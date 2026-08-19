@@ -10,6 +10,50 @@ import { ItemButton } from '../../actions/ItemButton';
 import { Item } from './Item';
 
 describe('<Item />', () => {
+  describe('current theme', () => {
+    it('should render the item shape by default', () => {
+      renderWithRoot(
+        <Item qa="Current" theme="current">
+          label
+        </Item>,
+      );
+
+      const item = screen.getByTestId('Current');
+
+      expect(item).toHaveAttribute('data-theme', 'current');
+      expect(item).toHaveAttribute('data-type', 'item');
+    });
+
+    it('should compose with every type', () => {
+      renderWithRoot(
+        <Item qa="Current" theme="current" type="outline">
+          label
+        </Item>,
+      );
+
+      const item = screen.getByTestId('Current');
+
+      expect(item).toHaveAttribute('data-theme', 'current');
+      expect(item).toHaveAttribute('data-type', 'outline');
+    });
+
+    // `current` used to live on the `type` axis. The old spelling keeps
+    // rendering the flavour it named — the borderless row — so the move is not
+    // a breaking change.
+    it('should keep rendering the legacy type="current" spelling', () => {
+      renderWithRoot(
+        <Item qa="Legacy" type="current">
+          label
+        </Item>,
+      );
+
+      const item = screen.getByTestId('Legacy');
+
+      expect(item).toHaveAttribute('data-theme', 'current');
+      expect(item).toHaveAttribute('data-type', 'item');
+    });
+  });
+
   describe('disabled state', () => {
     it('should announce the disabled state without the native attribute', () => {
       renderWithRoot(

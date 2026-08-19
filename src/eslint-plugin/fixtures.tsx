@@ -241,9 +241,9 @@ export const FIXTURES: Fixture[] = [
   {
     name: 'ItemBadge',
     /**
-     * Reads `type` and `theme` off `ItemActionContext` the same way `ItemAction`
-     * does, so it needs the same conditions — without them both props probe as
-     * plain defaults while actually being inheritance overrides.
+     * Sits under `ItemActionContext` the same way `ItemAction` does, so it gets
+     * the same conditions: the host theme reaches the element as `data-surface`,
+     * which the `current` ramp reads.
      */
     render: (props) => <ItemBadge {...props}>1</ItemBadge>,
     conditions: [
@@ -279,16 +279,17 @@ export const FIXTURES: Fixture[] = [
     /**
      * Every prop `ItemAction` reads off `ItemActionContext` needs a condition
      * here, because the fallback chain is `prop ?? context ?? literal`
-     * (`ItemAction.tsx`: `type = contextType ?? 'clear'`,
-     * `isDisabled = isDisabledProp ?? contextIsDisabled`). Probed bare, the
-     * literal wins and the prop looks like a plain default; probed under a
-     * provider that supplies a different value, the prop is what stops the
-     * inherited one from applying. `<Item isDisabled>` renders its `actions` in
-     * exactly such a provider, so `<ItemAction isDisabled={false}>` is the
-     * documented way to keep one action live inside a disabled item.
+     * (`ItemAction.tsx`: `isDisabled = isDisabledProp ?? contextIsDisabled`).
+     * Probed bare, the literal wins and the prop looks like a plain default;
+     * probed under a provider that supplies a different value, the prop is what
+     * stops the inherited one from applying. `<Item isDisabled>` renders its
+     * `actions` in exactly such a provider, so `<ItemAction isDisabled={false}>`
+     * is the documented way to keep one action live inside a disabled item.
      *
-     * The provider rewrites item-ish `type`s to `clear`, so `type="primary"` is
-     * used here — one of the values it passes through untouched.
+     * `type` and `theme` no longer come from context — the default `current`
+     * theme tracks the host through `currentcolor` instead — but the provider
+     * conditions stay: the host theme still reaches the element as
+     * `data-surface`, which the `current` ramp reads.
      */
     render: (props) => <ItemAction {...props}>Label</ItemAction>,
     conditions: [

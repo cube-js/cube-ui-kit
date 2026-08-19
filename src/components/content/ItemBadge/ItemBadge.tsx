@@ -8,8 +8,11 @@ import {
   useMemo,
 } from 'react';
 
+import { useDeprecationWarning } from '../../../_internal';
 import {
-  CURRENT_ITEM_STYLES,
+  CURRENT_CLEAR_STYLES,
+  CURRENT_OUTLINE_STYLES,
+  CURRENT_PRIMARY_STYLES,
   DANGER_CLEAR_STYLES,
   DANGER_OUTLINE_STYLES,
   DANGER_PRIMARY_STYLES,
@@ -35,8 +38,14 @@ export interface CubeItemBadgeProps extends BaseProps {
   children?: ReactNode;
   isLoading?: boolean;
   isSelected?: boolean;
-  type?: 'primary' | 'outline' | 'clear' | 'current' | (string & {});
-  theme?: 'default' | 'danger' | 'success' | 'special' | (string & {});
+  type?: 'primary' | 'outline' | 'clear' | (string & {});
+  theme?:
+    | 'current'
+    | 'default'
+    | 'danger'
+    | 'success'
+    | 'special'
+    | (string & {});
   tooltip?:
     | string
     | (Omit<ComponentProps<typeof TooltipProvider>, 'children'> & {
@@ -45,8 +54,10 @@ export interface CubeItemBadgeProps extends BaseProps {
 }
 
 type ItemBadgeVariant =
-  // Theme-agnostic inherited-color type — see `CURRENT_ITEM_STYLES`.
-  | 'default.current'
+  // Inherited-color theme — see the CURRENT THEME section of `item-themes`.
+  | 'current.primary'
+  | 'current.outline'
+  | 'current.clear'
   | 'default.primary'
   | 'default.outline'
   | 'default.clear'
@@ -70,9 +81,12 @@ const ItemBadgeElement = tasty({
     },
   }),
   variants: {
-    // Inherited-color type — theme-agnostic, see `CURRENT_ITEM_STYLES`. Badges
-    // inside a row use the borderless item flavour, not the chip.
-    'default.current': CURRENT_ITEM_STYLES,
+    // Current theme — colors mixed from the inherited `currentcolor`. The
+    // default `clear` flavour is borderless, so a badge does not put a resting
+    // chip on every row.
+    'current.primary': CURRENT_PRIMARY_STYLES,
+    'current.outline': CURRENT_OUTLINE_STYLES,
+    'current.clear': CURRENT_CLEAR_STYLES,
 
     // Default theme
     'default.primary': DEFAULT_PRIMARY_STYLES,
@@ -99,18 +113,18 @@ const ItemBadgeElement = tasty({
 export const ItemBadge = forwardRef<HTMLDivElement, CubeItemBadgeProps>(
   function ItemBadge(allProps, ref) {
     // `contextType` is read for its presence only — it marks "inside a row",
-    // which drives the `context` mod below. The variant no longer depends on it.
+    // which drives the `context` mod below. `contextTheme` names the surface the
+    // badge is painted on, which the `current` ramp reads. Neither one picks the
+    // variant any more.
     const { type: contextType, theme: contextTheme } = useItemActionContext();
 
-    const {
-      // See `ItemAction` for the full rationale: `current` tracks the host
-      // through `currentcolor`, so the row's `type` no longer has to be mirrored
-      // from context, and only an explicitly *themed* badge falls back to a
-      // concrete type. `theme="default"` stays inert.
-      type = allProps.theme && allProps.theme !== 'default'
-        ? 'clear'
-        : 'current',
-      theme = contextTheme ?? 'default',
+    let {
+      // See `ItemAction` for the full rationale: the `current` theme tracks the
+      // host through `currentcolor`, so neither the row's `type` nor its `theme`
+      // has to be mirrored from context, and a badge that names a theme is
+      // asking to paint itself rather than match its host.
+      type = 'clear',
+      theme = 'current',
       icon,
       children,
       isLoading = false,
@@ -119,6 +133,24 @@ export const ItemBadge = forwardRef<HTMLDivElement, CubeItemBadgeProps>(
       mods,
       ...rest
     } = allProps;
+
+    // `current` moved from the `type` axis to the `theme` axis. The old spelling
+    // still renders — mapped to the flavour it used to be, the borderless
+    // `clear` one — and warns.
+    const isLegacyCurrentType = type === 'current';
+
+    useDeprecationWarning(!isLegacyCurrentType, {
+      property: 'type="current"',
+      name: 'ItemBadge',
+      betterAlternative: 'theme="current"',
+      reason:
+        '`current` is a color source rather than a shape, so it now lives on the `theme` axis and composes with every `type`. It is already the default theme, so `type="current"` can simply be dropped.',
+    });
+
+    if (isLegacyCurrentType) {
+      type = 'clear';
+      theme = 'current';
+    }
 
     // Determine if we should show a checkmark
     const hasCheckmark = icon === 'checkmark';
@@ -207,14 +239,14 @@ export const ItemBadge = forwardRef<HTMLDivElement, CubeItemBadgeProps>(
       return (
         <ItemBadgeElement
           ref={handleRef}
-          variant={
-            // `current` has no per-theme flavours — it is registered once under
-            // `default`. `data-theme` still carries the real theme, which is
-            // what the ramp in `CURRENT_ITEM_STYLES` keys off.
-            `${finalType === 'current' ? 'default' : theme}.${finalType}` as ItemBadgeVariant
-          }
+          variant={`${theme}.${finalType}` as ItemBadgeVariant}
           data-theme={theme}
           data-type={finalType}
+          // The surface this badge is painted ON, which is a different question
+          // from its own theme now that `current` occupies that axis. The
+          // `current` ramp reads it to pick the alphas that work over the
+          // special theme's fixed dark-purple surface.
+          data-surface={contextTheme}
           aria-label={ariaLabel}
           mods={finalMods}
           {...mergeProps(rest, tooltipTriggerProps || {})}

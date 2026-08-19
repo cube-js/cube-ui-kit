@@ -156,5 +156,9 @@ declare module '@tenphi/tasty' {
     success: true;
     warning: true;
     note: true;
+    // Not a brand ramp: `current` mixes every color from the inherited
+    // `currentcolor`, so an element adopts the color of whatever container it
+    // sits in. See the CURRENT THEME section of `src/data/item-themes.ts`.
+    current: true;
   }
 }

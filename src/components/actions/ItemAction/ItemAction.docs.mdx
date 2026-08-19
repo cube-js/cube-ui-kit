@@ -5,7 +5,7 @@ import * as ItemActionStories from './ItemAction.stories';
 
 # ItemAction
 
-A compact action button designed for use inside `Item`, `ItemButton`, and `ItemCard`. Automatically inherits `type` and `theme` from its parent context.
+A compact action button designed for use inside `Item`, `ItemButton`, and `ItemCard`. Defaults to the `current` theme, so it takes its colors from whatever row hosts it.
 
 ## When to Use
 
@@ -22,8 +22,8 @@ A compact action button designed for use inside `Item`, `ItemButton`, and `ItemC
 ## Properties
 
 - **`icon`** `ReactNode | 'checkmark'` — Icon element or `'checkmark'` for a selection indicator
-- **`type`** `'primary' | 'outline' | 'clear' | 'current'` (default: `'current'`) — Visual type. `current` derives every color from the inherited `currentcolor`, so the action tracks whatever row hosts it without being told the row's type. Passing an explicit `theme` falls back to `'clear'`, since `current` is theme-agnostic and the theme would have nothing to color.
-- **`theme`** `'default' | 'danger' | 'success' | 'warning' | 'note' | 'special'` (default: `'default'`) — Color theme. Inherits from parent context.
+- **`type`** `'primary' | 'outline' | 'clear'` (default: `'clear'`) — Visual type. `clear` is borderless and paints nothing at rest, so a row full of actions does not read as busy.
+- **`theme`** `'current' | 'default' | 'danger' | 'success' | 'warning' | 'note' | 'special'` (default: `'current'`) — Color theme. `current` derives every color from the inherited `currentcolor`, so the action tracks whatever row hosts it without being told the row's type or theme. Name any other theme to have the action paint itself instead.
 - **`isLoading`** `boolean` (default: `false`) — Shows loading spinner
 - **`isSelected`** `boolean` (default: `false`) — Selected state (works with `icon="checkmark"`)
 - **`isDisabled`** `boolean` (default: `false`) — Disables the action. Inherits from parent; use `isDisabled={false}` to override.

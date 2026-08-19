@@ -939,25 +939,22 @@ export const SPECIAL_ITEM_STYLES: Styles = {
   },
 } as const;
 
-// ---------- CURRENT TYPE ----------
+// ---------- CURRENT THEME ----------
 // Every color is derived from the *inherited* text color (`#current` →
 // `currentcolor`), so the element adopts whatever color its context paints
-// with: a colored Alert, a dark banner, an image overlay, a chart tooltip. That
-// makes the type theme-agnostic — a single style object registered under
-// `default.current`, with the host component forcing the theme to `default`.
+// with: a colored Alert, a dark banner, an image overlay, a chart tooltip.
+//
+// That makes it a THEME rather than a type. The other themes each pick a brand
+// ramp and let `type` decide the shape (filled, outlined, borderless, textual);
+// `current` picks the inherited color and lets `type` decide the same shapes.
+// Every type therefore has a flavour here, and the `theme` axis is what a host
+// component switches — `type` keeps meaning what it means everywhere else.
 //
 // `color: '#current'` compiles to `color: currentcolor`, which CSS resolves as
 // `color: inherit` — so the label stays fully opaque and, crucially, the
 // element's own `currentcolor` (used by `fill`/`border` below) is the INHERITED
 // color rather than a faded one. The alpha steps are then mixed off that same
 // color, which is why the whole ramp tracks the context automatically.
-//
-// There are two flavours, mirroring the two shapes the neutral types take:
-// `CURRENT_ITEM_STYLES` follows `*_ITEM_STYLES` (borderless, invisible at rest,
-// for list rows) and `CURRENT_BUTTON_STYLES` follows the standalone button types
-// (a resting chip with a border). Both keep the monotonic-contrast pattern of
-// their neutral counterparts: default < hover < pressed, and the same again one
-// level up when selected.
 //
 // IMPORTANT: every alpha step within one state-map must be a unique value
 // string — Tasty's `mergeEntriesByValue` pass coalesces equal values into one
@@ -969,6 +966,13 @@ export const SPECIAL_ITEM_STYLES: Styles = {
 // `currentcolor`, so every other alpha is multiplied by .4 on that state.
 // Disabled `fill`/`border` are therefore written PRE-MULTIPLIED where they need
 // to stay visible.
+//
+// A note on what a single color cannot do: `primary` in every other theme is an
+// opaque brand fill under a `#white` label. There is no second color here to
+// punch the label out with — the inherited one is the only thing on hand, and
+// the surface behind it is unknown — so `current.primary` escalates on alpha
+// instead: the same construction as `outline`, at the strongest step the
+// contrast budget below allows. It reads as filled, not as inverted.
 
 // The alpha ramp for the item flavour, held in custom properties rather than
 // written inline in `fill`. Two reasons:
@@ -977,12 +981,14 @@ export const SPECIAL_ITEM_STYLES: Styles = {
 //    scheme: a 4% tint of a dark label on a light surface reads far stronger
 //    than a 4% tint of a light label on a dark one, so one ramp cannot serve
 //    both. Each step therefore carries a per-surface value — the base entry for
-//    the light scheme, `@dark` for the dark scheme, and `theme=special` for the
-//    special theme's dark-purple surface. Special is *static* (identical in
+//    the light scheme, `@dark` for the dark scheme, and `surface=special` for
+//    the special theme's dark-purple surface. Special is *static* (identical in
 //    light, dark and HC by design — see the SPECIAL section above), so it needs
-//    a single ramp rather than a light/dark pair. `theme=special` resolves
-//    against the element's own `data-theme`, which `ItemAction` sets from the
-//    surrounding `ItemActionProvider`.
+//    a single ramp rather than a light/dark pair. `surface=special` resolves
+//    against `data-surface`, which `ItemAction` and `ItemBadge` set from the
+//    surrounding `ItemActionProvider`: it names the surface the element is
+//    painted ON, which is a different question from its own `theme` now that
+//    `current` occupies that axis.
 // 2. Writing three ramps straight into one `fill` map would put ~18 alpha
 //    values in a single state-map, and Tasty's `mergeEntriesByValue` pass
 //    coalesces any two equal value strings into one OR-entry at the group's max
@@ -995,7 +1001,7 @@ export const SPECIAL_ITEM_STYLES: Styles = {
 // `SPECIAL_CLEAR_STYLES` uses on the same base.
 //
 // SELECTED steps jump well clear of the interaction steps rather than continuing
-// them. Every other type marks selection with a brand *hue* — an accent-tinted
+// them. Every other theme marks selection with a brand *hue* — an accent-tinted
 // fill under an accent label — and `current` has exactly one color to work with,
 // so it cannot. Alpha is the only channel left, and a step that merely continued
 // the hover/press ramp (the original `.04 → .06 → .09`) read as a slightly dirty
@@ -1015,37 +1021,46 @@ const CURRENT_ITEM_RAMP: Styles = {
   '$current-hover': {
     '': '#current.04',
     '@dark': '#current.07',
-    'theme=special': '#current.08',
+    'surface=special': '#current.08',
   },
   '$current-press': {
     '': '#current.06',
     '@dark': '#current.11',
-    'theme=special': '#current.12',
+    'surface=special': '#current.12',
   },
   '$current-selected': {
     '': '#current.18',
     '@dark': '#current.16',
-    'theme=special': '#current.17',
+    'surface=special': '#current.17',
   },
   '$current-selected-hover': {
     '': '#current.24',
     '@dark': '#current.19',
-    'theme=special': '#current.21',
+    'surface=special': '#current.21',
   },
   '$current-selected-press': {
     '': '#current.3',
     '@dark': '#current.22',
-    'theme=special': '#current.24',
+    'surface=special': '#current.24',
+  },
+} as const;
+
+// The focus ring is the one color NOT taken from `#current`: every theme in this
+// file uses `#primary-accent-text` (the special theme swapping in its fixed-mode
+// counterpart), so the focus indicator stays the same wherever it appears.
+const CURRENT_FOCUS_RING: Styles = {
+  outline: {
+    '': '0 #primary-accent-text.0',
+    focused: '1bw #primary-accent-text',
   },
 } as const;
 
 // Item flavour — the `current` counterpart of `*_ITEM_STYLES`: no border,
 // nothing painted at rest, the fill appearing only on interaction. Used for
-// list rows (`Item`, `ItemButton`) and, as the default type, the actions inside
-// them — where a resting chip on every row would read as noise. Like the other
-// `*_ITEM_STYLES` it leaves the focus ring to the base styles (the collection
-// that owns the row indicates focus), and only steps the fill. `ItemAction`
-// adds a ring of its own on top, since a focusable action is not a list row.
+// list rows (`Item`, `ItemButton`), where a resting chip on every row would read
+// as noise. Like the other `*_ITEM_STYLES` it leaves the focus ring to the base
+// styles (the collection that owns the row indicates focus), and only steps the
+// fill.
 export const CURRENT_ITEM_STYLES: Styles = {
   ...CURRENT_ITEM_RAMP,
   border: 'transparent',
@@ -1074,22 +1089,24 @@ export const CURRENT_ITEM_STYLES: Styles = {
   },
 } as const;
 
-// Button flavour — a standalone control, so it carries its own weight: a
+// Clear flavour — the item ramp on a focusable control. `*_CLEAR_STYLES` and
+// `*_ITEM_STYLES` differ by exactly this in every other theme too: same
+// borderless shape, same interaction fill, plus the ring a standalone control
+// needs. It is the default flavour for `ItemAction` and `ItemBadge`.
+export const CURRENT_CLEAR_STYLES: Styles = {
+  ...CURRENT_ITEM_STYLES,
+  ...CURRENT_FOCUS_RING,
+} as const;
+
+// Outline flavour — a standalone control, so it carries its own weight: a
 // resting `#current.03` chip inside a `#current.08` border. `.03` is enough to
 // separate the button from a flat background without reading as a filled
 // surface, while leaving room for four distinguishable steps above it.
 // Disabled `fill`/`border` are pre-multiplied (`.06`/`.12` → an effective
 // `.024`/`.048`) so the chip stays a muted version of itself instead of
 // vanishing.
-export const CURRENT_BUTTON_STYLES: Styles = {
-  // The focus ring is the one color NOT taken from `#current`: every type in
-  // this file uses `#primary-accent-text` (the special theme swapping in its
-  // fixed-mode counterpart), so the focus indicator stays the same wherever it
-  // appears.
-  outline: {
-    '': '0 #primary-accent-text.0',
-    focused: '1bw #primary-accent-text',
-  },
+export const CURRENT_OUTLINE_STYLES: Styles = {
+  ...CURRENT_FOCUS_RING,
   border: {
     '': '#current.08',
     'hovered | focused': '#current.15',
@@ -1118,8 +1135,101 @@ export const CURRENT_BUTTON_STYLES: Styles = {
   },
 } as const;
 
+// Outline-2 flavour — `outline` for a container that is already painting
+// something. In the brand themes the difference is the opaque base (`#surface-3`
+// instead of `#surface-2`); `current` has no opaque base to swap, since every
+// step is a translucent tint over whatever is behind it. The same intent —
+// "stay legible one rung further up the surface ladder" — is therefore carried
+// by a heavier tint at every step: roughly double `outline`'s resting chip, so
+// the control still separates from a tinted or busy container.
+export const CURRENT_OUTLINE_2_STYLES: Styles = {
+  ...CURRENT_FOCUS_RING,
+  border: {
+    '': '#current.14',
+    'hovered | focused': '#current.22',
+    pressed: '#current.3',
+    selected: '#current.36',
+    'selected & pressed': '#current.45',
+    disabled: '#current.2',
+    'selected & disabled': '#current.5',
+  },
+  fill: {
+    '': '#current.06',
+    'hovered | focused': '#current.11',
+    pressed: '#current.15',
+    selected: '#current.17',
+    'selected & (hovered | focused)': '#current.21',
+    // `.24` is the measured AA ceiling for a full-strength label on a dark
+    // surface (see the ramp comment above) — the top step stops there rather
+    // than continuing the interval.
+    'selected & pressed': '#current.24',
+    disabled: '#current.1',
+    'selected & disabled': '#current.26',
+  },
+  color: {
+    '': '#current',
+    disabled: '#current.4',
+  },
+} as const;
+
+// Primary flavour — the high-emphasis control. See the section header for why
+// this is an alpha escalation of `outline` rather than the inverted, opaque fill
+// the brand themes use. Like every other `*_PRIMARY_STYLES` it has no `selected`
+// state: primary is already the emphatic option, so there is nothing above it to
+// step to.
+export const CURRENT_PRIMARY_STYLES: Styles = {
+  ...CURRENT_FOCUS_RING,
+  border: {
+    '': '#current.28',
+    'hovered | focused': '#current.35',
+    pressed: '#current.45',
+    // Pre-multiplied against the `.4` label fade below → an effective `.2`,
+    // a muted version of the resting border rather than a stronger one.
+    disabled: '#current.5',
+  },
+  fill: {
+    '': '#current.14',
+    'hovered | focused': '#current.18',
+    // The AA ceiling for a full-strength label on a dark surface, and the
+    // reason the ramp stops climbing here.
+    pressed: '#current.24',
+    // Pre-multiplied → an effective `.104`, just under the resting chip.
+    disabled: '#current.26',
+  },
+  color: {
+    '': '#current',
+    disabled: '#current.4',
+  },
+} as const;
+
+// Link flavour — no chip at all, only the label. The brand themes intensify from
+// `accent-text-soft` at rest to `accent-text` on hover; with one color to work
+// with, "soft" is that color at `.8` and "strong" is it at full opacity.
+export const CURRENT_LINK_STYLES: Styles = {
+  ...CURRENT_FOCUS_RING,
+  border: 0,
+  fill: {
+    '': 'transparent',
+  },
+  color: {
+    '': '#current.8',
+    'hovered & !pressed': '#current',
+    disabled: '#current.4',
+  },
+} as const;
+
+// Card flavour — the `current` counterpart of `*_CARD_STYLES`: a static,
+// non-interactive panel. The label stays at full opacity so the tint and border
+// resolve against the inherited color rather than a faded one.
+export const CURRENT_CARD_STYLES: Styles = {
+  border: '#current.2',
+  fill: '#current.05',
+  color: '#current',
+} as const;
+
 // ---------- CARD TYPE STYLES ----------
-// Card type only supports: default, success, danger, note themes
+// Card type only supports: default, success, danger, note themes (plus the
+// `current` theme — see `CURRENT_CARD_STYLES` above)
 
 export const DEFAULT_CARD_STYLES: Styles = {
   border: '#surface-text.20',
@@ -1152,9 +1262,15 @@ export const NOTE_CARD_STYLES: Styles = {
 } as const;
 
 export type ItemVariant =
-  // The `current` type derives every color from the inherited `currentcolor`,
-  // so it has no per-theme flavours — see `CURRENT_ITEM_STYLES`.
-  | 'default.current'
+  // Inherited-color theme — every flavour mixes its colors from `currentcolor`
+  // instead of a brand ramp. See the CURRENT THEME section.
+  | 'current.item'
+  | 'current.primary'
+  | 'current.outline'
+  | 'current.outline-2'
+  | 'current.clear'
+  | 'current.link'
+  | 'current.card'
   | 'default.primary'
   | 'default.outline'
   | 'default.outline-2'
@@ -1200,8 +1316,14 @@ export type ItemVariant =
 // below cannot drift apart: `ITEM_RESTING_COLOR_VARIANTS` is derived from this
 // object rather than restating the palette.
 export const ITEM_VARIANTS: Record<ItemVariant, Styles> = {
-  // Inherited-color type — theme-agnostic, see `CURRENT_ITEM_STYLES`
-  'default.current': CURRENT_ITEM_STYLES,
+  // Current theme — colors mixed from the inherited `currentcolor`
+  'current.item': CURRENT_ITEM_STYLES,
+  'current.primary': CURRENT_PRIMARY_STYLES,
+  'current.outline': CURRENT_OUTLINE_STYLES,
+  'current.outline-2': CURRENT_OUTLINE_2_STYLES,
+  'current.clear': CURRENT_CLEAR_STYLES,
+  'current.link': CURRENT_LINK_STYLES,
+  'current.card': CURRENT_CARD_STYLES,
   // Default theme
   'default.primary': DEFAULT_PRIMARY_STYLES,
   'default.outline': DEFAULT_OUTLINE_STYLES,
@@ -1251,7 +1373,7 @@ export const ITEM_VARIANTS: Record<ItemVariant, Styles> = {
 };
 
 // Resolve a `theme` + `type` pair to the variant key that actually exists in
-// `ITEM_VARIANTS`. Three of the combinations users can write have no entry of
+// `ITEM_VARIANTS`. Two of the combinations users can write have no entry of
 // their own and are folded onto one that does.
 //
 // Shared rather than inlined because more than one component has to arrive at
@@ -1271,20 +1393,16 @@ export function resolveItemVariant(
   const effectiveType =
     theme === 'special' && type === 'outline-2' ? 'outline' : type;
 
-  // `header` reuses the `item` visuals, and both `header` and `current` are
-  // theme-agnostic — `current` paints from the inherited `currentcolor`.
+  // `header` reuses the `item` visuals and is theme-agnostic.
   const variantType = effectiveType === 'header' ? 'item' : effectiveType;
-  const variantTheme =
-    effectiveType === 'header' || effectiveType === 'current'
-      ? 'default'
-      : theme;
+  const variantTheme = effectiveType === 'header' ? 'default' : theme;
 
   return `${variantTheme}.${variantType}` as ItemVariant;
 }
 
 // Each variant reduced to the label colors an actions wrapper has to reproduce.
 //
-// The `current` type paints from `currentcolor`, which only reaches an action
+// The `current` theme paints from `currentcolor`, which only reaches an action
 // that is a DOM *descendant* of the row. `Item` renders its actions inside the
 // row element, so they inherit the row color for free — but `ItemButton` renders
 // them as a sibling of the button (deliberately, so the actions stay reachable
@@ -1312,9 +1430,10 @@ export const ITEM_RESTING_COLOR_VARIANTS: Record<ItemVariant, Styles> =
       }
 
       const map = color as Record<string, string>;
-      // Only a plain `disabled` key is usable. `default.current` states it as
+      // Only a plain `disabled` key is usable. The borderless `current`
+      // flavours (`current.item`, `current.clear`) state it as
       // `disabled & !inherit-disabled`, which is deliberately not matched here:
-      // that variant paints from `currentcolor` and has no fixed color to hand
+      // those variants paint from `currentcolor` and have no fixed color to hand
       // down, so the wrapper leaves its resting value in place.
       const disabled = map.disabled;
 

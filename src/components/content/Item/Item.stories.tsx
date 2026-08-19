@@ -2360,8 +2360,14 @@ CustomSize.parameters = {
 export const TypesAndThemes: StoryFn<CubeItemProps> = (args) => {
   // Valid type+theme combinations:
   // - title: only 'default'
-  // - card: 'default', 'success', 'danger', 'warning', 'note'
-  // - all other types: 'default', 'success', 'danger', 'warning', 'note', 'special'
+  // - card: 'default', 'success', 'danger', 'warning', 'note', 'current'
+  // - all other types: 'default', 'success', 'danger', 'warning', 'note',
+  //   'special', 'current'
+  //
+  // `current` is swept by `CurrentTheme` / `CurrentStates` instead of here: it
+  // mixes its colors from the inherited text color, so it only means anything
+  // inside a container that paints one, and a bare cell would show nothing the
+  // `default` cell next to it does not.
   const standardTypes = [
     'item',
     'primary',
@@ -2453,13 +2459,13 @@ TypesAndThemes.parameters = {
   docs: {
     description: {
       story:
-        'Showcases all valid type and theme combinations. Valid combinations: `title` type only supports `default` theme; `card` type supports `default`, `success`, `danger`, `warning`, and `note` themes; all other types (`item`, `primary`, `outline`, `outline-2`, `clear`, `link`) support `default`, `success`, `danger`, `warning`, `note`, and `special` themes (the `outline-2` + `special` combination falls back to `outline` since `outline-2` paints over `#surface-3`, which has no analogue on the special theme). The `link` type does not support icons or loading state (`isLoading`). Using an invalid type+theme combination, icons with `link` type, or `isLoading` with `link` type will trigger a console warning.',
+        'Showcases all valid type and theme combinations. Valid combinations: `title` type only supports `default` theme; `card` type supports `default`, `success`, `danger`, `warning`, `note` and `current` themes; all other types (`item`, `primary`, `outline`, `outline-2`, `clear`, `link`) support `default`, `success`, `danger`, `warning`, `note`, `special` and `current` themes (the `outline-2` + `special` combination falls back to `outline` since `outline-2` paints over `#surface-3`, which has no analogue on the special theme). The `current` theme is swept by `CurrentTheme` and `CurrentStates` instead of shown here, since it only means anything inside a container that paints its own text color. The `link` type does not support icons or loading state (`isLoading`). Using an invalid type+theme combination, icons with `link` type, or `isLoading` with `link` type will trigger a console warning.',
     },
   },
 };
 
-// Contexts the `current` type is meant to live in: each one paints its own text
-// color, and the item is expected to adopt it without any theme prop.
+// Contexts the `current` theme is meant to live in: each one paints its own text
+// color, and the item is expected to adopt it whatever its type.
 const CURRENT_CONTEXTS = [
   { label: 'Page surface (inherited)', fill: undefined, color: undefined },
   { label: 'Danger', fill: '#danger-surface', color: '#danger-accent-text' },
@@ -2483,7 +2489,7 @@ const CURRENT_STATES = [
   { label: 'disabled', mods: { disabled: true } },
 ] as const;
 
-export const CurrentType: StoryFn<CubeItemProps> = (args) => (
+export const CurrentTheme: StoryFn<CubeItemProps> = (args) => (
   <Flow gap="4x">
     <Flow gap="2x">
       <Title level={5}>Inherited Colors</Title>
@@ -2500,13 +2506,13 @@ export const CurrentType: StoryFn<CubeItemProps> = (args) => (
             <Flow gap="1x" placeItems="start">
               <Block preset="c2">{label}</Block>
               <Space flow="row wrap" placeItems="start">
-                <Item {...args} type="current" icon={<IconUser />}>
+                <Item {...args} theme="current" icon={<IconUser />}>
                   Default
                 </Item>
-                <Item {...args} isSelected type="current" icon={<IconUser />}>
+                <Item {...args} isSelected theme="current" icon={<IconUser />}>
                   Selected
                 </Item>
-                <Item {...args} isDisabled type="current" icon={<IconUser />}>
+                <Item {...args} isDisabled theme="current" icon={<IconUser />}>
                   Disabled
                 </Item>
               </Space>
@@ -2543,7 +2549,7 @@ export const CurrentType: StoryFn<CubeItemProps> = (args) => (
                   key={stateLabel}
                   {...args}
                   mods={mods}
-                  type="current"
+                  theme="current"
                   icon={<IconUser />}
                 >
                   {stateLabel}
@@ -2556,7 +2562,7 @@ export const CurrentType: StoryFn<CubeItemProps> = (args) => (
     </Flow>
 
     <Flow gap="2x">
-      <Title level={5}>Against the Neutral `item` Type</Title>
+      <Title level={5}>Against the Default Theme</Title>
       <Block preset="t4">
         Same ramp, same steps — `current` only swaps the fixed `#surface-text`
         anchor for the inherited color, so on the page surface the two are
@@ -2581,13 +2587,18 @@ export const CurrentType: StoryFn<CubeItemProps> = (args) => (
         >
           <Flow gap="1x" placeItems="start">
             <Block preset="c2">{label}</Block>
-            {(['item', 'current'] as const).map((type) => (
-              <Space key={type} flow="row wrap" placeItems="center">
+            {(['default', 'current'] as const).map((itemTheme) => (
+              <Space key={itemTheme} flow="row wrap" placeItems="center">
                 <Block preset="c2" width="8x">
-                  {type}
+                  {itemTheme}
                 </Block>
                 {CURRENT_STATES.map(({ label: stateLabel, mods }) => (
-                  <Item key={stateLabel} {...args} mods={mods} type={type}>
+                  <Item
+                    key={stateLabel}
+                    {...args}
+                    mods={mods}
+                    theme={itemTheme}
+                  >
                     {stateLabel}
                   </Item>
                 ))}
@@ -2615,7 +2626,7 @@ export const CurrentType: StoryFn<CubeItemProps> = (args) => (
                   {...args}
                   icon={<IconUser />}
                   size={size}
-                  type="current"
+                  theme="current"
                 >
                   {size}
                 </Item>
@@ -2623,22 +2634,22 @@ export const CurrentType: StoryFn<CubeItemProps> = (args) => (
             )}
           </Space>
           <Space flow="row wrap" placeItems="start">
-            <Item {...args} type="current" icon={<IconUser />} />
-            <Item {...args} type="current" icon={<IconCoin />} shape="pill">
+            <Item {...args} theme="current" icon={<IconUser />} />
+            <Item {...args} theme="current" icon={<IconCoin />} shape="pill">
               Pill
             </Item>
             <Item
               {...args}
-              type="current"
+              theme="current"
               icon={<IconUser />}
               rightIcon={<IconSettings />}
             >
               Both icons
             </Item>
-            <Item {...args} type="current" hotkeys="cmd+k">
+            <Item {...args} theme="current" hotkeys="cmd+k">
               With hotkeys
             </Item>
-            <Item {...args} isLoading type="current" icon={<IconUser />}>
+            <Item {...args} isLoading theme="current" icon={<IconUser />}>
               Loading
             </Item>
           </Space>
@@ -2646,7 +2657,7 @@ export const CurrentType: StoryFn<CubeItemProps> = (args) => (
             {...args}
             description="Actions and description inherit the same color"
             icon={<IconUser />}
-            type="current"
+            theme="current"
             width="40x"
             actions={
               <>
@@ -2663,11 +2674,90 @@ export const CurrentType: StoryFn<CubeItemProps> = (args) => (
   </Flow>
 );
 
-CurrentType.parameters = {
+CurrentTheme.parameters = {
   docs: {
     description: {
       story:
-        'The `current` type derives every color — fill and label — from the inherited text color (`currentcolor`), so an item adopts whatever color its context paints with and needs no `theme` (passing one other than `default` warns). It is shaped like the neutral `item` type: no border, nothing painted at rest, the fill stepping in on hover (`.04`), pressed (`.06`) and selected (`.09` → `.15`); the label stays fully opaque. Use it inside colored containers — alerts, banners, dark overlays, tooltips — where a themed type would either clash with the container or have to be picked to match it. `Button` has a `current` type too, shaped like a standalone control instead: a resting `#current.03` chip inside a `#current.08` border.',
+        'The `current` theme derives every color — fill and label — from the inherited text color (`currentcolor`), so an item adopts whatever color its context paints with. It sits on the `theme` axis rather than the `type` axis because it is a color source, not a shape: every type except `header` has a `current` flavour, so the shape is still chosen the usual way. The default `item` type keeps its borderless shape — nothing painted at rest, the fill stepping in on hover (`.04`), pressed (`.06`) and selected (`.18` → `.30`) — and the label stays fully opaque. Use it inside colored containers — alerts, banners, dark overlays, tooltips — where a brand theme would either clash with the container or have to be picked to match it. `CurrentStates` below sweeps every type and state on one container.',
+    },
+  },
+};
+
+// Every shape the `current` theme has a flavour for. `header` is the one type
+// left out: it is theme-agnostic and folds onto `item` visuals on the default
+// theme whatever theme it is given.
+const CURRENT_TYPES = [
+  'item',
+  'primary',
+  'outline',
+  'outline-2',
+  'clear',
+  'link',
+] as const;
+
+export const CurrentStates: StoryFn<CubeItemProps> = (args) => (
+  <Flow gap="4x">
+    {[
+      {
+        label: 'On note surface',
+        fill: '#note-surface',
+        color: '#note-accent-text',
+      },
+      { label: 'On dark', fill: '#fixed-dark', color: '#white' },
+    ].map(({ label, fill, color }) => (
+      <Block key={label} padding="1.5x" radius="1cr" fill={fill} color={color}>
+        <Flow gap="2x" placeItems="start">
+          <Block preset="c2">{label}</Block>
+          {CURRENT_TYPES.map((type) => (
+            <Flow key={type} gap="1x" placeItems="start">
+              <Block preset="c2">{type}</Block>
+              <Space
+                flow="row wrap"
+                placeItems="start"
+                // `outline-2` is drawn for a container one rung up the surface
+                // ladder. `current` has no opaque base to swap, so the stand-in
+                // is a tint of the inherited color.
+                fill={type === 'outline-2' ? '#current.08' : undefined}
+                padding={type === 'outline-2' ? '1x' : undefined}
+                radius={type === 'outline-2' ? '1cr' : undefined}
+              >
+                {CURRENT_STATES.map(({ label: stateLabel, mods }) => (
+                  <Item
+                    key={stateLabel}
+                    {...args}
+                    mods={mods}
+                    theme="current"
+                    type={type}
+                  >
+                    {stateLabel}
+                  </Item>
+                ))}
+              </Space>
+            </Flow>
+          ))}
+          <Flow gap="1x" placeItems="start">
+            <Block preset="c2">card</Block>
+            <Item
+              {...args}
+              theme="current"
+              type="card"
+              description="Every color mixed from the inherited one"
+              icon={<IconUser />}
+            >
+              Card
+            </Item>
+          </Flow>
+        </Flow>
+      </Block>
+    ))}
+  </Flow>
+);
+
+CurrentStates.parameters = {
+  docs: {
+    description: {
+      story:
+        'Every type, every state, on the `current` theme — the matrix the other themes get from `TypesAndThemes`, run on the one theme whose colors are not its own. Nothing in the grid names a color: each block paints a text color and every item mixes its fill, border and label from it. `primary` is the strongest step of the same alpha ramp rather than an inverted fill — a single inherited color has nothing to punch the label out with — and `outline-2` sits in a `#current.08` panel, the `current` stand-in for the `#surface-2` container it is drawn for. `link` carries no chip at all: it goes soft (`#current.8`) at rest and full strength on hover.',
     },
   },
 };

@@ -1304,7 +1304,7 @@ function useActivePreset(): string | null {
  * carrying it here cost the whole row: `success — 157°` is wide enough that four
  * of them had to stack, which is the arrangement the chips were meant to replace.
  *
- * `type="current"` is what makes a chip *be* its theme rather than describe one:
+ * `theme="current"` is what makes a chip *be* its theme rather than describe one:
  * every part of the button — the resting fill, the border, the hover step — is
  * mixed from the inherited text color, so setting `color` to the theme's own text
  * token colors the whole control from a single value.
@@ -1342,7 +1342,7 @@ function StatusThemeButton({
       placement="bottom start"
     >
       <Button
-        type="current"
+        theme="current"
         size="small"
         color={`#${name}-text`}
         tooltip={`Tune the ${name} theme — currently ${Math.round(seed.hue)}°`}

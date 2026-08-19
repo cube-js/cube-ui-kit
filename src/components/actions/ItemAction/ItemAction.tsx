@@ -9,8 +9,11 @@ import {
   useMemo,
 } from 'react';
 
+import { useDeprecationWarning } from '../../../_internal';
 import {
-  CURRENT_ITEM_STYLES,
+  CURRENT_CLEAR_STYLES,
+  CURRENT_OUTLINE_STYLES,
+  CURRENT_PRIMARY_STYLES,
   DANGER_CLEAR_STYLES,
   DANGER_OUTLINE_STYLES,
   DANGER_PRIMARY_STYLES,
@@ -45,8 +48,9 @@ export interface CubeItemActionProps
   children?: ReactNode;
   isLoading?: boolean;
   isSelected?: boolean;
-  type?: 'primary' | 'outline' | 'clear' | 'current' | (string & {});
+  type?: 'primary' | 'outline' | 'clear' | (string & {});
   theme?:
+    | 'current'
     | 'default'
     | 'danger'
     | 'success'
@@ -64,8 +68,10 @@ export interface CubeItemActionProps
 }
 
 type ItemActionVariant =
-  // Theme-agnostic inherited-color type — see `CURRENT_ITEM_STYLES`.
-  | 'default.current'
+  // Inherited-color theme — see the CURRENT THEME section of `item-themes`.
+  | 'current.primary'
+  | 'current.outline'
+  | 'current.clear'
   | 'default.primary'
   | 'default.outline'
   | 'default.clear'
@@ -90,11 +96,10 @@ const ItemActionElement = tasty({
   styles: {
     ...ITEM_ACTION_BASE_STYLES,
     recipe: 'reset button',
-    // Every variant below defines its own ring and overrides this one. It exists
-    // for `current`, which reuses `CURRENT_ITEM_STYLES` — an `*_ITEM_STYLES`
-    // flavour, and those leave focus to the collection that owns the row. A
-    // focusable action is not a row, so it needs the ring back, and it uses the
-    // same `#primary-accent-text` as every other type in `item-themes.ts`.
+    // Every variant below defines its own ring and overrides this one, which is
+    // kept as the floor for a custom `type` that resolves to no variant at all.
+    // It uses the same `#primary-accent-text` as every variant in
+    // `item-themes.ts`.
     outline: {
       '': '0 #primary-accent-text.0',
       focused: '1bw #primary-accent-text',
@@ -126,9 +131,12 @@ const ItemActionElement = tasty({
     },
   },
   variants: {
-    // Inherited-color type — theme-agnostic, see `CURRENT_ITEM_STYLES`. Actions
-    // inside a `current` Item use the borderless item flavour, not the chip.
-    'default.current': CURRENT_ITEM_STYLES,
+    // Current theme — colors mixed from the inherited `currentcolor`. The
+    // default `clear` flavour is borderless, so an action does not put a resting
+    // chip on every row.
+    'current.primary': CURRENT_PRIMARY_STYLES,
+    'current.outline': CURRENT_OUTLINE_STYLES,
+    'current.clear': CURRENT_CLEAR_STYLES,
 
     // Default theme
     'default.primary': DEFAULT_PRIMARY_STYLES,
@@ -173,19 +181,15 @@ export const ItemAction = forwardRef(function ItemAction(
     isDisabled: contextIsDisabled,
   } = useItemActionContext();
 
-  const {
-    // `current` derives every color from the row's inherited `currentcolor`, so
-    // one type covers every host type and theme — no need to mirror the row's
-    // `type` from context.
-    //
-    // An explicitly *themed* action is the exception: it is asking to paint
-    // itself, not to match its host, and `current` is theme-agnostic by
-    // construction, so it would have nothing to color with. Such actions fall
-    // back to `clear`. The `!== 'default'` guard keeps `theme="default"` inert —
-    // passing a prop's own default value must never change what renders, which
-    // is the invariant `no-redundant-default-prop` lints for.
-    type = allProps.theme && allProps.theme !== 'default' ? 'clear' : 'current',
-    theme = contextTheme ?? 'default',
+  let {
+    // Borderless by default: an action sits inside a row, where a resting chip
+    // on every one of them would read as noise.
+    type = 'clear',
+    // The `current` theme derives every color from the row's inherited
+    // `currentcolor`, so one default covers every host type and theme — no need
+    // to mirror the row's own `theme` from context. An action that names a theme
+    // is asking to paint itself rather than match its host, and gets it.
+    theme = 'current',
     icon,
     children,
     isLoading = false,
@@ -197,13 +201,31 @@ export const ItemAction = forwardRef(function ItemAction(
     ...rest
   } = allProps;
 
+  // `current` moved from the `type` axis to the `theme` axis. The old spelling
+  // still renders — mapped to the flavour it used to be, the borderless `clear`
+  // one — and warns.
+  const isLegacyCurrentType = type === 'current';
+
+  useDeprecationWarning(!isLegacyCurrentType, {
+    property: 'type="current"',
+    name: 'ItemAction',
+    betterAlternative: 'theme="current"',
+    reason:
+      '`current` is a color source rather than a shape, so it now lives on the `theme` axis and composes with every `type`. It is already the default theme, so `type="current"` can simply be dropped.',
+  });
+
+  if (isLegacyCurrentType) {
+    type = 'clear';
+    theme = 'current';
+  }
+
   // Inherit disabled state from context, but allow local override
   const isDisabled = isDisabledProp ?? contextIsDisabled;
 
   // Whether that disabled state came from the host row rather than this action's
-  // own prop. The `current` type paints from the inherited color, and a disabled
-  // host has already faded it — so fading a second time washes the label out. See
-  // `CURRENT_ITEM_STYLES.color`.
+  // own prop. The `current` theme paints from the inherited color, and a
+  // disabled host has already faded it — so fading a second time washes the
+  // label out. See `CURRENT_ITEM_STYLES.color`.
   const isDisabledInherited = isDisabledProp == null && !!contextIsDisabled;
 
   // Determine if we should show a checkmark
@@ -325,11 +347,14 @@ export const ItemAction = forwardRef(function ItemAction(
     return (
       <ItemActionElement
         {...mergedProps}
-        variant={
-          `${finalType === 'current' ? 'default' : theme}.${finalType}` as ItemActionVariant
-        }
+        variant={`${theme}.${finalType}` as ItemActionVariant}
         data-theme={theme}
         data-type={finalType}
+        // The surface this action is painted ON, which is a different question
+        // from its own theme now that `current` occupies that axis. The
+        // `current` ramp reads it to pick the alphas that work over the special
+        // theme's fixed dark-purple surface.
+        data-surface={contextTheme}
         tabIndex={finalTabIndex}
         styles={styles}
       >

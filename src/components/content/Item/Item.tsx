@@ -21,6 +21,7 @@ import {
 import { OverlayProps } from 'react-aria';
 import { useHotkeys } from 'react-hotkeys-hook';
 
+import { useDeprecationWarning } from '../../../_internal';
 import { useWarn } from '../../../_internal/hooks/use-warn';
 import {
   ITEM_VARIANTS,
@@ -143,7 +144,6 @@ export interface CubeItemProps extends BaseProps, ContainerStyleProps {
     | 'clear'
     | 'link'
     | 'card'
-    | 'current'
     | (string & {});
   theme?:
     | 'default'
@@ -152,6 +152,7 @@ export interface CubeItemProps extends BaseProps, ContainerStyleProps {
     | 'special'
     | 'warning'
     | 'note'
+    | 'current'
     | (string & {});
   /** Keyboard shortcut that triggers the element when pressed */
   hotkeys?: string;
@@ -572,6 +573,25 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     ...rest
   } = props;
 
+  // `current` moved from the `type` axis to the `theme` axis: it selects a color
+  // source, not a shape, so every shape can now have a `current` flavour. The
+  // old spelling still renders — mapped to the flavour it used to be, the
+  // borderless `item` row — and warns.
+  const isLegacyCurrentType = type === 'current';
+
+  useDeprecationWarning(!isLegacyCurrentType, {
+    property: 'type="current"',
+    name: 'Item',
+    betterAlternative: 'theme="current"',
+    reason:
+      '`current` is a color source rather than a shape, so it now lives on the `theme` axis and composes with every `type`. `type="current"` maps to `theme="current" type="item"`.',
+  });
+
+  if (isLegacyCurrentType) {
+    type = 'item';
+    theme = 'current';
+  }
+
   // Determine if Label will be rendered
   const hasLabel = !!(children || labelProps);
 
@@ -590,7 +610,8 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
   const finalIsDisabled =
     isDisabledProp === true || (isLoading && isDisabledProp !== false);
 
-  // Validate type+theme combinations
+  // Validate type+theme combinations. `current` is a theme like any other here:
+  // it has a flavour for every type, so it is listed wherever `default` is.
   const STANDARD_THEMES = [
     'default',
     'success',
@@ -598,19 +619,22 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     'warning',
     'note',
     'special',
+    'current',
   ];
-  const CARD_THEMES = ['default', 'success', 'danger', 'warning', 'note'];
+  const CARD_THEMES = [
+    'default',
+    'success',
+    'danger',
+    'warning',
+    'note',
+    'current',
+  ];
   const HEADER_THEMES = ['default'];
-  // `current` takes every color from the inherited `currentcolor`, so a theme
-  // would have nothing to change.
-  const CURRENT_THEMES = ['default'];
 
   const isInvalidCombination =
     (type === 'header' && !HEADER_THEMES.includes(theme)) ||
-    (type === 'current' && !CURRENT_THEMES.includes(theme)) ||
     (type === 'card' && !CARD_THEMES.includes(theme)) ||
-    (!['header', 'current', 'card'].includes(type) &&
-      !STANDARD_THEMES.includes(theme));
+    (!['header', 'card'].includes(type) && !STANDARD_THEMES.includes(theme));
 
   useWarn(isInvalidCombination, {
     key: ['Item', 'invalid-type-theme', type, theme],
@@ -618,11 +642,9 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
       `Item: Invalid type+theme combination. type="${type}" does not support theme="${theme}".` +
         (type === 'header'
           ? ' The "header" type only supports theme: default.'
-          : type === 'current'
-            ? ' The "current" type derives every color from the inherited text color and only supports theme: default.'
-            : type === 'card'
-              ? ' The "card" type only supports themes: default, success, danger, warning, note.'
-              : ' Standard types support themes: default, success, danger, warning, note, special.'),
+          : type === 'card'
+            ? ' The "card" type only supports themes: default, success, danger, warning, note, current.'
+            : ' Standard types support themes: default, success, danger, warning, note, special, current.'),
     ],
   });
 

@@ -24,8 +24,8 @@ A versatile action component that triggers commands and navigates users.
 
 ## Properties
 
-- **`type`** `'primary' | 'outline' | 'outline-2' | 'clear' | 'link' | 'current'` (default: `outline`) — Visual style variant of the button (`outline-2` is identical to `outline` but uses `#surface-3` as the base fill; not available for the `special` theme. `current` derives its colors from the inherited text color and ignores `theme`)
-- **`theme`** `'default' | 'danger' | 'success' | 'warning' | 'note' | 'special'` (default: `default`) — Semantic colour palette theme
+- **`type`** `'primary' | 'outline' | 'outline-2' | 'clear' | 'link'` (default: `outline`) — Visual style variant of the button (`outline-2` is identical to `outline` but uses `#surface-3` as the base fill; not available for the `special` theme)
+- **`theme`** `'default' | 'danger' | 'success' | 'warning' | 'note' | 'special' | 'current'` (default: `default`) — Semantic colour palette theme. `current` is not a brand palette: it mixes every color from the inherited text color, so the button adopts the color of whatever container it sits in
 - **`size`** `'xsmall' | 'small' | 'medium' | 'large' | 'xlarge' | 'inline' | number` (default: `medium`) — Button size. Use `'inline'` for link-type buttons or a number/string for custom sizes (e.g. `64` or `'8x'`)
 - **`icon`** — Icon rendered before the content. Can be: ReactNode, `true` (empty slot), or function `({ loading, selected, ...mods }) => ReactNode | true`
 - **`rightIcon`** — Icon rendered after the content. Can be: ReactNode, `true` (empty slot), or function `({ loading, selected, ...mods }) => ReactNode | true`
@@ -91,7 +91,6 @@ The `mods` prop accepts the following modifiers you can override:
 - `outline` – Border with transparent background; `isSelected` adds brand-tinted fill.
 - `clear` – No border, transparent background; `isSelected` adds brand-tinted fill.
 - `link` – Styled as a textual link.
-- `current` – Fill, border and label are mixed from the inherited text color (`#current`), so the button adopts the color of whatever container it sits in. The resting chip is a `#current.03` fill inside a `#current.08` border, and hover, pressed and selected step the same alpha ramp up from there; the label stays fully opaque. The focus ring stays `#primary-accent-text`, like every other type. Theme-agnostic — there is a single variant, and `theme` has no effect. Use it inside colored containers (alerts, banners, dark overlays, tooltips). `Item` has a `current` type too, shaped like its neutral `item` type instead: borderless and invisible at rest.
 
 ### Themes. `theme` prop
 
@@ -101,6 +100,13 @@ The `mods` prop accepts the following modifiers you can override:
 - `warning` – Yellow/amber palette for caution or attention.
 - `note` – Violet palette for informational context.
 - `special` – White palette for dark backgrounds.
+- `current` – Not a palette at all: fill, border and label are mixed from the inherited text color (`#current`), so the button adopts the color of whatever container it sits in and keeps adopting it if that color changes. Every `type` has a `current` flavour, so the shape is still yours to pick — `outline` is the resting `#current.03` chip inside a `#current.08` border, `primary` escalates the same construction to a filled chip, `clear` paints nothing at rest, `link` is the label alone. The label stays fully opaque and the focus ring stays `#primary-accent-text`, like every other theme. Use it inside colored containers (alerts, banners, dark overlays, tooltips), where a brand theme would either clash with the container or have to be picked to match it.
+
+  ```jsx
+  <Alert theme="note">
+    <Button theme="current" type="outline">Adopts the note color</Button>
+  </Alert>
+  ```
 
 ### Sizes. `size` prop
 
