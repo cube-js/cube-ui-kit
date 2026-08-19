@@ -226,7 +226,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         name: Download storybook cache
         with:
           path: |
