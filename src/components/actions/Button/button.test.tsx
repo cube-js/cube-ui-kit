@@ -118,22 +118,6 @@ describe('<Button />', () => {
       expect(button).toHaveAttribute('data-theme', 'current');
       expect(button).toHaveAttribute('data-type', 'primary');
     });
-
-    // `current` used to live on the `type` axis. The old spelling keeps
-    // rendering the flavour it named — the standalone outline chip — so the
-    // move is not a breaking change.
-    it('should keep rendering the legacy type="current" spelling', () => {
-      render(
-        <Button qa="Legacy" type="current">
-          label
-        </Button>,
-      );
-
-      const button = screen.getByTestId('Legacy');
-
-      expect(button).toHaveAttribute('data-theme', 'current');
-      expect(button).toHaveAttribute('data-type', 'outline');
-    });
   });
 
   describe('disabled state', () => {

@@ -19,7 +19,7 @@ import {
 } from 'react';
 import { OverlayProps } from 'react-aria';
 
-import { useDeprecationWarning, useEvent } from '../../../_internal';
+import { useEvent } from '../../../_internal';
 import { useIsFirstRender } from '../../../_internal/hooks/use-is-first-render';
 import { useWarn } from '../../../_internal/hooks/use-warn';
 import {
@@ -412,26 +412,6 @@ export const Button = forwardRef(function Button(
   } = allProps;
 
   type = type ?? splitContext?.type;
-
-  // `current` moved from the `type` axis to the `theme` axis: it selects a color
-  // source, not a shape, so every shape can now have a `current` flavour. The
-  // old spelling still renders — mapped to the flavour it used to be, the
-  // standalone `outline` chip — and warns.
-  const isLegacyCurrentType = type === 'current';
-
-  useDeprecationWarning(!isLegacyCurrentType, {
-    property: 'type="current"',
-    name: 'Button',
-    betterAlternative: 'theme="current"',
-    reason:
-      '`current` is a color source rather than a shape, so it now lives on the `theme` axis and composes with every `type`. `type="current"` maps to `theme="current" type="outline"`.',
-  });
-
-  if (isLegacyCurrentType) {
-    type = 'outline';
-    theme = 'current';
-  }
-
   const size =
     sizeProp ?? splitContext?.size ?? (type === 'link' ? 'inline' : 'medium');
 

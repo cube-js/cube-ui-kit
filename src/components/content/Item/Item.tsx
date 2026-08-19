@@ -21,7 +21,6 @@ import {
 import { OverlayProps } from 'react-aria';
 import { useHotkeys } from 'react-hotkeys-hook';
 
-import { useDeprecationWarning } from '../../../_internal';
 import { useWarn } from '../../../_internal/hooks/use-warn';
 import {
   ITEM_VARIANTS,
@@ -572,25 +571,6 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     tokens,
     ...rest
   } = props;
-
-  // `current` moved from the `type` axis to the `theme` axis: it selects a color
-  // source, not a shape, so every shape can now have a `current` flavour. The
-  // old spelling still renders — mapped to the flavour it used to be, the
-  // borderless `item` row — and warns.
-  const isLegacyCurrentType = type === 'current';
-
-  useDeprecationWarning(!isLegacyCurrentType, {
-    property: 'type="current"',
-    name: 'Item',
-    betterAlternative: 'theme="current"',
-    reason:
-      '`current` is a color source rather than a shape, so it now lives on the `theme` axis and composes with every `type`. `type="current"` maps to `theme="current" type="item"`.',
-  });
-
-  if (isLegacyCurrentType) {
-    type = 'item';
-    theme = 'current';
-  }
 
   // Determine if Label will be rendered
   const hasLabel = !!(children || labelProps);

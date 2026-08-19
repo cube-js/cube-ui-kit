@@ -9,7 +9,6 @@ import {
   useMemo,
 } from 'react';
 
-import { useDeprecationWarning } from '../../../_internal';
 import {
   CURRENT_CLEAR_STYLES,
   CURRENT_OUTLINE_STYLES,
@@ -181,7 +180,7 @@ export const ItemAction = forwardRef(function ItemAction(
     isDisabled: contextIsDisabled,
   } = useItemActionContext();
 
-  let {
+  const {
     // Borderless by default: an action sits inside a row, where a resting chip
     // on every one of them would read as noise.
     type = 'clear',
@@ -200,24 +199,6 @@ export const ItemAction = forwardRef(function ItemAction(
     isDisabled: isDisabledProp,
     ...rest
   } = allProps;
-
-  // `current` moved from the `type` axis to the `theme` axis. The old spelling
-  // still renders — mapped to the flavour it used to be, the borderless `clear`
-  // one — and warns.
-  const isLegacyCurrentType = type === 'current';
-
-  useDeprecationWarning(!isLegacyCurrentType, {
-    property: 'type="current"',
-    name: 'ItemAction',
-    betterAlternative: 'theme="current"',
-    reason:
-      '`current` is a color source rather than a shape, so it now lives on the `theme` axis and composes with every `type`. It is already the default theme, so `type="current"` can simply be dropped.',
-  });
-
-  if (isLegacyCurrentType) {
-    type = 'clear';
-    theme = 'current';
-  }
 
   // Inherit disabled state from context, but allow local override
   const isDisabled = isDisabledProp ?? contextIsDisabled;

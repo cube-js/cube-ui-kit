@@ -8,7 +8,6 @@ import {
   useMemo,
 } from 'react';
 
-import { useDeprecationWarning } from '../../../_internal';
 import {
   CURRENT_CLEAR_STYLES,
   CURRENT_OUTLINE_STYLES,
@@ -118,7 +117,7 @@ export const ItemBadge = forwardRef<HTMLDivElement, CubeItemBadgeProps>(
     // variant any more.
     const { type: contextType, theme: contextTheme } = useItemActionContext();
 
-    let {
+    const {
       // See `ItemAction` for the full rationale: the `current` theme tracks the
       // host through `currentcolor`, so neither the row's `type` nor its `theme`
       // has to be mirrored from context, and a badge that names a theme is
@@ -133,24 +132,6 @@ export const ItemBadge = forwardRef<HTMLDivElement, CubeItemBadgeProps>(
       mods,
       ...rest
     } = allProps;
-
-    // `current` moved from the `type` axis to the `theme` axis. The old spelling
-    // still renders — mapped to the flavour it used to be, the borderless
-    // `clear` one — and warns.
-    const isLegacyCurrentType = type === 'current';
-
-    useDeprecationWarning(!isLegacyCurrentType, {
-      property: 'type="current"',
-      name: 'ItemBadge',
-      betterAlternative: 'theme="current"',
-      reason:
-        '`current` is a color source rather than a shape, so it now lives on the `theme` axis and composes with every `type`. It is already the default theme, so `type="current"` can simply be dropped.',
-    });
-
-    if (isLegacyCurrentType) {
-      type = 'clear';
-      theme = 'current';
-    }
 
     // Determine if we should show a checkmark
     const hasCheckmark = icon === 'checkmark';
