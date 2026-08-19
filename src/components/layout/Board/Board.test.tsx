@@ -293,6 +293,49 @@ describe('Board', () => {
       ).not.toBeInTheDocument();
     });
 
+    it('moves the corner hit-zone out with the grip', () => {
+      render(
+        <Board width={1200} resizeGripPlacement="corner" defaultLayout={layout}>
+          <Board.Widget id="a" qa="WidgetA">
+            A
+          </Board.Widget>
+        </Board>,
+      );
+
+      // The half of the grip that hangs outside the widget has to be grabbable and
+      // has to keep the grip revealed, so the hit-zone goes with it rather than
+      // staying behind inside the clip.
+      const handle = screen.getByTestId('BoardResizeHandle');
+      expect(screen.getByTestId('BoardResizeGripLayer')).toContainElement(
+        handle,
+      );
+      expect(handle).toHaveAttribute('data-placement', 'corner');
+    });
+
+    it('leaves edge hit-zones inside the widget under corner placement', () => {
+      render(
+        <Board
+          width={1200}
+          resizeHandles={['se', 'e']}
+          resizeGripPlacement="corner"
+          defaultLayout={layout}
+        >
+          <Board.Widget id="a" qa="WidgetA">
+            A
+          </Board.Widget>
+        </Board>,
+      );
+
+      const layer = screen.getByTestId('BoardResizeGripLayer');
+      const handles = screen.getAllByTestId('BoardResizeHandle');
+      expect(handles.length).toBe(2);
+      const byAxis = Object.fromEntries(
+        handles.map((h) => [h.getAttribute('data-axis'), h]),
+      );
+      expect(layer).toContainElement(byAxis.se!);
+      expect(layer).not.toContainElement(byAxis.e!);
+    });
+
     it('draws a corner grip outside the widget so its clip cannot cut it', () => {
       render(
         <Board width={1200} resizeGripPlacement="corner" defaultLayout={layout}>

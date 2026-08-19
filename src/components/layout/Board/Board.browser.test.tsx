@@ -282,6 +282,39 @@ describe('Board resize grip placement', () => {
     expect(grip.width).toBeGreaterThan(0);
     expect(grip.height).toBeGreaterThan(0);
   });
+
+  it('stays revealed and grabbable on the half that hangs outside', async () => {
+    renderBoard(layout, { resizeGripPlacement: 'corner' });
+    await revealGrips();
+
+    const box = widget('a').getBoundingClientRect();
+    // A point just past the widget's corner - on the grip, outside the widget.
+    const outside = { x: box.right + 3, y: box.bottom + 3 };
+
+    // Whatever the browser hit-tests there must be the resize hit-zone, or the
+    // grip is inviting a gesture that lands somewhere else.
+    const hit = document.elementFromPoint(outside.x, outside.y);
+    expect(hit?.closest('[data-qa="BoardResizeHandle"]')).not.toBeNull();
+
+    // Drop the hover first, so the next step cannot pass on an attribute that was
+    // simply left over from hovering the widget.
+    await user.pointer({ target: board(), coords: { x: 2, y: 2 } });
+    await vi.waitFor(() =>
+      expect(screen.getByTestId('BoardResizeGrip')).not.toHaveAttribute(
+        'data-revealed',
+      ),
+    );
+
+    // Now the overhang on its own has to bring the grip back. The widget is not
+    // hovered here, so if this works it is because the hit-zone came out with the
+    // grip - otherwise the affordance retreats from the gesture it invites.
+    await user.pointer({ target: hit as Element, coords: outside });
+    await vi.waitFor(() =>
+      expect(screen.getByTestId('BoardResizeGrip')).toHaveAttribute(
+        'data-revealed',
+      ),
+    );
+  });
 });
 
 describe('Board marquee', () => {

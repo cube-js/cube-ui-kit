@@ -1,5 +1,5 @@
 import { Meta, StoryFn } from '@storybook/react-vite';
-import { useState } from 'react';
+import { ReactNode, useState } from 'react';
 
 import { Button } from '../../actions/Button';
 import { Text } from '../../content/Text';
@@ -509,51 +509,93 @@ CornerResizeGrip.parameters = {
   },
 };
 
-// A free grid where a blocked drop is resolved rather than refused. The layout
-// leaves deliberately awkward gaps so downscaling and swapping are both easy to
-// trigger.
-const CollisionModesTemplate: StoryFn<CubeBoardProps> = (args) => (
-  <Board
-    fill="#light"
-    padding="1x"
-    radius="1r"
-    cols={6}
-    extraRows={1}
-    compact="free"
-    showGridLines="drag"
-    widgetProps={{ isCard: true }}
-    defaultLayout={[
-      { i: 'wide', x: 0, y: 0, w: 4, h: 1 },
-      { i: 'blocker', x: 3, y: 1, w: 3, h: 1 },
-      { i: 'small', x: 0, y: 2, w: 2, h: 1 },
-    ]}
-    {...args}
-  >
-    <Board.Widget id="wide">
-      <WidgetBody title="Wide (4 cols)" text="Drop me on the row below" />
-    </Board.Widget>
-    <Board.Widget id="blocker">
-      <WidgetBody title="Blocker" text="Leaves 3 free columns" />
-    </Board.Widget>
-    <Board.Widget id="small">
-      <WidgetBody title="Small" text="Drop me onto another widget" />
-    </Board.Widget>
-  </Board>
+// One board per mode, rather than one board and a control: on the docs page there
+// is no control to flip, and a widget that says "drop me onto another widget"
+// while the board is in `downscale` is a promise the mode cannot keep.
+const CollisionBoard = ({
+  mode,
+  caption,
+  layout,
+  children,
+}: {
+  mode: 'downscale' | 'swap';
+  caption: string;
+  layout: LayoutItem[];
+  children: ReactNode;
+}) => (
+  <Flow gap="1x" flexGrow={1}>
+    <Text preset="t3" color="#dark-02">
+      <code>collisionMode=&quot;{mode}&quot;</code> — {caption}
+    </Text>
+    <Board
+      fill="#light"
+      padding="1x"
+      radius="1r"
+      cols={6}
+      extraRows={1}
+      compact="free"
+      collisionMode={mode}
+      showGridLines="drag"
+      widgetProps={{ isCard: true }}
+      defaultLayout={layout}
+    >
+      {children}
+    </Board>
+  </Flow>
+);
+
+const CollisionModesTemplate: StoryFn<CubeBoardProps> = () => (
+  <Flow gap="3x">
+    <CollisionBoard
+      mode="downscale"
+      caption="drag the wide widget onto the row below"
+      layout={[
+        { i: 'wide', x: 0, y: 0, w: 4, h: 1 },
+        { i: 'blocker', x: 3, y: 1, w: 3, h: 1 },
+      ]}
+    >
+      <Board.Widget id="wide">
+        <WidgetBody title="Wide — 4 columns" text="Drag me down one row" />
+      </Board.Widget>
+      <Board.Widget id="blocker">
+        <WidgetBody title="Blocker" text="Leaves 3 free columns" />
+      </Board.Widget>
+    </CollisionBoard>
+
+    <CollisionBoard
+      mode="swap"
+      caption="drop one widget onto another"
+      layout={[
+        { i: 'top-left', x: 0, y: 0, w: 2, h: 1 },
+        { i: 'top-right', x: 2, y: 0, w: 2, h: 1 },
+        { i: 'bottom', x: 0, y: 1, w: 2, h: 1 },
+      ]}
+    >
+      <Board.Widget id="top-left">
+        <WidgetBody title="Top left" />
+      </Board.Widget>
+      <Board.Widget id="top-right">
+        <WidgetBody title="Top right" />
+      </Board.Widget>
+      <Board.Widget id="bottom">
+        <WidgetBody title="Bottom" text="Drop me onto one of the others" />
+      </Board.Widget>
+    </CollisionBoard>
+  </Flow>
 );
 
 export const CollisionModes = CollisionModesTemplate.bind({});
-CollisionModes.args = {
-  collisionMode: 'downscale',
-};
+CollisionModes.args = {};
 CollisionModes.parameters = {
+  // Each board fixes its own mode, so a `collisionMode` control here would be dead.
+  controls: { exclude: ['collisionMode'] },
   docs: {
     description: {
       story:
-        'A `compact="free"` board refuses a drop onto occupied cells. `collisionMode` resolves it instead. With `"downscale"`, dropping the 4-column widget on the middle row shrinks it to the 3 free columns beside the blocker. With `"swap"`, dropping one widget onto another trades their places, each keeping as much of its own size as fits. Neither mode ever grows a widget. Switch to `"revert"` to see the default snap-back.',
+        'A `compact="free"` board refuses a drop onto occupied cells; `collisionMode` resolves it instead. **Downscale** — drag the 4-column widget onto the middle row and it shrinks to the 3 columns free beside the blocker, instead of snapping back. **Swap** — drop one widget onto another and they trade places: the dragged widget takes the other\'s cell, the displaced one takes the cell the dragged widget just left, and each keeps as much of its own size as fits there. Neither mode ever grows a widget. The default, `"revert"`, is what every other story on this page shows: the widget snaps back.',
     },
   },
 };
-
 // Widgets are filled (`#surface-2`) and rounded by default, but borderless. Add
 // a card border per widget with `isCard`, or for the whole board at once with
 // `widgetProps={{ isCard: true }}` (per-widget `isCard` still overrides that
