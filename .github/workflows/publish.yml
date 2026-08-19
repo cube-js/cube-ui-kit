@@ -26,22 +26,22 @@ jobs:
     env:
       NODE_OPTIONS: --max-old-space-size=4096
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # Installs the pnpm pinned by `packageManager` — the same field pnpm reads
       # to switch itself locally, so CI and a contributor cannot drift apart.
       # Must precede `setup-node`, whose `cache: 'pnpm'` needs `pnpm` on PATH.
       - uses: pnpm/action-setup@v6
 
-      # Publish jobs stay on Node 24 (not .nvmrc) because OIDC trusted
-      # publishing requires npm ≥ 11.5.1+, which Node 24 ships natively.
-      # Node 22 ships npm 10.x, which does NOT meet that requirement.
+      # No Node pin of its own any more: `.nvmrc` is Node 24, which ships
+      # npm 11.x, and OIDC trusted publishing needs npm ≥ 11.5.1. (Node 22
+      # shipped npm 10.x, which is why this job used to pin a version.)
       # Do not run `npm install -g npm@latest` — it corrupts npm's module
       # tree (e.g. missing sigstore) on hosted runners.
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
-          node-version: '24'
+          node-version-file: '.nvmrc'
           registry-url: 'https://registry.npmjs.org'
           cache: 'pnpm'
 
@@ -82,12 +82,58 @@ jobs:
           CANARY_VERSION: ${{ steps.version.outputs.version }}
           PR_TAG: pr_${{ github.event.number }}
         run: |
-          if npm view "@cube-dev/ui-kit@$CANARY_VERSION" version >/dev/null 2>&1; then
+          published() { npm view "@cube-dev/ui-kit@$CANARY_VERSION" version >/dev/null 2>&1; }
+          retag() { npm dist-tag add "@cube-dev/ui-kit@$CANARY_VERSION" "$PR_TAG" || true; }
+          # Registry reads lag writes by a few seconds, so a single negative
+          # read right after a publish is not proof that it failed to land.
+          landed() { for _ in 1 2 3; do published && return 0; sleep 5; done; return 1; }
+
+          if published; then
             echo "Canary version $CANARY_VERSION is already published; re-tagging '$PR_TAG' and skipping publish."
-            npm dist-tag add "@cube-dev/ui-kit@$CANARY_VERSION" "$PR_TAG" || true
-          else
-            npm publish --access public --tag "$PR_TAG" --provenance
+            retag
+            exit 0
           fi
+
+          if npm publish --access public --tag "$PR_TAG" --provenance; then
+            exit 0
+          fi
+
+          # `--provenance` signs the tarball and writes an entry to the Sigstore
+          # transparency log. When that request stalls, npm's own client retries
+          # it and resubmits a byte-identical envelope, which Rekor rejects:
+          #
+          #   TLOG_CREATE_ENTRY_ERROR (409) an equivalent entry already exists
+          #
+          # Nothing is actually wrong — a fresh run mints a new ephemeral
+          # signing certificate, so the envelope differs and Rekor accepts it.
+          # One retry beats red-ticking a PR over a transient signing failure.
+          #
+          # But check whether the publish landed before retrying: the registry
+          # can accept a publish and still report an error, and versions are
+          # immutable, so a second publish would fail on "cannot publish over"
+          # and turn a soft failure into a hard one.
+          if landed; then
+            echo "::warning::Publish reported an error but $CANARY_VERSION is on the registry; tagging '$PR_TAG' only."
+            retag
+            exit 0
+          fi
+
+          echo "::warning::Publish failed without landing $CANARY_VERSION; retrying once with a fresh signing certificate."
+          if npm publish --access public --tag "$PR_TAG" --provenance; then
+            exit 0
+          fi
+
+          # The retry itself can fail with "cannot publish over the previously
+          # published versions" if the first attempt landed after the loop above
+          # gave up waiting. That means the canary IS on the registry, which is
+          # the outcome this step exists to produce — tag it and pass.
+          if landed; then
+            echo "::warning::Retry rejected as a duplicate; $CANARY_VERSION was already on the registry. Tagging '$PR_TAG'."
+            retag
+            exit 0
+          fi
+
+          exit 1
 
       # The canary is already on npm by this point — `Publish canary to npm`
       # above owns that outcome. Failing the job because we could not post a
@@ -118,22 +164,22 @@ jobs:
     outputs:
       published: ${{ steps.changesets.outputs.published }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # Installs the pnpm pinned by `packageManager` — the same field pnpm reads
       # to switch itself locally, so CI and a contributor cannot drift apart.
       # Must precede `setup-node`, whose `cache: 'pnpm'` needs `pnpm` on PATH.
       - uses: pnpm/action-setup@v6
 
-      # Publish jobs stay on Node 24 (not .nvmrc) because OIDC trusted
-      # publishing requires npm ≥ 11.5.1+, which Node 24 ships natively.
-      # Node 22 ships npm 10.x, which does NOT meet that requirement.
+      # No Node pin of its own any more: `.nvmrc` is Node 24, which ships
+      # npm 11.x, and OIDC trusted publishing needs npm ≥ 11.5.1. (Node 22
+      # shipped npm 10.x, which is why this job used to pin a version.)
       # Do not run `npm install -g npm@latest` — it corrupts npm's module
       # tree (e.g. missing sigstore) on hosted runners.
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
-          node-version: '24'
+          node-version-file: '.nvmrc'
           registry-url: 'https://registry.npmjs.org'
           cache: 'pnpm'
 
@@ -176,11 +222,11 @@ jobs:
       NODE_OPTIONS: --max-old-space-size=4096
       CHROMATIC_RETRIES: 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         name: Download storybook cache
         with:
           path: |
@@ -194,7 +240,7 @@ jobs:
       # Must precede `setup-node`, whose `cache: 'pnpm'` needs `pnpm` on PATH.
       - uses: pnpm/action-setup@v6
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version-file: '.nvmrc'
           cache: 'pnpm'

@@ -97,7 +97,7 @@ Each component lives in `src/components/{category}/{ComponentName}/` and ships `
 
 ## Environment
 
-- Node `>=22.0.0`, pnpm `^10` (pinned to `pnpm@10.32.0`). The publish workflow (`publish.yml`) still runs on Node 24 because OIDC trusted publishing requires npm ≥ 11.5.1+, which Node 24 ships natively (Node 22 ships npm 10.x).
+- Node 24, pinned in `.nvmrc` and used by every CI job including publish — OIDC trusted publishing requires npm ≥ 11.5.1, which Node 24 ships and Node 22 (npm 10.x) does not. pnpm `^10`, pinned to `pnpm@10.34.5` via `packageManager`; no Corepack involved. Note the published package still declares `engines.node >=22.0.0` — that is the floor for consumers, not for building this repo.
 - After `pnpm install`, run `pnpm rebuild esbuild` (postinstall is blocked in `pnpm-workspace.yaml`). Do this at the start of every task — see [Before You Start](#before-you-start).
 - Husky hooks: `pre-commit` runs `pnpm lint-staged`; `pre-push` runs `pnpm test`. Skip only intentionally (`--no-verify` or `HUSKY=0`).
 - No external services or databases required for local development.
