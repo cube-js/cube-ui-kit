@@ -328,6 +328,15 @@ describe('collisionMode: swap', () => {
     expect(rects(next)).toEqual({ a: '0,0 2x2', b: '2,0 2x2' });
   });
 
+  it('sends the displaced widget to the cell the dragged one came from', () => {
+    // `from` is the caller's business: the registry hands over the cell the
+    // gesture began at, so one drag exchanges once no matter how far it sweeps.
+    const layout = [item('a', 0, 0), item('b', 4, 0)];
+    const next = place(layout, 'a', 4, 0, 'swap');
+
+    expect(rects(next)).toEqual({ a: '4,0 2x2', b: '0,0 2x2' });
+  });
+
   it('does not exchange when the widget has no slot to give back', () => {
     // `allowExchange: false` is what a cross-board drop passes: the incoming
     // widget never occupied a slot on this board.

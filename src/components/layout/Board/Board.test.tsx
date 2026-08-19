@@ -2259,6 +2259,48 @@ describe('Board', () => {
       expect(rectOf('c')).toBe('4,1 2x1');
     });
 
+    it('exchanges once across a sweep, not with every widget passed over', () => {
+      const { drag, rectOf } = setupBoard(
+        'swap',
+        [
+          { i: 'a', x: 0, y: 0, w: 2, h: 1 },
+          { i: 'b', x: 2, y: 0, w: 2, h: 1 },
+          { i: 'c', x: 4, y: 0, w: 2, h: 1 },
+        ],
+        { w: 2, h: 1 },
+      );
+
+      // Sweep past `b` and onto `c`, the way a real pointer emits many frames.
+      drag([100, 0], [200, 0], [300, 0], [400, 0]);
+
+      // Only the widget under the drop is displaced. Resolving each frame from the
+      // previous one instead would exchange with `b` on the way and again with
+      // `c`, leaving widgets shuffling under the pointer.
+      expect(rectOf('a')).toBe('4,0 2x1');
+      expect(rectOf('c')).toBe('0,0 2x1');
+      expect(rectOf('b')).toBe('2,0 2x1');
+    });
+
+    it('retraces exactly when the drag comes back', () => {
+      const { drag, rectOf } = setupBoard(
+        'swap',
+        [
+          { i: 'a', x: 0, y: 0, w: 2, h: 1 },
+          { i: 'b', x: 2, y: 0, w: 2, h: 1 },
+          { i: 'c', x: 4, y: 0, w: 2, h: 1 },
+        ],
+        { w: 2, h: 1 },
+      );
+
+      drag([100, 0], [300, 0], [400, 0], [200, 0], [0, 0]);
+
+      // Back where it started, with nothing displaced and nothing resized: a frame
+      // is a pure function of the landing cell, so a gesture leaves no residue.
+      expect(rectOf('a')).toBe('0,0 2x1');
+      expect(rectOf('b')).toBe('2,0 2x1');
+      expect(rectOf('c')).toBe('4,0 2x1');
+    });
+
     it('leaves a widget that already fits untouched', () => {
       const { drag, rectOf } = setupBoard('downscale', gapLayout, {
         w: 4,
@@ -2268,6 +2310,76 @@ describe('Board', () => {
       drag([0, 200]);
 
       expect(rectOf('a')).toBe('0,2 4x1');
+    });
+
+    describe('keyboard', () => {
+      function setupKeyboardBoard(
+        collisionMode: 'downscale' | 'swap',
+        layout: LayoutItem[],
+      ) {
+        const onLayoutChange = vi.fn();
+        render(
+          <Board
+            width={600}
+            cols={6}
+            rowHeight={100}
+            margin={[0, 0]}
+            containerPadding={[0, 0]}
+            compact="free"
+            collisionMode={collisionMode}
+            defaultLayout={layout}
+            onLayoutChange={onLayoutChange}
+          >
+            {layout.map((it) => (
+              <Board.Widget key={it.i} id={it.i} qa={`Widget-${it.i}`}>
+                {it.i}
+              </Board.Widget>
+            ))}
+          </Board>,
+        );
+
+        const widget = screen.getByTestId('Widget-a');
+        widget.focus();
+
+        return {
+          press: (key: string) => fireEvent.keyDown(widget, { key }),
+          rectOf: (id: string) => {
+            const committed = onLayoutChange.mock.calls.at(-1)?.[0] as
+              | LayoutItem[]
+              | undefined;
+            const it = (committed ?? layout).find((l) => l.i === id)!;
+            return `${it.x},${it.y} ${it.w}x${it.h}`;
+          },
+        };
+      }
+
+      it('never resizes a widget to make an arrow key fit', () => {
+        const { press, rectOf } = setupKeyboardBoard('downscale', [
+          { i: 'a', x: 0, y: 0, w: 2, h: 1 },
+          { i: 'b', x: 2, y: 0, w: 1, h: 1 },
+        ]);
+
+        press('ArrowRight');
+
+        // Each press is its own gesture, so a press that shrank the widget would
+        // become the next press's starting size and ratchet it down for good.
+        expect(rectOf('a').endsWith('2x1')).toBe(true);
+        expect(rectOf('b')).toBe('2,0 1x1');
+      });
+
+      it('still exchanges two widgets that fit each other outright', () => {
+        const { press, rectOf } = setupKeyboardBoard('swap', [
+          { i: 'a', x: 0, y: 0, w: 2, h: 1 },
+          { i: 'b', x: 2, y: 0, w: 2, h: 1 },
+        ]);
+
+        press('ArrowRight');
+
+        // No resize needed here, so the keyboard reaches the same arrangement a
+        // drop would.
+        expect(rectOf('a')).toBe('2,0 2x1');
+        expect(rectOf('b')).toBe('0,0 2x1');
+      });
     });
   });
 

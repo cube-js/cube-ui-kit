@@ -142,7 +142,7 @@ export type CompactType = 'horizontal' | 'vertical' | 'wrap' | null;
  *   dropped on, growing rightward and downward. Never upscales.
  * - `'swap'` - exchange with the single widget under the drop: the dragged widget
  *   takes that widget's cell and the displaced one takes the cell the dragged
- *   widget just left, each keeping as much of its own size as fits there. Else
+ *   widget came from, each keeping as much of its own size as fits there. Else
  *   downscale, else revert.
  *
  * Only consulted where a move would otherwise be refused, so it has no effect in

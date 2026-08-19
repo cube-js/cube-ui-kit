@@ -89,6 +89,16 @@ function hasNewOverlap(before: Set<string>, after: LayoutItem[]): boolean {
 }
 
 /**
+ * Whether any item in `after` has a different size than it had in `before`.
+ */
+function resizesAnything(before: LayoutItem[], after: LayoutItem[]): boolean {
+  return after.some((a) => {
+    const b = before.find((it) => it.i === a.i);
+    return !!b && (b.w !== a.w || b.h !== a.h);
+  });
+}
+
+/**
  * First position at or below the preferred cell where `item` fits without
  * overlapping any of `others` (assumed overlap-free), scanning left-to-right
  * then top-to-bottom, never past `maxRows`. Last-resort placement for a legacy
@@ -502,35 +512,43 @@ export function useBoardRegistry(
     (entry: BoardEntry, item: LayoutItem, x: number, y: number) => {
       const pp = entry.getPositionParams();
       const compactor = entry.getCompactor();
-      const collisionMode = entry.getCollisionMode();
       const layout = entry.getLayout();
-      const live = getLayoutItem(layout, item.i);
+      // A resolution only replaces the engine's revert, so a mode is only live
+      // where a collision would actually block the move.
+      const collisionMode = compactor.preventCollision
+        ? entry.getCollisionMode()
+        : 'revert';
+
+      // Which arrangement this frame resolves against.
+      //
+      // Normally it is the live layout: frame-to-frame continuity is what stops
+      // `moveElement` sinking a no-op placement to the bottom of an occupied
+      // column. But a *resolution* edits other widgets - a swap moves its partner,
+      // and sizes it down to fit - and those edits are committed to the preview.
+      // Chaining frames off each other then accumulates them: sweeping across two
+      // neighbours exchanges with both, so widgets shuffle continuously under the
+      // pointer, and each displaced widget shrinks a little more every time it is
+      // displaced again. Resolving from the arrangement the gesture started with
+      // makes a frame a pure function of the landing cell instead: one exchange,
+      // the partner goes to where the drag began, dragging back retraces exactly,
+      // and nothing accumulates. `moveGroupWithinBoard` recomputes from the
+      // snapshot for the same reason.
+      const startLayout = sourceSnapshotRef.current;
+      const base =
+        collisionMode !== 'revert' && getLayoutItem(startLayout, item.i)
+          ? startLayout
+          : layout;
+      const live = getLayoutItem(base, item.i);
       // Deep-clone so `moveElement` (which mutates item objects in place) never
       // touches the live layout's items. A shallow copy shares those objects, so
       // rejecting a frame below would still leave the live layout mutated into
       // the overlapping arrangement (committed on drop). `moveWithKeyboard`
       // clones for the same reason.
       const working = live
-        ? cloneLayout(layout)
-        : [...cloneLayout(layout), { ...item, x, y }];
+        ? cloneLayout(base)
+        : [...cloneLayout(base), { ...item, x, y }];
       const target = getLayoutItem(working, item.i);
       if (!target) return;
-
-      // Restore the size the gesture started with before resolving a new cell.
-      // A resolution may shrink the widget, and every frame re-resolves from the
-      // *live* layout, so leaving a shrunken size in place would make it the next
-      // frame's starting point: sweeping the pointer across occupied cells would
-      // ratchet the widget down with no way back. Re-measuring from the start size
-      // makes each frame a pure function of (start size, landing cell, other
-      // widgets), so dragging back restores the widget exactly.
-      //
-      // Only on a *changed* cell: `moveElement` short-circuits a move that goes
-      // nowhere, which would hand back the restored size without re-resolving it -
-      // an overlap the frame would then be thrown out for.
-      if (collisionMode !== 'revert' && (target.x !== x || target.y !== y)) {
-        target.w = item.w;
-        target.h = item.h;
-      }
 
       const moved = moveElement(
         working,
@@ -546,7 +564,10 @@ export function useBoardRegistry(
           resolveCollision: createCollisionResolver(collisionMode, {
             cols: pp.cols,
             maxRows: entry.getMaxRows(),
-            desired: { w: item.w, h: item.h },
+            // The size it has in `base` - the gesture's start size when a
+            // resolution is live, so a frame that shrank the widget can never
+            // become the next frame's starting point.
+            desired: { w: target.w, h: target.h },
           }),
         },
       );
@@ -562,7 +583,7 @@ export function useBoardRegistry(
       // opts out entirely.
       if (
         !compactor.allowOverlap &&
-        hasNewOverlap(overlappingPairs(layout), compacted)
+        hasNewOverlap(overlappingPairs(base), compacted)
       ) {
         return;
       }
@@ -624,7 +645,6 @@ export function useBoardRegistry(
     (entry: BoardEntry, item: LayoutItem, deltaX: number, deltaY: number) => {
       const pp = entry.getPositionParams();
       const compactor = entry.getCompactor();
-      const collisionMode = entry.getCollisionMode();
       const layout = entry.getLayout();
       const live = getLayoutItem(layout, item.i);
       if (!live) return;
@@ -634,13 +654,17 @@ export function useBoardRegistry(
       if (directionX === 0 && directionY === 0) return;
 
       const maxRows = entry.getMaxRows();
-      // Same resolution policy as the pointer path, so both inputs place a widget
-      // the same way (the invariant the overlap checks below are written around).
-      const resolveCollision = createCollisionResolver(collisionMode, {
-        cols: pp.cols,
-        maxRows,
-        desired: { w: item.w, h: item.h },
-      });
+      // The same resolution policy as the pointer path, so an arrow key can reach
+      // the arrangements a drop can (the invariant the overlap checks below are
+      // written around) - with one limit enforced after the fact: see
+      // `resizesAnything`.
+      const resolveCollision = compactor.preventCollision
+        ? createCollisionResolver(entry.getCollisionMode(), {
+            cols: pp.cols,
+            maxRows,
+            desired: { w: live.w, h: live.h },
+          })
+        : undefined;
       const attempts =
         directionX < 0
           ? live.x
@@ -697,16 +721,6 @@ export function useBoardRegistry(
         const working = cloneLayout(layout);
         const target = getLayoutItem(working, item.i);
         if (!target) return;
-        // Re-measure from the size the gesture started with, for the same reason
-        // (and under the same condition) as the pointer path - see
-        // `moveWithinBoard`.
-        if (
-          collisionMode !== 'revert' &&
-          (target.x !== candidate.x || target.y !== candidate.y)
-        ) {
-          target.w = item.w;
-          target.h = item.h;
-        }
         const moved = moveElement(
           working,
           target,
@@ -740,7 +754,16 @@ export function useBoardRegistry(
         // opts out entirely.
         const overlaps =
           !compactor.allowOverlap && hasNewOverlap(beforePairs, compacted);
-        if (!advanced || overlaps) continue;
+        // An arrow key moves widgets; it never resizes them. Unlike a pointer
+        // drag - one gesture, which can always re-measure from the size it began
+        // with - each press is a gesture of its own, so a resolution that shrank
+        // something would become the next press's starting size and ratchet it
+        // smaller with nothing left to restore from. So `swap` can exchange two
+        // widgets that fit each other's slots outright, and anything needing a
+        // resize is refused here and blocks as usual.
+        if (!advanced || overlaps || resizesAnything(layout, compacted)) {
+          continue;
+        }
 
         entry.applyLayout(compacted, false);
         entry.setPlaceholders([landed]);
@@ -882,7 +905,6 @@ export function useBoardRegistry(
     (target: BoardEntry, item: LayoutItem, x: number, y: number) => {
       const pp = target.getPositionParams();
       const compactor = target.getCompactor();
-      const collisionMode = target.getCollisionMode();
 
       const carried =
         previewRef.current?.boardId === target.id
@@ -930,12 +952,14 @@ export function useBoardRegistry(
           // pushed back the other way, and a transfer moves one widget only. A
           // widget arriving from elsewhere has no slot here to trade, so `'swap'`
           // resolves as `'downscale'`.
-          resolveCollision: createCollisionResolver(collisionMode, {
-            cols: pp.cols,
-            maxRows: target.getMaxRows(),
-            desired: { w: item.w, h: item.h },
-            allowExchange: false,
-          }),
+          resolveCollision: compactor.preventCollision
+            ? createCollisionResolver(target.getCollisionMode(), {
+                cols: pp.cols,
+                maxRows: target.getMaxRows(),
+                desired: { w: item.w, h: item.h },
+                allowExchange: false,
+              })
+            : undefined,
         },
       );
       const compacted = [...compactor.compact(moved, pp.cols)];

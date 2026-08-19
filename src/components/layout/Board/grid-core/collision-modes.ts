@@ -136,14 +136,14 @@ function downscaleInPlace(
  * Exchange the placement with the single widget occupying the target slot.
  *
  * The dragged widget takes the other's cell and the other takes the cell the
- * dragged widget just left. Each keeps as much of its own size as fits there -
+ * dragged widget came from. Each keeps as much of its own size as fits there -
  * that cell plus any free space adjacent to it - and neither ever grows.
  *
- * "Just left" rather than "started the gesture at" is deliberate: during a drag
- * each frame re-resolves, so the cell the widget came from is the previous
- * frame's, which is always free. Anchoring on the gesture's start instead would
- * break a chain of exchanges - the second partner would find the start cell
- * already taken by the first.
+ * `from` is whatever the caller's layout says, so it is the caller that decides
+ * what "came from" means. A pointer drag resolves every frame against the
+ * arrangement the gesture started with, making it the cell the drag began at, and
+ * keeping the result a pure function of where the pointer is; chaining frames off
+ * each other instead would exchange with every widget swept over.
  * The slot the dragged widget is leaving is reserved for the displaced widget
  * while the dragged one is sized, so the two can never claim the same cells: the
  * result is overlap-free by construction, not by a follow-up check.
