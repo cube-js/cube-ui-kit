@@ -126,6 +126,37 @@ describe('<ColorPicker />', () => {
     expect(getByTestId('ColorPickerTrigger')).toHaveTextContent('#7ac8bf');
   }, 10000);
 
+  it('publishes every step of a channel drag, not just the last', async () => {
+    const onChange = vi.fn();
+    const { getAllByRole, getByRole, getByTestId } = renderWithRoot(
+      <ColorPicker
+        aria-label="Brand"
+        defaultValue="#7a4dbf"
+        defaultSpace="rgb"
+        defaultOpen
+        onChange={onChange}
+      />,
+    );
+
+    await waitFor(() => expect(getByRole('dialog')).toBeInTheDocument());
+
+    const [, green] = getAllByRole('slider');
+
+    for (const value of ['120', '160', '200']) {
+      await act(async () => {
+        fireEvent.change(green, { target: { value } });
+      });
+    }
+
+    // The panel rides the slider's continuous `onChange`, never `onChangeEnd`.
+    // A consumer applying the color live — a theme tuner, a chart legend — has
+    // to see it move while the pointer is still down, so one call per step is
+    // the contract, not one call per drag.
+    expect(onChange).toHaveBeenCalledTimes(3);
+    expect(onChange).toHaveBeenLastCalledWith('#7ac8bf');
+    expect(getByTestId('ColorPickerTrigger')).toHaveTextContent('#7ac8bf');
+  }, 10000);
+
   it('adopts a value set from the outside', async () => {
     const { getByRole, rerender } = renderWithRoot(
       <ColorPicker aria-label="Brand" value="#ff0000" />,

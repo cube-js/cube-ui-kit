@@ -1,7 +1,7 @@
 import { glaze } from '@tenphi/glaze';
 import { useGlobalStyles } from '@tenphi/tasty';
 
-// Imported for its SIDE EFFECT as much as for `TINT_RECIPE`.
+// Imported for its SIDE EFFECT as much as for `tintRecipe`.
 //
 // `palette.ts` runs `glaze.configure({ states: { dark: '@dark', highContrast:
 // '@hc' }, modes: …, darkTone: … })` at module scope, and that global config is
@@ -9,8 +9,10 @@ import { useGlobalStyles } from '@tenphi/tasty';
 // a runtime theme falls back to Glaze's defaults — `@media(prefers-color-scheme:
 // dark)` keys and NO high-contrast tier — which still renders, so the failure is
 // silent. `color-theme.test.ts` asserts the `'@hc'` key exists to catch it.
-import { TINT_RECIPE } from './palette';
+import { colorSeed } from './color-seed';
+import { tintRecipe } from './palette';
 import {
+  DEFAULT_HUE,
   DEFAULT_SATURATION,
   getPaletteConfig,
   getPaletteVersion,
@@ -34,7 +36,7 @@ export interface ColorThemeConfig {
   saturation?: number;
   pastel?: boolean;
   /**
-   * Extra colour definitions, merged over {@link TINT_RECIPE}. Anything Glaze's
+   * Extra colour definitions, merged over {@link tintRecipe}. Anything Glaze's
    * `theme.colors()` accepts, including `contrast` floors against a sibling.
    */
   colors?: ColorMap;
@@ -128,15 +130,23 @@ function stableStringify(value: unknown): string {
  * ```ts
  * colorThemeSeed('#0ea5e9'); // → { hue: 237.32, saturation: 98.19 }
  * ```
+ *
+ * The tone {@link colorSeed} also reads is dropped here on purpose: a tint theme
+ * re-derives its lightness per scheme, which is what makes it adaptive. The palette's
+ * `accentColor` keeps the tone, because a brand fill has to *be* the colour.
+ *
+ * An unparseable value falls back to the shipped seed rather than throwing — a hue
+ * typed into a settings field should not take the render down.
  */
 export function colorThemeSeed(value: string): {
   hue: number;
   saturation: number;
 } {
-  const light = glaze.color(value).resolve().light;
+  const seed = colorSeed(value);
 
-  // Glaze reports saturation as a 0–1 factor; the palette's seeds are 0–100.
-  return { hue: light.h, saturation: light.s * 100 };
+  if (!seed) return { hue: DEFAULT_HUE, saturation: DEFAULT_SATURATION };
+
+  return { hue: seed.hue, saturation: seed.saturation };
 }
 
 /**
@@ -202,7 +212,11 @@ export function getColorTheme(config: ColorThemeConfig): ColorTheme {
     Object.keys(overrides).length ? overrides : undefined,
   );
 
-  theme.colors({ ...TINT_RECIPE, ...config.colors });
+  // The recipe follows the palette's `surfaceMode`, so a runtime tint sits the same
+  // distance off the page as a built-in status theme does. Safe to read here rather
+  // than hash into the seed: the cache is cleared on every palette version change,
+  // and `surfaceMode` is one of the fields that bumps it.
+  theme.colors({ ...tintRecipe(paletteConfig), ...config.colors });
 
   // `prefix` is a palette-only option, so the keys are renamed here. `oklch`
   // because that is what the palette emits; tasty converts to the configured
