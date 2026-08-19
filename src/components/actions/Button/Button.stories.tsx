@@ -24,7 +24,7 @@ export default {
   argTypes: {
     /* Visual presentation */
     type: {
-      options: ['primary', 'outline', 'outline-2', 'clear', 'link'],
+      options: ['primary', 'invert', 'outline', 'outline-2', 'clear', 'link'],
       control: { type: 'radio' },
       description: 'Visual style variant of the button',
       table: {
@@ -178,6 +178,7 @@ const TemplateSizesOnlyIcon: StoryFn<CubeButtonProps> = ({
 
 const BUTTON_TYPES = [
   'primary',
+  'invert',
   'outline',
   'outline-2',
   'clear',

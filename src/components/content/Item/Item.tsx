@@ -138,6 +138,7 @@ export interface CubeItemProps extends BaseProps, ContainerStyleProps {
     | 'item'
     | 'header'
     | 'primary'
+    | 'invert'
     | 'outline'
     | 'outline-2'
     | 'clear'
@@ -759,6 +760,25 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
   const finalPrefix =
     isLoading && resolvedLoadingSlot === 'prefix' ? <LoadingIcon /> : prefix;
 
+  // Which HotKeys flavour the shortcut hint wears, chosen by what the row's
+  // label is painted with.
+  //
+  // `primary` pins the hint to `#white`, which is right on a filled brand chip
+  // whose own label is `#white` too. `invert` labels itself `#surface`, so the
+  // white hint would land on the wrong side of the fill in dark mode — it takes
+  // `inherit` instead, which paints the hint from `currentcolor` and therefore
+  // tracks the label exactly.
+  //
+  // Except on the `current` theme, where `invert` and `primary` coincide and
+  // `currentcolor` IS the fill: there `inherit` would draw the hint's rim in the
+  // fill color and erase it, so that pairing stays on `primary`.
+  const hotkeysType =
+    type === 'invert' && theme !== 'current'
+      ? 'inherit'
+      : type === 'primary' || type === 'invert'
+        ? 'primary'
+        : 'default';
+
   // Build final suffix: loading icon, custom suffix, or HotKeys hint
   const finalSuffix =
     isLoading && resolvedLoadingSlot === 'suffix' ? (
@@ -768,7 +788,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
       (hotkeys ? (
         <HotKeys
           {...(keyboardShortcutProps as any)}
-          type={type === 'primary' ? 'primary' : 'default'}
+          type={hotkeysType}
           styles={{ padding: '1x left', opacity: finalIsDisabled ? 0.5 : 1 }}
         >
           {hotkeys}

@@ -1337,6 +1337,100 @@ export const CURRENT_CARD_STYLES: Styles = {
   color: '#current',
 } as const;
 
+// ---------- INVERT TYPE ----------
+// The page and its text, swapped. The fill is the theme's `accent-text` — the
+// color that is normally PAINTED on the page — and the label is `#surface`, the
+// page itself. That makes the control sit on the opposite side of the page in
+// either scheme, which is what "invert" means and what separates it from
+// `primary`: `primary` pins a fixed `#white` label on a brand SURFACE, so it
+// reads the same weight in light and dark; `invert` follows the scheme.
+//
+//         page      fill (accent-text)   label (#surface)
+//   light L 1.00    L 0.47  (dark)       L 1.00  (white)
+//   dark  L 0.24    L 0.76  (light)      L 0.24  (near-black)
+//
+// The label is `#surface` and NOT `#surface-text`, which is the trap this pairing
+// invites: `surface-text` is the color painted ON the page, so it sits on the
+// SAME side of the fill as `accent-text` does and the two collapse — measured
+// cr 2.60 in light and 1.91 in dark, against 6.96 / 7.52 for `#surface`.
+//
+// Hover and pressed darken through a second fill layer rather than stepping to a
+// darker sibling, because `accent-text` has none: its `-soft` counterpart is
+// LIGHTER. A `#black` overlay darkens in both schemes, so the monotonic
+// default → hover → pressed direction survives the scheme flip. Every entry
+// keeps the same two-layer shape so the overlay interpolates instead of snapping
+// — see `DEFAULT_PRIMARY_STYLES.fill`.
+//
+// Disabled hands over to the brand-tinted pair `primary` already uses, so the
+// two filled types mute identically and the alphas stay calibrated in one place.
+//
+// Written through a factory rather than seven near-identical objects on purpose.
+// The only thing that varies is the theme prefix, and hand-copying that is
+// exactly how `selected & disabled` ended up on the wrong token for four themes
+// earlier in this PR.
+const invertStyles = (accent: string): Styles => ({
+  outline: {
+    '': '0 #primary-accent-text.0',
+    focused: '1bw #primary-accent-text',
+  },
+  // No lighter sibling of `accent-text` exists to rim with, so the rim is the
+  // label token at low alpha — guaranteed to sit opposite the fill in either
+  // scheme. cr ~1.8 in light and ~1.6 in dark against the fill, against the 1.48
+  // that `accent-surface-border` measures on `primary`.
+  border: {
+    '': '#surface.25',
+    disabled: 'transparent',
+  },
+  fill: {
+    '': `#${accent}-accent-text #black.0`,
+    hovered: `#${accent}-accent-text #black.08`,
+    pressed: `#${accent}-accent-text #black.16`,
+    disabled: `#surface #${accent}-accent-disabled-surface`,
+  },
+  color: {
+    '': '#surface',
+    disabled: `#${accent}-accent-disabled-surface-text`,
+  },
+});
+
+export const DEFAULT_INVERT_STYLES: Styles = invertStyles('primary');
+export const DANGER_INVERT_STYLES: Styles = invertStyles('danger');
+export const SUCCESS_INVERT_STYLES: Styles = invertStyles('success');
+export const WARNING_INVERT_STYLES: Styles = invertStyles('warning');
+export const NOTE_INVERT_STYLES: Styles = invertStyles('note');
+
+// The special theme inverts against its OWN surface rather than the page: that
+// surface is a fixed dark purple, so the inverted control is a white pill with
+// the theme's dark accent on it — the same figure `SPECIAL_CLEAR_STYLES` strikes
+// when selected. Both tokens are fixed-mode, so this stays scheme-invariant like
+// the rest of the theme, where a `#surface` label would not.
+export const SPECIAL_INVERT_STYLES: Styles = {
+  outline: {
+    '': '0 #special-accent-text.0',
+    focused: '1bw #special-accent-text',
+  },
+  border: {
+    '': '#white.25',
+    disabled: 'transparent',
+  },
+  fill: {
+    '': '#white #black.0',
+    hovered: '#white #black.08',
+    pressed: '#white #black.16',
+    disabled: '#special-surface #special-accent-disabled-surface',
+  },
+  color: {
+    '': '#special-accent-text',
+    disabled: '#special-accent-disabled-surface-text',
+  },
+} as const;
+
+// On the `current` theme `invert` and `primary` coincide, and necessarily so:
+// there is exactly one color in play, so "the emphatic filled type" and "the
+// page and its text swapped" are the same construction. Aliased rather than
+// copied so they cannot drift.
+export const CURRENT_INVERT_STYLES: Styles = CURRENT_PRIMARY_STYLES;
+
 // ---------- CARD TYPE STYLES ----------
 // Card type only supports: default, success, danger, note themes (plus the
 // `current` theme — see `CURRENT_CARD_STYLES` above)
@@ -1375,12 +1469,14 @@ export type ItemVariant =
   // Inherited-color theme — every flavour mixes its colors from `currentcolor`
   // instead of a brand ramp. See the CURRENT THEME section.
   | 'current.item'
+  | 'current.invert'
   | 'current.primary'
   | 'current.outline'
   | 'current.outline-2'
   | 'current.clear'
   | 'current.link'
   | 'current.card'
+  | 'default.invert'
   | 'default.primary'
   | 'default.outline'
   | 'default.outline-2'
@@ -1388,6 +1484,7 @@ export type ItemVariant =
   | 'default.link'
   | 'default.item'
   | 'default.card'
+  | 'danger.invert'
   | 'danger.primary'
   | 'danger.outline'
   | 'danger.outline-2'
@@ -1395,6 +1492,7 @@ export type ItemVariant =
   | 'danger.link'
   | 'danger.item'
   | 'danger.card'
+  | 'success.invert'
   | 'success.primary'
   | 'success.outline'
   | 'success.outline-2'
@@ -1402,6 +1500,7 @@ export type ItemVariant =
   | 'success.link'
   | 'success.item'
   | 'success.card'
+  | 'warning.invert'
   | 'warning.primary'
   | 'warning.outline'
   | 'warning.outline-2'
@@ -1409,6 +1508,7 @@ export type ItemVariant =
   | 'warning.link'
   | 'warning.item'
   | 'warning.card'
+  | 'note.invert'
   | 'note.primary'
   | 'note.outline'
   | 'note.outline-2'
@@ -1416,6 +1516,7 @@ export type ItemVariant =
   | 'note.link'
   | 'note.item'
   | 'note.card'
+  | 'special.invert'
   | 'special.primary'
   | 'special.outline'
   | 'special.clear'
@@ -1429,6 +1530,7 @@ export const ITEM_VARIANTS: Record<ItemVariant, Styles> = {
   // Current theme — colors mixed from the inherited `currentcolor`
   'current.item': CURRENT_ITEM_STYLES,
   'current.primary': CURRENT_PRIMARY_STYLES,
+  'current.invert': CURRENT_INVERT_STYLES,
   'current.outline': CURRENT_OUTLINE_STYLES,
   'current.outline-2': CURRENT_OUTLINE_2_STYLES,
   'current.clear': CURRENT_CLEAR_STYLES,
@@ -1436,6 +1538,7 @@ export const ITEM_VARIANTS: Record<ItemVariant, Styles> = {
   'current.card': CURRENT_CARD_STYLES,
   // Default theme
   'default.primary': DEFAULT_PRIMARY_STYLES,
+  'default.invert': DEFAULT_INVERT_STYLES,
   'default.outline': DEFAULT_OUTLINE_STYLES,
   'default.outline-2': DEFAULT_OUTLINE_2_STYLES,
   'default.clear': DEFAULT_CLEAR_STYLES,
@@ -1444,6 +1547,7 @@ export const ITEM_VARIANTS: Record<ItemVariant, Styles> = {
   'default.card': DEFAULT_CARD_STYLES,
   // Danger theme
   'danger.primary': DANGER_PRIMARY_STYLES,
+  'danger.invert': DANGER_INVERT_STYLES,
   'danger.outline': DANGER_OUTLINE_STYLES,
   'danger.outline-2': DANGER_OUTLINE_2_STYLES,
   'danger.clear': DANGER_CLEAR_STYLES,
@@ -1452,6 +1556,7 @@ export const ITEM_VARIANTS: Record<ItemVariant, Styles> = {
   'danger.card': DANGER_CARD_STYLES,
   // Success theme
   'success.primary': SUCCESS_PRIMARY_STYLES,
+  'success.invert': SUCCESS_INVERT_STYLES,
   'success.outline': SUCCESS_OUTLINE_STYLES,
   'success.outline-2': SUCCESS_OUTLINE_2_STYLES,
   'success.clear': SUCCESS_CLEAR_STYLES,
@@ -1460,6 +1565,7 @@ export const ITEM_VARIANTS: Record<ItemVariant, Styles> = {
   'success.card': SUCCESS_CARD_STYLES,
   // Warning theme
   'warning.primary': WARNING_PRIMARY_STYLES,
+  'warning.invert': WARNING_INVERT_STYLES,
   'warning.outline': WARNING_OUTLINE_STYLES,
   'warning.outline-2': WARNING_OUTLINE_2_STYLES,
   'warning.clear': WARNING_CLEAR_STYLES,
@@ -1468,6 +1574,7 @@ export const ITEM_VARIANTS: Record<ItemVariant, Styles> = {
   'warning.card': WARNING_CARD_STYLES,
   // Note theme
   'note.primary': NOTE_PRIMARY_STYLES,
+  'note.invert': NOTE_INVERT_STYLES,
   'note.outline': NOTE_OUTLINE_STYLES,
   'note.outline-2': NOTE_OUTLINE_2_STYLES,
   'note.clear': NOTE_CLEAR_STYLES,
@@ -1476,6 +1583,7 @@ export const ITEM_VARIANTS: Record<ItemVariant, Styles> = {
   'note.card': NOTE_CARD_STYLES,
   // Special theme
   'special.primary': SPECIAL_PRIMARY_STYLES,
+  'special.invert': SPECIAL_INVERT_STYLES,
   'special.outline': SPECIAL_OUTLINE_STYLES,
   'special.clear': SPECIAL_CLEAR_STYLES,
   'special.link': SPECIAL_LINK_STYLES,

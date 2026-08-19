@@ -17,7 +17,7 @@ A non-interactive badge indicator for list items. Similar to `ItemAction` but wi
 ## Properties
 
 - **`icon`** `ReactNode | 'checkmark'` — Icon or checkmark display
-- **`type`** `'primary' | 'outline' | 'clear'` (default: `'clear'`) — Visual type. `isSelected` applies brand-tinted fill to `outline` and `clear`.
+- **`type`** `'primary' | 'invert' | 'outline' | 'clear'` (default: `'clear'`) — Visual type. `invert` is the filled type that follows the scheme: the theme's `accent-text` as the fill with a `#surface` label, rather than `primary`'s fixed `#white` on a brand surface. `isSelected` applies brand-tinted fill to `outline` and `clear`.
 - **`theme`** `'current' | 'default' | 'danger' | 'success' | 'special'` (default: `'current'`) — Color theme. `current` derives every color from the inherited `currentcolor`, so the badge tracks whatever row hosts it. Name any other theme to have the badge paint itself instead.
 - **`isLoading`** `boolean` (default: `false`) — Show loading spinner
 - **`isSelected`** `boolean` (default: `false`) — Selected state (for checkmark)

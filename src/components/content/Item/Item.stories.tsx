@@ -2371,6 +2371,7 @@ export const TypesAndThemes: StoryFn<CubeItemProps> = (args) => {
   const standardTypes = [
     'item',
     'primary',
+    'invert',
     'outline',
     'outline-2',
     'clear',
@@ -2683,9 +2684,11 @@ CurrentTheme.parameters = {
   },
 };
 
-// Every shape the `current` theme has a flavour for. `header` is the one type
-// left out: it is theme-agnostic and folds onto `item` visuals on the default
-// theme whatever theme it is given.
+// Every shape the `current` theme has a distinct flavour for. Two types are left
+// out: `header`, which is theme-agnostic and folds onto `item` visuals on the
+// default theme whatever theme it is given, and `invert`, which on this theme is
+// the same construction as `primary` and would only add a duplicate column —
+// see `CURRENT_INVERT_STYLES`.
 const CURRENT_TYPES = [
   'item',
   'primary',

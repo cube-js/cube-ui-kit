@@ -24,7 +24,7 @@ A versatile action component that triggers commands and navigates users.
 
 ## Properties
 
-- **`type`** `'primary' | 'outline' | 'outline-2' | 'clear' | 'link'` (default: `outline`) — Visual style variant of the button (`outline-2` is identical to `outline` but uses `#surface-3` as the base fill; not available for the `special` theme)
+- **`type`** `'primary' | 'invert' | 'outline' | 'outline-2' | 'clear' | 'link'` (default: `outline`) — Visual style variant of the button (`outline-2` is identical to `outline` but uses `#surface-3` as the base fill; not available for the `special` theme)
 - **`theme`** `'default' | 'danger' | 'success' | 'warning' | 'note' | 'special' | 'current'` (default: `default`) — Semantic colour palette theme. `current` is not a brand palette: it mixes every color from the inherited text color, so the button adopts the color of whatever container it sits in
 - **`size`** `'xsmall' | 'small' | 'medium' | 'large' | 'xlarge' | 'inline' | number` (default: `medium`) — Button size. Use `'inline'` for link-type buttons or a number/string for custom sizes (e.g. `64` or `'8x'`)
 - **`icon`** — Icon rendered before the content. Can be: ReactNode, `true` (empty slot), or function `({ loading, selected, ...mods }) => ReactNode | true`
@@ -88,6 +88,7 @@ The `mods` prop accepts the following modifiers you can override:
 ### Types. `type` prop
 
 - `primary` – Emphasised call-to-action.
+- `invert` – The page and its text swapped: the fill is the theme's `accent-text` — the color normally painted *on* the page — and the label is `#surface`, the page itself. Unlike `primary`, which pins a fixed `#white` label on a brand surface and so reads with the same weight in either scheme, `invert` follows the scheme: dark chip with a light label in light mode, light chip with a dark label in dark mode. Use it where a `primary` chip is not emphatic enough — a single hero action, or a filled control that has to out-read a brand chip sitting next to it.
 - `outline` – Border with transparent background; `isSelected` adds brand-tinted fill.
 - `clear` – No border, transparent background; `isSelected` adds brand-tinted fill.
 - `link` – Styled as a textual link.
