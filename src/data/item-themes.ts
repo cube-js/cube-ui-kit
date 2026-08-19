@@ -350,7 +350,7 @@ export const DANGER_CLEAR_STYLES: Styles = {
     'selected & (hovered | focused)': '#danger-accent-text.12',
     'selected & pressed': '#danger-accent-text.18',
     disabled: 'transparent',
-    'selected & disabled': '#danger-accent-surface.08',
+    'selected & disabled': '#danger-accent-text.08',
   },
   color: {
     '': '#danger-accent-text-soft',
@@ -479,7 +479,7 @@ export const SUCCESS_CLEAR_STYLES: Styles = {
     'selected & (hovered | focused)': '#success-accent-text.12',
     'selected & pressed': '#success-accent-text.18',
     disabled: 'transparent',
-    'selected & disabled': '#success-accent-surface.08',
+    'selected & disabled': '#success-accent-text.08',
   },
   color: {
     '': '#success-accent-text-soft',
@@ -608,7 +608,7 @@ export const WARNING_CLEAR_STYLES: Styles = {
     'selected & (hovered | focused)': '#warning-accent-text.12',
     'selected & pressed': '#warning-accent-text.18',
     disabled: 'transparent',
-    'selected & disabled': '#warning-accent-surface.08',
+    'selected & disabled': '#warning-accent-text.08',
   },
   color: {
     '': '#warning-accent-text-soft',
@@ -737,7 +737,7 @@ export const NOTE_CLEAR_STYLES: Styles = {
     'selected & (hovered | focused)': '#note-accent-text.12',
     'selected & pressed': '#note-accent-text.18',
     disabled: 'transparent',
-    'selected & disabled': '#note-accent-surface.08',
+    'selected & disabled': '#note-accent-text.08',
   },
   color: {
     '': '#note-accent-text-soft',
