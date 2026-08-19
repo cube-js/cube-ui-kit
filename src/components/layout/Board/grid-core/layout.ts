@@ -12,7 +12,13 @@
 import { getAllCollisions, getFirstCollision } from './collision';
 import { sortLayoutItems } from './sort';
 
-import type { CompactType, Layout, LayoutItem, Mutable } from './types';
+import type {
+  CompactType,
+  Layout,
+  LayoutItem,
+  MoveElementOptions,
+  Mutable,
+} from './types';
 
 // ============================================================================
 // Layout Queries
@@ -199,6 +205,7 @@ export function moveElement(
   compactType: CompactType,
   cols: number,
   allowOverlap?: boolean,
+  options?: MoveElementOptions,
 ): LayoutItem[] {
   // Static items can't be moved unless explicitly draggable
   if (l.static && l.isDraggable !== true) {
@@ -239,9 +246,21 @@ export function moveElement(
     return cloneLayout(layout);
   }
 
-  // Handle prevent collision mode - revert position.
-  // Return same reference to signal no change occurred.
+  // Handle prevent collision mode. A resolver may rewrite the layout instead of
+  // refusing the move outright - shrinking the item into the room that is there,
+  // or trading places with the widget already in it (see `collision-modes.ts`).
+  // Its result is required to be overlap-free, so nothing downstream has to
+  // change; when it declines, we revert exactly as before.
   if (hasCollisions && preventCollision) {
+    const resolved = options?.resolveCollision?.({
+      layout,
+      item: l,
+      collisions,
+      from: { x: oldX, y: oldY },
+    });
+    if (resolved) return resolved;
+
+    // Revert position. Return same reference to signal no change occurred.
     (l as Mutable<LayoutItem>).x = oldX;
     (l as Mutable<LayoutItem>).y = oldY;
     (l as Mutable<LayoutItem>).moved = false;

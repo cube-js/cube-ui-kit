@@ -16,6 +16,7 @@ import {
   calcXYRaw,
   cloneLayout,
   collides,
+  createCollisionResolver,
   getLayoutItem,
   LayoutItem,
   moveElement,
@@ -501,6 +502,7 @@ export function useBoardRegistry(
     (entry: BoardEntry, item: LayoutItem, x: number, y: number) => {
       const pp = entry.getPositionParams();
       const compactor = entry.getCompactor();
+      const collisionMode = entry.getCollisionMode();
       const layout = entry.getLayout();
       const live = getLayoutItem(layout, item.i);
       // Deep-clone so `moveElement` (which mutates item objects in place) never
@@ -514,6 +516,22 @@ export function useBoardRegistry(
       const target = getLayoutItem(working, item.i);
       if (!target) return;
 
+      // Restore the size the gesture started with before resolving a new cell.
+      // A resolution may shrink the widget, and every frame re-resolves from the
+      // *live* layout, so leaving a shrunken size in place would make it the next
+      // frame's starting point: sweeping the pointer across occupied cells would
+      // ratchet the widget down with no way back. Re-measuring from the start size
+      // makes each frame a pure function of (start size, landing cell, other
+      // widgets), so dragging back restores the widget exactly.
+      //
+      // Only on a *changed* cell: `moveElement` short-circuits a move that goes
+      // nowhere, which would hand back the restored size without re-resolving it -
+      // an overlap the frame would then be thrown out for.
+      if (collisionMode !== 'revert' && (target.x !== x || target.y !== y)) {
+        target.w = item.w;
+        target.h = item.h;
+      }
+
       const moved = moveElement(
         working,
         target,
@@ -524,6 +542,13 @@ export function useBoardRegistry(
         compactor.type,
         pp.cols,
         compactor.allowOverlap,
+        {
+          resolveCollision: createCollisionResolver(collisionMode, {
+            cols: pp.cols,
+            maxRows: entry.getMaxRows(),
+            desired: { w: item.w, h: item.h },
+          }),
+        },
       );
       const compacted = [...compactor.compact(moved, pp.cols)];
       // Never commit a frame that *creates* a stack. In the legacy
@@ -599,6 +624,7 @@ export function useBoardRegistry(
     (entry: BoardEntry, item: LayoutItem, deltaX: number, deltaY: number) => {
       const pp = entry.getPositionParams();
       const compactor = entry.getCompactor();
+      const collisionMode = entry.getCollisionMode();
       const layout = entry.getLayout();
       const live = getLayoutItem(layout, item.i);
       if (!live) return;
@@ -608,6 +634,13 @@ export function useBoardRegistry(
       if (directionX === 0 && directionY === 0) return;
 
       const maxRows = entry.getMaxRows();
+      // Same resolution policy as the pointer path, so both inputs place a widget
+      // the same way (the invariant the overlap checks below are written around).
+      const resolveCollision = createCollisionResolver(collisionMode, {
+        cols: pp.cols,
+        maxRows,
+        desired: { w: item.w, h: item.h },
+      });
       const attempts =
         directionX < 0
           ? live.x
@@ -664,6 +697,16 @@ export function useBoardRegistry(
         const working = cloneLayout(layout);
         const target = getLayoutItem(working, item.i);
         if (!target) return;
+        // Re-measure from the size the gesture started with, for the same reason
+        // (and under the same condition) as the pointer path - see
+        // `moveWithinBoard`.
+        if (
+          collisionMode !== 'revert' &&
+          (target.x !== candidate.x || target.y !== candidate.y)
+        ) {
+          target.w = item.w;
+          target.h = item.h;
+        }
         const moved = moveElement(
           working,
           target,
@@ -674,6 +717,7 @@ export function useBoardRegistry(
           compactor.type,
           pp.cols,
           compactor.allowOverlap,
+          { resolveCollision },
         );
         const compacted = [...compactor.compact(moved, pp.cols)];
         const landed = getLayoutItem(compacted, item.i);
@@ -838,6 +882,7 @@ export function useBoardRegistry(
     (target: BoardEntry, item: LayoutItem, x: number, y: number) => {
       const pp = target.getPositionParams();
       const compactor = target.getCompactor();
+      const collisionMode = target.getCollisionMode();
 
       const carried =
         previewRef.current?.boardId === target.id
@@ -858,7 +903,13 @@ export function useBoardRegistry(
       // no-op) that pushes colliding widgets aside instead of the item sinking.
       const prevItem = carried ? getLayoutItem(carried, item.i) : undefined;
       const dragged: LayoutItem = prevItem
-        ? { ...prevItem }
+        ? // The carried frame supplies continuity of *position*; size comes from
+          // the gesture's start whenever the cell changes, so a resolution that
+          // shrank the widget on an earlier frame cannot ratchet it down (see
+          // `moveWithinBoard` for both halves of this).
+          prevItem.x === x && prevItem.y === y
+          ? { ...prevItem }
+          : { ...prevItem, w: item.w, h: item.h }
         : compactor.type === 'horizontal'
           ? { ...item, x: Math.max(0, x) - 1, y }
           : { ...item, x, y: Math.max(0, y) - 1 };
@@ -874,6 +925,18 @@ export function useBoardRegistry(
         compactor.type,
         pp.cols,
         compactor.allowOverlap,
+        {
+          // No exchange across boards: the displaced widget would have to be
+          // pushed back the other way, and a transfer moves one widget only. A
+          // widget arriving from elsewhere has no slot here to trade, so `'swap'`
+          // resolves as `'downscale'`.
+          resolveCollision: createCollisionResolver(collisionMode, {
+            cols: pp.cols,
+            maxRows: target.getMaxRows(),
+            desired: { w: item.w, h: item.h },
+            allowExchange: false,
+          }),
+        },
       );
       const compacted = [...compactor.compact(moved, pp.cols)];
       // Skip a frame that would *newly* stack widgets on the target (see the same
@@ -1104,6 +1167,20 @@ export function useBoardRegistry(
           tc.type,
           tp.cols,
           tc.allowOverlap,
+          {
+            // Cross-board, so no exchange (see `previewOnTarget`). `newItem` is
+            // built from the drag-start item, so its size is already the one to
+            // measure against.
+            resolveCollision: createCollisionResolver(
+              target!.getCollisionMode(),
+              {
+                cols: tp.cols,
+                maxRows: tp.maxRows,
+                desired: { w: ds.item.w, h: ds.item.h },
+                allowExchange: false,
+              },
+            ),
+          },
         );
         finalLayout = [...tc.compact(moved, tp.cols)];
       }

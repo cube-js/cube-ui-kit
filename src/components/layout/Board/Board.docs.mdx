@@ -69,13 +69,15 @@ clipped by an ancestor's `overflow: hidden`.
 - **`compact`** `'vertical' | 'horizontal' | 'free' | null` (default: `'vertical'`) — Compaction behavior. `'vertical'`/`'horizontal'` reflow widgets to remove gaps; `'free'` places each widget exactly where dropped and never pushes its neighbours (blocked from occupied cells unless `allowOverlap`); `null` disables compaction but still resolves collisions the legacy react-grid-layout way.
 - **`allowOverlap`** `boolean` (default: `false`) — Allow widgets to overlap (stack). In `'free'` mode this is what distinguishes stacking from blocking a drop onto an occupied cell.
 - **`preventCollision`** `boolean` (default: `false`) — Block movement into occupied cells instead of pushing.
+- **`collisionMode`** `'revert' | 'downscale' | 'swap'` (default: `'revert'`) — How to resolve a drop the grid would otherwise refuse. Only applies where a collision *blocks* a move — `compact="free"` (which prevents collisions) or an explicit `preventCollision` — and never under `allowOverlap`, where nothing is blocked. `'revert'` snaps the widget back. `'downscale'` shrinks it into the free space at the drop cell, growing rightward and downward, floored at its `minW`/`minH` (below that it reverts). `'swap'` trades places with the single widget under the drop: the dragged widget takes that widget's cell, the displaced widget takes the cell the dragged one just left, and each keeps as much of its own size as fits there (so a widget displaced next to a neighbour may shrink). It falls back to `'downscale'`, then `'revert'`. No mode ever *grows* a widget: a drag only ever preserves or reduces size. Applies to single-widget drags, pointer and keyboard alike; a multi-widget selection still only moves where it fits outright, and a resize is still blocked by a collision.
 - **`isDraggable`** `boolean` (default: `true`) — Enable dragging for all widgets.
 - **`isResizable`** `boolean` (default: `true`) — Enable resizing for all widgets.
 - **`isDroppable`** `boolean` (default: `true`) — Whether the board accepts widgets dropped from other boards.
 - **`resizeHandles`** `ResizeHandleAxis[]` (default: `['se']`) — Which resize handles to show. Corner handles (`ne`/`nw`/`se`/`sw`) show an angle grip; edge handles (`n`/`s`/`e`/`w`) show a dotted grip. Both are revealed on hover/focus/resize. A single edge (e.g. `['e']` or `['s']`) gives a horizontally- or vertically-only resizable widget.
+- **`resizeGripPlacement`** `'inside' | 'corner'` (default: `'inside'`) — Where the corner grips sit. `'inside'` tucks each one into the widget box; `'corner'` centres it on the widget's corner, so it lines up with a control centred on the opposite corner. Only affects corner handles — a dotted edge grip always stays inside. A corner-placed grip is drawn *outside* the widget (a widget clips its own content, which would otherwise cut the grip in half), so it needs the board to have at least half a grip's worth of `containerPadding` to show in full against the board's edge. Can be overridden per widget.
 - **`dragCancel`** `string` — CSS selector for elements that must not start a pointer drag (e.g. form controls inside a widget: `"input,textarea,button,a,.no-drag"`). Does not affect keyboard moves — those only run when the widget host itself is focused. Can be overridden per widget.
 - **`dragHandle`** `string` — CSS selector for the only elements from which a pointer drag may start. Can be overridden per widget.
-- **`showGridLines`** `boolean | 'drag'` (default: `false`) — Show grid lines behind the widgets. `true` always, `'drag'` only while a widget is being dragged or resized. A nested board that does not set this inherits an enabled ancestor's grid lines, showing its own while a drag is in progress.
+- **`showGridLines`** `boolean | 'drag' | 'any-drag'` (default: `false`) — Show grid lines behind the widgets. `true` always; `false` never; `'drag'` only while *this* board is part of the active gesture — it owns the drag (as its source, or as the board the widget is currently over) or one of its own widgets is being resized; `'any-drag'` while any drag is in flight anywhere under a shared `Board.Provider`, so every board advertises itself as somewhere the widget could land. Under one `Board.Provider`, `'drag'` keeps boards a widget cannot land in quiet, and `'any-drag'` is the opt-in for the noisier, more informative version. A nested board that does not set this inherits an enabled ancestor's setting, at the ancestor's own scope.
 - **`isAligned`** `boolean` (default: `false`) — Align a nested board with its ancestor `Board`'s layout. Only takes effect when the board is nested inside another `Board`'s widget. When set, every cell matches the parent's cell size exactly: the board inherits the parent's column pitch (deriving its own column count from its measured width so cells stay parent-sized as the container is resized) and uses the parent's row height verbatim. It never shrinks rows to fit — pair it with an `isAutoHeight` container so the widget grows to fit its rows at that height. `cols`/`rowHeight` then act as fallbacks used only until the parent metrics resolve.
 - **`selectionMode`** `'none' | 'single' | 'multiple'` (default: `'none'`) — Whether widgets can be selected, and how many at a time. `'multiple'` also enables the marquee and rigid group movement.
 - **`selectedKeys`** `string[]` — Controlled selection. Keys are layout item ids (`LayoutItem.i`).
@@ -97,6 +99,7 @@ clipped by an ancestor's `overflow: hidden`.
 - **`isDraggable`** `boolean` — Disable dragging for this widget.
 - **`isResizable`** `boolean` — Disable resizing for this widget.
 - **`resizeHandles`** `ResizeHandleAxis[]` — Override the board's handles.
+- **`resizeGripPlacement`** `'inside' | 'corner'` — Override the board's grip placement.
 - **`minW`** `number` — Minimum width in grid columns. Used when the layout item omits `minW`; the resize handle stops here.
 - **`maxW`** `number` — Maximum width in grid columns. Used when the layout item omits `maxW`.
 - **`minH`** `number` — Minimum height in grid rows. Used when the layout item omits `minH`.
@@ -257,9 +260,27 @@ Bound resizing with per-widget `minW`/`maxW` (columns) and `minH`/`maxH` (rows).
 
 ### Grid lines
 
-Show grid lines behind the widgets while dragging or resizing (or always).
+Show grid lines behind the widgets while dragging or resizing (or always). With
+several boards under one `Board.Provider`, `'drag'` lights up only the board the
+drag belongs to; `'any-drag'` lights up all of them.
 
 <Story of={BoardStories.GridLines} />
+
+### Corner resize grip
+
+Centre the resize grip on the widget's corner with `resizeGripPlacement="corner"`,
+so it lines up with a control centred on the opposite corner.
+
+<Story of={BoardStories.CornerResizeGrip} />
+
+### Resolving a blocked drop
+
+On a free grid a drop onto occupied cells is refused. `collisionMode` resolves it
+instead: `'downscale'` shrinks the widget into whatever room is at the drop cell,
+`'swap'` trades places with the widget already there. Neither ever grows a widget.
+Drag the wide widget onto the middle row, or drop one widget onto another.
+
+<Story of={BoardStories.CollisionModes} />
 
 ### Card widgets
 

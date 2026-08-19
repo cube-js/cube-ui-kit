@@ -2,6 +2,7 @@ import { createContext, MutableRefObject, useContext } from 'react';
 
 import type { BoardWidgetStore } from './board-store';
 import type {
+  CollisionMode,
   Compactor,
   LayoutConstraint,
   LayoutItem,
@@ -30,6 +31,12 @@ export interface BoardEntry {
   getPositionParams: () => PositionParams;
   getConstraints: () => LayoutConstraint[];
   getCompactor: () => Compactor;
+  /**
+   * How this board resolves a placement its compactor would otherwise refuse.
+   * A board-level policy rather than part of the `Compactor`, which is a public
+   * type consumers implement.
+   */
+  getCollisionMode: () => CollisionMode;
   getMaxRows: () => number;
   getContainerHeight: () => number;
   getLayout: () => LayoutItem[];
@@ -136,14 +143,24 @@ export function useBoardDragActive(): boolean {
 }
 
 /**
- * Whether an ancestor `Board` has its grid-line overlay enabled. A nested board
- * that does not set `showGridLines` explicitly reads this to inherit the
- * behaviour, showing its own grid lines while a drag is in progress. Defaults to
- * `false` outside any grid-lined board.
+ * What a nested `Board` inherits as its `showGridLines` default. The drag-scoped
+ * subset of `BoardGridLines`: an ancestor's `true` is handed down as `'drag'`
+ * (a nested board shows lines while a drag is in flight, not permanently), while
+ * `'any-drag'` is handed down verbatim so the whole nested tree keeps advertising
+ * every board a widget could land on.
  */
-export const BoardGridLinesContext = createContext<boolean>(false);
+export type BoardInheritedGridLines = false | 'drag' | 'any-drag';
 
-export function useBoardGridLines(): boolean {
+/**
+ * Whether an ancestor `Board` has its grid-line overlay enabled, and with which
+ * drag scope. A nested board that does not set `showGridLines` explicitly reads
+ * this to inherit the behaviour. Defaults to `false` outside any grid-lined
+ * board.
+ */
+export const BoardGridLinesContext =
+  createContext<BoardInheritedGridLines>(false);
+
+export function useBoardGridLines(): BoardInheritedGridLines {
   return useContext(BoardGridLinesContext);
 }
 

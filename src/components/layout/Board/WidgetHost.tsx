@@ -24,6 +24,8 @@ import {
 } from './grid-core';
 import { BoardSelectModifierKey } from './use-board-select-modifier-key';
 
+import type { BoardResizeGripPlacement } from './Widget';
+
 export type ResizePhase = 'start' | 'move' | 'end';
 
 /**
@@ -184,8 +186,19 @@ const GripElement = tasty({
   qa: 'BoardResizeGrip',
   styles: {
     position: 'absolute',
-    width: '10px',
-    height: '10px',
+    // Both placements derive from one number, so the grip can never drift out of
+    // step with its own size: `inside` tucks it into the widget box, `corner`
+    // centres it on the widget's corner - exactly half its own size back from
+    // each edge. Consumers pick between them with `resizeGripPlacement` instead
+    // of re-deriving these offsets from the outside.
+    '--grip-size': '10px',
+    '--grip-inset': '4px',
+    '--grip-offset': {
+      '': '$grip-inset',
+      'placement=corner': '($grip-size / -2)',
+    },
+    width: '$grip-size',
+    height: '$grip-size',
     boxSizing: 'border-box',
     pointerEvents: 'none',
     opacity: {
@@ -218,20 +231,46 @@ const GripElement = tasty({
     },
     top: {
       '': 'auto',
-      '[data-axis="ne"] | [data-axis="nw"]': '4px',
+      '[data-axis="ne"] | [data-axis="nw"]': '$grip-offset',
     },
     bottom: {
       '': 'auto',
-      '[data-axis="se"] | [data-axis="sw"]': '4px',
+      '[data-axis="se"] | [data-axis="sw"]': '$grip-offset',
     },
     left: {
       '': 'auto',
-      '[data-axis="nw"] | [data-axis="sw"]': '4px',
+      '[data-axis="nw"] | [data-axis="sw"]': '$grip-offset',
     },
     right: {
       '': 'auto',
-      '[data-axis="ne"] | [data-axis="se"]': '4px',
+      '[data-axis="ne"] | [data-axis="se"]': '$grip-offset',
     },
+  },
+});
+
+/**
+ * Where the corner grips are drawn when `resizeGripPlacement` is `'corner'`.
+ *
+ * `WidgetElement` clips its children (`overflow: hidden`, and that clipping is
+ * load-bearing - see its own note), so a grip centred on the widget's corner
+ * would be cut in half if it stayed inside. This layer mirrors the widget's grid
+ * rect as a *sibling* of it, clips nothing, and never takes pointer events: the
+ * transparent `HandleElement` inside the widget still owns the gesture, so
+ * escaping the clip costs no hit-testing behaviour.
+ *
+ * It sits above a resting widget (`zIndex: 1`) so a grip is never hidden by the
+ * neighbour it overhangs, and below a dragged or resized one (`zIndex: 10`) so a
+ * lifted widget still paints over its neighbours' grips. The board's own content
+ * box still clips it, so a grip on a widget flush against the board edge needs
+ * `containerPadding` >= half the grip size to show in full.
+ */
+const GripLayerElement = tasty({
+  qa: 'BoardResizeGripLayer',
+  styles: {
+    position: 'absolute',
+    overflow: 'visible',
+    pointerEvents: 'none',
+    zIndex: 5,
   },
 });
 
@@ -367,6 +406,12 @@ export interface WidgetHostProps {
   isResizable: boolean;
   resizeHandles: ResizeHandleAxis[];
   /**
+   * Where the corner grips sit. Resolved by the owning `Board` from the
+   * per-widget `resizeGripPlacement` and the board-level
+   * `widgetProps.resizeGripPlacement` default.
+   */
+  resizeGripPlacement: BoardResizeGripPlacement;
+  /**
    * Whether this widget grows to fit its content. Resolved by the owning
    * `Board` from the per-widget `isAutoHeight` and the board-level
    * `widgetProps.isAutoHeight` default.
@@ -455,6 +500,7 @@ export function WidgetHost(props: WidgetHostProps) {
     isDraggable,
     isResizable,
     resizeHandles,
+    resizeGripPlacement,
     isAutoHeight,
     qa,
     dragCancel,
@@ -818,14 +864,20 @@ export function WidgetHost(props: WidgetHostProps) {
           {resizeHandles.map((axis) => (
             <ResizeHandle key={axis} axis={axis} onResize={handleResize} />
           ))}
-          {resizeHandles.filter(isCornerAxis).map((axis) => (
-            <GripElement
-              key={`grip-${axis}`}
-              data-axis={axis}
-              mods={{ revealed: gripsRevealed }}
-              aria-hidden="true"
-            />
-          ))}
+          {/* `corner` grips are drawn in the sibling `GripLayerElement` below,
+              which the widget's own `overflow: hidden` cannot clip. */}
+          {resizeGripPlacement === 'corner'
+            ? null
+            : resizeHandles
+                .filter(isCornerAxis)
+                .map((axis) => (
+                  <GripElement
+                    key={`grip-${axis}`}
+                    data-axis={axis}
+                    mods={{ revealed: gripsRevealed, placement: 'inside' }}
+                    aria-hidden="true"
+                  />
+                ))}
           {resizeHandles.filter(isEdgeAxis).map((axis) => (
             <EdgeGripElement
               key={`edge-grip-${axis}`}
@@ -967,9 +1019,38 @@ export function WidgetHost(props: WidgetHostProps) {
       )
     : null;
 
+  // Corner grips that must straddle the widget edge, hoisted out of the widget's
+  // clip (see `GripLayerElement`). Positioned on the same grid rect as the host,
+  // so the two stay in step through reflows and auto-height changes.
+  const cornerAxes =
+    isResizable && !item.static && resizeGripPlacement === 'corner'
+      ? resizeHandles.filter(isCornerAxis)
+      : [];
+  const gripLayer = cornerAxes.length ? (
+    <GripLayerElement
+      style={{
+        left: `${pos.left}px`,
+        top: `${pos.top}px`,
+        width: `${pos.width}px`,
+        height: `${pos.height}px`,
+      }}
+      aria-hidden="true"
+    >
+      {cornerAxes.map((axis) => (
+        <GripElement
+          key={`grip-${axis}`}
+          data-axis={axis}
+          mods={{ revealed: gripsRevealed, placement: 'corner' }}
+          aria-hidden="true"
+        />
+      ))}
+    </GripLayerElement>
+  ) : null;
+
   return (
     <>
       {host}
+      {gripLayer}
       {overlayClone}
     </>
   );

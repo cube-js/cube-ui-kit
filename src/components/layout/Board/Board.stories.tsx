@@ -50,9 +50,24 @@ export default {
     },
     showGridLines: {
       control: { type: 'radio' },
-      options: [false, 'drag', true],
-      description: 'Show grid lines behind the widgets.',
+      options: [false, 'drag', 'any-drag', true],
+      description:
+        'Show grid lines behind the widgets. `drag` scopes them to the board owning the active drag; `any-drag` shows them on every board under a shared `Board.Provider`.',
       table: { defaultValue: { summary: 'false' } },
+    },
+    collisionMode: {
+      control: { type: 'radio' },
+      options: ['revert', 'downscale', 'swap'],
+      description:
+        'How to resolve a drop the grid would otherwise refuse. Only applies where a collision blocks a move (`compact="free"`, or `preventCollision`).',
+      table: { defaultValue: { summary: 'revert' } },
+    },
+    resizeGripPlacement: {
+      control: { type: 'radio' },
+      options: ['inside', 'corner'],
+      description:
+        "Where the corner resize grips sit: inside the widget box, or centred on the widget's corner.",
+      table: { defaultValue: { summary: 'inside' } },
     },
     selectionMode: {
       control: { type: 'radio' },
@@ -407,7 +422,134 @@ GridLines.parameters = {
   docs: {
     description: {
       story:
-        'Grid lines appear behind the widgets while a widget is being dragged or resized (`showGridLines="drag"`). Use `true` to always show them.',
+        'Grid lines appear behind the widgets while a widget is being dragged or resized (`showGridLines="drag"`). Use `true` to always show them. Under a shared `Board.Provider`, `"drag"` lights up only the board the drag belongs to (its source, and whichever board the widget is currently over); `"any-drag"` lights up every board, advertising all of them as somewhere to land.',
+    },
+  },
+};
+
+// Two boards under one provider, so the grid-line scope is visible: drag a widget
+// and watch which boards light up.
+const ScopedGridLinesTemplate: StoryFn<CubeBoardProps> = (args) => (
+  <Board.Provider>
+    <Flow gap="2x">
+      {(['left', 'right'] as const).map((side) => (
+        <Board
+          key={side}
+          id={side}
+          fill="#light"
+          padding="1x"
+          radius="1r"
+          cols={6}
+          extraRows={1}
+          widgetProps={{ isCard: true }}
+          defaultLayout={[
+            { i: `${side}-1`, x: 0, y: 0, w: 2, h: 2 },
+            { i: `${side}-2`, x: 2, y: 0, w: 2, h: 2 },
+          ]}
+          {...args}
+        >
+          <Board.Widget id={`${side}-1`}>
+            <WidgetBody title={`${side} A`} text="Drag me across" />
+          </Board.Widget>
+          <Board.Widget id={`${side}-2`}>
+            <WidgetBody title={`${side} B`} text="Or me" />
+          </Board.Widget>
+        </Board>
+      ))}
+    </Flow>
+  </Board.Provider>
+);
+
+export const ScopedGridLines = ScopedGridLinesTemplate.bind({});
+ScopedGridLines.args = {
+  showGridLines: 'drag',
+};
+ScopedGridLines.parameters = {
+  docs: {
+    description: {
+      story:
+        'Two boards sharing one `Board.Provider`. With `showGridLines="drag"` only the board taking part in the gesture shows its grid — the source, plus whichever board the widget is currently over. Switch the control to `"any-drag"` to light up both from the first pixel of any drag.',
+    },
+  },
+};
+
+// The resize grip centred on the widget's corner, mirroring a control centred on
+// the opposite one.
+const CornerGripTemplate: StoryFn<CubeBoardProps> = (args) => (
+  <Board
+    fill="#light"
+    padding="2x"
+    radius="1r"
+    widgetProps={{ isCard: true }}
+    defaultLayout={[
+      { i: 'a', x: 0, y: 0, w: 4, h: 2 },
+      { i: 'b', x: 4, y: 0, w: 4, h: 2 },
+    ]}
+    {...args}
+  >
+    <Board.Widget id="a">
+      <WidgetBody title="Corner grip" text="Hover the bottom-right corner" />
+    </Board.Widget>
+    <Board.Widget id="b" resizeGripPlacement="inside">
+      <WidgetBody title="Inside grip" text="The default, for comparison" />
+    </Board.Widget>
+  </Board>
+);
+
+export const CornerResizeGrip = CornerGripTemplate.bind({});
+CornerResizeGrip.args = {
+  resizeGripPlacement: 'corner',
+};
+CornerResizeGrip.parameters = {
+  docs: {
+    description: {
+      story:
+        'With `resizeGripPlacement="corner"` the grip is centred on the widget\'s corner instead of tucked inside it, so it lines up with a control centred on the opposite corner. It is drawn outside the widget box (a widget clips its own content), so give the board enough `containerPadding` for it to show in full at the board\'s edge. Per-widget `resizeGripPlacement` overrides the board default — the second widget here opts back into `"inside"`.',
+    },
+  },
+};
+
+// A free grid where a blocked drop is resolved rather than refused. The layout
+// leaves deliberately awkward gaps so downscaling and swapping are both easy to
+// trigger.
+const CollisionModesTemplate: StoryFn<CubeBoardProps> = (args) => (
+  <Board
+    fill="#light"
+    padding="1x"
+    radius="1r"
+    cols={6}
+    extraRows={1}
+    compact="free"
+    showGridLines="drag"
+    widgetProps={{ isCard: true }}
+    defaultLayout={[
+      { i: 'wide', x: 0, y: 0, w: 4, h: 1 },
+      { i: 'blocker', x: 3, y: 1, w: 3, h: 1 },
+      { i: 'small', x: 0, y: 2, w: 2, h: 1 },
+    ]}
+    {...args}
+  >
+    <Board.Widget id="wide">
+      <WidgetBody title="Wide (4 cols)" text="Drop me on the row below" />
+    </Board.Widget>
+    <Board.Widget id="blocker">
+      <WidgetBody title="Blocker" text="Leaves 3 free columns" />
+    </Board.Widget>
+    <Board.Widget id="small">
+      <WidgetBody title="Small" text="Drop me onto another widget" />
+    </Board.Widget>
+  </Board>
+);
+
+export const CollisionModes = CollisionModesTemplate.bind({});
+CollisionModes.args = {
+  collisionMode: 'downscale',
+};
+CollisionModes.parameters = {
+  docs: {
+    description: {
+      story:
+        'A `compact="free"` board refuses a drop onto occupied cells. `collisionMode` resolves it instead. With `"downscale"`, dropping the 4-column widget on the middle row shrinks it to the 3 free columns beside the blocker. With `"swap"`, dropping one widget onto another trades their places, each keeping as much of its own size as fits. Neither mode ever grows a widget. Switch to `"revert"` to see the default snap-back.',
     },
   },
 };

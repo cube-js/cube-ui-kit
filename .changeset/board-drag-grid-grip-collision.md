@@ -1,0 +1,9 @@
+---
+'@cube-dev/ui-kit': minor
+---
+
+`Board`: scoped drag grid lines, a corner resize-grip placement, and collision modes for the free grid.
+
+- **`showGridLines="drag"` now scopes the grid to the board taking part in the gesture** — the board owning the drag (its source, or whichever board the widget is currently over) or resizing one of its own widgets. Previously any drag lit up every board sharing a `Board.Provider`, including boards the widget could not land in. The old behaviour is still available, now opt-in, as `showGridLines="any-drag"`, which advertises every board as somewhere to land.
+- **`resizeGripPlacement`** (`'inside' | 'corner'`, default `'inside'`) on `Board` and `Board.Widget` positions the corner resize grips. `'corner'` centres each grip on the widget's corner — drawn outside the widget box, which clips its own content — so it lines up with a control centred on the opposite corner. Edge grips are unaffected.
+- **`collisionMode`** (`'revert' | 'downscale' | 'swap'`, default `'revert'`) on `Board` resolves a drop the grid would otherwise refuse, where a collision blocks a move (`compact="free"`, or `preventCollision`). `'downscale'` shrinks the widget into the free space at the drop cell; `'swap'` trades places with the single widget under the drop, each keeping as much of its own size as fits, and falls back to `'downscale'` then `'revert'`. No mode ever grows a widget.
