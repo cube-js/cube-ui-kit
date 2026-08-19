@@ -1,12 +1,15 @@
 import { useSyncExternalStore } from 'react';
 
+import { colorSeed } from './color-seed';
+
 /**
  * Runtime configuration for the Glaze-generated color palette.
  *
  * The palette recipe itself lives in `./palette.ts`; this module owns only the
- * *seeds* it is built from, plus a version counter the token caches watch. It
- * deliberately imports nothing else — not the token modules, not `glaze` — so
- * there is no import cycle and no ordering hazard.
+ * *seeds* it is built from, plus a version counter the token caches watch. Its only
+ * import is the leaf `./color-seed` helper — never the token modules — so there is
+ * no import cycle and no ordering hazard. See that file for why reading a colour
+ * cannot depend on the global Glaze config `./palette.ts` installs.
  *
  * Reading is free; writing rebuilds the palette on the next token read. See
  * `Getting Started/Theming` in Storybook for the full contract.
@@ -25,6 +28,34 @@ export const DEFAULT_NOTE_HUE = 302.3;
 
 /** Seed saturation. Per-color `saturation` in the recipe is a 0–1 factor of it. */
 export const DEFAULT_SATURATION = 100;
+
+/**
+ * Share of {@link DEFAULT_SATURATION} the neutral `surface` carries — the recipe's
+ * own `SURFACE_SATURATION` factor, as a fraction.
+ *
+ * It lives here rather than in the recipe because the dependency runs one way:
+ * `./palette.ts` imports the config, not the reverse — and the config needs this
+ * number to default `baseSaturation`. It is the anchor of the base zone's own 0–100
+ * scale: the share the *accent zone* lends the chrome when no `baseColor` names one
+ * outright, so an untouched palette lands on `12`.
+ */
+export const SURFACE_SATURATION_SHARE = 0.12;
+
+/**
+ * Ceiling on a {@link PaletteConfig.baseSaturation} derived from a
+ * {@link PaletteConfig.baseColor}.
+ *
+ * A named base color lands the chrome near itself rather than at the 12% share the
+ * accent lends it, which is the whole reason to name one — but a fully saturated
+ * chrome stops being chrome. `50` is well past where the base colors begin to
+ * converge (`surface-inverse` tops out around `25`), so the clip costs nothing that
+ * was still moving and stops a vivid brand hex from being read as an instruction to
+ * paint the page with it.
+ *
+ * The manual slider in the tuner shares the number, so the two agree on what the top
+ * of the range means.
+ */
+export const MAX_BASE_SATURATION = 50;
 
 /**
  * Seed saturation for the `code-*` syntax family, deliberately **not** the same
@@ -67,6 +98,12 @@ export interface PaletteCodeSeed {
   saturation?: number;
 }
 
+/**
+ * Where the neutral surface ramp sits on the tone scale — see
+ * {@link PaletteConfig.surfaceMode}.
+ */
+export type SurfaceMode = 'neutral' | 'tinted';
+
 /** Names of the themes whose seeds can be overridden individually. */
 export type PaletteThemeName =
   | 'success'
@@ -80,6 +117,56 @@ export type PaletteThemeName =
  * and per-theme fields left unset inherit the palette-level value.
  */
 export interface PaletteConfig {
+  /**
+   * Accent zone seeded by a **color** rather than a hue — the brand, as you have it.
+   *
+   * Anything Glaze parses: hex, `rgb()`, `hsl()`, `okhsl()`, `okhst()`, `oklch()`.
+   * CSS color keywords (`rebeccapurple`) are not supported. An unparseable value
+   * warns and falls back to the numeric seed.
+   *
+   * Unlike {@link ColorThemeConfig.hue}, which keeps only hue and saturation, this
+   * keeps the **tone** as well — which is the whole point. Without it the brand fill
+   * is authored as a fixed tone step off white, so every accent hue lands at roughly
+   * the same lightness and the color you asked for never actually appears.
+   *
+   * The **light, normal-contrast** variant reproduces the color; dark and high
+   * contrast adapt, as every other color in the palette does. Two things cost
+   * exactness even there: {@link PaletteConfig.pastel} caps chroma (so `#FFD400`
+   * softens), and the fill answers to two APCA floors — **Lc 45 against `surface`**
+   * so the button reads as a shape, and **Lc 45 against the white label** it carries
+   * — moving only as far as the nearer one requires.
+   *
+   * Those floors are APCA, not WCAG, and the difference is deliberate: one WCAG
+   * ratio means two very different things by scheme (3:1 measures Lc 56 in light but
+   * only Lc 23 in dark), which crushed light brands while letting dark ones through.
+   * A consequence worth stating plainly — **the emitted fill can sit below WCAG
+   * 3:1**. `#0EA5E9` renders at 2.77:1 against a white page and is correct at that
+   * value; Lc 45 is the guarantee, not the ratio.
+   *
+   * {@link PaletteConfig.hue} and {@link PaletteConfig.saturation} still win when
+   * set — the number is the more specific instruction — and the tone keeps coming
+   * from here either way, so a preview can rotate the hue without losing the brand's
+   * lightness.
+   */
+  accentColor?: string;
+  /**
+   * Base zone seeded by a **color** rather than a hue and a saturation.
+   *
+   * Its **hue and saturation** are read; its **tone is discarded**, because the
+   * chrome's lightness ladder is the design — a base color says which way the greys
+   * lean and how far, not how dark they are.
+   *
+   * The saturation is clipped to {@link MAX_BASE_SATURATION}. Naming a base color
+   * says "the chrome is this color", so it lands near it rather than at the 12%
+   * share {@link PaletteConfig.baseSaturation} inherits from the accent — but a
+   * fully saturated chrome is no longer chrome, so there is a ceiling on how far
+   * "near" goes.
+   *
+   * {@link PaletteConfig.baseHue} and {@link PaletteConfig.baseSaturation} each win
+   * over it when set — the number is the more specific instruction, the same
+   * precedence {@link PaletteConfig.accentColor} sits under.
+   */
+  baseColor?: string;
   /**
    * Accent hue in degrees (0–360) — the brand.
    *
@@ -100,8 +187,62 @@ export interface PaletteConfig {
    */
   baseHue?: number;
   /**
+   * Saturation seed (0–100) of the **base** zone — the same family
+   * {@link PaletteConfig.baseHue} governs: `surface` and its ladder, the
+   * `surface-text*` ramp, `border`, `placeholder`.
+   *
+   * On the same 0–100 scale as {@link PaletteConfig.saturation}, and read the same
+   * way: `100` is a fully saturated base hue. **The shipped chrome is `12`** — a
+   * faint tint is what a neutral surface is — so the useful range is mostly below
+   * a third, and the numbers above it are a deliberately tinted theme rather than
+   * a neutral one.
+   *
+   * Left unset it is `saturation × 0.12`, which reproduces the recipe's own factor
+   * exactly and keeps a muted palette muting the chrome along with everything
+   * else. Set it and the base zone stops following the brand: a vivid accent over
+   * near-grey chrome, or a muted accent over visibly warm chrome, are both one
+   * number away and neither is reachable from a single scale.
+   *
+   * The base colors keep their proportions to one another — `border` more than
+   * `surface`, the text ramp more than `border` — until the highest of them hits
+   * the top of the scale, which happens around `25`. Past that they converge.
+   *
+   * Under {@link PaletteConfig.surfaceMode} `'neutral'` this reaches
+   * `surface-2`…`surface-4`, `border`, `placeholder` and the text ramp, but not
+   * the page surface: at the end of the tone scale there is no room for chroma,
+   * whatever the seed says. `'tinted'` is what gives it somewhere to land.
+   */
+  baseSaturation?: number;
+  /**
+   * Global. Where the neutral surface ramp sits on the tone scale.
+   *
+   * - `'neutral'` — `surface` is the extreme: pure white in light, the darkest
+   *   step the dark tone window allows in dark. No room for chroma, so the page
+   *   carries no hue however saturated the base zone is.
+   * - `'tinted'` — the whole ramp moves two tones inward, off the extreme.
+   *
+   * Two tones is not a visible lightness change; what it buys is *room*. Chroma
+   * needs distance from white to exist at all, so at the extreme a light page is
+   * white no matter what {@link PaletteConfig.baseSaturation} says. Tinted trades
+   * two tones of headroom for a page that actually carries its base hue.
+   *
+   * Everything below `surface` is positioned relative to it, so the ladder, the
+   * borders and the text ramp all follow — and the contrast floors on the text
+   * re-solve against the new background rather than drifting.
+   */
+  surfaceMode?: SurfaceMode;
+  /**
    * Seed saturation (0–100), and the fallback for every theme that does not set
    * its own.
+   *
+   * **Belongs to the non-pastel path**, and setting it says so: with no
+   * {@link PaletteConfig.pastel} beside it, this turns pastel off, because tuning a
+   * saturation is the non-pastel path by definition. Pastel is one flat chroma ceiling,
+   * so under it there is exactly one seed and it is the top of the scale.
+   *
+   * A `pastel: true` written next to a saturation wins and the saturation is ignored
+   * (with a dev warning) — but it is kept rather than dropped, so turning pastel back
+   * off restores your number.
    *
    * One scale for the whole theme, by design. Every color's own `saturation` is a
    * 0–1 factor of this seed — `surface` at 0.12, `border` at 0.175, the text ramp
@@ -117,6 +258,19 @@ export interface PaletteConfig {
    * producing a softer, more even palette across hues. Glaze treats `pastel` as
    * instance-level, so it is threaded into every theme.
    *
+   * It also **pins {@link PaletteConfig.saturation} to 100**: the even, hue-independent
+   * ceiling is what pastel is for, and a second saturation scale on top of it would
+   * only undo that. Two paths, then — pastel with no saturation knob, or
+   * `pastel: false` with a free 0–100 one.
+   *
+   * Which is why a lone `saturation` picks the second path for you. State this field
+   * only to override that: it is the coarser of the two choices, so it wins wherever
+   * both are set, and a saturation it shadows is ignored with a dev warning.
+   *
+   * The same ceiling is why an {@link PaletteConfig.accentColor} cannot render
+   * exactly under pastel — `#FFD400` softens to `#e4d8ad`. Under pastel a color
+   * contributes its hue and its tone; turn pastel off to get its chroma too.
+   *
    * Every theme except `code`. The syntax family is calibrated on its own
    * saturation and is deliberately left out — softening it collapses the chroma
    * spread the syntax hues rely on to stay apart. To soften a code block, lower
@@ -124,14 +278,20 @@ export interface PaletteConfig {
    */
   pastel?: boolean;
   /**
-   * Global. `'auto'` (the default) keeps the two-tier model: normal colors plus
-   * a separate high-contrast tier driven by `<html data-contrast="high">` /
-   * `prefers-contrast: more`.
+   * Global. `'auto'` (the default) leaves contrast entirely to the two-tier model:
+   * normal colors plus a high-contrast tier driven by `<html data-contrast="high">`
+   * / `prefers-contrast: more`.
    *
-   * A number (0–100) replaces that switch with a slider — and, because a manual
-   * level already carries the contrast preference, **drops the high-contrast
-   * tier entirely**. `0` reproduces the normal output and `100` the
-   * high-contrast output, bit for bit.
+   * A number (0–100) additionally positions the **normal** colors on a slider, so
+   * a product can offer its own contrast control. `0` is the shipped palette and
+   * `100` is the high-contrast one, bit for bit.
+   *
+   * The two **compose** rather than replace each other: the high-contrast tier
+   * stays the true high-contrast resolution at every level — identical to what
+   * `'auto'` emits — so a slider raises the baseline while
+   * `prefers-contrast: more` still escalates on top of it. The one exception is
+   * `100`, where the normal colors already *are* the high-contrast ones and a
+   * second tier would only duplicate them.
    */
   contrastLevel?: number | 'auto';
   /** Per-theme seed overrides. */
@@ -149,6 +309,47 @@ export interface ResolvedPaletteConfig {
   hue: number;
   baseHue: number;
   saturation: number;
+  baseSaturation: number;
+  surfaceMode: SurfaceMode;
+  /**
+   * The accent color as given, handed to Glaze's `from` so the brand family renders
+   * as that literal value rather than as a shade re-derived from the seed.
+   *
+   * `null` — the common case — means no accent color was supplied and the family keeps
+   * its white-anchored derivation, which is the only arrangement that reproduces the
+   * shipped palette bit for bit.
+   */
+  accentColor: string | null;
+  /**
+   * The base color as given, or `null`.
+   *
+   * Nothing renders from it — the hue and the saturation it derives are what reach the
+   * palette. It is resolved anyway so {@link isSameConfig} can compare it, which is the
+   * only way a write that changes the *string* without changing either derived number
+   * still counts as a change. `MAX_BASE_SATURATION` makes that a live case rather than
+   * a theoretical one: every color above the clip on a given hue derives the same pair,
+   * so without this a color picker's whole upper range — and its entire tone axis, which
+   * a base color discards — would drop writes silently and leave the field stale.
+   */
+  baseColor: string | null;
+  /**
+   * The tone of {@link ResolvedPaletteConfig.accentColor}, or `null` alongside it.
+   *
+   * `from` carries the tone itself, so this exists for the one thing that needs the
+   * *number*: the hover brand text sits a fixed tone step past the rest one, and a
+   * step has to be computed.
+   */
+  accentTone: number | null;
+  /**
+   * The saturation of {@link ResolvedPaletteConfig.accentColor}, or `null` beside it.
+   *
+   * On the palette's 0–100 scale, like every other saturation here. Kept because the
+   * accent seed is rebuilt from these three numbers rather than from the literal:
+   * {@link PaletteConfig.hue} outranks the color's own hue, so handing Glaze the
+   * original string would let `accent-surface` keep a hue the rest of the ramp has
+   * already rotated away from.
+   */
+  accentSaturation: number | null;
   pastel: boolean;
   contrastLevel: number | 'auto';
   themes: {
@@ -171,17 +372,114 @@ const DEFAULT_THEME_HUES = {
   note: DEFAULT_NOTE_HUE,
 } as const;
 
+/**
+ * Warned once per process, not once per call.
+ *
+ * `resolveConfig` runs on every write AND on every `resolvePaletteConfig` preview, so an
+ * unguarded warning would fire on every frame of a slider drag.
+ */
+let warnedAboutPastelSaturation = false;
+
 function resolveConfig(input: PaletteConfig): ResolvedPaletteConfig {
-  const saturation = input.saturation ?? DEFAULT_SATURATION;
   const themes = input.themes ?? {};
 
-  const hue = input.hue ?? DEFAULT_HUE;
+  const accent = input.accentColor ? colorSeed(input.accentColor) : null;
+  const base = input.baseColor ? colorSeed(input.baseColor) : null;
+
+  // A `saturation` with no `pastel` beside it turns pastel OFF.
+  //
+  // Under pastel there is one saturation and it is the top of the scale, so the two
+  // fields cannot both be honoured — but writing a saturation is only ever a request to
+  // tune it, which is the non-pastel path by definition. Reading it as one keeps
+  // `setPaletteConfig({ saturation: 55 })` doing what it always did.
+  //
+  // An explicit `pastel` wins, both ways: it is the coarser choice of the two, and a
+  // config that states it is choosing a color space rather than a value on one.
+  const pastel = input.pastel ?? input.saturation === undefined;
+
+  // Explicit number > derived from a color > shipped default, for both zones. The
+  // number is the more specific instruction, and keeping it ahead of the color is
+  // what lets `resolvePaletteConfig({ hue: 30 })` rotate a stored `accentColor`
+  // without discarding its tone.
+  const hue = input.hue ?? accent?.hue ?? DEFAULT_HUE;
+
+  // `base.tone` is never read — that is the whole enforcement of "a base color says
+  // which way the greys lean and how far, not how dark they are". Its saturation
+  // *is* read, below.
+  const baseHue = input.baseHue ?? base?.hue ?? hue;
+
+  // Only a CONTRADICTION warns — `pastel: true` written next to a saturation it will
+  // ignore. The inference above means a lone `saturation` is not a contradiction, and a
+  // saturation of exactly 100 is not one either: that is the value pastel pins it to.
+  if (
+    input.pastel === true &&
+    input.saturation !== undefined &&
+    input.saturation !== DEFAULT_SATURATION &&
+    !warnedAboutPastelSaturation
+  ) {
+    warnedAboutPastelSaturation = true;
+    console.warn(
+      `[cube-ui-kit] palette \`saturation\` (${input.saturation}) is ignored because ` +
+        `\`pastel\` is on — pastel pins it to ${DEFAULT_SATURATION}. Drop \`pastel\`, ` +
+        `or set it to \`false\`, to tune saturation yourself.`,
+    );
+  }
+
+  // Deliberately NOT `?? accent?.saturation`: the accent family carries the color's
+  // own chroma through Glaze's `from`, so the palette-level seed no longer has to be
+  // raised to reach it. Leaving it alone is what keeps a saturated brand out of every
+  // status theme, which all inherit this number.
+  //
+  // The neutral chrome is the one exception, and it is deliberate — `baseSaturation`
+  // below takes its share of the accent's own chroma so a near-grey brand leaves
+  // near-grey chrome. That is scoped to the base zone and capped by this seed; it does
+  // not pass through here.
+  const saturation = pastel
+    ? DEFAULT_SATURATION
+    : input.saturation ?? DEFAULT_SATURATION;
 
   return {
     hue,
-    baseHue: input.baseHue ?? hue,
+    baseHue,
     saturation,
-    pastel: input.pastel ?? true,
+    // Three arms, and the middle two are on deliberately different scales.
+    //
+    // A named `baseColor` means "the chrome IS this color", so it lands near it,
+    // clipped at `MAX_BASE_SATURATION`. Base merely FOLLOWING the accent means "a
+    // faint tint of the brand", so it stays the 12% share it has always been — now
+    // of the accent's own chroma, whether that arrived as a number or as an
+    // `accentColor`. Reading `accent?.saturation` here is the one place a brand color
+    // reaches the base zone, and it has to: without it, picking a near-grey brand
+    // would leave the chrome carrying 12% of a saturation nobody asked for.
+    //
+    // BOTH arms are also capped by `saturation`, and that is load-bearing rather than
+    // defensive. `baseSaturationScale` divides by the seed, so the chrome's absolute
+    // chroma is a function of this field ALONE — without the cap, an accent color
+    // would cancel the seed out of the base zone entirely and a muted
+    // `saturation: 20` would leave the chrome 4.4x more chromatic than asked for.
+    // The seed is a ceiling everywhere else in the palette; it is one here too.
+    //
+    // Nothing here reaches the status themes, which is what keeps the guarantee that
+    // a brand color cannot re-chromatize them.
+    //
+    // Unlike the palette seed, writing this does *not* turn pastel off: how much hue
+    // the chrome carries says nothing about which chroma space the palette is in.
+    //
+    // The accent arm sits INSIDE the parentheses on purpose: hoisting it to
+    // `accent?.saturation ?? saturation * SHARE` would apply the share to only one of
+    // the two and move the shipped default.
+    baseSaturation:
+      input.baseSaturation ??
+      (base
+        ? Math.min(base.saturation, MAX_BASE_SATURATION, saturation)
+        : Math.min(accent?.saturation ?? saturation, saturation) *
+          SURFACE_SATURATION_SHARE),
+    surfaceMode: input.surfaceMode ?? 'neutral',
+    accentColor: accent ? input.accentColor! : null,
+    baseColor: base ? input.baseColor! : null,
+    accentTone: accent?.tone ?? null,
+    accentSaturation: accent?.saturation ?? null,
+    pastel,
     contrastLevel: input.contrastLevel ?? 'auto',
     themes: {
       success: {
@@ -269,6 +567,17 @@ function isSameConfig(a: ResolvedPaletteConfig, b: ResolvedPaletteConfig) {
     a.hue === b.hue &&
     a.baseHue === b.baseHue &&
     a.saturation === b.saturation &&
+    a.baseSaturation === b.baseSaturation &&
+    a.surfaceMode === b.surfaceMode &&
+    // The colors themselves, not just what they derived: `hue` no longer carries the
+    // accent's chroma (the family gets that through Glaze's `from`), so two brands can
+    // agree on every numeric seed and still render differently. And a base color's
+    // derived pair collapses — everything above `MAX_BASE_SATURATION` on one hue lands
+    // on the same two numbers, and its tone is discarded outright — so comparing the
+    // string is the only thing that lets a color picker's upper range and tone axis
+    // register at all.
+    a.accentColor === b.accentColor &&
+    a.baseColor === b.baseColor &&
     a.pastel === b.pastel &&
     a.contrastLevel === b.contrastLevel &&
     a.themes.code.saturation === b.themes.code.saturation &&
@@ -291,11 +600,28 @@ function isSameConfig(a: ResolvedPaletteConfig, b: ResolvedPaletteConfig) {
  */
 function pinSignature(config: PaletteConfig): string {
   const set = (value: unknown) => (value === undefined ? '0' : '1');
+  // The two color fields carry their VALUE, not just their presence. Presence alone
+  // cannot tell one unparseable string from another: both resolve to `null`, so
+  // `isSameConfig` sees no movement either, and replacing `'bad-one'` with
+  // `'bad-two'` returned early — leaving `getPaletteConfigInput().accentColor` on
+  // the first string with no notification that the write was dropped.
+  //
+  // It also means two spellings of the same color (`'#ff0000'` / `'rgb(255 0 0)'`)
+  // now bump the version. That is the same argument the presence check was already
+  // making: what a settings UI reads back changed, so it has to re-render.
+  const seed = (value: string | undefined) => JSON.stringify(value ?? null);
 
   return [
+    // Both color seeds count, and they have to: a UI switching `{ hue: 45 }` for an
+    // `accentColor` that happens to derive hue 45 resolves to the same numbers, so
+    // without these the version would never bump and the control would look stuck.
+    seed(config.accentColor),
+    seed(config.baseColor),
     set(config.hue),
     set(config.baseHue),
     set(config.saturation),
+    set(config.baseSaturation),
+    set(config.surfaceMode),
     set(config.pastel),
     set(config.contrastLevel),
     set(config.themes?.code?.saturation),

@@ -35,8 +35,8 @@ import {
   parseColor,
 } from '../color/color';
 import { ColorPanel } from '../color/ColorPanel';
-import { ColorSwatch } from '../color/ColorSwatch';
 import { useIsInsideColorPopover } from '../color/context';
+import { ColorSwatch } from '../ColorSwatch';
 import { TextInputBase } from '../TextInput/TextInputBase';
 
 /**
@@ -333,7 +333,13 @@ export const ColorInput = forwardRef(function ColorInput(
       qa={qa || 'ColorInput'}
       size={size}
       autocomplete="off"
-      icon={<ColorSwatch color={color} styles={swatchStyles} />}
+      // A flat 20px at every field size, which is what this has always rendered.
+      // Neither of the other two options is right here: tracking `$size` puts a
+      // large field's swatch against the border, because a text input hangs its
+      // prefix off the edge with no padding of its own, and passing the field's
+      // own size through grows the swatch with the field — visibly, and for no
+      // reason a caller asked for. The swatch is a fixed badge, not a control.
+      icon={<ColorSwatch size="small" color={color} styles={swatchStyles} />}
       inputRef={inputRef}
       inputProps={{
         ...inputProps,

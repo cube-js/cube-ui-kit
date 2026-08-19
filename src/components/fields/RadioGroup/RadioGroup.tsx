@@ -55,6 +55,11 @@ const RadioGroupElement = tasty({
       '': '0',
       tabs: '.5x',
     },
+    // The tabs layout is the only one with padding, and a caller that gives the
+    // group an explicit width (`width: 100%` inside a popover, say) means the
+    // box it can see. Without this the padding is added on top and the group
+    // overhangs its container by `1x`.
+    boxSizing: 'border-box',
     radius: true,
     fill: {
       '': '#clear',

@@ -20,6 +20,19 @@ module.exports = [
         }),
       );
     },
+    // 505 kB, raised from 501 kB, which the branch exceeded by 596 B locally.
+    // Measured with both sides rebuilt on the same machine: `main` at 500.29 kB,
+    // this branch at 501.60 kB, so the palette work itself is +1.31 kB — the
+    // color-seeded accent arrangement, `color-seed.ts`, and `ColorSwatch` as its
+    // own component. The Button budget below is unchanged at 123.32 kB on both
+    // sides, i.e. the branch adds exactly nothing to a Button-only import, which
+    // is the number that says none of this reaches a consumer who imports none
+    // of it.
+    //
+    // Rounded up to the next 5 kB step rather than set just above the reading:
+    // the local figure runs low (see the macOS/Linux note below), so a limit
+    // fitted to it lands under the runner's own number.
+    //
     // 498.78 kB in CI at the time of writing, 1.78 kB over the previous
     // 497 kB. That is the calendar's month/year navigation: the shared
     // `CalendarPanel` / `CalendarHeader` / `PeriodGrid` that `Calendar`,
@@ -29,6 +42,15 @@ module.exports = [
     // and `datePicker.select*` strings across twelve locales, which are
     // registered eagerly. Measured against `main` at 496.25 kB with both sides
     // rebuilt: +2.53 kB. Raised to 501 kB.
+    //
+    // Before this, on the palette branch this merges with: 497.13 kB in CI, 131
+    // bytes over the then-current 497 kB, and all of it the dependency —
+    // `@tenphi/glaze` gained `from`, which lets a theme color be seeded from a
+    // literal value instead of the theme seed. Measured at +325 bytes locally
+    // between the two Glaze builds with the kit's own source held constant; the
+    // kit's own source got *smaller* over the same commit, since `from` replaced a
+    // derive-then-re-seed workaround. That bump asked for 498 kB and is subsumed by
+    // the 501 kB above, which was measured after it.
     //
     // Before this: 495.09 kB in CI, 86 bytes over the previous
     // 495 kB. Two things stack into that: `DataTable`'s column menu, adaptive
@@ -85,7 +107,7 @@ module.exports = [
     //
     // Note when checking locally: `size-limit` bundles the built `./dist`, it
     // does not build. Run `pnpm build` first or you will measure a stale bundle.
-    limit: '501kB',
+    limit: '505kB',
   },
   {
     name: 'Tree shaking (just a Button)',

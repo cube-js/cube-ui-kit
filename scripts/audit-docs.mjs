@@ -426,8 +426,14 @@ const FIELD_COMPONENT_DIRS = new Set([
   'Slider', 'Switch', 'TextArea', 'TextInput', 'TextInputMapper',
 ]);
 
+// Lives among the fields but takes no value and no field props — the detection
+// above goes by directory, and `fields/` is the right home for a component that
+// only makes sense next to the color fields.
+const NON_FIELD_COMPONENTS = new Set(['ColorSwatch']);
+
 function isFieldComponent(docPath) {
   const parts = path.relative(COMPONENTS, docPath).split(path.sep);
+  if (parts.some((p) => NON_FIELD_COMPONENTS.has(p))) return false;
   return parts.some((p) => FIELD_COMPONENT_DIRS.has(p));
 }
 

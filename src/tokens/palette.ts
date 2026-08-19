@@ -1,14 +1,22 @@
-import { glaze } from '@tenphi/glaze';
+import {
+  apcaContrast,
+  glaze,
+  okhslToLinearSrgb,
+  variantToOkhsl,
+} from '@tenphi/glaze';
 
 import { lazyStyles } from './lazy-styles';
 import {
   getPaletteConfig,
   getPaletteVersion,
   resolvePaletteConfig,
+  SURFACE_SATURATION_SHARE,
 } from './palette-config';
 
 import type {
   ColorMap,
+  ContrastSpec,
+  GlazeColorValue,
   GlazeConfigOverride,
   GlazePalette,
   GlazeTheme,
@@ -68,12 +76,368 @@ const CODE_STRING_HUE = 280.3;
  * Saturation factor of the neutral `surface`.
  *
  * Shared with the code theme, which mirrors `surface` to solve its contrast floors
- * against the real page background — the two must not drift apart.
+ * against the real page background — the two must not drift apart. Shared with the
+ * config too, which needs it to work out the share of the accent zone's chroma the
+ * chrome takes when no `baseColor` names one outright; it lives there because the
+ * config cannot import from here, and is re-exported under this name because that is
+ * what the recipe calls it.
  */
-const SURFACE_SATURATION = 0.12;
+const SURFACE_SATURATION = SURFACE_SATURATION_SHARE;
 
 const TINTED_SURFACE_SATURATION = 0.2;
 const TINTED_SURFACE_TONE_OFFSET = 2;
+
+/**
+ * How far `surfaceMode: 'tinted'` moves the neutral ramp off the end of the tone
+ * scale.
+ *
+ * Small on purpose. Two tones is below the threshold where a page reads as
+ * "grey" rather than "white", and it is not lightness this buys: chroma needs
+ * distance from the extreme to exist at all, so at tone 100 a light surface is
+ * white whatever saturation it asks for. Two tones is the cheapest room in which
+ * the base hue becomes visible.
+ *
+ * Everything under `surface` is positioned relative to it, so the shift carries
+ * the whole ladder — and the text ramp's contrast floors re-solve against the new
+ * background instead of drifting.
+ */
+const TINTED_SURFACE_TONE_SHIFT = 2;
+
+/** Tone of the neutral `surface`, per {@link ResolvedPaletteConfig.surfaceMode}. */
+function surfaceTone(config: ResolvedPaletteConfig): number {
+  return config.surfaceMode === 'tinted'
+    ? 100 - TINTED_SURFACE_TONE_SHIFT
+    : 100;
+}
+
+/**
+ * Tone of a TINTED `surface` — a status theme's, or a runtime tint's —
+ * as `[light, highContrast]`.
+ *
+ * A tinted surface is a banner sitting *on* the page, so its tone is authored as
+ * an offset from the page's rather than as an absolute. Under
+ * `surfaceMode: 'tinted'` the page itself moves down to 98, which is exactly where
+ * these used to sit: a `note` banner would come out the same tone as the surface
+ * behind it and stop reading as a banner at all. Anchoring both on
+ * {@link surfaceTone} keeps the separation the offset was chosen for.
+ *
+ * The text ramps on these themes are relative (`base: 'surface'`), so they follow
+ * on their own — only the absolute tone needs the anchor.
+ */
+function tintedSurfaceTone(config: ResolvedPaletteConfig): [number, number] {
+  const page = surfaceTone(config);
+
+  return [
+    page - TINTED_SURFACE_TONE_OFFSET,
+    page - TINTED_SURFACE_TONE_OFFSET * 2,
+  ];
+}
+
+/**
+ * Rescale the base-zone saturation factors onto the base zone's own seed.
+ *
+ * Every color's `saturation` is a 0–1 factor of its **theme's** seed, and the
+ * neutral family shares a theme instance with the accent one — it has to, since
+ * `accent-surface` is positioned against `surface`. A separate base seed therefore
+ * cannot be a second theme; it arrives as a scale over the authored factors.
+ *
+ * The scale is anchored on `surface`: dividing by `SURFACE_SATURATION` turns each
+ * factor into its share *of the surface's tint*, and multiplying by
+ * `baseSaturation / saturation` re-expresses that share against the base seed.
+ * `surface` therefore lands on exactly `baseSaturation` on the 0–100 scale, and
+ * every sibling keeps its proportion to it. At the shipped
+ * `baseSaturation = saturation × 0.12` the scale is `1` and nothing moves.
+ *
+ * Clamped because Glaze reads the factor as 0–1, which is also why the proportions
+ * converge at the top: `surface-inverse` (the highest at `0.475`) saturates first,
+ * around `baseSaturation: 25`.
+ *
+ * A palette seed of `0` leaves no chroma for any factor to scale, so the base zone
+ * is grey there whatever it asks for — the ceiling belongs to the theme instance,
+ * not to this scale.
+ */
+function baseSaturationScale(config: ResolvedPaletteConfig): number {
+  return config.saturation > 0
+    ? config.baseSaturation / (SURFACE_SATURATION * config.saturation)
+    : 0;
+}
+
+/**
+ * The floor for a pinned brand FILL, measured from white — APCA `large`, Lc 45.
+ *
+ * "From white" falls out of the anchor rather than replacing it. The base stays
+ * `surface`, and `roleToPolarity('surface')` gives this the `bg` polarity, so Glaze
+ * solves `apcaContrast(surface, fill)` — in light, where `surface` IS `oklch(1 0 0)`,
+ * that is literally white-on-fill, the pair every `type="primary"` label depends on.
+ *
+ * Re-anchoring to `accent-surface-text` to say "from white" in both schemes was tried
+ * and is wrong: in dark the label root is near-white while the page is not, so the
+ * floor stops constraining the fill against the page and a dark brand disappears into
+ * it — `#111827` came out at WCAG 1.16 against the dark surface. Keeping `surface`
+ * means the floor reads as the label pair in light and as page separation in dark,
+ * which is the constraint that actually matters in each.
+ *
+ * Why APCA and not a WCAG ratio. WCAG 2.x is polarity-blind, so one number means two
+ * very different things: the previous `3` measured Lc 56 in light but only Lc 23 in
+ * dark (12 hues, spread under 2 Lc — hue is not a factor, polarity is). That is 2.4x
+ * stricter in light than in dark, which is why light brands kept getting crushed while
+ * dark ones sailed through under the same rule. Lc 45 is one number that means one
+ * thing in both schemes.
+ *
+ * Still a FLOOR, not a target: a brand already past it is emitted exactly as given.
+ *
+ * The HC entry is `60` — APCA's `content` tier — and it is a CEILING imposed by
+ * geometry, not a preference. The fill answers to two floors that pull opposite ways
+ * in dark: this one pushes it away from a dark page (lighter), while
+ * {@link ACCENT_LABEL_LC} pushes it away from the white label (darker). Measured on
+ * the emitted tokens, the window where both hold in dark high contrast is
+ * `L ∈ [0.605, 0.735]`; asking 85 of the page empties it outright, and a 3072-case
+ * sweep put the white primary label at Lc 20.7 on a fill that satisfied the page.
+ * 60 is the largest value that keeps the window open — 65 reopens 768 failures.
+ *
+ * So high contrast escalates the fill only as far as the label can follow. That is
+ * the right way round: the tier exists to be READ, and a fill driven to Lc 85 off the
+ * page is one its own label has vanished from.
+ *
+ * It cannot be written as a WCAG ratio either — Glaze rejects a `contrast` pair that
+ * switches metric, which is a fair guard — so the tier moves to APCA with the rest.
+ * For the record, WCAG 7 measures Lc 83.5 in light but only Lc 54.4 in dark, so no
+ * single Lc could have restated the old AAA pair in both schemes regardless.
+ */
+const ACCENT_FILL_CONTRAST: ContrastSpec = { apca: [45, 60] };
+
+/**
+ * Floors for the two brand TEXT tokens: rest, then hover — APCA `content` and `body`.
+ *
+ * Also "from white", in the same sense as {@link ACCENT_FILL_CONTRAST}: both solve
+ * against `accent-selected-fill`, which is `oklch(0.975 0.0037 284.4)` in light — white
+ * for every practical purpose, and the surface these labels actually sit on. These are
+ * foreground spots, so they keep the default `fg` polarity and Glaze solves
+ * `apcaContrast(text, base)`.
+ *
+ * Lc 60 is APCA's `content` tier, the floor for ordinary body text, which is what a
+ * link is. The hover takes `body`/75 so the rest→hover intensify stays visible; one
+ * preset step apart is what keeps the two from solving onto the same color.
+ *
+ * The HC entries are spelled `85` and `92` rather than left to Glaze's +15, for the
+ * same reason as {@link ACCENT_FILL_CONTRAST}, and they stay apart so the rest→hover
+ * intensify survives the tier that needs it most. They replace the hand-measured
+ * `[4.5, 9]` pair, whose `9` existed only because a WCAG ratio that high is unreachable
+ * for a saturated hue against a chromatic base: `#FFD400` in dark high contrast used to
+ * pin to pure black and come out a hover link *less* readable than its rest state. An
+ * Lc target is reachable in both schemes because it is polarity-aware, so the
+ * pathological case has no equivalent here.
+ */
+const ACCENT_TEXT_CONTRAST: ContrastSpec = { apca: [60, 85] };
+const ACCENT_TEXT_HOVER_CONTRAST: ContrastSpec = { apca: [75, 92] };
+
+/**
+ * Tone steps of the brand fill ramp, measured from `accent-surface`.
+ *
+ * They reproduce the white-anchored `-49 / -52 / -55 / -58` ladder exactly once the
+ * fill is pinned, because those four deltas share an anchor and differ by 3 / 6 / 9.
+ */
+const ACCENT_RAMP = {
+  surface2: '-3',
+  surface3: '-6',
+  hover: '-9',
+} as const;
+
+/**
+ * How far the hover brand text sits past the rest one, in tone.
+ *
+ * Both are pinned to the caller's tone otherwise, and a pair at the same tone behind
+ * the same floor resolves to one color — which would silently delete the rest→hover
+ * intensify that `accent-text` exists for. Tone is contrast-uniform, so one step is
+ * one step in either scheme.
+ */
+const ACCENT_TEXT_HOVER_STEP = 6;
+
+/**
+ * The caller's brand color, or `null` for the shipped derivation.
+ *
+ * Carries the literal — which is what Glaze's `from` consumes — alongside its tone,
+ * because {@link ACCENT_TEXT_HOVER_STEP} needs the number to compute a step past it.
+ */
+type AccentSeed = { color: GlazeColorValue; tone: number } | null;
+
+/**
+ * The white label's own floor on the brand fill, as an APCA Lc.
+ *
+ * The same 45 as {@link ACCENT_FILL_CONTRAST}, and deliberately so: it is the same
+ * surface being constrained, just against the other thing that has to survive on it.
+ *
+ * Two floors rather than one because in dark they pull opposite ways, and dropping
+ * either one produces the mirror image of the other's failure. The fill has to be dark
+ * enough for the `#white` label every `type="primary"` item paints on it, and light
+ * enough to separate from a dark page. In light mode the page IS white, so both
+ * collapse into the single measurement Glaze already makes and this cap never fires.
+ *
+ * Measured, in dark, with only the page floor: `#FFFFFF` clears it at WCAG 14.4 while
+ * the label lands on **Lc 0** — the label is exactly its own fill. With only the white
+ * floor the failure mirrors: `#111827` puts the fill at **Lc 0.0 against the page**, a
+ * blazing white label on a shape that is not there. The border does not stand in for
+ * the fill here — it is deliberately low-contrast — so the fill has to carry it.
+ */
+const ACCENT_LABEL_LC = 45;
+
+/**
+ * How far above {@link ACCENT_LABEL_LC} the ceiling actually searches.
+ *
+ * The ceiling is computed on the bare seed, but the emitted `accent-surface` then goes
+ * through the page floor, which can only LIGHTEN — and a lighter fill is a weaker white
+ * label, so the solve eats into the margin the ceiling just established. Measured worst
+ * case across 3072 hue/chroma/tone/scheme/tier combinations is 1.8 Lc, in dark high
+ * contrast where the page floor pushes hardest; 3 covers it with room.
+ */
+const ACCENT_LABEL_MARGIN = 3;
+
+/**
+ * Keyed on the palette VERSION as well as the seed, because the search resolves
+ * through Glaze's global settings — the dark tone window among them. A caller that
+ * runs `glaze.configure(...)` and then `invalidatePaletteTokens()` has changed the
+ * answer without changing the seed, and a cache keyed on the color alone would hand
+ * back a cap computed against the old settings. Versioning it is what makes the
+ * invalidation API mean what it says.
+ *
+ * Bounded for the same reason `colorSeed`'s cache is: a color picker drag resolves a
+ * distinct seed per frame, and stale versions accumulate keys nobody reads again.
+ */
+const accentCapCache = new Map<string, number>();
+const ACCENT_CAP_CACHE_LIMIT = 256;
+
+/** APCA Lc of pure white on one resolved variant. */
+function labelLcOf(variant: Parameters<typeof variantToOkhsl>[0]): number {
+  const { h, s, l } = variantToOkhsl(variant);
+  const gamma = (c: number) =>
+    c <= 0.0031308 ? 12.92 * c : 1.055 * Math.pow(c, 1 / 2.4) - 0.055;
+  const y = (rgb: number[]) => {
+    const [r, g, b] = rgb.map((c) => Math.max(0, Math.min(1, gamma(c))));
+
+    return 0.2126 * r ** 2.4 + 0.7152 * g ** 2.4 + 0.0722 * b ** 2.4;
+  };
+
+  return Math.abs(
+    apcaContrast(y([1, 1, 1]), y(okhslToLinearSrgb(h, s, l, false))),
+  );
+}
+
+/**
+ * Pull a brand tone down until a white label survives on every variant of the fill.
+ *
+ * The search runs against Glaze's own fixed-mode resolution — the same mapping
+ * `accent-surface` goes through — rather than reimplementing the dark tone window, and
+ * checks all four variants so the cap is a property of the seed and not of one scheme.
+ *
+ * Only ever lowers, so a brand already dark enough comes back untouched.
+ */
+function capAccentTone(hue: number, saturation: number, tone: number): number {
+  return Math.min(tone, accentToneCeiling(hue, saturation));
+}
+
+/**
+ * The lightest tone at this hue and chroma that a white label still survives on.
+ *
+ * A property of the hue/chroma pair alone, NOT of the tone being asked for — which is
+ * what makes it cacheable, and what the first cut got wrong: it only searched when the
+ * requested tone already failed, so a dark tone probed first cached "no ceiling" and
+ * every later light tone at the same hue escaped uncapped.
+ */
+function accentToneCeiling(hue: number, saturation: number): number {
+  const key = `${hue}|${saturation}|${getPaletteVersion()}`;
+  const cached = accentCapCache.get(key);
+
+  if (cached !== undefined) return cached;
+
+  const labelLc = (candidate: number): number => {
+    // `from` takes an `OkhstColor` directly, so the seed never becomes a string —
+    // which skips the writers' scale question and the two decimals `okhst()` rounds
+    // to. Both components arrive on the palette's 0–100 authoring scale and
+    // `OkhstColor` wants factors, so both are divided.
+    const resolved = glaze
+      .color({
+        from: { h: hue, s: saturation / 100, t: candidate / 100 },
+        mode: 'fixed',
+      })
+      .resolve();
+
+    return Math.min(
+      labelLcOf(resolved.light),
+      labelLcOf(resolved.dark),
+      labelLcOf(resolved.lightContrast),
+      labelLcOf(resolved.darkContrast),
+    );
+  };
+
+  let ceiling = 100;
+
+  const target = ACCENT_LABEL_LC + ACCENT_LABEL_MARGIN;
+
+  if (labelLc(100) < target) {
+    // Monotone in tone — a lighter fill is a weaker white label. Bisect the boundary,
+    // always across the full axis so the answer is the hue's own ceiling.
+    let low = 0;
+    let high = 100;
+
+    for (let i = 0; i < 24; i++) {
+      const mid = (low + high) / 2;
+
+      if (labelLc(mid) >= target) low = mid;
+      else high = mid;
+    }
+
+    ceiling = low;
+  }
+
+  if (accentCapCache.size >= ACCENT_CAP_CACHE_LIMIT) accentCapCache.clear();
+  accentCapCache.set(key, ceiling);
+
+  return ceiling;
+}
+
+/**
+ * The brand seed as the three numbers Glaze consumes, with its tone capped.
+ *
+ * Takes the RESOLVED hue rather than the one the caller's literal carries, because
+ * `resolveConfig` ranks an explicit {@link PaletteConfig.hue} above a color's own —
+ * see the call site for what handing over the literal instead used to break.
+ */
+function cappedAccent(
+  hue: number,
+  saturation: number,
+  tone: number,
+): AccentSeed {
+  const capped = capAccentTone(hue, saturation, tone);
+
+  return {
+    color: { h: hue, s: saturation / 100, t: capped / 100 },
+    tone: capped,
+  };
+}
+
+/**
+ * Opaque stand-in for the BASE selected fill used by outline / outline-2 / clear Item
+ * types (`#surface|#surface-2|#surface-3` + `#accent-surface.09`).
+ *
+ * Anchors the `accent-text*` contrast. `value: 9` matches the `.09` alpha overlay;
+ * `space: 'srgb'` approximates CSS two-layer compositing. Inherited so colored themes
+ * re-resolve against their own `surface` + `accent-surface` (default `surface-2` /
+ * `surface-3` are `inherit: false` and can't be the mix base). Primary's tinted
+ * `surface` makes this slightly harder than default clear-selected, covering
+ * outline / outline-2 selected fills as well.
+ *
+ * The same in both accent arrangements — it is defined by its two ends, and both of
+ * those move with the seed on their own.
+ */
+const ACCENT_SELECTED_FILL: ColorMap = {
+  'accent-selected-fill': {
+    type: 'mix',
+    base: 'surface',
+    target: 'accent-surface',
+    value: 9,
+    space: 'srgb',
+  },
+};
 
 /**
  * Syntax highlighting for `PrismCode`, as its own theme.
@@ -173,26 +537,42 @@ function buildCodeTheme(
   const theme = glaze(config.hue, codeSaturation, instanceConfig);
 
   // Re-express the default theme's `surface` as a factor of the *code* seed, so it
-  // resolves to the same colour the code actually sits on. Written as a ratio of
-  // seeds so the default config lands on exactly `SURFACE_SATURATION`.
-  let mirrorFactor = SURFACE_SATURATION * (config.saturation / codeSaturation);
+  // resolves to the same colour the code actually sits on.
+  //
+  // The BASE seed, not the palette one: the real `surface` takes its chroma from
+  // the base zone, and a mirror that tracked the palette seed would solve every
+  // syntax contrast floor against a background the page does not have. `surface`
+  // lands on exactly `baseSaturation` on the 0–100 scale, so the ratio of the two
+  // seeds *is* the factor — there is no `SURFACE_SATURATION` left to apply.
+  let mirrorFactor = config.baseSaturation / codeSaturation;
 
   if (mirrorFactor > 1) {
-    // Only reachable with a code saturation far below the palette's. Glaze would
-    // clamp this silently and then solve every contrast floor against the wrong
-    // background, so say so.
+    // Glaze would clamp this silently and then solve every contrast floor against a
+    // background the page does not have, so say so.
+    //
+    // Closer to reach than it used to be: a `baseColor` can push `baseSaturation` to
+    // `MAX_BASE_SATURATION`, so any code saturation under 50 now trips it where it
+    // previously took a `baseSaturation` above 80. `Slate` sits at 55 — a five-point
+    // margin — so treat that number as load-bearing when tuning the preset.
+    //
+    // Deliberately NOT deduped once-per-process. It fires per token-cache miss, so a
+    // drag over a misconfigured pair is noisy — but the flag would also have to
+    // survive `resetPaletteConfig`, which is what a caller does to get back to a
+    // config that warns again legitimately. The narrow noise is the better trade.
     // eslint-disable-next-line no-console
     console.warn(
       `[cube-ui-kit] themes.code.saturation (${codeSaturation}) is too low for ` +
-        `saturation ${config.saturation}: the mirrored code surface would need a ` +
-        `factor of ${mirrorFactor.toFixed(3)}. Clamped to 1; raise the code ` +
+        `baseSaturation ${config.baseSaturation}: the mirrored code surface would ` +
+        `need a factor of ${mirrorFactor.toFixed(3)}. Clamped to 1; raise the code ` +
         `saturation to keep syntax contrast accurate.`,
     );
     mirrorFactor = 1;
   }
 
   theme.colors({
-    surface: { tone: 100, saturation: mirrorFactor },
+    // Tone as well as chroma: under `surfaceMode: 'tinted'` the page moved two
+    // tones off the extreme, and the mirror exists to be the page.
+    surface: { tone: surfaceTone(config), saturation: mirrorFactor },
     ...CODE_COLORS,
   });
 
@@ -236,22 +616,17 @@ glaze.configure({
 });
 
 /**
- * Per-colored-theme overrides on top of the default theme:
- *   - `surface` — bumped saturation so the banner bg is visibly tinted.
- *   - `border`  — bumped saturation so OUTLINE-variant borders pick up the
- *     theme hue (used by `#<theme>-border` in `item-themes.ts`). Mirrors the
- *     default-theme `border` shape (`base: 'surface'`, tone window) but
- *     with higher saturation. Glaze's `extend({ colors })` redefines each
- *     listed color from scratch, so we restate the full definition here.
+ * The config-free half of a colored theme's overrides — everything anchored to
+ * the theme's own `surface` with a *relative* tone, so it follows wherever
+ * {@link tintedSurfaceTone} puts that surface.
+ *
+ *   - `border` — bumped saturation so OUTLINE-variant borders pick up the theme
+ *     hue (used by `#<theme>-border` in `item-themes.ts`). Mirrors the
+ *     default-theme `border` shape (`base: 'surface'`, tone window) but with
+ *     higher saturation. Glaze's `extend({ colors })` redefines each listed color
+ *     from scratch, so we restate the full definition here.
  */
-const TINTED_SURFACE_OVERRIDE: ColorMap = {
-  surface: {
-    tone: [
-      100 - TINTED_SURFACE_TONE_OFFSET,
-      100 - TINTED_SURFACE_TONE_OFFSET * 2,
-    ],
-    saturation: TINTED_SURFACE_SATURATION,
-  },
+const TINTED_SURFACE_RAMP: ColorMap = {
   border: {
     base: 'surface',
     tone: ['-10', '-30'],
@@ -278,13 +653,32 @@ const TINTED_SURFACE_OVERRIDE: ColorMap = {
 };
 
 /**
+ * Per-colored-theme overrides on top of the default theme: a `surface` bumped in
+ * saturation so the banner background is visibly tinted, plus
+ * {@link TINTED_SURFACE_RAMP}.
+ *
+ * A function of the config because the surface's tone is — see
+ * {@link tintedSurfaceTone}.
+ */
+function tintedSurfaceOverride(config: ResolvedPaletteConfig): ColorMap {
+  return {
+    surface: {
+      tone: tintedSurfaceTone(config),
+      saturation: TINTED_SURFACE_SATURATION,
+    },
+    ...TINTED_SURFACE_RAMP,
+  };
+}
+
+/**
  * A tinted surface, a banding step, and text guaranteed to read on both.
  *
  * The recipe behind {@link getColorTheme} in `./color-theme.ts`, which builds
  * one-off themes at runtime from an arbitrary hue. It lives here so it shares
  * `TINTED_SURFACE_SATURATION`, the tone offsets and the text ramp with
- * {@link TINTED_SURFACE_OVERRIDE} above rather than forking them — a runtime tint
- * and a built-in theme's `surface` should be the same colour for the same hue.
+ * {@link tintedSurfaceOverride} above rather than forking them — a runtime tint
+ * and a built-in theme's `surface` should be the same colour for the same hue,
+ * which also means both have to follow the page when `surfaceMode` moves it.
  *
  * Three colours, because that is what banded, readable table column needs:
  * `surface` for even rows, `surface-2` one tone step down for odd rows and
@@ -296,44 +690,244 @@ const TINTED_SURFACE_OVERRIDE: ColorMap = {
  * clears it on both bands. The neutral ramp's own `surface-2-text` is shaped the
  * same way for the same reason.
  */
-export const TINT_RECIPE: ColorMap = {
-  surface: {
-    tone: [
-      100 - TINTED_SURFACE_TONE_OFFSET,
-      100 - TINTED_SURFACE_TONE_OFFSET * 2,
-    ],
-    saturation: TINTED_SURFACE_SATURATION,
-  },
-  'surface-2': {
-    base: 'surface',
-    // Mirrors the neutral ramp's step from `surface` to `surface-2`: enough to
-    // read as banding down a column, not enough to read as two colours.
-    tone: ['-2', '-4'],
-    saturation: TINTED_SURFACE_SATURATION,
-  },
-  'surface-2-text': {
-    base: 'surface-2',
-    tone: `${TEXT_TONE - TINTED_SURFACE_TONE_OFFSET - SURFACE_2_TEXT_OFFSET}`,
-    saturation: 0.25,
-    // The whole point: Glaze binary-searches the tone per scheme until the floor
-    // is met, so a caller cannot persist an unreadable pair.
-    contrast: ['AA', 'AAA'],
-  },
-  /**
-   * The softer step, for a tinted column HEADER.
-   *
-   * A neutral header is deliberately muted (`HeadRow` publishes `#dark-03`), so
-   * a tinted one taking the full-strength body text read markedly darker than
-   * the headers either side of it — measured at 16:1 against their 4.9:1. This
-   * keeps the two consistent, and the `AA` floor still applies.
-   */
-  'surface-2-text-soft': {
-    base: 'surface-2',
-    tone: `${TEXT_SOFT_TONE - TINTED_SURFACE_TONE_OFFSET - SURFACE_2_TEXT_OFFSET}`,
-    saturation: 0.25,
-    contrast: ['AA', 'AAA'],
-  },
-};
+export function tintRecipe(config: ResolvedPaletteConfig): ColorMap {
+  return {
+    surface: {
+      tone: tintedSurfaceTone(config),
+      saturation: TINTED_SURFACE_SATURATION,
+    },
+    'surface-2': {
+      base: 'surface',
+      // Mirrors the neutral ramp's step from `surface` to `surface-2`: enough to
+      // read as banding down a column, not enough to read as two colours.
+      tone: ['-2', '-4'],
+      saturation: TINTED_SURFACE_SATURATION,
+    },
+    'surface-2-text': {
+      base: 'surface-2',
+      tone: `${TEXT_TONE - TINTED_SURFACE_TONE_OFFSET - SURFACE_2_TEXT_OFFSET}`,
+      saturation: 0.25,
+      // The whole point: Glaze binary-searches the tone per scheme until the floor
+      // is met, so a caller cannot persist an unreadable pair.
+      contrast: ['AA', 'AAA'],
+    },
+    /**
+     * The softer step, for a tinted column HEADER.
+     *
+     * A neutral header is deliberately muted (`HeadRow` publishes `#dark-03`), so
+     * a tinted one taking the full-strength body text read markedly darker than
+     * the headers either side of it — measured at 16:1 against their 4.9:1. This
+     * keeps the two consistent, and the `AA` floor still applies.
+     */
+    'surface-2-text-soft': {
+      base: 'surface-2',
+      tone: `${TEXT_SOFT_TONE - TINTED_SURFACE_TONE_OFFSET - SURFACE_2_TEXT_OFFSET}`,
+      saturation: 0.25,
+      contrast: ['AA', 'AAA'],
+    },
+  };
+}
+
+// ============================================================================
+// The accent system
+// ============================================================================
+
+/**
+ * The brand family, in one of two arrangements.
+ *
+ * **`null`** — the shipped one, verbatim. Every fill hangs off a fixed white
+ * `accent-surface-text` at a relative tone delta behind an `['AA','AAA']` floor, and
+ * the text pair hangs off `accent-selected-fill` at `-49`. Those floors are
+ * load-bearing rather than decorative: relaxing them moves the shipped `accent-text`
+ * light tone from 38.76 to 48.63 and the `accent-surface` high-contrast tone from
+ * 36.08 to 51.00. Nothing on this path may change — `palette.test.ts` snapshots it.
+ *
+ * **A color** — the caller handed us one, and the job is to render *that*. Glaze's
+ * `from` takes the value directly: it supplies the hue, the tone, and an absolute
+ * saturation that does not answer to the theme seed, and it reproduces the value
+ * exactly in the light/normal-contrast variant. The floors drop to
+ * {@link ACCENT_FILL_CONTRAST} on top, because anchored the shipped way every accent
+ * lands at roughly tone 50 whatever went in, and a 4.5 floor then crushes anything
+ * light besides.
+ *
+ * Two details worth keeping straight:
+ *
+ * - **The ramp carries no floor.** Re-anchored onto the fill, an `['AA','AAA']` floor
+ *   is measured against the *fill* rather than white and collapses all three steps to
+ *   near-black. A plain tone step is what the relationship actually is.
+ * - **The text pair stays `mode: 'auto'`.** Link text has to invert on a dark page, so
+ *   exactness belongs to the fill; the text is a brand-toned companion of it.
+ */
+function accentFillColors(accent: AccentSeed): ColorMap {
+  if (accent == null) {
+    return {
+      // ---- Accent system (theme-aware, inherited by colored themes) ----
+      // Everything here is anchored to a fixed white "accent-surface-text" via
+      // `mode: 'fixed'` + relative tone deltas, so accent colors stay visually
+      // consistent across light/dark/high-contrast schemes (the brand color does
+      // not flip). The solid fills are white-text-on-brand backgrounds, so they
+      // keep an `['AA','AAA']` contrast floor even though the chosen tone deltas
+      // already exceed it. This leaves room for a future low-contrast scale.
+      'accent-surface-text': { tone: 100, mode: 'fixed' },
+      'accent-surface': {
+        base: 'accent-surface-text',
+        tone: '-49',
+        contrast: ['AA', 'AAA'],
+        mode: 'fixed',
+      },
+      'accent-surface-2': {
+        base: 'accent-surface-text',
+        tone: '-52',
+        contrast: ['AA', 'AAA'],
+        mode: 'fixed',
+      },
+      'accent-surface-3': {
+        base: 'accent-surface-text',
+        tone: '-55',
+        contrast: ['AA', 'AAA'],
+        mode: 'fixed',
+      },
+      // Hover variant of `accent-surface` — a *fixed*-mode darker shade used as
+      // the hover fill for solid PRIMARY-type buttons. Anchored to the same
+      // accent-surface-text so it stays in the same hue family. The relative tone
+      // lands a few steps darker than the pressed state in both schemes.
+      'accent-surface-hover': {
+        base: 'accent-surface-text',
+        tone: '-58',
+        contrast: ['AA', 'AAA'],
+        mode: 'fixed',
+      },
+      // Border for accent surfaces — a small relative tone step away from the
+      // brand fill so it stays in the brand hue family and does not flip in dark
+      // mode. No contrast prop needed; the delta is chosen directly on the tone
+      // scale.
+      'accent-surface-border': {
+        base: 'accent-surface',
+        tone: '+13',
+        mode: 'fixed',
+      },
+    };
+  }
+
+  return {
+    // Still a hard white root, and still the PRIMARY label: every `type="primary"`
+    // item in `src/data/item-themes.ts` writes `#white` directly. That is exactly what
+    // ACCENT_FILL_CONTRAST protects — and in light, where `surface` IS white, the
+    // floor below measures that label pair directly.
+    'accent-surface-text': { tone: 100, mode: 'fixed' },
+    'accent-surface': {
+      from: accent.color,
+      base: 'surface',
+      contrast: ACCENT_FILL_CONTRAST,
+      mode: 'fixed',
+    },
+    'accent-surface-2': {
+      base: 'accent-surface',
+      tone: ACCENT_RAMP.surface2,
+      mode: 'fixed',
+    },
+    'accent-surface-3': {
+      base: 'accent-surface',
+      tone: ACCENT_RAMP.surface3,
+      mode: 'fixed',
+    },
+    'accent-surface-hover': {
+      base: 'accent-surface',
+      tone: ACCENT_RAMP.hover,
+      mode: 'fixed',
+    },
+    // `'+13'` overshoots 100 on a light brand and `autoFlip` mirrors it to `-13`,
+    // which is the right answer either way: a border on a light fill has to be the
+    // darker of the two (`#FFD400` → `#d3af00`).
+    'accent-surface-border': {
+      base: 'accent-surface',
+      tone: '+13',
+      mode: 'fixed',
+    },
+  };
+}
+
+/**
+ * The brand FOREGROUNDS — text on a neutral surface, and the icon.
+ *
+ * Split from {@link accentFillColors} because the two have different audiences: the
+ * fill ramp is shared with the standalone `special` theme, which builds its own
+ * purpose-made subset and must not gain tokens it does not consume. Only the default
+ * theme (and the colored themes that inherit from it) takes these.
+ *
+ * These stay `mode: 'auto'` in both arrangements — a link has to invert on a dark page,
+ * so exactness belongs to the fill and these are its brand-toned companions.
+ */
+function accentTextColors(accent: AccentSeed): ColorMap {
+  if (accent == null) {
+    return {
+      ...ACCENT_SELECTED_FILL,
+      // Stronger brand text for HOVERED selected outline/clear labels and LINK
+      // hover. Same anchor + preferred tone as `accent-text-soft`, but a higher
+      // `contrast: [6, 11]` floor against `accent-selected-fill` so it reads as a
+      // clear step up from the soft rest color while staying saturated (a bare
+      // `AAA`/`7` floor over-darkens light and desaturates dark). The HC pair keeps
+      // it at/above the soft variant (which auto-promotes AA→AAA in HC).
+      // `mode: 'auto'` (default) keeps dark-mode text readable on dark surfaces.
+      'accent-text': {
+        base: 'accent-selected-fill',
+        tone: '-49',
+        saturation: 1,
+        contrast: [6, 11],
+      },
+      // Rest brand text for selected outline/clear labels and LINK base color.
+      // Anchored to `accent-selected-fill` with `contrast: 'AA'` — the measured
+      // floor for every BASE state of those Item types (surface / outline /
+      // outline-2 / clear selected fills). Sits visibly less prominent than
+      // `accent-text` (lighter in light, darker in dark) so the rest→hover
+      // intensify is real.
+      'accent-text-soft': {
+        base: 'accent-selected-fill',
+        tone: '-49',
+        saturation: 1,
+        contrast: ['AA', 'AAA'],
+      },
+      'accent-icon': {
+        base: 'surface',
+        tone: '-38',
+        saturation: 0.9375,
+      },
+    };
+  }
+
+  return {
+    ...ACCENT_SELECTED_FILL,
+    // The rest link color IS the brand, which is the visible payoff of a color seed;
+    // the hover one steps past it so the intensify survives. See
+    // ACCENT_TEXT_HOVER_STEP.
+    // The hover text is the one place the derived NUMBER is still needed: `from`
+    // carries the tone, but a step past it has to be computed.
+    'accent-text': {
+      from: accent.color,
+      base: 'accent-selected-fill',
+      tone: Math.max(0, accent.tone - ACCENT_TEXT_HOVER_STEP),
+      contrast: ACCENT_TEXT_HOVER_CONTRAST,
+    },
+    'accent-text-soft': {
+      from: accent.color,
+      base: 'accent-selected-fill',
+      contrast: ACCENT_TEXT_CONTRAST,
+    },
+    'accent-icon': {
+      from: accent.color,
+      base: 'surface',
+      contrast: ACCENT_TEXT_CONTRAST,
+    },
+  };
+}
+
+/** Every accent token the default theme carries — fills, foregrounds, and the mix. */
+function accentColors(accent: AccentSeed): ColorMap {
+  return {
+    ...accentFillColors(accent),
+    ...accentTextColors(accent),
+  };
+}
 
 // ============================================================================
 // Palette construction
@@ -360,7 +954,34 @@ function buildPalette(
     isolateContrastLevel?: boolean;
   } = {},
 ): BuiltPalette {
-  const { hue, baseHue, saturation, pastel, themes, contrastLevel } = config;
+  const {
+    hue,
+    baseHue,
+    saturation,
+    accentColor,
+    accentTone,
+    accentSaturation,
+    pastel,
+    themes,
+    contrastLevel,
+  } = config;
+
+  // Built from the RESOLVED hue, not the literal. `resolveConfig` ranks an explicit
+  // `hue` above the one a color carries — that is what lets a preview rotate a stored
+  // `accentColor` without discarding its tone — but `from: <the original string>`
+  // would hand Glaze the color's own hue and pin `accent-surface` to it while every
+  // sibling followed the theme. The ramp then splits: the fill one hue, its `-2`,
+  // `-3` and hover another, so a primary button changed hue on hover.
+  const accent: AccentSeed =
+    accentColor !== null && accentTone !== null && accentSaturation !== null
+      ? cappedAccent(hue, accentSaturation, accentTone)
+      : null;
+
+  // The base zone's tone anchor and its own chroma share, applied to every color
+  // that carries `hue: baseHue` below — that prop is the boundary of the zone.
+  const baseTone = surfaceTone(config);
+  const baseScale = baseSaturationScale(config);
+  const baseChroma = (factor: number) => Math.min(1, factor * baseScale);
 
   // The one override the code theme shares with the rest of the palette.
   const sharedOverrides: GlazeConfigOverride = options.isolateContrastLevel
@@ -398,26 +1019,30 @@ function buildPalette(
 
   defaultTheme.colors({
     // ---- Surfaces (neutral, very low saturation) ----
-    surface: { tone: 100, saturation: SURFACE_SATURATION, hue: baseHue },
+    surface: {
+      tone: baseTone,
+      saturation: baseChroma(SURFACE_SATURATION),
+      hue: baseHue,
+    },
     'surface-2': {
       hue: baseHue,
       base: 'surface',
       tone: ['-2', '-4'],
-      saturation: 0.1,
+      saturation: baseChroma(0.1),
       inherit: false,
     },
     'surface-3': {
       hue: baseHue,
       base: 'surface',
       tone: ['-4', '-8'],
-      saturation: 0.1,
+      saturation: baseChroma(0.1),
       inherit: false,
     },
     'surface-4': {
       hue: baseHue,
       base: 'surface',
       tone: ['-6', '-12'],
-      saturation: 0.1,
+      saturation: baseChroma(0.1),
       inherit: false,
     },
 
@@ -432,14 +1057,14 @@ function buildPalette(
       hue: baseHue,
       base: 'surface',
       tone: `${TEXT_TONE - 2}`,
-      saturation: 0.2,
+      saturation: baseChroma(0.2),
       contrast: ['AA', 'AAA'],
     },
     'surface-text-soft': {
       hue: baseHue,
       base: 'surface',
       tone: `${TEXT_SOFT_TONE - 2}`,
-      saturation: 0.2,
+      saturation: baseChroma(0.2),
       contrast: ['AA', 'AAA'],
       inherit: false,
     },
@@ -447,7 +1072,7 @@ function buildPalette(
       hue: baseHue,
       base: 'surface',
       tone: `${TEXT_SOFT2_TONE - 2}`,
-      saturation: 0.2,
+      saturation: baseChroma(0.2),
       contrast: ['AA', 'AAA'],
       inherit: false,
     },
@@ -455,7 +1080,7 @@ function buildPalette(
       hue: baseHue,
       base: 'surface-2',
       tone: `${TEXT_TONE + SURFACE_2_TEXT_OFFSET}`,
-      saturation: 0.2,
+      saturation: baseChroma(0.2),
       contrast: ['AA', 'AAA'],
       inherit: false,
     },
@@ -463,7 +1088,7 @@ function buildPalette(
       hue: baseHue,
       base: 'surface-2',
       tone: `${TEXT_SOFT_TONE + SURFACE_2_TEXT_OFFSET}`,
-      saturation: 0.2,
+      saturation: baseChroma(0.2),
       contrast: ['AA', 'AAA'],
       inherit: false,
     },
@@ -471,7 +1096,7 @@ function buildPalette(
       hue: baseHue,
       base: 'surface-3',
       tone: `${TEXT_TONE + SURFACE_3_TEXT_OFFSET}`,
-      saturation: 0.2,
+      saturation: baseChroma(0.2),
       contrast: ['AA', 'AAA'],
       inherit: false,
     },
@@ -479,7 +1104,7 @@ function buildPalette(
       hue: baseHue,
       base: 'surface-3',
       tone: `${TEXT_SOFT_TONE + SURFACE_3_TEXT_OFFSET}`,
-      saturation: 0.2,
+      saturation: baseChroma(0.2),
       contrast: ['AA', 'AAA'],
       inherit: false,
     },
@@ -489,13 +1114,13 @@ function buildPalette(
       hue: baseHue,
       base: 'surface',
       tone: ['-10', '-30'],
-      saturation: 0.175,
+      saturation: baseChroma(0.175),
     },
     placeholder: {
       hue: baseHue,
       base: 'surface',
       tone: '-33',
-      saturation: 0.175,
+      saturation: baseChroma(0.175),
       inherit: false,
     },
     focus: {
@@ -526,7 +1151,7 @@ function buildPalette(
       hue: baseHue,
       base: 'surface',
       tone: '-3.5',
-      saturation: 0.2,
+      saturation: baseChroma(0.2),
       inherit: false,
     },
     'disabled-surface-text': {
@@ -544,101 +1169,14 @@ function buildPalette(
     'surface-inverse': {
       hue: baseHue,
       tone: 12,
-      saturation: 0.475,
+      saturation: baseChroma(0.475),
       mode: 'fixed',
       inherit: false,
     },
 
     // ---- Accent system (theme-aware, inherited by colored themes) ----
-    // Everything here is anchored to a fixed white "accent-surface-text" via
-    // `mode: 'fixed'` + relative tone deltas, so accent colors stay visually
-    // consistent across light/dark/high-contrast schemes (the brand color does
-    // not flip). The solid fills are white-text-on-brand backgrounds, so they
-    // keep an `['AA','AAA']` contrast floor even though the chosen tone deltas
-    // already exceed it. This leaves room for a future low-contrast scale.
-    'accent-surface-text': { tone: 100, mode: 'fixed' },
-    'accent-surface': {
-      base: 'accent-surface-text',
-      tone: '-49',
-      contrast: ['AA', 'AAA'],
-      mode: 'fixed',
-    },
-    'accent-surface-2': {
-      base: 'accent-surface-text',
-      tone: '-52',
-      contrast: ['AA', 'AAA'],
-      mode: 'fixed',
-    },
-    'accent-surface-3': {
-      base: 'accent-surface-text',
-      tone: '-55',
-      contrast: ['AA', 'AAA'],
-      mode: 'fixed',
-    },
-    // Hover variant of `accent-surface` — a *fixed*-mode darker shade used as
-    // the hover fill for solid PRIMARY-type buttons. Anchored to the same
-    // accent-surface-text so it stays in the same hue family. The relative tone
-    // lands a few steps darker than the pressed state in both schemes.
-    'accent-surface-hover': {
-      base: 'accent-surface-text',
-      tone: '-58',
-      contrast: ['AA', 'AAA'],
-      mode: 'fixed',
-    },
-    // Border for accent surfaces — a small relative tone step away from the
-    // brand fill so it stays in the brand hue family and does not flip in dark
-    // mode. No contrast prop needed; the delta is chosen directly on the tone
-    // scale.
-    'accent-surface-border': {
-      base: 'accent-surface',
-      tone: '+13',
-      mode: 'fixed',
-    },
-    // Opaque stand-in for the BASE selected fill used by outline / outline-2 /
-    // clear Item types (`#surface|#surface-2|#surface-3` + `#accent-surface.09`).
-    // Anchors `accent-text` contrast. `value: 9` matches the `.09` alpha overlay;
-    // `space: 'srgb'` approximates CSS two-layer compositing. Inherited so
-    // colored themes re-resolve against their own `surface` + `accent-surface`
-    // (default `surface-2`/`surface-3` are `inherit: false` and can't be the mix
-    // base). Primary's tinted `surface` makes this slightly harder than default
-    // clear-selected, covering outline / outline-2 selected fills as well.
-    'accent-selected-fill': {
-      type: 'mix',
-      base: 'surface',
-      target: 'accent-surface',
-      value: 9,
-      space: 'srgb',
-    },
-    // Stronger brand text for HOVERED selected outline/clear labels and LINK
-    // hover. Same anchor + preferred tone as `accent-text-soft`, but a higher
-    // `contrast: { wcag: [6, 7] }` floor against `accent-selected-fill` so it
-    // reads as a clear step up from the soft rest color while staying saturated
-    // (a bare `AAA`/`7` floor over-darkens light and desaturates dark). The HC
-    // pair keeps it at/above the soft variant (which auto-promotes AA→AAA in HC).
-    // `mode: 'auto'` (default) keeps dark-mode text readable on dark surfaces.
-    'accent-text': {
-      base: 'accent-selected-fill',
-      tone: '-49',
-      saturation: 1,
-      contrast: [6, 11],
-    },
-    // Rest brand text for selected outline/clear labels and LINK base color.
-    // Anchored to `accent-selected-fill` with `contrast: 'AA'` — the measured
-    // floor for every BASE state of those Item types (surface / outline /
-    // outline-2 / clear selected fills). Sits visibly less prominent than
-    // `accent-text` (lighter in light, darker in dark) so the rest→hover
-    // intensify is real.
-    'accent-text-soft': {
-      base: 'accent-selected-fill',
-      tone: '-49',
-      saturation: 1,
-      contrast: ['AA', 'AAA'],
-    },
-    'accent-icon': {
-      base: 'surface',
-      tone: '-38',
-      saturation: 0.9375,
-    },
+    // Two arrangements, one per seeding mode — see `accentColors`.
+    ...accentColors(accent),
 
     // Brand-tinted disabled chip + label for PRIMARY-style buttons (solid brand
     // fill). The chip is scheme-symmetric (`mode: 'fixed'`) so the muted state
@@ -729,28 +1267,46 @@ function buildPalette(
   // `primary` is the brand theme: it shares both the accent hue and the palette
   // seed saturation with `default`, and differs only in carrying a tinted surface.
   // Each status theme adds its own hue on top.
+  const tintedSurface = tintedSurfaceOverride(config);
   const primaryTheme = defaultTheme.extend({
-    colors: TINTED_SURFACE_OVERRIDE,
+    colors: tintedSurface,
   });
+
+  // A status theme takes the ACCENT COLOR'S TONE back out.
+  //
+  // The tone is the brand's, and only the brand's. Inherited, a light brand would put
+  // `#danger-accent-surface` at tone 88 in a red hue — a pale pink danger button, which
+  // is not a danger button. Status themes carry a *meaning* their hue exists to signal,
+  // so they keep the white-anchored derivation that lands every hue at a comparable
+  // weight. `extend({ colors })` redefines each listed color from scratch, so restating
+  // the null arrangement is enough to undo it.
+  //
+  // With no accent color this is the tinted-surface override itself, so the
+  // shipped palette is provably untouched.
+  const statusColors: ColorMap =
+    accent == null
+      ? tintedSurface
+      : { ...tintedSurface, ...accentColors(null) };
+
   const successTheme = defaultTheme.extend({
     hue: themes.success.hue,
     saturation: themes.success.saturation,
-    colors: TINTED_SURFACE_OVERRIDE,
+    colors: statusColors,
   });
   const dangerTheme = defaultTheme.extend({
     hue: themes.danger.hue,
     saturation: themes.danger.saturation,
-    colors: TINTED_SURFACE_OVERRIDE,
+    colors: statusColors,
   });
   const warningTheme = defaultTheme.extend({
     hue: themes.warning.hue,
     saturation: themes.warning.saturation,
-    colors: TINTED_SURFACE_OVERRIDE,
+    colors: statusColors,
   });
   const noteTheme = defaultTheme.extend({
     hue: themes.note.hue,
     saturation: themes.note.saturation,
-    colors: TINTED_SURFACE_OVERRIDE,
+    colors: statusColors,
   });
 
   // --------------------------------------------------------------------------
@@ -791,36 +1347,20 @@ function buildPalette(
   specialTheme.colors({
     surface: { tone: 12, saturation: 0.475, mode: 'fixed' },
 
-    'accent-surface-text': { tone: 100, mode: 'fixed' },
-    'accent-surface': {
-      base: 'accent-surface-text',
-      tone: '-49',
-      contrast: ['AA', 'AAA'],
-      mode: 'fixed',
-    },
-    'accent-surface-2': {
-      base: 'accent-surface-text',
-      tone: '-52',
-      contrast: ['AA', 'AAA'],
-      mode: 'fixed',
-    },
-    'accent-surface-3': {
-      base: 'accent-surface-text',
-      tone: '-55',
-      contrast: ['AA', 'AAA'],
-      mode: 'fixed',
-    },
-    'accent-surface-border': {
-      base: 'accent-surface',
-      tone: '+13',
-      mode: 'fixed',
-    },
-    'accent-surface-hover': {
-      base: 'accent-surface-text',
-      tone: '-58',
-      contrast: ['AA', 'AAA'],
-      mode: 'fixed',
-    },
+    // The same fill ramp as the default theme, and for the same reason: this IS the
+    // brand CTA — `SPECIAL_PRIMARY_STYLES.fill` mirrors `#primary-accent-surface` — so
+    // leaving it on the white-anchored derivation would give a yellow brand a
+    // dark-purple hero button.
+    //
+    // Only the fills: `accent-selected-fill`, `accent-text-soft` and `accent-icon` are
+    // not part of this theme's purpose-built shape, and adding them would grow the
+    // emitted token set.
+    ...accentFillColors(accent),
+
+    // Special's `accent-text` is "dark brand, readable on a WHITE pill" (the CLEAR
+    // selected fill) — not on `surface`, which here is the fixed dark backdrop. It
+    // stays anchored to `accent-surface-text`, which is a hard white root in both
+    // arrangements, so the `-58` delta keeps its meaning either way.
     'accent-text': {
       base: 'accent-surface-text',
       tone: '-58',
@@ -1053,9 +1593,11 @@ export function renderPaletteTokens(
   }
 
   const variant = VARIANT_KEY[`${scheme}:${highContrast}`];
-  // A manual `contrastLevel` leaves no separate high-contrast tier — Glaze
-  // mirrors the contrast variants onto the normal ones — so asking for
-  // `highContrast` there correctly yields the same colors.
+  // The fallback is for `contrastLevel: 100` only. There the normal variants
+  // already *are* the high-contrast ones, so Glaze emits a single light/dark set
+  // rather than duplicating it — and `highContrast` correctly resolves to the same
+  // colors. At every other level the contrast variants are present and genuinely
+  // escalated, so the fallback is not taken.
   const flat = renderVariants[variant] ?? renderVariants[scheme];
   const out: Tokens = {};
 
