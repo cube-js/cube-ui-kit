@@ -375,6 +375,12 @@ const disabledPairs: ColorPair[] = [
     note: 'Muted brand fill for solid primary controls',
   },
   {
+    label: 'Primary disabled (soft)',
+    fill: '#primary-accent-disabled-surface-soft',
+    texts: ['#primary-accent-disabled-surface-soft-text'],
+    note: 'The neutral disabled pair at brand chroma — the selected disabled state of outline, outline-2 and clear',
+  },
+  {
     label: 'Success disabled',
     fill: '#success-accent-disabled-surface',
     texts: ['#success-accent-disabled-surface-text'],

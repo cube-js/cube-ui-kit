@@ -1210,6 +1210,37 @@ function buildPalette(
       mode: 'fixed',
     },
 
+    // Brand-tinted counterpart of the neutral `disabled-surface` /
+    // `disabled-surface-text` pair, for the SELECTED disabled state of the
+    // non-solid types (`outline`, `outline-2`, `clear`).
+    //
+    // The pair above is built for a PRIMARY button, whose enabled state is
+    // already an opaque brand fill under a `#white` label — so a mid-tone chip
+    // is a step DOWN there. On an outline or clear control it is a step up:
+    // the enabled selected state is a 9% tint under soft accent text, and the
+    // `-13` chip under a `tone: 'max'` label came out heavier and brighter than
+    // the state it is supposed to mute. A disabled control must never outweigh
+    // its enabled self.
+    //
+    // These therefore reuse the NEUTRAL disabled geometry exactly — the same
+    // `-3.5` chip and `-23` label deltas against `surface`, adaptive rather
+    // than fixed, so the weight matches in light, dark and HC — and differ from
+    // it only in chroma. Selection survives as a brand tint on a chip of
+    // unchanged weight, which is the one channel left once weight is spoken
+    // for. Saturation is set high because these tones sit near the ends of the
+    // lightness range, where the gamut affords little chroma: `1` on the chip
+    // buys about 3× the neutral's chroma in light and is still a faint tint.
+    'accent-disabled-surface-soft': {
+      base: 'surface',
+      tone: '-3.5',
+      saturation: 1,
+    },
+    'accent-disabled-surface-soft-text': {
+      base: 'surface',
+      tone: '-23',
+      saturation: 1,
+    },
+
     // ---- Loading-animation cube faces ----
     // Decorative gradient steps from `surface` to a saturated mid-tone. Tone
     // deltas are chosen directly on the contrast-uniform scale; no contrast prop
