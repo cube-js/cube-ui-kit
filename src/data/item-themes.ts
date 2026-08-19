@@ -1251,10 +1251,23 @@ export const CURRENT_OUTLINE_2_STYLES: Styles = {
 // reach, so they take the label color through the `Icon` sub-element.
 export const CURRENT_PRIMARY_STYLES: Styles = {
   ...CURRENT_FOCUS_RING,
-  // Matches the base fill, so the border reads as part of the chip rather than
-  // a rim — and still darkens with it, since only the overlay moves.
+  // Every other `primary` rims its fill with a lighter sibling
+  // (`accent-surface-border` over `accent-surface`, cr 1.48 against it in both
+  // schemes). An arbitrary inherited color has no such sibling, so the rim comes
+  // from the same token the label does — the one color guaranteed to sit on the
+  // opposite side of the fill in either scheme. `.25` measures cr 1.82 in light
+  // and 1.55 in dark against the fill: the brand rim's presence, a shade more so
+  // in light, where `current` has no other edge cue.
+  //
+  // Disabled swaps to the neutral text color, and has to. The chip there is a
+  // `.4` tint sitting close to the page, so a `#surface` rim washes into the
+  // page rather than defining the chip; `#surface-text` goes the other way and
+  // holds cr ~1.5 against the chip AND 2.8–3.7 against the page. It is also
+  // immune to the `.4` fade below, which `#current` is not — a `#current` rim on
+  // a disabled chip resolves to the fill's own color and disappears.
   border: {
-    '': '#current',
+    '': '#surface.25',
+    disabled: '#surface-text.2',
   },
   fill: {
     '': '#current',
