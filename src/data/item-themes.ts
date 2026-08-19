@@ -1138,6 +1138,21 @@ export const CURRENT_ITEM_STYLES: Styles = {
 export const CURRENT_CLEAR_STYLES: Styles = {
   ...CURRENT_ITEM_STYLES,
   ...CURRENT_FOCUS_RING,
+  fill: {
+    ...(CURRENT_ITEM_STYLES.fill as Record<string, string>),
+    // The one entry `clear` adds to the item ramp, and the same split the
+    // colored themes make: `*_ITEM_STYLES` let a disabled row fall back to a
+    // bare `transparent`, while `*_CLEAR_STYLES` keep a chip so a disabled
+    // segmented control still shows which option is active. Without it a
+    // disabled selected `clear` rendered nothing at all — the state was
+    // indistinguishable from an unselected one.
+    //
+    // `.18` is `CURRENT_OUTLINE_STYLES`' own disabled selected chip, so the two
+    // differ by exactly the border, and it is authored high for the same reason
+    // documented there: the disabled label dims `currentcolor` to `.4`, and
+    // this alpha resolves against it, rendering as ~`.07`.
+    'selected & disabled': '#current.18',
+  },
 } as const;
 
 // Outline flavour — a standalone control, so it carries its own weight: a

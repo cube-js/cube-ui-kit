@@ -38,14 +38,24 @@ describe('ITEM_VARIANTS', () => {
   ] as const;
 
   /**
-   * The `current` theme carries the state but cannot follow the rule literally.
+   * The `current` theme carries the state but cannot follow the rule literally,
+   * for two reasons.
+   *
    * Its alphas resolve against the element's OWN `currentcolor`, which the
    * disabled label has already faded to `.4`, so its disabled entries are
    * written PRE-MULTIPLIED: an authored `.18` renders as ~`.07`, below the
    * `.12` it is compared against. The chip is muted in effect; only the
    * authored number goes up. See `CURRENT_OUTLINE_STYLES`.
+   *
+   * And `current.clear` steps its enabled states through the custom properties
+   * of `CURRENT_ITEM_RAMP` — one per scheme and surface — while its disabled
+   * chip is a plain alpha, so the two are not comparable as strings at all.
    */
-  const PREMULTIPLIED = ['current.outline', 'current.outline-2'] as const;
+  const CURRENT = [
+    'current.outline',
+    'current.outline-2',
+    'current.clear',
+  ] as const;
 
   /** `'#surface-2 #primary-accent-surface.09'` -> `['#surface-2 #primary-accent-surface', 0.09]` */
   function splitAlpha(value: string): [string, number] {
@@ -69,7 +79,7 @@ describe('ITEM_VARIANTS', () => {
       })
       .map(([variant]) => variant);
 
-    expect(carriers.sort()).toEqual([...VARIANTS, ...PREMULTIPLIED].sort());
+    expect(carriers.sort()).toEqual([...VARIANTS, ...CURRENT].sort());
   });
 
   it.each(VARIANTS)(
