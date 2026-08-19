@@ -88,7 +88,7 @@ The `mods` prop accepts the following modifiers you can override:
 ### Types. `type` prop
 
 - `primary` – Emphasised call-to-action.
-- `invert` – The page and its text swapped: the fill is the theme's `accent-text` — the color normally painted *on* the page — and the label is `#surface`, the page itself. Unlike `primary`, which pins a fixed `#white` label on a brand surface and so reads with the same weight in either scheme, `invert` follows the scheme: dark chip with a light label in light mode, light chip with a dark label in dark mode. Use it where a `primary` chip is not emphatic enough — a single hero action, or a filled control that has to out-read a brand chip sitting next to it.
+- `invert` – The page and its text swapped: the fill is the theme's `accent-text` — the color normally painted *on* the page — and the label is `#surface`, the page itself. Unlike `primary`, which pins a fixed `#white` label on a brand surface and so reads with the same weight in either scheme, `invert` follows the scheme: dark chip with a light label in light mode, light chip with a dark label in dark mode. Use it where a `primary` chip is not emphatic enough — a single hero action, or a filled control that has to out-read a brand chip sitting next to it. On the `current` theme there is no `accent-text` to fill with, so `invert` is `primary` with its two colors swapped: `primary` fills with the inherited color and punches `#surface` out of it, `invert` fills with `#surface` and writes the inherited color on top.
 - `outline` – Border with transparent background; `isSelected` adds brand-tinted fill.
 - `clear` – No border, transparent background; `isSelected` adds brand-tinted fill.
 - `link` – Styled as a textual link.

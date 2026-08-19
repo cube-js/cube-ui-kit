@@ -396,7 +396,7 @@ CurrentStates.parameters = {
   docs: {
     description: {
       story:
-        'Every type, every state, on the `current` theme. Nothing here names a color: the block is painted `#note-surface` / `#note-accent-text` and each button mixes its fill, border and label from that inherited text color. `primary` inverts to an opaque fill of the inherited color with the label punched out of it, and `outline-2` sits in a `#current.08` panel, the `current` stand-in for the `#surface-2` container `outline-2` is drawn for. Swap the block color and the whole sweep follows it; `CurrentTheme` below does exactly that across seven containers.',
+        'Every type, every state, on the `current` theme. Nothing here names a color: the block is painted `#note-surface` / `#note-accent-text` and each button mixes its fill, border and label from that inherited text color. `primary` and `invert` are the same two colors in opposite roles — `primary` fills with the inherited color and punches the page (`#surface`) out of it, `invert` fills with the page and writes the inherited color on top — which is how `invert` is built on this theme, there being no `accent-text` to fill with. `outline-2` sits in a `#current.08` panel, the `current` stand-in for the `#surface-2` container `outline-2` is drawn for. Swap the block color and the whole sweep follows it; `CurrentTheme` below does exactly that across seven containers.',
     },
   },
 };

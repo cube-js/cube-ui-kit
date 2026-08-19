@@ -1458,11 +1458,55 @@ export const SPECIAL_INVERT_STYLES: Styles = {
   },
 } as const;
 
-// On the `current` theme `invert` and `primary` coincide, and necessarily so:
-// there is exactly one color in play, so "the emphatic filled type" and "the
-// page and its text swapped" are the same construction. Aliased rather than
-// copied so they cannot drift.
-export const CURRENT_INVERT_STYLES: Styles = CURRENT_PRIMARY_STYLES;
+// The `current` theme is the one special case, because it has no `accent-text`
+// to fill with — it has exactly one color, the one it inherits. So `invert` here
+// is literally `CURRENT_PRIMARY_STYLES` with its two colors swapped:
+//
+//              fill          label
+//   primary    #current      #surface   — paint the color, punch the page out of it
+//   invert     #surface      #current   — paint the page, write the color on it
+//
+// That is the same swap `special` makes between its own two filled types (a
+// brand surface under `#white`, against a white pill under the dark accent), so
+// the pairing reads the same way on every theme even though the tokens differ.
+//
+// Swapping the colors also removes the machinery `primary` needs. There,
+// `#current` is BOTH the fill and the value `currentcolor` resolves against, so
+// the label has to be painted with `-webkit-text-fill-color` to keep `color`
+// free — and every icon slot has to be recolored by hand, because SVG stroked
+// with `currentColor` does not see that property. Here the fill is `#surface`,
+// an absolute token that never consults `color`, so `color: '#current'` is just
+// the label and icons inherit it for free.
+export const CURRENT_INVERT_STYLES: Styles = {
+  ...CURRENT_FOCUS_RING,
+  // The rim is the inherited color at `primary`'s own `.25`, and it needs no
+  // disabled entry: `#current` resolves against this element's `color`, which
+  // the fade below already moved, so the rim fades with the label. That is the
+  // pre-multiply trap the rest of this section documents, used deliberately —
+  // it is only a trap when a value is faded twice on purpose.
+  border: '#current.25',
+  // The overlay tints TOWARDS the inherited color rather than darkening with
+  // `#black` the way the brand `invert` ramps do. On a white page that reads as
+  // a darkening and on a dark one as a lightening, so the step is visible in
+  // both schemes — where a fixed `#black` over a near-black `#surface` would
+  // barely move. Same two-layer shape in every state so the overlay
+  // interpolates; see `DEFAULT_PRIMARY_STYLES.fill`.
+  fill: {
+    '': '#surface #current.0',
+    'hovered | focused': '#surface #current.08',
+    pressed: '#surface #current.16',
+    // Half-strength page color lets the container show through, so a dead
+    // control stops reading as a solid chip. The label and rim fade with the
+    // color below.
+    disabled: '#surface.5 #current.0',
+  },
+  color: {
+    '': '#current',
+    // See `CURRENT_ITEM_STYLES.color` for why this is gated rather than a bare
+    // `disabled`: both mods mark a color that something above already faded.
+    'disabled & !inherit-disabled & !inside-wrapper': '#current.4',
+  },
+} as const;
 
 // ---------- CARD TYPE STYLES ----------
 // Card type only supports: default, success, danger, note themes (plus the
