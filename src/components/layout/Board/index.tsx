@@ -23,7 +23,7 @@ export type {
 } from './Board';
 export type { BoardSelectionMode } from './use-board-selection';
 export type { CubeBoardResponsiveProps } from './BoardResponsive';
-export type { CubeBoardWidgetProps } from './Widget';
+export type { CubeBoardWidgetProps, BoardResizeGripPlacement } from './Widget';
 export type { CubeBoardProviderProps } from './BoardProvider';
 export type { WidgetTransferInfo } from './board-context';
 export type {
@@ -36,6 +36,7 @@ export type {
   Layout,
   LayoutItem,
   ResizeHandleAxis,
+  CollisionMode,
   Compactor,
   LayoutConstraint,
   PositionParams,

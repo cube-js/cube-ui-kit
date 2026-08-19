@@ -7,6 +7,11 @@
 
 export type {
   ResizeHandleAxis,
+  CollisionMode,
+  CollisionResolutionContext,
+  CollisionResolver,
+  CollisionResolverOptions,
+  MoveElementOptions,
   LayoutItem,
   Layout,
   Position,
@@ -22,6 +27,12 @@ export type {
 export { defaultGridConfig } from './types';
 
 export { collides, getFirstCollision, getAllCollisions } from './collision';
+
+export {
+  maxFreeRectAt,
+  createCollisionResolver,
+  isOverlapFree,
+} from './collision-modes';
 
 export {
   sortLayoutItems,

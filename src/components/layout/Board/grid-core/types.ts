@@ -135,6 +135,77 @@ export interface Size {
 export type CompactType = 'horizontal' | 'vertical' | 'wrap' | null;
 
 /**
+ * How a blocked placement is resolved when collisions are prevented.
+ *
+ * - `'revert'` - snap the item back to where it was (the engine's own default).
+ * - `'downscale'` - shrink the item into the free space at the cell it was
+ *   dropped on, growing rightward and downward. Never upscales.
+ * - `'swap'` - exchange with one widget: the dragged widget takes the cell of the
+ *   widget the drop covers most, and that widget takes the cell the dragged one
+ *   came from, each keeping as much of its own size as fits there. Never displaces
+ *   more than that one widget. Else downscale, else revert.
+ *
+ * Only consulted where a move would otherwise be refused, so it has no effect in
+ * the compacting modes (a collision pushes neighbours there) or under
+ * `allowOverlap` (nothing is refused).
+ */
+export type CollisionMode = 'revert' | 'downscale' | 'swap';
+
+/** What a `CollisionResolver` is told about the placement it has to resolve. */
+export interface CollisionResolutionContext {
+  /** The working layout, with `item` already at the requested cell. */
+  layout: Layout;
+  /** The item being placed, already at the requested cell. */
+  item: LayoutItem;
+  /** Every item the requested placement overlaps. Never empty. */
+  collisions: LayoutItem[];
+  /** The cell `item` occupied before this move. */
+  from: { x: number; y: number };
+}
+
+/**
+ * Resolves a placement the engine would otherwise refuse.
+ *
+ * Returns a complete replacement layout, which **must** be overlap-free, or
+ * `null` to let the engine revert as usual.
+ */
+export type CollisionResolver = (
+  context: CollisionResolutionContext,
+) => LayoutItem[] | null;
+
+/** How to build a resolver for one board's gesture. */
+export interface CollisionResolverOptions {
+  /** Column count of the grid being placed into. */
+  cols: number;
+  /** Row limit, if the grid has one. */
+  maxRows?: number;
+  /**
+   * The size to measure a placement against - the size the gesture started
+   * with, not the size the item currently has. A resolution may shrink the item,
+   * and every frame of a drag re-resolves from the live layout, so measuring
+   * against the current size would ratchet the item smaller and smaller as the
+   * pointer crosses occupied cells, with no way back. Defaults to the item's
+   * current size.
+   */
+  desired?: { w: number; h: number };
+  /**
+   * Whether the `'swap'` exchange step may run. Off for a cross-board drop: the
+   * displaced widget would have to be pushed the other way across boards, which
+   * is not something a single-widget transfer can express.
+   */
+  allowExchange?: boolean;
+}
+
+/** Optional extras for `moveElement`, kept off its positional parameter list. */
+export interface MoveElementOptions {
+  /**
+   * Consulted instead of reverting when a move collides and collisions are
+   * prevented. See `createCollisionResolver`.
+   */
+  resolveCollision?: CollisionResolver;
+}
+
+/**
  * Interface for layout compaction strategies.
  *
  * Implement this interface to create custom compaction algorithms.

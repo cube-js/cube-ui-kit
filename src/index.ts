@@ -87,6 +87,8 @@ export type {
   Layout as BoardLayout,
   LayoutItem as BoardLayoutItem,
   ResizeHandleAxis as BoardResizeHandleAxis,
+  BoardResizeGripPlacement,
+  CollisionMode as BoardCollisionMode,
   Compactor as BoardCompactor,
   LayoutConstraint as BoardLayoutConstraint,
   WidgetTransferInfo as BoardWidgetTransferInfo,

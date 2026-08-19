@@ -272,6 +272,180 @@ describe('Board', () => {
     expect(screen.queryByTestId('BoardResizeGrip')).not.toBeInTheDocument();
   });
 
+  describe('resizeGripPlacement', () => {
+    const layout = [{ i: 'a', x: 0, y: 0, w: 2, h: 2 }];
+
+    it('keeps corner grips inside the widget by default', () => {
+      render(
+        <Board width={1200} defaultLayout={layout}>
+          <Board.Widget id="a" qa="WidgetA">
+            A
+          </Board.Widget>
+        </Board>,
+      );
+
+      const grip = screen.getByTestId('BoardResizeGrip');
+      expect(grip).toHaveAttribute('data-placement', 'inside');
+      expect(screen.getByTestId('WidgetA')).toContainElement(grip);
+      // No extra layer for the default placement.
+      expect(
+        screen.queryByTestId('BoardResizeGripLayer'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('moves the corner hit-zone out with the grip', () => {
+      render(
+        <Board width={1200} resizeGripPlacement="corner" defaultLayout={layout}>
+          <Board.Widget id="a" qa="WidgetA">
+            A
+          </Board.Widget>
+        </Board>,
+      );
+
+      // The half of the grip that hangs outside the widget has to be grabbable and
+      // has to keep the grip revealed, so the hit-zone goes with it rather than
+      // staying behind inside the clip.
+      const handle = screen.getByTestId('BoardResizeHandle');
+      expect(screen.getByTestId('BoardResizeGripLayer')).toContainElement(
+        handle,
+      );
+      expect(handle).toHaveAttribute('data-placement', 'corner');
+    });
+
+    it('leaves edge hit-zones inside the widget under corner placement', () => {
+      render(
+        <Board
+          width={1200}
+          resizeHandles={['se', 'e']}
+          resizeGripPlacement="corner"
+          defaultLayout={layout}
+        >
+          <Board.Widget id="a" qa="WidgetA">
+            A
+          </Board.Widget>
+        </Board>,
+      );
+
+      const layer = screen.getByTestId('BoardResizeGripLayer');
+      const handles = screen.getAllByTestId('BoardResizeHandle');
+      expect(handles.length).toBe(2);
+      const byAxis = Object.fromEntries(
+        handles.map((h) => [h.getAttribute('data-axis'), h]),
+      );
+      expect(layer).toContainElement(byAxis.se!);
+      expect(layer).not.toContainElement(byAxis.e!);
+    });
+
+    it('draws a corner grip outside the widget so its clip cannot cut it', () => {
+      render(
+        <Board width={1200} resizeGripPlacement="corner" defaultLayout={layout}>
+          <Board.Widget id="a" qa="WidgetA">
+            A
+          </Board.Widget>
+        </Board>,
+      );
+
+      const grip = screen.getByTestId('BoardResizeGrip');
+      const layer = screen.getByTestId('BoardResizeGripLayer');
+      expect(grip).toHaveAttribute('data-placement', 'corner');
+      expect(layer).toContainElement(grip);
+      // The whole point: a grip centred on the corner half-overhangs the widget,
+      // whose own `overflow: hidden` would clip it. The layer is a sibling.
+      expect(screen.getByTestId('WidgetA')).not.toContainElement(grip);
+    });
+
+    it('mirrors the widget rect on the grip layer', () => {
+      render(
+        <Board
+          width={600}
+          cols={6}
+          rowHeight={100}
+          margin={[0, 0]}
+          containerPadding={[0, 0]}
+          resizeGripPlacement="corner"
+          defaultLayout={[{ i: 'a', x: 1, y: 2, w: 2, h: 1 }]}
+        >
+          <Board.Widget id="a" qa="WidgetA">
+            A
+          </Board.Widget>
+        </Board>,
+      );
+
+      const layer = screen.getByTestId('BoardResizeGripLayer');
+      const widget = screen.getByTestId('WidgetA');
+      for (const prop of ['left', 'top', 'width', 'height'] as const) {
+        expect(layer.style[prop]).toBe(widget.style[prop]);
+      }
+    });
+
+    it('takes the placement from a single widget over the board default', () => {
+      render(
+        <Board
+          width={1200}
+          defaultLayout={[
+            { i: 'a', x: 0, y: 0, w: 2, h: 2 },
+            { i: 'b', x: 2, y: 0, w: 2, h: 2 },
+          ]}
+        >
+          <Board.Widget id="a" qa="WidgetA" resizeGripPlacement="corner">
+            A
+          </Board.Widget>
+          <Board.Widget id="b" qa="WidgetB">
+            B
+          </Board.Widget>
+        </Board>,
+      );
+
+      expect(screen.getAllByTestId('BoardResizeGripLayer').length).toBe(1);
+      const placements = screen
+        .getAllByTestId('BoardResizeGrip')
+        .map((grip) => grip.getAttribute('data-placement'));
+      expect(placements.sort()).toEqual(['corner', 'inside']);
+    });
+
+    it('leaves the dotted edge grips inside the widget', () => {
+      render(
+        <Board
+          width={1200}
+          resizeHandles={['se', 'e']}
+          resizeGripPlacement="corner"
+          defaultLayout={layout}
+        >
+          <Board.Widget id="a" qa="WidgetA">
+            A
+          </Board.Widget>
+        </Board>,
+      );
+
+      // Only the corner grip is hoisted; an edge grip sits along an edge, so it is
+      // never clipped and has no reason to leave the widget.
+      const edgeGrip = screen.getByTestId('BoardResizeEdgeGrip');
+      expect(screen.getByTestId('WidgetA')).toContainElement(edgeGrip);
+      expect(screen.getByTestId('BoardResizeGripLayer')).not.toContainElement(
+        edgeGrip,
+      );
+    });
+
+    it('renders no grip layer when resizing is disabled', () => {
+      render(
+        <Board
+          width={1200}
+          isResizable={false}
+          resizeGripPlacement="corner"
+          defaultLayout={layout}
+        >
+          <Board.Widget id="a" qa="WidgetA">
+            A
+          </Board.Widget>
+        </Board>,
+      );
+
+      expect(
+        screen.queryByTestId('BoardResizeGripLayer'),
+      ).not.toBeInTheDocument();
+    });
+  });
+
   it('renders all widgets at their given positions in free mode', () => {
     render(
       <Board
@@ -1917,6 +2091,518 @@ describe('Board', () => {
           toBoardId: 'target',
         }),
       );
+    });
+  });
+
+  describe('collisionMode', () => {
+    const mockRect = (
+      left: number,
+      top: number,
+      width: number,
+      height: number,
+    ): DOMRect =>
+      ({
+        left,
+        top,
+        width,
+        height,
+        right: left + width,
+        bottom: top + height,
+        x: left,
+        y: top,
+        toJSON: () => ({}),
+      }) as DOMRect;
+
+    const pointerEvent = (type: string, pageX: number, pageY: number) => {
+      const event = new PointerEvent(type, {
+        bubbles: true,
+        cancelable: true,
+        button: 0,
+        pointerId: 1,
+        pointerType: 'mouse',
+      });
+      Object.defineProperty(event, 'pageX', { get: () => pageX });
+      Object.defineProperty(event, 'pageY', { get: () => pageY });
+      return event;
+    };
+
+    /**
+     * One free-grid board with 100px cells, `a` grabbed by its top-left corner.
+     * jsdom has no layout, so the board's content box and the widget's own rect
+     * are fed in by hand - the registry works entirely off those.
+     */
+    function setupBoard(
+      collisionMode: 'revert' | 'downscale' | 'swap',
+      layout: LayoutItem[],
+      widgetSize: { w: number; h: number },
+    ) {
+      const onLayoutChange = vi.fn();
+      render(
+        <Board
+          width={600}
+          cols={6}
+          rowHeight={100}
+          margin={[0, 0]}
+          containerPadding={[0, 0]}
+          compact="free"
+          collisionMode={collisionMode}
+          defaultLayout={layout}
+          onLayoutChange={onLayoutChange}
+        >
+          {layout.map((it) => (
+            <Board.Widget key={it.i} id={it.i} qa={`Widget-${it.i}`}>
+              {it.i}
+            </Board.Widget>
+          ))}
+        </Board>,
+      );
+
+      const widget = screen.getByTestId('Widget-a');
+      const content = widget.parentElement as HTMLElement;
+      content.getBoundingClientRect = () => mockRect(0, 0, 600, 600);
+      widget.getBoundingClientRect = () =>
+        mockRect(0, 0, widgetSize.w * 100, widgetSize.h * 100);
+
+      /** Drag `a`'s top-left through each offset in turn, then release. */
+      const drag = (...steps: Array<[number, number]>) => {
+        fireEvent(widget, pointerEvent('pointerdown', 0, 0));
+        for (const [x, y] of steps) {
+          fireEvent(window, pointerEvent('pointermove', x, y));
+        }
+        const last = steps.at(-1)!;
+        fireEvent(window, pointerEvent('pointerup', last[0], last[1]));
+      };
+
+      const rectOf = (id: string) => {
+        const committed = onLayoutChange.mock.calls.at(-1)![0] as LayoutItem[];
+        const it = committed.find((l) => l.i === id)!;
+        return `${it.x},${it.y} ${it.w}x${it.h}`;
+      };
+
+      return { drag, rectOf, onLayoutChange };
+    }
+
+    // `a` is 4 wide; the row below has only 3 free columns.
+    const gapLayout: LayoutItem[] = [
+      { i: 'a', x: 0, y: 0, w: 4, h: 1 },
+      { i: 'b', x: 3, y: 1, w: 3, h: 1 },
+    ];
+
+    it('snaps back on collision by default', () => {
+      const { drag, rectOf } = setupBoard('revert', gapLayout, { w: 4, h: 1 });
+
+      drag([0, 100]);
+
+      expect(rectOf('a')).toBe('0,0 4x1');
+    });
+
+    it('shrinks the widget into the free space at the drop cell', () => {
+      const { drag, rectOf } = setupBoard('downscale', gapLayout, {
+        w: 4,
+        h: 1,
+      });
+
+      drag([0, 100]);
+
+      // Only 3 columns are free in row 1, so the 4-wide widget lands 3 wide.
+      expect(rectOf('a')).toBe('0,1 3x1');
+      expect(rectOf('b')).toBe('3,1 3x1');
+    });
+
+    it('restores the full size when the drag reaches free space again', () => {
+      const { drag, rectOf } = setupBoard('downscale', gapLayout, {
+        w: 4,
+        h: 1,
+      });
+
+      // Over the gap (shrinks), then past it into an empty row.
+      drag([0, 100], [0, 200]);
+
+      // Back to its original width - a shrunken frame must never become the next
+      // frame's starting size.
+      expect(rectOf('a')).toBe('0,2 4x1');
+    });
+
+    it('trades places with the widget under the drop', () => {
+      const { drag, rectOf } = setupBoard(
+        'swap',
+        [
+          { i: 'a', x: 0, y: 0, w: 2, h: 1 },
+          { i: 'b', x: 2, y: 0, w: 2, h: 1 },
+        ],
+        { w: 2, h: 1 },
+      );
+
+      drag([200, 0]);
+
+      expect(rectOf('a')).toBe('2,0 2x1');
+      expect(rectOf('b')).toBe('0,0 2x1');
+    });
+
+    it('trades with one widget when the drop covers two', () => {
+      const { drag, rectOf } = setupBoard(
+        'swap',
+        [
+          { i: 'a', x: 0, y: 0, w: 6, h: 1 },
+          { i: 'b', x: 2, y: 1, w: 2, h: 1 },
+          { i: 'c', x: 4, y: 1, w: 2, h: 1 },
+        ],
+        { w: 6, h: 1 },
+      );
+
+      drag([0, 100]);
+
+      // Covers `b` and `c` equally; the tie goes to `b`. Only one widget is ever
+      // displaced, and `c` stays exactly where it was.
+      expect(rectOf('a')).toBe('2,1 2x1');
+      expect(rectOf('b')).toBe('0,0 2x1');
+      expect(rectOf('c')).toBe('4,1 2x1');
+    });
+
+    // Sweeping a widget along a row crosses a band where the drop covers two
+    // neighbours at once. Refusing those frames used to snap the placeholder back
+    // to the origin, so the swap blinked away mid-drag and then reappeared against
+    // the far neighbour. Every landing cell must resolve to *some* swap.
+    it.each([1, 2, 3, 4])(
+      'shows a swap at every step of a sweep (landing column %i)',
+      (col) => {
+        const { drag, rectOf } = setupBoard(
+          'swap',
+          [
+            { i: 'a', x: 0, y: 0, w: 2, h: 1 },
+            { i: 'b', x: 2, y: 0, w: 2, h: 1 },
+            { i: 'c', x: 4, y: 0, w: 2, h: 1 },
+          ],
+          { w: 2, h: 1 },
+        );
+
+        drag([col * 100, 0]);
+
+        // Landed somewhere other than where it started, and one neighbour took the
+        // vacated slot - never the un-swapped original arrangement.
+        expect(rectOf('a')).not.toBe('0,0 2x1');
+        expect([rectOf('b'), rectOf('c')]).toContain('0,0 2x1');
+      },
+    );
+
+    it('exchanges once across a sweep, not with every widget passed over', () => {
+      const { drag, rectOf } = setupBoard(
+        'swap',
+        [
+          { i: 'a', x: 0, y: 0, w: 2, h: 1 },
+          { i: 'b', x: 2, y: 0, w: 2, h: 1 },
+          { i: 'c', x: 4, y: 0, w: 2, h: 1 },
+        ],
+        { w: 2, h: 1 },
+      );
+
+      // Sweep past `b` and onto `c`, the way a real pointer emits many frames.
+      drag([100, 0], [200, 0], [300, 0], [400, 0]);
+
+      // Only the widget under the drop is displaced. Resolving each frame from the
+      // previous one instead would exchange with `b` on the way and again with
+      // `c`, leaving widgets shuffling under the pointer.
+      expect(rectOf('a')).toBe('4,0 2x1');
+      expect(rectOf('c')).toBe('0,0 2x1');
+      expect(rectOf('b')).toBe('2,0 2x1');
+    });
+
+    it('retraces exactly when the drag comes back', () => {
+      const { drag, rectOf } = setupBoard(
+        'swap',
+        [
+          { i: 'a', x: 0, y: 0, w: 2, h: 1 },
+          { i: 'b', x: 2, y: 0, w: 2, h: 1 },
+          { i: 'c', x: 4, y: 0, w: 2, h: 1 },
+        ],
+        { w: 2, h: 1 },
+      );
+
+      drag([100, 0], [300, 0], [400, 0], [200, 0], [0, 0]);
+
+      // Back where it started, with nothing displaced and nothing resized: a frame
+      // is a pure function of the landing cell, so a gesture leaves no residue.
+      expect(rectOf('a')).toBe('0,0 2x1');
+      expect(rectOf('b')).toBe('2,0 2x1');
+      expect(rectOf('c')).toBe('4,0 2x1');
+    });
+
+    it('leaves a widget that already fits untouched', () => {
+      const { drag, rectOf } = setupBoard('downscale', gapLayout, {
+        w: 4,
+        h: 1,
+      });
+
+      drag([0, 200]);
+
+      expect(rectOf('a')).toBe('0,2 4x1');
+    });
+
+    describe('keyboard', () => {
+      function setupKeyboardBoard(
+        collisionMode: 'downscale' | 'swap',
+        layout: LayoutItem[],
+      ) {
+        const onLayoutChange = vi.fn();
+        render(
+          <Board
+            width={600}
+            cols={6}
+            rowHeight={100}
+            margin={[0, 0]}
+            containerPadding={[0, 0]}
+            compact="free"
+            collisionMode={collisionMode}
+            defaultLayout={layout}
+            onLayoutChange={onLayoutChange}
+          >
+            {layout.map((it) => (
+              <Board.Widget key={it.i} id={it.i} qa={`Widget-${it.i}`}>
+                {it.i}
+              </Board.Widget>
+            ))}
+          </Board>,
+        );
+
+        const widget = screen.getByTestId('Widget-a');
+        widget.focus();
+
+        return {
+          press: (key: string) => fireEvent.keyDown(widget, { key }),
+          rectOf: (id: string) => {
+            const committed = onLayoutChange.mock.calls.at(-1)?.[0] as
+              | LayoutItem[]
+              | undefined;
+            const it = (committed ?? layout).find((l) => l.i === id)!;
+            return `${it.x},${it.y} ${it.w}x${it.h}`;
+          },
+        };
+      }
+
+      it('never resizes a widget to make an arrow key fit', () => {
+        const { press, rectOf } = setupKeyboardBoard('downscale', [
+          { i: 'a', x: 0, y: 0, w: 2, h: 1 },
+          { i: 'b', x: 2, y: 0, w: 1, h: 1 },
+        ]);
+
+        press('ArrowRight');
+
+        // Each press is its own gesture, so a press that shrank the widget would
+        // become the next press's starting size and ratchet it down for good.
+        expect(rectOf('a').endsWith('2x1')).toBe(true);
+        expect(rectOf('b')).toBe('2,0 1x1');
+      });
+
+      it('still exchanges two widgets that fit each other outright', () => {
+        const { press, rectOf } = setupKeyboardBoard('swap', [
+          { i: 'a', x: 0, y: 0, w: 2, h: 1 },
+          { i: 'b', x: 2, y: 0, w: 2, h: 1 },
+        ]);
+
+        press('ArrowRight');
+
+        // No resize needed here, so the keyboard reaches the same arrangement a
+        // drop would.
+        expect(rectOf('a')).toBe('2,0 2x1');
+        expect(rectOf('b')).toBe('0,0 2x1');
+      });
+    });
+  });
+
+  describe('drag grid lines', () => {
+    const mockRect = (
+      left: number,
+      top: number,
+      width: number,
+      height: number,
+    ): DOMRect =>
+      ({
+        left,
+        top,
+        width,
+        height,
+        right: left + width,
+        bottom: top + height,
+        x: left,
+        y: top,
+        toJSON: () => ({}),
+      }) as DOMRect;
+
+    const pointerEvent = (type: string, pageX: number, pageY: number) => {
+      const event = new PointerEvent(type, {
+        bubbles: true,
+        cancelable: true,
+        button: 0,
+        pointerId: 1,
+        pointerType: 'mouse',
+      });
+      Object.defineProperty(event, 'pageX', { get: () => pageX });
+      Object.defineProperty(event, 'pageY', { get: () => pageY });
+      return event;
+    };
+
+    // Two 600px boards side by side under one provider, so a single drag can be
+    // over one board while the other only shares the provider.
+    function setupBoards(showGridLines: 'drag' | 'any-drag') {
+      render(
+        <Board.Provider>
+          <Board
+            id="source"
+            width={600}
+            cols={6}
+            rowHeight={100}
+            margin={[0, 0]}
+            containerPadding={[0, 0]}
+            showGridLines={showGridLines}
+            defaultLayout={[{ i: 'w', x: 0, y: 0, w: 4, h: 1 }]}
+          >
+            <Board.Widget id="w" qa="Wide">
+              W
+            </Board.Widget>
+          </Board>
+          <Board
+            id="target"
+            width={600}
+            cols={6}
+            rowHeight={100}
+            margin={[0, 0]}
+            containerPadding={[0, 0]}
+            showGridLines={showGridLines}
+            defaultLayout={[{ i: 'z', x: 5, y: 0, w: 1, h: 1 }]}
+          >
+            <Board.Widget id="z" qa="Target">
+              Z
+            </Board.Widget>
+          </Board>
+        </Board.Provider>,
+      );
+
+      const widget = screen.getByTestId('Wide');
+      const sourceContent = widget.parentElement as HTMLElement;
+      const targetContent = screen.getByTestId('Target')
+        .parentElement as HTMLElement;
+      sourceContent.getBoundingClientRect = () => mockRect(0, 0, 600, 400);
+      targetContent.getBoundingClientRect = () => mockRect(600, 0, 600, 400);
+      widget.getBoundingClientRect = () => mockRect(0, 0, 400, 100);
+
+      const hasGrid = (boardId: string) => {
+        const board = document.querySelector(
+          `[data-board-id="${boardId}"]`,
+        ) as HTMLElement;
+        return !!board.querySelector('[data-qa="BoardGridOverlay"]');
+      };
+
+      return { widget, hasGrid };
+    }
+
+    it('shows no grid until something is dragged', () => {
+      const { hasGrid } = setupBoards('drag');
+
+      expect(hasGrid('source')).toBe(false);
+      expect(hasGrid('target')).toBe(false);
+    });
+
+    it('lights up only the board owning the drag', () => {
+      const { widget, hasGrid } = setupBoards('drag');
+
+      // Centre stays at x=500, inside the source board (x:[0,600]).
+      fireEvent(widget, pointerEvent('pointerdown', 0, 0));
+      fireEvent(window, pointerEvent('pointermove', 300, 0));
+
+      expect(hasGrid('source')).toBe(true);
+      // The whole point of scoping: a board the widget cannot land in stays quiet
+      // instead of lighting up because *something* somewhere is being dragged.
+      expect(hasGrid('target')).toBe(false);
+
+      fireEvent(window, pointerEvent('pointerup', 300, 0));
+    });
+
+    it('lights up a board the widget is dragged into', () => {
+      const { widget, hasGrid } = setupBoards('drag');
+
+      // Centre reaches x=700, inside the target board (x:[600,1200]).
+      fireEvent(widget, pointerEvent('pointerdown', 0, 0));
+      fireEvent(window, pointerEvent('pointermove', 500, 0));
+
+      expect(hasGrid('target')).toBe(true);
+      // The source keeps its grid: releasing there is still a valid drop.
+      expect(hasGrid('source')).toBe(true);
+
+      fireEvent(window, pointerEvent('pointerup', 500, 0));
+    });
+
+    it('lights up every board under the provider with any-drag', () => {
+      const { widget, hasGrid } = setupBoards('any-drag');
+
+      fireEvent(widget, pointerEvent('pointerdown', 0, 0));
+      fireEvent(window, pointerEvent('pointermove', 300, 0));
+
+      // Opt-in noise: every board advertises itself as somewhere to land.
+      expect(hasGrid('source')).toBe(true);
+      expect(hasGrid('target')).toBe(true);
+
+      fireEvent(window, pointerEvent('pointerup', 300, 0));
+    });
+
+    it('clears the grid again once the drag ends', () => {
+      const { widget, hasGrid } = setupBoards('any-drag');
+
+      fireEvent(widget, pointerEvent('pointerdown', 0, 0));
+      fireEvent(window, pointerEvent('pointermove', 300, 0));
+      fireEvent(window, pointerEvent('pointerup', 300, 0));
+
+      expect(hasGrid('source')).toBe(false);
+      expect(hasGrid('target')).toBe(false);
+    });
+
+    it('inherits the drag scope into a nested board', () => {
+      render(
+        <Board
+          id="root"
+          width={600}
+          cols={6}
+          rowHeight={100}
+          margin={[0, 0]}
+          containerPadding={[0, 0]}
+          showGridLines="any-drag"
+          defaultLayout={[
+            { i: 'container', x: 0, y: 0, w: 6, h: 2 },
+            { i: 'other', x: 0, y: 2, w: 2, h: 1 },
+          ]}
+        >
+          <Board.Widget id="container">
+            <Board
+              id="nested"
+              width={600}
+              cols={6}
+              rowHeight={100}
+              margin={[0, 0]}
+              containerPadding={[0, 0]}
+              defaultLayout={[{ i: 'n', x: 0, y: 0, w: 1, h: 1 }]}
+            >
+              <Board.Widget id="n">N</Board.Widget>
+            </Board>
+          </Board.Widget>
+          <Board.Widget id="other" qa="Other">
+            O
+          </Board.Widget>
+        </Board>,
+      );
+
+      const other = screen.getByTestId('Other');
+      fireEvent(other, pointerEvent('pointerdown', 0, 200));
+      fireEvent(window, pointerEvent('pointermove', 100, 200));
+
+      // The nested board sets no `showGridLines` of its own, so it inherits the
+      // root's scope - `any-drag`, not a downgrade to the drag-owner default.
+      const nested = document.querySelector(
+        '[data-board-id="nested"]',
+      ) as HTMLElement;
+      expect(
+        nested.querySelector('[data-qa="BoardGridOverlay"]'),
+      ).toBeInTheDocument();
+
+      fireEvent(window, pointerEvent('pointerup', 100, 200));
     });
   });
 
