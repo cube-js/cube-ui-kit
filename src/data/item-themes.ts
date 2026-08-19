@@ -1229,33 +1229,55 @@ export const CURRENT_OUTLINE_2_STYLES: Styles = {
   },
 } as const;
 
-// Primary flavour — the high-emphasis control. See the section header for why
-// this is an alpha escalation of `outline` rather than the inverted, opaque fill
-// the brand themes use. Like every other `*_PRIMARY_STYLES` it has no `selected`
-// state: primary is already the emphatic option, so there is nothing above it to
-// step to.
+// Primary flavour — the high-emphasis control, and the only `current` flavour
+// that INVERTS: the fill is the inherited color at full opacity and the label
+// is punched out of it with `#accent-surface-text`, exactly as every other
+// theme's `primary` paints `#white` on an opaque brand fill.
+//
+// The states are the second fill layer. There is no lighter or darker sibling
+// of an arbitrary inherited color to step to — the brand ramps walk
+// `accent-surface` → `-2` → `-3` — so hover and pressed lay a translucent
+// `#black` over the same base instead, which darkens in both schemes and so
+// keeps the same monotonic direction the brand primaries have.
+//
+// The label CANNOT go through `color`. `#current` compiles to the literal
+// `currentcolor`, which in `fill` resolves against the element's OWN `color`,
+// so setting `color: '#accent-surface-text'` would make the fill resolve to the
+// label color and paint a white pill with a white label. Tasty's `--current-color`
+// is no escape either: the `color` handler rewrites it on the same element.
+// `-webkit-text-fill-color` paints the glyphs without touching `color`, so
+// `currentcolor` keeps meaning the INHERITED color for `fill` and `border`.
+// Icons are SVG painted with `fill="currentColor"`, which that property does not
+// reach, so they take the label color through the `Icon` sub-element.
 export const CURRENT_PRIMARY_STYLES: Styles = {
   ...CURRENT_FOCUS_RING,
+  // Matches the base fill, so the border reads as part of the chip rather than
+  // a rim — and still darkens with it, since only the overlay moves.
   border: {
-    '': '#current.28',
-    'hovered | focused': '#current.35',
-    pressed: '#current.45',
-    // Pre-multiplied against the `.4` label fade below → an effective `.2`,
-    // a muted version of the resting border rather than a stronger one.
-    disabled: '#current.5',
+    '': '#current',
+    disabled: '#current.4',
   },
   fill: {
-    '': '#current.14',
-    'hovered | focused': '#current.18',
-    // The AA ceiling for a full-strength label on a dark surface, and the
-    // reason the ramp stops climbing here.
-    pressed: '#current.24',
-    // Pre-multiplied → an effective `.104`, just under the resting chip.
-    disabled: '#current.26',
+    '': '#current',
+    'hovered | focused': '#current #black.08',
+    pressed: '#current #black.16',
+    disabled: '#current.4',
   },
+  // Deliberately left as the inherited color: this is what keeps `currentcolor`
+  // — and therefore the fill above — meaning the color the context paints with.
   color: {
     '': '#current',
     disabled: '#current.4',
+  },
+  '-webkit-text-fill-color': {
+    '': '#accent-surface-text',
+    disabled: '#accent-surface-text.5',
+  },
+  Icon: {
+    color: {
+      '': '#accent-surface-text',
+      disabled: '#accent-surface-text.5',
+    },
   },
 } as const;
 

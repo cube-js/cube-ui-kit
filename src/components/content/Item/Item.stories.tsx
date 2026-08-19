@@ -2757,7 +2757,7 @@ CurrentStates.parameters = {
   docs: {
     description: {
       story:
-        'Every type, every state, on the `current` theme — the matrix the other themes get from `TypesAndThemes`, run on the one theme whose colors are not its own. Nothing in the grid names a color: each block paints a text color and every item mixes its fill, border and label from it. `primary` is the strongest step of the same alpha ramp rather than an inverted fill — a single inherited color has nothing to punch the label out with — and `outline-2` sits in a `#current.08` panel, the `current` stand-in for the `#surface-2` container it is drawn for. `link` carries no chip at all: it goes soft (`#current.8`) at rest and full strength on hover.',
+        'Every type, every state, on the `current` theme — the matrix the other themes get from `TypesAndThemes`, run on the one theme whose colors are not its own. Nothing in the grid names a color: each block paints a text color and every item mixes its fill, border and label from it. `primary` inverts to an opaque fill of the inherited color with the label punched out of it, and `outline-2` sits in a `#current.08` panel, the `current` stand-in for the `#surface-2` container it is drawn for. `link` carries no chip at all: it goes soft (`#current.8`) at rest and full strength on hover.',
     },
   },
 };
