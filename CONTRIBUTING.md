@@ -2,7 +2,9 @@
 
 ## Requirements
 
-- [Node.js](https://nodejs.org/) >= 22.0.0
+- [Node.js](https://nodejs.org/) 24 — the version in `.nvmrc`, which every CI
+  job uses too. This is a build requirement only; the published package still
+  supports Node >= 22 (see `engines` in `package.json`).
 - [pnpm](https://pnpm.io/) >= 10 — no Corepack needed. Any pnpm >= 10 will do:
   it reads `packageManager` in `package.json` and switches itself to the
   pinned version when you run a command in this repo.

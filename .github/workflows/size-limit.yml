@@ -24,14 +24,14 @@ jobs:
       REPORT_FOLDER: './size-limit-report'
       NODE_OPTIONS: --max-old-space-size=4096
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # Installs the pnpm pinned by `packageManager` — the same field pnpm reads
       # to switch itself locally, so CI and a contributor cannot drift apart.
       # Must precede `setup-node`, whose `cache: 'pnpm'` needs `pnpm` on PATH.
       - uses: pnpm/action-setup@v6
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version-file: '.nvmrc'
           cache: 'pnpm'
@@ -121,7 +121,7 @@ jobs:
       # there stays loud.
       - name: Upload stats
         continue-on-error: ${{ github.event_name == 'pull_request' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: size-limit-report
           path: ${{ env.REPORT_FOLDER }}
@@ -162,7 +162,7 @@ jobs:
       - name: Upload Statoscope report
         continue-on-error: true
         if: steps.statoscope.outputs.built == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: size-limit-statoscope-report
           path: ./__report/report.html
