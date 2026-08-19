@@ -1117,17 +1117,32 @@ export const CURRENT_ITEM_STYLES: Styles = {
   },
   color: {
     '': '#current',
-    // Only fade when this element is disabled ON ITS OWN. `#current` is the
-    // color it inherits, and a disabled host has already faded that color to
-    // `#disabled-surface-text` — so fading again multiplies the two and the label
-    // washes out (an action inside a disabled row measured `.4` of an already
-    // muted token, roughly `rgb(224,225,228)` on white, against the row's own
-    // `rgb(178,181,205)`). Inheriting the host's faded color unchanged is both
-    // correct and what the neutral types did. `ItemAction` sets
-    // `inherit-disabled` when its disabled state came from the surrounding
-    // `ItemActionProvider` rather than its own prop; nothing else sets the mod, so
-    // `Item` keeps fading itself as before.
-    'disabled & !inherit-disabled': '#current.4',
+    // Fade exactly once per subtree, and only where nothing above has faded
+    // already. `#current` is the color this element INHERITS, so a second `.4`
+    // multiplies against the first and the label washes out — an action inside a
+    // disabled row measured `.4` of an already muted token, roughly
+    // `rgb(224,225,228)` on white, against the row's own `rgb(178,181,205)`.
+    //
+    // Two mods say "someone above already did it", and both are set by exactly
+    // one caller:
+    //
+    //   `inherit-disabled`  `ItemAction`, when its disabled state came from the
+    //                       surrounding `ItemActionProvider` rather than its own
+    //                       prop — the host row already faded the color it paints
+    //                       from.
+    //   `inside-wrapper`    `ItemButton`, on the row it renders inside
+    //                       `ActionsWrapper`. The wrapper reproduces this same
+    //                       disabled color (see `ITEM_RESTING_COLOR_VARIANTS`) so
+    //                       that actions rendered as SIBLINGS of the row inherit
+    //                       a faded `currentcolor` too; the row is a descendant
+    //                       of that wrapper, so it is already faded when it
+    //                       arrives here.
+    //
+    // Neither mod is set on a standalone `Item` or on `Button`, so both keep
+    // fading themselves exactly as before. Every `current` flavour states the
+    // gate identically — a flavour that spelled it `disabled` alone would fade a
+    // second time in both of those nestings.
+    'disabled & !inherit-disabled & !inside-wrapper': '#current.4',
   },
 } as const;
 
@@ -1188,7 +1203,9 @@ export const CURRENT_OUTLINE_STYLES: Styles = {
   },
   color: {
     '': '#current',
-    disabled: '#current.4',
+    // See `CURRENT_ITEM_STYLES.color` for why this is gated rather than a bare
+    // `disabled`: both mods mark a color that something above already faded.
+    'disabled & !inherit-disabled & !inside-wrapper': '#current.4',
   },
 } as const;
 
@@ -1225,7 +1242,9 @@ export const CURRENT_OUTLINE_2_STYLES: Styles = {
   },
   color: {
     '': '#current',
-    disabled: '#current.4',
+    // See `CURRENT_ITEM_STYLES.color` for why this is gated rather than a bare
+    // `disabled`: both mods mark a color that something above already faded.
+    'disabled & !inherit-disabled & !inside-wrapper': '#current.4',
   },
 } as const;
 
@@ -1289,7 +1308,9 @@ export const CURRENT_PRIMARY_STYLES: Styles = {
   // hand it a live color next to a dead chip.
   color: {
     '': '#current',
-    disabled: '#current.4',
+    // See `CURRENT_ITEM_STYLES.color` for why this is gated rather than a bare
+    // `disabled`: both mods mark a color that something above already faded.
+    'disabled & !inherit-disabled & !inside-wrapper': '#current.4',
   },
   '-webkit-text-fill-color': {
     '': '#surface',
@@ -1324,7 +1345,8 @@ export const CURRENT_LINK_STYLES: Styles = {
   color: {
     '': '#current.8',
     'hovered & !pressed': '#current',
-    disabled: '#current.4',
+    // See `CURRENT_ITEM_STYLES.color`.
+    'disabled & !inherit-disabled & !inside-wrapper': '#current.4',
   },
 } as const;
 
@@ -1363,6 +1385,13 @@ export const CURRENT_CARD_STYLES: Styles = {
 //
 // Disabled hands over to the brand-tinted pair `primary` already uses, so the
 // two filled types mute identically and the alphas stay calibrated in one place.
+// It rides on THIS type's base layer (`accent-text`) rather than `primary`'s
+// (`#surface`), which changes nothing at rest — `accent-disabled-surface` is an
+// opaque glaze tone, so it hides whatever is under it — but keeps the base
+// constant across all four states. Swapping the base on `disabled` alone would
+// animate `background-color` from the fill color to the page while the overlay
+// is still part-transparent, which is the surface flash `DEFAULT_PRIMARY_STYLES`
+// keeps its own base pinned to avoid.
 //
 // Written through a factory rather than seven near-identical objects on purpose.
 // The only thing that varies is the theme prefix, and hand-copying that is
@@ -1385,7 +1414,7 @@ const invertStyles = (accent: string): Styles => ({
     '': `#${accent}-accent-text #black.0`,
     hovered: `#${accent}-accent-text #black.08`,
     pressed: `#${accent}-accent-text #black.16`,
-    disabled: `#surface #${accent}-accent-disabled-surface`,
+    disabled: `#${accent}-accent-text #${accent}-accent-disabled-surface`,
   },
   color: {
     '': '#surface',
@@ -1404,6 +1433,10 @@ export const NOTE_INVERT_STYLES: Styles = invertStyles('note');
 // the theme's dark accent on it — the same figure `SPECIAL_CLEAR_STYLES` strikes
 // when selected. Both tokens are fixed-mode, so this stays scheme-invariant like
 // the rest of the theme, where a `#surface` label would not.
+//
+// The fill base is `#white` in every state, disabled included — the same pin
+// `SPECIAL_PRIMARY_STYLES` holds, and for the same reason. See the note on the
+// factory above.
 export const SPECIAL_INVERT_STYLES: Styles = {
   outline: {
     '': '0 #special-accent-text.0',
@@ -1417,7 +1450,7 @@ export const SPECIAL_INVERT_STYLES: Styles = {
     '': '#white #black.0',
     hovered: '#white #black.08',
     pressed: '#white #black.16',
-    disabled: '#special-surface #special-accent-disabled-surface',
+    disabled: '#white #special-accent-disabled-surface',
   },
   color: {
     '': '#special-accent-text',
@@ -1648,12 +1681,18 @@ export const ITEM_RESTING_COLOR_VARIANTS: Record<ItemVariant, Styles> =
       }
 
       const map = color as Record<string, string>;
-      // Only a plain `disabled` key is usable. The borderless `current`
-      // flavours (`current.item`, `current.clear`) state it as
-      // `disabled & !inherit-disabled`, which is deliberately not matched here:
-      // those variants paint from `currentcolor` and have no fixed color to hand
-      // down, so the wrapper leaves its resting value in place.
-      const disabled = map.disabled;
+      // The `current` flavours state their fade as
+      // `disabled & !inherit-disabled & !inside-wrapper` rather than a bare
+      // `disabled`, and the wrapper wants exactly that value under a plain
+      // `disabled`. It is entitled to it: the two negated mods mark "something
+      // above already faded this", and the wrapper is the top of the subtree —
+      // `ItemButton` gives it only `disabled`, never either mod. Reading just
+      // `map.disabled` left those variants with no disabled color to hand down,
+      // which is the failure the comment above describes: the row faded itself
+      // and its sibling actions, which suppress their own fade under
+      // `inherit-disabled`, stayed at full strength beside it.
+      const disabled =
+        map.disabled ?? map['disabled & !inherit-disabled & !inside-wrapper'];
 
       return [
         variant,

@@ -1,4 +1,4 @@
-import { ITEM_VARIANTS } from './item-themes';
+import { ITEM_RESTING_COLOR_VARIANTS, ITEM_VARIANTS } from './item-themes';
 
 /**
  * `selected & disabled` on the non-solid types keeps the ENABLED selected chip
@@ -106,4 +106,60 @@ describe('ITEM_VARIANTS', () => {
     expect(color['selected & disabled']).toBeDefined();
     expect(color['selected & disabled']).not.toBe(color.selected);
   });
+});
+
+/**
+ * Every `current` flavour fades its label exactly once per subtree.
+ *
+ * `#current` is the color the element INHERITS, so a `.4` applied twice down one
+ * chain multiplies to `.16` and the label washes out. Two mods mark "something
+ * above already faded this" — `inherit-disabled` (set by `ItemAction` inside a
+ * disabled row) and `inside-wrapper` (set by `ItemButton` on the row it renders
+ * inside `ActionsWrapper`) — and a flavour that spells its fade as a bare
+ * `disabled` fades a second time in both of those nestings. That is the shape
+ * this pins: `current.outline` and `current.primary` are reachable as
+ * `ItemAction` types, so a bare `disabled` there is a live bug, not a latent one.
+ *
+ * The wrapper is the other half. It reproduces the row's disabled color so
+ * sibling actions inherit a faded `currentcolor`, and it is entitled to the
+ * gated value because `ItemButton` gives it neither mod.
+ */
+describe('current theme disabled fades', () => {
+  const CURRENT_VARIANTS = Object.keys(ITEM_VARIANTS).filter(
+    (variant) => variant.startsWith('current.') && variant !== 'current.card',
+  ) as (keyof typeof ITEM_VARIANTS)[];
+
+  const GATE = 'disabled & !inherit-disabled & !inside-wrapper';
+
+  it('covers every interactive current flavour', () => {
+    expect(CURRENT_VARIANTS.sort()).toEqual([
+      'current.clear',
+      'current.invert',
+      'current.item',
+      'current.link',
+      'current.outline',
+      'current.outline-2',
+      'current.primary',
+    ]);
+  });
+
+  it.each(CURRENT_VARIANTS)('%s gates its label fade', (variant) => {
+    const color = ITEM_VARIANTS[variant].color as Record<string, string>;
+
+    expect(color[GATE]).toBe('#current.4');
+    // A bare `disabled` key would win over the gate and fade unconditionally.
+    expect(color.disabled).toBeUndefined();
+  });
+
+  it.each(CURRENT_VARIANTS)(
+    '%s still hands a disabled color to the actions wrapper',
+    (variant) => {
+      const color = ITEM_RESTING_COLOR_VARIANTS[variant].color as Record<
+        string,
+        string
+      >;
+
+      expect(color.disabled).toBe('#current.4');
+    },
+  );
 });
