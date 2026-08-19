@@ -1231,7 +1231,7 @@ export const CURRENT_OUTLINE_2_STYLES: Styles = {
 
 // Primary flavour — the high-emphasis control, and the only `current` flavour
 // that INVERTS: the fill is the inherited color at full opacity and the label
-// is punched out of it with `#accent-surface-text`, exactly as every other
+// is punched out of it with `#surface`, exactly as every other
 // theme's `primary` paints `#white` on an opaque brand fill.
 //
 // The states are the second fill layer. There is no lighter or darker sibling
@@ -1242,7 +1242,7 @@ export const CURRENT_OUTLINE_2_STYLES: Styles = {
 //
 // The label CANNOT go through `color`. `#current` compiles to the literal
 // `currentcolor`, which in `fill` resolves against the element's OWN `color`,
-// so setting `color: '#accent-surface-text'` would make the fill resolve to the
+// so setting `color: '#surface'` would make the fill resolve to the
 // label color and paint a white pill with a white label. Tasty's `--current-color`
 // is no escape either: the `color` handler rewrites it on the same element.
 // `-webkit-text-fill-color` paints the glyphs without touching `color`, so
@@ -1255,27 +1255,32 @@ export const CURRENT_PRIMARY_STYLES: Styles = {
   // a rim — and still darkens with it, since only the overlay moves.
   border: {
     '': '#current',
-    disabled: '#current.4',
   },
   fill: {
     '': '#current',
     'hovered | focused': '#current #black.08',
     pressed: '#current #black.16',
-    disabled: '#current.4',
   },
-  // Deliberately the inherited color in EVERY state, disabled included: this is
-  // the one thing keeping `currentcolor` — and therefore the fill and border
-  // above — meaning the color the context paints with. Fading it here would fade
-  // them too, since they resolve `currentcolor` against this element's own
-  // `color`: a `.4` label under a `.4` fill lands the chip at `.16`, the
-  // pre-multiply trap the other `current` ramps document. Nothing needs it to
-  // move, because the label is painted below and the icons take their own.
+  // Disabled is expressed HERE and nowhere else, and that is the whole trick.
+  // `fill` and `border` resolve `currentcolor` against this element's own
+  // `color`, so fading it once fades the chip with it: their default entries
+  // still read `#current`, which under `disabled` is already the `.4` color,
+  // and the chip lands at exactly `.4`. Writing `.4` in all three would apply
+  // the fade twice and land it at `.16` — the pre-multiply trap the other
+  // `current` ramps document at length.
+  //
+  // It has to fade rather than stay put, because descendants read it too: an
+  // action inside a disabled row suppresses its OWN fade on the grounds that
+  // the host already muted the color it paints from (see
+  // `CURRENT_ITEM_STYLES.color`), so a host that stayed at full strength would
+  // hand it a live color next to a dead chip.
   color: {
     '': '#current',
+    disabled: '#current.4',
   },
   '-webkit-text-fill-color': {
-    '': '#accent-surface-text',
-    disabled: '#accent-surface-text.5',
+    '': '#surface',
+    disabled: '#surface.5',
   },
   // Every icon-bearing slot, not just the leading one. `-webkit-text-fill-color`
   // paints glyphs and inherits into the text slots for free, but icons are SVG
@@ -1286,8 +1291,8 @@ export const CURRENT_PRIMARY_STYLES: Styles = {
       slot,
       {
         color: {
-          '': '#accent-surface-text',
-          disabled: '#accent-surface-text.5',
+          '': '#surface',
+          disabled: '#surface.5',
         },
       },
     ]),
