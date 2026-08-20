@@ -30,6 +30,16 @@ export const MultiLine = {
   },
 };
 
+export const Wrapped = {
+  render: Template,
+  args: {
+    language: 'bash',
+    isWrapped: true,
+    width: 'max 400px',
+    code: 'XMLA Internal Error: Arrow error: External error: Database Execution Error: Internal: Error during planning: Error decoding LogicalPlanNode.logical_plan_type:SubqueryAliasNode.input as protobuf message',
+  },
+};
+
 export const JavascriptSyntax = {
   render: Template,
   args: {
