@@ -1210,26 +1210,64 @@ function buildPalette(
       mode: 'fixed',
     },
 
-    // ---- Loading-animation cube faces ----
-    // Decorative gradient steps from `surface` to a saturated mid-tone. Tone
-    // deltas are chosen directly on the contrast-uniform scale; no contrast prop
-    // is needed for a non-text decorative element.
+    // ---- Isometric cube faces ----
+    // The three shading steps of the kit's isometric cube artwork: the lit top
+    // face, the mid side, and the shadowed side. Shared by `LoadingAnimation`
+    // and `NoDataIcon` so both read as the same object under the same light.
+    //
+    // Two things are deliberate here.
+    //
+    // **Neutral chroma.** These used to take a fraction of the *brand* seed
+    // saturation (0.3 / 0.62 / 0.66), which put the shadowed face at chroma
+    // 0.0676 — eight times `border` — so the animation read as a purple gradient
+    // next to a monochrome `CubeLogo`. They now take `baseChroma(0.2)`, the same
+    // normalised share the neutral chrome (`border`, `placeholder`, the text
+    // ramp) takes, which lands them at 0.0059 / 0.0161 / 0.0248: a tint that
+    // follows a re-seeded brand hue without announcing it.
+    //
+    // **Contrast, not tone, is the spec.** A relative tone delta is uniform on
+    // the OKHST scale but the dark scheme resolves it inside the `darkTone`
+    // window, which compressed the ramp to ~75% of its light span — measurably
+    // flatter, which is exactly how it looked. Glaze has no per-color
+    // `darkTone`, so the fix is to state the intent as a WCAG floor against
+    // `surface` and let each scheme solve for it: the authored `tone: '-2'` is
+    // deliberately short of every floor, so all three faces are pinned by the
+    // ratio in every scheme rather than by a delta that means different things
+    // in each. Measured on the emitted tokens, light comes out 1.201 / 1.653 /
+    // 2.409 and dark 1.212 / 1.666 / 2.424 — within 1% of each other, against
+    // 1.063 / 1.320 / 1.915 vs 1.053 / 1.264 / 1.735 before.
+    //
+    // WCAG rather than APCA, against the grain of the accent tokens above:
+    // APCA's low-contrast clamp scores every step of a ramp this subtle as
+    // Lc 0, so it cannot express the difference between these three faces at
+    // all. Polarity-blindness — the reason APCA wins for text — costs nothing
+    // for a decorative fill whose only job is to separate from the page.
+    //
+    // The high-contrast entries roughly double each step's distance from the
+    // page (1.351 / 2.107 / 3.211) instead of leaving HC identical to the
+    // normal tier, which is what an unconstrained tone delta gave.
     'loading-face-1': {
+      hue: baseHue,
       base: 'surface',
       tone: '-2',
-      saturation: 0.3,
+      saturation: baseChroma(0.2),
+      contrast: [1.2, 1.35],
       inherit: false,
     },
     'loading-face-2': {
+      hue: baseHue,
       base: 'surface',
-      tone: '-9',
-      saturation: 0.62,
+      tone: '-2',
+      saturation: baseChroma(0.2),
+      contrast: [1.65, 2.1],
       inherit: false,
     },
     'loading-face-3': {
+      hue: baseHue,
       base: 'surface',
-      tone: '-21',
-      saturation: 0.66,
+      tone: '-2',
+      saturation: baseChroma(0.2),
+      contrast: [2.4, 3.2],
       inherit: false,
     },
 

@@ -42,3 +42,15 @@ These properties allow direct style application without using the `styles` prop:
 
 <LoadingAnimation size="large" />
 ```
+
+## Colors
+
+The cube's three faces come from the shared isometric-cube tokens
+(`#loading-face-1` … `#loading-face-3`), a near-neutral ramp positioned by a WCAG
+floor against `#surface`. Each face therefore keeps the same separation from the
+page in light, dark, and high contrast, and follows a re-seeded brand hue as a
+tint rather than as a color. There is no `color` prop to override — recolouring
+one face and not the others would break the shading.
+
+[`NoDataIcon`](/docs/other-nodataicon--docs) draws its empty crate from the same
+three tokens, so a loading table and an empty table read as the same object.

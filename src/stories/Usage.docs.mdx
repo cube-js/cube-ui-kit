@@ -371,6 +371,13 @@ Icons live in `src/icons/`. Use existing icons when possible; otherwise use `@ta
 - Always wrap tabler icons with `<Icon>` for custom size/color. Never add props directly to tabler icons.
 - To add new icons run: `pnpm add-icons`
 
+Illustrations are not icons and do not live in `src/icons/`: `CubeLogo` and
+`NoDataIcon` are `Icon`-based components under `src/components/other/`. They size
+like an icon, but `NoDataIcon` is a three-tone drawing on the shared cube-face
+tokens (`#loading-face-1` … `#loading-face-3`) rather than a `currentColor`
+glyph, so it ignores `color` and belongs at illustration sizes (`size="8x"` and
+up).
+
 ## Form System
 
 ### Form Component

@@ -22,6 +22,12 @@ const CubeElement = tasty({
     // (defined in `src/tokens/palette.ts`) keeps the three faces driven by
     // the design system without going through a style property tasty would
     // re-route to the wrong CSS slot.
+    //
+    // Those three tokens are the kit's shared isometric-cube ramp — `NoDataIcon`
+    // draws its crate from the same ones — and they are pinned by a WCAG floor
+    // against `surface` rather than by a tone delta, so the faces hold the same
+    // separation in light, dark, and high contrast. See the recipe's comment for
+    // why that matters.
 
     animationName: {
       '': 'none',
