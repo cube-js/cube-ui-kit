@@ -123,10 +123,11 @@ const STYLES = [...BASE_STYLES, ...BLOCK_STYLES];
 export interface CubeRootProps extends BaseProps {
   tokens?: { [key: string]: string };
   /**
-   * Tune the generated color palette — the brand as a hue or as a color
-   * (`accentColor` / `baseColor`), saturation, per-status theme seeds, `pastel`, and
-   * `contrastLevel`. Omitted fields take their default, so this prop describes the
-   * whole palette and dropping a field from it drops the customization.
+   * Tune the generated color palette. Every zone — `accent`, `base` and each status
+   * theme — takes the same seed: a color, or `{ hue, saturation }`. Plus the global
+   * `surfaceMode`, `pastel` and `contrastLevel`. Omitted fields take their default, so
+   * this prop describes the whole palette and dropping a field from it drops the
+   * customization.
    *
    * Removing the prop entirely is the one thing that does *not* reset the
    * palette, so `<Root>` with no `palette` cannot clobber a host's imperative

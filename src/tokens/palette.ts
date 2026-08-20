@@ -22,7 +22,11 @@ import type {
   GlazeTheme,
 } from '@tenphi/glaze';
 import type { Styles, Tokens } from '@tenphi/tasty';
-import type { PaletteConfig, ResolvedPaletteConfig } from './palette-config';
+import type {
+  PaletteConfig,
+  ResolvedPaletteConfig,
+  ResolvedThemeSeed,
+} from './palette-config';
 
 /** Which resolved scheme variant {@link renderPaletteTokens} should return. */
 export interface RenderPaletteOptions extends PaletteConfig {
@@ -78,7 +82,7 @@ const CODE_STRING_HUE = 280.3;
  * Shared with the code theme, which mirrors `surface` to solve its contrast floors
  * against the real page background — the two must not drift apart. Shared with the
  * config too, which needs it to work out the share of the accent zone's chroma the
- * chrome takes when no `baseColor` names one outright; it lives there because the
+ * chrome takes when no base COLOR names one outright; it lives there because the
  * config cannot import from here, and is re-exported under this name because that is
  * what the recipe calls it.
  */
@@ -396,11 +400,15 @@ function accentToneCeiling(hue: number, saturation: number): number {
 }
 
 /**
- * The brand seed as the three numbers Glaze consumes, with its tone capped.
+ * A color seed as the three numbers Glaze consumes, with its tone capped.
  *
- * Takes the RESOLVED hue rather than the one the caller's literal carries, because
- * `resolveConfig` ranks an explicit {@link PaletteConfig.hue} above a color's own —
- * see the call site for what handing over the literal instead used to break.
+ * Takes the RESOLVED components rather than the caller's literal because the tone is
+ * capped — {@link capAccentTone} only ever lowers it — and a capped tone means rebuilding
+ * the color regardless. Passing `from: <the original string>` would emit the tone the
+ * white label cannot survive.
+ *
+ * Shared by the accent zone and by any status theme on the color path: they resolve their
+ * components differently, but a fill is a fill once the numbers are in hand.
  */
 function cappedAccent(
   hue: number,
@@ -966,12 +974,10 @@ function buildPalette(
     contrastLevel,
   } = config;
 
-  // Built from the RESOLVED hue, not the literal. `resolveConfig` ranks an explicit
-  // `hue` above the one a color carries — that is what lets a preview rotate a stored
-  // `accentColor` without discarding its tone — but `from: <the original string>`
-  // would hand Glaze the color's own hue and pin `accent-surface` to it while every
-  // sibling followed the theme. The ramp then splits: the fill one hue, its `-2`,
-  // `-3` and hover another, so a primary button changed hue on hover.
+  // Built from the RESOLVED components, not the literal — see `cappedAccent`. Handing
+  // Glaze the original string would pin `accent-surface` to an uncapped tone while its
+  // `-2`, `-3` and hover siblings stepped off the capped one, splitting the ramp so a
+  // primary button changed weight on hover.
   const accent: AccentSeed =
     accentColor !== null && accentTone !== null && accentSaturation !== null
       ? cappedAccent(hue, accentSaturation, accentTone)
@@ -1310,41 +1316,62 @@ function buildPalette(
     colors: tintedSurface,
   });
 
-  // A status theme takes the ACCENT COLOR'S TONE back out.
-  //
-  // The tone is the brand's, and only the brand's. Inherited, a light brand would put
-  // `#danger-accent-surface` at tone 88 in a red hue — a pale pink danger button, which
-  // is not a danger button. Status themes carry a *meaning* their hue exists to signal,
-  // so they keep the white-anchored derivation that lands every hue at a comparable
-  // weight. `extend({ colors })` redefines each listed color from scratch, so restating
-  // the null arrangement is enough to undo it.
-  //
-  // With no accent color this is the tinted-surface override itself, so the
-  // shipped palette is provably untouched.
-  const statusColors: ColorMap =
-    accent == null
+  /**
+   * One status theme's overrides, on whichever path its own seed is on.
+   *
+   * **Its own color** — the family becomes that color, exactly as the accent zone's does,
+   * so the softened APCA floors in `accentColors`' color arm come with it rather than
+   * being restated here. The theme's Glaze seed is the color's chroma (see
+   * `ResolvedThemeSeed.saturation`), so the tinted surface, the border and the text ramp
+   * re-solve at their shipped factors OF that chroma — the banner keeps its proportion to
+   * the button instead of drifting relative to a fill whose chroma arrives absolute.
+   *
+   * **No color of its own, but the ACCENT has one** — the accent color's tone is taken
+   * back out. The tone is the brand's, and only the brand's. Inherited, a light brand
+   * would put `#danger-accent-surface` at tone 88 in a red hue — a pale pink danger
+   * button, which is not a danger button. A status theme carries a *meaning* its hue
+   * exists to signal, so absent an instruction of its own it keeps the white-anchored
+   * derivation that lands every hue at a comparable weight. `extend({ colors })`
+   * redefines each listed color from scratch, so restating the null arrangement is enough
+   * to undo it.
+   *
+   * **Neither** — the tinted-surface override itself, so the shipped palette is provably
+   * untouched.
+   */
+  const statusColors = (theme: ResolvedThemeSeed): ColorMap => {
+    if (theme.color !== null && theme.colorTone !== null) {
+      return {
+        ...tintedSurface,
+        ...accentColors(
+          cappedAccent(theme.hue, theme.saturation, theme.colorTone),
+        ),
+      };
+    }
+
+    return accent == null
       ? tintedSurface
       : { ...tintedSurface, ...accentColors(null) };
+  };
 
   const successTheme = defaultTheme.extend({
     hue: themes.success.hue,
     saturation: themes.success.saturation,
-    colors: statusColors,
+    colors: statusColors(themes.success),
   });
   const dangerTheme = defaultTheme.extend({
     hue: themes.danger.hue,
     saturation: themes.danger.saturation,
-    colors: statusColors,
+    colors: statusColors(themes.danger),
   });
   const warningTheme = defaultTheme.extend({
     hue: themes.warning.hue,
     saturation: themes.warning.saturation,
-    colors: statusColors,
+    colors: statusColors(themes.warning),
   });
   const noteTheme = defaultTheme.extend({
     hue: themes.note.hue,
     saturation: themes.note.saturation,
-    colors: statusColors,
+    colors: statusColors(themes.note),
   });
 
   // --------------------------------------------------------------------------

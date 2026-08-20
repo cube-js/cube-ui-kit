@@ -183,7 +183,7 @@ For example, a success banner uses `fill: '#success-surface'` + `color: '#succes
 ```ts
 import { resetPaletteConfig, setPaletteConfig } from '@cube-dev/ui-kit';
 
-setPaletteConfig({ hue: 210, themes: { danger: { hue: 12 } } });
+setPaletteConfig({ accent: { hue: 210 }, themes: { danger: '#b91c1c' } });
 resetPaletteConfig();
 ```
 
@@ -192,7 +192,7 @@ Also available: `getPaletteConfig()`, `subscribePaletteConfig()`, the `usePalett
 To theme a *region* instead of the document — a theme preview, or a dark panel inside a light page — use `renderColorTokens()`. It resolves one config and one scheme to flat values you apply via a `tokens` prop, without touching the live palette:
 
 ```tsx
-<Block tokens={renderColorTokens({ hue: 210, scheme: 'dark' })} fill="#surface">
+<Block tokens={renderColorTokens({ accent: { hue: 210 }, scheme: 'dark' })} fill="#surface">
   …
 </Block>
 ```

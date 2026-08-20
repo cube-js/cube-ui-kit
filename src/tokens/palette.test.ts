@@ -20,6 +20,8 @@ import {
 } from './palette';
 import {
   DEFAULT_CODE_SATURATION,
+  DEFAULT_DANGER_HUE,
+  DEFAULT_NOTE_HUE,
   DEFAULT_PALETTE_CONFIG,
   getPaletteConfig,
   getPaletteConfigInput,
@@ -27,14 +29,28 @@ import {
   invalidatePaletteTokens,
   MAX_BASE_SATURATION,
   resetPaletteConfig,
+  resolvePaletteConfig,
   setPaletteConfig,
   subscribePaletteConfig,
 } from './palette-config';
 
 import type { Styles, Tokens } from '@tenphi/tasty';
-import type { PaletteConfig } from './palette-config';
+import type { PaletteConfig, PaletteSeed } from './palette-config';
 
 type TokenStates = Record<string, string>;
+
+/**
+ * The numeric arm of a seed read back from the sparse config, or `undefined`.
+ *
+ * A zone on the color path has no numbers to report — the point of the union — so
+ * asking one for its `hue` is a question with no answer rather than a type error to
+ * cast away.
+ */
+function pinnedNumbers(
+  seed: PaletteSeed | undefined,
+): { hue?: number; saturation?: number } | undefined {
+  return typeof seed === 'object' ? seed : undefined;
+}
 
 const CODE_TOKENS = [
   '#code-comment',
@@ -308,7 +324,7 @@ describe('setPaletteConfig', () => {
   });
 
   it('re-seeds the brand hue and restores it on reset', () => {
-    setPaletteConfig({ hue: 30 });
+    setPaletteConfig({ accent: { hue: 30 } });
 
     const tuned = dumpTokens(getPaletteTokens());
 
@@ -332,7 +348,7 @@ describe('setPaletteConfig', () => {
     // Re-seed the brand onto `code-number`'s hue: with `code-string` still
     // tracking the brand seed, strings and numbers would become
     // indistinguishable in a code block.
-    setPaletteConfig({ hue: 156.9 });
+    setPaletteConfig({ accent: { hue: 156.9 } });
 
     const after = getPaletteTokens();
 
@@ -358,7 +374,7 @@ describe('setPaletteConfig', () => {
   });
 
   it('moves the base zone without touching the accent zone', () => {
-    setPaletteConfig({ baseHue: 60 });
+    setPaletteConfig({ base: { hue: 60 } });
 
     const tuned = dumpTokens(getPaletteTokens());
     const moved = Object.keys(baseline).filter(
@@ -388,7 +404,7 @@ describe('setPaletteConfig', () => {
   });
 
   it('leaves a colored theme tinted with its own hue, not the base hue', () => {
-    setPaletteConfig({ baseHue: 60 });
+    setPaletteConfig({ base: { hue: 60 } });
 
     const tuned = dumpTokens(getPaletteTokens());
 
@@ -402,7 +418,7 @@ describe('setPaletteConfig', () => {
   it('ships with a white page surface that no saturation can tint', () => {
     // The premise `surfaceMode: 'tinted'` exists to fix: at the end of the tone
     // scale there is no room for chroma, so the base seed has nothing to act on.
-    setPaletteConfig({ pastel: false, baseSaturation: 100 });
+    setPaletteConfig({ base: { saturation: 100 }, pastel: false });
 
     expect(chromaOf(variant(getPaletteTokens(), '')['#surface'])).toBe(0);
   });
@@ -473,7 +489,7 @@ describe('setPaletteConfig', () => {
           renderColorTokens({
             surfaceMode: 'tinted',
             pastel: false,
-            baseSaturation,
+            base: { saturation: baseSaturation },
           })['#surface'] as string
         ).toString(),
       );
@@ -484,12 +500,16 @@ describe('setPaletteConfig', () => {
   });
 
   it('keeps the accent zone still while the base seed moves', () => {
-    setPaletteConfig({ pastel: false, saturation: 80 });
+    setPaletteConfig({ accent: { saturation: 80 }, pastel: false });
 
     const baseline80 = variant(getPaletteTokens(), '');
 
     // Under `80` the base zone sits at `9.6`; `2` is genuinely below it.
-    setPaletteConfig({ pastel: false, saturation: 80, baseSaturation: 2 });
+    setPaletteConfig({
+      accent: { saturation: 80 },
+      base: { saturation: 2 },
+      pastel: false,
+    });
 
     const muted = variant(getPaletteTokens(), '');
 
@@ -500,7 +520,11 @@ describe('setPaletteConfig', () => {
       );
 
     // …and takes on more when asked, rather than only ever less.
-    setPaletteConfig({ pastel: false, saturation: 80, baseSaturation: 30 });
+    setPaletteConfig({
+      accent: { saturation: 80 },
+      base: { saturation: 30 },
+      pastel: false,
+    });
 
     const tinted = variant(getPaletteTokens(), '');
 
@@ -517,12 +541,16 @@ describe('setPaletteConfig', () => {
   });
 
   it('follows the palette seed at the recipe share until the base seed is set', () => {
-    setPaletteConfig({ pastel: false, saturation: 55 });
+    setPaletteConfig({ accent: { saturation: 55 }, pastel: false });
 
     // 12% of the seed — the factor `surface` carries in the recipe.
     expect(getPaletteConfig().baseSaturation).toBeCloseTo(6.6, 5);
 
-    setPaletteConfig({ pastel: false, saturation: 55, baseSaturation: 20 });
+    setPaletteConfig({
+      accent: { saturation: 55 },
+      base: { saturation: 20 },
+      pastel: false,
+    });
 
     expect(getPaletteConfig().baseSaturation).toBe(20);
     expect(getPaletteConfig().saturation).toBe(55);
@@ -533,7 +561,7 @@ describe('setPaletteConfig', () => {
 
     // Stating the number the default resolves to has to be a no-op, or the two
     // halves of the default have drifted apart.
-    setPaletteConfig({ baseSaturation: 100 * 0.12 });
+    setPaletteConfig({ base: { saturation: 100 * 0.12 } });
 
     const stated = variant(getPaletteTokens(), '');
 
@@ -551,40 +579,44 @@ describe('setPaletteConfig', () => {
     // A palette-level `saturation` turns pastel off, because tuning it is the
     // non-pastel path. How much hue the chrome carries says nothing about which
     // chroma space the palette is in, so this one must not.
-    setPaletteConfig({ baseSaturation: 40 });
+    setPaletteConfig({ base: { saturation: 40 } });
 
     expect(getPaletteConfig().pastel).toBe(true);
   });
 
   it('unlinks a status saturation from the palette seed once set explicitly', () => {
     // Until it is set, `warning` follows the palette seed…
-    setPaletteConfig({ saturation: 50 });
+    setPaletteConfig({ accent: { saturation: 50 } });
     expect(getPaletteConfig().themes.warning.saturation).toBe(50);
 
     // …setting it pins it…
     setPaletteConfig({
-      saturation: 50,
+      accent: { saturation: 50 },
       themes: { warning: { saturation: 90 } },
     });
     expect(getPaletteConfig().themes.warning.saturation).toBe(90);
 
     // …and it then stays put while the seed keeps moving, as long as the config
     // carrying it survives — which is what the updater form is for.
-    setPaletteConfig((config) => ({ ...config, saturation: 30 }));
+    setPaletteConfig((config) => ({ ...config, accent: { saturation: 30 } }));
     expect(getPaletteConfig().saturation).toBe(30);
     expect(getPaletteConfig().themes.warning.saturation).toBe(90);
 
     // Dropping the pin makes it inherit again.
-    setPaletteConfig({ saturation: 20 });
+    setPaletteConfig({ accent: { saturation: 20 } });
     expect(getPaletteConfig().themes.warning.saturation).toBe(20);
   });
 
   it('reports which fields are pinned and which still inherit', () => {
-    expect(getPaletteConfigInput().themes?.warning?.saturation).toBeUndefined();
+    expect(
+      pinnedNumbers(getPaletteConfigInput().themes?.warning)?.saturation,
+    ).toBeUndefined();
 
     setPaletteConfig({ themes: { warning: { saturation: 90 } } });
 
-    expect(getPaletteConfigInput().themes?.warning?.saturation).toBe(90);
+    expect(
+      pinnedNumbers(getPaletteConfigInput().themes?.warning)?.saturation,
+    ).toBe(90);
   });
 
   it('notifies when only the pinned-ness changes, not the values', () => {
@@ -599,23 +631,27 @@ describe('setPaletteConfig', () => {
     setPaletteConfig({ themes: { warning: { saturation: inherited } } });
 
     expect(seen).toHaveLength(1);
-    expect(getPaletteConfigInput().themes?.warning?.saturation).toBe(inherited);
+    expect(
+      pinnedNumbers(getPaletteConfigInput().themes?.warning)?.saturation,
+    ).toBe(inherited);
 
     // Clearing it again is likewise observable.
     setPaletteConfig({ themes: { warning: { saturation: undefined } } });
 
     expect(seen).toHaveLength(2);
-    expect(getPaletteConfigInput().themes?.warning?.saturation).toBeUndefined();
+    expect(
+      pinnedNumbers(getPaletteConfigInput().themes?.warning)?.saturation,
+    ).toBeUndefined();
 
     // Pinning a field that was inherited is itself a change, so the first write
     // notifies…
-    setPaletteConfig({ hue: 200 });
+    setPaletteConfig({ accent: { hue: 200 } });
     expect(seen).toHaveLength(3);
 
     // …but re-applying an already-pinned value costs nothing. This is the
     // `<Root palette={{ hue: 200 }}>` case: an inline literal on every render.
-    setPaletteConfig({ hue: 200 });
-    setPaletteConfig({ hue: 200 });
+    setPaletteConfig({ accent: { hue: 200 } });
+    setPaletteConfig({ accent: { hue: 200 } });
 
     expect(seen).toHaveLength(3);
 
@@ -624,33 +660,35 @@ describe('setPaletteConfig', () => {
 
   it('drops a field that the new config leaves out', () => {
     setPaletteConfig({
-      saturation: 50,
+      accent: { saturation: 50 },
       themes: { warning: { saturation: 90 } },
     });
     expect(getPaletteConfig().themes.warning.saturation).toBe(90);
 
     // Omitting the pin is how you remove it — no `undefined` needed.
-    setPaletteConfig({ saturation: 50 });
+    setPaletteConfig({ accent: { saturation: 50 } });
 
     expect(getPaletteConfig().themes.warning.saturation).toBe(50);
-    expect(getPaletteConfigInput().themes?.warning?.saturation).toBeUndefined();
+    expect(
+      pinnedNumbers(getPaletteConfigInput().themes?.warning)?.saturation,
+    ).toBeUndefined();
 
     // An explicit `undefined` is equivalent, since neither is a value.
-    setPaletteConfig({ saturation: undefined });
+    setPaletteConfig({ accent: { saturation: undefined } });
 
     expect(getPaletteConfig().saturation).toBe(
       DEFAULT_PALETTE_CONFIG.saturation,
     );
 
     // Dropping it from inside an updater works the same way.
-    setPaletteConfig({ hue: 200, baseHue: 60 });
-    setPaletteConfig(({ baseHue, ...config }) => config);
+    setPaletteConfig({ accent: { hue: 200 }, base: { hue: 60 } });
+    setPaletteConfig(({ base, ...config }) => config);
 
     expect(getPaletteConfig().baseHue).toBe(200);
   });
 
   it('cascades a palette-level saturation into themes that set none', () => {
-    setPaletteConfig({ saturation: 40 });
+    setPaletteConfig({ accent: { saturation: 40 } });
 
     expect(getPaletteConfig().themes.danger.saturation).toBe(40);
     expect(getPaletteConfig().themes.warning.saturation).toBe(40);
@@ -661,7 +699,7 @@ describe('setPaletteConfig', () => {
       ...config,
       themes: { warning: { saturation: 95 } },
     }));
-    setPaletteConfig((config) => ({ ...config, saturation: 55 }));
+    setPaletteConfig((config) => ({ ...config, accent: { saturation: 55 } }));
 
     expect(getPaletteConfig().themes.warning.saturation).toBe(95);
     expect(getPaletteConfig().themes.danger.saturation).toBe(55);
@@ -727,7 +765,7 @@ describe('setPaletteConfig', () => {
   });
 
   it('replaces the whole config rather than accumulating', () => {
-    setPaletteConfig({ hue: 30 });
+    setPaletteConfig({ accent: { hue: 30 } });
     setPaletteConfig({ themes: { note: { hue: 12 } } });
 
     // The second call did not mention `hue`, so there is no `hue` any more.
@@ -738,7 +776,7 @@ describe('setPaletteConfig', () => {
   it('keeps sibling themes when an updater patches one nested seed', () => {
     // The shape every one-field control in a settings UI needs: `themes` is one
     // field, so patching a seed without spreading it drops the other three.
-    setPaletteConfig({ hue: 30, themes: { danger: { hue: 12 } } });
+    setPaletteConfig({ accent: { hue: 30 }, themes: { danger: { hue: 12 } } });
     setPaletteConfig((config) => ({
       ...config,
       themes: { ...config.themes, note: { hue: 200 } },
@@ -752,7 +790,7 @@ describe('setPaletteConfig', () => {
   });
 
   it('layers onto the current config from an updater', () => {
-    setPaletteConfig({ hue: 30 });
+    setPaletteConfig({ accent: { hue: 30 } });
     setPaletteConfig((config) => ({
       ...config,
       themes: { note: { hue: 12 } },
@@ -763,7 +801,7 @@ describe('setPaletteConfig', () => {
   });
 
   it('hands the updater the sparse config, not the resolved one', () => {
-    setPaletteConfig({ hue: 30 });
+    setPaletteConfig({ accent: { hue: 30 } });
 
     let seen: PaletteConfig | undefined;
     setPaletteConfig((config) => {
@@ -772,13 +810,13 @@ describe('setPaletteConfig', () => {
       return config;
     });
 
-    // `baseHue` inherits `hue`, and the updater has to be able to tell that from
-    // a `baseHue` pinned to 30 — otherwise spreading would silently pin it.
-    expect(seen).toEqual({ hue: 30 });
+    // The base zone inherits the accent, and the updater has to be able to tell that
+    // from a `base` pinned to the same hue — otherwise spreading would silently pin it.
+    expect(seen).toEqual({ accent: { hue: 30 } });
   });
 
   it('resets to the shipped config', () => {
-    setPaletteConfig({ hue: 30, pastel: true, contrastLevel: 40 });
+    setPaletteConfig({ accent: { hue: 30 }, pastel: true, contrastLevel: 40 });
     resetPaletteConfig();
 
     expect(getPaletteConfig()).toEqual(DEFAULT_PALETTE_CONFIG);
@@ -787,7 +825,7 @@ describe('setPaletteConfig', () => {
   it('invalidates the downstream token caches', () => {
     const before = getColorTokens()['#surface'];
 
-    setPaletteConfig({ hue: 30 });
+    setPaletteConfig({ accent: { hue: 30 } });
 
     expect(getColorTokens()['#surface']).not.toEqual(before);
   });
@@ -871,11 +909,11 @@ describe('code syntax tokens', () => {
     const before = CODE_TOKENS.map(lightOf);
 
     // Halving the palette saturation used to halve the syntax chroma with it.
-    setPaletteConfig({ saturation: 40 });
+    setPaletteConfig({ accent: { saturation: 40 } });
 
     expect(CODE_TOKENS.map(lightOf)).toEqual(before);
 
-    setPaletteConfig({ saturation: 100 });
+    setPaletteConfig({ accent: { saturation: 100 } });
 
     expect(CODE_TOKENS.map(lightOf)).toEqual(before);
   });
@@ -890,7 +928,7 @@ describe('code syntax tokens', () => {
 
   it('keeps its own saturation while the rest of the palette moves', () => {
     setPaletteConfig({
-      saturation: 30,
+      accent: { saturation: 30 },
       themes: { code: { saturation: 90 } },
     });
 
@@ -898,12 +936,12 @@ describe('code syntax tokens', () => {
     // Every other theme follows the palette-level seed…
     expect(getPaletteConfig().themes.danger.saturation).toBe(30);
     // …and `code` keeps its own even after the palette-level one moves again.
-    setPaletteConfig((config) => ({ ...config, saturation: 70 }));
+    setPaletteConfig((config) => ({ ...config, accent: { saturation: 70 } }));
     expect(getPaletteConfig().themes.code.saturation).toBe(90);
   });
 
   it('defaults to the shipped saturation rather than inheriting', () => {
-    setPaletteConfig({ saturation: 20 });
+    setPaletteConfig({ accent: { saturation: 20 } });
 
     // `DEFAULT_CODE_SATURATION`, not `DEFAULT_PALETTE_CONFIG.saturation`: the two
     // parted ways when the app seed moved to 100 for pastel. Asserting against the
@@ -969,7 +1007,10 @@ describe('code syntax tokens', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
 
     // 0.12 * 100 / 5 = 2.4, past Glaze's 0–1 factor range.
-    setPaletteConfig({ saturation: 100, themes: { code: { saturation: 5 } } });
+    setPaletteConfig({
+      accent: { saturation: 100 },
+      themes: { code: { saturation: 5 } },
+    });
     getPaletteTokens();
 
     expect(warn).toHaveBeenCalledWith(
@@ -1025,7 +1066,10 @@ describe('renderPaletteTokens', () => {
     const before = dumpTokens(getPaletteTokens());
     const baseline = renderPaletteTokens({ scheme: 'light' });
 
-    const preview = renderPaletteTokens({ hue: 30, scheme: 'light' });
+    const preview = renderPaletteTokens({
+      accent: { hue: 30 },
+      scheme: 'light',
+    });
 
     expect(preview['#accent-surface']).not.toBe(baseline['#accent-surface']);
     // The live palette and the stored config must be untouched.
@@ -1034,7 +1078,7 @@ describe('renderPaletteTokens', () => {
   });
 
   it('merges over the current config rather than the shipped defaults', () => {
-    setPaletteConfig({ saturation: 20 });
+    setPaletteConfig({ accent: { saturation: 20 } });
 
     expect(renderPaletteTokens({ scheme: 'light' })['#accent-surface']).toBe(
       getPaletteTokens()['#accent-surface']?.[''],
@@ -1104,13 +1148,15 @@ describe('renderPaletteTokens', () => {
     // for bit. If the level did not reach the themes in the region path, these
     // would silently all be the same.
     for (const scheme of ['light', 'dark'] as const) {
-      expect(renderPaletteTokens({ contrastLevel: 0, scheme })).toEqual(
-        renderPaletteTokens({ contrastLevel: 'auto', scheme }),
+      expect(renderPaletteTokens({ contrastLevel: 0, scheme: scheme })).toEqual(
+        renderPaletteTokens({ contrastLevel: 'auto', scheme: scheme }),
       );
-      expect(renderPaletteTokens({ contrastLevel: 100, scheme })).toEqual(
+      expect(
+        renderPaletteTokens({ contrastLevel: 100, scheme: scheme }),
+      ).toEqual(
         renderPaletteTokens({
           contrastLevel: 'auto',
-          scheme,
+          scheme: scheme,
           highContrast: true,
         }),
       );
@@ -1119,7 +1165,7 @@ describe('renderPaletteTokens', () => {
 
   it('interpolates between the tiers at intermediate levels', () => {
     const at = (contrastLevel: number | 'auto') =>
-      renderPaletteTokens({ contrastLevel, scheme: 'light' });
+      renderPaletteTokens({ contrastLevel: contrastLevel, scheme: 'light' });
 
     const low = at(0);
     const mid = at(50);
@@ -1260,17 +1306,20 @@ describe('config immutability', () => {
   });
 
   it('does not follow the caller mutating the object afterwards', () => {
-    const config: PaletteConfig = { hue: 200 };
+    const accent = { hue: 200 };
+    const config: PaletteConfig = { accent };
 
     setPaletteConfig(config);
-    config.hue = 300;
+    // Both levels: the config object the caller still holds, and the seed inside it.
+    config.accent = { hue: 400 };
+    accent.hue = 300;
 
     expect(getPaletteConfig().hue).toBe(200);
-    expect(getPaletteConfigInput().hue).toBe(200);
+    expect(pinnedNumbers(getPaletteConfigInput().accent)?.hue).toBe(200);
   });
 
   it('freezes what it hands out, so a stray write cannot desync the caches', () => {
-    setPaletteConfig({ hue: 200, themes: { danger: { hue: 12 } } });
+    setPaletteConfig({ accent: { hue: 200 }, themes: { danger: { hue: 12 } } });
 
     // Silent corruption is the failure being prevented: a write that landed
     // would move the config without bumping the version, leaving every token
@@ -1326,7 +1375,7 @@ describe('accent color seeds', () => {
   it('leaves the palette untouched when no color is given', () => {
     const baseline = dumpTokens(getPaletteTokens());
 
-    setPaletteConfig({ hue: DEFAULT_PALETTE_CONFIG.hue });
+    setPaletteConfig({ accent: { hue: DEFAULT_PALETTE_CONFIG.hue } });
 
     expect(getPaletteConfig().accentTone).toBeNull();
     expect(dumpTokens(getPaletteTokens())).toEqual(baseline);
@@ -1346,7 +1395,7 @@ describe('accent color seeds', () => {
     for (const accentColor of BRANDS) {
       const tokens = renderPaletteTokens({
         ...EXACT,
-        accentColor,
+        accent: accentColor,
         scheme: 'light',
       });
       const fill = String(tokens['#accent-surface']);
@@ -1391,7 +1440,7 @@ describe('accent color seeds', () => {
     for (const accentColor of BRANDS) {
       const tokens = renderPaletteTokens({
         ...EXACT,
-        accentColor,
+        accent: accentColor,
         scheme: 'dark',
       });
       const fill = String(tokens['#accent-surface']);
@@ -1405,7 +1454,7 @@ describe('accent color seeds', () => {
     // …and it really is a different value, for a color the window has to move.
     const dark = renderPaletteTokens({
       ...EXACT,
-      accentColor: '#FFD400',
+      accent: '#FFD400',
       scheme: 'dark',
     });
     expect(hexOf(String(dark['#accent-surface']))).not.toBe('#ffd400');
@@ -1419,7 +1468,7 @@ describe('accent color seeds', () => {
     // is what keeps them apart.
     const hc = renderPaletteTokens({
       ...EXACT,
-      accentColor: '#0EA5E9',
+      accent: '#0EA5E9',
       scheme: 'light',
       highContrast: true,
     });
@@ -1447,8 +1496,8 @@ describe('accent color seeds', () => {
       for (const scheme of ['light', 'dark'] as const) {
         const hc = renderPaletteTokens({
           ...EXACT,
-          accentColor,
-          scheme,
+          accent: accentColor,
+          scheme: scheme,
           highContrast: true,
         });
 
@@ -1476,9 +1525,9 @@ describe('accent color seeds', () => {
         for (const highContrast of [false, true]) {
           const tokens = renderPaletteTokens({
             ...EXACT,
-            accentColor,
-            scheme,
-            highContrast,
+            accent: accentColor,
+            scheme: scheme,
+            highContrast: highContrast,
           });
           const base = String(tokens['#accent-selected-fill']);
           const label = `${accentColor} ${scheme}${highContrast ? ' hc' : ''}`;
@@ -1520,11 +1569,11 @@ describe('accent color seeds', () => {
     for (const accentColor of BRANDS.filter((brand) => brand !== '#FFD400')) {
       for (const scheme of ['light', 'dark'] as const) {
         invalidatePaletteTokens();
-        renderPaletteTokens({ ...EXACT, accentColor, scheme });
+        renderPaletteTokens({ ...EXACT, accent: accentColor, scheme: scheme });
         renderPaletteTokens({
           ...EXACT,
-          accentColor,
-          scheme,
+          accent: accentColor,
+          scheme: scheme,
           highContrast: true,
         });
       }
@@ -1551,7 +1600,7 @@ describe('accent color seeds', () => {
     for (const accentColor of ['#7A4DBF', '#EF4444']) {
       const tokens = renderPaletteTokens({
         ...EXACT,
-        accentColor,
+        accent: accentColor,
         scheme: 'light',
       });
       const drift = Math.abs(
@@ -1569,7 +1618,11 @@ describe('accent color seeds', () => {
     // `#accent-text` exists for.
     for (const accentColor of BRANDS) {
       for (const scheme of ['light', 'dark'] as const) {
-        const tokens = renderPaletteTokens({ ...EXACT, accentColor, scheme });
+        const tokens = renderPaletteTokens({
+          ...EXACT,
+          accent: accentColor,
+          scheme: scheme,
+        });
 
         expect(tokens['#accent-text'], `${accentColor} ${scheme}`).not.toBe(
           tokens['#accent-text-soft'],
@@ -1591,7 +1644,7 @@ describe('accent color seeds', () => {
     // nothing left to leak into a status theme.
     const seeded = renderPaletteTokens({
       ...EXACT,
-      accentColor: '#FFD400',
+      accent: '#FFD400',
       scheme: 'light',
     });
     const baseline = renderPaletteTokens({ ...EXACT, scheme: 'light' });
@@ -1623,30 +1676,30 @@ describe('accent color seeds', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const seen: string[] = [];
     const unsubscribe = subscribePaletteConfig(() => {
-      seen.push(String(getPaletteConfigInput().accentColor));
+      seen.push(String(getPaletteConfigInput().accent));
     });
 
-    setPaletteConfig({ accentColor: 'bad-one' });
-    setPaletteConfig({ accentColor: 'bad-two' });
+    setPaletteConfig({ accent: 'bad-one' });
+    setPaletteConfig({ accent: 'bad-two' });
 
-    expect(getPaletteConfigInput().accentColor).toBe('bad-two');
+    expect(getPaletteConfigInput().accent).toBe('bad-two');
     expect(seen).toEqual(['bad-one', 'bad-two']);
 
     unsubscribe();
     warn.mockRestore();
   });
 
-  it('rotates the whole accent ramp when a hue outranks the color', () => {
-    // `resolveConfig` ranks an explicit `hue` above the one an `accentColor` carries,
-    // so the fill has to follow it like every sibling does. Handing Glaze the literal
-    // instead pinned `accent-surface` to the color's own hue while `-2`, `-3` and
-    // `hover` followed the theme — a primary button that changed hue on hover.
+  it('keeps the whole accent ramp on one hue under a color seed', () => {
+    // The fill is pinned by `from` while `-2`, `-3` and `hover` are tone steps off it,
+    // so the four have to agree on a hue. They stopped agreeing once — the seed was
+    // rebuilt from resolved components while the fill kept the literal's own hue — and
+    // a primary button changed hue on hover.
     //
-    // Asserted on the EMITTED tokens rather than on `getPaletteConfig().hue`, which
-    // was already correct while the ramp was split.
+    // Asserted on the EMITTED tokens rather than on `getPaletteConfig().hue`, which was
+    // already correct while the ramp was split.
+    const seed = colorSeed('#0EA5E9')!;
     const tokens = renderPaletteTokens({
-      accentColor: '#0EA5E9',
-      hue: 94,
+      accent: '#0EA5E9',
       scheme: 'light',
     });
     const ramp = [
@@ -1656,7 +1709,7 @@ describe('accent color seeds', () => {
       '#accent-surface-hover',
     ].map((name) => hueOf(String(tokens[name])));
 
-    for (const hue of ramp) expect(hue).toBeCloseTo(94, 1);
+    for (const hue of ramp) expect(hue).toBeCloseTo(seed.hue, 1);
   });
 
   it('keeps a white label readable on the emitted fill, every hue and tier', () => {
@@ -1671,9 +1724,9 @@ describe('accent color seeds', () => {
             for (const highContrast of [false, true]) {
               const seed = `okhst(${hue} ${saturation}% ${tone}%)`;
               const tokens = renderPaletteTokens({
-                accentColor: seed,
-                scheme,
-                highContrast,
+                accent: seed,
+                scheme: scheme,
+                highContrast: highContrast,
               });
               const label = `${seed} ${scheme}${highContrast ? ' hc' : ''}`;
 
@@ -1708,7 +1761,7 @@ describe('accent color seeds', () => {
     // unchanged.
     const tokens = renderPaletteTokens({
       ...EXACT,
-      accentColor: '#FFD400',
+      accent: '#FFD400',
       scheme: 'light',
     });
     const baseline = renderPaletteTokens({ ...EXACT, scheme: 'light' });
@@ -1729,7 +1782,7 @@ describe('accent color seeds', () => {
     const seed = colorSeed('#FFD400')!;
     const baseline = renderPaletteTokens({ scheme: 'light' });
 
-    setPaletteConfig({ baseColor: '#FFD400' });
+    setPaletteConfig({ base: '#FFD400' });
 
     expect(getPaletteConfig().baseHue).toBeCloseTo(seed.hue, 6);
     expect(getPaletteConfig().baseSaturation).toBe(MAX_BASE_SATURATION);
@@ -1758,7 +1811,7 @@ describe('accent color seeds', () => {
 
     expect(muted.saturation).toBeLessThan(MAX_BASE_SATURATION);
 
-    setPaletteConfig({ baseColor: '#6e7076' });
+    setPaletteConfig({ base: '#6e7076' });
     expect(getPaletteConfig().baseSaturation).toBeCloseTo(muted.saturation, 6);
 
     // …and the near-grey seed genuinely mutes the chrome, rather than leaving it on
@@ -1786,9 +1839,9 @@ describe('accent color seeds', () => {
     expect(statuses.length).toBeGreaterThan(10);
 
     for (const config of [
-      { baseColor: '#FFD400' },
-      { accentColor: '#7A7269' },
-      { accentColor: '#2F5BFF', baseColor: '#6e7076' },
+      { base: '#FFD400' },
+      { accent: '#7A7269' },
+      { accent: '#2F5BFF', base: '#6e7076' },
     ] as PaletteConfig[]) {
       setPaletteConfig(config);
 
@@ -1807,7 +1860,7 @@ describe('accent color seeds', () => {
     // asked for.
     const grey = colorSeed('#7A7269')!;
 
-    setPaletteConfig({ accentColor: '#7A7269' });
+    setPaletteConfig({ accent: '#7A7269' });
 
     expect(getPaletteConfig().baseSaturation).toBeCloseTo(
       grey.saturation * 0.12,
@@ -1816,7 +1869,7 @@ describe('accent color seeds', () => {
 
     // A vivid brand lands where the shipped palette does, because its saturation is
     // the 100 the seed already carried.
-    setPaletteConfig({ accentColor: '#2F5BFF' });
+    setPaletteConfig({ accent: '#2F5BFF' });
 
     expect(getPaletteConfig().baseSaturation).toBeCloseTo(
       colorSeed('#2F5BFF')!.saturation * 0.12,
@@ -1824,36 +1877,40 @@ describe('accent color seeds', () => {
     );
   });
 
-  it('prefers an explicit base saturation over the color it would derive', () => {
-    setPaletteConfig({ baseColor: '#FFD400', baseSaturation: 3 });
+  it('clips a base color to the ceiling but leaves a base number alone', () => {
+    // The two arms are on deliberately different scales. A color says "the chrome IS
+    // this", so it is clipped — a fully saturated chrome is no longer chrome. A number
+    // is the more specific instruction, and a tuner offering the range is entitled to
+    // the top of it.
+    setPaletteConfig({ base: '#FFD400', pastel: false });
 
-    expect(getPaletteConfig().baseSaturation).toBe(3);
+    expect(getPaletteConfig().baseSaturation).toBe(MAX_BASE_SATURATION);
+
+    setPaletteConfig({ base: { saturation: 100 }, pastel: false });
+
+    expect(getPaletteConfig().baseSaturation).toBe(100);
   });
 
-  it('keeps the palette seed a ceiling on the chrome under either color', () => {
+  it('keeps the palette seed a ceiling on the chrome under a base color', () => {
     // `baseSaturationScale` divides by the seed, so the chrome's absolute chroma is a
-    // function of `baseSaturation` alone. Without the seed as a cap, a color seed
-    // would cancel `saturation` out of the base zone and a muted palette would leave
-    // an unmuted chrome — the invariant this pins.
-    setPaletteConfig({ pastel: false, saturation: 20 });
-
-    const seedOnly = getPaletteConfig().baseSaturation;
-
+    // function of `baseSaturation` alone. Without the seed as a cap, a color seed would
+    // cancel `saturation` out of the base zone and a muted palette would leave an
+    // unmuted chrome — the invariant this pins.
+    //
+    // A muted seed beside an ACCENT color is no longer expressible: the zone is seeded
+    // one way or the other, so a color there leaves the inherited seed at its default.
+    // The base zone is where a color and a number still meet, and where the cap bites.
     setPaletteConfig({
+      accent: { saturation: 20 },
+      base: '#FFD400',
       pastel: false,
-      saturation: 20,
-      accentColor: '#EF4444',
     });
-
-    expect(getPaletteConfig().baseSaturation).toBe(seedOnly);
-
-    setPaletteConfig({ pastel: false, saturation: 20, baseColor: '#FFD400' });
 
     expect(getPaletteConfig().baseSaturation).toBe(20);
 
     // …and the cap only bites when the seed is the lower of the two: at full
     // saturation the brand's own chroma is what the chrome takes its share of.
-    setPaletteConfig({ pastel: false, accentColor: '#EF4444' });
+    setPaletteConfig({ accent: '#EF4444', pastel: false });
 
     expect(getPaletteConfig().baseSaturation).toBeCloseTo(
       colorSeed('#EF4444')!.saturation * 0.12,
@@ -1861,16 +1918,20 @@ describe('accent color seeds', () => {
     );
   });
 
-  it('prefers an explicit hue over the derived one, keeping the tone', () => {
-    // The number is the more specific instruction. Keeping the tone regardless is what
-    // lets a preview rotate the hue of a stored brand without discarding its
-    // lightness.
-    const seed = colorSeed('#FFD400')!;
+  it('lets a numeric seed replace a color one rather than layering over it', () => {
+    // The union is the exclusivity: a zone is seeded by a color or by numbers, so a
+    // patch that switches form REPLACES. There is no "this brand, rotated" — a hue
+    // arriving next to a stored color takes the zone over, tone and all, and
+    // `accentTone` goes back to null.
+    setPaletteConfig({ ...EXACT, accent: '#FFD400' });
 
-    setPaletteConfig({ accentColor: '#FFD400', hue: 200, ...EXACT });
+    expect(getPaletteConfig().accentTone).not.toBeNull();
 
-    expect(getPaletteConfig().hue).toBe(200);
-    expect(getPaletteConfig().accentTone).toBeCloseTo(seed.tone, 6);
+    const rotated = resolvePaletteConfig({ accent: { hue: 200 } });
+
+    expect(rotated.hue).toBe(200);
+    expect(rotated.accentColor).toBeNull();
+    expect(rotated.accentTone).toBeNull();
   });
 
   it('leaves the palette seed alone whatever the color’s own chroma is', () => {
@@ -1884,7 +1945,7 @@ describe('accent color seeds', () => {
       1,
     );
 
-    setPaletteConfig({ accentColor: '#7A4DBF', ...EXACT });
+    setPaletteConfig({ ...EXACT, accent: '#7A4DBF' });
 
     expect(getPaletteConfig().saturation).toBe(
       DEFAULT_PALETTE_CONFIG.saturation,
@@ -1894,7 +1955,7 @@ describe('accent color seeds', () => {
   it('takes the hue and tone but not the chroma of a color under pastel', () => {
     const seed = colorSeed('#EF4444')!;
 
-    setPaletteConfig({ accentColor: '#EF4444' });
+    setPaletteConfig({ accent: '#EF4444' });
 
     // Pastel is one flat ceiling, so there is one saturation and it is the top of the
     // scale — the color's own is deliberately dropped.
@@ -1911,12 +1972,12 @@ describe('accent color seeds', () => {
     // …and softer is measurable: pastel cannot reproduce the color, non-pastel can.
     // This is the divergence the Theme Builder shows as requested-vs-resolved chips.
     const softened = renderPaletteTokens({
-      accentColor: '#EF4444',
+      accent: '#EF4444',
       scheme: 'light',
     });
     const exact = renderPaletteTokens({
       ...EXACT,
-      accentColor: '#EF4444',
+      accent: '#EF4444',
       scheme: 'light',
     });
 
@@ -1930,9 +1991,9 @@ describe('accent color seeds', () => {
 
   it('reads a lone saturation as a request to leave pastel', () => {
     // Tuning a saturation IS the non-pastel path, so writing one picks it. This is
-    // also what keeps `setPaletteConfig({ saturation: 55 })` doing what it always
+    // also what keeps `setPaletteConfig({ accent: { saturation: 55 } })` doing what it always
     // did, rather than silently resolving to the value pastel pins.
-    setPaletteConfig({ saturation: 55 });
+    setPaletteConfig({ accent: { saturation: 55 } });
 
     expect(getPaletteConfig().pastel).toBe(false);
     expect(getPaletteConfig().saturation).toBe(55);
@@ -1943,7 +2004,7 @@ describe('accent color seeds', () => {
   });
 
   it('lets an explicit pastel override a saturation, and remembers the number', () => {
-    setPaletteConfig({ saturation: 40, pastel: true });
+    setPaletteConfig({ accent: { saturation: 40 }, pastel: true });
 
     // `pastel` is the coarser of the two choices — a color space rather than a value
     // on one — so it wins wherever both are set.
@@ -1954,7 +2015,7 @@ describe('accent color seeds', () => {
     // Kept rather than dropped, so turning pastel off restores the caller's number
     // instead of resetting it. That is what makes the two paths a toggle rather than
     // a one-way door — and what lets the Theme Builder's Pastel switch round-trip.
-    expect(getPaletteConfigInput().saturation).toBe(40);
+    expect(pinnedNumbers(getPaletteConfigInput().accent)?.saturation).toBe(40);
 
     setPaletteConfig((config) => ({ ...config, pastel: false }));
     expect(getPaletteConfig().saturation).toBe(40);
@@ -1966,7 +2027,7 @@ describe('accent color seeds', () => {
 
     // A CSS keyword is the likely typo in a settings field: it looks like a color and
     // Glaze rejects it. Taking the render down over it would be the wrong trade.
-    setPaletteConfig({ accentColor: 'rebeccapurple' });
+    setPaletteConfig({ accent: 'rebeccapurple' });
 
     expect(warn).toHaveBeenCalled();
     expect(getPaletteConfig().hue).toBe(DEFAULT_PALETTE_CONFIG.hue);
@@ -1984,15 +2045,18 @@ describe('accent color seeds', () => {
 
     const seed = colorSeed('#FFD400')!;
 
-    setPaletteConfig({ hue: seed.hue, saturation: seed.saturation, ...EXACT });
+    setPaletteConfig({
+      ...EXACT,
+      accent: { hue: seed.hue, saturation: seed.saturation },
+    });
     expect(seen).toHaveLength(1);
 
     // The same resolved hue and saturation, said a different WAY. A settings UI reads
     // the sparse config to decide whether its hue slider or its color field is in
     // charge, so the swap has to be observable even where the numbers agree.
-    setPaletteConfig({ accentColor: '#FFD400', ...EXACT });
+    setPaletteConfig({ ...EXACT, accent: '#FFD400' });
     expect(seen).toHaveLength(2);
-    expect(getPaletteConfigInput().accentColor).toBe('#FFD400');
+    expect(getPaletteConfigInput().accent).toBe('#FFD400');
 
     unsubscribe();
   });
@@ -2000,7 +2064,7 @@ describe('accent color seeds', () => {
   it('previews a color seed without applying it', () => {
     const preview = renderPaletteTokens({
       ...EXACT,
-      accentColor: '#FFD400',
+      accent: '#FFD400',
       scheme: 'light',
     });
 
@@ -2008,5 +2072,300 @@ describe('accent color seeds', () => {
       renderPaletteTokens({ scheme: 'light' })['#accent-surface'],
     );
     expect(getPaletteConfig()).toEqual(DEFAULT_PALETTE_CONFIG);
+  });
+});
+
+/**
+ * The same `from` machinery, pointed at a status theme instead of the brand.
+ *
+ * What is genuinely different here is the CHROMA. The accent zone deliberately keeps a
+ * color's chroma out of the palette seed, because every status theme inherits it. A
+ * status theme inherits to nobody, so its seed takes the color's chroma outright — which
+ * is what holds its tinted banner, border and text ramp in the proportion to the fill
+ * that the shipped derivation gives them.
+ */
+describe('status color seeds', () => {
+  const EXACT = { pastel: false } as const;
+
+  /** The four factors the shipped recipe authors these at, relative to the theme seed. */
+  const FACTORS = {
+    '#danger-surface': 0.2,
+    '#danger-border': 0.3,
+    '#danger-surface-text': 0.25,
+    '#danger-surface-text-soft': 0.25,
+    '#danger-surface-text-soft-2': 0.25,
+  };
+
+  afterEach(() => {
+    resetPaletteConfig();
+  });
+
+  it('leaves the palette untouched when no theme names a color', () => {
+    const baseline = dumpTokens(getPaletteTokens());
+
+    setPaletteConfig({ themes: { danger: { hue: DEFAULT_DANGER_HUE } } });
+
+    expect(getPaletteConfig().themes.danger.color).toBeNull();
+    expect(dumpTokens(getPaletteTokens())).toEqual(baseline);
+  });
+
+  it('renders the requested color exactly wherever the floor allows', () => {
+    // The same contract the brand fill answers to, restated per theme: the fill is
+    // EITHER the color asked for, OR sitting on the APCA floor — and floored only when
+    // the color could not clear it alone.
+    for (const color of [
+      '#b91c1c',
+      '#15803d',
+      '#a16207',
+      '#a21caf',
+      '#FFD400',
+    ]) {
+      const tokens = renderPaletteTokens({
+        ...EXACT,
+        themes: { danger: color },
+        scheme: 'light',
+      });
+      const fill = String(tokens['#danger-accent-surface']);
+      const surface = String(tokens['#surface']);
+
+      const wanted = apcaOf(surface, color);
+
+      if (wanted >= 45) {
+        expectSameColor(hexOf(fill), color.toLowerCase(), color);
+      } else {
+        expect(apcaOf(surface, fill), color).toBeGreaterThanOrEqual(45 - 0.5);
+      }
+    }
+  });
+
+  it('reaches the theme’s text and icon, hover a step past rest', () => {
+    setPaletteConfig({ ...EXACT, themes: { danger: '#b91c1c' } });
+
+    const tokens = renderPaletteTokens({ scheme: 'light' });
+    const seed = colorSeed('#b91c1c')!;
+
+    // The rest link IS the brand — the visible payoff of a color seed — and the hover
+    // steps past it so the intensify survives.
+    expect(hueOf(String(tokens['#danger-accent-text-soft']))).toBeCloseTo(
+      seed.hue,
+      0,
+    );
+    expect(hueOf(String(tokens['#danger-accent-icon']))).toBeCloseTo(
+      seed.hue,
+      0,
+    );
+    expect(toneOf(String(tokens['#danger-accent-text']))).toBeLessThan(
+      toneOf(String(tokens['#danger-accent-text-soft'])),
+    );
+  });
+
+  it('holds the banner’s chroma in proportion to the fill', () => {
+    // The assertion the whole chroma design turns on. A color's chroma reaches the fill
+    // absolutely, through `from`, so unless the theme's SEED moves with it the banner
+    // keeps answering to a number the fill no longer has anything to do with — 0.2 of
+    // 100 beside a fill at 23, which is a washed-out button on a fully tinted banner.
+    //
+    // Measured as a ratio against the SAME hue seeded numerically rather than as an
+    // absolute chroma, so it pins the proportion and not the gamut.
+    //
+    // Two colors, and the muted one is the one with teeth: the status hexes a product
+    // actually ships (`#b91c1c` and friends) all measure above 88, so on their own they
+    // would let a four-percent drift pass for a proportion.
+    for (const color of ['#b91c1c', '#8d6e63']) {
+      const seed = colorSeed(color)!;
+
+      const seeded = renderPaletteTokens({
+        ...EXACT,
+        themes: { danger: color },
+        scheme: 'light',
+      });
+      const numeric = renderPaletteTokens({
+        ...EXACT,
+        themes: { danger: { hue: seed.hue, saturation: seed.saturation } },
+        scheme: 'light',
+      });
+
+      for (const name of Object.keys(FACTORS)) {
+        expect(chromaOf(String(seeded[name])), `${color} ${name}`).toBeCloseTo(
+          chromaOf(String(numeric[name])),
+          4,
+        );
+      }
+    }
+
+    // And it really does move. At the default seed of 100 the banner is markedly more
+    // chromatic than a muted color asks for — that gap is the drift being prevented.
+    const muted = renderPaletteTokens({
+      ...EXACT,
+      themes: { danger: '#8d6e63' },
+      scheme: 'light',
+    });
+    const unseeded = renderPaletteTokens({ ...EXACT, scheme: 'light' });
+
+    expect(chromaOf(String(muted['#danger-border'])) * 3).toBeLessThan(
+      chromaOf(String(unseeded['#danger-border'])),
+    );
+  });
+
+  it('softens the fill’s floor the way the brand’s is softened', () => {
+    // A status fill under a color seed answers to APCA Lc 45, not the white-anchored
+    // ladder's `['AA','AAA']`. `#0EA5E9` is the case that separates them: it renders at
+    // WCAG 2.77:1 against a white page and is CORRECT there, where a 3:1 floor would
+    // have darkened it away from the color asked for.
+    const tokens = renderPaletteTokens({
+      ...EXACT,
+      themes: { note: '#0EA5E9' },
+      scheme: 'light',
+    });
+    const fill = String(tokens['#note-accent-surface']);
+
+    expectSameColor(hexOf(fill), '#0ea5e9', 'note');
+    expect(contrastOf(fill, String(tokens['#surface']))).toBeLessThan(3);
+    expect(apcaOf(String(tokens['#surface']), fill)).toBeGreaterThanOrEqual(
+      45 - 0.5,
+    );
+  });
+
+  it('keeps a white label readable on a pale status fill', () => {
+    // Every `type="primary"` item on a status theme paints `#white` on this fill, so the
+    // tone cap has to apply here exactly as it does to the brand. A near-white seed is
+    // the case that proves it: uncapped, the button would be a white label on white.
+    for (const name of ['danger', 'success', 'warning', 'note'] as const) {
+      for (const highContrast of [false, true]) {
+        for (const scheme of ['light', 'dark'] as const) {
+          const tokens = renderPaletteTokens({
+            ...EXACT,
+            themes: { [name]: 'okhst(20 80% 96%)' },
+            scheme,
+            highContrast,
+          });
+          const fill = String(tokens[`#${name}-accent-surface`]);
+
+          // 44.9 rather than 45, and the same allowance the brand's own sweep takes:
+          // the emitted token is rounded on the way out, so the last tenth is the
+          // serializer's rather than the solver's.
+          expect(
+            apcaOf('#ffffff', fill),
+            `${name} ${scheme}${highContrast ? ' hc' : ''}`,
+          ).toBeGreaterThanOrEqual(44.9);
+        }
+      }
+    }
+  });
+
+  it('scopes a color to its own theme, in both directions', () => {
+    const baseline = renderPaletteTokens({ ...EXACT, scheme: 'light' });
+    const seeded = renderPaletteTokens({
+      ...EXACT,
+      themes: { danger: '#b91c1c' },
+      scheme: 'light',
+    });
+
+    // Nothing outside `danger` may move — not the other three statuses, not the brand
+    // themes, not the neutral chrome, not the syntax palette.
+    const untouched = Object.keys(baseline).filter(
+      (name) => !name.startsWith('#danger-'),
+    );
+
+    expect(untouched.length).toBeGreaterThan(50);
+
+    for (const name of untouched) {
+      expect(seeded[name], name).toBe(baseline[name]);
+    }
+
+    // …and the other direction: a BRAND color still leaves the three unseeded statuses
+    // on the baseline while `danger` follows its own.
+    const both = renderPaletteTokens({
+      ...EXACT,
+      accent: '#FFD400',
+      themes: { danger: '#b91c1c' },
+      scheme: 'light',
+    });
+
+    for (const name of [
+      '#success-accent-surface',
+      '#warning-accent-surface',
+      '#note-accent-surface',
+    ]) {
+      expect(both[name], name).toBe(baseline[name]);
+    }
+    expect(both['#danger-accent-surface']).toBe(
+      seeded['#danger-accent-surface'],
+    );
+  });
+
+  it('falls back to the theme’s default hue on a color it cannot parse', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    // A string no earlier test has tried: `colorSeed` caches its failures, and the
+    // cached `null` is what dedupes the warning to once per process per value.
+    setPaletteConfig({ themes: { danger: 'crimson' } });
+
+    expect(getPaletteConfig().themes.danger.color).toBeNull();
+    expect(getPaletteConfig().themes.danger.hue).toBe(DEFAULT_DANGER_HUE);
+    expect(getPaletteConfig().themes.danger.saturation).toBe(
+      DEFAULT_PALETTE_CONFIG.saturation,
+    );
+    expect(warn).toHaveBeenCalled();
+
+    warn.mockRestore();
+  });
+
+  it('counts a status color as a pinned field', () => {
+    const seen: number[] = [];
+    const unsubscribe = subscribePaletteConfig(() =>
+      seen.push(getPaletteVersion()),
+    );
+
+    // The same resolved hue, said a different WAY: a color that derives the shipped
+    // danger hue resolves to the same number, so only the pin signature can see it.
+    const color = 'okhst(23.1 100% 49%)';
+
+    setPaletteConfig({ themes: { danger: { hue: colorSeed(color)!.hue } } });
+    expect(seen).toHaveLength(1);
+
+    setPaletteConfig({ themes: { danger: color } });
+    expect(seen).toHaveLength(2);
+    expect(getPaletteConfigInput().themes?.danger).toBe(color);
+
+    // Two unparseable strings resolve identically — the value in the signature is the
+    // only thing that keeps the second write from being dropped silently.
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    setPaletteConfig({ themes: { danger: 'bad-one' } });
+    setPaletteConfig({ themes: { danger: 'bad-two' } });
+
+    expect(seen).toHaveLength(4);
+    expect(getPaletteConfigInput().themes?.danger).toBe('bad-two');
+
+    warn.mockRestore();
+    unsubscribe();
+  });
+
+  it('previews a status color without applying it', () => {
+    const preview = renderPaletteTokens({
+      ...EXACT,
+      themes: { danger: '#b91c1c' },
+      scheme: 'light',
+    });
+
+    expect(preview['#danger-accent-surface']).not.toBe(
+      renderPaletteTokens({ scheme: 'light' })['#danger-accent-surface'],
+    );
+    expect(getPaletteConfig()).toEqual(DEFAULT_PALETTE_CONFIG);
+  });
+
+  it('replaces a color with numbers rather than layering them', () => {
+    setPaletteConfig({ ...EXACT, themes: { danger: '#b91c1c' } });
+
+    expect(getPaletteConfig().themes.danger.colorTone).not.toBeNull();
+
+    const rotated = resolvePaletteConfig({ themes: { danger: { hue: 200 } } });
+
+    expect(rotated.themes.danger.hue).toBe(200);
+    expect(rotated.themes.danger.color).toBeNull();
+    expect(rotated.themes.danger.colorTone).toBeNull();
+    // The other three are untouched by the patch, which is what `mergeSeed` is for.
+    expect(rotated.themes.note.hue).toBe(DEFAULT_NOTE_HUE);
   });
 });
