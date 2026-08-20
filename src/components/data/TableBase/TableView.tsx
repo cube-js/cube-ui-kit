@@ -428,7 +428,28 @@ function TreeGridTable<T>(props: {
 }) {
   const { tree, tableProps, style, children } = props;
   const ref = useRef<HTMLTableElement>(null);
+  const pendingFocusKey = useRef<Key | null>(null);
   const { gridProps } = useTree(tree.ariaProps as any, tree.state, ref);
+
+  // A virtualized destination may not exist until the focused key makes the
+  // parent virtualizer scroll and render another window. Retry after each
+  // render until that row mounts, then complete the keyboard focus move.
+  useEffect(() => {
+    const key = pendingFocusKey.current;
+    if (key == null) return;
+
+    const target = Array.from(
+      ref.current?.querySelectorAll<HTMLTableRowElement>(
+        'tbody tr[data-element="Row"][data-key]',
+      ) ?? [],
+    ).find((element) => element.dataset.key === String(key));
+
+    if (target) {
+      pendingFocusKey.current = null;
+      target.focus();
+    }
+  });
+
   const handleKeyDownCapture = (
     event: ReactKeyboardEvent<HTMLTableElement>,
   ) => {
@@ -456,7 +477,8 @@ function TreeGridTable<T>(props: {
           'tbody tr[data-element="Row"][data-key]',
         ) ?? [],
       ).find((element) => element.dataset.key === String(next.key));
-      target?.focus();
+      if (target) target.focus();
+      else pendingFocusKey.current = next.key;
       return true;
     };
 

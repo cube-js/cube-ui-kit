@@ -692,4 +692,31 @@ describe('treegrid focus and virtualization', () => {
       treegrid().querySelectorAll('tbody tr[data-element="Row"]').length,
     ).toBeLessThan(61);
   });
+
+  it('moves focus after a virtualized arrow destination mounts', async () => {
+    renderWithRoot(
+      <ItemTable
+        data={treeData}
+        columns={treeColumns}
+        getRowChildren={(row) => row.children}
+        height="140px"
+        isVirtualized
+        overscan={0}
+        paginationMode="off"
+      />,
+    );
+
+    await vi.waitFor(() => expect(treeRow('root-0')).toBeInTheDocument());
+    treeRow('root-0').focus();
+
+    for (let index = 1; index <= 12; index++) {
+      await act(() => realInput.keyboard('{ArrowDown}'));
+      await vi.waitFor(() => expect(treeRow(`root-${index}`)).toHaveFocus());
+    }
+
+    expect(
+      document.querySelector<HTMLElement>('[data-element="Scroller"]')!
+        .scrollTop,
+    ).toBeGreaterThan(0);
+  });
 });

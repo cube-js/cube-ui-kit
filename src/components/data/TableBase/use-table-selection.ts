@@ -80,13 +80,12 @@ function deriveTreeSelection(
 
   const visit = (
     key: Key,
-    inheritedSelection = false,
   ): { all: boolean; any: boolean; eligible: boolean } => {
     const children = childrenOf.get(key) ?? [];
     const eligible = isEligible(key);
-    const selectsBranch = inheritedSelection || (eligible && source.has(key));
+    const explicitlySelected = eligible && source.has(key);
 
-    if (eligible && selectsBranch) checked.add(key);
+    if (explicitlySelected) checked.add(key);
 
     if (!children.length) {
       const selected = eligible && checked.has(key);
@@ -99,7 +98,7 @@ function deriveTreeSelection(
     let hasEligible = false;
 
     for (const child of children) {
-      const result = visit(child, selectsBranch);
+      const result = visit(child);
       if (result.eligible) hasEligible = true;
       if (!result.all) all = false;
       if (result.any) any = true;
@@ -114,6 +113,13 @@ function deriveTreeSelection(
     } else if (hasEligible && any) {
       checked.delete(key);
       indeterminate.add(key);
+    } else if (hasEligible) {
+      // Branch keys in the public set are a normalized reflection of their
+      // descendants, not an enduring wildcard. This matters when a search
+      // hid siblings: restoring the full tree must not make those siblings
+      // selected merely because the filtered parent had been checked.
+      checked.delete(key);
+      indeterminate.delete(key);
     } else if (!checked.has(key)) {
       indeterminate.delete(key);
     }

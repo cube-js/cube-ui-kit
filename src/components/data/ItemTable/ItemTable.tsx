@@ -442,6 +442,30 @@ function ItemTable<T = any>(
   const filteredTreeEntries = treeModel
     ? flattenTableTree(processedTreeRoots)
     : [];
+  const selectionTree = useMemo(() => {
+    if (!treeModel) return undefined;
+
+    // Selection follows the tree the user can currently act on. In
+    // particular, a search that retains only an ancestor path must not let a
+    // checked ancestor reach siblings that the search removed.
+    const childrenOf = new Map<Key, Key[]>();
+    const parentOf = new Map<Key, Key | null>();
+
+    flattenTableTree(processedTreeRoots).forEach((node) => {
+      childrenOf.set(
+        node.key,
+        node.children.map((child) => child.key),
+      );
+      parentOf.set(node.key, node.parentKey);
+    });
+
+    return {
+      rootKeys: processedTreeRoots.map((node) => node.key),
+      childrenOf,
+      parentOf,
+      behavior: treeSelectionBehavior,
+    };
+  }, [treeModel, processedTreeRoots, treeSelectionBehavior]);
 
   // A bulk action with no way to select rows is a contradiction, so supplying
   // any implies multiple selection unless the consumer says otherwise.
@@ -482,14 +506,7 @@ function ItemTable<T = any>(
     selectAllMode,
     isRowSelectable,
     disabledKeys,
-    tree: treeModel
-      ? {
-          rootKeys: treeModel.roots.map((node) => node.key),
-          childrenOf: treeModel.childrenOf,
-          parentOf: treeModel.parentOf,
-          behavior: treeSelectionBehavior,
-        }
-      : undefined,
+    tree: selectionTree,
   });
 
   // A `ReactNode` menu applies to every row; a function decides per row. The

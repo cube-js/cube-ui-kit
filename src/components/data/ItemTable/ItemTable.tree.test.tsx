@@ -222,6 +222,48 @@ describe('ItemTable tree rows', () => {
     expect(rowBox('leaf')).not.toBeChecked();
   });
 
+  it('cascades only through rows retained by client search', async () => {
+    const onSelectionChange = vi.fn();
+
+    const { rerender } = renderWithRoot(
+      <ItemTable
+        {...treeProps}
+        selectionMode="multiple"
+        defaultExpandedKeys={['root']}
+        searchValue="needle"
+        searchDelay={0}
+        searchMode="client"
+        onSelectionChange={onSelectionChange}
+      />,
+    );
+
+    await waitFor(() => expect(row('leaf')).toBeInTheDocument());
+    await userEvent.click(rowBox('root'));
+
+    await waitFor(() => {
+      const keys = onSelectionChange.mock.lastCall?.[0] as string[];
+      expect(keys).toEqual(['root', 'branch', 'leaf']);
+      expect(keys).not.toContain('sibling');
+      expect(keys).not.toContain('other');
+    });
+
+    rerender(
+      <ItemTable
+        {...treeProps}
+        selectionMode="multiple"
+        defaultExpandedKeys={['root']}
+        searchValue=""
+        searchDelay={0}
+        searchMode="client"
+        onSelectionChange={onSelectionChange}
+      />,
+    );
+
+    await waitFor(() => expect(row('sibling')).toBeInTheDocument());
+    expect(rowBox('sibling')).not.toBeChecked();
+    expect(rowBox('root').indeterminate).toBe(true);
+  });
+
   it('excludes disabled descendants from cascade and collapsed select-all', async () => {
     const onSelectionChange = vi.fn();
 
