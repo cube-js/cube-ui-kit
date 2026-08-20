@@ -62,6 +62,18 @@ const StyledBlock = tasty({
         '': 'monospace',
         serif: true,
       },
+      // The `<code>` renders as `white-space: pre`, so setting `pre-wrap` on the
+      // surrounding block alone does not wrap it — the wrap has to live here.
+      // `overflow-wrap: anywhere` also breaks runs with no spaces (URLs, tokens,
+      // identifiers) that `pre-wrap` on its own would let overflow.
+      whiteSpace: {
+        '': 'pre',
+        wrap: 'pre-wrap',
+      },
+      overflowWrap: {
+        '': 'normal',
+        wrap: 'anywhere',
+      },
     },
   },
 });
@@ -153,13 +165,24 @@ const CopyButton = tasty(ActionButton, {
 
 const ShowButton = tasty(ActionButton, {});
 
-export interface CubeCopySnippetProps extends CubeCardProps {
+// `wrap` is omitted from the inherited container styles (it maps to `flex-wrap`,
+// which is meaningless on this grid-based component) so the name can carry the
+// boolean "soft-wrap the code" prop below.
+export interface CubeCopySnippetProps extends Omit<CubeCardProps, 'wrap'> {
   /** The code snippet */
   code: string;
   /** The title of the snippet */
   title?: string;
   /** Whether the snippet is single-lined */
   nowrap?: boolean;
+  /**
+   * Soft-wrap long content onto multiple lines instead of scrolling it
+   * horizontally. The block grows vertically to fit (so even a single long line
+   * is fully readable rather than clamped), and unbreakable runs like URLs,
+   * tokens and identifiers wrap too. Useful for error messages and logs.
+   * Has no effect when `nowrap` is set.
+   */
+  wrap?: boolean;
   /** The prefix for each line of code. Useful for bash snippets. */
   prefix?: string;
   /** The code language of the snippet */
@@ -186,6 +209,7 @@ function CopySnippet(allProps: CubeCopySnippetProps) {
     code = '',
     title = t('copySnippet.title', 'Code example'),
     nowrap,
+    wrap,
     prefix = '',
     language,
     serif,
@@ -208,6 +232,10 @@ function CopySnippet(allProps: CubeCopySnippetProps) {
   const pristineCode = code.replace(/\n$/, '');
 
   const multiline = pristineCode.includes('\n') && !nowrap;
+  // `wrap` reuses the multiline block layout (auto height, no right fade, copy
+  // button on top) so wrapped content grows vertically instead of being clamped
+  // to the single-line height. `nowrap` (force one scrolling line) wins over it.
+  const shouldWrap = !!wrap && !nowrap;
   let formattedCode = pristineCode
     .replace(/\r/g, '')
     .split(/\n/g)
@@ -236,11 +264,12 @@ function CopySnippet(allProps: CubeCopySnippetProps) {
   const mods = useMemo(() => {
     return {
       nowrap,
-      multiline,
+      multiline: multiline || shouldWrap,
+      wrap: shouldWrap,
       serif,
       hidden: !!hideText,
     };
-  }, [nowrap, multiline, hideText, serif]);
+  }, [nowrap, multiline, shouldWrap, hideText, serif]);
 
   const Snippet = (
     <CopySnippetElement mods={mods} {...props}>

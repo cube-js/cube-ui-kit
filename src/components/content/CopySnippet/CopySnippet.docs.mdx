@@ -21,6 +21,7 @@ A code block with copy-to-clipboard functionality and syntax highlighting. Exten
 - **`title`** `string` (default: `'Code example'`) — Accessible title used in the copy toast message
 - **`prefix`** `string` (default: `''`) — Prefix for each line of code (e.g. `'$ '` for bash snippets)
 - **`nowrap`** `boolean` — Force single-line display even for multi-line code
+- **`wrap`** `boolean` — Soft-wrap long content onto multiple lines instead of scrolling it horizontally. The block grows to fit, so even a single long line stays fully readable, and unbreakable runs (URLs, tokens, identifiers) wrap too. Useful for error messages and logs. Ignored when `nowrap` is set.
 - **`serif`** `boolean` — Use serif (non-monospace) font for the code
 - **`hideText`** `string | string[] | boolean` — Hide sensitive text with bullet characters. `true` hides all text, a string hides that substring, an array hides multiple substrings. A toggle button appears to reveal hidden content.
 - **`actions`** `ReactNode` — Additional action buttons displayed alongside the copy button. Use `CopySnippet.Button` for consistent styling.
@@ -55,14 +56,13 @@ These properties allow direct style application without using the `styles` prop:
 ```jsx
 <CopySnippet code="const x = 1;" language="javascript" />
 
-<CopySnippet
-  code={'{\n  "key": "value"\n}'}
-  language="json"
-  multiline
-/>
+<CopySnippet code={'{\n  "key": "value"\n}'} language="json" />
 
 <CopySnippet
   code={'<button type="button" class="primary">Save</button>'}
   language="html"
 />
+
+// Wrap a long single-line error instead of scrolling it sideways
+<CopySnippet code={longErrorMessage} language="bash" wrap />
 ```
