@@ -230,6 +230,69 @@ describe('palette tokens', () => {
       '@hc',
     ]);
   });
+
+  /**
+   * The cube-face ramp's whole point is that a `LoadingAnimation` reads with the
+   * same weight in every scheme. It is stated as a WCAG floor against `surface`
+   * rather than as a tone delta precisely because the dark scheme resolves a
+   * delta inside the `darkTone` window and flattened the ramp to ~75% of its
+   * light span. The snapshot above pins the emitted colors; this pins the
+   * property that made them those colors, so a regression reads as "dark went
+   * flat again" rather than as three changed oklch strings.
+   */
+  it('holds the cube faces at one contrast ratio in every scheme', () => {
+    const tokens = getPaletteTokens();
+    const FLOORS = [1.2, 1.65, 2.4];
+    const HC_FLOORS = [1.35, 2.1, 3.2];
+
+    for (const [state, floors] of [
+      ['', FLOORS],
+      ['@dark', FLOORS],
+      ['@hc', HC_FLOORS],
+      ['@dark & @hc', HC_FLOORS],
+    ] as const) {
+      const colors = variant(tokens, state);
+
+      floors.forEach((floor, index) => {
+        const face = colors[`#loading-face-${index + 1}`];
+        const measured = contrastOf(colors['#surface'], face);
+
+        // A floor, so it may only be met or exceeded — and Glaze's solve lands
+        // just above rather than exactly on it.
+        expect(
+          measured,
+          `face ${index + 1} @ '${state || 'light'}'`,
+        ).toBeGreaterThanOrEqual(floor);
+        expect(
+          measured,
+          `face ${index + 1} @ '${state || 'light'}'`,
+        ).toBeLessThan(floor * 1.02);
+      });
+    }
+  });
+
+  /**
+   * And that they stay in the neutral chrome's tint family rather than reading
+   * as a purple gradient beside a `currentColor` `CubeLogo` — the faces used to
+   * take a fraction of the *brand* seed saturation, which put the shadowed one
+   * at eight times `border`'s chroma.
+   *
+   * `#disabled` is the ceiling because it is the most tinted of the greys, and a
+   * face is allowed to be as tinted as the greys are but no more. An absolute
+   * number would not survive a re-seeded palette; the faces and `#disabled` both
+   * take a normalised share of the same surface saturation, so the relation does.
+   */
+  it('keeps the cube faces inside the neutral chrome chroma band', () => {
+    const colors = variant(getPaletteTokens(), '');
+    const ceiling = chromaOf(colors['#disabled']);
+
+    for (const index of [1, 2, 3]) {
+      expect(
+        chromaOf(colors[`#loading-face-${index}`]),
+        `face ${index}`,
+      ).toBeLessThanOrEqual(ceiling);
+    }
+  });
 });
 
 describe('setPaletteConfig', () => {
