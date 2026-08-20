@@ -693,7 +693,7 @@ describe('treegrid focus and virtualization', () => {
     ).toBeLessThan(61);
   });
 
-  it('moves focus after a virtualized arrow destination mounts', async () => {
+  it('moves rapid arrow focus across virtualized windows', async () => {
     renderWithRoot(
       <ItemTable
         data={treeData}
@@ -709,14 +709,55 @@ describe('treegrid focus and virtualization', () => {
     await vi.waitFor(() => expect(treeRow('root-0')).toBeInTheDocument());
     treeRow('root-0').focus();
 
-    for (let index = 1; index <= 12; index++) {
-      await act(() => realInput.keyboard('{ArrowDown}'));
-      await vi.waitFor(() => expect(treeRow(`root-${index}`)).toHaveFocus());
-    }
+    // Do not yield between presses. Once the next row is outside the mounted
+    // window, the old DOM row still receives keys while logical focus advances.
+    await act(() => {
+      for (let index = 0; index < 12; index++) {
+        document.activeElement?.dispatchEvent(
+          new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }),
+        );
+      }
+    });
+
+    await vi.waitFor(() => expect(treeRow('root-12')).toHaveFocus());
 
     expect(
       document.querySelector<HTMLElement>('[data-element="Scroller"]')!
         .scrollTop,
     ).toBeGreaterThan(0);
+  });
+
+  it('does not restore pending virtual focus after focus leaves the treegrid', async () => {
+    renderWithRoot(
+      <>
+        <ItemTable
+          data={treeData}
+          columns={treeColumns}
+          getRowChildren={(row) => row.children}
+          height="140px"
+          isVirtualized
+          overscan={0}
+          paginationMode="off"
+        />
+        <button type="button">Outside control</button>
+      </>,
+    );
+
+    await vi.waitFor(() => expect(treeRow('root-0')).toBeInTheDocument());
+    treeRow('root-0').focus();
+
+    await act(() => {
+      for (let index = 0; index < 12; index++) {
+        document.activeElement?.dispatchEvent(
+          new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }),
+        );
+      }
+      screen.getByRole('button', { name: 'Outside control' }).focus();
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    expect(
+      screen.getByRole('button', { name: 'Outside control' }),
+    ).toHaveFocus();
   });
 });

@@ -67,6 +67,7 @@ import type { Key, Node } from '@react-types/shared';
 import type { Styles } from '@tenphi/tasty';
 import type {
   CSSProperties,
+  FocusEvent as ReactFocusEvent,
   KeyboardEvent as ReactKeyboardEvent,
   MouseEvent as ReactMouseEvent,
   ReactNode,
@@ -438,6 +439,19 @@ function TreeGridTable<T>(props: {
     const key = pendingFocusKey.current;
     if (key == null) return;
 
+    // A real focus move wins over the delayed virtual-row focus. Losing the
+    // old row to virtualization leaves focus on <body>, whereas tabbing or
+    // clicking elsewhere leaves a concrete active element we must respect.
+    const activeElement = document.activeElement;
+    if (
+      activeElement &&
+      activeElement !== document.body &&
+      !ref.current?.contains(activeElement)
+    ) {
+      pendingFocusKey.current = null;
+      return;
+    }
+
     const target = Array.from(
       ref.current?.querySelectorAll<HTMLTableRowElement>(
         'tbody tr[data-element="Row"][data-key]',
@@ -449,6 +463,23 @@ function TreeGridTable<T>(props: {
       target.focus();
     }
   });
+
+  const handleBlurCapture = (event: ReactFocusEvent<HTMLTableElement>) => {
+    const pendingKey = pendingFocusKey.current;
+    const nextTarget = event.relatedTarget;
+
+    if (pendingKey != null && nextTarget instanceof Element) {
+      const nextRow = nextTarget.closest<HTMLTableRowElement>(
+        'tbody tr[data-element="Row"][data-key]',
+      );
+
+      if (nextRow?.dataset.key !== String(pendingKey)) {
+        pendingFocusKey.current = null;
+      }
+    }
+
+    (gridProps as any).onBlurCapture?.(event);
+  };
 
   const handleKeyDownCapture = (
     event: ReactKeyboardEvent<HTMLTableElement>,
@@ -463,8 +494,12 @@ function TreeGridTable<T>(props: {
       return;
     }
 
+    // While a virtual destination is still mounting, subsequent key presses
+    // continue from that logical key rather than repeatedly targeting the old
+    // DOM row that still owns focus.
+    const currentKey = pendingFocusKey.current ?? row.dataset.key;
     const index = tree.entries.findIndex(
-      (entry) => String(entry.key) === row.dataset.key,
+      (entry) => String(entry.key) === String(currentKey),
     );
     const entry = tree.entries[index];
     if (!entry) return;
@@ -477,8 +512,10 @@ function TreeGridTable<T>(props: {
           'tbody tr[data-element="Row"][data-key]',
         ) ?? [],
       ).find((element) => element.dataset.key === String(next.key));
-      if (target) target.focus();
-      else pendingFocusKey.current = next.key;
+      if (target) {
+        pendingFocusKey.current = null;
+        target.focus();
+      } else pendingFocusKey.current = next.key;
       return true;
     };
 
@@ -522,6 +559,7 @@ function TreeGridTable<T>(props: {
       ref={ref}
       role="treegrid"
       style={style}
+      onBlurCapture={handleBlurCapture}
       onKeyDownCapture={handleKeyDownCapture}
     >
       {children}
