@@ -143,10 +143,22 @@ describe('current theme disabled fades', () => {
     ]);
   });
 
+  // Every flavour fades to 40% of whatever it paints its label with. That is
+  // `#current.4` for all but `invert`, which sources its label from the
+  // `--current-accent` a container may offer and therefore has to spell the mix
+  // out — `#current.4` would compile to `color-mix(… currentcolor …)`, and
+  // `currentcolor` inside the `color` property means the inherited value rather
+  // than the accent.
+  const FADED: Record<string, string> = {
+    'current.invert':
+      'color-mix(in oklab, var(--current-accent, currentcolor) 40%, transparent)',
+  };
+  const fadedFor = (variant: string) => FADED[variant] ?? '#current.4';
+
   it.each(CURRENT_VARIANTS)('%s gates its label fade', (variant) => {
     const color = ITEM_VARIANTS[variant].color as Record<string, string>;
 
-    expect(color[GATE]).toBe('#current.4');
+    expect(color[GATE]).toBe(fadedFor(variant));
     // A bare `disabled` key would win over the gate and fade unconditionally.
     expect(color.disabled).toBeUndefined();
   });
@@ -159,7 +171,26 @@ describe('current theme disabled fades', () => {
         string
       >;
 
-      expect(color.disabled).toBe('#current.4');
+      expect(color.disabled).toBe(fadedFor(variant));
     },
   );
+
+  // `invert` is the only flavour a container can redirect, and it must degrade
+  // to the inherited color everywhere else — the fallback is what keeps every
+  // non-Banner usage rendering exactly as it did before the hook existed.
+  it('reads --current-accent on invert only, always with a currentcolor fallback', () => {
+    const readers = CURRENT_VARIANTS.filter((variant) =>
+      JSON.stringify(ITEM_VARIANTS[variant]).includes('--current-accent'),
+    );
+
+    expect(readers).toEqual(['current.invert']);
+
+    const color = ITEM_VARIANTS['current.invert'].color as Record<
+      string,
+      string
+    >;
+    for (const value of Object.values(color)) {
+      expect(value).toContain('var(--current-accent, currentcolor)');
+    }
+  });
 });

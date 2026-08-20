@@ -1475,8 +1475,9 @@ export const SPECIAL_INVERT_STYLES: Styles = {
 // the label has to be painted with `-webkit-text-fill-color` to keep `color`
 // free — and every icon slot has to be recolored by hand, because SVG stroked
 // with `currentColor` does not see that property. Here the fill is `#surface`,
-// an absolute token that never consults `color`, so `color: '#current'` is just
-// the label and icons inherit it for free.
+// an absolute token that never consults `color`, so `color` is just the label
+// and icons inherit it for free. That is also what makes the `--current-accent`
+// hook below possible: with `color` free, a container can redirect it.
 export const CURRENT_INVERT_STYLES: Styles = {
   ...CURRENT_FOCUS_RING,
   // The rim is the inherited color at `primary`'s own `.25`, and it needs no
@@ -1500,11 +1501,35 @@ export const CURRENT_INVERT_STYLES: Styles = {
     // color below.
     disabled: '#surface.5 #current.0',
   },
+  // The one place a container can intervene. `--current-accent` names a color a
+  // container OFFERS to the `current` theme, for the case the theme cannot solve
+  // on its own: this flavour writes its label on a `#surface` pill, so it breaks
+  // wherever the inherited color IS `#surface`. A `Banner` is exactly that — it
+  // labels itself `#white` in both schemes, and `#surface` is white in light, so
+  // an unaided `current.invert` inside one measures cr 1.00.
+  //
+  // Unset it and the fallback is `currentcolor`, which is what `#current`
+  // compiled to before, so nothing outside such a container changes.
+  //
+  // Only `color` reads it, and everything else follows for free: `#current`
+  // compiles to `currentcolor`, which in `border` and `fill` resolves against
+  // this element's OWN `color` — so the rim and the hover/pressed overlays all
+  // re-aim at the offered accent without naming it twice. Deliberately NOT read
+  // by the other `current` flavours: they paint their chip ON the container
+  // rather than on a pill, so the inherited color is already the right one and
+  // an offered accent would only lower their contrast — a `#danger-accent-text`
+  // dismiss icon on a danger banner measures 1.53, against the 4.62 `#white` gets.
+  //
+  // The disabled entry spells the mix out rather than writing `#current.4`,
+  // which would compile to `color-mix(… currentcolor …)` — and `currentcolor`
+  // inside the `color` property means the INHERITED value, so it would fade the
+  // container's color instead of the accent.
   color: {
-    '': '#current',
+    '': 'var(--current-accent, currentcolor)',
     // See `CURRENT_ITEM_STYLES.color` for why this is gated rather than a bare
     // `disabled`: both mods mark a color that something above already faded.
-    'disabled & !inherit-disabled & !inside-wrapper': '#current.4',
+    'disabled & !inherit-disabled & !inside-wrapper':
+      'color-mix(in oklab, var(--current-accent, currentcolor) 40%, transparent)',
   },
 } as const;
 

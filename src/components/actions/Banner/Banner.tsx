@@ -13,7 +13,6 @@ import { useI18n } from '../../../i18n';
 import { CubeItemProps, Item } from '../../content/Item/Item';
 import { Button, CubeButtonProps } from '../Button/Button';
 import { CubeItemActionProps } from '../ItemAction/ItemAction';
-import { useItemActionContext } from '../ItemActionContext';
 
 export type BannerTheme = 'danger' | 'warning' | 'note' | 'success';
 
@@ -56,6 +55,26 @@ const BannerElement = tasty(Item, {
 
     Actions: {
       gap: '1x',
+      // The color this banner OFFERS to `current`-themed children that cannot
+      // use the inherited one. `Banner.Action` is `current.invert`: it writes
+      // its label on a `#surface` pill, and a banner's inherited color is
+      // `#white` — which IS `#surface` in light mode, so unaided it measures
+      // cr 1.00. Handing down `accent-text` puts it at 6.87–7.90 in both
+      // schemes, with the pill still 1.5 (light) / 2.4 (dark) off the banner.
+      //
+      // Declared here rather than on `Banner.Action` so the banner states its
+      // color context once and its children stay theme-agnostic — the wrapper
+      // is the natural place for it, and custom properties inherit. It is safe
+      // for the dismiss button to sit in the same wrapper: that one is
+      // `current.clear`, which paints from `#current` and never reads this, so
+      // it keeps the `#white` that measures 4.62 against the banner where this
+      // accent would measure 1.53.
+      '$current-accent': {
+        'theme=note': '#note-accent-text',
+        'theme=danger': '#danger-accent-text',
+        'theme=warning': '#warning-accent-text',
+        'theme=success': '#success-accent-text',
+      },
     },
   },
 });
@@ -85,6 +104,9 @@ const BannerElement = tasty(Item, {
 // press.
 const BannerActionElement = tasty(Item.Action, {
   type: 'invert',
+  // No `theme`: it stays on `Item.Action`'s `current` default and takes its
+  // color from the `--current-accent` the banner offers above.
+
   styles: {
     preset: 't3m',
   },
@@ -104,15 +126,7 @@ const BannerLinkElement = tasty(Button, {
  * Automatically styled to match the banner's theme.
  */
 export function BannerAction(props: BannerActionProps) {
-  // The banner's theme, taken from the row that hosts the action. `Item.Action`
-  // defaults its own `theme` to `current` and no longer reads this context for
-  // styling, so the banner has to name it — which is the point here: `invert`
-  // needs the brand ramp, and `current` is exactly what does not work inside a
-  // banner. Falls back to the banner's own default theme when an action is
-  // rendered outside one, rather than to `current`.
-  const { theme } = useItemActionContext();
-
-  return <BannerActionElement theme={theme ?? 'note'} {...props} />;
+  return <BannerActionElement {...props} />;
 }
 
 /**
