@@ -371,6 +371,12 @@ Icons live in `src/icons/`. Use existing icons when possible; otherwise use `@ta
 - Always wrap tabler icons with `<Icon>` for custom size/color. Never add props directly to tabler icons.
 - To add new icons run: `pnpm add-icons`
 
+One exception to `currentColor`: **`<NoDataIcon>`** is a three-tone isometric
+crate drawn from the shared cube-face tokens (`#loading-face-1` …
+`#loading-face-3`) that `LoadingAnimation` also uses. It sizes like any other
+icon but ignores `color` — it is an illustration for empty states, so use it at
+illustration sizes (`size="8x"` and up).
+
 ## Form System
 
 ### Form Component
