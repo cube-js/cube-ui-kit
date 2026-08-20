@@ -95,6 +95,27 @@ describe('TextArea autoSize', () => {
     await waitFor(() => expect(heightInRows(input())).toBeCloseTo(2, 1));
   });
 
+  it('counts a trailing newline as a row', async () => {
+    renderWithRoot(
+      <TextArea
+        autoSize
+        qa="area"
+        rows={1}
+        label="Note"
+        inputStyles={TIGHT_TYPOGRAPHY}
+      />,
+    );
+
+    await userEvent.click(input());
+    await userEvent.keyboard('one{Enter}');
+
+    expect(input().value).toBe('one\n');
+    // The caret sits on an empty second row, so the box has to make room for
+    // it. The mirror is a textarea rather than a div precisely so that it lays
+    // a trailing newline out the same way the live field does.
+    await waitFor(() => expect(heightInRows(input())).toBeCloseTo(2, 1));
+  });
+
   it('honours rows as a minimum', async () => {
     renderWithRoot(
       <TextArea
