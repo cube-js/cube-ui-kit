@@ -165,10 +165,7 @@ const CopyButton = tasty(ActionButton, {
 
 const ShowButton = tasty(ActionButton, {});
 
-// `wrap` is omitted from the inherited container styles (it maps to `flex-wrap`,
-// which is meaningless on this grid-based component) so the name can carry the
-// boolean "soft-wrap the code" prop below.
-export interface CubeCopySnippetProps extends Omit<CubeCardProps, 'wrap'> {
+export interface CubeCopySnippetProps extends CubeCardProps {
   /** The code snippet */
   code: string;
   /** The title of the snippet */
@@ -180,9 +177,11 @@ export interface CubeCopySnippetProps extends Omit<CubeCardProps, 'wrap'> {
    * horizontally. The block grows vertically to fit (so even a single long line
    * is fully readable rather than clamped), and unbreakable runs like URLs,
    * tokens and identifiers wrap too. Useful for error messages and logs.
-   * Has no effect when `nowrap` is set.
+   * Has no effect when `nowrap` is set. Note this is a different axis from
+   * `nowrap`: `nowrap` collapses real newlines into one scrolling line, while
+   * `isWrapped` breaks long lines that would otherwise scroll.
    */
-  wrap?: boolean;
+  isWrapped?: boolean;
   /** The prefix for each line of code. Useful for bash snippets. */
   prefix?: string;
   /** The code language of the snippet */
@@ -209,7 +208,7 @@ function CopySnippet(allProps: CubeCopySnippetProps) {
     code = '',
     title = t('copySnippet.title', 'Code example'),
     nowrap,
-    wrap,
+    isWrapped,
     prefix = '',
     language,
     serif,
@@ -232,10 +231,11 @@ function CopySnippet(allProps: CubeCopySnippetProps) {
   const pristineCode = code.replace(/\n$/, '');
 
   const multiline = pristineCode.includes('\n') && !nowrap;
-  // `wrap` reuses the multiline block layout (auto height, no right fade, copy
-  // button on top) so wrapped content grows vertically instead of being clamped
-  // to the single-line height. `nowrap` (force one scrolling line) wins over it.
-  const shouldWrap = !!wrap && !nowrap;
+  // `isWrapped` reuses the multiline block layout (auto height, no right fade,
+  // copy button on top) so wrapped content grows vertically instead of being
+  // clamped to the single-line height. `nowrap` (force one scrolling line) wins
+  // over it.
+  const shouldWrap = !!isWrapped && !nowrap;
   let formattedCode = pristineCode
     .replace(/\r/g, '')
     .split(/\n/g)
