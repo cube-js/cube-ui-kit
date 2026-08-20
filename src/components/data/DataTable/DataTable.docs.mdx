@@ -52,6 +52,15 @@ and everything it knows about the query, in Cloud.
 - **`columns`** `CubeDataTableColumn<T>[]` — Same shape as `ItemTable`'s, plus `dataType`.
 - **`rowKey`** `string` (default: `'id'`) — Property to read the row identity from.
 - **`getRowKey`** `(row: T, index: number) => Key` — Wins over `rowKey`.
+- **`getRowChildren`** `(row: T) => readonly T[] | undefined` — Enables nested
+  treegrid rows; `data` contains roots.
+- **`treeColumnKey`** `string` — Indented disclosure column. Defaults to the
+  first visible data column.
+- **`expandedKeys`** `Key[]` — Controlled expansion.
+- **`defaultExpandedKeys`** `Key[]` — Initial expansion. Nothing is expanded by
+  default.
+- **`onExpand`** `(keys, info) => void` — Reports the resulting keys and toggled
+  row metadata.
 - **`pinnedTopRows`** `readonly T[]` — Rows stuck to the top of the scroller. Ordinary rows as far as the columns are concerned.
 - **`pinnedBottomRows`** `readonly T[]` — The same, at the bottom. This is where totals go.
 
@@ -144,6 +153,9 @@ see [Column Colors](#column-colors) for the last two.
 - **`getRowProps`** `(ctx: CubeTableRowContext<T>) => Record<string, any>` — Per-row mods, styles and height.
 - **`storageKey`** `string` — Persists page size, column widths and column order.
 - **`ariaLabel`** `string`
+- **`isChecked`** `boolean` — Base checked-state modifier.
+- **`place`** `string` — Tasty placement shorthand on the root frame.
+- **`scrollMargin`** `string | number` — Scroll margin on the root frame.
 
 #### `dataType`
 
@@ -211,6 +223,39 @@ body into a scroller, pins the header, and lets virtualization engage at all.
 
 Cell-level, in addition to `ItemTable`'s: `cell-selected`, `last-column`,
 `pinned`.
+
+## Tree Rows
+
+Tree mode uses the same nested-data contract as `ItemTable`:
+
+```jsx
+<DataTable
+  data={regions}
+  columns={columns}
+  getRowChildren={(row) => row.children}
+  treeColumnKey="region"
+  defaultExpandedKeys={['americas']}
+/>
+```
+
+Multi-sort is recursive: every sibling collection is sorted by the same
+precedence. Client pagination slices roots and keeps complete subtrees together;
+server pages are rendered exactly as supplied and `total` counts roots. Pinned
+rows remain ordinary non-hierarchical totals.
+
+Only visible descendants participate in cell ranges and virtualization.
+Collapsing a range endpoint makes the effective range inactive; a controlled or
+uncontrolled range is restored when that endpoint becomes visible again. Client
+row numbers remain continuous across root pages, while server tree pages restart
+at 1 because preceding descendant counts are unknown.
+
+The native table exposes `role="treegrid"`, `aria-level`, `aria-expanded`,
+`aria-posinset` and `aria-setsize`. Right/Left expand, collapse or move to the
+parent; Up/Down traverse visible rows, and typeahead reads `treeColumnKey`.
+Customize the hierarchy chrome with `styles.TreeContent`, `styles.TreeToggle`
+and `styles.TreeValue`.
+
+<Canvas of={DataTableStories.TreeRows} />
 
 ## Examples
 

@@ -13,6 +13,7 @@ import type {
   CubeTableSelectAllMode,
   CubeTableSelectionMode,
   CubeTableSort,
+  CubeTableTreeProps,
 } from '../TableBase/types';
 import type { CubeTablePersistKey } from '../TableBase/use-table-storage';
 
@@ -20,7 +21,8 @@ export type CubeItemTableColumn<T = any> = CubeTableColumn<T>;
 
 export interface CubeItemTableProps<T = any>
   extends BaseProps,
-    ContainerStyleProps {
+    ContainerStyleProps,
+    CubeTableTreeProps<T> {
   /* ── data ─────────────────────────────────────────────────────────── */
   data: readonly T[];
   columns: CubeItemTableColumn<T>[];
@@ -198,6 +200,11 @@ export interface CubeItemTableProps<T = any>
   selectionTooltip?: string | ((row: T) => string | undefined);
   /** Rows that cannot be interacted with at all. */
   disabledKeys?: Key[];
+  /**
+   * Multiple-selection behavior in tree mode. `cascade` selects eligible
+   * descendants and derives indeterminate ancestors. @default 'cascade'
+   */
+  treeSelectionBehavior?: 'cascade' | 'independent';
 
   /* ── bulk actions ─────────────────────────────────────────────────── */
   /**

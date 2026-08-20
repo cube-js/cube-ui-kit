@@ -1,3 +1,6 @@
+import { act } from 'react';
+import { userEvent as realInput } from 'vitest/browser';
+
 import { DatabaseIcon } from '../../../icons';
 import { renderWithRoot, screen } from '../../../test';
 import { Button } from '../../actions/Button';
@@ -617,5 +620,76 @@ describe('infinite scroll prefetch distance', () => {
     scroller.scrollTop = scroller.scrollHeight;
 
     await vi.waitFor(() => expect(onLoadMore).toHaveBeenCalled());
+  });
+});
+
+describe('treegrid focus and virtualization', () => {
+  interface TreeRow {
+    id: string;
+    name: string;
+    children?: TreeRow[];
+  }
+
+  const treeColumns: CubeItemTableColumn<TreeRow>[] = [
+    { key: 'name', title: 'Name', isRowHeader: true },
+  ];
+  const treeData: TreeRow[] = Array.from({ length: 60 }, (_, index) => ({
+    id: `root-${index}`,
+    name: `Root ${index}`,
+    children:
+      index === 0
+        ? [
+            {
+              id: 'branch',
+              name: 'Branch',
+              children: [{ id: 'leaf', name: 'Leaf' }],
+            },
+          ]
+        : undefined,
+  }));
+
+  const treegrid = () => screen.getByRole('treegrid');
+  const treeRow = (key: string) =>
+    treegrid().querySelector<HTMLTableRowElement>(`tr[data-key="${key}"]`)!;
+
+  it('moves real focus through three visible levels', async () => {
+    renderWithRoot(
+      <ItemTable
+        data={treeData.slice(0, 2)}
+        columns={treeColumns}
+        getRowChildren={(row) => row.children}
+      />,
+    );
+
+    treeRow('root-0').focus();
+    await act(() =>
+      realInput.keyboard('{ArrowRight}{ArrowRight}{ArrowRight}{ArrowRight}'),
+    );
+
+    await vi.waitFor(() => expect(treeRow('leaf')).toHaveFocus());
+  });
+
+  it('adds expanded children to a virtualized visible window', async () => {
+    renderWithRoot(
+      <ItemTable
+        data={treeData}
+        columns={treeColumns}
+        getRowChildren={(row) => row.children}
+        height="260px"
+        isVirtualized
+        overscan={2}
+        paginationMode="off"
+      />,
+    );
+
+    await vi.waitFor(() => expect(treeRow('root-0')).toBeInTheDocument());
+    treeRow('root-0').focus();
+    await act(() => realInput.keyboard('{ArrowRight}'));
+
+    await vi.waitFor(() => expect(treeRow('branch')).toBeInTheDocument());
+    expect(treegrid()).toHaveAttribute('aria-rowcount', '62');
+    expect(
+      treegrid().querySelectorAll('tbody tr[data-element="Row"]').length,
+    ).toBeLessThan(61);
   });
 });

@@ -31,4 +31,7 @@ export type {
   CubeTableRowSize,
   CubeTableSort,
   CubeTableSortDirection,
+  CubeTableTreeProps,
+  CubeTableTreeRowState,
+  CubeTableRowExpandInfo,
 } from './types';

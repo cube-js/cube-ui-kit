@@ -160,6 +160,7 @@
     "summary": "{{from}}–{{to}} av {{total}}"
   },
   "itemTable": {
+    "table": "Tabell",
     "noItems": "Inga objekt",
     "noResults": "Inga resultat hittades",
     "search": "Sök",

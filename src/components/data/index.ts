@@ -21,5 +21,8 @@ export type {
   CubeTableRowSize,
   CubeTableSort,
   CubeTableSortDirection,
+  CubeTableTreeProps,
+  CubeTableTreeRowState,
+  CubeTableRowExpandInfo,
 } from './TableBase';
 export type { CubeTableRowRenderProps } from './TableBase';

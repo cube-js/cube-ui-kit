@@ -1,5 +1,6 @@
 import { keyframes, tasty } from '@tenphi/tasty';
 
+import { Action } from '../../actions/Action/Action';
 import { Item } from '../../content/Item';
 
 import type { Styles } from '@tenphi/tasty';
@@ -624,6 +625,37 @@ export const TableElement = tasty({
       height: '100%',
     },
 
+    /**
+     * Hierarchy chrome inside the consumer-selected tree column. The wrapper
+     * owns indentation so custom renderers, links and text truncation all move
+     * together as one row label.
+     */
+    TreeContent: {
+      $: '> Scroller > Table > Body > Row > Cell >',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '.5x',
+      minWidth: 0,
+      padding: 'left ($tree-indent * 2x)',
+      '$tree-indent': '($tree-level, 0)',
+    },
+
+    TreeValue: {
+      $: '> Scroller > Table > Body > Row > Cell > TreeContent >',
+      flexGrow: 1,
+      flexShrink: 1,
+      flexBasis: 0,
+      minWidth: 0,
+      overflow: 'hidden',
+    },
+
+    TreeToggle: {
+      $: '> Scroller > Table > Body > Row > Cell > TreeContent >',
+      flexGrow: 0,
+      flexShrink: 0,
+      flexBasis: 'auto',
+    },
+
     SelectionBox: {
       $: '> Scroller > Table',
       display: 'flex',
@@ -919,6 +951,34 @@ export const TableElement = tasty({
       preset: 't3m',
     },
   },
+});
+
+const TREE_TOGGLE_STYLES: Styles = {
+  display: 'grid',
+  placeItems: 'center',
+  placeContent: 'center',
+  flexGrow: 0,
+  flexShrink: 0,
+  flexBasis: 'auto',
+  width: '3x',
+  height: '3x',
+  radius: true,
+  transition: 'theme',
+};
+
+/** Disclosure control rendered in the configured tree column. */
+export const TableTreeToggle = tasty(Action, {
+  qa: 'TableTreeToggle',
+  styles: {
+    ...TREE_TOGGLE_STYLES,
+    color: { '': '#dark-02', ':hover': '#dark' },
+    fill: { '': '#clear', ':hover': '#dark.04' },
+  },
+});
+
+/** Leaf placeholder matching the disclosure control's footprint. */
+export const TableTreeTogglePlaceholder = tasty({
+  styles: TREE_TOGGLE_STYLES,
 });
 
 /**

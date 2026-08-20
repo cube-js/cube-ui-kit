@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 
 import {
   NumberIcon,
@@ -30,6 +31,8 @@ interface ResultRow {
   conversion: number;
 }
 
+type TreeResultRow = ResultRow & { children?: TreeResultRow[] };
+
 const REGIONS = ['us-east-1', 'us-west-2', 'eu-central-1', 'ap-south-1'];
 const CHANNELS = ['organic', 'paid', 'email', 'referral'];
 
@@ -41,6 +44,27 @@ const ROWS: ResultRow[] = Array.from({ length: 240 }, (_, i) => ({
   revenue: ((i * 7919) % 250_000) + 1_500,
   conversion: (((i * 13) % 780) + 40) / 1000,
 }));
+
+const TREE_ROWS: TreeResultRow[] = [
+  {
+    ...ROWS[0],
+    id: 'americas',
+    region: 'Americas',
+    children: [
+      {
+        ...ROWS[1],
+        id: 'north-america',
+        region: 'North America',
+        children: [
+          { ...ROWS[2], id: 'us-east', region: 'US East' },
+          { ...ROWS[3], id: 'us-west', region: 'US West' },
+        ],
+      },
+      { ...ROWS[4], id: 'south-america', region: 'South America' },
+    ],
+  },
+  { ...ROWS[5], id: 'emea', region: 'EMEA' },
+];
 
 const COLUMNS: CubeDataTableColumn<ResultRow>[] = [
   { key: 'region', title: 'Region', minWidth: 140 },
@@ -159,6 +183,30 @@ type Story = StoryObj<typeof DataTable<ResultRow>>;
  * and takes tabular figures, so digits line up down the column.
  */
 export const Default: Story = {};
+
+/** Nested result rows retain DataTable's multi-sort and cell-range behavior. */
+export const TreeRows: Story = {
+  args: {
+    data: TREE_ROWS,
+    getRowChildren: (row) => (row as TreeResultRow).children,
+    treeColumnKey: 'region',
+    paginationMode: 'off',
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await userEvent.click(
+      canvas.getByRole('button', { name: /^Expand Americas/ }),
+    );
+
+    await waitFor(() => {
+      expect(canvas.getByText('North America')).toBeVisible();
+      expect(
+        canvas.getByRole('button', { name: /^Collapse Americas/ }),
+      ).toBeVisible();
+    });
+  },
+};
 
 /**
  * Sorting is **multi-column**, which is the main behavioural difference from

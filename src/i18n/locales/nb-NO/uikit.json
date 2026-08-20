@@ -160,6 +160,7 @@
     "summary": "{{from}}–{{to}} av {{total}}"
   },
   "itemTable": {
+    "table": "Tabell",
     "noItems": "Ingen elementer",
     "noResults": "Ingen resultater funnet",
     "search": "Søk",

@@ -11,6 +11,7 @@ import type {
   CubeTableRowSection,
   CubeTableRowSize,
   CubeTableSort,
+  CubeTableTreeProps,
 } from '../TableBase/types';
 
 /**
@@ -30,7 +31,8 @@ export interface CubeDataTableColumn<T = any> extends CubeTableColumn<T> {
 
 export interface CubeDataTableProps<T = any>
   extends BaseProps,
-    ContainerStyleProps {
+    ContainerStyleProps,
+    CubeTableTreeProps<T> {
   /* ── data ─────────────────────────────────────────────────────────── */
   data: readonly T[];
   columns: CubeDataTableColumn<T>[];

@@ -1,8 +1,9 @@
+import { useCollator } from '@react-aria/i18n';
 import { useControlledState } from '@react-stately/utils';
 import { CONTAINER_STYLES } from '@tenphi/tasty';
 import { forwardRef, useMemo, useRef, useState } from 'react';
 
-import { useEvent } from '../../../_internal/hooks';
+import { useEvent, useWarn } from '../../../_internal/hooks';
 import { useI18n } from '../../../i18n';
 import { useCombinedRefs } from '../../../utils/react';
 import { extractStyles } from '../../../utils/styles';
@@ -12,20 +13,33 @@ import {
   ROW_MENU_COLUMN_KEY,
   ROW_MENU_COLUMN_WIDTH,
 } from '../TableBase/row-menu';
+import {
+  buildTableTree,
+  filterTableTree,
+  flattenTableTree,
+  isTableTreeDescendant,
+  reindexTableTree,
+  sortTableTree,
+} from '../TableBase/table-tree';
 import { TableView } from '../TableBase/TableView';
 import { useContainerWidth } from '../TableBase/use-container-width';
 import {
   freezeColumnWidths,
+  getColumnText,
   useTableColumns,
 } from '../TableBase/use-table-columns';
-import { useTableSearch } from '../TableBase/use-table-search';
+import {
+  matchesTableSearch,
+  useTableSearch,
+} from '../TableBase/use-table-search';
 import {
   SELECTION_COLUMN_KEY,
   SELECTION_COLUMN_WIDTH,
   useTableSelection,
 } from '../TableBase/use-table-selection';
-import { useTableSort } from '../TableBase/use-table-sort';
+import { compareByColumn, useTableSort } from '../TableBase/use-table-sort';
 import { useTableStorage } from '../TableBase/use-table-storage';
+import { useTableTreeState } from '../TableBase/use-table-tree-state';
 
 import { ItemTableBulkBar } from './ItemTableBulkBar';
 import { ItemTableDragPreview } from './ItemTableDragPreview';
@@ -65,6 +79,11 @@ function ItemTable<T = any>(
     columns,
     rowKey = 'id',
     getRowKey,
+    getRowChildren,
+    treeColumnKey,
+    expandedKeys,
+    defaultExpandedKeys,
+    onExpand,
     isLoading = false,
     loadingIndicator = 'overlay',
     selectionMode,
@@ -84,6 +103,7 @@ function ItemTable<T = any>(
     isRowSelectable,
     selectionTooltip,
     disabledKeys,
+    treeSelectionBehavior = 'cascade',
     skeletonRowCount = 6,
     emptyLabel,
     noResultsLabel,
@@ -183,21 +203,93 @@ function ItemTable<T = any>(
   // is what turns the body into a scroller and pins the header.
   const rootStyles = { ...extractStyles(props, CONTAINER_STYLES), ...styles };
 
+  const resolvedGetRowKey = useMemo(
+    () => getRowKey ?? defaultGetRowKey<T>(rowKey),
+    [getRowKey, rowKey],
+  );
+
+  const treeModel = useMemo(
+    () =>
+      getRowChildren
+        ? buildTableTree(data, getRowChildren, resolvedGetRowKey)
+        : null,
+    [data, getRowChildren, resolvedGetRowKey],
+  );
+
+  useWarn(treeModel != null && treeModel.duplicateKeys.length > 0, {
+    key: ['item-table-tree-duplicate-keys'],
+    args: [
+      'ItemTable:',
+      'Tree row keys must be unique across the complete hierarchy. Duplicate rows were ignored.',
+    ],
+  });
+  useWarn(treeModel != null && treeModel.cyclicKeys.length > 0, {
+    key: ['item-table-tree-cyclic-keys'],
+    args: [
+      'ItemTable:',
+      'Tree data contains a cycle. Cyclic descendants were ignored.',
+    ],
+  });
+  useWarn(treeModel != null && isReorderable, {
+    key: ['item-table-tree-reorder-unsupported'],
+    args: [
+      'ItemTable:',
+      '`isReorderable` is ignored in tree mode. Use `dropOnRow` for folder-style moves.',
+    ],
+  });
+
+  const resolvedTreeColumnKey = useMemo(() => {
+    if (!treeModel) return undefined;
+    const visibleColumns = columns.filter((column) => !column.isHidden);
+    return visibleColumns.some((column) => column.key === treeColumnKey)
+      ? treeColumnKey
+      : visibleColumns[0]?.key;
+  }, [treeModel, columns, treeColumnKey]);
+
+  useWarn(
+    treeModel != null &&
+      treeColumnKey != null &&
+      resolvedTreeColumnKey !== treeColumnKey,
+    {
+      key: ['item-table-tree-column-invalid', treeColumnKey],
+      args: [
+        'ItemTable:',
+        '`treeColumnKey` must identify a visible data column. Falling back to the first visible column.',
+      ],
+    },
+  );
+
   const {
     searchValue,
     setSearchValue,
     searchedRows,
+    query,
     isFiltered: isSearching,
   } = useTableSearch<T>({
     columns,
     rows: data,
-    mode: searchMode,
+    // Tree filtering needs to preserve ancestors and descendants, so the flat
+    // hook owns only the controlled/debounced value in this mode.
+    mode: treeModel ? 'server' : searchMode,
     value: searchValueProp,
     defaultValue: defaultSearchValue,
     onChange: onSearchChange,
     delay: searchDelay,
     filter: searchFilter,
   });
+
+  const searchedTree = useMemo(() => {
+    if (!treeModel) return null;
+    if (searchMode !== 'client' || !query) {
+      return { roots: treeModel.roots, forcedExpandedKeys: new Set<Key>() };
+    }
+
+    return filterTableTree(treeModel.roots, (node) =>
+      searchFilter
+        ? searchFilter(node.row, query)
+        : matchesTableSearch(columns, node.row, node.sourceIndex, query),
+    );
+  }, [treeModel, searchMode, query, searchFilter, columns]);
 
   const storage = useTableStorage(storageKey, persist);
 
@@ -209,8 +301,10 @@ function ItemTable<T = any>(
     mode: resolvedSortMode,
   } = useTableSort<T>({
     columns,
-    rows: searchedRows,
-    mode: sortMode,
+    rows: treeModel
+      ? searchedTree?.roots.map((node) => node.row) ?? []
+      : searchedRows,
+    mode: treeModel ? 'server' : sortMode,
     sort: sortProp,
     // Only restore what the table owns: a controlled `sort` belongs to the page,
     // and overriding it here would fight the page's own source of truth.
@@ -223,6 +317,30 @@ function ItemTable<T = any>(
       onSortChange?.(next);
     }),
   });
+
+  const collator = useCollator({ numeric: true, sensitivity: 'base' });
+  const treeSortMode = treeModel
+    ? sortMode ??
+      (columns.some((column) => column.isSortable) ? 'client' : 'off')
+    : resolvedSortMode;
+  const processedTreeRoots = useMemo(() => {
+    const roots = searchedTree?.roots ?? [];
+    if (treeSortMode !== 'client' || !sort) return roots;
+    const column = columns.find((entry) => entry.key === sort.columnKey);
+    if (!column) return roots;
+
+    return sortTableTree(roots, (a, b) => {
+      const result = compareByColumn(
+        column,
+        collator,
+        a.row,
+        a.sourceIndex,
+        b.row,
+        b.sourceIndex,
+      );
+      return result * (sort.direction === 'asc' ? 1 : -1);
+    });
+  }, [searchedTree, treeSortMode, sort, columns, collator]);
 
   // Search → sort → paginate. Paging last, so a page always reflects the rows
   // the user is actually looking at.
@@ -247,7 +365,11 @@ function ItemTable<T = any>(
   // Infinite scroll replaces the page control rather than adding to it.
   const isPaginated = paginationMode !== 'off' && !isInfinite;
   const isServerPaginated = paginationMode === 'server';
-  const total = isServerPaginated ? totalProp ?? 0 : sortedRows.length;
+  const total = isServerPaginated
+    ? totalProp ?? 0
+    : treeModel
+      ? processedTreeRoots.length
+      : sortedRows.length;
 
   const pageInfo = getPageInfo({
     page,
@@ -269,7 +391,7 @@ function ItemTable<T = any>(
     setPageState(1);
   });
 
-  const visibleRows =
+  const flatVisibleRows =
     paginationMode === 'client'
       ? sortedRows.slice(
           (pageInfo.page - 1) * pageSize,
@@ -277,10 +399,49 @@ function ItemTable<T = any>(
         )
       : sortedRows;
 
-  const resolvedGetRowKey = useMemo(
-    () => getRowKey ?? defaultGetRowKey<T>(rowKey),
-    [getRowKey, rowKey],
+  const pageTreeRoots = useMemo(
+    () =>
+      reindexTableTree(
+        paginationMode === 'client'
+          ? processedTreeRoots.slice(
+              (pageInfo.page - 1) * pageSize,
+              pageInfo.page * pageSize,
+            )
+          : processedTreeRoots,
+      ),
+    [processedTreeRoots, paginationMode, pageInfo.page, pageSize],
   );
+
+  const treeState = useTableTreeState<T>({
+    roots: pageTreeRoots,
+    allNodesByKey: treeModel?.byKey ?? new Map(),
+    expandedKeys,
+    defaultExpandedKeys,
+    forcedExpandedKeys: searchedTree?.forcedExpandedKeys,
+    disabledKeys,
+    getTextValue: (node) => {
+      const column = columns.find(
+        (entry) => entry.key === resolvedTreeColumnKey,
+      );
+      return column
+        ? getColumnText(column, node.row, node.sourceIndex) ?? String(node.key)
+        : String(node.key);
+    },
+    onExpand,
+    ariaLabel,
+  });
+
+  const visibleTreeEntries = treeModel ? treeState.visibleEntries : [];
+  const visibleRows = treeModel
+    ? visibleTreeEntries.map((entry) => entry.row)
+    : flatVisibleRows;
+  const visibleRowKeys = treeModel
+    ? visibleTreeEntries.map((entry) => entry.key)
+    : undefined;
+  const pageTreeEntries = treeModel ? flattenTableTree(pageTreeRoots) : [];
+  const filteredTreeEntries = treeModel
+    ? flattenTableTree(processedTreeRoots)
+    : [];
 
   // A bulk action with no way to select rows is a contradiction, so supplying
   // any implies multiple selection unless the consumer says otherwise.
@@ -289,10 +450,30 @@ function ItemTable<T = any>(
 
   const selection = useTableSelection<T>({
     rows: visibleRows,
+    rowKeys: visibleRowKeys,
+    pageRows: treeModel
+      ? pageTreeEntries.map((entry) => entry.row)
+      : visibleRows,
+    pageRowKeys: treeModel
+      ? pageTreeEntries.map((entry) => entry.key)
+      : undefined,
     // The wider set the header checkbox can reach under
     // `selectAllMode="filtered"`. In server mode the client only ever holds one
     // page, so the two coincide.
-    filteredRows: paginationMode === 'client' ? sortedRows : visibleRows,
+    filteredRows: treeModel
+      ? (paginationMode === 'client'
+          ? filteredTreeEntries
+          : pageTreeEntries
+        ).map((entry) => entry.row)
+      : paginationMode === 'client'
+        ? sortedRows
+        : visibleRows,
+    filteredRowKeys: treeModel
+      ? (paginationMode === 'client'
+          ? filteredTreeEntries
+          : pageTreeEntries
+        ).map((entry) => entry.key)
+      : undefined,
     getRowKey: resolvedGetRowKey,
     selectionMode: resolvedSelectionMode,
     selectedKeys: selectedKeysProp,
@@ -301,6 +482,14 @@ function ItemTable<T = any>(
     selectAllMode,
     isRowSelectable,
     disabledKeys,
+    tree: treeModel
+      ? {
+          rootKeys: treeModel.roots.map((node) => node.key),
+          childrenOf: treeModel.childrenOf,
+          parentOf: treeModel.parentOf,
+          behavior: treeSelectionBehavior,
+        }
+      : undefined,
   });
 
   // A `ReactNode` menu applies to every row; a function decides per row. The
@@ -523,8 +712,10 @@ function ItemTable<T = any>(
 
   const rowKeys = useMemo(
     () =>
-      visibleRows.map((row, index) => String(resolvedGetRowKey(row, index))),
-    [visibleRows, resolvedGetRowKey],
+      visibleRows.map((row, index) =>
+        String(visibleRowKeys?.[index] ?? resolvedGetRowKey(row, index)),
+      ),
+    [visibleRows, visibleRowKeys, resolvedGetRowKey],
   );
 
   const handleReorder = useEvent((nextKeys: string[]) => {
@@ -565,13 +756,16 @@ function ItemTable<T = any>(
       bodyRef={bodyRef}
       qa={qa || 'ItemTable'}
       rows={visibleRows}
+      rowKeys={visibleRowKeys}
       // `aria-rowindex` is document-absolute by contract: on page 3 a screen
       // reader should hear "row 51 of 240", not "row 1 of 25". Infinite scroll
       // never offsets — every loaded row is already in `visibleRows`.
       // `isPaginated` already excludes infinite scroll, where every loaded row
       // is in `visibleRows` and there is no page to offset by.
-      rowIndexOffset={isPaginated ? (pageInfo.page - 1) * pageSize : 0}
-      totalRowCount={total}
+      rowIndexOffset={
+        treeModel ? 0 : isPaginated ? (pageInfo.page - 1) * pageSize : 0
+      }
+      totalRowCount={treeModel ? visibleRows.length : total}
       getRowKey={resolvedGetRowKey}
       layout={layout}
       onScrollerRef={setScrollerEl}
@@ -613,7 +807,7 @@ function ItemTable<T = any>(
       toolbar={toolbarNode}
       footer={footerNode}
       isFiltered={isFiltered ?? isSearching}
-      sortMode={resolvedSortMode}
+      sortMode={treeSortMode}
       sort={sort}
       onColumnSort={toggleSort}
       onColumnSortChange={setColumnSort}
@@ -632,6 +826,17 @@ function ItemTable<T = any>(
       cellStyles={cellStyles}
       mods={mods}
       overlay={bulkBarPlacement === 'floating' ? bulkBar : null}
+      tree={
+        treeModel
+          ? {
+              state: treeState.state,
+              ariaProps: treeState.ariaProps,
+              nodes: treeState.visibleNodes,
+              entries: visibleTreeEntries,
+              columnKey: resolvedTreeColumnKey!,
+            }
+          : undefined
+      }
     />
   );
 
@@ -639,11 +844,14 @@ function ItemTable<T = any>(
     const map = new Map<string, T>();
 
     visibleRows.forEach((row, index) =>
-      map.set(String(resolvedGetRowKey(row, index)), row),
+      map.set(
+        String(visibleRowKeys?.[index] ?? resolvedGetRowKey(row, index)),
+        row,
+      ),
     );
 
     return map;
-  }, [visibleRows, resolvedGetRowKey]);
+  }, [visibleRows, visibleRowKeys, resolvedGetRowKey]);
 
   const handleItemDrop = useEvent((targetKey: Key, draggedKeys: Key[]) => {
     if (!dropOnRow) return;
@@ -652,7 +860,28 @@ function ItemTable<T = any>(
 
     if (!target) return;
 
-    const dragged = draggedKeys
+    const draggedKeySet = new Set(draggedKeys);
+    const topmostDraggedKeys = treeModel
+      ? draggedKeys.filter((key) => {
+          let parent = treeModel.parentOf.get(key);
+          while (parent != null) {
+            if (draggedKeySet.has(parent)) return false;
+            parent = treeModel.parentOf.get(parent);
+          }
+          return true;
+        })
+      : draggedKeys;
+
+    if (
+      treeModel &&
+      topmostDraggedKeys.some((key) =>
+        isTableTreeDescendant(treeModel, targetKey, key),
+      )
+    ) {
+      return;
+    }
+
+    const dragged = topmostDraggedKeys
       .map((key) => rowByKeyForDrop.get(String(key)))
       // A row cannot be dropped on itself.
       .filter((row): row is T => row !== undefined && row !== target);
@@ -679,7 +908,7 @@ function ItemTable<T = any>(
   });
 
   // Dropping onto a row and reordering both need the drag machinery.
-  const isDragEnabled = isReorderable || dropOnRow != null;
+  const isDragEnabled = (!treeModel && isReorderable) || dropOnRow != null;
 
   const table = isDragEnabled ? (
     <DraggableCollection
@@ -695,7 +924,7 @@ function ItemTable<T = any>(
       listRef={bodyRef}
       orderedKeys={rowKeys}
       orientation="vertical"
-      onReorder={isReorderable ? handleReorder : undefined}
+      onReorder={!treeModel && isReorderable ? handleReorder : undefined}
       onItemDrop={dropOnRow ? handleItemDrop : undefined}
       shouldAcceptItemDrop={dropOnRow ? shouldAcceptItemDrop : undefined}
       renderPreview={getItemDragInfo ? renderDragPreview : undefined}

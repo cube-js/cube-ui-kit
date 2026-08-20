@@ -462,6 +462,7 @@ export const DEFAULTS: DefaultsRegistry = {
         shape: { kind: 'default', value: 'plain' },
         skeletonRowCount: { kind: 'default', value: 6 },
         sortMode: { kind: 'default', value: 'client' },
+        treeSelectionBehavior: { kind: 'default', value: 'cascade' },
         virtualizeThreshold: { kind: 'default', value: 50 },
       },
     },
