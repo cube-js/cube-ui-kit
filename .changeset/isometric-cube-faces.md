@@ -21,6 +21,8 @@ WCAG rather than APCA, against the grain of the accent tokens: APCA's low-contra
 
 High contrast used to be *identical* to the normal tier here, because an unconstrained tone delta had nothing to escalate. The `[1.35, 2.1, 3.2]` HC entries roughly double each step's distance from the page.
 
-**`NoDataIcon`** is the isometric open crate used for empty tables and empty lists, moved out of `cubejs-enterprise` and onto the shared tokens — the local copy hard-coded `#e5e5ec` / `#b4b4c5` / `#69697c` and re-derived a dark variant in JS on every scheme change. It sizes like any other icon but ignores `color`: it is a three-tone drawing, and flattening it to one tone loses the box. Use it at illustration sizes (`size="8x"` and up).
+**`NoDataIcon`** is the isometric open crate used for empty tables and empty lists, moved out of `cubejs-enterprise` and onto the shared tokens — the local copy hard-coded `#e5e5ec` / `#b4b4c5` / `#69697c` and re-derived a dark variant in JS on every scheme change.
+
+It ships as an **illustration component** alongside `CubeLogo`, not as a member of the icon set, because it is not an icon in the two ways that matter: it is a three-tone drawing rather than a `currentColor` glyph (so it ignores `color` — flattening the faces to one tone loses the box), and it is drawn full-bleed rather than inset in a 24×24 grid (so it belongs at `size="8x"` and up, not inline with text). It is still built on `Icon`, so sizing and style props behave exactly as they do for one.
 
 The token names stay `loading-face-*` so Cube Cloud's theme color map keeps resolving; they now cover both pieces of artwork, and the recipe comment says so.

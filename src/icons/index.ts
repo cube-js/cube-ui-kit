@@ -80,7 +80,6 @@ export { LoadingIcon } from './LoadingIcon';
 export { LockFilledIcon } from './LockFilledIcon';
 export { LockIcon } from './LockIcon';
 export { MoreIcon } from './MoreIcon';
-export { NoDataIcon } from './NoDataIcon';
 export { NotAllowedIcon } from './NotAllowedIcon';
 export { Number123Icon } from './Number123Icon';
 export { NumberIcon } from './NumberIcon';

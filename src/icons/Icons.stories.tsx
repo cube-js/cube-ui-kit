@@ -5,16 +5,12 @@ import { Title } from '../components/content/Title';
 import { Flow } from '../components/layout/Flow';
 import { Grid } from '../components/layout/Grid';
 import { Space } from '../components/layout/Space';
-import {
-  withDarkScheme,
-  withHighContrast,
-} from '../stories/decorators/withColorScheme';
 import { baseProps } from '../stories/lists/baseProps';
 
 import { Icon } from './Icon';
 
 import * as Icons from './index';
-import { DirectionIcon, NoDataIcon, SparklesIcon } from './index';
+import { DirectionIcon, SparklesIcon } from './index';
 
 import type { CubeIconProps } from './Icon';
 
@@ -121,26 +117,3 @@ export const Direction = TemplateDirectionIcon.bind({});
 Direction.args = {
   to: 'bottom',
 };
-
-/**
- * `NoDataIcon` is the one icon here that is not a `currentColor` glyph — it is a
- * three-tone isometric drawing sharing the cube-face tokens with
- * `LoadingAnimation`. Shown at illustration size, which is how it is used
- * (empty tables and empty lists), and in all three schemes, because the whole
- * point of the token ramp is that the three faces stay equally separated in each
- * one.
- */
-const TemplateNoData: StoryFn<CubeIconProps> = (args) => (
-  <NoDataIcon size="8x" {...args} />
-);
-
-export const NoData = TemplateNoData.bind({});
-NoData.args = {};
-
-export const NoDataDarkScheme = TemplateNoData.bind({});
-NoDataDarkScheme.args = {};
-NoDataDarkScheme.decorators = [withDarkScheme];
-
-export const NoDataHighContrast = TemplateNoData.bind({});
-NoDataHighContrast.args = {};
-NoDataHighContrast.decorators = [withHighContrast];

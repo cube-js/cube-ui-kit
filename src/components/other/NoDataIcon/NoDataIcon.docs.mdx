@@ -1,0 +1,54 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+import * as NoDataIconStories from './NoDataIcon.stories';
+
+<Meta of={NoDataIconStories} />
+
+# NoDataIcon
+
+The empty isometric crate — the kit's "nothing here yet" illustration.
+
+It is an **illustration, not a member of the icon set**, which is why it lives in `Other/` rather than under `Content/Icons`. It is still built on `Icon`, so it sizes and accepts style props exactly like one.
+
+## When to Use
+
+- An empty table, list, or card grid — "No invoices yet", "No deployments yet"
+- A full-page empty state, paired with a short line of copy
+- Anywhere `LoadingAnimation` would sit if the same view were still loading
+
+## Sizing
+
+`size` maps onto `font-size` and drives both axes; the artwork is square.
+
+```jsx
+<NoDataIcon size="8x" />
+```
+
+Unlike a glyph icon, the drawing is full-bleed in its viewBox rather than inset in a 24×24 grid, so it is meant for illustration sizes — `size="8x"` (64px) and up. At icon sizes it will read as noticeably heavier than the glyphs around it.
+
+## Colour
+
+Not a `currentColor` glyph, so it **ignores `color`**. The three faces come from the shared isometric cube-face tokens (`#loading-face-1` … `#loading-face-3`) that [`LoadingAnimation`](/docs/status-loadinganimation--docs) also draws from, so an empty table and a loading table read as the same object lit the same way.
+
+That ramp is positioned by a WCAG floor against `#surface`, so each face keeps the same separation from the page in light, dark, and high contrast, and follows a re-seeded brand hue as a tint rather than as a colour. Recolouring one face and not the others would break the shading, which is why there is no prop for it.
+
+## Properties
+
+- **`size`** `Styles['fontSize']` — Icon size; drives both axes
+
+### Base Properties
+
+Supports [Base properties](/docs/getting-started-base-properties--docs).
+
+### Style Properties
+
+Accepts the same style props as [`Icon`](/docs/content-icons--docs) — outer, base, and color style props.
+
+## Examples
+
+```jsx
+<Flow gap="1x" placeItems="center">
+  <NoDataIcon size="8x" />
+  <Paragraph>No invoices yet.</Paragraph>
+</Flow>
+```
