@@ -279,7 +279,7 @@ const RESOLUTION_SWATCH_STYLES: Styles = {
  * A color seed is a REQUEST, and two things can stop it arriving. Pastel caps chroma,
  * so a saturated brand can never resolve to itself under it — `#FFD400` softens to
  * `#e4d8ad`. And a light brand has to darken to clear the fill's APCA floors: Lc 45
- * off the page, and Lc 45 under the white label it carries. Both are correct; both
+ * under the white label it carries, and Lc 25 off the page. Both are correct; both
  * look like a bug if the only thing on screen is the color you typed.
  *
  * The requested color is deliberately NOT repeated here: the field above holds it, and
@@ -469,7 +469,7 @@ function AccentSourceControls({ resolved }: { resolved?: Tokens }) {
         <ColorInput
           label="Color"
           size="small"
-          tooltip="Hue, chroma and tone all come from here — the tone is what makes the brand fill actually be your color rather than a shade re-derived at a fixed lightness. Glaze reproduces it exactly in the light, normal-contrast variant; dark and high contrast adapt. Two APCA floors apply everywhere: Lc 45 against the page so the button reads as a shape, and Lc 45 against the white label it carries. Both are APCA rather than WCAG, so a fill can legitimately sit under 3:1 — #0EA5E9 lands at 2.77:1 and is correct there."
+          tooltip="Hue, chroma and tone all come from here — the tone is what makes the brand fill actually be your color rather than a shade re-derived at a fixed lightness. Glaze reproduces it exactly in the light, normal-contrast variant; dark and high contrast adapt. Two APCA floors apply everywhere, and they are different sizes: Lc 45 against the white label it carries, because that is text, and Lc 25 against the page, because a fill is a shape. Both are APCA rather than WCAG, so a fill can legitimately sit under 3:1 — #0EA5E9 lands at 2.77:1 and is correct there."
           value={seedColor(input.accent)}
           onChange={(accent) =>
             // Clearing the field is a change of path, so it lands back on a hue seed
@@ -1542,7 +1542,7 @@ function StatusThemeButton({
             <ColorInput
               label="Color"
               size="small"
-              tooltip="Hue, chroma and tone all come from here. The fill becomes this color on the same terms the brand does — reproduced in light at normal contrast, adapting in dark and high contrast, and held above APCA Lc 45 against both the page and the white label it carries. Its chroma also becomes the theme's own scale, which is what keeps the tinted banner, the border and the text ramp in the proportion to the fill that they have on every other theme."
+              tooltip="Hue, chroma and tone all come from here. The fill becomes this color on the same terms the brand does — reproduced in light at normal contrast, adapting in dark and high contrast, and held above APCA Lc 45 against the white label it carries and Lc 25 against the page. Its chroma also becomes the theme's own scale, which is what keeps the tinted banner, the border and the text ramp in the proportion to the fill that they have on every other theme."
               value={seedColor(written)}
               onChange={(color) =>
                 // Clearing lands back on a hue pinned where the color left it. There is

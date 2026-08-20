@@ -171,16 +171,17 @@ export interface PaletteConfig {
    * The **light, normal-contrast** variant reproduces the color; dark and high contrast
    * adapt, as every other color in the palette does. Two things cost exactness even
    * there: {@link PaletteConfig.pastel} caps chroma (so `#FFD400` softens), and the fill
-   * answers to two APCA floors — **Lc 45 against `surface`** so the button reads as a
-   * shape, and **Lc 45 against the white label** it carries — moving only as far as the
-   * nearer one requires.
+   * answers to two APCA floors of deliberately different sizes — **Lc 45 against the
+   * white label** it carries, because a label is text, and only **Lc 25 against
+   * `surface`**, because a fill is a shape. It moves as far as the nearer one requires
+   * and no further.
    *
    * Those floors are APCA, not WCAG, and the difference is deliberate: one WCAG ratio
    * means two very different things by scheme (3:1 measures Lc 56 in light but only
    * Lc 23 in dark), which crushed light brands while letting dark ones through. A
    * consequence worth stating plainly — **the emitted fill can sit below WCAG 3:1**.
-   * `#0EA5E9` renders at 2.77:1 against a white page and is correct at that value; Lc 45
-   * is the guarantee, not the ratio.
+   * `#0EA5E9` renders at 2.77:1 against a white page and is correct at that value; the
+   * Lc is the guarantee, not the ratio.
    *
    * A color's own chroma is **not** adopted as the zone's seed saturation, which stays at
    * its default. The accent family gets the chroma through Glaze's `from`, where it is

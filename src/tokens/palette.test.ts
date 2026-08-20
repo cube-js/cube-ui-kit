@@ -1484,32 +1484,98 @@ describe('accent color seeds', () => {
   });
 
   /**
-   * High contrast keeps AAA whatever the caller asked for.
+   * High contrast escalates the page floor, but only as far as the label can follow.
    *
-   * Fidelity to a requested color is a preference; the high-contrast tier is not. It is
-   * selected by `prefers-contrast: more` or an explicit `data-contrast="high"`, so
-   * anyone reading it has asked for separation over brand — and the relaxed normal floor
-   * must not follow them into it.
+   * Fidelity to a requested color is a preference; the high-contrast tier is not — it is
+   * selected by `prefers-contrast: more` or an explicit `data-contrast="high"`, so anyone
+   * reading it has asked for separation over brand. What that cannot mean is text-grade
+   * separation from the page: the same fill carries a white label, and driving it off the
+   * page drives the label off it. The shipped ladder makes the same trade the other way
+   * round, ending up with LESS page separation in high contrast than in normal.
    */
-  it('holds Lc 60 on the brand fill in high contrast, whatever the color', () => {
-    for (const accentColor of BRANDS) {
-      for (const scheme of ['light', 'dark'] as const) {
-        const hc = renderPaletteTokens({
-          ...EXACT,
-          accent: accentColor,
-          scheme: scheme,
-          highContrast: true,
-        });
+  it('calibrates the page floor to the shipped fill, not above it', () => {
+    // The floor's job is page separation, and the palette's OWN fill is the only honest
+    // reference for how much of it a filled shape needs: the white-anchored ladder every
+    // primary button used before color seeds existed. Holding a color-seeded fill to more
+    // than that is what flattened the dark tone axis — see `ACCENT_FILL_CONTRAST`.
+    //
+    // Measured in DARK, and on a brand dark enough that the floor is what binds. Light is
+    // not the same claim: there the fill reproduces the requested color and may sit well
+    // BELOW the shipped ladder's separation, which is the documented consequence of
+    // rendering a brand rather than a shade of one.
+    //
+    // Asserted as a band around the shipped value rather than as a number, so the floor
+    // cannot drift from the ladder it is calibrated against in either direction.
+    for (const highContrast of [false, true]) {
+      const shipped = renderPaletteTokens({
+        ...EXACT,
+        scheme: 'dark',
+        highContrast,
+      });
+      const reference = apcaOf(
+        String(shipped['#surface']),
+        String(shipped['#accent-surface']),
+      );
 
-        // 60, not the old AAA, and it is a ceiling geometry imposed rather than a
-        // preference: the same fill also answers to the white label above it, and in
-        // dark those two floors pull opposite ways. Asking 85 of the page empties the
-        // window they share — see `ACCENT_FILL_CONTRAST`.
-        expect(
-          apcaOf(String(hc['#surface']), String(hc['#accent-surface'])),
-          `${accentColor} ${scheme}`,
-        ).toBeGreaterThan(59.9);
+      const seeded = renderPaletteTokens({
+        ...EXACT,
+        accent: 'okhst(280 70% 10%)',
+        scheme: 'dark',
+        highContrast,
+      });
+      const separation = apcaOf(
+        String(seeded['#surface']),
+        String(seeded['#accent-surface']),
+      );
+      const label = `hc=${highContrast} shipped ${reference.toFixed(1)}`;
+
+      expect(separation, label).toBeGreaterThan(reference - 0.5);
+      // The upper bound is the point of the test: 45/60 put this at 1.8x and 3.1x the
+      // reference. 1.5x leaves room for the one place the two paths legitimately differ —
+      // in high contrast the shipped ladder sacrifices page separation to strengthen its
+      // white label, where a color-seeded fill has that label guaranteed by the tone
+      // ceiling instead and so keeps the separation it had.
+      expect(separation, label).toBeLessThan(reference * 1.5);
+    }
+  });
+
+  it('tracks the seed down the tone axis in dark, not just in light', () => {
+    // The regression this exists for: the page floor was set for the white LABEL (Lc 45,
+    // rising to 60 in high contrast) rather than for page separation. A floor can only
+    // lighten, so in dark every seed below it solved to one value — the whole dark half
+    // of a brand's tone range collapsed onto a single lavender, while light passed the
+    // same seeds through untouched.
+    //
+    // Guarded as SPAN plus monotonicity rather than as exact tones. Below the floor the
+    // axis is flat by geometry — a fill darker than the page can carry no shape — so what
+    // broke was not the flat part but how much of the axis it swallowed: 7.7 tones of
+    // range survived in dark against light's 45.
+    const tones = [30, 45, 60, 75];
+
+    for (const scheme of ['light', 'dark'] as const) {
+      const emitted = tones.map((tone) =>
+        toneOf(
+          String(
+            renderPaletteTokens({
+              ...EXACT,
+              accent: `okhst(280 70% ${tone}%)`,
+              scheme,
+            })['#accent-surface'],
+          ),
+        ),
+      );
+      const label = `${scheme}: ${emitted.map((t) => t.toFixed(1)).join(', ')}`;
+
+      // Never inverts — a lighter seed cannot emit a darker fill.
+      for (let i = 1; i < emitted.length; i++) {
+        expect(emitted[i], label).toBeGreaterThanOrEqual(emitted[i - 1] - 0.1);
       }
+
+      // And the axis stays a range rather than a sliver. The old floor left 7.7 tones
+      // here in dark; this one leaves ~27, against light's ~45.
+      expect(emitted[emitted.length - 1] - emitted[0], label).toBeGreaterThan(
+        20,
+      );
     }
   });
 
@@ -1730,17 +1796,23 @@ describe('accent color seeds', () => {
               });
               const label = `${seed} ${scheme}${highContrast ? ' hc' : ''}`;
 
+              // The white label — the guarantee `accentToneCeiling` exists for, and the
+              // one that has to hold at text strength.
               expect(
                 apcaOf('#ffffff', String(tokens['#accent-surface'])),
                 label,
               ).toBeGreaterThanOrEqual(44.9);
+              // The page is a separate, weaker claim: a filled shape, not text. It used
+              // to be asserted at the label's 44.9 too, which is exactly the conflation
+              // that flattened the dark axis. `ACCENT_FILL_CONTRAST` is the floor here,
+              // and the comparison against the shipped ladder is asserted above.
               expect(
                 apcaOf(
                   String(tokens['#surface']),
                   String(tokens['#accent-surface']),
                 ),
                 label,
-              ).toBeGreaterThanOrEqual(44.9);
+              ).toBeGreaterThanOrEqual(24.9);
             }
           }
         }

@@ -180,31 +180,42 @@ that reproduces your color. Dark and high contrast adapt, as every other color i
 palette does — they are different pages, and a brand pinned across all four would be
 less faithful, not more. What holds everywhere is the floor below.
 
-**The fill answers to two floors, both APCA Lc 45.** One against the page, so the
-button reads as a shape on the surface; one against the `#white` label it carries, so
-what is written on it stays readable. They are floors and not targets — a brand already
-past both is emitted exactly as given, and one that misses moves only as far as the
-nearer floor requires.
+**The fill answers to two constraints, and they are different sizes.** The `#white`
+label it carries needs **APCA Lc 45** — text strength, because it is text. The page it
+sits on needs only **Lc 25**, because a solid fill is a shape, not text, and Lc 25 is
+what the palette's own shipped fill achieves against a dark page. Both are floors rather
+than targets: a brand already past them is emitted exactly as given, and one that misses
+moves only as far as the nearer requires.
+
+Sizing those two the same is a mistake worth naming, because this palette made it. In
+light `surface` **is** white, so one measurement is both constraints at once and Lc 45
+looks right for the pair. In dark the page is near-black and the same number becomes a
+demand that a filled shape reach text contrast against it — which nothing in the palette
+meets, the shipped fill included. Since a floor can only lighten, the surplus flattened
+the dark half of the tone axis onto a single value: every brand darker than the floor came
+out the same colour. The page floor is now sized for a shape and the label is guaranteed
+separately, by a cap on the seed's tone.
 
 They are APCA rather than WCAG on purpose. A single WCAG ratio means two different
 things depending on the scheme: measured across twelve hues, a fill sitting exactly at
 3:1 comes out at Lc 56 in light but only Lc 23 in dark. That is why light brands kept
 getting crushed while dark ones sailed through the same rule. **A consequence to state
 plainly: the emitted fill can sit below WCAG 3:1.** `#0EA5E9` renders at 2.77:1 against
-a white page and is correct there — Lc 45 is the guarantee, not the ratio.
+a white page and is correct there — the Lc is the guarantee, not the ratio.
 
-High contrast escalates the page floor to Lc 60 and stops. It stops because the two
-floors pull opposite ways in dark — one wants a lighter fill, the other a darker one —
-and the window they share closes entirely somewhere past 60. A fill driven further off
-the page is one its own label has disappeared from, so the tier escalates only as far
-as the label can follow.
+High contrast does **not** escalate the page floor. It is a request for separation over
+brand, but not for separation from the page: the same fill carries the label, and driving
+it off the page drives the label off it. The shipped ladder makes the same trade and lands
+the other side of it, ending up with *less* page separation in high contrast than in
+normal, because it darkens the fill toward its label. What does escalate is the label cap,
+which searches the high-contrast variants too.
 
 **`pastel` caps chroma.** The flat, hue-independent ceiling is what makes pastel even
 across hues, and it sits below where a saturated color would land, so under it a color
 seed can never resolve to itself: `#EF4444` renders `#c47069`. Under pastel the color
 contributes its hue and its tone; turn pastel off to get its chroma too.
 
-All of it applies per zone. A status color answers to the same two floors on its own
+All of it applies per zone. A status color answers to the same two constraints on its own
 `#<theme>-accent-surface`, including the label cap — every `type="primary"` item on a
 status theme paints `#white` on that fill too, so a pale `danger` color is pulled down
 rather than shipped as a white label on white.
