@@ -40,6 +40,7 @@ import {
   CubeTextInputBaseProps,
   TextInputBase,
 } from '../TextInput/TextInputBase';
+import { useAutoSizeTextArea } from '../TextInput/useAutoSizeTextArea';
 
 import { useCaretAnchor } from './useCaretAnchor';
 
@@ -403,28 +404,13 @@ function CommandTextArea<T extends object>(
     isActive: shouldShowPopover,
   });
 
-  // ---- height autosize (mirrors TextArea) -------------------------------
-  const adjustHeight = useEvent(() => {
-    const textarea = inputRef.current;
-    if (!textarea || !autoSize) return;
-
-    textarea.style.height = 'auto';
-    const computedStyle = getComputedStyle(textarea);
-    const paddingTop = parseFloat(computedStyle.paddingTop) || 0;
-    const paddingBottom = parseFloat(computedStyle.paddingBottom) || 0;
-    const borderTop = parseFloat(computedStyle.borderTopWidth) || 0;
-    const borderBottom = parseFloat(computedStyle.borderBottomWidth) || 0;
-    const lineHeight = parseInt(computedStyle.lineHeight) || 20;
-    const contentHeight = textarea.scrollHeight - paddingTop - paddingBottom;
-    const computedRows = Math.ceil(contentHeight / lineHeight);
-    const targetRows = Math.max(Math.min(computedRows, maxRows), rows);
-    const totalHeight =
-      targetRows * lineHeight +
-      paddingTop +
-      paddingBottom +
-      borderTop +
-      borderBottom;
-    textarea.style.height = `${totalHeight}px`;
+  // ---- height autosize (shared with TextArea) ---------------------------
+  const adjustHeight = useAutoSizeTextArea({
+    inputRef,
+    autoSize,
+    rows,
+    maxRows,
+    value: effectiveValue,
   });
 
   // ---- useTextField (ARIA wiring for the textarea) ----------------------
@@ -446,20 +432,6 @@ function CommandTextArea<T extends object>(
 
   const useEnvironmentalEffect =
     typeof window !== 'undefined' ? useLayoutEffect : useEffect;
-
-  useEnvironmentalEffect(() => {
-    if (!autoSize || !inputRef.current) return;
-    adjustHeight();
-    const resizeObserver = new ResizeObserver(adjustHeight);
-    resizeObserver.observe(inputRef.current);
-    return () => resizeObserver.disconnect();
-  }, [autoSize, inputRef.current]);
-
-  useEnvironmentalEffect(() => {
-    if (autoSize && inputRef.current) {
-      adjustHeight();
-    }
-  }, [effectiveValue]);
 
   // ---- caret restore after commit --------------------------------------
   const pendingCaretRef = useRef<number | null>(null);

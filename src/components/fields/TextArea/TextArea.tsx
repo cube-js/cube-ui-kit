@@ -1,13 +1,6 @@
-import {
-  ForwardedRef,
-  forwardRef,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-} from 'react';
+import { ForwardedRef, forwardRef, useRef } from 'react';
 import { useTextField } from 'react-aria';
 
-import { useEvent } from '../../../_internal/index';
 import { chain, mergeProps, useBufferedValue } from '../../../utils/react';
 import {
   castNullableStringValue,
@@ -19,6 +12,7 @@ import {
   CubeTextInputBaseProps,
   TextInputBase,
 } from '../TextInput';
+import { useAutoSizeTextArea } from '../TextInput/useAutoSizeTextArea';
 
 export interface CubeTextAreaProps
   extends CubeTextInputBaseProps,
@@ -65,49 +59,20 @@ function TextArea(
   let localInputRef = useRef<HTMLTextAreaElement>(null);
   let inputRef = propsInputRef ?? localInputRef;
 
-  const adjustHeight = useEvent(() => {
-    const textarea = inputRef.current;
-
-    if (!textarea || !autoSize) return;
-
-    // Reset height to get the correct scrollHeight
-    textarea.style.height = 'auto';
-
-    // Get computed styles to account for padding
-    const computedStyle = getComputedStyle(textarea);
-    const paddingTop = parseFloat(computedStyle.paddingTop) || 0;
-    const paddingBottom = parseFloat(computedStyle.paddingBottom) || 0;
-    const borderTop = parseFloat(computedStyle.borderTopWidth) || 0;
-    const borderBottom = parseFloat(computedStyle.borderBottomWidth) || 0;
-
-    // Calculate line height (approximately)
-    const lineHeight = parseInt(computedStyle.lineHeight) || 20;
-
-    // Calculate content height (excluding padding and border)
-    const contentHeight = textarea.scrollHeight - paddingTop - paddingBottom;
-
-    // Calculate rows based on content height
-    const computedRows = Math.ceil(contentHeight / lineHeight);
-
-    // Apply min/max constraints
-    const targetRows = Math.max(Math.min(computedRows, maxRows), rows);
-
-    // Set the height including padding and border
-    const totalHeight =
-      targetRows * lineHeight +
-      paddingTop +
-      paddingBottom +
-      borderTop +
-      borderBottom;
-
-    textarea.style.height = `${totalHeight}px`;
-  });
-
   // Hold the typed text locally until the controlled value catches up — see `useBufferedValue`.
   const buffered = useBufferedValue(value, onChange, {
     isBuffered,
     isDisabled,
     isReadOnly,
+  });
+
+  const adjustHeight = useAutoSizeTextArea({
+    inputRef,
+    autoSize,
+    rows,
+    maxRows,
+    // Keyed on the rendered value, not the prop, so a buffered draft is measured.
+    value: buffered.value,
   });
 
   let { labelProps, inputProps } = useTextField(
@@ -126,30 +91,6 @@ function TextArea(
 
   // Merge user-provided labelProps with aria labelProps
   const mergedLabelProps = mergeProps(labelProps, userLabelProps);
-
-  const useEnvironmentalEffect =
-    typeof window !== 'undefined' ? useLayoutEffect : useEffect;
-
-  // Also call adjustHeight on element resize as that can affect wrapping
-  useEnvironmentalEffect(() => {
-    if (!autoSize || !inputRef.current) return;
-
-    adjustHeight();
-
-    const resizeObserver = new ResizeObserver(adjustHeight);
-
-    resizeObserver.observe(inputRef?.current);
-
-    return () => resizeObserver.disconnect();
-  }, [autoSize, inputRef?.current]);
-
-  // Adjust height when value changes programmatically (controlled mode with autoSize).
-  // Keyed on the rendered value, not the prop, so a buffered draft is measured.
-  useEnvironmentalEffect(() => {
-    if (autoSize && inputRef.current) {
-      adjustHeight();
-    }
-  }, [buffered.value]);
 
   return (
     <TextInputBase
