@@ -1248,6 +1248,14 @@ export const CURRENT_OUTLINE_2_STYLES: Styles = {
   },
 } as const;
 
+// The colour a container can offer the two FILLED `current` flavours, and the
+// only thing that varies between them: `primary` paints `#current` and writes
+// this on it, `invert` paints this and writes `#current`. Unset, it is the page
+// — which is what both used before the hook, and which collapses only when the
+// inherited colour IS the page (a `Banner` labels itself `#white`). One
+// property, so the mirror cannot come apart.
+const CURRENT_SWAP_COLOR = 'var(--current-accent, var(--surface-color))';
+
 // Primary flavour — the high-emphasis control, and the only `current` flavour
 // that INVERTS: the fill is the inherited color at full opacity and the label
 // is punched out of it with `#surface`, exactly as every other
@@ -1331,47 +1339,38 @@ export const CURRENT_PRIMARY_STYLES: Styles = {
   // is therefore the fix, and unset the fallback is the `#surface` this always
   // used, so nothing else moves.
   //
-  // `--current-label`, and NOT the `--current-accent` that `CURRENT_INVERT_STYLES`
-  // reads, because the two flavours sit on different chips and a container
-  // cannot satisfy both with one color. This chip is `currentcolor` — whatever
-  // the container paints text with, often scheme-fixed. `invert`'s chip is
-  // `#surface`, which flips. On a container painting `#white`, the label here
-  // must be dark in BOTH schemes while `invert`'s must flip with the page:
-  // offering one value drops the other to cr 1.00 in dark (measured 1.00 for
-  // `invert` on `#fixed-dark`, 1.12 for this one on `#surface-text`).
-  //
-  // Faded on a bare `disabled`, and NOT gated the way `invert`'s label is. The
-  // gate exists to protect an INHERITED fallback: `invert` falls back to
-  // `currentcolor`, which a disabled host has already muted, so fading again
-  // would multiply. This falls back to `#surface`, an absolute token nothing
-  // above touches — gating it left a crisp page-colored label on a faded chip
-  // in every nested disabled path, still reading live.
-  //
-  // The flip side of that is the contract for whoever offers the property:
-  // `--current-label` is the LIVE color only, and this fades it. That is the
-  // opposite of `--current-accent`, whose offerer owns every state — see
-  // `BANNER_ACTION_ACCENT`. The asymmetry is not a choice, it follows from
-  // which fallback each flavour has.
+  // Faded on a bare `disabled`, unlike the `#current`-derived values around it.
+  // The gate those carry protects an INHERITED value: `#current` is already
+  // muted by a disabled host, so fading it again would multiply. The swap color
+  // is not inherited — nothing above touches it — so this has to do the fading
+  // itself, and a container offers the live color only.
   '-webkit-text-fill-color': {
-    '': 'var(--current-label, var(--surface-color))',
+    '': 'var(--current-accent, var(--surface-color))',
     disabled:
-      'color-mix(in oklab, var(--current-label, var(--surface-color)) 50%, transparent)',
+      'color-mix(in oklab, var(--current-accent, var(--surface-color)) 50%, transparent)',
   },
-  // Every icon-bearing slot, not just the leading one. `-webkit-text-fill-color`
-  // paints glyphs and inherits into the text slots for free, but icons are SVG
-  // stroked with `currentColor`, which it does not reach — so an un-recolored
-  // slot would keep the inherited color and vanish into the fill it matches.
+  // Every slot that paints from `currentColor` rather than from the glyph fill.
+  // `-webkit-text-fill-color` inherits into the text slots for free, but two
+  // kinds of descendant escape it and would otherwise keep `color` — which on
+  // this flavour is the FILL — and vanish into the chip they match:
+  //
+  //   the icon slots, whose SVG is stroked with `currentColor`;
+  //   `Actions`, because a nested `Item.Action` defaults to `theme="current"`
+  //   and mixes its own label from the `currentcolor` it inherits.
+  //
+  // This is the one variant where `color` is not the label, so it is the one
+  // variant that has to hand the label down by hand.
   ...Object.fromEntries(
-    ['Icon', 'RightIcon', 'Prefix', 'Suffix'].map((slot) => [
+    ['Icon', 'RightIcon', 'Prefix', 'Suffix', 'Actions'].map((slot) => [
       slot,
       {
         // Icons are SVG stroked with `currentColor`, which
         // `-webkit-text-fill-color` never reaches, so each slot repeats the
         // label color — accent hook included.
         color: {
-          '': 'var(--current-label, var(--surface-color))',
+          '': 'var(--current-accent, var(--surface-color))',
           disabled:
-            'color-mix(in oklab, var(--current-label, var(--surface-color)) 50%, transparent)',
+            'color-mix(in oklab, var(--current-accent, var(--surface-color)) 50%, transparent)',
         },
       },
     ]),
@@ -1537,14 +1536,18 @@ export const CURRENT_INVERT_STYLES: Styles = {
   // both schemes — where a fixed `#black` over a near-black `#surface` would
   // barely move. Same two-layer shape in every state so the overlay
   // interpolates; see `DEFAULT_PRIMARY_STYLES.fill`.
+  // Exactly `CURRENT_PRIMARY_STYLES.fill` with the two colors exchanged: that
+  // one paints `#current` and writes the swap color on it, this one paints the
+  // swap color and writes `#current`. One pair, read from one property, so the
+  // two always stay each other's mirror — whatever a container offers moves
+  // both at once and cannot put them out of step.
   fill: {
-    '': '#surface #current.0',
-    'hovered | focused': '#surface #current.08',
-    pressed: '#surface #current.16',
-    // Half-strength page color lets the container show through, so a dead
-    // control stops reading as a solid chip. The label and rim fade with the
-    // color below.
-    disabled: '#surface.5 #current.0',
+    '': `${CURRENT_SWAP_COLOR} #current.0`,
+    'hovered | focused': `${CURRENT_SWAP_COLOR} #current.08`,
+    pressed: `${CURRENT_SWAP_COLOR} #current.16`,
+    // Half strength lets the container through, so a dead control stops reading
+    // as a solid chip. The label and rim fade with the color below.
+    disabled: `color-mix(in oklab, ${CURRENT_SWAP_COLOR} 50%, transparent) #current.0`,
   },
   // The one place a container can intervene. `--current-accent` names a color a
   // container OFFERS to the `current` theme, for the case the theme cannot solve
@@ -1579,11 +1582,10 @@ export const CURRENT_INVERT_STYLES: Styles = {
   // inside the `color` property means the INHERITED value, so it would fade the
   // container's color instead of the accent.
   color: {
-    '': 'var(--current-accent, currentcolor)',
+    '': '#current',
     // See `CURRENT_ITEM_STYLES.color` for why this is gated rather than a bare
     // `disabled`: both mods mark a color that something above already faded.
-    'disabled & !inherit-disabled & !inside-wrapper':
-      'color-mix(in oklab, var(--current-accent, currentcolor) 40%, transparent)',
+    'disabled & !inherit-disabled & !inside-wrapper': '#current.4',
   },
 } as const;
 
@@ -1794,6 +1796,15 @@ export function resolveItemVariant(
 // so it never carries `hovered` / `pressed` / `selected` and those entries could
 // never match there. `disabled` is different only because `ItemButton` passes it
 // down explicitly.
+const ACTIONS_COLOR_OVERRIDES: Partial<
+  Record<ItemVariant, Record<string, string>>
+> = {
+  'current.primary': {
+    '': CURRENT_SWAP_COLOR,
+    disabled: `color-mix(in oklab, ${CURRENT_SWAP_COLOR} 50%, transparent)`,
+  },
+};
+
 export const ITEM_RESTING_COLOR_VARIANTS: Record<ItemVariant, Styles> =
   Object.fromEntries(
     Object.entries(ITEM_VARIANTS).map(([variant, styles]) => {
@@ -1803,7 +1814,14 @@ export const ITEM_RESTING_COLOR_VARIANTS: Record<ItemVariant, Styles> =
         return [variant, { color }];
       }
 
-      const map = color as Record<string, string>;
+      // `current.primary` is the one variant whose `color` is not its label. It
+      // keeps `color` as the inherited fill so `#current` resolves in `fill`,
+      // and paints the label with `-webkit-text-fill-color`. Reproducing its
+      // `color` on the wrapper would hand sibling actions the CHIP color and
+      // they would vanish into it, so the override names the label instead —
+      // the same value the `Actions` slot gets inside a plain `Item`.
+      const map = (ACTIONS_COLOR_OVERRIDES[variant as ItemVariant] ??
+        color) as Record<string, string>;
       // The `current` flavours state their fade as
       // `disabled & !inherit-disabled & !inside-wrapper` rather than a bare
       // `disabled`, and the wrapper wants exactly that value under a plain

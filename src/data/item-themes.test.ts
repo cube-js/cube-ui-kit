@@ -143,17 +143,10 @@ describe('current theme disabled fades', () => {
     ]);
   });
 
-  // Every flavour fades to 40% of whatever it paints its label with. That is
-  // `#current.4` for all but `invert`, which sources its label from the
-  // `--current-accent` a container may offer and therefore has to spell the mix
-  // out — `#current.4` would compile to `color-mix(… currentcolor …)`, and
-  // `currentcolor` inside the `color` property means the inherited value rather
-  // than the accent.
-  const FADED: Record<string, string> = {
-    'current.invert':
-      'color-mix(in oklab, var(--current-accent, currentcolor) 40%, transparent)',
-  };
-  const fadedFor = (variant: string) => FADED[variant] ?? '#current.4';
+  // Every `current` flavour fades its label to 40% of the inherited color. They
+  // all express it the same way now that `invert` labels with `#current` like
+  // the rest — the swap color it paints WITH is faded on the fill instead.
+  const fadedFor = (_variant: string) => '#current.4';
 
   it.each(CURRENT_VARIANTS)('%s gates its label fade', (variant) => {
     const color = ITEM_VARIANTS[variant].color as Record<string, string>;
@@ -171,117 +164,81 @@ describe('current theme disabled fades', () => {
         string
       >;
 
+      // `current.primary` is the exception, and deliberately: its `color` is the
+      // FILL, not the label, so reproducing it on the wrapper would hand sibling
+      // actions the chip color and they would vanish into it. The wrapper gets
+      // the swap color — the same thing the `Actions` slot gets inside a plain
+      // `Item`. Everything else hands down its own faded label.
+      if (variant === 'current.primary') {
+        expect(color.disabled).toContain('var(--current-accent');
+        return;
+      }
+
       expect(color.disabled).toBe(fadedFor(variant));
     },
   );
 
-  // Each filled flavour takes its own property, and reads nobody else's. They
-  // sit on different chips — `invert` on `#surface`, `primary` on
-  // `currentcolor` — so a container painting a scheme-fixed color cannot
-  // satisfy both with one value: offering the container's own fill drops
-  // `invert` to cr 1.00 in dark, offering `#surface-text` drops `primary` to
-  // 1.12. Two properties is the smallest thing that serves both.
-  const HOOKS = {
-    'current.invert': {
-      property: '--current-accent',
-      fallback: 'var(--current-accent, currentcolor)',
-    },
-    'current.primary': {
-      property: '--current-label',
-      fallback: 'var(--current-label, var(--surface-color))',
-    },
-  } as const;
+  // One property, shared by the two filled flavours, because they are each
+  // other's mirror: `primary` paints `#current` and writes the swap color on it,
+  // `invert` paints the swap color and writes `#current`. A container that
+  // offers one value therefore moves both at once and cannot put them out of
+  // step. Nothing else reads it — the remaining flavours paint their chip ON the
+  // container, so the inherited color is already the right one.
+  const SWAP = 'var(--current-accent, var(--surface-color))';
 
-  const READERS = Object.keys(HOOKS) as (keyof typeof HOOKS)[];
-
-  it('redirects the filled flavours only', () => {
+  it('is read by the two filled flavours only', () => {
     const readers = CURRENT_VARIANTS.filter((variant) =>
-      /var\(--current-(accent|label)/.test(
-        JSON.stringify(ITEM_VARIANTS[variant]),
-      ),
+      JSON.stringify(ITEM_VARIANTS[variant]).includes('--current-accent'),
     ).sort();
 
-    expect(readers).toEqual([...READERS].sort());
+    expect(readers).toEqual(['current.invert', 'current.primary']);
   });
 
-  it.each(READERS)('%s reads only its own property', (variant) => {
-    const json = JSON.stringify(ITEM_VARIANTS[variant]);
-    const foreign = READERS.filter((other) => other !== variant).map(
-      (other) => HOOKS[other].property,
+  // Every read spells out the same fallback, which is what keeps a container
+  // that offers nothing rendering as it did before the hook existed. A bare
+  // `var(--current-accent)` would resolve to nothing and drop the color.
+  it.each(['current.invert', 'current.primary'] as const)(
+    '%s always spells out the fallback',
+    (variant) => {
+      const json = JSON.stringify(ITEM_VARIANTS[variant]);
+      const occurrences = (needle: string) => json.split(needle).length - 1;
+
+      expect(occurrences('var(--current-accent')).toBeGreaterThan(0);
+      expect(occurrences(SWAP)).toBe(occurrences('var(--current-accent'));
+    },
+  );
+
+  // The mirror itself: whatever `primary` writes with, `invert` paints with, and
+  // vice versa. Stated as a test because the pair is the whole definition of
+  // `invert` on this theme, and two objects can drift where one cannot.
+  it('current.invert is current.primary with the two colors exchanged', () => {
+    const primary = ITEM_VARIANTS['current.primary'] as Record<string, any>;
+    const invert = ITEM_VARIANTS['current.invert'] as Record<string, any>;
+
+    // `primary` paints `#current`, `invert` writes it.
+    expect(primary.fill['']).toContain('#current');
+    expect(invert.color['']).toBe('#current');
+
+    // `primary` writes the swap color, `invert` paints it.
+    expect(primary['-webkit-text-fill-color']['']).toBe(SWAP);
+    expect(invert.fill['']).toContain(SWAP);
+  });
+
+  // `#current`-derived fades gate, because a disabled host has already muted
+  // what they resolve against. The swap color is not inherited, so wherever it
+  // is faded the fade is the reader's own job and takes a bare `disabled`.
+  it('gates the inherited fades and not the offered one', () => {
+    const invert = ITEM_VARIANTS['current.invert'] as Record<string, any>;
+    const primary = ITEM_VARIANTS['current.primary'] as Record<string, any>;
+
+    expect(invert.color[GATE]).toBe('#current.4');
+    expect(invert.color.disabled).toBeUndefined();
+    expect(primary.color[GATE]).toBe('#current.4');
+    expect(primary.color.disabled).toBeUndefined();
+
+    expect(primary['-webkit-text-fill-color'].disabled).toContain(
+      'var(--current-accent',
     );
-
-    expect(json).toContain(HOOKS[variant].property);
-    for (const property of foreign) {
-      expect(json).not.toContain(property);
-    }
-  });
-
-  // Every read spells out its fallback, which is what keeps a container that
-  // offers nothing rendering exactly as it did before the hooks existed. A bare
-  // `var(--current-accent)` would resolve to nothing and drop the label.
-  it.each(READERS)('%s always spells out its fallback', (variant) => {
-    const json = JSON.stringify(ITEM_VARIANTS[variant]);
-    const occurrences = (needle: string) => json.split(needle).length - 1;
-    const bare = `var(${HOOKS[variant].property}`;
-
-    expect(occurrences(bare)).toBeGreaterThan(0);
-    expect(occurrences(HOOKS[variant].fallback)).toBe(occurrences(bare));
-  });
-
-  // The two flavours fade on opposite rules, and which fallback each has is
-  // what decides it.
-  //
-  // `invert` falls back to `currentcolor`, which a disabled host has already
-  // muted, so it gates — and its offerer (`BANNER_ACTION_ACCENT`) therefore owns
-  // every state, since a gated reader will not fade the offer either.
-  it('current.invert never fades the offered accent on a bare `disabled`', () => {
-    const variant = 'current.invert' as const;
-    {
-      const offenders: string[] = [];
-
-      const walk = (node: unknown, path: string) => {
-        if (!node || typeof node !== 'object') return;
-
-        const map = node as Record<string, unknown>;
-        const reads = Object.values(map).some(
-          (value) =>
-            typeof value === 'string' &&
-            value.includes(HOOKS[variant].property),
-        );
-
-        if (reads && 'disabled' in map) offenders.push(path);
-
-        for (const [key, value] of Object.entries(map))
-          walk(value, `${path}.${key}`);
-      };
-
-      walk(ITEM_VARIANTS[variant], variant);
-
-      expect(offenders).toEqual([]);
-    }
-  });
-
-  // `primary` falls back to the absolute `#surface`, which nothing above mutes,
-  // so IT must fade and its offerer supplies the live color only. Gating this
-  // the way `invert` is gated left a crisp page-colored label on a faded chip in
-  // every nested disabled path.
-  it('current.primary fades its label on a bare `disabled`', () => {
-    const styles = ITEM_VARIANTS['current.primary'] as Record<string, any>;
-    const carriers = [
-      '-webkit-text-fill-color',
-      'Icon',
-      'RightIcon',
-      'Prefix',
-      'Suffix',
-    ];
-
-    for (const key of carriers) {
-      const map = (
-        key.startsWith('-') ? styles[key] : styles[key]?.color
-      ) as Record<string, string>;
-
-      expect(map, key).toBeDefined();
-      expect(map.disabled, key).toContain('var(--current-label');
-    }
+    expect(primary['-webkit-text-fill-color'][GATE]).toBeUndefined();
   });
 });
