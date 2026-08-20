@@ -375,6 +375,12 @@ const disabledPairs: ColorPair[] = [
     note: 'Muted brand fill for solid primary controls',
   },
   {
+    label: 'Primary disabled (selected)',
+    fill: '#primary-accent-selected-fill',
+    texts: ['#primary-accent-disabled-text'],
+    note: 'The selected chip kept as-is, with only the label faded — the selected disabled state of outline, outline-2 and clear',
+  },
+  {
     label: 'Success disabled',
     fill: '#success-accent-disabled-surface',
     texts: ['#success-accent-disabled-surface-text'],

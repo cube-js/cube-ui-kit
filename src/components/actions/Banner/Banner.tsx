@@ -59,11 +59,34 @@ const BannerElement = tasty(Item, {
   },
 });
 
+// `current.outline` — the `current` theme on `Item.Action`, given the outlined
+// shape rather than the borderless default.
+//
+// `current` is the right color source: a banner labels itself `#white` in both
+// schemes (see `BannerLinkElement` and `*_PRIMARY_STYLES`), so the action mixes
+// its chip, border and label from that white — label cr 4.3-5.0 against every
+// banner theme, with the chip a subtle 1.06 off the banner. That is what an
+// action on a saturated surface should be: the banner carries the emphasis, the
+// button just has to be findable.
+//
+// `outline` rather than `Item.Action`'s `clear` default because a banner action
+// is a call to action, and `clear` paints nothing at rest — on a busy banner it
+// reads as body text until hovered. The `#current.08` border is what makes it a
+// button, which is why the old `border: '#clear'` override had to go: it was
+// written when `outline` meant `note.outline` and friends, whose border is the
+// opaque `#note-border` — a pale line built for a `#surface-2` chip on a light
+// page and plainly wrong on a saturated banner. On the `current` theme the
+// border IS the chip, and the 3% fill cannot carry one alone.
+//
+// `type="primary"` is deliberately not used. It would fill with the inherited
+// white and punch `#current-fill` out of it, which defaults to `#surface` —
+// white in light mode, so the label would collapse into its own chip. A banner
+// that wants a filled action has to set `#current-fill` to its own surface
+// color; see `CURRENT_PRIMARY_STYLES` in `item-themes`.
 const BannerActionElement = tasty(Item.Action, {
   type: 'outline',
   styles: {
     preset: 't3m',
-    border: '#clear',
   },
 });
 

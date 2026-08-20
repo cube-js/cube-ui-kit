@@ -390,12 +390,8 @@ export const DEFAULTS: DefaultsRegistry = {
         },
         isLoading: { kind: 'default', value: false },
         isSelected: { kind: 'default', value: false },
-        theme: {
-          kind: 'skip',
-          reason: 'context',
-          note: 'Redundant in a bare tree but load-bearing under "inside <ItemActionProvider theme="danger">", so removing it would change behaviour there.',
-        },
-        type: { kind: 'default', value: 'current' },
+        theme: { kind: 'default', value: 'current' },
+        type: { kind: 'default', value: 'clear' },
       },
     },
     ItemBadge: {
@@ -406,12 +402,8 @@ export const DEFAULTS: DefaultsRegistry = {
           reason: 'reflected-attribute',
           note: 'Reflected as `aria-selected={isSelected}`, so omitting the prop removes the attribute while `false` emits `aria-selected="false"`. Not safe to strip.',
         },
-        theme: {
-          kind: 'skip',
-          reason: 'context',
-          note: 'Redundant in a bare tree but load-bearing under "inside <ItemActionProvider theme="danger">", so removing it would change behaviour there.',
-        },
-        type: { kind: 'default', value: 'current' },
+        theme: { kind: 'default', value: 'current' },
+        type: { kind: 'default', value: 'clear' },
       },
     },
     ItemButton: {

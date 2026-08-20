@@ -30,8 +30,8 @@ A foundational component that provides a standardized layout and styling for ite
 - **`suffix`** `ReactNode` — Element rendered after the content (before rightIcon)
 - **`description`** `ReactNode` — Description text displayed with the item
 - **`descriptionPlacement`** `'inline' | 'block'` (default: `inline`) — How the description is positioned relative to the main content. Defaults to `'block'` for `type="card"` and `type="header"`
-- **`type`** `'item' | 'header' | 'primary' | 'outline' | 'outline-2' | 'clear' | 'link' | 'card' | 'current'` (default: `item`) — Visual style variant
-- **`theme`** `'default' | 'danger' | 'success' | 'warning' | 'note' | 'special'` (default: `default`) — Semantic colour palette theme
+- **`type`** `'item' | 'header' | 'primary' | 'outline' | 'outline-2' | 'clear' | 'link' | 'card'` (default: `item`) — Visual style variant
+- **`theme`** `'default' | 'danger' | 'success' | 'warning' | 'note' | 'special' | 'current'` (default: `default`) — Semantic colour palette theme. `current` is not a brand palette: it mixes every color from the inherited text color, so the item adopts the color of whatever container it sits in
 - **`size`** `'xsmall' | 'small' | 'medium' | 'large' | 'xlarge' | 'inline' | number` (default: `medium`) — Item size. Accepts custom number or string values
 - **`shape`** `'card' | 'button' | 'sharp' | 'pill'` (default: `button`) — Shape of the item border radius. Defaults to `'card'` for `type="card"`
 - **`isSelected`** `boolean` (default: `false`) — Marks the item as selected
@@ -92,8 +92,8 @@ The `mods` property accepts the following modifiers:
 - **`disabled`** `boolean` — Applied when isDisabled is true or when loading
 - **`loading`** `boolean` — Applied when isLoading is true
 - **`size`** `string` — Applied based on size prop value (xsmall, small, medium, large, xlarge, inline)
-- **`type`** `string` — Applied based on type prop value (item, header, primary, outline, outline-2, clear, link, card, current)
-- **`theme`** `string` — Applied based on theme prop value (default, danger, success, special, warning, note)
+- **`type`** `string` — Applied based on type prop value (item, header, primary, outline, outline-2, clear, link, card)
+- **`theme`** `string` — Applied based on theme prop value (default, danger, success, special, warning, note, current)
 - **`shape`** `string` — Applied based on shape prop value (card, button, sharp, pill)
 
 ## Variants
@@ -107,8 +107,7 @@ The `mods` property accepts the following modifiers:
 - `outline-2` - Same as `outline` but uses `#surface-3` as the base fill, designed to sit on `#surface-2` containers without blending in (not available for the `special` theme)
 - `clear` - Transparent item with minimal styling; `isSelected` adds brand-tinted fill
 - `link` - Link-styled item appearance (does not support icons or loading state)
-- `card` - Card appearance for notifications (supports `default`, `success`, `danger`, `warning`, `note` themes; defaults to `shape="card"`, `descriptionPlacement="block"`, uses semantic heading tags via `level` prop, and has `.5x` padding)
-- `current` - Same shape as `item` — no border, nothing painted at rest — but every color is derived from the inherited text color (`#current`) instead of the fixed `#surface-text`, so the item adopts the color of whatever container it sits in. The fill steps in on hover (`.04`), pressed (`.06`) and selected (`.09` → `.15`); the label stays fully opaque. Theme-agnostic: only supports the `default` theme (any other theme warns, since there is nothing for it to change). Use it inside colored containers — alerts, banners, dark overlays, tooltips. `Button` has a `current` type too, shaped like a standalone control instead: a resting `#current.03` chip inside a `#current.08` border
+- `card` - Card appearance for notifications (supports `default`, `success`, `danger`, `warning`, `note`, `current` themes; defaults to `shape="card"`, `descriptionPlacement="block"`, uses semantic heading tags via `level` prop, and has `.5x` padding)
 
 ### Themes
 
@@ -118,6 +117,7 @@ The `mods` property accepts the following modifiers:
 - `warning` - Yellow/amber theme for caution or attention
 - `note` - Violet theme for informational context
 - `special` - Special theme with unique styling (not available for `card` or `header` types)
+- `current` - Not a palette at all: every color is derived from the inherited text color (`#current`) instead of a brand ramp, so the item adopts the color of whatever container it sits in. Every type except `header` has a `current` flavour, so the shape is still yours to pick — `item` keeps its borderless shape (nothing painted at rest, the fill stepping in on hover, pressed and selected), `outline` adds the chip and border, `primary` escalates it further. `primary` is the one flavour that needs a second color: its fill is the inherited color at full strength, so the label is punched out of it with `#current-fill` (default `#surface`) — a container whose own text color collides with the page, such as a `Banner` labelling itself `#white`, should override `#current-fill` with its own fill. The label stays fully opaque. Use it inside colored containers — alerts, banners, dark overlays, tooltips
 
 ### Sizes
 
@@ -267,17 +267,17 @@ Like headers, card labels use semantic heading tags (h1-h6) controlled by the `l
 </Item>
 ```
 
-### Current Type
+### Current Theme
 
-Use `type="current"` inside a container that paints its own text color. The fill and label are mixed from that inherited color, so the item matches the container without picking a theme — and keeps matching it if the container's color changes:
+Use `theme="current"` inside a container that paints its own text color. The fill and label are mixed from that inherited color, so the item matches the container without picking a brand theme — and keeps matching it if the container's color changes. Every type composes with it:
 
 ```jsx
 <Block fill="#note-surface" color="#note-accent-text" padding="1.5x" radius="1cr">
-  <Item type="current" icon={<IconInfo />}>Adopts the note color</Item>
+  <Item theme="current" icon={<IconInfo />}>Adopts the note color</Item>
 </Block>
 
 <Block fill="#fixed-dark" color="#white" padding="1.5x" radius="1cr">
-  <Item type="current" icon={<IconInfo />}>Adopts white on a dark banner</Item>
+  <Item theme="current" type="outline" icon={<IconInfo />}>An outlined chip on a dark banner</Item>
 </Block>
 ```
 

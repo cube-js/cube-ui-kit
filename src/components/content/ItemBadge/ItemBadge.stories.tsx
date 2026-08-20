@@ -36,19 +36,30 @@ export const WithLabel: Story = {
 export const Types: Story = {
   render: () => (
     <Space placeItems="center">
-      <ItemBadge icon={<KeyIcon />} type="primary" tooltip="Primary" />
-      <ItemBadge icon={<KeyIcon />} type="outline" tooltip="Outline" />
+      <ItemBadge
+        theme="default"
+        icon={<KeyIcon />}
+        type="primary"
+        tooltip="Primary"
+      />
+      <ItemBadge
+        theme="default"
+        icon={<KeyIcon />}
+        type="outline"
+        tooltip="Outline"
+      />
       <ItemBadge
         isSelected
+        theme="default"
         icon={<KeyIcon />}
         type="outline"
         tooltip="Outline (selected)"
       />
-      <ItemBadge icon={<KeyIcon />} type="clear" tooltip="Clear" />
+      <ItemBadge theme="default" icon={<KeyIcon />} tooltip="Clear" />
       <ItemBadge
         isSelected
+        theme="default"
         icon={<KeyIcon />}
-        type="clear"
         tooltip="Clear (selected)"
       />
     </Space>
@@ -62,6 +73,17 @@ export const Themes: Story = {
       <ItemBadge icon={<KeyIcon />} theme="danger" tooltip="Danger" />
       <ItemBadge icon={<KeyIcon />} theme="success" tooltip="Success" />
       <ItemBadge icon={<KeyIcon />} theme="special" tooltip="Special" />
+      <Space
+        fill="#note-surface"
+        color="#note-accent-text"
+        padding="1x"
+        radius="1x"
+        placeItems="center"
+      >
+        {/* `current` is the default theme: no color of its own, mixed from the
+            container's inherited text color instead. */}
+        <ItemBadge icon={<KeyIcon />} tooltip="Current (default)" />
+      </Space>
     </Space>
   ),
 };
