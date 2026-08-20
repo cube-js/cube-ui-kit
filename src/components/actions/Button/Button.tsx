@@ -23,7 +23,11 @@ import { useEvent } from '../../../_internal';
 import { useIsFirstRender } from '../../../_internal/hooks/use-is-first-render';
 import { useWarn } from '../../../_internal/hooks/use-warn';
 import {
-  CURRENT_BUTTON_STYLES,
+  CURRENT_CLEAR_STYLES,
+  CURRENT_LINK_STYLES,
+  CURRENT_OUTLINE_2_STYLES,
+  CURRENT_OUTLINE_STYLES,
+  CURRENT_PRIMARY_STYLES,
   DANGER_CLEAR_STYLES,
   DANGER_LINK_STYLES,
   DANGER_OUTLINE_2_STYLES,
@@ -105,6 +109,14 @@ export interface CubeButtonProps extends CubeActionProps {
     | 'clear'
     | 'outline'
     | 'outline-2'
+    | (string & {});
+  theme?:
+    | 'default'
+    | 'danger'
+    | 'success'
+    | 'warning'
+    | 'note'
+    | 'special'
     | 'current'
     | (string & {});
   size?:
@@ -135,9 +147,13 @@ export interface CubeButtonProps extends CubeActionProps {
 }
 
 export type ButtonVariant =
-  // The `current` type derives every color from the inherited `currentcolor`,
-  // so it has no per-theme flavours — see `CURRENT_BUTTON_STYLES`.
-  | 'default.current'
+  // The `current` theme mixes every color from the inherited `currentcolor`
+  // instead of a brand ramp — see the CURRENT THEME section of `item-themes`.
+  | 'current.primary'
+  | 'current.outline'
+  | 'current.outline-2'
+  | 'current.clear'
+  | 'current.link'
   | 'default.primary'
   | 'default.outline'
   | 'default.outline-2'
@@ -322,8 +338,12 @@ const ButtonElement = tasty({
   qa: 'Button',
   styles: DEFAULT_BUTTON_STYLES,
   variants: {
-    // Inherited-color type — theme-agnostic, see `CURRENT_BUTTON_STYLES`
-    'default.current': CURRENT_BUTTON_STYLES,
+    // Current theme — colors mixed from the inherited `currentcolor`
+    'current.primary': CURRENT_PRIMARY_STYLES,
+    'current.outline': CURRENT_OUTLINE_STYLES,
+    'current.outline-2': CURRENT_OUTLINE_2_STYLES,
+    'current.clear': CURRENT_CLEAR_STYLES,
+    'current.link': CURRENT_LINK_STYLES,
 
     // Default theme
     'default.primary': DEFAULT_PRIMARY_STYLES,
@@ -609,10 +629,6 @@ export const Button = forwardRef(function Button(
     const effectiveType =
       theme === 'special' && type === 'outline-2' ? 'outline' : type;
 
-    // `current` paints from the inherited `currentcolor`, so a theme would have
-    // nothing to change — it has a single, theme-agnostic variant.
-    const variantTheme = effectiveType === 'current' ? 'default' : theme;
-
     return (
       <ButtonElement
         download={download}
@@ -620,9 +636,7 @@ export const Button = forwardRef(function Button(
         ref={handleRef}
         mods={{ ...actionProps.mods, ...modifiers }}
         disabled={isNativelyDisabled}
-        variant={
-          `${variantTheme}.${effectiveType ?? 'outline'}` as ButtonVariant
-        }
+        variant={`${theme}.${effectiveType ?? 'outline'}` as ButtonVariant}
         data-theme={theme}
         data-type={effectiveType ?? 'outline'}
         data-size={size}
