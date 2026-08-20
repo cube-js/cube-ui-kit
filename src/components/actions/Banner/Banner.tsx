@@ -47,8 +47,20 @@ const DEFAULT_ICONS: Record<BannerTheme, ReactNode> = {
 // The accent a banner offers its `current`-themed actions, live and muted.
 // Exported so the live/disabled pairing can be pinned by a test rather than by
 // discipline — see `Banner.test.ts`.
+// Keyed by `Record<BannerTheme, true>` rather than a loose array so the union
+// and the map cannot drift: add a fifth `BannerTheme` and this stops compiling
+// until it has an accent. A theme with no entry would fall through to the
+// reader's `currentcolor` fallback and land back on the cr 1.00 this exists to
+// avoid, which is not a failure worth leaving to review.
+const BANNER_ACCENT_THEMES: Record<BannerTheme, true> = {
+  note: true,
+  danger: true,
+  warning: true,
+  success: true,
+};
+
 export const BANNER_ACTION_ACCENT: Record<string, string> = Object.fromEntries(
-  (['note', 'danger', 'warning', 'success'] as const).flatMap((theme) => [
+  (Object.keys(BANNER_ACCENT_THEMES) as BannerTheme[]).flatMap((theme) => [
     [`theme=${theme}`, `#${theme}-accent-text`],
     [`theme=${theme} & disabled`, `#${theme}-accent-text.4`],
   ]),

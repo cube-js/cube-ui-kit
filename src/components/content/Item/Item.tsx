@@ -760,26 +760,34 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
   const finalPrefix =
     isLoading && resolvedLoadingSlot === 'prefix' ? <LoadingIcon /> : prefix;
 
-  // Which HotKeys flavour the shortcut hint wears, decided by one question: is
-  // this row's `color` the label, or the fill?
+  // Which HotKeys flavour the shortcut hint wears. `inherit` paints the hint's
+  // glyphs and rim from `currentcolor`, so it tracks whatever the row labels
+  // itself with; `primary` pins the hint to `#white`; `default` is a neutral
+  // `#dark.65` chip built for a page-colored row.
   //
-  // On every type but `primary`, `color` IS the label, so `inherit` is right —
-  // it paints the hint's glyphs and rim from `currentcolor` and therefore tracks
-  // the label exactly, in either scheme. `invert` needs that: it labels itself
-  // `#surface`, so `primary`'s fixed `#white` hint would land on the wrong side
-  // of the fill in dark mode.
+  // Two cases want `inherit`:
   //
-  // `primary` is the exception on both counts. On the brand themes its label is
-  // `#white`, which is what the `primary` flavour paints. On `current` its
-  // `color` is the FILL — the label is painted with `-webkit-text-fill-color`
-  // precisely so `color` can stay free for `fill` to resolve against — so
-  // `inherit` would draw the hint's rim in the fill color and erase it.
+  //   `invert`, on any theme — it labels itself `#surface`, so `primary`'s fixed
+  //   `#white` hint would sit on the wrong side of the fill in dark mode.
   //
-  // `current.invert` is not that case, despite the shared theme: it fills with
-  // an absolute `#surface` and keeps `color` for the label, like every other
-  // `invert`. It reads `inherit` here for exactly the same reason they do.
+  //   the whole `current` theme — every flavour there derives its label from the
+  //   inherited color, and a fixed hint cannot follow that. The neutral
+  //   `#dark.65`-on-`#dark.04` chip all but vanishes on a dark overlay, which is
+  //   exactly where this theme is meant to be used.
+  //
+  // `current.primary` belongs to the second case despite painting its label with
+  // `-webkit-text-fill-color` rather than `color`. The hint renders inside the
+  // `Suffix` slot, and `CURRENT_PRIMARY_STYLES` recolors that slot to the label
+  // color — so `currentcolor` there is the LABEL, not the fill. An earlier
+  // version of this comment claimed the opposite and sent it to `primary`, which
+  // put a `#white` hint on a light fill (measured cr 2.17 on a `#note` container
+  // in dark mode).
   const hotkeysType =
-    type === 'invert' ? 'inherit' : type === 'primary' ? 'primary' : 'default';
+    type === 'invert' || theme === 'current'
+      ? 'inherit'
+      : type === 'primary'
+        ? 'primary'
+        : 'default';
 
   // Build final suffix: loading icon, custom suffix, or HotKeys hint
   const finalSuffix =

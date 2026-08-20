@@ -175,34 +175,89 @@ describe('current theme disabled fades', () => {
     },
   );
 
-  // The two FILLED flavours are the ones a container can redirect, and only
-  // those: they are the pair whose label has to contrast with something other
-  // than the container itself — `invert` writes on a `#surface` pill, `primary`
-  // on a `currentcolor` one. The rest paint their chip ON the container, so the
-  // inherited color is already right and an accent would only lower contrast.
-  it('reads --current-accent on the filled flavours only', () => {
+  // Each filled flavour takes its own property, and reads nobody else's. They
+  // sit on different chips — `invert` on `#surface`, `primary` on
+  // `currentcolor` — so a container painting a scheme-fixed color cannot
+  // satisfy both with one value: offering the container's own fill drops
+  // `invert` to cr 1.00 in dark, offering `#surface-text` drops `primary` to
+  // 1.12. Two properties is the smallest thing that serves both.
+  const HOOKS = {
+    'current.invert': {
+      property: '--current-accent',
+      fallback: 'var(--current-accent, currentcolor)',
+    },
+    'current.primary': {
+      property: '--current-label',
+      fallback: 'var(--current-label, var(--surface-color))',
+    },
+  } as const;
+
+  const READERS = Object.keys(HOOKS) as (keyof typeof HOOKS)[];
+
+  it('redirects the filled flavours only', () => {
     const readers = CURRENT_VARIANTS.filter((variant) =>
-      JSON.stringify(ITEM_VARIANTS[variant]).includes('--current-accent'),
+      /var\(--current-(accent|label)/.test(
+        JSON.stringify(ITEM_VARIANTS[variant]),
+      ),
     ).sort();
 
-    expect(readers).toEqual(['current.invert', 'current.primary']);
+    expect(readers).toEqual([...READERS].sort());
   });
 
-  // Every read carries a fallback, which is what keeps a container that offers
-  // nothing rendering exactly as it did before the hook existed. They differ
-  // because the two flavours defaulted differently: `invert` labelled with the
-  // inherited color, `primary` with `#surface`.
-  it.each([
-    ['current.invert', 'var(--current-accent, currentcolor)'],
-    ['current.primary', 'var(--current-accent, var(--surface-color))'],
-  ] as const)('%s always falls back to %s', (variant, fallback) => {
+  it.each(READERS)('%s reads only its own property', (variant) => {
+    const json = JSON.stringify(ITEM_VARIANTS[variant]);
+    const foreign = READERS.filter((other) => other !== variant).map(
+      (other) => HOOKS[other].property,
+    );
+
+    expect(json).toContain(HOOKS[variant].property);
+    for (const property of foreign) {
+      expect(json).not.toContain(property);
+    }
+  });
+
+  // Every read spells out its fallback, which is what keeps a container that
+  // offers nothing rendering exactly as it did before the hooks existed. A bare
+  // `var(--current-accent)` would resolve to nothing and drop the label.
+  it.each(READERS)('%s always spells out its fallback', (variant) => {
     const json = JSON.stringify(ITEM_VARIANTS[variant]);
     const occurrences = (needle: string) => json.split(needle).length - 1;
+    const bare = `var(${HOOKS[variant].property}`;
 
-    // Every mention of the property spells out the same fallback — so there is
-    // no bare `var(--current-accent)` anywhere, which would resolve to nothing
-    // and drop the label entirely wherever no container offers one.
-    expect(occurrences('var(--current-accent')).toBeGreaterThan(0);
-    expect(occurrences(fallback)).toBe(occurrences('var(--current-accent'));
+    expect(occurrences(bare)).toBeGreaterThan(0);
+    expect(occurrences(HOOKS[variant].fallback)).toBe(occurrences(bare));
   });
+
+  // Anywhere an offered color is faded, the fade must carry the gate: the
+  // offering container owns its color in every state, so inside a disabled one
+  // the value already arrives muted and a bare `disabled` key would mix it a
+  // second time. Which property carries the label differs between the two —
+  // `color` on `invert`, `-webkit-text-fill-color` plus the icon slots on
+  // `primary` — so this walks the whole style object rather than naming one.
+  it.each(READERS)(
+    '%s never fades an offered color on a bare `disabled`',
+    (variant) => {
+      const offenders: string[] = [];
+
+      const walk = (node: unknown, path: string) => {
+        if (!node || typeof node !== 'object') return;
+
+        const map = node as Record<string, unknown>;
+        const reads = Object.values(map).some(
+          (value) =>
+            typeof value === 'string' &&
+            value.includes(HOOKS[variant].property),
+        );
+
+        if (reads && 'disabled' in map) offenders.push(path);
+
+        for (const [key, value] of Object.entries(map))
+          walk(value, `${path}.${key}`);
+      };
+
+      walk(ITEM_VARIANTS[variant], variant);
+
+      expect(offenders).toEqual([]);
+    },
+  );
 });

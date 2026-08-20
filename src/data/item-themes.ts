@@ -1288,8 +1288,13 @@ export const CURRENT_PRIMARY_STYLES: Styles = {
     '': '#surface.25',
     disabled: '#surface-text.2',
   },
+  // The resting entry carries a transparent second layer so every state has the
+  // same two-layer shape and the overlay interpolates instead of snapping in —
+  // the same pin `DEFAULT_PRIMARY_STYLES.fill` documents and `invertStyles`
+  // repeats. Without it the resting rule emits no `background-image` at all, so
+  // hover has nothing to animate from.
   fill: {
-    '': '#current',
+    '': '#current #black.0',
     'hovered | focused': '#current #black.08',
     pressed: '#current #black.16',
   },
@@ -1325,10 +1330,25 @@ export const CURRENT_PRIMARY_STYLES: Styles = {
   // text by construction, and the pill is that text. Offering `--current-accent`
   // is therefore the fix, and unset the fallback is the `#surface` this always
   // used, so nothing else moves.
+  //
+  // `--current-label`, and NOT the `--current-accent` that `CURRENT_INVERT_STYLES`
+  // reads, because the two flavours sit on different chips and a container
+  // cannot satisfy both with one color. This chip is `currentcolor` — whatever
+  // the container paints text with, often scheme-fixed. `invert`'s chip is
+  // `#surface`, which flips. On a container painting `#white`, the label here
+  // must be dark in BOTH schemes while `invert`'s must flip with the page:
+  // offering one value drops the other to cr 1.00 in dark (measured 1.00 for
+  // `invert` on `#fixed-dark`, 1.12 for this one on `#surface-text`).
+  //
+  // Gated like every other `current` fade, and for the offer's sake rather than
+  // the fallback's: a container that offers the property owns it in every state,
+  // so inside a disabled one the value already arrives muted and mixing again
+  // would halve it twice. The two mods mark exactly the nestings where something
+  // above has already muted what this paints with.
   '-webkit-text-fill-color': {
-    '': 'var(--current-accent, var(--surface-color))',
-    disabled:
-      'color-mix(in oklab, var(--current-accent, var(--surface-color)) 50%, transparent)',
+    '': 'var(--current-label, var(--surface-color))',
+    'disabled & !inherit-disabled & !inside-wrapper':
+      'color-mix(in oklab, var(--current-label, var(--surface-color)) 50%, transparent)',
   },
   // Every icon-bearing slot, not just the leading one. `-webkit-text-fill-color`
   // paints glyphs and inherits into the text slots for free, but icons are SVG
@@ -1342,9 +1362,9 @@ export const CURRENT_PRIMARY_STYLES: Styles = {
         // `-webkit-text-fill-color` never reaches, so each slot repeats the
         // label color — accent hook included.
         color: {
-          '': 'var(--current-accent, var(--surface-color))',
-          disabled:
-            'color-mix(in oklab, var(--current-accent, var(--surface-color)) 50%, transparent)',
+          '': 'var(--current-label, var(--surface-color))',
+          'disabled & !inherit-disabled & !inside-wrapper':
+            'color-mix(in oklab, var(--current-label, var(--surface-color)) 50%, transparent)',
         },
       },
     ]),

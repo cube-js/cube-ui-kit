@@ -538,13 +538,22 @@ DisabledWithTooltip.parameters = {
 
 // Contexts the `current` theme is meant to live in: each one paints its own text
 // color, and the button is expected to adopt it whatever its type.
-// `accent` is the container's `--current-accent` offer: the color a `current`
-// control should WRITE with when the inherited one will not do. Only the two
-// containers that invert the surface need it, and for the same reason — they
-// paint `#white`, so `currentcolor` collides with `#surface` in light mode and
-// both filled types lose their label. Each offers its own fill, which contrasts
-// with its own text by construction. The tinted containers leave it unset and
-// fall back exactly as before.
+// The two containers that INVERT the surface have to tell the filled `current`
+// flavours what to write with: they paint `#white`, so `currentcolor` collides
+// with `#surface` and the labels vanish. It takes two offers, because the two
+// flavours sit on different chips:
+//
+//   --current-label   `primary`, whose chip is the inherited color — here a
+//                     scheme-fixed `#white`, so the label must be dark in BOTH
+//                     schemes. The container's own fill is exactly that, and
+//                     contrasts with its own text by construction.
+//   --current-accent  `invert`, whose chip is `#surface` — which flips, so the
+//                     label has to flip with it. `#surface-text` is the page's
+//                     own text color and therefore always contrasts with it.
+//
+// One value cannot do both: on `#fixed-dark`, offering the fill alone drops
+// `invert` to cr 1.00 in dark, and offering `#surface-text` alone drops
+// `primary` to 1.12. The tinted containers need neither and leave both unset.
 const CURRENT_CONTEXTS = [
   { label: 'Page surface (inherited)', fill: undefined, color: undefined },
   { label: 'Danger', fill: '#danger-surface', color: '#danger-accent-text' },
@@ -555,9 +564,16 @@ const CURRENT_CONTEXTS = [
     label: 'Dark banner',
     fill: '#fixed-dark',
     color: '#white',
-    accent: '#fixed-dark',
+    label_: '#fixed-dark',
+    accent: '#surface-text',
   },
-  { label: 'Brand', fill: '#primary', color: '#white', accent: '#primary' },
+  {
+    label: 'Brand',
+    fill: '#primary',
+    color: '#white',
+    label_: '#primary',
+    accent: '#surface-text',
+  },
 ] as const;
 
 const CurrentContext = ({
@@ -565,12 +581,16 @@ const CurrentContext = ({
   fill,
   color,
   accent,
+  label_,
   children,
 }: {
   label: string;
   fill?: string;
   color?: string;
+  /** `--current-accent` — what `invert` writes on its `#surface` chip. */
   accent?: string;
+  /** `--current-label` — what `primary` writes on its `currentcolor` chip. */
+  label_?: string;
   children: ReactNode;
 }) => (
   <Space
@@ -580,7 +600,14 @@ const CurrentContext = ({
     border={fill ? undefined : true}
     fill={fill}
     color={color}
-    styles={accent ? { '$current-accent': accent } : undefined}
+    styles={
+      accent || label_
+        ? {
+            ...(accent ? { '$current-accent': accent } : null),
+            ...(label_ ? { '$current-label': label_ } : null),
+          }
+        : undefined
+    }
   >
     <Title level={6} color={color}>
       {label}
@@ -599,6 +626,7 @@ export const CurrentTheme: StoryFn<CubeButtonProps> = () => (
         color={color}
         fill={fill}
         label={label}
+        label_={'label_' in rest ? rest.label_ : undefined}
       >
         <Space>
           <Button theme="current" icon={<IconCoin />}>
@@ -629,7 +657,8 @@ export const CurrentTheme: StoryFn<CubeButtonProps> = () => (
         label: 'Dark banner',
         fill: '#fixed-dark',
         color: '#white',
-        accent: '#fixed-dark',
+        label_: '#fixed-dark',
+        accent: '#surface-text',
       },
     ].map(({ label, fill, color, ...rest }) => (
       <CurrentContext
@@ -638,6 +667,7 @@ export const CurrentTheme: StoryFn<CubeButtonProps> = () => (
         color={color}
         fill={fill}
         label={label}
+        label_={'label_' in rest ? rest.label_ : undefined}
       >
         <Space placeItems="center">
           {BUTTON_TYPES.map((type) => (

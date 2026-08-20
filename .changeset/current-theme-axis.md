@@ -20,7 +20,7 @@ The top step of each ramp stops at `#current.24`. That is the measured AA floor 
 
 ### Migration
 
-`type="current"` still renders, mapped to the flavour it used to be, and warns once in development:
+**`type="current"` is removed with no runtime fallback.** It resolves to no variant and falls back to base styles, the same as any other unknown type — there is no mapping and no deprecation warning. The spelling shipped one release ago and has no consumers outside the kit, so this is a clean break rather than a deprecation:
 
 | Old                            | New                                                     |
 | ------------------------------ | ------------------------------------------------------- |
