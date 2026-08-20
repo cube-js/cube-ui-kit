@@ -1340,14 +1340,21 @@ export const CURRENT_PRIMARY_STYLES: Styles = {
   // offering one value drops the other to cr 1.00 in dark (measured 1.00 for
   // `invert` on `#fixed-dark`, 1.12 for this one on `#surface-text`).
   //
-  // Gated like every other `current` fade, and for the offer's sake rather than
-  // the fallback's: a container that offers the property owns it in every state,
-  // so inside a disabled one the value already arrives muted and mixing again
-  // would halve it twice. The two mods mark exactly the nestings where something
-  // above has already muted what this paints with.
+  // Faded on a bare `disabled`, and NOT gated the way `invert`'s label is. The
+  // gate exists to protect an INHERITED fallback: `invert` falls back to
+  // `currentcolor`, which a disabled host has already muted, so fading again
+  // would multiply. This falls back to `#surface`, an absolute token nothing
+  // above touches — gating it left a crisp page-colored label on a faded chip
+  // in every nested disabled path, still reading live.
+  //
+  // The flip side of that is the contract for whoever offers the property:
+  // `--current-label` is the LIVE color only, and this fades it. That is the
+  // opposite of `--current-accent`, whose offerer owns every state — see
+  // `BANNER_ACTION_ACCENT`. The asymmetry is not a choice, it follows from
+  // which fallback each flavour has.
   '-webkit-text-fill-color': {
     '': 'var(--current-label, var(--surface-color))',
-    'disabled & !inherit-disabled & !inside-wrapper':
+    disabled:
       'color-mix(in oklab, var(--current-label, var(--surface-color)) 50%, transparent)',
   },
   // Every icon-bearing slot, not just the leading one. `-webkit-text-fill-color`
@@ -1363,7 +1370,7 @@ export const CURRENT_PRIMARY_STYLES: Styles = {
         // label color — accent hook included.
         color: {
           '': 'var(--current-label, var(--surface-color))',
-          'disabled & !inherit-disabled & !inside-wrapper':
+          disabled:
             'color-mix(in oklab, var(--current-label, var(--surface-color)) 50%, transparent)',
         },
       },

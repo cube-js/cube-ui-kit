@@ -228,15 +228,15 @@ describe('current theme disabled fades', () => {
     expect(occurrences(HOOKS[variant].fallback)).toBe(occurrences(bare));
   });
 
-  // Anywhere an offered color is faded, the fade must carry the gate: the
-  // offering container owns its color in every state, so inside a disabled one
-  // the value already arrives muted and a bare `disabled` key would mix it a
-  // second time. Which property carries the label differs between the two —
-  // `color` on `invert`, `-webkit-text-fill-color` plus the icon slots on
-  // `primary` — so this walks the whole style object rather than naming one.
-  it.each(READERS)(
-    '%s never fades an offered color on a bare `disabled`',
-    (variant) => {
+  // The two flavours fade on opposite rules, and which fallback each has is
+  // what decides it.
+  //
+  // `invert` falls back to `currentcolor`, which a disabled host has already
+  // muted, so it gates — and its offerer (`BANNER_ACTION_ACCENT`) therefore owns
+  // every state, since a gated reader will not fade the offer either.
+  it('current.invert never fades the offered accent on a bare `disabled`', () => {
+    const variant = 'current.invert' as const;
+    {
       const offenders: string[] = [];
 
       const walk = (node: unknown, path: string) => {
@@ -258,6 +258,30 @@ describe('current theme disabled fades', () => {
       walk(ITEM_VARIANTS[variant], variant);
 
       expect(offenders).toEqual([]);
-    },
-  );
+    }
+  });
+
+  // `primary` falls back to the absolute `#surface`, which nothing above mutes,
+  // so IT must fade and its offerer supplies the live color only. Gating this
+  // the way `invert` is gated left a crisp page-colored label on a faded chip in
+  // every nested disabled path.
+  it('current.primary fades its label on a bare `disabled`', () => {
+    const styles = ITEM_VARIANTS['current.primary'] as Record<string, any>;
+    const carriers = [
+      '-webkit-text-fill-color',
+      'Icon',
+      'RightIcon',
+      'Prefix',
+      'Suffix',
+    ];
+
+    for (const key of carriers) {
+      const map = (
+        key.startsWith('-') ? styles[key] : styles[key]?.color
+      ) as Record<string, string>;
+
+      expect(map, key).toBeDefined();
+      expect(map.disabled, key).toContain('var(--current-label');
+    }
+  });
 });
