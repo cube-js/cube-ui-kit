@@ -1511,6 +1511,15 @@ export const CURRENT_INVERT_STYLES: Styles = {
   // Unset it and the fallback is `currentcolor`, which is what `#current`
   // compiled to before, so nothing outside such a container changes.
   //
+  // The contract for a container that sets it: OWN THAT COLOR IN EVERY STATE,
+  // the disabled one included. The fade below is gated on `!inherit-disabled`
+  // because something above is expected to have faded the color this element
+  // paints from — automatic when that color is inherited, but an offered accent
+  // is not inherited, so the offer has to carry its own muted entry. A
+  // container that offers only a live accent leaves a full-strength label on a
+  // dead chip. See `BANNER_ACTION_ACCENT`, which pairs each entry with a `.4`
+  // counterpart, and the test that pins the pairing.
+  //
   // Only `color` reads it, and everything else follows for free: `#current`
   // compiles to `currentcolor`, which in `border` and `fill` resolves against
   // this element's OWN `color` — so the rim and the hover/pressed overlays all

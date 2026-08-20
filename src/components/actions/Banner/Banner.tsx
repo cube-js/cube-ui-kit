@@ -44,6 +44,16 @@ const DEFAULT_ICONS: Record<BannerTheme, ReactNode> = {
   success: <IconCircleCheck />,
 };
 
+// The accent a banner offers its `current`-themed actions, live and muted.
+// Exported so the live/disabled pairing can be pinned by a test rather than by
+// discipline — see `Banner.test.ts`.
+export const BANNER_ACTION_ACCENT: Record<string, string> = Object.fromEntries(
+  (['note', 'danger', 'warning', 'success'] as const).flatMap((theme) => [
+    [`theme=${theme}`, `#${theme}-accent-text`],
+    [`theme=${theme} & disabled`, `#${theme}-accent-text.4`],
+  ]),
+);
+
 const BannerElement = tasty(Item, {
   styles: {
     width: '100%',
@@ -69,12 +79,17 @@ const BannerElement = tasty(Item, {
       // `current.clear`, which paints from `#current` and never reads this, so
       // it keeps the `#white` that measures 4.62 against the banner where this
       // accent would measure 1.53.
-      '$current-accent': {
-        'theme=note': '#note-accent-text',
-        'theme=danger': '#danger-accent-text',
-        'theme=warning': '#warning-accent-text',
-        'theme=success': '#success-accent-text',
-      },
+      //
+      // The disabled entries are not optional, and they are the whole contract:
+      // a container that OFFERS a color owns that color in every state. The
+      // reader gates its own fade on `!inherit-disabled` precisely because
+      // something above is expected to have done it — true when the color is
+      // inherited, and true here only if this map says so. Drop them and a
+      // disabled banner keeps a full-strength `accent-text` label on a dead
+      // chip: cr 5.69 light / 6.13 dark, reading live. At `.4` it lands on
+      // 1.81 / 2.20, the same ~2:1 band every other disabled label in this file
+      // is tuned to.
+      '$current-accent': BANNER_ACTION_ACCENT,
     },
   },
 });
