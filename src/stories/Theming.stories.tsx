@@ -40,8 +40,9 @@ import type { Styles, Tokens } from '@tenphi/tasty';
 import type { ReactNode } from 'react';
 import type {
   PaletteConfig,
+  PaletteNumericSeed,
+  PaletteSeed,
   PaletteThemeName,
-  PaletteThemeSeed,
   RenderPaletteOptions,
   SurfaceMode,
 } from '../index';
@@ -278,7 +279,7 @@ const RESOLUTION_SWATCH_STYLES: Styles = {
  * A color seed is a REQUEST, and two things can stop it arriving. Pastel caps chroma,
  * so a saturated brand can never resolve to itself under it — `#FFD400` softens to
  * `#e4d8ad`. And a light brand has to darken to clear the fill's APCA floors: Lc 45
- * off the page, and Lc 45 under the white label it carries. Both are correct; both
+ * under the white label it carries, and Lc 25 off the page. Both are correct; both
  * look like a bug if the only thing on screen is the color you typed.
  *
  * The requested color is deliberately NOT repeated here: the field above holds it, and
@@ -292,7 +293,7 @@ function ColorResolution({ resolved }: { resolved?: Tokens }) {
 
   const [palette] = usePaletteConfig();
 
-  if (!getPaletteConfigInput().accentColor) return null;
+  if (typeof getPaletteConfigInput().accent !== 'string') return null;
 
   // The preview's own tokens when there are any, so the chip answers "what did I get in
   // the variant I am looking at". `resolvedValue` only ever reports the document's
@@ -342,6 +343,65 @@ function ColorResolution({ resolved }: { resolved?: Tokens }) {
 const ACCENT_COLOR_START = '#7a4dbf';
 const BASE_COLOR_START = '#6c717f';
 
+type StatusThemeName = Exclude<PaletteThemeName, 'code'>;
+
+const STATUS_THEMES = ['success', 'danger', 'warning', 'note'] as const;
+
+/**
+ * The five zones that take a {@link PaletteSeed}, as one table.
+ *
+ * The mode detector, the mode tabs and the per-zone controls all ask a zone the same two
+ * questions — what is your seed, and here is a new one — and answering them once is what
+ * keeps the tab bar from re-listing every field of the config by hand. It used to name
+ * `accentColor`, `baseColor`, `hue`, `baseHue` and `baseSaturation` one at a time and
+ * still reach no status theme at all.
+ *
+ * `code` is absent: it takes a saturation and nothing else, so it has no path to be on.
+ */
+const ZONES: {
+  name: 'accent' | 'base' | StatusThemeName;
+  read: (config: PaletteConfig) => PaletteSeed | undefined;
+  write: (
+    config: PaletteConfig,
+    seed: PaletteSeed | undefined,
+  ) => PaletteConfig;
+}[] = [
+  {
+    name: 'accent',
+    read: (config) => config.accent,
+    write: (config, accent) => ({ ...config, accent }),
+  },
+  {
+    name: 'base',
+    read: (config) => config.base,
+    write: (config, base) => ({ ...config, base }),
+  },
+  ...STATUS_THEMES.map((name) => ({
+    name,
+    read: (config: PaletteConfig) => config.themes?.[name],
+    write: (config: PaletteConfig, seed: PaletteSeed | undefined) => ({
+      ...config,
+      themes: { ...config.themes, [name]: seed },
+    }),
+  })),
+];
+
+/** A seed's color, or `null` for a zone on the numeric path. */
+function seedColor(seed: PaletteSeed | undefined): string | null {
+  return typeof seed === 'string' ? seed : null;
+}
+
+/**
+ * A seed's numbers, or an empty set — so a one-field slider can patch one of them.
+ *
+ * A zone on the color path has no numbers, and a slider that lands on one is switching
+ * path rather than patching, which is what makes the empty object the right answer
+ * instead of a guard at every call site.
+ */
+function seedNumbers(seed: PaletteSeed | undefined): PaletteNumericSeed {
+  return typeof seed === 'object' ? seed : {};
+}
+
 /**
  * The whole palette in one of three states, read off the SPARSE config.
  *
@@ -372,9 +432,11 @@ function usePaletteMode(): PaletteMode {
   // A color wins even next to `pastel: true`, which the tabs cannot produce but a
   // pasted config can. Reporting `color` is the more informative of the two, and the
   // colors are what the reader will be looking for.
-  if (input.accentColor !== undefined || input.baseColor !== undefined) {
+  //
+  // ANY zone, not just the two at the top: a config whose only hex is on `danger` is
+  // still a color-seeded config, and the status chips are where its reader will look.
+  if (ZONES.some((zone) => typeof zone.read(input) === 'string'))
     return 'color';
-  }
 
   return getPaletteConfig().pastel ? 'pastel' : 'advanced';
 }
@@ -407,22 +469,21 @@ function AccentSourceControls({ resolved }: { resolved?: Tokens }) {
         <ColorInput
           label="Color"
           size="small"
-          tooltip="Hue, chroma and tone all come from here — the tone is what makes the brand fill actually be your color rather than a shade re-derived at a fixed lightness. Glaze reproduces it exactly in the light, normal-contrast variant; dark and high contrast adapt. Two APCA floors apply everywhere: Lc 45 against the page so the button reads as a shape, and Lc 45 against the white label it carries. Both are APCA rather than WCAG, so a fill can legitimately sit under 3:1 — #0EA5E9 lands at 2.77:1 and is correct there."
-          value={input.accentColor ?? null}
-          onChange={(accentColor) =>
-            // Clearing the field is a mode change, so it lands back on a hue seed
+          tooltip="Hue, chroma and tone all come from here — the tone is what makes the brand fill actually be your color rather than a shade re-derived at a fixed lightness. Glaze reproduces it exactly in the light, normal-contrast variant; dark and high contrast adapt. Two APCA floors apply everywhere, and they are different sizes: Lc 45 against the white label it carries, because that is text, and Lc 25 against the page, because a fill is a shape. Both are APCA rather than WCAG, so a fill can legitimately sit under 3:1 — #0EA5E9 lands at 2.77:1 and is correct there."
+          value={seedColor(input.accent)}
+          onChange={(accent) =>
+            // Clearing the field is a change of path, so it lands back on a hue seed
             // pinned where the color left it rather than on a half-set config.
             //
-            // `hue` comes back OUT of the config when a color arrives, and has to:
-            // the pin the previous clear left behind outranks a color-derived hue in
-            // `resolveConfig`, so spreading it back would accept the new color and
-            // then ignore its hue — the field would show cyan while the palette
-            // stayed yellow.
-            setPalette(({ accentColor: previous, hue, ...config }) =>
-              accentColor
-                ? { ...config, accentColor }
-                : { ...config, hue: Math.round(palette.hue) },
-            )
+            // Nothing has to be cleared on the way in or out: a zone holds one seed, so
+            // writing either form replaces the other. This used to have to pull `hue`
+            // back out of the config by hand, because a pin left behind by a previous
+            // clear outranked a color-derived hue — the field would show cyan while the
+            // palette stayed yellow.
+            setPalette((config) => ({
+              ...config,
+              accent: accent ?? { hue: Math.round(palette.hue) },
+            }))
           }
         />
         <ColorResolution resolved={resolved} />
@@ -438,7 +499,14 @@ function AccentSourceControls({ resolved }: { resolved?: Tokens }) {
         label="Hue"
         tooltip="Drives the whole accent family, `primary` / `purple` / `special`, and the brand-tinted odds and ends — the focus ring, the loading faces, the disabled chip."
         value={Math.round(palette.hue)}
-        onChange={(hue) => setPalette((config) => ({ ...config, hue }))}
+        onChange={(hue) =>
+          setPalette((config) => ({
+            ...config,
+            // Spread the seed rather than replacing it: the two sliders share one field
+            // now, so writing a bare `{ hue }` would unpin the saturation beside it.
+            accent: { ...seedNumbers(config.accent), hue },
+          }))
+        }
       />
       {palette.pastel ? null : (
         <Slider
@@ -446,7 +514,10 @@ function AccentSourceControls({ resolved }: { resolved?: Tokens }) {
           tooltip="The accent zone's chroma, and the fallback every status theme inherits until it sets its own. It is also a ceiling on the base zone, which takes a 12% share of it while it follows the accent."
           value={palette.saturation}
           onChange={(saturation) =>
-            setPalette((config) => ({ ...config, saturation }))
+            setPalette((config) => ({
+              ...config,
+              accent: { ...seedNumbers(config.accent), saturation },
+            }))
           }
         />
       )}
@@ -460,13 +531,14 @@ function BaseSourceControls() {
   const seedMode = useSeedMode();
 
   // Two states now, not three. Whether the zone has a seed of its own is one question;
-  // how that seed is spelled is the global one. `baseHue`/`baseSaturation` follow the
-  // accent until something sets one, so without the first state inheritance would read
-  // as a stuck control.
-  const isOwn =
-    input.baseColor !== undefined ||
-    input.baseHue !== undefined ||
-    input.baseSaturation !== undefined;
+  // how that seed is spelled is the global one. The base zone follows the accent until
+  // something seeds it, so without the first state inheritance would read as a stuck
+  // control.
+  //
+  // One field answers it, where three used to have to agree. `base: {}` and no `base` at
+  // all resolve identically but read back differently, which is exactly the distinction
+  // this radio is: `pinSignature` keeps them apart for it.
+  const isOwn = input.base !== undefined;
 
   return (
     <Section>
@@ -476,19 +548,19 @@ function BaseSourceControls() {
         type="button"
         value={isOwn ? 'own' : 'accent'}
         onChange={(next) =>
-          setPalette(({ baseColor, baseHue, baseSaturation, ...config }) =>
+          setPalette(({ base, ...config }) =>
             next === 'own'
-              ? seedMode === 'color'
-                ? { ...config, baseColor: BASE_COLOR_START }
-                : // Hand the sliders the values they were *showing*, so taking over
-                  // is not also a repaint.
-                  {
-                    ...config,
-                    baseHue: Math.round(palette.baseHue),
-                    baseSaturation: Math.round(palette.baseSaturation * 2) / 2,
-                  }
-              : // Dropping all three is what re-links the zone: an absent `baseHue`
-                // means "inherit again", where keeping it would mean "stay at 60".
+              ? {
+                  ...config,
+                  base:
+                    seedMode === 'color'
+                      ? BASE_COLOR_START
+                      : // Hand the sliders the values they were *showing*, so taking
+                        // over is not also a repaint.
+                        numbersForZone('base', palette),
+                }
+              : // Dropping the field is what re-links the zone: an absent `base` means
+                // "inherit again", where keeping it would mean "stay at 60".
                 config,
           )
         }
@@ -502,22 +574,15 @@ function BaseSourceControls() {
           label="Color"
           size="small"
           tooltip={`The hue and the saturation are taken; the tone is discarded, because the chrome's own lightness ladder is the design. A base color says which way the greys lean and how far, not how dark they are — and its saturation is clipped at ${MAX_BASE_SATURATION}, since a fully saturated chrome stops being chrome.`}
-          value={input.baseColor ?? null}
-          onChange={(baseColor) =>
-            // Same shape as the accent field above, and for the same reason: the
-            // numeric pins a previous clear left behind outrank what a color derives,
-            // so they come out when one arrives.
-            setPalette(
-              ({ baseColor: previous, baseHue, baseSaturation, ...config }) =>
-                baseColor
-                  ? { ...config, baseColor }
-                  : {
-                      ...config,
-                      baseHue: Math.round(palette.baseHue),
-                      baseSaturation:
-                        Math.round(palette.baseSaturation * 2) / 2,
-                    },
-            )
+          value={seedColor(input.base)}
+          onChange={(base) =>
+            // Same shape as the accent field above, and for the same reason: one seed
+            // per zone, so clearing the color has to leave the numbers it derived
+            // behind rather than an empty seed the radio would read as Own.
+            setPalette((config) => ({
+              ...config,
+              base: base ?? numbersForZone('base', palette),
+            }))
           }
         />
       ) : null}
@@ -535,8 +600,11 @@ function BaseSourceControls() {
             label="Hue"
             tooltip="The neutral chrome — surface and its ladder, the surface-text ramp, border, placeholder. A colored theme's tinted surface deliberately follows its own hue instead, because a danger banner should read as red."
             value={Math.round(palette.baseHue)}
-            onChange={(baseHue) =>
-              setPalette((config) => ({ ...config, baseHue }))
+            onChange={(hue) =>
+              setPalette((config) => ({
+                ...config,
+                base: { ...seedNumbers(config.base), hue },
+              }))
             }
           />
           {palette.pastel ? null : (
@@ -554,8 +622,11 @@ function BaseSourceControls() {
               maxValue={MAX_BASE_SATURATION}
               step={0.5}
               value={Math.min(palette.baseSaturation, MAX_BASE_SATURATION)}
-              onChange={(baseSaturation) =>
-                setPalette((config) => ({ ...config, baseSaturation }))
+              onChange={(saturation) =>
+                setPalette((config) => ({
+                  ...config,
+                  base: { ...seedNumbers(config.base), saturation },
+                }))
               }
             />
           )}
@@ -563,6 +634,55 @@ function BaseSourceControls() {
       ) : null}
     </Section>
   );
+}
+
+/**
+ * What a zone's color field opens on when the palette flips into Color mode.
+ *
+ * The two halves of this transition follow deliberately different rules. The brand zones
+ * open on a fixed START HEX — see {@link ACCENT_COLOR_START} — so the flip changes which
+ * control is in charge rather than reading the page back to itself. The four status
+ * themes convert instead, each to the fill it is already emitting: four demo hexes would
+ * repaint every banner on a tab press, and a status theme's identity is a *meaning* that
+ * a sample color has no business overwriting.
+ *
+ * The conversion is as neutral as the transition allows rather than lossless. From
+ * Advanced — the same chroma space — a derived fill sits at roughly factor 1.0 of its
+ * theme's seed, so re-seeding from it puts the banner back where it was. From Pastel the
+ * palette repaints regardless: the tabs turn `pastel` off, and a change of chroma space
+ * is the one thing no hand-over can carry across.
+ */
+function colorForZone(zone: (typeof ZONES)[number]['name']): string | null {
+  if (zone === 'accent') return ACCENT_COLOR_START;
+  if (zone === 'base') return BASE_COLOR_START;
+
+  const fill = resolvedValue(`#${zone}-accent-surface`);
+
+  // `resolvedValue` reports an em dash for a token it cannot find. Nothing to convert
+  // from, so the zone stays on the numbers rather than taking a hex of a dash.
+  return fill.startsWith('—') ? null : fill;
+}
+
+/**
+ * The numbers a zone's color was deriving, pinned in its place on the way out.
+ *
+ * Status themes pin the **hue only**. A saturation pinned here would manufacture exactly
+ * the "set while pastel was off, and still in effect" state `StatusThemeButton` warns
+ * about — and it would be inert on the way to Pastel, which is half of where this goes.
+ */
+function numbersForZone(
+  zone: (typeof ZONES)[number]['name'],
+  palette: ReturnType<typeof getPaletteConfig>,
+): PaletteNumericSeed {
+  if (zone === 'accent') return { hue: Math.round(palette.hue) };
+  if (zone === 'base') {
+    return {
+      hue: Math.round(palette.baseHue),
+      saturation: Math.round(palette.baseSaturation * 2) / 2,
+    };
+  }
+
+  return { hue: Math.round(palette.themes[zone].hue) };
 }
 
 /** Full-width tabs, so the three states divide the column rather than huddling left. */
@@ -586,21 +706,37 @@ function PaletteModeTabs() {
   const [palette, setPalette] = usePaletteConfig();
   const mode = usePaletteMode();
 
-  /** Colors out, and the numbers they were deriving pinned in their place. */
-  const toNumbers = (config: PaletteConfig): PaletteConfig => ({
-    ...config,
-    accentColor: undefined,
-    baseColor: undefined,
-    ...(config.accentColor !== undefined
-      ? { hue: Math.round(palette.hue) }
-      : null),
-    ...(config.baseColor !== undefined
-      ? {
-          baseHue: Math.round(palette.baseHue),
-          baseSaturation: Math.round(palette.baseSaturation * 2) / 2,
-        }
-      : null),
-  });
+  /**
+   * Colors out, and the numbers they were deriving pinned in their place.
+   *
+   * One pass over the zone table, where this used to name five fields by hand and reach
+   * no status theme. Writing a numeric seed *is* dropping the color — that is what the
+   * union buys — so there is nothing to clear separately.
+   */
+  const toNumbers = (config: PaletteConfig): PaletteConfig =>
+    ZONES.reduce(
+      (next, zone) =>
+        seedColor(zone.read(next)) === null
+          ? next
+          : zone.write(next, numbersForZone(zone.name, palette)),
+      config,
+    );
+
+  /**
+   * Numbers out, colors in — for every zone that has a seed to spell.
+   *
+   * The base zone is the exception, and it is not a special case so much as a different
+   * question: whether the chrome has a seed at all is what its own **Follow accent**
+   * radio governs, so one still following the accent keeps following it.
+   */
+  const toColors = (config: PaletteConfig): PaletteConfig =>
+    ZONES.reduce((next, zone) => {
+      if (zone.name === 'base' && zone.read(next) === undefined) return next;
+
+      const color = colorForZone(zone.name);
+
+      return color === null ? next : zone.write(next, color);
+    }, config);
 
   return (
     <Radio.Tabs
@@ -608,32 +744,19 @@ function PaletteModeTabs() {
       value={mode}
       styles={MODE_TABS_STYLES}
       onChange={(next) =>
-        setPalette((config) => {
-          if (next === 'color') {
-            return {
-              ...config,
-              pastel: false,
-              hue: undefined,
-              accentColor: ACCENT_COLOR_START,
-              // Only a zone that had a seed of its own gets a color; one following the
-              // accent keeps following it.
-              ...(config.baseHue !== undefined ||
-              config.baseSaturation !== undefined
-                ? {
-                    baseHue: undefined,
-                    baseSaturation: undefined,
-                    baseColor: BASE_COLOR_START,
-                  }
-                : null),
-            };
-          }
-
-          // Pastel and Advanced are the same seeds in two chroma spaces, so both take
-          // the numeric form — a flat ceiling has nothing to do with a color, and
-          // `pastel` has to be explicit either way: an absent one is inferred from
-          // whether a `saturation` is pinned.
-          return { ...toNumbers(config), pastel: next === 'pastel' };
-        })
+        setPalette((config) =>
+          next === 'color'
+            ? // `pastel` off explicitly: it is the other chroma space, and a color
+              // cannot be honoured inside a flat ceiling. It is also not inferrable
+              // here — a color pins no saturation, so an absent `pastel` would read as
+              // pastel-on and cap the very chroma the hex was handed over for.
+              { ...toColors(config), pastel: false }
+            : // Pastel and Advanced are the same seeds in two chroma spaces, so both
+              // take the numeric form — a flat ceiling has nothing to do with a color,
+              // and `pastel` has to be explicit either way: an absent one is inferred
+              // from whether a saturation is pinned.
+              { ...toNumbers(config), pastel: next === 'pastel' },
+        )
       }
     >
       <Radio
@@ -653,7 +776,7 @@ function PaletteModeTabs() {
       <Radio
         value="color"
         styles={MODE_TAB_STYLES}
-        tooltip="The same space as Advanced, seeded from the hexes a brand usually arrives as. The accent color contributes hue, chroma and tone; a base color contributes hue and saturation. Whatever a color supplies, its slider goes away."
+        tooltip="The same space as Advanced, seeded from the hexes a brand usually arrives as — every zone, statuses included. An accent color contributes hue, chroma and tone; a base color contributes hue and saturation; a status color contributes all three and becomes its theme's chroma reference. Whatever a color supplies, its slider goes away."
       >
         Color
       </Radio>
@@ -732,27 +855,32 @@ function BrandControls() {
   );
 }
 
-type StatusThemeName = Exclude<PaletteThemeName, 'code'>;
-
-const STATUS_THEMES = ['success', 'danger', 'warning', 'note'] as const;
-
 /**
- * Patch one status theme's seed, leaving the rest of the config — and the other
- * three themes — alone. The setter replaces, so a one-field control has to spread
- * rather than send a bare `{ themes: { danger: … } }`.
+ * Patch one status theme's seed, leaving the rest of the config — and the other three
+ * themes — alone. The setter replaces, so a one-field control has to spread rather than
+ * send a bare `{ themes: { danger: … } }`.
+ *
+ * `patch` receives the seed **as written**, so a hue slider can preserve a pinned
+ * saturation beside it; a control that changes path returns a whole new seed and ignores
+ * what it was handed.
  */
-function statusSeed(name: StatusThemeName, seed: PaletteThemeSeed) {
+function statusSeed(
+  name: StatusThemeName,
+  patch: (seed: PaletteSeed | undefined) => PaletteSeed | undefined,
+) {
   return (config: PaletteConfig): PaletteConfig => ({
     ...config,
     themes: {
       ...config.themes,
-      [name]: { ...config.themes?.[name], ...seed },
+      [name]: patch(config.themes?.[name]),
     },
   });
 }
 
 function StatusControls() {
   const [palette, setPalette] = usePaletteConfig();
+  const input = getPaletteConfigInput();
+  const seedMode = useSeedMode();
 
   return (
     <Controls>
@@ -761,22 +889,51 @@ function StatusControls() {
 
         return (
           <Section key={name}>
-            <HueSlider
-              label={`${name} hue`}
-              value={Math.round(seed.hue)}
-              onChange={(hue) => setPalette(statusSeed(name, { hue }))}
-            />
-            {/* Hidden under pastel, for the reason `StatusThemeButton` spells
-                out: pastel is one flat ceiling with the palette seed pinned to
-                the top of it, so a per-theme scale underneath contradicts it. */}
-            {palette.pastel ? null : (
-              <Slider
-                label={`${name} saturation`}
-                value={seed.saturation}
-                onChange={(saturation) =>
-                  setPalette(statusSeed(name, { saturation }))
+            {seedMode === 'color' ? (
+              <ColorInput
+                label={`${name} color`}
+                size="small"
+                value={seedColor(input.themes?.[name])}
+                onChange={(color) =>
+                  setPalette(
+                    statusSeed(name, () =>
+                      color ? color : { hue: Math.round(seed.hue) },
+                    ),
+                  )
                 }
               />
+            ) : (
+              <>
+                <HueSlider
+                  label={`${name} hue`}
+                  value={Math.round(seed.hue)}
+                  onChange={(hue) =>
+                    setPalette(
+                      statusSeed(name, (current) => ({
+                        ...seedNumbers(current),
+                        hue,
+                      })),
+                    )
+                  }
+                />
+                {/* Hidden under pastel, for the reason `StatusThemeButton` spells
+                    out: pastel is one flat ceiling with the palette seed pinned to
+                    the top of it, so a per-theme scale underneath contradicts it. */}
+                {palette.pastel ? null : (
+                  <Slider
+                    label={`${name} saturation`}
+                    value={seed.saturation}
+                    onChange={(saturation) =>
+                      setPalette(
+                        statusSeed(name, (current) => ({
+                          ...seedNumbers(current),
+                          saturation,
+                        })),
+                      )
+                    }
+                  />
+                )}
+              </>
             )}
           </Section>
         );
@@ -999,11 +1156,10 @@ function ComponentPanel() {
 
 const SAMPLE_CODE = `import { setPaletteConfig } from '@cube-dev/ui-kit';
 
-// Re-seed the brand, and give danger its own hue.
+// Re-seed the brand, and give danger the red the product already ships.
 setPaletteConfig({
-  hue: 210,
-  saturation: 72,
-  themes: { danger: { hue: 12 } },
+  accent: { hue: 210, saturation: 72 },
+  themes: { danger: '#b91c1c' },
 });`;
 
 function CodePanel() {
@@ -1171,11 +1327,12 @@ const ControlGroup = tasty({
  * while its siblings are pinned off. `Cube` stays empty by design: it is the shipped
  * palette, so it should follow the default wherever the default goes.
  *
- * All five depart on the *numbers*. There is deliberately no preset for the other
- * half of the API — seeding a zone from a real color — because a preset that only
- * demonstrated the mechanism would be a worse teacher than the switch itself: flip
- * **Accent seeded by** to Color and the field opens on a color you can replace with
- * your own, which is the thing you actually came to do.
+ * Five depart on the *numbers* and one on colors. `Brand` is the whole other half of
+ * the API in one press — every zone spelled as a hex, statuses included — and it earns a
+ * preset now that a status theme can take one: the mechanism is no longer the point, the
+ * *combination* is, and six hexes that read as one product's palette is a thing the tab
+ * bar cannot show you by itself. Its colors are placeholders to replace with your own,
+ * which is still what you came to do.
  */
 const THEME_PRESETS: { label: string; config: PaletteConfig }[] = [
   // Empty on purpose: the setter replaces, so this *is* the shipped palette — the
@@ -1184,8 +1341,7 @@ const THEME_PRESETS: { label: string; config: PaletteConfig }[] = [
   {
     label: 'Ocean',
     config: {
-      hue: 235,
-      saturation: 70,
+      accent: { hue: 235, saturation: 70 },
       // Pinned off. These three were authored against a non-pastel default and
       // their saturation seeds are tuned for the per-hue chroma ceiling; now that
       // the shipped palette is pastel, inheriting it would quietly restyle them
@@ -1206,8 +1362,7 @@ const THEME_PRESETS: { label: string; config: PaletteConfig }[] = [
   {
     label: 'Forest',
     config: {
-      hue: 128,
-      saturation: 65,
+      accent: { hue: 128, saturation: 65 },
       pastel: false,
       themes: {
         success: { hue: 172 },
@@ -1220,8 +1375,7 @@ const THEME_PRESETS: { label: string; config: PaletteConfig }[] = [
   {
     label: 'Ember',
     config: {
-      hue: 48,
-      saturation: 85,
+      accent: { hue: 48, saturation: 85 },
       pastel: false,
       themes: {
         success: { hue: 155 },
@@ -1234,15 +1388,15 @@ const THEME_PRESETS: { label: string; config: PaletteConfig }[] = [
   {
     label: 'Slate',
     config: {
-      hue: 250,
+      accent: { hue: 250 },
       // Pastel alone is what mutes this one relative to the three above, which pin
       // it off — and it needs nothing else, because pastel swaps the per-hue chroma
       // ceiling for a flat one that sits below where a saturated hue would land. A
       // pastel accent at the pinned 100 resolves softer than `Ember`'s non-pastel 85,
       // and evenly across hues rather than letting the warm statuses run ahead.
       //
-      // No `saturation` here on purpose: pastel pins it to 100, so a number would be
-      // inert and would read as doing work it is not doing.
+      // No `saturation` on the accent here on purpose: pastel pins it to 100, so a
+      // number would be inert and would read as doing work it is not doing.
       pastel: true,
       themes: {
         success: { hue: 160 },
@@ -1252,6 +1406,29 @@ const THEME_PRESETS: { label: string; config: PaletteConfig }[] = [
         // Pastel does not reach the syntax palette, by design. Softening a code
         // block to match the rest of a muted theme goes through its own seed.
         code: { saturation: 55 },
+      },
+    },
+  },
+  {
+    label: 'Brand',
+    config: {
+      // Every zone as a hex — which is how a brand actually arrives. `pastel` off
+      // because these are requests for particular colors and a flat ceiling would cap
+      // the chroma they were chosen for; a color pins no saturation, so leaving it
+      // absent would infer pastel back on.
+      pastel: false,
+      accent: '#4f46e5',
+      // A base color contributes hue and saturation and discards the tone, so this is
+      // "lean the chrome slightly warm", not "make the page this dark".
+      base: '#78716c',
+      themes: {
+        // The status hexes a product usually already owns, sitting where the numeric
+        // presets put their hues — legible as danger/success/warning/aside, and far
+        // enough from the indigo brand not to read as a second accent.
+        success: '#15803d',
+        danger: '#b91c1c',
+        warning: '#a16207',
+        note: '#a21caf',
       },
     },
   },
@@ -1330,9 +1507,11 @@ function StatusThemeButton({
 }) {
   const [palette, setPalette] = usePaletteConfig();
   const seed = palette.themes[name];
+  const written = getPaletteConfigInput().themes?.[name];
+  const seedMode = useSeedMode();
   // The SPARSE config: only a saturation that was actually written counts as
   // pinned. The resolved one always carries a number, inherited or not.
-  const pinnedSaturation = getPaletteConfigInput().themes?.[name]?.saturation;
+  const pinnedSaturation = seedNumbers(written).saturation;
 
   return (
     <DialogTrigger
@@ -1356,12 +1535,41 @@ function StatusThemeButton({
       </Button>
       <Dialog aria-label={`${name} theme`} width="max-content">
         <Section styles={STATUS_POPOVER_STYLES}>
-          <HueSlider
-            label="Hue"
-            tooltip="Status hues have to stay semantically legible — danger red, warning amber, success green — and about 35° apart from each other and from the brand, which is roughly where two tinted surfaces stop reading as one color."
-            value={Math.round(seed.hue)}
-            onChange={(hue) => setPalette(statusSeed(name, { hue }))}
-          />
+          {/* One control, not two plus a switch. Which form a seed takes is the tab
+              bar's question, and a derived control is not shown — so in Color mode the
+              hex is the whole panel and the sliders are gone rather than disabled. */}
+          {seedMode === 'color' ? (
+            <ColorInput
+              label="Color"
+              size="small"
+              tooltip="Hue, chroma and tone all come from here. The fill becomes this color on the same terms the brand does — reproduced in light at normal contrast, adapting in dark and high contrast, and held above APCA Lc 45 against the white label it carries and Lc 25 against the page. Its chroma also becomes the theme's own scale, which is what keeps the tinted banner, the border and the text ramp in the proportion to the fill that they have on every other theme."
+              value={seedColor(written)}
+              onChange={(color) =>
+                // Clearing lands back on a hue pinned where the color left it. There is
+                // nothing to unset first: one seed per zone, so writing either form
+                // replaces the other.
+                setPalette(
+                  statusSeed(name, () =>
+                    color ? color : { hue: Math.round(seed.hue) },
+                  ),
+                )
+              }
+            />
+          ) : (
+            <HueSlider
+              label="Hue"
+              tooltip="Status hues have to stay semantically legible — danger red, warning amber, success green — and about 35° apart from each other and from the brand, which is roughly where two tinted surfaces stop reading as one color."
+              value={Math.round(seed.hue)}
+              onChange={(hue) =>
+                setPalette(
+                  statusSeed(name, (current) => ({
+                    ...seedNumbers(current),
+                    hue,
+                  })),
+                )
+              }
+            />
+          )}
           {/* No saturation slider under pastel.
 
               Pastel is one flat chroma ceiling and the palette-level saturation is
@@ -1374,7 +1582,7 @@ function StatusThemeButton({
               The engine still honours a `themes.<status>.saturation` under pastel,
               which is why the pinned case below gets said out loud rather than
               hidden: a number set before pastel went on is still in effect. */}
-          {palette.pastel ? (
+          {seedMode === 'color' ? null : palette.pastel ? (
             pinnedSaturation !== undefined ? (
               <Row>
                 <Token>Saturation {pinnedSaturation} — pinned</Token>
@@ -1390,7 +1598,12 @@ function StatusThemeButton({
               tooltip="Inherits the palette saturation until you move it, and stays pinned afterwards — so a re-seeded palette leaves this theme where you put it."
               value={seed.saturation}
               onChange={(saturation) =>
-                setPalette(statusSeed(name, { saturation }))
+                setPalette(
+                  statusSeed(name, (current) => ({
+                    ...seedNumbers(current),
+                    saturation,
+                  })),
+                )
               }
             />
           )}
@@ -1404,7 +1617,7 @@ function StatusThemeButton({
  * The theme, on its way out of this page.
  *
  * The sparse input rather than the resolved config, in both forms: it is far
- * shorter, and it is the honest answer, since an inherited `baseHue` written out
+ * shorter, and it is the honest answer, since an inherited `base` written out
  * as a number would stop following the accent the moment it was pasted.
  */
 const EXPORT_POPOVER_STYLES: Styles = {

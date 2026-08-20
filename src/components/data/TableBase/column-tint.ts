@@ -72,6 +72,12 @@ function isThemeName(value: string): value is CubeTableColumnTheme {
  *
  * `primary` and `purple` are the brand itself, which is why they read `hue`
  * rather than a `themes` entry — the palette derives them from the brand hue too.
+ *
+ * A status theme seeded by a COLOR needs nothing special here: its resolved seed already
+ * carries that color's hue and chroma, so a tinted column follows it for free. Only the
+ * two numbers are passed on — a runtime tint re-derives its own lightness per scheme, so
+ * the seed's `color` and `colorTone` have nothing to say to it and are not part of
+ * `ColorThemeConfig`.
  */
 function themeSeed(theme: CubeTableColumnTheme): {
   hue: number;
@@ -83,7 +89,9 @@ function themeSeed(theme: CubeTableColumnTheme): {
     return { hue: config.hue, saturation: config.saturation };
   }
 
-  return config.themes[theme];
+  const { hue, saturation } = config.themes[theme];
+
+  return { hue, saturation };
 }
 
 /** Normalizes any spec into a theme config, or `null` for the manual form. */

@@ -133,7 +133,8 @@ function stableStringify(value: unknown): string {
  *
  * The tone {@link colorSeed} also reads is dropped here on purpose: a tint theme
  * re-derives its lightness per scheme, which is what makes it adaptive. The palette's
- * `accentColor` keeps the tone, because a brand fill has to *be* the colour.
+ * The palette's accent zone keeps the tone, because a brand fill has to *be* the
+ * colour.
  *
  * An unparseable value falls back to the shipped seed rather than throwing — a hue
  * typed into a settings field should not take the render down.

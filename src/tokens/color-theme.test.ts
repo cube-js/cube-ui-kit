@@ -163,12 +163,12 @@ describe('getColorTheme', () => {
     // a near-neutral tint it shifts chroma in the 4th decimal (0.0027 → 0.0015),
     // which is close enough to round together that the assertion failed in CI
     // and could not be reproduced locally.
-    setPaletteConfig({ saturation: 80 });
+    setPaletteConfig({ accent: { saturation: 80 } });
 
     const before = getColorTheme({ hue: 200 });
     const beforeSurface = before.tokens[before.colors.surface];
 
-    setPaletteConfig({ saturation: 10 });
+    setPaletteConfig({ accent: { saturation: 10 } });
 
     const after = getColorTheme({ hue: 200 });
 
@@ -198,7 +198,7 @@ describe('getColorTheme', () => {
 
     // `hue`, `saturation` and `pastel` are all pinned, so re-seeding the brand
     // hue cannot move this theme — and its slot is replaced, not duplicated.
-    setPaletteConfig({ hue: 12 });
+    setPaletteConfig({ accent: { hue: 12 } });
 
     expect(getColorTheme(config).name).toBe(before.name);
   });
