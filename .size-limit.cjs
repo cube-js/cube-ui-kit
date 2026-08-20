@@ -20,14 +20,17 @@ module.exports = [
         }),
       );
     },
-    // 505 kB, raised from 501 kB, which the branch exceeded by 596 B locally.
-    // Measured with both sides rebuilt on the same machine: `main` at 500.29 kB,
-    // this branch at 501.60 kB, so the palette work itself is +1.31 kB — the
-    // color-seeded accent arrangement, `color-seed.ts`, and `ColorSwatch` as its
-    // own component. The Button budget below is unchanged at 123.32 kB on both
-    // sides, i.e. the branch adds exactly nothing to a Button-only import, which
-    // is the number that says none of this reaches a consumer who imports none
-    // of it.
+    // 505 kB, raised from 501 kB, which the palette branch exceeded by 596 B
+    // locally. Measured with both sides rebuilt on the same machine: `main` at
+    // 500.29 kB, that branch at 501.60 kB, so the palette work itself is
+    // +1.31 kB — the color-seeded accent arrangement, `color-seed.ts`, and
+    // `ColorSwatch` as its own component.
+    //
+    // Still 505 kB on the `current`-theme branch: 504.04 kB against `main`'s
+    // 503.76 kB with both sides rebuilt here, i.e. +0.28 kB for the whole theme.
+    // Unlike the palette work, this one DOES move the Button budget below —
+    // `current` is a theme on `Button` itself, so its seven flavours are in the
+    // variants map and reach a `{ Button }`-only import. See that entry.
     //
     // Rounded up to the next 5 kB step rather than set just above the reading:
     // the local figure runs low (see the macOS/Linux note below), so a limit
@@ -114,8 +117,24 @@ module.exports = [
     path: './dist/index.js',
     webpack: true,
     import: '{ Button }',
-    // 123.03 kB at the time of writing, 31 bytes over the previous 123 kB. That
-    // is `@tenphi/tasty` 3.0.1 -> 3.0.2 and nothing of ours: both sides rebuilt
+    // 123.67 kB at the time of writing, against `main`'s 123.32 kB with both
+    // sides rebuilt on the same machine: +0.35 kB for the `current` theme. This
+    // is the one entry the theme legitimately moves, and it is worth being clear
+    // about why, because the comments above use this budget staying flat as the
+    // proof that a feature costs an uninterested consumer nothing. That argument
+    // does not apply here: `current` sits on the THEME axis of `Button` itself,
+    // so its seven flavours are entries in the variants map and ship with any
+    // `import { Button }`. There is nothing to tree-shake — the cost is the
+    // feature.
+    //
+    // 330 B of headroom, which is thin on purpose (see the note at the end of
+    // this entry) but worth knowing about: the branch first came in at 124.01 kB,
+    // 6 bytes over, and what bought the room back was deleting the `invert` type
+    // (-0.34 kB on this entry and on `All`). If the next change here needs more
+    // than 330 B, raise this to 125 kB rather than shaving something real.
+    //
+    // Before this: 123.03 kB, 31 bytes over the previous 123 kB. That was
+    // `@tenphi/tasty` 3.0.1 -> 3.0.2 and nothing of ours: both sides rebuilt
     // on this Linux box read 122.47 kB on 3.0.1 and 123.03 kB on 3.0.2, +0.56 kB,
     // and the `All` entry moved by the same 0.55 kB (499.12 -> 499.67 kB), which
     // is what a change inside Tasty's always-included core looks like. The old

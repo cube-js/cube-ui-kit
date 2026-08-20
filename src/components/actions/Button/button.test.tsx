@@ -92,6 +92,34 @@ describe('<Button />', () => {
     spy.mockRestore();
   });
 
+  describe('current theme', () => {
+    it('should render the outline shape by default', () => {
+      render(
+        <Button qa="Current" theme="current">
+          label
+        </Button>,
+      );
+
+      const button = screen.getByTestId('Current');
+
+      expect(button).toHaveAttribute('data-theme', 'current');
+      expect(button).toHaveAttribute('data-type', 'outline');
+    });
+
+    it('should compose with every type', () => {
+      render(
+        <Button qa="Current" theme="current" type="primary">
+          label
+        </Button>,
+      );
+
+      const button = screen.getByTestId('Current');
+
+      expect(button).toHaveAttribute('data-theme', 'current');
+      expect(button).toHaveAttribute('data-type', 'primary');
+    });
+  });
+
   describe('disabled state', () => {
     it('should use the native attribute when there is no tooltip', () => {
       render(<Button isDisabled>Label</Button>);

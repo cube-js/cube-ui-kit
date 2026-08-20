@@ -148,17 +148,47 @@ export const Types: Story = {
       <Flow gap="1x">
         <Title level={4}>Primary</Title>
         <Space>
-          <ItemAction type="primary" icon={<IconEdit />} tooltip="Edit" />
-          <ItemAction type="primary" icon={<IconCopy />} tooltip="Copy" />
-          <ItemAction type="primary" icon={<IconTrash />} tooltip="Delete" />
+          <ItemAction
+            theme="default"
+            type="primary"
+            icon={<IconEdit />}
+            tooltip="Edit"
+          />
+          <ItemAction
+            theme="default"
+            type="primary"
+            icon={<IconCopy />}
+            tooltip="Copy"
+          />
+          <ItemAction
+            theme="default"
+            type="primary"
+            icon={<IconTrash />}
+            tooltip="Delete"
+          />
         </Space>
       </Flow>
       <Flow gap="1x">
         <Title level={4}>Outline (unselected)</Title>
         <Space>
-          <ItemAction type="outline" icon={<IconEdit />} tooltip="Edit" />
-          <ItemAction type="outline" icon={<IconCopy />} tooltip="Copy" />
-          <ItemAction type="outline" icon={<IconTrash />} tooltip="Delete" />
+          <ItemAction
+            theme="default"
+            type="outline"
+            icon={<IconEdit />}
+            tooltip="Edit"
+          />
+          <ItemAction
+            theme="default"
+            type="outline"
+            icon={<IconCopy />}
+            tooltip="Copy"
+          />
+          <ItemAction
+            theme="default"
+            type="outline"
+            icon={<IconTrash />}
+            tooltip="Delete"
+          />
         </Space>
       </Flow>
       <Flow gap="1x">
@@ -166,18 +196,21 @@ export const Types: Story = {
         <Space>
           <ItemAction
             isSelected
+            theme="default"
             type="outline"
             icon={<IconEdit />}
             tooltip="Edit"
           />
           <ItemAction
             isSelected
+            theme="default"
             type="outline"
             icon={<IconCopy />}
             tooltip="Copy"
           />
           <ItemAction
             isSelected
+            theme="default"
             type="outline"
             icon={<IconTrash />}
             tooltip="Delete"
@@ -187,9 +220,9 @@ export const Types: Story = {
       <Flow gap="1x">
         <Title level={4}>Clear (unselected)</Title>
         <Space>
-          <ItemAction type="clear" icon={<IconEdit />} tooltip="Edit" />
-          <ItemAction type="clear" icon={<IconCopy />} tooltip="Copy" />
-          <ItemAction type="clear" icon={<IconTrash />} tooltip="Delete" />
+          <ItemAction theme="default" icon={<IconEdit />} tooltip="Edit" />
+          <ItemAction theme="default" icon={<IconCopy />} tooltip="Copy" />
+          <ItemAction theme="default" icon={<IconTrash />} tooltip="Delete" />
         </Space>
       </Flow>
       <Flow gap="1x">
@@ -197,19 +230,19 @@ export const Types: Story = {
         <Space>
           <ItemAction
             isSelected
-            type="clear"
+            theme="default"
             icon={<IconEdit />}
             tooltip="Edit"
           />
           <ItemAction
             isSelected
-            type="clear"
+            theme="default"
             icon={<IconCopy />}
             tooltip="Copy"
           />
           <ItemAction
             isSelected
-            type="clear"
+            theme="default"
             icon={<IconTrash />}
             tooltip="Delete"
           />
@@ -270,8 +303,30 @@ export const Themes: Story = {
           <ItemAction theme="special" icon={<IconTrash />} tooltip="Delete" />
         </Space>
       </Flow>
+      <Flow gap="1x">
+        <Title level={4}>Current Theme (default)</Title>
+        <Space
+          fill="#note-surface"
+          color="#note-accent-text"
+          padding="2x"
+          radius="1x"
+        >
+          <ItemAction icon={<IconEdit />} tooltip="Edit" />
+          <ItemAction icon={<IconCopy />} tooltip="Copy" />
+          <ItemAction icon={<IconTrash />} tooltip="Delete" />
+        </Space>
+      </Flow>
     </Flow>
   ),
+};
+
+Themes.parameters = {
+  docs: {
+    description: {
+      story:
+        "`current` is the default theme, and the only one that names no color of its own: it mixes fill and label from the container's inherited text color, so an action tracks whatever row hosts it. Name any other theme to have the action paint itself instead.",
+    },
+  },
 };
 
 export const States: Story = {
@@ -432,7 +487,6 @@ export const InsideItemButton: Story = {
                 <ItemAction
                   icon={<IconTrash />}
                   tooltip="Delete"
-                  type="clear"
                   theme="danger"
                 />
               </>

@@ -95,22 +95,24 @@ describe('spike: differential render probe', () => {
       );
     });
 
-    it('ItemAction theme="default" collapses bare but not under a provider (case E)', () => {
+    it('ItemAction isDisabled={false} collapses bare but not under a provider (case E)', () => {
       const bare = probe(<ItemAction>Hi</ItemAction>);
-      const bareExplicit = probe(<ItemAction theme="default">Hi</ItemAction>);
+      const bareExplicit = probe(
+        <ItemAction isDisabled={false}>Hi</ItemAction>,
+      );
 
       expect(bareExplicit.markup + bareExplicit.css).toBe(
         bare.markup + bare.css,
       );
 
       const wrapped = probe(
-        <ItemActionProvider theme="danger">
+        <ItemActionProvider isDisabled>
           <ItemAction>Hi</ItemAction>
         </ItemActionProvider>,
       );
       const wrappedExplicit = probe(
-        <ItemActionProvider theme="danger">
-          <ItemAction theme="default">Hi</ItemAction>
+        <ItemActionProvider isDisabled>
+          <ItemAction isDisabled={false}>Hi</ItemAction>
         </ItemActionProvider>,
       );
 

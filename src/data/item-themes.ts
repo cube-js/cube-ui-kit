@@ -128,9 +128,28 @@ export const DEFAULT_OUTLINE_STYLES: Styles = {
   // body-composited single-layer `#primary-accent-surface.X` would be, but
   // visually almost identical and free of the overlay-snap flash on click).
   // Disabled paints the neutral `#disabled-surface` chip on top of the same
-  // base — or, when selected, the brand-tinted `accent-disabled-surface` one, so
-  // a disabled segmented control still shows which option is active (CUB-3912).
-  // Every `selected & disabled` entry in this file exists for that reason.
+  // base. When SELECTED it keeps the enabled selected chip instead and fades
+  // only the LABEL, to `#accent-disabled-text` — so a disabled segmented
+  // control still shows which option is active (CUB-3912) without the chip
+  // changing weight at all. Every `selected & disabled` entry in this file
+  // exists for that reason.
+  //
+  // Fading the label alone is what keeps the state honest. The chip is the
+  // thing that says "this one is on", and a disabled control has no business
+  // saying that more loudly than a live one — which is exactly what happened
+  // while the state borrowed `accent-disabled-surface`: the mid-tone pill a
+  // PRIMARY button steps DOWN to is a step UP from a 9% tint, and its
+  // `tone: 'max'` label resolved to literal white in light mode. Building the
+  // chip from the neutral disabled tone at brand chroma fixed the weight but
+  // read over-saturated next to the enabled selected chips it sits beside.
+  //
+  // The `.08` is `selected`'s own `.09` minus a hair, and the difference is
+  // deliberately imperceptible: the two entries must not serialize to the SAME
+  // string. Tasty's `mergeEntriesByValue` pass coalesces equal values into one
+  // OR-entry at the group's max priority, so a literal reuse of `.09` would
+  // merge `selected` into `selected & disabled` and then negate against
+  // `selected & (hovered | focused)` — the "selected-hover stays dark" bug that
+  // `SPECIAL_CLEAR_STYLES` documents at length, which escapes it the same way.
   fill: {
     '': '#surface-2 #surface-text.0',
     hovered: '#surface-2 #surface-text.03',
@@ -139,7 +158,7 @@ export const DEFAULT_OUTLINE_STYLES: Styles = {
     'selected & (hovered | focused)': '#surface-2 #primary-accent-surface.12',
     'selected & pressed': '#surface-2 #primary-accent-surface.18',
     disabled: '#surface-2 #disabled-surface',
-    'selected & disabled': '#surface-2 #primary-accent-disabled-surface',
+    'selected & disabled': '#surface-2 #primary-accent-surface.08',
   },
   color: {
     '': '#surface-text-soft',
@@ -148,7 +167,7 @@ export const DEFAULT_OUTLINE_STYLES: Styles = {
     selected: '#primary-accent-text-soft',
     'selected & hovered': '#primary-accent-text',
     disabled: '#disabled-surface-text',
-    'selected & disabled': '#primary-accent-disabled-surface-text',
+    'selected & disabled': '#primary-accent-disabled-text',
   },
 } as const;
 
@@ -164,7 +183,7 @@ export const DEFAULT_OUTLINE_2_STYLES: Styles = {
     'selected & (hovered | focused)': '#surface-3 #primary-accent-surface.12',
     'selected & pressed': '#surface-3 #primary-accent-surface.15',
     disabled: '#surface-3 #disabled-surface',
-    'selected & disabled': '#surface-3 #primary-accent-disabled-surface',
+    'selected & disabled': '#surface-3 #primary-accent-surface.08',
   },
 } as const;
 
@@ -187,7 +206,7 @@ export const DEFAULT_CLEAR_STYLES: Styles = {
     'selected & (hovered | focused)': '#primary-accent-surface.12',
     'selected & pressed': '#primary-accent-surface.18',
     disabled: 'transparent',
-    'selected & disabled': '#primary-accent-disabled-surface',
+    'selected & disabled': '#primary-accent-surface.08',
   },
   // Selected label mirrors LINK: soft at rest, `#primary-accent-text` on
   // hover. See DEFAULT_OUTLINE_STYLES.
@@ -198,7 +217,7 @@ export const DEFAULT_CLEAR_STYLES: Styles = {
     selected: '#primary-accent-text-soft',
     'selected & hovered': '#primary-accent-text',
     disabled: '#disabled-surface-text',
-    'selected & disabled': '#primary-accent-disabled-surface-text',
+    'selected & disabled': '#primary-accent-disabled-text',
   },
 } as const;
 
@@ -288,13 +307,13 @@ export const DANGER_OUTLINE_STYLES: Styles = {
     'selected & (hovered | focused)': '#surface-2 #danger-accent-surface.12',
     'selected & pressed': '#surface-2 #danger-accent-surface.18',
     disabled: '#surface-2 #disabled-surface',
-    'selected & disabled': '#surface-2 #danger-accent-disabled-surface',
+    'selected & disabled': '#surface-2 #danger-accent-surface.08',
   },
   color: {
     '': '#danger-accent-text-soft',
     selected: '#danger-accent-text',
     disabled: '#disabled-surface-text',
-    'selected & disabled': '#danger-accent-disabled-surface-text',
+    'selected & disabled': '#danger-accent-disabled-text',
   },
 } as const;
 
@@ -308,7 +327,7 @@ export const DANGER_OUTLINE_2_STYLES: Styles = {
     'selected & (hovered | focused)': '#surface-3 #danger-accent-surface.12',
     'selected & pressed': '#surface-3 #danger-accent-surface.18',
     disabled: '#surface-3 #disabled-surface',
-    'selected & disabled': '#surface-3 #danger-accent-disabled-surface',
+    'selected & disabled': '#surface-3 #danger-accent-surface.08',
   },
 } as const;
 
@@ -331,13 +350,13 @@ export const DANGER_CLEAR_STYLES: Styles = {
     'selected & (hovered | focused)': '#danger-accent-text.12',
     'selected & pressed': '#danger-accent-text.18',
     disabled: 'transparent',
-    'selected & disabled': '#danger-accent-disabled-surface',
+    'selected & disabled': '#danger-accent-text.08',
   },
   color: {
     '': '#danger-accent-text-soft',
     selected: '#danger-accent-text',
     disabled: '#disabled-surface-text',
-    'selected & disabled': '#danger-accent-disabled-surface-text',
+    'selected & disabled': '#danger-accent-disabled-text',
   },
 } as const;
 
@@ -419,13 +438,13 @@ export const SUCCESS_OUTLINE_STYLES: Styles = {
     'selected & (hovered | focused)': '#surface-2 #success-accent-surface.12',
     'selected & pressed': '#surface-2 #success-accent-surface.18',
     disabled: '#surface-2 #disabled-surface',
-    'selected & disabled': '#surface-2 #success-accent-disabled-surface',
+    'selected & disabled': '#surface-2 #success-accent-surface.08',
   },
   color: {
     '': '#success-accent-text-soft',
     selected: '#success-accent-text',
     disabled: '#disabled-surface-text',
-    'selected & disabled': '#success-accent-disabled-surface-text',
+    'selected & disabled': '#success-accent-disabled-text',
   },
 } as const;
 
@@ -439,7 +458,7 @@ export const SUCCESS_OUTLINE_2_STYLES: Styles = {
     'selected & (hovered | focused)': '#surface-3 #success-accent-surface.12',
     'selected & pressed': '#surface-3 #success-accent-surface.18',
     disabled: '#surface-3 #disabled-surface',
-    'selected & disabled': '#surface-3 #success-accent-disabled-surface',
+    'selected & disabled': '#surface-3 #success-accent-surface.08',
   },
 } as const;
 
@@ -460,13 +479,13 @@ export const SUCCESS_CLEAR_STYLES: Styles = {
     'selected & (hovered | focused)': '#success-accent-text.12',
     'selected & pressed': '#success-accent-text.18',
     disabled: 'transparent',
-    'selected & disabled': '#success-accent-disabled-surface',
+    'selected & disabled': '#success-accent-text.08',
   },
   color: {
     '': '#success-accent-text-soft',
     selected: '#success-accent-text',
     disabled: '#disabled-surface-text',
-    'selected & disabled': '#success-accent-disabled-surface-text',
+    'selected & disabled': '#success-accent-disabled-text',
   },
 } as const;
 
@@ -548,13 +567,13 @@ export const WARNING_OUTLINE_STYLES: Styles = {
     'selected & (hovered | focused)': '#surface-2 #warning-accent-surface.12',
     'selected & pressed': '#surface-2 #warning-accent-surface.18',
     disabled: '#surface-2 #disabled-surface',
-    'selected & disabled': '#surface-2 #warning-accent-disabled-surface',
+    'selected & disabled': '#surface-2 #warning-accent-surface.08',
   },
   color: {
     '': '#warning-accent-text-soft',
     selected: '#warning-accent-text',
     disabled: '#disabled-surface-text',
-    'selected & disabled': '#warning-accent-disabled-surface-text',
+    'selected & disabled': '#warning-accent-disabled-text',
   },
 } as const;
 
@@ -568,7 +587,7 @@ export const WARNING_OUTLINE_2_STYLES: Styles = {
     'selected & (hovered | focused)': '#surface-3 #warning-accent-surface.12',
     'selected & pressed': '#surface-3 #warning-accent-surface.18',
     disabled: '#surface-3 #disabled-surface',
-    'selected & disabled': '#surface-3 #warning-accent-disabled-surface',
+    'selected & disabled': '#surface-3 #warning-accent-surface.08',
   },
 } as const;
 
@@ -589,13 +608,13 @@ export const WARNING_CLEAR_STYLES: Styles = {
     'selected & (hovered | focused)': '#warning-accent-text.12',
     'selected & pressed': '#warning-accent-text.18',
     disabled: 'transparent',
-    'selected & disabled': '#warning-accent-disabled-surface',
+    'selected & disabled': '#warning-accent-text.08',
   },
   color: {
     '': '#warning-accent-text-soft',
     selected: '#warning-accent-text',
     disabled: '#disabled-surface-text',
-    'selected & disabled': '#warning-accent-disabled-surface-text',
+    'selected & disabled': '#warning-accent-disabled-text',
   },
 } as const;
 
@@ -677,13 +696,13 @@ export const NOTE_OUTLINE_STYLES: Styles = {
     'selected & (hovered | focused)': '#surface-2 #note-accent-surface.12',
     'selected & pressed': '#surface-2 #note-accent-surface.18',
     disabled: '#surface-2 #disabled-surface',
-    'selected & disabled': '#surface-2 #note-accent-disabled-surface',
+    'selected & disabled': '#surface-2 #note-accent-surface.08',
   },
   color: {
     '': '#note-accent-text-soft',
     selected: '#note-accent-text',
     disabled: '#disabled-surface-text',
-    'selected & disabled': '#note-accent-disabled-surface-text',
+    'selected & disabled': '#note-accent-disabled-text',
   },
 } as const;
 
@@ -697,7 +716,7 @@ export const NOTE_OUTLINE_2_STYLES: Styles = {
     'selected & (hovered | focused)': '#surface-3 #note-accent-surface.12',
     'selected & pressed': '#surface-3 #note-accent-surface.18',
     disabled: '#surface-3 #disabled-surface',
-    'selected & disabled': '#surface-3 #note-accent-disabled-surface',
+    'selected & disabled': '#surface-3 #note-accent-surface.08',
   },
 } as const;
 
@@ -718,13 +737,13 @@ export const NOTE_CLEAR_STYLES: Styles = {
     'selected & (hovered | focused)': '#note-accent-text.12',
     'selected & pressed': '#note-accent-text.18',
     disabled: 'transparent',
-    'selected & disabled': '#note-accent-disabled-surface',
+    'selected & disabled': '#note-accent-text.08',
   },
   color: {
     '': '#note-accent-text-soft',
     selected: '#note-accent-text',
     disabled: '#disabled-surface-text',
-    'selected & disabled': '#note-accent-disabled-surface-text',
+    'selected & disabled': '#note-accent-disabled-text',
   },
 } as const;
 
@@ -839,16 +858,29 @@ export const SPECIAL_OUTLINE_STYLES: Styles = {
     'selected & pressed': '#special-surface #white.3',
     disabled: '#special-surface #white.04',
     // Stays in the white-alpha register: the base here is a fixed dark tone.
-    'selected & disabled': '#special-surface #white.09',
+    // Like the colored themes, a disabled SELECTED control keeps the chip it
+    // has when enabled and fades only the label — `.17` rather than a literal
+    // reuse of `selected`'s `.18` so the two do not serialize identically and
+    // trip `mergeEntriesByValue`, exactly as `SPECIAL_CLEAR_STYLES` documents.
+    'selected & disabled': '#special-surface #white.17',
   },
   // Mirrors the colored-theme soft→opaque pattern (`*-accent-text-soft` →
   // `*-accent-text`) using white-alpha steps: default is slightly muted so
   // that selected reads as the more prominent state.
+  //
+  // Both disabled labels are solved for cr ≈ 2.0 against the chip they sit on
+  // — the house figure for a disabled label, which `disabled-surface-text`
+  // hits against `surface` and which this theme's own `primary` disabled pair
+  // hits at 1.73. They used to measure 3.24 and 4.21: not only too legible for
+  // a dead control, but the wrong way round, since the selected one out-read
+  // the plain one. The two alphas differ because they resolve against different chips
+  // (`.04` and `.17`), which lands them on the same contrast rather than the
+  // same opacity.
   color: {
     '': '#white.8',
     selected: '#white',
-    disabled: '#white.4',
-    'selected & disabled': '#white.55',
+    disabled: '#white.23',
+    'selected & disabled': '#white.28',
   },
 } as const;
 
@@ -871,10 +903,17 @@ export const SPECIAL_CLEAR_STYLES: Styles = {
   // negate against `'selected & (hovered | focused)'` (priority 4), making
   // it resolve to FALSE for `selected & hovered` — which is exactly the
   // "selected-hover stays dark" bug. `'selected & disabled'` therefore uses
-  // a slightly different alpha (.16) that's visually similar but a distinct
-  // value string. The default `''` and `disabled` may share `#white.0`
-  // because Tasty keeps the TRUE/default entry separate from non-defaults
-  // during merging.
+  // `#white.98` rather than a literal reuse of `selected`'s `#white`: the 2%
+  // of dark base bleeding through is invisible, and the string is distinct.
+  // The default `''` and `disabled` may share `#white.0` because Tasty keeps
+  // the TRUE/default entry separate from non-defaults during merging.
+  //
+  // Disabling a SELECTED control keeps the white pill and fades only the
+  // label, the same rule the rest of this file follows — the chip is what says
+  // "this one is on". Here that means fading the DARK label toward the pill
+  // rather than a white one toward the base, so the disabled label is
+  // `#special-accent-text` at `.45`: cr 1.95 against the pill, the same figure
+  // the white-alpha variants are solved for.
   //
   // Focus ring uses the fixed-mode `#special-accent-text` so the indicator
   // stays scheme-invariant alongside the rest of the special theme — see
@@ -895,7 +934,7 @@ export const SPECIAL_CLEAR_STYLES: Styles = {
     'selected & (hovered | focused)': '#white.94',
     'selected & pressed': '#white.88',
     disabled: '#white.0',
-    'selected & disabled': '#white.16',
+    'selected & disabled': '#white.98',
   },
   // Non-selected mirrors the colored-theme soft→opaque pattern with
   // white-alpha steps. Selected keeps its inverted look — dark accent-text
@@ -904,7 +943,10 @@ export const SPECIAL_CLEAR_STYLES: Styles = {
   color: {
     '': '#white.8',
     selected: '#special-accent-text',
-    disabled: '#white.4',
+    // Solved for cr ≈ 2.0 against what each one sits on — the bare surface, and
+    // the selected white pill. See `SPECIAL_OUTLINE_STYLES.color`.
+    disabled: '#white.23',
+    'selected & disabled': '#special-accent-text.45',
   },
 } as const;
 
@@ -922,7 +964,7 @@ export const SPECIAL_LINK_STYLES: Styles = {
   color: {
     '': '#white',
     'hovered & !pressed': '#white.9',
-    disabled: '#white.4',
+    disabled: '#white.23',
   },
 } as const;
 
@@ -935,29 +977,26 @@ export const SPECIAL_ITEM_STYLES: Styles = {
   },
   color: {
     '': '#white',
-    disabled: '#white.4',
+    disabled: '#white.23',
   },
 } as const;
 
-// ---------- CURRENT TYPE ----------
+// ---------- CURRENT THEME ----------
 // Every color is derived from the *inherited* text color (`#current` →
 // `currentcolor`), so the element adopts whatever color its context paints
-// with: a colored Alert, a dark banner, an image overlay, a chart tooltip. That
-// makes the type theme-agnostic — a single style object registered under
-// `default.current`, with the host component forcing the theme to `default`.
+// with: a colored Alert, a dark banner, an image overlay, a chart tooltip.
+//
+// That makes it a THEME rather than a type. The other themes each pick a brand
+// ramp and let `type` decide the shape (filled, outlined, borderless, textual);
+// `current` picks the inherited color and lets `type` decide the same shapes.
+// Every type therefore has a flavour here, and the `theme` axis is what a host
+// component switches — `type` keeps meaning what it means everywhere else.
 //
 // `color: '#current'` compiles to `color: currentcolor`, which CSS resolves as
 // `color: inherit` — so the label stays fully opaque and, crucially, the
 // element's own `currentcolor` (used by `fill`/`border` below) is the INHERITED
 // color rather than a faded one. The alpha steps are then mixed off that same
 // color, which is why the whole ramp tracks the context automatically.
-//
-// There are two flavours, mirroring the two shapes the neutral types take:
-// `CURRENT_ITEM_STYLES` follows `*_ITEM_STYLES` (borderless, invisible at rest,
-// for list rows) and `CURRENT_BUTTON_STYLES` follows the standalone button types
-// (a resting chip with a border). Both keep the monotonic-contrast pattern of
-// their neutral counterparts: default < hover < pressed, and the same again one
-// level up when selected.
 //
 // IMPORTANT: every alpha step within one state-map must be a unique value
 // string — Tasty's `mergeEntriesByValue` pass coalesces equal values into one
@@ -969,83 +1008,122 @@ export const SPECIAL_ITEM_STYLES: Styles = {
 // `currentcolor`, so every other alpha is multiplied by .4 on that state.
 // Disabled `fill`/`border` are therefore written PRE-MULTIPLIED where they need
 // to stay visible.
+//
+// A note on what a single color cannot do: `primary` in every other theme is an
+// opaque brand fill under a `#white` label, and the inherited color is the only
+// thing on hand here — it can be the fill, but then nothing is left to punch the
+// label out with. `current.primary` therefore takes its label from a second
+// token, `#current-fill`, which defaults to the page and which a container can
+// redirect when the page is the wrong answer. See `CURRENT_PRIMARY_STYLES`.
 
 // The alpha ramp for the item flavour, held in custom properties rather than
 // written inline in `fill`. Two reasons:
 //
 // 1. Unlike the brand tokens, `#current` alphas do NOT adapt to the color
-//    scheme: a 4% tint of a dark label on a light surface reads far stronger
-//    than a 4% tint of a light label on a dark one, so one ramp cannot serve
-//    both. Each step therefore carries a per-surface value — the base entry for
-//    the light scheme, `@dark` for the dark scheme, and `theme=special` for the
-//    special theme's dark-purple surface. Special is *static* (identical in
-//    light, dark and HC by design — see the SPECIAL section above), so it needs
-//    a single ramp rather than a light/dark pair. `theme=special` resolves
-//    against the element's own `data-theme`, which `ItemAction` sets from the
-//    surrounding `ItemActionProvider`.
-// 2. Writing three ramps straight into one `fill` map would put ~18 alpha
+//    scheme, so one ramp cannot serve both. Each step therefore carries the base
+//    entry for the light scheme and an `@dark` counterpart.
+// 2. Writing both ramps straight into one `fill` map would put twelve alpha
 //    values in a single state-map, and Tasty's `mergeEntriesByValue` pass
 //    coalesces any two equal value strings into one OR-entry at the group's max
 //    priority, which then negates against lower-priority rules. Giving each
-//    step its own 3-entry map keeps every value string unique by construction —
+//    step its own 2-entry map keeps every value string unique by construction —
 //    the constraint that `SPECIAL_OUTLINE_STYLES` documents the hard way.
 //
-// The special steps run higher than the light ones because they resolve against
-// a `#white.8` label: an authored `.15` nets roughly the `.12` that
-// `SPECIAL_CLEAR_STYLES` uses on the same base.
+// THE DARK STEPS ARE DERIVED, NOT AUTHORED. The same alpha is not the same step
+// in both schemes, and the direction is the opposite of what it looks like: near
+// the dark end of the scale a small sRGB move is a large perceptual one, so a
+// light tint on a dark surface reads STRONGER than the same tint of a dark label
+// on a light page. Each `@dark` value is therefore solved so its OKHST *tone*
+// delta from the surface matches the light step's — which, tone being
+// contrast-shaped, also lands the chip on the light step's contrast against the
+// page to three decimals:
+//
+//   step             light   ΔT     dark   ΔT     cr(chip, page)
+//   hover            .04     2.64   .031   2.62   1.084 / 1.083
+//   press            .06     3.99   .046   3.98   1.129 / 1.129
+//   selected         .18    12.57   .13   12.37   1.467 / 1.457
+//   selected-hover   .24    17.20   .175  17.16   1.689 / 1.686
+//   selected-press   .3     22.08   .221  22.13   1.959 / 1.961
+//
+// Every dark value is the solved one rounded to the shortest alpha that keeps it
+// within 2% of the target — `selected` is `.13` rather than the exact `.132`
+// because tasty computes the mix percentage as `parseFloat(alpha) * 100`, and
+// `.132` lands on `13.200000000000001%` in the emitted CSS.
+//
+// Measured against `#surface` / `#surface-text` in each scheme, which is the only
+// tractable calibration: `current` paints from an arbitrary inherited color over
+// an arbitrary container, so a single ramp cannot be exact for all of them. The
+// neutral page pair is the common case, and matching it is what keeps the two
+// schemes recognisably the same ramp. Re-derive with Glaze's `oklabToOkhsl` +
+// `okhslToOkhst` if the neutral tokens move.
+//
+// Note that the label keeps its own margin throughout: the weakest dark step
+// still measures cr 13.3 against a near-white label and the strongest 7.3, so
+// nothing here approaches an AA floor.
+//
+// There is deliberately NO special-surface ramp. The `special` theme's fixed
+// dark-purple surface used to get its own `surface=special` steps, read from a
+// `data-surface` attribute — but only `ItemAction` and `ItemBadge` ever set it,
+// so `Button` and `Item` on the same surface silently used the light ramp, and
+// `theme` can no longer be `special` and `current` at once. A per-surface axis
+// that three of five call sites miss is worse than not having one.
 //
 // SELECTED steps jump well clear of the interaction steps rather than continuing
-// them. Every other type marks selection with a brand *hue* — an accent-tinted
+// them. Every other theme marks selection with a brand *hue* — an accent-tinted
 // fill under an accent label — and `current` has exactly one color to work with,
 // so it cannot. Alpha is the only channel left, and a step that merely continued
 // the hover/press ramp (the original `.04 → .06 → .09`) read as a slightly dirty
 // background rather than an "on" state. Selection is a persistent state, not a
 // transient one, so it earns the bigger jump; hover and press stay subtle so an
 // unselected row full of actions does not look busy.
-// Only the LIGHT ramp can spend freely. There the chip is a pale tint and the
-// label stays opaque and dark, so contrast barely moves (.30 still measures
-// 5.66:1). On a dark surface the same construction inverts: the chip is a light
-// tint climbing toward an equally light label, so it swallows it. Both dark
-// surfaces hit the AA floor (4.5:1) for their label at exactly `.24` — measured,
-// not guessed — which is the ceiling every dark step below is written under, and
-// why `selected` there is a smaller jump than in light. `SPECIAL_CLEAR_STYLES`
-// escaped the same ceiling by INVERTING selected to a white pill with dark text;
-// a single inherited color cannot do that.
+//
+// The jump is authored once, on the light ramp, and the dark one follows from the
+// tone match below rather than being tuned against a contrast ceiling of its own.
+// An earlier version of this comment claimed the dark steps were capped by the AA
+// floor for their label at `.24`; that figure belonged to the SPECIAL surface,
+// whose `#white.8` label measures 4.53 against a `.21` chip. On the plain dark
+// page the label is opaque and the same steps measure 6.9-9.8, so there is no
+// ceiling to write under — which is why removing the special ramp also removes
+// the reason the dark steps were shaped by hand.
 const CURRENT_ITEM_RAMP: Styles = {
   '$current-hover': {
     '': '#current.04',
-    '@dark': '#current.07',
-    'theme=special': '#current.08',
+    '@dark': '#current.031',
   },
   '$current-press': {
     '': '#current.06',
-    '@dark': '#current.11',
-    'theme=special': '#current.12',
+    '@dark': '#current.046',
   },
   '$current-selected': {
     '': '#current.18',
-    '@dark': '#current.16',
-    'theme=special': '#current.17',
+    '@dark': '#current.13',
   },
   '$current-selected-hover': {
     '': '#current.24',
-    '@dark': '#current.19',
-    'theme=special': '#current.21',
+    '@dark': '#current.175',
   },
   '$current-selected-press': {
     '': '#current.3',
-    '@dark': '#current.22',
-    'theme=special': '#current.24',
+    '@dark': '#current.221',
+  },
+} as const;
+
+// The focus ring is the one color NOT taken from `#current`: every theme in this
+// file uses `#primary-accent-text` (the special theme swapping in its fixed-mode
+// counterpart), so the focus indicator stays the same wherever it appears.
+const CURRENT_FOCUS_RING: Styles = {
+  outline: {
+    '': '0 #primary-accent-text.0',
+    focused: '1bw #primary-accent-text',
   },
 } as const;
 
 // Item flavour — the `current` counterpart of `*_ITEM_STYLES`: no border,
 // nothing painted at rest, the fill appearing only on interaction. Used for
-// list rows (`Item`, `ItemButton`) and, as the default type, the actions inside
-// them — where a resting chip on every row would read as noise. Like the other
-// `*_ITEM_STYLES` it leaves the focus ring to the base styles (the collection
-// that owns the row indicates focus), and only steps the fill. `ItemAction`
-// adds a ring of its own on top, since a focusable action is not a list row.
+// list rows (`Item`, `ItemButton`), where a resting chip on every row would read
+// as noise. Like the other `*_ITEM_STYLES` it leaves the focus ring to the base
+// styles (the collection that owns the row indicates focus), and only steps the
+// fill.
 export const CURRENT_ITEM_STYLES: Styles = {
   ...CURRENT_ITEM_RAMP,
   border: 'transparent',
@@ -1060,36 +1138,68 @@ export const CURRENT_ITEM_STYLES: Styles = {
   },
   color: {
     '': '#current',
-    // Only fade when this element is disabled ON ITS OWN. `#current` is the
-    // color it inherits, and a disabled host has already faded that color to
-    // `#disabled-surface-text` — so fading again multiplies the two and the label
-    // washes out (an action inside a disabled row measured `.4` of an already
-    // muted token, roughly `rgb(224,225,228)` on white, against the row's own
-    // `rgb(178,181,205)`). Inheriting the host's faded color unchanged is both
-    // correct and what the neutral types did. `ItemAction` sets
-    // `inherit-disabled` when its disabled state came from the surrounding
-    // `ItemActionProvider` rather than its own prop; nothing else sets the mod, so
-    // `Item` keeps fading itself as before.
-    'disabled & !inherit-disabled': '#current.4',
+    // Fade exactly once per subtree, and only where nothing above has faded
+    // already. `#current` is the color this element INHERITS, so a second `.4`
+    // multiplies against the first and the label washes out — an action inside a
+    // disabled row measured `.4` of an already muted token, roughly
+    // `rgb(224,225,228)` on white, against the row's own `rgb(178,181,205)`.
+    //
+    // Two mods say "someone above already did it", and both are set by exactly
+    // one caller:
+    //
+    //   `inherit-disabled`  `ItemAction`, when its disabled state came from the
+    //                       surrounding `ItemActionProvider` rather than its own
+    //                       prop — the host row already faded the color it paints
+    //                       from.
+    //   `inside-wrapper`    `ItemButton`, on the row it renders inside
+    //                       `ActionsWrapper`. The wrapper reproduces this same
+    //                       disabled color (see `ITEM_RESTING_COLOR_VARIANTS`) so
+    //                       that actions rendered as SIBLINGS of the row inherit
+    //                       a faded `currentcolor` too; the row is a descendant
+    //                       of that wrapper, so it is already faded when it
+    //                       arrives here.
+    //
+    // Neither mod is set on a standalone `Item` or on `Button`, so both keep
+    // fading themselves exactly as before. Every `current` flavour states the
+    // gate identically — a flavour that spelled it `disabled` alone would fade a
+    // second time in both of those nestings.
+    'disabled & !inherit-disabled & !inside-wrapper': '#current.4',
   },
 } as const;
 
-// Button flavour — a standalone control, so it carries its own weight: a
+// Clear flavour — the item ramp on a focusable control. `*_CLEAR_STYLES` and
+// `*_ITEM_STYLES` differ by exactly this in every other theme too: same
+// borderless shape, same interaction fill, plus the ring a standalone control
+// needs. It is the default flavour for `ItemAction` and `ItemBadge`.
+export const CURRENT_CLEAR_STYLES: Styles = {
+  ...CURRENT_ITEM_STYLES,
+  ...CURRENT_FOCUS_RING,
+  fill: {
+    ...(CURRENT_ITEM_STYLES.fill as Record<string, string>),
+    // The one entry `clear` adds to the item ramp, and the same split the
+    // colored themes make: `*_ITEM_STYLES` let a disabled row fall back to a
+    // bare `transparent`, while `*_CLEAR_STYLES` keep a chip so a disabled
+    // segmented control still shows which option is active. Without it a
+    // disabled selected `clear` rendered nothing at all — the state was
+    // indistinguishable from an unselected one.
+    //
+    // `.18` is `CURRENT_OUTLINE_STYLES`' own disabled selected chip, so the two
+    // differ by exactly the border, and it is authored high for the same reason
+    // documented there: the disabled label dims `currentcolor` to `.4`, and
+    // this alpha resolves against it, rendering as ~`.07`.
+    'selected & disabled': '#current.18',
+  },
+} as const;
+
+// Outline flavour — a standalone control, so it carries its own weight: a
 // resting `#current.03` chip inside a `#current.08` border. `.03` is enough to
 // separate the button from a flat background without reading as a filled
 // surface, while leaving room for four distinguishable steps above it.
 // Disabled `fill`/`border` are pre-multiplied (`.06`/`.12` → an effective
 // `.024`/`.048`) so the chip stays a muted version of itself instead of
 // vanishing.
-export const CURRENT_BUTTON_STYLES: Styles = {
-  // The focus ring is the one color NOT taken from `#current`: every type in
-  // this file uses `#primary-accent-text` (the special theme swapping in its
-  // fixed-mode counterpart), so the focus indicator stays the same wherever it
-  // appears.
-  outline: {
-    '': '0 #primary-accent-text.0',
-    focused: '1bw #primary-accent-text',
-  },
+export const CURRENT_OUTLINE_STYLES: Styles = {
+  ...CURRENT_FOCUS_RING,
   border: {
     '': '#current.08',
     'hovered | focused': '#current.15',
@@ -1114,12 +1224,197 @@ export const CURRENT_BUTTON_STYLES: Styles = {
   },
   color: {
     '': '#current',
-    disabled: '#current.4',
+    // See `CURRENT_ITEM_STYLES.color` for why this is gated rather than a bare
+    // `disabled`: both mods mark a color that something above already faded.
+    'disabled & !inherit-disabled & !inside-wrapper': '#current.4',
   },
 } as const;
 
+// Outline-2 flavour — `outline` for a container that is already painting
+// something. In the brand themes the difference is the opaque base (`#surface-3`
+// instead of `#surface-2`); `current` has no opaque base to swap, since every
+// step is a translucent tint over whatever is behind it. The same intent —
+// "stay legible one rung further up the surface ladder" — is therefore carried
+// by a heavier tint at every step: roughly double `outline`'s resting chip, so
+// the control still separates from a tinted or busy container.
+export const CURRENT_OUTLINE_2_STYLES: Styles = {
+  ...CURRENT_FOCUS_RING,
+  border: {
+    '': '#current.14',
+    'hovered | focused': '#current.22',
+    pressed: '#current.3',
+    selected: '#current.36',
+    'selected & pressed': '#current.45',
+    disabled: '#current.2',
+    'selected & disabled': '#current.5',
+  },
+  fill: {
+    '': '#current.06',
+    'hovered | focused': '#current.11',
+    pressed: '#current.15',
+    selected: '#current.17',
+    'selected & (hovered | focused)': '#current.21',
+    // `.24` is the measured AA ceiling for a full-strength label on a dark
+    // surface (see the ramp comment above) — the top step stops there rather
+    // than continuing the interval.
+    'selected & pressed': '#current.24',
+    disabled: '#current.1',
+    'selected & disabled': '#current.26',
+  },
+  color: {
+    '': '#current',
+    // See `CURRENT_ITEM_STYLES.color` for why this is gated rather than a bare
+    // `disabled`: both mods mark a color that something above already faded.
+    'disabled & !inherit-disabled & !inside-wrapper': '#current.4',
+  },
+} as const;
+
+// Primary flavour — the high-emphasis control, and the only `current` flavour
+// that fills opaquely: the fill is the inherited color at full opacity and the
+// label is punched out of it with `#current-fill`, exactly as every other
+// theme's `primary` paints `#white` on an opaque brand fill.
+//
+// `#current-fill` is the whole answer to the one problem this flavour has. The
+// pill IS `currentcolor`, so the label has to contrast with an arbitrary color,
+// and the page (`#surface`) only manages that while the inherited color sits
+// away from the page. A container whose own text color IS the page breaks it: a
+// dark banner paints `#white`, so the pill is white and a `#surface` label is
+// white too in light mode — cr 1.00, the button reads as a blank chip. Such a
+// container has the answer to hand — its own fill contrasts with its own text by
+// construction, and the pill is that text — so it sets `#current-fill` and the
+// label, the rim and the icon slots all follow. The token defaults to `#surface`
+// (see `CONTEXT_TOKENS` in `src/tokens/colors.ts`), which is what this flavour
+// always used, so nothing outside such a container moves.
+//
+// The states are the second fill layer. There is no lighter or darker sibling
+// of an arbitrary inherited color to step to — the brand ramps walk
+// `accent-surface` → `-2` → `-3` — so hover and pressed lay a translucent
+// `#black` over the same base instead, which darkens in both schemes and so
+// keeps the same monotonic direction the brand primaries have.
+//
+// The label CANNOT go through `color`. `#current` compiles to the literal
+// `currentcolor`, which in `fill` resolves against the element's OWN `color`,
+// so setting `color: '#current-fill'` would make the fill resolve to the
+// label color and paint a white pill with a white label. Tasty's `--current-color`
+// is no escape either: the `color` handler rewrites it on the same element.
+// `-webkit-text-fill-color` paints the glyphs without touching `color`, so
+// `currentcolor` keeps meaning the INHERITED color for `fill` and `border`.
+// Icons are SVG painted with `fill="currentColor"`, which that property does not
+// reach, so they take the label color through the `Icon` sub-element.
+export const CURRENT_PRIMARY_STYLES: Styles = {
+  ...CURRENT_FOCUS_RING,
+  // Every other `primary` rims its fill with a lighter sibling
+  // (`accent-surface-border` over `accent-surface`, cr 1.48 against it in both
+  // schemes). An arbitrary inherited color has no such sibling, so the rim comes
+  // from the same token the label does — the one color guaranteed to sit on the
+  // opposite side of the fill in either scheme, and the one a container can
+  // redirect, so the rim cannot come apart from the label it edges. `.25`
+  // measures cr 1.82 in light and 1.55 in dark against the fill: the brand rim's
+  // presence, a shade more so in light, where `current` has no other edge cue.
+  //
+  // Disabled swaps to the neutral text color, and has to. The chip there is a
+  // `.4` tint sitting close to the page, so a `#surface` rim washes into the
+  // page rather than defining the chip; `#surface-text` goes the other way and
+  // holds cr ~1.5 against the chip AND 2.8–3.7 against the page. It is also
+  // immune to the `.4` fade below, which `#current` is not — a `#current` rim on
+  // a disabled chip resolves to the fill's own color and disappears.
+  border: {
+    '': '#current-fill.25',
+    disabled: '#surface-text.2',
+  },
+  // The resting entry carries a transparent second layer so every state has the
+  // same two-layer shape and the overlay interpolates instead of snapping in —
+  // the same pin `DEFAULT_PRIMARY_STYLES.fill` documents. Without it the resting
+  // rule emits no `background-image` at all, so hover has nothing to animate
+  // from.
+  fill: {
+    '': '#current #black.0',
+    'hovered | focused': '#current #black.08',
+    pressed: '#current #black.16',
+  },
+  // Disabled is expressed HERE and nowhere else, and that is the whole trick.
+  // `fill` resolves `currentcolor` against this element's own `color`, so fading
+  // it once fades the chip with it: the default entry still reads `#current`,
+  // which under `disabled` is already the `.4` color, and the chip lands at
+  // exactly `.4`. Writing `.4` in both would apply the fade twice and land it at
+  // `.16` — the pre-multiply trap the other `current` ramps document at length.
+  //
+  // It has to fade rather than stay put, because descendants read it too: an
+  // action inside a disabled row suppresses its OWN fade on the grounds that
+  // the host already muted the color it paints from (see
+  // `CURRENT_ITEM_STYLES.color`), so a host that stayed at full strength would
+  // hand it a live color next to a dead chip.
+  color: {
+    '': '#current',
+    // See `CURRENT_ITEM_STYLES.color` for why this is gated rather than a bare
+    // `disabled`: both mods mark a color that something above already faded.
+    'disabled & !inherit-disabled & !inside-wrapper': '#current.4',
+  },
+  // The label. Faded on a bare `disabled`, unlike the `#current`-derived values
+  // around it: the gate those carry protects an INHERITED value, since `#current`
+  // is already muted by a disabled host and fading it again would multiply.
+  // `#current-fill` is not inherited from that faded color — a container offers
+  // the live value only — so this has to do the fading itself.
+  '-webkit-text-fill-color': {
+    '': '#current-fill',
+    disabled: '#current-fill.5',
+  },
+  // Every slot that paints from `currentColor` rather than from the glyph fill.
+  // `-webkit-text-fill-color` inherits into the text slots for free, but two
+  // kinds of descendant escape it and would otherwise keep `color` — which on
+  // this flavour is the FILL — and vanish into the chip they match:
+  //
+  //   the icon slots, whose SVG is stroked with `currentColor`;
+  //   `Actions`, because a nested `Item.Action` defaults to `theme="current"`
+  //   and mixes its own label from the `currentcolor` it inherits.
+  //
+  // This is the one variant where `color` is not the label, so it is the one
+  // variant that has to hand the label down by hand.
+  ...Object.fromEntries(
+    ['Icon', 'RightIcon', 'Prefix', 'Suffix', 'Actions'].map((slot) => [
+      slot,
+      {
+        // Icons are SVG stroked with `currentColor`, which
+        // `-webkit-text-fill-color` never reaches, so each slot repeats the
+        // label color — container override included.
+        color: {
+          '': '#current-fill',
+          disabled: '#current-fill.5',
+        },
+      },
+    ]),
+  ),
+} as const;
+
+// Link flavour — no chip at all, only the label. The brand themes intensify from
+// `accent-text-soft` at rest to `accent-text` on hover; with one color to work
+// with, "soft" is that color at `.8` and "strong" is it at full opacity.
+export const CURRENT_LINK_STYLES: Styles = {
+  ...CURRENT_FOCUS_RING,
+  border: 0,
+  fill: {
+    '': 'transparent',
+  },
+  color: {
+    '': '#current.8',
+    'hovered & !pressed': '#current',
+    // See `CURRENT_ITEM_STYLES.color`.
+    'disabled & !inherit-disabled & !inside-wrapper': '#current.4',
+  },
+} as const;
+
+// Card flavour — the `current` counterpart of `*_CARD_STYLES`: a static,
+// non-interactive panel. The label stays at full opacity so the tint and border
+// resolve against the inherited color rather than a faded one.
+export const CURRENT_CARD_STYLES: Styles = {
+  border: '#current.2',
+  fill: '#current.05',
+  color: '#current',
+} as const;
+
 // ---------- CARD TYPE STYLES ----------
-// Card type only supports: default, success, danger, note themes
+// Card type only supports: default, success, danger, note themes (plus the
+// `current` theme — see `CURRENT_CARD_STYLES` above)
 
 export const DEFAULT_CARD_STYLES: Styles = {
   border: '#surface-text.20',
@@ -1152,9 +1447,15 @@ export const NOTE_CARD_STYLES: Styles = {
 } as const;
 
 export type ItemVariant =
-  // The `current` type derives every color from the inherited `currentcolor`,
-  // so it has no per-theme flavours — see `CURRENT_ITEM_STYLES`.
-  | 'default.current'
+  // Inherited-color theme — every flavour mixes its colors from `currentcolor`
+  // instead of a brand ramp. See the CURRENT THEME section.
+  | 'current.item'
+  | 'current.primary'
+  | 'current.outline'
+  | 'current.outline-2'
+  | 'current.clear'
+  | 'current.link'
+  | 'current.card'
   | 'default.primary'
   | 'default.outline'
   | 'default.outline-2'
@@ -1200,8 +1501,14 @@ export type ItemVariant =
 // below cannot drift apart: `ITEM_RESTING_COLOR_VARIANTS` is derived from this
 // object rather than restating the palette.
 export const ITEM_VARIANTS: Record<ItemVariant, Styles> = {
-  // Inherited-color type — theme-agnostic, see `CURRENT_ITEM_STYLES`
-  'default.current': CURRENT_ITEM_STYLES,
+  // Current theme — colors mixed from the inherited `currentcolor`
+  'current.item': CURRENT_ITEM_STYLES,
+  'current.primary': CURRENT_PRIMARY_STYLES,
+  'current.outline': CURRENT_OUTLINE_STYLES,
+  'current.outline-2': CURRENT_OUTLINE_2_STYLES,
+  'current.clear': CURRENT_CLEAR_STYLES,
+  'current.link': CURRENT_LINK_STYLES,
+  'current.card': CURRENT_CARD_STYLES,
   // Default theme
   'default.primary': DEFAULT_PRIMARY_STYLES,
   'default.outline': DEFAULT_OUTLINE_STYLES,
@@ -1251,7 +1558,7 @@ export const ITEM_VARIANTS: Record<ItemVariant, Styles> = {
 };
 
 // Resolve a `theme` + `type` pair to the variant key that actually exists in
-// `ITEM_VARIANTS`. Three of the combinations users can write have no entry of
+// `ITEM_VARIANTS`. Two of the combinations users can write have no entry of
 // their own and are folded onto one that does.
 //
 // Shared rather than inlined because more than one component has to arrive at
@@ -1271,20 +1578,16 @@ export function resolveItemVariant(
   const effectiveType =
     theme === 'special' && type === 'outline-2' ? 'outline' : type;
 
-  // `header` reuses the `item` visuals, and both `header` and `current` are
-  // theme-agnostic — `current` paints from the inherited `currentcolor`.
+  // `header` reuses the `item` visuals and is theme-agnostic.
   const variantType = effectiveType === 'header' ? 'item' : effectiveType;
-  const variantTheme =
-    effectiveType === 'header' || effectiveType === 'current'
-      ? 'default'
-      : theme;
+  const variantTheme = effectiveType === 'header' ? 'default' : theme;
 
   return `${variantTheme}.${variantType}` as ItemVariant;
 }
 
 // Each variant reduced to the label colors an actions wrapper has to reproduce.
 //
-// The `current` type paints from `currentcolor`, which only reaches an action
+// The `current` theme paints from `currentcolor`, which only reaches an action
 // that is a DOM *descendant* of the row. `Item` renders its actions inside the
 // row element, so they inherit the row color for free — but `ItemButton` renders
 // them as a sibling of the button (deliberately, so the actions stay reachable
@@ -1302,6 +1605,15 @@ export function resolveItemVariant(
 // so it never carries `hovered` / `pressed` / `selected` and those entries could
 // never match there. `disabled` is different only because `ItemButton` passes it
 // down explicitly.
+const ACTIONS_COLOR_OVERRIDES: Partial<
+  Record<ItemVariant, Record<string, string>>
+> = {
+  'current.primary': {
+    '': '#current-fill',
+    disabled: '#current-fill.5',
+  },
+};
+
 export const ITEM_RESTING_COLOR_VARIANTS: Record<ItemVariant, Styles> =
   Object.fromEntries(
     Object.entries(ITEM_VARIANTS).map(([variant, styles]) => {
@@ -1311,12 +1623,26 @@ export const ITEM_RESTING_COLOR_VARIANTS: Record<ItemVariant, Styles> =
         return [variant, { color }];
       }
 
-      const map = color as Record<string, string>;
-      // Only a plain `disabled` key is usable. `default.current` states it as
-      // `disabled & !inherit-disabled`, which is deliberately not matched here:
-      // that variant paints from `currentcolor` and has no fixed color to hand
-      // down, so the wrapper leaves its resting value in place.
-      const disabled = map.disabled;
+      // `current.primary` is the one variant whose `color` is not its label. It
+      // keeps `color` as the inherited fill so `#current` resolves in `fill`,
+      // and paints the label with `-webkit-text-fill-color`. Reproducing its
+      // `color` on the wrapper would hand sibling actions the CHIP color and
+      // they would vanish into it, so the override names the label instead —
+      // the same value the `Actions` slot gets inside a plain `Item`.
+      const map = (ACTIONS_COLOR_OVERRIDES[variant as ItemVariant] ??
+        color) as Record<string, string>;
+      // The `current` flavours state their fade as
+      // `disabled & !inherit-disabled & !inside-wrapper` rather than a bare
+      // `disabled`, and the wrapper wants exactly that value under a plain
+      // `disabled`. It is entitled to it: the two negated mods mark "something
+      // above already faded this", and the wrapper is the top of the subtree —
+      // `ItemButton` gives it only `disabled`, never either mod. Reading just
+      // `map.disabled` left those variants with no disabled color to hand down,
+      // which is the failure the comment above describes: the row faded itself
+      // and its sibling actions, which suppress their own fade under
+      // `inherit-disabled`, stayed at full strength beside it.
+      const disabled =
+        map.disabled ?? map['disabled & !inherit-disabled & !inside-wrapper'];
 
       return [
         variant,
