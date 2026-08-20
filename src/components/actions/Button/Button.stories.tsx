@@ -538,25 +538,39 @@ DisabledWithTooltip.parameters = {
 
 // Contexts the `current` theme is meant to live in: each one paints its own text
 // color, and the button is expected to adopt it whatever its type.
+// `accent` is the container's `--current-accent` offer: the color a `current`
+// control should WRITE with when the inherited one will not do. Only the two
+// containers that invert the surface need it, and for the same reason — they
+// paint `#white`, so `currentcolor` collides with `#surface` in light mode and
+// both filled types lose their label. Each offers its own fill, which contrasts
+// with its own text by construction. The tinted containers leave it unset and
+// fall back exactly as before.
 const CURRENT_CONTEXTS = [
   { label: 'Page surface (inherited)', fill: undefined, color: undefined },
   { label: 'Danger', fill: '#danger-surface', color: '#danger-accent-text' },
   { label: 'Success', fill: '#success-surface', color: '#success-accent-text' },
   { label: 'Note', fill: '#note-surface', color: '#note-accent-text' },
   { label: 'Warning', fill: '#warning-surface', color: '#warning-accent-text' },
-  { label: 'Dark banner', fill: '#fixed-dark', color: '#white' },
-  { label: 'Brand', fill: '#primary', color: '#white' },
+  {
+    label: 'Dark banner',
+    fill: '#fixed-dark',
+    color: '#white',
+    accent: '#fixed-dark',
+  },
+  { label: 'Brand', fill: '#primary', color: '#white', accent: '#primary' },
 ] as const;
 
 const CurrentContext = ({
   label,
   fill,
   color,
+  accent,
   children,
 }: {
   label: string;
   fill?: string;
   color?: string;
+  accent?: string;
   children: ReactNode;
 }) => (
   <Space
@@ -566,6 +580,7 @@ const CurrentContext = ({
     border={fill ? undefined : true}
     fill={fill}
     color={color}
+    styles={accent ? { '$current-accent': accent } : undefined}
   >
     <Title level={6} color={color}>
       {label}
@@ -577,8 +592,14 @@ const CurrentContext = ({
 export const CurrentTheme: StoryFn<CubeButtonProps> = () => (
   <Space flow="column" gap="3x">
     <Title level={5}>Inherited Colors</Title>
-    {CURRENT_CONTEXTS.map(({ label, fill, color }) => (
-      <CurrentContext key={label} color={color} fill={fill} label={label}>
+    {CURRENT_CONTEXTS.map(({ label, fill, color, ...rest }) => (
+      <CurrentContext
+        key={label}
+        accent={'accent' in rest ? rest.accent : undefined}
+        color={color}
+        fill={fill}
+        label={label}
+      >
         <Space>
           <Button theme="current" icon={<IconCoin />}>
             Default
@@ -604,9 +625,20 @@ export const CurrentTheme: StoryFn<CubeButtonProps> = () => (
     </Title>
     {[
       { label: 'Note', fill: '#note-surface', color: '#note-accent-text' },
-      { label: 'Dark banner', fill: '#fixed-dark', color: '#white' },
-    ].map(({ label, fill, color }) => (
-      <CurrentContext key={label} color={color} fill={fill} label={label}>
+      {
+        label: 'Dark banner',
+        fill: '#fixed-dark',
+        color: '#white',
+        accent: '#fixed-dark',
+      },
+    ].map(({ label, fill, color, ...rest }) => (
+      <CurrentContext
+        key={label}
+        accent={'accent' in rest ? rest.accent : undefined}
+        color={color}
+        fill={fill}
+        label={label}
+      >
         <Space placeItems="center">
           {BUTTON_TYPES.map((type) => (
             <Button key={type} theme="current" type={type}>

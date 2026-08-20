@@ -1312,9 +1312,23 @@ export const CURRENT_PRIMARY_STYLES: Styles = {
     // `disabled`: both mods mark a color that something above already faded.
     'disabled & !inherit-disabled & !inside-wrapper': '#current.4',
   },
+  // The label, and the same `--current-accent` hook `CURRENT_INVERT_STYLES`
+  // reads — the property means "the color to write with when the inherited one
+  // will not do", and this is the other flavour that cannot always write with
+  // it. Here the pill IS `currentcolor`, so the label has to contrast with an
+  // arbitrary color, and `#surface` only manages that while the inherited color
+  // sits away from the page. A container that INVERTS the surface breaks it: a
+  // dark banner paints `#white`, so the pill is white and a `#surface` label is
+  // white too in light mode — cr 1.00, the button reads as a blank chip.
+  //
+  // Such a container has the answer to hand: its own fill contrasts with its own
+  // text by construction, and the pill is that text. Offering `--current-accent`
+  // is therefore the fix, and unset the fallback is the `#surface` this always
+  // used, so nothing else moves.
   '-webkit-text-fill-color': {
-    '': '#surface',
-    disabled: '#surface.5',
+    '': 'var(--current-accent, var(--surface-color))',
+    disabled:
+      'color-mix(in oklab, var(--current-accent, var(--surface-color)) 50%, transparent)',
   },
   // Every icon-bearing slot, not just the leading one. `-webkit-text-fill-color`
   // paints glyphs and inherits into the text slots for free, but icons are SVG
@@ -1324,9 +1338,13 @@ export const CURRENT_PRIMARY_STYLES: Styles = {
     ['Icon', 'RightIcon', 'Prefix', 'Suffix'].map((slot) => [
       slot,
       {
+        // Icons are SVG stroked with `currentColor`, which
+        // `-webkit-text-fill-color` never reaches, so each slot repeats the
+        // label color — accent hook included.
         color: {
-          '': '#surface',
-          disabled: '#surface.5',
+          '': 'var(--current-accent, var(--surface-color))',
+          disabled:
+            'color-mix(in oklab, var(--current-accent, var(--surface-color)) 50%, transparent)',
         },
       },
     ]),

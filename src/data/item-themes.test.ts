@@ -175,22 +175,34 @@ describe('current theme disabled fades', () => {
     },
   );
 
-  // `invert` is the only flavour a container can redirect, and it must degrade
-  // to the inherited color everywhere else — the fallback is what keeps every
-  // non-Banner usage rendering exactly as it did before the hook existed.
-  it('reads --current-accent on invert only, always with a currentcolor fallback', () => {
+  // The two FILLED flavours are the ones a container can redirect, and only
+  // those: they are the pair whose label has to contrast with something other
+  // than the container itself — `invert` writes on a `#surface` pill, `primary`
+  // on a `currentcolor` one. The rest paint their chip ON the container, so the
+  // inherited color is already right and an accent would only lower contrast.
+  it('reads --current-accent on the filled flavours only', () => {
     const readers = CURRENT_VARIANTS.filter((variant) =>
       JSON.stringify(ITEM_VARIANTS[variant]).includes('--current-accent'),
-    );
+    ).sort();
 
-    expect(readers).toEqual(['current.invert']);
+    expect(readers).toEqual(['current.invert', 'current.primary']);
+  });
 
-    const color = ITEM_VARIANTS['current.invert'].color as Record<
-      string,
-      string
-    >;
-    for (const value of Object.values(color)) {
-      expect(value).toContain('var(--current-accent, currentcolor)');
-    }
+  // Every read carries a fallback, which is what keeps a container that offers
+  // nothing rendering exactly as it did before the hook existed. They differ
+  // because the two flavours defaulted differently: `invert` labelled with the
+  // inherited color, `primary` with `#surface`.
+  it.each([
+    ['current.invert', 'var(--current-accent, currentcolor)'],
+    ['current.primary', 'var(--current-accent, var(--surface-color))'],
+  ] as const)('%s always falls back to %s', (variant, fallback) => {
+    const json = JSON.stringify(ITEM_VARIANTS[variant]);
+    const occurrences = (needle: string) => json.split(needle).length - 1;
+
+    // Every mention of the property spells out the same fallback — so there is
+    // no bare `var(--current-accent)` anywhere, which would resolve to nothing
+    // and drop the label entirely wherever no container offers one.
+    expect(occurrences('var(--current-accent')).toBeGreaterThan(0);
+    expect(occurrences(fallback)).toBe(occurrences('var(--current-accent'));
   });
 });
