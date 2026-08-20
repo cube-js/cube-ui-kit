@@ -1,5 +1,382 @@
 # @cube-dev/ui-kit
 
+## 0.164.0
+
+### Minor Changes
+
+- [#1314](https://github.com/cube-js/cube-ui-kit/pull/1314) [`781973c9`](https://github.com/cube-js/cube-ui-kit/commit/781973c99eaf5c4598d77bfccefbc4f7db52674c) Thanks [@tenphi](https://github.com/tenphi)! - A `baseColor` now contributes its **saturation** as well as its hue, and `baseSaturation` follows the accent's chroma however that chroma was expressed.
+
+  `baseColor` previously contributed hue only, which left a hole: picking a base color set which way the greys leaned but not how far, so the chrome's chroma still came from the accent seed and had nothing to do with the color chosen. Its **tone** is still discarded — the chrome's own lightness ladder is the design.
+
+  ```ts
+  setPaletteConfig({ baseColor: "#6e7076" }); // near-grey in, near-grey chrome out
+  setPaletteConfig({ baseColor: "#FFD400" }); // saturation 100 in, clipped to 50
+  ```
+
+  The derived saturation is **clipped to `MAX_BASE_SATURATION`** (`50`, newly exported). Naming a base color says "the chrome _is_ this color", so it lands near it rather than at the 12% share `baseSaturation` otherwise inherits — but a fully saturated chrome stops being chrome, and the base colors converge above `25` anyway, so the clip costs nothing that was still moving.
+
+  `baseSaturation`'s default also changes shape. Unset, it takes `0.12` of whatever the **accent zone** carries — the `saturation` seed, or an `accentColor`'s own chroma when one is set:
+
+  ```
+  input.baseSaturation
+    ?? (baseColor  ? min(baseColor.saturation, 50)
+                   : (accentColor?.saturation ?? saturation) * 0.12)
+  ```
+
+  Reading the accent color there is the one place a brand color reaches the base zone, and it has to: without it, a near-grey brand left the chrome carrying 12% of a saturation nobody asked for. Nothing here touches the palette-level `saturation`, so the status themes still inherit exactly what they did and the guarantee that a brand color cannot re-chromatise them is intact.
+
+  The shipped palette is unchanged: with no color seed the expression is `saturation × 0.12` as before, and the snapshot is byte-identical.
+
+- [#1333](https://github.com/cube-js/cube-ui-kit/pull/1333) [`cd07258c`](https://github.com/cube-js/cube-ui-kit/commit/cd07258cf9be82dc5139ff8664c69416a733540d) Thanks [@tenphi](https://github.com/tenphi)! - `Board`: scoped drag grid lines, a corner resize-grip placement, and collision modes for the free grid.
+
+  - **`showGridLines="drag"` now scopes the grid to the board taking part in the gesture** — the board owning the drag (its source, or whichever board the widget is currently over) or resizing one of its own widgets. Previously any drag lit up every board sharing a `Board.Provider`, including boards the widget could not land in. The old behaviour is still available, now opt-in, as `showGridLines="any-drag"`, which advertises every board as somewhere to land.
+  - **`resizeGripPlacement`** (`'inside' | 'corner'`, default `'inside'`) on `Board` and `Board.Widget` positions the corner resize grips. `'corner'` centres each grip on the widget's corner — drawn outside the widget box, which clips its own content — so it lines up with a control centred on the opposite corner. The grip's hit-zone moves out with it, so the half that overhangs is grabbable and hovering it keeps the grip revealed. Edge grips are unaffected.
+  - **`collisionMode`** (`'revert' | 'downscale' | 'swap'`, default `'revert'`) on `Board` resolves a drop the grid would otherwise refuse, where a collision blocks a move (`compact="free"`, or `preventCollision`). `'downscale'` shrinks the widget into the free space at the drop cell; `'swap'` trades places with one widget — the one the drop covers most, which takes the cell the drag began at — each keeping as much of its own size as fits, and falls back to `'downscale'` then `'revert'`. It never displaces more than that one widget, a drop straddling two widgets trades with one rather than refusing, and dragging back retraces the original arrangement. No mode ever grows a widget, and arrow keys honour the mode without ever resizing anything.
+
+- [#1314](https://github.com/cube-js/cube-ui-kit/pull/1314) [`781973c9`](https://github.com/cube-js/cube-ui-kit/commit/781973c99eaf5c4598d77bfccefbc4f7db52674c) Thanks [@tenphi](https://github.com/tenphi)! - `ColorSwatch` is a component of its own, with sizes and automatic fitting.
+
+  It was already exported — as an implementation detail of the color fields, with no size of its own and no docs. It now lives in `src/components/fields/ColorSwatch/`, ships stories and documentation, and takes a `size`:
+
+  ```jsx
+  <ColorSwatch color="#7a4dbf" />              // tracks the control around it
+  <ColorSwatch color="#7a4dbf" size="large" /> // 28px
+  ```
+
+  - **`size`** — `small` / `medium` / `large` = `20px` / `24px` / `28px`.
+  - **Left unset, the swatch sizes itself to its host.** `Item`, `Button` and the text inputs publish their height as the `$size` custom property, so a swatch in an `icon`, `rightIcon`, `prefix` or `suffix` slot lands `8px` inside it — `20px` in a `small` control, `24px` in a `medium` one, `32px` in a `large` one — with nothing passed between the two. Outside a control it falls back to `medium`.
+
+  Nothing the kit renders changes size. `ColorInput` and `ColorPicker` keep the fixed `20px` swatch they have always drawn, at every field size: it reads as a value the field is showing rather than as part of the control, and a text input hangs its prefix off the border with no padding of its own, so a tracking swatch in a large field would sit against the edge. Automatic fitting is for a swatch you place yourself, where the host has the padding that makes it work.
+
+  The import path `@cube-dev/ui-kit` is unchanged.
+
+- [#1335](https://github.com/cube-js/cube-ui-kit/pull/1335) [`f777bbb3`](https://github.com/cube-js/cube-ui-kit/commit/f777bbb3c809484932b8cd6c2b9c15857e7ba7a8) Thanks [@solarrust](https://github.com/solarrust)! - `PrismCode` and `CopySnippet` take an `isWrapped` prop that soft-wraps long content instead of scrolling it sideways.
+
+  By default both components keep each line on one line and scroll horizontally, which buries long error messages and logs off to the right. `isWrapped` lays the content out on multiple lines instead: unbreakable runs like URLs, tokens and identifiers break too (`overflow-wrap: anywhere`), not just spaces. On `CopySnippet` the block additionally grows vertically to fit — so even a single very long line is fully readable rather than clamped to the collapsed height — and the prop is forwarded to the inner `PrismCode`, which owns the wrapping itself.
+
+  ```jsx
+  <PrismCode code={longErrorMessage} language="bash" isWrapped />
+  <CopySnippet code={longErrorMessage} language="bash" isWrapped />
+  ```
+
+  On `CopySnippet` it is a different axis from `nowrap` — `nowrap` collapses real newlines into one scrolling line, `isWrapped` breaks long lines — and `nowrap` wins when both are set. The copy button and syntax highlighting are unchanged.
+
+- [#1332](https://github.com/cube-js/cube-ui-kit/pull/1332) [`ac2ec331`](https://github.com/cube-js/cube-ui-kit/commit/ac2ec331a5d5b5d6b7af4849b0870b41f6637324) Thanks [@tenphi](https://github.com/tenphi)! - `current` moves from the `type` axis to the `theme` axis on `Button`, `Item` (and `ItemButton`), `Item.Action` and `ItemBadge`. It was never a shape: it names where the colors come from — the inherited `currentcolor` rather than a brand ramp — which is the question `theme` answers. As a type it occupied the slot that decides emphasis, so picking `current` meant giving up the choice between a filled button, an outlined one and a bare label.
+
+  On the `theme` axis it composes instead, and every type now has a `current` flavour:
+
+  - `item` — the old `Item` shape: no border, nothing painted at rest, the fill stepping in on hover, pressed and selected.
+  - `clear` — the same ramp plus the focus ring a standalone control needs. The default for `Item.Action` and `ItemBadge`.
+  - `outline` — the old `Button` shape: a resting `#current.03` chip inside a `#current.08` border.
+  - `outline-2` — `outline` for a container that is already painting something. The brand themes swap an opaque base (`#surface-3` for `#surface-2`); `current` has no opaque base to swap, so the same intent is carried by roughly doubling the tint at every step.
+  - `primary` — the high-emphasis control, and the one flavour that fills opaquely, like every other theme's `primary`: the fill is the inherited color at full opacity and the label is punched out of it with the new `#current-fill` token, which defaults to `#surface` — the page background, which is always the opposite of the text painted on it and so follows the scheme for free. Hover and pressed lay a translucent `#black` over the same base, since an arbitrary color has no lighter or darker sibling to step to the way the brand ramps walk `accent-surface` to `-2` and `-3`. The rim comes from the same token at `.25` — every other `primary` rims its fill with `accent-surface-border`, cr 1.48 against it, and this measures 1.82 in light and 1.55 in dark. Disabled swaps the rim to `#surface-text.2`, which holds against a `.4` chip that a `#surface` rim would wash into. The label is painted with `-webkit-text-fill-color` rather than `color`: `#current` compiles to the literal `currentcolor`, which in `fill` resolves against the element's own `color`, so setting `color` to the label token would make the fill resolve to the label color and paint a white pill with a white label.
+
+    `#current-fill` is a real color token with a default, not a bare custom property, so it takes the alpha suffix (`#current-fill.5` is the disabled label) and a container overrides it with one declaration — `styles={{ '#current-fill': '#fixed-dark' }}` — moving the label, the icon slots and the rim together. It exists for the one container the `#surface` default is wrong for: a container whose own text color IS the page paints `#white`, which IS `#surface` in light mode, so an unaided label measures cr 1.00 against its own chip. Its own fill is the right value there, since it contrasts with its own text by construction. Ordinary containers set nothing.
+
+  - `link` — no chip at all. The brand themes intensify from `accent-text-soft` to `accent-text` on hover; here "soft" is the inherited color at `.8` and "strong" is it at full opacity.
+  - `card` — the static panel: a `#current.05` fill inside a `#current.2` border (`Item` only).
+
+  `current.outline` and `current.item` are byte-identical to the old `Button` and `Item` flavours, so nothing that used `type="current"` changes appearance.
+
+  The top step of each ramp stops at `#current.24` in light. The dark counterpart is not authored: each `@dark` step is solved so its OKHST tone delta from the surface matches the light step's, which lands the two schemes on the same chip-vs-page contrast (1.084 / 1.083 at hover, 1.959 / 1.961 at the top step). That works out _lower_ than the light alpha throughout — `.031 / .046 / .13 / .175 / .221` against `.04 / .06 / .18 / .24 / .3` — because near the dark end of the scale a small sRGB move is a large perceptual one, so the same tint reads stronger on a dark surface than on a light page.
+
+  ### Migration
+
+  **`type="current"` is removed with no runtime fallback.** It resolves to no variant and falls back to base styles, the same as any other unknown type — there is no mapping and no deprecation warning. The spelling shipped one release ago and has no consumers outside the kit, so this is a clean break rather than a deprecation:
+
+  | Old                            | New                                                     |
+  | ------------------------------ | ------------------------------------------------------- |
+  | `<Button type="current">`      | `<Button theme="current">` (type defaults to `outline`) |
+  | `<Item type="current">`        | `<Item theme="current">` (type defaults to `item`)      |
+  | `<Item.Action type="current">` | drop it — `current` is already the default theme        |
+  | `<ItemBadge type="current">`   | drop it — `current` is already the default theme        |
+
+  `Item` accepts `theme="current"` with every type except `header`, which stays theme-agnostic; the warning that fired for `type="current"` with any theme but `default` is gone, since there is no longer such a pair to reject.
+
+  ### `Item.Action` / `ItemBadge` defaults
+
+  `type` now defaults to `clear` and `theme` to `current`, and neither is read from `ItemActionContext` any more — the two axes are independent, so a shape no longer implies a color source and vice versa. Both defaults are plain values the lint registry can prove, which the previous `theme` entry (`skip: 'context'`) was not.
+
+  This changes one case: an action that named a `type` but no `theme` used to inherit the host row's theme, and now takes the host's color through `currentcolor` instead. Inside a themed row the two are close by construction — a `danger` row paints `#danger-accent-text`, which is what the action then mixes from — but the chip is an alpha tint rather than the brand ramp. Pass `theme="default"` (or any other theme) to opt back into a fixed palette.
+
+  `Banner` is the one in-repo consumer that needed a matching edit. Its actions ask for `type="outline"` and then cleared the border, because back then `outline` meant `note.outline` and friends — whose border is the opaque `#note-border`, a pale line built for a `#surface-2` chip on a light page and plainly wrong on a saturated banner. The fill carried the chip on its own there. On the `current` theme the border is `#current.08` mixed from the banner's own white label, and the fill is a 3% tint that cannot carry a chip by itself, so clearing the border left the action invisible. The override is gone and the type renders as designed.
+
+  `ItemActionContext` no longer reaches the DOM at all beyond `isDisabled`. An interim version of this branch published the host theme as a `data-surface` attribute so the `current` ramp could pick per-surface alphas for the `special` theme's fixed dark-purple surface; that is gone, because only `ItemAction` and `ItemBadge` ever set the attribute, so `Button` and `Item` on the same surface silently fell back to the light ramp.
+
+  ### Two nesting fixes
+
+  Both fall out of `current.primary` keeping `color` as the fill rather than the label:
+
+  - The `Actions` slot is recolored to the label, like the icon slots already were — a nested `Item.Action` defaults to `theme="current"` and mixes its own label from the `currentcolor` it inherits, so without this it took the chip color and vanished into it.
+  - `ItemButton`'s `ActionsWrapper` reproduces the label rather than the chip, for the same reason on the sibling path.
+
+  ### Also
+
+  - `current` is registered in `TastyThemeNames`, so `theme="current"` autocompletes on every tasty component.
+  - New `CurrentStates` stories on `Button` and `Item` sweep every type and state on the theme, inside containers that paint their own text color; the context sweeps are renamed `CurrentTheme`.
+
+- [#1334](https://github.com/cube-js/cube-ui-kit/pull/1334) [`ffd1c7b5`](https://github.com/cube-js/cube-ui-kit/commit/ffd1c7b56ab4f2be9557841f7884c68ace3646ea) Thanks [@tenphi](https://github.com/tenphi)! - `LoadingAnimation` is retuned to sit next to the current monochrome `CubeLogo`, and the empty-crate illustration Cube Cloud has been carrying locally ships as `NoDataIcon`, drawn from the same three tokens.
+
+  **The faces are near-neutral now.** `loading-face-1..3` used to take a fraction of the _brand_ seed saturation (0.3 / 0.62 / 0.66), which put the shadowed face at chroma **0.0676** — eight times `border` — so a spinner rendered as a purple gradient beside a logo drawn in `currentColor`. They now take `baseChroma(0.2)`, the same normalised share the neutral chrome takes (`border`, `placeholder`, the text ramp), landing at **0.0059 / 0.0161 / 0.0248**. The brand hue still carries, as a tint rather than as a color, and still follows a re-seeded palette.
+
+  **Contrast, not tone, is the spec.** A relative tone delta is uniform on the OKHST scale, but the dark scheme resolves it inside the `darkTone` window, which compressed the ramp to ~75% of its light span. Measured against `surface`:
+
+  |               | face-1 | face-2 | face-3    |
+  | ------------- | ------ | ------ | --------- |
+  | light, before | 1.063  | 1.320  | 1.915     |
+  | dark, before  | 1.053  | 1.264  | **1.735** |
+  | light, after  | 1.201  | 1.653  | 2.409     |
+  | dark, after   | 1.212  | 1.666  | **2.424** |
+
+  Glaze has no per-color `darkTone`, so the intent moves into a WCAG floor against `surface` and each scheme solves for it. The authored `tone: '-2'` is deliberately short of every floor, so all three faces are pinned by the ratio rather than by a delta that means something different in each scheme — light and dark now agree to within 1%, and the whole ramp is roughly a third stronger than it was (Oklab ΔL 0.271 in light, 0.231 in dark, against 0.204 / 0.154).
+
+  WCAG rather than APCA, against the grain of the accent tokens: APCA's low-contrast clamp scores every step of a ramp this subtle as Lc 0, so it cannot express the difference between these three faces at all. Polarity-blindness — the reason APCA wins for text — costs nothing for a decorative fill whose only job is to separate from the page.
+
+  High contrast used to be _identical_ to the normal tier here, because an unconstrained tone delta had nothing to escalate. The `[1.35, 2.1, 3.2]` HC entries roughly double each step's distance from the page.
+
+  **`NoDataIcon`** is the isometric open crate used for empty tables and empty lists, moved out of `cubejs-enterprise` and onto the shared tokens — the local copy hard-coded `#e5e5ec` / `#b4b4c5` / `#69697c` and re-derived a dark variant in JS on every scheme change.
+
+  It ships as an **illustration component** alongside `CubeLogo`, not as a member of the icon set, because it is not an icon in the two ways that matter: it is a three-tone drawing rather than a `currentColor` glyph (so it ignores `color` — flattening the faces to one tone loses the box), and it is drawn full-bleed rather than inset in a 24×24 grid (so it belongs at `size="8x"` and up, not inline with text). It is still built on `Icon`, so sizing and style props behave exactly as they do for one.
+
+  The token names stay `loading-face-*` so Cube Cloud's theme color map keeps resolving; they now cover both pieces of artwork, and the recipe comment says so.
+
+- [#1326](https://github.com/cube-js/cube-ui-kit/pull/1326) [`aa455803`](https://github.com/cube-js/cube-ui-kit/commit/aa4558037e8deceb34694c735c4931772f15e95b) Thanks [@tenphi](https://github.com/tenphi)! - `ItemAction` / `ItemBadge` now default to the inherited-color `current` flavour and stop mirroring the host row's `type` from context. (A later change in this release moves `current` from the `type` axis to the `theme` axis, so the default is spelled `theme="current"` with `type="clear"` — see "`current` moves from the `type` axis to the `theme` axis". The behaviour described here is unchanged by that move.) `current` derives every color from the inherited `currentcolor`, so one type covers every host type × theme combination that the context mapping used to enumerate — and, because `currentcolor` is inherited rather than resolved once, an action also follows its row through hover, selected and disabled instead of holding a fixed palette. The mapping in `ItemActionProvider` that folded `item` / `outline` / `outline-2` / `header` / `card` onto `clear` is gone.
+
+  `ItemActionContext` stays. It still carries `disableActionsFocus`, `isDisabled`, the `theme`, and `type` — the last only for its _presence_, which drives the `context` mod that collapses an action's side margins. The provider's signature is unchanged, so no call site moved.
+
+  Passing an explicit `theme` opts an action out of the inherited color and into that palette.
+
+  Supporting changes:
+
+  - **Selection reads as a filled chip.** Every other type marks `isSelected` with a brand _hue_ — an accent-tinted fill under an accent label — and `current` has one inherited color to work with, so it cannot. Alpha is the only channel left, and the neutral types' `.09` step read as a slightly dirty background rather than an "on" state, so a selected `ItemAction` / `ItemBadge` looked unselected. Selection now jumps clear of the interaction steps (`.18` in light) instead of continuing them, while hover and press stay subtle so a row full of actions is not busy. The dark scheme takes the same jump, scaled by the tone match described below.
+  - **A scheme-aware alpha ramp.** Unlike the brand tokens, `#current` alphas do not adapt to the color scheme: the same tint is not the same step in light and dark. Each step therefore carries a base entry for light and an `@dark` counterpart, the dark one _derived_ — solved so its OKHST tone delta from the surface matches the light step's, which is also what puts the chip on the light step's contrast against the page. The direction is counter-intuitive: the dark alphas come out lower, because near the dark end of the scale a small sRGB move is a large perceptual one. Each step lives in its own custom property rather than inline in `fill`, because both ramps in one state-map would put twelve alpha values where Tasty's `mergeEntriesByValue` pass coalesces equal value strings into one OR-entry at the group's max priority and breaks negation against lower-priority rules.
+  - **`ItemAction` regains a focus ring.** `CURRENT_ITEM_STYLES` follows the `*_ITEM_STYLES` convention of leaving focus to the collection that owns the row, which is wrong for a focusable action, so the ring came back on the action itself.
+  - **`ItemButton` paints its actions' color.** It renders actions as a sibling of the button rather than inside it — deliberately, so they are not nested in a `<button>` — so `currentcolor` reached them from the page instead of the row: a `danger` row handed its actions neutral text, and a `special` row handed them the page's _dark_ text to tint on a dark purple surface. `ActionsWrapper` now carries the row's resting color, derived from the variant map rather than restating the palette.
+  - **One variants map.** `Item`'s inline `theme.type` → styles object is now the exported `ITEM_VARIANTS`, shared with the color projection above so the two cannot drift.
+
+  Every clear and trigger button across the field components now relies on that default instead of pinning a `type` or a validation `theme`: `Select`, `Picker`, `FilterPicker`, `ComboBox`, `SearchComboBox` and `SearchInput` clear buttons, `PasswordInput`'s masking toggle, `ColorInput`'s pipette, `DatePicker`'s calendar button and the ComboBox / SearchComboBox triggers. Each one now takes the color of the field it sits in, so it follows a custom theme rather than staying pinned to `default.clear`.
+
+  Where that changes rendering, it changes it toward matching the field's own text:
+
+  - `Picker` / `FilterPicker` clear buttons are unchanged — their trigger text already carries validation state, so the inherited color equals what the explicit theme produced.
+  - `ComboBox` / `SearchComboBox` / `SearchInput` clear buttons and the ComboBox trigger move from the fixed `danger.clear` label to the input's own `#danger-accent-text` when invalid. The trigger previously stayed neutral beside red input text.
+  - `PasswordInput`'s toggle now tints with the field instead of always rendering neutral.
+  - `Select`'s clear button no longer turns red when the field is invalid. Its trigger keeps **neutral** label text in that state, so the button now matches its own field, and the red border still signals invalidity. `Picker` and `FilterPicker` are also `Item`-based but do tint their trigger text — that inconsistency lives in `Select` and is worth fixing there rather than being masked by a themed clear button.
+
+  `ItemAction` / `ItemBadge` `type` therefore returns to a plain default in the lint registry. The `skip: 'context'` classification it was given existed because the prop resolved through `ItemActionProvider`; it no longer does. `isDisabled` is still context-resolved and still skipped.
+
+- [#1327](https://github.com/cube-js/cube-ui-kit/pull/1327) [`5bebe7d1`](https://github.com/cube-js/cube-ui-kit/commit/5bebe7d10fa2d8abc3d80c71c004f74ba970a7f9) Thanks [@tenphi](https://github.com/tenphi)! - `MenuTrigger` / `DialogTrigger`: an action can now hand focus off to the surface it opens. Closing either overlay used to return focus to its trigger unconditionally — an item or button whose action opened a panel, a dialog or an inline editor lost focus to the trigger a tick later, so consumers had to out-race the overlay by re-focusing on every animation frame over a several-hundred-millisecond window. The restore is now skipped whenever focus already sits outside the closing overlay, so a single `focus()` from the opened surface's mount effect holds.
+
+  Nothing changes when the action moves focus nowhere: focus still inside the overlay (the pressed control keeps it through the exit animation) or dropped to `<body>` returns to the trigger as before. A clicked control outside the overlay also keeps focus now instead of having it yanked to the trigger. For `DialogTrigger` this affects the `modal`, `tray`, `fullscreen`, `fullscreenTakeover` and `panel` types; `popover` already restored through `Dialog`'s own `FocusScope`, which declines to restore when focus moved.
+
+  Both triggers also gain a `shouldRestoreFocus` prop (default `true`) for surfaces that claim focus _later_ than the restore — after an async load or an entry animation — where the trigger would otherwise take focus first and flash. It silences every restore path the trigger owns: `MenuTrigger`'s popover `FocusScope` as well as its manual restore, and for `DialogTrigger` the `Dialog`'s own `FocusScope` (reached through `DialogContext`, so a `Dialog` rendered outside a trigger keeps restoring focus as before).
+
+  `Tabs`: the rename-from-menu flow no longer runs a refocus pass. Picking "Rename" used to re-focus the inline-edit input on an animation frame and again at 50/200/400ms purely to survive the closing menu; the input's own `FocusScope autoFocus` is now enough. Behaviour is unchanged — rename still lands in a live editing session, in every context-menu mode.
+
+- [#1314](https://github.com/cube-js/cube-ui-kit/pull/1314) [`781973c9`](https://github.com/cube-js/cube-ui-kit/commit/781973c99eaf5c4598d77bfccefbc4f7db52674c) Thanks [@tenphi](https://github.com/tenphi)! - Add color-valued palette seeds. `accentColor` and `baseColor` accept a real color string — hex, `rgb()`, `hsl()`, `okhsl()`, `okhst()`, `oklch()` — so a brand can be given as the color you have rather than as a hue you had to derive:
+
+  ```ts
+  setPaletteConfig({ accentColor: "#2F5BFF", baseColor: "#7A7269" });
+  ```
+
+  The two are deliberately asymmetric. `accentColor` contributes hue, saturation and **tone**, and the tone is the point: the brand fill was previously authored as a fixed tone step off white, so every accent hue landed at roughly the same lightness and a yellow brand came out olive. `baseColor` contributes hue and saturation but **not tone**, because the chrome's own lightness ladder is the design — a base color says which way the greys lean and how far, not how dark they are.
+
+  The color is handed to Glaze's `from`, so the **light, normal-contrast** variant reproduces it exactly — the fill, the link and the icon all render the value you passed. Dark and high contrast adapt as every other color does. Two APCA floors apply everywhere, both Lc 45 — one against the page so the button reads as a shape, one against the `#white` label it carries — and both are floors rather than targets: `#7A4DBF` clears them and is emitted untouched, while a light brand darkens only as far as the nearer one requires. They are APCA rather than WCAG deliberately, and the consequence is worth stating: **an emitted fill can sit below WCAG 3:1** (`#0EA5E9` lands at 2.77:1 and is correct there). High contrast escalates the page floor to Lc 60 and stops, because past that the window the two floors share closes and the label disappears off its own fill.
+
+  Because the accent family now carries its own chroma, a brand color no longer raises the palette-level `saturation` to reach it — so it cannot leak into the **status themes**. `#danger-accent-surface` is now identical whatever the brand is. (The neutral chrome is the one deliberate exception: `baseSaturation` takes a 12% share of the brand's own chroma, capped by the seed, so a near-grey brand leaves near-grey chrome. See the base-color changeset.) Status themes also do not inherit the literal itself (`extend()` copies defs, so an inherited `from` would make a danger button the brand color outright); `special` does follow it, being the brand-on-dark CTA.
+
+  `ResolvedPaletteConfig` gains `accentTone`, and `colorSeed()` is exported for reading hue / saturation / tone off a color directly. The shipped palette is unchanged — a config with no color seed resolves bit for bit as before.
+
+  Make `pastel` and `saturation` two explicit paths rather than two knobs that fight. Pastel is one flat chroma ceiling, so a second saturation scale on top of it only undid the evenness it exists for — under `pastel` the seed is now pinned to `100`. Setting a `saturation` therefore **turns pastel off**, since tuning a saturation is the non-pastel path by definition, so `setPaletteConfig({ saturation: 55 })` keeps resolving to 55 exactly as before. An explicit `pastel: true` written next to a saturation wins and the saturation is ignored with a dev warning, but it is kept rather than dropped, so turning pastel back off restores the number.
+
+  Fix the brand fill ramp collapsing in high contrast under a color seed: `accent-surface` and `accent-surface-2` previously solved to the same value there, so the hover step disappeared.
+
+  The `Theme Builder` story gains a **Seeded by** switch that flips the whole palette between numeric seeds and color seeds, and swatches of the two tokens a color seed's tone reaches — `Accent Fill` and `Accent Text` — which is what makes the pastel chroma cap visible rather than mysterious.
+
+- [#1336](https://github.com/cube-js/cube-ui-kit/pull/1336) [`acb9ab59`](https://github.com/cube-js/cube-ui-kit/commit/acb9ab5966499a0b061310b0912de66bac1c1512) Thanks [@tenphi](https://github.com/tenphi)! - Give every palette zone one seed, and let a status theme take a color.
+
+  **BREAKING (`setPaletteConfig` / `<Root palette>` / `renderColorTokens` / `renderPaletteTokens`).** The six flat seed fields collapse into one `PaletteSeed` per zone — a color string, or `{ hue?, saturation? }`:
+
+  | was                                      | is                                                  |
+  | ---------------------------------------- | --------------------------------------------------- |
+  | `hue`, `saturation`                      | `accent: { hue?, saturation? }`                     |
+  | `accentColor`                            | `accent: '#…'`                                      |
+  | `baseHue`, `baseSaturation`              | `base: { hue?, saturation? }`                       |
+  | `baseColor`                              | `base: '#…'`                                        |
+  | `themes.<status>: { hue?, saturation? }` | unchanged, and now also `themes.<status>: '#…'`     |
+  | `themes.code: { saturation? }`           | unchanged — it takes no hue and no color, by design |
+
+  ```ts
+  setPaletteConfig({
+    accent: "#2F5BFF",
+    base: "#7A7269",
+    themes: { danger: "#b91c1c", success: { hue: 150 } },
+  });
+  ```
+
+  The union **is** the exclusivity. A zone was always seeded either by a color or by numbers, but the old shape let you write both and needed a precedence rule to settle it (`hue` outranked `accentColor`). Now it cannot be written, so there is no rule to learn — and a patch that switches form replaces rather than merges. The one capability this removes is the hybrid that precedence allowed: `resolvePaletteConfig({ hue: 30 })` over a stored brand color previewed "this brand, rotated, tone intact". A numeric seed now takes the zone over outright.
+
+  `ResolvedPaletteConfig` keeps its flat shape — `hue`, `baseHue`, `saturation`, `baseSaturation`, `accentColor`, `accentTone`, `accentSaturation` — so anything reading the resolved config is unaffected. Its four status entries gain `color` and `colorTone`. `PaletteThemeSeed` is replaced by `PaletteSeed`; `PaletteNumericSeed` and `ResolvedThemeSeed` are new.
+
+  **Status themes can now be seeded by a color**, which is what the union was blocking. `themes.danger: '#b91c1c'` renders that red on `#danger-accent-surface` — reproduced in light at normal contrast, adapting in dark and high contrast — and reaches `#danger-accent-text`, `-text-soft` and `-icon`. It inherits the brand path's softened APCA floors (Lc 45 against the white label, Lc 25 against the page) in place of the white-anchored ladder's `['AA','AAA']`, and the same tone cap, so a pale status color is pulled down rather than shipped as a white `type="primary"` label on white.
+
+  One rule differs from the accent's, deliberately: **a status color's chroma becomes that theme's seed.** An accent color's does not, because all four status themes inherit the accent's saturation and raising it would re-chromatise every one of them; nothing inherits from a status theme, so there is nothing to protect. Moving the seed is also what holds the theme together — its tinted banner surface, border and text ramp are authored as factors of the seed (`0.2`, `0.3`, `0.25`), so leaving it at `100` beside a muted fill would give a fully tinted banner under a washed-out button. Moving it keeps the shipped `1.0 : 0.2 : 0.3 : 0.25` ratio exactly.
+
+  Two consequences worth stating. A muted `saturation` _beside_ an accent color is no longer expressible — a color leaves the inherited seed at its default, so mute the status themes individually if you want that. And the legacy `#danger` / `#success` / `#warning` / `#note` aliases resolve to `#<theme>-accent-surface`, so a status color moves every one of them across a consuming app; that is the point, but it is the blast radius.
+
+  The Theme Builder's **Color** tab now covers all six zones: each status chip opens on a color field with its hue and saturation sliders gone, entering the tab converts the four status themes to the fill each is already emitting rather than to a sample hex, and leaving it pins their hues back. The shipped palette is unchanged — a config with no color seed resolves bit for bit as before.
+
+- [#1314](https://github.com/cube-js/cube-ui-kit/pull/1314) [`781973c9`](https://github.com/cube-js/cube-ui-kit/commit/781973c99eaf5c4598d77bfccefbc4f7db52674c) Thanks [@tenphi](https://github.com/tenphi)! - Add `surfaceMode: 'neutral' | 'tinted'` and a separate `baseSaturation` seed.
+
+  A neutral `surface` sits at the extreme of the tone scale — pure white in light — and chroma needs distance from the extreme to exist at all, so on a light page the surface was white whatever saturation the palette carried. `surfaceMode: 'tinted'` moves the whole surface ramp two tones inward, which is the room the base hue needs to land on the page itself:
+
+  ```ts
+  setPaletteConfig({ surfaceMode: "tinted", baseSaturation: 25 });
+  ```
+
+  Everything below `surface` is positioned relative to it, so the ladder, the borders and the text ramp follow, and the text's `['AA','AAA']` floors re-solve against the new background rather than drifting. The `code-*` family's mirrored surface tracks it too — it exists to be the page.
+
+  The **tinted** surfaces move with it as well. A status theme's `surface`, and a runtime tint's from `getColorTheme()`, is an offset from the page's rather than an absolute tone — and that offset is exactly the two tones `tinted` shifts by, so anchored absolutely they would land on the page's own new tone and a `note` banner would stop reading as a banner. They keep their separation in both schemes, and pick up a little more chroma for being further from the extreme.
+
+  `baseSaturation` is the base zone's own saturation seed, opening the same seam `baseHue` already opens: the chrome is the one family whose job is _not_ to look like the brand. It is on the same 0–100 scale as `saturation`, and **the shipped chrome is `12`**, so the interesting range is the low end; the base colors keep their proportions to one another until the highest of them saturates around `25`.
+
+  - Left unset it is `0.12` — `surface`'s own factor — of whatever the accent zone carries, so an untouched palette resolves exactly as before and a muted `saturation` still mutes the chrome.
+  - Unlike `saturation`, writing it does **not** turn `pastel` off: how much hue the chrome carries says nothing about which chroma space the palette is in.
+
+  Both are shipped defaults-off: `surfaceMode` defaults to `'neutral'` — the surface at the end of the tone scale, which is exactly what a neutral one is — and the resolved palette is unchanged token for token.
+
+### Patch Changes
+
+- [#1314](https://github.com/cube-js/cube-ui-kit/pull/1314) [`781973c9`](https://github.com/cube-js/cube-ui-kit/commit/781973c99eaf5c4598d77bfccefbc4f7db52674c) Thanks [@tenphi](https://github.com/tenphi)! - A pinned brand color is held to an APCA floor instead of a WCAG ratio, which softens the constraint where it was over-tight.
+
+  Custom color mode only. The shipped palette is untouched — it runs the `null` accent arrangement, whose `['AA','AAA']` floors are unchanged and still snapshotted.
+
+  WCAG 2.x is polarity-blind, so the old `[3, 7]` meant two very different things depending on the scheme. Measured with Glaze's own `apcaContrast` across 12 hues at 30° steps, the fill sitting exactly at the old floor comes out at **Lc 56.2 in light** (55.8–56.5) but only **Lc 23.3 in dark** (22.7–24.4). Hue is not a factor — the spread is under 2 Lc across the whole wheel — polarity is. One number was therefore 2.4× stricter in light than in dark, which is why light brands kept getting crushed while dark ones sailed through, and it left dark-mode fills below APCA's own `non-text` floor of 30.
+
+  - `accent-surface` → `{ apca: [45, 85] }`. Lc 45 is APCA's `large` tier. The base stays `surface`, so with the `bg` polarity Glaze solves `apcaContrast(surface, fill)` — in light, where `surface` is `oklch(1 0 0)`, that is white-on-fill, the pair every `type="primary"` label rides on.
+  - `accent-text-soft` → `{ apca: [60, 85] }` and `accent-text` → `{ apca: [75, 92] }`, APCA's `content` and `body` tiers, one step apart so the rest→hover intensify cannot collapse onto one color.
+
+  In light this is a real relaxation: the floor drops from ~WCAG 3.0 to ~WCAG 2.3, giving a brand about 8 tone points more headroom before it is darkened. `#0EA5E9` now renders at 2.77 against the page instead of being pushed to 3.0.
+
+  Two things worth knowing. The high-contrast tier can no longer say "AAA in both schemes": WCAG 7 is Lc 83.5 in light but Lc 54.4 in dark, so no single Lc restates it. `85` is the closest — ~6.1 in light, a shade under AAA, and ~15 in dark. And the tier has to be APCA at all because Glaze rejects a `contrast` pair that switches metric between its normal and high-contrast entries, which is a fair guard rather than something to work around.
+
+  Anchoring the fill to `accent-surface-text` to make "from white" literal in both schemes was tried and rejected: in dark the label root is near-white while the page is not, so the floor stopped constraining the fill against the page and `#111827` came out at WCAG 1.16 against the dark surface — invisible.
+
+  The fill carries **two** floors, not one, because in dark they pull opposite ways and dropping either produces the mirror image of the other's failure.
+
+  Glaze takes one `base` per color, so only the page floor can be expressed as a `contrast`; the label floor is a cap on the seed tone, searched against Glaze's own fixed-mode resolution rather than a reimplementation of the dark tone window. It only ever lowers, so a brand that was already dark enough is emitted unchanged.
+
+  - **Page floor** (`contrast` against `surface`) — the button has to be a visible shape. Without it `#111827` puts the fill at **Lc 0.0 against the dark page**: a blazing white label on a shape that is not there. The border does not stand in for it, being deliberately low-contrast.
+  - **Label floor** (the seed cap) — the `#white` that every `type="primary"` item paints has to be readable. Without it `#FFFFFF` clears the page floor in dark at WCAG 14.4 while the label lands on **Lc 0** — the label is exactly its own fill.
+
+  In light the page IS white, so the two collapse into the single measurement Glaze already makes and the cap never fires.
+
+  This also reaches the `special` theme, whose `SPECIAL_PRIMARY_STYLES` paints `#white` on the same brand fill. `#FFD400` is one of the colors the cap moves — white on it untouched is Lc 28 — so the brand's hue carries into the hero button but its tone is capped. The test that asserted the literal survived unchanged now asserts the hue arrived, since exact equality there was a demand that the button's own label be unreadable.
+
+- [#1336](https://github.com/cube-js/cube-ui-kit/pull/1336) [`acb9ab59`](https://github.com/cube-js/cube-ui-kit/commit/acb9ab5966499a0b061310b0912de66bac1c1512) Thanks [@tenphi](https://github.com/tenphi)! - Fix a color-seeded accent fill collapsing to one value across the dark tone range.
+
+  The brand fill answers to two APCA constraints, and they were sized the same. The `#white` label it carries needs Lc 45 — text strength, because it is text. The page it sits on was asked for Lc 45 too, escalating to Lc 60 in high contrast, which is a demand that a filled shape reach text-grade contrast against the background.
+
+  Nothing in the palette meets that. Measured on the emitted tokens, the **shipped** `accent-surface` — the white-anchored ladder every primary button used before color seeds existed — sits at **Lc 25.5** off the dark page and **Lc 19.3** in dark high contrast, where the ladder darkens the fill toward its label. So a color-seeded fill was being held to 1.8x and 3.1x what the design system's own button achieves.
+
+  The two look identical in light, which is how it went unnoticed: there `surface` **is** white, so one measurement is both constraints at once and Lc 45 is right for the pair. In dark the page is near-black, and because a floor can only lighten, the surplus flattened the tone axis: every seed below the floor solved to the same fill. Measured across the axis at one hue, the dark fill was pinned at tone 66 for every seed from 5 to 65 — a brand's whole dark half collapsing onto one lavender — while light passed the same seeds through untouched. In dark high contrast the floor met the label cap and left a window of a single value.
+
+  The page floor is now **Lc 25 in both tiers**, calibrated to the shipped fill rather than to a text threshold. The same sweep now tracks the seed from tone 47 up, and 47 is where the shipped fill sits in dark, so the dark range went from 7.7 tones to ~27 against light's ~45. The pair is written with both entries equal in order to suppress APCA's automatic +15 Lc enhancement in high contrast: that tier is a request for separation over brand, but not for separation from the page — the same fill carries the label, and driving it off the page drives the label off it.
+
+  The white label is unaffected. It never depended on this number: it is guaranteed by the tone cap on the seed, which searches all four variants against pure white. A lower page floor lightens less, so it makes that guarantee safer rather than weaker.
+
+  Light mode is unchanged — a dark brand on a white page measures Lc 100+, so this floor never bound there. Palettes with no color seed are untouched: the white-anchored ladder keeps its `['AA','AAA']` floors.
+
+- [#1314](https://github.com/cube-js/cube-ui-kit/pull/1314) [`781973c9`](https://github.com/cube-js/cube-ui-kit/commit/781973c99eaf5c4598d77bfccefbc4f7db52674c) Thanks [@tenphi](https://github.com/tenphi)! - Four fixes to the pinned-brand accent path, from review.
+
+  **An explicit `hue` now rotates the whole accent ramp.** `resolveConfig` ranks a numeric `hue` above the one an `accentColor` carries, but `buildPalette` handed Glaze the original literal — so `accent-surface` kept the color's hue while `-2`, `-3` and `hover` followed the theme's. A primary button changed hue on hover. The seed is now built from the resolved hue, chroma and tone rather than the string, and the regression test asserts on emitted tokens rather than on `getPaletteConfig().hue`, which was already correct while the ramp was split.
+
+  **The white-label floor now holds on the emitted fill.** The ceiling was computed on the bare seed, but what ships is the fill after the page floor has had its turn — and that floor can only lighten, which is what weakens a white label. A 3072-case sweep over hue, chroma, tone, scheme and tier found 720 failures, the worst putting the label at Lc 20.7. Three things fixed it: the ceiling is now a property of the hue/chroma pair rather than of the tone asked for (it previously only searched when the requested tone already failed, so a dark tone probed first let every later light tone escape), it searches to a measured +3 Lc margin so the page floor cannot eat back through 45, and the high-contrast page floor drops from Lc 85 to 60.
+
+  That last one is geometry, not preference. The two floors pull opposite ways in dark: the page wants a lighter fill, the label a darker one. The window they share is `L ∈ [0.605, 0.735]`, and asking 85 of the page empties it outright — 60 is the largest value that keeps it open, with 65 reopening 768 failures. High contrast escalates the fill only as far as its own label can follow.
+
+  **The accent-cap cache is versioned.** It resolves through Glaze's global settings, including the dark tone window, so a caller running `glaze.configure(...)` then `invalidatePaletteTokens()` had changed the answer without changing the seed. Keyed on the palette version now, which is what makes that API mean what it says.
+
+  **Replacing one unparseable color with another registers.** Both resolve to `null`, and the pin signature recorded only whether the field was present, so `setPaletteConfig({ accentColor: 'bad-two' })` after `'bad-one'` returned early — input kept the first string and no subscriber heard. The signature carries the two color values now.
+
+  Documentation across the JSDoc, the Theme Builder tooltip, `Theming.docs.mdx` and the earlier changeset no longer promises WCAG 3:1. The floors are APCA Lc 45, and an emitted fill can legitimately sit under 3:1 — `#0EA5E9` renders at 2.77:1 and is correct there.
+
+- [#1314](https://github.com/cube-js/cube-ui-kit/pull/1314) [`781973c9`](https://github.com/cube-js/cube-ui-kit/commit/781973c99eaf5c4598d77bfccefbc4f7db52674c) Thanks [@tenphi](https://github.com/tenphi)! - The accent label cap hands Glaze its probe seed as an `OkhstColor` instead of a formatted string.
+
+  `from` accepts `string | OkhslColor | OkhstColor | RgbColor | OklchColor`, so the seed never needed to become text. Dropping `formatOkhst` removes the writers' scale question from this path entirely — and with it the two decimal places `okhst()` rounds to. `#7A4DBF` round-tripped through a string came back `0.450200` against a true `0.450191`.
+
+  No Glaze change: `OkhstColor` is existing 2.0.0 API.
+
+  One test moves with it. The cap's floor is measured on the emitted token, whose `oklch()` string carries four decimals, so `#FFD400` now reads Lc 44.9925 where it used to read a hair over 45 — the string round-trip had been rounding it up. The assertion takes the same epsilon treatment the high-contrast one already had (`84.9` for an 85 target). The shortfall is 0.0075 Lc, three orders of magnitude below anything visible, and the change is in the direction of accuracy.
+
+- [#1314](https://github.com/cube-js/cube-ui-kit/pull/1314) [`781973c9`](https://github.com/cube-js/cube-ui-kit/commit/781973c99eaf5c4598d77bfccefbc4f7db52674c) Thanks [@tenphi](https://github.com/tenphi)! - `ColorInput` and `ColorPicker` keep the `20px` swatch they have always drawn.
+
+  Giving `ColorSwatch` a size of its own changed both of them by accident. `ColorInput` passed the field's size straight through, so a `medium` field's swatch went `20px → 24px` and a `large` one `20px → 28px`; the `ColorPicker` trigger was left to track its button and moved `20px → 24px` the same way. Measured in a real browser against `main`, at every field size.
+
+  Neither was a size anyone asked for. The swatch in a color field reads as a value the field is showing, not as part of the control, so it is now pinned at `20px` in both — identical to `main` at `small`, `medium` and `large`.
+
+  The `size` prop and the automatic fitting are unchanged and remain the right thing for a swatch you place yourself in a `Button` or an `Item`, where the host has the padding that makes it work. A text input hangs its prefix off the border with none of its own, which is why the fields opt out.
+
+  Also corrects the docs, which gave the automatic fit in a `large` control as `32px` where it is `28px`.
+
+- [#1314](https://github.com/cube-js/cube-ui-kit/pull/1314) [`781973c9`](https://github.com/cube-js/cube-ui-kit/commit/781973c99eaf5c4598d77bfccefbc4f7db52674c) Thanks [@tenphi](https://github.com/tenphi)! - A manual `contrastLevel` no longer suppresses the high-contrast tier (via `@tenphi/glaze` 1.5.0).
+
+  The level now does one thing: it positions the **normal** colors on the 0–100 slider. The high-contrast tier stays the true high-contrast resolution — identical to what `contrastLevel: 'auto'` emits — at every level, so the two **compose** rather than replace each other: a product's own contrast slider raises the baseline while `<html data-contrast="high">` / `prefers-contrast: more` still escalates on top of it.
+
+  Two consequences for anyone who had set a level:
+
+  - `contrastLevel: 0` now reproduces `'auto'` output exactly, high-contrast tier included. Shipping the slider and defaulting it off therefore costs nothing — previously it silently dropped the tier, so `data-contrast="high"` stopped working the moment a level was set.
+  - At `contrastLevel: 100` the normal colors already _are_ the high-contrast ones, so a separate tier would only duplicate them: a single light/dark set is emitted. That is now the only level at which the tier is absent.
+
+  `renderColorTokens()` / `renderPaletteTokens()` follow the same rule — `highContrast: true` returns the genuine escalated variant at any level below 100.
+
+  The shipped palette is unaffected: it runs at `contrastLevel: 'auto'`, and the default-palette snapshot is unchanged.
+
+- [#1332](https://github.com/cube-js/cube-ui-kit/pull/1332) [`ac2ec331`](https://github.com/cube-js/cube-ui-kit/commit/ac2ec331a5d5b5d6b7af4849b0870b41f6637324) Thanks [@tenphi](https://github.com/tenphi)! - Fix the `current` theme fading a disabled label twice.
+
+  `current.item` and `current.clear` already suppressed their own `.4` label fade when the disabled state was inherited from a host that had faded `currentcolor` already, but `current.outline`, `current.outline-2`, `current.primary` and `current.link` stated it as a bare `disabled`. Two of those — `outline` and `primary` — are reachable `Item.Action` types, so an action inside a disabled row (including `Banner`'s outline actions) multiplied the two fades and rendered at `.16` of the row's color, washing out both the label and the alpha chip.
+
+  Every `current` flavour now gates the fade on `disabled & !inherit-disabled & !inside-wrapper`. The second mod closes the other half of the same hole: `ItemButton` renders its actions as siblings of the row inside a wrapper, and the wrapper reproduces the row's disabled color so those siblings inherit a faded `currentcolor`. It previously could not, because the gated key was skipped when deriving the wrapper's colors — so a disabled `ItemButton` on the `current` theme sat next to full-strength actions. The wrapper now reads the gated value, and the row suppresses its own fade under `inside-wrapper`, leaving exactly one `.4` on every path.
+
+- [#1314](https://github.com/cube-js/cube-ui-kit/pull/1314) [`781973c9`](https://github.com/cube-js/cube-ui-kit/commit/781973c99eaf5c4598d77bfccefbc4f7db52674c) Thanks [@tenphi](https://github.com/tenphi)! - `@tenphi/glaze` 2.0.0, whose one breaking change is the `format*` scale fix ([tenphi/glaze#93](https://github.com/tenphi/glaze/issues/93), [#94](https://github.com/tenphi/glaze/pull/94)).
+
+  `formatOkhsl` / `formatOkhst` / `formatRgb` / `formatHsl` / `formatOklch` took `s` / `l` / `t` as 0–100 percentages while every producer — `resolve()`, `variantToOkhsl`, `srgbToOkhsl`, `oklabToOkhsl`, `okhslToSrgb` — returns them on 0–1. Composing the two was off by 100× and failed silently, since `0.7` is a legal percentage and the result was a valid CSS string naming a near-black color. Glaze now speaks one scale end to end, and a leftover `* 100` warns instead of shifting the color quietly.
+
+  Every affected call site drops its scaling: `formatColor` in the color field (five notations, whose tests assert exact strings like `okhst(29.23 100% 58.59%)`) and the accent label cap in the palette. Output is unchanged — the palette's four-variant token values are byte-identical before and after, and Glaze's own export methods were compensating internally.
+
+  The tone axis is the exception the release notes call out: `toTone` / `fromTone` still speak the authoring API's 0–100, so a tone is divided by 100 on its way into `formatOkhst` while a saturation read off `resolve()` is passed straight through.
+
+- [#1314](https://github.com/cube-js/cube-ui-kit/pull/1314) [`781973c9`](https://github.com/cube-js/cube-ui-kit/commit/781973c99eaf5c4598d77bfccefbc4f7db52674c) Thanks [@tenphi](https://github.com/tenphi)! - `HueSlider` prints its value in degrees.
+
+  A hue is an angle, and the slider already renders its value beside the label — so a caller who wanted the unit had to put it in the label instead, which then repeated the number the slider was showing anyway. It now defaults `formatOptions` to `{ style: 'unit', unit: 'degree', unitDisplay: 'narrow' }`, giving `280°`. Pass your own `formatOptions` to override it.
+
+- [#1314](https://github.com/cube-js/cube-ui-kit/pull/1314) [`781973c9`](https://github.com/cube-js/cube-ui-kit/commit/781973c99eaf5c4598d77bfccefbc4f7db52674c) Thanks [@tenphi](https://github.com/tenphi)! - `RadioGroup` is `border-box`, so an explicit width means the box you can see.
+
+  The `tabs` layout is the one with padding of its own, and it was laid out as `content-box`: `<Radio.Tabs styles={{ width: '100%' }} />` came out `1x` wider than its container and overhung the right edge. The color popover's space switcher (HST / LCH / RGB) was the visible case — it touched the popover border while everything above and below it sat inside the padding.
+
+  Groups without an explicit width are unaffected: they size to `max-content`, which measures the same either way.
+
+- [#1332](https://github.com/cube-js/cube-ui-kit/pull/1332) [`ac2ec331`](https://github.com/cube-js/cube-ui-kit/commit/ac2ec331a5d5b5d6b7af4849b0870b41f6637324) Thanks [@tenphi](https://github.com/tenphi)! - Fix the `selected & disabled` state on the `outline`, `outline-2` and `clear` types across the `default`, `danger`, `success`, `warning` and `note` themes: it was heavier than the enabled state it is supposed to mute.
+
+  The state borrowed `accent-disabled-surface` / `accent-disabled-surface-text` — the pair built for a PRIMARY button, whose enabled state is already an opaque brand fill under a `#white` label, so a mid-tone chip is a step _down_ there. On a non-solid type it is a step _up_: against a 9% brand tint under soft accent text, the `-13` chip read as a filled pill, and its `tone: 'max'` label resolved to literal white in light mode. A disabled segmented control therefore drew more attention than a live one, and the selected option looked like the only enabled one.
+
+  It now keeps the enabled selected chip and fades only the label. The chip is the thing that says "this one is on", so it does not change weight at all when the control goes disabled; the label drops to a new `accent-disabled-text` token — the neutral `disabled-surface-text` geometry (the same `-23` tone delta against `surface`, adaptive, so it reads exactly as disabled as every other disabled label in light, dark and high contrast) carrying brand chroma instead of neutral, at roughly 2× `disabled-surface-text` and comfortably under `accent-text-soft`. Selection survives as a hue on a label of unchanged paleness, which is what CUB-3912 asked for: a disabled segmented control still shows which option is active.
+
+  The chip's tint tracks whatever token that theme's `selected` state uses — `accent-surface` for the outline types and for `default.clear`, `accent-text` for the four status themes' `clear`, which do not share `default`'s token. It is written as `.08` rather than reusing `selected`'s own `.09`, and the difference is deliberately imperceptible. The two entries must not serialize to the same string: Tasty's `mergeEntriesByValue` pass coalesces equal values into one OR-entry at the group's max priority, so a literal reuse would merge `selected` into `selected & disabled` and then negate against `selected & (hovered | focused)` — the "selected-hover stays dark" bug that `SPECIAL_CLEAR_STYLES` documents and escapes the same way.
+
+  No existing token changed value — the palette addition is `accent-disabled-text` and nothing else. `primary` keeps `accent-disabled-surface`, which is correct for a solid fill; the `special` and `current` themes keep their own white-alpha and `currentcolor` registers.
+
+  A unit test pins both halves of the invariant across all fifteen brand-theme x non-solid-type variants: the disabled selected fill must equal the enabled one modulo that alpha, and the label must be the `accent-disabled-text` of its theme.
+
+  The `special` theme gets the same treatment, plus a correction its non-selected disabled state needed on its own. Every disabled label there sat far above the house figure for a dead control: measured against the chip it sits on, `outline` disabled came out at cr 3.24 and `outline` selected + disabled at 4.21 — not only too legible, but the wrong way round, since the selected one out-read the plain one. For scale, `disabled-surface-text` measures ~2.02 against `surface` and this theme's own `primary` disabled pair measures 1.73. The white-alpha labels are now solved for cr ~2.0 against whatever each one sits on: `#white.23` for the plain disabled states across `outline`, `clear`, `item` and `link`, `#white.28` for `outline` selected + disabled on its `.17` chip. `outline` selected + disabled keeps the enabled selected chip like the colored themes (`.17` against its `.18`), and `clear` — whose selected state flips to a solid white pill — keeps that pill and fades its DARK label instead, to `#special-accent-text.45`, cr 1.95 against the pill.
+
+  The `current` theme's `clear` flavour gains the same state, which it was missing entirely: a disabled selected `clear` fell through to the item ramp's bare `transparent` and rendered no chip at all, so it was indistinguishable from an unselected one. It now carries `#current.18` — `current.outline`'s own disabled selected chip, so the two differ by exactly the border. This is the same split the colored themes already make between `*_ITEM_STYLES` and `*_CLEAR_STYLES`.
+
+- [#1328](https://github.com/cube-js/cube-ui-kit/pull/1328) [`cfa6fb6e`](https://github.com/cube-js/cube-ui-kit/commit/cfa6fb6edb665959ad206829a2fa34ffefc7b97c) Thanks [@tenphi](https://github.com/tenphi)! - Update `@tenphi/tasty` to `3.0.2`. A patch release with no public API change — the export surface is byte-for-byte the same set of names as `3.0.1` — so nothing in the UI Kit needed migrating and the full suite passes unchanged.
+
+  Two clarifications in Tasty's docs are worth knowing if you write custom tokens: token names are case-sensitive and should start lowercase (a leading capital folds, so `$Foo` resolves to `--foo`), and `preset` / `transition` take token _names_ rather than values, so a bare `$name` there warns in dev and is ignored. Neither affects this package — no capitalized token name is used anywhere in `src`.
+
+  The tree-shaking size budget goes from 123 kB to 124 kB. Tasty's core grew ~0.56 kB in this release, which put the old budget 31 bytes over; the `All` entry moved by the same amount and stays inside its 501 kB budget.
+
 ## 0.163.0
 
 ### Minor Changes
