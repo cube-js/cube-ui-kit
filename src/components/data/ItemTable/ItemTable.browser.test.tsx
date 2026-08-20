@@ -760,4 +760,52 @@ describe('treegrid focus and virtualization', () => {
       screen.getByRole('button', { name: 'Outside control' }),
     ).toHaveFocus();
   });
+
+  it('does not apply an unhandled pending key to the stale DOM row', async () => {
+    const onExpand = vi.fn();
+    const branchesBeforeTarget: TreeRow[] = Array.from(
+      { length: 20 },
+      (_, index) => ({
+        id: `pending-${index}`,
+        name: `Pending ${index}`,
+        children:
+          index < 12
+            ? [{ id: `pending-child-${index}`, name: `Child ${index}` }]
+            : undefined,
+      }),
+    );
+
+    renderWithRoot(
+      <ItemTable
+        data={branchesBeforeTarget}
+        columns={treeColumns}
+        getRowChildren={(row) => row.children}
+        height="140px"
+        isVirtualized
+        overscan={0}
+        paginationMode="off"
+        onExpand={onExpand}
+      />,
+    );
+
+    await vi.waitFor(() => expect(treeRow('pending-0')).toBeInTheDocument());
+    treeRow('pending-0').focus();
+
+    await act(() => {
+      for (let index = 0; index < 12; index++) {
+        document.activeElement?.dispatchEvent(
+          new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }),
+        );
+      }
+
+      // pending-12 is a leaf, so this has no logical tree action. The mounted
+      // stale row is a branch and must not receive the key as a fallback.
+      document.activeElement?.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }),
+      );
+    });
+
+    await vi.waitFor(() => expect(treeRow('pending-12')).toHaveFocus());
+    expect(onExpand).not.toHaveBeenCalled();
+  });
 });

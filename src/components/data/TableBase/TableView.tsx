@@ -550,6 +550,19 @@ function TreeGridTable<T>(props: {
       return;
     }
 
+    // React Aria still sees the DOM row that owned focus before the virtual
+    // destination mounted. If a logical navigation key has no action there
+    // (a boundary, leaf, or collapsed root), consuming it avoids falling
+    // through and applying that key to the stale row instead.
+    if (
+      pendingFocusKey.current != null &&
+      ['ArrowDown', 'ArrowUp', 'ArrowRight', 'ArrowLeft'].includes(event.key)
+    ) {
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
+
     (gridProps as any).onKeyDownCapture?.(event);
   };
 
