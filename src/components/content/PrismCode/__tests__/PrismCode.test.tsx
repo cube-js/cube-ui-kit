@@ -93,4 +93,18 @@ describe('PrismCode component', () => {
     expect(codeElement?.querySelector('.token.keyword')).toBeInTheDocument();
     expect(codeElement?.querySelector('.token.string')).toBeInTheDocument();
   });
+
+  test('sets the wrapped mod only when isWrapped is passed', () => {
+    const code = 'a very long single-line error message';
+
+    const { container: plain } = render(
+      <PrismCode code={code} language="bash" />,
+    );
+    const { container: wrapped } = render(
+      <PrismCode isWrapped code={code} language="bash" />,
+    );
+
+    expect(plain.querySelector('pre')).not.toHaveAttribute('data-wrapped');
+    expect(wrapped.querySelector('pre')).toHaveAttribute('data-wrapped');
+  });
 });

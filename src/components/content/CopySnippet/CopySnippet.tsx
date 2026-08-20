@@ -62,18 +62,9 @@ const StyledBlock = tasty({
         '': 'monospace',
         serif: true,
       },
-      // The `<code>` renders as `white-space: pre`, so setting `pre-wrap` on the
-      // surrounding block alone does not wrap it — the wrap has to live here.
-      // `overflow-wrap: anywhere` also breaks runs with no spaces (URLs, tokens,
-      // identifiers) that `pre-wrap` on its own would let overflow.
-      whiteSpace: {
-        '': 'pre',
-        wrap: 'pre-wrap',
-      },
-      overflowWrap: {
-        '': 'normal',
-        wrap: 'anywhere',
-      },
+      // The wrapping itself (`white-space` / `overflow-wrap` on the `<code>`)
+      // is owned by `PrismCode` via its `isWrapped` prop, which this component
+      // forwards.
     },
   },
 });
@@ -265,7 +256,6 @@ function CopySnippet(allProps: CubeCopySnippetProps) {
     return {
       nowrap,
       multiline: multiline || shouldWrap,
-      wrap: shouldWrap,
       serif,
       hidden: !!hideText,
     };
@@ -279,6 +269,7 @@ function CopySnippet(allProps: CubeCopySnippetProps) {
             style={{ margin: 0, overflow: 'visible' }}
             code={formattedCode}
             language={language || 'javascript'}
+            isWrapped={shouldWrap}
           />
         </StyledBlock>
         <ButtonContainer mods={mods}>
