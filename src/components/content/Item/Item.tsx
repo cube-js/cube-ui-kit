@@ -143,7 +143,6 @@ export interface CubeItemProps extends BaseProps, ContainerStyleProps {
     | 'clear'
     | 'link'
     | 'card'
-    | 'current'
     | (string & {});
   theme?:
     | 'default'
@@ -152,6 +151,7 @@ export interface CubeItemProps extends BaseProps, ContainerStyleProps {
     | 'special'
     | 'warning'
     | 'note'
+    | 'current'
     | (string & {});
   /** Keyboard shortcut that triggers the element when pressed */
   hotkeys?: string;
@@ -590,7 +590,8 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
   const finalIsDisabled =
     isDisabledProp === true || (isLoading && isDisabledProp !== false);
 
-  // Validate type+theme combinations
+  // Validate type+theme combinations. `current` is a theme like any other here:
+  // it has a flavour for every type, so it is listed wherever `default` is.
   const STANDARD_THEMES = [
     'default',
     'success',
@@ -598,19 +599,22 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     'warning',
     'note',
     'special',
+    'current',
   ];
-  const CARD_THEMES = ['default', 'success', 'danger', 'warning', 'note'];
+  const CARD_THEMES = [
+    'default',
+    'success',
+    'danger',
+    'warning',
+    'note',
+    'current',
+  ];
   const HEADER_THEMES = ['default'];
-  // `current` takes every color from the inherited `currentcolor`, so a theme
-  // would have nothing to change.
-  const CURRENT_THEMES = ['default'];
 
   const isInvalidCombination =
     (type === 'header' && !HEADER_THEMES.includes(theme)) ||
-    (type === 'current' && !CURRENT_THEMES.includes(theme)) ||
     (type === 'card' && !CARD_THEMES.includes(theme)) ||
-    (!['header', 'current', 'card'].includes(type) &&
-      !STANDARD_THEMES.includes(theme));
+    (!['header', 'card'].includes(type) && !STANDARD_THEMES.includes(theme));
 
   useWarn(isInvalidCombination, {
     key: ['Item', 'invalid-type-theme', type, theme],
@@ -618,11 +622,9 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
       `Item: Invalid type+theme combination. type="${type}" does not support theme="${theme}".` +
         (type === 'header'
           ? ' The "header" type only supports theme: default.'
-          : type === 'current'
-            ? ' The "current" type derives every color from the inherited text color and only supports theme: default.'
-            : type === 'card'
-              ? ' The "card" type only supports themes: default, success, danger, warning, note.'
-              : ' Standard types support themes: default, success, danger, warning, note, special.'),
+          : type === 'card'
+            ? ' The "card" type only supports themes: default, success, danger, warning, note, current.'
+            : ' Standard types support themes: default, success, danger, warning, note, special, current.'),
     ],
   });
 
@@ -757,6 +759,30 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
   const finalPrefix =
     isLoading && resolvedLoadingSlot === 'prefix' ? <LoadingIcon /> : prefix;
 
+  // Which HotKeys flavour the shortcut hint wears. `inherit` paints the hint's
+  // glyphs and rim from `currentcolor`, so it tracks whatever the row labels
+  // itself with; `primary` pins the hint to `#white`; `default` is a neutral
+  // `#dark.65` chip built for a page-colored row.
+  //
+  // The whole `current` theme wants `inherit`: every flavour there derives its
+  // label from the inherited color, and a fixed hint cannot follow that. The
+  // neutral `#dark.65`-on-`#dark.04` chip all but vanishes on a dark overlay,
+  // which is exactly where this theme is meant to be used.
+  //
+  // `current.primary` is included despite painting its label with
+  // `-webkit-text-fill-color` rather than `color`. The hint renders inside the
+  // `Suffix` slot, and `CURRENT_PRIMARY_STYLES` recolors that slot to the label
+  // color — so `currentcolor` there is the LABEL, not the fill. An earlier
+  // version of this comment claimed the opposite and sent it to `primary`, which
+  // put a `#white` hint on a light fill (measured cr 2.17 on a `#note` container
+  // in dark mode).
+  const hotkeysType =
+    theme === 'current'
+      ? 'inherit'
+      : type === 'primary'
+        ? 'primary'
+        : 'default';
+
   // Build final suffix: loading icon, custom suffix, or HotKeys hint
   const finalSuffix =
     isLoading && resolvedLoadingSlot === 'suffix' ? (
@@ -766,7 +792,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
       (hotkeys ? (
         <HotKeys
           {...(keyboardShortcutProps as any)}
-          type={type === 'primary' ? 'primary' : 'default'}
+          type={hotkeysType}
           styles={{ padding: '1x left', opacity: finalIsDisabled ? 0.5 : 1 }}
         >
           {hotkeys}

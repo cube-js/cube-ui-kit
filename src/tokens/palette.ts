@@ -1216,6 +1216,30 @@ function buildPalette(
       mode: 'fixed',
     },
 
+    // The disabled counterpart of `accent-text-soft`, for the SELECTED disabled
+    // state of the non-solid types (`outline`, `outline-2`, `clear`).
+    //
+    // Those types express `selected & disabled` by keeping the enabled selected
+    // CHIP and fading only the LABEL, so this is the one token the state needs.
+    // It is the neutral `disabled-surface-text` geometry — the same `-23` tone
+    // delta against `surface`, adaptive, so it reads exactly as disabled as
+    // every other disabled label in light, dark and HC — carrying brand chroma
+    // instead of neutral: roughly 2x `disabled-surface-text` and comfortably
+    // under `accent-text-soft`, which is the live label it must not be mistaken
+    // for. Selection therefore survives as a hue on a label of unchanged
+    // paleness.
+    //
+    // The pair above (`accent-disabled-surface` / `-text`) stays what it always
+    // was: the muted chip for a PRIMARY button, whose enabled state is an opaque
+    // brand fill under `#white`. Borrowing it here got the state backwards — its
+    // mid-tone chip is a step DOWN from a solid fill but a step UP from a 9%
+    // tint, and its `tone: 'max'` label resolves to literal white in light mode.
+    'accent-disabled-text': {
+      base: 'surface',
+      tone: '-23',
+      saturation: 0.6,
+    },
+
     // ---- Isometric cube faces ----
     // The three shading steps of the kit's isometric cube artwork: the lit top
     // face, the mid side, and the shadowed side. Shared by `LoadingAnimation`

@@ -79,7 +79,7 @@ Each prop lands in one of these states:
 |---|---|
 | `default` | Proven redundant. **The only state the rule acts on.** |
 | `skip: 'conditional'` | Redundant bare, load-bearing under a co-prop (`Button` `size` depends on `type="link"`). |
-| `skip: 'context'` | Redundant bare, load-bearing under a provider (`ItemAction` `theme` inside `ItemActionProvider`). |
+| `skip: 'context'` | Redundant bare, load-bearing under a provider (`ItemAction` `isDisabled` inside `ItemActionProvider`). |
 | `skip: 'reflected-attribute'` | Rendered onto the DOM as `data-*`/`aria-*`, so omitting it drops the attribute. `Item` renders `aria-selected={isSelected}`, so `isSelected={false}` is **not** removable. |
 | `skip: 'state-map'` | The default is a tasty state map, not a scalar; passing the default-state value replaces the whole map. |
 | `skip: 'unverified'` | The documented default could not be reproduced — usually docs drift. Needs a human. |
@@ -156,11 +156,11 @@ There is no consumer-side override, by design. A product hitting a one-off uses 
 
 **A prop whose default comes from context needs a condition, or it is misfiled as a plain default.** When a component resolves a prop as `prop ?? context ?? literal`, probing it bare hits the literal and the prop looks redundant — while in a real tree it is what stops the inherited value from applying. Stripping it is then a behaviour change, not a cleanup. Three cases were caught this way:
 
-- `ItemAction` reads `type`, `theme` and `isDisabled` off `ItemActionContext`. `<Item isDisabled>` renders its `actions` inside that provider, so `<ItemAction isDisabled={false}>` is the documented way to keep one action live inside a disabled item.
-- `ItemBadge` reads `type` and `theme` the same way and had no conditions at all.
+- `ItemAction` reads `isDisabled` off `ItemActionContext`. `<Item isDisabled>` renders its `actions` inside that provider, so `<ItemAction isDisabled={false}>` is the documented way to keep one action live inside a disabled item. (It used to read `type` and `theme` from there too; both are plain defaults now that the `current` theme tracks the host through `currentcolor` instead.)
+- `ItemBadge` read `type` and `theme` the same way and had no conditions at all.
 - `Dialog` resolves `isDismissable = contextProps.isDismissable` with no literal fallback, and `DialogContainer`/`DialogTrigger` default that context value to `true`, so a nested `<Dialog isDismissable={false}>` is an override.
 
-Only `theme` on `ItemAction` was classified correctly at first, because it was the only one with a matching condition. When you add a fixture, check what the component reads from context and add a condition supplying a *different* value for each such prop — the prover can only see what a condition lets it see. Grep for `= context` and `?? context` in the component to find them.
+Only the props with a matching condition were classified correctly at first. When you add a fixture, check what the component reads from context and add a condition supplying a *different* value for each such prop — the prover can only see what a condition lets it see. Grep for `= context` and `?? context` in the component to find them.
 
 **A fixture that renders nothing is worse than a missing one.** Every prop would look like a no-op and be recorded as a verified default, and the rule would then delete real props. `fixtures.test.tsx` compares each fixture against an empty tree to catch that.
 

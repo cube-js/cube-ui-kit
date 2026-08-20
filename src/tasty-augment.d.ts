@@ -32,12 +32,18 @@ declare module '@tenphi/tasty' {
     'accent-icon': true;
     'accent-disabled-surface': true;
     'accent-disabled-surface-text': true;
+    'accent-disabled-text': true;
     // Note: `accent-surface-hover` / `accent-selected-fill` (and their
     // per-theme prefixed variants + `<theme>-hover` aliases) are intentionally
     // omitted from this type list to stay under TS7056. They resolve at
     // runtime and still type-check via tasty's `(string & {})` fallback in
     // `ColorValue`. `accent-selected-fill` is an internal contrast anchor for
     // `accent-text`, not a style-facing token.
+
+    // ---- Context hooks (see CONTEXT_TOKENS in src/tokens/colors.ts) ----
+    // The label color `current.primary` punches out of its `currentcolor` chip.
+    // Defaults to `#surface`; a container painting `#white` overrides it.
+    'current-fill': true;
 
     // ---- Other primitives ----
     placeholder: true;
@@ -156,5 +162,9 @@ declare module '@tenphi/tasty' {
     success: true;
     warning: true;
     note: true;
+    // Not a brand ramp: `current` mixes every color from the inherited
+    // `currentcolor`, so an element adopts the color of whatever container it
+    // sits in. See the CURRENT THEME section of `src/data/item-themes.ts`.
+    current: true;
   }
 }
