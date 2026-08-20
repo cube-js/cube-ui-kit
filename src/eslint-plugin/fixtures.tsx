@@ -242,8 +242,7 @@ export const FIXTURES: Fixture[] = [
     name: 'ItemBadge',
     /**
      * Sits under `ItemActionContext` the same way `ItemAction` does, so it gets
-     * the same conditions: the host theme reaches the element as `data-surface`,
-     * which the `current` ramp reads.
+     * the same conditions — see `ItemAction` below for what they are for.
      */
     render: (props) => <ItemBadge {...props}>1</ItemBadge>,
     conditions: [
@@ -286,10 +285,10 @@ export const FIXTURES: Fixture[] = [
      * `actions` in exactly such a provider, so `<ItemAction isDisabled={false}>`
      * is the documented way to keep one action live inside a disabled item.
      *
-     * `type` and `theme` no longer come from context — the default `current`
-     * theme tracks the host through `currentcolor` instead — but the provider
-     * conditions stay: the host theme still reaches the element as
-     * `data-surface`, which the `current` ramp reads.
+     * `type` and `theme` no longer come from context at all — the default
+     * `current` theme tracks the host through `currentcolor` instead — so the
+     * provider conditions exist purely for `isDisabled`, the one prop still
+     * resolved that way.
      */
     render: (props) => <ItemAction {...props}>Label</ItemAction>,
     conditions: [

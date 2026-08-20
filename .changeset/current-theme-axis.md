@@ -18,7 +18,7 @@ On the `theme` axis it composes instead, and every type now has a `current` flav
 
 `current.outline` and `current.item` are byte-identical to the old `Button` and `Item` flavours, so nothing that used `type="current"` changes appearance.
 
-The top step of each ramp stops at `#current.24`. That is the measured AA floor for a full-strength label on a dark surface — the one place this construction turns around, since the chip climbs toward an equally light label instead of away from a dark one.
+The top step of each ramp stops at `#current.24` in light. The dark counterpart is not authored: each `@dark` step is solved so its OKHST tone delta from the surface matches the light step's, which lands the two schemes on the same chip-vs-page contrast (1.084 / 1.083 at hover, 1.959 / 1.961 at the top step). That works out *lower* than the light alpha throughout — `.031 / .046 / .13 / .175 / .221` against `.04 / .06 / .18 / .24 / .3` — because near the dark end of the scale a small sRGB move is a large perceptual one, so the same tint reads stronger on a dark surface than on a light page.
 
 ### Migration
 
@@ -41,7 +41,7 @@ This changes one case: an action that named a `type` but no `theme` used to inhe
 
 `Banner` is the one in-repo consumer that needed a matching edit. Its actions ask for `type="outline"` and then cleared the border, because back then `outline` meant `note.outline` and friends — whose border is the opaque `#note-border`, a pale line built for a `#surface-2` chip on a light page and plainly wrong on a saturated banner. The fill carried the chip on its own there. On the `current` theme the border is `#current.08` mixed from the banner's own white label, and the fill is a 3% tint that cannot carry a chip by itself, so clearing the border left the action invisible. The override is gone and the type renders as designed.
 
-The host theme still reaches the element, as `data-surface`: it names the surface an action is painted _on_, which is a different question from its own theme now that `current` occupies that axis. The `current` ramp reads it to pick the alphas that work over the `special` theme's fixed dark-purple surface — the job `data-theme` used to do before `theme="current"` claimed that attribute.
+`ItemActionContext` no longer reaches the DOM at all beyond `isDisabled`. An interim version of this branch published the host theme as a `data-surface` attribute so the `current` ramp could pick per-surface alphas for the `special` theme's fixed dark-purple surface; that is gone, because only `ItemAction` and `ItemBadge` ever set the attribute, so `Button` and `Item` on the same surface silently fell back to the light ramp.
 
 ### Two nesting fixes
 

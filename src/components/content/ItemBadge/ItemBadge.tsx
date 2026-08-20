@@ -112,10 +112,9 @@ const ItemBadgeElement = tasty({
 export const ItemBadge = forwardRef<HTMLDivElement, CubeItemBadgeProps>(
   function ItemBadge(allProps, ref) {
     // `contextType` is read for its presence only — it marks "inside a row",
-    // which drives the `context` mod below. `contextTheme` names the surface the
-    // badge is painted on, which the `current` ramp reads. Neither one picks the
-    // variant any more.
-    const { type: contextType, theme: contextTheme } = useItemActionContext();
+    // which drives the `context` mod below. It does not pick the variant any
+    // more.
+    const { type: contextType } = useItemActionContext();
 
     const {
       // See `ItemAction` for the full rationale: the `current` theme tracks the
@@ -223,11 +222,6 @@ export const ItemBadge = forwardRef<HTMLDivElement, CubeItemBadgeProps>(
           variant={`${theme}.${finalType}` as ItemBadgeVariant}
           data-theme={theme}
           data-type={finalType}
-          // The surface this badge is painted ON, which is a different question
-          // from its own theme now that `current` occupies that axis. The
-          // `current` ramp reads it to pick the alphas that work over the
-          // special theme's fixed dark-purple surface.
-          data-surface={contextTheme}
           aria-label={ariaLabel}
           mods={finalMods}
           {...mergeProps(rest, tooltipTriggerProps || {})}

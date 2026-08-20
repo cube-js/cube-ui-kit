@@ -175,7 +175,6 @@ export const ItemAction = forwardRef(function ItemAction(
 ) {
   const {
     type: contextType,
-    theme: contextTheme,
     disableActionsFocus,
     isDisabled: contextIsDisabled,
   } = useItemActionContext();
@@ -331,11 +330,6 @@ export const ItemAction = forwardRef(function ItemAction(
         variant={`${theme}.${finalType}` as ItemActionVariant}
         data-theme={theme}
         data-type={finalType}
-        // The surface this action is painted ON, which is a different question
-        // from its own theme now that `current` occupies that axis. The
-        // `current` ramp reads it to pick the alphas that work over the special
-        // theme's fixed dark-purple surface.
-        data-surface={contextTheme}
         tabIndex={finalTabIndex}
         styles={styles}
       >

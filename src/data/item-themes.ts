@@ -1020,27 +1020,53 @@ export const SPECIAL_ITEM_STYLES: Styles = {
 // written inline in `fill`. Two reasons:
 //
 // 1. Unlike the brand tokens, `#current` alphas do NOT adapt to the color
-//    scheme: a 4% tint of a dark label on a light surface reads far stronger
-//    than a 4% tint of a light label on a dark one, so one ramp cannot serve
-//    both. Each step therefore carries a per-surface value — the base entry for
-//    the light scheme, `@dark` for the dark scheme, and `surface=special` for
-//    the special theme's dark-purple surface. Special is *static* (identical in
-//    light, dark and HC by design — see the SPECIAL section above), so it needs
-//    a single ramp rather than a light/dark pair. `surface=special` resolves
-//    against `data-surface`, which `ItemAction` and `ItemBadge` set from the
-//    surrounding `ItemActionProvider`: it names the surface the element is
-//    painted ON, which is a different question from its own `theme` now that
-//    `current` occupies that axis.
-// 2. Writing three ramps straight into one `fill` map would put ~18 alpha
+//    scheme, so one ramp cannot serve both. Each step therefore carries the base
+//    entry for the light scheme and an `@dark` counterpart.
+// 2. Writing both ramps straight into one `fill` map would put twelve alpha
 //    values in a single state-map, and Tasty's `mergeEntriesByValue` pass
 //    coalesces any two equal value strings into one OR-entry at the group's max
 //    priority, which then negates against lower-priority rules. Giving each
-//    step its own 3-entry map keeps every value string unique by construction —
+//    step its own 2-entry map keeps every value string unique by construction —
 //    the constraint that `SPECIAL_OUTLINE_STYLES` documents the hard way.
 //
-// The special steps run higher than the light ones because they resolve against
-// a `#white.8` label: an authored `.15` nets roughly the `.12` that
-// `SPECIAL_CLEAR_STYLES` uses on the same base.
+// THE DARK STEPS ARE DERIVED, NOT AUTHORED. The same alpha is not the same step
+// in both schemes, and the direction is the opposite of what it looks like: near
+// the dark end of the scale a small sRGB move is a large perceptual one, so a
+// light tint on a dark surface reads STRONGER than the same tint of a dark label
+// on a light page. Each `@dark` value is therefore solved so its OKHST *tone*
+// delta from the surface matches the light step's — which, tone being
+// contrast-shaped, also lands the chip on the light step's contrast against the
+// page to three decimals:
+//
+//   step             light   ΔT     dark   ΔT     cr(chip, page)
+//   hover            .04     2.64   .031   2.62   1.084 / 1.083
+//   press            .06     3.99   .046   3.98   1.129 / 1.129
+//   selected         .18    12.57   .13   12.37   1.467 / 1.457
+//   selected-hover   .24    17.20   .175  17.16   1.689 / 1.686
+//   selected-press   .3     22.08   .221  22.13   1.959 / 1.961
+//
+// Every dark value is the solved one rounded to the shortest alpha that keeps it
+// within 2% of the target — `selected` is `.13` rather than the exact `.132`
+// because tasty computes the mix percentage as `parseFloat(alpha) * 100`, and
+// `.132` lands on `13.200000000000001%` in the emitted CSS.
+//
+// Measured against `#surface` / `#surface-text` in each scheme, which is the only
+// tractable calibration: `current` paints from an arbitrary inherited color over
+// an arbitrary container, so a single ramp cannot be exact for all of them. The
+// neutral page pair is the common case, and matching it is what keeps the two
+// schemes recognisably the same ramp. Re-derive with Glaze's `oklabToOkhsl` +
+// `okhslToOkhst` if the neutral tokens move.
+//
+// Note that the label keeps its own margin throughout: the weakest dark step
+// still measures cr 13.3 against a near-white label and the strongest 7.3, so
+// nothing here approaches an AA floor.
+//
+// There is deliberately NO special-surface ramp. The `special` theme's fixed
+// dark-purple surface used to get its own `surface=special` steps, read from a
+// `data-surface` attribute — but only `ItemAction` and `ItemBadge` ever set it,
+// so `Button` and `Item` on the same surface silently used the light ramp, and
+// `theme` can no longer be `special` and `current` at once. A per-surface axis
+// that three of five call sites miss is worse than not having one.
 //
 // SELECTED steps jump well clear of the interaction steps rather than continuing
 // them. Every other theme marks selection with a brand *hue* — an accent-tinted
@@ -1050,40 +1076,35 @@ export const SPECIAL_ITEM_STYLES: Styles = {
 // background rather than an "on" state. Selection is a persistent state, not a
 // transient one, so it earns the bigger jump; hover and press stay subtle so an
 // unselected row full of actions does not look busy.
-// Only the LIGHT ramp can spend freely. There the chip is a pale tint and the
-// label stays opaque and dark, so contrast barely moves (.30 still measures
-// 5.66:1). On a dark surface the same construction inverts: the chip is a light
-// tint climbing toward an equally light label, so it swallows it. Both dark
-// surfaces hit the AA floor (4.5:1) for their label at exactly `.24` — measured,
-// not guessed — which is the ceiling every dark step below is written under, and
-// why `selected` there is a smaller jump than in light. `SPECIAL_CLEAR_STYLES`
-// escaped the same ceiling by INVERTING selected to a white pill with dark text;
-// a single inherited color cannot do that.
+//
+// The jump is authored once, on the light ramp, and the dark one follows from the
+// tone match below rather than being tuned against a contrast ceiling of its own.
+// An earlier version of this comment claimed the dark steps were capped by the AA
+// floor for their label at `.24`; that figure belonged to the SPECIAL surface,
+// whose `#white.8` label measures 4.53 against a `.21` chip. On the plain dark
+// page the label is opaque and the same steps measure 6.9-9.8, so there is no
+// ceiling to write under — which is why removing the special ramp also removes
+// the reason the dark steps were shaped by hand.
 const CURRENT_ITEM_RAMP: Styles = {
   '$current-hover': {
     '': '#current.04',
-    '@dark': '#current.07',
-    'surface=special': '#current.08',
+    '@dark': '#current.031',
   },
   '$current-press': {
     '': '#current.06',
-    '@dark': '#current.11',
-    'surface=special': '#current.12',
+    '@dark': '#current.046',
   },
   '$current-selected': {
     '': '#current.18',
-    '@dark': '#current.16',
-    'surface=special': '#current.17',
+    '@dark': '#current.13',
   },
   '$current-selected-hover': {
     '': '#current.24',
-    '@dark': '#current.19',
-    'surface=special': '#current.21',
+    '@dark': '#current.175',
   },
   '$current-selected-press': {
     '': '#current.3',
-    '@dark': '#current.22',
-    'surface=special': '#current.24',
+    '@dark': '#current.221',
   },
 } as const;
 
