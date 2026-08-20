@@ -140,7 +140,36 @@ const LEGACY_ALIASES: Styles = {
 };
 
 /**
- * Combined color token map: Glaze-generated palette + legacy aliases.
+ * Context hooks — tokens a CONTAINER sets to steer a component that cannot
+ * resolve the color on its own.
+ *
+ * Declared with a default rather than read as `var(--x, fallback)` at every use
+ * site, for two reasons: the default is stated once instead of repeated (and so
+ * cannot drift), and a declared token gets its components companion for free —
+ * which is the only way `#current-fill.5` can fade whatever the container
+ * offered rather than the fallback.
+ *
+ * Included by reference in {@link renderColorTokens} alongside the legacy
+ * aliases, so a region preview re-resolves the default against that region's own
+ * `#surface` instead of freezing the outer theme's.
+ */
+const CONTEXT_TOKENS: Styles = {
+  // The label color `current.primary` punches out of its `currentcolor` chip —
+  // read by nothing else. That flavour fills with the color it INHERITS, so its
+  // label has to contrast with an arbitrary color, and the page only manages
+  // that while the inherited color sits away from the page. A container
+  // whose own text color IS the page breaks it: a `Banner` labels itself
+  // `#white`, and `#surface` is white in light mode, so label and chip collapse
+  // to cr 1.00.
+  //
+  // Such a container sets this to a color that contrasts with its own fill —
+  // usually its own surface — and the label, the rim and the icon slots all
+  // follow. See `CURRENT_PRIMARY_STYLES` in `src/data/item-themes.ts`.
+  '#current-fill': '#surface',
+};
+
+/**
+ * Combined color token map: Glaze-generated palette + legacy aliases + context hooks.
  *
  * Memoized against the palette config version, so a runtime `setPaletteConfig()`
  * invalidates it while repeated reads stay free. Prefer {@link getColorTokens}
@@ -159,6 +188,7 @@ export function getColorTokens(): Styles {
     colorTokensCache = {
       ...getPaletteTokens(),
       ...LEGACY_ALIASES,
+      ...CONTEXT_TOKENS,
     };
     cachedVersion = version;
   }
@@ -224,6 +254,7 @@ export function renderColorTokens(options?: RenderPaletteOptions): Tokens {
   return {
     ...renderPaletteTokens(options),
     ...(LEGACY_ALIASES as Tokens),
+    ...(CONTEXT_TOKENS as Tokens),
     ...(COLOR_DEPENDENT_TOKENS as Tokens),
   };
 }

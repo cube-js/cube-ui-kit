@@ -44,28 +44,6 @@ const DEFAULT_ICONS: Record<BannerTheme, ReactNode> = {
   success: <IconCircleCheck />,
 };
 
-// The accent a banner offers its `current`-themed actions, live and muted.
-// Exported so the live/disabled pairing can be pinned by a test rather than by
-// discipline — see `Banner.test.ts`.
-// Keyed by `Record<BannerTheme, true>` rather than a loose array so the union
-// and the map cannot drift: add a fifth `BannerTheme` and this stops compiling
-// until it has an accent. A theme with no entry would fall through to the
-// reader's `currentcolor` fallback and land back on the cr 1.00 this exists to
-// avoid, which is not a failure worth leaving to review.
-const BANNER_ACCENT_THEMES: Record<BannerTheme, true> = {
-  note: true,
-  danger: true,
-  warning: true,
-  success: true,
-};
-
-export const BANNER_ACTION_ACCENT: Record<string, string> = Object.fromEntries(
-  (Object.keys(BANNER_ACCENT_THEMES) as BannerTheme[]).flatMap((theme) => [
-    [`theme=${theme}`, `#${theme}-accent-text`],
-    [`theme=${theme} & disabled`, `#${theme}-accent-text.4`],
-  ]),
-);
-
 const BannerElement = tasty(Item, {
   styles: {
     width: '100%',
@@ -77,63 +55,36 @@ const BannerElement = tasty(Item, {
 
     Actions: {
       gap: '1x',
-      // The color this banner OFFERS to `current`-themed children that cannot
-      // use the inherited one. `Banner.Action` is `current.invert`: it writes
-      // its label on a `#surface` pill, and a banner's inherited color is
-      // `#white` — which IS `#surface` in light mode, so unaided it measures
-      // cr 1.00. Handing down `accent-text` puts it at 6.87–7.90 in both
-      // schemes, with the pill still 1.5 (light) / 2.4 (dark) off the banner.
-      //
-      // Declared here rather than on `Banner.Action` so the banner states its
-      // color context once and its children stay theme-agnostic — the wrapper
-      // is the natural place for it, and custom properties inherit. It is safe
-      // for the dismiss button to sit in the same wrapper: that one is
-      // `current.clear`, which paints from `#current` and never reads this, so
-      // it keeps the `#white` that measures 4.62 against the banner where this
-      // accent would measure 1.53.
-      //
-      // The disabled entries are not optional, and they are the whole contract:
-      // a container that OFFERS a color owns that color in every state. The
-      // reader gates its own fade on `!inherit-disabled` precisely because
-      // something above is expected to have done it — true when the color is
-      // inherited, and true here only if this map says so. Drop them and a
-      // disabled banner keeps a full-strength `accent-text` label on a dead
-      // chip: cr 5.69 light / 6.13 dark, reading live. At `.4` it lands on
-      // 1.81 / 2.20, the same ~2:1 band every other disabled label in this file
-      // is tuned to.
-      '$current-accent': BANNER_ACTION_ACCENT,
     },
   },
 });
 
-// `invert` on the banner's OWN theme, which is the one pairing that gives a
-// banner a filled action legible in both schemes.
+// `current.outline` — the `current` theme on `Item.Action`, given the outlined
+// shape rather than the borderless default.
 //
-// The obvious choice — `Item.Action`'s default `current` theme — cannot do it
-// here, and the reason is specific rather than general. A banner labels itself
-// `#white` in both schemes (see `BannerLinkElement` and `*_PRIMARY_STYLES`), so
-// `currentcolor` inside one is white; and `#surface`, the page token both filled
-// `current` flavours reach for, is ALSO white in light mode. Every arrangement
-// of those two collapses:
+// `current` is the right color source: a banner labels itself `#white` in both
+// schemes (see `BannerLinkElement` and `*_PRIMARY_STYLES`), so the action mixes
+// its chip, border and label from that white — label cr 4.3-5.0 against every
+// banner theme, with the chip a subtle 1.06 off the banner. That is what an
+// action on a saturated surface should be: the banner carries the emphasis, the
+// button just has to be findable.
 //
-//   theme=current type=primary   fill #current (white)  label #surface (white)
-//   theme=current type=invert    fill #surface (white)  label #current (white)
+// `outline` rather than `Item.Action`'s `clear` default because a banner action
+// is a call to action, and `clear` paints nothing at rest — on a busy banner it
+// reads as body text until hovered. The `#current.08` border is what makes it a
+// button, which is why the old `border: '#clear'` override had to go: it was
+// written when `outline` meant `note.outline` and friends, whose border is the
+// opaque `#note-border` — a pale line built for a `#surface-2` chip on a light
+// page and plainly wrong on a saturated banner. On the `current` theme the
+// border IS the chip, and the 3% fill cannot carry one alone.
 //
-// Both measure cr 1.00 in light on all four banner themes. The theme's own
-// tokens have no such coincidence: `accent-text` is the dark end of the brand
-// ramp and `#surface` is the page, so `<theme>.invert` measures 6.87–7.90 across
-// the four themes in both schemes, and the chip still separates from the banner
-// (cr ~1.5 light, ~2.4 dark, either side of the 1.48 a `primary` rim measures).
-//
-// The previous default was `current.outline`: label cr 4.3–5.0, but a chip only
-// 1.06 off the banner, which is what an outline is meant to be. `invert` is the
-// filled counterpart, for a banner whose action should read as the thing to
-// press.
+// `type="primary"` is deliberately not used. It would fill with the inherited
+// white and punch `#current-fill` out of it, which defaults to `#surface` —
+// white in light mode, so the label would collapse into its own chip. A banner
+// that wants a filled action has to set `#current-fill` to its own surface
+// color; see `CURRENT_PRIMARY_STYLES` in `item-themes`.
 const BannerActionElement = tasty(Item.Action, {
-  type: 'invert',
-  // No `theme`: it stays on `Item.Action`'s `current` default and takes its
-  // color from the `--current-accent` the banner offers above.
-
+  type: 'outline',
   styles: {
     preset: 't3m',
   },

@@ -872,8 +872,8 @@ export const SPECIAL_OUTLINE_STYLES: Styles = {
   // — the house figure for a disabled label, which `disabled-surface-text`
   // hits against `surface` and which this theme's own `primary` disabled pair
   // hits at 1.73. They used to measure 3.24 and 4.21: not only too legible for
-  // a dead control, but INVERTED, since the selected one out-read the plain
-  // one. The two alphas differ because they resolve against different chips
+  // a dead control, but the wrong way round, since the selected one out-read
+  // the plain one. The two alphas differ because they resolve against different chips
   // (`.04` and `.17`), which lands them on the same contrast rather than the
   // same opacity.
   color: {
@@ -908,7 +908,7 @@ export const SPECIAL_CLEAR_STYLES: Styles = {
   // The default `''` and `disabled` may share `#white.0` because Tasty keeps
   // the TRUE/default entry separate from non-defaults during merging.
   //
-  // Disabling a SELECTED control keeps the inverted pill and fades only the
+  // Disabling a SELECTED control keeps the white pill and fades only the
   // label, the same rule the rest of this file follows — the chip is what says
   // "this one is on". Here that means fading the DARK label toward the pill
   // rather than a white one toward the base, so the disabled label is
@@ -944,7 +944,7 @@ export const SPECIAL_CLEAR_STYLES: Styles = {
     '': '#white.8',
     selected: '#special-accent-text',
     // Solved for cr ≈ 2.0 against what each one sits on — the bare surface, and
-    // the inverted white pill. See `SPECIAL_OUTLINE_STYLES.color`.
+    // the selected white pill. See `SPECIAL_OUTLINE_STYLES.color`.
     disabled: '#white.23',
     'selected & disabled': '#special-accent-text.45',
   },
@@ -1010,11 +1010,11 @@ export const SPECIAL_ITEM_STYLES: Styles = {
 // to stay visible.
 //
 // A note on what a single color cannot do: `primary` in every other theme is an
-// opaque brand fill under a `#white` label. There is no second color here to
-// punch the label out with — the inherited one is the only thing on hand, and
-// the surface behind it is unknown — so `current.primary` escalates on alpha
-// instead: the same construction as `outline`, at the strongest step the
-// contrast budget below allows. It reads as filled, not as inverted.
+// opaque brand fill under a `#white` label, and the inherited color is the only
+// thing on hand here — it can be the fill, but then nothing is left to punch the
+// label out with. `current.primary` therefore takes its label from a second
+// token, `#current-fill`, which defaults to the page and which a container can
+// redirect when the page is the wrong answer. See `CURRENT_PRIMARY_STYLES`.
 
 // The alpha ramp for the item flavour, held in custom properties rather than
 // written inline in `fill`. Two reasons:
@@ -1248,18 +1248,22 @@ export const CURRENT_OUTLINE_2_STYLES: Styles = {
   },
 } as const;
 
-// The colour a container can offer the two FILLED `current` flavours, and the
-// only thing that varies between them: `primary` paints `#current` and writes
-// this on it, `invert` paints this and writes `#current`. Unset, it is the page
-// — which is what both used before the hook, and which collapses only when the
-// inherited colour IS the page (a `Banner` labels itself `#white`). One
-// property, so the mirror cannot come apart.
-const CURRENT_SWAP_COLOR = 'var(--current-accent, var(--surface-color))';
-
 // Primary flavour — the high-emphasis control, and the only `current` flavour
-// that INVERTS: the fill is the inherited color at full opacity and the label
-// is punched out of it with `#surface`, exactly as every other
+// that fills opaquely: the fill is the inherited color at full opacity and the
+// label is punched out of it with `#current-fill`, exactly as every other
 // theme's `primary` paints `#white` on an opaque brand fill.
+//
+// `#current-fill` is the whole answer to the one problem this flavour has. The
+// pill IS `currentcolor`, so the label has to contrast with an arbitrary color,
+// and the page (`#surface`) only manages that while the inherited color sits
+// away from the page. A container whose own text color IS the page breaks it: a
+// dark banner paints `#white`, so the pill is white and a `#surface` label is
+// white too in light mode — cr 1.00, the button reads as a blank chip. Such a
+// container has the answer to hand — its own fill contrasts with its own text by
+// construction, and the pill is that text — so it sets `#current-fill` and the
+// label, the rim and the icon slots all follow. The token defaults to `#surface`
+// (see `CONTEXT_TOKENS` in `src/tokens/colors.ts`), which is what this flavour
+// always used, so nothing outside such a container moves.
 //
 // The states are the second fill layer. There is no lighter or darker sibling
 // of an arbitrary inherited color to step to — the brand ramps walk
@@ -1269,7 +1273,7 @@ const CURRENT_SWAP_COLOR = 'var(--current-accent, var(--surface-color))';
 //
 // The label CANNOT go through `color`. `#current` compiles to the literal
 // `currentcolor`, which in `fill` resolves against the element's OWN `color`,
-// so setting `color: '#surface'` would make the fill resolve to the
+// so setting `color: '#current-fill'` would make the fill resolve to the
 // label color and paint a white pill with a white label. Tasty's `--current-color`
 // is no escape either: the `color` handler rewrites it on the same element.
 // `-webkit-text-fill-color` paints the glyphs without touching `color`, so
@@ -1282,9 +1286,10 @@ export const CURRENT_PRIMARY_STYLES: Styles = {
   // (`accent-surface-border` over `accent-surface`, cr 1.48 against it in both
   // schemes). An arbitrary inherited color has no such sibling, so the rim comes
   // from the same token the label does — the one color guaranteed to sit on the
-  // opposite side of the fill in either scheme. `.25` measures cr 1.82 in light
-  // and 1.55 in dark against the fill: the brand rim's presence, a shade more so
-  // in light, where `current` has no other edge cue.
+  // opposite side of the fill in either scheme, and the one a container can
+  // redirect, so the rim cannot come apart from the label it edges. `.25`
+  // measures cr 1.82 in light and 1.55 in dark against the fill: the brand rim's
+  // presence, a shade more so in light, where `current` has no other edge cue.
   //
   // Disabled swaps to the neutral text color, and has to. The chip there is a
   // `.4` tint sitting close to the page, so a `#surface` rim washes into the
@@ -1293,26 +1298,25 @@ export const CURRENT_PRIMARY_STYLES: Styles = {
   // immune to the `.4` fade below, which `#current` is not — a `#current` rim on
   // a disabled chip resolves to the fill's own color and disappears.
   border: {
-    '': '#surface.25',
+    '': '#current-fill.25',
     disabled: '#surface-text.2',
   },
   // The resting entry carries a transparent second layer so every state has the
   // same two-layer shape and the overlay interpolates instead of snapping in —
-  // the same pin `DEFAULT_PRIMARY_STYLES.fill` documents and `invertStyles`
-  // repeats. Without it the resting rule emits no `background-image` at all, so
-  // hover has nothing to animate from.
+  // the same pin `DEFAULT_PRIMARY_STYLES.fill` documents. Without it the resting
+  // rule emits no `background-image` at all, so hover has nothing to animate
+  // from.
   fill: {
     '': '#current #black.0',
     'hovered | focused': '#current #black.08',
     pressed: '#current #black.16',
   },
   // Disabled is expressed HERE and nowhere else, and that is the whole trick.
-  // `fill` and `border` resolve `currentcolor` against this element's own
-  // `color`, so fading it once fades the chip with it: their default entries
-  // still read `#current`, which under `disabled` is already the `.4` color,
-  // and the chip lands at exactly `.4`. Writing `.4` in all three would apply
-  // the fade twice and land it at `.16` — the pre-multiply trap the other
-  // `current` ramps document at length.
+  // `fill` resolves `currentcolor` against this element's own `color`, so fading
+  // it once fades the chip with it: the default entry still reads `#current`,
+  // which under `disabled` is already the `.4` color, and the chip lands at
+  // exactly `.4`. Writing `.4` in both would apply the fade twice and land it at
+  // `.16` — the pre-multiply trap the other `current` ramps document at length.
   //
   // It has to fade rather than stay put, because descendants read it too: an
   // action inside a disabled row suppresses its OWN fade on the grounds that
@@ -1325,29 +1329,14 @@ export const CURRENT_PRIMARY_STYLES: Styles = {
     // `disabled`: both mods mark a color that something above already faded.
     'disabled & !inherit-disabled & !inside-wrapper': '#current.4',
   },
-  // The label, and the same `--current-accent` hook `CURRENT_INVERT_STYLES`
-  // reads — the property means "the color to write with when the inherited one
-  // will not do", and this is the other flavour that cannot always write with
-  // it. Here the pill IS `currentcolor`, so the label has to contrast with an
-  // arbitrary color, and `#surface` only manages that while the inherited color
-  // sits away from the page. A container that INVERTS the surface breaks it: a
-  // dark banner paints `#white`, so the pill is white and a `#surface` label is
-  // white too in light mode — cr 1.00, the button reads as a blank chip.
-  //
-  // Such a container has the answer to hand: its own fill contrasts with its own
-  // text by construction, and the pill is that text. Offering `--current-accent`
-  // is therefore the fix, and unset the fallback is the `#surface` this always
-  // used, so nothing else moves.
-  //
-  // Faded on a bare `disabled`, unlike the `#current`-derived values around it.
-  // The gate those carry protects an INHERITED value: `#current` is already
-  // muted by a disabled host, so fading it again would multiply. The swap color
-  // is not inherited — nothing above touches it — so this has to do the fading
-  // itself, and a container offers the live color only.
+  // The label. Faded on a bare `disabled`, unlike the `#current`-derived values
+  // around it: the gate those carry protects an INHERITED value, since `#current`
+  // is already muted by a disabled host and fading it again would multiply.
+  // `#current-fill` is not inherited from that faded color — a container offers
+  // the live value only — so this has to do the fading itself.
   '-webkit-text-fill-color': {
-    '': 'var(--current-accent, var(--surface-color))',
-    disabled:
-      'color-mix(in oklab, var(--current-accent, var(--surface-color)) 50%, transparent)',
+    '': '#current-fill',
+    disabled: '#current-fill.5',
   },
   // Every slot that paints from `currentColor` rather than from the glyph fill.
   // `-webkit-text-fill-color` inherits into the text slots for free, but two
@@ -1366,11 +1355,10 @@ export const CURRENT_PRIMARY_STYLES: Styles = {
       {
         // Icons are SVG stroked with `currentColor`, which
         // `-webkit-text-fill-color` never reaches, so each slot repeats the
-        // label color — accent hook included.
+        // label color — container override included.
         color: {
-          '': 'var(--current-accent, var(--surface-color))',
-          disabled:
-            'color-mix(in oklab, var(--current-accent, var(--surface-color)) 50%, transparent)',
+          '': '#current-fill',
+          disabled: '#current-fill.5',
         },
       },
     ]),
@@ -1401,192 +1389,6 @@ export const CURRENT_CARD_STYLES: Styles = {
   border: '#current.2',
   fill: '#current.05',
   color: '#current',
-} as const;
-
-// ---------- INVERT TYPE ----------
-// The page and its text, swapped. The fill is the theme's `accent-text` — the
-// color that is normally PAINTED on the page — and the label is `#surface`, the
-// page itself. That makes the control sit on the opposite side of the page in
-// either scheme, which is what "invert" means and what separates it from
-// `primary`: `primary` pins a fixed `#white` label on a brand SURFACE, so it
-// reads the same weight in light and dark; `invert` follows the scheme.
-//
-//         page      fill (accent-text)   label (#surface)
-//   light L 1.00    L 0.47  (dark)       L 1.00  (white)
-//   dark  L 0.24    L 0.76  (light)      L 0.24  (near-black)
-//
-// The label is `#surface` and NOT `#surface-text`, which is the trap this pairing
-// invites: `surface-text` is the color painted ON the page, so it sits on the
-// SAME side of the fill as `accent-text` does and the two collapse — measured
-// cr 2.60 in light and 1.91 in dark, against 6.96 / 7.52 for `#surface`.
-//
-// Hover and pressed darken through a second fill layer rather than stepping to a
-// darker sibling, because `accent-text` has none: its `-soft` counterpart is
-// LIGHTER. A `#black` overlay darkens in both schemes, so the monotonic
-// default → hover → pressed direction survives the scheme flip. Every entry
-// keeps the same two-layer shape so the overlay interpolates instead of snapping
-// — see `DEFAULT_PRIMARY_STYLES.fill`.
-//
-// Disabled hands over to the brand-tinted pair `primary` already uses, so the
-// two filled types mute identically and the alphas stay calibrated in one place.
-// It rides on THIS type's base layer (`accent-text`) rather than `primary`'s
-// (`#surface`), which changes nothing at rest — `accent-disabled-surface` is an
-// opaque glaze tone, so it hides whatever is under it — but keeps the base
-// constant across all four states. Swapping the base on `disabled` alone would
-// animate `background-color` from the fill color to the page while the overlay
-// is still part-transparent, which is the surface flash `DEFAULT_PRIMARY_STYLES`
-// keeps its own base pinned to avoid.
-//
-// Written through a factory rather than seven near-identical objects on purpose.
-// The only thing that varies is the theme prefix, and hand-copying that is
-// exactly how `selected & disabled` ended up on the wrong token for four themes
-// earlier in this PR.
-const invertStyles = (accent: string): Styles => ({
-  outline: {
-    '': '0 #primary-accent-text.0',
-    focused: '1bw #primary-accent-text',
-  },
-  // No lighter sibling of `accent-text` exists to rim with, so the rim is the
-  // label token at low alpha — guaranteed to sit opposite the fill in either
-  // scheme. cr ~1.8 in light and ~1.6 in dark against the fill, against the 1.48
-  // that `accent-surface-border` measures on `primary`.
-  border: {
-    '': '#surface.25',
-    disabled: 'transparent',
-  },
-  fill: {
-    '': `#${accent}-accent-text #black.0`,
-    hovered: `#${accent}-accent-text #black.08`,
-    pressed: `#${accent}-accent-text #black.16`,
-    disabled: `#${accent}-accent-text #${accent}-accent-disabled-surface`,
-  },
-  color: {
-    '': '#surface',
-    disabled: `#${accent}-accent-disabled-surface-text`,
-  },
-});
-
-export const DEFAULT_INVERT_STYLES: Styles = invertStyles('primary');
-export const DANGER_INVERT_STYLES: Styles = invertStyles('danger');
-export const SUCCESS_INVERT_STYLES: Styles = invertStyles('success');
-export const WARNING_INVERT_STYLES: Styles = invertStyles('warning');
-export const NOTE_INVERT_STYLES: Styles = invertStyles('note');
-
-// The special theme inverts against its OWN surface rather than the page: that
-// surface is a fixed dark purple, so the inverted control is a white pill with
-// the theme's dark accent on it — the same figure `SPECIAL_CLEAR_STYLES` strikes
-// when selected. Both tokens are fixed-mode, so this stays scheme-invariant like
-// the rest of the theme, where a `#surface` label would not.
-//
-// The fill base is `#white` in every state, disabled included — the same pin
-// `SPECIAL_PRIMARY_STYLES` holds, and for the same reason. See the note on the
-// factory above.
-export const SPECIAL_INVERT_STYLES: Styles = {
-  outline: {
-    '': '0 #special-accent-text.0',
-    focused: '1bw #special-accent-text',
-  },
-  border: {
-    '': '#white.25',
-    disabled: 'transparent',
-  },
-  fill: {
-    '': '#white #black.0',
-    hovered: '#white #black.08',
-    pressed: '#white #black.16',
-    disabled: '#white #special-accent-disabled-surface',
-  },
-  color: {
-    '': '#special-accent-text',
-    disabled: '#special-accent-disabled-surface-text',
-  },
-} as const;
-
-// The `current` theme is the one special case, because it has no `accent-text`
-// to fill with — it has exactly one color, the one it inherits. So `invert` here
-// is literally `CURRENT_PRIMARY_STYLES` with its two colors swapped:
-//
-//              fill          label
-//   primary    #current      #surface   — paint the color, punch the page out of it
-//   invert     #surface      #current   — paint the page, write the color on it
-//
-// That is the same swap `special` makes between its own two filled types (a
-// brand surface under `#white`, against a white pill under the dark accent), so
-// the pairing reads the same way on every theme even though the tokens differ.
-//
-// Swapping the colors also removes the machinery `primary` needs. There,
-// `#current` is BOTH the fill and the value `currentcolor` resolves against, so
-// the label has to be painted with `-webkit-text-fill-color` to keep `color`
-// free — and every icon slot has to be recolored by hand, because SVG stroked
-// with `currentColor` does not see that property. Here the fill is `#surface`,
-// an absolute token that never consults `color`, so `color` is just the label
-// and icons inherit it for free. That is also what makes the `--current-accent`
-// hook below possible: with `color` free, a container can redirect it.
-export const CURRENT_INVERT_STYLES: Styles = {
-  ...CURRENT_FOCUS_RING,
-  // The rim is the inherited color at `primary`'s own `.25`, and it needs no
-  // disabled entry: `#current` resolves against this element's `color`, which
-  // the fade below already moved, so the rim fades with the label. That is the
-  // pre-multiply trap the rest of this section documents, used deliberately —
-  // it is only a trap when a value is faded twice on purpose.
-  border: '#current.25',
-  // The overlay tints TOWARDS the inherited color rather than darkening with
-  // `#black` the way the brand `invert` ramps do. On a white page that reads as
-  // a darkening and on a dark one as a lightening, so the step is visible in
-  // both schemes — where a fixed `#black` over a near-black `#surface` would
-  // barely move. Same two-layer shape in every state so the overlay
-  // interpolates; see `DEFAULT_PRIMARY_STYLES.fill`.
-  // Exactly `CURRENT_PRIMARY_STYLES.fill` with the two colors exchanged: that
-  // one paints `#current` and writes the swap color on it, this one paints the
-  // swap color and writes `#current`. One pair, read from one property, so the
-  // two always stay each other's mirror — whatever a container offers moves
-  // both at once and cannot put them out of step.
-  fill: {
-    '': `${CURRENT_SWAP_COLOR} #current.0`,
-    'hovered | focused': `${CURRENT_SWAP_COLOR} #current.08`,
-    pressed: `${CURRENT_SWAP_COLOR} #current.16`,
-    // Half strength lets the container through, so a dead control stops reading
-    // as a solid chip. The label and rim fade with the color below.
-    disabled: `color-mix(in oklab, ${CURRENT_SWAP_COLOR} 50%, transparent) #current.0`,
-  },
-  // The one place a container can intervene. `--current-accent` names a color a
-  // container OFFERS to the `current` theme, for the case the theme cannot solve
-  // on its own: this flavour writes its label on a `#surface` pill, so it breaks
-  // wherever the inherited color IS `#surface`. A `Banner` is exactly that — it
-  // labels itself `#white` in both schemes, and `#surface` is white in light, so
-  // an unaided `current.invert` inside one measures cr 1.00.
-  //
-  // Unset it and the fallback is `currentcolor`, which is what `#current`
-  // compiled to before, so nothing outside such a container changes.
-  //
-  // The contract for a container that sets it: OWN THAT COLOR IN EVERY STATE,
-  // the disabled one included. The fade below is gated on `!inherit-disabled`
-  // because something above is expected to have faded the color this element
-  // paints from — automatic when that color is inherited, but an offered accent
-  // is not inherited, so the offer has to carry its own muted entry. A
-  // container that offers only a live accent leaves a full-strength label on a
-  // dead chip. See `BANNER_ACTION_ACCENT`, which pairs each entry with a `.4`
-  // counterpart, and the test that pins the pairing.
-  //
-  // Only `color` reads it, and everything else follows for free: `#current`
-  // compiles to `currentcolor`, which in `border` and `fill` resolves against
-  // this element's OWN `color` — so the rim and the hover/pressed overlays all
-  // re-aim at the offered accent without naming it twice. Deliberately NOT read
-  // by the other `current` flavours: they paint their chip ON the container
-  // rather than on a pill, so the inherited color is already the right one and
-  // an offered accent would only lower their contrast — a `#danger-accent-text`
-  // dismiss icon on a danger banner measures 1.53, against the 4.62 `#white` gets.
-  //
-  // The disabled entry spells the mix out rather than writing `#current.4`,
-  // which would compile to `color-mix(… currentcolor …)` — and `currentcolor`
-  // inside the `color` property means the INHERITED value, so it would fade the
-  // container's color instead of the accent.
-  color: {
-    '': '#current',
-    // See `CURRENT_ITEM_STYLES.color` for why this is gated rather than a bare
-    // `disabled`: both mods mark a color that something above already faded.
-    'disabled & !inherit-disabled & !inside-wrapper': '#current.4',
-  },
 } as const;
 
 // ---------- CARD TYPE STYLES ----------
@@ -1627,14 +1429,12 @@ export type ItemVariant =
   // Inherited-color theme — every flavour mixes its colors from `currentcolor`
   // instead of a brand ramp. See the CURRENT THEME section.
   | 'current.item'
-  | 'current.invert'
   | 'current.primary'
   | 'current.outline'
   | 'current.outline-2'
   | 'current.clear'
   | 'current.link'
   | 'current.card'
-  | 'default.invert'
   | 'default.primary'
   | 'default.outline'
   | 'default.outline-2'
@@ -1642,7 +1442,6 @@ export type ItemVariant =
   | 'default.link'
   | 'default.item'
   | 'default.card'
-  | 'danger.invert'
   | 'danger.primary'
   | 'danger.outline'
   | 'danger.outline-2'
@@ -1650,7 +1449,6 @@ export type ItemVariant =
   | 'danger.link'
   | 'danger.item'
   | 'danger.card'
-  | 'success.invert'
   | 'success.primary'
   | 'success.outline'
   | 'success.outline-2'
@@ -1658,7 +1456,6 @@ export type ItemVariant =
   | 'success.link'
   | 'success.item'
   | 'success.card'
-  | 'warning.invert'
   | 'warning.primary'
   | 'warning.outline'
   | 'warning.outline-2'
@@ -1666,7 +1463,6 @@ export type ItemVariant =
   | 'warning.link'
   | 'warning.item'
   | 'warning.card'
-  | 'note.invert'
   | 'note.primary'
   | 'note.outline'
   | 'note.outline-2'
@@ -1674,7 +1470,6 @@ export type ItemVariant =
   | 'note.link'
   | 'note.item'
   | 'note.card'
-  | 'special.invert'
   | 'special.primary'
   | 'special.outline'
   | 'special.clear'
@@ -1688,7 +1483,6 @@ export const ITEM_VARIANTS: Record<ItemVariant, Styles> = {
   // Current theme — colors mixed from the inherited `currentcolor`
   'current.item': CURRENT_ITEM_STYLES,
   'current.primary': CURRENT_PRIMARY_STYLES,
-  'current.invert': CURRENT_INVERT_STYLES,
   'current.outline': CURRENT_OUTLINE_STYLES,
   'current.outline-2': CURRENT_OUTLINE_2_STYLES,
   'current.clear': CURRENT_CLEAR_STYLES,
@@ -1696,7 +1490,6 @@ export const ITEM_VARIANTS: Record<ItemVariant, Styles> = {
   'current.card': CURRENT_CARD_STYLES,
   // Default theme
   'default.primary': DEFAULT_PRIMARY_STYLES,
-  'default.invert': DEFAULT_INVERT_STYLES,
   'default.outline': DEFAULT_OUTLINE_STYLES,
   'default.outline-2': DEFAULT_OUTLINE_2_STYLES,
   'default.clear': DEFAULT_CLEAR_STYLES,
@@ -1705,7 +1498,6 @@ export const ITEM_VARIANTS: Record<ItemVariant, Styles> = {
   'default.card': DEFAULT_CARD_STYLES,
   // Danger theme
   'danger.primary': DANGER_PRIMARY_STYLES,
-  'danger.invert': DANGER_INVERT_STYLES,
   'danger.outline': DANGER_OUTLINE_STYLES,
   'danger.outline-2': DANGER_OUTLINE_2_STYLES,
   'danger.clear': DANGER_CLEAR_STYLES,
@@ -1714,7 +1506,6 @@ export const ITEM_VARIANTS: Record<ItemVariant, Styles> = {
   'danger.card': DANGER_CARD_STYLES,
   // Success theme
   'success.primary': SUCCESS_PRIMARY_STYLES,
-  'success.invert': SUCCESS_INVERT_STYLES,
   'success.outline': SUCCESS_OUTLINE_STYLES,
   'success.outline-2': SUCCESS_OUTLINE_2_STYLES,
   'success.clear': SUCCESS_CLEAR_STYLES,
@@ -1723,7 +1514,6 @@ export const ITEM_VARIANTS: Record<ItemVariant, Styles> = {
   'success.card': SUCCESS_CARD_STYLES,
   // Warning theme
   'warning.primary': WARNING_PRIMARY_STYLES,
-  'warning.invert': WARNING_INVERT_STYLES,
   'warning.outline': WARNING_OUTLINE_STYLES,
   'warning.outline-2': WARNING_OUTLINE_2_STYLES,
   'warning.clear': WARNING_CLEAR_STYLES,
@@ -1732,7 +1522,6 @@ export const ITEM_VARIANTS: Record<ItemVariant, Styles> = {
   'warning.card': WARNING_CARD_STYLES,
   // Note theme
   'note.primary': NOTE_PRIMARY_STYLES,
-  'note.invert': NOTE_INVERT_STYLES,
   'note.outline': NOTE_OUTLINE_STYLES,
   'note.outline-2': NOTE_OUTLINE_2_STYLES,
   'note.clear': NOTE_CLEAR_STYLES,
@@ -1741,7 +1530,6 @@ export const ITEM_VARIANTS: Record<ItemVariant, Styles> = {
   'note.card': NOTE_CARD_STYLES,
   // Special theme
   'special.primary': SPECIAL_PRIMARY_STYLES,
-  'special.invert': SPECIAL_INVERT_STYLES,
   'special.outline': SPECIAL_OUTLINE_STYLES,
   'special.clear': SPECIAL_CLEAR_STYLES,
   'special.link': SPECIAL_LINK_STYLES,
@@ -1800,8 +1588,8 @@ const ACTIONS_COLOR_OVERRIDES: Partial<
   Record<ItemVariant, Record<string, string>>
 > = {
   'current.primary': {
-    '': CURRENT_SWAP_COLOR,
-    disabled: `color-mix(in oklab, ${CURRENT_SWAP_COLOR} 50%, transparent)`,
+    '': '#current-fill',
+    disabled: '#current-fill.5',
   },
 };
 

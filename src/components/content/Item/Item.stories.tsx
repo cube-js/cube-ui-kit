@@ -2371,7 +2371,6 @@ export const TypesAndThemes: StoryFn<CubeItemProps> = (args) => {
   const standardTypes = [
     'item',
     'primary',
-    'invert',
     'outline',
     'outline-2',
     'clear',
@@ -2688,13 +2687,11 @@ CurrentTheme.parameters = {
 // left out: it is theme-agnostic and folds onto `item` visuals on the default
 // theme whatever theme it is given.
 //
-// `primary` and `invert` are worth reading side by side here — they are the same
-// two colors in opposite roles, and this is the only theme where that pairing is
-// built by swapping rather than from separate tokens.
+// `primary` is worth a close look here: it is the one flavour that needs a color
+// the theme does not inherit, so its label and rim come from `#current-fill`.
 const CURRENT_TYPES = [
   'item',
   'primary',
-  'invert',
   'outline',
   'outline-2',
   'clear',
@@ -2763,7 +2760,7 @@ CurrentStates.parameters = {
   docs: {
     description: {
       story:
-        'Every type, every state, on the `current` theme — the matrix the other themes get from `TypesAndThemes`, run on the one theme whose colors are not its own. Nothing in the grid names a color: each block paints a text color and every item mixes its fill, border and label from it. `primary` and `invert` are the same two colors in opposite roles — `primary` fills with the inherited color and punches the page (`#surface`) out of it, `invert` fills with the page and writes the inherited color on top — which on this theme is how `invert` is built, since there is no `accent-text` to fill with. `outline-2` sits in a `#current.08` panel, the `current` stand-in for the `#surface-2` container it is drawn for. `link` carries no chip at all: it goes soft (`#current.8`) at rest and full strength on hover.',
+        'Every type, every state, on the `current` theme — the matrix the other themes get from `TypesAndThemes`, run on the one theme whose colors are not its own. Nothing in the grid names a color: each block paints a text color and every item mixes its fill, border and label from it. `primary` is the exception that proves the rule: it fills with the inherited color at full strength, so its label and rim cannot also come from that color and are read from `#current-fill` instead, which defaults to the page (`#surface`). `outline-2` sits in a `#current.08` panel, the `current` stand-in for the `#surface-2` container it is drawn for. `link` carries no chip at all: it goes soft (`#current.8`) at rest and full strength on hover.',
     },
   },
 };

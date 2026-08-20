@@ -10,13 +10,15 @@ On the `theme` axis it composes instead, and every type now has a `current` flav
 - `clear` — the same ramp plus the focus ring a standalone control needs. The default for `Item.Action` and `ItemBadge`.
 - `outline` — the old `Button` shape: a resting `#current.03` chip inside a `#current.08` border.
 - `outline-2` — `outline` for a container that is already painting something. The brand themes swap an opaque base (`#surface-3` for `#surface-2`); `current` has no opaque base to swap, so the same intent is carried by roughly doubling the tint at every step.
-- `primary` — the high-emphasis control, and the one flavour that INVERTS, like every other theme's `primary`: the fill is the inherited color at full opacity and the label is punched out of it with `#surface` — the page background, which is always the opposite of the text painted on it and so inverts with the scheme for free. Hover and pressed lay a translucent `#black` over the same base, since an arbitrary color has no lighter or darker sibling to step to the way the brand ramps walk `accent-surface` to `-2` and `-3`. The rim comes from the same `#surface` token at `.25` — every other `primary` rims its fill with `accent-surface-border`, cr 1.48 against it, and this measures 1.82 in light and 1.55 in dark. Disabled swaps the rim to `#surface-text.2`, which holds against a `.4` chip that a `#surface` rim would wash into. The label is painted with `-webkit-text-fill-color` rather than `color`: `#current` compiles to the literal `currentcolor`, which in `fill` resolves against the element's own `color`, so setting `color` to the label token would make the fill resolve to the label color and paint a white pill with a white label.
+- `primary` — the high-emphasis control, and the one flavour that fills opaquely, like every other theme's `primary`: the fill is the inherited color at full opacity and the label is punched out of it with the new `#current-fill` token, which defaults to `#surface` — the page background, which is always the opposite of the text painted on it and so follows the scheme for free. Hover and pressed lay a translucent `#black` over the same base, since an arbitrary color has no lighter or darker sibling to step to the way the brand ramps walk `accent-surface` to `-2` and `-3`. The rim comes from the same token at `.25` — every other `primary` rims its fill with `accent-surface-border`, cr 1.48 against it, and this measures 1.82 in light and 1.55 in dark. Disabled swaps the rim to `#surface-text.2`, which holds against a `.4` chip that a `#surface` rim would wash into. The label is painted with `-webkit-text-fill-color` rather than `color`: `#current` compiles to the literal `currentcolor`, which in `fill` resolves against the element's own `color`, so setting `color` to the label token would make the fill resolve to the label color and paint a white pill with a white label.
+
+  `#current-fill` is a real color token with a default, not a bare custom property, so it takes the alpha suffix (`#current-fill.5` is the disabled label) and a container overrides it with one declaration — `styles={{ '#current-fill': '#fixed-dark' }}` — moving the label, the icon slots and the rim together. It exists for the one container the `#surface` default is wrong for: a container whose own text color IS the page paints `#white`, which IS `#surface` in light mode, so an unaided label measures cr 1.00 against its own chip. Its own fill is the right value there, since it contrasts with its own text by construction. Ordinary containers set nothing.
 - `link` — no chip at all. The brand themes intensify from `accent-text-soft` to `accent-text` on hover; here "soft" is the inherited color at `.8` and "strong" is it at full opacity.
 - `card` — the static panel: a `#current.05` fill inside a `#current.2` border (`Item` only).
 
 `current.outline` and `current.item` are byte-identical to the old `Button` and `Item` flavours, so nothing that used `type="current"` changes appearance.
 
-The top step of each ramp stops at `#current.24`. That is the measured AA floor for a full-strength label on a dark surface — the one place this construction inverts, since the chip climbs toward an equally light label instead of away from a dark one.
+The top step of each ramp stops at `#current.24`. That is the measured AA floor for a full-strength label on a dark surface — the one place this construction turns around, since the chip climbs toward an equally light label instead of away from a dark one.
 
 ### Migration
 
@@ -40,6 +42,13 @@ This changes one case: an action that named a `type` but no `theme` used to inhe
 `Banner` is the one in-repo consumer that needed a matching edit. Its actions ask for `type="outline"` and then cleared the border, because back then `outline` meant `note.outline` and friends — whose border is the opaque `#note-border`, a pale line built for a `#surface-2` chip on a light page and plainly wrong on a saturated banner. The fill carried the chip on its own there. On the `current` theme the border is `#current.08` mixed from the banner's own white label, and the fill is a 3% tint that cannot carry a chip by itself, so clearing the border left the action invisible. The override is gone and the type renders as designed.
 
 The host theme still reaches the element, as `data-surface`: it names the surface an action is painted _on_, which is a different question from its own theme now that `current` occupies that axis. The `current` ramp reads it to pick the alphas that work over the `special` theme's fixed dark-purple surface — the job `data-theme` used to do before `theme="current"` claimed that attribute.
+
+### Two nesting fixes
+
+Both fall out of `current.primary` keeping `color` as the fill rather than the label:
+
+- The `Actions` slot is recolored to the label, like the icon slots already were — a nested `Item.Action` defaults to `theme="current"` and mixes its own label from the `currentcolor` it inherits, so without this it took the chip color and vanished into it.
+- `ItemButton`'s `ActionsWrapper` reproduces the label rather than the chip, for the same reason on the sibling path.
 
 ### Also
 

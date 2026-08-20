@@ -24,7 +24,7 @@ export default {
   argTypes: {
     /* Visual presentation */
     type: {
-      options: ['primary', 'invert', 'outline', 'outline-2', 'clear', 'link'],
+      options: ['primary', 'outline', 'outline-2', 'clear', 'link'],
       control: { type: 'radio' },
       description: 'Visual style variant of the button',
       table: {
@@ -178,7 +178,6 @@ const TemplateSizesOnlyIcon: StoryFn<CubeButtonProps> = ({
 
 const BUTTON_TYPES = [
   'primary',
-  'invert',
   'outline',
   'outline-2',
   'clear',
@@ -396,7 +395,7 @@ CurrentStates.parameters = {
   docs: {
     description: {
       story:
-        'Every type, every state, on the `current` theme. Nothing here names a color: the block is painted `#note-surface` / `#note-accent-text` and each button mixes its fill, border and label from that inherited text color. `primary` and `invert` are the same two colors in opposite roles — `primary` fills with the inherited color and punches the page (`#surface`) out of it, `invert` fills with the page and writes the inherited color on top — which is how `invert` is built on this theme, there being no `accent-text` to fill with. `outline-2` sits in a `#current.08` panel, the `current` stand-in for the `#surface-2` container `outline-2` is drawn for. Swap the block color and the whole sweep follows it; `CurrentTheme` below does exactly that across seven containers.',
+        'Every type, every state, on the `current` theme. Nothing here names a color: the block is painted `#note-surface` / `#note-accent-text` and each button mixes its fill, border and label from that inherited text color. `primary` is the one type that needs a second color — it fills with the inherited color at full strength, so its label and rim come from `#current-fill`, which defaults to the page (`#surface`). `outline-2` sits in a `#current.08` panel, the `current` stand-in for the `#surface-2` container `outline-2` is drawn for. Swap the block color and the whole sweep follows it; `CurrentTheme` below does exactly that across seven containers.',
     },
   },
 };
@@ -538,13 +537,12 @@ DisabledWithTooltip.parameters = {
 
 // Contexts the `current` theme is meant to live in: each one paints its own text
 // color, and the button is expected to adopt it whatever its type.
-// `accent` is `--current-accent`: the second color the two filled `current`
-// flavours share. `primary` paints `#current` and writes this on it; `invert`
-// paints this and writes `#current`. Only the containers that INVERT the
-// surface need to offer one — they paint `#white`, so the default (`#surface`)
-// collides with the inherited color and both flavours lose a side. Each offers
-// its own fill, which contrasts with its own text by construction. The tinted
-// containers leave it unset.
+// `currentFill` is the `#current-fill` token: the color `current.primary`
+// punches its label out of the `currentcolor` chip with. Only the containers
+// whose own text color IS the page need to set it — they paint `#white`, so the default
+// (`#surface`) collides with the inherited color and the label vanishes into its
+// own chip. Each sets its own fill, which contrasts with its own text by
+// construction. The tinted containers leave it unset.
 const CURRENT_CONTEXTS = [
   { label: 'Page surface (inherited)', fill: undefined, color: undefined },
   { label: 'Danger', fill: '#danger-surface', color: '#danger-accent-text' },
@@ -555,23 +553,28 @@ const CURRENT_CONTEXTS = [
     label: 'Dark banner',
     fill: '#fixed-dark',
     color: '#white',
-    accent: '#fixed-dark',
+    currentFill: '#fixed-dark',
   },
-  { label: 'Brand', fill: '#primary', color: '#white', accent: '#primary' },
+  {
+    label: 'Brand',
+    fill: '#primary',
+    color: '#white',
+    currentFill: '#primary',
+  },
 ] as const;
 
 const CurrentContext = ({
   label,
   fill,
   color,
-  accent,
+  currentFill,
   children,
 }: {
   label: string;
   fill?: string;
   color?: string;
-  /** `--current-accent` — the swap color the two filled flavours share. */
-  accent?: string;
+  /** `#current-fill` — the label color `current.primary` reads. */
+  currentFill?: string;
   children: ReactNode;
 }) => (
   <Space
@@ -581,7 +584,7 @@ const CurrentContext = ({
     border={fill ? undefined : true}
     fill={fill}
     color={color}
-    styles={accent ? { '$current-accent': accent } : undefined}
+    styles={currentFill ? { '#current-fill': currentFill } : undefined}
   >
     <Title level={6} color={color}>
       {label}
@@ -596,7 +599,7 @@ export const CurrentTheme: StoryFn<CubeButtonProps> = () => (
     {CURRENT_CONTEXTS.map(({ label, fill, color, ...rest }) => (
       <CurrentContext
         key={label}
-        accent={'accent' in rest ? rest.accent : undefined}
+        currentFill={'currentFill' in rest ? rest.currentFill : undefined}
         color={color}
         fill={fill}
         label={label}
@@ -630,12 +633,12 @@ export const CurrentTheme: StoryFn<CubeButtonProps> = () => (
         label: 'Dark banner',
         fill: '#fixed-dark',
         color: '#white',
-        accent: '#fixed-dark',
+        currentFill: '#fixed-dark',
       },
     ].map(({ label, fill, color, ...rest }) => (
       <CurrentContext
         key={label}
-        accent={'accent' in rest ? rest.accent : undefined}
+        currentFill={'currentFill' in rest ? rest.currentFill : undefined}
         color={color}
         fill={fill}
         label={label}
@@ -694,7 +697,7 @@ CurrentTheme.parameters = {
   docs: {
     description: {
       story:
-        'The `current` theme derives its colors — fill, border, label — from the inherited text color (`currentcolor`), so a button adopts whatever color its container paints with. It sits on the `theme` axis rather than the `type` axis because it is a color source, not a shape: every type has a `current` flavour, so emphasis is still chosen the usual way. `outline` (the default) is a `#current.03` chip inside a `#current.08` border, with hover, pressed and selected stepping the same alpha ramp; `primary` starts that ramp at `#current.14`; `clear` paints nothing at rest; `link` is the label alone. The label stays fully opaque and the focus ring stays `#primary-accent-text`, like every other theme. Use it inside colored containers — alerts, banners, dark overlays, tooltips — where a brand theme would either clash with the container or have to be picked to match it.',
+        'The `current` theme derives its colors — fill, border, label — from the inherited text color (`currentcolor`), so a button adopts whatever color its container paints with. It sits on the `theme` axis rather than the `type` axis because it is a color source, not a shape: every type has a `current` flavour, so emphasis is still chosen the usual way. `outline` (the default) is a `#current.03` chip inside a `#current.08` border, with hover, pressed and selected stepping the same alpha ramp; `primary` fills with the inherited color at full strength and punches its label out of it with `#current-fill` — the one flavour a container may need to override, since that token defaults to the page and a container painting `#white` would collide with it; `clear` paints nothing at rest; `link` is the label alone. The label stays fully opaque and the focus ring stays `#primary-accent-text`, like every other theme. Use it inside colored containers — alerts, banners, dark overlays, tooltips — where a brand theme would either clash with the container or have to be picked to match it.',
     },
   },
 };

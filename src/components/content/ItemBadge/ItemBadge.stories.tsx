@@ -45,12 +45,6 @@ export const Types: Story = {
       <ItemBadge
         theme="default"
         icon={<KeyIcon />}
-        type="invert"
-        tooltip="Invert"
-      />
-      <ItemBadge
-        theme="default"
-        icon={<KeyIcon />}
         type="outline"
         tooltip="Outline"
       />

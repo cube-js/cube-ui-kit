@@ -40,6 +40,11 @@ declare module '@tenphi/tasty' {
     // `ColorValue`. `accent-selected-fill` is an internal contrast anchor for
     // `accent-text`, not a style-facing token.
 
+    // ---- Context hooks (see CONTEXT_TOKENS in src/tokens/colors.ts) ----
+    // The label color `current.primary` punches out of its `currentcolor` chip.
+    // Defaults to `#surface`; a container painting `#white` overrides it.
+    'current-fill': true;
+
     // ---- Other primitives ----
     placeholder: true;
     focus: true;

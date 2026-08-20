@@ -134,7 +134,6 @@ describe('current theme disabled fades', () => {
   it('covers every interactive current flavour', () => {
     expect(CURRENT_VARIANTS.sort()).toEqual([
       'current.clear',
-      'current.invert',
       'current.item',
       'current.link',
       'current.outline',
@@ -143,15 +142,16 @@ describe('current theme disabled fades', () => {
     ]);
   });
 
-  // Every `current` flavour fades its label to 40% of the inherited color. They
-  // all express it the same way now that `invert` labels with `#current` like
-  // the rest — the swap color it paints WITH is faded on the fill instead.
-  const fadedFor = (_variant: string) => '#current.4';
+  // Every `current` flavour fades its label to 40% of the inherited color, and
+  // they all express it the same way. `current.primary` is no exception: its
+  // `color` IS the fill there, so this is what fades the chip too (see
+  // `CURRENT_PRIMARY_STYLES.color`).
+  const FADED = '#current.4';
 
   it.each(CURRENT_VARIANTS)('%s gates its label fade', (variant) => {
     const color = ITEM_VARIANTS[variant].color as Record<string, string>;
 
-    expect(color[GATE]).toBe(fadedFor(variant));
+    expect(color[GATE]).toBe(FADED);
     // A bare `disabled` key would win over the gate and fade unconditionally.
     expect(color.disabled).toBeUndefined();
   });
@@ -167,78 +167,58 @@ describe('current theme disabled fades', () => {
       // `current.primary` is the exception, and deliberately: its `color` is the
       // FILL, not the label, so reproducing it on the wrapper would hand sibling
       // actions the chip color and they would vanish into it. The wrapper gets
-      // the swap color — the same thing the `Actions` slot gets inside a plain
+      // `#current-fill` — the same thing the `Actions` slot gets inside a plain
       // `Item`. Everything else hands down its own faded label.
       if (variant === 'current.primary') {
-        expect(color.disabled).toContain('var(--current-accent');
+        expect(color.disabled).toBe('#current-fill.5');
         return;
       }
 
-      expect(color.disabled).toBe(fadedFor(variant));
+      expect(color.disabled).toBe(FADED);
     },
   );
 
-  // One property, shared by the two filled flavours, because they are each
-  // other's mirror: `primary` paints `#current` and writes the swap color on it,
-  // `invert` paints the swap color and writes `#current`. A container that
-  // offers one value therefore moves both at once and cannot put them out of
-  // step. Nothing else reads it — the remaining flavours paint their chip ON the
-  // container, so the inherited color is already the right one.
-  const SWAP = 'var(--current-accent, var(--surface-color))';
-
-  it('is read by the two filled flavours only', () => {
+  // `#current-fill` is read by `current.primary` and by nothing else. Every other
+  // flavour paints its chip ON the container, so the inherited color is already
+  // the right one to write with and an offered one would only lower contrast — a
+  // `#danger-accent-text` dismiss icon on a danger banner measures 1.53, against
+  // the 4.62 the inherited `#white` gets.
+  it('is read by current.primary only', () => {
     const readers = CURRENT_VARIANTS.filter((variant) =>
-      JSON.stringify(ITEM_VARIANTS[variant]).includes('--current-accent'),
-    ).sort();
+      JSON.stringify(ITEM_VARIANTS[variant]).includes('#current-fill'),
+    );
 
-    expect(readers).toEqual(['current.invert', 'current.primary']);
+    expect(readers).toEqual(['current.primary']);
   });
 
-  // Every read spells out the same fallback, which is what keeps a container
-  // that offers nothing rendering as it did before the hook existed. A bare
-  // `var(--current-accent)` would resolve to nothing and drop the color.
-  it.each(['current.invert', 'current.primary'] as const)(
-    '%s always spells out the fallback',
-    (variant) => {
-      const json = JSON.stringify(ITEM_VARIANTS[variant]);
-      const occurrences = (needle: string) => json.split(needle).length - 1;
-
-      expect(occurrences('var(--current-accent')).toBeGreaterThan(0);
-      expect(occurrences(SWAP)).toBe(occurrences('var(--current-accent'));
-    },
-  );
-
-  // The mirror itself: whatever `primary` writes with, `invert` paints with, and
-  // vice versa. Stated as a test because the pair is the whole definition of
-  // `invert` on this theme, and two objects can drift where one cannot.
-  it('current.invert is current.primary with the two colors exchanged', () => {
+  // Every slot that carries the label carries it identically, so a container
+  // that sets `#current-fill` moves all of them at once and cannot leave one
+  // behind. The rim is in the list on purpose: it is the same "opposite side of
+  // the fill" color, at `.25`.
+  it('current.primary paints label, rim and icon slots from it', () => {
     const primary = ITEM_VARIANTS['current.primary'] as Record<string, any>;
-    const invert = ITEM_VARIANTS['current.invert'] as Record<string, any>;
 
-    // `primary` paints `#current`, `invert` writes it.
     expect(primary.fill['']).toContain('#current');
-    expect(invert.color['']).toBe('#current');
+    expect(primary.border['']).toBe('#current-fill.25');
+    expect(primary['-webkit-text-fill-color']['']).toBe('#current-fill');
 
-    // `primary` writes the swap color, `invert` paints it.
-    expect(primary['-webkit-text-fill-color']['']).toBe(SWAP);
-    expect(invert.fill['']).toContain(SWAP);
+    for (const slot of ['Icon', 'RightIcon', 'Prefix', 'Suffix', 'Actions']) {
+      expect(primary[slot].color['']).toBe('#current-fill');
+      expect(primary[slot].color.disabled).toBe('#current-fill.5');
+    }
   });
 
   // `#current`-derived fades gate, because a disabled host has already muted
-  // what they resolve against. The swap color is not inherited, so wherever it
-  // is faded the fade is the reader's own job and takes a bare `disabled`.
-  it('gates the inherited fades and not the offered one', () => {
-    const invert = ITEM_VARIANTS['current.invert'] as Record<string, any>;
+  // what they resolve against. `#current-fill` is not inherited from that faded
+  // color — a container offers the live value only — so its fade is the reader's
+  // own job and takes a bare `disabled`.
+  it('gates the inherited fade and not the offered one', () => {
     const primary = ITEM_VARIANTS['current.primary'] as Record<string, any>;
 
-    expect(invert.color[GATE]).toBe('#current.4');
-    expect(invert.color.disabled).toBeUndefined();
     expect(primary.color[GATE]).toBe('#current.4');
     expect(primary.color.disabled).toBeUndefined();
 
-    expect(primary['-webkit-text-fill-color'].disabled).toContain(
-      'var(--current-accent',
-    );
+    expect(primary['-webkit-text-fill-color'].disabled).toBe('#current-fill.5');
     expect(primary['-webkit-text-fill-color'][GATE]).toBeUndefined();
   });
 });

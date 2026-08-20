@@ -146,6 +146,33 @@ The neutral palette uses a `surface` / `surface-text` model. Each surface depth 
 | `#overlay` | Dim backdrop (50% transparent) |
 | `#clear` | `transparent` |
 
+### Context Hooks
+
+Tokens a **container** sets to steer a component that cannot resolve the color on
+its own. They ship with a default, so nothing has to be set unless the default is
+wrong.
+
+| Token | Default | Role |
+|-------|---------|------|
+| `#current-fill` | `#surface` | The label color `current.primary` punches out of its `currentcolor` chip — read by that one flavour and nothing else |
+
+`theme="current" type="primary"` fills with the color it **inherits**, so its
+label cannot come from that color too and reads `#current-fill` instead. The page
+(`#surface`) is the right answer almost everywhere, and wrong in exactly one
+place: a container whose own text color is the page paints `#white`, which *is*
+`#surface` in light mode, so the label would vanish into its own chip. Such a container sets
+the token to its own fill, which contrasts with its own text by construction:
+
+```jsx
+<Block fill="#fixed-dark" color="#white" styles={{ '#current-fill': '#fixed-dark' }}>
+  <Button theme="current" type="primary">Legible in both schemes</Button>
+</Block>
+```
+
+Setting it moves the label, the icon slots and the chip's rim together. It also
+takes the alpha suffix like any other token (`#current-fill.5` is the disabled
+label), because it is a declared token rather than a bare custom property.
+
 ### Accent System
 
 Each themed color (default, primary, success, danger, warning, note) provides an `accent-*` family anchored to a fixed white "accent surface text". These tokens stay recognizable across schemes (used for branded buttons, CTAs, etc.):

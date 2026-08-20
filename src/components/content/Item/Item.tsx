@@ -138,7 +138,6 @@ export interface CubeItemProps extends BaseProps, ContainerStyleProps {
     | 'item'
     | 'header'
     | 'primary'
-    | 'invert'
     | 'outline'
     | 'outline-2'
     | 'clear'
@@ -765,17 +764,12 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
   // itself with; `primary` pins the hint to `#white`; `default` is a neutral
   // `#dark.65` chip built for a page-colored row.
   //
-  // Two cases want `inherit`:
+  // The whole `current` theme wants `inherit`: every flavour there derives its
+  // label from the inherited color, and a fixed hint cannot follow that. The
+  // neutral `#dark.65`-on-`#dark.04` chip all but vanishes on a dark overlay,
+  // which is exactly where this theme is meant to be used.
   //
-  //   `invert`, on any theme — it labels itself `#surface`, so `primary`'s fixed
-  //   `#white` hint would sit on the wrong side of the fill in dark mode.
-  //
-  //   the whole `current` theme — every flavour there derives its label from the
-  //   inherited color, and a fixed hint cannot follow that. The neutral
-  //   `#dark.65`-on-`#dark.04` chip all but vanishes on a dark overlay, which is
-  //   exactly where this theme is meant to be used.
-  //
-  // `current.primary` belongs to the second case despite painting its label with
+  // `current.primary` is included despite painting its label with
   // `-webkit-text-fill-color` rather than `color`. The hint renders inside the
   // `Suffix` slot, and `CURRENT_PRIMARY_STYLES` recolors that slot to the label
   // color — so `currentcolor` there is the LABEL, not the fill. An earlier
@@ -783,7 +777,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
   // put a `#white` hint on a light fill (measured cr 2.17 on a `#note` container
   // in dark mode).
   const hotkeysType =
-    type === 'invert' || theme === 'current'
+    theme === 'current'
       ? 'inherit'
       : type === 'primary'
         ? 'primary'

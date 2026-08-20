@@ -45,7 +45,7 @@ const meta: Meta<typeof ItemAction> = {
     /* Presentation */
     type: {
       control: 'select',
-      options: ['primary', 'invert', 'outline', 'clear'],
+      options: ['primary', 'outline', 'clear'],
       description:
         'Visual type/variant of the action button (inherits from context when inside ItemButton/Item)',
       table: {
@@ -163,29 +163,6 @@ export const Types: Story = {
           <ItemAction
             theme="default"
             type="primary"
-            icon={<IconTrash />}
-            tooltip="Delete"
-          />
-        </Space>
-      </Flow>
-      <Flow gap="1x">
-        <Title level={4}>Invert</Title>
-        <Space>
-          <ItemAction
-            theme="default"
-            type="invert"
-            icon={<IconEdit />}
-            tooltip="Edit"
-          />
-          <ItemAction
-            theme="default"
-            type="invert"
-            icon={<IconCopy />}
-            tooltip="Copy"
-          />
-          <ItemAction
-            theme="default"
-            type="invert"
             icon={<IconTrash />}
             tooltip="Delete"
           />

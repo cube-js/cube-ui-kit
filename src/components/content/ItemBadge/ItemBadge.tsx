@@ -10,24 +10,19 @@ import {
 
 import {
   CURRENT_CLEAR_STYLES,
-  CURRENT_INVERT_STYLES,
   CURRENT_OUTLINE_STYLES,
   CURRENT_PRIMARY_STYLES,
   DANGER_CLEAR_STYLES,
-  DANGER_INVERT_STYLES,
   DANGER_OUTLINE_STYLES,
   DANGER_PRIMARY_STYLES,
   DEFAULT_CLEAR_STYLES,
-  DEFAULT_INVERT_STYLES,
   DEFAULT_OUTLINE_STYLES,
   DEFAULT_PRIMARY_STYLES,
   ITEM_ACTION_BASE_STYLES,
   SPECIAL_CLEAR_STYLES,
-  SPECIAL_INVERT_STYLES,
   SPECIAL_OUTLINE_STYLES,
   SPECIAL_PRIMARY_STYLES,
   SUCCESS_CLEAR_STYLES,
-  SUCCESS_INVERT_STYLES,
   SUCCESS_OUTLINE_STYLES,
   SUCCESS_PRIMARY_STYLES,
 } from '../../../data/item-themes';
@@ -42,7 +37,7 @@ export interface CubeItemBadgeProps extends BaseProps {
   children?: ReactNode;
   isLoading?: boolean;
   isSelected?: boolean;
-  type?: 'primary' | 'invert' | 'outline' | 'clear' | (string & {});
+  type?: 'primary' | 'outline' | 'clear' | (string & {});
   theme?:
     | 'current'
     | 'default'
@@ -60,23 +55,18 @@ export interface CubeItemBadgeProps extends BaseProps {
 type ItemBadgeVariant =
   // Inherited-color theme — see the CURRENT THEME section of `item-themes`.
   | 'current.primary'
-  | 'current.invert'
   | 'current.outline'
   | 'current.clear'
   | 'default.primary'
-  | 'default.invert'
   | 'default.outline'
   | 'default.clear'
   | 'danger.primary'
-  | 'danger.invert'
   | 'danger.outline'
   | 'danger.clear'
   | 'success.primary'
-  | 'success.invert'
   | 'success.outline'
   | 'success.clear'
   | 'special.primary'
-  | 'special.invert'
   | 'special.outline'
   | 'special.clear';
 
@@ -86,7 +76,7 @@ const ItemBadgeElement = tasty({
     cursor: 'default',
     border: {
       // extend
-      'type=primary | type=invert': '#clear',
+      'type=primary': '#clear',
     },
   }),
   variants: {
@@ -94,31 +84,26 @@ const ItemBadgeElement = tasty({
     // default `clear` flavour is borderless, so a badge does not put a resting
     // chip on every row.
     'current.primary': CURRENT_PRIMARY_STYLES,
-    'current.invert': CURRENT_INVERT_STYLES,
     'current.outline': CURRENT_OUTLINE_STYLES,
     'current.clear': CURRENT_CLEAR_STYLES,
 
     // Default theme
     'default.primary': DEFAULT_PRIMARY_STYLES,
-    'default.invert': DEFAULT_INVERT_STYLES,
     'default.outline': DEFAULT_OUTLINE_STYLES,
     'default.clear': DEFAULT_CLEAR_STYLES,
 
     // Danger theme
     'danger.primary': DANGER_PRIMARY_STYLES,
-    'danger.invert': DANGER_INVERT_STYLES,
     'danger.outline': DANGER_OUTLINE_STYLES,
     'danger.clear': DANGER_CLEAR_STYLES,
 
     // Success theme
     'success.primary': SUCCESS_PRIMARY_STYLES,
-    'success.invert': SUCCESS_INVERT_STYLES,
     'success.outline': SUCCESS_OUTLINE_STYLES,
     'success.clear': SUCCESS_CLEAR_STYLES,
 
     // Special theme
     'special.primary': SPECIAL_PRIMARY_STYLES,
-    'special.invert': SPECIAL_INVERT_STYLES,
     'special.outline': SPECIAL_OUTLINE_STYLES,
     'special.clear': SPECIAL_CLEAR_STYLES,
   },

@@ -1225,7 +1225,7 @@ function buildPalette(
     //
     // The pair above (`accent-disabled-surface` / `-text`) stays what it always
     // was: the muted chip for a PRIMARY button, whose enabled state is an opaque
-    // brand fill under `#white`. Borrowing it here inverted the state — its
+    // brand fill under `#white`. Borrowing it here got the state backwards — its
     // mid-tone chip is a step DOWN from a solid fill but a step UP from a 9%
     // tint, and its `tone: 'max'` label resolves to literal white in light mode.
     'accent-disabled-text': {

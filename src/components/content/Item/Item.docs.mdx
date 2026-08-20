@@ -30,7 +30,7 @@ A foundational component that provides a standardized layout and styling for ite
 - **`suffix`** `ReactNode` — Element rendered after the content (before rightIcon)
 - **`description`** `ReactNode` — Description text displayed with the item
 - **`descriptionPlacement`** `'inline' | 'block'` (default: `inline`) — How the description is positioned relative to the main content. Defaults to `'block'` for `type="card"` and `type="header"`
-- **`type`** `'item' | 'header' | 'primary' | 'invert' | 'outline' | 'outline-2' | 'clear' | 'link' | 'card'` (default: `item`) — Visual style variant
+- **`type`** `'item' | 'header' | 'primary' | 'outline' | 'outline-2' | 'clear' | 'link' | 'card'` (default: `item`) — Visual style variant
 - **`theme`** `'default' | 'danger' | 'success' | 'warning' | 'note' | 'special' | 'current'` (default: `default`) — Semantic colour palette theme. `current` is not a brand palette: it mixes every color from the inherited text color, so the item adopts the color of whatever container it sits in
 - **`size`** `'xsmall' | 'small' | 'medium' | 'large' | 'xlarge' | 'inline' | number` (default: `medium`) — Item size. Accepts custom number or string values
 - **`shape`** `'card' | 'button' | 'sharp' | 'pill'` (default: `button`) — Shape of the item border radius. Defaults to `'card'` for `type="card"`
@@ -92,7 +92,7 @@ The `mods` property accepts the following modifiers:
 - **`disabled`** `boolean` — Applied when isDisabled is true or when loading
 - **`loading`** `boolean` — Applied when isLoading is true
 - **`size`** `string` — Applied based on size prop value (xsmall, small, medium, large, xlarge, inline)
-- **`type`** `string` — Applied based on type prop value (item, header, primary, invert, outline, outline-2, clear, link, card)
+- **`type`** `string` — Applied based on type prop value (item, header, primary, outline, outline-2, clear, link, card)
 - **`theme`** `string` — Applied based on theme prop value (default, danger, success, special, warning, note, current)
 - **`shape`** `string` — Applied based on shape prop value (card, button, sharp, pill)
 
@@ -103,7 +103,6 @@ The `mods` property accepts the following modifiers:
 - `item` - Default item appearance (no specific styling)
 - `header` - Header appearance for section headers (only supports `default` theme, defaults to `descriptionPlacement="block"`, uses semantic heading tags via `level` prop)
 - `primary` - Primary styled item with prominent appearance
-- `invert` - The page and its text swapped: the fill is the theme's `accent-text` and the label is `#surface`. Unlike `primary`, which pins a fixed `#white` label on a brand surface, `invert` follows the scheme — dark chip with a light label in light mode, light chip with a dark label in dark mode. On the `current` theme, which has no `accent-text`, it is `primary` with its two colors swapped: a `#surface` fill with the inherited color written on it. On the `current` theme it is exactly `primary` with the two colors exchanged, both read from one `--current-accent` property (default `#surface`) — a container that paints a text color colliding with the page should offer its own fill there, or both flavours lose a side
 - `outline` - Item with border outline styling; `isSelected` adds brand-tinted fill
 - `outline-2` - Same as `outline` but uses `#surface-3` as the base fill, designed to sit on `#surface-2` containers without blending in (not available for the `special` theme)
 - `clear` - Transparent item with minimal styling; `isSelected` adds brand-tinted fill
@@ -118,7 +117,7 @@ The `mods` property accepts the following modifiers:
 - `warning` - Yellow/amber theme for caution or attention
 - `note` - Violet theme for informational context
 - `special` - Special theme with unique styling (not available for `card` or `header` types)
-- `current` - Not a palette at all: every color is derived from the inherited text color (`#current`) instead of a brand ramp, so the item adopts the color of whatever container it sits in. Every type except `header` has a `current` flavour, so the shape is still yours to pick — `item` keeps its borderless shape (nothing painted at rest, the fill stepping in on hover, pressed and selected), `outline` adds the chip and border, `primary` escalates it further. The label stays fully opaque. Use it inside colored containers — alerts, banners, dark overlays, tooltips
+- `current` - Not a palette at all: every color is derived from the inherited text color (`#current`) instead of a brand ramp, so the item adopts the color of whatever container it sits in. Every type except `header` has a `current` flavour, so the shape is still yours to pick — `item` keeps its borderless shape (nothing painted at rest, the fill stepping in on hover, pressed and selected), `outline` adds the chip and border, `primary` escalates it further. `primary` is the one flavour that needs a second color: its fill is the inherited color at full strength, so the label is punched out of it with `#current-fill` (default `#surface`) — a container whose own text color collides with the page, such as a `Banner` labelling itself `#white`, should override `#current-fill` with its own fill. The label stays fully opaque. Use it inside colored containers — alerts, banners, dark overlays, tooltips
 
 ### Sizes
 

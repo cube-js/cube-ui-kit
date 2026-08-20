@@ -24,42 +24,35 @@ import { useIsFirstRender } from '../../../_internal/hooks/use-is-first-render';
 import { useWarn } from '../../../_internal/hooks/use-warn';
 import {
   CURRENT_CLEAR_STYLES,
-  CURRENT_INVERT_STYLES,
   CURRENT_LINK_STYLES,
   CURRENT_OUTLINE_2_STYLES,
   CURRENT_OUTLINE_STYLES,
   CURRENT_PRIMARY_STYLES,
   DANGER_CLEAR_STYLES,
-  DANGER_INVERT_STYLES,
   DANGER_LINK_STYLES,
   DANGER_OUTLINE_2_STYLES,
   DANGER_OUTLINE_STYLES,
   DANGER_PRIMARY_STYLES,
   DEFAULT_CLEAR_STYLES,
-  DEFAULT_INVERT_STYLES,
   DEFAULT_LINK_STYLES,
   DEFAULT_OUTLINE_2_STYLES,
   DEFAULT_OUTLINE_STYLES,
   DEFAULT_PRIMARY_STYLES,
   NOTE_CLEAR_STYLES,
-  NOTE_INVERT_STYLES,
   NOTE_LINK_STYLES,
   NOTE_OUTLINE_2_STYLES,
   NOTE_OUTLINE_STYLES,
   NOTE_PRIMARY_STYLES,
   SPECIAL_CLEAR_STYLES,
-  SPECIAL_INVERT_STYLES,
   SPECIAL_LINK_STYLES,
   SPECIAL_OUTLINE_STYLES,
   SPECIAL_PRIMARY_STYLES,
   SUCCESS_CLEAR_STYLES,
-  SUCCESS_INVERT_STYLES,
   SUCCESS_LINK_STYLES,
   SUCCESS_OUTLINE_2_STYLES,
   SUCCESS_OUTLINE_STYLES,
   SUCCESS_PRIMARY_STYLES,
   WARNING_CLEAR_STYLES,
-  WARNING_INVERT_STYLES,
   WARNING_LINK_STYLES,
   WARNING_OUTLINE_2_STYLES,
   WARNING_OUTLINE_STYLES,
@@ -111,7 +104,6 @@ export interface CubeButtonProps extends CubeActionProps {
   isSelected?: boolean;
   type?:
     | 'primary'
-    | 'invert'
     | 'danger'
     | 'link'
     | 'clear'
@@ -158,43 +150,36 @@ export type ButtonVariant =
   // The `current` theme mixes every color from the inherited `currentcolor`
   // instead of a brand ramp — see the CURRENT THEME section of `item-themes`.
   | 'current.primary'
-  | 'current.invert'
   | 'current.outline'
   | 'current.outline-2'
   | 'current.clear'
   | 'current.link'
   | 'default.primary'
-  | 'default.invert'
   | 'default.outline'
   | 'default.outline-2'
   | 'default.clear'
   | 'default.link'
   | 'danger.primary'
-  | 'danger.invert'
   | 'danger.outline'
   | 'danger.outline-2'
   | 'danger.clear'
   | 'danger.link'
   | 'success.primary'
-  | 'success.invert'
   | 'success.outline'
   | 'success.outline-2'
   | 'success.clear'
   | 'success.link'
   | 'warning.primary'
-  | 'warning.invert'
   | 'warning.outline'
   | 'warning.outline-2'
   | 'warning.clear'
   | 'warning.link'
   | 'note.primary'
-  | 'note.invert'
   | 'note.outline'
   | 'note.outline-2'
   | 'note.clear'
   | 'note.link'
   | 'special.primary'
-  | 'special.invert'
   | 'special.outline'
   | 'special.clear'
   | 'special.link';
@@ -259,7 +244,7 @@ export const DEFAULT_BUTTON_STYLES: Styles = {
   },
   margin: {
     '': 0,
-    '@parent(button-split, >) & !:first-child & (type=outline | type=outline-2 | type=primary | type=invert)':
+    '@parent(button-split, >) & !:first-child & (type=outline | type=outline-2 | type=primary)':
       '-1bw left',
   },
   zIndex: {
@@ -355,7 +340,6 @@ const ButtonElement = tasty({
   variants: {
     // Current theme — colors mixed from the inherited `currentcolor`
     'current.primary': CURRENT_PRIMARY_STYLES,
-    'current.invert': CURRENT_INVERT_STYLES,
     'current.outline': CURRENT_OUTLINE_STYLES,
     'current.outline-2': CURRENT_OUTLINE_2_STYLES,
     'current.clear': CURRENT_CLEAR_STYLES,
@@ -363,7 +347,6 @@ const ButtonElement = tasty({
 
     // Default theme
     'default.primary': DEFAULT_PRIMARY_STYLES,
-    'default.invert': DEFAULT_INVERT_STYLES,
     'default.outline': DEFAULT_OUTLINE_STYLES,
     'default.outline-2': DEFAULT_OUTLINE_2_STYLES,
     'default.clear': DEFAULT_CLEAR_STYLES,
@@ -371,7 +354,6 @@ const ButtonElement = tasty({
 
     // Danger theme
     'danger.primary': DANGER_PRIMARY_STYLES,
-    'danger.invert': DANGER_INVERT_STYLES,
     'danger.outline': DANGER_OUTLINE_STYLES,
     'danger.outline-2': DANGER_OUTLINE_2_STYLES,
     'danger.clear': DANGER_CLEAR_STYLES,
@@ -379,7 +361,6 @@ const ButtonElement = tasty({
 
     // Success theme
     'success.primary': SUCCESS_PRIMARY_STYLES,
-    'success.invert': SUCCESS_INVERT_STYLES,
     'success.outline': SUCCESS_OUTLINE_STYLES,
     'success.outline-2': SUCCESS_OUTLINE_2_STYLES,
     'success.clear': SUCCESS_CLEAR_STYLES,
@@ -387,7 +368,6 @@ const ButtonElement = tasty({
 
     // Warning theme
     'warning.primary': WARNING_PRIMARY_STYLES,
-    'warning.invert': WARNING_INVERT_STYLES,
     'warning.outline': WARNING_OUTLINE_STYLES,
     'warning.outline-2': WARNING_OUTLINE_2_STYLES,
     'warning.clear': WARNING_CLEAR_STYLES,
@@ -395,7 +375,6 @@ const ButtonElement = tasty({
 
     // Note theme
     'note.primary': NOTE_PRIMARY_STYLES,
-    'note.invert': NOTE_INVERT_STYLES,
     'note.outline': NOTE_OUTLINE_STYLES,
     'note.outline-2': NOTE_OUTLINE_2_STYLES,
     'note.clear': NOTE_CLEAR_STYLES,
@@ -403,7 +382,6 @@ const ButtonElement = tasty({
 
     // Special theme
     'special.primary': SPECIAL_PRIMARY_STYLES,
-    'special.invert': SPECIAL_INVERT_STYLES,
     'special.outline': SPECIAL_OUTLINE_STYLES,
     'special.clear': SPECIAL_CLEAR_STYLES,
     'special.link': SPECIAL_LINK_STYLES,

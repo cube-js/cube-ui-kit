@@ -22,7 +22,7 @@ A compact action button designed for use inside `Item`, `ItemButton`, and `ItemC
 ## Properties
 
 - **`icon`** `ReactNode | 'checkmark'` — Icon element or `'checkmark'` for a selection indicator
-- **`type`** `'primary' | 'invert' | 'outline' | 'clear'` (default: `'clear'`) — Visual type. `invert` is the filled type that follows the scheme: the theme's `accent-text` as the fill with a `#surface` label, rather than `primary`'s fixed `#white` on a brand surface. `clear` is borderless and paints nothing at rest, so a row full of actions does not read as busy.
+- **`type`** `'primary' | 'outline' | 'clear'` (default: `'clear'`) — Visual type. `clear` is borderless and paints nothing at rest, so a row full of actions does not read as busy.
 - **`theme`** `'current' | 'default' | 'danger' | 'success' | 'warning' | 'note' | 'special'` (default: `'current'`) — Color theme. `current` derives every color from the inherited `currentcolor`, so the action tracks whatever row hosts it without being told the row's type or theme. Name any other theme to have the action paint itself instead.
 - **`isLoading`** `boolean` (default: `false`) — Shows loading spinner
 - **`isSelected`** `boolean` (default: `false`) — Selected state (works with `icon="checkmark"`)
