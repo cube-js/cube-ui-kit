@@ -65,6 +65,16 @@ WithScroll.args = {
   },
 };
 
+export const Wrapped = Template.bind({});
+Wrapped.args = {
+  code: 'XMLA Internal Error: Arrow error: External error: Database Execution Error: Internal: Error during planning: Error decoding LogicalPlanNode.logical_plan_type:SubqueryAliasNode.input as protobuf message',
+  language: 'bash',
+  isWrapped: true,
+  styles: {
+    width: 'max 400px',
+  },
+};
+
 export const JavascriptSyntax = Template.bind({});
 JavascriptSyntax.args = {
   language: 'javascript',

@@ -31,6 +31,20 @@ const PreElement = tasty({
     Code: {
       display: 'block',
       preset: 's3',
+      // The global Prism CSS pins `white-space: pre` on
+      // `code[class*="language-"]`, so the wrap has to be re-declared right on
+      // the `<code>` element — `pre-wrap` on the surrounding block alone does
+      // not cascade past it. `overflow-wrap: anywhere` also breaks runs with no
+      // spaces (URLs, tokens, identifiers) that `pre-wrap` on its own would let
+      // overflow.
+      whiteSpace: {
+        '': 'pre',
+        wrapped: 'pre-wrap',
+      },
+      overflowWrap: {
+        '': 'normal',
+        wrapped: 'anywhere',
+      },
     },
   },
 });
@@ -39,6 +53,12 @@ export interface CubePrismCodeProps extends ContainerStyleProps {
   /** The CSS style map */
   style?: BaseProps['style'];
   styles?: Styles;
+  /**
+   * Soft-wrap long lines onto multiple lines instead of scrolling them
+   * horizontally. Unbreakable runs like URLs, tokens and identifiers wrap too.
+   * Useful for error messages and logs.
+   */
+  isWrapped?: boolean;
   /** The code snippet */
   code?: string;
   /** The language of the code snippet */
@@ -82,7 +102,7 @@ function isDiffCode(code: string): boolean {
 }
 
 function PrismCode(props: CubePrismCodeProps, ref) {
-  let { code = '', language = 'javascript', ...otherProps } = props;
+  let { code = '', language = 'javascript', isWrapped, ...otherProps } = props;
 
   if (!code) {
     code = '';
@@ -109,7 +129,7 @@ function PrismCode(props: CubePrismCodeProps, ref) {
   }
 
   return (
-    <PreElement ref={ref} {...otherProps}>
+    <PreElement ref={ref} {...otherProps} mods={{ wrapped: isWrapped }}>
       <Highlight prism={Prism} code={code} language={grammarLang as any}>
         {({ className, style, tokens, getLineProps, getTokenProps }) => {
           return (
