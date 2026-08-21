@@ -128,6 +128,88 @@ const TOTALS: ResultRow[] = [
   },
 ];
 
+interface CrossTabRow {
+  id: string;
+  region: string;
+  organic: number;
+  paid: number;
+  email: number;
+  referral: number;
+  total: number;
+}
+
+const CROSS_TAB_ROWS: CrossTabRow[] = REGIONS.map((region) => {
+  const revenueByChannel = Object.fromEntries(
+    CHANNELS.map((channel) => [
+      channel,
+      ROWS.filter(
+        (row) => row.region === region && row.channel === channel,
+      ).reduce((sum, row) => sum + row.revenue, 0),
+    ]),
+  ) as Record<(typeof CHANNELS)[number], number>;
+
+  return {
+    id: region,
+    region,
+    organic: revenueByChannel.organic,
+    paid: revenueByChannel.paid,
+    email: revenueByChannel.email,
+    referral: revenueByChannel.referral,
+    total: Object.values(revenueByChannel).reduce(
+      (sum, value) => sum + value,
+      0,
+    ),
+  };
+});
+
+const formatCurrency = (value: number) =>
+  value.toLocaleString(undefined, {
+    style: 'currency',
+    currency: 'USD',
+    maximumFractionDigits: 0,
+  });
+
+const CROSS_TAB_COLUMNS: CubeDataTableColumn<CrossTabRow>[] = [
+  {
+    key: 'region',
+    title: 'Region',
+    minWidth: 150,
+    pin: 'start',
+    isSortable: true,
+  },
+  ...CHANNELS.map(
+    (channel): CubeDataTableColumn<CrossTabRow> => ({
+      key: channel,
+      title: channel[0].toUpperCase() + channel.slice(1),
+      dataType: 'number',
+      minWidth: 140,
+      isSortable: true,
+      format: formatCurrency,
+    }),
+  ),
+  {
+    key: 'total',
+    title: 'Total',
+    dataType: 'number',
+    minWidth: 150,
+    isSortable: true,
+    color: 'note',
+    format: formatCurrency,
+  },
+];
+
+const CROSS_TAB_TOTALS: CrossTabRow[] = [
+  {
+    id: 'grand-total',
+    region: 'Grand total',
+    organic: CROSS_TAB_ROWS.reduce((sum, row) => sum + row.organic, 0),
+    paid: CROSS_TAB_ROWS.reduce((sum, row) => sum + row.paid, 0),
+    email: CROSS_TAB_ROWS.reduce((sum, row) => sum + row.email, 0),
+    referral: CROSS_TAB_ROWS.reduce((sum, row) => sum + row.referral, 0),
+    total: CROSS_TAB_ROWS.reduce((sum, row) => sum + row.total, 0),
+  },
+];
+
 const meta: Meta<typeof DataTable> = {
   title: 'Data/DataTable',
   component: DataTable,
@@ -176,6 +258,7 @@ const meta: Meta<typeof DataTable> = {
 export default meta;
 
 type Story = StoryObj<typeof DataTable<ResultRow>>;
+type PivotStory = StoryObj<typeof DataTable<CrossTabRow>>;
 
 /**
  * The defaults are an analytical grid's rather than a list's: `t4` type, banded
@@ -183,6 +266,23 @@ type Story = StoryObj<typeof DataTable<ResultRow>>;
  * and takes tabular figures, so digits line up down the column.
  */
 export const Default: Story = {};
+
+/**
+ * DataTable renders an already-shaped pivot result as an ordinary flat table:
+ * the row field stays pinned, generated values become columns, and totals are
+ * regular pinned rows. The data/query layer owns the pivot calculation; the
+ * table keeps sorting, resizing, cell ranges and copy behavior generic.
+ */
+export const Pivot: PivotStory = {
+  args: {
+    data: CROSS_TAB_ROWS,
+    columns: CROSS_TAB_COLUMNS,
+    pinnedBottomRows: CROSS_TAB_TOTALS,
+    paginationMode: 'off',
+    ariaLabel: 'Revenue by region and channel',
+    height: '260px',
+  },
+};
 
 /** Nested result rows retain DataTable's multi-sort and cell-range behavior. */
 export const TreeRows: Story = {
