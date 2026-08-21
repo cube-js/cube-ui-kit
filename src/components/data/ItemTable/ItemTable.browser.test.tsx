@@ -1,3 +1,6 @@
+import { act } from 'react';
+import { userEvent as realInput } from 'vitest/browser';
+
 import { DatabaseIcon } from '../../../icons';
 import { renderWithRoot, screen } from '../../../test';
 import { Button } from '../../actions/Button';
@@ -59,6 +62,35 @@ const nextFrame = () =>
  * bug that shipped into this component and was found by hand.
  */
 describe('ItemTable layout', () => {
+  it('shrink-wraps rows in auto-height mode despite a supplied height', async () => {
+    renderWithRoot(
+      <div style={{ display: 'flex', flexDirection: 'column', height: 420 }}>
+        <ItemTable
+          qa="SizingTable"
+          data={ROWS.slice(0, 4)}
+          columns={COLUMNS}
+          paginationMode="off"
+          height="300px"
+          isAutoHeight
+        />
+      </div>,
+    );
+
+    const frame = screen.getByTestId('SizingTable');
+
+    await vi.waitFor(() =>
+      expect(frame.getBoundingClientRect().height).toBeGreaterThan(0),
+    );
+
+    const frameRect = frame.getBoundingClientRect();
+    const tableRect = grid().getBoundingClientRect();
+
+    expect(frameRect.height).toBeLessThan(300);
+    expect(Math.abs(frameRect.bottom - tableRect.bottom)).toBeLessThanOrEqual(
+      2,
+    );
+  });
+
   it('resolves column widths from the container', async () => {
     renderWithRoot(<ItemTable data={ROWS} columns={COLUMNS} width="600px" />);
 
@@ -617,5 +649,192 @@ describe('infinite scroll prefetch distance', () => {
     scroller.scrollTop = scroller.scrollHeight;
 
     await vi.waitFor(() => expect(onLoadMore).toHaveBeenCalled());
+  });
+});
+
+describe('treegrid focus and virtualization', () => {
+  interface TreeRow {
+    id: string;
+    name: string;
+    children?: TreeRow[];
+  }
+
+  const treeColumns: CubeItemTableColumn<TreeRow>[] = [
+    { key: 'name', title: 'Name', isRowHeader: true },
+  ];
+  const treeData: TreeRow[] = Array.from({ length: 60 }, (_, index) => ({
+    id: `root-${index}`,
+    name: `Root ${index}`,
+    children:
+      index === 0
+        ? [
+            {
+              id: 'branch',
+              name: 'Branch',
+              children: [{ id: 'leaf', name: 'Leaf' }],
+            },
+          ]
+        : undefined,
+  }));
+
+  const treegrid = () => screen.getByRole('treegrid');
+  const treeRow = (key: string) =>
+    treegrid().querySelector<HTMLTableRowElement>(`tr[data-key="${key}"]`)!;
+
+  it('moves real focus through three visible levels', async () => {
+    renderWithRoot(
+      <ItemTable
+        data={treeData.slice(0, 2)}
+        columns={treeColumns}
+        getRowChildren={(row) => row.children}
+      />,
+    );
+
+    treeRow('root-0').focus();
+    await act(() =>
+      realInput.keyboard('{ArrowRight}{ArrowRight}{ArrowRight}{ArrowRight}'),
+    );
+
+    await vi.waitFor(() => expect(treeRow('leaf')).toHaveFocus());
+  });
+
+  it('adds expanded children to a virtualized visible window', async () => {
+    renderWithRoot(
+      <ItemTable
+        data={treeData}
+        columns={treeColumns}
+        getRowChildren={(row) => row.children}
+        height="260px"
+        isVirtualized
+        overscan={2}
+        paginationMode="off"
+      />,
+    );
+
+    await vi.waitFor(() => expect(treeRow('root-0')).toBeInTheDocument());
+    treeRow('root-0').focus();
+    await act(() => realInput.keyboard('{ArrowRight}'));
+
+    await vi.waitFor(() => expect(treeRow('branch')).toBeInTheDocument());
+    expect(treegrid()).toHaveAttribute('aria-rowcount', '62');
+    expect(
+      treegrid().querySelectorAll('tbody tr[data-element="Row"]').length,
+    ).toBeLessThan(61);
+  });
+
+  it('moves rapid arrow focus across virtualized windows', async () => {
+    renderWithRoot(
+      <ItemTable
+        data={treeData}
+        columns={treeColumns}
+        getRowChildren={(row) => row.children}
+        height="140px"
+        isVirtualized
+        overscan={0}
+        paginationMode="off"
+      />,
+    );
+
+    await vi.waitFor(() => expect(treeRow('root-0')).toBeInTheDocument());
+    treeRow('root-0').focus();
+
+    // Do not yield between presses. Once the next row is outside the mounted
+    // window, the old DOM row still receives keys while logical focus advances.
+    await act(() => {
+      for (let index = 0; index < 12; index++) {
+        document.activeElement?.dispatchEvent(
+          new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }),
+        );
+      }
+    });
+
+    await vi.waitFor(() => expect(treeRow('root-12')).toHaveFocus());
+
+    expect(
+      document.querySelector<HTMLElement>('[data-element="Scroller"]')!
+        .scrollTop,
+    ).toBeGreaterThan(0);
+  });
+
+  it('does not restore pending virtual focus after focus leaves the treegrid', async () => {
+    renderWithRoot(
+      <>
+        <ItemTable
+          data={treeData}
+          columns={treeColumns}
+          getRowChildren={(row) => row.children}
+          height="140px"
+          isVirtualized
+          overscan={0}
+          paginationMode="off"
+        />
+        <button type="button">Outside control</button>
+      </>,
+    );
+
+    await vi.waitFor(() => expect(treeRow('root-0')).toBeInTheDocument());
+    treeRow('root-0').focus();
+
+    await act(() => {
+      for (let index = 0; index < 12; index++) {
+        document.activeElement?.dispatchEvent(
+          new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }),
+        );
+      }
+      screen.getByRole('button', { name: 'Outside control' }).focus();
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    expect(
+      screen.getByRole('button', { name: 'Outside control' }),
+    ).toHaveFocus();
+  });
+
+  it('does not apply an unhandled pending key to the stale DOM row', async () => {
+    const onExpand = vi.fn();
+    const branchesBeforeTarget: TreeRow[] = Array.from(
+      { length: 20 },
+      (_, index) => ({
+        id: `pending-${index}`,
+        name: `Pending ${index}`,
+        children:
+          index < 12
+            ? [{ id: `pending-child-${index}`, name: `Child ${index}` }]
+            : undefined,
+      }),
+    );
+
+    renderWithRoot(
+      <ItemTable
+        data={branchesBeforeTarget}
+        columns={treeColumns}
+        getRowChildren={(row) => row.children}
+        height="140px"
+        isVirtualized
+        overscan={0}
+        paginationMode="off"
+        onExpand={onExpand}
+      />,
+    );
+
+    await vi.waitFor(() => expect(treeRow('pending-0')).toBeInTheDocument());
+    treeRow('pending-0').focus();
+
+    await act(() => {
+      for (let index = 0; index < 12; index++) {
+        document.activeElement?.dispatchEvent(
+          new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }),
+        );
+      }
+
+      // pending-12 is a leaf, so this has no logical tree action. The mounted
+      // stale row is a branch and must not receive the key as a fallback.
+      document.activeElement?.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }),
+      );
+    });
+
+    await vi.waitFor(() => expect(treeRow('pending-12')).toHaveFocus());
+    expect(onExpand).not.toHaveBeenCalled();
   });
 });

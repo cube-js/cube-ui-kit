@@ -406,6 +406,32 @@ tokens (`#loading-face-1` … `#loading-face-3`) rather than a `currentColor`
 glyph, so it ignores `color` and belongs at illustration sizes (`size="8x"` and
 up).
 
+## Hierarchical Table Rows
+
+`ItemTable` and `DataTable` opt into native treegrid behavior with
+`getRowChildren`. Pass roots in `data`; the callback returns already-loaded
+children, and row keys must be globally unique. Expansion is uncontrolled with
+`defaultExpandedKeys` or controlled with `expandedKeys` / `onExpand`.
+
+The shared table engine recursively sorts siblings, paginates roots with their
+complete subtrees, and flattens only expanded rows for rendering and
+virtualization. ItemTable client search preserves ancestor paths and temporarily
+opens branches containing matches. Server modes do not transform nested data.
+
+Use `treeColumnKey` to choose the disclosure/indent column. Its hierarchy chrome
+is customizable through the `TreeContent`, `TreeToggle`, and `TreeValue`
+sub-elements. ItemTable multiple selection cascades by default; DataTable cell
+ranges contain visible rows only. See each component's docs for pagination,
+numbering, selection, and drag/drop limits.
+
+DataTable also accepts nested column definitions for already-shaped pivot
+results. Group nodes create accessible multi-row headers with native column
+spans, while sorting, resizing, ranges and copying continue to operate on their
+leaf columns. Both tables fill an available flex pane by default; use
+`isAutoHeight` for a compact result whose frame should end at its last rendered
+row. Auto-height renders every row, so bounded tables remain the right choice
+for large results.
+
 ## Form System
 
 ### Form Component

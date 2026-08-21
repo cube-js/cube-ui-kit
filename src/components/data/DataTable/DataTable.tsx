@@ -1,10 +1,11 @@
+import { useCollator } from '@react-aria/i18n';
 import { SelectionManager } from '@react-stately/selection';
 import { useControlledState } from '@react-stately/utils';
 import { CONTAINER_STYLES } from '@tenphi/tasty';
 import { forwardRef, useMemo, useRef, useState } from 'react';
 import { useMultipleSelectionState } from 'react-stately';
 
-import { useEvent } from '../../../_internal/hooks';
+import { useEvent, useWarn } from '../../../_internal/hooks';
 import { useI18n } from '../../../i18n';
 import { useCombinedRefs } from '../../../utils/react';
 import { extractStyles } from '../../../utils/styles';
@@ -12,6 +13,12 @@ import { clampPage, getPageInfo } from '../../navigation/Pagination';
 import { DraggableCollection } from '../../shared/DraggableCollection';
 import { ItemTableFooter } from '../ItemTable/ItemTableFooter';
 import { RowCollection } from '../TableBase/RowCollection';
+import {
+  buildTableTree,
+  flattenTableTree,
+  reindexTableTree,
+  sortTableTree,
+} from '../TableBase/table-tree';
 import { TableView } from '../TableBase/TableView';
 import { selectionRowKey } from '../TableBase/types';
 import { useCellSelection } from '../TableBase/use-cell-selection';
@@ -23,24 +30,73 @@ import {
 import { useContainerWidth } from '../TableBase/use-container-width';
 import {
   freezeColumnWidths,
+  getColumnText,
   useTableColumns,
 } from '../TableBase/use-table-columns';
 import { ROW_NUMBER_COLUMN_KEY } from '../TableBase/use-table-selection';
+import { compareByColumn } from '../TableBase/use-table-sort';
 import { useTableSorts } from '../TableBase/use-table-sorts';
 import { useTableStorage } from '../TableBase/use-table-storage';
+import { useTableTreeState } from '../TableBase/use-table-tree-state';
 
 import type { Key } from '@react-types/shared';
 import type { ForwardedRef, ReactElement } from 'react';
 import type {
+  CubeTableColumnGroupHeader,
   CubeTableColumnLayout,
   CubeTableRowSection,
 } from '../TableBase/types';
-import type { CubeDataTableColumn, CubeDataTableProps } from './types';
+import type {
+  CubeDataTableColumn,
+  CubeDataTableColumnDefinition,
+  CubeDataTableColumnGroup,
+  CubeDataTableProps,
+} from './types';
 
 /** Wide enough for five digits at the dense default. */
 const ROW_NUMBER_WIDTH = 56;
 
 const EMPTY_WIDTHS: Record<string, number> = {};
+
+interface DataTableColumnModel<T> {
+  columns: CubeDataTableColumn<T>[];
+  headerPaths: Map<string, readonly CubeTableColumnGroupHeader[]>;
+}
+
+function isColumnGroup<T>(
+  column: CubeDataTableColumnDefinition<T>,
+): column is CubeDataTableColumnGroup<T> {
+  return 'children' in column;
+}
+
+/** Flattens the public column tree while retaining each leaf's header path. */
+function buildColumnModel<T>(
+  definitions: readonly CubeDataTableColumnDefinition<T>[],
+): DataTableColumnModel<T> {
+  const columns: CubeDataTableColumn<T>[] = [];
+  const headerPaths = new Map<string, readonly CubeTableColumnGroupHeader[]>();
+
+  function visit(
+    entries: readonly CubeDataTableColumnDefinition<T>[],
+    path: readonly CubeTableColumnGroupHeader[],
+  ) {
+    for (const entry of entries) {
+      if (isColumnGroup(entry)) {
+        visit(entry.children, [
+          ...path,
+          { key: entry.key, title: entry.title },
+        ]);
+      } else {
+        columns.push(entry);
+        if (path.length) headerPaths.set(entry.key, path);
+      }
+    }
+  }
+
+  visit(definitions, []);
+
+  return { columns, headerPaths };
+}
 
 function defaultGetRowKey<T>(rowKey: string) {
   return (row: T, index: number): Key => {
@@ -59,9 +115,9 @@ function defaultGetRowKey<T>(rowKey: string) {
  * rows pinned for totals.
  *
  * It knows nothing about Cube. Measures, dimensions, pivots and drill-downs
- * reach it as ordinary columns, `render` output and `column.header.menu`
- * content, which is what keeps the ~34 kB of Cloud's column-header menu in
- * Cloud.
+ * reach it as leaf columns, presentational column groups, `render` output and
+ * `column.header.menu` content, which is what keeps the ~34 kB of Cloud's
+ * column-header menu in Cloud.
  */
 function DataTable<T = any>(
   props: CubeDataTableProps<T>,
@@ -72,6 +128,11 @@ function DataTable<T = any>(
     columns,
     rowKey = 'id',
     getRowKey,
+    getRowChildren,
+    treeColumnKey,
+    expandedKeys,
+    defaultExpandedKeys,
+    onExpand,
     pinnedTopRows,
     pinnedBottomRows,
     isLoading = false,
@@ -91,6 +152,7 @@ function DataTable<T = any>(
     isStriped = true,
     isHeaderHidden,
     isHeaderSticky,
+    isAutoHeight = false,
     showRowNumbers = false,
     sortMode,
     sorts: sortsProp,
@@ -153,7 +215,38 @@ function DataTable<T = any>(
   const [scrollerEl, setScrollerEl] = useState<HTMLElement | null>(null);
   const containerWidth = useContainerWidth(scrollerEl);
 
+  const resolvedGetRowKey = useMemo(
+    () => getRowKey ?? defaultGetRowKey<T>(rowKey),
+    [getRowKey, rowKey],
+  );
+
+  const treeModel = useMemo(
+    () =>
+      getRowChildren
+        ? buildTableTree(data, getRowChildren, resolvedGetRowKey)
+        : null,
+    [data, getRowChildren, resolvedGetRowKey],
+  );
+
+  useWarn(treeModel != null && treeModel.duplicateKeys.length > 0, {
+    key: ['data-table-tree-duplicate-keys'],
+    args: [
+      'DataTable:',
+      'Tree row keys must be unique across the complete hierarchy. Duplicate rows were ignored.',
+    ],
+  });
+  useWarn(treeModel != null && treeModel.cyclicKeys.length > 0, {
+    key: ['data-table-tree-cyclic-keys'],
+    args: [
+      'DataTable:',
+      'Tree data contains a cycle. Cyclic descendants were ignored.',
+    ],
+  });
+
   const storage = useTableStorage(storageKey);
+
+  const columnModel = useMemo(() => buildColumnModel(columns), [columns]);
+  const hasColumnGroups = columnModel.headerPaths.size > 0;
 
   /**
    * `dataType` is presentational, so it is folded into the column here rather
@@ -162,7 +255,7 @@ function DataTable<T = any>(
    */
   const resolvedColumns = useMemo(
     () =>
-      columns.map((column) => {
+      columnModel.columns.map((column) => {
         const isNumeric = column.dataType === 'number';
 
         return {
@@ -178,7 +271,7 @@ function DataTable<T = any>(
             : column.cellStyles,
         } as CubeDataTableColumn<T>;
       }),
-    [columns],
+    [columnModel.columns],
   );
 
   // Applied to the SOURCE columns, before `useTableColumns`, so hidden-column
@@ -193,6 +286,27 @@ function DataTable<T = any>(
   });
   const orderedColumns = columnOrderState.columns;
 
+  const resolvedTreeColumnKey = useMemo(() => {
+    if (!treeModel) return undefined;
+    const visibleColumns = orderedColumns.filter((column) => !column.isHidden);
+    return visibleColumns.some((column) => column.key === treeColumnKey)
+      ? treeColumnKey
+      : visibleColumns[0]?.key;
+  }, [treeModel, orderedColumns, treeColumnKey]);
+
+  useWarn(
+    treeModel != null &&
+      treeColumnKey != null &&
+      resolvedTreeColumnKey !== treeColumnKey,
+    {
+      key: ['data-table-tree-column-invalid', treeColumnKey],
+      args: [
+        'DataTable:',
+        '`treeColumnKey` must identify a visible data column. Falling back to the first visible column.',
+      ],
+    },
+  );
+
   const {
     sorts,
     sortedRows,
@@ -201,12 +315,46 @@ function DataTable<T = any>(
     mode: resolvedSortMode,
   } = useTableSorts<T>({
     columns: orderedColumns,
-    rows: data,
-    mode: sortMode,
+    rows: treeModel ? treeModel.roots.map((node) => node.row) : data,
+    mode: treeModel ? 'server' : sortMode,
     sorts: sortsProp,
     defaultSorts,
     onSortsChange,
   });
+
+  const collator = useCollator({ numeric: true, sensitivity: 'base' });
+  const treeSortMode = treeModel
+    ? sortMode ??
+      (orderedColumns.some((column) => column.isSortable) ? 'client' : 'off')
+    : resolvedSortMode;
+  const processedTreeRoots = useMemo(() => {
+    const roots = treeModel?.roots ?? [];
+    if (treeSortMode !== 'client' || !sorts.length) return roots;
+
+    const active = sorts
+      .map((sort) => ({
+        sort,
+        column: orderedColumns.find((column) => column.key === sort.columnKey),
+      }))
+      .filter((entry) => entry.column != null);
+
+    return sortTableTree(roots, (a, b) => {
+      for (const { sort, column } of active) {
+        const result = compareByColumn(
+          column!,
+          collator,
+          a.row,
+          a.sourceIndex,
+          b.row,
+          b.sourceIndex,
+        );
+        if (result !== 0) {
+          return result * (sort.direction === 'asc' ? 1 : -1);
+        }
+      }
+      return a.siblingIndex - b.siblingIndex;
+    });
+  }, [treeModel, treeSortMode, sorts, orderedColumns, collator]);
 
   const [pageSize, setPageSizeState] = useControlledState<number>(
     pageSizeProp as number,
@@ -223,7 +371,11 @@ function DataTable<T = any>(
 
   const isPaginated = paginationMode !== 'off';
   const isServerPaginated = paginationMode === 'server';
-  const total = isServerPaginated ? totalProp ?? 0 : sortedRows.length;
+  const total = isServerPaginated
+    ? totalProp ?? 0
+    : treeModel
+      ? processedTreeRoots.length
+      : sortedRows.length;
 
   const pageInfo = getPageInfo({
     page,
@@ -242,13 +394,51 @@ function DataTable<T = any>(
     if (pageSizeProp === undefined) storage.write({ pageSize: next });
   });
 
-  const visibleRows =
+  const flatVisibleRows =
     paginationMode === 'client'
       ? sortedRows.slice(
           (pageInfo.page - 1) * pageSize,
           pageInfo.page * pageSize,
         )
       : sortedRows;
+
+  const pageTreeRoots = useMemo(
+    () =>
+      reindexTableTree(
+        paginationMode === 'client'
+          ? processedTreeRoots.slice(
+              (pageInfo.page - 1) * pageSize,
+              pageInfo.page * pageSize,
+            )
+          : processedTreeRoots,
+      ),
+    [processedTreeRoots, paginationMode, pageInfo.page, pageSize],
+  );
+
+  const treeState = useTableTreeState<T>({
+    roots: pageTreeRoots,
+    allNodesByKey: treeModel?.byKey ?? new Map(),
+    expandedKeys,
+    defaultExpandedKeys,
+    getTextValue: (node) => {
+      const column = orderedColumns.find(
+        (entry) => entry.key === resolvedTreeColumnKey,
+      );
+      return column
+        ? getColumnText(column, node.row, node.sourceIndex) ?? String(node.key)
+        : String(node.key);
+    },
+    onExpand,
+    ariaLabel,
+  });
+
+  const visibleTreeEntries = treeModel ? treeState.visibleEntries : [];
+  const visibleRows = treeModel
+    ? visibleTreeEntries.map((entry) => entry.row)
+    : flatVisibleRows;
+  const visibleRowKeys = treeModel
+    ? visibleTreeEntries.map((entry) => entry.key)
+    : undefined;
 
   const [ownColumnWidths, setOwnColumnWidths] = useState<
     Record<string, number>
@@ -317,11 +507,6 @@ function DataTable<T = any>(
 
   const { t } = useI18n();
 
-  const resolvedGetRowKey = useMemo(
-    () => getRowKey ?? defaultGetRowKey<T>(rowKey),
-    [getRowKey, rowKey],
-  );
-
   // Every row a range can reach, in the order they appear on screen. Pinned rows
   // are in it: a total is a figure like any other, and having to copy it
   // separately from the column it sums is the wrong trade.
@@ -345,12 +530,21 @@ function DataTable<T = any>(
       ...(pinnedTopRows ?? []).map((row, index) =>
         selectionRowKey('pinnedTop', resolvedGetRowKey(row, index)),
       ),
-      ...visibleRows.map(resolvedGetRowKey),
+      ...visibleRows.map(
+        (row, index) =>
+          visibleRowKeys?.[index] ?? resolvedGetRowKey(row, index),
+      ),
       ...(pinnedBottomRows ?? []).map((row, index) =>
         selectionRowKey('pinnedBottom', resolvedGetRowKey(row, index)),
       ),
     ],
-    [pinnedTopRows, visibleRows, pinnedBottomRows, resolvedGetRowKey],
+    [
+      pinnedTopRows,
+      visibleRows,
+      visibleRowKeys,
+      pinnedBottomRows,
+      resolvedGetRowKey,
+    ],
   );
 
   // The hook works in one flat row order; the section a row belongs to is a
@@ -384,10 +578,6 @@ function DataTable<T = any>(
     onRangeChange: onCellRangeChange,
   });
 
-  // Same as `ItemTable`: style props (`height`, `maxHeight`, `margin`, …) land
-  // on the root frame. `height` is the one that matters — there is no
-  // page-scroll mode, so bounding the grid is what turns the body into a
-  // scroller, pins the header, and lets virtualization engage at all.
   const rootStyles = { ...extractStyles(props, CONTAINER_STYLES), ...styles };
 
   const smallestPageSize = pageSizeOptions?.length
@@ -411,16 +601,26 @@ function DataTable<T = any>(
 
   /* ── column reordering ────────────────────────────────────────────────── */
 
+  useWarn(isColumnReorderable && hasColumnGroups, {
+    key: ['data-table-grouped-column-reorder'],
+    args: [
+      'DataTable:',
+      '`isColumnReorderable` is ignored when columns contain header groups.',
+    ],
+  });
+
+  const canReorderColumns = isColumnReorderable && !hasColumnGroups;
+
   const headRowRef = useRef<HTMLTableRowElement>(null);
   const draggableColumnKeys = useMemo(
-    () => getDraggableColumnKeys(layout.columns, isColumnReorderable),
-    [layout.columns, isColumnReorderable],
+    () => getDraggableColumnKeys(layout.columns, canReorderColumns),
+    [layout.columns, canReorderColumns],
   );
   const columnCollection = useMemo(
     () =>
       new RowCollection(
         layout.columns.filter((column) =>
-          isColumnDraggable(column, isColumnReorderable),
+          isColumnDraggable(column, canReorderColumns),
         ),
         (column) => column.key,
         new Set(),
@@ -429,7 +629,7 @@ function DataTable<T = any>(
         (column) =>
           typeof column.title === 'string' ? column.title : column.key,
       ),
-    [layout.columns, isColumnReorderable],
+    [layout.columns, canReorderColumns],
   );
   /**
    * `'single'`, not `'none'`.
@@ -454,7 +654,16 @@ function DataTable<T = any>(
   // One draggable column cannot be reordered, so the machinery stays unmounted
   // and the header keeps its exact DOM.
   const isColumnDragEnabled =
-    isColumnReorderable && draggableColumnKeys.length > 1;
+    canReorderColumns && draggableColumnKeys.length > 1;
+
+  const treeRowNumberOffset = treeModel
+    ? paginationMode === 'client'
+      ? flattenTableTree(
+          processedTreeRoots.slice(0, (pageInfo.page - 1) * pageSize),
+          treeState.expandedKeys,
+        ).length
+      : 0
+    : null;
 
   const renderTable = (
     columnDragState?: any,
@@ -466,6 +675,7 @@ function DataTable<T = any>(
       rootRef={rootRef}
       qa={qa || 'DataTable'}
       rows={visibleRows}
+      rowKeys={visibleRowKeys}
       pinnedTopRows={pinnedTopRows}
       pinnedBottomRows={pinnedBottomRows}
       // Continuous across pages: row 101 is row 101, not row 1 of page two.
@@ -474,16 +684,22 @@ function DataTable<T = any>(
       // same, and `rows` is that page. Only `'off'` starts at 1, because then
       // there is no page to be on.
       rowNumberOffset={
-        paginationMode === 'off' ? 0 : (pageInfo.page - 1) * pageSize
+        treeRowNumberOffset ??
+        (paginationMode === 'off' ? 0 : (pageInfo.page - 1) * pageSize)
       }
       // The same offset drives `aria-rowindex`, which is document-absolute by
       // contract — a screen reader on page 3 should hear "row 51 of 240", not
       // "row 1 of 25".
       rowIndexOffset={
-        paginationMode === 'off' ? 0 : (pageInfo.page - 1) * pageSize
+        treeModel
+          ? 0
+          : paginationMode === 'off'
+            ? 0
+            : (pageInfo.page - 1) * pageSize
       }
-      totalRowCount={total}
+      totalRowCount={treeModel ? visibleRows.length : total}
       layout={layout}
+      columnHeaderPaths={columnModel.headerPaths}
       // Always on, unlike `ItemTable`. A result grid is read down a column, and
       // once the values are wide and right-aligned the rule is what keeps a
       // figure attached to its column — which is why Cloud's ag-grid theme sets
@@ -512,6 +728,7 @@ function DataTable<T = any>(
       isRowMoveAnimated={isRowMoveAnimated}
       isHeaderHidden={isHeaderHidden}
       isHeaderSticky={isHeaderSticky}
+      isAutoHeight={isAutoHeight}
       // The header shows the column name at body size — a result grid has no
       // room for the uppercase caption a list header uses.
       // `t4` throughout: a result grid is read as a block, and one step down
@@ -519,7 +736,7 @@ function DataTable<T = any>(
       // legibility. The header takes the medium weight of the same step.
       contentPreset="t4"
       headerPreset="t4m"
-      sortMode={resolvedSortMode}
+      sortMode={treeSortMode}
       sorts={sorts}
       onColumnSort={toggleSort}
       onColumnSortChange={setColumnSort}
@@ -548,6 +765,17 @@ function DataTable<T = any>(
       headCollectionProps={headCollectionProps}
       headRowRef={headRowRef}
       onColumnFocus={handleColumnFocus}
+      tree={
+        treeModel
+          ? {
+              state: treeState.state,
+              ariaProps: treeState.ariaProps,
+              nodes: treeState.visibleNodes,
+              entries: visibleTreeEntries,
+              columnKey: resolvedTreeColumnKey!,
+            }
+          : undefined
+      }
       footer={
         hasFooter ? (
           <ItemTableFooter

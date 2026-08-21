@@ -6,11 +6,13 @@ import type { CubeTablePageInfo } from '../../navigation/Pagination';
 import type {
   CubeTableCellRange,
   CubeTableColumn,
+  CubeTableLayoutProps,
   CubeTableLoadingIndicator,
   CubeTableRowContext,
   CubeTableRowSection,
   CubeTableRowSize,
   CubeTableSort,
+  CubeTableTreeProps,
 } from '../TableBase/types';
 
 /**
@@ -28,12 +30,32 @@ export interface CubeDataTableColumn<T = any> extends CubeTableColumn<T> {
   dataType?: 'string' | 'number' | 'boolean' | 'date' | 'unknown';
 }
 
+/**
+ * A header band spanning one or more DataTable columns.
+ *
+ * Groups are presentational: sorting, resizing, selection and the value
+ * pipeline continue to operate on the leaf columns in `children`.
+ */
+export interface CubeDataTableColumnGroup<T = any> {
+  /** Stable identity within the column tree. */
+  key: string;
+  title?: ReactNode;
+  children: CubeDataTableColumnDefinition<T>[];
+}
+
+/** A leaf column or a nested header group. */
+export type CubeDataTableColumnDefinition<T = any> =
+  | CubeDataTableColumn<T>
+  | CubeDataTableColumnGroup<T>;
+
 export interface CubeDataTableProps<T = any>
   extends BaseProps,
-    ContainerStyleProps {
+    ContainerStyleProps,
+    CubeTableLayoutProps,
+    CubeTableTreeProps<T> {
   /* ── data ─────────────────────────────────────────────────────────── */
   data: readonly T[];
-  columns: CubeDataTableColumn<T>[];
+  columns: CubeDataTableColumnDefinition<T>[];
   rowKey?: string;
   getRowKey?: (row: T, index: number) => Key;
 
@@ -72,6 +94,7 @@ export interface CubeDataTableProps<T = any>
   rowSize?: CubeTableRowSize;
   /** An exact height in px, when none of the named steps is the answer. */
   rowHeight?: number;
+  /** Exact height of each header row in px. */
   headerHeight?: number;
   /** @default true — banding is what makes a wide row readable across. */
   isStriped?: boolean;

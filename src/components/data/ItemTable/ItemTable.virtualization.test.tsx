@@ -139,6 +139,21 @@ describe('ItemTable virtualization', () => {
     expect(isVirtualizedPath()).toBe(true);
   });
 
+  it('turns virtualization off in auto-height mode', () => {
+    renderWithRoot(
+      <ItemTable
+        data={makeRows(100)}
+        columns={COLUMNS}
+        paginationMode="off"
+        isVirtualized
+        isAutoHeight
+      />,
+    );
+
+    expect(bodyRows()).toHaveLength(100);
+    expect(isVirtualizedPath()).toBe(false);
+  });
+
   it('honours a custom threshold', () => {
     renderWithRoot(
       <ItemTable

@@ -20,7 +20,15 @@ module.exports = [
         }),
       );
     },
-    // 505 kB, raised from 501 kB, which the palette branch exceeded by 596 B
+    // 510 kB, raised from 505 kB for ItemTable/DataTable tree rows. The shared
+    // immutable hierarchy model, recursive operations, React Aria treegrid
+    // wiring, cascading selection and disclosure renderer add 2.97 kB locally
+    // (507.97 kB total). The Button-only budget below is unchanged, confirming
+    // that consumers which do not import the tables tree-shake the feature.
+    // Rounded to the next 5 kB step for the macOS/Linux zlib difference noted
+    // below.
+    //
+    // Previously 505 kB, raised from 501 kB, which the palette branch exceeded by 596 B
     // locally. Measured with both sides rebuilt on the same machine: `main` at
     // 500.29 kB, that branch at 501.60 kB, so the palette work itself is
     // +1.31 kB — the color-seeded accent arrangement, `color-seed.ts`, and
@@ -110,7 +118,7 @@ module.exports = [
     //
     // Note when checking locally: `size-limit` bundles the built `./dist`, it
     // does not build. Run `pnpm build` first or you will measure a stale bundle.
-    limit: '505kB',
+    limit: '510kB',
   },
   {
     name: 'Tree shaking (just a Button)',

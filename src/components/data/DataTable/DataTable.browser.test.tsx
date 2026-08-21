@@ -38,6 +38,62 @@ const scroller = () =>
   document.querySelector<HTMLElement>('[data-element="Scroller"]')!;
 
 describe('DataTable layout', () => {
+  it('fills a flex pane by default', async () => {
+    renderWithRoot(
+      <div
+        data-qa="TableHost"
+        style={{ display: 'flex', flexDirection: 'column', height: 420 }}
+      >
+        <DataTable
+          qa="SizingTable"
+          data={ROWS.slice(0, 4)}
+          columns={COLUMNS}
+          paginationMode="off"
+        />
+      </div>,
+    );
+
+    const frame = screen.getByTestId('SizingTable');
+
+    await vi.waitFor(() =>
+      expect(Math.round(frame.getBoundingClientRect().height)).toBe(420),
+    );
+  });
+
+  it('shrink-wraps rows in auto-height mode despite a supplied height', async () => {
+    renderWithRoot(
+      <div
+        data-qa="TableHost"
+        style={{ display: 'flex', flexDirection: 'column', height: 420 }}
+      >
+        <DataTable
+          qa="SizingTable"
+          data={ROWS.slice(0, 4)}
+          columns={COLUMNS}
+          paginationMode="off"
+          height="300px"
+          isAutoHeight
+        />
+      </div>,
+    );
+
+    const frame = screen.getByTestId('SizingTable');
+
+    await vi.waitFor(() =>
+      expect(frame.getBoundingClientRect().height).toBeGreaterThan(0),
+    );
+
+    const frameRect = frame.getBoundingClientRect();
+    const tableRect = grid().getBoundingClientRect();
+
+    expect(frameRect.height).toBeLessThan(300);
+    // The card/frame edge may contribute one border pixel; there must not be a
+    // leftover flexible track below the final row.
+    expect(Math.abs(frameRect.bottom - tableRect.bottom)).toBeLessThanOrEqual(
+      2,
+    );
+  });
+
   it('does not overflow horizontally when the columns fit', async () => {
     renderWithRoot(
       <DataTable
