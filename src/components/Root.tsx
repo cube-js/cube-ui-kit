@@ -6,6 +6,7 @@ import {
   filterBaseProps,
   setGlobalPredefinedStates,
   tasty,
+  TastyBatchProvider,
 } from '@tenphi/tasty';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ModalProvider } from 'react-aria';
@@ -40,6 +41,15 @@ setGlobalPredefinedStates({
 
 configure({
   colorSpace: 'rgb',
+  // Collapse the kit's stylesheet writes into one style invalidation per commit
+  // instead of one per component. Only takes effect inside a
+  // `<TastyBatchProvider>` window, and windows have to be opened per portal
+  // boundary because a commit that mounts a portal does not re-render `<Root>`.
+  // The kit opens three: here, in `<Portal>` (tooltips) and in `<Overlay>`
+  // (popovers, modals, trays — i.e. Dialog and Menu). Writes in any commit
+  // without a window go straight through exactly as before, so a
+  // `useLayoutEffect` can never measure an element whose rules have not landed.
+  batchInjection: true,
   units: {
     x: 'var(--gap)',
     r: 'var(--radius)',
@@ -203,42 +213,46 @@ export function Root(allProps: CubeRootProps) {
   const styles = extractStyles(props, STYLES);
 
   return (
-    <I18nProvider i18n={i18n} locale={locale}>
-      <Provider navigation={navigation} root={rootRef}>
-        <TrackingProvider event={tracking?.event}>
-          <RootElement
-            ref={ref}
-            data-uikit={VERSION}
-            data-tasty={TASTY_VERSION}
-            data-font-display={fontDisplay}
-            {...filterBaseProps(props, { eventProps: true })}
-            styles={styles}
-            style={{
-              '--pointer': cursorStrategy === 'web' ? 'pointer' : 'default',
-              ...style,
-            }}
-            tokens={tokens}
-          >
-            <GlobalStyles
-              bodyStyles={bodyStyles}
-              publicUrl={publicUrl}
-              fonts={fonts}
-              font={font}
-              monospaceFont={monospaceFont}
-              fontDisplay={fontDisplay}
-            />
-            <ModalProvider>
-              <PortalProvider value={ref}>
-                <EventBusProvider>
-                  <OverlayProvider>
-                    <AlertDialogApiProvider>{children}</AlertDialogApiProvider>
-                  </OverlayProvider>
-                </EventBusProvider>
-              </PortalProvider>
-            </ModalProvider>
-          </RootElement>
-        </TrackingProvider>
-      </Provider>
-    </I18nProvider>
+    <TastyBatchProvider>
+      <I18nProvider i18n={i18n} locale={locale}>
+        <Provider navigation={navigation} root={rootRef}>
+          <TrackingProvider event={tracking?.event}>
+            <RootElement
+              ref={ref}
+              data-uikit={VERSION}
+              data-tasty={TASTY_VERSION}
+              data-font-display={fontDisplay}
+              {...filterBaseProps(props, { eventProps: true })}
+              styles={styles}
+              style={{
+                '--pointer': cursorStrategy === 'web' ? 'pointer' : 'default',
+                ...style,
+              }}
+              tokens={tokens}
+            >
+              <GlobalStyles
+                bodyStyles={bodyStyles}
+                publicUrl={publicUrl}
+                fonts={fonts}
+                font={font}
+                monospaceFont={monospaceFont}
+                fontDisplay={fontDisplay}
+              />
+              <ModalProvider>
+                <PortalProvider value={ref}>
+                  <EventBusProvider>
+                    <OverlayProvider>
+                      <AlertDialogApiProvider>
+                        {children}
+                      </AlertDialogApiProvider>
+                    </OverlayProvider>
+                  </EventBusProvider>
+                </PortalProvider>
+              </ModalProvider>
+            </RootElement>
+          </TrackingProvider>
+        </Provider>
+      </I18nProvider>
+    </TastyBatchProvider>
   );
 }
