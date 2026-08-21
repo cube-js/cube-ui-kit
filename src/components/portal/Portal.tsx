@@ -1,3 +1,4 @@
+import { TastyBatchProvider } from '@tenphi/tasty';
 import { createPortal } from 'react-dom';
 
 import { PortalProps } from './types';
@@ -29,8 +30,15 @@ import { usePortal } from './usePortal';
 export function Portal(props: PortalProps) {
   const { children, mountRoot, isDisabled } = usePortal(props);
 
-  if (isDisabled) return <>{children}</>;
+  // Overlays are where injection and measurement interleave worst: a dialog or
+  // tooltip mounts a fresh subtree and react-aria positions it from a layout
+  // effect in that same commit. `<Root>`'s batch window does not cover those
+  // commits — it does not re-render for them — so open one here. It flushes in
+  // `useInsertionEffect`, before any positioning effect reads the DOM.
+  const content = <TastyBatchProvider>{children}</TastyBatchProvider>;
+
+  if (isDisabled) return content;
   // Render inline until mountRoot is available (fixes timing issues in tests and SSR)
-  if (!mountRoot) return <>{children}</>;
-  return createPortal(children, mountRoot);
+  if (!mountRoot) return content;
+  return createPortal(content, mountRoot);
 }
