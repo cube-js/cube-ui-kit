@@ -1,5 +1,22 @@
 # @cube-dev/ui-kit
 
+## 0.165.0
+
+### Minor Changes
+
+- [#1338](https://github.com/cube-js/cube-ui-kit/pull/1338) [`4ffa6e03`](https://github.com/cube-js/cube-ui-kit/commit/4ffa6e03dc359d4226b2df4002f38a5811d42fdc) Thanks [@tenphi](https://github.com/tenphi)! - Add accessible nested tree rows, expansion state, hierarchy-aware operations, cascading ItemTable selection, grouped DataTable headers for pivoted results, and intrinsic table sizing with `isAutoHeight`.
+
+### Patch Changes
+
+- [#1343](https://github.com/cube-js/cube-ui-kit/pull/1343) [`947bd472`](https://github.com/cube-js/cube-ui-kit/commit/947bd472dc7de93265282eedd950c58c8c4ed386) Thanks [@tenphi](https://github.com/tenphi)! - Make Board's `collisionMode="swap"` source-aware: cross-board drops now insert only at an empty anchor, downscale without moving destination widgets, and cancel invalid transfers.
+
+- [#1341](https://github.com/cube-js/cube-ui-kit/pull/1341) [`7a4b6778`](https://github.com/cube-js/cube-ui-kit/commit/7a4b6778bbc859f04394d7732362413a5436e6c5) Thanks [@tenphi](https://github.com/tenphi)! - Update Tasty to 3.1.0. Colour-token opacity is now applied with CSS relative colour syntax instead of the token's channel components, so every `#token.N` value — `#surface-text.04`, `#purple.10` and the rest — emits `oklch(from var(--surface-text-color) l c h / .04)`. The colours are unchanged, `#current.N` still composes with the alpha it inherits, and the `--*-color-rgb` companion variables are untouched, so raw CSS that reads them directly (`rgb(var(--primary-color-rgb) / .2)` in `GlobalStyles`) keeps working. Tasty also now treats `light-dark()` and `contrast-color()` as colours, alongside `color-mix()` and `color()`.
+
+- [#1337](https://github.com/cube-js/cube-ui-kit/pull/1337) [`4594454b`](https://github.com/cube-js/cube-ui-kit/commit/4594454b8df49978de6a33f489e2871dfbdd5303) Thanks [@tenphi](https://github.com/tenphi)! - `TextArea` / `CommandTextArea`: `autoSize` no longer disturbs the page while typing, and a single line is one row again.
+
+  - **The height is now measured off-screen instead of on the live textarea.** Measuring used to set `height: auto` on the real element, force a layout, then restore it — twice per keystroke. Any ancestor sharing the column re-laid out mid-keystroke, so in a chat layout the transcript's scroll viewport grew by the collapsed rows and its scroll offset moved; the browser's scroll anchoring undid that imperfectly, which reads as the whole conversation bouncing a pixel in the rhythm of typing. A textarea already grown past its `rows` minimum — the everyday state of a chat prompt — lost 40px of scroll offset per keystroke with anchoring out of the way.
+  - **Row counting is fixed.** `height: auto` sizes a textarea from its `rows` attribute and the font's own metrics, and that height was being divided by CSS `line-height` to get a row count. Where the line height is tighter than the font's natural line box, one line of text counted as two rows, so an `autoSize` textarea with `rows={1}` rendered a row taller than its content. Row counting now rounds a measured content height that carries no such floor, which also stops a fractional line height (a zoomed page, a percentage preset) from adding a phantom row.
+
 ## 0.164.0
 
 ### Minor Changes
