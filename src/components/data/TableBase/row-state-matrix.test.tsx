@@ -88,7 +88,12 @@ describe('row state matrix', () => {
     // This is the rule that disappears when the merge fires: it sits between
     // `hovered` and the top of the group.
     expect(compound).toBeDefined();
-    expect(compound!.body).toMatch(/--row-overlay-color:\s*rgb\(/);
+    // Matched on the token it derives from, not on how the opacity is applied:
+    // Tasty fades a colour token with `color-mix()`, and that form is its
+    // business to change.
+    expect(compound!.body).toMatch(
+      /--row-overlay-color:[^;]*var\(--surface-text-color\)/,
+    );
   });
 
   it('keeps `dimmed` out of the fill maps entirely', () => {

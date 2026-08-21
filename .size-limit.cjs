@@ -20,7 +20,17 @@ module.exports = [
         }),
       );
     },
-    // 510 kB, raised from 505 kB for ItemTable/DataTable tree rows. The shared
+    // 515 kB. 509.94 kB locally with `@tenphi/tasty` 3.1.0, against 509.55 kB
+    // for the same code on 3.0.2 — +0.39 kB for the colour-function work, and
+    // the Button entry below moved by the same amount, which is what a change
+    // inside Tasty's always-included core looks like.
+    //
+    // The old 510 kB was not this branch's to spend: `main` had already reached
+    // 509.55 kB on its own, 450 B under, so any dependency bump was going to
+    // trip it. Rounded to the next 5 kB step rather than fitted to the reading,
+    // per the note further down about the local figure running low.
+    //
+    // Before this: 510 kB, raised from 505 kB for ItemTable/DataTable tree rows. The shared
     // immutable hierarchy model, recursive operations, React Aria treegrid
     // wiring, cascading selection and disclosure renderer add 2.97 kB locally
     // (507.97 kB total). The Button-only budget below is unchanged, confirming
@@ -118,14 +128,27 @@ module.exports = [
     //
     // Note when checking locally: `size-limit` bundles the built `./dist`, it
     // does not build. Run `pnpm build` first or you will measure a stale bundle.
-    limit: '510kB',
+    limit: '515kB',
   },
   {
     name: 'Tree shaking (just a Button)',
     path: './dist/index.js',
     webpack: true,
     import: '{ Button }',
-    // 123.67 kB at the time of writing, against `main`'s 123.32 kB with both
+    // 124.03 kB in CI (124,026 B, 26 bytes over the previous 124 kB), and all of
+    // it the dependency again — `@tenphi/tasty` 3.0.2 -> the colour-function
+    // work. Both sides rebuilt here read 123.63 kB on 3.0.2 and 124.03 kB on the
+    // snapshot, +0.40 kB, and `All` moved by the same 0.40 kB (508.98 ->
+    // 509.38 kB). Matching deltas on both entries is what a change inside
+    // Tasty's always-included core looks like, exactly as the 3.0.1 -> 3.0.2
+    // note below describes. The kit's own source is unchanged.
+    //
+    // Raised to 125 kB rather than shaved, as the note below asks for: the
+    // previous entry left 330 B and this needs 400 B. Nothing here is padding —
+    // it is `light-dark()`/`contrast-color()` support and the relative-colour
+    // opacity path, all in the parser and style handlers every consumer loads.
+    //
+    // Before this: 123.67 kB, against `main`'s 123.32 kB with both
     // sides rebuilt on the same machine: +0.35 kB for the `current` theme. This
     // is the one entry the theme legitimately moves, and it is worth being clear
     // about why, because the comments above use this budget staying flat as the
@@ -155,6 +178,6 @@ module.exports = [
     // (directional syntax, handler displacement, chunk conflicts) ship in every
     // bundle, because `isDevEnv()` is evaluated at runtime so one build serves
     // dev and production. Headroom stays small so real bloat still trips.
-    limit: '124kB',
+    limit: '125kB',
   },
 ];
