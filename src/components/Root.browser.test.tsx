@@ -1,6 +1,6 @@
 import { hasPendingStyleWrites, tasty } from '@tenphi/tasty';
 import { act, render } from '@testing-library/react';
-import { useLayoutEffect, useRef, useState } from 'react';
+import { StrictMode, useLayoutEffect, useRef, useState } from 'react';
 
 import { Portal } from './portal';
 import { Root } from './Root';
@@ -116,6 +116,36 @@ describe('Root batched injection', () => {
 
     expect(observed).toContain(true);
     expect(hasPendingStyleWrites()).toBe(false);
+  });
+
+  // Dev runs under StrictMode, which double-invokes render but runs insertion
+  // effects once. If a batch window survived its commit, the next commit with no
+  // provider in it would quietly get 'always' semantics and its layout effect
+  // would measure an unstyled box — a dev-only wrong number that never
+  // self-corrects. Consumers develop in StrictMode, so this is the common path.
+  it('keeps measurement correct after a StrictMode commit', () => {
+    const WIDTH = 211;
+    const Box = tasty({ styles: { width: `${WIDTH}px`, height: '10px' } });
+    let measured = -1;
+
+    function Measured() {
+      const ref = useRef<HTMLDivElement>(null);
+      useLayoutEffect(() => {
+        measured = ref.current!.getBoundingClientRect().width;
+      }, []);
+      return <Box ref={ref} />;
+    }
+
+    render(
+      <StrictMode>
+        <Root />
+      </StrictMode>,
+    );
+
+    // A separate commit, outside any provider.
+    render(<Measured />);
+
+    expect(measured).toBe(WIDTH);
   });
 
   it('measures correctly inside a portal that mounts later', () => {
