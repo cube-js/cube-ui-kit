@@ -187,6 +187,13 @@ export function useBoardRegistry(
   const previewRef = useRef<{ boardId: string; working: LayoutItem[] } | null>(
     null,
   );
+  // Whether the latest cross-board preview actually landed at the requested
+  // cell. A collision resolver may decline a placement, in which case
+  // `moveElement` restores its synthetic origin; that must not be mistaken for a
+  // valid target preview and committed somewhere the pointer never selected.
+  const targetLandingRef = useRef<{ boardId: string; valid: boolean } | null>(
+    null,
+  );
   // Board content rects captured at drag start. Reading geometry from here (not
   // live getBoundingClientRect) means the live-reflow preview can't move the
   // rects that selection/landing depend on -> no feedback loop.
@@ -440,6 +447,7 @@ export function useBoardRegistry(
       affectedRef.current = new Set([boardId]);
       sourceSnapshotRef.current = cloneLayout(entry.getLayout());
       previewRef.current = null;
+      targetLandingRef.current = null;
       lastLandingRef.current = { x: item.x, y: item.y };
       // Start tracking the live cursor for the ancestor-handoff gate. Keyboard
       // drags have no pointer, so the gate falls back to the widget anchor.
@@ -905,6 +913,15 @@ export function useBoardRegistry(
     (target: BoardEntry, item: LayoutItem, x: number, y: number) => {
       const pp = target.getPositionParams();
       const compactor = target.getCompactor();
+      // `swap` is deliberately source-aware. Inside one board it exchanges two
+      // widgets; across boards there is no slot on the destination to give back,
+      // so it becomes strict empty-anchor insertion with downscaling. The strict
+      // path also skips target compaction: inserting one widget must not reflow or
+      // push any widget already owned by the destination.
+      const strictIncomingSwap =
+        compactor.preventCollision === true &&
+        !compactor.allowOverlap &&
+        target.getCollisionMode() === 'swap';
 
       const carried =
         previewRef.current?.boardId === target.id
@@ -962,7 +979,10 @@ export function useBoardRegistry(
             : undefined,
         },
       );
-      const compacted = [...compactor.compact(moved, pp.cols)];
+      const compacted = strictIncomingSwap
+        ? cloneLayout(moved)
+        : [...compactor.compact(moved, pp.cols)];
+      const landed = getLayoutItem(compacted, item.i);
       // Skip a frame that would *newly* stack widgets on the target (see the same
       // guard in `moveWithinBoard`): keep the last valid preview instead of
       // committing an overlap the no-op compactor cannot resolve. The baseline is
@@ -972,18 +992,41 @@ export function useBoardRegistry(
         !compactor.allowOverlap &&
         hasNewOverlap(overlappingPairs(base), compacted)
       ) {
+        if (strictIncomingSwap) {
+          const snapshot = targetSnapshotsRef.current.get(target.id);
+          if (snapshot) target.applyLayout(cloneLayout(snapshot), false);
+          target.setPlaceholders([]);
+          previewRef.current = null;
+          targetLandingRef.current = { boardId: target.id, valid: false };
+        }
         return;
       }
-      previewRef.current = { boardId: target.id, working: compacted };
 
-      const landed = getLayoutItem(compacted, item.i) ?? { ...item, x, y };
+      // A prevented collision restores the incoming item to the synthetic origin
+      // used to make `moveElement` active. For a strict cross-board swap, only the
+      // exact requested anchor is a valid insertion; an occupied anchor or a fit
+      // below minW/minH therefore clears the preview and restores the untouched
+      // target snapshot.
+      if (strictIncomingSwap && (!landed || landed.x !== x || landed.y !== y)) {
+        const snapshot = targetSnapshotsRef.current.get(target.id);
+        if (snapshot) target.applyLayout(cloneLayout(snapshot), false);
+        target.setPlaceholders([]);
+        previewRef.current = null;
+        targetLandingRef.current = { boardId: target.id, valid: false };
+        return;
+      }
+
+      previewRef.current = { boardId: target.id, working: compacted };
+      targetLandingRef.current = { boardId: target.id, valid: true };
+
+      const previewItem = landed ?? { ...item, x, y };
       // Apply only the other widgets so the dragged item is never rendered as a
       // host on the target board.
       target.applyLayout(
         compacted.filter((l) => l.i !== item.i),
         false,
       );
-      target.setPlaceholders([{ ...landed }]);
+      target.setPlaceholders([{ ...previewItem }]);
     },
     [],
   );
@@ -1070,6 +1113,7 @@ export function useBoardRegistry(
           if (snap) prev?.applyLayout(cloneLayout(snap), false);
           prev?.setPlaceholders([]);
           previewRef.current = null;
+          targetLandingRef.current = null;
         }
         if (isGroup) {
           // The group moves by the delta the grabbed widget travelled from its
@@ -1105,6 +1149,7 @@ export function useBoardRegistry(
         // Drop the carried working layout so the newly entered target seeds a
         // fresh preview from its own clean snapshot.
         previewRef.current = null;
+        targetLandingRef.current = null;
 
         // Snapshot the newly entered target once, as the stable base for its
         // reflow preview.
@@ -1142,17 +1187,12 @@ export function useBoardRegistry(
       }
     } else {
       const landing = lastLandingRef.current ?? { x: ds.item.x, y: ds.item.y };
-
-      // Remove the item from the source board and compact.
-      if (source) {
-        const sp = source.getPositionParams();
-        const sc = source.getCompactor();
-        const remaining = source.getLayout().filter((l) => l.i !== ds.itemId);
-        source.applyLayout([...sc.compact(remaining, sp.cols)], true);
-      }
-
       const tp = target!.getPositionParams();
       const tc = target!.getCompactor();
+      const strictIncomingSwap =
+        tc.preventCollision === true &&
+        !tc.allowOverlap &&
+        target!.getCollisionMode() === 'swap';
 
       // Prefer committing the exact arrangement the user was previewing (item
       // already placed with the neighbours reflowed around it via continuity).
@@ -1162,92 +1202,126 @@ export function useBoardRegistry(
           ? previewRef.current.working
           : null;
 
-      let finalLayout: LayoutItem[];
-      if (carried) {
-        finalLayout = [...tc.compact(cloneLayout(carried), tp.cols)];
-      } else {
-        // No preview frame ran (e.g. a teleport drop). Seed the item just above
-        // (or left of) its landing cell so `moveElement` actively places it
-        // rather than no-opping and letting compaction sink it to the bottom.
-        const newItem: LayoutItem =
-          tc.type === 'horizontal'
-            ? { ...ds.item, x: Math.max(0, landing.x) - 1, y: landing.y }
-            : { ...ds.item, x: landing.x, y: Math.max(0, landing.y) - 1 };
-        const base = [
-          ...cloneLayout(
-            (
-              targetSnapshotsRef.current.get(target!.id) ?? target!.getLayout()
-            ).filter((l) => l.i !== ds.itemId),
-          ),
-          newItem,
-        ];
-        const moved = moveElement(
-          base,
-          newItem,
-          landing.x,
-          landing.y,
-          true,
-          tc.preventCollision,
-          tc.type,
-          tp.cols,
-          tc.allowOverlap,
-          {
-            // Cross-board, so no exchange (see `previewOnTarget`). `newItem` is
-            // built from the drag-start item, so its size is already the one to
-            // measure against.
-            resolveCollision: createCollisionResolver(
-              target!.getCollisionMode(),
-              {
-                cols: tp.cols,
-                maxRows: tp.maxRows,
-                desired: { w: ds.item.w, h: ds.item.h },
-                allowExchange: false,
-              },
-            ),
-          },
-        );
-        finalLayout = [...tc.compact(moved, tp.cols)];
-      }
-      // Never commit a drop that *creates* a stack. When the compactor cannot
-      // resolve overlaps (`compact={null}` / `preventCollision`) a teleport drop
-      // into an occupied region would otherwise land the item on top of another
-      // widget; place it in the first free slot instead so the pointer path
-      // matches the keyboard path. Overlaps the target already had do not trigger
-      // the reshuffle (they are preserved as-is). `allowOverlap` opts out.
-      const targetOthers = cloneLayout(
-        (
-          targetSnapshotsRef.current.get(target!.id) ?? target!.getLayout()
-        ).filter((l) => l.i !== ds.itemId),
-      );
-      if (
-        !tc.allowOverlap &&
-        hasNewOverlap(overlappingPairs(targetOthers), finalLayout)
-      ) {
-        finalLayout = [
-          ...targetOthers,
-          placeInFreeSlot(
-            targetOthers,
-            { ...ds.item, x: landing.x, y: landing.y },
-            tp.cols,
-            tp.maxRows,
-          ),
-        ];
-      }
-      target!.applyLayout(finalLayout, true);
+      const hasValidStrictLanding =
+        targetLandingRef.current?.boardId === target!.id &&
+        targetLandingRef.current.valid &&
+        carried != null;
 
-      // Signal the transfer so a controlled app can move the widget's
-      // declaration into the destination container (positions are already
-      // reported via each board's onLayoutChange).
-      onTransferRef.current?.({
-        widgetId: ds.itemId,
-        fromBoardId: ds.sourceBoardId,
-        toBoardId: target!.id,
-        item: getLayoutItem(finalLayout, ds.itemId) ?? {
-          ...ds.item,
-          x: landing.x,
-          y: landing.y,
-        },
-      });
+      // A strict incoming swap is allowed to commit only the exact valid preview
+      // shown under the pointer. An occupied anchor, a min-size failure, or moving
+      // from a valid cell onto an invalid one cancels the transfer completely:
+      // both boards return to their gesture-start snapshots and no controlled
+      // layout or transfer callback fires.
+      if (strictIncomingSwap && !hasValidStrictLanding) {
+        if (source) {
+          source.applyLayout(cloneLayout(sourceSnapshotRef.current), false);
+        }
+        const targetSnapshot = targetSnapshotsRef.current.get(target!.id);
+        if (targetSnapshot) {
+          target!.applyLayout(cloneLayout(targetSnapshot), false);
+        }
+      } else {
+        // Remove the item from the source board and compact only after the target
+        // landing is known to be committable.
+        if (source) {
+          const sp = source.getPositionParams();
+          const sc = source.getCompactor();
+          const remaining = source.getLayout().filter((l) => l.i !== ds.itemId);
+          source.applyLayout([...sc.compact(remaining, sp.cols)], true);
+        }
+
+        let finalLayout: LayoutItem[];
+        if (carried) {
+          // The strict path already produced an overlap-free exact placement and
+          // must not compact the destination widgets around it.
+          finalLayout = strictIncomingSwap
+            ? cloneLayout(carried)
+            : [...tc.compact(cloneLayout(carried), tp.cols)];
+        } else {
+          // No preview frame ran (e.g. a teleport drop). Seed the item just above
+          // (or left of) its landing cell so `moveElement` actively places it
+          // rather than no-opping and letting compaction sink it to the bottom.
+          const newItem: LayoutItem =
+            tc.type === 'horizontal'
+              ? { ...ds.item, x: Math.max(0, landing.x) - 1, y: landing.y }
+              : { ...ds.item, x: landing.x, y: Math.max(0, landing.y) - 1 };
+          const base = [
+            ...cloneLayout(
+              (
+                targetSnapshotsRef.current.get(target!.id) ??
+                target!.getLayout()
+              ).filter((l) => l.i !== ds.itemId),
+            ),
+            newItem,
+          ];
+          const moved = moveElement(
+            base,
+            newItem,
+            landing.x,
+            landing.y,
+            true,
+            tc.preventCollision,
+            tc.type,
+            tp.cols,
+            tc.allowOverlap,
+            {
+              // Cross-board, so no exchange (see `previewOnTarget`). `newItem` is
+              // built from the drag-start item, so its size is already the one to
+              // measure against.
+              resolveCollision: createCollisionResolver(
+                target!.getCollisionMode(),
+                {
+                  cols: tp.cols,
+                  maxRows: tp.maxRows,
+                  desired: { w: ds.item.w, h: ds.item.h },
+                  allowExchange: false,
+                },
+              ),
+            },
+          );
+          finalLayout = [...tc.compact(moved, tp.cols)];
+        }
+        // Never commit a drop that *creates* a stack. When the compactor cannot
+        // resolve overlaps (`compact={null}` / `preventCollision`) a teleport drop
+        // into an occupied region would otherwise land the item on top of another
+        // widget; place it in the first free slot instead so the pointer path
+        // matches the keyboard path. Overlaps the target already had do not trigger
+        // the reshuffle (they are preserved as-is). `allowOverlap` opts out.
+        const targetOthers = cloneLayout(
+          (
+            targetSnapshotsRef.current.get(target!.id) ?? target!.getLayout()
+          ).filter((l) => l.i !== ds.itemId),
+        );
+        if (
+          !tc.allowOverlap &&
+          hasNewOverlap(overlappingPairs(targetOthers), finalLayout)
+        ) {
+          finalLayout = [
+            ...targetOthers,
+            placeInFreeSlot(
+              targetOthers,
+              { ...ds.item, x: landing.x, y: landing.y },
+              tp.cols,
+              tp.maxRows,
+            ),
+          ];
+        }
+        target!.applyLayout(finalLayout, true);
+
+        // Signal the transfer so a controlled app can move the widget's
+        // declaration into the destination container (positions are already
+        // reported via each board's onLayoutChange).
+        onTransferRef.current?.({
+          widgetId: ds.itemId,
+          fromBoardId: ds.sourceBoardId,
+          toBoardId: target!.id,
+          item: getLayoutItem(finalLayout, ds.itemId) ?? {
+            ...ds.item,
+            x: landing.x,
+            y: landing.y,
+          },
+        });
+      }
     }
 
     const ids = new Set(affectedRef.current);
@@ -1261,6 +1335,7 @@ export function useBoardRegistry(
     frozenRectsRef.current.clear();
     nestedInDraggedRef.current = new Set();
     previewRef.current = null;
+    targetLandingRef.current = null;
     lastLandingRef.current = null;
     setDragState(null);
   });

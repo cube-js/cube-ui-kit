@@ -376,6 +376,17 @@ describe('collisionMode: swap', () => {
     expect(rects(next)).toEqual({ a: '0,0 2x2', b: '2,0 2x2' });
   });
 
+  it('downscales at an empty anchor when exchange is disabled', () => {
+    // This is the cross-board `swap` path: the incoming widget has no target
+    // slot to trade, so it may occupy the empty anchor and shrink before the
+    // blocker, but the blocker itself never moves.
+    const layout = [item('a', 0, 4, 4, 2), item('b', 3, 0, 3, 2)];
+    const next = place(layout, 'a', 0, 0, 'swap', { allowExchange: false });
+
+    expect(rects(next)).toEqual({ a: '0,0 3x2', b: '3,0 3x2' });
+    expect(isOverlapFree(next)).toBe(true);
+  });
+
   it('reverts when the displaced widget cannot fit the vacated slot', () => {
     // `b` needs 4 columns and `a` only frees 2, with everything else taken.
     const layout = [

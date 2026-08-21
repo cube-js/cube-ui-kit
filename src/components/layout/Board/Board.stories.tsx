@@ -59,7 +59,7 @@ export default {
       control: { type: 'radio' },
       options: ['revert', 'downscale', 'swap'],
       description:
-        'How to resolve a drop the grid would otherwise refuse. Only applies where a collision blocks a move (`compact="free"`, or `preventCollision`).',
+        'How to resolve a drop the grid would otherwise refuse. Only applies where a collision blocks a move (`compact="free"`, or `preventCollision`). `swap` exchanges widgets within a board; across boards it inserts only at an empty anchor and downscales without moving destination widgets.',
       table: { defaultValue: { summary: 'revert' } },
     },
     resizeGripPlacement: {
@@ -581,6 +581,58 @@ const CollisionModesTemplate: StoryFn<CubeBoardProps> = () => (
         <WidgetBody title="Bottom" text="Drop me onto one of the others" />
       </Board.Widget>
     </CollisionBoard>
+
+    <Flow gap="1x">
+      <Text preset="t3" color="#dark-02">
+        <code>collisionMode=&quot;swap&quot;</code> across boards — drag the
+        incoming widget into empty space on the target; dropping on the blocker
+        cancels the transfer
+      </Text>
+      <Board.Provider>
+        <Flow gap="1x" gridColumns="1fr 1fr" display="grid">
+          <Board
+            id="collision-source"
+            fill="#light"
+            padding="1x"
+            radius="1r"
+            cols={6}
+            extraRows={1}
+            compact="free"
+            collisionMode="swap"
+            showGridLines="drag"
+            widgetProps={{ isCard: true }}
+            defaultLayout={[{ i: 'incoming', x: 0, y: 0, w: 4, h: 1 }]}
+          >
+            <Board.Widget id="incoming">
+              <WidgetBody
+                title="Incoming — 4 columns"
+                text="Drag me to the target"
+              />
+            </Board.Widget>
+          </Board>
+          <Board
+            id="collision-target"
+            fill="#light"
+            padding="1x"
+            radius="1r"
+            cols={6}
+            extraRows={1}
+            compact="free"
+            collisionMode="swap"
+            showGridLines="drag"
+            widgetProps={{ isCard: true }}
+            defaultLayout={[{ i: 'target-blocker', x: 3, y: 0, w: 3, h: 1 }]}
+          >
+            <Board.Widget id="target-blocker">
+              <WidgetBody
+                title="Target blocker"
+                text="Existing widgets never move"
+              />
+            </Board.Widget>
+          </Board>
+        </Flow>
+      </Board.Provider>
+    </Flow>
   </Flow>
 );
 
@@ -592,7 +644,7 @@ CollisionModes.parameters = {
   docs: {
     description: {
       story:
-        'A `compact="free"` board refuses a drop onto occupied cells; `collisionMode` resolves it instead. **Downscale** — drag the 4-column widget onto the middle row and it shrinks to the 3 columns free beside the blocker, instead of snapping back. **Swap** — drop one widget onto another and they trade places: the dragged widget takes the other\'s cell, the displaced one takes the cell the drag began at, and each keeps as much of its own size as fits there. Exactly one widget is ever displaced, a drop straddling two of them trades with the one it covers most, and dragging back retraces the original arrangement. Neither mode ever grows a widget. The default, `"revert"`, is what every other story on this page shows: the widget snaps back.',
+        'A `compact="free"` board refuses a drop onto occupied cells; `collisionMode` resolves it instead. **Downscale** — drag the 4-column widget onto the middle row and it shrinks to the 3 columns free beside the blocker, instead of snapping back. **Swap within one board** — drop one widget onto another and they trade places: the dragged widget takes the other\'s cell, the displaced one takes the cell the drag began at, and each keeps as much of its own size as fits there. Exactly one widget is ever displaced, a drop straddling two of them trades with the one it covers most, and dragging back retraces the original arrangement. **Swap across boards** — the incoming widget can only use an empty anchor, downscales into the room to its right and below, and never moves a destination widget; an occupied anchor cancels the transfer. Neither path ever grows a widget. The default, `"revert"`, is what every other story on this page shows: the widget snaps back.',
     },
   },
 };
