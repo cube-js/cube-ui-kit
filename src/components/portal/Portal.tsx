@@ -30,11 +30,13 @@ import { usePortal } from './usePortal';
 export function Portal(props: PortalProps) {
   const { children, mountRoot, isDisabled } = usePortal(props);
 
-  // Overlays are where injection and measurement interleave worst: a dialog or
-  // tooltip mounts a fresh subtree and react-aria positions it from a layout
-  // effect in that same commit. `<Root>`'s batch window does not cover those
-  // commits — it does not re-render for them — so open one here. It flushes in
-  // `useInsertionEffect`, before any positioning effect reads the DOM.
+  // A portal mounts a fresh subtree in a commit that did not re-render `<Root>`,
+  // so its window cannot cover this one — open one here, flushing in
+  // `useInsertionEffect` before any positioning effect reads the DOM.
+  //
+  // In the kit this path is tooltips: `TooltipTrigger` is the only component
+  // that renders `<Portal>`. Popovers, modals and trays portal through
+  // `<Overlay>`'s own `createPortal`, which opens its own window.
   const content = <TastyBatchProvider>{children}</TastyBatchProvider>;
 
   if (isDisabled) return content;

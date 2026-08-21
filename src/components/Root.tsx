@@ -43,10 +43,12 @@ configure({
   colorSpace: 'rgb',
   // Collapse the kit's stylesheet writes into one style invalidation per commit
   // instead of one per component. Only takes effect inside a
-  // `<TastyBatchProvider>` window — `<Root>` opens one below, and `<Portal>`
-  // opens one for every overlay that mounts — so a `useLayoutEffect` can never
-  // measure an element whose rules have not landed yet. Without a provider in
-  // the commit, writes go straight through exactly as before.
+  // `<TastyBatchProvider>` window, and windows have to be opened per portal
+  // boundary because a commit that mounts a portal does not re-render `<Root>`.
+  // The kit opens three: here, in `<Portal>` (tooltips) and in `<Overlay>`
+  // (popovers, modals, trays — i.e. Dialog and Menu). Writes in any commit
+  // without a window go straight through exactly as before, so a
+  // `useLayoutEffect` can never measure an element whose rules have not landed.
   batchInjection: true,
   units: {
     x: 'var(--gap)',

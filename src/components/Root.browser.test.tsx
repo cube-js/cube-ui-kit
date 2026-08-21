@@ -1,7 +1,10 @@
 import { hasPendingStyleWrites, tasty } from '@tenphi/tasty';
-import { act, render } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { StrictMode, useLayoutEffect, useRef, useState } from 'react';
 
+import { Button } from './actions/Button';
+import { Dialog, DialogTrigger } from './overlays/Dialog';
 import { Portal } from './portal';
 import { Root } from './Root';
 
@@ -113,6 +116,41 @@ describe('Root batched injection', () => {
     expect(observed).toEqual([]);
 
     act(() => open(true));
+
+    expect(observed).toContain(true);
+    expect(hasPendingStyleWrites()).toBe(false);
+  });
+
+  // The claim this change rests on is that *overlays* benefit, and they do not
+  // go through <Portal>: Popover, Modal and Tray portal through Overlay's raw
+  // createPortal, so DialogTrigger and MenuTrigger are covered only by the
+  // window Overlay opens. Driving a real DialogTrigger is the only way to assert
+  // that — a <Portal> test passes whether or not the overlay path is covered.
+  it('batches the commit a real dialog mounts in', async () => {
+    const Box = tasty({ styles: { letterSpacing: '0.037em' } });
+    const observed: boolean[] = [];
+
+    function Probe() {
+      observed.push(hasPendingStyleWrites());
+      return null;
+    }
+
+    render(
+      <Root>
+        <DialogTrigger type="popover">
+          <Button>Open</Button>
+          <Dialog>
+            <Box />
+            <Probe />
+          </Dialog>
+        </DialogTrigger>
+      </Root>,
+    );
+
+    expect(observed).toEqual([]);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Open' }));
+    await waitFor(() => expect(observed.length).toBeGreaterThan(0));
 
     expect(observed).toContain(true);
     expect(hasPendingStyleWrites()).toBe(false);
