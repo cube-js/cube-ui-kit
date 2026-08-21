@@ -251,7 +251,7 @@ function StoryPage({
     <Page>
       <Section>
         <Heading>{title}</Heading>
-        <Lead as="div">{description}</Lead>
+        <Lead>{description}</Lead>
       </Section>
       {children}
     </Page>
@@ -317,7 +317,7 @@ function ColorResolution({ resolved }: { resolved?: Tokens }) {
       {palette.pastel ? (
         <InfoBadge
           theme="danger"
-          tooltip="Pastel limits color intensity, so the requested color is adjusted to the closest available result. Switch to Advanced or Color to use the full chroma range."
+          tooltip="Pastel caps chroma, so this color cannot render exactly — the palette takes its hue and its tone and finds the nearest color inside the ceiling. Turn Pastel off to land on it."
         />
       ) : null}
     </Row>
@@ -469,7 +469,7 @@ function AccentSourceControls({ resolved }: { resolved?: Tokens }) {
         <ColorInput
           label="Color"
           size="small"
-          tooltip="Sets the accent hue, intensity, and tone from one hex color. The light, normal-contrast fill matches it when accessibility limits allow; dark and high-contrast variants adapt automatically. Colors that are too light for white text or too subtle against the page are adjusted."
+          tooltip="Hue, chroma and tone all come from here — the tone is what makes the brand fill actually be your color rather than a shade re-derived at a fixed lightness. Glaze reproduces it exactly in the light, normal-contrast variant; dark and high contrast adapt. Two APCA floors apply everywhere, and they are different sizes: Lc 45 against the white label it carries, because that is text, and Lc 25 against the page, because a fill is a shape. Both are APCA rather than WCAG, so a fill can legitimately sit under 3:1 — #0EA5E9 lands at 2.77:1 and is correct there."
           value={seedColor(input.accent)}
           onChange={(accent) =>
             // Clearing the field is a change of path, so it lands back on a hue seed
@@ -497,7 +497,7 @@ function AccentSourceControls({ resolved }: { resolved?: Tokens }) {
         // No value in the label: the slider already prints it on the right, and
         // the same number twice on one line reads as two facts.
         label="Hue"
-        tooltip="Sets the brand hue used by the accent, primary, purple, and special colors, plus focus and loading states."
+        tooltip="Drives the whole accent family, `primary` / `purple` / `special`, and the brand-tinted odds and ends — the focus ring, the loading faces, the disabled chip."
         value={Math.round(palette.hue)}
         onChange={(hue) =>
           setPalette((config) => ({
@@ -511,7 +511,7 @@ function AccentSourceControls({ resolved }: { resolved?: Tokens }) {
       {palette.pastel ? null : (
         <Slider
           label="Saturation"
-          tooltip="Controls the intensity of accent colors. Status themes inherit this value until customized; the base palette uses a small share while it follows the accent."
+          tooltip="The accent zone's chroma, and the fallback every status theme inherits until it sets its own. It is also a ceiling on the base zone, which takes a 12% share of it while it follows the accent."
           value={palette.saturation}
           onChange={(saturation) =>
             setPalette((config) => ({
@@ -547,7 +547,6 @@ function BaseSourceControls() {
         labelPosition="split"
         type="button"
         value={isOwn ? 'own' : 'accent'}
-        tooltip="Follow accent derives neutral UI colors from the accent seed. Own lets you set a separate base hue or color for surfaces, text, borders, and placeholders."
         onChange={(next) =>
           setPalette(({ base, ...config }) =>
             next === 'own'
@@ -574,7 +573,7 @@ function BaseSourceControls() {
         <ColorInput
           label="Color"
           size="small"
-          tooltip={`Sets the hue and saturation of neutral UI colors such as surfaces, text, and borders. The color's lightness is ignored so the surface hierarchy stays intact, and saturation is capped at ${MAX_BASE_SATURATION} to keep the palette neutral.`}
+          tooltip={`The hue and the saturation are taken; the tone is discarded, because the chrome's own lightness ladder is the design. A base color says which way the greys lean and how far, not how dark they are — and its saturation is clipped at ${MAX_BASE_SATURATION}, since a fully saturated chrome stops being chrome.`}
           value={seedColor(input.base)}
           onChange={(base) =>
             // Same shape as the accent field above, and for the same reason: one seed
@@ -599,7 +598,7 @@ function BaseSourceControls() {
         <>
           <HueSlider
             label="Hue"
-            tooltip="Sets the tint of neutral UI colors: surfaces, text, borders, and placeholders. Status surfaces keep their own semantic hues."
+            tooltip="The neutral chrome — surface and its ladder, the surface-text ramp, border, placeholder. A colored theme's tinted surface deliberately follows its own hue instead, because a danger banner should read as red."
             value={Math.round(palette.baseHue)}
             onChange={(hue) =>
               setPalette((config) => ({
@@ -613,8 +612,8 @@ function BaseSourceControls() {
               label="Saturation"
               tooltip={
                 palette.surfaceMode === 'tinted'
-                  ? 'Controls how strongly the base hue tints neutral UI colors. Values above about 25 produce little visible change because the base palette intentionally stays near-neutral.'
-                  : 'Tints elevated surfaces, borders, and text, but not the page background. Choose Tinted surfaces to make the base hue visible on the page background too.'
+                  ? `The same 0–100 scale the accent saturation uses, on the chrome alone. The shipped value is 12 — a faint tint is what a neutral surface is — so the interesting range is the low end, and past about 25 the base colors run out of scale and converge.`
+                  : `Reaches surface-2…surface-4, the borders and the text ramp, but not the page surface: at the end of the tone scale there is no room for chroma. Switch Surfaces to Tinted to give it some.`
               }
               // The clip a derived base color gets, so the manual and the derived
               // routes agree on what the top of the range means. `surface-inverse`
@@ -763,21 +762,21 @@ function PaletteModeTabs() {
       <Radio
         value="pastel"
         styles={MODE_TAB_STYLES}
-        tooltip="Uses one restrained color-intensity limit across all hues for a softer, more even palette. Saturation controls are hidden because this mode manages intensity automatically; code colors remain independent."
+        tooltip="One flat, hue-independent chroma ceiling. It is what makes the palette even across hues, and it leaves nothing for a saturation scale to do — so there are no saturation sliders here except the syntax one, which pastel never reaches."
       >
         Pastel
       </Radio>
       <Radio
         value="advanced"
         styles={MODE_TAB_STYLES}
-        tooltip="Lets you edit hue and saturation numerically for each palette area. It uses the full color-intensity range and is best when you want precise control."
+        tooltip="The per-hue ceiling, with a hue and a saturation on each zone. The same space Color uses; this is the half where you dial the numbers yourself."
       >
         Advanced
       </Radio>
       <Radio
         value="color"
         styles={MODE_TAB_STYLES}
-        tooltip="Seeds the accent, base, and status themes with hex colors. Accent and status colors supply hue, intensity, and tone; the base color supplies hue and saturation. Equivalent sliders are hidden."
+        tooltip="The same space as Advanced, seeded from the hexes a brand usually arrives as — every zone, statuses included. An accent color contributes hue, chroma and tone; a base color contributes hue and saturation; a status color contributes all three and becomes its theme's chroma reference. Whatever a color supplies, its slider goes away."
       >
         Color
       </Radio>
@@ -808,7 +807,7 @@ function GlobalControls() {
         labelPosition="split"
         type="button"
         value={palette.surfaceMode}
-        tooltip="Neutral keeps the page background at the end of the tone scale. Tinted shifts the surface ramp slightly inward, giving the base hue room to appear across neutral and status surfaces."
+        tooltip="Tinted moves the whole surface ramp two tones off the end of the tone scale — the neutral surfaces, the status themes' tinted ones, and the mirrored surface the syntax palette solves against. Not a lightness change: chroma needs distance from the extreme to exist at all, so a neutral light page is white whatever the base saturation asks for. Two tones is the cheapest room in which the base hue becomes visible."
         onChange={(surfaceMode) =>
           setPalette((config) => ({
             ...config,
@@ -965,8 +964,8 @@ function ContrastControls() {
       label="Contrast level"
       tooltip={
         hasContrastTier()
-          ? 'Raises the normal palette from its shipped contrast at 0 toward the high-contrast palette at 100. The separate high-contrast tier remains available until the level reaches 100.'
-          : 'At 100, the normal palette already matches the high-contrast palette, so only one tier is generated. Lower the level to preview normal and high contrast separately.'
+          ? 'The level moves the normal colors only. The high-contrast tier is the true high-contrast resolution at every level, so the two compose — a contrast preference still escalates on top of wherever the slider puts the baseline.'
+          : 'One tier at level 100: the normal colors already are the high-contrast ones here, so data-contrast="high" and prefers-contrast: more have nothing left to escalate to. Every level below this keeps both tiers.'
       }
       value={level}
       onChange={(contrastLevel) =>
@@ -1525,7 +1524,7 @@ function StatusThemeButton({
         theme="current"
         size="small"
         color={`#${name}-text`}
-        tooltip={`Edit the ${name} theme. Current hue: ${Math.round(seed.hue)}°.`}
+        tooltip={`Tune the ${name} theme — currently ${Math.round(seed.hue)}°`}
         icon={
           <ColorSwatch
             color={tokens[`#${name}-accent-surface`] as string | undefined}
@@ -1543,7 +1542,7 @@ function StatusThemeButton({
             <ColorInput
               label="Color"
               size="small"
-              tooltip="Sets this status theme's hue, intensity, and tone from one hex color. The light, normal-contrast fill matches it when accessibility limits allow; dark and high-contrast variants adapt automatically. The color also seeds this theme's surfaces, borders, and text."
+              tooltip="Hue, chroma and tone all come from here. The fill becomes this color on the same terms the brand does — reproduced in light at normal contrast, adapting in dark and high contrast, and held above APCA Lc 45 against the white label it carries and Lc 25 against the page. Its chroma also becomes the theme's own scale, which is what keeps the tinted banner, the border and the text ramp in the proportion to the fill that they have on every other theme."
               value={seedColor(written)}
               onChange={(color) =>
                 // Clearing lands back on a hue pinned where the color left it. There is
@@ -1559,7 +1558,7 @@ function StatusThemeButton({
           ) : (
             <HueSlider
               label="Hue"
-              tooltip="Sets this status hue. Keep danger red, warning amber, and success green; as a starting point, separate status and brand hues by about 35° so tinted surfaces remain distinguishable."
+              tooltip="Status hues have to stay semantically legible — danger red, warning amber, success green — and about 35° apart from each other and from the brand, which is roughly where two tinted surfaces stop reading as one color."
               value={Math.round(seed.hue)}
               onChange={(hue) =>
                 setPalette(
@@ -1589,14 +1588,14 @@ function StatusThemeButton({
                 <Token>Saturation {pinnedSaturation} — pinned</Token>
                 <InfoBadge
                   theme="danger"
-                  tooltip="This value was customized before Pastel was enabled and still affects the theme. Switch to Advanced to change or clear it."
+                  tooltip={`Set while pastel was off, and still in effect. Pastel's flat ceiling is what governs status chroma now, so there is no scale to offer on top of it — turn pastel off to reach this number again, or to clear it.`}
                 />
               </Row>
             ) : null
           ) : (
             <Slider
               label="Saturation"
-              tooltip="Controls this status theme's intensity. It initially follows Accent saturation; once changed, it stays independent of later accent changes."
+              tooltip="Inherits the palette saturation until you move it, and stays pinned afterwards — so a re-seeded palette leaves this theme where you put it."
               value={seed.saturation}
               onChange={(saturation) =>
                 setPalette(
@@ -1657,11 +1656,7 @@ function ExportButton() {
       mobileType="tray"
       placement="bottom start"
     >
-      <Button
-        size="small"
-        icon={<CopyIcon />}
-        tooltip="Open a copyable setPaletteConfig(...) snippet."
-      >
+      <Button size="small" icon={<CopyIcon />}>
         Export
       </Button>
       <Dialog aria-label="Export the palette config" width="max-content">
@@ -1694,7 +1689,7 @@ function DownloadButton() {
     <Button
       size="small"
       icon={<IconDownload />}
-      tooltip="Download the sparse palette config as palette.json."
+      tooltip="Download the config as palette.json"
       onPress={download}
     >
       JSON
@@ -1715,7 +1710,7 @@ function BuilderActions() {
       <Button
         size="small"
         icon={<ReloadIcon />}
-        tooltip="Discard all changes and restore the shipped palette."
+        tooltip="Discard every change and return to the shipped palette"
         onPress={resetPaletteConfig}
       >
         Reset
@@ -1725,14 +1720,6 @@ function BuilderActions() {
     </Row>
   );
 }
-
-const PresetGrid = tasty({
-  styles: {
-    display: 'grid',
-    gridColumns: 'repeat(3, 1fr)',
-    gap: '1x',
-  },
-});
 
 function ThemeBuilderControls({
   tokens,
@@ -1756,12 +1743,11 @@ function ThemeBuilderControls({
 
       <ControlGroup>
         <GroupLabel>Presets</GroupLabel>
-        <PresetGrid>
+        <Row>
           {THEME_PRESETS.map((preset) => (
             <Button
               key={preset.label}
               size="small"
-              width="100%"
               // The default `outline` shows selection as a filled chip, so the
               // active preset reads as the state it is rather than as a fifth style.
               isSelected={activePreset === preset.label}
@@ -1774,7 +1760,7 @@ function ThemeBuilderControls({
               {preset.label}
             </Button>
           ))}
-        </PresetGrid>
+        </Row>
       </ControlGroup>
 
       {/* Ahead of the zones, because everything in here governs both of them —
@@ -1814,7 +1800,7 @@ function ThemeBuilderControls({
         <GroupLabel>Syntax</GroupLabel>
         <Slider
           label="Code saturation"
-          tooltip="Controls only the intensity of syntax colors. Their hues are fixed and independent of the brand so code categories stay distinct."
+          tooltip="Hues are fixed; only saturation is tunable. The syntax family carries absolute hues and its own seed, so neither the brand hue nor the palette saturation reaches it — a brand re-seeded toward green would otherwise collide strings with numbers."
           value={palette.themes.code.saturation}
           onChange={(saturation) =>
             setPalette((config) => ({
@@ -2236,11 +2222,13 @@ function ThemeBuilderPage() {
       title="Theme builder"
       description={
         <>
-          Build a palette with the controls and watch the preview update
-          instantly. Use the preview switches to check light, dark, normal, and
-          high-contrast variants without changing the palette, then export the
-          result as code or JSON. Colors are generated by{' '}
-          <Link to="!https://github.com/tenphi/glaze">Glaze</Link>.
+          Every control on the left writes to the live palette config; the panel
+          on the right renders it into a single region through a tasty{' '}
+          <Token>tokens</Token> prop. The palette is generated by{' '}
+          <Link to="!https://github.com/tenphi/glaze">Glaze</Link>. The two
+          switches over the preview pick which of the theme&rsquo;s four
+          variants to show — they start on whatever this page is already in, and
+          change nothing about the theme itself.
         </>
       }
     >
@@ -2276,7 +2264,7 @@ function ThemeBuilderPage() {
             {hasContrastTier() ? null : (
               <InfoBadge
                 theme="danger"
-                tooltip="At level 100, the normal palette already matches the high-contrast palette, so there is no separate variant to preview. Lower the Contrast level to restore both options."
+                tooltip="No separate tier at contrast level 100 — the normal colors already are the high-contrast ones, so there is nothing to escalate to and the preview is the normal variant."
               />
             )}
           </PreviewToolbar>
