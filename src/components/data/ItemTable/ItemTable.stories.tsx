@@ -221,6 +221,15 @@ const meta = {
         type: { summary: 'boolean' },
       },
     },
+    isAutoHeight: {
+      control: 'boolean',
+      description:
+        'Shrink-wrap the frame to its rows instead of filling a flex pane.',
+      table: {
+        defaultValue: { summary: 'false' },
+        type: { summary: 'boolean' },
+      },
+    },
 
     /* State */
     isLoading: {
@@ -1264,6 +1273,21 @@ export const Virtualized: Story = {
       name: `deployment-${String(i + 1).padStart(5, '0')}`,
       queries: (i * 7919) % 200_000,
     })),
+  },
+};
+
+/** A compact result can end at its final row inside a taller flex pane. */
+export const AutoHeight: Story = {
+  render: (args) => (
+    <div style={{ display: 'flex', flexDirection: 'column', height: 360 }}>
+      <ItemTable {...args} />
+    </div>
+  ),
+  args: {
+    data: DEPLOYMENTS.slice(0, 4),
+    shape: 'card',
+    paginationMode: 'off',
+    isAutoHeight: true,
   },
 };
 

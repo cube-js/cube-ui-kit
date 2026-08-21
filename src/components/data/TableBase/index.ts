@@ -26,6 +26,7 @@ export type {
   CubeTableColumnHeader,
   CubeTableColumnLayout,
   CubeTableHeaderContext,
+  CubeTableLayoutProps,
   CubeTableRowContext,
   CubeTableRowSection,
   CubeTableRowSize,

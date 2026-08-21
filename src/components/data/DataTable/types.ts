@@ -6,6 +6,7 @@ import type { CubeTablePageInfo } from '../../navigation/Pagination';
 import type {
   CubeTableCellRange,
   CubeTableColumn,
+  CubeTableLayoutProps,
   CubeTableLoadingIndicator,
   CubeTableRowContext,
   CubeTableRowSection,
@@ -50,6 +51,7 @@ export type CubeDataTableColumnDefinition<T = any> =
 export interface CubeDataTableProps<T = any>
   extends BaseProps,
     ContainerStyleProps,
+    CubeTableLayoutProps,
     CubeTableTreeProps<T> {
   /* ── data ─────────────────────────────────────────────────────────── */
   data: readonly T[];
@@ -98,14 +100,6 @@ export interface CubeDataTableProps<T = any>
   isStriped?: boolean;
   isHeaderHidden?: boolean;
   isHeaderSticky?: boolean;
-  /**
-   * Shrink-wraps the frame to its rendered rows instead of filling the
-   * available flex pane. This mode disables virtualization because there is no
-   * bounded vertical viewport to virtualize against.
-   *
-   * @default false
-   */
-  isAutoHeight?: boolean;
   /**
    * Slide rows to their new positions when the sort changes, instead of
    * teleporting them. @default true

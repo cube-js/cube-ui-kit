@@ -62,6 +62,35 @@ const nextFrame = () =>
  * bug that shipped into this component and was found by hand.
  */
 describe('ItemTable layout', () => {
+  it('shrink-wraps rows in auto-height mode despite a supplied height', async () => {
+    renderWithRoot(
+      <div style={{ display: 'flex', flexDirection: 'column', height: 420 }}>
+        <ItemTable
+          qa="SizingTable"
+          data={ROWS.slice(0, 4)}
+          columns={COLUMNS}
+          paginationMode="off"
+          height="300px"
+          isAutoHeight
+        />
+      </div>,
+    );
+
+    const frame = screen.getByTestId('SizingTable');
+
+    await vi.waitFor(() =>
+      expect(frame.getBoundingClientRect().height).toBeGreaterThan(0),
+    );
+
+    const frameRect = frame.getBoundingClientRect();
+    const tableRect = grid().getBoundingClientRect();
+
+    expect(frameRect.height).toBeLessThan(300);
+    expect(Math.abs(frameRect.bottom - tableRect.bottom)).toBeLessThanOrEqual(
+      2,
+    );
+  });
+
   it('resolves column widths from the container', async () => {
     renderWithRoot(<ItemTable data={ROWS} columns={COLUMNS} width="600px" />);
 

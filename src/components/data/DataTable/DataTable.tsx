@@ -578,19 +578,7 @@ function DataTable<T = any>(
     onRangeChange: onCellRangeChange,
   });
 
-  // A result grid normally occupies the flex pane it is given. `min-height: 0`
-  // is the part that lets the scroller become smaller than its contents rather
-  // than forcing the pane itself taller. Auto-height deliberately reverses
-  // that contract: its rows determine the frame height, even when a shared
-  // wrapper supplied a fixed `height` style.
-  const rootStyles = {
-    height: 'min 0',
-    flexGrow: 1,
-    flexShrink: 1,
-    ...extractStyles(props, CONTAINER_STYLES),
-    ...styles,
-    ...(isAutoHeight ? { height: 'min 0', flexGrow: 0, flexShrink: 0 } : null),
-  };
+  const rootStyles = { ...extractStyles(props, CONTAINER_STYLES), ...styles };
 
   const smallestPageSize = pageSizeOptions?.length
     ? Math.min(...pageSizeOptions)
@@ -740,6 +728,7 @@ function DataTable<T = any>(
       isRowMoveAnimated={isRowMoveAnimated}
       isHeaderHidden={isHeaderHidden}
       isHeaderSticky={isHeaderSticky}
+      isAutoHeight={isAutoHeight}
       // The header shows the column name at body size — a result grid has no
       // room for the uppercase caption a list header uses.
       // `t4` throughout: a result grid is read as a block, and one step down
@@ -755,9 +744,7 @@ function DataTable<T = any>(
       onColumnMenuAction={onColumnMenuAction}
       columnMenuTriggerProps={columnMenuTriggerProps}
       columnMenuProps={columnMenuProps}
-      // Virtualization needs a bounded scrollport. In auto-height mode the
-      // whole result is the viewport, so render every row by definition.
-      isVirtualized={isAutoHeight ? false : isVirtualized}
+      isVirtualized={isVirtualized}
       virtualizeThreshold={virtualizeThreshold}
       overscan={overscan}
       isResizable={isResizable}

@@ -80,6 +80,9 @@ pivots, totals. Use `ListBox` when there is only one column.
   row and drops it from `aria-rowcount`.
 - **`isHeaderSticky`** `boolean` (default: `true`) — Pins the column header
   while the body scrolls.
+- **`isAutoHeight`** `boolean` (default: `false`) — Shrink-wraps the frame to
+  the rendered rows instead of filling its flex pane. It takes precedence over
+  root height/flex sizing and disables virtualization.
 - **`sortMode`** `'client' | 'server' | 'off'` (default: `'client'` when any
   column is sortable, else `'off'`) — `client` reorders `data` itself; `server`
   only reflects `sort` and fires `onSortChange`; `off` removes the affordance.
@@ -111,7 +114,8 @@ pivots, totals. Use `ListBox` when there is only one column.
   toolbar.
 - **`isVirtualized`** `boolean | 'auto'` (default: `'auto'`) — `'auto'` turns
   virtualization on once the row count passes `virtualizeThreshold`. It needs a
-  bounded height to have a viewport to work against.
+  bounded height to have a viewport to work against and is ignored when
+  `isAutoHeight` is enabled.
 - **`virtualizeThreshold`** `number` (default: `50`) — Row count above which
   `'auto'` virtualizes.
 - **`overscan`** `number` (default: `12`) — Rows mounted beyond each viewport
@@ -754,6 +758,16 @@ Above `virtualizeThreshold` rows a bounded table virtualizes automatically. The
 DOM and the styles are identical either way — only the number of mounted rows
 changes, so sorting, search, pinned columns and the sticky header all behave the
 same.
+
+For a compact list in normal page flow, set `isAutoHeight`. Its frame then ends
+at the final rendered row instead of filling the surrounding flex pane. The
+complete result is rendered, so keep large lists bounded and virtualized.
+
+```jsx
+<ItemTable data={recentRows} columns={columns} paginationMode="off" isAutoHeight />
+```
+
+<Canvas of={ItemTableStories.AutoHeight} />
 
 ```jsx
 <ItemTable height="420px" paginationMode="off" data={tenThousandRows} columns={columns} />

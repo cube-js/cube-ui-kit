@@ -85,6 +85,7 @@ import type {
   CubeTableColumnGroupHeader,
   CubeTableColumnLayout,
   CubeTableHeaderContext,
+  CubeTableLayoutProps,
   CubeTableLoadingIndicator,
   CubeTableRowContext,
   CubeTableRowSection,
@@ -105,7 +106,7 @@ export interface CubeTableRowRenderProps {
   tooltip?: string;
 }
 
-export interface TableViewProps<T = any> {
+export interface TableViewProps<T = any> extends CubeTableLayoutProps {
   qa?: string;
   rows: readonly T[];
   /** Stable keys for `rows`; required when a tree was flattened for display. */
@@ -611,6 +612,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
     hasColumnDividers,
     isRowMoveAnimated = true,
     isHeaderSticky = true,
+    isAutoHeight = false,
     isVirtualized = 'auto',
     virtualizeThreshold = 50,
     overscan = 20,
@@ -806,7 +808,17 @@ export function TableView<T = any>(props: TableViewProps<T>) {
 
   const mergedStyles = useMemo(
     () => ({
+      // A table normally fills its flex pane. `min-height: 0` lets the scroller
+      // become smaller than its contents instead of forcing that pane taller.
+      height: 'min 0',
+      flexGrow: 1,
+      flexShrink: 1,
       ...styles,
+      // Auto-height is a layout mode rather than a styling suggestion: its
+      // rows determine the frame even when a wrapper supplied fixed sizing.
+      ...(isAutoHeight
+        ? { height: 'min 0', flexGrow: 0, flexShrink: 0 }
+        : null),
       ...(contentPreset ? { Table: { preset: contentPreset } } : null),
       ...(headerStyles ? { HeadRow: headerStyles } : null),
       ...(headerPreset || headerCellStyles || tints.headerCellStyles
@@ -845,6 +857,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
     }),
     [
       styles,
+      isAutoHeight,
       headerStyles,
       headerCellStyles,
       headerPreset,
@@ -1921,6 +1934,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
   const showBlank = isLoading && !hasRows && loadingIndicator === 'none';
 
   const shouldVirtualize =
+    !isAutoHeight &&
     hasRows &&
     error == null &&
     (isVirtualized === true ||

@@ -8,6 +8,7 @@ import type { CubeTablePageInfo } from '../../navigation/Pagination';
 import type { CubeTableRowRenderProps } from '../TableBase/TableView';
 import type {
   CubeTableColumn,
+  CubeTableLayoutProps,
   CubeTableLoadingIndicator,
   CubeTableRowContext,
   CubeTableSelectAllMode,
@@ -22,6 +23,7 @@ export type CubeItemTableColumn<T = any> = CubeTableColumn<T>;
 export interface CubeItemTableProps<T = any>
   extends BaseProps,
     ContainerStyleProps,
+    CubeTableLayoutProps,
     CubeTableTreeProps<T> {
   /* ── data ─────────────────────────────────────────────────────────── */
   data: readonly T[];

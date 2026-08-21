@@ -442,6 +442,7 @@ export const DEFAULTS: DefaultsRegistry = {
         defaultPage: { kind: 'default', value: 1 },
         defaultPageSize: { kind: 'default', value: 50 },
         headerPreset: { kind: 'default', value: 'c3' },
+        isAutoHeight: { kind: 'default', value: false },
         isHeaderHidden: { kind: 'default', value: false },
         isHeaderSticky: { kind: 'default', value: true },
         isLoading: { kind: 'default', value: false },

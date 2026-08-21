@@ -67,6 +67,18 @@ export interface CubeTableRowExpandInfo<T = any> {
   expanded: boolean;
 }
 
+/** Shared root sizing contract used by both table adapters. */
+export interface CubeTableLayoutProps {
+  /**
+   * Shrink-wraps the frame to its rendered rows instead of filling the
+   * available flex pane. This mode disables virtualization because there is no
+   * bounded vertical viewport to virtualize against.
+   *
+   * @default false
+   */
+  isAutoHeight?: boolean;
+}
+
 /** Shared opt-in hierarchy contract used by both table adapters. */
 export interface CubeTableTreeProps<T = any> {
   /**
