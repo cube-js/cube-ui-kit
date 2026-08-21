@@ -46,7 +46,7 @@ export interface UseTableSearchResult<T> {
  * value. `getColumnText` returns `null` for anything it cannot honestly turn
  * into text, and those columns are skipped rather than coerced.
  */
-function defaultMatcher<T>(
+export function matchesTableSearch<T>(
   columns: CubeTableColumn<T>[],
   row: T,
   rowIndex: number,
@@ -126,7 +126,9 @@ export function useTableSearch<T>({
     if (mode !== 'client' || !query) return rows;
 
     return rows.filter((row, index) =>
-      filter ? filter(row, query) : defaultMatcher(columns, row, index, query),
+      filter
+        ? filter(row, query)
+        : matchesTableSearch(columns, row, index, query),
     );
   }, [mode, query, rows, columns, filter]);
 

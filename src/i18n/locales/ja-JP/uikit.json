@@ -160,6 +160,7 @@
     "summary": "{{total}} 件中 {{from}}–{{to}} 件"
   },
   "itemTable": {
+    "table": "テーブル",
     "noItems": "項目がありません",
     "noResults": "結果が見つかりません",
     "search": "検索",

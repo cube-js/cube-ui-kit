@@ -1,40 +1,60 @@
 import { useRef } from 'react';
-import { useDraggableItem, useDropIndicator } from 'react-aria';
+import { useDraggableItem, useDropIndicator, useTreeItem } from 'react-aria';
 
-import { mergeProps } from '../../../utils/react';
+import { mergeProps, mergeRefs } from '../../../utils/react';
 
-import type { Key } from '@react-types/shared';
+import type { Key, Node } from '@react-types/shared';
 import type { ReactNode, Ref } from 'react';
 import type {
   DraggableCollectionState,
   DroppableCollectionState,
+  TreeState,
 } from 'react-stately';
+import type { TableTreeNode } from './table-tree';
 
-export interface TableRowProps {
+export interface TableRowTreeProps<T = any> {
+  state: TreeState<TableTreeNode<T>>;
+  node: Node<TableTreeNode<T>>;
+  entry: TableTreeNode<T>;
+  isVirtualized: boolean;
+}
+
+export interface TableRowProps<T = any> {
   rowKey: Key;
   /** Everything the renderer already computed: mods, ARIA, handlers. */
   rowProps: Record<string, any>;
   height?: number;
   /** Set on the virtualized path so the virtualizer can measure the row. */
   measureRef?: Ref<HTMLTableRowElement>;
+  /** Internal React Aria row ref in tree mode. */
+  rowRef?: Ref<HTMLTableRowElement>;
   index?: number;
   dragState?: DraggableCollectionState;
   dropState?: DroppableCollectionState;
-  children: ReactNode;
+  tree?: TableRowTreeProps<T>;
+  children:
+    | ReactNode
+    | ((treeItemAria: ReturnType<typeof useTreeItem> | undefined) => ReactNode);
 }
 
-function Row(props: TableRowProps & { extra?: Record<string, any> }) {
-  const { rowProps, height, measureRef, index, extra, children } = props;
+function Row(
+  props: TableRowProps & {
+    extra?: Record<string, any>;
+    rowRef?: Ref<HTMLTableRowElement>;
+  },
+) {
+  const { rowProps, height, measureRef, rowRef, index, extra, children } =
+    props;
 
   return (
     <tr
       {...rowProps}
       {...extra}
-      ref={measureRef}
+      ref={mergeRefs(measureRef, rowRef)}
       data-index={index}
       style={height != null ? { height } : undefined}
     >
-      {children}
+      {typeof children === 'function' ? children(undefined) : children}
     </tr>
   );
 }
@@ -81,7 +101,49 @@ function DraggableRow(props: TableRowProps) {
   );
 }
 
-export function TableRow(props: TableRowProps) {
+function TreeRow<T>(props: TableRowProps<T>) {
+  const { tree } = props;
+  const rowRef = useRef<HTMLTableRowElement>(null);
+  const treeItemAria = useTreeItem(
+    {
+      node: tree!.node,
+      hasChildItems: tree!.entry.children.length > 0,
+      isVirtualized: tree!.isVirtualized,
+    },
+    tree!.state,
+    rowRef,
+  );
+
+  const rowProps = mergeProps(treeItemAria.rowProps, props.rowProps);
+
+  // Table geometry and ItemTable selection are separate from React Aria's
+  // internal focus-only selection manager, so the renderer's values win.
+  if (props.rowProps['aria-rowindex'] !== undefined) {
+    rowProps['aria-rowindex'] = props.rowProps['aria-rowindex'];
+  }
+  if (props.rowProps['aria-selected'] !== undefined) {
+    rowProps['aria-selected'] = props.rowProps['aria-selected'];
+  }
+  rowProps['aria-level'] = tree!.entry.level + 1;
+  rowProps['aria-posinset'] = tree!.entry.siblingIndex + 1;
+  rowProps['aria-setsize'] = tree!.entry.siblingCount;
+
+  const children =
+    typeof props.children === 'function'
+      ? props.children(treeItemAria)
+      : props.children;
+  const next = { ...props, rowProps, rowRef, children };
+
+  return props.dragState && props.dropState ? (
+    <DraggableRow {...next} />
+  ) : (
+    <Row {...next} />
+  );
+}
+
+export function TableRow<T>(props: TableRowProps<T>) {
+  if (props.tree) return <TreeRow {...props} />;
+
   return props.dragState && props.dropState ? (
     <DraggableRow {...props} />
   ) : (

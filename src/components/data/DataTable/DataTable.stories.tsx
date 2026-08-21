@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 
 import {
   NumberIcon,
@@ -19,7 +20,10 @@ import { DataTable } from './DataTable';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import type { CubeTableCellRange, CubeTableSort } from '../TableBase/types';
-import type { CubeDataTableColumn } from './types';
+import type {
+  CubeDataTableColumn,
+  CubeDataTableColumnDefinition,
+} from './types';
 
 interface ResultRow {
   id: string;
@@ -30,8 +34,10 @@ interface ResultRow {
   conversion: number;
 }
 
+type TreeResultRow = ResultRow & { children?: TreeResultRow[] };
+
 const REGIONS = ['us-east-1', 'us-west-2', 'eu-central-1', 'ap-south-1'];
-const CHANNELS = ['organic', 'paid', 'email', 'referral'];
+const CHANNELS = ['organic', 'paid', 'email', 'referral'] as const;
 
 const ROWS: ResultRow[] = Array.from({ length: 240 }, (_, i) => ({
   id: `r${i}`,
@@ -41,6 +47,27 @@ const ROWS: ResultRow[] = Array.from({ length: 240 }, (_, i) => ({
   revenue: ((i * 7919) % 250_000) + 1_500,
   conversion: (((i * 13) % 780) + 40) / 1000,
 }));
+
+const TREE_ROWS: TreeResultRow[] = [
+  {
+    ...ROWS[0],
+    id: 'americas',
+    region: 'Americas',
+    children: [
+      {
+        ...ROWS[1],
+        id: 'north-america',
+        region: 'North America',
+        children: [
+          { ...ROWS[2], id: 'us-east', region: 'US East' },
+          { ...ROWS[3], id: 'us-west', region: 'US West' },
+        ],
+      },
+      { ...ROWS[4], id: 'south-america', region: 'South America' },
+    ],
+  },
+  { ...ROWS[5], id: 'emea', region: 'EMEA' },
+];
 
 const COLUMNS: CubeDataTableColumn<ResultRow>[] = [
   { key: 'region', title: 'Region', minWidth: 140 },
@@ -104,6 +131,122 @@ const TOTALS: ResultRow[] = [
   },
 ];
 
+type Channel = (typeof CHANNELS)[number];
+type PivotMetric = 'orders' | 'revenue';
+type PivotValueKey = `${Channel}_${PivotMetric}`;
+
+type CrossTabRow = Record<PivotValueKey, number> & {
+  id: string;
+  region: string;
+  total_orders: number;
+  total_revenue: number;
+};
+
+const PIVOT_VALUE_KEYS = CHANNELS.flatMap((channel) => [
+  `${channel}_orders` as const,
+  `${channel}_revenue` as const,
+]);
+
+const CROSS_TAB_ROWS: CrossTabRow[] = REGIONS.map((region) => {
+  const sourceRows = ROWS.filter((row) => row.region === region);
+  const pivotValues = Object.fromEntries(
+    PIVOT_VALUE_KEYS.map((key) => {
+      const separator = key.lastIndexOf('_');
+      const channel = key.slice(0, separator) as Channel;
+      const metric = key.slice(separator + 1) as PivotMetric;
+
+      return [
+        key,
+        sourceRows
+          .filter((row) => row.channel === channel)
+          .reduce((sum, row) => sum + row[metric], 0),
+      ];
+    }),
+  ) as Record<PivotValueKey, number>;
+
+  return {
+    id: region,
+    region,
+    ...pivotValues,
+    total_orders: sourceRows.reduce((sum, row) => sum + row.orders, 0),
+    total_revenue: sourceRows.reduce((sum, row) => sum + row.revenue, 0),
+  };
+});
+
+const formatCurrency = (value: number) =>
+  value.toLocaleString(undefined, {
+    style: 'currency',
+    currency: 'USD',
+    maximumFractionDigits: 0,
+  });
+
+const formatInteger = (value: number) => value.toLocaleString();
+
+const metricColumn = (
+  channel: Channel | 'total',
+  metric: PivotMetric,
+): CubeDataTableColumn<CrossTabRow> => ({
+  key: `${channel}_${metric}`,
+  title: metric === 'orders' ? 'Orders' : 'Revenue',
+  dataType: 'number',
+  minWidth: metric === 'orders' ? 115 : 140,
+  isSortable: true,
+  format: metric === 'orders' ? formatInteger : formatCurrency,
+});
+
+const CROSS_TAB_COLUMNS: CubeDataTableColumnDefinition<CrossTabRow>[] = [
+  {
+    key: 'region',
+    title: 'Region',
+    minWidth: 150,
+    pin: 'start',
+    isSortable: true,
+  },
+  ...CHANNELS.map((channel) => ({
+    key: channel,
+    title: channel[0].toUpperCase() + channel.slice(1),
+    children: [
+      metricColumn(channel, 'orders'),
+      metricColumn(channel, 'revenue'),
+    ],
+  })),
+  {
+    key: 'total',
+    title: 'Total',
+    children: [
+      {
+        ...metricColumn('total', 'orders'),
+        color: 'note',
+      },
+      {
+        ...metricColumn('total', 'revenue'),
+        color: 'note',
+      },
+    ],
+  },
+];
+
+const CROSS_TAB_TOTALS: CrossTabRow[] = [
+  {
+    id: 'grand-total',
+    region: 'Grand total',
+    ...(Object.fromEntries(
+      PIVOT_VALUE_KEYS.map((key) => [
+        key,
+        CROSS_TAB_ROWS.reduce((sum, row) => sum + row[key], 0),
+      ]),
+    ) as Record<PivotValueKey, number>),
+    total_orders: CROSS_TAB_ROWS.reduce(
+      (sum, row) => sum + row.total_orders,
+      0,
+    ),
+    total_revenue: CROSS_TAB_ROWS.reduce(
+      (sum, row) => sum + row.total_revenue,
+      0,
+    ),
+  },
+];
+
 const meta: Meta<typeof DataTable> = {
   title: 'Data/DataTable',
   component: DataTable,
@@ -126,6 +269,12 @@ const meta: Meta<typeof DataTable> = {
       control: 'radio',
       options: ['small', 'medium', 'large'],
       description: 'Row height: 28px / 32px / 40px.',
+    },
+    isAutoHeight: {
+      control: 'boolean',
+      description:
+        'Shrink-wrap the frame to its rows instead of filling a flex pane.',
+      table: { defaultValue: { summary: 'false' } },
     },
     isColumnReorderable: {
       control: 'boolean',
@@ -152,6 +301,7 @@ const meta: Meta<typeof DataTable> = {
 export default meta;
 
 type Story = StoryObj<typeof DataTable<ResultRow>>;
+type PivotStory = StoryObj<typeof DataTable<CrossTabRow>>;
 
 /**
  * The defaults are an analytical grid's rather than a list's: `t4` type, banded
@@ -159,6 +309,47 @@ type Story = StoryObj<typeof DataTable<ResultRow>>;
  * and takes tabular figures, so digits line up down the column.
  */
 export const Default: Story = {};
+
+/**
+ * Nested column definitions turn generated pivot values into real multi-row
+ * headers. The rows are still an already-shaped result: the data/query layer
+ * owns the pivot calculation while the table keeps sorting, resizing, cell
+ * ranges and copy behavior generic.
+ */
+export const Pivot: PivotStory = {
+  args: {
+    data: CROSS_TAB_ROWS,
+    columns: CROSS_TAB_COLUMNS,
+    pinnedBottomRows: CROSS_TAB_TOTALS,
+    paginationMode: 'off',
+    ariaLabel: 'Orders and revenue by region and channel',
+    isAutoHeight: true,
+  },
+};
+
+/** Nested result rows retain DataTable's multi-sort and cell-range behavior. */
+export const TreeRows: Story = {
+  args: {
+    data: TREE_ROWS,
+    getRowChildren: (row) => (row as TreeResultRow).children,
+    treeColumnKey: 'region',
+    paginationMode: 'off',
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await userEvent.click(
+      canvas.getByRole('button', { name: /^Expand Americas/ }),
+    );
+
+    await waitFor(() => {
+      expect(canvas.getByText('North America')).toBeVisible();
+      expect(
+        canvas.getByRole('button', { name: /^Collapse Americas/ }),
+      ).toBeVisible();
+    });
+  },
+};
 
 /**
  * Sorting is **multi-column**, which is the main behavioural difference from

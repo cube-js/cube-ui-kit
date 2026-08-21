@@ -26,9 +26,13 @@ export type {
   CubeTableColumnHeader,
   CubeTableColumnLayout,
   CubeTableHeaderContext,
+  CubeTableLayoutProps,
   CubeTableRowContext,
   CubeTableRowSection,
   CubeTableRowSize,
   CubeTableSort,
   CubeTableSortDirection,
+  CubeTableTreeProps,
+  CubeTableTreeRowState,
+  CubeTableRowExpandInfo,
 } from './types';

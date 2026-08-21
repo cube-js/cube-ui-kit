@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 
 import { DatabaseIcon, FolderIcon, PlusIcon, UserIcon } from '../../../icons';
 import { Button, Menu } from '../../actions';
@@ -24,6 +25,8 @@ interface Deployment {
   region: string;
   queries: number;
 }
+
+type TreeDeployment = Deployment & { children?: TreeDeployment[] };
 
 const DEPLOYMENTS: Deployment[] = [
   {
@@ -66,6 +69,26 @@ const DEPLOYMENTS: Deployment[] = [
     region: 'ap-south-1',
     queries: 12_004,
   },
+];
+
+const TREE_DEPLOYMENTS: TreeDeployment[] = [
+  {
+    ...DEPLOYMENTS[0],
+    id: 'production',
+    name: 'Production',
+    children: [
+      {
+        ...DEPLOYMENTS[1],
+        id: 'analytics',
+        name: 'Analytics',
+        children: [
+          { ...DEPLOYMENTS[2], id: 'billing', name: 'Billing pipeline' },
+        ],
+      },
+      { ...DEPLOYMENTS[3], id: 'growth', name: 'Growth marts' },
+    ],
+  },
+  { ...DEPLOYMENTS[4], id: 'sandbox', name: 'Sandbox' },
 ];
 
 const STATUS_THEME = {
@@ -198,6 +221,15 @@ const meta = {
         type: { summary: 'boolean' },
       },
     },
+    isAutoHeight: {
+      control: 'boolean',
+      description:
+        'Shrink-wrap the frame to its rows instead of filling a flex pane.',
+      table: {
+        defaultValue: { summary: 'false' },
+        type: { summary: 'boolean' },
+      },
+    },
 
     /* State */
     isLoading: {
@@ -261,6 +293,35 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {};
+
+/**
+ * Nested source rows opt into a native treegrid. The disclosure is independent
+ * from row activation, and multiple selection cascades through descendants.
+ */
+export const TreeRows: Story = {
+  args: {
+    data: TREE_DEPLOYMENTS,
+    getRowChildren: (row) => (row as TreeDeployment).children,
+    treeColumnKey: 'name',
+    selectionMode: 'multiple',
+    paginationMode: 'off',
+    shape: 'card',
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await userEvent.click(
+      canvas.getByRole('button', { name: /^Expand Production/ }),
+    );
+
+    await waitFor(() => {
+      expect(canvas.getByText('Analytics')).toBeVisible();
+      expect(
+        canvas.getByRole('button', { name: /^Collapse Production/ }),
+      ).toBeVisible();
+    });
+  },
+};
 
 /**
  * `shape="card"` frames the table, `isStriped` bands the rows, and `size` drives
@@ -1212,6 +1273,21 @@ export const Virtualized: Story = {
       name: `deployment-${String(i + 1).padStart(5, '0')}`,
       queries: (i * 7919) % 200_000,
     })),
+  },
+};
+
+/** A compact result can end at its final row inside a taller flex pane. */
+export const AutoHeight: Story = {
+  render: (args) => (
+    <div style={{ display: 'flex', flexDirection: 'column', height: 360 }}>
+      <ItemTable {...args} />
+    </div>
+  ),
+  args: {
+    data: DEPLOYMENTS.slice(0, 4),
+    shape: 'card',
+    paginationMode: 'off',
+    isAutoHeight: true,
   },
 };
 

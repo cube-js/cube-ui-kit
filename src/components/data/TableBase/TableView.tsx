@@ -7,18 +7,20 @@ import {
   useRef,
   useState,
 } from 'react';
-import { VisuallyHidden } from 'react-aria';
+import { useTree, useTreeItem, VisuallyHidden } from 'react-aria';
 
 import { useEvent } from '../../../_internal/hooks';
 import { useI18n } from '../../../i18n';
 import {
   ArrowNarrowDownIcon,
   ArrowNarrowUpIcon,
+  DirectionIcon,
   MoreIcon,
 } from '../../../icons';
 import { getColorTheme, useColorTheme } from '../../../tokens/color-theme';
 import { usePaletteVersion } from '../../../tokens/palette-config';
 import { SIZE_NAME_TO_KEY, SIZES } from '../../../tokens/sizes';
+import { mergeProps } from '../../../utils/react';
 import { Action } from '../../actions/Action/Action';
 import { ItemAction } from '../../actions/ItemAction/ItemAction';
 import { Menu, MenuTrigger } from '../../actions/Menu';
@@ -42,7 +44,12 @@ import {
   normalizeMenuAction,
   ROW_MENU_COLUMN_KEY,
 } from './row-menu';
-import { TableElement, TableHeaderItem } from './styled';
+import {
+  TableElement,
+  TableHeaderItem,
+  TableTreeToggle,
+  TableTreeTogglePlaceholder,
+} from './styled';
 import { TableHeaderCell } from './TableHeaderCell';
 import { TableRow, TableRowDropIndicator } from './TableRow';
 import { selectionRowKey } from './types';
@@ -56,24 +63,29 @@ import {
   SELECTION_COLUMN_KEY,
 } from './use-table-selection';
 
-import type { Key } from '@react-types/shared';
+import type { Key, Node } from '@react-types/shared';
 import type { Styles } from '@tenphi/tasty';
 import type {
   CSSProperties,
+  FocusEvent as ReactFocusEvent,
   KeyboardEvent as ReactKeyboardEvent,
   MouseEvent as ReactMouseEvent,
   ReactNode,
   PointerEvent as ReactPointerEvent,
   RefObject,
 } from 'react';
+import type { TreeState } from 'react-stately';
 import type { NavigateArg } from '../../../providers/navigation.types';
 import type { ColorThemeConfig } from '../../../tokens/color-theme';
 import type { CubeColumnMenuContext } from './column-menu';
+import type { TableTreeNode } from './table-tree';
 import type {
   CubeResolvedColumn,
   CubeTableCellContext,
+  CubeTableColumnGroupHeader,
   CubeTableColumnLayout,
   CubeTableHeaderContext,
+  CubeTableLayoutProps,
   CubeTableLoadingIndicator,
   CubeTableRowContext,
   CubeTableRowSection,
@@ -94,11 +106,18 @@ export interface CubeTableRowRenderProps {
   tooltip?: string;
 }
 
-export interface TableViewProps<T = any> {
+export interface TableViewProps<T = any> extends CubeTableLayoutProps {
   qa?: string;
   rows: readonly T[];
+  /** Stable keys for `rows`; required when a tree was flattened for display. */
+  rowKeys?: readonly Key[];
   getRowKey: (row: T, index: number) => Key;
   layout: CubeTableColumnLayout<T>;
+  /** Group path for each leaf column, from the outermost header inward. */
+  columnHeaderPaths?: ReadonlyMap<
+    string,
+    readonly CubeTableColumnGroupHeader[]
+  >;
   /**
    * Receives the scroll container once it exists. A callback rather than a ref
    * because the virtualized path does not create the element itself — Virtuoso
@@ -210,6 +229,14 @@ export interface TableViewProps<T = any> {
    */
   rowIndexOffset?: number;
   totalRowCount?: number;
+  /** React Aria treegrid state and the model entries matching `rows`. */
+  tree?: {
+    state: TreeState<TableTreeNode<T>>;
+    ariaProps: Record<string, any>;
+    nodes: Node<TableTreeNode<T>>[];
+    entries: TableTreeNode<T>[];
+    columnKey: string;
+  };
   isReorderable?: boolean;
   /** Provided by `DraggableCollection` when reordering is on. */
   dragState?: any;
@@ -398,6 +425,169 @@ function pinStyle(column: CubeResolvedColumn): CSSProperties | undefined {
 }
 
 /**
+ * Hook boundary for the native table. Flat tables deliberately avoid this
+ * component so their DOM and keyboard behaviour remain exactly as before.
+ */
+function TreeGridTable<T>(props: {
+  tree: NonNullable<TableViewProps<T>['tree']>;
+  tableProps: Record<string, any>;
+  style?: CSSProperties;
+  children: ReactNode;
+}) {
+  const { tree, tableProps, style, children } = props;
+  const ref = useRef<HTMLTableElement>(null);
+  const pendingFocusKey = useRef<Key | null>(null);
+  const { gridProps } = useTree(tree.ariaProps as any, tree.state, ref);
+
+  // A virtualized destination may not exist until the focused key makes the
+  // parent virtualizer scroll and render another window. Retry after each
+  // render until that row mounts, then complete the keyboard focus move.
+  useEffect(() => {
+    const key = pendingFocusKey.current;
+    if (key == null) return;
+
+    // A real focus move wins over the delayed virtual-row focus. Losing the
+    // old row to virtualization leaves focus on <body>, whereas tabbing or
+    // clicking elsewhere leaves a concrete active element we must respect.
+    const activeElement = document.activeElement;
+    if (
+      activeElement &&
+      activeElement !== document.body &&
+      !ref.current?.contains(activeElement)
+    ) {
+      pendingFocusKey.current = null;
+      return;
+    }
+
+    const target = Array.from(
+      ref.current?.querySelectorAll<HTMLTableRowElement>(
+        'tbody tr[data-element="Row"][data-key]',
+      ) ?? [],
+    ).find((element) => element.dataset.key === String(key));
+
+    if (target) {
+      pendingFocusKey.current = null;
+      target.focus();
+    }
+  });
+
+  const handleBlurCapture = (event: ReactFocusEvent<HTMLTableElement>) => {
+    const pendingKey = pendingFocusKey.current;
+    const nextTarget = event.relatedTarget;
+
+    if (pendingKey != null && nextTarget instanceof Element) {
+      const nextRow = nextTarget.closest<HTMLTableRowElement>(
+        'tbody tr[data-element="Row"][data-key]',
+      );
+
+      if (nextRow?.dataset.key !== String(pendingKey)) {
+        pendingFocusKey.current = null;
+      }
+    }
+
+    (gridProps as any).onBlurCapture?.(event);
+  };
+
+  const handleKeyDownCapture = (
+    event: ReactKeyboardEvent<HTMLTableElement>,
+  ) => {
+    const row = (event.target as HTMLElement).closest<HTMLTableRowElement>(
+      'tbody tr[data-element="Row"][data-key]',
+    );
+
+    // Inputs, links and menus embedded in a row retain their own shortcuts.
+    if (!row || event.target !== row) {
+      (gridProps as any).onKeyDownCapture?.(event);
+      return;
+    }
+
+    // While a virtual destination is still mounting, subsequent key presses
+    // continue from that logical key rather than repeatedly targeting the old
+    // DOM row that still owns focus.
+    const currentKey = pendingFocusKey.current ?? row.dataset.key;
+    const index = tree.entries.findIndex(
+      (entry) => String(entry.key) === String(currentKey),
+    );
+    const entry = tree.entries[index];
+    if (!entry) return;
+
+    const focusEntry = (next: TableTreeNode<T> | undefined) => {
+      if (!next) return false;
+      tree.state.selectionManager.setFocusedKey(next.key);
+      const target = Array.from(
+        ref.current?.querySelectorAll<HTMLTableRowElement>(
+          'tbody tr[data-element="Row"][data-key]',
+        ) ?? [],
+      ).find((element) => element.dataset.key === String(next.key));
+      if (target) {
+        pendingFocusKey.current = null;
+        target.focus();
+      } else pendingFocusKey.current = next.key;
+      return true;
+    };
+
+    const hasChildren = entry.children.length > 0;
+    const isExpanded = tree.state.expandedKeys.has(entry.key);
+    let handled = false;
+
+    if (event.key === 'ArrowRight' && hasChildren) {
+      if (isExpanded) handled = focusEntry(entry.children[0]);
+      else {
+        tree.state.toggleKey(entry.key);
+        handled = true;
+      }
+    } else if (event.key === 'ArrowLeft') {
+      if (hasChildren && isExpanded) {
+        tree.state.toggleKey(entry.key);
+        handled = true;
+      } else if (entry.parentKey != null) {
+        handled = focusEntry(
+          tree.entries.find((candidate) => candidate.key === entry.parentKey),
+        );
+      }
+    } else if (event.key === 'ArrowDown') {
+      handled = focusEntry(tree.entries[index + 1]);
+    } else if (event.key === 'ArrowUp') {
+      handled = focusEntry(tree.entries[index - 1]);
+    }
+
+    if (handled) {
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
+
+    // React Aria still sees the DOM row that owned focus before the virtual
+    // destination mounted. If a logical navigation key has no action there
+    // (a boundary, leaf, or collapsed root), consuming it avoids falling
+    // through and applying that key to the stale row instead.
+    if (
+      pendingFocusKey.current != null &&
+      ['ArrowDown', 'ArrowUp', 'ArrowRight', 'ArrowLeft'].includes(event.key)
+    ) {
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
+
+    (gridProps as any).onKeyDownCapture?.(event);
+  };
+
+  return (
+    <table
+      {...mergeProps(gridProps, tableProps)}
+      ref={ref}
+      role="treegrid"
+      style={style}
+      onBlurCapture={handleBlurCapture}
+      onKeyDownCapture={handleKeyDownCapture}
+    >
+      {children}
+    </table>
+  );
+}
+
+/**
  * The one place table DOM exists. Both `ItemTable` and `DataTable` resolve their
  * props into the shape above and hand it here, so the markup, the ARIA
  * bookkeeping and the tasty sub-element contract have a single implementation.
@@ -406,8 +596,10 @@ export function TableView<T = any>(props: TableViewProps<T>) {
   const {
     qa,
     rows,
+    rowKeys,
     getRowKey,
     layout,
+    columnHeaderPaths,
     onScrollerRef,
     rootRef,
     size = 'medium',
@@ -420,6 +612,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
     hasColumnDividers,
     isRowMoveAnimated = true,
     isHeaderSticky = true,
+    isAutoHeight = false,
     isVirtualized = 'auto',
     virtualizeThreshold = 50,
     overscan = 20,
@@ -445,6 +638,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
     rowNumberOffset = 0,
     rowIndexOffset = 0,
     totalRowCount,
+    tree,
     isReorderable = false,
     dragState,
     dropState,
@@ -489,6 +683,11 @@ export function TableView<T = any>(props: TableViewProps<T>) {
 
   const { columns } = layout;
   const columnCount = columns.length;
+  const headerGroupDepth = columns.reduce(
+    (depth, column) =>
+      Math.max(depth, columnHeaderPaths?.get(column.key)?.length ?? 0),
+    0,
+  );
 
   /**
    * `rowSize` resolved to the size scale, or `null` when it was not given.
@@ -544,7 +743,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
   );
 
   // Header rows count towards `aria-rowcount`, which must be document-absolute.
-  const headerRowCount = isHeaderHidden ? 0 : 1;
+  const headerRowCount = isHeaderHidden ? 0 : headerGroupDepth + 1;
 
   /* ── the ARIA row index space ───────────────────────────────────────────
    * Four bands, in the order a screen reader walks them:
@@ -570,6 +769,20 @@ export function TableView<T = any>(props: TableViewProps<T>) {
   /** 1-based `aria-rowindex` for the i-th body row of the current page. */
   const bodyRowIndex = (rowIndex: number) =>
     headerRowCount + pinnedTopCount + rowIndexOffset + rowIndex + 1;
+  const bodyRowKey = (row: T, rowIndex: number) =>
+    rowKeys?.[rowIndex] ?? getRowKey(row, rowIndex);
+  const treeRowState = (rowIndex: number) => {
+    const entry = tree?.entries[rowIndex];
+
+    return entry
+      ? {
+          level: entry.level,
+          parentKey: entry.parentKey,
+          hasChildren: entry.children.length > 0,
+          isExpanded: tree.state.expandedKeys.has(entry.key),
+        }
+      : undefined;
+  };
   /** 1-based `aria-rowindex` for the i-th pinned row at `edge`. */
   const pinnedRowIndex = (index: number, edge: 'top' | 'bottom') =>
     edge === 'top'
@@ -595,7 +808,17 @@ export function TableView<T = any>(props: TableViewProps<T>) {
 
   const mergedStyles = useMemo(
     () => ({
+      // A table normally fills its flex pane. `min-height: 0` lets the scroller
+      // become smaller than its contents instead of forcing that pane taller.
+      height: 'min 0',
+      flexGrow: 1,
+      flexShrink: 1,
       ...styles,
+      // Auto-height is a layout mode rather than a styling suggestion: its
+      // rows determine the frame even when a wrapper supplied fixed sizing.
+      ...(isAutoHeight
+        ? { height: 'min 0', flexGrow: 0, flexShrink: 0 }
+        : null),
       ...(contentPreset ? { Table: { preset: contentPreset } } : null),
       ...(headerStyles ? { HeadRow: headerStyles } : null),
       ...(headerPreset || headerCellStyles || tints.headerCellStyles
@@ -605,6 +828,14 @@ export function TableView<T = any>(props: TableViewProps<T>) {
               ...tints.headerCellStyles,
               // The consumer's own overrides land last, so a `headerCellStyles`
               // that sets `#cell-base` outright still wins over a tint.
+              ...headerCellStyles,
+            },
+          }
+        : null),
+      ...(headerPreset || headerCellStyles
+        ? {
+            HeaderGroupCell: {
+              ...(headerPreset ? { preset: headerPreset } : null),
               ...headerCellStyles,
             },
           }
@@ -626,6 +857,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
     }),
     [
       styles,
+      isAutoHeight,
       headerStyles,
       headerCellStyles,
       headerPreset,
@@ -831,7 +1063,10 @@ export function TableView<T = any>(props: TableViewProps<T>) {
     ));
   }
 
-  function renderSelectionHeaderCell(column: CubeResolvedColumn<T>) {
+  function renderSelectionHeaderCell(
+    column: CubeResolvedColumn<T>,
+    rowSpan = 1,
+  ) {
     return (
       <th
         key={column.key}
@@ -843,6 +1078,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
         data-last-column={lastColumnFlag(column)}
         role="columnheader"
         scope="col"
+        rowSpan={rowSpan > 1 ? rowSpan : undefined}
         tabIndex={-1}
         aria-colindex={column.ariaColIndex}
         style={pinStyle(column)}
@@ -883,6 +1119,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
       <Checkbox
         aria-label={t('itemTable.selectRow', 'Select row')}
         isSelected={selection!.isSelected(rowKey)}
+        isIndeterminate={selection!.isIndeterminate(rowKey)}
         isDisabled={!canSelect}
         onChange={() => selection!.toggleRow(rowKey)}
       />
@@ -973,9 +1210,9 @@ export function TableView<T = any>(props: TableViewProps<T>) {
     );
   }
 
-  function renderHeaderCell(column: CubeResolvedColumn<T>) {
+  function renderHeaderCell(column: CubeResolvedColumn<T>, rowSpan = 1) {
     if (column.key === SELECTION_COLUMN_KEY) {
-      return renderSelectionHeaderCell(column);
+      return renderSelectionHeaderCell(column, rowSpan);
     }
 
     if (column.key === ROW_NUMBER_COLUMN_KEY) {
@@ -990,6 +1227,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
           data-last-column={lastColumnFlag(column)}
           role="columnheader"
           scope="col"
+          rowSpan={rowSpan > 1 ? rowSpan : undefined}
           tabIndex={-1}
           aria-colindex={column.ariaColIndex}
           style={pinStyle(column)}
@@ -1011,6 +1249,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
           data-last-column={lastColumnFlag(column)}
           role="columnheader"
           scope="col"
+          rowSpan={rowSpan > 1 ? rowSpan : undefined}
           tabIndex={-1}
           aria-colindex={column.ariaColIndex}
           style={pinStyle(column)}
@@ -1191,6 +1430,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
           'data-tint': tintSlot(tints, column.key, 'header'),
           role: 'columnheader',
           scope: 'col',
+          rowSpan: rowSpan > 1 ? rowSpan : undefined,
           // A sortable header is a control, so it takes a tab stop — and so does
           // one carrying a menu (Shift+F10 needs somewhere to land) or one that
           // can be moved with Alt+Arrow. Row/cell keyboard navigation lands in a
@@ -1268,6 +1508,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
     // borders and the fill, and a sub-element cannot ask about its DOM parent's
     // mods — state keys inside `Cell` resolve against the table root.
     pinnedEdge?: 'top' | 'bottom',
+    treeItemAria?: ReturnType<typeof useTreeItem>,
   ) {
     // Section-qualified, because the same record is routinely pinned at both
     // edges. `rowKey` below stays the consumer's own — this identity is the
@@ -1337,6 +1578,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
       // Cell-range membership is a different question and has its own answer in
       // `data-cell-selected`.
       isSelected: selection?.isSelected(rowKey) ?? false,
+      tree: pinnedEdge == null ? treeRowState(rowIndex) : undefined,
     };
 
     const value = column.isStructural
@@ -1373,6 +1615,43 @@ export function TableView<T = any>(props: TableViewProps<T>) {
         String(rendered)
       ) : (
         (rendered as ReactNode)
+      );
+
+    const treeEntry = pinnedEdge == null ? tree?.entries[rowIndex] : undefined;
+    const displayContent =
+      treeEntry && column.key === tree?.columnKey ? (
+        <div
+          data-element="TreeContent"
+          style={
+            {
+              '--tree-level': String(treeEntry.level),
+            } as CSSProperties
+          }
+        >
+          {treeEntry.children.length > 0 ? (
+            <TableTreeToggle
+              {...treeItemAria?.expandButtonProps}
+              data-element="TreeToggle"
+              tabIndex={-1}
+            >
+              <DirectionIcon
+                to={
+                  tree.state.expandedKeys.has(treeEntry.key)
+                    ? 'bottom'
+                    : 'right'
+                }
+              />
+            </TableTreeToggle>
+          ) : (
+            <TableTreeTogglePlaceholder
+              data-element="TreeToggle"
+              aria-hidden="true"
+            />
+          )}
+          <div data-element="TreeValue">{content}</div>
+        </div>
+      ) : (
+        content
       );
 
     const resolvedCellStyles =
@@ -1422,7 +1701,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
         }}
         {...column.cellProps?.(ctx)}
       >
-        {content}
+        {displayContent}
         {link !== undefined ? (
           <Action
             data-element="RowLink"
@@ -1465,11 +1744,23 @@ export function TableView<T = any>(props: TableViewProps<T>) {
   }
 
   /** The cells of one body row. Shared by both render paths. */
-  function renderRowCells(row: T, rowIndex: number) {
-    const rowKey = getRowKey(row, rowIndex);
+  function renderRowCells(
+    row: T,
+    rowIndex: number,
+    treeItemAria?: ReturnType<typeof useTreeItem>,
+  ) {
+    const rowKey = bodyRowKey(row, rowIndex);
 
     return columns.map((column) =>
-      renderCell(column, row, rowIndex, rowKey, rowIndex === rows.length - 1),
+      renderCell(
+        column,
+        row,
+        rowIndex,
+        rowKey,
+        rowIndex === rows.length - 1,
+        undefined,
+        treeItemAria,
+      ),
     );
   }
 
@@ -1479,7 +1770,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
    * props rather than the element.
    */
   function getRowElementProps(row: T, rowIndex: number) {
-    const rowKey = getRowKey(row, rowIndex);
+    const rowKey = bodyRowKey(row, rowIndex);
     const isSelected = selection?.isSelected(rowKey) ?? false;
     const ctx: CubeTableRowContext<T> = {
       row,
@@ -1487,6 +1778,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
       rowIndex,
       section: 'body',
       isSelected,
+      tree: treeRowState(rowIndex),
     };
     const extra = getRowProps?.(ctx);
 
@@ -1504,11 +1796,12 @@ export function TableView<T = any>(props: TableViewProps<T>) {
       role: 'row',
       // Only the resting row takes a tab stop; the rest are reached with the
       // arrow keys. Off entirely when nothing on the row is operable.
-      tabIndex: isReorderable
-        ? rowIndex === focusedRowIndex
-          ? 0
-          : -1
-        : undefined,
+      tabIndex:
+        !tree && isReorderable
+          ? rowIndex === focusedRowIndex
+            ? 0
+            : -1
+          : undefined,
       // Only meaningful in a selectable grid; announcing "not selected" on
       // every row of a plain table is noise.
       'aria-selected': selection?.isEnabled ? isSelected : undefined,
@@ -1549,7 +1842,9 @@ export function TableView<T = any>(props: TableViewProps<T>) {
 
   function renderRow(row: T, rowIndex: number, isVirtual = false) {
     const { height, ...rowProps } = getRowElementProps(row, rowIndex);
-    const rowKey = getRowKey(row, rowIndex);
+    const rowKey = bodyRowKey(row, rowIndex);
+    const treeNode = tree?.nodes[rowIndex];
+    const treeEntry = tree?.entries[rowIndex];
 
     return (
       <TableRow
@@ -1561,8 +1856,18 @@ export function TableView<T = any>(props: TableViewProps<T>) {
         measureRef={isVirtual ? virtualizer.measureElement : undefined}
         dragState={isReorderable ? dragState : undefined}
         dropState={isReorderable ? dropState : undefined}
+        tree={
+          treeNode && treeEntry
+            ? {
+                state: tree.state,
+                node: treeNode,
+                entry: treeEntry,
+                isVirtualized: isVirtual,
+              }
+            : undefined
+        }
       >
-        {renderRowCells(row, rowIndex)}
+        {(treeItemAria) => renderRowCells(row, rowIndex, treeItemAria)}
       </TableRow>
     );
   }
@@ -1585,7 +1890,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
    * is merely *capable* of dragging keeps its ordinary structure.
    */
   function withDropIndicators(row: T, index: number, isVirtual = false) {
-    const rowKey = getRowKey(row, index);
+    const rowKey = bodyRowKey(row, index);
     const rowNode = renderRow(row, index, isVirtual);
 
     if (!isReorderable || !dropState) return rowNode;
@@ -1629,6 +1934,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
   const showBlank = isLoading && !hasRows && loadingIndicator === 'none';
 
   const shouldVirtualize =
+    !isAutoHeight &&
     hasRows &&
     error == null &&
     (isVirtualized === true ||
@@ -1644,7 +1950,8 @@ export function TableView<T = any>(props: TableViewProps<T>) {
   const virtualizer = useVirtualizer({
     count: shouldVirtualize ? rows.length : 0,
     getScrollElement: () => scrollerRef.current,
-    getItemKey: (index) => String(getRowKey(rowsRef.current[index], index)),
+    getItemKey: (index) =>
+      String(rowKeys?.[index] ?? getRowKey(rowsRef.current[index], index)),
     estimateSize: () =>
       (rowHeight ??
         (rowSizeKey
@@ -1661,6 +1968,16 @@ export function TableView<T = any>(props: TableViewProps<T>) {
   // `scrollerEl` is referenced only to re-render on the pass where the scroller
   // first exists, so the virtualizer re-reads `getScrollElement` and attaches.
   void scrollerEl;
+
+  const focusedTreeKey = tree?.state.selectionManager.focusedKey;
+  useEffect(() => {
+    if (!shouldVirtualize || focusedTreeKey == null || !tree) return;
+
+    const index = tree.entries.findIndex(
+      (entry) => entry.key === focusedTreeKey,
+    );
+    if (index >= 0) virtualizer.scrollToIndex(index, { align: 'auto' });
+  }, [focusedTreeKey, shouldVirtualize, tree, virtualizer]);
 
   const scrollability = useScrollability(scrollerEl);
 
@@ -1994,7 +2311,9 @@ export function TableView<T = any>(props: TableViewProps<T>) {
 
     const row = rows[index];
 
-    return row === undefined ? null : { row, index };
+    return row === undefined
+      ? null
+      : { row, index, key: bodyRowKey(row, index) };
   }
 
   const virtualItems = shouldVirtualize ? virtualizer.getVirtualItems() : [];
@@ -2014,33 +2333,146 @@ export function TableView<T = any>(props: TableViewProps<T>) {
     </colgroup>
   );
 
-  const headerRow = isHeaderHidden ? null : (
-    <tr
-      data-element="HeadRow"
-      role="row"
-      aria-rowindex={1}
-      ref={headRowRef}
-      {...headCollectionProps}
-      onKeyDownCapture={(event) => {
-        // `DraggableCollection`'s Alt+Arrow reorder sits on this row and fires
-        // in the capture phase, so it would beat the resize handle's own
-        // Alt+Arrow bubble handler and move the column instead of sizing it.
+  function pathsSharePrefix(
+    left: readonly CubeTableColumnGroupHeader[],
+    right: readonly CubeTableColumnGroupHeader[],
+    depth: number,
+  ) {
+    for (let index = 0; index <= depth; index++) {
+      if (left[index]?.key !== right[index]?.key) return false;
+    }
+
+    return true;
+  }
+
+  function renderHeaderGroupCell(
+    group: CubeTableColumnGroupHeader,
+    segment: readonly CubeResolvedColumn<T>[],
+    depth: number,
+  ) {
+    const first = segment[0];
+    const last = segment[segment.length - 1];
+    const pin = segment.every((column) => column.pin === first.pin)
+      ? first.pin
+      : undefined;
+    const pinOffset =
+      pin === 'start' ? first.pinOffset : pin === 'end' ? last.pinOffset : null;
+
+    return (
+      <th
+        key={`${depth}:${first.key}:${group.key}`}
+        data-element="HeaderGroupCell"
+        data-key={group.key}
+        data-pin={pin}
+        data-pin-edge={
+          segment.some((column) => column.isPinEdge) ? '' : undefined
+        }
+        data-last-column={last.index === columnCount - 1 ? '' : undefined}
+        data-align="center"
+        role="columnheader"
+        scope="colgroup"
+        tabIndex={-1}
+        aria-colindex={first.ariaColIndex}
+        colSpan={segment.length}
+        style={
+          pinOffset == null
+            ? undefined
+            : { ['--pin-offset' as any]: `${pinOffset}px` }
+        }
+      >
+        <TableHeaderItem>{group.title}</TableHeaderItem>
+      </th>
+    );
+  }
+
+  function renderHeaderRowCells(depth: number) {
+    const cells: ReactNode[] = [];
+
+    for (let columnIndex = 0; columnIndex < columns.length; ) {
+      const column = columns[columnIndex];
+      const path = columnHeaderPaths?.get(column.key) ?? [];
+
+      // This column's leaf header began on an earlier row and spans this one.
+      if (path.length < depth) {
+        columnIndex++;
+        continue;
+      }
+
+      if (path.length === depth) {
+        cells.push(renderHeaderCell(column, headerRowCount - depth));
+        columnIndex++;
+        continue;
+      }
+
+      let segmentEnd = columnIndex + 1;
+
+      while (segmentEnd < columns.length) {
+        const nextPath = columnHeaderPaths?.get(columns[segmentEnd].key) ?? [];
+
         if (
-          (event.target as HTMLElement)?.closest?.('[data-element="Resizer"]')
+          nextPath.length <= depth ||
+          columns[segmentEnd].pin !== column.pin ||
+          !pathsSharePrefix(path, nextPath, depth)
         ) {
-          return;
+          break;
         }
 
-        (headCollectionProps as any)?.onKeyDownCapture?.(event);
-      }}
-    >
-      {columns.map(renderHeaderCell)}
-    </tr>
-  );
+        segmentEnd++;
+      }
+
+      cells.push(
+        renderHeaderGroupCell(
+          path[depth],
+          columns.slice(columnIndex, segmentEnd),
+          depth,
+        ),
+      );
+      columnIndex = segmentEnd;
+    }
+
+    return cells;
+  }
+
+  const headerRows = isHeaderHidden
+    ? null
+    : Array.from({ length: headerRowCount }, (_, depth) => {
+        const isLeafRow = depth === headerRowCount - 1;
+
+        return (
+          <tr
+            key={depth}
+            data-element="HeadRow"
+            role="row"
+            aria-rowindex={depth + 1}
+            ref={isLeafRow ? headRowRef : undefined}
+            {...(isLeafRow ? headCollectionProps : undefined)}
+            onKeyDownCapture={
+              isLeafRow
+                ? (event) => {
+                    // `DraggableCollection`'s Alt+Arrow reorder sits on this
+                    // row and fires in capture, so it would beat the resize
+                    // handle's own Alt+Arrow bubble handler.
+                    if (
+                      (event.target as HTMLElement)?.closest?.(
+                        '[data-element="Resizer"]',
+                      )
+                    ) {
+                      return;
+                    }
+
+                    (headCollectionProps as any)?.onKeyDownCapture?.(event);
+                  }
+                : undefined
+            }
+          >
+            {renderHeaderRowCells(depth)}
+          </tr>
+        );
+      });
 
   const tableProps = {
     'data-element': 'Table',
-    role: 'grid',
+    role: tree ? 'treegrid' : 'grid',
     'aria-label': ariaLabel,
     'aria-busy': isLoading || undefined,
     'aria-rowcount':
@@ -2073,6 +2505,33 @@ export function TableView<T = any>(props: TableViewProps<T>) {
   } else {
     bodyContent = rows.map((row, index) => withDropIndicators(row, index));
   }
+
+  const tableContent = (
+    <>
+      {colGroup}
+      {isHeaderHidden ? null : <thead data-element="Head">{headerRows}</thead>}
+      <tbody data-element="Body" {...collectionProps} ref={handleBodyRef}>
+        {pinnedTopRows?.map((row, index) => renderPinnedRow(row, index, 'top'))}
+        {bodyContent}
+        {pinnedBottomRows?.map((row, index) =>
+          renderPinnedRow(row, index, 'bottom'),
+        )}
+        {isLoadingMore
+          ? renderSkeletonRows(loadMoreSkeletonCount, 'load-more')
+          : null}
+        {onLoadMore && hasRows ? (
+          <tr data-sentinel="" aria-hidden="true">
+            <td
+              colSpan={Math.max(columnCount, 1)}
+              style={{ height: 1, padding: 0, border: 0 }}
+            >
+              <div ref={sentinelRef} style={{ height: 1 }} />
+            </td>
+          </tr>
+        ) : null}
+      </tbody>
+    </>
+  );
 
   // Before the first measure there are no columns to lay out yet — show the
   // generic table skeleton rather than an empty frame.
@@ -2137,12 +2596,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
 
             if (found) {
               event.stopPropagation();
-              openContextMenuFor(
-                found.row,
-                found.index,
-                getRowKey(found.row, found.index),
-                event,
-              );
+              openContextMenuFor(found.row, found.index, found.key, event);
             }
 
             return;
@@ -2158,13 +2612,14 @@ export function TableView<T = any>(props: TableViewProps<T>) {
                 'a, button, input, select, textarea, [role="button"]',
               )
             ) {
-              onRowAction(found.row, getRowKey(found.row, found.index));
+              onRowAction(found.row, found.key);
             }
 
             return;
           }
 
           if (
+            !tree &&
             isReorderable &&
             (event.key === 'ArrowDown' || event.key === 'ArrowUp')
           ) {
@@ -2234,56 +2689,30 @@ export function TableView<T = any>(props: TableViewProps<T>) {
           });
         }}
       >
-        <table
-          {...tableProps}
-          style={
-            layout.totalWidth != null ? { width: layout.totalWidth } : undefined
-          }
-        >
-          {colGroup}
-          {isHeaderHidden ? null : (
-            <thead data-element="Head">{headerRow}</thead>
-          )}
-          <tbody data-element="Body" {...collectionProps} ref={handleBodyRef}>
-            {pinnedTopRows?.map((row, index) =>
-              renderPinnedRow(row, index, 'top'),
-            )}
-            {bodyContent}
-            {pinnedBottomRows?.map((row, index) =>
-              renderPinnedRow(row, index, 'bottom'),
-            )}
-            {/*
-              Skeleton rows rather than a spinner: they keep the row grid, say
-              "more rows of this shape are coming", and grow the scroll height
-              smoothly instead of a block that appears and vanishes. It also
-              matches what the first load already shows.
-
-              Sized to the batch that is coming (see `loadMoreSkeletonCount`),
-              not to a fixed few: the point is that the list keeps its length
-              through the load, so the user can carry on scrolling into it and
-              nothing lurches when the rows arrive.
-            */}
-            {isLoadingMore
-              ? renderSkeletonRows(loadMoreSkeletonCount, 'load-more')
-              : null}
-            {onLoadMore && hasRows ? (
-              <tr data-sentinel="" aria-hidden="true">
-                <td
-                  colSpan={Math.max(columnCount, 1)}
-                  style={{ height: 1, padding: 0, border: 0 }}
-                >
-                  {/*
-                    A plain block with real height, not the `<tr>` or `<td>`
-                    itself: an `IntersectionObserver` given a zero-area table
-                    part produced no entries at all — not even the initial one
-                    every observer is supposed to emit on `observe`.
-                  */}
-                  <div ref={sentinelRef} style={{ height: 1 }} />
-                </td>
-              </tr>
-            ) : null}
-          </tbody>
-        </table>
+        {tree ? (
+          <TreeGridTable
+            tree={tree}
+            tableProps={tableProps}
+            style={
+              layout.totalWidth != null
+                ? { width: layout.totalWidth }
+                : undefined
+            }
+          >
+            {tableContent}
+          </TreeGridTable>
+        ) : (
+          <table
+            {...tableProps}
+            style={
+              layout.totalWidth != null
+                ? { width: layout.totalWidth }
+                : undefined
+            }
+          >
+            {tableContent}
+          </table>
+        )}
       </div>
       {/*
         A refresh is shown by sweeping the table itself, not by parking a

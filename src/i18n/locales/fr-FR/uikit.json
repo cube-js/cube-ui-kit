@@ -160,6 +160,7 @@
     "summary": "{{from}}–{{to}} sur {{total}}"
   },
   "itemTable": {
+    "table": "Tableau",
     "noItems": "Aucun élément",
     "noResults": "Aucun résultat trouvé",
     "search": "Rechercher",

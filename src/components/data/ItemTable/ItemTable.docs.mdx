@@ -38,6 +38,14 @@ pivots, totals. Use `ListBox` when there is only one column.
 - **`columns`** `CubeItemTableColumn<T>[]` — Column definitions. See below.
 - **`rowKey`** `string` (default: `'id'`) — Property used as the row key.
 - **`getRowKey`** `(row: T, index: number) => Key` — Wins over `rowKey`.
+- **`getRowChildren`** `(row: T) => readonly T[] | undefined` — Enables tree
+  mode. `data` then contains top-level rows and children are read recursively.
+- **`treeColumnKey`** `string` — Column containing indentation and the
+  disclosure control. Defaults to the first visible data column.
+- **`expandedKeys`** `Key[]` — Controlled expanded rows.
+- **`defaultExpandedKeys`** `Key[]` — Initially expanded rows. Defaults to none.
+- **`onExpand`** `(keys, info) => void` — Reports the complete expanded-key list
+  and the toggled row, key, zero-based level, parent key and resulting state.
 - **`isLoading`** `boolean` (default: `false`) — Marks a fetch in flight. What
   the user sees depends on `loadingIndicator`.
 - **`loadingIndicator`** `'overlay' | 'skeleton' | 'none'` (default: `'overlay'`)
@@ -72,6 +80,9 @@ pivots, totals. Use `ListBox` when there is only one column.
   row and drops it from `aria-rowcount`.
 - **`isHeaderSticky`** `boolean` (default: `true`) — Pins the column header
   while the body scrolls.
+- **`isAutoHeight`** `boolean` (default: `false`) — Shrink-wraps the frame to
+  the rendered rows instead of filling its flex pane. It takes precedence over
+  root height/flex sizing and disables virtualization.
 - **`sortMode`** `'client' | 'server' | 'off'` (default: `'client'` when any
   column is sortable, else `'off'`) — `client` reorders `data` itself; `server`
   only reflects `sort` and fires `onSortChange`; `off` removes the affordance.
@@ -103,7 +114,8 @@ pivots, totals. Use `ListBox` when there is only one column.
   toolbar.
 - **`isVirtualized`** `boolean | 'auto'` (default: `'auto'`) — `'auto'` turns
   virtualization on once the row count passes `virtualizeThreshold`. It needs a
-  bounded height to have a viewport to work against.
+  bounded height to have a viewport to work against and is ignored when
+  `isAutoHeight` is enabled.
 - **`virtualizeThreshold`** `number` (default: `50`) — Row count above which
   `'auto'` virtualizes.
 - **`overscan`** `number` (default: `12`) — Rows mounted beyond each viewport
@@ -124,6 +136,10 @@ pivots, totals. Use `ListBox` when there is only one column.
 - **`selectionTooltip`** `string | ((row: T) => string | undefined)` — Explains
   an inert checkbox.
 - **`disabledKeys`** `Key[]` — Rows that cannot be interacted with at all.
+- **`treeSelectionBehavior`** `'cascade' | 'independent'` (default: `'cascade'`
+  in tree mode) — Multiple selection only. Cascade selects eligible descendants
+  and derives checked or indeterminate ancestors; single selection is always
+  independent.
 - **`rowLink`** `(row: T, index: number) => NavigateArg | undefined` — Turns the
   row-header cell into a stretched link covering the whole row. Return
   `undefined` for a row that should not navigate.
@@ -214,6 +230,9 @@ pivots, totals. Use `ListBox` when there is only one column.
 - **`getRowProps`** `(ctx) => { isDimmed?, mods?, styles?, height?, qa?, tooltip? }`
   — Per-row visuals.
 - **`ariaLabel`** `string` — Labels the grid.
+- **`isChecked`** `boolean` — Base checked-state modifier.
+- **`place`** `string` — Tasty placement shorthand on the root frame.
+- **`scrollMargin`** `string | number` — Scroll margin on the root frame.
 
 #### `CubeItemTableColumn<T>`
 
@@ -298,6 +317,8 @@ reachable from this one prop — that is the whole styling contract.
 - `Table` — the `<table>`
 - `Head`, `HeadRow`, `HeaderCell` — the column header
 - `Body`, `Row`, `Cell` — the data rows
+- `TreeContent`, `TreeToggle`, `TreeValue` — indentation, disclosure/leaf
+  placeholder, and the consumer-rendered value in the tree column
 - `SortIndicator` — the sort arrow, inside the header `Item`'s suffix
 - `Foot`, `FootRow`, `FootCell` — pinned totals
 - `StateContent` — the empty / no-results / error content
@@ -398,6 +419,41 @@ Row-level modifiers, set on each `<tr>`: `odd`, `selected`, `focused`, `dimmed`,
 ```
 
 <Canvas of={ItemTableStories.Default} />
+
+### Tree Rows
+
+Supplying `getRowChildren` changes the root to `role="treegrid"`. Rows keep their
+original objects; keys must be unique across the complete hierarchy.
+
+```jsx
+<ItemTable
+  data={folders}
+  columns={columns}
+  getRowChildren={(row) => row.children}
+  treeColumnKey="name"
+  defaultExpandedKeys={['production']}
+  selectionMode="multiple"
+/>
+```
+
+Client sorting runs independently within every sibling collection. Client
+search retains ancestor paths; a matching parent keeps its complete subtree,
+and required branches open temporarily without changing `expandedKeys`. Client
+pagination counts and slices roots, keeping each subtree on its parent's page.
+Server modes treat the supplied nested page as already processed, and `total`
+counts roots.
+
+The chevron and Right/Left arrows expand or collapse. Up/Down traverse visible
+rows, typeahead uses the tree column, and Left on a collapsed child moves to its
+parent. Ordinary row clicks still activate `onRowAction`/`rowLink`; the
+disclosure does not. Select-all includes collapsed descendants. Disabled and
+unselectable descendants are excluded from cascade.
+
+Tree mode ignores `isReorderable`, because a flat reordered array cannot encode
+parents. `dropOnRow` remains available for folder moves; self/descendant cycles
+are rejected and selected descendants are collapsed under a dragged ancestor.
+
+<Canvas of={ItemTableStories.TreeRows} />
 
 ### Custom Cells
 
@@ -702,6 +758,16 @@ Above `virtualizeThreshold` rows a bounded table virtualizes automatically. The
 DOM and the styles are identical either way — only the number of mounted rows
 changes, so sorting, search, pinned columns and the sticky header all behave the
 same.
+
+For a compact list in normal page flow, set `isAutoHeight`. Its frame then ends
+at the final rendered row instead of filling the surrounding flex pane. The
+complete result is rendered, so keep large lists bounded and virtualized.
+
+```jsx
+<ItemTable data={recentRows} columns={columns} paginationMode="off" isAutoHeight />
+```
+
+<Canvas of={ItemTableStories.AutoHeight} />
 
 ```jsx
 <ItemTable height="420px" paginationMode="off" data={tenThousandRows} columns={columns} />

@@ -31,12 +31,20 @@ export const SELECTION_COLUMN_WIDTH: Record<string, number> = {
 export interface UseTableSelectionOptions<T> {
   /** Rows currently on screen — one page, or everything when unpaginated. */
   rows: readonly T[];
+  /** Stable keys parallel to `rows`, used by tree mode. */
+  rowKeys?: readonly Key[];
+  /** Full current-page subtree; defaults to `rows`. */
+  pageRows?: readonly T[];
+  /** Stable keys parallel to `pageRows`. */
+  pageRowKeys?: readonly Key[];
   /**
    * Every row passing the current search/filter, across pages. Only differs
    * from `rows` under client pagination, and only `selectAllMode="filtered"`
    * reads it.
    */
   filteredRows: readonly T[];
+  /** Stable keys parallel to `filteredRows`. */
+  filteredRowKeys?: readonly Key[];
   getRowKey: (row: T, index: number) => Key;
   selectionMode: CubeTableSelectionMode;
   selectedKeys?: Key[] | 'all';
@@ -45,6 +53,12 @@ export interface UseTableSelectionOptions<T> {
   selectAllMode: CubeTableSelectAllMode;
   isRowSelectable?: (row: T) => boolean;
   disabledKeys?: Key[];
+  tree?: {
+    rootKeys: readonly Key[];
+    childrenOf: ReadonlyMap<Key, readonly Key[]>;
+    parentOf: ReadonlyMap<Key, Key | null>;
+    behavior: 'cascade' | 'independent';
+  };
 }
 
 export type CubeTableSelectAllState = 'none' | 'some' | 'all';
@@ -55,10 +69,80 @@ function toSelection(keys: Key[] | 'all' | undefined): Selection | undefined {
   return keys === 'all' ? 'all' : new Set(keys);
 }
 
+function deriveTreeSelection(
+  source: ReadonlySet<Key>,
+  rootKeys: readonly Key[],
+  childrenOf: ReadonlyMap<Key, readonly Key[]>,
+  isEligible: (key: Key) => boolean,
+) {
+  const checked = new Set(source);
+  const indeterminate = new Set<Key>();
+
+  const visit = (
+    key: Key,
+  ): { all: boolean; any: boolean; eligible: boolean } => {
+    const children = childrenOf.get(key) ?? [];
+    const eligible = isEligible(key);
+    const explicitlySelected = eligible && source.has(key);
+
+    if (explicitlySelected) checked.add(key);
+
+    if (!children.length) {
+      const selected = eligible && checked.has(key);
+      if (!eligible) checked.delete(key);
+      return { all: !eligible || selected, any: selected, eligible };
+    }
+
+    let all = true;
+    let any = false;
+    let hasEligible = false;
+
+    for (const child of children) {
+      const result = visit(child);
+      if (result.eligible) hasEligible = true;
+      if (!result.all) all = false;
+      if (result.any) any = true;
+    }
+
+    if (!eligible) {
+      checked.delete(key);
+      indeterminate.delete(key);
+    } else if (hasEligible && all) {
+      checked.add(key);
+      indeterminate.delete(key);
+    } else if (hasEligible && any) {
+      checked.delete(key);
+      indeterminate.add(key);
+    } else if (hasEligible) {
+      // Branch keys in the public set are a normalized reflection of their
+      // descendants, not an enduring wildcard. This matters when a search
+      // hid siblings: restoring the full tree must not make those siblings
+      // selected merely because the filtered parent had been checked.
+      checked.delete(key);
+      indeterminate.delete(key);
+    } else if (!checked.has(key)) {
+      indeterminate.delete(key);
+    }
+
+    return {
+      all: !eligible || (checked.has(key) && all),
+      any: any || checked.has(key),
+      eligible: eligible || hasEligible,
+    };
+  };
+
+  rootKeys.forEach((key) => visit(key));
+  return { checked, indeterminate };
+}
+
 export function useTableSelection<T>(options: UseTableSelectionOptions<T>) {
   const {
     rows,
+    rowKeys,
+    pageRows = rows,
+    pageRowKeys,
     filteredRows,
+    filteredRowKeys,
     getRowKey,
     selectionMode,
     selectedKeys: selectedKeysProp,
@@ -67,6 +151,7 @@ export function useTableSelection<T>(options: UseTableSelectionOptions<T>) {
     selectAllMode,
     isRowSelectable,
     disabledKeys,
+    tree,
   } = options;
 
   const isEnabled = selectionMode !== 'none';
@@ -95,16 +180,29 @@ export function useTableSelection<T>(options: UseTableSelectionOptions<T>) {
       // Scanned over the filtered set, not just the page: a select-all that
       // reaches beyond the page must respect it there too.
       filteredRows.forEach((row, index) => {
-        if (!isRowSelectable(row)) keys.add(getRowKey(row, index));
+        if (!isRowSelectable(row)) {
+          keys.add(filteredRowKeys?.[index] ?? getRowKey(row, index));
+        }
       });
     }
 
     return keys;
-  }, [hardDisabledKeys, isRowSelectable, filteredRows, getRowKey]);
+  }, [
+    hardDisabledKeys,
+    isRowSelectable,
+    filteredRows,
+    filteredRowKeys,
+    getRowKey,
+  ]);
+
+  const visibleGetRowKey = useCallback(
+    (row: T, index: number) => rowKeys?.[index] ?? getRowKey(row, index),
+    [rowKeys, getRowKey],
+  );
 
   const collection = useMemo(
-    () => new RowCollection(rows, getRowKey, unselectableKeys),
-    [rows, getRowKey, unselectableKeys],
+    () => new RowCollection(rows, visibleGetRowKey, unselectableKeys),
+    [rows, visibleGetRowKey, unselectableKeys],
   );
 
   const rowByKey = useMemo(() => {
@@ -112,11 +210,15 @@ export function useTableSelection<T>(options: UseTableSelectionOptions<T>) {
 
     // The page first, then the wider filtered set, so a key present in both
     // resolves to the row the user can actually see.
-    filteredRows.forEach((row, index) => map.set(getRowKey(row, index), row));
-    rows.forEach((row, index) => map.set(getRowKey(row, index), row));
+    filteredRows.forEach((row, index) =>
+      map.set(filteredRowKeys?.[index] ?? getRowKey(row, index), row),
+    );
+    rows.forEach((row, index) =>
+      map.set(rowKeys?.[index] ?? getRowKey(row, index), row),
+    );
 
     return map;
-  }, [rows, filteredRows, getRowKey]);
+  }, [rows, rowKeys, filteredRows, filteredRowKeys, getRowKey]);
 
   const rowByKeyRef = useRef(rowByKey);
 
@@ -187,6 +289,33 @@ export function useTableSelection<T>(options: UseTableSelectionOptions<T>) {
 
   const selectedKeys = state.selectedKeys;
   const isAll = selectedKeys === 'all';
+  const isCascade =
+    tree?.behavior === 'cascade' && selectionMode === 'multiple';
+
+  const derivedSelection = useMemo(() => {
+    if (isAll) {
+      return {
+        checked: new Set(
+          [...rowByKey.keys()].filter((key) => !unselectableKeys.has(key)),
+        ),
+        indeterminate: new Set<Key>(),
+      };
+    }
+
+    if (!isCascade || !tree) {
+      return {
+        checked: new Set(selectedKeys as Set<Key>),
+        indeterminate: new Set<Key>(),
+      };
+    }
+
+    return deriveTreeSelection(
+      selectedKeys as Set<Key>,
+      tree.rootKeys,
+      tree.childrenOf,
+      (key) => !unselectableKeys.has(key),
+    );
+  }, [isAll, isCascade, selectedKeys, tree, rowByKey, unselectableKeys]);
 
   const canSelect = useCallback(
     (key: Key) => isEnabled && !unselectableKeys.has(key),
@@ -194,26 +323,33 @@ export function useTableSelection<T>(options: UseTableSelectionOptions<T>) {
   );
 
   const isSelected = useCallback(
-    (key: Key) =>
-      isAll ? canSelect(key) : (selectedKeys as Set<Key>).has(key),
-    [isAll, selectedKeys, canSelect],
+    (key: Key) => (isAll ? canSelect(key) : derivedSelection.checked.has(key)),
+    [isAll, derivedSelection, canSelect],
+  );
+
+  const isIndeterminate = useCallback(
+    (key: Key) => derivedSelection.indeterminate.has(key),
+    [derivedSelection],
   );
 
   /** Keys the header checkbox acts on, which is what `selectAllMode` decides. */
   const scopeKeys = useMemo(() => {
     if (!isEnabled || selectionMode === 'single') return [];
 
-    const source = selectAllMode === 'page' ? rows : filteredRows;
+    const source = selectAllMode === 'page' ? pageRows : filteredRows;
+    const sourceKeys = selectAllMode === 'page' ? pageRowKeys : filteredRowKeys;
 
     return source
-      .map((row, index) => getRowKey(row, index))
+      .map((row, index) => sourceKeys?.[index] ?? getRowKey(row, index))
       .filter((key) => !unselectableKeys.has(key));
   }, [
     isEnabled,
     selectionMode,
     selectAllMode,
-    rows,
+    pageRows,
+    pageRowKeys,
     filteredRows,
+    filteredRowKeys,
     getRowKey,
     unselectableKeys,
   ]);
@@ -222,13 +358,13 @@ export function useTableSelection<T>(options: UseTableSelectionOptions<T>) {
     if (isAll) return 'all';
     if (!scopeKeys.length) return 'none';
 
-    const set = selectedKeys as Set<Key>;
+    const set = derivedSelection.checked;
     let count = 0;
 
     for (const key of scopeKeys) if (set.has(key)) count++;
 
     return count === 0 ? 'none' : count === scopeKeys.length ? 'all' : 'some';
-  }, [isAll, selectedKeys, scopeKeys]);
+  }, [isAll, derivedSelection, scopeKeys]);
 
   const toggleSelectAll = useEvent(() => {
     anchorRef.current = null;
@@ -249,10 +385,19 @@ export function useTableSelection<T>(options: UseTableSelectionOptions<T>) {
       return;
     }
 
-    const next = new Set(isAll ? [] : (selectedKeys as Set<Key>));
+    const next = new Set(isAll ? [] : derivedSelection.checked);
 
     scopeKeys.forEach((key) => next.add(key));
-    state.setSelectedKeys(next);
+    state.setSelectedKeys(
+      isCascade && tree
+        ? deriveTreeSelection(
+            next,
+            tree.rootKeys,
+            tree.childrenOf,
+            (key) => !unselectableKeys.has(key),
+          ).checked
+        : next,
+    );
   });
 
   const clearSelection = useEvent(() => {
@@ -301,39 +446,80 @@ export function useTableSelection<T>(options: UseTableSelectionOptions<T>) {
       return;
     }
 
+    const applyCascade = (set: Set<Key>, target: Key, value: boolean) => {
+      if (!canSelect(target)) return;
+      if (value) set.add(target);
+      else {
+        set.delete(target);
+
+        // A checked ancestor in the normalized public key set means its whole
+        // branch is selected. Remove that derived marker before normalizing a
+        // partial deselection, or it would immediately select the child again.
+        if (isCascade && tree) {
+          let parent = tree.parentOf.get(target);
+          while (parent != null) {
+            set.delete(parent);
+            parent = tree.parentOf.get(parent);
+          }
+        }
+      }
+      if (!isCascade || !tree) return;
+      (tree.childrenOf.get(target) ?? []).forEach((child) =>
+        applyCascade(set, child, value),
+      );
+    };
+
+    const normalizeCascade = (set: Set<Key>) =>
+      isCascade && tree
+        ? deriveTreeSelection(
+            set,
+            tree.rootKeys,
+            tree.childrenOf,
+            (candidate) => !unselectableKeys.has(candidate),
+          ).checked
+        : set;
+
     const anchor = anchorRef.current;
 
     if (shiftRef.current && anchor != null && collection.indexOf(anchor) >= 0) {
-      const next = new Set(isAll ? scopeKeys : (selectedKeys as Set<Key>));
+      const next = new Set(isAll ? scopeKeys : derivedSelection.checked);
 
       // Drop the range this shift-click supersedes before drawing the new one,
       // so clicking back toward the anchor shrinks the selection.
       if (extentRef.current != null) {
-        keysBetween(anchor, extentRef.current).forEach((k) => next.delete(k));
+        keysBetween(anchor, extentRef.current).forEach((k) =>
+          applyCascade(next, k, false),
+        );
       }
 
       keysBetween(anchor, key).forEach((k) => {
-        if (canSelect(k)) next.add(k);
+        applyCascade(next, k, true);
       });
 
       extentRef.current = key;
-      state.setSelectedKeys(next);
+      state.setSelectedKeys(normalizeCascade(next));
 
       return;
     }
 
     anchorRef.current = key;
     extentRef.current = null;
-    selectionManager.toggleSelection(key);
+    if (isCascade) {
+      const next = new Set(derivedSelection.checked);
+      applyCascade(next, key, !derivedSelection.checked.has(key));
+      state.setSelectedKeys(normalizeCascade(next));
+    } else {
+      selectionManager.toggleSelection(key);
+    }
   });
 
   const selectedRows = useMemo(() => {
     if (isAll) return [...rowByKey.values()];
 
-    return [...(selectedKeys as Set<Key>)]
+    return [...derivedSelection.checked]
       .map((key) => rowByKey.get(key))
       .filter((row): row is T => row !== undefined);
-  }, [isAll, selectedKeys, rowByKey]);
+  }, [isAll, derivedSelection, rowByKey]);
 
   return {
     isEnabled,
@@ -341,6 +527,7 @@ export function useTableSelection<T>(options: UseTableSelectionOptions<T>) {
     selectionManager,
     collection,
     isSelected,
+    isIndeterminate,
     canSelect,
     isRowDisabled: useCallback(
       (key: Key) => hardDisabledKeys.has(key),
@@ -352,8 +539,8 @@ export function useTableSelection<T>(options: UseTableSelectionOptions<T>) {
     toggleSelectAll,
     clearSelection,
     selectedRows,
-    selectedCount: isAll ? rowByKey.size : (selectedKeys as Set<Key>).size,
-    selectedKeys: (isAll ? 'all' : [...(selectedKeys as Set<Key>)]) as
+    selectedCount: isAll ? rowByKey.size : derivedSelection.checked.size,
+    selectedKeys: (isAll ? 'all' : [...derivedSelection.checked]) as
       | Key[]
       | 'all',
   };

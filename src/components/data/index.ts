@@ -1,5 +1,10 @@
 export { DataTable } from './DataTable';
-export type { CubeDataTableProps, CubeDataTableColumn } from './DataTable';
+export type {
+  CubeDataTableProps,
+  CubeDataTableColumn,
+  CubeDataTableColumnGroup,
+  CubeDataTableColumnDefinition,
+} from './DataTable';
 export { ItemTable } from './ItemTable';
 export type { CubeItemTableProps, CubeItemTableColumn } from './ItemTable';
 
@@ -16,10 +21,14 @@ export type {
   CubeTableColumn,
   CubeTableColumnHeader,
   CubeTableHeaderContext,
+  CubeTableLayoutProps,
   CubeTableRowContext,
   CubeTableRowSection,
   CubeTableRowSize,
   CubeTableSort,
   CubeTableSortDirection,
+  CubeTableTreeProps,
+  CubeTableTreeRowState,
+  CubeTableRowExpandInfo,
 } from './TableBase';
 export type { CubeTableRowRenderProps } from './TableBase';

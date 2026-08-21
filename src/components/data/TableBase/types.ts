@@ -51,6 +51,51 @@ export interface CubeTableCellRange {
   toColumnKey: string;
 }
 
+export interface CubeTableTreeRowState {
+  /** Zero-based depth in the hierarchy. */
+  level: number;
+  parentKey: Key | null;
+  hasChildren: boolean;
+  isExpanded: boolean;
+}
+
+export interface CubeTableRowExpandInfo<T = any> {
+  row: T;
+  rowKey: Key;
+  level: number;
+  parentKey: Key | null;
+  expanded: boolean;
+}
+
+/** Shared root sizing contract used by both table adapters. */
+export interface CubeTableLayoutProps {
+  /**
+   * Shrink-wraps the frame to its rendered rows instead of filling the
+   * available flex pane. This mode disables virtualization because there is no
+   * bounded vertical viewport to virtualize against.
+   *
+   * @default false
+   */
+  isAutoHeight?: boolean;
+}
+
+/** Shared opt-in hierarchy contract used by both table adapters. */
+export interface CubeTableTreeProps<T = any> {
+  /**
+   * Returns a row's already-loaded children. Supplying this enables tree mode
+   * and makes `data` the top-level row collection.
+   */
+  getRowChildren?: (row: T) => readonly T[] | undefined;
+  /** Column that owns the indentation and disclosure control. */
+  treeColumnKey?: string;
+  /** Controlled expanded row keys. */
+  expandedKeys?: Key[];
+  /** Initially expanded row keys. */
+  defaultExpandedKeys?: Key[];
+  /** Called after a user expands or collapses a row. */
+  onExpand?: (keys: Key[], info: CubeTableRowExpandInfo<T>) => void;
+}
+
 export interface CubeTableSort {
   /** `key` of the sorted column. */
   columnKey: string;
@@ -80,6 +125,8 @@ export interface CubeTableCellContext<T = any> {
    */
   isRowFocused?: boolean;
   isDropTarget?: boolean;
+  /** Present only when `getRowChildren` enables tree mode. */
+  tree?: CubeTableTreeRowState;
 }
 
 export interface CubeTableRowContext<T = any> {
@@ -91,6 +138,8 @@ export interface CubeTableRowContext<T = any> {
   /** Not yet wired — always absent. See `CubeTableCellContext` for why. */
   isFocused?: boolean;
   isDropTarget?: boolean;
+  /** Present only when `getRowChildren` enables tree mode. */
+  tree?: CubeTableTreeRowState;
 }
 
 export interface CubeTableHeaderContext {
@@ -100,6 +149,12 @@ export interface CubeTableHeaderContext {
   isSortable: boolean;
   isResizing: boolean;
   width: number | null;
+}
+
+/** Presentational path entry used to build multi-row column headers. */
+export interface CubeTableColumnGroupHeader {
+  key: string;
+  title?: ReactNode;
 }
 
 /* ── column ──────────────────────────────────────────────────────────────── */
