@@ -1,134 +1,114 @@
 import { Meta } from '@storybook/addon-docs/blocks';
-import Code from './assets/code-brackets.svg';
-import Colors from './assets/colors.svg';
-import Comments from './assets/comments.svg';
-import Direction from './assets/direction.svg';
-import Flow from './assets/flow.svg';
-import Plugin from './assets/plugin.svg';
-import Repo from './assets/repo.svg';
-import StackAlt from './assets/stackalt.svg';
 
 <Meta title="Getting Started/Overview" />
 
-# Welcome to Cube Cloud UI Kit
+# Cube UI Kit
 
-A comprehensive React component library built for modern web applications with accessibility, theming, and developer experience at its core.
+Cube UI Kit is the open-source React design system behind Cube Cloud. The
+`@cube-dev/ui-kit` package combines production-ready components, accessible
+interaction patterns, a token-aware styling engine, and a runtime-configurable
+color system.
 
-## What is Cube UI Kit?
+## Built for product interfaces
 
-Cube UI Kit is a complete design system that provides:
-- **Accessible Components** - Built with React Aria hooks for WCAG compliance
-- **Powerful Styling System** - The `tasty` style system for maintainable, theme-able components
-- **Form Management** - Integrated form handling with validation and state management
-- **Consistent Design** - Unified visual language across all components
+- **Production-ready components** — From layout and typography primitives to
+  forms, tables, navigation, dialogs, notifications, and complex pickers.
+- **Accessible interactions** — React Aria provides the foundation for keyboard
+  navigation, focus management, and screen-reader behavior.
+- **Composable styling** — Components share design tokens, style properties,
+  state-driven values, and responsive syntax.
+- **Integrated forms** — Fields connect directly to validation and form state
+  without an extra wrapper component.
+- **TypeScript-first APIs** — Component props, tokens, themes, and styling values
+  are typed and discoverable.
 
-Browse example stories by navigating to them in the sidebar to see components in action.
+## The foundations
 
-## Key Features
+Cube UI Kit is built on two independent open-source projects:
 
-### 🎨 Tasty Style System
-A declarative styling approach that makes it easy to create consistent, maintainable styles:
-- **State-based styling** - Bind styles to hover, focus, and custom modifiers
-- **Responsive design** - Use arrays for breakpoint-specific styles
-- **Token-based theming** - Built-in color tokens and semantic units
-- **Component variants** - Pre-defined style variations for different use cases
+- [Tasty](https://tasty.style) is the declarative styling engine. It turns
+  token-aware style objects, responsive values, and component states into
+  conflict-free CSS.
+- [Glaze](https://github.com/tenphi/glaze) generates the semantic color palette.
+  A small set of brand and status seeds resolves into light, dark, and
+  high-contrast token sets.
 
-### ♿ Accessibility First
-Every component is built with accessibility as a priority:
-- React Aria hooks provide keyboard navigation and screen reader support
-- ARIA attributes are automatically managed
-- Focus management follows best practices
-- High contrast and reduced motion support
+Use the [Theme Builder](/story/getting-started-theming--theme-builder) to tune a
+palette and preview the result across schemes and contrast levels.
 
-### 📝 Modern Form Handling
-Streamlined form development with built-in field support:
-- All input components have integrated field properties
-- Automatic validation and error handling
-- Form-level configuration inheritance
-- No wrapper components needed for most use cases
+## Get started
 
-## Getting Started
+Install the package alongside React:
 
-### Basic Usage
+```bash
+pnpm add @cube-dev/ui-kit react react-dom
+```
 
-```jsx
-import { Button, TextInput, Form } from '@cube-dev/ui-kit';
+Wrap the application in `Root`, then compose components normally:
 
-function MyApp() {
+```tsx
+import { Button, Root, Space, TextInput } from '@cube-dev/ui-kit';
+
+export function App() {
   return (
-    <Form onSubmit={handleSubmit}>
-      <TextInput
-        name="email"
-        label="Email"
-        type="email"
-        isRequired
-      />
-      <Button type="primary">Submit</Button>
-    </Form>
+    <Root>
+      <Space flow="column" gap="2x" padding="4x">
+        <TextInput name="email" label="Email" type="email" isRequired />
+        <Button type="primary">Continue</Button>
+      </Space>
+    </Root>
   );
 }
 ```
 
-### Styling Components
+`Root` installs the design tokens and providers used by overlays, navigation,
+internationalization, and other shared behaviors. See the
+[Root reference](/docs/getting-started-root--docs) for application-level options.
 
-Use the `tasty` system for consistent styling:
+## Style with the system
 
-```jsx
-import { tasty, Button } from '@cube-dev/ui-kit';
+Most components accept style properties directly. Values can reference semantic
+units and color tokens, so custom layouts stay aligned with the design system:
 
-const CustomButton = tasty(Button, {
-  styles: {
-    padding: '2x 4x',
-    fill: {
-      '': '#purple',
-      hovered: '#purple.8',
-    },
-    color: '#white',
-  },
-});
+```tsx
+<Space
+  flow="column"
+  gap={['2x', '3x']}
+  padding={['2x', '4x']}
+  fill="#surface-2"
+  radius="1cr"
+>
+  <Button width="max-content">Create workspace</Button>
+</Space>
 ```
 
-## Core Concepts
+For component states, reusable styled components, sub-elements, presets, and the
+complete token reference, continue to [Usage](/docs/getting-started-usage--docs)
+or the [Tasty project](https://tasty.style).
 
-### Styling with Tasty
+## Configure the palette
 
-The `tasty` style system provides a powerful, declarative way to style components:
+Pass palette seeds to `Root` to apply a product theme. Glaze resolves the complete
+semantic palette from this compact configuration:
 
-- **Custom Units** - Use semantic units like `2x` (gap), `1r` (radius), `#purple` (color tokens)
-- **State Bindings** - Style different states using modifiers like `hovered`, `focused`, `disabled`
-- **Responsive Arrays** - Define breakpoint-specific styles with arrays: `padding: ['4x', '2x', '1x']`
-- **Sub-element Styling** - Style internal component parts using element names
+```tsx
+<Root
+  palette={{
+    accent: '#2F5BFF',
+    themes: { danger: '#B91C1C' },
+  }}
+>
+  <App />
+</Root>
+```
 
-### Form Integration
+The [Theming guide](/docs/getting-started-theming--docs) covers palette zones,
+runtime updates, regional previews, dark mode, and high-contrast behavior.
 
-All input components work seamlessly with the Form component:
+## Where to go next
 
-- **Built-in Field Support** - No wrapper components needed
-- **Automatic Validation** - Validation rules and error display
-- **Form-level Configuration** - Inherit settings like `labelPosition` and `isReadOnly`
-- **Programmatic Control** - Use `Form.useForm()` for advanced form management
-
-### Component Architecture
-
-Components are designed with composition and reusability in mind:
-
-- **Base Properties** - Common props like `qa`, styling, and accessibility
-- **Style Properties** - Direct style application without the `styles` prop
-- **Modifiers** - Control component states through the `mods` prop
-- **Variants** - Pre-defined style themes and sizes
-
-## Documentation Structure
-
-Each component includes comprehensive documentation:
-
-- **Usage Examples** - Real-world implementation patterns
-- **Accessibility Guidelines** - Keyboard navigation and screen reader support
-- **Styling Reference** - Available sub-elements and modifiers
-- **Best Practices** - Recommended usage patterns and common pitfalls
-
-## Next Steps
-
-1. **Explore Components** - Browse the sidebar to see all available components
-2. **Learn Tasty** - Visit the [Tasty documentation](https://github.com/tenphi/tasty) to master the styling system
-3. **Build Forms** - Check out [Form documentation](/docs/forms-form--docs) for form development patterns
-4. **Accessibility** - Review accessibility guidelines for inclusive design
+- Browse the sidebar for live component examples and API documentation.
+- Learn the shared styling model in [Usage](/docs/getting-started-usage--docs).
+- Build validated workflows with the [Form documentation](/docs/forms-form--docs).
+- Review [Base Properties](/docs/getting-started-base-properties--docs) shared by
+  components across the kit.
