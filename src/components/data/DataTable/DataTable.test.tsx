@@ -774,6 +774,41 @@ describe('DataTable', () => {
       grid().querySelectorAll('[data-element="Resizer"]').length,
     ).toBeGreaterThan(0);
   });
+
+  it('disables virtualization in auto-height mode', () => {
+    const rows = Array.from({ length: 60 }, (_, index) => ({
+      id: `row-${index}`,
+      region: `region-${index}`,
+      orders: index,
+    }));
+    const { rerender } = renderWithRoot(
+      <DataTable
+        data={rows}
+        columns={COLUMNS}
+        paginationMode="off"
+        isVirtualized
+      />,
+    );
+
+    expect(bodyRows().every((row) => row.hasAttribute('data-index'))).toBe(
+      true,
+    );
+
+    rerender(
+      <DataTable
+        data={rows}
+        columns={COLUMNS}
+        paginationMode="off"
+        isVirtualized
+        isAutoHeight
+      />,
+    );
+
+    expect(bodyRows()).toHaveLength(60);
+    expect(bodyRows().some((row) => row.hasAttribute('data-index'))).toBe(
+      false,
+    );
+  });
 });
 
 describe('DataTable rowSize', () => {

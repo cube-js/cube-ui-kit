@@ -270,6 +270,12 @@ const meta: Meta<typeof DataTable> = {
       options: ['small', 'medium', 'large'],
       description: 'Row height: 28px / 32px / 40px.',
     },
+    isAutoHeight: {
+      control: 'boolean',
+      description:
+        'Shrink-wrap the frame to its rows instead of filling a flex pane.',
+      table: { defaultValue: { summary: 'false' } },
+    },
     isColumnReorderable: {
       control: 'boolean',
       description: 'Drag column headers sideways to reorder them.',
@@ -317,7 +323,7 @@ export const Pivot: PivotStory = {
     pinnedBottomRows: CROSS_TAB_TOTALS,
     paginationMode: 'off',
     ariaLabel: 'Orders and revenue by region and channel',
-    height: '300px',
+    isAutoHeight: true,
   },
 };
 

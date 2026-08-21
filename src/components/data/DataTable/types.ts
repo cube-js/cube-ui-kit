@@ -99,6 +99,14 @@ export interface CubeDataTableProps<T = any>
   isHeaderHidden?: boolean;
   isHeaderSticky?: boolean;
   /**
+   * Shrink-wraps the frame to its rendered rows instead of filling the
+   * available flex pane. This mode disables virtualization because there is no
+   * bounded vertical viewport to virtualize against.
+   *
+   * @default false
+   */
+  isAutoHeight?: boolean;
+  /**
    * Slide rows to their new positions when the sort changes, instead of
    * teleporting them. @default true
    */

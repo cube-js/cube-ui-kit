@@ -152,6 +152,7 @@ function DataTable<T = any>(
     isStriped = true,
     isHeaderHidden,
     isHeaderSticky,
+    isAutoHeight = false,
     showRowNumbers = false,
     sortMode,
     sorts: sortsProp,
@@ -577,11 +578,19 @@ function DataTable<T = any>(
     onRangeChange: onCellRangeChange,
   });
 
-  // Same as `ItemTable`: style props (`height`, `maxHeight`, `margin`, …) land
-  // on the root frame. `height` is the one that matters — there is no
-  // page-scroll mode, so bounding the grid is what turns the body into a
-  // scroller, pins the header, and lets virtualization engage at all.
-  const rootStyles = { ...extractStyles(props, CONTAINER_STYLES), ...styles };
+  // A result grid normally occupies the flex pane it is given. `min-height: 0`
+  // is the part that lets the scroller become smaller than its contents rather
+  // than forcing the pane itself taller. Auto-height deliberately reverses
+  // that contract: its rows determine the frame height, even when a shared
+  // wrapper supplied a fixed `height` style.
+  const rootStyles = {
+    height: 'min 0',
+    flexGrow: 1,
+    flexShrink: 1,
+    ...extractStyles(props, CONTAINER_STYLES),
+    ...styles,
+    ...(isAutoHeight ? { height: 'min 0', flexGrow: 0, flexShrink: 0 } : null),
+  };
 
   const smallestPageSize = pageSizeOptions?.length
     ? Math.min(...pageSizeOptions)
@@ -746,7 +755,9 @@ function DataTable<T = any>(
       onColumnMenuAction={onColumnMenuAction}
       columnMenuTriggerProps={columnMenuTriggerProps}
       columnMenuProps={columnMenuProps}
-      isVirtualized={isVirtualized}
+      // Virtualization needs a bounded scrollport. In auto-height mode the
+      // whole result is the viewport, so render every row by definition.
+      isVirtualized={isAutoHeight ? false : isVirtualized}
       virtualizeThreshold={virtualizeThreshold}
       overscan={overscan}
       isResizable={isResizable}
