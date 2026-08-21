@@ -1,5 +1,10 @@
 export { DataTable } from './DataTable';
-export type { CubeDataTableProps, CubeDataTableColumn } from './DataTable';
+export type {
+  CubeDataTableProps,
+  CubeDataTableColumn,
+  CubeDataTableColumnGroup,
+  CubeDataTableColumnDefinition,
+} from './DataTable';
 export { ItemTable } from './ItemTable';
 export type { CubeItemTableProps, CubeItemTableColumn } from './ItemTable';
 

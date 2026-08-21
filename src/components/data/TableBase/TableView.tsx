@@ -82,6 +82,7 @@ import type { TableTreeNode } from './table-tree';
 import type {
   CubeResolvedColumn,
   CubeTableCellContext,
+  CubeTableColumnGroupHeader,
   CubeTableColumnLayout,
   CubeTableHeaderContext,
   CubeTableLoadingIndicator,
@@ -111,6 +112,11 @@ export interface TableViewProps<T = any> {
   rowKeys?: readonly Key[];
   getRowKey: (row: T, index: number) => Key;
   layout: CubeTableColumnLayout<T>;
+  /** Group path for each leaf column, from the outermost header inward. */
+  columnHeaderPaths?: ReadonlyMap<
+    string,
+    readonly CubeTableColumnGroupHeader[]
+  >;
   /**
    * Receives the scroll container once it exists. A callback rather than a ref
    * because the virtualized path does not create the element itself — Virtuoso
@@ -592,6 +598,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
     rowKeys,
     getRowKey,
     layout,
+    columnHeaderPaths,
     onScrollerRef,
     rootRef,
     size = 'medium',
@@ -674,6 +681,11 @@ export function TableView<T = any>(props: TableViewProps<T>) {
 
   const { columns } = layout;
   const columnCount = columns.length;
+  const headerGroupDepth = columns.reduce(
+    (depth, column) =>
+      Math.max(depth, columnHeaderPaths?.get(column.key)?.length ?? 0),
+    0,
+  );
 
   /**
    * `rowSize` resolved to the size scale, or `null` when it was not given.
@@ -729,7 +741,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
   );
 
   // Header rows count towards `aria-rowcount`, which must be document-absolute.
-  const headerRowCount = isHeaderHidden ? 0 : 1;
+  const headerRowCount = isHeaderHidden ? 0 : headerGroupDepth + 1;
 
   /* ── the ARIA row index space ───────────────────────────────────────────
    * Four bands, in the order a screen reader walks them:
@@ -804,6 +816,14 @@ export function TableView<T = any>(props: TableViewProps<T>) {
               ...tints.headerCellStyles,
               // The consumer's own overrides land last, so a `headerCellStyles`
               // that sets `#cell-base` outright still wins over a tint.
+              ...headerCellStyles,
+            },
+          }
+        : null),
+      ...(headerPreset || headerCellStyles
+        ? {
+            HeaderGroupCell: {
+              ...(headerPreset ? { preset: headerPreset } : null),
               ...headerCellStyles,
             },
           }
@@ -1030,7 +1050,10 @@ export function TableView<T = any>(props: TableViewProps<T>) {
     ));
   }
 
-  function renderSelectionHeaderCell(column: CubeResolvedColumn<T>) {
+  function renderSelectionHeaderCell(
+    column: CubeResolvedColumn<T>,
+    rowSpan = 1,
+  ) {
     return (
       <th
         key={column.key}
@@ -1042,6 +1065,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
         data-last-column={lastColumnFlag(column)}
         role="columnheader"
         scope="col"
+        rowSpan={rowSpan > 1 ? rowSpan : undefined}
         tabIndex={-1}
         aria-colindex={column.ariaColIndex}
         style={pinStyle(column)}
@@ -1173,9 +1197,9 @@ export function TableView<T = any>(props: TableViewProps<T>) {
     );
   }
 
-  function renderHeaderCell(column: CubeResolvedColumn<T>) {
+  function renderHeaderCell(column: CubeResolvedColumn<T>, rowSpan = 1) {
     if (column.key === SELECTION_COLUMN_KEY) {
-      return renderSelectionHeaderCell(column);
+      return renderSelectionHeaderCell(column, rowSpan);
     }
 
     if (column.key === ROW_NUMBER_COLUMN_KEY) {
@@ -1190,6 +1214,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
           data-last-column={lastColumnFlag(column)}
           role="columnheader"
           scope="col"
+          rowSpan={rowSpan > 1 ? rowSpan : undefined}
           tabIndex={-1}
           aria-colindex={column.ariaColIndex}
           style={pinStyle(column)}
@@ -1211,6 +1236,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
           data-last-column={lastColumnFlag(column)}
           role="columnheader"
           scope="col"
+          rowSpan={rowSpan > 1 ? rowSpan : undefined}
           tabIndex={-1}
           aria-colindex={column.ariaColIndex}
           style={pinStyle(column)}
@@ -1391,6 +1417,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
           'data-tint': tintSlot(tints, column.key, 'header'),
           role: 'columnheader',
           scope: 'col',
+          rowSpan: rowSpan > 1 ? rowSpan : undefined,
           // A sortable header is a control, so it takes a tab stop — and so does
           // one carrying a menu (Shift+F10 needs somewhere to land) or one that
           // can be moved with Alt+Arrow. Row/cell keyboard navigation lands in a
@@ -2292,29 +2319,142 @@ export function TableView<T = any>(props: TableViewProps<T>) {
     </colgroup>
   );
 
-  const headerRow = isHeaderHidden ? null : (
-    <tr
-      data-element="HeadRow"
-      role="row"
-      aria-rowindex={1}
-      ref={headRowRef}
-      {...headCollectionProps}
-      onKeyDownCapture={(event) => {
-        // `DraggableCollection`'s Alt+Arrow reorder sits on this row and fires
-        // in the capture phase, so it would beat the resize handle's own
-        // Alt+Arrow bubble handler and move the column instead of sizing it.
+  function pathsSharePrefix(
+    left: readonly CubeTableColumnGroupHeader[],
+    right: readonly CubeTableColumnGroupHeader[],
+    depth: number,
+  ) {
+    for (let index = 0; index <= depth; index++) {
+      if (left[index]?.key !== right[index]?.key) return false;
+    }
+
+    return true;
+  }
+
+  function renderHeaderGroupCell(
+    group: CubeTableColumnGroupHeader,
+    segment: readonly CubeResolvedColumn<T>[],
+    depth: number,
+  ) {
+    const first = segment[0];
+    const last = segment[segment.length - 1];
+    const pin = segment.every((column) => column.pin === first.pin)
+      ? first.pin
+      : undefined;
+    const pinOffset =
+      pin === 'start' ? first.pinOffset : pin === 'end' ? last.pinOffset : null;
+
+    return (
+      <th
+        key={`${depth}:${first.key}:${group.key}`}
+        data-element="HeaderGroupCell"
+        data-key={group.key}
+        data-pin={pin}
+        data-pin-edge={
+          segment.some((column) => column.isPinEdge) ? '' : undefined
+        }
+        data-last-column={last.index === columnCount - 1 ? '' : undefined}
+        data-align="center"
+        role="columnheader"
+        scope="colgroup"
+        tabIndex={-1}
+        aria-colindex={first.ariaColIndex}
+        colSpan={segment.length}
+        style={
+          pinOffset == null
+            ? undefined
+            : { ['--pin-offset' as any]: `${pinOffset}px` }
+        }
+      >
+        <TableHeaderItem>{group.title}</TableHeaderItem>
+      </th>
+    );
+  }
+
+  function renderHeaderRowCells(depth: number) {
+    const cells: ReactNode[] = [];
+
+    for (let columnIndex = 0; columnIndex < columns.length; ) {
+      const column = columns[columnIndex];
+      const path = columnHeaderPaths?.get(column.key) ?? [];
+
+      // This column's leaf header began on an earlier row and spans this one.
+      if (path.length < depth) {
+        columnIndex++;
+        continue;
+      }
+
+      if (path.length === depth) {
+        cells.push(renderHeaderCell(column, headerRowCount - depth));
+        columnIndex++;
+        continue;
+      }
+
+      let segmentEnd = columnIndex + 1;
+
+      while (segmentEnd < columns.length) {
+        const nextPath = columnHeaderPaths?.get(columns[segmentEnd].key) ?? [];
+
         if (
-          (event.target as HTMLElement)?.closest?.('[data-element="Resizer"]')
+          nextPath.length <= depth ||
+          columns[segmentEnd].pin !== column.pin ||
+          !pathsSharePrefix(path, nextPath, depth)
         ) {
-          return;
+          break;
         }
 
-        (headCollectionProps as any)?.onKeyDownCapture?.(event);
-      }}
-    >
-      {columns.map(renderHeaderCell)}
-    </tr>
-  );
+        segmentEnd++;
+      }
+
+      cells.push(
+        renderHeaderGroupCell(
+          path[depth],
+          columns.slice(columnIndex, segmentEnd),
+          depth,
+        ),
+      );
+      columnIndex = segmentEnd;
+    }
+
+    return cells;
+  }
+
+  const headerRows = isHeaderHidden
+    ? null
+    : Array.from({ length: headerRowCount }, (_, depth) => {
+        const isLeafRow = depth === headerRowCount - 1;
+
+        return (
+          <tr
+            key={depth}
+            data-element="HeadRow"
+            role="row"
+            aria-rowindex={depth + 1}
+            ref={isLeafRow ? headRowRef : undefined}
+            {...(isLeafRow ? headCollectionProps : undefined)}
+            onKeyDownCapture={
+              isLeafRow
+                ? (event) => {
+                    // `DraggableCollection`'s Alt+Arrow reorder sits on this
+                    // row and fires in capture, so it would beat the resize
+                    // handle's own Alt+Arrow bubble handler.
+                    if (
+                      (event.target as HTMLElement)?.closest?.(
+                        '[data-element="Resizer"]',
+                      )
+                    ) {
+                      return;
+                    }
+
+                    (headCollectionProps as any)?.onKeyDownCapture?.(event);
+                  }
+                : undefined
+            }
+          >
+            {renderHeaderRowCells(depth)}
+          </tr>
+        );
+      });
 
   const tableProps = {
     'data-element': 'Table',
@@ -2355,7 +2495,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
   const tableContent = (
     <>
       {colGroup}
-      {isHeaderHidden ? null : <thead data-element="Head">{headerRow}</thead>}
+      {isHeaderHidden ? null : <thead data-element="Head">{headerRows}</thead>}
       <tbody data-element="Body" {...collectionProps} ref={handleBodyRef}>
         {pinnedTopRows?.map((row, index) => renderPinnedRow(row, index, 'top'))}
         {bodyContent}

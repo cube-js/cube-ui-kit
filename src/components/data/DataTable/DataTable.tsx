@@ -42,15 +42,61 @@ import { useTableTreeState } from '../TableBase/use-table-tree-state';
 import type { Key } from '@react-types/shared';
 import type { ForwardedRef, ReactElement } from 'react';
 import type {
+  CubeTableColumnGroupHeader,
   CubeTableColumnLayout,
   CubeTableRowSection,
 } from '../TableBase/types';
-import type { CubeDataTableColumn, CubeDataTableProps } from './types';
+import type {
+  CubeDataTableColumn,
+  CubeDataTableColumnDefinition,
+  CubeDataTableColumnGroup,
+  CubeDataTableProps,
+} from './types';
 
 /** Wide enough for five digits at the dense default. */
 const ROW_NUMBER_WIDTH = 56;
 
 const EMPTY_WIDTHS: Record<string, number> = {};
+
+interface DataTableColumnModel<T> {
+  columns: CubeDataTableColumn<T>[];
+  headerPaths: Map<string, readonly CubeTableColumnGroupHeader[]>;
+}
+
+function isColumnGroup<T>(
+  column: CubeDataTableColumnDefinition<T>,
+): column is CubeDataTableColumnGroup<T> {
+  return 'children' in column;
+}
+
+/** Flattens the public column tree while retaining each leaf's header path. */
+function buildColumnModel<T>(
+  definitions: readonly CubeDataTableColumnDefinition<T>[],
+): DataTableColumnModel<T> {
+  const columns: CubeDataTableColumn<T>[] = [];
+  const headerPaths = new Map<string, readonly CubeTableColumnGroupHeader[]>();
+
+  function visit(
+    entries: readonly CubeDataTableColumnDefinition<T>[],
+    path: readonly CubeTableColumnGroupHeader[],
+  ) {
+    for (const entry of entries) {
+      if (isColumnGroup(entry)) {
+        visit(entry.children, [
+          ...path,
+          { key: entry.key, title: entry.title },
+        ]);
+      } else {
+        columns.push(entry);
+        if (path.length) headerPaths.set(entry.key, path);
+      }
+    }
+  }
+
+  visit(definitions, []);
+
+  return { columns, headerPaths };
+}
 
 function defaultGetRowKey<T>(rowKey: string) {
   return (row: T, index: number): Key => {
@@ -69,9 +115,9 @@ function defaultGetRowKey<T>(rowKey: string) {
  * rows pinned for totals.
  *
  * It knows nothing about Cube. Measures, dimensions, pivots and drill-downs
- * reach it as ordinary columns, `render` output and `column.header.menu`
- * content, which is what keeps the ~34 kB of Cloud's column-header menu in
- * Cloud.
+ * reach it as leaf columns, presentational column groups, `render` output and
+ * `column.header.menu` content, which is what keeps the ~34 kB of Cloud's
+ * column-header menu in Cloud.
  */
 function DataTable<T = any>(
   props: CubeDataTableProps<T>,
@@ -198,6 +244,9 @@ function DataTable<T = any>(
 
   const storage = useTableStorage(storageKey);
 
+  const columnModel = useMemo(() => buildColumnModel(columns), [columns]);
+  const hasColumnGroups = columnModel.headerPaths.size > 0;
+
   /**
    * `dataType` is presentational, so it is folded into the column here rather
    * than reaching the renderer: `number` right-aligns and takes tabular figures
@@ -205,7 +254,7 @@ function DataTable<T = any>(
    */
   const resolvedColumns = useMemo(
     () =>
-      columns.map((column) => {
+      columnModel.columns.map((column) => {
         const isNumeric = column.dataType === 'number';
 
         return {
@@ -221,7 +270,7 @@ function DataTable<T = any>(
             : column.cellStyles,
         } as CubeDataTableColumn<T>;
       }),
-    [columns],
+    [columnModel.columns],
   );
 
   // Applied to the SOURCE columns, before `useTableColumns`, so hidden-column
@@ -555,16 +604,26 @@ function DataTable<T = any>(
 
   /* ── column reordering ────────────────────────────────────────────────── */
 
+  useWarn(isColumnReorderable && hasColumnGroups, {
+    key: ['data-table-grouped-column-reorder'],
+    args: [
+      'DataTable:',
+      '`isColumnReorderable` is ignored when columns contain header groups.',
+    ],
+  });
+
+  const canReorderColumns = isColumnReorderable && !hasColumnGroups;
+
   const headRowRef = useRef<HTMLTableRowElement>(null);
   const draggableColumnKeys = useMemo(
-    () => getDraggableColumnKeys(layout.columns, isColumnReorderable),
-    [layout.columns, isColumnReorderable],
+    () => getDraggableColumnKeys(layout.columns, canReorderColumns),
+    [layout.columns, canReorderColumns],
   );
   const columnCollection = useMemo(
     () =>
       new RowCollection(
         layout.columns.filter((column) =>
-          isColumnDraggable(column, isColumnReorderable),
+          isColumnDraggable(column, canReorderColumns),
         ),
         (column) => column.key,
         new Set(),
@@ -573,7 +632,7 @@ function DataTable<T = any>(
         (column) =>
           typeof column.title === 'string' ? column.title : column.key,
       ),
-    [layout.columns, isColumnReorderable],
+    [layout.columns, canReorderColumns],
   );
   /**
    * `'single'`, not `'none'`.
@@ -598,7 +657,7 @@ function DataTable<T = any>(
   // One draggable column cannot be reordered, so the machinery stays unmounted
   // and the header keeps its exact DOM.
   const isColumnDragEnabled =
-    isColumnReorderable && draggableColumnKeys.length > 1;
+    canReorderColumns && draggableColumnKeys.length > 1;
 
   const treeRowNumberOffset = treeModel
     ? paginationMode === 'client'
@@ -643,6 +702,7 @@ function DataTable<T = any>(
       }
       totalRowCount={treeModel ? visibleRows.length : total}
       layout={layout}
+      columnHeaderPaths={columnModel.headerPaths}
       // Always on, unlike `ItemTable`. A result grid is read down a column, and
       // once the values are wide and right-aligned the rule is what keeps a
       // figure attached to its column — which is why Cloud's ag-grid theme sets

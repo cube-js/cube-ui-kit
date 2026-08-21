@@ -20,7 +20,10 @@ import { DataTable } from './DataTable';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import type { CubeTableCellRange, CubeTableSort } from '../TableBase/types';
-import type { CubeDataTableColumn } from './types';
+import type {
+  CubeDataTableColumn,
+  CubeDataTableColumnDefinition,
+} from './types';
 
 interface ResultRow {
   id: string;
@@ -34,7 +37,7 @@ interface ResultRow {
 type TreeResultRow = ResultRow & { children?: TreeResultRow[] };
 
 const REGIONS = ['us-east-1', 'us-west-2', 'eu-central-1', 'ap-south-1'];
-const CHANNELS = ['organic', 'paid', 'email', 'referral'];
+const CHANNELS = ['organic', 'paid', 'email', 'referral'] as const;
 
 const ROWS: ResultRow[] = Array.from({ length: 240 }, (_, i) => ({
   id: `r${i}`,
@@ -128,37 +131,45 @@ const TOTALS: ResultRow[] = [
   },
 ];
 
-interface CrossTabRow {
+type Channel = (typeof CHANNELS)[number];
+type PivotMetric = 'orders' | 'revenue';
+type PivotValueKey = `${Channel}_${PivotMetric}`;
+
+type CrossTabRow = Record<PivotValueKey, number> & {
   id: string;
   region: string;
-  organic: number;
-  paid: number;
-  email: number;
-  referral: number;
-  total: number;
-}
+  total_orders: number;
+  total_revenue: number;
+};
+
+const PIVOT_VALUE_KEYS = CHANNELS.flatMap((channel) => [
+  `${channel}_orders` as const,
+  `${channel}_revenue` as const,
+]);
 
 const CROSS_TAB_ROWS: CrossTabRow[] = REGIONS.map((region) => {
-  const revenueByChannel = Object.fromEntries(
-    CHANNELS.map((channel) => [
-      channel,
-      ROWS.filter(
-        (row) => row.region === region && row.channel === channel,
-      ).reduce((sum, row) => sum + row.revenue, 0),
-    ]),
-  ) as Record<(typeof CHANNELS)[number], number>;
+  const sourceRows = ROWS.filter((row) => row.region === region);
+  const pivotValues = Object.fromEntries(
+    PIVOT_VALUE_KEYS.map((key) => {
+      const separator = key.lastIndexOf('_');
+      const channel = key.slice(0, separator) as Channel;
+      const metric = key.slice(separator + 1) as PivotMetric;
+
+      return [
+        key,
+        sourceRows
+          .filter((row) => row.channel === channel)
+          .reduce((sum, row) => sum + row[metric], 0),
+      ];
+    }),
+  ) as Record<PivotValueKey, number>;
 
   return {
     id: region,
     region,
-    organic: revenueByChannel.organic,
-    paid: revenueByChannel.paid,
-    email: revenueByChannel.email,
-    referral: revenueByChannel.referral,
-    total: Object.values(revenueByChannel).reduce(
-      (sum, value) => sum + value,
-      0,
-    ),
+    ...pivotValues,
+    total_orders: sourceRows.reduce((sum, row) => sum + row.orders, 0),
+    total_revenue: sourceRows.reduce((sum, row) => sum + row.revenue, 0),
   };
 });
 
@@ -169,7 +180,21 @@ const formatCurrency = (value: number) =>
     maximumFractionDigits: 0,
   });
 
-const CROSS_TAB_COLUMNS: CubeDataTableColumn<CrossTabRow>[] = [
+const formatInteger = (value: number) => value.toLocaleString();
+
+const metricColumn = (
+  channel: Channel | 'total',
+  metric: PivotMetric,
+): CubeDataTableColumn<CrossTabRow> => ({
+  key: `${channel}_${metric}`,
+  title: metric === 'orders' ? 'Orders' : 'Revenue',
+  dataType: 'number',
+  minWidth: metric === 'orders' ? 115 : 140,
+  isSortable: true,
+  format: metric === 'orders' ? formatInteger : formatCurrency,
+});
+
+const CROSS_TAB_COLUMNS: CubeDataTableColumnDefinition<CrossTabRow>[] = [
   {
     key: 'region',
     title: 'Region',
@@ -177,24 +202,27 @@ const CROSS_TAB_COLUMNS: CubeDataTableColumn<CrossTabRow>[] = [
     pin: 'start',
     isSortable: true,
   },
-  ...CHANNELS.map(
-    (channel): CubeDataTableColumn<CrossTabRow> => ({
-      key: channel,
-      title: channel[0].toUpperCase() + channel.slice(1),
-      dataType: 'number',
-      minWidth: 140,
-      isSortable: true,
-      format: formatCurrency,
-    }),
-  ),
+  ...CHANNELS.map((channel) => ({
+    key: channel,
+    title: channel[0].toUpperCase() + channel.slice(1),
+    children: [
+      metricColumn(channel, 'orders'),
+      metricColumn(channel, 'revenue'),
+    ],
+  })),
   {
     key: 'total',
     title: 'Total',
-    dataType: 'number',
-    minWidth: 150,
-    isSortable: true,
-    color: 'note',
-    format: formatCurrency,
+    children: [
+      {
+        ...metricColumn('total', 'orders'),
+        color: 'note',
+      },
+      {
+        ...metricColumn('total', 'revenue'),
+        color: 'note',
+      },
+    ],
   },
 ];
 
@@ -202,11 +230,20 @@ const CROSS_TAB_TOTALS: CrossTabRow[] = [
   {
     id: 'grand-total',
     region: 'Grand total',
-    organic: CROSS_TAB_ROWS.reduce((sum, row) => sum + row.organic, 0),
-    paid: CROSS_TAB_ROWS.reduce((sum, row) => sum + row.paid, 0),
-    email: CROSS_TAB_ROWS.reduce((sum, row) => sum + row.email, 0),
-    referral: CROSS_TAB_ROWS.reduce((sum, row) => sum + row.referral, 0),
-    total: CROSS_TAB_ROWS.reduce((sum, row) => sum + row.total, 0),
+    ...(Object.fromEntries(
+      PIVOT_VALUE_KEYS.map((key) => [
+        key,
+        CROSS_TAB_ROWS.reduce((sum, row) => sum + row[key], 0),
+      ]),
+    ) as Record<PivotValueKey, number>),
+    total_orders: CROSS_TAB_ROWS.reduce(
+      (sum, row) => sum + row.total_orders,
+      0,
+    ),
+    total_revenue: CROSS_TAB_ROWS.reduce(
+      (sum, row) => sum + row.total_revenue,
+      0,
+    ),
   },
 ];
 
@@ -268,10 +305,10 @@ type PivotStory = StoryObj<typeof DataTable<CrossTabRow>>;
 export const Default: Story = {};
 
 /**
- * DataTable renders an already-shaped pivot result as an ordinary flat table:
- * the row field stays pinned, generated values become columns, and totals are
- * regular pinned rows. The data/query layer owns the pivot calculation; the
- * table keeps sorting, resizing, cell ranges and copy behavior generic.
+ * Nested column definitions turn generated pivot values into real multi-row
+ * headers. The rows are still an already-shaped result: the data/query layer
+ * owns the pivot calculation while the table keeps sorting, resizing, cell
+ * ranges and copy behavior generic.
  */
 export const Pivot: PivotStory = {
   args: {
@@ -279,8 +316,8 @@ export const Pivot: PivotStory = {
     columns: CROSS_TAB_COLUMNS,
     pinnedBottomRows: CROSS_TAB_TOTALS,
     paginationMode: 'off',
-    ariaLabel: 'Revenue by region and channel',
-    height: '260px',
+    ariaLabel: 'Orders and revenue by region and channel',
+    height: '300px',
   },
 };
 

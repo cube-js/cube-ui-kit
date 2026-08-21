@@ -139,6 +139,12 @@ export interface CubeTableHeaderContext {
   width: number | null;
 }
 
+/** Presentational path entry used to build multi-row column headers. */
+export interface CubeTableColumnGroupHeader {
+  key: string;
+  title?: ReactNode;
+}
+
 /* ── column ──────────────────────────────────────────────────────────────── */
 
 /**

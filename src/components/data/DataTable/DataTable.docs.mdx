@@ -36,9 +36,9 @@ API keys. That is the one with selection, bulk actions, row menus and row links.
 ## It knows nothing about Cube
 
 Measures, dimensions, pivots, drill-downs and calculated fields never reach this
-component as concepts. They arrive as ordinary columns, `render` output and
-`column.header.menu` content — which is what keeps Cloud's column-header menu,
-and everything it knows about the query, in Cloud.
+component as query concepts. They arrive as leaf columns, presentational column
+groups, `render` output and `column.header.menu` content — which is what keeps
+Cloud's column-header menu, and everything it knows about the query, in Cloud.
 
 <Canvas of={DataTableStories.Default} />
 
@@ -49,7 +49,8 @@ and everything it knows about the query, in Cloud.
 #### Data
 
 - **`data`** `readonly T[]` — The rows.
-- **`columns`** `CubeDataTableColumn<T>[]` — Same shape as `ItemTable`'s, plus `dataType`.
+- **`columns`** `CubeDataTableColumnDefinition<T>[]` — Leaf columns use the same
+  shape as `ItemTable`'s, plus `dataType`; group nodes contain nested `children`.
 - **`rowKey`** `string` (default: `'id'`) — Property to read the row identity from.
 - **`getRowKey`** `(row: T, index: number) => Key` — Wins over `rowKey`.
 - **`getRowChildren`** `(row: T) => readonly T[] | undefined` — Enables nested
@@ -80,7 +81,7 @@ and everything it knows about the query, in Cloud.
 - **`size`** `SizeName` (default: `'small'`) — An analytical grid packs more rows than a list.
 - **`rowSize`** `'small' | 'medium' | 'large'` — Row height as a named step: 28px / 32px / 40px. Rows only; the header keeps answering to `size`. Unset, the height comes from `size`.
 - **`rowHeight`** `number` — An exact height, when none of the named steps is the answer. Wins over both `rowSize` and `size`.
-- **`headerHeight`** `number`
+- **`headerHeight`** `number` — Exact height of each header row in px.
 - **`isStriped`** `boolean` (default: `true`) — Banding is what makes a wide row readable across.
 - **`isHeaderHidden`** `boolean`
 - **`isHeaderSticky`** `boolean` (default: `true`)
@@ -179,9 +180,10 @@ Customizes the root frame. Every internal part of the grid is a **sub-element**
 reachable from this one prop — the same contract, and the same sub-element
 names, as [ItemTable](/docs/data-itemtable--docs#styling-properties).
 
-`DataTable` adds one: `StateCell`, the full-span cell that carries the empty,
-no-results and error content. It is deliberately not a `Cell`, so it takes none
-of the row's banding or hover paint.
+`DataTable` adds `StateCell`, the full-span cell that carries the empty,
+no-results and error content, and `HeaderGroupCell`, a spanning cell in a
+multi-row header. `StateCell` is deliberately not a `Cell`, so it takes none of
+the row's banding or hover paint.
 
 #### Targeted slots
 
@@ -223,6 +225,43 @@ body into a scroller, pins the header, and lets virtualization engage at all.
 
 Cell-level, in addition to `ItemTable`'s: `cell-selected`, `last-column`,
 `pinned`.
+
+## Pivoted Results and Column Groups
+
+Pass group nodes in `columns` to render real multi-row headers. Groups may nest
+to any depth; their `children` eventually resolve to ordinary leaf columns, and
+only those leaves participate in sorting, resizing, ranges and copying.
+
+```jsx
+const columns = [
+  { key: 'region', title: 'Region', pin: 'start' },
+  {
+    key: 'organic',
+    title: 'Organic',
+    children: [
+      { key: 'organic_orders', title: 'Orders', dataType: 'number' },
+      { key: 'organic_revenue', title: 'Revenue', dataType: 'number' },
+    ],
+  },
+  {
+    key: 'paid',
+    title: 'Paid',
+    children: [
+      { key: 'paid_orders', title: 'Orders', dataType: 'number' },
+      { key: 'paid_revenue', title: 'Revenue', dataType: 'number' },
+    ],
+  },
+];
+
+<DataTable data={pivotRows} columns={columns} />;
+```
+
+The data/query layer still owns the pivot calculation. DataTable only renders
+the already-shaped rows and generated column hierarchy. Leaf resizing and
+sorting remain available; drag column reordering is ignored while groups are
+present because moving one leaf cannot preserve an arbitrary hierarchy.
+
+<Canvas of={DataTableStories.Pivot} />
 
 ## Tree Rows
 
@@ -474,8 +513,10 @@ elsewhere.
 ## Accessibility
 
 The table is a `role="grid"` with document-absolute `aria-rowindex` /
-`aria-colindex`, and `aria-rowcount` counts pinned rows. Every sorted column
-carries `aria-sort`, not just the first.
+`aria-colindex`, and `aria-rowcount` counts pinned rows and every visible header
+row. Group cells use native `scope="colgroup"` / `colSpan`; ungrouped leaf
+headers span the remaining rows. Every sorted leaf column carries `aria-sort`,
+not just the first.
 
 A header cell takes a tab stop when it is interactive — sortable, carrying a
 menu, or reorderable. `Shift`+`F10` opens the column menu from the keyboard, and

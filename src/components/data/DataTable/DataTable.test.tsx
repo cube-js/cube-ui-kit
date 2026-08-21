@@ -2,7 +2,10 @@ import { renderWithRoot, screen, userEvent, waitFor } from '../../../test';
 
 import { DataTable } from './DataTable';
 
-import type { CubeDataTableColumn } from './types';
+import type {
+  CubeDataTableColumn,
+  CubeDataTableColumnDefinition,
+} from './types';
 
 interface Row {
   id: string;
@@ -57,6 +60,107 @@ describe('DataTable', () => {
       'data-align',
       'start',
     );
+  });
+
+  describe('column groups', () => {
+    const GROUPED_COLUMNS: CubeDataTableColumnDefinition<Row>[] = [
+      { key: 'region', title: 'Region', isSortable: true },
+      {
+        key: 'metrics',
+        title: 'Metrics',
+        children: [
+          {
+            key: 'orders',
+            title: 'Orders',
+            dataType: 'number',
+            isSortable: true,
+          },
+          {
+            key: 'orders-copy',
+            title: 'Orders copy',
+            getValue: (row) => row.orders,
+            dataType: 'number',
+          },
+        ],
+      },
+    ];
+
+    it('renders native spanning headers and counts both header rows', () => {
+      renderWithRoot(<DataTable data={ROWS} columns={GROUPED_COLUMNS} />);
+
+      expect(grid().querySelectorAll('thead tr')).toHaveLength(2);
+      expect(
+        screen.getByRole('columnheader', { name: 'Metrics' }),
+      ).toHaveAttribute('colspan', '2');
+      expect(
+        screen.getByRole('columnheader', { name: 'Metrics' }),
+      ).toHaveAttribute('scope', 'colgroup');
+      expect(
+        screen.getByRole('columnheader', { name: /^Region/ }),
+      ).toHaveAttribute('rowspan', '2');
+      expect(grid()).toHaveAttribute('aria-rowcount', '6');
+    });
+
+    it('keeps sorting on the generated leaf columns', async () => {
+      renderWithRoot(<DataTable data={ROWS} columns={GROUPED_COLUMNS} />);
+
+      await userEvent.click(
+        screen.getByRole('columnheader', { name: /^Orders Resize/ }),
+      );
+
+      expect(cellText('orders')).toEqual(['10', '20', '30', '40']);
+    });
+
+    it('supports nested header bands', () => {
+      const columns: CubeDataTableColumnDefinition<Row>[] = [
+        { key: 'region', title: 'Region' },
+        {
+          key: 'metrics',
+          title: 'Metrics',
+          children: [
+            {
+              key: 'volume',
+              title: 'Volume',
+              children: [
+                { key: 'orders', title: 'Orders' },
+                {
+                  key: 'orders-copy',
+                  title: 'Orders copy',
+                  getValue: (row) => row.orders,
+                },
+              ],
+            },
+          ],
+        },
+      ];
+
+      renderWithRoot(<DataTable data={ROWS} columns={columns} />);
+
+      expect(grid().querySelectorAll('thead tr')).toHaveLength(3);
+      expect(
+        screen.getByRole('columnheader', { name: /^Region/ }),
+      ).toHaveAttribute('rowspan', '3');
+      expect(
+        screen.getByRole('columnheader', { name: 'Volume' }),
+      ).toHaveAttribute('colspan', '2');
+    });
+
+    it('warns and leaves grouped leaf columns out of drag reordering', () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      renderWithRoot(
+        <DataTable data={ROWS} columns={GROUPED_COLUMNS} isColumnReorderable />,
+      );
+
+      expect(warn).toHaveBeenCalledWith(
+        'CubeUIKit:',
+        'DataTable:',
+        '`isColumnReorderable` is ignored when columns contain header groups.',
+      );
+      expect(grid().querySelector('[data-draggable]')).toBeNull();
+
+      warn.mockRestore();
+    });
   });
 
   describe('multi-column sorting', () => {
