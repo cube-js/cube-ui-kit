@@ -281,11 +281,14 @@ export interface CubeBoardProps
    * collision blocks a move - `compact="free"` (which prevents collisions) or an
    * explicit `preventCollision` - and never under `allowOverlap`. `'revert'`
    * snaps the widget back, `'downscale'` shrinks it into the free space at the
-   * drop cell, `'swap'` trades places with one widget - the one the drop covers
-   * most - which takes the cell the drag began at (falling back to `'downscale'`,
-   * then `'revert'`). No mode ever grows a widget, `'swap'` never displaces more
-   * than that one widget, and a drop that spans two widgets trades with one of
-   * them rather than refusing, so the swap never blinks away mid-drag.
+   * drop cell. Within this board, `'swap'` trades places with one widget - the one
+   * the drop covers most - which takes the cell the drag began at (falling back to
+   * `'downscale'`, then `'revert'`). For a widget arriving from another board,
+   * `'swap'` never exchanges or reflows destination widgets: the anchor cell must
+   * be empty, the incoming widget downscales into the room to its right/below, and
+   * an invalid landing cancels the transfer. No mode ever grows a widget, an
+   * in-board swap never displaces more than one widget, and a drop that spans two
+   * widgets trades with one of them rather than blinking away mid-drag.
    *
    * Applies to single-widget drags. Arrow keys honour it too, but never resize
    * anything: each press is a gesture of its own, so a press that shrank a widget

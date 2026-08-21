@@ -2338,6 +2338,280 @@ describe('Board', () => {
       expect(rectOf('a')).toBe('0,2 4x1');
     });
 
+    describe('cross-board swap', () => {
+      function setupCrossBoardSwap(
+        incoming: LayoutItem,
+        targetLayout: LayoutItem[],
+      ) {
+        const onSourceLayoutChange = vi.fn();
+        const onTargetLayoutChange = vi.fn();
+        const onWidgetTransfer = vi.fn();
+        const onDragStop = vi.fn();
+
+        render(
+          <Board.Provider onWidgetTransfer={onWidgetTransfer}>
+            <Board
+              id="source"
+              width={600}
+              cols={6}
+              rowHeight={100}
+              margin={[0, 0]}
+              containerPadding={[0, 0]}
+              compact="free"
+              collisionMode="swap"
+              defaultLayout={[incoming]}
+              onLayoutChange={onSourceLayoutChange}
+              onDragStop={onDragStop}
+            >
+              <Board.Widget id={incoming.i} qa="Incoming">
+                Incoming
+              </Board.Widget>
+            </Board>
+            <Board
+              id="target"
+              width={600}
+              cols={6}
+              rowHeight={100}
+              margin={[0, 0]}
+              containerPadding={[0, 0]}
+              compact="free"
+              collisionMode="swap"
+              defaultLayout={targetLayout}
+              onLayoutChange={onTargetLayoutChange}
+            >
+              {targetLayout.map((it) => (
+                <Board.Widget key={it.i} id={it.i} qa={`Target-${it.i}`}>
+                  {it.i}
+                </Board.Widget>
+              ))}
+            </Board>
+          </Board.Provider>,
+        );
+
+        const widget = screen.getByTestId('Incoming');
+        const sourceContent = widget.parentElement as HTMLElement;
+        const firstTarget = targetLayout[0];
+        const targetContent = firstTarget
+          ? (screen.getByTestId(`Target-${firstTarget.i}`)
+              .parentElement as HTMLElement)
+          : (document.querySelector(
+              '[data-board-id="target"] [data-qa="BoardContent"]',
+            ) as HTMLElement);
+
+        sourceContent.getBoundingClientRect = () => mockRect(0, 0, 600, 600);
+        targetContent.getBoundingClientRect = () => mockRect(600, 0, 600, 600);
+        widget.getBoundingClientRect = () =>
+          mockRect(0, 0, incoming.w * 100, incoming.h * 100);
+
+        const start = () =>
+          fireEvent(widget, pointerEvent('pointerdown', 0, 0));
+        const moveTo = (x: number, y: number) =>
+          fireEvent(
+            window,
+            pointerEvent('pointermove', 600 + x * 100, y * 100),
+          );
+        const endAt = (x: number, y: number) =>
+          fireEvent(window, pointerEvent('pointerup', 600 + x * 100, y * 100));
+        const dragTo = (x: number, y: number) => {
+          start();
+          moveTo(x, y);
+          endAt(x, y);
+        };
+
+        return {
+          start,
+          moveTo,
+          endAt,
+          dragTo,
+          onSourceLayoutChange,
+          onTargetLayoutChange,
+          onWidgetTransfer,
+          onDragStop,
+        };
+      }
+
+      it('inserts at full size when the requested target space is empty', () => {
+        const targetLayout = [{ i: 'b', x: 4, y: 0, w: 2, h: 1 }];
+        const { dragTo, onTargetLayoutChange, onWidgetTransfer } =
+          setupCrossBoardSwap({ i: 'a', x: 0, y: 0, w: 2, h: 1 }, targetLayout);
+
+        dragTo(0, 0);
+
+        const committed = onTargetLayoutChange.mock
+          .calls[0]![0] as LayoutItem[];
+        expect(committed).toEqual([
+          expect.objectContaining(targetLayout[0]),
+          expect.objectContaining({ i: 'a', x: 0, y: 0, w: 2, h: 1 }),
+        ]);
+        expect(onWidgetTransfer).toHaveBeenCalledWith(
+          expect.objectContaining({
+            fromBoardId: 'source',
+            toBoardId: 'target',
+            item: expect.objectContaining({ x: 0, y: 0, w: 2, h: 1 }),
+          }),
+        );
+      });
+
+      it('downscales at an empty anchor without moving target widgets', () => {
+        const targetLayout = [{ i: 'b', x: 3, y: 0, w: 3, h: 1 }];
+        const { dragTo, onTargetLayoutChange, onWidgetTransfer } =
+          setupCrossBoardSwap({ i: 'a', x: 0, y: 0, w: 4, h: 1 }, targetLayout);
+
+        dragTo(0, 0);
+
+        const committed = onTargetLayoutChange.mock
+          .calls[0]![0] as LayoutItem[];
+        expect(committed.find((it) => it.i === 'a')).toEqual(
+          expect.objectContaining({ x: 0, y: 0, w: 3, h: 1 }),
+        );
+        expect(committed.find((it) => it.i === 'b')).toEqual(
+          expect.objectContaining(targetLayout[0]),
+        );
+        expect(onWidgetTransfer.mock.calls[0]![0].item).toEqual(
+          expect.objectContaining({ x: 0, y: 0, w: 3, h: 1 }),
+        );
+      });
+
+      it('cancels the transfer when the anchor cell is occupied', () => {
+        const {
+          dragTo,
+          onSourceLayoutChange,
+          onTargetLayoutChange,
+          onWidgetTransfer,
+          onDragStop,
+        } = setupCrossBoardSwap({ i: 'a', x: 0, y: 0, w: 2, h: 1 }, [
+          { i: 'b', x: 0, y: 0, w: 2, h: 1 },
+        ]);
+
+        dragTo(0, 0);
+
+        expect(onSourceLayoutChange).not.toHaveBeenCalled();
+        expect(onTargetLayoutChange).not.toHaveBeenCalled();
+        expect(onWidgetTransfer).not.toHaveBeenCalled();
+        expect(onDragStop).toHaveBeenCalledWith(
+          expect.objectContaining({
+            item: expect.objectContaining({ i: 'a', x: 0, y: 0 }),
+            layout: [expect.objectContaining({ i: 'a', x: 0, y: 0 })],
+          }),
+        );
+      });
+
+      it('cancels when the available space is below the minimum size', () => {
+        const {
+          dragTo,
+          onSourceLayoutChange,
+          onTargetLayoutChange,
+          onWidgetTransfer,
+        } = setupCrossBoardSwap({ i: 'a', x: 0, y: 0, w: 4, h: 1, minW: 4 }, [
+          { i: 'b', x: 3, y: 0, w: 3, h: 1 },
+        ]);
+
+        dragTo(0, 0);
+
+        expect(onSourceLayoutChange).not.toHaveBeenCalled();
+        expect(onTargetLayoutChange).not.toHaveBeenCalled();
+        expect(onWidgetTransfer).not.toHaveBeenCalled();
+      });
+
+      it('cancels instead of committing the last valid preview', () => {
+        const {
+          start,
+          moveTo,
+          endAt,
+          onSourceLayoutChange,
+          onTargetLayoutChange,
+          onWidgetTransfer,
+        } = setupCrossBoardSwap({ i: 'a', x: 0, y: 0, w: 2, h: 1 }, [
+          { i: 'b', x: 2, y: 0, w: 2, h: 1 },
+        ]);
+
+        start();
+        moveTo(0, 0);
+        expect(screen.getAllByTestId('BoardPlaceholder')).toHaveLength(1);
+        moveTo(2, 0);
+        expect(
+          screen.queryByTestId('BoardPlaceholder'),
+        ).not.toBeInTheDocument();
+        endAt(2, 0);
+
+        expect(onSourceLayoutChange).not.toHaveBeenCalled();
+        expect(onTargetLayoutChange).not.toHaveBeenCalled();
+        expect(onWidgetTransfer).not.toHaveBeenCalled();
+      });
+
+      it('uses the same insertion rule when dragging from a nested board to its parent', () => {
+        const onParentLayoutChange = vi.fn();
+        const onChildLayoutChange = vi.fn();
+        const onWidgetTransfer = vi.fn();
+
+        render(
+          <Board.Provider onWidgetTransfer={onWidgetTransfer}>
+            <Board
+              id="parent"
+              width={600}
+              cols={6}
+              rowHeight={100}
+              margin={[0, 0]}
+              containerPadding={[0, 0]}
+              compact="free"
+              collisionMode="swap"
+              defaultLayout={[{ i: 'container', x: 0, y: 0, w: 3, h: 2 }]}
+              onLayoutChange={onParentLayoutChange}
+            >
+              <Board.Widget id="container" qa="Container">
+                <Board
+                  id="child"
+                  width={300}
+                  cols={3}
+                  rowHeight={100}
+                  margin={[0, 0]}
+                  containerPadding={[0, 0]}
+                  compact="free"
+                  collisionMode="swap"
+                  defaultLayout={[{ i: 'a', x: 0, y: 0, w: 1, h: 1 }]}
+                  onLayoutChange={onChildLayoutChange}
+                >
+                  <Board.Widget id="a" qa="NestedIncoming">
+                    A
+                  </Board.Widget>
+                </Board>
+              </Board.Widget>
+            </Board>
+          </Board.Provider>,
+        );
+
+        const widget = screen.getByTestId('NestedIncoming');
+        const childContent = widget.parentElement as HTMLElement;
+        const container = screen.getByTestId('Container');
+        const parentContent = container.parentElement as HTMLElement;
+        childContent.getBoundingClientRect = () => mockRect(0, 0, 300, 200);
+        parentContent.getBoundingClientRect = () => mockRect(0, 0, 600, 400);
+        container.getBoundingClientRect = () => mockRect(0, 0, 300, 200);
+        widget.getBoundingClientRect = () => mockRect(0, 0, 100, 100);
+
+        fireEvent(widget, pointerEvent('pointerdown', 0, 0));
+        fireEvent(window, pointerEvent('pointermove', 400, 0));
+        fireEvent(window, pointerEvent('pointerup', 400, 0));
+
+        const committed = onParentLayoutChange.mock
+          .calls[0]![0] as LayoutItem[];
+        expect(committed.find((it) => it.i === 'container')).toEqual(
+          expect.objectContaining({ x: 0, y: 0, w: 3, h: 2 }),
+        );
+        expect(committed.find((it) => it.i === 'a')).toEqual(
+          expect.objectContaining({ x: 4, y: 0, w: 1, h: 1 }),
+        );
+        expect(onChildLayoutChange).toHaveBeenCalledWith([]);
+        expect(onWidgetTransfer).toHaveBeenCalledWith(
+          expect.objectContaining({
+            widgetId: 'a',
+            fromBoardId: 'child',
+            toBoardId: 'parent',
+          }),
+        );
+      });
+    });
+
     describe('keyboard', () => {
       function setupKeyboardBoard(
         collisionMode: 'downscale' | 'swap',

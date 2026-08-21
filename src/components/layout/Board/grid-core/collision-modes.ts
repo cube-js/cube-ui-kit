@@ -252,10 +252,13 @@ function exchangeWith(
  * or `undefined` for `'revert'` (and for an unset mode), which keeps the engine
  * on its original path with no added work.
  *
- * `'swap'` is an escalation ladder, tried in order: exchange with one of the
- * widgets under the drop, else downscale at the drop cell, else revert. A dense
- * grid stays draggable that way - refusing everything that is not a clean
+ * For an in-board drag, `'swap'` is an escalation ladder: exchange with one of
+ * the widgets under the drop, else downscale at the drop cell, else revert. A
+ * dense grid stays draggable that way - refusing everything that is not a clean
  * one-to-one trade would make the mode feel broken exactly where it is needed.
+ * Cross-board callers pass `allowExchange: false`, which turns the same mode into
+ * empty-anchor downscaling; the registry cancels the transfer if that resolution
+ * cannot occupy the requested cell.
  */
 export function createCollisionResolver(
   mode: CollisionMode | undefined,
