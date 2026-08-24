@@ -2601,7 +2601,11 @@ describe('Board', () => {
         expect(committed.find((it) => it.i === 'a')).toEqual(
           expect.objectContaining({ x: 4, y: 0, w: 1, h: 1 }),
         );
-        expect(onChildLayoutChange).toHaveBeenCalledWith([]);
+        // The child board empties, and says why: the widget left for another
+        // board rather than the user rearranging this one.
+        expect(onChildLayoutChange).toHaveBeenCalledWith([], {
+          reason: 'transfer',
+        });
         expect(onWidgetTransfer).toHaveBeenCalledWith(
           expect.objectContaining({
             widgetId: 'a',
@@ -3746,6 +3750,252 @@ describe('Board', () => {
         b: '6,0',
         far: '0,4',
       });
+    });
+  });
+
+  describe('corner chrome', () => {
+    const pointerEvent = (type: string, pageX: number, pageY: number) => {
+      const event = new PointerEvent(type, {
+        bubbles: true,
+        cancelable: true,
+        button: 0,
+        pointerId: 1,
+        pointerType: 'mouse',
+      });
+      Object.defineProperty(event, 'pageX', { get: () => pageX });
+      Object.defineProperty(event, 'pageY', { get: () => pageY });
+      return event;
+    };
+
+    it('renders chrome outside the widget, so its own clip cannot crop it', () => {
+      render(
+        <Board width={1200} defaultLayout={baseLayout}>
+          <Board.Widget
+            id="a"
+            qa="WidgetA"
+            cornerChrome={<button type="button">Settings</button>}
+          >
+            A
+          </Board.Widget>
+        </Board>,
+      );
+
+      const chrome = screen.getByRole('button', { name: 'Settings' });
+      expect(chrome).toBeInTheDocument();
+      // The widget host clips its content (`overflow: hidden`), which is the
+      // whole reason this slot exists — so the chrome must NOT be inside it.
+      expect(screen.getByTestId('WidgetA').contains(chrome)).toBe(false);
+    });
+
+    it('keeps chrome reachable by assistive tech', () => {
+      // The grip layer is `aria-hidden` for the grips' sake. Chrome is real UI,
+      // so a layer holding chrome must not inherit that.
+      render(
+        <Board width={1200} defaultLayout={baseLayout}>
+          <Board.Widget
+            id="a"
+            cornerChrome={<button type="button">Settings</button>}
+          >
+            A
+          </Board.Widget>
+        </Board>,
+      );
+
+      expect(
+        screen
+          .getByRole('button', { name: 'Settings' })
+          .closest('[aria-hidden="true"]'),
+      ).toBeNull();
+    });
+
+    it('does not start a drag when the chrome is pressed', () => {
+      const onLayoutChange = vi.fn();
+      render(
+        <Board
+          width={1200}
+          defaultLayout={baseLayout}
+          onLayoutChange={onLayoutChange}
+        >
+          <Board.Widget
+            id="a"
+            cornerChrome={<button type="button">Settings</button>}
+          >
+            A
+          </Board.Widget>
+        </Board>,
+      );
+
+      const chrome = screen.getByRole('button', { name: 'Settings' });
+      fireEvent(chrome, pointerEvent('pointerdown', 0, 0));
+      fireEvent(window, pointerEvent('pointermove', 200, 200));
+      fireEvent(window, pointerEvent('pointerup', 200, 200));
+
+      // Chrome lives outside the widget host, so `useMove` is not even attached
+      // to it — no `dragCancel` entry needed to protect it.
+      expect(onLayoutChange).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('custom widget modifiers', () => {
+    it('resolves a style map against an app-defined modifier', () => {
+      render(
+        <Board width={1200} defaultLayout={baseLayout}>
+          <Board.Widget
+            id="a"
+            qa="WidgetA"
+            mods={{ editing: true }}
+            // Deliberately no `''` entry: that is what keeps this in tasty's
+            // EXTEND mode, so the board's own `selected` / `drag` treatments
+            // survive. The rule cannot see that a widget `styles` prop is always
+            // merged onto a parent map.
+            // oxlint-disable-next-line tasty/require-default-state
+            styles={{ shadow: { editing: '0 0 0 1bw #primary' } }}
+          >
+            A
+          </Board.Widget>
+        </Board>,
+      );
+
+      expect(screen.getByTestId('WidgetA')).toHaveAttribute('data-editing');
+    });
+
+    it('accepts board-wide modifiers via widgetProps, letting a widget override', () => {
+      render(
+        <Board
+          width={1200}
+          defaultLayout={baseLayout}
+          widgetProps={{ mods: { compact: true } }}
+        >
+          <Board.Widget id="a" qa="WidgetA">
+            A
+          </Board.Widget>
+          <Board.Widget id="b" qa="WidgetB" mods={{ compact: false }}>
+            B
+          </Board.Widget>
+        </Board>,
+      );
+
+      // The board-level default reaches a widget that sets nothing...
+      expect(screen.getByTestId('WidgetA')).toHaveAttribute('data-compact');
+      // ...and a widget's own value wins over it.
+      expect(screen.getByTestId('WidgetB')).not.toHaveAttribute('data-compact');
+    });
+
+    it('accepts corner chrome via widgetProps', () => {
+      render(
+        <Board
+          width={1200}
+          defaultLayout={baseLayout}
+          widgetProps={{
+            cornerChrome: <button type="button">Shared</button>,
+            cornerChromePlacement: 'sw',
+          }}
+        >
+          <Board.Widget id="a">A</Board.Widget>
+        </Board>,
+      );
+
+      // Typed as a widget default, so it has to behave like one — being silently
+      // dropped is worse than not accepting it at all.
+      expect(
+        screen.getAllByRole('button', { name: 'Shared' }),
+      ).not.toHaveLength(0);
+    });
+
+    it('keeps app modifiers on the clone that floats during a pointer drag', () => {
+      const pointerEvent = (type: string, pageX: number, pageY: number) => {
+        const event = new PointerEvent(type, {
+          bubbles: true,
+          cancelable: true,
+          button: 0,
+          pointerId: 1,
+          pointerType: 'mouse',
+        });
+        Object.defineProperty(event, 'pageX', { get: () => pageX });
+        Object.defineProperty(event, 'pageY', { get: () => pageY });
+        return event;
+      };
+
+      render(
+        <Board width={1200} defaultLayout={baseLayout}>
+          <Board.Widget id="a" qa="WidgetA" mods={{ editing: true }}>
+            A
+          </Board.Widget>
+        </Board>,
+      );
+
+      fireEvent(
+        screen.getByTestId('WidgetA'),
+        pointerEvent('pointerdown', 0, 0),
+      );
+      fireEvent(window, pointerEvent('pointermove', 120, 0));
+
+      // While a pointer drag is in flight the clone IS the widget — the in-grid
+      // host is hidden — so a custom state must not blink off for the gesture.
+      const floating = document.querySelector('[data-floating]');
+      expect(floating).not.toBeNull();
+      expect(floating).toHaveAttribute('data-editing');
+
+      fireEvent(window, pointerEvent('pointerup', 120, 0));
+    });
+
+    it('never lets an app modifier shadow one of the board own states', () => {
+      render(
+        <Board width={1200} defaultLayout={baseLayout} selectionMode="single">
+          <Board.Widget id="a" qa="WidgetA" mods={{ selected: true }}>
+            A
+          </Board.Widget>
+        </Board>,
+      );
+
+      // Nothing is selected, so the board's own `selected: false` has to win over
+      // the app's claim — the selection styling and the a11y wiring both read it.
+      expect(screen.getByTestId('WidgetA')).not.toHaveAttribute(
+        'data-selected',
+      );
+    });
+  });
+
+  describe('layout change reason', () => {
+    const pointerEvent = (type: string, pageX: number, pageY: number) => {
+      const event = new PointerEvent(type, {
+        bubbles: true,
+        cancelable: true,
+        button: 0,
+        pointerId: 1,
+        pointerType: 'mouse',
+      });
+      Object.defineProperty(event, 'pageX', { get: () => pageX });
+      Object.defineProperty(event, 'pageY', { get: () => pageY });
+      return event;
+    };
+
+    it('reports a resize as a gesture, not a normalization', () => {
+      const onLayoutChange = vi.fn();
+      render(
+        <Board
+          width={1200}
+          rowHeight={100}
+          margin={[0, 0]}
+          containerPadding={[0, 0]}
+          defaultLayout={[{ i: 'a', x: 0, y: 0, w: 2, h: 2 }]}
+          onLayoutChange={onLayoutChange}
+        >
+          <Board.Widget id="a" qa="WidgetA">
+            A
+          </Board.Widget>
+        </Board>,
+      );
+
+      const handle = document.querySelector(
+        '[data-qa="BoardResizeHandle"]',
+      ) as HTMLElement;
+      fireEvent(handle, pointerEvent('pointerdown', 0, 0));
+      fireEvent(window, pointerEvent('pointermove', 200, 0));
+      fireEvent(window, pointerEvent('pointerup', 200, 0));
+
+      expect(onLayoutChange).toHaveBeenCalled();
+      expect(onLayoutChange.mock.lastCall![1]).toEqual({ reason: 'resize' });
     });
   });
 });

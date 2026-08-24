@@ -1,6 +1,7 @@
 import { Meta, StoryFn } from '@storybook/react-vite';
 import { ReactNode, useState } from 'react';
 
+import { SettingsIcon } from '../../../icons';
 import { Button } from '../../actions/Button';
 import { Text } from '../../content/Text';
 import { Title } from '../../content/Title';
@@ -316,6 +317,46 @@ const FixedMatrixTemplate: StoryFn<CubeBoardProps> = (args) => (
     </Board>
   </div>
 );
+
+const CornerChromeTemplate: StoryFn<CubeBoardProps> = (args) => (
+  <Board
+    fill="#light"
+    padding="1x"
+    radius="1r"
+    widgetProps={{ isCard: true, resizeGripPlacement: 'corner' }}
+    defaultLayout={defaultLayout}
+    {...args}
+  >
+    {defaultLayout.map((item) => (
+      <Board.Widget
+        key={item.i}
+        id={item.i}
+        aria-label={`Widget ${item.i}`}
+        cornerChrome={
+          <Button
+            size="small"
+            icon={<SettingsIcon />}
+            aria-label={`Configure ${item.i}`}
+            onPress={() => {}}
+          />
+        }
+      >
+        <WidgetBody title={`Widget ${item.i}`} />
+      </Board.Widget>
+    ))}
+  </Board>
+);
+
+export const CornerChrome = CornerChromeTemplate.bind({});
+CornerChrome.args = {};
+CornerChrome.parameters = {
+  docs: {
+    description: {
+      story:
+        "`cornerChrome` centres a control on the widget's corner, drawn in the same layer as the corner resize grips - the layer that escapes the widget's own `overflow: hidden`. Chrome hung off the corner from inside a widget gets cropped in half by that clip, or by an ancestor's scroll container in the first row. It also sits outside the drag gesture, so pressing it never starts a drag. Here every widget pairs it with a `corner` resize grip on the opposite corner.",
+    },
+  },
+};
 
 export const FixedMatrix = FixedMatrixTemplate.bind({});
 FixedMatrix.args = {};

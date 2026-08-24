@@ -37,7 +37,7 @@ Dragging and resizing are powered by React Aria's `useMove`, so they work with m
 
 - **`layout`** `LayoutItem[]` — Controlled layout.
 - **`defaultLayout`** `LayoutItem[]` — Initial layout for uncontrolled usage.
-- **`onLayoutChange`** `(layout: LayoutItem[]) => void` — Called when a drag or resize is committed.
+- **`onLayoutChange`** `(layout: LayoutItem[], info: { reason }) => void` — Called when the layout is committed. `reason` is `'drag'`, `'resize'`, `'transfer'` (a widget arrived from or left for another board) or `'normalize'` (no gesture — a reflow for a changed column count, or an auto-height widget growing). See [Knowing why the layout changed](#knowing-why-the-layout-changed).
 - **`onDragStart` / `onDrag` / `onDragStop`** `(info: BoardInteractionInfo) => void` — Drag lifecycle callbacks. `onDrag` fires on every step; `onDragStop` fires after the layout is committed.
 - **`onResizeStart` / `onResize` / `onResizeStop`** `(info: BoardInteractionInfo) => void` — Resize lifecycle callbacks, mirroring the drag ones.
 - **`cols`** `number` (default: `12`) — Number of columns.
@@ -56,7 +56,7 @@ Dragging and resizing are powered by React Aria's `useMove`, so they work with m
 - **`isDroppable`** `boolean` (default: `true`) — Whether the board accepts widgets dropped from other boards.
 - **`resizeHandles`** `ResizeHandleAxis[]` (default: `['se']`) — Which resize handles to show. Corner handles (`ne`/`nw`/`se`/`sw`) show an angle grip; edge handles (`n`/`s`/`e`/`w`) show a dotted grip. Both are revealed on hover/focus/resize. A single edge (e.g. `['e']` or `['s']`) gives a horizontally- or vertically-only resizable widget.
 - **`resizeGripPlacement`** `'inside' | 'corner'` (default: `'inside'`) — Where the corner grips sit. `'inside'` tucks each one into the widget box; `'corner'` centres it on the widget's corner, so it lines up with a control centred on the opposite corner. Only affects corner handles — a dotted edge grip always stays inside. A corner-placed grip is drawn _outside_ the widget (a widget clips its own content, which would otherwise cut the grip in half), so it needs the board to have at least half a grip's worth of `containerPadding` to show in full against the board's edge. Its hit-zone moves out with it and overhangs by the same half-grip, so the whole visible grip is grabbable and hovering it keeps it revealed — the trade is a ~5px band just outside each corner where a press starts a resize rather than a marquee. Can be overridden per widget.
-- **`dragCancel`** `string` — CSS selector for elements that must not start a pointer drag (e.g. form controls inside a widget: `"input,textarea,button,a,.no-drag"`). Does not affect keyboard moves — those only run when the widget host itself is focused. Can be overridden per widget.
+- **`dragCancel`** `string` (default: `BOARD_SELECTION_CANCEL`) — CSS selector for elements that must not start a pointer drag. Defaults to the same set `selectionCancel` uses, because a control inside a widget has to keep its own press whether or not the board supports selection — a board hosting interactive content needs no configuration for buttons, inputs, links and the common ARIA widget roles to stay usable. Pass your own selector to narrow or widen it, or `''` to let a drag start from anywhere. Does not affect keyboard moves. Can be overridden per widget.
 - **`dragHandle`** `string` — CSS selector for the only elements from which a pointer drag may start. Can be overridden per widget.
 - **`showGridLines`** `boolean | 'drag' | 'any-drag'` (default: `false`) — Show grid lines behind the widgets. `true` always; `false` never; `'drag'` only while _this_ board is part of the active gesture — it owns the drag (as its source, or as the board the widget is currently over) or one of its own widgets is being resized; `'any-drag'` while any drag is in flight anywhere under a shared `Board.Provider`, so every board advertises itself as somewhere the widget could land. Under one `Board.Provider`, `'drag'` keeps boards a widget cannot land in quiet, and `'any-drag'` is the opt-in for the noisier, more informative version. A nested board that does not set this inherits an enabled ancestor's setting, at the ancestor's own scope.
 - **`isAligned`** `boolean` (default: `false`) — Align a nested board with its ancestor `Board`'s layout. Only takes effect when the board is nested inside another `Board`'s widget. When set, every cell matches the parent's cell size exactly: the board inherits the parent's column pitch (deriving its own column count from its measured width so cells stay parent-sized as the container is resized) and uses the parent's row height verbatim. It never shrinks rows to fit — pair it with an `isAutoHeight` container so the widget grows to fit its rows at that height. `cols`/`rowHeight` then act as fallbacks used only until the parent metrics resolve.
@@ -76,6 +76,9 @@ Dragging and resizing are powered by React Aria's `useMove`, so they work with m
 ### Board.Widget
 
 - **`id`** `string` (required) — Must match the `i` of a layout item.
+- **`cornerChrome`** `ReactNode` — A control anchored to one corner of the widget and centred on it — a settings button, a badge, a remove affordance. Drawn in the same layer as the corner resize grips, which is the layer that escapes the widget's own clip: chrome hung off the corner from _inside_ a widget is cropped in half by that clip, or by an ancestor's scroll container when the widget sits in the first row. It is also outside the drag gesture, so a press on it can never start a drag and needs no `dragCancel` entry.
+- **`cornerChromePlacement`** `'ne' | 'nw' | 'se' | 'sw'` (default: `'ne'`) — Which corner the chrome sits on. Pair it with a `resizeGripPlacement="corner"` grip on the opposite corner and the two line up.
+- **`mods`** `Record<string, boolean | string | undefined>` — App-defined modifiers for this widget, merged into the ones the board sets, so a `styles` map can match on app state: `mods={{ editing: true }}` with `styles={{ shadow: { editing: '0 0 0 1bw #primary' } }}`. Board's own modifiers always win, so a custom one can never shadow `selected`, `drag` and the rest. Board-level `widgetProps.mods` merge underneath, so a shared default can be set once and overridden per widget — and every modifier rides along on the clone that floats during a drag.
 - **`hoverRing`** `boolean` (default: `true`) — Whether the widget shows the resting ring on hover — the affordance that says it can be picked up. Turn it off for a widget that is scenery rather than a thing to grab (a chromeless layout container, a spacer), where the ring advertises an interaction the widget does not really offer. Selection and drag treatments are unaffected. Can be set for the whole board via `widgetProps`.
 - **`isCard`** `boolean` (default: `false`) — Render this widget as a card by adding a border. Widgets are always filled (`#surface-2`) and rounded (`1cr`); `isCard` adds the border on top. Defaults to `false` (borderless) unless the owning `Board`'s `widgetProps.isCard` opts in; set it per widget to override that default.
 - **`isDraggable`** `boolean` — Disable dragging for this widget.
@@ -223,6 +226,12 @@ Show grid lines behind the widgets while dragging or resizing (or always). With 
 
 <Story of={BoardStories.GridLines} />
 
+### Corner chrome
+
+A control centred on a widget's corner with `cornerChrome`, drawn outside the widget's clip so nothing crops it. With a `resizeGripPlacement="corner"` grip on the opposite corner, the two line up.
+
+<Story of={BoardStories.CornerChrome} />
+
 ### Corner resize grip
 
 Centre the resize grip on the widget's corner with `resizeGripPlacement="corner"`, so it lines up with a control centred on the opposite corner.
@@ -298,6 +307,21 @@ A group reflows like a single widget — it is compacted by the same rules, so o
 ### Controlled selection and deleting widgets
 
 <Story of={BoardStories.ControlledSelection} />
+
+### Knowing why the layout changed
+
+`onLayoutChange` reports a `reason` alongside the layout, because a board commits for two different kinds of reason and an app usually needs to tell them apart. `'drag'`, `'resize'` and `'transfer'` are the user arranging their board. `'normalize'` is the board fitting an existing arrangement to a constraint that moved underneath it — the column count changed, or an `isAutoHeight` widget grew to fit its content.
+
+An app that persists every commit without looking writes those normalizations back as if they were edits, which marks a document dirty that nobody touched and can overwrite saved positions with ones the board derived. Persist the gestures and let a normalization pass:
+
+```jsx
+<Board
+  onLayoutChange={(layout, { reason }) => {
+    if (reason === 'normalize') return;
+    save(layout);
+  }}
+/>
+```
 
 ### Restyling the selection
 
