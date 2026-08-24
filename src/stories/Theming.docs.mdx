@@ -447,7 +447,7 @@ invalidatePaletteTokens(); // only needed once the kit is already mounted
 
 `contrastLevel` is the one field the kit writes to Glaze's global config, and it only ever does so if you asked for a level. A host that sets its own `glaze.configure({ contrastLevel })` and never passes `contrastLevel` here keeps it.
 
-**Some things are not tunable at all.** Tasty locks its configuration on the first style injection, so the `@dark` / `@hc` state definitions and the `colorSpace` (both set in `Root`) are fixed for the lifetime of the page. Only token _values_ stay mutable — which is all re-seeding needs.
+**Some things are not tunable at all.** Tasty locks its configuration on the first style injection, so the `@dark` / `@hc` state definitions (set in `Root`) are fixed for the lifetime of the page. Only token _values_ stay mutable — which is all re-seeding needs.
 
 ## See also
 

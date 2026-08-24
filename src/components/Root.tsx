@@ -39,7 +39,6 @@ setGlobalPredefinedStates({
 });
 
 configure({
-  colorSpace: 'rgb',
   units: {
     x: 'var(--gap)',
     r: 'var(--radius)',
