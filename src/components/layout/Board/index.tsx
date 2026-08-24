@@ -23,7 +23,15 @@ export type {
 } from './Board';
 export type { BoardSelectionMode } from './use-board-selection';
 export type { CubeBoardResponsiveProps } from './BoardResponsive';
-export type { CubeBoardWidgetProps, BoardResizeGripPlacement } from './Widget';
+export type {
+  CubeBoardWidgetProps,
+  BoardResizeGripPlacement,
+  BoardCornerPlacement,
+} from './Widget';
+export type {
+  BoardLayoutChangeInfo,
+  BoardLayoutChangeReason,
+} from './use-board-layout';
 export type { CubeBoardProviderProps } from './BoardProvider';
 export type { WidgetTransferInfo } from './board-context';
 export type {

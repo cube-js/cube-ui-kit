@@ -63,6 +63,7 @@ import { useBoardSelectModifierKey } from './use-board-select-modifier-key';
 import { BoardSelectionMode, useBoardSelection } from './use-board-selection';
 import { ResizePhase, WidgetHost } from './WidgetHost';
 
+import type { BoardLayoutChangeInfo } from './use-board-layout';
 import type { BoardResizeGripPlacement, CubeBoardWidgetProps } from './Widget';
 
 const BoardElement = tasty({
@@ -229,7 +230,7 @@ export interface CubeBoardProps
   layout?: LayoutItem[];
   /** Initial layout for uncontrolled usage. */
   defaultLayout?: LayoutItem[];
-  onLayoutChange?: (layout: LayoutItem[]) => void;
+  onLayoutChange?: (layout: LayoutItem[], info: BoardLayoutChangeInfo) => void;
   /** Called when a drag gesture starts. */
   onDragStart?: (info: BoardInteractionInfo) => void;
   /** Called on every step of a drag gesture. */
@@ -334,10 +335,15 @@ export interface CubeBoardProps
    */
   resizeGripPlacement?: BoardResizeGripPlacement;
   /**
-   * CSS selector for elements that must not start a pointer drag (e.g. form
-   * controls inside a widget: `"input,textarea,button,a,.no-drag"`). Does not
-   * affect keyboard moves — those only run when the widget host itself is
-   * focused. Can be overridden per widget on `Board.Widget`.
+   * CSS selector for elements that must not start a pointer drag.
+   *
+   * Defaults to {@link BOARD_SELECTION_CANCEL} — the same set `selectionCancel`
+   * uses — because a control inside a widget has to keep its own press whether
+   * or not the board happens to support selection. Pass a selector of your own
+   * to narrow or widen it, or `''` to let a drag start from anywhere.
+   *
+   * Does not affect keyboard moves — those only run when the widget host itself
+   * is focused. Can be overridden per widget on `Board.Widget`.
    */
   dragCancel?: string;
   /**
@@ -489,7 +495,7 @@ function BoardInner(
     isDroppable = true,
     resizeHandles = ['se'],
     resizeGripPlacement = 'inside',
-    dragCancel,
+    dragCancel = BOARD_SELECTION_CANCEL,
     dragHandle,
     showGridLines,
     isAligned = false,
@@ -811,7 +817,8 @@ function BoardInner(
       // ref rather than the rendered value.
       getSelectedKeys: () =>
         selectedKeysRef.current.size > 0 ? selectedKeysRef.current : null,
-      applyLayout: (next, commit) => applyLayoutEvent(next, commit),
+      applyLayout: (next, commit, reason) =>
+        applyLayoutEvent(next, commit, reason),
       setPlaceholders: (items) => setPlaceholdersEvent(items),
       isDroppable: () => liveRef.current.isDroppable,
     };
@@ -837,7 +844,7 @@ function BoardInner(
     const compacted = [
       ...liveRef.current.compactor.compact(corrected, nextCols),
     ];
-    applyLayoutEvent(compacted, true);
+    applyLayoutEvent(compacted, true, 'normalize');
   });
   // `null` until the first *measured* aligned column count is established. This
   // avoids treating the initial zero-width -> measured-width transition as a
@@ -961,7 +968,7 @@ function BoardInner(
 
       if (phase === 'end') {
         const finalLayout = [...layoutRef.current];
-        applyLayout(finalLayout, true);
+        applyLayout(finalLayout, true, 'resize');
         setPlaceholders([]);
         const resizedItem = getLayoutItem(finalLayout, id) ?? rs.item;
         onResizeStop?.({
@@ -1087,7 +1094,7 @@ function BoardInner(
       h: neededRows,
     });
     const compacted = [...liveRef.current.compactor.compact(working, pp.cols)];
-    applyLayout(compacted, true);
+    applyLayout(compacted, true, 'normalize');
   });
 
   // The dragged item captured at gesture start, so drag callbacks can report the
@@ -1604,6 +1611,11 @@ function BoardInner(
                       registration={registration}
                       isCard={widgetIsCard}
                       hoverRing={widgetHoverRing}
+                      cornerChrome={registration?.cornerChrome}
+                      cornerChromePlacement={
+                        registration?.cornerChromePlacement
+                      }
+                      mods={registration?.mods}
                       styles={widgetStyles as Styles}
                       isDraggable={widgetDraggable}
                       isResizable={widgetResizable}
