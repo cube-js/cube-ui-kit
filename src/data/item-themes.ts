@@ -1292,15 +1292,26 @@ export const CURRENT_OUTLINE_2_STYLES: Styles = {
 // `#black` over the same base instead, which darkens in both schemes and so
 // keeps the same monotonic direction the brand primaries have.
 //
-// The label CANNOT go through `color`. `#current` compiles to the literal
-// `currentcolor`, which in `fill` resolves against the element's OWN `color`,
-// so setting `color: '#current-fill'` would make the fill resolve to the
-// label color and paint a white pill with a white label. Tasty's `--current-color`
-// is no escape either: the `color` handler rewrites it on the same element.
+// The label CANNOT go through `color`. The fill is written as the literal
+// `currentcolor`, which resolves against the element's OWN `color`, so setting
+// `color: '#current-fill'` would make the fill resolve to the label color and
+// paint a white pill with a white label. Tasty's `--current-color` is no escape
+// either: the `color` handler publishes it on the same element.
 // `-webkit-text-fill-color` paints the glyphs without touching `color`, so
 // `currentcolor` keeps meaning the INHERITED color for `fill` and `border`.
 // Icons are SVG painted with `fill="currentColor"`, which that property does not
 // reach, so they take the label color through the `Icon` sub-element.
+//
+// THE FILL IS THE KEYWORD, NOT `#current`, AND HAS TO BE. Since Tasty 3.3.0 a
+// bare `#current` compiles to `var(--current-color)`, which every `color` style
+// publishes — except one that reads the inherited color itself, since that would
+// be a self-reference. The disabled `color` below is exactly such a value, so it
+// publishes nothing and a `#current` fill would keep reading the ancestor's
+// UNFADED color: the disabled chip rendered at full strength. The keyword still
+// means "this element's own color", which is what the fade trick below needs.
+// (A `#current.N` fade is unaffected — it compiles to a `color-mix()` against
+// the keyword in every property, which is why the other `current` flavours,
+// whose disabled steps are all fades, needed no change.)
 export const CURRENT_PRIMARY_STYLES: Styles = {
   ...CURRENT_FOCUS_RING,
   // Every other `primary` rims its fill with a lighter sibling
@@ -1328,15 +1339,15 @@ export const CURRENT_PRIMARY_STYLES: Styles = {
   // rule emits no `background-image` at all, so hover has nothing to animate
   // from.
   fill: {
-    '': '#current #black.0',
-    'hovered | focused': '#current #black.08',
-    pressed: '#current #black.16',
+    '': 'currentColor #black.0',
+    'hovered | focused': 'currentColor #black.08',
+    pressed: 'currentColor #black.16',
   },
   // Disabled is expressed HERE and nowhere else, and that is the whole trick.
   // `fill` resolves `currentcolor` against this element's own `color`, so fading
-  // it once fades the chip with it: the default entry still reads `#current`,
-  // which under `disabled` is already the `.4` color, and the chip lands at
-  // exactly `.4`. Writing `.4` in both would apply the fade twice and land it at
+  // it once fades the chip with it: the default entry still reads
+  // `currentcolor`, which under `disabled` is already the `.4` color, and the
+  // chip lands at exactly `.4`. Writing `.4` in both would apply the fade twice and land it at
   // `.16` — the pre-multiply trap the other `current` ramps document at length.
   //
   // It has to fade rather than stay put, because descendants read it too: an
@@ -1624,7 +1635,7 @@ export const ITEM_RESTING_COLOR_VARIANTS: Record<ItemVariant, Styles> =
       }
 
       // `current.primary` is the one variant whose `color` is not its label. It
-      // keeps `color` as the inherited fill so `#current` resolves in `fill`,
+      // keeps `color` as the inherited fill so `currentcolor` resolves in `fill`,
       // and paints the label with `-webkit-text-fill-color`. Reproducing its
       // `color` on the wrapper would hand sibling actions the CHIP color and
       // they would vanish into it, so the override names the label instead —

@@ -198,13 +198,32 @@ describe('current theme disabled fades', () => {
   it('current.primary paints label, rim and icon slots from it', () => {
     const primary = ITEM_VARIANTS['current.primary'] as Record<string, any>;
 
-    expect(primary.fill['']).toContain('#current');
+    // The keyword, not `#current` — see the test below for why.
+    expect(primary.fill['']).toBe('currentColor #black.0');
     expect(primary.border['']).toBe('#current-fill.25');
     expect(primary['-webkit-text-fill-color']['']).toBe('#current-fill');
 
     for (const slot of ['Icon', 'RightIcon', 'Prefix', 'Suffix', 'Actions']) {
       expect(primary[slot].color['']).toBe('#current-fill');
       expect(primary[slot].color.disabled).toBe('#current-fill.5');
+    }
+  });
+
+  // The chip is the element's OWN color, written as the `currentcolor` keyword.
+  // A bare `#current` compiles to `var(--current-color)` since Tasty 3.3.0, and
+  // the one `color` that would have to publish it — this flavour's disabled
+  // `#current.4` — cannot, since a value that reads the inherited color would be
+  // publishing a self-reference. The fill would then read the ancestor's UNFADED
+  // color and a disabled chip would render at full strength instead of `.4`,
+  // which is the whole "fade once, in `color`" trick this flavour is built on.
+  it('fills current.primary from the keyword, not from #current', () => {
+    const primary = ITEM_VARIANTS['current.primary'] as Record<string, any>;
+    const layers = Object.values(primary.fill as Record<string, string>);
+
+    expect(layers.length).toBeGreaterThan(0);
+
+    for (const layer of layers) {
+      expect(layer).toMatch(/^currentColor\b/);
     }
   });
 
