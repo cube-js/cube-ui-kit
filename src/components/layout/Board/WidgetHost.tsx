@@ -1117,7 +1117,11 @@ export function WidgetHost(props: WidgetHostProps) {
             height: `${floatRect!.height}px`,
             pointerEvents: 'none',
           }}
-          mods={{ ...mods, drag: true, floating: true }}
+          // `hostMods` rather than `mods`, so the app's own modifiers survive the
+          // gesture: the clone IS the widget while a pointer drag is in flight
+          // (the in-grid host is hidden), and a custom state blinking off for the
+          // duration of the drag is exactly when it would be most noticeable.
+          mods={{ ...hostMods, drag: true, floating: true }}
           styles={widgetStyles as Styles}
           aria-hidden="true"
         >

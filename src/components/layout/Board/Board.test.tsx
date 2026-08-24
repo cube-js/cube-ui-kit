@@ -3859,6 +3859,86 @@ describe('Board', () => {
       expect(screen.getByTestId('WidgetA')).toHaveAttribute('data-editing');
     });
 
+    it('accepts board-wide modifiers via widgetProps, letting a widget override', () => {
+      render(
+        <Board
+          width={1200}
+          defaultLayout={baseLayout}
+          widgetProps={{ mods: { compact: true } }}
+        >
+          <Board.Widget id="a" qa="WidgetA">
+            A
+          </Board.Widget>
+          <Board.Widget id="b" qa="WidgetB" mods={{ compact: false }}>
+            B
+          </Board.Widget>
+        </Board>,
+      );
+
+      // The board-level default reaches a widget that sets nothing...
+      expect(screen.getByTestId('WidgetA')).toHaveAttribute('data-compact');
+      // ...and a widget's own value wins over it.
+      expect(screen.getByTestId('WidgetB')).not.toHaveAttribute('data-compact');
+    });
+
+    it('accepts corner chrome via widgetProps', () => {
+      render(
+        <Board
+          width={1200}
+          defaultLayout={baseLayout}
+          widgetProps={{
+            cornerChrome: <button type="button">Shared</button>,
+            cornerChromePlacement: 'sw',
+          }}
+        >
+          <Board.Widget id="a">A</Board.Widget>
+        </Board>,
+      );
+
+      // Typed as a widget default, so it has to behave like one — being silently
+      // dropped is worse than not accepting it at all.
+      expect(
+        screen.getAllByRole('button', { name: 'Shared' }),
+      ).not.toHaveLength(0);
+    });
+
+    it('keeps app modifiers on the clone that floats during a pointer drag', () => {
+      const pointerEvent = (type: string, pageX: number, pageY: number) => {
+        const event = new PointerEvent(type, {
+          bubbles: true,
+          cancelable: true,
+          button: 0,
+          pointerId: 1,
+          pointerType: 'mouse',
+        });
+        Object.defineProperty(event, 'pageX', { get: () => pageX });
+        Object.defineProperty(event, 'pageY', { get: () => pageY });
+        return event;
+      };
+
+      render(
+        <Board width={1200} defaultLayout={baseLayout}>
+          <Board.Widget id="a" qa="WidgetA" mods={{ editing: true }}>
+            A
+          </Board.Widget>
+        </Board>,
+      );
+
+      fireEvent(
+        screen.getByTestId('WidgetA'),
+        pointerEvent('pointerdown', 0, 0),
+      );
+      fireEvent(window, pointerEvent('pointermove', 120, 0));
+
+      // While a pointer drag is in flight the clone IS the widget — the in-grid
+      // host is hidden — so a custom state must not blink off for the gesture.
+      const floating = document.querySelector('[data-floating]');
+      expect(floating).not.toBeNull();
+      expect(floating).toHaveAttribute('data-editing');
+
+      fireEvent(window, pointerEvent('pointerup', 120, 0));
+    });
+
     it('never lets an app modifier shadow one of the board own states', () => {
       render(
         <Board width={1200} defaultLayout={baseLayout} selectionMode="single">

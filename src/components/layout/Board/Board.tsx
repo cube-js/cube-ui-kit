@@ -1578,6 +1578,14 @@ function BoardInner(
                     registration?.isCard ?? widgetProps?.isCard ?? false;
                   const widgetHoverRing =
                     registration?.hoverRing ?? widgetProps?.hoverRing ?? true;
+                  // Board-level mods merge UNDER the per-widget ones, mirroring
+                  // how `widgetProps.styles` merges under a widget's own styles:
+                  // a shared default every widget carries, which any one widget
+                  // can override for itself. Only allocate when both exist.
+                  const widgetMods =
+                    registration?.mods && widgetProps?.mods
+                      ? { ...widgetProps.mods, ...registration.mods }
+                      : registration?.mods ?? widgetProps?.mods;
                   // Per-widget `isAutoHeight`/`qa` fall back to the board-level
                   // `widgetProps` defaults (mirroring the other widget props).
                   const widgetIsAutoHeight =
@@ -1611,11 +1619,14 @@ function BoardInner(
                       registration={registration}
                       isCard={widgetIsCard}
                       hoverRing={widgetHoverRing}
-                      cornerChrome={registration?.cornerChrome}
-                      cornerChromePlacement={
-                        registration?.cornerChromePlacement
+                      cornerChrome={
+                        registration?.cornerChrome ?? widgetProps?.cornerChrome
                       }
-                      mods={registration?.mods}
+                      cornerChromePlacement={
+                        registration?.cornerChromePlacement ??
+                        widgetProps?.cornerChromePlacement
+                      }
+                      mods={widgetMods}
                       styles={widgetStyles as Styles}
                       isDraggable={widgetDraggable}
                       isResizable={widgetResizable}
