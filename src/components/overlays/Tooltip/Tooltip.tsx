@@ -55,6 +55,11 @@ const TooltipElement = tasty({
     preset: 't4',
     backdropFilter: 'blur(.5x)',
     whiteSpace: 'pre-line',
+    // The tooltip is width-capped (`min(36x, …)`) with `max-width: max-content`,
+    // so a run with no spaces — a URL, a token, an identifier, an error string —
+    // stays on one line and spills straight out of the bubble. `anywhere` breaks
+    // it at the cap instead. It inherits, so tooltip children wrap too.
+    overflowWrap: 'anywhere',
     pointerEvents: {
       '': 'none',
       material: 'auto',

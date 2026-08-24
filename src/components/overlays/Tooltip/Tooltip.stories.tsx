@@ -100,6 +100,30 @@ export const Light: typeof Template = Template.bind({});
 Light.args = { isLight: true };
 Light.play = Default.play;
 
+const UnbreakableContentTemplate: Story<CubeTooltipTriggerProps> = (args) => (
+  <TooltipTrigger {...args}>
+    <Button qa="UnbreakableTrigger">Hover to show a tooltip</Button>
+    <Tooltip>
+      https://cubecloud.example.com/deployments/12345/schema/files/model/cubes/very_long_cube_name.yml
+    </Tooltip>
+  </TooltipTrigger>
+);
+
+export const UnbreakableContent: typeof UnbreakableContentTemplate =
+  UnbreakableContentTemplate.bind({});
+UnbreakableContent.args = { delay: 0 };
+UnbreakableContent.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement);
+  await timeout(250);
+
+  const button = await canvas.findByTestId('UnbreakableTrigger');
+  // this is a weird hack that makes tooltip working properly on page load
+  await userEvent.unhover(button);
+  await userEvent.hover(button);
+
+  await waitFor(() => expect(canvas.getByRole('tooltip')).toBeVisible());
+};
+
 const FunctionPatternTemplate: Story<CubeTooltipProviderProps> = (args) => (
   <Block padding="2.5x">
     <Paragraph>This should show a div with tooltip below:</Paragraph>
