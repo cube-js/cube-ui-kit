@@ -192,34 +192,20 @@ Actions automatically inherit the parent button's `type` prop and adjust their s
 
 ## Behaviour Inside Popovers
 
-Like `Button`, an `ItemButton` press inside an open popover **dismisses
-that popover** by default — popovers are transient surfaces and any action
-inside them should close them. Modals/trays/fullscreen Dialogs are not
-affected.
+Like `Button`, an `ItemButton` press inside an open popover **dismisses that popover** by default — popovers are transient surfaces and any action inside them should close them. Modals/trays/fullscreen Dialogs are not affected.
 
 ### Opt-outs
 
-- **Automatic for popover triggers** — `MenuTrigger`, `DialogTrigger
-type="popover"`, and the picker components (`FilterPicker`, `Picker`,
-  `ComboBox`, `Select`) mark their trigger ItemButtons with
-  `data-popover-trigger` so they don't dismiss the popover they themselves
-  live in.
-- **Manual via `data-popover-keep`** — add to the ItemButton (toggle) or
-  any ancestor (whole subtree):
+- **Automatic for popover triggers** — `MenuTrigger`, `DialogTrigger type="popover"`, and the picker components (`FilterPicker`, `Picker`, `ComboBox`, `Select`) mark their trigger ItemButtons with `data-popover-trigger` so they don't dismiss the popover they themselves live in.
+- **Manual via `data-popover-keep`** — add to the ItemButton (toggle) or any ancestor (whole subtree):
   ```jsx
   <ItemButton data-popover-keep onPress={() => setMode((m) => !m)}>
     Toggle Mode
   </ItemButton>
   ```
-- **Custom non-Cube triggers** — call `useDismissParentPopover()` directly
-  if you build a control on top of something other than `Button` /
-  `ItemButton`.
+- **Custom non-Cube triggers** — call `useDismissParentPopover()` directly if you build a control on top of something other than `Button` / `ItemButton`.
 
-The dismiss is dispatched via the EventBus, which defers with `setTimeout(0)`
-— so synchronous `onPress` handlers (and the React state updates they
-trigger) flush BEFORE the popover closes. This makes the "open a hoisted
-modal from a popover footer" pattern work without flicker: the modal mounts
-first, then the popover closes behind it.
+The dismiss is dispatched via the EventBus, which defers with `setTimeout(0)` — so synchronous `onPress` handlers (and the React state updates they trigger) flush BEFORE the popover closes. This makes the "open a hoisted modal from a popover footer" pattern work without flicker: the modal mounts first, then the popover closes behind it.
 
 ## Best Practices
 

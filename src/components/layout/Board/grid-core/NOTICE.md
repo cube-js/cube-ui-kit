@@ -1,23 +1,17 @@
 # grid-core
 
-The files in this directory are a vendored and trimmed copy of the
-framework-agnostic core of **react-grid-layout** (v2).
+The files in this directory are a vendored and trimmed copy of the framework-agnostic core of **react-grid-layout** (v2).
 
 - Upstream project: https://github.com/react-grid-layout/react-grid-layout
 - Upstream version: 2.2.3
 - Copied from: `src/core/*`
 
-Only the pure layout algorithms are vendored (layout manipulation, collision
-detection, compaction, grid<->pixel calculation, constraints, resize direction
-math). The React bindings (`react-draggable` / `react-resizable` based) are NOT
-copied; the UI Kit provides its own React layer built on `@tenphi/tasty` and
-React Aria.
+Only the pure layout algorithms are vendored (layout manipulation, collision detection, compaction, grid<->pixel calculation, constraints, resize direction math). The React bindings (`react-draggable` / `react-resizable` based) are NOT copied; the UI Kit provides its own React layer built on `@tenphi/tasty` and React Aria.
 
 Local modifications:
 
 - Removed `.js` import extensions (project uses `moduleResolution: bundler`).
-- Trimmed unused type exports (React-specific event/config/responsive/position
-  strategy types) that the UI Kit layer does not use.
+- Trimmed unused type exports (React-specific event/config/responsive/position strategy types) that the UI Kit layer does not use.
 
 ## License
 

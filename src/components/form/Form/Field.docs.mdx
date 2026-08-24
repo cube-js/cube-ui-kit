@@ -58,6 +58,7 @@ Supports [Base properties](/docs/getting-started-base-properties--docs)
 Customizes the field wrapper element.
 
 **Sub-elements:**
+
 - `Label` - The field label element
 - `Description` - The field description text
 - `Message` - Error or help message text
@@ -194,8 +195,7 @@ function ModernForm() {
 
 ## Creating Custom Input Components
 
-To create your own input component with built-in field support, use `useFieldProps`. It applies the provider
-and form context for you, so it is the only hook you need:
+To create your own input component with built-in field support, use `useFieldProps`. It applies the provider and form context for you, so it is the only hook you need:
 
 ```jsx
 import { forwardRef, useRef } from 'react';
@@ -318,11 +318,13 @@ valuePropsMapper: ({ value, onChange }) => ({
 ## Best Practices
 
 1. **✅ Do**: Use input components directly with field properties
+
    ```jsx
    <TextInput name="email" label="Email" isRequired />
    ```
 
 2. **❌ Don't**: Wrap input components in Field unnecessarily
+
    ```jsx
    <Field name="email" label="Email">
      <TextInput />
@@ -330,6 +332,7 @@ valuePropsMapper: ({ value, onChange }) => ({
    ```
 
 3. **✅ Do**: Use Field only for read-only content or custom components
+
    ```jsx
    <Field label="Status">
      <StatusDisplay />

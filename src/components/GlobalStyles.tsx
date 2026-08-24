@@ -129,13 +129,13 @@ const STATIC_CSS = `
   pre[class*="language-"]::-moz-selection, pre[class*="language-"] ::-moz-selection,
   code[class*="language-"]::-moz-selection, code[class*="language-"] ::-moz-selection {
     text-shadow: none;
-    background: rgb(var(--primary-color-rgb) / .2);
+    background: oklch(from var(--primary-color) l c h / .2);
   }
 
   pre[class*="language-"]::selection, pre[class*="language-"] ::selection,
   code[class*="language-"]::selection, code[class*="language-"] ::selection {
     text-shadow: none;
-    background: rgb(var(--primary-color-rgb) / .2);
+    background: oklch(from var(--primary-color) l c h / .2);
   }
 
   @media print {

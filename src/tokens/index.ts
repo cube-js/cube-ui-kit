@@ -5,7 +5,7 @@
  * All token keys use $ prefix for CSS custom properties.
  *
  * Categories:
- * - Colors: Base color palette with -color and -color-rgb variants
+ * - Colors: Base color palette, each emitted as a -color variable
  * - Typography: Font presets for headings, text, paragraphs, etc.
  * - Sizes: Component size values (XS, SM, MD, LG, XL)
  * - Spacing: Space tokens using gap multipliers
@@ -45,7 +45,7 @@ import type { SizeKey, SizeName } from './sizes';
  * - Shadow tokens ($shadow, $item-shadow, etc.)
  * - Layout tokens ($max-content-width, $topbar-height, etc.)
  * - Typography tokens ($h1-font-size, $t3-line-height, etc.)
- * - Color tokens ($purple-color, $purple-color-rgb, etc.)
+ * - Color tokens ($purple-color, $danger-color, etc.)
  */
 let tokensCache: Styles | null = null;
 let cachedVersion = -1;

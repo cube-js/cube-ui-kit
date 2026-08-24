@@ -51,6 +51,7 @@ Customizes the root wrapper element of the component.
 Customizes the switch toggle element specifically.
 
 **Sub-elements:**
+
 - `Thumb` - The movable indicator inside the switch
 
 #### fieldStyles
@@ -158,11 +159,13 @@ const [isEnabled, setIsEnabled] = useState(false);
 ## Best Practices
 
 1. **Do**: Use clear, descriptive labels that indicate what the switch controls
+
    ```jsx
    <Switch>Enable email notifications</Switch>
    ```
 
 2. **Don't**: Use switches for actions that require additional steps
+
    ```jsx
    <Switch>Delete account</Switch> {/* Use Button instead */}
    ```

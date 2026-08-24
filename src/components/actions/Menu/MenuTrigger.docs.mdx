@@ -45,10 +45,7 @@ These properties allow direct style application without using the `styles` prop:
 
 ## Focus restoration
 
-When the menu closes, focus returns to the trigger — **unless the action that
-closed it moved focus somewhere else**. An item whose action opens a panel, a
-dialog or an inline editor just focuses that surface; a single `focus()` call
-from a mount effect is enough, and the menu leaves it alone:
+When the menu closes, focus returns to the trigger — **unless the action that closed it moved focus somewhere else**. An item whose action opens a panel, a dialog or an inline editor just focuses that surface; a single `focus()` call from a mount effect is enough, and the menu leaves it alone:
 
 ```jsx
 function Panel() {
@@ -74,15 +71,9 @@ function Panel() {
 </MenuTrigger>;
 ```
 
-Focusing the surface's own container rather than its first tabbable child
-matters when a header carries a close button — `<FocusScope autoFocus>` would
-land the user on ✕, with <kbd>Enter</kbd> already meaning "close the thing that
-just opened".
+Focusing the surface's own container rather than its first tabbable child matters when a header carries a close button — `<FocusScope autoFocus>` would land the user on ✕, with <kbd>Enter</kbd> already meaning "close the thing that just opened".
 
-`shouldRestoreFocus={false}` covers the remaining case: a surface that claims
-focus *later* than the menu's restore — after an async load, an entry
-animation, or a `requestAnimationFrame`. Without it the trigger takes focus
-first and the user sees a flash.
+`shouldRestoreFocus={false}` covers the remaining case: a surface that claims focus _later_ than the menu's restore — after an async load, an entry animation, or a `requestAnimationFrame`. Without it the trigger takes focus first and the user sees a flash.
 
 ```jsx
 <MenuTrigger shouldRestoreFocus={false}>

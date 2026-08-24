@@ -87,6 +87,7 @@ The hook automatically binds `onContextMenu` events to the `targetRef` element:
 `useContextMenu` supports two positioning modes:
 
 1. **Coordinate-Based Positioning** (when event is provided):
+
    - Creates an **invisible anchor element** at click coordinates
    - Supports **collision detection** and automatic repositioning
    - **Clamps coordinates** to stay within the container bounds
@@ -126,7 +127,7 @@ function FileItem({ file }) {
   const { targetRef, rendered } = useContextMenu(
     Menu,
     { placement: 'bottom start' },     // trigger props
-    { 
+    {
       onAction: handleAction,
       children: (
         <>
@@ -166,6 +167,7 @@ function FileItem({ file }) {
 The hook calculates menu position differently based on whether an event is provided:
 
 **With Event (Coordinate-Based):**
+
 1. **Getting viewport coordinates** from the pointer event
 2. **Converting to container-relative coordinates** accounting for borders and scroll
 3. **Clamping to container bounds** to ensure the menu stays visible
@@ -173,6 +175,7 @@ The hook calculates menu position differently based on whether an event is provi
 5. **Delegating to MenuTrigger** for collision detection and final positioning
 
 **Without Event (Center-Based):**
+
 1. **Calculating element center** using `clientWidth/2` and `clientHeight/2`
 2. **Accounting for scroll offset** to position relative to content area
 3. **Clamping to container bounds** to ensure proper positioning
@@ -219,7 +222,7 @@ The `{rendered}` element contains the invisible anchor and MenuTrigger component
 
 ---
 
-*Last updated: 2025-01-16* 
+_Last updated: 2025-01-16_
 
 ### Style Properties
 

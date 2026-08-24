@@ -49,6 +49,7 @@ Supports all [Field properties](/docs/getting-started-field-properties--docs)
 Customizes the root element of the component.
 
 **Sub-elements:**
+
 - `Button` - The clickable button element for file selection
 - `Placeholder` - Text shown when no file is selected
 - `Value` - Text showing the selected file name(s)
@@ -153,6 +154,7 @@ Pass `isValid` or `isInvalid` to tint the border and show the matching state ico
 ## Best Practices
 
 1. **Do**: Provide clear file type and size requirements
+
    ```jsx
    <FileInput
      label="Upload resume"
@@ -162,6 +164,7 @@ Pass `isValid` or `isInvalid` to tint the border and show the matching state ico
    ```
 
 2. **Don't**: Use unclear or missing labels
+
    ```jsx
    <FileInput /> {/* What should be uploaded? */}
    ```

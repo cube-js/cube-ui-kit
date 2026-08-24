@@ -66,6 +66,7 @@ Supports [Base properties](/docs/getting-started-base-properties--docs)
 Customizes the root element of the tooltip.
 
 **Sub-elements:**
+
 - None
 
 ### Style Properties
@@ -153,9 +154,7 @@ Control where the tooltip appears relative to its trigger:
 
 ### Long Content
 
-The tooltip is capped at `36x` wide (or the viewport minus `4x`, whichever is smaller) and wraps
-its content to stay inside that cap. Runs with no spaces — URLs, tokens, identifiers, error strings —
-are broken mid-word rather than allowed to overflow the bubble.
+The tooltip is capped at `36x` wide (or the viewport minus `4x`, whichever is smaller) and wraps its content to stay inside that cap. Runs with no spaces — URLs, tokens, identifiers, error strings — are broken mid-word rather than allowed to overflow the bubble.
 
 ```jsx
 <TooltipProvider title="https://cubecloud.example.com/deployments/12345/schema/files/model/cubes/very_long_cube_name.yml">
@@ -273,6 +272,7 @@ Show tooltip only on focus, not on hover:
 ### Best Practices
 
 1. **Keep it brief** - Tooltips should contain concise, supplementary information
+
    ```jsx
    {/* Good */}
    <TooltipProvider title="Save changes">
@@ -286,6 +286,7 @@ Show tooltip only on focus, not on hover:
    ```
 
 2. **Don't hide critical information** - Never put essential information only in a tooltip
+
    ```jsx
    {/* Good - tooltip adds context */}
    <TooltipProvider title="Permanently delete this item">
@@ -299,6 +300,7 @@ Show tooltip only on focus, not on hover:
    ```
 
 3. **Use appropriate delays** - Default delay (250ms) works for most cases
+
    ```jsx
    {/* Good - default delay */}
    <TooltipProvider title="Info">
@@ -312,6 +314,7 @@ Show tooltip only on focus, not on hover:
    ```
 
 4. **Choose the right pattern** - Use function pattern only when necessary
+
    ```jsx
    {/* Good - standard pattern for active elements */}
    <TooltipProvider title="Click me">
@@ -334,6 +337,7 @@ Show tooltip only on focus, not on hover:
    ```
 
 5. **Provide meaningful context** - Ensure tooltip text is descriptive
+
    ```jsx
    {/* Good */}
    <TooltipProvider title="Export as CSV">

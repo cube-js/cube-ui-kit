@@ -2,7 +2,7 @@
 
 Test runner: **Vitest** (globals enabled — `vi`, `describe`, `it`, `expect` etc. are available without imports).
 
-> **Before writing a spec, check you actually want one.** A spec is a permanent artefact someone maintains and re-runs. If the question is "what does this render / what CSS does this produce / what does this token resolve to", that is a *look*, not a test — run [`pnpm probe`](probe.md) and read the answer. Writing a spec to run once and delete is the habit the probe exists to replace.
+> **Before writing a spec, check you actually want one.** A spec is a permanent artefact someone maintains and re-runs. If the question is "what does this render / what CSS does this produce / what does this token resolve to", that is a _look_, not a test — run [`pnpm probe`](probe.md) and read the answer. Writing a spec to run once and delete is the habit the probe exists to replace.
 
 ## Setup
 
@@ -13,6 +13,7 @@ Test runner: **Vitest** (globals enabled — `vi`, `describe`, `it`, `expect` et
 ## Render Functions
 
 **Choose based on component requirements:**
+
 - `render()` - Simple components (Button, Text, standalone UI elements)
 - `renderWithRoot()` - Components using overlays, popovers, portals, modals, or complex interactions (Select, ComboBox, Menu, Dialog, etc.)
 - `renderWithForm()` - Form-integrated components (returns `{ formInstance, ...renderResult }`)
@@ -22,6 +23,7 @@ Note: Root provides ModalProvider, PortalProvider, EventBusProvider, Notificatio
 ## User Interactions
 
 **Always use `userEvent` for interactions:**
+
 - `await userEvent.click(element)`
 - `await userEvent.type(input, 'text')`
 - `await userEvent.clear(input)`
@@ -29,6 +31,7 @@ Note: Root provides ModalProvider, PortalProvider, EventBusProvider, Notificatio
 - `await userEvent.tab()`
 
 **Focus management:**
+
 ```tsx
 await act(async () => {
   element.focus();
@@ -39,6 +42,7 @@ await act(async () => {
 ## Async Testing
 
 Use `waitFor()` for async state changes:
+
 ```tsx
 await userEvent.click(button);
 
@@ -52,40 +56,43 @@ Wait for removal: `await waitForElementToBeRemoved(() => queryByRole('dialog'))`
 ## Common Patterns
 
 ### Basic Rendering & User Interactions
+
 ```tsx
 it('should handle button press', async () => {
   const onPress = vi.fn();
   const { getByRole } = render(<Button onPress={onPress}>Label</Button>);
-  
+
   await userEvent.click(getByRole('button'));
-  
+
   expect(onPress).toHaveBeenCalled();
 });
 ```
 
 ### Popover/Overlay State
+
 ```tsx
 it('should open and close popover', async () => {
   const { getByRole, queryByRole } = renderWithRoot(<Select label="test">...</Select>);
-  
+
   expect(queryByRole('listbox')).not.toBeInTheDocument();
-  
+
   await userEvent.click(getByRole('button'));
   await waitFor(() => expect(queryByRole('listbox')).toBeInTheDocument());
-  
+
   await userEvent.keyboard('{Escape}');
   await waitFor(() => expect(queryByRole('listbox')).not.toBeInTheDocument());
 });
 ```
 
 ### Form Integration
+
 ```tsx
 // Modern Form integration
 it('should integrate with Form', async () => {
   const { getByRole, formInstance } = renderWithForm(
     <TextInput name="test" label="test" />
   );
-  
+
   await userEvent.type(getByRole('textbox'), 'Hello');
   expect(formInstance.getFieldValue('test')).toBe('Hello');
 });
@@ -95,46 +102,49 @@ it('should interop with legacy <Field />', async () => {
   const { getByRole, formInstance } = renderWithForm(
     <Field name="test"><Switch aria-label="test" /></Field>
   );
-  
+
   await userEvent.click(getByRole('switch'));
   expect(formInstance.getFieldValue('test')).toBe(true);
 });
 ```
 
 ### Props & State Changes (Rerender)
+
 ```tsx
 it('should respect state props', async () => {
   const { getByRole, rerender } = renderWithRoot(<Component isDisabled />);
-  
+
   expect(getByRole('button')).toBeDisabled();
-  
+
   rerender(<Component isReadOnly />);
   expect(getByRole('button')).toHaveAttribute('readonly');
 });
 ```
 
 ### Keyboard Navigation
+
 ```tsx
 it('should handle keyboard navigation', async () => {
   const { getByRole } = renderWithRoot(<ComboBox label="test">...</ComboBox>);
   const input = getByRole('combobox');
-  
+
   await act(async () => {
     input.focus();
     await userEvent.keyboard('{ArrowDown}');
   });
-  
+
   await waitFor(() => expect(input).toHaveAttribute('aria-expanded', 'true'));
 });
 ```
 
 ### Filtering/Search
+
 ```tsx
 it('should filter options', async () => {
   const { getByRole, getAllByRole } = renderWithRoot(<ComboBox label="test">{items}</ComboBox>);
-  
+
   await userEvent.type(getByRole('combobox'), 'red');
-  
+
   await waitFor(() => {
     expect(getAllByRole('option')).toHaveLength(2);
   });
@@ -142,21 +152,23 @@ it('should filter options', async () => {
 ```
 
 ### Validation
+
 ```tsx
 it('should display validation errors', async () => {
   const { getByRole, getByText } = renderWithForm(
     <TextInput name="test" label="test" rules={[{ required: true, message: 'Required' }]} />
   );
-  
+
   await userEvent.type(getByRole('textbox'), 'a');
   await userEvent.clear(getByRole('textbox'));
   await userEvent.tab();
-  
+
   await waitFor(() => expect(getByText('Required')).toBeInTheDocument());
 });
 ```
 
 ### Parameterized Tests
+
 ```tsx
 it.each([
   ['aria-label', { 'aria-label': 'test' }],
@@ -187,6 +199,7 @@ Use `query*` when checking non-existence, `getAll*` for multiple elements.
 ## Best Practices
 
 ### Do
+
 - ✅ Test user-facing behavior, not implementation
 - ✅ Use semantic queries (`getByRole`)
 - ✅ Wait for async changes with `waitFor()`
@@ -195,6 +208,7 @@ Use `query*` when checking non-existence, `getAll*` for multiple elements.
 - ✅ Use descriptive test names
 
 ### Don't
+
 - ❌ Don't test implementation details
 - ❌ Don't overuse `act()` (userEvent handles it)
 - ❌ Don't query by class names when semantic queries work

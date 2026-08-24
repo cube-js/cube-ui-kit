@@ -6,14 +6,9 @@ import * as ColorSwatchGroupStories from './ColorSwatchGroup.stories.tsx';
 
 # ColorSwatchGroup
 
-A grid of color swatches, one of which can be selected. It is the palette half
-of choosing a color, where [ColorPicker](/docs/forms-colorpicker--docs) is the
-freeform half — and the two compose: pass `swatches` to a `ColorPicker` and the
-palette appears under the editor.
+A grid of color swatches, one of which can be selected. It is the palette half of choosing a color, where [ColorPicker](/docs/forms-colorpicker--docs) is the freeform half — and the two compose: pass `swatches` to a `ColorPicker` and the palette appears under the editor.
 
-Under the hood it is a radio group, so one tab stop and arrow keys move between
-swatches. The API is shaped after `Picker` rather than `RadioGroup`: colors go in
-as data, not as children.
+Under the hood it is a radio group, so one tab stop and arrow keys move between swatches. The API is shaped after `Picker` rather than `RadioGroup`: colors go in as data, not as children.
 
 ## When to Use
 
@@ -66,43 +61,35 @@ These properties allow direct style application without using the `styles` prop:
 
 ### Style Props on the group
 
-`ColorSwatchGroup` and `ColorPicker` both take the outer and block style props,
-so `radius`, `border`, `padding` and `shadow` work directly on them.
+`ColorSwatchGroup` and `ColorPicker` both take the outer and block style props, so `radius`, `border`, `padding` and `shadow` work directly on them.
 
 ### Modifiers
 
 The `mods` property accepts the following modifiers you can override:
 
-| Modifier   | Type      | Description                        |
-| ---------- | --------- | ---------------------------------- |
-| `selected` | `boolean` | The swatch is the selected color   |
-| `empty`    | `boolean` | The swatch has no color to show    |
-| `disabled` | `boolean` | The group is disabled              |
+| Modifier   | Type      | Description                      |
+| ---------- | --------- | -------------------------------- |
+| `selected` | `boolean` | The swatch is the selected color |
+| `empty`    | `boolean` | The swatch has no color to show  |
+| `disabled` | `boolean` | The group is disabled            |
 
 ## ColorSwatch
 
-The square itself is exported, for the times you need to show a color without a
-control around it — a legend, a table cell, a summary line. It takes direct
-style props, so its shape and size are yours:
+The square itself is exported, for the times you need to show a color without a control around it — a legend, a table cell, a summary line. It takes direct style props, so its shape and size are yours:
 
 ```jsx
 <ColorSwatch color="#7a4dbf" radius="round" width="4x" height="4x" />
 ```
 
-It is decorative on its own: pair it with the value as text, or with something
-that names it.
+It is decorative on its own: pair it with the value as text, or with something that names it.
 
 ## Swatches must be unique
 
-Equivalent colors are collapsed into one swatch, because two entries for the
-same color make selection ambiguous — there would be no way to say which one is
-selected. Matching is done on the canonical hex, so `#ff0000`, `rgb(255 0 0)`
-and `hsl(0 100% 50%)` are one swatch, not three.
+Equivalent colors are collapsed into one swatch, because two entries for the same color make selection ambiguous — there would be no way to say which one is selected. Matching is done on the canonical hex, so `#ff0000`, `rgb(255 0 0)` and `hsl(0 100% 50%)` are one swatch, not three.
 
 <Story of={ColorSwatchGroupStories.Deduplicated} />
 
-The same matching decides which swatch a value selects, so `value` need not be
-written in the same notation as the swatch it refers to.
+The same matching decides which swatch a value selects, so `value` need not be written in the same notation as the swatch it refers to.
 
 ## Examples
 
@@ -119,10 +106,7 @@ written in the same notation as the swatch it refers to.
 
 ### Wrapping onto rows
 
-By default the swatches wrap to fill whatever width they are given: a single row
-where there is room, more rows where there is not. `columns` pins them to a
-fixed grid instead, sized to the swatches rather than stretched across the
-container.
+By default the swatches wrap to fill whatever width they are given: a single row where there is room, more rows where there is not. `columns` pins them to a fixed grid instead, sized to the swatches rather than stretched across the container.
 
 <Story of={ColorSwatchGroupStories.Columns} />
 
@@ -132,8 +116,7 @@ container.
 
 ### Naming the swatches
 
-A swatch announces its color by default, which is rarely the most useful thing
-to hear. Give the colors names when they have them.
+A swatch announces its color by default, which is rarely the most useful thing to hear. Give the colors names when they have them.
 
 <Story of={ColorSwatchGroupStories.Named} />
 
@@ -154,8 +137,7 @@ to hear. Give the colors names when they have them.
 <ColorSwatchGroup colors={palette} allowCustom />
 ```
 
-The trailing picker shows the current color whenever that color is not one of
-the swatches, so a custom choice stays visible.
+The trailing picker shows the current color whenever that color is not one of the swatches, so a custom choice stays visible.
 
 ### Inside a ColorPicker
 
@@ -165,10 +147,7 @@ the swatches, so a custom choice stays visible.
 <ColorPicker label="Brand color" swatches={palette} swatchColumns={4} />
 ```
 
-`allowCustom` is ignored there, and deliberately so: the escape hatch is itself
-a `ColorPicker`, so offering it inside one would nest popovers without end. The
-group reads a context the popover provides, which means the recursion cannot be
-written even by hand.
+`allowCustom` is ignored there, and deliberately so: the escape hatch is itself a `ColorPicker`, so offering it inside one would nest popovers without end. The group reads a context the popover provides, which means the recursion cannot be written even by hand.
 
 ## Accessibility
 
@@ -202,14 +181,11 @@ written even by hand.
    <ColorSwatchGroup colors={['#ff0000', 'rgb(255 0 0)']} />
    ```
 
-3. **Do**: reach for `allowCustom` only where a color outside the palette is
-   genuinely acceptable. A fixed set is the point of this component.
+3. **Do**: reach for `allowCustom` only where a color outside the palette is genuinely acceptable. A fixed set is the point of this component.
 
 ## Integration with Forms
 
-This component supports all
-[Field properties](/docs/getting-started-field-properties--docs) when used
-within a Form. The field value is the color string.
+This component supports all [Field properties](/docs/getting-started-field-properties--docs) when used within a Form. The field value is the color string.
 
 ## Suggested Improvements
 

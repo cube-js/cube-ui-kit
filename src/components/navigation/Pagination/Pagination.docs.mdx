@@ -7,72 +7,41 @@ import * as PaginationStories from './Pagination.stories';
 
 # Pagination
 
-Pagination is the control for moving through a paged collection. It renders a
-bounded run of page buttons, optional first/last jumps, an optional page-size
-selector, and an optional item-range summary.
+Pagination is the control for moving through a paged collection. It renders a bounded run of page buttons, optional first/last jumps, an optional page-size selector, and an optional item-range summary.
 
-It is a pure control: it owns no data. Client-side slicing lives in the
-companion `usePagination` hook, and `ItemTable` composes the two.
+It is a pure control: it owns no data. Client-side slicing lives in the companion `usePagination` hook, and `ItemTable` composes the two.
 
 ## When to Use
 
-- Paging through a list, table, or grid where the user needs to jump around
-  rather than scroll.
-- Cursor pagination with an unknown total — supply `hasNextPage` and omit
-  `total`/`totalPages`, and the control degrades to prev/next.
+- Paging through a list, table, or grid where the user needs to jump around rather than scroll.
+- Cursor pagination with an unknown total — supply `hasNextPage` and omit `total`/`totalPages`, and the control degrades to prev/next.
 - Anywhere you need a page-size selector wired to the same state.
 
-Prefer infinite scroll when the collection is a feed the user skims, and
-pagination when they need stable, addressable positions.
+Prefer infinite scroll when the collection is a feed the user skims, and pagination when they need stable, addressable positions.
 
 ## Component
 
 ### Properties
 
-- **`page`** `number` — Controlled current page, 1-based. Pair with
-  `onPageChange`.
-- **`defaultPage`** `number` (default: `1`) — Initial page for uncontrolled
-  usage.
-- **`onPageChange`** `(page: number) => void` — Never fires with a page outside
-  `1…totalPages` when the total is known.
-- **`total`** `number` — Total items across all pages. Preferred over
-  `totalPages`; it also powers the range summary and the `select` type's range
-  labels.
-- **`totalPages`** `number` — Total pages. Only needed when the item count is
-  genuinely unavailable. Wins over the value derived from `total` + `pageSize`.
+- **`page`** `number` — Controlled current page, 1-based. Pair with `onPageChange`.
+- **`defaultPage`** `number` (default: `1`) — Initial page for uncontrolled usage.
+- **`onPageChange`** `(page: number) => void` — Never fires with a page outside `1…totalPages` when the total is known.
+- **`total`** `number` — Total items across all pages. Preferred over `totalPages`; it also powers the range summary and the `select` type's range labels.
+- **`totalPages`** `number` — Total pages. Only needed when the item count is genuinely unavailable. Wins over the value derived from `total` + `pageSize`.
 - **`pageSize`** `number` — Controlled page size.
-- **`defaultPageSize`** `number` (default: `50`) — Initial page size for
-  uncontrolled usage.
-- **`onPageSizeChange`** `(pageSize: number) => void` — Changing the size also
-  resets to page 1, because the old page index no longer refers to the same
-  items.
-- **`pageSizeOptions`** `number[]` — Supplying this **and** `onPageSizeChange`
-  renders the size selector.
-- **`type`** `'numbers' | 'select' | 'compact'` (default: `'numbers'`) — How the
-  page control is rendered. `numbers` is the default because it is the only mode
-  whose rendered element count is independent of the page count; `select`
-  materializes one entry per page, so above a safety cap the component falls
-  back to `compact` on its own.
-- **`siblingCount`** `number` (default: `1`) — Page buttons either side of the
-  current page.
-- **`boundaryCount`** `number` (default: `1`) — Page buttons pinned at each end.
-  Together with `siblingCount` this bounds the rendered count at
-  `boundaryCount * 2 + siblingCount * 2 + 3`.
+- **`defaultPageSize`** `number` (default: `50`) — Initial page size for uncontrolled usage.
+- **`onPageSizeChange`** `(pageSize: number) => void` — Changing the size also resets to page 1, because the old page index no longer refers to the same items.
+- **`pageSizeOptions`** `number[]` — Supplying this **and** `onPageSizeChange` renders the size selector.
+- **`type`** `'numbers' | 'select' | 'compact'` (default: `'numbers'`) — How the page control is rendered. `numbers` is the default because it is the only mode whose rendered element count is independent of the page count; `select` materializes one entry per page, so above a safety cap the component falls back to `compact` on its own.
+- **`siblingCount`** `number` (default: `1`) — Page buttons either side of the current page.
+- **`boundaryCount`** `number` (default: `1`) — Page buttons pinned at each end. Together with `siblingCount` this bounds the rendered count at `boundaryCount * 2 + siblingCount * 2 + 3`.
 - **`size`** `'small' | 'medium'` (default: `'small'`) — Control size.
 - **`isDisabled`** `boolean` — Disable every control.
-- **`hasNextPage`** `boolean` — Keeps "next" enabled when the total is unknown.
-  Ignored once `total` or `totalPages` is supplied — a known total is always
-  authoritative.
-- **`isCompact`** `boolean` (default: `false`) — Hide the first/last jump
-  buttons.
-- **`summary`** `boolean | ((info: CubeTablePageInfo) => ReactNode)` (default:
-  `false`) — `true` renders the localized `1–50 of 1,204`, with numbers
-  formatted for the active locale. Pass a function for full control.
-- **`labelFormatter`** `(info: CubeTablePageInfo) => ReactNode` — Labels the
-  entries of `type="select"`. Receives the page info with `page` set to the
-  entry being labelled.
-- **`ariaLabel`** `string` — Labels the `<nav>` landmark. Defaults to the
-  localized "Pagination".
+- **`hasNextPage`** `boolean` — Keeps "next" enabled when the total is unknown. Ignored once `total` or `totalPages` is supplied — a known total is always authoritative.
+- **`isCompact`** `boolean` (default: `false`) — Hide the first/last jump buttons.
+- **`summary`** `boolean | ((info: CubeTablePageInfo) => ReactNode)` (default: `false`) — `true` renders the localized `1–50 of 1,204`, with numbers formatted for the active locale. Pass a function for full control.
+- **`labelFormatter`** `(info: CubeTablePageInfo) => ReactNode` — Labels the entries of `type="select"`. Receives the page info with `page` set to the entry being labelled.
+- **`ariaLabel`** `string` — Labels the `<nav>` landmark. Defaults to the localized "Pagination".
 
 #### `CubeTablePageInfo`
 
@@ -119,9 +88,9 @@ These properties allow direct style application without using the `styles` prop:
 
 ### Modifiers
 
-| Modifier | Type | Description |
-| -------- | ---- | ----------- |
-| `size` | `'small' \| 'medium'` | Control size |
+| Modifier | Type                  | Description  |
+| -------- | --------------------- | ------------ |
+| `size`   | `'small' \| 'medium'` | Control size |
 
 ## Examples
 
@@ -225,34 +194,26 @@ Every control is a real `<button>`, so there is nothing bespoke to learn.
 
 ### Screen Reader Support
 
-- The root is a `<nav>` landmark labelled "Pagination" (override with
-  `ariaLabel`).
+- The root is a `<nav>` landmark labelled "Pagination" (override with `ariaLabel`).
 - The current page button carries `aria-current="page"`.
-- Every button has an explicit `aria-label` — "Page 3", "Next page", and so on
-  — so an icon-only button is never announced as unlabelled.
+- Every button has an explicit `aria-label` — "Page 3", "Next page", and so on — so an icon-only button is never announced as unlabelled.
 - The `…` gap is `aria-hidden`; it conveys nothing a screen reader user needs.
 
 ### ARIA Properties
 
-| Property | Applied to |
-| -------- | ---------- |
-| `aria-label` | The `<nav>` and every button |
-| `aria-current="page"` | The current page button |
-| `aria-hidden="true"` | The `…` gap |
+| Property              | Applied to                   |
+| --------------------- | ---------------------------- |
+| `aria-label`          | The `<nav>` and every button |
+| `aria-current="page"` | The current page button      |
+| `aria-hidden="true"`  | The `…` gap                  |
 
 ## Best Practices
 
-- Do: pass `total` rather than `totalPages` when you know the item count — the
-  summary and range labels both need it.
-- Do: use `type="numbers"` (the default) for anything that can grow. It is the
-  only mode whose cost does not scale with the page count.
-- Do: reset to page 1 whenever the underlying query changes (a new search term,
-  a new filter). A stale page index against a smaller result set shows an empty
-  page.
-- Don't: render `type="select"` over a large page count. It builds one
-  collection item per page.
-- Don't: pass both `hasNextPage` and a known total and expect the former to win
-  — it doesn't.
+- Do: pass `total` rather than `totalPages` when you know the item count — the summary and range labels both need it.
+- Do: use `type="numbers"` (the default) for anything that can grow. It is the only mode whose cost does not scale with the page count.
+- Do: reset to page 1 whenever the underlying query changes (a new search term, a new filter). A stale page index against a smaller result set shows an empty page.
+- Don't: render `type="select"` over a large page count. It builds one collection item per page.
+- Don't: pass both `hasNextPage` and a known total and expect the former to win — it doesn't.
 
 ## Suggested Improvements
 

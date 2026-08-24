@@ -9,7 +9,7 @@
 
 ## Documentation Structure
 
-```mdx
+````mdx
 import { Meta, Canvas, Story } from '@storybook/addon-docs/blocks';
 import { ComponentName } from './ComponentName';
 import * as ComponentStories from './ComponentName.stories';
@@ -104,7 +104,7 @@ The `mods` property accepts the following modifiers you can override:
 
 ```jsx
 <ComponentName arg="something" />
-```
+````
 
 ### [Additional Examples as needed]
 
@@ -132,11 +132,13 @@ The `mods` property accepts the following modifiers you can override:
 ## Best Practices
 
 1. **Do**: Best practice example
+
    ```jsx
    <ComponentName label="Clear Label">Content</ComponentName>
    ```
 
 2. **Don't**: Anti-pattern example
+
    ```jsx
    <ComponentName>Unclear usage</ComponentName>
    ```
@@ -146,8 +148,7 @@ The `mods` property accepts the following modifiers you can override:
 
 ## Integration with Forms
 
-[For input components only]
-This component supports all [Field properties](/field-properties.md) when used within a Form.
+[For input components only] This component supports all [Field properties](/field-properties.md) when used within a Form.
 
 ## Suggested Improvements
 
@@ -159,6 +160,7 @@ This component supports all [Field properties](/field-properties.md) when used w
 
 - [RelatedComponent1](/components/RelatedComponent1) - When to use instead
 - [RelatedComponent2](/components/RelatedComponent2) - Complementary component
+
 ```
 
 ## Guidelines
@@ -233,7 +235,10 @@ Don't include ALL stories in the documentation — only those that make sense to
 Use story links in the following format:
 
 ```
+
 - [FilterListBox](/docs/forms-filterlistbox--docs)
+
 ```
 
 Where `/docs/` is the standard prefix, `forms` is the section, `filterlistbox` is the lower-cased component name, and `--docs` is the standard suffix.
+```

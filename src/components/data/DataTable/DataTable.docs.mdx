@@ -8,19 +8,15 @@ import * as DataTableStories from './DataTable.stories';
 
 A grid for query results.
 
-The same engine as [ItemTable](/docs/data-itemtable--docs) — one renderer, one
-column layout, one value pipeline — with the defaults an analytical grid wants
-rather than a list's.
+The same engine as [ItemTable](/docs/data-itemtable--docs) — one renderer, one column layout, one value pipeline — with the defaults an analytical grid wants rather than a list's.
 
 ## When to Use
 
-Use `DataTable` for the output of a query: rows the user reads as a block,
-scans down a column of, and sorts by more than one thing at a time.
+Use `DataTable` for the output of a query: rows the user reads as a block, scans down a column of, and sorts by more than one thing at a time.
 
-Use `ItemTable` for a list of things the user acts on — deployments, members,
-API keys. That is the one with selection, bulk actions, row menus and row links.
+Use `ItemTable` for a list of things the user acts on — deployments, members, API keys. That is the one with selection, bulk actions, row menus and row links.
 
-| | `ItemTable` | `DataTable` |
+|  | `ItemTable` | `DataTable` |
 | --- | --- | --- |
 | Typography | `t3` | `t4` |
 | Density | `medium` | `small` |
@@ -35,10 +31,7 @@ API keys. That is the one with selection, bulk actions, row menus and row links.
 
 ## It knows nothing about Cube
 
-Measures, dimensions, pivots, drill-downs and calculated fields never reach this
-component as query concepts. They arrive as leaf columns, presentational column
-groups, `render` output and `column.header.menu` content — which is what keeps
-Cloud's column-header menu, and everything it knows about the query, in Cloud.
+Measures, dimensions, pivots, drill-downs and calculated fields never reach this component as query concepts. They arrive as leaf columns, presentational column groups, `render` output and `column.header.menu` content — which is what keeps Cloud's column-header menu, and everything it knows about the query, in Cloud.
 
 <Canvas of={DataTableStories.Default} />
 
@@ -49,19 +42,14 @@ Cloud's column-header menu, and everything it knows about the query, in Cloud.
 #### Data
 
 - **`data`** `readonly T[]` — The rows.
-- **`columns`** `CubeDataTableColumnDefinition<T>[]` — Leaf columns use the same
-  shape as `ItemTable`'s, plus `dataType`; group nodes contain nested `children`.
+- **`columns`** `CubeDataTableColumnDefinition<T>[]` — Leaf columns use the same shape as `ItemTable`'s, plus `dataType`; group nodes contain nested `children`.
 - **`rowKey`** `string` (default: `'id'`) — Property to read the row identity from.
 - **`getRowKey`** `(row: T, index: number) => Key` — Wins over `rowKey`.
-- **`getRowChildren`** `(row: T) => readonly T[] | undefined` — Enables nested
-  treegrid rows; `data` contains roots.
-- **`treeColumnKey`** `string` — Indented disclosure column. Defaults to the
-  first visible data column.
+- **`getRowChildren`** `(row: T) => readonly T[] | undefined` — Enables nested treegrid rows; `data` contains roots.
+- **`treeColumnKey`** `string` — Indented disclosure column. Defaults to the first visible data column.
 - **`expandedKeys`** `Key[]` — Controlled expansion.
-- **`defaultExpandedKeys`** `Key[]` — Initial expansion. Nothing is expanded by
-  default.
-- **`onExpand`** `(keys, info) => void` — Reports the resulting keys and toggled
-  row metadata.
+- **`defaultExpandedKeys`** `Key[]` — Initial expansion. Nothing is expanded by default.
+- **`onExpand`** `(keys, info) => void` — Reports the resulting keys and toggled row metadata.
 - **`pinnedTopRows`** `readonly T[]` — Rows stuck to the top of the scroller. Ordinary rows as far as the columns are concerned.
 - **`pinnedBottomRows`** `readonly T[]` — The same, at the bottom. This is where totals go.
 
@@ -85,9 +73,7 @@ Cloud's column-header menu, and everything it knows about the query, in Cloud.
 - **`isStriped`** `boolean` (default: `true`) — Banding is what makes a wide row readable across.
 - **`isHeaderHidden`** `boolean`
 - **`isHeaderSticky`** `boolean` (default: `true`)
-- **`isAutoHeight`** `boolean` (default: `false`) — Shrink-wraps the frame to
-  the rendered rows instead of filling its flex pane. It takes precedence over
-  root height/flex sizing and disables virtualization.
+- **`isAutoHeight`** `boolean` (default: `false`) — Shrink-wraps the frame to the rendered rows instead of filling its flex pane. It takes precedence over root height/flex sizing and disables virtualization.
 - **`isRowMoveAnimated`** `boolean` (default: `true`) — Slide rows to their new positions when the order changes, instead of teleporting them. Respects `prefers-reduced-motion`.
 - **`showRowNumbers`** `boolean` (default: `false`) — A continuous count down the side, which stays continuous across pages.
 
@@ -136,8 +122,7 @@ Cloud's column-header menu, and everything it knows about the query, in Cloud.
 - **`defaultColumnOrder`** `string[]`
 - **`onColumnOrderChange`** `(order: string[]) => void` — The full key list, including hidden and pinned columns.
 
-Per column, on `CubeDataTableColumn`: `isReorderable`, `color` and `colorScope` —
-see [Column Colors](#column-colors) for the last two.
+Per column, on `CubeDataTableColumn`: `isReorderable`, `color` and `colorScope` — see [Column Colors](#column-colors) for the last two.
 
 #### Column menu
 
@@ -163,13 +148,9 @@ see [Column Colors](#column-colors) for the last two.
 
 #### `dataType`
 
-Presentational, not a Cube type. `number` right-aligns the column and switches
-it to tabular figures, so digits line up down the column and a total lines up
-with the rows above it.
+Presentational, not a Cube type. `number` right-aligns the column and switches it to tabular figures, so digits line up down the column and a total lines up with the rows above it.
 
-Loading, empty and error states, pagination, footer slots, virtualization,
-column resize and persistence all behave exactly as they do in `ItemTable` —
-they come from the shared renderer.
+Loading, empty and error states, pagination, footer slots, virtualization, column resize and persistence all behave exactly as they do in `ItemTable` — they come from the shared renderer.
 
 ### Base Properties
 
@@ -179,20 +160,13 @@ Supports [Base Properties](/docs/tasty-base-properties--docs).
 
 #### styles
 
-Customizes the root frame. Every internal part of the grid is a **sub-element**
-reachable from this one prop — the same contract, and the same sub-element
-names, as [ItemTable](/docs/data-itemtable--docs#styling-properties).
+Customizes the root frame. Every internal part of the grid is a **sub-element** reachable from this one prop — the same contract, and the same sub-element names, as [ItemTable](/docs/data-itemtable--docs#styling-properties).
 
-`DataTable` adds `StateCell`, the full-span cell that carries the empty,
-no-results and error content, and `HeaderGroupCell`, a spanning cell in a
-multi-row header. `StateCell` is deliberately not a `Cell`, so it takes none of
-the row's banding or hover paint.
+`DataTable` adds `StateCell`, the full-span cell that carries the empty, no-results and error content, and `HeaderGroupCell`, a spanning cell in a multi-row header. `StateCell` is deliberately not a `Cell`, so it takes none of the row's banding or hover paint.
 
 #### Targeted slots
 
-Each merges into the corresponding sub-element at the same selector and
-specificity, so an override lands later in source order and wins without
-`!important`.
+Each merges into the corresponding sub-element at the same selector and specificity, so an override lands later in source order and wins without `!important`.
 
 - **`headerStyles`** `Styles` — The column header row.
 - **`headerCellStyles`** `Styles`
@@ -212,28 +186,23 @@ These properties allow direct style application without using the `styles` prop:
 - **Color:** `color`, `fill`, `fade`, `image`
 - **Flow:** `flow`, `gap`, `columnGap`, `rowGap`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`
 
-`height` is the important one, and more so here than for a list: a result grid
-is almost always taller than the screen, so bounding it is what turns the
-body into a scroller, pins the header, and lets virtualization engage at all.
+`height` is the important one, and more so here than for a list: a result grid is almost always taller than the screen, so bounding it is what turns the body into a scroller, pins the header, and lets virtualization engage at all.
 
 ### Modifiers
 
 | Modifier | Type | Description |
-| -------- | ---- | ----------- |
+| --- | --- | --- |
 | `size` | `SizeName` | Row height scale |
 | `shape` | `'plain' \| 'card'` | Frame treatment |
 | `sticky-header` | `boolean` | Header is pinned |
 | `column-dividers` | `boolean` | Vertical rules between columns — always on here |
 | `range-dragging` | `boolean` | A cell-range drag is in progress |
 
-Cell-level, in addition to `ItemTable`'s: `cell-selected`, `last-column`,
-`pinned`.
+Cell-level, in addition to `ItemTable`'s: `cell-selected`, `last-column`, `pinned`.
 
 ## Pivoted Results and Column Groups
 
-Pass group nodes in `columns` to render real multi-row headers. Groups may nest
-to any depth; their `children` eventually resolve to ordinary leaf columns, and
-only those leaves participate in sorting, resizing, ranges and copying.
+Pass group nodes in `columns` to render real multi-row headers. Groups may nest to any depth; their `children` eventually resolve to ordinary leaf columns, and only those leaves participate in sorting, resizing, ranges and copying.
 
 ```jsx
 const columns = [
@@ -259,10 +228,7 @@ const columns = [
 <DataTable data={pivotRows} columns={columns} isAutoHeight />;
 ```
 
-The data/query layer still owns the pivot calculation. DataTable only renders
-the already-shaped rows and generated column hierarchy. Leaf resizing and
-sorting remain available; drag column reordering is ignored while groups are
-present because moving one leaf cannot preserve an arbitrary hierarchy.
+The data/query layer still owns the pivot calculation. DataTable only renders the already-shaped rows and generated column hierarchy. Leaf resizing and sorting remain available; drag column reordering is ignored while groups are present because moving one leaf cannot preserve an arbitrary hierarchy.
 
 <Canvas of={DataTableStories.Pivot} />
 
@@ -280,22 +246,11 @@ Tree mode uses the same nested-data contract as `ItemTable`:
 />
 ```
 
-Multi-sort is recursive: every sibling collection is sorted by the same
-precedence. Client pagination slices roots and keeps complete subtrees together;
-server pages are rendered exactly as supplied and `total` counts roots. Pinned
-rows remain ordinary non-hierarchical totals.
+Multi-sort is recursive: every sibling collection is sorted by the same precedence. Client pagination slices roots and keeps complete subtrees together; server pages are rendered exactly as supplied and `total` counts roots. Pinned rows remain ordinary non-hierarchical totals.
 
-Only visible descendants participate in cell ranges and virtualization.
-Collapsing a range endpoint makes the effective range inactive; a controlled or
-uncontrolled range is restored when that endpoint becomes visible again. Client
-row numbers remain continuous across root pages, while server tree pages restart
-at 1 because preceding descendant counts are unknown.
+Only visible descendants participate in cell ranges and virtualization. Collapsing a range endpoint makes the effective range inactive; a controlled or uncontrolled range is restored when that endpoint becomes visible again. Client row numbers remain continuous across root pages, while server tree pages restart at 1 because preceding descendant counts are unknown.
 
-The native table exposes `role="treegrid"`, `aria-level`, `aria-expanded`,
-`aria-posinset` and `aria-setsize`. Right/Left expand, collapse or move to the
-parent; Up/Down traverse visible rows, and typeahead reads `treeColumnKey`.
-Customize the hierarchy chrome with `styles.TreeContent`, `styles.TreeToggle`
-and `styles.TreeValue`.
+The native table exposes `role="treegrid"`, `aria-level`, `aria-expanded`, `aria-posinset` and `aria-setsize`. Right/Left expand, collapse or move to the parent; Up/Down traverse visible rows, and typeahead reads `treeColumnKey`. Customize the hierarchy chrome with `styles.TreeContent`, `styles.TreeToggle` and `styles.TreeValue`.
 
 <Canvas of={DataTableStories.TreeRows} />
 
@@ -303,9 +258,7 @@ and `styles.TreeValue`.
 
 ### Multi-Column Sorting
 
-The main behavioural difference from `ItemTable`. Clicking a second header adds
-it to the sort rather than replacing it, and each sorted column shows its place
-in the precedence.
+The main behavioural difference from `ItemTable`. Clicking a second header adds it to the sort rather than replacing it, and each sorted column shows its place in the precedence.
 
 ```jsx
 <DataTable
@@ -316,12 +269,9 @@ in the precedence.
 />
 ```
 
-A newly sorted column is **appended**, so it is the least significant — the
-ordering the user already established keeps leading. Cycling a column through
-`ascending → descending → unsorted` leaves the others untouched.
+A newly sorted column is **appended**, so it is the least significant — the ordering the user already established keeps leading. Cycling a column through `ascending → descending → unsorted` leaves the others untouched.
 
-`sortMode="server"` reports the array and never reorders, which is the shape
-Cloud's reports already send to the query.
+`sortMode="server"` reports the array and never reorders, which is the shape Cloud's reports already send to the query.
 
 <Canvas of={DataTableStories.MultiColumnSort} />
 
@@ -329,9 +279,7 @@ Cloud's reports already send to the query.
 
 <Canvas of={DataTableStories.PinnedTotals} />
 
-Pinned rows stick to the edges of the scroller while the rest scrolls under
-them. They are excluded from sorting and paging — a total is not a row
-competing for a position.
+Pinned rows stick to the edges of the scroller while the rest scrolls under them. They are excluded from sorting and paging — a total is not a row competing for a position.
 
 ### Row Numbers
 
@@ -339,13 +287,9 @@ competing for a position.
 
 ### The Whole Result
 
-Above `virtualizeThreshold` a bounded grid virtualizes on its own, so
-`paginationMode="off"` is a reasonable default for a result the user scrolls.
+Above `virtualizeThreshold` a bounded grid virtualizes on its own, so `paginationMode="off"` is a reasonable default for a result the user scrolls.
 
-For a compact result that should participate in normal page flow, set
-`isAutoHeight`. The frame then ends at the last rendered row rather than filling
-its flex pane. This renders the complete result and disables virtualization, so
-keep larger results bounded instead.
+For a compact result that should participate in normal page flow, set `isAutoHeight`. The frame then ends at the last rendered row rather than filling its flex pane. This renders the complete result and disables virtualization, so keep larger results bounded instead.
 
 ```jsx
 <DataTable
@@ -360,39 +304,23 @@ keep larger results bounded instead.
 
 ### Sorting Moves Rows
 
-When a sort reorders rows, they slide to their new positions over 120ms rather
-than jumping. The point is to be able to follow one row to where it went — a
-table that teleports gives the eye nothing to track.
+When a sort reorders rows, they slide to their new positions over 120ms rather than jumping. The point is to be able to follow one row to where it went — a table that teleports gives the eye nothing to track.
 
-Only rows that were already on screen slide: a row arriving from outside the
-window, or from another page, has no position to come from. Scrolling is never
-mistaken for movement, and `prefers-reduced-motion` turns it off. Set
-`isRowMoveAnimated={false}` to opt out.
+Only rows that were already on screen slide: a row arriving from outside the window, or from another page, has no position to come from. Scrolling is never mistaken for movement, and `prefers-reduced-motion` turns it off. Set `isRowMoveAnimated={false}` to opt out.
 
 ### Cell Selection
 
-A list is acted on by row; a result grid is read by cell. Click one, shift-click
-or drag to grow a rectangle, and `⌘/Ctrl+C` copies the block as tab-separated
-values — the format Excel and Sheets both paste as a grid rather than as one run
-of text. `Escape` clears it.
+A list is acted on by row; a result grid is read by cell. Click one, shift-click or drag to grow a rectangle, and `⌘/Ctrl+C` copies the block as tab-separated values — the format Excel and Sheets both paste as a grid rather than as one run of text. `Escape` clears it.
 
-The range is stored as two opposite corners rather than a set of keys, so it
-survives sorting and paging the way a keyed row selection does.
+The range is stored as two opposite corners rather than a set of keys, so it survives sorting and paging the way a keyed row selection does.
 
-A pinned total takes part — a total is a figure like any other, and selecting the
-column it sums only to copy it separately is the wrong trade. It joins by press
-or shift-click, but a drag will not sweep through it: a pinned row sits *over*
-the scrolling ones and is last in the row order, so brushing it mid-drag would
-otherwise snap the range to the whole rest of the grid.
+A pinned total takes part — a total is a figure like any other, and selecting the column it sums only to copy it separately is the wrong trade. It joins by press or shift-click, but a drag will not sweep through it: a pinned row sits _over_ the scrolling ones and is last in the row order, so brushing it mid-drag would otherwise snap the range to the whole rest of the grid.
 
-(ag-grid excludes pinned rows from a range outright. This is a deliberate
-departure.)
+(ag-grid excludes pinned rows from a range outright. This is a deliberate departure.)
 
-The structural columns — row numbers, the checkbox, the row-menu button — stay
-out of every range. They are the grid's own furniture, not data.
+The structural columns — row numbers, the checkbox, the row-menu button — stay out of every range. They are the grid's own furniture, not data.
 
-`isCellSelectable` vetoes anything else. A total's label cell is the motivating
-case — `"Total"` is a caption for the row, not a figure:
+`isCellSelectable` vetoes anything else. A total's label cell is the motivating case — `"Total"` is a caption for the row, not a figure:
 
 ```jsx
 <DataTable
@@ -402,21 +330,15 @@ case — `"Total"` is a caption for the row, not a figure:
 />
 ```
 
-A vetoed cell is **inert**, not merely unpainted: pressing it neither starts a
-range nor disturbs the standing one, and it cannot be extended onto. A range that
-spans it skips it and copies an empty field in its place, so the pasted block
-keeps its shape.
+A vetoed cell is **inert**, not merely unpainted: pressing it neither starts a range nor disturbs the standing one, and it cannot be extended onto. A range that spans it skips it and copies an empty field in its place, so the pasted block keeps its shape.
 
 ### Pagination With Totals
 
 <Canvas of={DataTableStories.PaginatedWithTotals} />
 
-The total sits outside the page window, so it stays put as you move through the
-pages and keeps summing the whole result rather than the rows on screen. It is
-excluded from sorting for the same reason.
+The total sits outside the page window, so it stays put as you move through the pages and keeps summing the whole result rather than the rows on screen. It is excluded from sorting for the same reason.
 
-Copying reports the count in a toast, since nothing on screen changes when a copy
-succeeds.
+Copying reports the count in a toast, since nothing on screen changes when a copy succeeds.
 
 <Canvas of={DataTableStories.CellSelection} />
 
@@ -426,26 +348,15 @@ succeeds.
 
 ### Sorting Affordance
 
-A sortable header shows nothing at rest. Hover it — or focus it from the keyboard
-— and the sort arrow fades in at 40%, pointing the way a press would sort it
-(ascending, for a column that is currently unsorted). Press it and the arrow goes
-solid and stays that way with the pointer gone, which is what separates a hint
-from a state.
+A sortable header shows nothing at rest. Hover it — or focus it from the keyboard — and the sort arrow fades in at 40%, pointing the way a press would sort it (ascending, for a column that is currently unsorted). Press it and the arrow goes solid and stays that way with the pointer gone, which is what separates a hint from a state.
 
-The arrow keeps its slot throughout, so none of this shifts the label. A
-non-sortable column has no arrow at all — the hint is not a reason to render one.
+The arrow keeps its slot throughout, so none of this shifts the label. A non-sortable column has no arrow at all — the hint is not a reason to render one.
 
 ### Column Menu
 
-A column exposes a menu through `header.menu`, opened from a `⋮` trigger in the
-header, by right-click, or with `Shift`+`F10`. The contents are opaque — the grid
-mounts the node and reports the pressed key back through `onColumnMenuAction`,
-which is what keeps Cube vocabulary out of the kit.
+A column exposes a menu through `header.menu`, opened from a `⋮` trigger in the header, by right-click, or with `Shift`+`F10`. The contents are opaque — the grid mounts the node and reports the pressed key back through `onColumnMenuAction`, which is what keeps Cube vocabulary out of the kit.
 
-Sorting is the exception, because it is the one thing the table itself can do.
-`columnSortMenu()` returns `sort-asc` / `sort-desc` / `clear-sort` items that the
-table labels from the current locale, disables when they would do nothing, and
-applies before telling the consumer. Everything else is yours:
+Sorting is the exception, because it is the one thing the table itself can do. `columnSortMenu()` returns `sort-asc` / `sort-desc` / `clear-sort` items that the table labels from the current locale, disables when they would do nothing, and applies before telling the consumer. Everything else is yours:
 
 ```tsx
 import { columnSortMenu, Menu } from '@cube-dev/ui-kit';
@@ -474,37 +385,25 @@ const columns = [
 />;
 ```
 
-Pressing the trigger never sorts the column: the header's `Item` swallows the
-click, which is why it sits *inside* the `<th>` rather than being it.
+Pressing the trigger never sorts the column: the header's `Item` swallows the click, which is why it sits _inside_ the `<th>` rather than being it.
 
 <Canvas of={DataTableStories.ColumnMenu} />
 
 ### Column Reordering
 
-`isColumnReorderable` lets a user drag a header sideways, or move the focused
-column with `Alt`+`←` / `→`. Clicking still sorts and the resize handle still
-resizes.
+`isColumnReorderable` lets a user drag a header sideways, or move the focused column with `Alt`+`←` / `→`. Clicking still sorts and the resize handle still resizes.
 
-Structural and pinned columns stay put — `pin` is already the ordering authority
-for a pinned column — and a single column opts out with `isReorderable: false`.
-`columnOrder` works on its own too, so a column manager elsewhere in the page can
-drive the order without any dragging.
+Structural and pinned columns stay put — `pin` is already the ordering authority for a pinned column — and a single column opts out with `isReorderable: false`. `columnOrder` works on its own too, so a column manager elsewhere in the page can drive the order without any dragging.
 
-A stale order is safe: keys for columns that no longer exist are ignored, and a
-column missing from the list lands after the neighbour it had in `columns`
-rather than being swept to the end.
+A stale order is safe: keys for columns that no longer exist are ignored, and a column missing from the list lands after the neighbour it had in `columns` rather than being swept to the end.
 
 <Canvas of={DataTableStories.ColumnReordering} />
 
 ### Column Colors
 
-`column.color` tints a whole column — header, cells and pinned totals. It takes a
-palette theme name, any CSS color, a `{ hue, saturation }` seed, or a
-`{ fill, text }` pair for full manual control.
+`column.color` tints a whole column — header, cells and pinned totals. It takes a palette theme name, any CSS color, a `{ hue, saturation }` seed, or a `{ fill, text }` pair for full manual control.
 
-Every form but the last is *derived*: only the hue and saturation are kept, and
-the tone ramp plus an AA/AAA text floor are re-solved for light, dark and
-high-contrast. A column cannot end up unreadable in a scheme nobody checked.
+Every form but the last is _derived_: only the hue and saturation are kept, and the tone ramp plus an AA/AAA text floor are re-solved for light, dark and high-contrast. A column cannot end up unreadable in a scheme nobody checked.
 
 ```tsx
 const columns = [
@@ -516,28 +415,17 @@ const columns = [
 ];
 ```
 
-Row banding survives inside a tinted column: the tint carries its own band one
-tone step away, so the stripe still reads down the column instead of being
-painted over.
+Row banding survives inside a tinted column: the tint carries its own band one tone step away, so the stripe still reads down the column instead of being painted over.
 
-Under the hood each distinct color becomes a small adaptive theme named by a hash
-of its config, registered once per document — so ten columns sharing a color cost
-one set of tokens. That machinery is public as `useColorTheme` if you want it
-elsewhere.
+Under the hood each distinct color becomes a small adaptive theme named by a hash of its config, registered once per document — so ten columns sharing a color cost one set of tokens. That machinery is public as `useColorTheme` if you want it elsewhere.
 
 <Canvas of={DataTableStories.ColumnColors} />
 
 ## Accessibility
 
-The table is a `role="grid"` with document-absolute `aria-rowindex` /
-`aria-colindex`, and `aria-rowcount` counts pinned rows and every visible header
-row. Group cells use native `scope="colgroup"` / `colSpan`; ungrouped leaf
-headers span the remaining rows. Every sorted leaf column carries `aria-sort`,
-not just the first.
+The table is a `role="grid"` with document-absolute `aria-rowindex` / `aria-colindex`, and `aria-rowcount` counts pinned rows and every visible header row. Group cells use native `scope="colgroup"` / `colSpan`; ungrouped leaf headers span the remaining rows. Every sorted leaf column carries `aria-sort`, not just the first.
 
-A header cell takes a tab stop when it is interactive — sortable, carrying a
-menu, or reorderable. `Shift`+`F10` opens the column menu from the keyboard, and
-`Alt`+`←` / `→` moves a reorderable column, so neither needs a pointer.
+A header cell takes a tab stop when it is interactive — sortable, carrying a menu, or reorderable. `Shift`+`F10` opens the column menu from the keyboard, and `Alt`+`←` / `→` moves a reorderable column, so neither needs a pointer.
 
 ## Related Components
 

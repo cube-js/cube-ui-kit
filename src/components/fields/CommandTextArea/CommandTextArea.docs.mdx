@@ -6,10 +6,7 @@ import * as CommandTextAreaStories from './CommandTextArea.stories';
 
 # CommandTextArea
 
-A multiline free-form field with inline token autocomplete. Typing a configured
-trigger such as `/` or `@` opens suggestions at the caret; choosing one inserts
-its literal value into the text and fires `onCommand`. The field value remains
-the complete textarea string rather than a selected option key.
+A multiline free-form field with inline token autocomplete. Typing a configured trigger such as `/` or `@` opens suggestions at the caret; choosing one inserts its literal value into the text and fires `onCommand`. The field value remains the complete textarea string rather than a selected option key.
 
 ## When to Use
 
@@ -47,34 +44,13 @@ Choose a different component when the interaction has another outcome:
 - **`rows`** `number` (default: `3`) — Visible rows.
 - **`maxRows`** `number` (default: `10`) — Max visible rows when `autoSize` is true.
 
-Each option's value is the **literal string to insert**. For commands, set the
-item's `textValue` (and `key`) to the full `/clear` — the slash is part of both
-the active token and the inserted value, so `/cle` becomes `/clear ` with no
-duplication. This decouples insertion from the trigger, so non-command
-autocomplete (e.g. a `@mention` resolving to `@john`) works the same way.
+Each option's value is the **literal string to insert**. For commands, set the item's `textValue` (and `key`) to the full `/clear` — the slash is part of both the active token and the inserted value, so `/cle` becomes `/clear ` with no duplication. This decouples insertion from the trigger, so non-command autocomplete (e.g. a `@mention` resolving to `@john`) works the same way.
 
-> **What the filter matches.** The trigger char is stripped from the active
-> token before matching (so `/co` searches for `co`), and the query is matched
-> against each option's `textValue`, its plain-text `children`, and its
-> plain-text `description`. This means an option can match by its description
-> even though the description doesn't contain the trigger char (e.g. typing
-> `/co` keeps `/clear` because its description "Clear conversation" contains
-> "co"). A recommended layout is to put the command in `children` (e.g.
-> `/clear`) and the human-readable text in the `description` prop (e.g.
-> `Clear conversation`), keeping `textValue` equal to the command so it inserts
-> correctly.
+> **What the filter matches.** The trigger char is stripped from the active token before matching (so `/co` searches for `co`), and the query is matched against each option's `textValue`, its plain-text `children`, and its plain-text `description`. This means an option can match by its description even though the description doesn't contain the trigger char (e.g. typing `/co` keeps `/clear` because its description "Clear conversation" contains "co"). A recommended layout is to put the command in `children` (e.g. `/clear`) and the human-readable text in the `description` prop (e.g. `Clear conversation`), keeping `textValue` equal to the command so it inserts correctly.
 
-The matched substring (the query with the trigger char stripped) is highlighted
-within each option's plain-text `children` **and** `description`, so wherever the
-query matched is visible.
+The matched substring (the query with the trigger char stripped) is highlighted within each option's plain-text `children` **and** `description`, so wherever the query matched is visible.
 
-> **Popover anchors to the caret.** The autocomplete popover tracks the text
-> caret on both axes — it opens at the caret's horizontal position and on the
-> caret's current line (not pinned to the textarea's top/bottom edge). This
-> matters for multiline inputs, where the caret can be on any line. The popover
-> is clamped to the viewport, so it flips or shifts when the caret is near an
-> edge. `direction` still controls whether it prefers to open above (`top`) or
-> below (`bottom`) the caret.
+> **Popover anchors to the caret.** The autocomplete popover tracks the text caret on both axes — it opens at the caret's horizontal position and on the caret's current line (not pinned to the textarea's top/bottom edge). This matters for multiline inputs, where the caret can be on any line. The popover is clamped to the viewport, so it flips or shifts when the caret is near an edge. `direction` still controls whether it prefers to open above (`top`) or below (`bottom`) the caret.
 
 ### Base Properties
 
@@ -82,9 +58,7 @@ Supports [Base properties](/docs/getting-started-base-properties--docs).
 
 ### Field Properties
 
-Supports all [Field properties](/docs/getting-started-field-properties--docs)
-(`label`, `name`, `isRequired`, `isDisabled`, `isReadOnly`, `isInvalid`,
-`description`, `rules`, etc.).
+Supports all [Field properties](/docs/getting-started-field-properties--docs) (`label`, `name`, `isRequired`, `isDisabled`, `isReadOnly`, `isInvalid`, `description`, `rules`, etc.).
 
 ### Styling Properties
 
@@ -152,8 +126,7 @@ These properties allow direct style application without using the `styles` prop:
 ### Screen Reader Support
 
 - The textarea is announced as a `combobox` with `aria-autocomplete="list"`.
-- `aria-expanded`, `aria-controls`, and `aria-activedescendant` track the
-  popover and the highlighted option.
+- `aria-expanded`, `aria-controls`, and `aria-activedescendant` track the popover and the highlighted option.
 
 ## Integration with Forms
 

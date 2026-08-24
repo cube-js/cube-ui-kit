@@ -193,14 +193,14 @@ function UserFormDialog({ onSubmit, initialData, onCancel }) {
         label: 'Cancel'
       }}
     >
-      <Form.Item 
-        name="name" 
+      <Form.Item
+        name="name"
         rules={[{ required: true, message: 'Name is required' }]}
       >
         <TextInput label="Name" />
       </Form.Item>
-      <Form.Item 
-        name="email" 
+      <Form.Item
+        name="email"
         rules={[
           { required: true, message: 'Email is required' },
           { type: 'email', message: 'Please enter a valid email' }
@@ -396,7 +396,7 @@ The `rendered` property **must** be included in your component tree, or the hook
 // ✅ Correct usage
 function App() {
   const dialog = useDialogContainer(MyDialog);
-  
+
   return (
     <div>
       <Button onPress={() => dialog.open({ message: 'Hello' })}>Open</Button>
@@ -408,7 +408,7 @@ function App() {
 // ❌ Incorrect usage - will throw error
 function App() {
   const dialog = useDialogContainer(MyDialog);
-  
+
   return (
     <div>
       <Button onPress={() => dialog.open({ message: 'Hello' })}>Open</Button>
@@ -428,6 +428,7 @@ function App() {
 ### Container Props Priority
 
 When both `defaultContainerProps` and runtime `containerProps` are provided:
+
 - Runtime `containerProps` override `defaultContainerProps`
 - Deep merging is performed for nested objects
 - Arrays are replaced entirely (no merging)
@@ -435,6 +436,7 @@ When both `defaultContainerProps` and runtime `containerProps` are provided:
 ## Best Practices
 
 1. **Always include `rendered`**: Place `{dialog.rendered}` in your component tree
+
    ```tsx
    return (
      <div>
@@ -445,32 +447,35 @@ When both `defaultContainerProps` and runtime `containerProps` are provided:
    ```
 
 2. **Use TypeScript for type safety**: The hook automatically infers prop types from your dialog component
+
    ```tsx
    interface MyDialogProps {
      title: string;
      onConfirm: () => void;
    }
-   
+
    function MyDialog(props: MyDialogProps) {
      return <Dialog>{/* ... */}</Dialog>;
    }
-   
+
    const dialog = useDialogContainer(MyDialog); // Props type is automatically inferred
    ```
 
 3. **Handle cleanup in dialog components**: Ensure your dialog components handle their own cleanup
+
    ```tsx
    function MyDialog({ onClose, onSubmit }) {
      const handleSubmit = async (data) => {
        await onSubmit(data);
        onClose(); // Close dialog after successful submission
      };
-     
+
      return <Dialog>{/* ... */}</Dialog>;
    }
    ```
 
 4. **Use default container props for common patterns**: Set common dialog behaviors once
+
    ```tsx
    const dialog = useDialogContainer(MyDialog, {
      isDismissable: true,
@@ -479,12 +484,13 @@ When both `defaultContainerProps` and runtime `containerProps` are provided:
    ```
 
 5. **Separate concerns**: Keep dialog content components focused and reusable
+
    ```tsx
    // Good: Focused dialog component
    function ConfirmDialog({ message, onConfirm }) {
      return <Dialog>{/* Simple confirmation UI */}</Dialog>;
    }
-   
+
    // Avoid: Dialog component with complex business logic
    function OverlyComplexDialog({ userId, permissions, settings }) {
      // Too much business logic here

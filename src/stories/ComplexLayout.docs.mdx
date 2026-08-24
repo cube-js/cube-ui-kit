@@ -73,6 +73,7 @@ Use `Layout.Panel` for side navigation. Panels are absolutely positioned and aut
 ```
 
 **Key props:**
+
 - `side` - Panel position: `"left"`, `"right"`, `"top"`, `"bottom"`
 - `size` - Panel width (for left/right) or height (for top/bottom)
 - `isOpen` / `onOpenChange` - Control panel visibility
@@ -97,6 +98,7 @@ Add `isResizable` to allow users to resize the panel.
 ```
 
 **Resize behavior:**
+
 - Drag the edge handle to resize
 - Double-click the handle to reset to default size
 - Use `minSize` and `maxSize` to constrain resize range
@@ -119,6 +121,7 @@ Use `sizeStorageKey` to persist the panel size in localStorage. The size will be
 ```
 
 **Notes:**
+
 - The `sizeStorageKey` must be unique across your application
 - Size is persisted after drag operations complete
 - Double-clicking to reset also updates the stored value
@@ -183,6 +186,7 @@ Use `Space` components to create three sections.
 ```
 
 **Header props:**
+
 - `title` - Page title
 - `subtitle` - Text below the title
 - `breadcrumbs` - Array of `[label, href]` tuples
@@ -243,6 +247,7 @@ Panels with `mode="sticky"` float over content without pushing it aside.
 ### Overlay Panel
 
 Panels with `mode="overlay"` show a backdrop and dismiss on:
+
 - Clicking the backdrop
 - Pressing Escape anywhere in the Layout
 - Moving focus to the main content area
@@ -287,6 +292,7 @@ Panels with `mode="dialog"` render as a modal dialog instead of inline.
 ```
 
 **Use cases:**
+
 - Mobile-responsive layouts where sidebars become modal dialogs
 - Settings panels that need full focus
 - Any panel that should overlay rather than push content
@@ -385,6 +391,7 @@ Use `Layout.Container` for content that should be horizontally centered with a c
 ```
 
 **Use cases:**
+
 - Article or documentation pages
 - Forms and settings pages
 - Any content that benefits from constrained width
@@ -404,6 +411,7 @@ Use `Layout.Center` for content that should be centered both horizontally and ve
 ```
 
 **Use cases:**
+
 - Empty states ("No items found")
 - Loading screens
 - Welcome/onboarding screens
