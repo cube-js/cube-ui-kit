@@ -20,7 +20,7 @@ module.exports = [
         }),
       );
     },
-    // Still 515 kB on `@tenphi/tasty` 3.3.0: 508.53 kB locally against 509.94 kB
+    // Still 515 kB on `@tenphi/tasty` 3.3.1: 508.53 kB locally against 509.94 kB
     // on 3.1.0 with both sides rebuilt here, i.e. -1.41 kB across the two
     // releases. 3.2.0 added 0.69 kB for batched injection (the write queue and
     // `TastyBatchProvider` sit in the always-included core, so they ship whether
@@ -145,8 +145,8 @@ module.exports = [
     path: './dist/index.js',
     webpack: true,
     import: '{ Button }',
-    // Still 125 kB on `@tenphi/tasty` 3.3.0: 121.75 kB locally against 124.03 kB
-    // on 3.1.0, both sides rebuilt here — -2.28 kB, matched by the -1.41 kB on
+    // Still 125 kB on `@tenphi/tasty` 3.3.1: 121.76 kB locally against 124.03 kB
+    // on 3.1.0, both sides rebuilt here — -2.27 kB, matched by the -1.41 kB on
     // `All` above, so all of it is Tasty's always-included core and none of it
     // ours. 3.2.0's batching cost this entry 0.68 kB; 3.3.0 then removed the
     // colour-space decomposition, which is worth 2.96 kB to a consumer who
