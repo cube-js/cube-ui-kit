@@ -244,8 +244,28 @@ export interface CubeBoardProps
   onResizeStop?: (info: BoardInteractionInfo) => void;
   /** Number of columns. @default 12 */
   cols?: number;
-  /** Row height in pixels. @default 100 */
-  rowHeight?: number;
+  /**
+   * Render exactly this many rows, whatever the content needs — a fixed
+   * `cols × rows` matrix rather than a grid that hugs its widgets. Implies a
+   * `maxRows` of the same value, so the grid's own bounds constraint keeps every
+   * drag and resize inside the matrix. Pair with `rowHeight="stretch"` for a
+   * matrix that fills the box it is given.
+   */
+  rows?: number;
+  /**
+   * Row height in pixels, or `'stretch'` to divide the board's own measured
+   * height into its rows. `'stretch'` is what makes a fixed `rows × cols` matrix
+   * fill its container: the board fills the height it is given and each cell
+   * takes an equal share of it, so resizing the container resizes the cells
+   * instead of adding or removing them.
+   *
+   * Requires {@link rows}. Without a declared row count there is no matrix to
+   * fill, and dividing by the content extent instead would resize every cell
+   * whenever a widget landed on a new row — so the mode does not engage and the
+   * board keeps its ordinary content-hugging behaviour at the default height.
+   * @default 100
+   */
+  rowHeight?: number | 'stretch';
   /** [horizontal, vertical] margin between widgets in pixels. @default [8, 8] */
   margin?: [number, number];
   /**
@@ -408,6 +428,12 @@ export const BOARD_SELECTION_CANCEL =
   '[role="checkbox"],[role="switch"],[role="tab"],[contenteditable="true"],' +
   '[data-no-select]';
 
+/**
+ * Row height when none is given, and the fallback a `rowHeight="stretch"` board
+ * uses until it has both a bounded row count and a measured height to divide.
+ */
+const DEFAULT_ROW_HEIGHT = 100;
+
 /** Manhattan distance a pointer must travel before a press becomes a marquee. */
 const MARQUEE_THRESHOLD = 4;
 
@@ -448,10 +474,11 @@ function BoardInner(
     onResize: onResizeProp,
     onResizeStop,
     cols = 12,
-    rowHeight = 100,
+    rows: fixedRows,
+    rowHeight = DEFAULT_ROW_HEIGHT,
     margin = [8, 8],
     containerPadding,
-    maxRows = Infinity,
+    maxRows: maxRowsProp,
     extraRows = 0,
     compact = 'vertical',
     allowOverlap = false,
@@ -479,6 +506,12 @@ function BoardInner(
     children,
     ...otherProps
   } = props;
+
+  // A fixed row count is also a hard bound: `gridBounds` clamps every drag and
+  // resize against `maxRows`, so declaring `rows` is what keeps widgets inside
+  // the matrix without the caller restating a per-widget `maxH`.
+  const maxRows =
+    maxRowsProp ?? (fixedRows != null ? Math.max(1, fixedRows) : Infinity);
 
   const registry = useBoardRegistry()!;
   const parentMetrics = useBoardMetrics();
@@ -615,7 +648,10 @@ function BoardInner(
   // renders, so the band is real board surface: `ContentLayer` (inset: 0)
   // covers it, which is what lets a marquee start there and a widget be dropped
   // past the end.
-  const renderedRows = Math.min(rows + Math.max(0, extraRows), maxRows);
+  const renderedRows =
+    fixedRows != null
+      ? Math.max(1, fixedRows)
+      : Math.min(rows + Math.max(0, extraRows), maxRows);
 
   // Derive the aligned column count so each column keeps the parent's pixel
   // pitch: as the container widget is resized, columns are added/removed rather
@@ -650,11 +686,37 @@ function BoardInner(
       resolvedPadding[0] * 2
     : width;
 
+  // A stretch board divides its own measured height into its rows, so the matrix
+  // fills the box it was given and resizing the container resizes the cells.
+  //
+  // It only does that with a DECLARED row count. Dividing by the content extent
+  // instead would resize every cell whenever a widget lands on a new row, and
+  // the board would still be claiming its parent's whole height to do it — so
+  // without `rows` there is no matrix to fill and the board keeps its ordinary
+  // content-hugging behaviour at the default row height.
+  const isStretching = rowHeight === 'stretch' && fixedRows != null;
+  const stretchedRowHeight =
+    isStretching && measuredHeight > 0
+      ? Math.max(
+          1,
+          (measuredHeight -
+            Math.max(0, renderedRows - 1) * effectiveMargin[1] -
+            resolvedPadding[1] * 2) /
+            renderedRows,
+        )
+      : // Not measured yet (first paint) or not a matrix at all: a real pixel
+        // height keeps the board renderable rather than collapsing it.
+        DEFAULT_ROW_HEIGHT;
+
   // An aligned board uses the parent's row height verbatim, so every cell is
   // exactly the parent's cell size (width already matches via the inherited
   // column pitch). It never shrinks rows to fit; pair it with an `isAutoHeight`
   // container so the widget grows to fit the rows at this height instead.
-  const effectiveRowHeight = aligned ? parentMetrics!.rowHeight : rowHeight;
+  const effectiveRowHeight = aligned
+    ? parentMetrics!.rowHeight
+    : rowHeight === 'stretch'
+      ? stretchedRowHeight
+      : rowHeight;
 
   const positionParams = useMemo<PositionParams>(
     () => ({
@@ -701,10 +763,13 @@ function BoardInner(
         Math.max(0, renderedRows - 1) * effectiveMargin[1] +
         resolvedPadding[1] * 2
       : effectiveRowHeight;
-  // An aligned board fills the height the container grants it, so it reports its
-  // measured height; otherwise it reports the height its content needs.
+  // An aligned or stretching board fills the height the container grants it, so
+  // it reports its measured height; otherwise it reports the height its content
+  // needs.
   const containerHeight =
-    aligned && measuredHeight > 0 ? measuredHeight : computedHeight;
+    (aligned || isStretching) && measuredHeight > 0
+      ? measuredHeight
+      : computedHeight;
 
   // Live refs so the stable registry entry always reads current values.
   const liveRef = useRef({
@@ -1442,8 +1507,18 @@ function BoardInner(
           // shifts them, and the content layer (inset: 0) always covers the full
           // board -> the whole board is droppable. Aligned: omit the inline height
           // so the board fills (and is bounded by) the space the container grants,
-          // which is what drives the reduced row height.
-          style={aligned ? undefined : { minHeight: `${containerHeight}px` }}
+          // which is what drives the reduced row height. Stretch: take the
+          // parent's height outright, since that height is precisely what gets
+          // divided into rows — a min-height derived from the board's own rows
+          // would be a fixed point (it would measure back what it just asked
+          // for) and the cells could never track the container.
+          style={
+            aligned
+              ? undefined
+              : isStretching
+                ? { height: '100%' }
+                : { minHeight: `${containerHeight}px` }
+          }
           mods={{
             dragging: !!dragState,
             'drop-target': dragState?.currentBoardId === boardId,
@@ -1494,6 +1569,8 @@ function BoardInner(
                   // (borderless - widgets are always filled and rounded).
                   const widgetIsCard =
                     registration?.isCard ?? widgetProps?.isCard ?? false;
+                  const widgetHoverRing =
+                    registration?.hoverRing ?? widgetProps?.hoverRing ?? true;
                   // Per-widget `isAutoHeight`/`qa` fall back to the board-level
                   // `widgetProps` defaults (mirroring the other widget props).
                   const widgetIsAutoHeight =
@@ -1526,6 +1603,7 @@ function BoardInner(
                       positionParams={positionParams}
                       registration={registration}
                       isCard={widgetIsCard}
+                      hoverRing={widgetHoverRing}
                       styles={widgetStyles as Styles}
                       isDraggable={widgetDraggable}
                       isResizable={widgetResizable}

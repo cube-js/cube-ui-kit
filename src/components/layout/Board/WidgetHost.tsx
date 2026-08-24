@@ -74,7 +74,8 @@ const WidgetElement = tasty({
     },
     shadow: {
       '': false,
-      'hovered & !card & (draggable | resizing)': '0 0 0 1bw #border',
+      'hovered & !card & !no-hover-ring & (draggable | resizing)':
+        '0 0 0 1bw #border',
       'pre-selected': '0 0 0 1bw #primary.40',
       selected: '0 0 0 1bw #primary',
       // `$dialog-shadow` uses Glaze `#shadow-lg`, which adapts to dark / high-contrast schemes.
@@ -416,6 +417,12 @@ export interface WidgetHostProps {
    */
   isCard: boolean;
   /**
+   * Whether this widget draws the resting hover ring. Resolved by the owning
+   * `Board` from the per-widget `hoverRing` and the board-level
+   * `widgetProps.hoverRing` default.
+   */
+  hoverRing: boolean;
+  /**
    * Resolved style overrides for the rendered widget element (per-widget
    * `styles` falling back to the board-level `widgetProps.styles`).
    */
@@ -514,6 +521,7 @@ export function WidgetHost(props: WidgetHostProps) {
     positionParams,
     registration,
     isCard,
+    hoverRing,
     styles: widgetStyles,
     isDraggable,
     isResizable,
@@ -871,6 +879,7 @@ export function WidgetHost(props: WidgetHostProps) {
     static: !!item.static,
     resizing: isResizing,
     card: isCard,
+    'no-hover-ring': !hoverRing,
     hovered: isHovered,
     'focus-visible': isFocusVisible,
     selected: isSelected,

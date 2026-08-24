@@ -70,6 +70,8 @@ export {
   snapToGrid,
   minSize,
   maxSize,
+  placeInFreeSlot,
+  distributeEvenly,
   BOARD_SELECTION_CANCEL,
 } from './components/layout/Board';
 export type {

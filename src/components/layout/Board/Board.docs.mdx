@@ -61,7 +61,8 @@ clipped by an ancestor's `overflow: hidden`.
 - **`onDragStart` / `onDrag` / `onDragStop`** `(info: BoardInteractionInfo) => void` — Drag lifecycle callbacks. `onDrag` fires on every step; `onDragStop` fires after the layout is committed.
 - **`onResizeStart` / `onResize` / `onResizeStop`** `(info: BoardInteractionInfo) => void` — Resize lifecycle callbacks, mirroring the drag ones.
 - **`cols`** `number` (default: `12`) — Number of columns.
-- **`rowHeight`** `number` (default: `100`) — Row height in pixels.
+- **`rows`** `number` — Render exactly this many rows, whatever the content needs — a fixed `cols × rows` matrix rather than a grid that hugs its widgets. Implies a `maxRows` of the same value, so `gridBounds` keeps every drag and resize inside the matrix without a per-widget `maxH`.
+- **`rowHeight`** `number | 'stretch'` (default: `100`) — Row height in pixels, or `'stretch'` to divide the board's own measured height into its rows. `'stretch'` is what makes a fixed `rows × cols` matrix fill the box it is given: the board takes its parent's height and each cell an equal share of it, so resizing the container resizes the cells instead of adding or removing them. Requires `rows`: without a declared row count there is no matrix to fill, and dividing by the content extent instead would resize every cell whenever a widget landed on a new row. Unset, or before the parent's height is known, the board keeps its ordinary content-hugging behaviour at the default row height rather than collapsing.
 - **`margin`** `[number, number]` (default: `[8, 8]`) — Horizontal/vertical gap between widgets.
 - **`containerPadding`** `[number, number]` — Inner padding. Defaults to `margin`, or to `[0, 0]` for an aligned nested board (`isAligned`) so its grid lines up with the ancestor board's.
 - **`maxRows`** `number` (default: `Infinity`) — Maximum number of rows.
@@ -95,6 +96,7 @@ clipped by an ancestor's `overflow: hidden`.
 ### Board.Widget
 
 - **`id`** `string` (required) — Must match the `i` of a layout item.
+- **`hoverRing`** `boolean` (default: `true`) — Whether the widget shows the resting ring on hover — the affordance that says it can be picked up. Turn it off for a widget that is scenery rather than a thing to grab (a chromeless layout container, a spacer), where the ring advertises an interaction the widget does not really offer. Selection and drag treatments are unaffected. Can be set for the whole board via `widgetProps`.
 - **`isCard`** `boolean` (default: `false`) — Render this widget as a card by adding a border. Widgets are always filled (`#surface-2`) and rounded (`1cr`); `isCard` adds the border on top. Defaults to `false` (borderless) unless the owning `Board`'s `widgetProps.isCard` opts in; set it per widget to override that default.
 - **`isDraggable`** `boolean` — Disable dragging for this widget.
 - **`isResizable`** `boolean` — Disable resizing for this widget.
@@ -167,6 +169,7 @@ through `widgetProps.styles` or a per-widget `styles` resolves against them.
 - **`pre-selected`** — a live marquee covers the widget, so releasing the pointer
   will select it. Never set at the same time as `selected`.
 - **`card`** — the widget draws a card border (`isCard`).
+- **`no-hover-ring`** — the widget opted out of the resting hover ring (`hoverRing={false}`).
 - **`draggable`** — the widget can be dragged and no drag is in flight.
 - **`drag`** — the widget is being dragged.
 - **`floating`** — this is the clone floating in the drag overlay.
@@ -228,6 +231,15 @@ CSS margin.
 ### Controlled layout
 
 <Story of={BoardStories.Controlled} />
+
+### Fixed matrix
+
+`rows` with `rowHeight="stretch"` gives a board of a declared size that fills its
+container: a `cols × rows` matrix whose cells resize with the box rather than a
+grid that grows a row at a time. Pair it with `compact="free"` for a canvas the
+author places things on directly.
+
+<Story of={BoardStories.FixedMatrix} />
 
 ### Free positioning
 
@@ -467,6 +479,26 @@ described above. Set `aria-label` on your widgets and this reads correctly.
   `forced-colors` yet. The selected state uses a tint, a border *and* an extra
   ring, so it does not rely on hue alone, but a full forced-colors pass is a
   system-wide change.
+
+## Layout helpers
+
+Placement questions the board answers for itself during a gesture, exported so an
+app can ask them for a widget it adds programmatically. Without these, an app
+re-implements the scan, and the same drop lands in two different cells depending
+on whether a pointer or a code path served it.
+
+- **`placeInFreeSlot(others, item, cols, maxRows?)`** — the first position at or
+  below the item's preferred cell where it fits without overlapping `others`,
+  scanning the preferred row first, then down, then up. Never past `maxRows`, and
+  never resizes to fit (only `w` is capped to `cols`). This is the rule the board
+  itself applies when a dragged widget cannot stay where it was dropped.
+- **`distributeEvenly(layout, { cols, rows })`** — tile every item evenly across
+  both axes, keeping the row structure the layout already has: items are grouped
+  into visual rows by their current `y`, `rows` is divided across the groups and
+  `cols` across each group's members. A line holding more items than the grid is
+  wide wraps into sub-rows. This is the one operation that deliberately *grows*
+  items — every gesture-driven path refuses to, which is why it is a call the app
+  makes rather than a mode the board is in.
 
 ## Attribution
 

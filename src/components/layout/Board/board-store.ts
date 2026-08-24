@@ -24,6 +24,11 @@ export interface WidgetRegistration {
    * Falls back to the owning board's `widgetProps.isCard` when unset here.
    */
   isCard?: boolean;
+  /**
+   * Whether this widget shows the resting hover ring. Falls back to the owning
+   * board's `widgetProps.hoverRing` when unset here.
+   */
+  hoverRing?: boolean;
   /** Minimum width in grid columns (fallback when the layout item omits `minW`). */
   minW?: number;
   /** Maximum width in grid columns (fallback when the layout item omits `maxW`). */
@@ -87,6 +92,7 @@ export class BoardWidgetStore {
       prev.resizeHandles !== reg.resizeHandles ||
       prev.resizeGripPlacement !== reg.resizeGripPlacement ||
       prev.isCard !== reg.isCard ||
+      prev.hoverRing !== reg.hoverRing ||
       prev.minW !== reg.minW ||
       prev.maxW !== reg.maxW ||
       prev.minH !== reg.minH ||

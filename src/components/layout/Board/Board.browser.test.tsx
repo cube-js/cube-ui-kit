@@ -999,3 +999,116 @@ describe('Board group move', () => {
     );
   });
 });
+
+describe('a fixed cols × rows matrix', () => {
+  /**
+   * `rows` + `rowHeight="stretch"` is the shape a nested container board needs:
+   * a matrix of a declared size that fills the box it is given. Both halves are
+   * measurement questions — how tall the board actually is, and how tall one
+   * cell ends up — so neither can be asked in jsdom.
+   */
+  function renderMatrix(rows: number, height: number, cols = 2) {
+    return renderWithRoot(
+      <div style={{ width: '400px', height: `${height}px` }}>
+        <Board
+          cols={cols}
+          rows={rows}
+          rowHeight="stretch"
+          margin={[0, 0]}
+          containerPadding={[0, 0]}
+          compact="free"
+          defaultLayout={[{ i: 'a', x: 0, y: 0, w: 1, h: 1 }]}
+        >
+          <Board.Widget id="a" qa="A">
+            a
+          </Board.Widget>
+        </Board>
+      </div>,
+    );
+  }
+
+  it('divides its measured height into exactly `rows` cells', async () => {
+    renderMatrix(4, 400);
+    await settled();
+
+    // One cell of a 4-row matrix in a 400px box is 100px tall, whatever the
+    // content needs — the whole point of the mode.
+    await vi.waitFor(() =>
+      expect(widget('a').getBoundingClientRect().height).toBeCloseTo(100, 0),
+    );
+  });
+
+  it('resizes its cells with the container instead of adding rows', async () => {
+    const { rerender } = renderMatrix(4, 400);
+    await settled();
+    await vi.waitFor(() =>
+      expect(widget('a').getBoundingClientRect().height).toBeCloseTo(100, 0),
+    );
+
+    rerender(
+      <div style={{ width: '400px', height: '800px' }}>
+        <Board
+          cols={2}
+          rows={4}
+          rowHeight="stretch"
+          margin={[0, 0]}
+          containerPadding={[0, 0]}
+          compact="free"
+          defaultLayout={[{ i: 'a', x: 0, y: 0, w: 1, h: 1 }]}
+        >
+          <Board.Widget id="a" qa="A">
+            a
+          </Board.Widget>
+        </Board>
+      </div>,
+    );
+
+    // Twice the height, same row count → twice the cell. A board that hugged
+    // its content would have kept the cell and grown the empty space instead.
+    await vi.waitFor(() =>
+      expect(widget('a').getBoundingClientRect().height).toBeCloseTo(200, 0),
+    );
+  });
+
+  it('stays a normal content-hugging board when no row count is declared', async () => {
+    // `rowHeight="stretch"` with no `rows` has no matrix to fill. Dividing the
+    // parent's height by the CONTENT extent instead would resize every cell
+    // whenever a widget landed on a new row — while still claiming the parent's
+    // whole height to do it — so the mode simply does not engage.
+    renderWithRoot(
+      <div style={{ width: '400px', height: '900px' }}>
+        <Board
+          cols={2}
+          rowHeight="stretch"
+          margin={[0, 0]}
+          containerPadding={[0, 0]}
+          compact="free"
+          defaultLayout={[{ i: 'a', x: 0, y: 0, w: 1, h: 1 }]}
+        >
+          <Board.Widget id="a" qa="A">
+            a
+          </Board.Widget>
+        </Board>
+      </div>,
+    );
+    await settled();
+
+    // The default row height, not 900px (the parent) and not 900/1.
+    await vi.waitFor(() =>
+      expect(widget('a').getBoundingClientRect().height).toBeCloseTo(ROW, 0),
+    );
+    // And it hugs its one row rather than filling the 900px parent.
+    expect(board().getBoundingClientRect().height).toBeCloseTo(ROW, 0);
+  });
+
+  it('paints every declared row, so an empty matrix is still a drop surface', async () => {
+    renderMatrix(4, 400);
+    await settled();
+
+    // The board fills the container it was given rather than collapsing to the
+    // single row its one widget needs.
+    await vi.waitFor(() =>
+      expect(board().getBoundingClientRect().height).toBeCloseTo(400, 0),
+    );
+  });
+});
