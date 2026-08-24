@@ -285,6 +285,49 @@ RestyledSelection.args = { selectionMode: 'multiple' };
 export const Default = Template.bind({});
 Default.args = {};
 
+const FIXED_MATRIX_LAYOUT: LayoutItem[] = [
+  { i: 'm-a', x: 0, y: 0, w: 1, h: 1 },
+  { i: 'm-b', x: 1, y: 0, w: 2, h: 1 },
+  { i: 'm-c', x: 0, y: 1, w: 1, h: 2 },
+];
+
+const FixedMatrixTemplate: StoryFn<CubeBoardProps> = (args) => (
+  // A parent with a height of its own: `rowHeight="stretch"` divides THAT into
+  // rows, so the matrix fills the box instead of the box following the content.
+  <div style={{ height: 320, resize: 'vertical', overflow: 'auto' }}>
+    <Board
+      fill="#light"
+      padding="1x"
+      radius="1r"
+      cols={3}
+      rows={3}
+      rowHeight="stretch"
+      compact="free"
+      showGridLines
+      widgetProps={{ isCard: true }}
+      defaultLayout={FIXED_MATRIX_LAYOUT}
+      {...args}
+    >
+      {FIXED_MATRIX_LAYOUT.map((item) => (
+        <Board.Widget key={item.i} id={item.i} aria-label={`Cell ${item.i}`}>
+          <WidgetBody title={item.i} />
+        </Board.Widget>
+      ))}
+    </Board>
+  </div>
+);
+
+export const FixedMatrix = FixedMatrixTemplate.bind({});
+FixedMatrix.args = {};
+FixedMatrix.parameters = {
+  docs: {
+    description: {
+      story:
+        '`rows` with `rowHeight="stretch"` is a board of a declared size that fills its container: a 3x3 matrix whose cells resize with the box rather than a grid that grows a row at a time. Drag the container\'s bottom edge - the cells change size, the row count does not. `rows` also bounds the grid, so no drag or resize can leave the matrix.',
+    },
+  },
+};
+
 export const FreePositioning = Template.bind({});
 FreePositioning.args = {
   compact: 'free',

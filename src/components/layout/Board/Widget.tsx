@@ -41,6 +41,15 @@ export interface CubeBoardWidgetProps extends ContainerStyleProps {
    * in. Override per widget to enable or disable.
    */
   isCard?: boolean;
+  /**
+   * Whether the widget shows the resting ring on hover. On by default: it is the
+   * affordance that says a widget can be picked up. Turn it off for a widget
+   * that is scenery rather than a thing to grab — a chromeless layout container,
+   * a spacer — where the ring advertises an interaction the widget does not
+   * really offer. Selection and drag treatments are unaffected.
+   * @default true
+   */
+  hoverRing?: boolean;
   /** Minimum width in grid columns (used when the layout item omits `minW`). */
   minW?: number;
   /** Maximum width in grid columns (used when the layout item omits `maxW`). */
@@ -130,6 +139,7 @@ export function Widget(props: CubeBoardWidgetProps) {
     resizeHandles,
     resizeGripPlacement,
     isCard,
+    hoverRing,
     minW,
     maxW,
     minH,
@@ -180,6 +190,7 @@ export function Widget(props: CubeBoardWidgetProps) {
         resizeHandles,
         resizeGripPlacement,
         isCard,
+        hoverRing,
         minW,
         maxW,
         minH,

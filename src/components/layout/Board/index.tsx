@@ -42,6 +42,8 @@ export type {
   PositionParams,
 } from './grid-core';
 
+export { placeInFreeSlot, distributeEvenly } from './grid-core';
+
 export {
   verticalCompactor,
   horizontalCompactor,
