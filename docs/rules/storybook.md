@@ -3,11 +3,13 @@
 ## Imports
 
 ### Stories Files (.stories.tsx)
+
 - Import types: `import type { Meta, StoryObj } from '@storybook/react-vite';`
 - Import `StoryFn` for custom template functions
 - For interactive tests: `import { userEvent, within } from 'storybook/test';` (NOT from `@testing-library/react`)
 
 ### Documentation Files (.docs.mdx)
+
 - `import { Meta, Canvas, Story } from '@storybook/addon-docs/blocks';`
   - `Meta` - Define meta information with `<Meta of={StoriesImport} />`
   - `Canvas` - Display story with code panel
@@ -36,6 +38,7 @@ export default meta;
 ## ArgTypes Structure
 
 Group by categories with comments:
+
 - `/* Content */` - children, labels, placeholders, icons
 - `/* Selection */` - selectedKey, defaultSelectedKey
 - `/* Behavior */` - filter, trigger modes, loading states
@@ -64,11 +67,13 @@ propName: {
 ## Stories
 
 ### Named Exports (Preferred)
+
 ```tsx
 export const StoryName = (args) => <Component {...args} />;
 ```
 
 ### Story Objects with CSF3
+
 ```tsx
 export const StoryName: StoryObj<typeof Component> = {
   render: (args) => <Component {...args} />,
@@ -80,6 +85,7 @@ export const StoryName: StoryObj<typeof Component> = {
 ```
 
 ### Templates (Legacy Pattern)
+
 ```tsx
 const Template: StoryFn<ComponentProps> = (args) => <Component {...args} />;
 
@@ -89,9 +95,7 @@ Story.args = { /* ... */ };
 
 ### Validation Story
 
-Input components expose their validation state through **one** story named `Validation` that renders the
-valid case and the invalid case together. Do not add separate `Valid`, `Invalid`, `ValidationStates` or
-`WithValidation` stories.
+Input components expose their validation state through **one** story named `Validation` that renders the valid case and the invalid case together. Do not add separate `Valid`, `Invalid`, `ValidationStates` or `WithValidation` stories.
 
 ```tsx
 export const Validation: StoryFn<CubeComponentProps> = (args) => (
@@ -102,8 +106,7 @@ export const Validation: StoryFn<CubeComponentProps> = (args) => (
 );
 ```
 
-Pull the `isInvalid` / `isValid` argTypes from `VALIDATION_ARGS` in `src/stories/FormFieldArgs.ts` instead
-of declaring them inline.
+Pull the `isInvalid` / `isValid` argTypes from `VALIDATION_ARGS` in `src/stories/FormFieldArgs.ts` instead of declaring them inline.
 
 ## Testing with Play Functions
 
@@ -122,10 +125,7 @@ export const Interactive: StoryObj = {
 
 ### Interaction-Only States Need a Play Function
 
-A state that only exists during an interaction — an open tooltip, a hover or focus style, an expanded
-overlay — is invisible to Chromatic unless a `play` function puts the story into it. Chromatic runs
-`play` before it snapshots, so the state it leaves behind is what gets captured and diffed. A story
-whose whole point is such a state must drive it:
+A state that only exists during an interaction — an open tooltip, a hover or focus style, an expanded overlay — is invisible to Chromatic unless a `play` function puts the story into it. Chromatic runs `play` before it snapshots, so the state it leaves behind is what gets captured and diffed. A story whose whole point is such a state must drive it:
 
 ```tsx
 const timeout = (ms: number) =>
@@ -161,31 +161,18 @@ DisabledWithTooltip.play = async ({ canvasElement }) => {
 };
 ```
 
-Every line of that recipe is load-bearing for a tooltip. Two independent things make a hover fired
-from `play` do nothing, and both fail silently — the story renders, the snapshot just shows no
-tooltip:
+Every line of that recipe is load-bearing for a tooltip. Two independent things make a hover fired from `play` do nothing, and both fail silently — the story renders, the snapshot just shows no tooltip:
 
-- **The trigger is not wired yet.** `TooltipProvider` renders its child without trigger props until
-  its mount effect flips `rendered`. A hover that lands before that has no handler to reach, and
-  nothing replays it later. Wait ~250ms first (`timeout(250)`), as the other tooltip stories do.
-- **React Aria has no interaction modality yet.** It opens a tooltip only when the last interaction
-  came from a pointer, which it learns from a mouse move on the document. `userEvent.hover` fires
-  `mouseEnter` *before* its `mouseMove`, so the page's first hover is ignored. The leading `unhover`
-  moves the pointer over the body and supplies that move.
+- **The trigger is not wired yet.** `TooltipProvider` renders its child without trigger props until its mount effect flips `rendered`. A hover that lands before that has no handler to reach, and nothing replays it later. Wait ~250ms first (`timeout(250)`), as the other tooltip stories do.
+- **React Aria has no interaction modality yet.** It opens a tooltip only when the last interaction came from a pointer, which it learns from a mouse move on the document. `userEvent.hover` fires `mouseEnter` _before_ its `mouseMove`, so the page's first hover is ignored. The leading `unhover` moves the pointer over the body and supplies that move.
 
 Then:
 
-- Give the target a `qa` and find it with `findByTestId`, so the story does not depend on the order of
-  roles on the page.
-- Pass `delay: 0` in the tooltip config. The default 250ms open delay is real time the snapshot would
-  otherwise have to wait out, and it makes any retry racy.
-- End on an `await waitFor(...)` assertion for the state you want captured. It doubles as the wait
-  Chromatic needs — a snapshot taken before the overlay has mounted is a flaky diff.
-- Drive **one** element per story. Hovering a second one closes the first, and only the final state
-  is snapshotted, so a story showing several variants should hover the most interesting one.
-- Chromatic is the only real check on a `play` function: it fails the build with "component threw an
-  error during testing" when one throws. A local render test can pass while the story fails, because
-  the mount-effect timing above only shows up in Storybook.
+- Give the target a `qa` and find it with `findByTestId`, so the story does not depend on the order of roles on the page.
+- Pass `delay: 0` in the tooltip config. The default 250ms open delay is real time the snapshot would otherwise have to wait out, and it makes any retry racy.
+- End on an `await waitFor(...)` assertion for the state you want captured. It doubles as the wait Chromatic needs — a snapshot taken before the overlay has mounted is a flaky diff.
+- Drive **one** element per story. Hovering a second one closes the first, and only the final state is snapshotted, so a story showing several variants should hover the most interesting one.
+- Chromatic is the only real check on a `play` function: it fails the build with "component threw an error during testing" when one throws. A local render test can pass while the story fails, because the mount-effect timing above only shows up in Storybook.
 
 ## MDX Documentation Structure
 

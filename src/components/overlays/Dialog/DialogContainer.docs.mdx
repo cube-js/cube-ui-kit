@@ -179,6 +179,7 @@ function ConditionalDialog() {
 ## Best Practices
 
 1. **Do**: Use DialogContainer for dialogs without specific triggers
+
    ```jsx
    <DialogContainer isOpen={showErrorDialog} onDismiss={clearError}>
      <Dialog>
@@ -193,6 +194,7 @@ function ConditionalDialog() {
    ```
 
 2. **Don't**: Use DialogContainer when DialogTrigger is more appropriate
+
    ```jsx
    {/* Prefer DialogTrigger when you have a specific trigger */}
    <DialogContainer isOpen={buttonPressed}>

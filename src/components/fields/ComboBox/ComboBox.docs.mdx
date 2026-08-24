@@ -73,6 +73,7 @@ A combobox component that combines a text input with a dropdown list, allowing u
 **clearOnBlur** - When `true`, clears both the selection and input when the input loses focus. When `false` (default), the input reverts to showing the current selection. Only applies to non-custom-value mode. Useful for search-like scenarios where you want to reset after each interaction.
 
 **popoverTrigger** - Controls how the popover opens:
+
 - `manual` - Only opens via trigger button or arrow keys
 - `input` (default) - Opens when user types + manual triggers
 - `focus` - Opens on input focus + typing + manual triggers
@@ -94,6 +95,7 @@ Supports all [Field properties](/docs/getting-started-field-properties--docs)
 Customizes the root wrapper element of the ComboBox (the input container).
 
 **Sub-elements:**
+
 - `Prefix` - Container for prefix content and icons
 - `Suffix` - Container for suffix content, validation icons, and action buttons
 - `InputIcon` - Container for the left icon
@@ -602,6 +604,7 @@ const [selectedKey, setSelectedKey] = useState(null);
 ## Best Practices
 
 1. **Do**: Provide clear labels and placeholders
+
    ```jsx
    <ComboBox
      label="Country"
@@ -612,6 +615,7 @@ const [selectedKey, setSelectedKey] = useState(null);
    ```
 
 2. **Do**: Use sections to group related options
+
    ```jsx
    <ComboBox label="Contact">
      <ComboBox.Section title="Recent">
@@ -624,6 +628,7 @@ const [selectedKey, setSelectedKey] = useState(null);
    ```
 
 3. **Do**: Enable `allowsCustomValue` when user input flexibility is needed
+
    ```jsx
    <ComboBox
      allowsCustomValue
@@ -635,6 +640,7 @@ const [selectedKey, setSelectedKey] = useState(null);
    ```
 
 4. **Don't**: Use ComboBox for a small fixed set of options
+
    ```jsx
    {/* Use Select instead for simple dropdowns */}
    <ComboBox label="Yes or No">
@@ -644,6 +650,7 @@ const [selectedKey, setSelectedKey] = useState(null);
    ```
 
 5. **Don't**: Disable filtering on large lists
+
    ```jsx
    {/* Defeats the purpose of ComboBox's search capability */}
    <ComboBox filter={false} label="Countries">
@@ -652,6 +659,7 @@ const [selectedKey, setSelectedKey] = useState(null);
    ```
 
 6. **Accessibility**: Always provide meaningful labels and descriptions
+
    ```jsx
    <ComboBox
      label="Product Category"
@@ -663,6 +671,7 @@ const [selectedKey, setSelectedKey] = useState(null);
    ```
 
 7. **Performance**: Use `items` prop with render function for dynamic lists
+
    ```jsx
    <ComboBox items={largeDataset}>
      {(item) => <ComboBox.Item key={item.id}>{item.name}</ComboBox.Item>}
@@ -670,6 +679,7 @@ const [selectedKey, setSelectedKey] = useState(null);
    ```
 
 8. **Smart Behavior**: The ComboBox automatically shows all items when opening the popover after filtering yields no results
+
    ```jsx
    {/* User types "xyz" (no match), then clicks trigger - shows all items */}
    <ComboBox label="Search">
@@ -679,6 +689,7 @@ const [selectedKey, setSelectedKey] = useState(null);
    ```
 
 9. **Selected Item Sorting**: Use `items` prop for automatic selected-item-first sorting
+
    ```jsx
    {/* With items prop, selected item appears first by default */}
    <ComboBox items={options} defaultSelectedKey="option5">
@@ -687,10 +698,11 @@ const [selectedKey, setSelectedKey] = useState(null);
    ```
 
 10. **Independent Control**: Control input and selection separately when needed
+
     ```jsx
     const [inputValue, setInputValue] = useState('');
     const [selectedKey, setSelectedKey] = useState(null);
-    
+
     <ComboBox
       inputValue={inputValue}
       selectedKey={selectedKey}

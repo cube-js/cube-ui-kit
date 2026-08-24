@@ -2,12 +2,8 @@
 
 ## Requirements
 
-- [Node.js](https://nodejs.org/) 24 — the version in `.nvmrc`, which every CI
-  job uses too. This is a build requirement only; the published package still
-  supports Node >= 22 (see `engines` in `package.json`).
-- [pnpm](https://pnpm.io/) >= 10 — no Corepack needed. Any pnpm >= 10 will do:
-  it reads `packageManager` in `package.json` and switches itself to the
-  pinned version when you run a command in this repo.
+- [Node.js](https://nodejs.org/) 24 — the version in `.nvmrc`, which every CI job uses too. This is a build requirement only; the published package still supports Node >= 22 (see `engines` in `package.json`).
+- [pnpm](https://pnpm.io/) >= 10 — no Corepack needed. Any pnpm >= 10 will do: it reads `packageManager` in `package.json` and switches itself to the pinned version when you run a command in this repo.
 
 ## Getting Started
 
@@ -16,20 +12,24 @@ pnpm install
 pnpm storybook   # starts Storybook on http://localhost:6060
 ```
 
+## Markdown
+
+Prose in Markdown is never hard-wrapped: one paragraph is one line, in every `.md` and `.mdx` file — docs, specs and changesets alike. Prettier enforces it (`proseWrap: 'never'`), `pnpm fix` unwraps anything that slipped through, and a pre-commit hook formats staged Markdown for you.
+
 ## Commit Convention
 
 Follow the `category: message` format:
 
-| Category | Use for |
-|----------|---------|
-| `feat` | New features or components |
-| `fix` | Bug fixes (reference an issue when possible) |
+| Category   | Use for                                           |
+| ---------- | ------------------------------------------------- |
+| `feat`     | New features or components                        |
+| `fix`      | Bug fixes (reference an issue when possible)      |
 | `refactor` | Code changes that are neither a fix nor a feature |
-| `docs` | Documentation updates |
-| `build` | Build config or dependency changes |
-| `test` | Adding or updating tests |
-| `ci` | CI/CD configuration |
-| `chore` | Everything else (formatting, tooling, etc.) |
+| `docs`     | Documentation updates                             |
+| `build`    | Build config or dependency changes                |
+| `test`     | Adding or updating tests                          |
+| `ci`       | CI/CD configuration                               |
+| `chore`    | Everything else (formatting, tooling, etc.)       |
 
 See the [Conventional Commits](https://www.conventionalcommits.org/) spec for details.
 
@@ -51,11 +51,11 @@ pnpm fix            # lint + format
 pnpm changeset
 ```
 
-   [Learn more about Changesets.](https://github.com/atlassian/changesets/tree/master/packages/cli)
+[Learn more about Changesets.](https://github.com/atlassian/changesets/tree/master/packages/cli)
 
-   > For trivial changes (CI config, formatting, etc.) use `pnpm changeset add --empty`.
-   >
-   > If your changeset includes JSX snippets, disable live preview: `` ```jsx live=false ``
+> For trivial changes (CI config, formatting, etc.) use `pnpm changeset add --empty`.
+>
+> If your changeset includes JSX snippets, disable live preview: ` ```jsx live=false `
 
 4. **Push** and open a Pull Request against `main`.
 

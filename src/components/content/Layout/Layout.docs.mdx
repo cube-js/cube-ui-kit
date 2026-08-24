@@ -45,6 +45,7 @@ Supports [Base properties](/docs/getting-started-base-properties--docs).
 Customizes the root Layout element.
 
 **Sub-elements:**
+
 - `Inner` - The inner content wrapper that adjusts based on panel sizes
 
 ### Style Properties
@@ -65,6 +66,7 @@ These properties allow direct style application without using the `styles` prop:
 - `$content-padding` — `1x` (inherited by all sub-components for consistent inner padding)
 
 **Inner element:**
+
 - `position` — `absolute`
 - `inset` — Adjusts based on registered panel sizes
 - `display` — `flex`
@@ -92,6 +94,7 @@ A horizontal bar typically placed at the top for navigation and actions.
 - **`children`** `ReactNode` — Content split between left and right
 
 **Sub-elements:**
+
 - No sub-elements, styles apply to container
 
 ---
@@ -122,6 +125,7 @@ A semantic page header with title, breadcrumbs, subtitle, and action areas.
 - **`onBack`** `() => void` — Callback for the back button. When provided, a back arrow button appears to the left of the title.
 
 **Sub-elements:**
+
 - `Back` - Back button container (visible when `onBack` is provided)
 - `Breadcrumbs` - Navigation path container
 - `Title` - Main heading element
@@ -147,12 +151,14 @@ Scrollable content area with automatic overflow handling and custom scrollbar st
 - **`innerProps`** `HTMLAttributes<HTMLDivElement>` — Props to spread on the Inner sub-element
 
 **Scrollbar types:**
+
 - `default` - Browser default scrollbar
 - `thin` - Thin scrollbar (CSS native)
 - `tiny` - Custom hover-visible indicator (3px)
 - `none` - Hidden scrollbar (still scrollable)
 
 **Sub-elements:**
+
 - `Inner` - Scrollable inner container
 - `ScrollbarV` - Vertical scroll indicator (tiny mode)
 - `ScrollbarH` - Horizontal scroll indicator (tiny mode)
@@ -175,11 +181,13 @@ Horizontally centered content area with constrained width. Ideal for forms, arti
 - **`innerProps`** `HTMLAttributes<HTMLDivElement>` — Props to spread on the Inner sub-element
 
 **Width constraints:**
+
 - Minimum: `40x` (320px at default gap)
 - Default: `100%`
 - Maximum: `120x` (960px at default gap)
 
 **Sub-elements:**
+
 - `Inner` - Constrained width inner container
 
 ---
@@ -200,10 +208,12 @@ Centered content area for both horizontal and vertical alignment. Extends `Layou
 - **`isGoldenRatio`** `boolean` (default: `false`) — Position content slightly above the geometric center using the golden ratio (~38.2% empty space above, ~61.8% below). Only applies while content fits inside the container; once content overflows, falls back to the default centered behavior.
 
 **Styling differences from Container:**
+
 - Content is centered both horizontally and vertically
 - Text is center-aligned by default
 
 **Sub-elements:**
+
 - `Inner` - Constrained width inner container with `text-align: center`
 
 ---
@@ -320,6 +330,7 @@ Resizable inline section within a layout. Unlike Layout.Panel (which is absolute
 - **`innerProps`** `HTMLAttributes<HTMLDivElement>` — Props to spread on the Inner sub-element
 
 **Sub-elements:**
+
 - `Inner` - Scrollable inner container
 - `ScrollbarV` - Vertical scroll indicator (tiny mode)
 - `ScrollbarH` - Horizontal scroll indicator (tiny mode)
@@ -606,6 +617,7 @@ function StickyPanelExample() {
 ### Overlay Panel
 
 In `overlay` mode, a semi-transparent backdrop appears behind the panel. The panel is dismissed (when `isDismissable` is true, which is the default) when:
+
 - Clicking the backdrop overlay
 - Pressing Escape anywhere in the Layout
 - Moving focus to the main content area
@@ -876,4 +888,3 @@ Panel transitions are disabled during drag operations and initial mount to preve
 - [Layout Guide](/docs/getting-started-complex-layout--docs) - Patterns and examples for building layouts
 - [Dialog](/docs/overlays-dialog--docs) - For modal panels
 - [Item](/docs/content-item--docs) - Used by PanelHeader
-

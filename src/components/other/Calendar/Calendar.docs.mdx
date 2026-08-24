@@ -6,23 +6,15 @@ import * as CalendarStories from './Calendar.stories.tsx';
 
 # Calendar
 
-`Calendar` renders a month grid for picking a single date. `RangeCalendar` picks
-a contiguous range, and `PeriodCalendar` picks a whole month, quarter or year.
-All three are the panels behind the date fields — [DatePicker](/docs/forms-datepicker--docs),
-[DateRangePicker](/docs/forms-daterangepicker--docs) and the
-[period pickers](/docs/forms-periodpicker--docs) — and they are built on
-React Aria's `useCalendar` / `useRangeCalendar`.
+`Calendar` renders a month grid for picking a single date. `RangeCalendar` picks a contiguous range, and `PeriodCalendar` picks a whole month, quarter or year. All three are the panels behind the date fields — [DatePicker](/docs/forms-datepicker--docs), [DateRangePicker](/docs/forms-daterangepicker--docs) and the [period pickers](/docs/forms-periodpicker--docs) — and they are built on React Aria's `useCalendar` / `useRangeCalendar`.
 
-The header title is the navigation: the month and the year are buttons that open
-a month list and a year list, so reaching a date two years out takes two clicks
-instead of twenty-four.
+The header title is the navigation: the month and the year are buttons that open a month list and a year list, so reaching a date two years out takes two clicks instead of twenty-four.
 
 ## When to Use
 
 - Embedding a calendar directly in a page or panel rather than behind a field
 - Building a custom date input that needs the same grid and states
-- Otherwise, prefer the date fields — they add the text input, label, validation
-  and popover for you
+- Otherwise, prefer the date fields — they add the text input, label, validation and popover for you
 
 ## Component
 
@@ -48,14 +40,13 @@ instead of twenty-four.
 
 #### RangeCalendar
 
-Accepts React Aria's `AriaRangeCalendarProps` (a `{ start, end }` value) plus
-**`hasMonthYearNavigation`**.
+Accepts React Aria's `AriaRangeCalendarProps` (a `{ start, end }` value) plus **`hasMonthYearNavigation`**.
 
 #### PeriodCalendar
 
 - **`picker`** `'month' | 'quarter' | 'year'` — Which period the panel selects
 - **`value`** `DateValue | null` — The selected period, represented by its start date
-- **`minValue`** / **`maxValue`** `DateValue | null` — Range limits; a period is disabled only when *all* of it falls outside
+- **`minValue`** / **`maxValue`** `DateValue | null` — Range limits; a period is disabled only when _all_ of it falls outside
 - **`isDateUnavailable`** `(date: DateValue) => boolean` — Called with the period's start date
 - **`isDisabled`** `boolean`
 - **`autoFocus`** `boolean` — Moves focus into the grid on mount
@@ -69,16 +60,16 @@ Supports [Base properties](/docs/getting-started-base-properties--docs)
 
 Day cells and period cells share one set of modifiers:
 
-| Modifier      | Type      | Description                                          |
-| ------------- | --------- | ---------------------------------------------------- |
-| `selected`    | `boolean` | The cell is part of the current selection            |
-| `current`     | `boolean` | The cell contains today                              |
-| `outside`     | `boolean` | The cell belongs to an adjacent month or decade      |
-| `rangeHover`  | `boolean` | The whole row is highlighted (week mode)             |
-| `pressed`     | `boolean` | The cell is being pressed                            |
-| `focused`     | `boolean` | The cell holds keyboard focus                        |
-| `disabled`    | `boolean` | The cell is outside `minValue` / `maxValue`          |
-| `unavailable` | `boolean` | `isDateUnavailable` returned `true` for the cell     |
+| Modifier      | Type      | Description                                      |
+| ------------- | --------- | ------------------------------------------------ |
+| `selected`    | `boolean` | The cell is part of the current selection        |
+| `current`     | `boolean` | The cell contains today                          |
+| `outside`     | `boolean` | The cell belongs to an adjacent month or decade  |
+| `rangeHover`  | `boolean` | The whole row is highlighted (week mode)         |
+| `pressed`     | `boolean` | The cell is being pressed                        |
+| `focused`     | `boolean` | The cell holds keyboard focus                    |
+| `disabled`    | `boolean` | The cell is outside `minValue` / `maxValue`      |
+| `unavailable` | `boolean` | `isDateUnavailable` returned `true` for the cell |
 
 ## Examples
 
@@ -103,8 +94,7 @@ import { parseDate } from '@internationalized/date';
 
 ### Limited Range
 
-Months and years that fall entirely outside `minValue` / `maxValue` are disabled
-in the month and year lists too, and the navigation arrows stop at the edge.
+Months and years that fall entirely outside `minValue` / `maxValue` are disabled in the month and year lists too, and the navigation arrows stop at the edge.
 
 <Story of={CalendarStories.LimitedRange} />
 
@@ -171,32 +161,25 @@ Month and year lists:
 ### Screen Reader Support
 
 - Each panel is a `grid`, labelled `Months` / `Quarters` / `Years`
-- The visible month and year are the calendar's `heading`, and their buttons are
-  the controls that open the lists
+- The visible month and year are the calendar's `heading`, and their buttons are the controls that open the lists
 - Cells expose `aria-selected`; out-of-range periods are `disabled`
 
 ## Best Practices
 
-1. **Do**: bound the calendar when the domain is bounded — the month and year
-   lists disable everything out of range, which is far clearer than letting the
-   user land somewhere unselectable.
+1. **Do**: bound the calendar when the domain is bounded — the month and year lists disable everything out of range, which is far clearer than letting the user land somewhere unselectable.
 
    ```jsx
    <Calendar minValue={today(getLocalTimeZone())} />
    ```
 
-2. **Don't**: reach for `PeriodCalendar` to pick a day. Its value is always the
-   *start* of a period, never an exact date.
+2. **Don't**: reach for `PeriodCalendar` to pick a day. Its value is always the _start_ of a period, never an exact date.
 
-3. **Accessibility**: always give a standalone calendar an `aria-label` — inside
-   a field the label comes from the field.
+3. **Accessibility**: always give a standalone calendar an `aria-label` — inside a field the label comes from the field.
 
 ## Suggested Improvements
 
-- Range calendars paint every day in the range the same way; distinct start/end
-  caps would read better for long ranges.
-- Multi-month (`visibleDuration`) layouts are not implemented; the header falls
-  back to a plain title when a range spans more than one month.
+- Range calendars paint every day in the range the same way; distinct start/end caps would read better for long ranges.
+- Multi-month (`visibleDuration`) layouts are not implemented; the header falls back to a plain title when a range spans more than one month.
 
 ## Related Components
 

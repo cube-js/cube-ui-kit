@@ -84,6 +84,7 @@ Supports the layout-related [Field properties](/docs/getting-started-field-prope
 Customizes the root wrapper element of the SearchComboBox (the input container).
 
 **Sub-elements:**
+
 - `Prefix` - Container for prefix content and icons
 - `Suffix` - Container for suffix content, status icons, and action buttons
 - `InputIcon` - Container for the left icon
@@ -258,11 +259,13 @@ useEffect(() => {
 ## Best Practices
 
 1. **Do**: Debounce server requests before updating `items`
+
    ```jsx
    <SearchComboBox filter={false} isLoading={isLoading} items={results} />
    ```
 
 2. **Do**: Provide a meaningful `emptyLabel` for both the empty and loading states
+
    ```jsx
    <SearchComboBox emptyLabel={query ? 'No results' : 'Type to search'} />
    ```

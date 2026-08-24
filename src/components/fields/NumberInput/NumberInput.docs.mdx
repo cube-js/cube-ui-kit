@@ -61,6 +61,7 @@ Supports all [Field properties](/docs/getting-started-field-properties--docs)
 Customizes the root element of the component.
 
 **Sub-elements:**
+
 - `InputWrapper` – container around the input field
 - `Prefix` – wrapper around prefix content
 - `Suffix` – wrapper around suffix content
@@ -165,11 +166,13 @@ The `mods` prop accepts the following modifiers you can override:
 ## Best Practices
 
 1. **Do**: Provide clear labels and helpful placeholder text
+
    ```jsx
    <NumberInput label="Quantity" placeholder="0" />
    ```
 
 2. **Don't**: Use placeholder text as the only label
+
    ```jsx
    {/* Avoid this */}
    <NumberInput placeholder="Enter a number" />

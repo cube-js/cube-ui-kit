@@ -112,6 +112,7 @@ The `mods` property accepts the following modifiers you can override:
 - `tabs` - Connected tab-style buttons (compact, clear styling)
 
 **Default Orientation:**
+
 - `radio` type: vertical
 - `button` and `tabs` types: horizontal
 
@@ -121,20 +122,22 @@ The `mods` property accepts the following modifiers you can override:
 - `horizontal` - Arrange radio options horizontally
 
 The orientation is automatically set based on the `type`:
+
 - Traditional radios default to vertical
 - Button and tabs types default to horizontal for better UX
 
 ### Size
 
 Controls the size of all radio buttons in the group:
+
 - `xsmall` - Extra small size
 - `small` - Small size
 - `medium` - Medium size (default)
 - `large` - Large size
 - `xlarge` - Extra large size
 
-**Size Mapping in Tabs Mode:**
-When `type="tabs"`, sizes are automatically mapped to maintain visual consistency:
+**Size Mapping in Tabs Mode:** When `type="tabs"`, sizes are automatically mapped to maintain visual consistency:
+
 - `large` → `medium`
 - every other size → `xsmall`
 
@@ -143,11 +146,13 @@ Only `large` is carried through; `xsmall`, `small`, `medium` and `xlarge` all co
 ### Button Type
 
 When using `type="button"`, you can customize the button appearance:
+
 - `outline` - Outlined buttons (default); `isSelected` state adds brand-tinted fill
 - `clear` - Minimal buttons without background; `isSelected` state adds brand-tinted fill
 - `primary` - Primary action buttons with smart styling: selected buttons use primary style, non-selected buttons use outline with brand tint
 
-**Note:** 
+**Note:**
+
 - The `buttonType` prop is ignored when `type="tabs"`. Tabs always use `clear` styling for visual consistency.
 
 ## Examples
@@ -297,6 +302,7 @@ When using `type="button"`, you can customize the button appearance:
 ## Best Practices
 
 1. **Do**: Provide clear, descriptive labels for both group and options
+
    ```jsx
    <Radio.Group label="Preferred contact method">
      <Radio value="email">Email</Radio>
@@ -305,6 +311,7 @@ When using `type="button"`, you can customize the button appearance:
    ```
 
 2. **Don't**: Use radio groups for more than 7 options
+
    ```jsx
    <Radio.Group label="Country"> {/* Use Select instead */}
      {/* Too many options... */}
@@ -312,19 +319,20 @@ When using `type="button"`, you can customize the button appearance:
    ```
 
 3. **Visual Type**: Use `Radio.Tabs` for compact toolbars, `type="button"` for spaced selections, traditional radios for forms
+
    ```jsx
    {/* Good for compact toolbars */}
    <Radio.Tabs label="View">
      <Radio value="list">List</Radio>
      <Radio value="grid">Grid</Radio>
    </Radio.Tabs>
-   
+
    {/* Good for button selections */}
    <Radio.Group type="button" label="Priority">
      <Radio value="low">Low</Radio>
      <Radio value="high">High</Radio>
    </Radio.Group>
-   
+
    {/* Good for forms */}
    <Radio.Group label="Gender">
      <Radio value="male">Male</Radio>

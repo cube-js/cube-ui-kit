@@ -30,7 +30,7 @@ pnpm list @tenphi/tasty @tenphi/glaze
 
 Project-specific working rules for AI agents. Not published with the package.
 
-- [coding.md](docs/rules/coding.md) — development flow, code style, knowledge maintenance
+- [coding.md](docs/rules/coding.md) — development flow, code style, Markdown formatting, knowledge maintenance
 - [input-components.md](docs/rules/input-components.md) — form-attachable input components (`useFieldProps`, validation props, `wrapWithField`)
 - [storybook.md](docs/rules/storybook.md) — `.stories.tsx` and `.docs.mdx` authoring, including the `play`-function rule below
 - [documentation.md](docs/rules/documentation.md) — `.docs.mdx` structure + update flow
@@ -48,6 +48,7 @@ When making code changes that affect end users or the public API, **always add a
 - Keep the summary concise and user-focused (`"@cube-dev/ui-kit": patch|minor` frontmatter).
 - Skip changesets for docs-only, test-only, Storybook-only, or internal tooling that does not affect package consumers. Also skip fixes for issues introduced and resolved within the same PR.
 - Add changeset manually (no CLI) — full guidelines: [`.cursor/commands/add-changeset.md`](.cursor/commands/add-changeset.md).
+- Write the summary unwrapped: one paragraph is one line, like every other Markdown file here (see [Markdown rules](docs/rules/coding.md#markdown-rules)).
 
 ## Stories: Interaction-Only States
 
@@ -59,7 +60,7 @@ Answering "what CSS does this actually produce?" is one call, not a throwaway vi
 
 Use it as freely as you like, either tier: it is a throwaway question-answering tool, so nothing here needs justifying. It is also the honest way to check a styling claim before you write it into a doc or a review. `pnpm probe:browser` adds the four things jsdom cannot do — computed values, geometry, pointer behaviour, screenshots — at the cost of a browser binary and a slower start.
 
-**Read [`docs/rules/probe.md`](docs/rules/probe.md)** for the modes, the jsdom blind spots that make an answer jsdom's rather than the truth, the one-time `pnpm exec playwright install chromium`, and how the `*.browser.test.tsx` suite differs (that one *is* in CI, and the probe's freedom does not extend to it).
+**Read [`docs/rules/probe.md`](docs/rules/probe.md)** for the modes, the jsdom blind spots that make an answer jsdom's rather than the truth, the one-time `pnpm exec playwright install chromium`, and how the `*.browser.test.tsx` suite differs (that one _is_ in CI, and the probe's freedom does not extend to it).
 
 The DOM helpers behind it live in `src/probe/` and ship as the `@cube-dev/ui-kit/probe` entry, which Cube Cloud's own `yarn probe` imports. Changing them is a change to published API.
 
@@ -138,23 +139,11 @@ See `src/stories/Usage.docs.mdx` (Storybook → **Getting Started / Usage**) for
 
 Full rules in [`src/i18n/README.md`](src/i18n/README.md). The short version:
 
-- **Scope: strings a component renders.** Anything the component itself puts in
-  front of a user — visible text, `aria-label`, `aria-roledescription`, live-region
-  announcements, `title` — goes through `useI18n()`:
-  `t('component.key', 'English default')`. The inline English stays as a
-  belt-and-braces fallback.
-- **Not for stories, docs, or tests.** Storybook stories, `.docs.mdx`, and specs are
-  demo and fixture copy, not product UI. Use plain literals there — a locale key
-  that exists only to feed a story is noise in twelve files, and a test that reads
-  its expectation from the bundle asserts nothing about the string.
-- **Component props that expose a label stay overrides** that win over the
-  translated default: `emptyLabel = t('...', 'No items')`.
-- **All 12 locales, every time.** `en-US` is the source of truth;
-  `locale-parity.test.ts` fails CI if any locale's key set or `{{interpolation}}`
-  tokens diverge. Interpolation is `{{double}}` braces with no ICU, so plurals need
-  separate keys rather than a plural rule.
-- **If a string doubles as a DOM selector**, build the selector from the same
-  `t(...)` value so the two cannot drift when the language changes.
+- **Scope: strings a component renders.** Anything the component itself puts in front of a user — visible text, `aria-label`, `aria-roledescription`, live-region announcements, `title` — goes through `useI18n()`: `t('component.key', 'English default')`. The inline English stays as a belt-and-braces fallback.
+- **Not for stories, docs, or tests.** Storybook stories, `.docs.mdx`, and specs are demo and fixture copy, not product UI. Use plain literals there — a locale key that exists only to feed a story is noise in twelve files, and a test that reads its expectation from the bundle asserts nothing about the string.
+- **Component props that expose a label stay overrides** that win over the translated default: `emptyLabel = t('...', 'No items')`.
+- **All 12 locales, every time.** `en-US` is the source of truth; `locale-parity.test.ts` fails CI if any locale's key set or `{{interpolation}}` tokens diverge. Interpolation is `{{double}}` braces with no ICU, so plurals need separate keys rather than a plural rule.
+- **If a string doubles as a DOM selector**, build the selector from the same `t(...)` value so the two cannot drift when the language changes.
 
 ## TypeScript & Exports
 
@@ -163,12 +152,12 @@ Full rules in [`src/i18n/README.md`](src/i18n/README.md). The short version:
 - **Barrel exports:** every category has an `index.ts`; everything re-exports through `src/index.ts`.
 - **Compound components:** `Object.assign(Button, { Group: ButtonGroup, Split: ButtonSplit })`.
 - **Tasty re-exports:** only types are re-exported. Runtime imports (`tasty`, `extractStyles`, `filterBaseProps`) come directly from `@tenphi/tasty`.
-- **`Aria*Props` from `react-aria` silently resolve to `any`.** `tsconfig.json` sets `preserveSymlinks: true`, so TS resolves `react-aria`'s re-exports from the symlink path and never finds the `@react-aria/*` subpackages (they are not direct dependencies); `skipLibCheck` then hides the failure. Consequences: `interface X extends AriaFooProps` contributes **no** members (`keyof X` drops them), while `Omit<AriaFooProps, …>` becomes an index signature that accepts *anything*. Either way those props are unchecked. So declare the Aria props a component genuinely supports — see `ToggleSelectionProps` in `src/shared/form.ts`, which restores `onChange` for `Switch`/`Checkbox`. Removing `preserveSymlinks` is the real fix but surfaces ~320 previously-hidden errors across ~60 files, so it needs its own migration.
+- **`Aria*Props` from `react-aria` silently resolve to `any`.** `tsconfig.json` sets `preserveSymlinks: true`, so TS resolves `react-aria`'s re-exports from the symlink path and never finds the `@react-aria/*` subpackages (they are not direct dependencies); `skipLibCheck` then hides the failure. Consequences: `interface X extends AriaFooProps` contributes **no** members (`keyof X` drops them), while `Omit<AriaFooProps, …>` becomes an index signature that accepts _anything_. Either way those props are unchecked. So declare the Aria props a component genuinely supports — see `ToggleSelectionProps` in `src/shared/form.ts`, which restores `onChange` for `Switch`/`Checkbox`. Removing `preserveSymlinks` is the real fix but surfaces ~320 previously-hidden errors across ~60 files, so it needs its own migration.
 
 ## Testing
 
 - **Helpers:** `renderWithRoot` (wraps with `<Root>`), `renderWithForm` (returns `{ formInstance, ...renderResult }`).
 - **QA selectors:** `qa` prop → `data-qa` attribute → `screen.getByTestId('name')` (`testIdAttribute` is configured to `data-qa`).
 - **Tasty snapshots:** `toMatchTastySnapshot()` captures markup + CSS together.
-- **Not every question needs a spec.** If you only want to *see* what something renders, run [`pnpm probe`](#inspecting-rendered-html--css--pnpm-probe) instead of writing a spec to delete afterwards.
+- **Not every question needs a spec.** If you only want to _see_ what something renders, run [`pnpm probe`](#inspecting-rendered-html--css--pnpm-probe) instead of writing a spec to delete afterwards.
 - Patterns: see [docs/rules/tests.md](docs/rules/tests.md).

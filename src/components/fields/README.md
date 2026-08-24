@@ -3,6 +3,7 @@
 Form field components with built-in validation, accessibility, and React Aria integration.
 
 ## Text Input Fields
+
 - **TextInput** - Basic text input
 - **PasswordInput** - Password input with visibility toggle
 - **SearchInput** - Search input with clear button
@@ -11,6 +12,7 @@ Form field components with built-in validation, accessibility, and React Aria in
 - **Input** - Low-level input component
 
 ## Selection Fields
+
 - **Select** - Single selection dropdown
 - **Picker** - Single/multi selection with search and customization
 - **ComboBox** - Autocomplete text input with suggestions
@@ -19,11 +21,13 @@ Form field components with built-in validation, accessibility, and React Aria in
 - **FilterPicker** - Dropdown multi-select with filtering
 
 ## Choice Fields
+
 - **Checkbox** / **CheckboxGroup** - Boolean or multi-choice selection
 - **RadioGroup** / **Radio** - Single choice from multiple options
 - **Switch** - Boolean toggle
 
 ## Range & Date Fields
+
 - **Slider** / **RangeSlider** - Single or range value selection
 - **DatePicker** - Single date selection
 - **DateRangePicker** - Date range selection
@@ -31,8 +35,8 @@ Form field components with built-in validation, accessibility, and React Aria in
 - **DateInput** / **TimeInput** - Manual date/time entry
 
 ## Other
+
 - **FileInput** - File upload with drag & drop
 - **TextInputMapper** - Dynamic input type mapping
 
 All fields support form integration, validation rules, error states, and accessibility features.
-

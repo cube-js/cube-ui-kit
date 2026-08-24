@@ -42,6 +42,7 @@ function MyComponent(props: MyComponentProps) {
 ```
 
 **Filter options:**
+
 - `eventProps: true` - Include standard DOM event handlers (onClick, onFocus, etc.)
 - `labelable: true` - Include ARIA labeling properties
 - `propNames: Set<string>` - Include specific additional properties
@@ -100,7 +101,7 @@ import {
   filterBaseProps,
 } from '@tenphi/tasty';
 
-interface MyComponentProps 
+interface MyComponentProps
   extends AllBaseProps,
     ContainerStyleProps,
     TextStyleProps {
@@ -108,7 +109,7 @@ interface MyComponentProps
 
 function MyComponent(props: MyComponentProps) {
   const styles = extractStyles(props, [...CONTAINER_STYLES, ...TEXT_STYLES]);
-  
+
   return (
     <Element
       {...filterBaseProps(props, { eventProps: true })}
@@ -159,6 +160,7 @@ function MyComponent({ isLoading, mods, ...props }: MyComponentProps) {
 ```
 
 **Usage:**
+
 ```tsx
 <MyComponent mods={{ custom: true, highlighted: isHighlighted }} />
 // Renders: <div data-custom data-highlighted class="...">
@@ -173,7 +175,7 @@ const MyElement = tasty({
   styles: {
     display: 'flex',
     gap: '1x',
-    
+
     // Sub-element styles
     Icon: {
       preset: 'h3',
@@ -196,6 +198,7 @@ function MyComponent(props) {
 ```
 
 **Usage with style overrides:**
+
 ```tsx
 <MyComponent
   styles={{
@@ -208,6 +211,7 @@ function MyComponent(props) {
 ```
 
 **When to use sub-elements:**
+
 - Elements that should share the parent's state (hover, focus, disabled, etc.)
 - Tightly coupled UI parts (icon + label, title + subtitle)
 - When you want a single `styles` prop to control everything
@@ -228,7 +232,7 @@ interface MyComponentProps extends AllBaseProps {
 
 function MyComponent({ iconStyles, labelStyles, ...props }: MyComponentProps) {
   const styles = extractStyles(props, CONTAINER_STYLES);
-  
+
   return (
     <Element styles={styles}>
       <IconElement styles={iconStyles} />
@@ -239,6 +243,7 @@ function MyComponent({ iconStyles, labelStyles, ...props }: MyComponentProps) {
 ```
 
 **When to use additional style properties:**
+
 - Inner elements need independent state management (separate hover, focus behaviors)
 - Complex components with multiple logical sections
 - Components that need fine-grained styling control
@@ -255,7 +260,7 @@ import { useRef } from 'react';
 function MyButton(props) {
   const ref = useRef();
   const { buttonProps } = useButton(props, ref);
-  
+
   return (
     <Element
       {...buttonProps}
@@ -271,6 +276,7 @@ function MyButton(props) {
 ### Example 1: Block Component (Basic)
 
 This demonstrates a basic component with:
+
 - Base properties support
 - All container style properties
 - Clean, minimal implementation
@@ -312,6 +318,7 @@ export const Block = forwardRef(function Block(props: CubeBlockProps, ref) {
 ### Example 2: Action Component (Advanced)
 
 This demonstrates advanced features:
+
 - React Aria integration (`useButton`)
 - Complex modifier handling
 - Multiple style property sets
@@ -388,7 +395,7 @@ export const Action = forwardRef(function Action(
     },
     domRef,
   );
-  
+
   const { hoverProps, isHovered } = useHover({ isDisabled });
 
   const styles = extractStyles(props, STYLE_PROPS);
@@ -418,7 +425,7 @@ export const Action = forwardRef(function Action(
 For input components that need to integrate with forms, see the [Field documentation](/docs/forms-field--docs) for comprehensive guidance on:
 
 - Form state management
-- Validation integration  
+- Validation integration
 - Label and help text handling
 - Error state management
 - Accessibility requirements for form controls
@@ -459,7 +466,7 @@ When creating a new component, consider:
 
 - [ ] Base properties support (`AllBaseProps`, `filterBaseProps`)
 - [ ] Appropriate style property sets
-- [ ] Modifier (`mods`) support for state-based styling  
+- [ ] Modifier (`mods`) support for state-based styling
 - [ ] Additional style properties for inner elements
 - [ ] Sub-element definitions for targeted styling
 - [ ] React Aria integration for accessibility

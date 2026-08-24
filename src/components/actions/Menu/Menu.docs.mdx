@@ -70,6 +70,7 @@ Supports [Base properties](/docs/getting-started-base-properties--docs)
 Customizes the root menu container element.
 
 **Sub-elements:**
+
 - `Header` - Optional header element at the top of the menu
 - `Divider` - Separator elements between sections
 
@@ -78,14 +79,17 @@ Customizes the root menu container element.
 Customizes individual menu items.
 
 **Sub-elements:**
+
 - `Icon` - Icon element within menu items
 - `Text` - Main text content of menu items
 - `Description` - Secondary text content for items with descriptions
+
 #### sectionStyles
 
 Customizes section container elements.
 
 **Sub-elements:**
+
 - `SectionHeading` - Section title/heading element
 
 #### sectionHeadingStyles
@@ -125,6 +129,7 @@ The `mods` property accepts the following modifiers you can override:
 - **`selectedKeys`** `string[]` — Currently selected keys (controlled)
 - **`defaultSelectedKeys`** `string[]` — Initially selected keys (uncontrolled)
 - **`onSelectionChange`** `(keys: string[]) => void` — Handler for selection changes
+
 ### State Properties
 
 - **`disabledKeys`** `Iterable<Key>` — Keys of disabled items
@@ -175,16 +180,16 @@ For detailed information about all available item properties, see [Item document
 
 ```jsx
 <Menu>
-  <Menu.Item 
-    key="save" 
+  <Menu.Item
+    key="save"
     icon={<IconSave />}
     hotkeys="cmd+s"
     description="Save the current document"
   >
     Save
   </Menu.Item>
-  <Menu.Item 
-    key="export" 
+  <Menu.Item
+    key="export"
     icon={<IconExport />}
     suffix="PDF"
     tooltip="Export as PDF file"
@@ -223,6 +228,7 @@ For detailed information about all available item properties, see [Item document
 ## Selection Modes
 
 ### None (Default)
+
 Items are not selectable and only trigger `onAction` when activated.
 
 ```jsx
@@ -233,6 +239,7 @@ Items are not selectable and only trigger `onAction` when activated.
 ```
 
 ### Single Selection
+
 Only one item can be selected at a time.
 
 ```jsx
@@ -243,6 +250,7 @@ Only one item can be selected at a time.
 ```
 
 ### Multiple Selection
+
 Multiple items can be selected simultaneously.
 
 ```jsx
@@ -317,8 +325,8 @@ const items = [
   <Menu.Item key="copy" tooltip="Copy selected text">
     Copy
   </Menu.Item>
-  <Menu.Item 
-    key="paste" 
+  <Menu.Item
+    key="paste"
     tooltip={{ title: "Paste from clipboard", placement: "left" }}
   >
     Paste
@@ -332,7 +340,7 @@ const items = [
 <Menu onAction={(key) => console.log(key)}>
   <Menu.Item key="copy">Copy</Menu.Item>
   <Menu.Item key="paste">Paste</Menu.Item>
-  
+
   <Menu.SubMenuTrigger>
     <Menu.Item key="share">Share</Menu.Item>
     <Menu onAction={(key) => console.log(key)}>
@@ -341,7 +349,7 @@ const items = [
       <Menu.Item key="share-sms">SMS</Menu.Item>
     </Menu>
   </Menu.SubMenuTrigger>
-  
+
   <Menu.Item key="delete">Delete</Menu.Item>
 </Menu>
 ```
@@ -351,13 +359,13 @@ const items = [
 ```jsx
 <Menu onAction={(key) => console.log(key)}>
   <Menu.Item key="new">New File</Menu.Item>
-  
+
   <Menu.SubMenuTrigger>
     <Menu.Item key="export">Export</Menu.Item>
     <Menu onAction={(key) => console.log(key)}>
       <Menu.Item key="export-pdf">Export as PDF</Menu.Item>
       <Menu.Item key="export-image">Export as Image</Menu.Item>
-      
+
       <Menu.SubMenuTrigger>
         <Menu.Item key="export-formats">More formats</Menu.Item>
         <Menu onAction={(key) => console.log(key)}>
@@ -376,7 +384,7 @@ const items = [
 ```jsx
 <Menu onAction={(key) => console.log(key)}>
   <Menu.Item key="copy">Copy</Menu.Item>
-  
+
   <Menu.SubMenuTrigger>
     <Menu.Item key="settings">Settings</Menu.Item>
     <Menu onAction={(key) => console.log(key)}>
@@ -426,12 +434,14 @@ const items = [
 ## Best Practices
 
 1. **Clear Labels**: Use descriptive, action-oriented labels
+
    ```jsx
    <Menu.Item key="save">Save Document</Menu.Item> // Good
    <Menu.Item key="save">Save</Menu.Item> // Less clear
    ```
 
 2. **Logical Grouping**: Group related actions using sections
+
    ```jsx
    <Menu.Section title="File Operations">
      <Menu.Item key="new">New</Menu.Item>
@@ -440,16 +450,19 @@ const items = [
    ```
 
 3. **Keyboard Shortcuts**: Include shortcuts for common actions
+
    ```jsx
    <Menu.Item key="copy" hotkeys="Ctrl+C">Copy</Menu.Item>
    ```
 
 4. **Appropriate Selection**: Choose the right selection mode
+
    - Use `selectionMode="none"` for action menus
    - Use `selectionMode="single"` for mutually exclusive options
    - Use `selectionMode="multiple"` for independent toggles
 
 5. **Disabled States**: Clearly indicate unavailable actions
+
    ```jsx
    <Menu disabledKeys={['paste']}>
      <Menu.Item key="paste">Paste</Menu.Item>
