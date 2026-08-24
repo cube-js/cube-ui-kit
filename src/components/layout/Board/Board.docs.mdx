@@ -187,10 +187,7 @@ These properties allow direct style application without using the `styles` prop.
 
 ### Fixed matrix
 
-`rows` with `rowHeight="stretch"` gives a board of a declared size that fills its
-container: a `cols × rows` matrix whose cells resize with the box rather than a
-grid that grows a row at a time. Pair it with `compact="free"` for a canvas the
-author places things on directly.
+`rows` with `rowHeight="stretch"` gives a board of a declared size that fills its container: a `cols × rows` matrix whose cells resize with the box rather than a grid that grows a row at a time. Pair it with `compact="free"` for a canvas the author places things on directly.
 
 <Story of={BoardStories.FixedMatrix} />
 
@@ -345,23 +342,10 @@ Board deliberately does **not** use a collection role. `aria-selected` is only v
 
 ## Layout helpers
 
-Placement questions the board answers for itself during a gesture, exported so an
-app can ask them for a widget it adds programmatically. Without these, an app
-re-implements the scan, and the same drop lands in two different cells depending
-on whether a pointer or a code path served it.
+Placement questions the board answers for itself during a gesture, exported so an app can ask them for a widget it adds programmatically. Without these, an app re-implements the scan, and the same drop lands in two different cells depending on whether a pointer or a code path served it.
 
-- **`placeInFreeSlot(others, item, cols, maxRows?)`** — the first position at or
-  below the item's preferred cell where it fits without overlapping `others`,
-  scanning the preferred row first, then down, then up. Never past `maxRows`, and
-  never resizes to fit (only `w` is capped to `cols`). This is the rule the board
-  itself applies when a dragged widget cannot stay where it was dropped.
-- **`distributeEvenly(layout, { cols, rows })`** — tile every item evenly across
-  both axes, keeping the row structure the layout already has: items are grouped
-  into visual rows by their current `y`, `rows` is divided across the groups and
-  `cols` across each group's members. A line holding more items than the grid is
-  wide wraps into sub-rows. This is the one operation that deliberately *grows*
-  items — every gesture-driven path refuses to, which is why it is a call the app
-  makes rather than a mode the board is in.
+- **`placeInFreeSlot(others, item, cols, maxRows?)`** — the first position at or below the item's preferred cell where it fits without overlapping `others`, scanning the preferred row first, then down, then up. Never past `maxRows`, and never resizes to fit (only `w` is capped to `cols`). This is the rule the board itself applies when a dragged widget cannot stay where it was dropped.
+- **`distributeEvenly(layout, { cols, rows })`** — tile every item evenly across both axes, keeping the row structure the layout already has: items are grouped into visual rows by their current `y`, `rows` is divided across the groups and `cols` across each group's members. A line holding more items than the grid is wide wraps into sub-rows. This is the one operation that deliberately _grows_ items — every gesture-driven path refuses to, which is why it is a call the app makes rather than a mode the board is in.
 
 ## Attribution
 

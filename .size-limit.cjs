@@ -22,7 +22,8 @@ module.exports = [
     },
     // Still 515 kB on `@tenphi/tasty` 3.3.1: 508.53 kB locally against 509.94 kB
     // on 3.1.0 with both sides rebuilt here, i.e. -1.41 kB across the two
-    // releases. 3.2.0 added 0.69 kB for batched injection (the write queue and
+    // releases. (508.95 kB after merging `main`'s cols x rows Board matrix,
+    // which is that feature's 0.42 kB and not the dependency's.) 3.2.0 added 0.69 kB for batched injection (the write queue and
     // `TastyBatchProvider` sit in the always-included core, so they ship whether
     // or not an app turns batching on), and 3.3.0 gave back 2.10 kB by deleting
     // the colour-space decomposition: a `#name` token no longer emits a
