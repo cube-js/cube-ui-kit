@@ -1,6 +1,7 @@
 import { StoryFn } from '@storybook/react-vite';
 import { useState } from 'react';
 
+import { NO_SNAPSHOT } from '../../../stories/chromatic';
 import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Space } from '../../layout/Space';
@@ -195,6 +196,8 @@ export const Controlled: StoryFn = () => {
     </CommandTextArea>
   );
 };
+// Starts empty, so this is the same textarea `Default` photographs.
+Controlled.parameters = NO_SNAPSHOT;
 
 export const MentionTrigger: StoryFn = (props) => (
   <CommandTextArea
@@ -219,6 +222,8 @@ export const MentionTrigger: StoryFn = (props) => (
     ))}
   </CommandTextArea>
 );
+// The `@` popover never opens here, so the snapshot is an empty textarea.
+MentionTrigger.parameters = NO_SNAPSHOT;
 
 export const WithSections: StoryFn = (props) => (
   <CommandTextArea
@@ -261,6 +266,8 @@ export const WithSections: StoryFn = (props) => (
     </CommandTextArea.Section>
   </CommandTextArea>
 );
+// Sections live in the command popover, which only opens once you type `/`.
+WithSections.parameters = NO_SNAPSHOT;
 
 export const AutoSize: StoryFn = (props) => (
   <CommandTextArea
@@ -268,6 +275,13 @@ export const AutoSize: StoryFn = (props) => (
     label="Message"
     placeholder="Type / to see commands…"
     width="40x"
+    // Auto-sizing is only visible once there is enough text to grow the field.
+    // Empty, this story renders exactly like `Default` and shows nothing.
+    defaultValue={
+      'This field grows with its content instead of scrolling.\n' +
+      'Every line you add makes it taller,\n' +
+      'up to whatever the surrounding layout allows.'
+    }
     {...props}
   >
     {commands.map((c) => (
@@ -332,5 +346,7 @@ export const TopPopoverPosition: StoryFn = (props) => (
   </div>
 );
 TopPopoverPosition.parameters = {
+  // The popover never opens, so the placement it demonstrates is not captured.
+  ...NO_SNAPSHOT,
   layout: 'fullscreen',
 };

@@ -8,7 +8,7 @@ import {
 import { Fragment, useState } from 'react';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 
-import { DirectionIcon } from '../../../icons';
+import { DirectionIcon } from '../../../icons/DirectionIcon';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Button } from '../../actions/Button/Button';
 import { ItemAction } from '../../actions/ItemAction/ItemAction';
@@ -592,13 +592,18 @@ WithHotkeys.parameters = {
   },
 };
 
+// chromatic-overlay-reviewed: every tooltip here is configured with an explicit
+// `title`, and those do not open from a synthetic hover — deterministically, on
+// every run, though a real mouse opens them fine. A `play` function here would
+// throw and fail the whole Chromatic build. The tooltip *visual* is covered by
+// `Overlays/Tooltip`; what this story shows is the set of configurations.
 export const WithTooltip: StoryFn<CubeItemProps> = (args) => (
   <Space gap="2x" flow="column" placeItems="start">
     <Title level={5}>Simple String Tooltips</Title>
     <Space flow="column" placeItems="start">
       <Item
         {...args}
-        tooltip={{ title: 'Simple tooltip text', activeWrap: true }}
+        tooltip={{ title: 'Simple tooltip text', activeWrap: true, delay: 0 }}
         as="button"
         icon={<IconUser />}
         onClick={() => alert('Button clicked!')}
@@ -1758,6 +1763,10 @@ WithActions.parameters = {
   },
 };
 
+// chromatic-overlay-reviewed: `autoHideActions` reveals the actions through the
+// `@interacted` state, which resolves to CSS `:hover` — synthetic pointer events
+// cannot set that, so no play function can capture the revealed state. The
+// always-visible comparison row in the same story is what carries the coverage.
 export const WithActionsOnHover: StoryFn<CubeItemProps> = (args) => (
   <Space gap="2x" flow="column" placeItems="start">
     <Title level={5}>Actions Shown on Hover</Title>
@@ -2121,6 +2130,11 @@ WithAutoTooltip.parameters = {
   },
 };
 
+// chromatic-overlay-reviewed: its `tooltip={{ delay: 0 }}` is the object form,
+// which does not open reliably from a synthetic hover even once the label has
+// been resized into overflow — it opened on one run in three. A `play` that
+// fails intermittently fails the Chromatic build intermittently, which is worse
+// than no play at all. The resize button and the overflowing label are captured.
 export const DynamicAutoTooltip: StoryFn<CubeItemProps> = () => {
   const [width, setWidth] = useState('400px');
 

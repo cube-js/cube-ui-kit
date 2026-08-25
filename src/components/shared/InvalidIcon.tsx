@@ -1,4 +1,4 @@
-import { WarningIcon } from '../../icons';
+import { WarningIcon } from '../../icons/WarningIcon';
 
 export const InvalidIcon = (
   <WarningIcon data-element="ValidationIcon" color="#danger" />

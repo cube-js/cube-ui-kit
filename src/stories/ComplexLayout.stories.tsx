@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 
 import { Button } from '../components/actions';
 import { ItemButton } from '../components/actions/ItemButton/ItemButton';
@@ -244,6 +245,7 @@ export const StickyPanel: Story = {
 /**
  * Overlay panel with backdrop that dismisses on click, Escape, or focus change.
  */
+// chromatic-overlay-reviewed: the panel starts open
 export const OverlayPanel: Story = {
   render: function OverlayPanelStory() {
     const [isOpen, setIsOpen] = useState(true);
@@ -283,6 +285,17 @@ export const OverlayPanel: Story = {
  * Panel rendered as a dialog overlay instead of inline.
  */
 export const DialogModePanel: Story = {
+  // Starts closed, unlike `OverlayPanel` above — without this the snapshot is the trigger alone.
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await userEvent.click(
+      canvas.getByRole('button', { name: 'Open Settings' }),
+    );
+
+    await waitFor(() => expect(canvas.getByRole('dialog')).toBeVisible());
+  },
+
   render: function DialogModePanelStory() {
     const [isOpen, setIsOpen] = useState(false);
 

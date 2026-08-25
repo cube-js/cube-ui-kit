@@ -393,6 +393,7 @@ export const Nested: Story = {
 /**
  * Trigger with actions containing a Switch to control disabled state
  */
+// chromatic-overlay-reviewed: the switch in the trigger row is the subject and it renders inline
 export const TriggerWithActions: Story = {
   render: function TriggerWithActionsStory(args) {
     const [isDisabled, setIsDisabled] = useState(false);

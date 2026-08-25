@@ -20,7 +20,7 @@ import {
 import { useTextField } from 'react-aria';
 
 import { useEvent } from '../../../_internal';
-import { PipetteIcon } from '../../../icons';
+import { PipetteIcon } from '../../../icons/PipetteIcon';
 import { FieldBaseProps } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
 import { ItemAction, ItemActionProvider } from '../../actions';

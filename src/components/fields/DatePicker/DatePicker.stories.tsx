@@ -1,6 +1,7 @@
 import { StoryFn } from '@storybook/react-vite';
 import { userEvent, within } from 'storybook/test';
 
+import { NO_SNAPSHOT } from '../../../stories/chromatic';
 import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Space } from '../../layout/Space';
@@ -337,6 +338,8 @@ WithLimitedRange.args = {
   minValue: parseAbsoluteDate('2023-10-04'),
   maxValue: parseAbsoluteDate('2023-12-15'),
 };
+// The range bounds only show once the calendar opens; closed, this is `Default`.
+WithLimitedRange.parameters = NO_SNAPSHOT;
 
 export const WithLocale = Template.bind({});
 WithLocale.args = { useLocale: true };

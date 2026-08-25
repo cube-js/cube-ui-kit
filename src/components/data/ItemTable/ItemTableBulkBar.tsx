@@ -3,7 +3,7 @@ import { useState } from 'react';
 
 import { useEvent } from '../../../_internal/hooks';
 import { useI18n } from '../../../i18n';
-import { CloseIcon } from '../../../icons';
+import { CloseIcon } from '../../../icons/CloseIcon';
 import { Button } from '../../actions';
 import { Text } from '../../content/Text';
 

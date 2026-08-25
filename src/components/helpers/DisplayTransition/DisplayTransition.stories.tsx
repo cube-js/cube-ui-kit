@@ -1,6 +1,7 @@
 import { tasty } from '@tenphi/tasty';
 import { useState } from 'react';
 
+import { NO_SNAPSHOT } from '../../../stories/chromatic';
 import { Button } from '../../actions/Button';
 import { Card } from '../../content/Card/Card';
 import { Text } from '../../content/Text';
@@ -166,6 +167,9 @@ export const SlowTransition: Story = {
     animateOnMount: true,
     respectReducedMotion: true,
   },
+  // Starts hidden, so the snapshot is the bare toggle button that `Default`
+  // already photographs. The duration only exists mid-transition.
+  parameters: NO_SNAPSHOT,
 };
 
 export const NoAnimation: Story = {
@@ -175,6 +179,8 @@ export const NoAnimation: Story = {
     animateOnMount: true,
     respectReducedMotion: true,
   },
+  // Starts hidden; identical to `Default` at rest.
+  parameters: NO_SNAPSHOT,
 };
 
 export const NoMountAnimation: Story = {
@@ -263,6 +269,8 @@ export const NativeEventDetection: Story = {
     animateOnMount: true,
     respectReducedMotion: true,
   },
+  // Starts hidden; identical to `Default` at rest.
+  parameters: NO_SNAPSHOT,
 };
 
 export const PreserveContent: Story = {

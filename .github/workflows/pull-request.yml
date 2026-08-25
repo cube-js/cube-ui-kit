@@ -119,6 +119,22 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      # Built here rather than inside `chromaui/action` so the same output can
+      # be checked before it is uploaded. `--stats-json` writes the module graph
+      # TurboSnap traces (`onlyChanged`), which is also what the budget check
+      # below reads.
+      - name: Build Storybook
+        run: pnpm build-storybook
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+
+      # Fails when the set of files that force a *full* Chromatic build grows —
+      # one barrel import inside the Root decorator's dependency tree is enough
+      # to turn every PR into a 1000-snapshot build, and nothing else would
+      # notice. See scripts/chromatic-report.mjs.
+      - name: Check Chromatic snapshot budget
+        run: pnpm chromatic:check
+
       - name: Publish to Chromatic
         id: publish_chromatic
         uses: chromaui/action@v11
@@ -127,6 +143,7 @@ jobs:
           exitOnceUploaded: true
           onlyChanged: true
           debug: true
+          storybookBuildDir: storybook-static
           token: ${{ secrets.GITHUB_TOKEN }}
           projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
 

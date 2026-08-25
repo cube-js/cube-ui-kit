@@ -1,6 +1,6 @@
 import { tasty } from '@tenphi/tasty';
 
-import { CalendarIcon } from '../../../icons';
+import { CalendarIcon } from '../../../icons/CalendarIcon';
 import {
   CubeItemActionProps,
   ItemAction,

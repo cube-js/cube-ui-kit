@@ -3,7 +3,9 @@ import copy from 'clipboard-copy';
 import { ReactNode, useMemo, useState } from 'react';
 
 import { useI18n } from '../../../i18n';
-import { CopyIcon, EyeIcon, EyeInvisibleIcon } from '../../../icons';
+import { CopyIcon } from '../../../icons/CopyIcon';
+import { EyeIcon } from '../../../icons/EyeIcon';
+import { EyeInvisibleIcon } from '../../../icons/EyeInvisibleIcon';
 import { Action, Button } from '../../actions';
 import {
   CubePrismCodeProps,

@@ -21,10 +21,10 @@ import {
 } from 'react-aria';
 
 import { useI18n } from '../../../i18n';
-import { CloseIcon } from '../../../icons';
+import { CloseIcon } from '../../../icons/CloseIcon';
 import { mergeProps, SlotProvider } from '../../../utils/react';
 import { extractStyles } from '../../../utils/styles';
-import { ItemButton } from '../../actions';
+import { ItemButton } from '../../actions/ItemButton/ItemButton';
 import { useOpenTransitionContext } from '../Modal/OpenTransitionContext';
 
 import { useDialogContext } from './context';

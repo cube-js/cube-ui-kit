@@ -12,7 +12,7 @@ import { forwardRef, useRef } from 'react';
 import { AriaSwitchProps, useHover, useSwitch } from 'react-aria';
 import { useToggleState } from 'react-stately';
 
-import { LoadingIcon } from '../../../icons';
+import { LoadingIcon } from '../../../icons/LoadingIcon';
 import { FieldBaseProps, ToggleSelectionProps } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
