@@ -1,7 +1,7 @@
 import { act } from 'react';
 import { userEvent as realInput } from 'vitest/browser';
 
-import { DatabaseIcon } from '../../../icons';
+import { DatabaseIcon } from '../../../icons/DatabaseIcon';
 import { renderWithRoot, screen } from '../../../test';
 import { Button } from '../../actions/Button';
 

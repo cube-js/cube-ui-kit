@@ -1,7 +1,8 @@
 import { tasty } from '@tenphi/tasty';
 import { ReactNode } from 'react';
 
-import { LeftIcon, RightIcon } from '../../../icons';
+import { LeftIcon } from '../../../icons/LeftIcon';
+import { RightIcon } from '../../../icons/RightIcon';
 import { Button } from '../../actions';
 import { Title } from '../../content/Title';
 import { Space } from '../../layout/Space';

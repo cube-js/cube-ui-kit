@@ -28,7 +28,9 @@ import { Section as BaseSection, ListState, useListState } from 'react-stately';
 import { useEvent } from '../../../_internal';
 import { useWarn } from '../../../_internal/hooks/use-warn';
 import { useI18n } from '../../../i18n';
-import { CloseIcon, DirectionIcon, LoadingIcon } from '../../../icons';
+import { CloseIcon } from '../../../icons/CloseIcon';
+import { DirectionIcon } from '../../../icons/DirectionIcon';
+import { LoadingIcon } from '../../../icons/LoadingIcon';
 import { processSelectionArray } from '../../../utils/selection';
 import { extractStyles } from '../../../utils/styles';
 import {

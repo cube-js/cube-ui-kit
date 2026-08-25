@@ -4,7 +4,10 @@ import { forwardRef, useMemo } from 'react';
 
 import { useEvent } from '../../../_internal/hooks';
 import { useFormatter, useI18n } from '../../../i18n';
-import { BackwardIcon, ForwardIcon, LeftIcon, RightIcon } from '../../../icons';
+import { BackwardIcon } from '../../../icons/BackwardIcon';
+import { ForwardIcon } from '../../../icons/ForwardIcon';
+import { LeftIcon } from '../../../icons/LeftIcon';
+import { RightIcon } from '../../../icons/RightIcon';
 import { extractStyles } from '../../../utils/styles';
 import { Button } from '../../actions';
 import { Select } from '../../fields/Select';

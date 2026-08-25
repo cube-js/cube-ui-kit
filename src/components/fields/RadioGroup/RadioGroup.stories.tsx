@@ -1,6 +1,8 @@
 import { StoryFn } from '@storybook/react-vite';
 
-import { CheckIcon, CloseIcon, ExclamationIcon } from '../../../icons';
+import { CheckIcon } from '../../../icons/CheckIcon';
+import { CloseIcon } from '../../../icons/CloseIcon';
+import { ExclamationIcon } from '../../../icons/ExclamationIcon';
 import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Block } from '../../Block';

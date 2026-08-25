@@ -65,6 +65,10 @@ export default {
 //   );
 // };
 
+// `Form.SubmitError` forwards `CubeAlertProps` to the `Alert` it renders, so the
+// banner can be restyled without replacing the component. This template is the
+// only place that is documented — it used to be a byte-for-byte copy of
+// `SubmitErrorTemplate` below, which made its story an unreadable duplicate.
 const CustomSubmitErrorTemplate: StoryFn<typeof Form> = (args) => {
   const [form] = Form.useForm();
 
@@ -85,7 +89,7 @@ const CustomSubmitErrorTemplate: StoryFn<typeof Form> = (args) => {
         <TextInput />
       </Field>
       <Form.Submit>Submit</Form.Submit>
-      <Form.SubmitError />
+      <Form.SubmitError shape="sharp" theme="warning" />
     </Form>
   );
 };

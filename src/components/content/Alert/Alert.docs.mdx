@@ -1,4 +1,4 @@
-import { Meta } from '@storybook/addon-docs/blocks';
+import { Meta, Story } from '@storybook/addon-docs/blocks';
 
 import * as AlertStories from './Alert.stories';
 
@@ -13,6 +13,10 @@ An alert message with theme variants. Used for announcements, warnings, and info
 - Form validation messages
 - Success/error/warning notifications
 - Informational banners
+
+## Component
+
+<Story of={AlertStories.Default} />
 
 ## Properties
 
@@ -47,12 +51,26 @@ These properties allow direct style application without using the `styles` prop:
 
 ## Examples
 
+### Themes
+
+<Story of={AlertStories.Themes} />
+
 ```jsx
 <Alert theme="note">Informational message</Alert>
-
 <Alert theme="success">Operation completed successfully</Alert>
-
 <Alert theme="danger">Something went wrong</Alert>
+```
 
+### Shapes
+
+<Story of={AlertStories.Shapes} />
+
+```jsx
 <Alert theme="warning" shape="sharp">Warning with sharp corners</Alert>
 ```
+
+### Disabled
+
+`isDisabled` replaces the theme's colors rather than tinting them, so every theme looks the same once disabled.
+
+<Story of={AlertStories.Disabled} />

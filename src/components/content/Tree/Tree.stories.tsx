@@ -1,7 +1,11 @@
 import { IconCopy, IconEdit, IconFile, IconTrash } from '@tabler/icons-react';
 import { useMemo, useState } from 'react';
 
-import { FolderIcon, FolderOpenIcon, Icon, MoreIcon } from '../../../icons';
+import { FolderIcon } from '../../../icons/FolderIcon';
+import { FolderOpenIcon } from '../../../icons/FolderOpenIcon';
+import { Icon } from '../../../icons/Icon';
+import { MoreIcon } from '../../../icons/MoreIcon';
+import { NO_SNAPSHOT } from '../../../stories/chromatic';
 import { ItemAction } from '../../actions/ItemAction';
 import { Menu, MenuTrigger } from '../../actions/Menu';
 import { SearchInput } from '../../fields/SearchInput';
@@ -291,12 +295,16 @@ export const Multiple: Story = {
     selectionMode: 'multiple',
     defaultExpandedKeys: ['src'],
   },
+  // Repeats the meta`s `defaultExpandedKeys`, and `selectionMode` paints nothing until something is selected — pixel-identical to `Default`.
+  parameters: NO_SNAPSHOT,
 };
 
 export const SelectionDisabled: Story = {
   args: {
     selectionMode: 'none',
   },
+  // `selectionMode="none"` removes an affordance that is not painted at rest, so this is `Default`.
+  parameters: NO_SNAPSHOT,
 };
 
 export const Disabled: Story = {

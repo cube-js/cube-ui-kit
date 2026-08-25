@@ -1,4 +1,5 @@
 import { Meta, StoryObj } from '@storybook/react-vite';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Input } from '../../fields/Input';
@@ -337,6 +338,26 @@ export const WithValidationError: Story = {
   args: {
     orientation: 'vertical',
     labelPosition: 'top',
+  },
+  // The submit error is the whole point of this story and it does not exist
+  // until the form is submitted. Without the play function below the snapshot
+  // is the same empty form `Default` photographs.
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    // By placeholder, not by label: the label text matches both the `<label>`
+    // and the input it names, so `getByLabelText` throws on the ambiguity.
+    await userEvent.type(
+      canvas.getByPlaceholderText('Enter your email'),
+      'user@example.com',
+    );
+    await userEvent.type(
+      canvas.getByPlaceholderText('Enter your password'),
+      'hunter2',
+    );
+    await userEvent.click(canvas.getByRole('button', { name: 'Sign In' }));
+
+    await waitFor(() => expect(canvas.getByRole('alert')).toBeVisible());
   },
 };
 

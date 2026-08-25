@@ -3,7 +3,9 @@ import { useHover, useTreeItem } from 'react-aria';
 
 import { useEvent } from '../../../_internal/hooks';
 import { useI18n } from '../../../i18n';
-import { DirectionIcon, LoadingIcon, MoreIcon } from '../../../icons';
+import { DirectionIcon } from '../../../icons/DirectionIcon';
+import { LoadingIcon } from '../../../icons/LoadingIcon';
+import { MoreIcon } from '../../../icons/MoreIcon';
 import { mergeProps, mergeRefs } from '../../../utils/react';
 import { CubeItemActionProps, ItemAction } from '../../actions/ItemAction';
 import { CubeMenuProps, Menu, MenuTrigger } from '../../actions/Menu';

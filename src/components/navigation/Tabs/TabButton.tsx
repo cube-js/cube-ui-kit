@@ -20,7 +20,8 @@ import {
 
 import { useEvent } from '../../../_internal/hooks';
 import { useI18n } from '../../../i18n';
-import { CloseIcon, MoreIcon } from '../../../icons';
+import { CloseIcon } from '../../../icons/CloseIcon';
+import { MoreIcon } from '../../../icons/MoreIcon';
 import { mergeProps } from '../../../utils/react';
 import { CubeItemActionProps, ItemAction } from '../../actions/ItemAction';
 import { ItemActionProvider } from '../../actions/ItemActionContext';

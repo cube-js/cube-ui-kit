@@ -1,4 +1,5 @@
 import { StoryFn } from '@storybook/react-vite';
+import { expect, userEvent, within } from 'storybook/test';
 
 import { ICON_ARG, VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
@@ -48,6 +49,22 @@ WithDefaultValue.args = {
 
 export const WithDefaultValueOpen = Template.bind({});
 WithDefaultValueOpen.args = WithDefaultValue.args;
+// Without this the story photographs a closed picker — identical to
+// `WithDefaultValue` — and the calendar it is named for goes untested.
+WithDefaultValueOpen.play = async ({ canvasElement }) => {
+  // Two calendar triggers (start and end) plus the segment buttons, so the
+  // `getByRole('button')` the single-field pickers use is ambiguous here. Nor
+  // can the trigger be found by accessible name: it carries both `aria-label`
+  // and an `aria-labelledby`, and `aria-labelledby` wins, so its name is the
+  // field's label rather than "Calendar". Query the attribute directly.
+  const start = canvasElement.querySelector<HTMLElement>(
+    'button[aria-label="Calendar"]',
+  );
+
+  await userEvent.click(start!);
+
+  await expect(await within(canvasElement).findByRole('dialog')).toBeVisible();
+};
 
 export const WithSecondGranularity = Template.bind({});
 WithSecondGranularity.args = {

@@ -12,19 +12,17 @@ import {
 import { useEffect, useRef, useState } from 'react';
 import { expect, findByRole, userEvent, waitFor, within } from 'storybook/test';
 
-import {
-  CheckIcon,
-  CloseCircleIcon,
-  CloseIcon,
-  CopyIcon,
-  EditIcon,
-  FolderIcon,
-  Icon,
-  MoreIcon,
-  PlusIcon,
-  TrashIcon,
-} from '../../../icons';
+import { CheckIcon } from '../../../icons/CheckIcon';
+import { CloseCircleIcon } from '../../../icons/CloseCircleIcon';
+import { CloseIcon } from '../../../icons/CloseIcon';
+import { CopyIcon } from '../../../icons/CopyIcon';
 import { DirectionIcon } from '../../../icons/DirectionIcon';
+import { EditIcon } from '../../../icons/EditIcon';
+import { FolderIcon } from '../../../icons/FolderIcon';
+import { Icon } from '../../../icons/Icon';
+import { MoreIcon } from '../../../icons/MoreIcon';
+import { PlusIcon } from '../../../icons/PlusIcon';
+import { TrashIcon } from '../../../icons/TrashIcon';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Block } from '../../Block';
 import { Alert } from '../../content/Alert';
@@ -612,20 +610,6 @@ export const MenuSelectableCheckboxes = (props) => {
       </Menu.Item>
     </Menu>
   );
-};
-
-export const MenuSelectableRadio = (props) => {
-  const [selectedKeys, setSelectedKeys] = useState(['1']);
-  const onSelectionChange = (keys) => {
-    setSelectedKeys(keys);
-  };
-
-  return MenuTemplate({
-    ...props,
-    selectionMode: 'single',
-    selectedKeys,
-    onSelectionChange,
-  });
 };
 
 export const PaymentDetails = (props) => {

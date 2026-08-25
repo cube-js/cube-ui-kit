@@ -1,5 +1,6 @@
 import { StoryFn } from '@storybook/react-vite';
 import { useState } from 'react';
+import { expect, userEvent, within } from 'storybook/test';
 
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Button } from '../../actions/Button/Button';
@@ -115,3 +116,14 @@ const Template: StoryFn<CubeDialogContainerProps> = (props) => {
 
 export const Default = Template.bind({});
 Default.args = {};
+
+// `DialogContainer` holds its dialog closed until `isOpen` flips. Without this
+// the file's only story photographs a closed button: no coverage of the dialog
+// at all, and an image identical to `DialogTrigger`'s story.
+Default.play = async ({ canvasElement }) => {
+  const { findByRole } = within(canvasElement);
+
+  await userEvent.click(await findByRole('button', { name: 'Open Dialog' }));
+
+  await expect(await findByRole('dialog')).toBeVisible();
+};

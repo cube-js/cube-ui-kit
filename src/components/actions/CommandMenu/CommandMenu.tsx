@@ -21,7 +21,7 @@ import { useFilter, useMenu } from 'react-aria';
 import { Section, useTreeState } from 'react-stately';
 
 import { useI18n } from '../../../i18n';
-import { LoadingIcon } from '../../../icons';
+import { LoadingIcon } from '../../../icons/LoadingIcon';
 import { mergeProps } from '../../../utils/react';
 import { extractStyles } from '../../../utils/styles';
 // `CollectionItem` (not react-stately's bare `Item`) is what CommandMenu

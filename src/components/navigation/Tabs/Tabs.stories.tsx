@@ -2,13 +2,12 @@ import { IconCalendar } from '@tabler/icons-react';
 import { Key, RefObject, useRef, useState } from 'react';
 import { expect, userEvent, within } from 'storybook/test';
 
-import {
-  DatabaseIcon,
-  FilterIcon,
-  PlusIcon,
-  SettingsIcon,
-  UserIcon,
-} from '../../../icons';
+import { DatabaseIcon } from '../../../icons/DatabaseIcon';
+import { FilterIcon } from '../../../icons/FilterIcon';
+import { PlusIcon } from '../../../icons/PlusIcon';
+import { SettingsIcon } from '../../../icons/SettingsIcon';
+import { UserIcon } from '../../../icons/UserIcon';
+import { NO_SNAPSHOT } from '../../../stories/chromatic';
 import { Button } from '../../actions/Button';
 import { Menu } from '../../actions/Menu';
 import { Layout } from '../../content/Layout';
@@ -866,6 +865,8 @@ export const WithEditableTabs: Story = {
       </Tabs>
     );
   },
+  // Renaming happens on double-click, so at rest this is the same tab row `WithMenu` photographs.
+  parameters: NO_SNAPSHOT,
 };
 
 /**

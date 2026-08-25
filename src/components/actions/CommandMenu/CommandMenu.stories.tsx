@@ -14,7 +14,8 @@ import { tasty } from '@tenphi/tasty';
 import React, { useState } from 'react';
 import { expect, findByRole, userEvent, waitFor, within } from 'storybook/test';
 
-import { EditIcon, TrashIcon } from '../../../icons';
+import { EditIcon } from '../../../icons/EditIcon';
+import { TrashIcon } from '../../../icons/TrashIcon';
 import { Block } from '../../Block';
 import { Card } from '../../content/Card/Card';
 import { HotKeys } from '../../content/HotKeys';

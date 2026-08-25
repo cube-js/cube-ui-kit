@@ -8,7 +8,7 @@ import {
 import { Fragment, useState } from 'react';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 
-import { DirectionIcon } from '../../../icons';
+import { DirectionIcon } from '../../../icons/DirectionIcon';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Button } from '../../actions/Button/Button';
 import { ItemAction } from '../../actions/ItemAction/ItemAction';

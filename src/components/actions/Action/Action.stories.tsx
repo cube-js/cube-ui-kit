@@ -1,5 +1,6 @@
 import { StoryFn } from '@storybook/react-vite';
 
+import { NO_SNAPSHOT } from '../../../stories/chromatic';
 import { baseProps } from '../../../stories/lists/baseProps';
 
 import { Action, CubeActionProps } from './Action';
@@ -23,3 +24,5 @@ Disabled.args = {
   children: 'Action',
   isDisabled: true,
 };
+// `Action` is the unstyled base element, so `isDisabled` changes behaviour and attributes but paints nothing.
+Disabled.parameters = NO_SNAPSHOT;

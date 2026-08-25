@@ -1,12 +1,10 @@
 import { isValidElement, Key, ReactNode, useMemo } from 'react';
 import { isFragment } from 'react-is';
 
-import {
-  CheckIcon,
-  DangerIcon,
-  InfoCircleIcon,
-  WarningIcon,
-} from '../../../icons';
+import { CheckIcon } from '../../../icons/CheckIcon';
+import { DangerIcon } from '../../../icons/DangerIcon';
+import { InfoCircleIcon } from '../../../icons/InfoCircleIcon';
+import { WarningIcon } from '../../../icons/WarningIcon';
 
 import { useToastContext } from './ToastProvider';
 

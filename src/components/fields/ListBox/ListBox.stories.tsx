@@ -1,17 +1,17 @@
 import { Key } from '@react-types/shared';
 import { StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
+import { expect, userEvent, within } from 'storybook/test';
 
-import {
-  CheckIcon,
-  DatabaseIcon,
-  EditIcon,
-  FilterIcon,
-  PlusIcon,
-  RightIcon,
-  SettingsIcon,
-  UserIcon,
-} from '../../../icons';
+import { CheckIcon } from '../../../icons/CheckIcon';
+import { DatabaseIcon } from '../../../icons/DatabaseIcon';
+import { EditIcon } from '../../../icons/EditIcon';
+import { FilterIcon } from '../../../icons/FilterIcon';
+import { PlusIcon } from '../../../icons/PlusIcon';
+import { RightIcon } from '../../../icons/RightIcon';
+import { SettingsIcon } from '../../../icons/SettingsIcon';
+import { UserIcon } from '../../../icons/UserIcon';
+import { NO_SNAPSHOT } from '../../../stories/chromatic';
 import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Button } from '../../actions/Button/Button';
@@ -456,6 +456,8 @@ DynamicSections.args = {
   label: 'Select food items',
   selectionMode: 'single',
 };
+// Renders the same sections as `WithSections`; only the API differs.
+DynamicSections.parameters = NO_SNAPSHOT;
 
 export const WithHeaderAndFooter: StoryObj<CubeListBoxProps<any>>['render'] = (
   args,
@@ -626,6 +628,8 @@ export const DisallowEmptySelection: Story = {
     defaultSelectedKey: 'apple',
   },
   parameters: {
+    // Renders the same selected list as `SingleSelection`; the prop only blocks a deselect.
+    ...NO_SNAPSHOT,
     docs: {
       description: {
         story:
@@ -753,6 +757,8 @@ export const ControlledExample: StoryObj<
     </Space>
   );
 };
+// A `useState` wrapper around `Default` plus two buttons; the state is not visible.
+ControlledExample.parameters = NO_SNAPSHOT;
 
 export const MultipleControlledExample: StoryObj<
   CubeListBoxProps<any>
@@ -799,6 +805,8 @@ export const MultipleControlledExample: StoryObj<
     </Space>
   );
 };
+// A `useState` wrapper around `CheckableMultipleSelection` plus two buttons.
+MultipleControlledExample.parameters = NO_SNAPSHOT;
 
 export const InForm: StoryObj<CubeListBoxProps<any>>['render'] = () => {
   const handleSubmit = (data: any) => {
@@ -967,6 +975,18 @@ export const InPopover: StoryObj<CubeListBoxProps<any>>['render'] = () => {
   );
 };
 
+// The popover is the whole story and it starts closed, so without this the
+// snapshot is the trigger button and nothing else.
+InPopover.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement);
+
+  await userEvent.click(
+    await canvas.findByRole('button', { name: 'Choose Technology' }),
+  );
+
+  await expect(await canvas.findByRole('dialog')).toBeVisible();
+};
+
 InPopover.parameters = {
   docs: {
     description: {
@@ -1105,6 +1125,8 @@ export const FocusBehavior: Story = {
     selectionMode: 'single',
   },
   parameters: {
+    // `focusOnHover` only changes what a hover does; both lists render identically at rest.
+    ...NO_SNAPSHOT,
     docs: {
       description: {
         story:
@@ -1150,6 +1172,8 @@ export const EscapeKeyHandling: StoryObj<
 };
 
 EscapeKeyHandling.parameters = {
+  // Counts Escape presses — nothing about the list itself differs from `Default`.
+  ...NO_SNAPSHOT,
   docs: {
     description: {
       story:
@@ -1170,6 +1194,8 @@ export const WithItemsProp: Story = {
     defaultSelectedKey: 'apple',
   },
   parameters: {
+    // Same list as `SingleSelection` — the difference is which API builds it.
+    ...NO_SNAPSHOT,
     docs: {
       description: {
         story:

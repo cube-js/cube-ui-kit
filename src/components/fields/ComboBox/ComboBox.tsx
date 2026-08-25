@@ -27,7 +27,9 @@ import { Section as BaseSection, useListState } from 'react-stately';
 
 import { useEvent } from '../../../_internal';
 import { useI18n } from '../../../i18n';
-import { CloseIcon, DirectionIcon, LoadingIcon } from '../../../icons';
+import { CloseIcon } from '../../../icons/CloseIcon';
+import { DirectionIcon } from '../../../icons/DirectionIcon';
+import { LoadingIcon } from '../../../icons/LoadingIcon';
 import { FieldBaseProps } from '../../../shared';
 import { generateRandomId } from '../../../utils/random';
 import { useCombinedRefs, useLayoutEffect } from '../../../utils/react';

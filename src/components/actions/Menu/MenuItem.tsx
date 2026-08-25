@@ -4,7 +4,7 @@ import { KeyboardEvent, useContext, useRef } from 'react';
 import { FocusRing, useMenuItem } from 'react-aria';
 import { TreeState } from 'react-stately';
 
-import { RightIcon } from '../../../icons';
+import { RightIcon } from '../../../icons/RightIcon';
 import { mergeProps } from '../../../utils/react';
 import { filterCollectionItemProps } from '../../CollectionItem';
 import { Item } from '../../content/Item/Item';
