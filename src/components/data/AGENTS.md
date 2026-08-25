@@ -9,7 +9,7 @@ Nothing under this directory may reference `measure`, `dimension`, `pivot`, `dri
 The escape hatches that keep this line holdable:
 
 - `column.header.menu` / `column.header.actions` take an opaque `ReactNode`, so a caller can mount an arbitrarily complex column menu without the kit knowing what is in it. `onColumnMenuAction(action, columnKey)` reports the pressed key back as a bare string. The single exception is the reserved sort keys, and only because sorting is a capability the table itself owns — `pin` and `hide` are deliberately NOT reserved, because there is no column pin/visibility state behind them to drive.
-- `column.color` takes a hue rather than a resolved colour, so the kit derives the ramp and the contrast floor per scheme instead of trusting a caller's hex pair. See `column-tint.ts` and `src/tokens/color-theme.ts`.
+- `column.color` takes a hue rather than a resolved colour, so the kit derives the ramp and the contrast floor per schema instead of trusting a caller's hex pair. See `column-tint.ts` and `src/tokens/color-theme.ts`.
 - `renderCellMenu`, `column.render`, `column.cellStyles` and `renderRow` cover the rest.
 
 If something seems to need domain knowledge in here, it needs a new generic prop instead.

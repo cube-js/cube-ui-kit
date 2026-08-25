@@ -6,7 +6,7 @@ Answering "what CSS does this actually produce?" used to mean hand-writing a thr
 
 ```bash
 pnpm probe styles '{"fill":"#purple","padding":"2x","preset":"t3"}'
-pnpm probe tokens --scheme dark --filter surface
+pnpm probe tokens --schema dark --filter surface
 pnpm probe globals
 pnpm probe render <<'TSX'
 import { Button } from '@cube-dev/ui-kit';
@@ -25,8 +25,8 @@ TSX
 
 **`tokens`** — two shapes of the same palette, labelled rather than merged:
 
-- `resolved` is `renderColorTokens()`: flat literal values for **one** variant, chosen with `--scheme light|dark` and `--hc`. The legacy aliases come back **by reference** (`'#dark': '#surface-text'`) rather than resolved — deliberately, so a region preview re-resolves them against its own tokens — and the probe labels them so you cannot read one as a color.
-- `palette` is `getPaletteTokens()`: one tasty state map per token, keyed by scheme (`''` / `'@dark'` / `'@hc'` / `'@dark & @hc'`). This is the **four-variant view**, and it is the one a palette change has to be diffed across — see [`docs/glaze/`](../glaze/) on why light mode alone is misleading.
+- `resolved` is `renderColorTokens()`: flat literal values for **one** variant, chosen with `--schema light|dark` and `--hc`. The legacy aliases come back **by reference** (`'#dark': '#surface-text'`) rather than resolved — deliberately, so a region preview re-resolves them against its own tokens — and the probe labels them so you cannot read one as a color.
+- `palette` is `getPaletteTokens()`: one tasty state map per token, keyed by schema (`''` / `'@dark'` / `'@hc'` / `'@dark & @hc'`). This is the **four-variant view**, and it is the one a palette change has to be diffed across — see [`docs/glaze/`](../glaze/) on why light mode alone is misleading.
 
 ```bash
 pnpm probe tokens --json > /tmp/tokens-before.json
@@ -35,7 +35,7 @@ pnpm probe tokens --json > /tmp/tokens-after.json
 diff <(jq -S .palette /tmp/tokens-before.json) <(jq -S .palette /tmp/tokens-after.json)
 ```
 
-**`render`** — module-level code, then a trailing JSX expression (or an explicit `export default`). The default export is rendered by React as `<Snippet />`, so a snippet may use hooks — `useState` to probe a controlled input or a disclosure is ordinary, not exotic. Each run gets its own `.probe/<runId>/` directory, so probing in parallel is safe; directories older than an hour are swept on the next run. It reports the markup plus **only the CSS that snippet caused**: the harness renders `<Root>` empty, captures, mounts the snippet, captures again and subtracts. Overlays are reported under `PORTALS` — `<Root>` is the `PortalProvider` target, so a `Dialog` renders as its _sibling_ and never appears in the inline markup. `--full-css` keeps the baseline; `--canonical` normalises tasty's class hashes and React's `useId` counters so two renders can be diffed byte-for-byte, **on both tiers** — a browser run is exactly where you would diff one scheme or viewport against another.
+**`render`** — module-level code, then a trailing JSX expression (or an explicit `export default`). The default export is rendered by React as `<Snippet />`, so a snippet may use hooks — `useState` to probe a controlled input or a disclosure is ordinary, not exotic. Each run gets its own `.probe/<runId>/` directory, so probing in parallel is safe; directories older than an hour are swept on the next run. It reports the markup plus **only the CSS that snippet caused**: the harness renders `<Root>` empty, captures, mounts the snippet, captures again and subtracts. Overlays are reported under `PORTALS` — `<Root>` is the `PortalProvider` target, so a `Dialog` renders as its _sibling_ and never appears in the inline markup. `--full-css` keeps the baseline; `--canonical` normalises tasty's class hashes and React's `useId` counters so two renders can be diffed byte-for-byte, **on both tiers** — a browser run is exactly where you would diff one schema or viewport against another.
 
 **`globals`** — everything on the page with only `<Root>` mounted: the `:root` token block, the body styles, `@font-face`, the keyframes. Note that only a handful of those rules are attributed to a node, and **those** are all `render` subtracts; the token block reaches the page through `useGlobalStyles` / `injectRawCSS`, so it lives on a global sheet that no per-node dump can see and `render` never had to exclude it. (Cube Cloud's console-ui hands its palette to `<Root>` through a tasty `tokens` prop instead, so there the same block _is_ node-attributed and the subtraction is what keeps ~119KB out of every answer. Same command, different reason for the same clean output.)
 
@@ -47,15 +47,15 @@ jsdom is the default only because it is quicker: it reports the CSS tasty genera
 
 ```bash
 pnpm probe:browser render --computed '[data-qa="Card"]' backgroundColor padding
-pnpm probe:browser render --scheme dark --hc --screenshot
+pnpm probe:browser render --schema dark --hc --screenshot
 pnpm probe:browser render --rect '[data-qa="Card"]'
 ```
 
 The same component, both tiers: `var(--surface-2-color)` / `calc(3 * var(--gap))` under `probe`, versus `rgb(248, 248, 249)` / `24px` under `probe:browser`. `--computed` and `--rect` take a CSS selector, so give the component a `qa` prop and select on `[data-qa="…"]`.
 
-Scheme and contrast are independent axes, driven through the `<html>` attributes the `@dark` / `@hc` states resolve against — so `--scheme dark --hc` reaches the fourth variant, which no single `--scheme` value can express. `--scheme hc` stays accepted as the spelling Cloud's probe uses and means light + high contrast.
+Schema and contrast are independent axes, driven through the `<html>` attributes the `@dark` / `@hc` states resolve against — so `--schema dark --hc` reaches the fourth variant, which no single `--schema` value can express. `--schema hc` stays accepted as the spelling Cloud's probe uses and means light + high contrast.
 
-**Nothing is silently ignored.** `--computed`, `--rect` and `--screenshot` are rejected on the jsdom tier rather than no-oping: asking for computed values and getting none back reads as "no styles applied", the opposite of the truth. Likewise `probe:browser` refuses every mode but `render`; `--scheme` / `--hc` are refused on modes that have no scheme (`styles` and `globals` already report every scheme at once — their state maps and `@media` blocks _are_ the per-scheme answer); an unknown `--scheme` is rejected by the CLI rather than reaching the token renderer, where it surfaces as a stack trace that reads like a harness bug instead of a typo; and a flag that needs a value says so instead of defaulting to off — including when the value it would have swallowed is the next flag (`--computed --scheme dark`).
+**Nothing is silently ignored.** `--computed`, `--rect` and `--screenshot` are rejected on the jsdom tier rather than no-oping: asking for computed values and getting none back reads as "no styles applied", the opposite of the truth. Likewise `probe:browser` refuses every mode but `render`; `--schema` / `--hc` are refused on modes that have no schema (`styles` and `globals` already report every schema at once — their state maps and `@media` blocks _are_ the per-schema answer); an unknown `--schema` is rejected by the CLI rather than reaching the token renderer, where it surfaces as a stack trace that reads like a harness bug instead of a typo; and a flag that needs a value says so instead of defaulting to off — including when the value it would have swallowed is the next flag (`--computed --schema dark`).
 
 A snippet that does not compile is reported the same way on both tiers: the parse error, with its file, line and code frame. That takes a detour on the browser tier, because Chromium hands the harness only `Failed to fetch dynamically imported module: <url>` — the real error is in the 500 body it keeps from script, so the harness re-requests the module to read it. When the module itself compiles and the break is in something it _imports_, only Vite's log names the file, so the probe prints that log under the message instead of dropping it.
 

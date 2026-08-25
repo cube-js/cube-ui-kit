@@ -233,7 +233,7 @@ export type CubeTableColumnTheme =
  * How a column is tinted.
  *
  * Every form but the last is *derived*: only a hue and a saturation are kept, and
- * the tone ramp plus an `AA`/`AAA` text floor are re-solved per colour scheme. So
+ * the tone ramp plus an `AA`/`AAA` text floor are re-solved per colour schema. So
  * a column stays readable in light, dark and high contrast without the caller
  * checking — which is the part hand-picked hex pairs get wrong.
  */
@@ -248,7 +248,7 @@ export type CubeTableColumnColor =
    * Full manual control, as tasty colour strings (`'#note-surface'`, `'#purple.10'`).
    *
    * Nothing is derived and nothing is contrast-checked — this is the escape
-   * hatch, and readability in every scheme becomes the caller's problem.
+   * hatch, and readability in every schema becomes the caller's problem.
    * `fillBand` defaults to `fill`, which turns banding off for the column.
    */
   | { fill: string; fillBand?: string; text?: string };
@@ -317,7 +317,7 @@ export interface CubeTableColumn<T = any> {
 
   /**
    * Tints the column — header, cells and pinned totals — with an adaptive fill
-   * and a text colour solved to stay readable on it in every scheme.
+   * and a text colour solved to stay readable on it in every schema.
    *
    * Row banding survives: the tint carries its own band one tone step away, so
    * the stripe still reads down the column instead of being painted over.

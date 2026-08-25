@@ -40,15 +40,15 @@ pnpm probe <mode> [options]
 Modes
   styles '<json>'     CSS for a tasty styles object, under the real ui-kit
                       config (units, recipes, presets, color tokens)
-  tokens              Color tokens: resolved literal values for one scheme,
+  tokens              Color tokens: resolved literal values for one schema,
                       plus the four-variant state maps <Root> declares
   render              HTML + the CSS this snippet caused. Snippet on stdin.
   globals             Everything on the page with only <Root> mounted: the
                       :root token block, body styles, @font-face, keyframes
 
 Options
-  --scheme <name>     tokens: light | dark  (default: light)
-  --hc                tokens: resolve the high-contrast variant of --scheme
+  --schema <name>     tokens: light | dark  (default: light)
+  --hc                tokens: resolve the high-contrast variant of --schema
   --filter <substr>   tokens: only tokens whose name contains this
   --full-css          render: do not subtract the baseline
   --canonical         render: normalise tasty hashes and React IDs (for
@@ -59,10 +59,10 @@ Options for 'pnpm probe:browser' only (these need a real browser)
   --computed <sel> [prop...]   resolved values — jsdom reports var(...) as text
   --rect <sel>                 geometry — jsdom sizes everything at 0
   --screenshot                 write a PNG beside the result
-  --scheme <name>              render: drive <html> into light | dark | hc
-  --hc                         render: high contrast, composable with --scheme
+  --schema <name>              render: drive <html> into light | dark | hc
+  --hc                         render: high contrast, composable with --schema
                                so 'dark --hc' reaches the fourth variant
-                               ('--scheme hc' alone means light + hc)
+                               ('--schema hc' alone means light + hc)
 
 Notes
   The snippet is NOT typechecked — oxc strips types without checking them.
@@ -87,8 +87,8 @@ function parseArgs(argv) {
    * A missing value used to land as `undefined`, which every downstream check
    * reads as "flag absent" — so `probe:browser render --computed` produced a
    * plain render and looked like an answer to a computed-values question that was
-   * never asked. Worse, `--computed --scheme dark` took `--scheme` itself as the
-   * selector, silently dropping the scheme too. Both are the failure this tool
+   * never asked. Worse, `--computed --schema dark` took `--schema` itself as the
+   * selector, silently dropping the schema too. Both are the failure this tool
    * refuses to commit elsewhere, so they are errors rather than defaults.
    */
   const takeValue = (flag, index) => {
@@ -122,8 +122,8 @@ function parseArgs(argv) {
       options.json = true;
     } else if (arg === '--hc') {
       options.highContrast = true;
-    } else if (arg === '--scheme') {
-      options.scheme = takeValue(arg, (i += 1));
+    } else if (arg === '--schema') {
+      options.schema = takeValue(arg, (i += 1));
     } else if (arg === '--filter') {
       options.filter = takeValue(arg, (i += 1));
     } else if (arg === '--screenshot') {
@@ -257,44 +257,44 @@ function main() {
     }
   }
 
-  // Which modes can actually act on a scheme. Silently ignoring `--scheme dark`
-  // on a mode that has no scheme is the same failure as silently ignoring
+  // Which modes can actually act on a schema. Silently ignoring `--schema dark`
+  // on a mode that has no schema is the same failure as silently ignoring
   // `--computed`: the answer comes back looking like the light-mode result was
   // the dark-mode result.
-  const schemeAware = browser ? ['render'] : ['tokens'];
+  const schemaAware = browser ? ['render'] : ['tokens'];
 
   if (
-    (options.scheme || options.highContrast) &&
-    !schemeAware.includes(options.mode)
+    (options.schema || options.highContrast) &&
+    !schemaAware.includes(options.mode)
   ) {
-    const flags = [options.scheme && '--scheme', options.highContrast && '--hc']
+    const flags = [options.schema && '--schema', options.highContrast && '--hc']
       .filter(Boolean)
       .join(', ');
 
     console.error(
       `probe ${options.mode}: ${flags} has no effect here.\n` +
         (options.mode === 'styles' || options.mode === 'globals'
-          ? `'${options.mode}' reports what tasty generated for every scheme at once — the state ` +
-            `maps and @media blocks in its output ARE the per-scheme answer.\n`
-          : `The jsdom tier cannot resolve a scheme's colors at all. Use 'pnpm probe tokens ` +
-            `--scheme <name>' for literal values, or 'pnpm probe:browser render --scheme <name>' ` +
+          ? `'${options.mode}' reports what tasty generated for every schema at once — the state ` +
+            `maps and @media blocks in its output ARE the per-schema answer.\n`
+          : `The jsdom tier cannot resolve a schema's colors at all. Use 'pnpm probe tokens ` +
+            `--schema <name>' for literal values, or 'pnpm probe:browser render --schema <name>' ` +
             `for what a browser computes.\n`),
     );
     process.exit(1);
   }
 
-  // Validated here rather than left to the palette. An unknown scheme reaches
+  // Validated here rather than left to the palette. An unknown schema reaches
   // `renderColorTokens`, misses the variant lookup and throws inside the token
   // renderer — surfacing as a vitest stack trace about `Object.keys(undefined)`,
   // which reads as a harness bug rather than as a typo in the flag.
-  const schemes = browser ? ['light', 'dark', 'hc'] : ['light', 'dark'];
+  const schemas = browser ? ['light', 'dark', 'hc'] : ['light', 'dark'];
 
-  if (options.scheme && !schemes.includes(options.scheme)) {
+  if (options.schema && !schemas.includes(options.schema)) {
     console.error(
-      `probe: unknown --scheme "${options.scheme}". Expected ${schemes.join(' | ')}.` +
+      `probe: unknown --schema "${options.schema}". Expected ${schemas.join(' | ')}.` +
         (browser
           ? `\n('hc' is light + high contrast, the spelling Cube Cloud's probe uses. ` +
-            `For dark + high contrast, pass '--scheme dark --hc'.)`
+            `For dark + high contrast, pass '--schema dark --hc'.)`
           : `\nAdd --hc for the high-contrast variant of either.`),
     );
     process.exit(1);
@@ -342,7 +342,7 @@ function main() {
 
   if (options.mode === 'tokens') {
     input.tokenOptions = {
-      scheme: options.scheme ?? 'light',
+      schema: options.schema ?? 'light',
       highContrast: Boolean(options.highContrast),
     };
   }
@@ -375,7 +375,7 @@ function main() {
   // file's contents in through `define` at config-load time, so anything added
   // after the write never reaches the harness.
   if (browser) {
-    input.scheme = options.scheme;
+    input.schema = options.schema;
     input.highContrast = Boolean(options.highContrast);
     input.computed = options.computed;
     input.computedProps = options.computedProps;
@@ -545,7 +545,7 @@ function print(result, options, harnessLog = '') {
       ([name]) => !options.filter || name.includes(options.filter),
     );
 
-    console.log(`# resolved — ${result.scheme} (${entries.length} tokens)`);
+    console.log(`# resolved — ${result.schema} (${entries.length} tokens)`);
     for (const [name, value] of entries) {
       // Legacy aliases come back by reference, not resolved — flagged so a
       // '#surface-text' value is not read as a literal color.

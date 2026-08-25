@@ -28,11 +28,11 @@ import type {
   ResolvedThemeSeed,
 } from './palette-config';
 
-/** Which resolved scheme variant {@link renderPaletteTokens} should return. */
+/** Which resolved schema variant {@link renderPaletteTokens} should return. */
 export interface RenderPaletteOptions extends PaletteConfig {
-  /** Color scheme to resolve. Default: `'light'`. */
-  scheme?: 'light' | 'dark';
-  /** Resolve the high-contrast variant of that scheme. Default: `false`. */
+  /** Color schema to resolve. Default: `'light'`. */
+  schema?: 'light' | 'dark';
+  /** Resolve the high-contrast variant of that schema. Default: `false`. */
   highContrast?: boolean;
 }
 
@@ -174,7 +174,7 @@ function baseSaturationScale(config: ResolvedPaletteConfig): number {
  * so Glaze solves `apcaContrast(surface, fill)`.
  *
  * **This number is page separation and nothing else**, and getting that wrong is what
- * made the dark scheme unusable. It reads differently by scheme — in light `surface` IS
+ * made the dark schema unusable. It reads differently by schema — in light `surface` IS
  * white, so the same measurement happens to be the white-label pair, which invited the
  * value to be set for the LABEL at Lc 45 (`large` text) with 60 in high contrast. In
  * dark the page is near-black and the same number is a demand that a filled shape reach
@@ -214,7 +214,7 @@ function baseSaturationScale(config: ResolvedPaletteConfig): number {
  * dark (12 hues, spread under 2 Lc — hue is not a factor, polarity is). That is 2.4x
  * stricter in light than in dark, which is why light brands kept getting crushed while
  * dark ones sailed through under the same rule. An Lc is one number that means one
- * thing in both schemes.
+ * thing in both schemas.
  *
  * The pair is written out with BOTH entries equal, and that is the whole reason it is a
  * pair: stating one level would let APCA's automatic +15 Lc enhancement fire in high
@@ -247,7 +247,7 @@ const ACCENT_FILL_CONTRAST: ContrastSpec = { apca: [25, 25] };
  * `[4.5, 9]` pair, whose `9` existed only because a WCAG ratio that high is unreachable
  * for a saturated hue against a chromatic base: `#FFD400` in dark high contrast used to
  * pin to pure black and come out a hover link *less* readable than its rest state. An
- * Lc target is reachable in both schemes because it is polarity-aware, so the
+ * Lc target is reachable in both schemas because it is polarity-aware, so the
  * pathological case has no equivalent here.
  */
 const ACCENT_TEXT_CONTRAST: ContrastSpec = { apca: [60, 85] };
@@ -271,7 +271,7 @@ const ACCENT_RAMP = {
  * Both are pinned to the caller's tone otherwise, and a pair at the same tone behind
  * the same floor resolves to one color — which would silently delete the rest→hover
  * intensify that `accent-text` exists for. Tone is contrast-uniform, so one step is
- * one step in either scheme.
+ * one step in either schema.
  */
 const ACCENT_TEXT_HOVER_STEP = 6;
 
@@ -309,7 +309,7 @@ const ACCENT_LABEL_LC = 45;
  * The ceiling is computed on the bare seed, but the emitted `accent-surface` then goes
  * through the page floor, which can only LIGHTEN — and a lighter fill is a weaker white
  * label, so the solve eats into the margin the ceiling just established. Measured worst
- * case across 3072 hue/chroma/tone/scheme/tier combinations is 1.8 Lc, in dark high
+ * case across 3072 hue/chroma/tone/schema/tier combinations is 1.8 Lc, in dark high
  * contrast where the page floor pushes hardest; 3 covers it with room.
  */
 const ACCENT_LABEL_MARGIN = 3;
@@ -349,7 +349,7 @@ function labelLcOf(variant: Parameters<typeof variantToOkhsl>[0]): number {
  *
  * The search runs against Glaze's own fixed-mode resolution — the same mapping
  * `accent-surface` goes through — rather than reimplementing the dark tone window, and
- * checks all four variants so the cap is a property of the seed and not of one scheme.
+ * checks all four variants so the cap is a property of the seed and not of one schema.
  *
  * Only ever lowers, so a brand already dark enough comes back untouched.
  */
@@ -711,7 +711,7 @@ function tintedSurfaceOverride(config: ResolvedPaletteConfig): ColorMap {
  * pinned totals, and `surface-2-text`.
  *
  * The text is anchored to `surface-2`, not `surface`. `surface-2` has the lower
- * contrast headroom in BOTH schemes — a darker background under dark text in
+ * contrast headroom in BOTH schemas — a darker background under dark text in
  * light, a lighter one under light text in dark — so solving the floor there
  * clears it on both bands. The neutral ramp's own `surface-2-text` is shaped the
  * same way for the same reason.
@@ -733,7 +733,7 @@ export function tintRecipe(config: ResolvedPaletteConfig): ColorMap {
       base: 'surface-2',
       tone: `${TEXT_TONE - TINTED_SURFACE_TONE_OFFSET - SURFACE_2_TEXT_OFFSET}`,
       saturation: 0.25,
-      // The whole point: Glaze binary-searches the tone per scheme until the floor
+      // The whole point: Glaze binary-searches the tone per schema until the floor
       // is met, so a caller cannot persist an unreadable pair.
       contrast: ['AA', 'AAA'],
     },
@@ -790,7 +790,7 @@ function accentFillColors(accent: AccentSeed): ColorMap {
       // ---- Accent system (theme-aware, inherited by colored themes) ----
       // Everything here is anchored to a fixed white "accent-surface-text" via
       // `mode: 'fixed'` + relative tone deltas, so accent colors stay visually
-      // consistent across light/dark/high-contrast schemes (the brand color does
+      // consistent across light/dark/high-contrast schemas (the brand color does
       // not flip). The solid fills are white-text-on-brand backgrounds, so they
       // keep an `['AA','AAA']` contrast floor even though the chosen tone deltas
       // already exceed it. This leaves room for a future low-contrast scale.
@@ -816,7 +816,7 @@ function accentFillColors(accent: AccentSeed): ColorMap {
       // Hover variant of `accent-surface` — a *fixed*-mode darker shade used as
       // the hover fill for solid PRIMARY-type buttons. Anchored to the same
       // accent-surface-text so it stays in the same hue family. The relative tone
-      // lands a few steps darker than the pressed state in both schemes.
+      // lands a few steps darker than the pressed state in both schemas.
       'accent-surface-hover': {
         base: 'accent-surface-text',
         tone: '-58',
@@ -974,7 +974,7 @@ function buildPalette(
      * Carry `contrastLevel` on the theme instances instead of relying on the
      * global Glaze config. Used when rendering a palette the app is not running,
      * so a preview cannot disturb the live one. The resolved values are the same
-     * either way; only which scheme variants get *emitted* differs, and callers
+     * either way; only which schema variants get *emitted* differs, and callers
      * that isolate pick their variant explicitly.
      */
     isolateContrastLevel?: boolean;
@@ -1160,7 +1160,7 @@ function buildPalette(
     },
     // Disabled fill chip + text — both adaptive (mode 'auto') and positioned
     // with relative tone deltas against `surface` so the disabled state has the
-    // same perceived intensity in light, dark, and high-contrast schemes. No
+    // same perceived intensity in light, dark, and high-contrast schemas. No
     // numeric contrast prop is needed: tone is already on a WCAG-uniform scale.
     //
     // Tone deltas reproduce the legacy palette's disabled appearance exactly:
@@ -1186,8 +1186,8 @@ function buildPalette(
     },
 
     // Fixed-mode "always dark" surface for elements that intentionally stay
-    // inverted regardless of scheme (tooltips, code blocks, popovers with their
-    // own dark theme, etc.). `mode: 'fixed'` bypasses the dark-scheme inversion
+    // inverted regardless of schema (tooltips, code blocks, popovers with their
+    // own dark theme, etc.). `mode: 'fixed'` bypasses the dark-schema inversion
     // so the color reads as a dark surface in light, dark, and high-contrast.
     // Pair with `#white` (built-in) for foreground text.
     'surface-inverse': {
@@ -1203,7 +1203,7 @@ function buildPalette(
     ...accentColors(accent),
 
     // Brand-tinted disabled chip + label for PRIMARY-style buttons (solid brand
-    // fill). The chip is scheme-symmetric (`mode: 'fixed'`) so the muted state
+    // fill). The chip is schema-symmetric (`mode: 'fixed'`) so the muted state
     // reads the same weight in light/dark/HC; saturation is bumped so it stays
     // identifiable as a muted brand color.
     //
@@ -1213,9 +1213,9 @@ function buildPalette(
     // relative `tone: '+15'` with `autoFlip: false`, because Glaze < 1.2.0
     // re-mapped the extreme through the dark tone window, compressing the
     // base-to-extreme span and dropping the dark label's contrast. Glaze 1.2.0
-    // (tenphi/glaze#82) instead replays the light scheme's base→extreme tone
+    // (tenphi/glaze#82) instead replays the light schema's base→extreme tone
     // shift against the base's resolved dark tone — same-signed under
-    // `mode: 'fixed'` — so `'max'` holds its intended separation in every scheme
+    // `mode: 'fixed'` — so `'max'` holds its intended separation in every schema
     // and the approximation is no longer needed. Inherited per theme.
     //
     // The special theme keeps its own relative `+18` pair: its `surface` is a
@@ -1274,13 +1274,13 @@ function buildPalette(
     // follows a re-seeded brand hue without announcing it.
     //
     // **Contrast, not tone, is the spec.** A relative tone delta is uniform on
-    // the OKHST scale but the dark scheme resolves it inside the `darkTone`
+    // the OKHST scale but the dark schema resolves it inside the `darkTone`
     // window, which compressed the ramp to ~75% of its light span — measurably
     // flatter, which is exactly how it looked. Glaze has no per-color
     // `darkTone`, so the fix is to state the intent as a WCAG floor against
-    // `surface` and let each scheme solve for it: the authored `tone: '-2'` is
+    // `surface` and let each schema solve for it: the authored `tone: '-2'` is
     // deliberately short of every floor, so all three faces are pinned by the
-    // ratio in every scheme rather than by a delta that means different things
+    // ratio in every schema rather than by a delta that means different things
     // in each. Measured on the emitted tokens, light comes out 1.201 / 1.653 /
     // 2.409 and dark 1.212 / 1.666 / 2.424 — within 1% of each other, against
     // 1.063 / 1.320 / 1.915 vs 1.053 / 1.264 / 1.735 before.
@@ -1421,7 +1421,7 @@ function buildPalette(
   // --------------------------------------------------------------------------
   //
   // Standalone theme for `special`-variant components (hero CTAs, banners, etc.)
-  // that intentionally sit on a dark surface regardless of the active scheme.
+  // that intentionally sit on a dark surface regardless of the active schema.
   //
   // Every token here is `mode: 'fixed'` so the resolved value is identical in
   // light, dark, and high-contrast. The shape is purpose-built (not a full
@@ -1447,7 +1447,7 @@ function buildPalette(
   //   - `accent-disabled-surface` / `accent-disabled-surface-text` —
   //     brand-tinted disabled chip + label, positioned with relative tone
   //     deltas against the fixed dark `surface` so the disabled state is
-  //     scheme-symmetric.
+  //     schema-symmetric.
 
   const specialTheme = glaze(hue, saturation, instanceConfig);
 
@@ -1641,7 +1641,7 @@ let renderKey: string | null = null;
 let renderVariants: Record<string, Record<string, string>> = {};
 
 /**
- * Resolve one scheme variant of a palette to flat, literal color values.
+ * Resolve one schema variant of a palette to flat, literal color values.
  *
  * Unlike {@link getPaletteTokens}, which emits state maps (`@dark` / `@hc`) for
  * the whole document, this collapses the palette to the single variant you ask
@@ -1655,7 +1655,7 @@ let renderVariants: Record<string, Record<string, string>> = {};
 export function renderPaletteTokens(
   options: RenderPaletteOptions = {},
 ): Tokens {
-  const { scheme = 'light', highContrast = false, ...config } = options;
+  const { schema = 'light', highContrast = false, ...config } = options;
   const resolved = resolvePaletteConfig(config);
   const key = `${getPaletteVersion()}:${JSON.stringify(resolved)}`;
 
@@ -1699,13 +1699,13 @@ export function renderPaletteTokens(
     }
   }
 
-  const variant = VARIANT_KEY[`${scheme}:${highContrast}`];
+  const variant = VARIANT_KEY[`${schema}:${highContrast}`];
   // The fallback is for `contrastLevel: 100` only. There the normal variants
   // already *are* the high-contrast ones, so Glaze emits a single light/dark set
   // rather than duplicating it — and `highContrast` correctly resolves to the same
   // colors. At every other level the contrast variants are present and genuinely
   // escalated, so the fallback is not taken.
-  const flat = renderVariants[variant] ?? renderVariants[scheme];
+  const flat = renderVariants[variant] ?? renderVariants[schema];
   const out: Tokens = {};
 
   for (const name of Object.keys(flat)) out[`#${name}`] = flat[name];

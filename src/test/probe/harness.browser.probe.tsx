@@ -36,32 +36,32 @@ const input = JSON.parse(__PROBE_INPUT__) as ProbeInput & {
   computedProps?: string[];
   rect?: string;
   screenshot?: boolean;
-  scheme?: 'light' | 'dark' | 'hc';
+  schema?: 'light' | 'dark' | 'hc';
   highContrast?: boolean;
 };
 
 /**
- * Drive the scheme the way a host app does — through the attributes on `<html>`
+ * Drive the schema the way a host app does — through the attributes on `<html>`
  * that the `@dark` / `@hc` predefined states resolve against (see `Root.tsx`).
  * Setting a token by hand would prove nothing about how the real cascade
  * behaves.
  *
  * The two axes are independent, so they are separate parameters: `@hc` is a
- * contrast attribute that composes with either schema. `--scheme hc` stays
+ * contrast attribute that composes with either schema. `--schema hc` stays
  * accepted as the spelling Cube Cloud's probe uses, where it means light + high
  * contrast — but it cannot express dark + high contrast, which is a real palette
  * variant, so `--hc` is the flag that reaches all four.
  */
-function applyScheme(scheme: string | undefined, highContrast: boolean): void {
+function applySchema(schema: string | undefined, highContrast: boolean): void {
   const root = document.documentElement;
 
-  if (scheme === 'dark') {
+  if (schema === 'dark') {
     root.setAttribute('data-schema', 'dark');
   }
-  if (scheme === 'light' || scheme === 'hc') {
+  if (schema === 'light' || schema === 'hc') {
     root.setAttribute('data-schema', 'light');
   }
-  if (scheme === 'hc' || highContrast) {
+  if (schema === 'hc' || highContrast) {
     root.setAttribute('data-contrast', 'high');
   }
 }
@@ -184,7 +184,7 @@ it('probe:browser', async () => {
   // pixel geometry rather than as visibly missing output.
   assertConfigApplied();
 
-  applyScheme(input.scheme, Boolean(input.highContrast));
+  applySchema(input.schema, Boolean(input.highContrast));
 
   const view = render(<Root>{null}</Root>);
   const baseline = captureCss(view.baseElement);
@@ -258,7 +258,7 @@ it('probe:browser', async () => {
   const scope = view.baseElement.querySelector('[data-probe-scope]');
 
   // `--canonical` applies on both tiers. It is what makes two runs comparable
-  // byte-for-byte, and a browser run is exactly where you would diff one scheme
+  // byte-for-byte, and a browser run is exactly where you would diff one schema
   // or viewport against another — accepting the flag and returning raw hashes
   // and `useId` counters would defeat the comparison silently.
   const normalise = (text: string) =>
@@ -337,8 +337,8 @@ it('probe:browser', async () => {
         mode: input.mode,
         tier: 'browser',
         ok: true,
-        scheme: `${input.scheme ?? 'default'}${
-          input.highContrast && input.scheme !== 'hc' ? ' + high contrast' : ''
+        schema: `${input.schema ?? 'default'}${
+          input.highContrast && input.schema !== 'hc' ? ' + high contrast' : ''
         }`,
         html,
         portalHtml,

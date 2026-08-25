@@ -426,7 +426,7 @@ const options = [
  * `surface` is a story-only arg, not a `Select` prop: it paints the container
  * the select sits on. `addon-backgrounds` is not installed (see the note in
  * `.storybook/preview.jsx`, which disables it so the body keeps its
- * scheme-aware `#surface` fill), so `parameters.backgrounds` does nothing here
+ * schema-aware `#surface` fill), so `parameters.backgrounds` does nothing here
  * — the two stories that need a tinted ground paint it themselves, which also
  * keeps them correct in dark mode.
  */

@@ -16,6 +16,14 @@ export { useLayoutEffect } from './useLayoutEffect';
 export { useCombinedRefs, mergeRefs } from './useCombinedRefs';
 export { wrapNodeIfPlain } from './wrapNodeIfPlain';
 export { useViewportSize } from './useViewportSize';
+export {
+  useSchema,
+  useHighContrast,
+  resolveSchema,
+  resolveHighContrast,
+  subscribeSchema,
+} from './useSchema';
+export type { ColorSchema } from './useSchema';
 export { useQaProps } from './useQaProps';
 export { useEventBus, useEventListener, EventBusProvider } from './useEventBus';
 export type { EventBusListener, EventBusContextValue } from './useEventBus';

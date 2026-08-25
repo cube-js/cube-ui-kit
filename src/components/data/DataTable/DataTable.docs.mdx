@@ -401,7 +401,7 @@ A stale order is safe: keys for columns that no longer exist are ignored, and a 
 
 `column.color` tints a whole column — header, cells and pinned totals. It takes a palette theme name, any CSS color, a `{ hue, saturation }` seed, or a `{ fill, text }` pair for full manual control.
 
-Every form but the last is _derived_: only the hue and saturation are kept, and the tone ramp plus an AA/AAA text floor are re-solved for light, dark and high-contrast. A column cannot end up unreadable in a scheme nobody checked.
+Every form but the last is _derived_: only the hue and saturation are kept, and the tone ramp plus an AA/AAA text floor are re-solved for light, dark and high-contrast. A column cannot end up unreadable in a schema nobody checked.
 
 ```tsx
 const columns = [

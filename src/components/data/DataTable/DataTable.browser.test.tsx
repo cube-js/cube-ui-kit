@@ -590,7 +590,7 @@ describe('DataTable column menu visibility', () => {
  * The three things Cube Cloud's ag-grid version gets wrong are the three things
  * asserted here: banding survives inside a tinted column, the fill stays opaque
  * so a pinned column still occludes, and the text clears WCAG AA in every
- * scheme rather than only the one it was picked in.
+ * schema rather than only the one it was picked in.
  */
 describe('DataTable column colors', () => {
   const TINTED: CubeDataTableColumn<Row>[] = [
@@ -722,7 +722,7 @@ describe('DataTable column colors', () => {
       )!;
       const [even, odd] = cellsOf('revenue');
 
-      // Both bands and the header. Glaze re-solves the tone per scheme against a
+      // Both bands and the header. Glaze re-solves the tone per schema against a
       // real contrast floor, which is exactly what a hex pair picked once in
       // light mode cannot do.
       for (const element of [even, odd, header]) {

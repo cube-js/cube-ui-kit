@@ -5,24 +5,24 @@
  * Two writers route through here:
  *   - The `storybook-dark-mode` addon's toolbar toggle (via the
  *     `DARK_MODE` channel event in `.storybook/preview.jsx`).
- *   - The per-story `withColorScheme` decorator in this folder.
+ *   - The per-story `withColorSchema` decorator in this folder.
  *
- * `overrideScheme` always wins over `toolbarScheme`, so a story explicitly
+ * `overrideSchema` always wins over `toolbarSchema`, so a story explicitly
  * forced into dark/light cannot be clobbered by the addon's async init.
  *
  * NOTE: lives under `src/stories/decorators/` (not `.storybook/`) so the
  * decorator can import it without crossing the TypeScript include boundary.
  */
 
-export type Scheme = 'light' | 'dark';
+export type Schema = 'light' | 'dark';
 
-let toolbarScheme: Scheme | null = null;
-let overrideScheme: Scheme | null = null;
+let toolbarSchema: Schema | null = null;
+let overrideSchema: Schema | null = null;
 
 const apply = (): void => {
   if (typeof document === 'undefined') return;
 
-  const next = overrideScheme ?? toolbarScheme;
+  const next = overrideSchema ?? toolbarSchema;
 
   if (next == null) {
     document.documentElement.removeAttribute('data-schema');
@@ -32,16 +32,16 @@ const apply = (): void => {
 };
 
 /** Set by the `storybook-dark-mode` channel listener in `preview.jsx`. */
-export const setToolbarScheme = (scheme: Scheme | null): void => {
-  toolbarScheme = scheme;
+export const setToolbarSchema = (schema: Schema | null): void => {
+  toolbarSchema = schema;
   apply();
 };
 
 /**
- * Set by the per-story `withColorScheme` decorator.
+ * Set by the per-story `withColorSchema` decorator.
  * Pass `null` to release the override and fall back to the toolbar value.
  */
-export const setSchemeOverride = (scheme: Scheme | null): void => {
-  overrideScheme = scheme;
+export const setSchemaOverride = (schema: Schema | null): void => {
+  overrideSchema = schema;
   apply();
 };

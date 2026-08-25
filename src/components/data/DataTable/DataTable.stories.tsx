@@ -655,7 +655,7 @@ export const PersistedColumnLayout: Story = {
  *
  * A palette theme name (`'success'`, `'note'`, …) is the cheap form. Any CSS
  * colour works too: only its hue and saturation are kept, and the tone ramp plus
- * an AA/AAA text floor are re-solved per scheme by Glaze. Flip the toolbar to
+ * an AA/AAA text floor are re-solved per schema by Glaze. Flip the toolbar to
  * dark or high contrast and every column stays readable — which is the point,
  * and the thing hand-picked hex pairs get wrong.
  *

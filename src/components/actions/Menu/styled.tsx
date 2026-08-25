@@ -22,7 +22,7 @@ export const StyledMenuWrapper = tasty({
       '': '',
       // Use the design-system `$shadow` token (resolves to
       // `0 .5x 2x #shadow-md`) so the popover shadow follows the
-      // scheme-aware Glaze `#shadow-md` color. The previous literal
+      // schema-aware Glaze `#shadow-md` color. The previous literal
       // `0px 5px 15px #dark.05` baked in `#dark` (now aliased to the
       // adaptive `#surface-text`) which inverts to a *light* shadow on
       // dark surfaces.

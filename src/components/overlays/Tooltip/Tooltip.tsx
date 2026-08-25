@@ -28,18 +28,18 @@ export type { AriaTooltipProps };
 const TooltipElement = tasty({
   styles: {
     display: 'block',
-    // The DEFAULT (dark) tooltip is intentionally scheme-invariant:
+    // The DEFAULT (dark) tooltip is intentionally schema-invariant:
     // `#surface-inverse.85` + `#white` keep it the "always dark" tooltip in
-    // light, dark, and high-contrast schemes — matching the legacy `#dark.85`
+    // light, dark, and high-contrast schemas — matching the legacy `#dark.85`
     // + `#white` design.
     //
     // The `light` variant uses the adaptive surface tokens (`#surface` +
-    // `#surface-text-soft`) so it follows the page scheme. This restores the
+    // `#surface-text-soft`) so it follows the page schema. This restores the
     // softer legacy `#dark-02` look in light mode (cr≈9.2) and stays AA-safe
     // in dark mode (the previous fixed `#surface-inverse` was much darker
     // than the legacy `#dark-02`, and pairing the fixed `#white` fill with
     // the adaptive `#surface-text-soft` text — the LEGACY_ALIASES port of
-    // `#dark-02` — would collapse to cr≈1.8 in dark schemes; using `#surface`
+    // `#dark-02` — would collapse to cr≈1.8 in dark schemas; using `#surface`
     // for the fill keeps both ends of the pair adapting together).
     fill: {
       '': '#surface-inverse.85',

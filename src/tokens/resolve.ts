@@ -1,6 +1,7 @@
 import { useState, useSyncExternalStore } from 'react';
 
 import { useLayoutEffect } from '../utils/react/useLayoutEffect';
+import { subscribeSchema } from '../utils/react/useSchema';
 import { warn } from '../utils/warnings';
 
 import { getTokens } from './all-tokens';
@@ -372,21 +373,15 @@ export function resolvePresetValues(
 
 /**
  * A token's resolved value changes for two reasons: the palette was re-seeded
- * (`setPaletteConfig()`, covered by `usePaletteVersion`), or the scheme /
+ * (`setPaletteConfig()`, covered by `usePaletteVersion`), or the schema /
  * contrast tier flipped. This store covers the second.
  *
- * Both axes are the ones `@dark` and `@hc` resolve against (see
- * `src/components/Root.tsx`): the `data-schema` / `data-contrast` attributes on
- * `<html>`, and the `prefers-color-scheme` / `prefers-contrast` media queries
- * they fall back to. An attribute flip is invisible to `matchMedia` and a system
- * flip is invisible to a `MutationObserver`, so both are watched.
+ * The watching itself belongs to `subscribeSchema()` (`src/utils/react/useSchema.ts`),
+ * which owns the definition of both axes — the `data-schema` / `data-contrast`
+ * attributes and the media queries they fall back to are the same strings
+ * `<Root>` registers `@dark` and `@hc` from. This store only counts the changes,
+ * so there is one observer for the document rather than one per concern.
  */
-const APPEARANCE_QUERIES = [
-  '(prefers-color-scheme: dark)',
-  '(prefers-contrast: more)',
-];
-const APPEARANCE_ATTRIBUTES = ['data-schema', 'data-contrast'];
-
 let appearanceVersion = 0;
 let stopWatchingAppearance: (() => void) | null = null;
 
@@ -398,45 +393,11 @@ function onAppearanceChange() {
   appearanceListeners.forEach((listener) => listener());
 }
 
-function watchAppearance(): () => void {
-  const teardowns: (() => void)[] = [];
-
-  // Guarded rather than assumed: jsdom ships neither `matchMedia` nor a
-  // `MediaQueryList` in every version, and a consumer's unit tests are exactly
-  // where a hook like this gets mounted. Losing one source of change is a stale
-  // value; throwing is a broken render.
-  if (typeof window.matchMedia === 'function') {
-    for (const query of APPEARANCE_QUERIES) {
-      const list = window.matchMedia(query);
-
-      if (typeof list?.addEventListener !== 'function') continue;
-
-      list.addEventListener('change', onAppearanceChange);
-      teardowns.push(() =>
-        list.removeEventListener('change', onAppearanceChange),
-      );
-    }
-  }
-
-  if (typeof MutationObserver === 'function' && document.documentElement) {
-    const observer = new MutationObserver(onAppearanceChange);
-
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: APPEARANCE_ATTRIBUTES,
-    });
-
-    teardowns.push(() => observer.disconnect());
-  }
-
-  return () => teardowns.forEach((teardown) => teardown());
-}
-
 function subscribeAppearance(listener: () => void): () => void {
   appearanceListeners.add(listener);
 
-  if (appearanceListeners.size === 1 && typeof window !== 'undefined') {
-    stopWatchingAppearance = watchAppearance();
+  if (appearanceListeners.size === 1) {
+    stopWatchingAppearance = subscribeSchema(onAppearanceChange);
   }
 
   return () => {
@@ -469,7 +430,7 @@ function getServerAppearanceVersion(): number {
 }
 
 /**
- * Re-render on a scheme / contrast change. Returns the version rather than the
+ * Re-render on a schema / contrast change. Returns the version rather than the
  * state so the snapshot is a primitive — the same reason `usePaletteVersion`
  * does, see `src/tokens/palette-config.ts`.
  */
@@ -487,7 +448,7 @@ function useAppearanceVersion(): number {
 
 /**
  * The value is read out of the DOM, so it re-resolves whenever the palette is
- * re-seeded or the scheme / contrast tier flips, and it is `fallback ?? null`
+ * re-seeded or the schema / contrast tier flips, and it is `fallback ?? null`
  * during SSR. The layout effect is what covers the first commit: a consumer
  * rendered in the same pass as `<Root>` reads before the token block lands.
  */
@@ -551,7 +512,7 @@ function isSameRecord<T extends Record<string, string | null>>(
 
 /**
  * {@link resolveTokenValue} as a hook: re-renders when the palette is re-seeded
- * or the scheme / contrast tier flips.
+ * or the schema / contrast tier flips.
  *
  * ```tsx
  * const accent = useTokenValue('#purple');

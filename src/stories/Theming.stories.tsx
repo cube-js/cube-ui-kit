@@ -31,14 +31,17 @@ import {
   Switch,
   Tag,
   tasty,
+  useHighContrast,
   usePaletteConfig,
   usePaletteVersion,
+  useSchema,
 } from '../index';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import type { Styles, Tokens } from '@tenphi/tasty';
 import type { ReactNode } from 'react';
 import type {
+  ColorSchema,
   PaletteConfig,
   PaletteNumericSeed,
   PaletteSeed,
@@ -182,7 +185,7 @@ function useResetOnUnmount() {
   useEffect(() => resetPaletteConfig, []);
 }
 
-/** Light-scheme value of a token, straight out of the resolved palette. */
+/** Light-schema value of a token, straight out of the resolved palette. */
 function resolvedValue(name: string): string {
   const token = getPaletteTokens()[name] as Record<string, string> | undefined;
 
@@ -297,7 +300,7 @@ function ColorResolution({ resolved }: { resolved?: Tokens }) {
 
   // The preview's own tokens when there are any, so the chip answers "what did I get in
   // the variant I am looking at". `resolvedValue` only ever reports the document's
-  // light scheme, which is the wrong answer inside a dark preview.
+  // light schema, which is the wrong answer inside a dark preview.
   const valueOf = (name: string) =>
     (resolved?.[name] as string | undefined) ?? resolvedValue(name);
 
@@ -1176,7 +1179,7 @@ function CodePanel() {
         with numbers, and a muted palette would wash the whole block out. Tune
         it on its own with <Token>themes.code.saturation</Token>. Every token
         still keeps an AA/AAA floor against the real surface, so it stays
-        readable in every scheme.
+        readable in every schema.
       </Lead>
       <Swatch styles={{ fill: '#surface-3', padding: '3x' }}>
         <PrismCode code={SAMPLE_CODE} language="javascript" />
@@ -1188,87 +1191,6 @@ function CodePanel() {
 // ============================================================================
 // Theme builder
 // ============================================================================
-
-/**
- * A preview renders one concrete variant, so there is no `auto` here: `auto` is a
- * *preference* ("follow the OS"), and a flat token value cannot express one.
- */
-type SchemeChoice = 'light' | 'dark';
-
-/**
- * Scheme and contrast tier are **viewing conditions**, not theme settings — the
- * same theme renders in all four of them, and a designer moves between them to
- * check their work rather than to change it. They live over the preview for
- * that reason, and nothing they do reaches the palette config.
- */
-interface ViewingConditions {
-  scheme: SchemeChoice;
-  highContrast: boolean;
-}
-
-/** What the document is showing right now, per the states `Root` registers. */
-function readViewingConditions(): ViewingConditions {
-  if (typeof document === 'undefined') {
-    return { scheme: 'light', highContrast: false };
-  }
-
-  const schema = document.documentElement.getAttribute('data-schema');
-  const contrast = document.documentElement.getAttribute('data-contrast');
-
-  return {
-    scheme:
-      schema === 'dark' || schema === 'light'
-        ? schema
-        : matchMedia('(prefers-color-scheme: dark)').matches
-          ? 'dark'
-          : 'light',
-    highContrast: contrast
-      ? contrast === 'high'
-      : matchMedia('(prefers-contrast: more)').matches,
-  };
-}
-
-/**
- * The document's own scheme and contrast tier, kept live.
- *
- * This is what makes the two switches over the preview *follow* without an
- * `Auto` option to explain: they start on whatever the page is already showing,
- * and until someone presses one they keep tracking it. Flipping Storybook's
- * dark-mode toolbar with a light preview stranded inside a dark page is exactly
- * the state that reads as broken.
- *
- * Both inputs have to be watched, because both can decide the answer: the
- * attribute when `Root`'s opt-in is set, the media query otherwise.
- */
-function useDocumentConditions(): ViewingConditions {
-  const [conditions, setConditions] = useState(readViewingConditions);
-
-  useEffect(() => {
-    const sync = () => setConditions(readViewingConditions());
-    const observer = new MutationObserver(sync);
-    const queries = [
-      matchMedia('(prefers-color-scheme: dark)'),
-      matchMedia('(prefers-contrast: more)'),
-    ];
-
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['data-schema', 'data-contrast'],
-    });
-    queries.forEach((query) => query.addEventListener('change', sync));
-
-    // The attribute can land before the effect runs, so re-read on mount rather
-    // than trusting the value the first render happened to see.
-    sync();
-
-    return () => {
-      observer.disconnect();
-      queries.forEach((query) => query.removeEventListener('change', sync));
-    };
-  }, []);
-
-  return conditions;
-}
 
 // ----------------------------------------------------------------------------
 // Controls
@@ -2062,10 +1984,10 @@ const PREVIEW_NAV = [
 
 function ThemePreview({
   tokens,
-  scheme,
+  schema,
 }: {
   tokens: Tokens;
-  scheme: SchemeChoice;
+  schema: ColorSchema;
 }) {
   const [tab, setTab] = useState(PREVIEW_TABS[0]);
 
@@ -2074,8 +1996,8 @@ function ThemePreview({
       <PreviewHeader>
         {/* The mark is two drawings swapped by the `@dark` state, which follows the
             *document* — tokens override token values, not states, so the preview has
-            to pin the scheme explicitly. Its colour is a token and needs no help. */}
-        <CubeLogo size="3x" scheme={scheme} color="#accent-surface" />
+            to pin the schema explicitly. Its colour is a token and needs no help. */}
+        <CubeLogo size="3x" schema={schema} color="#accent-surface" />
         <SwatchLabel styles={{ preset: 't3m' }}>Quarterly Revenue</SwatchLabel>
         <Badge>Draft</Badge>
         <Row styles={{ gap: '1x', marginLeft: 'auto' }}>
@@ -2201,11 +2123,18 @@ function ThemePreview({
 }
 
 function ThemeBuilderPage() {
-  const documentConditions = useDocumentConditions();
+  // Schema and contrast tier are viewing conditions, not theme settings — the
+  // same theme renders in all four of them. The switches start on whatever the
+  // page is already showing and keep tracking it until someone presses one, so
+  // a light preview is never stranded inside a dark page.
+  const documentSchema = useSchema();
+  const documentHighContrast = useHighContrast();
   // `null` while the switch is still following the document. Deriving the shown
   // value from "override ?? document" is what lets a two-option control follow
-  // without an `Auto` option standing for the third state.
-  const [schemeOverride, setSchemeOverride] = useState<SchemeChoice | null>(
+  // without an `Auto` option standing for the third state — and `auto` could not
+  // be previewed anyway: it is a *preference*, and a flat token value renders one
+  // concrete variant.
+  const [schemaOverride, setSchemaOverride] = useState<ColorSchema | null>(
     null,
   );
   const [contrastOverride, setContrastOverride] = useState<boolean | null>(
@@ -2213,22 +2142,26 @@ function ThemeBuilderPage() {
   );
   const version = usePaletteVersion();
 
-  const scheme = schemeOverride ?? documentConditions.scheme;
-  const isHighContrast = contrastOverride ?? documentConditions.highContrast;
+  const schema = schemaOverride ?? documentSchema;
+  const isHighContrast = contrastOverride ?? documentHighContrast;
 
   // The level lives in the palette config now, so it needs no mention here: it
   // is part of the theme being built, and both of these pick it up.
   const tokens = useMemo(
-    () => renderColorTokens({ scheme, highContrast: isHighContrast }),
-    [scheme, isHighContrast, version],
+    () => renderColorTokens({ schema: schema, highContrast: isHighContrast }),
+    [schema, isHighContrast, version],
   );
 
   // Resolved separately for the controls, which the *document* paints. Both
   // calls land on the same memo inside `renderPaletteTokens` — it holds all four
   // variants of one config — so the second one costs nothing.
   const documentTokens = useMemo(
-    () => renderColorTokens(documentConditions),
-    [documentConditions, version],
+    () =>
+      renderColorTokens({
+        schema: documentSchema,
+        highContrast: documentHighContrast,
+      }),
+    [documentSchema, documentHighContrast, version],
   );
 
   return (
@@ -2249,10 +2182,10 @@ function ThemeBuilderPage() {
         <PreviewColumn>
           <PreviewToolbar>
             <RadioGroup
-              aria-label="Color scheme"
+              aria-label="Color schema"
               type="button"
-              value={scheme}
-              onChange={(value) => setSchemeOverride(value as SchemeChoice)}
+              value={schema}
+              onChange={(value) => setSchemaOverride(value as ColorSchema)}
             >
               <Radio value="light">Light</Radio>
               <Radio value="dark">Dark</Radio>
@@ -2280,7 +2213,7 @@ function ThemeBuilderPage() {
               />
             )}
           </PreviewToolbar>
-          <ThemePreview tokens={tokens} scheme={scheme} />
+          <ThemePreview tokens={tokens} schema={schema} />
         </PreviewColumn>
       </BuilderLayout>
     </StoryPage>
@@ -2313,7 +2246,7 @@ export const Playground: Story = {
           {DEFAULT_PALETTE_CONFIG.hue}° / saturation{' '}
           {DEFAULT_PALETTE_CONFIG.saturation}; the hue slider steps by 1°, so
           use Reset to get back to the exact shipped value. Flip the toolbar
-          dark-mode switch at any point — both schemes are generated from the
+          dark-mode switch at any point — both schemas are generated from the
           same seed.
         </>
       }
