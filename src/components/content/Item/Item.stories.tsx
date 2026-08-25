@@ -1262,7 +1262,7 @@ DescriptionWithTypes.parameters = {
   docs: {
     description: {
       story:
-        "Demonstrates how descriptions work with all Item type variants. The description inherits the color scheme and adapts to each type's visual style, ensuring consistent readability across different type configurations.",
+        "Demonstrates how descriptions work with all Item type variants. The description inherits the color schema and adapts to each type's visual style, ensuring consistent readability across different type configurations.",
     },
   },
 };

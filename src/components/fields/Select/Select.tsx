@@ -472,7 +472,7 @@ function Select<T extends object>(
               // Forwarded so a `special` trigger tells its action which SURFACE it
               // sits on: `CURRENT_ITEM_STYLES` only steps up to the stronger alpha
               // ramp on `theme=special`, and against that dark purple base the
-              // light-scheme alphas are almost invisible. It travels through
+              // light-schema alphas are almost invisible. It travels through
               // context rather than as a prop because the prop is what opts an
               // action out of `current` back to `clear`, and this one needs to stay
               // `current` so its label keeps inheriting.

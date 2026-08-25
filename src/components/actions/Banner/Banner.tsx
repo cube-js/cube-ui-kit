@@ -63,7 +63,7 @@ const BannerElement = tasty(Item, {
 // shape rather than the borderless default.
 //
 // `current` is the right color source: a banner labels itself `#white` in both
-// schemes (see `BannerLinkElement` and `*_PRIMARY_STYLES`), so the action mixes
+// schemas (see `BannerLinkElement` and `*_PRIMARY_STYLES`), so the action mixes
 // its chip, border and label from that white — label cr 4.3-5.0 against every
 // banner theme, with the chip a subtle 1.06 off the banner. That is what an
 // action on a saturated surface should be: the banner carries the emphasis, the

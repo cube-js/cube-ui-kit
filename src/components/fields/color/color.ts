@@ -361,7 +361,7 @@ export function detectFormat(input: string): ColorFormat | null {
  * Black or white — whichever the WCAG contrast ratio favors on the given
  * color. Keeps the popover preview label readable at any lightness. Returns a
  * literal hex rather than a token, because the answer is measured against this
- * exact fill and must not adapt with the color scheme.
+ * exact fill and must not adapt with the color schema.
  */
 export function getContrastingColor(color: ColorValue): '#000000' | '#ffffff' {
   const luminance = relativeLuminanceFromLinearRgb(

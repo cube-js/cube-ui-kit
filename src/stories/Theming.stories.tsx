@@ -185,7 +185,7 @@ function useResetOnUnmount() {
   useEffect(() => resetPaletteConfig, []);
 }
 
-/** Light-scheme value of a token, straight out of the resolved palette. */
+/** Light-schema value of a token, straight out of the resolved palette. */
 function resolvedValue(name: string): string {
   const token = getPaletteTokens()[name] as Record<string, string> | undefined;
 
@@ -300,7 +300,7 @@ function ColorResolution({ resolved }: { resolved?: Tokens }) {
 
   // The preview's own tokens when there are any, so the chip answers "what did I get in
   // the variant I am looking at". `resolvedValue` only ever reports the document's
-  // light scheme, which is the wrong answer inside a dark preview.
+  // light schema, which is the wrong answer inside a dark preview.
   const valueOf = (name: string) =>
     (resolved?.[name] as string | undefined) ?? resolvedValue(name);
 
@@ -1179,7 +1179,7 @@ function CodePanel() {
         with numbers, and a muted palette would wash the whole block out. Tune
         it on its own with <Token>themes.code.saturation</Token>. Every token
         still keeps an AA/AAA floor against the real surface, so it stays
-        readable in every scheme.
+        readable in every schema.
       </Lead>
       <Swatch styles={{ fill: '#surface-3', padding: '3x' }}>
         <PrismCode code={SAMPLE_CODE} language="javascript" />
@@ -1997,7 +1997,7 @@ function ThemePreview({
         {/* The mark is two drawings swapped by the `@dark` state, which follows the
             *document* — tokens override token values, not states, so the preview has
             to pin the schema explicitly. Its colour is a token and needs no help. */}
-        <CubeLogo size="3x" scheme={schema} color="#accent-surface" />
+        <CubeLogo size="3x" schema={schema} color="#accent-surface" />
         <SwatchLabel styles={{ preset: 't3m' }}>Quarterly Revenue</SwatchLabel>
         <Badge>Draft</Badge>
         <Row styles={{ gap: '1x', marginLeft: 'auto' }}>
@@ -2148,7 +2148,7 @@ function ThemeBuilderPage() {
   // The level lives in the palette config now, so it needs no mention here: it
   // is part of the theme being built, and both of these pick it up.
   const tokens = useMemo(
-    () => renderColorTokens({ scheme: schema, highContrast: isHighContrast }),
+    () => renderColorTokens({ schema: schema, highContrast: isHighContrast }),
     [schema, isHighContrast, version],
   );
 
@@ -2158,7 +2158,7 @@ function ThemeBuilderPage() {
   const documentTokens = useMemo(
     () =>
       renderColorTokens({
-        scheme: documentSchema,
+        schema: documentSchema,
         highContrast: documentHighContrast,
       }),
     [documentSchema, documentHighContrast, version],
@@ -2246,7 +2246,7 @@ export const Playground: Story = {
           {DEFAULT_PALETTE_CONFIG.hue}° / saturation{' '}
           {DEFAULT_PALETTE_CONFIG.saturation}; the hue slider steps by 1°, so
           use Reset to get back to the exact shipped value. Flip the toolbar
-          dark-mode switch at any point — both schemes are generated from the
+          dark-mode switch at any point — both schemas are generated from the
           same seed.
         </>
       }

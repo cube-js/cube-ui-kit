@@ -48,7 +48,7 @@ describe('ITEM_VARIANTS', () => {
    * authored number goes up. See `CURRENT_OUTLINE_STYLES`.
    *
    * And `current.clear` steps its enabled states through the custom properties
-   * of `CURRENT_ITEM_RAMP` — one per scheme and surface — while its disabled
+   * of `CURRENT_ITEM_RAMP` — one per schema and surface — while its disabled
    * chip is a plain alpha, so the two are not comparable as strings at all.
    */
   const CURRENT = [

@@ -8,7 +8,7 @@ import { create, themes } from 'storybook/theming';
 
 import { Root } from '../src/components/Root';
 import { getI18n, LOCALE_LABELS, SUPPORTED_LOCALES } from '../src/i18n';
-import { setToolbarScheme } from '../src/stories/decorators/colorSchemeBridge';
+import { setToolbarSchema } from '../src/stories/decorators/colorSchemaBridge';
 
 // Summarizes DOM/React events before Storybook's action spies see them. Without
 // it, serializing a focus event over the preview channel costs ~600ms per focus
@@ -53,7 +53,7 @@ configure({ testIdAttribute: 'data-qa', asyncUtilTimeout: 10000 });
 // initial event after manager/preview channels connect.
 if (typeof document !== 'undefined') {
   addons.getChannel().on(DARK_MODE_EVENT_NAME, (isDark) => {
-    setToolbarScheme(isDark ? 'dark' : 'light');
+    setToolbarSchema(isDark ? 'dark' : 'light');
   });
 }
 
@@ -137,7 +137,7 @@ export const parameters = {
   // `storybook-dark-mode` configuration. No `current` so the addon resolves
   // OS `prefers-color-scheme` on first load. `stylePreview: false` keeps the
   // addon from also injecting dark/light classes on the preview body — the
-  // `data-schema` attribute set by `colorSchemeBridge` is the only signal
+  // `data-schema` attribute set by `colorSchemaBridge` is the only signal
   // we care about (see `src/components/Root.tsx` and `src/tokens/palette.ts`).
   darkMode: {
     dark: darkTheme,
@@ -147,7 +147,7 @@ export const parameters = {
   // Storybook's `addon-backgrounds` injects `.sb-show-main { background: … !important }`
   // when an option is selected, which overrides the body's `#surface` fill from
   // `src/components/GlobalStyles.tsx`. Disable it globally so the body's
-  // scheme-aware Glaze background shows through (dark/light). Stories can still
+  // schema-aware Glaze background shows through (dark/light). Stories can still
   // override via `parameters.backgrounds = { disable: false, … }`.
   // NOTE: the addon's parameter is `disable` (not `disabled`) — the latter is
   // silently ignored, leaving the addon active and its toolbar still able to

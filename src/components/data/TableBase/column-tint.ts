@@ -75,7 +75,7 @@ function isThemeName(value: string): value is CubeTableColumnTheme {
  *
  * A status theme seeded by a COLOR needs nothing special here: its resolved seed already
  * carries that color's hue and chroma, so a tinted column follows it for free. Only the
- * two numbers are passed on — a runtime tint re-derives its own lightness per scheme, so
+ * two numbers are passed on — a runtime tint re-derives its own lightness per schema, so
  * the seed's `color` and `colorTone` have nothing to say to it and are not part of
  * `ColorThemeConfig`.
  */

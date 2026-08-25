@@ -28,7 +28,7 @@ export interface ColorThemeConfig {
    * `okhsl()`, `okhst()`, `oklch()`.
    *
    * From a colour only the HUE and SATURATION are taken; the lightness is
-   * discarded and re-derived per scheme. That is what makes the result adaptive
+   * discarded and re-derived per schema. That is what makes the result adaptive
    * rather than a value that happens to work in one theme.
    */
   hue: number | string;
@@ -132,7 +132,7 @@ function stableStringify(value: unknown): string {
  * ```
  *
  * The tone {@link colorSeed} also reads is dropped here on purpose: a tint theme
- * re-derives its lightness per scheme, which is what makes it adaptive. The palette's
+ * re-derives its lightness per schema, which is what makes it adaptive. The palette's
  * The palette's accent zone keeps the tone, because a brand fill has to *be* the
  * colour.
  *

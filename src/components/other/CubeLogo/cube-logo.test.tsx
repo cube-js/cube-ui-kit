@@ -3,7 +3,7 @@ import { renderWithRoot, screen } from '../../../test';
 import { CubeFullLogo, CubeLogo } from './CubeLogo';
 
 describe('<CubeLogo />', () => {
-  it('renders both scheme marks so the swap is CSS-only', () => {
+  it('renders both schema marks so the swap is CSS-only', () => {
     renderWithRoot(<CubeLogo />);
     const el = screen.getByTestId('CubeLogo');
 
@@ -20,8 +20,8 @@ describe('<CubeLogo />', () => {
   it.each([
     ['light', 'block', 'none'],
     ['dark', 'none', 'block'],
-  ] as const)('pins the %s mark when asked', (scheme, light, dark) => {
-    renderWithRoot(<CubeLogo scheme={scheme} />);
+  ] as const)('pins the %s mark when asked', (schema, light, dark) => {
+    renderWithRoot(<CubeLogo schema={schema} />);
     const el = screen.getByTestId('CubeLogo');
     const mark = (name: string) =>
       getComputedStyle(el.querySelector(`[data-element="${name}"]`)!).display;
@@ -30,10 +30,10 @@ describe('<CubeLogo />', () => {
     expect(mark('DarkMark')).toBe(dark);
   });
 
-  it('keeps scheme off the DOM', () => {
-    renderWithRoot(<CubeLogo scheme="dark" />);
+  it('keeps schema off the DOM', () => {
+    renderWithRoot(<CubeLogo schema="dark" />);
 
-    expect(screen.getByTestId('CubeLogo')).not.toHaveAttribute('scheme');
+    expect(screen.getByTestId('CubeLogo')).not.toHaveAttribute('schema');
   });
 
   it('drives sizing from the size prop', () => {

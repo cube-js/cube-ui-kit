@@ -177,7 +177,7 @@ export interface PaletteConfig {
    * and no further.
    *
    * Those floors are APCA, not WCAG, and the difference is deliberate: one WCAG ratio
-   * means two very different things by scheme (3:1 measures Lc 56 in light but only
+   * means two very different things by schema (3:1 measures Lc 56 in light but only
    * Lc 23 in dark), which crushed light brands while letting dark ones through. A
    * consequence worth stating plainly — **the emitted fill can sit below WCAG 3:1**.
    * `#0EA5E9` renders at 2.77:1 against a white page and is correct at that value; the

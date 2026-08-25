@@ -21,7 +21,7 @@ The escape hatches that keep this line holdable:
   are deliberately NOT reserved, because there is no column pin/visibility state
   behind them to drive.
 - `column.color` takes a hue rather than a resolved colour, so the kit derives
-  the ramp and the contrast floor per scheme instead of trusting a caller's
+  the ramp and the contrast floor per schema instead of trusting a caller's
   hex pair. See `column-tint.ts` and `src/tokens/color-theme.ts`.
 - `renderCellMenu`, `column.render`, `column.cellStyles` and `renderRow` cover
   the rest.

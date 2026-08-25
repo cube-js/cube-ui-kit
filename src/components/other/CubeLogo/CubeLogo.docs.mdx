@@ -43,35 +43,35 @@ Every path is drawn with `currentColor`. Inheriting is the default and usually c
 <CubeFullLogo color="#dark" />
 ```
 
-There are **no baked-in brand hexes**, which is what lets the marks work on any surface and in any scheme.
+There are **no baked-in brand hexes**, which is what lets the marks work on any surface and in any schema.
 
-## Light and dark schemes
+## Light and dark schemas
 
 The mark is two different drawings rather than one drawing recoloured — the dark variant is filled differently so it holds its weight against a dark surface. Both are rendered, and the `@dark` state swaps them in CSS.
 
 That means the swap costs no re-render, is correct during SSR and before hydration, and needs no prop in the normal case. It also means a snapshot of the DOM always contains both paths; assert on `[data-element="LightMark"]` / `[data-element="DarkMark"]` rather than on a single `path`.
 
-### Pinning a scheme
+### Pinning a schema
 
-`@dark` is a *state*, and it is resolved against the **document**. Where the background is known but the document scheme does not describe it, pass `scheme` to pin one mark:
+`@dark` is a *state*, and it is resolved against the **document**. Where the background is known but the document schema does not describe it, pass `schema` to pin one mark:
 
 ```jsx
 {/* A fixed-dark panel inside a light app */}
 <Block fill="#surface-inverse">
-  <CubeFullLogo scheme="dark" color="#white" />
+  <CubeFullLogo schema="dark" color="#white" />
 </Block>
 
 {/* A themed region — `tokens` overrides token *values*, so it cannot reach a state */}
-<Block tokens={renderColorTokens({ scheme: 'dark' })} fill="#surface">
-  <CubeFullLogo scheme="dark" />
+<Block tokens={renderColorTokens({ schema: 'dark' })} fill="#surface">
+  <CubeFullLogo schema="dark" />
 </Block>
 ```
 
-Use it only when you know the surface. Omitting it is the right default: a pinned scheme stops following the user's own light/dark preference.
+Use it only when you know the surface. Omitting it is the right default: a pinned schema stops following the user's own light/dark preference.
 
 ## Properties
 
-- **`scheme`** `'light' | 'dark'` — Pin one mark instead of letting the `@dark` state pick. Omit it unless you know the surface; see [Pinning a scheme](#pinning-a-scheme)
+- **`schema`** `'light' | 'dark'` — Pin one mark instead of letting the `@dark` state pick. Omit it unless you know the surface; see [Pinning a schema](#pinning-a-schema)
 - **`size`** — Maps onto `font-size`. Both axes on `CubeLogo`, height only on `CubeFullLogo`
 - **`color`** — Any color token. Both marks are drawn with `currentColor`, so this is inherited by default
 
