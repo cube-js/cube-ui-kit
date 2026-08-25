@@ -1,3 +1,6 @@
+import { useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
+
 import {
   act,
   fireEvent,
@@ -11,6 +14,7 @@ import { Tab, Tabs } from '../../navigation/Tabs';
 
 import { Board } from './index';
 
+import type { ReactNode } from 'react';
 import type { LayoutConstraint, LayoutItem } from './grid-core';
 
 const baseLayout = [
@@ -3212,6 +3216,110 @@ describe('Board', () => {
         });
 
         expect(onSelectionChange).toHaveBeenCalledWith([]);
+      });
+
+      // Regression (CUB-3827): the reset used to ride on the host's bubble-phase
+      // `onPointerDown`, so a control that never let the press through kept the
+      // selection standing — which is why a widget's gear button dropped it and
+      // the chart's own toolbar button did not. Three ways a press can miss the
+      // host, all of which must still drop the selection.
+      describe('however the press reaches the widget', () => {
+        const twoWidgetLayout = [
+          { i: 'a', x: 0, y: 0, w: 2, h: 1 },
+          { i: 'b', x: 2, y: 0, w: 2, h: 1 },
+        ];
+
+        /** Selects `b`, then presses `content`'s control inside widget `a`. */
+        const pressInsideA = async (content: ReactNode) => {
+          const onSelectionChange = vi.fn();
+
+          render(
+            <Board
+              width={600}
+              cols={6}
+              rowHeight={100}
+              margin={[0, 0]}
+              containerPadding={[0, 0]}
+              selectionMode="multiple"
+              defaultLayout={twoWidgetLayout}
+              onSelectionChange={onSelectionChange}
+            >
+              <Board.Widget id="a" qa="A">
+                {content}
+              </Board.Widget>
+              <Board.Widget id="b" qa="B">
+                B
+              </Board.Widget>
+            </Board>,
+          );
+
+          await userEvent.click(screen.getByTestId('B'));
+          expect(onSelectionChange).toHaveBeenLastCalledWith(['b']);
+          onSelectionChange.mockClear();
+
+          fireEvent.pointerDown(screen.getByRole('button', { name: 'Ctl' }), {
+            button: 0,
+            pointerId: 1,
+          });
+
+          return onSelectionChange;
+        };
+
+        // What React Aria's `usePress` does by default.
+        it('drops it when the control stops the React press', async () => {
+          const onSelectionChange = await pressInsideA(
+            <button type="button" onPointerDown={(e) => e.stopPropagation()}>
+              Ctl
+            </button>,
+          );
+
+          expect(onSelectionChange).toHaveBeenCalledWith([]);
+        });
+
+        // What a charting or mapping library does with its own listeners: the
+        // native event never reaches React, so no React handler on the host runs.
+        it('drops it when the control stops the native press', async () => {
+          function NativeStopButton() {
+            const ref = useRef<HTMLButtonElement>(null);
+
+            useEffect(() => {
+              const node = ref.current;
+              if (!node) return;
+
+              const stop = (event: Event) => event.stopPropagation();
+
+              node.addEventListener('pointerdown', stop);
+
+              return () => node.removeEventListener('pointerdown', stop);
+            }, []);
+
+            return (
+              <button ref={ref} type="button">
+                Ctl
+              </button>
+            );
+          }
+
+          const onSelectionChange = await pressInsideA(<NativeStopButton />);
+
+          expect(onSelectionChange).toHaveBeenCalledWith([]);
+        });
+
+        // A menu opened from a widget renders outside the host's DOM subtree,
+        // but still inside its React tree — so the React capture handler is the
+        // only one that can see this press.
+        it('drops it when a portaled control stops the press', async () => {
+          const onSelectionChange = await pressInsideA(
+            createPortal(
+              <button type="button" onPointerDown={(e) => e.stopPropagation()}>
+                Ctl
+              </button>,
+              document.body,
+            ) as ReactNode,
+          );
+
+          expect(onSelectionChange).toHaveBeenCalledWith([]);
+        });
       });
 
       it('keeps the selection when pressing a widget inside it', async () => {

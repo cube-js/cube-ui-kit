@@ -1,0 +1,5 @@
+---
+'@cube-dev/ui-kit': patch
+---
+
+**`Board`: pressing an interactive control inside a widget now always drops the selection.** `selectionCancel` promises that a press on an interactive descendant drops the selection, but the reset used to ride on the widget host's bubble-phase `onPointerDown` — so it only happened for presses that actually reached the host. A control that calls `stopPropagation()` first (React Aria's `usePress` does by default, and charting libraries do it on the native event) or one that renders in a portal never got there, which is why a widget's gear button dropped the selection while the chart's own toolbar button silently left it standing. The reset now runs in the capture phase, both through React (so a portal declared inside the widget is still covered) and as a native listener on the host node itself (so a descendant that stops the native event cannot pre-empt it). Nothing is stopped or prevented in either handler, so every control keeps its press, its focus and its default behaviour. A press on content a widget portaled outside the board also no longer starts a marquee behind the overlay.
