@@ -701,6 +701,38 @@ subscribePaletteConfig(() => {
 `getPaletteConfig().themes.danger.saturation` is a number even if nobody ever set
 it. `DEFAULT_PALETTE_CONFIG` is the shipped baseline in the same shape.
 
+## Reading the ambient scheme
+
+The palette config is what the app *asked for*; the scheme and contrast tier are
+what the viewer is *seeing* — `<html data-schema>` / `prefers-color-scheme`, and
+`<html data-contrast>` / `prefers-contrast`. They are not part of the config,
+so `getPaletteConfig()` says nothing about them:
+
+```tsx
+import { useHighContrast, useScheme } from '@cube-dev/ui-kit';
+
+const scheme = useScheme(); // 'light' | 'dark'
+const isHighContrast = useHighContrast(); // boolean
+```
+
+Both resolve exactly as the `@dark` / `@hc` states do — attribute opt-in first,
+media query only when the attribute is absent — and re-render when either input
+changes. Outside React: `resolveScheme()`, `resolveHighContrast()` and
+`subscribeScheme(listener)`, which fires on a change to either condition.
+
+Reach for these only where CSS cannot go. Styling belongs in a state map
+(`{ '': …, '@dark': …, '@hc': … }`), which repaints on a scheme flip with no
+re-render at all. What the states cannot reach is a surface that takes values
+rather than CSS — a Vega spec, a CodeMirror or Monaco theme, an iframe — or a
+control whose value *is* the condition, like the Light/Dark and
+Normal/High-contrast selectors over the [theme builder](#theme-builder).
+
+Note the distinction from `contrastLevel`: the level is a config seed the app
+supplies and can read back, while high contrast is a viewing condition the
+document is in. They also pair up — `renderColorTokens({ scheme, highContrast })`
+takes both, so a region can be previewed in the conditions the page is actually
+showing.
+
 ## `<Root palette>`
 
 `<Root>` accepts the same config as a prop, applied during render so the first
