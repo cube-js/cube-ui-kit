@@ -2,7 +2,8 @@ import { ForwardedRef, forwardRef, useCallback, useRef, useState } from 'react';
 import { useTextField } from 'react-aria';
 
 import { useI18n } from '../../../i18n';
-import { EyeIcon, EyeInvisibleIcon } from '../../../icons';
+import { EyeIcon } from '../../../icons/EyeIcon';
+import { EyeInvisibleIcon } from '../../../icons/EyeInvisibleIcon';
 import { chain, mergeProps, useBufferedValue } from '../../../utils/react';
 import {
   castNullableStringValue,

@@ -3,7 +3,7 @@ import { forwardRef } from 'react';
 import { ItemVariant } from 'src/data/item-themes';
 
 import { useI18n } from '../../../i18n';
-import { CloseIcon } from '../../../icons';
+import { CloseIcon } from '../../../icons/CloseIcon';
 import { CubeItemProps, Item } from '../Item';
 
 const TagElement = tasty(Item, {

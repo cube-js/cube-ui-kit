@@ -1,6 +1,7 @@
 import { StoryFn } from '@storybook/react-vite';
 import { userEvent, waitFor, within } from 'storybook/test';
 
+import { NO_SNAPSHOT } from '../../../stories/chromatic';
 import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Space } from '../../layout/Space';
@@ -193,3 +194,6 @@ ExtractText.play = async ({ canvasElement }) => {
     await userEvent.upload(input, file);
   });
 };
+// Ends on the same overflowing filename `LongFileNameOverflow` photographs.
+// `type="text"` changes what the value becomes, not what is drawn.
+ExtractText.parameters = NO_SNAPSHOT;

@@ -364,6 +364,20 @@ function PopoverTrigger(allProps) {
     (el: Element): boolean => {
       const popoverTriggerEl = el.closest('[data-popover-trigger]');
       if (!popoverTriggerEl) {
+        // The caller's own predicate is asked FIRST, so an explicit "keep me
+        // open for this element" wins over the automatic behaviours below
+        // (CUB-4113). It used to be consulted last, which made the prop inert
+        // for every `Button` / `ItemButton`: those carry
+        // `data-popover-dismiss`, so the auto-dismiss branch matched and
+        // closed the popover before the predicate was ever asked.
+        //
+        // React Aria hands over the element the pointer landed on — for a
+        // `Button` that is the label inside it, not the `<button>` — so a
+        // predicate that guards an element has to use `contains()` rather
+        // than an identity check.
+        if (shouldCloseOnInteractOutside && !shouldCloseOnInteractOutside(el)) {
+          return false;
+        }
         if (el.closest('[data-popover-keep]')) return false;
         // Plain interactive controls (Button, ItemButton) opt in via
         // `data-popover-dismiss`. Schedule the close after the click finishes so
@@ -373,9 +387,7 @@ function PopoverTrigger(allProps) {
           setTimeout(() => state.close(), 0);
           return false;
         }
-        return shouldCloseOnInteractOutside
-          ? shouldCloseOnInteractOutside(el)
-          : true;
+        return true;
       }
       // Clicking our own trigger again should dismiss us.
       const ownTrigger = targetRef?.current ?? triggerRef.current;

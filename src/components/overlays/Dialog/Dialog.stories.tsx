@@ -4,6 +4,7 @@ import { useRef, useState } from 'react';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 
 import { DirectionIcon } from '../../../icons/DirectionIcon';
+import { NO_SNAPSHOT } from '../../../stories/chromatic';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { timeout } from '../../../utils/promise';
 import { Button } from '../../actions';
@@ -194,6 +195,9 @@ Modal.args = {
   type: 'modal',
 };
 Modal.play = Default.play;
+// `modal` is the default type, so this renders the same open dialog `Default`
+// does. Kept as the named example of the type; the photograph is `Default`'s.
+Modal.parameters = NO_SNAPSHOT;
 
 export const Popover: typeof Template = Template.bind({});
 Popover.args = {
@@ -243,6 +247,9 @@ SizeMedium.args = {
   size: 'medium',
 };
 SizeMedium.play = Default.play;
+// `medium` is the default size — same image as `Default`. `SizeSmall` and
+// `SizeLarge` keep their snapshots, which is what makes the ladder reviewable.
+SizeMedium.parameters = NO_SNAPSHOT;
 
 export const SizeLarge: typeof Template = Template.bind({});
 SizeLarge.args = {
@@ -250,10 +257,17 @@ SizeLarge.args = {
 };
 SizeLarge.play = Default.play;
 
+// The six `hideOnClose` stories below all finish with the dialog closed, so
+// each one photographs the same bare trigger. What they assert — that the
+// dialog stays mounted instead of unmounting — lives in the DOM, which a
+// screenshot cannot show. The play functions are the test; the snapshots are
+// six copies of one button.
+
 export const CloseBehaviorHideDialog: typeof Template = Template.bind({});
 CloseBehaviorHideDialog.args = {
   hideOnClose: true,
 };
+CloseBehaviorHideDialog.parameters = NO_SNAPSHOT;
 CloseBehaviorHideDialog.play = async ({ canvasElement, viewMode }) => {
   if (viewMode === 'docs') return;
 
@@ -272,6 +286,7 @@ CloseBehaviorHidePopover.args = {
   hideOnClose: true,
 };
 CloseBehaviorHidePopover.play = CloseBehaviorHideDialog.play;
+CloseBehaviorHidePopover.parameters = NO_SNAPSHOT;
 
 export const CloseBehaviorHideTray: typeof Template = Template.bind({});
 CloseBehaviorHideTray.args = {
@@ -279,6 +294,7 @@ CloseBehaviorHideTray.args = {
   hideOnClose: true,
 };
 CloseBehaviorHideTray.play = CloseBehaviorHideDialog.play;
+CloseBehaviorHideTray.parameters = NO_SNAPSHOT;
 
 export const CloseBehaviorHideFullscreen: typeof Template = Template.bind({});
 CloseBehaviorHideFullscreen.args = {
@@ -286,6 +302,7 @@ CloseBehaviorHideFullscreen.args = {
   hideOnClose: true,
 };
 CloseBehaviorHideFullscreen.play = CloseBehaviorHideDialog.play;
+CloseBehaviorHideFullscreen.parameters = NO_SNAPSHOT;
 
 export const CloseBehaviorHideFullscreenTakeover: typeof Template =
   Template.bind({});
@@ -294,6 +311,7 @@ CloseBehaviorHideFullscreenTakeover.args = {
   hideOnClose: true,
 };
 CloseBehaviorHideFullscreenTakeover.play = CloseBehaviorHideDialog.play;
+CloseBehaviorHideFullscreenTakeover.parameters = NO_SNAPSHOT;
 
 export const CloseBehaviorHidePanel: typeof Template = Template.bind({});
 CloseBehaviorHidePanel.args = {
@@ -301,8 +319,12 @@ CloseBehaviorHidePanel.args = {
   hideOnClose: true,
 };
 CloseBehaviorHidePanel.play = CloseBehaviorHideDialog.play;
+CloseBehaviorHidePanel.parameters = NO_SNAPSHOT;
 
 export const CloseOnEsc: typeof Template = Template.bind({});
+// Ends with the dialog dismissed, so the snapshot is the bare trigger. The
+// assertions — dialog removed, focus returned to the trigger — are the story.
+CloseOnEsc.parameters = NO_SNAPSHOT;
 CloseOnEsc.play = async (context) => {
   if (context.viewMode === 'docs') return;
 
@@ -329,6 +351,9 @@ CloseOnEsc.play = async (context) => {
 };
 
 export const CloseOnEscCloseBehaviorHide: typeof Template = Template.bind({});
+// Same closed trigger as `CloseOnEsc`; the difference it proves (dialog stays
+// mounted) is invisible to a screenshot.
+CloseOnEscCloseBehaviorHide.parameters = NO_SNAPSHOT;
 CloseOnEscCloseBehaviorHide.args = {
   hideOnClose: true,
 };
@@ -386,8 +411,11 @@ export const DoNotCloseOnClickAtParticularElement: typeof Template = () => {
       <Space gap="2x">
         <DialogTrigger
           type="popover"
+          // `contains`, not an identity check: React Aria passes the element
+          // the pointer landed on, which for a `Button` is the label inside it
+          // rather than the `<button>` itself.
           shouldCloseOnInteractOutside={(e) =>
-            btnRef.current?.UNSAFE_getDOMNode() !== e
+            !btnRef.current?.UNSAFE_getDOMNode()?.contains(e)
           }
         >
           <Button size="small">Open modal</Button>
@@ -423,6 +451,14 @@ DoNotCloseOnClickAtParticularElement.play = async (context) => {
   await expect(await findByRole('dialog')).toBeInTheDocument();
 
   await userEvent.click(button);
+
+  // The dialog is supposed to stay open here — that is the whole story — and
+  // now does: `shouldCloseOnInteractOutside` reaches the overlay (CUB-4113), so
+  // the guard is asked and keeps the popover open. Settle before asserting:
+  // asserting immediately samples the DOM before React could have removed the
+  // dialog either way, which is what let this pass about two runs in three
+  // while the prop was inert.
+  await timeout(500);
 
   await expect(await findByRole('dialog')).toBeInTheDocument();
   await expect(button).toHaveTextContent('It works!');

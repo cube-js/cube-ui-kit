@@ -7,6 +7,7 @@ import {
   within,
 } from 'storybook/test';
 
+import { NO_SNAPSHOT } from '../../../stories/chromatic';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Button } from '../../actions/Button/Button';
 import { Paragraph } from '../../content/Paragraph';
@@ -142,6 +143,8 @@ AsyncExampleTrigger.play = async ({ viewMode, canvasElement }) => {
   await waitForElementToBeRemoved(dialog);
   await expect(dialog).not.toBeInTheDocument();
 };
+// Ends on the closed trigger `Default` already photographs.
+AsyncExampleTrigger.parameters = NO_SNAPSHOT;
 
 AsyncExampleContainer.play = async ({ viewMode, canvasElement }) => {
   if (viewMode === 'docs') return;
@@ -162,3 +165,5 @@ AsyncExampleContainer.play = async ({ viewMode, canvasElement }) => {
   await waitForElementToBeRemoved(dialog);
   await expect(dialog).not.toBeInTheDocument();
 };
+// Ends on the closed trigger `Default` already photographs.
+AsyncExampleContainer.parameters = NO_SNAPSHOT;

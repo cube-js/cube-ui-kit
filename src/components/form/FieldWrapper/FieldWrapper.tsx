@@ -6,7 +6,7 @@ import { InfoBadge } from '../../content/InfoBadge';
 import { Text } from '../../content/Text';
 import { Flex } from '../../layout/Flex';
 import { Space } from '../../layout/Space';
-import { Label } from '../Label';
+import { Label, NecessityIndicatorMark } from '../Label';
 import { getValidationMods } from '../validation/index';
 
 import { CubeFieldWrapperProps } from './types';
@@ -137,7 +137,18 @@ export const FieldWrapper = forwardRef(function FieldWrapper(
     >
       <Flex placeContent="baseline space-between" width="100%">
         <Space placeItems="center" gap="0.75x">
-          <div>{label}</div>
+          <div>
+            {label}
+            {/*
+              `Label` can only append the marker itself when its child is plain
+              text, and the tree below is not — so it is placed here, against
+              the label text, rather than after the full-width `Flex`.
+            */}
+            <NecessityIndicatorMark
+              isRequired={requiredMark ? isRequired : false}
+              necessityIndicator={necessityIndicator}
+            />
+          </div>
 
           {tooltip ? <InfoBadge tooltip={tooltip} /> : null}
 

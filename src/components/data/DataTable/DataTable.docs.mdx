@@ -179,14 +179,12 @@ Each merges into the corresponding sub-element at the same selector and specific
 
 These properties allow direct style application without using the `styles` prop:
 
-- **Base:** `display`, `font`, `preset`, `hide`, `opacity`, `whiteSpace`, `transition`
-- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `place`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `scrollMargin`
+- **Base:** `display`, `font`, `preset`, `hide`, `whiteSpace`, `opacity`, `transition`
+- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `scrollMargin`
 - **Dimension:** `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`
-- **Block:** `padding`, `paddingInline`, `paddingBlock`, `border`, `radius`, `shadow`, `overflow`, `outline`, `scrollbar`, `textAlign`
+- **Block:** `border`, `radius`, `shadow`, `outline`, `padding`, `paddingInline`, `paddingBlock`, `overflow`, `scrollbar`, `textAlign`
 - **Color:** `color`, `fill`, `fade`, `image`
-- **Flow:** `flow`, `gap`, `columnGap`, `rowGap`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`
-
-`height` is the important one, and more so here than for a list: a result grid is almost always taller than the screen, so bounding it is what turns the body into a scroller, pins the header, and lets virtualization engage at all.
+- **Flow:** `flow`, `place`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gap`, `columnGap`, `rowGap`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`
 
 ### Modifiers
 

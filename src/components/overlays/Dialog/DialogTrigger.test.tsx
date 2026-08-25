@@ -190,3 +190,85 @@ describe.each(['popover', 'modal'] as const)(
     });
   },
 );
+
+// CUB-4113: `shouldCloseOnInteractOutside` used to be shadowed by the
+// automatic `data-popover-dismiss` handling — every Button/ItemButton outside
+// the popover took the auto-dismiss branch, so the caller's predicate was
+// never asked and the popover closed regardless of what it would have said.
+describe('<DialogTrigger type="popover" shouldCloseOnInteractOutside />', () => {
+  const user = userEvent.setup({ delay: null });
+
+  const renderApp = (
+    shouldCloseOnInteractOutside: (el: Element) => boolean,
+    onGuardedPress?: () => void,
+  ) =>
+    renderWithRoot(
+      <>
+        <DialogTrigger
+          type="popover"
+          shouldCloseOnInteractOutside={shouldCloseOnInteractOutside}
+        >
+          <Button qa="Trigger">Open</Button>
+          <Dialog>
+            <Button qa="Inside">Inside</Button>
+          </Dialog>
+        </DialogTrigger>
+        <Button qa="Guarded" onPress={onGuardedPress}>
+          Guarded
+        </Button>
+        <Button qa="Plain">Plain</Button>
+      </>,
+    );
+
+  const open = async (baseElement: HTMLElement) => {
+    await user.click(
+      baseElement.querySelector('[data-qa="Trigger"]') as HTMLElement,
+    );
+
+    return waitFor(() =>
+      expect(baseElement.querySelector('[data-qa="Dialog"]')).toBeTruthy(),
+    );
+  };
+
+  it('stays open when the predicate vetoes the pressed element', async () => {
+    const seen: Element[] = [];
+    const onGuardedPress = vi.fn();
+    const { baseElement } = renderApp((el) => {
+      seen.push(el);
+
+      return !el.closest('[data-qa="Guarded"]');
+    }, onGuardedPress);
+
+    await open(baseElement);
+
+    await user.click(
+      baseElement.querySelector('[data-qa="Guarded"]') as HTMLElement,
+    );
+
+    // Past the auto-dismiss `setTimeout(0)` and the exit animation, so a close
+    // that was merely scheduled has had time to land.
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    expect(seen.length).toBeGreaterThan(0);
+    expect(baseElement.querySelector('[data-qa="Dialog"]')).toBeTruthy();
+    // Vetoing must not cost the guarded control its click: `useOverlay` only
+    // calls `stopPropagation()` when the predicate says to close.
+    expect(onGuardedPress).toHaveBeenCalled();
+  });
+
+  it('still closes on an element the predicate allows', async () => {
+    const { baseElement } = renderApp(
+      (el) => !el.closest('[data-qa="Guarded"]'),
+    );
+
+    await open(baseElement);
+
+    await user.click(
+      baseElement.querySelector('[data-qa="Plain"]') as HTMLElement,
+    );
+
+    await waitFor(() =>
+      expect(baseElement.querySelector('[data-qa="Dialog"]')).toBeNull(),
+    );
+  });
+});

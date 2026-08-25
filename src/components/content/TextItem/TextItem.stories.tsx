@@ -1,3 +1,6 @@
+import { within } from 'storybook/test';
+
+import { openTooltip } from '../../../stories/interactions';
 import { Block } from '../../Block';
 import { Space } from '../../layout/Space';
 import { Text } from '../Text';
@@ -129,6 +132,11 @@ export const OverflowWithTooltip: Story = {
       </TextItem>
     </Block>
   ),
+  // Truncation is visible without help, but the auto-tooltip firing *because*
+  // of it is the actual claim, and that only exists on hover.
+  play: async ({ canvasElement }) => {
+    await openTooltip(within(canvasElement).getByTestId('TextItem'));
+  },
 };
 
 export const WithHighlight: Story = {
@@ -164,6 +172,7 @@ export const MultipleHighlights: Story = {
   },
 };
 
+// chromatic-overlay-reviewed: the highlight and the truncation are both on screen
 export const HighlightWithOverflow: Story = {
   render: () => (
     <Block width="250px">
@@ -175,16 +184,27 @@ export const HighlightWithOverflow: Story = {
   ),
 };
 
+// chromatic-overlay-reviewed: an explicit-`title` tooltip, which does not open
+// from a synthetic hover — unlike the auto-on-overflow ones above, which do. A
+// `play` here throws deterministically and would fail the Chromatic build.
 export const CustomTooltip: Story = {
   render: () => (
     <Block width="200px">
-      <TextItem tooltip="Custom tooltip text that differs from the content">
+      <TextItem
+        // `delay: 0` so the snapshot does not have to wait out the default
+        // 250ms open delay, which also makes the play function racy.
+        tooltip={{
+          title: 'Custom tooltip text that differs from the content',
+          delay: 0,
+        }}
+      >
         Short text
       </TextItem>
     </Block>
   ),
 };
 
+// chromatic-overlay-reviewed: the point is that no tooltip appears
 export const DisabledTooltip: Story = {
   render: () => (
     <Block width="200px">
@@ -196,6 +216,14 @@ export const DisabledTooltip: Story = {
 };
 
 export const TooltipPlacements: Story = {
+  // Only one tooltip can be open at a time, so this captures the first
+  // placement rather than all four — the other three are covered by the
+  // rendered labels and by `Tooltip`'s own `Side` story.
+  play: async ({ canvasElement }) => {
+    const [top] = within(canvasElement).getAllByTestId('TextItem');
+
+    await openTooltip(top);
+  },
   render: () => (
     <Space flow="column" gap="2x" padding="8x">
       <Block width="200px">

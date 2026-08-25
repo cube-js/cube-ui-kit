@@ -1,7 +1,9 @@
 import { Styles, tasty } from '@tenphi/tasty';
 
 import { useI18n } from '../../../i18n';
-import { CaretDownIcon, CaretUpIcon, DirectionIcon } from '../../../icons';
+import { CaretDownIcon } from '../../../icons/CaretDownIcon';
+import { CaretUpIcon } from '../../../icons/CaretUpIcon';
+import { DirectionIcon } from '../../../icons/DirectionIcon';
 import { Button } from '../../actions';
 
 const StepButtonElement = tasty(Button, {

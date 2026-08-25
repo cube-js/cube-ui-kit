@@ -146,6 +146,15 @@ export default {
   },
 } as Meta<CubeHueSliderProps>;
 
+const HUE_NAMES = [
+  'Red',
+  'Yellow',
+  'Green',
+  'Cyan',
+  'Blue',
+  'Magenta',
+] as const;
+
 const Template: StoryFn<CubeHueSliderProps> = (args) => <HueSlider {...args} />;
 
 export const Default = Template.bind({});
@@ -159,7 +168,11 @@ WithLabel.args = {
 export const WithCustomLabel = Template.bind({});
 WithCustomLabel.args = {
   label: 'Hue',
-  getValueLabel: (val) => `${val}°`,
+  // `HueSlider` already formats its value as `180°`, so a `getValueLabel` that
+  // returns the same string makes this story indistinguishable from
+  // `WithLabel`. Name the hue instead, which is what the prop is actually for.
+  getValueLabel: (val) =>
+    `${HUE_NAMES[Math.round(Number(val) / 60) % 6]} (${val}°)`,
 };
 
 export const Controlled: StoryFn<CubeHueSliderProps> = (args) => {

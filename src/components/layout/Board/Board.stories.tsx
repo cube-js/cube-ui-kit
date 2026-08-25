@@ -1,7 +1,8 @@
 import { Meta, StoryFn } from '@storybook/react-vite';
 import { ReactNode, useState } from 'react';
 
-import { SettingsIcon } from '../../../icons';
+import { SettingsIcon } from '../../../icons/SettingsIcon';
+import { NO_SNAPSHOT } from '../../../stories/chromatic';
 import { Button } from '../../actions/Button';
 import { Text } from '../../content/Text';
 import { Title } from '../../content/Title';
@@ -150,6 +151,8 @@ Selection.args = {
   showGridLines: 'drag',
 };
 Selection.parameters = {
+  // Identical to `Default` at rest — a selection only exists once a widget is pressed.
+  ...NO_SNAPSHOT,
   docs: {
     description: {
       story:
@@ -374,6 +377,8 @@ FreePositioning.args = {
   compact: 'free',
 };
 FreePositioning.parameters = {
+  // `compact` only changes where a dragged widget lands; the resting board is `Default`.
+  ...NO_SNAPSHOT,
   docs: {
     description: {
       story:
@@ -388,6 +393,8 @@ FreePositioningOverlap.args = {
   allowOverlap: true,
 };
 FreePositioningOverlap.parameters = {
+  // Overlap is observable only mid-drag; the resting board is `Default`.
+  ...NO_SNAPSHOT,
   docs: {
     description: {
       story:
@@ -400,11 +407,15 @@ export const HorizontalCompaction = Template.bind({});
 HorizontalCompaction.args = {
   compact: 'horizontal',
 };
+// Same resting layout as `Default` — compaction happens during a drag.
+HorizontalCompaction.parameters = NO_SNAPSHOT;
 
 export const NonResizable = Template.bind({});
 NonResizable.args = {
   isResizable: false,
 };
+// Removes a resize handle that is only painted on hover, so this renders as `Default`.
+NonResizable.parameters = NO_SNAPSHOT;
 
 export const ReadOnly = Template.bind({});
 ReadOnly.args = {
@@ -412,6 +423,8 @@ ReadOnly.args = {
   isResizable: false,
 };
 ReadOnly.parameters = {
+  // Drag and resize affordances are not painted at rest, so this renders as `Default`.
+  ...NO_SNAPSHOT,
   docs: {
     description: {
       story:
@@ -503,6 +516,8 @@ GridLines.args = {
   showGridLines: 'drag',
 };
 GridLines.parameters = {
+  // `showGridLines="drag"` paints nothing until a drag starts.
+  ...NO_SNAPSHOT,
   docs: {
     description: {
       story:

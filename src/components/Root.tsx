@@ -21,7 +21,7 @@ import { extractStyles } from '../utils/styles';
 import { TASTY_VERSION, VERSION } from '../version';
 
 import { GlobalStyles } from './GlobalStyles';
-import { AlertDialogApiProvider } from './overlays/AlertDialog';
+import { AlertDialogApiProvider } from './overlays/AlertDialog/AlertDialogApiProvider';
 import { OverlayProvider } from './overlays/Notifications/OverlayProvider';
 import { PortalProvider } from './portal';
 
