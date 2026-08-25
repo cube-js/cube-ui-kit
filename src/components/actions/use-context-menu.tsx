@@ -35,7 +35,9 @@ export interface UseContextMenuReturn<
 
   /**
    * Programmatically opens the menu at the specified coordinates or element center.
-   * Runtime props are merged with defaultMenuProps (runtime props take precedence).
+   * Runtime props are merged with the CURRENT `defaultMenuProps` on every render
+   * (runtime props take precedence), so defaults that change while the menu is
+   * open reach it without an `update()` call.
    *
    * @param props - Props to pass to the menu component (optional, defaults to defaultMenuProps)
    * @param triggerProps - Additional props for MenuTrigger (merged with defaultTriggerProps)
@@ -48,8 +50,9 @@ export interface UseContextMenuReturn<
   ): void;
 
   /**
-   * Updates the props of the currently open menu without repositioning.
-   * Props are merged with defaultMenuProps.
+   * Updates the RUNTIME props of the currently open menu without repositioning.
+   * Props are merged over the current `defaultMenuProps`. Only needed for props
+   * the caller owns — `defaultMenuProps` is re-read on every render.
    */
   update(props: P, triggerProps?: T): void;
 
@@ -89,7 +92,20 @@ export function useContextMenu<
 ): UseContextMenuReturn<E, P, T> {
   const { t } = useI18n();
   const [isOpen, setIsOpen] = useState(false);
-  const [componentProps, setComponentProps] = useState<P | null>(null);
+  /**
+   * The props the CALLER passed to `open()`/`update()`, on their own — never
+   * pre-merged with `defaultMenuProps`.
+   *
+   * Merging at open time snapshotted the defaults, so a consumer that keeps its
+   * menu content IN the defaults (`Tree`'s row menu does: `children` is part of
+   * the third argument) had a menu that was frozen the moment it opened. Items
+   * appearing, disappearing or flipping `isDisabled` while it was open stayed
+   * invisible until it was closed and reopened, and the only workaround was to
+   * mirror every render into an `update()` call. Keeping the overrides alone
+   * lets the merge happen at RENDER time, against the current defaults, while
+   * runtime props still win.
+   */
+  const [runtimeProps, setRuntimeProps] = useState<P | null>(null);
   const [triggerProps, setTriggerProps] = useState<T | null>(null);
   const [anchorPosition, setAnchorPosition] = useState<{
     x: number;
@@ -207,12 +223,8 @@ export function useContextMenu<
       const { x, y } = calculatePosition(event);
       setAnchorPosition({ x, y });
 
-      // Merge defaultMenuProps with provided props
-      const finalProps = defaultMenuProps
-        ? { ...defaultMenuProps, ...props }
-        : props;
-
-      setComponentProps(finalProps);
+      // Overrides only — `defaultMenuProps` is merged in on render.
+      setRuntimeProps(props);
       setTriggerProps(triggerProps ?? null);
       setIsOpen(true);
     },
@@ -221,12 +233,7 @@ export function useContextMenu<
   const update = useEvent((props: P, triggerProps?: T) => {
     setupCheck();
 
-    // Merge defaultMenuProps with provided props
-    const finalProps = defaultMenuProps
-      ? { ...defaultMenuProps, ...props }
-      : props;
-
-    setComponentProps(finalProps as P);
+    setRuntimeProps(props);
     setTriggerProps(triggerProps ?? null);
   });
 
@@ -243,7 +250,9 @@ export function useContextMenu<
         const pos = calculatePosition(event);
         setAnchorPosition(pos);
       } else {
-        open(defaultMenuProps, undefined, event);
+        // No overrides: the defaults are merged in on every render, so
+        // passing them here would freeze the version this right-click saw.
+        open(undefined, undefined, event);
       }
     },
   );
@@ -260,9 +269,15 @@ export function useContextMenu<
     };
   }, [onContextMenu]);
 
-  // Render the menu only when componentProps is set
+  // Render the menu only when it has been opened at least once
   const renderedMenu = useMemo(() => {
-    if (!componentProps || !anchorPosition) return null;
+    if (!runtimeProps || !anchorPosition) return null;
+
+    // Merged here rather than at open time, so the defaults an open menu
+    // renders are the CURRENT ones. Runtime props still take precedence.
+    const componentProps = defaultMenuProps
+      ? { ...defaultMenuProps, ...runtimeProps }
+      : runtimeProps;
 
     return (
       <>
@@ -335,7 +350,8 @@ export function useContextMenu<
       </>
     );
   }, [
-    componentProps,
+    runtimeProps,
+    defaultMenuProps,
     triggerProps,
     isOpen,
     defaultTriggerProps,

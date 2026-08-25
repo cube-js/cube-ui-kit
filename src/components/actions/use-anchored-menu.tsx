@@ -24,15 +24,19 @@ export interface UseAnchoredMenuReturn<P, T> {
   anchorRef: RefObject<HTMLElement | null>;
 
   /**
-   * Programmatically opens the menu with the provided props.
+   * Programmatically opens the menu with the provided props. They are merged
+   * over the CURRENT `defaultMenuProps` on every render, so defaults that change
+   * while the menu is open reach it without an `update()` call.
+   *
    * @param props - Props to pass to the menu component
    * @param triggerProps - Additional props for MenuTrigger (merged with defaultTriggerProps)
    */
   open(props?: P, triggerProps?: T): void;
 
   /**
-   * Updates the props of the currently open menu.
-   * Props are merged if defaults are provided.
+   * Updates the RUNTIME props of the currently open menu. Props are merged over
+   * the current `defaultMenuProps`. Only needed for props the caller owns —
+   * `defaultMenuProps` is re-read on every render.
    */
   update(props: P, triggerProps?: T): void;
 
@@ -67,7 +71,13 @@ export function useAnchoredMenu<P, T = ComponentProps<typeof MenuTrigger>>(
 ): UseAnchoredMenuReturn<P, T> {
   const { t } = useI18n();
   const [isOpen, setIsOpen] = useState(false);
-  const [componentProps, setComponentProps] = useState<P | null>(null);
+  /**
+   * The props the CALLER passed to `open()`/`update()`, on their own — never
+   * pre-merged with `defaultMenuProps`. Merging at open time snapshotted the
+   * defaults, which froze the content of a menu whose items live in those
+   * defaults; merging on render keeps them current. Runtime props still win.
+   */
+  const [runtimeProps, setRuntimeProps] = useState<P | null>(null);
   const [triggerProps, setTriggerProps] = useState<T | null>(null);
   const anchorRef = useRef<HTMLElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
@@ -112,12 +122,8 @@ export function useAnchoredMenu<P, T = ComponentProps<typeof MenuTrigger>>(
   const open = useEvent((props: P = {} as P, triggerProps?: T) => {
     setupCheck();
 
-    // Merge defaultMenuProps with provided props
-    const finalProps = defaultMenuProps
-      ? { ...defaultMenuProps, ...props }
-      : props;
-
-    setComponentProps(finalProps);
+    // Overrides only — `defaultMenuProps` is merged in on render.
+    setRuntimeProps(props);
     setTriggerProps(triggerProps ?? null);
     setIsOpen(true);
   });
@@ -125,12 +131,7 @@ export function useAnchoredMenu<P, T = ComponentProps<typeof MenuTrigger>>(
   const update = useEvent((props: P, triggerProps?: T) => {
     setupCheck();
 
-    // Merge defaultMenuProps with provided props
-    const finalProps = defaultMenuProps
-      ? { ...defaultMenuProps, ...props }
-      : props;
-
-    setComponentProps(finalProps);
+    setRuntimeProps(props);
     setTriggerProps(triggerProps ?? null);
   });
 
@@ -138,9 +139,15 @@ export function useAnchoredMenu<P, T = ComponentProps<typeof MenuTrigger>>(
     setIsOpen(false);
   });
 
-  // Render the menu only when componentProps is set
+  // Render the menu only when it has been opened at least once
   const renderedMenu = useMemo(() => {
-    if (!componentProps) return null;
+    if (!runtimeProps) return null;
+
+    // Merged here rather than at open time, so the defaults an open menu
+    // renders are the CURRENT ones. Runtime props still take precedence.
+    const componentProps = defaultMenuProps
+      ? { ...defaultMenuProps, ...runtimeProps }
+      : runtimeProps;
 
     return (
       <MenuTrigger
@@ -159,7 +166,14 @@ export function useAnchoredMenu<P, T = ComponentProps<typeof MenuTrigger>>(
         <Component {...componentProps} />
       </MenuTrigger>
     );
-  }, [componentProps, triggerProps, isOpen, defaultTriggerProps, t]);
+  }, [
+    runtimeProps,
+    defaultMenuProps,
+    triggerProps,
+    isOpen,
+    defaultTriggerProps,
+    t,
+  ]);
 
   return {
     anchorRef,
