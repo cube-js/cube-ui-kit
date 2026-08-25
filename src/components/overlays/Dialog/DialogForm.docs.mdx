@@ -196,7 +196,7 @@ When you need custom action buttons, use `noActions` prop and the render functio
     <>
       <Input.Text name="field1" label="Field 1" />
       <Input.Text name="field2" label="Field 2" />
-      
+
       <ButtonGroup>
         <SubmitButton>Save</SubmitButton>
         <Button onPress={() => {
@@ -271,22 +271,26 @@ See [Dialog Accessibility](/docs/overlays-dialog--docs#accessibility) and [Form 
 ## Best Practices
 
 1. **Use useDialogContainer for programmatic control**: Preferred method for better state management
+
    ```jsx
    const dialog = useDialogContainer(MyFormDialog);
    dialog.open({ initialData, onSubmit: handleSubmit });
    ```
 
 2. **Provide clear titles**: Always set a descriptive `title` for context
+
    ```jsx
    <DialogForm title="Edit User Profile" onSubmit={save}>
    ```
 
 3. **Use danger theme for destructive actions**: Apply `danger` for delete/remove operations
+
    ```jsx
    <DialogForm title="Delete Item" danger submitProps={{ label: 'Delete' }}>
    ```
 
 4. **Customize button labels**: Make action buttons specific to the task
+
    ```jsx
    <DialogForm
      title="Create Project"
@@ -296,6 +300,7 @@ See [Dialog Accessibility](/docs/overlays-dialog--docs#accessibility) and [Form 
    ```
 
 5. **Handle submission errors**: Implement `onSubmitFailed` for error handling
+
    ```jsx
    <DialogForm
      onSubmit={save}
@@ -315,4 +320,3 @@ See [Dialog Accessibility](/docs/overlays-dialog--docs#accessibility) and [Form 
 - [Form](/docs/forms-form--docs) - Form component with validation
 - [DialogTrigger](/docs/overlays-dialogtrigger--docs) - Alternative: manages dialog open/close state
 - [AlertDialog](/docs/overlays-alertdialog--docs) - For simple confirmations without forms
-

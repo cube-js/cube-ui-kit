@@ -63,6 +63,7 @@ Supports all [Field properties](/docs/getting-started-field-properties--docs)
 Customizes the root element of the component.
 
 **Sub-elements:**
+
 - `InputWrapper` – container around the input field
 - `Prefix` – wrapper around prefix content
 - `Suffix` – wrapper around suffix content
@@ -190,11 +191,13 @@ import { IconMail } from '@tabler/icons-react';
 ## Best Practices
 
 1. **Do**: Provide clear labels and helpful placeholder text
+
    ```jsx
    <TextInput label="Email Address" placeholder="you@example.com" />
    ```
 
 2. **Don't**: Use placeholder text as the only label
+
    ```jsx
    {/* Avoid this */}
    <TextInput placeholder="Enter your email" />

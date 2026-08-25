@@ -58,6 +58,7 @@ Supports the layout-related [Field properties](/docs/getting-started-field-prope
 Customizes the root wrapper element of the component.
 
 **Sub-elements:**
+
 - `Prefix` - Element displayed before the input (contains search icon)
 - `Suffix` - Element displayed after the input (contains clear button when shown)
 - `State` - Container for validation state indicators
@@ -210,11 +211,13 @@ const [searchValue, setSearchValue] = useState('');
 ## Best Practices
 
 1. **Do**: Provide clear placeholder text indicating what can be searched
+
    ```jsx
    <SearchInput placeholder="Search by name, email, or department..." />
    ```
 
 2. **Don't**: Use search input for non-search related text entry
+
    ```jsx
    <SearchInput label="Enter your name" /> {/* Use TextInput instead */}
    ```
@@ -226,8 +229,7 @@ const [searchValue, setSearchValue] = useState('');
 
 ## Integration with Forms
 
-SearchInput is not a form field. Use [TextInput](/docs/forms-textinput--docs) when the typed text has to be
-captured as a form value.
+SearchInput is not a form field. Use [TextInput](/docs/forms-textinput--docs) when the typed text has to be captured as a form value.
 
 ## Suggested Improvements
 

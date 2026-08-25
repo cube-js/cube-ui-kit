@@ -70,6 +70,8 @@ export {
   snapToGrid,
   minSize,
   maxSize,
+  placeInFreeSlot,
+  distributeEvenly,
   BOARD_SELECTION_CANCEL,
 } from './components/layout/Board';
 export type {
@@ -88,6 +90,9 @@ export type {
   LayoutItem as BoardLayoutItem,
   ResizeHandleAxis as BoardResizeHandleAxis,
   BoardResizeGripPlacement,
+  BoardCornerPlacement,
+  BoardLayoutChangeInfo,
+  BoardLayoutChangeReason,
   CollisionMode as BoardCollisionMode,
   Compactor as BoardCompactor,
   LayoutConstraint as BoardLayoutConstraint,

@@ -16,6 +16,7 @@ import {
 } from './responsive-utils';
 
 import type { BoardCompactType, CubeBoardProps } from './Board';
+import type { BoardLayoutChangeInfo } from './use-board-layout';
 
 export interface CubeBoardResponsiveProps
   extends Omit<
@@ -36,12 +37,15 @@ export interface CubeBoardResponsiveProps
   /** Initial per-breakpoint layouts for uncontrolled usage. */
   defaultLayouts?: ResponsiveLayouts;
   /**
-   * Called when a drag or resize is committed. Receives the active breakpoint's
-   * layout and the full map of all breakpoint layouts.
+   * Called when the layout is committed. Receives the active breakpoint's
+   * layout, the full map of all breakpoint layouts, and why it changed — see
+   * {@link BoardLayoutChangeInfo}, which is what separates a user's gesture
+   * from the board reflowing itself.
    */
   onLayoutChange?: (
     currentLayout: LayoutItem[],
     allLayouts: ResponsiveLayouts,
+    info: BoardLayoutChangeInfo,
   ) => void;
   /** Called when the active breakpoint changes. */
   onBreakpointChange?: (breakpoint: string, cols: number) => void;
@@ -171,12 +175,14 @@ function BoardResponsiveInner(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [measuredWidth, activeCols]);
 
-  const handleLayoutChange = useEvent((next: LayoutItem[]) => {
-    const merged = { ...layoutsRef.current, [activeBreakpoint]: next };
-    layoutsRef.current = merged;
-    if (!isControlled) setInternalLayouts(merged);
-    onLayoutChange?.(next, merged);
-  });
+  const handleLayoutChange = useEvent(
+    (next: LayoutItem[], info: BoardLayoutChangeInfo) => {
+      const merged = { ...layoutsRef.current, [activeBreakpoint]: next };
+      layoutsRef.current = merged;
+      if (!isControlled) setInternalLayouts(merged);
+      onLayoutChange?.(next, merged, info);
+    },
+  );
 
   return (
     <Board

@@ -9,6 +9,7 @@ This document describes how the npm publishing workflows operate and the manual 
 When you create or update a pull request:
 
 1. **Canary Release** — A canary version is automatically published to npm
+
    - Version format: `0.0.0-canary-<short-sha>`
    - npm tag: `pr_<pr-number>` (e.g., `pr_123`)
    - A comment is posted to the PR with the npm link:
@@ -18,6 +19,7 @@ When you create or update a pull request:
 2. **Tests & Lint** — Linting and unit tests run in parallel
 
 3. **Storybook Review** — Storybook is deployed to Chromatic for visual review
+
    - A comment is posted with review and preview links
 
 4. **Size Limit** — Bundle size is measured and reported in a PR comment
@@ -27,13 +29,15 @@ When you create or update a pull request:
 When changes are pushed to `main` (typically via merged PRs):
 
 1. **Changesets Processing** — The workflow checks for pending changesets:
-   
+
    **If there are pending changesets:**
+
    - A "Release Pull Request" is created/updated automatically
    - This PR contains version bumps and changelog updates
    - No npm publish happens yet
-   
+
    **If there are no pending changesets (Release PR was just merged):**
+
    - The package is built and published to npm
    - Uses the version specified in `package.json` (updated by the Release PR)
    - Published with the `latest` tag
@@ -54,6 +58,7 @@ Developer creates PR → Canary published → PR merged to main
 ## Ignored Paths
 
 Pull request workflows are skipped for changes only in:
+
 - `.changeset/**`
 - `.husky/**`
 
@@ -86,12 +91,12 @@ Publishing now uses npm's [Trusted Publishing](https://docs.npmjs.com/trusted-pu
 4. Click the **"GitHub Actions"** button
 5. Fill in the configuration **exactly** as shown:
 
-   | Field | Value |
-   |-------|-------|
-   | Owner | `cube-js` |
-   | Repository | `cube-ui-kit` |
-   | Workflow filename | `publish.yml` |
-   | Environment | _(leave empty)_ |
+   | Field             | Value           |
+   | ----------------- | --------------- |
+   | Owner             | `cube-js`       |
+   | Repository        | `cube-ui-kit`   |
+   | Workflow filename | `publish.yml`   |
+   | Environment       | _(leave empty)_ |
 
 6. Click **Save**
 
@@ -139,7 +144,7 @@ Once everything is working:
 ## Workflow Files
 
 | File | Purpose |
-|------|---------|
+| --- | --- |
 | `publish.yml` | Handles all npm publishing (canary on PRs, releases on main) and Chromatic deployment |
 | `pull-request.yml` | PR workflow for tests and Chromatic staging |
 | `size-limit.yml` | Bundle size measurement |
@@ -195,7 +200,8 @@ This is the most common error when first setting up trusted publishing:
 ### Workflow file validation failed
 
 npm does not validate the trusted publisher configuration when you save it. Double-check:
+
 - Repository name matches exactly
-- Organization/username matches exactly  
+- Organization/username matches exactly
 - Workflow filename includes `.yml` extension
 - No trailing spaces in any field

@@ -57,7 +57,7 @@ import { Block } from '@cube-dev/ui-kit';
 
 <DisplayTransition isShown={isVisible} duration={150}>
   {({ phase, isShown }) => (
-    <Block 
+    <Block
       data-phase={phase}
       mods={{ entered: phase === 'entered' }}
       styles={{
@@ -124,14 +124,14 @@ Longer durations can be used for more dramatic entrance and exit effects.
 ### With Callbacks
 
 ```jsx
-<DisplayTransition 
+<DisplayTransition
   isShown={isVisible}
   onRest={(transition) => {
     console.log(`${transition} transition completed`);
   }}
 >
   {({ phase, isShown }) => (
-    <Block 
+    <Block
       data-phase={phase}
       mods={{ entered: phase === 'entered' }}
     >
@@ -197,12 +197,14 @@ Set `preserveContent={false}` if you need the exit animation to reflect real-tim
 ## Animation Flow
 
 ### Enter Flow
+
 1. `isShown` changes from `false` to `true`
 2. Phase changes to `enter` (isShown = false)
 3. After next paint, phase changes to `entered` (isShown = true)
 4. After `duration` milliseconds, `onRest('enter')` fires
 
 ### Exit Flow
+
 1. `isShown` changes from `true` to `false`
 2. Phase changes to `exit` (isShown = false)
 3. After `duration` milliseconds, phase changes to `unmounted` and `onRest('exit')` fires
@@ -211,10 +213,11 @@ Set `preserveContent={false}` if you need the exit animation to reflect real-tim
 ## Best Practices
 
 1. **Match CSS duration with duration prop**: Ensure your CSS transition/animation duration matches the `duration` prop for proper timing
+
    ```jsx
    <DisplayTransition duration={300}>
      {({ phase }) => (
-       <Block 
+       <Block
          data-phase={phase}
          mods={{ entered: phase === 'entered' }}
          styles={{
@@ -232,10 +235,11 @@ Set `preserveContent={false}` if you need the exit animation to reflect real-tim
 2. **Use stable callbacks**: The component uses `useEvent` internally, but you should still avoid recreating callbacks on every render when possible
 
 3. **Animate on mount thoughtfully**: Set `animateOnMount={false}` for content that should appear immediately on SSR or first paint
+
    ```jsx
    <DisplayTransition isShown={true} animateOnMount={false}>
      {({ phase }) => (
-       <Block 
+       <Block
          data-phase={phase}
          mods={{ entered: phase === 'entered' }}
        >
@@ -265,6 +269,7 @@ The component automatically respects the user's motion preferences when `respect
 ### Screen Reader Considerations
 
 Since this is a purely visual transition component, ensure that:
+
 - Content changes are announced appropriately (use `aria-live` if needed)
 - Focus management is handled by parent components
 - Critical state changes aren't communicated only through animations
@@ -280,4 +285,3 @@ Since this is a purely visual transition component, ensure that:
 - [Modal](/components/Modal) - Uses DisplayTransition internally for overlay animations
 - [Popover](/components/Popover) - Can use DisplayTransition for custom entrance animations
 - [OverlayWrapper](/components/OverlayWrapper) - Another component that may benefit from transition management
-

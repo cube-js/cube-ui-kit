@@ -165,9 +165,7 @@ DOM order is always "bar then panels" — visual order is controlled internally 
 
 #### Vertical tabs across types
 
-`narrow` only makes sense for a horizontal strip (it collapses horizontal
-label padding for a denser row). When `placement` is `'left'` or `'right'`,
-`type="narrow"` is coerced to `type="default"`.
+`narrow` only makes sense for a horizontal strip (it collapses horizontal label padding for a denser row). When `placement` is `'left'` or `'right'`, `type="narrow"` is coerced to `type="default"`.
 
 <Story of={TabsStories.VerticalFile} />
 
@@ -817,9 +815,7 @@ Override per-tab/panel:
 
 ### Optimized Lazy Rendering with `renderPanel`
 
-For tabs with expensive content, use the `renderPanel` prop for optimized lazy rendering.
-This prevents content from being evaluated on every parent render - only the active tab's
-content is computed, while inactive tabs use cached content.
+For tabs with expensive content, use the `renderPanel` prop for optimized lazy rendering. This prevents content from being evaluated on every parent render - only the active tab's content is computed, while inactive tabs use cached content.
 
 <Story of={TabsStories.LazyRenderingWithRenderPanel} />
 
@@ -910,15 +906,7 @@ Tabs work seamlessly inside Layout components. When placed in a `Layout` or `Lay
 
 ### Inside a Board (spring-loaded switching)
 
-When `Tabs` is rendered inside a [`Board`](/docs/layout-board--docs), tab
-switching becomes spring-loaded automatically: while a Board widget is being
-dragged, hovering a tab header for a moment opens that tab, so a widget can be
-dropped into it or moved between tabs. This requires no configuration - `Tabs`
-detects the active Board drag and, for its duration, keeps panels mounted so the
-tab a widget is dragged out of (and the board owning the in-flight gesture) is
-not unmounted mid-drag. Spring-loading works with mouse and pen; touch drags
-capture the pointer and do not trigger it. Outside a `Board` this behavior is
-inert.
+When `Tabs` is rendered inside a [`Board`](/docs/layout-board--docs), tab switching becomes spring-loaded automatically: while a Board widget is being dragged, hovering a tab header for a moment opens that tab, so a widget can be dropped into it or moved between tabs. This requires no configuration - `Tabs` detects the active Board drag and, for its duration, keeps panels mounted so the tab a widget is dragged out of (and the board owning the in-flight gesture) is not unmounted mid-drag. Spring-loading works with mouse and pen; touch drags capture the pointer and do not trigger it. Outside a `Board` this behavior is inert.
 
 ## Accessibility
 

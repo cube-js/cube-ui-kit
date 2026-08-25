@@ -135,6 +135,7 @@ function ExpandableItem({ isExpanded, onToggle }) {
 ## Best Practices
 
 1. **Prefer `contentKey`**: The component can derive a key from the child element type, but explicit keys are more reliable (especially for custom “same type, different meaning” icons):
+
    ```jsx
    // Good - explicit key
    <IconSwitch contentKey={isOpen ? 'open' : 'closed'}>

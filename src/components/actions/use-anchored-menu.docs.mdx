@@ -72,7 +72,7 @@ function useAnchoredMenu&lt;P, T = ComponentProps&lt;typeof MenuTrigger&gt;&gt;(
 The hook provides full programmatic control over the menu:
 
 - **`open()`** opens the menu with provided props
-- **`update()`** updates menu props without closing/reopening
+- **`update()`** updates the runtime menu props without closing/reopening — only needed for props the caller owns, since `defaultMenuProps` are re-read on every render
 - **`close()`** closes the menu
 - **No automatic triggering** - designed for manual control via events or state
 
@@ -87,8 +87,8 @@ Positions menus relative to the anchor element:
 
 ### Props Merging Strategy
 
-- **`defaultMenuProps`** - Used as base props for the menu component
-- **Runtime props** (via `open()`/`update()`) - Merged with defaults, taking precedence
+- **`defaultMenuProps`** - Used as base props for the menu component, and re-read on every render: changing them updates a menu that is already open, so content kept there (items, `isDisabled`, `disabledKeys`) stays current without an `update()` call
+- **Runtime props** (via `open()`/`update()`) - Merged over the defaults, taking precedence, and held until the next `open()`/`update()`
 - **Trigger props** - Merged with `defaultTriggerProps` for positioning control
 
 ### Menu Synchronization
@@ -107,7 +107,7 @@ import { IconDotsVertical } from '@tabler/icons-react';
 
 function TabWithMultipleTriggers() {
   const menu = useAnchoredMenu(
-    Menu, 
+    Menu,
     {
       placement: 'top end',
     },
@@ -210,8 +210,7 @@ The hook positions the menu by:
 
 ---
 
-*Last updated: 2025-01-16* 
-
+_Last updated: 2025-01-16_
 
 ### Style Properties
 

@@ -20,7 +20,18 @@ module.exports = [
         }),
       );
     },
-    // 515 kB. 509.94 kB locally with `@tenphi/tasty` 3.1.0, against 509.55 kB
+    // Still 515 kB on `@tenphi/tasty` 3.3.1: 508.53 kB locally against 509.94 kB
+    // on 3.1.0 with both sides rebuilt here, i.e. -1.41 kB across the two
+    // releases. (508.95 kB after merging `main`'s cols x rows Board matrix,
+    // which is that feature's 0.42 kB and not the dependency's.) 3.2.0 added 0.69 kB for batched injection (the write queue and
+    // `TastyBatchProvider` sit in the always-included core, so they ship whether
+    // or not an app turns batching on), and 3.3.0 gave back 2.10 kB by deleting
+    // the colour-space decomposition: a `#name` token no longer emits a
+    // `--name-color-rgb`/`-oklch` companion, so the conversion tables and the
+    // per-space emit paths go with it. The Button entry below moved by the same
+    // amounts, which is the signature of a change inside that core.
+    //
+    // Before this: 515 kB. 509.94 kB locally with `@tenphi/tasty` 3.1.0, against 509.55 kB
     // for the same code on 3.0.2 — +0.39 kB for the colour-function work, and
     // the Button entry below moved by the same amount, which is what a change
     // inside Tasty's always-included core looks like.
@@ -135,7 +146,19 @@ module.exports = [
     path: './dist/index.js',
     webpack: true,
     import: '{ Button }',
-    // 124.03 kB in CI (124,026 B, 26 bytes over the previous 124 kB), and all of
+    // Still 125 kB on `@tenphi/tasty` 3.3.1: 121.76 kB locally against 124.03 kB
+    // on 3.1.0, both sides rebuilt here — -2.27 kB, matched by the -1.41 kB on
+    // `All` above, so all of it is Tasty's always-included core and none of it
+    // ours. 3.2.0's batching cost this entry 0.68 kB; 3.3.0 then removed the
+    // colour-space decomposition, which is worth 2.96 kB to a consumer who
+    // imports a single component.
+    //
+    // That leaves 3.25 kB of headroom, the most this entry has had in a while.
+    // Left at 125 kB deliberately: the note below wants the margin thin enough
+    // that real bloat still trips it, and a budget lowered to fit today's
+    // reading would have to move again on the next feature.
+    //
+    // Before this: 124.03 kB in CI (124,026 B, 26 bytes over the previous 124 kB), and all of
     // it the dependency again — `@tenphi/tasty` 3.0.2 -> the colour-function
     // work. Both sides rebuilt here read 123.63 kB on 3.0.2 and 124.03 kB on the
     // snapshot, +0.40 kB, and `All` moved by the same 0.40 kB (508.98 ->

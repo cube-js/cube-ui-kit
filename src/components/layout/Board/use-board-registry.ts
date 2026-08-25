@@ -21,6 +21,7 @@ import {
   LayoutItem,
   moveElement,
   moveElements,
+  placeInFreeSlot,
 } from './grid-core';
 
 /**
@@ -96,54 +97,6 @@ function resizesAnything(before: LayoutItem[], after: LayoutItem[]): boolean {
     const b = before.find((it) => it.i === a.i);
     return !!b && (b.w !== a.w || b.h !== a.h);
   });
-}
-
-/**
- * First position at or below the preferred cell where `item` fits without
- * overlapping any of `others` (assumed overlap-free), scanning left-to-right
- * then top-to-bottom, never past `maxRows`. Last-resort placement for a legacy
- * (no-op compaction) cross-board drop that would otherwise stack widgets.
- *
- * A finite `maxRows` mirrors the `gridBounds` constraint the normal landing path
- * applies (`clamp(y, 0, maxRows - h)`): the widget's bottom edge (`y + h`) stays
- * within the row limit even when the landing cell is blocked, so the downward
- * scan can't push it off the board. Rows are searched from the (clamped) landing
- * row down to the limit first, then upward toward the top; if the whole valid
- * band is full the widget is clamped to the limit (bounds win over overlap, as
- * `gridBounds` does). With an unbounded `maxRows` there is always a free slot
- * below every existing item, so the downward scan terminates on its own.
- */
-function placeInFreeSlot(
-  others: LayoutItem[],
-  item: LayoutItem,
-  cols: number,
-  maxRows = Infinity,
-): LayoutItem {
-  const w = Math.min(item.w, cols);
-  const maxY = Number.isFinite(maxRows)
-    ? Math.max(0, maxRows - item.h)
-    : Infinity;
-  const fits = (x: number, y: number) =>
-    !others.some((o) => collides(o, { ...item, x, y, w }));
-  const preferX = Math.min(Math.max(0, item.x), cols - w);
-  const startY = Math.min(Math.max(0, item.y), maxY);
-  if (fits(preferX, startY)) return { ...item, x: preferX, y: startY, w };
-  const scanBottom = Number.isFinite(maxRows)
-    ? maxY
-    : startY + others.reduce((m, o) => Math.max(m, o.y + o.h), 0) + 1;
-  for (let y = startY; y <= scanBottom; y++) {
-    for (let x = 0; x <= cols - w; x++) {
-      if (fits(x, y)) return { ...item, x, y, w };
-    }
-  }
-  // The landing row (clamped to the limit) and everything below it were full;
-  // look upward for a free slot still inside the board before giving up.
-  for (let y = startY - 1; y >= 0; y--) {
-    for (let x = 0; x <= cols - w; x++) {
-      if (fits(x, y)) return { ...item, x, y, w };
-    }
-  }
-  return { ...item, x: preferX, y: startY, w };
 }
 
 /**
@@ -1183,7 +1136,11 @@ export function useBoardRegistry(
       if (source) {
         const sp = source.getPositionParams();
         const sc = source.getCompactor();
-        source.applyLayout([...sc.compact(source.getLayout(), sp.cols)], true);
+        source.applyLayout(
+          [...sc.compact(source.getLayout(), sp.cols)],
+          true,
+          'drag',
+        );
       }
     } else {
       const landing = lastLandingRef.current ?? { x: ds.item.x, y: ds.item.y };
@@ -1227,7 +1184,11 @@ export function useBoardRegistry(
           const sp = source.getPositionParams();
           const sc = source.getCompactor();
           const remaining = source.getLayout().filter((l) => l.i !== ds.itemId);
-          source.applyLayout([...sc.compact(remaining, sp.cols)], true);
+          source.applyLayout(
+            [...sc.compact(remaining, sp.cols)],
+            true,
+            'transfer',
+          );
         }
 
         let finalLayout: LayoutItem[];
@@ -1306,7 +1267,7 @@ export function useBoardRegistry(
             ),
           ];
         }
-        target!.applyLayout(finalLayout, true);
+        target!.applyLayout(finalLayout, true, 'transfer');
 
         // Signal the transfer so a controlled app can move the widget's
         // declaration into the destination container (positions are already

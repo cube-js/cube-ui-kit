@@ -1,6 +1,7 @@
 import { Meta, StoryFn } from '@storybook/react-vite';
 import { ReactNode, useState } from 'react';
 
+import { SettingsIcon } from '../../../icons';
 import { Button } from '../../actions/Button';
 import { Text } from '../../content/Text';
 import { Title } from '../../content/Title';
@@ -284,6 +285,89 @@ RestyledSelection.args = { selectionMode: 'multiple' };
 
 export const Default = Template.bind({});
 Default.args = {};
+
+const FIXED_MATRIX_LAYOUT: LayoutItem[] = [
+  { i: 'm-a', x: 0, y: 0, w: 1, h: 1 },
+  { i: 'm-b', x: 1, y: 0, w: 2, h: 1 },
+  { i: 'm-c', x: 0, y: 1, w: 1, h: 2 },
+];
+
+const FixedMatrixTemplate: StoryFn<CubeBoardProps> = (args) => (
+  // A parent with a height of its own: `rowHeight="stretch"` divides THAT into
+  // rows, so the matrix fills the box instead of the box following the content.
+  <div style={{ height: 320, resize: 'vertical', overflow: 'auto' }}>
+    <Board
+      fill="#light"
+      padding="1x"
+      radius="1r"
+      cols={3}
+      rows={3}
+      rowHeight="stretch"
+      compact="free"
+      showGridLines
+      widgetProps={{ isCard: true }}
+      defaultLayout={FIXED_MATRIX_LAYOUT}
+      {...args}
+    >
+      {FIXED_MATRIX_LAYOUT.map((item) => (
+        <Board.Widget key={item.i} id={item.i} aria-label={`Cell ${item.i}`}>
+          <WidgetBody title={item.i} />
+        </Board.Widget>
+      ))}
+    </Board>
+  </div>
+);
+
+const CornerChromeTemplate: StoryFn<CubeBoardProps> = (args) => (
+  <Board
+    fill="#light"
+    padding="1x"
+    radius="1r"
+    widgetProps={{ isCard: true, resizeGripPlacement: 'corner' }}
+    defaultLayout={defaultLayout}
+    {...args}
+  >
+    {defaultLayout.map((item) => (
+      <Board.Widget
+        key={item.i}
+        id={item.i}
+        aria-label={`Widget ${item.i}`}
+        cornerChrome={
+          <Button
+            size="small"
+            icon={<SettingsIcon />}
+            aria-label={`Configure ${item.i}`}
+            onPress={() => {}}
+          />
+        }
+      >
+        <WidgetBody title={`Widget ${item.i}`} />
+      </Board.Widget>
+    ))}
+  </Board>
+);
+
+export const CornerChrome = CornerChromeTemplate.bind({});
+CornerChrome.args = {};
+CornerChrome.parameters = {
+  docs: {
+    description: {
+      story:
+        "`cornerChrome` centres a control on the widget's corner, drawn in the same layer as the corner resize grips - the layer that escapes the widget's own `overflow: hidden`. Chrome hung off the corner from inside a widget gets cropped in half by that clip, or by an ancestor's scroll container in the first row. It also sits outside the drag gesture, so pressing it never starts a drag. Here every widget pairs it with a `corner` resize grip on the opposite corner.",
+    },
+  },
+};
+
+export const FixedMatrix = FixedMatrixTemplate.bind({});
+FixedMatrix.args = {};
+FixedMatrix.parameters = {
+  docs: {
+    description: {
+      story:
+        '`rows` with `rowHeight="stretch"` is a board of a declared size that fills its container: a 3x3 matrix whose cells resize with the box rather than a grid that grows a row at a time. Drag the container\'s bottom edge - the cells change size, the row count does not. `rows` also bounds the grid, so no drag or resize can leave the matrix.',
+    },
+  },
+};
 
 export const FreePositioning = Template.bind({});
 FreePositioning.args = {

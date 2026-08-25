@@ -40,7 +40,6 @@ setGlobalPredefinedStates({
 });
 
 configure({
-  colorSpace: 'rgb',
   // Collapse the kit's stylesheet writes into one style invalidation per commit
   // instead of one per component. Only takes effect inside a
   // `<TastyBatchProvider>` window, and windows have to be opened per portal

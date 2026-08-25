@@ -94,15 +94,15 @@ These properties allow direct style application without using the `styles` prop:
 
 The `mods` property is automatically populated. Consumers can target these in their own `styles`:
 
-| Modifier   | Type      | Description                                                                       |
-| ---------- | --------- | --------------------------------------------------------------------------------- |
-| editing    | `boolean` | Currently in edit mode                                                            |
-| editable   | `boolean` | `editTrigger` is `dblclick` or `click` and not disabled/read-only                 |
-| focused    | `boolean` | The component is focused — keyboard-focused on the display, **or** while editing. Always `false` when `keyboardActivation={false}` (the host owns the focus indication). |
-| disabled   | `boolean` | `isDisabled` is `true`                                                            |
-| read-only  | `boolean` | `isReadOnly` is `true`                                                            |
-| styled     | `boolean` | `isStyled` is `true`                                                              |
-| empty      | `boolean` | The committed value is empty                                                      |
+| Modifier | Type | Description |
+| --- | --- | --- |
+| editing | `boolean` | Currently in edit mode |
+| editable | `boolean` | `editTrigger` is `dblclick` or `click` and not disabled/read-only |
+| focused | `boolean` | The component is focused — keyboard-focused on the display, **or** while editing. Always `false` when `keyboardActivation={false}` (the host owns the focus indication). |
+| disabled | `boolean` | `isDisabled` is `true` |
+| read-only | `boolean` | `isReadOnly` is `true` |
+| styled | `boolean` | `isStyled` is `true` |
+| empty | `boolean` | The committed value is empty |
 
 ## Examples
 
@@ -316,11 +316,11 @@ When leaving edit mode, focus is not restored automatically — the host is resp
 
 These look similar but fire under different conditions. Pick the one that matches your intent:
 
-| Event       | Fires when                                                                | Typical use                              |
-| ----------- | ------------------------------------------------------------------------- | ---------------------------------------- |
-| `onChange`  | The committed value is **different** from the previous value             | Updating state (controlled pattern)      |
-| `onSubmit`  | The user commits (Enter / blur / `ref.stopEditing(true)`) — always fires | Side effects (server save, toasts)       |
-| `onCancel`  | Escape, empty submit (when `allowEmpty=false`), or `ref.stopEditing(false)` | Reverting UI, cleanup                    |
+| Event | Fires when | Typical use |
+| --- | --- | --- |
+| `onChange` | The committed value is **different** from the previous value | Updating state (controlled pattern) |
+| `onSubmit` | The user commits (Enter / blur / `ref.stopEditing(true)`) — always fires | Side effects (server save, toasts) |
+| `onCancel` | Escape, empty submit (when `allowEmpty=false`), or `ref.stopEditing(false)` | Reverting UI, cleanup |
 
 ### Optimistic Display
 

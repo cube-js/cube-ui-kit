@@ -88,6 +88,7 @@ Supports all [Field properties](/docs/getting-started-field-properties--docs)
 Customizes the root wrapper element and the trigger button of the Picker component.
 
 **Sub-elements:**
+
 - None
 
 #### triggerStyles
@@ -95,6 +96,7 @@ Customizes the root wrapper element and the trigger button of the Picker compone
 Customizes the DialogTrigger wrapper that contains the trigger button and manages the popover.
 
 **Sub-elements:**
+
 - None
 
 #### listBoxStyles
@@ -102,8 +104,9 @@ Customizes the DialogTrigger wrapper that contains the trigger button and manage
 Customizes the ListBox component styles within the popover. See [ListBox documentation](/docs/forms-listbox--docs) for available sub-elements.
 
 **Sub-elements:**
+
 - `Label` - Item label text
-- `Description` - Item description text  
+- `Description` - Item description text
 - `Content` - Item content wrapper
 - `Checkbox` - Checkbox element in multiple selection mode
 - `CheckboxWrapper` - Wrapper around checkbox
@@ -113,6 +116,7 @@ Customizes the ListBox component styles within the popover. See [ListBox documen
 Customizes the popover Dialog that contains the ListBox. See [Dialog documentation](/docs/overlays-dialog--docs) for available sub-elements.
 
 **Sub-elements:**
+
 - None for Dialog in popover mode
 
 #### listStyles
@@ -183,17 +187,18 @@ See [Item documentation](/docs/content-item--docs) for the complete API. Common 
 #### Examples with Rich Items
 
 **With Icons and Descriptions:**
+
 ```jsx
 <Picker label="Team Selection" selectionMode="single">
-  <Picker.Item 
-    key="active" 
+  <Picker.Item
+    key="active"
     icon={<IconUsers />}
     description="All active team members"
   >
     Active Users
   </Picker.Item>
-  <Picker.Item 
-    key="admins" 
+  <Picker.Item
+    key="admins"
     icon={<IconShield />}
     description="Admin users only"
   >
@@ -203,16 +208,17 @@ See [Item documentation](/docs/content-item--docs) for the complete API. Common 
 ```
 
 **With Prefix and Suffix:**
+
 ```jsx
 <Picker label="Select Plan" selectionMode="single">
-  <Picker.Item 
+  <Picker.Item
     key="free"
     prefix={<Badge>Free</Badge>}
     suffix="$0/mo"
   >
     Basic Plan
   </Picker.Item>
-  <Picker.Item 
+  <Picker.Item
     key="pro"
     prefix={<Badge type="primary">Pro</Badge>}
     suffix="$29/mo"
@@ -282,12 +288,14 @@ For large datasets or dynamic content, use the `items` prop with a render functi
 ```
 
 **Key Benefits:**
+
 - **Virtualization**: Automatically enabled for large lists without sections
 - **Performance**: Only renders visible items in the DOM
 - **Dynamic Content**: Perfect for data fetched from APIs or changing datasets
 - **Memory Efficient**: Handles thousands of items smoothly
 
 **When to Use:**
+
 - Lists with 50+ items
 - Dynamic data from APIs
 - Content that changes frequently
@@ -330,8 +338,8 @@ Control the color scheme with the `theme` prop:
 Standard single-selection picker with a placeholder and label.
 
 ```jsx
-<Picker 
-  label="Favorite Fruit" 
+<Picker
+  label="Favorite Fruit"
   placeholder="Select a fruit"
   selectionMode="single"
 >
@@ -484,7 +492,7 @@ const categories = [
 Picker supports three sizes: small, medium (default), and large.
 
 ```jsx
-<Picker 
+<Picker
   size="small"
   label="Small Picker"
   placeholder="Select a fruit"
@@ -493,7 +501,7 @@ Picker supports three sizes: small, medium (default), and large.
   <Picker.Item key="banana">Banana</Picker.Item>
 </Picker>
 
-<Picker 
+<Picker
   size="medium"
   label="Medium Picker"
   placeholder="Select a fruit"
@@ -502,7 +510,7 @@ Picker supports three sizes: small, medium (default), and large.
   <Picker.Item key="banana">Banana</Picker.Item>
 </Picker>
 
-<Picker 
+<Picker
   size="large"
   label="Large Picker"
   placeholder="Select a fruit"
@@ -582,6 +590,7 @@ The Picker component is built with React Aria hooks and provides comprehensive a
 - **`Space`** or **`Enter`** — Selects the focused item (single mode closes popover automatically)
 
 **In the popover:**
+
 - Arrow keys navigate through items
 - Home/End keys jump to first/last item
 - Type-ahead: typing characters focuses matching items
@@ -611,26 +620,30 @@ The following ARIA attributes are automatically managed by React Aria and do not
 ### Best Practices for Accessibility
 
 1. **Always provide a label**: Use the `label` prop or `aria-label` for screen reader users
+
    ```jsx
    <Picker label="Select Category">...</Picker>
    ```
 
 2. **Use meaningful placeholders**: Placeholders should describe the expected selection
+
    ```jsx
    <Picker placeholder="Choose a category" label="Category">...</Picker>
    ```
 
 3. **Provide help text**: Use `description` for additional context
+
    ```jsx
-   <Picker 
+   <Picker
      label="Priority"
      description="Select the task priority level"
    >...</Picker>
    ```
 
 4. **Handle validation properly**: Use the `isInvalid` / `isValid` and `errorMessage` props
+
    ```jsx
-   <Picker 
+   <Picker
      isInvalid
      message="Please select an option"
    >...</Picker>
@@ -646,9 +659,10 @@ The following ARIA attributes are automatically managed by React Aria and do not
 ## Best Practices
 
 1. **Do**: Provide clear, descriptive labels and placeholders
+
    ```jsx
-   <Picker 
-     label="Product Category" 
+   <Picker
+     label="Product Category"
      placeholder="Choose a category..."
      selectionMode="single"
    >
@@ -658,12 +672,13 @@ The following ARIA attributes are automatically managed by React Aria and do not
    ```
 
 2. **Don't**: Use overly long option texts that will be truncated
+
    ```jsx
    // Avoid
    <Picker.Item key="long">
      This is an extremely long option text that will be truncated and hard to read
    </Picker.Item>
-   
+
    // Instead, use description
    <Picker.Item key="short" description="Additional details here">
      Short Label
@@ -671,6 +686,7 @@ The following ARIA attributes are automatically managed by React Aria and do not
    ```
 
 3. **Do**: Use sections for logical grouping
+
    ```jsx
    <Picker label="Select Food" selectionMode="single">
      <Picker.Section title="Fruits">
@@ -683,6 +699,7 @@ The following ARIA attributes are automatically managed by React Aria and do not
    ```
 
 4. **Do**: Use the `items` prop for large datasets to enable virtualization
+
    ```jsx
    <Picker items={largeDataset} label="Select Item">
      {(item) => <Picker.Item key={item.id}>{item.name}</Picker.Item>}
@@ -690,10 +707,11 @@ The following ARIA attributes are automatically managed by React Aria and do not
    ```
 
 5. **Do**: Use `isClearable` for optional single selections
+
    ```jsx
-   <Picker 
+   <Picker
      label="Optional Filter"
-     selectionMode="single" 
+     selectionMode="single"
      isClearable
      placeholder="Choose an option..."
    >
@@ -702,11 +720,12 @@ The following ARIA attributes are automatically managed by React Aria and do not
    ```
 
 6. **Do**: Use `showSelectAll` for efficient multiple selection
+
    ```jsx
-   <Picker 
+   <Picker
      label="Permissions"
-     selectionMode="multiple" 
-     showSelectAll 
+     selectionMode="multiple"
+     showSelectAll
      selectAllLabel="All Permissions"
      isCheckable
    >
@@ -716,10 +735,11 @@ The following ARIA attributes are automatically managed by React Aria and do not
    ```
 
 7. **Do**: Use `isCheckable` in multiple selection mode for clarity
+
    ```jsx
-   <Picker 
+   <Picker
      label="Select Options"
-     selectionMode="multiple" 
+     selectionMode="multiple"
      isCheckable
    >
      <Picker.Item key="option1">Option 1</Picker.Item>
@@ -811,7 +831,7 @@ const renderSummary = ({ selectedLabels, selectedKeys, selectionMode }) => {
   if (selectionMode === 'single') {
     return selectedLabels?.[0] ? `Selected: ${selectedLabels[0]}` : null;
   }
-  
+
   if (!selectedKeys || selectedKeys.length === 0) return null;
   if (selectedKeys === 'all') return 'All items selected';
   if (selectedKeys.length === 1) return selectedLabels[0];
@@ -819,7 +839,7 @@ const renderSummary = ({ selectedLabels, selectedKeys, selectionMode }) => {
   return `${selectedKeys.length} items selected`;
 };
 
-<Picker 
+<Picker
   label="Custom Summary"
   selectionMode="multiple"
   renderSummary={renderSummary}
@@ -852,6 +872,7 @@ For space-constrained interfaces, hide the summary text and show only an icon:
 Full control over selection state for integration with external state management:
 
 **Single Selection:**
+
 ```jsx
 const [selectedKey, setSelectedKey] = useState(null);
 
@@ -867,6 +888,7 @@ const [selectedKey, setSelectedKey] = useState(null);
 ```
 
 **Multiple Selection:**
+
 ```jsx
 const [selectedKeys, setSelectedKeys] = useState([]);
 
@@ -918,15 +940,18 @@ const fruits = [
 ### Optimization Tips
 
 1. **Use Dynamic Content Pattern for Large Lists**
+
    - For lists with 50+ items, use the `items` prop with a render function
    - This enables automatic virtualization for better performance
    - Only visible items are rendered in the DOM
 
 2. **Avoid Sections with Large Datasets**
+
    - Virtualization is disabled when sections are present
    - For large lists, prefer flat structure or use filtering instead
 
 3. **Provide `textValue` for Complex Content**
+
    - When items contain complex JSX, provide a `textValue` prop
    - This helps with accessibility and potential search functionality
 
@@ -940,7 +965,7 @@ Virtualization is automatically enabled when using the `items` prop without sect
 
 ```jsx
 // ✅ Virtualized - excellent performance with thousands of items
-<Picker 
+<Picker
   items={thousandsOfItems}
   label="Large Dataset"
 >
@@ -964,8 +989,8 @@ Optimize complex item content with the `textValue` prop for better accessibility
 ```jsx
 <Picker label="Select User" items={users}>
   {(user) => (
-    <Picker.Item 
-      key={user.id} 
+    <Picker.Item
+      key={user.id}
       textValue={`${user.name} - ${user.role}`}
     >
       <UserCard user={user} />

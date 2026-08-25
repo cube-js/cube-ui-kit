@@ -1,5 +1,7 @@
 // NOTE: Type checking is disabled in this test file to prevent
 // noisy errors from complex generic typings that do not affect runtime behaviour.
+import { useState } from 'react';
+
 import { act, renderWithRoot, userEvent, waitFor } from '../../test';
 
 import { Menu } from './Menu';
@@ -130,5 +132,74 @@ describe('useAnchoredMenu', () => {
     expect(queryByText('Edit')).toBeInTheDocument();
     expect(queryByText('More')).toBeInTheDocument();
     expect(getByText('Nested 2')).toBeInTheDocument();
+  });
+  /**
+   * Same shape as `useContextMenu`'s live-defaults case: the menu's CONTENT is in
+   * `defaultMenuProps` and the consumer never calls `update()`. Merging those
+   * defaults at `open()` time froze the content of an open menu.
+   */
+  it('reflects defaultMenuProps changes while the menu is open', async () => {
+    let revealPreview: () => void = () => {};
+
+    const TestLiveDefaultsWrapper = () => {
+      const [hasPreview, setHasPreview] = useState(false);
+
+      revealPreview = () => setHasPreview(true);
+
+      const { anchorRef, open, rendered } = useAnchoredMenu<any>(
+        Menu,
+        {
+          placement: 'bottom start',
+        },
+        {
+          children: (
+            <>
+              {hasPreview ? <Menu.Item key="preview">Preview</Menu.Item> : null}
+              <Menu.Item key="delete">Delete</Menu.Item>
+            </>
+          ),
+        },
+      );
+
+      return (
+        <div>
+          <button
+            ref={anchorRef as React.RefObject<HTMLButtonElement>}
+            data-qa="Trigger"
+            onClick={() => open()}
+          >
+            Open Menu
+          </button>
+          {rendered}
+        </div>
+      );
+    };
+
+    const { getByTestId, getByRole, getByText, queryByText } = renderWithRoot(
+      <TestLiveDefaultsWrapper />,
+    );
+
+    await act(async () => {
+      await userEvent.click(getByTestId('Trigger'));
+    });
+
+    await waitFor(() => {
+      expect(getByRole('menu')).toBeInTheDocument();
+    });
+
+    expect(getByText('Delete')).toBeInTheDocument();
+    expect(queryByText('Preview')).not.toBeInTheDocument();
+
+    // Menu still open, no `update()` call.
+    await act(async () => {
+      revealPreview();
+    });
+
+    await waitFor(() => {
+      expect(getByText('Preview')).toBeInTheDocument();
+    });
+
+    expect(getByRole('menu')).toBeInTheDocument();
+    expect(getByText('Delete')).toBeInTheDocument();
   });
 });

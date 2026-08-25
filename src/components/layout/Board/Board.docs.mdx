@@ -6,15 +6,9 @@ import * as BoardStories from './Board.stories';
 
 # Board
 
-A draggable and resizable widget grid for building dashboards. Widgets are
-declared with `Board.Widget` and positioned via a `layout` (grid units). Wrap
-multiple boards in a `BoardProvider` (`Board.Provider`) to drag widgets between
-them, including out of a nested board into its parent.
+A draggable and resizable widget grid for building dashboards. Widgets are declared with `Board.Widget` and positioned via a `layout` (grid units). Wrap multiple boards in a `BoardProvider` (`Board.Provider`) to drag widgets between them, including out of a nested board into its parent.
 
-Dragging and resizing are powered by React Aria's `useMove`, so they work with
-mouse, touch, and keyboard (focus a widget and use the arrow keys). While a
-widget is dragged with a pointer it renders into a fixed overlay so it is never
-clipped by an ancestor's `overflow: hidden`.
+Dragging and resizing are powered by React Aria's `useMove`, so they work with mouse, touch, and keyboard (focus a widget and use the arrow keys). While a widget is dragged with a pointer it renders into a fixed overlay so it is never clipped by an ancestor's `overflow: hidden`.
 
 ## When to Use
 
@@ -31,25 +25,11 @@ clipped by an ancestor's `overflow: hidden`.
 
 ## Concepts
 
-- **Layout** — an array of items `{ i, x, y, w, h }` in grid units. `i` matches a
-  `Board.Widget` `id`.
-- **Content vs. position** — `Board.Widget` declares content; the owning `Board`
-  positions it. This decoupling is what lets a widget be transferred between
-  boards.
-- **Compaction** — `vertical` (default), `horizontal`, or `free`. In `free` mode a
-  widget is placed exactly where you drop it and its neighbours are never pushed
-  or swapped; without `allowOverlap` a drop onto an occupied cell is blocked, and
-  with `allowOverlap` widgets may stack for a fully free canvas.
-- **Selection** — off by default. Pressing a widget selects it and arms a drag
-  of the selection: selecting and grabbing are one gesture, so move the pointer
-  and it drags, stay still and it was just a selection. <kbd>Shift</kbd> (or
-  <kbd>Cmd</kbd>/<kbd>Ctrl</kbd>) toggles a widget's membership. Keys are layout
-  item ids, scoped to a single board, and always reported in layout order.
-- **Selection is focus-like** — it tracks what the user is working with, and
-  touching anything else moves it on: pressing another widget makes *that* the
-  selection, pressing a control inside a widget drops it, and so does focus
-  leaving the board. With `'multiple'`, pressing an already-selected widget
-  keeps the selection so a drag moves the whole block.
+- **Layout** — an array of items `{ i, x, y, w, h }` in grid units. `i` matches a `Board.Widget` `id`.
+- **Content vs. position** — `Board.Widget` declares content; the owning `Board` positions it. This decoupling is what lets a widget be transferred between boards.
+- **Compaction** — `vertical` (default), `horizontal`, or `free`. In `free` mode a widget is placed exactly where you drop it and its neighbours are never pushed or swapped; without `allowOverlap` a drop onto an occupied cell is blocked, and with `allowOverlap` widgets may stack for a fully free canvas.
+- **Selection** — off by default. Pressing a widget selects it and arms a drag of the selection: selecting and grabbing are one gesture, so move the pointer and it drags, stay still and it was just a selection. <kbd>Shift</kbd> (or <kbd>Cmd</kbd>/<kbd>Ctrl</kbd>) toggles a widget's membership. Keys are layout item ids, scoped to a single board, and always reported in layout order.
+- **Selection is focus-like** — it tracks what the user is working with, and touching anything else moves it on: pressing another widget makes _that_ the selection, pressing a control inside a widget drops it, and so does focus leaving the board. With `'multiple'`, pressing an already-selected widget keeps the selection so a drag moves the whole block.
 
 ## Properties
 
@@ -57,11 +37,12 @@ clipped by an ancestor's `overflow: hidden`.
 
 - **`layout`** `LayoutItem[]` — Controlled layout.
 - **`defaultLayout`** `LayoutItem[]` — Initial layout for uncontrolled usage.
-- **`onLayoutChange`** `(layout: LayoutItem[]) => void` — Called when a drag or resize is committed.
+- **`onLayoutChange`** `(layout: LayoutItem[], info: { reason }) => void` — Called when the layout is committed. `reason` is `'drag'`, `'resize'`, `'transfer'` (a widget arrived from or left for another board) or `'normalize'` (no gesture — a reflow for a changed column count, or an auto-height widget growing). See [Knowing why the layout changed](#knowing-why-the-layout-changed).
 - **`onDragStart` / `onDrag` / `onDragStop`** `(info: BoardInteractionInfo) => void` — Drag lifecycle callbacks. `onDrag` fires on every step; `onDragStop` fires after the layout is committed.
 - **`onResizeStart` / `onResize` / `onResizeStop`** `(info: BoardInteractionInfo) => void` — Resize lifecycle callbacks, mirroring the drag ones.
 - **`cols`** `number` (default: `12`) — Number of columns.
-- **`rowHeight`** `number` (default: `100`) — Row height in pixels.
+- **`rows`** `number` — Render exactly this many rows, whatever the content needs — a fixed `cols × rows` matrix rather than a grid that hugs its widgets. Implies a `maxRows` of the same value, so `gridBounds` keeps every drag and resize inside the matrix without a per-widget `maxH`.
+- **`rowHeight`** `number | 'stretch'` (default: `100`) — Row height in pixels, or `'stretch'` to divide the board's own measured height into its rows. `'stretch'` is what makes a fixed `rows × cols` matrix fill the box it is given: the board takes its parent's height and each cell an equal share of it, so resizing the container resizes the cells instead of adding or removing them. Requires `rows`: without a declared row count there is no matrix to fill, and dividing by the content extent instead would resize every cell whenever a widget landed on a new row. Unset, or before the parent's height is known, the board keeps its ordinary content-hugging behaviour at the default row height rather than collapsing.
 - **`margin`** `[number, number]` (default: `[8, 8]`) — Horizontal/vertical gap between widgets.
 - **`containerPadding`** `[number, number]` — Inner padding. Defaults to `margin`, or to `[0, 0]` for an aligned nested board (`isAligned`) so its grid lines up with the ancestor board's.
 - **`maxRows`** `number` (default: `Infinity`) — Maximum number of rows.
@@ -69,21 +50,21 @@ clipped by an ancestor's `overflow: hidden`.
 - **`compact`** `'vertical' | 'horizontal' | 'free' | null` (default: `'vertical'`) — Compaction behavior. `'vertical'`/`'horizontal'` reflow widgets to remove gaps; `'free'` places each widget exactly where dropped and never pushes its neighbours (blocked from occupied cells unless `allowOverlap`); `null` disables compaction but still resolves collisions the legacy react-grid-layout way.
 - **`allowOverlap`** `boolean` (default: `false`) — Allow widgets to overlap (stack). In `'free'` mode this is what distinguishes stacking from blocking a drop onto an occupied cell.
 - **`preventCollision`** `boolean` (default: `false`) — Block movement into occupied cells instead of pushing.
-- **`collisionMode`** `'revert' | 'downscale' | 'swap'` (default: `'revert'`) — How to resolve a drop the grid would otherwise refuse. Only applies where a collision *blocks* a move — `compact="free"` (which prevents collisions) or an explicit `preventCollision` — and never under `allowOverlap`, where nothing is blocked. `'revert'` snaps the widget back. `'downscale'` shrinks it into the free space at the drop cell, growing rightward and downward, floored at its `minW`/`minH` (below that it reverts). Within one board, `'swap'` trades places with **one** widget — the one the drop covers most — which takes the cell the drag began at, each keeping as much of its own size as fits there. It never displaces more than that one widget. A drop straddling two widgets trades with one of them rather than refusing, so the swap never blinks away as you sweep across a boundary; ties go to the widget earlier in reading order. Dragging back retraces the original arrangement exactly. For a widget arriving from another board (including a nested board entering its parent), the destination board's `'swap'` mode becomes strict insertion: the requested anchor cell must be empty, the incoming widget keeps its size when possible or downscales into the available room to its right and below, and existing destination widgets are neither exchanged nor reflowed. Releasing over an occupied anchor or where `minW`/`minH` cannot fit cancels the transfer and restores both boards; it does not reuse the last valid preview or search for another slot. No mode ever *grows* a widget. Applies to single-widget drags. Arrow keys honour it too but never resize anything — each press is a gesture of its own, so a press that shrank a widget would have nothing to restore from, and only an exchange that fits outright is allowed. A multi-widget selection still only moves where it fits outright, and a resize is still blocked by a collision.
+- **`collisionMode`** `'revert' | 'downscale' | 'swap'` (default: `'revert'`) — How to resolve a drop the grid would otherwise refuse. Only applies where a collision _blocks_ a move — `compact="free"` (which prevents collisions) or an explicit `preventCollision` — and never under `allowOverlap`, where nothing is blocked. `'revert'` snaps the widget back. `'downscale'` shrinks it into the free space at the drop cell, growing rightward and downward, floored at its `minW`/`minH` (below that it reverts). Within one board, `'swap'` trades places with **one** widget — the one the drop covers most — which takes the cell the drag began at, each keeping as much of its own size as fits there. It never displaces more than that one widget. A drop straddling two widgets trades with one of them rather than refusing, so the swap never blinks away as you sweep across a boundary; ties go to the widget earlier in reading order. Dragging back retraces the original arrangement exactly. For a widget arriving from another board (including a nested board entering its parent), the destination board's `'swap'` mode becomes strict insertion: the requested anchor cell must be empty, the incoming widget keeps its size when possible or downscales into the available room to its right and below, and existing destination widgets are neither exchanged nor reflowed. Releasing over an occupied anchor or where `minW`/`minH` cannot fit cancels the transfer and restores both boards; it does not reuse the last valid preview or search for another slot. No mode ever _grows_ a widget. Applies to single-widget drags. Arrow keys honour it too but never resize anything — each press is a gesture of its own, so a press that shrank a widget would have nothing to restore from, and only an exchange that fits outright is allowed. A multi-widget selection still only moves where it fits outright, and a resize is still blocked by a collision.
 - **`isDraggable`** `boolean` (default: `true`) — Enable dragging for all widgets.
 - **`isResizable`** `boolean` (default: `true`) — Enable resizing for all widgets.
 - **`isDroppable`** `boolean` (default: `true`) — Whether the board accepts widgets dropped from other boards.
 - **`resizeHandles`** `ResizeHandleAxis[]` (default: `['se']`) — Which resize handles to show. Corner handles (`ne`/`nw`/`se`/`sw`) show an angle grip; edge handles (`n`/`s`/`e`/`w`) show a dotted grip. Both are revealed on hover/focus/resize. A single edge (e.g. `['e']` or `['s']`) gives a horizontally- or vertically-only resizable widget.
-- **`resizeGripPlacement`** `'inside' | 'corner'` (default: `'inside'`) — Where the corner grips sit. `'inside'` tucks each one into the widget box; `'corner'` centres it on the widget's corner, so it lines up with a control centred on the opposite corner. Only affects corner handles — a dotted edge grip always stays inside. A corner-placed grip is drawn *outside* the widget (a widget clips its own content, which would otherwise cut the grip in half), so it needs the board to have at least half a grip's worth of `containerPadding` to show in full against the board's edge. Its hit-zone moves out with it and overhangs by the same half-grip, so the whole visible grip is grabbable and hovering it keeps it revealed — the trade is a ~5px band just outside each corner where a press starts a resize rather than a marquee. Can be overridden per widget.
-- **`dragCancel`** `string` — CSS selector for elements that must not start a pointer drag (e.g. form controls inside a widget: `"input,textarea,button,a,.no-drag"`). Does not affect keyboard moves — those only run when the widget host itself is focused. Can be overridden per widget.
+- **`resizeGripPlacement`** `'inside' | 'corner'` (default: `'inside'`) — Where the corner grips sit. `'inside'` tucks each one into the widget box; `'corner'` centres it on the widget's corner, so it lines up with a control centred on the opposite corner. Only affects corner handles — a dotted edge grip always stays inside. A corner-placed grip is drawn _outside_ the widget (a widget clips its own content, which would otherwise cut the grip in half), so it needs the board to have at least half a grip's worth of `containerPadding` to show in full against the board's edge. Its hit-zone moves out with it and overhangs by the same half-grip, so the whole visible grip is grabbable and hovering it keeps it revealed — the trade is a ~5px band just outside each corner where a press starts a resize rather than a marquee. Can be overridden per widget.
+- **`dragCancel`** `string` (default: `BOARD_SELECTION_CANCEL`) — CSS selector for elements that must not start a pointer drag. Defaults to the same set `selectionCancel` uses, because a control inside a widget has to keep its own press whether or not the board supports selection — a board hosting interactive content needs no configuration for buttons, inputs, links and the common ARIA widget roles to stay usable. Pass your own selector to narrow or widen it, or `''` to let a drag start from anywhere. Does not affect keyboard moves. Can be overridden per widget.
 - **`dragHandle`** `string` — CSS selector for the only elements from which a pointer drag may start. Can be overridden per widget.
-- **`showGridLines`** `boolean | 'drag' | 'any-drag'` (default: `false`) — Show grid lines behind the widgets. `true` always; `false` never; `'drag'` only while *this* board is part of the active gesture — it owns the drag (as its source, or as the board the widget is currently over) or one of its own widgets is being resized; `'any-drag'` while any drag is in flight anywhere under a shared `Board.Provider`, so every board advertises itself as somewhere the widget could land. Under one `Board.Provider`, `'drag'` keeps boards a widget cannot land in quiet, and `'any-drag'` is the opt-in for the noisier, more informative version. A nested board that does not set this inherits an enabled ancestor's setting, at the ancestor's own scope.
+- **`showGridLines`** `boolean | 'drag' | 'any-drag'` (default: `false`) — Show grid lines behind the widgets. `true` always; `false` never; `'drag'` only while _this_ board is part of the active gesture — it owns the drag (as its source, or as the board the widget is currently over) or one of its own widgets is being resized; `'any-drag'` while any drag is in flight anywhere under a shared `Board.Provider`, so every board advertises itself as somewhere the widget could land. Under one `Board.Provider`, `'drag'` keeps boards a widget cannot land in quiet, and `'any-drag'` is the opt-in for the noisier, more informative version. A nested board that does not set this inherits an enabled ancestor's setting, at the ancestor's own scope.
 - **`isAligned`** `boolean` (default: `false`) — Align a nested board with its ancestor `Board`'s layout. Only takes effect when the board is nested inside another `Board`'s widget. When set, every cell matches the parent's cell size exactly: the board inherits the parent's column pitch (deriving its own column count from its measured width so cells stay parent-sized as the container is resized) and uses the parent's row height verbatim. It never shrinks rows to fit — pair it with an `isAutoHeight` container so the widget grows to fit its rows at that height. `cols`/`rowHeight` then act as fallbacks used only until the parent metrics resolve.
 - **`selectionMode`** `'none' | 'single' | 'multiple'` (default: `'none'`) — Whether widgets can be selected, and how many at a time. `'multiple'` also enables the marquee and rigid group movement.
 - **`selectedKeys`** `string[]` — Controlled selection. Keys are layout item ids (`LayoutItem.i`).
 - **`defaultSelectedKeys`** `string[]` — Initial selection for uncontrolled usage.
 - **`onSelectionChange`** `(keys: string[]) => void` — Called when the selection changes. Keys are deduped and returned in the board's layout order, never in click order.
-- **`selectionCancel`** `string` (default: `BOARD_SELECTION_CANCEL`) — CSS selector marking interactive descendants. A press on one never selects and never starts a drag, so the control keeps its own click *and* its native focus; it also drops the selection, since interacting with a widget's content means the user has moved on. On a selectable board this doubles as the drag guard, so form controls stay usable without also configuring `dragCancel`. The default covers native form controls, links, and the common ARIA widget roles, plus `[data-no-select]` as an escape hatch. Pass `''` to disable the guard. Can be overridden per widget.
+- **`selectionCancel`** `string` (default: `BOARD_SELECTION_CANCEL`) — CSS selector marking interactive descendants. A press on one never selects and never starts a drag, so the control keeps its own click _and_ its native focus; it also drops the selection, since interacting with a widget's content means the user has moved on. On a selectable board this doubles as the drag guard, so form controls stay usable without also configuring `dragCancel`. The default covers native form controls, links, and the common ARIA widget roles, plus `[data-no-select]` as an escape hatch. Pass `''` to disable the guard. Can be overridden per widget.
 - **`allowMarqueeSelection`** `boolean` (default: `selectionMode === 'multiple'`) — Draw a rubber-band selection when a drag starts on empty board space. A press on a widget selects and drags instead, so the lasso owns empty canvas only. Hold <kbd>Shift</kbd> or <kbd>Cmd</kbd>/<kbd>Ctrl</kbd> to add to the existing selection rather than replacing it. A board sized to its content has no empty space left once the grid fills up, which makes the lasso undiscoverable — use `extraRows` to keep a band of it.
 - **`onWidgetsDelete`** `(keys: string[]) => void` — Called when <kbd>Delete</kbd>/<kbd>Backspace</kbd> is pressed with a non-empty selection and focus is not in an editable field. **Board never mutates the layout itself** — removing the widgets is yours to do, which is what lets you make it undoable. Board only handles these keys when this handler is set.
 - **`constraints`** `LayoutConstraint[]` — Grid/item layout constraints.
@@ -95,6 +76,10 @@ clipped by an ancestor's `overflow: hidden`.
 ### Board.Widget
 
 - **`id`** `string` (required) — Must match the `i` of a layout item.
+- **`cornerChrome`** `ReactNode` — A control anchored to one corner of the widget and centred on it — a settings button, a badge, a remove affordance. Drawn in the same layer as the corner resize grips, which is the layer that escapes the widget's own clip: chrome hung off the corner from _inside_ a widget is cropped in half by that clip, or by an ancestor's scroll container when the widget sits in the first row. It is also outside the drag gesture, so a press on it can never start a drag and needs no `dragCancel` entry.
+- **`cornerChromePlacement`** `'ne' | 'nw' | 'se' | 'sw'` (default: `'ne'`) — Which corner the chrome sits on. Pair it with a `resizeGripPlacement="corner"` grip on the opposite corner and the two line up.
+- **`mods`** `Record<string, boolean | string | undefined>` — App-defined modifiers for this widget, merged into the ones the board sets, so a `styles` map can match on app state: `mods={{ editing: true }}` with `styles={{ shadow: { editing: '0 0 0 1bw #primary' } }}`. Board's own modifiers always win, so a custom one can never shadow `selected`, `drag` and the rest. Board-level `widgetProps.mods` merge underneath, so a shared default can be set once and overridden per widget — and every modifier rides along on the clone that floats during a drag.
+- **`hoverRing`** `boolean` (default: `true`) — Whether the widget shows the resting ring on hover — the affordance that says it can be picked up. Turn it off for a widget that is scenery rather than a thing to grab (a chromeless layout container, a spacer), where the ring advertises an interaction the widget does not really offer. Selection and drag treatments are unaffected. Can be set for the whole board via `widgetProps`.
 - **`isCard`** `boolean` (default: `false`) — Render this widget as a card by adding a border. Widgets are always filled (`#surface-2`) and rounded (`1cr`); `isCard` adds the border on top. Defaults to `false` (borderless) unless the owning `Board`'s `widgetProps.isCard` opts in; set it per widget to override that default.
 - **`isDraggable`** `boolean` — Disable dragging for this widget.
 - **`isResizable`** `boolean` — Disable resizing for this widget.
@@ -115,35 +100,19 @@ clipped by an ancestor's `overflow: hidden`.
 - **`selectionCancel`** `string` — Override the board's `selectionCancel` selector for this widget.
 - **`aria-label`** `string` — Accessible name for the widget. Falls back to `qa`, then the layout item id — both developer-facing, so set this whenever the widget is user-visible. Also what the selection announcement reads out.
 
-A widget clips its content to its grid cell, card or not — otherwise a nested
-board with more rows than currently fit, or a mid-drag reflow, would paint over
-its neighbours. The cost is that a descendant's `outline` is cropped at the edge
-(an outline is clipped by an *ancestor's* overflow, not its own), so a widget
-whose content must paint outside — a control drawing its own active ring — sets
-`overflow="visible"`, or draws the ring inset with a negative `outlineOffset`.
+A widget clips its content to its grid cell, card or not — otherwise a nested board with more rows than currently fit, or a mid-drag reflow, would paint over its neighbours. The cost is that a descendant's `outline` is cropped at the edge (an outline is clipped by an _ancestor's_ overflow, not its own), so a widget whose content must paint outside — a control drawing its own active ring — sets `overflow="visible"`, or draws the ring inset with a negative `outlineOffset`.
 
 ### Board.Provider
 
-Shares one drag context across multiple boards. A standalone `Board` provides its
-own automatically; only use `Board.Provider` when you need cross-board dragging.
+Shares one drag context across multiple boards. A standalone `Board` provides its own automatically; only use `Board.Provider` when you need cross-board dragging.
 
-- **`onWidgetTransfer`** `(info: { widgetId, fromBoardId, toBoardId, item }) => void` —
-  Fired when a widget is dropped from one board into another.
+- **`onWidgetTransfer`** `(info: { widgetId, fromBoardId, toBoardId, item }) => void` — Fired when a widget is dropped from one board into another.
 
-Dragging a widget across a container that can unmount (for example, out of an
-inactive `Tab`) requires controlled ownership: a widget's content is declared by
-its `Board.Widget`, so if that declaration unmounts the content is lost. Keep
-each board's `layout` controlled and, in response to `onWidgetTransfer`, move the
-`Board.Widget` declaration into the destination container so the content follows
-the widget. The [Boards inside Tabs](#boards-inside-tabs) example shows the
-pattern.
+Dragging a widget across a container that can unmount (for example, out of an inactive `Tab`) requires controlled ownership: a widget's content is declared by its `Board.Widget`, so if that declaration unmounts the content is lost. Keep each board's `layout` controlled and, in response to `onWidgetTransfer`, move the `Board.Widget` declaration into the destination container so the content follows the widget. The [Boards inside Tabs](#boards-inside-tabs) example shows the pattern.
 
 ### Board.Responsive
 
-A wrapper around `Board` that selects a layout and column count based on the
-container's measured width, mirroring react-grid-layout's `Responsive` +
-`WidthProvider`. It accepts all `Board` props except `layout`, `defaultLayout`,
-`cols`, `onLayoutChange`, and `width` (which it manages), plus:
+A wrapper around `Board` that selects a layout and column count based on the container's measured width, mirroring react-grid-layout's `Responsive` + `WidthProvider`. It accepts all `Board` props except `layout`, `defaultLayout`, `cols`, `onLayoutChange`, and `width` (which it manages), plus:
 
 - **`breakpoints`** `Record<string, number>` — Breakpoint name to minimum container width (px).
 - **`cols`** `Record<string, number>` — Breakpoint name to column count.
@@ -155,18 +124,16 @@ container's measured width, mirroring react-grid-layout's `Responsive` +
 - **`breakpoint`** `string` — Force a specific breakpoint regardless of width (e.g. for a fixed-size screenshot or PDF export).
 - **`width`** `number` — Explicit width; disables measurement (SSR/tests/forced-size exports).
 
-A breakpoint with no layout is synthesized from the nearest available one,
-corrected into bounds and compacted for the target column count.
+A breakpoint with no layout is synthesized from the nearest available one, corrected into bounds and compacted for the target column count.
 
 ### Modifiers
 
-Every widget host exposes these as `data-*` attributes, and any style map passed
-through `widgetProps.styles` or a per-widget `styles` resolves against them.
+Every widget host exposes these as `data-*` attributes, and any style map passed through `widgetProps.styles` or a per-widget `styles` resolves against them.
 
 - **`selected`** — the widget is in the board's selection.
-- **`pre-selected`** — a live marquee covers the widget, so releasing the pointer
-  will select it. Never set at the same time as `selected`.
+- **`pre-selected`** — a live marquee covers the widget, so releasing the pointer will select it. Never set at the same time as `selected`.
 - **`card`** — the widget draws a card border (`isCard`).
+- **`no-hover-ring`** — the widget opted out of the resting hover ring (`hoverRing={false}`).
 - **`draggable`** — the widget can be dragged and no drag is in flight.
 - **`drag`** — the widget is being dragged.
 - **`floating`** — this is the clone floating in the drag overlay.
@@ -175,13 +142,7 @@ through `widgetProps.styles` or a per-widget `styles` resolves against them.
 - **`hovered`**, **`focus-visible`** — pointer and keyboard-focus states.
 - **`settled`** — the board has painted its widgets once, so position changes animate.
 
-Selection is an *edge* treatment — a `#primary-border` border plus a `#primary`
-ring — because it reads as a focus-like state rather than a fill. `outline` stays
-reserved for the real focus ring, which is what keeps the two legible together:
-they use different tokens and the focus outline sits one border-width further
-out. `pre-selected` draws the same edge with the ring dimmed, so committing a
-lasso only changes the strength of something already on screen. To restyle
-either, override the same keys:
+Selection is an _edge_ treatment — a `#primary-border` border plus a `#primary` ring — because it reads as a focus-like state rather than a fill. `outline` stays reserved for the real focus ring, which is what keeps the two legible together: they use different tokens and the focus outline sits one border-width further out. `pre-selected` draws the same edge with the ring dimmed, so committing a lasso only changes the strength of something already on screen. To restyle either, override the same keys:
 
 ```jsx
 <Board
@@ -212,9 +173,7 @@ Supports [Base properties](/docs/getting-started-base-properties--docs).
 
 ### Style Properties
 
-These properties allow direct style application without using the `styles` prop.
-Note: `margin` is repurposed as the grid gap (see Properties above) rather than a
-CSS margin.
+These properties allow direct style application without using the `styles` prop. Note: `margin` is repurposed as the grid gap (see Properties above) rather than a CSS margin.
 
 - **Base:** `display`, `font`, `preset`, `hide`, `whiteSpace`, `opacity`, `transition`
 - **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `scrollMargin`
@@ -229,18 +188,21 @@ CSS margin.
 
 <Story of={BoardStories.Controlled} />
 
+### Fixed matrix
+
+`rows` with `rowHeight="stretch"` gives a board of a declared size that fills its container: a `cols × rows` matrix whose cells resize with the box rather than a grid that grows a row at a time. Pair it with `compact="free"` for a canvas the author places things on directly.
+
+<Story of={BoardStories.FixedMatrix} />
+
 ### Free positioning
 
-A widget stays exactly where you drop it and never shuffles its neighbours.
-Dropping onto an occupied cell is blocked, so the widget stays at its last free
-spot.
+A widget stays exactly where you drop it and never shuffles its neighbours. Dropping onto an occupied cell is blocked, so the widget stays at its last free spot.
 
 <Story of={BoardStories.FreePositioning} />
 
 ### Free positioning (overlap)
 
-Add `allowOverlap` to let widgets stack on top of each other instead of being
-blocked from occupied cells.
+Add `allowOverlap` to let widgets stack on top of each other instead of being blocked from occupied cells.
 
 <Story of={BoardStories.FreePositioningOverlap} />
 
@@ -260,42 +222,37 @@ Bound resizing with per-widget `minW`/`maxW` (columns) and `minH`/`maxH` (rows).
 
 ### Grid lines
 
-Show grid lines behind the widgets while dragging or resizing (or always). With
-several boards under one `Board.Provider`, `'drag'` lights up only the board the
-drag belongs to; `'any-drag'` lights up all of them.
+Show grid lines behind the widgets while dragging or resizing (or always). With several boards under one `Board.Provider`, `'drag'` lights up only the board the drag belongs to; `'any-drag'` lights up all of them.
 
 <Story of={BoardStories.GridLines} />
 
+### Corner chrome
+
+A control centred on a widget's corner with `cornerChrome`, drawn outside the widget's clip so nothing crops it. With a `resizeGripPlacement="corner"` grip on the opposite corner, the two line up.
+
+<Story of={BoardStories.CornerChrome} />
+
 ### Corner resize grip
 
-Centre the resize grip on the widget's corner with `resizeGripPlacement="corner"`,
-so it lines up with a control centred on the opposite corner.
+Centre the resize grip on the widget's corner with `resizeGripPlacement="corner"`, so it lines up with a control centred on the opposite corner.
 
 <Story of={BoardStories.CornerResizeGrip} />
 
 ### Resolving a blocked drop
 
-On a free grid a drop onto occupied cells is refused. `collisionMode` resolves it
-instead: `'downscale'` shrinks the widget into whatever room is at the drop cell.
-Within one board, `'swap'` trades places with the widget already there. Across
-boards, the same mode inserts only at an empty anchor and downscales without
-moving destination widgets; an invalid release cancels the transfer. None of
-these paths ever grows a widget. The examples below show all three behaviors.
+On a free grid a drop onto occupied cells is refused. `collisionMode` resolves it instead: `'downscale'` shrinks the widget into whatever room is at the drop cell. Within one board, `'swap'` trades places with the widget already there. Across boards, the same mode inserts only at an empty anchor and downscales without moving destination widgets; an invalid release cancels the transfer. None of these paths ever grows a widget. The examples below show all three behaviors.
 
 <Story of={BoardStories.CollisionModes} />
 
 ### Card widgets
 
-Widgets are filled (`#surface-2`) and rounded by default, but borderless. Add a
-card border per widget with `isCard`, or for the whole board at once with
-`widgetProps={{ isCard: true }}`. Per-widget `isCard` overrides the board default.
+Widgets are filled (`#surface-2`) and rounded by default, but borderless. Add a card border per widget with `isCard`, or for the whole board at once with `widgetProps={{ isCard: true }}`. Per-widget `isCard` overrides the board default.
 
 <Story of={BoardStories.CardWidgets} />
 
 ### Drag cancel
 
-Keep interactive controls inside a widget clickable by excluding them from the
-drag gesture with `dragCancel`.
+Keep interactive controls inside a widget clickable by excluding them from the drag gesture with `dragCancel`.
 
 <Story of={BoardStories.DragCancel} />
 
@@ -313,69 +270,33 @@ Wrap boards in `Board.Provider` to drag widgets between them.
 
 ### Nested boards
 
-A `Board` can be placed inside a `Board.Widget`, making the whole container
-draggable while its children can be dragged out into sibling boards.
+A `Board` can be placed inside a `Board.Widget`, making the whole container draggable while its children can be dragged out into sibling boards.
 
-Set `isAligned` on the nested board to align it with the surrounding layout:
-every cell matches the parent's cell size exactly. Its columns keep the parent's
-pixel pitch (so resizing the container adds or removes columns instead of
-stretching them) and its rows use the parent's row height verbatim.
+Set `isAligned` on the nested board to align it with the surrounding layout: every cell matches the parent's cell size exactly. Its columns keep the parent's pixel pitch (so resizing the container adds or removes columns instead of stretching them) and its rows use the parent's row height verbatim.
 
-Because an aligned board never shrinks its rows to fit, add `isAutoHeight` to the
-container `Board.Widget` so it grows (only ever taller) until the inner board's
-rows fit at the parent's row height. It also stops the container's resize handle
-at that height, so you can't drag it shorter than the inner board needs.
+Because an aligned board never shrinks its rows to fit, add `isAutoHeight` to the container `Board.Widget` so it grows (only ever taller) until the inner board's rows fit at the parent's row height. It also stops the container's resize handle at that height, so you can't drag it shorter than the inner board needs.
 
 <Story of={BoardStories.NestedBoards} />
 
 ### Aligned nested boards
 
-A nested `Board` with `isAligned` and no padding, fill, border, or radius of its
-own — only a header above the grid — inherits the parent column pitch with zero
-offset, so its columns line up exactly with the outer board. Grid lines are
-shown on both boards while dragging to verify the alignment.
+A nested `Board` with `isAligned` and no padding, fill, border, or radius of its own — only a header above the grid — inherits the parent column pitch with zero offset, so its columns line up exactly with the outer board. Grid lines are shown on both boards while dragging to verify the alignment.
 
 <Story of={BoardStories.AlignedNestedBoards} />
 
 ### Boards inside Tabs
 
-A `Board.Widget` can host a `Tabs` where each tab renders its own `Board`, all
-under a shared `Board.Provider` so widgets can be dragged between tabs and out
-into the surrounding board. Because an inactive tab unmounts, this example is
-fully controlled: each board's `layout` is controlled and `onWidgetTransfer`
-moves a widget's declaration into the destination container so its content
-survives dragging out of (and switching away from) a tab.
+A `Board.Widget` can host a `Tabs` where each tab renders its own `Board`, all under a shared `Board.Provider` so widgets can be dragged between tabs and out into the surrounding board. Because an inactive tab unmounts, this example is fully controlled: each board's `layout` is controlled and `onWidgetTransfer` moves a widget's declaration into the destination container so its content survives dragging out of (and switching away from) a tab.
 
-When a `Tabs` sits inside a `Board`, tab switching becomes "spring-loaded"
-automatically: while you drag a widget, hovering a tab header for a moment opens
-that tab so you can drop into it (or move a widget between tabs). This needs no
-setup - `Tabs` detects the active Board drag and, for its duration, keeps panels
-mounted so the tab a widget is dragged out of (and the board owning the in-flight
-drag) is not unmounted mid-gesture. Spring-loading works with mouse and pen;
-touch drags capture the pointer, so they do not trigger it.
+When a `Tabs` sits inside a `Board`, tab switching becomes "spring-loaded" automatically: while you drag a widget, hovering a tab header for a moment opens that tab so you can drop into it (or move a widget between tabs). This needs no setup - `Tabs` detects the active Board drag and, for its duration, keeps panels mounted so the tab a widget is dragged out of (and the board owning the in-flight drag) is not unmounted mid-gesture. Spring-loading works with mouse and pen; touch drags capture the pointer, so they do not trigger it.
 
 <Story of={BoardStories.TabsBoard} />
 
 ### Selection
 
-Press a widget to select it, <kbd>Shift</kbd>-press to add or remove one, and
-drag from empty board space to lasso. Because the press both selects and arms the
-drag, grabbing a widget you have not selected simply makes it the selection and
-moves it; grabbing one that *is* selected moves the whole block rigidly — keeping
-its shape, clamping against the grid edge as a unit rather than collapsing, and
-committing once. While the band is out, the widgets it covers show a dimmed
-version of the selected edge (`pre-selected`), and no text can be selected under
-it.
+Press a widget to select it, <kbd>Shift</kbd>-press to add or remove one, and drag from empty board space to lasso. Because the press both selects and arms the drag, grabbing a widget you have not selected simply makes it the selection and moves it; grabbing one that _is_ selected moves the whole block rigidly — keeping its shape, clamping against the grid edge as a unit rather than collapsing, and committing once. While the band is out, the widgets it covers show a dimmed version of the selected edge (`pre-selected`), and no text can be selected under it.
 
-A group reflows like a single widget — it is compacted by the same rules, so on a
-`vertical` board it can no more be parked in empty space than one widget can, and
-the widgets around it close the gap in the same frame — but it does so as one
-block. Its members keep their exact offsets for the whole drag, and the widgets
-standing where it lands move out of its way rather than being packed between its
-members — whether it is dragged against the compaction axis or across it. When
-the drag ends the board compacts normally, so a group whose members could each
-float further settles on release. Under `compact="free"` (or `null`) nothing compacts,
-so the block stays precisely where it was dropped.
+A group reflows like a single widget — it is compacted by the same rules, so on a `vertical` board it can no more be parked in empty space than one widget can, and the widgets around it close the gap in the same frame — but it does so as one block. Its members keep their exact offsets for the whole drag, and the widgets standing where it lands move out of its way rather than being packed between its members — whether it is dragged against the compaction axis or across it. When the drag ends the board compacts normally, so a group whose members could each float further settles on release. Under `compact="free"` (or `null`) nothing compacts, so the block stays precisely where it was dropped.
 
 <Story of={BoardStories.Selection} />
 
@@ -386,6 +307,21 @@ so the block stays precisely where it was dropped.
 ### Controlled selection and deleting widgets
 
 <Story of={BoardStories.ControlledSelection} />
+
+### Knowing why the layout changed
+
+`onLayoutChange` reports a `reason` alongside the layout, because a board commits for two different kinds of reason and an app usually needs to tell them apart. `'drag'`, `'resize'` and `'transfer'` are the user arranging their board. `'normalize'` is the board fitting an existing arrangement to a constraint that moved underneath it — the column count changed, or an `isAutoHeight` widget grew to fit its content.
+
+An app that persists every commit without looking writes those normalizations back as if they were edits, which marks a document dirty that nobody touched and can overwrite saved positions with ones the board derived. Persist the gestures and let a normalization pass:
+
+```jsx
+<Board
+  onLayoutChange={(layout, { reason }) => {
+    if (reason === 'normalize') return;
+    save(layout);
+  }}
+/>
+```
 
 ### Restyling the selection
 
@@ -404,73 +340,37 @@ so the block stays precisely where it was dropped.
 | <kbd>Escape</kbd> | Clear the selection. |
 | <kbd>Delete</kbd> / <kbd>Backspace</kbd> | Request deletion of the selection via `onWidgetsDelete`. |
 
-Arrow keys and <kbd>Space</kbd> only act when the widget host **itself** is
-focused, never when focus is inside a nested control, so an `input`,
-`textarea`, or `button` inside a widget keeps every key it needs. Board's own
-keys are handled on the board element rather than on `document`, and are only
-consumed when they actually do something — an <kbd>Escape</kbd> with nothing
-selected still reaches an ancestor Dialog, and <kbd>Backspace</kbd> stays
-available for text editing and browser-back.
+Arrow keys and <kbd>Space</kbd> only act when the widget host **itself** is focused, never when focus is inside a nested control, so an `input`, `textarea`, or `button` inside a widget keeps every key it needs. Board's own keys are handled on the board element rather than on `document`, and are only consumed when they actually do something — an <kbd>Escape</kbd> with nothing selected still reaches an ancestor Dialog, and <kbd>Backspace</kbd> stays available for text editing and browser-back.
 
-Every draggable or selectable widget is its own tab stop. Roving tabindex would
-be an improvement on a large board, but arrow keys are already claimed for
-movement, so it needs a navigation key set of its own — see below.
+Every draggable or selectable widget is its own tab stop. Roving tabindex would be an improvement on a large board, but arrow keys are already claimed for movement, so it needs a navigation key set of its own — see below.
 
 ### Screen Reader Support
 
-Each widget host is a `group` with an accessible name, taken from
-`aria-label`, then `qa`, then the layout item id — set `aria-label` on any
-user-visible widget, since the other two are developer-facing. Draggable widgets
-carry a localized `aria-roledescription`, and selectable ones advertise
-`aria-keyshortcuts="Space"`.
+Each widget host is a `group` with an accessible name, taken from `aria-label`, then `qa`, then the layout item id — set `aria-label` on any user-visible widget, since the other two are developer-facing. Draggable widgets carry a localized `aria-roledescription`, and selectable ones advertise `aria-keyshortcuts="Space"`.
 
-Selection state is conveyed two ways: a selected widget is described as
-"Selected" via `aria-describedby`, and every selection change is announced
-through a polite live region owned by the board ("Revenue selected", "3 widgets
-selected", "Selection cleared"). A marquee announces once, on release — not once
-per pointer frame.
+Selection state is conveyed two ways: a selected widget is described as "Selected" via `aria-describedby`, and every selection change is announced through a polite live region owned by the board ("Revenue selected", "3 widgets selected", "Selection cleared"). A marquee announces once, on release — not once per pointer frame.
 
 ### ARIA Properties
 
-Board deliberately does **not** use a collection role. `aria-selected` is only
-valid on `option`, `gridcell`, `row`, `treeitem` and friends, and every one of
-those requires presentational children — but a Board widget hosts arbitrary
-interactive content (nested boards, tabs, inputs), and a `grid`'s keyboard model
-would fight `useMove`'s arrow keys. Rather than ship ARIA that lies about the
-structure, selection is exposed through the name, description, and live region
-described above. Set `aria-label` on your widgets and this reads correctly.
+Board deliberately does **not** use a collection role. `aria-selected` is only valid on `option`, `gridcell`, `row`, `treeitem` and friends, and every one of those requires presentational children — but a Board widget hosts arbitrary interactive content (nested boards, tabs, inputs), and a `grid`'s keyboard model would fight `useMove`'s arrow keys. Rather than ship ARIA that lies about the structure, selection is exposed through the name, description, and live region described above. Set `aria-label` on your widgets and this reads correctly.
 
 ## Not yet supported
 
-- **External drag-in from a palette** — dragging a brand-new widget from an
-  element outside any board into the grid (react-grid-layout's
-  `isDroppable`/`onDrop`/`droppingItem`) is not implemented. Board's drag engine
-  is built entirely on React Aria's `useMove` over registered widgets; drag-in
-  is a separate HTML5 drag-and-drop modality (pixel-to-grid mapping, a dropping
-  placeholder, and new `onDrop`/`droppingItem` props). Add widgets
-  programmatically (render a new `Board.Widget` and add its layout item), or drag
-  between boards with `Board.Provider`.
-- **Cross-board group transfer** — a group drag never leaves its source board.
-  Cross-board transfer is single-item throughout (`WidgetTransferInfo`, the
-  carried preview, the free-slot fallback), and landing a group on a board with a
-  different column count has no obvious right answer. Degrading to a
-  single-widget transfer would silently split a selection the user made, so the
-  gesture is confined instead. Drag widgets across one at a time.
-- **Collection ARIA semantics** — `role="grid"`/`option`, `aria-selected` and
-  `aria-multiselectable`, for the reason above.
-- **Roving tabindex** — needs a widget-navigation key set that does not collide
-  with `useMove`'s arrow keys.
+- **External drag-in from a palette** — dragging a brand-new widget from an element outside any board into the grid (react-grid-layout's `isDroppable`/`onDrop`/`droppingItem`) is not implemented. Board's drag engine is built entirely on React Aria's `useMove` over registered widgets; drag-in is a separate HTML5 drag-and-drop modality (pixel-to-grid mapping, a dropping placeholder, and new `onDrop`/`droppingItem` props). Add widgets programmatically (render a new `Board.Widget` and add its layout item), or drag between boards with `Board.Provider`.
+- **Cross-board group transfer** — a group drag never leaves its source board. Cross-board transfer is single-item throughout (`WidgetTransferInfo`, the carried preview, the free-slot fallback), and landing a group on a board with a different column count has no obvious right answer. Degrading to a single-widget transfer would silently split a selection the user made, so the gesture is confined instead. Drag widgets across one at a time.
+- **Collection ARIA semantics** — `role="grid"`/`option`, `aria-selected` and `aria-multiselectable`, for the reason above.
+- **Roving tabindex** — needs a widget-navigation key set that does not collide with `useMove`'s arrow keys.
 - **<kbd>Cmd/Ctrl</kbd>+<kbd>A</kbd>** — select all.
-- **Cross-board marquee and cross-board selection** — selection is per board; a
-  `Board.Provider` shares drag, not selection.
-- **Windows High Contrast Mode** — no component in the kit styles for
-  `forced-colors` yet. The selected state uses a tint, a border *and* an extra
-  ring, so it does not rely on hue alone, but a full forced-colors pass is a
-  system-wide change.
+- **Cross-board marquee and cross-board selection** — selection is per board; a `Board.Provider` shares drag, not selection.
+- **Windows High Contrast Mode** — no component in the kit styles for `forced-colors` yet. The selected state uses a tint, a border _and_ an extra ring, so it does not rely on hue alone, but a full forced-colors pass is a system-wide change.
+
+## Layout helpers
+
+Placement questions the board answers for itself during a gesture, exported so an app can ask them for a widget it adds programmatically. Without these, an app re-implements the scan, and the same drop lands in two different cells depending on whether a pointer or a code path served it.
+
+- **`placeInFreeSlot(others, item, cols, maxRows?)`** — the first position at or below the item's preferred cell where it fits without overlapping `others`, scanning the preferred row first, then down, then up. Never past `maxRows`, and never resizes to fit (only `w` is capped to `cols`). This is the rule the board itself applies when a dragged widget cannot stay where it was dropped.
+- **`distributeEvenly(layout, { cols, rows })`** — tile every item evenly across both axes, keeping the row structure the layout already has: items are grouped into visual rows by their current `y`, `rows` is divided across the groups and `cols` across each group's members. A line holding more items than the grid is wide wraps into sub-rows. This is the one operation that deliberately _grows_ items — every gesture-driven path refuses to, which is why it is a call the app makes rather than a mode the board is in.
 
 ## Attribution
 
-The layout engine in `grid-core/` is a vendored, trimmed copy of
-[react-grid-layout](https://github.com/react-grid-layout/react-grid-layout)
-(MIT). The React layer is a UI Kit-native reimplementation on top of tasty and
-React Aria. See `grid-core/NOTICE.md`.
+The layout engine in `grid-core/` is a vendored, trimmed copy of [react-grid-layout](https://github.com/react-grid-layout/react-grid-layout) (MIT). The React layer is a UI Kit-native reimplementation on top of tasty and React Aria. See `grid-core/NOTICE.md`.

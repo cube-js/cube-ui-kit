@@ -3,10 +3,12 @@
 Add changeset manually (direct edit / without cli commands). Place the changeset in the `/.changeset` folder.
 
 ## Version Selection
+
 - Use `patch` for bug fixes and small changes (even with minor breaking changes)
 - Use `minor` for new features and noticeable breaking changes
 
 ## Content Guidelines
+
 - To analyze changes, use the following priority (unless user explicitly specifies what the changeset is for):
   1. Diff introduced in the current chat session
   2. Diff of the working tree (if chat diff is empty)
@@ -16,3 +18,4 @@ Add changeset manually (direct edit / without cli commands). Place the changeset
 - Keep the changeset concise and user-focused
 - Only document changes that affect end users or the public API
 - Exclude fixes for issues that were introduced and resolved within the same PR (internal corrections during development)
+- Never hard-wrap the summary — one paragraph is one line, like every other Markdown file in the repo (see [Markdown rules](../../docs/rules/coding.md#markdown-rules))

@@ -89,8 +89,8 @@ const [activeId, setActiveId] = useState(1);
   getKey={(item) => item.id}
 >
   {(item) => (
-    <ExpensiveListItem 
-      item={item} 
+    <ExpensiveListItem
+      item={item}
       isActive={item.id === activeId}
     />
   )}
@@ -107,6 +107,7 @@ const [activeId, setActiveId] = useState(1);
 ## Best Practices
 
 1. **Use stable keys**: Ensure getKey returns consistent keys for the same items across renders
+
    ```jsx
    // Good: Using stable IDs
    <RenderCache
@@ -116,7 +117,7 @@ const [activeId, setActiveId] = useState(1);
    >
      {(item) => <Item {...item} />}
    </RenderCache>
-   
+
    // Bad: Using indices (unstable when list changes)
    <RenderCache
      items={items}
@@ -128,6 +129,7 @@ const [activeId, setActiveId] = useState(1);
    ```
 
 2. **Minimize renderKeys**: Only include keys that truly need re-rendering to maximize cache benefits
+
    ```jsx
    // Good: Only re-render the active item
    <RenderCache
@@ -137,7 +139,7 @@ const [activeId, setActiveId] = useState(1);
    >
      {(item) => <Item {...item} />}
    </RenderCache>
-   
+
    // Bad: Re-rendering all items defeats the purpose
    <RenderCache
      items={items}
@@ -153,12 +155,13 @@ const [activeId, setActiveId] = useState(1);
 4. **Profile first**: Use React DevTools Profiler to confirm you have a performance issue before adding this optimization
 
 5. **Avoid inline functions**: Use stable render functions to prevent unnecessary cache invalidation
+
    ```jsx
    // Good: Stable render function
    const renderItem = useCallback((item) => (
      <ExpensiveItem item={item} />
    ), []);
-   
+
    <RenderCache
      items={items}
      renderKeys={[selectedId]}
@@ -181,4 +184,3 @@ const [activeId, setActiveId] = useState(1);
 - **useMemo** - For memoizing computed values
 - **useCallback** - For memoizing callback functions
 - **DisplayTransition** - For animating component mount/unmount
-

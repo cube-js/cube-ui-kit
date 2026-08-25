@@ -1,7 +1,7 @@
 import type { Styles } from '@tenphi/tasty';
 import type { ReactNode } from 'react';
 import type { LayoutConstraint, ResizeHandleAxis } from './grid-core';
-import type { BoardResizeGripPlacement } from './Widget';
+import type { BoardCornerPlacement, BoardResizeGripPlacement } from './Widget';
 
 /**
  * Declarative registration for a single widget.
@@ -24,6 +24,17 @@ export interface WidgetRegistration {
    * Falls back to the owning board's `widgetProps.isCard` when unset here.
    */
   isCard?: boolean;
+  /**
+   * Whether this widget shows the resting hover ring. Falls back to the owning
+   * board's `widgetProps.hoverRing` when unset here.
+   */
+  hoverRing?: boolean;
+  /** Corner-anchored chrome for this widget. */
+  cornerChrome?: ReactNode;
+  /** Which corner the chrome sits on. */
+  cornerChromePlacement?: BoardCornerPlacement;
+  /** App-defined modifiers merged into the host's own. */
+  mods?: Record<string, boolean | string | undefined>;
   /** Minimum width in grid columns (fallback when the layout item omits `minW`). */
   minW?: number;
   /** Maximum width in grid columns (fallback when the layout item omits `maxW`). */
@@ -87,6 +98,10 @@ export class BoardWidgetStore {
       prev.resizeHandles !== reg.resizeHandles ||
       prev.resizeGripPlacement !== reg.resizeGripPlacement ||
       prev.isCard !== reg.isCard ||
+      prev.hoverRing !== reg.hoverRing ||
+      prev.cornerChrome !== reg.cornerChrome ||
+      prev.cornerChromePlacement !== reg.cornerChromePlacement ||
+      prev.mods !== reg.mods ||
       prev.minW !== reg.minW ||
       prev.maxW !== reg.maxW ||
       prev.minH !== reg.minH ||

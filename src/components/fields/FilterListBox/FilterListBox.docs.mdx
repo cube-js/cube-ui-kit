@@ -72,6 +72,7 @@ Supports all [Field properties](/docs/getting-started-field-properties--docs)
 Customizes the root wrapper element of the component.
 
 **Sub-elements:**
+
 - `ValidationState` - Container for validation and loading indicators
 
 #### searchInputStyles
@@ -79,6 +80,7 @@ Customizes the root wrapper element of the component.
 Customizes the search input field appearance.
 
 **Sub-elements:**
+
 - `Prefix` - Container for search icon
 - `InputIcon` - The search or loading icon
 
@@ -87,6 +89,7 @@ Customizes the search input field appearance.
 Customizes the list container element that holds the filtered options.
 
 **Sub-elements:**
+
 - Same as ListBox component sub-elements
 
 #### optionStyles
@@ -94,6 +97,7 @@ Customizes the list container element that holds the filtered options.
 Customizes individual option elements.
 
 **Sub-elements:**
+
 - `Label` - The main text of each option
 - `Description` - Secondary descriptive text for options
 - `Content` - Container for label and description
@@ -105,6 +109,7 @@ Customizes individual option elements.
 Customizes section wrapper elements.
 
 **Sub-elements:**
+
 - Same as ListBox component sub-elements
 
 #### headingStyles
@@ -112,6 +117,7 @@ Customizes section wrapper elements.
 Customizes section heading elements.
 
 **Sub-elements:**
+
 - Same as ListBox component sub-elements
 
 #### listBoxStyles
@@ -123,6 +129,7 @@ Customizes the inner ListBox component.
 Customizes the header area when header prop is provided.
 
 **Sub-elements:**
+
 - None - styles apply directly to the header container
 
 #### footerStyles
@@ -130,6 +137,7 @@ Customizes the header area when header prop is provided.
 Customizes the footer area when footer prop is provided.
 
 **Sub-elements:**
+
 - None - styles apply directly to the footer container
 
 ### Style Properties
@@ -279,14 +287,14 @@ const categories = [
 
 ```jsx
 <FilterListBox label="Choose a fruit" searchPlaceholder="Search fruits...">
-  <FilterListBox.Item 
-    key="apple" 
+  <FilterListBox.Item
+    key="apple"
     description="Crisp and sweet red fruit"
   >
     Apple
   </FilterListBox.Item>
-  <FilterListBox.Item 
-    key="banana" 
+  <FilterListBox.Item
+    key="banana"
     description="Yellow tropical fruit rich in potassium"
   >
     Banana
@@ -367,7 +375,7 @@ const categories = [
 <FilterListBox
   label="Programming Language"
   searchPlaceholder="Type first letters..."
-  filter={(text, search) => 
+  filter={(text, search) =>
     text.toLowerCase().startsWith(search.toLowerCase())
   }
 >
@@ -496,6 +504,7 @@ const categories = [
 ## Best Practices
 
 1. **Do**: Use for lists with more than 10-15 options
+
    ```jsx
    <FilterListBox label="Choose Country" searchPlaceholder="Search countries...">
      {countries.map(country => (
@@ -505,6 +514,7 @@ const categories = [
    ```
 
 2. **Don't**: Use for very small lists (under 5-7 options)
+
    ```jsx
    // ❌ Avoid for small lists - use ListBox instead
    <FilterListBox>
@@ -514,6 +524,7 @@ const categories = [
    ```
 
 3. **Do**: Provide `textValue` for complex option content
+
    ```jsx
    <FilterListBox.Item key="user1" textValue="John Doe john.doe@company.com">
      <Avatar src="/john.jpg" />
@@ -525,10 +536,11 @@ const categories = [
    ```
 
 4. **Do**: Use `showSelectAll` for efficient multiple selection from filtered lists
+
    ```jsx
-   <FilterListBox 
-     selectionMode="multiple" 
-     showSelectAll 
+   <FilterListBox
+     selectionMode="multiple"
+     showSelectAll
      selectAllLabel="Select All Visible"
      searchPlaceholder="Filter items..."
    >
@@ -537,9 +549,10 @@ const categories = [
    ```
 
 5. **Do**: Use `isCheckable` for visual clarity in multiple selection mode
+
    ```jsx
-   <FilterListBox 
-     selectionMode="multiple" 
+   <FilterListBox
+     selectionMode="multiple"
      isCheckable={true}
      searchPlaceholder="Search options..."
    >
@@ -585,7 +598,7 @@ FilterListBox supports custom filter functions for specialized search behavior:
 
 ```jsx
 // Starts-with filter
-const startsWithFilter = (text, search) => 
+const startsWithFilter = (text, search) =>
   text.toLowerCase().startsWith(search.toLowerCase());
 
 // Fuzzy search filter
@@ -593,7 +606,7 @@ const fuzzyFilter = (text, search) => {
   const searchChars = search.toLowerCase().split('');
   const textLower = text.toLowerCase();
   let searchIndex = 0;
-  
+
   for (const char of textLower) {
     if (char === searchChars[searchIndex]) {
       searchIndex++;
@@ -623,6 +636,7 @@ When `allowsCustomValue={true}`, users can add new options by typing:
 ```
 
 Custom values:
+
 - Are automatically added when selected
 - Persist across searches
 - Appear in the list with selected items
@@ -655,6 +669,7 @@ Use `customValueProps` to style existing custom values and `newCustomValueProps`
 ```
 
 **Key differences:**
+
 - `customValueProps` - Applied to custom values that are already selected
 - `newCustomValueProps` - Applied to new custom values appearing when typing in search (merged with `customValueProps`)
 
@@ -689,6 +704,7 @@ const handleSearchChange = useCallback((value) => {
 ```
 
 **How it works:**
+
 - **`filter={false}`** disables client-side filtering so items appear exactly as the server returns them
 - **`searchValue` + `onSearchChange`** give you control over the search input; debounce and fetch on your side
 - **`items`** is reactive — replace it with server results and the list updates automatically
@@ -716,6 +732,7 @@ Use the `onEscape` prop to handle custom behavior when Escape is pressed with em
 ```
 
 **Key behaviors:**
+
 - If search has text: Escape clears the search
 - If search is empty: Escape calls `onEscape` callback
 - Useful for closing parent modals or dialogs
@@ -745,6 +762,7 @@ useEffect(() => {
 ```
 
 **Use cases:**
+
 - Debouncing search input
 - Synchronizing with external UI
 - Tracking search analytics
@@ -774,12 +792,14 @@ const items = Array.from({ length: 1000 }, (_, i) => ({
 ```
 
 **Key features:**
+
 - Automatically enabled for large lists without sections
 - Handles items with varying heights
 - Works seamlessly with filtering
 - Maintains performance with thousands of items
 
 **Limitations:**
+
 - Virtualization is disabled when sections are present
 - For sectioned large lists, consider flattening or alternative approaches
 
@@ -795,8 +815,8 @@ const items = Array.from({ length: 1000 }, (_, i) => ({
 
 ```jsx
 // Optimized for performance
-<FilterListBox.Item 
-  key="complex" 
+<FilterListBox.Item
+  key="complex"
   textValue="John Doe - Senior Developer - Engineering Team"
 >
   <ComplexUserCard user={user} />

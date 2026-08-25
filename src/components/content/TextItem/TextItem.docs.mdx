@@ -93,8 +93,8 @@ Highlight matching text within the content - useful for search results:
 Customize the appearance of highlighted text with `highlightStyles`:
 
 ```jsx
-<TextItem 
-  highlight="important" 
+<TextItem
+  highlight="important"
   highlightStyles={{ fill: '#purple.20', color: '#purple' }}
 >
   This important text has custom highlight styling
@@ -218,6 +218,7 @@ const searchTerm = 'app';
 ## Best Practices
 
 1. **Do**: Use for text that may exceed container width
+
    ```jsx
    <Block width="200px">
      <TextItem>Long filename-that-might-overflow.tsx</TextItem>
@@ -225,11 +226,13 @@ const searchTerm = 'app';
    ```
 
 2. **Do**: Provide meaningful highlight terms for search
+
    ```jsx
    <TextItem highlight={userSearchQuery}>{result.title}</TextItem>
    ```
 
 3. **Don't**: Use for multi-line text (this component enforces single-line with ellipsis)
+
    ```jsx
    {/* Use Text component instead for multi-line content */}
    <Text>Multi-line paragraph content...</Text>
@@ -246,4 +249,3 @@ const searchTerm = 'app';
 - [Text](/docs/generic-text--docs) - Base text component without overflow handling
 - [Item](/docs/content-item--docs) - Interactive list item with similar overflow behavior
 - [TooltipProvider](/docs/overlays-tooltip--docs) - Standalone tooltip wrapper
-

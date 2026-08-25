@@ -34,6 +34,8 @@ export {
   isOverlapFree,
 } from './collision-modes';
 
+export { placeInFreeSlot, distributeEvenly } from './placement';
+
 export {
   sortLayoutItems,
   sortLayoutItemsByRowCol,
