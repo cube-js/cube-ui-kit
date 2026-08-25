@@ -39,6 +39,7 @@ function PasswordInput(
   let [type, setType] = useState('password');
   let {
     labelProps: userLabelProps,
+    inputProps: userInputProps,
     suffix,
     multiLine,
     inputRef: propsInputRef,
@@ -101,7 +102,11 @@ function PasswordInput(
     <TextInputBase
       ref={ref}
       labelProps={mergedLabelProps}
-      inputProps={{ ...inputProps, 'data-input-type': 'passwordinput' }}
+      inputProps={mergeProps(
+        inputProps,
+        { 'data-input-type': 'passwordinput' },
+        userInputProps,
+      )}
       inputRef={inputRef}
       inputStyles={{ paddingRight: '4x' }}
       type={type}

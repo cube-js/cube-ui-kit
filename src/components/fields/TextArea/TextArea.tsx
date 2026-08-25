@@ -47,6 +47,7 @@ function TextArea(
     maxRows = 10,
     rows = 3,
     labelProps: userLabelProps,
+    inputProps: userInputProps,
     inputRef: propsInputRef,
     value,
     isBuffered,
@@ -99,7 +100,11 @@ function TextArea(
       multiLine
       inputRef={inputRef}
       labelProps={mergedLabelProps}
-      inputProps={{ ...inputProps, 'data-input-type': 'textarea' }}
+      inputProps={mergeProps(
+        inputProps,
+        { 'data-input-type': 'textarea' },
+        userInputProps,
+      )}
       isDisabled={isDisabled}
       isReadOnly={isReadOnly}
       isRequired={isRequired}
