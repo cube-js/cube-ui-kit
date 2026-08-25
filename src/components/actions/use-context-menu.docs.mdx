@@ -33,7 +33,8 @@ function useContextMenu<P, T = ComponentProps<typeof MenuTrigger>>(
 
   /**
    * Programmatically opens the menu at the specified coordinates or element center.
-   * Runtime props are merged with defaultMenuProps (runtime props take precedence).
+   * Runtime props are merged with the current defaultMenuProps on every render
+   * (runtime props take precedence).
    *
    * @param props - Props to pass to the menu component (optional, defaults to defaultMenuProps)
    * @param triggerProps - Additional props for MenuTrigger (merged with defaultTriggerProps)
@@ -46,8 +47,8 @@ function useContextMenu<P, T = ComponentProps<typeof MenuTrigger>>(
   ): void;
 
   /**
-   * Updates the props of the currently open menu without repositioning.
-   * Props are merged with defaultMenuProps.
+   * Updates the runtime props of the currently open menu without repositioning.
+   * Props are merged over the current defaultMenuProps.
    */
   update(props: P, triggerProps?: T): void;
 
@@ -102,8 +103,8 @@ The hook automatically binds `onContextMenu` events to the `targetRef` element:
 
 The hook provides flexible prop management:
 
-- **`defaultMenuProps`** - Used for automatic right-click opening
-- **Runtime props** (via `open()`) - Merged with defaults, taking precedence
+- **`defaultMenuProps`** - Used for automatic right-click opening, and re-read on every render: changing them updates a menu that is already open, so content kept there (items, `isDisabled`, `disabledKeys`) stays current without an `update()` call
+- **Runtime props** (via `open()`/`update()`) - Merged over the defaults, taking precedence, and held until the next `open()`/`update()`
 - **Trigger props** - Merged with `defaultTriggerProps` for positioning control
 
 ### Menu Synchronization
