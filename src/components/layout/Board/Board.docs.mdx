@@ -68,7 +68,7 @@ Dragging and resizing are powered by React Aria's `useMove`, so they work with m
 - **`allowMarqueeSelection`** `boolean` (default: `selectionMode === 'multiple'`) — Draw a rubber-band selection when a drag starts on empty board space. A press on a widget selects and drags instead, so the lasso owns empty canvas only. Hold <kbd>Shift</kbd> or <kbd>Cmd</kbd>/<kbd>Ctrl</kbd> to add to the existing selection rather than replacing it. A board sized to its content has no empty space left once the grid fills up, which makes the lasso undiscoverable — use `extraRows` to keep a band of it.
 - **`onWidgetsDelete`** `(keys: string[]) => void` — Called when <kbd>Delete</kbd>/<kbd>Backspace</kbd> is pressed with a non-empty selection and focus is not in an editable field. **Board never mutates the layout itself** — removing the widgets is yours to do, which is what lets you make it undoable. Board only handles these keys when this handler is set.
 - **`constraints`** `LayoutConstraint[]` — Grid/item layout constraints.
-- **`width`** `number` — Explicit width (disables measurement; useful for SSR/tests).
+- **`width`** `number` — Explicit width, which **disables the board's own measurement**. Only needed for SSR, tests, or a forced-size export — see [Sizing](#sizing); a board in the document measures itself and does not need this.
 - **`widgetProps`** `Partial<Board.Widget props>` — Default props applied to every widget this board hosts (per-widget `Board.Widget` props override these). Use it to add a card border to every widget (`widgetProps={{ isCard: true }}`) or set shared `styles`/sizing defaults without repeating them on each widget.
 - **`place`** `Styles['place']` — Style prop shorthand for `place-items`/`place-content`.
 - **`scrollMargin`** `Styles['scrollMargin']` — Style prop for scroll margin.
@@ -326,6 +326,16 @@ An app that persists every commit without looking writes those normalizations ba
 ### Restyling the selection
 
 <Story of={BoardStories.RestyledSelection} />
+
+## Sizing
+
+**A board measures its own container. You do not need to measure it for it.**
+
+It observes its container with a `ResizeObserver` and derives the column width from that, so the only reason to pass `width` is to _prevent_ measurement — SSR, a test, or an export forced to a fixed size.
+
+The part worth knowing, because it is what makes hand-measuring look necessary: **a board renders no widgets at all until it has a width.** At width 0 a column works out negative (`(0 - margin × (cols - 1) - containerPadding × 2) / cols`), so painting then would put every widget at a nonsense size for a frame. Instead the board renders its own box and nothing inside it, and the widgets appear on the first measured frame. A board briefly hidden (an inactive tab, say) keeps its last non-zero measurement rather than dropping back to zero, so its widgets stay mounted — which is what keeps an in-flight drag alive.
+
+So a consumer that mirrors this — measuring the box itself, feeding the result back in as `width`, and gating its own render on `measured > 0` — is reimplementing behaviour it already has, and pays a `ResizeObserver` and an extra DOM node for it.
 
 ## Accessibility
 

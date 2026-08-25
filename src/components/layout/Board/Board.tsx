@@ -1353,6 +1353,12 @@ function BoardInner(
   const styles: Styles = extractStyles(otherProps, CONTAINER_STYLES);
 
   const dragState = registry.dragState;
+  // No widgets until the board has a width. At width 0 a column works out
+  // NEGATIVE (`(0 - margin*(cols-1) - containerPadding*2) / cols`), so rendering
+  // then would paint every widget at a nonsense size for a frame — and a
+  // consumer who sees that concludes the board cannot measure itself and starts
+  // measuring it for them. Pinned by a browser test ("renders no widget until it
+  // has a width"), since jsdom reports every box as 0 and cannot see this.
   const ready = width > 0;
 
   // Gate widget position transitions off until the widgets have been painted at
