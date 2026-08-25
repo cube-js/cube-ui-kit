@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.169.1
+
+### Patch Changes
+
+- [#1360](https://github.com/cube-js/cube-ui-kit/pull/1360) [`167ef87d`](https://github.com/cube-js/cube-ui-kit/commit/167ef87d5373ba61e30c46baee4280b7acfa1481) Thanks [@tenphi](https://github.com/tenphi)! - Fix `inputProps` on `TextInput`, `TextArea`, `PasswordInput`, `SearchInput`, `NumberInput` and `CommandTextArea`. Each of these passes its own React Aria props down under the same `inputProps` name as the caller's, and one side was overwriting the other wholesale: `TextInput`, `TextArea`, `NumberInput` and `CommandTextArea` dropped the caller's `inputProps` entirely, while `PasswordInput` and `SearchInput` did the opposite and replaced the hook's value tracking, ids and ARIA attributes with it. The two are now merged, so a key you set wins and event handlers are chained rather than replaced.
+
 ## 0.169.0
 
 ### Minor Changes
