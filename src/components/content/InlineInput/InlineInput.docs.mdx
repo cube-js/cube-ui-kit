@@ -46,6 +46,7 @@ Unlike `TextInput`, `InlineInput` is intentionally **not** a form field. It mana
 - **`isReadOnly`** `boolean` (default: `false`) — When `true`, edit mode cannot be entered, but the display reads as enabled.
 - **`isStyled`** `boolean` (default: `false`) — When `true`, applies a styled wrapper (border, surface fill, padding, fixed height) so the component visually matches a `TextInput`. Useful when swapping a field component (e.g. `Select`) for an `InlineInput` to rename / edit the current value without a visual jump.
 - **`placeholder`** `string` — Placeholder text shown in the input when the draft is empty.
+- **`autoComplete`** `string` — HTML [`autocomplete`](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/autocomplete) token forwarded to the inner input (`off` to suppress autofill on a rename field).
 - **`renderDisplay`** `(value: string) => ReactNode` — Custom render for display (non-editing) mode.
 - **`tooltip`** `boolean | string | AutoTooltipValue` (default: `true`) — Tooltip behaviour for the display value. `true` enables auto-tooltip on overflow (showing the full text when truncated). A string always shows that text. `false` disables the tooltip. Suppressed automatically while editing and when `renderDisplay` is used.
 - **`tooltipPlacement`** `'top' | 'bottom' | 'left' | 'right' | ...` (default: `'top'`) — Default tooltip placement.

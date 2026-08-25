@@ -232,6 +232,15 @@ export interface CubeTextInputBaseProps
   resize?: Styles['resize'];
   /** The size of the input */
   size?: 'small' | 'medium' | 'large' | (string & {});
+  /**
+   * What kind of autofill the browser may offer for the input, as the HTML `autocomplete` token
+   * (`email`, `current-password`, `off`, …). See [MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/autocomplete).
+   */
+  autoComplete?: string;
+  /**
+   * @deprecated Use `autoComplete` instead. Kept as an alias so existing callers keep working;
+   * `autoComplete` wins when both are set.
+   */
   autocomplete?: string;
 }
 
@@ -280,6 +289,7 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
     tooltip,
     rows = 1,
     size = 'medium',
+    autoComplete,
     autocomplete,
     icon,
     maxLength,
@@ -373,6 +383,14 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
     ],
   );
 
+  // `autoComplete` is the prop; `autocomplete` is the deprecated alias. Falling back to
+  // `inputProps` matters as much as the aliasing: this attribute is applied after the merge, so a
+  // bare `autoComplete={resolved}` would overwrite whatever the React Aria hook put there —
+  // `useNumberField`'s own `off`, or an `inputProps={{ autoComplete }}` passed by the caller — with
+  // `undefined` whenever neither prop is set.
+  const resolvedAutoComplete =
+    autoComplete ?? autocomplete ?? inputProps.autoComplete;
+
   const hasTextSecurity = multiLine && type === 'password';
   const textSecurityStyles =
     hasTextSecurity && inputProps.value?.length
@@ -402,7 +420,7 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
         data-autofocus={autoFocus ? '' : undefined}
         autoFocus={autoFocus}
         data-size={size}
-        autoComplete={autocomplete}
+        autoComplete={resolvedAutoComplete}
         styles={inputStyles}
         disabled={!!isDisabled}
         maxLength={maxLength}

@@ -118,6 +118,11 @@ export interface CubeInlineInputProps
 
   /** Placeholder text shown in the input when the draft is empty. */
   placeholder?: string;
+  /**
+   * What kind of autofill the browser may offer for the input, as the HTML `autocomplete` token
+   * (`email`, `off`, …). See [MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/autocomplete).
+   */
+  autoComplete?: string;
   /** Custom render for display (non-editing) mode. Receives the currently-displayed value (including optimistic). */
   renderDisplay?: (value: string) => ReactNode;
   /** ARIA label for the input (used when no visible label is associated). */
@@ -321,6 +326,7 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
       isReadOnly = false,
       isStyled = false,
       placeholder,
+      autoComplete,
       renderDisplay,
       tooltip = true,
       tooltipPlacement = 'top',
@@ -879,6 +885,7 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
                 type="text"
                 value={draft}
                 placeholder={placeholder}
+                autoComplete={autoComplete}
                 disabled={isDisabled}
                 readOnly={isReadOnly}
                 aria-label={ariaLabel}

@@ -103,6 +103,14 @@ export default {
         defaultValue: { summary: false },
       },
     },
+    autoComplete: {
+      control: { type: 'text' },
+      description:
+        'HTML `autocomplete` token telling the browser what to autofill (`cc-number`, `one-time-code`, …)',
+      table: {
+        defaultValue: { summary: 'off' },
+      },
+    },
     /* Events */
     onChange: {
       action: 'change',

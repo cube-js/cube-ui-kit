@@ -531,6 +531,7 @@ export const DEFAULTS: DefaultsRegistry = {
     },
     NumberInput: {
       props: {
+        autoComplete: { kind: 'default', value: 'off' },
         hideStepper: { kind: 'default', value: false },
         size: { kind: 'default', value: 'medium' },
         suffixPosition: { kind: 'default', value: 'before' },
