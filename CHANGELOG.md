@@ -1,5 +1,29 @@
 # @cube-dev/ui-kit
 
+## 0.169.0
+
+### Minor Changes
+
+- [#1357](https://github.com/cube-js/cube-ui-kit/pull/1357) [`b9b4cf92`](https://github.com/cube-js/cube-ui-kit/commit/b9b4cf92411bce210ff3b4142e43bdee758a8abe) Thanks [@tenphi](https://github.com/tenphi)! - Add a proper `autoComplete` prop to the text-input family. `TextInput`, `TextArea`, `PasswordInput`, `SearchInput`, `NumberInput`, `CommandTextArea` and `TextInputMapper` (through `keyProps` / `valueProps`) now accept `autoComplete` in the standard React casing, and `InlineInput` gained the prop as well. The lowercase `autocomplete` prop still works as a deprecated alias; `autoComplete` wins when both are set.
+
+  Previously the camelCase prop — the one React Aria's own types advertise — was silently dropped, and the attribute was written unconditionally after `inputProps` was merged, so it also overwrote an `autoComplete` coming from `inputProps` or from a React Aria hook with `undefined`. As a result `NumberInput` now renders the `autocomplete="off"` that `useNumberField` asks for.
+
+### Patch Changes
+
+- [#1354](https://github.com/cube-js/cube-ui-kit/pull/1354) [`b6d51af1`](https://github.com/cube-js/cube-ui-kit/commit/b6d51af1cb8fa806eaeb17d4012ca068c34823f4) Thanks [@tenphi](https://github.com/tenphi)! - Import defining files directly instead of through barrels along the `Root` → `AlertDialog` → `Dialog` chain, and replace every `from '…/icons'` barrel import inside the library with a direct icon import. Nothing about the public API changes — the barrels still re-export everything — but the module graph gets narrower: pulling in `Root` no longer transitively drags in `Menu`, `CommandMenu`, `Form` and all 133 icon components, which is both better for a consumer's tree-shaking and what lets Chromatic's TurboSnap scope a build to the stories a change actually affects.
+
+- [#1354](https://github.com/cube-js/cube-ui-kit/pull/1354) [`b6d51af1`](https://github.com/cube-js/cube-ui-kit/commit/b6d51af1cb8fa806eaeb17d4012ca068c34823f4) Thanks [@tenphi](https://github.com/tenphi)! - Field labels show their necessity indicator again, and a required `ComboBox` says so to assistive technology. `Label` only appended the `*` / `(required)` / `(optional)` marker when its child was plain text, and `FieldWrapper` — which every labelled input goes through — always hands it an element tree, so `isRequired` and `necessityIndicator` reached the label and rendered nothing. The marker now comes from a shared `NecessityIndicatorMark`, which `FieldWrapper` places against the label text rather than after the full-width row. Separately, `ComboBox` builds its own trigger instead of going through a react-aria field hook and never forwarded `isRequired` to it, so a required combobox rendered markup byte-identical to an optional one — no `aria-required`, nothing for a screen reader to announce. Ten other components still have that second gap (`Select`, `Picker`, `FilterPicker`, `ListBox`, `FilterListBox`, `Switch`, `Slider`, `ColorInput`, `SearchComboBox`, `FileInput`); they are unchanged here.
+
+- [#1359](https://github.com/cube-js/cube-ui-kit/pull/1359) [`1cf5c9f6`](https://github.com/cube-js/cube-ui-kit/commit/1cf5c9f6e66a06818e1fb3af723bfa9553b1d18d) Thanks [@tenphi](https://github.com/tenphi)! - `DialogTrigger`: make `shouldCloseOnInteractOutside` actually reach the popover.
+
+  The prop was inert for a popover type Dialog. `PopoverTrigger` wraps the caller's predicate in its own resolver, and that resolver consulted the predicate last — after the automatic behaviours. Every `Button` and `ItemButton` carries `data-popover-dismiss`, so the auto-dismiss branch matched first, scheduled the close and returned, and the predicate was never called. A caller could not keep a popover open for a chosen element: it closed on every outside interaction regardless of what the predicate would have said.
+
+  The predicate is now asked first, so an explicit "keep me open for this element" wins over the automatic dismiss. Returning `false` still lets the click through to the control that was pressed (the resolver only reports "close" when the popover really should close, which is what stops React Aria from swallowing the click), so a guarded button both keeps the popover open and runs its own `onPress`.
+
+  One thing to know when writing the predicate: React Aria passes the element the pointer landed on, which for a `Button` is the label inside it rather than the `<button>` itself. Guard with `contains()`, not an identity check — `(el) => !myRef.current?.UNSAFE_getDOMNode()?.contains(el)`.
+
+  Nothing changes for callers that never passed the prop: without a predicate the resolver behaves exactly as before.
+
 ## 0.168.1
 
 ### Patch Changes
