@@ -10,25 +10,36 @@ import {
 } from './resolve';
 
 /**
- * jsdom implements neither `@property` nor its initial values, so the fixture
- * declares them by hand on `<html>` — which is exactly the shape a browser
- * produces: the token block lands on `<body>`, and anything above it reads back
- * the registered placeholder rather than an empty string.
+ * jsdom implements neither `@property` nor its defaults, so the fixture declares
+ * them by hand on `<html>` — the shape a browser produces, including the part
+ * that makes value inspection useless: tasty's defaults are not all obvious
+ * duds. `--gap` reads a perfectly plausible `4px` off the token block, and
+ * `--h2-letter-spacing` reads the same `0px` on both sides.
+ *
+ * `--tokens-applied` is what separates them, and it is on `<body>` only.
  */
 const FIXTURE = `
   html {
     --purple-color: rgba(0, 0, 0, 0);
     --surface-color: rgba(0, 0, 0, 0);
+    --scrollbar-outline-color: rgba(0, 0, 0, 0);
+    --clear-color: transparent;
+    --h2-letter-spacing: 0px;
+    --gap: 4px;
     --space-md: 0px;
     --font-sans: system-ui;
   }
 
   body {
+    --tokens-applied: 1;
     --purple-color: #7a2ef6;
     --surface-color: #ffffff;
+    --scrollbar-outline-color: rgba(0, 0, 0, 0);
+    --gap: 8px;
     --space-md: 8px;
     --clear-color: transparent;
     --sharp-radius: 0px;
+    --h2-letter-spacing: 0px;
     --t3-font-size: 14px;
     --t3-line-height: 20px;
     --s3-font-family: monospace;
@@ -60,7 +71,7 @@ describe('resolveTokenValue', () => {
     expect(resolveTokenValue('purple-color')).toBe('#7a2ef6');
   });
 
-  it('should refuse an @property placeholder read off the wrong element', () => {
+  it('should refuse any read off an element the tokens are not in effect on', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
     expect(
@@ -75,7 +86,27 @@ describe('resolveTokenValue', () => {
     warn.mockRestore();
   });
 
-  it('should warn about a placeholder only once per token', () => {
+  it('should refuse a plausible-looking @property default, not just a dud', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    // The trap: tasty registers `--gap` with `initial-value: 4px`, so off the
+    // token block it reads as a real length that is simply the wrong one. No
+    // inspection of the value could catch this.
+    expect(
+      getComputedStyle(document.documentElement)
+        .getPropertyValue('--gap')
+        .trim(),
+    ).toBe('4px');
+
+    expect(
+      resolveTokenValue('$gap', { element: document.documentElement }),
+    ).toBe(null);
+    expect(resolveTokenValue('$gap')).toBe('8px');
+
+    warn.mockRestore();
+  });
+
+  it('should warn about an off-surface read only once per token', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
     resolveTokenValue('$space-md', { element: document.documentElement });
@@ -106,14 +137,30 @@ describe('resolveTokenValue', () => {
     ).toBe('1px');
   });
 
-  it('should pass through a token whose own value is placeholder-shaped', () => {
-    // Both are real values, not misses — the guard has to tell them apart from a
-    // placeholder by their declared value.
+  it('should keep a real value that looks exactly like an unset one', () => {
+    // Every one of these is a real, intended value. Declared directly...
     expect(getTokens()['#clear']).toBe('transparent');
     expect(getTokens()['$sharp-radius']).toBe('0px');
+    // ...through a reference to another token...
+    expect(getTokens()['#scrollbar-outline']).toBe('#clear');
+    // ...or in a unit the computed value does not preserve.
+    expect(getTokens()['$h2-letter-spacing']).toBe('0em');
 
     expect(resolveTokenValue('#clear')).toBe('transparent');
     expect(resolveTokenValue('$sharp-radius')).toBe('0px');
+    // jsdom strips the spaces a browser keeps; the browser spec asserts that form.
+    expect(resolveTokenValue('#scrollbar-outline')).toBe('rgba(0,0,0,0)');
+    expect(resolveTokenValue('$h2-letter-spacing')).toBe('0px');
+  });
+
+  it('should refuse a name the kit does not declare at all', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    // On a token surface, so the marker cannot help — an unset custom property
+    // is all this is.
+    expect(resolveTokenValue('#not-a-real-token')).toBe(null);
+
+    warn.mockRestore();
   });
 
   it('should reject a name that is not a valid custom property', () => {

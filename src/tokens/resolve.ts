@@ -12,27 +12,51 @@ import { getPaletteVersion, usePaletteVersion } from './palette-config';
  * a CodeMirror / Monaco theme object, a Vega spec. Those take colors, lengths and
  * font descriptors as values; `var(--purple-color)` means nothing to them.
  *
- * There are two ways to get this wrong by hand, and both fail silently:
+ * Doing it by hand fails silently, because a token read from the wrong element
+ * does not come back empty. Tasty registers `@property` rules — its own defaults
+ * plus one for every custom property whose type it can infer — and an undeclared
+ * token reads back as that rule's `initial-value`. Some of those are obvious
+ * duds (`rgba(0, 0, 0, 0)` for a `<color>`, `0px` for a `<length>`), but many are
+ * ordinary-looking values: off the token block `--gap` reads `4px` rather than
+ * the kit's `8px`, `--transition` reads `80ms`, `--radius` reads `6px`. So
+ * inspecting the value cannot tell a real token from a miss, in either
+ * direction — `#clear` really is `transparent` and `$h2-letter-spacing` really
+ * is `0px`.
  *
- * 1. **Reading from the wrong element.** `<Root>` declares the token block on
- *    `<body>` (see `src/components/GlobalStyles.tsx`), so `<html>` — and any
- *    detached node — is outside it.
- * 2. **Trusting what comes back.** Tasty registers an `@property` rule for every
- *    custom property it can infer a type for, which means an *undeclared* token
- *    does not read back as `''`. It reads back as that rule's `initial-value`:
- *    `rgba(0, 0, 0, 0)` for `<color>`, `0px` for `<length>`, `0deg`, `0s`, `0`.
- *    A placeholder is a plausible-looking value, so it propagates into an
- *    invisible chart series or a zero-height font instead of throwing.
- *
- * The helpers below read from the declaration site by default and return `null`
- * (or an explicit `fallback`) rather than a placeholder.
+ * The question that CAN be answered is "are the kit's tokens in effect on this
+ * element?", and `$tokens-applied` (see `src/tokens/base.ts`) answers it: it is
+ * declared alongside the tokens, so it is present exactly where they are. Off
+ * that surface every read is reported as unresolved; on it, the computed value
+ * is the truth.
  */
 
 /**
- * The `initial-value`s tasty auto-registers, whitespace-stripped for comparison.
- * A token that reads back as one of these is almost always undeclared where it
- * was read — `resolve.browser.test.tsx` is what keeps this set honest against
- * the tasty version we ship with.
+ * Declared by the token block and nothing else — see `src/tokens/base.ts`.
+ *
+ * Matched by VALUE rather than by presence, because presence is not the signal
+ * it looks like: tasty infers a type for the marker as readily as for any other
+ * token, registers `@property --tokens-applied` with `initial-value: 0`, and so
+ * hands back `0` off the block instead of an empty string. Comparing against the
+ * declared value is right either way, and cannot drift from `base.ts`.
+ */
+const SURFACE_MARKER = '$tokens-applied';
+
+function isTokenSurface(computed: CSSStyleDeclaration): boolean {
+  const declared = getTokens()[SURFACE_MARKER];
+  const name = tokenToProperty(SURFACE_MARKER);
+
+  if (typeof declared !== 'string' || !name) return false;
+
+  return (
+    normalizeValue(computed.getPropertyValue(name)) === normalizeValue(declared)
+  );
+}
+
+/**
+ * Values that mean "this property was never declared" once we already know the
+ * token block IS in effect. Only used to catch a token the kit does not declare
+ * at all — a typo, or a name from another design system — since for those there
+ * is no marker to lean on.
  */
 const PLACEHOLDER_VALUES = new Set([
   'transparent',
@@ -131,36 +155,30 @@ function normalizeValue(value: string): string {
 }
 
 /**
- * Tokens whose *declared* value is itself placeholder-shaped, keyed by custom
- * property name — `--clear-color` is `transparent` on purpose, `--sharp-radius`
- * is `0px` on purpose, and every `--*-letter-spacing` that reads `0` is a real
- * `0`. Without this the guard below would report them as unset.
+ * Every custom property the kit declares, by name. Membership only — the value
+ * is deliberately not consulted, because a token's declared value tells you
+ * nothing about whether it is in effect where you read it.
  *
  * Memoized against the palette version, like {@link getTokens} itself.
  */
-let literalsCache: { version: number; names: Set<string> } | null = null;
+let knownNamesCache: { version: number; names: Set<string> } | null = null;
 
-function getPlaceholderShapedTokens(): Set<string> {
+function getKnownTokenNames(): Set<string> {
   const version = getPaletteVersion();
 
-  if (!literalsCache || literalsCache.version !== version) {
+  if (!knownNamesCache || knownNamesCache.version !== version) {
     const names = new Set<string>();
 
-    for (const [key, value] of Object.entries(getTokens())) {
-      // Glaze color tokens are per-scheme state maps, not literals — they never
-      // declare a placeholder, so only strings are worth indexing.
-      if (typeof value !== 'string') continue;
-      if (!PLACEHOLDER_VALUES.has(normalizeValue(value))) continue;
-
+    for (const key of Object.keys(getTokens())) {
       const name = tokenToProperty(key);
 
       if (name) names.add(name);
     }
 
-    literalsCache = { version, names };
+    knownNamesCache = { version, names };
   }
 
-  return literalsCache.names;
+  return knownNamesCache.names;
 }
 
 /** These fire per token, per page — once each, not once per render. */
@@ -187,6 +205,7 @@ function readValue(
   token: string,
   fallback: string | null,
   silent: boolean,
+  onTokenSurface: boolean,
 ): string | null {
   const name = tokenToProperty(token);
 
@@ -196,18 +215,32 @@ function readValue(
     return fallback;
   }
 
+  if (!onTokenSurface) {
+    if (!silent) {
+      warnOnce(
+        `surface:${name}`,
+        `Token "${token}" (${name}) was read from an element the design tokens are not in effect on, so any value there is tasty's @property default rather than the kit's. <Root> declares the token block on <body>, so <html>, a detached node, and a tree that has not mounted <Root> yet are all outside it. Pass \`element\` to read from a specific subtree, or \`fallback\` for a value to use instead.`,
+      );
+    }
+
+    return fallback;
+  }
+
   const value = computed.getPropertyValue(name).trim();
 
   if (!value) return fallback;
 
+  // On a token surface the computed value is the truth, including a genuinely
+  // transparent color or a real `0px`. The only thing left to catch is a name
+  // the kit never declares, where an @property default is all there is to read.
   if (
     PLACEHOLDER_VALUES.has(normalizeValue(value)) &&
-    !getPlaceholderShapedTokens().has(name)
+    !getKnownTokenNames().has(name)
   ) {
     if (!silent) {
       warnOnce(
-        `placeholder:${name}`,
-        `Token "${token}" (${name}) read back as an @property placeholder, meaning it is not declared on the element it was read from. <Root> declares tokens on <body>, so <html>, a detached node, and a tree that has not mounted <Root> yet all return placeholders. Pass \`element\` to read from a specific subtree, or \`fallback\` for a value to use instead.`,
+        `unknown:${name}`,
+        `Token "${token}" (${name}) is not declared by the kit, and read back as an unset custom property. Check the name, or pass \`fallback\`.`,
       );
     }
 
@@ -274,9 +307,18 @@ function readTokens<T extends string>(
   }
 
   const computed = view.getComputedStyle(target);
+  // One read for the whole batch: the marker is a property of the element, not
+  // of any individual token.
+  const onTokenSurface = isTokenSurface(computed);
 
   for (const token of tokens) {
-    result[token] = readValue(computed, token, fallback, silent);
+    result[token] = readValue(
+      computed,
+      token,
+      fallback,
+      silent,
+      onTokenSurface,
+    );
   }
 
   return result;
@@ -411,8 +453,19 @@ function getAppearanceVersion(): number {
   return appearanceVersion;
 }
 
+/**
+ * A version React only ever hands out while rendering on the server or
+ * hydrating: `useSyncExternalStore` reads `getServerSnapshot` in exactly those
+ * two cases and `getSnapshot` in every other. That makes it a reliable "this
+ * render has to match the server's markup" flag — see {@link useResolvedTokens}.
+ *
+ * A plain client render (`createRoot`) never sees it, so a CSR app still
+ * resolves on its first render rather than paying an extra pass.
+ */
+const HYDRATING = -1;
+
 function getServerAppearanceVersion(): number {
-  return 0;
+  return HYDRATING;
 }
 
 /**
@@ -448,7 +501,9 @@ function useResolvedTokens<T extends string>(
   const appearance = useAppearanceVersion();
 
   const [values, setValues] = useState(() =>
-    resolveTokenValues(tokens, options),
+    appearance === HYDRATING
+      ? unresolved(tokens, fallback)
+      : resolveTokenValues(tokens, options),
   );
 
   useLayoutEffect(() => {
@@ -463,6 +518,23 @@ function useResolvedTokens<T extends string>(
   }, [key, element, fallback, paletteVersion, appearance]);
 
   return values;
+}
+
+/**
+ * What the server rendered: no DOM, so every token is the fallback. The first
+ * client render has to agree with it or hydration reports a mismatch for any
+ * consumer that renders the value; the layout effect above replaces it with the
+ * resolved values before the browser paints.
+ */
+function unresolved<T extends string>(
+  tokens: readonly T[],
+  fallback: string | undefined,
+): Record<T, string | null> {
+  const result = {} as Record<T, string | null>;
+
+  for (const token of tokens) result[token] = fallback ?? null;
+
+  return result;
 }
 
 /** Keeps the previous object when nothing moved, so it stays usable as a dep. */
@@ -528,7 +600,9 @@ export function usePresetValues(
   const appearance = useAppearanceVersion();
 
   const [values, setValues] = useState(() =>
-    resolvePresetValues(preset, options),
+    appearance === HYDRATING
+      ? unresolvedPreset(fallback)
+      : resolvePresetValues(preset, options),
   );
 
   useLayoutEffect(() => {
@@ -540,4 +614,13 @@ export function usePresetValues(
   }, [preset, element, fallback, paletteVersion, appearance]);
 
   return values;
+}
+
+/** {@link unresolved} for the fixed shape {@link resolvePresetValues} returns. */
+function unresolvedPreset(fallback: string | undefined): ResolvedPreset {
+  const resolved = {} as ResolvedPreset;
+
+  for (const field of PRESET_FIELDS) resolved[field] = fallback ?? null;
+
+  return resolved;
 }
