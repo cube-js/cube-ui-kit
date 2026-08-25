@@ -1,3 +1,4 @@
+import { NO_SNAPSHOT } from '../../../stories/chromatic';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Tooltip } from '../../overlays/Tooltip/Tooltip';
 import { TooltipTrigger } from '../../overlays/Tooltip/TooltipTrigger';
@@ -36,3 +37,5 @@ export const WithTooltip: StoryFn = TooltipTemplate.bind({});
 WithTooltip.args = {
   label: 'ActiveZone',
 };
+// The tooltip never opens, so this photographs the same zone as `Default`.
+WithTooltip.parameters = NO_SNAPSHOT;

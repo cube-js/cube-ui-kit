@@ -9,8 +9,8 @@ import { Footer } from '../../content/Footer';
 import { Header } from '../../content/Header';
 import { Paragraph } from '../../content/Paragraph';
 import { Title } from '../../content/Title';
-import { CubeDialogProps, Dialog } from '../Dialog';
 import { useDialogContext } from '../Dialog/context';
+import { CubeDialogProps, Dialog } from '../Dialog/Dialog';
 
 import type { CubeButtonProps } from '../../actions/Button/Button';
 

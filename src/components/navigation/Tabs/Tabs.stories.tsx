@@ -2,13 +2,13 @@ import { IconCalendar } from '@tabler/icons-react';
 import { Key, RefObject, useRef, useState } from 'react';
 import { expect, userEvent, within } from 'storybook/test';
 
-import {
-  DatabaseIcon,
-  FilterIcon,
-  PlusIcon,
-  SettingsIcon,
-  UserIcon,
-} from '../../../icons';
+import { DatabaseIcon } from '../../../icons/DatabaseIcon';
+import { FilterIcon } from '../../../icons/FilterIcon';
+import { PlusIcon } from '../../../icons/PlusIcon';
+import { SettingsIcon } from '../../../icons/SettingsIcon';
+import { UserIcon } from '../../../icons/UserIcon';
+import { NO_SNAPSHOT } from '../../../stories/chromatic';
+import { openContextMenu, waitForOverlay } from '../../../stories/interactions';
 import { Button } from '../../actions/Button';
 import { Menu } from '../../actions/Menu';
 import { Layout } from '../../content/Layout';
@@ -335,6 +335,28 @@ function ReorderableTabsDemo({ storyArgs }: { storyArgs: Story['args'] }) {
 /**
  * Basic tabs with content panels
  */
+
+/**
+ * Opens a tab's `⋮` menu.
+ *
+ * Only the stories that set `contextMenu` respond to a right-click; the rest
+ * expose the menu through this button alone. `autoHideActions` keeps it out of
+ * the layout until the tab is hovered, and it is a sibling of the tab button
+ * rather than a child (nested buttons would be invalid HTML), so it has to be
+ * found through the tab's parent.
+ */
+async function openTabMenu(canvasElement: HTMLElement, tabName: string) {
+  const canvas = within(canvasElement);
+  const tab = canvas.getByRole('tab', { name: tabName });
+
+  await userEvent.unhover(tab);
+  await userEvent.hover(tab);
+
+  await userEvent.click(within(tab.parentElement!).getByTestId('ItemAction'));
+
+  await waitForOverlay('menu');
+}
+
 export const Default: Story = {
   render: (args) => (
     <Tabs {...args} defaultActiveKey="tab1">
@@ -719,6 +741,11 @@ export const KeepMounted: Story = {
  * Tabs with menu - demonstrates the simplified menu API with predefined actions
  */
 export const WithMenu: Story = {
+  // The shared tab menu lives behind the `⋮` button and nowhere else.
+  play: async ({ canvasElement }) => {
+    await openTabMenu(canvasElement, 'Tab 1');
+  },
+
   render: function WithMenuRender(args) {
     const [tabs, setTabs] = useState([
       { id: 'tab1', title: 'Tab 1', content: 'Content for Tab 1' },
@@ -866,12 +893,24 @@ export const WithEditableTabs: Story = {
       </Tabs>
     );
   },
+  // Renaming happens on double-click, so at rest this is the same tab row `WithMenu` photographs.
+  parameters: NO_SNAPSHOT,
 };
 
 /**
  * Context menu - demonstrates right-click menu on tabs
  */
 export const WithContextMenu: Story = {
+  // The context menu is the subject; without this the snapshot is a plain tab row.
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await openContextMenu(
+      canvasElement,
+      canvas.getByRole('tab', { name: 'Tab 1' }),
+    );
+  },
+
   render: function WithContextMenuRender(args) {
     const [tabs, setTabs] = useState([
       { id: 'tab1', title: 'Tab 1', content: 'Content for Tab 1' },
@@ -934,6 +973,16 @@ export const WithContextMenu: Story = {
  * Context-only menu — right-click / Shift+F10; no ⋮ trigger; inline close when onDelete
  */
 export const WithContextMenuOnly: Story = {
+  // Rename and the rest live only in the context menu.
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await openContextMenu(
+      canvasElement,
+      canvas.getByRole('tab', { name: 'Tab 1' }),
+    );
+  },
+
   render: function WithContextMenuOnlyRender(args) {
     const [tabs, setTabs] = useState([
       { id: 'tab1', title: 'Tab 1', content: 'Content for Tab 1' },
@@ -996,6 +1045,11 @@ export const WithContextMenuOnly: Story = {
  * Per-tab menu override - demonstrates overriding or disabling menu per tab
  */
 export const WithPerTabMenuOverride: Story = {
+  // Tab 2 carries the overridden menu, so that is the one worth opening.
+  play: async ({ canvasElement }) => {
+    await openTabMenu(canvasElement, 'Custom Menu');
+  },
+
   render: function WithPerTabMenuOverrideRender(args) {
     return (
       <Space flow="column" gap="2x">
@@ -1046,6 +1100,11 @@ export const WithPerTabMenuOverride: Story = {
  * Menu with sections - demonstrates using Menu.Section for organized menus
  */
 export const WithMenuSections: Story = {
+  // The sections this story is named for are inside the menu.
+  play: async ({ canvasElement }) => {
+    await openTabMenu(canvasElement, 'Document.txt');
+  },
+
   render: function WithMenuSectionsRender(args) {
     const [tabs, setTabs] = useState([
       { id: 'tab1', title: 'Document.txt' },
@@ -1304,6 +1363,11 @@ export const ReorderableLeft: Story = {
  * Reorderable tabs with delete and menu - demonstrates combining reordering with other features
  */
 export const ReorderableWithMenu: Story = {
+  // Reordering is a drag and cannot be photographed; the menu can.
+  play: async ({ canvasElement }) => {
+    await openTabMenu(canvasElement, 'Document 1');
+  },
+
   render: function ReorderableWithMenuRender(args) {
     const [tabs, setTabs] = useState([
       { id: 'tab1', title: 'Document 1' },

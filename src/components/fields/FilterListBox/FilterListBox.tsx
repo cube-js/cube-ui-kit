@@ -25,7 +25,7 @@ import { useFilter, useKeyboard } from 'react-aria';
 import { Section as BaseSection, useListState } from 'react-stately';
 
 import { useI18n } from '../../../i18n';
-import { LoadingIcon } from '../../../icons';
+import { LoadingIcon } from '../../../icons/LoadingIcon';
 import { mergeProps, modAttrs, useCombinedRefs } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
 import { extractStyles } from '../../../utils/styles';

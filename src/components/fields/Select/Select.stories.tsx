@@ -422,11 +422,21 @@ const options = [
   'very-long-option-value-with-suffix',
 ];
 
-const Template: StoryObj<CubeSelectProps<any>>['render'] = (args) => (
+/**
+ * `surface` is a story-only arg, not a `Select` prop: it paints the container
+ * the select sits on. `addon-backgrounds` is not installed (see the note in
+ * `.storybook/preview.jsx`, which disables it so the body keeps its
+ * scheme-aware `#surface` fill), so `parameters.backgrounds` does nothing here
+ * — the two stories that need a tinted ground paint it themselves, which also
+ * keeps them correct in dark mode.
+ */
+const Template: StoryObj<
+  CubeSelectProps<any> & { surface?: string }
+>['render'] = ({ surface, ...args }) => (
   <Space
     radius="1x"
-    padding={args.theme === 'special' ? '2x' : undefined}
-    fill={args.theme === 'special' ? '#dark' : undefined}
+    padding={surface || args.theme === 'special' ? '2x' : undefined}
+    fill={args.theme === 'special' ? '#dark' : surface}
   >
     <Select {...args}>
       {options.map((option) => (
@@ -443,10 +453,14 @@ export const Primary = Template.bind({});
 Primary.args = { type: 'primary', placeholder: 'primary' };
 
 export const Outline2 = Template.bind({});
-Outline2.args = { type: 'outline-2', placeholder: 'outline-2' };
-// `outline-2` uses `#surface-3` as its base fill so it stands out when
-// sitting on a `#surface-2` container — render this story on a tinted bg.
-Outline2.parameters = { backgrounds: { default: 'gray' } };
+// `outline-2` uses `#surface-3` as its base fill so it stands out when sitting
+// on a `#surface-2` container — which is the only context the type is designed
+// for, so the story has to paint it.
+Outline2.args = {
+  type: 'outline-2',
+  placeholder: 'outline-2',
+  surface: '#surface-2',
+};
 
 export const Clear = Template.bind({});
 Clear.args = { type: 'clear', placeholder: 'clear', width: 'max-content' };
@@ -576,7 +590,10 @@ export const WithIcon = Template.bind({});
 WithIcon.args = { icon: <IconCoin /> };
 
 export const OverTheCustomBG = Template.bind({});
-OverTheCustomBG.parameters = { backgrounds: { default: 'gray' } };
+// The point is that the select stays legible on a ground it did not choose, so
+// it has to be on one. This used to ask `addon-backgrounds` for a grey page,
+// which is not installed — the story rendered identically to `Default`.
+OverTheCustomBG.args = { surface: '#purple.10' };
 
 export const Disabled = Template.bind({});
 Disabled.args = { isDisabled: true, label: 'Disabled' };

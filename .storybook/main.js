@@ -49,7 +49,17 @@ const config = {
 
     config.build ??= {};
     config.build.rolldownOptions ??= {};
-    config.build.rolldownOptions.experimental = {
+    // Keeps modules executing in declaration order. The UI Kit relies on it:
+    // `Root.tsx` calls tasty's `configure()` and `setGlobalPredefinedStates()`
+    // at module scope, and a component evaluated before those land renders
+    // with unresolved units and presets.
+    //
+    // Rolldown stabilised this out of `experimental` into `output`. Setting it
+    // on `experimental` still "works" in the sense that nothing throws — it
+    // just logs a deprecation and is ignored, so the guarantee quietly goes
+    // away. Keep it under `output`.
+    config.build.rolldownOptions.output = {
+      ...config.build.rolldownOptions.output,
       strictExecutionOrder: true,
     };
 

@@ -2,6 +2,7 @@ import { parseDate } from '@internationalized/date';
 import { StoryFn } from '@storybook/react-vite';
 import { userEvent, within } from 'storybook/test';
 
+import { NO_SNAPSHOT } from '../../../stories/chromatic';
 import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Space } from '../../layout/Space';
@@ -94,6 +95,8 @@ WithLimitedRange.args = {
   minValue: parseDate('2026-03-01'),
   maxValue: parseDate('2026-09-30'),
 };
+// The range bounds only show once the panel opens; closed, this is `Month`.
+WithLimitedRange.parameters = NO_SNAPSHOT;
 
 export const Validation: StoryFn<CubePeriodPickerProps> = (props) => (
   <Space gap="2x" flow="column" placeItems="start">

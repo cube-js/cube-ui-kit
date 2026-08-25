@@ -1333,4 +1333,31 @@ describe('<ComboBox />', () => {
     // Input should show controlled value, not defaultInputValue
     expect(combobox).toHaveValue('Controlled value');
   });
+
+  it('should mark the input as required outside a form', () => {
+    // `ComboBox` builds its own trigger instead of going through a react-aria
+    // field hook, so `isRequired` used to reach the label and stop there — the
+    // rendered markup was byte-identical to a non-required combobox.
+    const { getByRole } = renderWithRoot(
+      <ComboBox isRequired label="test">
+        {items.map((item) => (
+          <ComboBox.Item key={item.key}>{item.children}</ComboBox.Item>
+        ))}
+      </ComboBox>,
+    );
+
+    expect(getByRole('combobox')).toHaveAttribute('aria-required', 'true');
+  });
+
+  it('should not mark the input as required by default', () => {
+    const { getByRole } = renderWithRoot(
+      <ComboBox label="test">
+        {items.map((item) => (
+          <ComboBox.Item key={item.key}>{item.children}</ComboBox.Item>
+        ))}
+      </ComboBox>,
+    );
+
+    expect(getByRole('combobox')).not.toHaveAttribute('aria-required');
+  });
 });

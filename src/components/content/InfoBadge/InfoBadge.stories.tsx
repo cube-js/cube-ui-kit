@@ -1,5 +1,6 @@
 import { Meta, StoryObj } from '@storybook/react-vite';
 
+import { NO_SNAPSHOT } from '../../../stories/chromatic';
 import { Switch } from '../../fields/Switch';
 import { Flow } from '../../layout/Flow';
 import { Space } from '../../layout/Space';
@@ -29,12 +30,16 @@ export const AsLink: Story = {
   args: {
     to: '!https://docs.cube.dev',
   },
+  // Renders the same icon as `Default` — `to` only changes where a click goes.
+  parameters: NO_SNAPSHOT,
 };
 
 export const AsButton: Story = {
   args: {
     onPress: () => alert('Pressed'),
   },
+  // Renders the same icon as `Default` — `onPress` only changes what a click does.
+  parameters: NO_SNAPSHOT,
 };
 
 export const WithoutSuffix: Story = {
@@ -42,6 +47,8 @@ export const WithoutSuffix: Story = {
     to: '!https://docs.cube.dev',
     tooltipSuffix: null,
   },
+  // `tooltipSuffix` lives inside the tooltip, which never opens here.
+  parameters: NO_SNAPSHOT,
 };
 
 export const Sizes: Story = {
@@ -128,4 +135,6 @@ export const InField: Story = {
       tooltip="Suspends the deployment after a period of inactivity."
     />
   ),
+  // Produces the same badge-next-to-label as `InsideClickableContainer`; the point is that `tooltip` builds it for you.
+  parameters: NO_SNAPSHOT,
 };

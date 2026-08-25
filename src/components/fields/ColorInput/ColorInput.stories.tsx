@@ -2,6 +2,7 @@ import { StoryFn } from '@storybook/react-vite';
 import { useState } from 'react';
 import { userEvent, within } from 'storybook/test';
 
+import { NO_SNAPSHOT } from '../../../stories/chromatic';
 import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Text } from '../../content/Text';
@@ -275,3 +276,5 @@ OpensOnTrigger.play = async ({ canvasElement }) => {
 
   await userEvent.click(canvas.getByRole('button'));
 };
+// Ends on the same open panel `Open` renders via `defaultOpen`; this story proves the click path, which a snapshot cannot show.
+OpensOnTrigger.parameters = NO_SNAPSHOT;

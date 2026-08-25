@@ -19,7 +19,7 @@ import {
 } from 'react-stately';
 
 import { useEvent, useWarn } from '../../../_internal/hooks';
-import { DirectionIcon } from '../../../icons';
+import { DirectionIcon } from '../../../icons/DirectionIcon';
 import { mergeProps, useMergeStyles } from '../../../utils/react';
 import { extractStyles } from '../../../utils/styles';
 import { useTinyScrollbar } from '../../content/Layout/hooks/useTinyScrollbar';

@@ -36,3 +36,7 @@ __screenshots__
 # per-machine. `vitest.config.ts` excludes the same path from test collection —
 # see the comment there for what leaks in without it.
 .claude/worktrees
+
+# Throwaway scripts written while investigating something — a Playwright probe,
+# a one-off scanner. `git add -A` will otherwise sweep them into a commit.
+.tmp-*

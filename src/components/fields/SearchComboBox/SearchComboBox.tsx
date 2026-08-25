@@ -29,12 +29,10 @@ import { Section as BaseSection, useListState } from 'react-stately';
 
 import { useEvent } from '../../../_internal';
 import { useI18n } from '../../../i18n';
-import {
-  CloseIcon,
-  DirectionIcon,
-  LoadingIcon,
-  SearchIcon,
-} from '../../../icons';
+import { CloseIcon } from '../../../icons/CloseIcon';
+import { DirectionIcon } from '../../../icons/DirectionIcon';
+import { LoadingIcon } from '../../../icons/LoadingIcon';
+import { SearchIcon } from '../../../icons/SearchIcon';
 import { useProviderProps } from '../../../provider';
 import { FieldBaseProps } from '../../../shared';
 import { generateRandomId } from '../../../utils/random';
