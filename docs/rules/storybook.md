@@ -221,6 +221,15 @@ pnpm chromatic:duplicates
 
 Renders every story in real Chromium — waiting for `play` to finish, exactly as Chromatic does — and fingerprints the result by markup and by pixels. Stories sharing a fingerprint are reported as a group: that is proof two snapshots are paying for one image. It also lists stories **named for an overlay that never opened** — a `WithTooltip` or `InPopover` with no `play` function and no `tooltip`/`dialog`/`menu` role on the page. Those are the ones to fix rather than opt out: give them a `play` function (see above) so they finally show what they are named for.
 
+That second list is a heuristic over story names, so it has honest false positives — a `FieldWrapper / WithTooltip` whose subject is where the info badge sits in the label row, an `OverlayPanel` that renders open from the start, a `Skeleton / Menu` that is a skeleton. When you have looked and the overlay genuinely is not what the story shows, say so in a comment above it and the report stops asking:
+
+```tsx
+// chromatic-overlay-reviewed: the badge, not the tooltip, is the subject
+export const WithTooltip: Story = { … };
+```
+
+Both lists are meant to reach zero and stay there. An entry nobody can act on is an entry everybody learns to skip.
+
 ```bash
 pnpm chromatic:report
 ```

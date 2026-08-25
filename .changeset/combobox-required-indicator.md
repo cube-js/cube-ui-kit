@@ -1,0 +1,5 @@
+---
+'@cube-dev/ui-kit': patch
+---
+
+Field labels show their necessity indicator again, and a required `ComboBox` says so to assistive technology. `Label` only appended the `*` / `(required)` / `(optional)` marker when its child was plain text, and `FieldWrapper` — which every labelled input goes through — always hands it an element tree, so `isRequired` and `necessityIndicator` reached the label and rendered nothing. The marker now comes from a shared `NecessityIndicatorMark`, which `FieldWrapper` places against the label text rather than after the full-width row. Separately, `ComboBox` builds its own trigger instead of going through a react-aria field hook and never forwarded `isRequired` to it, so a required combobox rendered markup byte-identical to an optional one — no `aria-required`, nothing for a screen reader to announce. Ten other components still have that second gap (`Select`, `Picker`, `FilterPicker`, `ListBox`, `FilterListBox`, `Switch`, `Slider`, `ColorInput`, `SearchComboBox`, `FileInput`); they are unchanged here.

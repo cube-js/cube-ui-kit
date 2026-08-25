@@ -9,6 +9,7 @@ import { Fragment, useState } from 'react';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 
 import { DirectionIcon } from '../../../icons/DirectionIcon';
+import { openTooltip } from '../../../stories/interactions';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Button } from '../../actions/Button/Button';
 import { ItemAction } from '../../actions/ItemAction/ItemAction';
@@ -699,6 +700,15 @@ WithTooltip.parameters = {
         'Demonstrates the tooltip functionality when `tooltip` prop is provided. Supports both string tooltips and advanced configuration objects with custom placement. Note: `activeWrap: true` is required in the tooltip object to make the item interactive.',
     },
   },
+};
+
+// Every item here is a tooltip configuration and none of them is visible until
+// something hovers one. Only one tooltip can be open at a time, so this opens
+// the first; the rest are covered by `Tooltip`'s own stories.
+WithTooltip.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement);
+
+  await openTooltip(canvasElement, canvas.getByText('Hover for tooltip'));
 };
 
 export const CombinedFeatures: StoryFn<CubeItemProps> = (args) => (
@@ -1925,6 +1935,21 @@ WithActionsOnHover.parameters = {
   },
 };
 
+// `autoHideActions` means the actions are absent until the row is hovered, so
+// without this the story photographs a row with nothing to compare against the
+// always-visible one below it.
+WithActionsOnHover.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement);
+  const item = canvas.getByTestId('HoverActionsItem');
+
+  await userEvent.unhover(item);
+  await userEvent.hover(item);
+
+  await waitFor(() =>
+    expect(within(item).getByRole('button', { name: 'Edit' })).toBeVisible(),
+  );
+};
+
 export const ActionsPreserveSpace: StoryFn<CubeItemProps> = (args) => (
   <Space gap="2x" flow="column" placeItems="start">
     <Title level={5}>
@@ -2182,6 +2207,17 @@ DynamicAutoTooltip.parameters = {
         'Tests the dynamic auto tooltip behavior that responds to width changes. Initially the item is wide and no tooltip appears. When the width is reduced, the label overflows and the tooltip automatically appears on hover.',
     },
   },
+};
+
+// The auto-tooltip only appears once the label actually overflows, and at the
+// starting 400px it does not — so the resize has to happen first. That order is
+// the whole point of the story.
+DynamicAutoTooltip.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement);
+
+  await userEvent.click(canvas.getByTestId('ResizeButton'));
+
+  await openTooltip(canvasElement, canvas.getByTestId('DynamicTooltipItem'));
 };
 
 export const DifferentShapes: StoryFn<CubeItemProps> = (args) => (

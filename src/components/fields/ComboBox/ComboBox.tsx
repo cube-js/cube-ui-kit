@@ -472,6 +472,7 @@ interface ComboBoxInputProps {
   placeholder?: string;
   isDisabled?: boolean;
   isReadOnly?: boolean;
+  isRequired?: boolean;
   autoFocus?: boolean;
   autoComplete?: string;
   size: string;
@@ -497,6 +498,7 @@ const ComboBoxInput = forwardRef<HTMLInputElement, ComboBoxInputProps>(
       placeholder,
       isDisabled,
       isReadOnly,
+      isRequired,
       autoFocus,
       autoComplete,
       size,
@@ -537,6 +539,11 @@ const ComboBoxInput = forwardRef<HTMLInputElement, ComboBoxInputProps>(
         data-size={size}
         data-input-type="combobox"
         role="combobox"
+        // `ComboBox` builds its own trigger rather than going through a
+        // react-aria field hook, so nothing else would announce that the field
+        // is mandatory — the label marker alone is not exposed to assistive
+        // technology.
+        aria-required={isRequired || undefined}
         aria-expanded={isPopoverOpen && hasResults}
         aria-haspopup="listbox"
         aria-controls={
@@ -1360,6 +1367,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
         placeholder={placeholder}
         isDisabled={isDisabled}
         isReadOnly={isReadOnly}
+        isRequired={isRequired}
         autoFocus={autoFocus}
         autoComplete={autoComplete}
         size={size}

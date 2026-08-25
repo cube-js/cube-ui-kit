@@ -61,7 +61,12 @@ import { fileURLToPath } from 'node:url';
 
 import { chromium } from 'playwright';
 
-import { hasPlay, isOptedOut, sourceReader } from './lib/story-snapshots.mjs';
+import {
+  hasPlay,
+  isOptedOut,
+  isOverlayReviewed,
+  sourceReader,
+} from './lib/story-snapshots.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const STATIC_DIR = join(ROOT, 'storybook-static');
@@ -478,13 +483,16 @@ const pixelOnly = pixelGroups.filter(
     !domGroups.some((d) => d[0].domHash && d.some((s) => s.id === g[0].id)),
 );
 
-// Stories named for an interaction-only state that never reached it.
+// Stories named for an overlay that never reached it, minus the ones somebody
+// has already looked at and marked (see `isOverlayReviewed`) — otherwise the
+// heuristic's false positives would sit in the report forever.
 const unopened = billable
   .filter(
     (r) =>
       OVERLAY_NAME.test(r.exportName ?? r.name) &&
       !OVERLAY_ROLES.some((role) => r.roles?.includes(role)) &&
-      !hasPlay(sourceOf(r.importPath), r.exportName),
+      !hasPlay(sourceOf(r.importPath), r.exportName) &&
+      !isOverlayReviewed(sourceOf(r.importPath), r.exportName),
   )
   .sort((a, b) => a.title.localeCompare(b.title));
 

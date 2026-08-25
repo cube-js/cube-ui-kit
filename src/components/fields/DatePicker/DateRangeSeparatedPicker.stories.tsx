@@ -57,11 +57,9 @@ WithDefaultValueOpen.play = async ({ canvasElement }) => {
   // can the trigger be found by accessible name: it carries both `aria-label`
   // and an `aria-labelledby`, and `aria-labelledby` wins, so its name is the
   // field's label rather than "Calendar". Query the attribute directly.
-  const start = canvasElement.querySelector<HTMLElement>(
-    'button[aria-label="Calendar"]',
-  );
+  const start = canvasElement.querySelector('button[aria-label="Calendar"]');
 
-  await userEvent.click(start!);
+  await userEvent.click(start);
 
   await expect(await within(canvasElement).findByRole('dialog')).toBeVisible();
 };

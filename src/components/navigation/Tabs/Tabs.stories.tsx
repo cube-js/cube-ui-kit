@@ -8,6 +8,7 @@ import { PlusIcon } from '../../../icons/PlusIcon';
 import { SettingsIcon } from '../../../icons/SettingsIcon';
 import { UserIcon } from '../../../icons/UserIcon';
 import { NO_SNAPSHOT } from '../../../stories/chromatic';
+import { openContextMenu } from '../../../stories/interactions';
 import { Button } from '../../actions/Button';
 import { Menu } from '../../actions/Menu';
 import { Layout } from '../../content/Layout';
@@ -718,6 +719,16 @@ export const KeepMounted: Story = {
  * Tabs with menu - demonstrates the simplified menu API with predefined actions
  */
 export const WithMenu: Story = {
+  // The shared tab menu only exists once a tab is right-clicked.
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await openContextMenu(
+      canvasElement,
+      canvas.getByRole('tab', { name: 'Tab 1' }),
+    );
+  },
+
   render: function WithMenuRender(args) {
     const [tabs, setTabs] = useState([
       { id: 'tab1', title: 'Tab 1', content: 'Content for Tab 1' },
@@ -873,6 +884,16 @@ export const WithEditableTabs: Story = {
  * Context menu - demonstrates right-click menu on tabs
  */
 export const WithContextMenu: Story = {
+  // The context menu is the subject; without this the snapshot is a plain tab row.
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await openContextMenu(
+      canvasElement,
+      canvas.getByRole('tab', { name: 'Tab 1' }),
+    );
+  },
+
   render: function WithContextMenuRender(args) {
     const [tabs, setTabs] = useState([
       { id: 'tab1', title: 'Tab 1', content: 'Content for Tab 1' },
@@ -935,6 +956,16 @@ export const WithContextMenu: Story = {
  * Context-only menu — right-click / Shift+F10; no ⋮ trigger; inline close when onDelete
  */
 export const WithContextMenuOnly: Story = {
+  // Rename and the rest live only in the context menu.
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await openContextMenu(
+      canvasElement,
+      canvas.getByRole('tab', { name: 'Document.txt' }),
+    );
+  },
+
   render: function WithContextMenuOnlyRender(args) {
     const [tabs, setTabs] = useState([
       { id: 'tab1', title: 'Tab 1', content: 'Content for Tab 1' },
@@ -997,6 +1028,16 @@ export const WithContextMenuOnly: Story = {
  * Per-tab menu override - demonstrates overriding or disabling menu per tab
  */
 export const WithPerTabMenuOverride: Story = {
+  // Tab 2 carries the overridden menu, so that is the one worth opening.
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await openContextMenu(
+      canvasElement,
+      canvas.getByRole('tab', { name: 'Custom Menu' }),
+    );
+  },
+
   render: function WithPerTabMenuOverrideRender(args) {
     return (
       <Space flow="column" gap="2x">
@@ -1047,6 +1088,16 @@ export const WithPerTabMenuOverride: Story = {
  * Menu with sections - demonstrates using Menu.Section for organized menus
  */
 export const WithMenuSections: Story = {
+  // The sections this story is named for are inside the menu.
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await openContextMenu(
+      canvasElement,
+      canvas.getByRole('tab', { name: 'Document.txt' }),
+    );
+  },
+
   render: function WithMenuSectionsRender(args) {
     const [tabs, setTabs] = useState([
       { id: 'tab1', title: 'Document.txt' },
@@ -1305,6 +1356,16 @@ export const ReorderableLeft: Story = {
  * Reorderable tabs with delete and menu - demonstrates combining reordering with other features
  */
 export const ReorderableWithMenu: Story = {
+  // Reordering is a drag and cannot be photographed; the menu can.
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await openContextMenu(
+      canvasElement,
+      canvas.getByRole('tab', { name: 'Document 1' }),
+    );
+  },
+
   render: function ReorderableWithMenuRender(args) {
     const [tabs, setTabs] = useState([
       { id: 'tab1', title: 'Document 1' },

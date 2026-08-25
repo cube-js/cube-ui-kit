@@ -620,6 +620,7 @@ export const Validation = () => (
   </Flex>
 );
 
+// chromatic-overlay-reviewed: three closed fields is the comparison; which gesture opens each cannot be photographed
 export const PopoverTriggers = () => (
   <Flex flow="column" gap="2x">
     {/* oxlint-disable-next-line cube-ui-kit/no-redundant-default-prop -- labelled "Trigger on Input (default)" - the trigger is what it demonstrates */}
@@ -811,6 +812,7 @@ export const WithDescription = () => (
   </ComboBox>
 );
 
+// chromatic-overlay-reviewed: the absent trigger button is the subject
 export const HiddenTrigger = () => (
   <ComboBox
     hideTrigger

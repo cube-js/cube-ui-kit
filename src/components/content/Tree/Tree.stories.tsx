@@ -1,11 +1,13 @@
 import { IconCopy, IconEdit, IconFile, IconTrash } from '@tabler/icons-react';
 import { useMemo, useState } from 'react';
+import { within } from 'storybook/test';
 
 import { FolderIcon } from '../../../icons/FolderIcon';
 import { FolderOpenIcon } from '../../../icons/FolderOpenIcon';
 import { Icon } from '../../../icons/Icon';
 import { MoreIcon } from '../../../icons/MoreIcon';
 import { NO_SNAPSHOT } from '../../../stories/chromatic';
+import { openContextMenu } from '../../../stories/interactions';
 import { ItemAction } from '../../actions/ItemAction';
 import { Menu, MenuTrigger } from '../../actions/Menu';
 import { SearchInput } from '../../fields/SearchInput';
@@ -551,6 +553,13 @@ const sharedMenu = (
  * the same menu at the pointer position.
  */
 export const WithContextMenu: Story = {
+  // The menu is the subject; closed, this is the same tree `Default` photographs.
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await openContextMenu(canvasElement, canvas.getByText('Tree.tsx'));
+  },
+
   args: {
     defaultExpandedKeys: ['src', 'src/components'],
     menu: sharedMenu,
@@ -563,6 +572,13 @@ export const WithContextMenu: Story = {
  * right-click / Shift+F10 menu — useful for clean file-tree UIs.
  */
 export const WithContextMenuOnly: Story = {
+  // `context-only` hides the `⋮` trigger, so the menu is the only thing that distinguishes this story.
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await openContextMenu(canvasElement, canvas.getByText('Tree.tsx'));
+  },
+
   args: {
     defaultExpandedKeys: ['src', 'src/components'],
     menu: sharedMenu,
@@ -575,6 +591,16 @@ export const WithContextMenuOnly: Story = {
  * `null` to disable the menu for a specific row.
  */
 export const PerNodeMenu: Story = {
+  // Open the one node whose `data.menu` overrides the tree-level one — the override is the story.
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await openContextMenu(
+      canvasElement,
+      canvas.getByText('Has custom menu (Open only)'),
+    );
+  },
+
   args: {
     defaultExpandedKeys: ['root'],
     contextMenu: true,

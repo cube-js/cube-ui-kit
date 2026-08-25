@@ -92,3 +92,28 @@ export function sourceReader(root) {
     return cache.get(path);
   };
 }
+
+/**
+ * The marker that records "an overlay word in the name, but the overlay is not
+ * what this story shows".
+ *
+ * The unopened-overlay check is a heuristic over story names, so it has honest
+ * false positives: a `FieldWrapper / WithTooltip` whose subject is where the
+ * info badge sits in the label row, an `OverlayPanel` that renders open from
+ * the start, a `Skeleton / Menu` that is a skeleton. Without a way to record
+ * that someone looked and decided, those entries sit in the report forever and
+ * the whole list stops being read.
+ *
+ * Write it as a comment directly above the story:
+ *
+ *   // chromatic-overlay-reviewed: the badge, not the tooltip, is the subject
+ *   export const WithTooltip: Story = { … };
+ */
+export function isOverlayReviewed(source, exportName) {
+  const decl = new RegExp(
+    `^\\s*// chromatic-overlay-reviewed\\b.*\\n(?:^\\s*//.*\\n)*^export const ${exportName}\\b`,
+    'm',
+  );
+
+  return decl.test(source);
+}

@@ -1,3 +1,6 @@
+import { within } from 'storybook/test';
+
+import { openTooltip } from '../../../stories/interactions';
 import { Block } from '../../Block';
 import { Space } from '../../layout/Space';
 import { Text } from '../Text';
@@ -129,6 +132,14 @@ export const OverflowWithTooltip: Story = {
       </TextItem>
     </Block>
   ),
+  // Truncation is visible without help, but the auto-tooltip firing *because*
+  // of it is the actual claim, and that only exists on hover.
+  play: async ({ canvasElement }) => {
+    await openTooltip(
+      canvasElement,
+      within(canvasElement).getByTestId('TextItem'),
+    );
+  },
 };
 
 export const WithHighlight: Story = {
@@ -164,6 +175,7 @@ export const MultipleHighlights: Story = {
   },
 };
 
+// chromatic-overlay-reviewed: the highlight and the truncation are both on screen
 export const HighlightWithOverflow: Story = {
   render: () => (
     <Block width="250px">
@@ -183,8 +195,17 @@ export const CustomTooltip: Story = {
       </TextItem>
     </Block>
   ),
+  // The text is short and untruncated, so the tooltip is the only thing this
+  // story has to show.
+  play: async ({ canvasElement }) => {
+    await openTooltip(
+      canvasElement,
+      within(canvasElement).getByTestId('TextItem'),
+    );
+  },
 };
 
+// chromatic-overlay-reviewed: the point is that no tooltip appears
 export const DisabledTooltip: Story = {
   render: () => (
     <Block width="200px">
@@ -196,6 +217,14 @@ export const DisabledTooltip: Story = {
 };
 
 export const TooltipPlacements: Story = {
+  // Only one tooltip can be open at a time, so this captures the first
+  // placement rather than all four — the other three are covered by the
+  // rendered labels and by `Tooltip`'s own `Side` story.
+  play: async ({ canvasElement }) => {
+    const [top] = within(canvasElement).getAllByTestId('TextItem');
+
+    await openTooltip(canvasElement, top);
+  },
   render: () => (
     <Space flow="column" gap="2x" padding="8x">
       <Block width="200px">

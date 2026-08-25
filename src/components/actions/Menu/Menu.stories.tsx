@@ -1500,6 +1500,18 @@ export const MenuSynchronization = () => {
   );
 };
 
+// Only one menu can be open at a time — the rule this story exists for is
+// invisible until one of them is.
+MenuSynchronization.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement);
+
+  await userEvent.click(
+    canvas.getByRole('button', { name: /Click to test menu synchronization/ }),
+  );
+
+  await waitFor(() => expect(canvas.getByRole('menu')).toBeVisible());
+};
+
 export const SubMenus = (props) => {
   const handleAction = (key) => {
     console.log('Action selected:', key);
@@ -1831,6 +1843,18 @@ export const SubMenuCustomization = () => {
   );
 };
 
+// The placement and offset options live in the submenus, so the closed
+// triggers show none of them.
+SubMenuCustomization.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement);
+
+  await userEvent.click(
+    canvas.getByRole('button', { name: /Default Placement/ }),
+  );
+
+  await waitFor(() => expect(canvas.getByRole('menu')).toBeVisible());
+};
+
 export const WithHeaderAndFooter = (props) => {
   return (
     <Block padding="2.5x" width="340px">
@@ -2094,6 +2118,16 @@ export const ComprehensivePopoverSynchronization = () => {
       </Flex>
     </Flow>
   );
+};
+
+// Same as `MenuSynchronization`: the behaviour needs one popover open to
+// mean anything.
+ComprehensivePopoverSynchronization.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement);
+
+  await userEvent.click(canvas.getByRole('button', { name: /MenuTrigger/ }));
+
+  await waitFor(() => expect(canvas.getByRole('menu')).toBeVisible());
 };
 
 export const ItemsWithActions = (props) => {

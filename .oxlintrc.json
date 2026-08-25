@@ -110,6 +110,19 @@
       {
         "relativeImports": true
       }
+    ],
+    "no-restricted-imports": [
+      "error",
+      {
+        "patterns": [
+          {
+            "group": [
+              "**/icons"
+            ],
+            "message": "Import the icon's own file (`../../icons/CloseIcon`). The barrel re-exports 133 components, so importing it puts every one of them in the importer's dependency graph — which is what decides how much of the Storybook suite Chromatic has to re-snapshot when any single icon changes. See docs/rules/coding.md#imports."
+          }
+        ]
+      }
     ]
   },
   "overrides": [
@@ -1348,6 +1361,16 @@
       ],
       "rules": {
         "cube-ui-kit/no-redundant-default-prop": "off"
+      }
+    },
+    {
+      // The package barrel exists to re-export the icon barrel — that is its
+      // job, and it is the one place the wide import is correct.
+      "files": [
+        "src/index.ts"
+      ],
+      "rules": {
+        "no-restricted-imports": "off"
       }
     }
   ]

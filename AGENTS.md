@@ -30,7 +30,7 @@ pnpm list @tenphi/tasty @tenphi/glaze
 
 Project-specific working rules for AI agents. Not published with the package.
 
-- [coding.md](docs/rules/coding.md) — development flow, code style, Markdown formatting, knowledge maintenance
+- [coding.md](docs/rules/coding.md) — development flow, code style, **import rules**, Markdown formatting, knowledge maintenance
 - [input-components.md](docs/rules/input-components.md) — form-attachable input components (`useFieldProps`, validation props, `wrapWithField`)
 - [storybook.md](docs/rules/storybook.md) — `.stories.tsx` and `.docs.mdx` authoring, including the `play`-function rule below
 - [documentation.md](docs/rules/documentation.md) — `.docs.mdx` structure + update flow
@@ -53,6 +53,10 @@ When making code changes that affect end users or the public API, **always add a
 ## Stories: Interaction-Only States
 
 A state that only exists during an interaction — an open tooltip, a hover or focus style, an expanded overlay — is invisible to Chromatic unless a `play` function puts the story into it. Chromatic runs `play` before it snapshots, so a story whose point is such a state **must** drive it with `play` and end on a `waitFor` assertion for the state itself (that assertion is also the wait Chromatic needs). Drive one element per story — only the final state is captured. For tooltips, copy the recipe verbatim: `timeout(250)` (the trigger is wired in a mount effect), `unhover` before `hover` (React Aria ignores a hover until a mouse move sets the pointer modality), and `delay: 0` in the tooltip config. Both caveats fail silently, and a local render test can pass while the story does not — Chromatic is the check. Full pattern: [storybook.md](docs/rules/storybook.md#interaction-only-states-need-a-play-function).
+
+## Imports: Reach Past the Barrel
+
+Inside `src/`, import the file that defines a thing rather than the barrel that re-exports it: `from '../../actions/ItemButton/ItemButton'`, not `from '../../actions'`. Same component either way, but the barrel also drags `Menu`, `CommandMenu`, `ButtonSplit` and everything they import into the graph. Three things read that graph — Chromatic's TurboSnap (which cannot scope a build around anything reachable from `<Root>`, so a barrel there costs a full 1000-snapshot rebuild), consumers' tree-shaking, and module init order around `Root`'s module-scope `configure()`. Icons are enforced by `no-restricted-imports`; the rest is on you, with `pnpm chromatic:check` as the backstop and `node scripts/chromatic-report.mjs --trace <file>` to price a change before making it. `index.ts` files are exempt — assembling the public surface is their job. Full rules: [coding.md](docs/rules/coding.md#imports).
 
 ## Stories: The Snapshot Budget
 
