@@ -49,11 +49,11 @@ Customises the root wrapper element of the split button.
 These properties allow direct style application without using the `styles` prop:
 
 - **Base:** `display`, `font`, `preset`, `hide`, `whiteSpace`, `opacity`, `transition`
-- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`
+- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `scrollMargin`
 - **Dimension:** `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`
 - **Block:** `border`, `radius`, `shadow`, `outline`, `padding`, `paddingInline`, `paddingBlock`, `overflow`, `scrollbar`, `textAlign`
 - **Color:** `color`, `fill`, `fade`, `image`
-- **Flow:** `flow`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gap`, `columnGap`, `rowGap`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`
+- **Flow:** `flow`, `place`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gap`, `columnGap`, `rowGap`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`
 
 ### Context Inheritance
 
@@ -195,11 +195,13 @@ Use `actionProps`, `triggerProps`, and `menuProps` to customise individual parts
 ## Best Practices
 
 1. **Do**: Use strict mode for standard action+trigger patterns.
+
    ```jsx
    <Button.Split actions={actions} defaultActionKey="deploy" type="primary" />
    ```
 
 2. **Do**: Set `type` and `theme` on the wrapper instead of repeating on each child.
+
    ```jsx
    <Button.Split type="primary">
      <Button>Save</Button>

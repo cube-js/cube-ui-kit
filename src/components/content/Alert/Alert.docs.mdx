@@ -1,4 +1,4 @@
-import { Meta } from '@storybook/addon-docs/blocks';
+import { Meta, Story } from '@storybook/addon-docs/blocks';
 
 import * as AlertStories from './Alert.stories';
 
@@ -13,6 +13,10 @@ An alert message with theme variants. Used for announcements, warnings, and info
 - Form validation messages
 - Success/error/warning notifications
 - Informational banners
+
+## Component
+
+<Story of={AlertStories.Default} />
 
 ## Properties
 
@@ -38,21 +42,35 @@ Supports [Base properties](/docs/getting-started-base-properties--docs).
 These properties allow direct style application without using the `styles` prop:
 
 - **Base:** `display`, `font`, `preset`, `hide`, `whiteSpace`, `opacity`, `transition`
-- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`
+- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `scrollMargin`
 - **Dimension:** `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`
 - **Block:** `border`, `radius`, `shadow`, `outline`, `padding`, `paddingInline`, `paddingBlock`, `overflow`, `scrollbar`, `textAlign`
 - **Color:** `color`, `fill`, `fade`, `image`
 - **Text:** `textTransform`, `fontWeight`, `fontStyle`
-- **Flow:** `flow`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gap`, `columnGap`, `rowGap`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`
+- **Flow:** `flow`, `place`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gap`, `columnGap`, `rowGap`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`
 
 ## Examples
 
+### Themes
+
+<Story of={AlertStories.Themes} />
+
 ```jsx
 <Alert theme="note">Informational message</Alert>
-
 <Alert theme="success">Operation completed successfully</Alert>
-
 <Alert theme="danger">Something went wrong</Alert>
+```
 
+### Shapes
+
+<Story of={AlertStories.Shapes} />
+
+```jsx
 <Alert theme="warning" shape="sharp">Warning with sharp corners</Alert>
 ```
+
+### Disabled
+
+`isDisabled` replaces the theme's colors rather than tinting them, so every theme looks the same once disabled.
+
+<Story of={AlertStories.Disabled} />

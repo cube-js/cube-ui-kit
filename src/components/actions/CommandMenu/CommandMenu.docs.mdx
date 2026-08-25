@@ -95,11 +95,11 @@ Customizes the search input field specifically.
 These properties allow direct style application without using the `styles` prop:
 
 - **Base:** `display`, `font`, `preset`, `hide`, `whiteSpace`, `opacity`, `transition`
-- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`
+- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `scrollMargin`
 - **Dimension:** `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`
 - **Block:** `border`, `radius`, `shadow`, `outline`, `padding`, `paddingInline`, `paddingBlock`, `overflow`, `scrollbar`, `textAlign`
 - **Color:** `color`, `fill`, `fade`, `image`
-- **Flow:** `flow`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gap`, `columnGap`, `rowGap`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`
+- **Flow:** `flow`, `place`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gap`, `columnGap`, `rowGap`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`
 
 ### Modifiers
 
@@ -137,8 +137,8 @@ For detailed information about all available item properties, see the [Menu.Item
 
 ```jsx
 <CommandMenu searchPlaceholder="Search commands...">
-  <CommandMenu.Item 
-    key="save" 
+  <CommandMenu.Item
+    key="save"
     icon={<IconSave />}
     hotkeys="cmd+s"
     keywords={["write", "disk", "persist"]}
@@ -146,8 +146,8 @@ For detailed information about all available item properties, see the [Menu.Item
   >
     Save Document
   </CommandMenu.Item>
-  <CommandMenu.Item 
-    key="help" 
+  <CommandMenu.Item
+    key="help"
     icon={<IconHelp />}
     forceMount={true}
     description="Always visible help option"
@@ -366,10 +366,10 @@ function CommandMenuDialogContent({ onClose, ...args }) {
 
   return (
     <Dialog size="medium" isDismissable={false}>
-      <CommandMenu 
-        width="100%" 
-        height="max(40x, 90vh)" 
-        size="medium" 
+      <CommandMenu
+        width="100%"
+        height="max(40x, 90vh)"
+        size="medium"
         onAction={handleAction}
         {...args}
       >

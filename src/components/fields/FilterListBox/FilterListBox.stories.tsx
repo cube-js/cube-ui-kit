@@ -1,19 +1,19 @@
 import { StoryFn } from '@storybook/react-vite';
 import { IconFile, IconFileDiff } from '@tabler/icons-react';
 import { useState } from 'react';
-import { userEvent, within } from 'storybook/test';
+import { expect, userEvent, within } from 'storybook/test';
 
-import {
-  BellFilledIcon,
-  CheckIcon,
-  DatabaseIcon,
-  FilterIcon,
-  PlusIcon,
-  RightIcon,
-  SettingsIcon,
-  UserIcon,
-} from '../../../icons';
+import { BellFilledIcon } from '../../../icons/BellFilledIcon';
+import { CheckIcon } from '../../../icons/CheckIcon';
+import { DatabaseIcon } from '../../../icons/DatabaseIcon';
+import { FilterIcon } from '../../../icons/FilterIcon';
+import { PlusIcon } from '../../../icons/PlusIcon';
+import { RightIcon } from '../../../icons/RightIcon';
+import { SettingsIcon } from '../../../icons/SettingsIcon';
+import { UserIcon } from '../../../icons/UserIcon';
+import { NO_SNAPSHOT } from '../../../stories/chromatic';
 import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
+import { waitForOverlay } from '../../../stories/interactions';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Button } from '../../actions/Button/Button';
 import { Badge } from '../../content/Badge/Badge';
@@ -988,6 +988,8 @@ export const ControlledExample: StoryFn<CubeFilterListBoxProps<any>> = () => {
     </Space>
   );
 };
+// A `useState` wrapper around `Default`; the state is not visible in a snapshot.
+ControlledExample.parameters = NO_SNAPSHOT;
 
 export const MultipleControlledExample: StoryFn<
   CubeFilterListBoxProps<any>
@@ -1036,6 +1038,8 @@ export const MultipleControlledExample: StoryFn<
     </Space>
   );
 };
+// A `useState` wrapper around `MultipleSelection`; the state is not visible.
+MultipleControlledExample.parameters = NO_SNAPSHOT;
 
 export const InForm: StoryFn = () => {
   return (
@@ -1099,6 +1103,20 @@ export const InDialog: StoryFn = () => {
       </Dialog>
     </DialogTrigger>
   );
+};
+
+// The dialog is the whole story and it starts closed, so without this the
+// snapshot is the trigger button and nothing else.
+InDialog.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement);
+
+  await userEvent.click(
+    await canvas.findByRole('button', {
+      name: 'Open Dialog with FilterListBox',
+    }),
+  );
+
+  await waitForOverlay('dialog');
 };
 
 export const AsyncLoading: StoryFn = () => {

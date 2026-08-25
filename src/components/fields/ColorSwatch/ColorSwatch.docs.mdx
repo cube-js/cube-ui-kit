@@ -6,14 +6,9 @@ import * as ColorSwatchStories from './ColorSwatch.stories.tsx';
 
 # ColorSwatch
 
-A square of color. It is the smallest piece of the color family —
-[ColorPicker](/docs/forms-colorpicker--docs),
-[ColorInput](/docs/forms-colorinput--docs) and
-[ColorSwatchGroup](/docs/forms-colorswatchgroup--docs) all draw one, and it is
-exported so a legend, a list row or a table cell can draw the same one.
+A square of color. It is the smallest piece of the color family — [ColorPicker](/docs/forms-colorpicker--docs), [ColorInput](/docs/forms-colorinput--docs) and [ColorSwatchGroup](/docs/forms-colorswatchgroup--docs) all draw one, and it is exported so a legend, a list row or a table cell can draw the same one.
 
-It is decorative on its own: it carries no text and no accessible name. Pair it
-with the value written out, or put it in a control that names it.
+It is decorative on its own: it carries no text and no accessible name. Pair it with the value written out, or put it in a control that names it.
 
 ## When to Use
 
@@ -40,8 +35,7 @@ Supports [Base properties](/docs/getting-started-base-properties--docs)
 
 #### styles
 
-Customizes the swatch itself. `width` and `height` set here win over both the
-`size` prop and the automatic sizing.
+Customizes the swatch itself. `width` and `height` set here win over both the `size` prop and the automatic sizing.
 
 ### Style Properties
 
@@ -56,9 +50,9 @@ These properties allow direct style application without using the `styles` prop:
 
 The `mods` property accepts the following modifiers you can override:
 
-| Modifier | Type      | Description                                                    |
-| -------- | --------- | -------------------------------------------------------------- |
-| `empty`  | `boolean` | No color to show — drawn as the conventional diagonal stroke     |
+| Modifier | Type | Description |
+| --- | --- | --- |
+| `empty` | `boolean` | No color to show — drawn as the conventional diagonal stroke |
 
 ## Sizes
 
@@ -70,21 +64,11 @@ The `mods` property accepts the following modifiers you can override:
 
 ### Sizing inside a control
 
-Leave `size` off and the swatch sizes itself to whatever it sits in. `Item`,
-`Button` and the text inputs publish their own height as the `$size` custom
-property, and the swatch reads it and lands `8px` inside — `20px` in a `small`
-control, `24px` in a `medium` one, `28px` in a `large` one. Nothing has to be
-passed between the two, so a control that changes size takes its swatch with it.
+Leave `size` off and the swatch sizes itself to whatever it sits in. `Item`, `Button` and the text inputs publish their own height as the `$size` custom property, and the swatch reads it and lands `8px` inside — `20px` in a `small` control, `24px` in a `medium` one, `28px` in a `large` one. Nothing has to be passed between the two, so a control that changes size takes its swatch with it.
 
-Outside a control there is nothing to read, and the swatch falls back to
-`medium`.
+Outside a control there is nothing to read, and the swatch falls back to `medium`.
 
-`ColorInput` and `ColorPicker` deliberately do **not** use this. Their swatch is a
-fixed `20px` badge at every field size — it reads as a value the field is showing
-rather than as part of the control, and a text input hangs its prefix off the border
-with no padding of its own, so a tracking swatch in a large field would sit against
-the edge. Automatic fitting is for a swatch you place yourself, in a `Button` or an
-`Item`, where the host has the padding that makes it work.
+`ColorInput` and `ColorPicker` deliberately do **not** use this. Their swatch is a fixed `20px` badge at every field size — it reads as a value the field is showing rather than as part of the control, and a text input hangs its prefix off the border with no padding of its own, so a tracking swatch in a large field would sit against the edge. Automatic fitting is for a swatch you place yourself, in a `Button` or an `Item`, where the host has the padding that makes it work.
 
 <Story of={ColorSwatchStories.InsideControls} />
 
@@ -108,8 +92,7 @@ the edge. Automatic fitting is for a swatch you place yourself, in a `Button` or
 
 ### With the value spelled out
 
-The swatch has no accessible name of its own, so the text beside it is what a
-screen reader announces.
+The swatch has no accessible name of its own, so the text beside it is what a screen reader announces.
 
 ```jsx
 <Space gap="1x" placeItems="center start">
@@ -132,9 +115,7 @@ screen reader announces.
 
 ## Accessibility
 
-`ColorSwatch` renders a plain `div` with no role and no name — a color on its
-own is not information a screen reader can use, and an announced hex is rarely
-what the user wants to hear.
+`ColorSwatch` renders a plain `div` with no role and no name — a color on its own is not information a screen reader can use, and an announced hex is rarely what the user wants to hear.
 
 - **Do** put the value, or the name of the thing the color belongs to, next to it
 - **Do** rely on the surrounding control's `aria-label` when the swatch is its icon

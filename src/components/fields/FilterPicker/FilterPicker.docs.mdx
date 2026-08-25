@@ -99,6 +99,7 @@ Supports all [Field properties](/docs/getting-started-field-properties--docs)
 Customizes the main wrapper element of the FilterPicker component.
 
 **Sub-elements:**
+
 - None - styles apply directly to the wrapper
 
 #### triggerStyles
@@ -106,6 +107,7 @@ Customizes the main wrapper element of the FilterPicker component.
 Customizes the trigger button element.
 
 **Sub-elements:**
+
 - None - styles apply directly to the trigger button
 
 #### listBoxStyles
@@ -113,6 +115,7 @@ Customizes the trigger button element.
 Customizes the dropdown list container within the popover.
 
 **Sub-elements:**
+
 - Same as FilterListBox: `Label`, `Description`, `Content`, `Checkbox`, `CheckboxWrapper`
 
 #### popoverStyles
@@ -120,6 +123,7 @@ Customizes the dropdown list container within the popover.
 Customizes the popover dialog that contains the FilterListBox.
 
 **Sub-elements:**
+
 - Same as Dialog component sub-elements
 
 #### searchInputStyles
@@ -155,7 +159,7 @@ Customizes the footer area when footer prop is provided.
 These properties allow direct style application without using the `styles` prop:
 
 - **Base:** `display`, `font`, `preset`, `hide`, `whiteSpace`, `opacity`, `transition`
-- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`
+- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `scrollMargin`
 - **Dimension:** `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`
 - **Block:** `border`, `radius`, `shadow`, `outline`
 - **Color:** `color`, `fill`, `fade`, `image`
@@ -193,16 +197,16 @@ For detailed information about all available item properties, see [Item document
 
 ```jsx
 <FilterPicker label="Team Filters" selectionMode="multiple">
-  <FilterPicker.Item 
-    key="active-users" 
+  <FilterPicker.Item
+    key="active-users"
     icon={<IconUsers />}
     description="Filter by active users"
     suffix="12 users"
   >
     Active Users
   </FilterPicker.Item>
-  <FilterPicker.Item 
-    key="recent-activity" 
+  <FilterPicker.Item
+    key="recent-activity"
     icon={<IconClock />}
     description="Recent activity in the last week"
     rightIcon={<IconBadge />}
@@ -287,6 +291,7 @@ const categories = [
 ```
 
 **Key Benefits:**
+
 - **Virtualization**: Automatically enabled for large lists without sections
 - **Performance**: Only renders visible items in the DOM
 - **Dynamic Content**: Perfect for data fetched from APIs or changing datasets
@@ -294,6 +299,7 @@ const categories = [
 - **Selected Items Sorting**: When using the `items` prop, selected items are automatically sorted to the top when the popover reopens (can be controlled with `sortSelectedToTop`)
 
 **When to Use:**
+
 - Lists with 50+ items
 - Dynamic data from APIs
 - Content that changes frequently
@@ -325,8 +331,8 @@ const categories = [
 <Story of={FilterPickerStories.Default} />
 
 ```jsx
-<FilterPicker 
-  label="Select Options" 
+<FilterPicker
+  label="Select Options"
   placeholder="Choose items..."
   searchPlaceholder="Search options..."
 >
@@ -518,7 +524,7 @@ Use `isLoadingItems` to indicate that items are currently being fetched. Unlike 
   isCheckable={true}
   renderSummary={({ selectedKeys, selectedLabels }) => {
     if (selectedKeys.length === 0) return null;
-    if (selectedKeys.length <= 3) 
+    if (selectedKeys.length <= 3)
       return `${selectedKeys.length} filters: ${selectedLabels.join(', ')}`;
     return `${selectedKeys.length} filters applied`;
   }}
@@ -595,6 +601,7 @@ const [keyOrder, setKeyOrder] = useState([
 ## Best Practices
 
 1. **Do**: Provide clear, descriptive labels for the trigger
+
    ```jsx
    <FilterPicker label="Filter by Category" placeholder="Choose categories...">
      <FilterPicker.Item key="electronics">Electronics</FilterPicker.Item>
@@ -602,6 +609,7 @@ const [keyOrder, setKeyOrder] = useState([
    ```
 
 2. **Don't**: Use overly long option texts that will be truncated
+
    ```jsx
    // ❌ Avoid very long option text
    <FilterPicker.Item key="long">
@@ -610,6 +618,7 @@ const [keyOrder, setKeyOrder] = useState([
    ```
 
 3. **Do**: Use sections for logical grouping of small to medium lists
+
    ```jsx
    <FilterPicker.Section title="Categories">
      <FilterPicker.Item key="tech">Technology</FilterPicker.Item>
@@ -617,6 +626,7 @@ const [keyOrder, setKeyOrder] = useState([
    ```
 
 4. **Do**: Use dynamic content pattern for large datasets
+
    ```jsx
    // ✅ For large lists (50+ items)
    <FilterPicker items={largeDataset}>
@@ -625,10 +635,11 @@ const [keyOrder, setKeyOrder] = useState([
    ```
 
 5. **Do**: Use `showSelectAll` for efficient multiple selection in compact interfaces
+
    ```jsx
-   <FilterPicker 
-     selectionMode="multiple" 
-     showSelectAll 
+   <FilterPicker
+     selectionMode="multiple"
+     showSelectAll
      selectAllLabel="Select All Options"
      placeholder="Choose items..."
    >
@@ -637,9 +648,10 @@ const [keyOrder, setKeyOrder] = useState([
    ```
 
 6. **Do**: Use `isClearable` when users need to quickly clear selections
+
    ```jsx
-   <FilterPicker 
-     isClearable 
+   <FilterPicker
+     isClearable
      selectionMode="single"
      label="Choose option"
    >
@@ -689,7 +701,7 @@ const renderSummary = ({ selectedLabels, selectedKeys, selectionMode }) => {
   if (selectionMode === 'single') {
     return selectedLabels[0] ? `Selected: ${selectedLabels[0]}` : null;
   }
-  
+
   if (selectedKeys.length === 0) return null;
   if (selectedKeys.length === 1) return selectedLabels[0];
   if (selectedKeys.length <= 3) return selectedLabels.join(', ');
@@ -716,8 +728,9 @@ When `allowsCustomValue={true}`, users can add new options:
 ```
 
 Custom values:
+
 - Are automatically added when typed and selected
-- Persist across popover sessions  
+- Persist across popover sessions
 - Appear in the selection summary
 - Can be removed like any other selection
 
@@ -751,6 +764,7 @@ When using the `items` prop, FilterPicker automatically sorts selected items to 
 ```
 
 **Key behaviors:**
+
 - Sorting only works when using the `items` prop
 - Selected items move to the top when the popover reopens
 - Within sections, selected items sort to the top of their section
@@ -789,6 +803,7 @@ Add a clear button to quickly reset selection:
 ```
 
 The clear button:
+
 - Appears in the `rightIcon` slot when there's a selection
 - Only shows when `isClearable={true}` and a selection exists
 - Closes the popover when clicked
@@ -839,6 +854,7 @@ const handleSearchChange = useCallback((value) => {
 ```
 
 **How it works:**
+
 - **`filter={false}`** disables client-side filtering so items are shown exactly as the server returns them
 - **`searchValue` + `onSearchChange`** give you control over the search input; debounce and fetch on your side
 - **`items`** is a reactive prop — replace it with server results and the list updates automatically
@@ -849,6 +865,7 @@ const handleSearchChange = useCallback((value) => {
 - **Reset on close** — use `onOpenChange` to restore the initial item set and clear the search when the popover closes, ensuring the trigger label resolves correctly
 
 **Tips:**
+
 - Debouncing is the consumer's responsibility (300-500ms is typical)
 - During the debounce delay, old items remain visible — if you want instant client-side feedback while waiting, use a filter function instead of `false`
 
@@ -885,8 +902,8 @@ When using the dynamic content pattern (`items` prop) without sections, FilterPi
 
 ```jsx
 // Optimized for performance
-<FilterPicker.Item 
-  key="complex" 
+<FilterPicker.Item
+  key="complex"
   textValue="John Doe - Senior Developer"
 >
   <UserCard user={user} />

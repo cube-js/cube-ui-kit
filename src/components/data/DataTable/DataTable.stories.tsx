@@ -1,14 +1,12 @@
 import { useMemo, useState } from 'react';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 
-import {
-  NumberIcon,
-  ReloadIcon,
-  StringIcon,
-  ThumbsDownIcon,
-  ThumbsUpIcon,
-  TimeIcon,
-} from '../../../icons';
+import { NumberIcon } from '../../../icons/NumberIcon';
+import { ReloadIcon } from '../../../icons/ReloadIcon';
+import { StringIcon } from '../../../icons/StringIcon';
+import { ThumbsDownIcon } from '../../../icons/ThumbsDownIcon';
+import { ThumbsUpIcon } from '../../../icons/ThumbsUpIcon';
+import { TimeIcon } from '../../../icons/TimeIcon';
 import { Button } from '../../actions/Button';
 import { Menu } from '../../actions/Menu';
 import { Text } from '../../content/Text';

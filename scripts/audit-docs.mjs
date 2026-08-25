@@ -63,19 +63,28 @@ const STYLE_CATEGORIES = [
 
 /* ── Prop classification ──────────────────────────────────────────────── */
 
+/**
+ * Props every component inherits, and which therefore belong on the shared
+ * "Base properties" page rather than in each component's own list.
+ *
+ * The style names are taken from tasty's own exports rather than restated here.
+ * They were hardcoded once and drifted: the copy was missing `scrollMargin` and
+ * `place`, which tasty had since added to `CONTAINER_STYLES`, so every
+ * component that spreads that list was reported as under-documenting two props
+ * it inherits like all the others. Deriving them means the next addition to
+ * tasty cannot reopen that.
+ */
 const BASE_STYLE_PROPS = new Set([
+  // Tasty's own non-style base props (`TastySpecificKeys` plus the DOM
+  // shorthands `filterBaseProps` lets through).
   'qa', 'qaVal', 'block', 'inline', 'style', 'styles', 'css', 'hidden',
-  'disabled', 'mods', 'breakpoints', 'isHidden', 'element',
-  'display', 'font', 'preset', 'hide', 'whiteSpace', 'opacity', 'transition',
-  'padding', 'paddingInline', 'paddingBlock', 'overflow', 'scrollbar', 'textAlign',
-  'border', 'radius', 'shadow', 'outline', 'color', 'fill', 'fade', 'image',
-  'width', 'height', 'flexBasis', 'flexGrow', 'flexShrink', 'flex',
-  'gridArea', 'order', 'gridColumn', 'gridRow', 'placeSelf', 'alignSelf',
-  'justifySelf', 'zIndex', 'margin', 'inset', 'position',
-  'flow', 'placeItems', 'placeContent', 'alignItems', 'alignContent',
-  'justifyItems', 'justifyContent', 'align', 'justify', 'gap', 'columnGap',
-  'rowGap', 'gridColumns', 'gridRows', 'gridTemplate', 'gridAreas',
-  'textTransform', 'fontWeight', 'fontStyle', 'className', 'role', 'id', 'tokens',
+  'disabled', 'mods', 'breakpoints', 'isHidden', 'isChecked', 'element',
+  'className', 'role', 'id', 'tokens',
+  // Every style name a component can expose as a prop.
+  ...BASE_STYLES, ...POSITION_STYLES, ...DIMENSION_STYLES,
+  ...BLOCK_OUTER_STYLES, ...BLOCK_INNER_STYLES, ...BLOCK_STYLES,
+  ...COLOR_STYLES, ...TEXT_STYLES, ...FLOW_STYLES,
+  ...CONTAINER_STYLES, ...OUTER_STYLES, ...INNER_STYLES,
 ]);
 
 const ALLBASE_PROPS = new Set([

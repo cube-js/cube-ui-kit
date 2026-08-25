@@ -7,6 +7,7 @@ Package name: `@cube-dev/ui-kit`
 ## Component file structure (preferable)
 
 /src/components/{category}/{ComponentName}/
+
 - {ComponentName}.tsx – implementation of the component
 - {ComponentName}.docs.mdx - documentation
 - {ComponentName}.stories.tsx - Storybook stories
@@ -21,8 +22,7 @@ Package name: `@cube-dev/ui-kit`
 
 ## Test
 
-All tests: `$ pnpm test`
-Specific test: `$ pnpm test -- {TestFileName}`
+All tests: `$ pnpm test` Specific test: `$ pnpm test -- {TestFileName}`
 
 ## Build
 

@@ -34,8 +34,8 @@ A search input provides a specialized text field for search functionality, featu
 - **`suffixPosition`** `'before' | 'after'` (default: `after`) — Position of suffix relative to validation/loading state icons
 - **`isClearable`** `boolean` (default: `false`) — Whether the search input shows a clear button
 - **`size`** `'small' | 'medium' | 'large'` (default: `medium`) — Input size
-- **`autocomplete`** `string` — HTML autocomplete attribute for browser autofill behavior
-- **`inputProps`** `Props` — Direct props passed to the native input element
+- **`autoComplete`** `string` — HTML [`autocomplete`](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/autocomplete) token that tells the browser what to autofill (`off` to suppress autofill on a filter field). The lowercase `autocomplete` alias is deprecated.
+- **`inputProps`** `Props` — Direct props passed to the native input element, merged over the props React Aria generates: a key you set wins, and event handlers are chained rather than replaced
 - **`wrapperProps`** `Props` — Direct props passed to the input wrapper element
 - **`onChange`** `function` — Callback fired when the search value changes
 - **`onSubmit`** `function` — Callback fired when search is submitted
@@ -58,6 +58,7 @@ Supports the layout-related [Field properties](/docs/getting-started-field-prope
 Customizes the root wrapper element of the component.
 
 **Sub-elements:**
+
 - `Prefix` - Element displayed before the input (contains search icon)
 - `Suffix` - Element displayed after the input (contains clear button when shown)
 - `State` - Container for validation state indicators
@@ -73,7 +74,7 @@ Customizes the search input field specifically.
 These properties allow direct style application without using the `styles` prop:
 
 - **Base:** `display`, `font`, `preset`, `hide`, `whiteSpace`, `opacity`, `transition`
-- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`
+- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `scrollMargin`
 - **Dimension:** `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`
 - **Block:** `border`, `radius`, `shadow`, `outline`, `padding`, `paddingInline`, `paddingBlock`, `overflow`, `scrollbar`, `textAlign`
 - **Color:** `color`, `fill`, `fade`, `image`
@@ -210,11 +211,13 @@ const [searchValue, setSearchValue] = useState('');
 ## Best Practices
 
 1. **Do**: Provide clear placeholder text indicating what can be searched
+
    ```jsx
    <SearchInput placeholder="Search by name, email, or department..." />
    ```
 
 2. **Don't**: Use search input for non-search related text entry
+
    ```jsx
    <SearchInput label="Enter your name" /> {/* Use TextInput instead */}
    ```
@@ -226,8 +229,7 @@ const [searchValue, setSearchValue] = useState('');
 
 ## Integration with Forms
 
-SearchInput is not a form field. Use [TextInput](/docs/forms-textinput--docs) when the typed text has to be
-captured as a form value.
+SearchInput is not a form field. Use [TextInput](/docs/forms-textinput--docs) when the typed text has to be captured as a form value.
 
 ## Suggested Improvements
 

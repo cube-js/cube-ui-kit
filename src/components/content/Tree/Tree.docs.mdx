@@ -7,23 +7,15 @@ import * as TreeStories from './Tree.stories';
 
 # Tree
 
-Tree displays hierarchical data as a list of nodes you can expand, collapse,
-select, and (optionally) check. Built on `useTree` and `useTreeState`
-(React Aria + React Stately) and styled with Tasty.
+Tree displays hierarchical data as a list of nodes you can expand, collapse, select, and (optionally) check. Built on `useTree` and `useTreeState` (React Aria + React Stately) and styled with Tasty.
 
-The component's data shape (`treeData`) and the public callback shape are
-designed to be a near drop-in for AntD's `Tree` (modulo the `is*` boolean
-prop convention used across `@cube-dev/ui-kit`), so existing AntD `Tree`
-consumers can be migrated with minimal churn.
+The component's data shape (`treeData`) and the public callback shape are designed to be a near drop-in for AntD's `Tree` (modulo the `is*` boolean prop convention used across `@cube-dev/ui-kit`), so existing AntD `Tree` consumers can be migrated with minimal churn.
 
 ## When to Use
 
-- Rendering hierarchical structures such as file systems, organizational
-  charts, navigation, or schema browsers.
-- Letting users select one or many nodes from a tree, with cascading
-  parent/child checkbox semantics.
-- Lazily loading children when a node is expanded the first time
-  (`loadData`).
+- Rendering hierarchical structures such as file systems, organizational charts, navigation, or schema browsers.
+- Letting users select one or many nodes from a tree, with cascading parent/child checkbox semantics.
+- Lazily loading children when a node is expanded the first time (`loadData`).
 - Filtering with auto-expanded ancestors (`autoExpandParent`).
 
 ## Component
@@ -34,87 +26,49 @@ consumers can be migrated with minimal churn.
 
 ### Properties
 
-- **`treeData`** `CubeTreeNodeData[]` — Hierarchical data describing the
-  tree.
-- **`isCheckable`** `boolean` (default: `false`) — Render a checkbox in
-  front of every eligible row.
-- **`isSelectable`** `boolean` — Sugar for `selectionMode="none"` when
-  `false`. `selectionMode` wins when both are passed.
-- **`selectionMode`** `'none' | 'single' | 'multiple'` (default: `'single'`)
-  — Selection cardinality.
+- **`treeData`** `CubeTreeNodeData[]` — Hierarchical data describing the tree.
+- **`isCheckable`** `boolean` (default: `false`) — Render a checkbox in front of every eligible row.
+- **`isSelectable`** `boolean` — Sugar for `selectionMode="none"` when `false`. `selectionMode` wins when both are passed.
+- **`selectionMode`** `'none' | 'single' | 'multiple'` (default: `'single'`) — Selection cardinality.
 - **`isDisabled`** `boolean` (default: `false`) — Disable the entire tree.
-- **`defaultExpandedKeys`** `string[]` — Default expanded keys
-  (uncontrolled).
+- **`defaultExpandedKeys`** `string[]` — Default expanded keys (uncontrolled).
 - **`expandedKeys`** `string[]` — Controlled expanded keys.
-- **`autoExpandParent`** `boolean` (default: `false`) — Auto-expand parents
-  of currently expanded keys. Useful for filtering.
+- **`autoExpandParent`** `boolean` (default: `false`) — Auto-expand parents of currently expanded keys. Useful for filtering.
 - **`defaultCheckedKeys`** `string[]` — Default checked keys (uncontrolled).
-- **`checkedKeys`** `string[] | { checked: string[]; halfChecked?: string[] }`
-  — Controlled checked keys. Pass the object form to receive the same
-  shape back from `onCheck`.
-- **`defaultSelectedKeys`** `string[]` — Default selected keys
-  (uncontrolled).
+- **`checkedKeys`** `string[] | { checked: string[]; halfChecked?: string[] }` — Controlled checked keys. Pass the object form to receive the same shape back from `onCheck`.
+- **`defaultSelectedKeys`** `string[]` — Default selected keys (uncontrolled).
 - **`selectedKeys`** `string[]` — Controlled selected keys.
-- **`height`** `number` — Fixed height in pixels. When omitted, the tree
-  fills the available vertical space and scrolls internally.
-- **`loadData`** `(node: TreeLoadDataNode) => Promise<void>` — Async
-  loader called the first time a non-leaf node with no `children` is
-  expanded. The consumer is expected to merge new children into
-  `treeData` (typical AntD pattern).
-- **`onExpand`** `(expandedKeys: Key[], info: TreeOnExpandInfo) => void` —
-  Called when a node is expanded or collapsed.
-- **`onCheck`** `(checked: Key[] | { checked, halfChecked }, info: TreeOnCheckInfo) => void`
-  — Called when a node is checked or unchecked.
-- **`onSelect`** `(selectedKeys: Key[], info: TreeOnSelectInfo) => void` —
-  Called when row selection changes.
-- **`menu`** `ReactNode | ((data, state) => ReactNode | null)` — Default
-  `Menu.Item` children rendered on every row that doesn't override via
-  `data.menu`. Returning `null` from the callback hides the menu for
-  that specific row.
-- **`contextMenu`** `boolean | 'context-only'` (default: `false`) — How
-  the row menu is exposed.
+- **`height`** `number` — Fixed height in pixels. When omitted, the tree fills the available vertical space and scrolls internally.
+- **`loadData`** `(node: TreeLoadDataNode) => Promise<void>` — Async loader called the first time a non-leaf node with no `children` is expanded. The consumer is expected to merge new children into `treeData` (typical AntD pattern).
+- **`onExpand`** `(expandedKeys: Key[], info: TreeOnExpandInfo) => void` — Called when a node is expanded or collapsed.
+- **`onCheck`** `(checked: Key[] | { checked, halfChecked }, info: TreeOnCheckInfo) => void` — Called when a node is checked or unchecked.
+- **`onSelect`** `(selectedKeys: Key[], info: TreeOnSelectInfo) => void` — Called when row selection changes.
+- **`menu`** `ReactNode | ((data, state) => ReactNode | null)` — Default `Menu.Item` children rendered on every row that doesn't override via `data.menu`. Returning `null` from the callback hides the menu for that specific row.
+- **`contextMenu`** `boolean | 'context-only'` (default: `false`) — How the row menu is exposed.
 
   - `false` — no menu at all.
-  - `true` — render an overflow `⋮` trigger inside `actions` AND open
-    the same menu on right-click / Shift+F10.
+  - `true` — render an overflow `⋮` trigger inside `actions` AND open the same menu on right-click / Shift+F10.
   - `'context-only'` — right-click / Shift+F10 only; no `⋮` trigger.
 
   Per-node `data.contextMenu` wins when provided.
 
-- **`onAction`** `(action: string, key: Key) => void` — Called when a
-  menu action is triggered on any row. Receives the action key (with
-  React's `.$` prefix stripped) and the row key. Per-node
-  `data.onAction` is called first.
-- **`menuTriggerProps`** `Partial<CubeMenuTriggerProps>` — Forwarded to
-  every per-row `MenuTrigger`.
-- **`menuProps`** `Partial<CubeMenuProps<object>>` — Forwarded to every
-  per-row `Menu` (both the overflow `⋮` menu and the right-click context
-  menu). If you pass `onAction` here, it is **chained with** the
-  tree-level `onAction`/per-node `data.onAction` callbacks (it does not
-  override them) and receives the same normalized action key.
+- **`onAction`** `(action: string, key: Key) => void` — Called when a menu action is triggered on any row. Receives the action key (with React's `.$` prefix stripped) and the row key. Per-node `data.onAction` is called first.
+- **`menuTriggerProps`** `Partial<CubeMenuTriggerProps>` — Forwarded to every per-row `MenuTrigger`.
+- **`menuProps`** `Partial<CubeMenuProps<object>>` — Forwarded to every per-row `Menu` (both the overflow `⋮` menu and the right-click context menu). If you pass `onAction` here, it is **chained with** the tree-level `onAction`/per-node `data.onAction` callbacks (it does not override them) and receives the same normalized action key.
 - **`rowStyles`** `Styles` — Override styles for `[data-element="Row"]`.
 
 #### `CubeTreeNodeData`
 
 - **`key`** `string` — Unique identifier of the node.
 - **`title`** `ReactNode` — Visible label.
-- **`children`** `CubeTreeNodeData[]` — Children. Pass `undefined`
-  together with `isLeaf={false}` for lazy nodes.
-- **`isLeaf`** `boolean` — Force leaf rendering (no expand toggle, no
-  `loadData` call).
-- **`isDisabled`** `boolean` — Disable interactions on this row (focus /
-  select / expand / check).
-- **`isCheckboxDisabled`** `boolean` — Disable only the checkbox of this
-  row.
-- **`isCheckable`** `boolean` — Per-node override; `false` hides the
-  checkbox for this row even when the tree is `isCheckable`.
-- **`menu`** `ReactNode | null` — Per-node menu override. Wins over
-  the tree-level `menu`. Pass `null` to hide the menu for this row
-  when the tree provides a default.
-- **`contextMenu`** `boolean | 'context-only'` — Per-node override of
-  the tree-level `contextMenu`.
-- **`onAction`** `(action: string) => void` — Per-node action callback.
-  Called before the tree-level `onAction`.
+- **`children`** `CubeTreeNodeData[]` — Children. Pass `undefined` together with `isLeaf={false}` for lazy nodes.
+- **`isLeaf`** `boolean` — Force leaf rendering (no expand toggle, no `loadData` call).
+- **`isDisabled`** `boolean` — Disable interactions on this row (focus / select / expand / check).
+- **`isCheckboxDisabled`** `boolean` — Disable only the checkbox of this row.
+- **`isCheckable`** `boolean` — Per-node override; `false` hides the checkbox for this row even when the tree is `isCheckable`.
+- **`menu`** `ReactNode | null` — Per-node menu override. Wins over the tree-level `menu`. Pass `null` to hide the menu for this row when the tree provides a default.
+- **`contextMenu`** `boolean | 'context-only'` — Per-node override of the tree-level `contextMenu`.
+- **`onAction`** `(action: string) => void` — Per-node action callback. Called before the tree-level `onAction`.
 
 ### Base Properties
 
@@ -128,14 +82,11 @@ Customizes the root `treegrid` element of the Tree.
 
 **Sub-elements:**
 
-- `Row` — A single tree row (also targetable via the dedicated
-  `rowStyles` prop).
+- `Row` — A single tree row (also targetable via the dedicated `rowStyles` prop).
 
 #### rowStyles
 
-Customizes `[data-element="Row"]`. Useful when you need to override row
-spacing, hover/selected colors, or cell layout without re-targeting via
-`styles`.
+Customizes `[data-element="Row"]`. Useful when you need to override row spacing, hover/selected colors, or cell layout without re-targeting via `styles`.
 
 **Sub-elements:**
 
@@ -153,27 +104,25 @@ These properties allow direct style application without using the `styles` prop:
 
 ### Modifiers
 
-The following row-level modifiers are emitted automatically. They are
-useful when overriding `rowStyles`:
+The following row-level modifiers are emitted automatically. They are useful when overriding `rowStyles`:
 
-| Modifier        | Type      | Description                                          |
-| --------------- | --------- | ---------------------------------------------------- |
-| `selected`      | `boolean` | Row is selected.                                     |
-| `checked`       | `boolean` | Row is fully checked.                                |
-| `indeterminate` | `boolean` | Row is in the half-checked state.                    |
-| `expanded`      | `boolean` | Row is expanded.                                     |
-| `disabled`      | `boolean` | Row is disabled.                                     |
-| `loading`       | `boolean` | The row's children are being fetched via `loadData`. |
-| `leaf`          | `boolean` | Row has no children.                                 |
-| `has-checkbox`  | `boolean` | Row renders a checkbox.                              |
-| `has-menu`      | `boolean` | Row resolves a non-empty menu.                       |
+| Modifier | Type | Description |
+| --- | --- | --- |
+| `selected` | `boolean` | Row is selected. |
+| `checked` | `boolean` | Row is fully checked. |
+| `indeterminate` | `boolean` | Row is in the half-checked state. |
+| `expanded` | `boolean` | Row is expanded. |
+| `disabled` | `boolean` | Row is disabled. |
+| `loading` | `boolean` | The row's children are being fetched via `loadData`. |
+| `leaf` | `boolean` | Row has no children. |
+| `has-checkbox` | `boolean` | Row renders a checkbox. |
+| `has-menu` | `boolean` | Row resolves a non-empty menu. |
 
 ## Variants
 
 ### Selection Modes
 
-- `none` — Row click does not select. Useful in pure-display or pure-
-  checkable trees.
+- `none` — Row click does not select. Useful in pure-display or pure- checkable trees.
 - `single` (default) — One row selected at a time.
 - `multiple` — Multi-select with keyboard modifiers and shift-range.
 
@@ -203,10 +152,7 @@ const data = [
 
 ### Checkable
 
-`isCheckable` enables AntD-style cascading parent ↔ child checkbox
-behavior: checking a parent checks all eligible descendants, and a
-parent flips into the indeterminate (half-checked) state when only some
-of its descendants are checked.
+`isCheckable` enables AntD-style cascading parent ↔ child checkbox behavior: checking a parent checks all eligible descendants, and a parent flips into the indeterminate (half-checked) state when only some of its descendants are checked.
 
 ```jsx
 <Tree
@@ -225,8 +171,7 @@ of its descendants are checked.
 
 ### Controlled Checked
 
-To match AntD's object-shape API, pass `checkedKeys` as
-`{ checked, halfChecked }`. `onCheck` returns the same shape.
+To match AntD's object-shape API, pass `checkedKeys` as `{ checked, halfChecked }`. `onCheck` returns the same shape.
 
 ```jsx
 const [checkedKeys, setCheckedKeys] = useState({
@@ -246,10 +191,7 @@ const [checkedKeys, setCheckedKeys] = useState({
 
 ### Lazy Loading
 
-Set `isLeaf: false` and omit `children` on a node, then provide a
-`loadData` callback. The callback should merge new children into
-`treeData`. The row shows a spinner while in flight; subsequent expands
-of the same key won't refire `loadData`.
+Set `isLeaf: false` and omit `children` on a node, then provide a `loadData` callback. The callback should merge new children into `treeData`. The row shows a spinner while in flight; subsequent expands of the same key won't refire `loadData`.
 
 ```jsx
 const handleLoadData = (node) =>
@@ -264,8 +206,7 @@ const handleLoadData = (node) =>
 
 ### Auto-expand Parent (Filtering)
 
-Pass the matching keys via `expandedKeys` and set `autoExpandParent` to
-keep their ancestors expanded.
+Pass the matching keys via `expandedKeys` and set `autoExpandParent` to keep their ancestors expanded.
 
 ```jsx
 <Tree treeData={data} expandedKeys={matchedKeys} autoExpandParent />
@@ -275,8 +216,7 @@ keep their ancestors expanded.
 
 ### Per-node Disabling
 
-Disable the entire row, just the checkbox, or hide the checkbox via
-node-level flags.
+Disable the entire row, just the checkbox, or hide the checkbox via node-level flags.
 
 ```jsx
 const data = [
@@ -306,11 +246,7 @@ const data = [
 
 ### Per-row Menu (Overflow + Right-Click)
 
-Pass `menu` (a `ReactNode` of `Menu.Item`s, or a callback) plus
-`contextMenu={true}` to render a built-in `⋮` overflow trigger AND
-open the same menu on right-click / `Shift+F10`. Use
-`onAction(action, key)` at the tree level to handle actions, or
-`data.onAction` for per-node behavior.
+Pass `menu` (a `ReactNode` of `Menu.Item`s, or a callback) plus `contextMenu={true}` to render a built-in `⋮` overflow trigger AND open the same menu on right-click / `Shift+F10`. Use `onAction(action, key)` at the tree level to handle actions, or `data.onAction` for per-node behavior.
 
 ```jsx
 <Tree
@@ -331,75 +267,54 @@ open the same menu on right-click / `Shift+F10`. Use
 
 ### Right-Click Only
 
-`contextMenu="context-only"` keeps the right-click / `Shift+F10`
-behavior but hides the `⋮` trigger — handy for clean file-tree UIs.
+`contextMenu="context-only"` keeps the right-click / `Shift+F10` behavior but hides the `⋮` trigger — handy for clean file-tree UIs.
 
 <Story of={TreeStories.WithContextMenuOnly} />
 
 ### Per-Node Menu Overrides
 
-Set `data.menu` to override the tree-level menu for a specific row,
-or `null` to hide it entirely. `data.contextMenu` and
-`data.onAction` follow the same per-row override pattern.
+Set `data.menu` to override the tree-level menu for a specific row, or `null` to hide it entirely. `data.contextMenu` and `data.onAction` follow the same per-row override pattern.
 
 <Story of={TreeStories.PerNodeMenu} />
 
 ## Accessibility
 
-Tree implements the
-[`treegrid` ARIA pattern](https://www.w3.org/WAI/ARIA/apg/patterns/treegrid/)
-via `useTree` from React Aria.
+Tree implements the [`treegrid` ARIA pattern](https://www.w3.org/WAI/ARIA/apg/patterns/treegrid/) via `useTree` from React Aria.
 
 ### Keyboard Navigation
 
-- `Tab` — Moves focus into / out of the tree (focus stays on the
-  currently active row inside).
+- `Tab` — Moves focus into / out of the tree (focus stays on the currently active row inside).
 - `ArrowUp` / `ArrowDown` — Move focus to the previous / next visible row.
-- `ArrowRight` — Expand the focused row (or move to its first child if
-  already expanded).
-- `ArrowLeft` — Collapse the focused row (or move to its parent if
-  already collapsed).
+- `ArrowRight` — Expand the focused row (or move to its first child if already expanded).
+- `ArrowLeft` — Collapse the focused row (or move to its parent if already collapsed).
 - `Home` / `End` — Move focus to the first / last visible row.
-- `Space` / `Enter` — Toggle selection on the focused row (in `single`
-  or `multiple` mode).
+- `Space` / `Enter` — Toggle selection on the focused row (in `single` or `multiple` mode).
 
 ### Screen Reader Support
 
-- Each row reports `aria-level`, `aria-posinset`, `aria-setsize`, and
-  `aria-expanded` so screen readers can announce the position and
-  expansion state.
-- When `isCheckable` is enabled, the row carries `aria-checked` (`true`,
-  `false`, or `mixed` for the indeterminate state).
+- Each row reports `aria-level`, `aria-posinset`, `aria-setsize`, and `aria-expanded` so screen readers can announce the position and expansion state.
+- When `isCheckable` is enabled, the row carries `aria-checked` (`true`, `false`, or `mixed` for the indeterminate state).
 - Disabled rows expose `aria-disabled="true"`.
 
 ### ARIA Properties
 
-- `aria-label` — Provide a label that describes the tree's contents
-  (defaults to `"Tree"`).
+- `aria-label` — Provide a label that describes the tree's contents (defaults to `"Tree"`).
 
 ## Best Practices
 
-1. **Do**: Provide stable, unique `key`s — they are used for selection,
-   expansion, checking, and lazy-load tracking.
+1. **Do**: Provide stable, unique `key`s — they are used for selection, expansion, checking, and lazy-load tracking.
    ```jsx
    <Tree treeData={data.map((node) => ({ ...node, key: node.id }))} />
    ```
-2. **Don't**: Mutate `treeData` in place. Always return a new array
-   from `loadData`'s commit step so React Stately can rebuild the
-   collection.
-3. **Accessibility**: When using checkboxes for selection, set
-   `selectionMode="none"` so the row click doesn't compete with the
-   checkbox.
-4. **Performance**: For very large trees, prefer virtualization (planned;
-   see Suggested Improvements) or use `loadData` to defer subtree
-   construction.
+2. **Don't**: Mutate `treeData` in place. Always return a new array from `loadData`'s commit step so React Stately can rebuild the collection.
+3. **Accessibility**: When using checkboxes for selection, set `selectionMode="none"` so the row click doesn't compete with the checkbox.
+4. **Performance**: For very large trees, prefer virtualization (planned; see Suggested Improvements) or use `loadData` to defer subtree construction.
 
 ## Suggested Improvements
 
 - Built-in virtualization for very large trees (10k+ rows).
 - Drag-and-drop reordering, mirroring AntD's `draggable` API.
-- Reveal-on-mount: scroll the focused row into view when expanded
-  programmatically.
+- Reveal-on-mount: scroll the focused row into view when expanded programmatically.
 - Optional inline title editing.
 
 ## Related Components

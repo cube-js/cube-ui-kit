@@ -1,7 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 
-import { DatabaseIcon, FolderIcon, PlusIcon, UserIcon } from '../../../icons';
+import { DatabaseIcon } from '../../../icons/DatabaseIcon';
+import { FolderIcon } from '../../../icons/FolderIcon';
+import { PlusIcon } from '../../../icons/PlusIcon';
+import { UserIcon } from '../../../icons/UserIcon';
 import { Button, Menu } from '../../actions';
 import { Tag } from '../../content/Tag/Tag';
 import { Text } from '../../content/Text';

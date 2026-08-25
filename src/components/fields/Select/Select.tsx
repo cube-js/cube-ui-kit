@@ -42,7 +42,9 @@ import { Section as BaseSection, useSelectState } from 'react-stately';
 import { CubeTooltipProviderProps } from 'src/components/overlays/Tooltip/TooltipProvider';
 
 import { useEvent } from '../../../_internal';
-import { CloseIcon, DirectionIcon, LoadingIcon } from '../../../icons/index';
+import { CloseIcon } from '../../../icons/CloseIcon';
+import { DirectionIcon } from '../../../icons/DirectionIcon';
+import { LoadingIcon } from '../../../icons/LoadingIcon';
 import { FieldBaseProps } from '../../../shared/index';
 import { generateRandomId } from '../../../utils/random';
 import {

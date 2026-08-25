@@ -31,8 +31,7 @@ Supports all [Field properties](/docs/getting-started-field-properties--docs)
 
 ## Validation States
 
-`isValid` and `isInvalid` are forwarded to every key and value input, so the whole mapping list picks up
-the state.
+`isValid` and `isInvalid` are forwarded to every key and value input, so the whole mapping list picks up the state.
 
 <Canvas of={TextInputMapperStories.Validation} />
 
@@ -65,15 +64,14 @@ The TextInputMapper component follows WAI-ARIA guidelines:
 - Use `allowsCustomValue` when users need flexibility in value selection
 - Provide clear feedback when validation fails on individual pairs
 
-
 ### Style Properties
 
 These properties allow direct style application without using the `styles` prop:
 
 - **Base:** `display`, `font`, `preset`, `hide`, `whiteSpace`, `opacity`, `transition`
-- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`
+- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `scrollMargin`
 - **Dimension:** `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`
 - **Block:** `border`, `radius`, `shadow`, `outline`, `padding`, `paddingInline`, `paddingBlock`, `overflow`, `scrollbar`, `textAlign`
 - **Color:** `color`, `fill`, `fade`, `image`
 - **Text:** `textTransform`, `fontWeight`, `fontStyle`
-- **Flow:** `flow`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gap`, `columnGap`, `rowGap`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`
+- **Flow:** `flow`, `place`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gap`, `columnGap`, `rowGap`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`

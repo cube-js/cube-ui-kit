@@ -27,11 +27,11 @@ Supports [Base properties](/docs/getting-started-base-properties--docs).
 These properties allow direct style application without using the `styles` prop:
 
 - **Base:** `display`, `font`, `preset`, `hide`, `whiteSpace`, `opacity`, `transition`
-- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`
+- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `scrollMargin`
 - **Dimension:** `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`
 - **Block:** `border`, `radius`, `shadow`, `outline`, `padding`, `paddingInline`, `paddingBlock`, `overflow`, `scrollbar`, `textAlign`
 - **Color:** `color`, `fill`, `fade`, `image`
-- **Flow:** `flow`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gap`, `columnGap`, `rowGap`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`
+- **Flow:** `flow`, `place`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gap`, `columnGap`, `rowGap`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`
 
 ## Examples
 
@@ -45,12 +45,6 @@ These properties allow direct style application without using the `styles` prop:
 
 ## Colors
 
-The cube's three faces come from the shared isometric-cube tokens
-(`#loading-face-1` … `#loading-face-3`), a near-neutral ramp positioned by a WCAG
-floor against `#surface`. Each face therefore keeps the same separation from the
-page in light, dark, and high contrast, and follows a re-seeded brand hue as a
-tint rather than as a color. There is no `color` prop to override — recolouring
-one face and not the others would break the shading.
+The cube's three faces come from the shared isometric-cube tokens (`#loading-face-1` … `#loading-face-3`), a near-neutral ramp positioned by a WCAG floor against `#surface`. Each face therefore keeps the same separation from the page in light, dark, and high contrast, and follows a re-seeded brand hue as a tint rather than as a color. There is no `color` prop to override — recolouring one face and not the others would break the shading.
 
-[`NoDataIcon`](/docs/other-nodataicon--docs) draws its empty crate from the same
-three tokens, so a loading table and an empty table read as the same object.
+[`NoDataIcon`](/docs/other-nodataicon--docs) draws its empty crate from the same three tokens, so a loading table and an empty table read as the same object.

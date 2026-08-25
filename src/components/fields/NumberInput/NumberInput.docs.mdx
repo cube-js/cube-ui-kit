@@ -37,10 +37,11 @@ A number input component that allows users to enter numeric values and increment
 - **`step`** `number` — Amount to increment or decrement the value
 - **`formatOptions`** `Intl.NumberFormatOptions` — Options for formatting the displayed number value
 - **`size`** `'small' | 'medium' | 'large'` (default: `medium`) — Input size
+- **`autoComplete`** `string` (default: `off`) — HTML [`autocomplete`](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/autocomplete) token that tells the browser what to autofill (`cc-number`, `one-time-code`, …). A number field opts out of autofill by default.
 - **`isWheelDisabled`** `boolean` — Whether scrolling the mouse wheel changes the value
 - **`decrementAriaLabel`** `string` — Custom aria-label for the decrement button
 - **`incrementAriaLabel`** `string` — Custom aria-label for the increment button
-- **`inputProps`** `Props` — Direct props passed to the native input element
+- **`inputProps`** `Props` — Direct props passed to the native input element, merged over the props React Aria generates: a key you set wins, and event handlers are chained rather than replaced
 - **`wrapperProps`** `Props` — Direct props passed to the input wrapper element
 - **`onChange`** `function` — Callback fired when the input value changes
 - **`onBlur`** `function` — Callback fired when the input loses focus
@@ -61,6 +62,7 @@ Supports all [Field properties](/docs/getting-started-field-properties--docs)
 Customizes the root element of the component.
 
 **Sub-elements:**
+
 - `InputWrapper` – container around the input field
 - `Prefix` – wrapper around prefix content
 - `Suffix` – wrapper around suffix content
@@ -77,7 +79,7 @@ Customizes the input element itself.
 These properties allow direct style application without using the `styles` prop:
 
 - **Base:** `display`, `font`, `preset`, `hide`, `whiteSpace`, `opacity`, `transition`
-- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`
+- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `scrollMargin`
 - **Dimension:** `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`
 - **Block:** `border`, `radius`, `shadow`, `outline`, `padding`, `paddingInline`, `paddingBlock`, `overflow`, `scrollbar`, `textAlign`
 - **Color:** `color`, `fill`, `fade`, `image`
@@ -165,11 +167,13 @@ The `mods` prop accepts the following modifiers you can override:
 ## Best Practices
 
 1. **Do**: Provide clear labels and helpful placeholder text
+
    ```jsx
    <NumberInput label="Quantity" placeholder="0" />
    ```
 
 2. **Don't**: Use placeholder text as the only label
+
    ```jsx
    {/* Avoid this */}
    <NumberInput placeholder="Enter a number" />
@@ -185,7 +189,6 @@ This component supports all [Field properties](/docs/getting-started-field-prope
 
 ## Suggested Improvements
 
-- Add `autoComplete` prop mapping for better browser integration
 - Provide `maxValue`/`minValue` indicator with value range
 - Support for input masks and formatting
 - Built-in debouncing for onChange events

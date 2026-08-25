@@ -1,3 +1,4 @@
+import { TastyBatchProvider } from '@tenphi/tasty';
 import {
   Children,
   cloneElement,
@@ -111,7 +112,17 @@ function Overlay(props: CubeOverlayProps, ref) {
     </Provider>
   );
 
-  return createPortal(contents, container || root || document.body);
+  // Popover, Modal and Tray all portal through here, which makes this the
+  // overlay path that matters most for batching: a dialog or menu mounts a
+  // fresh subtree and react-aria positions it from a layout effect in the same
+  // commit. `<Root>` does not re-render for those commits, so open a window
+  // here — it flushes in `useInsertionEffect`, before any positioning effect
+  // reads the DOM. Note this is a *raw* `createPortal`, not `<Portal>`, so the
+  // window `<Portal>` opens does not reach these overlays.
+  return createPortal(
+    <TastyBatchProvider>{contents}</TastyBatchProvider>,
+    container || root || document.body,
+  );
 }
 
 let _Overlay = forwardRef(Overlay);

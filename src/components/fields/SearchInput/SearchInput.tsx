@@ -2,7 +2,8 @@ import { forwardRef, useRef } from 'react';
 import { useSearchField } from 'react-aria';
 import { SearchFieldProps, useSearchFieldState } from 'react-stately';
 
-import { CloseIcon, SearchIcon } from '../../../icons';
+import { CloseIcon } from '../../../icons/CloseIcon';
+import { SearchIcon } from '../../../icons/SearchIcon';
 import { useProviderProps } from '../../../provider';
 import { chain, mergeProps, useBufferedValue } from '../../../utils/react';
 import { ariaToCubeButtonProps } from '../../../utils/react/mapProps';
@@ -58,6 +59,7 @@ export const SearchInput = forwardRef(function SearchInput(
     isValid,
     onClear,
     labelProps: userLabelProps,
+    inputProps: userInputProps,
     isBuffered,
     ...restProps
   } = props;
@@ -94,7 +96,11 @@ export const SearchInput = forwardRef(function SearchInput(
     <TextInputBase
       ref={ref}
       labelProps={mergedLabelProps}
-      inputProps={{ ...inputProps, 'data-input-type': 'searchinput' }}
+      inputProps={mergeProps(
+        inputProps,
+        { 'data-input-type': 'searchinput' },
+        userInputProps,
+      )}
       inputRef={inputRef}
       type="search"
       icon={<SearchIcon />}

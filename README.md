@@ -1,7 +1,6 @@
 # Cube UI Kit
 
-[![npm version](https://img.shields.io/npm/v/@cube-dev/ui-kit.svg)](https://www.npmjs.com/package/@cube-dev/ui-kit)
-[![license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/cube-js/cube-ui-kit/blob/main/LICENSE)
+[![npm version](https://img.shields.io/npm/v/@cube-dev/ui-kit.svg)](https://www.npmjs.com/package/@cube-dev/ui-kit) [![license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/cube-js/cube-ui-kit/blob/main/LICENSE)
 
 An open-source React component library that powers [Cube Cloud](https://cubecloud.dev) and other [Cube Dev](https://cube.dev) products. While built for Cube's own interfaces, it is a general-purpose kit you can use freely in any application where it fits your needs.
 
@@ -52,8 +51,7 @@ function App() {
 }
 ```
 
-To ship your own brand color, tune the palette seeds — every token, in every
-schema, re-resolves from them:
+To ship your own brand color, tune the palette seeds — every token, in every schema, re-resolves from them:
 
 ```tsx
 <Root palette={{ hue: 210, saturation: 72, themes: { danger: { hue: 12 } } }}>
@@ -61,8 +59,7 @@ schema, re-resolves from them:
 </Root>
 ```
 
-`setPaletteConfig()` does the same thing imperatively, from anywhere. It replaces
-rather than accumulates, like `useState` — pass an updater to change one field:
+`setPaletteConfig()` does the same thing imperatively, from anywhere. It replaces rather than accumulates, like `useState` — pass an updater to change one field:
 
 ```ts
 setPaletteConfig((config) => ({ ...config, hue: 235 }));
@@ -71,7 +68,7 @@ setPaletteConfig((config) => ({ ...config, hue: 235 }));
 ## Components
 
 | Category | Components |
-|----------|------------|
+| --- | --- |
 | **Layout** | Flex, Grid, Space, Flow, Panel, ResizablePanel, Prefix, Suffix |
 | **Actions** | Button, Button.Group, Button.Split, Link, Menu, CommandMenu |
 | **Content** | Text, Title, Paragraph, Card, Badge, Tag, Avatar, Alert, Skeleton, Placeholder, Disclosure, Divider, CopySnippet, PrismCode |

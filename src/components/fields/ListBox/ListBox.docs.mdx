@@ -72,6 +72,7 @@ Supports all [Field properties](/docs/getting-started-field-properties--docs)
 Customizes the root wrapper element of the component.
 
 **Sub-elements:**
+
 - `ValidationState` - Container for validation and loading indicators
 
 #### listStyles
@@ -83,6 +84,7 @@ Customizes the list container element.
 Customizes individual option elements.
 
 **Sub-elements:**
+
 - `Label` - The main text of each option
 - `Description` - Secondary descriptive text for options
 - `Content` - Container for label and description
@@ -110,7 +112,7 @@ Customizes the footer area when footer prop is provided.
 These properties allow direct style application without using the `styles` prop:
 
 - **Base:** `display`, `font`, `preset`, `hide`, `whiteSpace`, `opacity`, `transition`
-- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`
+- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `scrollMargin`
 - **Dimension:** `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`
 - **Block:** `border`, `radius`, `shadow`, `outline`
 - **Color:** `color`, `fill`, `fade`, `image`
@@ -134,42 +136,51 @@ The `mods` property accepts the following modifiers you can override:
 ### Selection Behavior
 
 **isCheckable** (`boolean`, default: `false`)
+
 - When `true` in multiple selection mode, displays checkboxes on the left of each option
 - Checkboxes are visible when the item is hovered, focused, or selected
 - Improves clarity of multiple selection interactions
 
 **showSelectAll** (`boolean`, default: `false`)
+
 - When `true` in multiple selection mode, displays a "Select All" option in the header
 - The checkbox shows three states: unchecked (none selected), indeterminate (some selected), checked (all selected)
 - Only works with `selectionMode="multiple"`
 
 **selectAllLabel** (`ReactNode`, default: `'Select All'`)
+
 - Custom label for the "Select All" option
 - Only used when `showSelectAll={true}`
 
 **allValueProps** (`Partial<CubeItemProps>`)
+
 - Props to customize the styling and behavior of the "Select All" option
 - Accepts any Item props like `styles`, `icon`, etc.
 
 **disallowEmptySelection** (`boolean`, default: `false`)
+
 - When `true`, prevents the user from deselecting the last selected item
 - Ensures at least one item is always selected in single selection mode
 
 **allowDuplicateSelectionEvents** (`boolean`, default: `false`)
+
 - When `true`, `onSelectionChange` fires even when the new selection equals the current one (React Stately suppresses such duplicate events by default)
 - Used by popover-based wrappers (Picker, FilterPicker) together with `disallowEmptySelection` to close the popover when the user re-selects the current item
 
 **disableSelectionToggle** (`boolean`, default: `false`)
+
 - When `true`, clicking an already-selected item keeps it selected instead of toggling it off
 - Useful when embedding ListBox inside components like ComboBox
 
 **disabledKeys** (`Key[]`)
+
 - Array of keys for items that should be disabled
 - Disabled items cannot be selected and are visually distinguished
 
 ### Visual Styling
 
 **shape** (`'card' | 'plain' | 'popover'`, default: `'card'`)
+
 - Controls the visual styling of the ListBox container
 - `card`: Standard card styling with border and margin (default)
 - `plain`: No border, no margin, no radius - suitable for embedded use
@@ -180,39 +191,47 @@ The `mods` property accepts the following modifiers you can override:
 ### Focus and Interaction
 
 **focusOnHover** (`boolean`, default: `true`)
+
 - When `true`, moving the pointer over an option will move DOM focus to that option
 - Set to `false` for components that keep DOM focus outside (e.g., searchable FilterListBox)
 
 **shouldUseVirtualFocus** (`boolean`, default: `false`)
+
 - When `true`, uses virtual focus for keyboard navigation
 - DOM focus stays outside individual option elements (useful for searchable lists)
 
 **shouldFocusWrap** (`boolean`, default: `false`)
+
 - When `true`, keyboard navigation wraps around when reaching the end of the list
 
 ### Event Handlers
 
 **onSelectionChange** (`(key: Key | null | 'all' | Key[]) => void`)
+
 - Callback fired when selection changes
 - In single mode: receives a single key or `null`
 - In multiple mode: receives an array of keys or `'all'` for select all
 
 **onEscape** (`() => void`)
+
 - Callback fired when the user presses Escape key
 - When provided, prevents React Aria's default Escape behavior (selection reset)
 - Useful for closing parent overlays
 
 **onOptionClick** (`(key: Key) => void`)
+
 - Callback fired when an option is clicked (not on the checkbox area in checkable mode)
 - Used by FilterPicker to close the popover on non-checkbox clicks
 
 ### Advanced
 
 **stateRef** (`RefObject<any>`)
+
 - Ref to access the internal ListState instance
 - Allows parent components to access selection state and other list functionality
 
 **listRef** (`RefObject<HTMLUListElement>`)
+
 - Ref for accessing the list DOM element
 
 ## Sub-components
@@ -243,16 +262,16 @@ ListBox.Item is built using [Item](/docs/content-item--docs), which provides ric
 
 ```jsx
 <ListBox label="Team Members" selectionMode="multiple">
-  <ListBox.Item 
-    key="user1" 
+  <ListBox.Item
+    key="user1"
     icon={<IconUser />}
     description="Product Manager"
     suffix="Online"
   >
     Alice Johnson
   </ListBox.Item>
-  <ListBox.Item 
-    key="user2" 
+  <ListBox.Item
+    key="user2"
     icon={<IconUser />}
     description="Senior Developer"
     rightIcon={<IconBadge />}
@@ -303,14 +322,14 @@ Groups related items together with an optional heading.
 
 ```jsx
 <ListBox label="Choose a framework" selectionMode="single">
-  <ListBox.Item 
-    key="react" 
+  <ListBox.Item
+    key="react"
     description="A JavaScript library for building user interfaces"
   >
     React
   </ListBox.Item>
-  <ListBox.Item 
-    key="vue" 
+  <ListBox.Item
+    key="vue"
     description="The Progressive JavaScript Framework"
   >
     Vue.js
@@ -717,6 +736,7 @@ const [keyOrder, setKeyOrder] = useState([
 ## Best Practices
 
 1. **Do**: Provide clear, descriptive labels for options
+
    ```jsx
    <ListBox.Item key="react" description="JavaScript library for UIs">
      React
@@ -724,6 +744,7 @@ const [keyOrder, setKeyOrder] = useState([
    ```
 
 2. **Don't**: Use ListBox for very large datasets without considering virtualization
+
    ```jsx
    // ✅ Virtualization is automatic for lists without sections
    <ListBox height="300px">
@@ -732,6 +753,7 @@ const [keyOrder, setKeyOrder] = useState([
    ```
 
 3. **Do**: Use sections to organize related options
+
    ```jsx
    <ListBox.Section title="Frontend Frameworks">
      <ListBox.Item key="react">React</ListBox.Item>
@@ -739,6 +761,7 @@ const [keyOrder, setKeyOrder] = useState([
    ```
 
 4. **Do**: Use `isCheckable` for clearer multiple selection UI
+
    ```jsx
    <ListBox selectionMode="multiple" isCheckable={true}>
      {/* Checkboxes make the selection state obvious */}
@@ -746,6 +769,7 @@ const [keyOrder, setKeyOrder] = useState([
    ```
 
 5. **Do**: Use `showSelectAll` for efficient multiple selection from lists
+
    ```jsx
    <ListBox selectionMode="multiple" isCheckable={true} showSelectAll selectAllLabel="Select All">
      {/* Easy bulk selection with visual feedback */}
@@ -753,6 +777,7 @@ const [keyOrder, setKeyOrder] = useState([
    ```
 
 6. **Do**: Use `textValue` for complex option content
+
    ```jsx
    <ListBox.Item key="item" textValue="Basic Plan - Free">
      <Space gap="1x" flow="column">
@@ -763,6 +788,7 @@ const [keyOrder, setKeyOrder] = useState([
    ```
 
 7. **Do**: Leverage Item features for rich content
+
    ```jsx
    <ListBox.Item
      key="admin"
@@ -834,4 +860,4 @@ const items = Array.from({ length: 1000 }, (_, i) => ({
 - [Select](/docs/forms-select--docs) - Dropdown selection without persistent visibility
 - [ComboBox](/docs/forms-combobox--docs) - Dropdown with text input and search
 - [RadioGroup](/docs/forms-radiogroup--docs) - Single selection with radio buttons
-- [CheckboxGroup](/docs/forms-checkbox--docs) - Multiple selection with checkboxes 
+- [CheckboxGroup](/docs/forms-checkbox--docs) - Multiple selection with checkboxes

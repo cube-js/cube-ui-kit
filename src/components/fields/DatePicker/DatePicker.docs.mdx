@@ -62,6 +62,7 @@ Supports all [Field properties](/docs/getting-started-field-properties--docs)
 Customizes the root wrapper element of the component.
 
 **Sub-elements:**
+
 - `Prefix` - Element displayed before the input (icon area)
 - `Suffix` - Element displayed after the input (calendar button area)
 - `State` - Container for validation state indicators
@@ -85,11 +86,11 @@ Customizes the calendar trigger button.
 These properties allow direct style application without using the `styles` prop:
 
 - **Base:** `display`, `font`, `preset`, `hide`, `whiteSpace`, `opacity`, `transition`
-- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`
+- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `scrollMargin`
 - **Dimension:** `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`
 - **Block:** `border`, `radius`, `shadow`, `outline`, `padding`, `paddingInline`, `paddingBlock`, `overflow`, `scrollbar`, `textAlign`
 - **Color:** `color`, `fill`, `fade`, `image`
-- **Flow:** `flow`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gap`, `columnGap`, `rowGap`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`
+- **Flow:** `flow`, `place`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gap`, `columnGap`, `rowGap`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`
 
 ### Modifiers
 
@@ -201,6 +202,7 @@ The `mods` property accepts the following modifiers you can override:
 ## Best Practices
 
 1. **Do**: Provide clear labels and format hints
+
    ```jsx
    <DatePicker
      label="Event date"
@@ -209,6 +211,7 @@ The `mods` property accepts the following modifiers you can override:
    ```
 
 2. **Don't**: Use date picker for approximate dates
+
    ```jsx
    <DatePicker label="Approximately when?" /> {/* Use text input instead */}
    ```

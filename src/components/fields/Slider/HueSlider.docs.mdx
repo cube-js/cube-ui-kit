@@ -76,7 +76,7 @@ Custom tokens for the thumb element (e.g., `#slider-thumb` for fill color). The 
 
 These properties allow direct style application without using the `styles` prop:
 
-- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`
+- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `scrollMargin`
 - **Dimension:** `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`
 - **Block:** `border`, `radius`, `shadow`, `outline`
 
@@ -108,8 +108,8 @@ The `mods` property accepts the following modifiers you can override:
 <Canvas of={HueSliderStories.WithCustomLabel} />
 
 ```jsx
-<HueSlider 
-  label="Hue" 
+<HueSlider
+  label="Hue"
   defaultValue={180}
   getValueLabel={(val) => `${val}°`}
 />
@@ -147,9 +147,9 @@ function ColorPicker() {
 <Canvas of={HueSliderStories.Vertical} />
 
 ```jsx
-<HueSlider 
-  orientation="vertical" 
-  fieldStyles={{ height: '200px' }} 
+<HueSlider
+  orientation="vertical"
+  fieldStyles={{ height: '200px' }}
 />
 ```
 

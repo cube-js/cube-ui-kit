@@ -1,6 +1,6 @@
 // NOTE: Type checking is disabled in this test file to prevent
 // noisy errors from complex generic typings that do not affect runtime behaviour.
-import { createRef } from 'react';
+import { createRef, useState } from 'react';
 
 import {
   act,
@@ -1029,5 +1029,140 @@ describe('useContextMenu', () => {
     expect(queryByText('Edit')).toBeInTheDocument();
     expect(queryByText('More')).toBeInTheDocument();
     expect(getByText('Nested 2')).toBeInTheDocument();
+  });
+  /**
+   * The row-menu shape: the menu's CONTENT lives in `defaultMenuProps`, and the
+   * consumer never calls `update()`. Before the merge moved to render time these
+   * defaults were snapshotted by `open()`, so an item that became available while
+   * the menu was open stayed invisible until it was closed and reopened —
+   * `Tree`'s row context menu (see `TreeNode`) is exactly this shape.
+   */
+  it('reflects defaultMenuProps changes while the menu is open', async () => {
+    let revealPreview: () => void = () => {};
+
+    const TestLiveDefaultsWrapper = () => {
+      const [hasPreview, setHasPreview] = useState(false);
+
+      revealPreview = () => setHasPreview(true);
+
+      const { targetRef, rendered } = useContextMenu<HTMLDivElement, any>(
+        Menu,
+        { placement: 'bottom start' },
+        {
+          children: (
+            <>
+              {hasPreview ? <Menu.Item key="preview">Preview</Menu.Item> : null}
+              <Menu.Item key="delete">Delete</Menu.Item>
+            </>
+          ),
+        },
+      );
+
+      return (
+        <div ref={targetRef} data-qa="Container">
+          Right-click me
+          {rendered}
+        </div>
+      );
+    };
+
+    const { getByTestId, getByRole, getByText, queryByText } = renderWithRoot(
+      <TestLiveDefaultsWrapper />,
+    );
+
+    await act(async () => {
+      fireEvent.contextMenu(getByTestId('Container'), {
+        clientX: 100,
+        clientY: 50,
+      });
+    });
+
+    await waitFor(() => {
+      expect(getByRole('menu')).toBeInTheDocument();
+    });
+
+    expect(getByText('Delete')).toBeInTheDocument();
+    expect(queryByText('Preview')).not.toBeInTheDocument();
+
+    // The state change happens outside the menu, with the menu still open —
+    // nothing reopens it, and nothing calls `update()`.
+    await act(async () => {
+      revealPreview();
+    });
+
+    await waitFor(() => {
+      expect(getByText('Preview')).toBeInTheDocument();
+    });
+
+    // Still the same open menu, not a reopened one.
+    expect(getByRole('menu')).toBeInTheDocument();
+    expect(getByText('Delete')).toBeInTheDocument();
+  });
+
+  it('keeps runtime props ahead of defaults that change while open', async () => {
+    const defaultAction = vi.fn();
+    const runtimeAction = vi.fn();
+    let bumpDefaults: () => void = () => {};
+
+    const TestPrecedenceWrapper = () => {
+      const [extraItem, setExtraItem] = useState(false);
+
+      bumpDefaults = () => setExtraItem(true);
+
+      const { targetRef, open, rendered } = useContextMenu<HTMLDivElement, any>(
+        Menu,
+        { placement: 'bottom start' },
+        {
+          onAction: defaultAction,
+          children: (
+            <>
+              <Menu.Item key="edit">Edit</Menu.Item>
+              {extraItem ? <Menu.Item key="extra">Extra</Menu.Item> : null}
+            </>
+          ),
+        },
+      );
+
+      return (
+        <div ref={targetRef} data-qa="Container">
+          <button
+            data-qa="ManualTrigger"
+            onClick={(e) => open({ onAction: runtimeAction }, undefined, e)}
+          >
+            Open
+          </button>
+          {rendered}
+        </div>
+      );
+    };
+
+    const { getByTestId, getByText } = renderWithRoot(
+      <TestPrecedenceWrapper />,
+    );
+
+    await act(async () => {
+      await userEvent.click(getByTestId('ManualTrigger'));
+    });
+
+    await waitFor(() => {
+      expect(getByText('Edit')).toBeInTheDocument();
+    });
+
+    // A defaults change re-merges the props — the runtime `onAction` must
+    // survive it rather than be overwritten by the default one.
+    await act(async () => {
+      bumpDefaults();
+    });
+
+    await waitFor(() => {
+      expect(getByText('Extra')).toBeInTheDocument();
+    });
+
+    await act(async () => {
+      await userEvent.click(getByText('Edit'));
+    });
+
+    expect(runtimeAction).toHaveBeenCalledWith('edit');
+    expect(defaultAction).not.toHaveBeenCalled();
   });
 });

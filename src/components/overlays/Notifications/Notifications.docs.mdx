@@ -32,6 +32,7 @@ Supports [Base properties](/docs/getting-started-base-properties--docs)
 Customizes the root element of the notification.
 
 **Sub-elements:**
+
 - `Description` - The description text area below the title
 
 ## Variants
@@ -344,6 +345,7 @@ Collapse is disabled when notifications are present, since notifications require
 ## Best Practices
 
 1. **Do**: Use notifications for action-oriented messages
+
    ```jsx
    notify({
      theme: 'success',
@@ -357,16 +359,19 @@ Collapse is disabled when notifications are present, since notifications require
    ```
 
 2. **Don't**: Use notifications for simple messages without actions — use Toast instead
+
    ```jsx
    // Use toast.success('Copied to clipboard') instead
    ```
 
 3. **Do**: Provide explicit `id` for persistent and stored notifications
+
    ```jsx
    notify({ id: 'deploy:123', persistent: true, ... });
    ```
 
 4. **Do**: Place the dismiss action last for consistent right-side positioning
+
    ```jsx
    notify({
      actions: (
@@ -379,6 +384,7 @@ Collapse is disabled when notifications are present, since notifications require
    ```
 
 5. **Do**: When using `isDismissable: false`, always provide actions — the user needs a way to interact
+
    ```jsx
    // isDismissable: false hides the default "Dismiss" button and Escape key,
    // but actions with closeOnPress (default true) still close the notification.
@@ -395,6 +401,7 @@ Collapse is disabled when notifications are present, since notifications require
    ```
 
 6. **Do**: Return `false` from `onPress` to keep the notification when the user cancels a confirmation flow
+
    ```jsx
    <Notification.Action
      onPress={async () => {

@@ -38,6 +38,7 @@ Supports [Base properties](/docs/getting-started-base-properties--docs)
 Customizes the root element of the toast. The toast uses the `Item` component with `type="card"` internally.
 
 **Sub-elements:**
+
 - `Label` - Primary content text
 - `Description` - Secondary content text
 - `Icon` - Icon container
@@ -128,17 +129,20 @@ type ProgressToastEmpty = null | undefined | false | {};
 The hook requires a loading cycle (`isLoading: true`) before any toast becomes visible. If the initial state is not loading, no toast is shown until `isLoading: true` is passed. The hook handles three main scenarios:
 
 **1. Loading State** (`isLoading: true`) — triggers initial appearance
+
 - Toast appears immediately and persists until `isLoading` becomes `false`
 - No auto-dismiss timer while loading
 - This is the only state that can trigger the initial appearance of the toast
 
 **2. Result State** (`isLoading: false` with content)
+
 - Only shown after a prior loading state — ignored if loading was never seen
 - When transitioning from loading to not loading, the toast updates to show the result
 - Result toast auto-dismisses after 3 seconds
 - Theme-based icons are automatically applied (success checkmark, danger X, etc.)
 
 **3. Dismissed** (empty value, no argument, or no title when not loading)
+
 - Pass `null`, `undefined`, `false`, `{}`, or call with no argument to immediately remove any existing toast
 - Also resets the loading gate, so the next toast cycle requires `isLoading: true` again
 - Useful for conditional rendering or cleanup
@@ -148,7 +152,7 @@ The hook requires a loading cycle (`isLoading: true`) before any toast becomes v
 ```jsx
 function SaveButton() {
   const [status, setStatus] = useState('idle');
-  
+
   useProgressToast(
     status === 'saving'
       ? { isLoading: true, title: 'Saving...' }
@@ -158,7 +162,7 @@ function SaveButton() {
           ? { isLoading: false, title: 'Failed to save', theme: 'danger' }
           : null // idle state - no toast
   );
-  
+
   return <Button onPress={() => setStatus('saving')}>Save</Button>;
 }
 ```
@@ -168,7 +172,7 @@ function SaveButton() {
 ```jsx
 function DataLoader() {
   const { data, isLoading, error } = useQuery('data');
-  
+
   useProgressToast(
     isLoading
       ? { isLoading: true, title: 'Loading data...' }
@@ -176,7 +180,7 @@ function DataLoader() {
         ? { isLoading: false, title: 'Error', description: error.message, theme: 'danger' }
         : { isLoading: false, title: 'Data loaded', theme: 'success' }
   );
-  
+
   return <div>{/* content */}</div>;
 }
 ```
@@ -188,8 +192,8 @@ Pass an empty value to prevent the toast from showing or to immediately remove a
 ```jsx
 // Only show toast when needed
 useProgressToast(
-  shouldShowProgress 
-    ? { isLoading: true, title: 'Processing...' } 
+  shouldShowProgress
+    ? { isLoading: true, title: 'Processing...' }
     : null
 );
 
@@ -218,7 +222,7 @@ useProgressToast({
 
 For component-based usage, use `<Toast.Progress>`:
 
-```jsx
+````jsx
 <Toast.Progress
   {...(isLoading
     ? { isLoading: true, title: 'Saving...' }
@@ -287,7 +291,7 @@ Maximum 3 toasts are visible at once. When the limit is exceeded, the oldest toa
 
    ```jsx
    toast.success('Changes saved');
-   ```
+````
 
 2. **Don't**: Use overly long or technical messages
 

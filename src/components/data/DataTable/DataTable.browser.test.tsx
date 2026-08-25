@@ -607,7 +607,32 @@ describe('DataTable column colors', () => {
 
   const TOTAL = { ...ROWS[0], id: 'total', region: 'Total' };
 
-  /** WCAG 2 contrast from two computed `rgb(...)` strings. */
+  /**
+   * Any computed color string → non-premultiplied sRGB bytes plus alpha.
+   *
+   * Never parse the string by hand here. A computed color serializes in
+   * whatever space it was authored in — the palette is OKLCH, so these come
+   * back as `oklch(...)` / `oklab(...)`, and reading the first three numbers as
+   * 0-255 channels turns a legible pair into a contrast of 1.0. Canvas makes
+   * the browser do the conversion, whatever the syntax.
+   */
+  function srgb(color: string): [number, number, number, number] {
+    const canvas = document.createElement('canvas');
+
+    canvas.width = canvas.height = 1;
+
+    const context = canvas.getContext('2d')!;
+
+    context.clearRect(0, 0, 1, 1);
+    context.fillStyle = color;
+    context.fillRect(0, 0, 1, 1);
+
+    const [r, g, b, a] = context.getImageData(0, 0, 1, 1).data;
+
+    return [r, g, b, a / 255];
+  }
+
+  /** WCAG 2 contrast between two computed colors, in any color syntax. */
   function contrast(a: string, b: string): number {
     const channel = (value: number) => {
       const c = value / 255;
@@ -615,7 +640,7 @@ describe('DataTable column colors', () => {
       return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
     };
     const luminance = (color: string) => {
-      const [r, g, blue] = color.match(/[\d.]+/g)!.map(Number);
+      const [r, g, blue] = srgb(color);
 
       return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(blue);
     };
@@ -671,10 +696,11 @@ describe('DataTable column colors', () => {
     for (const cell of cellsOf('revenue').slice(0, 2)) {
       const fill = getComputedStyle(cell).backgroundColor;
 
-      // `rgb(...)` with no alpha channel, or an explicit alpha of 1. A
-      // translucent fill would let scrolling cells show through a sticky column.
-      expect(fill).toMatch(/^rgba?\([^)]*\)$/);
-      expect(fill).not.toMatch(/rgba\([^)]*,\s*0?\.\d+\s*\)$/);
+      // Alpha of exactly 1, read through the browser rather than matched
+      // against `rgb(`/`rgba(` — the computed value serializes in the space the
+      // token was authored in, which for this palette is OKLCH. A translucent
+      // fill would let scrolling cells show through a sticky column.
+      expect(srgb(fill)[3]).toBe(1);
     }
   });
 

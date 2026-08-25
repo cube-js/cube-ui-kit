@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { userEvent, within } from 'storybook/test';
 
+import { NO_SNAPSHOT } from '../../../stories/chromatic';
 import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Paragraph } from '../../content/Paragraph';
@@ -554,6 +555,8 @@ export const DynamicSections = () => {
     </ComboBox>
   );
 };
+// Renders the same sections as `WithSections`; only the API differs.
+DynamicSections.parameters = NO_SNAPSHOT;
 
 export const WithDisabledItems = () => (
   <ComboBox
@@ -568,6 +571,8 @@ export const WithDisabledItems = () => (
     <ComboBox.Item key="elderberry">Elderberry</ComboBox.Item>
   </ComboBox>
 );
+// Disabled items are only visible once the popover opens; closed, this is `Default`.
+WithDisabledItems.parameters = NO_SNAPSHOT;
 
 export const Loading = (args) => (
   <ComboBox isLoading label="Fruit" placeholder="Select a fruit..." {...args}>
@@ -615,6 +620,7 @@ export const Validation = () => (
   </Flex>
 );
 
+// chromatic-overlay-reviewed: three closed fields is the comparison; which gesture opens each cannot be photographed
 export const PopoverTriggers = () => (
   <Flex flow="column" gap="2x">
     {/* oxlint-disable-next-line cube-ui-kit/no-redundant-default-prop -- labelled "Trigger on Input (default)" - the trigger is what it demonstrates */}
@@ -681,6 +687,8 @@ export const WithItemsArray = () => {
     </ComboBox>
   );
 };
+// Same closed field as `Default` — the difference is which API builds the list.
+WithItemsArray.parameters = NO_SNAPSHOT;
 
 export const SortSelectedToTop = () => {
   interface Fruit {
@@ -804,6 +812,7 @@ export const WithDescription = () => (
   </ComboBox>
 );
 
+// chromatic-overlay-reviewed: the absent trigger button is the subject
 export const HiddenTrigger = () => (
   <ComboBox
     hideTrigger

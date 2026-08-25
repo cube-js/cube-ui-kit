@@ -58,7 +58,7 @@ import {
   WARNING_OUTLINE_STYLES,
   WARNING_PRIMARY_STYLES,
 } from '../../../data/item-themes';
-import { LoadingIcon } from '../../../icons';
+import { LoadingIcon } from '../../../icons/LoadingIcon';
 import {
   DynamicIcon,
   getDisabledElementProps,

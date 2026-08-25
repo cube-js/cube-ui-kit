@@ -29,6 +29,7 @@ Topbar.args = {
   layout: 'topbar',
 };
 
+// chromatic-overlay-reviewed: a menu-shaped skeleton, not a menu
 export const Menu: StoryFn = Template.bind({});
 Menu.args = {
   layout: 'menu',

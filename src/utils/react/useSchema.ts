@@ -134,33 +134,48 @@ function notify() {
 
 /**
  * Both inputs have to be watched, because either can decide the answer: the
- * attribute when the opt-in is set, the media query otherwise. One observer and
- * one pair of query listeners are shared by every subscriber, and torn down when
- * the last one leaves.
+ * attribute when the opt-in is set, the media query otherwise — an attribute flip
+ * is invisible to `matchMedia` and a system flip is invisible to a
+ * `MutationObserver`. One observer and one pair of query listeners are shared by
+ * every subscriber, and torn down when the last one leaves.
  */
 function startWatching(): () => void {
   if (typeof document === 'undefined') {
     return () => {};
   }
 
-  const observer = new MutationObserver(notify);
+  const teardowns: (() => void)[] = [];
 
-  observer.observe(document.documentElement, {
-    attributes: true,
-    attributeFilter: [SCHEMA_ATTR, CONTRAST_ATTR],
-  });
+  // Guarded rather than assumed: jsdom ships neither `matchMedia` nor a
+  // `MediaQueryList` in every version, and a consumer's unit tests are exactly
+  // where a hook like this gets mounted. Losing one source of change is a stale
+  // value; throwing is a broken render.
+  if (
+    typeof window !== 'undefined' &&
+    typeof window.matchMedia === 'function'
+  ) {
+    for (const query of [DARK_QUERY, HIGH_CONTRAST_QUERY]) {
+      const list = window.matchMedia(query);
 
-  const queries =
-    typeof window !== 'undefined' && typeof window.matchMedia === 'function'
-      ? [window.matchMedia(DARK_QUERY), window.matchMedia(HIGH_CONTRAST_QUERY)]
-      : [];
+      if (typeof list?.addEventListener !== 'function') continue;
 
-  queries.forEach((query) => query.addEventListener('change', notify));
+      list.addEventListener('change', notify);
+      teardowns.push(() => list.removeEventListener('change', notify));
+    }
+  }
 
-  return () => {
-    observer.disconnect();
-    queries.forEach((query) => query.removeEventListener('change', notify));
-  };
+  if (typeof MutationObserver === 'function' && document.documentElement) {
+    const observer = new MutationObserver(notify);
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: [SCHEMA_ATTR, CONTRAST_ATTR],
+    });
+
+    teardowns.push(() => observer.disconnect());
+  }
+
+  return () => teardowns.forEach((teardown) => teardown());
 }
 
 /**

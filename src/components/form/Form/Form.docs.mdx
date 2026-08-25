@@ -74,11 +74,11 @@ The Form component does not expose styled sub-elements via the `styles` prop. It
 These properties allow direct style application without using the `styles` prop:
 
 - **Base:** `display`, `font`, `preset`, `hide`, `whiteSpace`, `opacity`, `transition`
-- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`
+- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `scrollMargin`
 - **Dimension:** `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`
 - **Block:** `border`, `radius`, `shadow`, `outline`, `padding`, `paddingInline`, `paddingBlock`, `overflow`, `scrollbar`, `textAlign`
 - **Color:** `color`, `fill`, `fade`, `image`
-- **Flow:** `flow`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gap`, `columnGap`, `rowGap`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`
+- **Flow:** `flow`, `place`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gap`, `columnGap`, `rowGap`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`
 
 ### Modifiers
 
@@ -584,6 +584,7 @@ export function ConfirmDeletionDialogForm({ name, onSubmit, onDismiss }) {
 ## Best Practices
 
 1. **Use direct field properties**: Pass field properties directly to input components instead of using Field wrapper
+
    ```jsx
    // Recommended
    <Input.Text name="email" label="Email" type="email" rules={[{ required: true }]} />
@@ -595,11 +596,13 @@ export function ConfirmDeletionDialogForm({ name, onSubmit, onDismiss }) {
    ```
 
 2. **Provide clear labels**: Always include descriptive labels for form fields
+
    ```jsx
    <Input.Text name="email" label="Email Address" type="email" />
    ```
 
 3. **Use appropriate validation**: Combine built-in validators for common cases and custom validators for complex logic
+
    ```jsx
    <Input.Text
      name="email"
@@ -613,6 +616,7 @@ export function ConfirmDeletionDialogForm({ name, onSubmit, onDismiss }) {
    ```
 
 4. **Handle errors gracefully**: Always provide feedback for validation and submission errors
+
    ```jsx
    <Form onSubmit={handleSubmit} onSubmitFailed={handleError}>
      {/* fields */}
@@ -621,6 +625,7 @@ export function ConfirmDeletionDialogForm({ name, onSubmit, onDismiss }) {
    ```
 
 5. **Use proper field types**: Choose appropriate input types for better UX and validation
+
    ```jsx
    <Input.Text type="email" />     {/* for email addresses */}
    <Input.Password />              {/* for passwords */}

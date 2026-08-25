@@ -60,12 +60,12 @@ Customises the root element of the component.
 These properties allow direct style application without using the `styles` prop:
 
 - **Base:** `display`, `font`, `preset`, `hide`, `whiteSpace`, `opacity`, `transition`
-- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`
+- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `scrollMargin`
 - **Dimension:** `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`
 - **Block:** `border`, `radius`, `shadow`, `outline`, `padding`, `paddingInline`, `paddingBlock`, `overflow`, `scrollbar`, `textAlign`
 - **Color:** `color`, `fill`, `fade`, `image`
 - **Text:** `textTransform`, `fontWeight`, `fontStyle`
-- **Flow:** `flow`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gap`, `columnGap`, `rowGap`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`
+- **Flow:** `flow`, `place`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gap`, `columnGap`, `rowGap`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`
 
 ### Modifiers
 
@@ -204,13 +204,7 @@ import { IconPlus } from '@tabler/icons-react';
 </Button>;
 ```
 
-A disabled button keeps showing its tooltip. Browsers stop dispatching mouse
-events on elements carrying the native `disabled` attribute, so a button that
-has a tooltip is marked with `aria-disabled` instead and kept inert: `onPress`
-never fires and clicks (including the ones Enter and Space produce) do nothing.
-Such a button also stays in the tab order, so keyboard users can focus it and
-read the tooltip. Buttons rendered as links (`to`) are always marked this way,
-since `disabled` is not a valid attribute on an anchor.
+A disabled button keeps showing its tooltip. Browsers stop dispatching mouse events on elements carrying the native `disabled` attribute, so a button that has a tooltip is marked with `aria-disabled` instead and kept inert: `onPress` never fires and clicks (including the ones Enter and Space produce) do nothing. Such a button also stays in the tab order, so keyboard users can focus it and read the tooltip. Buttons rendered as links (`to`) are always marked this way, since `disabled` is not a valid attribute on an anchor.
 
 <Story of={ButtonStories.DisabledWithTooltip} />
 
@@ -245,35 +239,21 @@ since `disabled` is not a valid attribute on an anchor.
 
 - `aria-label`, `aria-labelledby` – Accessible name.
 - `aria-pressed` – Managed automatically when `isSelected` is used.
-- `aria-disabled` – Announces the disabled state whenever the native `disabled`
-  attribute cannot be used: on links, and on buttons that carry a tooltip.
+- `aria-disabled` – Announces the disabled state whenever the native `disabled` attribute cannot be used: on links, and on buttons that carry a tooltip.
 - Additional ARIA attributes supported by React Aria's `useButton`.
 
 ## Behaviour Inside Popovers
 
-By default, pressing a `Button` inside an open popover (any overlay that
-uses `usePopoverSync` — including the popovers rendered by `FilterPicker`,
-`Picker`, `ComboBox`, `Select`, `MenuTrigger`, and
-`DialogTrigger type="popover"`) **dismisses that popover** after the user's
-`onPress` runs. This matches the common UX where a popover is a transient
-surface: any action inside it should close it.
+By default, pressing a `Button` inside an open popover (any overlay that uses `usePopoverSync` — including the popovers rendered by `FilterPicker`, `Picker`, `ComboBox`, `Select`, `MenuTrigger`, and `DialogTrigger type="popover"`) **dismisses that popover** after the user's `onPress` runs. This matches the common UX where a popover is a transient surface: any action inside it should close it.
 
-Modal / tray / fullscreen Dialogs are **not** affected — a Button inside a
-modal Dialog does not auto-close it.
+Modal / tray / fullscreen Dialogs are **not** affected — a Button inside a modal Dialog does not auto-close it.
 
 ### Opt-outs
 
 There are three ways to keep the popover open when a Button is pressed:
 
-1. **Automatic for popover triggers.** Buttons that act as popover triggers
-   already carry `data-popover-trigger` (applied by `MenuTrigger`,
-   `DialogTrigger type="popover"`, `FilterPicker`, `Picker`, `ComboBox`,
-   `Select`). Modal-type `DialogTrigger` children are **not** marked, so they
-   correctly dismiss the parent popover and let the modal take over.
-2. **Manual via `data-popover-keep`.** Add the attribute to the button
-   (toggle case) or to any ancestor element (subtree case — useful when a
-   custom inline editor inside a popover footer should not collapse on
-   every interaction):
+1. **Automatic for popover triggers.** Buttons that act as popover triggers already carry `data-popover-trigger` (applied by `MenuTrigger`, `DialogTrigger type="popover"`, `FilterPicker`, `Picker`, `ComboBox`, `Select`). Modal-type `DialogTrigger` children are **not** marked, so they correctly dismiss the parent popover and let the modal take over.
+2. **Manual via `data-popover-keep`.** Add the attribute to the button (toggle case) or to any ancestor element (subtree case — useful when a custom inline editor inside a popover footer should not collapse on every interaction):
 
    ```jsx
    <Button data-popover-keep onPress={() => setMode((m) => !m)}>
@@ -285,9 +265,7 @@ There are three ways to keep the popover open when a Button is pressed:
    </div>
    ```
 
-3. **Custom non-Cube triggers.** Call `useDismissParentPopover()` yourself if
-   your control should dismiss the popover but does not extend `Button` /
-   `ItemButton`:
+3. **Custom non-Cube triggers.** Call `useDismissParentPopover()` yourself if your control should dismiss the popover but does not extend `Button` / `ItemButton`:
    ```jsx
    const dismiss = useDismissParentPopover();
    <MyCustomPressable
@@ -300,13 +278,7 @@ There are three ways to keep the popover open when a Button is pressed:
 
 ### Async `onPress`
 
-The dismiss is dispatched via the EventBus, which defers with `setTimeout(0)`.
-This means synchronous `onPress` handlers (and any React state updates they
-trigger) flush **before** the popover closes — including the common case of
-opening a hoisted modal via `useDialogContainer` from a popover footer (the
-modal mounts first, then the popover closes behind it). If your `onPress` is
-async and `await`s before opening another overlay, the popover will close
-first and the new overlay will appear after — usually fine, but worth noting.
+The dismiss is dispatched via the EventBus, which defers with `setTimeout(0)`. This means synchronous `onPress` handlers (and any React state updates they trigger) flush **before** the popover closes — including the common case of opening a hoisted modal via `useDialogContainer` from a popover footer (the modal mounts first, then the popover closes behind it). If your `onPress` is async and `await`s before opening another overlay, the popover will close first and the new overlay will appear after — usually fine, but worth noting.
 
 ## Best Practices
 

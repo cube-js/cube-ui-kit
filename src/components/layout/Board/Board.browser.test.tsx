@@ -1,3 +1,5 @@
+import { useLayoutEffect, useRef } from 'react';
+
 import { renderWithRoot, screen, userEvent } from '../../../test';
 
 import { Board } from './index';
@@ -996,6 +998,196 @@ describe('Board group move', () => {
     expect(frames.length).toBeGreaterThan(0);
     expect(asPositions(onLayoutChange.mock.lastCall![0])).toEqual(
       asPositions(frames.at(-1)!),
+    );
+  });
+});
+
+describe('a fixed cols × rows matrix', () => {
+  /**
+   * `rows` + `rowHeight="stretch"` is the shape a nested container board needs:
+   * a matrix of a declared size that fills the box it is given. Both halves are
+   * measurement questions — how tall the board actually is, and how tall one
+   * cell ends up — so neither can be asked in jsdom.
+   */
+  function renderMatrix(rows: number, height: number, cols = 2) {
+    return renderWithRoot(
+      <div style={{ width: '400px', height: `${height}px` }}>
+        <Board
+          cols={cols}
+          rows={rows}
+          rowHeight="stretch"
+          margin={[0, 0]}
+          containerPadding={[0, 0]}
+          compact="free"
+          defaultLayout={[{ i: 'a', x: 0, y: 0, w: 1, h: 1 }]}
+        >
+          <Board.Widget id="a" qa="A">
+            a
+          </Board.Widget>
+        </Board>
+      </div>,
+    );
+  }
+
+  it('divides its measured height into exactly `rows` cells', async () => {
+    renderMatrix(4, 400);
+    await settled();
+
+    // One cell of a 4-row matrix in a 400px box is 100px tall, whatever the
+    // content needs — the whole point of the mode.
+    await vi.waitFor(() =>
+      expect(widget('a').getBoundingClientRect().height).toBeCloseTo(100, 0),
+    );
+  });
+
+  it('resizes its cells with the container instead of adding rows', async () => {
+    const { rerender } = renderMatrix(4, 400);
+    await settled();
+    await vi.waitFor(() =>
+      expect(widget('a').getBoundingClientRect().height).toBeCloseTo(100, 0),
+    );
+
+    rerender(
+      <div style={{ width: '400px', height: '800px' }}>
+        <Board
+          cols={2}
+          rows={4}
+          rowHeight="stretch"
+          margin={[0, 0]}
+          containerPadding={[0, 0]}
+          compact="free"
+          defaultLayout={[{ i: 'a', x: 0, y: 0, w: 1, h: 1 }]}
+        >
+          <Board.Widget id="a" qa="A">
+            a
+          </Board.Widget>
+        </Board>
+      </div>,
+    );
+
+    // Twice the height, same row count → twice the cell. A board that hugged
+    // its content would have kept the cell and grown the empty space instead.
+    await vi.waitFor(() =>
+      expect(widget('a').getBoundingClientRect().height).toBeCloseTo(200, 0),
+    );
+  });
+
+  it('stays a normal content-hugging board when no row count is declared', async () => {
+    // `rowHeight="stretch"` with no `rows` has no matrix to fill. Dividing the
+    // parent's height by the CONTENT extent instead would resize every cell
+    // whenever a widget landed on a new row — while still claiming the parent's
+    // whole height to do it — so the mode simply does not engage.
+    renderWithRoot(
+      <div style={{ width: '400px', height: '900px' }}>
+        <Board
+          cols={2}
+          rowHeight="stretch"
+          margin={[0, 0]}
+          containerPadding={[0, 0]}
+          compact="free"
+          defaultLayout={[{ i: 'a', x: 0, y: 0, w: 1, h: 1 }]}
+        >
+          <Board.Widget id="a" qa="A">
+            a
+          </Board.Widget>
+        </Board>
+      </div>,
+    );
+    await settled();
+
+    // The default row height, not 900px (the parent) and not 900/1.
+    await vi.waitFor(() =>
+      expect(widget('a').getBoundingClientRect().height).toBeCloseTo(ROW, 0),
+    );
+    // And it hugs its one row rather than filling the 900px parent.
+    expect(board().getBoundingClientRect().height).toBeCloseTo(ROW, 0);
+  });
+
+  it('paints every declared row, so an empty matrix is still a drop surface', async () => {
+    renderMatrix(4, 400);
+    await settled();
+
+    // The board fills the container it was given rather than collapsing to the
+    // single row its one widget needs.
+    await vi.waitFor(() =>
+      expect(board().getBoundingClientRect().height).toBeCloseTo(400, 0),
+    );
+  });
+});
+
+describe('self-measurement', () => {
+  /**
+   * A board with no `width` prop measures its own container. Both halves of that
+   * contract are load-bearing for consumers — and a consumer that doubts either
+   * ends up hand-measuring the box and feeding `width` back in, which is a lot
+   * of machinery to replace something that already works.
+   *
+   * Only answerable in a browser: jsdom reports every box as 0, so the very
+   * thing under test cannot happen there.
+   */
+  it('renders no widget until it has a width, rather than painting a bad one', async () => {
+    const framesWithHost: number[] = [];
+    const Probe = () => {
+      const ref = useRef<HTMLDivElement>(null);
+      // Runs before the board's own measurement effect on mount, so the first
+      // entry is the pre-measurement frame.
+      useLayoutEffect(() => {
+        framesWithHost.push(
+          ref.current?.querySelectorAll('[data-board-widget-host]').length ??
+            -1,
+        );
+      });
+      return (
+        <div ref={ref} style={{ width: '600px' }}>
+          <Board
+            cols={12}
+            rowHeight={ROW}
+            defaultLayout={[{ i: 'a', x: 0, y: 0, w: 6, h: 1 }]}
+          >
+            <Board.Widget id="a" qa="A">
+              a
+            </Board.Widget>
+          </Board>
+        </div>
+      );
+    };
+
+    renderWithRoot(<Probe />);
+
+    // The probe really did observe the first frame...
+    expect(framesWithHost.length).toBeGreaterThan(0);
+    // ...and the board had painted no widget in it. At width 0 a column works
+    // out NEGATIVE (`(0 - margin*(cols-1) - padding*2) / cols`), so rendering
+    // then would put every widget at a nonsense size for a frame.
+    expect(framesWithHost[0]).toBe(0);
+
+    // Once measured, the widget appears at its real size.
+    await vi.waitFor(() =>
+      expect(widget('a').getBoundingClientRect().width).toBeGreaterThan(0),
+    );
+  });
+
+  it('resolves its own width without an explicit `width` prop', async () => {
+    renderWithRoot(
+      <div style={{ width: '800px' }}>
+        <Board
+          cols={4}
+          rowHeight={ROW}
+          margin={[0, 0]}
+          containerPadding={[0, 0]}
+          defaultLayout={[{ i: 'a', x: 0, y: 0, w: 1, h: 1 }]}
+        >
+          <Board.Widget id="a" qa="A">
+            a
+          </Board.Widget>
+        </Board>
+      </div>,
+    );
+
+    // 800 / 4 columns = 200. A board that failed to measure would fall back to
+    // width 0 and never reach this.
+    await vi.waitFor(() =>
+      expect(widget('a').getBoundingClientRect().width).toBeCloseTo(200, 0),
     );
   });
 });

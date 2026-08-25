@@ -85,6 +85,7 @@ Choose a different component when the interaction has another shape:
 **onClear** - Callback fired when the clear button is pressed, allowing you to perform custom actions when the selection is cleared.
 
 **tooltip** - Enables tooltip display on the trigger button. Can be:
+
 - `string` - Simple tooltip text
 - `true` - Auto tooltip on overflow (shows selected value when truncated)
 - `object` - Advanced configuration with optional `auto` property
@@ -120,6 +121,7 @@ Customizes the root wrapper element of the component.
 Customizes the trigger button element that opens the dropdown.
 
 **Sub-elements:**
+
 - `Label` - The displayed selected value text or placeholder
 - `Prefix` - Container for prefix content
 - `Suffix` - Container for suffix content
@@ -141,6 +143,7 @@ Customizes the popover overlay wrapper that contains the list.
 Customizes individual option items in the dropdown.
 
 **Sub-elements:**
+
 - `Label` - The main content/text of the option
 - `Description` - Secondary description text
 - `Prefix` - Container for prefix content
@@ -153,7 +156,7 @@ Customizes individual option items in the dropdown.
 These properties allow direct style application without using the `styles` prop:
 
 - **Base:** `display`, `font`, `preset`, `hide`, `whiteSpace`, `opacity`, `transition`
-- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`
+- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `scrollMargin`
 - **Dimension:** `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`
 - **Block:** `border`, `radius`, `shadow`, `outline`
 - **Color:** `color`, `fill`, `fade`, `image`
@@ -198,15 +201,15 @@ For detailed information about all available item properties, see [Item document
 
 ```jsx
 <Select label="Users">
-  <Select.Item 
-    key="user1" 
+  <Select.Item
+    key="user1"
     icon={<IconUser />}
     description="Administrator"
   >
     John Doe
   </Select.Item>
-  <Select.Item 
-    key="user2" 
+  <Select.Item
+    key="user2"
     icon={<IconUser />}
     description="Editor"
     suffix="Online"
@@ -375,23 +378,23 @@ Groups related options together with an optional heading.
 
 ```jsx
 <Select placeholder="Select a color">
-  <Select.Item 
-    key="yellow" 
-    description="Child and light" 
+  <Select.Item
+    key="yellow"
+    description="Child and light"
     icon={<IconUser />}
   >
     Yellow
   </Select.Item>
-  <Select.Item 
-    key="red" 
-    description="Hot and strong" 
+  <Select.Item
+    key="red"
+    description="Hot and strong"
     prefix={<span>🔥</span>}
   >
     Red
   </Select.Item>
-  <Select.Item 
-    key="green" 
-    description="Fresh and calm" 
+  <Select.Item
+    key="green"
+    description="Fresh and calm"
     suffix={<Text color="#dark-03">#00A000</Text>}
   >
     Green
@@ -523,6 +526,7 @@ const groups = [
 ## Best Practices
 
 1. **Do**: Provide clear, descriptive labels and meaningful option text
+
    ```jsx
    <Select label="Shipping method">
      <Select.Item key="standard">Standard (5-7 days)</Select.Item>
@@ -531,6 +535,7 @@ const groups = [
    ```
 
 2. **Don't**: Use select for very long lists (use ComboBox or FilterPicker with search instead)
+
    ```jsx
    {/* Consider ComboBox or FilterPicker for 50+ options */}
    <Select label="Country">
@@ -539,6 +544,7 @@ const groups = [
    ```
 
 3. **Do**: Use sections to group related options logically
+
    ```jsx
    <Select label="Category">
      <Select.Section title="Popular">
@@ -551,6 +557,7 @@ const groups = [
    ```
 
 4. **Do**: Provide clear error messages for validation failures
+
    ```jsx
    <Select
      isRequired
@@ -563,6 +570,7 @@ const groups = [
    ```
 
 5. **Do**: Consider providing sensible defaults when appropriate
+
    ```jsx
    <Select label="Language" defaultSelectedKey="en">
      <Select.Item key="en">English</Select.Item>
@@ -571,6 +579,7 @@ const groups = [
    ```
 
 6. **Do**: Show loading state when options are being fetched
+
    ```jsx
    <Select isLoading label="Categories" placeholder="Loading...">
      {categories.map(cat => <Select.Item key={cat.id}>{cat.name}</Select.Item>)}
@@ -578,6 +587,7 @@ const groups = [
    ```
 
 7. **Accessibility**: Always provide meaningful labels
+
    ```jsx
    <Select label="Country" aria-label="Select your country">
      <Select.Item key="us">United States</Select.Item>

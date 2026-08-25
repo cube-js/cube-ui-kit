@@ -6,13 +6,9 @@ import * as ColorPickerStories from './ColorPicker.stories.tsx';
 
 # ColorPicker
 
-A swatch button that opens the color popover. It is the same popover
-[ColorInput](/docs/forms-colorinput--docs) uses — three perceptual axes backed
-by [Glaze](https://github.com/tenphi/glaze) — without the text field in front of
-it.
+A swatch button that opens the color popover. It is the same popover [ColorInput](/docs/forms-colorinput--docs) uses — three perceptual axes backed by [Glaze](https://github.com/tenphi/glaze) — without the text field in front of it.
 
-Reach for it when a color is **chosen but never typed**. Reach for `ColorInput`
-when someone needs to paste `#7a4dbf` from a brand guide.
+Reach for it when a color is **chosen but never typed**. Reach for `ColorInput` when someone needs to paste `#7a4dbf` from a brand guide.
 
 ## When to Use
 
@@ -20,8 +16,7 @@ when someone needs to paste `#7a4dbf` from a brand guide.
 - A chart legend, a tag color, a cell in a dense table
 - Anywhere the exact notation is an implementation detail the user never sees
 
-Use [ColorInput](/docs/forms-colorinput--docs) instead when the color has to be
-readable and pasteable as text.
+Use [ColorInput](/docs/forms-colorinput--docs) instead when the color has to be readable and pasteable as text.
 
 ## Component
 
@@ -49,10 +44,7 @@ readable and pasteable as text.
 - **`onOpenChange`** `(isOpen: boolean) => void` — Fired when the popover opens or closes
 - **`shouldFlip`** `boolean` (default: `true`) — Whether the popover may flip to the other side of the trigger
 
-There is no `formatMode`: with no text to reconcile, `format` alone decides how
-the value is written. Everything else about the color model — the notations it
-reads, the gamut handling, the three spaces — is identical to `ColorInput` and
-documented there.
+There is no `formatMode`: with no text to reconcile, `format` alone decides how the value is written. Everything else about the color model — the notations it reads, the gamut handling, the three spaces — is identical to `ColorInput` and documented there.
 
 ### Base Properties
 
@@ -88,30 +80,25 @@ These properties allow direct style application without using the `styles` prop:
 
 The `mods` property accepts the following modifiers you can override:
 
-| Modifier      | Type      | Description                          |
-| ------------- | --------- | ------------------------------------ |
-| `placeholder` | `boolean` | No color is selected yet             |
+| Modifier      | Type      | Description              |
+| ------------- | --------- | ------------------------ |
+| `placeholder` | `boolean` | No color is selected yet |
 
 The swatch carries its own `empty` modifier while there is no color to show.
 
 ### The value as text
 
-The popover carries a `ColorInput` above the preview, so the exact color can be
-read, copied, pasted and normalized in place rather than only dialed in. It has
-no trigger of its own — a disclosure inside the thing it discloses would be
-meaningless — and clearing it clears the picker.
+The popover carries a `ColorInput` above the preview, so the exact color can be read, copied, pasted and normalized in place rather than only dialed in. It has no trigger of its own — a disclosure inside the thing it discloses would be meaningless — and clearing it clears the picker.
 
 ### A palette under the editor
 
-Pass `swatches` and a [ColorSwatchGroup](/docs/forms-colorswatchgroup--docs)
-appears below the channels, so a common color is one press away.
+Pass `swatches` and a [ColorSwatchGroup](/docs/forms-colorswatchgroup--docs) appears below the channels, so a common color is one press away.
 
 ```jsx
 <ColorPicker label="Brand color" swatches={palette} swatchColumns={4} />
 ```
 
-That group never offers its own custom-color escape hatch, since the escape
-hatch is a `ColorPicker` and would nest popovers without end.
+That group never offers its own custom-color escape hatch, since the escape hatch is a `ColorPicker` and would nest popovers without end.
 
 ## Examples
 
@@ -133,8 +120,7 @@ Drop the label for a compact button — a toolbar, or a cell in a table.
 </ColorPicker>
 ```
 
-Give it an `aria-label` when you do: with no visible text, that is the only
-thing naming the control.
+Give it an `aria-label` when you do: with no visible text, that is the only thing naming the control.
 
 ### A label of your own
 
@@ -173,12 +159,10 @@ thing naming the control.
 
 ### Screen Reader Support
 
-- The trigger announces as a button, named by the field label, `aria-label`, or
-  its own text
+- The trigger announces as a button, named by the field label, `aria-label`, or its own text
 - The popover announces as a dialog named "Color picker"
 - Each channel slider sits in a group named after its axis
-- The swatch is decorative; the color is announced as the trigger's text unless
-  you replace it
+- The swatch is decorative; the color is announced as the trigger's text unless you replace it
 
 ### ARIA Properties
 
@@ -193,28 +177,22 @@ thing naming the control.
    <ColorPicker aria-label="Series color">{null}</ColorPicker>
    ```
 
-2. **Don't**: leave a swatch-only picker unnamed — the swatch says nothing to a
-   screen reader
+2. **Don't**: leave a swatch-only picker unnamed — the swatch says nothing to a screen reader
 
    ```jsx
    <ColorPicker>{null}</ColorPicker>
    ```
 
-3. **Do**: reach for `ColorInput` the moment someone might want to paste a hex
-   value; a picker alone makes that impossible.
+3. **Do**: reach for `ColorInput` the moment someone might want to paste a hex value; a picker alone makes that impossible.
 
 ## Integration with Forms
 
-This component supports all
-[Field properties](/docs/getting-started-field-properties--docs) when used
-within a Form. The field value is the color string.
+This component supports all [Field properties](/docs/getting-started-field-properties--docs) when used within a Form. The field value is the color string.
 
 ## Suggested Improvements
 
 - A row of recent or preset swatches inside the popover
-- An eyedropper that samples a pixel from the page, where
-  [`EyeDropper`](https://developer.mozilla.org/en-US/docs/Web/API/EyeDropper) is
-  available
+- An eyedropper that samples a pixel from the page, where [`EyeDropper`](https://developer.mozilla.org/en-US/docs/Web/API/EyeDropper) is available
 - Clearing the color back to `null` from the trigger
 
 ## Related Components

@@ -1,16 +1,15 @@
 import { useCallback, useRef, useState } from 'react';
 import { userEvent, within } from 'storybook/test';
 
-import {
-  CheckIcon,
-  DatabaseIcon,
-  FilterIcon,
-  PlusIcon,
-  RightIcon,
-  SearchIcon,
-  SettingsIcon,
-  UserIcon,
-} from '../../../icons';
+import { CheckIcon } from '../../../icons/CheckIcon';
+import { DatabaseIcon } from '../../../icons/DatabaseIcon';
+import { FilterIcon } from '../../../icons/FilterIcon';
+import { PlusIcon } from '../../../icons/PlusIcon';
+import { RightIcon } from '../../../icons/RightIcon';
+import { SearchIcon } from '../../../icons/SearchIcon';
+import { SettingsIcon } from '../../../icons/SettingsIcon';
+import { UserIcon } from '../../../icons/UserIcon';
+import { NO_SNAPSHOT } from '../../../stories/chromatic';
 import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
 import { Button } from '../../actions/Button/Button';
 import { Badge } from '../../content/Badge/Badge';
@@ -539,6 +538,8 @@ export const Clearable: Story = {
 
 export const ClearableThemes: Story = {
   parameters: {
+    // A copy of the identical matrix in `Picker.stories.tsx`, which keeps the snapshot. Both verify the same `ItemActionProvider` colour inheritance.
+    ...NO_SNAPSHOT,
     layout: 'padded',
     docs: {
       description: {

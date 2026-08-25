@@ -1,6 +1,6 @@
 import { ReactElement } from 'react';
 
-import { LoadingIcon } from '../../../icons/index';
+import { LoadingIcon } from '../../../icons/LoadingIcon';
 import { ValidationProps } from '../../../shared/index';
 import { InvalidIcon } from '../../shared/InvalidIcon';
 import { ValidIcon } from '../../shared/ValidIcon';

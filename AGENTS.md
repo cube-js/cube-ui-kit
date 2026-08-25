@@ -30,7 +30,7 @@ pnpm list @tenphi/tasty @tenphi/glaze
 
 Project-specific working rules for AI agents. Not published with the package.
 
-- [coding.md](docs/rules/coding.md) — development flow, code style, knowledge maintenance
+- [coding.md](docs/rules/coding.md) — development flow, code style, **import rules**, Markdown formatting, knowledge maintenance
 - [input-components.md](docs/rules/input-components.md) — form-attachable input components (`useFieldProps`, validation props, `wrapWithField`)
 - [storybook.md](docs/rules/storybook.md) — `.stories.tsx` and `.docs.mdx` authoring, including the `play`-function rule below
 - [documentation.md](docs/rules/documentation.md) — `.docs.mdx` structure + update flow
@@ -48,10 +48,21 @@ When making code changes that affect end users or the public API, **always add a
 - Keep the summary concise and user-focused (`"@cube-dev/ui-kit": patch|minor` frontmatter).
 - Skip changesets for docs-only, test-only, Storybook-only, or internal tooling that does not affect package consumers. Also skip fixes for issues introduced and resolved within the same PR.
 - Add changeset manually (no CLI) — full guidelines: [`.cursor/commands/add-changeset.md`](.cursor/commands/add-changeset.md).
+- Write the summary unwrapped: one paragraph is one line, like every other Markdown file here (see [Markdown rules](docs/rules/coding.md#markdown-rules)).
 
 ## Stories: Interaction-Only States
 
 A state that only exists during an interaction — an open tooltip, a hover or focus style, an expanded overlay — is invisible to Chromatic unless a `play` function puts the story into it. Chromatic runs `play` before it snapshots, so a story whose point is such a state **must** drive it with `play` and end on a `waitFor` assertion for the state itself (that assertion is also the wait Chromatic needs). Drive one element per story — only the final state is captured. For tooltips, copy the recipe verbatim: `timeout(250)` (the trigger is wired in a mount effect), `unhover` before `hover` (React Aria ignores a hover until a mouse move sets the pointer modality), and `delay: 0` in the tooltip config. Both caveats fail silently, and a local render test can pass while the story does not — Chromatic is the check. Full pattern: [storybook.md](docs/rules/storybook.md#interaction-only-states-need-a-play-function).
+
+## Imports: Reach Past the Barrel
+
+Inside `src/`, import the file that defines a thing rather than the barrel that re-exports it: `from '../../actions/ItemButton/ItemButton'`, not `from '../../actions'`. Same component either way, but the barrel also drags `Menu`, `CommandMenu`, `ButtonSplit` and everything they import into the graph. Three things read that graph — Chromatic's TurboSnap (which cannot scope a build around anything reachable from `<Root>`, so a barrel there costs a full 1000-snapshot rebuild), consumers' tree-shaking, and module init order around `Root`'s module-scope `configure()`. Icons are enforced by `no-restricted-imports`; the rest is on you, with `pnpm chromatic:check` as the backstop and `node scripts/chromatic-report.mjs --trace <file>` to price a change before making it. `index.ts` files are exempt — assembling the public surface is their job. Full rules: [coding.md](docs/rules/coding.md#imports).
+
+## Stories: The Snapshot Budget
+
+Chromatic bills per snapshot and a snapshot is one story, so every story is a recurring cost for as long as it exists. A story earns its snapshot by showing something no other story shows — and a surprising number do not: controlled/uncontrolled twins, props that only paint during a drag or hover, `DynamicSections` next to `WithSections`, a `Modal` story for a dialog whose default type is already `modal`. Keep those stories (the sidebar and the docs page still want them) and opt the photograph out with `NO_SNAPSHOT` from [`src/stories/chromatic.ts`](src/stories/chromatic.ts), with a comment saying why. Where several stories differ only in one enum value, one matrix story is both cheaper and a better review artefact — an inconsistency between two themes shows up in one image and not across two.
+
+Do not guess which stories are redundant, measure: `pnpm build-storybook && pnpm chromatic:duplicates` renders every story in real Chromium (waiting for `play`, as Chromatic does) and reports the groups that are provably paying twice for one image, plus the stories named for an overlay that never opened. `pnpm chromatic:report` covers the other half of the bill — how much of the suite one changed file drags in, and which files force a full rebuild by being reachable from `.storybook/preview.jsx`. Inside that dependency tree, import defining files directly rather than through a barrel: one `from '../../actions'` pulls most of the library into the always-rebuild set. `pnpm chromatic:check` gates this in CI. Full guidance: [storybook.md](docs/rules/storybook.md#the-snapshot-budget).
 
 ## Inspecting Rendered HTML & CSS — `pnpm probe`
 
@@ -59,7 +70,7 @@ Answering "what CSS does this actually produce?" is one call, not a throwaway vi
 
 Use it as freely as you like, either tier: it is a throwaway question-answering tool, so nothing here needs justifying. It is also the honest way to check a styling claim before you write it into a doc or a review. `pnpm probe:browser` adds the four things jsdom cannot do — computed values, geometry, pointer behaviour, screenshots — at the cost of a browser binary and a slower start.
 
-**Read [`docs/rules/probe.md`](docs/rules/probe.md)** for the modes, the jsdom blind spots that make an answer jsdom's rather than the truth, the one-time `pnpm exec playwright install chromium`, and how the `*.browser.test.tsx` suite differs (that one *is* in CI, and the probe's freedom does not extend to it).
+**Read [`docs/rules/probe.md`](docs/rules/probe.md)** for the modes, the jsdom blind spots that make an answer jsdom's rather than the truth, the one-time `pnpm exec playwright install chromium`, and how the `*.browser.test.tsx` suite differs (that one _is_ in CI, and the probe's freedom does not extend to it).
 
 The DOM helpers behind it live in `src/probe/` and ship as the `@cube-dev/ui-kit/probe` entry, which Cube Cloud's own `yarn probe` imports. Changing them is a change to published API.
 
@@ -90,6 +101,7 @@ Each component lives in `src/components/{category}/{ComponentName}/` and ships `
 - `pnpm fix` — lint + format (Oxlint + Prettier)
 - `pnpm size` — check bundle size limits
 - `pnpm chromatic` — visual regression
+- `pnpm chromatic:report` — snapshot inventory + TurboSnap blast radius. `pnpm chromatic:check` is the CI gate; `pnpm chromatic:duplicates` finds stories that photograph the same thing. All three read `storybook-static`, so run `pnpm build-storybook` first. See [The Snapshot Budget](#stories-the-snapshot-budget)
 - `pnpm add-icons` — add new icons from tabler
 - `pnpm audit-docs` — audit component API ↔ docs ↔ argTypes sync. Options: `--component=Name`, `--fix-stories`, `--fix-docs`, `--json`, `--verbose`, `--all-props`. **Run after changing a component's API or adding a new component.**
 - `pnpm audit-defaults` — regenerate the lint plugin's defaults registry (`src/eslint-plugin/defaults.generated.ts`). **Run whenever you change a default prop value.** `pnpm test` fails until the registry matches what the components actually render — see [eslint-plugin.md](docs/rules/eslint-plugin.md).
@@ -138,23 +150,11 @@ See `src/stories/Usage.docs.mdx` (Storybook → **Getting Started / Usage**) for
 
 Full rules in [`src/i18n/README.md`](src/i18n/README.md). The short version:
 
-- **Scope: strings a component renders.** Anything the component itself puts in
-  front of a user — visible text, `aria-label`, `aria-roledescription`, live-region
-  announcements, `title` — goes through `useI18n()`:
-  `t('component.key', 'English default')`. The inline English stays as a
-  belt-and-braces fallback.
-- **Not for stories, docs, or tests.** Storybook stories, `.docs.mdx`, and specs are
-  demo and fixture copy, not product UI. Use plain literals there — a locale key
-  that exists only to feed a story is noise in twelve files, and a test that reads
-  its expectation from the bundle asserts nothing about the string.
-- **Component props that expose a label stay overrides** that win over the
-  translated default: `emptyLabel = t('...', 'No items')`.
-- **All 12 locales, every time.** `en-US` is the source of truth;
-  `locale-parity.test.ts` fails CI if any locale's key set or `{{interpolation}}`
-  tokens diverge. Interpolation is `{{double}}` braces with no ICU, so plurals need
-  separate keys rather than a plural rule.
-- **If a string doubles as a DOM selector**, build the selector from the same
-  `t(...)` value so the two cannot drift when the language changes.
+- **Scope: strings a component renders.** Anything the component itself puts in front of a user — visible text, `aria-label`, `aria-roledescription`, live-region announcements, `title` — goes through `useI18n()`: `t('component.key', 'English default')`. The inline English stays as a belt-and-braces fallback.
+- **Not for stories, docs, or tests.** Storybook stories, `.docs.mdx`, and specs are demo and fixture copy, not product UI. Use plain literals there — a locale key that exists only to feed a story is noise in twelve files, and a test that reads its expectation from the bundle asserts nothing about the string.
+- **Component props that expose a label stay overrides** that win over the translated default: `emptyLabel = t('...', 'No items')`.
+- **All 12 locales, every time.** `en-US` is the source of truth; `locale-parity.test.ts` fails CI if any locale's key set or `{{interpolation}}` tokens diverge. Interpolation is `{{double}}` braces with no ICU, so plurals need separate keys rather than a plural rule.
+- **If a string doubles as a DOM selector**, build the selector from the same `t(...)` value so the two cannot drift when the language changes.
 
 ## TypeScript & Exports
 
@@ -163,12 +163,12 @@ Full rules in [`src/i18n/README.md`](src/i18n/README.md). The short version:
 - **Barrel exports:** every category has an `index.ts`; everything re-exports through `src/index.ts`.
 - **Compound components:** `Object.assign(Button, { Group: ButtonGroup, Split: ButtonSplit })`.
 - **Tasty re-exports:** only types are re-exported. Runtime imports (`tasty`, `extractStyles`, `filterBaseProps`) come directly from `@tenphi/tasty`.
-- **`Aria*Props` from `react-aria` silently resolve to `any`.** `tsconfig.json` sets `preserveSymlinks: true`, so TS resolves `react-aria`'s re-exports from the symlink path and never finds the `@react-aria/*` subpackages (they are not direct dependencies); `skipLibCheck` then hides the failure. Consequences: `interface X extends AriaFooProps` contributes **no** members (`keyof X` drops them), while `Omit<AriaFooProps, …>` becomes an index signature that accepts *anything*. Either way those props are unchecked. So declare the Aria props a component genuinely supports — see `ToggleSelectionProps` in `src/shared/form.ts`, which restores `onChange` for `Switch`/`Checkbox`. Removing `preserveSymlinks` is the real fix but surfaces ~320 previously-hidden errors across ~60 files, so it needs its own migration.
+- **`Aria*Props` from `react-aria` silently resolve to `any`.** `tsconfig.json` sets `preserveSymlinks: true`, so TS resolves `react-aria`'s re-exports from the symlink path and never finds the `@react-aria/*` subpackages (they are not direct dependencies); `skipLibCheck` then hides the failure. Consequences: `interface X extends AriaFooProps` contributes **no** members (`keyof X` drops them), while `Omit<AriaFooProps, …>` becomes an index signature that accepts _anything_. Either way those props are unchecked. So declare the Aria props a component genuinely supports — see `ToggleSelectionProps` in `src/shared/form.ts`, which restores `onChange` for `Switch`/`Checkbox`. Removing `preserveSymlinks` is the real fix but surfaces ~320 previously-hidden errors across ~60 files, so it needs its own migration.
 
 ## Testing
 
 - **Helpers:** `renderWithRoot` (wraps with `<Root>`), `renderWithForm` (returns `{ formInstance, ...renderResult }`).
 - **QA selectors:** `qa` prop → `data-qa` attribute → `screen.getByTestId('name')` (`testIdAttribute` is configured to `data-qa`).
 - **Tasty snapshots:** `toMatchTastySnapshot()` captures markup + CSS together.
-- **Not every question needs a spec.** If you only want to *see* what something renders, run [`pnpm probe`](#inspecting-rendered-html--css--pnpm-probe) instead of writing a spec to delete afterwards.
+- **Not every question needs a spec.** If you only want to _see_ what something renders, run [`pnpm probe`](#inspecting-rendered-html--css--pnpm-probe) instead of writing a spec to delete afterwards.
 - Patterns: see [docs/rules/tests.md](docs/rules/tests.md).

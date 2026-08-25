@@ -7,25 +7,18 @@ import * as PeriodPickerStories from './PeriodPicker.stories.tsx';
 
 # Period Pickers
 
-`WeekPicker`, `MonthPicker`, `QuarterPicker`, and `YearPicker` let users select a
-whole calendar period instead of a specific day. They mirror Ant Design's
-`DatePicker picker="week|month|quarter|year"` feature, but are exposed as four
-dedicated components that share a single implementation.
+`WeekPicker`, `MonthPicker`, `QuarterPicker`, and `YearPicker` let users select a whole calendar period instead of a specific day. They mirror Ant Design's `DatePicker picker="week|month|quarter|year"` feature, but are exposed as four dedicated components that share a single implementation.
 
-The value is always a single `CalendarDate` (from `@internationalized/date`)
-**snapped to the start of the chosen period**:
+The value is always a single `CalendarDate` (from `@internationalized/date`) **snapped to the start of the chosen period**:
 
 - **Week** → the first day of the week (locale-aware)
 - **Month** → the 1st of the month
 - **Quarter** → the 1st of the first month of the quarter
 - **Year** → January 1st
 
-The field renders a compact label for the selected period (`2026-W33`, `2026-08`,
-`2026-Q3`, `2026`). Use `formatValue` to override it.
+The field renders a compact label for the selected period (`2026-W33`, `2026-08`, `2026-Q3`, `2026`). Use `formatValue` to override it.
 
-In the month and quarter panels the year in the header is a button that opens a
-year list, so picking a period several years away takes two clicks instead of
-paging through the arrows.
+In the month and quarter panels the year in the header is a button that opens a year list, so picking a period several years away takes two clicks instead of paging through the arrows.
 
 ## When to Use
 
@@ -56,8 +49,7 @@ paging through the arrows.
 - **`onChange`** `(value: DateValue | null) => void` — Fired when the selected period changes
 - **`onOpenChange`** `(isOpen: boolean) => void` — Fired when the popover opens or closes
 
-`WeekPicker`, `MonthPicker`, `QuarterPicker` and `YearPicker` are thin wrappers
-that pin `picker`; everything else is identical.
+`WeekPicker`, `MonthPicker`, `QuarterPicker` and `YearPicker` are thin wrappers that pin `picker`; everything else is identical.
 
 ### Base Properties
 
@@ -105,8 +97,7 @@ These properties allow direct style application without using the `styles` prop:
 
 ### Limited range
 
-Periods that fall entirely outside `minValue` / `maxValue` are disabled, and the
-navigation arrows stop at the edge of the range.
+Periods that fall entirely outside `minValue` / `maxValue` are disabled, and the navigation arrows stop at the edge of the range.
 
 <Story of={PeriodPickerStories.WithLimitedRange} />
 
@@ -124,8 +115,7 @@ navigation arrows stop at the edge of the range.
 ### Screen Reader Support
 
 - The panel is a `grid` labelled `Months`, `Quarters` or `Years`
-- The trigger is described by the field's current value, so the selection is
-  announced along with the button
+- The trigger is described by the field's current value, so the selection is announced along with the button
 
 ## Related Components
 

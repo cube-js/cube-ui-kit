@@ -38,6 +38,7 @@ Supports [Base properties](/docs/getting-started-base-properties--docs)
 Customizes the root element of the component (Space component).
 
 **Sub-elements:**
+
 - None - The component uses Tag components for individual keys
 
 ### Style Properties
@@ -45,11 +46,11 @@ Customizes the root element of the component (Space component).
 These properties allow direct style application without using the `styles` prop:
 
 - **Base:** `display`, `font`, `preset`, `hide`, `whiteSpace`, `opacity`, `transition`
-- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`
+- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `scrollMargin`
 - **Dimension:** `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`
 - **Block:** `border`, `radius`, `shadow`, `outline`, `padding`, `paddingInline`, `paddingBlock`, `overflow`, `scrollbar`, `textAlign`
 - **Color:** `color`, `fill`, `fade`, `image`
-- **Flow:** `flow`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gap`, `columnGap`, `rowGap`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`
+- **Flow:** `flow`, `place`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gap`, `columnGap`, `rowGap`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`
 
 ### Accessibility Properties
 
@@ -134,7 +135,7 @@ The inherit type is particularly useful when the HotKeys component needs to matc
 <Story of={HotKeysStories.MultipleKeys} />
 
 ```jsx
-<HotKeys 
+<HotKeys
   aria-label="Command palette"
   aria-description="Opens the command palette for quick actions"
 >
@@ -147,7 +148,7 @@ The inherit type is particularly useful when the HotKeys component needs to matc
 <Story of={HotKeysStories.Alternatives} />
 
 ```jsx
-<HotKeys 
+<HotKeys
   aria-label="Search"
   aria-description="Opens the search dialog"
 >
@@ -160,7 +161,7 @@ The inherit type is particularly useful when the HotKeys component needs to matc
 <Story of={HotKeysStories.ComplexAlternatives} />
 
 ```jsx
-<HotKeys 
+<HotKeys
   aria-label="Quick actions"
   aria-description="Multiple ways to access quick actions menu"
 >
@@ -173,7 +174,7 @@ The inherit type is particularly useful when the HotKeys component needs to matc
 <Story of={HotKeysStories.FunctionKeys} />
 
 ```jsx
-<HotKeys 
+<HotKeys
   aria-label="Help functions"
   aria-description="Function keys for help, rename, and search"
 >
@@ -186,7 +187,7 @@ The inherit type is particularly useful when the HotKeys component needs to matc
 <Story of={HotKeysStories.ArrowKeys} />
 
 ```jsx
-<HotKeys 
+<HotKeys
   aria-label="Navigation"
   aria-description="Arrow keys for directional navigation"
 >
@@ -199,7 +200,7 @@ The inherit type is particularly useful when the HotKeys component needs to matc
 <Story of={HotKeysStories.SpecialKeys} />
 
 ```jsx
-<HotKeys 
+<HotKeys
   aria-label="Common actions"
   aria-description="Frequently used special keys"
 >
@@ -212,7 +213,7 @@ The inherit type is particularly useful when the HotKeys component needs to matc
 <Story of={HotKeysStories.Mixed} />
 
 ```jsx
-<HotKeys 
+<HotKeys
   aria-label="Copy"
   aria-description="Copy selected content to clipboard"
 >
@@ -225,7 +226,7 @@ The inherit type is particularly useful when the HotKeys component needs to matc
 <Story of={HotKeysStories.WithCustomStyles} />
 
 ```jsx
-<HotKeys 
+<HotKeys
   aria-label="Styled shortcuts"
   aria-description="Custom styled keyboard shortcuts"
   styles={{
@@ -299,9 +300,10 @@ The HotKeys component is designed with comprehensive accessibility support:
 ## Best Practices
 
 1. **Provide meaningful labels**: Always use the `aria-label` prop to describe what the shortcuts do
+
    ```jsx
-   <HotKeys 
-     aria-label="Search" 
+   <HotKeys
+     aria-label="Search"
      aria-description="Opens the search dialog"
    >
      mod+k
@@ -309,14 +311,16 @@ The HotKeys component is designed with comprehensive accessibility support:
    ```
 
 2. **Use platform-appropriate modifiers**: Use `mod` instead of `ctrl` for cross-platform shortcuts
+
    ```jsx
    <HotKeys aria-label="Search">mod+k</HotKeys> // Good: Works on both Mac and PC
    <HotKeys aria-label="Search">ctrl+k</HotKeys> // Limited: PC-specific
    ```
 
 3. **Group related alternatives**: Separate alternative shortcuts with commas
+
    ```jsx
-   <HotKeys 
+   <HotKeys
      aria-label="Search"
      aria-description="Opens search dialog"
    >
@@ -325,8 +329,9 @@ The HotKeys component is designed with comprehensive accessibility support:
    ```
 
 4. **Provide descriptions for complex shortcuts**: Use the `aria-description` prop for clarity
+
    ```jsx
-   <HotKeys 
+   <HotKeys
      aria-label="Command palette"
      aria-description="Opens the command palette for quick actions"
    >
@@ -335,12 +340,14 @@ The HotKeys component is designed with comprehensive accessibility support:
    ```
 
 5. **Use clear, recognizable keys**: Stick to standard key names
+
    ```jsx
    <HotKeys aria-label="Confirm">enter, space</HotKeys> // Good: Clear key names
    <HotKeys aria-label="Confirm">ret, spc</HotKeys> // Avoid: Unclear abbreviations
    ```
 
 6. **Keep combinations reasonable**: Avoid overly complex key combinations
+
    ```jsx
    <HotKeys aria-label="Command palette">mod+shift+p</HotKeys> // Good: Reasonable complexity
    <HotKeys aria-label="Command palette">mod+ctrl+shift+alt+p</HotKeys> // Avoid: Too complex
@@ -348,7 +355,7 @@ The HotKeys component is designed with comprehensive accessibility support:
 
 7. **Consider context**: Provide context about when and where shortcuts are available
    ```jsx
-   <HotKeys 
+   <HotKeys
      aria-label="Cancel"
      aria-description="Cancel current action and close dialog"
    >
@@ -378,4 +385,4 @@ This ensures users see familiar symbols regardless of their operating system.
 - Consider adding animation for key press feedback
 - Support for custom key symbol mappings
 - Integration with system accessibility preferences
-- Support for voice command alternatives 
+- Support for voice command alternatives

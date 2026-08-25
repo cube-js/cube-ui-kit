@@ -1,3 +1,4 @@
+import { TastyBatchProvider } from '@tenphi/tasty';
 import { createPortal } from 'react-dom';
 
 import { PortalProps } from './types';
@@ -29,8 +30,17 @@ import { usePortal } from './usePortal';
 export function Portal(props: PortalProps) {
   const { children, mountRoot, isDisabled } = usePortal(props);
 
-  if (isDisabled) return <>{children}</>;
+  // A portal mounts a fresh subtree in a commit that did not re-render `<Root>`,
+  // so its window cannot cover this one — open one here, flushing in
+  // `useInsertionEffect` before any positioning effect reads the DOM.
+  //
+  // In the kit this path is tooltips: `TooltipTrigger` is the only component
+  // that renders `<Portal>`. Popovers, modals and trays portal through
+  // `<Overlay>`'s own `createPortal`, which opens its own window.
+  const content = <TastyBatchProvider>{children}</TastyBatchProvider>;
+
+  if (isDisabled) return content;
   // Render inline until mountRoot is available (fixes timing issues in tests and SSR)
-  if (!mountRoot) return <>{children}</>;
-  return createPortal(children, mountRoot);
+  if (!mountRoot) return content;
+  return createPortal(content, mountRoot);
 }

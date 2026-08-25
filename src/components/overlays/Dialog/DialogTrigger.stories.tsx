@@ -1,5 +1,7 @@
 import { StoryFn } from '@storybook/react-vite';
+import { userEvent, within } from 'storybook/test';
 
+import { waitForOverlay } from '../../../stories/interactions';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Button } from '../../actions/Button/Button';
 import { Content } from '../../content/Content';
@@ -223,3 +225,14 @@ const Template: StoryFn<CubeDialogTriggerProps> = (props) => (
 
 export const Default = Template.bind({});
 Default.args = {};
+
+// `DialogTrigger` renders nothing but its trigger until that trigger is
+// activated. Without this the file's only story photographs a closed button: no
+// coverage of the dialog at all, and an image identical to `DialogContainer`'s.
+Default.play = async ({ canvasElement }) => {
+  const { findByRole } = within(canvasElement);
+
+  await userEvent.click(await findByRole('button', { name: 'Open Dialog' }));
+
+  await waitForOverlay('dialog');
+};

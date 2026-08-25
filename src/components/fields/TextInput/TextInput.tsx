@@ -34,6 +34,7 @@ export const TextInput = forwardRef(function TextInput(
 
   let {
     labelProps: userLabelProps,
+    inputProps: userInputProps,
     inputRef: propsInputRef,
     form,
     isBuffered,
@@ -68,7 +69,7 @@ export const TextInput = forwardRef(function TextInput(
       {...restProps}
       ref={ref}
       labelProps={mergedLabelProps}
-      inputProps={inputProps}
+      inputProps={mergeProps(inputProps, userInputProps)}
       inputRef={inputRef}
     />
   );

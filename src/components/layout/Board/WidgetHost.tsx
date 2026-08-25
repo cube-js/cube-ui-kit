@@ -1,5 +1,5 @@
 import { Styles, tasty } from '@tenphi/tasty';
-import { CSSProperties, useMemo, useRef, useState } from 'react';
+import { CSSProperties, ReactNode, useMemo, useRef, useState } from 'react';
 import { useFocusRing, useFocusWithin, useHover, useMove } from 'react-aria';
 import { createPortal } from 'react-dom';
 
@@ -24,7 +24,7 @@ import {
 } from './grid-core';
 import { BoardSelectModifierKey } from './use-board-select-modifier-key';
 
-import type { BoardResizeGripPlacement } from './Widget';
+import type { BoardCornerPlacement, BoardResizeGripPlacement } from './Widget';
 
 export type ResizePhase = 'start' | 'move' | 'end';
 
@@ -74,7 +74,8 @@ const WidgetElement = tasty({
     },
     shadow: {
       '': false,
-      'hovered & !card & (draggable | resizing)': '0 0 0 1bw #border',
+      'hovered & !card & !no-hover-ring & (draggable | resizing)':
+        '0 0 0 1bw #border',
       'pre-selected': '0 0 0 1bw #primary.40',
       selected: '0 0 0 1bw #primary',
       // `$dialog-shadow` uses Glaze `#shadow-lg`, which adapts to dark / high-contrast schemas.
@@ -290,6 +291,53 @@ const GripLayerElement = tasty({
   },
 });
 
+/**
+ * A control anchored to one corner of a widget, centred on it.
+ *
+ * Lives in the same layer as the corner resize grips, which is the layer that
+ * exists precisely because a widget clips its own content: a control an app
+ * hangs off the corner itself is cropped in half by that clip, or by an
+ * ancestor's scroll container when the widget sits in the first row. Here it is
+ * a sibling of the widget rather than a descendant, so neither can reach it.
+ *
+ * Being outside the widget host also means `useMove` is not attached, so a press
+ * on the chrome cannot start a drag — no `dragCancel` entry required.
+ */
+const CornerChromeElement = tasty({
+  qa: 'BoardWidgetCornerChrome',
+  styles: {
+    position: 'absolute',
+    // The layer takes no pointer events; chrome is interactive, so it opts back in.
+    pointerEvents: 'auto',
+    zIndex: 1,
+    top: {
+      '': 'auto',
+      'corner=ne | corner=nw': 0,
+    },
+    bottom: {
+      '': 'auto',
+      'corner=se | corner=sw': 0,
+    },
+    left: {
+      '': 'auto',
+      'corner=nw | corner=sw': 0,
+    },
+    right: {
+      '': 'auto',
+      'corner=ne | corner=se': 0,
+    },
+    // Centre it on the corner: half of its own size in each direction. The
+    // default matches `ne`, which is also the default placement, so chrome is
+    // still centred rather than hanging off-centre if no corner mod matches.
+    transform: {
+      '': 'translate(50%, -50%)',
+      'corner=nw': 'translate(-50%, -50%)',
+      'corner=se': 'translate(50%, 50%)',
+      'corner=sw': 'translate(-50%, 50%)',
+    },
+  },
+});
+
 // Edge axes (n/s/e/w) get a dotted grip affordance, revealed on
 // hover/focus/resize. The dots line up along the edge (a vertical column for the
 // e/w handles, a horizontal row for n/s), matching the design-system pane grip
@@ -416,6 +464,18 @@ export interface WidgetHostProps {
    */
   isCard: boolean;
   /**
+   * Whether this widget draws the resting hover ring. Resolved by the owning
+   * `Board` from the per-widget `hoverRing` and the board-level
+   * `widgetProps.hoverRing` default.
+   */
+  hoverRing: boolean;
+  /** Corner-anchored chrome, drawn outside the widget's clip. */
+  cornerChrome?: ReactNode;
+  /** Which corner {@link cornerChrome} is centred on. */
+  cornerChromePlacement?: BoardCornerPlacement;
+  /** App-defined modifiers merged into the host's own, for style maps to match. */
+  mods?: Record<string, boolean | string | undefined>;
+  /**
    * Resolved style overrides for the rendered widget element (per-widget
    * `styles` falling back to the board-level `widgetProps.styles`).
    */
@@ -514,6 +574,10 @@ export function WidgetHost(props: WidgetHostProps) {
     positionParams,
     registration,
     isCard,
+    hoverRing,
+    cornerChrome,
+    cornerChromePlacement = 'ne',
+    mods: customMods,
     styles: widgetStyles,
     isDraggable,
     isResizable,
@@ -871,6 +935,7 @@ export function WidgetHost(props: WidgetHostProps) {
     static: !!item.static,
     resizing: isResizing,
     card: isCard,
+    'no-hover-ring': !hoverRing,
     hovered: isHovered,
     'focus-visible': isFocusVisible,
     selected: isSelected,
@@ -995,7 +1060,15 @@ export function WidgetHost(props: WidgetHostProps) {
   // The floating clone carries the "drag" affordance (raised shadow/z-index);
   // keep the hidden host flat. Keyboard drags (which never float) still
   // highlight the in-grid host, so only suppress `drag` when floating.
-  const hostMods = { ...mods, drag: isActiveDrag && !floatInOverlay, settled };
+  // App mods go UNDER the board's own: a custom mod must never be able to
+  // shadow `selected`, `drag` and friends, which the board's own style map and
+  // its accessibility wiring both depend on.
+  const hostMods = {
+    ...customMods,
+    ...mods,
+    drag: isActiveDrag && !floatInOverlay,
+    settled,
+  };
 
   // The host is always rendered first, with a stable element shape, so React
   // reuses the same DOM node across the drag transition (never remounts it).
@@ -1044,7 +1117,11 @@ export function WidgetHost(props: WidgetHostProps) {
             height: `${floatRect!.height}px`,
             pointerEvents: 'none',
           }}
-          mods={{ ...mods, drag: true, floating: true }}
+          // `hostMods` rather than `mods`, so the app's own modifiers survive the
+          // gesture: the clone IS the widget while a pointer drag is in flight
+          // (the in-grid host is hidden), and a custom state blinking off for the
+          // duration of the drag is exactly when it would be most noticeable.
+          mods={{ ...hostMods, drag: true, floating: true }}
           styles={widgetStyles as Styles}
           aria-hidden="true"
         >
@@ -1064,8 +1141,10 @@ export function WidgetHost(props: WidgetHostProps) {
   // Suppressed while the widget floats in the drag overlay: the layer mirrors the
   // widget's *grid* rect, so leaving it behind would park a live hit-zone on a
   // cell the widget has visually left.
+  // The layer is also what carries corner chrome, so it renders when either the
+  // grips or the chrome need it.
   const gripLayer =
-    cornerAxes.length && !floatInOverlay ? (
+    (cornerAxes.length || cornerChrome) && !floatInOverlay ? (
       <GripLayerElement
         {...layerHoverProps}
         style={{
@@ -1074,7 +1153,9 @@ export function WidgetHost(props: WidgetHostProps) {
           width: `${pos.width}px`,
           height: `${pos.height}px`,
         }}
-        aria-hidden="true"
+        // Only the grips are decorative. Chrome is real, focusable UI, so the
+        // layer can only be hidden from assistive tech when it holds no chrome.
+        aria-hidden={cornerChrome ? undefined : 'true'}
       >
         {cornerAxes.map((axis) => (
           <ResizeHandle
@@ -1092,6 +1173,11 @@ export function WidgetHost(props: WidgetHostProps) {
             aria-hidden="true"
           />
         ))}
+        {cornerChrome ? (
+          <CornerChromeElement mods={{ corner: cornerChromePlacement }}>
+            {cornerChrome}
+          </CornerChromeElement>
+        ) : null}
       </GripLayerElement>
     ) : null;
 

@@ -1,6 +1,7 @@
 import { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
 
+import { NO_SNAPSHOT } from '../../../stories/chromatic';
 import { Text } from '../../content/Text';
 import { Flex } from '../../layout/Flex';
 
@@ -179,6 +180,8 @@ export const WithSelectAll: Story = {
       <Picker.Item key={fruit.key}>{fruit.label}</Picker.Item>
     )),
   },
+  // The Select All row lives in the popover, which never opens — closed, this is `MultipleSelection`.
+  parameters: NO_SNAPSHOT,
 };
 
 export const Disabled: Story = {
@@ -276,6 +279,8 @@ export const DynamicSections: Story = {
       </Picker>
     );
   },
+  // Renders the same sections as `WithSections`; only the API differs.
+  parameters: NO_SNAPSHOT,
 };
 
 export const WithItemsArray: Story = {
@@ -288,6 +293,8 @@ export const WithItemsArray: Story = {
       <Picker.Item key={item.key}>{item.label}</Picker.Item>
     ),
   },
+  // Same closed trigger as `SingleSelection`; only the API that builds the list differs.
+  parameters: NO_SNAPSHOT,
 };
 
 export const Controlled = () => {

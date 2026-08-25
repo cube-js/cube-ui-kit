@@ -41,7 +41,7 @@ import { ItemActionProvider } from '../../actions/ItemActionContext';
 import { IconSwitch } from '../../helpers/IconSwitch/IconSwitch';
 import { CubeTooltipProviderProps } from '../../overlays/Tooltip/TooltipProvider';
 import { highlightText } from '../highlightText';
-import { HotKeys } from '../HotKeys';
+import { HotKeys } from '../HotKeys/HotKeys';
 import { ItemBadge } from '../ItemBadge';
 import { useAutoTooltip } from '../use-auto-tooltip';
 

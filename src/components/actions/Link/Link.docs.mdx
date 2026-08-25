@@ -35,6 +35,7 @@ Supports [Base properties](/docs/getting-started-base-properties--docs)
 Customizes the root element of the component.
 
 Sub-elements:
+
 - `ButtonIcon` – wrapper around `icon` and `rightIcon` when used.
 
 ### Style Properties
@@ -42,12 +43,12 @@ Sub-elements:
 These properties allow direct style application without using the `styles` prop:
 
 - **Base:** `display`, `font`, `preset`, `hide`, `whiteSpace`, `opacity`, `transition`
-- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`
+- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `scrollMargin`
 - **Dimension:** `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`
 - **Block:** `border`, `radius`, `shadow`, `outline`, `padding`, `paddingInline`, `paddingBlock`, `overflow`, `scrollbar`, `textAlign`
 - **Color:** `color`, `fill`, `fade`, `image`
 - **Text:** `textTransform`, `fontWeight`, `fontStyle`
-- **Flow:** `flow`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gap`, `columnGap`, `rowGap`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`
+- **Flow:** `flow`, `place`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gap`, `columnGap`, `rowGap`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`
 
 ## Link Syntax (`to` prop)
 
@@ -77,6 +78,7 @@ These properties allow direct style application without using the `styles` prop:
 ```
 
 Notes:
+
 - Adds `target="_blank"` and `rel="noopener noreferrer"` automatically.
 - Cmd/Ctrl/Shift + click also opens in a new tab, like a native link.
 
@@ -109,11 +111,13 @@ Notes:
 ```
 
 Accepted object shape:
+
 ```ts
 { pathname?: string; search?: string; hash?: string }
 ```
 
 Notes:
+
 - `search` and `hash` are auto-prefixed with `?` and `#` if needed
 - `pathname` can be relative (e.g., `../parent`) or absolute (e.g., `/root`)
 - Works with `!` and `@` prefixes when passed as strings
@@ -132,6 +136,7 @@ Notes:
 ```
 
 Behavior:
+
 - Uses `navigate(delta)` from the navigation adapter with overload signature
 - The default adapter calls `window.history.go(delta)`
 
@@ -225,6 +230,7 @@ export function App() {
 ```
 
 Default adapter behavior:
+
 - String/object navigation uses `window.location.assign(href)`
 - History navigation uses `window.history.go(delta)`
 - `!` prefix opens resolved URLs in a new tab
@@ -238,10 +244,10 @@ Default adapter behavior:
 Control navigation behavior via the `navigationOptions` prop:
 
 ```jsx
-<Link 
+<Link
   to="/search"
-  navigationOptions={{ 
-    replace: true, 
+  navigationOptions={{
+    replace: true,
     state: { from: 'homepage' },
     relative: 'path',
     preventScrollReset: true
@@ -254,7 +260,7 @@ Control navigation behavior via the `navigationOptions` prop:
 ### Available options
 
 - `replace`: Replace current history entry instead of pushing a new one
-- `state`: Navigation state data (router-specific)  
+- `state`: Navigation state data (router-specific)
 - `relative`: How relative paths are resolved (`'route'` | `'path'`)
 - `preventScrollReset`: Prevent scroll reset on navigation
 
@@ -334,5 +340,3 @@ These options are passed to the router's `navigate` function and have no effect 
 ## Related Components
 
 - [Button](/docs/actions-button--docs) – Action component with multiple visual styles, including `type="link"`.
-
-

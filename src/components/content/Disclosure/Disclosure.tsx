@@ -24,7 +24,7 @@ import {
   useDisclosureState,
 } from 'react-stately';
 
-import { RightIcon } from '../../../icons';
+import { RightIcon } from '../../../icons/RightIcon';
 import { mergeRefs } from '../../../utils/react';
 import { extractStyles } from '../../../utils/styles';
 import { CubeItemButtonProps, ItemButton } from '../../actions/ItemButton';

@@ -58,6 +58,7 @@ Supports [Base properties](/docs/getting-started-base-properties--docs)
 Customizes the root element of the component.
 
 **Sub-elements:**
+
 - `Icon` - The main icon displayed before the content
 - `RightIcon` - The icon displayed after the content
 - `Label` - The main text content area
@@ -68,7 +69,14 @@ Customizes the root element of the component.
 
 ### Style Properties
 
-Direct style application without using the `styles` prop: `width`, `height`, `padding`, `paddingInline`, `paddingBlock`, `margin`, `inset`, `color`, `fill`, `fade`, `opacity`, `display`, `font`, `preset`, `hide`, `whiteSpace`, `position`, `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `gap`, `columnGap`, `rowGap`, `flow`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`, `border`, `radius`, `shadow`, `overflow`, `scrollbar`, `outline`, `textAlign`, `reset`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`, `fontWeight`, `fontStyle`, `textTransform`.
+These properties allow direct style application without using the `styles` prop:
+
+- **Base:** `display`, `font`, `preset`, `hide`, `whiteSpace`, `opacity`, `transition`
+- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `scrollMargin`
+- **Dimension:** `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`
+- **Block:** `border`, `radius`, `shadow`, `outline`, `padding`, `paddingInline`, `paddingBlock`, `overflow`, `scrollbar`, `textAlign`
+- **Color:** `color`, `fill`, `fade`, `image`
+- **Flow:** `flow`, `place`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gap`, `columnGap`, `rowGap`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`
 
 ### Modifiers
 
@@ -157,7 +165,7 @@ The `mods` property accepts the following modifiers:
 </Item>
 
 {/* Dynamic icon based on mods */}
-<Item 
+<Item
   icon={({ loading }) => loading ? <LoadingIcon /> : <IconUser />}
   rightIcon={({ selected }) => selected ? <CheckIcon /> : <IconSettings />}
 >
@@ -165,7 +173,7 @@ The `mods` property accepts the following modifiers:
 </Item>
 
 {/* Return true from function for empty slot */}
-<Item 
+<Item
   icon={({ selected }) => selected ? <CheckIcon /> : true}
 >
   Conditional icon
@@ -178,7 +186,7 @@ The `descriptionPlacement` prop controls where the description appears. It defau
 
 ```jsx
 {/* Inline description (default for most types) */}
-<Item 
+<Item
   icon={<IconFile />}
   description="Secondary description text"
   descriptionPlacement="inline"
@@ -187,7 +195,7 @@ The `descriptionPlacement` prop controls where the description appears. It defau
 </Item>
 
 {/* Block description */}
-<Item 
+<Item
   icon={<IconFile />}
   description="Description appears below the label"
   descriptionPlacement="block"
@@ -199,7 +207,7 @@ The `descriptionPlacement` prop controls where the description appears. It defau
 ### With Hotkeys
 
 ```jsx
-<Item 
+<Item
   as="button"
   hotkeys="cmd+s"
   onClick={() => console.log('Save triggered')}
@@ -286,7 +294,7 @@ Use `theme="current"` inside a container that paints its own text color. The fil
 The `isLoading` prop displays a loading indicator and disables the item. The `loadingSlot` prop controls which slot the loading icon replaces:
 
 ```jsx
-<Item 
+<Item
   icon={<IconSave />}
   isLoading={true}
   loadingSlot="icon"
@@ -294,7 +302,7 @@ The `isLoading` prop displays a loading indicator and disables the item. The `lo
   Saving...
 </Item>
 
-<Item 
+<Item
   icon={<IconFile />}
   rightIcon={<IconDownload />}
   isLoading={true}
@@ -311,7 +319,7 @@ When `loadingSlot="auto"` (default), the loading icon intelligently selects the 
 Item supports inline actions that appear on the right side. Use the `Item.Action` compound component for consistent styling:
 
 ```jsx
-<Item 
+<Item
   icon={<IconFile />}
   actions={
     <>
@@ -333,7 +341,7 @@ By default, action buttons are focusable. Use `disableActionsFocus={true}` to pr
 Use `autoHideActions` to hide actions by default and reveal them on hover, focus, or focus-within:
 
 ```jsx
-<Item 
+<Item
   icon={<IconFile />}
   autoHideActions={true}
   actions={
@@ -354,7 +362,7 @@ This provides a cleaner interface while keeping actions easily accessible. By de
 Use `preserveActionsSpace` together with `autoHideActions` to keep the actions area visible (preserving its width) while only changing the opacity. This prevents content from shifting when actions appear:
 
 ```jsx
-<Item 
+<Item
   icon={<IconFile />}
   autoHideActions={true}
   preserveActionsSpace={true}
@@ -380,6 +388,7 @@ By default, Item shows an auto tooltip when content overflows.
 **Type:** `string | boolean | object`
 
 **Values:**
+
 - `true` (default) - Shows tooltip with item content when text overflows
 - `false` - Disables tooltip entirely
 - `string` - Shows tooltip with the specified text (always visible, not auto)
@@ -411,7 +420,7 @@ By default, Item shows an auto tooltip when content overflows.
 </Item>
 
 {/* Custom tooltip only on overflow */}
-<Item 
+<Item
   tooltip={{ title: 'Custom overflow tooltip', auto: true }}
   style={{ width: '200px' }}
 >
@@ -453,11 +462,13 @@ A disabled item keeps showing its tooltip — that is usually where the reason f
 ## Best Practices
 
 1. **Do**: Use clear, descriptive text for the main content
+
    ```jsx
    <Item icon={<IconUser />}>User Profile</Item>
    ```
 
 2. **Do**: Use descriptions to provide additional context
+
    ```jsx
    <Item icon={<IconFile />} description="Last edited 2 hours ago">
      Document.pdf
@@ -465,6 +476,7 @@ A disabled item keeps showing its tooltip — that is usually where the reason f
    ```
 
 3. **Do**: Use hotkeys for frequently accessed actions
+
    ```jsx
    <Item as="button" hotkeys="cmd+s" onPress={handleSave}>
      Save Document
@@ -472,8 +484,9 @@ A disabled item keeps showing its tooltip — that is usually where the reason f
    ```
 
 4. **Do**: Use `Item.Action` for inline actions
+
    ```jsx
-   <Item 
+   <Item
      icon={<IconFile />}
      actions={
        <>
@@ -487,9 +500,10 @@ A disabled item keeps showing its tooltip — that is usually where the reason f
    ```
 
 5. **Don't**: Add too many actions (limit to 2-3 for clarity)
+
    ```jsx
    {/* Avoid this - too many action buttons */}
-   <Item 
+   <Item
      actions={
        <>
          <Item.Action icon={<IconEdit />} aria-label="Edit" />
@@ -504,12 +518,13 @@ A disabled item keeps showing its tooltip — that is usually where the reason f
    ```
 
 6. **Don't**: Overcrowd the component with too many elements
+
    ```jsx
    {/* Avoid this - too many elements competing for attention */}
-   <Item 
-     icon={<IconA />} 
-     rightIcon={<IconB />} 
-     prefix="Pre" 
+   <Item
+     icon={<IconA />}
+     rightIcon={<IconB />}
+     prefix="Pre"
      suffix="Suf"
      description="Very long description with lots of details"
    >

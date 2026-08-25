@@ -52,6 +52,7 @@ function NumberInput(
     onChange,
     inputRef,
     labelProps: userLabelProps,
+    inputProps: userInputProps,
     ...otherProps
   } = props;
   let showStepper = !hideStepper;
@@ -94,7 +95,11 @@ function NumberInput(
       {...otherProps}
       ref={ref}
       labelProps={mergedLabelProps}
-      inputProps={{ ...inputProps, 'data-input-type': 'numberinput' }}
+      inputProps={mergeProps(
+        inputProps,
+        { 'data-input-type': 'numberinput' },
+        userInputProps,
+      )}
       inputRef={inputRef}
       wrapperProps={groupProps}
       suffixPosition="after"

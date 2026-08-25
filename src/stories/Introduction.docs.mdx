@@ -4,37 +4,24 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 # Cube UI Kit
 
-Cube UI Kit is the open-source React design system behind Cube Cloud. The
-`@cube-dev/ui-kit` package combines production-ready components, accessible
-interaction patterns, a token-aware styling engine, and a runtime-configurable
-color system.
+Cube UI Kit is the open-source React design system behind Cube Cloud. The `@cube-dev/ui-kit` package combines production-ready components, accessible interaction patterns, a token-aware styling engine, and a runtime-configurable color system.
 
 ## Built for product interfaces
 
-- **Production-ready components** — From layout and typography primitives to
-  forms, tables, navigation, dialogs, notifications, and complex pickers.
-- **Accessible interactions** — React Aria provides the foundation for keyboard
-  navigation, focus management, and screen-reader behavior.
-- **Composable styling** — Components share design tokens, style properties,
-  state-driven values, and responsive syntax.
-- **Integrated forms** — Fields connect directly to validation and form state
-  without an extra wrapper component.
-- **TypeScript-first APIs** — Component props, tokens, themes, and styling values
-  are typed and discoverable.
+- **Production-ready components** — From layout and typography primitives to forms, tables, navigation, dialogs, notifications, and complex pickers.
+- **Accessible interactions** — React Aria provides the foundation for keyboard navigation, focus management, and screen-reader behavior.
+- **Composable styling** — Components share design tokens, style properties, state-driven values, and responsive syntax.
+- **Integrated forms** — Fields connect directly to validation and form state without an extra wrapper component.
+- **TypeScript-first APIs** — Component props, tokens, themes, and styling values are typed and discoverable.
 
 ## The foundations
 
 Cube UI Kit is built on two independent open-source projects:
 
-- [Tasty](https://tasty.style) is the declarative styling engine. It turns
-  token-aware style objects, responsive values, and component states into
-  conflict-free CSS.
-- [Glaze](https://github.com/tenphi/glaze) generates the semantic color palette.
-  A small set of brand and status seeds resolves into light, dark, and
-  high-contrast token sets.
+- [Tasty](https://tasty.style) is the declarative styling engine. It turns token-aware style objects, responsive values, and component states into conflict-free CSS.
+- [Glaze](https://github.com/tenphi/glaze) generates the semantic color palette. A small set of brand and status seeds resolves into light, dark, and high-contrast token sets.
 
-Use the [Theme Builder](/story/getting-started-theming--theme-builder) to tune a
-palette and preview the result across schemas and contrast levels.
+Use the [Theme Builder](/story/getting-started-theming--theme-builder) to tune a palette and preview the result across schemas and contrast levels.
 
 ## Get started
 
@@ -61,14 +48,11 @@ export function App() {
 }
 ```
 
-`Root` installs the design tokens and providers used by overlays, navigation,
-internationalization, and other shared behaviors. See the
-[Root reference](/docs/getting-started-root--docs) for application-level options.
+`Root` installs the design tokens and providers used by overlays, navigation, internationalization, and other shared behaviors. See the [Root reference](/docs/getting-started-root--docs) for application-level options.
 
 ## Style with the system
 
-Most components accept style properties directly. Values can reference semantic
-units and color tokens, so custom layouts stay aligned with the design system:
+Most components accept style properties directly. Values can reference semantic units and color tokens, so custom layouts stay aligned with the design system:
 
 ```tsx
 <Space
@@ -82,14 +66,11 @@ units and color tokens, so custom layouts stay aligned with the design system:
 </Space>
 ```
 
-For component states, reusable styled components, sub-elements, presets, and the
-complete token reference, continue to [Usage](/docs/getting-started-usage--docs)
-or the [Tasty project](https://tasty.style).
+For component states, reusable styled components, sub-elements, presets, and the complete token reference, continue to [Usage](/docs/getting-started-usage--docs) or the [Tasty project](https://tasty.style).
 
 ## Configure the palette
 
-Pass palette seeds to `Root` to apply a product theme. Glaze resolves the complete
-semantic palette from this compact configuration:
+Pass palette seeds to `Root` to apply a product theme. Glaze resolves the complete semantic palette from this compact configuration:
 
 ```tsx
 <Root
@@ -102,13 +83,11 @@ semantic palette from this compact configuration:
 </Root>
 ```
 
-The [Theming guide](/docs/getting-started-theming--docs) covers palette zones,
-runtime updates, regional previews, dark mode, and high-contrast behavior.
+The [Theming guide](/docs/getting-started-theming--docs) covers palette zones, runtime updates, regional previews, dark mode, and high-contrast behavior.
 
 ## Where to go next
 
 - Browse the sidebar for live component examples and API documentation.
 - Learn the shared styling model in [Usage](/docs/getting-started-usage--docs).
 - Build validated workflows with the [Form documentation](/docs/forms-form--docs).
-- Review [Base Properties](/docs/getting-started-base-properties--docs) shared by
-  components across the kit.
+- Review [Base Properties](/docs/getting-started-base-properties--docs) shared by components across the kit.
