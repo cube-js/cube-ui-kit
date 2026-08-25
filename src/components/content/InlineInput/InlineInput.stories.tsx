@@ -40,6 +40,14 @@ const meta = {
         type: { summary: 'string' },
       },
     },
+    autoComplete: {
+      control: 'text',
+      description:
+        'HTML `autocomplete` token forwarded to the inner input (`off` to suppress autofill on a rename field).',
+      table: {
+        type: { summary: 'string' },
+      },
+    },
 
     /* Behavior */
     editTrigger: {

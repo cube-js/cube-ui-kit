@@ -105,6 +105,11 @@ export default {
         defaultValue: { summary: false },
       },
     },
+    autoComplete: {
+      control: { type: 'text' },
+      description:
+        'HTML `autocomplete` token telling the browser what to autofill (`email`, `username`, `off`, …)',
+    },
 
     /* Events */
     onChange: {

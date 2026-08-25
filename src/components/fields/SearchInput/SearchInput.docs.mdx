@@ -34,7 +34,7 @@ A search input provides a specialized text field for search functionality, featu
 - **`suffixPosition`** `'before' | 'after'` (default: `after`) — Position of suffix relative to validation/loading state icons
 - **`isClearable`** `boolean` (default: `false`) — Whether the search input shows a clear button
 - **`size`** `'small' | 'medium' | 'large'` (default: `medium`) — Input size
-- **`autocomplete`** `string` — HTML autocomplete attribute for browser autofill behavior
+- **`autoComplete`** `string` — HTML [`autocomplete`](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/autocomplete) token that tells the browser what to autofill (`off` to suppress autofill on a filter field). The lowercase `autocomplete` alias is deprecated.
 - **`inputProps`** `Props` — Direct props passed to the native input element
 - **`wrapperProps`** `Props` — Direct props passed to the input wrapper element
 - **`onChange`** `function` — Callback fired when the search value changes

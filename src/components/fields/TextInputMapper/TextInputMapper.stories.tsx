@@ -234,8 +234,8 @@ WithComboBoxKeyAndValue.play = WithValueAndNewMapping.play;
 export const WithPassword = Template.bind({});
 WithPassword.args = {
   value: { 'Key 1': 'Hidden' },
-  keyProps: { autocomplete: 'off' },
-  valueProps: { inputType: 'password', autocomplete: 'off' },
+  keyProps: { autoComplete: 'off' },
+  valueProps: { inputType: 'password', autoComplete: 'off' },
 };
 
 export const WithTextArea = Template.bind({});

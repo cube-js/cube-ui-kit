@@ -321,6 +321,11 @@ export interface CubeTextInputMapperInputProps {
   isValid?: boolean;
   autoFocus?: boolean;
   allowsCustomValue?: boolean;
+  /**
+   * What kind of autofill the browser may offer for the input, as the HTML `autocomplete` token
+   * (`off`, `email`, …). Forwarded to the underlying input component.
+   */
+  autoComplete?: string;
 }
 
 function TextInputMapperInput(props: CubeTextInputMapperInputProps) {
