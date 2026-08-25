@@ -1,3 +1,4 @@
+import { FocusableRefValue } from '@react-types/shared';
 import { useEffect, useRef, useState } from 'react';
 
 import { renderWithRoot, screen, userEvent, waitFor } from '../../../test';
@@ -117,3 +118,95 @@ describe.each(['popover', 'modal'] as const)(
     });
   },
 );
+
+/**
+ * `shouldCloseOnInteractOutside`, in a real browser (CUB-4113).
+ *
+ * Deliberately a Cube `Button` rather than a plain `<button>`: the prop was
+ * shadowed by the automatic `data-popover-dismiss` handling, which only
+ * `Button` / `ItemButton` carry, so a plain button never reproduced the bug.
+ *
+ * In a browser rather than jsdom because the predicate's shape depends on real
+ * pointer behaviour: React Aria passes the element the pointer landed on, which
+ * for a `Button` is the label inside it, not the `<button>`. jsdom delivers a
+ * pointer event straight to the node a test aimed at, so an identity check can
+ * pass there and still be wrong in a browser — which is how the matching
+ * Storybook story was originally written.
+ *
+ * Mirrors `Overlays/Dialog / Do Not Close On Click At Particular Element`.
+ */
+describe('DialogTrigger popover shouldCloseOnInteractOutside', () => {
+  const user = userEvent.setup();
+
+  it('keeps the popover open for the guarded element and still presses it', async () => {
+    function App() {
+      const guardedRef = useRef<FocusableRefValue<HTMLButtonElement>>(null);
+      const [pressed, setPressed] = useState(false);
+
+      return (
+        <>
+          <DialogTrigger
+            type="popover"
+            shouldCloseOnInteractOutside={(el) =>
+              !guardedRef.current?.UNSAFE_getDOMNode()?.contains(el)
+            }
+          >
+            <Button qa="Trigger">Open</Button>
+            <Dialog>
+              <Button qa="Inside">Inside</Button>
+            </Dialog>
+          </DialogTrigger>
+          <Button
+            ref={guardedRef}
+            qa="Guarded"
+            onPress={() => setPressed(true)}
+          >
+            {pressed ? 'It works!' : 'Click me!'}
+          </Button>
+        </>
+      );
+    }
+
+    renderWithRoot(<App />);
+
+    await user.click(screen.getByTestId('Trigger'));
+    await screen.findByTestId('Dialog');
+
+    await user.click(screen.getByText('Click me!'));
+
+    // Settle past the auto-dismiss `setTimeout(0)` and the exit animation, so a
+    // close that was only scheduled has had time to land.
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    expect(screen.getByTestId('Dialog')).toBeInTheDocument();
+    expect(screen.getByTestId('Guarded')).toHaveTextContent('It works!');
+  });
+
+  it('closes on an outside element the predicate allows', async () => {
+    renderWithRoot(
+      <>
+        <DialogTrigger
+          type="popover"
+          shouldCloseOnInteractOutside={(el) =>
+            !el.closest('[data-qa="Guarded"]')
+          }
+        >
+          <Button qa="Trigger">Open</Button>
+          <Dialog>
+            <Button qa="Inside">Inside</Button>
+          </Dialog>
+        </DialogTrigger>
+        <Button qa="Plain">Plain</Button>
+      </>,
+    );
+
+    await user.click(screen.getByTestId('Trigger'));
+    await screen.findByTestId('Dialog');
+
+    await user.click(screen.getByTestId('Plain'));
+
+    await waitFor(() =>
+      expect(screen.queryByTestId('Dialog')).not.toBeInTheDocument(),
+    );
+  });
+});
