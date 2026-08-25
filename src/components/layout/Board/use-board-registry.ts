@@ -1136,7 +1136,11 @@ export function useBoardRegistry(
       if (source) {
         const sp = source.getPositionParams();
         const sc = source.getCompactor();
-        source.applyLayout([...sc.compact(source.getLayout(), sp.cols)], true);
+        source.applyLayout(
+          [...sc.compact(source.getLayout(), sp.cols)],
+          true,
+          'drag',
+        );
       }
     } else {
       const landing = lastLandingRef.current ?? { x: ds.item.x, y: ds.item.y };
@@ -1180,7 +1184,11 @@ export function useBoardRegistry(
           const sp = source.getPositionParams();
           const sc = source.getCompactor();
           const remaining = source.getLayout().filter((l) => l.i !== ds.itemId);
-          source.applyLayout([...sc.compact(remaining, sp.cols)], true);
+          source.applyLayout(
+            [...sc.compact(remaining, sp.cols)],
+            true,
+            'transfer',
+          );
         }
 
         let finalLayout: LayoutItem[];
@@ -1259,7 +1267,7 @@ export function useBoardRegistry(
             ),
           ];
         }
-        target!.applyLayout(finalLayout, true);
+        target!.applyLayout(finalLayout, true, 'transfer');
 
         // Signal the transfer so a controlled app can move the widget's
         // declaration into the destination container (positions are already

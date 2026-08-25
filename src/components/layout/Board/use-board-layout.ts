@@ -4,12 +4,39 @@ import { useEvent } from '../../../_internal/hooks';
 
 import { cloneLayout, LayoutItem } from './grid-core';
 
+/**
+ * Why the layout changed.
+ *
+ * A board commits for two different kinds of reason, and an app usually cares
+ * which: a gesture is the user arranging their board, while a normalization is
+ * the board fitting an existing arrangement to a constraint that moved
+ * underneath it. Without this, an app that persists `onLayoutChange` has no way
+ * to tell "the user dragged a widget" from "the column count changed and the
+ * board reflowed", so it writes the reflow back as if it were an edit — marking
+ * a document dirty nobody touched.
+ *
+ * - `drag` / `resize` — a pointer or keyboard gesture on this board.
+ * - `transfer` — a widget arrived from, or left for, another board.
+ * - `normalize` — no gesture: a reflow for a changed column count, or an
+ *   auto-height widget growing to fit its content.
+ */
+export type BoardLayoutChangeReason =
+  | 'drag'
+  | 'resize'
+  | 'transfer'
+  | 'normalize';
+
+/** What `onLayoutChange` reports alongside the new layout. */
+export interface BoardLayoutChangeInfo {
+  reason: BoardLayoutChangeReason;
+}
+
 export interface UseBoardLayoutOptions {
   /** Controlled layout. */
   layout?: LayoutItem[];
   /** Initial layout for uncontrolled usage. */
   defaultLayout?: LayoutItem[];
-  onLayoutChange?: (layout: LayoutItem[]) => void;
+  onLayoutChange?: (layout: LayoutItem[], info: BoardLayoutChangeInfo) => void;
 }
 
 export interface UseBoardLayoutResult {
@@ -35,8 +62,16 @@ export interface UseBoardLayoutResult {
   placeholdersRef: React.MutableRefObject<LayoutItem[]>;
   placeholderRef: React.MutableRefObject<LayoutItem | null>;
   setPlaceholders: (items: LayoutItem[]) => void;
-  /** Update the layout. `commit` fires `onLayoutChange`. */
-  applyLayout: (layout: LayoutItem[], commit: boolean) => void;
+  /**
+   * Update the layout. `commit` fires `onLayoutChange` with `reason`, which is
+   * required on a commit so a new commit path cannot forget to say why it
+   * fired.
+   */
+  applyLayout: (
+    layout: LayoutItem[],
+    commit: boolean,
+    reason?: BoardLayoutChangeReason,
+  ) => void;
 }
 
 /**
@@ -69,8 +104,9 @@ export function useBoardLayout(
     setPlaceholdersState(items);
   }, []);
 
-  const onLayoutChangeEvent = useEvent((next: LayoutItem[]) =>
-    onLayoutChange?.(next),
+  const onLayoutChangeEvent = useEvent(
+    (next: LayoutItem[], reason: BoardLayoutChangeReason) =>
+      onLayoutChange?.(next, { reason }),
   );
 
   // Sync controlled prop into local state when it changes by reference.
@@ -85,11 +121,15 @@ export function useBoardLayout(
   }, [controlledLayout, isControlled]);
 
   const applyLayout = useCallback(
-    (next: LayoutItem[], commit: boolean) => {
+    (
+      next: LayoutItem[],
+      commit: boolean,
+      reason: BoardLayoutChangeReason = 'normalize',
+    ) => {
       layoutRef.current = next;
       setLayout(next);
       if (commit) {
-        onLayoutChangeEvent(next);
+        onLayoutChangeEvent(next, reason);
       }
     },
     [onLayoutChangeEvent],
