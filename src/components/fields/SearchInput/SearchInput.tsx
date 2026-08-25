@@ -59,6 +59,7 @@ export const SearchInput = forwardRef(function SearchInput(
     isValid,
     onClear,
     labelProps: userLabelProps,
+    inputProps: userInputProps,
     isBuffered,
     ...restProps
   } = props;
@@ -95,7 +96,11 @@ export const SearchInput = forwardRef(function SearchInput(
     <TextInputBase
       ref={ref}
       labelProps={mergedLabelProps}
-      inputProps={{ ...inputProps, 'data-input-type': 'searchinput' }}
+      inputProps={mergeProps(
+        inputProps,
+        { 'data-input-type': 'searchinput' },
+        userInputProps,
+      )}
       inputRef={inputRef}
       type="search"
       icon={<SearchIcon />}

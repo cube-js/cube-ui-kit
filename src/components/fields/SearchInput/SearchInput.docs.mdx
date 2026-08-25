@@ -35,7 +35,7 @@ A search input provides a specialized text field for search functionality, featu
 - **`isClearable`** `boolean` (default: `false`) — Whether the search input shows a clear button
 - **`size`** `'small' | 'medium' | 'large'` (default: `medium`) — Input size
 - **`autoComplete`** `string` — HTML [`autocomplete`](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/autocomplete) token that tells the browser what to autofill (`off` to suppress autofill on a filter field). The lowercase `autocomplete` alias is deprecated.
-- **`inputProps`** `Props` — Direct props passed to the native input element
+- **`inputProps`** `Props` — Direct props passed to the native input element, merged over the props React Aria generates: a key you set wins, and event handlers are chained rather than replaced
 - **`wrapperProps`** `Props` — Direct props passed to the input wrapper element
 - **`onChange`** `function` — Callback fired when the search value changes
 - **`onSubmit`** `function` — Callback fired when search is submitted

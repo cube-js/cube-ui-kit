@@ -220,6 +220,7 @@ function CommandTextArea<T extends object>(
     maxRows = 10,
     rows = 3,
     labelProps: userLabelProps,
+    inputProps: userInputProps,
     inputRef: propsInputRef,
     value,
     defaultValue,
@@ -650,22 +651,26 @@ function CommandTextArea<T extends object>(
   };
 
   // ---- assemble input props ---------------------------------------------
-  const commandInputProps = mergeProps(inputProps, {
-    role: 'combobox',
-    'aria-autocomplete': 'list',
-    'aria-expanded': shouldShowPopover,
-    'aria-haspopup': 'listbox',
-    'aria-controls': shouldShowPopover ? listBoxId : undefined,
-    'aria-activedescendant':
-      shouldShowPopover && focusedKey != null
-        ? `ListBoxItem-${focusedKey}`
-        : undefined,
-    onKeyDown: onKeyDownHandler,
-    onSelect: syncCaret,
-    onKeyUp: syncCaret,
-    onClick: syncCaret,
-    'data-input-type': 'command-textarea',
-  });
+  const commandInputProps = mergeProps(
+    inputProps,
+    {
+      role: 'combobox',
+      'aria-autocomplete': 'list',
+      'aria-expanded': shouldShowPopover,
+      'aria-haspopup': 'listbox',
+      'aria-controls': shouldShowPopover ? listBoxId : undefined,
+      'aria-activedescendant':
+        shouldShowPopover && focusedKey != null
+          ? `ListBoxItem-${focusedKey}`
+          : undefined,
+      onKeyDown: onKeyDownHandler,
+      onSelect: syncCaret,
+      onKeyUp: syncCaret,
+      onClick: syncCaret,
+      'data-input-type': 'command-textarea',
+    },
+    userInputProps,
+  );
 
   // ---- render -----------------------------------------------------------
   const field = (
