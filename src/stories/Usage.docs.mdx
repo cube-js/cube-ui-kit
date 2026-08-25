@@ -316,6 +316,27 @@ Sized to parallel `t2`–`t4`. Each preset sets `font-family` to `var(--font-mon
 | `em`      | Inherits everything, applies italic style      |
 | `default` | Aliases `t3` values — the base text style      |
 
+## Resolving Tokens Outside CSS
+
+Some surfaces cannot take a `var(--…)` reference — a third-party iframe (Stripe Elements), a CodeMirror or Monaco theme object, a Vega spec. Those take colors, lengths and font descriptors as values, so they need the token _resolved_. `resolveTokenValue()` and its siblings read that value out of the DOM, from the element `Root` declares the tokens on, and refuse to hand back a placeholder.
+
+```ts
+import { resolvePresetValues, resolveTokenValue, resolveTokenValues } from '@cube-dev/ui-kit';
+
+resolveTokenValue('#purple'); // 'oklch(0.571 0.0971 280.3)'
+resolveTokenValue('$space-md'); // '8px'
+resolveTokenValues(['#surface', '#surface-text', '#border']); // keyed by the tokens as written
+resolvePresetValues('s3'); // { fontFamily: 'ui-monospace, …', fontSize: '14px', lineHeight: '20px', … }
+```
+
+`useTokenValue()`, `useTokenValues()` and `usePresetValues()` are the same three readers as hooks, re-resolved whenever the palette is re-seeded or the scheme / contrast tier flips. The object `useTokenValues()` returns keeps its identity while the values do, so it is safe as a dependency of the theme object built from it.
+
+So these helpers do not inspect the value. They read `$tokens-applied`, a marker the token block declares alongside the tokens, which answers the question that matters — _are the kit's tokens in effect on this element?_ Off that surface every read returns `null` (or `fallback`) and warns once in development; on it, the computed value is taken as the truth.
+
+All six take `{ element, fallback }`. Pass `element` to read a _local_ override instead of the document — a subtree carrying its own `tokens` prop (`renderColorTokens()`), or one under a `data-schema` / `data-contrast` that differs from the document's. Pass `fallback` for the value to use when a token cannot be resolved, including during SSR, where there is no DOM to read.
+
+**Why `getComputedStyle` by hand does not work.** `Root` declares the token block on `<body>`, so `<html>`, a detached node, and a tree that has not mounted `Root` yet are all outside it — and a token read from outside does not come back empty. Tasty registers `@property` rules with real `initial-value`s, so `--gap` reads `4px` there rather than the kit's `8px`, `--radius` reads `6px`, `--transition` reads `80ms`. The value looks entirely ordinary and is simply wrong. Inspecting it cannot help in the other direction either: `#clear` really is `transparent` and `$h2-letter-spacing` really is `0px`, indistinguishable from an unset property of the same type.
+
 ## Themes
 
 Component themes are set via the `theme` prop or `theme=name` modifier:
