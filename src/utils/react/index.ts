@@ -17,13 +17,13 @@ export { useCombinedRefs, mergeRefs } from './useCombinedRefs';
 export { wrapNodeIfPlain } from './wrapNodeIfPlain';
 export { useViewportSize } from './useViewportSize';
 export {
-  useScheme,
+  useSchema,
   useHighContrast,
-  resolveScheme,
+  resolveSchema,
   resolveHighContrast,
-  subscribeScheme,
-} from './useScheme';
-export type { ColorScheme } from './useScheme';
+  subscribeSchema,
+} from './useSchema';
+export type { ColorSchema } from './useSchema';
 export { useQaProps } from './useQaProps';
 export { useEventBus, useEventListener, EventBusProvider } from './useEventBus';
 export type { EventBusListener, EventBusContextValue } from './useEventBus';

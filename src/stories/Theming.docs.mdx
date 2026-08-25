@@ -701,27 +701,27 @@ subscribePaletteConfig(() => {
 `getPaletteConfig().themes.danger.saturation` is a number even if nobody ever set
 it. `DEFAULT_PALETTE_CONFIG` is the shipped baseline in the same shape.
 
-## Reading the ambient scheme
+## Reading the ambient schema
 
-The palette config is what the app *asked for*; the scheme and contrast tier are
+The palette config is what the app *asked for*; the schema and contrast tier are
 what the viewer is *seeing* — `<html data-schema>` / `prefers-color-scheme`, and
 `<html data-contrast>` / `prefers-contrast`. They are not part of the config,
 so `getPaletteConfig()` says nothing about them:
 
 ```tsx
-import { useHighContrast, useScheme } from '@cube-dev/ui-kit';
+import { useHighContrast, useSchema } from '@cube-dev/ui-kit';
 
-const scheme = useScheme(); // 'light' | 'dark'
+const schema = useSchema(); // 'light' | 'dark'
 const isHighContrast = useHighContrast(); // boolean
 ```
 
 Both resolve exactly as the `@dark` / `@hc` states do — attribute opt-in first,
 media query only when the attribute is absent — and re-render when either input
-changes. Outside React: `resolveScheme()`, `resolveHighContrast()` and
-`subscribeScheme(listener)`, which fires on a change to either condition.
+changes. Outside React: `resolveSchema()`, `resolveHighContrast()` and
+`subscribeSchema(listener)`, which fires on a change to either condition.
 
 Reach for these only where CSS cannot go. Styling belongs in a state map
-(`{ '': …, '@dark': …, '@hc': … }`), which repaints on a scheme flip with no
+(`{ '': …, '@dark': …, '@hc': … }`), which repaints on a schema flip with no
 re-render at all. What the states cannot reach is a surface that takes values
 rather than CSS — a Vega spec, a CodeMirror or Monaco theme, an iframe — or a
 control whose value *is* the condition, like the Light/Dark and

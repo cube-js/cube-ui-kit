@@ -34,14 +34,14 @@ import {
   useHighContrast,
   usePaletteConfig,
   usePaletteVersion,
-  useScheme,
+  useSchema,
 } from '../index';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import type { Styles, Tokens } from '@tenphi/tasty';
 import type { ReactNode } from 'react';
 import type {
-  ColorScheme,
+  ColorSchema,
   PaletteConfig,
   PaletteNumericSeed,
   PaletteSeed,
@@ -1984,10 +1984,10 @@ const PREVIEW_NAV = [
 
 function ThemePreview({
   tokens,
-  scheme,
+  schema,
 }: {
   tokens: Tokens;
-  scheme: ColorScheme;
+  schema: ColorSchema;
 }) {
   const [tab, setTab] = useState(PREVIEW_TABS[0]);
 
@@ -1996,8 +1996,8 @@ function ThemePreview({
       <PreviewHeader>
         {/* The mark is two drawings swapped by the `@dark` state, which follows the
             *document* — tokens override token values, not states, so the preview has
-            to pin the scheme explicitly. Its colour is a token and needs no help. */}
-        <CubeLogo size="3x" scheme={scheme} color="#accent-surface" />
+            to pin the schema explicitly. Its colour is a token and needs no help. */}
+        <CubeLogo size="3x" scheme={schema} color="#accent-surface" />
         <SwatchLabel styles={{ preset: 't3m' }}>Quarterly Revenue</SwatchLabel>
         <Badge>Draft</Badge>
         <Row styles={{ gap: '1x', marginLeft: 'auto' }}>
@@ -2123,18 +2123,18 @@ function ThemePreview({
 }
 
 function ThemeBuilderPage() {
-  // Scheme and contrast tier are viewing conditions, not theme settings — the
+  // Schema and contrast tier are viewing conditions, not theme settings — the
   // same theme renders in all four of them. The switches start on whatever the
   // page is already showing and keep tracking it until someone presses one, so
   // a light preview is never stranded inside a dark page.
-  const documentScheme = useScheme();
+  const documentSchema = useSchema();
   const documentHighContrast = useHighContrast();
   // `null` while the switch is still following the document. Deriving the shown
   // value from "override ?? document" is what lets a two-option control follow
   // without an `Auto` option standing for the third state — and `auto` could not
   // be previewed anyway: it is a *preference*, and a flat token value renders one
   // concrete variant.
-  const [schemeOverride, setSchemeOverride] = useState<ColorScheme | null>(
+  const [schemaOverride, setSchemaOverride] = useState<ColorSchema | null>(
     null,
   );
   const [contrastOverride, setContrastOverride] = useState<boolean | null>(
@@ -2142,14 +2142,14 @@ function ThemeBuilderPage() {
   );
   const version = usePaletteVersion();
 
-  const scheme = schemeOverride ?? documentScheme;
+  const schema = schemaOverride ?? documentSchema;
   const isHighContrast = contrastOverride ?? documentHighContrast;
 
   // The level lives in the palette config now, so it needs no mention here: it
   // is part of the theme being built, and both of these pick it up.
   const tokens = useMemo(
-    () => renderColorTokens({ scheme, highContrast: isHighContrast }),
-    [scheme, isHighContrast, version],
+    () => renderColorTokens({ scheme: schema, highContrast: isHighContrast }),
+    [schema, isHighContrast, version],
   );
 
   // Resolved separately for the controls, which the *document* paints. Both
@@ -2158,10 +2158,10 @@ function ThemeBuilderPage() {
   const documentTokens = useMemo(
     () =>
       renderColorTokens({
-        scheme: documentScheme,
+        scheme: documentSchema,
         highContrast: documentHighContrast,
       }),
-    [documentScheme, documentHighContrast, version],
+    [documentSchema, documentHighContrast, version],
   );
 
   return (
@@ -2182,10 +2182,10 @@ function ThemeBuilderPage() {
         <PreviewColumn>
           <PreviewToolbar>
             <RadioGroup
-              aria-label="Color scheme"
+              aria-label="Color schema"
               type="button"
-              value={scheme}
-              onChange={(value) => setSchemeOverride(value as ColorScheme)}
+              value={schema}
+              onChange={(value) => setSchemaOverride(value as ColorSchema)}
             >
               <Radio value="light">Light</Radio>
               <Radio value="dark">Dark</Radio>
@@ -2213,7 +2213,7 @@ function ThemeBuilderPage() {
               />
             )}
           </PreviewToolbar>
-          <ThemePreview tokens={tokens} scheme={scheme} />
+          <ThemePreview tokens={tokens} schema={schema} />
         </PreviewColumn>
       </BuilderLayout>
     </StoryPage>

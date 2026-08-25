@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from 'react';
 
 /**
- * The ambient viewing conditions — the color scheme and the contrast tier the
+ * The ambient viewing conditions — the color schema and the contrast tier the
  * document is showing right now.
  *
  * This module is the single owner of the definition: it builds the `@dark` /
@@ -11,7 +11,7 @@ import { useSyncExternalStore } from 'react';
  *
  * **For styling, do not use this.** `{ '': light, '@dark': dark, '@hc': hc }` is
  * the answer, and branching styles in JS gives up the conditionality that lets a
- * scheme flip repaint without a re-render. Two cases the state map cannot serve:
+ * schema flip repaint without a re-render. Two cases the state map cannot serve:
  *
  * 1. **Surfaces the stylesheet does not reach** — a Vega spec, a CodeMirror or
  *    Monaco theme, a third-party iframe. They take values, not CSS, so `@dark`
@@ -37,9 +37,9 @@ import { useSyncExternalStore } from 'react';
  * back to. `@root(schema=dark)` compiles to `:root[data-schema="dark"]`, hence
  * the `data-` prefix on the DOM side and the bare key on the tasty side.
  */
-const SCHEME_KEY = 'schema';
+const SCHEMA_KEY = 'schema';
 const CONTRAST_KEY = 'contrast';
-const SCHEME_ATTR = `data-${SCHEME_KEY}`;
+const SCHEMA_ATTR = `data-${SCHEMA_KEY}`;
 const CONTRAST_ATTR = `data-${CONTRAST_KEY}`;
 const DARK_QUERY = '(prefers-color-scheme: dark)';
 const HIGH_CONTRAST_QUERY = '(prefers-contrast: more)';
@@ -51,16 +51,16 @@ const HIGH_CONTRAST_QUERY = '(prefers-contrast: more)';
  * The attribute opt-in wins over the system preference, and the fallback is
  * gated on the attribute being *absent* (`!@root(schema)`) rather than on it
  * being some other value — so `<html data-schema="light">` stays light inside a
- * dark OS, which is the whole point of an opt-in. {@link resolveScheme} and
+ * dark OS, which is the whole point of an opt-in. {@link resolveSchema} and
  * {@link resolveHighContrast} read the same way.
  */
 export const AMBIENT_PREDEFINED_STATES = {
-  '@dark': `@root(${SCHEME_KEY}=dark) | (!@root(${SCHEME_KEY}) & @media${DARK_QUERY})`,
+  '@dark': `@root(${SCHEMA_KEY}=dark) | (!@root(${SCHEMA_KEY}) & @media${DARK_QUERY})`,
   '@hc': `@root(${CONTRAST_KEY}=high) | (!@root(${CONTRAST_KEY}) & @media${HIGH_CONTRAST_QUERY})`,
 } as const;
 
-/** The color scheme the document resolves to. Matches `renderColorTokens({ scheme })`. */
-export type ColorScheme = 'light' | 'dark';
+/** The color schema the document resolves to — the two arms of the `@dark` state. */
+export type ColorSchema = 'light' | 'dark';
 
 // ============================================================================
 // Reading
@@ -85,14 +85,14 @@ function rootAttribute(name: string): string | null {
 }
 
 /**
- * The document's current color scheme, read once — the JS answer to `@dark`.
+ * The document's current color schema, read once — the JS answer to `@dark`.
  *
  * Outside React (a chart spec built in a module, an editor theme registered at
- * import time). In React use {@link useScheme}, which also re-renders on change.
+ * import time). In React use {@link useSchema}, which also re-renders on change.
  * Returns `'light'` with no DOM.
  */
-export function resolveScheme(): ColorScheme {
-  const attribute = rootAttribute(SCHEME_ATTR);
+export function resolveSchema(): ColorSchema {
+  const attribute = rootAttribute(SCHEMA_ATTR);
 
   if (attribute !== null) {
     return attribute === 'dark' ? 'dark' : 'light';
@@ -147,7 +147,7 @@ function startWatching(): () => void {
 
   observer.observe(document.documentElement, {
     attributes: true,
-    attributeFilter: [SCHEME_ATTR, CONTRAST_ATTR],
+    attributeFilter: [SCHEMA_ATTR, CONTRAST_ATTR],
   });
 
   const queries =
@@ -164,15 +164,15 @@ function startWatching(): () => void {
 }
 
 /**
- * Subscribe to ambient condition changes — either the scheme or the contrast
+ * Subscribe to ambient condition changes — either the schema or the contrast
  * tier. Returns an unsubscribe function.
  *
- * The listener takes no argument: re-read with {@link resolveScheme} /
+ * The listener takes no argument: re-read with {@link resolveSchema} /
  * {@link resolveHighContrast}, which is what the hooks below do. For non-React
  * consumers that own a surface the stylesheet cannot reach — re-theming a Monaco
  * instance, re-rendering a chart.
  */
-export function subscribeScheme(listener: () => void): () => void {
+export function subscribeSchema(listener: () => void): () => void {
   listeners.add(listener);
 
   if (!stopWatching) {
@@ -195,27 +195,27 @@ export function subscribeScheme(listener: () => void): () => void {
 
 /**
  * Snapshots are primitives, so React bails out on an unchanged value and no
- * memoization is needed — a contrast change re-runs a `useScheme()` reader's
+ * memoization is needed — a contrast change re-runs a `useSchema()` reader's
  * `getSnapshot` and stops there.
  */
-const getServerScheme = (): ColorScheme => 'light';
+const getServerSchema = (): ColorSchema => 'light';
 const getServerHighContrast = () => false;
 
 /**
- * The document's color scheme, kept live — `'light'` or `'dark'`.
+ * The document's color schema, kept live — `'light'` or `'dark'`.
  *
  * ```tsx
- * const scheme = useScheme();
+ * const schema = useSchema();
  *
- * <VegaChart spec={useMemo(() => buildSpec(scheme), [scheme])} />;
+ * <VegaChart spec={useMemo(() => buildSpec(schema), [schema])} />;
  * ```
  *
  * Follows both the `<html data-schema>` opt-in and `prefers-color-scheme`,
  * exactly as the `@dark` state does. Under SSR it renders `'light'` and
  * re-renders with the real value after hydration.
  */
-export function useScheme(): ColorScheme {
-  return useSyncExternalStore(subscribeScheme, resolveScheme, getServerScheme);
+export function useSchema(): ColorSchema {
+  return useSyncExternalStore(subscribeSchema, resolveSchema, getServerSchema);
 }
 
 /**
@@ -228,7 +228,7 @@ export function useScheme(): ColorScheme {
  */
 export function useHighContrast(): boolean {
   return useSyncExternalStore(
-    subscribeScheme,
+    subscribeSchema,
     resolveHighContrast,
     getServerHighContrast,
   );

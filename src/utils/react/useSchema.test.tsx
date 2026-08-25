@@ -4,10 +4,10 @@ import { renderHook } from '../../test';
 
 import {
   resolveHighContrast,
-  resolveScheme,
+  resolveSchema,
   useHighContrast,
-  useScheme,
-} from './useScheme';
+  useSchema,
+} from './useSchema';
 
 const DARK = '(prefers-color-scheme: dark)';
 const MORE_CONTRAST = '(prefers-contrast: more)';
@@ -47,7 +47,7 @@ function stubMatchMedia(initial: Record<string, boolean> = {}) {
   };
 }
 
-describe('useScheme / useHighContrast', () => {
+describe('useSchema / useHighContrast', () => {
   const originalMatchMedia = window.matchMedia;
 
   afterEach(() => {
@@ -61,15 +61,15 @@ describe('useScheme / useHighContrast', () => {
     document.documentElement.removeAttribute('data-contrast');
   });
 
-  describe('resolveScheme', () => {
+  describe('resolveSchema', () => {
     it('falls back to the media query when no attribute is set', () => {
       const set = stubMatchMedia({ [DARK]: true });
 
-      expect(resolveScheme()).toBe('dark');
+      expect(resolveSchema()).toBe('dark');
 
       set(DARK, false);
 
-      expect(resolveScheme()).toBe('light');
+      expect(resolveSchema()).toBe('light');
     });
 
     it('lets the attribute opt-in win over the system preference', () => {
@@ -77,11 +77,11 @@ describe('useScheme / useHighContrast', () => {
 
       document.documentElement.setAttribute('data-schema', 'light');
 
-      expect(resolveScheme()).toBe('light');
+      expect(resolveSchema()).toBe('light');
 
       document.documentElement.setAttribute('data-schema', 'dark');
 
-      expect(resolveScheme()).toBe('dark');
+      expect(resolveSchema()).toBe('dark');
     });
 
     it('reads any other attribute value as light, exactly as `@dark` does', () => {
@@ -92,7 +92,7 @@ describe('useScheme / useHighContrast', () => {
       // than falling through to the preference.
       document.documentElement.setAttribute('data-schema', 'sepia');
 
-      expect(resolveScheme()).toBe('light');
+      expect(resolveSchema()).toBe('light');
     });
   });
 
@@ -119,7 +119,7 @@ describe('useScheme / useHighContrast', () => {
   it('re-renders when the attribute flips', async () => {
     stubMatchMedia();
 
-    const { result } = renderHook(() => useScheme());
+    const { result } = renderHook(() => useSchema());
 
     expect(result.current).toBe('light');
 
@@ -139,15 +139,15 @@ describe('useScheme / useHighContrast', () => {
   it('re-renders when the system preference changes', async () => {
     const set = stubMatchMedia({ [DARK]: false, [MORE_CONTRAST]: false });
 
-    const scheme = renderHook(() => useScheme());
+    const schema = renderHook(() => useSchema());
     const contrast = renderHook(() => useHighContrast());
 
-    expect(scheme.result.current).toBe('light');
+    expect(schema.result.current).toBe('light');
     expect(contrast.result.current).toBe(false);
 
     await act(async () => set(DARK, true));
 
-    expect(scheme.result.current).toBe('dark');
+    expect(schema.result.current).toBe('dark');
     expect(contrast.result.current).toBe(false);
 
     await act(async () => set(MORE_CONTRAST, true));
@@ -160,9 +160,9 @@ describe('useScheme / useHighContrast', () => {
 
     // The observer and the query listeners are shared and torn down when the
     // listener set empties, so a remount has to build them again.
-    renderHook(() => useScheme()).unmount();
+    renderHook(() => useSchema()).unmount();
 
-    const { result } = renderHook(() => useScheme());
+    const { result } = renderHook(() => useSchema());
 
     await act(async () => {
       document.documentElement.setAttribute('data-schema', 'dark');

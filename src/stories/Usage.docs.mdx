@@ -117,18 +117,18 @@ The `@dark` and `@hc` predefined states are wired up in `src/components/Root.tsx
 
 When the attribute is absent, the scheme falls back to `@media (prefers-color-scheme: dark)` and `@media (prefers-contrast: more)`.
 
-#### Reading the scheme from JS
+#### Reading the schema from JS
 
 For styling, use the state map — `{ '': light, '@dark': dark, '@hc': hc }`. Two cases it cannot serve: a surface the stylesheet never reaches (a Vega spec, a CodeMirror / Monaco theme, an iframe), and a control whose value *is* the ambient condition (a Light/Dark preview selector). For those, read the same two conditions from JS:
 
 ```tsx
-import { useHighContrast, useScheme } from '@cube-dev/ui-kit';
+import { useHighContrast, useSchema } from '@cube-dev/ui-kit';
 
-const scheme = useScheme(); // 'light' | 'dark' — the JS answer to `@dark`
+const schema = useSchema(); // 'light' | 'dark' — the JS answer to `@dark`
 const isHighContrast = useHighContrast(); // boolean — the JS answer to `@hc`
 ```
 
-Both follow the attribute opt-in first and the media query second, exactly as the states do, and re-render when either changes. Outside React: `resolveScheme()`, `resolveHighContrast()`, and `subscribeScheme(listener)` (fires on either condition; re-read in the listener).
+Both follow the attribute opt-in first and the media query second, exactly as the states do, and re-render when either changes. Outside React: `resolveSchema()`, `resolveHighContrast()`, and `subscribeSchema(listener)` (fires on either condition; re-read in the listener).
 
 Root-level only — there is no element-scoped or generic state reader, on purpose. Tasty's state vocabulary mixes element-local states (`hovered`, `pressed`, `disabled`) with ambient ones (`@media(…)`, `@root(…)`), and only the ambient half is answerable without an element.
 
