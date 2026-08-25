@@ -1,9 +1,0 @@
----
-'@cube-dev/ui-kit': minor
----
-
-New: `resolveTokenValue()`, `resolveTokenValues()` and `resolvePresetValues()`, plus the `useTokenValue()` / `useTokenValues()` / `usePresetValues()` hooks — a supported way to ask the kit for a design token's _resolved_ value, for consumers rendering into a surface our stylesheets do not reach: a third-party iframe (Stripe Elements), a CodeMirror or Monaco theme, a chart spec. Those take colors, lengths and font descriptors as values, and `var(--purple-color)` means nothing to them.
-
-Reading tokens off `getComputedStyle()` by hand fails silently. `Root` declares the token block on `<body>`, so `<html>`, a detached node, and a tree that has not mounted `Root` yet are all outside it — and a token read from outside does not come back empty, it comes back as tasty's registered `@property` default. Some of those are obvious duds (`rgba(0, 0, 0, 0)`, `0px`), but many are ordinary-looking values that are merely wrong: `--gap` reads `4px` rather than the kit's `8px`, `--transition` reads `80ms`, `--radius` reads `6px`. So the helpers do not inspect the value. They read `$tokens-applied`, a new marker the token block declares alongside the tokens, and use it to answer the only question that settles the matter — are the kit's tokens in effect on this element? Off that surface every read returns `null` (or an explicit `fallback`) and warns once in development; on it, the computed value is the truth, so a token that genuinely is `transparent` or `0px` — `#clear`, `#scrollbar-outline`, `$h2-letter-spacing` — comes through intact. The hooks re-resolve when the palette is re-seeded or the scheme / contrast tier flips, and match the server's markup while hydrating.
-
-All six take `{ element, fallback }` — pass `element` to resolve against a local override (a subtree with its own `tokens` prop, or one under a differing `data-schema`) instead of the document.
