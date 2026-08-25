@@ -386,8 +386,11 @@ export const DoNotCloseOnClickAtParticularElement: typeof Template = () => {
       <Space gap="2x">
         <DialogTrigger
           type="popover"
+          // `contains`, not an identity check: React Aria passes the element
+          // the pointer landed on, which for a `Button` is the label inside it
+          // rather than the `<button>` itself.
           shouldCloseOnInteractOutside={(e) =>
-            btnRef.current?.UNSAFE_getDOMNode() !== e
+            !btnRef.current?.UNSAFE_getDOMNode()?.contains(e)
           }
         >
           <Button size="small">Open modal</Button>
@@ -423,6 +426,13 @@ DoNotCloseOnClickAtParticularElement.play = async (context) => {
   await expect(await findByRole('dialog')).toBeInTheDocument();
 
   await userEvent.click(button);
+
+  // Settle first: the guard returns `false` synchronously, but an unguarded
+  // close would be scheduled on a timeout, so asserting immediately samples
+  // the DOM before React could have removed the dialog either way. Without the
+  // wait this passed roughly two runs in three even while the prop was inert
+  // (CUB-4113).
+  await timeout(500);
 
   await expect(await findByRole('dialog')).toBeInTheDocument();
   await expect(button).toHaveTextContent('It works!');

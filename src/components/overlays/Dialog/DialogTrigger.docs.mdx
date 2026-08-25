@@ -40,7 +40,7 @@ DialogTrigger serves as a wrapper around a Dialog and its associated trigger, li
 - **`onDismiss`** `function` — Callback fired when the dialog is dismissed
 - **`targetRef`** — The ref of the element the Dialog should visually attach itself to
 - **`styles`** — The style map for the overlay
-- **`shouldCloseOnInteractOutside`** — Function to determine if overlay should close on outside interaction
+- **`shouldCloseOnInteractOutside`** `(element: Element) => boolean` — Function to determine if a popover type Dialog should close on outside interaction. Asked before the built-in dismiss behaviours, so returning `false` keeps the popover open even for a `Button` / `ItemButton` that would otherwise dismiss it — and the pressed control still receives its own click. The element passed is the deepest node under the pointer (for a `Button` that is the label inside it, not the `<button>`), so guard with `contains()` rather than an identity check
 - **`shouldRestoreFocus`** `boolean` (default: `true`) — Whether focus returns to the trigger when the dialog closes. Only needed for a surface that claims focus _later_ than the restore (async load, entry animation); an action that focuses the surface it opens is already left alone — see [Focus Management](#best-practices)
 
 ### Base Properties
