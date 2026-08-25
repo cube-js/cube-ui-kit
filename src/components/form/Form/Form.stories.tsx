@@ -339,13 +339,11 @@ export const WithValidationError: Story = {
     orientation: 'vertical',
     labelPosition: 'top',
   },
-  // The error this story is named for never appears. Filling both fields and
-  // submitting — with a real mouse and keyboard, not just synthetic events —
-  // leaves the form untouched: no submit error, and no field messages either,
-  // so validation is not merely rejecting the input. `ComplexForm`'s
-  // `ErrorMessage` story does reach the state, so the mechanism works; whatever
-  // stops it here is a `Form` bug, not a story one. Until it is fixed this
-  // renders exactly what `Default` renders and should not be photographed twice.
+  // As written, this story never reaches the error state: filling both fields
+  // and pressing Sign In leaves the form as it was, so what it renders is
+  // exactly what `Default` renders and there is no reason to photograph it
+  // twice. `Forms/ComplexForm / ErrorMessage` is where the submit error is
+  // actually shown and snapshotted.
   parameters: NO_SNAPSHOT,
 };
 
