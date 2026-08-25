@@ -43,18 +43,30 @@ export async function waitForOverlay(role: string) {
  * Opens `target`'s context menu and waits for it.
  *
  * The leading pointer move is load-bearing: `userEvent.pointer` dispatches the
- * right-click from wherever the virtual pointer happens to be, and React Aria's
- * context-menu handler reads the event's coordinates to position the overlay.
- * Without a move first those are `0,0`, and the menu opens pinned to the corner
- * of the viewport — which snapshots as a menu floating away from its trigger.
+ * right-click from wherever the virtual pointer happens to be, and
+ * `use-context-menu` positions the overlay from the event's coordinates. Without
+ * a move first those are `0,0` and the menu opens pinned to the corner of the
+ * viewport.
+ *
+ * The coordinates have to come from the target's own box, not a constant — a
+ * fixed point anchors every menu to the same place regardless of which row was
+ * opened, so the snapshot shows a menu floating away from its trigger and would
+ * not catch a real positioning regression. Aim just inside the leading edge,
+ * vertically centred, which is where a pointer lands on a row.
  */
 export async function openContextMenu(
   canvasElement: HTMLElement,
   target: Element,
 ) {
+  const rect = target.getBoundingClientRect();
+  const coords = {
+    clientX: Math.round(rect.left + Math.min(rect.width / 2, 40)),
+    clientY: Math.round(rect.top + rect.height / 2),
+  };
+
   await userEvent.pointer([
-    { target, coords: { clientX: 120, clientY: 120 } },
-    { keys: '[MouseRight]', target },
+    { target, coords },
+    { keys: '[MouseRight]', target, coords },
   ]);
 
   await waitForOverlay('menu');

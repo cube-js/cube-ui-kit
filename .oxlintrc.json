@@ -117,7 +117,8 @@
         "patterns": [
           {
             "group": [
-              "**/icons"
+              "**/icons",
+              "**/icons/index"
             ],
             "message": "Import the icon's own file (`../../icons/CloseIcon`). The barrel re-exports 133 components, so importing it puts every one of them in the importer's dependency graph — which is what decides how much of the Storybook suite Chromatic has to re-snapshot when any single icon changes. See docs/rules/coding.md#imports."
           }
