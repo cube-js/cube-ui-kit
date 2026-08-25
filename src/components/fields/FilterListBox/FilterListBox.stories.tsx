@@ -13,6 +13,7 @@ import { SettingsIcon } from '../../../icons/SettingsIcon';
 import { UserIcon } from '../../../icons/UserIcon';
 import { NO_SNAPSHOT } from '../../../stories/chromatic';
 import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
+import { waitForOverlay } from '../../../stories/interactions';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Button } from '../../actions/Button/Button';
 import { Badge } from '../../content/Badge/Badge';
@@ -1115,7 +1116,7 @@ InDialog.play = async ({ canvasElement }) => {
     }),
   );
 
-  await expect(await canvas.findByRole('dialog')).toBeVisible();
+  await waitForOverlay('dialog');
 };
 
 export const AsyncLoading: StoryFn = () => {

@@ -8,7 +8,7 @@ import { PlusIcon } from '../../../icons/PlusIcon';
 import { SettingsIcon } from '../../../icons/SettingsIcon';
 import { UserIcon } from '../../../icons/UserIcon';
 import { NO_SNAPSHOT } from '../../../stories/chromatic';
-import { openContextMenu } from '../../../stories/interactions';
+import { openContextMenu, waitForOverlay } from '../../../stories/interactions';
 import { Button } from '../../actions/Button';
 import { Menu } from '../../actions/Menu';
 import { Layout } from '../../content/Layout';
@@ -335,6 +335,28 @@ function ReorderableTabsDemo({ storyArgs }: { storyArgs: Story['args'] }) {
 /**
  * Basic tabs with content panels
  */
+
+/**
+ * Opens a tab's `⋮` menu.
+ *
+ * Only the stories that set `contextMenu` respond to a right-click; the rest
+ * expose the menu through this button alone. `autoHideActions` keeps it out of
+ * the layout until the tab is hovered, and it is a sibling of the tab button
+ * rather than a child (nested buttons would be invalid HTML), so it has to be
+ * found through the tab's parent.
+ */
+async function openTabMenu(canvasElement: HTMLElement, tabName: string) {
+  const canvas = within(canvasElement);
+  const tab = canvas.getByRole('tab', { name: tabName });
+
+  await userEvent.unhover(tab);
+  await userEvent.hover(tab);
+
+  await userEvent.click(within(tab.parentElement!).getByTestId('ItemAction'));
+
+  await waitForOverlay('menu');
+}
+
 export const Default: Story = {
   render: (args) => (
     <Tabs {...args} defaultActiveKey="tab1">
@@ -719,14 +741,9 @@ export const KeepMounted: Story = {
  * Tabs with menu - demonstrates the simplified menu API with predefined actions
  */
 export const WithMenu: Story = {
-  // The shared tab menu only exists once a tab is right-clicked.
+  // The shared tab menu lives behind the `⋮` button and nowhere else.
   play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-
-    await openContextMenu(
-      canvasElement,
-      canvas.getByRole('tab', { name: 'Tab 1' }),
-    );
+    await openTabMenu(canvasElement, 'Tab 1');
   },
 
   render: function WithMenuRender(args) {
@@ -962,7 +979,7 @@ export const WithContextMenuOnly: Story = {
 
     await openContextMenu(
       canvasElement,
-      canvas.getByRole('tab', { name: 'Document.txt' }),
+      canvas.getByRole('tab', { name: 'Tab 1' }),
     );
   },
 
@@ -1030,12 +1047,7 @@ export const WithContextMenuOnly: Story = {
 export const WithPerTabMenuOverride: Story = {
   // Tab 2 carries the overridden menu, so that is the one worth opening.
   play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-
-    await openContextMenu(
-      canvasElement,
-      canvas.getByRole('tab', { name: 'Custom Menu' }),
-    );
+    await openTabMenu(canvasElement, 'Custom Menu');
   },
 
   render: function WithPerTabMenuOverrideRender(args) {
@@ -1090,12 +1102,7 @@ export const WithPerTabMenuOverride: Story = {
 export const WithMenuSections: Story = {
   // The sections this story is named for are inside the menu.
   play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-
-    await openContextMenu(
-      canvasElement,
-      canvas.getByRole('tab', { name: 'Document.txt' }),
-    );
+    await openTabMenu(canvasElement, 'Document.txt');
   },
 
   render: function WithMenuSectionsRender(args) {
@@ -1358,12 +1365,7 @@ export const ReorderableLeft: Story = {
 export const ReorderableWithMenu: Story = {
   // Reordering is a drag and cannot be photographed; the menu can.
   play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-
-    await openContextMenu(
-      canvasElement,
-      canvas.getByRole('tab', { name: 'Document 1' }),
-    );
+    await openTabMenu(canvasElement, 'Document 1');
   },
 
   render: function ReorderableWithMenuRender(args) {

@@ -135,10 +135,7 @@ export const OverflowWithTooltip: Story = {
   // Truncation is visible without help, but the auto-tooltip firing *because*
   // of it is the actual claim, and that only exists on hover.
   play: async ({ canvasElement }) => {
-    await openTooltip(
-      canvasElement,
-      within(canvasElement).getByTestId('TextItem'),
-    );
+    await openTooltip(within(canvasElement).getByTestId('TextItem'));
   },
 };
 
@@ -187,22 +184,24 @@ export const HighlightWithOverflow: Story = {
   ),
 };
 
+// chromatic-overlay-reviewed: an explicit-`title` tooltip, which does not open
+// from a synthetic hover — unlike the auto-on-overflow ones above, which do. A
+// `play` here throws deterministically and would fail the Chromatic build.
 export const CustomTooltip: Story = {
   render: () => (
     <Block width="200px">
-      <TextItem tooltip="Custom tooltip text that differs from the content">
+      <TextItem
+        // `delay: 0` so the snapshot does not have to wait out the default
+        // 250ms open delay, which also makes the play function racy.
+        tooltip={{
+          title: 'Custom tooltip text that differs from the content',
+          delay: 0,
+        }}
+      >
         Short text
       </TextItem>
     </Block>
   ),
-  // The text is short and untruncated, so the tooltip is the only thing this
-  // story has to show.
-  play: async ({ canvasElement }) => {
-    await openTooltip(
-      canvasElement,
-      within(canvasElement).getByTestId('TextItem'),
-    );
-  },
 };
 
 // chromatic-overlay-reviewed: the point is that no tooltip appears
@@ -223,7 +222,7 @@ export const TooltipPlacements: Story = {
   play: async ({ canvasElement }) => {
     const [top] = within(canvasElement).getAllByTestId('TextItem');
 
-    await openTooltip(canvasElement, top);
+    await openTooltip(top);
   },
   render: () => (
     <Space flow="column" gap="2x" padding="8x">

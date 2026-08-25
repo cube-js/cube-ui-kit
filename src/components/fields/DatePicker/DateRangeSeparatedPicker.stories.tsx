@@ -1,7 +1,8 @@
 import { StoryFn } from '@storybook/react-vite';
-import { expect, userEvent, within } from 'storybook/test';
+import { userEvent } from 'storybook/test';
 
 import { ICON_ARG, VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
+import { waitForOverlay } from '../../../stories/interactions';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Space } from '../../layout/Space';
 
@@ -61,7 +62,7 @@ WithDefaultValueOpen.play = async ({ canvasElement }) => {
 
   await userEvent.click(start);
 
-  await expect(await within(canvasElement).findByRole('dialog')).toBeVisible();
+  await waitForOverlay('dialog');
 };
 
 export const WithSecondGranularity = Template.bind({});

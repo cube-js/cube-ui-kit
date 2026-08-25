@@ -17,6 +17,29 @@ export const timeout = (ms: number) =>
   new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
+ * Waits for an overlay of `role` to be on screen, anywhere in the document.
+ *
+ * Two details, both of which produce a *failing* `play` rather than a silent
+ * one — and a thrown `play` fails the entire Chromatic build:
+ *
+ * - **Scope.** Overlays portal out of `canvasElement`, so the `within(canvas)`
+ *   queries a story normally uses cannot see them. Some components portal
+ *   inside the canvas and some do not, which makes this the difference between
+ *   a story that works and one that throws for no visible reason.
+ * - **Visibility takes a frame.** Overlays mount hidden and are revealed by a
+ *   transition, so asserting visibility once — even after `findByRole` has
+ *   resolved — catches the hidden frame. The assertion has to be inside
+ *   `waitFor`, not after it.
+ */
+export async function waitForOverlay(role: string) {
+  const doc = within(document.body);
+
+  await waitFor(() => expect(doc.getAllByRole(role)[0]).toBeVisible());
+
+  return doc.getAllByRole(role)[0];
+}
+
+/**
  * Opens `target`'s context menu and waits for it.
  *
  * The leading pointer move is load-bearing: `userEvent.pointer` dispatches the
@@ -29,14 +52,12 @@ export async function openContextMenu(
   canvasElement: HTMLElement,
   target: Element,
 ) {
-  const canvas = within(canvasElement);
-
   await userEvent.pointer([
     { target, coords: { clientX: 120, clientY: 120 } },
     { keys: '[MouseRight]', target },
   ]);
 
-  await waitFor(() => expect(canvas.getByRole('menu')).toBeVisible());
+  await waitForOverlay('menu');
 }
 
 /**
@@ -61,14 +82,18 @@ export async function openContextMenu(
  *
  * Only one element per story: hovering a second closes the first, and only the
  * final state is photographed.
+ *
+ * Not every tooltip opens from a synthetic hover. A real mouse opens all of
+ * them, but `userEvent` reliably opens only the auto-on-overflow ones; a
+ * tooltip configured with an explicit `title` stays closed, deterministically.
+ * If this throws for a story, that is what you are hitting — do not paper over
+ * it with a longer wait.
  */
-export async function openTooltip(canvasElement: HTMLElement, target: Element) {
+export async function openTooltip(target: Element) {
   await timeout(250);
 
   await userEvent.unhover(target);
   await userEvent.hover(target);
 
-  await waitFor(() =>
-    expect(within(canvasElement).getByRole('tooltip')).toBeVisible(),
-  );
+  await waitForOverlay('tooltip');
 }

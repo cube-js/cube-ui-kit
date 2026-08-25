@@ -1505,9 +1505,9 @@ export const MenuSynchronization = () => {
 MenuSynchronization.play = async ({ canvasElement }) => {
   const canvas = within(canvasElement);
 
-  await userEvent.click(
-    canvas.getByRole('button', { name: /Click to test menu synchronization/ }),
-  );
+  // The button carries `aria-label="Open Menu"`, which wins over its visible
+  // text for the accessible name — so match the text instead.
+  await userEvent.click(canvas.getByText('Click to test menu synchronization'));
 
   await waitFor(() => expect(canvas.getByRole('menu')).toBeVisible());
 };

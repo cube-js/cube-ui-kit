@@ -291,14 +291,33 @@ const sha = (value) =>
  * quiescence-only wait fingerprints a dialog that the story is about to close.
  */
 const WATCH_STORY_FINISHED = () => {
-  window.__storyFinished = false;
+  window.__storyFinished = null;
+
+  const describe = (error) => {
+    try {
+      return (
+        error?.message ??
+        error?.error?.message ??
+        JSON.stringify(error, Object.getOwnPropertyNames(error ?? {}))
+      );
+    } catch {
+      return String(error);
+    }
+  };
 
   const subscribe = () => {
     const channel = window.__STORYBOOK_ADDONS_CHANNEL__;
     if (!channel) return false;
-    channel.on('storyFinished', () => {
-      window.__storyFinished = true;
+
+    channel.on('storyFinished', (payload) => {
+      window.__storyFinished = { status: payload?.status ?? 'success' };
     });
+    // Storybook reports a thrown `play` on its own event, and `storyFinished`
+    // does not carry the reason — so keep the message from here.
+    channel.on('playFunctionThrewException', (error) => {
+      window.__storyFinished = { status: 'error', error: describe(error) };
+    });
+
     return true;
   };
 
@@ -325,11 +344,12 @@ async function fingerprintStory(page, port, story) {
   // Stories without a `play` function also emit `storyFinished`, so this is the
   // single wait for both cases. Stories that never emit it (a `play` that hangs)
   // fall through to the quiescence wait below rather than stalling the run.
-  await page
-    .waitForFunction(() => window.__storyFinished === true, null, {
+  const finished = await page
+    .waitForFunction(() => window.__storyFinished, null, {
       timeout: SETTLE_TIMEOUT_MS,
     })
-    .catch(() => {});
+    .then((handle) => handle.jsonValue())
+    .catch(() => ({ status: 'timeout' }));
 
   await page.evaluate(
     ([quietMs, timeoutMs]) =>
@@ -383,6 +403,8 @@ async function fingerprintStory(page, port, story) {
     importPath: story.importPath,
     domHash: sha(dom.html),
     pixelHash,
+    playStatus: finished?.status ?? 'unknown',
+    playError: finished?.error,
     width: dom.width,
     height: dom.height,
     roles: dom.roles,
@@ -518,6 +540,25 @@ for (const g of pixelOnly) {
   for (const r of g) console.log(line(r));
   console.log('');
 }
+
+// A `play` function that throws fails the whole Chromatic build with
+// "component threw an error during testing", so this is the one section that
+// reports a hard error rather than an opportunity.
+const broken = ok
+  .filter((r) => r.playStatus !== 'success')
+  .sort((a, b) => a.title.localeCompare(b.title));
+
+console.log(`── Play functions that did not finish ${'─'.repeat(40)}`);
+console.log(
+  `  ${broken.length} stories. Chromatic fails the build on each of these.\n`,
+);
+for (const r of broken) {
+  console.log(`  ${r.title} / ${r.name}  [${r.playStatus}]`);
+  if (r.playError) {
+    console.log(`    ${r.playError.split('\n')[0].slice(0, 160)}`);
+  }
+}
+console.log('');
 
 console.log(`── Named for an overlay, snapshotted closed ${'─'.repeat(34)}`);
 console.log(

@@ -1,7 +1,8 @@
 import { StoryFn } from '@storybook/react-vite';
 import { useState } from 'react';
-import { expect, userEvent, within } from 'storybook/test';
+import { userEvent, within } from 'storybook/test';
 
+import { waitForOverlay } from '../../../stories/interactions';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Button } from '../../actions/Button/Button';
 import { Block } from '../../Block';
@@ -125,5 +126,5 @@ Default.play = async ({ canvasElement }) => {
 
   await userEvent.click(await findByRole('button', { name: 'Open Dialog' }));
 
-  await expect(await findByRole('dialog')).toBeVisible();
+  await waitForOverlay('dialog');
 };
