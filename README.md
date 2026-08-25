@@ -53,7 +53,7 @@ function App() {
 ```
 
 To ship your own brand color, tune the palette seeds — every token, in every
-scheme, re-resolves from them:
+schema, re-resolves from them:
 
 ```tsx
 <Root palette={{ hue: 210, saturation: 72, themes: { danger: { hue: 12 } } }}>
