@@ -1,3 +1,5 @@
+import { useLayoutEffect, useRef } from 'react';
+
 import { renderWithRoot, screen, userEvent } from '../../../test';
 
 import { Board } from './index';
@@ -1109,6 +1111,83 @@ describe('a fixed cols × rows matrix', () => {
     // single row its one widget needs.
     await vi.waitFor(() =>
       expect(board().getBoundingClientRect().height).toBeCloseTo(400, 0),
+    );
+  });
+});
+
+describe('self-measurement', () => {
+  /**
+   * A board with no `width` prop measures its own container. Both halves of that
+   * contract are load-bearing for consumers — and a consumer that doubts either
+   * ends up hand-measuring the box and feeding `width` back in, which is a lot
+   * of machinery to replace something that already works.
+   *
+   * Only answerable in a browser: jsdom reports every box as 0, so the very
+   * thing under test cannot happen there.
+   */
+  it('renders no widget until it has a width, rather than painting a bad one', async () => {
+    const framesWithHost: number[] = [];
+    const Probe = () => {
+      const ref = useRef<HTMLDivElement>(null);
+      // Runs before the board's own measurement effect on mount, so the first
+      // entry is the pre-measurement frame.
+      useLayoutEffect(() => {
+        framesWithHost.push(
+          ref.current?.querySelectorAll('[data-board-widget-host]').length ??
+            -1,
+        );
+      });
+      return (
+        <div ref={ref} style={{ width: '600px' }}>
+          <Board
+            cols={12}
+            rowHeight={ROW}
+            defaultLayout={[{ i: 'a', x: 0, y: 0, w: 6, h: 1 }]}
+          >
+            <Board.Widget id="a" qa="A">
+              a
+            </Board.Widget>
+          </Board>
+        </div>
+      );
+    };
+
+    renderWithRoot(<Probe />);
+
+    // The probe really did observe the first frame...
+    expect(framesWithHost.length).toBeGreaterThan(0);
+    // ...and the board had painted no widget in it. At width 0 a column works
+    // out NEGATIVE (`(0 - margin*(cols-1) - padding*2) / cols`), so rendering
+    // then would put every widget at a nonsense size for a frame.
+    expect(framesWithHost[0]).toBe(0);
+
+    // Once measured, the widget appears at its real size.
+    await vi.waitFor(() =>
+      expect(widget('a').getBoundingClientRect().width).toBeGreaterThan(0),
+    );
+  });
+
+  it('resolves its own width without an explicit `width` prop', async () => {
+    renderWithRoot(
+      <div style={{ width: '800px' }}>
+        <Board
+          cols={4}
+          rowHeight={ROW}
+          margin={[0, 0]}
+          containerPadding={[0, 0]}
+          defaultLayout={[{ i: 'a', x: 0, y: 0, w: 1, h: 1 }]}
+        >
+          <Board.Widget id="a" qa="A">
+            a
+          </Board.Widget>
+        </Board>
+      </div>,
+    );
+
+    // 800 / 4 columns = 200. A board that failed to measure would fall back to
+    // width 0 and never reach this.
+    await vi.waitFor(() =>
+      expect(widget('a').getBoundingClientRect().width).toBeCloseTo(200, 0),
     );
   });
 });
