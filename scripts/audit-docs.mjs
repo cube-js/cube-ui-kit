@@ -817,6 +817,31 @@ async function readTsxFile(filePath) {
   return null;
 }
 
+/**
+ * Style props the component's own props interface drops via
+ * `Omit<SomeStyleProps, 'a' | 'b'>`.
+ *
+ * A component that repurposes a style prop for something else omits it from the
+ * style-prop interface and destructures it as an ordinary prop, so it never
+ * reaches `extractStyles` — `Board`'s `margin` is the grid gap, not a CSS
+ * margin. The `extractStyles` call still names the full style list, so without
+ * this the audit would demand the docs list a prop the component does not
+ * accept.
+ */
+function extractOmittedStyleProps(fileContent) {
+  const omitted = new Set();
+  const omitRe = /Omit<\s*(?:\w+\s*\|\s*)*?(\w*(?:StyleProps|BaseProps))\s*,\s*([^>]+?)>/g;
+  let m;
+  while ((m = omitRe.exec(fileContent)) !== null) {
+    const nameRe = /'([^']+)'|"([^"]+)"/g;
+    let n;
+    while ((n = nameRe.exec(m[2])) !== null) {
+      omitted.add(n[1] ?? n[2]);
+    }
+  }
+  return omitted;
+}
+
 async function detectStyleProps(componentDir, componentName, verbose) {
   const mainFile = path.join(componentDir, `${componentName}.tsx`);
   let content;
@@ -826,8 +851,17 @@ async function detectStyleProps(componentDir, componentName, verbose) {
     return null;
   }
 
+  const omitted = extractOmittedStyleProps(content);
+  const finish = (props) => {
+    const unique = [...new Set(props)].filter((prop) => !omitted.has(prop));
+    if (verbose && omitted.size > 0) {
+      console.log(`  [${componentName}] Omitted style props: ${[...omitted].join(', ')}`);
+    }
+    return unique;
+  };
+
   let result = extractStylePropsFromFile(content);
-  if (result) return [...new Set(result)];
+  if (result) return finish(result);
 
   const entries = await fs.readdir(componentDir, { withFileTypes: true });
   for (const entry of entries) {
@@ -841,7 +875,7 @@ async function detectStyleProps(componentDir, componentName, verbose) {
     result = extractStylePropsFromFile(fileContent);
     if (result) {
       if (verbose) console.log(`  [${componentName}] Found extractStyles in ${entry.name}`);
-      return [...new Set(result)];
+      return finish(result);
     }
   }
 
@@ -853,7 +887,7 @@ async function detectStyleProps(componentDir, componentName, verbose) {
     result = extractStylePropsFromFile(file.content);
     if (result) {
       if (verbose) console.log(`  [${componentName}] Found extractStyles via import ${path.relative(ROOT, file.path)}`);
-      return [...new Set(result)];
+      return finish(result);
     }
 
     const reExportRe = /export\s+\*\s+from\s+'([^']+)'/g;
@@ -865,7 +899,7 @@ async function detectStyleProps(componentDir, componentName, verbose) {
       result = extractStylePropsFromFile(reFile.content);
       if (result) {
         if (verbose) console.log(`  [${componentName}] Found extractStyles via re-export ${path.relative(ROOT, reFile.path)}`);
-        return [...new Set(result)];
+        return finish(result);
       }
     }
   }
