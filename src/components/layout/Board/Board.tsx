@@ -1190,6 +1190,10 @@ function BoardInner(
 
     const content = contentRef.current;
     if (!content) return;
+    // React events also arrive from portaled content: an overlay a widget opened
+    // renders outside this DOM subtree but still propagates along the React
+    // tree, and a press in a popover must never start a lasso behind it.
+    if (target && !content.contains(target)) return;
 
     // Suppress the compatibility mouse events that would begin a native text
     // selection. Safe here specifically because every case that wants default

@@ -1,5 +1,12 @@
 import { Styles, tasty } from '@tenphi/tasty';
-import { CSSProperties, ReactNode, useMemo, useRef, useState } from 'react';
+import {
+  CSSProperties,
+  ReactNode,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useFocusRing, useFocusWithin, useHover, useMove } from 'react-aria';
 import { createPortal } from 'react-dom';
 
@@ -754,6 +761,59 @@ export function WidgetHost(props: WidgetHostProps) {
   };
 
   /**
+   * Pressing something interactive means the user has moved on from the
+   * selection, so the selection is dropped — always, whatever the control is and
+   * whatever it does with the event.
+   *
+   * That "always" is why this is a *capture*-phase handler and not part of
+   * `handleSelectPointerDown` below. A bubble-phase handler only sees the
+   * presses that reach the host, and a control is free to call
+   * `stopPropagation()` before that happens — React Aria's `usePress` does it by
+   * default, which is why some in-widget buttons dropped the selection and
+   * others silently did not. Capture runs top-down, so it lands before any
+   * descendant can speak. Portaled controls (a menu opened from a widget's
+   * toolbar) are covered too: React propagates events along the React tree, so a
+   * portal declared inside this widget still passes through here.
+   *
+   * Nothing is stopped or prevented here — the handler only reads the target, so
+   * the control keeps its press, its focus and its default behaviour intact.
+   */
+  const handleSelectPointerDownCapture = (e: React.PointerEvent) => {
+    if (!isSelectable || e.button !== 0) return;
+
+    if (isInteractiveTarget(e.target)) {
+      onSelectionReset?.();
+    }
+  };
+
+  // The React capture handler above is dispatched from the React root, so a
+  // descendant that stops the *native* event (charting and mapping libraries
+  // attach their own listeners and do exactly that) keeps it from ever reaching
+  // React — capture phase included. A native capture listener on the host node
+  // itself sits below any such descendant and cannot be pre-empted. The two
+  // overlap for the ordinary case and that costs nothing: clearing an already
+  // empty selection is a no-op.
+  useEffect(() => {
+    const node = hostRef.current;
+
+    if (!node || !isSelectable || !selectionCancel || !onSelectionReset) return;
+
+    const handleCapture = (event: PointerEvent) => {
+      if (event.button !== 0) return;
+
+      const target = event.target as HTMLElement | null;
+
+      if (target?.closest?.(selectionCancel)) {
+        onSelectionReset();
+      }
+    };
+
+    node.addEventListener('pointerdown', handleCapture, true);
+
+    return () => node.removeEventListener('pointerdown', handleCapture, true);
+  }, [isSelectable, selectionCancel, onSelectionReset]);
+
+  /**
    * Selecting and starting a drag are the *same* gesture: you grab the thing you
    * are about to move. So the press selects immediately and the drag arms behind
    * it — move and it drags, stay still and it was only a selection. This is what
@@ -761,7 +821,8 @@ export function WidgetHost(props: WidgetHostProps) {
    * modifier.
    *
    *  - a press on an interactive descendant belongs to that control, so the
-   *    selection is dropped and the press is left alone;
+   *    press is left alone (the selection was already dropped in the capture
+   *    phase above);
    *  - <kbd>Shift</kbd> or the platform modifier toggles membership;
    *  - a press on an unselected widget makes it the selection, so the drag that
    *    follows moves exactly what was grabbed;
@@ -774,11 +835,7 @@ export function WidgetHost(props: WidgetHostProps) {
   const handleSelectPointerDown = (e: React.PointerEvent) => {
     if (!isSelectable || !onSelect || e.button !== 0) return;
 
-    if (isInteractiveTarget(e.target)) {
-      onSelectionReset?.();
-
-      return;
-    }
+    if (isInteractiveTarget(e.target)) return;
 
     // A press this widget owns must never reach an ancestor widget host: in a
     // nested board the outer widget would otherwise select itself on top of the
@@ -910,6 +967,7 @@ export function WidgetHost(props: WidgetHostProps) {
   // its focusability have to come from here instead.
   const selectionProps = isSelectable
     ? {
+        onPointerDownCapture: handleSelectPointerDownCapture,
         onPointerDown: handleSelectPointerDown,
         // A draggable widget routes Space through the drag gate below, which
         // already enforces the host-focused rule; a non-draggable one gets no
