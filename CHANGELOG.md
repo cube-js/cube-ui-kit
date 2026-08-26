@@ -1,5 +1,23 @@
 # @cube-dev/ui-kit
 
+## 0.170.0
+
+### Minor Changes
+
+- [#1362](https://github.com/cube-js/cube-ui-kit/pull/1362) [`cc139397`](https://github.com/cube-js/cube-ui-kit/commit/cc1393979779b8f8d776d83e97b02e7805cd3f7a) Thanks [@tenphi](https://github.com/tenphi)! - Added `useSchema()` and `useHighContrast()` — the JS answer to the `@dark` and `@hc` states, for the two places a state map cannot reach: surfaces that take values rather than CSS (a Vega spec, a CodeMirror/Monaco theme, an iframe) and controls whose value _is_ the ambient condition. Both follow the `<html data-schema>` / `<html data-contrast>` opt-in first and `prefers-color-scheme` / `prefers-contrast` second, exactly as the states do, and re-render on a change. `resolveSchema()`, `resolveHighContrast()` and `subscribeSchema()` cover the same ground outside React. Styling still belongs in a state map.
+
+- [#1362](https://github.com/cube-js/cube-ui-kit/pull/1362) [`cc139397`](https://github.com/cube-js/cube-ui-kit/commit/cc1393979779b8f8d776d83e97b02e7805cd3f7a) Thanks [@tenphi](https://github.com/tenphi)! - **Breaking:** renamed the `scheme` term to `schema` across the API, so one word names the concept the `data-schema` attribute and the `@root(schema=…)` state already use.
+
+  - `renderColorTokens()` / `renderPaletteTokens()` / `RenderPaletteOptions`: the `scheme` option is now `schema` — `renderColorTokens({ schema: 'dark' })`.
+  - `<CubeLogo>` / `<CubeFullLogo>`: the `scheme` prop is now `schema`.
+  - The probe's `tokenOptions.scheme` is now `tokenOptions.schema`, and the `pnpm probe` CLI flag `--scheme` is now `--schema` (`--schema hc` still means light + high contrast).
+
+  No aliases: update the call sites.
+
+### Patch Changes
+
+- [#1364](https://github.com/cube-js/cube-ui-kit/pull/1364) [`9cf2d8d7`](https://github.com/cube-js/cube-ui-kit/commit/9cf2d8d794c35da9a0f169bbab362045eba86a6a) Thanks [@tenphi](https://github.com/tenphi)! - **`Board`: pressing an interactive control inside a widget now always drops the selection.** `selectionCancel` promises that a press on an interactive descendant drops the selection, but the reset used to ride on the widget host's bubble-phase `onPointerDown` — so it only happened for presses that actually reached the host. A control that calls `stopPropagation()` first (React Aria's `usePress` does by default, and charting libraries do it on the native event) or one that renders in a portal never got there, which is why a widget's gear button dropped the selection while the chart's own toolbar button silently left it standing. The reset now runs in the capture phase, both through React (so a portal declared inside the widget is still covered) and as a native listener on the host node itself (so a descendant that stops the native event cannot pre-empt it). Nothing is stopped or prevented in either handler, so every control keeps its press, its focus and its default behaviour. A press on content a widget portaled outside the board also no longer starts a marquee behind the overlay.
+
 ## 0.169.1
 
 ### Patch Changes
