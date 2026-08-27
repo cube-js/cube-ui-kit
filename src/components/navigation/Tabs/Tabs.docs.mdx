@@ -121,7 +121,7 @@ For individual tabs:
 - `default` - Standard tabs with selection indicator below (default)
 - `narrow` - Same as default but with collapsed horizontal label padding for compact layouts
 - `file` - File-style tabs with border bottom highlight on selection, delimiter between tabs
-- `radio` - Radio button style for tab selection
+- `radio` - Radio button style for tab selection. This is the right choice for a compact switcher that is _not_ a form field — a view toolbar, a segmented control over page content. [`Radio.Tabs`](/docs/forms-radiogroup--docs) looks the same but is a form control, so keep it for choices inside a `Form`
 
 <Story of={TabsStories.DefaultType} />
 

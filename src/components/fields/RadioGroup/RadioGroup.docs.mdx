@@ -16,6 +16,18 @@ A radio group allows users to select exactly one option from a set of mutually e
 - Display filter options where only one can be active
 - Provide clear selection options in surveys or questionnaires
 
+Every variant of this component — `Radio.Tabs` included — is a **form control**: it runs through `useFieldProps` / `wrapWithField`, publishes `role="radiogroup"` semantics, and takes part in `Form` validation. Reach for one when the selection is a _value the user is setting_.
+
+### When not to use
+
+If the control is not a field — a toolbar that swaps which view is on screen, a segmented control over page content — use [Tabs](/docs/navigation-tabs--docs) instead, with `type="radio"` when the connected-button look was the point. It renders the same chrome without the field wiring, and it owns the panels it switches between.
+
+| In a `Form`? | Switches which controls render? | Use |
+| --- | --- | --- |
+| yes | yes | `Radio.Tabs` |
+| yes | no | `Radio.Group type="button"` |
+| no | — | `Tabs` (with `type="radio"` when the radio look was wanted) |
+
 ## Component
 
 <Story of={RadioGroupStories.Default} />
@@ -189,8 +201,10 @@ When using `type="button"`, you can customize the button appearance:
 
 ### Tabs Group
 
+Only inside a `Form`, and only when the choice changes which fields follow it — see [When not to use](#when-not-to-use). A toolbar switcher is `Tabs type="radio"`.
+
 ```jsx
-<Radio.Tabs label="Status">
+<Radio.Tabs name="status" label="Status">
   <Radio value="active">Active</Radio>
   <Radio value="inactive">Inactive</Radio>
   <Radio value="pending">Pending</Radio>
@@ -318,14 +332,20 @@ When using `type="button"`, you can customize the button appearance:
    </Radio.Group>
    ```
 
-3. **Visual Type**: Use `Radio.Tabs` for compact toolbars, `type="button"` for spaced selections, traditional radios for forms
+3. **Visual Type**: pick by the shape of the choice, not by the look you want — `Radio.Tabs` for a compact connected group _inside a form_, `type="button"` for spaced selections, traditional radios for longer or descriptive option lists
 
    ```jsx
-   {/* Good for compact toolbars */}
-   <Radio.Tabs label="View">
-     <Radio value="list">List</Radio>
-     <Radio value="grid">Grid</Radio>
+   {/* Good for a compact form field that gates the fields below it */}
+   <Radio.Tabs name="mode" label="Mode">
+     <Radio value="basic">Basic</Radio>
+     <Radio value="advanced">Advanced</Radio>
    </Radio.Tabs>
+
+   {/* Don't: a toolbar view switcher is not a field — use Tabs */}
+   <Tabs type="radio" defaultActiveKey="list">
+     <Tab key="list" title="List">...</Tab>
+     <Tab key="grid" title="Grid">...</Tab>
+   </Tabs>
 
    {/* Good for button selections */}
    <Radio.Group type="button" label="Priority">
@@ -333,7 +353,7 @@ When using `type="button"`, you can customize the button appearance:
      <Radio value="high">High</Radio>
    </Radio.Group>
 
-   {/* Good for forms */}
+   {/* Good for a longer or descriptive option list */}
    <Radio.Group label="Gender">
      <Radio value="male">Male</Radio>
      <Radio value="female">Female</Radio>
@@ -345,7 +365,7 @@ When using `type="button"`, you can customize the button appearance:
 6. **Grouping**: Use meaningful group labels that describe the choice
 7. **Options**: Keep option labels concise and mutually exclusive
 8. **Layout**: Use horizontal layout only when space permits and options are short
-9. **Tabs Mode**: Use `Radio.Tabs` for compact, connected button groups in limited space
+9. **Tabs Mode**: `Radio.Tabs` is for compact, connected button groups in limited space _that are form fields_. Outside a `Form` — or inside one, when the choice doesn't change which controls render — reach for `Tabs type="radio"` or `type="button"` instead
 
 ## Integration with Forms
 
