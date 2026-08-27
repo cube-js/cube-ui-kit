@@ -306,8 +306,9 @@ export interface CubeBoardProps
    * the drop covers most - which takes the cell the drag began at (falling back to
    * `'downscale'`, then `'revert'`). For a widget arriving from another board there
    * is no slot to trade back, so `'swap'` behaves as `'downscale'`: the widget
-   * downscales into the room to its right/below and an occupied anchor resolves to
-   * the nearest cell it fits in rather than cancelling the transfer. No mode ever
+   * downscales into the room to its right/below, and an occupied anchor holds the
+   * cell the preview last found (the nearest fitting one, if the widget arrived
+   * over an occupied cell) rather than cancelling the transfer. No mode ever
    * grows a widget, an
    * in-board swap never displaces more than one widget, and a drop that spans two
    * widgets trades with one of them rather than blinking away mid-drag.

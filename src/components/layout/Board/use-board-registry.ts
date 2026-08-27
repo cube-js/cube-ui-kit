@@ -90,16 +90,21 @@ function hasNewOverlap(before: Set<string>, after: LayoutItem[]): boolean {
 }
 
 /**
- * Where a cross-board arrival ends up when the destination refuses the cell it
- * was dropped on.
+ * Where a cross-board arrival ends up when the destination refuses the very first
+ * cell it was offered.
  *
  * `moveElement` answers a refused placement by restoring the item to where it
- * came from, and for an incoming widget that is the synthetic seed one cell above
- * (or left of) the anchor - a cell the pointer never chose, and one that sits off
- * the board entirely whenever the anchor is in row 0 or column 0. A widget
- * released over a board has to end up somewhere on it, so send it to the nearest
- * cell that can hold it instead. The destination's own widgets are the fixed
- * `others` here: an arrival is placed around them and never displaces one.
+ * came from. Every frame after the first has a real cell to go back to - the one
+ * the previous frame settled on - so the preview simply holds there, which is
+ * what keeps the placeholder from jumping about as the pointer sweeps across an
+ * occupied widget. The *first* frame on a board has no such cell: its origin is
+ * the synthetic seed one row above (or column left of) the anchor, which sits off
+ * the board entirely whenever the anchor is in row 0 or column 0. Holding that
+ * would preview - and commit - a widget outside the grid.
+ *
+ * So only that first frame relocates, to the nearest cell that can hold the
+ * widget. The destination's own widgets are the fixed `others`: an arrival is
+ * placed around them and never displaces one.
  *
  * Returns `layout` untouched when the requested cell was honoured, which covers
  * both a clean landing and a resolver that downscaled the item into it.
@@ -952,7 +957,19 @@ export function useBoardRegistry(
       );
       const compacted = [
         ...compactor.compact(
-          landIncoming(moved, base, item.i, x, y, pp.cols, target.getMaxRows()),
+          // Only the seeded first frame may relocate; later frames fall back to
+          // the cell the previous frame settled on, so the preview holds.
+          prevItem
+            ? moved
+            : landIncoming(
+                moved,
+                base,
+                item.i,
+                x,
+                y,
+                pp.cols,
+                target.getMaxRows(),
+              ),
           pp.cols,
         ),
       ];

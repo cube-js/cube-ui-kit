@@ -2554,6 +2554,27 @@ describe('Board', () => {
         expect(onWidgetTransfer).toHaveBeenCalled();
       });
 
+      it('holds the last valid preview while sweeping over an occupied cell', () => {
+        const targetLayout = [{ i: 'b', x: 2, y: 0, w: 2, h: 1 }];
+        const { start, moveTo, endAt, onTargetLayoutChange } =
+          setupCrossBoardSwap({ i: 'a', x: 0, y: 0, w: 2, h: 1 }, targetLayout);
+
+        start();
+        moveTo(4, 0);
+        moveTo(2, 0);
+        endAt(2, 0);
+
+        const committed = onTargetLayoutChange.mock
+          .calls[0]![0] as LayoutItem[];
+        // Once a frame has found a cell, an occupied cell holds it there rather
+        // than hunting for a new one: sweeping across a widget must not make the
+        // placeholder jump somewhere the pointer never went. (0,0) is free here,
+        // so a relocating implementation would move it and be visibly wrong.
+        expect(committed.find((it) => it.i === 'a')).toEqual(
+          expect.objectContaining({ x: 4, y: 0, w: 2, h: 1 }),
+        );
+      });
+
       it('lands a downscale arrival on the board, never above its first row', () => {
         const targetLayout = [{ i: 'b', x: 0, y: 0, w: 6, h: 1 }];
         const { dragTo, onTargetLayoutChange } = setupCrossBoardSwap(
