@@ -20,8 +20,8 @@ interface GlobalStylesProps {
 /**
  * Body styles applied via useGlobalStyles.
  *
- * `fill` and `color` use schema-aware Glaze tokens so the whole page flips
- * automatically when `<html data-schema="dark">` (or `prefers-color-scheme: dark`)
+ * `fill` and `color` use scheme-aware Glaze tokens so the whole page flips
+ * automatically when `<html data-scheme="dark">` (or `prefers-color-scheme: dark`)
  * is active — see `src/tokens/palette.ts` and `src/components/Root.tsx`.
  */
 const BODY_STYLES: Styles = {
@@ -93,10 +93,10 @@ const STATIC_CSS = `
   /*
    * Prism syntax highlighting.
    *
-   * All token colors come from the schema-aware Glaze \`code-*\` palette
+   * All token colors come from the scheme-aware Glaze \`code-*\` palette
    * (defined in src/tokens/palette.ts). Each \`code-*\` token has \`mode: 'auto'\`
    * with a numeric contrast floor of 4.5 against \`#surface\` so every token
-   * reads at WCAG AA in light AND dark schemas (AAA in high-contrast).
+   * reads at WCAG AA in light AND dark schemes (AAA in high-contrast).
    * Diff insertion / deletion re-use the adaptive \`success-*\` and \`danger-*\`
    * ramps for both the line bg and the token color.
    */
@@ -161,7 +161,7 @@ const STATIC_CSS = `
     white-space: normal;
   }
 
-  /* Diff (re-uses success/danger ramps; both bg and text adapt to schema) */
+  /* Diff (re-uses success/danger ramps; both bg and text adapt to scheme) */
   .token.inserted-sign {
     background-color: var(--success-bg-color);
     color: var(--success-text-color);

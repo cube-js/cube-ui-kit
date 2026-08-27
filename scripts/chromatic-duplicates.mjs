@@ -262,15 +262,15 @@ const FINGERPRINT = () => {
   ].filter((role) => document.querySelector(`[role="${role}"]`));
 
   // A story can change its whole appearance without touching the root: the
-  // color-schema decorators in `src/stories/decorators/withColorSchema.tsx`
-  // drive `<html data-schema>` / `<html data-contrast>`, which the `@dark` and
+  // color-scheme decorators in `src/stories/decorators/withColorScheme.tsx`
+  // drive `<html data-scheme>` / `<html data-contrast>`, which the `@dark` and
   // `@hc` predefined states resolve against. Fold them into the fingerprint so
-  // a `DarkSchema` story is not reported as a copy of its light twin.
+  // a `DarkScheme` story is not reported as a copy of its light twin.
   const html = document.documentElement;
-  const schema = `${html.getAttribute('data-schema') ?? ''}/${html.getAttribute('data-contrast') ?? ''}`;
+  const scheme = `${html.getAttribute('data-scheme') ?? ''}/${html.getAttribute('data-contrast') ?? ''}`;
 
   return {
-    html: `${schema}\n${clone.innerHTML}`,
+    html: `${scheme}\n${clone.innerHTML}`,
     text: root.innerText?.slice(0, 400) ?? '',
     width: finite ? Math.round(right - left) : 0,
     height: finite ? Math.round(bottom - top) : 0,

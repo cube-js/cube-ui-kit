@@ -9,7 +9,7 @@ import { CubeIconProps, Icon } from '../../../icons/Icon';
  * The mark is two *different drawings*, not one drawing recoloured: the light
  * variant is an outlined cube, the dark variant is filled differently so it keeps
  * its weight against a dark surface. Both are rendered and swapped by the global
- * `@dark` state rather than picked in JS, so the logo follows the schema without a
+ * `@dark` state rather than picked in JS, so the logo follows the scheme without a
  * re-render and works in SSR.
  *
  * Both marks are drawn with `currentColor`, so colour comes from the surrounding
@@ -56,7 +56,7 @@ const MarkPaths = () => (
   </>
 );
 
-const SCHEMA_SWAP = {
+const SCHEME_SWAP = {
   LightMark: {
     display: { '': 'block', '@dark': 'none' },
   },
@@ -68,13 +68,13 @@ const SCHEMA_SWAP = {
 /**
  * Pin one mark instead of letting the `@dark` state choose.
  *
- * Needed wherever the background is known but the *document* schema does not
+ * Needed wherever the background is known but the *document* scheme does not
  * describe it: a fixed-dark panel in a light app (`#surface-inverse`, the
  * `special` theme), an exported image, or a themed region — `tokens` overrides
  * token *values*, and `@dark` is a state, so a region preview cannot reach the
  * swap on its own.
  */
-const FORCED_SCHEMA = {
+const FORCED_SCHEME = {
   light: {
     LightMark: { display: 'block' },
     DarkMark: { display: 'none' },
@@ -88,14 +88,14 @@ const FORCED_SCHEMA = {
 export interface CubeLogoProps extends CubeIconProps {
   /**
    * Force the light or dark mark. Omit it — the default — to follow the document
-   * schema in CSS, which costs no re-render and is correct during SSR.
+   * scheme in CSS, which costs no re-render and is correct during SSR.
    */
-  schema?: 'light' | 'dark';
+  scheme?: 'light' | 'dark';
 }
 
-/** Caller styles win; a forced schema only overrides the swap itself. */
-function resolveLogoStyles({ schema, styles }: CubeLogoProps) {
-  return schema ? mergeStyles(FORCED_SCHEMA[schema], styles) : styles;
+/** Caller styles win; a forced scheme only overrides the swap itself. */
+function resolveLogoStyles({ scheme, styles }: CubeLogoProps) {
+  return scheme ? mergeStyles(FORCED_SCHEME[scheme], styles) : styles;
 }
 
 /**
@@ -104,14 +104,14 @@ function resolveLogoStyles({ schema, styles }: CubeLogoProps) {
  */
 const CubeLogoElement = tasty(Icon, {
   qa: 'CubeLogo',
-  styles: SCHEMA_SWAP,
+  styles: SCHEME_SWAP,
 });
 
 export const CubeLogo = forwardRef(function CubeLogo(
   props: CubeLogoProps,
   ref: ForwardedRef<HTMLSpanElement>,
 ) {
-  const { schema, styles, ...rest } = props;
+  const { scheme, styles, ...rest } = props;
 
   return (
     <CubeLogoElement
@@ -143,7 +143,7 @@ export const CubeLogo = forwardRef(function CubeLogo(
 const CubeFullLogoElement = tasty(Icon, {
   qa: 'CubeFullLogo',
   styles: {
-    ...SCHEMA_SWAP,
+    ...SCHEME_SWAP,
     // Height still comes from `$icon-size` via `Icon`; width must not.
     width: 'auto',
     aspectRatio: FULL_ASPECT_RATIO,
@@ -160,7 +160,7 @@ export const CubeFullLogo = forwardRef(function CubeFullLogo(
   props: CubeLogoProps,
   ref: ForwardedRef<HTMLSpanElement>,
 ) {
-  const { schema, styles, ...rest } = props;
+  const { scheme, styles, ...rest } = props;
 
   return (
     <CubeFullLogoElement

@@ -17,7 +17,7 @@ import { NavigationAdapter } from '../providers/navigation.types';
 import { TrackingProps, TrackingProvider } from '../providers/TrackingProvider';
 import { PaletteConfig, setPaletteConfig } from '../tokens/palette-config';
 import { EventBusProvider } from '../utils/react/useEventBus';
-import { AMBIENT_PREDEFINED_STATES } from '../utils/react/useSchema';
+import { AMBIENT_PREDEFINED_STATES } from '../utils/react/useScheme';
 import { extractStyles } from '../utils/styles';
 import { TASTY_VERSION, VERSION } from '../version';
 
@@ -28,14 +28,14 @@ import { PortalProvider } from './portal';
 
 import type { i18n as I18nInstance } from 'i18next';
 
-// Color-schema aliases for the Glaze-generated palette (see `src/tokens/palette.ts`).
+// Color-scheme aliases for the Glaze-generated palette (see `src/tokens/palette.ts`).
 // Attribute opt-in wins over system preference:
-//   <html data-schema="dark">    → forces the dark schema
-//   <html data-contrast="high">  → forces the high-contrast schema
+//   <html data-scheme="dark">    → forces the dark scheme
+//   <html data-contrast="high">  → forces the high-contrast scheme
 // Otherwise falls back to the user's `prefers-color-scheme` / `prefers-contrast`.
 //
-// The strings live in `useSchema.ts`, which also reads the same two conditions
-// from JS (`useSchema()` / `useHighContrast()`) — one definition, so the CSS and
+// The strings live in `useScheme.ts`, which also reads the same two conditions
+// from JS (`useScheme()` / `useHighContrast()`) — one definition, so the CSS and
 // the JS answers cannot drift apart.
 setGlobalPredefinedStates(AMBIENT_PREDEFINED_STATES);
 

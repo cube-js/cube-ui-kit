@@ -166,7 +166,7 @@ const A11yLayer = tasty({
 // rectangle inset by the board's resolved padding and sized to the grid content
 // so the padding reads as a symmetric frame on every edge. Its size, position
 // and gradients come from the board's position params via inline `style`. The
-// fill uses the `#border` token (via its CSS var) so it adapts to the schema.
+// fill uses the `#border` token (via its CSS var) so it adapts to the scheme.
 const GridOverlayElement = tasty({
   qa: 'BoardGridOverlay',
   styles: {

@@ -1,7 +1,7 @@
 import { useState, useSyncExternalStore } from 'react';
 
 import { useLayoutEffect } from '../utils/react/useLayoutEffect';
-import { subscribeSchema } from '../utils/react/useSchema';
+import { subscribeScheme } from '../utils/react/useScheme';
 import { warn } from '../utils/warnings';
 
 import { getTokens } from './all-tokens';
@@ -78,7 +78,7 @@ export interface ResolveTokenOptions {
    *
    * Pass an element when the value has to reflect a *local* override — a subtree
    * carrying its own `tokens` prop (`renderColorTokens()`), or one under a
-   * `data-schema` / `data-contrast` attribute that differs from the document's.
+   * `data-scheme` / `data-contrast` attribute that differs from the document's.
    * The element's own document and view are used, so a node inside a same-origin
    * iframe resolves against that iframe.
    */
@@ -373,11 +373,11 @@ export function resolvePresetValues(
 
 /**
  * A token's resolved value changes for two reasons: the palette was re-seeded
- * (`setPaletteConfig()`, covered by `usePaletteVersion`), or the schema /
+ * (`setPaletteConfig()`, covered by `usePaletteVersion`), or the scheme /
  * contrast tier flipped. This store covers the second.
  *
- * The watching itself belongs to `subscribeSchema()` (`src/utils/react/useSchema.ts`),
- * which owns the definition of both axes — the `data-schema` / `data-contrast`
+ * The watching itself belongs to `subscribeScheme()` (`src/utils/react/useScheme.ts`),
+ * which owns the definition of both axes — the `data-scheme` / `data-contrast`
  * attributes and the media queries they fall back to are the same strings
  * `<Root>` registers `@dark` and `@hc` from. This store only counts the changes,
  * so there is one observer for the document rather than one per concern.
@@ -397,7 +397,7 @@ function subscribeAppearance(listener: () => void): () => void {
   appearanceListeners.add(listener);
 
   if (appearanceListeners.size === 1) {
-    stopWatchingAppearance = subscribeSchema(onAppearanceChange);
+    stopWatchingAppearance = subscribeScheme(onAppearanceChange);
   }
 
   return () => {
@@ -430,7 +430,7 @@ function getServerAppearanceVersion(): number {
 }
 
 /**
- * Re-render on a schema / contrast change. Returns the version rather than the
+ * Re-render on a scheme / contrast change. Returns the version rather than the
  * state so the snapshot is a primitive — the same reason `usePaletteVersion`
  * does, see `src/tokens/palette-config.ts`.
  */
@@ -448,7 +448,7 @@ function useAppearanceVersion(): number {
 
 /**
  * The value is read out of the DOM, so it re-resolves whenever the palette is
- * re-seeded or the schema / contrast tier flips, and it is `fallback ?? null`
+ * re-seeded or the scheme / contrast tier flips, and it is `fallback ?? null`
  * during SSR. The layout effect is what covers the first commit: a consumer
  * rendered in the same pass as `<Root>` reads before the token block lands.
  */
@@ -512,7 +512,7 @@ function isSameRecord<T extends Record<string, string | null>>(
 
 /**
  * {@link resolveTokenValue} as a hook: re-renders when the palette is re-seeded
- * or the schema / contrast tier flips.
+ * or the scheme / contrast tier flips.
  *
  * ```tsx
  * const accent = useTokenValue('#purple');

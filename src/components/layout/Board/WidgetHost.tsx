@@ -71,7 +71,7 @@ const WidgetElement = tasty({
     // ring dimmed, so releasing the pointer only changes the strength of an edge
     // that is already there — no geometry shift, nothing to re-read. The border
     // is *not* dimmed with it: `#primary-border` is close to `#border` on a dark
-    // schema, so fading it lands below the border a widget already has and the
+    // scheme, so fading it lands below the border a widget already has and the
     // preview would read as weaker than doing nothing.
     border: {
       '': false,
@@ -85,7 +85,7 @@ const WidgetElement = tasty({
         '0 0 0 1bw #border',
       'pre-selected': '0 0 0 1bw #primary.40',
       selected: '0 0 0 1bw #primary',
-      // `$dialog-shadow` uses Glaze `#shadow-lg`, which adapts to dark / high-contrast schemas.
+      // `$dialog-shadow` uses Glaze `#shadow-lg`, which adapts to dark / high-contrast schemes.
       'drag | resizing': '$dialog-shadow',
     },
     outline: {

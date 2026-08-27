@@ -81,8 +81,8 @@ export const DEFAULT_PRIMARY_STYLES: Styles = {
   // The brand ramp `accent-surface` → `-2` → `-3` gives a monotonically
   // increasing contrast against `#surface` (cr ≈ 4.5 → 4.8 → 5.2 in light,
   // similar in dark), so hover and pressed read visibly *darker* than the
-  // default state in both schemas. Disabled uses the brand-tinted,
-  // schema-symmetric chip (`accent-disabled-surface` cr ≈ 1.4 vs surface)
+  // default state in both schemes. Disabled uses the brand-tinted,
+  // scheme-symmetric chip (`accent-disabled-surface` cr ≈ 1.4 vs surface)
   // so the muted state stays identifiable as a brand color.
   fill: {
     '': '#surface #primary-accent-surface',
@@ -786,10 +786,10 @@ export const NOTE_ITEM_STYLES: Styles = {
 // Every color here resolves to a fixed-mode value (built-in `#white`, the
 // standalone `#special-*` theme in `src/tokens/palette.ts`, or `transparent`).
 // `mode: 'fixed'` makes the resolved OKHSL identical in light, dark, and
-// high-contrast, so the special theme renders the same regardless of schema.
+// high-contrast, so the special theme renders the same regardless of scheme.
 // The only intentionally adaptive colors are `VALIDATION_STYLES.border`
 // (`#danger-accent-text` / `#success-accent-text`) — validation state is allowed to follow
-// the active schema.
+// the active scheme.
 export const SPECIAL_PRIMARY_STYLES: Styles = {
   // Focus ring uses `#special-accent-text` — a fixed-mode dark-purple that
   // stays identical across light/dark/HC, matching the special theme's
@@ -838,7 +838,7 @@ export const SPECIAL_OUTLINE_STYLES: Styles = {
   // alpha distinct sidesteps the collision.
   //
   // Focus ring uses the fixed-mode `#special-accent-text` so the indicator
-  // stays schema-invariant alongside the rest of the special theme — see
+  // stays scheme-invariant alongside the rest of the special theme — see
   // `SPECIAL_PRIMARY_STYLES.outline` for the full rationale.
   outline: {
     '': '0 #special-accent-text.0',
@@ -916,7 +916,7 @@ export const SPECIAL_CLEAR_STYLES: Styles = {
   // the white-alpha variants are solved for.
   //
   // Focus ring uses the fixed-mode `#special-accent-text` so the indicator
-  // stays schema-invariant alongside the rest of the special theme — see
+  // stays scheme-invariant alongside the rest of the special theme — see
   // `SPECIAL_PRIMARY_STYLES.outline` for the full rationale.
   outline: {
     '': '0 #special-accent-text.0',
@@ -1020,8 +1020,8 @@ export const SPECIAL_ITEM_STYLES: Styles = {
 // written inline in `fill`. Two reasons:
 //
 // 1. Unlike the brand tokens, `#current` alphas do NOT adapt to the color
-//    schema, so one ramp cannot serve both. Each step therefore carries the base
-//    entry for the light schema and an `@dark` counterpart.
+//    scheme, so one ramp cannot serve both. Each step therefore carries the base
+//    entry for the light scheme and an `@dark` counterpart.
 // 2. Writing both ramps straight into one `fill` map would put twelve alpha
 //    values in a single state-map, and Tasty's `mergeEntriesByValue` pass
 //    coalesces any two equal value strings into one OR-entry at the group's max
@@ -1030,7 +1030,7 @@ export const SPECIAL_ITEM_STYLES: Styles = {
 //    the constraint that `SPECIAL_OUTLINE_STYLES` documents the hard way.
 //
 // THE DARK STEPS ARE DERIVED, NOT AUTHORED. The same alpha is not the same step
-// in both schemas, and the direction is the opposite of what it looks like: near
+// in both schemes, and the direction is the opposite of what it looks like: near
 // the dark end of the scale a small sRGB move is a large perceptual one, so a
 // light tint on a dark surface reads STRONGER than the same tint of a dark label
 // on a light page. Each `@dark` value is therefore solved so its OKHST *tone*
@@ -1050,11 +1050,11 @@ export const SPECIAL_ITEM_STYLES: Styles = {
 // because tasty computes the mix percentage as `parseFloat(alpha) * 100`, and
 // `.132` lands on `13.200000000000001%` in the emitted CSS.
 //
-// Measured against `#surface` / `#surface-text` in each schema, which is the only
+// Measured against `#surface` / `#surface-text` in each scheme, which is the only
 // tractable calibration: `current` paints from an arbitrary inherited color over
 // an arbitrary container, so a single ramp cannot be exact for all of them. The
 // neutral page pair is the common case, and matching it is what keeps the two
-// schemas recognisably the same ramp. Re-derive with Glaze's `oklabToOkhsl` +
+// schemes recognisably the same ramp. Re-derive with Glaze's `oklabToOkhsl` +
 // `okhslToOkhst` if the neutral tokens move.
 //
 // Note that the label keeps its own margin throughout: the weakest dark step
@@ -1289,7 +1289,7 @@ export const CURRENT_OUTLINE_2_STYLES: Styles = {
 // The states are the second fill layer. There is no lighter or darker sibling
 // of an arbitrary inherited color to step to — the brand ramps walk
 // `accent-surface` → `-2` → `-3` — so hover and pressed lay a translucent
-// `#black` over the same base instead, which darkens in both schemas and so
+// `#black` over the same base instead, which darkens in both schemes and so
 // keeps the same monotonic direction the brand primaries have.
 //
 // The label CANNOT go through `color`. `#current` compiles to the literal
@@ -1305,9 +1305,9 @@ export const CURRENT_PRIMARY_STYLES: Styles = {
   ...CURRENT_FOCUS_RING,
   // Every other `primary` rims its fill with a lighter sibling
   // (`accent-surface-border` over `accent-surface`, cr 1.48 against it in both
-  // schemas). An arbitrary inherited color has no such sibling, so the rim comes
+  // schemes). An arbitrary inherited color has no such sibling, so the rim comes
   // from the same token the label does — the one color guaranteed to sit on the
-  // opposite side of the fill in either schema, and the one a container can
+  // opposite side of the fill in either scheme, and the one a container can
   // redirect, so the rim cannot come apart from the label it edges. `.25`
   // measures cr 1.82 in light and 1.55 in dark against the fill: the brand rim's
   // presence, a shade more so in light, where `current` has no other edge cue.

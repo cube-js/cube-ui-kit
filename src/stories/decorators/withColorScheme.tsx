@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef } from 'react';
 
-import { setSchemaOverride } from './colorSchemaBridge';
+import { setSchemeOverride } from './colorSchemeBridge';
 
 import type { ReactElement } from 'react';
 
@@ -16,11 +16,11 @@ type StoryDecorator = (
 ) => ReactElement | null;
 
 /**
- * Drives the `data-schema` attribute on `<html>`.
- *  - `'dark'` / `'light'` — force the corresponding schema
+ * Drives the `data-scheme` attribute on `<html>`.
+ *  - `'dark'` / `'light'` — force the corresponding scheme
  *  - `'auto'` — clear the attribute and fall back to `prefers-color-scheme`
  */
-export type ColorSchema = 'light' | 'dark' | 'auto';
+export type ColorScheme = 'light' | 'dark' | 'auto';
 
 /**
  * Drives the `data-contrast` attribute on `<html>`.
@@ -29,42 +29,42 @@ export type ColorSchema = 'light' | 'dark' | 'auto';
  */
 export type ContrastMode = 'normal' | 'high' | 'auto';
 
-export interface WithColorSchemaOptions {
-  /** Color schema applied via `<html data-schema=…>`. */
-  schema?: ColorSchema;
+export interface WithColorSchemeOptions {
+  /** Color scheme applied via `<html data-scheme=…>`. */
+  scheme?: ColorScheme;
   /** Contrast mode applied via `<html data-contrast=…>`. */
   contrast?: ContrastMode;
 }
 
 /**
- * Storybook decorator that switches a story into a different color schema by
- * driving the `data-schema` / `data-contrast` attributes on `<html>` (the same
+ * Storybook decorator that switches a story into a different color scheme by
+ * driving the `data-scheme` / `data-contrast` attributes on `<html>` (the same
  * attributes the global `@dark` / `@hc` predefined states resolve against —
  * see `src/components/Root.tsx`).
  *
  * The body itself is `fill: '#surface'` (see `src/components/GlobalStyles.tsx`),
- * so flipping `data-schema` is enough to repaint the whole story canvas — no
+ * so flipping `data-scheme` is enough to repaint the whole story canvas — no
  * extra wrappers needed.
  *
- * `data-schema` writes go through `colorSchemaBridge` so the per-story
+ * `data-scheme` writes go through `colorSchemeBridge` so the per-story
  * override always wins over the `storybook-dark-mode` toolbar (which writes
  * the same attribute via the channel listener in `.storybook/preview.jsx`).
  * `data-contrast` is unmanaged by the addon and stays a direct DOM write.
  *
- * Implemented synchronously in `useLayoutEffect`, so the schema switches
+ * Implemented synchronously in `useLayoutEffect`, so the scheme switches
  * before paint (no flash). The bridge restores the toolbar value on unmount,
  * and `data-contrast` restores its prior literal value.
  *
  * @example
  *   export const DarkVariant = MyTemplate.bind({});
- *   DarkVariant.decorators = [withColorSchema({ schema: 'dark' })];
+ *   DarkVariant.decorators = [withColorScheme({ scheme: 'dark' })];
  */
-export const withColorSchema = (
-  options: WithColorSchemaOptions = {},
+export const withColorScheme = (
+  options: WithColorSchemeOptions = {},
 ): StoryDecorator => {
-  const { schema, contrast } = options;
+  const { scheme, contrast } = options;
 
-  const ColorSchemaDecorator: StoryDecorator = (Story) => {
+  const ColorSchemeDecorator: StoryDecorator = (Story) => {
     const previousContrastRef = useRef<string | null>(null);
 
     useLayoutEffect(() => {
@@ -72,10 +72,10 @@ export const withColorSchema = (
 
       previousContrastRef.current = html.getAttribute('data-contrast');
 
-      if (schema === 'auto') {
-        setSchemaOverride(null);
-      } else if (schema) {
-        setSchemaOverride(schema);
+      if (scheme === 'auto') {
+        setSchemeOverride(null);
+      } else if (scheme) {
+        setSchemeOverride(scheme);
       }
 
       if (contrast === 'auto') {
@@ -88,8 +88,8 @@ export const withColorSchema = (
       }
 
       return () => {
-        if (schema) {
-          setSchemaOverride(null);
+        if (scheme) {
+          setSchemeOverride(null);
         }
 
         if (contrast) {
@@ -107,18 +107,18 @@ export const withColorSchema = (
     return <Story />;
   };
 
-  (ColorSchemaDecorator as { displayName?: string }).displayName =
-    `WithColorSchema(${schema ?? 'auto'},${contrast ?? 'auto'})`;
+  (ColorSchemeDecorator as { displayName?: string }).displayName =
+    `WithColorScheme(${scheme ?? 'auto'},${contrast ?? 'auto'})`;
 
-  return ColorSchemaDecorator;
+  return ColorSchemeDecorator;
 };
 
-/** Convenience preset: switches the story into the dark schema. */
-export const withDarkSchema: StoryDecorator = withColorSchema({
-  schema: 'dark',
+/** Convenience preset: switches the story into the dark scheme. */
+export const withDarkScheme: StoryDecorator = withColorScheme({
+  scheme: 'dark',
 });
 
-/** Convenience preset: switches the story into the high-contrast schema. */
-export const withHighContrast: StoryDecorator = withColorSchema({
+/** Convenience preset: switches the story into the high-contrast scheme. */
+export const withHighContrast: StoryDecorator = withColorScheme({
   contrast: 'high',
 });

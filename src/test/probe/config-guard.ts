@@ -36,7 +36,7 @@ export function assertConfigApplied(): void {
   if (!states || !('@dark' in states)) {
     throw new Error(
       'Probe harness: the `@dark` / `@hc` predefined states are missing, so ' +
-        "`<Root>`'s module body did not run. Schema-keyed styles would resolve " +
+        "`<Root>`'s module body did not run. Scheme-keyed styles would resolve " +
         'wrong. Check what the harness imports before `components/Root`.',
     );
   }

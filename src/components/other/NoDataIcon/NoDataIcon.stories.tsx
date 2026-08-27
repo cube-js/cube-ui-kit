@@ -1,9 +1,9 @@
 import { Meta, StoryObj } from '@storybook/react-vite';
 
 import {
-  withDarkSchema,
+  withDarkScheme,
   withHighContrast,
-} from '../../../stories/decorators/withColorSchema';
+} from '../../../stories/decorators/withColorScheme';
 import { Text } from '../../content/Text';
 import { Flow } from '../../layout/Flow';
 import { Space } from '../../layout/Space';
@@ -64,11 +64,11 @@ export const WithLoadingAnimation: Story = {
 
 /**
  * The three faces are pinned by a contrast floor against `#surface`, so they
- * hold the same separation from the page in every schema rather than flattening
+ * hold the same separation from the page in every scheme rather than flattening
  * out in dark — this story and the next are what that claim is checked against.
  */
-export const DarkSchema: Story = {
-  decorators: [withDarkSchema],
+export const DarkScheme: Story = {
+  decorators: [withDarkScheme],
 };
 
 export const HighContrast: Story = {

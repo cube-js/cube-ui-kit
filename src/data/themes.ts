@@ -13,7 +13,7 @@
 //                top. We use `#<theme>-accent-surface` (fixed mode) which is
 //                anchored to the fixed-white `#<theme>-accent-surface-text`
 //                with `contrast: [4.5, 7]`, so white-text-on-fill is
-//                guaranteed WCAG AA (4.5) / AAA (7) in every schema — the
+//                guaranteed WCAG AA (4.5) / AAA (7) in every scheme — the
 //                same brand-pill design `special` uses. (Pre-glaze this slot
 //                resolved to `#<theme>-accent-text`, which is anchored to
 //                surface with mode 'auto' for "readable text on surface" —

@@ -64,7 +64,7 @@ it('probe', async () => {
   if (input.mode === 'tokens') {
     writeResult(input, {
       mode: 'tokens',
-      schema: `${input.tokenOptions?.schema ?? 'light'}${
+      scheme: `${input.tokenOptions?.scheme ?? 'light'}${
         input.tokenOptions?.highContrast ? ' + high contrast' : ''
       }`,
       // Flat literal values for one variant. The legacy aliases come back BY
@@ -72,7 +72,7 @@ it('probe', async () => {
       // preview re-resolves them against its own tokens — so they are reported
       // separately rather than being mistaken for resolved colors.
       resolved: renderColorTokens(input.tokenOptions),
-      // The same palette as tasty state maps keyed by schema
+      // The same palette as tasty state maps keyed by scheme
       // (`'' | '@dark' | '@hc' | '@dark & @hc'`), which is the four-variant view
       // a palette change has to be diffed across. A different shape from the
       // above, so it is labelled rather than merged.
