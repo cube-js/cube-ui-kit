@@ -257,8 +257,9 @@ function exchangeWith(
  * dense grid stays draggable that way - refusing everything that is not a clean
  * one-to-one trade would make the mode feel broken exactly where it is needed.
  * Cross-board callers pass `allowExchange: false`, which turns the same mode into
- * empty-anchor downscaling; the registry cancels the transfer if that resolution
- * cannot occupy the requested cell.
+ * downscaling at the drop cell - there is no slot on the destination to trade
+ * back, and a transfer that cannot resolve is placed in a free cell rather than
+ * refused, since a widget dropped somewhere has to end up somewhere.
  */
 export function createCollisionResolver(
   mode: CollisionMode | undefined,

@@ -12,6 +12,8 @@ import {
 } from '../../../test';
 import { Tab, Tabs } from '../../navigation/Tabs';
 
+import { isOverlapFree } from './grid-core';
+
 import { Board } from './index';
 
 import type { ReactNode } from 'react';
@@ -2346,6 +2348,7 @@ describe('Board', () => {
       function setupCrossBoardSwap(
         incoming: LayoutItem,
         targetLayout: LayoutItem[],
+        mode: 'swap' | 'downscale' = 'swap',
       ) {
         const onSourceLayoutChange = vi.fn();
         const onTargetLayoutChange = vi.fn();
@@ -2362,7 +2365,7 @@ describe('Board', () => {
               margin={[0, 0]}
               containerPadding={[0, 0]}
               compact="free"
-              collisionMode="swap"
+              collisionMode={mode}
               defaultLayout={[incoming]}
               onLayoutChange={onSourceLayoutChange}
               onDragStop={onDragStop}
@@ -2379,7 +2382,7 @@ describe('Board', () => {
               margin={[0, 0]}
               containerPadding={[0, 0]}
               compact="free"
-              collisionMode="swap"
+              collisionMode={mode}
               defaultLayout={targetLayout}
               onLayoutChange={onTargetLayoutChange}
             >
@@ -2476,71 +2479,101 @@ describe('Board', () => {
         );
       });
 
-      it('cancels the transfer when the anchor cell is occupied', () => {
-        const {
-          dragTo,
-          onSourceLayoutChange,
-          onTargetLayoutChange,
-          onWidgetTransfer,
-          onDragStop,
-        } = setupCrossBoardSwap({ i: 'a', x: 0, y: 0, w: 2, h: 1 }, [
-          { i: 'b', x: 0, y: 0, w: 2, h: 1 },
-        ]);
+      it('places into a free cell when the anchor cell is occupied', () => {
+        const targetLayout = [{ i: 'b', x: 0, y: 0, w: 2, h: 1 }];
+        const { dragTo, onTargetLayoutChange, onWidgetTransfer } =
+          setupCrossBoardSwap({ i: 'a', x: 0, y: 0, w: 2, h: 1 }, targetLayout);
 
         dragTo(0, 0);
 
-        expect(onSourceLayoutChange).not.toHaveBeenCalled();
-        expect(onTargetLayoutChange).not.toHaveBeenCalled();
-        expect(onWidgetTransfer).not.toHaveBeenCalled();
-        expect(onDragStop).toHaveBeenCalledWith(
+        const committed = onTargetLayoutChange.mock
+          .calls[0]![0] as LayoutItem[];
+        // The occupant keeps its cell: a cross-board arrival never displaces it.
+        expect(committed.find((it) => it.i === 'b')).toEqual(
+          expect.objectContaining(targetLayout[0]),
+        );
+        // The nearest free cell in reading order, at the widget's own size.
+        expect(committed.find((it) => it.i === 'a')).toEqual(
+          expect.objectContaining({ x: 2, y: 0, w: 2, h: 1 }),
+        );
+        expect(isOverlapFree(committed)).toBe(true);
+        expect(onWidgetTransfer).toHaveBeenCalledWith(
           expect.objectContaining({
-            item: expect.objectContaining({ i: 'a', x: 0, y: 0 }),
-            layout: [expect.objectContaining({ i: 'a', x: 0, y: 0 })],
+            fromBoardId: 'source',
+            toBoardId: 'target',
+            item: expect.objectContaining({ i: 'a' }),
           }),
         );
       });
 
-      it('cancels when the available space is below the minimum size', () => {
-        const {
-          dragTo,
-          onSourceLayoutChange,
-          onTargetLayoutChange,
-          onWidgetTransfer,
-        } = setupCrossBoardSwap({ i: 'a', x: 0, y: 0, w: 4, h: 1, minW: 4 }, [
-          { i: 'b', x: 3, y: 0, w: 3, h: 1 },
-        ]);
+      it('places at full size when the anchor cannot honour the minimum size', () => {
+        const targetLayout = [{ i: 'b', x: 3, y: 0, w: 3, h: 1 }];
+        const { dragTo, onTargetLayoutChange, onWidgetTransfer } =
+          setupCrossBoardSwap(
+            { i: 'a', x: 0, y: 0, w: 4, h: 1, minW: 4 },
+            targetLayout,
+          );
 
         dragTo(0, 0);
 
-        expect(onSourceLayoutChange).not.toHaveBeenCalled();
-        expect(onTargetLayoutChange).not.toHaveBeenCalled();
-        expect(onWidgetTransfer).not.toHaveBeenCalled();
+        const committed = onTargetLayoutChange.mock
+          .calls[0]![0] as LayoutItem[];
+        expect(committed.find((it) => it.i === 'b')).toEqual(
+          expect.objectContaining(targetLayout[0]),
+        );
+        // `minW: 4` rules out downscaling into the 3 free columns, so the widget
+        // keeps its size and takes the nearest cell where that size fits.
+        expect(committed.find((it) => it.i === 'a')).toEqual(
+          expect.objectContaining({ x: 0, y: 1, w: 4, h: 1 }),
+        );
+        expect(isOverlapFree(committed)).toBe(true);
+        expect(onWidgetTransfer).toHaveBeenCalled();
       });
 
-      it('cancels instead of committing the last valid preview', () => {
-        const {
-          start,
-          moveTo,
-          endAt,
-          onSourceLayoutChange,
-          onTargetLayoutChange,
-          onWidgetTransfer,
-        } = setupCrossBoardSwap({ i: 'a', x: 0, y: 0, w: 2, h: 1 }, [
-          { i: 'b', x: 2, y: 0, w: 2, h: 1 },
-        ]);
+      it('commits the last valid preview when the release cell is occupied', () => {
+        const targetLayout = [{ i: 'b', x: 2, y: 0, w: 2, h: 1 }];
+        const { start, moveTo, endAt, onTargetLayoutChange, onWidgetTransfer } =
+          setupCrossBoardSwap({ i: 'a', x: 0, y: 0, w: 2, h: 1 }, targetLayout);
 
         start();
         moveTo(0, 0);
         expect(screen.getAllByTestId('BoardPlaceholder')).toHaveLength(1);
         moveTo(2, 0);
-        expect(
-          screen.queryByTestId('BoardPlaceholder'),
-        ).not.toBeInTheDocument();
+        // The preview holds at the last cell that fit rather than blinking away.
+        expect(screen.getAllByTestId('BoardPlaceholder')).toHaveLength(1);
         endAt(2, 0);
 
-        expect(onSourceLayoutChange).not.toHaveBeenCalled();
-        expect(onTargetLayoutChange).not.toHaveBeenCalled();
-        expect(onWidgetTransfer).not.toHaveBeenCalled();
+        const committed = onTargetLayoutChange.mock
+          .calls[0]![0] as LayoutItem[];
+        expect(committed.find((it) => it.i === 'a')).toEqual(
+          expect.objectContaining({ x: 0, y: 0, w: 2, h: 1 }),
+        );
+        expect(committed.find((it) => it.i === 'b')).toEqual(
+          expect.objectContaining(targetLayout[0]),
+        );
+        expect(onWidgetTransfer).toHaveBeenCalled();
+      });
+
+      it('lands a downscale arrival on the board, never above its first row', () => {
+        const targetLayout = [{ i: 'b', x: 0, y: 0, w: 6, h: 1 }];
+        const { dragTo, onTargetLayoutChange } = setupCrossBoardSwap(
+          { i: 'a', x: 0, y: 0, w: 2, h: 1 },
+          targetLayout,
+          'downscale',
+        );
+
+        dragTo(0, 0);
+
+        const committed = onTargetLayoutChange.mock
+          .calls[0]![0] as LayoutItem[];
+        // Row 0 is full, so the arrival goes to the row below - not to the
+        // synthetic seed cell at y = -1 that a refused move restores.
+        expect(committed.find((it) => it.i === 'a')).toEqual(
+          expect.objectContaining({ x: 0, y: 1, w: 2, h: 1 }),
+        );
+        expect(committed.find((it) => it.i === 'b')).toEqual(
+          expect.objectContaining(targetLayout[0]),
+        );
       });
 
       it('uses the same insertion rule when dragging from a nested board to its parent', () => {

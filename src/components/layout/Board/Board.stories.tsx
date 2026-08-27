@@ -684,8 +684,8 @@ const CollisionModesTemplate: StoryFn<CubeBoardProps> = () => (
     <Flow gap="1x">
       <Text preset="t3" color="#dark-02">
         <code>collisionMode=&quot;swap&quot;</code> across boards — drag the
-        incoming widget into empty space on the target; dropping on the blocker
-        cancels the transfer
+        incoming widget onto the target; it downscales into the room at the drop
+        cell, and dropping on the blocker sends it to the nearest cell that fits
       </Text>
       <Board.Provider>
         <Flow gap="1x" gridColumns="1fr 1fr" display="grid">
@@ -743,7 +743,7 @@ CollisionModes.parameters = {
   docs: {
     description: {
       story:
-        'A `compact="free"` board refuses a drop onto occupied cells; `collisionMode` resolves it instead. **Downscale** — drag the 4-column widget onto the middle row and it shrinks to the 3 columns free beside the blocker, instead of snapping back. **Swap within one board** — drop one widget onto another and they trade places: the dragged widget takes the other\'s cell, the displaced one takes the cell the drag began at, and each keeps as much of its own size as fits there. Exactly one widget is ever displaced, a drop straddling two of them trades with the one it covers most, and dragging back retraces the original arrangement. **Swap across boards** — the incoming widget can only use an empty anchor, downscales into the room to its right and below, and never moves a destination widget; an occupied anchor cancels the transfer. Neither path ever grows a widget. The default, `"revert"`, is what every other story on this page shows: the widget snaps back.',
+        'A `compact="free"` board refuses a drop onto occupied cells; `collisionMode` resolves it instead. **Downscale** — drag the 4-column widget onto the middle row and it shrinks to the 3 columns free beside the blocker, instead of snapping back. **Swap within one board** — drop one widget onto another and they trade places: the dragged widget takes the other\'s cell, the displaced one takes the cell the drag began at, and each keeps as much of its own size as fits there. Exactly one widget is ever displaced, a drop straddling two of them trades with the one it covers most, and dragging back retraces the original arrangement. **Swap across boards** — there is no slot on the destination to trade back, so the arrival downscales into the room to its right and below and never moves a destination widget; an occupied anchor sends it to the nearest cell that fits rather than cancelling. Neither path ever grows a widget. The default, `"revert"`, is what every other story on this page shows: the widget snaps back.',
     },
   },
 };
