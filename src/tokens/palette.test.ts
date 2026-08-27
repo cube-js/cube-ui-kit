@@ -85,7 +85,7 @@ function dumpTokens(tokens: Styles): Record<string, string> {
   return out;
 }
 
-/** Pick one schema variant out of every token's state map. */
+/** Pick one scheme variant out of every token's state map. */
 function variant(tokens: Styles, state: string): Record<string, string> {
   const out: Record<string, string> = {};
 
@@ -142,7 +142,7 @@ function hexOf(value: string): string {
  *
  * Reading the tone rather than the color is what lets a test say "this landed where the
  * seed asked" for a token whose hue and chroma are settled but whose lightness went
- * through a schema window.
+ * through a scheme window.
  */
 function toneOf(value: string): number {
   return (
@@ -238,7 +238,7 @@ describe('palette tokens', () => {
     expect(dump).toMatchSnapshot();
   });
 
-  it('emits every token in all four schema variants by default', () => {
+  it('emits every token in all four scheme variants by default', () => {
     expect(statesOf(getPaletteTokens())).toEqual([
       '',
       '@dark',
@@ -249,14 +249,14 @@ describe('palette tokens', () => {
 
   /**
    * The cube-face ramp's whole point is that a `LoadingAnimation` reads with the
-   * same weight in every schema. It is stated as a WCAG floor against `surface`
-   * rather than as a tone delta precisely because the dark schema resolves a
+   * same weight in every scheme. It is stated as a WCAG floor against `surface`
+   * rather than as a tone delta precisely because the dark scheme resolves a
    * delta inside the `darkTone` window and flattened the ramp to ~75% of its
    * light span. The snapshot above pins the emitted colors; this pins the
    * property that made them those colors, so a regression reads as "dark went
    * flat again" rather than as three changed oklch strings.
    */
-  it('holds the cube faces at one contrast ratio in every schema', () => {
+  it('holds the cube faces at one contrast ratio in every scheme', () => {
     const tokens = getPaletteTokens();
     const FLOORS = [1.2, 1.65, 2.4];
     const HC_FLOORS = [1.35, 2.1, 3.2];
@@ -745,7 +745,7 @@ describe('setPaletteConfig', () => {
 
     const tuned = dumpTokens(getPaletteTokens());
 
-    // Bit-identical, in all four schema variants: nothing but the code
+    // Bit-identical, in all four scheme variants: nothing but the code
     // saturation reaches these.
     expect(CODE_TOKENS.map((name) => tuned[name])).toEqual(before);
     expect(getCodeTheme().getConfig().pastel).toBe(false);
@@ -1048,27 +1048,27 @@ describe('renderPaletteTokens', () => {
       return out;
     };
 
-    expect({ ...renderPaletteTokens({ schema: 'light' }) }).toEqual(
+    expect({ ...renderPaletteTokens({ scheme: 'light' }) }).toEqual(
       variantOf(''),
     );
-    expect({ ...renderPaletteTokens({ schema: 'dark' }) }).toEqual(
+    expect({ ...renderPaletteTokens({ scheme: 'dark' }) }).toEqual(
       variantOf('@dark'),
     );
     expect({
-      ...renderPaletteTokens({ schema: 'light', highContrast: true }),
+      ...renderPaletteTokens({ scheme: 'light', highContrast: true }),
     }).toEqual(variantOf('@hc'));
     expect({
-      ...renderPaletteTokens({ schema: 'dark', highContrast: true }),
+      ...renderPaletteTokens({ scheme: 'dark', highContrast: true }),
     }).toEqual(variantOf('@dark & @hc'));
   });
 
   it('renders a config the app is not using, without applying it', () => {
     const before = dumpTokens(getPaletteTokens());
-    const baseline = renderPaletteTokens({ schema: 'light' });
+    const baseline = renderPaletteTokens({ scheme: 'light' });
 
     const preview = renderPaletteTokens({
       accent: { hue: 30 },
-      schema: 'light',
+      scheme: 'light',
     });
 
     expect(preview['#accent-surface']).not.toBe(baseline['#accent-surface']);
@@ -1080,13 +1080,13 @@ describe('renderPaletteTokens', () => {
   it('merges over the current config rather than the shipped defaults', () => {
     setPaletteConfig({ accent: { saturation: 20 } });
 
-    expect(renderPaletteTokens({ schema: 'light' })['#accent-surface']).toBe(
+    expect(renderPaletteTokens({ scheme: 'light' })['#accent-surface']).toBe(
       getPaletteTokens()['#accent-surface']?.[''],
     );
   });
 
   it('is independent of the ambient contrast mode', () => {
-    const hc = renderPaletteTokens({ schema: 'light', highContrast: true });
+    const hc = renderPaletteTokens({ scheme: 'light', highContrast: true });
 
     // A manual global level suppresses high-contrast output in Glaze exports;
     // a preview must not inherit that.
@@ -1095,7 +1095,7 @@ describe('renderPaletteTokens', () => {
     expect(
       renderPaletteTokens({
         contrastLevel: 'auto',
-        schema: 'light',
+        scheme: 'light',
         highContrast: true,
       }),
     ).toEqual(hc);
@@ -1107,7 +1107,7 @@ describe('renderPaletteTokens', () => {
 
     expect(glaze.getConfig().contrastLevel).toBe(60);
 
-    renderPaletteTokens({ schema: 'dark' });
+    renderPaletteTokens({ scheme: 'dark' });
 
     expect(glaze.getConfig().contrastLevel).toBe(60);
   });
@@ -1116,15 +1116,15 @@ describe('renderPaletteTokens', () => {
     // A region asking for high contrast at a mid level gets the genuine
     // high-contrast resolution, not a copy of its own normal variant — the level
     // moves the baseline, the tier escalates from wherever `'auto'` would put it.
-    const normal = renderPaletteTokens({ contrastLevel: 40, schema: 'light' });
+    const normal = renderPaletteTokens({ contrastLevel: 40, scheme: 'light' });
     const hc = renderPaletteTokens({
       contrastLevel: 40,
-      schema: 'light',
+      scheme: 'light',
       highContrast: true,
     });
     const autoHc = renderPaletteTokens({
       contrastLevel: 'auto',
-      schema: 'light',
+      scheme: 'light',
       highContrast: true,
     });
 
@@ -1133,10 +1133,10 @@ describe('renderPaletteTokens', () => {
   });
 
   it('emits one tier at level 100, where the two coincide', () => {
-    const normal = renderPaletteTokens({ contrastLevel: 100, schema: 'light' });
+    const normal = renderPaletteTokens({ contrastLevel: 100, scheme: 'light' });
     const hc = renderPaletteTokens({
       contrastLevel: 100,
-      schema: 'light',
+      scheme: 'light',
       highContrast: true,
     });
 
@@ -1147,16 +1147,16 @@ describe('renderPaletteTokens', () => {
     // Glaze guarantees level 0 === normal and level 100 === high contrast, bit
     // for bit. If the level did not reach the themes in the region path, these
     // would silently all be the same.
-    for (const schema of ['light', 'dark'] as const) {
-      expect(renderPaletteTokens({ contrastLevel: 0, schema: schema })).toEqual(
-        renderPaletteTokens({ contrastLevel: 'auto', schema: schema }),
+    for (const scheme of ['light', 'dark'] as const) {
+      expect(renderPaletteTokens({ contrastLevel: 0, scheme: scheme })).toEqual(
+        renderPaletteTokens({ contrastLevel: 'auto', scheme: scheme }),
       );
       expect(
-        renderPaletteTokens({ contrastLevel: 100, schema: schema }),
+        renderPaletteTokens({ contrastLevel: 100, scheme: scheme }),
       ).toEqual(
         renderPaletteTokens({
           contrastLevel: 'auto',
-          schema: schema,
+          scheme: scheme,
           highContrast: true,
         }),
       );
@@ -1165,7 +1165,7 @@ describe('renderPaletteTokens', () => {
 
   it('interpolates between the tiers at intermediate levels', () => {
     const at = (contrastLevel: number | 'auto') =>
-      renderPaletteTokens({ contrastLevel: contrastLevel, schema: 'light' });
+      renderPaletteTokens({ contrastLevel: contrastLevel, scheme: 'light' });
 
     const low = at(0);
     const mid = at(50);
@@ -1188,10 +1188,10 @@ describe('renderPaletteTokens', () => {
   it('applies the level to every theme in the palette, not just the default', () => {
     const auto = renderPaletteTokens({
       contrastLevel: 'auto',
-      schema: 'light',
+      scheme: 'light',
       highContrast: true,
     });
-    const full = renderPaletteTokens({ contrastLevel: 100, schema: 'light' });
+    const full = renderPaletteTokens({ contrastLevel: 100, scheme: 'light' });
 
     // `special` is a standalone theme and the status themes are `extend()`
     // children — the level has to reach all of them.
@@ -1213,7 +1213,7 @@ describe('renderColorTokens', () => {
   });
 
   it('adds the legacy aliases by reference, not resolved', () => {
-    const rendered = renderColorTokens({ schema: 'dark' });
+    const rendered = renderColorTokens({ scheme: 'dark' });
 
     // Resolved palette value…
     expect(rendered['#surface-text']).toMatch(/^oklch\(/);
@@ -1233,7 +1233,7 @@ describe('renderColorTokens', () => {
   });
 
   it('re-declares the tokens whose values embed a palette color', () => {
-    const rendered = renderColorTokens({ schema: 'dark' });
+    const rendered = renderColorTokens({ scheme: 'dark' });
 
     // Declared on <Root>, so CSS would have frozen the outer theme's color into
     // them; they have to ride along by reference to re-resolve in the region.
@@ -1291,12 +1291,12 @@ describe('interop with a host driving glaze directly', () => {
     // only input — `buildPalette` also reads Glaze's global config. Without the
     // version in that key, a region preview keeps serving the old palette while
     // the document around it has already moved.
-    const before = renderColorTokens({ schema: 'dark' });
+    const before = renderColorTokens({ scheme: 'dark' });
 
     glaze.configure({ darkDesaturation: 0.5 });
     invalidatePaletteTokens();
 
-    expect(renderColorTokens({ schema: 'dark' })).not.toEqual(before);
+    expect(renderColorTokens({ scheme: 'dark' })).not.toEqual(before);
   });
 });
 
@@ -1382,7 +1382,7 @@ describe('accent color seeds', () => {
   });
 
   /**
-   * The whole contract, as one invariant: for every brand and every schema, the fill
+   * The whole contract, as one invariant: for every brand and every scheme, the fill
    * is EITHER exactly the color asked for, OR sitting on the 3:1 floor — and it is
    * floored only when the color could not clear the floor by itself.
    *
@@ -1396,7 +1396,7 @@ describe('accent color seeds', () => {
       const tokens = renderPaletteTokens({
         ...EXACT,
         accent: accentColor,
-        schema: 'light',
+        scheme: 'light',
       });
       const fill = String(tokens['#accent-surface']);
       const surface = String(tokens['#surface']);
@@ -1430,7 +1430,7 @@ describe('accent color seeds', () => {
     }
   });
 
-  it('lets dark adapt rather than pinning the color across schemas', () => {
+  it('lets dark adapt rather than pinning the color across schemes', () => {
     // Exactness is scoped to light / normal contrast on purpose. Dark is a
     // different page, and a fill pinned to one lightness across both would be a
     // worse `mode: 'fixed'` rather than a faithful brand — so the dark variant
@@ -1441,7 +1441,7 @@ describe('accent color seeds', () => {
       const tokens = renderPaletteTokens({
         ...EXACT,
         accent: accentColor,
-        schema: 'dark',
+        scheme: 'dark',
       });
       const fill = String(tokens['#accent-surface']);
 
@@ -1455,7 +1455,7 @@ describe('accent color seeds', () => {
     const dark = renderPaletteTokens({
       ...EXACT,
       accent: '#FFD400',
-      schema: 'dark',
+      scheme: 'dark',
     });
     expect(hexOf(String(dark['#accent-surface']))).not.toBe('#ffd400');
   });
@@ -1469,7 +1469,7 @@ describe('accent color seeds', () => {
     const hc = renderPaletteTokens({
       ...EXACT,
       accent: '#0EA5E9',
-      schema: 'light',
+      scheme: 'light',
       highContrast: true,
     });
 
@@ -1509,7 +1509,7 @@ describe('accent color seeds', () => {
     for (const highContrast of [false, true]) {
       const shipped = renderPaletteTokens({
         ...EXACT,
-        schema: 'dark',
+        scheme: 'dark',
         highContrast,
       });
       const reference = apcaOf(
@@ -1520,7 +1520,7 @@ describe('accent color seeds', () => {
       const seeded = renderPaletteTokens({
         ...EXACT,
         accent: 'okhst(280 70% 10%)',
-        schema: 'dark',
+        scheme: 'dark',
         highContrast,
       });
       const separation = apcaOf(
@@ -1552,19 +1552,19 @@ describe('accent color seeds', () => {
     // range survived in dark against light's 45.
     const tones = [30, 45, 60, 75];
 
-    for (const schema of ['light', 'dark'] as const) {
+    for (const scheme of ['light', 'dark'] as const) {
       const emitted = tones.map((tone) =>
         toneOf(
           String(
             renderPaletteTokens({
               ...EXACT,
               accent: `okhst(280 70% ${tone}%)`,
-              schema,
+              scheme,
             })['#accent-surface'],
           ),
         ),
       );
-      const label = `${schema}: ${emitted.map((t) => t.toFixed(1)).join(', ')}`;
+      const label = `${scheme}: ${emitted.map((t) => t.toFixed(1)).join(', ')}`;
 
       // Never inverts — a lighter seed cannot emit a darker fill.
       for (let i = 1; i < emitted.length; i++) {
@@ -1587,16 +1587,16 @@ describe('accent color seeds', () => {
     // saturated hue behaves (`#FFD400` in dark high contrast lands on pure black at
     // 2.23 against the rest state's 7.07), and it is why the hover target is 9.
     for (const accentColor of BRANDS) {
-      for (const schema of ['light', 'dark'] as const) {
+      for (const scheme of ['light', 'dark'] as const) {
         for (const highContrast of [false, true]) {
           const tokens = renderPaletteTokens({
             ...EXACT,
             accent: accentColor,
-            schema: schema,
+            scheme: scheme,
             highContrast: highContrast,
           });
           const base = String(tokens['#accent-selected-fill']);
-          const label = `${accentColor} ${schema}${highContrast ? ' hc' : ''}`;
+          const label = `${accentColor} ${scheme}${highContrast ? ' hc' : ''}`;
 
           expect(
             contrastOf(String(tokens['#accent-text']), base),
@@ -1633,13 +1633,13 @@ describe('accent color seeds', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
     for (const accentColor of BRANDS.filter((brand) => brand !== '#FFD400')) {
-      for (const schema of ['light', 'dark'] as const) {
+      for (const scheme of ['light', 'dark'] as const) {
         invalidatePaletteTokens();
-        renderPaletteTokens({ ...EXACT, accent: accentColor, schema: schema });
+        renderPaletteTokens({ ...EXACT, accent: accentColor, scheme: scheme });
         renderPaletteTokens({
           ...EXACT,
           accent: accentColor,
-          schema: schema,
+          scheme: scheme,
           highContrast: true,
         });
       }
@@ -1667,7 +1667,7 @@ describe('accent color seeds', () => {
       const tokens = renderPaletteTokens({
         ...EXACT,
         accent: accentColor,
-        schema: 'light',
+        scheme: 'light',
       });
       const drift = Math.abs(
         toneOf(String(tokens['#accent-text-soft'])) -
@@ -1683,14 +1683,14 @@ describe('accent color seeds', () => {
     // collapse them into one color and delete the rest→hover intensify that
     // `#accent-text` exists for.
     for (const accentColor of BRANDS) {
-      for (const schema of ['light', 'dark'] as const) {
+      for (const scheme of ['light', 'dark'] as const) {
         const tokens = renderPaletteTokens({
           ...EXACT,
           accent: accentColor,
-          schema: schema,
+          scheme: scheme,
         });
 
-        expect(tokens['#accent-text'], `${accentColor} ${schema}`).not.toBe(
+        expect(tokens['#accent-text'], `${accentColor} ${scheme}`).not.toBe(
           tokens['#accent-text-soft'],
         );
       }
@@ -1711,9 +1711,9 @@ describe('accent color seeds', () => {
     const seeded = renderPaletteTokens({
       ...EXACT,
       accent: '#FFD400',
-      schema: 'light',
+      scheme: 'light',
     });
-    const baseline = renderPaletteTokens({ ...EXACT, schema: 'light' });
+    const baseline = renderPaletteTokens({ ...EXACT, scheme: 'light' });
 
     for (const name of [
       '#danger-accent-surface',
@@ -1766,7 +1766,7 @@ describe('accent color seeds', () => {
     const seed = colorSeed('#0EA5E9')!;
     const tokens = renderPaletteTokens({
       accent: '#0EA5E9',
-      schema: 'light',
+      scheme: 'light',
     });
     const ramp = [
       '#accent-surface',
@@ -1786,15 +1786,15 @@ describe('accent color seeds', () => {
     for (let hue = 0; hue < 360; hue += 45) {
       for (const tone of [20, 60, 88, 100]) {
         for (const saturation of [0, 60, 100]) {
-          for (const schema of ['light', 'dark'] as const) {
+          for (const scheme of ['light', 'dark'] as const) {
             for (const highContrast of [false, true]) {
               const seed = `okhst(${hue} ${saturation}% ${tone}%)`;
               const tokens = renderPaletteTokens({
                 accent: seed,
-                schema: schema,
+                scheme: scheme,
                 highContrast: highContrast,
               });
-              const label = `${seed} ${schema}${highContrast ? ' hc' : ''}`;
+              const label = `${seed} ${scheme}${highContrast ? ' hc' : ''}`;
 
               // The white label — the guarantee `accentToneCeiling` exists for, and the
               // one that has to hold at text strength.
@@ -1834,9 +1834,9 @@ describe('accent color seeds', () => {
     const tokens = renderPaletteTokens({
       ...EXACT,
       accent: '#FFD400',
-      schema: 'light',
+      scheme: 'light',
     });
-    const baseline = renderPaletteTokens({ ...EXACT, schema: 'light' });
+    const baseline = renderPaletteTokens({ ...EXACT, scheme: 'light' });
 
     expect(hueOf(String(tokens['#special-accent-surface']))).toBeCloseTo(
       colorSeed('#FFD400')!.hue,
@@ -1852,7 +1852,7 @@ describe('accent color seeds', () => {
     // `#FFD400` sits on the sRGB gamut boundary, so its saturation is exactly 100 —
     // which makes it the clearest witness for the clip.
     const seed = colorSeed('#FFD400')!;
-    const baseline = renderPaletteTokens({ schema: 'light' });
+    const baseline = renderPaletteTokens({ scheme: 'light' });
 
     setPaletteConfig({ base: '#FFD400' });
 
@@ -1869,7 +1869,7 @@ describe('accent color seeds', () => {
     // The base zone moved and the accent zone did not. `baseline` is captured before
     // the write on purpose: `renderPaletteTokens` LAYERS over the live config, so a
     // baseline taken afterwards would already carry the base color.
-    const seeded = renderPaletteTokens({ schema: 'light' });
+    const seeded = renderPaletteTokens({ scheme: 'light' });
 
     expect(seeded['#border']).not.toBe(baseline['#border']);
     expect(seeded['#accent-surface']).toBe(baseline['#accent-surface']);
@@ -1903,7 +1903,7 @@ describe('accent color seeds', () => {
     // The one guarantee this must not break: a brand — or a chrome — expressed as a
     // color cannot re-chromatize the status themes. They inherit the palette seed,
     // and no color writes to it.
-    const baseline = renderPaletteTokens({ schema: 'light' });
+    const baseline = renderPaletteTokens({ scheme: 'light' });
     const statuses = Object.keys(baseline).filter((name) =>
       /^#(success|danger|warning|note)-/.test(name),
     );
@@ -1917,7 +1917,7 @@ describe('accent color seeds', () => {
     ] as PaletteConfig[]) {
       setPaletteConfig(config);
 
-      const seeded = renderPaletteTokens({ schema: 'light' });
+      const seeded = renderPaletteTokens({ scheme: 'light' });
 
       for (const name of statuses)
         expect(seeded[name], `${JSON.stringify(config)} ${name}`).toBe(
@@ -2045,12 +2045,12 @@ describe('accent color seeds', () => {
     // This is the divergence the Theme Builder shows as requested-vs-resolved chips.
     const softened = renderPaletteTokens({
       accent: '#EF4444',
-      schema: 'light',
+      scheme: 'light',
     });
     const exact = renderPaletteTokens({
       ...EXACT,
       accent: '#EF4444',
-      schema: 'light',
+      scheme: 'light',
     });
 
     expectSameColor(
@@ -2137,11 +2137,11 @@ describe('accent color seeds', () => {
     const preview = renderPaletteTokens({
       ...EXACT,
       accent: '#FFD400',
-      schema: 'light',
+      scheme: 'light',
     });
 
     expect(preview['#accent-surface']).not.toBe(
-      renderPaletteTokens({ schema: 'light' })['#accent-surface'],
+      renderPaletteTokens({ scheme: 'light' })['#accent-surface'],
     );
     expect(getPaletteConfig()).toEqual(DEFAULT_PALETTE_CONFIG);
   });
@@ -2195,7 +2195,7 @@ describe('status color seeds', () => {
       const tokens = renderPaletteTokens({
         ...EXACT,
         themes: { danger: color },
-        schema: 'light',
+        scheme: 'light',
       });
       const fill = String(tokens['#danger-accent-surface']);
       const surface = String(tokens['#surface']);
@@ -2213,7 +2213,7 @@ describe('status color seeds', () => {
   it('reaches the theme’s text and icon, hover a step past rest', () => {
     setPaletteConfig({ ...EXACT, themes: { danger: '#b91c1c' } });
 
-    const tokens = renderPaletteTokens({ schema: 'light' });
+    const tokens = renderPaletteTokens({ scheme: 'light' });
     const seed = colorSeed('#b91c1c')!;
 
     // The rest link IS the brand — the visible payoff of a color seed — and the hover
@@ -2249,12 +2249,12 @@ describe('status color seeds', () => {
       const seeded = renderPaletteTokens({
         ...EXACT,
         themes: { danger: color },
-        schema: 'light',
+        scheme: 'light',
       });
       const numeric = renderPaletteTokens({
         ...EXACT,
         themes: { danger: { hue: seed.hue, saturation: seed.saturation } },
-        schema: 'light',
+        scheme: 'light',
       });
 
       for (const name of Object.keys(FACTORS)) {
@@ -2270,9 +2270,9 @@ describe('status color seeds', () => {
     const muted = renderPaletteTokens({
       ...EXACT,
       themes: { danger: '#8d6e63' },
-      schema: 'light',
+      scheme: 'light',
     });
-    const unseeded = renderPaletteTokens({ ...EXACT, schema: 'light' });
+    const unseeded = renderPaletteTokens({ ...EXACT, scheme: 'light' });
 
     expect(chromaOf(String(muted['#danger-border'])) * 3).toBeLessThan(
       chromaOf(String(unseeded['#danger-border'])),
@@ -2287,7 +2287,7 @@ describe('status color seeds', () => {
     const tokens = renderPaletteTokens({
       ...EXACT,
       themes: { note: '#0EA5E9' },
-      schema: 'light',
+      scheme: 'light',
     });
     const fill = String(tokens['#note-accent-surface']);
 
@@ -2304,11 +2304,11 @@ describe('status color seeds', () => {
     // the case that proves it: uncapped, the button would be a white label on white.
     for (const name of ['danger', 'success', 'warning', 'note'] as const) {
       for (const highContrast of [false, true]) {
-        for (const schema of ['light', 'dark'] as const) {
+        for (const scheme of ['light', 'dark'] as const) {
           const tokens = renderPaletteTokens({
             ...EXACT,
             themes: { [name]: 'okhst(20 80% 96%)' },
-            schema,
+            scheme,
             highContrast,
           });
           const fill = String(tokens[`#${name}-accent-surface`]);
@@ -2318,7 +2318,7 @@ describe('status color seeds', () => {
           // serializer's rather than the solver's.
           expect(
             apcaOf('#ffffff', fill),
-            `${name} ${schema}${highContrast ? ' hc' : ''}`,
+            `${name} ${scheme}${highContrast ? ' hc' : ''}`,
           ).toBeGreaterThanOrEqual(44.9);
         }
       }
@@ -2326,11 +2326,11 @@ describe('status color seeds', () => {
   });
 
   it('scopes a color to its own theme, in both directions', () => {
-    const baseline = renderPaletteTokens({ ...EXACT, schema: 'light' });
+    const baseline = renderPaletteTokens({ ...EXACT, scheme: 'light' });
     const seeded = renderPaletteTokens({
       ...EXACT,
       themes: { danger: '#b91c1c' },
-      schema: 'light',
+      scheme: 'light',
     });
 
     // Nothing outside `danger` may move — not the other three statuses, not the brand
@@ -2351,7 +2351,7 @@ describe('status color seeds', () => {
       ...EXACT,
       accent: '#FFD400',
       themes: { danger: '#b91c1c' },
-      schema: 'light',
+      scheme: 'light',
     });
 
     for (const name of [
@@ -2418,11 +2418,11 @@ describe('status color seeds', () => {
     const preview = renderPaletteTokens({
       ...EXACT,
       themes: { danger: '#b91c1c' },
-      schema: 'light',
+      scheme: 'light',
     });
 
     expect(preview['#danger-accent-surface']).not.toBe(
-      renderPaletteTokens({ schema: 'light' })['#danger-accent-surface'],
+      renderPaletteTokens({ scheme: 'light' })['#danger-accent-surface'],
     );
     expect(getPaletteConfig()).toEqual(DEFAULT_PALETTE_CONFIG);
   });

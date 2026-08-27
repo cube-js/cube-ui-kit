@@ -8,7 +8,7 @@ import { create, themes } from 'storybook/theming';
 
 import { Root } from '../src/components/Root';
 import { getI18n, LOCALE_LABELS, SUPPORTED_LOCALES } from '../src/i18n';
-import { setToolbarSchema } from '../src/stories/decorators/colorSchemaBridge';
+import { setToolbarScheme } from '../src/stories/decorators/colorSchemeBridge';
 
 // Summarizes DOM/React events before Storybook's action spies see them. Without
 // it, serializing a focus event over the preview channel costs ~600ms per focus
@@ -47,13 +47,13 @@ const darkTheme = create({
 
 configure({ testIdAttribute: 'data-qa', asyncUtilTimeout: 10000 });
 
-// Bridge the `storybook-dark-mode` toolbar to `<html data-schema>` (the
+// Bridge the `storybook-dark-mode` toolbar to `<html data-scheme>` (the
 // attribute the Glaze `@dark` predefined state resolves against). Subscribed
 // at module scope so the listener is in place before the addon emits its
 // initial event after manager/preview channels connect.
 if (typeof document !== 'undefined') {
   addons.getChannel().on(DARK_MODE_EVENT_NAME, (isDark) => {
-    setToolbarSchema(isDark ? 'dark' : 'light');
+    setToolbarScheme(isDark ? 'dark' : 'light');
   });
 }
 
@@ -66,7 +66,7 @@ const ThemedDocsContainer = ({ children, ...props }) => {
   const [isDark, setIsDark] = useState(
     () =>
       typeof document !== 'undefined' &&
-      document.documentElement.getAttribute('data-schema') === 'dark',
+      document.documentElement.getAttribute('data-scheme') === 'dark',
   );
 
   useEffect(() => {
@@ -137,7 +137,7 @@ export const parameters = {
   // `storybook-dark-mode` configuration. No `current` so the addon resolves
   // OS `prefers-color-scheme` on first load. `stylePreview: false` keeps the
   // addon from also injecting dark/light classes on the preview body — the
-  // `data-schema` attribute set by `colorSchemaBridge` is the only signal
+  // `data-scheme` attribute set by `colorSchemeBridge` is the only signal
   // we care about (see `src/components/Root.tsx` and `src/tokens/palette.ts`).
   darkMode: {
     dark: darkTheme,
@@ -147,7 +147,7 @@ export const parameters = {
   // Storybook's `addon-backgrounds` injects `.sb-show-main { background: … !important }`
   // when an option is selected, which overrides the body's `#surface` fill from
   // `src/components/GlobalStyles.tsx`. Disable it globally so the body's
-  // schema-aware Glaze background shows through (dark/light). Stories can still
+  // scheme-aware Glaze background shows through (dark/light). Stories can still
   // override via `parameters.backgrounds = { disable: false, … }`.
   // NOTE: the addon's parameter is `disable` (not `disabled`) — the latter is
   // silently ignored, leaving the addon active and its toolbar still able to

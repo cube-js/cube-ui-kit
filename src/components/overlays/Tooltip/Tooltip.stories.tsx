@@ -109,7 +109,7 @@ const UnbreakableContentTemplate: Story<CubeTooltipTriggerProps> = (args) => (
   <TooltipTrigger {...args}>
     <Button qa="UnbreakableTrigger">Hover to show a tooltip</Button>
     <Tooltip>
-      https://cubecloud.example.com/deployments/12345/schema/files/model/cubes/very_long_cube_name.yml
+      https://cubecloud.example.com/deployments/12345/scheme/files/model/cubes/very_long_cube_name.yml
     </Tooltip>
   </TooltipTrigger>
 );

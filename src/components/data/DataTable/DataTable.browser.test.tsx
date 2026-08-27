@@ -590,7 +590,7 @@ describe('DataTable column menu visibility', () => {
  * The three things Cube Cloud's ag-grid version gets wrong are the three things
  * asserted here: banding survives inside a tinted column, the fill stays opaque
  * so a pinned column still occludes, and the text clears WCAG AA in every
- * schema rather than only the one it was picked in.
+ * scheme rather than only the one it was picked in.
  */
 describe('DataTable column colors', () => {
   const TINTED: CubeDataTableColumn<Row>[] = [
@@ -706,9 +706,9 @@ describe('DataTable column colors', () => {
 
   it.each([
     ['light', {}],
-    ['dark', { schema: 'dark' }],
+    ['dark', { scheme: 'dark' }],
     ['high contrast', { contrast: 'high' }],
-    ['dark high contrast', { schema: 'dark', contrast: 'high' }],
+    ['dark high contrast', { scheme: 'dark', contrast: 'high' }],
   ] as const)('clears WCAG AA in %s', async (_name, attrs) => {
     const root = document.documentElement;
 
@@ -722,7 +722,7 @@ describe('DataTable column colors', () => {
       )!;
       const [even, odd] = cellsOf('revenue');
 
-      // Both bands and the header. Glaze re-solves the tone per schema against a
+      // Both bands and the header. Glaze re-solves the tone per scheme against a
       // real contrast floor, which is exactly what a hex pair picked once in
       // light mode cannot do.
       for (const element of [even, odd, header]) {
@@ -733,7 +733,7 @@ describe('DataTable column colors', () => {
         ).toBeGreaterThanOrEqual(4.5);
       }
     } finally {
-      delete root.dataset.schema;
+      delete root.dataset.scheme;
       delete root.dataset.contrast;
     }
   });

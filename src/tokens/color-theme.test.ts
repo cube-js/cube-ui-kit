@@ -13,7 +13,7 @@ import {
   setPaletteConfig,
 } from './palette-config';
 
-const SCHEMAS = ['', '@dark', '@hc', '@dark & @hc'] as const;
+const SCHEMES = ['', '@dark', '@hc', '@dark & @hc'] as const;
 
 function wcag(background: string, foreground: string): number {
   const luminance = (value: string) => {
@@ -61,7 +61,7 @@ describe('getColorTheme', () => {
     );
   });
 
-  it('covers all four schema variants', () => {
+  it('covers all four scheme variants', () => {
     const theme = getColorTheme({ hue: 200 });
 
     for (const token of Object.values(theme.colors)) {
@@ -71,12 +71,12 @@ describe('getColorTheme', () => {
       // `@media(prefers-color-scheme: dark)` keys and no high-contrast tier at
       // all — a silent failure, since the light values still render.
       expect(Object.keys(theme.tokens[token] as object).sort()).toEqual(
-        [...SCHEMAS].sort(),
+        [...SCHEMES].sort(),
       );
     }
   });
 
-  it('solves the text contrast in every schema', () => {
+  it('solves the text contrast in every scheme', () => {
     const theme = getColorTheme({ hue: 200 });
     const band = theme.tokens[theme.colors['surface-2']] as Record<
       string,
@@ -87,11 +87,11 @@ describe('getColorTheme', () => {
       string
     >;
 
-    for (const schema of SCHEMAS) {
+    for (const scheme of SCHEMES) {
       // The Cloud defect this exists to fix: there, contrast was solved once
       // against a white surface at pick time and never re-checked, so a dark
-      // schema could invert both sides into an unreadable pair.
-      expect(wcag(band[schema], text[schema])).toBeGreaterThanOrEqual(4.5);
+      // scheme could invert both sides into an unreadable pair.
+      expect(wcag(band[scheme], text[scheme])).toBeGreaterThanOrEqual(4.5);
     }
   });
 
@@ -104,10 +104,10 @@ describe('getColorTheme', () => {
     >;
 
     // The floor is solved against `surface-2`, which is the tighter of the two
-    // bands in both schemas — so `surface` clears it for free. That is the whole
+    // bands in both schemes — so `surface` clears it for free. That is the whole
     // reason the text is anchored there rather than to `surface`.
-    for (const schema of SCHEMAS) {
-      expect(wcag(base[schema], text[schema])).toBeGreaterThanOrEqual(4.5);
+    for (const scheme of SCHEMES) {
+      expect(wcag(base[scheme], text[scheme])).toBeGreaterThanOrEqual(4.5);
     }
   });
 
@@ -122,8 +122,8 @@ describe('getColorTheme', () => {
     // Banding that resolves to the same colour is not banding. This is also what
     // keeps the two out of tasty's value-coalescing trap when they end up in one
     // state map.
-    for (const schema of SCHEMAS) {
-      expect(band[schema]).not.toBe(base[schema]);
+    for (const scheme of SCHEMES) {
+      expect(band[scheme]).not.toBe(base[scheme]);
     }
   });
 

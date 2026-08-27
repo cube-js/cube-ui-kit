@@ -650,7 +650,7 @@ export const CodeSyntax: Story = {
   render: () => (
     <StoryPage
       title="Code syntax colors"
-      description="Adaptive syntax tokens are designed together on #surface and remain readable in light, dark, and high-contrast schemas."
+      description="Adaptive syntax tokens are designed together on #surface and remain readable in light, dark, and high-contrast schemes."
     >
       <SyntaxSample>
         <TextS3 styles={{ color: '#code-comment' }}>
@@ -684,7 +684,7 @@ export const BordersAndShadows: Story = {
   render: () => (
     <StoryPage
       title="Borders and shadows"
-      description="Borders communicate grouping and focus; schema-aware shadow colors provide elevation."
+      description="Borders communicate grouping and focus; scheme-aware shadow colors provide elevation."
     >
       <Section>
         <SectionHeading>Borders</SectionHeading>

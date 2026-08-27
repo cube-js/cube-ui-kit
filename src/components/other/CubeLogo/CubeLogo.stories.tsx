@@ -70,16 +70,16 @@ export const Colors: Story = {
  * `@dark` follows the *document*, so a panel whose background does **not** follow
  * it has to pin the mark itself. Both fills here are fixed (`#white` is a tasty
  * named color, `#surface-inverse` is `mode: 'fixed'`), so flipping the toolbar
- * schema switch must leave both panels exactly as they are.
+ * scheme switch must leave both panels exactly as they are.
  */
-export const PinnedSchema: Story = {
+export const PinnedScheme: Story = {
   render: () => (
     <Space gap="2x" placeItems="stretch">
       <Block fill="#white" padding="2x" radius="1r">
-        <CubeFullLogo color="#surface-inverse" schema="light" size="24px" />
+        <CubeFullLogo color="#surface-inverse" scheme="light" size="24px" />
       </Block>
       <Block fill="#surface-inverse" padding="2x" radius="1r">
-        <CubeFullLogo color="#white" schema="dark" size="24px" />
+        <CubeFullLogo color="#white" scheme="dark" size="24px" />
       </Block>
     </Space>
   ),

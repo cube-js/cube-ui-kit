@@ -36,21 +36,21 @@ const LEGACY_ALIASES: Styles = {
   '#dark-05': '#border',
 
   // Fixed-mode counterpart to `#dark`. Resolves to the same L≈12 surface
-  // but uses Glaze `mode: 'fixed'` so it does NOT invert in dark schemas.
+  // but uses Glaze `mode: 'fixed'` so it does NOT invert in dark schemes.
   // Use this whenever the design intentionally pins a dark color regardless
-  // of schema. Points at `#special-surface` (`mode: 'fixed'`, L=12),
+  // of scheme. Points at `#special-surface` (`mode: 'fixed'`, L=12),
   // emitted by the standalone `specialTheme` in `palette.ts` — the canonical
   // source of fixed-mode color tokens for `special`-variant components.
   '#fixed-dark': '#special-surface',
 
   // Fixed-mode counterpart to `#primary-text`. `#primary-text` is anchored
   // to `surface` with `mode: 'auto'`, so it flips to a *light* purple in
-  // dark schemas (correct on body content, which also inverts). When the
+  // dark schemes (correct on body content, which also inverts). When the
   // local fill is a fixed color instead (an always-white pill, etc.), the
   // adaptive text loses contrast (light purple on white) in dark mode.
   // Points at `#special-accent-text` (`mode: 'fixed'`, cr 6–8.5 vs fixed
   // white) — a dark purple readable on a white surface that stays put
-  // across schemas.
+  // across schemes.
   '#fixed-primary-text': '#special-accent-text',
 
   // ---- Misc neutral ----
@@ -60,7 +60,7 @@ const LEGACY_ALIASES: Styles = {
   '#dark-bg': '#surface-2',
   '#clear': 'transparent',
 
-  // Pink: independent hue, schema-static (no Glaze adaptation). Kept as a raw
+  // Pink: independent hue, scheme-static (no Glaze adaptation). Kept as a raw
   // literal rather than folded into a theme — nothing in the palette emits this
   // hue as a standalone token, and it is a documented public alias (see
   // `Usage.docs.mdx`, `tasty.config.ts`, and the `pink` key in
@@ -70,7 +70,7 @@ const LEGACY_ALIASES: Styles = {
 
   // ---- Disabled state aliases ----
   // `#disabled-surface` and `#disabled-surface-text` are emitted directly by
-  // the Glaze palette (`palette.ts`) as schema-symmetric, contrast-driven
+  // the Glaze palette (`palette.ts`) as scheme-symmetric, contrast-driven
   // tokens — no alias needed here. `#disabled` stays as a brand-tinted
   // backwards-compat anchor for the per-theme `#<theme>-disabled` aliases below.
 
@@ -214,12 +214,12 @@ const COLOR_DEPENDENT_TOKENS: Styles = {
 };
 
 /**
- * Render every UI Kit color for one config and one schema, as flat literal
+ * Render every UI Kit color for one config and one scheme, as flat literal
  * values ready to apply to a **region** via a tasty `tokens` prop.
  *
  * ```tsx
  * const preview = useMemo(
- *   () => renderColorTokens({ hue: 210, schema: 'dark' }),
+ *   () => renderColorTokens({ hue: 210, scheme: 'dark' }),
  *   [],
  * );
  *
@@ -229,7 +229,7 @@ const COLOR_DEPENDENT_TOKENS: Styles = {
  * ```
  *
  * Config fields merge over the *current* palette config, so
- * `renderColorTokens({ schema: 'dark' })` previews the active theme in dark
+ * `renderColorTokens({ scheme: 'dark' })` previews the active theme in dark
  * without restating it. Nothing is applied globally — the live palette is
  * untouched.
  *

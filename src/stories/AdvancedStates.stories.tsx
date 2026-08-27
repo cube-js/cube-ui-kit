@@ -223,10 +223,10 @@ Local definitions take precedence over global ones.
 };
 
 // =============================================================================
-// Color Schema (Light/Dark Mode)
+// Color Scheme (Light/Dark Mode)
 // =============================================================================
 
-const ColorSchemaBox = tasty({
+const ColorSchemeBox = tasty({
   styles: {
     padding: '3x',
     radius: '2r',
@@ -245,19 +245,19 @@ const ColorSchemaBox = tasty({
   },
 });
 
-export const ColorSchema: StoryObj = {
+export const ColorScheme: StoryObj = {
   render: () => (
     <Flex flow="column" gap="2x">
       <Text preset="t2">
-        Adapts to system color schema (prefers-color-scheme)
+        Adapts to system color scheme (prefers-color-scheme)
       </Text>
-      <ColorSchemaBox>
+      <ColorSchemeBox>
         <Text>
           Light mode: white background, dark text
           <br />
           Dark mode: dark background, white text
         </Text>
-      </ColorSchemaBox>
+      </ColorSchemeBox>
       <Text preset="c1" color="#warning">
         Change your system appearance settings to see the effect
       </Text>
@@ -270,7 +270,7 @@ export const ColorSchema: StoryObj = {
 Use \`@media(prefers-color-scheme: dark)\` to style based on system color preference:
 
 \`\`\`tsx
-const ColorSchemaBox = tasty({
+const ColorSchemeBox = tasty({
   styles: {
     fill: {
       '': '#white',

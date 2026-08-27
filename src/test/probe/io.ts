@@ -43,7 +43,7 @@ export interface ProbeInput {
    */
   snippetUrl?: string;
   styles?: Styles;
-  tokenOptions?: { schema?: 'light' | 'dark'; highContrast?: boolean };
+  tokenOptions?: { scheme?: 'light' | 'dark'; highContrast?: boolean };
   fullCss?: boolean;
   canonical?: boolean;
 }
