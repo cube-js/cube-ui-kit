@@ -2575,6 +2575,28 @@ describe('Board', () => {
         );
       });
 
+      it('downscales into room to the right of a blocker, not just the left', () => {
+        // The anchor clamp (`cols - w` = 2) puts every cell of the free room out
+        // of the pointer's reach, so this drop used to miss the downscale
+        // entirely and land the widget on the next row instead.
+        const targetLayout = [{ i: 'b', x: 0, y: 0, w: 3, h: 1 }];
+        const { start, moveTo, endAt, onTargetLayoutChange } =
+          setupCrossBoardSwap({ i: 'a', x: 0, y: 0, w: 4, h: 1 }, targetLayout);
+
+        start();
+        moveTo(3, 0);
+        endAt(3, 0);
+
+        const committed = onTargetLayoutChange.mock
+          .calls[0]![0] as LayoutItem[];
+        expect(committed.find((it) => it.i === 'a')).toEqual(
+          expect.objectContaining({ x: 3, y: 0, w: 3, h: 1 }),
+        );
+        expect(committed.find((it) => it.i === 'b')).toEqual(
+          expect.objectContaining(targetLayout[0]),
+        );
+      });
+
       it('lands a downscale arrival on the board, never above its first row', () => {
         const targetLayout = [{ i: 'b', x: 0, y: 0, w: 6, h: 1 }];
         const { dragTo, onTargetLayoutChange } = setupCrossBoardSwap(

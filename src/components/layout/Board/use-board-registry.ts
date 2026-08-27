@@ -106,22 +106,30 @@ function hasNewOverlap(before: Set<string>, after: LayoutItem[]): boolean {
  * widget. The destination's own widgets are the fixed `others`: an arrival is
  * placed around them and never displaces one.
  *
- * Returns `layout` untouched when the requested cell was honoured, which covers
- * both a clean landing and a resolver that downscaled the item into it.
+ * A refusal is read off `origin` - the seed itself - rather than off the
+ * requested cell, because a resolver is allowed to place the widget somewhere
+ * other than the exact cell asked for (downscaling into room the anchor clamp hid
+ * from the pointer does exactly that). Only an item sitting back on its origin was
+ * actually refused; anything else is a resolution and stands.
  */
 function landIncoming(
   layout: LayoutItem[],
   others: LayoutItem[],
   itemId: string,
-  x: number,
-  y: number,
+  origin: { x: number; y: number },
+  landing: { x: number; y: number },
   cols: number,
   maxRows?: number,
 ): LayoutItem[] {
   const placed = getLayoutItem(layout, itemId);
-  if (!placed || (placed.x === x && placed.y === y)) return layout;
+  if (!placed || placed.x !== origin.x || placed.y !== origin.y) return layout;
 
-  const landed = placeInFreeSlot(others, { ...placed, x, y }, cols, maxRows);
+  const landed = placeInFreeSlot(
+    others,
+    { ...placed, ...landing },
+    cols,
+    maxRows,
+  );
   return layout.map((l) => (l.i === itemId ? { ...l, ...landed } : l));
 }
 
@@ -925,6 +933,9 @@ export function useBoardRegistry(
           ? { ...item, x: Math.max(0, x) - 1, y }
           : { ...item, x, y: Math.max(0, y) - 1 };
       const working = [...base, dragged];
+      // Captured before the move: `moveElement` mutates the item in place, and a
+      // refusal is recognised by the item being back on this exact cell.
+      const origin = { x: dragged.x, y: dragged.y };
 
       const moved = moveElement(
         working,
@@ -965,8 +976,8 @@ export function useBoardRegistry(
                 moved,
                 base,
                 item.i,
-                x,
-                y,
+                origin,
+                { x, y },
                 pp.cols,
                 target.getMaxRows(),
               ),
@@ -1201,6 +1212,7 @@ export function useBoardRegistry(
           ),
           newItem,
         ];
+        const seed = { x: newItem.x, y: newItem.y };
         const moved = moveElement(
           base,
           newItem,
@@ -1232,8 +1244,8 @@ export function useBoardRegistry(
               moved,
               base.filter((l) => l.i !== ds.itemId),
               ds.itemId,
-              landing.x,
-              landing.y,
+              seed,
+              landing,
               tp.cols,
               tp.maxRows,
             ),

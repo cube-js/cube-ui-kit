@@ -684,9 +684,9 @@ const CollisionModesTemplate: StoryFn<CubeBoardProps> = () => (
     <Flow gap="1x">
       <Text preset="t3" color="#dark-02">
         <code>collisionMode=&quot;swap&quot;</code> across boards — drag the
-        incoming widget onto the target; it downscales into the room at the drop
-        cell, and dropping on the blocker commits the previewed cell instead of
-        cancelling
+        incoming widget onto the room right of the blocker and it downscales
+        into it, even though 4 columns never fit there; dropping on the blocker
+        itself commits the previewed cell instead of cancelling
       </Text>
       <Board.Provider>
         <Flow gap="1x" gridColumns="1fr 1fr" display="grid">
@@ -721,7 +721,7 @@ const CollisionModesTemplate: StoryFn<CubeBoardProps> = () => (
             collisionMode="swap"
             showGridLines="drag"
             widgetProps={{ isCard: true }}
-            defaultLayout={[{ i: 'target-blocker', x: 3, y: 0, w: 3, h: 1 }]}
+            defaultLayout={[{ i: 'target-blocker', x: 0, y: 0, w: 3, h: 1 }]}
           >
             <Board.Widget id="target-blocker">
               <WidgetBody

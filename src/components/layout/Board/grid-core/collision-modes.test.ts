@@ -216,6 +216,62 @@ describe('collisionMode: downscale', () => {
     expect(rects(next).a).toBe('0,4 2x2');
   });
 
+  it('shrinks into room on either side of a blocker, not just the left', () => {
+    // `gridBounds` clamps a drag anchor to `cols - w`, so a 4-wide widget on a
+    // 6-column grid can never be anchored past column 2. With the blocker on the
+    // left that is every cell of the free room, and the drop used to revert -
+    // downscaling worked on one side of a blocker and not the other.
+    const roomOnTheRight = place(
+      [item('a', 0, 4, 4, 2), item('b', 0, 0, 3, 2)],
+      'a',
+      2,
+      0,
+      'downscale',
+    );
+    expect(rects(roomOnTheRight)).toEqual({ a: '3,0 3x2', b: '0,0 3x2' });
+    expect(isOverlapFree(roomOnTheRight)).toBe(true);
+
+    // The mirror image, which has always worked because column 0 is reachable.
+    const roomOnTheLeft = place(
+      [item('a', 0, 4, 4, 2), item('b', 3, 0, 3, 2)],
+      'a',
+      0,
+      0,
+      'downscale',
+    );
+    expect(rects(roomOnTheLeft)).toEqual({ a: '0,0 3x2', b: '3,0 3x2' });
+  });
+
+  it('takes the largest of the cells the anchor clamp hid', () => {
+    // Free room in columns 3-5, so anchoring at 3 (3 wide) beats 4 (2 wide) and
+    // 5 (1 wide). All three are past the clamp at column 2.
+    const next = place(
+      [item('a', 0, 4, 4, 1), item('b', 0, 0, 3, 1)],
+      'a',
+      2,
+      0,
+      'downscale',
+    );
+
+    expect(rects(next).a).toBe('3,0 3x1');
+  });
+
+  it('recovers hidden cells on the row axis too', () => {
+    // The row clamp is the same rule: a 4-tall widget on a 6-row grid cannot be
+    // anchored past row 2, and the blocker covers rows 0-2 of that column.
+    const next = place(
+      [item('a', 4, 0, 2, 4), item('b', 0, 0, 2, 3)],
+      'a',
+      0,
+      2,
+      'downscale',
+      { maxRows: 6 },
+    );
+
+    expect(rects(next).a).toBe('0,3 2x3');
+    expect(isOverlapFree(next)).toBe(true);
+  });
+
   it('respects the row limit when shrinking downward', () => {
     const layout = [item('a', 4, 0, 2, 4), item('b', 0, 2, 2, 2)];
     const next = place(layout, 'a', 0, 0, 'downscale', { maxRows: 4 });
