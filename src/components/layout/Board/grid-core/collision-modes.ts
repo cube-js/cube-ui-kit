@@ -105,7 +105,7 @@ export function maxFreeRectAt(
 }
 
 /**
- * The cells the widget already covers but a drag could never anchor on.
+ * The cells beyond a pinned anchor that a drag could never ask for.
  *
  * `gridBounds` clamps a drag anchor to `cols - w` (and `maxRows - h`), which
  * assumes the widget keeps the size it started with. So when the blocker is to
@@ -118,9 +118,16 @@ export function maxFreeRectAt(
  * the same way, so a board with a finite `maxRows` has the same blind spot below
  * a blocker.
  *
- * Only the cells the clamp put out of reach are returned. Anchors a pointer
- * could have selected by itself are deliberately absent, so every drop that
- * resolves today keeps resolving to exactly the same cell.
+ * Nothing is offered unless the anchor is sitting ON the limit, pinned against
+ * the far edge with the pointer unable to push it further. An anchor short of the
+ * limit is the pointer's own choice - every cell between it and the limit was
+ * available to ask for - so a blocked drop there still just reverts, exactly as
+ * before. Without that gate a widget dropped on an occupied cell would skip over
+ * free cells the pointer could perfectly well have aimed at.
+ *
+ * A pinned anchor's span ends at the last row/column of the grid, so every cell
+ * returned - and every rectangle that can be measured from one - lies inside the
+ * footprint the widget is already covering.
  */
 function clampedOutAnchors(
   item: LayoutItem,
@@ -132,27 +139,26 @@ function clampedOutAnchors(
   const xLimit = Math.max(0, limits.cols - desired.w);
   const yLimit = bounded ? Math.max(0, maxRows - desired.h) : Infinity;
 
-  const lastX = Math.min(item.x + desired.w - 1, limits.cols - 1);
-  const lastY = bounded
-    ? Math.min(item.y + desired.h - 1, maxRows - 1)
-    : item.y + desired.h - 1;
-
   const anchors: { x: number; y: number }[] = [];
-  for (let y = item.y; y <= lastY; y++) {
-    for (let x = item.x; x <= lastX; x++) {
-      if (x === item.x && y === item.y) continue;
-      if (x > xLimit || y > yLimit) anchors.push({ x, y });
-    }
+  // Each axis is clamped on its own, so each recovers on its own: slide along
+  // the one the limit actually pinned, never diagonally into open grid.
+  if (item.x === xLimit) {
+    const lastX = Math.min(item.x + desired.w - 1, limits.cols - 1);
+    for (let x = item.x + 1; x <= lastX; x++) anchors.push({ x, y: item.y });
+  }
+  if (bounded && item.y === yLimit) {
+    const lastY = Math.min(item.y + desired.h - 1, maxRows - 1);
+    for (let y = item.y + 1; y <= lastY; y++) anchors.push({ x: item.x, y });
   }
   return anchors;
 }
 
 /**
  * Shrink the placement to the room actually available at the cell it was
- * dropped on, or - when that cell cannot take the widget at any size - at the
- * nearest cell the anchor clamp hid from the pointer (see `clampedOutAnchors`).
- * The largest fit among those wins, so the widget takes as much of the room it is
- * already hovering as there is.
+ * dropped on, or - when that cell cannot take the widget at any size and the
+ * anchor is pinned against the grid edge - at a cell the clamp hid from the
+ * pointer (see `clampedOutAnchors`). The largest fit among those wins, so the
+ * widget takes as much of the room it is already hovering as there is.
  */
 function downscaleInPlace(
   layout: Layout,

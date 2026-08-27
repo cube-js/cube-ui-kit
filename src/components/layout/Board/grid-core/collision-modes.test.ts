@@ -256,6 +256,23 @@ describe('collisionMode: downscale', () => {
     expect(rects(next).a).toBe('3,0 3x1');
   });
 
+  it('never reaches past a cell the pointer could have aimed at', () => {
+    // Same 4-wide widget and the same clamp at column 2, but the drop is at
+    // column 0 - the pointer's own choice, with columns 1 and 2 free and just as
+    // reachable. Recovering the far columns here would skip over those and land
+    // the widget three columns from where it was dropped, so a blocked drop that
+    // is not pinned against the edge still reverts.
+    const next = place(
+      [item('a', 0, 4, 4, 1), item('b', 0, 0, 1, 1)],
+      'a',
+      0,
+      0,
+      'downscale',
+    );
+
+    expect(rects(next).a).toBe('0,4 4x1');
+  });
+
   it('recovers hidden cells on the row axis too', () => {
     // The row clamp is the same rule: a 4-tall widget on a 6-row grid cannot be
     // anchored past row 2, and the blocker covers rows 0-2 of that column.
