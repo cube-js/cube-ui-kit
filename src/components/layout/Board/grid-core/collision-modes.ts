@@ -105,8 +105,60 @@ export function maxFreeRectAt(
 }
 
 /**
+ * The cells beyond a pinned anchor that a drag could never ask for.
+ *
+ * `gridBounds` clamps a drag anchor to `cols - w` (and `maxRows - h`), which
+ * assumes the widget keeps the size it started with. So when the blocker is to
+ * the LEFT of the free room and that room is narrower than the widget, every
+ * anchor a pointer can produce lands inside the blocker - and the mode whose
+ * whole job is to shrink the widget into that room never gets offered it. The
+ * drop just reverts. The mirror case has no such problem, because the anchor at
+ * column 0 is always reachable: that asymmetry is why downscaling into room on
+ * the left has always worked and room on the right has not. The row axis clamps
+ * the same way, so a board with a finite `maxRows` has the same blind spot below
+ * a blocker.
+ *
+ * Nothing is offered unless the anchor is sitting ON the limit, pinned against
+ * the far edge with the pointer unable to push it further. An anchor short of the
+ * limit is the pointer's own choice - every cell between it and the limit was
+ * available to ask for - so a blocked drop there still just reverts, exactly as
+ * before. Without that gate a widget dropped on an occupied cell would skip over
+ * free cells the pointer could perfectly well have aimed at.
+ *
+ * A pinned anchor's span ends at the last row/column of the grid, so every cell
+ * returned - and every rectangle that can be measured from one - lies inside the
+ * footprint the widget is already covering.
+ */
+function clampedOutAnchors(
+  item: LayoutItem,
+  desired: { w: number; h: number },
+  limits: { cols: number; maxRows?: number },
+): { x: number; y: number }[] {
+  const maxRows = limits.maxRows ?? Infinity;
+  const bounded = Number.isFinite(maxRows);
+  const xLimit = Math.max(0, limits.cols - desired.w);
+  const yLimit = bounded ? Math.max(0, maxRows - desired.h) : Infinity;
+
+  const anchors: { x: number; y: number }[] = [];
+  // Each axis is clamped on its own, so each recovers on its own: slide along
+  // the one the limit actually pinned, never diagonally into open grid.
+  if (item.x === xLimit) {
+    const lastX = Math.min(item.x + desired.w - 1, limits.cols - 1);
+    for (let x = item.x + 1; x <= lastX; x++) anchors.push({ x, y: item.y });
+  }
+  if (bounded && item.y === yLimit) {
+    const lastY = Math.min(item.y + desired.h - 1, maxRows - 1);
+    for (let y = item.y + 1; y <= lastY; y++) anchors.push({ x: item.x, y });
+  }
+  return anchors;
+}
+
+/**
  * Shrink the placement to the room actually available at the cell it was
- * dropped on.
+ * dropped on, or - when that cell cannot take the widget at any size and the
+ * anchor is pinned against the grid edge - at a cell the clamp hid from the
+ * pointer (see `clampedOutAnchors`). The largest fit among those wins, so the
+ * widget takes as much of the room it is already hovering as there is.
  */
 function downscaleInPlace(
   layout: Layout,
@@ -115,20 +167,44 @@ function downscaleInPlace(
   desired: { w: number; h: number },
   limits: { cols: number; maxRows?: number },
 ): LayoutItem[] | null {
-  const fit = maxFreeRectAt(
-    others,
-    { x: item.x, y: item.y },
-    desired,
-    limits,
-    item,
-  );
+  const fitAt = (anchor: { x: number; y: number }) =>
+    maxFreeRectAt(others, anchor, desired, limits, item);
+
+  let anchor = { x: item.x, y: item.y };
+  let fit = fitAt(anchor);
+
+  if (!fit) {
+    let bestArea = 0;
+    for (const candidate of clampedOutAnchors(item, desired, limits)) {
+      const candidateFit = fitAt(candidate);
+      if (!candidateFit) continue;
+      const area = candidateFit.w * candidateFit.h;
+      // `>` keeps the first of several equal-area fits, and the scan runs in
+      // reading order from the drop cell, so that is the closest one to it.
+      if (area > bestArea) {
+        bestArea = area;
+        fit = candidateFit;
+        anchor = candidate;
+      }
+    }
+  }
+
   if (!fit) return null;
-  // Nothing to resolve: the requested size already fits, so the collision was
-  // not a sizing problem and reverting is still the honest answer.
-  if (fit.w === item.w && fit.h === item.h) return null;
+  // Nothing to resolve: the requested cell takes the requested size, so the
+  // collision was not a sizing problem and reverting is still the honest answer.
+  if (
+    fit.w === item.w &&
+    fit.h === item.h &&
+    anchor.x === item.x &&
+    anchor.y === item.y
+  ) {
+    return null;
+  }
 
   return layout.map((l) =>
-    l.i === item.i ? { ...l, w: fit.w, h: fit.h, moved: true } : l,
+    l.i === item.i
+      ? { ...l, x: anchor.x, y: anchor.y, w: fit!.w, h: fit!.h, moved: true }
+      : l,
   );
 }
 
@@ -257,8 +333,9 @@ function exchangeWith(
  * dense grid stays draggable that way - refusing everything that is not a clean
  * one-to-one trade would make the mode feel broken exactly where it is needed.
  * Cross-board callers pass `allowExchange: false`, which turns the same mode into
- * empty-anchor downscaling; the registry cancels the transfer if that resolution
- * cannot occupy the requested cell.
+ * downscaling at the drop cell - there is no slot on the destination to trade
+ * back, and a transfer that cannot resolve is placed in a free cell rather than
+ * refused, since a widget dropped somewhere has to end up somewhere.
  */
 export function createCollisionResolver(
   mode: CollisionMode | undefined,
