@@ -42,11 +42,13 @@ module.exports = [
     // machine that measured this bump, the local reading matched CI EXACTLY on
     // both entries. CI reported `main` at 500.38 KB and 118.96 KB binary, which
     // is 512.39 kB and 121.81 kB decimal, and the local rebuild of the same
-    // commit read 512.39 kB and 121.81 kB. So the ~1.6 kB gap that warning
-    // describes did not apply here. Two entries on one machine do not retire
-    // the warning — still prefer CI's number — but a local reading is not
-    // automatically 1.6 kB light either, and assuming it is would have raised
-    // this budget for no reason.
+    // commit read 512.39 kB and 121.81 kB. CI then measured this branch at
+    // 501.56 KB and 120.13 KB binary — 513.60 kB and 123.02 kB — matching the
+    // local readings above that the budgets were checked against. So the
+    // ~1.6 kB gap that warning describes did not apply here. Two entries on one
+    // machine do not retire the warning — still prefer CI's number — but a
+    // local reading is not automatically 1.6 kB light either, and assuming it
+    // is would have raised this budget for no reason.
     //
     // Before this: 515 kB on 3.3.1 too — 508.53 kB locally against 509.94 kB
     // on 3.1.0 with both sides rebuilt here, i.e. -1.41 kB across the two
