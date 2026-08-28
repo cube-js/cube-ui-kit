@@ -2,7 +2,7 @@ import { tasty } from '@tenphi/tasty';
 import { createContext, useContext } from 'react';
 
 import { useI18n } from '../../../i18n';
-import { ReloadIcon } from '../../../icons';
+import { ReloadIcon } from '../../../icons/ReloadIcon';
 import { Button } from '../../actions';
 import { SearchInput } from '../../fields/SearchInput';
 

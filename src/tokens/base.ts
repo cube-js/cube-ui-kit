@@ -54,6 +54,19 @@ export const BASE_TOKENS: Styles = {
   /** Transition for fade animations */
   '$fade-transition': '200ms',
 
+  /**
+   * Marks an element as carrying the token block. Not a design value — nothing
+   * styles against it.
+   *
+   * `resolveTokenValue()` reads it to answer the one question a computed value
+   * cannot: "are the kit's tokens in effect here?" Tasty registers `@property`
+   * defaults with real initial values — `--gap` is `4px` off the block, not
+   * `0px` — so a token read from outside `<Root>` comes back plausible and
+   * wrong, and no amount of inspecting the value would reveal it. This is
+   * declared alongside the tokens, so it is present exactly where they are.
+   */
+  '$tokens-applied': '1',
+
   // Scrollbar tokens
   '$scrollbar-width': '1.5x',
   '$scrollbar-outline-width': '1ow',

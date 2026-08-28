@@ -11,7 +11,8 @@ import {
 
 import { useEvent } from '../../../_internal/hooks';
 import { useI18n } from '../../../i18n';
-import { CloseIcon, PlusIcon } from '../../../icons';
+import { CloseIcon } from '../../../icons/CloseIcon';
+import { PlusIcon } from '../../../icons/PlusIcon';
 import { FieldBaseProps } from '../../../shared';
 import { mergeProps, useCombinedRefs } from '../../../utils/react';
 import { Button } from '../../actions';
@@ -321,6 +322,11 @@ export interface CubeTextInputMapperInputProps {
   isValid?: boolean;
   autoFocus?: boolean;
   allowsCustomValue?: boolean;
+  /**
+   * What kind of autofill the browser may offer for the input, as the HTML `autocomplete` token
+   * (`off`, `email`, …). Forwarded to the underlying input component.
+   */
+  autoComplete?: string;
 }
 
 function TextInputMapperInput(props: CubeTextInputMapperInputProps) {

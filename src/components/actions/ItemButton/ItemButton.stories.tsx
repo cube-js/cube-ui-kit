@@ -6,6 +6,7 @@ import {
 } from '@tabler/icons-react';
 import { userEvent, within } from 'storybook/test';
 
+import { openTooltip } from '../../../stories/interactions';
 import { timeout } from '../../../utils/promise';
 import { Paragraph } from '../../content/Paragraph';
 import { Title } from '../../content/Title';
@@ -538,6 +539,19 @@ export const WithLoading: Story = {
 };
 
 export const AutoTooltipOnOverflow: Story = {
+  // `tooltip={true}` means "tooltip only when the label is truncated", and the
+  // truncation is visible without help — but whether the tooltip actually fires
+  // because of it is the claim, and that needs a hover.
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await openTooltip(
+      canvas.getByText(
+        'This text is long enough to overflow and trigger auto tooltip',
+      ),
+    );
+  },
+
   render: (args) => (
     <Flow gap="2x">
       <Flow gap="1x">

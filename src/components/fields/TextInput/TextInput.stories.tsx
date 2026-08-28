@@ -105,6 +105,11 @@ export default {
         defaultValue: { summary: false },
       },
     },
+    autoComplete: {
+      control: { type: 'text' },
+      description:
+        'HTML `autocomplete` token telling the browser what to autofill (`email`, `username`, `off`, …)',
+    },
 
     /* Events */
     onChange: {
@@ -173,7 +178,14 @@ export const WithIcon = Template.bind({});
 WithIcon.args = { icon: <IconCoin /> };
 
 export const Password = Template.bind({});
-Password.args = { icon: <IconCoin />, type: 'password' };
+// A `defaultValue` is what makes this story worth photographing: an empty
+// password input is pixel-identical to `WithIcon`, so without a value the
+// masking it exists to show never appears.
+Password.args = {
+  icon: <IconCoin />,
+  type: 'password',
+  defaultValue: 'correct horse battery staple',
+};
 
 export const Validation: StoryFn<CubeTextInputProps> = (args) => (
   <Space gap="2x" flow="column" placeItems="start">

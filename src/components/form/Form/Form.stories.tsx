@@ -1,5 +1,6 @@
 import { Meta, StoryObj } from '@storybook/react-vite';
 
+import { NO_SNAPSHOT } from '../../../stories/chromatic';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Input } from '../../fields/Input';
 import { Space } from '../../layout/Space';
@@ -338,6 +339,12 @@ export const WithValidationError: Story = {
     orientation: 'vertical',
     labelPosition: 'top',
   },
+  // As written, this story never reaches the error state: filling both fields
+  // and pressing Sign In leaves the form as it was, so what it renders is
+  // exactly what `Default` renders and there is no reason to photograph it
+  // twice. `Forms/ComplexForm / ErrorMessage` is where the submit error is
+  // actually shown and snapshotted.
+  parameters: NO_SNAPSHOT,
 };
 
 export const WithDefaultValues: Story = {

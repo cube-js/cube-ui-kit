@@ -21,6 +21,9 @@ import { LayoutConstraint, ResizeHandleAxis } from './grid-core';
  */
 export type BoardResizeGripPlacement = 'inside' | 'corner';
 
+/** Which corner of a widget a piece of chrome is anchored to. */
+export type BoardCornerPlacement = 'ne' | 'nw' | 'se' | 'sw';
+
 export interface CubeBoardWidgetProps extends ContainerStyleProps {
   /** Unique id, must match the `i` of a layout item in a `Board`. */
   id: string;
@@ -50,6 +53,32 @@ export interface CubeBoardWidgetProps extends ContainerStyleProps {
    * @default true
    */
   hoverRing?: boolean;
+  /**
+   * A control anchored to one corner of the widget and centred on it — a
+   * settings button, a badge, a remove affordance.
+   *
+   * Drawn in the same layer as the corner resize grips, which is the layer that
+   * escapes the widget's own clip. Hanging such a control off the corner from
+   * inside the widget gets it cropped in half by that clip, or by an ancestor's
+   * scroll container when the widget is in the first row. It is also outside the
+   * drag gesture, so a press on it can never start a drag.
+   */
+  cornerChrome?: ReactNode;
+  /**
+   * Which corner {@link cornerChrome} sits on. Pair it with a
+   * `resizeGripPlacement="corner"` grip on the opposite corner and the two line
+   * up. @default 'ne'
+   */
+  cornerChromePlacement?: BoardCornerPlacement;
+  /**
+   * App-defined modifiers for this widget, merged into the ones the board sets
+   * so a `styles` map can match on app state: `mods={{ editing: true }}` with
+   * `styles={{ shadow: { editing: '0 0 0 1bw #primary' } }}`.
+   *
+   * Board's own modifiers always win, so a custom one can never shadow
+   * `selected`, `drag` and the rest.
+   */
+  mods?: Record<string, boolean | string | undefined>;
   /** Minimum width in grid columns (used when the layout item omits `minW`). */
   minW?: number;
   /** Maximum width in grid columns (used when the layout item omits `maxW`). */
@@ -140,6 +169,9 @@ export function Widget(props: CubeBoardWidgetProps) {
     resizeGripPlacement,
     isCard,
     hoverRing,
+    cornerChrome,
+    cornerChromePlacement,
+    mods,
     minW,
     maxW,
     minH,
@@ -191,6 +223,9 @@ export function Widget(props: CubeBoardWidgetProps) {
         resizeGripPlacement,
         isCard,
         hoverRing,
+        cornerChrome,
+        cornerChromePlacement,
+        mods,
         minW,
         maxW,
         minH,

@@ -1,5 +1,6 @@
 import { IconFilter, IconFilterFilled } from '@tabler/icons-react';
 import { useState } from 'react';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Button } from '../../actions';
@@ -900,6 +901,17 @@ export const VerticalResizablePanes: Story = {
  * with standard Dialog styling (backdrop, centered positioning, animations).
  */
 export const PanelAsDialog: Story = {
+  // The only Layout panel story that starts closed, so the dialog it is named for needs opening.
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await userEvent.click(
+      canvas.getByRole('button', { name: 'Open Panel Dialog' }),
+    );
+
+    await waitFor(() => expect(canvas.getByRole('dialog')).toBeVisible());
+  },
+
   render: function PanelAsDialogStory() {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
@@ -970,6 +982,7 @@ export const PanelAsDialog: Story = {
  * Use a toggle to simulate the responsive behavior - in a real app,
  * you would use a media query hook like `useMediaQuery('(max-width: 768px)')`.
  */
+// chromatic-overlay-reviewed: starts in desktop mode with the panel inline, which is what it compares against
 export const ResponsivePanelToDialog: Story = {
   render: function ResponsivePanelToDialogStory() {
     const [isMobileMode, setIsMobileMode] = useState(false);
@@ -1142,6 +1155,7 @@ export const StickyPanel: Story = {
  * This mode is ideal for panels that require user attention and should
  * dim the background content.
  */
+// chromatic-overlay-reviewed: the panel starts open
 export const OverlayPanel: Story = {
   render: function OverlayPanelStory() {
     const [isPanelOpen, setIsPanelOpen] = useState(true);
@@ -1210,6 +1224,7 @@ export const OverlayPanel: Story = {
  * The overlay backdrop can be customized using the `overlayStyles` prop.
  * This example shows a darker overlay with custom fill color.
  */
+// chromatic-overlay-reviewed: the panel starts open
 export const OverlayPanelCustomStyling: Story = {
   render: function OverlayPanelCustomStylingStory() {
     const [isPanelOpen, setIsPanelOpen] = useState(true);
@@ -1264,6 +1279,7 @@ export const OverlayPanelCustomStyling: Story = {
  * When `isDismissable` is set to `false`, clicking the overlay or pressing
  * Escape will not close the panel. The user must use explicit controls to close it.
  */
+// chromatic-overlay-reviewed: the panel starts open
 export const OverlayPanelNotDismissable: Story = {
   render: function OverlayPanelNotDismissableStory() {
     const [isPanelOpen, setIsPanelOpen] = useState(true);

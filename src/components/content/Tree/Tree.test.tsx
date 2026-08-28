@@ -654,6 +654,66 @@ describe('<Tree />', () => {
       expect(menuOnAction).toHaveBeenCalledWith('rename');
     });
 
+    /**
+     * A row menu whose items depend on data that arrives later — a preview action
+     * that only becomes available once its file list has loaded, which is the
+     * shape Cube Cloud's schema editor uses.
+     *
+     * `TreeNode` hands those items to `useContextMenu` as part of its
+     * `defaultMenuProps` and never calls `update()`, so while the hook merged the
+     * defaults at open time the OPEN menu was frozen: the item appeared only
+     * after a close and reopen.
+     */
+    it('adds an item to an open right-click menu when the tree-level menu changes', async () => {
+      let revealPreview: () => void = () => {};
+
+      const LiveMenuTree = () => {
+        const [hasPreview, setHasPreview] = useState(false);
+
+        revealPreview = () => setHasPreview(true);
+
+        return (
+          <Tree
+            contextMenu="context-only"
+            treeData={SAMPLE}
+            defaultExpandedKeys={['fruits']}
+            menu={() => (
+              <>
+                {hasPreview ? (
+                  <Menu.Item key="preview">Preview</Menu.Item>
+                ) : null}
+                <Menu.Item key="delete">Delete</Menu.Item>
+              </>
+            )}
+          />
+        );
+      };
+
+      const { getAllByRole, getByText, queryByText } = renderWithRoot(
+        <LiveMenuTree />,
+      );
+
+      const rows = getAllByRole('row');
+      await act(async () => {
+        await userEvent.pointer({ keys: '[MouseRight>]', target: rows[0] });
+      });
+
+      await waitFor(() => {
+        expect(getByText('Delete')).toBeInTheDocument();
+      });
+      expect(queryByText('Preview')).not.toBeInTheDocument();
+
+      // The data lands while the menu is open. Nothing closes or reopens it.
+      await act(async () => {
+        revealPreview();
+      });
+
+      await waitFor(() => {
+        expect(getByText('Preview')).toBeInTheDocument();
+      });
+      expect(getByText('Delete')).toBeInTheDocument();
+    });
+
     it('forwards `menuProps.onAction` for the right-click context menu too', async () => {
       const treeOnAction = vi.fn();
       const menuOnAction = vi.fn();

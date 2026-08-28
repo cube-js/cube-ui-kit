@@ -706,9 +706,9 @@ describe('DataTable column colors', () => {
 
   it.each([
     ['light', {}],
-    ['dark', { schema: 'dark' }],
+    ['dark', { scheme: 'dark' }],
     ['high contrast', { contrast: 'high' }],
-    ['dark high contrast', { schema: 'dark', contrast: 'high' }],
+    ['dark high contrast', { scheme: 'dark', contrast: 'high' }],
   ] as const)('clears WCAG AA in %s', async (_name, attrs) => {
     const root = document.documentElement;
 
@@ -733,7 +733,7 @@ describe('DataTable column colors', () => {
         ).toBeGreaterThanOrEqual(4.5);
       }
     } finally {
-      delete root.dataset.schema;
+      delete root.dataset.scheme;
       delete root.dataset.contrast;
     }
   });

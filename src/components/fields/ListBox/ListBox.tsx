@@ -43,8 +43,9 @@ import {
 
 import { useWarn } from '../../../_internal/hooks/use-warn';
 import { useI18n } from '../../../i18n';
-import { CheckIcon, GripVerticalIcon } from '../../../icons';
-import { Icon } from '../../../icons/index';
+import { CheckIcon } from '../../../icons/CheckIcon';
+import { GripVerticalIcon } from '../../../icons/GripVerticalIcon';
+import { Icon } from '../../../icons/Icon';
 import { SIZE_NAME_TO_KEY, SIZES } from '../../../tokens';
 import { mergeProps, useCombinedRefs } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';

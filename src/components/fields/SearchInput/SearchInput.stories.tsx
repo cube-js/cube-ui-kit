@@ -83,6 +83,11 @@ export default {
         defaultValue: { summary: false },
       },
     },
+    autoComplete: {
+      control: { type: 'text' },
+      description:
+        'HTML `autocomplete` token telling the browser what to autofill (`off` to suppress autofill on a filter field)',
+    },
 
     /* Events */
     onChange: {

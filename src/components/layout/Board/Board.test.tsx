@@ -1,3 +1,6 @@
+import { useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
+
 import {
   act,
   fireEvent,
@@ -9,8 +12,11 @@ import {
 } from '../../../test';
 import { Tab, Tabs } from '../../navigation/Tabs';
 
+import { isOverlapFree } from './grid-core';
+
 import { Board } from './index';
 
+import type { ReactNode } from 'react';
 import type { LayoutConstraint, LayoutItem } from './grid-core';
 
 const baseLayout = [
@@ -2342,6 +2348,7 @@ describe('Board', () => {
       function setupCrossBoardSwap(
         incoming: LayoutItem,
         targetLayout: LayoutItem[],
+        mode: 'swap' | 'downscale' = 'swap',
       ) {
         const onSourceLayoutChange = vi.fn();
         const onTargetLayoutChange = vi.fn();
@@ -2358,7 +2365,7 @@ describe('Board', () => {
               margin={[0, 0]}
               containerPadding={[0, 0]}
               compact="free"
-              collisionMode="swap"
+              collisionMode={mode}
               defaultLayout={[incoming]}
               onLayoutChange={onSourceLayoutChange}
               onDragStop={onDragStop}
@@ -2375,7 +2382,7 @@ describe('Board', () => {
               margin={[0, 0]}
               containerPadding={[0, 0]}
               compact="free"
-              collisionMode="swap"
+              collisionMode={mode}
               defaultLayout={targetLayout}
               onLayoutChange={onTargetLayoutChange}
             >
@@ -2472,71 +2479,144 @@ describe('Board', () => {
         );
       });
 
-      it('cancels the transfer when the anchor cell is occupied', () => {
-        const {
-          dragTo,
-          onSourceLayoutChange,
-          onTargetLayoutChange,
-          onWidgetTransfer,
-          onDragStop,
-        } = setupCrossBoardSwap({ i: 'a', x: 0, y: 0, w: 2, h: 1 }, [
-          { i: 'b', x: 0, y: 0, w: 2, h: 1 },
-        ]);
+      it('places into a free cell when the anchor cell is occupied', () => {
+        const targetLayout = [{ i: 'b', x: 0, y: 0, w: 2, h: 1 }];
+        const { dragTo, onTargetLayoutChange, onWidgetTransfer } =
+          setupCrossBoardSwap({ i: 'a', x: 0, y: 0, w: 2, h: 1 }, targetLayout);
 
         dragTo(0, 0);
 
-        expect(onSourceLayoutChange).not.toHaveBeenCalled();
-        expect(onTargetLayoutChange).not.toHaveBeenCalled();
-        expect(onWidgetTransfer).not.toHaveBeenCalled();
-        expect(onDragStop).toHaveBeenCalledWith(
+        const committed = onTargetLayoutChange.mock
+          .calls[0]![0] as LayoutItem[];
+        // The occupant keeps its cell: a cross-board arrival never displaces it.
+        expect(committed.find((it) => it.i === 'b')).toEqual(
+          expect.objectContaining(targetLayout[0]),
+        );
+        // The nearest free cell in reading order, at the widget's own size.
+        expect(committed.find((it) => it.i === 'a')).toEqual(
+          expect.objectContaining({ x: 2, y: 0, w: 2, h: 1 }),
+        );
+        expect(isOverlapFree(committed)).toBe(true);
+        expect(onWidgetTransfer).toHaveBeenCalledWith(
           expect.objectContaining({
-            item: expect.objectContaining({ i: 'a', x: 0, y: 0 }),
-            layout: [expect.objectContaining({ i: 'a', x: 0, y: 0 })],
+            fromBoardId: 'source',
+            toBoardId: 'target',
+            item: expect.objectContaining({ i: 'a' }),
           }),
         );
       });
 
-      it('cancels when the available space is below the minimum size', () => {
-        const {
-          dragTo,
-          onSourceLayoutChange,
-          onTargetLayoutChange,
-          onWidgetTransfer,
-        } = setupCrossBoardSwap({ i: 'a', x: 0, y: 0, w: 4, h: 1, minW: 4 }, [
-          { i: 'b', x: 3, y: 0, w: 3, h: 1 },
-        ]);
+      it('places at full size when the anchor cannot honour the minimum size', () => {
+        const targetLayout = [{ i: 'b', x: 3, y: 0, w: 3, h: 1 }];
+        const { dragTo, onTargetLayoutChange, onWidgetTransfer } =
+          setupCrossBoardSwap(
+            { i: 'a', x: 0, y: 0, w: 4, h: 1, minW: 4 },
+            targetLayout,
+          );
 
         dragTo(0, 0);
 
-        expect(onSourceLayoutChange).not.toHaveBeenCalled();
-        expect(onTargetLayoutChange).not.toHaveBeenCalled();
-        expect(onWidgetTransfer).not.toHaveBeenCalled();
+        const committed = onTargetLayoutChange.mock
+          .calls[0]![0] as LayoutItem[];
+        expect(committed.find((it) => it.i === 'b')).toEqual(
+          expect.objectContaining(targetLayout[0]),
+        );
+        // `minW: 4` rules out downscaling into the 3 free columns, so the widget
+        // keeps its size and takes the nearest cell where that size fits.
+        expect(committed.find((it) => it.i === 'a')).toEqual(
+          expect.objectContaining({ x: 0, y: 1, w: 4, h: 1 }),
+        );
+        expect(isOverlapFree(committed)).toBe(true);
+        expect(onWidgetTransfer).toHaveBeenCalled();
       });
 
-      it('cancels instead of committing the last valid preview', () => {
-        const {
-          start,
-          moveTo,
-          endAt,
-          onSourceLayoutChange,
-          onTargetLayoutChange,
-          onWidgetTransfer,
-        } = setupCrossBoardSwap({ i: 'a', x: 0, y: 0, w: 2, h: 1 }, [
-          { i: 'b', x: 2, y: 0, w: 2, h: 1 },
-        ]);
+      it('commits the last valid preview when the release cell is occupied', () => {
+        const targetLayout = [{ i: 'b', x: 2, y: 0, w: 2, h: 1 }];
+        const { start, moveTo, endAt, onTargetLayoutChange, onWidgetTransfer } =
+          setupCrossBoardSwap({ i: 'a', x: 0, y: 0, w: 2, h: 1 }, targetLayout);
 
         start();
         moveTo(0, 0);
         expect(screen.getAllByTestId('BoardPlaceholder')).toHaveLength(1);
         moveTo(2, 0);
-        expect(
-          screen.queryByTestId('BoardPlaceholder'),
-        ).not.toBeInTheDocument();
+        // The preview holds at the last cell that fit rather than blinking away.
+        expect(screen.getAllByTestId('BoardPlaceholder')).toHaveLength(1);
         endAt(2, 0);
 
-        expect(onSourceLayoutChange).not.toHaveBeenCalled();
-        expect(onTargetLayoutChange).not.toHaveBeenCalled();
-        expect(onWidgetTransfer).not.toHaveBeenCalled();
+        const committed = onTargetLayoutChange.mock
+          .calls[0]![0] as LayoutItem[];
+        expect(committed.find((it) => it.i === 'a')).toEqual(
+          expect.objectContaining({ x: 0, y: 0, w: 2, h: 1 }),
+        );
+        expect(committed.find((it) => it.i === 'b')).toEqual(
+          expect.objectContaining(targetLayout[0]),
+        );
+        expect(onWidgetTransfer).toHaveBeenCalled();
+      });
+
+      it('holds the last valid preview while sweeping over an occupied cell', () => {
+        const targetLayout = [{ i: 'b', x: 2, y: 0, w: 2, h: 1 }];
+        const { start, moveTo, endAt, onTargetLayoutChange } =
+          setupCrossBoardSwap({ i: 'a', x: 0, y: 0, w: 2, h: 1 }, targetLayout);
+
+        start();
+        moveTo(4, 0);
+        moveTo(2, 0);
+        endAt(2, 0);
+
+        const committed = onTargetLayoutChange.mock
+          .calls[0]![0] as LayoutItem[];
+        // Once a frame has found a cell, an occupied cell holds it there rather
+        // than hunting for a new one: sweeping across a widget must not make the
+        // placeholder jump somewhere the pointer never went. (0,0) is free here,
+        // so a relocating implementation would move it and be visibly wrong.
+        expect(committed.find((it) => it.i === 'a')).toEqual(
+          expect.objectContaining({ x: 4, y: 0, w: 2, h: 1 }),
+        );
+      });
+
+      it('downscales into room to the right of a blocker, not just the left', () => {
+        // The anchor clamp (`cols - w` = 2) puts every cell of the free room out
+        // of the pointer's reach, so this drop used to miss the downscale
+        // entirely and land the widget on the next row instead.
+        const targetLayout = [{ i: 'b', x: 0, y: 0, w: 3, h: 1 }];
+        const { start, moveTo, endAt, onTargetLayoutChange } =
+          setupCrossBoardSwap({ i: 'a', x: 0, y: 0, w: 4, h: 1 }, targetLayout);
+
+        start();
+        moveTo(3, 0);
+        endAt(3, 0);
+
+        const committed = onTargetLayoutChange.mock
+          .calls[0]![0] as LayoutItem[];
+        expect(committed.find((it) => it.i === 'a')).toEqual(
+          expect.objectContaining({ x: 3, y: 0, w: 3, h: 1 }),
+        );
+        expect(committed.find((it) => it.i === 'b')).toEqual(
+          expect.objectContaining(targetLayout[0]),
+        );
+      });
+
+      it('lands a downscale arrival on the board, never above its first row', () => {
+        const targetLayout = [{ i: 'b', x: 0, y: 0, w: 6, h: 1 }];
+        const { dragTo, onTargetLayoutChange } = setupCrossBoardSwap(
+          { i: 'a', x: 0, y: 0, w: 2, h: 1 },
+          targetLayout,
+          'downscale',
+        );
+
+        dragTo(0, 0);
+
+        const committed = onTargetLayoutChange.mock
+          .calls[0]![0] as LayoutItem[];
+        // Row 0 is full, so the arrival goes to the row below - not to the
+        // synthetic seed cell at y = -1 that a refused move restores.
+        expect(committed.find((it) => it.i === 'a')).toEqual(
+          expect.objectContaining({ x: 0, y: 1, w: 2, h: 1 }),
+        );
+        expect(committed.find((it) => it.i === 'b')).toEqual(
+          expect.objectContaining(targetLayout[0]),
+        );
       });
 
       it('uses the same insertion rule when dragging from a nested board to its parent', () => {
@@ -2601,7 +2681,11 @@ describe('Board', () => {
         expect(committed.find((it) => it.i === 'a')).toEqual(
           expect.objectContaining({ x: 4, y: 0, w: 1, h: 1 }),
         );
-        expect(onChildLayoutChange).toHaveBeenCalledWith([]);
+        // The child board empties, and says why: the widget left for another
+        // board rather than the user rearranging this one.
+        expect(onChildLayoutChange).toHaveBeenCalledWith([], {
+          reason: 'transfer',
+        });
         expect(onWidgetTransfer).toHaveBeenCalledWith(
           expect.objectContaining({
             widgetId: 'a',
@@ -3210,6 +3294,110 @@ describe('Board', () => {
         expect(onSelectionChange).toHaveBeenCalledWith([]);
       });
 
+      // Regression (CUB-3827): the reset used to ride on the host's bubble-phase
+      // `onPointerDown`, so a control that never let the press through kept the
+      // selection standing — which is why a widget's gear button dropped it and
+      // the chart's own toolbar button did not. Three ways a press can miss the
+      // host, all of which must still drop the selection.
+      describe('however the press reaches the widget', () => {
+        const twoWidgetLayout = [
+          { i: 'a', x: 0, y: 0, w: 2, h: 1 },
+          { i: 'b', x: 2, y: 0, w: 2, h: 1 },
+        ];
+
+        /** Selects `b`, then presses `content`'s control inside widget `a`. */
+        const pressInsideA = async (content: ReactNode) => {
+          const onSelectionChange = vi.fn();
+
+          render(
+            <Board
+              width={600}
+              cols={6}
+              rowHeight={100}
+              margin={[0, 0]}
+              containerPadding={[0, 0]}
+              selectionMode="multiple"
+              defaultLayout={twoWidgetLayout}
+              onSelectionChange={onSelectionChange}
+            >
+              <Board.Widget id="a" qa="A">
+                {content}
+              </Board.Widget>
+              <Board.Widget id="b" qa="B">
+                B
+              </Board.Widget>
+            </Board>,
+          );
+
+          await userEvent.click(screen.getByTestId('B'));
+          expect(onSelectionChange).toHaveBeenLastCalledWith(['b']);
+          onSelectionChange.mockClear();
+
+          fireEvent.pointerDown(screen.getByRole('button', { name: 'Ctl' }), {
+            button: 0,
+            pointerId: 1,
+          });
+
+          return onSelectionChange;
+        };
+
+        // What React Aria's `usePress` does by default.
+        it('drops it when the control stops the React press', async () => {
+          const onSelectionChange = await pressInsideA(
+            <button type="button" onPointerDown={(e) => e.stopPropagation()}>
+              Ctl
+            </button>,
+          );
+
+          expect(onSelectionChange).toHaveBeenCalledWith([]);
+        });
+
+        // What a charting or mapping library does with its own listeners: the
+        // native event never reaches React, so no React handler on the host runs.
+        it('drops it when the control stops the native press', async () => {
+          function NativeStopButton() {
+            const ref = useRef<HTMLButtonElement>(null);
+
+            useEffect(() => {
+              const node = ref.current;
+              if (!node) return;
+
+              const stop = (event: Event) => event.stopPropagation();
+
+              node.addEventListener('pointerdown', stop);
+
+              return () => node.removeEventListener('pointerdown', stop);
+            }, []);
+
+            return (
+              <button ref={ref} type="button">
+                Ctl
+              </button>
+            );
+          }
+
+          const onSelectionChange = await pressInsideA(<NativeStopButton />);
+
+          expect(onSelectionChange).toHaveBeenCalledWith([]);
+        });
+
+        // A menu opened from a widget renders outside the host's DOM subtree,
+        // but still inside its React tree — so the React capture handler is the
+        // only one that can see this press.
+        it('drops it when a portaled control stops the press', async () => {
+          const onSelectionChange = await pressInsideA(
+            createPortal(
+              <button type="button" onPointerDown={(e) => e.stopPropagation()}>
+                Ctl
+              </button>,
+              document.body,
+            ) as ReactNode,
+          );
+
+          expect(onSelectionChange).toHaveBeenCalledWith([]);
+        });
+      });
+
       it('keeps the selection when pressing a widget inside it', async () => {
         const onSelectionChange = vi.fn();
         const { widget } = renderSelectableBoard({ onSelectionChange });
@@ -3746,6 +3934,252 @@ describe('Board', () => {
         b: '6,0',
         far: '0,4',
       });
+    });
+  });
+
+  describe('corner chrome', () => {
+    const pointerEvent = (type: string, pageX: number, pageY: number) => {
+      const event = new PointerEvent(type, {
+        bubbles: true,
+        cancelable: true,
+        button: 0,
+        pointerId: 1,
+        pointerType: 'mouse',
+      });
+      Object.defineProperty(event, 'pageX', { get: () => pageX });
+      Object.defineProperty(event, 'pageY', { get: () => pageY });
+      return event;
+    };
+
+    it('renders chrome outside the widget, so its own clip cannot crop it', () => {
+      render(
+        <Board width={1200} defaultLayout={baseLayout}>
+          <Board.Widget
+            id="a"
+            qa="WidgetA"
+            cornerChrome={<button type="button">Settings</button>}
+          >
+            A
+          </Board.Widget>
+        </Board>,
+      );
+
+      const chrome = screen.getByRole('button', { name: 'Settings' });
+      expect(chrome).toBeInTheDocument();
+      // The widget host clips its content (`overflow: hidden`), which is the
+      // whole reason this slot exists — so the chrome must NOT be inside it.
+      expect(screen.getByTestId('WidgetA').contains(chrome)).toBe(false);
+    });
+
+    it('keeps chrome reachable by assistive tech', () => {
+      // The grip layer is `aria-hidden` for the grips' sake. Chrome is real UI,
+      // so a layer holding chrome must not inherit that.
+      render(
+        <Board width={1200} defaultLayout={baseLayout}>
+          <Board.Widget
+            id="a"
+            cornerChrome={<button type="button">Settings</button>}
+          >
+            A
+          </Board.Widget>
+        </Board>,
+      );
+
+      expect(
+        screen
+          .getByRole('button', { name: 'Settings' })
+          .closest('[aria-hidden="true"]'),
+      ).toBeNull();
+    });
+
+    it('does not start a drag when the chrome is pressed', () => {
+      const onLayoutChange = vi.fn();
+      render(
+        <Board
+          width={1200}
+          defaultLayout={baseLayout}
+          onLayoutChange={onLayoutChange}
+        >
+          <Board.Widget
+            id="a"
+            cornerChrome={<button type="button">Settings</button>}
+          >
+            A
+          </Board.Widget>
+        </Board>,
+      );
+
+      const chrome = screen.getByRole('button', { name: 'Settings' });
+      fireEvent(chrome, pointerEvent('pointerdown', 0, 0));
+      fireEvent(window, pointerEvent('pointermove', 200, 200));
+      fireEvent(window, pointerEvent('pointerup', 200, 200));
+
+      // Chrome lives outside the widget host, so `useMove` is not even attached
+      // to it — no `dragCancel` entry needed to protect it.
+      expect(onLayoutChange).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('custom widget modifiers', () => {
+    it('resolves a style map against an app-defined modifier', () => {
+      render(
+        <Board width={1200} defaultLayout={baseLayout}>
+          <Board.Widget
+            id="a"
+            qa="WidgetA"
+            mods={{ editing: true }}
+            // Deliberately no `''` entry: that is what keeps this in tasty's
+            // EXTEND mode, so the board's own `selected` / `drag` treatments
+            // survive. The rule cannot see that a widget `styles` prop is always
+            // merged onto a parent map.
+            // oxlint-disable-next-line tasty/require-default-state
+            styles={{ shadow: { editing: '0 0 0 1bw #primary' } }}
+          >
+            A
+          </Board.Widget>
+        </Board>,
+      );
+
+      expect(screen.getByTestId('WidgetA')).toHaveAttribute('data-editing');
+    });
+
+    it('accepts board-wide modifiers via widgetProps, letting a widget override', () => {
+      render(
+        <Board
+          width={1200}
+          defaultLayout={baseLayout}
+          widgetProps={{ mods: { compact: true } }}
+        >
+          <Board.Widget id="a" qa="WidgetA">
+            A
+          </Board.Widget>
+          <Board.Widget id="b" qa="WidgetB" mods={{ compact: false }}>
+            B
+          </Board.Widget>
+        </Board>,
+      );
+
+      // The board-level default reaches a widget that sets nothing...
+      expect(screen.getByTestId('WidgetA')).toHaveAttribute('data-compact');
+      // ...and a widget's own value wins over it.
+      expect(screen.getByTestId('WidgetB')).not.toHaveAttribute('data-compact');
+    });
+
+    it('accepts corner chrome via widgetProps', () => {
+      render(
+        <Board
+          width={1200}
+          defaultLayout={baseLayout}
+          widgetProps={{
+            cornerChrome: <button type="button">Shared</button>,
+            cornerChromePlacement: 'sw',
+          }}
+        >
+          <Board.Widget id="a">A</Board.Widget>
+        </Board>,
+      );
+
+      // Typed as a widget default, so it has to behave like one — being silently
+      // dropped is worse than not accepting it at all.
+      expect(
+        screen.getAllByRole('button', { name: 'Shared' }),
+      ).not.toHaveLength(0);
+    });
+
+    it('keeps app modifiers on the clone that floats during a pointer drag', () => {
+      const pointerEvent = (type: string, pageX: number, pageY: number) => {
+        const event = new PointerEvent(type, {
+          bubbles: true,
+          cancelable: true,
+          button: 0,
+          pointerId: 1,
+          pointerType: 'mouse',
+        });
+        Object.defineProperty(event, 'pageX', { get: () => pageX });
+        Object.defineProperty(event, 'pageY', { get: () => pageY });
+        return event;
+      };
+
+      render(
+        <Board width={1200} defaultLayout={baseLayout}>
+          <Board.Widget id="a" qa="WidgetA" mods={{ editing: true }}>
+            A
+          </Board.Widget>
+        </Board>,
+      );
+
+      fireEvent(
+        screen.getByTestId('WidgetA'),
+        pointerEvent('pointerdown', 0, 0),
+      );
+      fireEvent(window, pointerEvent('pointermove', 120, 0));
+
+      // While a pointer drag is in flight the clone IS the widget — the in-grid
+      // host is hidden — so a custom state must not blink off for the gesture.
+      const floating = document.querySelector('[data-floating]');
+      expect(floating).not.toBeNull();
+      expect(floating).toHaveAttribute('data-editing');
+
+      fireEvent(window, pointerEvent('pointerup', 120, 0));
+    });
+
+    it('never lets an app modifier shadow one of the board own states', () => {
+      render(
+        <Board width={1200} defaultLayout={baseLayout} selectionMode="single">
+          <Board.Widget id="a" qa="WidgetA" mods={{ selected: true }}>
+            A
+          </Board.Widget>
+        </Board>,
+      );
+
+      // Nothing is selected, so the board's own `selected: false` has to win over
+      // the app's claim — the selection styling and the a11y wiring both read it.
+      expect(screen.getByTestId('WidgetA')).not.toHaveAttribute(
+        'data-selected',
+      );
+    });
+  });
+
+  describe('layout change reason', () => {
+    const pointerEvent = (type: string, pageX: number, pageY: number) => {
+      const event = new PointerEvent(type, {
+        bubbles: true,
+        cancelable: true,
+        button: 0,
+        pointerId: 1,
+        pointerType: 'mouse',
+      });
+      Object.defineProperty(event, 'pageX', { get: () => pageX });
+      Object.defineProperty(event, 'pageY', { get: () => pageY });
+      return event;
+    };
+
+    it('reports a resize as a gesture, not a normalization', () => {
+      const onLayoutChange = vi.fn();
+      render(
+        <Board
+          width={1200}
+          rowHeight={100}
+          margin={[0, 0]}
+          containerPadding={[0, 0]}
+          defaultLayout={[{ i: 'a', x: 0, y: 0, w: 2, h: 2 }]}
+          onLayoutChange={onLayoutChange}
+        >
+          <Board.Widget id="a" qa="WidgetA">
+            A
+          </Board.Widget>
+        </Board>,
+      );
+
+      const handle = document.querySelector(
+        '[data-qa="BoardResizeHandle"]',
+      ) as HTMLElement;
+      fireEvent(handle, pointerEvent('pointerdown', 0, 0));
+      fireEvent(window, pointerEvent('pointermove', 200, 0));
+      fireEvent(window, pointerEvent('pointerup', 200, 0));
+
+      expect(onLayoutChange).toHaveBeenCalled();
+      expect(onLayoutChange.mock.lastCall![1]).toEqual({ reason: 'resize' });
     });
   });
 });

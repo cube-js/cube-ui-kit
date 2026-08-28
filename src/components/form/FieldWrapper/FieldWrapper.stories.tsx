@@ -44,6 +44,7 @@ Small.args = {
   labelProps: { size: 'small' },
 };
 
+// chromatic-overlay-reviewed: the info badge in the label row is the subject, not the tooltip it opens
 export const WithTooltip = Template.bind({});
 WithTooltip.args = {
   tooltip: 'Long description',
@@ -60,6 +61,7 @@ SideLabel.args = {
   labelPosition: 'side',
 };
 
+// chromatic-overlay-reviewed: badge placement against a side label
 export const SideLabelWithTooltip = Template.bind({});
 SideLabelWithTooltip.args = {
   labelPosition: 'side',
@@ -95,12 +97,14 @@ WithExtraAndSuffix.args = {
   labelSuffix: 'Suffix',
 };
 
+// chromatic-overlay-reviewed: badge placement beside a suffix
 export const WithSuffixAndTooltip = Template.bind({});
 WithSuffixAndTooltip.args = {
   labelSuffix: 'Suffix',
   tooltip: 'Long description',
 };
 
+// chromatic-overlay-reviewed: badge placement beside a suffix and extra
 export const WithSuffixExtraAndTooltip = Template.bind({});
 WithSuffixExtraAndTooltip.args = {
   labelSuffix: 'Suffix',
@@ -113,6 +117,7 @@ WithButtonSuffix.args = {
   labelSuffix: <Button size="small" icon={<IconCoin />} placeSelf="center" />,
 };
 
+// chromatic-overlay-reviewed: badge placement beside a button suffix
 export const WithButtonSuffixAndTooltip = Template.bind({});
 WithButtonSuffixAndTooltip.args = {
   labelSuffix: (
@@ -170,6 +175,7 @@ SplitLabel.args = {
   styles: { width: '(100vw - 6x)' },
 };
 
+// chromatic-overlay-reviewed: badge placement in a split label
 export const SplitLabelWithTooltip = Template.bind({});
 SplitLabelWithTooltip.args = {
   labelPosition: 'split',

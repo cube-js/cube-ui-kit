@@ -253,6 +253,7 @@ export const CustomEmptyLabel: Story = {
   ),
 };
 
+// chromatic-overlay-reviewed: the trigger button itself is the subject — `Default` hides it
 export const WithTrigger: Story = {
   render: () => (
     <SearchComboBox

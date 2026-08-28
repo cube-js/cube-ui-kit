@@ -1,6 +1,6 @@
 {
   "name": "@cube-dev/ui-kit",
-  "version": "0.166.0",
+  "version": "0.172.0",
   "type": "module",
   "description": "UIKit for Cube Projects",
   "repository": {
@@ -57,6 +57,9 @@
     "build-storybook": "STORYBOOK_MODE=stories storybook build --stats-json",
     "build-docs": "STORYBOOK_MODE=docs storybook build --docs -o storybook-docs",
     "chromatic": "chromatic --only-changed",
+    "chromatic:report": "node scripts/chromatic-report.mjs",
+    "chromatic:check": "node scripts/chromatic-report.mjs --check",
+    "chromatic:duplicates": "node scripts/chromatic-duplicates.mjs",
     "size": "size-limit",
     "prepare": "husky install",
     "clear": "pnpm clear:dist && rimraf ./storybook-docs ./storybook-static ./node_modules/.cache",
@@ -130,7 +133,7 @@
     "@statoscope/cli": "^5.20.1",
     "@storybook/addon-docs": "^10.3.6",
     "@storybook/react-vite": "^10.3.6",
-    "@tenphi/eslint-plugin-tasty": "^1.0.3",
+    "@tenphi/eslint-plugin-tasty": "^1.0.5",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.7.0",
     "@testing-library/react": "^16.3.0",

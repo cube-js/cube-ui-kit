@@ -2,6 +2,7 @@ import { Meta, StoryFn } from '@storybook/react-vite';
 import { action } from 'storybook/actions';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 
+import { NO_SNAPSHOT } from '../../../stories/chromatic';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Button } from '../../actions/Button/Button';
 import { Paragraph } from '../../content/Paragraph';
@@ -71,6 +72,8 @@ UsingApi.play = async ({ canvasElement }) => {
 
   await expect(await findByRole('alertdialog')).toBeInTheDocument();
 };
+// Opens the same alert dialog `Default` does; the difference is the imperative API that opens it.
+UsingApi.parameters = NO_SNAPSHOT;
 
 export const UsingApiWithCancel: StoryFn<DialogProps> = (args) => {
   const dialogAPI = useAlertDialogAPI();

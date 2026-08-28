@@ -10,7 +10,7 @@ import { TextDropItem, useClipboard } from 'react-aria';
 
 import { useTimer } from '../../../_internal';
 import { useI18n } from '../../../i18n';
-import { CopyIcon } from '../../../icons';
+import { CopyIcon } from '../../../icons/CopyIcon';
 import { extractStyles } from '../../../utils/styles';
 import { Button } from '../../actions';
 import { useToast } from '../../overlays/Toast';

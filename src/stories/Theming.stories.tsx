@@ -31,14 +31,17 @@ import {
   Switch,
   Tag,
   tasty,
+  useHighContrast,
   usePaletteConfig,
   usePaletteVersion,
+  useScheme,
 } from '../index';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import type { Styles, Tokens } from '@tenphi/tasty';
 import type { ReactNode } from 'react';
 import type {
+  ColorScheme,
   PaletteConfig,
   PaletteNumericSeed,
   PaletteSeed,
@@ -1189,87 +1192,6 @@ function CodePanel() {
 // Theme builder
 // ============================================================================
 
-/**
- * A preview renders one concrete variant, so there is no `auto` here: `auto` is a
- * *preference* ("follow the OS"), and a flat token value cannot express one.
- */
-type SchemeChoice = 'light' | 'dark';
-
-/**
- * Scheme and contrast tier are **viewing conditions**, not theme settings — the
- * same theme renders in all four of them, and a designer moves between them to
- * check their work rather than to change it. They live over the preview for
- * that reason, and nothing they do reaches the palette config.
- */
-interface ViewingConditions {
-  scheme: SchemeChoice;
-  highContrast: boolean;
-}
-
-/** What the document is showing right now, per the states `Root` registers. */
-function readViewingConditions(): ViewingConditions {
-  if (typeof document === 'undefined') {
-    return { scheme: 'light', highContrast: false };
-  }
-
-  const schema = document.documentElement.getAttribute('data-schema');
-  const contrast = document.documentElement.getAttribute('data-contrast');
-
-  return {
-    scheme:
-      schema === 'dark' || schema === 'light'
-        ? schema
-        : matchMedia('(prefers-color-scheme: dark)').matches
-          ? 'dark'
-          : 'light',
-    highContrast: contrast
-      ? contrast === 'high'
-      : matchMedia('(prefers-contrast: more)').matches,
-  };
-}
-
-/**
- * The document's own scheme and contrast tier, kept live.
- *
- * This is what makes the two switches over the preview *follow* without an
- * `Auto` option to explain: they start on whatever the page is already showing,
- * and until someone presses one they keep tracking it. Flipping Storybook's
- * dark-mode toolbar with a light preview stranded inside a dark page is exactly
- * the state that reads as broken.
- *
- * Both inputs have to be watched, because both can decide the answer: the
- * attribute when `Root`'s opt-in is set, the media query otherwise.
- */
-function useDocumentConditions(): ViewingConditions {
-  const [conditions, setConditions] = useState(readViewingConditions);
-
-  useEffect(() => {
-    const sync = () => setConditions(readViewingConditions());
-    const observer = new MutationObserver(sync);
-    const queries = [
-      matchMedia('(prefers-color-scheme: dark)'),
-      matchMedia('(prefers-contrast: more)'),
-    ];
-
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['data-schema', 'data-contrast'],
-    });
-    queries.forEach((query) => query.addEventListener('change', sync));
-
-    // The attribute can land before the effect runs, so re-read on mount rather
-    // than trusting the value the first render happened to see.
-    sync();
-
-    return () => {
-      observer.disconnect();
-      queries.forEach((query) => query.removeEventListener('change', sync));
-    };
-  }, []);
-
-  return conditions;
-}
-
 // ----------------------------------------------------------------------------
 // Controls
 // ----------------------------------------------------------------------------
@@ -2065,7 +1987,7 @@ function ThemePreview({
   scheme,
 }: {
   tokens: Tokens;
-  scheme: SchemeChoice;
+  scheme: ColorScheme;
 }) {
   const [tab, setTab] = useState(PREVIEW_TABS[0]);
 
@@ -2201,11 +2123,18 @@ function ThemePreview({
 }
 
 function ThemeBuilderPage() {
-  const documentConditions = useDocumentConditions();
+  // Scheme and contrast tier are viewing conditions, not theme settings — the
+  // same theme renders in all four of them. The switches start on whatever the
+  // page is already showing and keep tracking it until someone presses one, so
+  // a light preview is never stranded inside a dark page.
+  const documentScheme = useScheme();
+  const documentHighContrast = useHighContrast();
   // `null` while the switch is still following the document. Deriving the shown
   // value from "override ?? document" is what lets a two-option control follow
-  // without an `Auto` option standing for the third state.
-  const [schemeOverride, setSchemeOverride] = useState<SchemeChoice | null>(
+  // without an `Auto` option standing for the third state — and `auto` could not
+  // be previewed anyway: it is a *preference*, and a flat token value renders one
+  // concrete variant.
+  const [schemeOverride, setSchemeOverride] = useState<ColorScheme | null>(
     null,
   );
   const [contrastOverride, setContrastOverride] = useState<boolean | null>(
@@ -2213,13 +2142,13 @@ function ThemeBuilderPage() {
   );
   const version = usePaletteVersion();
 
-  const scheme = schemeOverride ?? documentConditions.scheme;
-  const isHighContrast = contrastOverride ?? documentConditions.highContrast;
+  const scheme = schemeOverride ?? documentScheme;
+  const isHighContrast = contrastOverride ?? documentHighContrast;
 
   // The level lives in the palette config now, so it needs no mention here: it
   // is part of the theme being built, and both of these pick it up.
   const tokens = useMemo(
-    () => renderColorTokens({ scheme, highContrast: isHighContrast }),
+    () => renderColorTokens({ scheme: scheme, highContrast: isHighContrast }),
     [scheme, isHighContrast, version],
   );
 
@@ -2227,8 +2156,12 @@ function ThemeBuilderPage() {
   // calls land on the same memo inside `renderPaletteTokens` — it holds all four
   // variants of one config — so the second one costs nothing.
   const documentTokens = useMemo(
-    () => renderColorTokens(documentConditions),
-    [documentConditions, version],
+    () =>
+      renderColorTokens({
+        scheme: documentScheme,
+        highContrast: documentHighContrast,
+      }),
+    [documentScheme, documentHighContrast, version],
   );
 
   return (
@@ -2252,7 +2185,7 @@ function ThemeBuilderPage() {
               aria-label="Color scheme"
               type="button"
               value={scheme}
-              onChange={(value) => setSchemeOverride(value as SchemeChoice)}
+              onChange={(value) => setSchemeOverride(value as ColorScheme)}
             >
               <Radio value="light">Light</Radio>
               <Radio value="dark">Dark</Radio>

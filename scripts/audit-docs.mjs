@@ -63,19 +63,28 @@ const STYLE_CATEGORIES = [
 
 /* ── Prop classification ──────────────────────────────────────────────── */
 
+/**
+ * Props every component inherits, and which therefore belong on the shared
+ * "Base properties" page rather than in each component's own list.
+ *
+ * The style names are taken from tasty's own exports rather than restated here.
+ * They were hardcoded once and drifted: the copy was missing `scrollMargin` and
+ * `place`, which tasty had since added to `CONTAINER_STYLES`, so every
+ * component that spreads that list was reported as under-documenting two props
+ * it inherits like all the others. Deriving them means the next addition to
+ * tasty cannot reopen that.
+ */
 const BASE_STYLE_PROPS = new Set([
+  // Tasty's own non-style base props (`TastySpecificKeys` plus the DOM
+  // shorthands `filterBaseProps` lets through).
   'qa', 'qaVal', 'block', 'inline', 'style', 'styles', 'css', 'hidden',
-  'disabled', 'mods', 'breakpoints', 'isHidden', 'element',
-  'display', 'font', 'preset', 'hide', 'whiteSpace', 'opacity', 'transition',
-  'padding', 'paddingInline', 'paddingBlock', 'overflow', 'scrollbar', 'textAlign',
-  'border', 'radius', 'shadow', 'outline', 'color', 'fill', 'fade', 'image',
-  'width', 'height', 'flexBasis', 'flexGrow', 'flexShrink', 'flex',
-  'gridArea', 'order', 'gridColumn', 'gridRow', 'placeSelf', 'alignSelf',
-  'justifySelf', 'zIndex', 'margin', 'inset', 'position',
-  'flow', 'placeItems', 'placeContent', 'alignItems', 'alignContent',
-  'justifyItems', 'justifyContent', 'align', 'justify', 'gap', 'columnGap',
-  'rowGap', 'gridColumns', 'gridRows', 'gridTemplate', 'gridAreas',
-  'textTransform', 'fontWeight', 'fontStyle', 'className', 'role', 'id', 'tokens',
+  'disabled', 'mods', 'breakpoints', 'isHidden', 'isChecked', 'element',
+  'className', 'role', 'id', 'tokens',
+  // Every style name a component can expose as a prop.
+  ...BASE_STYLES, ...POSITION_STYLES, ...DIMENSION_STYLES,
+  ...BLOCK_OUTER_STYLES, ...BLOCK_INNER_STYLES, ...BLOCK_STYLES,
+  ...COLOR_STYLES, ...TEXT_STYLES, ...FLOW_STYLES,
+  ...CONTAINER_STYLES, ...OUTER_STYLES, ...INNER_STYLES,
 ]);
 
 const ALLBASE_PROPS = new Set([
@@ -808,6 +817,31 @@ async function readTsxFile(filePath) {
   return null;
 }
 
+/**
+ * Style props the component's own props interface drops via
+ * `Omit<SomeStyleProps, 'a' | 'b'>`.
+ *
+ * A component that repurposes a style prop for something else omits it from the
+ * style-prop interface and destructures it as an ordinary prop, so it never
+ * reaches `extractStyles` — `Board`'s `margin` is the grid gap, not a CSS
+ * margin. The `extractStyles` call still names the full style list, so without
+ * this the audit would demand the docs list a prop the component does not
+ * accept.
+ */
+function extractOmittedStyleProps(fileContent) {
+  const omitted = new Set();
+  const omitRe = /Omit<\s*(?:\w+\s*\|\s*)*?(\w*(?:StyleProps|BaseProps))\s*,\s*([^>]+?)>/g;
+  let m;
+  while ((m = omitRe.exec(fileContent)) !== null) {
+    const nameRe = /'([^']+)'|"([^"]+)"/g;
+    let n;
+    while ((n = nameRe.exec(m[2])) !== null) {
+      omitted.add(n[1] ?? n[2]);
+    }
+  }
+  return omitted;
+}
+
 async function detectStyleProps(componentDir, componentName, verbose) {
   const mainFile = path.join(componentDir, `${componentName}.tsx`);
   let content;
@@ -817,8 +851,17 @@ async function detectStyleProps(componentDir, componentName, verbose) {
     return null;
   }
 
+  const omitted = extractOmittedStyleProps(content);
+  const finish = (props) => {
+    const unique = [...new Set(props)].filter((prop) => !omitted.has(prop));
+    if (verbose && omitted.size > 0) {
+      console.log(`  [${componentName}] Omitted style props: ${[...omitted].join(', ')}`);
+    }
+    return unique;
+  };
+
   let result = extractStylePropsFromFile(content);
-  if (result) return [...new Set(result)];
+  if (result) return finish(result);
 
   const entries = await fs.readdir(componentDir, { withFileTypes: true });
   for (const entry of entries) {
@@ -832,7 +875,7 @@ async function detectStyleProps(componentDir, componentName, verbose) {
     result = extractStylePropsFromFile(fileContent);
     if (result) {
       if (verbose) console.log(`  [${componentName}] Found extractStyles in ${entry.name}`);
-      return [...new Set(result)];
+      return finish(result);
     }
   }
 
@@ -844,7 +887,7 @@ async function detectStyleProps(componentDir, componentName, verbose) {
     result = extractStylePropsFromFile(file.content);
     if (result) {
       if (verbose) console.log(`  [${componentName}] Found extractStyles via import ${path.relative(ROOT, file.path)}`);
-      return [...new Set(result)];
+      return finish(result);
     }
 
     const reExportRe = /export\s+\*\s+from\s+'([^']+)'/g;
@@ -856,7 +899,7 @@ async function detectStyleProps(componentDir, componentName, verbose) {
       result = extractStylePropsFromFile(reFile.content);
       if (result) {
         if (verbose) console.log(`  [${componentName}] Found extractStyles via re-export ${path.relative(ROOT, reFile.path)}`);
-        return [...new Set(result)];
+        return finish(result);
       }
     }
   }

@@ -1,6 +1,7 @@
 import { Meta, StoryFn } from '@storybook/react-vite';
 import { useRef } from 'react';
 
+import { NO_SNAPSHOT } from '../../../stories/chromatic';
 import { Block } from '../../Block';
 import { Portal } from '../Portal';
 import { PortalProps } from '../types';
@@ -18,6 +19,8 @@ export const Default = Basic.bind({});
 export const Disabled = Basic.bind({});
 
 export const Playground = Basic.bind({});
+// An unmodified clone of `Default` — it exists as a controls sandbox.
+Playground.parameters = NO_SNAPSHOT;
 Disabled.args = {
   isDisabled: true,
 };

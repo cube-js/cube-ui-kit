@@ -16,7 +16,7 @@ type StoryDecorator = (
 ) => ReactElement | null;
 
 /**
- * Drives the `data-schema` attribute on `<html>`.
+ * Drives the `data-scheme` attribute on `<html>`.
  *  - `'dark'` / `'light'` — force the corresponding scheme
  *  - `'auto'` — clear the attribute and fall back to `prefers-color-scheme`
  */
@@ -30,7 +30,7 @@ export type ColorScheme = 'light' | 'dark' | 'auto';
 export type ContrastMode = 'normal' | 'high' | 'auto';
 
 export interface WithColorSchemeOptions {
-  /** Color scheme applied via `<html data-schema=…>`. */
+  /** Color scheme applied via `<html data-scheme=…>`. */
   scheme?: ColorScheme;
   /** Contrast mode applied via `<html data-contrast=…>`. */
   contrast?: ContrastMode;
@@ -38,15 +38,15 @@ export interface WithColorSchemeOptions {
 
 /**
  * Storybook decorator that switches a story into a different color scheme by
- * driving the `data-schema` / `data-contrast` attributes on `<html>` (the same
+ * driving the `data-scheme` / `data-contrast` attributes on `<html>` (the same
  * attributes the global `@dark` / `@hc` predefined states resolve against —
  * see `src/components/Root.tsx`).
  *
  * The body itself is `fill: '#surface'` (see `src/components/GlobalStyles.tsx`),
- * so flipping `data-schema` is enough to repaint the whole story canvas — no
+ * so flipping `data-scheme` is enough to repaint the whole story canvas — no
  * extra wrappers needed.
  *
- * `data-schema` writes go through `colorSchemeBridge` so the per-story
+ * `data-scheme` writes go through `colorSchemeBridge` so the per-story
  * override always wins over the `storybook-dark-mode` toolbar (which writes
  * the same attribute via the channel listener in `.storybook/preview.jsx`).
  * `data-contrast` is unmanaged by the addon and stays a direct DOM write.

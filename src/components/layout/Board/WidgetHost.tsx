@@ -1,5 +1,12 @@
 import { Styles, tasty } from '@tenphi/tasty';
-import { CSSProperties, useMemo, useRef, useState } from 'react';
+import {
+  CSSProperties,
+  ReactNode,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useFocusRing, useFocusWithin, useHover, useMove } from 'react-aria';
 import { createPortal } from 'react-dom';
 
@@ -24,7 +31,7 @@ import {
 } from './grid-core';
 import { BoardSelectModifierKey } from './use-board-select-modifier-key';
 
-import type { BoardResizeGripPlacement } from './Widget';
+import type { BoardCornerPlacement, BoardResizeGripPlacement } from './Widget';
 
 export type ResizePhase = 'start' | 'move' | 'end';
 
@@ -291,6 +298,53 @@ const GripLayerElement = tasty({
   },
 });
 
+/**
+ * A control anchored to one corner of a widget, centred on it.
+ *
+ * Lives in the same layer as the corner resize grips, which is the layer that
+ * exists precisely because a widget clips its own content: a control an app
+ * hangs off the corner itself is cropped in half by that clip, or by an
+ * ancestor's scroll container when the widget sits in the first row. Here it is
+ * a sibling of the widget rather than a descendant, so neither can reach it.
+ *
+ * Being outside the widget host also means `useMove` is not attached, so a press
+ * on the chrome cannot start a drag — no `dragCancel` entry required.
+ */
+const CornerChromeElement = tasty({
+  qa: 'BoardWidgetCornerChrome',
+  styles: {
+    position: 'absolute',
+    // The layer takes no pointer events; chrome is interactive, so it opts back in.
+    pointerEvents: 'auto',
+    zIndex: 1,
+    top: {
+      '': 'auto',
+      'corner=ne | corner=nw': 0,
+    },
+    bottom: {
+      '': 'auto',
+      'corner=se | corner=sw': 0,
+    },
+    left: {
+      '': 'auto',
+      'corner=nw | corner=sw': 0,
+    },
+    right: {
+      '': 'auto',
+      'corner=ne | corner=se': 0,
+    },
+    // Centre it on the corner: half of its own size in each direction. The
+    // default matches `ne`, which is also the default placement, so chrome is
+    // still centred rather than hanging off-centre if no corner mod matches.
+    transform: {
+      '': 'translate(50%, -50%)',
+      'corner=nw': 'translate(-50%, -50%)',
+      'corner=se': 'translate(50%, 50%)',
+      'corner=sw': 'translate(-50%, 50%)',
+    },
+  },
+});
+
 // Edge axes (n/s/e/w) get a dotted grip affordance, revealed on
 // hover/focus/resize. The dots line up along the edge (a vertical column for the
 // e/w handles, a horizontal row for n/s), matching the design-system pane grip
@@ -422,6 +476,12 @@ export interface WidgetHostProps {
    * `widgetProps.hoverRing` default.
    */
   hoverRing: boolean;
+  /** Corner-anchored chrome, drawn outside the widget's clip. */
+  cornerChrome?: ReactNode;
+  /** Which corner {@link cornerChrome} is centred on. */
+  cornerChromePlacement?: BoardCornerPlacement;
+  /** App-defined modifiers merged into the host's own, for style maps to match. */
+  mods?: Record<string, boolean | string | undefined>;
   /**
    * Resolved style overrides for the rendered widget element (per-widget
    * `styles` falling back to the board-level `widgetProps.styles`).
@@ -522,6 +582,9 @@ export function WidgetHost(props: WidgetHostProps) {
     registration,
     isCard,
     hoverRing,
+    cornerChrome,
+    cornerChromePlacement = 'ne',
+    mods: customMods,
     styles: widgetStyles,
     isDraggable,
     isResizable,
@@ -698,6 +761,59 @@ export function WidgetHost(props: WidgetHostProps) {
   };
 
   /**
+   * Pressing something interactive means the user has moved on from the
+   * selection, so the selection is dropped — always, whatever the control is and
+   * whatever it does with the event.
+   *
+   * That "always" is why this is a *capture*-phase handler and not part of
+   * `handleSelectPointerDown` below. A bubble-phase handler only sees the
+   * presses that reach the host, and a control is free to call
+   * `stopPropagation()` before that happens — React Aria's `usePress` does it by
+   * default, which is why some in-widget buttons dropped the selection and
+   * others silently did not. Capture runs top-down, so it lands before any
+   * descendant can speak. Portaled controls (a menu opened from a widget's
+   * toolbar) are covered too: React propagates events along the React tree, so a
+   * portal declared inside this widget still passes through here.
+   *
+   * Nothing is stopped or prevented here — the handler only reads the target, so
+   * the control keeps its press, its focus and its default behaviour intact.
+   */
+  const handleSelectPointerDownCapture = (e: React.PointerEvent) => {
+    if (!isSelectable || e.button !== 0) return;
+
+    if (isInteractiveTarget(e.target)) {
+      onSelectionReset?.();
+    }
+  };
+
+  // The React capture handler above is dispatched from the React root, so a
+  // descendant that stops the *native* event (charting and mapping libraries
+  // attach their own listeners and do exactly that) keeps it from ever reaching
+  // React — capture phase included. A native capture listener on the host node
+  // itself sits below any such descendant and cannot be pre-empted. The two
+  // overlap for the ordinary case and that costs nothing: clearing an already
+  // empty selection is a no-op.
+  useEffect(() => {
+    const node = hostRef.current;
+
+    if (!node || !isSelectable || !selectionCancel || !onSelectionReset) return;
+
+    const handleCapture = (event: PointerEvent) => {
+      if (event.button !== 0) return;
+
+      const target = event.target as HTMLElement | null;
+
+      if (target?.closest?.(selectionCancel)) {
+        onSelectionReset();
+      }
+    };
+
+    node.addEventListener('pointerdown', handleCapture, true);
+
+    return () => node.removeEventListener('pointerdown', handleCapture, true);
+  }, [isSelectable, selectionCancel, onSelectionReset]);
+
+  /**
    * Selecting and starting a drag are the *same* gesture: you grab the thing you
    * are about to move. So the press selects immediately and the drag arms behind
    * it — move and it drags, stay still and it was only a selection. This is what
@@ -705,7 +821,8 @@ export function WidgetHost(props: WidgetHostProps) {
    * modifier.
    *
    *  - a press on an interactive descendant belongs to that control, so the
-   *    selection is dropped and the press is left alone;
+   *    press is left alone (the selection was already dropped in the capture
+   *    phase above);
    *  - <kbd>Shift</kbd> or the platform modifier toggles membership;
    *  - a press on an unselected widget makes it the selection, so the drag that
    *    follows moves exactly what was grabbed;
@@ -718,11 +835,7 @@ export function WidgetHost(props: WidgetHostProps) {
   const handleSelectPointerDown = (e: React.PointerEvent) => {
     if (!isSelectable || !onSelect || e.button !== 0) return;
 
-    if (isInteractiveTarget(e.target)) {
-      onSelectionReset?.();
-
-      return;
-    }
+    if (isInteractiveTarget(e.target)) return;
 
     // A press this widget owns must never reach an ancestor widget host: in a
     // nested board the outer widget would otherwise select itself on top of the
@@ -854,6 +967,7 @@ export function WidgetHost(props: WidgetHostProps) {
   // its focusability have to come from here instead.
   const selectionProps = isSelectable
     ? {
+        onPointerDownCapture: handleSelectPointerDownCapture,
         onPointerDown: handleSelectPointerDown,
         // A draggable widget routes Space through the drag gate below, which
         // already enforces the host-focused rule; a non-draggable one gets no
@@ -1004,7 +1118,15 @@ export function WidgetHost(props: WidgetHostProps) {
   // The floating clone carries the "drag" affordance (raised shadow/z-index);
   // keep the hidden host flat. Keyboard drags (which never float) still
   // highlight the in-grid host, so only suppress `drag` when floating.
-  const hostMods = { ...mods, drag: isActiveDrag && !floatInOverlay, settled };
+  // App mods go UNDER the board's own: a custom mod must never be able to
+  // shadow `selected`, `drag` and friends, which the board's own style map and
+  // its accessibility wiring both depend on.
+  const hostMods = {
+    ...customMods,
+    ...mods,
+    drag: isActiveDrag && !floatInOverlay,
+    settled,
+  };
 
   // The host is always rendered first, with a stable element shape, so React
   // reuses the same DOM node across the drag transition (never remounts it).
@@ -1053,7 +1175,11 @@ export function WidgetHost(props: WidgetHostProps) {
             height: `${floatRect!.height}px`,
             pointerEvents: 'none',
           }}
-          mods={{ ...mods, drag: true, floating: true }}
+          // `hostMods` rather than `mods`, so the app's own modifiers survive the
+          // gesture: the clone IS the widget while a pointer drag is in flight
+          // (the in-grid host is hidden), and a custom state blinking off for the
+          // duration of the drag is exactly when it would be most noticeable.
+          mods={{ ...hostMods, drag: true, floating: true }}
           styles={widgetStyles as Styles}
           aria-hidden="true"
         >
@@ -1073,8 +1199,10 @@ export function WidgetHost(props: WidgetHostProps) {
   // Suppressed while the widget floats in the drag overlay: the layer mirrors the
   // widget's *grid* rect, so leaving it behind would park a live hit-zone on a
   // cell the widget has visually left.
+  // The layer is also what carries corner chrome, so it renders when either the
+  // grips or the chrome need it.
   const gripLayer =
-    cornerAxes.length && !floatInOverlay ? (
+    (cornerAxes.length || cornerChrome) && !floatInOverlay ? (
       <GripLayerElement
         {...layerHoverProps}
         style={{
@@ -1083,7 +1211,9 @@ export function WidgetHost(props: WidgetHostProps) {
           width: `${pos.width}px`,
           height: `${pos.height}px`,
         }}
-        aria-hidden="true"
+        // Only the grips are decorative. Chrome is real, focusable UI, so the
+        // layer can only be hidden from assistive tech when it holds no chrome.
+        aria-hidden={cornerChrome ? undefined : 'true'}
       >
         {cornerAxes.map((axis) => (
           <ResizeHandle
@@ -1101,6 +1231,11 @@ export function WidgetHost(props: WidgetHostProps) {
             aria-hidden="true"
           />
         ))}
+        {cornerChrome ? (
+          <CornerChromeElement mods={{ corner: cornerChromePlacement }}>
+            {cornerChrome}
+          </CornerChromeElement>
+        ) : null}
       </GripLayerElement>
     ) : null;
 

@@ -47,7 +47,7 @@ const input = JSON.parse(__PROBE_INPUT__) as ProbeInput & {
  * behaves.
  *
  * The two axes are independent, so they are separate parameters: `@hc` is a
- * contrast attribute that composes with either schema. `--scheme hc` stays
+ * contrast attribute that composes with either scheme. `--scheme hc` stays
  * accepted as the spelling Cube Cloud's probe uses, where it means light + high
  * contrast — but it cannot express dark + high contrast, which is a real palette
  * variant, so `--hc` is the flag that reaches all four.
@@ -56,10 +56,10 @@ function applyScheme(scheme: string | undefined, highContrast: boolean): void {
   const root = document.documentElement;
 
   if (scheme === 'dark') {
-    root.setAttribute('data-schema', 'dark');
+    root.setAttribute('data-scheme', 'dark');
   }
   if (scheme === 'light' || scheme === 'hc') {
-    root.setAttribute('data-schema', 'light');
+    root.setAttribute('data-scheme', 'light');
   }
   if (scheme === 'hc' || highContrast) {
     root.setAttribute('data-contrast', 'high');

@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 
 import { Button } from '../../actions/Button/Button';
 import { Select } from '../../fields/Select/Select';
@@ -36,6 +37,14 @@ const meta = {
       control: 'text',
       description:
         'Placeholder text shown in the input when the draft is empty.',
+      table: {
+        type: { summary: 'string' },
+      },
+    },
+    autoComplete: {
+      control: 'text',
+      description:
+        'HTML `autocomplete` token forwarded to the inner input (`off` to suppress autofill on a rename field).',
       table: {
         type: { summary: 'string' },
       },
@@ -209,12 +218,29 @@ export const SingleClickTrigger: Story = {
     editTrigger: 'click',
     defaultValue: 'Click me to edit',
   },
+  // Edit mode is the whole difference from `Default`, and it is one click away.
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await userEvent.click(canvas.getByText('Click me to edit'));
+
+    await waitFor(() => expect(canvas.getByRole('textbox')).toBeVisible());
+  },
 };
 
 export const ManualTrigger: Story = {
   args: {
     editTrigger: 'none',
     defaultValue: 'Use the button',
+  },
+  // `editTrigger: 'none'` means nothing but the imperative `startEditing()`
+  // opens this one, so the button is the only way to show what it does.
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await userEvent.click(canvas.getByRole('button', { name: 'Rename' }));
+
+    await waitFor(() => expect(canvas.getByRole('textbox')).toBeVisible());
   },
   render: function ManualTriggerStory(args) {
     const ref = useRef<CubeInlineInputRef>(null);

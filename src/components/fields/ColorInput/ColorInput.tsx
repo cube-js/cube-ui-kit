@@ -20,7 +20,7 @@ import {
 import { useTextField } from 'react-aria';
 
 import { useEvent } from '../../../_internal';
-import { PipetteIcon } from '../../../icons';
+import { PipetteIcon } from '../../../icons/PipetteIcon';
 import { FieldBaseProps } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
 import { ItemAction, ItemActionProvider } from '../../actions';
@@ -332,7 +332,7 @@ export const ColorInput = forwardRef(function ColorInput(
       ref={ref}
       qa={qa || 'ColorInput'}
       size={size}
-      autocomplete="off"
+      autoComplete="off"
       // A flat 20px at every field size, which is what this has always rendered.
       // Neither of the other two options is right here: tracking `$size` puts a
       // large field's swatch against the border, because a text input hangs its

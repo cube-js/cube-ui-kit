@@ -11,12 +11,10 @@ import { useTree, useTreeItem, VisuallyHidden } from 'react-aria';
 
 import { useEvent } from '../../../_internal/hooks';
 import { useI18n } from '../../../i18n';
-import {
-  ArrowNarrowDownIcon,
-  ArrowNarrowUpIcon,
-  DirectionIcon,
-  MoreIcon,
-} from '../../../icons';
+import { ArrowNarrowDownIcon } from '../../../icons/ArrowNarrowDownIcon';
+import { ArrowNarrowUpIcon } from '../../../icons/ArrowNarrowUpIcon';
+import { DirectionIcon } from '../../../icons/DirectionIcon';
+import { MoreIcon } from '../../../icons/MoreIcon';
 import { getColorTheme, useColorTheme } from '../../../tokens/color-theme';
 import { usePaletteVersion } from '../../../tokens/palette-config';
 import { SIZE_NAME_TO_KEY, SIZES } from '../../../tokens/sizes';

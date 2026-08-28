@@ -1,6 +1,7 @@
 import { ComponentMeta, Story } from '@storybook/react-vite';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 
+import { NO_SNAPSHOT } from '../../../stories/chromatic';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Button } from '../../actions/Button/Button';
 import { Block } from '../../Block';
@@ -79,6 +80,8 @@ ViaProvider.play = async ({ canvasElement }) => {
 
   await waitFor(() => expect(canvas.getByRole('tooltip')).toBeVisible());
 };
+// Opens the same tooltip `Default` does — the difference is which API wires the trigger.
+ViaProvider.parameters = NO_SNAPSHOT;
 
 export const ViaProviderWithActiveWrap: typeof ViaProviderTemplate =
   ViaProviderTemplate.bind({});
@@ -95,6 +98,8 @@ ViaProviderWithActiveWrap.play = async ({ canvasElement }) => {
 
   await waitFor(() => expect(canvas.getByRole('tooltip')).toBeVisible());
 };
+// `activeWrap` changes which element carries the trigger, not what the open tooltip looks like — same image as `Default`.
+ViaProviderWithActiveWrap.parameters = NO_SNAPSHOT;
 
 export const Light: typeof Template = Template.bind({});
 Light.args = { isLight: true };
@@ -104,7 +109,7 @@ const UnbreakableContentTemplate: Story<CubeTooltipTriggerProps> = (args) => (
   <TooltipTrigger {...args}>
     <Button qa="UnbreakableTrigger">Hover to show a tooltip</Button>
     <Tooltip>
-      https://cubecloud.example.com/deployments/12345/schema/files/model/cubes/very_long_cube_name.yml
+      https://cubecloud.example.com/deployments/12345/scheme/files/model/cubes/very_long_cube_name.yml
     </Tooltip>
   </TooltipTrigger>
 );

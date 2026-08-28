@@ -18,7 +18,7 @@ import {
 } from 'react-aria';
 import { useToggleState } from 'react-stately';
 
-import { Icon } from '../../../icons/index';
+import { Icon } from '../../../icons/Icon';
 import { FieldBaseProps, ToggleSelectionProps } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';

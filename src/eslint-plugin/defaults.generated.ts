@@ -73,6 +73,8 @@ export const DEFAULTS: DefaultsRegistry = {
         collisionMode: { kind: 'default', value: 'revert' },
         cols: { kind: 'default', value: 12 },
         compact: { kind: 'default', value: 'vertical' },
+        cornerChromePlacement: { kind: 'default', value: 'ne' },
+        dragCancel: { kind: 'default', value: 'BOARD_SELECTION_CANCEL' },
         extraRows: { kind: 'default', value: 0 },
         hoverRing: { kind: 'default', value: true },
         isAligned: { kind: 'default', value: false },
@@ -529,6 +531,7 @@ export const DEFAULTS: DefaultsRegistry = {
     },
     NumberInput: {
       props: {
+        autoComplete: { kind: 'default', value: 'off' },
         hideStepper: { kind: 'default', value: false },
         size: { kind: 'default', value: 'medium' },
         suffixPosition: { kind: 'default', value: 'before' },

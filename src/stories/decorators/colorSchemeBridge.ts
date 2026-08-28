@@ -1,5 +1,5 @@
 /**
- * Single owner of the `<html data-schema="…">` attribute used by the
+ * Single owner of the `<html data-scheme="…">` attribute used by the
  * Glaze-generated `@dark` predefined state in `src/components/Root.tsx`.
  *
  * Two writers route through here:
@@ -25,9 +25,9 @@ const apply = (): void => {
   const next = overrideScheme ?? toolbarScheme;
 
   if (next == null) {
-    document.documentElement.removeAttribute('data-schema');
+    document.documentElement.removeAttribute('data-scheme');
   } else {
-    document.documentElement.setAttribute('data-schema', next);
+    document.documentElement.setAttribute('data-scheme', next);
   }
 };
 

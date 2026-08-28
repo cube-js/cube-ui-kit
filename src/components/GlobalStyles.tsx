@@ -21,7 +21,7 @@ interface GlobalStylesProps {
  * Body styles applied via useGlobalStyles.
  *
  * `fill` and `color` use scheme-aware Glaze tokens so the whole page flips
- * automatically when `<html data-schema="dark">` (or `prefers-color-scheme: dark`)
+ * automatically when `<html data-scheme="dark">` (or `prefers-color-scheme: dark`)
  * is active — see `src/tokens/palette.ts` and `src/components/Root.tsx`.
  */
 const BODY_STYLES: Styles = {

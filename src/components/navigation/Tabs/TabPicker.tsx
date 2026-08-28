@@ -1,5 +1,6 @@
 import { useI18n } from '../../../i18n';
-import { CloseIcon, MoreIcon } from '../../../icons';
+import { CloseIcon } from '../../../icons/CloseIcon';
+import { MoreIcon } from '../../../icons/MoreIcon';
 import { ItemAction } from '../../actions/ItemAction';
 import { FilterPicker } from '../../fields/FilterPicker/FilterPicker';
 

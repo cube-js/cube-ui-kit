@@ -1,5 +1,6 @@
 import { StoryFn } from '@storybook/react-vite';
 
+import { NO_SNAPSHOT } from '../../../stories/chromatic';
 import {
   ICON_ARG,
   TIME_VALUE_ARG,
@@ -83,3 +84,5 @@ WithLimitedRange.args = {
   minValue: parseAbsoluteDate('2023-10-04'),
   maxValue: parseAbsoluteDate('2023-12-15'),
 };
+// The range bounds are only enforced while typing; at rest this is `Default`.
+WithLimitedRange.parameters = NO_SNAPSHOT;

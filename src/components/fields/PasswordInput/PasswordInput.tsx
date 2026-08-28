@@ -2,7 +2,8 @@ import { ForwardedRef, forwardRef, useCallback, useRef, useState } from 'react';
 import { useTextField } from 'react-aria';
 
 import { useI18n } from '../../../i18n';
-import { EyeIcon, EyeInvisibleIcon } from '../../../icons';
+import { EyeIcon } from '../../../icons/EyeIcon';
+import { EyeInvisibleIcon } from '../../../icons/EyeInvisibleIcon';
 import { chain, mergeProps, useBufferedValue } from '../../../utils/react';
 import {
   castNullableStringValue,
@@ -38,6 +39,7 @@ function PasswordInput(
   let [type, setType] = useState('password');
   let {
     labelProps: userLabelProps,
+    inputProps: userInputProps,
     suffix,
     multiLine,
     inputRef: propsInputRef,
@@ -100,7 +102,11 @@ function PasswordInput(
     <TextInputBase
       ref={ref}
       labelProps={mergedLabelProps}
-      inputProps={{ ...inputProps, 'data-input-type': 'passwordinput' }}
+      inputProps={mergeProps(
+        inputProps,
+        { 'data-input-type': 'passwordinput' },
+        userInputProps,
+      )}
       inputRef={inputRef}
       inputStyles={{ paddingRight: '4x' }}
       type={type}

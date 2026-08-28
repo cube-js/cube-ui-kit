@@ -74,11 +74,11 @@ Customizes the root element of the tooltip.
 These properties allow direct style application without using the `styles` prop:
 
 - **Base:** `display`, `font`, `preset`, `hide`, `whiteSpace`, `opacity`, `transition`
-- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`
+- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `scrollMargin`
 - **Dimension:** `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`
 - **Block:** `border`, `radius`, `shadow`, `outline`, `padding`, `paddingInline`, `paddingBlock`, `overflow`, `scrollbar`, `textAlign`
 - **Color:** `color`, `fill`, `fade`, `image`
-- **Flow:** `flow`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gap`, `columnGap`, `rowGap`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`
+- **Flow:** `flow`, `place`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gap`, `columnGap`, `rowGap`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`
 
 ### Modifiers
 
@@ -157,7 +157,7 @@ Control where the tooltip appears relative to its trigger:
 The tooltip is capped at `36x` wide (or the viewport minus `4x`, whichever is smaller) and wraps its content to stay inside that cap. Runs with no spaces — URLs, tokens, identifiers, error strings — are broken mid-word rather than allowed to overflow the bubble.
 
 ```jsx
-<TooltipProvider title="https://cubecloud.example.com/deployments/12345/schema/files/model/cubes/very_long_cube_name.yml">
+<TooltipProvider title="https://cubecloud.example.com/deployments/12345/scheme/files/model/cubes/very_long_cube_name.yml">
   <Button>Hover me</Button>
 </TooltipProvider>
 ```

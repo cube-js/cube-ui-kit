@@ -47,7 +47,7 @@ const darkTheme = create({
 
 configure({ testIdAttribute: 'data-qa', asyncUtilTimeout: 10000 });
 
-// Bridge the `storybook-dark-mode` toolbar to `<html data-schema>` (the
+// Bridge the `storybook-dark-mode` toolbar to `<html data-scheme>` (the
 // attribute the Glaze `@dark` predefined state resolves against). Subscribed
 // at module scope so the listener is in place before the addon emits its
 // initial event after manager/preview channels connect.
@@ -66,7 +66,7 @@ const ThemedDocsContainer = ({ children, ...props }) => {
   const [isDark, setIsDark] = useState(
     () =>
       typeof document !== 'undefined' &&
-      document.documentElement.getAttribute('data-schema') === 'dark',
+      document.documentElement.getAttribute('data-scheme') === 'dark',
   );
 
   useEffect(() => {
@@ -137,7 +137,7 @@ export const parameters = {
   // `storybook-dark-mode` configuration. No `current` so the addon resolves
   // OS `prefers-color-scheme` on first load. `stylePreview: false` keeps the
   // addon from also injecting dark/light classes on the preview body — the
-  // `data-schema` attribute set by `colorSchemeBridge` is the only signal
+  // `data-scheme` attribute set by `colorSchemeBridge` is the only signal
   // we care about (see `src/components/Root.tsx` and `src/tokens/palette.ts`).
   darkMode: {
     dark: darkTheme,

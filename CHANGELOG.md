@@ -1,5 +1,153 @@
 # @cube-dev/ui-kit
 
+## 0.172.0
+
+### Minor Changes
+
+- [#1372](https://github.com/cube-js/cube-ui-kit/pull/1372) [`7f1f7227`](https://github.com/cube-js/cube-ui-kit/commit/7f1f722749ac0cdc154d2c1abe70a6ee40c11022) Thanks [@tenphi](https://github.com/tenphi)! - **Breaking:** reverted the `schema` term back to `scheme`, and renamed the `<html>` attribute to match. `schema` was the wrong word — the platform calls this a color _scheme_ (`prefers-color-scheme`, the `color-scheme` property, `<meta name="color-scheme">`), and in Cube's own vocabulary "schema" means the data model, so a `useSchema()` that returns `'light' | 'dark'` sits next to Cloud's `useSchema()` for SQL Runner as a pure homonym. This undoes the rename shipped in 0.170.0 ([#1362](https://github.com/cube-js/cube-ui-kit/pull/1362)) and fixes the older misspelling it was propagating.
+
+  The API, back to `scheme`:
+
+  - `renderColorTokens()` / `renderPaletteTokens()` / `RenderPaletteOptions`: the `schema` option is `scheme` again — `renderColorTokens({ scheme: 'dark' })`.
+  - `<CubeLogo>` / `<CubeFullLogo>`: the `schema` prop is `scheme` again.
+  - `useSchema()`, `resolveSchema()`, `subscribeSchema()` and `ColorSchema` — added in 0.170.0 — are now `useScheme()`, `resolveScheme()`, `subscribeScheme()` and `ColorScheme`. `useHighContrast()` and `resolveHighContrast()` are unchanged.
+  - The probe's `tokenOptions.schema` is `tokenOptions.scheme` again, and the `pnpm probe` CLI flag `--schema` is `--scheme` (`--scheme hc` still means light + high contrast).
+
+  The DOM opt-in, renamed for the first time:
+
+  - `<html data-schema="dark">` is now `<html data-scheme="dark">`, and the tasty state is `@root(scheme=…)` — so `@dark` compiles to `:root[data-scheme="dark"]`. `data-contrast` is unchanged.
+
+  No aliases, on either half. An alias for the attribute was measured and rejected: teaching the `@dark` state to accept both spellings takes a four-variant palette style map from 21 rules / 3.6 KB to 52 rules / 10.3 KB, because every arm has to be expanded against both attributes — a permanent 2.9× on the kit's most-used state to save a one-line edit. An app that wants a transition window can write both attributes itself; the kit reads only `data-scheme`.
+
+  To migrate, rename the option, the prop, the four hooks and the attribute at your call sites. Apps that set the attribute from JS need the one write updated (`document.documentElement.setAttribute('data-scheme', …)`), and any hand-written CSS selecting `[data-schema]` needs the same rename.
+
+## 0.171.0
+
+### Minor Changes
+
+- [#1370](https://github.com/cube-js/cube-ui-kit/pull/1370) [`154a701f`](https://github.com/cube-js/cube-ui-kit/commit/154a701fab94eb02b343dbd766ef91071dd38724) Thanks [@tenphi](https://github.com/tenphi)! - `<Board collisionMode="swap">` now **places** a widget arriving from another board instead of cancelling the transfer.
+
+  `swap` used to treat a cross-board arrival as strict insertion: the anchor cell had to be empty, and releasing over an occupied one cancelled the whole transfer — both boards snapped back and `onWidgetTransfer` never fired. That made the mode's two halves unusable together, since a board that wanted in-board swapping had to give up cross-board drops (or pick `downscale` and give up the swap).
+
+  A cross-board arrival now resolves the same way `downscale` does: it keeps its size where the drop cell allows, downscales into the room to its right and below where it does not, and holds the last cell it fitted in as the pointer sweeps across a destination widget — so releasing over an occupied cell commits what the preview was showing. Entering a board directly over an occupied cell places the widget in the nearest cell that fits. Destination widgets are still never exchanged, pushed, or reflowed to make space — only the arrival moves. In-board drops are unchanged and still swap.
+
+  Also fixes a cross-board landing under any `collisionMode` where a refused placement committed the widget one row above the board (`y: -1`) instead of on it.
+
+### Patch Changes
+
+- [#1370](https://github.com/cube-js/cube-ui-kit/pull/1370) [`154a701f`](https://github.com/cube-js/cube-ui-kit/commit/154a701fab94eb02b343dbd766ef91071dd38724) Thanks [@tenphi](https://github.com/tenphi)! - `<Board collisionMode="downscale">` (and the cross-board half of `"swap"`) now shrinks a widget into free room on **either** side of a blocker, not just the left.
+
+  `gridBounds` clamps a drag anchor to `cols - w`, which assumes the widget keeps the width it started with. So when the blocker sat to the left and the room to its right was narrower than the widget, every anchor a pointer could produce landed inside the blocker — the mode whose whole job is to shrink the widget into that room never got offered it, and the drop just reverted. Dropping into room on the _left_ always worked, because column 0 is reachable whatever the widget's width.
+
+  A blocked drop whose anchor is **pinned against the grid edge** now also considers the cells beyond it that the clamp hid, taking the largest fit among them. An anchor short of the limit is the pointer's own choice — every cell between it and the limit was available to aim at — so a blocked drop there still reverts, and every drop that resolved before resolves to exactly the same cell. The row axis clamps the same way, so boards with a finite `maxRows` get the same fix below a blocker.
+
+## 0.170.0
+
+### Minor Changes
+
+- [#1362](https://github.com/cube-js/cube-ui-kit/pull/1362) [`cc139397`](https://github.com/cube-js/cube-ui-kit/commit/cc1393979779b8f8d776d83e97b02e7805cd3f7a) Thanks [@tenphi](https://github.com/tenphi)! - Added `useSchema()` and `useHighContrast()` — the JS answer to the `@dark` and `@hc` states, for the two places a state map cannot reach: surfaces that take values rather than CSS (a Vega spec, a CodeMirror/Monaco theme, an iframe) and controls whose value _is_ the ambient condition. Both follow the `<html data-schema>` / `<html data-contrast>` opt-in first and `prefers-color-scheme` / `prefers-contrast` second, exactly as the states do, and re-render on a change. `resolveSchema()`, `resolveHighContrast()` and `subscribeSchema()` cover the same ground outside React. Styling still belongs in a state map.
+
+- [#1362](https://github.com/cube-js/cube-ui-kit/pull/1362) [`cc139397`](https://github.com/cube-js/cube-ui-kit/commit/cc1393979779b8f8d776d83e97b02e7805cd3f7a) Thanks [@tenphi](https://github.com/tenphi)! - **Breaking:** renamed the `scheme` term to `schema` across the API, so one word names the concept the `data-schema` attribute and the `@root(schema=…)` state already use.
+
+  - `renderColorTokens()` / `renderPaletteTokens()` / `RenderPaletteOptions`: the `scheme` option is now `schema` — `renderColorTokens({ schema: 'dark' })`.
+  - `<CubeLogo>` / `<CubeFullLogo>`: the `scheme` prop is now `schema`.
+  - The probe's `tokenOptions.scheme` is now `tokenOptions.schema`, and the `pnpm probe` CLI flag `--scheme` is now `--schema` (`--schema hc` still means light + high contrast).
+
+  No aliases: update the call sites.
+
+### Patch Changes
+
+- [#1364](https://github.com/cube-js/cube-ui-kit/pull/1364) [`9cf2d8d7`](https://github.com/cube-js/cube-ui-kit/commit/9cf2d8d794c35da9a0f169bbab362045eba86a6a) Thanks [@tenphi](https://github.com/tenphi)! - **`Board`: pressing an interactive control inside a widget now always drops the selection.** `selectionCancel` promises that a press on an interactive descendant drops the selection, but the reset used to ride on the widget host's bubble-phase `onPointerDown` — so it only happened for presses that actually reached the host. A control that calls `stopPropagation()` first (React Aria's `usePress` does by default, and charting libraries do it on the native event) or one that renders in a portal never got there, which is why a widget's gear button dropped the selection while the chart's own toolbar button silently left it standing. The reset now runs in the capture phase, both through React (so a portal declared inside the widget is still covered) and as a native listener on the host node itself (so a descendant that stops the native event cannot pre-empt it). Nothing is stopped or prevented in either handler, so every control keeps its press, its focus and its default behaviour. A press on content a widget portaled outside the board also no longer starts a marquee behind the overlay.
+
+## 0.169.1
+
+### Patch Changes
+
+- [#1360](https://github.com/cube-js/cube-ui-kit/pull/1360) [`167ef87d`](https://github.com/cube-js/cube-ui-kit/commit/167ef87d5373ba61e30c46baee4280b7acfa1481) Thanks [@tenphi](https://github.com/tenphi)! - Fix `inputProps` on `TextInput`, `TextArea`, `PasswordInput`, `SearchInput`, `NumberInput` and `CommandTextArea`. Each of these passes its own React Aria props down under the same `inputProps` name as the caller's, and one side was overwriting the other wholesale: `TextInput`, `TextArea`, `NumberInput` and `CommandTextArea` dropped the caller's `inputProps` entirely, while `PasswordInput` and `SearchInput` did the opposite and replaced the hook's value tracking, ids and ARIA attributes with it. The two are now merged, so a key you set wins and event handlers are chained rather than replaced.
+
+## 0.169.0
+
+### Minor Changes
+
+- [#1357](https://github.com/cube-js/cube-ui-kit/pull/1357) [`b9b4cf92`](https://github.com/cube-js/cube-ui-kit/commit/b9b4cf92411bce210ff3b4142e43bdee758a8abe) Thanks [@tenphi](https://github.com/tenphi)! - Add a proper `autoComplete` prop to the text-input family. `TextInput`, `TextArea`, `PasswordInput`, `SearchInput`, `NumberInput`, `CommandTextArea` and `TextInputMapper` (through `keyProps` / `valueProps`) now accept `autoComplete` in the standard React casing, and `InlineInput` gained the prop as well. The lowercase `autocomplete` prop still works as a deprecated alias; `autoComplete` wins when both are set.
+
+  Previously the camelCase prop — the one React Aria's own types advertise — was silently dropped, and the attribute was written unconditionally after `inputProps` was merged, so it also overwrote an `autoComplete` coming from `inputProps` or from a React Aria hook with `undefined`. As a result `NumberInput` now renders the `autocomplete="off"` that `useNumberField` asks for.
+
+### Patch Changes
+
+- [#1354](https://github.com/cube-js/cube-ui-kit/pull/1354) [`b6d51af1`](https://github.com/cube-js/cube-ui-kit/commit/b6d51af1cb8fa806eaeb17d4012ca068c34823f4) Thanks [@tenphi](https://github.com/tenphi)! - Import defining files directly instead of through barrels along the `Root` → `AlertDialog` → `Dialog` chain, and replace every `from '…/icons'` barrel import inside the library with a direct icon import. Nothing about the public API changes — the barrels still re-export everything — but the module graph gets narrower: pulling in `Root` no longer transitively drags in `Menu`, `CommandMenu`, `Form` and all 133 icon components, which is both better for a consumer's tree-shaking and what lets Chromatic's TurboSnap scope a build to the stories a change actually affects.
+
+- [#1354](https://github.com/cube-js/cube-ui-kit/pull/1354) [`b6d51af1`](https://github.com/cube-js/cube-ui-kit/commit/b6d51af1cb8fa806eaeb17d4012ca068c34823f4) Thanks [@tenphi](https://github.com/tenphi)! - Field labels show their necessity indicator again, and a required `ComboBox` says so to assistive technology. `Label` only appended the `*` / `(required)` / `(optional)` marker when its child was plain text, and `FieldWrapper` — which every labelled input goes through — always hands it an element tree, so `isRequired` and `necessityIndicator` reached the label and rendered nothing. The marker now comes from a shared `NecessityIndicatorMark`, which `FieldWrapper` places against the label text rather than after the full-width row. Separately, `ComboBox` builds its own trigger instead of going through a react-aria field hook and never forwarded `isRequired` to it, so a required combobox rendered markup byte-identical to an optional one — no `aria-required`, nothing for a screen reader to announce. Ten other components still have that second gap (`Select`, `Picker`, `FilterPicker`, `ListBox`, `FilterListBox`, `Switch`, `Slider`, `ColorInput`, `SearchComboBox`, `FileInput`); they are unchanged here.
+
+- [#1359](https://github.com/cube-js/cube-ui-kit/pull/1359) [`1cf5c9f6`](https://github.com/cube-js/cube-ui-kit/commit/1cf5c9f6e66a06818e1fb3af723bfa9553b1d18d) Thanks [@tenphi](https://github.com/tenphi)! - `DialogTrigger`: make `shouldCloseOnInteractOutside` actually reach the popover.
+
+  The prop was inert for a popover type Dialog. `PopoverTrigger` wraps the caller's predicate in its own resolver, and that resolver consulted the predicate last — after the automatic behaviours. Every `Button` and `ItemButton` carries `data-popover-dismiss`, so the auto-dismiss branch matched first, scheduled the close and returned, and the predicate was never called. A caller could not keep a popover open for a chosen element: it closed on every outside interaction regardless of what the predicate would have said.
+
+  The predicate is now asked first, so an explicit "keep me open for this element" wins over the automatic dismiss. Returning `false` still lets the click through to the control that was pressed (the resolver only reports "close" when the popover really should close, which is what stops React Aria from swallowing the click), so a guarded button both keeps the popover open and runs its own `onPress`.
+
+  One thing to know when writing the predicate: React Aria passes the element the pointer landed on, which for a `Button` is the label inside it rather than the `<button>` itself. Guard with `contains()`, not an identity check — `(el) => !myRef.current?.UNSAFE_getDOMNode()?.contains(el)`.
+
+  Nothing changes for callers that never passed the prop: without a predicate the resolver behaves exactly as before.
+
+## 0.168.1
+
+### Patch Changes
+
+- [#1355](https://github.com/cube-js/cube-ui-kit/pull/1355) [`207828aa`](https://github.com/cube-js/cube-ui-kit/commit/207828aa0cb4b5dd3c9d33f4ccf6a76027f12ed3) Thanks [@tenphi](https://github.com/tenphi)! - `Board`: document that it measures itself, and pin the no-paint-before-measurement guarantee with a test.
+
+  Two behaviours were already true and nowhere written down, which is enough to make a consumer rebuild both: a board observes its own container and derives the column width from it, and it renders **no widgets at all** until it has a width. The second is what makes the first look unreliable — at width 0 a column works out negative, so a board that painted then would flash every widget at a nonsense size, and a consumer who saw that would reasonably conclude the board cannot size itself.
+
+  The result is a recognisable workaround: measure the box yourself, feed it back in as `width`, and gate your own render on `measured > 0` — a `ResizeObserver` and an extra DOM node reimplementing what the board already does, plus a guaranteed empty first frame from the redundant gate.
+
+  No behaviour change. A new **Sizing** section says what `width` is actually for (SSR, tests, forced-size exports — not everyday use), and a browser test now fails if the gate is removed. It has to be a browser test: jsdom reports every box as 0, so the situation under test cannot arise there.
+
+## 0.168.0
+
+### Minor Changes
+
+- [#1344](https://github.com/cube-js/cube-ui-kit/pull/1344) [`7f786591`](https://github.com/cube-js/cube-ui-kit/commit/7f7865910ae4f9858d5052cd1452cb457530ce92) Thanks [@tenphi](https://github.com/tenphi)! - Collapse the kit's stylesheet writes into one style invalidation per commit.
+
+  Every `insertRule()` on a live stylesheet invalidates style for that sheet's scope. Kit components inject during React's render phase, so when anything else reads layout in the same pass — a tooltip positioning itself, `TextArea` autosizing, a virtualized table measuring rows — the two interleave and the browser is forced to recalculate style between every injection.
+
+  `<Root>` now enables tasty's `batchInjection` and opens a batch window for its own commits. A commit that mounts a portal does not re-render `<Root>`, so windows are opened per portal boundary too: `<Portal>` (tooltips) and `<Overlay>` (popovers, modals and trays — the `Dialog` and `Menu` surfaces). Those are the commits where injection and measurement interleave worst, because react-aria positions the overlay from a layout effect in the same commit that mounts it.
+
+  Writes are queued and applied together, and the flush happens in `useInsertionEffect` — before any `useLayoutEffect` — so nothing can measure an element whose rules have not landed yet. Any commit without a window in it writes straight through exactly as before.
+
+  No API change: no new props, no new setup. SSR is unaffected — styles are collected as text there and the provider is inert without a `document`.
+
+## 0.167.0
+
+### Minor Changes
+
+- [#1350](https://github.com/cube-js/cube-ui-kit/pull/1350) [`ee97f365`](https://github.com/cube-js/cube-ui-kit/commit/ee97f3651bca7c1fd9bcf8201eb2a236a885b6f2) Thanks [@tenphi](https://github.com/tenphi)! - `Board`: corner-anchored widget chrome, app-defined widget modifiers, a reason on `onLayoutChange`, and a real `dragCancel` default.
+
+  - **`dragCancel` now defaults to `BOARD_SELECTION_CANCEL`** instead of no cancel at all. A control inside a widget has to keep its own press whether or not the board happens to support selection — previously that only worked on a _selectable_ board, where `selectionCancel` incidentally doubled as the drag guard, so every other board had to hand-write a selector or a pointer-down on a child's button would drag the widget instead. Pass your own selector to narrow or widen it, or `''` for the old behaviour.
+  - **`cornerChrome`** (with **`cornerChromePlacement`**, default `'ne'`) puts a control on a widget's corner, centred on it. It renders in the same layer as the corner resize grips, which is the layer that escapes the widget's own `overflow: hidden` — chrome hung off the corner from inside a widget is cropped in half by that clip, or by an ancestor's scroll container when the widget sits in the first row. Being outside the widget host, it is also outside the drag gesture, so pressing it can never start a drag and it needs no `dragCancel` entry.
+  - **`mods`** on `Board.Widget` (and board-wide via `widgetProps`) merges app-defined modifiers into the ones the board sets, so a `styles` map can match on app state (`mods={{ editing: true }}` with `styles={{ shadow: { editing: '…' } }}`) instead of the app swapping whole style objects per state. Board's own modifiers are applied last, so a custom one can never shadow `selected`, `drag` and the rest, which the board's styling and its accessibility wiring both depend on.
+  - **`onLayoutChange` now reports why the layout changed** — `'drag'`, `'resize'`, `'transfer'`, or `'normalize'` for the commits no gesture caused (a reflow for a changed column count, an `isAutoHeight` widget growing). An app that persisted every commit had no way to tell a user's edit from the board fitting itself to a constraint that moved, so it wrote the reflow back as an edit and marked a document dirty nobody touched. The argument is additive: existing one-parameter handlers keep working.
+
+  The docs also now explain that widget style maps are **merged**: a map with no `''` entry extends the defaults, while one that sets `''` replaces them and needs `'@inherit'` to keep any. Reaching for `'': false` to switch a single state off is the easy mistake — it silently takes `selected`, `pre-selected` and the drag lift with it.
+
+- [#1351](https://github.com/cube-js/cube-ui-kit/pull/1351) [`2caf1072`](https://github.com/cube-js/cube-ui-kit/commit/2caf1072c29e90098ff387d42329ecf3bed6fdce) Thanks [@tenphi](https://github.com/tenphi)! - New: `resolveTokenValue()`, `resolveTokenValues()` and `resolvePresetValues()`, plus the `useTokenValue()` / `useTokenValues()` / `usePresetValues()` hooks — a supported way to ask the kit for a design token's _resolved_ value, for consumers rendering into a surface our stylesheets do not reach: a third-party iframe (Stripe Elements), a CodeMirror or Monaco theme, a chart spec. Those take colors, lengths and font descriptors as values, and `var(--purple-color)` means nothing to them.
+
+  Reading tokens off `getComputedStyle()` by hand fails silently. `Root` declares the token block on `<body>`, so `<html>`, a detached node, and a tree that has not mounted `Root` yet are all outside it — and a token read from outside does not come back empty, it comes back as tasty's registered `@property` default. Some of those are obvious duds (`rgba(0, 0, 0, 0)`, `0px`), but many are ordinary-looking values that are merely wrong: `--gap` reads `4px` rather than the kit's `8px`, `--transition` reads `80ms`, `--radius` reads `6px`. So the helpers do not inspect the value. They read `$tokens-applied`, a new marker the token block declares alongside the tokens, and use it to answer the only question that settles the matter — are the kit's tokens in effect on this element? Off that surface every read returns `null` (or an explicit `fallback`) and warns once in development; on it, the computed value is the truth, so a token that genuinely is `transparent` or `0px` — `#clear`, `#scrollbar-outline`, `$h2-letter-spacing` — comes through intact. The hooks re-resolve when the palette is re-seeded or the scheme / contrast tier flips, and match the server's markup while hydrating.
+
+  All six take `{ element, fallback }` — pass `element` to resolve against a local override (a subtree with its own `tokens` prop, or one under a differing `data-schema`) instead of the document.
+
+- [#1345](https://github.com/cube-js/cube-ui-kit/pull/1345) [`8fdee382`](https://github.com/cube-js/cube-ui-kit/commit/8fdee38230d0aee519df7db8c6edd5a6951910b7) Thanks [@tenphi](https://github.com/tenphi)! - Update Tasty to 3.3.1 (from 3.1.0). Three things come with it.
+
+  **Color tokens no longer emit companion channel variables, and `colorSpace` is deprecated.** A `#name` token used to declare `--name-color` plus a decomposed companion — `--name-color-rgb` here, since the kit configured `colorSpace: 'rgb'` — and only the companion is gone: `--name-color` is emitted exactly as authored. Opacity has used CSS relative color syntax since 3.1.0, so nothing inside Tasty needed the channels any more. **If your own CSS reads a companion — `rgb(var(--primary-color-rgb) / .2)` and the like — it silently stops resolving.** Rewrite it against the token itself: `oklch(from var(--primary-color) l c h / .2)`, which works on any color, including the ones no build-time conversion could evaluate. `configure({ colorSpace })` now warns in development and does nothing; the kit no longer sets it. One more consequence worth planning for: a token is emitted in the space it was authored in, so `getComputedStyle(el).backgroundColor` now returns `oklch(…)` / `oklab(…)` where it used to return `rgb(…)`. The color is the same, but any test or code that parses those strings by hand has to stop assuming sRGB syntax.
+
+  **The inherited color is now readable as a color, through `$current-color`.** `#current` keeps emitting the `currentcolor` keyword, so it still resolves against the element that reads it — which is what lets a ramp express its disabled state once, in `color`, and have everything painted from `#current` below it fade along. Beside that, every `color` style now publishes `--current-color`, registered with `initial-value: currentcolor`, for the cases the keyword cannot serve: hand-authored CSS, or anywhere the inherited color is needed as a _color_. Read it as `$current-color`. A value that already reads the color it inherits — `#current`, a `#current` fade — is deliberately not published into it, since resolving it again one level down would fade it twice.
+
+  **Opt-in batched style injection** (from 3.2.0): `configure({ batchInjection: true })` plus a `<TastyBatchProvider>` queue a commit's stylesheet writes into one FIFO and apply them together, so the document is style-invalidated once per flush instead of once per component — which matters in a tree that measures layout during render (popovers, autosizing inputs, virtualized lists). The provider flushes in `useInsertionEffect`, before any layout effect, so a queued write can never be observed by a measurement. `flushStyles()`, `hasPendingStyleWrites()` and `resetStyleBatch()` come with it, and all of it is re-exported from `@cube-dev/ui-kit`. Batching stays off unless an app turns it on.
+
+### Patch Changes
+
+- [#1345](https://github.com/cube-js/cube-ui-kit/pull/1345) [`8fdee382`](https://github.com/cube-js/cube-ui-kit/commit/8fdee38230d0aee519df7db8c6edd5a6951910b7) Thanks [@tenphi](https://github.com/tenphi)! - `no-redundant-default-prop` now knows three defaults it used to miss: `ItemTable`'s `size` and `summary`, and `Pagination`'s `summary`. The registry it checks against is parsed line by line out of `*.docs.mdx`, so a documented default whose `(default: …)` annotation had been hard-wrapped onto the next line was invisible to the parser. Unwrapping the documentation surfaced them, and the generator proved each value against the component it belongs to.
+
+- [#1352](https://github.com/cube-js/cube-ui-kit/pull/1352) [`40261f63`](https://github.com/cube-js/cube-ui-kit/commit/40261f631ff684c624f78f4132ab63338da211c7) Thanks [@tenphi](https://github.com/tenphi)! - `useContextMenu` and `useAnchoredMenu` now re-read `defaultMenuProps` on every render instead of snapshotting them when the menu opens. A menu whose content lives in those defaults — the row context menu in `Tree` and the tab context menu in `Tabs` both do — stayed frozen while open, so items appearing, disappearing or flipping `isDisabled` were invisible until it was closed and reopened. Runtime props passed to `open()`/`update()` still take precedence and are unaffected.
+
 ## 0.166.0
 
 ### Minor Changes

@@ -1,7 +1,7 @@
 import { IconCheck, IconLoader2 } from '@tabler/icons-react';
 import { ReactNode, useRef, useState } from 'react';
 
-import { CheckIcon } from '../../../icons';
+import { CheckIcon } from '../../../icons/CheckIcon';
 import { Button } from '../../actions/Button/Button';
 import { Item } from '../../content/Item/Item';
 import { Flex } from '../../layout/Flex';

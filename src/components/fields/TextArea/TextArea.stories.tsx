@@ -115,6 +115,11 @@ export default {
         defaultValue: { summary: false },
       },
     },
+    autoComplete: {
+      control: { type: 'text' },
+      description:
+        'HTML `autocomplete` token telling the browser what to autofill (`street-address`, `off`, …)',
+    },
 
     /* Events */
     onChange: {

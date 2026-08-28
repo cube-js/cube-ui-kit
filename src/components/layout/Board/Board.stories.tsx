@@ -1,6 +1,8 @@
 import { Meta, StoryFn } from '@storybook/react-vite';
 import { ReactNode, useState } from 'react';
 
+import { SettingsIcon } from '../../../icons/SettingsIcon';
+import { NO_SNAPSHOT } from '../../../stories/chromatic';
 import { Button } from '../../actions/Button';
 import { Text } from '../../content/Text';
 import { Title } from '../../content/Title';
@@ -149,6 +151,8 @@ Selection.args = {
   showGridLines: 'drag',
 };
 Selection.parameters = {
+  // Identical to `Default` at rest — a selection only exists once a widget is pressed.
+  ...NO_SNAPSHOT,
   docs: {
     description: {
       story:
@@ -317,6 +321,46 @@ const FixedMatrixTemplate: StoryFn<CubeBoardProps> = (args) => (
   </div>
 );
 
+const CornerChromeTemplate: StoryFn<CubeBoardProps> = (args) => (
+  <Board
+    fill="#light"
+    padding="1x"
+    radius="1r"
+    widgetProps={{ isCard: true, resizeGripPlacement: 'corner' }}
+    defaultLayout={defaultLayout}
+    {...args}
+  >
+    {defaultLayout.map((item) => (
+      <Board.Widget
+        key={item.i}
+        id={item.i}
+        aria-label={`Widget ${item.i}`}
+        cornerChrome={
+          <Button
+            size="small"
+            icon={<SettingsIcon />}
+            aria-label={`Configure ${item.i}`}
+            onPress={() => {}}
+          />
+        }
+      >
+        <WidgetBody title={`Widget ${item.i}`} />
+      </Board.Widget>
+    ))}
+  </Board>
+);
+
+export const CornerChrome = CornerChromeTemplate.bind({});
+CornerChrome.args = {};
+CornerChrome.parameters = {
+  docs: {
+    description: {
+      story:
+        "`cornerChrome` centres a control on the widget's corner, drawn in the same layer as the corner resize grips - the layer that escapes the widget's own `overflow: hidden`. Chrome hung off the corner from inside a widget gets cropped in half by that clip, or by an ancestor's scroll container in the first row. It also sits outside the drag gesture, so pressing it never starts a drag. Here every widget pairs it with a `corner` resize grip on the opposite corner.",
+    },
+  },
+};
+
 export const FixedMatrix = FixedMatrixTemplate.bind({});
 FixedMatrix.args = {};
 FixedMatrix.parameters = {
@@ -333,6 +377,8 @@ FreePositioning.args = {
   compact: 'free',
 };
 FreePositioning.parameters = {
+  // `compact` only changes where a dragged widget lands; the resting board is `Default`.
+  ...NO_SNAPSHOT,
   docs: {
     description: {
       story:
@@ -347,6 +393,8 @@ FreePositioningOverlap.args = {
   allowOverlap: true,
 };
 FreePositioningOverlap.parameters = {
+  // Overlap is observable only mid-drag; the resting board is `Default`.
+  ...NO_SNAPSHOT,
   docs: {
     description: {
       story:
@@ -359,11 +407,15 @@ export const HorizontalCompaction = Template.bind({});
 HorizontalCompaction.args = {
   compact: 'horizontal',
 };
+// Same resting layout as `Default` — compaction happens during a drag.
+HorizontalCompaction.parameters = NO_SNAPSHOT;
 
 export const NonResizable = Template.bind({});
 NonResizable.args = {
   isResizable: false,
 };
+// Removes a resize handle that is only painted on hover, so this renders as `Default`.
+NonResizable.parameters = NO_SNAPSHOT;
 
 export const ReadOnly = Template.bind({});
 ReadOnly.args = {
@@ -371,6 +423,8 @@ ReadOnly.args = {
   isResizable: false,
 };
 ReadOnly.parameters = {
+  // Drag and resize affordances are not painted at rest, so this renders as `Default`.
+  ...NO_SNAPSHOT,
   docs: {
     description: {
       story:
@@ -462,6 +516,8 @@ GridLines.args = {
   showGridLines: 'drag',
 };
 GridLines.parameters = {
+  // `showGridLines="drag"` paints nothing until a drag starts.
+  ...NO_SNAPSHOT,
   docs: {
     description: {
       story:
@@ -628,8 +684,9 @@ const CollisionModesTemplate: StoryFn<CubeBoardProps> = () => (
     <Flow gap="1x">
       <Text preset="t3" color="#dark-02">
         <code>collisionMode=&quot;swap&quot;</code> across boards — drag the
-        incoming widget into empty space on the target; dropping on the blocker
-        cancels the transfer
+        incoming widget onto the room right of the blocker and it downscales
+        into it, even though 4 columns never fit there; dropping on the blocker
+        itself commits the previewed cell instead of cancelling
       </Text>
       <Board.Provider>
         <Flow gap="1x" gridColumns="1fr 1fr" display="grid">
@@ -664,7 +721,7 @@ const CollisionModesTemplate: StoryFn<CubeBoardProps> = () => (
             collisionMode="swap"
             showGridLines="drag"
             widgetProps={{ isCard: true }}
-            defaultLayout={[{ i: 'target-blocker', x: 3, y: 0, w: 3, h: 1 }]}
+            defaultLayout={[{ i: 'target-blocker', x: 0, y: 0, w: 3, h: 1 }]}
           >
             <Board.Widget id="target-blocker">
               <WidgetBody
@@ -687,7 +744,7 @@ CollisionModes.parameters = {
   docs: {
     description: {
       story:
-        'A `compact="free"` board refuses a drop onto occupied cells; `collisionMode` resolves it instead. **Downscale** — drag the 4-column widget onto the middle row and it shrinks to the 3 columns free beside the blocker, instead of snapping back. **Swap within one board** — drop one widget onto another and they trade places: the dragged widget takes the other\'s cell, the displaced one takes the cell the drag began at, and each keeps as much of its own size as fits there. Exactly one widget is ever displaced, a drop straddling two of them trades with the one it covers most, and dragging back retraces the original arrangement. **Swap across boards** — the incoming widget can only use an empty anchor, downscales into the room to its right and below, and never moves a destination widget; an occupied anchor cancels the transfer. Neither path ever grows a widget. The default, `"revert"`, is what every other story on this page shows: the widget snaps back.',
+        'A `compact="free"` board refuses a drop onto occupied cells; `collisionMode` resolves it instead. **Downscale** — drag the 4-column widget onto the middle row and it shrinks to the 3 columns free beside the blocker, instead of snapping back. **Swap within one board** — drop one widget onto another and they trade places: the dragged widget takes the other\'s cell, the displaced one takes the cell the drag began at, and each keeps as much of its own size as fits there. Exactly one widget is ever displaced, a drop straddling two of them trades with the one it covers most, and dragging back retraces the original arrangement. **Swap across boards** — there is no slot on the destination to trade back, so the arrival downscales into the room to its right and below and never moves a destination widget; an occupied anchor commits the cell the preview was showing rather than cancelling. Neither path ever grows a widget. The default, `"revert"`, is what every other story on this page shows: the widget snaps back.',
     },
   },
 };

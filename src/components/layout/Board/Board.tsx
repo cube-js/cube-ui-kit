@@ -63,6 +63,7 @@ import { useBoardSelectModifierKey } from './use-board-select-modifier-key';
 import { BoardSelectionMode, useBoardSelection } from './use-board-selection';
 import { ResizePhase, WidgetHost } from './WidgetHost';
 
+import type { BoardLayoutChangeInfo } from './use-board-layout';
 import type { BoardResizeGripPlacement, CubeBoardWidgetProps } from './Widget';
 
 const BoardElement = tasty({
@@ -229,7 +230,7 @@ export interface CubeBoardProps
   layout?: LayoutItem[];
   /** Initial layout for uncontrolled usage. */
   defaultLayout?: LayoutItem[];
-  onLayoutChange?: (layout: LayoutItem[]) => void;
+  onLayoutChange?: (layout: LayoutItem[], info: BoardLayoutChangeInfo) => void;
   /** Called when a drag gesture starts. */
   onDragStart?: (info: BoardInteractionInfo) => void;
   /** Called on every step of a drag gesture. */
@@ -303,10 +304,12 @@ export interface CubeBoardProps
    * snaps the widget back, `'downscale'` shrinks it into the free space at the
    * drop cell. Within this board, `'swap'` trades places with one widget - the one
    * the drop covers most - which takes the cell the drag began at (falling back to
-   * `'downscale'`, then `'revert'`). For a widget arriving from another board,
-   * `'swap'` never exchanges or reflows destination widgets: the anchor cell must
-   * be empty, the incoming widget downscales into the room to its right/below, and
-   * an invalid landing cancels the transfer. No mode ever grows a widget, an
+   * `'downscale'`, then `'revert'`). For a widget arriving from another board there
+   * is no slot to trade back, so `'swap'` behaves as `'downscale'`: the widget
+   * downscales into the room to its right/below, and an occupied anchor holds the
+   * cell the preview last found (the nearest fitting one, if the widget arrived
+   * over an occupied cell) rather than cancelling the transfer. No mode ever
+   * grows a widget, an
    * in-board swap never displaces more than one widget, and a drop that spans two
    * widgets trades with one of them rather than blinking away mid-drag.
    *
@@ -334,10 +337,15 @@ export interface CubeBoardProps
    */
   resizeGripPlacement?: BoardResizeGripPlacement;
   /**
-   * CSS selector for elements that must not start a pointer drag (e.g. form
-   * controls inside a widget: `"input,textarea,button,a,.no-drag"`). Does not
-   * affect keyboard moves — those only run when the widget host itself is
-   * focused. Can be overridden per widget on `Board.Widget`.
+   * CSS selector for elements that must not start a pointer drag.
+   *
+   * Defaults to {@link BOARD_SELECTION_CANCEL} — the same set `selectionCancel`
+   * uses — because a control inside a widget has to keep its own press whether
+   * or not the board happens to support selection. Pass a selector of your own
+   * to narrow or widen it, or `''` to let a drag start from anywhere.
+   *
+   * Does not affect keyboard moves — those only run when the widget host itself
+   * is focused. Can be overridden per widget on `Board.Widget`.
    */
   dragCancel?: string;
   /**
@@ -489,7 +497,7 @@ function BoardInner(
     isDroppable = true,
     resizeHandles = ['se'],
     resizeGripPlacement = 'inside',
-    dragCancel,
+    dragCancel = BOARD_SELECTION_CANCEL,
     dragHandle,
     showGridLines,
     isAligned = false,
@@ -811,7 +819,8 @@ function BoardInner(
       // ref rather than the rendered value.
       getSelectedKeys: () =>
         selectedKeysRef.current.size > 0 ? selectedKeysRef.current : null,
-      applyLayout: (next, commit) => applyLayoutEvent(next, commit),
+      applyLayout: (next, commit, reason) =>
+        applyLayoutEvent(next, commit, reason),
       setPlaceholders: (items) => setPlaceholdersEvent(items),
       isDroppable: () => liveRef.current.isDroppable,
     };
@@ -837,7 +846,7 @@ function BoardInner(
     const compacted = [
       ...liveRef.current.compactor.compact(corrected, nextCols),
     ];
-    applyLayoutEvent(compacted, true);
+    applyLayoutEvent(compacted, true, 'normalize');
   });
   // `null` until the first *measured* aligned column count is established. This
   // avoids treating the initial zero-width -> measured-width transition as a
@@ -961,7 +970,7 @@ function BoardInner(
 
       if (phase === 'end') {
         const finalLayout = [...layoutRef.current];
-        applyLayout(finalLayout, true);
+        applyLayout(finalLayout, true, 'resize');
         setPlaceholders([]);
         const resizedItem = getLayoutItem(finalLayout, id) ?? rs.item;
         onResizeStop?.({
@@ -1087,7 +1096,7 @@ function BoardInner(
       h: neededRows,
     });
     const compacted = [...liveRef.current.compactor.compact(working, pp.cols)];
-    applyLayout(compacted, true);
+    applyLayout(compacted, true, 'normalize');
   });
 
   // The dragged item captured at gesture start, so drag callbacks can report the
@@ -1183,6 +1192,10 @@ function BoardInner(
 
     const content = contentRef.current;
     if (!content) return;
+    // React events also arrive from portaled content: an overlay a widget opened
+    // renders outside this DOM subtree but still propagates along the React
+    // tree, and a press in a popover must never start a lasso behind it.
+    if (target && !content.contains(target)) return;
 
     // Suppress the compatibility mouse events that would begin a native text
     // selection. Safe here specifically because every case that wants default
@@ -1346,6 +1359,12 @@ function BoardInner(
   const styles: Styles = extractStyles(otherProps, CONTAINER_STYLES);
 
   const dragState = registry.dragState;
+  // No widgets until the board has a width. At width 0 a column works out
+  // NEGATIVE (`(0 - margin*(cols-1) - containerPadding*2) / cols`), so rendering
+  // then would paint every widget at a nonsense size for a frame — and a
+  // consumer who sees that concludes the board cannot measure itself and starts
+  // measuring it for them. Pinned by a browser test ("renders no widget until it
+  // has a width"), since jsdom reports every box as 0 and cannot see this.
   const ready = width > 0;
 
   // Gate widget position transitions off until the widgets have been painted at
@@ -1571,6 +1590,14 @@ function BoardInner(
                     registration?.isCard ?? widgetProps?.isCard ?? false;
                   const widgetHoverRing =
                     registration?.hoverRing ?? widgetProps?.hoverRing ?? true;
+                  // Board-level mods merge UNDER the per-widget ones, mirroring
+                  // how `widgetProps.styles` merges under a widget's own styles:
+                  // a shared default every widget carries, which any one widget
+                  // can override for itself. Only allocate when both exist.
+                  const widgetMods =
+                    registration?.mods && widgetProps?.mods
+                      ? { ...widgetProps.mods, ...registration.mods }
+                      : registration?.mods ?? widgetProps?.mods;
                   // Per-widget `isAutoHeight`/`qa` fall back to the board-level
                   // `widgetProps` defaults (mirroring the other widget props).
                   const widgetIsAutoHeight =
@@ -1604,6 +1631,14 @@ function BoardInner(
                       registration={registration}
                       isCard={widgetIsCard}
                       hoverRing={widgetHoverRing}
+                      cornerChrome={
+                        registration?.cornerChrome ?? widgetProps?.cornerChrome
+                      }
+                      cornerChromePlacement={
+                        registration?.cornerChromePlacement ??
+                        widgetProps?.cornerChromePlacement
+                      }
+                      mods={widgetMods}
                       styles={widgetStyles as Styles}
                       isDraggable={widgetDraggable}
                       isResizable={widgetResizable}

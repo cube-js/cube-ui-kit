@@ -46,6 +46,87 @@ const REQUIRED_ICON = (
   </svg>
 );
 
+export interface CubeNecessityIndicatorProps {
+  /**
+   * `'icon'` renders the asterisk, `'label'` the `(required)` / `(optional)`
+   * text. `null` suppresses it — `Label` resolves its own default to that when
+   * `isRequired` was never passed, and forwards the result here.
+   */
+  necessityIndicator?: NecessityIndicator | null;
+  isRequired?: boolean;
+  /**
+   * Whether the indicator contributes to the field's accessible name. Off by
+   * default because a required field already announces `aria-required`, and
+   * repeating it in the name is noise.
+   */
+  includeNecessityIndicatorInAccessibilityName?: boolean;
+}
+
+/**
+ * The `*` or `(required)` / `(optional)` marker that follows a field label.
+ *
+ * Its own component because two places render it and both need the same
+ * strings: `Label` when it is given plain text, and `FieldWrapper`, which
+ * builds a element tree around the label and therefore has to place the marker
+ * beside the label text itself rather than after the whole tree.
+ *
+ * Renders nothing unless a marker was actually asked for.
+ */
+export function NecessityIndicatorMark(props: CubeNecessityIndicatorProps) {
+  const {
+    isRequired,
+    // Same default as `Label`'s own prop: passing `isRequired` at all opts into
+    // the asterisk, and `'label'` has to be asked for. Applied here so the two
+    // call sites cannot disagree about what an omitted prop means.
+    necessityIndicator = isRequired != null ? 'icon' : null,
+    includeNecessityIndicatorInAccessibilityName = false,
+  } = props;
+  const { t } = useI18n();
+
+  const requiredLabel = t('form.required', '(required)');
+
+  // A plain space would collapse against the label text in a flex container,
+  // and the zero-width space keeps the pair from being split across lines.
+  const separator = ' ​';
+
+  if (necessityIndicator === 'icon') {
+    if (!isRequired) return null;
+
+    return (
+      <>
+        {separator}
+        <span
+          aria-label={
+            includeNecessityIndicatorInAccessibilityName
+              ? requiredLabel
+              : undefined
+          }
+        >
+          {REQUIRED_ICON}
+        </span>
+      </>
+    );
+  }
+
+  if (necessityIndicator !== 'label') return null;
+
+  // Hidden from screen readers when the field is required, because
+  // `aria-required` on the input already announces it. When the field is
+  // optional there is nothing else saying so, so that one is announced.
+  return (
+    <>
+      {separator}
+      <span
+        aria-hidden={
+          !includeNecessityIndicatorInAccessibilityName ? isRequired : undefined
+        }
+      >
+        {isRequired ? requiredLabel : t('form.optional', '(optional)')}
+      </span>
+    </>
+  );
+}
+
 export const INLINE_LABEL_STYLES: Styles = {
   preset: 't3',
   color: {
@@ -116,18 +197,14 @@ function Label(props: CubeLabelProps, ref) {
 
   const styles = extractStyles(otherProps, CONTAINER_STYLES);
 
-  let requiredLabel = t('form.required', '(required)');
-  let necessityLabel = isRequired
-    ? requiredLabel
-    : t('form.optional', '(optional)');
-  let icon = (
-    <span
-      aria-label={
-        includeNecessityIndicatorInAccessibilityName ? requiredLabel : undefined
+  const mark = (
+    <NecessityIndicatorMark
+      isRequired={isRequired}
+      necessityIndicator={necessityIndicator}
+      includeNecessityIndicatorInAccessibilityName={
+        includeNecessityIndicatorInAccessibilityName
       }
-    >
-      {REQUIRED_ICON}
-    </span>
+    />
   );
 
   return (
@@ -143,29 +220,19 @@ function Label(props: CubeLabelProps, ref) {
         ...getValidationMods({ isInvalid, isValid }),
       }}
     >
+      {/*
+        A non-string child is a tree the caller laid out \u2014 `FieldWrapper`'s
+        full-width `Flex`, for one \u2014 and appending the marker after it would put
+        it at the far end of that layout rather than next to the label text. So
+        the marker is only appended here for plain-text labels; callers that
+        build their own tree place `NecessityIndicatorMark` where it belongs.
+      */}
       {typeof children !== 'string' ? (
         children
       ) : (
         <>
           {children}
-          {(necessityIndicator === 'label' ||
-            (necessityIndicator === 'icon' && isRequired)) &&
-            ' \u200b'}
-          {/* necessityLabel is hidden to screen readers if the field is required because
-           * aria-required is set on the field in that case. That will already be announced,
-           * so no need to duplicate it here. If optional, we do want it to be announced here. */}
-          {necessityIndicator === 'label' && (
-            <span
-              aria-hidden={
-                !includeNecessityIndicatorInAccessibilityName
-                  ? isRequired
-                  : undefined
-              }
-            >
-              {necessityLabel}
-            </span>
-          )}
-          {necessityIndicator === 'icon' && isRequired && icon}
+          {mark}
         </>
       )}
     </LabelElement>

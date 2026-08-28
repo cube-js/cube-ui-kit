@@ -13,7 +13,7 @@ import {
 } from 'react';
 
 import { useI18n } from '../../../i18n';
-import { InfoCircleIcon } from '../../../icons/index';
+import { InfoCircleIcon } from '../../../icons/InfoCircleIcon';
 import { CubeItemActionProps, ItemAction } from '../../actions/ItemAction';
 import { CubeUseActionProps } from '../../actions/use-action';
 import { CubeTooltipProviderProps } from '../../overlays/Tooltip/TooltipProvider';

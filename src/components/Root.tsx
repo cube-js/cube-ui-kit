@@ -6,6 +6,7 @@ import {
   filterBaseProps,
   setGlobalPredefinedStates,
   tasty,
+  TastyBatchProvider,
 } from '@tenphi/tasty';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ModalProvider } from 'react-aria';
@@ -16,11 +17,12 @@ import { NavigationAdapter } from '../providers/navigation.types';
 import { TrackingProps, TrackingProvider } from '../providers/TrackingProvider';
 import { PaletteConfig, setPaletteConfig } from '../tokens/palette-config';
 import { EventBusProvider } from '../utils/react/useEventBus';
+import { AMBIENT_PREDEFINED_STATES } from '../utils/react/useScheme';
 import { extractStyles } from '../utils/styles';
 import { TASTY_VERSION, VERSION } from '../version';
 
 import { GlobalStyles } from './GlobalStyles';
-import { AlertDialogApiProvider } from './overlays/AlertDialog';
+import { AlertDialogApiProvider } from './overlays/AlertDialog/AlertDialogApiProvider';
 import { OverlayProvider } from './overlays/Notifications/OverlayProvider';
 import { PortalProvider } from './portal';
 
@@ -28,17 +30,25 @@ import type { i18n as I18nInstance } from 'i18next';
 
 // Color-scheme aliases for the Glaze-generated palette (see `src/tokens/palette.ts`).
 // Attribute opt-in wins over system preference:
-//   <html data-schema="dark">    → forces dark scheme
-//   <html data-contrast="high">  → forces high-contrast scheme
+//   <html data-scheme="dark">    → forces the dark scheme
+//   <html data-contrast="high">  → forces the high-contrast scheme
 // Otherwise falls back to the user's `prefers-color-scheme` / `prefers-contrast`.
-setGlobalPredefinedStates({
-  '@dark':
-    '@root(schema=dark) | (!@root(schema) & @media(prefers-color-scheme: dark))',
-  '@hc':
-    '@root(contrast=high) | (!@root(contrast) & @media(prefers-contrast: more))',
-});
+//
+// The strings live in `useScheme.ts`, which also reads the same two conditions
+// from JS (`useScheme()` / `useHighContrast()`) — one definition, so the CSS and
+// the JS answers cannot drift apart.
+setGlobalPredefinedStates(AMBIENT_PREDEFINED_STATES);
 
 configure({
+  // Collapse the kit's stylesheet writes into one style invalidation per commit
+  // instead of one per component. Only takes effect inside a
+  // `<TastyBatchProvider>` window, and windows have to be opened per portal
+  // boundary because a commit that mounts a portal does not re-render `<Root>`.
+  // The kit opens three: here, in `<Portal>` (tooltips) and in `<Overlay>`
+  // (popovers, modals, trays — i.e. Dialog and Menu). Writes in any commit
+  // without a window go straight through exactly as before, so a
+  // `useLayoutEffect` can never measure an element whose rules have not landed.
+  batchInjection: true,
   units: {
     x: 'var(--gap)',
     r: 'var(--radius)',
@@ -202,42 +212,46 @@ export function Root(allProps: CubeRootProps) {
   const styles = extractStyles(props, STYLES);
 
   return (
-    <I18nProvider i18n={i18n} locale={locale}>
-      <Provider navigation={navigation} root={rootRef}>
-        <TrackingProvider event={tracking?.event}>
-          <RootElement
-            ref={ref}
-            data-uikit={VERSION}
-            data-tasty={TASTY_VERSION}
-            data-font-display={fontDisplay}
-            {...filterBaseProps(props, { eventProps: true })}
-            styles={styles}
-            style={{
-              '--pointer': cursorStrategy === 'web' ? 'pointer' : 'default',
-              ...style,
-            }}
-            tokens={tokens}
-          >
-            <GlobalStyles
-              bodyStyles={bodyStyles}
-              publicUrl={publicUrl}
-              fonts={fonts}
-              font={font}
-              monospaceFont={monospaceFont}
-              fontDisplay={fontDisplay}
-            />
-            <ModalProvider>
-              <PortalProvider value={ref}>
-                <EventBusProvider>
-                  <OverlayProvider>
-                    <AlertDialogApiProvider>{children}</AlertDialogApiProvider>
-                  </OverlayProvider>
-                </EventBusProvider>
-              </PortalProvider>
-            </ModalProvider>
-          </RootElement>
-        </TrackingProvider>
-      </Provider>
-    </I18nProvider>
+    <TastyBatchProvider>
+      <I18nProvider i18n={i18n} locale={locale}>
+        <Provider navigation={navigation} root={rootRef}>
+          <TrackingProvider event={tracking?.event}>
+            <RootElement
+              ref={ref}
+              data-uikit={VERSION}
+              data-tasty={TASTY_VERSION}
+              data-font-display={fontDisplay}
+              {...filterBaseProps(props, { eventProps: true })}
+              styles={styles}
+              style={{
+                '--pointer': cursorStrategy === 'web' ? 'pointer' : 'default',
+                ...style,
+              }}
+              tokens={tokens}
+            >
+              <GlobalStyles
+                bodyStyles={bodyStyles}
+                publicUrl={publicUrl}
+                fonts={fonts}
+                font={font}
+                monospaceFont={monospaceFont}
+                fontDisplay={fontDisplay}
+              />
+              <ModalProvider>
+                <PortalProvider value={ref}>
+                  <EventBusProvider>
+                    <OverlayProvider>
+                      <AlertDialogApiProvider>
+                        {children}
+                      </AlertDialogApiProvider>
+                    </OverlayProvider>
+                  </EventBusProvider>
+                </PortalProvider>
+              </ModalProvider>
+            </RootElement>
+          </TrackingProvider>
+        </Provider>
+      </I18nProvider>
+    </TastyBatchProvider>
   );
 }

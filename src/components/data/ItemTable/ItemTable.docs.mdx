@@ -253,14 +253,12 @@ Every body cell.
 
 These properties allow direct style application without using the `styles` prop:
 
-- **Base:** `display`, `font`, `preset`, `hide`, `opacity`, `whiteSpace`, `transition`
-- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `place`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `scrollMargin`
+- **Base:** `display`, `font`, `preset`, `hide`, `whiteSpace`, `opacity`, `transition`
+- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `scrollMargin`
 - **Dimension:** `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`
-- **Block:** `padding`, `paddingInline`, `paddingBlock`, `border`, `radius`, `shadow`, `overflow`, `outline`, `scrollbar`, `textAlign`
+- **Block:** `border`, `radius`, `shadow`, `outline`, `padding`, `paddingInline`, `paddingBlock`, `overflow`, `scrollbar`, `textAlign`
 - **Color:** `color`, `fill`, `fade`, `image`
-- **Flow:** `flow`, `gap`, `columnGap`, `rowGap`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`
-
-`height` is the important one: there is no page-scroll mode, so bounding the table is what turns the body into a scroller and pins the header. An unbounded table simply sizes to its content.
+- **Flow:** `flow`, `place`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gap`, `columnGap`, `rowGap`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`
 
 ### Modifiers
 

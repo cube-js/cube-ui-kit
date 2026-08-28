@@ -8,6 +8,7 @@ import type {
   LayoutItem,
   PositionParams,
 } from './grid-core';
+import type { BoardLayoutChangeReason } from './use-board-layout';
 
 /** A rectangle in viewport (client) coordinates. */
 export interface ViewportRect {
@@ -47,7 +48,11 @@ export interface BoardEntry {
    */
   getSelectedKeys: () => ReadonlySet<string> | null;
   /** Update the board layout. `commit` fires `onLayoutChange`. */
-  applyLayout: (layout: LayoutItem[], commit: boolean) => void;
+  applyLayout: (
+    layout: LayoutItem[],
+    commit: boolean,
+    reason?: BoardLayoutChangeReason,
+  ) => void;
   /** Replace every drop-slot preview. Pass `[]` to clear. */
   setPlaceholders: (items: LayoutItem[]) => void;
   isDroppable: () => boolean;
