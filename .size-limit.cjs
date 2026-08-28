@@ -20,7 +20,37 @@ module.exports = [
         }),
       );
     },
-    // Still 515 kB on `@tenphi/tasty` 3.3.1: 508.53 kB locally against 509.94 kB
+    // Still 515 kB on `@tenphi/tasty` 3.5.0: 513.60 kB against `main`'s
+    // 512.39 kB with both sides rebuilt here, i.e. +1.21 kB. The Button entry
+    // below moved by the same +1.21 kB, and matching deltas on both entries is
+    // the signature of a change inside Tasty's always-included core — here the
+    // DOM-scanning GC sweep that replaced the reference counting, keyframe
+    // ownership, content-addressed local `@keyframes` names, and the fuller
+    // `tastyDebug.summary()` accounting. 3.4.0 is pure performance (faster LRU
+    // reads, memoized chunk cache keys) and does not show up in either reading.
+    //
+    // That leaves only 1.40 kB, the thinnest this entry has been, and most of
+    // what ate it was not this bump: `main` had already climbed from 508.95 to
+    // 512.39 kB on its own (+3.44 kB of Board chrome, `tokens/resolve`,
+    // `useScheme`, TextInput `autoComplete` and the batched-injection wiring),
+    // leaving 2.61 kB before Tasty was touched. Left at 515 kB rather than
+    // rounded up: it fits, and the note further down wants the margin thin
+    // enough that real bloat still trips the budget. The NEXT change here
+    // almost certainly has to raise it — read the units note below first.
+    //
+    // Calibration worth keeping, against the macOS/Linux warning below: on the
+    // machine that measured this bump, the local reading matched CI EXACTLY on
+    // both entries. CI reported `main` at 500.38 KB and 118.96 KB binary, which
+    // is 512.39 kB and 121.81 kB decimal, and the local rebuild of the same
+    // commit read 512.39 kB and 121.81 kB. CI then measured this branch at
+    // 501.56 KB and 120.13 KB binary — 513.60 kB and 123.02 kB — matching the
+    // local readings above that the budgets were checked against. So the
+    // ~1.6 kB gap that warning describes did not apply here. Two entries on one
+    // machine do not retire the warning — still prefer CI's number — but a
+    // local reading is not automatically 1.6 kB light either, and assuming it
+    // is would have raised this budget for no reason.
+    //
+    // Before this: 515 kB on 3.3.1 too — 508.53 kB locally against 509.94 kB
     // on 3.1.0 with both sides rebuilt here, i.e. -1.41 kB across the two
     // releases. (508.95 kB after merging `main`'s cols x rows Board matrix,
     // which is that feature's 0.42 kB and not the dependency's.) 3.2.0 added 0.69 kB for batched injection (the write queue and
@@ -146,7 +176,13 @@ module.exports = [
     path: './dist/index.js',
     webpack: true,
     import: '{ Button }',
-    // Still 125 kB on `@tenphi/tasty` 3.3.1: 121.76 kB locally against 124.03 kB
+    // Still 125 kB on `@tenphi/tasty` 3.5.0: 123.02 kB against `main`'s
+    // 121.81 kB, both sides rebuilt here — +1.21 kB, matched by the same
+    // +1.21 kB on `All` above, so all of it is Tasty's always-included core and
+    // none of it ours. See that entry for what the release changed there, and
+    // for why a local reading was trusted here. 1.98 kB left.
+    //
+    // Before this: 125 kB on 3.3.1 too — 121.76 kB locally against 124.03 kB
     // on 3.1.0, both sides rebuilt here — -2.27 kB, matched by the -1.41 kB on
     // `All` above, so all of it is Tasty's always-included core and none of it
     // ours. 3.2.0's batching cost this entry 0.68 kB; 3.3.0 then removed the
