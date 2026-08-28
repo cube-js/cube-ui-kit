@@ -20,7 +20,17 @@ module.exports = [
         }),
       );
     },
-    // Still 515 kB on `@tenphi/tasty` 3.3.1: 508.53 kB locally against 509.94 kB
+    // Still 515 kB on `@tenphi/tasty` 3.5.0: 510.16 kB locally against 508.95 kB
+    // on 3.3.1 with both sides rebuilt here, i.e. +1.21 kB. The Button entry
+    // below moved by +1.18 kB, and matching deltas on both entries is the
+    // signature of a change inside Tasty's always-included core — here the
+    // DOM-scanning GC sweep that replaced the reference counting, keyframe
+    // ownership, content-addressed local `@keyframes` names, and the fuller
+    // `tastyDebug.summary()` accounting. 3.4.0 is pure performance (faster LRU
+    // reads, memoized chunk cache keys) and does not show up in either reading.
+    // That leaves 4.84 kB of headroom, which is enough not to raise this.
+    //
+    // Before this: 515 kB on 3.3.1 too — 508.53 kB locally against 509.94 kB
     // on 3.1.0 with both sides rebuilt here, i.e. -1.41 kB across the two
     // releases. (508.95 kB after merging `main`'s cols x rows Board matrix,
     // which is that feature's 0.42 kB and not the dependency's.) 3.2.0 added 0.69 kB for batched injection (the write queue and
@@ -146,7 +156,12 @@ module.exports = [
     path: './dist/index.js',
     webpack: true,
     import: '{ Button }',
-    // Still 125 kB on `@tenphi/tasty` 3.3.1: 121.76 kB locally against 124.03 kB
+    // Still 125 kB on `@tenphi/tasty` 3.5.0: 122.94 kB locally against 121.76 kB
+    // on 3.3.1, both sides rebuilt here — +1.18 kB, matched by the +1.21 kB on
+    // `All` above, so all of it is Tasty's always-included core and none of it
+    // ours. See that entry for what the release changed there. 2.06 kB left.
+    //
+    // Before this: 125 kB on 3.3.1 too — 121.76 kB locally against 124.03 kB
     // on 3.1.0, both sides rebuilt here — -2.27 kB, matched by the -1.41 kB on
     // `All` above, so all of it is Tasty's always-included core and none of it
     // ours. 3.2.0's batching cost this entry 0.68 kB; 3.3.0 then removed the
