@@ -1,6 +1,6 @@
 import { tasty } from '@tenphi/tasty';
 
-import { precompileUIKitStyles } from './index';
+import { precompileStyles } from './index';
 
 const AppPanel = tasty({
   styles: {
@@ -10,9 +10,9 @@ const AppPanel = tasty({
   },
 });
 
-describe('precompileUIKitStyles', () => {
+describe('precompileStyles', () => {
   it('compiles application cases under the UI Kit Root configuration', async () => {
-    const result = await precompileUIKitStyles({
+    const result = await precompileStyles({
       id: '@cube-dev/example-app',
       cases: [
         {
@@ -32,7 +32,7 @@ describe('precompileUIKitStyles', () => {
   });
 
   it('can use an application tree that already contains Root', async () => {
-    const result = await precompileUIKitStyles({
+    const result = await precompileStyles({
       id: '@cube-dev/example-app/bare',
       root: false,
       cases: [{ id: 'empty', render: () => <div /> }],

@@ -9,11 +9,11 @@ import type {
 } from '@tenphi/tasty/precompile';
 import type { CubeRootProps } from '../components/Root';
 
-export type UIKitPrecompileCase = TastyPrecompileCase;
+export type PrecompileCase = TastyPrecompileCase;
 
-export interface UIKitPrecompileOptions {
+export interface PrecompileStylesOptions {
   id: string;
-  cases: readonly UIKitPrecompileCase[];
+  cases: readonly PrecompileCase[];
   /**
    * Props for the UI Kit Root wrapped around every case. Pass false when each
    * case already returns the application's complete Root tree.
@@ -25,8 +25,8 @@ export interface UIKitPrecompileOptions {
  * Compile application-owned catalog cases under UI Kit's exact Tasty
  * configuration and normal Root providers.
  */
-export function precompileUIKitStyles(
-  options: UIKitPrecompileOptions,
+export function precompileStyles(
+  options: PrecompileStylesOptions,
 ): Promise<TastyPrecompileResult> {
   const { id, cases, root = {} } = options;
 

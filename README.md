@@ -84,11 +84,11 @@ Applications with substantial `styles`, `style`, style-prop, or application-comp
 
 ```tsx
 import { writeFile } from 'node:fs/promises';
-import { precompileUIKitStyles } from '@cube-dev/ui-kit/precompile';
+import { precompileStyles } from '@cube-dev/ui-kit/precompile';
 
 import { DashboardRoute, QueryRoute } from './catalog-routes';
 
-const artifact = await precompileUIKitStyles({
+const artifact = await precompileStyles({
   id: '@cube-dev/console-ui',
   cases: [
     { id: 'dashboard', render: () => <DashboardRoute /> },
