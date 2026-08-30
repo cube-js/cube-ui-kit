@@ -83,6 +83,9 @@ jobs:
       - name: Run the browser tests
         run: pnpm test:browser
 
+      - name: Verify precompiled style parity
+        run: pnpm test:precompiled
+
   deploy-chromatic:
     name: 'Prepare Storybook for review & tests'
     runs-on: ubuntu-latest

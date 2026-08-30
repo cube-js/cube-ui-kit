@@ -94,9 +94,12 @@ Each component lives in `src/components/{category}/{ComponentName}/` and ships `
 ## Commands
 
 - `pnpm storybook` — start Storybook on port 6060
-- `pnpm build` — build library (`tsdown`, unbundled ESM)
+- `pnpm build` — build library (`tsdown`, unbundled ESM), then generate the opt-in precompiled Tasty CSS, manifest, and report
+- `pnpm precompile:tasty` — regenerate the precompiled Tasty artifact from the already-built `dist/`
+- `pnpm bench:precompiled` — benchmark the actual generated artifact's registration and browser installation strategies
 - `pnpm test` — run all tests (Vitest); add `-- ComponentName` to filter, `-u` to update snapshots
 - `pnpm test:browser` — run the `*.browser.test.tsx` specs in real Chromium (layout, pointer, observers)
+- `pnpm test:precompiled` — build the UI Kit artifact and compare representative normal and precompiled computed styles in Chromium
 - `pnpm probe` — print the HTML, CSS or tokens a snippet actually produces, with the real config loaded. `pnpm probe:browser` for computed values, geometry and screenshots. See [Inspecting Rendered HTML & CSS](#inspecting-rendered-html--css--pnpm-probe)
 - `pnpm fix` — lint + format (Oxlint + Prettier)
 - `pnpm size` — check bundle size limits

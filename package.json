@@ -9,7 +9,11 @@
   },
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "sideEffects": false,
+  "sideEffects": [
+    "./dist/precompiled/index.js",
+    "./dist/precompiled/register.js",
+    "./dist/precompiled/styles.css"
+  ],
   "packageManager": "pnpm@10.34.5",
   "exports": {
     ".": {
@@ -23,10 +27,25 @@
     "./probe": {
       "import": "./dist/probe/index.js",
       "types": "./dist/probe/index.d.ts"
+    },
+    "./precompiled": {
+      "import": "./dist/precompiled/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./precompiled/register": {
+      "import": "./dist/precompiled/register.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./precompiled.css": "./dist/precompiled/styles.css",
+    "./precompiled/manifest": {
+      "import": "./dist/precompiled/manifest.js",
+      "types": "./dist/precompiled/manifest.d.ts"
     }
   },
   "files": [
     "dist/**/*.js",
+    "dist/**/*.css",
+    "dist/**/*.json",
     "dist/**/*.d.ts",
     "dist/**/*.map",
     "dist/README.md",
@@ -39,12 +58,15 @@
   ],
   "scripts": {
     "start": "pnpm storybook",
-    "build": "tsdown",
+    "build": "tsdown && pnpm precompile:tasty",
     "watch": "tsdown --watch",
     "test": "vitest run",
     "test:browser": "vitest run --config vitest.browser.config.ts",
+    "test:precompiled": "pnpm build && vitest run --config vitest.precompiled.config.ts",
     "probe": "node scripts/probe.mjs",
     "probe:browser": "PROBE_TIER=browser node scripts/probe.mjs",
+    "precompile:tasty": "node scripts/precompile-tasty.mjs",
+    "bench:precompiled": "pnpm build && vitest bench --config vitest.browser.config.ts scripts/precompile-startup.bench.js",
     "test-cover": "vitest run --coverage",
     "test-watch": "vitest",
     "prettier": "prettier --check \"src/**/*.{js,jsx,ts,tsx}\" \"**/*.{md,mdx}\"",
@@ -96,7 +118,7 @@
     "@tabler/icons-react": "^3.31.0",
     "@tanstack/react-virtual": "^3.13.12",
     "@tenphi/glaze": "2.0.0",
-    "@tenphi/tasty": "^3.5.0",
+    "@tenphi/tasty": "0.0.0-snapshot.94660d8",
     "clipboard-copy": "^4.0.1",
     "clsx": "^1.1.1",
     "diff": "^8.0.3",

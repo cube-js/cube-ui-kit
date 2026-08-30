@@ -20,6 +20,13 @@ module.exports = [
         }),
       );
     },
+    // Raised to 520 kB for the precompiled Tasty runtime support. The fresh
+    // local build is 515.26 kB, while the Button-only entry is 124.40 kB; both
+    // moved by roughly the same amount from the Tasty 3.5.0 measurements below,
+    // which pins the increase to Tasty's always-included manifest fast path.
+    // The 714 kB catalog stylesheet is opt-in and is not part of either normal
+    // JavaScript bundle. Rounded to the next 5 kB step as required below.
+    //
     // Still 515 kB on `@tenphi/tasty` 3.5.0: 513.60 kB against `main`'s
     // 512.39 kB with both sides rebuilt here, i.e. +1.21 kB. The Button entry
     // below moved by the same +1.21 kB, and matching deltas on both entries is
@@ -169,7 +176,7 @@ module.exports = [
     //
     // Note when checking locally: `size-limit` bundles the built `./dist`, it
     // does not build. Run `pnpm build` first or you will measure a stale bundle.
-    limit: '515kB',
+    limit: '520kB',
   },
   {
     name: 'Tree shaking (just a Button)',

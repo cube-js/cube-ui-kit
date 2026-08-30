@@ -65,6 +65,24 @@ To ship your own brand color, tune the palette seeds — every token, in every s
 setPaletteConfig((config) => ({ ...config, hue: 235 }));
 ```
 
+## Precompiled Tasty Styles
+
+Applications can opt into the UI Kit's precompiled component stylesheet by changing the package entry they import from:
+
+```tsx
+import { Root, Button } from '@cube-dev/ui-kit/precompiled';
+```
+
+This entry registers the generated Tasty manifest, imports the static CSS asset, and re-exports the normal UI Kit API. Keep rendering `Root`: palette variables, body styles, fonts, and application globals remain dynamic and are intentionally not part of the component artifact. Styles or style props that are not covered by the catalog continue through Tasty's runtime path.
+
+Frameworks that load stylesheets explicitly can link `@cube-dev/ui-kit/precompiled.css` and execute the registration-only entry before rendering:
+
+```ts
+import '@cube-dev/ui-kit/precompiled/register';
+```
+
+Consumer overrides to Tasty parser functions, units, states, handlers, recipes, or chunk assignments invalidate the shared artifact. Keep using the normal `@cube-dev/ui-kit` entry or generate a project-specific artifact in those applications.
+
 ## Components
 
 | Category | Components |

@@ -3,7 +3,6 @@ import {
   CONTAINER_STYLES,
   ContainerStyleProps,
   filterBaseProps,
-  keyframes,
   Styles,
   tasty,
 } from '@tenphi/tasty';
@@ -12,20 +11,20 @@ import { forwardRef } from 'react';
 import { useI18n } from '../../../i18n';
 import { extractStyles } from '../../../utils/styles';
 
-// Create the placeholder animation using keyframes helper
-const placeholderAnimation = keyframes({
-  '0%': {
-    'background-position': '0 0',
-  },
-  '100%': {
-    'background-position': '$placeholder-animation-size 0',
-  },
-});
-
 const StyledPlaceholder = tasty({
   role: 'alert',
   'aria-live': 'polite',
   styles: {
+    '@keyframes': {
+      'placeholder-sweep': {
+        '0%': {
+          'background-position': '0 0',
+        },
+        '100%': {
+          'background-position': '$placeholder-animation-size 0',
+        },
+      },
+    },
     display: 'block',
     height: '2x',
     opacity: '.35',
@@ -48,10 +47,13 @@ const StyledPlaceholder = tasty({
     fill: '#dark.15',
 
     // Animated state styling
-    animation: {
+    animationName: {
       '': 'none',
-      animated: `${placeholderAnimation} $placeholder-animation-time linear infinite`,
+      animated: 'placeholder-sweep',
     },
+    animationDuration: '$placeholder-animation-time',
+    animationIterationCount: 'infinite',
+    animationTimingFunction: 'linear',
     image: {
       '': 'none',
       animated: `linear-gradient(
