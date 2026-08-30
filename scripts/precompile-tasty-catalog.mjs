@@ -1,5 +1,4 @@
 import { Fragment, createElement as h } from 'react';
-import { renderToStaticMarkup } from 'react-dom/server';
 
 const BUTTON_THEMES = [
   'current',
@@ -35,12 +34,10 @@ function catalogCase(id, components, render, structuralReason) {
     async render() {
       try {
         const ui = await import('../dist/index.js');
-        return renderToStaticMarkup(
-          h(
-            ui.I18nProvider,
-            null,
-            h(ui.Provider, null, h(ui.OverlayProvider, null, render(ui))),
-          ),
+        return h(
+          ui.I18nProvider,
+          null,
+          h(ui.Provider, null, h(ui.OverlayProvider, null, render(ui))),
         );
       } catch (error) {
         throw new Error(`UI Kit precompile case "${id}" failed.`, {
