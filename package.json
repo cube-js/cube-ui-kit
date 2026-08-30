@@ -28,16 +28,19 @@
       "import": "./dist/probe/index.js",
       "types": "./dist/probe/index.d.ts"
     },
-    "./precompiled": {
+    "./precompiled-styles": {
       "import": "./dist/precompiled/index.js",
-      "types": "./dist/index.d.ts"
+      "types": "./dist/precompiled/index.d.ts"
     },
-    "./precompiled/register": {
+    "./precompiled-styles/register": {
       "import": "./dist/precompiled/register.js",
-      "types": "./dist/index.d.ts"
+      "types": "./dist/precompiled/register.d.ts"
     },
-    "./precompiled.css": "./dist/precompiled/styles.css",
-    "./precompiled/manifest": {
+    "./precompiled-styles.css": {
+      "types": "./dist/precompiled/styles.d.ts",
+      "default": "./dist/precompiled/styles.css"
+    },
+    "./precompiled-styles/manifest": {
       "import": "./dist/precompiled/manifest.js",
       "types": "./dist/precompiled/manifest.d.ts"
     }
@@ -118,7 +121,7 @@
     "@tabler/icons-react": "^3.31.0",
     "@tanstack/react-virtual": "^3.13.12",
     "@tenphi/glaze": "2.0.0",
-    "@tenphi/tasty": "0.0.0-snapshot.94660d8",
+    "@tenphi/tasty": "0.0.0-snapshot.b9638e2",
     "clipboard-copy": "^4.0.1",
     "clsx": "^1.1.1",
     "diff": "^8.0.3",

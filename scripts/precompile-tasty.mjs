@@ -36,9 +36,10 @@ const report = {
 };
 
 const manifestSource = `const manifest = ${JSON.stringify(result.manifest, null, 2)};\n\nexport default manifest;\n`;
-const registerSource = `import { registerTastyPrecompiled } from '@tenphi/tasty/precompile/register';\nimport manifest from './manifest.js';\n\nregisterTastyPrecompiled(manifest);\n\nexport * from '../index.js';\n`;
-const indexSource = `import './register.js';\nimport './styles.css';\n\nexport * from './register.js';\n`;
+const registerSource = `import { registerTastyPrecompiled } from '@tenphi/tasty/precompile/register';\nimport manifest from './manifest.js';\n\nregisterTastyPrecompiled(manifest);\n`;
+const indexSource = `import './register.js';\nimport './styles.css';\n`;
 const manifestTypes = `import type { TastyPrecompiledManifest } from '@tenphi/tasty/precompile/register';\n\ndeclare const manifest: TastyPrecompiledManifest;\nexport default manifest;\n`;
+const sideEffectTypes = `export {};\n`;
 
 await mkdir(OUTPUT, { recursive: true });
 await Promise.all([
@@ -47,7 +48,10 @@ await Promise.all([
   writeFile(resolve(OUTPUT, 'manifest.js'), manifestSource),
   writeFile(resolve(OUTPUT, 'manifest.d.ts'), manifestTypes),
   writeFile(resolve(OUTPUT, 'register.js'), registerSource),
+  writeFile(resolve(OUTPUT, 'register.d.ts'), sideEffectTypes),
   writeFile(resolve(OUTPUT, 'index.js'), indexSource),
+  writeFile(resolve(OUTPUT, 'index.d.ts'), sideEffectTypes),
+  writeFile(resolve(OUTPUT, 'styles.d.ts'), sideEffectTypes),
   writeFile(resolve(OUTPUT, 'report.json'), json(report)),
 ]);
 

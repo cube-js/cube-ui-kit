@@ -297,13 +297,10 @@ export const TableElement = tasty({
       // unknown key through as raw CSS, so it emits fine: verified computing to
       // `300% 100%` with the sweep running. The warning is the linter's gap.
       maskSize: '300% 100%',
-      animationName: {
+      animation: {
         '': 'none',
-        stale: 'refresh-sweep',
+        stale: 'refresh-sweep 1.4s linear infinite',
       },
-      animationDuration: '1.4s',
-      animationIterationCount: 'infinite',
-      animationTimingFunction: 'linear',
       // Belt and braces with the flat mask above, and the same shape `Spin`
       // already uses.
       animationPlayState: {

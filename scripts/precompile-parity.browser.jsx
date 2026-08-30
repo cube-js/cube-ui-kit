@@ -1,10 +1,9 @@
-import { destroy, getCSSText } from '@tenphi/tasty';
-import { registerTastyPrecompiled } from '@tenphi/tasty/precompile/register';
+import css from '@cube-dev/ui-kit/precompiled-styles.css?raw';
+import manifest from '@cube-dev/ui-kit/precompiled-styles/manifest';
+import { destroy, getCSSText, tastyDebug } from '@tenphi/tasty';
 import { cleanup, render } from '@testing-library/react';
 import { afterAll, describe, expect, test } from 'vitest';
 
-import manifest from '../dist/precompiled/manifest.js';
-import css from '../dist/precompiled/styles.css?raw';
 import { Button, Checkbox, Placeholder, Root, TextInput } from '../src/index';
 
 function Example({ marker }) {
@@ -56,17 +55,14 @@ describe('UI Kit precompiled Tasty artifact', () => {
     runtime.unmount();
     destroy();
 
-    const style = document.createElement('style');
-    style.dataset.tastyPrecompiled = manifest.id;
-    style.textContent = css;
-    document.head.append(style);
-    registerTastyPrecompiled(manifest);
+    await import('@cube-dev/ui-kit/precompiled-styles');
 
     const precompiled = render(<Example marker="precompiled" />);
     await settle();
 
     const precompiledStyles = capture(precompiled.container);
     const precompiledCSS = getCSSText();
+    const debugSummary = tastyDebug.summary({ raw: true });
     const buttonClasses = precompiled.container
       .querySelector('[data-parity="button"]')
       .className.split(/\s+/);
@@ -78,16 +74,19 @@ describe('UI Kit precompiled Tasty artifact', () => {
     expect(precompiledStyles).toEqual(runtimeStyles);
     expect(precompiledCSS).toContain('--precompile-parity: precompiled');
     expect(precompiledCSS.length).toBeLessThan(runtimeCSS.length);
+    expect(debugSummary.precompiledCSSSize).toBe(css.length);
+    expect(debugSummary.precompiledRuleCount).toBe(manifest.stats.ruleCount);
     expect(placeholderAnimation).toMatch(/^placeholder-sweep-[a-z0-9]+$/);
     expect(css).toContain(`@keyframes ${placeholderAnimation}`);
-    expect(css).toMatch(/animation-name: refresh-sweep-[a-z0-9]+/);
+    expect(css).toMatch(
+      /animation: refresh-sweep-[a-z0-9]+ 1\.4s linear infinite/,
+    );
     for (const className of buttonClasses) {
       expect(runtimeCSS).toContain(`.${className}`);
       expect(precompiledCSS).not.toContain(`.${className}`);
     }
 
     precompiled.unmount();
-    style.remove();
   });
 });
 

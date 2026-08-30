@@ -47,13 +47,10 @@ const StyledPlaceholder = tasty({
     fill: '#dark.15',
 
     // Animated state styling
-    animationName: {
+    animation: {
       '': 'none',
-      animated: 'placeholder-sweep',
+      animated: 'placeholder-sweep $placeholder-animation-time linear infinite',
     },
-    animationDuration: '$placeholder-animation-time',
-    animationIterationCount: 'infinite',
-    animationTimingFunction: 'linear',
     image: {
       '': 'none',
       animated: `linear-gradient(

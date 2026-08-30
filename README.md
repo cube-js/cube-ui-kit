@@ -67,19 +67,25 @@ setPaletteConfig((config) => ({ ...config, hue: 235 }));
 
 ## Precompiled Tasty Styles
 
-Applications can opt into the UI Kit's precompiled component stylesheet by changing the package entry they import from:
+Applications can opt into the UI Kit's precompiled component stylesheet with one side-effect import. Keep component imports on the normal entry:
 
 ```tsx
-import { Root, Button } from '@cube-dev/ui-kit/precompiled';
+import '@cube-dev/ui-kit/precompiled-styles';
+import { Root, Button } from '@cube-dev/ui-kit';
 ```
 
-This entry registers the generated Tasty manifest, imports the static CSS asset, and re-exports the normal UI Kit API. Keep rendering `Root`: palette variables, body styles, fonts, and application globals remain dynamic and are intentionally not part of the component artifact. Styles or style props that are not covered by the catalog continue through Tasty's runtime path.
+Import it once in the application entry or framework root, before anything renders. It registers the generated Tasty manifest and imports the static CSS asset through the application's bundler. Keep rendering `Root`: palette variables, body styles, fonts, and application globals remain dynamic and are intentionally not part of the component artifact. Styles or style props that are not covered by the catalog continue through Tasty's runtime path.
 
-Frameworks that load stylesheets explicitly can link `@cube-dev/ui-kit/precompiled.css` and execute the registration-only entry before rendering:
+Frameworks that require explicit global CSS imports can split those two side effects in their root entry:
 
 ```ts
-import '@cube-dev/ui-kit/precompiled/register';
+import '@cube-dev/ui-kit/precompiled-styles/register';
+import '@cube-dev/ui-kit/precompiled-styles.css';
 ```
+
+SSR deployments that emit a stylesheet `<link>` can resolve or copy the same `@cube-dev/ui-kit/precompiled-styles.css` package asset into the document head, then execute `@cube-dev/ui-kit/precompiled-styles/register` before rendering. RSC applications must make that registration module execute in both the server render graph and a client entry/provider; a stylesheet link alone does not install the runtime lookup map. Build integrations that need to inspect the catalog can import `@cube-dev/ui-kit/precompiled-styles/manifest`; registration is still required at runtime, and the CSS must still be delivered separately.
+
+Environments that cannot deliver a static stylesheet but can load an asset as text may combine `@cube-dev/ui-kit/precompiled-styles/manifest` with `installTastyPrecompiled()` from `@tenphi/tasty/precompile/register`. This is the fallback path: it puts the CSS in the JavaScript bundle, must run before the first Tasty render, and may require a CSP nonce.
 
 Consumer overrides to Tasty parser functions, units, states, handlers, recipes, or chunk assignments invalidate the shared artifact. Keep using the normal `@cube-dev/ui-kit` entry or generate a project-specific artifact in those applications.
 
