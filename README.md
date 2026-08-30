@@ -67,7 +67,9 @@ setPaletteConfig((config) => ({ ...config, hue: 235 }));
 
 ## Precompiled Tasty Styles
 
-Applications can opt into the UI Kit's precompiled component stylesheet with one side-effect import. Keep component imports on the normal entry:
+Tasty precompilation uses exact style-chunk keys. Choose between the shared UI Kit catalog and an application-owned catalog based on how closely the application renders stock UI Kit styles.
+
+The shared catalog is a convenient opt-in for applications with broad, mostly stock UI Kit usage. It loads the entire generated stylesheet on every page, so it is not a blanket performance default. Keep component imports on the normal entry:
 
 ```tsx
 import '@cube-dev/ui-kit/precompiled-styles';
@@ -75,6 +77,33 @@ import { Root, Button } from '@cube-dev/ui-kit';
 ```
 
 Import it once in the application entry or framework root, before anything renders. It registers the generated Tasty manifest and imports the static CSS asset through the application's bundler. Keep rendering `Root`: palette variables, body styles, fonts, and application globals remain dynamic and are intentionally not part of the component artifact. Styles or style props that are not covered by the catalog continue through Tasty's runtime path.
+
+Use `tastyDebug.summary()` during representative navigation before adopting the shared asset. The summary separates runtime-active and precompiled-active classes, reports registered classes that are currently inactive, and shows how many distinct precompiled classes were used since metrics were reset. A high precompiled hit count alone can come from repeated renders of a small set and does not imply broad coverage.
+
+Applications with substantial `styles`, `style`, style-prop, or application-component usage should generate an app-owned artifact instead. The Node-only `@cube-dev/ui-kit/precompile` entry runs cases under UI Kit's exact Tasty configuration and normal `Root` providers while collecting both UI Kit and application chunks:
+
+```tsx
+import { writeFile } from 'node:fs/promises';
+import { precompileUIKitStyles } from '@cube-dev/ui-kit/precompile';
+
+import { DashboardRoute, QueryRoute } from './catalog-routes';
+
+const artifact = await precompileUIKitStyles({
+  id: '@cube-dev/console-ui',
+  cases: [
+    { id: 'dashboard', render: () => <DashboardRoute /> },
+    { id: 'query', render: () => <QueryRoute /> },
+  ],
+});
+
+await Promise.all([
+  writeFile('dist/tasty.css', artifact.css),
+  writeFile('dist/tasty.manifest.json', JSON.stringify(artifact.manifest)),
+  writeFile('dist/tasty.report.json', JSON.stringify(artifact.report)),
+]);
+```
+
+Cases should render representative application routes, data shapes, variants, and controlled subtrees. Import the application's Tasty configuration before invoking the compiler. Pass `root: false` when each case already returns the application's complete `Root` tree. Deliver the resulting CSS and register its manifest before rendering, using `registerTastyPrecompiled()` or `installTastyPrecompiled()` from `@tenphi/tasty/precompile/register`. Use the app-owned artifact instead of the broad shared asset, not in addition to it.
 
 Frameworks that require explicit global CSS imports can split those two side effects in their root entry:
 
@@ -87,7 +116,7 @@ SSR deployments that emit a stylesheet `<link>` can resolve or copy the same `@c
 
 Environments that cannot deliver a static stylesheet but can load an asset as text may combine `@cube-dev/ui-kit/precompiled-styles/manifest` with `installTastyPrecompiled()` from `@tenphi/tasty/precompile/register`. This is the fallback path: it puts the CSS in the JavaScript bundle, must run before the first Tasty render, and may require a CSP nonce.
 
-Consumer overrides to Tasty parser functions, units, states, handlers, recipes, or chunk assignments invalidate the shared artifact. Keep using the normal `@cube-dev/ui-kit` entry or generate a project-specific artifact in those applications.
+Consumer overrides to Tasty parser functions, units, states, handlers, recipes, or chunk assignments invalidate the shared artifact. Keep using runtime generation or generate an application-owned artifact under that exact configuration.
 
 ## Components
 

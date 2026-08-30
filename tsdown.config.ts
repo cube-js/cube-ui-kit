@@ -29,6 +29,9 @@ export default defineConfig({
     // the class-name pattern it normalises is tasty's, and the CSS it reads is
     // this package's.
     'probe/index': 'src/probe/index.ts',
+    // Node-only application catalog compiler. It loads UI Kit's exact Tasty
+    // configuration and delegates rendering/collection to tasty's precompiler.
+    'precompile/index': 'src/precompile/index.ts',
   },
   format: 'esm',
   outDir: 'dist',

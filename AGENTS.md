@@ -96,6 +96,7 @@ Each component lives in `src/components/{category}/{ComponentName}/` and ships `
 - `pnpm storybook` — start Storybook on port 6060
 - `pnpm build` — build library (`tsdown`, unbundled ESM), then generate the opt-in precompiled Tasty CSS, manifest, and report
 - `pnpm precompile:tasty` — regenerate the precompiled Tasty artifact from the already-built `dist/`
+- `@cube-dev/ui-kit/precompile` — Node-only helper for application-owned catalogs; it wraps cases in UI Kit's configured `Root` unless passed `root: false`
 - `pnpm bench:precompiled` — benchmark the actual generated artifact's registration and browser installation strategies
 - `pnpm test` — run all tests (Vitest); add `-- ComponentName` to filter, `-u` to update snapshots
 - `pnpm test:browser` — run the `*.browser.test.tsx` specs in real Chromium (layout, pointer, observers)
