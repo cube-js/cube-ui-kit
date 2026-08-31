@@ -177,7 +177,6 @@ type Story = StoryObj<typeof Form>;
 export const Default: Story = {
   render: (args) => (
     <Form
-      requiredMark={false}
       onSubmit={(data) => {
         console.log('Form submitted:', data);
         return new Promise((resolve) => {
@@ -225,6 +224,50 @@ export const Default: Story = {
         <SubmitButton>Sign In</SubmitButton>
         <ResetButton>Reset</ResetButton>
       </Space>
+    </Form>
+  ),
+  args: {
+    orientation: 'vertical',
+    labelPosition: 'top',
+  },
+};
+
+/**
+ * The four states of the necessity indicator side by side. The marker is opt-in:
+ * a `required` rule validates and sets `aria-required` without touching the
+ * label, and `isOptional` is a note that changes no behaviour at all.
+ */
+export const NecessityIndicators: Story = {
+  render: (args) => (
+    <Form {...args}>
+      <Input.Text
+        name="ruleOnly"
+        label="Email"
+        description="Required by a rule — validated and announced, but not marked"
+        rules={[{ required: true }]}
+      />
+
+      <Input.Text
+        name="required"
+        label="Email"
+        description="isRequired — adds the rule and marks the label"
+        isRequired
+      />
+
+      <Input.Text
+        name="requiredLabel"
+        label="Email"
+        description='The same, with necessityIndicator="label"'
+        isRequired
+        necessityIndicator="label"
+      />
+
+      <Input.Text
+        name="optional"
+        label="Nickname"
+        description="isOptional — a note, never a rule"
+        isOptional
+      />
     </Form>
   ),
   args: {

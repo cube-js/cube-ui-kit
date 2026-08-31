@@ -2,6 +2,7 @@ import { ReactNode } from 'react';
 
 import {
   FieldCoreProps,
+  NecessityIndicator,
   ValidateTrigger,
   ValidationProps,
   ValidationState,
@@ -25,6 +26,11 @@ export interface UseFieldProps<T extends FieldTypes>
   showValid?: boolean;
   /** On which event perform the validation for the field */
   validateTrigger?: ValidateTrigger;
+  /**
+   * The type of necessity indicator. Read only to tell an explicit request for
+   * one apart from an omitted prop — see `suppressNecessityIndicator`.
+   */
+  necessityIndicator?: NecessityIndicator | null;
 }
 
 export type FieldReturnValue<T extends FieldTypes> = ValidationProps & {
@@ -48,6 +54,13 @@ export type FieldReturnValue<T extends FieldTypes> = ValidationProps & {
   /** Error message for the field. Always displayed in danger state regardless of validation state */
   errorMessage?: ReactNode;
   isRequired?: boolean;
+  /**
+   * Set to `null` when `isRequired` was derived from a `required` rule rather
+   * than authored, which suppresses the label marker while leaving validation
+   * and `aria-required` in place. Absent otherwise, so an authored indicator
+   * survives the merge in `useFieldProps`.
+   */
+  necessityIndicator?: NecessityIndicator | null;
   onBlur: () => void;
   nonInput: boolean;
   field?: CubeFieldData<keyof FieldTypes & string, T[keyof FieldTypes]>;

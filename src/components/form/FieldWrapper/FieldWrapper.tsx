@@ -1,6 +1,7 @@
 import { tasty } from '@tenphi/tasty';
 import { forwardRef } from 'react';
 
+import { useI18n } from '../../../i18n';
 import { mergeProps, wrapNodeIfPlain } from '../../../utils/react/index';
 import { InfoBadge } from '../../content/InfoBadge';
 import { Text } from '../../content/Text';
@@ -103,6 +104,7 @@ export const FieldWrapper = forwardRef(function FieldWrapper(
     extra,
     styles,
     isRequired,
+    isOptional,
     isDisabled,
     labelStyles,
     necessityIndicator,
@@ -122,17 +124,33 @@ export const FieldWrapper = forwardRef(function FieldWrapper(
     children,
   } = props;
 
+  const { t } = useI18n();
+
+  // The `aria-label` below is what the input is named by, so it shadows the
+  // label's own content — including the `(optional)` note, which is the only
+  // thing saying the field is optional. A required field needs no such help:
+  // `aria-required` on the input already announces it.
+  const optionalNote =
+    isOptional && !isRequired ? t('form.optional', '(optional)') : null;
+
   const labelComponent = label ? (
     <Label
       as={as === 'label' ? 'div' : 'label'}
       styles={labelStyles}
       labelPosition={labelPosition}
       isRequired={requiredMark ? isRequired : false}
+      isOptional={isOptional}
       isDisabled={isDisabled}
       necessityIndicator={necessityIndicator}
       isInvalid={isInvalid}
       isValid={isValid}
-      aria-label={typeof label === 'string' ? label : undefined}
+      aria-label={
+        typeof label === 'string'
+          ? optionalNote
+            ? `${label} ${optionalNote}`
+            : label
+          : undefined
+      }
       {...labelProps}
     >
       <Flex placeContent="baseline space-between" width="100%">
@@ -146,6 +164,7 @@ export const FieldWrapper = forwardRef(function FieldWrapper(
             */}
             <NecessityIndicatorMark
               isRequired={requiredMark ? isRequired : false}
+              isOptional={isOptional}
               necessityIndicator={necessityIndicator}
             />
           </div>

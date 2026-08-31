@@ -31,9 +31,10 @@ The Field component is a **legacy wrapper** for form inputs that provides field-
 - **`defaultValue`** `string` — Default field value
 - **`rules`** — Validation rules array
 - **`labelPosition`** `'top' | 'side' | 'split'` (default: `top`) — Position of the field label
-- **`necessityIndicator`** `'icon' | 'label'` — Type of necessity indicator
+- **`necessityIndicator`** `'icon' | 'label' | null` — Type of necessity indicator
 - **`necessityLabel`** `string` — Custom necessity label text
-- **`isRequired`** `boolean` (default: `false`) — Whether the field is required
+- **`isRequired`** `boolean` (default: `false`) — Whether the field is required. Marks the label, unlike a bare `required` rule
+- **`isOptional`** `boolean` (default: `false`) — Marks the label with an `(optional)` note
 - **`isDisabled`** `boolean` (default: `false`) — Whether the field is disabled
 - **`isLoading`** `boolean` (default: `false`) — Whether the field is in loading state
 - **`isHidden`** `boolean` (default: `false`) — Whether the field is hidden
@@ -93,14 +94,15 @@ These properties allow direct style application without using the `styles` prop:
 ### Presentation Properties
 
 - **`labelPosition`** `'top' | 'side'` — Position of the field label
-- **`necessityIndicator`** `'icon' | 'label'` — Type of necessity indicator
+- **`necessityIndicator`** `'icon' | 'label' | null` — Type of necessity indicator
 - **`necessityLabel`** `string` — Custom necessity label text
+- **`isOptional`** `boolean` — Marks the label with an `(optional)` note
 - **`labelProps`** `object` — Additional props for the label element
 - **`labelSuffix`** `ReactNode` — Content to display after the label
 
 ### State Properties
 
-- **`isRequired`** `boolean` — Whether the field is required
+- **`isRequired`** `boolean` — Whether the field is required. Marks the label, unlike a bare `required` rule
 - **`isDisabled`** `boolean` — Whether the field is disabled
 - **`isLoading`** `boolean` — Whether the field is in loading state
 - **`isReadOnly`** `boolean` — Whether the field is read-only

@@ -111,6 +111,7 @@ interface CubeFullFieldProps<T extends FieldTypes> extends CubeFieldProps<T> {
 interface CubeReplaceFieldProps<T extends FieldTypes>
   extends CubeFieldProps<T> {
   isRequired?: boolean;
+  isOptional?: boolean;
   onChange?: (any) => void;
   onSelectionChange?: (any) => void;
   onBlur: () => void;
@@ -133,6 +134,7 @@ export function Field<T extends FieldTypes>(props: CubeFieldProps<T>) {
     isHidden,
     isDisabled,
     isLoading,
+    isOptional,
     styles,
     labelProps,
     labelPosition = 'top',
@@ -163,6 +165,14 @@ export function Field<T extends FieldTypes>(props: CubeFieldProps<T>) {
     id,
   } = __props;
 
+  // `useField` reports `null` here when `isRequired` came from a `required` rule
+  // rather than from the props, which suppresses the label marker. An indicator
+  // set on the `Field` itself is an explicit request and outranks that.
+  const resolvedNecessityIndicator =
+    necessityIndicator !== undefined
+      ? necessityIndicator
+      : __props.necessityIndicator;
+
   if (!child) return null;
 
   if (id) {
@@ -181,9 +191,10 @@ export function Field<T extends FieldTypes>(props: CubeFieldProps<T>) {
           isDisabled={isDisabled}
           isInvalid={isInvalid}
           isValid={isValid}
-          necessityIndicator={necessityIndicator}
+          necessityIndicator={resolvedNecessityIndicator}
           necessityLabel={necessityLabel}
           isRequired={isRequired}
+          isOptional={isOptional}
           label={label}
           labelProps={labelProps}
           extra={extra}
@@ -231,8 +242,18 @@ export function Field<T extends FieldTypes>(props: CubeFieldProps<T>) {
     onBlur: __props.onBlur,
   };
 
-  if (necessityIndicator != null) {
-    newProps.necessityIndicator = necessityIndicator;
+  // A `null` indicator suppresses the marker for a rule-derived `isRequired`. It
+  // must not override a necessity the child input declares for itself, which the
+  // `useField` above never saw.
+  const childDeclaresNecessity =
+    (child.props as any).isRequired != null ||
+    (child.props as any).necessityIndicator !== undefined;
+
+  if (
+    resolvedNecessityIndicator !== undefined &&
+    !(resolvedNecessityIndicator === null && childDeclaresNecessity)
+  ) {
+    newProps.necessityIndicator = resolvedNecessityIndicator;
   }
 
   if (necessityLabel) {
@@ -249,6 +270,10 @@ export function Field<T extends FieldTypes>(props: CubeFieldProps<T>) {
 
   if (isRequired) {
     newProps.isRequired = isRequired;
+  }
+
+  if (isOptional != null) {
+    newProps.isOptional = isOptional;
   }
 
   if (label) {

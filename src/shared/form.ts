@@ -15,7 +15,10 @@ export interface ValidationResult {
 
 /** Where to place label relative to input */
 export type LabelPosition = 'side' | 'top' | 'split';
-/** The type of necessity indicator */
+/**
+ * The type of necessity indicator: `'icon'` renders the asterisk, `'label'` the
+ * `(required)` / `(optional)` text. `null` suppresses the indicator entirely.
+ */
 export type NecessityIndicator = 'icon' | 'label';
 
 /**
@@ -60,8 +63,18 @@ export interface FieldCoreProps {
   description?: ReactNode;
   /** Error message for the field. Always displayed in danger state regardless of validation state */
   errorMessage?: ReactNode;
-  /** Whether the field is required */
+  /**
+   * Whether the field is required. Drives `aria-required`, adds a `required`
+   * validation rule, and — unlike a `required` rule on its own — marks the
+   * label with the necessity indicator.
+   */
   isRequired?: boolean;
+  /**
+   * Whether the field is optional. Purely presentational: it marks the label
+   * with an `(optional)` note and changes no validation behaviour. Ignored when
+   * the field is required.
+   */
+  isOptional?: boolean;
   /** Custom label props */
   labelProps?: Props;
 }
@@ -98,7 +111,7 @@ export interface FieldBaseProps extends FormBaseProps, FieldCoreProps {
   label?: ReactNode;
   /** An additional content next to the label */
   extra?: ReactNode;
-  necessityIndicator?: NecessityIndicator;
+  necessityIndicator?: NecessityIndicator | null;
   necessityLabel?: ReactNode;
   labelSuffix?: ReactNode;
   /** A tooltip that is shown inside the label */
@@ -130,7 +143,7 @@ export interface FormBaseProps extends ValidationProps {
   /** Whether the field presents required mark */
   requiredMark?: boolean;
   /** The type of necessity indicator */
-  necessityIndicator?: NecessityIndicator;
+  necessityIndicator?: NecessityIndicator | null;
   /** That can replace the necessity label */
   necessityLabel?: ReactNode;
   /** Whether the field is read only */

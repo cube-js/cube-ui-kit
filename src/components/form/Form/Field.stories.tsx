@@ -72,7 +72,15 @@ export default {
     /* State */
     isRequired: {
       control: { type: 'boolean' },
-      description: 'Whether the field is required',
+      description:
+        'Whether the field is required. Marks the label, unlike a bare `required` rule',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+    isOptional: {
+      control: { type: 'boolean' },
+      description: 'Marks the label with an `(optional)` note',
       table: {
         defaultValue: { summary: false },
       },
