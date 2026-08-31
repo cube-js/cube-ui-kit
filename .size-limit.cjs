@@ -25,10 +25,17 @@ module.exports = [
     // 515 kB budget that `main` had already spent down to 1,257 B of headroom, so
     // it came in 261 B over. A later visual pass (a painted gap on the outside
     // grips, the corner angle in place of a dot, and the dev guards moved to
-    // `isDevEnv()`) added a further 180 B locally, which projects to ~515.44 kB in
-    // CI at the +151 B local-to-CI gap this branch measured. Set to 517 kB, which
-    // leaves ~1.5 kB — about what `main` was carrying, and thin on purpose per the
-    // note further down.
+    // `isDevEnv()`) added a further 180 B, and CI then measured the finished
+    // branch at 515,433 B. Set to 517 kB, leaving 1,567 B — about what `main` was
+    // carrying, and thin on purpose per the note further down.
+    //
+    // Another calibration point for the macOS/Linux warning below, since this
+    // branch produced two: the local reading was 515,290 B against CI's 515,433 B,
+    // a +143 B gap, after +151 B on the previous commit. Small and consistent, not
+    // the ~1.6 kB that warning describes — but it IS a gap, and both times it ran
+    // the same direction, so a budget fitted to a local reading would have landed
+    // just under. Predicting CI from a local delta worked here to 8 bytes; that is
+    // a usable technique, not a licence to skip the CI number.
     //
     // The `Tree shaking (just a Button)` entry below is BYTE-IDENTICAL across the
     // two commits: 123,018 B on both. That is the check those comments keep
