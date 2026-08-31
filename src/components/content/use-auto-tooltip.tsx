@@ -108,9 +108,17 @@ export function useAutoTooltip({
           checkLabelOverflow();
         });
         resizeObserverRef.current = obs;
+        // `observe()` delivers an initial callback with the element's current
+        // size, so this is the initial measurement as well as the resize one.
+        //
+        // Do NOT measure synchronously here. React runs callback refs during
+        // `commitAttachRef`, so reading `scrollWidth`/`clientWidth` at this
+        // point forces a style recalc and layout per element, mid-commit —
+        // every tooltip-bearing Button, Item and TextItem paying its own
+        // reflow. Observer callbacks run after layout but before paint, so the
+        // measurement is still applied in the same frame, but batched across
+        // every observed label into a single flush.
         obs.observe(element);
-        // Initial check
-        checkLabelOverflow();
       } else {
         setIsLabelOverflowed(false);
       }
