@@ -61,6 +61,8 @@ export function useAutoTooltip({
   const elementRef = useRef<HTMLElement | null>(null);
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
 
+  const measurePendingRef = useRef(false);
+
   const checkLabelOverflow = useCallback(() => {
     const label = elementRef.current;
 
@@ -68,6 +70,33 @@ export function useAutoTooltip({
 
     setIsLabelOverflowed(label.scrollWidth > label.clientWidth);
   }, []);
+
+  /**
+   * Measure once the current task has finished, not inside it.
+   *
+   * A microtask runs after React's whole commit — every mutation, layout effect
+   * and ref attachment — and before paint. Every label on the page therefore
+   * reads after all of them have written, so the reads collapse into one style
+   * and layout flush instead of forcing one each, mid-commit. Reading straight
+   * from the callback ref is what cost 122ms of `get scrollWidth` in one Cloud
+   * profile, more than the entire style engine.
+   *
+   * A microtask rather than the observer's first delivery: observer callbacks
+   * are part of the rendering steps, so a runner that is not producing frames —
+   * a background tab, or a headless browser running many stories at once — can
+   * delay them past the point something asks whether the tooltip is active.
+   * Microtasks do not depend on a frame.
+   */
+  const scheduleLabelOverflowCheck = useCallback(() => {
+    if (measurePendingRef.current) return;
+
+    measurePendingRef.current = true;
+
+    queueMicrotask(() => {
+      measurePendingRef.current = false;
+      checkLabelOverflow();
+    });
+  }, [checkLabelOverflow]);
 
   useEffect(() => {
     if (isAutoTooltipEnabled) {
@@ -113,27 +142,26 @@ export function useAutoTooltip({
       // loop that never settles.
       if (!element) return;
 
-      // Create a fresh observer to capture the latest callback
+      // Do NOT measure synchronously here — see `scheduleLabelOverflowCheck`.
+      // This covers the node the ref just handed us, including the fresh one
+      // React creates when `TooltipProvider` mounts and remounts the label.
+      scheduleLabelOverflowCheck();
+
+      // The observer covers every later size change.
       const obs = new ResizeObserver(() => {
         checkLabelOverflow();
       });
 
       resizeObserverRef.current = obs;
 
-      // `observe()` delivers an initial callback with the element's current
-      // size, so this is the initial measurement as well as the resize one.
-      //
-      // Do NOT measure synchronously here. React runs callback refs during
-      // `commitAttachRef`, so reading `scrollWidth`/`clientWidth` at this point
-      // forces a style recalc and layout per element, mid-commit — every
-      // tooltip-bearing Button, Item and TextItem paying its own reflow. In one
-      // Cloud profile this call site alone was 122ms of `get scrollWidth`, more
-      // than the entire style engine cost. Observer callbacks run after layout
-      // but before paint, so the measurement still lands in the same frame,
-      // batched across every observed label into a single flush.
       obs.observe(element);
     },
-    [externalLabelRef, isAutoTooltipEnabled, checkLabelOverflow],
+    [
+      externalLabelRef,
+      isAutoTooltipEnabled,
+      checkLabelOverflow,
+      scheduleLabelOverflowCheck,
+    ],
   );
 
   // Cleanup on unmount
