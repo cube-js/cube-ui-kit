@@ -62,7 +62,6 @@ function CheckboxGroup(props: WithNullableValue<CubeCheckboxGroupProps>, ref) {
     isDisabled,
     isRequired,
     necessityIndicator,
-    necessityLabel,
     label,
     extra,
     isInvalid,
