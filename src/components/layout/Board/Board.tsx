@@ -496,7 +496,7 @@ function BoardInner(
     isResizable = true,
     isDroppable = true,
     resizeHandles = ['se'],
-    resizeGripPlacement = 'inside',
+    resizeGripPlacement,
     dragCancel = BOARD_SELECTION_CANCEL,
     dragHandle,
     showGridLines,
@@ -893,6 +893,14 @@ function BoardInner(
   // positive when the board is squeezed (needs more height), negative when the
   // container is taller than needed (so the floor can be lowered). The host
   // never shrinks the widget on its own - it only grows and clamps resizing.
+  // Tell the widget holding this board that it is holding a board, so it can move
+  // its own grips out into the gutter and leave the inside to this board's
+  // widgets. Registration rather than a prop: a widget cannot see its own
+  // content, and threading "am I a container" through every call site would put
+  // the burden on consumers to keep a fact the tree already knows.
+  const registerNestedBoard = host?.registerNestedBoard;
+  useEffect(() => registerNestedBoard?.(), [registerNestedBoard]);
+
   const requestHeightDeficit = host?.requestHeightDeficit;
   useEffect(() => {
     if (!aligned || !host?.isAutoHeight || !requestHeightDeficit) return;

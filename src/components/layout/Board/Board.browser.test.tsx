@@ -373,11 +373,16 @@ describe('Board nested handle arbitration', () => {
   function renderNested({
     ids,
     outerHandles,
+    placement,
+    margin = [0, 0],
     onOuter,
     onInner,
   }: {
     ids: [string, string];
     outerHandles?: string[];
+    /** Left unset, both boards let placement resolve itself from content. */
+    placement?: 'inside' | 'corner' | 'outside';
+    margin?: [number, number];
     onOuter?: (layout: LayoutItem[]) => void;
     onInner?: (layout: LayoutItem[]) => void;
   }) {
@@ -393,9 +398,9 @@ describe('Board nested handle arbitration', () => {
           <Board
             cols={COLS}
             rowHeight={CELL}
-            margin={[0, 0]}
+            margin={margin}
             containerPadding={[0, 0]}
-            resizeGripPlacement="corner"
+            resizeGripPlacement={placement}
             defaultLayout={[{ i: container, x: 0, y: 0, w: COLS, h: 4 }]}
             onLayoutChange={onOuter}
           >
@@ -409,8 +414,8 @@ describe('Board nested handle arbitration', () => {
                 isAligned
                 cols={COLS}
                 rowHeight={CELL}
-                margin={[0, 0]}
-                resizeGripPlacement="corner"
+                margin={margin}
+                resizeGripPlacement={placement}
                 // Last column, last row: flush with the container on both axes.
                 defaultLayout={[{ i: child, x: COLS - 2, y: 3, w: 2, h: 1 }]}
                 onLayoutChange={onInner}
@@ -464,7 +469,12 @@ describe('Board nested handle arbitration', () => {
   it('hands a corner two widgets share to the innermost one', async () => {
     const onOuter = vi.fn();
     const onInner = vi.fn();
-    renderNested({ ids: ['grid', 'child'], onOuter, onInner });
+    renderNested({
+      ids: ['grid', 'child'],
+      onOuter,
+      onInner,
+      placement: 'corner',
+    });
 
     const corner = await sharedCorner('grid', 'child');
 
@@ -490,7 +500,7 @@ describe('Board nested handle arbitration', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
     try {
-      renderNested({ ids: ['grid-warn', 'child-warn'] });
+      renderNested({ ids: ['grid-warn', 'child-warn'], placement: 'corner' });
       const corner = await sharedCorner('grid-warn', 'child-warn');
 
       const from = contested(corner);
@@ -522,6 +532,7 @@ describe('Board nested handle arbitration', () => {
     renderNested({
       ids: ['grid-edge', 'child-edge'],
       outerHandles: ['se', 'e', 's'],
+      placement: 'corner',
       onOuter,
       onInner,
     });
@@ -540,6 +551,255 @@ describe('Board nested handle arbitration', () => {
     await vi.waitFor(() => expect(onOuter).toHaveBeenCalled());
     expect(widthOf(onOuter.mock.lastCall?.[0], 'grid-edge')).toBe(COLS - 1);
     expect(widthOf(onInner.mock.lastCall?.[0], 'child-edge') ?? 2).toBe(2);
+  });
+});
+
+describe('Board grip placement resolved from content', () => {
+  /**
+   * The rule that makes the nested case safe by construction rather than by
+   * arbitration: a widget holding a `Board` puts its grips OUTSIDE its box, in the
+   * grid gutter, and every other widget keeps them INSIDE. Nothing then straddles
+   * the boundary between a container and its children, so no press is ambiguous
+   * and nothing has to be clipped to stay out of the way.
+   *
+   * Every test here leaves `resizeGripPlacement` unset, which is the point: the
+   * geometry has to follow from the tree, not from a prop a consumer must know to
+   * pass. The `corner` suite above covers the explicit override.
+   */
+  const CELL = 50;
+  const COLS = 6;
+  const GUTTER = 8;
+
+  function renderContainer({
+    handles = ['se'],
+    margin = [GUTTER, GUTTER] as [number, number],
+    onOuter,
+    onInner,
+  }: {
+    handles?: string[];
+    margin?: [number, number];
+    onOuter?: (layout: LayoutItem[]) => void;
+    onInner?: (layout: LayoutItem[]) => void;
+  } = {}) {
+    return renderWithRoot(
+      <div style={{ width: `${COLS * CELL + (COLS - 1) * margin[0]}px` }}>
+        <Board.Provider>
+          <Board
+            cols={COLS}
+            rowHeight={CELL}
+            margin={margin}
+            containerPadding={margin}
+            defaultLayout={[{ i: 'box', x: 0, y: 0, w: COLS, h: 4 }]}
+            onLayoutChange={onOuter}
+          >
+            <Board.Widget
+              id="box"
+              qa="BOX"
+              isCard={false}
+              resizeHandles={handles as never}
+            >
+              <Board
+                isAligned
+                cols={COLS}
+                rowHeight={CELL}
+                margin={margin}
+                defaultLayout={[{ i: 'leaf', x: COLS - 2, y: 3, w: 2, h: 1 }]}
+                onLayoutChange={onInner}
+              >
+                <Board.Widget id="leaf" qa="LEAF">
+                  leaf
+                </Board.Widget>
+              </Board>
+            </Board.Widget>
+          </Board>
+        </Board.Provider>
+      </div>,
+    );
+  }
+
+  const handles = () =>
+    Array.from(
+      document.querySelectorAll<HTMLElement>('[data-qa="BoardResizeHandle"]'),
+    );
+
+  const handleFor = (owner: string, axis: string) =>
+    handles().find(
+      (el) =>
+        el.dataset.axis === axis &&
+        el
+          .closest('[data-board-widget-host]')
+          ?.getAttribute('data-board-widget-id') === owner,
+    );
+
+  /** Which resize hit-zones a point actually lands on, innermost owner first. */
+  const zonesAt = (x: number, y: number) =>
+    document
+      .elementsFromPoint(x, y)
+      .filter((el) => (el as HTMLElement).dataset?.qa === 'BoardResizeHandle')
+      .map((el) => (el as HTMLElement).dataset.placement);
+
+  async function settledNested() {
+    await vi.waitFor(() =>
+      expect(widget('leaf').getBoundingClientRect().width).toBeGreaterThan(0),
+    );
+  }
+
+  it("puts a board container's grips outside its box, and a leaf's inside", async () => {
+    renderContainer({ handles: ['se', 'e', 's'] });
+    await settledNested();
+
+    const box = widget('box').getBoundingClientRect();
+    const outside = handles().filter(
+      (el) => el.dataset.placement === 'outside',
+    );
+
+    // The container holds a board, so all three of its axes moved out.
+    expect(outside).toHaveLength(3);
+    // And not one of them reaches back over the container's own content, which is
+    // the whole point — that content belongs to the nested board's widgets.
+    for (const el of outside) {
+      const rect = el.getBoundingClientRect();
+      const beyondRight = rect.left >= box.right - 0.5;
+      const beyondBottom = rect.top >= box.bottom - 0.5;
+      expect(beyondRight || beyondBottom).toBe(true);
+    }
+
+    // The leaf inside it resolved the other way.
+    expect(handleFor('leaf', 'se')?.dataset.placement).toBe('inside');
+  });
+
+  it('keeps an outside grip within the gutter it was given', async () => {
+    renderContainer({ handles: ['e'] });
+    await settledNested();
+
+    const box = widget('box').getBoundingClientRect();
+    const pill = handles().find((el) => el.dataset.placement === 'outside')!;
+    const rect = pill.getBoundingClientRect();
+
+    // Starts at the widget's edge and stops within the gutter, so it can never be
+    // sitting on the neighbour's content.
+    expect(rect.left).toBeCloseTo(box.right, 0);
+    expect(rect.width).toBeCloseTo(GUTTER, 0);
+  });
+
+  it('leaves the two levels no pixel in common', async () => {
+    renderContainer({ handles: ['se', 'e', 's'] });
+    await settledNested();
+
+    const box = widget('box').getBoundingClientRect();
+    const leaf = widget('leaf').getBoundingClientRect();
+
+    // The leaf is flush with the container, so this is the hardest point there is.
+    expect(leaf.right).toBeCloseTo(box.right, 0);
+    expect(leaf.bottom).toBeCloseTo(box.bottom, 0);
+
+    // Just inside the shared corner: the leaf's zone, and only the leaf's.
+    expect(zonesAt(leaf.right - 6, leaf.bottom - 6)).toEqual(['inside']);
+    // Just outside it: the container's, and only the container's.
+    expect(zonesAt(box.right + 4, box.bottom + 4)).toEqual(['outside']);
+    // And the container no longer has a hit-zone lying over the leaf's content,
+    // which is what used to make the leaf unresizable.
+    expect(zonesAt(box.right - 4, box.top + 2 * CELL)).toEqual([]);
+  });
+
+  it('reveals one level of grips at a time', async () => {
+    renderContainer({ handles: ['se', 'e', 's'] });
+    await settledNested();
+
+    // Which widget each revealed affordance belongs to. Asked by owner rather than
+    // by placement because the two placements mark different elements: `inside`
+    // draws a grip beside its transparent hit-zone and reveals the grip, while
+    // `outside` is one element and reveals itself. An outside grip sits in the
+    // sibling grip layer, so it has no host to climb to — that is what identifies
+    // it as the container's.
+    const revealedOwners = () =>
+      Array.from(document.querySelectorAll<HTMLElement>('[data-revealed]'))
+        .filter((el) =>
+          [
+            'BoardResizeGrip',
+            'BoardResizeHandle',
+            'BoardResizeEdgeGrip',
+          ].includes(el.dataset.qa ?? ''),
+        )
+        .map(
+          (el) =>
+            el
+              .closest('[data-board-widget-host]')
+              ?.getAttribute('data-board-widget-id') ?? 'box:outside',
+        );
+
+    await user.hover(widget('leaf'));
+    // The pointer is inside the container too — it has to be, the leaf is in it —
+    // so without the container standing down, both sets would light up at once.
+    await vi.waitFor(() => expect(revealedOwners()).toEqual(['leaf']));
+
+    const box = widget('box').getBoundingClientRect();
+    await user.pointer({
+      target: document.elementFromPoint(box.right + 4, box.bottom + 4)!,
+      coords: { x: box.right + 4, y: box.bottom + 4 },
+    });
+    await vi.waitFor(() =>
+      expect(revealedOwners()).toEqual([
+        'box:outside',
+        'box:outside',
+        'box:outside',
+      ]),
+    );
+  });
+
+  it('resizes the container from outside and the leaf from inside', async () => {
+    const onOuter = vi.fn();
+    const onInner = vi.fn();
+    renderContainer({ handles: ['se', 'e', 's'], onOuter, onInner });
+    await settledNested();
+
+    const widthOf = (layout: LayoutItem[] | undefined, id: string) =>
+      layout?.find((item) => item.i === id)?.w;
+
+    // The leaf, from its own corner.
+    const leaf = widget('leaf').getBoundingClientRect();
+    const from = { x: leaf.right - 6, y: leaf.bottom - 6 };
+    await dragPointer(
+      document.elementFromPoint(from.x, from.y) as HTMLElement,
+      from,
+      { x: from.x - CELL - GUTTER, y: from.y },
+    );
+    await vi.waitFor(() => expect(onInner).toHaveBeenCalled());
+    expect(widthOf(onInner.mock.lastCall?.[0], 'leaf')).toBe(1);
+    expect(widthOf(onOuter.mock.lastCall?.[0], 'box') ?? COLS).toBe(COLS);
+
+    // The container, from the pill in the gutter beyond its right edge.
+    const box = widget('box').getBoundingClientRect();
+    const at = { x: box.right + 4, y: box.top + 2 * CELL };
+    await dragPointer(
+      document.elementFromPoint(at.x, at.y) as HTMLElement,
+      at,
+      { x: at.x - CELL - GUTTER, y: at.y },
+    );
+    await vi.waitFor(() =>
+      expect(widthOf(onOuter.mock.lastCall?.[0], 'box')).toBe(COLS - 1),
+    );
+  });
+
+  it('warns when the gutter is too thin to hold an outside grip', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    try {
+      renderContainer({ margin: [0, 0] });
+      await settledNested();
+
+      await vi.waitFor(() =>
+        expect(
+          warn.mock.calls.some(
+            (call) =>
+              typeof call[0] === 'string' &&
+              call[0].includes('gutter to sit in'),
+          ),
+        ).toBe(true),
+      );
+    } finally {
+      warn.mockRestore();
+    }
   });
 });
 

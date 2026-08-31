@@ -212,6 +212,24 @@ export interface BoardHost {
    * ever increases the host's height. No-op when the host does not auto-size.
    */
   requestHeightDeficit: (px: number) => void;
+  /**
+   * A nested `Board` announces itself here, and the host widget answers by moving
+   * its own resize grips *outside* its box - see `resolveGripPlacement`. This is
+   * how the rule "a widget's grips go inside it, a board container's go outside"
+   * applies itself: a widget cannot inspect its own content, but a board can
+   * introduce itself to whatever is holding it.
+   *
+   * Returns the deregistration callback, so a board that unmounts (or moves to
+   * another host) hands the corner back.
+   */
+  registerNestedBoard: () => () => void;
+  /**
+   * A widget of a nested `Board` reports the pointer arriving on or leaving it, so
+   * its host can stand down and show only one set of grips at a time. Without
+   * this, hovering a child reveals the child's grips *and* every ancestor
+   * container's, since the pointer is inside all of them at once.
+   */
+  setDescendantHovered: (hovered: boolean) => void;
 }
 
 export const BoardHostContext = createContext<BoardHost | null>(null);

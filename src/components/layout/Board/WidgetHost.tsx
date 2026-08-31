@@ -20,6 +20,7 @@ import {
   BoardHost,
   BoardHostContext,
   BoardRegistryContextValue,
+  useBoardHost,
   ViewportRect,
 } from './board-context';
 import { WidgetRegistration } from './board-store';
@@ -64,6 +65,18 @@ const CORNER_HIT_INWARD = GRIP_SIZE / 2;
  * dot" and starts reading as "somewhere near the corner".
  */
 const CORNER_HIT_OUTWARD_MAX = GRIP_SIZE;
+
+/**
+ * Thickness of an `outside` grip: the band, measured out from the widget's edge,
+ * that the affordance owns. It is the grid gutter where the gutter is big enough
+ * to hold it, and this floor where it is not — an affordance thinner than this
+ * stops being reliably clickable, so it overhangs the neighbour instead and the
+ * board says so in development.
+ */
+const OUTSIDE_GRIP_MIN_BAND = 8;
+
+/** Length of an `outside` edge grip along the edge it belongs to. */
+const OUTSIDE_GRIP_LENGTH = 24;
 
 const WidgetElement = tasty({
   qa: 'BoardWidget',
@@ -305,6 +318,85 @@ const GripElement = tasty({
     right: {
       '': 'auto',
       '[data-axis="ne"] | [data-axis="se"]': '$grip-offset',
+    },
+  },
+});
+
+/**
+ * An `outside` grip: the visible control and the hit-zone in one element.
+ *
+ * The two used to be separate boxes of different sizes, aligned by hand, which is
+ * how a 10px dot came to stand for a 24px target reaching back over the widget's
+ * own content (CUB-4166). Here they cannot drift apart, because there is only one
+ * box: what is painted is exactly what is grabbed.
+ *
+ * It lives in the grid gutter, beyond the widget's edge — never over the widget's
+ * content, so a nested board's children keep every pixel of their own. The band
+ * it occupies (`--grip-band-x` / `--grip-band-y`) is the gutter, floored at
+ * `OUTSIDE_GRIP_MIN_BAND`. Rendered in `GripLayerElement`, which nothing clips.
+ *
+ * Always hit-testable, painted only once revealed: you have to be able to hover
+ * it to reveal it, and `opacity` leaves hit-testing alone.
+ */
+const OutsideGripElement = tasty({
+  qa: 'BoardResizeHandle',
+  styles: {
+    position: 'absolute',
+    boxSizing: 'border-box',
+    pointerEvents: 'auto',
+    touchAction: 'none',
+    zIndex: 20,
+    radius: 'round',
+    fill: {
+      '': '#dark.30',
+      resizing: '#dark.50',
+    },
+    opacity: {
+      '': 0,
+      revealed: 1,
+    },
+    transition: 'opacity 120ms ease-in-out, theme',
+    // Anchored to the edge it resizes and centred along it, so the control reads
+    // as belonging to that edge rather than floating near it.
+    left: {
+      '': 'auto',
+      '[data-axis="e"] | [data-axis="ne"] | [data-axis="se"]': '100%',
+      '[data-axis="n"] | [data-axis="s"]': '50%',
+    },
+    right: {
+      '': 'auto',
+      '[data-axis="w"] | [data-axis="nw"] | [data-axis="sw"]': '100%',
+    },
+    top: {
+      '': 'auto',
+      '[data-axis="s"] | [data-axis="se"] | [data-axis="sw"]': '100%',
+      '[data-axis="e"] | [data-axis="w"]': '50%',
+    },
+    bottom: {
+      '': 'auto',
+      '[data-axis="n"] | [data-axis="ne"] | [data-axis="nw"]': '100%',
+    },
+    transform: {
+      '': 'translate(0, 0)',
+      '[data-axis="e"] | [data-axis="w"]': 'translate(0, -50%)',
+      '[data-axis="n"] | [data-axis="s"]': 'translate(-50%, 0)',
+    },
+    // An edge grip is a pill: gutter-thick across, fixed length along. A corner
+    // grip fills the square where the two gutters cross.
+    width: {
+      '': '$grip-band-x',
+      '[data-axis="n"] | [data-axis="s"]': `${OUTSIDE_GRIP_LENGTH}px`,
+    },
+    height: {
+      '': '$grip-band-y',
+      '[data-axis="e"] | [data-axis="w"]': `${OUTSIDE_GRIP_LENGTH}px`,
+    },
+    cursor: {
+      '': 'default',
+      '[data-axis="n"] | [data-axis="s"]': 'ns-resize',
+      '[data-axis="e"] | [data-axis="w"]': 'ew-resize',
+      '[data-axis="ne"] | [data-axis="sw"]': 'nesw-resize',
+      '[data-axis="nw"] | [data-axis="se"]': 'nwse-resize',
     },
   },
 });
@@ -577,6 +669,14 @@ interface ResizeHandleProps {
    * when the widget does have a fallback or in production.
    */
   yieldWarning?: string;
+  /**
+   * `outside` placement only, where the control and the hit-zone are one element:
+   * whether it is currently painted. It stays hit-testable either way — you have
+   * to be able to hover it to reveal it.
+   */
+  isRevealed?: boolean;
+  /** `outside` placement only: whether a resize is in flight on this widget. */
+  isResizing?: boolean;
   onResize: (
     axis: ResizeHandleAxis,
     phase: ResizePhase,
@@ -590,6 +690,8 @@ function ResizeHandle({
   placement,
   boardDepth,
   yieldWarning,
+  isRevealed,
+  isResizing,
   onResize,
 }: ResizeHandleProps) {
   const { moveProps } = useMove({
@@ -642,12 +744,16 @@ function ResizeHandle({
     handleProps.onPointerDown?.(e);
   };
 
+  // `outside` is one element for the control and its hit-zone; the other
+  // placements keep a transparent zone with a separate grip drawn near it.
+  const Element = placement === 'outside' ? OutsideGripElement : HandleElement;
+
   return (
-    <HandleElement
+    <Element
       data-axis={axis}
       // Read by `findDeeperHandle` on a handle it can only reach through the DOM.
       data-board-depth={boardDepth}
-      mods={{ placement }}
+      mods={{ placement, revealed: isRevealed, resizing: isResizing }}
       {...handleProps}
       onPointerDown={onPointerDown}
       aria-hidden="true"
@@ -687,11 +793,14 @@ export interface WidgetHostProps {
   isResizable: boolean;
   resizeHandles: ResizeHandleAxis[];
   /**
-   * Where the corner grips sit. Resolved by the owning `Board` from the
-   * per-widget `resizeGripPlacement` and the board-level
-   * `widgetProps.resizeGripPlacement` default.
+   * Where the resize grips sit, if a consumer said. Resolved by the owning `Board`
+   * from the per-widget `resizeGripPlacement`, the board-level
+   * `widgetProps.resizeGripPlacement`, and the board's own prop — and left
+   * `undefined` when none of them set it, in which case this host resolves it from
+   * its own content: `outside` for a widget holding a nested `Board`, `inside`
+   * otherwise.
    */
-  resizeGripPlacement: BoardResizeGripPlacement;
+  resizeGripPlacement?: BoardResizeGripPlacement;
   /**
    * Nesting depth of the owning board (0 at the top level). Published on every
    * resize hit-zone so a press on a corner two boards share can be settled by
@@ -850,9 +959,37 @@ export function WidgetHost(props: WidgetHostProps) {
     onAutoHeight(item.i, neededRows);
   });
 
+  // How many nested `Board`s this widget is holding. A count rather than a flag
+  // because a widget may hold more than one (a Tabs panel per board), and each
+  // registers and deregisters on its own schedule.
+  const [nestedBoardCount, setNestedBoardCount] = useState(0);
+  const registerNestedBoard = useEvent(() => {
+    setNestedBoardCount((count) => count + 1);
+
+    return () => setNestedBoardCount((count) => Math.max(0, count - 1));
+  });
+
+  // Whether the pointer is on a widget of a board nested inside this one. Also a
+  // count: the pointer can be leaving one child as it arrives on another, and the
+  // two reports interleave.
+  const [descendantHoverCount, setDescendantHoverCount] = useState(0);
+  const setDescendantHovered = useEvent((hovered: boolean) => {
+    setDescendantHoverCount((count) => Math.max(0, count + (hovered ? 1 : -1)));
+  });
+
   const hostValue = useMemo<BoardHost>(
-    () => ({ isAutoHeight, requestHeightDeficit }),
-    [isAutoHeight, requestHeightDeficit],
+    () => ({
+      isAutoHeight,
+      requestHeightDeficit,
+      registerNestedBoard,
+      setDescendantHovered,
+    }),
+    [
+      isAutoHeight,
+      requestHeightDeficit,
+      registerNestedBoard,
+      setDescendantHovered,
+    ],
   );
   // Keyboard drags stay in place: moving the focused element into the overlay
   // portal would unmount it and stop arrow-key move events.
@@ -873,12 +1010,42 @@ export function WidgetHost(props: WidgetHostProps) {
     onFocusWithinChange: setIsFocusWithin,
   });
 
+  // Where this widget's grips go, when nobody said explicitly.
+  //
+  // A widget holding a board puts them OUTSIDE its box, in the grid gutter; every
+  // other widget keeps them INSIDE. That is what stops the two levels of a nested
+  // board claiming the same pixel: the container's affordance is beyond its edge,
+  // its children's are within theirs, and no geometry is shared. An explicit
+  // `resizeGripPlacement` still wins - a consumer that wants the old look, or
+  // wants a container's grips inside, says so.
+  const placement: BoardResizeGripPlacement =
+    resizeGripPlacement ?? (nestedBoardCount > 0 ? 'outside' : 'inside');
+
+  // Report this widget's hover to the container holding it (null at the top
+  // level), so only one level of a nested board shows grips at a time. Balanced
+  // by construction: the cleanup runs on un-hover and on unmount, so a widget
+  // that disappears mid-hover cannot leave its container stood down for good.
+  const parentHost = useBoardHost();
+  const reportHoverToHost = parentHost?.setDescendantHovered;
+  useEffect(() => {
+    if (!reportHoverToHost || !isHovered) return;
+
+    reportHoverToHost(true);
+
+    return () => reportHoverToHost(false);
+  }, [reportHoverToHost, isHovered]);
+
   // Reveal the resize grips when the widget is interacted with (but not while it
   // is being dragged, where the widget floats in the overlay).
+  //
+  // A container stands down while the pointer is on one of its children: the
+  // pointer is inside every ancestor at once, so without this, hovering a child
+  // lights up its grips and every container's above it.
   const gripsRevealed =
     isResizable &&
     !item.static &&
     !isActiveDrag &&
+    !descendantHoverCount &&
     (isHovered || isLayerHovered || isFocusWithin || isResizing);
 
   const { moveProps } = useMove({
@@ -1217,29 +1384,44 @@ export function WidgetHost(props: WidgetHostProps) {
       ? `Board: widget "${item.i}" yielded a resize press to a handle of a board nested inside it, because their handles sit on the same point (a nested board with no \`containerPadding\` puts its last child's corner exactly on its host's). The innermost handle wins, and this widget has only corner \`resizeHandles\`, so it can no longer be resized there. Give it an edge axis to fall back on (e.g. \`resizeHandles={['se', 'e', 's']}\`), or give the nested board some \`containerPadding\` so the two corners stop coinciding.`
       : undefined;
 
+  // An `outside` grip needs gutter to sit in. Warn where there is not enough,
+  // since the fallback (keep the band, overhang the neighbour) is visible and the
+  // fix — widen `margin` — belongs to the board, not to the widget.
+  if (process.env.NODE_ENV !== 'production' && placement === 'outside') {
+    const [marginX, marginY] = positionParams.margin;
+
+    if (marginX < OUTSIDE_GRIP_MIN_BAND || marginY < OUTSIDE_GRIP_MIN_BAND) {
+      warnOnce(
+        `Board: widget "${item.i}" holds a nested board, so its resize grips are drawn outside its box - but this board's \`margin\` is [${marginX}, ${marginY}] and a grip needs ${OUTSIDE_GRIP_MIN_BAND}px of gutter to sit in. The grips keep their size and overhang the neighbouring widgets. Raise \`margin\` to at least ${OUTSIDE_GRIP_MIN_BAND}px on both axes, or set \`resizeGripPlacement\` explicitly to put them back inside.`,
+      );
+    }
+  }
+
   const content = (
     <BoardHostContext.Provider value={hostValue}>
       {registration?.content}
-      {isResizable && !item.static ? (
+      {isResizable && !item.static && placement !== 'outside' ? (
         <>
           {/* A `corner` grip and its hit-zone both move to the sibling
               `GripLayerElement` below, which the widget's own `overflow: hidden`
               cannot clip. They travel together: hoisting only the visual would
-              leave the half that hangs outside impossible to grab. */}
-          {(resizeGripPlacement === 'corner'
+              leave the half that hangs outside impossible to grab. Under
+              `outside` the whole set moves there and this branch renders nothing:
+              no part of the affordance belongs over the widget's own content. */}
+          {(placement === 'corner'
             ? resizeHandles.filter((axis) => !isCornerAxis(axis))
             : resizeHandles
           ).map((axis) => (
             <ResizeHandle
               key={axis}
               axis={axis}
-              placement={resizeGripPlacement}
+              placement={placement}
               boardDepth={boardDepth}
               yieldWarning={cornerYieldWarning}
               onResize={handleResize}
             />
           ))}
-          {resizeGripPlacement === 'corner'
+          {placement === 'corner'
             ? null
             : resizeHandles
                 .filter(isCornerAxis)
@@ -1335,6 +1517,16 @@ export function WidgetHost(props: WidgetHostProps) {
     ),
   );
 
+  // An `outside` grip owns a band measured out from the widget's edge: the grid
+  // gutter, where the gutter can hold it. Below the floor it keeps the floor and
+  // overhangs the neighbour instead — an affordance too thin to hit is worse than
+  // one that encroaches, and the warning below makes the encroachment a choice
+  // rather than a surprise.
+  const gripBand: [number, number] = [
+    Math.max(OUTSIDE_GRIP_MIN_BAND, positionParams.margin[0]),
+    Math.max(OUTSIDE_GRIP_MIN_BAND, positionParams.margin[1]),
+  ];
+
   // Published on the host as well as on the grip layer. Both carry handles for
   // this same widget — edge axes stay inside the host, corner axes are hoisted
   // out — and a handle whose geometry depended on which of the two it happened to
@@ -1342,6 +1534,8 @@ export function WidgetHost(props: WidgetHostProps) {
   const cornerHitVars = {
     '--corner-hit-size': `${CORNER_HIT_INWARD + cornerHitOutward}px`,
     '--corner-hit-overhang': `${-cornerHitOutward}px`,
+    '--grip-band-x': `${gripBand[0]}px`,
+    '--grip-band-y': `${gripBand[1]}px`,
   } as CSSProperties;
 
   const hostStyle: CSSProperties = {
@@ -1429,12 +1623,19 @@ export function WidgetHost(props: WidgetHostProps) {
       )
     : null;
 
-  // Corner grips that must straddle the widget edge, hoisted out of the widget's
-  // clip (see `GripLayerElement`). Positioned on the same grid rect as the host,
-  // so the two stay in step through reflows and auto-height changes.
-  const cornerAxes =
-    isResizable && !item.static && resizeGripPlacement === 'corner'
-      ? resizeHandles.filter(isCornerAxis)
+  // Grips that must escape the widget's clip, hoisted into `GripLayerElement`
+  // (see its own note). Positioned on the same grid rect as the host, so the two
+  // stay in step through reflows and auto-height changes.
+  //
+  // Under `corner` that is the corner axes, whose grips straddle the edge. Under
+  // `outside` it is every axis, since the whole affordance lives in the gutter.
+  const layerAxes =
+    isResizable && !item.static
+      ? placement === 'outside'
+        ? resizeHandles
+        : placement === 'corner'
+          ? resizeHandles.filter(isCornerAxis)
+          : []
       : [];
   // Suppressed while the widget floats in the drag overlay: the layer mirrors the
   // widget's *grid* rect, so leaving it behind would park a live hit-zone on a
@@ -1442,7 +1643,7 @@ export function WidgetHost(props: WidgetHostProps) {
   // The layer is also what carries corner chrome, so it renders when either the
   // grips or the chrome need it.
   const gripLayer =
-    (cornerAxes.length || cornerChrome) && !floatInOverlay ? (
+    (layerAxes.length || cornerChrome) && !floatInOverlay ? (
       <GripLayerElement
         {...layerHoverProps}
         style={{
@@ -1456,24 +1657,29 @@ export function WidgetHost(props: WidgetHostProps) {
         // layer can only be hidden from assistive tech when it holds no chrome.
         aria-hidden={cornerChrome ? undefined : 'true'}
       >
-        {cornerAxes.map((axis) => (
+        {layerAxes.map((axis) => (
           <ResizeHandle
             key={`handle-${axis}`}
             axis={axis}
-            placement="corner"
+            placement={placement}
             boardDepth={boardDepth}
             yieldWarning={cornerYieldWarning}
+            isRevealed={gripsRevealed}
+            isResizing={isResizing}
             onResize={handleResize}
           />
         ))}
-        {cornerAxes.map((axis) => (
-          <GripElement
-            key={`grip-${axis}`}
-            data-axis={axis}
-            mods={{ revealed: gripsRevealed, placement: 'corner' }}
-            aria-hidden="true"
-          />
-        ))}
+        {/* `outside` needs no separate grip: its hit-zone IS the control. */}
+        {placement === 'outside'
+          ? null
+          : layerAxes.map((axis) => (
+              <GripElement
+                key={`grip-${axis}`}
+                data-axis={axis}
+                mods={{ revealed: gripsRevealed, placement: 'corner' }}
+                aria-hidden="true"
+              />
+            ))}
         {cornerChrome ? (
           <CornerChromeElement mods={{ corner: cornerChromePlacement }}>
             {cornerChrome}

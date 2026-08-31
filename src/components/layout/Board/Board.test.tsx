@@ -299,6 +299,70 @@ describe('Board', () => {
       ).not.toBeInTheDocument();
     });
 
+    it("moves a board container's grips outside, and only that widget's", () => {
+      render(
+        <Board width={1200} defaultLayout={layout}>
+          <Board.Widget id="a" qa="WidgetA">
+            <Board
+              isAligned
+              width={600}
+              defaultLayout={[{ i: 'b', x: 0, y: 0, w: 1, h: 1 }]}
+            >
+              <Board.Widget id="b" qa="WidgetB">
+                B
+              </Board.Widget>
+            </Board>
+          </Board.Widget>
+        </Board>,
+      );
+
+      const byPlacement = Object.fromEntries(
+        screen
+          .getAllByTestId('BoardResizeHandle')
+          .map((h) => [h.getAttribute('data-placement'), h]),
+      );
+
+      // Nothing set `resizeGripPlacement`. The widget holding the board resolved
+      // to `outside` because the board introduced itself; the widget inside that
+      // board stayed `inside`. That is what keeps the two levels off each other's
+      // pixels without anyone having to pass a prop.
+      expect(byPlacement.outside).toBeDefined();
+      expect(byPlacement.inside).toBeDefined();
+      expect(screen.getByTestId('BoardResizeGripLayer')).toContainElement(
+        byPlacement.outside!,
+      );
+      expect(screen.getByTestId('WidgetB')).toContainElement(
+        byPlacement.inside!,
+      );
+    });
+
+    it('lets an explicit placement override what the content implies', () => {
+      render(
+        <Board width={1200} resizeGripPlacement="inside" defaultLayout={layout}>
+          <Board.Widget id="a" qa="WidgetA">
+            <Board
+              isAligned
+              width={600}
+              defaultLayout={[{ i: 'b', x: 0, y: 0, w: 1, h: 1 }]}
+            >
+              <Board.Widget id="b" qa="WidgetB">
+                B
+              </Board.Widget>
+            </Board>
+          </Board.Widget>
+        </Board>,
+      );
+
+      // A container that was told `inside` stays inside — the resolution is a
+      // default, not a rule imposed on consumers who want the old geometry.
+      for (const handle of screen.getAllByTestId('BoardResizeHandle')) {
+        expect(handle).toHaveAttribute('data-placement', 'inside');
+      }
+      expect(
+        screen.queryByTestId('BoardResizeGripLayer'),
+      ).not.toBeInTheDocument();
+    });
+
     it('moves the corner hit-zone out with the grip', () => {
       render(
         <Board width={1200} resizeGripPlacement="corner" defaultLayout={layout}>
