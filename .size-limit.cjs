@@ -183,7 +183,26 @@ module.exports = [
     path: './dist/index.js',
     webpack: true,
     import: '{ Button }',
-    // Still 125 kB on `@tenphi/tasty` 3.5.0: 123.02 kB against `main`'s
+    // Raised to 126 kB for the Tasty snapshot that records a precompiled
+    // catalog's compilation configuration. 125.03 kB against 124.97 kB on the
+    // previous snapshot, both sides rebuilt here — +0.06 kB, matched by the
+    // same +0.06 kB on `All` above (515.83 -> 515.89 kB), so all of it is
+    // Tasty's always-included core and none of it ours. What ships there is
+    // small on purpose: `configure()` now records which style handlers and
+    // props middleware the host configured, and the precompile store holds a
+    // reference to the check, so the comparison itself lives in
+    // `precompile/register` and only an app that registers a catalog loads it.
+    //
+    // Raised rather than shaved, as the note below asks: the previous entry
+    // left 30 B and this needs 60 B. The alternative was dropping the guard
+    // that keeps a catalog from serving CSS the host's configuration would
+    // never produce, which is not padding.
+    //
+    // CI agreed with the local reading exactly on this one — its report showed
+    // 122.1 KB binary, which is 125.03 kB decimal, the same figure measured
+    // here. Second data point for the calibration note in `All`.
+    //
+    // Before this: 125 kB on `@tenphi/tasty` 3.5.0: 123.02 kB against `main`'s
     // 121.81 kB, both sides rebuilt here — +1.21 kB, matched by the same
     // +1.21 kB on `All` above, so all of it is Tasty's always-included core and
     // none of it ours. See that entry for what the release changed there, and
@@ -244,6 +263,6 @@ module.exports = [
     // (directional syntax, handler displacement, chunk conflicts) ship in every
     // bundle, because `isDevEnv()` is evaluated at runtime so one build serves
     // dev and production. Headroom stays small so real bloat still trips.
-    limit: '125kB',
+    limit: '126kB',
   },
 ];

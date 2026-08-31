@@ -70,7 +70,7 @@
     "watch": "tsdown --watch",
     "test": "vitest run",
     "test:browser": "vitest run --config vitest.browser.config.ts",
-    "test:precompiled": "pnpm build && vitest run --config vitest.precompiled.config.ts",
+    "test:precompiled": "pnpm build && node scripts/precompile-app-parity.mjs && vitest run --config vitest.precompiled.config.ts",
     "probe": "node scripts/probe.mjs",
     "probe:browser": "PROBE_TIER=browser node scripts/probe.mjs",
     "precompile:tasty": "node scripts/precompile-tasty.mjs",

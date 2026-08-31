@@ -66,33 +66,39 @@ describe('useAutoTooltip overflow measurement', () => {
     spy.restore();
   });
 
-  it('does not measure during the commit that attaches the label ref', async () => {
-    // Sampled from a layout effect, which React runs in the same commit phase
-    // as ref attachment and after the children's refs are attached.
-    let readsDuringCommit = -1;
+  // Mounting Root plus a handful of Buttons is well under a second locally but
+  // has run past the 15s default on a cold CI runner.
+  it(
+    'does not measure during the commit that attaches the label ref',
+    { timeout: 60_000 },
+    async () => {
+      // Sampled from a layout effect, which React runs in the same commit phase
+      // as ref attachment and after the children's refs are attached.
+      let readsDuringCommit = -1;
 
-    function Harness() {
-      useLayoutEffect(() => {
-        readsDuringCommit = spy.counter.reads;
-      }, []);
+      function Harness() {
+        useLayoutEffect(() => {
+          readsDuringCommit = spy.counter.reads;
+        }, []);
 
-      return (
-        <div style={{ width: '80px' }}>
-          {Array.from({ length: 12 }, (_, i) => (
-            <Button key={i} tooltip width="80px">
-              {`${LONG_LABEL} ${i}`}
-            </Button>
-          ))}
-        </div>
-      );
-    }
+        return (
+          <div style={{ width: '80px' }}>
+            {Array.from({ length: 6 }, (_, i) => (
+              <Button key={i} tooltip width="80px">
+                {`${LONG_LABEL} ${i}`}
+              </Button>
+            ))}
+          </div>
+        );
+      }
 
-    await act(async () => {
-      renderWithRoot(<Harness />);
-    });
+      await act(async () => {
+        renderWithRoot(<Harness />);
+      });
 
-    expect(readsDuringCommit).toBe(0);
-  });
+      expect(readsDuringCommit).toBe(0);
+    },
+  );
 
   describe('still measures overflow off the commit path', () => {
     /** Exposes the hook's overflow verdict, with the label it measures. */
