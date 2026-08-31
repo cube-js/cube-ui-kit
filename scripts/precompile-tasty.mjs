@@ -11,6 +11,13 @@ import {
   runtimeOnlyComponents,
 } from './precompile-tasty-catalog.mjs';
 
+// Apply UI Kit's own `configure()` before compiling. The catalog imports the
+// kit lazily inside each case, so without this the manifest would record the
+// configuration as it stood before the kit set up its units and recipes — and a
+// consumer overriding one of those recipes would not be detected as a
+// divergence.
+await import('../dist/index.js');
+
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const OUTPUT = resolve(ROOT, 'dist/precompiled');
 
