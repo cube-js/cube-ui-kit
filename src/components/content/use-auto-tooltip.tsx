@@ -63,13 +63,10 @@ export function useAutoTooltip({
 
   const checkLabelOverflow = useCallback(() => {
     const label = elementRef.current;
-    if (!label) {
-      setIsLabelOverflowed(false);
-      return;
-    }
 
-    const hasOverflow = label.scrollWidth > label.clientWidth;
-    setIsLabelOverflowed(hasOverflow);
+    if (!label) return;
+
+    setIsLabelOverflowed(label.scrollWidth > label.clientWidth);
   }, []);
 
   useEffect(() => {
@@ -102,26 +99,39 @@ export function useAutoTooltip({
 
       elementRef.current = element;
 
-      if (element && isAutoTooltipEnabled) {
-        // Create a fresh observer to capture the latest callback
-        const obs = new ResizeObserver(() => {
-          checkLabelOverflow();
-        });
-        resizeObserverRef.current = obs;
-        // `observe()` delivers an initial callback with the element's current
-        // size, so this is the initial measurement as well as the resize one.
-        //
-        // Do NOT measure synchronously here. React runs callback refs during
-        // `commitAttachRef`, so reading `scrollWidth`/`clientWidth` at this
-        // point forces a style recalc and layout per element, mid-commit —
-        // every tooltip-bearing Button, Item and TextItem paying its own
-        // reflow. Observer callbacks run after layout but before paint, so the
-        // measurement is still applied in the same frame, but batched across
-        // every observed label into a single flush.
-        obs.observe(element);
-      } else {
+      if (!isAutoTooltipEnabled) {
         setIsLabelOverflowed(false);
+
+        return;
       }
+
+      // No node to measure. Leave the previous verdict alone rather than
+      // clearing it: turning the verdict on mounts `TooltipProvider`, which
+      // remounts the label underneath it, so React detaches the old node and
+      // attaches a new one within that commit. Clearing here would unmount the
+      // provider, remount the label, measure it, mount the provider again — a
+      // loop that never settles.
+      if (!element) return;
+
+      // Create a fresh observer to capture the latest callback
+      const obs = new ResizeObserver(() => {
+        checkLabelOverflow();
+      });
+
+      resizeObserverRef.current = obs;
+
+      // `observe()` delivers an initial callback with the element's current
+      // size, so this is the initial measurement as well as the resize one.
+      //
+      // Do NOT measure synchronously here. React runs callback refs during
+      // `commitAttachRef`, so reading `scrollWidth`/`clientWidth` at this point
+      // forces a style recalc and layout per element, mid-commit — every
+      // tooltip-bearing Button, Item and TextItem paying its own reflow. In one
+      // Cloud profile this call site alone was 122ms of `get scrollWidth`, more
+      // than the entire style engine cost. Observer callbacks run after layout
+      // but before paint, so the measurement still lands in the same frame,
+      // batched across every observed label into a single flush.
+      obs.observe(element);
     },
     [externalLabelRef, isAutoTooltipEnabled, checkLabelOverflow],
   );
