@@ -217,6 +217,41 @@ describe('useAutoTooltip overflow measurement', () => {
       );
     });
 
+    /**
+     * The condition that kept failing in Chromatic while passing everywhere
+     * else: observer callbacks are delivered as part of the rendering steps, so
+     * a runner that is not producing frames — a background tab, or a headless
+     * browser running a thousand stories at once — can delay them past the
+     * point the play function hovers and asks for the tooltip. An
+     * implementation that leans on the observer's first delivery for the
+     * initial measurement is only as reliable as the runner's frame loop.
+     */
+    it('activates without the observer ever firing', async () => {
+      const RealResizeObserver = window.ResizeObserver;
+
+      // Records the observation but never delivers a callback.
+      window.ResizeObserver = class {
+        observe() {}
+        unobserve() {}
+        disconnect() {}
+      } as unknown as typeof RealResizeObserver;
+
+      try {
+        await act(async () => {
+          renderWithRoot(<RemountProbe />);
+        });
+
+        await waitFor(() => {
+          expect(screen.getByTestId('Status')).toHaveAttribute(
+            'data-active',
+            'true',
+          );
+        });
+      } finally {
+        window.ResizeObserver = RealResizeObserver;
+      }
+    });
+
     it('re-measures when the label is resized', async () => {
       function Resizable() {
         const [width, setWidth] = useState('600px');
