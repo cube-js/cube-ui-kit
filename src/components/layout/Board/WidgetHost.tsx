@@ -13,6 +13,7 @@ import { createPortal } from 'react-dom';
 
 import { useEvent } from '../../../_internal/hooks';
 import { useI18n } from '../../../i18n';
+import { isDevEnv } from '../../../utils/is-dev-env';
 import { mergeProps } from '../../../utils/react';
 
 import {
@@ -77,6 +78,19 @@ const OUTSIDE_GRIP_MIN_BAND = 8;
 
 /** Length of an `outside` edge grip along the edge it belongs to. */
 const OUTSIDE_GRIP_LENGTH = 24;
+
+/**
+ * Painted thickness of an `outside` edge grip, which is deliberately less than
+ * the band it sits in: the rest becomes a gap, so the control reads as a thing
+ * lying in the gutter rather than as an extension of the widget's own edge.
+ *
+ * Only the PAINT is inset. The element keeps the whole band, so the target does
+ * not shrink with the visual and the two still cannot drift apart.
+ */
+const OUTSIDE_GRIP_THICKNESS = 4;
+
+/** Gap between a widget's corner and its `outside` corner grip. */
+const OUTSIDE_CORNER_GAP = 2;
 
 const WidgetElement = tasty({
   qa: 'BoardWidget',
@@ -346,11 +360,6 @@ const OutsideGripElement = tasty({
     pointerEvents: 'auto',
     touchAction: 'none',
     zIndex: 20,
-    radius: 'round',
-    fill: {
-      '': '#dark.30',
-      resizing: '#dark.50',
-    },
     opacity: {
       '': 0,
       revealed: 1,
@@ -376,20 +385,70 @@ const OutsideGripElement = tasty({
       '': 'auto',
       '[data-axis="n"] | [data-axis="ne"] | [data-axis="nw"]': '100%',
     },
+    // Edges centre themselves along the edge; corners step off it by the gap, so
+    // the angle sits clear of the widget it belongs to rather than touching it.
     transform: {
       '': 'translate(0, 0)',
       '[data-axis="e"] | [data-axis="w"]': 'translate(0, -50%)',
       '[data-axis="n"] | [data-axis="s"]': 'translate(-50%, 0)',
+      '[data-axis="se"]': `translate(${OUTSIDE_CORNER_GAP}px, ${OUTSIDE_CORNER_GAP}px)`,
+      '[data-axis="sw"]': `translate(${-OUTSIDE_CORNER_GAP}px, ${OUTSIDE_CORNER_GAP}px)`,
+      '[data-axis="ne"]': `translate(${OUTSIDE_CORNER_GAP}px, ${-OUTSIDE_CORNER_GAP}px)`,
+      '[data-axis="nw"]': `translate(${-OUTSIDE_CORNER_GAP}px, ${-OUTSIDE_CORNER_GAP}px)`,
     },
-    // An edge grip is a pill: gutter-thick across, fixed length along. A corner
-    // grip fills the square where the two gutters cross.
+    // An edge grip spans the gutter band across, a fixed length along. A corner
+    // grip is the same angle the `inside` and `corner` placements draw, at the
+    // same size - it is a familiar shape, and a filled dot read as a scrollbar
+    // rather than as a resize corner.
     width: {
-      '': '$grip-band-x',
+      '': `${GRIP_SIZE}px`,
+      '[data-axis="e"] | [data-axis="w"]': '$grip-band-x',
       '[data-axis="n"] | [data-axis="s"]': `${OUTSIDE_GRIP_LENGTH}px`,
     },
     height: {
-      '': '$grip-band-y',
+      '': `${GRIP_SIZE}px`,
+      '[data-axis="n"] | [data-axis="s"]': '$grip-band-y',
       '[data-axis="e"] | [data-axis="w"]': `${OUTSIDE_GRIP_LENGTH}px`,
+    },
+    // The gap on an edge grip: pad the band away on the thickness axis and clip
+    // the paint to what is left. The element - and so the target - is untouched.
+    padding: {
+      '': 0,
+      '[data-axis="e"] | [data-axis="w"]': '0 $grip-pad-x',
+      '[data-axis="n"] | [data-axis="s"]': '$grip-pad-y 0',
+    },
+    backgroundClip: 'content-box',
+    fill: {
+      '': '#clear',
+      '[data-axis="n"] | [data-axis="s"] | [data-axis="e"] | [data-axis="w"]':
+        '#dark.30',
+      '([data-axis="n"] | [data-axis="s"] | [data-axis="e"] | [data-axis="w"]) & resizing':
+        '#dark.50',
+    },
+    // Corner angles, mirroring `GripElement` so the two placements draw the same
+    // affordance in different places.
+    borderTop: {
+      '': '0',
+      '[data-axis="ne"] | [data-axis="nw"]': '2px solid #dark.40',
+    },
+    borderBottom: {
+      '': '0',
+      '[data-axis="se"] | [data-axis="sw"]': '2px solid #dark.40',
+    },
+    borderLeft: {
+      '': '0',
+      '[data-axis="nw"] | [data-axis="sw"]': '2px solid #dark.40',
+    },
+    borderRight: {
+      '': '0',
+      '[data-axis="ne"] | [data-axis="se"]': '2px solid #dark.40',
+    },
+    radius: {
+      '': 'round',
+      '[data-axis="se"]': '4px bottom-right',
+      '[data-axis="sw"]': '4px bottom-left',
+      '[data-axis="ne"]': '4px top-right',
+      '[data-axis="nw"]': '4px top-left',
     },
     cursor: {
       '': 'default',
@@ -1380,14 +1439,20 @@ export function WidgetHost(props: WidgetHostProps) {
   // container does nothing", so say so out loud — but only when it actually
   // happens, since whether a child sits in that corner is a runtime question.
   const cornerYieldWarning =
-    process.env.NODE_ENV !== 'production' && !resizeHandles.some(isEdgeAxis)
+    isDevEnv() && !resizeHandles.some(isEdgeAxis)
       ? `Board: widget "${item.i}" yielded a resize press to a handle of a board nested inside it, because their handles sit on the same point (a nested board with no \`containerPadding\` puts its last child's corner exactly on its host's). The innermost handle wins, and this widget has only corner \`resizeHandles\`, so it can no longer be resized there. Give it an edge axis to fall back on (e.g. \`resizeHandles={['se', 'e', 's']}\`), or give the nested board some \`containerPadding\` so the two corners stop coinciding.`
       : undefined;
 
   // An `outside` grip needs gutter to sit in. Warn where there is not enough,
   // since the fallback (keep the band, overhang the neighbour) is visible and the
   // fix — widen `margin` — belongs to the board, not to the widget.
-  if (process.env.NODE_ENV !== 'production' && placement === 'outside') {
+  //
+  // `isDevEnv()` rather than a bare `process.env.NODE_ENV` check: the build folds
+  // that constant away and keeps whichever branch it resolved to, so a
+  // `!== 'production'` guard compiled at a dev NODE_ENV disappears and leaves the
+  // warning firing in consumers' production bundles. `isDevEnv()` is evaluated at
+  // runtime, so one build serves both — the same reason Tasty's diagnostics do it.
+  if (isDevEnv() && placement === 'outside') {
     const [marginX, marginY] = positionParams.margin;
 
     if (marginX < OUTSIDE_GRIP_MIN_BAND || marginY < OUTSIDE_GRIP_MIN_BAND) {
@@ -1536,6 +1601,10 @@ export function WidgetHost(props: WidgetHostProps) {
     '--corner-hit-overhang': `${-cornerHitOutward}px`,
     '--grip-band-x': `${gripBand[0]}px`,
     '--grip-band-y': `${gripBand[1]}px`,
+    // What the band gives up to the gap, split evenly so the painted pill floats
+    // in the middle of the gutter instead of leaning on one side of it.
+    '--grip-pad-x': `${Math.max(0, (gripBand[0] - OUTSIDE_GRIP_THICKNESS) / 2)}px`,
+    '--grip-pad-y': `${Math.max(0, (gripBand[1] - OUTSIDE_GRIP_THICKNESS) / 2)}px`,
   } as CSSProperties;
 
   const hostStyle: CSSProperties = {

@@ -498,6 +498,9 @@ describe('Board nested handle arbitration', () => {
     // A distinct id per test: the warning is deduped by its own text, which names
     // the widget, so tests stay independent of each other's order.
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    // `isDevEnv()` reports false under `NODE_ENV=test` — deliberately, so a
+    // consumer's test run is not noisy — and reads this flag as the way back in.
+    localStorage.setItem('UIKIT_DEBUG', 'true');
 
     try {
       renderNested({ ids: ['grid-warn', 'child-warn'], placement: 'corner' });
@@ -519,6 +522,7 @@ describe('Board nested handle arbitration', () => {
         ).toBe(true),
       );
     } finally {
+      localStorage.removeItem('UIKIT_DEBUG');
       warn.mockRestore();
     }
   });
@@ -783,6 +787,7 @@ describe('Board grip placement resolved from content', () => {
 
   it('warns when the gutter is too thin to hold an outside grip', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    localStorage.setItem('UIKIT_DEBUG', 'true');
 
     try {
       renderContainer({ margin: [0, 0] });
@@ -798,6 +803,7 @@ describe('Board grip placement resolved from content', () => {
         ).toBe(true),
       );
     } finally {
+      localStorage.removeItem('UIKIT_DEBUG');
       warn.mockRestore();
     }
   });
