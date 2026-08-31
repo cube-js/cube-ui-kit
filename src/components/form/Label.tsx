@@ -49,11 +49,18 @@ const REQUIRED_ICON = (
 /**
  * The `(required)` / `(optional)` note. Deliberately quieter than the label it
  * follows: it is an aside about the field, not part of its name.
+ *
+ * `t4` / `#dark-03` is the same tier `FieldWrapper` already gives `description`
+ * and `message`, so the note joins the established secondary text rather than
+ * inventing a size of its own. The weight is dropped back to 400 — `t4` carries
+ * 500, the same weight as the label — because that contrast is what makes the
+ * note read as an aside at a glance.
  */
 const NecessityLabelElement = tasty({
   as: 'span',
   qa: 'NecessityLabel',
   styles: {
+    preset: 't4',
     color: '#dark-03',
     fontWeight: 400,
   },
@@ -111,7 +118,11 @@ export function NecessityIndicatorMark(props: CubeNecessityIndicatorProps) {
   // and the zero-width space keeps the pair from being split across lines.
   const separator = ' ​';
 
-  if (necessityIndicator === null) return null;
+  // Anything that is not one of the two shapes means "no indicator" — `null`,
+  // and also any stray falsy value a caller might still be passing.
+  if (necessityIndicator !== 'icon' && necessityIndicator !== 'label') {
+    return null;
+  }
 
   if (isRequired) {
     if (necessityIndicator === 'icon') {

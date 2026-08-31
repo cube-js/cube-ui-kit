@@ -74,6 +74,23 @@ describe('necessity indicators', () => {
       expect(getByRole('textbox')).toHaveAttribute('aria-required', 'true');
     });
 
+    it('should treat an unrecognised indicator as no indicator', () => {
+      // `false` is not in the type, but it was an option in the shared story
+      // args for a long time, so it is worth rendering as "nothing" rather than
+      // falling through to the text form.
+      const { container, queryByText } = renderWithForm(
+        <TextInput
+          name="email"
+          label="Email"
+          isRequired
+          necessityIndicator={false as any}
+        />,
+      );
+
+      expect(star(container)).toBeNull();
+      expect(queryByText('(required)')).not.toBeInTheDocument();
+    });
+
     it('should render the label form of the mark', () => {
       const { container, getByText } = renderWithForm(
         <TextInput
