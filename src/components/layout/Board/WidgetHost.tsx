@@ -2,6 +2,7 @@ import { Styles, tasty } from '@tenphi/tasty';
 import {
   CSSProperties,
   ReactNode,
+  PointerEvent as ReactPointerEvent,
   useEffect,
   useMemo,
   useRef,
@@ -47,6 +48,22 @@ const AUTO_HEIGHT_TOLERANCE = 4;
  * hit-zone reads the same number so what you see is what you can grab.
  */
 const GRIP_SIZE = 10;
+
+/**
+ * How far a `corner`-placed hit-zone may reach *inward*: exactly the half of the
+ * dot that is painted inside the widget, and no further. Reaching deeper would
+ * park an invisible resize target over the widget's own content — and when that
+ * content is a nested `Board`, the child in the bottom-right cell loses its own
+ * corner handle to it and cannot be resized at all (CUB-4166).
+ */
+const CORNER_HIT_INWARD = GRIP_SIZE / 2;
+
+/**
+ * Ceiling on how far the same hit-zone reaches *outward*, where there is only
+ * grid gutter to cover. Past a whole grip size the target stops reading as "that
+ * dot" and starts reading as "somewhere near the corner".
+ */
+const CORNER_HIT_OUTWARD_MAX = GRIP_SIZE;
 
 const WidgetElement = tasty({
   qa: 'BoardWidget',
@@ -154,45 +171,65 @@ const HandleElement = tasty({
     // events; `pointer-events` inherits, so it has to opt back in. Inside the
     // widget this is what it already got from the default.
     pointerEvents: 'auto',
-    // Overhang: how far the hit-zone extends beyond the widget edge. A
-    // `corner`-placed grip hangs out by half its own size, and the hit-zone
-    // matches it exactly - a visible grip you cannot grab is worse than no grip.
     '--handle-size': '3x',
-    '--handle-overhang': {
-      '': '-8px',
-      'placement=corner': `${-GRIP_SIZE / 2}px`,
-    },
     '--handle-inset': '1x',
-    width: {
+    // An EDGE hit-zone is a band running along its edge, mostly inside the
+    // widget. It is a descendant of the host, so the sliver that hangs outside is
+    // eaten by the host's own clip and only the inward band is ever real.
+    '--edge-overhang': '-8px',
+    // A CORNER hit-zone under `corner` placement is the one that has to stay off
+    // its own content, so it is built from its two halves rather than as one
+    // square: it reaches `CORNER_HIT_INWARD` inward — the half-dot that is
+    // actually painted there, so what you see stays what you can grab — and takes
+    // the rest of its size outward, into the gutter. `WidgetHost` measures both
+    // and publishes them as `--corner-hit-size` / `--corner-hit-overhang`.
+    //
+    // `inside` placement keeps the plain 3x square: its dot sits in the content
+    // area by design, so it has nothing to stay clear of.
+    '--corner-overhang': {
+      '': '-8px',
+      'placement=corner': '$corner-hit-overhang',
+    },
+    '--corner-size': {
       '': '$handle-size',
+      'placement=corner': '$corner-hit-size',
+    },
+    // Corner axes are the DEFAULT case in the six maps below, and each edge axis
+    // is named on its own, so a corner can never pick up an edge's geometry (it
+    // used to, via a shared `--handle-overhang`, which is how the inward reach
+    // above went unnoticed).
+    width: {
+      '': '$corner-size',
+      '[data-axis="e"] | [data-axis="w"]': '$handle-size',
       '[data-axis="n"] | [data-axis="s"]': 'auto',
     },
     height: {
-      '': '$handle-size',
+      '': '$corner-size',
+      '[data-axis="n"] | [data-axis="s"]': '$handle-size',
       '[data-axis="e"] | [data-axis="w"]': 'auto',
     },
     top: {
       '': 'auto',
-      '[data-axis="n"] | [data-axis="ne"] | [data-axis="nw"]':
-        '$handle-overhang',
+      '[data-axis="ne"] | [data-axis="nw"]': '$corner-overhang',
+      '[data-axis="n"]': '$edge-overhang',
       '[data-axis="e"] | [data-axis="w"]': '$handle-inset',
     },
     bottom: {
       '': 'auto',
-      '[data-axis="s"] | [data-axis="se"] | [data-axis="sw"]':
-        '$handle-overhang',
+      '[data-axis="se"] | [data-axis="sw"]': '$corner-overhang',
+      '[data-axis="s"]': '$edge-overhang',
       '[data-axis="e"] | [data-axis="w"]': '$handle-inset',
     },
     left: {
       '': 'auto',
-      '[data-axis="w"] | [data-axis="nw"] | [data-axis="sw"]':
-        '$handle-overhang',
+      '[data-axis="nw"] | [data-axis="sw"]': '$corner-overhang',
+      '[data-axis="w"]': '$edge-overhang',
       '[data-axis="n"] | [data-axis="s"]': '$handle-inset',
     },
     right: {
       '': 'auto',
-      '[data-axis="e"] | [data-axis="ne"] | [data-axis="se"]':
-        '$handle-overhang',
+      '[data-axis="ne"] | [data-axis="se"]': '$corner-overhang',
+      '[data-axis="e"]': '$edge-overhang',
       '[data-axis="n"] | [data-axis="s"]': '$handle-inset',
     },
     cursor: {
@@ -284,9 +321,17 @@ const GripElement = tasty({
  *
  * It sits above a resting widget (`zIndex: 1`) so a grip is never hidden by the
  * neighbour it overhangs, and below a dragged or resized one (`zIndex: 10`) so a
- * lifted widget still paints over its neighbours' grips. The board's own content
- * box still clips it, so a grip on a widget flush against the board edge needs
- * `containerPadding` >= half the grip size to show in full.
+ * lifted widget still paints over its neighbours' grips.
+ *
+ * Nothing clips this layer — `BoardElement` sets no `overflow` — so a grip on a
+ * widget flush against its board's edge (`containerPadding: [0, 0]`, which
+ * `isAligned` sets) is painted *outside* the board's content box rather than
+ * cropped to fit inside it. Inside a nested board that puts it exactly on the
+ * host widget's own corner: the two corners are the same point, so the two hit
+ * zones cannot be separated by geometry, and `z-index` cannot arbitrate either
+ * (this layer is a sibling of the host, so it outranks the whole nested subtree
+ * whatever the inner handle asks for). `ResizeHandle` settles it by depth
+ * instead.
  */
 const GripLayerElement = tasty({
   qa: 'BoardResizeGripLayer',
@@ -419,9 +464,119 @@ function isEdgeAxis(axis: ResizeHandleAxis): boolean {
   return axis.length === 1;
 }
 
+/** `data-qa` of a resize hit-zone, as published by `HandleElement`. */
+const HANDLE_QA = 'BoardResizeHandle';
+
+/**
+ * The deepest resize hit-zone under `point` belonging to a board nested deeper
+ * than `depth`, or `null` when the caller is already the innermost one there.
+ *
+ * Asked of the document rather than of a registry, deliberately: the two handles
+ * belong to different boards, which share no owner below the app root, and "what
+ * is under this pixel" is the browser's own question to answer.
+ * `elementsFromPoint` skips `pointer-events: none` nodes, so everything it hands
+ * back is something the pointer could genuinely have landed on.
+ */
+function findDeeperHandle(
+  point: { x: number; y: number },
+  depth: number,
+): HTMLElement | null {
+  let stack: Element[];
+
+  try {
+    // Absent in jsdom, where the pointer path is not exercised anyway.
+    if (typeof document.elementsFromPoint !== 'function') return null;
+    stack = document.elementsFromPoint(point.x, point.y);
+  } catch {
+    return null;
+  }
+
+  let deepest: HTMLElement | null = null;
+  let deepestDepth = depth;
+
+  for (const node of stack) {
+    if (!(node instanceof HTMLElement)) continue;
+    if (node.dataset.qa !== HANDLE_QA) continue;
+    const nodeDepth = Number(node.dataset.boardDepth);
+    if (!Number.isFinite(nodeDepth) || nodeDepth <= deepestDepth) continue;
+    deepest = node;
+    deepestDepth = nodeDepth;
+  }
+
+  return deepest;
+}
+
+/**
+ * Hand a press to `target` unchanged.
+ *
+ * Safe because of how `useMove` (which owns the resize gesture) tracks a
+ * pointer: through `window` listeners matched on `pointerId`, never through
+ * `setPointerCapture`. So only the opening `pointerdown` is re-dispatched — every
+ * real `pointermove`/`pointerup` that follows drives the forwarded gesture just
+ * as it would drive a direct one.
+ */
+function forwardPointerDown(e: ReactPointerEvent, target: HTMLElement): void {
+  const forwarded = new PointerEvent('pointerdown', {
+    bubbles: true,
+    cancelable: true,
+    composed: true,
+    pointerId: e.pointerId,
+    pointerType: e.pointerType,
+    isPrimary: e.isPrimary,
+    button: e.button,
+    buttons: e.buttons,
+    clientX: e.clientX,
+    clientY: e.clientY,
+    screenX: e.screenX,
+    screenY: e.screenY,
+    shiftKey: e.shiftKey,
+    ctrlKey: e.ctrlKey,
+    altKey: e.altKey,
+    metaKey: e.metaKey,
+  });
+
+  // `useMove` seeds the gesture from the PAGE pair and then measures every later
+  // delta against it, so a wrong seed does not merely offset the resize - it
+  // makes the first move jump. `pageX`/`pageY` are not init-dictionary members
+  // (they are derived from the client pair), so copy the originals across instead
+  // of trusting the derivation to agree with the real events that follow.
+  Object.defineProperty(forwarded, 'pageX', {
+    value: e.pageX,
+    configurable: true,
+  });
+  Object.defineProperty(forwarded, 'pageY', {
+    value: e.pageY,
+    configurable: true,
+  });
+
+  target.dispatchEvent(forwarded);
+}
+
+/**
+ * Warnings already emitted, keyed by their own text. A widget that yields its
+ * only resize affordance is a layout mistake, not an event: it is the same
+ * mistake every single time the user reaches for that corner, so it is worth
+ * saying exactly once.
+ */
+const yieldWarnings = new Set<string>();
+
+function warnOnce(message: string | undefined): void {
+  if (!message || yieldWarnings.has(message)) return;
+  yieldWarnings.add(message);
+  console.warn(message);
+}
+
 interface ResizeHandleProps {
   axis: ResizeHandleAxis;
   placement: BoardResizeGripPlacement;
+  /** Nesting depth of the board this handle's widget belongs to. */
+  boardDepth: number;
+  /**
+   * What to warn (once) if this handle yields to a deeper one and its widget has
+   * no edge axis left to be resized from. Built by `WidgetHost`, and `undefined`
+   * when the widget does have a fallback or in production.
+   */
+  yieldWarning?: string;
   onResize: (
     axis: ResizeHandleAxis,
     phase: ResizePhase,
@@ -430,7 +585,13 @@ interface ResizeHandleProps {
   ) => void;
 }
 
-function ResizeHandle({ axis, placement, onResize }: ResizeHandleProps) {
+function ResizeHandle({
+  axis,
+  placement,
+  boardDepth,
+  yieldWarning,
+  onResize,
+}: ResizeHandleProps) {
   const { moveProps } = useMove({
     onMoveStart() {
       onResize(axis, 'start', 0, 0);
@@ -444,16 +605,51 @@ function ResizeHandle({ axis, placement, onResize }: ResizeHandleProps) {
   });
 
   const stopProps = {
-    onPointerDown: (e: React.PointerEvent) => e.stopPropagation(),
+    onPointerDown: (e: ReactPointerEvent) => e.stopPropagation(),
     onMouseDown: (e: React.MouseEvent) => e.stopPropagation(),
     onTouchStart: (e: React.TouchEvent) => e.stopPropagation(),
+  };
+
+  const handleProps = mergeProps(stopProps, moveProps);
+
+  /**
+   * Two resize hit-zones can want the same pixel. A `corner`-placed zone
+   * straddles its widget's corner, and in a nested board that sits flush — which
+   * `isAligned` guarantees, since it pins `containerPadding` to `[0, 0]` — the
+   * host widget's corner and its bottom-right child's corner ARE one point.
+   * Geometry has nothing left to separate them with, and `z-index` cannot
+   * arbitrate either (see `GripLayerElement`), so the tie is broken here: the
+   * innermost handle takes the press. It is the more specific target, and the
+   * outer widget can still be resized from its edges — where it has any, which is
+   * what `yieldWarning` is about.
+   *
+   * Decided on the press rather than on hover so that touch, which has no hover
+   * to decide on, is covered by the same code. Nothing is lost by deciding this
+   * late: both handles ask for the same resize cursor anyway.
+   */
+  const onPointerDown = (e: ReactPointerEvent) => {
+    const deeper = findDeeperHandle({ x: e.clientX, y: e.clientY }, boardDepth);
+
+    if (deeper) {
+      // The press still must not reach the host and start a widget drag.
+      e.stopPropagation();
+      e.preventDefault();
+      warnOnce(yieldWarning);
+      forwardPointerDown(e, deeper);
+      return;
+    }
+
+    handleProps.onPointerDown?.(e);
   };
 
   return (
     <HandleElement
       data-axis={axis}
+      // Read by `findDeeperHandle` on a handle it can only reach through the DOM.
+      data-board-depth={boardDepth}
       mods={{ placement }}
-      {...mergeProps(stopProps, moveProps)}
+      {...handleProps}
+      onPointerDown={onPointerDown}
       aria-hidden="true"
     />
   );
@@ -496,6 +692,12 @@ export interface WidgetHostProps {
    * `widgetProps.resizeGripPlacement` default.
    */
   resizeGripPlacement: BoardResizeGripPlacement;
+  /**
+   * Nesting depth of the owning board (0 at the top level). Published on every
+   * resize hit-zone so a press on a corner two boards share can be settled by
+   * depth — see `ResizeHandle`.
+   */
+  boardDepth: number;
   /**
    * Whether this widget grows to fit its content. Resolved by the owning
    * `Board` from the per-widget `isAutoHeight` and the board-level
@@ -590,6 +792,7 @@ export function WidgetHost(props: WidgetHostProps) {
     isResizable,
     resizeHandles,
     resizeGripPlacement,
+    boardDepth,
     isAutoHeight,
     qa,
     dragCancel,
@@ -1004,6 +1207,16 @@ export function WidgetHost(props: WidgetHostProps) {
     'pre-selected': isPreSelected && !isSelected,
   };
 
+  // A widget whose only resize axes are corners has nothing to fall back on if a
+  // nested board's child takes one of those corners from it (see `ResizeHandle`).
+  // That is a layout mistake with no visible symptom other than "resizing this
+  // container does nothing", so say so out loud — but only when it actually
+  // happens, since whether a child sits in that corner is a runtime question.
+  const cornerYieldWarning =
+    process.env.NODE_ENV !== 'production' && !resizeHandles.some(isEdgeAxis)
+      ? `Board: widget "${item.i}" yielded a resize press to a handle of a board nested inside it, because their handles sit on the same point (a nested board with no \`containerPadding\` puts its last child's corner exactly on its host's). The innermost handle wins, and this widget has only corner \`resizeHandles\`, so it can no longer be resized there. Give it an edge axis to fall back on (e.g. \`resizeHandles={['se', 'e', 's']}\`), or give the nested board some \`containerPadding\` so the two corners stop coinciding.`
+      : undefined;
+
   const content = (
     <BoardHostContext.Provider value={hostValue}>
       {registration?.content}
@@ -1021,6 +1234,8 @@ export function WidgetHost(props: WidgetHostProps) {
               key={axis}
               axis={axis}
               placement={resizeGripPlacement}
+              boardDepth={boardDepth}
+              yieldWarning={cornerYieldWarning}
               onResize={handleResize}
             />
           ))}
@@ -1105,7 +1320,32 @@ export function WidgetHost(props: WidgetHostProps) {
           }
       : null;
 
+  // A corner hit-zone reaches only `CORNER_HIT_INWARD` into the widget, so the
+  // rest of its size has to come from outward, where there is nothing but grid
+  // gutter to cover. Half the gutter is the ceiling: past the midline the zone
+  // would start eating into the NEIGHBOUR's content, which is the same bug
+  // pointing the other way. `CORNER_HIT_INWARD` is the floor, so the zone is
+  // never smaller than the dot it stands for even on a gutterless board — there
+  // it matches the dot exactly, overhang for overhang.
+  const cornerHitOutward = Math.min(
+    CORNER_HIT_OUTWARD_MAX,
+    Math.max(
+      CORNER_HIT_INWARD,
+      Math.min(positionParams.margin[0], positionParams.margin[1]) / 2,
+    ),
+  );
+
+  // Published on the host as well as on the grip layer. Both carry handles for
+  // this same widget — edge axes stay inside the host, corner axes are hoisted
+  // out — and a handle whose geometry depended on which of the two it happened to
+  // land in would be a trap for the next person to move one.
+  const cornerHitVars = {
+    '--corner-hit-size': `${CORNER_HIT_INWARD + cornerHitOutward}px`,
+    '--corner-hit-overhang': `${-cornerHitOutward}px`,
+  } as CSSProperties;
+
   const hostStyle: CSSProperties = {
+    ...cornerHitVars,
     left: `${pos.left}px`,
     top: `${pos.top}px`,
     width: `${pos.width}px`,
@@ -1206,6 +1446,7 @@ export function WidgetHost(props: WidgetHostProps) {
       <GripLayerElement
         {...layerHoverProps}
         style={{
+          ...cornerHitVars,
           left: `${pos.left}px`,
           top: `${pos.top}px`,
           width: `${pos.width}px`,
@@ -1220,6 +1461,8 @@ export function WidgetHost(props: WidgetHostProps) {
             key={`handle-${axis}`}
             axis={axis}
             placement="corner"
+            boardDepth={boardDepth}
+            yieldWarning={cornerYieldWarning}
             onResize={handleResize}
           />
         ))}

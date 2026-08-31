@@ -317,6 +317,230 @@ describe('Board resize grip placement', () => {
       ),
     );
   });
+
+  /**
+   * The hit-zone, as opposed to the dot. These two are the reason CUB-4166
+   * existed: the zone used to be a 3x square pinned to the corner by its outer
+   * edge, so ~19px of it lay over the widget's own content while the dot showed
+   * 5px. Nothing about the *visuals* said so, which is why it survived review.
+   */
+  it('keeps a corner hit-zone off the widget content, not just the dot', async () => {
+    renderBoard(layout, { resizeGripPlacement: 'corner' });
+    await revealGrips();
+
+    const box = widget('a').getBoundingClientRect();
+    const hit = screen.getByTestId('BoardResizeHandle').getBoundingClientRect();
+
+    // Inward reach is capped at the half-dot that is painted there (5px).
+    expect(box.right - hit.left).toBeLessThanOrEqual(5.5);
+    expect(box.bottom - hit.top).toBeLessThanOrEqual(5.5);
+    // And it really is a target, not collapsed to nothing by the cap.
+    expect(hit.width).toBeGreaterThanOrEqual(9.5);
+    expect(hit.height).toBeGreaterThanOrEqual(9.5);
+  });
+
+  it('takes the rest of a corner hit-zone outward, bounded by half the gutter', async () => {
+    // A 40px gutter leaves 20px each side of the midline, so the zone takes the
+    // full `CORNER_HIT_OUTWARD_MAX` (10px) and stops there.
+    renderBoard(layout, { resizeGripPlacement: 'corner', margin: [40, 40] });
+    await revealGrips();
+
+    const box = widget('a').getBoundingClientRect();
+    const hit = screen.getByTestId('BoardResizeHandle').getBoundingClientRect();
+
+    expect(hit.right - box.right).toBeCloseTo(10, 0);
+    expect(hit.bottom - box.bottom).toBeCloseTo(10, 0);
+    // Growing outward must not have quietly grown it inward too.
+    expect(box.right - hit.left).toBeLessThanOrEqual(5.5);
+    expect(box.bottom - hit.top).toBeLessThanOrEqual(5.5);
+  });
+});
+
+describe('Board nested handle arbitration', () => {
+  /**
+   * The CUB-4166 geometry, which no amount of layout can talk its way out of: a
+   * container widget with a `corner` grip, holding a nested board that sits flush
+   * inside it (`isAligned` pins the inner `containerPadding` to `[0, 0]`), with a
+   * child in the last cell. The container's bottom-right corner and the child's
+   * bottom-right corner are then the SAME POINT — both hit-zones straddle it, and
+   * nothing is clipped — so a press there has to be arbitrated rather than
+   * placed.
+   */
+  /** A square cell, and a grid narrow enough to fit the browser viewport. */
+  const CELL = 50;
+  const COLS = 6;
+
+  function renderNested({
+    ids,
+    outerHandles,
+    onOuter,
+    onInner,
+  }: {
+    ids: [string, string];
+    outerHandles?: string[];
+    onOuter?: (layout: LayoutItem[]) => void;
+    onInner?: (layout: LayoutItem[]) => void;
+  }) {
+    const [container, child] = ids;
+
+    // 300 x 200 of board, so the shared corner is comfortably inside the browser
+    // project's 414 x 896 viewport - `elementsFromPoint` returns nothing at all
+    // for a point past the edge of it, and the arbitration this suite is here to
+    // check is built on that call.
+    return renderWithRoot(
+      <div style={{ width: `${COLS * CELL}px` }}>
+        <Board.Provider>
+          <Board
+            cols={COLS}
+            rowHeight={CELL}
+            margin={[0, 0]}
+            containerPadding={[0, 0]}
+            resizeGripPlacement="corner"
+            defaultLayout={[{ i: container, x: 0, y: 0, w: COLS, h: 4 }]}
+            onLayoutChange={onOuter}
+          >
+            <Board.Widget
+              id={container}
+              qa={container.toUpperCase()}
+              isCard={false}
+              resizeHandles={outerHandles as never}
+            >
+              <Board
+                isAligned
+                cols={COLS}
+                rowHeight={CELL}
+                margin={[0, 0]}
+                resizeGripPlacement="corner"
+                // Last column, last row: flush with the container on both axes.
+                defaultLayout={[{ i: child, x: COLS - 2, y: 3, w: 2, h: 1 }]}
+                onLayoutChange={onInner}
+              >
+                <Board.Widget id={child} qa={child.toUpperCase()}>
+                  {child}
+                </Board.Widget>
+              </Board>
+            </Board.Widget>
+          </Board>
+        </Board.Provider>
+      </div>,
+    );
+  }
+
+  /** The corner both widgets anchor a resize handle to — asserted, not assumed. */
+  async function sharedCorner(container: string, child: string) {
+    await vi.waitFor(() =>
+      expect(widget(child).getBoundingClientRect().width).toBeGreaterThan(0),
+    );
+
+    const outerBox = widget(container).getBoundingClientRect();
+    const innerBox = widget(child).getBoundingClientRect();
+
+    // The precondition. If this ever stops holding, the tests below stop testing
+    // anything, so they say so here rather than passing for the wrong reason.
+    expect(innerBox.right).toBeCloseTo(outerBox.right, 0);
+    expect(innerBox.bottom).toBeCloseTo(outerBox.bottom, 0);
+
+    return { x: outerBox.right, y: outerBox.bottom };
+  }
+
+  /**
+   * Where to press on a corner both widgets claim.
+   *
+   * Not the corner itself: a widget is `radius: 1cr` and clips its content, so the
+   * last pixel or two of the tip is outside the container's rounded shape — and
+   * with it, outside the *child's* hit-zone, which lives inside that clip. The
+   * container's own zone is a sibling of the widget and is not clipped, so right
+   * at the tip there is only one handle and nothing to arbitrate. A few pixels in,
+   * both are live and stacked, which is the case that matters.
+   */
+  const contested = (corner: { x: number; y: number }) => ({
+    x: corner.x - 3,
+    y: corner.y - 3,
+  });
+
+  const widthOf = (layout: LayoutItem[] | undefined, id: string) =>
+    layout?.find((item) => item.i === id)?.w;
+
+  it('hands a corner two widgets share to the innermost one', async () => {
+    const onOuter = vi.fn();
+    const onInner = vi.fn();
+    renderNested({ ids: ['grid', 'child'], onOuter, onInner });
+
+    const corner = await sharedCorner('grid', 'child');
+
+    // One column to the left, from a point both hit-zones cover. Only one of them
+    // may act on it.
+    const from = contested(corner);
+    const hit = document.elementFromPoint(from.x, from.y)!;
+    await dragPointer(hit as HTMLElement, from, {
+      x: from.x - CELL,
+      y: from.y,
+    });
+
+    // The child shrank by the column the pointer walked back.
+    await vi.waitFor(() => expect(onInner).toHaveBeenCalled());
+    expect(widthOf(onInner.mock.lastCall?.[0], 'child')).toBe(1);
+    // And the container did not move at all — the gesture was never its to take.
+    expect(widthOf(onOuter.mock.lastCall?.[0], 'grid') ?? COLS).toBe(COLS);
+  });
+
+  it('warns when yielding leaves the outer widget with no way to resize', async () => {
+    // A distinct id per test: the warning is deduped by its own text, which names
+    // the widget, so tests stay independent of each other's order.
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    try {
+      renderNested({ ids: ['grid-warn', 'child-warn'] });
+      const corner = await sharedCorner('grid-warn', 'child-warn');
+
+      const from = contested(corner);
+      const hit = document.elementFromPoint(from.x, from.y)!;
+      await dragPointer(hit as HTMLElement, from, {
+        x: from.x - CELL,
+        y: from.y,
+      });
+
+      await vi.waitFor(() =>
+        expect(
+          warn.mock.calls.some(
+            (call) =>
+              typeof call[0] === 'string' && call[0].includes('grid-warn'),
+          ),
+        ).toBe(true),
+      );
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it('leaves the outer widget resizable from the edge axes it was told to add', async () => {
+    // The other half of the fix: yielding the corner is only acceptable because
+    // an edge axis is still there to resize the container from. If this breaks,
+    // the bug has simply moved from the child to the container.
+    const onOuter = vi.fn();
+    const onInner = vi.fn();
+    renderNested({
+      ids: ['grid-edge', 'child-edge'],
+      outerHandles: ['se', 'e', 's'],
+      onOuter,
+      onInner,
+    });
+
+    const corner = await sharedCorner('grid-edge', 'child-edge');
+    // Half way up the container's right edge: its `e` hit-zone, and well clear of
+    // the only child, so there is nothing deeper under the pointer to yield to.
+    const from = { x: corner.x - 4, y: corner.y - 2 * CELL };
+
+    const hit = document.elementFromPoint(from.x, from.y)!;
+    await dragPointer(hit as HTMLElement, from, {
+      x: from.x - CELL,
+      y: from.y,
+    });
+
+    await vi.waitFor(() => expect(onOuter).toHaveBeenCalled());
+    expect(widthOf(onOuter.mock.lastCall?.[0], 'grid-edge')).toBe(COLS - 1);
+    expect(widthOf(onInner.mock.lastCall?.[0], 'child-edge') ?? 2).toBe(2);
+  });
 });
 
 describe('Board marquee', () => {

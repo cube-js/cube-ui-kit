@@ -184,6 +184,13 @@ export interface BoardMetrics {
   margin: readonly [number, number];
   /** Parent [horizontal, vertical] container padding in pixels. */
   containerPadding: readonly [number, number];
+  /**
+   * How deep this board is nested: 0 for a top-level board, and one more for each
+   * board rendered inside a widget. Resize handles publish it as
+   * `data-board-depth` so a press on a corner that two boards' handles share can
+   * be settled by depth — see `ResizeHandle`.
+   */
+  depth: number;
 }
 
 export const BoardMetricsContext = createContext<BoardMetrics | null>(null);

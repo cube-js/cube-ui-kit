@@ -603,7 +603,98 @@ CornerResizeGrip.parameters = {
   docs: {
     description: {
       story:
-        'With `resizeGripPlacement="corner"` the grip is centred on the widget\'s corner instead of tucked inside it, so it lines up with a control centred on the opposite corner. It is drawn outside the widget box (a widget clips its own content), so give the board enough `containerPadding` for it to show in full at the board\'s edge. Per-widget `resizeGripPlacement` overrides the board default — the second widget here opts back into `"inside"`.',
+        'With `resizeGripPlacement="corner"` the grip is centred on the widget\'s corner instead of tucked inside it, so it lines up with a control centred on the opposite corner. It is drawn outside the widget box (a widget clips its own content) and nothing clips it in turn, so it shows in full even at the board\'s edge. Its hit-zone is held to the dot: half a grip inward, and outward only as far as half the grid gutter, so it never covers the widget\'s own content or a neighbour\'s. Per-widget `resizeGripPlacement` overrides the board default — the second widget here opts back into `"inside"`.',
+    },
+  },
+};
+
+// A corner grip on a container whose content is a flush nested board - the case
+// where two widgets end up owning the same corner. The container is `isCard={false}`
+// and the inner board `isAligned`, so the inner grid has no padding of its own and
+// its last child sits exactly on the container's bottom-right corner.
+const NestedCornerGripTemplate: StoryFn<CubeBoardProps> = (args) => {
+  const [outerLayout, setOuterLayout] = useState<LayoutItem[]>([
+    { i: 'container', x: 0, y: 0, w: 6, h: 4, minW: 2, minH: 2 },
+    { i: 'sibling', x: 6, y: 0, w: 2, h: 4 },
+  ]);
+  // `inner-a` spans the top so `inner-b` cannot float up out of the last row when
+  // the inner board compacts - the shared corner is the whole point of the story,
+  // and it has to survive a resize to still be demonstrating it.
+  const [innerLayout, setInnerLayout] = useState<LayoutItem[]>([
+    { i: 'inner-a', x: 0, y: 0, w: 6, h: 2 },
+    { i: 'inner-c', x: 0, y: 2, w: 3, h: 2 },
+    { i: 'inner-b', x: 3, y: 2, w: 3, h: 2 },
+  ]);
+
+  return (
+    <Board.Provider>
+      <Board
+        id="outer-nested-corner"
+        cols={8}
+        rowHeight={90}
+        padding="2x"
+        fill="#light"
+        radius="1r"
+        resizeGripPlacement="corner"
+        layout={outerLayout}
+        onLayoutChange={setOuterLayout}
+        {...args}
+      >
+        <Board.Widget
+          id="container"
+          isCard={false}
+          // The other half of the fix: the container yields its bottom-right
+          // corner to `inner-b`, so it needs an edge to be resized from. Without
+          // one it would stay draggable but stop being resizable, and the board
+          // says so in the console the first time that corner is used.
+          resizeHandles={['se', 'e', 's']}
+          fill="#surface"
+          // A `Board` sizes its height from its own grid but needs a flex parent
+          // to claim it, so the container widget is the flex column here rather
+          // than a wrapper - one less box between the two grids, which is the
+          // whole point of an aligned nested board.
+          display="flex"
+          flow="column"
+        >
+          <Board
+            id="inner-nested-corner"
+            isAligned
+            flexGrow={1}
+            cols={6}
+            rowHeight={90}
+            resizeGripPlacement="corner"
+            layout={innerLayout}
+            onLayoutChange={setInnerLayout}
+          >
+            <Board.Widget id="inner-a">
+              <WidgetBody title="Child A" text="Resize from its own corner" />
+            </Board.Widget>
+            <Board.Widget id="inner-c">
+              <WidgetBody title="Child C" text="Bottom-left" />
+            </Board.Widget>
+            <Board.Widget id="inner-b">
+              <WidgetBody
+                title="Child B"
+                text="Shares a corner with the container"
+              />
+            </Board.Widget>
+          </Board>
+        </Board.Widget>
+        <Board.Widget id="sibling" isCard>
+          <WidgetBody title="Sibling" text="Outer grid reference" />
+        </Board.Widget>
+      </Board>
+    </Board.Provider>
+  );
+};
+
+export const NestedCornerResizeGrip = NestedCornerGripTemplate.bind({});
+NestedCornerResizeGrip.args = {};
+NestedCornerResizeGrip.parameters = {
+  docs: {
+    description: {
+      story:
+        "A `resizeGripPlacement=\"corner\"` container holding a flush nested board (`isAligned`, so the inner `containerPadding` is `[0, 0]`). Child B fills the last cell, which puts its resize corner on exactly the same point as the container's - both hit-zones are there, stacked. The innermost one takes the press, so Child B resizes from that corner and the container resizes from the `e`/`s` edges it was given instead. Drag Child B's bottom-right corner, then the container's right edge, to see each act on its own widget.",
     },
   },
 };

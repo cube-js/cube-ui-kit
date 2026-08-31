@@ -526,6 +526,10 @@ function BoardInner(
   const host = useBoardHost();
   const inheritedGridLines = useBoardGridLines();
   const aligned = isAligned && !!parentMetrics;
+  // 0 at the top level, one more for every board nested inside a widget. Read
+  // from the PARENT's metrics (this board publishes its own further down), so the
+  // count follows the React tree and needs no wiring at the call site.
+  const boardDepth = (parentMetrics?.depth ?? -1) + 1;
   // `widgetProps` may carry container style props directly (e.g. `fill`,
   // `padding`, `radius`) alongside an explicit `styles` object, mirroring
   // `Board.Widget`. Extract them into a single style map here so those defaults
@@ -1493,8 +1497,9 @@ function BoardInner(
       rowHeight: positionParams.rowHeight,
       margin: positionParams.margin,
       containerPadding: positionParams.containerPadding,
+      depth: boardDepth,
     }),
-    [positionParams],
+    [positionParams, boardDepth],
   );
 
   return (
@@ -1644,6 +1649,7 @@ function BoardInner(
                       isResizable={widgetResizable}
                       resizeHandles={handles}
                       resizeGripPlacement={gripPlacement}
+                      boardDepth={boardDepth}
                       isAutoHeight={widgetIsAutoHeight}
                       qa={widgetQa}
                       dragCancel={widgetDragCancel}
