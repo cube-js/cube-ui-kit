@@ -143,6 +143,74 @@ describe('useAutoTooltip overflow measurement', () => {
       expect(label()).toHaveAttribute('data-tooltip-active', 'false');
     });
 
+    /**
+     * Regression guard for the provider-remount cycle.
+     *
+     * Real consumers differ from the Probe above in two ways that matter, and
+     * together they broke the first version of this fix: `TextItem` and friends
+     * build their callback ref inline, so React detaches and re-attaches on
+     * every render, and turning the verdict on mounts `TooltipProvider`, which
+     * remounts the label underneath it. Clearing the verdict when the node goes
+     * away therefore undoes the measurement that had just been made, and the
+     * tooltip never activates — five Chromatic stories, none of them visible to
+     * a stable-ref probe.
+     *
+     * The status element sits outside the provider so it survives the remount.
+     */
+    function RemountProbe() {
+      const { labelRef, isTooltipActive, renderWithTooltip } = useAutoTooltip({
+        tooltip: true,
+        children: LONG_LABEL,
+        labelProps: undefined,
+      });
+
+      return (
+        <div style={{ width: '80px' }}>
+          <span data-qa="Status" data-active={String(isTooltipActive)} />
+          {renderWithTooltip(
+            (triggerProps, ref) => (
+              <div
+                {...triggerProps}
+                // Inline, so its identity changes every render — exactly what
+                // TextItem, Item and Button's own wrappers do.
+                ref={(element: HTMLElement | null) => {
+                  if (ref) (ref as { current: unknown }).current = element;
+                  labelRef(element);
+                }}
+                data-qa="RemountLabel"
+                style={{ whiteSpace: 'nowrap', overflow: 'hidden' }}
+              >
+                {LONG_LABEL}
+              </div>
+            ),
+            'top',
+          )}
+        </div>
+      );
+    }
+
+    it('activates the tooltip even though mounting it remounts the label', async () => {
+      await act(async () => {
+        renderWithRoot(<RemountProbe />);
+      });
+
+      await waitFor(() => {
+        expect(screen.getByTestId('Status')).toHaveAttribute(
+          'data-active',
+          'true',
+        );
+      });
+
+      // And stays active rather than being undone by the remount it caused.
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 400));
+      });
+      expect(screen.getByTestId('Status')).toHaveAttribute(
+        'data-active',
+        'true',
+      );
+    });
+
     it('re-measures when the label is resized', async () => {
       function Resizable() {
         const [width, setWidth] = useState('600px');
