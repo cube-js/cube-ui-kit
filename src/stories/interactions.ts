@@ -79,9 +79,12 @@ export async function openContextMenu(
  * both fail silently:
  *
  * - **The trigger is not wired yet.** `TooltipProvider` renders its child
- *   without trigger props until a mount effect flips `rendered`. A hover that
- *   lands before that has no handler to reach and nothing replays it, hence the
- *   wait.
+ *   without trigger props until a mount effect flips `rendered`, and an
+ *   auto-on-overflow label does not even ask for a provider until it has
+ *   measured itself, which happens off the commit path. A hover that lands
+ *   before any of that has no handler to reach, and the browser does not replay
+ *   it — so this replays the hover itself rather than guessing a delay long
+ *   enough to cover however many commits the component needed.
  * - **React Aria has no interaction modality yet.** It opens a tooltip only
  *   when the last interaction came from a pointer, which it learns from a mouse
  *   move on the document. `userEvent.hover` fires `mouseEnter` *before* its
@@ -89,8 +92,8 @@ export async function openContextMenu(
  *   supplies that move.
  *
  * Pass `delay: 0` in the story's tooltip config as well. The default 250ms open
- * delay is real time the snapshot would otherwise wait out, and it makes any
- * retry racy.
+ * delay is real time the snapshot would otherwise wait out, and it makes each
+ * retry below that much slower.
  *
  * Only one element per story: hovering a second closes the first, and only the
  * final state is photographed.
@@ -102,10 +105,24 @@ export async function openContextMenu(
  * it with a longer wait.
  */
 export async function openTooltip(target: Element) {
-  await timeout(250);
+  const doc = within(document.body);
 
-  await userEvent.unhover(target);
-  await userEvent.hover(target);
+  // Replay the hover rather than waiting a fixed time before it. Nothing
+  // replays a hover that lands before the trigger is wired, so a single
+  // attempt is only as good as the guess in front of it — and the guess has to
+  // cover however many commits the component needs to decide it wants a
+  // tooltip at all. An auto-on-overflow label measures itself off the commit
+  // path, so that is at least one commit after mount, and longer on a loaded
+  // machine. Retrying costs nothing when the first attempt works.
+  await waitFor(
+    async () => {
+      await userEvent.unhover(target);
+      await userEvent.hover(target);
 
-  await waitForOverlay('tooltip');
+      expect(doc.getAllByRole('tooltip')[0]).toBeVisible();
+    },
+    { timeout: 10000 },
+  );
+
+  return doc.getAllByRole('tooltip')[0];
 }
