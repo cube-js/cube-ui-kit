@@ -61,7 +61,8 @@
     "docs/tasty",
     "docs/glaze",
     "docs/*.md",
-    "tasty.config.ts"
+    "tasty.config.ts",
+    "scripts/precompile-tasty-catalog.mjs"
   ],
   "scripts": {
     "start": "pnpm storybook",

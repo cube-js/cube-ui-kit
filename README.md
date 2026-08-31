@@ -80,7 +80,7 @@ Import it once in the application entry or framework root, before anything rende
 
 Use `tastyDebug.summary()` during representative navigation before adopting the shared asset. The summary separates runtime-active and precompiled-active classes, reports registered classes that are currently inactive, and shows how many distinct precompiled classes were used since metrics were reset. A high precompiled hit count alone can come from repeated renders of a small set and does not imply broad coverage.
 
-Applications with substantial `styles`, `style`, style-prop, or application-component usage should generate an app-owned artifact instead. The Node-only `@cube-dev/ui-kit/precompile` entry runs cases under UI Kit's exact Tasty configuration and normal `Root` providers while collecting both UI Kit and application chunks:
+Applications with substantial `styles`, `style`, style-prop, or application-component usage should generate an app-owned artifact. The Node-only `@cube-dev/ui-kit/precompile` entry runs cases under UI Kit's exact Tasty configuration and normal `Root` providers while collecting both UI Kit and application chunks:
 
 ```tsx
 import { writeFile } from 'node:fs/promises';
@@ -103,7 +103,18 @@ await Promise.all([
 ]);
 ```
 
-Cases should render representative application routes, data shapes, variants, and controlled subtrees. Import the application's Tasty configuration before invoking the compiler. Pass `root: false` when each case already returns the application's complete `Root` tree. Deliver the resulting CSS and register its manifest before rendering, using `registerTastyPrecompiled()` or `installTastyPrecompiled()` from `@tenphi/tasty/precompile/register`. Use the app-owned artifact instead of the broad shared asset, not in addition to it.
+Cases should render representative application routes, data shapes, variants, and controlled subtrees. Import the application's Tasty configuration before invoking the compiler. Pass `root: false` when each case already returns the application's complete `Root` tree. Deliver the resulting CSS and register its manifest before rendering, using `registerTastyPrecompiled()` or `installTastyPrecompiled()` from `@tenphi/tasty/precompile/register`.
+
+By default the compiler also re-renders UI Kit's own component catalog under the application's configuration and folds it into the same artifact, so one asset covers both layers. That default exists because a chunk's lookup key hashes the style _source_, not the CSS it produced: an application that redefines a unit, recipe, state or handler a kit chunk relies on still hits the shipped chunk for that key, while the CSS behind it no longer matches. Recompiling removes the divergence rather than leaving Tasty to detect it and fall back to runtime generation.
+
+Pass `recompileKitCatalog: false` to skip that work when the application makes no compilation-affecting configuration change. It skips the _recompilation_, not the coverage — pair it with the shipped asset:
+
+```ts
+import '@cube-dev/ui-kit/precompiled-styles';
+import './app-precompiled-styles';
+```
+
+Catalogs stack rather than replace: Tasty keys registered manifests by id and merges their lookup tables, and identical chunks compile to identical class names, so an overlap between the two artifacts costs nothing but the duplicated CSS bytes.
 
 Frameworks that require explicit global CSS imports can split those two side effects in their root entry:
 
@@ -116,7 +127,7 @@ SSR deployments that emit a stylesheet `<link>` can resolve or copy the same `@c
 
 Environments that cannot deliver a static stylesheet but can load an asset as text may combine `@cube-dev/ui-kit/precompiled-styles/manifest` with `installTastyPrecompiled()` from `@tenphi/tasty/precompile/register`. This is the fallback path: it puts the CSS in the JavaScript bundle, must run before the first Tasty render, and may require a CSP nonce.
 
-Consumer overrides to Tasty parser functions, units, states, handlers, recipes, or chunk assignments invalidate the shared artifact. Keep using runtime generation or generate an application-owned artifact under that exact configuration.
+Consumer overrides to Tasty parser functions, units, states, handlers, recipes, or chunk assignments invalidate the shared artifact. Tasty enforces this: a manifest records the configuration it was compiled under, and a catalog whose record no longer matches the host is dropped with a warning naming the differing entries, falling back to runtime generation rather than serving CSS the configuration would not produce. Adding names the catalog never compiled — extra states or recipes of the application's own — is not a divergence and keeps the catalog. To keep coverage under a real override, generate an application-owned artifact, which recompiles the kit catalog under that exact configuration by default.
 
 ## Components
 
