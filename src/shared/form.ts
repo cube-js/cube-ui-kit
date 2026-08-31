@@ -112,7 +112,6 @@ export interface FieldBaseProps extends FormBaseProps, FieldCoreProps {
   /** An additional content next to the label */
   extra?: ReactNode;
   necessityIndicator?: NecessityIndicator | null;
-  necessityLabel?: ReactNode;
   labelSuffix?: ReactNode;
   /** A tooltip that is shown inside the label */
   tooltip?: ReactNode;
@@ -144,8 +143,6 @@ export interface FormBaseProps extends ValidationProps {
   requiredMark?: boolean;
   /** The type of necessity indicator */
   necessityIndicator?: NecessityIndicator | null;
-  /** That can replace the necessity label */
-  necessityLabel?: ReactNode;
   /** Whether the field is read only */
   isReadOnly?: boolean;
   /**

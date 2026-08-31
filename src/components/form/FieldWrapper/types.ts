@@ -35,7 +35,6 @@ export type CubeFieldWrapperProps = ValidationProps & {
   requiredMark?: boolean;
   tooltip?: ReactNode;
   extra?: ReactNode;
-  necessityLabel?: ReactNode;
   necessityIndicator?: NecessityIndicator | null;
 
   /**

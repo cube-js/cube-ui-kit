@@ -64,11 +64,6 @@ export default {
       control: { type: 'radio' },
       description: 'Type of necessity indicator',
     },
-    necessityLabel: {
-      control: { type: 'text' },
-      description: 'Custom necessity label text',
-    },
-
     /* State */
     isRequired: {
       control: { type: 'boolean' },

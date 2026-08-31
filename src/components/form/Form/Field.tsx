@@ -128,7 +128,6 @@ export function Field<T extends FieldTypes>(props: CubeFieldProps<T>) {
     form,
     label,
     extra,
-    necessityLabel,
     necessityIndicator,
     tooltip,
     isHidden,
@@ -192,7 +191,6 @@ export function Field<T extends FieldTypes>(props: CubeFieldProps<T>) {
           isInvalid={isInvalid}
           isValid={isValid}
           necessityIndicator={resolvedNecessityIndicator}
-          necessityLabel={necessityLabel}
           isRequired={isRequired}
           isOptional={isOptional}
           label={label}
@@ -254,10 +252,6 @@ export function Field<T extends FieldTypes>(props: CubeFieldProps<T>) {
     !(resolvedNecessityIndicator === null && childDeclaresNecessity)
   ) {
     newProps.necessityIndicator = resolvedNecessityIndicator;
-  }
-
-  if (necessityLabel) {
-    newProps.necessityLabel = necessityLabel;
   }
 
   if (isInvalid) {

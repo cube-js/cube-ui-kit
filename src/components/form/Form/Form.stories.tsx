@@ -160,14 +160,6 @@ const meta: Meta<typeof Form> = {
         type: { summary: 'Styles' },
       },
     },
-    necessityLabel: {
-      control: { type: null },
-      description:
-        'Custom label to replace the default necessity indicator text',
-      table: {
-        type: { summary: 'ReactNode' },
-      },
-    },
   },
 };
 
