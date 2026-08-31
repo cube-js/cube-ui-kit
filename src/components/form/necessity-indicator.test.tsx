@@ -59,6 +59,21 @@ describe('necessity indicators', () => {
       expect(star(container)).toBeNull();
     });
 
+    it('should treat an explicit isRequired={false} as opting out', () => {
+      const { container, getByRole } = renderWithForm(
+        <TextInput
+          name="email"
+          label="Email"
+          isRequired={false}
+          rules={[{ required: true }]}
+        />,
+      );
+
+      expect(star(container)).toBeNull();
+      // The rule still governs the behaviour; only the marker was declined.
+      expect(getByRole('textbox')).toHaveAttribute('aria-required', 'true');
+    });
+
     it('should render the label form of the mark', () => {
       const { container, getByText } = renderWithForm(
         <TextInput
@@ -99,6 +114,30 @@ describe('necessity indicators', () => {
 
       expect(star(container)).not.toBeNull();
       expect(queryByText('(optional)')).not.toBeInTheDocument();
+    });
+
+    it('should not fill the gap left by requiredMark={false}', () => {
+      // `requiredMark={false}` drops the marker but not the requirement, so the
+      // note must not step in and call a required field optional.
+      const { container, queryByText, getByRole } = renderWithForm(
+        <TextInput name="email" label="Email" isRequired isOptional />,
+        { formProps: { requiredMark: false } },
+      );
+
+      expect(star(container)).toBeNull();
+      expect(queryByText('(optional)')).not.toBeInTheDocument();
+      expect(getByRole('textbox')).toHaveAccessibleName('Email');
+      expect(getByRole('textbox')).toHaveAttribute('aria-required', 'true');
+    });
+
+    it('should survive requiredMark={false} on its own', () => {
+      const { getByRole, getByText } = renderWithForm(
+        <TextInput name="nickname" label="Nickname" isOptional />,
+        { formProps: { requiredMark: false } },
+      );
+
+      expect(getByText('(optional)')).toBeInTheDocument();
+      expect(getByRole('textbox')).toHaveAccessibleName('Nickname (optional)');
     });
 
     it('should lose to a required rule', () => {

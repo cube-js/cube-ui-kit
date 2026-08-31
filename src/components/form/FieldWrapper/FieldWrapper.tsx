@@ -126,20 +126,27 @@ export const FieldWrapper = forwardRef(function FieldWrapper(
 
   const { t } = useI18n();
 
+  // `requiredMark={false}` drops the required marker, but the field is still
+  // required — so the optional note has to keep losing to it rather than
+  // stepping into the gap and labelling a required field optional.
+  const showRequiredMark = !!requiredMark && !!isRequired;
+  const showOptionalNote = !isRequired && !!isOptional;
+
   // The `aria-label` below is what the input is named by, so it shadows the
   // label's own content — including the `(optional)` note, which is the only
   // thing saying the field is optional. A required field needs no such help:
   // `aria-required` on the input already announces it.
-  const optionalNote =
-    isOptional && !isRequired ? t('form.optional', '(optional)') : null;
+  const optionalNote = showOptionalNote
+    ? t('form.optional', '(optional)')
+    : null;
 
   const labelComponent = label ? (
     <Label
       as={as === 'label' ? 'div' : 'label'}
       styles={labelStyles}
       labelPosition={labelPosition}
-      isRequired={requiredMark ? isRequired : false}
-      isOptional={isOptional}
+      isRequired={showRequiredMark}
+      isOptional={showOptionalNote}
       isDisabled={isDisabled}
       necessityIndicator={necessityIndicator}
       isInvalid={isInvalid}
@@ -163,8 +170,8 @@ export const FieldWrapper = forwardRef(function FieldWrapper(
               the label text, rather than after the full-width `Flex`.
             */}
             <NecessityIndicatorMark
-              isRequired={requiredMark ? isRequired : false}
-              isOptional={isOptional}
+              isRequired={showRequiredMark}
+              isOptional={showOptionalNote}
               necessityIndicator={necessityIndicator}
             />
           </div>
