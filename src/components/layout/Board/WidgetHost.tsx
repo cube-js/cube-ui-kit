@@ -92,6 +92,26 @@ const OUTSIDE_GRIP_THICKNESS = 4;
 /** Gap between a widget's corner and its `outside` corner grip. */
 const OUTSIDE_CORNER_GAP = 2;
 
+/**
+ * How far an `outside` corner angle reaches out from the widget, given the gutter
+ * it has to reach into: the full `GRIP_SIZE` where the gutter can take it, and
+ * whatever is left over where it cannot.
+ *
+ * A corner grip sits in the square where the two gutters cross, which is empty —
+ * but only as far as the gutters go. At `GRIP_SIZE` stepped `OUTSIDE_CORNER_GAP`
+ * off the corner it reached 12px out, past the 8px gutter the defaults give it
+ * and onto the diagonal neighbour, swallowing that widget's own corner. Shrinking
+ * rather than warning because the angle still reads at 6px, and a grip that is a
+ * little small is not the same order of problem as one covering someone else's
+ * widget.
+ *
+ * `band` arrives floored at `OUTSIDE_GRIP_MIN_BAND`, so the result is never below
+ * `OUTSIDE_GRIP_MIN_BAND - OUTSIDE_CORNER_GAP`.
+ */
+function cornerGripExtent(band: number): number {
+  return Math.min(GRIP_SIZE, band - OUTSIDE_CORNER_GAP);
+}
+
 const WidgetElement = tasty({
   qa: 'BoardWidget',
   styles: {
@@ -397,16 +417,17 @@ const OutsideGripElement = tasty({
       '[data-axis="nw"]': `translate(${-OUTSIDE_CORNER_GAP}px, ${-OUTSIDE_CORNER_GAP}px)`,
     },
     // An edge grip spans the gutter band across, a fixed length along. A corner
-    // grip is the same angle the `inside` and `corner` placements draw, at the
-    // same size - it is a familiar shape, and a filled dot read as a scrollbar
-    // rather than as a resize corner.
+    // grip is the same angle the `inside` and `corner` placements draw - it is a
+    // familiar shape, and a filled dot read as a scrollbar rather than as a
+    // resize corner - sized to the gutter it reaches into (`cornerGripExtent`),
+    // one axis of the crossing per dimension.
     width: {
-      '': `${GRIP_SIZE}px`,
+      '': '$outside-corner-w',
       '[data-axis="e"] | [data-axis="w"]': '$grip-band-x',
       '[data-axis="n"] | [data-axis="s"]': `${OUTSIDE_GRIP_LENGTH}px`,
     },
     height: {
-      '': `${GRIP_SIZE}px`,
+      '': '$outside-corner-h',
       '[data-axis="n"] | [data-axis="s"]': '$grip-band-y',
       '[data-axis="e"] | [data-axis="w"]': `${OUTSIDE_GRIP_LENGTH}px`,
     },
@@ -1084,15 +1105,24 @@ export function WidgetHost(props: WidgetHostProps) {
   // level), so only one level of a nested board shows grips at a time. Balanced
   // by construction: the cleanup runs on un-hover and on unmount, so a widget
   // that disappears mid-hover cannot leave its container stood down for good.
+  //
+  // The grip layer counts as this widget, not as a gap between it and its
+  // container. It matters once this widget is itself a container — three levels
+  // deep, a widget holding a board inside a board — because then its own grips
+  // are `outside`, in the gutter, off its box. Reporting only `isHovered` there
+  // left the pointer sitting on this widget's grips while the container above
+  // still thought nothing of its own was hovered, and both levels lit up at once:
+  // exactly the collision the placement split exists to prevent.
   const parentHost = useBoardHost();
   const reportHoverToHost = parentHost?.setDescendantHovered;
+  const isSelfHovered = isHovered || isLayerHovered;
   useEffect(() => {
-    if (!reportHoverToHost || !isHovered) return;
+    if (!reportHoverToHost || !isSelfHovered) return;
 
     reportHoverToHost(true);
 
     return () => reportHoverToHost(false);
-  }, [reportHoverToHost, isHovered]);
+  }, [reportHoverToHost, isSelfHovered]);
 
   // Reveal the resize grips when the widget is interacted with (but not while it
   // is being dragged, where the widget floats in the overlay).
@@ -1105,7 +1135,7 @@ export function WidgetHost(props: WidgetHostProps) {
     !item.static &&
     !isActiveDrag &&
     !descendantHoverCount &&
-    (isHovered || isLayerHovered || isFocusWithin || isResizing);
+    (isSelfHovered || isFocusWithin || isResizing);
 
   const { moveProps } = useMove({
     onMoveStart(e) {
@@ -1605,6 +1635,10 @@ export function WidgetHost(props: WidgetHostProps) {
     // in the middle of the gutter instead of leaning on one side of it.
     '--grip-pad-x': `${Math.max(0, (gripBand[0] - OUTSIDE_GRIP_THICKNESS) / 2)}px`,
     '--grip-pad-y': `${Math.max(0, (gripBand[1] - OUTSIDE_GRIP_THICKNESS) / 2)}px`,
+    // A corner grip lies in the square where the two gutters cross, so each of
+    // its dimensions is bounded by its own axis's band.
+    '--outside-corner-w': `${cornerGripExtent(gripBand[0])}px`,
+    '--outside-corner-h': `${cornerGripExtent(gripBand[1])}px`,
   } as CSSProperties;
 
   const hostStyle: CSSProperties = {

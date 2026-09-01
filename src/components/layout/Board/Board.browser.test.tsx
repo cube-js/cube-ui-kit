@@ -686,6 +686,46 @@ describe('Board grip placement resolved from content', () => {
     expect(rect.width).toBeCloseTo(GUTTER, 0);
   });
 
+  it('shrinks a corner grip to the square where the two gutters cross', async () => {
+    renderContainer({ handles: ['se'] });
+    await settledNested();
+
+    const box = widget('box').getBoundingClientRect();
+    const rect = handles()
+      .find(
+        (el) => el.dataset.axis === 'se' && el.dataset.placement === 'outside',
+      )!
+      .getBoundingClientRect();
+
+    // Diagonally off the corner, the horizontal and vertical gutters cross, and
+    // that square is the only empty space a corner grip has. One pixel past it is
+    // the diagonal neighbour's own corner. The angle is drawn at `GRIP_SIZE` and
+    // stepped clear of the widget, which together overran the default gutter — so
+    // here it gives up the difference rather than the neighbour's pixels.
+    expect(rect.left).toBeGreaterThanOrEqual(box.right - 0.5);
+    expect(rect.top).toBeGreaterThanOrEqual(box.bottom - 0.5);
+    expect(rect.right).toBeLessThanOrEqual(box.right + GUTTER + 0.5);
+    expect(rect.bottom).toBeLessThanOrEqual(box.bottom + GUTTER + 0.5);
+  });
+
+  it('draws a corner grip at full size once the gutter can hold it', async () => {
+    // 12px is exactly the threshold: the 10px angle plus the 2px it steps off the
+    // corner by.
+    renderContainer({ handles: ['se'], margin: [12, 12] });
+    await settledNested();
+
+    const rect = handles()
+      .find(
+        (el) => el.dataset.axis === 'se' && el.dataset.placement === 'outside',
+      )!
+      .getBoundingClientRect();
+
+    // Shrinking is a concession to a tight gutter, not the new size: given room,
+    // the angle is the same one the other two placements draw.
+    expect(rect.width).toBeCloseTo(10, 0);
+    expect(rect.height).toBeCloseTo(10, 0);
+  });
+
   it('leaves the two levels no pixel in common', async () => {
     renderContainer({ handles: ['se', 'e', 's'] });
     await settledNested();
@@ -783,6 +823,85 @@ describe('Board grip placement resolved from content', () => {
     await vi.waitFor(() =>
       expect(widthOf(onOuter.mock.lastCall?.[0], 'box')).toBe(COLS - 1),
     );
+  });
+
+  it('stands an ancestor down for a mid-level widget hovered on its own grips', async () => {
+    // Three levels, so the middle widget is both a container and a child: its own
+    // grips resolve to `outside` and sit in the gutter, off its box. Reporting
+    // hover to the level above therefore cannot be a question of whether the
+    // pointer is on the widget — on its grips it is not, and the level above,
+    // which does contain them, would light up alongside it.
+    //
+    // One axis per level, so a revealed affordance names its owner.
+    renderWithRoot(
+      <div style={{ width: `${COLS * CELL + (COLS - 1) * GUTTER}px` }}>
+        <Board.Provider>
+          <Board
+            cols={COLS}
+            rowHeight={CELL}
+            margin={[GUTTER, GUTTER]}
+            containerPadding={[GUTTER, GUTTER]}
+            defaultLayout={[{ i: 'box', x: 0, y: 0, w: COLS, h: 4 }]}
+          >
+            <Board.Widget
+              id="box"
+              qa="BOX"
+              isCard={false}
+              resizeHandles={['e']}
+            >
+              <Board
+                isAligned
+                cols={COLS}
+                rowHeight={CELL}
+                margin={[GUTTER, GUTTER]}
+                defaultLayout={[{ i: 'mid', x: 0, y: 0, w: 3, h: 2 }]}
+              >
+                <Board.Widget
+                  id="mid"
+                  qa="MID"
+                  isCard={false}
+                  resizeHandles={['s']}
+                >
+                  <Board
+                    cols={2}
+                    rowHeight={CELL}
+                    margin={[GUTTER, GUTTER]}
+                    defaultLayout={[{ i: 'deep', x: 0, y: 0, w: 1, h: 1 }]}
+                  >
+                    <Board.Widget id="deep" qa="DEEP" resizeHandles={['se']}>
+                      deep
+                    </Board.Widget>
+                  </Board>
+                </Board.Widget>
+              </Board>
+            </Board.Widget>
+          </Board>
+        </Board.Provider>
+      </div>,
+    );
+    await vi.waitFor(() =>
+      expect(widget('deep').getBoundingClientRect().width).toBeGreaterThan(0),
+    );
+
+    const revealedAxes = () =>
+      Array.from(document.querySelectorAll<HTMLElement>('[data-revealed]'))
+        .map((el) => el.dataset.axis)
+        .filter(Boolean);
+
+    // Every level resolved as the rule says it should.
+    expect(handleFor('deep', 'se')?.dataset.placement).toBe('inside');
+    const midGrip = handles().find((el) => el.dataset.axis === 's')!;
+    expect(midGrip.dataset.placement).toBe('outside');
+
+    const at = midGrip.getBoundingClientRect();
+    const point = { x: at.left + at.width / 2, y: at.top + at.height / 2 };
+    await user.pointer({
+      target: document.elementFromPoint(point.x, point.y)!,
+      coords: point,
+    });
+
+    // The middle widget's grip, and nothing from the container that holds it.
+    await vi.waitFor(() => expect(revealedAxes()).toEqual(['s']));
   });
 
   it('warns when the gutter is too thin to hold an outside grip', async () => {
