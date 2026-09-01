@@ -32,6 +32,11 @@ export default defineConfig({
     // Node-only application catalog compiler. It loads UI Kit's exact Tasty
     // configuration and delegates rendering/collection to tasty's precompiler.
     'precompile/index': 'src/precompile/index.ts',
+    // Browser half of the same feature: registering the artifact the compiler
+    // above produced. Split from it because that entry is Node-only, and kept
+    // out of the package root so an app that builds no catalog does not ship
+    // the registry.
+    'precompile/register': 'src/precompile/register.ts',
   },
   format: 'esm',
   outDir: 'dist',

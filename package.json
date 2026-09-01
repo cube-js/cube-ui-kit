@@ -32,6 +32,10 @@
       "import": "./dist/precompile/index.js",
       "types": "./dist/precompile/index.d.ts"
     },
+    "./precompile/register": {
+      "import": "./dist/precompile/register.js",
+      "types": "./dist/precompile/register.d.ts"
+    },
     "./precompiled-styles": {
       "import": "./dist/precompiled/index.js",
       "types": "./dist/precompiled/index.d.ts"
