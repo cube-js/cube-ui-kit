@@ -19,7 +19,19 @@ import { LayoutConstraint, ResizeHandleAxis } from './grid-core';
  * Only affects corner handles (`ne`/`nw`/`se`/`sw`); the dotted edge grips
  * (`n`/`s`/`e`/`w`) always sit inside the widget.
  */
-export type BoardResizeGripPlacement = 'inside' | 'corner';
+/**
+ * Where a widget's resize grips sit.
+ *
+ * `inside` tucks them into the widget box, `corner` centres a corner one on the
+ * widget's corner, and `outside` puts every grip in the grid gutter beyond the
+ * widget's edge, as a padded control of its own.
+ *
+ * Left unset, this resolves itself: a widget holding a nested `Board` gets
+ * `outside` and every other widget gets `inside`, so the two levels of a nested
+ * board can never claim the same pixel. Set it to override that per widget or
+ * per board.
+ */
+export type BoardResizeGripPlacement = 'inside' | 'corner' | 'outside';
 
 /** Which corner of a widget a piece of chrome is anchored to. */
 export type BoardCornerPlacement = 'ne' | 'nw' | 'se' | 'sw';
@@ -35,7 +47,10 @@ export interface CubeBoardWidgetProps extends ContainerStyleProps {
   isResizable?: boolean;
   /** Which resize handles to show (overrides the board default). */
   resizeHandles?: ResizeHandleAxis[];
-  /** Where the corner resize grips sit (overrides the board default). */
+  /**
+   * Where the resize grips sit (overrides the board default). Unset, it is
+   * resolved from the widget's content - see {@link BoardResizeGripPlacement}.
+   */
   resizeGripPlacement?: BoardResizeGripPlacement;
   /**
    * Render this widget as a card by adding a border. Widgets are always filled

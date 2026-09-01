@@ -66,10 +66,10 @@ export default {
     },
     resizeGripPlacement: {
       control: { type: 'radio' },
-      options: ['inside', 'corner'],
+      options: ['inside', 'corner', 'outside'],
       description:
-        "Where the corner resize grips sit: inside the widget box, or centred on the widget's corner.",
-      table: { defaultValue: { summary: 'inside' } },
+        "Where the resize grips sit: inside the widget box, centred on the widget's corner, or outside it in the grid gutter. Unset, it resolves per widget - `outside` for a widget holding a nested `Board`, `inside` for every other.",
+      table: { defaultValue: { summary: 'resolved from content' } },
     },
     selectionMode: {
       control: { type: 'radio' },
@@ -603,7 +603,96 @@ CornerResizeGrip.parameters = {
   docs: {
     description: {
       story:
-        'With `resizeGripPlacement="corner"` the grip is centred on the widget\'s corner instead of tucked inside it, so it lines up with a control centred on the opposite corner. It is drawn outside the widget box (a widget clips its own content), so give the board enough `containerPadding` for it to show in full at the board\'s edge. Per-widget `resizeGripPlacement` overrides the board default — the second widget here opts back into `"inside"`.',
+        'With `resizeGripPlacement="corner"` the grip is centred on the widget\'s corner instead of tucked inside it, so it lines up with a control centred on the opposite corner. It is drawn outside the widget box (a widget clips its own content) and nothing clips it in turn, so it shows in full even at the board\'s edge. Its hit-zone is held to the dot: half a grip inward, and outward only as far as half the grid gutter, so it never covers the widget\'s own content or a neighbour\'s. Per-widget `resizeGripPlacement` overrides the board default — the second widget here opts back into `"inside"`.',
+    },
+  },
+};
+
+// Grip placement resolving itself across a nesting boundary. Nothing here sets
+// `resizeGripPlacement`: the container holds a `Board`, so its grips go OUTSIDE
+// into the outer board's gutter, and the leaf widgets keep theirs INSIDE. The
+// inner board is `isAligned` (no padding of its own), so its last child sits
+// exactly on the container's bottom-right corner - the configuration that used to
+// put two grips on one pixel.
+const NestedCornerGripTemplate: StoryFn<CubeBoardProps> = (args) => {
+  const [outerLayout, setOuterLayout] = useState<LayoutItem[]>([
+    { i: 'container', x: 0, y: 0, w: 6, h: 4, minW: 2, minH: 2 },
+    { i: 'sibling', x: 6, y: 0, w: 2, h: 4 },
+  ]);
+  // `inner-a` spans the top so `inner-b` cannot float up out of the last row when
+  // the inner board compacts - the shared corner is the whole point of the story,
+  // and it has to survive a resize to still be demonstrating it.
+  const [innerLayout, setInnerLayout] = useState<LayoutItem[]>([
+    { i: 'inner-a', x: 0, y: 0, w: 6, h: 2 },
+    { i: 'inner-c', x: 0, y: 2, w: 3, h: 2 },
+    { i: 'inner-b', x: 3, y: 2, w: 3, h: 2 },
+  ]);
+
+  return (
+    <Board.Provider>
+      <Board
+        id="outer-nested-corner"
+        cols={8}
+        rowHeight={90}
+        padding="2x"
+        fill="#light"
+        radius="1r"
+        layout={outerLayout}
+        onLayoutChange={setOuterLayout}
+        {...args}
+      >
+        <Board.Widget
+          id="container"
+          isCard={false}
+          // Three axes so all three outside shapes are on show: a square where the
+          // two gutters cross, and a pill in each.
+          resizeHandles={['se', 'e', 's']}
+          fill="#surface"
+          // A `Board` sizes its height from its own grid but needs a flex parent
+          // to claim it, so the container widget is the flex column here rather
+          // than a wrapper - one less box between the two grids, which is the
+          // whole point of an aligned nested board.
+          display="flex"
+          flow="column"
+        >
+          <Board
+            id="inner-nested-corner"
+            isAligned
+            flexGrow={1}
+            cols={6}
+            rowHeight={90}
+            layout={innerLayout}
+            onLayoutChange={setInnerLayout}
+          >
+            <Board.Widget id="inner-a">
+              <WidgetBody title="Child A" text="Resize from its own corner" />
+            </Board.Widget>
+            <Board.Widget id="inner-c">
+              <WidgetBody title="Child C" text="Bottom-left" />
+            </Board.Widget>
+            <Board.Widget id="inner-b">
+              <WidgetBody
+                title="Child B"
+                text="Shares a corner with the container"
+              />
+            </Board.Widget>
+          </Board>
+        </Board.Widget>
+        <Board.Widget id="sibling" isCard>
+          <WidgetBody title="Sibling" text="Outer grid reference" />
+        </Board.Widget>
+      </Board>
+    </Board.Provider>
+  );
+};
+
+export const NestedBoardResizeGrips = NestedCornerGripTemplate.bind({});
+NestedBoardResizeGrips.args = {};
+NestedBoardResizeGrips.parameters = {
+  docs: {
+    description: {
+      story:
+        "Grip placement resolving itself across a nesting boundary - no `resizeGripPlacement` is set anywhere in this story. The container holds a `Board`, so its grips are drawn **outside** its box, in the outer board's gutter, as padded controls of their own; the leaf widgets (the two children and the sibling) keep theirs **inside**. Child B fills the inner board's last cell, and because `isAligned` leaves the inner grid unpadded its corner coincides with the container's - exactly the case that used to stack two grips on one pixel. Hover a child and only its grips appear; hover the container's outer edge and only the container's do.",
     },
   },
 };
