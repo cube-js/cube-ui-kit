@@ -252,6 +252,73 @@ describe('useAutoTooltip overflow measurement', () => {
       }
     });
 
+    /**
+     * `isAutoTooltipEnabled` requires string children, and the label unmounts
+     * when children stop being a string — the default `Button` path, since
+     * `tooltip` defaults to `true`. Flipping it changes the callback ref's
+     * identity, so React detaches with the previous callback (which still sees
+     * auto tooltips as on, and preserves the verdict) and never attaches the
+     * new one, because the label is gone. Without the effect clearing it, the
+     * stale `true` keeps a tooltip mounted over content that is no longer text.
+     */
+    it('drops the verdict when children stop being a string', async () => {
+      function Switchable() {
+        const [asNode, setAsNode] = useState(false);
+        const { labelRef, isTooltipActive, renderWithTooltip } = useAutoTooltip(
+          {
+            tooltip: true,
+            children: asNode ? <span>{LONG_LABEL}</span> : LONG_LABEL,
+            labelProps: undefined,
+          },
+        );
+
+        return (
+          <div style={{ width: '80px' }}>
+            <button type="button" onClick={() => setAsNode(true)}>
+              To node
+            </button>
+            <span data-qa="Status" data-active={String(isTooltipActive)} />
+            {renderWithTooltip(
+              () =>
+                asNode ? (
+                  <div>{LONG_LABEL}</div>
+                ) : (
+                  <div
+                    ref={labelRef as never}
+                    style={{ whiteSpace: 'nowrap', overflow: 'hidden' }}
+                  >
+                    {LONG_LABEL}
+                  </div>
+                ),
+              'top',
+            )}
+          </div>
+        );
+      }
+
+      await act(async () => {
+        renderWithRoot(<Switchable />);
+      });
+
+      await waitFor(() => {
+        expect(screen.getByTestId('Status')).toHaveAttribute(
+          'data-active',
+          'true',
+        );
+      });
+
+      await act(async () => {
+        screen.getByRole('button', { name: 'To node' }).click();
+      });
+
+      await waitFor(() => {
+        expect(screen.getByTestId('Status')).toHaveAttribute(
+          'data-active',
+          'false',
+        );
+      });
+    });
+
     it('re-measures when the label is resized', async () => {
       function Resizable() {
         const [width, setWidth] = useState('600px');

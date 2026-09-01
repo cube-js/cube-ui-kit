@@ -101,7 +101,19 @@ export function useAutoTooltip({
   useEffect(() => {
     if (isAutoTooltipEnabled) {
       checkLabelOverflow();
+
+      return;
     }
+
+    // Clearing here rather than in the callback ref, which cannot be trusted
+    // to do it. Flipping `isAutoTooltipEnabled` changes the ref's identity, so
+    // React detaches with the PREVIOUS callback — the one that still believes
+    // auto tooltips are on, and therefore keeps the last verdict — and only
+    // attaches the new one if the label still exists. When `children` stops
+    // being a string the label unmounts, so the new callback never runs and a
+    // stale `true` would keep an auto tooltip mounted over content that is no
+    // longer text. That is the default `Button` path, where `tooltip` is `true`.
+    setIsLabelOverflowed(false);
   }, [isAutoTooltipEnabled, checkLabelOverflow]);
 
   // Attach ResizeObserver via callback ref to handle DOM node changes
