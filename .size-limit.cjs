@@ -20,6 +20,13 @@ module.exports = [
         }),
       );
     },
+    // Raised to 520 kB for the precompiled Tasty runtime support. The fresh
+    // local build is 515.26 kB, while the Button-only entry is 124.40 kB; both
+    // moved by roughly the same amount from the Tasty 3.5.0 measurements below,
+    // which pins the increase to Tasty's always-included manifest fast path.
+    // The 714 kB catalog stylesheet is opt-in and is not part of either normal
+    // JavaScript bundle. Rounded to the next 5 kB step as required below.
+    //
     // Still 515 kB on `@tenphi/tasty` 3.5.0: 513.60 kB against `main`'s
     // 512.39 kB with both sides rebuilt here, i.e. +1.21 kB. The Button entry
     // below moved by the same +1.21 kB, and matching deltas on both entries is
@@ -169,14 +176,33 @@ module.exports = [
     //
     // Note when checking locally: `size-limit` bundles the built `./dist`, it
     // does not build. Run `pnpm build` first or you will measure a stale bundle.
-    limit: '515kB',
+    limit: '520kB',
   },
   {
     name: 'Tree shaking (just a Button)',
     path: './dist/index.js',
     webpack: true,
     import: '{ Button }',
-    // Still 125 kB on `@tenphi/tasty` 3.5.0: 123.02 kB against `main`'s
+    // Raised to 126 kB for the Tasty snapshot that records a precompiled
+    // catalog's compilation configuration. 125.03 kB against 124.97 kB on the
+    // previous snapshot, both sides rebuilt here — +0.06 kB, matched by the
+    // same +0.06 kB on `All` above (515.83 -> 515.89 kB), so all of it is
+    // Tasty's always-included core and none of it ours. What ships there is
+    // small on purpose: `configure()` now records which style handlers and
+    // props middleware the host configured, and the precompile store holds a
+    // reference to the check, so the comparison itself lives in
+    // `precompile/register` and only an app that registers a catalog loads it.
+    //
+    // Raised rather than shaved, as the note below asks: the previous entry
+    // left 30 B and this needs 60 B. The alternative was dropping the guard
+    // that keeps a catalog from serving CSS the host's configuration would
+    // never produce, which is not padding.
+    //
+    // CI agreed with the local reading exactly on this one — its report showed
+    // 122.1 KB binary, which is 125.03 kB decimal, the same figure measured
+    // here. Second data point for the calibration note in `All`.
+    //
+    // Before this: 125 kB on `@tenphi/tasty` 3.5.0: 123.02 kB against `main`'s
     // 121.81 kB, both sides rebuilt here — +1.21 kB, matched by the same
     // +1.21 kB on `All` above, so all of it is Tasty's always-included core and
     // none of it ours. See that entry for what the release changed there, and
@@ -237,6 +263,6 @@ module.exports = [
     // (directional syntax, handler displacement, chunk conflicts) ship in every
     // bundle, because `isDevEnv()` is evaluated at runtime so one build serves
     // dev and production. Headroom stays small so real bloat still trips.
-    limit: '125kB',
+    limit: '126kB',
   },
 ];

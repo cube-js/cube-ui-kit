@@ -1,4 +1,4 @@
-import { keyframes, tasty } from '@tenphi/tasty';
+import { tasty } from '@tenphi/tasty';
 
 import { Action } from '../../actions/Action/Action';
 import { Item } from '../../content/Item';
@@ -23,11 +23,6 @@ import type { Styles } from '@tenphi/tasty';
  * OPPOSITE way to the position value: raising it slides the image left, which
  * would send the band right to left.
  */
-const refreshSweep = keyframes({
-  '0%': { 'mask-position': '100% 0' },
-  '100%': { 'mask-position': '0% 0' },
-});
-
 const ROW_STYLES: Styles = {
   // The stretched `rowLink` anchor positions against this.
   position: 'relative',
@@ -154,6 +149,12 @@ const CELL_STYLES: Styles = {
 export const TableElement = tasty({
   qa: 'Table',
   styles: {
+    '@keyframes': {
+      'refresh-sweep': {
+        '0%': { 'mask-position': '100% 0' },
+        '100%': { 'mask-position': '0% 0' },
+      },
+    },
     /* ── tokens the root owns ─────────────────────────────────────────── */
     // Rows are 40px at the default size and the header is one step tighter at
     // 32px — the proportion the Cloud tables use. Each is the content height;
@@ -298,7 +299,7 @@ export const TableElement = tasty({
       maskSize: '300% 100%',
       animation: {
         '': 'none',
-        stale: `${refreshSweep} 1.4s linear infinite`,
+        stale: 'refresh-sweep 1.4s linear infinite',
       },
       // Belt and braces with the flat mask above, and the same shape `Spin`
       // already uses.
