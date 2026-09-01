@@ -106,23 +106,45 @@ export async function openContextMenu(
  */
 export async function openTooltip(target: Element) {
   const doc = within(document.body);
+  const tooltip = () => doc.queryAllByRole('tooltip')[0];
 
-  // Replay the hover rather than waiting a fixed time before it. Nothing
-  // replays a hover that lands before the trigger is wired, so a single
-  // attempt is only as good as the guess in front of it — and the guess has to
-  // cover however many commits the component needs to decide it wants a
-  // tooltip at all. An auto-on-overflow label measures itself off the commit
-  // path, so that is at least one commit after mount, and longer on a loaded
-  // machine. Retrying costs nothing when the first attempt works.
-  await waitFor(
-    async () => {
-      await userEvent.unhover(target);
-      await userEvent.hover(target);
+  // Replay the hover, but leave the pointer in place between attempts.
+  //
+  // A single hover is only as good as the guess in front of it: nothing
+  // replays a hover that lands before the trigger is wired, and an
+  // auto-on-overflow label does not ask for a provider until it has measured
+  // itself, which happens off the commit path.
+  //
+  // Retrying inside `waitFor` does NOT work, and the failure is silent: its
+  // retry period is shorter than `TooltipTrigger`'s 250ms open delay, so every
+  // retry unhovers and cancels the timer that the previous one started, and the
+  // tooltip can never appear. Each attempt therefore hovers ONCE and then waits
+  // out the delay several times over before deciding the hover was wasted.
+  const ATTEMPTS = 3;
+  const PER_ATTEMPT_MS = 1500;
 
-      expect(doc.getAllByRole('tooltip')[0]).toBeVisible();
-    },
-    { timeout: 10000 },
-  );
+  for (let attempt = 1; attempt <= ATTEMPTS; attempt++) {
+    // The leading unhover supplies the mouse move React Aria needs to set its
+    // interaction modality — `userEvent.hover` fires `mouseEnter` before
+    // `mouseMove`, so an un-preceded first hover is ignored.
+    await userEvent.unhover(target);
+    await userEvent.hover(target);
 
-  return doc.getAllByRole('tooltip')[0];
+    if (attempt === ATTEMPTS) break;
+
+    try {
+      await waitFor(() => expect(tooltip()).toBeVisible(), {
+        timeout: PER_ATTEMPT_MS,
+      });
+
+      return tooltip();
+    } catch {
+      // Trigger was probably not wired when the hover landed. Try again.
+    }
+  }
+
+  // Let the last attempt report the real assertion failure.
+  await waitForOverlay('tooltip');
+
+  return tooltip();
 }
