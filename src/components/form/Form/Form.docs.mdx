@@ -40,8 +40,7 @@ These properties are inherited by all input components within the form:
 - **`labelPosition`** `'top' | 'side' | 'split'` (default: `top`) — Where to place labels relative to inputs. `'top'` places labels above inputs, `'side'` places labels beside inputs with fixed width, `'split'` places labels and inputs on opposite sides without fixed label width
 - **`labelStyles`** `Styles` — Styles applied to field labels
 - **`requiredMark`** `boolean` (default: `true`) — Whether to show required field indicators
-- **`necessityIndicator`** `'icon' | 'label'` (default: `icon`) — Type of necessity indicator
-- **`necessityLabel`** `ReactNode` — Custom label to replace the default necessity indicator text
+- **`necessityIndicator`** `'icon' | 'label' | null` (default: `icon`) — Type of necessity indicator. `null` suppresses it
 - **`isReadOnly`** `boolean` (default: `false`) — Whether fields are read-only by default
 - **`isInvalid`** `boolean` — Invalid state for all fields
 - **`isValid`** `boolean` — Valid state for all fields
@@ -175,7 +174,8 @@ All input components within a Form accept these field-related properties:
 - **`description`** `ReactNode` — Help text displayed below the field
 - **`errorMessage`** `ReactNode` — Error message displayed when validation fails
 - **`rules`** `ValidationRule[]` — Validation rules array (see [Validation Rules](#validation-rules))
-- **`isRequired`** `boolean` — Whether the field is required
+- **`isRequired`** `boolean` — Whether the field is required. Marks the label, unlike a bare `required` rule — see [Necessity Indicators](/docs/getting-started-field-properties--docs#necessity-indicators)
+- **`isOptional`** `boolean` — Marks the label with an `(optional)` note. Presentational only
 - **`extra`** `ReactNode` — Additional content displayed next to the label
 - **`tooltip`** `ReactNode` — Tooltip content for the field label
 - **`labelSuffix`** `ReactNode` — Content appended after the label

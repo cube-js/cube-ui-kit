@@ -43,7 +43,7 @@ export const NECESSITY_INDICATOR_ARG = {
   necessityIndicator: {
     // defaultValue: 'icon',
     description: 'Type of the necessity indicator',
-    options: ['icon', 'label', false],
+    options: [undefined, 'icon', 'label', null],
     control: 'radio',
     table: {
       type: { summary: 'string' },

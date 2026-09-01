@@ -46,14 +46,44 @@ const REQUIRED_ICON = (
   </svg>
 );
 
+/**
+ * The `(required)` / `(optional)` note. Deliberately quieter than the label it
+ * follows: it is an aside about the field, not part of its name.
+ *
+ * `t4` / `#dark-03` is the same tier `FieldWrapper` already gives `description`
+ * and `message`, so the note joins the established secondary text rather than
+ * inventing a size of its own. The weight is dropped back to 400 — `t4` carries
+ * 500, the same weight as the label — because that contrast is what makes the
+ * note read as an aside at a glance.
+ */
+const NecessityLabelElement = tasty({
+  as: 'span',
+  qa: 'NecessityLabel',
+  styles: {
+    preset: 't4',
+    color: '#dark-03',
+    fontWeight: 400,
+  },
+});
+
 export interface CubeNecessityIndicatorProps {
   /**
    * `'icon'` renders the asterisk, `'label'` the `(required)` / `(optional)`
-   * text. `null` suppresses it — `Label` resolves its own default to that when
-   * `isRequired` was never passed, and forwards the result here.
+   * text. Defaults to `'icon'`, which has no optional form and so only ever
+   * marks a required field. `null` suppresses the indicator entirely.
    */
   necessityIndicator?: NecessityIndicator | null;
+  /**
+   * Marks the label as required. Only an `isRequired` authored on the input,
+   * the label or the `Form` reaches this — a `required` validation rule drives
+   * validation and `aria-required` without decorating the label.
+   */
   isRequired?: boolean;
+  /**
+   * Marks the label as optional. Purely presentational, and ignored when the
+   * field is required.
+   */
+  isOptional?: boolean;
   /**
    * Whether the indicator contributes to the field's accessible name. Off by
    * default because a required field already announces `aria-required`, and
@@ -70,15 +100,14 @@ export interface CubeNecessityIndicatorProps {
  * builds a element tree around the label and therefore has to place the marker
  * beside the label text itself rather than after the whole tree.
  *
- * Renders nothing unless a marker was actually asked for.
+ * Both marks are opt-in: nothing renders unless the call site passed
+ * `isRequired` or `isOptional`.
  */
 export function NecessityIndicatorMark(props: CubeNecessityIndicatorProps) {
   const {
     isRequired,
-    // Same default as `Label`'s own prop: passing `isRequired` at all opts into
-    // the asterisk, and `'label'` has to be asked for. Applied here so the two
-    // call sites cannot disagree about what an omitted prop means.
-    necessityIndicator = isRequired != null ? 'icon' : null,
+    isOptional,
+    necessityIndicator = 'icon',
     includeNecessityIndicatorInAccessibilityName = false,
   } = props;
   const { t } = useI18n();
@@ -89,40 +118,57 @@ export function NecessityIndicatorMark(props: CubeNecessityIndicatorProps) {
   // and the zero-width space keeps the pair from being split across lines.
   const separator = ' ​';
 
-  if (necessityIndicator === 'icon') {
-    if (!isRequired) return null;
+  // Anything that is not one of the two shapes means "no indicator" — `null`,
+  // and also any stray falsy value a caller might still be passing.
+  if (necessityIndicator !== 'icon' && necessityIndicator !== 'label') {
+    return null;
+  }
 
+  if (isRequired) {
+    if (necessityIndicator === 'icon') {
+      return (
+        <>
+          {separator}
+          <span
+            aria-label={
+              includeNecessityIndicatorInAccessibilityName
+                ? requiredLabel
+                : undefined
+            }
+          >
+            {REQUIRED_ICON}
+          </span>
+        </>
+      );
+    }
+
+    // Hidden from screen readers by default, because `aria-required` on the
+    // input already announces it and repeating it in the name is noise.
     return (
       <>
         {separator}
-        <span
-          aria-label={
-            includeNecessityIndicatorInAccessibilityName
-              ? requiredLabel
-              : undefined
+        <NecessityLabelElement
+          aria-hidden={
+            !includeNecessityIndicatorInAccessibilityName ? true : undefined
           }
         >
-          {REQUIRED_ICON}
-        </span>
+          {requiredLabel}
+        </NecessityLabelElement>
       </>
     );
   }
 
-  if (necessityIndicator !== 'label') return null;
+  // There is no icon form of "optional", so the note is rendered whichever
+  // indicator was asked for. Nothing else tells a screen reader the field is
+  // optional, so this one stays in the accessible name.
+  if (!isOptional) return null;
 
-  // Hidden from screen readers when the field is required, because
-  // `aria-required` on the input already announces it. When the field is
-  // optional there is nothing else saying so, so that one is announced.
   return (
     <>
       {separator}
-      <span
-        aria-hidden={
-          !includeNecessityIndicatorInAccessibilityName ? isRequired : undefined
-        }
-      >
-        {isRequired ? requiredLabel : t('form.optional', '(optional)')}
-      </span>
+      <NecessityLabelElement>
+        {t('form.optional', '(optional)')}
+      </NecessityLabelElement>
     </>
   );
 }
@@ -163,8 +209,9 @@ export interface CubeLabelProps
     ContainerStyleProps,
     ValidationProps {
   labelPosition?: LabelPosition;
-  necessityIndicator?: NecessityIndicator;
+  necessityIndicator?: NecessityIndicator | null;
   isRequired?: boolean;
+  isOptional?: boolean;
   includeNecessityIndicatorInAccessibilityName?: boolean;
   htmlFor?: string;
   for?: string;
@@ -182,7 +229,8 @@ function Label(props: CubeLabelProps, ref) {
     children,
     labelPosition = 'top',
     isRequired,
-    necessityIndicator = isRequired != null ? 'icon' : null,
+    isOptional,
+    necessityIndicator,
     includeNecessityIndicatorInAccessibilityName = false,
     htmlFor,
     isDisabled,
@@ -200,6 +248,7 @@ function Label(props: CubeLabelProps, ref) {
   const mark = (
     <NecessityIndicatorMark
       isRequired={isRequired}
+      isOptional={isOptional}
       necessityIndicator={necessityIndicator}
       includeNecessityIndicatorInAccessibilityName={
         includeNecessityIndicatorInAccessibilityName

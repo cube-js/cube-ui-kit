@@ -1,7 +1,8 @@
 import { tasty } from '@tenphi/tasty';
-import { CSSProperties } from 'react';
+import { CSSProperties, RefObject, useRef } from 'react';
 
 import { useI18n } from '../../../i18n';
+import { useLayoutEffect } from '../../../utils/react/useLayoutEffect';
 import { Block, CubeBlockProps } from '../../Block';
 
 const CubeElement = tasty({
@@ -77,14 +78,63 @@ const CubeElement = tasty({
   },
 });
 
+/**
+ * Phase-lock a cube's `dice*` animation to the document timeline.
+ *
+ * A page under load mounts these animations at whatever moment each level of
+ * the tree resolves — a route shell, then a panel, then the table inside it —
+ * and every wrapper that appears around a running `LoadingAnimation` remounts
+ * it. A CSS animation is created with its start time at "now", so each of
+ * those events snapped the cubes back to the first frame: the visible symptom
+ * is a loader that keeps stuttering back to the start while the page settles.
+ *
+ * Moving the start time to 0 puts it at the origin of the document timeline,
+ * so the cube's position is a function of the timeline's current reading and
+ * nothing else. Two consequences: a remount picks up exactly where the removed
+ * element was, and every instance in the document runs in lockstep, because
+ * they all read the same clock.
+ *
+ * Done through the animation object in a layout effect (before the first paint
+ * of the new element) rather than through a negative `animation-delay`: the
+ * delay would have to be computed during render from `Date.now()`, which is
+ * both a different clock than the one the animation runs on — so the phase
+ * would be off by the render-to-paint gap — and a value that differs between
+ * the server and the client, i.e. a hydration mismatch on every render.
+ */
+function useTimelineSyncedAnimation(
+  ref: RefObject<SVGSVGElement | null>,
+  isAnimated: boolean,
+) {
+  useLayoutEffect(() => {
+    const element = ref.current;
+
+    // `getAnimations` is absent in jsdom, where there is nothing to sync.
+    if (!isAnimated || !element?.getAnimations) return;
+
+    for (const animation of element.getAnimations()) {
+      // These elements carry nothing but the `dice*` animation, and it always
+      // runs on the document timeline — the one timeline an explicit numeric
+      // start time is meaningful against.
+      if (animation.timeline === element.ownerDocument.timeline) {
+        animation.startTime = 0;
+      }
+    }
+  }, [isAnimated]);
+}
+
 interface CubeProps {
   index?: 0 | 1 | 2;
   style?: CSSProperties;
 }
 
 function Cube({ index, style }: CubeProps) {
+  const ref = useRef<SVGSVGElement>(null);
+
+  useTimelineSyncedAnimation(ref, index != null);
+
   return (
     <CubeElement
+      ref={ref}
       mods={index != null ? { index } : undefined}
       style={style}
       viewBox="0 0 36 41"
