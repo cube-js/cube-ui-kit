@@ -79,9 +79,12 @@ export async function openContextMenu(
  * both fail silently:
  *
  * - **The trigger is not wired yet.** `TooltipProvider` renders its child
- *   without trigger props until a mount effect flips `rendered`. A hover that
- *   lands before that has no handler to reach and nothing replays it, hence the
- *   wait.
+ *   without trigger props until a mount effect flips `rendered`, and an
+ *   auto-on-overflow label does not even ask for a provider until it has
+ *   measured itself, which happens off the commit path. A hover that lands
+ *   before any of that has no handler to reach, and the browser does not replay
+ *   it — so this replays the hover itself rather than guessing a delay long
+ *   enough to cover however many commits the component needed.
  * - **React Aria has no interaction modality yet.** It opens a tooltip only
  *   when the last interaction came from a pointer, which it learns from a mouse
  *   move on the document. `userEvent.hover` fires `mouseEnter` *before* its
@@ -89,8 +92,8 @@ export async function openContextMenu(
  *   supplies that move.
  *
  * Pass `delay: 0` in the story's tooltip config as well. The default 250ms open
- * delay is real time the snapshot would otherwise wait out, and it makes any
- * retry racy.
+ * delay is real time the snapshot would otherwise wait out, and it makes each
+ * retry below that much slower.
  *
  * Only one element per story: hovering a second closes the first, and only the
  * final state is photographed.
@@ -101,11 +104,72 @@ export async function openContextMenu(
  * If this throws for a story, that is what you are hitting — do not paper over
  * it with a longer wait.
  */
-export async function openTooltip(target: Element) {
-  await timeout(250);
+export async function openTooltip(target: Element | (() => Element)) {
+  const doc = within(document.body);
+  const tooltip = () => doc.queryAllByRole('tooltip')[0];
 
-  await userEvent.unhover(target);
-  await userEvent.hover(target);
+  /**
+   * Resolved per attempt, never captured once.
+   *
+   * Turning an auto-tooltip verdict on mounts `TooltipProvider`, which remounts
+   * the label underneath it — so the node a caller looked up before calling
+   * this is detached by the time the retry runs. Hovering a detached node
+   * dispatches events nothing is listening to: it does not throw, the tooltip
+   * never opens, and every further attempt hovers the same dead node. That is
+   * the exact race this helper exists to survive, so it has to re-query.
+   */
+  const resolve = () => (typeof target === 'function' ? target() : target);
 
+  // Replay the hover, but leave the pointer in place between attempts.
+  //
+  // A single hover is only as good as the guess in front of it: nothing
+  // replays a hover that lands before the trigger is wired, and an
+  // auto-on-overflow label does not ask for a provider until it has measured
+  // itself, which happens off the commit path.
+  //
+  // Retrying inside `waitFor` does NOT work, and the failure is silent: its
+  // retry period is shorter than `TooltipTrigger`'s 250ms open delay, so every
+  // retry unhovers and cancels the timer that the previous one started, and the
+  // tooltip can never appear. Each attempt therefore hovers ONCE and then waits
+  // out the delay several times over before deciding the hover was wasted.
+  const ATTEMPTS = 3;
+  const PER_ATTEMPT_MS = 1500;
+
+  for (let attempt = 1; attempt <= ATTEMPTS; attempt++) {
+    const element = resolve();
+
+    // A caller that handed over a node rather than a lookup cannot re-resolve
+    // it. Say so, rather than hovering a corpse for four and a half seconds and
+    // reporting "expected null to be visible".
+    if (!element.isConnected) {
+      throw new Error(
+        'openTooltip: the target is detached from the document. Mounting a ' +
+          'tooltip provider remounts its label, so pass a lookup — ' +
+          'openTooltip(() => canvas.getByTestId(…)) — not the element.',
+      );
+    }
+
+    // The leading unhover supplies the mouse move React Aria needs to set its
+    // interaction modality — `userEvent.hover` fires `mouseEnter` before
+    // `mouseMove`, so an un-preceded first hover is ignored.
+    await userEvent.unhover(element);
+    await userEvent.hover(element);
+
+    if (attempt === ATTEMPTS) break;
+
+    try {
+      await waitFor(() => expect(tooltip()).toBeVisible(), {
+        timeout: PER_ATTEMPT_MS,
+      });
+
+      return tooltip();
+    } catch {
+      // Trigger was probably not wired when the hover landed. Try again.
+    }
+  }
+
+  // Let the last attempt report the real assertion failure.
   await waitForOverlay('tooltip');
+
+  return tooltip();
 }
