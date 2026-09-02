@@ -1,5 +1,17 @@
 # @cube-dev/ui-kit
 
+## 0.175.1
+
+### Patch Changes
+
+- [#1388](https://github.com/cube-js/cube-ui-kit/pull/1388) [`cfe686de`](https://github.com/cube-js/cube-ui-kit/commit/cfe686deab305e15f3aa6dcb702c922169cff0c9) Thanks [@tenphi](https://github.com/tenphi)! - Stop `useAutoTooltip` from measuring label overflow inside its callback ref. React invokes callback refs during `commitAttachRef`, so reading `scrollWidth`/`clientWidth` there forced a style recalc and layout per element, mid-commit — every tooltip-bearing `Button`, `Item`, `TextItem`, `LayoutHeader` and `InlineInput` paying its own reflow. The measurement now runs in a microtask queued from the ref: it lands after React's whole commit and before paint, so every label reads once all of them have written and the reads collapse into a single style and layout flush. A microtask rather than the `ResizeObserver`'s first delivery, because observer callbacks are part of the rendering steps and a runner that is not producing frames can hold them past the point something asks whether the tooltip is active; the observer still covers every later resize.
+
+- [#1386](https://github.com/cube-js/cube-ui-kit/pull/1386) [`179e7ee9`](https://github.com/cube-js/cube-ui-kit/commit/179e7ee90e37287502ead5a88cfa342c14721c42) Thanks [@tenphi](https://github.com/tenphi)! - Fix form-connected inputs running their field handlers twice: `useFieldProps` merged the field's own `onChange`/`onBlur` on top of the handlers the value mapper had already wired, and `mergeProps` chained the pairs. Every user change and every blur reached the form twice, so change- and blur-triggered validation started two runs and async validators (including ones that call an API) were invoked twice. Each now runs once; the input's own `onChange`/`onBlur` props still fire once, before the field's.
+
+- [#1385](https://github.com/cube-js/cube-ui-kit/pull/1385) [`521cf1b4`](https://github.com/cube-js/cube-ui-kit/commit/521cf1b4e60e070358a88ab569449812bdcc53e2) Thanks [@tenphi](https://github.com/tenphi)! - Fix `Form` publishing stale validation results: changing a field's value (by typing, `setFieldValue()` or `setFieldsValue()`) now invalidates a validation that is still running for the previous value, so an async validator that settles late can no longer show an error, or a valid state, for a value the user has already replaced. The pending `validateField()` promise still settles for its caller.
+
+- [#1388](https://github.com/cube-js/cube-ui-kit/pull/1388) [`cfe686de`](https://github.com/cube-js/cube-ui-kit/commit/cfe686deab305e15f3aa6dcb702c922169cff0c9) Thanks [@tenphi](https://github.com/tenphi)! - Mount `TooltipProvider`'s trigger in one commit. Its SSR guard was a `rendered` state flipped from an effect, so on the client it rendered its children bare, then swapped them into `TooltipTrigger` a commit later — remounting the trigger after everything watching the mount had already called it finished, and leaving anything holding that node with a detached one. `useIsSSR` answers on the first client render instead.
+
 ## 0.175.0
 
 ### Minor Changes
