@@ -1,0 +1,126 @@
+{
+  "generatedAt": "2026-09-02T14:26:38.568Z",
+  "tooling": {
+    "eslint": "10.8.0",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "@typescript-eslint/parser": "8.69.0"
+  },
+  "scope": {
+    "legacy engine": [
+      "src/components/form/Form/Form.tsx",
+      "src/components/form/Form/use-form.tsx",
+      "src/components/form/Form/validation.ts",
+      "src/components/form/Form/use-field/**/*.{ts,tsx}",
+      "src/components/form/Form/Field.tsx"
+    ],
+    "shared form surface": [
+      "src/components/form/**/*.{ts,tsx}",
+      "src/components/overlays/Dialog/DialogForm.tsx",
+      "src/shared/form.ts"
+    ],
+    "input components": ["src/components/fields/**/*.{ts,tsx}"]
+  },
+  "filesLinted": 123,
+  "totals": {
+    "react-hooks/exhaustive-deps": 23,
+    "react-hooks/immutability": 15,
+    "react-hooks/incompatible-library": 1,
+    "react-hooks/preserve-manual-memoization": 5,
+    "react-hooks/refs": 50,
+    "react-hooks/rules-of-hooks": 14,
+    "react-hooks/set-state-in-effect": 5,
+    "react-hooks/use-memo": 1
+  },
+  "files": {
+    "src/components/fields/Checkbox/Checkbox.tsx": {
+      "react-hooks/immutability": 1,
+      "react-hooks/preserve-manual-memoization": 1,
+      "react-hooks/refs": 1,
+      "react-hooks/rules-of-hooks": 2
+    },
+    "src/components/fields/ColorSwatchGroup/ColorSwatchGroup.tsx": {
+      "react-hooks/refs": 1
+    },
+    "src/components/fields/ComboBox/ComboBox.tsx": {
+      "react-hooks/exhaustive-deps": 4,
+      "react-hooks/immutability": 1,
+      "react-hooks/preserve-manual-memoization": 2,
+      "react-hooks/refs": 9,
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/fields/CommandTextArea/CommandTextArea.tsx": {
+      "react-hooks/exhaustive-deps": 3,
+      "react-hooks/preserve-manual-memoization": 1,
+      "react-hooks/refs": 8,
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/fields/DatePicker/DateInput.tsx": {
+      "react-hooks/immutability": 1
+    },
+    "src/components/fields/DatePicker/DatePickerInput.tsx": {
+      "react-hooks/immutability": 1
+    },
+    "src/components/fields/FileInput/FileInput.tsx": {
+      "react-hooks/exhaustive-deps": 2,
+      "react-hooks/immutability": 1,
+      "react-hooks/refs": 1
+    },
+    "src/components/fields/FilterListBox/FilterListBox.tsx": {
+      "react-hooks/exhaustive-deps": 1,
+      "react-hooks/rules-of-hooks": 1
+    },
+    "src/components/fields/ListBox/ListBox.tsx": {
+      "react-hooks/exhaustive-deps": 2,
+      "react-hooks/incompatible-library": 1,
+      "react-hooks/refs": 2
+    },
+    "src/components/fields/Picker/Picker.tsx": {
+      "react-hooks/exhaustive-deps": 1
+    },
+    "src/components/fields/SearchComboBox/SearchComboBox.tsx": {
+      "react-hooks/exhaustive-deps": 2,
+      "react-hooks/refs": 8,
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/fields/Select/Select.tsx": {
+      "react-hooks/exhaustive-deps": 1,
+      "react-hooks/immutability": 2,
+      "react-hooks/preserve-manual-memoization": 1
+    },
+    "src/components/fields/Slider/SliderBase.tsx": {
+      "react-hooks/refs": 1
+    },
+    "src/components/fields/TextInput/TextInputBase.tsx": {
+      "react-hooks/rules-of-hooks": 6
+    },
+    "src/components/fields/TextInput/useAutoSizeTextArea.ts": {
+      "react-hooks/refs": 4
+    },
+    "src/components/fields/TextInputMapper/TextInputMapper.tsx": {
+      "react-hooks/exhaustive-deps": 4,
+      "react-hooks/refs": 2,
+      "react-hooks/set-state-in-effect": 1,
+      "react-hooks/use-memo": 1
+    },
+    "src/components/form/Form/Field.tsx": {
+      "react-hooks/immutability": 1
+    },
+    "src/components/form/Form/Form.tsx": {
+      "react-hooks/refs": 6
+    },
+    "src/components/form/Form/use-field/use-field-props.tsx": {
+      "react-hooks/immutability": 2,
+      "react-hooks/refs": 1,
+      "react-hooks/rules-of-hooks": 5
+    },
+    "src/components/form/Form/use-field/use-field.ts": {
+      "react-hooks/exhaustive-deps": 3,
+      "react-hooks/immutability": 4,
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/form/Form/use-form.tsx": {
+      "react-hooks/immutability": 1,
+      "react-hooks/refs": 6
+    }
+  }
+}
