@@ -278,7 +278,9 @@ describe('legacy contract: overlapping, delayed and stale validation (§7.1 #21,
     expect(formInstance.getFieldInstance('a')!.status).toBe('invalid');
   });
 
-  it('[bug-eligible] a value change during an in-flight validation does not discard its result', async () => {
+  it('[frozen] a value change during an in-flight validation discards its result', async () => {
+    // Was `[bug-eligible]`: until the stale-validation fix the result for the
+    // old value was published against the new one.
     const queue: Deferred<void>[] = [];
     const validator = queuedValidator(queue);
     const { formInstance } = renderWithForm(
@@ -303,10 +305,39 @@ describe('legacy contract: overlapping, delayed and stale validation (§7.1 #21,
       await pending;
     });
 
-    // The result for the old value is published against the new one.
+    // The run belonged to the previous value: its rejection still reaches the
+    // caller, but nothing is published against the new value.
+    await expect(pending).resolves.toEqual(['stale']);
     expect(formInstance.getFieldValue('a')).toBe('changed');
-    expect(formInstance.getFieldError('a')).toEqual(['stale']);
-    expect(formInstance.getFieldInstance('a')!.status).toBe('invalid');
+    expect(formInstance.getFieldError('a')).toEqual([]);
+    expect(formInstance.getFieldInstance('a')!.status).toBeUndefined();
+  });
+
+  it('[frozen] setFieldsValue() during an in-flight validation discards its result too', async () => {
+    const queue: Deferred<void>[] = [];
+    const validator = queuedValidator(queue);
+    const { formInstance } = renderWithForm(
+      <FieldProbe name="a" rules={[{ validator }]} />,
+      { formProps: { defaultValues: { a: 'x' } } },
+    );
+
+    let pending!: Promise<unknown>;
+
+    await act(async () => {
+      pending = formInstance.validateField('a').catch((e) => e);
+    });
+
+    await act(async () => {
+      formInstance.setFieldsValue({ a: 'changed' });
+    });
+
+    await act(async () => {
+      queue[0].reject('stale');
+      await pending;
+    });
+
+    expect(formInstance.getFieldError('a')).toEqual([]);
+    expect(formInstance.getFieldInstance('a')!.status).toBeUndefined();
   });
 
   it('[frozen] resetFieldsValidation() or resetFields() during an in-flight validation discards its result', async () => {
