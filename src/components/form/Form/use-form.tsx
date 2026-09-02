@@ -98,6 +98,8 @@ export class CubeFormInstance<
       flag = true;
 
       field.value = newData[name];
+      // Same as `setFieldValue`: a pending validation ran against the old value.
+      field.validationId = (field.validationId ?? 0) + 1;
 
       field.errors = [];
       field.status = undefined;
@@ -167,6 +169,10 @@ export class CubeFormInstance<
     }
 
     field.value = value;
+    // A validation that is still running belongs to the previous value. Bump
+    // the revision so its result cannot publish against this one (the caller's
+    // promise still settles) — legacy contract §7.1 #22.
+    field.validationId = (field.validationId ?? 0) + 1;
 
     if (typeof value === 'object' && !Array.isArray(value)) {
       Object.keys(this.fields)
