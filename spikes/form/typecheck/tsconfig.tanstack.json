@@ -1,0 +1,5 @@
+{
+  "extends": "../../../tsconfig.json",
+  "compilerOptions": { "baseUrl": "../../..", "noEmit": true, "incremental": false },
+  "include": ["./tanstack-fixture.ts", "./cloud-values.ts", "../../../src/**/*.d.ts"]
+}
