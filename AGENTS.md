@@ -104,6 +104,7 @@ Each component lives in `src/components/{category}/{ComponentName}/` and ships `
 - `pnpm chromatic:report` — snapshot inventory + TurboSnap blast radius. `pnpm chromatic:check` is the CI gate; `pnpm chromatic:duplicates` finds stories that photograph the same thing. All three read `storybook-static`, so run `pnpm build-storybook` first. See [The Snapshot Budget](#stories-the-snapshot-budget)
 - `pnpm add-icons` — add new icons from tabler
 - `pnpm audit-docs` — audit component API ↔ docs ↔ argTypes sync. Options: `--component=Name`, `--fix-stories`, `--fix-docs`, `--json`, `--verbose`, `--all-props`. **Run after changing a component's API or adding a new component.**
+- `pnpm diagnostics:form` — report-only React Hooks / React Compiler diagnostics for the Form surface and input components, compared against a committed ratchet baseline (`--check` fails on growth, `--update` rewrites it). Not part of `pnpm lint`. See [`src/components/form/Form/legacy-contract/README.md`](src/components/form/Form/legacy-contract/README.md)
 - `pnpm audit-defaults` — regenerate the lint plugin's defaults registry (`src/eslint-plugin/defaults.generated.ts`). **Run whenever you change a default prop value.** `pnpm test` fails until the registry matches what the components actually render — see [eslint-plugin.md](docs/rules/eslint-plugin.md).
 - `pnpm run update-tasty` / `pnpm run update-glaze` — bump and pin `@tenphi/tasty` or `@tenphi/glaze` to the latest version. Pass `--version=X.Y.Z` to pin a specific version.
 
