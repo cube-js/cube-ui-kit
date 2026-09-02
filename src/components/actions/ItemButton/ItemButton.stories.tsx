@@ -545,7 +545,7 @@ export const AutoTooltipOnOverflow: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
 
-    await openTooltip(
+    await openTooltip(() =>
       canvas.getByText(
         'This text is long enough to overflow and trigger auto tooltip',
       ),

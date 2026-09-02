@@ -104,9 +104,21 @@ export async function openContextMenu(
  * If this throws for a story, that is what you are hitting — do not paper over
  * it with a longer wait.
  */
-export async function openTooltip(target: Element) {
+export async function openTooltip(target: Element | (() => Element)) {
   const doc = within(document.body);
   const tooltip = () => doc.queryAllByRole('tooltip')[0];
+
+  /**
+   * Resolved per attempt, never captured once.
+   *
+   * Turning an auto-tooltip verdict on mounts `TooltipProvider`, which remounts
+   * the label underneath it — so the node a caller looked up before calling
+   * this is detached by the time the retry runs. Hovering a detached node
+   * dispatches events nothing is listening to: it does not throw, the tooltip
+   * never opens, and every further attempt hovers the same dead node. That is
+   * the exact race this helper exists to survive, so it has to re-query.
+   */
+  const resolve = () => (typeof target === 'function' ? target() : target);
 
   // Replay the hover, but leave the pointer in place between attempts.
   //
@@ -124,11 +136,24 @@ export async function openTooltip(target: Element) {
   const PER_ATTEMPT_MS = 1500;
 
   for (let attempt = 1; attempt <= ATTEMPTS; attempt++) {
+    const element = resolve();
+
+    // A caller that handed over a node rather than a lookup cannot re-resolve
+    // it. Say so, rather than hovering a corpse for four and a half seconds and
+    // reporting "expected null to be visible".
+    if (!element.isConnected) {
+      throw new Error(
+        'openTooltip: the target is detached from the document. Mounting a ' +
+          'tooltip provider remounts its label, so pass a lookup — ' +
+          'openTooltip(() => canvas.getByTestId(…)) — not the element.',
+      );
+    }
+
     // The leading unhover supplies the mouse move React Aria needs to set its
     // interaction modality — `userEvent.hover` fires `mouseEnter` before
     // `mouseMove`, so an un-preceded first hover is ignored.
-    await userEvent.unhover(target);
-    await userEvent.hover(target);
+    await userEvent.unhover(element);
+    await userEvent.hover(element);
 
     if (attempt === ATTEMPTS) break;
 

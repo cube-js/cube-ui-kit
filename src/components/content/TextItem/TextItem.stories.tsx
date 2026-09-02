@@ -135,7 +135,7 @@ export const OverflowWithTooltip: Story = {
   // Truncation is visible without help, but the auto-tooltip firing *because*
   // of it is the actual claim, and that only exists on hover.
   play: async ({ canvasElement }) => {
-    await openTooltip(within(canvasElement).getByTestId('TextItem'));
+    await openTooltip(() => within(canvasElement).getByTestId('TextItem'));
   },
 };
 
@@ -220,9 +220,11 @@ export const TooltipPlacements: Story = {
   // placement rather than all four — the other three are covered by the
   // rendered labels and by `Tooltip`'s own `Side` story.
   play: async ({ canvasElement }) => {
-    const [top] = within(canvasElement).getAllByTestId('TextItem');
-
-    await openTooltip(top);
+    // A lookup, not a node: mounting the tooltip provider remounts the label,
+    // so anything captured before the hover is detached by the retry.
+    await openTooltip(
+      () => within(canvasElement).getAllByTestId('TextItem')[0],
+    );
   },
   render: () => (
     <Space flow="column" gap="2x" padding="8x">
