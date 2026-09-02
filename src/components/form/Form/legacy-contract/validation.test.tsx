@@ -52,7 +52,9 @@ describe('legacy contract: validation triggers and status (§7.1 #20)', () => {
     expect(formInstance.getFieldInstance('a')!.status).toBe('invalid');
   });
 
-  it('[frozen] validateTrigger="onChange" validates on every change (twice per change, see below)', async () => {
+  it('[frozen] validateTrigger="onChange" validates once per change', async () => {
+    // Was "twice per change" until the double-handler fix; see
+    // `change-handler.test.tsx`.
     const validator = vi.fn(async () => {});
     const { formInstance, getByRole } = renderWithForm(
       <TextInput
@@ -72,17 +74,13 @@ describe('legacy contract: validation triggers and status (§7.1 #20)', () => {
     );
     expect(validator.mock.calls.map((call: any[]) => call[1])).toEqual([
       'a',
-      'a',
-      'ab',
       'ab',
     ]);
   });
 
-  it('[bug-eligible] every user change runs the field change handler twice, so onChange validation validates twice per change', async () => {
-    // `useFieldProps` merges `useField`'s own `onChange` with the mapped
-    // `onChange` through `mergeProps`, which chains same-named handlers. The
-    // second `setFieldValue` is an equal-value no-op, but `validateField` runs
-    // again and only its result is published.
+  it('[frozen] a user change runs the field change handler exactly once', async () => {
+    // Was `[bug-eligible]`: `useFieldProps` used to merge `useField`'s own
+    // `onChange` on top of the mapped one, and `mergeProps` chained them.
     const validator = vi.fn(async () => {});
     const { formInstance, getByTestId } = renderWithForm(
       <FieldProbe name="a" next="v" rules={[{ validator }]} />,
@@ -97,9 +95,9 @@ describe('legacy contract: validation triggers and status (§7.1 #20)', () => {
     await waitFor(() =>
       expect(formInstance.getFieldInstance('a')!.status).toBe('valid'),
     );
-    expect(setFieldValue).toHaveBeenCalledTimes(2);
-    expect(validateField).toHaveBeenCalledTimes(2);
-    expect(validator).toHaveBeenCalledTimes(2);
+    expect(setFieldValue).toHaveBeenCalledTimes(1);
+    expect(validateField).toHaveBeenCalledTimes(1);
+    expect(validator).toHaveBeenCalledTimes(1);
   });
 
   it('[bug-eligible] changing an invalid field clears its errors without revalidating; the next trigger revalidates', async () => {

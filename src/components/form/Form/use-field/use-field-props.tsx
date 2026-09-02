@@ -1,6 +1,6 @@
 import { useDebugValue, useId, useRef } from 'react';
 
-import { useChainedCallback, useEvent } from '../../../../_internal/index';
+import { useEvent } from '../../../../_internal/index';
 import { useProviderProps } from '../../../../provider';
 import { mergeProps } from '../../../../utils/react/index';
 import { warn } from '../../../../utils/warnings';
@@ -100,11 +100,6 @@ export function useFieldProps<
     );
   }
 
-  const onBlurChained = useChainedCallback(
-    field?.onBlur,
-    'onBlur' in props ? (props as any).onBlur : undefined,
-  );
-
   const onChangeEvent = useEvent((value, dontTouch: boolean) => {
     field?.onChange?.(
       value,
@@ -142,14 +137,25 @@ export function useFieldProps<
         ? field.field.errors[0]
         : undefined;
 
-  // Exclude 'form' from field to prevent it from being spread to DOM elements
-  const { form: _form, ...fieldWithoutForm } = field ?? {};
+  // Exclude `form` (it must never reach a DOM node) and the field's own
+  // handlers: `valueProps` already routes the component's change event into
+  // `field.onChange` under the name the component listens to, and `onBlur` is
+  // added once below. `mergeProps` chains same-named handlers, so merging them
+  // here as well made every user change and every blur run the field handler
+  // twice — and onChange/onBlur-triggered validation validate twice.
+  const {
+    form: _form,
+    onChange: _fieldOnChange,
+    onBlur: _fieldOnBlur,
+    ...fieldRest
+  } = field ?? {};
 
   const result: Props = isOutsideOfForm
     ? props
-    : mergeProps(props, fieldWithoutForm, valueProps, {
+    : mergeProps(props, fieldRest, valueProps, {
         validateTrigger: field.validateTrigger ?? defaultValidationTrigger,
-        onBlur: onBlurChained,
+        // Chained after the caller's own `onBlur` by `mergeProps`.
+        onBlur: field.onBlur,
         errorMessage: compiledErrorMessage,
       });
 
