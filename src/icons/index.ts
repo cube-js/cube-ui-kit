@@ -36,6 +36,7 @@ export { CheckCircleFilledIcon } from './CheckCircleFilledIcon';
 export { CheckCircleIcon } from './CheckCircleIcon';
 export { CheckIcon } from './CheckIcon';
 export { CircleFilledIcon } from './CircleFilledIcon';
+export { CirclePlusIcon } from './CirclePlusIcon';
 export { ClearIcon } from './ClearIcon';
 export { CloseCircleFilledIcon } from './CloseCircleFilledIcon';
 export { CloseCircleIcon } from './CloseCircleIcon';

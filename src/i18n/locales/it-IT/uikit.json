@@ -146,6 +146,21 @@
     "widgetsSelected": "{{count}} widget selezionati",
     "selectionCleared": "Selezione annullata"
   },
+  "dashboard": {
+    "container": "Contenitore dashboard",
+    "widget": "Widget dashboard",
+    "movableWidget": "Widget dashboard spostabile",
+    "moveWidget": "Sposta widget dashboard",
+    "resizeWidget": "Ridimensiona widget dashboard",
+    "resizeContainer": "Ridimensiona contenitore dashboard",
+    "addItem": "Aggiungi un elemento alla colonna {{column}}, riga {{row}} in {{container}}",
+    "addMenu": "Elementi disponibili per {{container}}",
+    "addTopLevelContainer": "Aggiungi contenitore di primo livello",
+    "addTopLevelMenu": "Scegli un contenitore di primo livello",
+    "settingsContainer": "Impostazioni per {{container}}",
+    "deleteContainer": "Elimina {{container}}",
+    "deleteWidget": "Elimina {{widget}}"
+  },
   "pagination": {
     "ariaLabel": "Impaginazione",
     "firstPage": "Prima pagina",

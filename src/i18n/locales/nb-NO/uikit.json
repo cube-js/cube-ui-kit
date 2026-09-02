@@ -146,6 +146,21 @@
     "widgetsSelected": "{{count}} widgeter valgt",
     "selectionCleared": "Valget er fjernet"
   },
+  "dashboard": {
+    "container": "Instrumentbordbeholder",
+    "widget": "Instrumentbord-widget",
+    "movableWidget": "Flyttbar instrumentbord-widget",
+    "moveWidget": "Flytt instrumentbord-widget",
+    "resizeWidget": "Endre størrelse på instrumentbord-widget",
+    "resizeContainer": "Endre størrelse på instrumentbordbeholder",
+    "addItem": "Legg til et element i kolonne {{column}}, rad {{row}} i {{container}}",
+    "addMenu": "Tilgjengelige elementer for {{container}}",
+    "addTopLevelContainer": "Legg til beholder på toppnivå",
+    "addTopLevelMenu": "Velg en beholder på toppnivå",
+    "settingsContainer": "Innstillinger for {{container}}",
+    "deleteContainer": "Slett {{container}}",
+    "deleteWidget": "Slett {{widget}}"
+  },
   "pagination": {
     "ariaLabel": "Paginering",
     "firstPage": "Første side",

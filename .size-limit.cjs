@@ -20,6 +20,18 @@ module.exports = [
         }),
       );
     },
+    // 530 kB for the standalone Dashboard compound component on top of the
+    // Board resize-affordance work below. Dashboard measured 526.06 kB locally
+    // against its 513.60 kB baseline, i.e. +12.46 kB for the shared 12-column
+    // layout, nested container chrome, selection registry, settings affordance,
+    // Tabs composition, controlled pointer/keyboard movement, cross-parent hit
+    // testing, resizing, occupancy-aware add slots, and registered contextual
+    // menus. After rebasing onto main's later Board work, the combined branch
+    // measures 527.94 kB locally. The Button-only entry measures 123.06 kB and
+    // remained effectively unchanged through both features, confirming that
+    // Dashboard and Board tree-shake away for consumers that do not import them.
+    // Rounded to the next 5 kB step as the sizing notes below require.
+    //
     // 517 kB for the Board resize-affordance rework. CI measured `main`
     // (582c1e0) at 513,743 B and this branch at 515,261 B — +1.52 kB — against a
     // 515 kB budget that `main` had already spent down to 1,257 B of headroom, so
@@ -210,7 +222,7 @@ module.exports = [
     //
     // Note when checking locally: `size-limit` bundles the built `./dist`, it
     // does not build. Run `pnpm build` first or you will measure a stale bundle.
-    limit: '517kB',
+    limit: '530kB',
   },
   {
     name: 'Tree shaking (just a Button)',

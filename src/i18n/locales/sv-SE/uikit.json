@@ -146,6 +146,21 @@
     "widgetsSelected": "{{count}} widgetar markerade",
     "selectionCleared": "Markeringen rensad"
   },
+  "dashboard": {
+    "container": "Instrumentpanelsbehållare",
+    "widget": "Instrumentpanelswidget",
+    "movableWidget": "Flyttbar instrumentpanelswidget",
+    "moveWidget": "Flytta instrumentpanelswidget",
+    "resizeWidget": "Ändra storlek på instrumentpanelswidget",
+    "resizeContainer": "Ändra storlek på instrumentpanelsbehållare",
+    "addItem": "Lägg till ett objekt i kolumn {{column}}, rad {{row}} i {{container}}",
+    "addMenu": "Tillgängliga objekt för {{container}}",
+    "addTopLevelContainer": "Lägg till behållare på toppnivå",
+    "addTopLevelMenu": "Välj en behållare på toppnivå",
+    "settingsContainer": "Inställningar för {{container}}",
+    "deleteContainer": "Ta bort {{container}}",
+    "deleteWidget": "Ta bort {{widget}}"
+  },
   "pagination": {
     "ariaLabel": "Paginering",
     "firstPage": "Första sidan",

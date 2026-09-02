@@ -53,6 +53,35 @@ export type { CubePanelProps } from './components/layout/Panel';
 export { ResizablePanel } from './components/layout/ResizablePanel';
 export type { CubeResizablePanelProps } from './components/layout/ResizablePanel';
 export {
+  Dashboard,
+  DashboardGrid,
+  DashboardHorizontalStack,
+  DashboardTab,
+  DashboardTabs,
+  DashboardVerticalStack,
+  DashboardWidget,
+} from './components/layout/Dashboard';
+export type {
+  CubeDashboardContainerProps,
+  CubeDashboardProps,
+  CubeDashboardTabProps,
+  CubeDashboardTabsProps,
+  CubeDashboardWidgetProps,
+  DashboardAddItemDefinition,
+  DashboardAddItemInfo,
+  DashboardAddItemKind,
+  DashboardContainerKind,
+  DashboardParentKind,
+  DashboardPlacement,
+  DashboardPlacementChangeInfo,
+  DashboardPlacementChangeInput,
+  DashboardPlacementChangeItem,
+  DashboardPlacementChangePhase,
+  DashboardPlacementChangeReason,
+  DashboardPlacementProps,
+  DashboardSelectionMode,
+} from './components/layout/Dashboard';
+export {
   Board,
   BoardProvider,
   BoardResponsive,

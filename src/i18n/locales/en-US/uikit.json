@@ -146,6 +146,21 @@
     "widgetsSelected": "{{count}} widgets selected",
     "selectionCleared": "Selection cleared"
   },
+  "dashboard": {
+    "container": "Dashboard container",
+    "widget": "Dashboard widget",
+    "movableWidget": "Movable dashboard widget",
+    "moveWidget": "Move dashboard widget",
+    "resizeWidget": "Resize dashboard widget",
+    "resizeContainer": "Resize dashboard container",
+    "addItem": "Add an item at column {{column}}, row {{row}} in {{container}}",
+    "addMenu": "Items available for {{container}}",
+    "addTopLevelContainer": "Add top-level dashboard container",
+    "addTopLevelMenu": "Top-level dashboard containers",
+    "settingsContainer": "Settings for {{container}}",
+    "deleteContainer": "Delete {{container}}",
+    "deleteWidget": "Delete {{widget}}"
+  },
   "pagination": {
     "ariaLabel": "Pagination",
     "firstPage": "First page",

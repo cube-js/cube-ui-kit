@@ -146,6 +146,21 @@
     "widgetsSelected": "Đã chọn {{count}} widget",
     "selectionCleared": "Đã bỏ chọn"
   },
+  "dashboard": {
+    "container": "Vùng chứa bảng điều khiển",
+    "widget": "Tiện ích bảng điều khiển",
+    "movableWidget": "Tiện ích bảng điều khiển có thể di chuyển",
+    "moveWidget": "Di chuyển tiện ích bảng điều khiển",
+    "resizeWidget": "Đổi kích thước tiện ích bảng điều khiển",
+    "resizeContainer": "Đổi kích thước vùng chứa bảng điều khiển",
+    "addItem": "Thêm một mục tại cột {{column}}, hàng {{row}} trong {{container}}",
+    "addMenu": "Các mục có sẵn cho {{container}}",
+    "addTopLevelContainer": "Thêm vùng chứa cấp cao nhất",
+    "addTopLevelMenu": "Chọn vùng chứa cấp cao nhất",
+    "settingsContainer": "Cài đặt cho {{container}}",
+    "deleteContainer": "Xóa {{container}}",
+    "deleteWidget": "Xóa {{widget}}"
+  },
   "pagination": {
     "ariaLabel": "Phân trang",
     "firstPage": "Trang đầu",

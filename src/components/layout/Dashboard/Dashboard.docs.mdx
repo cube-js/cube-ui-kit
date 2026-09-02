@@ -1,0 +1,393 @@
+import { Meta, Story } from '@storybook/addon-docs/blocks';
+
+import * as DashboardStories from './Dashboard.stories';
+
+<Meta of={DashboardStories} />
+
+# Dashboard
+
+Dashboard is a standalone compound layout for authoring full-width dashboards on one shared 12-column scale. A nested container exposes its own current column span as child capacity, while all containers share one row height and gap configuration. Consumers register their widget and container types, then retain ownership of the serializable layout state and custom widget rendering.
+
+## When to Use
+
+- Analytics and reporting pages with mixed widget sizes
+- User-customizable dashboards with selectable widgets and containers
+- Nested dashboard sections that need one consistent column system
+
+## Component
+
+<Story of={DashboardStories.Playground} />
+
+The Playground owns a recursive serializable tree and registers three constrained widget types plus the available container types with Dashboard. The permanent root add button creates Grid, HorizontalStack, VerticalStack, or Tabs containers. Hovering a Grid reveals only that Grid's vacant cells and moves its add button to the current cell; crossing a gap preserves the last valid cell. The entire outlined cell is pressable, and its matching resting fill transitions directly to the hovered colors while the CirclePlus icon appears. An open menu keeps that trigger and destination locked while the pointer crosses into the popover. HorizontalStack and VerticalStack expose one insertion point at the end. Every tab owns an independent layout and, while empty, offers one full-panel add button for Grid, HorizontalStack, or VerticalStack only. The menu disables registered items that cannot fit and stops offering nested containers at depth three.
+
+---
+
+## Components
+
+- **`Dashboard`** — Full-width root that owns metrics and selection.
+- **`Dashboard.Grid`** — Explicit row and column placement.
+- **`Dashboard.HorizontalStack`** — Children arranged across one row and stretched vertically within their row constraints.
+- **`Dashboard.VerticalStack`** — Children arranged vertically and stretched horizontally within their column constraints.
+- **`Dashboard.Tabs`** — Root-only tabbed container.
+- **`Dashboard.Tab`** — Declarative panel inside `Dashboard.Tabs`.
+- **`Dashboard.Widget`** — Customizable widget surface.
+
+## Properties
+
+### Dashboard
+
+- **`rowHeight`** `number` (default: `80`) — Height in pixels of a content row in every container.
+- **`gap`** `number | [number, number]` (default: `16`) — Shared gap, or horizontal and vertical gaps, in pixels.
+- **`isEditing`** `boolean` (default: `false`) — Reveals transparent, rounded container boundaries on hover; boundaries persist during resize, every boundary is revealed during a move, and a newly mounted container remains revealed briefly.
+- **`selectionMode`** `'none' | 'single' | 'multiple'` (default: `'multiple'`) — Whether and how Dashboard nodes can be selected.
+- **`selectedKeys`** `string[]` — Controlled selected widget and container ids.
+- **`defaultSelectedKeys`** `string[]` (default: `[]`) — Initial selection for uncontrolled usage.
+- **`onSelectionChange`** `(keys: string[]) => void` — Called with the normalized selection.
+- **`addItems`** `readonly DashboardAddItemDefinition[]` — Consumer registry used by Dashboard's contextual add menus.
+- **`onAddItem`** `(itemId, info) => void` — Reports the selected registry id, exact placement, parent kind/depth, and tab identity when applicable.
+
+### Containers
+
+- **`id`** `string` (required) — Stable layout and selection identity.
+- **`title`** `ReactNode` — Optional accessible title for Tabs. Grid, HorizontalStack, and VerticalStack never render a heading.
+- **`column`** `number` (default: `0`) — Zero-based starting column inside a Grid or tab panel.
+- **`row`** `number` (default: `0`) — Zero-based starting row inside a Grid or tab panel.
+- **`columns`** `number` (default: `12`, clamped to the parent) — Width in the immediate parent's available columns and the capacity exposed to this container's children.
+- **`rows`** `number` (default: `1`) — Reserved height in content rows.
+- **`isSelectable`** `boolean` (default: `true`) — Whether the container participates in selection.
+- **`isMovable`** `boolean` (default: `false`) — Makes the non-action area of the container draggable when `onPlacementChange` is supplied.
+- **`isResizable`** `boolean` (default: `false`) — Makes a context-sensitive resize handle available after the container is selected when `onPlacementChange` is supplied.
+- **`minColumns`** `number` (default: `1`) — Explicit minimum width; occupied child bounds may raise it.
+- **`maxColumns`** `number` (default: `12`, clamped to the parent) — Maximum nested-container width.
+- **`minRows`** `number` (default: `1`) — Explicit minimum height; occupied child bounds may raise it.
+- **`maxRows`** `number` (default: `12` at root or parent rows when nested) — Maximum container height.
+- **`onPlacementChange`** `(placement, info) => void` — Reports preview and committed container movement/resizing. A selected sibling group is reported atomically through `info.items`.
+- **`moveLabel`** `string` — Accessible name for the focused movable container.
+- **`resizeLabel`** `string` — Accessible label for the container resize handle.
+- **`onSettingsPress`** `(event: PressEvent) => void` — Enables the standard settings action after the container is selected.
+- **`settingsLabel`** `string` — Accessible label for the container settings action.
+- **`onDeletePress`** `(event: PressEvent) => void` — Enables the standard delete action after the container is selected.
+- **`deleteLabel`** `string` — Accessible label for the container delete action.
+- **`aria-label`** `string` — Accessible name; falls back to a string title and then the id.
+
+### Tabs
+
+- **`activeKey`** `string` — Controlled active tab id.
+- **`defaultActiveKey`** `string` — Initially active tab id for uncontrolled usage.
+- **`onActiveChange`** `(key: string) => void` — Called when the active tab changes.
+
+Tabs is root-only. Its tab strip ends with a delimiter and keeps a `1x` gap before the active layout. Each tab is a separate, layout-less 12-column destination and therefore accepts exactly one Grid, HorizontalStack, or VerticalStack container as its layout root. An empty tab shows its add button permanently; a populated tab has no additional tab-level insertion point. Widgets cannot be direct tab children.
+
+### Tab
+
+- **`id`** `string` (required) — Stable tab id.
+- **`title`** `ReactNode` (required) — Tab label.
+- **`keepMounted`** `boolean` (default: `true`) — Whether the panel remains mounted while inactive.
+
+### Widget
+
+- **`id`** `string` (required) — Stable layout and selection identity.
+- **`column`** `number` (default: `0`) — Zero-based starting column inside a Grid or tab panel.
+- **`row`** `number` (default: `0`) — Zero-based starting row inside a Grid or tab panel.
+- **`columns`** `number` (default: `12`, clamped to the parent) — Width in the immediate parent's available columns.
+- **`rows`** `number` (default: `1`) — Reserved height in content rows.
+- **`isCard`** `boolean` (default: `false`) — Adds the widget's outside card shadow. Widgets remain rounded by default.
+- **`isSelectable`** `boolean` (default: `true`) — Whether the widget participates in selection.
+- **`isMovable`** `boolean` (default: `false`) — Makes the non-action area of the widget draggable when `onPlacementChange` is supplied.
+- **`isResizable`** `boolean` (default: `false`) — Makes a resize handle available after the widget is selected when at least one configured size axis can change.
+- **`minColumns`** `number` (default: `1`) — Minimum widget width in columns.
+- **`maxColumns`** `number` (default: `12`, clamped to the parent) — Maximum widget width in columns.
+- **`minRows`** `number` (default: `1`) — Minimum widget height in rows.
+- **`maxRows`** `number` (default: parent row count) — Maximum widget height in rows.
+- **`onPlacementChange`** `(placement, info) => void` — Reports preview and committed movement/resizing. A selected sibling group is reported atomically through `info.items`; the consumer owns layout state and collision handling.
+- **`moveLabel`** `string` — Accessible name for the focused movable widget.
+- **`resizeLabel`** `string` — Accessible label for the resize handle.
+- **`onSettingsPress`** `(event: PressEvent) => void` — Enables the standard settings control on the selected widget and reports its activation.
+- **`settingsLabel`** `string` — Accessible label for the settings control.
+- **`onDeletePress`** `(event: PressEvent) => void` — Enables the danger-outline delete control on the selected widget and reports its activation.
+- **`deleteLabel`** `string` — Accessible label for the delete control.
+- **`aria-label`** `string` — Accessible widget name; falls back to the id.
+
+### Base Properties
+
+Supports [Base properties](/docs/getting-started-base-properties--docs).
+
+### Styling Properties
+
+The root, containers, and widgets accept `styles` plus direct container style props. Widget styles apply to the rounded content surface; placement remains controlled by Dashboard.
+
+### Style Properties
+
+These properties allow direct style application without using the `styles` prop:
+
+- **Base:** `display`, `font`, `preset`, `hide`, `whiteSpace`, `opacity`, `transition`
+- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `scrollMargin`
+- **Dimension:** `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`
+- **Block:** `border`, `radius`, `shadow`, `outline`, `padding`, `paddingInline`, `paddingBlock`, `overflow`, `scrollbar`, `textAlign`
+- **Color:** `color`, `fill`, `fade`, `image`
+- **Flow:** `flow`, `place`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `columnGap`, `rowGap`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`
+
+### Modifiers
+
+Dashboard owns these visual modifiers. Consumer `mods` are merged underneath them.
+
+| Modifier | Applies to | Description |
+| --- | --- | --- |
+| `selected` | Container and Widget | Draws the selected treatment. |
+| `hovered` | Container and Widget | Draws the hover treatment. |
+| `arriving` | Container | Briefly reveals a container mounted after the initial layout. |
+| `empty` | Container | Keeps an empty container's neutral outline visible while editing. |
+| `focus-within` | Container and Widget | Keeps controls and chrome visible for keyboard users. |
+| `editing` | Container and Widget | Enables authoring chrome. |
+| `dragging` | Container and Widget | Reveals every container with a neutral one-pixel boundary while any node is moving. |
+| `movable` | Container and Widget | Enables the surface grab cursor. |
+| `moving` | Container and Widget | Gives the node that owns the active move its two-pixel brand boundary. |
+| `resizing` | Container and Widget | Indicates the node that owns the active resize. |
+| `depth` | Container | Selects depth-one, depth-two, or depth-three chrome. |
+| `titled` | Tabs | Reserves an optional heading above the tab list. |
+| `card` | Widget | Draws the opt-in card shadow. |
+
+Containers have no visible fill or CSS border. At rest, a populated container has no boundary, while an empty container keeps a neutral outline visible in edit mode. All chrome uses a rounded outside shadow: hover, resize, emptiness, and arrival use a neutral one-pixel boundary; selection and the actively moved container use a two-pixel brand boundary. While any node is moving, every other container receives the neutral boundary so destinations remain legible without appearing selected. A container mounted after the initial layout keeps its boundary for one second. The arrival treatment covers both newly added containers and containers reparented by a cross-container move, including the case where the stationary pointer is already inside the new surface. Each depth balances padding with an equal negative margin (`8px`, `5px`, then `2px`), keeping child grid tracks aligned to the parent's top-left origin while the selectable container box protrudes into the surrounding gap.
+
+The widget placement wrapper never paints a border or outline. All widget chrome follows the rounded surface: `isCard` draws its resting one-pixel boundary with an outside shadow, keyboard focus uses a rounded focus shadow, and selection or active movement replaces either treatment with a two-pixel `#primary` brand shadow. The surface itself has no CSS border.
+
+## Examples
+
+### Registered authoring items
+
+Dashboard owns the contextual controls and fit checks, while the consumer owns the catalog metadata and layout mutation. `kind` defaults to `widget`; container definitions use `grid`, `horizontal-stack`, `vertical-stack`, or `tabs`. The callback receives the exact cell chosen by the user rather than asking the consumer to scan for a vacancy again.
+
+```jsx
+const addItems = [
+  {
+    id: 'compact',
+    name: 'Compact KPI',
+    description: 'Fixed 1×1',
+    defaultColumns: 1,
+    defaultRows: 1,
+    minColumns: 1,
+    maxColumns: 1,
+    minRows: 1,
+    maxRows: 1,
+  },
+  {
+    id: 'wide',
+    name: 'Wide metric',
+    defaultColumns: 2,
+    defaultRows: 1,
+    minColumns: 2,
+    maxColumns: 6,
+    minRows: 1,
+    maxRows: 1,
+  },
+  { id: 'grid', name: 'Grid', kind: 'grid', defaultColumns: 12, defaultRows: 3 },
+];
+
+<Dashboard
+  isEditing
+  addItems={addItems}
+  onAddItem={(itemId, { parentId, placement, tabsId, tabId }) => {
+    insertLayoutItem({ itemId, parentId, placement, tabsId, tabId });
+  }}
+>
+  {renderLayout(layout)}
+</Dashboard>;
+```
+
+Dashboard applies the following contextual filtering before the menu opens:
+
+- The root offers registered container kinds only and always keeps one add button after the top-level content.
+- Grid offers every widget or nestable container that fits the hovered vacant origin.
+- HorizontalStack and VerticalStack expose only their single trailing insertion point.
+- An empty tab offers Grid, HorizontalStack, and VerticalStack only; Tabs and widgets are disabled there.
+- Nestable containers are disabled when adding them would exceed depth three.
+- `isDisabled` lets product logic disable a type in addition to Dashboard's geometric checks.
+
+### Basic grid
+
+```jsx
+import { Dashboard } from '@cube-dev/ui-kit';
+
+<Dashboard rowHeight={72} gap={16}>
+  <Dashboard.Grid id="overview" aria-label="Overview" rows={2}>
+    <Dashboard.Widget
+      id="revenue"
+      column={0}
+      row={0}
+      columns={4}
+      rows={1}
+      isCard
+    >
+      <RevenueMetric />
+    </Dashboard.Widget>
+    <Dashboard.Widget
+      id="trend"
+      column={4}
+      row={0}
+      columns={8}
+      rows={2}
+      isCard
+    >
+      <RevenueChart />
+    </Dashboard.Widget>
+  </Dashboard.Grid>
+</Dashboard>;
+```
+
+### Nested containers
+
+```jsx
+<Dashboard>
+  <Dashboard.Grid id="root-section" rows={2}>
+    <Dashboard.VerticalStack
+      id="metrics"
+      column={0}
+      row={0}
+      columns={5}
+      rows={2}
+    >
+      <Dashboard.Widget id="orders" rows={1} isCard>
+        <OrdersMetric />
+      </Dashboard.Widget>
+      <Dashboard.Widget id="customers" rows={1} isCard>
+        <CustomersMetric />
+      </Dashboard.Widget>
+    </Dashboard.VerticalStack>
+  </Dashboard.Grid>
+</Dashboard>
+```
+
+### Consumer-owned settings panel
+
+```jsx
+const [settingsId, setSettingsId] = useState(null);
+
+return (
+  <div style={{ position: 'relative' }}>
+    <Dashboard>
+      <Dashboard.Grid id="main" rows={2}>
+        <Dashboard.Widget
+          id="trend"
+          columns={12}
+          rows={2}
+          isCard
+          settingsLabel="Settings for revenue trend"
+          onSettingsPress={() => setSettingsId('trend')}
+        >
+          <RevenueChart />
+        </Dashboard.Widget>
+      </Dashboard.Grid>
+    </Dashboard>
+    {settingsId ? <Panel isFloating>{/* settings form */}</Panel> : null}
+  </div>
+);
+```
+
+### Controlled movement and resizing
+
+Dashboard quantizes pointer and keyboard gestures to whole grid units, applies the node's bounds, and reports the proposed placement. A move starts from any point on a movable widget or container except buttons, inputs, links, tabs, resize grips, and descendants marked with `data-dashboard-no-move`. The consumer accepts a placement by writing it to state; this keeps collision policy and persistence outside the component.
+
+```jsx
+const [placement, setPlacement] = useState({
+  column: 0,
+  row: 0,
+  columns: 2,
+  rows: 1,
+});
+
+<Dashboard rowHeight={96} gap={16}>
+  <Dashboard.Grid id="editor" rows={6}>
+    <Dashboard.Widget
+      id="revenue"
+      {...placement}
+      minColumns={2}
+      maxColumns={6}
+      minRows={1}
+      maxRows={1}
+      isMovable
+      isResizable
+      moveLabel="Move revenue"
+      resizeLabel="Resize revenue"
+      onPlacementChange={(nextPlacement) => {
+        if (!collides(nextPlacement)) {
+          setPlacement(nextPlacement);
+        }
+      }}
+    >
+      <RevenueMetric />
+    </Dashboard.Widget>
+  </Dashboard.Grid>
+</Dashboard>;
+```
+
+`info.phase` is `'preview'` while a gesture is active and `'commit'` when it ends. `info.reason` identifies a move or resize, and `info.input` identifies pointer or keyboard input. When a pointer crosses into another container, the move proposal is expressed in that destination's local coordinates and `info.sourceParentId` plus `info.destinationParentId` identify the atomic tree transfer. The destination id is `null` for the Dashboard root. Those fields are omitted for movement within one parent and for resizing.
+
+Containers use the same controlled placement callback for movement and resizing. Inside one parent, a top-level container moves vertically, a HorizontalStack child horizontally, a VerticalStack child vertically, and Grid children on both axes. A tab panel holds one layout root and primarily acts as a cross-parent origin or destination. When a node enters a HorizontalStack, its proposed `rows` expands to the lesser of the stack height and its `maxRows`; when it enters a VerticalStack, its proposed `columns` expands to the lesser of the stack width and its `maxColumns`. A node that reaches its constraint before filling the cross axis remains aligned to the top in HorizontalStack or the left in VerticalStack. Pointer movement may also target the deepest valid container under the pointer. Widgets cannot target the Dashboard root or a tab panel, Tabs cannot target a nested container, and containers cannot target themselves, descendants, or a fourth nesting level. Keyboard movement remains within the immediate parent. A root container resizes vertically; a nested container resizes on the axes its parent layout permits. Dashboard derives a minimum from the occupied bounds of direct children, so a container cannot be resized across existing content. A nested container's current `columns` and `rows` are its child capacity; child placement and resizing are clamped to those bounds and never grow the parent.
+
+```jsx
+<Dashboard.Grid
+  id="section"
+  aria-label="Section"
+  rows={4}
+  maxRows={10}
+  isResizable
+  onPlacementChange={setSectionPlacement}
+>
+  {children}
+</Dashboard.Grid>
+```
+
+## Selection
+
+Plain click selects one node. Shift-click, Command-click, or Control-click toggles sibling nodes in `multiple` mode. A descendant cannot be added while its ancestor is selected, and items from different immediate parents cannot form a multi-selection. Clicking Dashboard whitespace outside every widget and container clears the selection.
+
+Use controlled selection when another editor surface needs to coordinate with Dashboard:
+
+```jsx
+const [selectedKeys, setSelectedKeys] = useState([]);
+
+<Dashboard
+  selectedKeys={selectedKeys}
+  onSelectionChange={setSelectedKeys}
+>
+  {/* containers */}
+</Dashboard>;
+```
+
+## Accessibility
+
+### Keyboard Navigation
+
+- `Tab` moves among selectable nodes and their interactive contents.
+- `Space` selects a focused Dashboard node.
+- Arrow keys on a focused movable widget or container move it by one unit on the axes its parent permits.
+- Selecting a widget or container reveals its available settings, delete, and resize controls and adds them to the keyboard sequence. Settings stays on the top-right corner, with its danger-outline Delete action immediately to the left.
+- Arrow keys on a focused resize handle resize the selected widget or container by one column or row on its available axes.
+- Settings buttons and Tabs retain their standard keyboard behavior.
+
+### Screen Reader Support
+
+Containers and widgets are named groups with descriptive role descriptions. Supply meaningful `aria-label` values for non-text titles and user-visible widgets. `settingsLabel` should describe the target, for example “Settings for revenue trend”.
+
+### Interaction Scope
+
+This release supplies surface-based pointer and keyboard movement, cross-container pointer destinations, selected-sibling pointer groups, controlled resizing, contextual free-cell affordances, and registered add menus. Dashboard renders one destination placeholder per moving item: primary when the landing is available, danger when the geometry fits but occupancy blocks the drop, and no placeholder when the destination cannot satisfy the minimum geometry. If that placeholder covers Dashboard's add slot, Dashboard temporarily hides the add control so the two affordances never overlap. The Playground resolves same-parent previews by moving blockers in stacks and swapping two Grid occupants when both exchanged placements fit. Cross-parent previews keep the source mounted for the active gesture, then atomically remove and insert a single item or selected sibling group on commit.
+
+## Best Practices
+
+1. Keep every id stable across renders and persistence cycles.
+2. Express placement relative to the immediate parent, not the root.
+3. Use `isCard` for widgets that need an outside boundary; rounding is already provided.
+4. Keep layout state, collision policy, widget rendering, data configuration, and settings panels in consumer code; pass catalog names and size constraints through `addItems` so Dashboard can provide consistent contextual menus.
+5. Do not nest `Dashboard.Tabs`; Tabs is root-only.
+6. Hide nested-container actions at depth three rather than allowing Dashboard's development error to become an authoring dead end.
+
+## Suggested Improvements
+
+- Add a compact floating group preview, source-vacancy placeholders, and Escape cancellation.
+- Add an optional consumer hook for product-specific availability rules that depend on the destination, beyond the static `isDisabled` flag.
+
+## Related Components
+
+- [Panel](/docs/layout-panel--docs) — A consumer-owned surface for widget settings.
+- [Tabs](/docs/navigation-tabs--docs) — The tab primitive composed by `Dashboard.Tabs`.

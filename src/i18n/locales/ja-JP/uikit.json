@@ -146,6 +146,21 @@
     "widgetsSelected": "{{count}} 個のウィジェットを選択しました",
     "selectionCleared": "選択を解除しました"
   },
+  "dashboard": {
+    "container": "ダッシュボードコンテナー",
+    "widget": "ダッシュボードウィジェット",
+    "movableWidget": "移動可能なダッシュボードウィジェット",
+    "moveWidget": "ダッシュボードウィジェットを移動",
+    "resizeWidget": "ダッシュボードウィジェットのサイズを変更",
+    "resizeContainer": "ダッシュボードコンテナーのサイズを変更",
+    "addItem": "{{container}}の列{{column}}、行{{row}}に項目を追加",
+    "addMenu": "{{container}}で使用可能な項目",
+    "addTopLevelContainer": "トップレベルコンテナーを追加",
+    "addTopLevelMenu": "トップレベルコンテナーを選択",
+    "settingsContainer": "{{container}}の設定",
+    "deleteContainer": "{{container}}を削除",
+    "deleteWidget": "{{widget}}を削除"
+  },
   "pagination": {
     "ariaLabel": "ページネーション",
     "firstPage": "最初のページ",
