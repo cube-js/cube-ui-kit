@@ -59,7 +59,14 @@ describe('Dashboard', () => {
       </Dashboard>,
     );
 
-    expect(screen.getByTestId('Dashboard')).toHaveStyle({ gap: '16px' });
+    // The `gap` prop is the spacing inside a container's grid. The top-level
+    // channel is a fixed `1x` token on the root and no longer tracks it, so the
+    // root carries no inline gap at all — `Dashboard.browser.test.tsx` pins the
+    // resulting distance in pixels.
+    expect(screen.getByTestId('Dashboard').style.gap).toBe('');
+    expect(screen.getByTestId('DashboardContainerContent')).toHaveStyle({
+      gap: '16px 16px',
+    });
     expect(screen.getByTestId('Grid')).toHaveAttribute(
       'data-dashboard-depth',
       '1',
@@ -323,10 +330,12 @@ describe('Dashboard', () => {
     );
   });
 
-  it('reveals container actions and the Board-style corner grip only after selection', async () => {
+  it('gathers container actions and size commands under one menu after selection', async () => {
     const user = userEvent.setup();
     const onSettingsPress = vi.fn();
+    const onDuplicatePress = vi.fn();
     const onDeletePress = vi.fn();
+    const onMenuAction = vi.fn();
     const onPlacementChange = vi.fn();
 
     renderWithRoot(
@@ -341,8 +350,11 @@ describe('Dashboard', () => {
             onPlacementChange={onPlacementChange}
             onSettingsPress={onSettingsPress}
             settingsLabel="Settings for empty layout"
+            onDuplicatePress={onDuplicatePress}
             onDeletePress={onDeletePress}
             deleteLabel="Delete empty layout"
+            actions={[{ id: 'export', name: 'Export as CSV' }]}
+            onMenuAction={onMenuAction}
           />
         </Dashboard.Grid>
       </Dashboard>,
@@ -351,26 +363,345 @@ describe('Dashboard', () => {
     const container = screen.getByRole('group', { name: 'Empty layout' });
     expect(container).toHaveAttribute('data-dashboard-empty', 'true');
     expect(
-      screen.queryByRole('button', { name: 'Settings for empty layout' }),
+      screen.queryByRole('button', { name: 'Actions for Empty layout' }),
     ).not.toBeInTheDocument();
 
     await user.click(container);
     expect(screen.getByTestId('DashboardResizeCornerGrip')).toBeInTheDocument();
+    const trigger = screen.getByRole('button', {
+      name: 'Actions for Empty layout',
+    });
     expect(
-      Array.from(
-        container.querySelectorAll('[data-dashboard-container-actions] button'),
-      ).map((button) => button.getAttribute('aria-label')),
-    ).toEqual(['Delete empty layout', 'Settings for empty layout']);
+      container.querySelectorAll('[data-dashboard-container-actions] button'),
+    ).toHaveLength(1);
+
+    await user.click(trigger);
+    expect(
+      screen
+        .getAllByRole('menuitem')
+        .map((item) => item.textContent?.trim())
+        .filter(Boolean),
+    ).toEqual([
+      'Settings for empty layout',
+      'Duplicate',
+      'Export as CSV',
+      'Widen',
+      'Narrow',
+      'Make taller',
+      'Make shorter',
+      'Grow on both axes',
+      'Shrink on both axes',
+      'Fill available space',
+      'Delete empty layout',
+    ]);
+
+    await user.click(screen.getByRole('menuitem', { name: 'Export as CSV' }));
+    expect(onMenuAction).toHaveBeenCalledExactlyOnceWith('export');
+
+    // Every command reports through the same placement contract as the resize
+    // handle, tagged so consumers can tell it from a drag.
+    await user.click(trigger);
+    await user.click(screen.getByRole('menuitem', { name: 'Widen' }));
+    expect(onPlacementChange).toHaveBeenCalledExactlyOnceWith(
+      { column: 0, row: 0, columns: 4, rows: 2 },
+      { reason: 'resize', phase: 'commit', input: 'command' },
+    );
+
+    // Settings and Delete deselect the node, as the loose buttons used to.
+    await user.click(trigger);
     await user.click(
-      screen.getByRole('button', { name: 'Settings for empty layout' }),
+      screen.getByRole('menuitem', { name: 'Settings for empty layout' }),
     );
     expect(onSettingsPress).toHaveBeenCalledOnce();
 
     await user.click(container);
+    await user.click(trigger);
     await user.click(
-      screen.getByRole('button', { name: 'Delete empty layout' }),
+      screen.getByRole('menuitem', { name: 'Delete empty layout' }),
     );
     expect(onDeletePress).toHaveBeenCalledOnce();
+    expect(onDuplicatePress).not.toHaveBeenCalled();
+  });
+
+  it('disables the size commands a widget cannot act on', async () => {
+    const user = userEvent.setup();
+
+    renderWithRoot(
+      <Dashboard isEditing>
+        <Dashboard.Grid id="section" rows={2}>
+          <Dashboard.Widget
+            id="pinned"
+            aria-label="Pinned"
+            column={0}
+            row={0}
+            columns={12}
+            rows={1}
+            minRows={1}
+            maxRows={2}
+            isResizable
+            onPlacementChange={vi.fn()}
+          >
+            Pinned
+          </Dashboard.Widget>
+          <Dashboard.Widget
+            id="blocker"
+            aria-label="Blocker"
+            column={0}
+            row={1}
+            columns={12}
+            rows={1}
+          >
+            Blocker
+          </Dashboard.Widget>
+        </Dashboard.Grid>
+      </Dashboard>,
+    );
+
+    const widget = screen.getByRole('group', { name: 'Pinned' });
+    await user.click(widget);
+    await user.click(
+      screen.getByRole('button', { name: 'Actions for Pinned' }),
+    );
+
+    const disabled = (name: string) =>
+      screen
+        .getByRole('menuitem', { name })
+        .closest('li')
+        ?.getAttribute('aria-disabled') === 'true';
+
+    // Already spanning every column, so widening is capped by the parent…
+    expect(disabled('Widen')).toBe(true);
+    // …the sibling below blocks growing taller, even though maxRows allows it…
+    expect(disabled('Make taller')).toBe(true);
+    expect(disabled('Grow on both axes')).toBe(true);
+    expect(disabled('Fill available space')).toBe(true);
+    // …but narrowing is unobstructed, while nothing can be shorter than a row.
+    expect(disabled('Narrow')).toBe(false);
+    expect(disabled('Make shorter')).toBe(true);
+    expect(disabled('Shrink on both axes')).toBe(true);
+  });
+
+  it('claims a dragged region for the add button and offers only items that fit it', async () => {
+    const user = userEvent.setup();
+    const onAddItem = vi.fn();
+
+    renderWithRoot(
+      <Dashboard
+        isEditing
+        gap={0}
+        rowHeight={100}
+        addItems={[
+          {
+            id: 'tile',
+            name: 'Tile',
+            defaultColumns: 1,
+            defaultRows: 1,
+            maxColumns: 1,
+            maxRows: 1,
+          },
+          {
+            id: 'panel',
+            name: 'Panel',
+            defaultColumns: 2,
+            defaultRows: 1,
+            minColumns: 2,
+            maxColumns: 4,
+          },
+        ]}
+        onAddItem={onAddItem}
+      >
+        <Dashboard.Grid id="grid" rows={2} />
+      </Dashboard>,
+    );
+
+    const contentGrid = document.querySelector<HTMLElement>(
+      '[data-dashboard-drop-target][data-dashboard-parent-id="grid"]',
+    )!;
+    // 12 columns over 1200px with no gap, so a column step is exactly 100px.
+    mockRect(contentGrid, { left: 0, top: 0, width: 1200, height: 200 });
+
+    // The add button only surfaces on hover of its own container.
+    fireEvent.pointerMove(
+      document.querySelector(
+        '[data-dashboard-free-cell][data-dashboard-parent-id="grid"][data-dashboard-column="0"][data-dashboard-row="0"]',
+      )!,
+    );
+
+    const addButton = screen.getByRole('button', { name: /^Add an item at/ });
+    expect(addButton).toHaveAttribute('data-dashboard-columns', '1');
+
+    await act(async () => {
+      fireEvent.pointerDown(addButton, { button: 0, pointerId: 1 });
+    });
+    await act(async () => {
+      fireEvent(window, pointerEvent('pointermove', 250, 40));
+    });
+
+    // The claim spans anchor→pointer, and the button occupies it.
+    expect(addButton).toHaveAttribute('data-dashboard-columns', '3');
+    expect(addButton).toHaveAttribute('data-dashboard-rows', '1');
+    expect(addButton).toHaveStyle({ gridColumn: '1 / span 3' });
+    expect(addButton).toHaveAccessibleName(
+      'Add an item filling 3 by 1 cells from column 1, row 1 in grid',
+    );
+
+    await act(async () => {
+      fireEvent(window, pointerEvent('pointerup', 250, 40));
+    });
+
+    // A claimed region is a demand: a one-cell tile cannot fill 3×1.
+    expect(screen.getByRole('menuitem', { name: /Tile/ })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
+    await user.click(screen.getByRole('menuitem', { name: /Panel/ }));
+
+    expect(onAddItem).toHaveBeenCalledWith('panel', {
+      parentId: 'grid',
+      parentKind: 'grid',
+      parentDepth: 1,
+      placement: { column: 0, row: 0, columns: 3, rows: 1 },
+    });
+  });
+
+  it('stops a claimed region at the first occupied cell', async () => {
+    const onAddItem = vi.fn();
+
+    renderWithRoot(
+      <Dashboard
+        isEditing
+        gap={0}
+        rowHeight={100}
+        addItems={[{ id: 'panel', name: 'Panel', maxColumns: 12 }]}
+        onAddItem={onAddItem}
+      >
+        <Dashboard.Grid id="grid" rows={1}>
+          <Dashboard.Widget id="blocker" column={3} row={0} columns={1} />
+        </Dashboard.Grid>
+      </Dashboard>,
+    );
+
+    const contentGrid = document.querySelector<HTMLElement>(
+      '[data-dashboard-drop-target][data-dashboard-parent-id="grid"]',
+    )!;
+    mockRect(contentGrid, { left: 0, top: 0, width: 1200, height: 100 });
+
+    // The add button only surfaces on hover of its own container.
+    fireEvent.pointerMove(
+      document.querySelector(
+        '[data-dashboard-free-cell][data-dashboard-parent-id="grid"][data-dashboard-column="0"][data-dashboard-row="0"]',
+      )!,
+    );
+
+    const addButton = screen.getByRole('button', { name: /^Add an item at/ });
+
+    await act(async () => {
+      fireEvent.pointerDown(addButton, { button: 0, pointerId: 1 });
+    });
+    // Column 7 is free, but column 3 is not — a region cannot jump the blocker.
+    await act(async () => {
+      fireEvent(window, pointerEvent('pointermove', 750, 40));
+    });
+
+    expect(addButton).toHaveAttribute('data-dashboard-columns', '3');
+  });
+
+  it('abandons a claimed region on Escape and recovers on the next press', async () => {
+    const user = userEvent.setup();
+
+    renderWithRoot(
+      <Dashboard
+        isEditing
+        gap={0}
+        rowHeight={100}
+        addItems={[{ id: 'panel', name: 'Panel', maxColumns: 12 }]}
+        onAddItem={vi.fn()}
+      >
+        <Dashboard.Grid id="grid" rows={1} />
+      </Dashboard>,
+    );
+
+    const contentGrid = document.querySelector<HTMLElement>(
+      '[data-dashboard-drop-target][data-dashboard-parent-id="grid"]',
+    )!;
+    mockRect(contentGrid, { left: 0, top: 0, width: 1200, height: 100 });
+
+    // The add button only surfaces on hover of its own container.
+    fireEvent.pointerMove(
+      document.querySelector(
+        '[data-dashboard-free-cell][data-dashboard-parent-id="grid"][data-dashboard-column="0"][data-dashboard-row="0"]',
+      )!,
+    );
+
+    const addButton = screen.getByRole('button', { name: /^Add an item at/ });
+
+    await act(async () => {
+      fireEvent.pointerDown(addButton, { button: 0, pointerId: 1 });
+    });
+    await act(async () => {
+      fireEvent(window, pointerEvent('pointermove', 250, 40));
+    });
+    expect(addButton).toHaveAttribute('data-dashboard-columns', '3');
+
+    await act(async () => {
+      fireEvent.keyDown(window, { key: 'Escape' });
+    });
+    expect(addButton).toHaveAttribute('data-dashboard-columns', '1');
+
+    // `usePress` does not cancel a press on Escape, so the release still
+    // reaches the button's own press handler. It must not open a menu for the
+    // area the user just abandoned.
+    await user.click(addButton);
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+
+    // …and the next press must still work: an abandoned claim suppresses one
+    // release, not the button.
+    await user.click(addButton);
+    expect(screen.getByRole('menu')).toBeInTheDocument();
+  });
+
+  it('grows a claimed region from the keyboard with Shift and the arrow keys', async () => {
+    const user = userEvent.setup();
+    const onAddItem = vi.fn();
+
+    renderWithRoot(
+      <Dashboard
+        isEditing
+        addItems={[{ id: 'panel', name: 'Panel', maxColumns: 12, maxRows: 4 }]}
+        onAddItem={onAddItem}
+      >
+        <Dashboard.Grid id="grid" rows={2} />
+      </Dashboard>,
+    );
+
+    // The add button only surfaces on hover of its own container.
+    fireEvent.pointerMove(
+      document.querySelector(
+        '[data-dashboard-free-cell][data-dashboard-parent-id="grid"][data-dashboard-column="0"][data-dashboard-row="0"]',
+      )!,
+    );
+
+    const addButton = screen.getByRole('button', { name: /^Add an item at/ });
+
+    fireEvent.keyDown(addButton, { key: 'ArrowRight', shiftKey: true });
+    fireEvent.keyDown(addButton, { key: 'ArrowDown', shiftKey: true });
+    expect(addButton).toHaveAttribute('data-dashboard-columns', '2');
+    expect(addButton).toHaveAttribute('data-dashboard-rows', '2');
+
+    // Shift back the way it came, so the claim is adjustable, not one-way.
+    fireEvent.keyDown(addButton, { key: 'ArrowLeft', shiftKey: true });
+    expect(addButton).toHaveAttribute('data-dashboard-columns', '1');
+
+    addButton.focus();
+    await user.keyboard('{Enter}');
+    await user.click(screen.getByRole('menuitem', { name: /Panel/ }));
+
+    expect(onAddItem).toHaveBeenCalledWith('panel', {
+      parentId: 'grid',
+      parentKind: 'grid',
+      parentDepth: 1,
+      placement: { column: 0, row: 0, columns: 1, rows: 2 },
+    });
   });
 
   it('briefly reveals a container added after the initial layout mounts', () => {
@@ -473,7 +804,7 @@ describe('Dashboard', () => {
     expect(onSelectionChange).toHaveBeenLastCalledWith([]);
   });
 
-  it('reveals ordered settings and outline-delete actions for the selected widget', async () => {
+  it('reveals one action menu for the selected widget', async () => {
     const user = userEvent.setup();
     const onSelectionChange = vi.fn();
     const onSettingsPress = vi.fn();
@@ -498,30 +829,47 @@ describe('Dashboard', () => {
     );
 
     expect(
-      screen.queryByRole('button', { name: 'Settings for revenue metric' }),
-    ).not.toBeInTheDocument();
-    expect(
-      screen.queryByRole('button', { name: 'Delete revenue metric' }),
+      screen.queryByRole('button', { name: 'Actions for Revenue metric' }),
     ).not.toBeInTheDocument();
 
     const widget = screen.getByRole('group', { name: 'Revenue metric' });
     await user.click(widget);
+    // The raise lives on the painted surface, not on the placement wrapper or
+    // the container, so node controls are never trapped in a nested context.
     expect(
       getComputedStyle(screen.getByRole('group', { name: 'section' })),
-    ).toHaveProperty('zIndex', '3');
-    const widgetActions = Array.from(
-      widget.querySelectorAll('[data-dashboard-widget-actions] button'),
+    ).toHaveProperty('zIndex', 'auto');
+    expect(getComputedStyle(widget)).toHaveProperty('zIndex', 'auto');
+    expect(getComputedStyle(widget.firstElementChild!)).toHaveProperty(
+      'zIndex',
+      '3',
     );
+    const trigger = screen.getByRole('button', {
+      name: 'Actions for Revenue metric',
+    });
     expect(
-      widgetActions.map((button) => button.getAttribute('aria-label')),
-    ).toEqual(['Delete revenue metric', 'Settings for revenue metric']);
-    expect(widgetActions[0]).toHaveAttribute('data-type', 'outline');
-    expect(widgetActions[0]).toHaveAttribute('data-theme', 'danger');
+      widget.querySelectorAll('[data-dashboard-widget-actions] button'),
+    ).toHaveLength(1);
+
+    // Without `onPlacementChange` there is nothing to resize, so the size
+    // section drops out and only the consumer's own actions remain.
+    await user.click(trigger);
+    expect(
+      screen.getAllByRole('menuitem').map((item) => item.textContent?.trim()),
+    ).toEqual(['Settings for revenue metric', 'Delete revenue metric']);
+    expect(
+      screen
+        .getByRole('menuitem', { name: 'Delete revenue metric' })
+        .closest('li'),
+    ).toHaveAttribute('data-theme', 'danger');
+
     await user.click(
-      screen.getByRole('button', { name: 'Settings for revenue metric' }),
+      screen.getByRole('menuitem', { name: 'Settings for revenue metric' }),
     );
+    await user.click(widget);
+    await user.click(trigger);
     await user.click(
-      screen.getByRole('button', { name: 'Delete revenue metric' }),
+      screen.getByRole('menuitem', { name: 'Delete revenue metric' }),
     );
 
     expect(onSelectionChange).toHaveBeenLastCalledWith(['metric']);
@@ -897,7 +1245,7 @@ describe('Dashboard', () => {
     );
   });
 
-  it('hides the placeholder when a destination cannot fit the minimum size', () => {
+  it('falls back to an enclosing destination when the deepest one cannot fit', () => {
     const onPlacementChange = vi.fn();
 
     renderWithRoot(
@@ -933,12 +1281,204 @@ describe('Dashboard', () => {
     fireEvent(metric, pointerEvent('pointerdown', 20, 20));
     fireEvent(window, pointerEvent('pointermove', 628, 20));
 
+    // The one-column destination cannot hold a two-column minimum, so it is
+    // skipped and the enclosing grid — also under the pointer — is offered
+    // instead. It has the geometry but the destination container occupies that
+    // region, so the landing is reported as danger and never commits.
+    const placeholder = screen.getByTestId('DashboardDropPlaceholder');
+    expect(placeholder).toHaveAttribute('data-dashboard-drop-status', 'danger');
+    expect(contents[0]).toContainElement(placeholder);
+
+    fireEvent(window, pointerEvent('pointerup', 628, 20));
+    expect(onPlacementChange).toHaveBeenCalledTimes(1);
+    expect(onPlacementChange).toHaveBeenCalledWith(
+      { column: 6, row: 0, columns: 2, rows: 1 },
+      {
+        reason: 'move',
+        phase: 'preview',
+        input: 'pointer',
+        isBlocked: true,
+        sourceParentId: 'source',
+        destinationParentId: 'outer',
+      },
+    );
+  });
+
+  it('restores the origin and commits nothing when Escape cancels a move', () => {
+    const onPlacementChange = vi.fn();
+
+    renderWithRoot(
+      <Dashboard qa="Dashboard">
+        <Dashboard.Grid id="source" columns={12} rows={2}>
+          <Dashboard.Widget
+            id="metric"
+            aria-label="Metric"
+            columns={2}
+            rows={1}
+            isMovable
+            onPlacementChange={onPlacementChange}
+          >
+            Metric
+          </Dashboard.Widget>
+        </Dashboard.Grid>
+      </Dashboard>,
+    );
+
+    const dashboard = screen.getByTestId('Dashboard');
+    const content = screen.getByTestId('DashboardContainerContent');
+    const metric = screen.getByRole('group', { name: 'Metric' });
+    mockRect(dashboard, { left: 0, top: 0, width: 1200, height: 400 });
+    mockRect(content, { left: 0, top: 0, width: 1200, height: 192 });
+    mockRect(metric, { left: 0, top: 0, width: 186, height: 80 });
+
+    fireEvent(metric, pointerEvent('pointerdown', 20, 20));
+    fireEvent(window, pointerEvent('pointermove', 425, 20));
+    expect(onPlacementChange).toHaveBeenLastCalledWith(
+      { column: 4, row: 0, columns: 2, rows: 1 },
+      { reason: 'move', phase: 'preview', input: 'pointer' },
+    );
+
+    fireEvent.keyDown(window, { key: 'Escape' });
+
+    // The consumer has been applying every preview, so cancelling has to hand
+    // the origin back rather than simply skipping the commit.
+    expect(onPlacementChange).toHaveBeenLastCalledWith(
+      { column: 0, row: 0, columns: 2, rows: 1 },
+      { reason: 'move', phase: 'commit', input: 'pointer' },
+    );
     expect(
       screen.queryByTestId('DashboardDropPlaceholder'),
     ).not.toBeInTheDocument();
 
-    fireEvent(window, pointerEvent('pointerup', 628, 20));
-    expect(onPlacementChange).not.toHaveBeenCalled();
+    const callsAfterEscape = onPlacementChange.mock.calls.length;
+    fireEvent(window, pointerEvent('pointermove', 700, 20));
+    fireEvent(window, pointerEvent('pointerup', 700, 20));
+    expect(onPlacementChange).toHaveBeenCalledTimes(callsAfterEscape);
+  });
+
+  it('never targets a nested Dashboard as a destination', () => {
+    const onPlacementChange = vi.fn();
+
+    renderWithRoot(
+      <Dashboard qa="Dashboard">
+        <Dashboard.Grid id="source" columns={12} rows={2}>
+          <Dashboard.Widget
+            id="metric"
+            aria-label="Metric"
+            columns={2}
+            rows={1}
+            isMovable
+            onPlacementChange={onPlacementChange}
+          >
+            Metric
+          </Dashboard.Widget>
+          <Dashboard.Widget id="host" column={6} columns={6} rows={2}>
+            <Dashboard qa="Inner">
+              <Dashboard.Grid id="inner-grid" columns={12} rows={2}>
+                <Dashboard.Widget id="inner-metric" aria-label="Inner metric">
+                  Inner
+                </Dashboard.Widget>
+              </Dashboard.Grid>
+            </Dashboard>
+          </Dashboard.Widget>
+        </Dashboard.Grid>
+      </Dashboard>,
+    );
+
+    const contents = screen.getAllByTestId('DashboardContainerContent');
+    mockRect(screen.getByTestId('Dashboard'), {
+      left: 0,
+      top: 0,
+      width: 1200,
+      height: 400,
+    });
+    mockRect(screen.getByTestId('Inner'), {
+      left: 600,
+      top: 0,
+      width: 600,
+      height: 192,
+    });
+    mockRect(contents[0], { left: 0, top: 0, width: 1200, height: 192 });
+    // The inner Dashboard's grid restarts at depth 1, so before it was scoped
+    // out it beat the outer grid on the depth sort and handed the outer
+    // consumer a `destinationParentId` from a tree it does not own.
+    mockRect(contents[1], { left: 600, top: 0, width: 600, height: 192 });
+    const metric = screen.getByRole('group', { name: 'Metric' });
+    mockRect(metric, { left: 0, top: 0, width: 186, height: 80 });
+
+    fireEvent(metric, pointerEvent('pointerdown', 20, 20));
+    fireEvent(window, pointerEvent('pointermove', 700, 20));
+
+    // The move stays inside the outer tree: the placeholder is drawn in the
+    // widget's own grid, not in the nested Dashboard the pointer is over.
+    const placeholder = screen.getByTestId('DashboardDropPlaceholder');
+    expect(contents[0]).toContainElement(placeholder);
+    expect(contents[1]).not.toContainElement(placeholder);
+
+    fireEvent(window, pointerEvent('pointerup', 700, 20));
+    expect(onPlacementChange).toHaveBeenCalled();
+    for (const [, info] of onPlacementChange.mock.calls) {
+      expect(info.destinationParentId).not.toBe('inner-grid');
+    }
+  });
+
+  it('hit-tests against geometry frozen at the start of the gesture', () => {
+    const onPlacementChange = vi.fn();
+
+    renderWithRoot(
+      <Dashboard qa="Dashboard">
+        <Dashboard.Grid id="outer" rows={2}>
+          <Dashboard.Grid id="source" columns={6} rows={2}>
+            <Dashboard.Widget
+              id="metric"
+              aria-label="Metric"
+              columns={2}
+              rows={1}
+              isMovable
+              onPlacementChange={onPlacementChange}
+            >
+              Metric
+            </Dashboard.Widget>
+          </Dashboard.Grid>
+          <Dashboard.Grid id="destination" column={6} columns={6} rows={2} />
+        </Dashboard.Grid>
+      </Dashboard>,
+    );
+
+    const contents = screen.getAllByTestId('DashboardContainerContent');
+    const metric = screen.getByRole('group', { name: 'Metric' });
+    mockRect(screen.getByTestId('Dashboard'), {
+      left: 0,
+      top: 0,
+      width: 1200,
+      height: 400,
+    });
+    mockRect(contents[0], { left: 0, top: 0, width: 1200, height: 192 });
+    mockRect(contents[1], { left: 0, top: 0, width: 592, height: 192 });
+    mockRect(contents[2], { left: 608, top: 0, width: 592, height: 192 });
+    mockRect(metric, { left: 0, top: 0, width: 186, height: 80 });
+
+    fireEvent(metric, pointerEvent('pointerdown', 20, 20));
+    fireEvent(window, pointerEvent('pointermove', 628, 20));
+    expect(onPlacementChange).toHaveBeenLastCalledWith(
+      expect.anything(),
+      expect.objectContaining({ destinationParentId: 'destination' }),
+    );
+
+    // Reflowing the layout under the pointer must not move the destination the
+    // gesture is aiming at; otherwise the preview the consumer applies feeds
+    // back into the next frame's hit test and the drop oscillates.
+    mockRect(contents[2], { left: 900, top: 0, width: 300, height: 192 });
+    fireEvent(window, pointerEvent('pointermove', 640, 20));
+    fireEvent(window, pointerEvent('pointerup', 640, 20));
+
+    expect(onPlacementChange).toHaveBeenLastCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        phase: 'commit',
+        destinationParentId: 'destination',
+      }),
+    );
   });
 
   it('reports a nested container move back to the dashboard root', () => {

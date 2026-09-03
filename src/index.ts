@@ -71,6 +71,7 @@ export type {
   DashboardAddItemInfo,
   DashboardAddItemKind,
   DashboardContainerKind,
+  DashboardNodeAction,
   DashboardParentKind,
   DashboardPlacement,
   DashboardPlacementChangeInfo,

@@ -1,11 +1,14 @@
 import { useRef, useState } from 'react';
 
 import { AreaChartIcon } from '../../../icons/AreaChartIcon';
+import { BarChartIcon } from '../../../icons/BarChartIcon';
 import { ChartKPIIcon } from '../../../icons/ChartKPIIcon';
 import { CloseIcon } from '../../../icons/CloseIcon';
+import { LineChartIcon } from '../../../icons/LineChartIcon';
 import { ReloadIcon } from '../../../icons/ReloadIcon';
 import { TableIcon } from '../../../icons/TableIcon';
 import { Button } from '../../actions/Button/Button';
+import { Skeleton } from '../../content/Skeleton/Skeleton';
 import { Text } from '../../content/Text';
 import { Title } from '../../content/Title';
 import { TextInput } from '../../fields/TextInput/TextInput';
@@ -66,7 +69,7 @@ const meta = {
 export default meta;
 
 type Story = StoryObj<typeof meta>;
-type WidgetType = 'compact' | 'wide' | 'insight';
+type WidgetType = 'compact' | 'wide' | 'insight' | 'chart' | 'table';
 type ContainerKind = 'grid' | 'horizontal-stack' | 'vertical-stack' | 'tabs';
 type NestedContainerKind = Exclude<ContainerKind, 'tabs'>;
 
@@ -142,6 +145,26 @@ const WIDGET_DEFINITIONS: Record<WidgetType, WidgetDefinition> = {
     minRows: 2,
     maxRows: 4,
   },
+  chart: {
+    label: 'Chart',
+    description: '4×2 to 12×4',
+    defaultColumns: 4,
+    defaultRows: 2,
+    minColumns: 3,
+    maxColumns: 12,
+    minRows: 2,
+    maxRows: 4,
+  },
+  table: {
+    label: 'Table',
+    description: '6×3 to 12×6',
+    defaultColumns: 6,
+    defaultRows: 3,
+    minColumns: 4,
+    maxColumns: 12,
+    minRows: 2,
+    maxRows: 6,
+  },
 };
 
 const ADD_ITEMS: readonly DashboardAddItemDefinition[] = [
@@ -161,7 +184,7 @@ const ADD_ITEMS: readonly DashboardAddItemDefinition[] = [
     id: 'widget:wide',
     name: 'Wide metric',
     description: 'Starts at 2×1; resizes through 6×1',
-    icon: <TableIcon />,
+    icon: <LineChartIcon />,
     defaultColumns: 2,
     defaultRows: 1,
     minColumns: 2,
@@ -173,13 +196,37 @@ const ADD_ITEMS: readonly DashboardAddItemDefinition[] = [
     id: 'widget:insight',
     name: 'Insight card',
     description: 'Starts at 2×2; resizes through 4×4',
-    icon: <AreaChartIcon />,
+    icon: <BarChartIcon />,
     defaultColumns: 2,
     defaultRows: 2,
     minColumns: 2,
     maxColumns: 4,
     minRows: 2,
     maxRows: 4,
+  },
+  {
+    id: 'widget:chart',
+    name: 'Chart',
+    description: 'Starts at 4×2; resizes through 12×4',
+    icon: <AreaChartIcon />,
+    defaultColumns: 4,
+    defaultRows: 2,
+    minColumns: 3,
+    maxColumns: 12,
+    minRows: 2,
+    maxRows: 4,
+  },
+  {
+    id: 'widget:table',
+    name: 'Table',
+    description: 'Starts at 6×3; resizes through 12×6',
+    icon: <TableIcon />,
+    defaultColumns: 6,
+    defaultRows: 3,
+    minColumns: 4,
+    maxColumns: 12,
+    minRows: 2,
+    maxRows: 6,
   },
   {
     id: 'container:grid',
@@ -237,20 +284,286 @@ const CONTAINER_LABELS: Record<ContainerKind, string> = {
 const INITIAL_CONTAINERS: PlaygroundContainer[] = [
   {
     nodeType: 'container',
-    id: 'grid-1',
-    kind: 'grid',
-    title: 'Executive commerce overview',
+    id: 'tabs-1',
+    kind: 'tabs',
+    title: 'Commerce performance',
     column: 0,
     row: 0,
+    columns: 12,
+    rows: 6,
+    children: [],
+    tabs: [
+      {
+        id: 'overview',
+        title: 'Overview',
+        children: [
+          {
+            nodeType: 'container',
+            id: 'grid-overview',
+            kind: 'grid',
+            title: 'Overview layout',
+            column: 0,
+            row: 0,
+            columns: 12,
+            rows: 6,
+            children: [
+              {
+                nodeType: 'container',
+                id: 'horizontal-kpi',
+                kind: 'horizontal-stack',
+                title: 'Headline metrics',
+                column: 0,
+                row: 0,
+                columns: 12,
+                rows: 1,
+                children: [
+                  {
+                    nodeType: 'widget',
+                    id: 'wide-1',
+                    type: 'wide',
+                    title: 'Net revenue',
+                    value: '$128K',
+                    change: '+12.4%',
+                    column: 0,
+                    row: 0,
+                    columns: 3,
+                    rows: 1,
+                  },
+                  {
+                    nodeType: 'widget',
+                    id: 'wide-2',
+                    type: 'wide',
+                    title: 'Orders',
+                    value: '842',
+                    change: '+6.1%',
+                    column: 3,
+                    row: 0,
+                    columns: 3,
+                    rows: 1,
+                  },
+                  {
+                    nodeType: 'widget',
+                    id: 'wide-3',
+                    type: 'wide',
+                    title: 'Gross margin',
+                    value: '62.8%',
+                    change: '+1.7 pp',
+                    column: 6,
+                    row: 0,
+                    columns: 3,
+                    rows: 1,
+                  },
+                  {
+                    nodeType: 'widget',
+                    id: 'compact-1',
+                    type: 'compact',
+                    title: 'Returns',
+                    value: '19',
+                    column: 9,
+                    row: 0,
+                    columns: 1,
+                    rows: 1,
+                  },
+                  {
+                    nodeType: 'widget',
+                    id: 'compact-2',
+                    type: 'compact',
+                    title: 'Markets',
+                    value: '24',
+                    column: 10,
+                    row: 0,
+                    columns: 1,
+                    rows: 1,
+                  },
+                ],
+              },
+              {
+                nodeType: 'widget',
+                id: 'chart-1',
+                type: 'chart',
+                title: 'Revenue by week',
+                change: '+18.2%',
+                column: 0,
+                row: 1,
+                columns: 7,
+                rows: 3,
+              },
+              {
+                nodeType: 'widget',
+                id: 'chart-2',
+                type: 'chart',
+                title: 'Orders by channel',
+                change: '+9.8%',
+                column: 7,
+                row: 1,
+                columns: 5,
+                rows: 3,
+              },
+              {
+                nodeType: 'widget',
+                id: 'table-1',
+                type: 'table',
+                title: 'Top products',
+                change: '+4.6%',
+                column: 0,
+                row: 4,
+                columns: 8,
+                rows: 2,
+              },
+              {
+                nodeType: 'widget',
+                id: 'insight-1',
+                type: 'insight',
+                title: 'Inventory health',
+                change: '-4.1%',
+                changeTone: 'negative',
+                subtitle: 'Low-stock products',
+                column: 8,
+                row: 4,
+                columns: 4,
+                rows: 2,
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'revenue',
+        title: 'Revenue',
+        children: [
+          {
+            nodeType: 'container',
+            id: 'grid-revenue',
+            kind: 'grid',
+            title: 'Revenue layout',
+            column: 0,
+            row: 0,
+            columns: 12,
+            rows: 6,
+            children: [
+              {
+                nodeType: 'widget',
+                id: 'chart-3',
+                type: 'chart',
+                title: 'Recognised revenue',
+                change: '+14.0%',
+                column: 0,
+                row: 0,
+                columns: 12,
+                rows: 3,
+              },
+              {
+                nodeType: 'container',
+                id: 'vertical-revenue',
+                kind: 'vertical-stack',
+                title: 'Pipeline',
+                column: 0,
+                row: 3,
+                columns: 5,
+                rows: 3,
+                children: [
+                  {
+                    nodeType: 'widget',
+                    id: 'wide-4',
+                    type: 'wide',
+                    title: 'Qualified pipeline',
+                    value: '$1.7M',
+                    change: '+16.2%',
+                    column: 0,
+                    row: 0,
+                    columns: 5,
+                    rows: 1,
+                  },
+                  {
+                    nodeType: 'widget',
+                    id: 'wide-5',
+                    type: 'wide',
+                    title: 'Forecast',
+                    value: '$146K',
+                    change: '+14.0%',
+                    column: 0,
+                    row: 1,
+                    columns: 5,
+                    rows: 1,
+                  },
+                ],
+              },
+              {
+                nodeType: 'widget',
+                id: 'table-2',
+                type: 'table',
+                title: 'Revenue by account',
+                change: '+11.3%',
+                column: 5,
+                row: 3,
+                columns: 7,
+                rows: 3,
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'operations',
+        title: 'Operations',
+        children: [
+          {
+            nodeType: 'container',
+            id: 'grid-operations',
+            kind: 'grid',
+            title: 'Operations layout',
+            column: 0,
+            row: 0,
+            columns: 12,
+            rows: 6,
+            children: [
+              {
+                nodeType: 'widget',
+                id: 'table-3',
+                type: 'table',
+                title: 'Fulfilment queue',
+                change: '-2.4%',
+                changeTone: 'negative',
+                column: 0,
+                row: 0,
+                columns: 8,
+                rows: 4,
+              },
+              {
+                nodeType: 'widget',
+                id: 'insight-2',
+                type: 'insight',
+                title: 'On-time delivery',
+                change: '+3.2%',
+                subtitle: 'Last eight weeks',
+                column: 8,
+                row: 0,
+                columns: 4,
+                rows: 4,
+              },
+            ],
+          },
+        ],
+      },
+      { id: 'build', title: 'Build a view', children: [] },
+    ],
+  },
+  {
+    nodeType: 'container',
+    id: 'grid-1',
+    kind: 'grid',
+    title: 'Acquisition detail',
+    column: 0,
+    row: 1,
     columns: 12,
     rows: TOP_LEVEL_ROWS,
     children: [
       {
         nodeType: 'widget',
-        id: 'compact-1',
+        id: 'compact-3',
         type: 'compact',
-        title: 'Orders',
-        value: '842',
+        title: 'Sessions',
+        value: '94K',
         column: 0,
         row: 0,
         columns: 1,
@@ -258,11 +571,11 @@ const INITIAL_CONTAINERS: PlaygroundContainer[] = [
       },
       {
         nodeType: 'widget',
-        id: 'wide-1',
+        id: 'wide-8',
         type: 'wide',
-        title: 'Net revenue',
-        value: '$128K',
-        change: '+12.4%',
+        title: 'Signups',
+        value: '3.1K',
+        change: '+7.4%',
         column: 1,
         row: 0,
         columns: 2,
@@ -270,350 +583,86 @@ const INITIAL_CONTAINERS: PlaygroundContainer[] = [
       },
       {
         nodeType: 'widget',
-        id: 'insight-1',
+        id: 'insight-3',
         type: 'insight',
-        title: 'Revenue trend',
-        change: '+18.2%',
-        subtitle: 'Last eight weeks',
+        title: 'Conversion quality',
+        change: '+5.4%',
+        subtitle: 'Qualified sessions',
         column: 3,
         row: 0,
         columns: 2,
         rows: 2,
       },
       {
-        nodeType: 'container',
-        id: 'vertical-1',
-        kind: 'vertical-stack',
-        title: 'Regional breakdown',
-        column: 0,
-        row: 3,
-        columns: 6,
-        rows: 3,
-        children: [
-          {
-            nodeType: 'widget',
-            id: 'wide-2',
-            type: 'wide',
-            title: 'Regional revenue',
-            value: '$74K',
-            change: '+8.7%',
-            column: 0,
-            row: 0,
-            columns: 4,
-            rows: 1,
-          },
-          {
-            nodeType: 'container',
-            id: 'horizontal-1',
-            kind: 'horizontal-stack',
-            title: 'Regional KPIs',
-            column: 0,
-            row: 1,
-            columns: 6,
-            rows: 2,
-            children: [
-              {
-                nodeType: 'widget',
-                id: 'compact-2',
-                type: 'compact',
-                title: 'Active markets',
-                value: '24',
-                column: 0,
-                row: 0,
-                columns: 1,
-                rows: 1,
-              },
-              {
-                nodeType: 'widget',
-                id: 'insight-2',
-                type: 'insight',
-                title: 'Market momentum',
-                change: '+11.5%',
-                subtitle: 'Across all regions',
-                column: 1,
-                row: 0,
-                columns: 2,
-                rows: 2,
-              },
-              {
-                nodeType: 'widget',
-                id: 'wide-6',
-                type: 'wide',
-                title: 'Repeat purchase rate',
-                value: '38.6%',
-                change: '+2.1 pp',
-                column: 3,
-                row: 0,
-                columns: 3,
-                rows: 1,
-              },
-            ],
-          },
-        ],
-      },
-      {
-        nodeType: 'widget',
-        id: 'wide-4',
-        type: 'wide',
-        title: 'Gross margin',
-        value: '62.8%',
-        change: '+1.7 pp',
-        column: 5,
-        row: 2,
-        columns: 3,
-        rows: 1,
-      },
-      {
-        nodeType: 'widget',
-        id: 'compact-3',
-        type: 'compact',
-        title: 'Returns',
-        value: '19',
-        column: 9,
-        row: 0,
-        columns: 1,
-        rows: 1,
-      },
-      {
-        nodeType: 'widget',
-        id: 'wide-5',
-        type: 'wide',
-        title: 'Forecast',
-        value: '$146K',
-        change: '+14.0%',
-        column: 10,
-        row: 0,
-        columns: 2,
-        rows: 1,
-      },
-      {
         nodeType: 'widget',
         id: 'insight-4',
         type: 'insight',
-        title: 'Inventory health',
-        change: '-4.1%',
-        changeTone: 'negative',
-        subtitle: 'Low-stock products',
-        column: 9,
-        row: 1,
-        columns: 3,
+        title: 'Retention curve',
+        change: '+6.9%',
+        subtitle: 'Week-one retention',
+        column: 5,
+        row: 0,
+        columns: 2,
         rows: 2,
       },
       {
         nodeType: 'container',
-        id: 'horizontal-2',
+        id: 'horizontal-1',
         kind: 'horizontal-stack',
-        title: 'Channel health',
-        column: 6,
-        row: 3,
-        columns: 6,
-        rows: 3,
+        title: 'Acquisition KPIs',
+        column: 7,
+        row: 0,
+        columns: 5,
+        rows: 1,
         children: [
           {
             nodeType: 'widget',
-            id: 'insight-5',
-            type: 'insight',
-            title: 'Channel mix',
-            change: '+9.8%',
-            subtitle: 'Direct and partner sales',
+            id: 'wide-6',
+            type: 'wide',
+            title: 'Acquisition cost',
+            value: '$46',
+            change: '-7.6%',
             column: 0,
             row: 0,
             columns: 3,
-            rows: 3,
+            rows: 1,
           },
           {
             nodeType: 'widget',
-            id: 'wide-8',
+            id: 'wide-7',
             type: 'wide',
-            title: 'Marketing efficiency',
-            value: '4.3×',
-            change: '+0.5×',
+            title: 'ROAS',
+            value: '3.4×',
+            change: '+0.4×',
             column: 3,
             row: 0,
             columns: 2,
             rows: 1,
           },
-          {
-            nodeType: 'widget',
-            id: 'compact-5',
-            type: 'compact',
-            title: 'Campaigns',
-            value: '12',
-            column: 5,
-            row: 0,
-            columns: 1,
-            rows: 1,
-          },
-        ],
-      },
-    ],
-  },
-  {
-    nodeType: 'container',
-    id: 'tabs-1',
-    kind: 'tabs',
-    title: 'Acquisition analysis',
-    column: 0,
-    row: 1,
-    columns: 12,
-    rows: 4,
-    children: [],
-    tabs: [
-      {
-        id: 'channels',
-        title: 'Channels',
-        children: [
-          {
-            nodeType: 'container',
-            id: 'grid-2',
-            kind: 'grid',
-            title: 'Channel performance',
-            column: 0,
-            row: 0,
-            columns: 12,
-            rows: 4,
-            children: [
-              {
-                nodeType: 'widget',
-                id: 'insight-3',
-                type: 'insight',
-                title: 'New customer growth',
-                change: '+24.8%',
-                subtitle: 'New customers by week',
-                column: 0,
-                row: 0,
-                columns: 4,
-                rows: 3,
-              },
-              {
-                nodeType: 'widget',
-                id: 'wide-3',
-                type: 'wide',
-                title: 'Qualified pipeline',
-                value: '$1.7M',
-                change: '+16.2%',
-                column: 4,
-                row: 0,
-                columns: 4,
-                rows: 1,
-              },
-              {
-                nodeType: 'widget',
-                id: 'compact-6',
-                type: 'compact',
-                title: 'ROAS',
-                value: '3.4×',
-                column: 8,
-                row: 0,
-                columns: 1,
-                rows: 1,
-              },
-              {
-                nodeType: 'widget',
-                id: 'wide-9',
-                type: 'wide',
-                title: 'Customer acquisition cost',
-                value: '$46',
-                change: '-7.6%',
-                column: 9,
-                row: 0,
-                columns: 3,
-                rows: 1,
-              },
-              {
-                nodeType: 'widget',
-                id: 'insight-6',
-                type: 'insight',
-                title: 'Conversion quality',
-                change: '+5.4%',
-                subtitle: 'Qualified sessions',
-                column: 4,
-                row: 1,
-                columns: 4,
-                rows: 2,
-              },
-            ],
-          },
         ],
       },
       {
-        id: 'cohorts',
-        title: 'Cohorts',
-        children: [
-          {
-            nodeType: 'container',
-            id: 'vertical-2',
-            kind: 'vertical-stack',
-            title: 'Customer cohorts',
-            column: 0,
-            row: 0,
-            columns: 12,
-            rows: 4,
-            children: [
-              {
-                nodeType: 'widget',
-                id: 'wide-10',
-                type: 'wide',
-                title: '90-day customer value',
-                value: '$318',
-                change: '+10.1%',
-                column: 0,
-                row: 0,
-                columns: 6,
-                rows: 1,
-              },
-              {
-                nodeType: 'container',
-                id: 'horizontal-3',
-                kind: 'horizontal-stack',
-                title: 'Cohort signals',
-                column: 0,
-                row: 1,
-                columns: 12,
-                rows: 3,
-                children: [
-                  {
-                    nodeType: 'widget',
-                    id: 'insight-7',
-                    type: 'insight',
-                    title: 'Retention curve',
-                    change: '+6.9%',
-                    subtitle: 'Week-one retention',
-                    column: 0,
-                    row: 0,
-                    columns: 4,
-                    rows: 3,
-                  },
-                  {
-                    nodeType: 'widget',
-                    id: 'wide-11',
-                    type: 'wide',
-                    title: 'Repeat customers',
-                    value: '18.4K',
-                    change: '+13.7%',
-                    column: 4,
-                    row: 0,
-                    columns: 4,
-                    rows: 1,
-                  },
-                  {
-                    nodeType: 'widget',
-                    id: 'compact-7',
-                    type: 'compact',
-                    title: 'Churn risk',
-                    value: '126',
-                    column: 8,
-                    row: 0,
-                    columns: 1,
-                    rows: 1,
-                  },
-                ],
-              },
-            ],
-          },
-        ],
+        nodeType: 'widget',
+        id: 'chart-4',
+        type: 'chart',
+        title: 'New customers by week',
+        change: '+24.8%',
+        column: 0,
+        row: 3,
+        columns: 7,
+        rows: 3,
       },
-      { id: 'build', title: 'Build a view', children: [] },
+      {
+        nodeType: 'widget',
+        id: 'table-4',
+        type: 'table',
+        title: 'Campaign performance',
+        change: '+8.5%',
+        column: 7,
+        row: 3,
+        columns: 5,
+        rows: 3,
+      },
     ],
   },
 ];
@@ -629,6 +678,25 @@ function overlaps(first: DashboardPlacement, second: DashboardPlacement) {
 
 function getContainerColumns(container: PlaygroundContainer) {
   return Math.max(1, Math.min(12, container.columns));
+}
+
+function findFreeSpot(
+  occupied: PlaygroundNode[],
+  size: DashboardPlacement,
+  columns: number,
+  rows: number,
+): { column: number; row: number } | null {
+  for (let row = 0; row + size.rows <= rows; row += 1) {
+    for (let column = 0; column + size.columns <= columns; column += 1) {
+      const candidate = { ...size, column, row };
+
+      if (!occupied.some((node) => overlaps(candidate, node))) {
+        return { column, row };
+      }
+    }
+  }
+
+  return null;
 }
 
 function isWithinContainer(
@@ -1201,57 +1269,6 @@ function transferPlaygroundNodes(
   };
 }
 
-function resolveGroupMove(
-  parent: PlaygroundContainer,
-  items: DashboardPlacementChangeItem[],
-): PlaygroundNode[] | null {
-  const movingIds = new Set(items.map((item) => item.id));
-  const movingNodes = parent.children.filter((child) =>
-    movingIds.has(child.id),
-  );
-  if (movingNodes.length !== items.length) return null;
-
-  if (parent.kind === 'horizontal-stack' || parent.kind === 'vertical-stack') {
-    const axis = parent.kind === 'horizontal-stack' ? 'column' : 'row';
-    const span = parent.kind === 'horizontal-stack' ? 'columns' : 'rows';
-    const stationary = parent.children.filter(
-      (child) => !movingIds.has(child.id),
-    );
-    const insertionPoint = items[0].placement[axis];
-    const insertionIndex = stationary.findIndex(
-      (child) => insertionPoint < child[axis] + child[span] / 2,
-    );
-    const orderedMoving = parent.children.filter((child) =>
-      movingIds.has(child.id),
-    );
-    const next = [...stationary];
-    next.splice(
-      insertionIndex < 0 ? next.length : insertionIndex,
-      0,
-      ...orderedMoving,
-    );
-
-    return normalizeStackChildren(parent, next);
-  }
-
-  const placements = new Map(items.map((item) => [item.id, item.placement]));
-  const next = parent.children.map((child) => {
-    const placement = placements.get(child.id);
-    return placement ? { ...child, ...placement } : child;
-  });
-
-  if (
-    items.some((item) => !isWithinContainer(parent, item.placement)) ||
-    next.some((node, index) =>
-      next.slice(index + 1).some((other) => overlaps(node, other)),
-    )
-  ) {
-    return null;
-  }
-
-  return next;
-}
-
 function findPlaygroundNode(
   nodes: PlaygroundNode[],
   id: string,
@@ -1330,135 +1347,6 @@ function acceptsPlacement(
   return siblings.find((sibling) => overlaps(sibling, placement)) ?? null;
 }
 
-function resolveStackMove(
-  parent: PlaygroundContainer,
-  nodeId: string,
-  placement: DashboardPlacement,
-): PlaygroundNode[] | null {
-  if (!isWithinContainer(parent, placement)) return null;
-
-  const children = normalizeStackChildren(parent);
-  const sourceIndex = children.findIndex((child) => child.id === nodeId);
-  if (sourceIndex < 0) return null;
-
-  const isHorizontal = parent.kind === 'horizontal-stack';
-  const start = isHorizontal ? placement.column : placement.row;
-  const end = start + (isHorizontal ? placement.columns : placement.rows);
-  let blockerIndex = -1;
-  let blockerOverlap = 0;
-
-  children.forEach((child, index) => {
-    if (index === sourceIndex) return;
-    const childStart = isHorizontal ? child.column : child.row;
-    const childEnd = childStart + (isHorizontal ? child.columns : child.rows);
-    const overlap = Math.max(
-      0,
-      Math.min(end, childEnd) - Math.max(start, childStart),
-    );
-
-    if (overlap > blockerOverlap) {
-      blockerIndex = index;
-      blockerOverlap = overlap;
-    }
-  });
-
-  if (blockerIndex < 0) return children;
-
-  const reordered = [...children];
-  const [moving] = reordered.splice(sourceIndex, 1);
-  reordered.splice(blockerIndex, 0, moving);
-
-  return normalizeStackChildren(parent, reordered);
-}
-
-function resolveGridMove(
-  parent: PlaygroundContainer,
-  nodeId: string,
-  placement: DashboardPlacement,
-): PlaygroundNode[] | null {
-  if (!isWithinContainer(parent, placement)) return null;
-
-  const moving = parent.children.find((child) => child.id === nodeId);
-  if (!moving) return null;
-  const stationary = parent.children.filter((child) => child.id !== nodeId);
-  const blockers = stationary.filter((child) => overlaps(child, placement));
-
-  if (blockers.length === 0) {
-    return parent.children.map((child) =>
-      child.id === nodeId ? { ...child, ...placement } : child,
-    );
-  }
-
-  if (blockers.length !== 1) return null;
-  const blocker = blockers[0];
-  const movedPlacement = placement;
-  const remaining = stationary.filter((child) => child.id !== blocker.id);
-  const displacedPlacements: DashboardPlacement[] = [];
-
-  for (
-    let row = moving.row;
-    row <= moving.row + moving.rows - blocker.rows;
-    row += 1
-  ) {
-    for (
-      let column = moving.column;
-      column <= moving.column + moving.columns - blocker.columns;
-      column += 1
-    ) {
-      const candidate = {
-        column,
-        row,
-        columns: blocker.columns,
-        rows: blocker.rows,
-      };
-
-      if (
-        isWithinContainer(parent, candidate) &&
-        !overlaps(movedPlacement, candidate) &&
-        !remaining.some((child) => overlaps(child, candidate))
-      ) {
-        displacedPlacements.push(candidate);
-      }
-    }
-  }
-
-  displacedPlacements.sort((a, b) => {
-    const distanceA =
-      Math.abs(a.column - blocker.column) + Math.abs(a.row - blocker.row);
-    const distanceB =
-      Math.abs(b.column - blocker.column) + Math.abs(b.row - blocker.row);
-
-    return distanceA - distanceB;
-  });
-
-  const displacedPlacement = displacedPlacements[0];
-
-  if (
-    !isWithinContainer(parent, movedPlacement) ||
-    !displacedPlacement ||
-    remaining.some((child) => overlaps(child, movedPlacement))
-  ) {
-    return null;
-  }
-
-  return parent.children.map((child) => {
-    if (child.id === nodeId) return { ...child, ...movedPlacement };
-    if (child.id === blocker.id) return { ...child, ...displacedPlacement };
-
-    return child;
-  });
-}
-
-function resolveMove(
-  parent: PlaygroundContainer,
-  nodeId: string,
-  placement: DashboardPlacement,
-): PlaygroundNode[] | null {
-  return parent.kind === 'horizontal-stack' || parent.kind === 'vertical-stack'
-    ? resolveStackMove(parent, nodeId, placement)
-    : resolveGridMove(parent, nodeId, placement);
-}
-
 function MiniBars() {
   const values = [34, 52, 40, 70, 58, 82, 76, 92];
 
@@ -1501,6 +1389,37 @@ function WidgetContent({ widget }: { widget: PlaygroundWidget }) {
         <Title level={3} preset="h5">
           {widget.value ?? '842'}
         </Title>
+      </Flow>
+    );
+  }
+
+  if (widget.type === 'chart' || widget.type === 'table') {
+    return (
+      <Flow
+        padding="1.5x"
+        display="grid"
+        gridRows="auto minmax(0, 1fr)"
+        gap="1x"
+        height="100%"
+      >
+        <Flow display="flex" placeContent="space-between" alignItems="start">
+          <Title level={3} preset="h5" ellipsis>
+            {widget.title}
+          </Title>
+          <Text preset="c3" color={changeColor}>
+            {widget.change ?? '+9.4%'}
+          </Text>
+        </Flow>
+        {/* `isStatic` everywhere: a shimmering placeholder is a flaky snapshot.
+            `height="100%"` overrides the chart layout's own fixed height. */}
+        <Skeleton
+          layout={widget.type}
+          isStatic
+          columns={widget.type === 'table' ? 4 : 10}
+          rows={3}
+          height="100%"
+          styles={{ minHeight: 0 }}
+        />
       </Flow>
     );
   }
@@ -1558,7 +1477,11 @@ function WidgetContent({ widget }: { widget: PlaygroundWidget }) {
 
 function WidgetPresetLegend() {
   return (
-    <Flow display="grid" gridColumns="repeat(3, minmax(0, 1fr))" gap="1x">
+    <Flow
+      display="grid"
+      gridColumns="repeat(auto-fit, minmax(140px, 1fr))"
+      gap="1x"
+    >
       {(Object.keys(WIDGET_DEFINITIONS) as WidgetType[]).map((type) => {
         const definition = WIDGET_DEFINITIONS[type];
 
@@ -1796,6 +1719,48 @@ export function DashboardPlayground({
     }
   };
 
+  // `onDuplicatePress` is opt-in, and the playground opts in for widgets only —
+  // duplicating a container would mean remapping every descendant id.
+  const duplicateWidget = (parentId: string, widget: PlaygroundWidget) => {
+    const parent = findContainer(containers, parentId);
+    if (!parent) return;
+
+    const spot =
+      parent.kind === 'grid'
+        ? findFreeSpot(
+            normalizeStackChildren(parent),
+            widget,
+            getContainerColumns(parent),
+            parent.rows,
+          )
+        : { column: 0, row: 0 };
+
+    if (!spot) {
+      setNotice(`No room to duplicate ${widget.title} in ${parent.title}.`);
+      return;
+    }
+
+    const index = nextId.current;
+    nextId.current += 1;
+    const copy: PlaygroundWidget = {
+      ...widget,
+      ...spot,
+      id: `${widget.type}-${index}`,
+      title: `${widget.title} copy`,
+    };
+
+    setContainers(
+      updateContainerTree(containers, parentId, (container) => ({
+        ...container,
+        children: normalizeStackChildren(container, [
+          ...container.children,
+          copy,
+        ]),
+      })),
+    );
+    setNotice(`${widget.title} duplicated in ${parent.title}.`);
+  };
+
   const deleteNode = (id: string, title: string) => {
     const removal = removePlaygroundNode(containers, id);
     if (!removal.removed) return;
@@ -1874,64 +1839,73 @@ export function DashboardPlayground({
       return;
     }
 
-    if (info.reason === 'move' && info.items && info.items.length > 1) {
-      if (info.phase === 'commit') {
-        setNotice(`${info.items.length} selected items moved.`);
+    // Dashboard resolves move occupancy itself — swapping a Grid occupant into
+    // the vacated box, reordering a stack — and reports the whole arrangement
+    // through `info.items`. The consumer's job is to write it down.
+    if (info.reason === 'move') {
+      if (info.isBlocked) {
+        setNotice('That item cannot swap with the current occupants.');
         return;
       }
 
-      const nextChildren = resolveGroupMove(parent, info.items);
-      if (!nextChildren) {
-        setNotice('The selected items cannot fit at that position.');
+      if (info.phase === 'commit') {
+        setNotice(
+          info.items && info.items.length > 1
+            ? `${info.items.length} items moved.`
+            : `Moved to ${placement.columns}×${placement.rows} at column ${placement.column + 1}, row ${placement.row + 1}.`,
+        );
         return;
       }
+
+      const placements = new Map(
+        [
+          ...(info.items ?? [{ id: nodeId, placement }]),
+          ...(info.displaced ?? []),
+        ].map((item) => [item.id, item.placement]),
+      );
 
       setContainers(
         updateContainerTree(containers, parentId, (container) => ({
           ...container,
-          children: nextChildren,
+          children: container.children.map((child) => {
+            const next = placements.get(child.id);
+
+            return next ? { ...child, ...next } : child;
+          }),
         })),
       );
       setNotice(null);
       return;
     }
 
-    if (info.phase === 'commit') {
-      setNotice(
-        `${info.reason === 'move' ? 'Moved' : 'Resized'} to ${placement.columns}×${placement.rows} at column ${placement.column + 1}, row ${placement.row + 1}.`,
-      );
+    const resized = `Resized to ${placement.columns}×${placement.rows} at column ${placement.column + 1}, row ${placement.row + 1}.`;
+
+    // A drag has already written every step by the time it commits. A menu size
+    // command is a single `commit` with no preview behind it, so it still has to
+    // be applied here.
+    if (info.phase === 'commit' && info.input !== 'command') {
+      setNotice(resized);
       return;
     }
 
-    const nextChildren =
-      info.reason === 'move'
-        ? resolveMove(parent, nodeId, placement)
-        : acceptsPlacement(parent, nodeId, placement)
-          ? null
-          : normalizeStackChildren(
-              parent,
-              parent.children.map((child) =>
-                child.id === nodeId ? { ...child, ...placement } : child,
-              ),
-            );
-
-    if (!nextChildren) {
-      setNotice(
-        info.reason === 'move'
-          ? 'That item cannot swap with the current occupants.'
-          : 'That resize is blocked by another item.',
-      );
+    if (acceptsPlacement(parent, nodeId, placement)) {
+      setNotice('That resize is blocked by another item.');
       return;
     }
 
     setContainers(
       updateContainerTree(containers, parentId, (container) => ({
         ...container,
-        children: nextChildren,
+        children: normalizeStackChildren(
+          container,
+          container.children.map((child) =>
+            child.id === nodeId ? { ...child, ...placement } : child,
+          ),
+        ),
       })),
     );
 
-    setNotice(null);
+    setNotice(info.input === 'command' ? resized : null);
   };
 
   const updateTopLevelContainerPlacement = (
@@ -1976,12 +1950,11 @@ export function DashboardPlayground({
       return;
     }
 
-    if (info.phase === 'commit') {
-      setNotice(
-        info.reason === 'move'
-          ? `${container.title} moved.`
-          : `${container.title} resized to ${placement.columns}×${placement.rows}.`,
-      );
+    const resized = `${container.title} resized to ${placement.columns}×${placement.rows}.`;
+
+    // As above: a menu size command commits without ever previewing.
+    if (info.phase === 'commit' && info.input !== 'command') {
+      setNotice(info.reason === 'move' ? `${container.title} moved.` : resized);
       return;
     }
 
@@ -2013,7 +1986,7 @@ export function DashboardPlayground({
       })),
     );
 
-    setNotice(null);
+    setNotice(info.input === 'command' ? resized : null);
   };
 
   const renderWidget = (
@@ -2041,11 +2014,13 @@ export function DashboardPlayground({
         moveLabel={`Move ${widget.title}`}
         resizeLabel={`Resize ${widget.title}`}
         settingsLabel={`Settings for ${widget.title}`}
+        duplicateLabel={`Duplicate ${widget.title}`}
         deleteLabel={`Delete ${widget.title}`}
         onPlacementChange={(placement, info) =>
           updatePlacement(parent.id, widget.id, placement, info)
         }
         onSettingsPress={() => setSettingsId(widget.id)}
+        onDuplicatePress={() => duplicateWidget(parent.id, widget)}
         onDeletePress={() => deleteNode(widget.id, widget.title)}
       >
         <WidgetContent widget={widget} />
@@ -2200,9 +2175,11 @@ export function DashboardPlayground({
         <Flow gap="0.5x">
           <Title preset="h3">Dashboard Playground</Title>
           <Text preset="c2" color="#dark.60">
-            Drag widgets or containers from any non-action surface. Stacks
-            reflow blockers, Grid swaps when both placements fit, and items can
-            move into or out of nested containers through level three.
+            Drag widgets or containers from any non-action surface, or press and
+            drag the add button to claim an area before choosing what fills it.
+            Every node's actions — including the size commands — sit behind its
+            menu. Stacks reflow blockers, Grid swaps when both placements fit,
+            and items move into or out of nested containers through level three.
           </Text>
         </Flow>
         <Flow display="flex" gap="1x">

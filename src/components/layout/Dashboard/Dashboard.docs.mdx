@@ -6,7 +6,7 @@ import * as DashboardStories from './Dashboard.stories';
 
 # Dashboard
 
-Dashboard is a standalone compound layout for authoring full-width dashboards on one shared 12-column scale. A nested container exposes its own current column span as child capacity, while all containers share one row height and gap configuration. Consumers register their widget and container types, then retain ownership of the serializable layout state and custom widget rendering.
+Dashboard is a standalone compound layout for authoring full-width dashboards on one shared 12-column scale. A nested container exposes its own current column span as child capacity, while all containers share one row height and gap configuration. Consumers register their widget and container types, then retain ownership of the serializable layout state and custom widget rendering. Dashboard resolves collisions itself and reports the resolved set, so a consumer writes placements rather than reimplementing reflow.
 
 ## When to Use
 
@@ -18,7 +18,7 @@ Dashboard is a standalone compound layout for authoring full-width dashboards on
 
 <Story of={DashboardStories.Playground} />
 
-The Playground owns a recursive serializable tree and registers three constrained widget types plus the available container types with Dashboard. The permanent root add button creates Grid, HorizontalStack, VerticalStack, or Tabs containers. Hovering a Grid reveals only that Grid's vacant cells and moves its add button to the current cell; crossing a gap preserves the last valid cell. The entire outlined cell is pressable, and its matching resting fill transitions directly to the hovered colors while the CirclePlus icon appears. An open menu keeps that trigger and destination locked while the pointer crosses into the popover. HorizontalStack and VerticalStack expose one insertion point at the end. Every tab owns an independent layout and, while empty, offers one full-panel add button for Grid, HorizontalStack, or VerticalStack only. The menu disables registered items that cannot fit and stops offering nested containers at depth three.
+The Playground owns a recursive serializable tree and registers five constrained widget types plus the available container types with Dashboard. The permanent root add button creates Grid, HorizontalStack, VerticalStack, or Tabs containers. Hovering a Grid reveals only that Grid's vacant cells and moves its add button to the current cell; crossing a gap preserves the last valid cell. The entire outlined cell is pressable, and its matching resting fill transitions directly to the hovered colors while the CirclePlus icon appears. An open menu keeps that trigger and destination locked while the pointer crosses into the popover. HorizontalStack and VerticalStack expose one insertion point at the end. Every tab owns an independent layout and, while empty, offers one full-panel add button for Grid, HorizontalStack, or VerticalStack only. The menu disables registered items that cannot fit and stops offering nested containers at depth three. Pressing and dragging a Grid's add button claims an area — clamped to the free cells reachable from the anchor — and the button grows to occupy it, after which the menu offers only items that can _be_ that size. `Shift` with the arrow keys claims the same area from the keyboard. Every node's own actions, including its size commands, sit behind one menu button in its top-right corner.
 
 ---
 
@@ -37,7 +37,7 @@ The Playground owns a recursive serializable tree and registers three constraine
 ### Dashboard
 
 - **`rowHeight`** `number` (default: `80`) — Height in pixels of a content row in every container.
-- **`gap`** `number | [number, number]` (default: `16`) — Shared gap, or horizontal and vertical gaps, in pixels.
+- **`gap`** `number | [number, number]` (default: `16`) — Shared gap, or horizontal and vertical gaps, in pixels, **inside** every container's grid. The channel between top-level containers is a fixed `1x` and is not configurable; because a depth-one container's selectable box protrudes `8px` into that channel, adjacent top-level boundaries meet when both are outlined, and Dashboard's own box does not clip the protrusion — leave padding around the component.
 - **`isEditing`** `boolean` (default: `false`) — Reveals transparent, rounded container boundaries on hover; boundaries persist during resize, every boundary is revealed during a move, and a newly mounted container remains revealed briefly.
 - **`selectionMode`** `'none' | 'single' | 'multiple'` (default: `'multiple'`) — Whether and how Dashboard nodes can be selected.
 - **`selectedKeys`** `string[]` — Controlled selected widget and container ids.
@@ -61,13 +61,17 @@ The Playground owns a recursive serializable tree and registers three constraine
 - **`maxColumns`** `number` (default: `12`, clamped to the parent) — Maximum nested-container width.
 - **`minRows`** `number` (default: `1`) — Explicit minimum height; occupied child bounds may raise it.
 - **`maxRows`** `number` (default: `12` at root or parent rows when nested) — Maximum container height.
-- **`onPlacementChange`** `(placement, info) => void` — Reports preview and committed container movement/resizing. A selected sibling group is reported atomically through `info.items`.
+- **`onPlacementChange`** `(placement, info) => void` — Reports preview and committed container movement/resizing. Every placement Dashboard resolved for the gesture — the grabbed group and any displaced sibling — arrives through `info.items`.
 - **`moveLabel`** `string` — Accessible name for the focused movable container.
 - **`resizeLabel`** `string` — Accessible label for the container resize handle.
-- **`onSettingsPress`** `(event: PressEvent) => void` — Enables the standard settings action after the container is selected.
-- **`settingsLabel`** `string` — Accessible label for the container settings action.
-- **`onDeletePress`** `(event: PressEvent) => void` — Enables the standard delete action after the container is selected.
-- **`deleteLabel`** `string` — Accessible label for the container delete action.
+- **`onSettingsPress`** `() => void` — Adds Settings to the container's action menu.
+- **`settingsLabel`** `string` — Label for the settings menu item.
+- **`onDuplicatePress`** `() => void` — Adds Duplicate to the menu. Opt-in: without it the item is absent.
+- **`duplicateLabel`** `string` — Label for the duplicate menu item.
+- **`onDeletePress`** `() => void` — Adds the danger-themed Delete to the menu.
+- **`deleteLabel`** `string` — Label for the delete menu item.
+- **`actions`** `readonly DashboardNodeAction[]` — Consumer menu items, placed between the standard actions and the size commands. Each carries `id`, `name`, and optional `icon`, `description`, and `isDisabled`.
+- **`onMenuAction`** `(key: string) => void` — Receives the `id` of a pressed consumer item.
 - **`aria-label`** `string` — Accessible name; falls back to a string title and then the id.
 
 ### Tabs
@@ -99,14 +103,26 @@ Tabs is root-only. Its tab strip ends with a delimiter and keeps a `1x` gap befo
 - **`maxColumns`** `number` (default: `12`, clamped to the parent) — Maximum widget width in columns.
 - **`minRows`** `number` (default: `1`) — Minimum widget height in rows.
 - **`maxRows`** `number` (default: parent row count) — Maximum widget height in rows.
-- **`onPlacementChange`** `(placement, info) => void` — Reports preview and committed movement/resizing. A selected sibling group is reported atomically through `info.items`; the consumer owns layout state and collision handling.
+- **`onPlacementChange`** `(placement, info) => void` — Reports preview and committed movement/resizing. Every placement Dashboard resolved for the gesture — the grabbed group and any displaced sibling — arrives through `info.items`; the consumer owns layout state and persistence.
 - **`moveLabel`** `string` — Accessible name for the focused movable widget.
 - **`resizeLabel`** `string` — Accessible label for the resize handle.
-- **`onSettingsPress`** `(event: PressEvent) => void` — Enables the standard settings control on the selected widget and reports its activation.
-- **`settingsLabel`** `string` — Accessible label for the settings control.
-- **`onDeletePress`** `(event: PressEvent) => void` — Enables the danger-outline delete control on the selected widget and reports its activation.
-- **`deleteLabel`** `string` — Accessible label for the delete control.
+- **`onSettingsPress`** `() => void` — Adds Settings to the widget's action menu.
+- **`settingsLabel`** `string` — Label for the settings menu item.
+- **`onDuplicatePress`** `() => void` — Adds Duplicate to the menu. Opt-in: without it the item is absent.
+- **`duplicateLabel`** `string` — Label for the duplicate menu item.
+- **`onDeletePress`** `() => void` — Adds the danger-themed Delete to the menu.
+- **`deleteLabel`** `string` — Label for the delete menu item.
+- **`actions`** `readonly DashboardNodeAction[]` — Consumer menu items, placed between the standard actions and the size commands.
+- **`onMenuAction`** `(key: string) => void` — Receives the `id` of a pressed consumer item.
 - **`aria-label`** `string` — Accessible widget name; falls back to the id.
+
+### Node action menu
+
+A selected widget or container exposes one round menu button in its top-right corner, holding — in order — Settings, Duplicate, the consumer's own `actions`, the size commands, and Delete. The button appears only when the node has at least one action or one available size command.
+
+The size commands are Widen, Narrow, Make taller, Make shorter, Grow on both axes, Shrink on both axes, and Fill available space. They require `onPlacementChange` and cover only the axes that can actually change — a VerticalStack child cannot change columns, a HorizontalStack child cannot change rows, and a node whose own minimum equals its maximum on both axes gets no size section at all. Each remaining command is disabled when pressing it would change nothing — because the node is at a bound, because the parent has no room left at its origin, or because a sibling occupies the space. Occupancy is read when the menu opens, not on every render. A container's shrink commands additionally respect the minimum derived from its own children.
+
+A size command reports through the same `onPlacementChange` contract as the resize handle: one call with `reason: 'resize'`, `phase: 'commit'`, and `input: 'command'`. Note that it is a commit with **no preview behind it** — a consumer that applies previews during a drag and only announces the commit still has to write this one, which `input === 'command'` identifies. The commands are also the accessible route to resizing.
 
 ### Base Properties
 
@@ -285,7 +301,7 @@ return (
 
 ### Controlled movement and resizing
 
-Dashboard quantizes pointer and keyboard gestures to whole grid units, applies the node's bounds, and reports the proposed placement. A move starts from any point on a movable widget or container except buttons, inputs, links, tabs, resize grips, and descendants marked with `data-dashboard-no-move`. The consumer accepts a placement by writing it to state; this keeps collision policy and persistence outside the component.
+Dashboard quantizes pointer and keyboard gestures to whole grid units, applies the node's bounds, and reports the proposed placement. A move starts from any point on a movable widget or container except buttons, inputs, links, tabs, resize grips, and descendants marked with `data-dashboard-no-move`. The consumer accepts a placement by writing it to state, which keeps persistence — and the final say — outside the component. Collision resolution is Dashboard's: it reports placements that already account for the occupants in the destination.
 
 ```jsx
 const [placement, setPlacement] = useState({
@@ -320,7 +336,9 @@ const [placement, setPlacement] = useState({
 </Dashboard>;
 ```
 
-`info.phase` is `'preview'` while a gesture is active and `'commit'` when it ends. `info.reason` identifies a move or resize, and `info.input` identifies pointer or keyboard input. When a pointer crosses into another container, the move proposal is expressed in that destination's local coordinates and `info.sourceParentId` plus `info.destinationParentId` identify the atomic tree transfer. The destination id is `null` for the Dashboard root. Those fields are omitted for movement within one parent and for resizing.
+`info.phase` is `'preview'` while a gesture is active and `'commit'` when it ends. `info.reason` identifies a move or resize, and `info.input` is `'pointer'`, `'keyboard'`, or `'command'` for a size command pressed in the node menu.
+
+Dashboard resolves occupancy before it reports. `info.items` carries every placement the resolution produced, `info.displaced` carries only the siblings Dashboard moved out of the way, and `info.isBlocked` is `true` when no resolution exists — the destination shows the danger placeholder and the consumer should reject the proposal. In a Grid, a single blocker is swapped into the box the moving node vacated; in a stack, the affected siblings are reflowed around the insertion point. A consumer applies `info.items` (plus `info.displaced`) verbatim and can still refuse a proposal simply by not writing it. When a pointer crosses into another container, the move proposal is expressed in that destination's local coordinates and `info.sourceParentId` plus `info.destinationParentId` identify the atomic tree transfer. The destination id is `null` for the Dashboard root. Those fields are omitted for movement within one parent and for resizing.
 
 Containers use the same controlled placement callback for movement and resizing. Inside one parent, a top-level container moves vertically, a HorizontalStack child horizontally, a VerticalStack child vertically, and Grid children on both axes. A tab panel holds one layout root and primarily acts as a cross-parent origin or destination. When a node enters a HorizontalStack, its proposed `rows` expands to the lesser of the stack height and its `maxRows`; when it enters a VerticalStack, its proposed `columns` expands to the lesser of the stack width and its `maxColumns`. A node that reaches its constraint before filling the cross axis remains aligned to the top in HorizontalStack or the left in VerticalStack. Pointer movement may also target the deepest valid container under the pointer. Widgets cannot target the Dashboard root or a tab panel, Tabs cannot target a nested container, and containers cannot target themselves, descendants, or a fourth nesting level. Keyboard movement remains within the immediate parent. A root container resizes vertically; a nested container resizes on the axes its parent layout permits. Dashboard derives a minimum from the occupied bounds of direct children, so a container cannot be resized across existing content. A nested container's current `columns` and `rows` are its child capacity; child placement and resizing are clamped to those bounds and never grow the parent.
 
@@ -361,9 +379,11 @@ const [selectedKeys, setSelectedKeys] = useState([]);
 - `Tab` moves among selectable nodes and their interactive contents.
 - `Space` selects a focused Dashboard node.
 - Arrow keys on a focused movable widget or container move it by one unit on the axes its parent permits.
-- Selecting a widget or container reveals its available settings, delete, and resize controls and adds them to the keyboard sequence. Settings stays on the top-right corner, with its danger-outline Delete action immediately to the left.
+- Selecting a widget or container reveals its action menu button and resize grip and adds them to the keyboard sequence. The menu button sits in the top-right corner and holds the node's size commands, which are the accessible equivalent of the resize gesture.
 - Arrow keys on a focused resize handle resize the selected widget or container by one column or row on its available axes.
-- Settings buttons and Tabs retain their standard keyboard behavior.
+- `Shift` with the arrow keys on a focused Grid add button claims an insertion area; `Enter` opens the menu for it.
+- `Escape` during a pointer move, a pointer resize, or an add-region claim cancels the gesture and leaves the layout untouched.
+- Menu buttons and Tabs retain their standard keyboard behavior.
 
 ### Screen Reader Support
 
@@ -371,20 +391,24 @@ Containers and widgets are named groups with descriptive role descriptions. Supp
 
 ### Interaction Scope
 
-This release supplies surface-based pointer and keyboard movement, cross-container pointer destinations, selected-sibling pointer groups, controlled resizing, contextual free-cell affordances, and registered add menus. Dashboard renders one destination placeholder per moving item: primary when the landing is available, danger when the geometry fits but occupancy blocks the drop, and no placeholder when the destination cannot satisfy the minimum geometry. If that placeholder covers Dashboard's add slot, Dashboard temporarily hides the add control so the two affordances never overlap. The Playground resolves same-parent previews by moving blockers in stacks and swapping two Grid occupants when both exchanged placements fit. Cross-parent previews keep the source mounted for the active gesture, then atomically remove and insert a single item or selected sibling group on commit.
+This release supplies surface-based pointer and keyboard movement, cross-container pointer destinations, selected-sibling pointer groups, controlled resizing, node menus with discrete size commands, contextual free-cell affordances, claimed add regions, and registered add menus. A pointer move tries every container under the pointer from the deepest outward and lands in the first one that can take the geometry, rather than dead-ending on the deepest; candidate geometry is snapshotted once per gesture, so applying previews to layout state cannot feed back into the hit test. Dashboard renders one destination placeholder per moving item: primary when the landing is available, danger — with an icon, not colour alone — when occupancy blocks the drop, and no placeholder when the destination cannot satisfy the minimum geometry. If that placeholder covers Dashboard's add slot, Dashboard temporarily hides the add control so the two affordances never overlap. Cross-parent previews keep the source mounted for the active gesture, then atomically remove and insert a single item or selected sibling group on commit.
+
+Node chrome — the action menu, the resize grip, and the drop placeholders — is ordered inside a single stacking context that Dashboard opens at its root, so it paints above every node body at every depth, including the node being dragged and any add slot in an adjacent cell.
 
 ## Best Practices
 
 1. Keep every id stable across renders and persistence cycles.
 2. Express placement relative to the immediate parent, not the root.
 3. Use `isCard` for widgets that need an outside boundary; rounding is already provided.
-4. Keep layout state, collision policy, widget rendering, data configuration, and settings panels in consumer code; pass catalog names and size constraints through `addItems` so Dashboard can provide consistent contextual menus.
+4. Keep layout state, widget rendering, data configuration, and settings panels in consumer code; pass catalog names and size constraints through `addItems` so Dashboard can provide consistent contextual menus. Apply `info.items` and `info.displaced` as reported instead of recomputing collisions.
 5. Do not nest `Dashboard.Tabs`; Tabs is root-only.
 6. Hide nested-container actions at depth three rather than allowing Dashboard's development error to become an authoring dead end.
 
 ## Suggested Improvements
 
-- Add a compact floating group preview, source-vacancy placeholders, and Escape cancellation.
+- Add a compact floating group preview and source-vacancy placeholders.
+- Add spring-loaded tab switching, so a drag can enter an inactive tab panel.
+- Give the resize handle full `separator` semantics: `aria-valuenow`/`min`/`max`, Home/End, and a Shift-accelerated step.
 - Add an optional consumer hook for product-specific availability rules that depend on the destination, beyond the static `isDisabled` flag.
 
 ## Related Components
