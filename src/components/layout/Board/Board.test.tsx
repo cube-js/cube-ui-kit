@@ -14,7 +14,7 @@ import { Tab, Tabs } from '../../navigation/Tabs';
 
 import { isOverlapFree } from './grid-core';
 
-import { Board } from './index';
+import { Board, BoardDragActiveProvider } from './index';
 
 import type { ReactNode } from 'react';
 import type { LayoutConstraint, LayoutItem } from './grid-core';
@@ -4244,6 +4244,88 @@ describe('Board', () => {
 
       expect(onLayoutChange).toHaveBeenCalled();
       expect(onLayoutChange.mock.lastCall![1]).toEqual({ reason: 'resize' });
+    });
+  });
+  describe('BoardDragActiveProvider', () => {
+    // The reason this component is public: a Board implementation outside this
+    // package (Cube Cloud owns its own copy) cannot reach
+    // `BoardDragActiveContext`, so without it `Tabs` never learns a drag is in
+    // flight — losing spring-loading and, more importantly, the panel mounting
+    // that keeps the tab a widget is dragged out of from unmounting mid-drag.
+    // No `Board` here on purpose: this stands in for that foreign board.
+    const renderTabs = (isActive: boolean) =>
+      renderWithRoot(
+        <BoardDragActiveProvider isActive={isActive}>
+          <Tabs defaultActiveKey="one">
+            <Tab key="one" title="One">
+              Panel one
+            </Tab>
+            <Tab key="two" title="Two">
+              Panel two
+            </Tab>
+          </Tabs>
+        </BoardDragActiveProvider>,
+      );
+
+    // `keepMounted` keeps a panel alive once it has been *visited*, which is
+    // what saves an in-flight drag: the widget was dragged out of a tab that
+    // was open a moment ago, so switching away must not unmount it.
+    it('keeps a visited tab panel mounted while it reports a drag', async () => {
+      renderTabs(true);
+
+      await userEvent.click(screen.getByTestId('Tab-two'));
+      expect(screen.getByText('Panel two')).toBeInTheDocument();
+
+      await userEvent.click(screen.getByTestId('Tab-one'));
+      expect(screen.getByText('Panel two')).toBeInTheDocument();
+    });
+
+    it('lets a visited panel unmount when it reports no drag', async () => {
+      renderTabs(false);
+
+      await userEvent.click(screen.getByTestId('Tab-two'));
+      expect(screen.getByText('Panel two')).toBeInTheDocument();
+
+      await userEvent.click(screen.getByTestId('Tab-one'));
+      expect(screen.queryByText('Panel two')).not.toBeInTheDocument();
+    });
+
+    it('spring-loads an inactive tab on hover while it reports a drag', () => {
+      vi.useFakeTimers();
+      try {
+        renderTabs(true);
+
+        fireEvent.pointerEnter(screen.getByTestId('Tab-two'));
+        act(() => {
+          vi.advanceTimersByTime(600);
+        });
+
+        expect(screen.getByTestId('Tab-two')).toHaveAttribute(
+          'aria-selected',
+          'true',
+        );
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('does not spring-load when it reports no drag', () => {
+      vi.useFakeTimers();
+      try {
+        renderTabs(false);
+
+        fireEvent.pointerEnter(screen.getByTestId('Tab-two'));
+        act(() => {
+          vi.advanceTimersByTime(600);
+        });
+
+        expect(screen.getByTestId('Tab-two')).toHaveAttribute(
+          'aria-selected',
+          'false',
+        );
+      } finally {
+        vi.useRealTimers();
+      }
     });
   });
 });

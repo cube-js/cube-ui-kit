@@ -14,6 +14,8 @@ export { BoardProvider };
 export { BoardResponsive };
 export { Widget as BoardWidget };
 export { BOARD_SELECTION_CANCEL } from './Board';
+export { BoardDragActiveProvider } from './board-context';
+export type { CubeBoardDragActiveProviderProps } from './board-context';
 
 export type {
   CubeBoardProps,
