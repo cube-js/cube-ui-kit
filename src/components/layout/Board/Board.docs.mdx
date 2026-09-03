@@ -407,6 +407,16 @@ A `Board.Widget` can host a `Tabs` where each tab renders its own `Board`, all u
 
 When a `Tabs` sits inside a `Board`, tab switching becomes "spring-loaded" automatically: while you drag a widget, hovering a tab header for a moment opens that tab so you can drop into it (or move a widget between tabs). This needs no setup - `Tabs` detects the active Board drag and, for its duration, keeps panels mounted so the tab a widget is dragged out of (and the board owning the in-flight drag) is not unmounted mid-gesture. Spring-loading works with mouse and pen; touch drags capture the pointer, so they do not trigger it.
 
+`Tabs` learns about the drag from a context this package owns, which a `Board` implementation living **outside** this package cannot reach — so both behaviours above would silently be missing there. Publish the drag state with `BoardDragActiveProvider` instead, wrapping the subtree your board renders at the same level as your drag registry:
+
+```jsx
+import { BoardDragActiveProvider } from '@cube-dev/ui-kit';
+
+<BoardDragActiveProvider isActive={dragState != null}>{children}</BoardDragActiveProvider>;
+```
+
+You never need it alongside this package's `Board`, which provides it for you.
+
 <Story of={BoardStories.TabsBoard} />
 
 ### Selection

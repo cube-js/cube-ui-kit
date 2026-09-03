@@ -54,6 +54,7 @@ export { ResizablePanel } from './components/layout/ResizablePanel';
 export type { CubeResizablePanelProps } from './components/layout/ResizablePanel';
 export {
   Board,
+  BoardDragActiveProvider,
   BoardProvider,
   BoardResponsive,
   BoardWidget,
@@ -78,6 +79,7 @@ export type {
   CubeBoardProps,
   BoardSelectionMode,
   CubeBoardWidgetProps,
+  CubeBoardDragActiveProviderProps,
   CubeBoardProviderProps,
   CubeBoardResponsiveProps,
   BoardCompactType,

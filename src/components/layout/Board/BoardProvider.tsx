@@ -2,7 +2,7 @@ import { tasty } from '@tenphi/tasty';
 import { ReactNode } from 'react';
 
 import {
-  BoardDragActiveContext,
+  BoardDragActiveProvider,
   BoardRegistryContext,
   WidgetTransferInfo,
 } from './board-context';
@@ -47,10 +47,10 @@ export function BoardProvider(props: CubeBoardProviderProps) {
 
   return (
     <BoardRegistryContext.Provider value={registry}>
-      <BoardDragActiveContext.Provider value={registry.dragState != null}>
+      <BoardDragActiveProvider isActive={registry.dragState != null}>
         {children}
         <OverlayElement ref={registry.overlayRef} aria-hidden="true" />
-      </BoardDragActiveContext.Provider>
+      </BoardDragActiveProvider>
     </BoardRegistryContext.Provider>
   );
 }
