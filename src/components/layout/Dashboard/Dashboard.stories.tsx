@@ -744,6 +744,28 @@ function normalizeStackChildren(
   return children;
 }
 
+/**
+ * Re-derive a stack's array order from the coordinates Dashboard just resolved.
+ *
+ * A stack's rendered order is its array order — `normalizeStackChildren` packs
+ * children along the axis by position, ignoring whatever coordinates they
+ * carry. So writing a resolved placement onto a stack child is a no-op on its
+ * own: the reorder only lands once the array itself is sorted by the axis
+ * coordinate. Grids are position-addressed and are left alone.
+ */
+function sortStackChildren(
+  parent: PlaygroundContainer,
+  children: PlaygroundNode[],
+): PlaygroundNode[] {
+  if (parent.kind !== 'horizontal-stack' && parent.kind !== 'vertical-stack') {
+    return children;
+  }
+
+  const axis = parent.kind === 'horizontal-stack' ? 'column' : 'row';
+
+  return [...children].sort((a, b) => a[axis] - b[axis]);
+}
+
 function normalizeTopLevel(containers: PlaygroundContainer[]) {
   return containers.map((container, row) => ({ ...container, row }));
 }
@@ -1310,6 +1332,38 @@ function countNodes(nodes: PlaygroundNode[]): {
   );
 }
 
+/** How far one node can be squeezed, which is what a stack budgets against. */
+function getPlaygroundMinimum(node: PlaygroundNode): {
+  columns: number;
+  rows: number;
+} {
+  if (node.nodeType === 'widget') {
+    const definition = WIDGET_DEFINITIONS[node.type];
+
+    return {
+      columns: definition.minColumns ?? 1,
+      rows: definition.minRows ?? 1,
+    };
+  }
+
+  if (node.kind === 'horizontal-stack' || node.kind === 'vertical-stack') {
+    const children = node.children.map(getPlaygroundMinimum);
+    if (children.length === 0) return { columns: 1, rows: 1 };
+
+    return node.kind === 'horizontal-stack'
+      ? {
+          columns: children.reduce((total, child) => total + child.columns, 0),
+          rows: Math.max(...children.map((child) => child.rows)),
+        }
+      : {
+          columns: Math.max(...children.map((child) => child.columns)),
+          rows: children.reduce((total, child) => total + child.rows, 0),
+        };
+  }
+
+  return { columns: 1, rows: 1 };
+}
+
 function acceptsPlacement(
   parent: PlaygroundContainer,
   widgetId: string,
@@ -1321,9 +1375,11 @@ function acceptsPlacement(
     return parent;
   }
 
+  // A stack shares its axis out, so what a resize has to leave room for is the
+  // siblings' floor, not the spans they happen to be drawn at.
   if (parent.kind === 'horizontal-stack') {
     const usedColumns = siblings.reduce(
-      (total, sibling) => total + sibling.columns,
+      (total, sibling) => total + getPlaygroundMinimum(sibling).columns,
       0,
     );
 
@@ -1335,7 +1391,7 @@ function acceptsPlacement(
 
   if (parent.kind === 'vertical-stack') {
     const usedRows = siblings.reduce(
-      (total, sibling) => total + sibling.rows,
+      (total, sibling) => total + getPlaygroundMinimum(sibling).rows,
       0,
     );
 
@@ -1867,11 +1923,14 @@ export function DashboardPlayground({
       setContainers(
         updateContainerTree(containers, parentId, (container) => ({
           ...container,
-          children: container.children.map((child) => {
-            const next = placements.get(child.id);
+          children: sortStackChildren(
+            container,
+            container.children.map((child) => {
+              const next = placements.get(child.id);
 
-            return next ? { ...child, ...next } : child;
-          }),
+              return next ? { ...child, ...next } : child;
+            }),
+          ),
         })),
       );
       setNotice(null);
@@ -1893,14 +1952,25 @@ export function DashboardPlayground({
       return;
     }
 
+    // A stack is always full, so a child's resize moves the seam with its
+    // neighbours: Dashboard reports their new spans alongside it.
+    const resizes = new Map(
+      [{ id: nodeId, placement }, ...(info.displaced ?? [])].map((item) => [
+        item.id,
+        item.placement,
+      ]),
+    );
+
     setContainers(
       updateContainerTree(containers, parentId, (container) => ({
         ...container,
         children: normalizeStackChildren(
           container,
-          container.children.map((child) =>
-            child.id === nodeId ? { ...child, ...placement } : child,
-          ),
+          container.children.map((child) => {
+            const next = resizes.get(child.id);
+
+            return next ? { ...child, ...next } : child;
+          }),
         ),
       })),
     );

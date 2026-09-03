@@ -16,16 +16,19 @@ import { TrashIcon } from '../../../icons/TrashIcon';
 import { Button } from '../../actions/Button/Button';
 import { Menu } from '../../actions/Menu/Menu';
 
-import { getLargestFreeRect } from './occupancy';
+import { readDashboardStackAxis, readDashboardStackRow } from './drag';
+import { getLargestFreeRect, resolveDashboardStackResize } from './occupancy';
 import { placementsOverlap } from './placement';
 import { NodeActionsElement } from './styles';
 
 import type { Key } from '@react-types/shared';
 import type { ModValue } from '@tenphi/tasty';
 import type { ReactNode, RefObject } from 'react';
+import type { DashboardStackRow } from './drag';
 import type {
   DashboardNodeAction,
   DashboardPlacement,
+  DashboardPlacementChangeItem,
   DashboardSizeBounds,
 } from './types';
 
@@ -54,7 +57,10 @@ export interface DashboardNodeActionsProps {
   canResizeRows: boolean;
   /** The node itself; its parent grid is read for occupancy on menu open. */
   nodeRef: RefObject<HTMLElement | null>;
-  onResize: (placement: DashboardPlacement) => void;
+  onResize: (
+    placement: DashboardPlacement,
+    displaced?: DashboardPlacementChangeItem[],
+  ) => void;
   onSettingsPress?: () => void;
   settingsLabel?: string;
   onDuplicatePress?: () => void;
@@ -63,6 +69,12 @@ export interface DashboardNodeActionsProps {
   deleteLabel?: string;
   actions?: readonly DashboardNodeAction[];
   onMenuAction?: (key: string) => void;
+}
+
+/** What one size command would produce, and who has to give way for it. */
+export interface DashboardSizeProposal {
+  placement: DashboardPlacement;
+  displaced?: DashboardPlacementChangeItem[];
 }
 
 /** Sibling boxes, read straight off the DOM the way the drag engine does. */
@@ -90,10 +102,13 @@ function readSiblingPlacements(
 /**
  * What each size command would produce, or nothing when it would change nothing.
  *
- * Two things can stop a command: the node's own bounds together with the space
- * left in the parent, and an occupant in the way. Both are checked, because
- * "disabled when pressing it has no effect" is the whole point — an enabled item
- * that silently does nothing is worse than a greyed-out one.
+ * In a layout addressed by position, two things can stop a command: the node's
+ * own bounds together with the space left in the parent, and an occupant in the
+ * way. Both are checked, because "disabled when pressing it has no effect" is
+ * the whole point — an enabled item that silently does nothing is worse than a
+ * greyed-out one. In a stack, which is always full and has no free space to
+ * claim, the same question is instead whether a neighbour can give a track up,
+ * and the answer carries that neighbour's new span with it.
  *
  * Resolved when the menu opens rather than on every render: the occupancy half
  * is a DOM read, and a node re-renders on every frame of a neighbour's drag.
@@ -104,8 +119,11 @@ export function getDashboardSizeCommands(
   siblings: readonly DashboardPlacement[],
   canResizeColumns: boolean,
   canResizeRows: boolean,
-): Map<DashboardSizeCommand, DashboardPlacement> {
-  const resolved = new Map<DashboardSizeCommand, DashboardPlacement>();
+  /** Set for a stack child, whose siblings give way instead of blocking. */
+  stackRow: DashboardStackRow | null = null,
+  stackAxis: 'columns' | 'rows' | null = null,
+): Map<DashboardSizeCommand, DashboardSizeProposal> {
+  const resolved = new Map<DashboardSizeCommand, DashboardSizeProposal>();
   const fits = (candidate: DashboardPlacement) =>
     candidate.column + candidate.columns <= bounds.parentColumns &&
     candidate.row + candidate.rows <= bounds.parentRows &&
@@ -123,8 +141,53 @@ export function getDashboardSizeCommands(
     const changes =
       candidate.columns !== placement.columns ||
       candidate.rows !== placement.rows;
+    if (!changes) return;
 
-    if (changes && fits(candidate)) resolved.set(command, candidate);
+    // A stack is always full, so this axis is a seam rather than a free
+    // claim: the command only exists if a neighbour can give way, and it
+    // carries that neighbour's new span with it.
+    if (stackRow && stackAxis) {
+      if (
+        candidate[stackAxis] <
+          (stackAxis === 'columns' ? bounds.minColumns : bounds.minRows) ||
+        candidate[stackAxis] >
+          (stackAxis === 'columns' ? bounds.maxColumns : bounds.maxRows)
+      ) {
+        return;
+      }
+
+      const sizes = resolveDashboardStackResize(
+        stackRow.sizes,
+        stackRow.bounds,
+        stackRow.index,
+        candidate[stackAxis],
+      );
+      if (!sizes) return;
+
+      const displaced = stackRow.ids.flatMap((id, position) =>
+        position === stackRow.index ||
+        sizes[position] === stackRow.sizes[position]
+          ? []
+          : [
+              {
+                id,
+                placement: {
+                  ...stackRow.placements[position],
+                  [stackAxis]: sizes[position],
+                },
+              },
+            ],
+      );
+
+      resolved.set(command, {
+        placement: { ...candidate, [stackAxis]: sizes[stackRow.index] },
+        displaced,
+      });
+
+      return;
+    }
+
+    if (fits(candidate)) resolved.set(command, { placement: candidate });
   };
 
   if (canResizeColumns) {
@@ -186,7 +249,7 @@ export function DashboardNodeActions(props: DashboardNodeActionsProps) {
   } = props;
   const { t } = useI18n();
   const [sizeCommands, setSizeCommands] = useState<
-    Map<DashboardSizeCommand, DashboardPlacement>
+    Map<DashboardSizeCommand, DashboardSizeProposal>
   >(() => new Map());
 
   const canResize = canResizeColumns || canResizeRows;
@@ -255,6 +318,9 @@ export function DashboardNodeActions(props: DashboardNodeActionsProps) {
 
   const handleOpenChange = useEvent((isOpen: boolean) => {
     if (!isOpen || !canResize) return;
+    const stackAxis = readDashboardStackAxis(
+      nodeRef.current?.parentElement ?? null,
+    );
 
     setSizeCommands(
       getDashboardSizeCommands(
@@ -263,6 +329,14 @@ export function DashboardNodeActions(props: DashboardNodeActionsProps) {
         readSiblingPlacements(nodeRef.current?.parentElement ?? null, nodeId),
         canResizeColumns,
         canResizeRows,
+        stackAxis
+          ? readDashboardStackRow(
+              nodeRef.current?.parentElement ?? null,
+              nodeId,
+              stackAxis,
+            )
+          : null,
+        stackAxis,
       ),
     );
   });
@@ -284,7 +358,7 @@ export function DashboardNodeActions(props: DashboardNodeActionsProps) {
     const resized = sizeCommands.get(command as DashboardSizeCommand);
 
     if (resized) {
-      onResize(resized);
+      onResize(resized.placement, resized.displaced);
       return;
     }
     if (command === 'settings') return onSettingsPress?.();

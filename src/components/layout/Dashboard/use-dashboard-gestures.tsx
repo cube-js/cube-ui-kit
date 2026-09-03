@@ -12,7 +12,9 @@ import {
   getDashboardGestureItems,
   getDashboardGesturePlacements,
   getOwnDashboardDropTarget,
+  getStackKeyboardPlacement,
   resolveDashboardDrop,
+  resolveDashboardStackResizeAt,
   useDashboardDropPreview,
 } from './drag';
 import { clamp, DASHBOARD_ROOT_GAP, isSamePlacement } from './placement';
@@ -310,7 +312,7 @@ export function useDashboardGestures(
         group,
         movingIds,
         gesture.sourceParentId,
-        gesture.items.map((item) => item.origin),
+        gesture.items,
       );
 
       return {
@@ -452,7 +454,18 @@ export function useDashboardGestures(
         input === 'pointer' || canMoveRows ? event.deltaY : 0,
         input,
       );
-      const samePlacement: DashboardPlacement = {
+      // Inside a stack an arrow key means one *position*, not one cell.
+      const stackPlacement =
+        input === 'keyboard' && nodeRef.current
+          ? getStackKeyboardPlacement(
+              nodeRef.current,
+              id,
+              gesture.origin,
+              canMoveColumns ? delta.columns : 0,
+              canMoveRows ? delta.rows : 0,
+            )
+          : null;
+      const samePlacement: DashboardPlacement = stackPlacement ?? {
         ...gesture.origin,
         column: canMoveColumns
           ? clamp(
@@ -518,7 +531,7 @@ export function useDashboardGestures(
               currentItems,
               new Set(gesture.items.map((item) => item.id)),
               gesture.sourceParentId,
-              gesture.items.map((item) => item.origin),
+              gesture.items,
             )
           : null;
 
@@ -637,9 +650,28 @@ export function useDashboardGestures(
           : gesture.origin.rows,
       };
 
-      if (isSamePlacement(nextPlacement, gesture.current)) return;
-      gesture.current = nextPlacement;
-      reportPlacement(nextPlacement, 'resize', 'preview', gesture.input);
+      // A stack is always full, so a child's resize is a seam between it and
+      // its neighbours rather than a free claim, and the neighbour's new span
+      // travels with it.
+      const resolved = nodeRef.current
+        ? resolveDashboardStackResizeAt(nodeRef.current, id, nextPlacement)
+        : null;
+      const landing = resolved?.placement ?? nextPlacement;
+
+      if (isSamePlacement(landing, gesture.current)) return;
+      gesture.current = landing;
+      gesture.currentDisplaced = resolved?.displaced ?? [];
+      reportPlacement(
+        landing,
+        'resize',
+        'preview',
+        gesture.input,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        gesture.currentDisplaced,
+      );
     },
     onMoveEnd() {
       const gesture = resizeSessionRef.current;
@@ -652,7 +684,17 @@ export function useDashboardGestures(
       ) {
         return;
       }
-      reportPlacement(gesture.current, 'resize', 'commit', gesture.input);
+      reportPlacement(
+        gesture.current,
+        'resize',
+        'commit',
+        gesture.input,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        gesture.currentDisplaced,
+      );
     },
   });
 

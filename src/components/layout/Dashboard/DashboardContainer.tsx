@@ -156,8 +156,13 @@ export const DashboardContainerShell = forwardRef(
       1,
       columnLimit,
     );
+    // A stack cannot usefully grow past what its children can absorb: the extra
+    // tracks would have no taker and would read as trailing dead space.
     const resolvedMaxColumns = clamp(
-      clampSpan(maxColumns, columnLimit),
+      Math.min(
+        clampSpan(maxColumns, columnLimit),
+        childMinimum.maxColumns ?? columnLimit,
+      ),
       resolvedMinColumns,
       columnLimit,
     );
@@ -167,7 +172,7 @@ export const DashboardContainerShell = forwardRef(
       rowLimit,
     );
     const resolvedMaxRows = clamp(
-      clampRows(maxRows, rowLimit),
+      Math.min(clampRows(maxRows, rowLimit), childMinimum.maxRows ?? rowLimit),
       resolvedMinRows,
       rowLimit,
     );
@@ -235,9 +240,24 @@ export const DashboardContainerShell = forwardRef(
       node.selectSelf(false);
       onDuplicatePress?.();
     });
-    const handleMenuResize = useEvent((next: DashboardPlacement) => {
-      gestures.reportPlacement(next, 'resize', 'commit', 'command');
-    });
+    const handleMenuResize = useEvent(
+      (
+        next: DashboardPlacement,
+        displaced?: DashboardPlacementChangeItem[],
+      ) => {
+        gestures.reportPlacement(
+          next,
+          'resize',
+          'commit',
+          'command',
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          displaced,
+        );
+      },
+    );
     const resolvedMods = {
       ...mods,
       depth: String(node.containerDepth),

@@ -10,7 +10,7 @@ import { Button } from '../../actions/Button/Button';
  * between the root and a control opens a stacking context of its own. `zIndex: 0`
  * closes the scale off from the host app instead of leaking six levels into it.
  *
- * The `1x` gap is the top-level rhythm and is deliberately not the `gap` prop:
+ * The `2x` gap is the top-level rhythm and is deliberately not the `gap` prop:
  * that one is the spacing *inside* a container's grid.
  */
 export const DashboardElement = tasty({
@@ -20,7 +20,8 @@ export const DashboardElement = tasty({
     zIndex: 0,
     display: 'grid',
     gridColumns: 'minmax(0, 1fr)',
-    gap: '1x',
+    // Must stay in step with `DASHBOARD_ROOT_GAP`.
+    gap: '2x',
     width: '100%',
     minWidth: 0,
     boxSizing: 'border-box',

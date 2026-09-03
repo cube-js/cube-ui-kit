@@ -206,9 +206,21 @@ export const DashboardWidget = forwardRef(function DashboardWidget(
     node.selectSelf(false);
     onDuplicatePress?.();
   });
-  const handleMenuResize = useEvent((next: DashboardPlacement) => {
-    reportPlacement(next, 'resize', 'commit', 'command');
-  });
+  const handleMenuResize = useEvent(
+    (next: DashboardPlacement, displaced?: DashboardPlacementChangeItem[]) => {
+      reportPlacement(
+        next,
+        'resize',
+        'commit',
+        'command',
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        displaced,
+      );
+    },
+  );
 
   return (
     <WidgetElement

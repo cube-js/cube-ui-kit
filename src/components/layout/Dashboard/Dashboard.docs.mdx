@@ -26,8 +26,8 @@ The Playground owns a recursive serializable tree and registers five constrained
 
 - **`Dashboard`** — Full-width root that owns metrics and selection.
 - **`Dashboard.Grid`** — Explicit row and column placement.
-- **`Dashboard.HorizontalStack`** — Children arranged across one row and stretched vertically within their row constraints.
-- **`Dashboard.VerticalStack`** — Children arranged vertically and stretched horizontally within their column constraints.
+- **`Dashboard.HorizontalStack`** — Children arranged across one row, sharing its full width in proportion to their `columns` and stretched vertically within their row constraints.
+- **`Dashboard.VerticalStack`** — Children arranged vertically, sharing its full height in proportion to their `rows` and stretched horizontally within their column constraints.
 - **`Dashboard.Tabs`** — Root-only tabbed container.
 - **`Dashboard.Tab`** — Declarative panel inside `Dashboard.Tabs`.
 - **`Dashboard.Widget`** — Customizable widget surface.
@@ -37,7 +37,7 @@ The Playground owns a recursive serializable tree and registers five constrained
 ### Dashboard
 
 - **`rowHeight`** `number` (default: `80`) — Height in pixels of a content row in every container.
-- **`gap`** `number | [number, number]` (default: `16`) — Shared gap, or horizontal and vertical gaps, in pixels, **inside** every container's grid. The channel between top-level containers is a fixed `1x` and is not configurable; because a depth-one container's selectable box protrudes `8px` into that channel, adjacent top-level boundaries meet when both are outlined, and Dashboard's own box does not clip the protrusion — leave padding around the component.
+- **`gap`** `number | [number, number]` (default: `16`) — Shared gap, or horizontal and vertical gaps, in pixels, **inside** every container's grid. The channel between top-level containers is a fixed `2x` and is not configurable; because a depth-one container's selectable box protrudes `8px` into that channel on each side, adjacent top-level boxes meet edge to edge, and Dashboard's own box does not clip the protrusion — leave padding around the component.
 - **`isEditing`** `boolean` (default: `false`) — Reveals transparent, rounded container boundaries on hover; boundaries persist during resize, every boundary is revealed during a move, and a newly mounted container remains revealed briefly.
 - **`selectionMode`** `'none' | 'single' | 'multiple'` (default: `'multiple'`) — Whether and how Dashboard nodes can be selected.
 - **`selectedKeys`** `string[]` — Controlled selected widget and container ids.
@@ -342,6 +342,8 @@ Dashboard resolves occupancy before it reports. `info.items` carries every place
 
 Containers use the same controlled placement callback for movement and resizing. Inside one parent, a top-level container moves vertically, a HorizontalStack child horizontally, a VerticalStack child vertically, and Grid children on both axes. A tab panel holds one layout root and primarily acts as a cross-parent origin or destination. When a node enters a HorizontalStack, its proposed `rows` expands to the lesser of the stack height and its `maxRows`; when it enters a VerticalStack, its proposed `columns` expands to the lesser of the stack width and its `maxColumns`. A node that reaches its constraint before filling the cross axis remains aligned to the top in HorizontalStack or the left in VerticalStack. Pointer movement may also target the deepest valid container under the pointer. Widgets cannot target the Dashboard root or a tab panel, Tabs cannot target a nested container, and containers cannot target themselves, descendants, or a fourth nesting level. Keyboard movement remains within the immediate parent. A root container resizes vertically; a nested container resizes on the axes its parent layout permits. Dashboard derives a minimum from the occupied bounds of direct children, so a container cannot be resized across existing content. A nested container's current `columns` and `rows` are its child capacity; child placement and resizing are clamped to those bounds and never grow the parent.
 
+A stack is the exception to fixed child spans. It always fills itself, sharing its own axis among its children in proportion to their stored spans and never below each child's own minimum, so resizing a stack stretches or squeezes what is inside it. A stack's own minimum is therefore the sum of its children's minimums rather than of their current spans, and its maximum the sum of their maximums. The stored span is a preference, not a position: it says how the space is shared, and Dashboard applies the distribution in layout rather than reporting it through `onPlacementChange`. While editing, a stack that still has room gains a narrow track of its own past the last child to hold its insertion point. Resizing a _child_ of a stack is a seam rather than a claim — it takes tracks from the next neighbour and gives them back the same way — so `onPlacementChange` reports the neighbour's new span in `info.displaced` and a size command is disabled when nothing can give way.
+
 ```jsx
 <Dashboard.Grid
   id="section"
@@ -357,7 +359,7 @@ Containers use the same controlled placement callback for movement and resizing.
 
 ## Selection
 
-Plain click selects one node. Shift-click, Command-click, or Control-click toggles sibling nodes in `multiple` mode. A descendant cannot be added while its ancestor is selected, and items from different immediate parents cannot form a multi-selection. Clicking Dashboard whitespace outside every widget and container clears the selection.
+Plain click selects one node. Shift-click, Command-click, or Control-click toggles sibling nodes in `multiple` mode. A descendant cannot be added while its ancestor is selected, and items from different immediate parents cannot form a multi-selection. Any click that does not land on a node clears the selection — Dashboard whitespace and the rest of the page alike. A node's own menu is excluded, so working through it never deselects the node it belongs to.
 
 Use controlled selection when another editor surface needs to coordinate with Dashboard:
 

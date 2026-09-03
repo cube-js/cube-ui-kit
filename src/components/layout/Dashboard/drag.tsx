@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom';
 import { useEvent } from '../../../_internal/hooks';
 import { CloseCircleIcon } from '../../../icons/CloseCircleIcon';
 
+import { resolveDashboardStackResize } from './occupancy';
 import {
   clamp,
   DASHBOARD_ROOT_GAP,
@@ -13,6 +14,7 @@ import {
 import { DropPlaceholderElement } from './styles';
 
 import type { CSSProperties } from 'react';
+import type { DashboardStackBound } from './occupancy';
 import type {
   DashboardMetrics,
   DashboardParentKind,
@@ -403,6 +405,9 @@ export function getDashboardGestureItem(
 export interface DashboardSibling {
   id: string;
   placement: DashboardPlacement;
+  /** How far this node can be squeezed, which is what a stack asks about. */
+  minColumns: number;
+  minRows: number;
 }
 
 /** The stationary nodes a landing has to coexist with, read from the DOM. */
@@ -418,9 +423,197 @@ export function getDashboardDropSiblings(
     if (child.dataset.dashboardAddSlot !== undefined) return [];
 
     const placement = readDashboardNodePlacement(child);
+    if (!placement) return [];
 
-    return placement ? [{ id, placement }] : [];
+    const minColumns = Number(child.dataset.dashboardMinColumns);
+    const minRows = Number(child.dataset.dashboardMinRows);
+
+    return [
+      {
+        id,
+        placement,
+        minColumns: Number.isFinite(minColumns) ? minColumns : 1,
+        minRows: Number.isFinite(minRows) ? minRows : 1,
+      },
+    ];
   });
+}
+
+/** The whole sequence a stack child sits in, this node included and in order. */
+export interface DashboardStackRow {
+  ids: string[];
+  placements: DashboardPlacement[];
+  sizes: number[];
+  bounds: DashboardStackBound[];
+  index: number;
+}
+
+/** The axis a stack shares out, or `null` for a layout addressed by position. */
+export function readDashboardStackAxis(
+  parentElement: HTMLElement | null,
+): 'columns' | 'rows' | null {
+  const kind = parentElement?.dataset.dashboardContainerKind;
+
+  if (kind === 'horizontal-stack') return 'columns';
+  if (kind === 'vertical-stack') return 'rows';
+
+  return null;
+}
+
+/**
+ * Read a stack's whole row off the DOM, including the node doing the asking.
+ *
+ * The sibling readers elsewhere in this module deliberately drop the moving
+ * node, because a landing only has to coexist with what stays put. A resize is
+ * the opposite: it is a negotiation along one axis, so the sequence has to be
+ * complete and in order for "the next child" to mean anything.
+ */
+export function readDashboardStackRow(
+  parentElement: HTMLElement | null,
+  nodeId: string,
+  axis: 'columns' | 'rows',
+): DashboardStackRow | null {
+  if (!parentElement) return null;
+  const row: DashboardStackRow = {
+    ids: [],
+    placements: [],
+    sizes: [],
+    bounds: [],
+    index: -1,
+  };
+
+  for (const child of Array.from(parentElement.children)) {
+    if (!(child instanceof HTMLElement)) continue;
+    if (!child.dataset.dashboardNode) continue;
+    if (child.dataset.dashboardAddSlot !== undefined) continue;
+    const placement = readDashboardNodePlacement(child);
+    if (!placement) continue;
+
+    const min = Number(
+      axis === 'columns'
+        ? child.dataset.dashboardMinColumns
+        : child.dataset.dashboardMinRows,
+    );
+    const max = Number(
+      axis === 'columns'
+        ? child.dataset.dashboardMaxColumns
+        : child.dataset.dashboardMaxRows,
+    );
+    const size = placement[axis];
+
+    if (child.dataset.dashboardNodeId === nodeId) row.index = row.ids.length;
+    row.ids.push(child.dataset.dashboardNodeId ?? '');
+    row.placements.push(placement);
+    row.sizes.push(size);
+    row.bounds.push({
+      min: Number.isFinite(min) ? Math.min(min, size) : 1,
+      max: Number.isFinite(max) ? Math.max(max, size) : size,
+    });
+  }
+
+  return row.index < 0 ? null : row;
+}
+
+/** What a stack row looks like after one of its children is resized. */
+export interface DashboardStackResizeResolution {
+  placement: DashboardPlacement;
+  displaced: DashboardPlacementChangeItem[];
+}
+
+/**
+ * Resolve one stack child's requested span against the rest of its row.
+ *
+ * `null` for anything that is not a stack child, and for a request nothing can
+ * give way for — in both cases the caller keeps the placement it already had.
+ */
+export function resolveDashboardStackResizeAt(
+  node: HTMLElement,
+  nodeId: string,
+  placement: DashboardPlacement,
+): DashboardStackResizeResolution | null {
+  const axis = readDashboardStackAxis(node.parentElement);
+  if (!axis) return null;
+
+  const row = readDashboardStackRow(node.parentElement, nodeId, axis);
+  if (!row) return null;
+
+  const sizes = resolveDashboardStackResize(
+    row.sizes,
+    row.bounds,
+    row.index,
+    placement[axis],
+  );
+  if (!sizes) return null;
+
+  return {
+    placement: { ...placement, [axis]: sizes[row.index] },
+    displaced: row.ids.flatMap((id, position) =>
+      position === row.index || sizes[position] === row.sizes[position]
+        ? []
+        : [
+            {
+              id,
+              placement: {
+                ...row.placements[position],
+                [axis]: sizes[position],
+              },
+            },
+          ],
+    ),
+  };
+}
+
+/**
+ * Where a stack child has to land to move one position under the arrow keys.
+ *
+ * A stack packs its children edge to edge, so a one-cell arrow step never
+ * reaches the neighbour's midpoint: `resolveStackOccupancy` packs the item
+ * straight back to where it started, the placement never changes, and the
+ * gesture reports nothing at all. Stepping to the *neighbour's own start*
+ * clears that midpoint, which is what "one position" means in a sequence.
+ *
+ * Returns `null` for every layout where an arrow already means one cell, and at
+ * either end of the stack, where the caller's clamped step is a no-op anyway.
+ */
+export function getStackKeyboardPlacement(
+  node: HTMLElement,
+  id: string,
+  placement: DashboardPlacement,
+  columns: number,
+  rows: number,
+): DashboardPlacement | null {
+  const target = getOwnDashboardDropTarget(node);
+  if (!target) return null;
+  const isHorizontal = target.kind === 'horizontal-stack';
+  if (!isHorizontal && target.kind !== 'vertical-stack') return null;
+
+  const direction = Math.sign(isHorizontal ? columns : rows);
+  if (direction === 0) return null;
+
+  const axis = isHorizontal ? 'column' : 'row';
+  const span = isHorizontal ? 'columns' : 'rows';
+  const siblings = getDashboardDropSiblings(target, new Set([id]));
+
+  // Sibling offsets with this item lifted out — the same sequence
+  // `resolveStackOccupancy` measures its midpoints against.
+  const offsets: number[] = [];
+  let cursor = 0;
+  for (const sibling of siblings) {
+    offsets.push(cursor);
+    cursor += sibling.placement[span];
+  }
+
+  const index = siblings.filter(
+    (sibling) => sibling.placement[axis] < placement[axis],
+  ).length;
+  const next = index + direction;
+  if (next < 0 || next > siblings.length) return null;
+
+  const coordinate = offsets[next] ?? cursor;
+
+  return isHorizontal
+    ? { ...placement, column: coordinate, row: 0 }
+    : { ...placement, column: 0, row: coordinate };
 }
 
 /** What a destination will accept, and what has to move out of the way for it. */
@@ -541,22 +734,39 @@ function resolveStackOccupancy(
   items: DashboardPlacementChangeItem[],
   siblings: DashboardSibling[],
   isSameParent: boolean,
+  moving: DashboardGestureItem[],
 ): Omit<DashboardDropResolution, 'status'> | null {
   const isHorizontal = target.kind === 'horizontal-stack';
   const axisSpan = (placement: DashboardPlacement) =>
     isHorizontal ? placement.columns : placement.rows;
   const capacity = isHorizontal ? target.columns : target.rows;
+  const floors = new Map(
+    moving.map((item) => [
+      item.id,
+      isHorizontal ? item.minColumns : item.minRows,
+    ]),
+  );
+
+  // A stack shares itself out among its children, so what decides whether one
+  // more fits is the floor everything can be squeezed to — not the spans they
+  // happen to be drawn at, which always add up to the stack's full width.
   const used = siblings.reduce(
-    (total, sibling) => total + axisSpan(sibling.placement),
+    (total, sibling) =>
+      total + (isHorizontal ? sibling.minColumns : sibling.minRows),
     0,
   );
   const incoming = items.reduce(
-    (total, item) => total + axisSpan(item.placement),
+    (total, item) => total + (floors.get(item.id) ?? axisSpan(item.placement)),
     0,
   );
 
   if (used + incoming > capacity) return null;
-  if (isHorizontal && items.some((item) => item.placement.rows > target.rows)) {
+  if (
+    isHorizontal &&
+    moving.some(
+      (item) => Math.min(item.minRows, item.origin.rows) > target.rows,
+    )
+  ) {
     return null;
   }
 
@@ -640,7 +850,7 @@ export function resolveDashboardDrop(
   items: DashboardPlacementChangeItem[],
   movingIds: ReadonlySet<string>,
   sourceParentId: string | null,
-  movingOrigins: DashboardPlacement[],
+  moving: DashboardGestureItem[],
 ): DashboardDropResolution {
   if (target.kind === 'root') return { status: 'valid', items, displaced: [] };
 
@@ -653,6 +863,7 @@ export function resolveDashboardDrop(
       items,
       siblings,
       isSameParent,
+      moving,
     );
 
     return resolved ? { status: 'valid', ...resolved } : { ...REJECTED, items };
@@ -662,7 +873,7 @@ export function resolveDashboardDrop(
     target,
     items,
     siblings,
-    isSameParent && movingOrigins.length === 1 ? movingOrigins[0] : undefined,
+    isSameParent && moving.length === 1 ? moving[0].origin : undefined,
   );
 
   return displaced

@@ -451,7 +451,7 @@ describe('Dashboard drag under scroll', () => {
 });
 
 describe('Dashboard top-level gap', () => {
-  it('separates top-level container content by one 1x channel', () => {
+  it('separates top-level container content by one 2x channel', () => {
     renderWithRoot(
       <div style={{ width: '360px', padding: '24px' }}>
         <Dashboard rowHeight={ROW} gap={16}>
@@ -473,14 +473,23 @@ describe('Dashboard top-level gap', () => {
     const second = document.querySelector(
       '[data-dashboard-parent-id="second"]',
     )!;
+    const boxes = ['first', 'second'].map((id) =>
+      document
+        .querySelector(`[data-dashboard-node-id="${id}"]`)!
+        .getBoundingClientRect(),
+    );
 
-    // The content grids — the boxes children actually occupy — are 1x apart,
+    // The content grids — the boxes children actually occupy — are 2x apart,
     // and that distance does not track the `gap` prop, which is 16px here.
     expect(
       Math.round(
         second.getBoundingClientRect().top -
           first.getBoundingClientRect().bottom,
       ),
-    ).toBe(8);
+    ).toBe(16);
+
+    // 2x is twice the depth-one chrome bleed, so the two selectable boxes meet
+    // exactly rather than crossing — which an 8px channel made them do.
+    expect(Math.round(boxes[1].top - boxes[0].bottom)).toBe(0);
   });
 });

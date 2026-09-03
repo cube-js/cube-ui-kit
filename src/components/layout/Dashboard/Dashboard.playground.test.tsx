@@ -119,6 +119,54 @@ describe('Dashboard Playground', () => {
       '2 selected items moved into Grid 10.',
     );
   }, 10000);
+  it('reorders a stack by pointer and by keyboard', async () => {
+    const user = userEvent.setup();
+
+    renderWithRoot(<DashboardPlayground rowHeight={96} gap={16} />);
+
+    // A stack renders its children in array order, so the reorder only counts
+    // once the array itself has moved — reading the DOM is the whole point.
+    const stackOrder = () =>
+      Array.from(
+        document
+          .querySelector<HTMLElement>(
+            '[data-dashboard-drop-target][data-dashboard-parent-id="horizontal-kpi"]',
+          )!
+          .querySelectorAll(':scope > [data-dashboard-node-id]'),
+        (node) => node.getAttribute('data-dashboard-node-id'),
+      );
+
+    expect(stackOrder().slice(0, 3)).toEqual(['wide-1', 'wide-2', 'wide-3']);
+
+    const dashboard = screen.getByTestId('Dashboard');
+    const content = document.querySelector<HTMLElement>(
+      '[data-dashboard-drop-target][data-dashboard-parent-id="horizontal-kpi"]',
+    )!;
+    const orders = screen.getByRole('group', { name: 'Move Orders' });
+    mockRect(dashboard, { left: 0, top: 0, width: 1200, height: 700 });
+    mockRect(content, { left: 0, top: 0, width: 1200, height: 96 });
+    mockRect(orders, { left: 405, top: 0, width: 288, height: 96 });
+
+    // Far enough left that it is past the first tile's midpoint whatever share
+    // of the stack that tile currently holds.
+    fireEvent(orders, pointerEvent('pointerdown', 420, 40));
+    fireEvent(window, pointerEvent('pointermove', 20, 40));
+    fireEvent(window, pointerEvent('pointerup', 20, 40));
+
+    expect(stackOrder().slice(0, 3)).toEqual(['wide-2', 'wide-1', 'wide-3']);
+
+    // An arrow key steps one position, not one column: a stack is packed edge
+    // to edge, so a single-column step would never leave the item's own slot.
+    orders.focus();
+    await user.keyboard('{ArrowRight}{ArrowRight}');
+    expect(stackOrder().slice(0, 3)).toEqual(['wide-1', 'wide-3', 'wide-2']);
+
+    // Rows are pinned in a horizontal stack, so the cross-axis arrow does not
+    // move anything.
+    await user.keyboard('{ArrowUp}');
+    expect(stackOrder().slice(0, 3)).toEqual(['wide-1', 'wide-3', 'wide-2']);
+  }, 15000);
+
   it('applies a menu size command, which commits without ever previewing', async () => {
     const user = userEvent.setup();
 

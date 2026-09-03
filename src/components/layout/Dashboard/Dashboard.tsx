@@ -1,8 +1,15 @@
 import { CONTAINER_STYLES, filterBaseProps, Styles } from '@tenphi/tasty';
-import { Children, forwardRef, useMemo, useRef, useState } from 'react';
+import {
+  Children,
+  forwardRef,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
 import { useEvent } from '../../../_internal/hooks';
-import { mergeProps, useLayoutEffect } from '../../../utils/react';
+import { isInsideOpenPopover, useLayoutEffect } from '../../../utils/react';
 import { extractStyles } from '../../../utils/styles';
 
 import {
@@ -26,7 +33,7 @@ import { DashboardWidget } from './DashboardWidget';
 import { normalizeGap } from './placement';
 import { DashboardElement } from './styles';
 
-import type { ForwardedRef, MouseEvent as ReactMouseEvent } from 'react';
+import type { ForwardedRef } from 'react';
 import type {
   CubeDashboardProps,
   DashboardAuthoringContextValue,
@@ -125,11 +132,40 @@ export const DashboardRoot = forwardRef(function DashboardRoot(
     current.add(id);
     commitSelection([...current]);
   });
-  const handleRootClick = useEvent((event: ReactMouseEvent<HTMLElement>) => {
-    const target = event.target as HTMLElement;
-    if (target.closest('[data-dashboard-node]')) return;
-    if (selectedKeySet.size > 0) commitSelection([]);
-  });
+
+  /**
+   * Any click that is not on a node clears the selection — Dashboard whitespace
+   * and the rest of the page alike. A selection that survives a click elsewhere
+   * reads as stuck: the node keeps its brand outline and its chrome while the
+   * user is plainly working somewhere else.
+   *
+   * This deliberately listens on `document` rather than on the root's `onClick`.
+   * React dispatches through the *React* tree, so a press inside a node's own
+   * portaled menu bubbles to the root as if it had landed on whitespace and
+   * deselects the node the menu belongs to. Three exclusions cover the rest:
+   * a node keeps its selection, overlay content is portaled out of the
+   * Dashboard's subtree so it has to be recognised by the popover registry
+   * rather than by containment, and a target already detached by the action
+   * that closed it can no longer be located at all.
+   */
+  const hasSelection = selectedKeySet.size > 0;
+  useEffect(() => {
+    if (!hasSelection) return;
+
+    const onDocumentClick = (event: MouseEvent) => {
+      const target = event.target as Element | null;
+      if (!target?.isConnected) return;
+      if (target.closest('[data-dashboard-node]')) return;
+      if (isInsideOpenPopover(target)) return;
+
+      commitSelection([]);
+    };
+
+    document.addEventListener('click', onDocumentClick);
+
+    return () => document.removeEventListener('click', onDocumentClick);
+  }, [commitSelection, hasSelection]);
+
   const startMoving = useEvent((id: string) => setMovingId(id));
   const stopMoving = useEvent((id: string) => {
     setMovingId((current) => (current === id ? null : current));
@@ -204,7 +240,7 @@ export const DashboardRoot = forwardRef(function DashboardRoot(
   );
   // `otherProps` rather than `props`: `gap` is a container style prop as well as
   // a Dashboard prop, and extracting it would write the in-container gap onto the
-  // root grid, overriding the fixed `1x` top-level channel.
+  // root grid, overriding the fixed `2x` top-level channel.
   const extractedStyles = extractStyles(otherProps, CONTAINER_STYLES);
   const styles: Styles = { ...extractedStyles, ...explicitStyles };
   const baseProps = filterBaseProps(otherProps, {
@@ -219,7 +255,7 @@ export const DashboardRoot = forwardRef(function DashboardRoot(
           <DashboardAuthoringContext.Provider value={authoring}>
             <DashboardTreeContext.Provider value={rootTree}>
               <DashboardElement
-                {...mergeProps(baseProps, { onClick: handleRootClick })}
+                {...baseProps}
                 ref={ref}
                 styles={styles}
                 style={style}

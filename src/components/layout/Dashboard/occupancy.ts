@@ -1,4 +1,4 @@
-import { Children, isValidElement } from 'react';
+import { Children, cloneElement, isValidElement } from 'react';
 
 import {
   clamp,
@@ -67,23 +67,18 @@ export function getDashboardFreeCells(
   placements: DashboardPlacement[],
   columns: number,
   rows: number,
+  /** Stacks only: what the current children can be squeezed down to. */
+  stackFloor = 0,
 ): DashboardFreeCell[] {
+  // A stack's children fill it, so its insertion point is never leftover space:
+  // it sits in a track of its own past the last column (or row), and it exists
+  // whenever the residents could squeeze far enough to seat one more item.
   if (kind === 'horizontal-stack') {
-    const column = placements.reduce(
-      (end, placement) => Math.max(end, placement.column + placement.columns),
-      0,
-    );
-
-    return column < columns ? [{ column, row: 0 }] : [];
+    return stackFloor < columns ? [{ column: columns, row: 0 }] : [];
   }
 
   if (kind === 'vertical-stack') {
-    const row = placements.reduce(
-      (end, placement) => Math.max(end, placement.row + placement.rows),
-      0,
-    );
-
-    return row < rows ? [{ column: 0, row }] : [];
+    return stackFloor < rows ? [{ column: 0, row: rows }] : [];
   }
 
   if (kind === 'tabs') {
@@ -118,6 +113,8 @@ export function getDashboardAddPlacement(
   parentRows: number,
   parentDepth: number,
   region?: DashboardPlacement,
+  /** Stacks only: what the existing children can be squeezed down to. */
+  stackFloor = 0,
 ): DashboardPlacement | null {
   if (
     definition.isDisabled ||
@@ -148,11 +145,44 @@ export function getDashboardAddPlacement(
     maxRows,
   );
 
-  if (kind === 'horizontal-stack') {
-    resolvedRows = Math.min(parentRows, maxRows);
-  } else if (kind === 'vertical-stack') {
-    resolvedColumns = Math.min(parentColumns, maxColumns);
-  } else if (kind === 'tabs') {
+  if (kind === 'horizontal-stack' || kind === 'vertical-stack') {
+    const isHorizontal = kind === 'horizontal-stack';
+
+    if (isHorizontal) {
+      resolvedRows = Math.min(parentRows, maxRows);
+    } else {
+      resolvedColumns = Math.min(parentColumns, maxColumns);
+    }
+
+    // A stack shares itself out, so an arriving item does not need free space
+    // of its own size — it needs the residents to be able to squeeze down far
+    // enough to seat its minimum. Its span is stored as a weight and the
+    // distribution decides what it is actually drawn at, so it is only held
+    // inside what the stack has left to give.
+    const available =
+      (isHorizontal ? parentColumns : parentRows) - Math.max(0, stackFloor);
+    const minimum = isHorizontal ? minColumns : minRows;
+    if (minimum > available) return null;
+
+    if (isHorizontal) {
+      resolvedColumns = clamp(
+        resolvedColumns,
+        minColumns,
+        Math.min(maxColumns, available),
+      );
+    } else {
+      resolvedRows = clamp(resolvedRows, minRows, Math.min(maxRows, available));
+    }
+
+    return {
+      column: isHorizontal ? cell.column : 0,
+      row: isHorizontal ? 0 : cell.row,
+      columns: resolvedColumns,
+      rows: resolvedRows,
+    };
+  }
+
+  if (kind === 'tabs') {
     resolvedColumns = parentColumns;
     resolvedRows = Math.min(parentRows, maxRows);
   }
@@ -184,10 +214,12 @@ export function getDashboardAddPlacement(
     return null;
   }
 
+  // Both stacks have already returned, so only a grid or a tab panel is left
+  // and the landing is a plain rectangle that must not overlap an occupant.
   const origin = region ?? cell;
   const placement: DashboardPlacement = {
-    column: kind === 'vertical-stack' || kind === 'tabs' ? 0 : origin.column,
-    row: kind === 'horizontal-stack' || kind === 'tabs' ? 0 : origin.row,
+    column: kind === 'tabs' ? 0 : origin.column,
+    row: kind === 'tabs' ? 0 : origin.row,
     columns: resolvedColumns,
     rows: resolvedRows,
   };
@@ -199,25 +231,9 @@ export function getDashboardAddPlacement(
     return null;
   }
 
-  const isBlocked = placements.some((occupied) => {
-    if (kind === 'horizontal-stack') {
-      return !(
-        placement.column + placement.columns <= occupied.column ||
-        occupied.column + occupied.columns <= placement.column
-      );
-    }
-
-    if (kind === 'vertical-stack') {
-      return !(
-        placement.row + placement.rows <= occupied.row ||
-        occupied.row + occupied.rows <= placement.row
-      );
-    }
-
-    return placementsOverlap(placement, occupied);
-  });
-
-  return isBlocked ? null : placement;
+  return placements.some((occupied) => placementsOverlap(placement, occupied))
+    ? null
+    : placement;
 }
 
 /**
@@ -281,14 +297,24 @@ export function getDashboardFreeRegion(
 export interface DashboardChildMinimum {
   columns: number;
   rows: number;
+  /**
+   * Stacks only, and only on the stack's own axis: past this the surplus has no
+   * child able to take it, so growing further would only add trailing space.
+   */
+  maxColumns?: number;
+  maxRows?: number;
 }
 
-const LAYOUT_CONTAINER_DISPLAY_NAMES = new Set([
-  'DashboardGrid',
-  'DashboardHorizontalStack',
-  'DashboardVerticalStack',
-  'DashboardTabs',
-]);
+const CONTAINER_KIND_BY_DISPLAY_NAME: Record<string, DashboardContainerKind> = {
+  DashboardGrid: 'grid',
+  DashboardHorizontalStack: 'horizontal-stack',
+  DashboardVerticalStack: 'vertical-stack',
+  DashboardTabs: 'tabs',
+};
+
+const LAYOUT_CONTAINER_DISPLAY_NAMES = new Set(
+  Object.keys(CONTAINER_KIND_BY_DISPLAY_NAME),
+);
 
 /**
  * Identity by `displayName` rather than by reference. A duplicated module
@@ -330,6 +356,291 @@ export function getDashboardDescendantContainerDepth(
   }, 0);
 }
 
+/** The placement props a layout node accepts, as read off an unrendered child. */
+type DashboardBoundedProps = DashboardPlacementProps & {
+  minColumns?: number;
+  maxColumns?: number;
+  minRows?: number;
+  maxRows?: number;
+  'data-dashboard-add-slot'?: unknown;
+  children?: ReactNode;
+};
+
+/** A node's own span limits, floored by whatever it contains. */
+export interface DashboardNodeBounds {
+  minColumns: number;
+  maxColumns: number;
+  minRows: number;
+  maxRows: number;
+  columns: number;
+  rows: number;
+}
+
+/**
+ * What one child of a container can be squeezed to, and stretched to.
+ *
+ * A container's declared `minColumns` is not the whole story: it cannot be
+ * narrower than its own contents need either, and that floor is only knowable
+ * one level further down. So this recurses through `getContainerChildMinimum`,
+ * which is how a stack learns that the nested stack inside it has a floor of
+ * its own rather than the `1` its props claim.
+ */
+export function getDashboardNodeBounds(
+  child: ReactNode,
+  capacityColumns: number,
+  capacityRows: number,
+): DashboardNodeBounds | null {
+  if (!isValidElement(child)) return null;
+  const props = child.props as DashboardBoundedProps;
+  if (props['data-dashboard-add-slot'] !== undefined) return null;
+
+  const placement = normalizePlacement(props, capacityColumns, capacityRows);
+  let minColumns = clampSpan(props.minColumns, 1);
+  let minRows = clampRows(props.minRows, 1);
+  const displayName = getDashboardChildDisplayName(child);
+  const kind = displayName
+    ? CONTAINER_KIND_BY_DISPLAY_NAME[displayName]
+    : undefined;
+
+  if (kind) {
+    const nested = getContainerChildMinimum(
+      kind,
+      props.children,
+      placement.columns,
+      placement.rows,
+    );
+    minColumns = Math.max(minColumns, nested.columns);
+    minRows = Math.max(minRows, nested.rows);
+  }
+
+  return {
+    minColumns: Math.min(minColumns, capacityColumns),
+    maxColumns: Math.max(
+      minColumns,
+      clampSpan(props.maxColumns, capacityColumns),
+    ),
+    minRows: Math.min(minRows, capacityRows),
+    maxRows: Math.max(minRows, clampRows(props.maxRows, capacityRows)),
+    columns: placement.columns,
+    rows: placement.rows,
+  };
+}
+
+/** One child's share of a stack, in the terms the distribution reasons about. */
+export interface DashboardStackItem {
+  min: number;
+  max: number;
+  /** The stored span, which acts as a preference rather than a position. */
+  weight: number;
+}
+
+/**
+ * How a stack hands its own capacity to its children.
+ *
+ * A stack's children are a sequence, not a set of addresses, so a stored span
+ * is a *preference* rather than a position: the stack always fills itself, and
+ * the spans only say how the space is shared out. Everyone starts at their own
+ * minimum and each surplus track goes to whichever child sits furthest below
+ * its proportional share — so widening a stack stretches its children and
+ * narrowing one squeezes them, down to the floor their own constraints set.
+ *
+ * The two ends are deliberate rather than clamped away. Above the sum of the
+ * children's maxima nothing can take the surplus, so it is left as trailing
+ * space. Below the sum of their minima no distribution exists at all, and the
+ * largest children give way one track at a time rather than the last child
+ * being pushed out of the container — a container's own bounds should keep it
+ * out of that range, but a consumer writing placements directly can still get
+ * there.
+ */
+export function distributeDashboardStackSpans(
+  items: readonly DashboardStackItem[],
+  capacity: number,
+): number[] {
+  if (items.length === 0) return [];
+
+  const sizes = items.map((item) => Math.max(1, Math.min(item.min, item.max)));
+  const totalWeight = items.reduce(
+    (total, item) => total + Math.max(1, item.weight),
+    0,
+  );
+  let total = sizes.reduce((sum, size) => sum + size, 0);
+
+  while (total > capacity) {
+    let largest = -1;
+    for (const [index, size] of sizes.entries()) {
+      if (size > 1 && (largest < 0 || size > sizes[largest])) largest = index;
+    }
+    if (largest < 0) break;
+    sizes[largest] -= 1;
+    total -= 1;
+  }
+
+  while (total < capacity) {
+    let best = -1;
+    let bestDeficit = 0;
+
+    for (const [index, item] of items.entries()) {
+      if (sizes[index] >= item.max) continue;
+      const share = (capacity * Math.max(1, item.weight)) / totalWeight;
+      const deficit = share - sizes[index];
+      if (best < 0 || deficit > bestDeficit) {
+        best = index;
+        bestDeficit = deficit;
+      }
+    }
+
+    if (best < 0) break;
+    sizes[best] += 1;
+    total += 1;
+  }
+
+  return sizes;
+}
+
+/** One child's room to move when a neighbour is resized. */
+export interface DashboardStackBound {
+  min: number;
+  max: number;
+}
+
+/**
+ * A stack child's resize, resolved the way a splitter behaves.
+ *
+ * A stack is always full, so a child cannot simply claim more space: it grows
+ * only by taking tracks from a neighbour and shrinks only by handing them over.
+ * Tracks are taken from — or given to — the next child in the sequence first
+ * and the previous one after, which is what makes dragging the grip on a
+ * child's trailing edge read as moving the seam between it and what follows.
+ *
+ * Without this a size command inside a stack does nothing visible: it would
+ * only nudge the stored span, and `distributeDashboardStackSpans` hands the
+ * same track straight back to the child that is already proportionally the
+ * largest — usually the one that just grew.
+ *
+ * Returns every child's new span, or `null` when nothing can give way.
+ */
+export function resolveDashboardStackResize(
+  sizes: readonly number[],
+  bounds: readonly DashboardStackBound[],
+  index: number,
+  target: number,
+): number[] | null {
+  const own = bounds[index];
+  if (!own || index < 0 || index >= sizes.length) return null;
+
+  const next = [...sizes];
+  const wanted = clamp(target, own.min, own.max);
+  const order: number[] = [];
+  for (let position = index + 1; position < next.length; position += 1) {
+    order.push(position);
+  }
+  for (let position = index - 1; position >= 0; position -= 1) {
+    order.push(position);
+  }
+
+  while (next[index] < wanted) {
+    const donor = order.find(
+      (position) => next[position] > bounds[position].min,
+    );
+    if (donor === undefined) break;
+    next[donor] -= 1;
+    next[index] += 1;
+  }
+
+  while (next[index] > wanted) {
+    const taker = order.find(
+      (position) => next[position] < bounds[position].max,
+    );
+    if (taker === undefined) break;
+    next[taker] += 1;
+    next[index] -= 1;
+  }
+
+  return next[index] === sizes[index] ? null : next;
+}
+
+/**
+ * The children of a stack, re-spanned to fill it exactly.
+ *
+ * Applied at render rather than written back through `onPlacementChange`: the
+ * distribution is a function of the stored spans and the stack's own size, so
+ * making the consumer persist it would mean a write on every frame of a stack
+ * resize to arrive back at a value the layout can derive on its own. Cloning
+ * also keeps the DOM honest — a child reports the span it is actually drawn at,
+ * so the drag engine, the free-cell map and the node menu all agree with the
+ * picture.
+ */
+export function applyDashboardStackDistribution(
+  kind: DashboardContainerKind,
+  children: ReactNode,
+  columns: number,
+  rows: number,
+): ReactNode {
+  const isHorizontal = kind === 'horizontal-stack';
+  if (!isHorizontal && kind !== 'vertical-stack') return children;
+
+  const list = Children.toArray(children);
+  const positions: number[] = [];
+  const items: DashboardStackItem[] = [];
+
+  list.forEach((child, position) => {
+    const bounds = getDashboardNodeBounds(child, columns, rows);
+    if (!bounds) return;
+
+    positions.push(position);
+    items.push(
+      isHorizontal
+        ? {
+            min: bounds.minColumns,
+            max: bounds.maxColumns,
+            weight: bounds.columns,
+          }
+        : { min: bounds.minRows, max: bounds.maxRows, weight: bounds.rows },
+    );
+  });
+
+  if (items.length === 0) return children;
+
+  const sizes = distributeDashboardStackSpans(
+    items,
+    isHorizontal ? columns : rows,
+  );
+  const next = [...list];
+  let cursor = 0;
+  let changed = false;
+
+  positions.forEach((position, index) => {
+    const child = next[position];
+    const size = sizes[index];
+    const origin = cursor;
+    cursor += size;
+    if (!isValidElement<DashboardBoundedProps>(child)) return;
+
+    // The origin is re-derived alongside the span. A stack packs by sequence,
+    // so a child's stored coordinate is only whatever the consumer last wrote
+    // and would otherwise contradict the span it is drawn at — and that
+    // coordinate is what the midpoint maths behind reordering reads back off
+    // the DOM.
+    const applied = isHorizontal
+      ? { columns: size, column: origin, row: 0 }
+      : { rows: size, row: origin, column: 0 };
+
+    if (
+      child.props.columns === applied.columns &&
+      child.props.rows === applied.rows &&
+      child.props.column === applied.column &&
+      child.props.row === applied.row
+    ) {
+      return;
+    }
+
+    next[position] = cloneElement(child, applied);
+    changed = true;
+  });
+
+  return changed ? next : children;
+}
+
 export function getContainerChildMinimum(
   kind: DashboardContainerKind,
   children: ReactNode,
@@ -357,20 +668,35 @@ export function getContainerChildMinimum(
 
   if (placements.length === 0) return { columns: 1, rows: 1 };
 
-  if (kind === 'horizontal-stack') {
-    return {
-      columns: Math.min(
+  // A stack distributes its own axis, so its floor there is the sum of what its
+  // children can be squeezed to — not the sum of the spans they happen to hold,
+  // which would pin the stack at its current size. The cross axis is not
+  // distributed, so it keeps the tallest (or widest) child as its floor.
+  if (kind === 'horizontal-stack' || kind === 'vertical-stack') {
+    const bounds = directChildren.flatMap((child) => {
+      const childBounds = getDashboardNodeBounds(
+        child,
         capacityColumns,
-        placements.reduce((total, placement) => total + placement.columns, 0),
-      ),
-      rows: Math.min(
         capacityRows,
-        Math.max(...placements.map((placement) => placement.rows)),
-      ),
-    };
-  }
+      );
 
-  if (kind === 'vertical-stack') {
+      return childBounds ? [childBounds] : [];
+    });
+
+    if (kind === 'horizontal-stack') {
+      return {
+        columns: Math.min(
+          capacityColumns,
+          bounds.reduce((total, item) => total + item.minColumns, 0),
+        ),
+        rows: Math.min(
+          capacityRows,
+          Math.max(...placements.map((placement) => placement.rows)),
+        ),
+        maxColumns: bounds.reduce((total, item) => total + item.maxColumns, 0),
+      };
+    }
+
     return {
       columns: Math.min(
         capacityColumns,
@@ -378,8 +704,9 @@ export function getContainerChildMinimum(
       ),
       rows: Math.min(
         capacityRows,
-        placements.reduce((total, placement) => total + placement.rows, 0),
+        bounds.reduce((total, item) => total + item.minRows, 0),
       ),
+      maxRows: bounds.reduce((total, item) => total + item.maxRows, 0),
     };
   }
 

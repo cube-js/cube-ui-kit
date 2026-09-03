@@ -11,12 +11,15 @@ import type {
 /**
  * The vertical channel between top-level containers, in pixels.
  *
- * Must stay in step with `gap: '1x'` on `DashboardElement`. It is deliberately
+ * Must stay in step with `gap: '2x'` on `DashboardElement`. It is deliberately
  * independent of the `gap` prop, which describes spacing *inside* a container's
  * grid, and the pointer maths for a root-level move reads it from here rather
  * than from `metrics.rowGap`.
+ *
+ * `2x` is also exactly twice the depth-one chrome bleed, so two adjacent
+ * top-level containers' selectable boxes meet edge to edge instead of crossing.
  */
-export const DASHBOARD_ROOT_GAP = 8;
+export const DASHBOARD_ROOT_GAP = 16;
 
 export function normalizeGap(gap: CubeDashboardProps['gap']): [number, number] {
   if (Array.isArray(gap)) return gap;
@@ -109,16 +112,37 @@ export function getPlacementStyle(
   };
 }
 
+/**
+ * The width of a stack's authoring track.
+ *
+ * A stack fills itself, so its insertion point cannot be leftover space. It gets
+ * a narrow track of its own past the last child instead of one of the stack's
+ * own columns: taking a column would mean the children could not be drawn at
+ * the spans the consumer stored, and a size command that changed one of those
+ * spans would then have nowhere to show up.
+ */
+const STACK_ADD_TRACK = 20;
+
 export function getContentGridStyle(
   kind: DashboardContainerKind,
   columns: number,
   rows: number,
   metrics: DashboardMetrics,
+  hasStackAddTrack = false,
 ): CSSProperties {
+  const columnTracks = `repeat(${Math.max(1, Math.floor(columns))}, minmax(0, 1fr))`;
+  const rowTracks = `repeat(${Math.max(1, Math.floor(rows))}, minmax(${metrics.rowHeight}px, auto))`;
+
   return {
     gap: `${metrics.rowGap}px ${metrics.columnGap}px`,
-    gridTemplateColumns: `repeat(${Math.max(1, Math.floor(columns))}, minmax(0, 1fr))`,
-    gridTemplateRows: `repeat(${Math.max(1, Math.floor(rows))}, minmax(${metrics.rowHeight}px, auto))`,
+    gridTemplateColumns:
+      hasStackAddTrack && kind === 'horizontal-stack'
+        ? `${columnTracks} ${STACK_ADD_TRACK}px`
+        : columnTracks,
+    gridTemplateRows:
+      hasStackAddTrack && kind === 'vertical-stack'
+        ? `${rowTracks} ${STACK_ADD_TRACK}px`
+        : rowTracks,
     gridAutoFlow: kind === 'horizontal-stack' ? 'row' : undefined,
   };
 }

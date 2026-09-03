@@ -107,14 +107,50 @@ describe('Dashboard', () => {
       </Dashboard>,
     );
 
+    // Each child stretches along its stack's own axis and is held at its
+    // maximum across it, which is what keeps a short tile short and a narrow
+    // one narrow.
     expect(screen.getByTestId('Short')).toHaveStyle({
-      gridColumn: 'span 2',
+      gridColumn: 'span 12',
       gridRow: '1 / span 1',
     });
     expect(screen.getByTestId('Narrow')).toHaveStyle({
       gridColumn: '1 / span 2',
-      gridRow: 'span 1',
+      gridRow: 'span 3',
     });
+  });
+
+  it('shares a stack between its children and follows it as it resizes', () => {
+    const renderStack = (columns: number) => (
+      <Dashboard>
+        <Dashboard.Grid id="grid" rows={1}>
+          <Dashboard.HorizontalStack id="stack" columns={columns} rows={1}>
+            <Dashboard.Widget id="a" columns={3} minColumns={2} qa="A" />
+            <Dashboard.Widget id="b" columns={1} minColumns={1} qa="B" />
+          </Dashboard.HorizontalStack>
+        </Dashboard.Grid>
+      </Dashboard>
+    );
+
+    const { rerender } = renderWithRoot(renderStack(8));
+
+    // Stored spans are a preference, not a position: 3 and 1 share 8 in the
+    // same 3:1 proportion.
+    expect(screen.getByTestId('A')).toHaveStyle({ gridColumn: 'span 6' });
+    expect(screen.getByTestId('B')).toHaveStyle({ gridColumn: 'span 2' });
+
+    rerender(renderStack(12));
+    expect(screen.getByTestId('A')).toHaveStyle({ gridColumn: 'span 9' });
+    expect(screen.getByTestId('B')).toHaveStyle({ gridColumn: 'span 3' });
+
+    // Down at the floor the children are at their own minimums and the stack
+    // can go no further — `minColumns` on the first child is what stops it.
+    rerender(renderStack(3));
+    expect(screen.getByTestId('A')).toHaveStyle({ gridColumn: 'span 2' });
+    expect(screen.getByTestId('B')).toHaveStyle({ gridColumn: 'span 1' });
+    expect(
+      document.querySelector('[data-dashboard-node-id="stack"]'),
+    ).toHaveAttribute('data-dashboard-min-columns', '3');
   });
 
   it('highlights only the deepest hovered Grid free cells', () => {
@@ -147,6 +183,123 @@ describe('Dashboard', () => {
     );
   });
 
+  it('offers the add menu items a full stack can still squeeze for', async () => {
+    const user = userEvent.setup();
+    const onAddItem = vi.fn();
+
+    renderWithRoot(
+      <Dashboard
+        isEditing
+        onAddItem={onAddItem}
+        addItems={[
+          { id: 'tile', name: 'Tile', defaultColumns: 3, minColumns: 3 },
+          { id: 'panel', name: 'Panel', defaultColumns: 9, minColumns: 9 },
+        ]}
+      >
+        <Dashboard.HorizontalStack id="stack" rows={1}>
+          <Dashboard.Widget id="resident" columns={4} minColumns={4} rows={1}>
+            Resident
+          </Dashboard.Widget>
+        </Dashboard.HorizontalStack>
+      </Dashboard>,
+    );
+
+    // The resident is drawn across the whole stack, yet it can be squeezed to
+    // 4 — so an item needing 3 fits and one needing 9 does not.
+    expect(
+      document.querySelector('[data-dashboard-node-id="resident"]'),
+    ).toHaveAttribute('data-dashboard-columns', '12');
+
+    // The add button only enters the accessibility tree once its container is
+    // hovered, the same as every other insertion point.
+    fireEvent.pointerMove(
+      document.querySelector('[data-dashboard-free-cell]')!,
+    );
+    await user.click(screen.getByRole('button', { name: /Add an item/ }));
+    expect(screen.getByRole('menuitem', { name: 'Tile' })).not.toHaveAttribute(
+      'aria-disabled',
+    );
+    expect(
+      screen.getByRole('menuitem', { name: 'Panel' }).closest('li'),
+    ).toHaveAttribute('aria-disabled', 'true');
+
+    await user.click(screen.getByRole('menuitem', { name: 'Tile' }));
+    expect(onAddItem).toHaveBeenCalledWith(
+      'tile',
+      expect.objectContaining({
+        parentId: 'stack',
+        placement: expect.objectContaining({ columns: 3 }),
+      }),
+    );
+  });
+
+  it('accepts a drop into a full stack the children can squeeze for', () => {
+    const onPlacementChange = vi.fn();
+    const renderTree = (destinationMin: number) =>
+      renderWithRoot(
+        <Dashboard qa="Dashboard">
+          <Dashboard.Grid id="grid" rows={1}>
+            <Dashboard.Widget
+              id="metric"
+              aria-label="Metric"
+              column={0}
+              columns={2}
+              rows={1}
+              isMovable
+              onPlacementChange={onPlacementChange}
+            >
+              Metric
+            </Dashboard.Widget>
+            <Dashboard.HorizontalStack
+              id="destination"
+              aria-label="Destination"
+              column={6}
+              columns={6}
+              rows={1}
+            >
+              <Dashboard.Widget
+                id="resident"
+                aria-label="Resident"
+                columns={6}
+                minColumns={destinationMin}
+                rows={1}
+              >
+                Resident
+              </Dashboard.Widget>
+            </Dashboard.HorizontalStack>
+          </Dashboard.Grid>
+        </Dashboard>,
+      );
+
+    const drag = () => {
+      const dashboard = screen.getByTestId('Dashboard');
+      const contents = screen.getAllByTestId('DashboardContainerContent');
+      const metric = screen.getByRole('group', { name: 'Metric' });
+      mockRect(dashboard, { left: 0, top: 0, width: 1200, height: 200 });
+      mockRect(contents[0], { left: 0, top: 0, width: 1200, height: 96 });
+      mockRect(contents[1], { left: 608, top: 0, width: 592, height: 96 });
+      mockRect(metric, { left: 0, top: 0, width: 186, height: 80 });
+
+      fireEvent(metric, pointerEvent('pointerdown', 20, 20));
+      fireEvent(window, pointerEvent('pointermove', 700, 20));
+
+      return screen.getByTestId('DashboardDropPlaceholder');
+    };
+
+    // The resident is drawn across all six columns either way — a stack always
+    // fills itself — so only its own floor can decide whether one more fits.
+    const { unmount } = renderTree(1);
+    expect(
+      document.querySelector('[data-dashboard-node-id="resident"]'),
+    ).toHaveAttribute('data-dashboard-columns', '6');
+    expect(drag()).toHaveAttribute('data-dashboard-drop-status', 'valid');
+    fireEvent(window, pointerEvent('pointerup', 700, 20));
+    unmount();
+
+    renderTree(6);
+    expect(drag()).toHaveAttribute('data-dashboard-drop-status', 'danger');
+  });
+
   it('uses one trailing add location for each stack', () => {
     renderWithRoot(
       <Dashboard isEditing>
@@ -166,12 +319,15 @@ describe('Dashboard', () => {
       '[data-dashboard-free-cell][data-dashboard-parent-id="vertical"]',
     );
 
+    // A stack fills itself, so the insertion point is not leftover space: the
+    // children stretch across every column (or row) and the slot sits in a
+    // narrow track of its own past the last one.
     expect(horizontalCells).toHaveLength(1);
-    expect(horizontalCells[0]).toHaveAttribute('data-dashboard-column', '2');
+    expect(horizontalCells[0]).toHaveAttribute('data-dashboard-column', '12');
     expect(horizontalCells[0]).toHaveAttribute('data-dashboard-row', '0');
     expect(verticalCells).toHaveLength(1);
     expect(verticalCells[0]).toHaveAttribute('data-dashboard-column', '0');
-    expect(verticalCells[0]).toHaveAttribute('data-dashboard-row', '1');
+    expect(verticalCells[0]).toHaveAttribute('data-dashboard-row', '3');
   });
 
   it('moves the add button with the hovered Grid cell and disables items that cannot fit', async () => {
@@ -801,6 +957,57 @@ describe('Dashboard', () => {
     fireEvent.click(screen.getByTestId('Dashboard'));
 
     expect(widget).not.toHaveAttribute('data-selected');
+    expect(onSelectionChange).toHaveBeenLastCalledWith([]);
+  });
+
+  it('clears selection when the click lands outside the dashboard entirely', async () => {
+    const user = userEvent.setup();
+    const onSelectionChange = vi.fn();
+
+    renderWithRoot(
+      <>
+        <button type="button">Elsewhere</button>
+        <Dashboard qa="Dashboard" onSelectionChange={onSelectionChange}>
+          <Dashboard.Grid id="section" rows={1}>
+            <Dashboard.Widget
+              id="metric"
+              aria-label="Metric"
+              columns={12}
+              actions={[
+                { id: 'export', name: 'Export' },
+                { id: 'archive', name: 'Archive', isDisabled: true },
+              ]}
+              onMenuAction={vi.fn()}
+            >
+              Metric
+            </Dashboard.Widget>
+          </Dashboard.Grid>
+        </Dashboard>
+      </>,
+    );
+
+    const widget = screen.getByRole('group', { name: 'Metric' });
+    await user.click(widget);
+    expect(widget).toHaveAttribute('data-selected', 'true');
+
+    // The node's own menu is portaled out of the Dashboard's subtree, so a
+    // press inside it must not read as an outside click. A disabled item keeps
+    // the menu open and the target attached, which is the case a plain
+    // `contains()` on the Dashboard would get wrong.
+    await user.click(
+      screen.getByRole('button', { name: 'Actions for Metric' }),
+    );
+    await user.click(screen.getByRole('menuitem', { name: 'Archive' }));
+    expect(screen.getByRole('menu')).toBeInTheDocument();
+    expect(widget).toHaveAttribute('data-selected', 'true');
+    expect(onSelectionChange).toHaveBeenLastCalledWith(['metric']);
+
+    await user.keyboard('{Escape}');
+    await user.click(screen.getByRole('button', { name: 'Elsewhere' }));
+
+    expect(screen.getByRole('group', { name: 'Metric' })).not.toHaveAttribute(
+      'data-selected',
+    );
     expect(onSelectionChange).toHaveBeenLastCalledWith([]);
   });
 
@@ -1705,6 +1912,60 @@ describe('Dashboard', () => {
     expect(onPlacementChange).toHaveBeenLastCalledWith(
       { column: 0, row: 0, columns: 3, rows: 1 },
       { reason: 'resize', phase: 'commit', input: 'keyboard' },
+    );
+  });
+
+  it('resizes a stack child against its neighbour', async () => {
+    const user = userEvent.setup();
+    const onPlacementChange = vi.fn();
+
+    renderWithRoot(
+      <Dashboard>
+        <Dashboard.HorizontalStack id="stack" rows={1}>
+          <Dashboard.Widget
+            id="first"
+            aria-label="First"
+            columns={6}
+            minColumns={2}
+            maxColumns={10}
+            rows={1}
+            isResizable
+            resizeLabel="Resize first"
+            onPlacementChange={onPlacementChange}
+          >
+            First
+          </Dashboard.Widget>
+          <Dashboard.Widget
+            id="second"
+            aria-label="Second"
+            columns={6}
+            minColumns={2}
+            rows={1}
+          >
+            Second
+          </Dashboard.Widget>
+        </Dashboard.HorizontalStack>
+      </Dashboard>,
+    );
+
+    await user.click(screen.getByRole('group', { name: 'First' }));
+    screen.getByRole('button', { name: 'Resize first' }).focus();
+    await user.keyboard('{ArrowRight}');
+
+    // The stack is full, so the track has to come from somewhere: the seam
+    // between the two moves rather than the first one claiming free space.
+    expect(onPlacementChange).toHaveBeenLastCalledWith(
+      { column: 0, row: 0, columns: 7, rows: 1 },
+      expect.objectContaining({
+        reason: 'resize',
+        phase: 'commit',
+        displaced: [
+          {
+            id: 'second',
+            placement: { column: 6, row: 0, columns: 5, rows: 1 },
+          },
+        ],
+      }),
     );
   });
 
