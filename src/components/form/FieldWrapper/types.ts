@@ -17,6 +17,8 @@ export type CubeFieldWrapperProps = ValidationProps & {
   styles?: Styles;
   /** Whether the input is required */
   isRequired?: boolean;
+  /** Whether the input is optional. Marks the label with an `(optional)` note. */
+  isOptional?: boolean;
   /** Whether the input is disabled */
   isDisabled?: boolean;
   fieldProps?: Props;
@@ -33,8 +35,7 @@ export type CubeFieldWrapperProps = ValidationProps & {
   requiredMark?: boolean;
   tooltip?: ReactNode;
   extra?: ReactNode;
-  necessityLabel?: ReactNode;
-  necessityIndicator?: NecessityIndicator;
+  necessityIndicator?: NecessityIndicator | null;
 
   /**
    * @deprecated Use `errorMessage` for error messages and `description` for field descriptions instead.

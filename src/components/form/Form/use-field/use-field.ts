@@ -62,6 +62,7 @@ export function useField<T extends FieldTypes, Props extends UseFieldProps<T>>(
     showValid,
     shouldUpdate,
     isRequired: isRequiredProp,
+    necessityIndicator: necessityIndicatorProp,
   } = props;
 
   const { isInvalid: isInvalidProp, isValid: isValidProp } =
@@ -128,6 +129,17 @@ export function useField<T extends FieldTypes, Props extends UseFieldProps<T>>(
   let isRequired = !!processedRules?.find(
     (rule) => 'required' in rule && rule.required === true,
   );
+
+  // `isRequired` has two sources with different intent. A `required` rule states
+  // how the field behaves: it is what validation runs, and `aria-required` is
+  // its programmatic mirror, so the flag has to reach the input either way. The
+  // `isRequired` prop additionally states what the label should say. So unless
+  // the prop itself asked for the marker, suppress it — an absent prop and an
+  // explicit `isRequired={false}` both mean "do not mark this", the latter
+  // rather more loudly. An explicit `necessityIndicator` overrides either way,
+  // being a request for the marker in its own right.
+  const suppressNecessityIndicator =
+    isRequired && !isRequiredProp && necessityIndicatorProp === undefined;
 
   useEffect(() => {
     if (!form) return;
@@ -216,6 +228,7 @@ export function useField<T extends FieldTypes, Props extends UseFieldProps<T>>(
       isInvalid: isInvalidProp ?? !!field?.errors?.length,
       isValid: isValidProp ?? !!(showValid && field?.status === 'valid'),
       ...(isRequired && { isRequired }),
+      ...(suppressNecessityIndicator && { necessityIndicator: null }),
       message:
         message !== undefined
           ? message
@@ -239,6 +252,7 @@ export function useField<T extends FieldTypes, Props extends UseFieldProps<T>>(
       fieldId,
       fieldName,
       isRequired,
+      suppressNecessityIndicator,
       message,
       description,
       errorMessage,

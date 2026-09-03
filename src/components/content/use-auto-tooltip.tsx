@@ -61,21 +61,59 @@ export function useAutoTooltip({
   const elementRef = useRef<HTMLElement | null>(null);
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
 
+  const measurePendingRef = useRef(false);
+
   const checkLabelOverflow = useCallback(() => {
     const label = elementRef.current;
-    if (!label) {
-      setIsLabelOverflowed(false);
-      return;
-    }
 
-    const hasOverflow = label.scrollWidth > label.clientWidth;
-    setIsLabelOverflowed(hasOverflow);
+    if (!label) return;
+
+    setIsLabelOverflowed(label.scrollWidth > label.clientWidth);
   }, []);
+
+  /**
+   * Measure once the current task has finished, not inside it.
+   *
+   * A microtask runs after React's whole commit — every mutation, layout effect
+   * and ref attachment — and before paint. Every label on the page therefore
+   * reads after all of them have written, so the reads collapse into one style
+   * and layout flush instead of forcing one each, mid-commit. Reading straight
+   * from the callback ref is what cost 122ms of `get scrollWidth` in one Cloud
+   * profile, more than the entire style engine.
+   *
+   * A microtask rather than the observer's first delivery: observer callbacks
+   * are part of the rendering steps, so a runner that is not producing frames —
+   * a background tab, or a headless browser running many stories at once — can
+   * delay them past the point something asks whether the tooltip is active.
+   * Microtasks do not depend on a frame.
+   */
+  const scheduleLabelOverflowCheck = useCallback(() => {
+    if (measurePendingRef.current) return;
+
+    measurePendingRef.current = true;
+
+    queueMicrotask(() => {
+      measurePendingRef.current = false;
+      checkLabelOverflow();
+    });
+  }, [checkLabelOverflow]);
 
   useEffect(() => {
     if (isAutoTooltipEnabled) {
       checkLabelOverflow();
+
+      return;
     }
+
+    // Clearing here rather than in the callback ref, which cannot be trusted
+    // to do it. Flipping `isAutoTooltipEnabled` changes the ref's identity, so
+    // React detaches with the PREVIOUS callback — the one that still believes
+    // auto tooltips are on, and therefore keeps the last verdict — and only
+    // attaches the new one if the label still exists. When `children` stops
+    // being a string the label unmounts, so the new callback never runs and a
+    // stale `true` would keep an auto tooltip mounted over content that is no
+    // longer text. That is the default `Button` path, where `tooltip` is `true`.
+    setIsLabelOverflowed(false);
   }, [isAutoTooltipEnabled, checkLabelOverflow]);
 
   // Attach ResizeObserver via callback ref to handle DOM node changes
@@ -102,20 +140,40 @@ export function useAutoTooltip({
 
       elementRef.current = element;
 
-      if (element && isAutoTooltipEnabled) {
-        // Create a fresh observer to capture the latest callback
-        const obs = new ResizeObserver(() => {
-          checkLabelOverflow();
-        });
-        resizeObserverRef.current = obs;
-        obs.observe(element);
-        // Initial check
-        checkLabelOverflow();
-      } else {
+      if (!isAutoTooltipEnabled) {
         setIsLabelOverflowed(false);
+
+        return;
       }
+
+      // No node to measure. Leave the previous verdict alone rather than
+      // clearing it: turning the verdict on mounts `TooltipProvider`, which
+      // remounts the label underneath it, so React detaches the old node and
+      // attaches a new one within that commit. Clearing here would unmount the
+      // provider, remount the label, measure it, mount the provider again — a
+      // loop that never settles.
+      if (!element) return;
+
+      // Do NOT measure synchronously here — see `scheduleLabelOverflowCheck`.
+      // This covers the node the ref just handed us, including the fresh one
+      // React creates when `TooltipProvider` mounts and remounts the label.
+      scheduleLabelOverflowCheck();
+
+      // The observer covers every later size change.
+      const obs = new ResizeObserver(() => {
+        checkLabelOverflow();
+      });
+
+      resizeObserverRef.current = obs;
+
+      obs.observe(element);
     },
-    [externalLabelRef, isAutoTooltipEnabled, checkLabelOverflow],
+    [
+      externalLabelRef,
+      isAutoTooltipEnabled,
+      checkLabelOverflow,
+      scheduleLabelOverflowCheck,
+    ],
   );
 
   // Cleanup on unmount

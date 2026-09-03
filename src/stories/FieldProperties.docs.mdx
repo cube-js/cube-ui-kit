@@ -29,9 +29,31 @@ When used inside a [Form](/docs/forms-form--docs), these properties are automati
 
 ## Necessity Indicators
 
-- **`isRequired`** `boolean` (default: `false`) — Whether user input is required before form submission.
-- **`necessityIndicator`** `'icon' | 'label'` — Type of necessity indicator shown next to the label.
-- **`necessityLabel`** `ReactNode` — Custom text for the necessity indicator (e.g., "Required" or "Optional").
+- **`isRequired`** `boolean` (default: `false`) — Whether user input is required before form submission. Marks the label, sets `aria-required` on the input, and adds a `required` validation rule.
+- **`isOptional`** `boolean` (default: `false`) — Marks the label with a quiet `(optional)` note. Presentational only: it changes no validation behaviour, and it is ignored when the field is required.
+- **`necessityIndicator`** `'icon' | 'label' | null` (default: `icon`) — Shape of the marker. `'icon'` renders the asterisk, `'label'` the `(required)` text, `null` suppresses it. `(optional)` has no icon form and always renders as text.
+- **`requiredMark`** `boolean` (default: `true`) — Set it to `false` — usually on the `Form` — to drop the required marker across fields that ask for one.
+
+**The marker is opt-in.** A `{ required: true }` rule states how the field _behaves_: it is what validation runs, and `aria-required` is its programmatic mirror, so both stay in place. It does not decorate the label. Pass `isRequired` when you want the marker too — it adds the rule for you, so the two are interchangeable as far as validation goes:
+
+```jsx
+{/* Validated and announced as required, but the label is left alone */}
+<TextInput name="email" label="Email" rules={[{ required: true }]} />
+
+{/* The same validation, plus the marker */}
+<TextInput name="email" label="Email" isRequired />
+
+{/* Asking for the marker on a rule-required field, without repeating the rule */}
+<TextInput
+  name="email"
+  label="Email"
+  necessityIndicator="icon"
+  rules={[{ required: true }]}
+/>
+
+{/* Optional is a note, never a rule */}
+<TextInput name="nickname" label="Nickname" isOptional />
+```
 
 ## State
 

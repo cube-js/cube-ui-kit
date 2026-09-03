@@ -85,7 +85,6 @@ export const DEFAULTS: DefaultsRegistry = {
         isResizable: { kind: 'default', value: true },
         maxRows: { kind: 'default', value: 'Infinity' },
         preventCollision: { kind: 'default', value: false },
-        resizeGripPlacement: { kind: 'default', value: 'inside' },
         rowHeight: { kind: 'default', value: 100 },
         selectionCancel: { kind: 'default', value: 'BOARD_SELECTION_CANCEL' },
         selectionMode: { kind: 'default', value: 'none' },

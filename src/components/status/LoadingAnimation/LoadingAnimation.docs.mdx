@@ -43,6 +43,15 @@ These properties allow direct style application without using the `styles` prop:
 <LoadingAnimation size="large" />
 ```
 
+## Synchronised Playback
+
+Every instance shares one phase. The cube animation is pinned to the document timeline rather than to the moment the element mounted, which has two consequences worth relying on:
+
+- **A remount is invisible.** A loading page adds levels as they resolve, and each wrapper that appears above a running loader replaces its DOM node. The new node picks up the cycle where the old one left off instead of snapping back to the first frame.
+- **Loaders run in lockstep.** Several loaders on the same page — a page shell, a panel, a table inside it — move together, whenever each of them appeared.
+
+Nothing to configure. See the `StaggeredInstances` story for four loaders appearing 700ms apart, with a live readout of how far into the cycle each one is.
+
 ## Colors
 
 The cube's three faces come from the shared isometric-cube tokens (`#loading-face-1` … `#loading-face-3`), a near-neutral ramp positioned by a WCAG floor against `#surface`. Each face therefore keeps the same separation from the page in light, dark, and high contrast, and follows a re-seeded brand hue as a tint rather than as a color. There is no `color` prop to override — recolouring one face and not the others would break the shading.

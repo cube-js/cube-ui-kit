@@ -1,12 +1,6 @@
 import { Styles } from '@tenphi/tasty';
-import {
-  isValidElement,
-  ReactElement,
-  ReactNode,
-  RefObject,
-  useEffect,
-  useState,
-} from 'react';
+import { isValidElement, ReactElement, ReactNode, RefObject } from 'react';
+import { useIsSSR } from 'react-aria';
 
 import { CubeTooltipProps, Tooltip } from './Tooltip';
 import {
@@ -24,18 +18,19 @@ export interface CubeTooltipProviderProps
 }
 
 export function TooltipProvider(props: CubeTooltipProviderProps): ReactElement {
-  const [rendered, setRendered] = useState(false);
+  const isSSR = useIsSSR();
   const { title, children, tooltipStyles, width, isDisabled, ...otherProps } =
     props;
 
-  useEffect(() => {
-    setRendered(true);
-  }, []);
-
   const isFunction = typeof children === 'function';
 
-  // SSR: render without tooltip
-  if (!rendered) {
+  // Render without the tooltip on the server, and while hydrating it.
+  //
+  // `useIsSSR` rather than a `rendered` state flipped from an effect: the
+  // state version answered `false` on the first client render too, so every
+  // client-rendered tree paid a second commit — and its trigger a remount —
+  // one task after everything watching the mount had called it finished.
+  if (isSSR) {
     return (
       <>
         {isFunction

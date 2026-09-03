@@ -20,7 +20,48 @@ module.exports = [
         }),
       );
     },
-    // Still 515 kB on `@tenphi/tasty` 3.5.0: 513.60 kB against `main`'s
+    // 517 kB for the Board resize-affordance rework. CI measured `main`
+    // (582c1e0) at 513,743 B and this branch at 515,261 B — +1.52 kB — against a
+    // 515 kB budget that `main` had already spent down to 1,257 B of headroom, so
+    // it came in 261 B over. A later visual pass (a painted gap on the outside
+    // grips, the corner angle in place of a dot, and the dev guards moved to
+    // `isDevEnv()`) added a further 180 B, and CI then measured the finished
+    // branch at 515,433 B. Set to 517 kB, leaving 1,567 B — about what `main` was
+    // carrying, and thin on purpose per the note further down.
+    //
+    // Another calibration point for the macOS/Linux warning below, since this
+    // branch produced two: the local reading was 515,290 B against CI's 515,433 B,
+    // a +143 B gap, after +151 B on the previous commit. Small and consistent, not
+    // the ~1.6 kB that warning describes — but it IS a gap, and both times it ran
+    // the same direction, so a budget fitted to a local reading would have landed
+    // just under. Predicting CI from a local delta worked here to 8 bytes; that is
+    // a usable technique, not a licence to skip the CI number.
+    //
+    // The `Tree shaking (just a Button)` entry below is BYTE-IDENTICAL across the
+    // two commits: 123,018 B on both. That is the check those comments keep
+    // reaching for — none of this reaches a consumer who imports a single
+    // component, so all 1.5 kB is Board and all of it tree-shakes. It also rules
+    // out the dependency: a change inside Tasty's always-included core moves both
+    // entries by the same amount, and this moved only one.
+    //
+    // What the 1.5 kB is: `OutsideGripElement`'s style map (a third grip
+    // placement, with per-axis geometry across nine style maps), placement
+    // resolving itself from content, two new `BoardHost` channels and the nesting
+    // depth that rides with them, and the `elementsFromPoint` arbitration
+    // (`findDeeperHandle` / `forwardPointerDown`).
+    //
+    // Roughly 0.7 kB of it is the two dev warning strings, raw. They ship now, and
+    // deliberately: they used to sit behind `process.env.NODE_ENV !== 'production'`,
+    // which the build FOLDS AWAY — it keeps whichever branch the build-time value
+    // resolved to, so a guard compiled at a dev NODE_ENV vanished and left the
+    // warnings firing in consumers' production bundles. They are on `isDevEnv()`
+    // now, evaluated at runtime, so the text is in the bundle and the warning is
+    // not. Same trade Tasty makes for its diagnostics, and the same reason. Worth
+    // knowing they are the first thing to shorten if this entry needs room, and
+    // that the same folding applies to the bare `NODE_ENV` checks elsewhere in the
+    // kit (`FieldWrapper`, `TooltipTrigger`, `use-field-props`) — not touched here.
+    //
+    // Before this: 515 kB on `@tenphi/tasty` 3.5.0: 513.60 kB against `main`'s
     // 512.39 kB with both sides rebuilt here, i.e. +1.21 kB. The Button entry
     // below moved by the same +1.21 kB, and matching deltas on both entries is
     // the signature of a change inside Tasty's always-included core — here the
@@ -169,7 +210,7 @@ module.exports = [
     //
     // Note when checking locally: `size-limit` bundles the built `./dist`, it
     // does not build. Run `pnpm build` first or you will measure a stale bundle.
-    limit: '515kB',
+    limit: '517kB',
   },
   {
     name: 'Tree shaking (just a Button)',

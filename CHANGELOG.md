@@ -1,5 +1,69 @@
 # @cube-dev/ui-kit
 
+## 0.175.1
+
+### Patch Changes
+
+- [#1388](https://github.com/cube-js/cube-ui-kit/pull/1388) [`cfe686de`](https://github.com/cube-js/cube-ui-kit/commit/cfe686deab305e15f3aa6dcb702c922169cff0c9) Thanks [@tenphi](https://github.com/tenphi)! - Stop `useAutoTooltip` from measuring label overflow inside its callback ref. React invokes callback refs during `commitAttachRef`, so reading `scrollWidth`/`clientWidth` there forced a style recalc and layout per element, mid-commit — every tooltip-bearing `Button`, `Item`, `TextItem`, `LayoutHeader` and `InlineInput` paying its own reflow. The measurement now runs in a microtask queued from the ref: it lands after React's whole commit and before paint, so every label reads once all of them have written and the reads collapse into a single style and layout flush. A microtask rather than the `ResizeObserver`'s first delivery, because observer callbacks are part of the rendering steps and a runner that is not producing frames can hold them past the point something asks whether the tooltip is active; the observer still covers every later resize.
+
+- [#1386](https://github.com/cube-js/cube-ui-kit/pull/1386) [`179e7ee9`](https://github.com/cube-js/cube-ui-kit/commit/179e7ee90e37287502ead5a88cfa342c14721c42) Thanks [@tenphi](https://github.com/tenphi)! - Fix form-connected inputs running their field handlers twice: `useFieldProps` merged the field's own `onChange`/`onBlur` on top of the handlers the value mapper had already wired, and `mergeProps` chained the pairs. Every user change and every blur reached the form twice, so change- and blur-triggered validation started two runs and async validators (including ones that call an API) were invoked twice. Each now runs once; the input's own `onChange`/`onBlur` props still fire once, before the field's.
+
+- [#1385](https://github.com/cube-js/cube-ui-kit/pull/1385) [`521cf1b4`](https://github.com/cube-js/cube-ui-kit/commit/521cf1b4e60e070358a88ab569449812bdcc53e2) Thanks [@tenphi](https://github.com/tenphi)! - Fix `Form` publishing stale validation results: changing a field's value (by typing, `setFieldValue()` or `setFieldsValue()`) now invalidates a validation that is still running for the previous value, so an async validator that settles late can no longer show an error, or a valid state, for a value the user has already replaced. The pending `validateField()` promise still settles for its caller.
+
+- [#1388](https://github.com/cube-js/cube-ui-kit/pull/1388) [`cfe686de`](https://github.com/cube-js/cube-ui-kit/commit/cfe686deab305e15f3aa6dcb702c922169cff0c9) Thanks [@tenphi](https://github.com/tenphi)! - Mount `TooltipProvider`'s trigger in one commit. Its SSR guard was a `rendered` state flipped from an effect, so on the client it rendered its children bare, then swapped them into `TooltipTrigger` a commit later — remounting the trigger after everything watching the mount had already called it finished, and leaving anything holding that node with a detached one. `useIsSSR` answers on the first client render instead.
+
+## 0.175.0
+
+### Minor Changes
+
+- [#1379](https://github.com/cube-js/cube-ui-kit/pull/1379) [`6e8f5806`](https://github.com/cube-js/cube-ui-kit/commit/6e8f580614f7c1dc4444f8f8562c6737658508b6) Thanks [@tenphi](https://github.com/tenphi)! - `Board`: resize grips now know which side of a nesting boundary they belong to.
+
+  **The bug.** A `resizeGripPlacement="corner"` hit-zone was a 24px square pinned to the corner by its outer edge, so ~19px of it lay over the widget's own content while only the 5px half-dot was painted there. Where that content was a nested `Board`, the child in the bottom-right cell lost its own resize handle and could not be resized at all. Pulling on the thread found three more collisions in the same place: a container's edge grips were painted _under_ its children (`z-index: auto` against a child host's `1`) while its edge hit-zones sat 16px _over_ them at `z-index: 20`; a child's corner grip was drawn as a clipped fragment; and any last-column child's corner grip landed on the container's east edge grip.
+
+  **The fix.** `resizeGripPlacement` is no longer defaulted to `'inside'` — left unset it resolves from the widget's content. A widget holding a nested `Board` gets the new `'outside'` placement, and every other widget gets `'inside'`. A nested board introduces itself to its host through `BoardHost`, so this needs no prop at any call site and follows the tree as boards are nested.
+
+  An `'outside'` grip is a padded control in the grid gutter beyond the widget's edge — a pill along each edge, a dot where two gutters cross — and the control _is_ the hit-zone, one element, so the two can no longer drift apart the way the dot and the square did. A container's affordance therefore points outward and its children's inward, leaving the two levels no pixel in common: nothing to arbitrate, nothing clipped to stay out of the way.
+
+  Grips also reveal one widget at a time now. The pointer is inside every ancestor at once, so a container stands down while the pointer is on one of its children.
+
+  **Behaviour change.** A widget holding a nested `Board` that relied on the board-level default now draws its grips outside instead of inside. Pass `resizeGripPlacement` explicitly to keep the old geometry. An `'outside'` grip needs at least 8px of `margin` per axis to sit in; below that it keeps its size, overhangs the neighbours, and warns in development.
+
+  Also in this release: `'corner'`'s hit-zone is held to the dot it stands for (half a grip inward, and outward only as far as half the gutter), edge axes under `'corner'` no longer inherit the corner offset, and where two hit-zones still overlap — an explicit placement on a container, or too thin a gutter — a press goes to the innermost handle under the pointer, with a development warning if that leaves the container unable to resize itself.
+
+### Patch Changes
+
+- [#1381](https://github.com/cube-js/cube-ui-kit/pull/1381) [`13a37e3d`](https://github.com/cube-js/cube-ui-kit/commit/13a37e3d173250325939a09b14c16f84351e2c7a) Thanks [@tenphi](https://github.com/tenphi)! - `LoadingAnimation` now picks up the page's current animation phase instead of starting from the first frame, so a loader that remounts — which is what happens when another level of a loading page adds a wrapper around it — no longer visibly snaps back to the start, and every loader on the page runs in step.
+
+## 0.174.0
+
+### Minor Changes
+
+- [#1377](https://github.com/cube-js/cube-ui-kit/pull/1377) [`582c1e06`](https://github.com/cube-js/cube-ui-kit/commit/582c1e06046f29d34941cf340cc5f858b0d3a563) Thanks [@tenphi](https://github.com/tenphi)! - **Breaking:** reworked the field label's necessity indicators. The required marker is now opt-in, `isOptional` is new, and the dead `necessityLabel` prop is gone.
+
+  A `{ required: true }` validation rule used to put the asterisk on the label, because `useField` derived `isRequired` from the rules and merged it back into the input's props. That conflated two different statements: a rule says how the field _behaves_, while `isRequired` says what its label should _read_. So the two are now separate — the rule keeps driving validation and `aria-required` (it is what the field is, and screen readers should still hear it), and only an `isRequired` authored on the input, the `Form` or the legacy `<Field>` marks the label.
+
+  ```jsx
+  {
+    /* Was marked, now isn't — still validated, still `aria-required` */
+  }
+  <TextInput name="email" label="Email" rules={[{ required: true }]} />;
+
+  {
+    /* Marked. `isRequired` adds the `required` rule for you, as before */
+  }
+  <TextInput name="email" label="Email" isRequired />;
+  ```
+
+  To keep the marker on a field that only has a rule, either add `isRequired` (the rule is not duplicated) or ask for the indicator directly with `necessityIndicator="icon"` — an explicit indicator is a request in its own right and still wins.
+
+  New `isOptional` prop, on every input, the `Form` and `<Field>`: it marks the label with a quiet `(optional)` note, in the same slot the required marker uses. It is presentational only — it adds no rule and changes no validation — and it is ignored when the field is required, including required by a rule, so the label can never claim a field is optional when the form will reject it empty. The note is dimmed and unbolded against the label text, and it joins the field's accessible name, since nothing else tells a screen reader the field is optional.
+
+  `necessityIndicator` now also accepts `null`, which suppresses the marker entirely — as does any value that is not `'icon'` or `'label'`, so a stray `necessityIndicator={false}` renders nothing rather than falling through to the text form. `'label'` renders `(required)` / `(optional)` as before; `(optional)` has no icon form, so it renders as text under either setting.
+
+  Both text notes are now `t4` / `#dark-03` at weight 400 — the same secondary tier `description` and `message` already use, one step down from the label rather than the same size as it.
+
+  **Also removed:** the `necessityLabel` prop, from `FieldBaseProps`, `FormBaseProps`, `Form`, `DialogForm` and `<Field>`. It never did anything — it was declared, forwarded, controllable in Storybook and documented as working, but nothing ever read it. (`Label` held a local variable of the same name for the computed `(required)` / `(optional)` string, which is what made the gap easy to miss.) Removing it changes no rendering, only the types. It is also not worth implementing: it is one string for two mutually exclusive states, and on `FormBaseProps` it would stamp the same literal onto required and optional fields alike. Those strings are owned by i18n now (`form.required` / `form.optional`), so rewording them belongs in a translation override. For custom content beside a label use `labelSuffix` or `extra`; for the marker's shape use `necessityIndicator`.
+
 ## 0.173.0
 
 ### Minor Changes
