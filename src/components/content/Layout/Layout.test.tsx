@@ -640,3 +640,52 @@ describe('Layout.Panel validation', () => {
     ).not.toThrow();
   });
 });
+
+describe('Layout collapse warning', () => {
+  // jsdom reports `offsetHeight: 0` for every element, so every Layout rendered
+  // in a jsdom spec looks collapsed two frames after mount. That made the
+  // warning - and, while it replaced `children`, the disappearance of the
+  // component under test - a property of the test environment rather than of
+  // the layout. Both tests below are the regression: CUB-4300.
+  afterEach(() => {
+    localStorage.removeItem('UIKIT_DEBUG');
+  });
+
+  it('keeps children mounted while the warning is shown', async () => {
+    renderWithRoot(
+      <Layout _forceShowDevWarning>
+        <div data-qa="Child">Content</div>
+      </Layout>,
+    );
+
+    await waitFor(() => expect(screen.getByRole('alert')).toBeInTheDocument());
+
+    // The diagnostic is overlaid, not substituted. Unmounting the subtree turns
+    // a wrong guess about height into an outage.
+    expect(screen.getByText('Content')).toBeInTheDocument();
+  });
+
+  it('does not warn under NODE_ENV=test', () => {
+    renderWithRoot(
+      <Layout>
+        <div data-qa="Child">Content</div>
+      </Layout>,
+    );
+
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(screen.getByText('Content')).toBeInTheDocument();
+  });
+
+  it('warns when UIKIT_DEBUG opts back in', async () => {
+    localStorage.setItem('UIKIT_DEBUG', 'true');
+
+    renderWithRoot(
+      <Layout>
+        <div data-qa="Child">Content</div>
+      </Layout>,
+    );
+
+    await waitFor(() => expect(screen.getByRole('alert')).toBeInTheDocument());
+    expect(screen.getByText('Content')).toBeInTheDocument();
+  });
+});

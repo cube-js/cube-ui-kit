@@ -15,6 +15,7 @@ import {
 } from 'react-aria';
 import { useTooltipTriggerState } from 'react-stately';
 
+import { isDevEnv } from '../../../utils/is-dev-env';
 import { Block } from '../../Block';
 import { ActiveZone } from '../../content/ActiveZone/ActiveZone';
 import { DisplayTransition } from '../../helpers/DisplayTransition/DisplayTransition';
@@ -134,7 +135,7 @@ export function TooltipTrigger(props: CubeTooltipTriggerProps) {
   }
 
   // Show deprecation warning for activeWrap
-  if (activeWrap && process.env.NODE_ENV === 'development') {
+  if (activeWrap && isDevEnv()) {
     console.warn(
       'CubeUIKit: The `activeWrap` prop is deprecated. Use function-as-first-child pattern instead.',
     );

@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 
 import { useEvent } from '../../../_internal/hooks';
+import { isDevEnvOrTest } from '../../../utils/is-dev-env';
 
 import type { Key } from '@react-types/shared';
 import type { CubeTreeNodeData, TreeLoadDataNode } from './types';
@@ -88,7 +89,7 @@ export function useLoadData(opts: UseLoadDataOptions): LoadDataController {
       const loadNode = nodesByKey.get(key);
       Promise.resolve(loadData({ key, children: loadNode?.children }))
         .catch((err) => {
-          if (process.env.NODE_ENV !== 'production') {
+          if (isDevEnvOrTest()) {
             console.error(`[Tree] loadData failed for key "${key}":`, err);
           }
         })

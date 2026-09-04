@@ -14,6 +14,17 @@ const banner = {
 const define = {
   __UIKIT_VERSION__: JSON.stringify(pkg.version),
   __TASTY_VERSION__: JSON.stringify(tastyPkg.version),
+  // Identity mapping, on purpose. `platform: 'browser'` makes rolldown inline
+  // `process.env.NODE_ENV` as the literal NODE_ENV of *this* build, so every
+  // consumer inherited whatever the release machine happened to export -
+  // `isDevEnv()` shipped as `"development" !== "test" && ... !== "production"`,
+  // i.e. `true` in production. Defining the expression as itself wins over that
+  // injection and leaves the read in the output, where the consumer's own
+  // bundler (webpack/Vite/Next all define it) or Node resolves it for the
+  // environment that is actually running. Keep the canonical
+  // `process.env.NODE_ENV` spelling at the read sites: that is the only form
+  // those bundlers match.
+  'process.env.NODE_ENV': 'process.env.NODE_ENV',
 };
 
 export default defineConfig({

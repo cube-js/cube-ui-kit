@@ -1477,11 +1477,11 @@ export function WidgetHost(props: WidgetHostProps) {
   // since the fallback (keep the band, overhang the neighbour) is visible and the
   // fix — widen `margin` — belongs to the board, not to the widget.
   //
-  // `isDevEnv()` rather than a bare `process.env.NODE_ENV` check: the build folds
-  // that constant away and keeps whichever branch it resolved to, so a
-  // `!== 'production'` guard compiled at a dev NODE_ENV disappears and leaves the
-  // warning firing in consumers' production bundles. `isDevEnv()` is evaluated at
-  // runtime, so one build serves both — the same reason Tasty's diagnostics do it.
+  // `isDevEnv()` rather than a bare `process.env.NODE_ENV` check: it is the one
+  // place that reads NODE_ENV, so it is the one place that has to survive the
+  // build unfolded (see `tsdown.config.ts`) and the one place that guards against
+  // there being no `process` to read at all. One build serves every consumer
+  // environment — the same reason Tasty's diagnostics do it.
   if (isDevEnv() && placement === 'outside') {
     const [marginX, marginY] = positionParams.margin;
 

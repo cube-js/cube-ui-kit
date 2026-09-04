@@ -87,6 +87,16 @@ const LayoutElement = tasty({
   },
 });
 
+// The collapse warning sits on top of `Inner` rather than in place of it.
+// `Inner` is absolutely positioned, so an in-flow sibling would paint beneath
+// it; match its box and take the layer above.
+const DEV_WARNING_STYLES: Styles = {
+  position: 'absolute',
+  inset: '0',
+  zIndex: 1,
+  overflow: 'auto',
+};
+
 export interface CubeLayoutProps
   extends BaseProps,
     OuterStyleProps,
@@ -361,30 +371,29 @@ function LayoutInner(
       style={insetStyle}
       onKeyDown={hasOverlayPanels ? handleKeyDown : undefined}
     >
+      {/* All children go inside the Inner element - panels will portal themselves out */}
+      <div
+        ref={combinedInnerRef}
+        data-element="Inner"
+        onFocus={handleInnerFocus}
+        {...innerProps}
+      >
+        {children}
+      </div>
+      {/* Container for panels to portal into - rendered after Inner so panels paint on top via DOM order */}
+      <div ref={layoutRefs?.setPanelContainer} data-element="PanelContainer" />
+      {/* Overlaid, never substituted for `children`. A zero-height measurement is
+          not proof of a mistake - a hidden tab, a collapsed accordion and a
+          container mid-animation all measure zero - so unmounting the subtree
+          would turn a wrong guess into an outage, and remounting it on the way
+          back would drop whatever state it held. */}
       {showDevWarning ? (
-        <Alert theme="danger">
+        <Alert theme="danger" styles={DEV_WARNING_STYLES}>
           <b>UIKit:</b> <b>&lt;Layout/&gt;</b> has collapsed to <b>0</b> height.
           Ensure the parent container has a defined height or use the{' '}
           <b>height</b> prop on <b>&lt;Layout/&gt;</b>.
         </Alert>
-      ) : (
-        <>
-          {/* All children go inside the Inner element - panels will portal themselves out */}
-          <div
-            ref={combinedInnerRef}
-            data-element="Inner"
-            onFocus={handleInnerFocus}
-            {...innerProps}
-          >
-            {children}
-          </div>
-          {/* Container for panels to portal into - rendered after Inner so panels paint on top via DOM order */}
-          <div
-            ref={layoutRefs?.setPanelContainer}
-            data-element="PanelContainer"
-          />
-        </>
-      )}
+      ) : null}
     </LayoutElement>
   );
 }
