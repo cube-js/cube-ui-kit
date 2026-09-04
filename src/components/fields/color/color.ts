@@ -11,12 +11,23 @@ import {
   okhslToOklch,
   okhslToSrgb,
   okhstToOkhsl,
-  oklabToOkhsl,
   parseHexAlpha,
   relativeLuminanceFromLinearRgb,
   srgbToHex,
   srgbToOkhsl,
 } from '@tenphi/glaze';
+
+import {
+  anyNaN,
+  clamp,
+  maxChroma,
+  normalizeHue,
+  oklchToOkhsl,
+  parseColorFunction,
+  readComponent,
+  readHue,
+  rgbFromSrgb,
+} from '../../../utils/colors';
 
 import type {
   OkhslColor,
@@ -26,6 +37,13 @@ import type {
 } from '@tenphi/glaze';
 
 export type { OkhslColor, OkhstColor, OklchColor, RgbColor };
+
+// The color-literal grammar and the OKLCh gamut clamp are shared with
+// `toLegacyColor()` (see `src/utils/colors.ts`) — two parsers for one notation
+// drift, and the drift is invisible. Re-exported because the picker's own
+// modules import them from here, `fromOklch` under the name its `toOklch`
+// counterpart pairs it by.
+export { maxChroma, normalizeHue, oklchToOkhsl as fromOklch };
 
 /**
  * Every color format the picker can read and write.
@@ -51,32 +69,11 @@ export type ColorFormat = (typeof COLOR_FORMATS)[number];
  */
 export type ColorValue = OkhslColor;
 
-const FUNCTION_RE = /^([a-z]+)\(([^()]+)\)$/;
-/**
- * A number with an optional `%` or `deg` unit.
- *
- * The integer and fraction parts are deliberately written so that no two
- * quantifiers can consume the same digit — `\d+(?:\.\d*)?` rather than
- * `\d+\.?\d*`, whose `\d+` and `\d*` can split a digit run n ways and make
- * rejecting a long one quadratic. This runs on whatever the user types.
- */
-const NUMBER_RE = /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?(?:%|deg)?$/;
-
 /**
  * Saturation below this rounds to `0%` in every output notation, so the color
  * is achromatic for display purposes even when the conversion left a residue.
  */
 const ACHROMATIC_SATURATION = 5e-5;
-
-function clamp(value: number, min: number, max: number): number {
-  return value < min ? min : value > max ? max : value;
-}
-
-export function normalizeHue(hue: number): number {
-  if (!Number.isFinite(hue)) return 0;
-
-  return ((hue % 360) + 360) % 360;
-}
 
 /**
  * The color carries no meaningful hue: every conversion out of it invents an
@@ -95,42 +92,6 @@ export function isSameColor(a?: ColorValue | null, b?: ColorValue | null) {
     Math.abs(a.s - b.s) < 1e-6 &&
     Math.abs(a.l - b.l) < 1e-6
   );
-}
-
-/**
- * Split a color-function body into its numeric arguments, dropping the alpha
- * component. Both the modern space-separated and the legacy comma-separated
- * syntaxes are accepted.
- *
- * Each argument keeps its unit so the caller can tell `50%` from `50`.
- */
-function splitArguments(body: string): string[] | null {
-  const [values, ...rest] = body.split('/');
-
-  // More than one slash is never valid syntax.
-  if (rest.length > 1) return null;
-
-  const args = values
-    .trim()
-    .split(values.includes(',') ? ',' : /\s+/)
-    .map((part) => part.trim())
-    .filter(Boolean);
-
-  // Legacy `rgba(r, g, b, a)` / `hsla(h, s, l, a)` carry alpha as a fourth
-  // argument. Alpha is not part of the value, so it is dropped either way.
-  if (args.length === 4) args.pop();
-
-  return args.every((arg) => NUMBER_RE.test(arg)) ? args : null;
-}
-
-/** Parse an argument that may carry a `%` unit. `scale` is the 100% value. */
-function scalar(arg: string, scale: number): number {
-  return arg.endsWith('%') ? (parseFloat(arg) / 100) * scale : parseFloat(arg);
-}
-
-function hueArgument(arg: string): number {
-  // A percentage is not a valid hue angle.
-  return arg.endsWith('%') ? NaN : normalizeHue(parseFloat(arg));
 }
 
 export function fromRgb(color: RgbColor): ColorValue {
@@ -169,42 +130,10 @@ export function toOkhst(color: ColorValue): OkhstColor {
   return { h: color.h, s: color.s, t: clamp(t, 0, 1) };
 }
 
-/**
- * The largest OKLCh chroma that stays inside the sRGB gamut for the given hue
- * and OKHSL lightness — that is exactly what OKHSL saturation `1` means.
- */
-export function maxChroma(hue: number, lightness: number): number {
-  return okhslToOklch(normalizeHue(hue), 1, clamp(lightness, 0, 1))[1];
-}
-
 export function toOklch(color: ColorValue): OklchColor {
   const [l, c, h] = okhslToOklch(color.h, color.s, color.l);
 
   return { l, c, h: normalizeHue(h) };
-}
-
-/**
- * OKLCh addresses colors outside the sRGB gamut, so chroma is clipped to the
- * gamut boundary at the requested lightness before it is stored. Hue is taken
- * from the input rather than from the conversion, which loses it at zero
- * chroma.
- */
-export function fromOklch(color: OklchColor): ColorValue {
-  const h = normalizeHue(color.h);
-  const c = Math.max(color.c, 0);
-  const radians = (h * Math.PI) / 180;
-  const [, s, l] = oklabToOkhsl([
-    clamp(color.l, 0, 1),
-    c * Math.cos(radians),
-    c * Math.sin(radians),
-  ]);
-  const limit = maxChroma(h, l);
-
-  return {
-    h,
-    s: limit > 0 ? (c >= limit ? 1 : clamp(s, 0, 1)) : 0,
-    l: clamp(l, 0, 1),
-  };
 }
 
 export function toHex(color: ColorValue): string {
@@ -230,45 +159,42 @@ export function parseColor(input: string): ColorValue | null {
     return parsed ? fromRgb(rgbFromSrgb(parsed.rgb)) : null;
   }
 
-  const match = FUNCTION_RE.exec(text);
+  const parsed = parseColorFunction(text);
 
-  if (!match) return null;
+  if (!parsed || parsed.args.length !== 3) return null;
 
-  const [, name, body] = match;
-  const args = splitArguments(body);
-
-  if (!args || args.length !== 3) return null;
+  const { name, args } = parsed;
 
   switch (name) {
     case 'rgb':
     case 'rgba': {
-      const [r, g, b] = args.map((arg) => scalar(arg, 255));
+      const [r, g, b] = args.map((arg) => readComponent(arg, 255));
 
       return anyNaN(r, g, b) ? null : fromRgb({ r, g, b });
     }
     case 'hsl':
     case 'hsla': {
-      const h = hueArgument(args[0]);
-      const s = scalar(args[1], 100) / 100;
-      const l = scalar(args[2], 100) / 100;
+      const h = readHue(args[0]);
+      const s = readComponent(args[1], 100) / 100;
+      const l = readComponent(args[2], 100) / 100;
 
       if (anyNaN(h, s, l)) return null;
 
       return fromRgb(rgbFromSrgb(hslToSrgb(h, clamp(s, 0, 1), clamp(l, 0, 1))));
     }
     case 'okhsl': {
-      const h = hueArgument(args[0]);
-      const s = scalar(args[1], 100) / 100;
-      const l = scalar(args[2], 100) / 100;
+      const h = readHue(args[0]);
+      const s = readComponent(args[1], 100) / 100;
+      const l = readComponent(args[2], 100) / 100;
 
       if (anyNaN(h, s, l)) return null;
 
       return { h, s: clamp(s, 0, 1), l: clamp(l, 0, 1) };
     }
     case 'okhst': {
-      const h = hueArgument(args[0]);
-      const s = scalar(args[1], 100) / 100;
-      const t = scalar(args[2], 100) / 100;
+      const h = readHue(args[0]);
+      const s = readComponent(args[1], 100) / 100;
+      const t = readComponent(args[2], 100) / 100;
 
       if (anyNaN(h, s, t)) return null;
 
@@ -276,23 +202,15 @@ export function parseColor(input: string): ColorValue | null {
     }
     case 'oklch': {
       // In `oklch()` a percentage means 1 for lightness and 0.4 for chroma.
-      const l = scalar(args[0], 1);
-      const c = scalar(args[1], 0.4);
-      const h = hueArgument(args[2]);
+      const l = readComponent(args[0], 1);
+      const c = readComponent(args[1], 0.4);
+      const h = readHue(args[2]);
 
-      return anyNaN(l, c, h) ? null : fromOklch({ l, c, h });
+      return anyNaN(l, c, h) ? null : oklchToOkhsl({ l, c, h });
     }
     default:
       return null;
   }
-}
-
-function anyNaN(...values: number[]): boolean {
-  return values.some((value) => !Number.isFinite(value));
-}
-
-function rgbFromSrgb([r, g, b]: [number, number, number]): RgbColor {
-  return { r: r * 255, g: g * 255, b: b * 255 };
 }
 
 /** Serialize the canonical color into one of the supported notations. */
@@ -337,7 +255,7 @@ export function detectFormat(input: string): ColorFormat | null {
 
   if (text.startsWith('#')) return 'hex';
 
-  const name = FUNCTION_RE.exec(text)?.[1];
+  const name = parseColorFunction(text)?.name;
 
   switch (name) {
     case 'rgb':
