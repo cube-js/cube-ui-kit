@@ -127,6 +127,14 @@ export interface DashboardTreeContextValue {
   parentColumns: number;
   parentRows: number;
   ancestorIds: string[];
+  /**
+   * Stacks only: the span the parent's children already occupy on its axis.
+   *
+   * A stack child grows into what its siblings leave over, so it needs to know
+   * the total — which only the parent can see. `0` everywhere else, where
+   * occupancy is a question about positions rather than a running sum.
+   */
+  parentStackUsed: number;
 }
 
 export interface DashboardNodeRegistration {

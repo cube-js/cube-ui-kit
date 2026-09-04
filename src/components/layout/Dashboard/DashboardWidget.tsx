@@ -17,6 +17,7 @@ import {
   clampRows,
   clampSpan,
   getPlacementStyle,
+  getStackSpanBounds,
   isSamePlacement,
   normalizePlacement,
 } from './placement';
@@ -124,16 +125,34 @@ export const DashboardWidget = forwardRef(function DashboardWidget(
   const canMove = isMovable && !!onPlacementChange;
   const canMoveColumns = canMove && node.tree.parentKind !== 'vertical-stack';
   const canMoveRows = canMove && node.tree.parentKind !== 'horizontal-stack';
+  // In a stack the reachable range is narrower than the declared one: a child
+  // shrinks to its own minimum and grows only into what its siblings left over,
+  // so a child pinned between the two has no grip at all rather than a grip
+  // that does nothing.
+  const stackBounds = getStackSpanBounds(
+    node.tree,
+    normalizedPlacement,
+    node.tree.parentKind === 'vertical-stack'
+      ? resolvedMinRows
+      : resolvedMinColumns,
+    node.tree.parentKind === 'vertical-stack'
+      ? resolvedMaxRows
+      : resolvedMaxColumns,
+  );
   const canResizeColumns =
     isResizable &&
     !!onPlacementChange &&
     node.tree.parentKind !== 'vertical-stack' &&
-    resolvedMaxColumns > resolvedMinColumns;
+    (stackBounds?.axis === 'columns'
+      ? stackBounds.max > stackBounds.min
+      : resolvedMaxColumns > resolvedMinColumns);
   const canResizeRows =
     isResizable &&
     !!onPlacementChange &&
     node.tree.parentKind !== 'horizontal-stack' &&
-    resolvedMaxRows > resolvedMinRows;
+    (stackBounds?.axis === 'rows'
+      ? stackBounds.max > stackBounds.min
+      : resolvedMaxRows > resolvedMinRows);
   const canResize = canResizeColumns || canResizeRows;
   const resizeAxis = canResizeColumns ? (canResizeRows ? 'both' : 'x') : 'y';
 
@@ -206,21 +225,9 @@ export const DashboardWidget = forwardRef(function DashboardWidget(
     node.selectSelf(false);
     onDuplicatePress?.();
   });
-  const handleMenuResize = useEvent(
-    (next: DashboardPlacement, displaced?: DashboardPlacementChangeItem[]) => {
-      reportPlacement(
-        next,
-        'resize',
-        'commit',
-        'command',
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        displaced,
-      );
-    },
-  );
+  const handleMenuResize = useEvent((next: DashboardPlacement) => {
+    reportPlacement(next, 'resize', 'commit', 'command');
+  });
 
   return (
     <WidgetElement

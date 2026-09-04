@@ -14,10 +14,15 @@ import {
   getOwnDashboardDropTarget,
   getStackKeyboardPlacement,
   resolveDashboardDrop,
-  resolveDashboardStackResizeAt,
+  resolveDashboardStackCapacity,
   useDashboardDropPreview,
 } from './drag';
-import { clamp, DASHBOARD_ROOT_GAP, isSamePlacement } from './placement';
+import {
+  clamp,
+  DASHBOARD_ROOT_GAP,
+  getStackSpanBounds,
+  isSamePlacement,
+} from './placement';
 import { getSurfaceMoveProps } from './use-dashboard-node';
 
 import type { RefObject } from 'react';
@@ -165,12 +170,25 @@ export function useDashboardGestures(
       isBlocked?: boolean,
       displaced?: DashboardPlacementChangeItem[],
     ) => {
+      // A stack's children follow its capacity, always. Resolving it here
+      // rather than at each call site means no resize path — pointer, keyboard
+      // or menu command — can report a new stack size without them.
+      const resolved =
+        reason === 'resize' && !displaced?.length && nodeRef.current
+          ? resolveDashboardStackCapacity(
+              nodeRef.current,
+              id,
+              containerKind,
+              nextPlacement,
+            )
+          : displaced;
+
       onPlacementChange?.(nextPlacement, {
         reason,
         phase,
         input,
         ...(isBlocked && { isBlocked }),
-        ...(displaced?.length && { displaced }),
+        ...(resolved?.length && { displaced: resolved }),
         ...(destinationParentId !== sourceParentId && {
           sourceParentId,
           destinationParentId,
@@ -222,6 +240,12 @@ export function useDashboardGestures(
             : undefined,
         keyboardColumns: 0,
         keyboardRows: 0,
+        stackFree: Math.max(
+          0,
+          (tree.parentKind === 'horizontal-stack'
+            ? tree.parentColumns
+            : tree.parentRows) - tree.parentStackUsed,
+        ),
         columnStep: Math.max(1, columnWidth),
         rowStep: Math.max(
           1,
@@ -629,13 +653,25 @@ export function useDashboardGestures(
         canResizeRows ? event.deltaY : 0,
         event.pointerType === 'keyboard' ? 'keyboard' : 'pointer',
       );
-      const maxColumnsAtOrigin = Math.min(
-        maxColumns,
-        tree.parentColumns - gesture.origin.column,
+      // A stack child grows into the room its siblings left over rather than
+      // into the space past its own origin, which is what keeps the resize
+      // from pushing anything else around.
+      const stackBounds = getStackSpanBounds(
+        tree,
+        gesture.origin,
+        canResizeColumns ? minColumns : minRows,
+        canResizeColumns ? maxColumns : maxRows,
       );
-      const maxRowsAtOrigin = isRootChild
-        ? maxRows
-        : Math.min(maxRows, tree.parentRows - gesture.origin.row);
+      const maxColumnsAtOrigin =
+        stackBounds?.axis === 'columns'
+          ? Math.min(maxColumns, gesture.origin.columns + gesture.stackFree)
+          : Math.min(maxColumns, tree.parentColumns - gesture.origin.column);
+      const maxRowsAtOrigin =
+        stackBounds?.axis === 'rows'
+          ? Math.min(maxRows, gesture.origin.rows + gesture.stackFree)
+          : isRootChild
+            ? maxRows
+            : Math.min(maxRows, tree.parentRows - gesture.origin.row);
       const nextPlacement: DashboardPlacement = {
         ...gesture.origin,
         columns: canResizeColumns
@@ -650,28 +686,9 @@ export function useDashboardGestures(
           : gesture.origin.rows,
       };
 
-      // A stack is always full, so a child's resize is a seam between it and
-      // its neighbours rather than a free claim, and the neighbour's new span
-      // travels with it.
-      const resolved = nodeRef.current
-        ? resolveDashboardStackResizeAt(nodeRef.current, id, nextPlacement)
-        : null;
-      const landing = resolved?.placement ?? nextPlacement;
-
-      if (isSamePlacement(landing, gesture.current)) return;
-      gesture.current = landing;
-      gesture.currentDisplaced = resolved?.displaced ?? [];
-      reportPlacement(
-        landing,
-        'resize',
-        'preview',
-        gesture.input,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        gesture.currentDisplaced,
-      );
+      if (isSamePlacement(nextPlacement, gesture.current)) return;
+      gesture.current = nextPlacement;
+      reportPlacement(nextPlacement, 'resize', 'preview', gesture.input);
     },
     onMoveEnd() {
       const gesture = resizeSessionRef.current;
@@ -684,17 +701,7 @@ export function useDashboardGestures(
       ) {
         return;
       }
-      reportPlacement(
-        gesture.current,
-        'resize',
-        'commit',
-        gesture.input,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        gesture.currentDisplaced,
-      );
+      reportPlacement(gesture.current, 'resize', 'commit', gesture.input);
     },
   });
 

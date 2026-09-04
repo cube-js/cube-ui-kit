@@ -4,7 +4,7 @@ import { createPortal } from 'react-dom';
 import { useEvent } from '../../../_internal/hooks';
 import { CloseCircleIcon } from '../../../icons/CloseCircleIcon';
 
-import { resolveDashboardStackResize } from './occupancy';
+import { distributeDashboardStackSpans } from './occupancy';
 import {
   clamp,
   DASHBOARD_ROOT_GAP,
@@ -14,8 +14,8 @@ import {
 import { DropPlaceholderElement } from './styles';
 
 import type { CSSProperties } from 'react';
-import type { DashboardStackBound } from './occupancy';
 import type {
+  DashboardContainerKind,
   DashboardMetrics,
   DashboardParentKind,
   DashboardPlacement,
@@ -51,6 +51,14 @@ export interface DashboardPlacementGesture {
   frozen?: DashboardTargetGeometry;
   /** Set by Escape or `pointercancel`; suppresses the commit. */
   cancelled?: boolean;
+  /**
+   * A stack child's growing room, measured once at gesture start.
+   *
+   * Read live it would be a feedback loop: the consumer applies each preview,
+   * so the space the drag has already claimed disappears from the parent's
+   * total and the next frame would clamp the child straight back.
+   */
+  stackFree: number;
   keyboardColumns: number;
   keyboardRows: number;
   columnStep: number;
@@ -439,13 +447,24 @@ export function getDashboardDropSiblings(
   });
 }
 
-/** The whole sequence a stack child sits in, this node included and in order. */
+/** One child's room to move when the stack around it is resized. */
+export interface DashboardStackBound {
+  min: number;
+  max: number;
+}
+
+/** One child's room to move when the stack around it is resized. */
+export interface DashboardStackBound {
+  min: number;
+  max: number;
+}
+
+/** A stack's children in sequence, with the room each has to give or take. */
 export interface DashboardStackRow {
   ids: string[];
   placements: DashboardPlacement[];
   sizes: number[];
   bounds: DashboardStackBound[];
-  index: number;
 }
 
 /** The axis a stack shares out, or `null` for a layout addressed by position. */
@@ -461,28 +480,26 @@ export function readDashboardStackAxis(
 }
 
 /**
- * Read a stack's whole row off the DOM, including the node doing the asking.
+ * Read a stack's row off the DOM, in order and with its constraints.
  *
  * The sibling readers elsewhere in this module deliberately drop the moving
- * node, because a landing only has to coexist with what stays put. A resize is
- * the opposite: it is a negotiation along one axis, so the sequence has to be
- * complete and in order for "the next child" to mean anything.
+ * node, because a landing only has to coexist with what stays put. Re-sharing a
+ * stack is the opposite: every child takes part, so the sequence has to be
+ * complete and ordered for "the next child" to mean anything.
  */
 export function readDashboardStackRow(
-  parentElement: HTMLElement | null,
-  nodeId: string,
+  content: HTMLElement | null,
   axis: 'columns' | 'rows',
 ): DashboardStackRow | null {
-  if (!parentElement) return null;
+  if (!content) return null;
   const row: DashboardStackRow = {
     ids: [],
     placements: [],
     sizes: [],
     bounds: [],
-    index: -1,
   };
 
-  for (const child of Array.from(parentElement.children)) {
+  for (const child of Array.from(content.children)) {
     if (!(child instanceof HTMLElement)) continue;
     if (!child.dataset.dashboardNode) continue;
     if (child.dataset.dashboardAddSlot !== undefined) continue;
@@ -501,7 +518,6 @@ export function readDashboardStackRow(
     );
     const size = placement[axis];
 
-    if (child.dataset.dashboardNodeId === nodeId) row.index = row.ids.length;
     row.ids.push(child.dataset.dashboardNodeId ?? '');
     row.placements.push(placement);
     row.sizes.push(size);
@@ -511,56 +527,55 @@ export function readDashboardStackRow(
     });
   }
 
-  return row.index < 0 ? null : row;
-}
-
-/** What a stack row looks like after one of its children is resized. */
-export interface DashboardStackResizeResolution {
-  placement: DashboardPlacement;
-  displaced: DashboardPlacementChangeItem[];
+  return row.ids.length > 0 ? row : null;
 }
 
 /**
- * Resolve one stack child's requested span against the rest of its row.
+ * A stack's children, re-shared after the stack's own capacity changed.
  *
- * `null` for anything that is not a stack child, and for a request nothing can
- * give way for — in both cases the caller keeps the placement it already had.
+ * A stack child's span is its own, so nothing but the stack's own resize gets
+ * to move it — and when that happens every child has to follow, or the stack
+ * either overflows or ends up with dead space at the end. Dashboard resolves
+ * the whole row here and reports it as `info.displaced`, so the consumer
+ * writes the children's spans alongside the container's.
+ *
+ * Empty for anything that is not a stack, and for a capacity its children
+ * already fill exactly.
  */
-export function resolveDashboardStackResizeAt(
+export function resolveDashboardStackCapacity(
   node: HTMLElement,
   nodeId: string,
+  kind: DashboardContainerKind | undefined,
   placement: DashboardPlacement,
-): DashboardStackResizeResolution | null {
-  const axis = readDashboardStackAxis(node.parentElement);
-  if (!axis) return null;
+): DashboardPlacementChangeItem[] {
+  const isHorizontal = kind === 'horizontal-stack';
+  if (!isHorizontal && kind !== 'vertical-stack') return [];
 
-  const row = readDashboardStackRow(node.parentElement, nodeId, axis);
-  if (!row) return null;
+  const axis = isHorizontal ? 'columns' : 'rows';
+  const content = Array.from(
+    node.querySelectorAll<HTMLElement>('[data-dashboard-drop-target]'),
+  ).find((element) => element.dataset.dashboardParentId === nodeId);
+  const row = readDashboardStackRow(content ?? null, axis);
+  if (!row) return [];
 
-  const sizes = resolveDashboardStackResize(
-    row.sizes,
-    row.bounds,
-    row.index,
+  const sizes = distributeDashboardStackSpans(
+    row.bounds.map((bound, index) => ({ ...bound, weight: row.sizes[index] })),
     placement[axis],
   );
-  if (!sizes) return null;
 
-  return {
-    placement: { ...placement, [axis]: sizes[row.index] },
-    displaced: row.ids.flatMap((id, position) =>
-      position === row.index || sizes[position] === row.sizes[position]
-        ? []
-        : [
-            {
-              id,
-              placement: {
-                ...row.placements[position],
-                [axis]: sizes[position],
-              },
+  return row.ids.flatMap((id, position) =>
+    sizes[position] === row.sizes[position]
+      ? []
+      : [
+          {
+            id,
+            placement: {
+              ...row.placements[position],
+              [axis]: sizes[position],
             },
-          ],
-    ),
-  };
+          },
+        ],
+  );
 }
 
 /**

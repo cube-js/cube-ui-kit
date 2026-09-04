@@ -16,19 +16,17 @@ import { TrashIcon } from '../../../icons/TrashIcon';
 import { Button } from '../../actions/Button/Button';
 import { Menu } from '../../actions/Menu/Menu';
 
-import { readDashboardStackAxis, readDashboardStackRow } from './drag';
-import { getLargestFreeRect, resolveDashboardStackResize } from './occupancy';
+import { readDashboardStackAxis } from './drag';
+import { getLargestFreeRect } from './occupancy';
 import { placementsOverlap } from './placement';
 import { NodeActionsElement } from './styles';
 
 import type { Key } from '@react-types/shared';
 import type { ModValue } from '@tenphi/tasty';
 import type { ReactNode, RefObject } from 'react';
-import type { DashboardStackRow } from './drag';
 import type {
   DashboardNodeAction,
   DashboardPlacement,
-  DashboardPlacementChangeItem,
   DashboardSizeBounds,
 } from './types';
 
@@ -57,10 +55,7 @@ export interface DashboardNodeActionsProps {
   canResizeRows: boolean;
   /** The node itself; its parent grid is read for occupancy on menu open. */
   nodeRef: RefObject<HTMLElement | null>;
-  onResize: (
-    placement: DashboardPlacement,
-    displaced?: DashboardPlacementChangeItem[],
-  ) => void;
+  onResize: (placement: DashboardPlacement) => void;
   onSettingsPress?: () => void;
   settingsLabel?: string;
   onDuplicatePress?: () => void;
@@ -69,12 +64,6 @@ export interface DashboardNodeActionsProps {
   deleteLabel?: string;
   actions?: readonly DashboardNodeAction[];
   onMenuAction?: (key: string) => void;
-}
-
-/** What one size command would produce, and who has to give way for it. */
-export interface DashboardSizeProposal {
-  placement: DashboardPlacement;
-  displaced?: DashboardPlacementChangeItem[];
 }
 
 /** Sibling boxes, read straight off the DOM the way the drag engine does. */
@@ -106,9 +95,8 @@ function readSiblingPlacements(
  * own bounds together with the space left in the parent, and an occupant in the
  * way. Both are checked, because "disabled when pressing it has no effect" is
  * the whole point — an enabled item that silently does nothing is worse than a
- * greyed-out one. In a stack, which is always full and has no free space to
- * claim, the same question is instead whether a neighbour can give a track up,
- * and the answer carries that neighbour's new span with it.
+ * greyed-out one. In a stack, whose children are packed by sequence rather
+ * than addressed, "in the way" is instead the room the siblings leave over.
  *
  * Resolved when the menu opens rather than on every render: the occupancy half
  * is a DOM read, and a node re-renders on every frame of a neighbour's drag.
@@ -119,19 +107,40 @@ export function getDashboardSizeCommands(
   siblings: readonly DashboardPlacement[],
   canResizeColumns: boolean,
   canResizeRows: boolean,
-  /** Set for a stack child, whose siblings give way instead of blocking. */
-  stackRow: DashboardStackRow | null = null,
+  /** Set for a stack child, which is bounded by free space, not by overlap. */
   stackAxis: 'columns' | 'rows' | null = null,
-): Map<DashboardSizeCommand, DashboardSizeProposal> {
-  const resolved = new Map<DashboardSizeCommand, DashboardSizeProposal>();
-  const fits = (candidate: DashboardPlacement) =>
-    candidate.column + candidate.columns <= bounds.parentColumns &&
-    candidate.row + candidate.rows <= bounds.parentRows &&
-    candidate.columns >= bounds.minColumns &&
-    candidate.columns <= bounds.maxColumns &&
-    candidate.rows >= bounds.minRows &&
-    candidate.rows <= bounds.maxRows &&
-    !siblings.some((sibling) => placementsOverlap(candidate, sibling));
+): Map<DashboardSizeCommand, DashboardPlacement> {
+  const resolved = new Map<DashboardSizeCommand, DashboardPlacement>();
+  const fits = (candidate: DashboardPlacement) => {
+    if (
+      candidate.columns < bounds.minColumns ||
+      candidate.columns > bounds.maxColumns ||
+      candidate.rows < bounds.minRows ||
+      candidate.rows > bounds.maxRows
+    ) {
+      return false;
+    }
+
+    // A stack packs by sequence, so its children's coordinates are derived and
+    // an overlap test would read every growth as blocked. What actually bounds
+    // one is the room its siblings leave over — and shrinking always has room.
+    if (stackAxis) {
+      const capacity =
+        stackAxis === 'columns' ? bounds.parentColumns : bounds.parentRows;
+      const used = siblings.reduce(
+        (total, sibling) => total + sibling[stackAxis],
+        0,
+      );
+
+      return used + candidate[stackAxis] <= capacity;
+    }
+
+    return (
+      candidate.column + candidate.columns <= bounds.parentColumns &&
+      candidate.row + candidate.rows <= bounds.parentRows &&
+      !siblings.some((sibling) => placementsOverlap(candidate, sibling))
+    );
+  };
   const propose = (
     command: DashboardSizeCommand,
     columns: number,
@@ -141,53 +150,8 @@ export function getDashboardSizeCommands(
     const changes =
       candidate.columns !== placement.columns ||
       candidate.rows !== placement.rows;
-    if (!changes) return;
 
-    // A stack is always full, so this axis is a seam rather than a free
-    // claim: the command only exists if a neighbour can give way, and it
-    // carries that neighbour's new span with it.
-    if (stackRow && stackAxis) {
-      if (
-        candidate[stackAxis] <
-          (stackAxis === 'columns' ? bounds.minColumns : bounds.minRows) ||
-        candidate[stackAxis] >
-          (stackAxis === 'columns' ? bounds.maxColumns : bounds.maxRows)
-      ) {
-        return;
-      }
-
-      const sizes = resolveDashboardStackResize(
-        stackRow.sizes,
-        stackRow.bounds,
-        stackRow.index,
-        candidate[stackAxis],
-      );
-      if (!sizes) return;
-
-      const displaced = stackRow.ids.flatMap((id, position) =>
-        position === stackRow.index ||
-        sizes[position] === stackRow.sizes[position]
-          ? []
-          : [
-              {
-                id,
-                placement: {
-                  ...stackRow.placements[position],
-                  [stackAxis]: sizes[position],
-                },
-              },
-            ],
-      );
-
-      resolved.set(command, {
-        placement: { ...candidate, [stackAxis]: sizes[stackRow.index] },
-        displaced,
-      });
-
-      return;
-    }
-
-    if (fits(candidate)) resolved.set(command, { placement: candidate });
+    if (changes && fits(candidate)) resolved.set(command, candidate);
   };
 
   if (canResizeColumns) {
@@ -249,7 +213,7 @@ export function DashboardNodeActions(props: DashboardNodeActionsProps) {
   } = props;
   const { t } = useI18n();
   const [sizeCommands, setSizeCommands] = useState<
-    Map<DashboardSizeCommand, DashboardSizeProposal>
+    Map<DashboardSizeCommand, DashboardPlacement>
   >(() => new Map());
 
   const canResize = canResizeColumns || canResizeRows;
@@ -329,13 +293,6 @@ export function DashboardNodeActions(props: DashboardNodeActionsProps) {
         readSiblingPlacements(nodeRef.current?.parentElement ?? null, nodeId),
         canResizeColumns,
         canResizeRows,
-        stackAxis
-          ? readDashboardStackRow(
-              nodeRef.current?.parentElement ?? null,
-              nodeId,
-              stackAxis,
-            )
-          : null,
         stackAxis,
       ),
     );
@@ -358,7 +315,7 @@ export function DashboardNodeActions(props: DashboardNodeActionsProps) {
     const resized = sizeCommands.get(command as DashboardSizeCommand);
 
     if (resized) {
-      onResize(resized.placement, resized.displaced);
+      onResize(resized);
       return;
     }
     if (command === 'settings') return onSettingsPress?.();

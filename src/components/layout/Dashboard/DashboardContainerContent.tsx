@@ -20,8 +20,7 @@ import {
   DashboardMetricsContext,
 } from './context';
 import {
-  applyDashboardStackDistribution,
-  getContainerChildMinimum,
+  fitDashboardStackChildren,
   getDashboardAddPlacement,
   getDashboardChildPlacements,
   getDashboardFreeCells,
@@ -163,36 +162,12 @@ export function DashboardContainerContent({
         : authoring.addItems.filter((definition) => definition.kind !== 'tabs'),
     [authoring.addItems, kind],
   );
-  /**
-   * How far this stack's current children could be squeezed, on its own axis.
-   *
-   * A stack always fills itself, so its children's drawn spans say nothing
-   * about whether there is room for one more — only their floor does. It is
-   * what decides whether the stack offers an insertion point at all, and which
-   * catalog items that insertion point can seat.
-   */
-  const stackFloor = useMemo(() => {
-    const isHorizontal = kind === 'horizontal-stack';
-    if (!isHorizontal && kind !== 'vertical-stack') return 0;
-
-    const floor = getContainerChildMinimum(kind, children, columns, rows);
-
-    return isHorizontal ? floor.columns : floor.rows;
-  }, [children, columns, kind, rows]);
-  const isStack = kind === 'horizontal-stack' || kind === 'vertical-stack';
-  /**
-   * A stack being authored gets a narrow track past its last child to hold the
-   * insertion point, for as long as its children could make room for one.
-   */
-  const hasStackAddTrack =
-    isStack &&
-    editing.isEditing &&
-    stackFloor < (kind === 'horizontal-stack' ? columns : rows);
-  // A stack's children are re-spanned to the space it actually has before
-  // anything else looks at them, so placements, free cells and the rendered
-  // tree all describe the same layout.
+  // A stack's children are drawn at exactly the spans the consumer stored, so
+  // resizing one is a local change. The only thing done to them here is a
+  // squeeze back inside the stack when a controlled value leaves them
+  // over-subscribed, which would otherwise wrap onto a second row.
   const layoutChildren = useMemo(
-    () => applyDashboardStackDistribution(kind, children, columns, rows),
+    () => fitDashboardStackChildren(kind, children, columns, rows),
     [children, columns, kind, rows],
   );
   const placements = useMemo(
@@ -200,11 +175,8 @@ export function DashboardContainerContent({
     [columns, kind, layoutChildren, rows],
   );
   const freeCells = useMemo(
-    () =>
-      isStack && !hasStackAddTrack
-        ? []
-        : getDashboardFreeCells(kind, placements, columns, rows, stackFloor),
-    [columns, hasStackAddTrack, isStack, kind, placements, rows, stackFloor],
+    () => getDashboardFreeCells(kind, placements, columns, rows),
+    [columns, kind, placements, rows],
   );
   const rememberedActiveCell =
     activeCell &&
@@ -246,7 +218,6 @@ export function DashboardContainerContent({
                 rows,
                 depth,
                 claimedRegion,
-                stackFloor,
               )
             : null,
         ]),
@@ -260,7 +231,6 @@ export function DashboardContainerContent({
       placements,
       addButtonCell,
       rows,
-      stackFloor,
     ],
   );
   const disabledKeys = useMemo(
@@ -292,7 +262,6 @@ export function DashboardContainerContent({
             region && (region.columns > 1 || region.rows > 1)
               ? region
               : undefined,
-            stackFloor,
           )
         : null;
     if (!placement) return;
@@ -538,13 +507,7 @@ export function DashboardContainerContent({
     !!addButtonCell && !!authoring.onAddItem && availableItems.length > 0;
   const isAddButtonVisible =
     hasAddTarget && (isPermanentAdd || isOwnHovered || isAddMenuOpen);
-  const gridStyle = getContentGridStyle(
-    kind,
-    columns,
-    rows,
-    metrics,
-    hasStackAddTrack,
-  );
+  const gridStyle = getContentGridStyle(kind, columns, rows, metrics);
 
   return (
     <ContentGridElement

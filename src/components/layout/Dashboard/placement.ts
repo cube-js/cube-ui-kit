@@ -113,36 +113,43 @@ export function getPlacementStyle(
 }
 
 /**
- * The width of a stack's authoring track.
+ * What a stack child can be resized to along its parent's axis.
  *
- * A stack fills itself, so its insertion point cannot be leftover space. It gets
- * a narrow track of its own past the last child instead of one of the stack's
- * own columns: taking a column would mean the children could not be drawn at
- * the spans the consumer stored, and a size command that changed one of those
- * spans would then have nowhere to show up.
+ * A stack child owns its span: it shrinks to its own minimum and grows only
+ * into the room its siblings leave over, so resizing one never moves another.
+ * `null` for every other layout, where the bound is a question about positions
+ * rather than a running total.
  */
-const STACK_ADD_TRACK = 20;
+export function getStackSpanBounds(
+  tree: DashboardTreeContextValue,
+  placement: DashboardPlacement,
+  minSpan: number,
+  maxSpan: number,
+): { axis: 'columns' | 'rows'; min: number; max: number } | null {
+  const isHorizontal = tree.parentKind === 'horizontal-stack';
+  if (!isHorizontal && tree.parentKind !== 'vertical-stack') return null;
+
+  const axis = isHorizontal ? 'columns' : 'rows';
+  const capacity = isHorizontal ? tree.parentColumns : tree.parentRows;
+  const free = Math.max(0, capacity - tree.parentStackUsed);
+
+  return {
+    axis,
+    min: minSpan,
+    max: Math.max(minSpan, Math.min(maxSpan, placement[axis] + free)),
+  };
+}
 
 export function getContentGridStyle(
   kind: DashboardContainerKind,
   columns: number,
   rows: number,
   metrics: DashboardMetrics,
-  hasStackAddTrack = false,
 ): CSSProperties {
-  const columnTracks = `repeat(${Math.max(1, Math.floor(columns))}, minmax(0, 1fr))`;
-  const rowTracks = `repeat(${Math.max(1, Math.floor(rows))}, minmax(${metrics.rowHeight}px, auto))`;
-
   return {
     gap: `${metrics.rowGap}px ${metrics.columnGap}px`,
-    gridTemplateColumns:
-      hasStackAddTrack && kind === 'horizontal-stack'
-        ? `${columnTracks} ${STACK_ADD_TRACK}px`
-        : columnTracks,
-    gridTemplateRows:
-      hasStackAddTrack && kind === 'vertical-stack'
-        ? `${rowTracks} ${STACK_ADD_TRACK}px`
-        : rowTracks,
+    gridTemplateColumns: `repeat(${Math.max(1, Math.floor(columns))}, minmax(0, 1fr))`,
+    gridTemplateRows: `repeat(${Math.max(1, Math.floor(rows))}, minmax(${metrics.rowHeight}px, auto))`,
     gridAutoFlow: kind === 'horizontal-stack' ? 'row' : undefined,
   };
 }

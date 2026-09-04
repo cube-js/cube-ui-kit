@@ -110,6 +110,7 @@ export const DashboardTabs = forwardRef(function DashboardTabs(
           parentColumns: 12,
           parentRows: Math.max(1, Math.floor(rows)),
           ancestorIds: [...tree.ancestorIds, id],
+          parentStackUsed: 0,
         };
 
         return (

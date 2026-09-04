@@ -873,6 +873,37 @@ function updateContainerTree(
   return updateNodeTree(containers, id, update) as PlaygroundContainer[];
 }
 
+/**
+ * Write a batch of placements wherever their nodes happen to live.
+ *
+ * A resize can reach past one parent's children: when a stack is resized,
+ * Dashboard reports the stack's own placement *and* its children's new spans,
+ * and those sit one level further down. Matching on id across the whole tree is
+ * simpler than tracking which level each entry belongs to.
+ */
+function applyPlacements(
+  nodes: PlaygroundNode[],
+  placements: ReadonlyMap<string, DashboardPlacement>,
+): PlaygroundNode[] {
+  return nodes.map((node) => {
+    const next = placements.get(node.id);
+    const placed = next ? { ...node, ...next } : node;
+    if (placed.nodeType === 'widget') return placed;
+
+    return {
+      ...placed,
+      children: applyPlacements(placed.children, placements),
+      tabs: placed.tabs?.map((tab) => ({
+        ...tab,
+        children: applyPlacements(
+          tab.children,
+          placements,
+        ) as PlaygroundContainer[],
+      })),
+    };
+  });
+}
+
 interface RemoveNodeResult {
   nodes: PlaygroundNode[];
   removed: PlaygroundNode | null;
@@ -1332,38 +1363,6 @@ function countNodes(nodes: PlaygroundNode[]): {
   );
 }
 
-/** How far one node can be squeezed, which is what a stack budgets against. */
-function getPlaygroundMinimum(node: PlaygroundNode): {
-  columns: number;
-  rows: number;
-} {
-  if (node.nodeType === 'widget') {
-    const definition = WIDGET_DEFINITIONS[node.type];
-
-    return {
-      columns: definition.minColumns ?? 1,
-      rows: definition.minRows ?? 1,
-    };
-  }
-
-  if (node.kind === 'horizontal-stack' || node.kind === 'vertical-stack') {
-    const children = node.children.map(getPlaygroundMinimum);
-    if (children.length === 0) return { columns: 1, rows: 1 };
-
-    return node.kind === 'horizontal-stack'
-      ? {
-          columns: children.reduce((total, child) => total + child.columns, 0),
-          rows: Math.max(...children.map((child) => child.rows)),
-        }
-      : {
-          columns: Math.max(...children.map((child) => child.columns)),
-          rows: children.reduce((total, child) => total + child.rows, 0),
-        };
-  }
-
-  return { columns: 1, rows: 1 };
-}
-
 function acceptsPlacement(
   parent: PlaygroundContainer,
   widgetId: string,
@@ -1375,11 +1374,11 @@ function acceptsPlacement(
     return parent;
   }
 
-  // A stack shares its axis out, so what a resize has to leave room for is the
-  // siblings' floor, not the spans they happen to be drawn at.
+  // A stack child owns its span, so a resize only has to fit in what the
+  // siblings leave over.
   if (parent.kind === 'horizontal-stack') {
     const usedColumns = siblings.reduce(
-      (total, sibling) => total + getPlaygroundMinimum(sibling).columns,
+      (total, sibling) => total + sibling.columns,
       0,
     );
 
@@ -1391,7 +1390,7 @@ function acceptsPlacement(
 
   if (parent.kind === 'vertical-stack') {
     const usedRows = siblings.reduce(
-      (total, sibling) => total + getPlaygroundMinimum(sibling).rows,
+      (total, sibling) => total + sibling.rows,
       0,
     );
 
@@ -1952,8 +1951,9 @@ export function DashboardPlayground({
       return;
     }
 
-    // A stack is always full, so a child's resize moves the seam with its
-    // neighbours: Dashboard reports their new spans alongside it.
+    // Resizing a stack changes its children's spans too, and Dashboard reports
+    // them in `info.displaced` — one level below `parentId`, so they are
+    // written by id rather than by position.
     const resizes = new Map(
       [{ id: nodeId, placement }, ...(info.displaced ?? [])].map((item) => [
         item.id,
@@ -1962,17 +1962,7 @@ export function DashboardPlayground({
     );
 
     setContainers(
-      updateContainerTree(containers, parentId, (container) => ({
-        ...container,
-        children: normalizeStackChildren(
-          container,
-          container.children.map((child) => {
-            const next = resizes.get(child.id);
-
-            return next ? { ...child, ...next } : child;
-          }),
-        ),
-      })),
+      applyPlacements(containers, resizes) as PlaygroundContainer[],
     );
 
     setNotice(info.input === 'command' ? resized : null);

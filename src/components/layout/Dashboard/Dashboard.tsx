@@ -235,6 +235,7 @@ export const DashboardRoot = forwardRef(function DashboardRoot(
       parentColumns: 12,
       parentRows: 1,
       ancestorIds: [],
+      parentStackUsed: 0,
     }),
     [],
   );

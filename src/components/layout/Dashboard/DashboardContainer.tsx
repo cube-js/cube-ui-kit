@@ -20,6 +20,7 @@ import { renderDashboardDropPreview } from './drag';
 import {
   getContainerChildMinimum,
   getDashboardDescendantContainerDepth,
+  getDashboardStackUsage,
   hasContainerLayoutChildren,
 } from './occupancy';
 import {
@@ -28,6 +29,7 @@ import {
   clampRows,
   clampSpan,
   getPlacementStyle,
+  getStackSpanBounds,
   isSamePlacement,
   normalizePlacement,
 } from './placement';
@@ -182,17 +184,34 @@ export const DashboardContainerShell = forwardRef(
       node.tree.parentKind !== 'root' &&
       node.tree.parentKind !== 'vertical-stack';
     const canMoveRows = canMove && node.tree.parentKind !== 'horizontal-stack';
+    // Inside a stack the reachable range is narrower than the declared one —
+    // see `getStackSpanBounds`. A container pinned between the two gets no grip
+    // rather than one that cannot move.
+    const stackBounds = getStackSpanBounds(
+      node.tree,
+      normalizedPlacement,
+      node.tree.parentKind === 'vertical-stack'
+        ? resolvedMinRows
+        : resolvedMinColumns,
+      node.tree.parentKind === 'vertical-stack'
+        ? resolvedMaxRows
+        : resolvedMaxColumns,
+    );
     const canResizeColumns =
       isResizable &&
       !!onPlacementChange &&
       node.tree.parentKind !== 'root' &&
       node.tree.parentKind !== 'vertical-stack' &&
-      resolvedMaxColumns > resolvedMinColumns;
+      (stackBounds?.axis === 'columns'
+        ? stackBounds.max > stackBounds.min
+        : resolvedMaxColumns > resolvedMinColumns);
     const canResizeRows =
       isResizable &&
       !!onPlacementChange &&
       node.tree.parentKind !== 'horizontal-stack' &&
-      resolvedMaxRows > resolvedMinRows;
+      (stackBounds?.axis === 'rows'
+        ? stackBounds.max > stackBounds.min
+        : resolvedMaxRows > resolvedMinRows);
     const canResize = canResizeColumns || canResizeRows;
     const resizeAxis = canResizeColumns ? (canResizeRows ? 'both' : 'x') : 'y';
     const shouldRenderTitle = kind === 'tabs' && !!title;
@@ -240,24 +259,9 @@ export const DashboardContainerShell = forwardRef(
       node.selectSelf(false);
       onDuplicatePress?.();
     });
-    const handleMenuResize = useEvent(
-      (
-        next: DashboardPlacement,
-        displaced?: DashboardPlacementChangeItem[],
-      ) => {
-        gestures.reportPlacement(
-          next,
-          'resize',
-          'commit',
-          'command',
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          displaced,
-        );
-      },
-    );
+    const handleMenuResize = useEvent((next: DashboardPlacement) => {
+      gestures.reportPlacement(next, 'resize', 'commit', 'command');
+    });
     const resolvedMods = {
       ...mods,
       depth: String(node.containerDepth),
@@ -407,8 +411,22 @@ export function DashboardContainer(
       parentColumns: resolvedColumns,
       parentRows: resolvedRows,
       ancestorIds: [...tree.ancestorIds, id],
+      parentStackUsed: getDashboardStackUsage(
+        kind,
+        children,
+        resolvedColumns,
+        resolvedRows,
+      ),
     }),
-    [containerDepth, id, kind, resolvedColumns, resolvedRows, tree.ancestorIds],
+    [
+      children,
+      containerDepth,
+      id,
+      kind,
+      resolvedColumns,
+      resolvedRows,
+      tree.ancestorIds,
+    ],
   );
 
   const content = (

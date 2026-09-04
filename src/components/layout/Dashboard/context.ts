@@ -22,6 +22,7 @@ export const DashboardTreeContext = createContext<DashboardTreeContextValue>({
   parentColumns: 12,
   parentRows: 1,
   ancestorIds: [],
+  parentStackUsed: 0,
 });
 
 export const DashboardSelectionContext =
