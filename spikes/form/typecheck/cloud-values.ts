@@ -1,0 +1,43 @@
+/** A Cloud-shaped values interface: roughly a deployment settings form. */
+export interface DeploymentValues {
+  name: string;
+  description: string;
+  region: 'us-east-1' | 'eu-west-1' | 'ap-south-1';
+  cloud: 'aws' | 'gcp' | 'azure';
+  plan: 'free' | 'starter' | 'premium' | 'enterprise';
+  apiInstances: number;
+  workerInstances: number;
+  cubeStoreEnabled: boolean;
+  cubeStoreSize: 'small' | 'medium' | 'large';
+  devMode: boolean;
+  preAggregationsBuilds: number;
+  scheduledRefresh: boolean;
+  refreshTimezone: string;
+  CUBEJS_DB_TYPE: string;
+  CUBEJS_DB_HOST: string;
+  CUBEJS_DB_PORT: number;
+  CUBEJS_DB_NAME: string;
+  CUBEJS_DB_USER: string;
+  CUBEJS_DB_PASS: string;
+  CUBEJS_DB_SSL: boolean;
+  CUBEJS_DB_SSL_CA: string | null;
+  CUBEJS_API_SECRET: string;
+  CUBEJS_CACHE_AND_QUEUE_DRIVER: 'memory' | 'cubestore' | 'redis';
+  gitBranch: string;
+  gitProvider: 'github' | 'gitlab' | 'bitbucket' | null;
+  gitRepository: string | null;
+  samlEnabled: boolean;
+  samlEntryPoint: string;
+  samlIssuer: string;
+  samlCertificate: string;
+  ldapEnabled: boolean;
+  ldapUrl: string;
+  ldapBindDn: string;
+  ldapBindPassword: string;
+  ldapSearchBase: string;
+  budgetAmount: number;
+  budgetRecipients: string[];
+  alertThresholds: Array<{ amount: number; email: string }>;
+  tags: Record<string, string>;
+  notes: string | null;
+}
