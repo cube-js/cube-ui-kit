@@ -1,3 +1,5 @@
+import { isDevEnvOrTest } from './is-dev-env';
+
 const SUGGESTED_PROP_MAP = {
   disabled: 'isDisabled',
   loading: 'isLoading',
@@ -5,7 +7,6 @@ const SUGGESTED_PROP_MAP = {
 };
 
 const PREFIX = 'CubeUIKit';
-const devMode = process.env.NODE_ENV !== 'production';
 
 export function propDeprecationWarning(name, props, propList) {
   propList.forEach((prop) => {
@@ -22,7 +23,7 @@ export function propDeprecationWarning(name, props, propList) {
 }
 
 export function warn(...args) {
-  if (devMode) {
+  if (isDevEnvOrTest()) {
     console.warn(`${PREFIX}:`, ...args);
   }
 }
@@ -43,7 +44,7 @@ export function deprecationWarning(
 ) {
   if (condition) return;
 
-  if (!devMode) return;
+  if (!isDevEnvOrTest()) return;
 
   // we can make deprecations even better if we add the md syntax in the console.
   // anyway, everything down below will be stripped in the production build

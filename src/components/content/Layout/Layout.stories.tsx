@@ -778,6 +778,9 @@ export const AutoHeight: Story = {
  * and the auto-height fallback (100%) still results in 0 height,
  * the Layout shows a development warning and sets a minimum height.
  *
+ * The warning is overlaid on the content, not swapped in for it - `children`
+ * stay mounted, because a zero-height measurement is not proof of a mistake.
+ *
  * This warning is only visible in development mode or when `_forceShowDevWarning`
  * is enabled (used here for storybook which runs in production mode).
  */
@@ -790,7 +793,7 @@ export const CollapsedWithWarning: Story = {
       <Layout _forceShowDevWarning fill="#light">
         <Layout.Header title="Collapsed Layout" />
         <Layout.Content>
-          <Text>This content is hidden when collapsed</Text>
+          <Text>This content stays mounted behind the warning</Text>
         </Layout.Content>
       </Layout>
     </Block>

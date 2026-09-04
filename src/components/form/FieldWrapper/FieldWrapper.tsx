@@ -2,6 +2,7 @@ import { tasty } from '@tenphi/tasty';
 import { forwardRef } from 'react';
 
 import { useI18n } from '../../../i18n';
+import { isDevEnv } from '../../../utils/is-dev-env';
 import { mergeProps, wrapNodeIfPlain } from '../../../utils/react/index';
 import { InfoBadge } from '../../content/InfoBadge';
 import { Text } from '../../content/Text';
@@ -60,7 +61,7 @@ const FieldElement = tasty({
   },
 });
 
-if (process.env.NODE_ENV === 'development') {
+if (isDevEnv()) {
   FieldElement.displayName = 'FieldWrapperElement';
 }
 

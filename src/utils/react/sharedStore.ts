@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from 'react';
 
 import { useEvent } from '../../_internal/hooks/use-event';
+import { isDevEnv } from '../is-dev-env';
 
 /** Like React.setState: either a value or a function of the previous value */
 type Updater<S> = S | ((prev: S) => S);
@@ -31,11 +32,7 @@ export function createSharedStore<S>(
   };
 
   /* Warn if someone tries to “re-initialise” with a different value */
-  if (
-    process.env.NODE_ENV === 'development' &&
-    existing &&
-    existing.state !== initialState
-  ) {
+  if (isDevEnv() && existing && existing.state !== initialState) {
     console.warn(
       `[createSharedStore] Store "${name}" already exists – ` +
         'the new initialState is ignored to preserve hot-reload state.',
