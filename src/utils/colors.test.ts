@@ -99,6 +99,27 @@ describe('readComponent()', () => {
   it('refuses an angle where a number belongs', () => {
     expect(readComponent('50deg', 100)).toBeNaN();
   });
+
+  it('stays linear on a long run of unit characters', () => {
+    // Reading the unit back with an unanchored `/[a-z%]+$/` is quadratic here
+    // (CodeQL `js/polynomial-redos`): every start position re-walks the run of
+    // `%` before failing at `$`. The unit is a capture group of the anchored
+    // NUMBER_RE instead, so this is one pass.
+    //
+    // The trailing `!` is what makes the input pathological rather than merely
+    // long — the old scan matched a run that reached the end of the string
+    // immediately, and only blew up (~2s at this size) once the match had to
+    // fail. Unparseable either way; what is asserted is that it returns.
+    const pathological = `1${'%'.repeat(60_000)}!`;
+    const started = Date.now();
+
+    expect(readComponent(pathological, 100)).toBeNaN();
+    expect(readHue(pathological)).toBeNaN();
+    expect(readAlpha(pathological)).toBeNaN();
+    expect(parseColorFunction(`rgb(1 2 ${pathological})`)).toBeNull();
+
+    expect(Date.now() - started).toBeLessThan(1000);
+  });
 });
 
 describe('readHue()', () => {

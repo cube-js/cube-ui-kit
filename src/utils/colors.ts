@@ -30,15 +30,20 @@ import type { OkhslColor, OklchColor, RgbColor } from '@tenphi/glaze';
 const FUNCTION_RE = /^([a-z]+)\(([^()]+)\)$/;
 
 /**
- * A number with an optional unit.
+ * A number with an optional unit, both captured in one pass.
  *
- * The integer and fraction parts are deliberately written so that no two
+ * This runs on whatever the user types, so it is written to stay linear in two
+ * separate ways. The integer and fraction parts are arranged so that no two
  * quantifiers can consume the same digit — `\d+(?:\.\d*)?` rather than
  * `\d+\.?\d*`, whose `\d+` and `\d*` can split a digit run n ways and make
- * rejecting a long one quadratic. This runs on whatever the user types.
+ * rejecting a long one quadratic. And the unit is a capture group here rather
+ * than a second, unanchored scan: reading it back with `/[a-z%]+$/` is itself
+ * polynomial (CodeQL `js/polynomial-redos`), because every start position
+ * re-walks the run of unit characters before failing at `$` — quadratic on a
+ * string of many `%`.
  */
 const NUMBER_RE =
-  /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?(?:%|deg|rad|grad|turn)?$/;
+  /^([+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?)(%|deg|rad|grad|turn)?$/;
 
 /** Degrees per unit, for the angle units `<hue>` accepts. */
 const ANGLE_UNITS: Record<string, number> = {
@@ -61,11 +66,17 @@ function isComponent(arg: string): boolean {
   return arg === NONE || NUMBER_RE.test(arg);
 }
 
-/** The unit an argument carries, or `''` when it is a bare number. */
-function unitOf(arg: string): string {
-  const match = /[a-z%]+$/.exec(arg);
+/** A component's magnitude and its unit, `''` when it is a bare number. */
+interface NumericComponent {
+  value: number;
+  unit: string;
+}
 
-  return match ? match[0] : '';
+/** Read a numeric component and its unit together, or `null` if it is neither. */
+function readNumber(arg: string): NumericComponent | null {
+  const match = NUMBER_RE.exec(arg);
+
+  return match ? { value: parseFloat(match[1]), unit: match[2] ?? '' } : null;
 }
 
 export function normalizeHue(hue: number): number {
@@ -141,27 +152,32 @@ export function parseColorFunction(input: string): ColorFunction | null {
 export function readComponent(arg: string, scale: number): number {
   if (arg === NONE) return 0;
 
-  const unit = unitOf(arg);
+  const parsed = readNumber(arg);
 
-  if (unit === '%') return (parseFloat(arg) / 100) * scale;
+  if (!parsed) return NaN;
 
-  return unit ? NaN : parseFloat(arg);
+  if (parsed.unit === '%') return (parsed.value / 100) * scale;
+
+  return parsed.unit ? NaN : parsed.value;
 }
 
 /** Read a `<hue>`: any angle unit, or a bare number of degrees. Normalized. */
 export function readHue(arg: string): number {
   if (arg === NONE) return 0;
 
-  const unit = unitOf(arg);
+  const parsed = readNumber(arg);
+
+  if (!parsed) return NaN;
 
   // A percentage is not a valid hue angle.
-  if (unit === '%') return NaN;
+  if (parsed.unit === '%') return NaN;
 
-  const perDegree = unit ? ANGLE_UNITS[unit] : 1;
+  // Every unit {@link NUMBER_RE} captures other than `%` is an angle, so the
+  // guard is unreachable today. It stays because a unit added there later — a
+  // length, say — would otherwise arrive here and be read as degrees.
+  const perDegree = parsed.unit ? ANGLE_UNITS[parsed.unit] : 1;
 
-  return perDegree === undefined
-    ? NaN
-    : normalizeHue(parseFloat(arg) * perDegree);
+  return perDegree === undefined ? NaN : normalizeHue(parsed.value * perDegree);
 }
 
 /** Read an `<alpha-value>`. A missing alpha is opaque; out of range is clamped. */
