@@ -20,6 +20,45 @@ module.exports = [
         }),
       );
     },
+    // 540 kB for the Dashboard authoring pass on top of the component below.
+    // Both sides rebuilt on the same machine: the Dashboard commit (ee836b28)
+    // reads 527,936 B and this branch 534,037 B — +6,101 B, so the 530 kB budget
+    // it was booked at is 4,037 B over.
+    //
+    // Attributed, by reverting one half and rebuilding: with the previous commit's
+    // locale bundles the branch reads 532,868 B, so 1,137 B is the twelve new
+    // `dashboard.*` strings across all twelve locales (net of four the node menu
+    // retired) and 4,932 B is code. The code half is the node action menu and its
+    // seven size commands with the bounds-plus-occupancy resolution behind them,
+    // seven new icons, the collision resolver promoted out of the Playground
+    // (`resolveDashboardDrop`, the Grid single-blocker swap, stack reflow,
+    // `getLargestFreeRect`), the claimed add region with its free-rectangle trim,
+    // and the drag engine's per-gesture geometry snapshot, client-coordinate
+    // tracking and Escape handling.
+    //
+    // The `Tree shaking (just a Button)` entry is BYTE-IDENTICAL across the two
+    // commits at 123,062 B, so none of this reaches a consumer that imports one
+    // component, and it also rules out the dependency: a change inside Tasty's
+    // always-included core moves both entries together, and this moved only one.
+    //
+    // Rounded to the next 5 kB step ABOVE the platform gap rather than to the
+    // next step above the reading: 535 kB would leave 995 B, and the macOS/Linux
+    // zlib note below puts the local figure up to ~1.6 kB light. 540 kB leaves
+    // 5,963 B locally, which is more headroom than this entry usually carries —
+    // fit it back down once CI has reported a number for this branch.
+    //
+    // Before this: 530 kB for the standalone Dashboard compound component on top of the
+    // Board resize-affordance work below. Dashboard measured 526.06 kB locally
+    // against its 513.60 kB baseline, i.e. +12.46 kB for the shared 12-column
+    // layout, nested container chrome, selection registry, settings affordance,
+    // Tabs composition, controlled pointer/keyboard movement, cross-parent hit
+    // testing, resizing, occupancy-aware add slots, and registered contextual
+    // menus. After rebasing onto main's later Board work, the combined branch
+    // measures 527.94 kB locally. The Button-only entry measures 123.06 kB and
+    // remained effectively unchanged through both features, confirming that
+    // Dashboard and Board tree-shake away for consumers that do not import them.
+    // Rounded to the next 5 kB step as the sizing notes below require.
+    //
     // 517 kB for the Board resize-affordance rework. CI measured `main`
     // (582c1e0) at 513,743 B and this branch at 515,261 B — +1.52 kB — against a
     // 515 kB budget that `main` had already spent down to 1,257 B of headroom, so
@@ -210,7 +249,7 @@ module.exports = [
     //
     // Note when checking locally: `size-limit` bundles the built `./dist`, it
     // does not build. Run `pnpm build` first or you will measure a stale bundle.
-    limit: '517kB',
+    limit: '540kB',
   },
   {
     name: 'Tree shaking (just a Button)',

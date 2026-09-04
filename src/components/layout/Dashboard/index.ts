@@ -1,0 +1,31 @@
+export {
+  Dashboard,
+  DashboardGrid,
+  DashboardHorizontalStack,
+  DashboardTab,
+  DashboardTabs,
+  DashboardVerticalStack,
+  DashboardWidget,
+} from './Dashboard';
+
+export type {
+  CubeDashboardContainerProps,
+  CubeDashboardProps,
+  CubeDashboardTabProps,
+  CubeDashboardTabsProps,
+  CubeDashboardWidgetProps,
+  DashboardAddItemDefinition,
+  DashboardAddItemInfo,
+  DashboardAddItemKind,
+  DashboardContainerKind,
+  DashboardNodeAction,
+  DashboardParentKind,
+  DashboardPlacement,
+  DashboardPlacementChangeInfo,
+  DashboardPlacementChangeInput,
+  DashboardPlacementChangeItem,
+  DashboardPlacementChangePhase,
+  DashboardPlacementChangeReason,
+  DashboardPlacementProps,
+  DashboardSelectionMode,
+} from './Dashboard';
