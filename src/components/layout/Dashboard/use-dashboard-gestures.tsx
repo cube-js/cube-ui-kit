@@ -8,11 +8,13 @@ import {
   findDashboardDropTargets,
   freezeDashboardTargetGeometry,
   getCrossParentPlacement,
+  getDashboardDropSiblings,
   getDashboardGestureItem,
   getDashboardGestureItems,
   getDashboardGesturePlacements,
   getOwnDashboardDropTarget,
   getStackKeyboardPlacement,
+  readOwnDashboardStackChildren,
   resolveDashboardDrop,
   resolveDashboardStackCapacity,
   useDashboardDropPreview,
@@ -219,6 +221,9 @@ export function useDashboardGestures(
           ? getDashboardGestureItems(element, id, placement, isSelected)
           : [getDashboardGestureItem(id, placement, element)];
 
+      const ownTarget = element ? getOwnDashboardDropTarget(element) : null;
+      const movingIds = new Set(gestureItems.map((item) => item.id));
+
       return {
         origin: placement,
         current: placement,
@@ -226,6 +231,15 @@ export function useDashboardGestures(
           id: item.id,
           placement: item.origin,
         })),
+        originChildren: element
+          ? readOwnDashboardStackChildren(element, id, containerKind)
+          : [],
+        originSiblings: ownTarget
+          ? getDashboardDropSiblings(ownTarget, movingIds).map((sibling) => ({
+              id: sibling.id,
+              placement: sibling.placement,
+            }))
+          : [],
         sourceParentId: tree.layoutParentId,
         destinationParentId: tree.layoutParentId,
         deltaX: 0,
@@ -290,10 +304,28 @@ export function useDashboardGestures(
     },
   );
 
-  /** A `tabs` container is root-only, so it can leave its parent only upward. */
+  /**
+   * Whether this node may leave its parent for `target` at all.
+   *
+   * Two rules, both about `tabs`, and both there because the alternative is a
+   * throw rather than a rejection the consumer could report. A `tabs` container
+   * is root-only, so it can leave its parent only upward. A tab *panel* is the
+   * mirror: `Dashboard.Tab` accepts one layout container and nothing else, so a
+   * panel takes a single container and only while it is empty. Geometry alone
+   * would wave both through — an empty panel is 12 free columns, and a panel
+   * with room to spare next to its container looks like any other grid.
+   */
   const canTargetOtherParent = useEvent(
-    (target: DashboardDropTarget) =>
-      containerKind !== 'tabs' || target.kind === 'root',
+    (target: DashboardDropTarget, movingIds: ReadonlySet<string>) => {
+      if (containerKind === 'tabs') return target.kind === 'root';
+      if (target.kind !== 'tabs') return true;
+
+      return (
+        isContainer &&
+        movingIds.size === 1 &&
+        getDashboardDropSiblings(target, movingIds).length === 0
+      );
+    },
   );
 
   /**
@@ -309,12 +341,13 @@ export function useDashboardGestures(
       samePlacement: DashboardPlacement,
     ): DashboardProposal | null => {
       const isSameParent = target.parentId === gesture.sourceParentId;
+      const movingIds = new Set(gesture.items.map((item) => item.id));
       let landing: DashboardPlacement;
 
       if (isSameParent) {
         landing = samePlacement;
       } else {
-        if (!canTargetOtherParent(target)) return null;
+        if (!canTargetOtherParent(target, movingIds)) return null;
         const crossParentPlacement = getCrossParentPlacement(
           target,
           gesture,
@@ -330,7 +363,6 @@ export function useDashboardGestures(
       const group = getDashboardGesturePlacements(target, gesture, landing);
       if (!group?.length) return null;
 
-      const movingIds = new Set(gesture.items.map((item) => item.id));
       const resolution = resolveDashboardDrop(
         target,
         group,
@@ -360,9 +392,11 @@ export function useDashboardGestures(
   /**
    * Put the layout back and stop the gesture from committing.
    *
-   * Used by Escape and by `pointercancel`. Both need the origin re-reported,
-   * because the consumer has been applying `preview` placements all along and
-   * simply not committing would leave it holding the last preview.
+   * Used by Escape and by `pointercancel`. Both need the whole arrangement
+   * re-reported, not just the abandoned move: a consumer has been applying
+   * `preview` placements all along, so simply not committing would leave it
+   * holding the last one. The moved group goes back through `items` and every
+   * sibling the previews shuffled goes back through `displaced`.
    */
   const cancelMove = useEvent(() => {
     const gesture = moveSessionRef.current;
@@ -385,6 +419,36 @@ export function useDashboardGestures(
       gesture.sourceParentId,
       gesture.sourceParentId,
       gesture.items.map((item) => ({ id: item.id, placement: item.origin })),
+      false,
+      gesture.originSiblings,
+    );
+  });
+
+  /**
+   * Put a resize back and stop it from committing.
+   *
+   * Same contract as `cancelMove`, and the same reason: the consumer has been
+   * applying previews. A stack's resize also redistributed the stack's
+   * children, and `reportPlacement` re-resolves those from whatever placement
+   * it is handed, so re-reporting the origin restores them too.
+   */
+  const cancelResize = useEvent(() => {
+    const gesture = resizeSessionRef.current;
+    if (!gesture || gesture.cancelled) return;
+    gesture.cancelled = true;
+    gesture.canCommit = false;
+
+    if (isSamePlacement(gesture.current, gesture.origin)) return;
+    reportPlacement(
+      gesture.origin,
+      'resize',
+      'commit',
+      gesture.input,
+      undefined,
+      undefined,
+      undefined,
+      false,
+      gesture.originChildren,
     );
   });
 
@@ -438,12 +502,20 @@ export function useDashboardGestures(
     [],
   );
 
-  /** Escape has to come from the window: `useMove` reports no cancellation. */
+  /**
+   * Escape has to come from the window: `useMove` reports no cancellation.
+   *
+   * One listener for both gestures. A move and a resize cannot be live at once
+   * — one starts on the node's surface, the other on its handle — and each
+   * cancel is a no-op without its own session, so the pair needs no bookkeeping
+   * about which of them is running.
+   */
   const listenForEscape = useEvent(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key !== 'Escape') return;
       event.preventDefault();
       cancelMove();
+      cancelResize();
     };
 
     window.addEventListener('keydown', onKeyDown, { capture: true });
@@ -643,10 +715,12 @@ export function useDashboardGestures(
         event.pointerType === 'keyboard' ? 'keyboard' : 'pointer',
         'resize',
       );
+      stopEscapeRef.current?.();
+      stopEscapeRef.current = listenForEscape();
     },
     onMove(event) {
       const gesture = resizeSessionRef.current;
-      if (!canResize || !gesture) return;
+      if (!canResize || !gesture || gesture.cancelled) return;
       const delta = updateGestureDeltas(
         gesture,
         canResizeColumns ? event.deltaX : 0,
@@ -693,10 +767,13 @@ export function useDashboardGestures(
     onMoveEnd() {
       const gesture = resizeSessionRef.current;
       resizeSessionRef.current = null;
+      stopEscapeRef.current?.();
+      stopEscapeRef.current = null;
       setIsResizing(false);
       if (
         !canResize ||
         !gesture ||
+        gesture.cancelled ||
         isSamePlacement(gesture.current, gesture.origin)
       ) {
         return;

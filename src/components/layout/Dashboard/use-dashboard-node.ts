@@ -66,12 +66,20 @@ export function useDashboardNodeInteraction({
     selectSelf(event.shiftKey || event.metaKey || event.ctrlKey);
   });
 
+  /**
+   * Space is the keyboard's click, and behaves like one: plain Space selects
+   * this node alone, and a modifier makes it additive. Reading additivity off
+   * the selection mode instead would make *every* Space additive, which in
+   * `select`'s vocabulary means toggle — Space would deselect the node it was
+   * pressed on, and do nothing at all whenever the current selection is a node
+   * this one cannot be selected alongside.
+   */
   const onKeyDown = useEvent((event: ReactKeyboardEvent<HTMLElement>) => {
     if (!canSelect || event.target !== event.currentTarget) return;
     if (event.key !== ' ' && event.key !== 'Spacebar') return;
     event.preventDefault();
     event.stopPropagation();
-    selectSelf(selection.selectionMode === 'multiple');
+    selectSelf(event.shiftKey || event.metaKey || event.ctrlKey);
   });
 
   const interactionProps = mergeProps(hoverProps, focusWithinProps, {

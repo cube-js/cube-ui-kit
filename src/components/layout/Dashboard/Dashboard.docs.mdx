@@ -50,8 +50,8 @@ The Playground owns a recursive serializable tree and registers five constrained
 
 - **`id`** `string` (required) — Stable layout and selection identity.
 - **`title`** `ReactNode` — Optional accessible title for Tabs. Grid, HorizontalStack, and VerticalStack never render a heading.
-- **`column`** `number` (default: `0`) — Zero-based starting column inside a Grid or tab panel.
-- **`row`** `number` (default: `0`) — Zero-based starting row inside a Grid or tab panel.
+- **`column`** `number` (default: `0`) — Zero-based starting column inside a Grid or tab panel. A stack packs its children along its own axis and derives both coordinates, so it ignores whatever you store here.
+- **`row`** `number` (default: `0`) — Zero-based starting row inside a Grid or tab panel. Derived inside a stack, as `column` is.
 - **`columns`** `number` (default: `12`, clamped to the parent) — Width in the immediate parent's available columns and the capacity exposed to this container's children.
 - **`rows`** `number` (default: `1`) — Reserved height in content rows.
 - **`isSelectable`** `boolean` (default: `true`) — Whether the container participates in selection.
@@ -91,8 +91,8 @@ Tabs is root-only. Its tab strip ends with a delimiter and keeps a `1x` gap befo
 ### Widget
 
 - **`id`** `string` (required) — Stable layout and selection identity.
-- **`column`** `number` (default: `0`) — Zero-based starting column inside a Grid or tab panel.
-- **`row`** `number` (default: `0`) — Zero-based starting row inside a Grid or tab panel.
+- **`column`** `number` (default: `0`) — Zero-based starting column inside a Grid or tab panel. A stack packs its children along its own axis and derives both coordinates, so it ignores whatever you store here.
+- **`row`** `number` (default: `0`) — Zero-based starting row inside a Grid or tab panel. Derived inside a stack, as `column` is.
 - **`columns`** `number` (default: `12`, clamped to the parent) — Width in the immediate parent's available columns.
 - **`rows`** `number` (default: `1`) — Reserved height in content rows.
 - **`isCard`** `boolean` (default: `false`) — Adds the widget's outside card shadow. Widgets remain rounded by default.
@@ -340,7 +340,7 @@ const [placement, setPlacement] = useState({
 
 Dashboard resolves occupancy before it reports. `info.items` carries every placement the resolution produced, `info.displaced` carries only the siblings Dashboard moved out of the way, and `info.isBlocked` is `true` when no resolution exists — the destination shows the danger placeholder and the consumer should reject the proposal. In a Grid, a single blocker is swapped into the box the moving node vacated; in a stack, the affected siblings are reflowed around the insertion point. A consumer applies `info.items` (plus `info.displaced`) verbatim and can still refuse a proposal simply by not writing it. When a pointer crosses into another container, the move proposal is expressed in that destination's local coordinates and `info.sourceParentId` plus `info.destinationParentId` identify the atomic tree transfer. The destination id is `null` for the Dashboard root. Those fields are omitted for movement within one parent and for resizing.
 
-Containers use the same controlled placement callback for movement and resizing. Inside one parent, a top-level container moves vertically, a HorizontalStack child horizontally, a VerticalStack child vertically, and Grid children on both axes. A tab panel holds one layout root and primarily acts as a cross-parent origin or destination. When a node enters a HorizontalStack, its proposed `rows` expands to the lesser of the stack height and its `maxRows`; when it enters a VerticalStack, its proposed `columns` expands to the lesser of the stack width and its `maxColumns`. A node that reaches its constraint before filling the cross axis remains aligned to the top in HorizontalStack or the left in VerticalStack. Pointer movement may also target the deepest valid container under the pointer. Widgets cannot target the Dashboard root or a tab panel, Tabs cannot target a nested container, and containers cannot target themselves, descendants, or a fourth nesting level. Keyboard movement remains within the immediate parent. A root container resizes vertically; a nested container resizes on the axes its parent layout permits. Dashboard derives a minimum from the occupied bounds of direct children, so a container cannot be resized across existing content. A nested container's current `columns` and `rows` are its child capacity; child placement and resizing are clamped to those bounds and never grow the parent.
+Containers use the same controlled placement callback for movement and resizing. Inside one parent, a top-level container moves vertically, a HorizontalStack child horizontally, a VerticalStack child vertically, and Grid children on both axes. A tab panel holds one layout root and primarily acts as a cross-parent origin or destination. When a node enters a HorizontalStack, its proposed `rows` expands to the lesser of the stack height and its `maxRows`; when it enters a VerticalStack, its proposed `columns` expands to the lesser of the stack width and its `maxColumns`. A node that reaches its constraint before filling the cross axis remains aligned to the top in HorizontalStack or the left in VerticalStack. Pointer movement may also target the deepest valid container under the pointer. Widgets cannot target the Dashboard root or a tab panel, a tab panel takes a single container and only while it is empty, Tabs cannot target a nested container, and containers cannot target themselves, descendants, or a fourth nesting level. Keyboard movement remains within the immediate parent. A root container resizes vertically; a nested container resizes on the axes its parent layout permits. Dashboard derives a minimum from the occupied bounds of direct children, so a container cannot be resized across existing content. A nested container's current `columns` and `rows` are its child capacity; child placement and resizing are clamped to those bounds and never grow the parent.
 
 Resizing a stack carries its children with it. A stack's own minimum is the sum of its children's minimums, and its maximum the sum of their maximums, so it can be narrowed until they reach their floors and widened until they run out of room to take; either way Dashboard reports every child's new span in `info.displaced` alongside the stack's own placement, and the consumer writes them together. Nothing else moves a stack child's span: resizing one child grows it into the room its siblings left over and shrinks it to its own minimum, leaving every sibling exactly where it was. A child pinned between the two — at its minimum in a stack with nothing spare — gets no resize grip at all, rather than one that cannot move.
 
@@ -379,12 +379,12 @@ const [selectedKeys, setSelectedKeys] = useState([]);
 ### Keyboard Navigation
 
 - `Tab` moves among selectable nodes and their interactive contents.
-- `Space` selects a focused Dashboard node.
+- `Space` selects a focused Dashboard node, and `Shift`, `Cmd`, or `Ctrl` with it extends the selection — the same modifiers a click takes.
 - Arrow keys on a focused movable widget or container move it by one unit on the axes its parent permits.
 - Selecting a widget or container reveals its action menu button and resize grip and adds them to the keyboard sequence. The menu button sits in the top-right corner and holds the node's size commands, which are the accessible equivalent of the resize gesture.
 - Arrow keys on a focused resize handle resize the selected widget or container by one column or row on its available axes.
 - `Shift` with the arrow keys on a focused Grid add button claims an insertion area; `Enter` opens the menu for it.
-- `Escape` during a pointer move, a pointer resize, or an add-region claim cancels the gesture and leaves the layout untouched.
+- `Escape` during a pointer move, a pointer resize, or an add-region claim cancels the gesture and leaves the layout untouched. A cancelled gesture reports the arrangement it started from as its `commit` — the node through `info.items` and every sibling its previews had shuffled through `info.displaced` — so a consumer that applies previews must apply the commit too rather than treat it as a repeat.
 - Menu buttons and Tabs retain their standard keyboard behavior.
 
 ### Screen Reader Support

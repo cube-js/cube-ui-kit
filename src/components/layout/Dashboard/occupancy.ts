@@ -540,19 +540,27 @@ export function getDashboardStackUsage(
 }
 
 /**
- * A stack's children, squeezed back inside it when they no longer fit.
+ * A stack's children, at the coordinates and spans the stack will paint.
  *
- * Every path Dashboard controls keeps a stack's children within its capacity —
- * the stack's own resize reports their new spans, and an arriving item has to
- * fit in what is left over. This is the guard for the states it does not
- * control: a controlled `columns` written straight onto a stack, or a stack
- * carried into a narrower parent. Without it the overflow wraps onto a second
- * row, which reads as a broken layout rather than a rejected value.
+ * **Coordinates are derived, never trusted.** A stack packs its children along
+ * its axis, so a stack child carrying the default `column: 0` is the normal
+ * case and not a mistake — a consumer has no reason to maintain coordinates the
+ * layout ignores. CSS gets the order right regardless, because a stack paints
+ * with auto-flow plus `span`. `data-dashboard-column` does not: it is written
+ * from the child's own props, and the drag engine reads the stack's order back
+ * out of exactly those attributes to decide where a drop or an arrow key lands.
+ * Packing here is what keeps the two in step.
  *
- * It never stretches. A child that fits is drawn at exactly the span the
- * consumer stored, which is what makes resizing one child a local change.
+ * **Spans are left alone** while they fit, so a child is drawn at exactly the
+ * span the consumer stored — that is what makes resizing one child a local
+ * change. The exception is the state Dashboard does not control: a controlled
+ * `columns` written straight onto a stack, or a stack carried into a narrower
+ * parent. Both over-subscribe the axis and would wrap onto a second row, so the
+ * children are squeezed back inside instead. It never stretches.
+ *
+ * Every child is cloned, so this belongs behind a `useMemo` on the children.
  */
-export function fitDashboardStackChildren(
+export function layoutDashboardStackChildren(
   kind: DashboardContainerKind,
   children: ReactNode,
   columns: number,
@@ -584,15 +592,16 @@ export function fitDashboardStackChildren(
     used += isHorizontal ? bounds.columns : bounds.rows;
   });
 
-  if (items.length === 0 || used <= capacity) return children;
+  if (items.length === 0) return children;
 
-  const sizes = distributeDashboardStackSpans(items, capacity);
+  const sizes =
+    used > capacity ? distributeDashboardStackSpans(items, capacity) : null;
   const next = [...list];
   let cursor = 0;
 
   positions.forEach((position, index) => {
     const child = next[position];
-    const size = sizes[index];
+    const size = sizes ? sizes[index] : items[index].weight;
     const origin = cursor;
     cursor += size;
     if (!isValidElement<DashboardBoundedProps>(child)) return;

@@ -1780,6 +1780,9 @@ export function DashboardPlayground({
     const parent = findContainer(containers, parentId);
     if (!parent) return;
 
+    // A stack packs the copy in at the end, so the only question is whether its
+    // span still fits — `acceptsPlacement` answers it by returning the blocker.
+    // An id no child carries keeps every current occupant in the count.
     const spot =
       parent.kind === 'grid'
         ? findFreeSpot(
@@ -1788,7 +1791,14 @@ export function DashboardPlayground({
             getContainerColumns(parent),
             parent.rows,
           )
-        : { column: 0, row: 0 };
+        : acceptsPlacement(parent, '', {
+              column: 0,
+              row: 0,
+              columns: widget.columns,
+              rows: widget.rows,
+            })
+          ? null
+          : { column: 0, row: 0 };
 
     if (!spot) {
       setNotice(`No room to duplicate ${widget.title} in ${parent.title}.`);
@@ -1897,18 +1907,15 @@ export function DashboardPlayground({
     // Dashboard resolves move occupancy itself — swapping a Grid occupant into
     // the vacated box, reordering a stack — and reports the whole arrangement
     // through `info.items`. The consumer's job is to write it down.
+    //
+    // Every phase is written, the `commit` included. Re-applying the placements
+    // a drag already previewed is idempotent, and the commit is the only phase
+    // that is *always* reported: a gesture cancelled by Escape reports the
+    // origin through it, so a consumer that skips it keeps the last preview and
+    // Escape looks broken. The phase decides what to announce, nothing more.
     if (info.reason === 'move') {
       if (info.isBlocked) {
         setNotice('That item cannot swap with the current occupants.');
-        return;
-      }
-
-      if (info.phase === 'commit') {
-        setNotice(
-          info.items && info.items.length > 1
-            ? `${info.items.length} items moved.`
-            : `Moved to ${placement.columns}×${placement.rows} at column ${placement.column + 1}, row ${placement.row + 1}.`,
-        );
         return;
       }
 
@@ -1932,19 +1939,17 @@ export function DashboardPlayground({
           ),
         })),
       );
-      setNotice(null);
+      setNotice(
+        info.phase === 'commit'
+          ? info.items && info.items.length > 1
+            ? `${info.items.length} items moved.`
+            : `Moved to ${placement.columns}×${placement.rows} at column ${placement.column + 1}, row ${placement.row + 1}.`
+          : null,
+      );
       return;
     }
 
     const resized = `Resized to ${placement.columns}×${placement.rows} at column ${placement.column + 1}, row ${placement.row + 1}.`;
-
-    // A drag has already written every step by the time it commits. A menu size
-    // command is a single `commit` with no preview behind it, so it still has to
-    // be applied here.
-    if (info.phase === 'commit' && info.input !== 'command') {
-      setNotice(resized);
-      return;
-    }
 
     if (acceptsPlacement(parent, nodeId, placement)) {
       setNotice('That resize is blocked by another item.');
@@ -1965,7 +1970,7 @@ export function DashboardPlayground({
       applyPlacements(containers, resizes) as PlaygroundContainer[],
     );
 
-    setNotice(info.input === 'command' ? resized : null);
+    setNotice(info.phase === 'commit' ? resized : null);
   };
 
   const updateTopLevelContainerPlacement = (
@@ -1986,11 +1991,6 @@ export function DashboardPlayground({
     }
 
     if (info.reason === 'move' && info.items && info.items.length > 1) {
-      if (info.phase === 'commit') {
-        setNotice(`${info.items.length} selected containers moved.`);
-        return;
-      }
-
       const movingIds = new Set(info.items.map((item) => item.id));
       const stationary = containers.filter(
         (current) => !movingIds.has(current.id),
@@ -2006,17 +2006,15 @@ export function DashboardPlayground({
       const next = [...stationary];
       next.splice(insertionIndex, 0, ...moving);
       setContainers(normalizeTopLevel(next));
-      setNotice(null);
+      setNotice(
+        info.phase === 'commit'
+          ? `${info.items.length} selected containers moved.`
+          : null,
+      );
       return;
     }
 
     const resized = `${container.title} resized to ${placement.columns}×${placement.rows}.`;
-
-    // As above: a menu size command commits without ever previewing.
-    if (info.phase === 'commit' && info.input !== 'command') {
-      setNotice(info.reason === 'move' ? `${container.title} moved.` : resized);
-      return;
-    }
 
     if (info.reason === 'move') {
       const sourceIndex = containers.findIndex(
@@ -2034,7 +2032,7 @@ export function DashboardPlayground({
         setContainers(normalizeTopLevel(reordered));
       }
 
-      setNotice(null);
+      setNotice(info.phase === 'commit' ? `${container.title} moved.` : null);
 
       return;
     }
@@ -2046,7 +2044,7 @@ export function DashboardPlayground({
       })),
     );
 
-    setNotice(info.input === 'command' ? resized : null);
+    setNotice(info.phase === 'commit' ? resized : null);
   };
 
   const renderWidget = (

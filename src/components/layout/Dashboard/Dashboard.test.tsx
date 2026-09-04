@@ -117,6 +117,140 @@ describe('Dashboard', () => {
     });
   });
 
+  it('hands a stack its children back exactly when Escape cancels its resize', () => {
+    const onPlacementChange = vi.fn();
+
+    renderWithRoot(
+      <Dashboard rowHeight={80} gap={16}>
+        <Dashboard.Grid id="grid" rows={1}>
+          <Dashboard.HorizontalStack
+            id="stack"
+            aria-label="Stack"
+            columns={9}
+            rows={1}
+            isResizable
+            resizeLabel="Resize stack"
+            onPlacementChange={onPlacementChange}
+          >
+            <Dashboard.Widget id="a" columns={2} minColumns={1} qa="A" />
+            <Dashboard.Widget id="b" columns={3} minColumns={1} qa="B" />
+            <Dashboard.Widget id="c" columns={4} minColumns={1} qa="C" />
+          </Dashboard.HorizontalStack>
+        </Dashboard.Grid>
+      </Dashboard>,
+    );
+
+    // One column of pointer travel, which needs a real parent width to quantize
+    // against — a keyboard resize is a complete gesture per press and so has
+    // nothing left to cancel.
+    mockRect(
+      document.querySelector(
+        '[data-dashboard-drop-target][data-dashboard-parent-id="grid"]',
+      )!,
+      { left: 0, top: 0, width: 1200, height: 80 },
+    );
+
+    fireEvent.click(screen.getByRole('group', { name: 'Stack' }));
+    const resizeHandle = screen.getByRole('button', { name: 'Resize stack' });
+    fireEvent(resizeHandle, pointerEvent('pointerdown', 0, 0));
+    fireEvent(window, pointerEvent('pointermove', -101, 0));
+
+    // Narrowing sheds from whichever child sits furthest above its proportional
+    // share, which is why widening back is not the inverse of it.
+    expect(onPlacementChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({ columns: 8 }),
+      expect.objectContaining({
+        reason: 'resize',
+        phase: 'preview',
+        displaced: [
+          { id: 'c', placement: { column: 5, row: 0, columns: 3, rows: 1 } },
+        ],
+      }),
+    );
+
+    fireEvent.keyDown(window, { key: 'Escape' });
+
+    // So a cancel restores from the arrangement snapshotted at the start,
+    // rather than by redistributing the original span a second time.
+    expect(onPlacementChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({ columns: 9 }),
+      expect.objectContaining({
+        reason: 'resize',
+        phase: 'commit',
+        displaced: [
+          { id: 'a', placement: { column: 0, row: 0, columns: 2, rows: 1 } },
+          { id: 'b', placement: { column: 2, row: 0, columns: 3, rows: 1 } },
+          { id: 'c', placement: { column: 5, row: 0, columns: 4, rows: 1 } },
+        ],
+      }),
+    );
+  });
+
+  it('packs stack coordinates a consumer never stored', async () => {
+    const user = userEvent.setup();
+    const onPlacementChange = vi.fn();
+
+    renderWithRoot(
+      <Dashboard>
+        <Dashboard.HorizontalStack id="horizontal" rows={1}>
+          {/* No `column` anywhere: a stack ignores the coordinate, so there is
+              no reason for a consumer to keep one. */}
+          <Dashboard.Widget id="first" aria-label="First" columns={3} isMovable>
+            First
+          </Dashboard.Widget>
+          <Dashboard.Widget
+            id="second"
+            aria-label="Second"
+            columns={4}
+            isMovable
+            onPlacementChange={onPlacementChange}
+          >
+            Second
+          </Dashboard.Widget>
+          <Dashboard.Widget id="third" aria-label="Third" columns={5} isMovable>
+            Third
+          </Dashboard.Widget>
+        </Dashboard.HorizontalStack>
+      </Dashboard>,
+    );
+
+    // The stack derives them instead, and reports them the way it paints them.
+    // CSS would look right either way — a stack lays out with auto-flow plus
+    // `span` — but the drag engine reads the order back out of these attributes.
+    const columns = () =>
+      Array.from(
+        document
+          .querySelector<HTMLElement>(
+            '[data-dashboard-drop-target][data-dashboard-parent-id="horizontal"]',
+          )!
+          .querySelectorAll(':scope > [data-dashboard-node-id]'),
+        (node) => node.getAttribute('data-dashboard-column'),
+      );
+    expect(columns()).toEqual(['0', '3', '7']);
+
+    // Which is what makes an arrow key land one position away rather than
+    // measuring every child against a column they all claim to be in.
+    screen.getByRole('group', { name: 'Second' }).focus();
+    await user.keyboard('{ArrowLeft}');
+
+    expect(onPlacementChange).toHaveBeenLastCalledWith(
+      { column: 0, row: 0, columns: 4, rows: 1 },
+      expect.objectContaining({
+        reason: 'move',
+        phase: 'commit',
+        input: 'keyboard',
+        // `first` gives up the head of the stack and repacks behind the four
+        // columns `second` now holds; `third` never moves.
+        displaced: [
+          {
+            id: 'first',
+            placement: { column: 4, row: 0, columns: 3, rows: 1 },
+          },
+        ],
+      }),
+    );
+  });
+
   it('reports its children when a stack resizes, and leaves them otherwise', async () => {
     const user = userEvent.setup();
     const onPlacementChange = vi.fn();
@@ -885,6 +1019,48 @@ describe('Dashboard', () => {
     );
   });
 
+  it('selects with Space the way it selects with a click', async () => {
+    const user = userEvent.setup();
+    const onSelectionChange = vi.fn();
+
+    renderWithRoot(
+      <Dashboard onSelectionChange={onSelectionChange}>
+        <Dashboard.Grid id="section" aria-label="Section" rows={1}>
+          <Dashboard.Widget id="first" aria-label="First widget" columns={6}>
+            First
+          </Dashboard.Widget>
+          <Dashboard.Widget
+            id="second"
+            aria-label="Second widget"
+            column={6}
+            columns={6}
+          >
+            Second
+          </Dashboard.Widget>
+        </Dashboard.Grid>
+      </Dashboard>,
+    );
+
+    const first = screen.getByRole('group', { name: 'First widget' });
+    const second = screen.getByRole('group', { name: 'Second widget' });
+    const section = screen.getByRole('group', { name: 'Section' });
+
+    first.focus();
+    await user.keyboard(' ');
+    expect(onSelectionChange).toHaveBeenLastCalledWith(['first']);
+
+    // Shift is what makes it additive, exactly as with a click.
+    second.focus();
+    await user.keyboard('{Shift>} {/Shift}');
+    expect(onSelectionChange).toHaveBeenLastCalledWith(['first', 'second']);
+
+    // A plain Space replaces the selection rather than toggling into it, so it
+    // still lands on a node the current selection could never be extended to.
+    section.focus();
+    await user.keyboard(' ');
+    expect(onSelectionChange).toHaveBeenLastCalledWith(['section']);
+  });
+
   it('clears selection when dashboard whitespace is pressed', async () => {
     const user = userEvent.setup();
     const onSelectionChange = vi.fn();
@@ -1510,6 +1686,188 @@ describe('Dashboard', () => {
     fireEvent(window, pointerEvent('pointermove', 700, 20));
     fireEvent(window, pointerEvent('pointerup', 700, 20));
     expect(onPlacementChange).toHaveBeenCalledTimes(callsAfterEscape);
+  });
+
+  it('restores the origin and commits nothing when Escape cancels a resize', () => {
+    const onPlacementChange = vi.fn();
+
+    renderWithRoot(
+      <Dashboard rowHeight={80} gap={16}>
+        <Dashboard.Grid
+          id="section"
+          aria-label="Section"
+          rows={4}
+          maxRows={8}
+          isResizable
+          resizeLabel="Resize section"
+          onPlacementChange={onPlacementChange}
+        >
+          <Dashboard.Widget id="metric" rows={2} columns={4}>
+            Metric
+          </Dashboard.Widget>
+        </Dashboard.Grid>
+      </Dashboard>,
+    );
+
+    fireEvent.click(screen.getByRole('group', { name: 'Section' }));
+    const resizeHandle = screen.getByRole('button', { name: 'Resize section' });
+    fireEvent(resizeHandle, pointerEvent('pointerdown', 0, 0));
+    fireEvent(window, pointerEvent('pointermove', 0, 200));
+    expect(onPlacementChange).toHaveBeenLastCalledWith(
+      { column: 0, row: 0, columns: 12, rows: 6 },
+      { reason: 'resize', phase: 'preview', input: 'pointer' },
+    );
+
+    fireEvent.keyDown(window, { key: 'Escape' });
+
+    // A resize previews exactly as a move does, so it has to cancel the same
+    // way — by handing the origin back, not by declining to commit.
+    expect(onPlacementChange).toHaveBeenLastCalledWith(
+      { column: 0, row: 0, columns: 12, rows: 4 },
+      { reason: 'resize', phase: 'commit', input: 'pointer' },
+    );
+
+    const callsAfterEscape = onPlacementChange.mock.calls.length;
+    fireEvent(window, pointerEvent('pointermove', 0, 300));
+    fireEvent(window, pointerEvent('pointerup', 0, 300));
+    expect(onPlacementChange).toHaveBeenCalledTimes(callsAfterEscape);
+  });
+
+  it('takes a container into an empty tab panel but never a widget', () => {
+    const onWidgetPlacementChange = vi.fn();
+    const onContainerPlacementChange = vi.fn();
+
+    renderWithRoot(
+      <Dashboard qa="Dashboard">
+        <Dashboard.Tabs id="insights" rows={2}>
+          <Dashboard.Tab id="first" title="First" />
+        </Dashboard.Tabs>
+        <Dashboard.Grid id="source" rows={2}>
+          <Dashboard.Widget
+            id="metric"
+            aria-label="Metric"
+            columns={2}
+            rows={1}
+            isMovable
+            onPlacementChange={onWidgetPlacementChange}
+          >
+            Metric
+          </Dashboard.Widget>
+          <Dashboard.Grid
+            id="mover"
+            row={1}
+            columns={4}
+            rows={1}
+            isMovable
+            onPlacementChange={onContainerPlacementChange}
+          />
+        </Dashboard.Grid>
+      </Dashboard>,
+    );
+
+    const dashboard = screen.getByTestId('Dashboard');
+    const panel = document.querySelector<HTMLElement>(
+      '[data-dashboard-drop-target][data-dashboard-parent-id="insights:first"]',
+    )!;
+    const source = document.querySelector<HTMLElement>(
+      '[data-dashboard-drop-target][data-dashboard-parent-id="source"]',
+    )!;
+    const metric = screen.getByRole('group', { name: 'Metric' });
+    const mover = document.querySelector<HTMLElement>(
+      '[data-dashboard-node-id="mover"]',
+    )!;
+    mockRect(dashboard, { left: 0, top: 0, width: 1200, height: 420 });
+    mockRect(panel, { left: 0, top: 0, width: 1200, height: 200 });
+    mockRect(source, { left: 0, top: 220, width: 1200, height: 200 });
+    mockRect(metric, { left: 0, top: 220, width: 186, height: 80 });
+    mockRect(mover, { left: 0, top: 316, width: 386, height: 80 });
+
+    // A `Dashboard.Tab` renders one layout container and nothing else, so a
+    // widget over the panel has no destination at all: the panel refuses it and
+    // the root refuses every widget. Landing it there would not be a rejected
+    // drop, it would be a render-time throw on the committed tree.
+    fireEvent(metric, pointerEvent('pointerdown', 20, 240));
+    fireEvent(window, pointerEvent('pointermove', 600, 100));
+    expect(
+      screen.queryByTestId('DashboardDropPlaceholder'),
+    ).not.toBeInTheDocument();
+    fireEvent(window, pointerEvent('pointerup', 600, 100));
+    expect(onWidgetPlacementChange).not.toHaveBeenCalled();
+
+    // The same panel takes a container, which is what it is for.
+    fireEvent(mover, pointerEvent('pointerdown', 20, 340));
+    fireEvent(window, pointerEvent('pointermove', 600, 100));
+    expect(panel).toContainElement(
+      screen.getByTestId('DashboardDropPlaceholder'),
+    );
+    fireEvent(window, pointerEvent('pointerup', 600, 100));
+    expect(onContainerPlacementChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({ columns: 4 }),
+      expect.objectContaining({
+        phase: 'commit',
+        sourceParentId: 'source',
+        destinationParentId: 'insights:first',
+      }),
+    );
+  });
+
+  it('never adds a second container to an occupied tab panel', () => {
+    const onPlacementChange = vi.fn();
+
+    renderWithRoot(
+      <Dashboard qa="Dashboard">
+        <Dashboard.Tabs id="insights" rows={2}>
+          <Dashboard.Tab id="first" title="First">
+            <Dashboard.Grid id="occupant" columns={6} rows={1} />
+          </Dashboard.Tab>
+        </Dashboard.Tabs>
+        <Dashboard.Grid id="source" rows={2}>
+          <Dashboard.Grid
+            id="mover"
+            columns={4}
+            rows={1}
+            isMovable
+            onPlacementChange={onPlacementChange}
+          />
+        </Dashboard.Grid>
+      </Dashboard>,
+    );
+
+    const dashboard = screen.getByTestId('Dashboard');
+    const panel = document.querySelector<HTMLElement>(
+      '[data-dashboard-drop-target][data-dashboard-parent-id="insights:first"]',
+    )!;
+    const occupant = document.querySelector<HTMLElement>(
+      '[data-dashboard-node-id="occupant"]',
+    )!;
+    const source = document.querySelector<HTMLElement>(
+      '[data-dashboard-drop-target][data-dashboard-parent-id="source"]',
+    )!;
+    const mover = document.querySelector<HTMLElement>(
+      '[data-dashboard-node-id="mover"]',
+    )!;
+    mockRect(dashboard, { left: 0, top: 0, width: 1200, height: 420 });
+    mockRect(panel, { left: 0, top: 0, width: 1200, height: 200 });
+    mockRect(occupant, { left: 0, top: 0, width: 592, height: 200 });
+    mockRect(source, { left: 0, top: 220, width: 1200, height: 200 });
+    mockRect(mover, { left: 0, top: 220, width: 386, height: 80 });
+
+    // Pointer inside the panel but clear of the container already in it. The
+    // geometry is free and a grid would take the drop; a tab panel holds one
+    // child, so it is skipped and the root — also under the pointer, and a
+    // legitimate home for a container — answers instead.
+    fireEvent(mover, pointerEvent('pointerdown', 20, 240));
+    fireEvent(window, pointerEvent('pointermove', 900, 100));
+    fireEvent(window, pointerEvent('pointerup', 900, 100));
+
+    expect(onPlacementChange).toHaveBeenLastCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        phase: 'commit',
+        sourceParentId: 'source',
+        destinationParentId: null,
+      }),
+    );
   });
 
   it('never targets a nested Dashboard as a destination', () => {

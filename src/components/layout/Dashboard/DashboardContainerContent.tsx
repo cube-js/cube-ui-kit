@@ -20,11 +20,11 @@ import {
   DashboardMetricsContext,
 } from './context';
 import {
-  fitDashboardStackChildren,
   getDashboardAddPlacement,
   getDashboardChildPlacements,
   getDashboardFreeCells,
   getDashboardFreeRegion,
+  layoutDashboardStackChildren,
 } from './occupancy';
 import {
   clamp,
@@ -162,12 +162,12 @@ export function DashboardContainerContent({
         : authoring.addItems.filter((definition) => definition.kind !== 'tabs'),
     [authoring.addItems, kind],
   );
-  // A stack's children are drawn at exactly the spans the consumer stored, so
-  // resizing one is a local change. The only thing done to them here is a
-  // squeeze back inside the stack when a controlled value leaves them
-  // over-subscribed, which would otherwise wrap onto a second row.
+  // A stack owns its children's coordinates — it packs them along its axis, so
+  // the consumer never has to store them — and leaves their spans as stored,
+  // which is what makes resizing one child a local change. The one exception is
+  // an over-subscribed axis, squeezed back in rather than wrapped onto a row.
   const layoutChildren = useMemo(
-    () => fitDashboardStackChildren(kind, children, columns, rows),
+    () => layoutDashboardStackChildren(kind, children, columns, rows),
     [children, columns, kind, rows],
   );
   const placements = useMemo(

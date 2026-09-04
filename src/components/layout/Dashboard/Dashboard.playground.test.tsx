@@ -167,6 +167,84 @@ describe('Dashboard Playground', () => {
     expect(stackOrder().slice(0, 3)).toEqual(['wide-1', 'wide-3', 'wide-2']);
   }, 15000);
 
+  it('puts a previewed reorder back when Escape cancels the drag', async () => {
+    renderWithRoot(<DashboardPlayground rowHeight={96} gap={16} />);
+
+    const stackOrder = () =>
+      Array.from(
+        document
+          .querySelector<HTMLElement>(
+            '[data-dashboard-drop-target][data-dashboard-parent-id="horizontal-kpi"]',
+          )!
+          .querySelectorAll(':scope > [data-dashboard-node-id]'),
+        (node) => node.getAttribute('data-dashboard-node-id'),
+      );
+
+    expect(stackOrder().slice(0, 3)).toEqual(['wide-1', 'wide-2', 'wide-3']);
+
+    const dashboard = screen.getByTestId('Dashboard');
+    const content = document.querySelector<HTMLElement>(
+      '[data-dashboard-drop-target][data-dashboard-parent-id="horizontal-kpi"]',
+    )!;
+    const orders = screen.getByRole('group', { name: 'Move Orders' });
+    mockRect(dashboard, { left: 0, top: 0, width: 1200, height: 700 });
+    mockRect(content, { left: 0, top: 0, width: 1200, height: 96 });
+    mockRect(orders, { left: 405, top: 0, width: 288, height: 96 });
+
+    fireEvent(orders, pointerEvent('pointerdown', 420, 40));
+    fireEvent(window, pointerEvent('pointermove', 20, 40));
+
+    // The preview is real state: the story has already written the reorder, so
+    // a cancel has to undo it rather than merely decline to repeat it.
+    expect(stackOrder().slice(0, 3)).toEqual(['wide-2', 'wide-1', 'wide-3']);
+
+    fireEvent.keyDown(window, { key: 'Escape' });
+
+    // Both halves come back — the dragged tile from `info.items`, and the
+    // sibling its landing had pushed aside from `info.displaced`.
+    expect(stackOrder().slice(0, 3)).toEqual(['wide-1', 'wide-2', 'wide-3']);
+
+    fireEvent(window, pointerEvent('pointerup', 20, 40));
+    expect(stackOrder().slice(0, 3)).toEqual(['wide-1', 'wide-2', 'wide-3']);
+  }, 15000);
+
+  it('refuses to duplicate into a stack with no room left', async () => {
+    const user = userEvent.setup();
+
+    renderWithRoot(<DashboardPlayground rowHeight={96} gap={16} />);
+
+    // The headline stack holds 3+3+3+1+1 of its 12 columns, so it has room for
+    // another compact tile and none at all for another wide one.
+    const revenue = screen.getByRole('group', { name: 'Move Net revenue' });
+    await user.click(revenue);
+    await user.click(
+      screen.getByRole('button', { name: 'Actions for Net revenue' }),
+    );
+    await user.click(screen.getByRole('menuitem', { name: /Duplicate/ }));
+
+    expect(screen.getByRole('status')).toHaveTextContent(
+      'No room to duplicate Net revenue in Headline metrics.',
+    );
+    expect(
+      screen.queryByRole('group', { name: 'Move Net revenue copy' }),
+    ).not.toBeInTheDocument();
+    await user.keyboard('{Escape}');
+
+    const returns = screen.getByRole('group', { name: 'Move Returns' });
+    await user.click(returns);
+    await user.click(
+      screen.getByRole('button', { name: 'Actions for Returns' }),
+    );
+    await user.click(screen.getByRole('menuitem', { name: /Duplicate/ }));
+
+    expect(screen.getByRole('status')).toHaveTextContent(
+      'Returns duplicated in Headline metrics.',
+    );
+    expect(
+      screen.getByRole('group', { name: 'Move Returns copy' }),
+    ).toBeInTheDocument();
+  }, 15000);
+
   it('applies a menu size command, which commits without ever previewing', async () => {
     const user = userEvent.setup();
 

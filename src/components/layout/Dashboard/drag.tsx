@@ -52,6 +52,25 @@ export interface DashboardPlacementGesture {
   /** Set by Escape or `pointercancel`; suppresses the commit. */
   cancelled?: boolean;
   /**
+   * A stack container's own children as they stood before the gesture.
+   *
+   * Only a stack container fills this, and only so a cancelled resize can put
+   * its children back exactly — see `readOwnDashboardStackChildren` for why
+   * re-resolving the origin span is not the same thing.
+   */
+  originChildren: DashboardPlacementChangeItem[];
+  /**
+   * The source parent's other children as they stood before the gesture.
+   *
+   * A cancel has to undo more than the moved item: a consumer that applies
+   * previews has also written every sibling the landing pushed aside, and their
+   * pre-gesture placements are no longer anywhere to be read — the DOM now
+   * holds the previewed arrangement. Snapshotting them at the start is the only
+   * moment they exist. Cross-parent previews are proposals a consumer is not
+   * expected to persist before the commit, so only the source is captured.
+   */
+  originSiblings: DashboardPlacementChangeItem[];
+  /**
    * A stack child's growing room, measured once at gesture start.
    *
    * Read live it would be a feedback loop: the consumer applies each preview,
@@ -542,21 +561,56 @@ export function readDashboardStackRow(
  * Empty for anything that is not a stack, and for a capacity its children
  * already fill exactly.
  */
-export function resolveDashboardStackCapacity(
+/** A stack container's own content grid, which is not its parent's. */
+function findOwnStackRow(
   node: HTMLElement,
   nodeId: string,
   kind: DashboardContainerKind | undefined,
-  placement: DashboardPlacement,
-): DashboardPlacementChangeItem[] {
+): { axis: 'columns' | 'rows'; row: DashboardStackRow } | null {
   const isHorizontal = kind === 'horizontal-stack';
-  if (!isHorizontal && kind !== 'vertical-stack') return [];
+  if (!isHorizontal && kind !== 'vertical-stack') return null;
 
   const axis = isHorizontal ? 'columns' : 'rows';
   const content = Array.from(
     node.querySelectorAll<HTMLElement>('[data-dashboard-drop-target]'),
   ).find((element) => element.dataset.dashboardParentId === nodeId);
   const row = readDashboardStackRow(content ?? null, axis);
-  if (!row) return [];
+
+  return row ? { axis, row } : null;
+}
+
+/**
+ * A stack container's children exactly as they stand.
+ *
+ * For a gesture to snapshot before it starts redistributing them. Handing a
+ * stack back a span it held earlier does not hand each child back the columns
+ * it gave up — `distributeDashboardStackSpans` reconciles against proportional
+ * shares, with no memory of who shed what — so an exact restore has to come
+ * from a snapshot rather than from re-resolving.
+ */
+export function readOwnDashboardStackChildren(
+  node: HTMLElement,
+  nodeId: string,
+  kind: DashboardContainerKind | undefined,
+): DashboardPlacementChangeItem[] {
+  const own = findOwnStackRow(node, nodeId, kind);
+  if (!own) return [];
+
+  return own.row.ids.map((id, position) => ({
+    id,
+    placement: own.row.placements[position],
+  }));
+}
+
+export function resolveDashboardStackCapacity(
+  node: HTMLElement,
+  nodeId: string,
+  kind: DashboardContainerKind | undefined,
+  placement: DashboardPlacement,
+): DashboardPlacementChangeItem[] {
+  const own = findOwnStackRow(node, nodeId, kind);
+  if (!own) return [];
+  const { axis, row } = own;
 
   const sizes = distributeDashboardStackSpans(
     row.bounds.map((bound, index) => ({ ...bound, weight: row.sizes[index] })),
