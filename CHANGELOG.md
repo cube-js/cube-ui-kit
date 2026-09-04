@@ -1,5 +1,31 @@
 # @cube-dev/ui-kit
 
+## 0.177.0
+
+### Minor Changes
+
+- [#1394](https://github.com/cube-js/cube-ui-kit/pull/1394) [`0ef322d9`](https://github.com/cube-js/cube-ui-kit/commit/0ef322d99dec6317fa427b2bd5bb8ad769cf2449) Thanks [@tenphi](https://github.com/tenphi)! - New: `toLegacyColor()` — converts a color literal, most usefully the `oklch(...)` every color token resolves to, into a hex or `rgba()` string a third-party parser will actually accept.
+
+  `resolveTokenValue()` hands back the token's computed value, and since Glaze that is always `oklch(...)`. A large class of consumers validates colors against "HEX, `rgb()`, or `hsl()`" and **silently drops** anything else: Stripe's Appearance API falls back to its own light theme, `d3-color` (so Vega) throws, mapbox-gl rejects even an `#rrggbbaa` tail. Nothing warns, and a round trip through the DOM does not normalize it — Chrome serializes `oklch` back as `oklch` — so until now each consumer wrote its own regex plus the polar→cartesian→OKHSL→sRGB math, and its own alpha handling.
+
+  ```ts
+  toLegacyColor(resolveTokenValue("#purple")); // '#6b53e4'
+  toLegacyColor("oklch(0.55 0.21 285 / 0.4)"); // 'rgba(107, 83, 228, 0.4)'
+  toLegacyColor("oklch(0.55 0.21 285 / 0.4)", { alpha: "hex" }); // '#6b53e466'
+  ```
+
+  An opaque color is always `#rrggbb`; `alpha` picks the translucent form, since the acceptable one differs per consumer (`'rgba'`, the default, is the widest; `'hex'` gives the `#rrggbbaa` Vega and CSS prefer and mapbox-gl drops). It accepts `null` so it composes with `resolveTokenValue()` without a null check, and reads `oklch()`, `okhsl()`, `okhst()`, `rgb()`, `hsl()`, hex (3/4/6/8 digits) and `transparent`, in either the slash or the legacy comma alpha syntax — including the components a hand-rolled regex misses: a negative hue, any angle unit, scientific notation, a `none` component. An out-of-gamut chroma is clipped to the gamut boundary. A value whose meaning only exists inside a CSS engine — `color-mix()`, relative syntax (`oklch(from …)`), a bare `var()` — returns `fallback ?? null` rather than passing through, because handing it back unchanged is precisely what makes a consumer drop the color.
+
+  The color-literal grammar behind it is now shared with the color fields' own parser rather than duplicated, so `ColorInput` / `ColorPicker` additionally accept `none` components and `rad` / `grad` / `turn` hue units, and no longer read an angle where a plain number belongs.
+
+### Patch Changes
+
+- [#1395](https://github.com/cube-js/cube-ui-kit/pull/1395) [`a5c284b5`](https://github.com/cube-js/cube-ui-kit/commit/a5c284b582e61719139ffb9dc3f6b90cf2a0b4c4) Thanks [@tenphi](https://github.com/tenphi)! - Stop the published build from inlining `process.env.NODE_ENV`, which had left `isDevEnv()` returning `true` in every consumer and every environment. `platform: 'browser'` makes rolldown replace that read with the literal `NODE_ENV` of the machine that cut the release, so `dist` shipped `"development" !== 'test' && "development" !== 'production'` — a constant — and the `NODE_ENV=test` and `NODE_ENV=production` opt-outs the function documents were unreachable. `tsdown.config.ts` now defines the expression as itself, which wins over that injection and leaves the read in the output for the consumer's own bundler (webpack, Vite and Next all define it) or Node to resolve for the environment that is actually running.
+
+  The visible symptom was `Layout`: it flags a collapse by measuring `offsetHeight === 0` from a `requestAnimationFrame` callback, and with `isDevEnv()` stuck at `true` any production `Layout` that ever measured zero — a hidden tab, a collapsed accordion, a container mid-animation, a `display: none` ancestor — swapped the app's subtree for a developer warning, with no way for a consumer to turn it off. The warning is now overlaid on the content instead of substituted for it, so `children` stay mounted and keep their state even when the diagnostic is shown and even when it is wrong; a zero-height measurement is not proof of a mistake, and unmounting on a wrong guess turns a diagnostic into an outage. This also unbreaks jsdom specs: jsdom reports `offsetHeight: 0` for everything, so every test rendering a `Layout` lost the component under test two frames after mount, and `NODE_ENV=test` now switches the warning off as intended rather than needing an `offsetHeight` stub in the test setup.
+
+  `NODE_ENV` is read in exactly one place now, guarded so that a bundle which never substituted it cannot turn a bare `process` reference into a `ReferenceError`; when nothing can say what the environment is, diagnostics stay off, since one shown to an end user is worse than one missed by a developer. The `UIKIT_DEBUG` localStorage flag became an escape hatch in both directions — `"true"` forces ui-kit's diagnostics on anywhere, and `"false"` forces them off, so a consumer whose build reports `development` can silence them without waiting for a release. Diagnostics split by whether a test run should hear them: deprecation warnings still fire under `NODE_ENV=test`, while anything keyed off a measurement does not, because jsdom has no layout to measure.
+
 ## 0.176.0
 
 ### Minor Changes
