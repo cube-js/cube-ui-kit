@@ -27,6 +27,10 @@ export {
   useTokenValues,
 } from './resolve';
 export type { ResolvedPreset, ResolveTokenOptions } from './resolve';
+// Turns the `oklch(...)` a resolved color token computes to into something a
+// third-party parser will accept, rather than silently drop.
+export { toLegacyColor } from './legacy-color';
+export type { LegacyAlphaFormat, ToLegacyColorOptions } from './legacy-color';
 
 // Re-export category modules for direct access
 export { COLOR_TOKENS, getColorTokens, renderColorTokens } from './colors';

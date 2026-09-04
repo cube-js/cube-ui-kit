@@ -346,6 +346,24 @@ resolvePresetValues('s3'); // { fontFamily: 'ui-monospace, …', fontSize: '14px
 
 `useTokenValue()`, `useTokenValues()` and `usePresetValues()` are the same three readers as hooks, re-resolved whenever the palette is re-seeded or the scheme / contrast tier flips. The object `useTokenValues()` returns keeps its identity while the values do, so it is safe as a dependency of the theme object built from it.
 
+### Colors a Legacy Parser Will Accept
+
+Every color token computes to `oklch(...)`, and a large class of consumers validates colors against "HEX, `rgb()`, or `hsl()`" and **silently drops** anything else — Stripe's Appearance API falls back to its own light theme, `d3-color` (so Vega) throws, mapbox-gl rejects even an `#rrggbbaa` tail. Nothing warns, and a round trip through the DOM does not help: Chrome serializes `oklch` back as `oklch`. So `resolveTokenValue()` hands back a value that is correct and unusable at the same time, and `toLegacyColor()` is the step between them.
+
+```ts
+import { resolveTokenValue, toLegacyColor } from '@cube-dev/ui-kit';
+
+toLegacyColor(resolveTokenValue('#purple')); // '#6b53e4'
+toLegacyColor('oklch(0.55 0.21 285 / 0.4)'); // 'rgba(107, 83, 228, 0.4)'
+toLegacyColor('oklch(0.55 0.21 285 / 0.4)', { alpha: 'hex' }); // '#6b53e466'
+```
+
+An opaque color is always `#rrggbb`, which everything accepts. Only the translucent case has a choice, and `alpha` picks it, because the acceptable form differs per consumer: `'rgba'` (the default) is the widest — Stripe, mapbox-gl and CSS all take it — while `'hex'` gives the shorter `#rrggbbaa` that Vega and plain CSS prefer and mapbox-gl drops.
+
+It takes `null` so it composes with `resolveTokenValue()` directly, and reads every notation the kit emits or accepts: `oklch()`, `okhsl()`, `okhst()`, `rgb()`, `hsl()`, hex (3/4/6/8 digits) and `transparent`, in either the slash or the legacy comma alpha syntax, including the components a hand-rolled regex misses — a negative hue, any angle unit, scientific notation, a `none` component. A chroma outside the sRGB gamut is clipped to the gamut boundary rather than allowed to overflow a channel.
+
+A value it cannot read returns `fallback ?? null` rather than the input, which is the whole point: `color-mix()`, relative syntax (`oklch(from …)`) and a bare `var()` reference only have a value inside a CSS engine, and handing one back unchanged is exactly what makes the consumer drop the color and revert to its own theme.
+
 These resolve token _values_. For the ambient _conditions_ themselves — which scheme and contrast tier the document is in — see [Reading the scheme from JS](#reading-the-scheme-from-js).
 
 So these helpers do not inspect the value. They read `$tokens-applied`, a marker the token block declares alongside the tokens, which answers the question that matters — _are the kit's tokens in effect on this element?_ Off that surface every read returns `null` (or `fallback`) and warns once in development; on it, the computed value is taken as the truth.
