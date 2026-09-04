@@ -167,9 +167,10 @@ export function useFieldProps<
     result.labelProps.for = result.id;
   }
 
-  if (process.env.NODE_ENV === 'development') {
-    useDebugValue(result);
-  }
+  // Unconditional on purpose: React makes `useDebugValue` a no-op outside its
+  // development build, and gating a hook on `isDevEnv()` would let hook order
+  // change between renders when `UIKIT_DEBUG` is toggled.
+  useDebugValue(result);
 
   return result;
 }
