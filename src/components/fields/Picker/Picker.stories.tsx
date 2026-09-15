@@ -1,6 +1,8 @@
 import { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
+import { Key } from 'react-aria';
 
+import { ReloadIcon } from '../../../icons/ReloadIcon';
 import { NO_SNAPSHOT } from '../../../stories/chromatic';
 import { Text } from '../../content/Text';
 import { Flex } from '../../layout/Flex';
@@ -78,6 +80,50 @@ export const IsClearable: Story = {
       </Picker>
     </Flex>
   ),
+};
+
+export const WithActions: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Custom actions render inside the trigger, to the left of the built-in clear button and dropdown caret. Pressing one runs its handler without opening the popover \u2014 which is what makes a "Reset" action (restore the default selection, rather than empty it) possible.',
+      },
+    },
+  },
+  render: () => {
+    const DEFAULT_KEY = 'apple';
+
+    function ResettablePicker() {
+      const [selectedKey, setSelectedKey] = useState<Key | null>('mango');
+
+      return (
+        <Picker
+          isClearable
+          label="Favorite Fruit"
+          placeholder="Select a fruit"
+          selectedKey={selectedKey}
+          actions={
+            selectedKey !== DEFAULT_KEY ? (
+              <Picker.Action
+                icon={<ReloadIcon />}
+                tooltip="Reset to default"
+                aria-label="Reset to default"
+                onPress={() => setSelectedKey(DEFAULT_KEY)}
+              />
+            ) : null
+          }
+          onSelectionChange={(key) => setSelectedKey(key as Key | null)}
+        >
+          {fruits.map((fruit) => (
+            <Picker.Item key={fruit.key}>{fruit.label}</Picker.Item>
+          ))}
+        </Picker>
+      );
+    }
+
+    return <ResettablePicker />;
+  },
 };
 
 export const ClearableThemes: Story = {

@@ -22,6 +22,7 @@ import { useEvent, useWarn } from '../../../_internal/hooks';
 import { DirectionIcon } from '../../../icons/DirectionIcon';
 import { mergeProps, useMergeStyles } from '../../../utils/react';
 import { extractStyles } from '../../../utils/styles';
+import { ItemAction } from '../../actions/ItemAction/ItemAction';
 import { useTinyScrollbar } from '../../content/Layout/hooks/useTinyScrollbar';
 import { useBoardDragActive } from '../../layout/Board/board-context';
 
@@ -98,6 +99,15 @@ function Tab(_props: CubeTabProps): ReactElement | null {
 }
 
 Tab.displayName = 'CubeTab';
+
+/**
+ * Action for a tab's own `actions` slot, where it renders left of the built-in
+ * menu trigger and delete button — which are `ItemAction`s themselves.
+ *
+ * Not to be confused with `Tabs.Action`, which is an `ItemButton` sized for the
+ * tab bar's `prefix` / `suffix` slots rather than for a tab.
+ */
+Tab.Action = ItemAction;
 
 // =============================================================================
 // TabPanel Component (configuration only - not rendered directly)

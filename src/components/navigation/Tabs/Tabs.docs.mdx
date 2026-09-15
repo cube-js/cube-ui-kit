@@ -277,6 +277,24 @@ Action button designed for the Tabs prefix/suffix slots. Styled with sharp edges
 
 Inherits all props from `ItemButton` except `shape` (always sharp).
 
+### Tab.Action
+
+Action for a single tab's own `actions` slot, where it renders to the left of the built-in menu trigger and delete button. It is an [ItemAction](/docs/actions-itemaction--docs), the same component those built-ins use, so it picks up the tab's size and theme without being configured. Pressing one runs its handler without selecting the tab.
+
+Not to be confused with `Tabs.Action`, which is sized for the tab bar's `prefix` / `suffix` slots rather than for a tab.
+
+```jsx
+<Tab
+  key="tab1"
+  title="Tab 1"
+  actions={<Tab.Action icon={<PinIcon />} aria-label="Pin tab" onPress={handlePin} />}
+>
+  Content
+</Tab>
+```
+
+Give every icon-only action an `aria-label` (a `tooltip` string also supplies one), since the icon alone has no accessible name.
+
 ### Tab Props
 
 `Tab` extends [Item](/docs/content-item--docs), so it accepts all Item props except those that don't apply to tabs (`description`, `hotkeys`, `theme`, `shape`, `variant`, `highlight`, `isSelected`, `htmlType`). This includes `icon`, `rightIcon`, `prefix`, `suffix`, `tooltip`, `isLoading`, `loadingSlot`, and all style props.
@@ -287,7 +305,7 @@ In addition, Tab accepts these tab-specific props:
 - **`isDisabled`** `boolean` — Disables the tab
 - **`size`** `TabSize` — Override tab size for this tab
 - **`type`** `TabType` — Override tab type for this tab
-- **`actions`** `ReactNode` — Custom actions to render in the tab
+- **`actions`** `ReactNode` — Custom actions to render in the tab, left of the built-in menu trigger and delete button. Use `Tab.Action`
 - **`autoHideActions`** `boolean` — Show actions only on hover (overrides Tabs-level)
 - **`isEditable`** `boolean` — Whether the tab title can be edited (overrides Tabs-level)
 - **`onTitleChange`** `(newTitle: string) => void` — Callback when title changes (overrides Tabs-level)

@@ -75,6 +75,7 @@ import {
 } from '../../form';
 import { DisplayTransition } from '../../helpers';
 import { Portal } from '../../portal';
+import { TriggerActions } from '../TriggerActions';
 
 import type { Props } from '../../../props';
 
@@ -248,6 +249,12 @@ export interface CubeSelectBaseProps<T>
   isClearable?: boolean;
   /** Callback called when the clear button is pressed */
   onClear?: () => void;
+  /**
+   * Custom actions rendered inside the trigger, to the left of the built-in
+   * clear button and dropdown caret. Use `Select.Action` so they match the
+   * trigger's size and theme. Pressing one does not open the popover.
+   */
+  actions?: ReactNode;
   /** Callback called when the popover open state changes */
   onOpenChange?: (isOpen: boolean) => void;
 }
@@ -301,6 +308,7 @@ function Select<T extends object>(
     listBoxStyles,
     overlayStyles,
     suffix,
+    actions,
     message,
     triggerDescription,
     descriptionPlacement,
@@ -420,7 +428,7 @@ function Select<T extends object>(
   );
 
   suffix = useMemo(() => {
-    if (!suffix && !validationIcon) {
+    if (!suffix && !validationIcon && !actions) {
       return null;
     }
 
@@ -428,9 +436,24 @@ function Select<T extends object>(
       <>
         {suffix}
         {validationIcon}
+        {actions ? (
+          // The `suffix` slot sits between the label and `rightIcon`, so actions
+          // placed at its end land immediately left of the built-in clear button
+          // and caret — which is where custom actions belong.
+          //
+          // The RAW theme, like the clear button below — this trigger paints
+          // with the raw theme and surfaces validation through the wrapper.
+          <TriggerActions
+            type={type}
+            theme={theme}
+            isDisabled={isDisabled || isLoading}
+          >
+            {actions}
+          </TriggerActions>
+        ) : null}
       </>
     );
-  }, [suffix, validationIcon]);
+  }, [suffix, validationIcon, actions, type, theme, isDisabled, isLoading]);
 
   let selectField = (
     <SelectWrapperElement
@@ -841,10 +864,12 @@ const __Select = Object.assign(
   _Select as typeof _Select & {
     Item: typeof CollectionItem;
     Section: typeof SelectSectionComponent;
+    Action: typeof ItemAction;
   },
   {
     Item: CollectionItem,
     Section: SelectSectionComponent,
+    Action: ItemAction,
   },
 );
 

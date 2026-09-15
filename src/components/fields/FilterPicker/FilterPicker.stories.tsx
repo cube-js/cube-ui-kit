@@ -5,6 +5,7 @@ import { CheckIcon } from '../../../icons/CheckIcon';
 import { DatabaseIcon } from '../../../icons/DatabaseIcon';
 import { FilterIcon } from '../../../icons/FilterIcon';
 import { PlusIcon } from '../../../icons/PlusIcon';
+import { ReloadIcon } from '../../../icons/ReloadIcon';
 import { RightIcon } from '../../../icons/RightIcon';
 import { SearchIcon } from '../../../icons/SearchIcon';
 import { SettingsIcon } from '../../../icons/SettingsIcon';
@@ -534,6 +535,56 @@ export const Clearable: Story = {
       )}
     </FilterPicker>
   ),
+};
+
+export const WithActions: Story = {
+  parameters: {
+    // A copy of the equivalent story in `Picker.stories.tsx`, which keeps the snapshot. Both photograph an `ItemButton` trigger with one action left of the clear button.
+    ...NO_SNAPSHOT,
+    docs: {
+      description: {
+        story:
+          'Custom actions render inside the trigger, to the left of the built-in clear button and dropdown caret. Pressing one runs its handler without opening the popover \u2014 which is what makes a "Reset" action (restore the default selection, rather than empty it) possible.',
+      },
+    },
+  },
+  render: () => {
+    const DEFAULT_KEY = 'apple';
+
+    function ResettableFilterPicker() {
+      const [selectedKey, setSelectedKey] = useState<Key | null>('mango');
+
+      return (
+        <FilterPicker<(typeof fruits)[number]>
+          isClearable
+          label="Favorite Fruit"
+          placeholder="Choose items..."
+          width="max 30x"
+          items={fruits}
+          selectedKey={selectedKey}
+          actions={
+            selectedKey !== DEFAULT_KEY ? (
+              <FilterPicker.Action
+                icon={<ReloadIcon />}
+                tooltip="Reset to default"
+                aria-label="Reset to default"
+                onPress={() => setSelectedKey(DEFAULT_KEY)}
+              />
+            ) : null
+          }
+          onSelectionChange={(key) => setSelectedKey(key as Key | null)}
+        >
+          {(fruit) => (
+            <FilterPicker.Item key={fruit.key} textValue={fruit.label}>
+              {fruit.label}
+            </FilterPicker.Item>
+          )}
+        </FilterPicker>
+      );
+    }
+
+    return <ResettableFilterPicker />;
+  },
 };
 
 export const ClearableThemes: Story = {

@@ -94,4 +94,75 @@ describe('<Select />', () => {
     // Wait for the exit transition to complete and element to be removed
     await waitForElementToBeRemoved(() => queryByRole('listbox'));
   });
+
+  describe('Custom actions', () => {
+    const items = [
+      <Select.Item key="1">Blue</Select.Item>,
+      <Select.Item key="2">Red</Select.Item>,
+    ];
+
+    it('should render custom actions before the clear button', () => {
+      const { getByTestId } = renderWithRoot(
+        <Select
+          isClearable
+          label="test"
+          defaultSelectedKey="1"
+          actions={<Select.Action qa="ResetAction">Reset</Select.Action>}
+        >
+          {items}
+        </Select>,
+      );
+
+      const resetAction = getByTestId('ResetAction');
+      const clearButton = getByTestId('SelectClearButton');
+
+      expect(resetAction).toBeInTheDocument();
+      // `Node.DOCUMENT_POSITION_FOLLOWING` — the clear button comes after the
+      // custom action in document order, which is what "to the left of the
+      // built-in actions" means in the trigger's LTR layout.
+      expect(
+        resetAction.compareDocumentPosition(clearButton) &
+          Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+    });
+
+    it('should call the action handler without opening the popover', async () => {
+      const onReset = vi.fn();
+
+      const { getByTestId, queryByRole } = renderWithRoot(
+        <Select
+          label="test"
+          defaultSelectedKey="1"
+          actions={
+            <Select.Action qa="ResetAction" onPress={onReset}>
+              Reset
+            </Select.Action>
+          }
+        >
+          {items}
+        </Select>,
+      );
+
+      await act(async () => await userEvent.click(getByTestId('ResetAction')));
+
+      expect(onReset).toHaveBeenCalledTimes(1);
+      expect(queryByRole('listbox')).not.toBeInTheDocument();
+    });
+
+    it('should still open the popover when the trigger itself is pressed', async () => {
+      const { getByTestId, queryByRole } = renderWithRoot(
+        <Select
+          label="test"
+          defaultSelectedKey="1"
+          actions={<Select.Action qa="ResetAction">Reset</Select.Action>}
+        >
+          {items}
+        </Select>,
+      );
+
+      await act(async () => await userEvent.click(getByTestId('Select')));
+
+      expect(queryByRole('listbox')).toBeInTheDocument();
+    });
+  });
 });

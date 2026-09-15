@@ -1,3 +1,4 @@
+import { ClearPressResponder } from '@react-aria/interactions';
 import { CollectionChildren, FocusableRefValue } from '@react-types/shared';
 import {
   BASE_STYLES,
@@ -49,6 +50,7 @@ import {
 } from '../../form';
 import { Dialog, DialogTrigger } from '../../overlays/Dialog';
 import { CubeListBoxProps, ListBox } from '../ListBox/ListBox';
+import { TriggerActions } from '../TriggerActions';
 
 import type { FieldBaseProps } from '../../../shared';
 
@@ -128,6 +130,12 @@ export interface CubePickerProps<T>
   /** Callback called when the clear button is pressed */
   onClear?: () => void;
   /**
+   * Custom actions rendered inside the trigger, to the left of the built-in
+   * clear button and dropdown caret. Use `Picker.Action` so they match the
+   * trigger's size and theme. Pressing one does not open the popover.
+   */
+  actions?: ReactNode;
+  /**
    * Sort selected item(s) to the top when the popover opens.
    * Only works when using the `items` prop (data-driven mode).
    * Supports both single and multiple selection modes.
@@ -193,6 +201,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
     rightIcon,
     prefix,
     suffix,
+    actions,
     hotkeys,
     triggerTooltip,
     triggerDescription,
@@ -555,11 +564,31 @@ export const Picker = forwardRef(function Picker<T extends object>(
 
   const validationIcon = getValidationIcon({ isInvalid, isValid });
 
-  if (validationIcon) {
+  // Must be the SAME expression the trigger is painted with, not the raw
+  // `theme`: this tells an action which surface it sits on, and validation
+  // overrides the theme. With `theme="special"` on an invalid field the trigger
+  // renders `danger` — a light surface — so forwarding `special` would hand the
+  // action the strong dark-purple alpha ramp and make hover/press read far too
+  // heavy.
+  const paintedTheme = getValidationTheme(theme, { isInvalid, isValid });
+
+  if (validationIcon || actions) {
+    // The `suffix` slot sits between the label and `rightIcon`, so actions
+    // placed at its end land immediately left of the built-in clear button and
+    // caret — which is where custom actions belong.
     suffix = (
       <>
         {suffix}
         {validationIcon}
+        {actions ? (
+          <TriggerActions
+            type={type}
+            theme={paintedTheme}
+            isDisabled={isDisabled || isLoading}
+          >
+            {actions}
+          </TriggerActions>
+        ) : null}
       </>
     );
   }
@@ -572,7 +601,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
       id={id}
       qa={qa || 'PickerTrigger'}
       type={type}
-      theme={getValidationTheme(theme, { isInvalid, isValid })}
+      theme={paintedTheme}
       size={size}
       shape={shape}
       isDisabled={isDisabled || isLoading}
@@ -588,32 +617,34 @@ export const Picker = forwardRef(function Picker<T extends object>(
         ) : rightIcon !== undefined ? (
           rightIcon
         ) : showClearButton ? (
-          <ItemActionProvider
-            type={type}
-            // Must be the SAME expression the trigger is painted with (above), not
-            // the raw `theme`: this tells the action which surface it sits on, and
-            // validation overrides the theme. With `theme="special"` on an invalid
-            // field the trigger renders `danger` — a light surface — so forwarding
-            // `special` here would hand the action the strong dark-purple alpha
-            // ramp and make hover/press read far too heavy.
-            //
-            // It travels through context rather than as a prop because the prop is
-            // what opts an action out of `current` back to `clear`, and this one
-            // needs to stay `current` so its label keeps inheriting.
-            theme={getValidationTheme(theme, { isInvalid, isValid })}
-          >
-            <ItemAction
-              icon={<CloseIcon />}
-              size={size}
-              qa="PickerClearButton"
-              // No explicit `type`/`theme` — the default `current` type inherits
-              // the trigger's own text color, which already carries validation
-              // state here, so this renders exactly as the explicit theme did
-              // while also following a custom theme.
-              mods={{ pressed: false }}
-              onPress={clearValue}
-            />
-          </ItemActionProvider>
+          // `ClearPressResponder`: `DialogTrigger` opens the popover through a
+          // `PressResponder` whose context reaches every `usePress` below it,
+          // this button included — so without it, clearing also opened the
+          // popover that `clearValue` had just closed.
+          <ClearPressResponder>
+            <ItemActionProvider
+              type={type}
+              // The theme the trigger is PAINTED with, not the raw `theme` —
+              // see `paintedTheme` above.
+              //
+              // It travels through context rather than as a prop because the prop is
+              // what opts an action out of `current` back to `clear`, and this one
+              // needs to stay `current` so its label keeps inheriting.
+              theme={paintedTheme}
+            >
+              <ItemAction
+                icon={<CloseIcon />}
+                size={size}
+                qa="PickerClearButton"
+                // No explicit `type`/`theme` — the default `current` type inherits
+                // the trigger's own text color, which already carries validation
+                // state here, so this renders exactly as the explicit theme did
+                // while also following a custom theme.
+                mods={{ pressed: false }}
+                onPress={clearValue}
+              />
+            </ItemActionProvider>
+          </ClearPressResponder>
         ) : (
           <DirectionIcon to={isPopoverOpen ? 'top' : 'bottom'} />
         )
@@ -811,11 +842,17 @@ export const Picker = forwardRef(function Picker<T extends object>(
   );
 }) as unknown as (<T>(
   props: CubePickerProps<T> & { ref?: ForwardedRef<HTMLElement> },
-) => ReactElement) & { Item: typeof ListBox.Item; Section: typeof BaseSection };
+) => ReactElement) & {
+  Item: typeof ListBox.Item;
+  Section: typeof BaseSection;
+  Action: typeof ItemAction;
+};
 
 Picker.Item = ListBox.Item;
 
 Picker.Section = BaseSection;
+
+Picker.Action = ItemAction;
 
 Object.defineProperty(Picker, 'cubeInputType', {
   value: 'Picker',

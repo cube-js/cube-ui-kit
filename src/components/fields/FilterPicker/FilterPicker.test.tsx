@@ -441,6 +441,98 @@ describe('<FilterPicker />', () => {
     });
   });
 
+  describe('Custom actions', () => {
+    it('should render custom actions before the clear button', () => {
+      const { getByTestId } = renderWithRoot(
+        <FilterPicker
+          isClearable
+          label="Select fruit"
+          selectionMode="single"
+          defaultSelectedKey="apple"
+          actions={
+            <FilterPicker.Action qa="ResetAction">Reset</FilterPicker.Action>
+          }
+        >
+          {basicItems}
+        </FilterPicker>,
+      );
+
+      const resetAction = getByTestId('ResetAction');
+      const clearButton = getByTestId('FilterPickerClearButton');
+
+      expect(resetAction).toBeInTheDocument();
+      // `Node.DOCUMENT_POSITION_FOLLOWING` — the clear button comes after the
+      // custom action in document order, which is what "to the left of the
+      // built-in actions" means in the trigger's LTR layout.
+      expect(
+        resetAction.compareDocumentPosition(clearButton) &
+          Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+    });
+
+    it('should call the action handler without opening the popover', async () => {
+      const onReset = vi.fn();
+
+      const { getByTestId, queryByRole } = renderWithRoot(
+        <FilterPicker
+          label="Select fruit"
+          selectionMode="single"
+          defaultSelectedKey="apple"
+          actions={
+            <FilterPicker.Action qa="ResetAction" onPress={onReset}>
+              Reset
+            </FilterPicker.Action>
+          }
+        >
+          {basicItems}
+        </FilterPicker>,
+      );
+
+      await user.click(getByTestId('ResetAction'));
+
+      expect(onReset).toHaveBeenCalledTimes(1);
+      expect(queryByRole('listbox')).not.toBeInTheDocument();
+    });
+
+    it('should not open the popover when the clear button is pressed', async () => {
+      const { getByTestId, queryByRole } = renderWithRoot(
+        <FilterPicker
+          isClearable
+          label="Select fruit"
+          selectionMode="single"
+          defaultSelectedKey="apple"
+        >
+          {basicItems}
+        </FilterPicker>,
+      );
+
+      await user.click(getByTestId('FilterPickerClearButton'));
+
+      expect(queryByRole('listbox')).not.toBeInTheDocument();
+    });
+
+    it('should still open the popover when the trigger itself is pressed', async () => {
+      const { getByTestId, getByRole } = renderWithRoot(
+        <FilterPicker
+          label="Select fruit"
+          selectionMode="single"
+          defaultSelectedKey="apple"
+          actions={
+            <FilterPicker.Action qa="ResetAction">Reset</FilterPicker.Action>
+          }
+        >
+          {basicItems}
+        </FilterPicker>,
+      );
+
+      await user.click(getByTestId('FilterPicker'));
+
+      await waitFor(() => {
+        expect(getByRole('listbox')).toBeInTheDocument();
+      });
+    });
+  });
+
   describe('isCheckable prop functionality', () => {
     it('should show checkboxes when isCheckable is true in multiple selection mode', async () => {
       const { getByRole } = renderWithRoot(

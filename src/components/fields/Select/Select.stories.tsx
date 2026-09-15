@@ -1,6 +1,8 @@
 import { IconCoin, IconUser } from '@tabler/icons-react';
+import { useState } from 'react';
 import { userEvent, within } from 'storybook/test';
 
+import { ReloadIcon } from '../../../icons/ReloadIcon';
 import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Text } from '../../content/Text';
@@ -491,6 +493,44 @@ Clearable.args = {
   defaultSelectedKey: 'blue',
   isClearable: true,
   placeholder: 'Choose a color...',
+};
+
+export const WithActions: StoryObj<CubeSelectProps<any>>['render'] = () => {
+  const DEFAULT_KEY = 'blue';
+  const [selectedKey, setSelectedKey] = useState<string | null>('yellow');
+
+  return (
+    <Select
+      isClearable
+      label="Color"
+      placeholder="Choose a color..."
+      selectedKey={selectedKey}
+      actions={
+        selectedKey !== DEFAULT_KEY ? (
+          <Select.Action
+            icon={<ReloadIcon />}
+            tooltip="Reset to default"
+            aria-label="Reset to default"
+            onPress={() => setSelectedKey(DEFAULT_KEY)}
+          />
+        ) : null
+      }
+      onSelectionChange={(key) => setSelectedKey(key as string | null)}
+    >
+      {options.map((option) => (
+        <Select.Item key={option}>{option}</Select.Item>
+      ))}
+    </Select>
+  );
+};
+
+WithActions.parameters = {
+  docs: {
+    description: {
+      story:
+        'Custom actions render inside the trigger, to the left of the built-in clear button and dropdown caret. Pressing one runs its handler without opening the popover \u2014 which is what makes a "Reset" action (restore the default selection, rather than empty it) possible.',
+    },
+  },
 };
 
 export const ClearableThemes: StoryObj<CubeSelectProps<any>>['render'] = () => {
