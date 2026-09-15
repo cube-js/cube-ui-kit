@@ -32,7 +32,31 @@ const TriggerActionsElement = tasty({
     flow: 'column',
     placeItems: 'center',
     placeContent: 'center',
+    // What separates two adjacent actions everywhere else in the kit — see
+    // `ItemButton`'s `ActionsWrapper` and `Item`'s own `Actions` slot.
     gap: '1bw',
+
+    // The built-in clear button / caret is NOT a sibling in this run: it lives
+    // in the `RightIcon` slot, a `($size - 2bw)` square that centres a
+    // `$action-size` control and so already puts `$side-padding` to its left.
+    // Left alone that reads as a much wider gap before the built-in than
+    // between two custom actions (`.5x` vs `1bw` at `medium`). Pull the run
+    // right by the difference so the whole trailing cluster is evenly spaced,
+    // and `$side-padding` survives only where it belongs — at the outer edge,
+    // between the built-in and the trigger's border.
+    //
+    // This assumes the `RightIcon` slot is occupied, which it is for every
+    // trigger state (loading, clear, caret). A caller who empties it with
+    // `rightIcon={null}` gets the run sitting `$side-padding - 1bw` closer to
+    // the border, inside the padding `Suffix` regains when `has-right-icon`
+    // goes away.
+    margin: '0 (1bw - $side-padding) 0 0',
+
+    // `$size` is inherited from the trigger; these two are re-derived from it
+    // the same way `Item`'s `Actions` slot does, because `ItemAction` defines
+    // them on itself and a parent cannot read a child's custom property.
+    '$action-size': 'min(max((2x + 2bw), ($size - 1x - 2bw)), (3x - 2bw))',
+    '$side-padding': '(($size - $action-size - 2bw) / 2)',
   },
 });
 
