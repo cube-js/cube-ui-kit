@@ -85,9 +85,9 @@ Customizes the root flex wrapper of the Tabs component. The wrapper holds the ta
 
 These properties allow direct style application without using the `styles` prop:
 
-- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `scrollMargin`
-- **Dimension:** `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`
-- **Block:** `border`, `radius`, `shadow`, `outline`
+- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `blockMargin`, `inlineMargin`, `inset`, `blockInset`, `inlineInset`, `position`, `scrollMargin`, `blockScrollMargin`, `inlineScrollMargin`, `scrollPadding`, `blockScrollPadding`, `inlineScrollPadding`
+- **Dimension:** `width`, `height`, `blockSize`, `inlineSize`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`
+- **Block:** `border`, `blockBorder`, `inlineBorder`, `radius`, `shadow`, `outline`
 
 ### Modifiers
 
@@ -282,6 +282,8 @@ Inherits all props from `ItemButton` except `shape` (always sharp).
 Action for a single tab's own `actions` slot, where it renders to the left of the built-in menu trigger and delete button. It is an [ItemAction](/docs/actions-itemaction--docs), the same component those built-ins use, so it picks up the tab's size and theme without being configured. Pressing one runs its handler without selecting the tab.
 
 Not to be confused with `Tabs.Action`, which is sized for the tab bar's `prefix` / `suffix` slots rather than for a tab.
+
+<Story of={TabsStories.WithTabActions} />
 
 ```jsx
 <Tab

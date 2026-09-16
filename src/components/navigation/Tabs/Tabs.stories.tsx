@@ -4,8 +4,10 @@ import { expect, userEvent, within } from 'storybook/test';
 
 import { DatabaseIcon } from '../../../icons/DatabaseIcon';
 import { FilterIcon } from '../../../icons/FilterIcon';
+import { LockIcon } from '../../../icons/LockIcon';
 import { PlusIcon } from '../../../icons/PlusIcon';
 import { SettingsIcon } from '../../../icons/SettingsIcon';
+import { UnlockIcon } from '../../../icons/UnlockIcon';
 import { UserIcon } from '../../../icons/UserIcon';
 import { NO_SNAPSHOT } from '../../../stories/chromatic';
 import { openContextMenu, waitForOverlay } from '../../../stories/interactions';
@@ -565,6 +567,59 @@ export const WithPrefixAndSuffix: Story = {
       </Tab>
     </Tabs>
   ),
+};
+
+/**
+ * Per-tab actions using `Tab.Action` — an alias for `ItemAction` that inherits
+ * the tab's styling. Rendered in the tab's `actions` slot, before the built-in
+ * menu trigger and close button.
+ *
+ * Note the difference from `Tabs.Action`, which belongs in the `prefix` /
+ * `suffix` slots of the tab strip rather than inside a tab.
+ */
+export const WithTabActions: Story = {
+  render: function WithTabActionsStory(args) {
+    const [lockedKeys, setLockedKeys] = useState<string[]>(['settings']);
+
+    const toggleLock = (key: string) => {
+      setLockedKeys((prev) =>
+        prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key],
+      );
+    };
+
+    const tabs = [
+      { key: 'overview', title: 'Overview' },
+      { key: 'settings', title: 'Settings' },
+      { key: 'users', title: 'Users' },
+    ];
+
+    return (
+      <Tabs {...args} defaultActiveKey="overview">
+        {tabs.map((tab) => {
+          const isLocked = lockedKeys.includes(tab.key);
+
+          return (
+            <Tab
+              key={tab.key}
+              title={tab.title}
+              actions={
+                <Tab.Action
+                  icon={isLocked ? <LockIcon /> : <UnlockIcon />}
+                  isSelected={isLocked}
+                  aria-label={`${isLocked ? 'Unlock' : 'Lock'} ${tab.title}`}
+                  onPress={() => toggleLock(tab.key)}
+                />
+              }
+            >
+              <Paragraph>
+                {tab.title} is {isLocked ? 'locked' : 'unlocked'}.
+              </Paragraph>
+            </Tab>
+          );
+        })}
+      </Tabs>
+    );
+  },
 };
 
 /**
