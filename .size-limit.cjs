@@ -20,7 +20,45 @@ module.exports = [
         }),
       );
     },
-    // 517 kB for the Board resize-affordance rework. CI measured `main`
+    // STILL 517 kB on the trigger-actions-slot migration, and the story of why
+    // is the useful part. The first push genuinely failed: on `@tenphi/tasty`
+    // 3.9.0 this branch measured 517,254 B locally against a budget `main` had
+    // already spent down to ~100 B. Then #1400 landed 3.9.1 on `main`, which
+    // gives back ~740 B of always-included core, and since a `pull_request` run
+    // checks out the MERGE COMMIT, CI was suddenly measuring this branch on a
+    // dependency the working copy did not have. Re-measured with both sides
+    // rebuilt on 3.9.1: `main` 516,029 B, this branch 516,461 B — +432 B, which
+    // fits with 539 B to spare. The budget was briefly raised to 520 kB against
+    // the 3.9.0 numbers; that bump is reverted here because it buys nothing.
+    //
+    // WATCH FOR THIS. A local reading is against the dependency versions in the
+    // working copy; CI's is against the merge with whatever `main` has since
+    // become. When the two disagree by more than the calibration below predicts,
+    // check whether `main` moved before concluding anything about the branch —
+    // the numbers here looked like a 790 B platform gap on `All` and a 4 kB one
+    // on the Button entry, and both were entirely the version skew.
+    //
+    // Left at 517 kB with 539 B of headroom rather than rounded up, per the note
+    // further down: it fits, and thin margins are what make real bloat trip the
+    // budget. This IS thinner than recent entries have carried, so the next
+    // change here probably does have to raise it — take CI's number when it does.
+    //
+    // The `Tree shaking (just a Button)` entry below moves by +134 B, and `All`
+    // by +432 B. They do NOT match, so this is not the dependency-core signature
+    // the notes below keep reaching for. The 134 B is `src/data/item-themes.ts`
+    // — `ROW_STATE_ALIASES` and the pressed-color branch in the
+    // `ITEM_RESTING_COLOR_VARIANTS` builder — which every themed component pulls
+    // in, `Button` included. The remaining ~300 B is the part that tree-shakes:
+    // `ItemActionsWrapper` and the three triggers composing through it, roughly a
+    // wash against the hand-rolled runs it replaced.
+    //
+    // Calibration, once the version skew is taken out: this machine matched CI to
+    // within 4 bytes on BOTH entries. CI reported 504.36 KB and 116.62 KB binary
+    // for the merge commit — 516,465 B and 119,419 B — against local readings of
+    // 516,461 B and 119,416 B on the same dependency. That is the third reading
+    // here at or just under CI, never the ~1.6 kB the warning below describes.
+    //
+    // Before this: 517 kB for the Board resize-affordance rework. CI measured `main`
     // (582c1e0) at 513,743 B and this branch at 515,261 B — +1.52 kB — against a
     // 515 kB budget that `main` had already spent down to 1,257 B of headroom, so
     // it came in 261 B over. A later visual pass (a painted gap on the outside
@@ -217,7 +255,19 @@ module.exports = [
     path: './dist/index.js',
     webpack: true,
     import: '{ Button }',
-    // Still 125 kB on `@tenphi/tasty` 3.5.0: 123.02 kB against `main`'s
+    // Still 125 kB on the trigger-actions-slot migration: 119,416 B against
+    // `main`'s 119,282 B, both sides rebuilt here on `@tenphi/tasty` 3.9.1 —
+    // +134 B, NOT matched by the +432 B on `All` above, so it is not the
+    // dependency. It is `item-themes.ts` (`ROW_STATE_ALIASES` and the
+    // pressed-color branch in the variants builder), which sits on the
+    // themed-component path every consumer loads.
+    //
+    // 5.58 kB of headroom, the most this entry has ever had, and none of it this
+    // branch's doing: 3.9.1 returned ~4 kB to a consumer who imports a single
+    // component. Left at 125 kB rather than lowered to fit — see `All` above for
+    // why a budget fitted to one dependency release has to move on the next.
+    //
+    // Before this: still 125 kB on `@tenphi/tasty` 3.5.0: 123.02 kB against `main`'s
     // 121.81 kB, both sides rebuilt here — +1.21 kB, matched by the same
     // +1.21 kB on `All` above, so all of it is Tasty's always-included core and
     // none of it ours. See that entry for what the release changed there, and

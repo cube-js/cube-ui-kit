@@ -318,7 +318,14 @@ const ItemElement = tasty({
     },
     width: {
       '': 'min $size',
-      'has-icon & has-right-icon': 'min ($size * 2)',
+      // An actions run is end content just like a right icon — a trigger that
+      // puts its caret in the run instead of the `rightIcon` slot must keep the
+      // same minimum as one that does not. Only for a SIBLING run: an in-grid
+      // one is laid out by this element's own columns, which already sized the
+      // row before the run existed, and widening it there would push a tab's or
+      // a tag's border out past its content.
+      'has-icon & (has-right-icon | (has-actions & inside-wrapper))':
+        'min ($size * 2)',
       'size=inline': 'min (1lh + 2bw)',
     },
     border: '#clear',
@@ -476,7 +483,11 @@ const ItemElement = tasty({
       gridArea: 'suffix',
       padding: {
         '': '$inline-padding right',
-        'has-right-icon': 0,
+        // Same reason — and the same restriction — as the minimum width above:
+        // a sibling run already carries `$side-padding` on both sides, so the
+        // suffix must not add the inline padding on top of it, exactly as it
+        // does not next to a right icon.
+        'has-right-icon | (has-actions & inside-wrapper)': 0,
       },
     },
 
@@ -490,7 +501,13 @@ const ItemElement = tasty({
       placeSelf: 'stretch',
       padding: {
         '': '0 $side-padding',
-        'inside-wrapper & !actions-shown': 0,
+        // Inside a wrapper this column is a PLACEHOLDER: the run itself is a
+        // sibling that carries its own side padding, and `--actions-width`
+        // already includes it. Repeating it here is at best a no-op — the column
+        // is `border-box` and that wide — and at worst wrong: an EMPTY run
+        // publishes a width of 0, and the padding would still reserve
+        // `2 * $side-padding` for nothing, pushing a right icon inwards.
+        'inside-wrapper': 0,
       },
       boxSizing: 'border-box',
       height: 'min ($size - 2bw)',
@@ -866,7 +883,13 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     tooltip,
     children,
     labelProps,
-    isDynamicLabel: !!actions,
+    // A row inside an actions wrapper is dynamic whether or not the run holds
+    // anything right now: the label's width is whatever `--actions-width` leaves
+    // it, and the wrapper republishes that as the actions change. Holding the
+    // flag steady is also what keeps the row from REMOUNTING when its actions
+    // come and go — the resolved tooltip decides whether a provider wraps the
+    // element, so a flag that flips restructures the tree around it.
+    isDynamicLabel: !!actions || insideWrapper,
   });
 
   // A disabled item still has to be able to show its tooltip — that is usually

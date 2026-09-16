@@ -1,21 +1,8 @@
 import { FocusableRef, PressEvent } from '@react-types/shared';
 import { Styles, tasty } from '@tenphi/tasty';
-import {
-  CSSProperties,
-  forwardRef,
-  ReactNode,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
-import { useFocusWithin, useHover } from 'react-aria';
+import { forwardRef, HTMLAttributes, ReactNode, useMemo, useRef } from 'react';
 
 import { useEvent } from '../../../_internal';
-import {
-  ITEM_RESTING_COLOR_VARIANTS,
-  resolveItemVariant,
-} from '../../../data/item-themes';
 import {
   mergeProps,
   mergeRefs,
@@ -23,17 +10,26 @@ import {
 } from '../../../utils/react';
 import { CubeItemProps, Item } from '../../content/Item';
 import { ItemBadge } from '../../content/ItemBadge';
-import { DisplayTransition } from '../../helpers';
 import { CubeItemActionProps, ItemAction } from '../ItemAction';
-import { ItemActionProvider } from '../ItemActionContext';
+import { ItemActionsWrapper } from '../ItemActionsWrapper';
 import { CubeUseActionProps, useAction } from '../use-action';
 
 export interface CubeItemButtonProps
   extends Omit<CubeItemProps, 'size'>,
     Omit<CubeUseActionProps, 'as'> {
+  /**
+   * The row's trailing controls, rendered beside the button rather than inside
+   * it. Pass `null` to keep an empty run — the row reserves no space for it, and
+   * the button is not remounted when the actions arrive later.
+   */
   actions?: ReactNode;
   size?: Omit<CubeItemProps['size'], 'inline'>;
   wrapperStyles?: Styles;
+  /**
+   * Props spread on the actions run's container — `data-trigger-action` and
+   * friends. Only meaningful together with `actions`.
+   */
+  actionsProps?: HTMLAttributes<HTMLDivElement>;
 }
 
 const StyledItem = tasty(Item, {
@@ -43,65 +39,6 @@ const StyledItem = tasty(Item, {
   styles: {
     recipe: 'reset button',
     placeContent: 'center stretch',
-  },
-});
-
-const ActionsWrapper = tasty({
-  // Actions default to the `current` type, which paints from the inherited
-  // `currentcolor` — but they are rendered as a SIBLING of the button here, not
-  // inside it, so without this they would inherit the page color instead of the
-  // row's. Harmless on the default theme (the two match) and plainly wrong on
-  // any other: a `special` row would hand its actions the page's dark text to
-  // tint with, on a dark purple surface. The variant carries the row's resting
-  // color down so `currentcolor` means the same thing it does inside an `Item`.
-  variants: ITEM_RESTING_COLOR_VARIANTS,
-  styles: {
-    display: 'grid',
-    position: 'relative',
-    placeContent: 'stretch',
-    placeItems: 'stretch',
-
-    $size: {
-      '': '$size-md',
-      'size=xsmall': '$size-xs',
-      'size=small': '$size-sm',
-      'size=medium': '$size-md',
-      'size=large': '$size-lg',
-      'size=xlarge': '$size-xl',
-    },
-
-    Actions: {
-      $: '>',
-      position: 'absolute',
-      inset: {
-        '': '1bw 1bw auto auto',
-        'type=card': '(1bw + .5x) (1bw + .5x) auto auto',
-      },
-      display: 'flex',
-      gap: '1bw',
-      placeItems: 'center',
-      placeContent: 'center end',
-      pointerEvents: {
-        '': 'auto',
-        '!actions-shown': 'none',
-      },
-      padding: '0 $side-padding',
-      height: 'min ($size - 2bw)',
-      opacity: {
-        '': 1,
-        '!actions-shown': 0,
-      },
-      translate: {
-        '': '0 0',
-        '!actions-shown': '.5x 0',
-      },
-      transition: 'theme, translate',
-
-      // Size for the action buttons
-      '$action-size': 'min(max((2x + 2bw), ($size - 1x - 2bw)), (3x - 2bw))',
-      // Side padding for the button
-      '$side-padding': '(($size - $action-size - 2bw) / 2)',
-    },
   },
 });
 
@@ -124,6 +61,7 @@ const ItemButton = forwardRef(function ItemButton(
     onPressChange: _onPressChange,
     onPressUp: _onPressUp,
     actions,
+    actionsProps,
     size = 'medium',
     wrapperStyles,
     autoHideActions = false,
@@ -138,53 +76,6 @@ const ItemButton = forwardRef(function ItemButton(
   // Loading state makes the component disabled (same logic as Item)
   const finalIsDisabled =
     isDisabled === true || (isLoading && isDisabled !== false);
-
-  const actionsRef = useRef<HTMLDivElement>(null);
-  const [actionsWidth, setActionsWidth] = useState(0);
-  const [areActionsVisible, setAreActionsVisible] = useState(false);
-  const [areActionsShown, setAreActionsShown] = useState(false);
-
-  useLayoutEffect(() => {
-    if (actions && actionsRef.current) {
-      const width = Math.round(actionsRef.current.offsetWidth);
-      if (width !== actionsWidth) {
-        setActionsWidth(width);
-      }
-    }
-  }, [actions, areActionsVisible]);
-
-  const [isFocusWithin, setIsFocusWithin] = useState(false);
-  const [hasPressed, setHasPressed] = useState(false);
-  const { hoverProps, isHovered } = useHover({});
-  const { focusWithinProps } = useFocusWithin({
-    onFocusWithinChange: setIsFocusWithin,
-  });
-
-  // Watch for data-pressed attribute on any descendant element
-  useLayoutEffect(() => {
-    const actionsEl = actionsRef.current;
-
-    if (!actionsEl || !autoHideActions) return;
-
-    const checkPressed = () => {
-      setHasPressed(actionsEl.querySelector('[data-pressed]') !== null);
-    };
-
-    const observer = new MutationObserver(checkPressed);
-
-    observer.observe(actionsEl, {
-      attributes: true,
-      attributeFilter: ['data-pressed'],
-      subtree: true,
-    });
-
-    checkPressed();
-
-    return () => observer.disconnect();
-  }, [areActionsVisible, autoHideActions]);
-
-  const shouldShowActions =
-    isHovered || isFocusWithin || hasPressed || !autoHideActions;
 
   // Default: pressing an ItemButton inside an open popover closes that
   // popover. Opt-outs: `data-popover-trigger` on self (applied by
@@ -215,20 +106,6 @@ const ItemButton = forwardRef(function ItemButton(
     ref,
   );
 
-  // `disabled` is on the wrapper so its variant can paint the row's DISABLED
-  // label color, not just the resting one. Actions default to the `current` type
-  // and suppress their own fade when the disabled state is inherited — on the
-  // grounds that the host already faded the color they paint from — so without
-  // this the wrapper would hand them a full-strength color and a disabled button
-  // would sit next to full-strength actions. See `ITEM_RESTING_COLOR_VARIANTS`.
-  const finalMods = useMemo(() => {
-    return {
-      ...mods,
-      ...(shouldShowActions ? { 'actions-shown': true } : null),
-      disabled: finalIsDisabled,
-    };
-  }, [mods, shouldShowActions, finalIsDisabled]);
-
   // Merge the useAction-supplied ref with our internal ref so the dismiss
   // wrapper can read the rendered DOM node at press time.
   const combinedRef = useMemo(
@@ -236,10 +113,35 @@ const ItemButton = forwardRef(function ItemButton(
     [actionProps.ref],
   );
 
-  const button = (
+  // Once a row has had actions it keeps the wrapper, even after they go away.
+  // Adding or removing a DOM level around the button remounts it — losing focus,
+  // any running transition, and the element every ref in the tree is holding —
+  // and a row whose actions come and go with a permission or a loading flag
+  // would do that on every flip. The empty run costs nothing: it publishes a
+  // width of 0, so the row reserves no space for it.
+  //
+  // `null` is how a caller asks for the run up front — "there is a run here, it
+  // just has nothing in it right now" — so a row that knows its actions are
+  // coming never has to remount to receive them. Only `undefined` means the row
+  // has no run at all.
+  const hasHadActions = useRef(false);
+
+  if (actions !== undefined) {
+    hasHadActions.current = true;
+  }
+
+  const withWrapper = hasHadActions.current;
+
+  const renderButton = (showActions: boolean) => (
     <StyledItem
-      insideWrapper={!!actions}
-      showActions={shouldShowActions}
+      // Two different questions. `insideWrapper` is "am I laid out for a
+      // sibling run", which stays true so the DOM does not restructure;
+      // `actions` is "is there anything in that run to reserve width for",
+      // which must go back to false when the run empties — it drives the
+      // two-square minimum width and the suffix's padding, and a row that
+      // reserved space for nothing would sit wider than it needs to.
+      insideWrapper={withWrapper}
+      showActions={showActions}
       actions={actions ? true : undefined}
       {...(mergeProps(rest, actionProps) as any)}
       ref={combinedRef}
@@ -253,72 +155,26 @@ const ItemButton = forwardRef(function ItemButton(
     />
   );
 
-  if (actions) {
+  if (withWrapper) {
     return (
-      <ActionsWrapper
-        {...hoverProps}
-        // The same resolver `Item` uses, so the wrapper cannot land on a
-        // different variant than the row it wraps.
-        variant={resolveItemVariant(theme, type)}
-        data-size={size}
-        data-type={type}
-        data-theme={theme}
-        mods={finalMods}
+      <ItemActionsWrapper
+        type={type}
+        theme={theme}
+        size={size as CubeItemProps['size']}
+        mods={mods}
         styles={wrapperStyles}
-        style={
-          {
-            '--actions-width':
-              areActionsVisible || !autoHideActions
-                ? `${actionsWidth}px`
-                : '0px',
-            ...(typeof size === 'number' && { '--size': `${size}px` }),
-          } as CSSProperties
-        }
+        actions={actions}
+        actionsProps={actionsProps}
+        autoHideActions={autoHideActions}
+        disableActionsFocus={disableActionsFocus}
+        isDisabled={finalIsDisabled}
       >
-        {button}
-        <ItemActionProvider
-          type={type}
-          theme={theme}
-          disableActionsFocus={disableActionsFocus}
-          isDisabled={finalIsDisabled}
-        >
-          {autoHideActions ? (
-            <DisplayTransition
-              exposeUnmounted
-              isShown={shouldShowActions}
-              onPhaseChange={(phase) => {
-                setAreActionsVisible(phase !== 'unmounted');
-              }}
-              onToggle={(isShown) => {
-                setAreActionsShown(isShown);
-              }}
-            >
-              {({ ref: transitionRef }) => {
-                return (
-                  <div
-                    {...focusWithinProps}
-                    ref={(node: any) => {
-                      actionsRef.current = node;
-                      transitionRef(node);
-                    }}
-                    data-element="Actions"
-                  >
-                    {actions}
-                  </div>
-                );
-              }}
-            </DisplayTransition>
-          ) : (
-            <div ref={actionsRef} data-element="Actions">
-              {actions}
-            </div>
-          )}
-        </ItemActionProvider>
-      </ActionsWrapper>
+        {({ showActions }) => renderButton(showActions)}
+      </ItemActionsWrapper>
     );
   }
 
-  return button;
+  return renderButton(false);
 });
 
 const _ItemButton = Object.assign(ItemButton, {

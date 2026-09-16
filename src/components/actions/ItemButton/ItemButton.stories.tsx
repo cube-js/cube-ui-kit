@@ -1596,3 +1596,99 @@ export const Disabled: Story = {
     },
   },
 };
+
+export const ActionsVerticalAlignment: Story = {
+  render: (args) => (
+    <Flow gap="2x" width="max 600px">
+      <Flow gap="1x">
+        <Title level={4}>Centred on the row's own height</Title>
+        <Space flow="column" placeItems="stretch">
+          <ItemButton
+            {...args}
+            type="outline"
+            icon={<IconFile />}
+            actions={
+              <>
+                <ItemAction icon={<IconEdit />} aria-label="Edit" />
+                <ItemAction icon={<IconTrash />} aria-label="Delete" />
+              </>
+            }
+          >
+            Single line
+          </ItemButton>
+          <ItemButton
+            {...args}
+            type="outline"
+            icon={<IconFile />}
+            description="An inline description puts a second line under the label"
+            actions={
+              <>
+                <ItemAction icon={<IconEdit />} aria-label="Edit" />
+                <ItemAction icon={<IconTrash />} aria-label="Delete" />
+              </>
+            }
+          >
+            Inline description
+          </ItemButton>
+          <ItemButton
+            {...args}
+            type="outline"
+            icon={<IconFile />}
+            styles={{ height: '8x' }}
+            actions={
+              <>
+                <ItemAction icon={<IconEdit />} aria-label="Edit" />
+                <ItemAction icon={<IconTrash />} aria-label="Delete" />
+              </>
+            }
+          >
+            Caller-set height
+          </ItemButton>
+        </Space>
+      </Flow>
+
+      <Flow gap="1x">
+        <Title level={4}>Pinned to the first line</Title>
+        <Space flow="column" placeItems="stretch">
+          <ItemButton
+            {...args}
+            type="outline"
+            icon={<IconFile />}
+            description="A block description can make the row arbitrarily tall, so the actions stay beside the label instead of floating to the middle."
+            descriptionPlacement="block"
+            actions={
+              <>
+                <ItemAction icon={<IconEdit />} aria-label="Edit" />
+                <ItemAction icon={<IconTrash />} aria-label="Delete" />
+              </>
+            }
+          >
+            Block description
+          </ItemButton>
+          <ItemButton
+            {...args}
+            type="card"
+            icon={<IconFile />}
+            description="A card with a label defaults to a block description."
+            actions={
+              <>
+                <ItemAction icon={<IconEdit />} aria-label="Edit" />
+                <ItemAction icon={<IconTrash />} aria-label="Delete" />
+              </>
+            }
+          >
+            Card
+          </ItemButton>
+        </Space>
+      </Flow>
+    </Flow>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "Actions are rendered outside the button, in a run laid over its trailing end, and they are centred on the row's own height — so a row with an inline description, or one whose height the caller set, keeps them on its centre line. The exception is a block description, which can make the row arbitrarily tall: there the run is pinned to the first line, beside the label. An action is always `$action-size` whatever the row's height, so a tall row does not get oversized buttons.",
+      },
+    },
+  },
+};
