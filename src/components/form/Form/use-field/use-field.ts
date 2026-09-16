@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { useEvent, useIsFirstRender } from '../../../../_internal/index';
 import { ValidateTrigger } from '../../../../shared/index';
+import { useLayoutEffect } from '../../../../utils/react/useLayoutEffect';
 import { resolveValidationProps } from '../../validation/index';
 import {
   isModernFormController,
@@ -131,8 +132,11 @@ export function useField<T extends FieldTypes, Props extends UseFieldProps<T>>(
 
   // Ids are registered per base (form name prefix plus field name), so that
   // duplicates get a suffix and the base is released when it changes or the
-  // input unmounts. `id` and `nonInput` cannot change without the base.
-  useEffect(() => {
+  // input unmounts. `id` and `nonInput` cannot change without the base. A
+  // layout effect: when the base changes, the commit that carries the
+  // unsuffixed base is corrected before the browser paints, so a duplicate
+  // never shows a colliding id.
+  useLayoutEffect(() => {
     if (id || nonInput) return;
 
     const newId = createId(baseId);

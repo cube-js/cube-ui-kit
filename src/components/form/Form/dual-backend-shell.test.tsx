@@ -732,7 +732,9 @@ describe('dual-backend shell: rebinding after mount', () => {
     }
 
     const { getByRole } = renderWithRoot(<Owner />);
-    const removeField = vi.spyOn(form, 'removeField');
+    // The adapter only ever sees copies, which resolve `removeField` through
+    // the prototype; a spy on the instance would never observe the call.
+    const removeField = vi.spyOn(CubeFormInstance.prototype, 'removeField');
 
     await act(async () => {
       await userEvent.type(getByRole('textbox'), 'x');

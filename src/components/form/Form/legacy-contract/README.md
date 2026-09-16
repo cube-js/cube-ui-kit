@@ -118,11 +118,11 @@ Baseline on `b204a4d7`: 114 diagnostics. After the dual-backend shell (plan Phas
 | `react-hooks/immutability` | 9 | 2 | 7 |
 | `react-hooks/rules-of-hooks` | 9 | 0 | 9 |
 | `react-hooks/preserve-manual-memoization` | 5 | 0 | 5 |
-| `react-hooks/set-state-in-effect` | 5 | 1 | 4 |
+| `react-hooks/set-state-in-effect` | 4 | 0 | 4 |
 | `react-hooks/incompatible-library` | 1 | 0 | 1 |
 | `react-hooks/use-memo` | 1 | 0 | 1 |
 
-The legacy-engine findings are the ones the plan already names in §4.1: originally the five conditional hooks in `use-field-props.tsx` (`useId`, `useField`, `useChainedCallback`, `useEvent`, `useDebugValue`; removed by the Phase 3 shell, which calls every hook in every mode), render-phase ref reads and default/reset writes in `Form.tsx`, render-phase ref reads and callback writes in `useForm`, and the render-phase field mutation, the effect-dependency gaps of the `[field]` effect (it must not depend on the form's identity) and the id-state write in the registration effect in `use-field.ts`. They are the compiler-containment list for the legacy modules (plan §8.1); zero is not required until a module is either made compiler-clean or given a reviewed opt-out.
+The legacy-engine findings are the ones the plan already names in §4.1: originally the five conditional hooks in `use-field-props.tsx` (`useId`, `useField`, `useChainedCallback`, `useEvent`, `useDebugValue`; removed by the Phase 3 shell, which calls every hook in every mode), render-phase ref reads and default/reset writes in `Form.tsx`, render-phase ref reads and callback writes in `useForm`, and the render-phase field mutation, the `[field]` effect's deliberately missing `form` dependency (it must not depend on the form's identity) and the id-state write in the registration layout effect in `use-field.ts`. They are the compiler-containment list for the legacy modules (plan §8.1); zero is not required until a module is either made compiler-clean or given a reviewed opt-out.
 
 The `refs` findings in the input components are dominated by `wrapWithField(component, domRef, props)` passing a ref during render, which the rule reads as a possible render-time ref access. That is a shared-surface question for the Phase 2 spike, not a legacy one.
 

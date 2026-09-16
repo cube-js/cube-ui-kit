@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-16T17:58:58.665Z",
+  "generatedAt": "2026-09-16T18:15:14.289Z",
   "tooling": {
     "eslint": "10.8.0",
     "eslint-plugin-react-hooks": "7.1.1",
@@ -28,7 +28,7 @@
     "react-hooks/preserve-manual-memoization": 5,
     "react-hooks/refs": 49,
     "react-hooks/rules-of-hooks": 9,
-    "react-hooks/set-state-in-effect": 5,
+    "react-hooks/set-state-in-effect": 4,
     "react-hooks/use-memo": 1
   },
   "files": {
@@ -109,8 +109,7 @@
       "react-hooks/refs": 6
     },
     "src/components/form/Form/use-field/use-field.ts": {
-      "react-hooks/exhaustive-deps": 2,
-      "react-hooks/set-state-in-effect": 1
+      "react-hooks/exhaustive-deps": 2
     },
     "src/components/form/Form/use-form.tsx": {
       "react-hooks/immutability": 1,
