@@ -1,5 +1,15 @@
 # @cube-dev/ui-kit
 
+## 0.178.0
+
+### Minor Changes
+
+- [#1397](https://github.com/cube-js/cube-ui-kit/pull/1397) [`6cfd9ceb`](https://github.com/cube-js/cube-ui-kit/commit/6cfd9ceb94ec15c90e8bcdcd0379c6f28efab96b) Thanks [@tenphi](https://github.com/tenphi)! - Add an `actions` prop to `Select`, `Picker` and `FilterPicker` for custom actions inside the trigger, rendered to the left of the built-in clear button and dropdown caret. Pressing one runs its handler without opening or closing the popover — including while the popover is open — so an action can do what the clear button cannot, such as restoring a default selection. Each component re-exports `ItemAction` as `.Action` (`Picker.Action`, `Select.Action`, `FilterPicker.Action`) so actions inherit the trigger's size and theme, and `Tab.Action` is exposed for the same reason on a tab's `actions` slot.
+
+### Patch Changes
+
+- [#1397](https://github.com/cube-js/cube-ui-kit/pull/1397) [`6cfd9ceb`](https://github.com/cube-js/cube-ui-kit/commit/6cfd9ceb94ec15c90e8bcdcd0379c6f28efab96b) Thanks [@tenphi](https://github.com/tenphi)! - Fix interactive controls inside a popover trigger losing their press. `DialogTrigger` only asked a caller's `shouldCloseOnInteractOutside` for presses landing outside every `[data-popover-trigger]`; a control INSIDE the trigger took the "our own trigger, so dismiss" branch without the predicate ever being consulted, and the overlay swallowed the press to close itself. `Select` had the same gap in its own `useOverlay` predicate. As a result the `Picker` and `FilterPicker` clear buttons did nothing when pressed while their list was open — the first press only closed the list — and the same would have applied to custom trigger `actions`.
+
 ## 0.177.0
 
 ### Minor Changes
