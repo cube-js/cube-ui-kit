@@ -252,7 +252,13 @@ export interface CubeSelectBaseProps<T>
   /**
    * Custom actions rendered inside the trigger, to the left of the built-in
    * clear button and dropdown caret. Use `Select.Action` so they match the
-   * trigger's size and theme. Pressing one does not open the popover.
+   * trigger's size and theme.
+   *
+   * Pressing one runs its handler without opening or closing the popover —
+   * including while the popover is open. Actions follow the trigger's disabled
+   * state but NOT `isReadOnly`, since a read-only field can still host an
+   * action that does not change the value; pass `isDisabled` yourself for one
+   * that does.
    */
   actions?: ReactNode;
   /** Callback called when the popover open state changes */
@@ -512,6 +518,7 @@ function Select<T extends object>(
               <ItemAction
                 icon={<CloseIcon />}
                 qa="SelectClearButton"
+                data-trigger-action=""
                 // No explicit `type`/`theme`: the default `current` type paints
                 // from the trigger's own inherited text color, so the button
                 // matches whatever the field is showing instead of one palette.
@@ -611,6 +618,14 @@ export function ListBoxPopup({
       isOpen: state.isOpen,
       isDismissable: true,
       shouldCloseOnInteractOutside: (el) => {
+        // The trigger owns interactive controls of its own — the clear button
+        // and any custom `actions`. They live INSIDE the trigger element, so
+        // the lookup below would read them as a press on our own trigger and
+        // dismiss, swallowing the press: the first press on `Reset` while the
+        // list was open only closed the list and the action never ran. Same
+        // guard as `DialogTrigger`, which `Picker` / `FilterPicker` go through.
+        if (el.closest('[data-trigger-action]')) return false;
+
         const menuTriggerEl = el.closest('[data-popover-trigger]');
         if (!menuTriggerEl) {
           if (el.closest('[data-popover-keep]')) return false;

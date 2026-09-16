@@ -691,6 +691,75 @@ describe('<Picker />', () => {
       expect(queryByRole('listbox')).not.toBeInTheDocument();
     });
 
+    it('should run a custom action while the popover is open, and keep it open', async () => {
+      const onReset = vi.fn();
+
+      const { getByTestId, getByRole, queryByRole } = renderWithRoot(
+        <Picker
+          label="Select fruit"
+          selectionMode="single"
+          defaultSelectedKey="apple"
+          actions={
+            <Picker.Action qa="ResetAction" onPress={onReset}>
+              Reset
+            </Picker.Action>
+          }
+        >
+          {basicItems}
+        </Picker>,
+      );
+
+      await act(async () => {
+        await userEvent.click(getByTestId('PickerTrigger'));
+      });
+      await waitFor(() => {
+        expect(getByRole('listbox')).toBeInTheDocument();
+      });
+
+      await act(async () => {
+        await userEvent.click(getByTestId('ResetAction'));
+      });
+
+      // The overlay used to read a press on the trigger's own trailing run as a
+      // press on the trigger itself, dismiss, and swallow the press — so the
+      // first press on an action while the list was open did nothing but close
+      // it. See `shouldCloseOnInteractOutside` in `DialogTrigger`.
+      expect(onReset).toHaveBeenCalledTimes(1);
+      expect(queryByRole('listbox')).toBeInTheDocument();
+    });
+
+    it('should clear while the popover is open', async () => {
+      const onClear = vi.fn();
+      const onSelectionChange = vi.fn();
+
+      const { getByTestId, getByRole } = renderWithRoot(
+        <Picker
+          label="Select fruit"
+          selectionMode="single"
+          isClearable={true}
+          defaultSelectedKey="apple"
+          onClear={onClear}
+          onSelectionChange={onSelectionChange}
+        >
+          {basicItems}
+        </Picker>,
+      );
+
+      await act(async () => {
+        await userEvent.click(getByTestId('PickerTrigger'));
+      });
+      await waitFor(() => {
+        expect(getByRole('listbox')).toBeInTheDocument();
+      });
+
+      await act(async () => {
+        await userEvent.click(getByTestId('PickerClearButton'));
+      });
+
+      expect(onClear).toHaveBeenCalledTimes(1);
+      expect(onSelectionChange).toHaveBeenCalledWith(null);
+    });
+
     it('should disable custom actions when the picker is disabled', () => {
       const { getByTestId } = renderWithRoot(
         <Picker

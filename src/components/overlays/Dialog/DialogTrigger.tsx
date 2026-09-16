@@ -362,22 +362,30 @@ function PopoverTrigger(allProps) {
   // a sibling trigger can't open it while this popover is open.
   const resolveShouldCloseOnInteractOutside = useEvent(
     (el: Element): boolean => {
+      // The caller's own predicate is asked FIRST, so an explicit "keep me open
+      // for this element" wins over every automatic behaviour below (CUB-4113).
+      // It used to be consulted last, which made the prop inert for every
+      // `Button` / `ItemButton`: those carry `data-popover-dismiss`, so the
+      // auto-dismiss branch matched and closed the popover before the predicate
+      // was ever asked.
+      //
+      // Asked before the `data-popover-trigger` lookup too, not just inside the
+      // "outside any trigger" branch. A trigger can own interactive controls —
+      // a picker's clear button, or its custom `actions` — and those live
+      // INSIDE the trigger element, so the lookup below matched "our own
+      // trigger" and dismissed us without asking. That cost the control its
+      // press: the first click on `Reset` closed the list and never ran.
+      //
+      // React Aria hands over the element the pointer landed on — for a
+      // `Button` that is the label inside it, not the `<button>` — so a
+      // predicate that guards an element has to use `contains()` rather than an
+      // identity check.
+      if (shouldCloseOnInteractOutside && !shouldCloseOnInteractOutside(el)) {
+        return false;
+      }
+
       const popoverTriggerEl = el.closest('[data-popover-trigger]');
       if (!popoverTriggerEl) {
-        // The caller's own predicate is asked FIRST, so an explicit "keep me
-        // open for this element" wins over the automatic behaviours below
-        // (CUB-4113). It used to be consulted last, which made the prop inert
-        // for every `Button` / `ItemButton`: those carry
-        // `data-popover-dismiss`, so the auto-dismiss branch matched and
-        // closed the popover before the predicate was ever asked.
-        //
-        // React Aria hands over the element the pointer landed on — for a
-        // `Button` that is the label inside it, not the `<button>` — so a
-        // predicate that guards an element has to use `contains()` rather
-        // than an identity check.
-        if (shouldCloseOnInteractOutside && !shouldCloseOnInteractOutside(el)) {
-          return false;
-        }
         if (el.closest('[data-popover-keep]')) return false;
         // Plain interactive controls (Button, ItemButton) opt in via
         // `data-popover-dismiss`. Schedule the close after the click finishes so

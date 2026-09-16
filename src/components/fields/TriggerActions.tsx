@@ -108,6 +108,7 @@ export function TriggerActions(props: TriggerActionsProps) {
     <ClearPressResponder>
       <TriggerActionsElement
         data-element="TriggerActions"
+        data-trigger-action=""
         {...STOP_PROPAGATION_HANDLERS}
       >
         <ItemActionProvider type={type} theme={theme} isDisabled={isDisabled}>

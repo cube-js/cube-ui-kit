@@ -511,6 +511,64 @@ describe('<FilterPicker />', () => {
       expect(queryByRole('listbox')).not.toBeInTheDocument();
     });
 
+    it('should run a custom action while the popover is open, and keep it open', async () => {
+      const onReset = vi.fn();
+
+      const { getByTestId, getByRole, queryByRole } = renderWithRoot(
+        <FilterPicker
+          label="Select fruit"
+          selectionMode="single"
+          defaultSelectedKey="apple"
+          actions={
+            <FilterPicker.Action qa="ResetAction" onPress={onReset}>
+              Reset
+            </FilterPicker.Action>
+          }
+        >
+          {basicItems}
+        </FilterPicker>,
+      );
+
+      await user.click(getByTestId('FilterPicker'));
+      await waitFor(() => {
+        expect(getByRole('listbox')).toBeInTheDocument();
+      });
+
+      await user.click(getByTestId('ResetAction'));
+
+      // See `shouldCloseOnInteractOutside` in `DialogTrigger`: the overlay used
+      // to dismiss on a press inside its own trigger and swallow the press, so
+      // the first press on an action while the list was open did nothing but
+      // close it.
+      expect(onReset).toHaveBeenCalledTimes(1);
+      expect(queryByRole('listbox')).toBeInTheDocument();
+    });
+
+    it('should clear while the popover is open', async () => {
+      const onClear = vi.fn();
+
+      const { getByTestId, getByRole } = renderWithRoot(
+        <FilterPicker
+          isClearable
+          label="Select fruit"
+          selectionMode="single"
+          defaultSelectedKey="apple"
+          onClear={onClear}
+        >
+          {basicItems}
+        </FilterPicker>,
+      );
+
+      await user.click(getByTestId('FilterPicker'));
+      await waitFor(() => {
+        expect(getByRole('listbox')).toBeInTheDocument();
+      });
+
+      await user.click(getByTestId('FilterPickerClearButton'));
+
+      expect(onClear).toHaveBeenCalledTimes(1);
+    });
+
     it('should still open the popover when the trigger itself is pressed', async () => {
       const { getByTestId, getByRole } = renderWithRoot(
         <FilterPicker

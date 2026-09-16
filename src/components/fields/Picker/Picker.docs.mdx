@@ -410,6 +410,8 @@ Enable users to clear their selection with a clear button that appears when an i
 
 Use `actions` to add your own controls inside the trigger. They render to the left of the built-in clear button and dropdown caret, and pressing one runs its handler without opening the popover — so an action can do something the clear button cannot, such as restoring a default selection instead of emptying it.
 
+Actions follow the trigger's disabled state but not `isReadOnly` — a read-only field can still host an action that does not change the value, so pass `isDisabled` yourself for one that does. Pressing an action neither opens nor closes the popover, and works while the popover is open.
+
 ```jsx
 const DEFAULT_KEY = 'apple';
 

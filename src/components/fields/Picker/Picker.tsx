@@ -132,7 +132,13 @@ export interface CubePickerProps<T>
   /**
    * Custom actions rendered inside the trigger, to the left of the built-in
    * clear button and dropdown caret. Use `Picker.Action` so they match the
-   * trigger's size and theme. Pressing one does not open the popover.
+   * trigger's size and theme.
+   *
+   * Pressing one runs its handler without opening or closing the popover —
+   * including while the popover is open. Actions follow the trigger's disabled
+   * state but NOT `isReadOnly`, since a read-only field can still host an
+   * action that does not change the value; pass `isDisabled` yourself for one
+   * that does.
    */
   actions?: ReactNode;
   /**
@@ -493,6 +499,15 @@ export const Picker = forwardRef(function Picker<T extends object>(
     },
   });
 
+  // A press on the trigger's own trailing run — a custom action or the clear
+  // button — must not be read as an interaction outside the popover. Without
+  // this the overlay's dismiss machinery swallows the press to close itself, so
+  // the first press on `Reset` while the list is open only closes the list and
+  // the action never runs.
+  const shouldCloseOnInteractOutside = useEvent(
+    (element: Element) => !element.closest('[data-trigger-action]'),
+  );
+
   // Clear handler
   const clearValue = useEvent(() => {
     if (selectionMode === 'multiple') {
@@ -636,6 +651,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
                 icon={<CloseIcon />}
                 size={size}
                 qa="PickerClearButton"
+                data-trigger-action=""
                 // No explicit `type`/`theme` — the default `current` type inherits
                 // the trigger's own text color, which already carries validation
                 // state here, so this renders exactly as the explicit theme did
@@ -757,6 +773,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
         isOpen={isPopoverOpen}
         containerPadding={containerPadding}
         shouldFlip={shouldFlip}
+        shouldCloseOnInteractOutside={shouldCloseOnInteractOutside}
         onOpenChange={handleOpenChange}
       >
         {triggerElement}
