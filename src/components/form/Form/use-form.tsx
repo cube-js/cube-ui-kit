@@ -1,5 +1,6 @@
-import { dotize } from '@tenphi/tasty';
 import { ReactNode, useRef, useState } from 'react';
+
+import { dotizeConvert } from '../../../utils/dotize';
 
 import { CubeFieldData, FieldTypes, SetFieldsArrType } from './types';
 import { applyRules } from './validation';
@@ -77,7 +78,7 @@ export class CubeFormInstance<
   ) => {
     let flag = false;
 
-    newData = { ...newData, ...dotize.convert(newData) };
+    newData = { ...newData, ...dotizeConvert(newData) };
 
     Object.keys(newData).forEach((name: keyof T & string) => {
       let field = this.fields[name];
@@ -206,14 +207,14 @@ export class CubeFormInstance<
   }
 
   setInitialFieldsValue(values: PartialString<T>): void {
-    this.defaultValues = { ...values, ...dotize.convert(values) };
+    this.defaultValues = { ...values, ...dotizeConvert(values) };
   }
 
   updateInitialFieldsValue(values: FieldTypes): void {
     this.defaultValues = {
       ...this.defaultValues,
       ...values,
-      ...dotize.convert(values),
+      ...dotizeConvert(values),
     };
   }
 

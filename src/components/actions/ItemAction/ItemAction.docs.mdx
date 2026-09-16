@@ -5,7 +5,9 @@ import * as ItemActionStories from './ItemAction.stories';
 
 # ItemAction
 
-A compact action button designed for use inside `Item`, `ItemButton`, and `ItemCard`. Defaults to the `current` theme, so it takes its colors from whatever row hosts it.
+A compact action button designed for use inside `Item`, `ItemButton`, `ItemCard`, and `Tab`. Defaults to the `current` theme, so it takes its colors from whatever row hosts it.
+
+Each host re-exports it as its own `.Action` — `Item.Action`, `ItemButton.Action`, `ItemCard.Action`, `Tab.Action`, `Menu.Item.Action` — all the same component.
 
 ## When to Use
 
