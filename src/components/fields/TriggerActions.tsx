@@ -5,6 +5,23 @@ import { ItemActionProvider } from '../actions/ItemActionContext';
 
 import type { KeyboardEvent, MouseEvent, PointerEvent, ReactNode } from 'react';
 
+/*
+ * Why this file exists rather than `ItemButton`'s `actions` slot, which is the
+ * kit's purpose-built home for exactly this: that slot renders its run as an
+ * absolutely positioned SIBLING of the button, so a row action cannot activate
+ * the row. A picker's built-ins have to be rightmost, so putting custom actions
+ * to their left means the caret joins that run — and a caret outside the button
+ * stops opening the popover, `pointer-events: none` included (the hit just
+ * lands on the actions container, which is outside the button too). `Select` is
+ * a second blocker: it builds its trigger from `Item as="button"`, not
+ * `ItemButton`.
+ *
+ * Migrating the three triggers properly is tracked in
+ * https://github.com/cube-js/cube-ui-kit/issues/1398, which carries the
+ * measurements — a migrated `Picker` is pixel-identical to this one — and the
+ * `Item` changes it needs. Until then the run is built here.
+ */
+
 /**
  * `Item`'s own `Actions` slot stops these so a press on an action never reaches
  * the row behind it. The custom actions of a picker trigger sit in the `suffix`
