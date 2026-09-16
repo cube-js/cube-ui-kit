@@ -382,6 +382,14 @@ Use `actions` to add your own controls inside the trigger. They render to the le
 
 Actions follow the trigger's disabled state but not `isReadOnly` — a read-only field can still host an action that does not change the value, so pass `isDisabled` yourself for one that does. Pressing an action neither opens nor closes the popover, and works while the popover is open.
 
+#### Where the trailing controls live
+
+Your actions, the clear button and the caret share one run, rendered **outside** the trigger `<button>` and laid over its trailing end — the same layout `ItemButton` uses for a row's actions. The clear button is therefore a real sibling of the trigger rather than a `<button>` nested inside one, and the run reserves its width so nothing overlaps the label.
+
+The caret is in that run too, and still opens the popover: the run is transparent to the pointer and only its interactive children take presses, so a press on the caret — or anywhere in the run's padding — hit-tests through to the trigger underneath.
+
+`rightIcon` is the one thing that stays in its own slot, because it accepts a render function resolved against the trigger's modifiers and is what a caller's `RightIcon` styles target. Passing it replaces the built-in caret exactly as before; if you pass `actions` as well, they render after it.
+
 ```jsx
 const DEFAULT_KEY = 'apple';
 

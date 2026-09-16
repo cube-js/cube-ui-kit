@@ -318,7 +318,10 @@ const ItemElement = tasty({
     },
     width: {
       '': 'min $size',
-      'has-icon & has-right-icon': 'min ($size * 2)',
+      // An actions run is end content just like a right icon — a trigger that
+      // puts its caret in the run instead of the `rightIcon` slot must keep the
+      // same minimum as one that does not.
+      'has-icon & (has-right-icon | has-actions)': 'min ($size * 2)',
       'size=inline': 'min (1lh + 2bw)',
     },
     border: '#clear',
@@ -476,7 +479,11 @@ const ItemElement = tasty({
       gridArea: 'suffix',
       padding: {
         '': '$inline-padding right',
-        'has-right-icon': 0,
+        // Same reason as the minimum width above: the actions column already
+        // carries `$side-padding` on both sides, so the suffix must not add the
+        // inline padding on top of it — exactly as it does not next to a right
+        // icon.
+        'has-right-icon | has-actions': 0,
       },
     },
 
@@ -490,7 +497,13 @@ const ItemElement = tasty({
       placeSelf: 'stretch',
       padding: {
         '': '0 $side-padding',
-        'inside-wrapper & !actions-shown': 0,
+        // Inside a wrapper this column is a PLACEHOLDER: the run itself is a
+        // sibling that carries its own side padding, and `--actions-width`
+        // already includes it. Repeating it here is at best a no-op — the column
+        // is `border-box` and that wide — and at worst wrong: an EMPTY run
+        // publishes a width of 0, and the padding would still reserve
+        // `2 * $side-padding` for nothing, pushing a right icon inwards.
+        'inside-wrapper': 0,
       },
       boxSizing: 'border-box',
       height: 'min ($size - 2bw)',

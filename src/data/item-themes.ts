@@ -1594,17 +1594,23 @@ export function resolveItemVariant(
 // and are not nested inside a `<button>`), where `currentcolor` would inherit
 // from the page instead. Painting these colors on that wrapper restores the link.
 //
-// Resting AND disabled, and the second one is not optional. `ItemAction`
-// suppresses its own `.4` fade when the disabled state was inherited from the
-// host, on the grounds that the host has already faded the color it paints from —
-// which is only true if the wrapper actually reproduces the host's *disabled*
-// color. With resting alone, a disabled `ItemButton` rendered full-strength
-// actions next to its own faded label.
+// Three states: resting, disabled and pressed.
 //
-// The other states are still skipped: the wrapper is not the interactive element,
-// so it never carries `hovered` / `pressed` / `selected` and those entries could
-// never match there. `disabled` is different only because `ItemButton` passes it
-// down explicitly.
+// `disabled` is not optional. `ItemAction` suppresses its own `.4` fade when the
+// disabled state was inherited from the host, on the grounds that the host has
+// already faded the color it paints from — which is only true if the wrapper
+// actually reproduces the host's *disabled* color. With resting alone, a
+// disabled `ItemButton` rendered full-strength actions next to its own faded
+// label.
+//
+// `pressed` cannot arrive as a mod — the wrapper is not the interactive element
+// — but the row it wraps is its own child, so `@row-pressed` reads that child's
+// state with `:has()`. Press is the one interaction a row states as a color
+// change rather than a fill change, so without it the label darkened under the
+// finger while the caret and the actions beside it stayed at their resting tint.
+//
+// `hovered` and `selected` need no entry: every variant paints those with
+// `fill`, and their `color` is the resting one.
 const ACTIONS_COLOR_OVERRIDES: Partial<
   Record<ItemVariant, Record<string, string>>
 > = {
@@ -1612,6 +1618,25 @@ const ACTIONS_COLOR_OVERRIDES: Partial<
     '': '#current-fill',
     disabled: '#current-fill.5',
   },
+};
+
+/**
+ * Reads the state of the row a wrapper wraps, for colors the wrapper has to
+ * reproduce. Direct child only: an action's own `data-pressed` is a grandchild
+ * and must not repaint the run around it.
+ */
+export const ROW_STATE_ALIASES = {
+  '@row-pressed': ':has(> [data-pressed])',
+  '@row-selected': ':has(> [data-selected])',
+} as const;
+
+// How each variant spells its pressed label color, and what that key becomes on
+// a wrapper. The `clear` flavours exclude `selected` because a selected row
+// keeps its accent label under the finger; the wrapper has to make the same
+// exclusion or a selected row's actions would flash the neutral pressed color.
+const ROW_PRESSED_KEYS: Record<string, string> = {
+  pressed: '@row-pressed',
+  'pressed & !selected': '@row-pressed & !@row-selected',
 };
 
 export const ITEM_RESTING_COLOR_VARIANTS: Record<ItemVariant, Styles> =
@@ -1643,10 +1668,29 @@ export const ITEM_RESTING_COLOR_VARIANTS: Record<ItemVariant, Styles> =
       // `inherit-disabled`, stayed at full strength beside it.
       const disabled =
         map.disabled ?? map['disabled & !inherit-disabled & !inside-wrapper'];
+      const pressedKey = Object.keys(ROW_PRESSED_KEYS).find((key) => map[key]);
+
+      if (!disabled && !pressedKey) {
+        return [variant, { color: map[''] }];
+      }
 
       return [
         variant,
-        { color: disabled ? { '': map[''], disabled } : map[''] },
+        {
+          // Declared here rather than only on the wrapper element: a `@`-state
+          // is resolved within the styles object that USES it, and a variant is
+          // a separate object.
+          ...(pressedKey ? ROW_STATE_ALIASES : null),
+          color: {
+            '': map[''],
+            ...(pressedKey
+              ? { [ROW_PRESSED_KEYS[pressedKey]]: map[pressedKey] }
+              : null),
+            // After the pressed entry, so a disabled row cannot be tinted by a
+            // press it could not have received.
+            ...(disabled ? { disabled } : null),
+          },
+        },
       ];
     }),
   ) as Record<ItemVariant, Styles>;

@@ -1,4 +1,3 @@
-import { ClearPressResponder } from '@react-aria/interactions';
 import { CollectionChildren, FocusableRefValue } from '@react-types/shared';
 import {
   BASE_STYLES,
@@ -34,12 +33,7 @@ import { DirectionIcon } from '../../../icons/DirectionIcon';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
 import { processSelectionArray } from '../../../utils/selection';
 import { extractStyles } from '../../../utils/styles';
-import {
-  CubeItemButtonProps,
-  ItemAction,
-  ItemActionProvider,
-  ItemButton,
-} from '../../actions';
+import { CubeItemButtonProps, ItemAction, ItemButton } from '../../actions';
 import { CubeItemProps } from '../../content/Item';
 import { Text } from '../../content/Text';
 import {
@@ -50,7 +44,11 @@ import {
 } from '../../form';
 import { Dialog, DialogTrigger } from '../../overlays/Dialog';
 import { CubeListBoxProps, ListBox } from '../ListBox/ListBox';
-import { TriggerActions } from '../TriggerActions';
+import {
+  TRIGGER_ACTIONS_PROPS,
+  TriggerActions,
+  TriggerIcon,
+} from '../TriggerActions';
 
 import type { FieldBaseProps } from '../../../shared';
 
@@ -586,27 +584,65 @@ export const Picker = forwardRef(function Picker<T extends object>(
   // action the strong dark-purple alpha ramp and make hover/press read far too
   // heavy.
   const paintedTheme = getValidationTheme(theme, { isInvalid, isValid });
+  //
+  // It reaches the trailing actions through `ItemButton`'s wrapper, which is
+  // what provides `ItemActionContext` for a run rendered outside the button —
+  // so passing it as the trigger's `theme` is all that is needed.
 
-  if (validationIcon || actions) {
-    // The `suffix` slot sits between the label and `rightIcon`, so actions
-    // placed at its end land immediately left of the built-in clear button and
-    // caret — which is where custom actions belong.
+  if (validationIcon) {
     suffix = (
       <>
         {suffix}
         {validationIcon}
-        {actions ? (
-          <TriggerActions
-            type={type}
-            theme={paintedTheme}
-            isDisabled={isDisabled || isLoading}
-          >
-            {actions}
-          </TriggerActions>
-        ) : null}
       </>
     );
   }
+
+  // A caller's `rightIcon` keeps the `rightIcon` slot: it accepts a render
+  // function resolved against the trigger's mods, which only that slot does, and
+  // it is also what a caller's `RightIcon` styles target. It replaces the
+  // built-in control, exactly as before — including under `isLoading`, where the
+  // spinner replaces it in turn.
+  const hasCustomRightIcon = rightIcon !== undefined;
+  const triggerRightIcon = hasCustomRightIcon ? (
+    isLoading ? (
+      <LoadingIcon />
+    ) : (
+      rightIcon
+    )
+  ) : undefined;
+
+  // Everything trailing that is NOT the caller's own icon goes into the actions
+  // run — a sibling of the `<button>`, so the clear button is no longer nested
+  // inside one. See `TriggerActions`.
+  const triggerActions = (
+    <TriggerActions
+      actions={actions}
+      builtIn={
+        hasCustomRightIcon ? null : isLoading ? (
+          <TriggerIcon>
+            <LoadingIcon />
+          </TriggerIcon>
+        ) : showClearButton ? (
+          <ItemAction
+            icon={<CloseIcon />}
+            size={size}
+            qa="PickerClearButton"
+            // No explicit `type`/`theme` — the default `current` type inherits
+            // the trigger's own text color, which already carries validation
+            // state here, so this renders exactly as the explicit theme did
+            // while also following a custom theme.
+            mods={{ pressed: false }}
+            onPress={clearValue}
+          />
+        ) : (
+          <TriggerIcon>
+            <DirectionIcon to={isPopoverOpen ? 'top' : 'bottom'} />
+          </TriggerIcon>
+        )
+      }
+    />
+  );
 
   // Trigger element — plain JSX with no hooks.
   const triggerElement = (
@@ -626,45 +662,9 @@ export const Picker = forwardRef(function Picker<T extends object>(
         ...externalMods,
       }}
       icon={icon}
-      rightIcon={
-        isLoading ? (
-          <LoadingIcon />
-        ) : rightIcon !== undefined ? (
-          rightIcon
-        ) : showClearButton ? (
-          // `ClearPressResponder`: `DialogTrigger` opens the popover through a
-          // `PressResponder` whose context reaches every `usePress` below it,
-          // this button included — so without it, clearing also opened the
-          // popover that `clearValue` had just closed.
-          <ClearPressResponder>
-            <ItemActionProvider
-              type={type}
-              // The theme the trigger is PAINTED with, not the raw `theme` —
-              // see `paintedTheme` above.
-              //
-              // It travels through context rather than as a prop because the prop is
-              // what opts an action out of `current` back to `clear`, and this one
-              // needs to stay `current` so its label keeps inheriting.
-              theme={paintedTheme}
-            >
-              <ItemAction
-                icon={<CloseIcon />}
-                size={size}
-                qa="PickerClearButton"
-                data-trigger-action=""
-                // No explicit `type`/`theme` — the default `current` type inherits
-                // the trigger's own text color, which already carries validation
-                // state here, so this renders exactly as the explicit theme did
-                // while also following a custom theme.
-                mods={{ pressed: false }}
-                onPress={clearValue}
-              />
-            </ItemActionProvider>
-          </ClearPressResponder>
-        ) : (
-          <DirectionIcon to={isPopoverOpen ? 'top' : 'bottom'} />
-        )
-      }
+      rightIcon={triggerRightIcon}
+      actions={triggerActions}
+      actionsProps={TRIGGER_ACTIONS_PROPS}
       prefix={prefix}
       suffix={suffix}
       hotkeys={hotkeys}

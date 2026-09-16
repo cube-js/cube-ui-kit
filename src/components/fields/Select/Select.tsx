@@ -55,7 +55,8 @@ import {
 import { useFocus } from '../../../utils/react/interactions';
 import { usePopoverSync } from '../../../utils/react/usePopoverSync';
 import { extractStyles } from '../../../utils/styles';
-import { ItemAction, ItemActionProvider } from '../../actions';
+import { ItemAction } from '../../actions';
+import { ItemActionsWrapper } from '../../actions/ItemActionsWrapper';
 import {
   StyledDivider as ListDivider,
   StyledSectionHeading as ListSectionHeading,
@@ -75,7 +76,11 @@ import {
 } from '../../form';
 import { DisplayTransition } from '../../helpers';
 import { Portal } from '../../portal';
-import { TriggerActions } from '../TriggerActions';
+import {
+  TRIGGER_ACTIONS_PROPS,
+  TriggerActions,
+  TriggerIcon,
+} from '../TriggerActions';
 
 import type { Props } from '../../../props';
 
@@ -434,7 +439,7 @@ function Select<T extends object>(
   );
 
   suffix = useMemo(() => {
-    if (!suffix && !validationIcon && !actions) {
+    if (!suffix && !validationIcon) {
       return null;
     }
 
@@ -442,24 +447,58 @@ function Select<T extends object>(
       <>
         {suffix}
         {validationIcon}
-        {actions ? (
-          // The `suffix` slot sits between the label and `rightIcon`, so actions
-          // placed at its end land immediately left of the built-in clear button
-          // and caret — which is where custom actions belong.
-          //
-          // The RAW theme, like the clear button below — this trigger paints
-          // with the raw theme and surfaces validation through the wrapper.
-          <TriggerActions
-            type={type}
-            theme={theme}
-            isDisabled={isDisabled || isLoading}
-          >
-            {actions}
-          </TriggerActions>
-        ) : null}
       </>
     );
-  }, [suffix, validationIcon, actions, type, theme, isDisabled, isLoading]);
+  }, [suffix, validationIcon]);
+
+  // A caller's `rightIcon` keeps the `rightIcon` slot: it accepts a render
+  // function resolved against the trigger's mods, which only that slot does, and
+  // it is also what a caller's `RightIcon` styles target. It replaces the
+  // built-in control, exactly as before.
+  const hasCustomRightIcon = rightIcon !== undefined;
+  const triggerRightIcon = hasCustomRightIcon ? (
+    isLoading ? (
+      <LoadingIcon />
+    ) : (
+      rightIcon
+    )
+  ) : undefined;
+
+  // Everything trailing that is NOT the caller's own icon goes into the actions
+  // run — a sibling of the `<button>`, so the clear button is no longer nested
+  // inside one. See `TriggerActions`.
+  const triggerActions = (
+    <TriggerActions
+      actions={actions}
+      builtIn={
+        hasCustomRightIcon ? null : showClearButton ? (
+          <ItemAction
+            icon={<CloseIcon />}
+            size={size}
+            qa="SelectClearButton"
+            // No explicit `type`/`theme`: the default `current` type paints
+            // from the trigger's own inherited text color, so the button
+            // matches whatever the field is showing instead of one palette.
+            //
+            // NOTE: this trigger keeps NEUTRAL label text when invalid, so
+            // the button reads neutral there too. `Picker` and `FilterPicker`
+            // are also `Item`-based but do tint theirs, which is the actual
+            // inconsistency to fix — in `Select`, not here.
+            mods={{ pressed: false }}
+            onPress={clearValue}
+          />
+        ) : isLoading ? (
+          <TriggerIcon>
+            <LoadingIcon />
+          </TriggerIcon>
+        ) : (
+          <TriggerIcon>
+            <DirectionIcon to={state.isOpen ? 'up' : 'down'} />
+          </TriggerIcon>
+        )
+      }
+    />
+  );
 
   let selectField = (
     <SelectWrapperElement
@@ -475,80 +514,66 @@ function Select<T extends object>(
         label={props.label}
         name={props.name}
       />
-      <Item
-        as="button"
-        qa={qa || 'Select'}
-        data-input-type="select"
-        {...mergeProps(buttonProps, hoverProps, focusProps)}
-        ref={triggerRef}
-        data-popover-trigger
-        styles={{ ...inputStyles, ...triggerStyles }}
+      {/*
+        The trigger's trailing controls are rendered as a SIBLING of the
+        `<button>` — the same layout `ItemButton` uses for its actions, shared
+        through `ItemActionsWrapper`. `Select` builds its trigger from `Item`
+        rather than `ItemButton` because `useSelect`/`useButton` already own the
+        button props, so it reaches for the wrapper directly.
+
+        The RAW theme, unlike `Picker` / `FilterPicker` which forward
+        `getValidationTheme(...)`: this trigger is painted with the raw theme too
+        and surfaces validation through `SelectWrapperElement` rather than by
+        switching theme. What the wrapper hands its actions must always match
+        what the trigger paints with.
+      */}
+      <ItemActionsWrapper
+        type={type}
         theme={theme}
         size={size}
-        shape={shape}
-        // Ensure this button never submits a surrounding form in tests or runtime
-        htmlType="button"
-        // Preserve visual variant via data attribute instead of conflicting with HTML attribute
-        type={type}
+        isDisabled={isDisabled || isLoading}
         mods={modifiers}
-        prefix={prefix}
-        suffix={suffix}
-        icon={icon}
-        rightIcon={
-          rightIcon !== undefined ? (
-            rightIcon
-          ) : showClearButton ? (
-            <ItemActionProvider
-              type={type}
-              // Forwarded so a `special` trigger tells its action which SURFACE it
-              // sits on: `CURRENT_ITEM_STYLES` only steps up to the stronger alpha
-              // ramp on `theme=special`, and against that dark purple base the
-              // light-scheme alphas are almost invisible. It travels through
-              // context rather than as a prop because the prop is what opts an
-              // action out of `current` back to `clear`, and this one needs to stay
-              // `current` so its label keeps inheriting.
-              //
-              // The RAW theme, unlike `Picker` / `FilterPicker` which forward
-              // `getValidationTheme(...)`: this trigger is painted with the raw
-              // theme too (see above), and surfaces validation through the wrapper
-              // rather than by switching theme. Forwarding must always match what
-              // the trigger paints with.
-              theme={theme}
-            >
-              <ItemAction
-                icon={<CloseIcon />}
-                qa="SelectClearButton"
-                data-trigger-action=""
-                // No explicit `type`/`theme`: the default `current` type paints
-                // from the trigger's own inherited text color, so the button
-                // matches whatever the field is showing instead of one palette.
-                //
-                // NOTE: this trigger keeps NEUTRAL label text when invalid, so
-                // the button reads neutral there too. `Picker` and `FilterPicker`
-                // are also `Item`-based but do tint theirs, which is the actual
-                // inconsistency to fix — in `Select`, not here.
-                mods={{ pressed: false }}
-                onPress={clearValue}
-              />
-            </ItemActionProvider>
-          ) : isLoading ? (
-            <LoadingIcon />
-          ) : (
-            <DirectionIcon to={state.isOpen ? 'up' : 'down'} />
-          )
-        }
-        description={triggerDescription}
-        descriptionPlacement={descriptionPlacement}
-        hotkeys={hotkeys}
-        tooltip={tooltip}
-        labelProps={valueProps}
+        actions={triggerActions}
+        actionsProps={TRIGGER_ACTIONS_PROPS}
       >
-        {state.selectedItem ? (
-          state.selectedItem.rendered
-        ) : placeholder ? (
-          <Text.Placeholder>{placeholder}</Text.Placeholder>
-        ) : null}
-      </Item>
+        {({ showActions }) => (
+          <Item
+            actions
+            insideWrapper
+            as="button"
+            qa={qa || 'Select'}
+            data-input-type="select"
+            {...mergeProps(buttonProps, hoverProps, focusProps)}
+            ref={triggerRef}
+            data-popover-trigger
+            showActions={showActions}
+            styles={{ ...inputStyles, ...triggerStyles }}
+            theme={theme}
+            size={size}
+            shape={shape}
+            // Ensure this button never submits a surrounding form in tests or runtime
+            htmlType="button"
+            // Preserve visual variant via data attribute instead of conflicting with HTML attribute
+            type={type}
+            mods={modifiers}
+            prefix={prefix}
+            suffix={suffix}
+            icon={icon}
+            rightIcon={triggerRightIcon}
+            description={triggerDescription}
+            descriptionPlacement={descriptionPlacement}
+            hotkeys={hotkeys}
+            tooltip={tooltip}
+            labelProps={valueProps}
+          >
+            {state.selectedItem ? (
+              state.selectedItem.rendered
+            ) : placeholder ? (
+              <Text.Placeholder>{placeholder}</Text.Placeholder>
+            ) : null}
+          </Item>
+        )}
+      </ItemActionsWrapper>
       <ListBoxPopup
         {...menuProps}
         popoverRef={popoverRef}
