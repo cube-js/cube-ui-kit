@@ -676,6 +676,14 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     )
   ) : undefined;
 
+  // With a caller's own `rightIcon` the built-in control moves into that slot,
+  // leaving the run with whatever the caller passed — possibly nothing. `null`
+  // rather than nothing at all: the run stays in the markup, so the trigger does
+  // not restructure if actions arrive later, but the row stops counting it as
+  // end content. That is what keeps an icon-only trigger with `rightIcon={null}`
+  // square, as it was before the run existed.
+  const hasTriggerActions = !hasCustomRightIcon || !!actions;
+
   // Everything trailing that is NOT the caller's own icon goes into the actions
   // run — a sibling of the `<button>`, so the clear button is no longer nested
   // inside one. See `TriggerActions`.
@@ -727,7 +735,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
       }}
       icon={icon}
       rightIcon={triggerRightIcon}
-      actions={triggerActions}
+      actions={hasTriggerActions ? triggerActions : null}
       actionsProps={TRIGGER_ACTIONS_PROPS}
       prefix={prefix}
       suffix={suffix}

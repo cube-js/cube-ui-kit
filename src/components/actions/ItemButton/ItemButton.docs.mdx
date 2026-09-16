@@ -40,7 +40,7 @@ An interactive button component built on top of `Item` that provides all the lay
 - **`htmlType`** `'button' | 'submit' | 'reset'` — HTML button type attribute
 - **`description`** `string` — Secondary text shown below the main content
 - **`isLoading`** `boolean` — Whether the button shows loading state with disabled interaction
-- **`actions`** `ReactNode` — Inline action buttons displayed on the right side. Use `ItemButton.Action` for consistent styling. Actions automatically inherit the parent button's `type` prop
+- **`actions`** `ReactNode` — Inline action buttons displayed on the right side. Use `ItemButton.Action` for consistent styling. Actions automatically inherit the parent button's `type` prop. Pass `null` to keep an empty run, so actions arriving later do not remount the button
 - **`actionsProps`** `HTMLAttributes<HTMLDivElement>` — Props spread on the actions run's container. Only meaningful together with `actions`
 - **`autoHideActions`** `boolean` — When true, actions are hidden by default and fade in on hover
 - **`preserveActionsSpace`** `boolean` (default: `false`) — Preserve the actions width when hidden (only changes opacity, not layout)
@@ -176,7 +176,8 @@ Three consequences worth knowing:
 
 - **The run is transparent to the pointer; its children are not.** A press in the padding or in a gap between two actions falls through to the row, so the row stays clickable right up to its edge. A non-interactive control placed in the run — an icon, a spinner — should set `pointerEvents: 'none'` on itself so presses reach the row too.
 - **Actions are centred on the row's height**, and stay `$action-size` whatever that height is, so a `large` row does not get oversized buttons. The exception is a row with a **block** description, where the run is pinned to the first line beside the label instead of floating to the middle of a tall row.
-- **The wrapper element is kept once a row has had actions**, even if they later go away. Adding or removing a DOM level around the button would remount it — dropping focus, any running transition, and the node every ref is holding — so a row whose actions depend on a permission or a loading flag stays stable. An empty run reserves no space.
+- **The wrapper element is kept once a row has had actions**, even if they later go away. Adding or removing a DOM level around the button would remount it — dropping focus, any running transition, and the node every ref is holding — so a row whose actions depend on a permission or a loading flag stays stable. An empty run reserves no space: the row stops treating it as end content, so an icon-only row stays square.
+- **Pass `actions={null}` to ask for the run up front.** A row that knows its actions are coming — on a permission, a fetch — gets the wrapper from its first render and never remounts when they arrive. `undefined` means no run at all, and is still the default.
 
 `wrapperStyles` targets that wrapper, which is the row's layout box when actions are present; `styles` targets the button inside it.
 

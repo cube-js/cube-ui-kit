@@ -1,3 +1,4 @@
+import { FilterIcon } from '../../icons/FilterIcon';
 import { renderWithRoot, screen, userEvent, waitFor } from '../../test';
 
 import { FilterPicker } from './FilterPicker';
@@ -189,6 +190,31 @@ describe('trigger actions run', () => {
     await waitFor(() =>
       expect(screen.getByRole('listbox')).toBeInTheDocument(),
     );
+  });
+
+  it('keeps an icon-only trigger square when `rightIcon` is suppressed', () => {
+    renderWithRoot(
+      <>
+        <FilterPicker
+          aria-label="square"
+          qa="Square"
+          icon={<FilterIcon />}
+          rightIcon={null}
+          renderSummary={false}
+          selectionMode="multiple"
+          defaultSelectedKeys={['1']}
+        >
+          <FilterPicker.Item key="1">Blue</FilterPicker.Item>
+        </FilterPicker>
+      </>,
+    );
+
+    const rect = screen.getByTestId('Square').getBoundingClientRect();
+
+    // `rightIcon={null}` takes the caret away and puts nothing in its place, so
+    // the run is empty and the trigger is an icon and nothing else. Reserving
+    // end content for the empty run is what made it oblong.
+    expect(Math.round(rect.width)).toBe(Math.round(rect.height));
   });
 
   it('does not nest the clear button inside the trigger button', () => {

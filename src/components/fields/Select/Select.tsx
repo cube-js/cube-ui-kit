@@ -464,6 +464,13 @@ function Select<T extends object>(
     )
   ) : undefined;
 
+  // With a caller's own `rightIcon` the built-in control moves into that slot,
+  // leaving the run with whatever the caller passed — possibly nothing. The run
+  // is still rendered, so the trigger does not restructure if actions arrive
+  // later, but the row stops counting it as end content — which is what keeps an
+  // icon-only trigger with `rightIcon={null}` square.
+  const hasTriggerActions = !hasCustomRightIcon || !!actions;
+
   // Everything trailing that is NOT the caller's own icon goes into the actions
   // run — a sibling of the `<button>`, so the clear button is no longer nested
   // inside one. See `TriggerActions`.
@@ -538,7 +545,7 @@ function Select<T extends object>(
       >
         {({ showActions }) => (
           <Item
-            actions
+            actions={hasTriggerActions || undefined}
             insideWrapper
             as="button"
             qa={qa || 'Select'}

@@ -390,6 +390,8 @@ The caret is in that run too, and still opens the popover: the run is transparen
 
 `rightIcon` is the one thing that stays in its own slot, because it accepts a render function resolved against the trigger's modifiers and is what a caller's `RightIcon` styles target. Passing it replaces the built-in caret exactly as before; if you pass `actions` as well, they render after it.
 
+The run is rendered whether or not it has anything in it, so the trigger's markup does not change shape as a clear button appears or a spinner replaces the caret. `rightIcon={null}` empties it — the caret moves into the `rightIcon` slot and nothing takes its place — and an empty run reserves nothing, so an icon-only trigger stays square.
+
 ```jsx
 const DEFAULT_KEY = 'apple';
 

@@ -20,7 +20,35 @@ module.exports = [
         }),
       );
     },
-    // 517 kB for the Board resize-affordance rework. CI measured `main`
+    // 520 kB for the trigger-actions-slot migration. Local readings with both
+    // sides rebuilt here: `main` 516,903 B, this branch 517,254 B — +351 B —
+    // against a 517 kB budget `main` had already spent down to ~100 B, so the
+    // branch came in 254 B over and CI failed on exactly that.
+    //
+    // The `Tree shaking (just a Button)` entry below moves too, by +132 B
+    // (123,348 -> 123,480 B), and the two deltas do NOT match — so this is not
+    // the dependency-core signature the notes below keep pointing at. The 132 B
+    // is `src/data/item-themes.ts`: `ROW_STATE_ALIASES` and the pressed-color
+    // branch in the `ITEM_RESTING_COLOR_VARIANTS` builder, which every themed
+    // component pulls in, `Button` included. The remaining ~220 B is the part
+    // that tree-shakes — `ItemActionsWrapper` and the three triggers composing
+    // through it — which is roughly a wash against the three hand-rolled runs it
+    // replaced.
+    //
+    // Set to 520 kB, the next 5 kB step, leaving ~2.75 kB. Thicker than the note
+    // further down likes, but 518 kB would leave this entry needing to move
+    // again on the next commit, and `main` reaching 517 kB unaided is what
+    // caused this failure in the first place.
+    //
+    // Third calibration point for the macOS/Linux warning below, and the
+    // sharpest yet: CI measured the first push of this branch at 517,202 B and
+    // the local rebuild of that same commit read 517,203 B — one byte apart. The
+    // earlier +143 B and +151 B gaps did not reproduce. Three readings on this
+    // machine have now come in at or just under CI, never the ~1.6 kB the
+    // warning describes; still take CI's number, but a local reading is a good
+    // predictor here.
+    //
+    // Before this: 517 kB for the Board resize-affordance rework. CI measured `main`
     // (582c1e0) at 513,743 B and this branch at 515,261 B — +1.52 kB — against a
     // 515 kB budget that `main` had already spent down to 1,257 B of headroom, so
     // it came in 261 B over. A later visual pass (a painted gap on the outside
@@ -210,14 +238,21 @@ module.exports = [
     //
     // Note when checking locally: `size-limit` bundles the built `./dist`, it
     // does not build. Run `pnpm build` first or you will measure a stale bundle.
-    limit: '517kB',
+    limit: '520kB',
   },
   {
     name: 'Tree shaking (just a Button)',
     path: './dist/index.js',
     webpack: true,
     import: '{ Button }',
-    // Still 125 kB on `@tenphi/tasty` 3.5.0: 123.02 kB against `main`'s
+    // Still 125 kB on the trigger-actions-slot migration: 123,480 B against
+    // `main`'s 123,348 B, both sides rebuilt here — +132 B, which is NOT matched
+    // by the +351 B on `All` above, so it is not the dependency. It is
+    // `item-themes.ts` (`ROW_STATE_ALIASES` and the pressed-color branch in the
+    // variants builder), which sits on the themed-component path every consumer
+    // loads. 1.52 kB left.
+    //
+    // Before this: still 125 kB on `@tenphi/tasty` 3.5.0: 123.02 kB against `main`'s
     // 121.81 kB, both sides rebuilt here — +1.21 kB, matched by the same
     // +1.21 kB on `All` above, so all of it is Tasty's always-included core and
     // none of it ours. See that entry for what the release changed there, and

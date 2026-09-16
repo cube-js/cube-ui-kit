@@ -64,6 +64,42 @@ describe('<ItemActionsWrapper />', () => {
     expect(wrapper.style.getPropertyValue('--actions-width')).toBe('0px');
   });
 
+  it('reserves no end content once the run has emptied', async () => {
+    const { getByTestId } = renderWithRoot(<Toggler />);
+
+    const row = getByTestId('Row');
+
+    expect(row).toHaveAttribute('data-has-actions');
+
+    await act(async () => await userEvent.click(getByTestId('Toggle')));
+
+    // The row still LAYS OUT for a sibling run — that is what keeps the DOM
+    // from restructuring — but it no longer counts one as end content, which is
+    // what drives the two-square minimum width and the suffix's padding. A
+    // trigger whose run is empty has to stay the shape it was.
+    expect(row).toHaveAttribute('data-inside-wrapper');
+    expect(row).not.toHaveAttribute('data-has-actions');
+    expect(row).not.toHaveAttribute('data-has-end-content');
+  });
+
+  it('keeps the run for `actions={null}`, without reserving for it', () => {
+    const { getByTestId } = renderWithRoot(
+      <ItemButton qa="Row" actions={null}>
+        Row
+      </ItemButton>,
+    );
+
+    const row = getByTestId('Row');
+
+    // How the field triggers ask for a run up front: the wrapper and the run
+    // are there from the first render, so actions arriving later never remount
+    // the button, but an empty run is not end content.
+    expect(
+      row.parentElement?.querySelector('[data-element="Actions"]'),
+    ).toBeInTheDocument();
+    expect(row).not.toHaveAttribute('data-has-actions');
+  });
+
   it('does not wrap a row that never had actions', () => {
     const { getByTestId } = renderWithRoot(
       <ItemButton qa="Row">Row</ItemButton>,

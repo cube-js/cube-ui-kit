@@ -17,6 +17,11 @@ import { CubeUseActionProps, useAction } from '../use-action';
 export interface CubeItemButtonProps
   extends Omit<CubeItemProps, 'size'>,
     Omit<CubeUseActionProps, 'as'> {
+  /**
+   * The row's trailing controls, rendered beside the button rather than inside
+   * it. Pass `null` to keep an empty run — the row reserves no space for it, and
+   * the button is not remounted when the actions arrive later.
+   */
   actions?: ReactNode;
   size?: Omit<CubeItemProps['size'], 'inline'>;
   wrapperStyles?: Styles;
@@ -114,9 +119,14 @@ const ItemButton = forwardRef(function ItemButton(
   // and a row whose actions come and go with a permission or a loading flag
   // would do that on every flip. The empty run costs nothing: it publishes a
   // width of 0, so the row reserves no space for it.
+  //
+  // `null` is how a caller asks for the run up front — "there is a run here, it
+  // just has nothing in it right now" — so a row that knows its actions are
+  // coming never has to remount to receive them. Only `undefined` means the row
+  // has no run at all.
   const hasHadActions = useRef(false);
 
-  if (actions) {
+  if (actions !== undefined) {
     hasHadActions.current = true;
   }
 
@@ -124,9 +134,15 @@ const ItemButton = forwardRef(function ItemButton(
 
   const renderButton = (showActions: boolean) => (
     <StyledItem
+      // Two different questions. `insideWrapper` is "am I laid out for a
+      // sibling run", which stays true so the DOM does not restructure;
+      // `actions` is "is there anything in that run to reserve width for",
+      // which must go back to false when the run empties — it drives the
+      // two-square minimum width and the suffix's padding, and a row that
+      // reserved space for nothing would sit wider than it needs to.
       insideWrapper={withWrapper}
       showActions={showActions}
-      actions={withWrapper ? true : undefined}
+      actions={actions ? true : undefined}
       {...(mergeProps(rest, actionProps) as any)}
       ref={combinedRef}
       data-popover-dismiss=""
