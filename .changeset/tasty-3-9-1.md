@@ -1,0 +1,13 @@
+---
+'@cube-dev/ui-kit': patch
+---
+
+Update Tasty to 3.9.1 (from 3.7.0), and document `Tab.Action` with a story.
+
+**Tasty 3.9.1 changes no rendered style, but it does change the CSS text.** Logical padding, margin and inset props are no longer folded into the physical shorthand: where 3.7.0 merged a `paddingBlock` / `paddingInline` pair into one `padding: <y> <x>` declaration per state, 3.9.1 emits separate `padding-block` and `padding-inline` declarations, each under its own state selector. Computed values come out the same — this was checked in real Chromium on the table cells that depend on it (`ItemTable`'s header, body and selection cells), and a canonical CSS diff across `Button`, `Item`, `ItemButton`, `Tabs`, `TextInput`, `Card`, `Tag`, `Badge` and typography is byte-identical. What changes is what an override has to beat: a rule that used to compete with a `padding` shorthand now competes with `padding-block` or `padding-inline`, and the documented priority ladder `padding < paddingBlock/paddingInline < paddingTop/...` is gone, because `paddingBlock` and `paddingInline` are ordinary CSS properties again rather than enhanced handlers.
+
+**The replacement is a new family of logical style props**, each an enhanced handler that emits native logical CSS and lets the browser resolve `start` / `end` from `writingMode` and `direction`: `blockSize` / `inlineSize`, `blockPadding` / `inlinePadding`, `blockMargin` / `inlineMargin`, `blockInset` / `inlineInset`, `blockScrollMargin` / `inlineScrollMargin`, `blockScrollPadding` / `inlineScrollPadding`, and `blockBorder` / `inlineBorder`, alongside physical `scrollMargin` / `scrollPadding`. They take one value for both edges or two in start/end order, support `start` / `end` modifiers with comma-separated groups, and `blockSize` / `inlineSize` accept the same `min` / `max` / `fixed` syntax as `width`. Every component's Style Properties table has been regenerated to list them.
+
+**`dotize` is gone from Tasty's public API** and is now internal to the kit. It was never re-exported, so nothing consumers import has changed; `Form.setFieldsValue({ user: { name: 'A' } })` still reaches a field registered as `name="user.name"`. The port was differential-tested against the 3.7.0 implementation across nested, empty, array-valued, numeric-key and non-object inputs at three prefixes.
+
+**`Tab.Action` gains a story.** The component and its docs section shipped without one, so the tab `actions` slot had no rendered example and nothing in Chromatic's coverage. `Tabs` → `WithTabActions` shows a per-tab toggle action, and the docs section now renders it above its code sample. `ItemAction`'s own page also names `Tab` among its hosts and lists the `.Action` aliases, which it did not before.
