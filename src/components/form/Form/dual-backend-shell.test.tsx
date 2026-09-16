@@ -5,14 +5,15 @@ import {
   render,
   renderWithForm,
   renderWithRoot,
-  screen,
   userEvent,
   waitFor,
 } from '../../../test/index';
 import { Checkbox } from '../../fields/Checkbox/Checkbox';
 import { CheckboxGroup } from '../../fields/Checkbox/CheckboxGroup';
+import { NumberInput } from '../../fields/NumberInput/NumberInput';
 import { Radio } from '../../fields/RadioGroup/Radio';
 import { RadioGroup } from '../../fields/RadioGroup/RadioGroup';
+import { Slider } from '../../fields/Slider/Slider';
 import { TextInput } from '../../fields/TextInput/TextInput';
 
 import { FORM_BACKEND, isModernFormController } from './backend';
@@ -303,94 +304,119 @@ describe('dual-backend shell: contexts', () => {
     });
 
     expect(formInstance.getFieldNames()).toEqual(['g']);
-    expect(screen.getByRole('textbox')).toHaveValue('x');
+    expect(getByRole('textbox')).toHaveValue('x');
   });
 });
 
 /**
  * The legacy engine never supported changing an input's binding after mount:
  * `useFieldProps` returned early for a standalone input, so the switch threw a
- * hook-order error, and a `form` prop that changed left the field registered
- * in both forms. The shell keeps every hook mounted and keys the legacy
- * adapter on `(form, name)`, so these are defined now.
+ * hook-order error. The shell keeps every hook mounted and the legacy adapter
+ * binds like a first mount whenever its `(form, name)` has no field yet, so
+ * these are defined now. A `form` prop that changes still leaves the field in
+ * the old form (legacy contract, row 4).
  */
 describe('dual-backend shell: rebinding after mount', () => {
-  it.each([
-    ['named to standalone', 'a', undefined],
-    ['standalone to named', undefined, 'a'],
-  ])(
-    'switching an input from %s keeps the hook order and rebinds',
-    async (_, from, to) => {
-      silenceConsoleError();
+  const CONTROLLED_STATE_WARNING =
+    /changed from (un)?controlled to (un)?controlled/;
 
-      function Fixture({ name }: { name?: string }) {
-        return <TextInput name={name} label="A" />;
-      }
+  function controlledStateWarnings(warn: ReturnType<typeof vi.spyOn>) {
+    return warn.mock.calls
+      .map((call) => String(call[0]))
+      .filter((message) => CONTROLLED_STATE_WARNING.test(message));
+  }
 
-      const { formInstance, rerender, queryByTestId, getByRole } =
-        renderWithForm(
-          <RenderErrorBoundary>
-            <Fixture name={from} />
-          </RenderErrorBoundary>,
-        );
+  it('an input that loses its name releases the field and keeps what was typed', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
-      rerender(
-        <RenderErrorBoundary>
-          <Fixture name={to} />
-        </RenderErrorBoundary>,
-      );
+    function Fixture({ name }: { name?: string }) {
+      return <TextInput name={name} label="A" />;
+    }
 
-      expect(queryByTestId('render-error')).toBeNull();
+    const { formInstance, rerender, getByRole } = renderWithForm(
+      <RenderErrorBoundary>
+        <Fixture name="a" />
+      </RenderErrorBoundary>,
+    );
 
-      await act(async () => {
-        await userEvent.type(getByRole('textbox'), 'x');
-      });
+    await act(async () => {
+      await userEvent.type(getByRole('textbox'), 'x');
+    });
 
-      if (to) {
-        expect(formInstance.getFieldNames()).toEqual(['a']);
-        expect(formInstance.getFieldValue('a')).toBe('x');
-      } else {
-        // Unbinding released the field; typing stays local to the input.
-        expect(formInstance.getFieldNames()).toEqual([]);
-        expect(getByRole('textbox')).toHaveValue('x');
-      }
-    },
-  );
+    expect(formInstance.getFieldValue('a')).toBe('x');
 
-  it('an input that gains a name gets the form-prefixed id and its default as the baseline', async () => {
+    rerender(
+      <RenderErrorBoundary>
+        <Fixture />
+      </RenderErrorBoundary>,
+    );
+
+    expect(formInstance.getFieldNames()).toEqual([]);
+    // React Aria keeps the last value when a control becomes uncontrolled,
+    // and says so in development.
+    expect(getByRole('textbox')).toHaveValue('x');
+    expect(controlledStateWarnings(warn)).toEqual([
+      'WARN: A component changed from controlled to uncontrolled.',
+    ]);
+
+    await act(async () => {
+      await userEvent.type(getByRole('textbox'), 'y');
+    });
+
+    expect(getByRole('textbox')).toHaveValue('xy');
+    expect(formInstance.getFieldNames()).toEqual([]);
+  });
+
+  it('an input that gains a name binds like a first mount: typed text is dropped, the default seeds the field', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
     function Fixture({ name }: { name?: string }) {
       return <TextInput name={name} label="A" defaultValue="init" />;
     }
 
     const { formInstance, rerender, getByRole, getByTestId } = renderWithForm(
-      <Fixture />,
+      <RenderErrorBoundary>
+        <Fixture />
+      </RenderErrorBoundary>,
       { formProps: { name: 'shell' } },
     );
 
+    await act(async () => {
+      await userEvent.type(getByRole('textbox'), 'x');
+    });
+
+    expect(getByRole('textbox')).toHaveValue('initx');
     expect(formInstance.getFieldNames()).toEqual([]);
 
-    rerender(<Fixture name="gained" />);
-
-    await waitFor(() =>
-      expect(formInstance.getFieldNames()).toEqual(['gained']),
+    rerender(
+      <RenderErrorBoundary>
+        <Fixture name="gained" />
+      </RenderErrorBoundary>,
     );
 
+    expect(formInstance.getFieldNames()).toEqual(['gained']);
+
     const input = getByRole('textbox');
+
+    // The field, not the DOM, is the source of truth once bound: it starts
+    // from `defaultValue`, which is also the dirty baseline.
+    expect(input).toHaveValue('init');
+    expect(formInstance.getFieldValue('gained')).toBe('init');
+    expect(formInstance.isFieldDirty('gained')).toBe(false);
+    expect(controlledStateWarnings(warn)).toEqual([
+      'WARN: A component changed from uncontrolled to controlled.',
+    ]);
 
     // The id is derived from the current binding, not from the standalone
     // seed, and the label follows it.
     expect(input).toHaveAttribute('id', 'shell_gained');
     expect(getByTestId('Label')).toHaveAttribute('for', 'shell_gained');
 
-    // The field default seeds the value and the dirty baseline, as on a
-    // first mount.
-    expect(formInstance.getFieldValue('gained')).toBe('init');
-    expect(formInstance.isFieldDirty('gained')).toBe(false);
-
     await act(async () => {
-      await userEvent.type(input, 'x');
+      await userEvent.type(input, 'y');
     });
 
+    expect(formInstance.getFieldValue('gained')).toBe('inity');
     expect(formInstance.isFieldDirty('gained')).toBe(true);
 
     act(() => {
@@ -401,7 +427,48 @@ describe('dual-backend shell: rebinding after mount', () => {
     expect(formInstance.isFieldDirty('gained')).toBe(false);
   });
 
+  it('the label and the input agree on the id in every committed render of a switch', () => {
+    const seen: Array<{ id: string | null; for: string | null }> = [];
+
+    function Fixture({ name }: { name?: string }) {
+      return <TextInput name={name} label="A" />;
+    }
+
+    const { rerender, getByRole, getByTestId } = renderWithForm(<Fixture />, {
+      formProps: { name: 'shell' },
+    });
+
+    const record = () =>
+      seen.push({
+        id: getByRole('textbox').getAttribute('id'),
+        for: getByTestId('Label').getAttribute('for'),
+      });
+
+    record();
+    rerender(<Fixture name="a" />);
+    record();
+    rerender(<Fixture />);
+    record();
+    rerender(<Fixture name="b" />);
+    record();
+
+    expect(seen.map((entry) => entry.id === entry.for)).toEqual([
+      true,
+      true,
+      true,
+      true,
+    ]);
+    expect(seen.map((entry) => entry.id)).toEqual([
+      expect.not.stringMatching(/^shell_/),
+      'shell_a',
+      expect.not.stringMatching(/^shell_/),
+      'shell_b',
+    ]);
+  });
+
   it('switching a name back and forth reuses the same id instead of suffixing it', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+
     function Fixture({ name }: { name?: string }) {
       return <TextInput name={name} label="A" />;
     }
@@ -420,17 +487,89 @@ describe('dual-backend shell: rebinding after mount', () => {
     );
   });
 
-  it('an input that receives a form prop after mount registers with it', async () => {
+  it.each([
+    {
+      component: 'NumberInput',
+      render: (name?: string) => <NumberInput name={name} label="N" />,
+      role: 'textbox',
+    },
+    {
+      component: 'Slider',
+      render: (name?: string) => (
+        <Slider name={name} label="S" minValue={0} maxValue={10} />
+      ),
+      role: 'group',
+    },
+  ])(
+    '$component keeps its label pointing at the element after the id changes',
+    ({ render: renderInput, role }) => {
+      vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      const { rerender, getByRole, getByTestId } = renderWithForm(
+        renderInput(),
+        { formProps: { name: 'shell' } },
+      );
+
+      const before = getByRole(role).getAttribute('id');
+
+      expect(getByTestId('Label')).toHaveAttribute('for', before);
+
+      rerender(renderInput('n'));
+
+      // react-aria seeds its ids once; the components re-apply the current id.
+      expect(getByRole(role)).toHaveAttribute('id', 'shell_n');
+      expect(getByTestId('Label')).toHaveAttribute('for', 'shell_n');
+    },
+  );
+
+  it('a field created after mount carries its rules, so a late form still validates it', async () => {
     let form!: CubeFormInstance<any>;
 
     function Owner({ late }: { late: boolean }) {
       [form] = useForm();
 
       return (
+        <Form.Item
+          name="a"
+          rules={[{ required: true }]}
+          form={late ? form : undefined}
+        >
+          <TextInput label="A" />
+        </Form.Item>
+      );
+    }
+
+    const { rerender } = renderWithRoot(<Owner late={false} />);
+
+    expect(form.getFieldNames()).toEqual([]);
+
+    rerender(<Owner late />);
+
+    expect(form.getFieldNames()).toEqual(['a']);
+    expect(form.getFieldInstance('a')?.rules).toEqual([{ required: true }]);
+
+    await act(async () => {
+      await form.validateFields().catch(() => {});
+    });
+
+    expect(form.isFieldInvalid('a')).toBe(true);
+  });
+
+  it('an input that receives a form prop after mount registers with it and re-renders the owner', async () => {
+    let form!: CubeFormInstance<any>;
+    let ownerRenders = 0;
+
+    function Owner({ late }: { late: boolean }) {
+      ownerRenders++;
+      [form] = useForm();
+
+      return (
         <TextInput
+          id="fixed"
           name="a"
           label="A"
           defaultValue="init"
+          rules={[{ required: true }]}
           form={late ? form : undefined}
         />
       );
@@ -440,11 +579,17 @@ describe('dual-backend shell: rebinding after mount', () => {
 
     expect(form.getFieldNames()).toEqual([]);
 
+    const rendersBefore = ownerRenders;
+
     rerender(<Owner late />);
 
-    await waitFor(() => expect(form.getFieldNames()).toEqual(['a']));
+    expect(form.getFieldNames()).toEqual(['a']);
     expect(form.getFieldValue('a')).toBe('init');
     expect(form.isFieldDirty('a')).toBe(false);
+    expect(form.getFieldInstance('a')?.rules).toEqual([{ required: true }]);
+    // The rerender plus the owner re-render the adapter requests once the
+    // registration is committed, so the owner's render-time reads catch up.
+    expect(ownerRenders - rendersBefore).toBe(2);
 
     await act(async () => {
       await userEvent.type(getByRole('textbox'), 'x');
@@ -453,34 +598,31 @@ describe('dual-backend shell: rebinding after mount', () => {
     expect(form.getFieldValue('a')).toBe('initx');
   });
 
-  it('an input whose form prop changes leaves the old form and registers with the new one', async () => {
-    let first!: CubeFormInstance<any>;
-    let second!: CubeFormInstance<any>;
+  it('a form prop whose identity changes on every render does not re-register the field', async () => {
+    let form!: CubeFormInstance<any>;
+    let renders = 0;
 
-    function Fixture({ useSecond }: { useSecond: boolean }) {
-      [first] = useForm();
-      [second] = useForm();
+    function Owner() {
+      renders++;
+      [form] = useForm();
 
-      return <TextInput form={useSecond ? second : first} name="a" label="A" />;
+      // A structural copy per render: the same store behind a new identity,
+      // as a wrapper spreading the instance or an inline test mock would do.
+      const copy = Object.assign(
+        Object.create(Object.getPrototypeOf(form)),
+        form,
+      );
+
+      return <TextInput name="a" label="A" form={copy} />;
     }
 
-    const { rerender, getByRole } = renderWithRoot(
-      <Fixture useSecond={false} />,
-    );
-
-    expect(first.getFieldNames()).toEqual(['a']);
-    expect(second.getFieldNames()).toEqual([]);
-
-    rerender(<Fixture useSecond />);
-
-    await waitFor(() => expect(second.getFieldNames()).toEqual(['a']));
-    expect(first.getFieldNames()).toEqual([]);
+    const { getByRole } = renderWithRoot(<Owner />);
 
     await act(async () => {
       await userEvent.type(getByRole('textbox'), 'x');
     });
 
-    expect(second.getFieldValue('a')).toBe('x');
-    expect(first.getFieldValue('a')).toBeUndefined();
+    expect(form.getFieldValue('a')).toBe('x');
+    expect(renders).toBeLessThan(10);
   });
 });

@@ -43,9 +43,9 @@ One row per item of plan §7.1. "Existing" points at the pre-existing spec that 
 | 1 | Creation | `instance-and-binding` | frozen, undefined | `Form.useForm()` returns one stable instance and installs `forceReRender` on its creator. `useForm(instance)` adopts without installing anything, so a bare `new CubeFormInstance()` passed to `<Form>` **never rerenders anything** (undefined). Classify direct construction as unsupported for reactive use. |
 | 2 | Context binding | `instance-and-binding`; existing `field.test` | frozen | Named inputs register with the context form; unnamed ones do not. `CheckboxGroup`/`RadioGroup` register once and mask the context so options never register, even with a `name`. |
 | 3 | Explicit precedence / detachment | `instance-and-binding`; existing `explicit-form-prop.test`, `unbind-form-prop.test` | frozen | Explicit `form` wins over context; `form={undefined}` and `form={null}` both detach and leave the input controlled by its own props. |
-| 4 | Form identity change after mount | `instance-and-binding` | undefined | `<Form form={b}>` after mounting with `a` keeps using `a`. An input whose own `form` prop changes is defined by the dual-backend shell since Phase 3 (`../dual-backend-shell.test.tsx`: it leaves the old form and registers with the new one; before the shell it stayed registered in both, undefined). |
+| 4 | Form identity change after mount | `instance-and-binding` | undefined | `<Form form={b}>` after mounting with `a` keeps using `a`. An input whose `form` prop changes registers with the new form **and stays registered in the old one**. |
 | 5 | Registration order, duplicates | `instance-and-binding` | frozen, undefined | `getFieldNames()` is mount order. Two inputs with one name share a field object; unmounting either deletes it and the survivor re-registers with the default value (undefined). |
-| 6 | Dynamic names | `instance-and-binding` | frozen | Renaming re-registers under the new name and drops the old value. Switching an input between named and standalone is defined by the dual-backend shell since Phase 3 (`../dual-backend-shell.test.tsx`: it rebinds with the form-prefixed id and the field default as the baseline; before the shell the switch threw `Should have a queue…`, undefined). |
+| 6 | Dynamic names | `instance-and-binding` | frozen | Renaming re-registers under the new name and drops the old value; since the dual-backend shell (Phase 3) the renamed field is seeded like a first mount, so a field-level `defaultValue` becomes its baseline, and a same-named sibling loses the shared field exactly as on unmount (row 5). Switching an input between named and standalone is defined by the shell spec (`../dual-backend-shell.test.tsx`; before the shell the switch threw `Should have a queue…`, undefined). |
 | 7 | First-mount defaults | `defaults-and-values`; existing `field.test` | frozen, undefined | Form defaults seed fields without dirtying them. A field-level `defaultValue` fills an empty field and becomes its baseline. When both exist the field default wins for an untouched field **but the Form default stays the dirty baseline**, so the field starts dirty (undefined). |
 | 8 | Form default changes after mount | `defaults-and-values`; existing `field.test` | frozen | Current values are untouched, the dirty baseline moves, `resetFields()` adopts the new defaults. |
 | 9 | Field-level `defaultValue` changes | `defaults-and-values`; existing `field.test` | frozen | Applied on every untouched render, ignored after touch, and only the first one reaches the baseline. |
@@ -82,14 +82,14 @@ Recorded by `render-baseline.test.tsx` with a fixture of an owner (`useForm()` +
 
 | Event | Owner | Context consumer | Field A | Field B |
 | --- | --: | --: | --: | --: |
-| Mount with two fields | 3 | 3 | 3 | 3 |
+| Mount with two fields | 2 (3 before Phase 3) | 2 (3) | 2 (3) | 2 (3) |
 | One programmatic user-style change on A | 1 | 1 | 1 | 1 |
 | One keystroke into A | 1 | 1 | 1 | 1 |
 | One validation result published | 1 | 1 | 1 | 1 |
 | `setSubmitting()` / `setFieldError()` (each) | 1 | 1 | 1 | 1 |
 | Change with the instance created by a grandparent | 1 | — | — | — |
 
-Why mount costs three renders: fields are created during render 1 after the `[field]` effect has already captured `undefined` as its dependency; render 2 comes from the mount effects calling `forceReRender()`; render 3 comes from that dependency flipping to the created field object.
+Why mount costs two renders: fields are created during render 1, and render 2 comes from the mount effects calling `forceReRender()`. Before the dual-backend shell (Phase 3) there was a third: the field was created after the `[field]` effect had captured `undefined` as its dependency, so the dependency flipped to the created object and the effect ran once more. The shell creates the field before that effect reads its dependency (so a field created after mount is treated the same way), which removed the artifact; the frozen row was updated with this compatibility note.
 
 Every mutation rerenders the whole owner subtree because the only publication mechanism is the creator's `forceReRender()`. This is the owner-wide behaviour Cloud's render-time getters depend on (plan §1), and the reason the modern backend gets a separate contract rather than a retrofit.
 
@@ -109,13 +109,13 @@ Every mutation rerenders the whole owner subtree because the only publication me
 - `pnpm diagnostics:form --update` rewrites the baseline after a reviewed change (a decrease should always be committed).
 - `--verbose` lists every message; `--json` dumps the raw report.
 
-Baseline on `b204a4d7`: 123 files linted, 114 diagnostics. After the dual-backend shell (plan Phase 3): 127 files, 106 diagnostics — `use-field-props.tsx` is at zero (its five conditional hooks and the render-phase ref read are gone; `rules-of-hooks` fell from 14 to 9), and the remaining legacy-engine findings sit in `use-field.ts`, `use-form.tsx`, `Form.tsx` and `Field.tsx`, the legacy adapter modules.
+Baseline on `b204a4d7`: 114 diagnostics. After the dual-backend shell (plan Phase 3) `use-field-props.tsx` has no findings — its five conditional hooks and the render-phase ref read are gone — `use-field.ts` lost the effect that reassigned a render variable, and the remaining legacy-engine findings sit in `use-field.ts`, `use-form.tsx`, `Form.tsx` and `Field.tsx`, the legacy adapter modules. Current counts (also the committed baseline):
 
 | Rule | Total | Legacy engine | Input components |
 | --- | --: | --: | --: |
 | `react-hooks/refs` | 49 | 12 | 37 |
 | `react-hooks/exhaustive-deps` | 23 | 3 | 20 |
-| `react-hooks/immutability` | 13 | 6 | 7 |
+| `react-hooks/immutability` | 9 | 2 | 7 |
 | `react-hooks/rules-of-hooks` | 9 | 0 | 9 |
 | `react-hooks/preserve-manual-memoization` | 5 | 0 | 5 |
 | `react-hooks/set-state-in-effect` | 5 | 1 | 4 |

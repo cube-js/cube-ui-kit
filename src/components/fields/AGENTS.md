@@ -1,6 +1,6 @@
 # Fields
 
-Read [`docs/rules/input-components.md`](../../../docs/rules/input-components.md) before touching anything here — hook order, the two `useFieldProps` modes, id/label wiring, `wrapWithField`, validation props.
+Read [`docs/rules/input-components.md`](../../../docs/rules/input-components.md) before touching anything here — hook order, the `useFieldProps` modes, id/label wiring, `wrapWithField`, validation props.
 
 ## Textarea autosize
 

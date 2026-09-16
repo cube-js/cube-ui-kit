@@ -8,6 +8,7 @@ import {
   tasty,
 } from '@tenphi/tasty';
 import {
+  ContextType,
   createContext,
   FormHTMLAttributes,
   forwardRef,
@@ -69,7 +70,7 @@ export function FormScopeMask({
   value,
   children,
 }: {
-  value: Record<string, unknown>;
+  value: ContextType<typeof FormContext>;
   children?: ReactNode;
 }) {
   return (

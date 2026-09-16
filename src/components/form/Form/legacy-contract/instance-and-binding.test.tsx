@@ -194,9 +194,36 @@ describe('legacy contract: form identity changes after mount (§7.1 #4)', () => 
     expect(second.getFieldNames()).toEqual([]);
   });
 
-  // An input whose own `form` prop changes is defined by the dual-backend
-  // shell since Phase 3 (`../dual-backend-shell.test.tsx`): it leaves the old
-  // form. Before the shell it stayed registered in both, which was undefined.
+  it('[undefined] an input given a new form prop registers with the new form but stays registered in the old one', async () => {
+    let first!: CubeFormInstance<any>;
+    let second!: CubeFormInstance<any>;
+
+    function Fixture({ useSecond }: { useSecond: boolean }) {
+      [first] = useForm();
+      [second] = useForm();
+
+      return <TextInput form={useSecond ? second : first} name="a" label="A" />;
+    }
+
+    const { rerender, getByRole } = renderWithRoot(
+      <Fixture useSecond={false} />,
+    );
+
+    expect(first.getFieldNames()).toEqual(['a']);
+    expect(second.getFieldNames()).toEqual([]);
+
+    rerender(<Fixture useSecond />);
+
+    await waitFor(() => expect(second.getFieldNames()).toEqual(['a']));
+    expect(first.getFieldNames()).toEqual(['a']);
+
+    await act(async () => {
+      await userEvent.type(getByRole('textbox'), 'x');
+    });
+
+    expect(second.getFieldValue('a')).toBe('x');
+    expect(first.getFieldValue('a')).toBeUndefined();
+  });
 });
 
 describe('legacy contract: registration order and duplicate names (§7.1 #5)', () => {

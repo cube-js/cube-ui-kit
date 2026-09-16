@@ -76,22 +76,23 @@ function createFixture({ strict = false } = {}) {
 }
 
 describe('legacy render baseline (plan §9 Phase 1 step 3, §11)', () => {
-  it('[frozen] mounting two fields renders the owner three times', async () => {
+  it('[frozen] mounting two fields renders the owner twice', async () => {
     const { counter } = createFixture();
 
     await act(async () => {});
 
-    // 1: mount — fields are created during this render, after the `[field]`
-    //    effect has already captured `undefined` as its dependency.
+    // 1: mount — fields are created during this render.
     // 2: the fields' mount effects call `forceReRender()` (batched into one).
-    // 3: the `[field]` dependency flipped from `undefined` to the field object
-    //    created later in render 1, so the effect runs again and calls
-    //    `forceReRender()` once more.
+    // Before the dual-backend shell (Phase 3) there was a third render: the
+    // fields were created after the `[field]` effect had captured `undefined`
+    // as its dependency, so the effect ran once more after render 2. The
+    // shell creates the field before that effect reads its dependency, which
+    // removes the artifact; nothing else about mount changed.
     expect(counter.snapshot()).toEqual({
-      owner: 3,
-      fieldA: 3,
-      fieldB: 3,
-      leaf: 3,
+      owner: 2,
+      fieldA: 2,
+      fieldB: 2,
+      leaf: 2,
     });
   });
 

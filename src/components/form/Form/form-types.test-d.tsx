@@ -10,11 +10,18 @@ import { CubeFormInstance } from './use-form';
 import { Form } from './index';
 
 /**
- * Type fixtures for the dual-backend shell (plan Phase 3, item 11). Vitest's
- * typecheck project compiles them as part of `pnpm test` (see
- * `vitest.config.ts`); nothing here runs. Covered: direct `<Form>` usage, a
- * pass-through wrapper, `DialogForm`, an explicit external instance, and the
- * rejection of a modern controller everywhere a legacy instance is expected.
+ * Type fixtures for the dual-backend shell (plan Phase 3, item 11). Compiled
+ * by `pnpm test:types` (`tsconfig.typecheck.json`, a CI step; not part of
+ * `pnpm test` or the pre-push hook); nothing here runs. Covered: direct
+ * `<Form>` usage, a pass-through wrapper, `DialogForm`, an explicit external
+ * instance, and the rejection of a modern controller everywhere a legacy
+ * instance is expected.
+ *
+ * Known gap: the in-repo check resolves react-aria's `Aria*Props` to `any`
+ * (`preserveSymlinks`, see `tsconfig.json`), so `ExternalInstance` does not
+ * prove that a consumer compiling against `dist/` may pass an instance to a
+ * kit input directly — there `InputDOMProps.form?: string` wins over
+ * `FieldCoreProps.form`. Pre-existing on `main`; tracked separately.
  */
 
 interface Values {

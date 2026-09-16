@@ -61,11 +61,13 @@ Rules:
 | Inside `<Field>` / `Form.Item` | `useInsideLegacyField()` | The props as given: the wrapper already did the binding |
 | Disabled | `unsafe__isDisabled` | The props as given |
 
-Because every hook runs every time, an input may gain or lose `name`, or move between forms, without a hook-order error; the legacy adapter rebinds — new field, new id, the field default as the new baseline — when `name` or `form` changes. Do not add a hook to `useFieldProps` behind a condition, do not return before the hooks, and do not call `useField` from component code: it is the adapter behind `useFieldProps`, not an input API.
+Because every hook runs every time, an input may gain or lose `name`, or receive a `form` later, without a hook-order error. The legacy adapter then binds like a first mount: a new field with the field-level `defaultValue` as value and baseline, and a new id derived from the form name and the field name. A value typed while the input was standalone is not carried into the field, and React Aria logs its development warning about switching between uncontrolled and controlled — both expected. A `form` prop that changes registers the field with the new form; the old form keeps it (legacy contract, row 4). Do not add a hook to `useFieldProps` behind a condition and do not return before the hooks.
+
+Components must apply the current `id` from props to the element the label points at. React Aria hooks seed their ids once (`useId(props.id)`), so a component that hands `props.id` only to the hook keeps the mount-time id after a rebind; `TextInput` gets this for free from `useTextField`, `NumberInput` merges `{ id: props.id }` into `inputProps` and `SliderBase` sets `id` after spreading `groupProps`.
 
 The form itself comes from the `form` prop when it is set, and from `FormContext` otherwise. That makes `<TextInput name="email" form={form} />` a supported way to link an input to a form it is not nested in, and to override the surrounding form. Keep `form` in the props of every form-attachable component and always pass the whole props object to `useFieldProps` so this keeps working.
 
-Form instances are branded (`FORM_BACKEND` in `Form/backend.ts`): `Form.useForm()` creates a legacy instance, and `<Form>` is a facade that renders the legacy root for it. A modern controller does not exist in this version; the facade, `Form.useForm()` and the legacy adapter throw a clear error if one is passed, so nothing modern is reachable by accident.
+Form instances are branded (see `Form/backend.ts`); a modern controller does not exist in this version, and `<Form>`, `Form.useForm()` and a bound field throw a clear error if one is passed.
 
 `FormScopeMask` (exported) scopes the inputs below it to a new form context: Radio/Checkbox groups render it around their options so a nested `name` never registers as an independent field. A wrapper that overrides `FormContext` for the same purpose must render `FormScopeMask` instead of a bare `FormContext.Provider`, because presentation props (`labelPosition`, `idPrefix`, …) also travel through a separate context that only the mask resets.
 

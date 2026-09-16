@@ -43,7 +43,7 @@ jobs:
       - name: Run the tests
         run: pnpm test
 
-      - name: Type fixtures
+      - name: Type check the Form type fixtures (and their import graph)
         run: pnpm test:types
 
   browser-tests:

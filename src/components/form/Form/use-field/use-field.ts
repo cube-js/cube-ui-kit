@@ -80,8 +80,10 @@ export function useField<T extends FieldTypes, Props extends UseFieldProps<T>>(
     form = undefined;
   }
 
-  if (name != null && isModernFormController(form)) {
-    throw modernBackendUnavailableError(`The "${name}" field`);
+  if (!params.unbound && isModernFormController(form)) {
+    throw modernBackendUnavailableError(
+      name != null ? `The "${name}" field` : 'A field without a name',
+    );
   }
 
   const { isInvalid: isInvalidProp, isValid: isValidProp } =
@@ -118,10 +120,19 @@ export function useField<T extends FieldTypes, Props extends UseFieldProps<T>>(
   const baseId = id || (idPrefix ? `${idPrefix}_${fieldName}` : fieldName);
   let [fieldId, setFieldId] = useState(baseId);
 
-  // The binding is `(form, fieldName)`, and it can change after mount: the
-  // dual-backend shell keeps this hook mounted for standalone inputs, so a
-  // `name` or a `form` may arrive later. Derive the id from the current base
-  // (not the seed) and release the previous binding on every change.
+  // `fieldId` is seeded from the mount-time base and corrected by the effect
+  // below, so after a binding change it lags one commit. Until it catches up,
+  // hand out the current base: a label and its input must never disagree.
+  const isFieldIdCurrent =
+    fieldId === baseId || fieldId.startsWith(`${baseId}_`);
+  const currentId = isFieldIdCurrent ? fieldId : baseId;
+
+  // `fieldName` may change after mount: the dual-backend shell keeps this hook
+  // mounted for standalone inputs, so a name may arrive later or go away.
+  // Derive the id from the current base (not the seed) and release the
+  // previous name. The effect deliberately does not depend on `form`: an
+  // instance whose identity changes on every render (a copy, an inline mock)
+  // would otherwise remove and re-create the field on every render.
   useEffect(() => {
     let newId;
 
@@ -140,9 +151,34 @@ export function useField<T extends FieldTypes, Props extends UseFieldProps<T>>(
         form.removeField(fieldName);
       }
     };
-  }, [fieldName, form]);
+  }, [fieldName]);
 
   let field = form?.getFieldInstance(fieldName);
+
+  if (form) {
+    // First render of this binding: the hook's first render, or a named field
+    // that is not registered yet because the name or the form changed after
+    // mount. A previous form keeps the field (legacy contract, row 4). Without
+    // a name the engine returns an unstored placeholder, so it is only created
+    // on the first render, as before: creating it again on every render would
+    // give the effect below a new object each time.
+    if (isFirstRender || (!field && fieldName)) {
+      if (!field) {
+        field = form.createField(fieldName, true);
+      }
+
+      if (field?.value == null && defaultValue != null) {
+        form.setFieldValue(fieldName, defaultValue, false, true);
+        form.updateInitialFieldsValue({ [fieldName]: defaultValue });
+
+        field = form?.getFieldInstance(fieldName);
+      }
+    }
+
+    if (!field?.touched && defaultValue != null) {
+      form.setFieldValue(fieldName, defaultValue, false, true);
+    }
+  }
 
   if (field) {
     field.rules = processedRules;
@@ -163,36 +199,13 @@ export function useField<T extends FieldTypes, Props extends UseFieldProps<T>>(
   const suppressNecessityIndicator =
     isRequired && !isRequiredProp && necessityIndicatorProp === undefined;
 
+  // Registration happens during render; once it is committed, re-render the
+  // form's owner so its render-time reads see the new field.
   useEffect(() => {
-    if (!form) return;
-
-    if (field) {
+    if (form && field) {
       form.forceReRender();
-    } else {
-      field = form.createField(fieldName);
     }
   }, [field]);
-
-  if (form) {
-    // First render of this binding: the hook's first render, or a field that
-    // is not registered yet because the binding changed after mount.
-    if (isFirstRender || !field) {
-      if (!field) {
-        field = form.createField(fieldName, true);
-      }
-
-      if (field?.value == null && defaultValue != null) {
-        form.setFieldValue(fieldName, defaultValue, false, true);
-        form.updateInitialFieldsValue({ [fieldName]: defaultValue });
-
-        field = form?.getFieldInstance(fieldName);
-      }
-    }
-
-    if (!field?.touched && defaultValue != null) {
-      form.setFieldValue(fieldName, defaultValue, false, true);
-    }
-  }
 
   const onChangeHandler = useEvent((val: any, dontTouch: boolean) => {
     if (!form) return;
@@ -240,7 +253,7 @@ export function useField<T extends FieldTypes, Props extends UseFieldProps<T>>(
 
   return useMemo(
     () => ({
-      id: fieldId,
+      id: currentId,
       name: fieldName,
       value,
       validateTrigger,
@@ -273,7 +286,7 @@ export function useField<T extends FieldTypes, Props extends UseFieldProps<T>>(
       field?.value,
       field?.errors?.length,
       field?.status,
-      fieldId,
+      currentId,
       fieldName,
       isRequired,
       suppressNecessityIndicator,
