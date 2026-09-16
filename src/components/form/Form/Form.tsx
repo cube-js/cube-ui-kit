@@ -25,10 +25,62 @@ import { useCombinedRefs } from '../../../utils/react/index';
 import { extractStyles } from '../../../utils/styles';
 import { useValidationProps } from '../validation/index';
 
+import { isModernFormController } from './backend';
+import { ModernFormRoot } from './ModernFormRoot';
 import { FieldTypes } from './types';
 import { CubeFormData, CubeFormInstance, useForm } from './use-form';
 
+/**
+ * Public legacy context. Its value is the full legacy scope (presentation
+ * props, the instance, `submitError`, `idPrefix`) and is part of the exported
+ * contract: wrappers outside the kit read it and Radio/Checkbox groups mask it.
+ */
 export const FormContext = createContext({});
+
+/**
+ * Presentation and configuration that any root — legacy or modern — hands to
+ * the fields below it. Backend-neutral by construction: no instance in here.
+ */
+export interface FormPresentationContextValue {
+  labelPosition?: FormBaseProps['labelPosition'];
+  labelStyles?: FormBaseProps['labelStyles'];
+  orientation?: 'vertical' | 'horizontal';
+  necessityIndicator?: FormBaseProps['necessityIndicator'];
+  validateTrigger?: FormBaseProps['validateTrigger'];
+  requiredMark?: boolean;
+  showValid?: boolean;
+  idPrefix?: string;
+}
+
+const EMPTY_PRESENTATION: FormPresentationContextValue = {};
+
+export const FormPresentationContext =
+  createContext<FormPresentationContextValue>(EMPTY_PRESENTATION);
+
+/** The legacy instance of the nearest legacy root, `null` elsewhere. */
+export const LegacyFormBackendContext =
+  createContext<CubeFormInstance<any> | null>(null);
+
+/**
+ * Radio/Checkbox groups scope their options: the options see the group's
+ * validation state but neither the surrounding form's presentation props nor
+ * its backend, so a nested `name` never registers as an independent field.
+ */
+export function FormScopeMask({
+  value,
+  children,
+}: {
+  value: Record<string, unknown>;
+  children?: ReactNode;
+}) {
+  return (
+    <FormPresentationContext.Provider value={EMPTY_PRESENTATION}>
+      <LegacyFormBackendContext.Provider value={null}>
+        <FormContext.Provider value={value}>{children}</FormContext.Provider>
+      </LegacyFormBackendContext.Provider>
+    </FormPresentationContext.Provider>
+  );
+}
 
 const FormElement = tasty({
   as: 'form',
@@ -51,10 +103,16 @@ const FormElement = tasty({
   },
 });
 
+/**
+ * Merge order: presentation context, then the legacy `FormContext`, then the
+ * props. Under a legacy root the two contexts carry the same presentation
+ * values, so the result is exactly `{ ...FormContext, ...props }` as before.
+ */
 export function useFormProps(props) {
+  const presentation = useContext(FormPresentationContext);
   const ctx = useContext(FormContext);
 
-  return { ...ctx, ...props };
+  return { ...presentation, ...ctx, ...props };
 }
 
 const formPropNames = new Set([
@@ -90,7 +148,11 @@ export interface CubeFormProps<T extends FieldTypes = FieldTypes>
   orientation?: 'vertical' | 'horizontal';
 }
 
-function Form<T extends FieldTypes>(
+/**
+ * The legacy backend's root: the current engine under an internal name. Its
+ * role is compatibility; see `legacy-contract/README.md` for what is frozen.
+ */
+function LegacyFormRoot<T extends FieldTypes>(
   props: CubeFormProps<T>,
   ref: Ref<HTMLFormElement>,
 ) {
@@ -205,7 +267,7 @@ function Form<T extends FieldTypes>(
 
   let domRef = useObjectRef(ref);
 
-  let ctx = {
+  const presentation: FormPresentationContextValue = {
     labelPosition,
     labelStyles,
     orientation,
@@ -213,9 +275,13 @@ function Form<T extends FieldTypes>(
     validateTrigger,
     requiredMark,
     showValid,
+    idPrefix: name,
+  };
+
+  let ctx = {
+    ...presentation,
     form,
     submitError: form.submitError,
-    idPrefix: name,
   };
 
   if (firstRunRef.current && form) {
@@ -245,19 +311,48 @@ function Form<T extends FieldTypes>(
       }}
       onSubmit={onSubmitCallback}
     >
-      <FormContext.Provider value={ctx}>
-        <Provider
-          insideForm={true}
-          isDisabled={isDisabled}
-          isReadOnly={isReadOnly}
-          isInvalid={isInvalid}
-          isValid={isValid}
-        >
-          {children}
-        </Provider>
-      </FormContext.Provider>
+      <FormPresentationContext.Provider value={presentation}>
+        <LegacyFormBackendContext.Provider value={form}>
+          <FormContext.Provider value={ctx}>
+            <Provider
+              insideForm={true}
+              isDisabled={isDisabled}
+              isReadOnly={isReadOnly}
+              isInvalid={isInvalid}
+              isValid={isValid}
+            >
+              {children}
+            </Provider>
+          </FormContext.Provider>
+        </LegacyFormBackendContext.Provider>
+      </FormPresentationContext.Provider>
     </FormElement>
   );
+}
+
+const _LegacyFormRoot = forwardRef(LegacyFormRoot) as unknown as <
+  T extends FieldTypes,
+>(
+  props: CubeFormProps<T> & { ref?: Ref<HTMLFormElement> },
+) => ReactElement;
+
+(_LegacyFormRoot as any).displayName = 'LegacyFormRoot';
+
+/**
+ * The `<Form>` facade. It chooses the root by the brand of the `form` prop
+ * before any backend hook runs; without a modern controller — which is every
+ * form today — it is the legacy root, so `<Form>` and `Form.useForm()` keep
+ * their behaviour.
+ */
+function Form<T extends FieldTypes>(
+  props: CubeFormProps<T>,
+  ref: Ref<HTMLFormElement>,
+) {
+  if (isModernFormController(props.form as unknown)) {
+    return <ModernFormRoot {...props} ref={ref} />;
+  }
+
+  return <_LegacyFormRoot {...props} ref={ref} />;
 }
 
 /**
@@ -269,4 +364,4 @@ const _Form = forwardRef(Form) as unknown as <T extends FieldTypes>(
 
 (_Form as any).displayName = 'Form';
 
-export { _Form as Form };
+export { _Form as Form, _LegacyFormRoot as LegacyFormRoot };

@@ -141,6 +141,9 @@ export function useField<T extends FieldTypes, Props extends UseFieldProps<T>>(
   const suppressNecessityIndicator =
     isRequired && !isRequiredProp && necessityIndicatorProp === undefined;
 
+  // `fieldName` is a dependency so an input that gains a name after mount
+  // registers: since the dual-backend shell keeps this hook mounted in every
+  // mode, `field` is `undefined` both before and after such a switch.
   useEffect(() => {
     if (!form) return;
 
@@ -149,7 +152,7 @@ export function useField<T extends FieldTypes, Props extends UseFieldProps<T>>(
     } else {
       field = form.createField(fieldName);
     }
-  }, [field]);
+  }, [field, fieldName]);
 
   if (form) {
     if (isFirstRender) {

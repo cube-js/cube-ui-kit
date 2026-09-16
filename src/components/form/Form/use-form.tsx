@@ -2,6 +2,12 @@ import { ReactNode, useRef, useState } from 'react';
 
 import { dotizeConvert } from '../../../utils/dotize';
 
+import {
+  FORM_BACKEND,
+  isModernFormController,
+  LegacyFormBrand,
+  modernBackendUnavailableError,
+} from './backend';
 import { CubeFieldData, FieldTypes, SetFieldsArrType } from './types';
 import { applyRules } from './validation';
 
@@ -32,7 +38,10 @@ function isEqual(v1, v2) {
 export class CubeFormInstance<
   T extends FieldTypes,
   TFormData extends CubeFormData<T> = CubeFormData<T>,
-> {
+> implements LegacyFormBrand
+{
+  /** Backend brand: the `<Form>` facade and the field hook dispatch on it. */
+  public readonly [FORM_BACKEND] = 'legacy' as const;
   public forceReRender: () => void = () => {};
   private defaultValues: PartialString<T> = {};
   private fields: TFormData = {} as TFormData;
@@ -522,6 +531,11 @@ export function useForm<TSourceType extends FieldTypes>(
   } = {},
 ): [CubeFormInstance<TSourceType>] {
   const { onSubmit, onValuesChange } = options;
+
+  if (isModernFormController(form)) {
+    throw modernBackendUnavailableError('Form.useForm()');
+  }
+
   const formRef = useRef<CubeFormInstance<TSourceType>>(null);
   const [, forceUpdate] = useState({});
 

@@ -297,14 +297,15 @@ describe('legacy contract: dynamic field names (§7.1 #6)', () => {
   });
 
   it.each([
-    // Dropping `name` skips `useField`: React reports conditional hook calls.
-    ['named to standalone', 'a', undefined, /calling hooks conditionally/i],
-    // Adding `name` appends hooks; React fails inside its hook bookkeeping
-    // ("Cannot read properties of undefined") before it can name the cause.
-    ['standalone to named', undefined, 'a', /./],
+    ['named to standalone', 'a', undefined],
+    ['standalone to named', undefined, 'a'],
   ])(
-    '[undefined] switching an input from %s changes the hook order and throws',
-    (_, from, to, expectedMessage) => {
+    '[frozen] switching an input from %s keeps the hook order and rebinds',
+    async (_, from, to) => {
+      // Before the dual-backend shell, `useFieldProps` returned early for a
+      // standalone input and React threw on the next render ("Should have a
+      // queue…" / a React internal TypeError). Every hook now runs in every
+      // mode; only the returned props change.
       const consoleError = vi
         .spyOn(console, 'error')
         .mockImplementation(() => {});
@@ -313,11 +314,12 @@ describe('legacy contract: dynamic field names (§7.1 #6)', () => {
         return <TextInput name={name} label="A" />;
       }
 
-      const { rerender, queryByTestId } = renderWithForm(
-        <RenderErrorBoundary>
-          <Fixture name={from} />
-        </RenderErrorBoundary>,
-      );
+      const { formInstance, rerender, queryByTestId, getByRole } =
+        renderWithForm(
+          <RenderErrorBoundary>
+            <Fixture name={from} />
+          </RenderErrorBoundary>,
+        );
 
       expect(queryByTestId('render-error')).toBeNull();
 
@@ -327,7 +329,23 @@ describe('legacy contract: dynamic field names (§7.1 #6)', () => {
         </RenderErrorBoundary>,
       );
 
-      expect(queryByTestId('render-error')).toHaveTextContent(expectedMessage);
+      expect(queryByTestId('render-error')).toBeNull();
+      expect(
+        consoleError.mock.calls.filter((call) => /hook/i.test(String(call[0]))),
+      ).toEqual([]);
+
+      await act(async () => {
+        await userEvent.type(getByRole('textbox'), 'x');
+      });
+
+      if (to) {
+        expect(formInstance.getFieldNames()).toEqual(['a']);
+        expect(formInstance.getFieldValue('a')).toBe('x');
+      } else {
+        // Unbinding released the field; typing stays local to the input.
+        expect(formInstance.getFieldNames()).toEqual([]);
+        expect((getByRole('textbox') as HTMLInputElement).value).toBe('x');
+      }
 
       consoleError.mockRestore();
     },

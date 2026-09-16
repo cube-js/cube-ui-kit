@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-02T14:26:38.568Z",
+  "generatedAt": "2026-09-16T15:38:46.955Z",
   "tooling": {
     "eslint": "10.8.0",
     "eslint-plugin-react-hooks": "7.1.1",
@@ -20,14 +20,14 @@
     ],
     "input components": ["src/components/fields/**/*.{ts,tsx}"]
   },
-  "filesLinted": 123,
+  "filesLinted": 126,
   "totals": {
     "react-hooks/exhaustive-deps": 23,
-    "react-hooks/immutability": 15,
+    "react-hooks/immutability": 13,
     "react-hooks/incompatible-library": 1,
     "react-hooks/preserve-manual-memoization": 5,
-    "react-hooks/refs": 50,
-    "react-hooks/rules-of-hooks": 14,
+    "react-hooks/refs": 49,
+    "react-hooks/rules-of-hooks": 9,
     "react-hooks/set-state-in-effect": 5,
     "react-hooks/use-memo": 1
   },
@@ -107,11 +107,6 @@
     },
     "src/components/form/Form/Form.tsx": {
       "react-hooks/refs": 6
-    },
-    "src/components/form/Form/use-field/use-field-props.tsx": {
-      "react-hooks/immutability": 2,
-      "react-hooks/refs": 1,
-      "react-hooks/rules-of-hooks": 5
     },
     "src/components/form/Form/use-field/use-field.ts": {
       "react-hooks/exhaustive-deps": 3,

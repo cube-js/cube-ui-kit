@@ -63,7 +63,11 @@ Never call `useField` for standalone fields — the extra state management break
 
 The form itself comes from the `form` prop when it is set, and from `FormContext` otherwise. That makes `<TextInput name="email" form={form} />` a supported way to link an input to a form it is not nested in, and to override the surrounding form. Keep `form` in the props of every form-attachable component and always pass the whole props object to `useFieldProps` so this keeps working.
 
-`useFormProps` stays a public export because wrappers outside the UI Kit call it to read the form context and then hand adjusted props to a nested input. Since it merges as `{ ...context, ...props }`, and `useFieldProps` applies it again, any prop the wrapper sets explicitly wins — but a **deleted** key falls back to the context value. To detach a nested input from the form, pass `form={undefined}` (or `null`) explicitly, or omit `name`; destructuring `form` away is not enough.
+`useFieldProps` calls **the same hooks in every mode**. Standalone, inside the deprecated `<Field>`, disabled through `unsafe__isDisabled`, or bound to a form — the mode only decides which props come back, so an input may gain or lose `name`, or move between forms, without a hook-order error. The legacy binding (`useField`) is the legacy backend's adapter and runs inert when the input is not bound to it. Do not add a hook to `useFieldProps` behind a condition, and do not return before the hooks.
+
+Form instances are branded (`FORM_BACKEND` in `Form/backend.ts`): `Form.useForm()` creates a legacy instance, and `<Form>` is a facade that renders the legacy root for it. A modern controller does not exist in this version; the facade, `Form.useForm()` and `useFieldProps` throw a clear error if one is passed, so nothing modern is reachable by accident.
+
+`useFormProps` stays a public export because wrappers outside the UI Kit call it to read the form context and then hand adjusted props to a nested input. Since it merges as `{ ...presentationContext, ...FormContext, ...props }` (the two contexts carry the same presentation values under a legacy root), and `useFieldProps` applies it again, any prop the wrapper sets explicitly wins — but a **deleted** key falls back to the context value. To detach a nested input from the form, pass `form={undefined}` (or `null`) explicitly, or omit `name`; destructuring `form` away is not enough.
 
 ## 3. Field chrome
 

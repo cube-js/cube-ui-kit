@@ -17,7 +17,8 @@ import {
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
 import { extractStyles } from '../../../utils/styles';
-import { FormContext, useFieldProps, wrapWithField } from '../../form';
+import { useFieldProps, wrapWithField } from '../../form';
+import { FormScopeMask } from '../../form/Form/Form';
 
 import { CheckboxGroupContext } from './context';
 
@@ -93,7 +94,7 @@ function CheckboxGroup(props: WithNullableValue<CubeCheckboxGroupProps>, ref) {
         horizontal: orientation === 'horizontal',
       }}
     >
-      <FormContext.Provider
+      <FormScopeMask
         value={{
           isDisabled,
           isInvalid,
@@ -103,7 +104,7 @@ function CheckboxGroup(props: WithNullableValue<CubeCheckboxGroupProps>, ref) {
         <CheckboxGroupContext.Provider value={state}>
           {children}
         </CheckboxGroupContext.Provider>
-      </FormContext.Provider>
+      </FormScopeMask>
     </CheckGroupElement>
   );
 

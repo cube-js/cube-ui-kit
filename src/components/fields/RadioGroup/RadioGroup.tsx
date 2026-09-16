@@ -18,7 +18,8 @@ import {
 } from '../../../utils/react/nullableValue';
 import { extractStyles } from '../../../utils/styles';
 import { CubeItemProps } from '../../content/Item/Item';
-import { FormContext, useFieldProps, wrapWithField } from '../../form';
+import { useFieldProps, wrapWithField } from '../../form';
+import { FormScopeMask } from '../../form/Form/Form';
 
 import { RadioContext } from './context';
 
@@ -151,7 +152,7 @@ function RadioGroup(props: WithNullableValue<CubeRadioGroupProps>, ref) {
       }}
       {...groupFocusProps}
     >
-      <FormContext.Provider
+      <FormScopeMask
         value={{
           isRequired,
           isInvalid,
@@ -171,7 +172,7 @@ function RadioGroup(props: WithNullableValue<CubeRadioGroupProps>, ref) {
         >
           {children}
         </RadioContext.Provider>
-      </FormContext.Provider>
+      </FormScopeMask>
     </RadioGroupElement>
   );
 
