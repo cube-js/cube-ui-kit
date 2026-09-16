@@ -1,3 +1,4 @@
+import { ClearPressResponder } from '@react-aria/interactions';
 import { CollectionChildren, FocusableRefValue } from '@react-types/shared';
 import {
   BASE_STYLES,
@@ -53,6 +54,7 @@ import {
   FilterListBox,
 } from '../FilterListBox/FilterListBox';
 import { ListBox } from '../ListBox';
+import { TriggerActions } from '../TriggerActions';
 
 import type { FieldBaseProps } from '../../../shared';
 
@@ -144,6 +146,18 @@ export interface CubeFilterPickerProps<T>
   /** Callback called when the clear button is pressed */
   onClear?: () => void;
   /**
+   * Custom actions rendered inside the trigger, to the left of the built-in
+   * clear button and dropdown caret. Use `FilterPicker.Action` so they match the
+   * trigger's size and theme.
+   *
+   * Pressing one runs its handler without opening or closing the popover —
+   * including while the popover is open. Actions follow the trigger's disabled
+   * state but NOT `isReadOnly`, since a read-only field can still host an
+   * action that does not change the value; pass `isDisabled` yourself for one
+   * that does.
+   */
+  actions?: ReactNode;
+  /**
    * Whether items are currently loading. Shows a loading spinner in the search
    * input suffix inside the popover. Unlike `isLoading`, this does NOT disable
    * the trigger.
@@ -214,6 +228,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     rightIcon,
     prefix,
     suffix,
+    actions,
     hotkeys,
     triggerTooltip,
     triggerDescription,
@@ -481,6 +496,15 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     },
   });
 
+  // A press on the trigger's own trailing run — a custom action or the clear
+  // button — must not be read as an interaction outside the popover. Without
+  // this the overlay reads it as a press on our own trigger and dismisses,
+  // swallowing the press, so the first press on `Reset` while the list is open
+  // only closed the list and the action never ran.
+  const shouldCloseOnInteractOutside = useEvent(
+    (element: Element) => !element.closest('[data-trigger-action]'),
+  );
+
   // Clear handler
   const clearValue = useEvent(() => {
     if (selectionMode === 'multiple') {
@@ -627,11 +651,27 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
 
   const validationIcon = getValidationIcon({ isInvalid, isValid });
 
-  if (validationIcon) {
+  // The same expression the trigger is painted with, not the raw `theme` — see
+  // `Picker` for why validation has to be applied here too.
+  const paintedTheme = getValidationTheme(theme, { isInvalid, isValid });
+
+  if (validationIcon || actions) {
+    // The `suffix` slot sits between the label and `rightIcon`, so actions
+    // placed at its end land immediately left of the built-in clear button and
+    // caret — which is where custom actions belong.
     suffix = (
       <>
         {suffix}
         {validationIcon}
+        {actions ? (
+          <TriggerActions
+            type={type}
+            theme={paintedTheme}
+            isDisabled={isDisabled || isLoading}
+          >
+            {actions}
+          </TriggerActions>
+        ) : null}
       </>
     );
   }
@@ -645,7 +685,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
       qa={qa || 'FilterPicker'}
       id={id}
       type={type}
-      theme={getValidationTheme(theme, { isInvalid, isValid })}
+      theme={paintedTheme}
       size={size}
       shape={shape}
       isDisabled={isDisabled || isLoading}
@@ -661,23 +701,29 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
         ) : rightIcon !== undefined ? (
           rightIcon
         ) : showClearButton ? (
-          <ItemActionProvider
-            type={type}
-            // The same expression the trigger is painted with, not the raw
-            // `theme` — see `Picker` for why validation has to be applied here too.
-            theme={getValidationTheme(theme, { isInvalid, isValid })}
-          >
-            <ItemAction
-              icon={<CloseIcon />}
-              size={size}
-              qa="FilterPickerClearButton"
-              // No explicit `type`/`theme` — see `Picker`: the default `current`
-              // type inherits the trigger's text color, which already carries
-              // validation state.
-              mods={{ pressed: false }}
-              onPress={clearValue}
-            />
-          </ItemActionProvider>
+          // `ClearPressResponder`: `DialogTrigger` opens the popover through a
+          // `PressResponder` whose context reaches every `usePress` below it,
+          // this button included — so without it, clearing also opened the
+          // popover that `clearValue` had just closed.
+          <ClearPressResponder>
+            <ItemActionProvider
+              type={type}
+              // The theme the trigger is PAINTED with — see `paintedTheme` above.
+              theme={paintedTheme}
+            >
+              <ItemAction
+                icon={<CloseIcon />}
+                size={size}
+                qa="FilterPickerClearButton"
+                data-trigger-action=""
+                // No explicit `type`/`theme` — see `Picker`: the default `current`
+                // type inherits the trigger's text color, which already carries
+                // validation state.
+                mods={{ pressed: false }}
+                onPress={clearValue}
+              />
+            </ItemActionProvider>
+          </ClearPressResponder>
         ) : (
           <DirectionIcon to={isPopoverOpen ? 'top' : 'bottom'} />
         )
@@ -797,6 +843,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
         isOpen={isPopoverOpen}
         containerPadding={containerPadding}
         shouldFlip={shouldFlip}
+        shouldCloseOnInteractOutside={shouldCloseOnInteractOutside}
         onOpenChange={handleOpenChange}
       >
         {triggerElement}
@@ -901,11 +948,17 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
   );
 }) as unknown as (<T>(
   props: CubeFilterPickerProps<T> & { ref?: ForwardedRef<HTMLElement> },
-) => ReactElement) & { Item: typeof ListBox.Item; Section: typeof BaseSection };
+) => ReactElement) & {
+  Item: typeof ListBox.Item;
+  Section: typeof BaseSection;
+  Action: typeof ItemAction;
+};
 
 FilterPicker.Item = ListBox.Item;
 
 FilterPicker.Section = BaseSection;
+
+FilterPicker.Action = ItemAction;
 
 Object.defineProperty(FilterPicker, 'cubeInputType', {
   value: 'FilterPicker',

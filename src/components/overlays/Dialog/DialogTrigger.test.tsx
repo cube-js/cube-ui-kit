@@ -1,3 +1,4 @@
+import { ClearPressResponder } from '@react-aria/interactions';
 import { useRef, useState } from 'react';
 
 import { renderWithRoot, userEvent, waitFor } from '../../../test';
@@ -270,5 +271,47 @@ describe('<DialogTrigger type="popover" shouldCloseOnInteractOutside />', () => 
     await waitFor(() =>
       expect(baseElement.querySelector('[data-qa="Dialog"]')).toBeNull(),
     );
+  });
+
+  // The predicate is asked before the `data-popover-trigger` lookup, not only
+  // for presses outside every trigger. A trigger can own interactive controls —
+  // `Picker` / `FilterPicker` / `Select` put a clear button and their custom
+  // `actions` inside theirs — and those used to take the "our own trigger, so
+  // dismiss" branch without the predicate ever being asked, which cost the
+  // control its press.
+  //
+  // Asserted as "the predicate is consulted": whether the press then reaches
+  // the control depends on the trigger also isolating it (`ClearPressResponder`
+  // plus a propagation guard), which is the pickers' job and is covered by
+  // their own specs.
+  it('asks the predicate for a control INSIDE the trigger', async () => {
+    const seen: Element[] = [];
+
+    const { baseElement } = renderWithRoot(
+      <DialogTrigger
+        type="popover"
+        shouldCloseOnInteractOutside={(el) => {
+          seen.push(el);
+
+          return true;
+        }}
+      >
+        <Button qa="Trigger">
+          Open
+          <span data-qa="Owned">Owned</span>
+        </Button>
+        <Dialog>
+          <Button qa="Inside">Inside</Button>
+        </Dialog>
+      </DialogTrigger>,
+    );
+
+    await open(baseElement);
+
+    await user.click(
+      baseElement.querySelector('[data-qa="Owned"]') as HTMLElement,
+    );
+
+    expect(seen.some((el) => el.closest('[data-qa="Owned"]'))).toBe(true);
   });
 });

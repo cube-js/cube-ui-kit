@@ -362,6 +362,41 @@ describe('<Tabs />', () => {
     });
   });
 
+  describe('Tab.Action', () => {
+    it('should render a tab action and call its handler without selecting the tab', async () => {
+      const onPress = vi.fn();
+      const onChange = vi.fn();
+
+      const { getByTestId } = renderWithRoot(
+        <Tabs defaultActiveKey="tab1" onChange={onChange}>
+          <Tab key="tab1" title="Tab 1">
+            Content 1
+          </Tab>
+          <Tab
+            key="tab2"
+            title="Tab 2"
+            actions={
+              <Tab.Action qa="TabAction" aria-label="Pin" onPress={onPress} />
+            }
+          >
+            Content 2
+          </Tab>
+        </Tabs>,
+      );
+
+      const action = getByTestId('TabAction');
+
+      expect(action).toBeInTheDocument();
+
+      await act(async () => {
+        await userEvent.click(action);
+      });
+
+      expect(onPress).toHaveBeenCalledTimes(1);
+      expect(onChange).not.toHaveBeenCalled();
+    });
+  });
+
   describe('Visual Variants', () => {
     it('should render with radio type', () => {
       const { getByTestId, getByRole } = renderWithRoot(

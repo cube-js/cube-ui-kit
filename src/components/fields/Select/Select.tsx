@@ -75,6 +75,7 @@ import {
 } from '../../form';
 import { DisplayTransition } from '../../helpers';
 import { Portal } from '../../portal';
+import { TriggerActions } from '../TriggerActions';
 
 import type { Props } from '../../../props';
 
@@ -248,6 +249,18 @@ export interface CubeSelectBaseProps<T>
   isClearable?: boolean;
   /** Callback called when the clear button is pressed */
   onClear?: () => void;
+  /**
+   * Custom actions rendered inside the trigger, to the left of the built-in
+   * clear button and dropdown caret. Use `Select.Action` so they match the
+   * trigger's size and theme.
+   *
+   * Pressing one runs its handler without opening or closing the popover —
+   * including while the popover is open. Actions follow the trigger's disabled
+   * state but NOT `isReadOnly`, since a read-only field can still host an
+   * action that does not change the value; pass `isDisabled` yourself for one
+   * that does.
+   */
+  actions?: ReactNode;
   /** Callback called when the popover open state changes */
   onOpenChange?: (isOpen: boolean) => void;
 }
@@ -301,6 +314,7 @@ function Select<T extends object>(
     listBoxStyles,
     overlayStyles,
     suffix,
+    actions,
     message,
     triggerDescription,
     descriptionPlacement,
@@ -420,7 +434,7 @@ function Select<T extends object>(
   );
 
   suffix = useMemo(() => {
-    if (!suffix && !validationIcon) {
+    if (!suffix && !validationIcon && !actions) {
       return null;
     }
 
@@ -428,9 +442,24 @@ function Select<T extends object>(
       <>
         {suffix}
         {validationIcon}
+        {actions ? (
+          // The `suffix` slot sits between the label and `rightIcon`, so actions
+          // placed at its end land immediately left of the built-in clear button
+          // and caret — which is where custom actions belong.
+          //
+          // The RAW theme, like the clear button below — this trigger paints
+          // with the raw theme and surfaces validation through the wrapper.
+          <TriggerActions
+            type={type}
+            theme={theme}
+            isDisabled={isDisabled || isLoading}
+          >
+            {actions}
+          </TriggerActions>
+        ) : null}
       </>
     );
-  }, [suffix, validationIcon]);
+  }, [suffix, validationIcon, actions, type, theme, isDisabled, isLoading]);
 
   let selectField = (
     <SelectWrapperElement
@@ -489,6 +518,7 @@ function Select<T extends object>(
               <ItemAction
                 icon={<CloseIcon />}
                 qa="SelectClearButton"
+                data-trigger-action=""
                 // No explicit `type`/`theme`: the default `current` type paints
                 // from the trigger's own inherited text color, so the button
                 // matches whatever the field is showing instead of one palette.
@@ -588,6 +618,14 @@ export function ListBoxPopup({
       isOpen: state.isOpen,
       isDismissable: true,
       shouldCloseOnInteractOutside: (el) => {
+        // The trigger owns interactive controls of its own — the clear button
+        // and any custom `actions`. They live INSIDE the trigger element, so
+        // the lookup below would read them as a press on our own trigger and
+        // dismiss, swallowing the press: the first press on `Reset` while the
+        // list was open only closed the list and the action never ran. Same
+        // guard as `DialogTrigger`, which `Picker` / `FilterPicker` go through.
+        if (el.closest('[data-trigger-action]')) return false;
+
         const menuTriggerEl = el.closest('[data-popover-trigger]');
         if (!menuTriggerEl) {
           if (el.closest('[data-popover-keep]')) return false;
@@ -841,10 +879,12 @@ const __Select = Object.assign(
   _Select as typeof _Select & {
     Item: typeof CollectionItem;
     Section: typeof SelectSectionComponent;
+    Action: typeof ItemAction;
   },
   {
     Item: CollectionItem,
     Section: SelectSectionComponent,
+    Action: ItemAction,
   },
 );
 

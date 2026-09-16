@@ -45,6 +45,7 @@ Choose a different component when the interaction has another shape:
 - **`size`** `string` (default: `medium`) — Size of the select component
 - **`direction`** `string` (default: `bottom`) — Preferred direction for the dropdown menu
 - **`isClearable`** `boolean` (default: `false`) — Whether the select is clearable using a clear button in the rightIcon slot
+- **`actions`** `ReactNode` — Custom actions rendered inside the trigger, to the left of the built-in clear button and dropdown caret
 - **`shouldFlip`** `boolean` (default: `true`) — Whether dropdown should flip to fit in viewport
 - **`overlayOffset`** `number` (default: `8`) — Distance between select and dropdown in pixels
 - **`items`** `Iterable<T>` — Item objects used when rendering dynamic collections
@@ -83,6 +84,8 @@ Choose a different component when the interaction has another shape:
 **isClearable** - Adds a clear button in the rightIcon slot that allows users to clear the selected value. The clear button only appears when a value is selected and the select is not disabled or read-only.
 
 **onClear** - Callback fired when the clear button is pressed, allowing you to perform custom actions when the selection is cleared.
+
+**actions** - Your own controls inside the trigger, rendered to the left of the built-in clear button and dropdown caret. Pressing one runs its handler without opening or closing the popover — including while the popover is open — so an action can do something the clear button cannot, such as restoring a default selection instead of emptying it. Use `Select.Action` so they match the trigger's size and theme. Actions follow the trigger's disabled state but not `isReadOnly`; pass `isDisabled` yourself for an action that changes the value.
 
 **tooltip** - Enables tooltip display on the trigger button. Can be:
 
@@ -219,6 +222,19 @@ For detailed information about all available item properties, see [Item document
 </Select>
 ```
 
+### Select.Action
+
+An [ItemAction](/docs/actions-itemaction--docs) re-exported for the `actions` slot. It picks up the trigger's size and theme, so an action matches the field it sits in without being configured. Give every icon-only action an `aria-label` (a `tooltip` string also supplies one), since the icon alone has no accessible name.
+
+```jsx
+<Select
+  label="Color"
+  actions={<Select.Action icon={<ReloadIcon />} aria-label="Reset" onPress={reset} />}
+>
+  {items}
+</Select>
+```
+
 ### Select.Section
 
 Groups related options together with an optional heading.
@@ -298,6 +314,35 @@ Groups related options together with an optional heading.
   <Select.Item key="red">Red</Select.Item>
   <Select.Item key="blue">Blue</Select.Item>
   <Select.Item key="green">Green</Select.Item>
+</Select>
+```
+
+### With Custom Actions
+
+<Story of={SelectStories.WithActions} />
+
+```jsx
+const DEFAULT_KEY = 'blue';
+
+<Select
+  isClearable
+  label="Color"
+  placeholder="Choose a color..."
+  selectedKey={selectedKey}
+  actions={
+    selectedKey !== DEFAULT_KEY ? (
+      <Select.Action
+        icon={<ReloadIcon />}
+        aria-label="Reset to default"
+        tooltip="Reset to default"
+        onPress={() => setSelectedKey(DEFAULT_KEY)}
+      />
+    ) : null
+  }
+  onSelectionChange={setSelectedKey}
+>
+  <Select.Item key="red">Red</Select.Item>
+  <Select.Item key="blue">Blue</Select.Item>
 </Select>
 ```
 

@@ -57,6 +57,7 @@ Choose a different component when the interaction has another shape:
 - **`disabledKeys`** `Key[]` — Array of keys for disabled items
 - **`isClearable`** `boolean` (default: `false`) — Whether the picker shows a clear button when a selection is made
 - **`onClear`** `() => void` — Callback called when the clear button is pressed
+- **`actions`** `ReactNode` — Custom actions rendered inside the trigger, to the left of the built-in clear button and dropdown caret
 - **`sortSelectedToTop`** `boolean` — Sort selected items to the top when the popover opens (only works with `items` prop)
 - **`renderSummary`** `((args: { selectedLabels, selectedKeys, selectionMode }) => ReactNode) | false` — Custom renderer for the summary shown inside the trigger
 - **`header`** `ReactNode` — Custom header content in the popover
@@ -228,6 +229,21 @@ See [Item documentation](/docs/content-item--docs) for the complete API. Common 
 </Picker>
 ```
 
+### Picker.Action
+
+An [ItemAction](/docs/actions-itemaction--docs) re-exported for the `actions` slot. It picks up the trigger's size and theme, so an action matches the field it sits in without being configured.
+
+```jsx
+<Picker
+  label="Favorite Fruit"
+  actions={<Picker.Action icon={<ReloadIcon />} aria-label="Reset" onPress={reset} />}
+>
+  {items}
+</Picker>
+```
+
+Give every icon-only action an `aria-label` (a `tooltip` string also supplies one), since the icon alone has no accessible name.
+
 ### Picker.Section
 
 Groups related items together under an optional section heading. Sections provide visual and semantic grouping for better organization.
@@ -385,6 +401,39 @@ Enable users to clear their selection with a clear button that appears when an i
   <Picker.Item key="apple">Apple</Picker.Item>
   <Picker.Item key="banana">Banana</Picker.Item>
   <Picker.Item key="orange">Orange</Picker.Item>
+</Picker>
+```
+
+### With Custom Actions
+
+<Story of={PickerStories.WithActions} />
+
+Use `actions` to add your own controls inside the trigger. They render to the left of the built-in clear button and dropdown caret, and pressing one runs its handler without opening the popover — so an action can do something the clear button cannot, such as restoring a default selection instead of emptying it.
+
+Actions follow the trigger's disabled state but not `isReadOnly` — a read-only field can still host an action that does not change the value, so pass `isDisabled` yourself for one that does. Pressing an action neither opens nor closes the popover, and works while the popover is open.
+
+```jsx
+const DEFAULT_KEY = 'apple';
+
+<Picker
+  label="Favorite Fruit"
+  placeholder="Select a fruit"
+  selectedKey={selectedKey}
+  isClearable
+  actions={
+    selectedKey !== DEFAULT_KEY ? (
+      <Picker.Action
+        icon={<ReloadIcon />}
+        aria-label="Reset to default"
+        tooltip="Reset to default"
+        onPress={() => setSelectedKey(DEFAULT_KEY)}
+      />
+    ) : null
+  }
+  onSelectionChange={setSelectedKey}
+>
+  <Picker.Item key="apple">Apple</Picker.Item>
+  <Picker.Item key="banana">Banana</Picker.Item>
 </Picker>
 ```
 
