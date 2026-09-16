@@ -57,14 +57,13 @@ const EMPTY_PRESENTATION: FormPresentationContextValue = {};
 export const FormPresentationContext =
   createContext<FormPresentationContextValue>(EMPTY_PRESENTATION);
 
-/** The legacy instance of the nearest legacy root, `null` elsewhere. */
-export const LegacyFormBackendContext =
-  createContext<CubeFormInstance<any> | null>(null);
-
 /**
- * Radio/Checkbox groups scope their options: the options see the group's
- * validation state but neither the surrounding form's presentation props nor
- * its backend, so a nested `name` never registers as an independent field.
+ * Scope the inputs below to a new form context. Radio/Checkbox groups use it
+ * for their options: they see the group's validation state, but neither the
+ * surrounding form's presentation props nor its instance, so a nested `name`
+ * never registers as an independent field. Wrappers that used to override
+ * `FormContext` directly for the same purpose should render this instead — a
+ * bare `FormContext.Provider` no longer masks the presentation context.
  */
 export function FormScopeMask({
   value,
@@ -75,12 +74,15 @@ export function FormScopeMask({
 }) {
   return (
     <FormPresentationContext.Provider value={EMPTY_PRESENTATION}>
-      <LegacyFormBackendContext.Provider value={null}>
-        <FormContext.Provider value={value}>{children}</FormContext.Provider>
-      </LegacyFormBackendContext.Provider>
+      <FormContext.Provider value={value}>{children}</FormContext.Provider>
     </FormPresentationContext.Provider>
   );
 }
+
+/** The root components share one signature: generic props plus a form ref. */
+export type FormRootComponent = <T extends FieldTypes>(
+  props: CubeFormProps<T> & { ref?: Ref<HTMLFormElement> },
+) => ReactElement;
 
 const FormElement = tasty({
   as: 'form',
@@ -312,29 +314,25 @@ function LegacyFormRoot<T extends FieldTypes>(
       onSubmit={onSubmitCallback}
     >
       <FormPresentationContext.Provider value={presentation}>
-        <LegacyFormBackendContext.Provider value={form}>
-          <FormContext.Provider value={ctx}>
-            <Provider
-              insideForm={true}
-              isDisabled={isDisabled}
-              isReadOnly={isReadOnly}
-              isInvalid={isInvalid}
-              isValid={isValid}
-            >
-              {children}
-            </Provider>
-          </FormContext.Provider>
-        </LegacyFormBackendContext.Provider>
+        <FormContext.Provider value={ctx}>
+          <Provider
+            insideForm={true}
+            isDisabled={isDisabled}
+            isReadOnly={isReadOnly}
+            isInvalid={isInvalid}
+            isValid={isValid}
+          >
+            {children}
+          </Provider>
+        </FormContext.Provider>
       </FormPresentationContext.Provider>
     </FormElement>
   );
 }
 
-const _LegacyFormRoot = forwardRef(LegacyFormRoot) as unknown as <
-  T extends FieldTypes,
->(
-  props: CubeFormProps<T> & { ref?: Ref<HTMLFormElement> },
-) => ReactElement;
+const _LegacyFormRoot = forwardRef(
+  LegacyFormRoot,
+) as unknown as FormRootComponent;
 
 (_LegacyFormRoot as any).displayName = 'LegacyFormRoot';
 
@@ -348,7 +346,7 @@ function Form<T extends FieldTypes>(
   props: CubeFormProps<T>,
   ref: Ref<HTMLFormElement>,
 ) {
-  if (isModernFormController(props.form as unknown)) {
+  if (isModernFormController(props.form)) {
     return <ModernFormRoot {...props} ref={ref} />;
   }
 
@@ -358,9 +356,7 @@ function Form<T extends FieldTypes>(
 /**
  * Forms allow users to enter data that can be submitted while providing alignment and styling for form fields.
  */
-const _Form = forwardRef(Form) as unknown as <T extends FieldTypes>(
-  props: CubeFormProps<T> & { ref?: Ref<HTMLFormElement> },
-) => ReactElement;
+const _Form = forwardRef(Form) as unknown as FormRootComponent;
 
 (_Form as any).displayName = 'Form';
 

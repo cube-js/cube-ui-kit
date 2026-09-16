@@ -5,7 +5,6 @@ import { useProviderProps } from '../../../../provider';
 import { mergeProps } from '../../../../utils/react/index';
 import { warn } from '../../../../utils/warnings';
 import { useValidationProps } from '../../validation/index';
-import { modernBackendUnavailableError, resolveFormBackend } from '../backend';
 import { useInsideLegacyField } from '../Field';
 import { useFormProps } from '../Form';
 
@@ -74,19 +73,13 @@ export function useFieldProps<
   const generatedId = useId();
   const isBound = hasName && !isInsideLegacyField && !isDisabled;
 
-  // `props.form` is the explicit prop or the surrounding legacy root by now.
-  const backend = resolveFormBackend(props.form);
-
-  if (isBound && backend.kind === 'modern') {
-    throw modernBackendUnavailableError(`The "${props.name}" field`);
-  }
-
-  // Legacy binding, always called; with neither name nor form it registers
-  // nothing, generates no id and returns an inert value.
-  const field = useField<T, Props>(
-    isBound ? props : ({ ...props, name: undefined, form: undefined } as Props),
-    { defaultValidationTrigger: params.defaultValidationTrigger },
-  );
+  // The legacy backend's adapter, always called. Unbound, it registers
+  // nothing, generates no id and returns an inert value; bound, it refuses a
+  // modern controller with a clear error.
+  const field = useField<T, Props>(props, {
+    defaultValidationTrigger: params.defaultValidationTrigger,
+    unbound: !isBound,
+  });
 
   const isOutsideOfForm = field?.form == null;
 
@@ -138,14 +131,6 @@ export function useFieldProps<
         })
       : {};
 
-    // Use errorMessage directly or fall back to validation errors
-    const compiledErrorMessage =
-      props.errorMessage !== undefined
-        ? props.errorMessage
-        : field?.field?.status === 'invalid' && field?.field?.errors?.length
-          ? field.field.errors[0]
-          : undefined;
-
     // Exclude `form` (it must never reach a DOM node) and the field's own
     // handlers: `valueProps` already routes the component's change event into
     // `field.onChange` under the name the component listens to, and `onBlur` is
@@ -165,7 +150,6 @@ export function useFieldProps<
           validateTrigger: field.validateTrigger ?? defaultValidationTrigger,
           // Chained after the caller's own `onBlur` by `mergeProps`.
           onBlur: field.onBlur,
-          errorMessage: compiledErrorMessage,
         });
 
     if (result.id) {

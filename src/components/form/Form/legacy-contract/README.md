@@ -43,9 +43,9 @@ One row per item of plan §7.1. "Existing" points at the pre-existing spec that 
 | 1 | Creation | `instance-and-binding` | frozen, undefined | `Form.useForm()` returns one stable instance and installs `forceReRender` on its creator. `useForm(instance)` adopts without installing anything, so a bare `new CubeFormInstance()` passed to `<Form>` **never rerenders anything** (undefined). Classify direct construction as unsupported for reactive use. |
 | 2 | Context binding | `instance-and-binding`; existing `field.test` | frozen | Named inputs register with the context form; unnamed ones do not. `CheckboxGroup`/`RadioGroup` register once and mask the context so options never register, even with a `name`. |
 | 3 | Explicit precedence / detachment | `instance-and-binding`; existing `explicit-form-prop.test`, `unbind-form-prop.test` | frozen | Explicit `form` wins over context; `form={undefined}` and `form={null}` both detach and leave the input controlled by its own props. |
-| 4 | Form identity change after mount | `instance-and-binding` | undefined | `<Form form={b}>` after mounting with `a` keeps using `a`. An input whose `form` prop changes registers with the new form **and stays registered in the old one**. |
+| 4 | Form identity change after mount | `instance-and-binding` | undefined | `<Form form={b}>` after mounting with `a` keeps using `a`. An input whose own `form` prop changes is defined by the dual-backend shell since Phase 3 (`../dual-backend-shell.test.tsx`: it leaves the old form and registers with the new one; before the shell it stayed registered in both, undefined). |
 | 5 | Registration order, duplicates | `instance-and-binding` | frozen, undefined | `getFieldNames()` is mount order. Two inputs with one name share a field object; unmounting either deletes it and the survivor re-registers with the default value (undefined). |
-| 6 | Dynamic names | `instance-and-binding` | frozen | Renaming re-registers under the new name and drops the old value. Switching between named and standalone rebinds without a hook-order error: since the dual-backend shell (Phase 3) `useFieldProps` calls every hook in every mode. (Before it, the switch threw `Should have a queue…` / a React internal `TypeError`; that row was `[undefined]`.) |
+| 6 | Dynamic names | `instance-and-binding` | frozen | Renaming re-registers under the new name and drops the old value. Switching an input between named and standalone is defined by the dual-backend shell since Phase 3 (`../dual-backend-shell.test.tsx`: it rebinds with the form-prefixed id and the field default as the baseline; before the shell the switch threw `Should have a queue…`, undefined). |
 | 7 | First-mount defaults | `defaults-and-values`; existing `field.test` | frozen, undefined | Form defaults seed fields without dirtying them. A field-level `defaultValue` fills an empty field and becomes its baseline. When both exist the field default wins for an untouched field **but the Form default stays the dirty baseline**, so the field starts dirty (undefined). |
 | 8 | Form default changes after mount | `defaults-and-values`; existing `field.test` | frozen | Current values are untouched, the dirty baseline moves, `resetFields()` adopts the new defaults. |
 | 9 | Field-level `defaultValue` changes | `defaults-and-values`; existing `field.test` | frozen | Applied on every untouched render, ignored after touch, and only the first one reaches the baseline. |
@@ -109,14 +109,14 @@ Every mutation rerenders the whole owner subtree because the only publication me
 - `pnpm diagnostics:form --update` rewrites the baseline after a reviewed change (a decrease should always be committed).
 - `--verbose` lists every message; `--json` dumps the raw report.
 
-Baseline on `b204a4d7`: 123 files linted, 114 diagnostics. After the dual-backend shell (plan Phase 3): 126 files, 106 diagnostics — `use-field-props.tsx` is at zero (its five conditional hooks and the render-phase ref read are gone; `rules-of-hooks` fell from 14 to 9), and the remaining legacy-engine findings sit in `use-field.ts`, `use-form.tsx`, `Form.tsx` and `Field.tsx`, the legacy adapter modules.
+Baseline on `b204a4d7`: 123 files linted, 114 diagnostics. After the dual-backend shell (plan Phase 3): 127 files, 106 diagnostics — `use-field-props.tsx` is at zero (its five conditional hooks and the render-phase ref read are gone; `rules-of-hooks` fell from 14 to 9), and the remaining legacy-engine findings sit in `use-field.ts`, `use-form.tsx`, `Form.tsx` and `Field.tsx`, the legacy adapter modules.
 
 | Rule | Total | Legacy engine | Input components |
 | --- | --: | --: | --: |
-| `react-hooks/refs` | 50 | 13 | 37 |
+| `react-hooks/refs` | 49 | 12 | 37 |
 | `react-hooks/exhaustive-deps` | 23 | 3 | 20 |
-| `react-hooks/immutability` | 15 | 8 | 7 |
-| `react-hooks/rules-of-hooks` | 14 | 5 | 9 |
+| `react-hooks/immutability` | 13 | 6 | 7 |
+| `react-hooks/rules-of-hooks` | 9 | 0 | 9 |
 | `react-hooks/preserve-manual-memoization` | 5 | 0 | 5 |
 | `react-hooks/set-state-in-effect` | 5 | 1 | 4 |
 | `react-hooks/incompatible-library` | 1 | 0 | 1 |

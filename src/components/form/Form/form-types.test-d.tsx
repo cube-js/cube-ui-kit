@@ -10,10 +10,11 @@ import { CubeFormInstance } from './use-form';
 import { Form } from './index';
 
 /**
- * Type fixtures for the dual-backend shell (plan Phase 3, item 11). They are
- * compiled by `tsc`, not executed: direct `<Form>` usage, a pass-through
- * wrapper, `DialogForm`, an explicit external instance, and the rejection of
- * a modern controller everywhere a legacy instance is expected today.
+ * Type fixtures for the dual-backend shell (plan Phase 3, item 11). Vitest's
+ * typecheck project compiles them as part of `pnpm test` (see
+ * `vitest.config.ts`); nothing here runs. Covered: direct `<Form>` usage, a
+ * pass-through wrapper, `DialogForm`, an explicit external instance, and the
+ * rejection of a modern controller everywhere a legacy instance is expected.
  */
 
 interface Values {
@@ -62,14 +63,18 @@ export function ExternalInstance({ form }: { form: CubeFormInstance<Values> }) {
   return <TextInput name="name" label="Name" form={form} />;
 }
 
-declare const modern: FormController<Values>;
+declare const modern: FormController;
 
 export function ModernIsRejectedToday() {
   // @ts-expect-error a modern controller is not a legacy instance
   const root = <Form form={modern} />;
 
-  // @ts-expect-error DialogForm is legacy-only until it gets a backend-aware implementation
-  const dialog = <DialogForm form={modern} title="t" />;
+  const dialog = (
+    // @ts-expect-error DialogForm is legacy-only until it gets a backend-aware implementation
+    <DialogForm form={modern} title="Settings" onSubmit={() => {}}>
+      <TextInput name="name" label="Name" />
+    </DialogForm>
+  );
 
   // @ts-expect-error the legacy creator cannot adopt a modern controller
   Form.useForm(modern);
@@ -77,10 +82,9 @@ export function ModernIsRejectedToday() {
   return [root, dialog];
 }
 
-it('the dual-backend type fixtures compile', () => {
-  expect(typeof DirectUsage).toBe('function');
-  expect(typeof PassThroughWrapper).toBe('function');
-  expect(typeof DialogUsage).toBe('function');
-  expect(typeof ExternalInstance).toBe('function');
-  expect(typeof ModernIsRejectedToday).toBe('function');
+test('the modern brand is rejected where a legacy instance is expected', () => {
+  expectTypeOf<FormController>().not.toMatchTypeOf<CubeFormInstance<Values>>();
+  expectTypeOf(Form.useForm<Values>)
+    .returns.items(0)
+    .toEqualTypeOf<CubeFormInstance<Values>>();
 });

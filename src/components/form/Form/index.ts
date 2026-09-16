@@ -1,7 +1,12 @@
 import { CubeAlertProps } from '../../content/Alert/index';
 
 import { Field } from './Field';
-import { Form as _Form, FormContext, useFormProps } from './Form';
+import {
+  Form as _Form,
+  FormContext,
+  FormScopeMask,
+  useFormProps,
+} from './Form';
 import { ResetButton } from './ResetButton';
 import { SubmitButton } from './SubmitButton';
 import { SubmitError } from './SubmitError';
@@ -28,7 +33,7 @@ export * from './SubmitError';
 export * from './SubmitButton';
 export * from './ResetButton';
 export * from './use-field';
-export { useFormProps, Form, Field, useForm, FormContext };
+export { useFormProps, Form, Field, useForm, FormContext, FormScopeMask };
 export type { CubeFormProps } from './Form';
 export type { CubeFormInstance } from './use-form';
 export type { FieldTypes, Fields } from './types';

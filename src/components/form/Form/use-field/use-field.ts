@@ -3,6 +3,10 @@ import { useEffect, useMemo, useState } from 'react';
 import { useEvent, useIsFirstRender } from '../../../../_internal/index';
 import { ValidateTrigger } from '../../../../shared/index';
 import { resolveValidationProps } from '../../validation/index';
+import {
+  isModernFormController,
+  modernBackendUnavailableError,
+} from '../backend';
 import { useFormProps } from '../Form';
 import { FieldTypes } from '../types';
 import { delayValidationRule } from '../validation';
@@ -39,6 +43,12 @@ function removeId(name, id) {
 
 export type UseFieldParams = {
   defaultValidationTrigger?: ValidateTrigger;
+  /**
+   * Run without a binding: `useFieldProps` sets this for an input that is
+   * standalone, inside the deprecated `<Field>` or disabled, so that this hook
+   * is still called (stable hook order) but registers nothing.
+   */
+  unbound?: boolean;
 };
 
 export function useField<T extends FieldTypes, Props extends UseFieldProps<T>>(
@@ -64,6 +74,15 @@ export function useField<T extends FieldTypes, Props extends UseFieldProps<T>>(
     isRequired: isRequiredProp,
     necessityIndicator: necessityIndicatorProp,
   } = props;
+
+  if (params.unbound) {
+    name = undefined;
+    form = undefined;
+  }
+
+  if (name != null && isModernFormController(form)) {
+    throw modernBackendUnavailableError(`The "${name}" field`);
+  }
 
   const { isInvalid: isInvalidProp, isValid: isValidProp } =
     resolveValidationProps(props);
@@ -96,29 +115,32 @@ export function useField<T extends FieldTypes, Props extends UseFieldProps<T>>(
   const fieldName: string = name != null ? name : '';
 
   const isFirstRender = useIsFirstRender();
-  let [fieldId, setFieldId] = useState(
-    id || (idPrefix ? `${idPrefix}_${fieldName}` : fieldName),
-  );
+  const baseId = id || (idPrefix ? `${idPrefix}_${fieldName}` : fieldName);
+  let [fieldId, setFieldId] = useState(baseId);
 
+  // The binding is `(form, fieldName)`, and it can change after mount: the
+  // dual-backend shell keeps this hook mounted for standalone inputs, so a
+  // `name` or a `form` may arrive later. Derive the id from the current base
+  // (not the seed) and release the previous binding on every change.
   useEffect(() => {
     let newId;
 
     if (!id && !nonInput) {
-      newId = createId(fieldId);
+      newId = createId(baseId);
 
       setFieldId(newId);
     }
 
     return () => {
       if (!id) {
-        removeId(idPrefix ? `${idPrefix}_${fieldName}` : fieldName, newId);
+        removeId(baseId, newId);
       }
 
       if (fieldName && form) {
         form.removeField(fieldName);
       }
     };
-  }, [fieldName]);
+  }, [fieldName, form]);
 
   let field = form?.getFieldInstance(fieldName);
 
@@ -141,9 +163,6 @@ export function useField<T extends FieldTypes, Props extends UseFieldProps<T>>(
   const suppressNecessityIndicator =
     isRequired && !isRequiredProp && necessityIndicatorProp === undefined;
 
-  // `fieldName` is a dependency so an input that gains a name after mount
-  // registers: since the dual-backend shell keeps this hook mounted in every
-  // mode, `field` is `undefined` both before and after such a switch.
   useEffect(() => {
     if (!form) return;
 
@@ -152,10 +171,12 @@ export function useField<T extends FieldTypes, Props extends UseFieldProps<T>>(
     } else {
       field = form.createField(fieldName);
     }
-  }, [field, fieldName]);
+  }, [field]);
 
   if (form) {
-    if (isFirstRender) {
+    // First render of this binding: the hook's first render, or a field that
+    // is not registered yet because the binding changed after mount.
+    if (isFirstRender || !field) {
       if (!field) {
         field = form.createField(fieldName, true);
       }

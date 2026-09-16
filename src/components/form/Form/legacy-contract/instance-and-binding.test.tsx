@@ -194,36 +194,9 @@ describe('legacy contract: form identity changes after mount (§7.1 #4)', () => 
     expect(second.getFieldNames()).toEqual([]);
   });
 
-  it('[undefined] an input given a new form prop registers with the new form but stays registered in the old one', async () => {
-    let first!: CubeFormInstance<any>;
-    let second!: CubeFormInstance<any>;
-
-    function Fixture({ useSecond }: { useSecond: boolean }) {
-      [first] = useForm();
-      [second] = useForm();
-
-      return <TextInput form={useSecond ? second : first} name="a" label="A" />;
-    }
-
-    const { rerender, getByRole } = renderWithRoot(
-      <Fixture useSecond={false} />,
-    );
-
-    expect(first.getFieldNames()).toEqual(['a']);
-    expect(second.getFieldNames()).toEqual([]);
-
-    rerender(<Fixture useSecond />);
-
-    await waitFor(() => expect(second.getFieldNames()).toEqual(['a']));
-    expect(first.getFieldNames()).toEqual(['a']);
-
-    await act(async () => {
-      await userEvent.type(getByRole('textbox'), 'x');
-    });
-
-    expect(second.getFieldValue('a')).toBe('x');
-    expect(first.getFieldValue('a')).toBeUndefined();
-  });
+  // An input whose own `form` prop changes is defined by the dual-backend
+  // shell since Phase 3 (`../dual-backend-shell.test.tsx`): it leaves the old
+  // form. Before the shell it stayed registered in both, which was undefined.
 });
 
 describe('legacy contract: registration order and duplicate names (§7.1 #5)', () => {
@@ -296,60 +269,9 @@ describe('legacy contract: dynamic field names (§7.1 #6)', () => {
     expect(formInstance.getFieldValue('first')).toBeUndefined();
   });
 
-  it.each([
-    ['named to standalone', 'a', undefined],
-    ['standalone to named', undefined, 'a'],
-  ])(
-    '[frozen] switching an input from %s keeps the hook order and rebinds',
-    async (_, from, to) => {
-      // Before the dual-backend shell, `useFieldProps` returned early for a
-      // standalone input and React threw on the next render ("Should have a
-      // queue…" / a React internal TypeError). Every hook now runs in every
-      // mode; only the returned props change.
-      const consoleError = vi
-        .spyOn(console, 'error')
-        .mockImplementation(() => {});
-
-      function Fixture({ name }: { name?: string }) {
-        return <TextInput name={name} label="A" />;
-      }
-
-      const { formInstance, rerender, queryByTestId, getByRole } =
-        renderWithForm(
-          <RenderErrorBoundary>
-            <Fixture name={from} />
-          </RenderErrorBoundary>,
-        );
-
-      expect(queryByTestId('render-error')).toBeNull();
-
-      rerender(
-        <RenderErrorBoundary>
-          <Fixture name={to} />
-        </RenderErrorBoundary>,
-      );
-
-      expect(queryByTestId('render-error')).toBeNull();
-      expect(
-        consoleError.mock.calls.filter((call) => /hook/i.test(String(call[0]))),
-      ).toEqual([]);
-
-      await act(async () => {
-        await userEvent.type(getByRole('textbox'), 'x');
-      });
-
-      if (to) {
-        expect(formInstance.getFieldNames()).toEqual(['a']);
-        expect(formInstance.getFieldValue('a')).toBe('x');
-      } else {
-        // Unbinding released the field; typing stays local to the input.
-        expect(formInstance.getFieldNames()).toEqual([]);
-        expect((getByRole('textbox') as HTMLInputElement).value).toBe('x');
-      }
-
-      consoleError.mockRestore();
-    },
-  );
+  // Switching an input between named and standalone is defined by the
+  // dual-backend shell since Phase 3 (`../dual-backend-shell.test.tsx`).
+  // Before the shell the switch threw a hook-order error, which was undefined.
 });
 
 describe('legacy contract: instance created above the Form root (§7.1 #19)', () => {

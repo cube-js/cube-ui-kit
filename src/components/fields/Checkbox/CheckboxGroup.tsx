@@ -17,8 +17,7 @@ import {
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
 import { extractStyles } from '../../../utils/styles';
-import { useFieldProps, wrapWithField } from '../../form';
-import { FormScopeMask } from '../../form/Form/Form';
+import { FormScopeMask, useFieldProps, wrapWithField } from '../../form';
 
 import { CheckboxGroupContext } from './context';
 

@@ -18,8 +18,7 @@ import {
 } from '../../../utils/react/nullableValue';
 import { extractStyles } from '../../../utils/styles';
 import { CubeItemProps } from '../../content/Item/Item';
-import { useFieldProps, wrapWithField } from '../../form';
-import { FormScopeMask } from '../../form/Form/Form';
+import { FormScopeMask, useFieldProps, wrapWithField } from '../../form';
 
 import { RadioContext } from './context';
 

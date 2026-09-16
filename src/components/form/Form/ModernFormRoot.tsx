@@ -2,7 +2,7 @@ import { forwardRef, ReactElement, Ref } from 'react';
 
 import { modernBackendUnavailableError } from './backend';
 
-import type { CubeFormProps } from './Form';
+import type { CubeFormProps, FormRootComponent } from './Form';
 import type { FieldTypes } from './types';
 
 /**
@@ -18,11 +18,9 @@ function ModernFormRoot<T extends FieldTypes>(
   throw modernBackendUnavailableError('<Form>');
 }
 
-const _ModernFormRoot = forwardRef(ModernFormRoot) as unknown as <
-  T extends FieldTypes,
->(
-  props: CubeFormProps<T> & { ref?: Ref<HTMLFormElement> },
-) => ReactElement;
+const _ModernFormRoot = forwardRef(
+  ModernFormRoot,
+) as unknown as FormRootComponent;
 
 (_ModernFormRoot as any).displayName = 'ModernFormRoot';
 

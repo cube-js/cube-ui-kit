@@ -50,22 +50,24 @@ Rules:
 - **`valuePropsMapper`** — maps the form value onto the component's own value API. Required whenever the component does not use `value`/`onChange` verbatim (`selectedKey`/`onSelectionChange`, `isSelected`/`onChange`, `selectedKeys`, …).
 - **`unsafe__isDisabled`** — opts out of field wiring for the lifetime of the mount. Only for components that can be nested inside a group that owns the form connection (`Checkbox` inside `CheckboxGroup`). The value must be stable across renders.
 
-### Two modes
+### Modes
 
-`useFieldProps` behaves differently depending on `name`:
+`useFieldProps` calls **the same hooks in every mode** — including `useField`, the legacy backend's adapter — and the mode only decides which props come back:
 
-| Mode | Condition | Behaviour |
+| Mode | Condition | What comes back |
 | --- | --- | --- |
-| Form-connected | `name` is set | Calls `useField`: registers the field, owns value/onChange/onBlur, derives validation state, generates an incremental id from the field name (`email`, `email_1`, …) |
-| Standalone | no `name` | Does **not** call `useField`. Preserves the caller's `value`/`onChange` and only generates an id via React's `useId()` |
+| Bound | `name` is set, not inside the deprecated `<Field>`, not `unsafe__isDisabled` | The field's value/onChange/onBlur and validation state merged over the props, with an incremental id derived from the form name and the field name (`email`, `email_1`, `settings_email`, …) |
+| Standalone | no `name` | The caller's own `value`/`onChange` untouched, plus an id from React's `useId()` and matching label props; `useField` runs inert and registers nothing |
+| Inside `<Field>` / `Form.Item` | `useInsideLegacyField()` | The props as given: the wrapper already did the binding |
+| Disabled | `unsafe__isDisabled` | The props as given |
 
-Never call `useField` for standalone fields — the extra state management breaks controlled components.
+Because every hook runs every time, an input may gain or lose `name`, or move between forms, without a hook-order error; the legacy adapter rebinds — new field, new id, the field default as the new baseline — when `name` or `form` changes. Do not add a hook to `useFieldProps` behind a condition, do not return before the hooks, and do not call `useField` from component code: it is the adapter behind `useFieldProps`, not an input API.
 
 The form itself comes from the `form` prop when it is set, and from `FormContext` otherwise. That makes `<TextInput name="email" form={form} />` a supported way to link an input to a form it is not nested in, and to override the surrounding form. Keep `form` in the props of every form-attachable component and always pass the whole props object to `useFieldProps` so this keeps working.
 
-`useFieldProps` calls **the same hooks in every mode**. Standalone, inside the deprecated `<Field>`, disabled through `unsafe__isDisabled`, or bound to a form — the mode only decides which props come back, so an input may gain or lose `name`, or move between forms, without a hook-order error. The legacy binding (`useField`) is the legacy backend's adapter and runs inert when the input is not bound to it. Do not add a hook to `useFieldProps` behind a condition, and do not return before the hooks.
+Form instances are branded (`FORM_BACKEND` in `Form/backend.ts`): `Form.useForm()` creates a legacy instance, and `<Form>` is a facade that renders the legacy root for it. A modern controller does not exist in this version; the facade, `Form.useForm()` and the legacy adapter throw a clear error if one is passed, so nothing modern is reachable by accident.
 
-Form instances are branded (`FORM_BACKEND` in `Form/backend.ts`): `Form.useForm()` creates a legacy instance, and `<Form>` is a facade that renders the legacy root for it. A modern controller does not exist in this version; the facade, `Form.useForm()` and `useFieldProps` throw a clear error if one is passed, so nothing modern is reachable by accident.
+`FormScopeMask` (exported) scopes the inputs below it to a new form context: Radio/Checkbox groups render it around their options so a nested `name` never registers as an independent field. A wrapper that overrides `FormContext` for the same purpose must render `FormScopeMask` instead of a bare `FormContext.Provider`, because presentation props (`labelPosition`, `idPrefix`, …) also travel through a separate context that only the mask resets.
 
 `useFormProps` stays a public export because wrappers outside the UI Kit call it to read the form context and then hand adjusted props to a nested input. Since it merges as `{ ...presentationContext, ...FormContext, ...props }` (the two contexts carry the same presentation values under a legacy root), and `useFieldProps` applies it again, any prop the wrapper sets explicitly wins — but a **deleted** key falls back to the context value. To detach a nested input from the form, pass `form={undefined}` (or `null`) explicitly, or omit `name`; destructuring `form` away is not enough.
 
