@@ -13,6 +13,8 @@ import { delayValidationRule } from '../validation';
 
 import { FieldReturnValue, UseFieldProps } from './types';
 
+import type { CubeFormInstance } from '../use-form';
+
 const ID_MAP = {};
 
 function createId(name) {
@@ -118,50 +120,59 @@ export function useField<T extends FieldTypes, Props extends UseFieldProps<T>>(
 
   const isFirstRender = useIsFirstRender();
   const baseId = id || (idPrefix ? `${idPrefix}_${fieldName}` : fieldName);
-  let [fieldId, setFieldId] = useState(baseId);
 
-  // `fieldId` is seeded from the mount-time base and corrected by the effect
-  // below, so after a binding change it lags one commit. Until it catches up,
-  // hand out the current base: a label and its input must never disagree.
-  const isFieldIdCurrent =
-    fieldId === baseId || fieldId.startsWith(`${baseId}_`);
-  const currentId = isFieldIdCurrent ? fieldId : baseId;
+  // The id the effect below registered, with the base it was registered for.
+  // Between a base change and that effect's next run the state is stale, and
+  // handing it out would let the element carry the previous binding's id for
+  // one commit — which can duplicate a sibling's live id — so the current base
+  // is used until the effect catches up. An explicit `id` is used as it is.
+  const [assignedId, setAssignedId] = useState({ base: baseId, id: baseId });
+  const currentId = id || (assignedId.base === baseId ? assignedId.id : baseId);
 
-  // `fieldName` may change after mount: the dual-backend shell keeps this hook
-  // mounted for standalone inputs, so a name may arrive later or go away.
-  // Derive the id from the current base (not the seed) and release the
-  // previous name. The effect deliberately does not depend on `form`: an
-  // instance whose identity changes on every render (a copy, an inline mock)
-  // would otherwise remove and re-create the field on every render.
+  // Ids are registered per base (form name prefix plus field name), so that
+  // duplicates get a suffix and the base is released when it changes or the
+  // input unmounts. `id` and `nonInput` cannot change without the base.
   useEffect(() => {
-    let newId;
+    if (id || nonInput) return;
 
-    if (!id && !nonInput) {
-      newId = createId(baseId);
+    const newId = createId(baseId);
 
-      setFieldId(newId);
-    }
+    setAssignedId((previous) =>
+      previous.base === baseId && previous.id === newId
+        ? previous
+        : { base: baseId, id: newId },
+    );
 
     return () => {
-      if (!id) {
-        removeId(baseId, newId);
+      removeId(baseId, newId);
+    };
+  }, [baseId, id, nonInput]);
+
+  // Every form this hook registered the current name with. The dual-backend
+  // shell keeps the hook mounted for standalone inputs, so a form may arrive
+  // later or change, and the name may change; the name is released from all
+  // of them, not from whichever form a closure happened to capture. This is
+  // state rather than a ref only to keep render free of ref access.
+  const [boundForms] = useState(() => new Set<CubeFormInstance<any>>());
+
+  useEffect(() => {
+    return () => {
+      if (fieldName) {
+        boundForms.forEach((boundForm) => boundForm.removeField(fieldName));
       }
 
-      if (fieldName && form) {
-        form.removeField(fieldName);
-      }
+      boundForms.clear();
     };
-  }, [fieldName]);
+  }, [fieldName, boundForms]);
 
   let field = form?.getFieldInstance(fieldName);
 
   if (form) {
     // First render of this binding: the hook's first render, or a named field
     // that is not registered yet because the name or the form changed after
-    // mount. A previous form keeps the field (legacy contract, row 4). Without
-    // a name the engine returns an unstored placeholder, so it is only created
-    // on the first render, as before: creating it again on every render would
-    // give the effect below a new object each time.
+    // mount. Without a name the engine returns an unstored placeholder, so it
+    // is only created on the first render, as before: creating it again on
+    // every render would give the effect below a new object each time.
     if (isFirstRender || (!field && fieldName)) {
       if (!field) {
         field = form.createField(fieldName, true);
@@ -199,13 +210,17 @@ export function useField<T extends FieldTypes, Props extends UseFieldProps<T>>(
   const suppressNecessityIndicator =
     isRequired && !isRequiredProp && necessityIndicatorProp === undefined;
 
-  // Registration happens during render; once it is committed, re-render the
-  // form's owner so its render-time reads see the new field.
+  // Registration happens during render. Once it is committed, remember the
+  // form for the release above and re-render the form's owner so its
+  // render-time reads see the new field. `form` is deliberately not a
+  // dependency: a form whose identity changes on every render (a copy, an
+  // inline mock) shares its store, and re-running here would loop.
   useEffect(() => {
     if (form && field) {
+      boundForms.add(form);
       form.forceReRender();
     }
-  }, [field]);
+  }, [field, boundForms]);
 
   const onChangeHandler = useEvent((val: any, dontTouch: boolean) => {
     if (!form) return;

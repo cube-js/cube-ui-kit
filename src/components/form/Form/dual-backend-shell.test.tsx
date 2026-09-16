@@ -427,9 +427,7 @@ describe('dual-backend shell: rebinding after mount', () => {
     expect(formInstance.isFieldDirty('gained')).toBe(false);
   });
 
-  it('the label and the input agree on the id in every committed render of a switch', () => {
-    const seen: Array<{ id: string | null; for: string | null }> = [];
-
+  it("a switch changes the id in one step: no commit carries the previous binding's id", async () => {
     function Fixture({ name }: { name?: string }) {
       return <TextInput name={name} label="A" />;
     }
@@ -438,32 +436,40 @@ describe('dual-backend shell: rebinding after mount', () => {
       formProps: { name: 'shell' },
     });
 
-    const record = () =>
-      seen.push({
-        id: getByRole('textbox').getAttribute('id'),
-        for: getByTestId('Label').getAttribute('for'),
-      });
+    const input = getByRole('textbox');
+    const label = getByTestId('Label');
+    const ids: string[] = [input.getAttribute('id')!];
+    const fors: string[] = [label.getAttribute('for')!];
+    const observer = new MutationObserver((records) => {
+      for (const record of records) {
+        const target = record.target as Element;
 
-    record();
-    rerender(<Fixture name="a" />);
-    record();
-    rerender(<Fixture />);
-    record();
-    rerender(<Fixture name="b" />);
-    record();
+        if (target === input) ids.push(target.getAttribute('id')!);
+        if (target === label) fors.push(target.getAttribute('for')!);
+      }
+    });
 
-    expect(seen.map((entry) => entry.id === entry.for)).toEqual([
-      true,
-      true,
-      true,
-      true,
-    ]);
-    expect(seen.map((entry) => entry.id)).toEqual([
+    observer.observe(input, { attributes: true, attributeFilter: ['id'] });
+    observer.observe(label, { attributes: true, attributeFilter: ['for'] });
+
+    for (const name of ['a', undefined, 'b']) {
+      rerender(<Fixture name={name} />);
+      // MutationObserver delivers records as microtasks.
+      await act(async () => {});
+    }
+
+    observer.disconnect();
+
+    // One transition per switch. Before the id was derived from the current
+    // base, each switch committed the previous base first (`shell_`,
+    // then `shell_a`), which can duplicate a sibling's live id.
+    expect(ids).toEqual([
       expect.not.stringMatching(/^shell_/),
       'shell_a',
       expect.not.stringMatching(/^shell_/),
       'shell_b',
     ]);
+    expect(fors).toEqual(ids);
   });
 
   it('switching a name back and forth reuses the same id instead of suffixing it', async () => {
@@ -598,12 +604,121 @@ describe('dual-backend shell: rebinding after mount', () => {
     expect(form.getFieldValue('a')).toBe('initx');
   });
 
+  it('unmounting releases the field from a form that arrived after mount', async () => {
+    let form!: CubeFormInstance<any>;
+
+    function Owner({ late }: { late: boolean }) {
+      [form] = useForm();
+
+      return (
+        <TextInput
+          name="a"
+          label="A"
+          rules={[{ required: true }]}
+          form={late ? form : undefined}
+        />
+      );
+    }
+
+    const { rerender, unmount } = renderWithRoot(<Owner late={false} />);
+
+    rerender(<Owner late />);
+
+    expect(form.getFieldNames()).toEqual(['a']);
+
+    unmount();
+
+    // A ghost registration would keep failing the required rule.
+    expect(form.getFieldNames()).toEqual([]);
+    await expect(form.validateFields()).resolves.toBeDefined();
+  });
+
+  it('unmounting releases the field from every form it was bound to', () => {
+    let first!: CubeFormInstance<any>;
+    let second!: CubeFormInstance<any>;
+
+    function Fixture({ useSecond }: { useSecond: boolean }) {
+      [first] = useForm();
+      [second] = useForm();
+
+      return <TextInput form={useSecond ? second : first} name="a" label="A" />;
+    }
+
+    const { rerender, unmount } = renderWithRoot(<Fixture useSecond={false} />);
+
+    rerender(<Fixture useSecond />);
+
+    // While mounted the old form keeps the field (legacy contract, row 4).
+    expect(first.getFieldNames()).toEqual(['a']);
+    expect(second.getFieldNames()).toEqual(['a']);
+
+    unmount();
+
+    expect(first.getFieldNames()).toEqual([]);
+    expect(second.getFieldNames()).toEqual([]);
+  });
+
+  it('a Form name change re-registers the id under the new prefix', () => {
+    function Fixture({ prefix, twice }: { prefix: string; twice?: boolean }) {
+      return (
+        <Form name={prefix}>
+          <TextInput name="a" label="A" />
+          {twice ? <TextInput name="a" label="B" /> : null}
+        </Form>
+      );
+    }
+
+    const { rerender, getAllByRole, getAllByTestId } = renderWithRoot(
+      <Fixture prefix="one" />,
+    );
+
+    expect(getAllByRole('textbox').map((el) => el.id)).toEqual(['one_a']);
+
+    rerender(<Fixture prefix="two" />);
+    rerender(<Fixture prefix="two" twice />);
+
+    // The first input released `one_a` and registered `two_a`, so the
+    // duplicate gets a suffix instead of the same id. Read the labels: the
+    // inputs themselves both show `two_a_1` because of the legacy id-merging
+    // bug recorded in legacy-contract row 31.
+    expect(getAllByTestId('Label').map((el) => el.getAttribute('for'))).toEqual(
+      ['two_a', 'two_a_1'],
+    );
+  });
+
+  it('a renamed field is seeded like a first mount: its default is the new baseline', () => {
+    function Fixture({ name }: { name: string }) {
+      return <TextInput name={name} label="A" defaultValue="init" />;
+    }
+
+    const { formInstance, rerender } = renderWithForm(<Fixture name="a" />);
+
+    act(() => {
+      formInstance.setFieldValue('a', 'typed', true);
+    });
+
+    expect(formInstance.isFieldDirty('a')).toBe(true);
+
+    rerender(<Fixture name="b" />);
+
+    expect(formInstance.getFieldNames()).toEqual(['b']);
+    expect(formInstance.getFieldValue('b')).toBe('init');
+    expect(formInstance.isFieldDirty('b')).toBe(false);
+  });
+
   it('a form prop whose identity changes on every render does not re-register the field', async () => {
     let form!: CubeFormInstance<any>;
     let renders = 0;
 
     function Owner() {
       renders++;
+
+      // A render loop here is a synchronous effect cascade that no test
+      // timeout can interrupt; fail instead of hanging the run.
+      if (renders > 20) {
+        throw new Error('render loop: the field is re-registered per render');
+      }
+
       [form] = useForm();
 
       // A structural copy per render: the same store behind a new identity,
@@ -617,12 +732,13 @@ describe('dual-backend shell: rebinding after mount', () => {
     }
 
     const { getByRole } = renderWithRoot(<Owner />);
+    const removeField = vi.spyOn(form, 'removeField');
 
     await act(async () => {
       await userEvent.type(getByRole('textbox'), 'x');
     });
 
     expect(form.getFieldValue('a')).toBe('x');
-    expect(renders).toBeLessThan(10);
+    expect(removeField).not.toHaveBeenCalled();
   });
 });
