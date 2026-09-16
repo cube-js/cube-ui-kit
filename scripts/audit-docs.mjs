@@ -852,6 +852,14 @@ async function detectStyleProps(componentDir, componentName, verbose) {
   }
 
   const omitted = extractOmittedStyleProps(content);
+  // A component large enough to be split keeps its props types in a sibling
+  // `types.ts`, and that is where the `Omit<…StyleProps, '…'>` then lives.
+  try {
+    const typesFile = await fs.readFile(path.join(componentDir, 'types.ts'), 'utf8');
+    for (const prop of extractOmittedStyleProps(typesFile)) omitted.add(prop);
+  } catch {
+    /* no sibling types module */
+  }
   const finish = (props) => {
     const unique = [...new Set(props)].filter((prop) => !omitted.has(prop));
     if (verbose && omitted.size > 0) {

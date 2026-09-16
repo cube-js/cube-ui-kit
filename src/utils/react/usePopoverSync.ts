@@ -101,6 +101,17 @@ function findOwningPopover(
 }
 
 /**
+ * Whether `target` sits inside any currently open popover's container.
+ *
+ * The primitive an "outside click" needs: overlay content is portaled out of
+ * its logical parent, so a plain `contains()` from the owning component reads a
+ * menu press as an outside click and dismisses the thing the menu belongs to.
+ */
+export function isInsideOpenPopover(target: Element | null): boolean {
+  return findOwningPopover(target) !== null;
+}
+
+/**
  * Returns `true` when `target` is nested inside the overlay identified by
  * `ancestorMenuId` — either as a direct DOM descendant of `ancestorContainer`
  * or as a descendant of a chain of popovers whose triggers eventually land

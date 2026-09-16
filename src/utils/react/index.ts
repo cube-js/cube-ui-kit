@@ -27,7 +27,11 @@ export type { ColorScheme } from './useScheme';
 export { useQaProps } from './useQaProps';
 export { useEventBus, useEventListener, EventBusProvider } from './useEventBus';
 export type { EventBusListener, EventBusContextValue } from './useEventBus';
-export { usePopoverSync, useDismissParentPopover } from './usePopoverSync';
+export {
+  isInsideOpenPopover,
+  usePopoverSync,
+  useDismissParentPopover,
+} from './usePopoverSync';
 export type { UsePopoverSyncOptions } from './usePopoverSync';
 export { useControlledFocusVisible } from './useControlledFocusVisible';
 export type { UseControlledFocusVisibleResult } from './useControlledFocusVisible';
