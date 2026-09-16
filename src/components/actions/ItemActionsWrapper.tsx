@@ -116,9 +116,13 @@ const ItemActionsWrapperElement = tasty({
         '': 1,
         '!actions-shown': 0,
       },
+      // The run slides in as it fades, but only where it was taking no space to
+      // begin with. Where the space is reserved the run has a fixed place in the
+      // layout, and sliding it would read as the actions drifting rather than
+      // appearing.
       translate: {
         '': '0 0',
-        '!actions-shown': '.5x 0',
+        '!actions-shown & !preserve-actions-space': '.5x 0',
       },
       transition: 'theme, translate',
 
@@ -201,6 +205,17 @@ export interface ItemActionsWrapperProps {
    * @default false
    */
   autoHideActions?: boolean;
+  /**
+   * Keep the run's width reserved while it is hidden, so the row does not
+   * change size as the actions come and go. Only meaningful with
+   * `autoHideActions`.
+   *
+   * It also keeps the run MOUNTED rather than transitioning it in and out:
+   * an unmounted run cannot be measured, so a row that starts hidden would
+   * have nothing to reserve.
+   * @default false
+   */
+  preserveActionsSpace?: boolean;
   /** Extra modifiers for the wrapper, merged after the ones it derives itself. */
   mods?: Mods;
   /** Styles for the wrapper element — the one that is the row's layout box. */
@@ -223,6 +238,7 @@ export function ItemActionsWrapper(props: ItemActionsWrapperProps) {
     isDisabled,
     disableActionsFocus,
     autoHideActions = false,
+    preserveActionsSpace = false,
     mods,
     styles,
     actionsProps,
@@ -290,9 +306,10 @@ export function ItemActionsWrapper(props: ItemActionsWrapperProps) {
     return {
       ...mods,
       ...(shouldShowActions ? { 'actions-shown': true } : null),
+      ...(preserveActionsSpace ? { 'preserve-actions-space': true } : null),
       disabled: isDisabled,
     };
-  }, [mods, shouldShowActions, isDisabled]);
+  }, [mods, shouldShowActions, preserveActionsSpace, isDisabled]);
 
   return (
     <ItemActionsWrapperElement
@@ -308,7 +325,9 @@ export function ItemActionsWrapper(props: ItemActionsWrapperProps) {
       style={
         {
           '--actions-width':
-            areActionsVisible || !autoHideActions ? `${actionsWidth}px` : '0px',
+            areActionsVisible || !autoHideActions || preserveActionsSpace
+              ? `${actionsWidth}px`
+              : '0px',
           ...(typeof size === 'number' && { '--size': `${size}px` }),
         } as CSSProperties
       }
@@ -320,7 +339,7 @@ export function ItemActionsWrapper(props: ItemActionsWrapperProps) {
         disableActionsFocus={disableActionsFocus}
         isDisabled={isDisabled}
       >
-        {autoHideActions ? (
+        {autoHideActions && !preserveActionsSpace ? (
           <DisplayTransition
             exposeUnmounted
             isShown={shouldShowActions}

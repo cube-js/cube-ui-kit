@@ -457,40 +457,6 @@ export const TabContainer = tasty({
       draggable: 'grab',
       dragging: 'grabbing',
     },
-
-    // Size variable for actions (same as ItemButton's ActionsWrapper)
-    $size: {
-      '': '$size-md',
-      'size=xsmall': '$size-xs',
-      'size=small': '$size-sm',
-      'size=medium': '$size-md',
-      'size=large': '$size-lg',
-      'size=xlarge': '$size-xl',
-    },
-
-    // Actions rendered outside the button for accessibility
-    Actions: {
-      $: '>',
-      position: 'absolute',
-      inset: '1bw 1bw auto auto',
-      display: 'flex',
-      gap: '1bw',
-      placeItems: 'center',
-      placeContent: 'center end',
-      pointerEvents: 'auto',
-      height: 'min ($size - 2bw)',
-      padding: '0 $side-padding',
-      // Simple CSS opacity for show-on-hover
-      opacity: {
-        '': 1,
-        'auto-hide-actions': 0,
-        'auto-hide-actions & (active | :hover | :focus-within | :has([data-pressed]))': 1,
-      },
-      transition: 'opacity $transition',
-      // Size variables (same as Item)
-      '$action-size': 'min(max((2x + 2bw), ($size - 1x - 2bw)), (3x - 2bw))',
-      '$side-padding': '(($size - $action-size - 2bw) / 2)',
-    },
   },
 });
 
