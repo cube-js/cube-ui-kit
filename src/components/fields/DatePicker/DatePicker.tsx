@@ -31,7 +31,7 @@ import { DateFieldBase } from './types';
 import { useFocusManagerRef } from './utils';
 
 export interface CubeDatePickerProps<T extends DateValue = DateValue>
-  extends Omit<AriaDatePickerProps<T>, 'errorMessage'>,
+  extends Omit<AriaDatePickerProps<T>, 'errorMessage' | 'form'>,
     DateFieldBase<T>,
     BaseProps,
     ContainerStyleProps,

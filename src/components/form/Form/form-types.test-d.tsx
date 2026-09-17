@@ -17,11 +17,11 @@ import { Form } from './index';
  * instance, and the rejection of a modern controller everywhere a legacy
  * instance is expected.
  *
- * Known gap: the in-repo check resolves react-aria's `Aria*Props` to `any`
- * (`preserveSymlinks`, see `tsconfig.json`), so `ExternalInstance` does not
- * prove that a consumer compiling against `dist/` may pass an instance to a
- * kit input directly — there `InputDOMProps.form?: string` wins over
- * `FieldCoreProps.form`. Pre-existing on `main`; tracked separately.
+ * The in-repo check resolves react-aria's `Aria*Props` to `any`
+ * (`preserveSymlinks`, see `tsconfig.json`), so `ExternalInstance` alone does
+ * not prove that a consumer may pass an instance to a kit input; the
+ * consumer-facing fixture in `typecheck/consumer/` (compiled against `dist/`
+ * by `pnpm test:types:consumer`) does.
  */
 
 interface Values {

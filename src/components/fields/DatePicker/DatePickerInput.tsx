@@ -26,7 +26,7 @@ const DateInputElement = tasty({
 });
 
 interface CubeDatePickerInputProps<T extends DateValue>
-  extends Omit<AriaDatePickerProps<T>, 'errorMessage'>,
+  extends Omit<AriaDatePickerProps<T>, 'errorMessage' | 'form'>,
     DateFieldBase<T> {
   hideValidationIcon?: boolean;
   maxGranularity?: Granularity;

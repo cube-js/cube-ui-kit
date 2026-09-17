@@ -40,7 +40,7 @@ const CheckGroupElement = tasty({
 
 export interface CubeCheckboxGroupProps
   extends BaseProps,
-    Omit<AriaCheckboxGroupProps, 'errorMessage'>,
+    Omit<AriaCheckboxGroupProps, 'errorMessage' | 'form'>,
     FieldBaseProps,
     ContainerStyleProps {
   orientation?: 'vertical' | 'horizontal';

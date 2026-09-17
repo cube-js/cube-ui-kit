@@ -44,6 +44,7 @@
     "test": "vitest run",
     "test:browser": "vitest run --config vitest.browser.config.ts",
     "test:types": "tsc -p tsconfig.typecheck.json",
+    "test:types:consumer": "tsc -p tsconfig.consumer.json",
     "probe": "node scripts/probe.mjs",
     "probe:browser": "PROBE_TIER=browser node scripts/probe.mjs",
     "test-cover": "vitest run --coverage",

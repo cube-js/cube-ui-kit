@@ -1,0 +1,24 @@
+{
+  // `pnpm test:types:consumer`: compiles the fixtures under `typecheck/consumer`
+  // against the built declarations in `dist/`, with the options a consumer
+  // uses. Unlike the in-repo check, `preserveSymlinks` is off here, so
+  // react-aria's prop types resolve for real instead of collapsing to `any`
+  // (see the note in tsconfig.json). Run `pnpm build` first.
+  "compilerOptions": {
+    "target": "es2022",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "lib": ["dom", "es2023"],
+    "jsx": "react-jsx",
+    "strict": true,
+    "isolatedModules": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "types": [],
+    "baseUrl": ".",
+    "paths": {
+      "@cube-dev/ui-kit": ["./dist/index.d.ts"]
+    }
+  },
+  "include": ["typecheck/consumer/**/*.tsx"]
+}

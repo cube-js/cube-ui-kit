@@ -197,7 +197,7 @@ export interface CubeTextInputBaseProps
     BlockStyleProps,
     BaseStyleProps,
     ColorStyleProps,
-    Omit<AriaTextFieldProps, 'validate'>,
+    Omit<AriaTextFieldProps, 'validate' | 'form'>,
     FieldBaseProps {
   validate?: AriaTextFieldProps['validate'] | AriaNumberFieldProps['validate'];
   /** Left input icon */

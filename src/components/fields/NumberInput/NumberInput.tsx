@@ -20,7 +20,7 @@ import { StepButton } from './StepButton';
 
 export interface CubeNumberInputProps
   extends Omit<CubeTextInputBaseProps, 'defaultValue' | 'value' | 'onChange'>,
-    Omit<AriaNumberFieldProps, 'validate'> {
+    Omit<AriaNumberFieldProps, 'validate' | 'form'> {
   /** Whether or to hide stepper */
   hideStepper?: boolean;
 }
