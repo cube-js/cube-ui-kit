@@ -2,6 +2,7 @@ import { FORM_BACKEND } from '../backend';
 
 import {
   createValueSnapshotter,
+  defineValue,
   formValueEqual,
   freezeContainer,
   getFieldKey,
@@ -31,6 +32,7 @@ import type { FormPath } from './values';
 interface Registration {
   options: RegistrationOptions;
   order: number;
+  defaultConsidered: boolean;
 }
 
 interface FieldRecord<ErrorValue> {
@@ -78,14 +80,15 @@ function projectActive(
   if (isPlainObject(value) || Array.isArray(value)) {
     for (const [key, child] of path.children) {
       if (!Object.hasOwn(value, key)) continue;
-      Object.defineProperty(result, key, {
-        value: projectActive(
+      defineValue(
+        result,
+        key,
+        projectActive(
           Reflect.get(value, key),
           child,
           readPath(previous, [key]),
         ),
-        enumerable: true,
-      });
+      );
     }
   }
   return formValueEqual(result, previous) ? previous : freezeContainer(result);
@@ -114,6 +117,7 @@ export function createFormStore<
   let disposed = false;
   let pending = false;
   let changes: FormChange[] = [];
+  const cancellations = new Set<AbortController>();
 
   let state: FormState<T, ErrorValue> = Object.freeze({
     values: values as Partial<T>,
@@ -193,8 +197,31 @@ export function createFormStore<
     record.validationRevision++;
     record.status = 'unvalidated';
     if (!keepErrors) record.errors = EMPTY_ERRORS;
-    // Reentrant abort handlers see an already invalidated token.
-    controller?.abort();
+    // Abort handlers are user code. Deliver them after the complete snapshot
+    // publishes, so they cannot interleave writes with the command cancelling
+    // them (or resurrect a token that command later overwrites).
+    if (controller) cancellations.add(controller);
+  }
+
+  function cancelPending() {
+    for (const controller of Array.from(cancellations)) {
+      cancellations.delete(controller);
+      controller.abort();
+    }
+  }
+
+  function invalidateRelated(path: readonly string[], previous: object) {
+    for (const record of records.values()) {
+      if (
+        related(path, record.path) ||
+        !Object.is(
+          readPath(previous, record.path),
+          readPath(values, record.path),
+        ) ||
+        hasPath(previous, record.path) !== hasPath(values, record.path)
+      )
+        invalidate(record);
+    }
   }
 
   function activeValues(): object {
@@ -284,7 +311,7 @@ export function createFormStore<
     if (depth || notifying || disposed) return;
     notifying = true;
     try {
-      while (pending && !disposed) {
+      while ((pending || cancellations.size) && !disposed) {
         pending = false;
         const events = changes;
         changes = [];
@@ -320,6 +347,7 @@ export function createFormStore<
             report(error);
           }
         }
+        cancelPending();
       }
     } finally {
       notifying = false;
@@ -351,14 +379,14 @@ export function createFormStore<
     value: unknown,
     config: SetValueOptions = {},
   ): boolean {
-    const record = ensure(path);
-    const next = writePath(values, record.path, ownValue(value));
+    const normalized = normalizePath(path);
+    const previous = values;
+    const next = writePath(values, normalized, ownValue(value));
+    const record = ensure(normalized);
     const changed = next !== values;
     if (changed) {
       values = next;
-      for (const other of records.values()) {
-        if (related(record.path, other.path)) invalidate(other);
-      }
+      invalidateRelated(record.path, previous);
     }
     if (config.touch ?? config.source === 'user') record.touched = true;
     if (changed && (config.notify ?? config.source === 'user')) {
@@ -370,27 +398,58 @@ export function createFormStore<
   function setValue(path: FormPath, value: unknown, config?: SetValueOptions) {
     // Validate paths before entering a transaction (no partial invalid writes).
     const normalized = normalizePath(path);
+    const prepared = { ...config };
     batch(() => {
-      write(normalized, value, config);
+      write(normalized, value, prepared);
     });
   }
 
   function setValues(next: Partial<T>, config?: SetValueOptions) {
+    assertLive();
+    const prepared = { ...config };
     const entries = Object.entries(next).map(
-      ([name, value]) => [normalizePath(name), value] as const,
+      ([name, value]) => [normalizePath(name), ownValue(value)] as const,
     );
+    // Copying input or an invalid array-length write can throw. Check every
+    // value/path before the first write, including when inside an outer batch.
+    let checked = values;
+    for (const [path, value] of entries)
+      checked = writePath(checked, path, value);
     batch(() => {
-      for (const [path, value] of entries) write(path, value, config);
+      for (const [path, value] of entries) write(path, value, prepared);
     });
   }
 
+  function prepareRegistration(
+    path: FormPath,
+    config: RegistrationOptions,
+  ): RegistrationOptions {
+    const prepared = { ...config };
+    if (Object.hasOwn(prepared, 'defaultValue')) {
+      prepared.defaultValue = ownValue(prepared.defaultValue);
+      const normalized = normalizePath(path);
+      if (!hasPath(values, normalized) && !hasPath(defaults, normalized)) {
+        writePath(values, normalized, prepared.defaultValue);
+        writePath(defaults, normalized, prepared.defaultValue);
+      }
+    }
+    return prepared;
+  }
+
   function seed(record: FieldRecord<ErrorValue>, registration: Registration) {
-    if (!Object.hasOwn(registration.options, 'defaultValue')) return;
+    if (
+      registration.defaultConsidered ||
+      !Object.hasOwn(registration.options, 'defaultValue')
+    )
+      return;
+    registration.defaultConsidered = true;
     const value = ownValue(registration.options.defaultValue);
     if (!hasPath(values, record.path) && !hasPath(defaults, record.path)) {
+      const previous = values;
       values = writePath(values, record.path, value);
       defaults = writePath(defaults, record.path, value);
       record.fieldDefault = { value };
+      invalidateRelated(record.path, previous);
     } else if (
       record.fieldDefault &&
       record.registrations.size > 1 &&
@@ -407,10 +466,13 @@ export function createFormStore<
     config: RegistrationOptions = {},
   ): RegistrationToken {
     assertLive();
-    const record = ensure(path);
+    const normalized = normalizePath(path);
+    const prepared = prepareRegistration(normalized, config);
+    const record = ensure(normalized);
     const registration: Registration = {
-      options: { ...config },
+      options: prepared,
       order: ++order,
+      defaultConsidered: false,
     };
     let released = false;
     batch(() => {
@@ -426,8 +488,19 @@ export function createFormStore<
       },
       update(next: RegistrationOptions) {
         if (released || disposed) return;
+        const prepared = prepareRegistration(record.path, next);
+        const hasNewDefault =
+          !registration.defaultConsidered &&
+          Object.hasOwn(prepared, 'defaultValue');
+        if (
+          !hasNewDefault &&
+          (registration.options.preserve ?? true) ===
+            (prepared.preserve ?? true) &&
+          registration.options.isEqual === prepared.isEqual
+        )
+          return;
         batch(() => {
-          registration.options = { ...next };
+          registration.options = prepared;
           registration.order = ++order;
           // Only an ownership change invalidates; equivalent options pushed
           // after every React commit must not cause a publication loop.
@@ -479,9 +552,10 @@ export function createFormStore<
     next: Partial<T>,
     config: { currentValues?: 'preserve' | 'replace' } = {},
   ) {
+    const replace = config.currentValues === 'replace';
     batch(() => {
       replaceDefaults(next);
-      if (config.currentValues === 'replace') {
+      if (replace) {
         values = defaults;
         for (const record of records.values()) {
           invalidate(record);
@@ -499,6 +573,8 @@ export function createFormStore<
       preserveDirty?: boolean;
     } = {},
   ) {
+    const when = config.when ?? 'untouched';
+    const preserveDirty = config.preserveDirty ?? false;
     batch(() => {
       // Retain edits at the narrowest guarded field path. This also protects a
       // nested edited leaf when the server replaces its containing object.
@@ -517,11 +593,10 @@ export function createFormStore<
             )
           )
             return false;
-          const when = config.when ?? 'untouched';
           return (
             (when === 'untouched' && record.touched) ||
             (when === 'clean' && dirty(record)) ||
-            (config.preserveDirty && dirty(record))
+            (preserveDirty && dirty(record))
           );
         })
         .map((record) => ({
@@ -568,19 +643,21 @@ export function createFormStore<
       const previous = submission;
       submission = undefined;
       submitError = undefined;
-      previous?.abort();
+      if (previous) cancellations.add(previous);
       event(names, 'reset');
     });
   }
 
   function setFieldErrors(path: FormPath, errors: readonly ErrorValue[]) {
+    assertLive();
+    const copied = errors.length ? Object.freeze([...errors]) : EMPTY_ERRORS;
     batch(() => {
       const record = ensure(path);
-      const status = errors.length ? 'invalid' : 'valid';
-      if (record.status === status && formValueEqual(record.errors, errors))
+      const status = copied.length ? 'invalid' : 'valid';
+      if (record.status === status && formValueEqual(record.errors, copied))
         return;
       invalidate(record);
-      record.errors = errors.length ? Object.freeze([...errors]) : EMPTY_ERRORS;
+      record.errors = copied;
       record.status = status;
     });
   }
@@ -604,12 +681,13 @@ export function createFormStore<
       signal: controller.signal,
       complete(errors: readonly ErrorValue[]) {
         if (!current()) return false;
+        const copied = errors.length
+          ? Object.freeze([...errors])
+          : EMPTY_ERRORS;
         batch(() => {
           record.validation = undefined;
-          record.errors = errors.length
-            ? Object.freeze([...errors])
-            : EMPTY_ERRORS;
-          record.status = errors.length ? 'invalid' : 'valid';
+          record.errors = copied;
+          record.status = copied.length ? 'invalid' : 'valid';
         });
         return true;
       },
@@ -635,9 +713,10 @@ export function createFormStore<
       complete(result?: { error: unknown }) {
         if (disposed || submission !== controller || controller.signal.aborted)
           return false;
+        const error = result?.error;
         batch(() => {
           submission = undefined;
-          submitError = result?.error;
+          submitError = error;
         });
         return true;
       },
@@ -666,9 +745,10 @@ export function createFormStore<
     }
     const previous = submission;
     submission = undefined;
-    previous?.abort();
+    if (previous) cancellations.add(previous);
     state = buildSnapshot();
     records.clear();
+    cancelPending();
   }
 
   for (const name of Object.keys(values)) ensure(name, false);

@@ -24,6 +24,40 @@ function isContainer(value: unknown): value is Container {
   return Array.isArray(value) || isPlainObject(value);
 }
 
+function enumerableKeys(value: object): (string | symbol)[] {
+  return Reflect.ownKeys(value).filter((key) =>
+    Object.prototype.propertyIsEnumerable.call(value, key),
+  );
+}
+
+/** Preserve the special non-enumerable descriptor of an array's length. */
+export function defineValue(
+  container: object,
+  key: PropertyKey,
+  value: unknown,
+) {
+  Object.defineProperty(
+    container,
+    key,
+    Array.isArray(container) && key === 'length'
+      ? { value }
+      : { value, enumerable: true, writable: true, configurable: true },
+  );
+}
+
+function emptyCopy(value: Container): Container {
+  return Array.isArray(value)
+    ? new Array(value.length)
+    : Object.create(Object.getPrototypeOf(value));
+}
+
+function copyContainer(value: Container): Container {
+  const copy = emptyCopy(value);
+  for (const key of enumerableKeys(value))
+    defineValue(copy, key, Reflect.get(value, key));
+  return copy;
+}
+
 /** The ADR's default dirty comparator: Object.is, then one structural level. */
 export function formValueEqual(a: unknown, b: unknown): boolean {
   if (Object.is(a, b)) return true;
@@ -31,9 +65,9 @@ export function formValueEqual(a: unknown, b: unknown): boolean {
   if (Array.isArray(a) !== Array.isArray(b)) return false;
   if (Array.isArray(a) && Array.isArray(b) && a.length !== b.length)
     return false;
-  const keys = Object.keys(a);
+  const keys = enumerableKeys(a);
   return (
-    keys.length === Object.keys(b).length &&
+    keys.length === enumerableKeys(b).length &&
     keys.every(
       (key) =>
         Object.hasOwn(b, key) &&
@@ -46,7 +80,7 @@ export function normalizePath(path: FormPath): readonly string[] {
   const parts = typeof path === 'string' ? [path] : path;
   if (!parts.length) throw new Error('A form field path must not be empty.');
   return Object.freeze(
-    parts.map((part) => {
+    Array.from(parts, (part) => {
       if (
         typeof part !== 'string' &&
         (!Number.isSafeInteger(part) || part < 0)
@@ -102,21 +136,16 @@ export function writePath(
     const next = last ? value : write(previous, depth + 1);
     if (!remove && exists && Object.is(previous, next)) return current;
     if (remove && !last && Object.is(previous, next)) return current;
-    const copy: Container = Array.isArray(container)
-      ? container.slice()
-      : container
-        ? { ...container }
-        : depth > 0 && /^(0|[1-9]\d*)$/.test(key)
-          ? []
-          : {};
+    // Array length cannot be removed, even for preserve:false registrations.
+    if (remove && last && Array.isArray(container) && key === 'length')
+      return current;
+    const copy: Container = container
+      ? copyContainer(container)
+      : depth > 0 && /^(0|[1-9]\d*)$/.test(key)
+        ? []
+        : {};
     if (remove && last) Reflect.deleteProperty(copy, key);
-    else
-      Object.defineProperty(copy, key, {
-        value: next,
-        enumerable: true,
-        writable: true,
-        configurable: true,
-      });
+    else defineValue(copy, key, next);
     return freezeContainer(copy);
   }
   return write(root, 0) as object;
@@ -130,19 +159,28 @@ export function writePath(
 export function createValueSnapshotter() {
   const copies = new WeakMap<object, unknown>();
   function snapshot<T>(value: T): T {
-    if (!isContainer(value)) return value;
-    if (ownedContainers.has(value)) return value;
-    if (copies.has(value)) return copies.get(value) as T;
-    const copy: Container = Array.isArray(value) ? new Array(value.length) : {};
-    copies.set(value, copy);
-    copies.set(copy, copy);
-    for (const key of Object.keys(value)) {
-      Object.defineProperty(copy, key, {
-        value: snapshot(Reflect.get(value, key)),
-        enumerable: true,
-      });
+    // Commit the ownership cache only after the entire graph copied. A throwing
+    // getter must not leave an incomplete, mutable snapshot cached for a retry.
+    const pending = new WeakMap<object, object>();
+    const entries: [object, object][] = [];
+    function clone(input: unknown): unknown {
+      if (!isContainer(input) || ownedContainers.has(input)) return input;
+      if (copies.has(input)) return copies.get(input);
+      if (pending.has(input)) return pending.get(input);
+      const copy = emptyCopy(input);
+      pending.set(input, copy);
+      entries.push([input, copy]);
+      for (const key of enumerableKeys(input)) {
+        defineValue(copy, key, clone(Reflect.get(input, key)));
+      }
+      return copy;
     }
-    return freezeContainer(copy) as T;
+    const result = clone(value);
+    for (const [input, copy] of entries) {
+      freezeContainer(copy);
+      copies.set(input, copy);
+    }
+    return result as T;
   }
   return snapshot;
 }
