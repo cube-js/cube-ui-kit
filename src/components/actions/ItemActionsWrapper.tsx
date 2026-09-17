@@ -1,3 +1,4 @@
+import { ClearPressResponder } from '@react-aria/interactions';
 import { Mods, Styles, tasty } from '@tenphi/tasty';
 import {
   CSSProperties,
@@ -34,6 +35,13 @@ import { ItemActionProvider } from './ItemActionContext';
  * lets a picker put its non-interactive caret in the run and still have a click
  * on the caret reach the trigger underneath, and it stops the run's padding and
  * inter-action gaps from swallowing presses meant for the row.
+ *
+ * Being a sibling also puts the run OUTSIDE the row for anything that asks
+ * "did this press land on my trigger?" — an overlay opened by the row would
+ * read a press on its own actions as a press outside and dismiss itself,
+ * swallowing that press on the way. The run therefore marks itself with
+ * `data-trigger-action`, which `isOwnActionsPress` resolves back to the row it
+ * belongs to. See `actions-run.ts`.
  */
 const ItemActionsWrapperElement = tasty({
   // Actions default to the `current` type, which paints from the inherited
@@ -220,7 +228,7 @@ export interface ItemActionsWrapperProps {
   mods?: Mods;
   /** Styles for the wrapper element — the one that is the row's layout box. */
   styles?: Styles;
-  /** Props spread on the run's container, e.g. `data-trigger-action`. */
+  /** Extra props spread on the run's container, e.g. event handlers. */
   actionsProps?: HTMLAttributes<HTMLDivElement>;
 }
 
@@ -333,42 +341,59 @@ export function ItemActionsWrapper(props: ItemActionsWrapperProps) {
       }
     >
       {children({ showActions: shouldShowActions })}
-      <ItemActionProvider
-        type={type}
-        theme={theme}
-        disableActionsFocus={disableActionsFocus}
-        isDisabled={isDisabled}
-      >
-        {autoHideActions && !preserveActionsSpace ? (
-          <DisplayTransition
-            exposeUnmounted
-            isShown={shouldShowActions}
-            onPhaseChange={(phase) => {
-              setAreActionsVisible(phase !== 'unmounted');
-            }}
-          >
-            {({ ref: transitionRef }) => {
-              return (
-                <div
-                  {...focusWithinProps}
-                  {...actionsProps}
-                  ref={(node: any) => {
-                    actionsRef.current = node;
-                    transitionRef(node);
-                  }}
-                  data-element="Actions"
-                >
-                  {actions}
-                </div>
-              );
-            }}
-          </DisplayTransition>
-        ) : (
-          <div ref={actionsRef} {...actionsProps} data-element="Actions">
-            {actions}
-          </div>
-        )}
-      </ItemActionProvider>
+      {/*
+        The run is rendered under whatever press context the row sits in, and a
+        `PressResponder` in that context reaches EVERY `usePress` below it — so
+        an `ItemButton` / `TabButton` / picker trigger inside a `DialogTrigger`
+        or a `MenuTrigger` handed its own actions the trigger's `onPress`, and
+        pressing one toggled the overlay on top of running the action. The run
+        belongs to the row, not to whatever opened around it: it clears the
+        context so each action answers only to its own handler.
+      */}
+      <ClearPressResponder>
+        <ItemActionProvider
+          type={type}
+          theme={theme}
+          disableActionsFocus={disableActionsFocus}
+          isDisabled={isDisabled}
+        >
+          {autoHideActions && !preserveActionsSpace ? (
+            <DisplayTransition
+              exposeUnmounted
+              isShown={shouldShowActions}
+              onPhaseChange={(phase) => {
+                setAreActionsVisible(phase !== 'unmounted');
+              }}
+            >
+              {({ ref: transitionRef }) => {
+                return (
+                  <div
+                    {...focusWithinProps}
+                    {...actionsProps}
+                    ref={(node: any) => {
+                      actionsRef.current = node;
+                      transitionRef(node);
+                    }}
+                    data-element="Actions"
+                    data-trigger-action=""
+                  >
+                    {actions}
+                  </div>
+                );
+              }}
+            </DisplayTransition>
+          ) : (
+            <div
+              ref={actionsRef}
+              {...actionsProps}
+              data-element="Actions"
+              data-trigger-action=""
+            >
+              {actions}
+            </div>
+          )}
+        </ItemActionProvider>
+      </ClearPressResponder>
     </ItemActionsWrapperElement>
   );
 }

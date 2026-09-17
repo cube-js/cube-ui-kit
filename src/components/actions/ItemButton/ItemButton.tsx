@@ -26,8 +26,8 @@ export interface CubeItemButtonProps
   size?: Omit<CubeItemProps['size'], 'inline'>;
   wrapperStyles?: Styles;
   /**
-   * Props spread on the actions run's container — `data-trigger-action` and
-   * friends. Only meaningful together with `actions`.
+   * Extra props spread on the actions run's container, e.g. event handlers.
+   * Only meaningful together with `actions`.
    */
   actionsProps?: HTMLAttributes<HTMLDivElement>;
 }
