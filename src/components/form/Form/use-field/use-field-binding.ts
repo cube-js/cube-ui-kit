@@ -12,6 +12,7 @@ import {
 
 import { useField } from './use-field';
 
+import type { ReactNode } from 'react';
 import type { FormController } from '../modern/controller';
 import type { FieldBackendHandle, FieldView } from '../modern/field-binding';
 import type { RegistrationToken } from '../modern/types';
@@ -76,7 +77,9 @@ export function useFieldBinding<
     selectView,
     sameFieldView,
   );
-  const registration = useRef<RegistrationToken | undefined>(undefined);
+  const registration = useRef<RegistrationToken<ReactNode> | undefined>(
+    undefined,
+  );
   useLayoutEffect(() => {
     const token = handle.register();
     registration.current = token;

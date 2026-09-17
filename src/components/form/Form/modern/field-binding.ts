@@ -20,7 +20,7 @@ export interface FieldBackendHandle {
   subscribe(listener: () => void): () => void;
   getSnapshot(): FieldView | undefined;
   getServerSnapshot(): FieldView | undefined;
-  register(): RegistrationToken | undefined;
+  register(): RegistrationToken<ReactNode> | undefined;
   change(value: unknown, dontTouch: boolean, trigger: ValidateTrigger): void;
   blur(): void;
 }
@@ -57,7 +57,7 @@ export function fieldRegistrationOptions(props: {
   defaultValue?: unknown;
   preserve?: boolean;
   isEqual?: (a: unknown, b: unknown) => boolean;
-}): RegistrationOptions {
+}): RegistrationOptions<ReactNode> {
   return {
     ...(Object.hasOwn(props, 'defaultValue')
       ? { defaultValue: props.defaultValue }
