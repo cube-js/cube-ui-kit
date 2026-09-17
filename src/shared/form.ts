@@ -1,6 +1,7 @@
 import { Styles } from '@tenphi/tasty';
 import { ReactNode } from 'react';
 
+import type { ModernValidationRule } from '../components/form/Form/modern/validation';
 import type { Props } from '../props';
 
 /** ValidationResult type for error message functions */
@@ -51,7 +52,11 @@ export interface FieldCoreProps {
   /** Function that checks whether to perform update of the form state. */
   shouldUpdate?: boolean | ((prevValues, nextValues) => boolean);
   /** Validation rules */
-  rules?: ValidationRule[];
+  rules?: ModernValidationRule<ReactNode>[];
+  /** Explicit revision key for modern validators with captured dependencies. */
+  rulesKey?: string;
+  /** Modern rule error ordering policy; defaults to the controller policy. */
+  errorPolicy?: 'first' | 'all';
   /** Debounce in milliseconds for validation */
   validationDelay?: number;
   /** Modern fields retain their value on unmount by default. */

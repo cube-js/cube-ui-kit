@@ -1,5 +1,6 @@
 import { FORM_BACKEND } from '../backend';
 
+import { rulesSignature, runRules } from './validation';
 import {
   createValueSnapshotter,
   defineValue,
@@ -16,11 +17,16 @@ import {
 } from './values';
 
 import type {
+  CallbackBinding,
   FieldState,
+  FormCallbacks,
   FormChange,
   FormState,
   FormStore,
   FormStoreOptions,
+  ModernFieldValidationResult,
+  ModernSubmitResult,
+  ModernValidationResult,
   RegistrationOptions,
   RegistrationToken,
   SetValueOptions,
@@ -29,8 +35,9 @@ import type {
 } from './types';
 import type { FormPath } from './values';
 
-interface Registration {
-  options: RegistrationOptions;
+interface Registration<ErrorValue> {
+  options: RegistrationOptions<ErrorValue>;
+  signature: string;
   order: number;
   defaultConsidered: boolean;
 }
@@ -40,8 +47,8 @@ interface FieldRecord<ErrorValue> {
   path: readonly string[];
   /** Defaults create aggregate metadata; explicit commands/fields own guards. */
   explicit: boolean;
-  registrations: Set<Registration>;
-  owner?: Registration;
+  registrations: Set<Registration<ErrorValue>>;
+  owner?: Registration<ErrorValue>;
   fieldDefault?: { value: unknown };
   touched: boolean;
   errors: readonly ErrorValue[];
@@ -95,14 +102,14 @@ function projectActive(
 }
 
 /**
- * Phase 4's framework-neutral command layer. Not exported from the package.
- * React registration, root callbacks, rule execution and submit orchestration
- * are deliberately separate later phases; their state transitions live here.
+ * Framework-neutral store, registration ownership, and async pipelines.
+ * Not exported from the package; React receives the public command facade.
  */
 export function createFormStore<
   T extends object = Record<string, unknown>,
   ErrorValue = unknown,
->(options: FormStoreOptions<T> = {}): FormStore<T, ErrorValue> {
+>(inputOptions: FormStoreOptions<T> = {}): FormStore<T, ErrorValue> {
+  const options = { ...inputOptions };
   const ownValue = createValueSnapshotter();
   const records = new Map<string, FieldRecord<ErrorValue>>();
   // Subscription identity belongs to the registration, not to the callback.
@@ -111,6 +118,7 @@ export function createFormStore<
   let defaults = values;
   let submitError: unknown;
   let submission: AbortController | undefined;
+  let binding: { callbacks: FormCallbacks<T> } | undefined;
   let order = 0;
   let depth = 0;
   let notifying = false;
@@ -210,7 +218,11 @@ export function createFormStore<
     }
   }
 
-  function invalidateRelated(path: readonly string[], previous: object) {
+  function invalidateRelated(
+    path: readonly string[],
+    previous: object,
+    config?: SetValueOptions,
+  ) {
     for (const record of records.values()) {
       if (
         related(path, record.path) ||
@@ -219,8 +231,17 @@ export function createFormStore<
           readPath(values, record.path),
         ) ||
         hasPath(previous, record.path) !== hasPath(values, record.path)
-      )
-        invalidate(record);
+      ) {
+        const revalidate =
+          !!config &&
+          !!record.registrations.size &&
+          (config.validate === 'always' ||
+            (config.validate !== 'never' &&
+              (record.owner?.options.validateTrigger === 'onChange' ||
+                !!record.errors.length)));
+        invalidate(record, revalidate);
+        if (revalidate) void validateRecord(record, false);
+      }
     }
   }
 
@@ -328,7 +349,7 @@ export function createFormStore<
             }
           }
         }
-        if (events.length && !disposed && options.onValuesChange) {
+        if (events.length && !disposed && resolveCallbacks().onValuesChange) {
           // One callback per transaction; names are unioned, user source wins,
           // and the final command supplies the transaction's kind.
           const change: FormChange = Object.freeze({
@@ -341,7 +362,10 @@ export function createFormStore<
             kind: events[events.length - 1].kind,
           });
           try {
-            const result = options.onValuesChange(published.values, change);
+            const result = resolveCallbacks().onValuesChange?.(
+              published.values,
+              change,
+            );
             if (result) Promise.resolve(result).catch(report);
           } catch (error) {
             report(error);
@@ -386,7 +410,7 @@ export function createFormStore<
     const changed = next !== values;
     if (changed) {
       values = next;
-      invalidateRelated(record.path, previous);
+      invalidateRelated(record.path, previous, config);
     }
     if (config.touch ?? config.source === 'user') record.touched = true;
     if (changed && (config.notify ?? config.source === 'user')) {
@@ -422,9 +446,17 @@ export function createFormStore<
 
   function prepareRegistration(
     path: FormPath,
-    config: RegistrationOptions,
-  ): RegistrationOptions {
-    const prepared = { ...config };
+    config: RegistrationOptions<ErrorValue>,
+  ): RegistrationOptions<ErrorValue> {
+    const prepared = {
+      ...config,
+      rules: config.rules?.map((rule) =>
+        Object.freeze({
+          ...rule,
+          ...(rule.enum ? { enum: Object.freeze([...rule.enum]) } : {}),
+        }),
+      ),
+    };
     if (Object.hasOwn(prepared, 'defaultValue')) {
       prepared.defaultValue = ownValue(prepared.defaultValue);
       const normalized = normalizePath(path);
@@ -436,7 +468,10 @@ export function createFormStore<
     return prepared;
   }
 
-  function seed(record: FieldRecord<ErrorValue>, registration: Registration) {
+  function seed(
+    record: FieldRecord<ErrorValue>,
+    registration: Registration<ErrorValue>,
+  ) {
     if (
       registration.defaultConsidered ||
       !Object.hasOwn(registration.options, 'defaultValue')
@@ -463,14 +498,16 @@ export function createFormStore<
 
   function register(
     path: FormPath,
-    config: RegistrationOptions = {},
-  ): RegistrationToken {
+    config: RegistrationOptions<ErrorValue> = {},
+  ): RegistrationToken<ErrorValue> {
     assertLive();
     const normalized = normalizePath(path);
     const prepared = prepareRegistration(normalized, config);
+    const signature = prepared.rulesKey ?? rulesSignature(prepared.rules);
     const record = ensure(normalized);
-    const registration: Registration = {
+    const registration: Registration<ErrorValue> = {
       options: prepared,
+      signature,
       order: ++order,
       defaultConsidered: false,
     };
@@ -486,25 +523,37 @@ export function createFormStore<
       get released() {
         return released || disposed;
       },
-      update(next: RegistrationOptions) {
+      update(next: RegistrationOptions<ErrorValue>) {
         if (released || disposed) return;
         const prepared = prepareRegistration(record.path, next);
+        const signature = prepared.rulesKey ?? rulesSignature(prepared.rules);
+        const validationChanged =
+          registration.signature !== signature ||
+          registration.options.validationDelay !== prepared.validationDelay ||
+          registration.options.validateTrigger !== prepared.validateTrigger ||
+          registration.options.errorPolicy !== prepared.errorPolicy;
         const hasNewDefault =
           !registration.defaultConsidered &&
           Object.hasOwn(prepared, 'defaultValue');
         if (
           !hasNewDefault &&
+          !validationChanged &&
           (registration.options.preserve ?? true) ===
             (prepared.preserve ?? true) &&
           registration.options.isEqual === prepared.isEqual
-        )
+        ) {
+          // Keep the latest closures/messages without invalidating equivalent rules.
+          registration.options = prepared;
           return;
+        }
         batch(() => {
           registration.options = prepared;
+          registration.signature = signature;
           registration.order = ++order;
           // Only an ownership change invalidates; equivalent options pushed
           // after every React commit must not cause a publication loop.
-          if (record.owner !== registration) invalidate(record);
+          if (record.owner !== registration || validationChanged)
+            invalidate(record);
           record.owner = registration;
           seed(record, registration);
         });
@@ -742,6 +791,259 @@ export function createFormStore<
     });
   }
 
+  function validateRecord(
+    record: FieldRecord<ErrorValue>,
+    immediate: boolean,
+    parentSignal?: AbortSignal,
+  ): Promise<ModernFieldValidationResult<ErrorValue>> {
+    const result = (errors: readonly ErrorValue[], stale = false) => ({
+      name: record.name,
+      errors,
+      isValid: !stale && !errors.length,
+      stale,
+    });
+    if (parentSignal?.aborted)
+      return Promise.resolve(result(EMPTY_ERRORS, true));
+    const config = record.owner?.options;
+    const rules = config?.rules ?? [];
+    const token = startValidation(record.path);
+    const revision = record.validationRevision;
+    if (token.signal.aborted || parentSignal?.aborted) {
+      token.cancel();
+      return Promise.resolve(result(EMPTY_ERRORS, true));
+    }
+    if (!rules.length) {
+      const committed = token.complete(EMPTY_ERRORS);
+      return Promise.resolve(
+        result(
+          EMPTY_ERRORS,
+          !committed || record.validationRevision !== revision,
+        ),
+      );
+    }
+    const value = readPath(values, record.path);
+    return new Promise((resolve) => {
+      let timer: ReturnType<typeof setTimeout> | undefined;
+      let settled = false;
+      const finish = (errors: readonly ErrorValue[], stale: boolean) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        token.signal.removeEventListener('abort', abort);
+        parentSignal?.removeEventListener('abort', cancel);
+        resolve(result(errors, stale));
+      };
+      const abort = () => finish(EMPTY_ERRORS, true);
+      const cancel = () => token.cancel();
+      token.signal.addEventListener('abort', abort, { once: true });
+      parentSignal?.addEventListener('abort', cancel, { once: true });
+      const run = async () => {
+        timer = undefined;
+        const errors = await runRules(
+          value,
+          rules,
+          {
+            name: record.name,
+            signal: token.signal,
+            getValue: (path) => readPath(values, normalizePath(path)),
+            getValues: () => values as Partial<T>,
+          },
+          config?.errorPolicy ?? options.errorPolicy ?? 'first',
+        );
+        if (!settled) {
+          const committed = token.complete(errors);
+          finish(
+            Object.freeze(errors),
+            !committed ||
+              record.validationRevision !== revision ||
+              !!parentSignal?.aborted,
+          );
+        }
+      };
+      const delay = immediate ? 0 : config?.validationDelay ?? 0;
+      if (delay > 0) timer = setTimeout(() => void run(), delay);
+      else void run();
+    });
+  }
+
+  function validate(
+    paths?: readonly FormPath[],
+    config: { immediate?: boolean; signal?: AbortSignal } = {},
+  ): Promise<ModernValidationResult<ErrorValue>> {
+    assertLive();
+    const targets = paths
+      ? Array.from(new Set(paths.map(getFieldKey))).map((key) =>
+          records.get(key),
+        )
+      : Array.from(records.values());
+    const active = targets.filter(
+      (record): record is FieldRecord<ErrorValue> =>
+        !!record?.registrations.size,
+    );
+    let runs: Promise<ModernFieldValidationResult<ErrorValue>>[] = [];
+    let revisions: number[] = [];
+    batch(() => {
+      runs = active.map((record) =>
+        validateRecord(record, config.immediate ?? true, config.signal),
+      );
+      // Capture before publishing: a synchronous subscriber can edit/reset.
+      revisions = active.map((record) => record.validationRevision);
+    });
+    return Promise.all(runs).then((results) => {
+      const fields = results.map((result, index) => {
+        const record = active[index];
+        return record.validationRevision === revisions[index] &&
+          !!record.registrations.size &&
+          !config.signal?.aborted
+          ? result
+          : { ...result, stale: true, isValid: false };
+      });
+      return {
+        fields,
+        stale: fields.some((field) => field.stale) || !!config.signal?.aborted,
+        isValid: !!fields.length && fields.every((field) => field.isValid),
+      };
+    });
+  }
+
+  function resolveCallbacks(): FormCallbacks<T> {
+    return { ...options, ...binding?.callbacks };
+  }
+
+  function cancelSubmission() {
+    batch(() => {
+      if (submission) cancellations.add(submission);
+      submission = undefined;
+    });
+  }
+
+  function bindCallbacks(callbacks: FormCallbacks<T>): CallbackBinding<T> {
+    assertLive();
+    if (binding)
+      developmentError(
+        'A second Form root owns this controller; the newest callback binding wins.',
+      );
+    const own = { callbacks: { ...callbacks } };
+    binding = own;
+    let released = false;
+    return Object.freeze({
+      update(next: FormCallbacks<T>) {
+        if (!released && !disposed && binding === own)
+          own.callbacks = { ...next };
+      },
+      release() {
+        if (released || disposed) return;
+        released = true;
+        if (binding === own) {
+          binding = undefined;
+          cancelSubmission();
+        }
+      },
+    });
+  }
+
+  async function submit(
+    config: { include?: 'active' | 'all' } = {},
+  ): Promise<ModernSubmitResult<ErrorValue>> {
+    const token = startSubmission();
+    if (!token) return { status: 'ignored', reason: 'submitting' };
+    const include = config.include ?? 'active';
+    // Cancellation settles promptly even if a validator or callback ignores its signal.
+    return new Promise((resolve) => {
+      let settled = false;
+      const finish = (result: ModernSubmitResult<ErrorValue>) => {
+        if (settled) return;
+        settled = true;
+        token.signal.removeEventListener('abort', abort);
+        resolve(result);
+      };
+      const abort = () => finish({ status: 'stale' });
+      token.signal.addEventListener('abort', abort, { once: true });
+      if (token.signal.aborted) {
+        abort();
+        return;
+      }
+      const run = async () => {
+        const pendingValidation = validate(undefined, { signal: token.signal });
+        const validatedRecords = Array.from(records.values()).filter(
+          (record) => record.registrations.size,
+        );
+        const revisions = validatedRecords.map(
+          (record) => record.validationRevision,
+        );
+        const validation = await pendingValidation;
+        if (settled) return;
+        const changedSinceValidation =
+          validatedRecords.length !== validation.fields.length ||
+          validatedRecords.length !==
+            Array.from(records.values()).filter(
+              (record) => record.registrations.size,
+            ).length ||
+          validatedRecords.some(
+            (record, index) =>
+              !record.registrations.size ||
+              record.validationRevision !== revisions[index],
+          );
+        if (validation.stale || changedSinceValidation) {
+          token.complete();
+          finish({ status: 'stale' });
+          return;
+        }
+        const callbacks = resolveCallbacks();
+        let result: ModernSubmitResult<ErrorValue>;
+        if (!validation.isValid) {
+          const errors = Object.fromEntries(
+            validation.fields
+              .filter((field) => !field.isValid)
+              .map((field) => [field.name, field.errors]),
+          );
+          result = { status: 'invalid', errors: Object.freeze(errors) };
+          try {
+            await callbacks.onSubmitFailed?.(errors);
+          } catch (error) {
+            report(error);
+          }
+          if (!settled) {
+            token.complete();
+            finish(result);
+          }
+          return;
+        }
+        try {
+          await callbacks.onSubmit?.(
+            (include === 'all' ? values : activeValues()) as Partial<T>,
+            { include, signal: token.signal },
+          );
+          result = { status: 'submitted' };
+        } catch (error) {
+          if (settled) return;
+          // Keep the guard active while failure callbacks run.
+          batch(() => {
+            submitError = error;
+          });
+          try {
+            await callbacks.onSubmitFailed?.(error);
+          } catch (failure) {
+            report(failure);
+          }
+          result = { status: 'failed', error };
+        }
+        if (!settled) {
+          token.complete(
+            result.status === 'failed' ? { error: result.error } : undefined,
+          );
+          finish(result);
+        }
+      };
+      void run().catch((error) => {
+        if (!settled) {
+          token.complete({ error });
+          finish({ status: 'failed', error });
+        }
+      });
+    });
+  }
+
   function subscribe(listener: () => void) {
     assertLive();
     const entry = { notify: listener };
@@ -755,6 +1057,7 @@ export function createFormStore<
     if (disposed) return;
     disposed = true;
     listeners.clear();
+    binding = undefined;
     changes = [];
     pending = false;
     for (const record of records.values()) {
@@ -796,6 +1099,18 @@ export function createFormStore<
       });
     },
     register,
+    validate,
+    submit,
+    bindCallbacks,
+    blur(path: FormPath) {
+      const record = records.get(getFieldKey(path));
+      if (!record?.registrations.size) return;
+      batch(() => {
+        record.touched = true;
+        if ((record.owner?.options.validateTrigger ?? 'onBlur') === 'onBlur')
+          void validateRecord(record, false);
+      });
+    },
     setValue,
     setValues,
     batch,

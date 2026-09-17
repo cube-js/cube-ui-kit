@@ -54,9 +54,18 @@ export type {
   FormController,
   ModernFormState,
   UseFormControllerOptions,
+  ModernValidationRule,
+  ModernValidationResult,
+  ModernFieldValidationResult,
+  ModernSubmitResult,
 } from './modern/controller';
 export type { FormSelectorOptions, FormSubscribeProps } from './modern/react';
-export type { FormChange, SetValueOptions } from './modern/types';
+export type {
+  FormChange,
+  SetValueOptions,
+  ModernSubmitContext,
+} from './modern/types';
+export type { ModernValidationContext } from './modern/validation';
 export type { FormPath } from './modern/values';
 export type { CubeFormInstance } from './use-form';
 export type { FieldTypes, Fields } from './types';

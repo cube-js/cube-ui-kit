@@ -81,6 +81,8 @@ jobs:
         run: pnpm add -D --save-exact react@18.3.1 react-dom@18.3.1 react-test-renderer@18.3.1
       - name: Verify selectors, root scopes, Strict Mode, and hydration
         run: pnpm test:form-react
+      - name: Verify the same modern Form contract with React Compiler
+        run: pnpm test:form-compiled
 
   browser-tests:
     name: 'Browser tests'

@@ -28,6 +28,11 @@ export type UseFieldPropsParams = {
   unsafe__isDisabled?: boolean;
 };
 
+const defaultValuePropsMapper = ({ value, onChange }) => ({
+  value: value ?? null,
+  onChange,
+});
+
 /**
  * The single entry point for input components (see
  * `docs/rules/input-components.md`).
@@ -53,12 +58,7 @@ export function useFieldProps<
   const [isDisabled] = useState(params.unsafe__isDisabled ?? false);
 
   const {
-    valuePropsMapper = ({ value, onChange }) => {
-      return {
-        value: value ?? null,
-        onChange,
-      };
-    },
+    valuePropsMapper = defaultValuePropsMapper,
     defaultValidationTrigger = 'onBlur',
   } = params;
 
@@ -92,17 +92,6 @@ export function useFieldProps<
       field?.validateTrigger ?? defaultValidationTrigger,
     );
   });
-
-  const resolved = resolveResult();
-  // React Aria forwards `form` to native inputs. A modern controller is a
-  // binding source, never an HTML form id, including in standalone/group mode.
-  const result = isModernFormController(resolved.form)
-    ? { ...resolved, form: undefined }
-    : resolved;
-
-  useDebugValue(result);
-
-  return result;
 
   function resolveResult(): Props {
     if (isInsideLegacyField || isDisabled) {
@@ -163,4 +152,15 @@ export function useFieldProps<
       ? { ...result, labelProps: { ...result.labelProps, for: result.id } }
       : result;
   }
+
+  const resolved = resolveResult();
+  // React Aria forwards `form` to native inputs. A modern controller is a
+  // binding source, never an HTML form id, including in standalone/group mode.
+  const result = isModernFormController(resolved.form)
+    ? { ...resolved, form: undefined }
+    : resolved;
+
+  useDebugValue(result);
+
+  return result;
 }

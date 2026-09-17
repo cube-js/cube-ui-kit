@@ -587,7 +587,7 @@ describe('validation/submission state and lifecycle', () => {
       status: 'validating',
     });
     expect(store.getFieldSnapshot('a')?.errors[0]).toBe(errorNode);
-    store.setValue('a', 'edited');
+    store.setValue('a', 'edited', { validate: 'never' });
     expect(validation.signal.aborted).toBe(true);
     expect(validation.complete(['stale'])).toBe(false);
     expect(store.getFieldSnapshot('a')).toMatchObject({

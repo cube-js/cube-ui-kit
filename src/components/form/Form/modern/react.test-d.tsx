@@ -4,7 +4,13 @@ import { DialogForm } from '../../../overlays/Dialog/DialogForm';
 import { Form } from '../index';
 import { useFieldProps } from '../use-field/use-field-props';
 
-import type { FormController, ModernFormState } from './controller';
+import type {
+  FormController,
+  ModernFormState,
+  ModernSubmitResult,
+  ModernValidationResult,
+  ModernValidationRule,
+} from './controller';
 
 interface Values {
   amount: number;
@@ -21,6 +27,23 @@ export function ModernTypes() {
     FormController<Values>
   >();
   expectTypeOf(form.getValue('amount')).toEqualTypeOf<number | undefined>();
+  const rule: ModernValidationRule = {
+    validator: (_rule, _value, context) => {
+      expectTypeOf(context.signal).toEqualTypeOf<AbortSignal>();
+      return <span>Invalid</span>;
+    },
+  };
+  useFieldProps({
+    form,
+    name: 'name',
+    rules: [rule],
+    rulesKey: 'revision',
+    errorPolicy: 'all',
+  });
+  expectTypeOf(form.validate()).toEqualTypeOf<
+    Promise<ModernValidationResult>
+  >();
+  expectTypeOf(form.submit()).toEqualTypeOf<Promise<ModernSubmitResult>>();
   form.setValue('dynamic.name', 'value');
   form.setValue(['nested', 0], 'value');
   form.setFieldErrors('amount', [<span key="error">Error</span>]);
@@ -38,8 +61,14 @@ export function ModernTypes() {
   const root = <Form form={form} ref={createRef<HTMLFormElement>()} />;
   // @ts-expect-error defaults belong on the creator
   const defaults = <Form form={form} defaultValues={{ amount: 2 }} />;
-  // @ts-expect-error submission integration is phase 7
-  const submit = <Form form={form} onSubmit={() => {}} />;
+  const submit = (
+    <Form
+      form={form}
+      onSubmit={(values) => {
+        expectTypeOf(values.amount).toEqualTypeOf<number | undefined>();
+      }}
+    />
+  );
   // @ts-expect-error existing wrappers remain legacy-only
   const dialog = <DialogForm form={form} title="Settings" />;
   const subscriber = (

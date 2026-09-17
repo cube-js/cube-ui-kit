@@ -284,21 +284,20 @@ describe('modern Form root and subscriptions', () => {
     );
   });
 
-  it.each([
-    { defaultValues: { a: 2 } },
-    { onSubmit: () => {} },
-    { onValuesChange: () => {} },
-  ])('rejects unsupported modern root props: %j', (props) => {
-    silenceErrors();
-    const form = createFormController({ defaultValues: { a: 1 } });
-    const view = render(
-      <RenderErrorBoundary>
-        <Form {...(props as {})} form={form} />
-      </RenderErrorBoundary>,
-    );
-    expect(view.getByTestId('render-error')).toBeInTheDocument();
-    expect(form.getValue('a')).toBe(1);
-  });
+  it.each([{ defaultValues: { a: 2 } }])(
+    'rejects unsupported modern root props: %j',
+    (props) => {
+      silenceErrors();
+      const form = createFormController({ defaultValues: { a: 1 } });
+      const view = render(
+        <RenderErrorBoundary>
+          <Form {...(props as {})} form={form} />
+        </RenderErrorBoundary>,
+      );
+      expect(view.getByTestId('render-error')).toBeInTheDocument();
+      expect(form.getValue('a')).toBe(1);
+    },
+  );
 
   it('prevents accidental navigation without action and leaves native action untouched', () => {
     const form = createFormController();

@@ -1,4 +1,5 @@
 import type { ModernFormBrand } from '../backend';
+import type { ModernValidationRule } from './validation';
 import type { FormPath } from './values';
 
 export type FieldStatus = 'unvalidated' | 'validating' | 'valid' | 'invalid';
@@ -33,16 +34,21 @@ export interface FormState<T extends object, ErrorValue = unknown> {
   readonly revision: number;
 }
 
-export interface RegistrationOptions {
+export interface RegistrationOptions<ErrorValue = unknown> {
+  readonly rules?: readonly ModernValidationRule<ErrorValue>[];
+  readonly rulesKey?: string;
+  readonly validationDelay?: number;
+  readonly validateTrigger?: 'onBlur' | 'onChange' | 'onSubmit';
+  readonly errorPolicy?: 'first' | 'all';
   readonly defaultValue?: unknown;
   readonly preserve?: boolean;
   readonly isEqual?: (a: unknown, b: unknown) => boolean;
 }
 
-export interface RegistrationToken {
+export interface RegistrationToken<ErrorValue = unknown> {
   readonly name: string;
   readonly released: boolean;
-  update(options: RegistrationOptions): void;
+  update(options: RegistrationOptions<ErrorValue>): void;
   /** React effect replay can reconnect before the queued value removal. */
   release(options?: { deferValueRemoval?: boolean }): void;
 }
@@ -54,12 +60,59 @@ export interface FormChange {
 }
 
 export interface SetValueOptions {
+  readonly validate?: 'auto' | 'always' | 'never';
   readonly source?: FormChange['source'];
   readonly touch?: boolean;
   readonly notify?: boolean;
 }
 
-export interface FormStoreOptions<T extends object> {
+export interface ModernSubmitContext {
+  readonly include: 'active' | 'all';
+  readonly signal: AbortSignal;
+}
+
+export interface FormCallbacks<T extends object> {
+  readonly onSubmit?: (
+    values: Readonly<Partial<T>>,
+    context: ModernSubmitContext,
+  ) => void | Promise<void>;
+  readonly onSubmitFailed?: (error: unknown) => void | Promise<void>;
+  readonly onValuesChange?: (
+    values: Readonly<Partial<T>>,
+    change: FormChange,
+  ) => void | Promise<void>;
+}
+
+export interface CallbackBinding<T extends object> {
+  update(callbacks: FormCallbacks<T>): void;
+  release(): void;
+}
+
+export interface ModernFieldValidationResult<ErrorValue = unknown> {
+  readonly name: string;
+  readonly errors: readonly ErrorValue[];
+  readonly isValid: boolean;
+  readonly stale: boolean;
+}
+
+export interface ModernValidationResult<ErrorValue = unknown> {
+  readonly fields: readonly ModernFieldValidationResult<ErrorValue>[];
+  readonly isValid: boolean;
+  readonly stale: boolean;
+}
+
+export type ModernSubmitResult<ErrorValue = unknown> =
+  | { status: 'ignored'; reason: 'submitting' }
+  | { status: 'stale' }
+  | {
+      status: 'invalid';
+      errors: Readonly<Record<string, readonly ErrorValue[]>>;
+    }
+  | { status: 'failed'; error: unknown }
+  | { status: 'submitted' };
+
+export interface FormStoreOptions<T extends object> extends FormCallbacks<T> {
+  readonly errorPolicy?: 'first' | 'all';
   readonly defaultValues?: Partial<T>;
   readonly onValuesChange?: (
     values: Readonly<Partial<T>>,
@@ -69,7 +122,7 @@ export interface FormStoreOptions<T extends object> {
   readonly onDevelopmentError?: (message: string) => void;
 }
 
-/** State transitions for the later validation pipeline; no rules/timers here. */
+/** Internal state token owned by the validation pipeline. */
 export interface ValidationToken<ErrorValue> {
   readonly signal: AbortSignal;
   complete(errors: readonly ErrorValue[]): boolean;
@@ -99,7 +152,19 @@ export interface FormStore<
     listener: (value: Selected, previous: Selected) => void,
     isEqual?: (a: Selected, b: Selected) => boolean,
   ): () => void;
-  register(path: FormPath, options?: RegistrationOptions): RegistrationToken;
+  register(
+    path: FormPath,
+    options?: RegistrationOptions<ErrorValue>,
+  ): RegistrationToken<ErrorValue>;
+  validate(
+    paths?: readonly FormPath[],
+    options?: { immediate?: boolean; signal?: AbortSignal },
+  ): Promise<ModernValidationResult<ErrorValue>>;
+  submit(options?: {
+    include?: 'active' | 'all';
+  }): Promise<ModernSubmitResult<ErrorValue>>;
+  blur(path: FormPath): void;
+  bindCallbacks(callbacks: FormCallbacks<T>): CallbackBinding<T>;
   setValue(path: FormPath, value: unknown, options?: SetValueOptions): void;
   setValues(values: Partial<T>, options?: SetValueOptions): void;
   /** Synchronous notification transaction; completed writes commit even if fn throws. */
