@@ -15,7 +15,7 @@ export interface CaretRect {
 }
 
 // Computed styles that affect text wrapping / caret placement inside a textarea.
-const MIRROR_STYLES: ReadonlyArray<keyof CSSStyleDeclaration> = [
+const MIRROR_STYLES = [
   'boxSizing',
   'width',
   'height',
@@ -48,7 +48,7 @@ const MIRROR_STYLES: ReadonlyArray<keyof CSSStyleDeclaration> = [
   'wordWrap',
   'wordBreak',
   'overflowWrap',
-];
+] as const satisfies ReadonlyArray<keyof CSSStyleDeclaration>;
 
 /**
  * Returns the viewport-space rect of the caret at `index` within `textarea`,

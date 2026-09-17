@@ -43,7 +43,8 @@ export interface RegistrationToken {
   readonly name: string;
   readonly released: boolean;
   update(options: RegistrationOptions): void;
-  release(): void;
+  /** React effect replay can reconnect before the queued value removal. */
+  release(options?: { deferValueRemoval?: boolean }): void;
 }
 
 export interface FormChange {

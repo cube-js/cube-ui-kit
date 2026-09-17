@@ -19,6 +19,7 @@ function AmountPreview() {
 
   return (
     <Form form={form}>
+      <NumberInput name="amount" label="Amount" />
       <button type="button" onClick={() => form.setValue('amount', 20)}>
         Set amount
       </button>
@@ -36,7 +37,9 @@ The creator does not subscribe its owner. `Form.useSelector(form, selector, { is
 
 Use selectors for render-time state. `getValue`, `getValues`, `getActiveValues`, `getFieldSnapshot`, and `getSnapshot` are imperative reads; `subscribe` supports imperative observers. `values` contains retained data and `activeValues` contains registered fields. Commands include `setValue`, `setValues`, `batch`, `touch`, the defaults/reset commands, and explicit field/submit error setters. String paths are literal names; tuples such as `['rows', 0, 'amount']` address nested data. `setValue` accepts `{ source, touch, notify }`; programmatic changes do not touch or notify `onValuesChange` unless requested, while user changes do both by default. The creation-time `onValuesChange(values, change)` callback receives retained values and `{ names, source, kind }`.
 
-The current modern root supplies presentation and controller context only. Named UI Kit inputs, `Form.Item`, `Form.Submit`, `Form.Reset`, `Form.SubmitError`, validation rules, and submission orchestration are not yet supported. Keep production input forms on `Form.useForm()` until those migration phases land. Modern roots reject `defaultValues` and root callback props; use controller creation options for defaults and `onValuesChange`. A root with a native `action` keeps browser submission; without an action, submission is prevented until the modern pipeline is available. Legacy wrappers such as `DialogForm` keep legacy-only types.
+Named UI Kit inputs bind to the modern controller automatically; `<TextInput name="email" form={form} />` also works outside a root. Inputs subscribe only to their own value, errors, and validation status. Custom controls use `useFieldProps` and `wrapWithField`; `Form.Item` stays legacy-only. Controller values and defaults win over field defaults, including explicit `undefined` and `null`. Duplicate fields share a value but receive unique accessible ids. Groups register once and keep their options detached.
+
+Removing a field removes it from `activeValues` immediately and retains its value by default. Use `preserve={false}` to remove its retained value after cleanup; the baseline remains available to reset. Changing a name or controller releases the old registration. Explicit `form={undefined}` detaches an input. Modern validation rules, submission orchestration, `Form.Submit`, `Form.Reset`, and `Form.SubmitError` remain migration work; use the legacy backend when those features are needed. Modern roots reject `defaultValues` and root callback props; use controller creation options for defaults and `onValuesChange`. A root with a native `action` keeps browser submission; without an action, submission is prevented until the modern pipeline is available. Legacy wrappers such as `DialogForm` keep legacy-only types.
 
 For SSR, seed the controller with the same serializable `defaultValues` on server and client. Server rendering and initial hydration select the cached creation snapshot; after hydration, subscribers catch up to current client state. Prepare server data before creating the controller. Each mount owns a separate controller, and subscriptions clean up on unmount; Strict Mode effect replay does not dispose live controllers.
 

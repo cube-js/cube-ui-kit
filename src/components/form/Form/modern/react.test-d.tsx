@@ -2,6 +2,7 @@ import { createRef } from 'react';
 
 import { DialogForm } from '../../../overlays/Dialog/DialogForm';
 import { Form } from '../index';
+import { useFieldProps } from '../use-field/use-field-props';
 
 import type { FormController, ModernFormState } from './controller';
 
@@ -31,6 +32,9 @@ export function ModernTypes() {
   form.isDirty = true;
   // @ts-expect-error controller commands have stable readonly identities
   form.reset = () => {};
+  useFieldProps({ form, name: 'name', preserve: false, isEqual: Object.is });
+  // @ts-expect-error Form.Item remains legacy-only
+  const item = <Form.Item form={form} name="name" />;
   const root = <Form form={form} ref={createRef<HTMLFormElement>()} />;
   // @ts-expect-error defaults belong on the creator
   const defaults = <Form form={form} defaultValues={{ amount: 2 }} />;
@@ -51,7 +55,7 @@ export function ModernTypes() {
       {String}
     </Form.Subscribe>
   );
-  return [root, defaults, submit, dialog, subscriber, context];
+  return [root, defaults, submit, dialog, subscriber, context, item];
 }
 
 export function LegacyTypes() {

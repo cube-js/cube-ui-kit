@@ -5,10 +5,11 @@ import { useProviderProps } from '../../../../provider';
 import { mergeProps } from '../../../../utils/react/index';
 import { warn } from '../../../../utils/warnings';
 import { useValidationProps } from '../../validation/index';
+import { isModernFormController } from '../backend';
 import { useInsideLegacyField } from '../Field';
 import { useFormProps } from '../Form';
 
-import { useField } from './use-field';
+import { useFieldBinding } from './use-field-binding';
 
 import type { ValidateTrigger } from '../../../../shared/index';
 import type { FieldTypes } from '../types';
@@ -73,13 +74,14 @@ export function useFieldProps<
   const generatedId = useId();
   const isBound = hasName && !isInsideLegacyField && !isDisabled;
 
-  // The legacy backend's adapter, always called. Unbound, it registers
-  // nothing, generates no id and returns an inert value; bound, it refuses a
-  // modern controller with a clear error.
-  const field = useField<T, Props>(props, {
-    defaultValidationTrigger: params.defaultValidationTrigger,
-    unbound: !isBound,
-  });
+  const field = useFieldBinding<T, Props>(
+    props,
+    {
+      defaultValidationTrigger: params.defaultValidationTrigger,
+      unbound: !isBound,
+    },
+    generatedId,
+  );
 
   const isOutsideOfForm = field?.form == null;
 
@@ -91,7 +93,12 @@ export function useFieldProps<
     );
   });
 
-  const result = resolveResult();
+  const resolved = resolveResult();
+  // React Aria forwards `form` to native inputs. A modern controller is a
+  // binding source, never an HTML form id, including in standalone/group mode.
+  const result = isModernFormController(resolved.form)
+    ? { ...resolved, form: undefined }
+    : resolved;
 
   useDebugValue(result);
 
@@ -152,14 +159,8 @@ export function useFieldProps<
           onBlur: field.onBlur,
         });
 
-    if (result.id) {
-      if (!result.labelProps) {
-        result.labelProps = {};
-      }
-
-      result.labelProps.for = result.id;
-    }
-
-    return result;
+    return result.id
+      ? { ...result, labelProps: { ...result.labelProps, for: result.id } }
+      : result;
   }
 }

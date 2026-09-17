@@ -137,7 +137,7 @@ describe('dual-backend shell: <Form> facade', () => {
       </Form.Item>,
     ],
   ])(
-    '%s bound to a modern controller is the same development error',
+    '%s rejects an unsupported bare modern brand at its backend boundary',
     (_, bound) => {
       silenceConsoleError();
 
@@ -146,7 +146,7 @@ describe('dual-backend shell: <Form> facade', () => {
       );
 
       expect(getByTestId('render-error')).toHaveTextContent(
-        /The "a" field received a modern form controller/,
+        /The "a" field (received a modern form controller|requires a modern form controller)/,
       );
     },
   );

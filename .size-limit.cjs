@@ -20,6 +20,11 @@ module.exports = [
         }),
       );
     },
+    // Phase 6 field bindings: CI run 35255787395 measured 522,278 B for All,
+    // up 826 B from Phase 5's 521,452 B. Modern per-field subscriptions and
+    // guarded registration cleanup fit in 523 kB with 722 B headroom. The
+    // Button-only entry is 119,482 B (+18 B) and keeps its existing budget.
+    //
     // Phase 5 Form migration: the formerly internal store now ships with the
     // controller, selector adapter, and modern context root. CI run 35251516687
     // measured 521,452 B against main's 516,667 B (+4,785 B gzip); the Button-only
@@ -255,7 +260,7 @@ module.exports = [
     //
     // Note when checking locally: `size-limit` bundles the built `./dist`, it
     // does not build. Run `pnpm build` first or you will measure a stale bundle.
-    limit: '522kB',
+    limit: '523kB',
   },
   {
     name: 'Tree shaking (just a Button)',

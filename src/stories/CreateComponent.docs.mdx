@@ -19,7 +19,7 @@ Creating a component involves several optional but recommended elements:
 
 Everything is optional - you can create simplified components without all features, but exported UI Kit components should be feature-rich and consistent.
 
-Form-aware inputs continue to use the existing `useFieldProps` integration. The modern Form migration currently exposes controller creation and selectors for state consumers; modern field binding is a later phase. Do not register a modern field during render or connect a modern controller through the legacy input path. See [Form](/docs/forms-form--docs) for the current integration boundary.
+Form-aware inputs use `useFieldProps` for both legacy instances and modern controllers. Map the control’s value API with `valuePropsMapper` and pass the resolved props to `wrapWithField`. The hook owns modern registration after commit, narrow subscriptions, cleanup, and unique accessible ids. Do not register during render, call the legacy adapter directly, or wrap a modern control in `Form.Item`. See [Form](/docs/forms-form--docs) for the current integration boundary.
 
 ## Core Concepts
 

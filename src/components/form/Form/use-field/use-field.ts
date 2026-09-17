@@ -65,7 +65,7 @@ export function useField<T extends FieldTypes, Props extends UseFieldProps<T>>(
     id,
     idPrefix,
     name,
-    form,
+    form: sourceForm,
     rules,
     message,
     description,
@@ -80,14 +80,18 @@ export function useField<T extends FieldTypes, Props extends UseFieldProps<T>>(
 
   if (params.unbound) {
     name = undefined;
-    form = undefined;
+    sourceForm = undefined;
   }
 
-  if (!params.unbound && isModernFormController(form)) {
+  if (!params.unbound && isModernFormController(sourceForm)) {
     throw modernBackendUnavailableError(
       name != null ? `The "${name}" field` : 'A field without a name',
     );
   }
+
+  // A modern source is rejected above (or cleared when this adapter is inert).
+  // Keep unbranded structural legacy instances supported as before.
+  const form = sourceForm as CubeFormInstance<T> | undefined;
 
   const { isInvalid: isInvalidProp, isValid: isValidProp } =
     resolveValidationProps(props);

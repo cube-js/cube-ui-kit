@@ -54,6 +54,10 @@ export interface FieldCoreProps {
   rules?: ValidationRule[];
   /** Debounce in milliseconds for validation */
   validationDelay?: number;
+  /** Modern fields retain their value on unmount by default. */
+  preserve?: boolean;
+  /** Modern field dirty comparison override. Values must be immutable. */
+  isEqual?: (previous: unknown, next: unknown) => boolean;
   /**
    * @deprecated Use `errorMessage` for error messages and `description` for field descriptions instead.
    * Message for the field. Some additional information or error notice
