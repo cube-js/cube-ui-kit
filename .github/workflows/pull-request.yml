@@ -43,6 +43,9 @@ jobs:
       - name: Run the tests
         run: pnpm test
 
+      - name: Verify the modern Form store without React or DOM setup
+        run: pnpm test:form-store
+
       - name: Type check the Form type fixtures (and their import graph)
         run: pnpm test:types
 
