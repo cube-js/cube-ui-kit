@@ -38,8 +38,14 @@ export function ModernTypes() {
   const root = <Form form={form} ref={createRef<HTMLFormElement>()} />;
   // @ts-expect-error defaults belong on the creator
   const defaults = <Form form={form} defaultValues={{ amount: 2 }} />;
-  // @ts-expect-error submission integration is phase 7
-  const submit = <Form form={form} onSubmit={() => {}} />;
+  const submit = (
+    <Form
+      form={form}
+      onSubmit={(values) => {
+        expectTypeOf(values.amount).toEqualTypeOf<number | undefined>();
+      }}
+    />
+  );
   // @ts-expect-error existing wrappers remain legacy-only
   const dialog = <DialogForm form={form} title="Settings" />;
   const subscriber = (

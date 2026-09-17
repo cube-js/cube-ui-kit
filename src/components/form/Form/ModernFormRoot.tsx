@@ -1,7 +1,9 @@
 import { CONTAINER_STYLES, filterBaseProps } from '@tenphi/tasty';
-import { forwardRef, useMemo } from 'react';
+import { forwardRef, useMemo, useRef } from 'react';
 
+import { useEvent } from '../../../_internal/hooks/use-event';
 import { Provider, useProviderProps } from '../../../provider';
+import { useLayoutEffect } from '../../../utils/react/useLayoutEffect';
 import { extractStyles } from '../../../utils/styles';
 import { useValidationProps } from '../validation/use-validation-props';
 
@@ -17,8 +19,9 @@ import { getControllerInternals } from './modern/controller';
 import type { FormEvent, ReactElement, Ref } from 'react';
 import type { CubeFormProps, FormPresentationContextValue } from './Form';
 import type { FormController } from './modern/controller';
+import type { CallbackBinding, FormCallbacks } from './modern/types';
 
-/** Phase 5 root: presentation and subscriptions; callbacks arrive in phase 7. */
+/** Modern root owns callback bindings; subscriptions stay in descendants. */
 export interface ModernFormProps<T extends object = Record<string, unknown>>
   extends Omit<
     CubeFormProps<T>,
@@ -26,17 +29,13 @@ export interface ModernFormProps<T extends object = Record<string, unknown>>
   > {
   form: FormController<T>;
   defaultValues?: never;
-  onSubmit?: never;
-  onSubmitFailed?: never;
-  onValuesChange?: never;
+  onReset?: (event: FormEvent<HTMLFormElement>) => void;
+  onSubmit?: FormCallbacks<T>['onSubmit'];
+  onSubmitFailed?: FormCallbacks<T>['onSubmitFailed'];
+  onValuesChange?: FormCallbacks<T>['onValuesChange'];
 }
 
 const EMPTY_LEGACY_CONTEXT = {};
-
-function preventUnimplementedSubmit(event: FormEvent<HTMLFormElement>) {
-  event.preventDefault();
-  event.stopPropagation();
-}
 
 function ModernFormRoot<T extends object>(
   props: ModernFormProps<T>,
@@ -49,8 +48,8 @@ function ModernFormRoot<T extends object>(
     name,
     children,
     orientation = 'vertical',
-    labelPosition = orientation === 'horizontal' ? 'side' : 'top',
-    labelWidth = orientation === 'horizontal' ? 'auto' : undefined,
+    labelPosition: authoredLabelPosition,
+    labelWidth: authoredLabelWidth,
     labelStyles,
     necessityIndicator,
     validateTrigger,
@@ -66,17 +65,44 @@ function ModernFormRoot<T extends object>(
     onValuesChange,
     ...otherProps
   } = resolved;
-  getControllerInternals(form, '<Form>');
+  const labelPosition =
+    authoredLabelPosition ?? (orientation === 'horizontal' ? 'side' : 'top');
+  const labelWidth =
+    authoredLabelWidth ?? (orientation === 'horizontal' ? 'auto' : undefined);
+  const { store } = getControllerInternals(form, '<Form>');
   if (defaultValues !== undefined) {
     throw new Error(
       'A modern <Form> does not accept defaultValues. Seed Form.useController() or use an explicit defaults command.',
     );
   }
-  if (onSubmit || onSubmitFailed || onValuesChange) {
-    throw new Error(
-      'Modern <Form> callback bindings are not available yet. Use the controller creation options for onValuesChange; submission arrives in a later phase.',
-    );
-  }
+  const binding = useRef<CallbackBinding<T> | undefined>(undefined);
+  useLayoutEffect(() => {
+    const token = store.bindCallbacks({});
+    binding.current = token;
+    return () => {
+      token.release();
+      if (binding.current === token) binding.current = undefined;
+    };
+  }, [store]);
+  useLayoutEffect(() => {
+    binding.current?.update({
+      ...(onSubmit === undefined ? {} : { onSubmit }),
+      ...(onSubmitFailed === undefined ? {} : { onSubmitFailed }),
+      ...(onValuesChange === undefined ? {} : { onValuesChange }),
+    });
+  });
+  const handleSubmit = useEvent((event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    void form.submit();
+  });
+  const handleReset = useEvent((event: FormEvent<HTMLFormElement>) => {
+    otherProps.onReset?.(event);
+    if (!event.defaultPrevented) {
+      event.preventDefault();
+      form.reset();
+    }
+  });
   const presentation = useMemo<FormPresentationContextValue>(
     () => ({
       labelPosition,
@@ -114,9 +140,8 @@ function ModernFormRoot<T extends object>(
         'has-split': labelPosition === 'split',
         horizontal: orientation === 'horizontal',
       }}
-      onSubmit={
-        otherProps.action == null ? preventUnimplementedSubmit : undefined
-      }
+      onSubmit={otherProps.action == null ? handleSubmit : undefined}
+      onReset={otherProps.action == null ? handleReset : otherProps.onReset}
     >
       <FormContext.Provider value={EMPTY_LEGACY_CONTEXT}>
         <ModernControllerContext.Provider value={form}>

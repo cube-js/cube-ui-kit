@@ -2,7 +2,7 @@ import { getControllerInternals } from './controller';
 import { getFieldKey } from './values';
 
 import type { ReactNode } from 'react';
-import type { ValidateTrigger } from '../../../../shared/form';
+import type { FieldCoreProps, ValidateTrigger } from '../../../../shared/form';
 import type { FormController } from './controller';
 import type {
   FieldState,
@@ -48,21 +48,38 @@ export function createModernFieldBackend(
     getServerSnapshot: () => getServerSnapshot().fields[key],
     register: () => store.register(name),
     change: (value, dontTouch) =>
-      store.setValue(name, value, { source: 'user', touch: !dontTouch }),
-    blur: () => store.touch(name),
+      store.setValue(name, value, {
+        source: 'user',
+        touch: !dontTouch,
+        validate: dontTouch ? 'never' : 'auto',
+      }),
+    blur: () => store.blur(name),
   };
 }
 
-export function fieldRegistrationOptions(props: {
-  defaultValue?: unknown;
-  preserve?: boolean;
-  isEqual?: (a: unknown, b: unknown) => boolean;
-}): RegistrationOptions<ReactNode> {
+export function fieldRegistrationOptions(
+  props: FieldCoreProps & {
+    defaultValue?: unknown;
+    validateTrigger?: ValidateTrigger;
+  },
+  defaultTrigger?: ValidateTrigger,
+): RegistrationOptions<ReactNode> {
   return {
     ...(Object.hasOwn(props, 'defaultValue')
       ? { defaultValue: props.defaultValue }
       : {}),
     preserve: props.preserve,
     isEqual: props.isEqual,
+    rules:
+      props.isRequired && !props.rules?.some((rule) => rule.required)
+        ? [{ required: true }, ...(props.rules ?? [])]
+        : props.rules,
+    rulesKey:
+      props.rulesKey === undefined
+        ? undefined
+        : `${props.isRequired ? 'required:' : ''}${props.rulesKey}`,
+    validationDelay: props.validationDelay,
+    validateTrigger: props.validateTrigger ?? defaultTrigger ?? 'onBlur',
+    errorPolicy: props.errorPolicy,
   };
 }

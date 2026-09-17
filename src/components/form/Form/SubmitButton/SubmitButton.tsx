@@ -3,17 +3,23 @@ import { forwardRef } from 'react';
 
 import { useProviderProps } from '../../../../provider';
 import { Button, CubeButtonProps } from '../../../actions/Button/Button';
+import { isModernFormController } from '../backend';
 import { useFormProps } from '../Form';
+import { ModernSubmitButton } from '../modern/actions';
 import { FieldTypes } from '../types';
 import { CubeFormInstance } from '../use-form';
 
+import type { FormController } from '../modern/controller';
+
 export interface CubeSubmitButtonProps<T extends FieldTypes = FieldTypes>
   extends CubeButtonProps {
-  form?: CubeFormInstance<T>;
+  form?: CubeFormInstance<T> | FormController<T>;
 }
 
-function SubmitButton(
-  props: CubeSubmitButtonProps,
+function LegacySubmitButton(
+  props: Omit<CubeSubmitButtonProps, 'form'> & {
+    form?: CubeFormInstance<FieldTypes>;
+  },
   ref: FocusableRef<HTMLElement>,
 ) {
   const providerProps = useProviderProps({} as CubeButtonProps);
@@ -41,6 +47,31 @@ function SubmitButton(
   );
 }
 
+function SubmitButton(
+  props: CubeSubmitButtonProps,
+  ref: FocusableRef<HTMLElement>,
+) {
+  const resolved = useFormProps(props);
+  if (isModernFormController(resolved.form)) {
+    return (
+      <ModernSubmitButton
+        {...resolved}
+        form={resolved.form as FormController}
+        buttonRef={ref}
+      />
+    );
+  }
+  return (
+    <LegacySubmitButtonWithRef
+      {...(props as Omit<CubeSubmitButtonProps, 'form'> & {
+        form?: CubeFormInstance<FieldTypes>;
+      })}
+      ref={ref}
+    />
+  );
+}
+
+const LegacySubmitButtonWithRef = forwardRef(LegacySubmitButton);
 const _SubmitButton = forwardRef(SubmitButton);
 
 _SubmitButton.displayName = 'SubmitButton';

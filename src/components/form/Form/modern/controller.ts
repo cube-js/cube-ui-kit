@@ -18,6 +18,9 @@ export type FormController<T extends object = Record<string, unknown>> =
     Pick<
       FormStore<T, ReactNode>,
       | typeof FORM_BACKEND
+      | 'validate'
+      | 'submit'
+      | 'blur'
       | 'getSnapshot'
       | 'getFieldSnapshot'
       | 'getValue'
@@ -60,6 +63,9 @@ export function createFormController<T extends object>(
   return Object.freeze({
     [FORM_BACKEND]: 'modern' as const,
     [CONTROLLER_STORE]: internals,
+    validate: store.validate,
+    submit: store.submit,
+    blur: store.blur,
     getSnapshot: store.getSnapshot,
     getFieldSnapshot: store.getFieldSnapshot,
     getValue: store.getValue,

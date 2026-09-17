@@ -5,17 +5,23 @@ import { useEvent } from '../../../../_internal/index';
 import { useProviderProps } from '../../../../provider';
 import { mergeProps } from '../../../../utils/react/index';
 import { Button, CubeButtonProps } from '../../../actions/Button/Button';
+import { isModernFormController } from '../backend';
 import { useFormProps } from '../Form';
+import { ModernResetButton } from '../modern/actions';
 import { FieldTypes } from '../types';
 import { CubeFormInstance } from '../use-form';
 
+import type { FormController } from '../modern/controller';
+
 export interface CubeResetButtonProps<T extends FieldTypes = FieldTypes>
   extends CubeButtonProps {
-  form?: CubeFormInstance<T>;
+  form?: CubeFormInstance<T> | FormController<T>;
 }
 
-function ResetButton(
-  props: CubeResetButtonProps,
+function LegacyResetButton(
+  props: Omit<CubeResetButtonProps, 'form'> & {
+    form?: CubeFormInstance<FieldTypes>;
+  },
   ref: FocusableRef<HTMLElement>,
 ) {
   const providerProps = useProviderProps({} as CubeButtonProps);
@@ -53,6 +59,31 @@ function ResetButton(
   );
 }
 
+function ResetButton(
+  props: CubeResetButtonProps,
+  ref: FocusableRef<HTMLElement>,
+) {
+  const resolved = useFormProps(props);
+  if (isModernFormController(resolved.form)) {
+    return (
+      <ModernResetButton
+        {...resolved}
+        form={resolved.form as FormController}
+        buttonRef={ref}
+      />
+    );
+  }
+  return (
+    <LegacyResetButtonWithRef
+      {...(props as Omit<CubeResetButtonProps, 'form'> & {
+        form?: CubeFormInstance<FieldTypes>;
+      })}
+      ref={ref}
+    />
+  );
+}
+
+const LegacyResetButtonWithRef = forwardRef(LegacyResetButton);
 const _ResetButton = forwardRef(ResetButton);
 
 _ResetButton.displayName = 'ResetButton';

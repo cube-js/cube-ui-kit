@@ -10,13 +10,19 @@ import { useI18n } from '../../../i18n';
 import { Alert, CubeAlertProps } from '../../content/Alert/index';
 
 import { FormContext } from './Form';
+import { ModernControllerContext } from './modern/context';
+import { useFormSelector } from './modern/react';
+
+import type { FormController } from './modern/controller';
 
 type SubmitErrorContextProps = {
   submitError?: unknown;
 };
 
-function SubmitError(props: CubeAlertProps, ref: ForwardedRef<HTMLDivElement>) {
-  let { submitError } = useContext(FormContext) as SubmitErrorContextProps;
+function ErrorAlert(
+  { submitError, ...props }: CubeAlertProps & SubmitErrorContextProps,
+  ref: ForwardedRef<HTMLDivElement>,
+) {
   const { t } = useI18n();
 
   if (!submitError) {
@@ -34,6 +40,36 @@ function SubmitError(props: CubeAlertProps, ref: ForwardedRef<HTMLDivElement>) {
     <Alert ref={ref} theme="danger" {...props}>
       {submitError as ReactNode}
     </Alert>
+  );
+}
+
+const ForwardedErrorAlert = forwardRef(ErrorAlert);
+
+function ModernSubmitError({
+  form,
+  alertRef,
+  ...props
+}: CubeAlertProps & {
+  form: FormController<any>;
+  alertRef: ForwardedRef<HTMLDivElement>;
+}) {
+  const submitError = useFormSelector(form, (state) => state.submitError);
+  return (
+    <ForwardedErrorAlert {...props} ref={alertRef} submitError={submitError} />
+  );
+}
+
+function SubmitError(props: CubeAlertProps, ref: ForwardedRef<HTMLDivElement>) {
+  const modern = useContext(ModernControllerContext);
+  const legacy = useContext(FormContext) as SubmitErrorContextProps;
+  return modern ? (
+    <ModernSubmitError {...props} form={modern} alertRef={ref} />
+  ) : (
+    <ForwardedErrorAlert
+      {...props}
+      ref={ref}
+      submitError={legacy.submitError}
+    />
   );
 }
 

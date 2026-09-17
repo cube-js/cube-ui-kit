@@ -89,7 +89,9 @@ export function useFieldBinding<
     };
   }, [handle]);
   useLayoutEffect(() => {
-    registration.current?.update(fieldRegistrationOptions(props));
+    registration.current?.update(
+      fieldRegistrationOptions(props, params.defaultValidationTrigger),
+    );
   });
   const trigger =
     props.validateTrigger ?? params.defaultValidationTrigger ?? 'onBlur';
