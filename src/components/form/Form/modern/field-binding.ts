@@ -64,6 +64,7 @@ export function fieldRegistrationOptions(
   },
   defaultTrigger?: ValidateTrigger,
 ): RegistrationOptions<ReactNode> {
+  const rules = props.rules?.flat(Infinity);
   return {
     ...(Object.hasOwn(props, 'defaultValue')
       ? { defaultValue: props.defaultValue }
@@ -71,9 +72,9 @@ export function fieldRegistrationOptions(
     preserve: props.preserve,
     isEqual: props.isEqual,
     rules:
-      props.isRequired && !props.rules?.some((rule) => rule.required)
-        ? [{ required: true }, ...(props.rules ?? [])]
-        : props.rules,
+      props.isRequired && !rules?.some((rule) => rule.required)
+        ? [{ required: true }, ...(rules ?? [])]
+        : rules,
     rulesKey:
       props.rulesKey === undefined
         ? undefined

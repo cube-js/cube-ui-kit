@@ -3,15 +3,18 @@ import { FORM_BACKEND, isModernFormController } from '../backend';
 import { createFormStore } from './store';
 
 import type { ReactNode } from 'react';
+import type { FormValueAtPath } from './path-types';
 import type {
   FormState,
   FormStore,
   FormStoreOptions,
+  SetValueOptions,
   ModernFieldValidationResult as StoreFieldValidationResult,
   ModernSubmitResult as StoreSubmitResult,
   ModernValidationResult as StoreValidationResult,
 } from './types';
 import type { ModernValidationRule as StoreValidationRule } from './validation';
+import type { FormPath } from './values';
 
 export type ModernValidationRule = StoreValidationRule<ReactNode>;
 export type ModernValidationResult = StoreValidationResult<ReactNode>;
@@ -36,11 +39,9 @@ export type FormController<T extends object = Record<string, unknown>> =
       | 'blur'
       | 'getSnapshot'
       | 'getFieldSnapshot'
-      | 'getValue'
       | 'getValues'
       | 'getActiveValues'
       | 'subscribe'
-      | 'setValue'
       | 'setValues'
       | 'batch'
       | 'setDefaultValues'
@@ -51,7 +52,16 @@ export type FormController<T extends object = Record<string, unknown>> =
       | 'clearFieldErrors'
       | 'setSubmitError'
       | 'clearSubmitError'
-    >
+    > & {
+      getValue<const Path extends FormPath>(
+        path: Path,
+      ): FormValueAtPath<T, Path> | undefined;
+      setValue<const Path extends FormPath>(
+        path: Path,
+        value: FormValueAtPath<T, NoInfer<Path>> | undefined,
+        options?: SetValueOptions,
+      ): void;
+    }
   >;
 
 // Symbol.for also lets two copies of the kit share a controller, just as the
@@ -96,7 +106,7 @@ export function createFormController<T extends object>(
     clearFieldErrors: store.clearFieldErrors,
     setSubmitError: store.setSubmitError,
     clearSubmitError: store.clearSubmitError,
-  });
+  }) as FormController<T>;
 }
 
 export function getControllerInternals<T extends object>(

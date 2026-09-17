@@ -21,6 +21,8 @@ Everything is optional - you can create simplified components without all featur
 
 Form-aware inputs use `useFieldProps` for both legacy instances and modern controllers. Map the control’s value API with `valuePropsMapper` and pass the resolved props to `wrapWithField`. The hook owns modern registration after commit, narrow subscriptions, cleanup, and unique accessible ids. Do not register during render, call the legacy adapter directly, or wrap a modern control in `Form.Item`. Modern validation options (`rules`, `rulesKey`, `validationDelay`, `validateTrigger`, `errorPolicy`) flow through the same hook. Validators receive an AbortSignal and return or reject with a message; use `rulesKey` for changed closure dependencies. See [Form](/docs/forms-form--docs) for the integration contract.
 
+The [compiled custom-control example](https://github.com/cube-js/cube-ui-kit/blob/main/typecheck/consumer/modern-form-examples.tsx) shows explicit DOM forwarding, async validation, and default adoption. Shared input rule props accept existing legacy validators; use `ModernValidationRule` for strict modern success/error return types, and adapt legacy validators that resolve data before migrating them.
+
 ## Core Concepts
 
 ### 1. Base Properties with `filterBaseProps`

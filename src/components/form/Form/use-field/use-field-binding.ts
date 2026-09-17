@@ -111,7 +111,8 @@ export function useFieldBinding<
   if (!controller) return legacy;
 
   const required =
-    props.isRequired || props.rules?.some((rule) => rule.required === true);
+    props.isRequired ||
+    props.rules?.flat(Infinity).some((rule) => rule.required === true);
   const id =
     props.id ??
     `${props.idPrefix ? `${props.idPrefix}_` : ''}${name}-${generatedId}`;

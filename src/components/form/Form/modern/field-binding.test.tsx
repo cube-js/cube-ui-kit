@@ -59,6 +59,25 @@ function Control(
 afterEach(() => vi.restoreAllMocks());
 
 describe('modern field binding', () => {
+  it('normalizes grouped input rules before required detection and validation', async () => {
+    const form = createFormController({ defaultValues: { name: '' } });
+    const view = renderWithRoot(
+      <Form form={form}>
+        <TextInput
+          name="name"
+          label="Name"
+          isRequired
+          rules={[[{ required: true, message: 'Choose a name' }]]}
+        />
+      </Form>,
+    );
+    await act(async () => {
+      await form.validate();
+    });
+    expect(view.getByText('Choose a name')).toBeInTheDocument();
+    expect(form.getFieldSnapshot('name')?.errors).toEqual(['Choose a name']);
+  });
+
   it('renders only the changed input and affected selectors', () => {
     const owner = vi.fn();
     const shell = vi.fn();
