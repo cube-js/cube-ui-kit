@@ -92,7 +92,7 @@ describe('dual-backend shell: <Form> facade', () => {
     expect(formInstance.getFieldNames()).toEqual(['a']);
   });
 
-  it('a modern controller reaches the modern root boundary, which is an error in this version', () => {
+  it('a bare modern brand reaches the modern root and is rejected as an incomplete controller', () => {
     silenceConsoleError();
 
     const { getByTestId } = renderWithRoot(
@@ -104,7 +104,7 @@ describe('dual-backend shell: <Form> facade', () => {
     );
 
     expect(getByTestId('render-error')).toHaveTextContent(
-      /<Form> received a modern form controller, but the modern Form backend is not available/,
+      /<Form> requires a modern form controller created by Form.useController/,
     );
   });
 

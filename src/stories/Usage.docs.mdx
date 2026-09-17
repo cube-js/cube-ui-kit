@@ -475,6 +475,8 @@ const [form] = useForm();
 
 ### useForm Hook
 
+`Form.useController()` is the explicit modern alternative. Its creator does not subscribe; use `Form.useSelector(controller, selector, { isEqual })` or `<Form.Subscribe>` for reactive reads, and `Form.useControllerContext()` for descendant access. This migration preview supports controller commands and subscriptions; named UI Kit fields and submission still require the legacy `Form.useForm()` backend. See the [Form documentation](/docs/forms-form--docs) for scope, defaults, and SSR contracts.
+
 Returns a `CubeFormInstance` with:
 
 - **Get/Set:** `getFieldValue`, `setFieldValue`, `getFieldsValue`, `setFieldsValue`, `getFormData`

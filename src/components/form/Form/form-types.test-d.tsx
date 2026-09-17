@@ -72,8 +72,7 @@ export function ExternalInstance({ form }: { form: CubeFormInstance<Values> }) {
 
 declare const modern: FormController;
 
-export function ModernIsRejectedToday() {
-  // @ts-expect-error a modern controller is not a legacy instance
+export function ModernUsesSeparateAPIs() {
   const root = <Form form={modern} />;
 
   const dialog = (

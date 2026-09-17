@@ -27,9 +27,12 @@ import { extractStyles } from '../../../utils/styles';
 import { useValidationProps } from '../validation/index';
 
 import { isModernFormController } from './backend';
+import { ModernControllerContext } from './modern/context';
 import { ModernFormRoot } from './ModernFormRoot';
 import { FieldTypes } from './types';
 import { CubeFormData, CubeFormInstance, useForm } from './use-form';
+
+import type { ModernFormProps } from './ModernFormRoot';
 
 /**
  * Public legacy context. Its value is the full legacy scope (presentation
@@ -74,18 +77,22 @@ export function FormScopeMask({
   children?: ReactNode;
 }) {
   return (
-    <FormPresentationContext.Provider value={EMPTY_PRESENTATION}>
-      <FormContext.Provider value={value}>{children}</FormContext.Provider>
-    </FormPresentationContext.Provider>
+    <ModernControllerContext.Provider value={null}>
+      <FormPresentationContext.Provider value={EMPTY_PRESENTATION}>
+        <FormContext.Provider value={value}>{children}</FormContext.Provider>
+      </FormPresentationContext.Provider>
+    </ModernControllerContext.Provider>
   );
 }
 
 /** The root components share one signature: generic props plus a form ref. */
 export type FormRootComponent = <T extends FieldTypes>(
-  props: CubeFormProps<T> & { ref?: Ref<HTMLFormElement> },
+  props: (CubeFormProps<T> | ModernFormProps<T>) & {
+    ref?: Ref<HTMLFormElement>;
+  },
 ) => ReactElement;
 
-const FormElement = tasty({
+export const FormElement = tasty({
   as: 'form',
   qa: 'Form',
   styles: {
@@ -114,11 +121,17 @@ const FormElement = tasty({
 export function useFormProps(props) {
   const presentation = useContext(FormPresentationContext);
   const ctx = useContext(FormContext);
+  const modern = useContext(ModernControllerContext);
 
-  return { ...presentation, ...ctx, ...props };
+  return {
+    ...presentation,
+    ...(modern ? { form: modern } : {}),
+    ...ctx,
+    ...props,
+  };
 }
 
-const formPropNames = new Set([
+export const formPropNames = new Set([
   'action',
   'autoComplete',
   'encType',
@@ -314,44 +327,47 @@ function LegacyFormRoot<T extends FieldTypes>(
       }}
       onSubmit={onSubmitCallback}
     >
-      <FormPresentationContext.Provider value={presentation}>
-        <FormContext.Provider value={ctx}>
-          <Provider
-            insideForm={true}
-            isDisabled={isDisabled}
-            isReadOnly={isReadOnly}
-            isInvalid={isInvalid}
-            isValid={isValid}
-          >
-            {children}
-          </Provider>
-        </FormContext.Provider>
-      </FormPresentationContext.Provider>
+      <ModernControllerContext.Provider value={null}>
+        <FormPresentationContext.Provider value={presentation}>
+          <FormContext.Provider value={ctx}>
+            <Provider
+              insideForm={true}
+              isDisabled={isDisabled}
+              isReadOnly={isReadOnly}
+              isInvalid={isInvalid}
+              isValid={isValid}
+            >
+              {children}
+            </Provider>
+          </FormContext.Provider>
+        </FormPresentationContext.Provider>
+      </ModernControllerContext.Provider>
     </FormElement>
   );
 }
 
-const _LegacyFormRoot = forwardRef(
-  LegacyFormRoot,
-) as unknown as FormRootComponent;
+const _LegacyFormRoot = forwardRef(LegacyFormRoot) as unknown as <
+  T extends FieldTypes,
+>(
+  props: CubeFormProps<T> & { ref?: Ref<HTMLFormElement> },
+) => ReactElement;
 
 (_LegacyFormRoot as any).displayName = 'LegacyFormRoot';
 
 /**
  * The `<Form>` facade. It chooses the root by the brand of the `form` prop
- * before any backend hook runs; without a modern controller — which is every
- * form today — it is the legacy root, so `<Form>` and `Form.useForm()` keep
- * their behaviour.
+ * before any backend hook runs. Without an explicit modern controller it is
+ * the legacy root, so existing `<Form>` and `Form.useForm()` keep their behavior.
  */
 function Form<T extends FieldTypes>(
-  props: CubeFormProps<T>,
+  props: CubeFormProps<T> | ModernFormProps<T>,
   ref: Ref<HTMLFormElement>,
 ) {
   if (isModernFormController(props.form)) {
-    return <ModernFormRoot {...props} ref={ref} />;
+    return <ModernFormRoot {...(props as ModernFormProps<T>)} ref={ref} />;
   }
 
-  return <_LegacyFormRoot {...props} ref={ref} />;
+  return <_LegacyFormRoot {...(props as CubeFormProps<T>)} ref={ref} />;
 }
 
 /**

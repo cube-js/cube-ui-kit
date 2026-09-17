@@ -20,7 +20,13 @@ module.exports = [
         }),
       );
     },
-    // STILL 517 kB on the trigger-actions-slot migration, and the story of why
+    // Phase 5 Form migration: the formerly internal store now ships with the
+    // controller, selector adapter, and modern context root. Both sides rebuilt
+    // locally: 512,792 B before, 517,979 B after (+5,187 B gzip). The Button-only
+    // bundle is unchanged at 119,072 B. Raise the full-library limit to the next
+    // 5 kB step; verify the final number in CI before merging.
+    //
+    // Previously 517 kB on the trigger-actions-slot migration; the story of why
     // is the useful part. The first push genuinely failed: on `@tenphi/tasty`
     // 3.9.0 this branch measured 517,254 B locally against a budget `main` had
     // already spent down to ~100 B. Then #1400 landed 3.9.1 on `main`, which
@@ -248,7 +254,7 @@ module.exports = [
     //
     // Note when checking locally: `size-limit` bundles the built `./dist`, it
     // does not build. Run `pnpm build` first or you will measure a stale bundle.
-    limit: '517kB',
+    limit: '520kB',
   },
   {
     name: 'Tree shaking (just a Button)',
