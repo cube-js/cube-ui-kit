@@ -27,6 +27,7 @@ import { generateRandomId } from '../../../utils/random';
 import { SlotProvider } from '../../../utils/react';
 import { usePopoverSync } from '../../../utils/react/usePopoverSync';
 import { Popover, Tray } from '../../overlays/Modal';
+import { isOwnActionsPress } from '../actions-run';
 
 import { MenuContext, MenuContextValue } from './context';
 
@@ -255,6 +256,13 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: Ref<HTMLElement>) {
     // again with new props" flows. Reading `state.isOpen` directly is safe
     // because `useEvent` always sees the latest closure.
     if (!state.isOpen) return false;
+
+    // A press on our OWN trigger's actions run — an `ItemButton` row's
+    // `actions` — is not a press outside. The run is rendered as a sibling of
+    // the trigger (see `ItemActionsWrapper`), so the checks below cannot
+    // recognise it and we closed instead, which cost the action its press: the
+    // first press on it while the menu was open only closed the menu.
+    if (isOwnActionsPress(el, menuTriggerRef.current)) return false;
 
     const menuTriggerEl = el.closest('[data-popover-trigger]');
     if (!menuTriggerEl) {

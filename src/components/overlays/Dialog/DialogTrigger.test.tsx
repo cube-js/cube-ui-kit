@@ -3,6 +3,7 @@ import { useRef, useState } from 'react';
 
 import { renderWithRoot, userEvent, waitFor } from '../../../test';
 import { Button } from '../../actions/Button';
+import { ItemButton } from '../../actions/ItemButton/ItemButton';
 
 import { Dialog } from './Dialog';
 import { DialogTrigger } from './DialogTrigger';
@@ -313,5 +314,146 @@ describe('<DialogTrigger type="popover" shouldCloseOnInteractOutside />', () => 
     );
 
     expect(seen.some((el) => el.closest('[data-qa="Owned"]'))).toBe(true);
+  });
+});
+
+/**
+ * A row's `actions` are rendered as a SIBLING of the row (see
+ * `ItemActionsWrapper`), so a row that is itself a popover trigger owns
+ * controls that live outside its own element. Both halves of "that press
+ * belongs to the action, not to the trigger" are the shared run's job: it
+ * clears the press context it sits in, and it marks itself so the overlay can
+ * tell the trigger's own actions from a press somewhere else on the page.
+ */
+describe('<DialogTrigger type="popover" /> with an actions row as the trigger', () => {
+  const user = userEvent.setup({ delay: null });
+
+  const renderRowTrigger = (onAction: () => void) =>
+    renderWithRoot(
+      <DialogTrigger type="popover">
+        <ItemButton
+          qa="Trigger"
+          actions={
+            <ItemButton.Action qa="RowAction" onPress={onAction}>
+              Reset
+            </ItemButton.Action>
+          }
+        >
+          Open
+        </ItemButton>
+        <Dialog>
+          <Button qa="Inside">Inside</Button>
+        </Dialog>
+      </DialogTrigger>,
+    );
+
+  it('runs an action without opening the popover', async () => {
+    const onAction = vi.fn();
+    const { baseElement } = renderRowTrigger(onAction);
+
+    await user.click(
+      baseElement.querySelector('[data-qa="RowAction"]') as HTMLElement,
+    );
+
+    // Past the open animation, so a popover that was merely scheduled has had
+    // time to appear.
+    await new Promise((resolve) => setTimeout(resolve, 400));
+
+    expect(onAction).toHaveBeenCalledTimes(1);
+    expect(baseElement.querySelector('[data-qa="Dialog"]')).toBeNull();
+  });
+
+  it('runs an action while the popover is open, and keeps it open', async () => {
+    const onAction = vi.fn();
+    const { baseElement } = renderRowTrigger(onAction);
+
+    await user.click(
+      baseElement.querySelector('[data-qa="Trigger"]') as HTMLElement,
+    );
+    await waitFor(() =>
+      expect(baseElement.querySelector('[data-qa="Dialog"]')).toBeTruthy(),
+    );
+
+    await user.click(
+      baseElement.querySelector('[data-qa="RowAction"]') as HTMLElement,
+    );
+
+    // Past the auto-dismiss `setTimeout(0)` and the exit animation.
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    expect(onAction).toHaveBeenCalledTimes(1);
+    expect(baseElement.querySelector('[data-qa="Dialog"]')).toBeTruthy();
+  });
+
+  // A popover trigger is often one of the row's actions itself. The run around
+  // such a trigger is not its own actions run, so the ordinary toggle has to
+  // keep working inside it.
+  it('closes when a trigger that LIVES in a run is pressed again', async () => {
+    const { baseElement } = renderWithRoot(
+      <ItemButton
+        qa="Row"
+        actions={
+          <DialogTrigger type="popover">
+            <ItemButton.Action qa="RowTrigger">More</ItemButton.Action>
+            <Dialog>
+              <Button qa="Inside">Inside</Button>
+            </Dialog>
+          </DialogTrigger>
+        }
+      >
+        Row
+      </ItemButton>,
+    );
+
+    await user.click(
+      baseElement.querySelector('[data-qa="RowTrigger"]') as HTMLElement,
+    );
+    await waitFor(() =>
+      expect(baseElement.querySelector('[data-qa="Dialog"]')).toBeTruthy(),
+    );
+
+    await user.click(
+      baseElement.querySelector('[data-qa="RowTrigger"]') as HTMLElement,
+    );
+
+    await waitFor(() =>
+      expect(baseElement.querySelector('[data-qa="Dialog"]')).toBeNull(),
+    );
+  });
+
+  it('still dismisses on a press in ANOTHER row’s actions run', async () => {
+    const { baseElement } = renderWithRoot(
+      <>
+        <DialogTrigger type="popover">
+          <Button qa="Trigger">Open</Button>
+          <Dialog>
+            <Button qa="Inside">Inside</Button>
+          </Dialog>
+        </DialogTrigger>
+        <ItemButton
+          qa="OtherRow"
+          actions={
+            <ItemButton.Action qa="OtherAction">Reset</ItemButton.Action>
+          }
+        >
+          Other row
+        </ItemButton>
+      </>,
+    );
+
+    await user.click(
+      baseElement.querySelector('[data-qa="Trigger"]') as HTMLElement,
+    );
+    await waitFor(() =>
+      expect(baseElement.querySelector('[data-qa="Dialog"]')).toBeTruthy(),
+    );
+
+    await user.click(
+      baseElement.querySelector('[data-qa="OtherAction"]') as HTMLElement,
+    );
+
+    await waitFor(() =>
+      expect(baseElement.querySelector('[data-qa="Dialog"]')).toBeNull(),
+    );
   });
 });

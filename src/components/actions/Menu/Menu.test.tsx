@@ -18,6 +18,7 @@ import { Select } from '../../fields';
 import { Dialog, DialogTrigger } from '../../overlays/Dialog';
 import { Button } from '../Button';
 import { CommandMenu } from '../CommandMenu';
+import { ItemButton } from '../ItemButton/ItemButton';
 import { useAnchoredMenu } from '../use-anchored-menu';
 import { useContextMenu } from '../use-context-menu';
 
@@ -1919,6 +1920,98 @@ describe('MenuTrigger focus hand-off (CUB-3962)', () => {
     await new Promise((resolve) => setTimeout(resolve, 600));
 
     expect(trigger()).not.toHaveFocus();
+  });
+});
+
+/**
+ * A row's `actions` are a SIBLING of the row (see `ItemActionsWrapper`), so a
+ * row that is itself a menu trigger owns controls that live outside its own
+ * element: the run has to clear the press context it sits in, and say who it
+ * belongs to, or pressing an action toggles the menu instead of running.
+ */
+describe('MenuTrigger with an actions row as the trigger', () => {
+  const user = userEvent.setup({ delay: null });
+
+  const renderRowTrigger = (onAction) =>
+    renderWithRoot(
+      <MenuTrigger>
+        <ItemButton
+          qa="Trigger"
+          actions={
+            <ItemButton.Action qa="RowAction" onPress={onAction}>
+              Reset
+            </ItemButton.Action>
+          }
+        >
+          Open
+        </ItemButton>
+        <Menu>
+          <Menu.Item key="first">First</Menu.Item>
+        </Menu>
+      </MenuTrigger>,
+    );
+
+  it('runs an action without opening the menu', async () => {
+    const onAction = vi.fn();
+    const { baseElement } = renderRowTrigger(onAction);
+
+    await user.click(baseElement.querySelector('[data-qa="RowAction"]'));
+
+    // Past the open animation, so a menu that was merely scheduled has had
+    // time to appear.
+    await new Promise((resolve) => setTimeout(resolve, 400));
+
+    expect(onAction).toHaveBeenCalledTimes(1);
+    expect(baseElement.querySelector('[role="menu"]')).toBeNull();
+  });
+
+  // The trigger is often one of the actions itself — a tab's overflow menu, a
+  // row's `⋯`. The run around such a trigger is not its own actions run, so
+  // the ordinary toggle has to keep working inside it.
+  it('closes when a trigger that LIVES in a run is pressed again', async () => {
+    const { baseElement } = renderWithRoot(
+      <ItemButton
+        qa="Row"
+        actions={
+          <MenuTrigger>
+            <ItemButton.Action qa="MenuAction">More</ItemButton.Action>
+            <Menu>
+              <Menu.Item key="first">First</Menu.Item>
+            </Menu>
+          </MenuTrigger>
+        }
+      >
+        Row
+      </ItemButton>,
+    );
+
+    await user.click(baseElement.querySelector('[data-qa="MenuAction"]'));
+    await waitFor(() =>
+      expect(baseElement.querySelector('[role="menu"]')).toBeTruthy(),
+    );
+
+    await user.click(baseElement.querySelector('[data-qa="MenuAction"]'));
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    expect(baseElement.querySelector('[role="menu"]')).toBeNull();
+  });
+
+  it('runs an action while the menu is open, and keeps it open', async () => {
+    const onAction = vi.fn();
+    const { baseElement } = renderRowTrigger(onAction);
+
+    await user.click(baseElement.querySelector('[data-qa="Trigger"]'));
+    await waitFor(() =>
+      expect(baseElement.querySelector('[role="menu"]')).toBeTruthy(),
+    );
+
+    await user.click(baseElement.querySelector('[data-qa="RowAction"]'));
+
+    // Past the auto-dismiss `setTimeout(0)` and the exit animation.
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    expect(onAction).toHaveBeenCalledTimes(1);
+    expect(baseElement.querySelector('[role="menu"]')).toBeTruthy();
   });
 });
 
