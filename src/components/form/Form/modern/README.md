@@ -1,6 +1,6 @@
-# Standalone modern Form store — Phase 4
+# Modern Form store and React adapter — Phases 4–5
 
-This directory implements the standalone store from the accepted Form modernization ADR (architecture spike: PR #1389, shell: PR #1404). It has no React imports, new dependencies, package exports, or connections to the legacy engine. There is no changeset because no consumer behavior or public API changes in this phase. The existing modern root deliberately still throws. The modern creator/hooks, field binding, and validation/submission orchestration belong to phases 5–7.
+This directory implements the store and React adapter from the accepted Form modernization ADR (architecture spike: PR #1389, shell: PR #1404, store: PR #1407). The pure store still has no React imports. Phase 5 publishes a command-only controller facade and the approved creation, selector, Subscribe, and context APIs, using React's official `use-sync-external-store/with-selector` integration. The modern root now provides presentation and controller context; field binding and validation/submission orchestration belong to phases 6–7.
 
 ## Files and checks
 
@@ -9,6 +9,9 @@ This directory implements the standalone store from the accepted Form modernizat
 - `types.ts`: internal contracts, including an arbitrary error value type (a React adapter can supply `ReactNode` without bringing React into the store).
 - `store.test.ts`: the phase 2 store conformance cases that apply to phase 4. `lifecycle.test.ts`, `values.test.ts`, and `transactions.test.ts` cover cancellation, ownership, paths, and rejected-input regressions; `sequences.test.ts` compares mixed command workloads across transaction boundaries. The spike's rule/timer, root-callback, and submit-pipeline cases remain phase 7 work.
 - `store.test-d.tsx`: branded/readonly/type-inference checks, included in `pnpm test:types`.
+- `controller.ts`: public `FormController` command facade and initial server snapshot; registration, disposal, and validation/submission tokens remain internal.
+- `react.tsx` / `context.ts`: state-initialized creation, selector subscriptions, narrow render-prop subscriptions, and explicit context access. Options are captured once; use commands to update defaults. Subscriptions release themselves; the creator does not dispose the store from effect cleanup because React can reconnect a preserved tree.
+- `react.test.tsx` / `root.test.tsx` / `react.test-d.tsx`: rendering, lifecycle, SSR/hydration, scope isolation, and public type contracts. `pnpm test:form-react` runs against real React 18 and 19 installations in CI. Consumer fixtures also check built declarations.
 
 `pnpm test:form-store` runs in Node with zero setup files: no React, DOM, i18n, or UI test helpers. It is also a CI step. `pnpm test` runs the store tests alongside the legacy suite, and `pnpm test:types` checks all modern store sources and tests. `pnpm diagnostics:form --check` covers the modern sources through its existing form glob.
 
@@ -34,7 +37,7 @@ Commands publish synchronously. `batch(fn)` is a synchronous notification transa
 
 Reentrant commands queue another notification cycle after every listener has observed the original snapshot. Unsubscribing during delivery is supported; listeners added during delivery begin with the next publication. Registering the same callback twice creates independent subscriptions. Throwing listeners/selectors do not stop other listeners, and callback rejections go to `onListenerError`.
 
-`subscribeSelector(selector, listener, isEqual = Object.is)` tracks the selected result and skips unchanged selections. Supply equality for allocating selectors. The selector and equality function must be pure. This is an internal subscription primitive; the later React selector hook owns render-safe selector/controller replacement.
+`subscribeSelector(selector, listener, isEqual = Object.is)` tracks the selected result and skips unchanged selections. Supply equality for allocating selectors. The selector and equality function must be pure. This is an internal subscription primitive; the React adapter uses the official with-selector integration over `subscribe` / `getSnapshot` for safe selector/controller replacement. Server rendering and initial hydration read the immutable creation snapshot; the client catches up to current state after hydration. Seed the same defaults on both sides and prepare server data before creating the controller.
 
 User sets touch and invoke `onValuesChange` by default. Programmatic sets do neither unless requested. Actual value changes are required for a set notification. Reset, adoption, and replacing current values with defaults notify with their respective `kind`; baseline-only updates do not. A transaction invokes the callback once with the coherent retained values, the union of changed names, user source if any notified command came from a user, and the last notified command's kind. Reentrant writes cannot change the payload of an earlier event. Root callback ownership/precedence is deferred to phase 7.
 

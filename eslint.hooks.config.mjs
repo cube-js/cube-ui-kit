@@ -22,6 +22,8 @@ export default [
     files: ['src/**/*.{ts,tsx}'],
     ignores: [
       '**/*.test.{ts,tsx}',
+      // Type-error fixtures intentionally contain forbidden operations.
+      '**/*.test-d.tsx',
       '**/*.browser.test.{ts,tsx}',
       '**/*.stories.{ts,tsx}',
       '**/legacy-contract/**',

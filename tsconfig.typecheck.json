@@ -15,6 +15,7 @@
   "include": [
     "src/**/*.test-d.tsx",
     "src/**/*.d.ts",
-    "src/components/form/Form/modern/**/*.ts"
+    "src/components/form/Form/modern/**/*.ts",
+    "src/components/form/Form/modern/**/*.tsx"
   ]
 }

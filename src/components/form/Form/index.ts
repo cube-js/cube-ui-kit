@@ -7,6 +7,12 @@ import {
   FormScopeMask,
   useFormProps,
 } from './Form';
+import { useFormControllerContext } from './modern/context';
+import {
+  FormSubscribe,
+  useFormController,
+  useFormSelector,
+} from './modern/react';
 import { ResetButton } from './ResetButton';
 import { SubmitButton } from './SubmitButton';
 import { SubmitError } from './SubmitError';
@@ -19,10 +25,18 @@ const Form = Object.assign(
     Submit: typeof SubmitButton;
     Reset: typeof ResetButton;
     useForm: typeof useForm;
+    useController: typeof useFormController;
+    useSelector: typeof useFormSelector;
+    Subscribe: typeof FormSubscribe;
+    useControllerContext: typeof useFormControllerContext;
   },
   {
     Item: Field,
     useForm,
+    useController: useFormController,
+    useSelector: useFormSelector,
+    Subscribe: FormSubscribe,
+    useControllerContext: useFormControllerContext,
     Submit: SubmitButton,
     Reset: ResetButton,
     SubmitError,
@@ -35,6 +49,15 @@ export * from './ResetButton';
 export * from './use-field';
 export { useFormProps, Form, Field, useForm, FormContext, FormScopeMask };
 export type { CubeFormProps } from './Form';
+export type { ModernFormProps } from './ModernFormRoot';
+export type {
+  FormController,
+  ModernFormState,
+  UseFormControllerOptions,
+} from './modern/controller';
+export type { FormSelectorOptions, FormSubscribeProps } from './modern/react';
+export type { FormChange, SetValueOptions } from './modern/types';
+export type { FormPath } from './modern/values';
 export type { CubeFormInstance } from './use-form';
 export type { FieldTypes, Fields } from './types';
 export type { CubeAlertProps as CubeSubmitErrorProps };

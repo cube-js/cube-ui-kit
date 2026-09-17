@@ -69,7 +69,7 @@ Components must apply the current `id` from props to the element the label point
 
 The form itself comes from the `form` prop when it is set, and from `FormContext` otherwise. That makes `<TextInput name="email" form={form} />` a supported way to link an input to a form it is not nested in, and to override the surrounding form. Keep `form` in the props of every form-attachable component and always pass the whole props object to `useFieldProps` so this keeps working.
 
-Form instances are branded (see `Form/backend.ts`); a modern controller does not exist in this version, and `<Form>`, `Form.useForm()` and a bound field throw a clear error if one is passed.
+Form instances are branded (see `Form/backend.ts`). `Form.useController()` creates the modern controller and `<Form form={controller}>` supports presentation, selectors, and modern context. Modern input binding is still a later phase: `Form.useForm()` and a bound field reject a modern controller with a clear error. Modern roots expose their controller through `useFormProps` so named inputs cannot silently bind to an outer legacy form. Standalone inputs and explicit `form={undefined}` remain detached. Legacy roots and `FormScopeMask` mask modern context.
 
 `FormScopeMask` (exported) scopes the inputs below it to a new form context: Radio/Checkbox groups render it around their options so a nested `name` never registers as an independent field. A wrapper that overrides `FormContext` for the same purpose must render `FormScopeMask` instead of a bare `FormContext.Provider`, because presentation props (`labelPosition`, `idPrefix`, …) also travel through a separate context that only the mask resets.
 
