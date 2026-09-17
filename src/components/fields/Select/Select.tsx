@@ -56,6 +56,7 @@ import { useFocus } from '../../../utils/react/interactions';
 import { usePopoverSync } from '../../../utils/react/usePopoverSync';
 import { extractStyles } from '../../../utils/styles';
 import { ItemAction } from '../../actions';
+import { isOwnActionsPress } from '../../actions/actions-run';
 import { ItemActionsWrapper } from '../../actions/ItemActionsWrapper';
 import {
   StyledDivider as ListDivider,
@@ -76,11 +77,7 @@ import {
 } from '../../form';
 import { DisplayTransition } from '../../helpers';
 import { Portal } from '../../portal';
-import {
-  TRIGGER_ACTIONS_PROPS,
-  TriggerActions,
-  TriggerIcon,
-} from '../TriggerActions';
+import { TriggerActions, TriggerIcon } from '../TriggerActions';
 
 import type { Props } from '../../../props';
 
@@ -541,7 +538,6 @@ function Select<T extends object>(
         isDisabled={isDisabled || isLoading}
         mods={modifiers}
         actions={triggerActions}
-        actionsProps={TRIGGER_ACTIONS_PROPS}
       >
         {({ showActions }) => (
           <Item
@@ -651,12 +647,12 @@ export function ListBoxPopup({
       isDismissable: true,
       shouldCloseOnInteractOutside: (el) => {
         // The trigger owns interactive controls of its own — the clear button
-        // and any custom `actions`. They live INSIDE the trigger element, so
-        // the lookup below would read them as a press on our own trigger and
-        // dismiss, swallowing the press: the first press on `Reset` while the
-        // list was open only closed the list and the action never ran. Same
+        // and any custom `actions`. They sit in the actions run, a SIBLING of
+        // the trigger, so the lookup below would read them as a press outside
+        // and dismiss, swallowing the press: the first press on `Reset` while
+        // the list was open only closed the list and the action never ran. Same
         // guard as `DialogTrigger`, which `Picker` / `FilterPicker` go through.
-        if (el.closest('[data-trigger-action]')) return false;
+        if (isOwnActionsPress(el, triggerRef?.current)) return false;
 
         const menuTriggerEl = el.closest('[data-popover-trigger]');
         if (!menuTriggerEl) {

@@ -5,7 +5,6 @@ import {
   ReactElement,
   ReactNode,
   useEffect,
-  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -24,7 +23,7 @@ import { CloseIcon } from '../../../icons/CloseIcon';
 import { MoreIcon } from '../../../icons/MoreIcon';
 import { mergeProps } from '../../../utils/react';
 import { CubeItemActionProps, ItemAction } from '../../actions/ItemAction';
-import { ItemActionProvider } from '../../actions/ItemActionContext';
+import { ItemActionsWrapper } from '../../actions/ItemActionsWrapper';
 import { CubeMenuProps, Menu, MenuTrigger } from '../../actions/Menu';
 import { useContextMenu } from '../../actions/use-context-menu';
 import {
@@ -218,12 +217,8 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
 
   const ref = useRef<HTMLButtonElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const actionsRef = useRef<HTMLDivElement>(null);
   const inlineInputRef = useRef<CubeInlineInputRef>(null);
   const { tabProps } = useTab({ key: item.key }, state, ref);
-
-  // Measure actions width for proper space allocation in Item
-  const [actionsWidth, setActionsWidth] = useState(0);
 
   // Drag-and-drop support - only enable when both states are provided
   const isDraggable = !!dragState && !!dropState;
@@ -518,13 +513,6 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
       </>
     ) : undefined;
 
-  // Measure actions width to pass to Item for proper space allocation
-  useLayoutEffect(() => {
-    if (actions && actionsRef.current) {
-      setActionsWidth(Math.round(actionsRef.current.offsetWidth));
-    }
-  }, [actions]);
-
   // Determine effective size
   const effectiveSize = tabData.size ?? size ?? 'medium';
   const itemSize =
@@ -619,7 +607,6 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
       ref={effectiveContainerRef}
       data-size={itemSize}
       mods={containerMods}
-      tokens={{ '$actions-width': `${actionsWidth}px` }}
       {...effectiveDragProps}
     >
       {/* Drop indicator before this tab */}
@@ -630,48 +617,54 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
           position="before"
         />
       )}
-      <TabElement
+      <ItemActionsWrapper
         preserveActionsSpace
-        autoHideActions={effectiveAutoHideActions}
-        as="button"
-        {...mergeProps(tabProps, hoverProps, focusProps, {
-          onKeyDown: handleKeyDown,
-          onPointerEnter: handleSpringLoadEnter,
-          onPointerLeave: clearSpringLoad,
-        })}
-        {...ariaProps}
-        {...itemStyleProps}
-        ref={ref}
-        qa={qa ?? `Tab-${String(item.key)}`}
-        qaVal={qaVal}
-        styles={styles}
-        mods={mods}
-        isSelected={isActive}
-        isDisabled={isDisabled}
-        size={itemSize}
+        // The active tab keeps its actions on show. Everywhere else the wrapper
+        // reveals them on hover or focus, which is the same set of triggers the
+        // hand-rolled run used, minus the `active` case it had to spell out in
+        // CSS because it had no way to ask for it.
+        autoHideActions={effectiveAutoHideActions && !isActive}
         type={itemType}
-        shape={itemShape}
-        actions={actions ? true : undefined}
-        tooltip={effectiveIsEditable ? false : tabTooltip}
+        theme="default"
+        size={itemSize}
+        isDisabled={isDisabled}
+        mods={mods}
+        actions={actions}
+        // The container carries the drag handlers, so a press on an action would
+        // start a drag if it were allowed to reach it.
+        actionsProps={ACTIONS_EVENT_HANDLERS}
       >
-        {titleContent}
-      </TabElement>
-      {/* Actions rendered outside the button for accessibility */}
-      {actions && (
-        <div
-          ref={actionsRef}
-          data-element="Actions"
-          {...ACTIONS_EVENT_HANDLERS}
-        >
-          <ItemActionProvider
-            type={itemType}
-            theme="default"
+        {({ showActions }) => (
+          <TabElement
+            insideWrapper
+            preserveActionsSpace
+            showActions={showActions}
+            autoHideActions={effectiveAutoHideActions}
+            as="button"
+            {...mergeProps(tabProps, hoverProps, focusProps, {
+              onKeyDown: handleKeyDown,
+              onPointerEnter: handleSpringLoadEnter,
+              onPointerLeave: clearSpringLoad,
+            })}
+            {...ariaProps}
+            {...itemStyleProps}
+            ref={ref}
+            qa={qa ?? `Tab-${String(item.key)}`}
+            qaVal={qaVal}
+            styles={styles}
+            mods={mods}
+            isSelected={isActive}
             isDisabled={isDisabled}
+            size={itemSize}
+            type={itemType}
+            shape={itemShape}
+            actions={actions ? true : undefined}
+            tooltip={effectiveIsEditable ? false : tabTooltip}
           >
-            {actions}
-          </ItemActionProvider>
-        </div>
-      )}
+            {titleContent}
+          </TabElement>
+        )}
+      </ItemActionsWrapper>
       {contextMenuEnabled && processedMenu && contextMenu.rendered}
       {/* Drop indicator after the last tab */}
       {isDraggable && dropState && isLastTab && (

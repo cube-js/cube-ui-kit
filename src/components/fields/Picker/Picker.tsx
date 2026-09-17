@@ -44,11 +44,7 @@ import {
 } from '../../form';
 import { Dialog, DialogTrigger } from '../../overlays/Dialog';
 import { CubeListBoxProps, ListBox } from '../ListBox/ListBox';
-import {
-  TRIGGER_ACTIONS_PROPS,
-  TriggerActions,
-  TriggerIcon,
-} from '../TriggerActions';
+import { TriggerActions, TriggerIcon } from '../TriggerActions';
 
 import type { FieldBaseProps } from '../../../shared';
 
@@ -497,15 +493,6 @@ export const Picker = forwardRef(function Picker<T extends object>(
     },
   });
 
-  // A press on the trigger's own trailing run — a custom action or the clear
-  // button — must not be read as an interaction outside the popover. Without
-  // this the overlay's dismiss machinery swallows the press to close itself, so
-  // the first press on `Reset` while the list is open only closes the list and
-  // the action never runs.
-  const shouldCloseOnInteractOutside = useEvent(
-    (element: Element) => !element.closest('[data-trigger-action]'),
-  );
-
   // Clear handler
   const clearValue = useEvent(() => {
     if (selectionMode === 'multiple') {
@@ -672,7 +659,6 @@ export const Picker = forwardRef(function Picker<T extends object>(
       icon={icon}
       rightIcon={triggerRightIcon}
       actions={hasTriggerActions ? triggerActions : null}
-      actionsProps={TRIGGER_ACTIONS_PROPS}
       prefix={prefix}
       suffix={suffix}
       hotkeys={hotkeys}
@@ -781,7 +767,6 @@ export const Picker = forwardRef(function Picker<T extends object>(
         isOpen={isPopoverOpen}
         containerPadding={containerPadding}
         shouldFlip={shouldFlip}
-        shouldCloseOnInteractOutside={shouldCloseOnInteractOutside}
         onOpenChange={handleOpenChange}
       >
         {triggerElement}

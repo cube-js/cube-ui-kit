@@ -22,6 +22,7 @@ import { useEvent } from '../../../_internal';
 import { generateRandomId } from '../../../utils/random';
 import { useCombinedRefs, useLayoutEffect } from '../../../utils/react/index';
 import { usePopoverSync } from '../../../utils/react/usePopoverSync';
+import { isOwnActionsPress } from '../../actions/actions-run';
 import { Modal, Popover, Tray, WithCloseBehavior } from '../Modal';
 
 import { DialogContext } from './context';
@@ -369,12 +370,9 @@ function PopoverTrigger(allProps) {
       // auto-dismiss branch matched and closed the popover before the predicate
       // was ever asked.
       //
-      // Asked before the `data-popover-trigger` lookup too, not just inside the
-      // "outside any trigger" branch. A trigger can own interactive controls —
-      // a picker's clear button, or its custom `actions` — and those live
-      // INSIDE the trigger element, so the lookup below matched "our own
-      // trigger" and dismissed us without asking. That cost the control its
-      // press: the first click on `Reset` closed the list and never ran.
+      // Asked before every lookup below, not just inside the "outside any
+      // trigger" branch: a trigger can own interactive controls of its own, and
+      // those used to be decided without the predicate ever being asked.
       //
       // React Aria hands over the element the pointer landed on — for a
       // `Button` that is the label inside it, not the `<button>` — so a
@@ -383,6 +381,16 @@ function PopoverTrigger(allProps) {
       if (shouldCloseOnInteractOutside && !shouldCloseOnInteractOutside(el)) {
         return false;
       }
+
+      const ownTrigger = targetRef?.current ?? triggerRef.current;
+
+      // A press on our OWN trigger's actions run — an `ItemButton` row's
+      // `actions`, a picker's clear button — is not a press outside. The run is
+      // rendered as a sibling of the trigger (see `ItemActionsWrapper`), so the
+      // `contains` checks below cannot recognise it and we dismissed instead,
+      // which cost the action its press: the first press on `Reset` while the
+      // popover was open only closed the popover and never ran.
+      if (isOwnActionsPress(el, ownTrigger)) return false;
 
       const popoverTriggerEl = el.closest('[data-popover-trigger]');
       if (!popoverTriggerEl) {
@@ -398,7 +406,6 @@ function PopoverTrigger(allProps) {
         return true;
       }
       // Clicking our own trigger again should dismiss us.
-      const ownTrigger = targetRef?.current ?? triggerRef.current;
       if (popoverTriggerEl === ownTrigger || ownTrigger?.contains(el))
         return true;
       // Another popover's trigger: let the click through so it can open.

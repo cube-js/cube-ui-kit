@@ -48,11 +48,7 @@ import {
   FilterListBox,
 } from '../FilterListBox/FilterListBox';
 import { ListBox } from '../ListBox';
-import {
-  TRIGGER_ACTIONS_PROPS,
-  TriggerActions,
-  TriggerIcon,
-} from '../TriggerActions';
+import { TriggerActions, TriggerIcon } from '../TriggerActions';
 
 import type { FieldBaseProps } from '../../../shared';
 
@@ -494,15 +490,6 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     },
   });
 
-  // A press on the trigger's own trailing run — a custom action or the clear
-  // button — must not be read as an interaction outside the popover. Without
-  // this the overlay reads it as a press on our own trigger and dismisses,
-  // swallowing the press, so the first press on `Reset` while the list is open
-  // only closed the list and the action never ran.
-  const shouldCloseOnInteractOutside = useEvent(
-    (element: Element) => !element.closest('[data-trigger-action]'),
-  );
-
   // Clear handler
   const clearValue = useEvent(() => {
     if (selectionMode === 'multiple') {
@@ -736,7 +723,6 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
       icon={icon}
       rightIcon={triggerRightIcon}
       actions={hasTriggerActions ? triggerActions : null}
-      actionsProps={TRIGGER_ACTIONS_PROPS}
       prefix={prefix}
       suffix={suffix}
       hotkeys={hotkeys}
@@ -852,7 +838,6 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
         isOpen={isPopoverOpen}
         containerPadding={containerPadding}
         shouldFlip={shouldFlip}
-        shouldCloseOnInteractOutside={shouldCloseOnInteractOutside}
         onOpenChange={handleOpenChange}
       >
         {triggerElement}

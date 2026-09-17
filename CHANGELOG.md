@@ -1,5 +1,64 @@
 # @cube-dev/ui-kit
 
+## 0.179.0
+
+### Minor Changes
+
+- [#1401](https://github.com/cube-js/cube-ui-kit/pull/1401) [`63f447ce`](https://github.com/cube-js/cube-ui-kit/commit/63f447ce059617ce446b25e0c2d4519c9193b647) Thanks [@tenphi](https://github.com/tenphi)! - `Select`, `Picker` and `FilterPicker` now render their trailing controls — your `actions`, the clear button, the loading spinner and the dropdown caret — through the same actions slot `ItemButton` uses, instead of the bespoke run added alongside the `actions` prop. Closes #1398.
+
+  The visible result is meant to be nothing: the trigger renders pixel-identically across sizes, types, themes, validation states and the loading, placeholder, icon-only and clearable variants, in light and dark. What changes is the DOM and the behaviour that depends on it.
+
+  - **The clear button is no longer a `<button>` nested inside a `<button>`.** The whole trailing run is now a sibling of the trigger, laid over its end.
+  - **The caret still opens the popover** even though it sits in that run: the run is transparent to the pointer and only its interactive children take presses, so a press on the caret — or anywhere in the run's padding — hit-tests through to the trigger underneath. This is covered by a browser spec; jsdom implements neither `pointer-events` nor hit testing and would pass against a build where the caret is dead.
+  - **The trigger's markup no longer changes shape** as a clear button appears, a spinner replaces the caret, or actions come and go. The run is rendered even when it is empty — `rightIcon={null}` with no `actions` of your own empties it — and an empty run reserves nothing, so an icon-only trigger stays square.
+  - `rightIcon` keeps its own slot, so a render function resolved against the trigger's modifiers and any `RightIcon` styles keep working. It replaces the built-in control exactly as before; if you also pass `actions`, they render after it.
+
+  `ItemButton` and `Item` share the mechanism, so three things change for rows with actions:
+
+  - **Actions are centred on the row's height**, instead of on the size token. A row with an inline description, or one whose height the caller set, now keeps its actions on its centre line rather than pinned near the top. A row with a **block** description is unchanged: there the run stays on the first line beside the label. An action is still `$action-size` whatever the row's height, so a tall row does not get oversized buttons.
+  - **The actions run is transparent to the pointer**, so a press in its padding or in a gap between two actions activates the row instead of being swallowed. The actions themselves are unaffected.
+  - **A `suffix` next to actions no longer adds its inline padding**, matching what it already did next to a `rightIcon` — the actions column carries the spacing. The gap between a suffix and the first action narrows accordingly. Restore it with `styles={{ Suffix: { padding: '$inline-padding right' } }}` if a row was relying on it.
+  - **An icon-only row with actions keeps a two-square minimum width**, as one with a `rightIcon` already did — so a trigger whose caret moved into the run does not change size. Both of these apply only to a row whose actions are rendered as a sibling run (`ItemButton` and the field triggers); a row with in-grid actions — `Tabs`, `Tag`, tree and list rows — is laid out by `Item`'s own columns and is untouched.
+
+  `ItemButton` also keeps its wrapper element once a row has had actions, so a row whose actions depend on a permission or a loading flag no longer remounts its button when they disappear, and it gains an `actionsProps` prop for attributes on the run's container. Pass `actions={null}` to ask for the run before there is anything in it, and the button is not remounted when the actions arrive either — `undefined` still means no run at all.
+
+  A row inside that wrapper also stops remounting when its actions come and go for a second reason: `Item` resolves its auto-tooltip from whether the label is dynamic, which decides whether a tooltip provider wraps the element, and `actions` used to flip that answer. A wrapped row is now always treated as having a dynamic label, which is true — its label gets whatever width the actions run leaves it.
+
+  Sibling actions now follow the row's **pressed** colour as well as its resting and disabled ones, so a caret or an action beside a label no longer stays at its resting tint while the label darkens under the finger.
+
+### Patch Changes
+
+- [#1405](https://github.com/cube-js/cube-ui-kit/pull/1405) [`af5c06af`](https://github.com/cube-js/cube-ui-kit/commit/af5c06afae53887d678828556e16bbe5fa8e0397) Thanks [@tenphi](https://github.com/tenphi)! - A control in a row's `actions` no longer answers to whatever opened around the row. An `ItemButton` — or a tab, or a `Select` / `Picker` / `FilterPicker` trigger — used as the trigger of a `DialogTrigger` or a `MenuTrigger` handed its own actions the trigger's press behaviour, because React Aria's `PressResponder` reaches every control below it. Pressing an action ran the action _and_ toggled the overlay; with the overlay already open the press was spent dismissing it instead, so the action never ran at all.
+
+  Both halves of the guard now live in the actions run itself, so every row that has actions gets them rather than only the three field triggers that had grown their own copy:
+
+  - **The run clears the press context it sits in**, so each action answers only to its own handler.
+  - **The run identifies itself to the overlay** as belonging to its row, so an overlay opened by that row reads a press on its own actions as its own rather than as a press outside. It is scoped to the row: pressing some other row's actions dismisses an open popover exactly as before.
+
+- [#1403](https://github.com/cube-js/cube-ui-kit/pull/1403) [`0ff467be`](https://github.com/cube-js/cube-ui-kit/commit/0ff467bedbbbdad8b5209965a37ba672d6f516f0) Thanks [@tenphi](https://github.com/tenphi)! - `Tabs` now renders a tab's actions — your own, the overflow menu trigger, the close button — through the same actions run `ItemButton` and the field triggers use, instead of the copy `TabButton` carried of its own.
+
+  The tab bar is meant to look exactly as it did, and does: identical across the `default`, `file`, `narrow` and `radio` types, all three sizes, and the reorderable, editable, auto-hiding, disabled and no-actions variants. What changes is behaviour the copy had drifted on.
+
+  - **A press in the run no longer disappears.** The run used to be opaque to the pointer, so a click in its padding — or in the gap between the menu trigger and the close button — hit the run and did nothing. The shared run is transparent and only its controls take presses, so those clicks now select the tab underneath. The controls themselves are unaffected, and pressing one still does not select the tab.
+  - **Actions centre on the tab's height** rather than being pinned to its top, so a tab whose height a caller has set keeps its controls on the centre line.
+  - **The active tab keeps its actions visible** under `autoHideActions` because the component asks for that, not because a CSS rule spelled out `active` next to `:hover` and `:focus-within`.
+
+  `ItemActionsWrapper` gains a `preserveActionsSpace` option for this, matching the prop `Item` already had: the run keeps its width reserved while hidden, so a bar does not reflow as the pointer crosses it, and it stays mounted rather than transitioning in and out — an unmounted run cannot be measured, so a tab that starts hidden would have nothing to reserve.
+
+  A tab's actions container is now always present in the markup, empty when the tab has none.
+
+- [#1400](https://github.com/cube-js/cube-ui-kit/pull/1400) [`0e1c9425`](https://github.com/cube-js/cube-ui-kit/commit/0e1c9425b40c839bc7f8513e074cf2769273b943) Thanks [@tenphi](https://github.com/tenphi)! - Update Tasty to 3.9.1 (from 3.7.0), and document `Tab.Action` with a story.
+
+  **Tasty 3.9.1 changes no rendered style, but it does change the CSS text.** Logical padding, margin and inset props are no longer folded into the physical shorthand: where 3.7.0 merged a `paddingBlock` / `paddingInline` pair into one `padding: <y> <x>` declaration per state, 3.9.1 emits separate `padding-block` and `padding-inline` declarations, each under its own state selector. Computed values come out the same — this was checked in real Chromium on the table cells that depend on it (`ItemTable`'s header, body and selection cells), and a canonical CSS diff across `Button`, `Item`, `ItemButton`, `Tabs`, `TextInput`, `Card`, `Tag`, `Badge` and typography is byte-identical. What changes is what an override has to beat: a rule that used to compete with a `padding` shorthand now competes with `padding-block` or `padding-inline`, and the documented priority ladder `padding < paddingBlock/paddingInline < paddingTop/...` is gone, because `paddingBlock` and `paddingInline` are ordinary CSS properties again rather than enhanced handlers.
+
+  **The replacement is a new family of logical style props**, each an enhanced handler that emits native logical CSS and lets the browser resolve `start` / `end` from `writingMode` and `direction`: `blockSize` / `inlineSize`, `blockPadding` / `inlinePadding`, `blockMargin` / `inlineMargin`, `blockInset` / `inlineInset`, `blockScrollMargin` / `inlineScrollMargin`, `blockScrollPadding` / `inlineScrollPadding`, and `blockBorder` / `inlineBorder`, alongside physical `scrollMargin` / `scrollPadding`. They take one value for both edges or two in start/end order, support `start` / `end` modifiers with comma-separated groups, and `blockSize` / `inlineSize` accept the same `min` / `max` / `fixed` syntax as `width`. Every component's Style Properties table has been regenerated to list them.
+
+  **`dotize` is gone from Tasty's public API** and is now internal to the kit. It was never re-exported, so nothing consumers import has changed; `Form.setFieldsValue({ user: { name: 'A' } })` still reaches a field registered as `name="user.name"`. The port was differential-tested against the 3.7.0 implementation across nested, empty, array-valued, numeric-key and non-object inputs at three prefixes.
+
+  **`Tab.Action` gains a story.** The component and its docs section shipped without one, so the tab `actions` slot had no rendered example and nothing in Chromatic's coverage. `Tabs` → `WithTabActions` shows a per-tab toggle action, and the docs section now renders it above its code sample. `ItemAction`'s own page also names `Tab` among its hosts and lists the `.Action` aliases, which it did not before.
+
+  **The Tasty lint plugin moves to 1.1.0** so the new props lint clean. On 1.0.5 every one of them — `blockPadding`, `inlinePadding`, `blockMargin`, `inlineInset`, `blockBorder`, `blockScrollPadding` — was reported as an unknown style property, which would have made the migration path above unusable. This is dev tooling only and does not affect the published package.
+
 ## 0.178.0
 
 ### Minor Changes
