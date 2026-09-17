@@ -12,5 +12,9 @@
     // rejects wide inferred types in files that the full program accepts.
     "declaration": false
   },
-  "include": ["src/**/*.test-d.tsx", "src/**/*.d.ts"]
+  "include": [
+    "src/**/*.test-d.tsx",
+    "src/**/*.d.ts",
+    "src/components/form/Form/modern/**/*.ts"
+  ]
 }
