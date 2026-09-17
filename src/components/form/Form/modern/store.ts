@@ -509,7 +509,7 @@ export function createFormStore<
           seed(record, registration);
         });
       },
-      release() {
+      release(config: { deferValueRemoval?: boolean } = {}) {
         if (released || disposed) return;
         released = true;
         batch(() => {
@@ -522,12 +522,31 @@ export function createFormStore<
           }
           if (!record.registrations.size) {
             if (registration.options.preserve === false) {
-              values = writePath(values, record.path, undefined, true);
-              record.touched = false;
-              for (const other of records.values()) {
-                if (other !== record && related(other.path, record.path))
-                  invalidate(other);
-              }
+              const removeValue = () => {
+                values = writePath(values, record.path, undefined, true);
+                record.touched = false;
+                for (const other of records.values()) {
+                  if (other !== record && related(other.path, record.path))
+                    invalidate(other);
+                }
+                if (!hasPath(defaults, record.path))
+                  records.delete(record.name);
+              };
+              if (config.deferValueRemoval) {
+                // Unregister and abort immediately. Only destructive retention
+                // cleanup waits one microtask, allowing Strict Mode's effect
+                // replay to reconnect without losing the current value.
+                const revision = record.validationRevision;
+                queueMicrotask(() => {
+                  if (
+                    !disposed &&
+                    records.get(record.name) === record &&
+                    !record.registrations.size &&
+                    record.validationRevision === revision
+                  )
+                    batch(removeValue);
+                });
+              } else removeValue();
             }
             if (
               !hasPath(values, record.path) &&

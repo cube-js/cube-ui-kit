@@ -201,20 +201,16 @@ describe('modern Form root and subscriptions', () => {
     view.unmount();
   });
 
-  it('rejects named inputs until modern field binding lands, while detached inputs work', () => {
-    silenceErrors();
+  it('binds named inputs while explicit detachment stays standalone', () => {
     const form = createFormController({ defaultValues: { a: 'value' } });
     const view = render(
       <Form form={form}>
-        <RenderErrorBoundary>
-          <TextInput name="a" />
-        </RenderErrorBoundary>
+        <TextInput name="a" label="A" />
         <TextInput name="b" form={undefined} aria-label="detached" />
       </Form>,
     );
-    expect(view.getByTestId('render-error')).toHaveTextContent(
-      /modern input binding is not available/i,
-    );
+    expect(view.getByRole('textbox', { name: 'A' })).toHaveValue('value');
+    expect(form.getActiveValues()).toEqual({ a: 'value' });
     expect(view.getByRole('textbox', { name: 'detached' })).toBeInTheDocument();
   });
 

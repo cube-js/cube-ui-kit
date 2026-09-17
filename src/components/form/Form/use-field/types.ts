@@ -10,13 +10,15 @@ import {
 import { CubeFieldData, FieldTypes } from '../types';
 import { CubeFormInstance } from '../use-form';
 
+import type { FormController } from '../modern/controller';
+
 export interface UseFieldProps<T extends FieldTypes>
   extends FieldCoreProps,
     ValidationProps {
   /** The initial value of the input. */
   defaultValue?: any;
   /** The form instance */
-  form?: CubeFormInstance<T>;
+  form?: CubeFormInstance<T> | FormController<any>;
   /**
    * The validation state of the field
    * @deprecated Use `isInvalid` / `isValid` instead.
@@ -24,6 +26,8 @@ export interface UseFieldProps<T extends FieldTypes>
   validationState?: ValidationState;
   /** Whether to show valid state */
   showValid?: boolean;
+  /** Explicit loading presentation overrides the modern validation state. */
+  isLoading?: boolean;
   /** On which event perform the validation for the field */
   validateTrigger?: ValidateTrigger;
   /**

@@ -1,6 +1,6 @@
-# Modern Form store and React adapter — Phases 4–5
+# Modern Form store and React adapter — Phases 4–6
 
-This directory implements the store and React adapter from the accepted Form modernization ADR (architecture spike: PR #1389, shell: PR #1404, store: PR #1407). The pure store still has no React imports. Phase 5 publishes a command-only controller facade and the approved creation, selector, Subscribe, and context APIs, using React's official `use-sync-external-store/with-selector` integration. The modern root now provides presentation and controller context; field binding and validation/submission orchestration belong to phases 6–7.
+This directory implements the store and React adapter from the accepted Form modernization ADR (architecture spike: PR #1389, shell: PR #1404, store: PR #1407). The pure store still has no React imports. Phase 5 publishes a command-only controller facade and the approved creation, selector, Subscribe, and context APIs, using React's official `use-sync-external-store/with-selector` integration. The modern root now provides presentation and controller context; Phase 6 binds named inputs and custom controls through `useFieldProps`; validation/submission orchestration belongs to phase 7.
 
 ## Files and checks
 
@@ -14,6 +14,14 @@ This directory implements the store and React adapter from the accepted Form mod
 - `react.test.tsx` / `root.test.tsx` / `react.test-d.tsx`: rendering, lifecycle, SSR/hydration, scope isolation, and public type contracts. `pnpm test:form-react` runs against real React 18 and 19 installations in CI. Consumer fixtures also check built declarations.
 
 `pnpm test:form-store` runs in Node with zero setup files: no React, DOM, i18n, or UI test helpers. It is also a CI step. `pnpm test` runs the store tests alongside the legacy suite, and `pnpm test:types` checks all modern store sources and tests. `pnpm diagnostics:form --check` covers the modern sources through its existing form glob.
+
+## Field integration
+
+`field-binding.ts` supplies the modern backend handle used by `../use-field/use-field-binding.ts`. The shared hook invokes the legacy adapter inertly on the modern path and always calls the same hooks, including a single external-store subscription boundary. Creation and render only read snapshots. Layout effects own registration, option updates, and cleanup. Inputs select only value, errors, and status, so changing one input leaves the creator, form shell, unrelated inputs, and unaffected selectors untouched. Field binding accepts literal string names; controller commands also accept explicit nested tuple paths.
+
+Controller values and defaults exist before fields mount and win over field defaults. Explicit controllers work outside context; explicit `undefined` detaches. Name/controller changes release the previous token. Duplicate fields share state and retain separate tokens/React ids; group options remain masked. Standalone inputs preserve their own value APIs. `Form.Item` remains legacy-only; custom modern controls use `useFieldProps`, map their value API, and pass resolved props to `wrapWithField`.
+
+React cleanup unregisters and aborts pending field work immediately. For `preserve: false`, removal of the retained value waits one microtask; a reconnect or intervening value command cancels removal. This handles Strict Mode effect replay without disposing or erasing a live controller. The imperative store registration API still removes synchronously by default. `field-binding.test.tsx` covers built-in/custom controls, mode transitions, isolation, abandoned renders, hydration, Strict Mode, accessible ids, and DOM filtering.
 
 ## Snapshots and ownership
 

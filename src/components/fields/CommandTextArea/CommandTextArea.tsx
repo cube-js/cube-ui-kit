@@ -1,4 +1,4 @@
-import { Key } from '@react-types/shared';
+import { Collection, Key, Node } from '@react-types/shared';
 import { Styles } from '@tenphi/tasty';
 import React, {
   ForwardedRef,
@@ -259,9 +259,9 @@ function CommandTextArea<T extends object>(
   const localInputRef = useRef<HTMLTextAreaElement>(null);
   const inputRef = (propsInputRef ??
     localInputRef) as RefObject<HTMLTextAreaElement>;
-  const wrapperRef = useCombinedRefs(propsWrapperRef);
-  const popoverRef = useCombinedRefs(propsPopoverRef);
-  const listBoxRef = useCombinedRefs(propsListBoxRef);
+  const wrapperRef = useCombinedRefs<HTMLDivElement>(propsWrapperRef);
+  const popoverRef = useCombinedRefs<HTMLDivElement>(propsPopoverRef);
+  const listBoxRef = useCombinedRefs<HTMLDivElement>(propsListBoxRef);
   const localListStateRef = useRef<ListStateLike | null>(null);
   const listStateRef = (propsListStateRef ??
     localListStateRef) as RefObject<ListStateLike | null>;
@@ -517,7 +517,9 @@ function CommandTextArea<T extends object>(
     setDismissedToken(null);
     onCommand?.(key, {
       textValue,
-      ...(listState?.collection?.getItem(key)?.props ?? {}),
+      ...((
+        listState?.collection as Collection<Node<unknown>> | undefined
+      )?.getItem(key)?.props ?? {}),
     });
   });
 

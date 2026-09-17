@@ -37,8 +37,10 @@ import {
  * DOM `form?: string` attribute must not win over the kit's prop when a
  * consumer resolves react-aria's types for real.
  */
-export function ExplicitInstanceOnEveryInput() {
-  const [form] = Form.useForm();
+export function ExplicitInstanceOnEveryInput({ modern = false }) {
+  const [legacy] = Form.useForm();
+  const controller = Form.useController();
+  const form = modern ? controller : legacy;
 
   return (
     <>
@@ -78,12 +80,7 @@ export function ExplicitInstanceOnEveryInput() {
       <FilterPicker name="filterpicker" label="Filter picker" form={form}>
         <FilterPicker.Item key="one">One</FilterPicker.Item>
       </FilterPicker>
-      <Slider
-        name="slider"
-        label="Slider"
-        maxValue={10}
-        form={form}
-      />
+      <Slider name="slider" label="Slider" maxValue={10} form={form} />
       <DateInput name="date" label="Date" form={form} />
       <DatePicker name="datepicker" label="Date picker" form={form} />
       <DateRangePicker name="daterange" label="Date range" form={form} />
