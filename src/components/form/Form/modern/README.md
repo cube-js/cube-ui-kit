@@ -1,8 +1,10 @@
-# Modern Form store and React adapter — Phases 4–7
+# Modern Form store and React adapter — Phases 4–8
 
 This directory implements the store and React adapter from the accepted Form modernization ADR (architecture spike: PR #1389, shell: PR #1404, store: PR #1407). The pure store still has no React imports. Phase 5 publishes a command-only controller facade and the approved creation, selector, Subscribe, and context APIs, using React's official `use-sync-external-store/with-selector` integration. The modern root now provides presentation and controller context; Phase 6 binds named inputs and custom controls through `useFieldProps`; Phase 7 supplies validation, submission, callback bindings, and reactive action/error helpers.
 
 ## Files and checks
+
+Phase 8 finalizes the public API and migration guide in `docs/modern-form-migration.md`. `path-types.ts` resolves only a supplied key/tuple (including fixed tuples, arrays, and dynamic fallbacks), avoiding a recursive enumeration of model paths. The built-declaration consumer fixtures check typed commands, all documented examples, and unchanged inline legacy callback/rule usage. Root overloads preserve contextual typing for each backend. `subscriptions.browser.test.tsx` verifies keyboard focus/caret, narrow selections, reset, and conditional active/retained values in Chromium. `scripts/benchmark-cloud-form-types.mjs` checks representative Cloud forms with temporary configs and a single consumer dependency graph; it never edits the Cloud checkout.
 
 - `store.ts`: branded store, immutable snapshots, subscriptions, transactions, registration ownership, values/defaults, and validation/submission state transitions.
 - `values.ts`: immutable path operations, the ADR's shallow comparator, owned plain-data snapshots, and immutable membership sets.

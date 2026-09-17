@@ -21,6 +21,8 @@ docs/*
 !docs/rules
 !docs/tasty
 !docs/glaze
+!docs/modern-form-migration.md
+!docs/modern-form-typecheck.md
 scratch
 
 

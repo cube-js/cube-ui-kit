@@ -11,6 +11,8 @@ The form system is inspired by AntD Forms and [rc-field-form](https://field-form
 
 ## Modern controller and subscriptions (migration preview)
 
+The [per-form migration guide](https://github.com/cube-js/cube-ui-kit/blob/main/docs/modern-form-migration.md) covers backend selection, rollback, active versus retained values, async defaults, and custom controls. Its [public API examples](https://github.com/cube-js/cube-ui-kit/blob/main/typecheck/consumer/modern-form-examples.tsx) compile against the built package declarations. Existing legacy forms need no API changes when upgrading.
+
 `Form.useForm()` and forms without an explicit modern controller continue to use the legacy backend described below. `Form.useController<T>()` creates a stable modern controller with immutable snapshots. Its initial options are captured once: changing `defaultValues` or callbacks in a later options object does not reconfigure it. Use `reset({ values })`, `setDefaultValues()`, or `adoptDefaultValues()` for later data.
 
 ```tsx
@@ -38,6 +40,8 @@ The creator does not subscribe its owner. `Form.useSelector(form, selector, { is
 Use selectors for render-time state. `getValue`, `getValues`, `getActiveValues`, `getFieldSnapshot`, and `getSnapshot` are imperative reads; `subscribe` supports imperative observers. `values` contains retained data and `activeValues` contains registered fields. Commands include `setValue`, `setValues`, `batch`, `touch`, the defaults/reset commands, and explicit field/submit error setters. String paths are literal names; tuples such as `['rows', 0, 'amount']` address nested data. `setValue` accepts `{ source, touch, notify, validate }`; programmatic changes do not touch or notify `onValuesChange` unless requested, while user changes do both by default. The creation-time `onValuesChange(values, change)` callback receives retained values and `{ names, source, kind }`.
 
 Named UI Kit inputs bind to the modern controller automatically; `<TextInput name="email" form={form} />` also works outside a root. Inputs subscribe only to their own value, errors, and validation status. Custom controls use `useFieldProps` and `wrapWithField`; `Form.Item` stays legacy-only. Controller values and defaults win over field defaults, including explicit `undefined` and `null`. Duplicate fields share a value but receive unique accessible ids. Groups register once and keep their options detached.
+
+`getValue` and `setValue` infer value types for known literal keys, nested tuples, and array indices without enumerating every path in the model. Unknown or dynamic paths use `unknown`; strings containing dots remain literal keys. Use an explicit `Form.useController<Model>()` model when defaults are partial or narrower than the intended values. `FormValueAtPath<Model, Path>` exports the same lookup type. The modern declaration surface requires TypeScript 5.4 or newer.
 
 Removing a field removes it from `activeValues` immediately and retains its value by default. Use `preserve={false}` to remove its retained value after cleanup; the baseline remains available to reset. Changing a name or controller releases the old registration. Explicit `form={undefined}` detaches an input. `Form.Submit`, `Form.Reset`, and `Form.SubmitError` subscribe to modern state. Modern roots reject `defaultValues`; seed the creator or use a defaults command. Legacy wrappers such as `DialogForm` keep legacy-only types.
 

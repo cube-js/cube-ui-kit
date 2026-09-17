@@ -85,12 +85,15 @@ export function FormScopeMask({
   );
 }
 
-/** The root components share one signature: generic props plus a form ref. */
-export type FormRootComponent = <T extends FieldTypes>(
-  props: (CubeFormProps<T> | ModernFormProps<T>) & {
-    ref?: Ref<HTMLFormElement>;
-  },
-) => ReactElement;
+/** Separate overloads retain contextual callback typing for each backend. */
+export interface FormRootComponent {
+  <T extends FieldTypes = FieldTypes>(
+    props: CubeFormProps<T> & { ref?: Ref<HTMLFormElement> },
+  ): ReactElement;
+  <T extends FieldTypes = FieldTypes>(
+    props: ModernFormProps<T> & { ref?: Ref<HTMLFormElement> },
+  ): ReactElement;
+}
 
 export const FormElement = tasty({
   as: 'form',

@@ -1,7 +1,10 @@
 import { Styles } from '@tenphi/tasty';
 import { ReactNode } from 'react';
 
-import type { ModernValidationRule } from '../components/form/Form/modern/validation';
+import type {
+  ModernValidationContext,
+  ModernValidationRule,
+} from '../components/form/Form/modern/validation';
 import type { Props } from '../props';
 
 /** ValidationResult type for error message functions */
@@ -39,6 +42,17 @@ export interface ValidationProps {
 /** On which event perform the validation for the field */
 export type ValidateTrigger = 'onBlur' | 'onChange' | 'onSubmit';
 
+/** Shared inputs also accept legacy validators with arbitrary success values. */
+export interface FieldValidationRule
+  extends Omit<ModernValidationRule<any>, 'validator'> {
+  [key: string]: any;
+  validator?: (
+    rule: any,
+    value: any,
+    context: ModernValidationContext<any>,
+  ) => any;
+}
+
 /** Core field identity and validation props */
 export interface FieldCoreProps {
   /** The unique ID of the field */
@@ -52,7 +66,7 @@ export interface FieldCoreProps {
   /** Function that checks whether to perform update of the form state. */
   shouldUpdate?: boolean | ((prevValues, nextValues) => boolean);
   /** Validation rules */
-  rules?: ModernValidationRule<ReactNode>[];
+  rules?: (FieldValidationRule | any[])[];
   /** Explicit revision key for modern validators with captured dependencies. */
   rulesKey?: string;
   /** Modern rule error ordering policy; defaults to the controller policy. */

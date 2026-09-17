@@ -67,6 +67,7 @@ export type {
 } from './modern/types';
 export type { ModernValidationContext } from './modern/validation';
 export type { FormPath } from './modern/values';
+export type { FormValueAtPath } from './modern/path-types';
 export type { CubeFormInstance } from './use-form';
 export type { FieldTypes, Fields } from './types';
 export type { CubeAlertProps as CubeSubmitErrorProps };
