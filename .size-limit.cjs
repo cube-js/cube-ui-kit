@@ -20,6 +20,10 @@ module.exports = [
         }),
       );
     },
+    // Phase 7 validation/submission: CI run 35257552657 measured 524,252 B,
+    // +1,974 B from Phase 6. The cancellable pipelines and reactive helpers
+    // fit in 525 kB with 748 B headroom; Button remains exactly 119,482 B.
+    //
     // Phase 6 field bindings: CI run 35255787395 measured 522,278 B for All,
     // up 826 B from Phase 5's 521,452 B. Modern per-field subscriptions and
     // guarded registration cleanup fit in 523 kB with 722 B headroom. The
@@ -260,7 +264,7 @@ module.exports = [
     //
     // Note when checking locally: `size-limit` bundles the built `./dist`, it
     // does not build. Run `pnpm build` first or you will measure a stale bundle.
-    limit: '523kB',
+    limit: '525kB',
   },
   {
     name: 'Tree shaking (just a Button)',
