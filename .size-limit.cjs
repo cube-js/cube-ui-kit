@@ -21,10 +21,11 @@ module.exports = [
       );
     },
     // Phase 5 Form migration: the formerly internal store now ships with the
-    // controller, selector adapter, and modern context root. Both sides rebuilt
-    // locally: 512,792 B before, 517,979 B after (+5,187 B gzip). The Button-only
-    // bundle is unchanged at 119,072 B. Raise the full-library limit to the next
-    // 5 kB step; verify the final number in CI before merging.
+    // controller, selector adapter, and modern context root. CI run 35251516687
+    // measured 521,452 B against main's 516,667 B (+4,785 B gzip); the Button-only
+    // bundle is unchanged at 119,464 B. Set the full-library limit to 522 kB,
+    // leaving 548 B of headroom. The initial 520 kB limit passed locally but
+    // failed on Linux; use the CI measurement as described below.
     //
     // Previously 517 kB on the trigger-actions-slot migration; the story of why
     // is the useful part. The first push genuinely failed: on `@tenphi/tasty`
@@ -254,7 +255,7 @@ module.exports = [
     //
     // Note when checking locally: `size-limit` bundles the built `./dist`, it
     // does not build. Run `pnpm build` first or you will measure a stale bundle.
-    limit: '520kB',
+    limit: '522kB',
   },
   {
     name: 'Tree shaking (just a Button)',
