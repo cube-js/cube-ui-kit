@@ -132,6 +132,8 @@ export interface CubeSwitchProps
     FieldBaseProps,
     ToggleSelectionProps,
     AriaSwitchProps {
+  /** The form instance; redeclared for the same reason as in `Checkbox`. */
+  form?: FieldBaseProps['form'];
   inputStyles?: Styles;
   isLoading?: boolean;
   size?: 'large' | 'medium' | 'small';

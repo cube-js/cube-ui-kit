@@ -1,0 +1,16 @@
+{
+  // `pnpm test:types`: compiles the `*.test-d.tsx` fixtures (public type
+  // contracts such as the Form backend brands) together with everything they
+  // import — roughly 200 source files, so a type error anywhere in that graph
+  // fails the step too. `@ts-expect-error` and `expectTypeOf` are enforced by
+  // `tsc` itself; the fixtures never run. Kept out of `pnpm test` so the
+  // runtime suite and the pre-push hook do not pay for a type check.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": ["vitest/globals", "node"],
+    // No `.d.ts` is produced here, and declaration serialization (TS7056)
+    // rejects wide inferred types in files that the full program accepts.
+    "declaration": false
+  },
+  "include": ["src/**/*.test-d.tsx", "src/**/*.d.ts"]
+}

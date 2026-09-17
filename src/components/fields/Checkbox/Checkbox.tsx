@@ -49,6 +49,13 @@ export interface CubeCheckboxProps
     AriaCheckboxProps,
     ToggleSelectionProps,
     FieldBaseProps {
+  /**
+   * The form instance. Redeclared so that it wins over react-aria's DOM
+   * `form: string` attribute when a consumer resolves react-aria's types for
+   * real; `Omit<AriaCheckboxProps, 'form'>` would erase every other prop
+   * in-repo, where those types resolve to `any` (see tsconfig.json).
+   */
+  form?: FieldBaseProps['form'];
   inputStyles?: Styles;
   isIndeterminate?: boolean;
   value?: string;

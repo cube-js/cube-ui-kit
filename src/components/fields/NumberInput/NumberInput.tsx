@@ -1,6 +1,11 @@
 import { tasty } from '@tenphi/tasty';
 import { ForwardedRef, forwardRef, RefObject, useRef } from 'react';
-import { AriaNumberFieldProps, useLocale, useNumberField } from 'react-aria';
+import {
+  AriaNumberFieldProps,
+  mergeProps as mergeAriaProps,
+  useLocale,
+  useNumberField,
+} from 'react-aria';
 import { useNumberFieldState } from 'react-stately';
 
 import { mergeProps } from '../../../utils/react';
@@ -15,7 +20,7 @@ import { StepButton } from './StepButton';
 
 export interface CubeNumberInputProps
   extends Omit<CubeTextInputBaseProps, 'defaultValue' | 'value' | 'onChange'>,
-    Omit<AriaNumberFieldProps, 'validate'> {
+    Omit<AriaNumberFieldProps, 'validate' | 'form'> {
   /** Whether or to hide stepper */
   hideStepper?: boolean;
 }
@@ -96,7 +101,11 @@ function NumberInput(
       ref={ref}
       labelProps={mergedLabelProps}
       inputProps={mergeProps(
-        inputProps,
+        // `useNumberField` seeds its input id once. Merging the current id
+        // through react-aria's own `mergeProps` updates that seed, so the
+        // input, its label and the steppers' `aria-controls` follow the id
+        // when the form binding changes after mount.
+        mergeAriaProps(inputProps, { id: props.id }),
         { 'data-input-type': 'numberinput' },
         userInputProps,
       )}

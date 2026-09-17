@@ -210,8 +210,10 @@ function SliderBase(allProps: SliderBaseProps, ref: DOMRef<HTMLDivElement>) {
   const sliderField = (
     <SliderElement
       ref={domRef}
-      id={props.id}
       {...groupProps}
+      // `useSlider` seeds the group id once; the current id follows the form
+      // binding, and the label points at it.
+      id={props.id ?? groupProps.id}
       mods={mods}
       styles={styles}
       data-input-type="slider"

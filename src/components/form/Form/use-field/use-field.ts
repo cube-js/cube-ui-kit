@@ -2,12 +2,19 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { useEvent, useIsFirstRender } from '../../../../_internal/index';
 import { ValidateTrigger } from '../../../../shared/index';
+import { useLayoutEffect } from '../../../../utils/react/useLayoutEffect';
 import { resolveValidationProps } from '../../validation/index';
+import {
+  isModernFormController,
+  modernBackendUnavailableError,
+} from '../backend';
 import { useFormProps } from '../Form';
 import { FieldTypes } from '../types';
 import { delayValidationRule } from '../validation';
 
 import { FieldReturnValue, UseFieldProps } from './types';
+
+import type { CubeFormInstance } from '../use-form';
 
 const ID_MAP = {};
 
@@ -39,6 +46,12 @@ function removeId(name, id) {
 
 export type UseFieldParams = {
   defaultValidationTrigger?: ValidateTrigger;
+  /**
+   * Run without a binding: `useFieldProps` sets this for an input that is
+   * standalone, inside the deprecated `<Field>` or disabled, so that this hook
+   * is still called (stable hook order) but registers nothing.
+   */
+  unbound?: boolean;
 };
 
 export function useField<T extends FieldTypes, Props extends UseFieldProps<T>>(
@@ -64,6 +77,17 @@ export function useField<T extends FieldTypes, Props extends UseFieldProps<T>>(
     isRequired: isRequiredProp,
     necessityIndicator: necessityIndicatorProp,
   } = props;
+
+  if (params.unbound) {
+    name = undefined;
+    form = undefined;
+  }
+
+  if (!params.unbound && isModernFormController(form)) {
+    throw modernBackendUnavailableError(
+      name != null ? `The "${name}" field` : 'A field without a name',
+    );
+  }
 
   const { isInvalid: isInvalidProp, isValid: isValidProp } =
     resolveValidationProps(props);
@@ -96,31 +120,80 @@ export function useField<T extends FieldTypes, Props extends UseFieldProps<T>>(
   const fieldName: string = name != null ? name : '';
 
   const isFirstRender = useIsFirstRender();
-  let [fieldId, setFieldId] = useState(
-    id || (idPrefix ? `${idPrefix}_${fieldName}` : fieldName),
-  );
+  const baseId = id || (idPrefix ? `${idPrefix}_${fieldName}` : fieldName);
 
-  useEffect(() => {
-    let newId;
+  // The id the effect below registered, with the base it was registered for.
+  // Between a base change and that effect's next run the state is stale, and
+  // handing it out would let the element carry the previous binding's id for
+  // one commit — which can duplicate a sibling's live id — so the current base
+  // is used until the effect catches up. An explicit `id` is used as it is.
+  const [assignedId, setAssignedId] = useState({ base: baseId, id: baseId });
+  const currentId = id || (assignedId.base === baseId ? assignedId.id : baseId);
 
-    if (!id && !nonInput) {
-      newId = createId(fieldId);
+  // Ids are registered per base (form name prefix plus field name), so that
+  // duplicates get a suffix and the base is released when it changes or the
+  // input unmounts. `id` and `nonInput` cannot change without the base. A
+  // layout effect: when the base changes, the commit that carries the
+  // unsuffixed base is corrected before the browser paints, so a duplicate
+  // never shows a colliding id.
+  useLayoutEffect(() => {
+    if (id || nonInput) return;
 
-      setFieldId(newId);
-    }
+    const newId = createId(baseId);
+
+    setAssignedId((previous) =>
+      previous.base === baseId && previous.id === newId
+        ? previous
+        : { base: baseId, id: newId },
+    );
 
     return () => {
-      if (!id) {
-        removeId(idPrefix ? `${idPrefix}_${fieldName}` : fieldName, newId);
+      removeId(baseId, newId);
+    };
+  }, [baseId, id, nonInput]);
+
+  // Every form this hook registered the current name with. The dual-backend
+  // shell keeps the hook mounted for standalone inputs, so a form may arrive
+  // later or change, and the name may change; the name is released from all
+  // of them, not from whichever form a closure happened to capture. This is
+  // state rather than a ref only to keep render free of ref access.
+  const [boundForms] = useState(() => new Set<CubeFormInstance<any>>());
+
+  useEffect(() => {
+    return () => {
+      if (fieldName) {
+        boundForms.forEach((boundForm) => boundForm.removeField(fieldName));
       }
 
-      if (fieldName && form) {
-        form.removeField(fieldName);
-      }
+      boundForms.clear();
     };
-  }, [fieldName]);
+  }, [fieldName, boundForms]);
 
   let field = form?.getFieldInstance(fieldName);
+
+  if (form) {
+    // First render of this binding: the hook's first render, or a named field
+    // that is not registered yet because the name or the form changed after
+    // mount. Without a name the engine returns an unstored placeholder, so it
+    // is only created on the first render, as before: creating it again on
+    // every render would give the effect below a new object each time.
+    if (isFirstRender || (!field && fieldName)) {
+      if (!field) {
+        field = form.createField(fieldName, true);
+      }
+
+      if (field?.value == null && defaultValue != null) {
+        form.setFieldValue(fieldName, defaultValue, false, true);
+        form.updateInitialFieldsValue({ [fieldName]: defaultValue });
+
+        field = form?.getFieldInstance(fieldName);
+      }
+    }
+
+    if (!field?.touched && defaultValue != null) {
+      form.setFieldValue(fieldName, defaultValue, false, true);
+    }
+  }
 
   if (field) {
     field.rules = processedRules;
@@ -141,34 +214,17 @@ export function useField<T extends FieldTypes, Props extends UseFieldProps<T>>(
   const suppressNecessityIndicator =
     isRequired && !isRequiredProp && necessityIndicatorProp === undefined;
 
+  // Registration happens during render. Once it is committed, remember the
+  // form for the release above and re-render the form's owner so its
+  // render-time reads see the new field. `form` is deliberately not a
+  // dependency: a form whose identity changes on every render (a copy, an
+  // inline mock) shares its store, and re-running here would loop.
   useEffect(() => {
-    if (!form) return;
-
-    if (field) {
+    if (form && field) {
+      boundForms.add(form);
       form.forceReRender();
-    } else {
-      field = form.createField(fieldName);
     }
-  }, [field]);
-
-  if (form) {
-    if (isFirstRender) {
-      if (!field) {
-        field = form.createField(fieldName, true);
-      }
-
-      if (field?.value == null && defaultValue != null) {
-        form.setFieldValue(fieldName, defaultValue, false, true);
-        form.updateInitialFieldsValue({ [fieldName]: defaultValue });
-
-        field = form?.getFieldInstance(fieldName);
-      }
-    }
-
-    if (!field?.touched && defaultValue != null) {
-      form.setFieldValue(fieldName, defaultValue, false, true);
-    }
-  }
+  }, [field, boundForms]);
 
   const onChangeHandler = useEvent((val: any, dontTouch: boolean) => {
     if (!form) return;
@@ -216,7 +272,7 @@ export function useField<T extends FieldTypes, Props extends UseFieldProps<T>>(
 
   return useMemo(
     () => ({
-      id: fieldId,
+      id: currentId,
       name: fieldName,
       value,
       validateTrigger,
@@ -249,7 +305,7 @@ export function useField<T extends FieldTypes, Props extends UseFieldProps<T>>(
       field?.value,
       field?.errors?.length,
       field?.status,
-      fieldId,
+      currentId,
       fieldName,
       isRequired,
       suppressNecessityIndicator,

@@ -8,6 +8,7 @@ import {
   tasty,
 } from '@tenphi/tasty';
 import {
+  ContextType,
   createContext,
   FormHTMLAttributes,
   forwardRef,
@@ -25,10 +26,64 @@ import { useCombinedRefs } from '../../../utils/react/index';
 import { extractStyles } from '../../../utils/styles';
 import { useValidationProps } from '../validation/index';
 
+import { isModernFormController } from './backend';
+import { ModernFormRoot } from './ModernFormRoot';
 import { FieldTypes } from './types';
 import { CubeFormData, CubeFormInstance, useForm } from './use-form';
 
+/**
+ * Public legacy context. Its value is the full legacy scope (presentation
+ * props, the instance, `submitError`, `idPrefix`) and is part of the exported
+ * contract: wrappers outside the kit read it and Radio/Checkbox groups mask it.
+ */
 export const FormContext = createContext({});
+
+/**
+ * Presentation and configuration that any root — legacy or modern — hands to
+ * the fields below it. Backend-neutral by construction: no instance in here.
+ */
+export interface FormPresentationContextValue {
+  labelPosition?: FormBaseProps['labelPosition'];
+  labelStyles?: FormBaseProps['labelStyles'];
+  orientation?: 'vertical' | 'horizontal';
+  necessityIndicator?: FormBaseProps['necessityIndicator'];
+  validateTrigger?: FormBaseProps['validateTrigger'];
+  requiredMark?: boolean;
+  showValid?: boolean;
+  idPrefix?: string;
+}
+
+const EMPTY_PRESENTATION: FormPresentationContextValue = {};
+
+export const FormPresentationContext =
+  createContext<FormPresentationContextValue>(EMPTY_PRESENTATION);
+
+/**
+ * Scope the inputs below to a new form context. Radio/Checkbox groups use it
+ * for their options: they see the group's validation state, but neither the
+ * surrounding form's presentation props nor its instance, so a nested `name`
+ * never registers as an independent field. Wrappers that used to override
+ * `FormContext` directly for the same purpose should render this instead — a
+ * bare `FormContext.Provider` no longer masks the presentation context.
+ */
+export function FormScopeMask({
+  value,
+  children,
+}: {
+  value: ContextType<typeof FormContext>;
+  children?: ReactNode;
+}) {
+  return (
+    <FormPresentationContext.Provider value={EMPTY_PRESENTATION}>
+      <FormContext.Provider value={value}>{children}</FormContext.Provider>
+    </FormPresentationContext.Provider>
+  );
+}
+
+/** The root components share one signature: generic props plus a form ref. */
+export type FormRootComponent = <T extends FieldTypes>(
+  props: CubeFormProps<T> & { ref?: Ref<HTMLFormElement> },
+) => ReactElement;
 
 const FormElement = tasty({
   as: 'form',
@@ -51,10 +106,16 @@ const FormElement = tasty({
   },
 });
 
+/**
+ * Merge order: presentation context, then the legacy `FormContext`, then the
+ * props. Under a legacy root the two contexts carry the same presentation
+ * values, so the result is exactly `{ ...FormContext, ...props }` as before.
+ */
 export function useFormProps(props) {
+  const presentation = useContext(FormPresentationContext);
   const ctx = useContext(FormContext);
 
-  return { ...ctx, ...props };
+  return { ...presentation, ...ctx, ...props };
 }
 
 const formPropNames = new Set([
@@ -90,7 +151,11 @@ export interface CubeFormProps<T extends FieldTypes = FieldTypes>
   orientation?: 'vertical' | 'horizontal';
 }
 
-function Form<T extends FieldTypes>(
+/**
+ * The legacy backend's root: the current engine under an internal name. Its
+ * role is compatibility; see `legacy-contract/README.md` for what is frozen.
+ */
+function LegacyFormRoot<T extends FieldTypes>(
   props: CubeFormProps<T>,
   ref: Ref<HTMLFormElement>,
 ) {
@@ -205,7 +270,7 @@ function Form<T extends FieldTypes>(
 
   let domRef = useObjectRef(ref);
 
-  let ctx = {
+  const presentation: FormPresentationContextValue = {
     labelPosition,
     labelStyles,
     orientation,
@@ -213,9 +278,13 @@ function Form<T extends FieldTypes>(
     validateTrigger,
     requiredMark,
     showValid,
+    idPrefix: name,
+  };
+
+  let ctx = {
+    ...presentation,
     form,
     submitError: form.submitError,
-    idPrefix: name,
   };
 
   if (firstRunRef.current && form) {
@@ -245,28 +314,51 @@ function Form<T extends FieldTypes>(
       }}
       onSubmit={onSubmitCallback}
     >
-      <FormContext.Provider value={ctx}>
-        <Provider
-          insideForm={true}
-          isDisabled={isDisabled}
-          isReadOnly={isReadOnly}
-          isInvalid={isInvalid}
-          isValid={isValid}
-        >
-          {children}
-        </Provider>
-      </FormContext.Provider>
+      <FormPresentationContext.Provider value={presentation}>
+        <FormContext.Provider value={ctx}>
+          <Provider
+            insideForm={true}
+            isDisabled={isDisabled}
+            isReadOnly={isReadOnly}
+            isInvalid={isInvalid}
+            isValid={isValid}
+          >
+            {children}
+          </Provider>
+        </FormContext.Provider>
+      </FormPresentationContext.Provider>
     </FormElement>
   );
+}
+
+const _LegacyFormRoot = forwardRef(
+  LegacyFormRoot,
+) as unknown as FormRootComponent;
+
+(_LegacyFormRoot as any).displayName = 'LegacyFormRoot';
+
+/**
+ * The `<Form>` facade. It chooses the root by the brand of the `form` prop
+ * before any backend hook runs; without a modern controller — which is every
+ * form today — it is the legacy root, so `<Form>` and `Form.useForm()` keep
+ * their behaviour.
+ */
+function Form<T extends FieldTypes>(
+  props: CubeFormProps<T>,
+  ref: Ref<HTMLFormElement>,
+) {
+  if (isModernFormController(props.form)) {
+    return <ModernFormRoot {...props} ref={ref} />;
+  }
+
+  return <_LegacyFormRoot {...props} ref={ref} />;
 }
 
 /**
  * Forms allow users to enter data that can be submitted while providing alignment and styling for form fields.
  */
-const _Form = forwardRef(Form) as unknown as <T extends FieldTypes>(
-  props: CubeFormProps<T> & { ref?: Ref<HTMLFormElement> },
-) => ReactElement;
+const _Form = forwardRef(Form) as unknown as FormRootComponent;
 
 (_Form as any).displayName = 'Form';
 
-export { _Form as Form };
+export { _Form as Form, _LegacyFormRoot as LegacyFormRoot };

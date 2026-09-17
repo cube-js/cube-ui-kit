@@ -17,7 +17,7 @@ import {
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
 import { extractStyles } from '../../../utils/styles';
-import { FormContext, useFieldProps, wrapWithField } from '../../form';
+import { FormScopeMask, useFieldProps, wrapWithField } from '../../form';
 
 import { CheckboxGroupContext } from './context';
 
@@ -40,7 +40,7 @@ const CheckGroupElement = tasty({
 
 export interface CubeCheckboxGroupProps
   extends BaseProps,
-    Omit<AriaCheckboxGroupProps, 'errorMessage'>,
+    Omit<AriaCheckboxGroupProps, 'errorMessage' | 'form'>,
     FieldBaseProps,
     ContainerStyleProps {
   orientation?: 'vertical' | 'horizontal';
@@ -93,7 +93,7 @@ function CheckboxGroup(props: WithNullableValue<CubeCheckboxGroupProps>, ref) {
         horizontal: orientation === 'horizontal',
       }}
     >
-      <FormContext.Provider
+      <FormScopeMask
         value={{
           isDisabled,
           isInvalid,
@@ -103,7 +103,7 @@ function CheckboxGroup(props: WithNullableValue<CubeCheckboxGroupProps>, ref) {
         <CheckboxGroupContext.Provider value={state}>
           {children}
         </CheckboxGroupContext.Provider>
-      </FormContext.Provider>
+      </FormScopeMask>
     </CheckGroupElement>
   );
 

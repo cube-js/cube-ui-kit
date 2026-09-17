@@ -50,20 +50,30 @@ Rules:
 - **`valuePropsMapper`** — maps the form value onto the component's own value API. Required whenever the component does not use `value`/`onChange` verbatim (`selectedKey`/`onSelectionChange`, `isSelected`/`onChange`, `selectedKeys`, …).
 - **`unsafe__isDisabled`** — opts out of field wiring for the lifetime of the mount. Only for components that can be nested inside a group that owns the form connection (`Checkbox` inside `CheckboxGroup`). The value must be stable across renders.
 
-### Two modes
+### Modes
 
-`useFieldProps` behaves differently depending on `name`:
+`useFieldProps` calls **the same hooks in every mode** — including `useField`, the legacy backend's adapter — and the mode only decides which props come back:
 
-| Mode | Condition | Behaviour |
+| Mode | Condition | What comes back |
 | --- | --- | --- |
-| Form-connected | `name` is set | Calls `useField`: registers the field, owns value/onChange/onBlur, derives validation state, generates an incremental id from the field name (`email`, `email_1`, …) |
-| Standalone | no `name` | Does **not** call `useField`. Preserves the caller's `value`/`onChange` and only generates an id via React's `useId()` |
+| Bound | `name` is set, not inside the deprecated `<Field>`, not `unsafe__isDisabled` | The field's value/onChange/onBlur and validation state merged over the props, with an incremental id derived from the form name and the field name (`email`, `email_1`, `settings_email`, …) |
+| Standalone | no `name` | The caller's own `value`/`onChange` untouched, plus an id from React's `useId()` and matching label props; `useField` runs inert and registers nothing |
+| Inside `<Field>` / `Form.Item` | `useInsideLegacyField()` | The props as given: the wrapper already did the binding |
+| Disabled | `unsafe__isDisabled` | The props as given |
 
-Never call `useField` for standalone fields — the extra state management breaks controlled components.
+Because every hook runs every time, an input may gain or lose `name`, or receive a `form` later, without a hook-order error. Gaining a name, or a form, binds like a first mount: a new field with the field-level `defaultValue` as value and baseline. The id is derived from the surrounding form's `name` prefix and the field name, so it changes with `name` (and with the prefix), not when a `form` arrives. A value typed while the input was standalone is not carried into the field, and React Aria logs its development warning about switching between uncontrolled and controlled — both expected. Losing the name releases the field. A `form` prop that changes registers the field with the new form and the old form keeps it while the input is mounted (legacy contract, row 4); losing the `form` prop while keeping the name leaves the field in that form too, and a form that comes back reuses it; unmounting releases the name from every form it was bound to. Do not add a hook to `useFieldProps` behind a condition and do not return before the hooks.
+
+When a props interface extends a react-aria props type that carries the DOM `form?: string` attribute (text fields, number field, checkbox, switch, radio group, slider, date and time fields), keep the kit's `form` (the instance) on top: add `'form'` to the `Omit<Aria…Props, …>` the interface already uses, or, when it extends the Aria type directly, redeclare `form?: FieldBaseProps['form']` in the body — `Omit` over a type that resolves to `any` in-repo (see `preserveSymlinks` in `tsconfig.json`) would erase every other prop. The consumer-facing fixture `typecheck/consumer/form-instance.test-d.tsx`, compiled against `dist/` by `pnpm test:types:consumer`, renders every form-attachable input with `form={instance}` and fails when the DOM attribute wins.
+
+Components must apply the current `id` from props to the element the label points at. React Aria hooks seed their ids once (`useId(props.id)`), so a component that hands `props.id` only to the hook keeps the mount-time id after a rebind; `TextInput` gets this for free from `useTextField`, `NumberInput` merges `{ id: props.id }` into `inputProps` and `SliderBase` sets `id` after spreading `groupProps`.
 
 The form itself comes from the `form` prop when it is set, and from `FormContext` otherwise. That makes `<TextInput name="email" form={form} />` a supported way to link an input to a form it is not nested in, and to override the surrounding form. Keep `form` in the props of every form-attachable component and always pass the whole props object to `useFieldProps` so this keeps working.
 
-`useFormProps` stays a public export because wrappers outside the UI Kit call it to read the form context and then hand adjusted props to a nested input. Since it merges as `{ ...context, ...props }`, and `useFieldProps` applies it again, any prop the wrapper sets explicitly wins — but a **deleted** key falls back to the context value. To detach a nested input from the form, pass `form={undefined}` (or `null`) explicitly, or omit `name`; destructuring `form` away is not enough.
+Form instances are branded (see `Form/backend.ts`); a modern controller does not exist in this version, and `<Form>`, `Form.useForm()` and a bound field throw a clear error if one is passed.
+
+`FormScopeMask` (exported) scopes the inputs below it to a new form context: Radio/Checkbox groups render it around their options so a nested `name` never registers as an independent field. A wrapper that overrides `FormContext` for the same purpose must render `FormScopeMask` instead of a bare `FormContext.Provider`, because presentation props (`labelPosition`, `idPrefix`, …) also travel through a separate context that only the mask resets.
+
+`useFormProps` stays a public export because wrappers outside the UI Kit call it to read the form context and then hand adjusted props to a nested input. Since it merges as `{ ...presentationContext, ...FormContext, ...props }` (the two contexts carry the same presentation values under a legacy root), and `useFieldProps` applies it again, any prop the wrapper sets explicitly wins — but a **deleted** key falls back to the context value. To detach a nested input from the form, pass `form={undefined}` (or `null`) explicitly, or omit `name`; destructuring `form` away is not enough.
 
 ## 3. Field chrome
 

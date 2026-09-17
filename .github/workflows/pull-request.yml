@@ -43,6 +43,15 @@ jobs:
       - name: Run the tests
         run: pnpm test
 
+      - name: Type check the Form type fixtures (and their import graph)
+        run: pnpm test:types
+
+      - name: Build the package
+        run: pnpm build
+
+      - name: Type check the consumer fixtures against the built declarations
+        run: pnpm test:types:consumer
+
   browser-tests:
     name: 'Browser tests'
     runs-on: ubuntu-latest

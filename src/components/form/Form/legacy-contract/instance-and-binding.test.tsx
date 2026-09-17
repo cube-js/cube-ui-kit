@@ -296,42 +296,9 @@ describe('legacy contract: dynamic field names (§7.1 #6)', () => {
     expect(formInstance.getFieldValue('first')).toBeUndefined();
   });
 
-  it.each([
-    // Dropping `name` skips `useField`: React reports conditional hook calls.
-    ['named to standalone', 'a', undefined, /calling hooks conditionally/i],
-    // Adding `name` appends hooks; React fails inside its hook bookkeeping
-    // ("Cannot read properties of undefined") before it can name the cause.
-    ['standalone to named', undefined, 'a', /./],
-  ])(
-    '[undefined] switching an input from %s changes the hook order and throws',
-    (_, from, to, expectedMessage) => {
-      const consoleError = vi
-        .spyOn(console, 'error')
-        .mockImplementation(() => {});
-
-      function Fixture({ name }: { name?: string }) {
-        return <TextInput name={name} label="A" />;
-      }
-
-      const { rerender, queryByTestId } = renderWithForm(
-        <RenderErrorBoundary>
-          <Fixture name={from} />
-        </RenderErrorBoundary>,
-      );
-
-      expect(queryByTestId('render-error')).toBeNull();
-
-      rerender(
-        <RenderErrorBoundary>
-          <Fixture name={to} />
-        </RenderErrorBoundary>,
-      );
-
-      expect(queryByTestId('render-error')).toHaveTextContent(expectedMessage);
-
-      consoleError.mockRestore();
-    },
-  );
+  // Switching an input between named and standalone is defined by the
+  // dual-backend shell since Phase 3 (`../dual-backend-shell.test.tsx`).
+  // Before the shell the switch threw a hook-order error, which was undefined.
 });
 
 describe('legacy contract: instance created above the Form root (§7.1 #19)', () => {

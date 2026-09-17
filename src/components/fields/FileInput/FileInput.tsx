@@ -125,6 +125,8 @@ export interface CubeFileInputProps
     BlockStyleProps,
     AriaTextFieldProps,
     FieldBaseProps {
+  /** The form instance; redeclared for the same reason as in `Checkbox`. */
+  form?: FieldBaseProps['form'];
   /**
    * The size of the input
    * @default default
