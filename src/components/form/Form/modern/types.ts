@@ -122,7 +122,7 @@ export interface FormStoreOptions<T extends object> extends FormCallbacks<T> {
   readonly onDevelopmentError?: (message: string) => void;
 }
 
-/** State transitions for the later validation pipeline; no rules/timers here. */
+/** Internal state token owned by the validation pipeline. */
 export interface ValidationToken<ErrorValue> {
   readonly signal: AbortSignal;
   complete(errors: readonly ErrorValue[]): boolean;

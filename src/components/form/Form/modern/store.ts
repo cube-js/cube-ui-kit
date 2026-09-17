@@ -102,14 +102,14 @@ function projectActive(
 }
 
 /**
- * Phase 4's framework-neutral command layer. Not exported from the package.
- * React registration, root callbacks, rule execution and submit orchestration
- * are deliberately separate later phases; their state transitions live here.
+ * Framework-neutral store, registration ownership, and async pipelines.
+ * Not exported from the package; React receives the public command facade.
  */
 export function createFormStore<
   T extends object = Record<string, unknown>,
   ErrorValue = unknown,
->(options: FormStoreOptions<T> = {}): FormStore<T, ErrorValue> {
+>(inputOptions: FormStoreOptions<T> = {}): FormStore<T, ErrorValue> {
+  const options = { ...inputOptions };
   const ownValue = createValueSnapshotter();
   const records = new Map<string, FieldRecord<ErrorValue>>();
   // Subscription identity belongs to the registration, not to the callback.
@@ -807,11 +807,19 @@ export function createFormStore<
     const config = record.owner?.options;
     const rules = config?.rules ?? [];
     const token = startValidation(record.path);
-    if (token.signal.aborted)
+    const revision = record.validationRevision;
+    if (token.signal.aborted || parentSignal?.aborted) {
+      token.cancel();
       return Promise.resolve(result(EMPTY_ERRORS, true));
+    }
     if (!rules.length) {
       const committed = token.complete(EMPTY_ERRORS);
-      return Promise.resolve(result(EMPTY_ERRORS, !committed));
+      return Promise.resolve(
+        result(
+          EMPTY_ERRORS,
+          !committed || record.validationRevision !== revision,
+        ),
+      );
     }
     const value = readPath(values, record.path);
     return new Promise((resolve) => {
@@ -842,7 +850,15 @@ export function createFormStore<
           },
           config?.errorPolicy ?? options.errorPolicy ?? 'first',
         );
-        if (!settled) finish(Object.freeze(errors), !token.complete(errors));
+        if (!settled) {
+          const committed = token.complete(errors);
+          finish(
+            Object.freeze(errors),
+            !committed ||
+              record.validationRevision !== revision ||
+              !!parentSignal?.aborted,
+          );
+        }
       };
       const delay = immediate ? 0 : config?.validationDelay ?? 0;
       if (delay > 0) timer = setTimeout(() => void run(), delay);
@@ -865,12 +881,14 @@ export function createFormStore<
         !!record?.registrations.size,
     );
     let runs: Promise<ModernFieldValidationResult<ErrorValue>>[] = [];
+    let revisions: number[] = [];
     batch(() => {
       runs = active.map((record) =>
         validateRecord(record, config.immediate ?? true, config.signal),
       );
+      // Capture before publishing: a synchronous subscriber can edit/reset.
+      revisions = active.map((record) => record.validationRevision);
     });
-    const revisions = active.map((record) => record.validationRevision);
     return Promise.all(runs).then((results) => {
       const fields = results.map((result, index) => {
         const record = active[index];
@@ -946,9 +964,27 @@ export function createFormStore<
         return;
       }
       const run = async () => {
-        const validation = await validate(undefined, { signal: token.signal });
+        const pendingValidation = validate(undefined, { signal: token.signal });
+        const validatedRecords = Array.from(records.values()).filter(
+          (record) => record.registrations.size,
+        );
+        const revisions = validatedRecords.map(
+          (record) => record.validationRevision,
+        );
+        const validation = await pendingValidation;
         if (settled) return;
-        if (validation.stale) {
+        const changedSinceValidation =
+          validatedRecords.length !== validation.fields.length ||
+          validatedRecords.length !==
+            Array.from(records.values()).filter(
+              (record) => record.registrations.size,
+            ).length ||
+          validatedRecords.some(
+            (record, index) =>
+              !record.registrations.size ||
+              record.validationRevision !== revisions[index],
+          );
+        if (validation.stale || changedSinceValidation) {
           token.complete();
           finish({ status: 'stale' });
           return;

@@ -1,4 +1,5 @@
 import { useEvent } from '../../../../_internal/hooks/use-event';
+import { useProviderProps } from '../../../../provider';
 import { Button } from '../../../actions/Button/Button';
 
 import { useFormSelector } from './react';
@@ -15,6 +16,9 @@ export function ModernSubmitButton({
   form: FormController<any>;
   buttonRef: FocusableRef<HTMLElement>;
 }) {
+  const { isDisabled: contextDisabled } = useProviderProps(
+    {} as CubeButtonProps,
+  );
   const submitting = useFormSelector(form, (state) => state.isSubmitting);
   const invalid = useFormSelector(form, (state) => state.isInvalid);
   return (
@@ -24,7 +28,7 @@ export function ModernSubmitButton({
       htmlType="submit"
       isLoading={submitting}
       {...props}
-      isDisabled={props.isDisabled || submitting || invalid}
+      isDisabled={contextDisabled || props.isDisabled || submitting || invalid}
     />
   );
 }
@@ -38,6 +42,9 @@ export function ModernResetButton({
   form: FormController<any>;
   buttonRef: FocusableRef<HTMLElement>;
 }) {
+  const { isDisabled: contextDisabled } = useProviderProps(
+    {} as CubeButtonProps,
+  );
   const disabled = useFormSelector(
     form,
     (state) => state.isSubmitting || !state.isTouched,
@@ -53,7 +60,7 @@ export function ModernResetButton({
       htmlType="button"
       {...props}
       onPress={reset}
-      isDisabled={props.isDisabled || disabled}
+      isDisabled={contextDisabled || props.isDisabled || disabled}
     />
   );
 }

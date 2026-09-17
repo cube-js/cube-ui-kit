@@ -475,7 +475,7 @@ const [form] = useForm();
 
 ### useForm Hook
 
-`Form.useController()` is the explicit modern alternative. Its creator does not subscribe; use `Form.useSelector(controller, selector, { isEqual })` or `<Form.Subscribe>` for reactive reads, and `Form.useControllerContext()` for descendant access. Named UI Kit inputs bind to modern controllers through commit-time registration and per-field subscriptions. Custom controls use `useFieldProps`; `Form.Item` remains legacy-only. Validation and submission still require the legacy `Form.useForm()` backend in this migration preview. See the [Form documentation](/docs/forms-form--docs) for scope, defaults, and SSR contracts.
+`Form.useController()` is the explicit modern alternative. Its creator does not subscribe; use `Form.useSelector(controller, selector, { isEqual })` or `<Form.Subscribe>` for reactive reads, and `Form.useControllerContext()` for descendant access. Named UI Kit inputs bind to modern controllers through commit-time registration and per-field subscriptions. Custom controls use `useFieldProps`; `Form.Item` remains legacy-only. Modern rules support cancellation, delayed validation, and ReactNode errors. Root callbacks and `Form.Submit`, `Form.Reset`, and `Form.SubmitError` use the modern pipeline; native action forms keep browser submission. See the [Form documentation](/docs/forms-form--docs) for scope, defaults, and SSR contracts.
 
 Returns a `CubeFormInstance` with:
 

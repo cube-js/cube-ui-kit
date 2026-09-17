@@ -146,6 +146,20 @@ describe('modern root submission and validation', () => {
     expect(form.getSnapshot().isValid).toBe(true);
   });
 
+  it('keeps both action helpers disabled by the modern root provider', () => {
+    const form = createFormController({ defaultValues: { value: 'seed' } });
+    form.touch('value');
+    const view = render(
+      <Form form={form} isDisabled>
+        <TextInput name="value" />
+        <Form.Submit>Save</Form.Submit>
+        <Form.Reset>Reset</Form.Reset>
+      </Form>,
+    );
+    expect(view.getByRole('button', { name: 'Save' })).toBeDisabled();
+    expect(view.getByRole('button', { name: 'Reset' })).toBeDisabled();
+  });
+
   it('leaves OAuth-shaped native action/method submission uncancelled', () => {
     const onSubmit = vi.fn();
     const form = createFormController({ onSubmit });

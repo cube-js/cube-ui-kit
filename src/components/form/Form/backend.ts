@@ -6,8 +6,8 @@
  * kind, the `<Form>` facade dispatches on it before any backend hook runs, and
  * the legacy field adapter refuses a controller it cannot bind.
  *
- * The modern creator, selectors, and field binding are available. Submission
- * orchestration remain separate migration phases.
+ * Modern controllers support creation, selectors, fields, validation, and submission.
+ * Legacy-only APIs reject them explicitly.
  */
 export const FORM_BACKEND: unique symbol = Symbol.for(
   '@cube-dev/ui-kit/form-backend',

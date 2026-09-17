@@ -348,6 +348,42 @@ describe('modern callback ownership and submission', () => {
     expect(defaults).toHaveBeenCalledTimes(2);
   });
 
+  it('captures creation callbacks once even when the caller mutates the options object', async () => {
+    const initial = vi.fn();
+    const later = vi.fn();
+    const options = { onSubmit: initial };
+    const store = createFormStore(options);
+    store.register('a');
+    options.onSubmit = later;
+    await store.submit();
+    expect(initial).toHaveBeenCalledTimes(1);
+    expect(later).not.toHaveBeenCalled();
+  });
+
+  it('rejects a result invalidated by a synchronous completion subscriber', async () => {
+    const onSubmit = vi.fn();
+    const store = createFormStore({ onSubmit });
+    store.register('a');
+    store.subscribe(() => {
+      if (store.getFieldSnapshot('a')?.status === 'valid')
+        store.setValue('a', 'changed', { validate: 'never' });
+    });
+    expect(await store.submit()).toEqual({ status: 'stale' });
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it('checks revisions again between validation resolution and the submit callback', async () => {
+    const onSubmit = vi.fn();
+    const store = createFormStore({ onSubmit });
+    store.register('a');
+    const pending = store.submit();
+    queueMicrotask(() =>
+      store.setValue('a', 'intervening write', { validate: 'never' }),
+    );
+    expect(await pending).toEqual({ status: 'stale' });
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
   it('cancels pending submission validation on root unmount and clears owned timers', async () => {
     vi.useFakeTimers();
     const store = createFormStore();

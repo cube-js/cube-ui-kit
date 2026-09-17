@@ -3,7 +3,20 @@ import { FORM_BACKEND, isModernFormController } from '../backend';
 import { createFormStore } from './store';
 
 import type { ReactNode } from 'react';
-import type { FormState, FormStore, FormStoreOptions } from './types';
+import type {
+  FormState,
+  FormStore,
+  FormStoreOptions,
+  ModernFieldValidationResult as StoreFieldValidationResult,
+  ModernSubmitResult as StoreSubmitResult,
+  ModernValidationResult as StoreValidationResult,
+} from './types';
+import type { ModernValidationRule as StoreValidationRule } from './validation';
+
+export type ModernValidationRule = StoreValidationRule<ReactNode>;
+export type ModernValidationResult = StoreValidationResult<ReactNode>;
+export type ModernFieldValidationResult = StoreFieldValidationResult<ReactNode>;
+export type ModernSubmitResult = StoreSubmitResult<ReactNode>;
 
 export type ModernFormState<T extends object = Record<string, unknown>> =
   FormState<T, ReactNode>;
