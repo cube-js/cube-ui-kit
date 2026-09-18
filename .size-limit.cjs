@@ -20,6 +20,11 @@ module.exports = [
         }),
       );
     },
+    // Modern Form DX: CI run 35328219841 measured 525,178 B, +915 B from
+    // main's 524,263 B (run 35322019290). Typed field descriptors, dependency
+    // tracking, and controller-bound actions fit in 526 kB with 822 B headroom.
+    // Button remains exactly 119,482 B and keeps its existing budget.
+    //
     // Phase 7 validation/submission: CI run 35257552657 measured 524,252 B,
     // +1,974 B from Phase 6. The cancellable pipelines and reactive helpers
     // fit in 525 kB with 748 B headroom; Button remains exactly 119,482 B.
@@ -264,7 +269,7 @@ module.exports = [
     //
     // Note when checking locally: `size-limit` bundles the built `./dist`, it
     // does not build. Run `pnpm build` first or you will measure a stale bundle.
-    limit: '525kB',
+    limit: '526kB',
   },
   {
     name: 'Tree shaking (just a Button)',
