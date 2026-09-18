@@ -1,5 +1,19 @@
 # @cube-dev/ui-kit
 
+## 0.180.0
+
+### Minor Changes
+
+- [#1404](https://github.com/cube-js/cube-ui-kit/pull/1404) [`e6e010b0`](https://github.com/cube-js/cube-ui-kit/commit/e6e010b0cd2ff307788f4afb26aa44afe69a9f25) Thanks [@tenphi](https://github.com/tenphi)! - Form: input components keep working when their binding changes after mount — gaining or losing `name`, or receiving a `form` later, binds the field like a first mount (`defaultValue` as the baseline, an id that follows the field name) instead of throwing a hook-order error, and `NumberInput`/`Slider` keep their label pointing at the input when the id changes; `FormScopeMask` is exported for wrappers that scope nested inputs the way `RadioGroup`/`CheckboxGroup` do — a bare `FormContext.Provider` override no longer hides the surrounding form's presentation props (`labelPosition`, id prefix), render `FormScopeMask` instead; every form-attachable input now accepts a form instance in `form` in the published types (react-aria's DOM `form` attribute type used to win for text, number, checkbox, switch, radio group, slider, date and time inputs when compiled with real react-aria types).
+
+- [#1409](https://github.com/cube-js/cube-ui-kit/pull/1409) [`9c7275f4`](https://github.com/cube-js/cube-ui-kit/commit/9c7275f43df9795c872b473212e4abd8eea50b54) Thanks [@tenphi](https://github.com/tenphi)! - Support modern Form controllers in named inputs and custom controls using `useFieldProps`. Field subscriptions update only the affected input; registration happens after commit, supports dynamic names and explicit controllers, and preserves values through Strict Mode replay. Add `preserve` and `isEqual` field options and unique accessible ids for duplicate modern fields. `Form.Item` remains legacy-only.
+
+- [#1411](https://github.com/cube-js/cube-ui-kit/pull/1411) [`7d01b16b`](https://github.com/cube-js/cube-ui-kit/commit/7d01b16ba9d63051d1f597d1d0649bf7f3edcca4) Thanks [@tenphi](https://github.com/tenphi)! - Infer modern Form controller values from literal keys and nested tuple paths, while retaining support for dynamic field names. Preserve inline callback inference for both Form backends and existing legacy validator shapes. Add tested public API examples and a per-form migration guide covering subscriptions, conditional values, async defaults, and custom validation.
+
+- [#1408](https://github.com/cube-js/cube-ui-kit/pull/1408) [`0bb4073f`](https://github.com/cube-js/cube-ui-kit/commit/0bb4073fc502d63c84dad9fcb2c7794f75fdb6d7) Thanks [@tenphi](https://github.com/tenphi)! - Add the modern Form controller and React subscription APIs: `Form.useController`, `Form.useSelector`, `Form.Subscribe`, and `Form.useControllerContext`. Modern roots now provide controller and presentation context with immutable state, explicit value/default commands, selector equality, and hydration support. Existing forms remain on the legacy backend; modern input binding and submission callbacks are not available yet.
+
+- [#1410](https://github.com/cube-js/cube-ui-kit/pull/1410) [`f5971ee8`](https://github.com/cube-js/cube-ui-kit/commit/f5971ee809de383d56f7f86ff87354998b8da2ba) Thanks [@tenphi](https://github.com/tenphi)! - Add modern Form validation and submission: cancellable async rules, validation delays, deterministic errors, root callback bindings, and guarded submission of active or retained values. Modern fields support ReactNode errors, `rulesKey`, and `errorPolicy`; `Form.Submit`, `Form.Reset`, and `Form.SubmitError` now subscribe to modern state. Native action forms preserve browser submission. Add compiled and uncompiled React 18/19 contract checks.
+
 ## 0.179.0
 
 ### Minor Changes
