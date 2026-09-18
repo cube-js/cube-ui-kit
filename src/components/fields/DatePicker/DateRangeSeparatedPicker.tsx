@@ -49,7 +49,7 @@ export interface CubeDateRangeSeparatedPickerProps<
     BaseProps,
     ContainerStyleProps,
     DateFieldBase<T>,
-    FieldBaseProps {
+    FieldBaseProps<{ start: T; end: T } | null | undefined> {
   wrapperStyles?: Styles;
   inputStyles?: Styles;
   styles?: Styles;

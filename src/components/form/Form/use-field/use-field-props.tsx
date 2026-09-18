@@ -8,6 +8,7 @@ import { useValidationProps } from '../../validation/index';
 import { isModernFormController } from '../backend';
 import { useInsideLegacyField } from '../Field';
 import { useFormProps } from '../Form';
+import { getFieldKey } from '../modern/values';
 
 import { useFieldBinding } from './use-field-binding';
 
@@ -50,8 +51,18 @@ export function useFieldProps<
 >(inputProps: Props, params: UseFieldPropsParams = {}): Props {
   // Provider defaults, then form context, then the normalization of the
   // deprecated `validationState` prop into `isInvalid`/`isValid`.
+  const provided = useProviderProps(inputProps);
   const props: Props = useValidationProps(
-    useFormProps(useProviderProps(inputProps)),
+    useFormProps(
+      provided.field
+        ? {
+            ...provided,
+            ...provided.field.options,
+            form: provided.field.form,
+            name: getFieldKey(provided.field.path),
+          }
+        : provided,
+    ),
   );
 
   // The initial value is what counts: changing it after mount is unsupported.
@@ -160,7 +171,13 @@ export function useFieldProps<
     ? { ...resolved, form: undefined }
     : resolved;
 
-  useDebugValue(result);
+  const {
+    field: _descriptor,
+    dependsOn: _dependsOn,
+    deps: _deps,
+    ...domProps
+  } = result;
+  useDebugValue(domProps);
 
-  return result;
+  return domProps as Props;
 }

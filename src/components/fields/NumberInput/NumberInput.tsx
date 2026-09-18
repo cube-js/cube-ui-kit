@@ -18,9 +18,15 @@ import { CubeTextInputBaseProps, TextInputBase } from '../TextInput';
 
 import { StepButton } from './StepButton';
 
+import type { FieldBaseProps } from '../../../shared/form';
+
 export interface CubeNumberInputProps
-  extends Omit<CubeTextInputBaseProps, 'defaultValue' | 'value' | 'onChange'>,
+  extends Omit<
+      CubeTextInputBaseProps,
+      'defaultValue' | 'value' | 'onChange' | 'field'
+    >,
     Omit<AriaNumberFieldProps, 'validate' | 'form'> {
+  field?: FieldBaseProps<number | null | undefined>['field'];
   /** Whether or to hide stepper */
   hideStepper?: boolean;
 }

@@ -50,7 +50,7 @@ export interface CubePeriodPickerProps<T extends DateValue = DateValue>
   extends Omit<AriaDatePickerProps<T>, 'errorMessage' | 'granularity' | 'form'>,
     BaseProps,
     ContainerStyleProps,
-    FieldBaseProps {
+    FieldBaseProps<T | null | undefined> {
   /** Which period the picker selects. Set by the concrete picker components. */
   picker?: PickerType;
   wrapperStyles?: Styles;

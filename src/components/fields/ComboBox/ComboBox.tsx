@@ -75,7 +75,7 @@ export interface CubeComboBoxProps<T>
     BaseStyleProps,
     OuterStyleProps,
     ColorStyleProps,
-    FieldBaseProps {
+    FieldBaseProps<string | null | undefined> {
   /** The selected key in controlled mode */
   selectedKey?: string | null;
   /** The default selected key in uncontrolled mode */

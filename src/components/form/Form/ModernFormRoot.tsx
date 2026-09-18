@@ -3,6 +3,7 @@ import { forwardRef, useMemo, useRef } from 'react';
 
 import { useEvent } from '../../../_internal/hooks/use-event';
 import { Provider, useProviderProps } from '../../../provider';
+import { mergeRefs } from '../../../utils/react/useCombinedRefs';
 import { useLayoutEffect } from '../../../utils/react/useLayoutEffect';
 import { extractStyles } from '../../../utils/styles';
 import { useValidationProps } from '../validation/use-validation-props';
@@ -16,7 +17,7 @@ import {
 import { ModernControllerContext } from './modern/context';
 import { getControllerInternals } from './modern/controller';
 
-import type { FormEvent, ReactElement, Ref } from 'react';
+import type { FormEvent, ReactElement, ReactNode, Ref } from 'react';
 import type { CubeFormProps, FormPresentationContextValue } from './Form';
 import type { FormController } from './modern/controller';
 import type { CallbackBinding, FormCallbacks } from './modern/types';
@@ -30,9 +31,12 @@ export interface ModernFormProps<T extends object = Record<string, unknown>>
   form: FormController<T>;
   defaultValues?: never;
   onReset?: (event: FormEvent<HTMLFormElement>) => void;
-  onSubmit?: FormCallbacks<T>['onSubmit'];
-  onSubmitFailed?: FormCallbacks<T>['onSubmitFailed'];
-  onValuesChange?: FormCallbacks<T>['onValuesChange'];
+  onResetCapture?: (event: FormEvent<HTMLFormElement>) => void;
+  onSubmit?: FormCallbacks<T, ReactNode>['onSubmit'];
+  onSubmitFailed?: FormCallbacks<T, ReactNode>['onSubmitFailed'];
+  onValuesChange?: FormCallbacks<T, ReactNode>['onValuesChange'];
+  /** Payload selection for native submission, including Enter and external buttons. */
+  submitValues?: 'active' | 'all';
 }
 
 const EMPTY_LEGACY_CONTEXT = {};
@@ -63,19 +67,27 @@ function ModernFormRoot<T extends object>(
     onSubmit,
     onSubmitFailed,
     onValuesChange,
+    submitValues = 'active',
     ...otherProps
   } = resolved;
   const labelPosition =
     authoredLabelPosition ?? (orientation === 'horizontal' ? 'side' : 'top');
   const labelWidth =
     authoredLabelWidth ?? (orientation === 'horizontal' ? 'auto' : undefined);
-  const { store } = getControllerInternals(form, '<Form>');
+  const internals = getControllerInternals(form, '<Form>');
+  const { store } = internals;
+  const rootRef = useRef<HTMLFormElement>(null);
+  const mergedRef = useMemo(() => mergeRefs(ref, rootRef), [ref]);
+  useLayoutEffect(
+    () => internals.bindRootElement(rootRef.current),
+    [internals],
+  );
   if (defaultValues !== undefined) {
     throw new Error(
       'A modern <Form> does not accept defaultValues. Seed Form.useController() or use an explicit defaults command.',
     );
   }
-  const binding = useRef<CallbackBinding<T> | undefined>(undefined);
+  const binding = useRef<CallbackBinding<T, ReactNode> | undefined>(undefined);
   useLayoutEffect(() => {
     const token = store.bindCallbacks({});
     binding.current = token;
@@ -94,9 +106,13 @@ function ModernFormRoot<T extends object>(
   const handleSubmit = useEvent((event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     event.stopPropagation();
-    void form.submit();
+    void form.submit({ include: submitValues });
   });
   const handleReset = useEvent((event: FormEvent<HTMLFormElement>) => {
+    // React Aria's native reset listeners do not honor preventDefault. Handle
+    // controller resets in capture, before they can write mount-time defaults.
+    event.stopPropagation();
+    otherProps.onResetCapture?.(event);
     otherProps.onReset?.(event);
     if (!event.defaultPrevented) {
       event.preventDefault();
@@ -131,7 +147,7 @@ function ModernFormRoot<T extends object>(
   return (
     <FormElement
       {...filterBaseProps(otherProps, { propNames: formPropNames })}
-      ref={ref}
+      ref={mergedRef}
       qa={qa}
       noValidate
       styles={styles}
@@ -141,7 +157,10 @@ function ModernFormRoot<T extends object>(
         horizontal: orientation === 'horizontal',
       }}
       onSubmit={otherProps.action == null ? handleSubmit : undefined}
-      onReset={otherProps.action == null ? handleReset : otherProps.onReset}
+      onReset={otherProps.action == null ? undefined : otherProps.onReset}
+      onResetCapture={
+        otherProps.action == null ? handleReset : otherProps.onResetCapture
+      }
     >
       <FormContext.Provider value={EMPTY_LEGACY_CONTEXT}>
         <ModernControllerContext.Provider value={form}>

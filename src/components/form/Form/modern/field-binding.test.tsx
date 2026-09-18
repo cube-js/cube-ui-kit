@@ -165,7 +165,11 @@ describe('modern field binding', () => {
 
   it('keeps form defaults, including null and undefined, ahead of field defaults', () => {
     const form = createFormController({
-      defaultValues: { a: null, b: undefined },
+      defaultValues: { a: null, b: undefined } as {
+        a: null;
+        b: undefined;
+        c?: string;
+      },
     });
     const view = render(
       <Form form={form}>

@@ -14,9 +14,12 @@ import {
 } from '../TextInput';
 import { useAutoSizeTextArea } from '../TextInput/useAutoSizeTextArea';
 
+import type { FieldBaseProps } from '../../../shared/form';
+
 export interface CubeTextAreaProps
   extends CubeTextInputBaseProps,
     CubeBufferedValueProps {
+  field?: FieldBaseProps<string | null | undefined>['field'];
   /** Whether the textarea should change its size depends on the content */
   autoSize?: boolean;
   /** Max number of visible rows when autoSize is `true`. Defaults to 10  */

@@ -1,4 +1,5 @@
 import type { ModernFormBrand } from '../backend';
+import type { FormValues } from './read-types';
 import type { ModernValidationRule } from './validation';
 import type { FormPath } from './values';
 
@@ -18,9 +19,9 @@ export interface FieldState<ErrorValue = unknown> {
 }
 
 export interface FormState<T extends object, ErrorValue = unknown> {
-  readonly values: Readonly<Partial<T>>;
-  readonly activeValues: Readonly<Partial<T>>;
-  readonly defaultValues: Readonly<Partial<T>>;
+  readonly values: FormValues<T>;
+  readonly activeValues: FormValues<T>;
+  readonly defaultValues: FormValues<T>;
   readonly fields: Readonly<Record<string, FieldState<ErrorValue>>>;
   readonly dirtyFields: ReadonlySet<string>;
   readonly touchedFields: ReadonlySet<string>;
@@ -37,6 +38,10 @@ export interface FormState<T extends object, ErrorValue = unknown> {
 export interface RegistrationOptions<ErrorValue = unknown> {
   readonly rules?: readonly ModernValidationRule<ErrorValue>[];
   readonly rulesKey?: string;
+  /** Field paths read by a validator. Changes cancel and invalidate its result. */
+  readonly dependsOn?: readonly FormPath[];
+  /** External validator inputs, compared by Object.is. */
+  readonly deps?: readonly unknown[];
   readonly validationDelay?: number;
   readonly validateTrigger?: 'onBlur' | 'onChange' | 'onSubmit';
   readonly errorPolicy?: 'first' | 'all';
@@ -71,20 +76,29 @@ export interface ModernSubmitContext {
   readonly signal: AbortSignal;
 }
 
-export interface FormCallbacks<T extends object> {
+export interface FormCallbacks<T extends object, ErrorValue = unknown> {
   readonly onSubmit?: (
-    values: Readonly<Partial<T>>,
+    values: FormValues<T>,
     context: ModernSubmitContext,
   ) => void | Promise<void>;
-  readonly onSubmitFailed?: (error: unknown) => void | Promise<void>;
+  readonly onSubmitFailed?: (
+    failure: ModernSubmitFailure<ErrorValue>,
+  ) => void | Promise<void>;
   readonly onValuesChange?: (
-    values: Readonly<Partial<T>>,
+    values: FormValues<T>,
     change: FormChange,
   ) => void | Promise<void>;
 }
 
-export interface CallbackBinding<T extends object> {
-  update(callbacks: FormCallbacks<T>): void;
+export type ModernSubmitFailure<ErrorValue = unknown> =
+  | {
+      status: 'invalid';
+      errors: Readonly<Record<string, readonly ErrorValue[]>>;
+    }
+  | { status: 'failed'; error: unknown };
+
+export interface CallbackBinding<T extends object, ErrorValue = unknown> {
+  update(callbacks: FormCallbacks<T, ErrorValue>): void;
   release(): void;
 }
 
@@ -111,11 +125,12 @@ export type ModernSubmitResult<ErrorValue = unknown> =
   | { status: 'failed'; error: unknown }
   | { status: 'submitted' };
 
-export interface FormStoreOptions<T extends object> extends FormCallbacks<T> {
+export interface FormStoreOptions<T extends object, ErrorValue = unknown>
+  extends FormCallbacks<T, ErrorValue> {
   readonly errorPolicy?: 'first' | 'all';
   readonly defaultValues?: Partial<T>;
   readonly onValuesChange?: (
-    values: Readonly<Partial<T>>,
+    values: FormValues<T>,
     change: FormChange,
   ) => void | Promise<void>;
   readonly onListenerError?: (error: unknown) => void;
@@ -144,8 +159,8 @@ export interface FormStore<
   getFieldSnapshot(path: FormPath): FieldState<ErrorValue> | undefined;
   getValue<K extends keyof T & string>(name: K): T[K] | undefined;
   getValue(path: FormPath): unknown;
-  getValues(): Readonly<Partial<T>>;
-  getActiveValues(): Readonly<Partial<T>>;
+  getValues(): FormValues<T>;
+  getActiveValues(): FormValues<T>;
   subscribe(listener: () => void): () => void;
   subscribeSelector<Selected>(
     selector: (state: FormState<T, ErrorValue>) => Selected,
@@ -164,7 +179,10 @@ export interface FormStore<
     include?: 'active' | 'all';
   }): Promise<ModernSubmitResult<ErrorValue>>;
   blur(path: FormPath): void;
-  bindCallbacks(callbacks: FormCallbacks<T>): CallbackBinding<T>;
+  bindCallbacks(
+    callbacks: FormCallbacks<T, ErrorValue>,
+  ): CallbackBinding<T, ErrorValue>;
+  updateCallbacks(callbacks: FormCallbacks<T, ErrorValue>): void;
   setValue(path: FormPath, value: unknown, options?: SetValueOptions): void;
   setValues(values: Partial<T>, options?: SetValueOptions): void;
   /** Synchronous notification transaction; completed writes commit even if fn throws. */

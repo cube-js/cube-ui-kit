@@ -174,10 +174,11 @@ describe('immutable snapshots and selector subscriptions', () => {
     const store = createFormStore({ defaultValues: original });
     original.a.nested.value = 2;
     const initial = store.getSnapshot();
-    expect(initial.values.a?.nested.value).toBe(1);
+    expect(initial.values.a?.nested?.value).toBe(1);
     expect(Object.isFrozen(original.a)).toBe(false);
     expect(() => {
-      initial.values.a!.nested.value = 3;
+      // @ts-expect-error snapshots reject nested mutations both statically and at runtime
+      initial.values.a!.nested!.value = 3;
     }).toThrow();
     expect(() => {
       (initial.fields as Record<string, unknown>).a = {};
@@ -484,8 +485,8 @@ describe('nested paths and dynamic names', () => {
     const after = store.getSnapshot();
     expect(after.values.user).toBe(before.values.user);
     expect(after.values.rows?.[0]).toBe(before.values.rows?.[0]);
-    expect(before.values.rows?.[1].id).toBe(2);
-    expect(after.values.rows?.[1].id).toBe(20);
+    expect(before.values.rows?.[1]?.id).toBe(2);
+    expect(after.values.rows?.[1]?.id).toBe(20);
     expect(store.getActiveValues()).toEqual({
       user: { first: 'A' },
       rows: Object.assign(new Array(2), { 1: { id: 20 } }),

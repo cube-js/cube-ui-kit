@@ -9,6 +9,40 @@ import type { FormController } from './controller';
 // Real focus/keyboard events exercise subscriptions across conditional field
 // unmount/remount and native form reset. No snapshots are needed for this gate.
 describe('modern subscriptions in Chromium', () => {
+  it('submits a nested descriptor from an external footer and preserves native Enter', async () => {
+    const save = vi.fn();
+    function Example() {
+      const form = Form.useController({
+        defaultValues: { profile: { name: 'Ada' }, retained: 'draft' },
+        onSubmit: save,
+      });
+      return (
+        <>
+          <Form form={form} submitValues="all">
+            <TextInput
+              field={form.field(['profile', 'name'])}
+              label="Nested name"
+            />
+            <Form.Submit>Inside</Form.Submit>
+          </Form>
+          <Form.Submit form={form}>Footer save</Form.Submit>
+        </>
+      );
+    }
+    renderWithRoot(<Example />);
+    const input = screen.getByRole('textbox', { name: 'Nested name' });
+    expect(input).toHaveValue('Ada');
+    await userEvent.type(input, '!');
+    await userEvent.click(screen.getByRole('button', { name: 'Footer save' }));
+    await waitFor(() => expect(save).toHaveBeenCalledTimes(1));
+    expect(save).toHaveBeenLastCalledWith(
+      { profile: { name: 'Ada!' }, retained: 'draft' },
+      expect.objectContaining({ include: 'all' }),
+    );
+    await userEvent.type(input, '{Enter}');
+    await waitFor(() => expect(save).toHaveBeenCalledTimes(2));
+  });
+
   it('updates only affected selections while preserving focus and caret', async () => {
     const owner = vi.fn();
     const first = vi.fn();

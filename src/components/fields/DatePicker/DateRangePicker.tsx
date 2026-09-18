@@ -48,7 +48,7 @@ export interface CubeDateRangePickerProps<T extends DateValue = DateValue>
     BaseProps,
     DateFieldBase<T>,
     ContainerStyleProps,
-    FieldBaseProps {
+    FieldBaseProps<{ start: T; end: T } | null | undefined> {
   wrapperStyles?: Styles;
   inputStyles?: Styles;
   styles?: Styles;

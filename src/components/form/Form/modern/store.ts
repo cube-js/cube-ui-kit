@@ -16,6 +16,7 @@ import {
   writePath,
 } from './values';
 
+import type { FormValues } from './read-types';
 import type {
   CallbackBinding,
   FieldState,
@@ -55,6 +56,8 @@ interface FieldRecord<ErrorValue> {
   status: FieldState['status'];
   validationRevision: number;
   validation?: AbortController;
+  reads?: Map<string, readonly string[]>;
+  readsAll?: boolean;
 }
 
 const EMPTY_ERRORS = Object.freeze([]);
@@ -67,6 +70,16 @@ function related(a: readonly string[], b: readonly string[]): boolean {
   return a
     .slice(0, Math.min(a.length, b.length))
     .every((key, index) => key === b[index]);
+}
+
+function sameDependencies(
+  a: readonly unknown[] = [],
+  b: readonly unknown[] = [],
+) {
+  return (
+    a.length === b.length &&
+    a.every((value, index) => Object.is(value, b[index]))
+  );
 }
 
 interface ActivePath {
@@ -108,7 +121,9 @@ function projectActive(
 export function createFormStore<
   T extends object = Record<string, unknown>,
   ErrorValue = unknown,
->(inputOptions: FormStoreOptions<T> = {}): FormStore<T, ErrorValue> {
+>(
+  inputOptions: FormStoreOptions<T, ErrorValue> = {},
+): FormStore<T, ErrorValue> {
   const options = { ...inputOptions };
   const ownValue = createValueSnapshotter();
   const records = new Map<string, FieldRecord<ErrorValue>>();
@@ -118,7 +133,7 @@ export function createFormStore<
   let defaults = values;
   let submitError: unknown;
   let submission: AbortController | undefined;
-  let binding: { callbacks: FormCallbacks<T> } | undefined;
+  let binding: { callbacks: FormCallbacks<T, ErrorValue> } | undefined;
   let order = 0;
   let depth = 0;
   let notifying = false;
@@ -128,9 +143,9 @@ export function createFormStore<
   const cancellations = new Set<AbortController>();
 
   let state: FormState<T, ErrorValue> = Object.freeze({
-    values: values as Partial<T>,
-    defaultValues: defaults as Partial<T>,
-    activeValues: EMPTY_OBJECT,
+    values: values as FormValues<T>,
+    defaultValues: defaults as FormValues<T>,
+    activeValues: EMPTY_OBJECT as FormValues<T>,
     fields: EMPTY_FIELDS,
     dirtyFields: readonlySet<string>([]),
     touchedFields: readonlySet<string>([]),
@@ -218,14 +233,34 @@ export function createFormStore<
     }
   }
 
+  function dependencyChanged(
+    record: FieldRecord<ErrorValue>,
+    previous: object,
+  ) {
+    if (record.readsAll && previous !== values) return true;
+    const declared = record.owner?.options.dependsOn;
+    if (!declared?.length && !record.reads?.size) return false;
+    const paths = [
+      ...(declared ?? []).map(normalizePath),
+      ...(record.reads?.values() ?? []),
+    ];
+    return paths.some(
+      (path) =>
+        !Object.is(readPath(previous, path), readPath(values, path)) ||
+        hasPath(previous, path) !== hasPath(values, path),
+    );
+  }
+
   function invalidateRelated(
     path: readonly string[],
     previous: object,
     config?: SetValueOptions,
   ) {
     for (const record of records.values()) {
+      const dependency = dependencyChanged(record, previous);
       if (
         related(path, record.path) ||
+        dependency ||
         !Object.is(
           readPath(previous, record.path),
           readPath(values, record.path),
@@ -238,7 +273,8 @@ export function createFormStore<
           (config.validate === 'always' ||
             (config.validate !== 'never' &&
               (record.owner?.options.validateTrigger === 'onChange' ||
-                !!record.errors.length)));
+                !!record.errors.length ||
+                (dependency && record.status !== 'unvalidated'))));
         invalidate(record, revalidate);
         if (revalidate) void validateRecord(record, false);
       }
@@ -303,9 +339,9 @@ export function createFormStore<
       }
     }
     const next: FormState<T, ErrorValue> = {
-      values: values as Partial<T>,
-      defaultValues: defaults as Partial<T>,
-      activeValues: activeValues() as Partial<T>,
+      values: values as FormValues<T>,
+      defaultValues: defaults as FormValues<T>,
+      activeValues: activeValues() as FormValues<T>,
       fields: formValueEqual(fields, state.fields)
         ? state.fields
         : Object.freeze(fields),
@@ -450,6 +486,10 @@ export function createFormStore<
   ): RegistrationOptions<ErrorValue> {
     const prepared = {
       ...config,
+      deps: config.deps ? Object.freeze([...config.deps]) : undefined,
+      dependsOn: config.dependsOn?.map((dependency) =>
+        Object.freeze(normalizePath(dependency)),
+      ),
       rules: config.rules?.map((rule) =>
         Object.freeze({
           ...rule,
@@ -503,7 +543,7 @@ export function createFormStore<
     assertLive();
     const normalized = normalizePath(path);
     const prepared = prepareRegistration(normalized, config);
-    const signature = prepared.rulesKey ?? rulesSignature(prepared.rules);
+    const signature = `${prepared.rulesKey ?? ''}:${rulesSignature(prepared.rules)}`;
     const record = ensure(normalized);
     const registration: Registration<ErrorValue> = {
       options: prepared,
@@ -526,9 +566,12 @@ export function createFormStore<
       update(next: RegistrationOptions<ErrorValue>) {
         if (released || disposed) return;
         const prepared = prepareRegistration(record.path, next);
-        const signature = prepared.rulesKey ?? rulesSignature(prepared.rules);
+        const signature = `${prepared.rulesKey ?? ''}:${rulesSignature(prepared.rules)}`;
         const validationChanged =
           registration.signature !== signature ||
+          !sameDependencies(registration.options.deps, prepared.deps) ||
+          JSON.stringify(registration.options.dependsOn) !==
+            JSON.stringify(prepared.dependsOn) ||
           registration.options.validationDelay !== prepared.validationDelay ||
           registration.options.validateTrigger !== prepared.validateTrigger ||
           registration.options.errorPolicy !== prepared.errorPolicy;
@@ -552,10 +595,13 @@ export function createFormStore<
           registration.order = ++order;
           // Only an ownership change invalidates; equivalent options pushed
           // after every React commit must not cause a publication loop.
+          const revalidate =
+            validationChanged && record.status !== 'unvalidated';
           if (record.owner !== registration || validationChanged)
-            invalidate(record);
+            invalidate(record, revalidate);
           record.owner = registration;
           seed(record, registration);
+          if (revalidate) void validateRecord(record, false);
         });
       },
       release(config: { deferValueRemoval?: boolean } = {}) {
@@ -572,12 +618,10 @@ export function createFormStore<
           if (!record.registrations.size) {
             if (registration.options.preserve === false) {
               const removeValue = () => {
+                const previous = values;
                 values = writePath(values, record.path, undefined, true);
                 record.touched = false;
-                for (const other of records.values()) {
-                  if (other !== record && related(other.path, record.path))
-                    invalidate(other);
-                }
+                invalidateRelated(record.path, previous, { validate: 'auto' });
                 if (!hasPath(defaults, record.path))
                   records.delete(record.name);
               };
@@ -683,6 +727,7 @@ export function createFormStore<
       const names: string[] = [];
       for (const record of records.values()) {
         if (
+          dependencyChanged(record, previous) ||
           !Object.is(
             readPath(previous, record.path),
             readPath(values, record.path),
@@ -813,6 +858,8 @@ export function createFormStore<
       return Promise.resolve(result(EMPTY_ERRORS, true));
     }
     if (!rules.length) {
+      record.reads = undefined;
+      record.readsAll = false;
       const committed = token.complete(EMPTY_ERRORS);
       return Promise.resolve(
         result(
@@ -821,7 +868,11 @@ export function createFormStore<
         ),
       );
     }
-    const value = readPath(values, record.path);
+    const validationValues = values;
+    const reads = new Map<string, readonly string[]>();
+    record.reads = reads;
+    record.readsAll = false;
+    const value = readPath(validationValues, record.path);
     return new Promise((resolve) => {
       let timer: ReturnType<typeof setTimeout> | undefined;
       let settled = false;
@@ -845,8 +896,29 @@ export function createFormStore<
           {
             name: record.name,
             signal: token.signal,
-            getValue: (path) => readPath(values, normalizePath(path)),
-            getValues: () => values as Partial<T>,
+            getValue: (path) => {
+              const normalized = normalizePath(path);
+              if (!token.signal.aborted) {
+                reads.set(getFieldKey(normalized), normalized);
+                if (
+                  !Object.is(
+                    readPath(values, normalized),
+                    readPath(validationValues, normalized),
+                  ) ||
+                  hasPath(values, normalized) !==
+                    hasPath(validationValues, normalized)
+                )
+                  token.cancel();
+              }
+              return readPath(validationValues, normalized);
+            },
+            getValues: () => {
+              if (!token.signal.aborted) {
+                record.readsAll = true;
+                if (values !== validationValues) token.cancel();
+              }
+              return validationValues as FormValues<T>;
+            },
           },
           config?.errorPolicy ?? options.errorPolicy ?? 'first',
         );
@@ -906,7 +978,7 @@ export function createFormStore<
     });
   }
 
-  function resolveCallbacks(): FormCallbacks<T> {
+  function resolveCallbacks(): FormCallbacks<T, ErrorValue> {
     return { ...options, ...binding?.callbacks };
   }
 
@@ -917,7 +989,9 @@ export function createFormStore<
     });
   }
 
-  function bindCallbacks(callbacks: FormCallbacks<T>): CallbackBinding<T> {
+  function bindCallbacks(
+    callbacks: FormCallbacks<T, ErrorValue>,
+  ): CallbackBinding<T, ErrorValue> {
     assertLive();
     if (binding)
       developmentError(
@@ -927,7 +1001,7 @@ export function createFormStore<
     binding = own;
     let released = false;
     return Object.freeze({
-      update(next: FormCallbacks<T>) {
+      update(next: FormCallbacks<T, ErrorValue>) {
         if (!released && !disposed && binding === own)
           own.callbacks = { ...next };
       },
@@ -999,7 +1073,10 @@ export function createFormStore<
           );
           result = { status: 'invalid', errors: Object.freeze(errors) };
           try {
-            await callbacks.onSubmitFailed?.(errors);
+            await callbacks.onSubmitFailed?.({
+              status: 'invalid',
+              errors: Object.freeze(errors),
+            });
           } catch (error) {
             report(error);
           }
@@ -1011,7 +1088,7 @@ export function createFormStore<
         }
         try {
           await callbacks.onSubmit?.(
-            (include === 'all' ? values : activeValues()) as Partial<T>,
+            (include === 'all' ? values : activeValues()) as FormValues<T>,
             { include, signal: token.signal },
           );
           result = { status: 'submitted' };
@@ -1022,7 +1099,7 @@ export function createFormStore<
             submitError = error;
           });
           try {
-            await callbacks.onSubmitFailed?.(error);
+            await callbacks.onSubmitFailed?.({ status: 'failed', error });
           } catch (failure) {
             report(failure);
           }
@@ -1081,8 +1158,8 @@ export function createFormStore<
     getSnapshot: () => state,
     getFieldSnapshot: (path: FormPath) => state.fields[getFieldKey(path)],
     getValue: (path: FormPath) => readPath(values, normalizePath(path)),
-    getValues: () => values as Partial<T>,
-    getActiveValues: () => activeValues() as Partial<T>,
+    getValues: () => values as FormValues<T>,
+    getActiveValues: () => activeValues() as FormValues<T>,
     subscribe,
     subscribeSelector<Selected>(
       selector: (snapshot: FormState<T, ErrorValue>) => Selected,
@@ -1102,6 +1179,11 @@ export function createFormStore<
     validate,
     submit,
     bindCallbacks,
+    updateCallbacks(callbacks: FormCallbacks<T, ErrorValue>) {
+      options.onSubmit = callbacks.onSubmit;
+      options.onSubmitFailed = callbacks.onSubmitFailed;
+      options.onValuesChange = callbacks.onValuesChange;
+    },
     blur(path: FormPath) {
       const record = records.get(getFieldKey(path));
       if (!record?.registrations.size) return;

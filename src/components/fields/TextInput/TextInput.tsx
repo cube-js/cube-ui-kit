@@ -14,8 +14,12 @@ import {
   TextInputBase,
 } from './TextInputBase';
 
+import type { FieldBaseProps } from '../../../shared/form';
+
 export type CubeTextInputProps = WithNullableValue<CubeTextInputBaseProps> &
-  CubeBufferedValueProps;
+  CubeBufferedValueProps & {
+    field?: FieldBaseProps<string | null | undefined>['field'];
+  };
 
 export { useTextField };
 

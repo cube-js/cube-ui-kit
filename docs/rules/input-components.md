@@ -6,7 +6,7 @@ All input components live under `src/components/fields/{ComponentName}/`.
 
 ## 1. Prop contract
 
-- Extend `FieldBaseProps` from `src/shared/index` (it already includes `FormBaseProps` + `FieldCoreProps`). Never redeclare shared field props (`label`, `name`, `isRequired`, `isDisabled`, `description`, `rules`, …).
+- Extend `FieldBaseProps<Value>` (the control’s accepted model value, including supported empty values) from `src/shared/index` (it already includes `FormBaseProps` + `FieldCoreProps`). Never redeclare shared field props (`label`, `name`, `isRequired`, `isDisabled`, `description`, `rules`, …).
 - Name the props interface `Cube{ComponentName}Props`.
 - Mix in tasty style-prop interfaces (`ContainerStyleProps`, `OuterStyleProps`, …) as needed.
 
@@ -135,3 +135,7 @@ Every input component ships:
 - `ComponentName.test.tsx` — uses `renderWithForm` for form integration and `renderWithRoot` otherwise (see [tests.md](tests.md))
 
 After changing an input component's API, run `pnpm audit-docs --component=ComponentName`.
+
+## Typed modern descriptors
+
+`field={form.field(path, options)}` carries controller/path/options into the shared hook, including nested tuple paths. Construction is pure; registration stays in the commit effect. `useFieldProps` resolves descriptor identity/options and strips `field`, `deps`, and `dependsOn` before DOM forwarding. Keep the base value API correct (booleans for toggles, numbers for numeric controls, selection keys for selectors). Do not add another registration path or read controller getters during render. Existing `name` bindings and legacy rule props keep their compatibility contract.

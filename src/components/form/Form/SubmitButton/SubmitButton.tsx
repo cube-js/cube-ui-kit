@@ -14,6 +14,8 @@ import type { FormController } from '../modern/controller';
 export interface CubeSubmitButtonProps<T extends FieldTypes = FieldTypes>
   extends CubeButtonProps {
   form?: CubeFormInstance<T> | FormController<T>;
+  /** Modern forms: allow submitting an invalid form to display validation feedback. */
+  disableOnInvalid?: boolean;
 }
 
 function LegacySubmitButton(
@@ -30,7 +32,12 @@ function LegacySubmitButton(
 
   props = useFormProps(props);
 
-  const { form, isDisabled, ...otherProps } = props;
+  const {
+    form,
+    isDisabled,
+    disableOnInvalid: _disableOnInvalid,
+    ...otherProps
+  } = props;
   const isSomethingDisabled = isDisabled || isContextDisabled;
 
   return (

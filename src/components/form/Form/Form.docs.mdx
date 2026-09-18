@@ -13,7 +13,7 @@ The form system is inspired by AntD Forms and [rc-field-form](https://field-form
 
 The [per-form migration guide](https://github.com/cube-js/cube-ui-kit/blob/main/docs/modern-form-migration.md) covers backend selection, rollback, active versus retained values, async defaults, and custom controls. Its [public API examples](https://github.com/cube-js/cube-ui-kit/blob/main/typecheck/consumer/modern-form-examples.tsx) compile against the built package declarations. Existing legacy forms need no API changes when upgrading.
 
-`Form.useForm()` and forms without an explicit modern controller continue to use the legacy backend described below. `Form.useController<T>()` creates a stable modern controller with immutable snapshots. Its initial options are captured once: changing `defaultValues` or callbacks in a later options object does not reconfigure it. Use `reset({ values })`, `setDefaultValues()`, or `adoptDefaultValues()` for later data.
+`Form.useForm()` and forms without an explicit modern controller continue to use the legacy backend described below. `Form.useController<T>()` creates a stable modern controller with immutable snapshots. Defaults and store policy are captured once. Business callbacks update after every committed render without resetting values. Use `reset({ values })`, `setDefaultValues()`, or `adoptDefaultValues()` for later data.
 
 ```tsx
 function AmountPreview() {
@@ -37,13 +37,45 @@ The creator does not subscribe its owner. `Form.useSelector(form, selector, { is
 
 `Form.Subscribe` accepts `form`, `selector`, optional `isEqual`, and a `children(selected)` render function. Omit `form` to use the surrounding modern root; an explicit controller takes precedence, while explicit `form={undefined}` detaches and reports a missing-controller error. `Form.useControllerContext<T>()` reads a modern root explicitly. These context APIs reject legacy roots, missing roots, and `FormScopeMask`; an explicit modern controller can still be used outside a root.
 
-Use selectors for render-time state. `getValue`, `getValues`, `getActiveValues`, `getFieldSnapshot`, and `getSnapshot` are imperative reads; `subscribe` supports imperative observers. `values` contains retained data and `activeValues` contains registered fields. Commands include `setValue`, `setValues`, `batch`, `touch`, the defaults/reset commands, and explicit field/submit error setters. String paths are literal names; tuples such as `['rows', 0, 'amount']` address nested data. `setValue` accepts `{ source, touch, notify, validate }`; programmatic changes do not touch or notify `onValuesChange` unless requested, while user changes do both by default. The creation-time `onValuesChange(values, change)` callback receives retained values and `{ names, source, kind }`.
+Use selectors for render-time state. `getValue`, `getValues`, `getActiveValues`, `getFieldSnapshot`, and `getSnapshot` are imperative reads; `subscribe` supports imperative observers. `values` contains retained data and `activeValues` contains registered fields. Commands include `setValue`, `setValues`, `batch`, `touch`, the defaults/reset commands, and explicit field/submit error setters. String paths are literal names; tuples such as `['rows', 0, 'amount']` address nested data. `setValue` accepts `{ source, touch, notify, validate }`; programmatic changes do not touch or notify `onValuesChange` unless requested, while user changes do both by default. The committed `onValuesChange(values, change)` callback receives retained values and `{ names, source, kind }`.
 
 Named UI Kit inputs bind to the modern controller automatically; `<TextInput name="email" form={form} />` also works outside a root. Inputs subscribe only to their own value, errors, and validation status. Custom controls use `useFieldProps` and `wrapWithField`; `Form.Item` stays legacy-only. Controller values and defaults win over field defaults, including explicit `undefined` and `null`. Duplicate fields share a value but receive unique accessible ids. Groups register once and keep their options detached.
 
-`getValue` and `setValue` infer value types for known literal keys, nested tuples, and array indices without enumerating every path in the model. Unknown or dynamic paths use `unknown`; strings containing dots remain literal keys. Use an explicit `Form.useController<Model>()` model when defaults are partial or narrower than the intended values. `FormValueAtPath<Model, Path>` exports the same lookup type. The modern declaration surface requires TypeScript 5.4 or newer.
+`getValue` and `setValue` infer value types for known literal keys, nested tuples, and array indices without enumerating every path in the model. Misspelled literal paths are rejected; widened dynamic paths remain supported; strings containing dots remain literal keys. Use an explicit `Form.useController<Model>()` model when defaults are partial or narrower than the intended values. `FormValueAtPath<Model, Path>` exports the same lookup type. The modern declaration surface requires TypeScript 5.4 or newer.
 
 Removing a field removes it from `activeValues` immediately and retains its value by default. Use `preserve={false}` to remove its retained value after cleanup; the baseline remains available to reset. Changing a name or controller releases the old registration. Explicit `form={undefined}` detaches an input. `Form.Submit`, `Form.Reset`, and `Form.SubmitError` subscribe to modern state. Modern roots reject `defaultValues`; seed the creator or use a defaults command. Legacy wrappers such as `DialogForm` keep legacy-only types.
+
+### Typed fields and focused reads
+
+Prefer typed descriptors for new modern forms. `form.field(path, options)` is pure configuration: it does not read current values, register a field, or subscribe the owner. Inputs register after commit and infer their allowed value type from `FieldBaseProps<Value>`. A descriptor takes precedence over `form`/`name`; its options take precedence over matching input validation/default options. Keep presentation such as labels and `isRequired` on the input. Existing `name` bindings remain available for legacy-compatible controls.
+
+```tsx
+const form = Form.useController<Profile>({
+  defaultValues: initialProfile,
+  onSubmit: (values, { signal }) => save(accountId, values, signal),
+});
+
+<TextInput field={form.field(['profile', 'name'])} label="Name" />;
+<TextInput
+  field={form.field('email', {
+    deps: [organizationId],
+    validate: (value, { signal }) => checkEmail(organizationId, value, signal),
+  })}
+  label="Email"
+/>;
+```
+
+`validate(value, context)` infers the field value and checked paths in `context.getValue(path)`. Declare external inputs with `deps`, compared by `Object.is`. Field reads through `getValue` automatically become dependencies; `getValues()` depends on the whole values object. `dependsOn` can declare paths before the validator reads them. Each run reads one captured snapshot. Changes abort obsolete work, invalidate the dependent result, and revalidate previously validated or validating fields (unless a value command requests `validate: 'never'`). Rule/dependency changes preserve visible errors while the replacement run is pending. Inline function identity does not restart validation, so change `deps` when captured inputs change.
+
+Use `Form.useValue(form, path)` for a reactive value and `Form.useFieldState(form, path)` for typed value/defaults, errors, status, dirty/touched, and active state. Both support nested tuples and subscribe only to their selection; place them in leaf components when the form owner should not rerender. State may be `undefined` before a field has registered. Snapshot read types are deeply readonly and potentially incomplete; use controller commands for writes.
+
+### Modern actions and errors
+
+`<Form submitValues="all">` includes retained values for native Enter and button submission; the default is `active`. Validation still targets active registrations. Explicit-controller Submit buttons target that controller even in an external footer or another DOM form, preserve native action forms, and submit once. `disableOnInvalid={false}` allows a modern Submit button to run validation while errors are visible; the default remains `true`. Reset is enabled when values, interaction state, validation state, or submit errors can be reset; root reset cancellation is honored.
+
+Root business callbacks override hook callbacks while mounted. Omitted or undefined root callbacks restore the latest committed hook callback. Changing defaults remains an explicit command. Unmounting the owning root cancels pending submission.
+
+`onSubmitFailed` receives `{ status: 'invalid', errors }` for validation failures and `{ status: 'failed', error }` for submission exceptions. `<Form.SubmitError form={form} renderError={error => ...} />` supports external placement and application-specific formatting. Omit `renderError` for the existing safe generic fallback.
 
 ### Modern validation and submission
 
@@ -51,11 +83,11 @@ Use `rules`, `isRequired`, `validateTrigger`, and `validationDelay` on named inp
 
 `form.validate()` validates active fields immediately; `form.validate(['email'])` selects literal names and `form.validate([['users', 0, 'email']])` selects a nested path. `{ immediate: false }` honors field delays. `form.blur(name)` touches the field and runs an on-blur rule. No-rule fields become valid synchronously. The form is valid only when at least one field is active and every active field is valid. Existing errors stay visible during revalidation; an edit that does not revalidate clears them. `setValue` and `setValues` accept `validate: 'auto' | 'always' | 'never'`: auto revalidates on-change fields or fields showing errors. Once an on-blur field becomes valid, subsequent edits await its next blur.
 
-`errorPolicy: 'first' | 'all'` controls rule-order errors (default `first`), on the creator or individual field. Equivalent inline rules do not restart validation: primitive rule values, RegExp source/flags, and function source text form the signature; messages do not. Supply a changing `rulesKey` when a validator captures a dependency that changes without changing its source text. The latest updated duplicate registration owns its rules and trigger.
+`errorPolicy: 'first' | 'all'` controls rule-order errors (default `first`), on the creator or individual field. Equivalent inline rules do not restart validation: primitive constraints and RegExp source/flags form the signature; messages and function identity/source do not. Use `deps` for external captured inputs. `rulesKey` remains an additional revision key and never suppresses structural constraint checks. The latest updated duplicate registration owns its rules and trigger.
 
 `<Form onSubmit={save} onSubmitFailed={report} onValuesChange={changed}>` binds the current callbacks after commit. A callback changed to `undefined` falls back to the creator's initial callback. Unmount releases only that root's binding and cancels its pending submission. Use one owning root per controller; duplicate roots report a development error and the newest binding wins.
 
-`form.submit()` validates and submits `activeValues`; `form.submit({ include: 'all' })` includes retained values deliberately. `onSubmit(values, { include, signal })` may return a promise. Concurrent submissions return `{ status: 'ignored', reason: 'submitting' }`; other results are `submitted`, `invalid` with an error map, `failed` with an error, or `stale` after cancellation. Validation failures call `onSubmitFailed` without setting `submitError`; submission failures set it. Submit start and reset clear `submitError`; ordinary edits keep it. Explicit error commands remain available. A modern root without `action` prevents navigation and routes submission to the controller. A native `action`/`method` form preserves browser submission and bypasses the controller pipeline.
+`form.submit()` validates and submits `activeValues`; `form.submit({ include: 'all' })` includes retained values deliberately. `onSubmit(values, { include, signal })` may return a promise. Concurrent submissions return `{ status: 'ignored', reason: 'submitting' }`; other results are `submitted`, `invalid` with an error map, `failed` with an error, or `stale` after cancellation. Validation failures call `onSubmitFailed({ status: 'invalid', errors })` without setting `submitError`; submission failures call it with `{ status: 'failed', error }` and set the error. Submit start and reset clear `submitError`; ordinary edits keep it. Explicit error commands remain available. A modern root without `action` prevents navigation and routes submission to the controller. A native `action`/`method` form preserves browser submission and bypasses the controller pipeline.
 
 For SSR, seed the controller with the same serializable `defaultValues` on server and client. Server rendering and initial hydration select the cached creation snapshot; after hydration, subscribers catch up to current client state. Prepare server data before creating the controller. Each mount owns a separate controller, and subscriptions clean up on unmount; Strict Mode effect replay does not dispose live controllers.
 

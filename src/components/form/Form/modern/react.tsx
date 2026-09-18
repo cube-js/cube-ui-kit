@@ -1,15 +1,22 @@
 import { useContext, useState } from 'react';
 import { useSyncExternalStoreWithSelector } from 'use-sync-external-store/with-selector.js';
 
+import { useLayoutEffect } from '../../../../utils/react/useLayoutEffect';
+
 import { ModernControllerContext } from './context';
 import { createFormController, getControllerInternals } from './controller';
+import { getFieldKey, normalizePath, readPath } from './values';
 
 import type { ReactNode } from 'react';
 import type {
   FormController,
+  ModernFieldState,
   ModernFormState,
   UseFormControllerOptions,
 } from './controller';
+import type { CheckedFormPath, FormValueAtPath } from './path-types';
+import type { FormReadValue } from './read-types';
+import type { FormPath } from './values';
 
 export function useFormController<T extends object = Record<string, unknown>>(
   options?: UseFormControllerOptions<T>,
@@ -17,10 +24,39 @@ export function useFormController<T extends object = Record<string, unknown>>(
   // Initial options seed synchronously. A new options object never resets the
   // controller, and the creator does not subscribe its owner to form changes.
   const [controller] = useState(() => createFormController(options));
+  const { store } = getControllerInternals(controller, 'Form.useController()');
+  useLayoutEffect(() => {
+    store.updateCallbacks({
+      onSubmit: options?.onSubmit,
+      onSubmitFailed: options?.onSubmitFailed,
+      onValuesChange: options?.onValuesChange,
+    });
+  });
   // Do not dispose from effect cleanup: Strict Mode and hidden React trees
   // reconnect effects while preserving state. Subscriptions own their cleanup;
   // the controller has no external resources and is collected with its owner.
   return controller;
+}
+
+export function useFormValue<T extends object, const Path extends FormPath>(
+  form: FormController<T>,
+  path: CheckedFormPath<T, Path>,
+): FormReadValue<FormValueAtPath<T, Path>> | undefined {
+  return useFormSelector(form, (state) =>
+    readPath(state.values, normalizePath(path)),
+  ) as FormReadValue<FormValueAtPath<T, Path>> | undefined;
+}
+
+export function useFormFieldState<
+  T extends object,
+  const Path extends FormPath,
+>(
+  form: FormController<T>,
+  path: CheckedFormPath<T, Path>,
+): ModernFieldState<FormValueAtPath<T, Path>> | undefined {
+  return useFormSelector(form, (state) => state.fields[getFieldKey(path)]) as
+    | ModernFieldState<FormValueAtPath<T, Path>>
+    | undefined;
 }
 
 export interface FormSelectorOptions<Selected> {
