@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.181.0
+
+### Minor Changes
+
+- [#1412](https://github.com/cube-js/cube-ui-kit/pull/1412) [`3fac2506`](https://github.com/cube-js/cube-ui-kit/commit/3fac25065d505835d173584046e653cb056f0af2) Thanks [@tenphi](https://github.com/tenphi)! - Improve the modern Form API before adoption: add typed field descriptors with nullable input bindings and value/state hooks, reject misspelled literal command paths, and expose immutable nested read types while preserving date-control value types. Controller callbacks now use the latest committed props; validators use explicit field/external dependencies and cancel stale in-flight reads. Rule comparison detects function replacements while keeping equivalent inline closures stable. Declarative constraints stay reactive with `rulesKey`; descriptor construction keeps public dependencies unchanged and defers function comparison until registration. Submit and Reset honor their controller outside the form, both honor click cancellation, modern Submit stays enabled after validation errors by default, reset availability is exposed as `canReset`, root payload selection supports retained values, and submission failures have discriminated results with explicit-controller error rendering. Existing legacy forms retain their API and behavior. Modern consumers should handle `onSubmitFailed` by its `status` and use `deps` for external validator inputs and `dependsOn` for sibling form paths.
+
 ## 0.180.0
 
 ### Minor Changes
