@@ -59,7 +59,10 @@ export function useFieldProps<
             ...provided,
             ...provided.field.options,
             form: provided.field.form,
-            name: getFieldKey(provided.field.path),
+            name:
+              typeof provided.field.path === 'string'
+                ? provided.field.path
+                : getFieldKey(provided.field.path),
           }
         : provided,
     ),

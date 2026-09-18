@@ -75,8 +75,8 @@ When used inside a [Form](/docs/forms-form--docs), these properties are automati
 - **`validateTrigger`** `'onBlur' | 'onChange' | 'onSubmit'` — When to trigger validation.
 - **`validationDelay`** `number` — Debounce delay in milliseconds before running validation.
 - **`deps`** `readonly unknown[]` — Modern validator inputs captured from outside the form. Compared with `Object.is`; changes invalidate prior validation.
-- **`dependsOn`** `readonly FormPath[]` — Explicit modern field dependencies. Validator reads also track dependencies automatically.
-- **`rulesKey`** `string` — Explicit modern validator revision, checked alongside structural rule constraints.
+- **`dependsOn`** `readonly FormPath[]` — Modern form paths that trigger revalidation, including conditional reads. Validator reads only cancel in-flight work.
+- **`rulesKey`** `string` — Manual modern rules revision. Skips automatic rule comparison; update when any rule changes.
 - **`errorPolicy`** `'first' | 'all'` — Modern rule error collection policy, inherited from the controller by default.
 - **`showValid`** `boolean` — Whether to show the valid state icon after successful validation.
 - **`errorMessage`** `ReactNode` — Error message always displayed in danger state, regardless of validation state.

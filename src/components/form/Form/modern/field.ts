@@ -1,3 +1,5 @@
+import { normalizePath } from './values';
+
 import type { ReactNode } from 'react';
 import type { FormController } from './controller';
 import type { CheckedFormPath, FormValueAtPath } from './path-types';
@@ -42,12 +44,18 @@ export function createFormField<T extends object, Value>(
   options: FormFieldOptions<T, Value> = {},
 ): FormField<Value> {
   const { validate, ...registration } = options;
+  const normalized = normalizePath(path);
   return Object.freeze({
     form,
-    path: typeof path === 'string' ? path : Object.freeze([...path]),
+    path: typeof path === 'string' ? path : normalized,
     options: Object.freeze({
       ...registration,
       ...(validate && {
+        // The rule adapter has fixed source. Compare the authored validator too,
+        // while allowing equivalent inline closures to survive rerenders.
+        ...(registration.rulesKey === undefined && {
+          deps: [validate.toString(), ...(registration.deps ?? [])],
+        }),
         rules: [
           ...(registration.rules ?? []),
           {

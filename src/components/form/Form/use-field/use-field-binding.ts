@@ -9,7 +9,12 @@ import {
   fieldRegistrationOptions,
   sameFieldView,
 } from '../modern/field-binding';
-import { normalizePath, writePath } from '../modern/values';
+import {
+  getFieldKey,
+  getFieldPath,
+  normalizePath,
+  writePath,
+} from '../modern/values';
 
 import { useField } from './use-field';
 
@@ -46,9 +51,7 @@ export function useFieldBinding<
     ? (props.form as unknown as FormController<any>)
     : undefined;
   const name = props.name ?? '';
-  const pathKey = controller
-    ? JSON.stringify(normalizePath(props.field?.path ?? name))
-    : '';
+  const pathKey = controller ? getFieldKey(props.field?.path ?? name) : '';
   const legacy = useField<T, P>(props, {
     ...params,
     unbound: params.unbound || modern,
@@ -56,7 +59,7 @@ export function useFieldBinding<
   const modernHandle = useMemo(
     () =>
       controller
-        ? createModernFieldBackend(controller, JSON.parse(pathKey))
+        ? createModernFieldBackend(controller, getFieldPath(pathKey))
         : undefined,
     [controller, pathKey],
   );

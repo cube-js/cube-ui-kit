@@ -55,7 +55,7 @@ const form = Form.useController<Profile>({
 />;
 ```
 
-`validate(value, context)` infers the field value and checked paths in `context.getValue(path)`. Declare external inputs with `deps`, compared by `Object.is`. Field reads through `getValue` automatically become dependencies; `getValues()` depends on the whole values object. `dependsOn` can declare paths before the validator reads them. Each run reads one captured snapshot. Changes abort obsolete work, invalidate the dependent result, and revalidate previously validated or validating fields (unless a value command requests `validate: 'never'`). Rule/dependency changes preserve visible errors while the replacement run is pending. Inline function identity does not restart validation, so change `deps` when captured inputs change.
+`validate(value, context)` infers the field value and checked paths in `context.getValue(path)`. Use `deps` for external inputs, compared by `Object.is`, and `dependsOn` for form paths that should trigger revalidation. Declare conditional reads too: `dependsOn: ['password']` reruns confirmation validation when the password changes, even if the previous run stopped at an empty confirmation. Each run reads one captured snapshot. Reads through `getValue`/`getValues` cancel in-flight work if those values change, but do not schedule another run; revalidation requires `dependsOn`. Declared dependency changes revalidate previously validated or validating fields unless a value command requests `validate: 'never'`. Rule/dependency changes preserve visible errors while the replacement run is pending. Equivalent inline functions do not restart validation. Function source detects replacements; use `deps` for captures and distinct functions with identical source (including bound/native functions).
 
 Use `Form.useValue(form, path)` for a reactive value and `Form.useFieldState(form, path)` for typed value/defaults, errors, status, dirty/touched, and active state. Both support nested tuples and subscribe only to their selection; place them in leaf components when the form owner should not rerender. State may be `undefined` before a field has registered. Plain objects and arrays have deeply readonly, potentially incomplete read types; use controller commands for writes. Platform values and date-control values (`CalendarDate`, `CalendarDateTime`, `ZonedDateTime`, and `Time`) retain their types and methods.
 
@@ -70,6 +70,16 @@ Creation does not subscribe the component. A selector subscribes its caller; a `
 ```
 
 Selectors and equality functions must be pure. Select a primitive or a stable snapshot branch. A newly allocated object compares unequal with the default `Object.is`; supply `isEqual` when selecting several values into a fresh object. `Form.useControllerContext<T>()` gives a descendant the controller without subscribing it. The generic describes that root's values; it cannot verify an ancestor's type.
+
+A leaf component can get its controller from context without prop threading, while retaining checked paths and inferred values:
+
+```tsx
+function EmailPreview() {
+  const form = Form.useControllerContext<Profile>();
+  const email = Form.useValue(form, 'email');
+  return <output>{email}</output>;
+}
+```
 
 `getValue`, `getValues`, `getActiveValues`, `getFieldSnapshot`, and `getSnapshot` are imperative reads for handlers and effects. They do not make JSX reactive. `subscribe(listener)` supports imperative observers and returns an unsubscribe function. `batch(fn)` groups synchronous commands into one publication; it is not a rollback transaction, and the callback must not be async.
 
@@ -110,7 +120,7 @@ Built-in named inputs register after commit and select only their value, errors,
 
 For modern custom validators, return an error (including a ReactNode), or throw/reject it. Return undefined, null, or an empty string on success. A legacy validator that resolves a data object must be adapted: a modern validator treats that result as an error. Use `ModernValidationRule` to check authored modern rules strictly; shared input props remain permissive enough for existing legacy rules. Legacy forms keep their existing validator behavior.
 
-Validators receive `{ signal, name, getValue, getValues }` as the third argument. Pass the signal to network requests. Superseded work settles as stale even if the validator ignores cancellation. List external captured inputs in `deps` (for example, `deps: [organizationId, checkEmail]`). Field reads track dependencies automatically; use `dependsOn` to declare them before an asynchronous validator reads them. `rulesKey` is an optional explicit revision. Function identity and source text do not restart validation; structural rule changes, changed `deps`, and changed `rulesKey` do.
+Validators receive `{ signal, name, getValue, getValues }` as the third argument. Pass the signal to network requests. Superseded work settles as stale even if the validator ignores cancellation. List external captured inputs in `deps` (for example, `deps: [organizationId, checkEmail]`). Use `dependsOn` for field-triggered revalidation; read tracking only cancels in-flight work. Rule constraints and function source are compared automatically. `rulesKey` opts into manual versioning and skips that comparison; update it when any rule changes. Prefer `deps` for ordinary captured inputs, including string IDs: strings in `deps` are values, while strings in `dependsOn` are field paths.
 
 `validationDelay` coalesces automatic validation; explicit validation and submission run immediately by default. Auto writes revalidate on-change fields and fields already showing errors. On-blur fields otherwise wait for blur. `errorPolicy` chooses first/all rule errors. Errors remain visible while revalidating and clear on nonvalidating edits.
 
@@ -118,7 +128,7 @@ Root `onSubmit` receives the selected payload and an abort signal; `onSubmitFail
 
 ## Modern actions and errors
 
-`<Form submitValues="all">` includes retained values for native Enter and button submission; the default is `active`. Validation still targets active registrations. Explicit-controller Submit buttons target that controller even in an external footer or another DOM form, preserve native action forms, and submit once. `disableOnInvalid={false}` allows a modern Submit button to run validation while errors are visible; the default remains `true`. Reset is enabled when values, interaction state, validation state, or submit errors can be reset; root reset cancellation is honored.
+`<Form submitValues="all">` includes retained values for native Enter and button submission; the default is `active`. Validation still targets active registrations. Explicit-controller Submit buttons target that controller even in an external footer or another DOM form, preserve native action forms, and submit once. Modern Submit stays enabled while validation errors are visible, so another submission can display feedback; opt into disabling with `disableOnInvalid`. Legacy Submit keeps its existing default. `state.canReset` enables Reset when edits, touched/validation state, or submit errors can be cleared, and is false during submission. Both buttons preserve `onPress`; use `onClick` with `event.preventDefault()` to cancel the action. A controller root's `onReset` runs before reset and can cancel with `preventDefault()`. Reset interception also prevents nested controls from restoring their own mount-time defaults, including when reset is cancelled; `onResetCapture` is reserved for this interception. Native `action` forms retain browser reset behavior.
 
 Root business callbacks override hook callbacks while mounted. Omitted or undefined root callbacks restore the latest committed hook callback. Changing defaults remains an explicit command. Unmounting the owning root cancels pending submission.
 
@@ -130,7 +140,7 @@ Root business callbacks override hook callbacks while mounted. Omitted or undefi
 2. Check surrounding wrappers. Migrate a wrapper explicitly or choose a form that does not rely on its legacy instance API.
 3. Create a typed controller and move initial defaults into its creation options. Choose adoption/reset semantics for later data.
 4. Replace render-time getters and flags with narrow selectors or `Subscribe`. Update custom controls through `useFieldProps`.
-5. Adapt validators' success values and cancellation, and declare external captured inputs in `deps`.
+5. Adapt validators' success values and cancellation. Declare external captured inputs in `deps` and sibling form paths in `dependsOn`.
 6. Decide whether hidden fields are retained and whether submission uses active or all values. Verify the actual payload with conditional sections both visible and hidden.
 7. Test required/async errors, double submit, server failure, reset, unmount during requests, keyboard focus, and navigation guards. Confirm unaffected fields and the creator do not rerender on each keystroke.
 8. Run source and built-consumer type checks, the frozen legacy contract suite, React 18/19 compiler checks, and relevant browser checks. Review visual changes before merging.

@@ -4,6 +4,34 @@ import { createFormStore } from './store';
 import { formValueEqual, getFieldKey } from './values';
 
 describe('modern store: phase 2 value and ownership conformance', () => {
+  it('derives reset availability from retained state and submission', async () => {
+    const store = createFormStore({ defaultValues: { a: 1 } });
+    const registration = store.register('a');
+    expect(store.getSnapshot().canReset).toBe(false);
+    await store.validate();
+    expect(store.getSnapshot().canReset).toBe(true);
+    store.reset();
+    expect(store.getSnapshot().canReset).toBe(false);
+    store.touch('a');
+    expect(store.getSnapshot().canReset).toBe(true);
+    store.reset();
+    store.setFieldErrors('a', ['Error']);
+    expect(store.getSnapshot().canReset).toBe(true);
+    store.reset();
+    store.setSubmitError('Failed');
+    expect(store.getSnapshot().canReset).toBe(true);
+    store.reset();
+    store.setValue('a', 2);
+    registration.release();
+    expect(store.getSnapshot().canReset).toBe(true);
+    const submission = store.startSubmission()!;
+    expect(store.getSnapshot().canReset).toBe(false);
+    submission.complete();
+    expect(store.getSnapshot().canReset).toBe(true);
+    store.reset();
+    expect(store.getSnapshot().canReset).toBe(false);
+  });
+
   it('seeds retained values before registration, with a stable branded identity', () => {
     const store = createFormStore({ defaultValues: { a: 1, b: null } });
     expect(store[FORM_BACKEND]).toBe('modern');

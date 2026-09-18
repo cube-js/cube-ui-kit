@@ -11,6 +11,93 @@ import { FieldFixture } from './field.fixture';
 import { createFormStore } from './store';
 
 describe('modern Form consumer workflows', () => {
+  it('revalidates when the descriptor validator is replaced', async () => {
+    const form = createFormController({ defaultValues: { name: 'Ada' } });
+    const view = render(
+      <TextInput
+        field={form.field('name', { validate: () => 'Strict error' })}
+        label="Name"
+      />,
+    );
+    await act(async () => {
+      await form.validate();
+    });
+    expect(view.getByText('Strict error')).toBeInTheDocument();
+    view.rerender(
+      <TextInput
+        field={form.field('name', { validate: () => undefined })}
+        label="Name"
+      />,
+    );
+    await waitFor(() =>
+      expect(form.getFieldSnapshot('name')?.status).toBe('valid'),
+    );
+    expect(view.queryByText('Strict error')).not.toBeInTheDocument();
+  });
+
+  it('validates descriptor paths immediately and preserves literal DOM names', () => {
+    const form = createFormController<Record<string, string>>();
+    expect(() => form.field([])).toThrow('must not be empty');
+    expect(() => form.field(['__proto__'])).toThrow('Unsafe form path');
+    const view = render(
+      <TextInput field={form.field('user.email')} label="Email" />,
+    );
+    expect(view.getByRole('textbox')).toHaveAttribute('name', 'user.email');
+  });
+
+  it('lets invalid modern forms submit again by default, with an explicit disable opt-in', async () => {
+    const onSubmitFailed = vi.fn();
+    const form = createFormController({
+      defaultValues: { name: '' },
+      onSubmitFailed,
+    });
+    const view = render(
+      <Form form={form}>
+        <TextInput name="name" label="Name" isRequired />
+        <Form.Submit>Save</Form.Submit>
+        <Form.Submit disableOnInvalid>Only valid</Form.Submit>
+      </Form>,
+    );
+    const save = view.getByRole('button', { name: 'Save' });
+    await userEvent.click(save);
+    expect(save).toBeEnabled();
+    expect(view.getByRole('button', { name: 'Only valid' })).toBeDisabled();
+    await userEvent.click(save);
+    expect(onSubmitFailed).toHaveBeenCalledTimes(2);
+  });
+
+  it.each([false, true])(
+    'honors Reset click cancellation and calls press before resetting (root: %s)',
+    async (withRoot) => {
+      const form = createFormController({ defaultValues: { name: 'Ada' } });
+      const onPress = vi.fn(() => expect(form.getValue('name')).toBe('Grace'));
+      const content = (
+        <>
+          <TextInput field={form.field('name')} label="Name" />
+          <Form.Reset
+            form={form}
+            onPress={onPress}
+            onClick={(event) => event.preventDefault()}
+          >
+            Cancel
+          </Form.Reset>
+          <Form.Reset form={form} onPress={onPress} htmlType="reset">
+            Reset
+          </Form.Reset>
+        </>
+      );
+      const view = render(
+        withRoot ? <Form form={form}>{content}</Form> : content,
+      );
+      act(() => form.setValue('name', 'Grace'));
+      await userEvent.click(view.getByRole('button', { name: 'Cancel' }));
+      expect(form.getValue('name')).toBe('Grace');
+      await userEvent.click(view.getByRole('button', { name: 'Reset' }));
+      expect(form.getValue('name')).toBe('Ada');
+      expect(onPress).toHaveBeenCalledTimes(2);
+    },
+  );
+
   it('keeps input rules unless the descriptor supplies its own rules', async () => {
     const form = createFormController({ defaultValues: { name: '' } });
     const inputRules = [{ required: true, message: 'Input rule' }];
@@ -242,7 +329,7 @@ describe('modern Form consumer workflows', () => {
     expect(descriptor.path).toEqual(['profile', 'name']);
   });
 
-  it('tracks sibling reads, aborts obsolete validation, and revalidates the dependent field', async () => {
+  it('aborts obsolete validation and revalidates declared sibling dependencies', async () => {
     const store = createFormStore({
       defaultValues: { password: 'same', confirm: 'same' },
     });
@@ -257,6 +344,7 @@ describe('modern Form consumer workflows', () => {
     let firstSignal: AbortSignal | undefined;
     store.register('password');
     store.register('confirm', {
+      dependsOn: ['password'],
       rules: [
         {
           validator: async (_rule, value, context) => {
@@ -306,7 +394,7 @@ describe('modern Form consumer workflows', () => {
     expect(seen).toHaveBeenCalledWith('old');
   });
 
-  it('invalidates built-in constraints even with an unchanged rulesKey', async () => {
+  it('lets rulesKey explicitly version all rules', async () => {
     const store = createFormStore({ defaultValues: { name: 'abc' } });
     const field = store.register('name', {
       rulesKey: 'organization',
@@ -314,6 +402,8 @@ describe('modern Form consumer workflows', () => {
     });
     await store.validate();
     field.update({ rulesKey: 'organization', rules: [{ min: 5 }] });
+    expect(store.getFieldSnapshot('name')?.status).toBe('valid');
+    field.update({ rulesKey: 'new rules', rules: [{ min: 5 }] });
     await waitFor(() =>
       expect(store.getFieldSnapshot('name')?.status).toBe('invalid'),
     );

@@ -37,8 +37,13 @@ import type {
 } from './types';
 import type { FormPath } from './values';
 
+interface PreparedRegistration<ErrorValue>
+  extends Omit<RegistrationOptions<ErrorValue>, 'dependsOn'> {
+  readonly dependsOn?: readonly (readonly string[])[];
+}
+
 interface Registration<ErrorValue> {
-  options: RegistrationOptions<ErrorValue>;
+  options: PreparedRegistration<ErrorValue>;
   signature: string;
   order: number;
   defaultConsidered: boolean;
@@ -80,6 +85,16 @@ function sameDependencies(
   return (
     a.length === b.length &&
     a.every((value, index) => Object.is(value, b[index]))
+  );
+}
+
+function samePaths(
+  a: readonly (readonly string[])[] = [],
+  b: readonly (readonly string[])[] = [],
+) {
+  return (
+    a.length === b.length &&
+    a.every((path, index) => sameDependencies(path, b[index]))
   );
 }
 
@@ -156,6 +171,7 @@ export function createFormStore<
     isInvalid: false,
     isValidating: false,
     isSubmitting: false,
+    canReset: false,
     submitError: undefined,
     revision: 0,
   });
@@ -218,6 +234,8 @@ export function createFormStore<
   function invalidate(record: FieldRecord<ErrorValue>, keepErrors = false) {
     const controller = record.validation;
     record.validation = undefined;
+    record.reads = undefined;
+    record.readsAll = false;
     record.validationRevision++;
     record.status = 'unvalidated';
     if (!keepErrors) record.errors = EMPTY_ERRORS;
@@ -238,14 +256,23 @@ export function createFormStore<
     record: FieldRecord<ErrorValue>,
     previous: object,
   ) {
+    return (
+      record.owner?.options.dependsOn?.some((path) =>
+        pathValueChanged(previous, values, path),
+      ) ?? false
+    );
+  }
+
+  function validationReadChanged(
+    record: FieldRecord<ErrorValue>,
+    previous: object,
+  ) {
+    if (!record.validation) return false;
     if (record.readsAll && previous !== values) return true;
-    const declared = record.owner?.options.dependsOn;
-    if (!declared?.length && !record.reads?.size) return false;
-    const paths = [
-      ...(declared ?? []).map(normalizePath),
-      ...(record.reads?.values() ?? []),
-    ];
-    return paths.some((path) => pathValueChanged(previous, values, path));
+    for (const path of record.reads?.values() ?? []) {
+      if (pathValueChanged(previous, values, path)) return true;
+    }
+    return false;
   }
 
   function invalidateRelated(
@@ -255,12 +282,16 @@ export function createFormStore<
   ) {
     for (const record of records.values()) {
       const dependency = dependencyChanged(record, previous);
-      if (
+      const fieldChanged =
         related(path, record.path) ||
+        pathValueChanged(previous, values, record.path);
+      if (
+        fieldChanged ||
         dependency ||
-        pathValueChanged(previous, values, record.path)
+        validationReadChanged(record, previous)
       ) {
         const revalidate =
+          (fieldChanged || dependency) &&
           !!config &&
           !!record.registrations.size &&
           (config.validate === 'always' ||
@@ -302,6 +333,7 @@ export function createFormStore<
     let validCount = 0;
     let invalid = false;
     let validating = false;
+    let resettable = submitError != null;
     for (const record of records.values()) {
       const field: FieldState<ErrorValue> = {
         name: record.name,
@@ -324,6 +356,11 @@ export function createFormStore<
       });
       if (field.dirty) dirtyNames.add(record.name);
       if (field.touched) touchedNames.add(record.name);
+      resettable ||=
+        field.dirty ||
+        field.touched ||
+        !!field.errors.length ||
+        field.status !== 'unvalidated';
       if (field.active) {
         activeCount++;
         if (field.status === 'valid') validCount++;
@@ -350,6 +387,7 @@ export function createFormStore<
       isInvalid: invalid,
       isValidating: validating,
       isSubmitting: !!submission,
+      canReset: !submission && resettable,
       submitError,
       revision: state.revision,
     };
@@ -476,7 +514,7 @@ export function createFormStore<
   function prepareRegistration(
     path: FormPath,
     config: RegistrationOptions<ErrorValue>,
-  ): RegistrationOptions<ErrorValue> {
+  ): PreparedRegistration<ErrorValue> {
     const prepared = {
       ...config,
       deps: config.deps ? Object.freeze([...config.deps]) : undefined,
@@ -536,7 +574,7 @@ export function createFormStore<
     assertLive();
     const normalized = normalizePath(path);
     const prepared = prepareRegistration(normalized, config);
-    const signature = rulesSignature(prepared.rules);
+    const signature = prepared.rulesKey ?? rulesSignature(prepared.rules);
     const record = ensure(normalized);
     const registration: Registration<ErrorValue> = {
       options: prepared,
@@ -559,13 +597,12 @@ export function createFormStore<
       update(next: RegistrationOptions<ErrorValue>) {
         if (released || disposed) return;
         const prepared = prepareRegistration(record.path, next);
-        const signature = rulesSignature(prepared.rules);
+        const signature = prepared.rulesKey ?? rulesSignature(prepared.rules);
         const validationChanged =
           registration.signature !== signature ||
           registration.options.rulesKey !== prepared.rulesKey ||
           !sameDependencies(registration.options.deps, prepared.deps) ||
-          JSON.stringify(registration.options.dependsOn) !==
-            JSON.stringify(prepared.dependsOn) ||
+          !samePaths(registration.options.dependsOn, prepared.dependsOn) ||
           registration.options.validationDelay !== prepared.validationDelay ||
           registration.options.validateTrigger !== prepared.validateTrigger ||
           registration.options.errorPolicy !== prepared.errorPolicy;
@@ -721,7 +758,12 @@ export function createFormStore<
       const names: string[] = [];
       for (const record of records.values()) {
         const changed = pathValueChanged(previous, values, record.path);
-        if (changed || dependencyChanged(record, previous)) invalidate(record);
+        if (
+          changed ||
+          dependencyChanged(record, previous) ||
+          validationReadChanged(record, previous)
+        )
+          invalidate(record);
         if (changed) names.push(record.name);
       }
       event(names, 'adopt');
@@ -785,6 +827,8 @@ export function createFormStore<
           : EMPTY_ERRORS;
         batch(() => {
           record.validation = undefined;
+          record.reads = undefined;
+          record.readsAll = false;
           record.errors = copied;
           record.status = copied.length ? 'invalid' : 'valid';
         });
@@ -884,7 +928,7 @@ export function createFormStore<
             signal: token.signal,
             getValue: (path) => {
               const normalized = normalizePath(path);
-              if (!token.signal.aborted) {
+              if (!settled && !token.signal.aborted) {
                 reads.set(getFieldKey(normalized), normalized);
                 if (pathValueChanged(validationValues, values, normalized))
                   token.cancel();
@@ -892,7 +936,7 @@ export function createFormStore<
               return readPath(validationValues, normalized);
             },
             getValues: () => {
-              if (!token.signal.aborted) {
+              if (!settled && !token.signal.aborted) {
                 record.readsAll = true;
                 if (values !== validationValues) token.cancel();
               }

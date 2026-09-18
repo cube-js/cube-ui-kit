@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react';
+import { useContext, useMemo, useState } from 'react';
 import { useSyncExternalStoreWithSelector } from 'use-sync-external-store/with-selector.js';
 
 import { useLayoutEffect } from '../../../../utils/react/useLayoutEffect';
@@ -25,6 +25,8 @@ export function useFormController<T extends object = Record<string, unknown>>(
   // controller, and the creator does not subscribe its owner to form changes.
   const [controller] = useState(() => createFormController(options));
   const { store } = getControllerInternals(controller, 'Form.useController()');
+  // Intentionally commit after every render: callbacks are live, unlike the
+  // initial defaults/policy. Abandoned renders must never replace callbacks.
   useLayoutEffect(() => {
     store.updateCallbacks({
       onSubmit: options?.onSubmit,
@@ -42,8 +44,9 @@ export function useFormValue<T extends object, const Path extends FormPath>(
   form: FormController<T>,
   path: CheckedFormPath<T, Path>,
 ): FormReadValue<FormValueAtPath<T, Path>> | undefined {
+  const normalized = useMemo(() => normalizePath(path), [path]);
   return useFormSelector(form, (state) =>
-    readPath(state.values, normalizePath(path)),
+    readPath(state.values, normalized),
   ) as FormReadValue<FormValueAtPath<T, Path>> | undefined;
 }
 
@@ -54,7 +57,8 @@ export function useFormFieldState<
   form: FormController<T>,
   path: CheckedFormPath<T, Path>,
 ): ModernFieldState<FormValueAtPath<T, Path>> | undefined {
-  return useFormSelector(form, (state) => state.fields[getFieldKey(path)]) as
+  const key = useMemo(() => getFieldKey(path), [path]);
+  return useFormSelector(form, (state) => state.fields[key]) as
     | ModernFieldState<FormValueAtPath<T, Path>>
     | undefined;
 }

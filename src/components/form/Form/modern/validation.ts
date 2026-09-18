@@ -31,13 +31,13 @@ export interface ModernValidationRule<ErrorValue = unknown> {
   ) => ErrorValue | void | Promise<ErrorValue | void>;
 }
 
-/** Compare structural constraints. Function captures are versioned by deps/rulesKey. */
+/** Compare constraints and function source; captures still need deps/rulesKey. */
 export function rulesSignature<ErrorValue>(
   rules: readonly ModernValidationRule<ErrorValue>[] = [],
 ): string {
   const seen = new Set<object>();
   const signature = (value: unknown): string => {
-    if (typeof value === 'function') return 'function';
+    if (typeof value === 'function') return `function:${value.toString()}`;
     if (value instanceof RegExp) return `regexp:${value.source}/${value.flags}`;
     if (!value || typeof value !== 'object')
       return `${typeof value}:${String(value)}`;

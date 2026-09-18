@@ -30,8 +30,10 @@ export interface ModernFormProps<T extends object = Record<string, unknown>>
   > {
   form: FormController<T>;
   defaultValues?: never;
+  /** Runs before a controller reset; preventDefault cancels the reset, including nested controls. */
   onReset?: (event: FormEvent<HTMLFormElement>) => void;
-  onResetCapture?: (event: FormEvent<HTMLFormElement>) => void;
+  /** Reserved for controller reset interception. Use onReset to cancel. */
+  onResetCapture?: never;
   onSubmit?: FormCallbacks<T, ReactNode>['onSubmit'];
   onSubmitFailed?: FormCallbacks<T, ReactNode>['onSubmitFailed'];
   onValuesChange?: FormCallbacks<T, ReactNode>['onValuesChange'];
@@ -112,7 +114,6 @@ function ModernFormRoot<T extends object>(
     // React Aria's native reset listeners do not honor preventDefault. Handle
     // controller resets in capture, before they can write mount-time defaults.
     event.stopPropagation();
-    otherProps.onResetCapture?.(event);
     otherProps.onReset?.(event);
     if (!event.defaultPrevented) {
       event.preventDefault();
@@ -158,9 +159,7 @@ function ModernFormRoot<T extends object>(
       }}
       onSubmit={otherProps.action == null ? handleSubmit : undefined}
       onReset={otherProps.action == null ? undefined : otherProps.onReset}
-      onResetCapture={
-        otherProps.action == null ? handleReset : otherProps.onResetCapture
-      }
+      onResetCapture={otherProps.action == null ? handleReset : undefined}
     >
       <FormContext.Provider value={EMPTY_LEGACY_CONTEXT}>
         <ModernControllerContext.Provider value={form}>

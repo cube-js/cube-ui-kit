@@ -105,6 +105,17 @@ export function getFieldKey(path: FormPath): string {
     .join('.');
 }
 
+/** Inverse of getFieldKey, for stable keys produced by this module. */
+export function getFieldPath(key: string): readonly string[] {
+  const path = [''];
+  for (let index = 0; index < key.length; index++) {
+    const part = key[index];
+    if (part === '.') path.push('');
+    else path[path.length - 1] += part === '\\' ? key[++index] : part;
+  }
+  return Object.freeze(path);
+}
+
 export function readPath(root: unknown, path: readonly string[]): unknown {
   let value = root;
   for (const key of path) {

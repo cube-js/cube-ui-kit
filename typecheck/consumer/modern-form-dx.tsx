@@ -47,6 +47,11 @@ export function ModernFieldTypes({ form }: { form: FormController<Profile> }) {
   });
   const name: string | undefined = Form.useValue(form, ['profile', 'name']);
   const dirty: boolean | undefined = Form.useFieldState(form, 'email')?.dirty;
+  const canReset: boolean = Form.useSelector(form, (state) => state.canReset);
+  void canReset;
+  // @ts-expect-error controller roots reserve capture for reset interception
+  const resetCapture = <Form form={form} onResetCapture={() => {}} />;
+  void resetCapture;
   // @ts-expect-error descriptors reject invalid literal paths
   form.field('emali');
   // @ts-expect-error declared validation dependencies check literal paths

@@ -14,7 +14,7 @@ export function ModernSubmitButton({
   form,
   buttonRef,
   onClick,
-  disableOnInvalid = true,
+  disableOnInvalid = false,
   ...props
 }: CubeButtonProps & {
   form: FormController<any>;
@@ -57,7 +57,7 @@ export function ModernSubmitButton({
 export function ModernResetButton({
   form,
   buttonRef,
-  onPress,
+  onClick,
   ...props
 }: CubeButtonProps & {
   form: FormController<any>;
@@ -66,24 +66,16 @@ export function ModernResetButton({
   const { isDisabled: contextDisabled } = useProviderProps(
     {} as CubeButtonProps,
   );
-  const disabled = useFormSelector(
-    form,
-    (state) =>
-      state.isSubmitting ||
-      !(
-        state.isDirty ||
-        state.isTouched ||
-        state.submitError != null ||
-        Object.values(state.fields).some(
-          (field) => field.errors.length || field.status !== 'unvalidated',
-        )
-      ),
-  );
-  const reset = useEvent((event) => {
+  const canReset = useFormSelector(form, (state) => state.canReset);
+  const reset = useEvent((event: MouseEvent<HTMLElement>) => {
+    onClick?.(event);
+    if (event.defaultPrevented) return;
     const root = getControllerInternals(form, '<Form.Reset>').getRootElement();
+    const button = event.currentTarget as HTMLButtonElement;
+    if (root && button.form === root && button.type === 'reset') return;
+    event.preventDefault();
     if (root?.isConnected) root.reset();
     else form.reset();
-    onPress?.(event);
   });
   return (
     <Button
@@ -91,8 +83,8 @@ export function ModernResetButton({
       type="primary"
       htmlType="button"
       {...props}
-      onPress={reset}
-      isDisabled={contextDisabled || props.isDisabled || disabled}
+      onClick={reset}
+      isDisabled={contextDisabled || props.isDisabled || !canReset}
     />
   );
 }

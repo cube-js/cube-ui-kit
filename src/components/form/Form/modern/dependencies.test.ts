@@ -1,6 +1,80 @@
 import { createFormStore } from './store';
 
 describe('validation dependency lifecycle', () => {
+  it('revalidates a replacement validator without explicit dependencies', async () => {
+    const store = createFormStore({ defaultValues: { a: 'value' } });
+    const registration = store.register('a', {
+      rules: [{ validator: () => 'Strict error' }],
+    });
+    await store.validate();
+    expect(store.getFieldSnapshot('a')?.errors).toEqual(['Strict error']);
+    registration.update({ rules: [{ validator: () => undefined }] });
+    await vi.waitFor(() => {
+      expect(store.getFieldSnapshot('a')?.status).toBe('valid');
+      expect(store.getFieldSnapshot('a')?.errors).toEqual([]);
+    });
+  });
+
+  it.each([false, true])(
+    'only declared dependencies rerun validation, even after a short circuit (declared: %s)',
+    async (declared) => {
+      const store = createFormStore({
+        defaultValues: { password: 'first', confirm: '' },
+      });
+      const validator = vi.fn((_rule, value, context) => {
+        if (!value) return 'Required';
+        return value === context.getValue('password') ? undefined : 'Mismatch';
+      });
+      store.register('confirm', {
+        dependsOn: declared ? ['password'] : undefined,
+        rules: [{ validator }],
+      });
+      await store.validate();
+      store.setValue('password', 'second');
+      if (declared)
+        await vi.waitFor(() => expect(validator).toHaveBeenCalledTimes(2));
+      else expect(validator).toHaveBeenCalledTimes(1);
+      store.setValue('confirm', 'second', { validate: 'never' });
+      await store.validate();
+      validator.mockClear();
+      store.setValue('password', 'third');
+      if (declared) {
+        await vi.waitFor(() =>
+          expect(store.getFieldSnapshot('confirm')?.errors).toEqual([
+            'Mismatch',
+          ]),
+        );
+        expect(validator).toHaveBeenCalledTimes(1);
+      } else {
+        expect(validator).not.toHaveBeenCalled();
+        expect(store.getFieldSnapshot('confirm')?.status).toBe('valid');
+      }
+    },
+  );
+
+  it('cancels a changed read without scheduling an undeclared dependent run', async () => {
+    const store = createFormStore({
+      defaultValues: { source: 1, dependent: 2 },
+    });
+    const validator = vi.fn((_rule, _value, context) => {
+      context.getValues();
+      return new Promise<void>(() => {});
+    });
+    const registration = store.register('dependent', {
+      rules: [{ validator }],
+    });
+    const pending = store.validate();
+    await vi.waitFor(() => expect(validator).toHaveBeenCalledTimes(1));
+    store.setValue('source', 3);
+    expect((await pending).stale).toBe(true);
+    expect(store.getFieldSnapshot('dependent')?.status).toBe('unvalidated');
+    expect(validator).toHaveBeenCalledTimes(1);
+    registration.release();
+    const retained = store.getFieldSnapshot('dependent');
+    store.setValue('source', 4);
+    expect(store.getFieldSnapshot('dependent')).toBe(retained);
+  });
+
   it('reports only changed values when defaults invalidate a dependent field', async () => {
     const onValuesChange = vi.fn();
     const store = createFormStore({
@@ -62,12 +136,12 @@ describe('validation dependency lifecycle', () => {
     },
   );
 
-  it('tracks whole-values reads and respects validate: never on dependency writes', async () => {
+  it('respects validate: never on declared dependency writes', async () => {
     const store = createFormStore({ defaultValues: { a: 1, b: 2 } });
     const validator = vi.fn((_rule, _value, context) => {
       context.getValues();
     });
-    store.register('b', { rules: [{ validator }] });
+    store.register('b', { dependsOn: ['a'], rules: [{ validator }] });
     await store.validate();
     store.setValue('a', 3, { validate: 'never' });
     expect(store.getFieldSnapshot('b')?.status).toBe('unvalidated');

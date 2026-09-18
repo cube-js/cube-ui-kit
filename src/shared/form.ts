@@ -57,7 +57,7 @@ export interface FieldValidationRule
 
 /** Core field identity and validation props */
 export interface FieldCoreProps<Value = unknown> {
-  /** Typed modern field descriptor; takes precedence over form/name. */
+  /** Typed modern descriptor. Its form, path, and supplied options override matching input props. */
   field?: FormField<Value>;
 
   /** The unique ID of the field */
@@ -72,9 +72,11 @@ export interface FieldCoreProps<Value = unknown> {
   shouldUpdate?: boolean | ((prevValues, nextValues) => boolean);
   /** Validation rules */
   rules?: (FieldValidationRule | any[])[];
-  /** Explicit revision key for modern validators with captured dependencies. */
+  /** Manual modern rules revision, bypassing rule comparison. Update when any rule changes. */
   rulesKey?: string;
+  /** Modern field paths that trigger revalidation. Declare conditional validator reads too. */
   dependsOn?: readonly FormPath[];
+  /** External modern validator inputs, compared by Object.is (e.g. organizationId). */
   deps?: readonly unknown[];
   /** Modern rule error ordering policy; defaults to the controller policy. */
   errorPolicy?: 'first' | 'all';

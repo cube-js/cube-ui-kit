@@ -31,14 +31,17 @@ export interface FormState<T extends object, ErrorValue = unknown> {
   readonly isInvalid: boolean;
   readonly isValidating: boolean;
   readonly isSubmitting: boolean;
+  /** Reset would clear edits, touched/validation state, or a submit error; false while submitting. */
+  readonly canReset: boolean;
   readonly submitError: unknown;
   readonly revision: number;
 }
 
 export interface RegistrationOptions<ErrorValue = unknown> {
   readonly rules?: readonly ModernValidationRule<ErrorValue>[];
+  /** Manual rules revision, bypassing automatic rule comparison. Update when any rule changes. */
   readonly rulesKey?: string;
-  /** Field paths read by a validator. Changes cancel and invalidate its result. */
+  /** Field paths that trigger revalidation after this field has been validated. Declare conditional reads too. */
   readonly dependsOn?: readonly FormPath[];
   /** External validator inputs, compared by Object.is. */
   readonly deps?: readonly unknown[];
@@ -77,13 +80,16 @@ export interface ModernSubmitContext {
 }
 
 export interface FormCallbacks<T extends object, ErrorValue = unknown> {
+  /** Form.useController commits the latest callback after each render. */
   readonly onSubmit?: (
     values: FormValues<T>,
     context: ModernSubmitContext,
   ) => void | Promise<void>;
+  /** Form.useController commits the latest callback after each render. */
   readonly onSubmitFailed?: (
     failure: ModernSubmitFailure<ErrorValue>,
   ) => void | Promise<void>;
+  /** Form.useController commits the latest callback after each render. */
   readonly onValuesChange?: (
     values: FormValues<T>,
     change: FormChange,
@@ -123,9 +129,13 @@ export type ModernSubmitResult<ErrorValue = unknown> =
 
 export interface FormStoreOptions<T extends object, ErrorValue = unknown>
   extends FormCallbacks<T, ErrorValue> {
+  /** Initial default policy; later hook renders do not change it. Fields can override it. */
   readonly errorPolicy?: 'first' | 'all';
+  /** Initial values only. Use setDefaultValues/adoptDefaultValues/reset to change them. */
   readonly defaultValues?: Partial<T>;
+  /** Initial listener-error handler; later hook renders do not change it. */
   readonly onListenerError?: (error: unknown) => void;
+  /** Initial development-error handler; later hook renders do not change it. */
   readonly onDevelopmentError?: (message: string) => void;
 }
 
