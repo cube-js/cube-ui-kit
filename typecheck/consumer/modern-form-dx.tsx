@@ -1,4 +1,16 @@
-import { Form, NumberInput, Switch, TextInput } from '@cube-dev/ui-kit';
+import {
+  DateInput,
+  Form,
+  NumberInput,
+  Switch,
+  TextInput,
+} from '@cube-dev/ui-kit';
+import {
+  CalendarDate,
+  CalendarDateTime,
+  Time,
+  ZonedDateTime,
+} from '@internationalized/date';
 
 import type { FormController } from '@cube-dev/ui-kit';
 import type { ReactNode } from 'react';
@@ -82,4 +94,38 @@ export function DynamicFields({
 }) {
   form.setValue(key, 'value');
   return <TextInput field={form.field(key)} />;
+}
+
+export function DateFieldReads({
+  form,
+}: {
+  form: FormController<{
+    date: CalendarDate | null;
+    time: Time | null;
+    range: { start: CalendarDateTime; end: ZonedDateTime };
+  }>;
+}) {
+  const date: CalendarDate | null | undefined = Form.useValue(form, 'date');
+  const time: Time | null | undefined = form.getValue('time');
+  const start: CalendarDateTime | undefined = form.getValues().range?.start;
+  const end: ZonedDateTime | undefined = form.getFieldSnapshot([
+    'range',
+    'end',
+  ])?.value;
+  date?.add({ days: 1 });
+  time?.add({ hours: 1 });
+  start?.set({ hour: 12 });
+  end?.add({ months: 1 });
+  return (
+    <DateInput
+      field={form.field('date', {
+        validate: (value, context) => {
+          context.getValue('time')?.add({ minutes: 5 });
+          return value && value.compare(new CalendarDate(2026, 1, 1)) < 0
+            ? 'Choose a later date'
+            : undefined;
+        },
+      })}
+    />
+  );
 }

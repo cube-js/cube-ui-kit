@@ -119,6 +119,18 @@ export function hasPath(root: unknown, path: readonly string[]): boolean {
   return isContainer(parent) && Object.hasOwn(parent, path[path.length - 1]);
 }
 
+/** Missing and explicitly undefined values are distinct form states. */
+export function pathValueChanged(
+  previous: object,
+  next: object,
+  path: readonly string[],
+): boolean {
+  return (
+    !Object.is(readPath(previous, path), readPath(next, path)) ||
+    hasPath(previous, path) !== hasPath(next, path)
+  );
+}
+
 /** Copy just the ancestor chain. Array deletion leaves indices in place. */
 export function writePath(
   root: object,

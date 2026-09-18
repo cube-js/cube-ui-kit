@@ -9,7 +9,7 @@ import {
   fieldRegistrationOptions,
   sameFieldView,
 } from '../modern/field-binding';
-import { normalizePath } from '../modern/values';
+import { normalizePath, writePath } from '../modern/values';
 
 import { useField } from './use-field';
 
@@ -108,7 +108,14 @@ export function useFieldBinding<
       if (
         props.shouldUpdate === false ||
         (typeof props.shouldUpdate === 'function' &&
-          !props.shouldUpdate(previous, { ...previous, [name]: value }))
+          !props.shouldUpdate(
+            previous,
+            writePath(
+              previous,
+              normalizePath(props.field?.path ?? name),
+              value,
+            ),
+          ))
       )
         return;
     }

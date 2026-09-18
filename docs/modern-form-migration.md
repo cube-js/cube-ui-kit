@@ -33,6 +33,32 @@ The following API mapping describes migration choices; names are not mechanicall
 
 `DialogForm` and Cloud's `NarrowForm` / `SaveableCard` currently expose legacy instance contracts. Keep their callers legacy until the wrapper itself is migrated and verified. Passing a modern controller through a cast does not migrate the wrapper. `Form.Item`, legacy mutable flags, and the legacy `Form.Context` instance shape remain compatibility APIs.
 
+## Typed fields and focused reads
+
+Prefer typed descriptors for new modern forms. `form.field(path, options)` is pure configuration: it does not read current values, register a field, or subscribe the owner. Inputs register after commit and infer their allowed value type from `FieldBaseProps<Value>`. A descriptor takes precedence over `form`/`name`; only options it supplies override matching input options. Put `rules` and `validate` together on the descriptor: supplying either replaces input-level `rules`, while a descriptor with neither preserves them. Keep presentation such as labels and `isRequired` on the input. Existing `name` bindings remain available for legacy-compatible controls.
+
+Typed built-in field bindings accept `null` and `undefined` alongside their normal model value, so nullable API responses can be used directly. Display normalization does not change the stored value: a switch displays `null` as unchecked and a text input displays it as empty, while the form retains `null` until an edit or explicit command changes it. Controls keep their existing change payloads (for example, switches emit booleans), and reset restores nullable defaults. Declare nullable fields in the model so validators and value selectors also include `null`.
+
+```tsx
+const form = Form.useController<Profile>({
+  defaultValues: initialProfile,
+  onSubmit: (values, { signal }) => save(accountId, values, signal),
+});
+
+<TextInput field={form.field(['profile', 'name'])} label="Name" />;
+<TextInput
+  field={form.field('email', {
+    deps: [organizationId],
+    validate: (value, { signal }) => checkEmail(organizationId, value, signal),
+  })}
+  label="Email"
+/>;
+```
+
+`validate(value, context)` infers the field value and checked paths in `context.getValue(path)`. Declare external inputs with `deps`, compared by `Object.is`. Field reads through `getValue` automatically become dependencies; `getValues()` depends on the whole values object. `dependsOn` can declare paths before the validator reads them. Each run reads one captured snapshot. Changes abort obsolete work, invalidate the dependent result, and revalidate previously validated or validating fields (unless a value command requests `validate: 'never'`). Rule/dependency changes preserve visible errors while the replacement run is pending. Inline function identity does not restart validation, so change `deps` when captured inputs change.
+
+Use `Form.useValue(form, path)` for a reactive value and `Form.useFieldState(form, path)` for typed value/defaults, errors, status, dirty/touched, and active state. Both support nested tuples and subscribe only to their selection; place them in leaf components when the form owner should not rerender. State may be `undefined` before a field has registered. Plain objects and arrays have deeply readonly, potentially incomplete read types; use controller commands for writes. Platform values and date-control values (`CalendarDate`, `CalendarDateTime`, `ZonedDateTime`, and `Time`) retain their types and methods.
+
 ## Subscribe where the UI reads state
 
 Creation does not subscribe the component. A selector subscribes its caller; a `Form.Subscribe` render function subscribes only that subtree. A colocated selector is valid when the whole creator should render on that selection. Otherwise place the selector in a child or use `Subscribe`.
@@ -84,11 +110,19 @@ Built-in named inputs register after commit and select only their value, errors,
 
 For modern custom validators, return an error (including a ReactNode), or throw/reject it. Return undefined, null, or an empty string on success. A legacy validator that resolves a data object must be adapted: a modern validator treats that result as an error. Use `ModernValidationRule` to check authored modern rules strictly; shared input props remain permissive enough for existing legacy rules. Legacy forms keep their existing validator behavior.
 
-Validators receive `{ signal, name, getValue, getValues }` as the third argument. Pass the signal to network requests. Superseded work settles as stale even if the validator ignores cancellation. Use `rulesKey` for dependencies captured by a validator whose function source stays the same (for example, an organization id). Keep service callbacks stable or include their revision in that key too. Equivalent rule signatures do not restart pending validation.
+Validators receive `{ signal, name, getValue, getValues }` as the third argument. Pass the signal to network requests. Superseded work settles as stale even if the validator ignores cancellation. List external captured inputs in `deps` (for example, `deps: [organizationId, checkEmail]`). Field reads track dependencies automatically; use `dependsOn` to declare them before an asynchronous validator reads them. `rulesKey` is an optional explicit revision. Function identity and source text do not restart validation; structural rule changes, changed `deps`, and changed `rulesKey` do.
 
 `validationDelay` coalesces automatic validation; explicit validation and submission run immediately by default. Auto writes revalidate on-change fields and fields already showing errors. On-blur fields otherwise wait for blur. `errorPolicy` chooses first/all rule errors. Errors remain visible while revalidating and clear on nonvalidating edits.
 
 Root `onSubmit` receives the selected payload and an abort signal; `onSubmitFailed` receives `{ status: 'invalid', errors }` or `{ status: 'failed', error }`. Concurrent submits are ignored. Reset and owning-root release cancel pending submission. Submit start and reset clear `submitError`; ordinary edits keep it. `Form.Submit`, `Form.Reset`, and `Form.SubmitError` subscribe to the modern state. Native `action`/`method` forms continue browser navigation and bypass this pipeline.
+
+## Modern actions and errors
+
+`<Form submitValues="all">` includes retained values for native Enter and button submission; the default is `active`. Validation still targets active registrations. Explicit-controller Submit buttons target that controller even in an external footer or another DOM form, preserve native action forms, and submit once. `disableOnInvalid={false}` allows a modern Submit button to run validation while errors are visible; the default remains `true`. Reset is enabled when values, interaction state, validation state, or submit errors can be reset; root reset cancellation is honored.
+
+Root business callbacks override hook callbacks while mounted. Omitted or undefined root callbacks restore the latest committed hook callback. Changing defaults remains an explicit command. Unmounting the owning root cancels pending submission.
+
+`onSubmitFailed` receives `{ status: 'invalid', errors }` for validation failures and `{ status: 'failed', error }` for submission exceptions. `<Form.SubmitError form={form} renderError={error => ...} />` supports external placement and application-specific formatting. Omit `renderError` for the existing safe generic fallback.
 
 ## Per-form migration checklist
 
@@ -96,43 +130,9 @@ Root `onSubmit` receives the selected payload and an abort signal; `onSubmitFail
 2. Check surrounding wrappers. Migrate a wrapper explicitly or choose a form that does not rely on its legacy instance API.
 3. Create a typed controller and move initial defaults into its creation options. Choose adoption/reset semantics for later data.
 4. Replace render-time getters and flags with narrow selectors or `Subscribe`. Update custom controls through `useFieldProps`.
-5. Adapt validators' success values and cancellation, and version captured dependencies with `rulesKey`.
+5. Adapt validators' success values and cancellation, and declare external captured inputs in `deps`.
 6. Decide whether hidden fields are retained and whether submission uses active or all values. Verify the actual payload with conditional sections both visible and hidden.
 7. Test required/async errors, double submit, server failure, reset, unmount during requests, keyboard focus, and navigation guards. Confirm unaffected fields and the creator do not rerender on each keystroke.
 8. Run source and built-consumer type checks, the frozen legacy contract suite, React 18/19 compiler checks, and relevant browser checks. Review visual changes before merging.
 
 To revert a migrated form, render the preserved legacy component again and restore its legacy defaults/callback/validator contracts. Remount the boundary and deliberately transfer serializable draft values if needed. Do not cast the modern controller to a legacy instance or toggle hook implementations in place.
-
-### Typed fields and focused reads
-
-Prefer typed descriptors for new modern forms. `form.field(path, options)` is pure configuration: it does not read current values, register a field, or subscribe the owner. Inputs register after commit and infer their allowed value type from `FieldBaseProps<Value>`. A descriptor takes precedence over `form`/`name`; its options take precedence over matching input validation/default options. Keep presentation such as labels and `isRequired` on the input. Existing `name` bindings remain available for legacy-compatible controls.
-
-Typed built-in field bindings accept `null` and `undefined` alongside their normal model value, so nullable API responses can be used directly. Display normalization does not change the stored value: a switch displays `null` as unchecked and a text input displays it as empty, while the form retains `null` until an edit or explicit command changes it. Controls keep their existing change payloads (for example, switches emit booleans), and reset restores nullable defaults. Declare nullable fields in the model so validators and value selectors also include `null`.
-
-```tsx
-const form = Form.useController<Profile>({
-  defaultValues: initialProfile,
-  onSubmit: (values, { signal }) => save(accountId, values, signal),
-});
-
-<TextInput field={form.field(['profile', 'name'])} label="Name" />;
-<TextInput
-  field={form.field('email', {
-    deps: [organizationId],
-    validate: (value, { signal }) => checkEmail(organizationId, value, signal),
-  })}
-  label="Email"
-/>;
-```
-
-`validate(value, context)` infers the field value and checked paths in `context.getValue(path)`. Declare external inputs with `deps`, compared by `Object.is`. Field reads through `getValue` automatically become dependencies; `getValues()` depends on the whole values object. `dependsOn` can declare paths before the validator reads them. Each run reads one captured snapshot. Changes abort obsolete work, invalidate the dependent result, and revalidate previously validated or validating fields (unless a value command requests `validate: 'never'`). Rule/dependency changes preserve visible errors while the replacement run is pending. Inline function identity does not restart validation, so change `deps` when captured inputs change.
-
-Use `Form.useValue(form, path)` for a reactive value and `Form.useFieldState(form, path)` for typed value/defaults, errors, status, dirty/touched, and active state. Both support nested tuples and subscribe only to their selection; place them in leaf components when the form owner should not rerender. State may be `undefined` before a field has registered. Snapshot read types are deeply readonly and potentially incomplete; use controller commands for writes.
-
-### Modern actions and errors
-
-`<Form submitValues="all">` includes retained values for native Enter and button submission; the default is `active`. Validation still targets active registrations. Explicit-controller Submit buttons target that controller even in an external footer or another DOM form, preserve native action forms, and submit once. `disableOnInvalid={false}` allows a modern Submit button to run validation while errors are visible; the default remains `true`. Reset is enabled when values, interaction state, validation state, or submit errors can be reset; root reset cancellation is honored.
-
-Root business callbacks override hook callbacks while mounted. Omitted or undefined root callbacks restore the latest committed hook callback. Changing defaults remains an explicit command. Unmounting the owning root cancels pending submission.
-
-`onSubmitFailed` receives `{ status: 'invalid', errors }` for validation failures and `{ status: 'failed', error }` for submission exceptions. `<Form.SubmitError form={form} renderError={error => ...} />` supports external placement and application-specific formatting. Omit `renderError` for the existing safe generic fallback.

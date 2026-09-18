@@ -11,6 +11,54 @@ import { FieldFixture } from './field.fixture';
 import { createFormStore } from './store';
 
 describe('modern Form consumer workflows', () => {
+  it('keeps input rules unless the descriptor supplies its own rules', async () => {
+    const form = createFormController({ defaultValues: { name: '' } });
+    const inputRules = [{ required: true, message: 'Input rule' }];
+    const view = render(
+      <TextInput field={form.field('name')} rules={inputRules} label="Name" />,
+    );
+    await act(async () => {
+      await form.validate();
+    });
+    expect(form.getFieldSnapshot('name')?.errors).toEqual(['Input rule']);
+    view.rerender(
+      <TextInput
+        field={form.field('name', {
+          rules: [{ required: true, message: 'Descriptor rule' }],
+        })}
+        rules={inputRules}
+        label="Name"
+      />,
+    );
+    await act(async () => {
+      await form.validate();
+    });
+    expect(form.getFieldSnapshot('name')?.errors).toEqual(['Descriptor rule']);
+  });
+
+  it('previews nested edits in shouldUpdate without modifying current values', async () => {
+    const defaults = { profile: { name: 'Ada', role: 'admin' } };
+    const form = createFormController({ defaultValues: defaults });
+    const shouldUpdate = vi.fn(
+      (_previous, next) => next.profile.name.length <= 4,
+    );
+    const view = render(
+      <TextInput
+        field={form.field(['profile', 'name'])}
+        shouldUpdate={shouldUpdate}
+        label="Name"
+      />,
+    );
+    await userEvent.type(view.getByRole('textbox'), 'XY');
+    expect(shouldUpdate).toHaveBeenNthCalledWith(1, defaults, {
+      profile: { name: 'AdaX', role: 'admin' },
+    });
+    expect(form.getValues()).toEqual({
+      profile: { name: 'AdaX', role: 'admin' },
+    });
+    expect(defaults.profile.name).toBe('Ada');
+  });
+
   it('renders nested defaults before registration, including on the server', () => {
     const form = createFormController({
       defaultValues: { profile: { name: 'Ada' } },

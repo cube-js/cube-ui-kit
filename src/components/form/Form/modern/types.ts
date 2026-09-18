@@ -116,23 +116,15 @@ export interface ModernValidationResult<ErrorValue = unknown> {
 }
 
 export type ModernSubmitResult<ErrorValue = unknown> =
+  | ModernSubmitFailure<ErrorValue>
   | { status: 'ignored'; reason: 'submitting' }
   | { status: 'stale' }
-  | {
-      status: 'invalid';
-      errors: Readonly<Record<string, readonly ErrorValue[]>>;
-    }
-  | { status: 'failed'; error: unknown }
   | { status: 'submitted' };
 
 export interface FormStoreOptions<T extends object, ErrorValue = unknown>
   extends FormCallbacks<T, ErrorValue> {
   readonly errorPolicy?: 'first' | 'all';
   readonly defaultValues?: Partial<T>;
-  readonly onValuesChange?: (
-    values: FormValues<T>,
-    change: FormChange,
-  ) => void | Promise<void>;
   readonly onListenerError?: (error: unknown) => void;
   readonly onDevelopmentError?: (message: string) => void;
 }

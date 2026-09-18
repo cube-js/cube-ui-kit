@@ -47,15 +47,15 @@ export function createFormField<T extends object, Value>(
     path: typeof path === 'string' ? path : Object.freeze([...path]),
     options: Object.freeze({
       ...registration,
-      rules: validate
-        ? [
-            ...(registration.rules ?? []),
-            {
-              validator: (_rule, value, context) =>
-                validate(value, context as FormFieldContext<T>),
-            },
-          ]
-        : registration.rules,
+      ...(validate && {
+        rules: [
+          ...(registration.rules ?? []),
+          {
+            validator: (_rule, value, context) =>
+              validate(value, context as FormFieldContext<T>),
+          },
+        ],
+      }),
     }),
   }) as FormField<Value>;
 }

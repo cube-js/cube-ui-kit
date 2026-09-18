@@ -10,6 +10,7 @@ import {
   hasPath,
   isPlainObject,
   normalizePath,
+  pathValueChanged,
   readonlySet,
   readPath,
   sameMembers,
@@ -244,11 +245,7 @@ export function createFormStore<
       ...(declared ?? []).map(normalizePath),
       ...(record.reads?.values() ?? []),
     ];
-    return paths.some(
-      (path) =>
-        !Object.is(readPath(previous, path), readPath(values, path)) ||
-        hasPath(previous, path) !== hasPath(values, path),
-    );
+    return paths.some((path) => pathValueChanged(previous, values, path));
   }
 
   function invalidateRelated(
@@ -261,11 +258,7 @@ export function createFormStore<
       if (
         related(path, record.path) ||
         dependency ||
-        !Object.is(
-          readPath(previous, record.path),
-          readPath(values, record.path),
-        ) ||
-        hasPath(previous, record.path) !== hasPath(values, record.path)
+        pathValueChanged(previous, values, record.path)
       ) {
         const revalidate =
           !!config &&
@@ -543,7 +536,7 @@ export function createFormStore<
     assertLive();
     const normalized = normalizePath(path);
     const prepared = prepareRegistration(normalized, config);
-    const signature = `${prepared.rulesKey ?? ''}:${rulesSignature(prepared.rules)}`;
+    const signature = rulesSignature(prepared.rules);
     const record = ensure(normalized);
     const registration: Registration<ErrorValue> = {
       options: prepared,
@@ -566,9 +559,10 @@ export function createFormStore<
       update(next: RegistrationOptions<ErrorValue>) {
         if (released || disposed) return;
         const prepared = prepareRegistration(record.path, next);
-        const signature = `${prepared.rulesKey ?? ''}:${rulesSignature(prepared.rules)}`;
+        const signature = rulesSignature(prepared.rules);
         const validationChanged =
           registration.signature !== signature ||
+          registration.options.rulesKey !== prepared.rulesKey ||
           !sameDependencies(registration.options.deps, prepared.deps) ||
           JSON.stringify(registration.options.dependsOn) !==
             JSON.stringify(prepared.dependsOn) ||
@@ -726,17 +720,9 @@ export function createFormStore<
       }
       const names: string[] = [];
       for (const record of records.values()) {
-        if (
-          dependencyChanged(record, previous) ||
-          !Object.is(
-            readPath(previous, record.path),
-            readPath(values, record.path),
-          ) ||
-          hasPath(previous, record.path) !== hasPath(values, record.path)
-        ) {
-          invalidate(record);
-          names.push(record.name);
-        }
+        const changed = pathValueChanged(previous, values, record.path);
+        if (changed || dependencyChanged(record, previous)) invalidate(record);
+        if (changed) names.push(record.name);
       }
       event(names, 'adopt');
     });
@@ -900,14 +886,7 @@ export function createFormStore<
               const normalized = normalizePath(path);
               if (!token.signal.aborted) {
                 reads.set(getFieldKey(normalized), normalized);
-                if (
-                  !Object.is(
-                    readPath(values, normalized),
-                    readPath(validationValues, normalized),
-                  ) ||
-                  hasPath(values, normalized) !==
-                    hasPath(validationValues, normalized)
-                )
+                if (pathValueChanged(validationValues, values, normalized))
                   token.cancel();
               }
               return readPath(validationValues, normalized);

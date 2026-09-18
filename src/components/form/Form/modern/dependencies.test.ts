@@ -1,6 +1,28 @@
 import { createFormStore } from './store';
 
 describe('validation dependency lifecycle', () => {
+  it('reports only changed values when defaults invalidate a dependent field', async () => {
+    const onValuesChange = vi.fn();
+    const store = createFormStore({
+      defaultValues: { source: 'old', dependent: 'same' },
+      onValuesChange,
+    });
+    store.register('dependent', {
+      dependsOn: ['source'],
+      rules: [{ required: true }],
+    });
+    await store.validate();
+    store.adoptDefaultValues(
+      { source: 'new', dependent: 'same' },
+      { when: 'always' },
+    );
+    expect(store.getFieldSnapshot('dependent')?.status).toBe('unvalidated');
+    expect(onValuesChange).toHaveBeenCalledExactlyOnceWith(
+      { source: 'new', dependent: 'same' },
+      { names: ['source'], source: 'program', kind: 'adopt' },
+    );
+  });
+
   it.each(['adoption', 'release'] as const)(
     'cancels a sibling validator after %s',
     async (operation) => {

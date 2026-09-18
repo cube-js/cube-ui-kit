@@ -94,10 +94,7 @@ export function fieldRegistrationOptions(
       props.isRequired && !rules?.some((rule) => rule.required)
         ? [{ required: true }, ...(rules ?? [])]
         : rules,
-    rulesKey:
-      props.rulesKey === undefined
-        ? undefined
-        : `${props.isRequired ? 'required:' : ''}${props.rulesKey}`,
+    rulesKey: props.rulesKey,
     validationDelay: props.validationDelay,
     validateTrigger: props.validateTrigger ?? defaultTrigger ?? 'onBlur',
     errorPolicy: props.errorPolicy,
