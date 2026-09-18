@@ -102,6 +102,8 @@ const FIELD_PROPS = new Set([
   'insideForm', 'fieldProps', 'fieldStyles', 'messageStyles', 'forceField',
   'requiredMark', 'validateTrigger', 'showValid', 'idPrefix', 'shouldUpdate',
   'validationDelay', 'message',
+  'field', 'rulesKey', 'dependsOn', 'deps', 'errorPolicy', 'preserve', 'isEqual',
+  'isOptional',
 ]);
 
 const ARIA_REACT_PROPS = new Set([

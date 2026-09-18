@@ -129,7 +129,7 @@ export interface CubeSwitchProps
   extends BaseProps,
     OuterStyleProps,
     BlockStyleProps,
-    FieldBaseProps<boolean | undefined>,
+    FieldBaseProps<boolean | null | undefined>,
     ToggleSelectionProps,
     AriaSwitchProps {
   /** The form instance; redeclared for the same reason as in `Checkbox`. */

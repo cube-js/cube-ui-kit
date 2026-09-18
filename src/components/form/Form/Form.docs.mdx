@@ -49,6 +49,8 @@ Removing a field removes it from `activeValues` immediately and retains its valu
 
 Prefer typed descriptors for new modern forms. `form.field(path, options)` is pure configuration: it does not read current values, register a field, or subscribe the owner. Inputs register after commit and infer their allowed value type from `FieldBaseProps<Value>`. A descriptor takes precedence over `form`/`name`; its options take precedence over matching input validation/default options. Keep presentation such as labels and `isRequired` on the input. Existing `name` bindings remain available for legacy-compatible controls.
 
+Typed built-in field bindings accept `null` and `undefined` alongside their normal model value, so nullable API responses can be used directly. Display normalization does not change the stored value: a switch displays `null` as unchecked and a text input displays it as empty, while the form retains `null` until an edit or explicit command changes it. Controls keep their existing change payloads (for example, switches emit booleans), and reset restores nullable defaults. Declare nullable fields in the model so validators and value selectors also include `null`.
+
 ```tsx
 const form = Form.useController<Profile>({
   defaultValues: initialProfile,

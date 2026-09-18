@@ -124,7 +124,7 @@ export interface CubeFileInputProps
     ContainerStyleProps,
     BlockStyleProps,
     AriaTextFieldProps,
-    FieldBaseProps<string | undefined> {
+    FieldBaseProps<string | null | undefined> {
   /** The form instance; redeclared for the same reason as in `Checkbox`. */
   form?: FieldBaseProps['form'];
   /**

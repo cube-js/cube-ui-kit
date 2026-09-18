@@ -33,7 +33,7 @@ type Mapping = {
 };
 
 export interface CubeTextInputMapperProps
-  extends FieldBaseProps<Record<string, string> | undefined> {
+  extends FieldBaseProps<Record<string, string> | null | undefined> {
   qa?: string;
   actionLabel?: string;
   isDisabled?: boolean;
