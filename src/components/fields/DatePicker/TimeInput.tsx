@@ -29,7 +29,7 @@ export interface CubeTimeInputProps<T extends TimeValue = TimeValue>
   extends Omit<AriaTimeFieldProps<T>, 'errorMessage' | 'form'>,
     BaseProps,
     ContainerStyleProps,
-    FieldBaseProps {
+    FieldBaseProps<TimeValue | null | undefined> {
   wrapperStyles?: Styles;
   inputStyles?: Styles;
   styles?: Styles;

@@ -293,7 +293,7 @@ function renderCheckboxIcon({
 export interface CubeListBoxProps<T>
   extends AriaListBoxProps<T>,
     CollectionBase<T>,
-    FieldBaseProps,
+    FieldBaseProps<Key | readonly Key[] | null | undefined>,
     BasePropsWithoutChildren {
   /** Custom styles for the list container */
   listStyles?: Styles;

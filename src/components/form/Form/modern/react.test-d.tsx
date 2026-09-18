@@ -44,7 +44,9 @@ export function ModernTypes() {
     Promise<ModernValidationResult>
   >();
   expectTypeOf(form.submit()).toEqualTypeOf<Promise<ModernSubmitResult>>();
+  // @ts-expect-error unknown literal keys require an open model or a dynamic string
   form.setValue('dynamic.name', 'value');
+  // @ts-expect-error unknown literal nested path
   form.setValue(['nested', 0], 'value');
   form.setFieldErrors('amount', [<span key="error">Error</span>]);
   // @ts-expect-error pipeline tokens are internal

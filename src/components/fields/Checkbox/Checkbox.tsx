@@ -48,7 +48,7 @@ export interface CubeCheckboxProps
     ContainerStyleProps,
     AriaCheckboxProps,
     ToggleSelectionProps,
-    FieldBaseProps {
+    FieldBaseProps<boolean | null | undefined> {
   /**
    * The form instance. Redeclared so that it wins over react-aria's DOM
    * `form: string` attribute when a consumer resolves react-aria's types for

@@ -1,10 +1,12 @@
 import { Styles } from '@tenphi/tasty';
 import { ReactNode } from 'react';
 
+import type { FormField } from '../components/form/Form/modern/field';
 import type {
   ModernValidationContext,
   ModernValidationRule,
 } from '../components/form/Form/modern/validation';
+import type { FormPath } from '../components/form/Form/modern/values';
 import type { Props } from '../props';
 
 /** ValidationResult type for error message functions */
@@ -54,7 +56,10 @@ export interface FieldValidationRule
 }
 
 /** Core field identity and validation props */
-export interface FieldCoreProps {
+export interface FieldCoreProps<Value = unknown> {
+  /** Typed modern descriptor. Its form, path, and supplied options override matching input props. */
+  field?: FormField<Value>;
+
   /** The unique ID of the field */
   id?: string;
   /** The id prefix for the field to avoid collisions between forms */
@@ -67,8 +72,12 @@ export interface FieldCoreProps {
   shouldUpdate?: boolean | ((prevValues, nextValues) => boolean);
   /** Validation rules */
   rules?: (FieldValidationRule | any[])[];
-  /** Explicit revision key for modern validators with captured dependencies. */
+  /** Manual modern function revision, skipping source comparison. Declarative constraints are always compared. */
   rulesKey?: string;
+  /** Modern field paths that trigger revalidation. Declare conditional validator reads too. */
+  dependsOn?: readonly FormPath[];
+  /** External modern validator inputs, compared by Object.is (e.g. organizationId). */
+  deps?: readonly unknown[];
   /** Modern rule error ordering policy; defaults to the controller policy. */
   errorPolicy?: 'first' | 'all';
   /** Debounce in milliseconds for validation */
@@ -129,7 +138,9 @@ export interface ToggleSelectionProps {
   onChange?: (isSelected: boolean) => void;
 }
 
-export interface FieldBaseProps extends FormBaseProps, FieldCoreProps {
+export interface FieldBaseProps<Value = unknown>
+  extends FormBaseProps,
+    FieldCoreProps<Value> {
   /** The label of the field */
   label?: ReactNode;
   /** An additional content next to the label */

@@ -112,7 +112,9 @@ const StyledHeaderWithoutBorder = tasty(StyledHeader, {
 
 export interface CubeFilterListBoxProps<T>
   extends Omit<CubeListBoxProps<T>, 'filter'>,
-    FieldBaseProps {
+    FieldBaseProps<
+      string | number | readonly (string | number)[] | null | undefined
+    > {
   /** Placeholder text for the search input */
   searchPlaceholder?: string;
   /** Whether the search input should have autofocus */

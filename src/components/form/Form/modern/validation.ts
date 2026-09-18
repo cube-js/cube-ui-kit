@@ -1,5 +1,6 @@
 import { applyRule } from '../validation';
 
+import type { FormValues } from './read-types';
 import type { FormPath } from './values';
 
 export interface ModernValidationContext<
@@ -8,7 +9,7 @@ export interface ModernValidationContext<
   readonly name: string;
   readonly signal: AbortSignal;
   getValue(path: FormPath): unknown;
-  getValues(): Readonly<Partial<T>>;
+  getValues(): FormValues<T>;
 }
 
 /** Library-neutral: return an error, or throw/reject; undefined/null means success. */
@@ -30,13 +31,15 @@ export interface ModernValidationRule<ErrorValue = unknown> {
   ) => ErrorValue | void | Promise<ErrorValue | void>;
 }
 
-/** Inline rules are equivalent by content; use rulesKey for closure captures. */
+/** Compare constraints and function source; captures still need deps/rulesKey. */
 export function rulesSignature<ErrorValue>(
   rules: readonly ModernValidationRule<ErrorValue>[] = [],
+  { hashFunctions = true }: { hashFunctions?: boolean } = {},
 ): string {
   const seen = new Set<object>();
   const signature = (value: unknown): string => {
-    if (typeof value === 'function') return `function:${value.toString()}`;
+    if (typeof value === 'function')
+      return hashFunctions ? `function:${value.toString()}` : 'function';
     if (value instanceof RegExp) return `regexp:${value.source}/${value.flags}`;
     if (!value || typeof value !== 'object')
       return `${typeof value}:${String(value)}`;

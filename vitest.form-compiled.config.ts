@@ -34,11 +34,11 @@ export default mergeConfig(config, {
           sourceMaps: true,
         });
         if (
-          id.endsWith('/submission.fixture.tsx') &&
+          /\/(submission|field)\.fixture\.tsx$/.test(id) &&
           !result?.code?.includes('react-compiler-runtime')
         )
           throw new Error(
-            'Submission fixture did not compile: this gate must exercise compiled code.',
+            'Form consumer fixture did not compile: this gate must exercise compiled code.',
           );
         return { code: result?.code ?? source, map: result?.map };
       },

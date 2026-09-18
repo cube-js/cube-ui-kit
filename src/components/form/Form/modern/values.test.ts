@@ -1,7 +1,28 @@
 import { createFormStore } from './store';
-import { createValueSnapshotter, formValueEqual } from './values';
+import {
+  createValueSnapshotter,
+  formValueEqual,
+  getFieldKey,
+  getFieldPath,
+  normalizePath,
+} from './values';
 
 describe('modern value ownership and path regressions', () => {
+  it('round-trips stable keys without confusing literal dots, escaping, or empty segments', () => {
+    const paths = [
+      'user.email',
+      ['user', 'email'],
+      ['a\\b', 'c.d', '', 2],
+      ['', ''],
+      '',
+      ['\\', '.', '\n'],
+    ];
+    for (const path of paths) {
+      expect(getFieldPath(getFieldKey(path))).toEqual(normalizePath(path));
+    }
+    expect(new Set(paths.map(getFieldKey)).size).toBe(paths.length);
+  });
+
   it('never reuses an incomplete copy after a getter throws during snapshotting', () => {
     const snapshot = createValueSnapshotter();
     let fail = true;

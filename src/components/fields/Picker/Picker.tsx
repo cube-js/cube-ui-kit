@@ -58,7 +58,12 @@ export interface CubePickerProps<T>
     BaseStyleProps,
     OuterStyleProps,
     ColorStyleProps,
-    Omit<FieldBaseProps, 'tooltip'>,
+    Omit<
+      FieldBaseProps<
+        string | number | readonly (string | number)[] | null | undefined
+      >,
+      'tooltip'
+    >,
     Pick<
       CubeItemButtonProps,
       | 'type'

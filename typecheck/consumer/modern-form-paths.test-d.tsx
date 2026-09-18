@@ -29,6 +29,7 @@ export function TypedCommands({ dynamicName }: { dynamicName: string }) {
     'port',
   ]);
   const dynamic: unknown = form.getValue(dynamicName);
+  // @ts-expect-error unknown literal paths are rejected; widened paths remain supported
   const unknownPath: unknown = form.getValue(['unknown', 0]);
   const tuple: string | undefined = form.getValue(['pair', 0]);
   const union: string | number | undefined = form.getValue([

@@ -105,6 +105,17 @@ export function getFieldKey(path: FormPath): string {
     .join('.');
 }
 
+/** Inverse of getFieldKey, for stable keys produced by this module. */
+export function getFieldPath(key: string): readonly string[] {
+  const path = [''];
+  for (let index = 0; index < key.length; index++) {
+    const part = key[index];
+    if (part === '.') path.push('');
+    else path[path.length - 1] += part === '\\' ? key[++index] : part;
+  }
+  return Object.freeze(path);
+}
+
 export function readPath(root: unknown, path: readonly string[]): unknown {
   let value = root;
   for (const key of path) {
@@ -117,6 +128,18 @@ export function readPath(root: unknown, path: readonly string[]): unknown {
 export function hasPath(root: unknown, path: readonly string[]): boolean {
   const parent = readPath(root, path.slice(0, -1));
   return isContainer(parent) && Object.hasOwn(parent, path[path.length - 1]);
+}
+
+/** Missing and explicitly undefined values are distinct form states. */
+export function pathValueChanged(
+  previous: object,
+  next: object,
+  path: readonly string[],
+): boolean {
+  return (
+    !Object.is(readPath(previous, path), readPath(next, path)) ||
+    hasPath(previous, path) !== hasPath(next, path)
+  );
 }
 
 /** Copy just the ancestor chain. Array deletion leaves indices in place. */

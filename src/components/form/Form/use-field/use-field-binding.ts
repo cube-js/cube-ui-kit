@@ -9,6 +9,12 @@ import {
   fieldRegistrationOptions,
   sameFieldView,
 } from '../modern/field-binding';
+import {
+  getFieldKey,
+  getFieldPath,
+  normalizePath,
+  writePath,
+} from '../modern/values';
 
 import { useField } from './use-field';
 
@@ -45,13 +51,17 @@ export function useFieldBinding<
     ? (props.form as unknown as FormController<any>)
     : undefined;
   const name = props.name ?? '';
+  const pathKey = controller ? getFieldKey(props.field?.path ?? name) : '';
   const legacy = useField<T, P>(props, {
     ...params,
     unbound: params.unbound || modern,
   });
   const modernHandle = useMemo(
-    () => (controller ? createModernFieldBackend(controller, name) : undefined),
-    [controller, name],
+    () =>
+      controller
+        ? createModernFieldBackend(controller, getFieldPath(pathKey))
+        : undefined,
+    [controller, pathKey],
   );
   const legacyHandle = useMemo<FieldBackendHandle>(() => {
     const snapshot: FieldView = {
@@ -101,7 +111,14 @@ export function useFieldBinding<
       if (
         props.shouldUpdate === false ||
         (typeof props.shouldUpdate === 'function' &&
-          !props.shouldUpdate(previous, { ...previous, [name]: value }))
+          !props.shouldUpdate(
+            previous,
+            writePath(
+              previous,
+              normalizePath(props.field?.path ?? name),
+              value,
+            ),
+          ))
       )
         return;
     }

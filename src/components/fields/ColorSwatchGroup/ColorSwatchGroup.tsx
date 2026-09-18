@@ -166,7 +166,7 @@ export interface CubeColorSwatchGroupProps
   extends BaseProps,
     OuterStyleProps,
     BlockStyleProps,
-    FieldBaseProps {
+    FieldBaseProps<string | null | undefined> {
   /** The colors to offer. Duplicates of the same color are dropped. */
   colors?: CubeColorSwatchItem[];
   /** The selected color (controlled). */

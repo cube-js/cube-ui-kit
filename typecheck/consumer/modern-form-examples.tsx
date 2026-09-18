@@ -5,9 +5,9 @@ import {
   useFieldProps,
   wrapWithField,
 } from '@cube-dev/ui-kit';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
-import type { FieldBaseProps } from '@cube-dev/ui-kit';
+import type { FieldBaseProps, FormValues } from '@cube-dev/ui-kit';
 
 interface Profile {
   name: string;
@@ -21,7 +21,7 @@ export function ColocatedSelection() {
   const dirty = Form.useSelector(form, (state) => state.isDirty);
   return (
     <Form form={form}>
-      <TextInput name="name" label="Name" />
+      <TextInput field={form.field('name')} label="Name" />
       <span>{dirty ? 'Unsaved' : 'Saved'}</span>
     </Form>
   );
@@ -45,11 +45,13 @@ export function ConditionalProfile() {
         console.log(active);
       }}
     >
-      <TextInput name="name" label="Name" />
-      <Switch name="advanced" label="Advanced" />
+      <TextInput field={form.field('name')} label="Name" />
+      <Switch field={form.field('advanced')} label="Advanced" />
       <Form.Subscribe form={form} selector={(state) => state.values.advanced}>
         {(advanced) =>
-          advanced ? <TextInput name="note" label="Note" /> : null
+          advanced ? (
+            <TextInput field={form.field('note')} label="Note" />
+          ) : null
         }
       </Form.Subscribe>
       <DirtyStatus />
@@ -68,22 +70,25 @@ export function AsyncDefaults({
   load: (signal: AbortSignal) => Promise<Profile>;
 }) {
   const form = Form.useController<Profile>();
+  const [loadError, setLoadError] = useState<unknown>();
   useEffect(() => {
     const request = new AbortController();
     void load(request.signal)
       .then((profile) => {
-        if (!request.signal.aborted)
+        if (!request.signal.aborted) {
+          setLoadError(undefined);
           form.adoptDefaultValues(profile, { when: 'untouched' });
+        }
       })
       .catch((error: unknown) => {
-        if (!request.signal.aborted) form.setSubmitError(error);
+        if (!request.signal.aborted) setLoadError(error);
       });
     return () => request.abort();
   }, [form, load]);
   return (
     <Form form={form}>
-      <TextInput name="name" label="Name" />
-      <Form.SubmitError />
+      <TextInput field={form.field('name')} label="Name" />
+      {loadError != null && <span role="alert">Unable to load profile</span>}
     </Form>
   );
 }
@@ -91,8 +96,8 @@ export function AsyncDefaults({
 // Keep the control's event/value API explicit; never spread controller props
 // onto the DOM. The wrapper supplies the label, description, and error UI.
 export function CustomControl(
-  input: FieldBaseProps & {
-    value?: string;
+  input: FieldBaseProps<string | null | undefined> & {
+    value?: string | null;
     onChange?: (value: string) => void;
     onBlur?: () => void;
   },
@@ -135,25 +140,95 @@ export function RemoteValidation({
   return (
     <Form form={form}>
       <CustomControl
-        name="name"
-        label="Name"
-        validateTrigger="onChange"
-        validationDelay={200}
-        rulesKey={organizationId}
-        rules={[
-          {
-            validator: async (_rule, value, { signal }) => {
-              const available = await check(
-                organizationId,
-                String(value ?? ''),
-                signal,
-              );
-              return available ? undefined : 'Name is already in use';
-            },
+        field={form.field('name', {
+          deps: [organizationId, check],
+          validateTrigger: 'onChange',
+          validationDelay: 200,
+          validate: async (value, { signal }) => {
+            if (!value) return;
+            const available = await check(organizationId, value, signal);
+            return available ? undefined : 'Name is already in use';
           },
-        ]}
+        })}
+        label="Name"
+        isRequired
       />
       <Form.Submit>Save</Form.Submit>
+    </Form>
+  );
+}
+
+// Quickstart from docs/modern-form-guide.md.
+interface NullableProfile {
+  email: string | null;
+  notifications: boolean | null;
+}
+
+export function NullableProfileForm({
+  initialNullableProfile,
+  save,
+}: {
+  initialNullableProfile: NullableProfile;
+  save: (
+    values: FormValues<NullableProfile>,
+    signal: AbortSignal,
+  ) => Promise<void>;
+}) {
+  const form = Form.useController<NullableProfile>({
+    defaultValues: initialNullableProfile,
+  });
+
+  return (
+    <Form form={form} onSubmit={(values, { signal }) => save(values, signal)}>
+      <TextInput
+        field={form.field('email', {
+          rules: [{ type: 'email', message: 'Enter a valid email' }],
+        })}
+        label="Email"
+        isRequired
+      />
+      <Switch field={form.field('notifications')} label="Notifications" />
+      <Form.SubmitError />
+      <Form.Submit>Save</Form.Submit>
+      <Form.Reset>Reset</Form.Reset>
+    </Form>
+  );
+}
+
+// Typed leaf reads, including nullable values and context without prop threading.
+export function EmailPreview() {
+  const form = Form.useControllerContext<NullableProfile>();
+  const email = Form.useValue(form, 'email');
+  return <output>{email ?? 'No email set'}</output>;
+}
+
+export function PasswordConfirmation() {
+  const form = Form.useController<{
+    password: string;
+    confirmation: string;
+  }>();
+  return (
+    <Form form={form}>
+      <TextInput
+        field={form.field('password')}
+        type="password"
+        label="Password"
+        isRequired
+      />
+      <TextInput
+        field={form.field('confirmation', {
+          dependsOn: ['password'],
+          validate: (value, { getValue }) => {
+            if (!value) return;
+            return value === getValue('password')
+              ? undefined
+              : 'Passwords must match';
+          },
+        })}
+        label="Confirm password"
+        type="password"
+        isRequired
+      />
     </Form>
   );
 }

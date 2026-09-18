@@ -14,7 +14,7 @@ const modern = Form.useController<Profile>({ defaultValues: initialProfile });
 // <Form form={modern}> selects the modern engine.
 ```
 
-`Form.useController()` returns a stable command object. Initial options are read once. Later changes to the options object do not replace defaults or callbacks. Seed defaults in the creation hook, then use commands for fetched data. Modern roots reject `defaultValues`; callback props on the root bind the latest committed callbacks. An omitted or undefined root callback falls back to its creation-time counterpart.
+`Form.useController()` returns a stable command object. Defaults and store policy are read once; business callbacks update after each committed render without replacing values. Seed defaults in the creation hook, then use commands for fetched data. Modern roots reject `defaultValues`; callback props on the root bind the latest committed callbacks. An omitted or undefined root callback falls back to its latest hook counterpart.
 
 The following API mapping describes migration choices; names are not mechanically interchangeable.
 
@@ -23,7 +23,7 @@ The following API mapping describes migration choices; names are not mechanicall
 | `const [form] = Form.useForm()` | `const form = Form.useController<T>()` |
 | `form.isDirty` in JSX | `Form.useSelector(form, state => state.isDirty)` |
 | `getFieldValue(name)` / `getFieldsValue()` | Imperative `getValue(path)` / `getValues()` |
-| Read a value during render | `Form.useSelector` or `Form.Subscribe` |
+| Read a value during render | `Form.useValue(form, path)`; selectors / `Subscribe` for derived or inline UI |
 | `setFieldsValue(values)` | `setValues(values)`; review touch/notification/validation options |
 | `setInitialFieldsValue(values)` | `setDefaultValues(values)` to change the baseline; `adoptDefaultValues` to load data into eligible fields |
 | `resetFields()` | `reset()`; `reset({ values })` replaces baseline and current values |
@@ -31,64 +31,25 @@ The following API mapping describes migration choices; names are not mechanicall
 | `submit()` | `submit()` returns a tagged result such as `submitted`, `invalid`, or `failed` |
 | `Form.Item` wrapping a custom control | `useFieldProps` plus `wrapWithField` inside that control |
 
-`DialogForm` and Cloud's `NarrowForm` / `SaveableCard` currently expose legacy instance contracts. Keep their callers legacy until the wrapper itself is migrated and verified. Passing a modern controller through a cast does not migrate the wrapper. `Form.Item`, legacy mutable flags, and the legacy `Form.Context` instance shape remain compatibility APIs.
+`DialogForm` and Cloud's `NarrowForm` / `SaveableCard` currently expose legacy instance contracts. Keep their callers legacy until the wrapper itself is migrated and verified. Passing a modern controller through a cast does not migrate the wrapper. `Form.Item`, legacy mutable flags, and the legacy `FormContext` instance shape remain compatibility APIs.
 
-## Subscribe where the UI reads state
+## Review the behavior changes
 
-Creation does not subscribe the component. A selector subscribes its caller; a `Form.Subscribe` render function subscribes only that subtree. A colocated selector is valid when the whole creator should render on that selection. Otherwise place the selector in a child or use `Subscribe`.
+The [Modern Form guide](modern-form-guide.md) is the reference for implementing forms. Start there for [API choices](modern-form-guide.md#pick-one-binding-and-one-owner-for-each-concern), [reactive reads](modern-form-guide.md#read-a-value-show-status-or-reveal-a-section), [incoming data](modern-form-guide.md#load-server-data-refresh-defaults-or-discard-edits), [validation](modern-form-guide.md#validate-simple-rules-sibling-fields-or-an-api-response), and [submission](modern-form-guide.md#submit-display-server-errors-and-reset). The following differences need particular attention during migration:
 
-```tsx
-<Form.Subscribe form={form} selector={state => state.values.name}>
-  {name => <output>{name}</output>}
-</Form.Subscribe>
-```
-
-Selectors and equality functions must be pure. Select a primitive or a stable snapshot branch. A newly allocated object compares unequal with the default `Object.is`; supply `isEqual` when selecting several values into a fresh object. `Form.useControllerContext<T>()` gives a descendant the controller without subscribing it. The generic describes that root's values; it cannot verify an ancestor's type.
-
-`getValue`, `getValues`, `getActiveValues`, `getFieldSnapshot`, and `getSnapshot` are imperative reads for handlers and effects. They do not make JSX reactive. `subscribe(listener)` supports imperative observers and returns an unsubscribe function. `batch(fn)` groups synchronous commands into one publication; it is not a rollback transaction, and the callback must not be async.
-
-Omitted `form` props use context. Explicit `form={undefined}` detaches an input. `Form.Subscribe` and `useControllerContext` require modern context; legacy roots and `FormScopeMask` mask it. An explicit modern controller can be used outside a root. Use only one owning root for each controller.
-
-## Retained data and active fields
-
-| View | Contents | Typical use |
-| --- | --- | --- |
-| `state.values` / `getValues()` | All retained values, including defaults for unmounted fields | Draft previews, autosave, restoring hidden sections |
-| `state.activeValues` / `getActiveValues()` | Values at registered field paths | The default validated submission payload |
-
-Hiding a field unregisters it immediately. Its value stays retained by default, so showing it again restores the draft. `preserve={false}` removes that value after cleanup; the default baseline remains, so reset can restore it. An intervening update or Strict Mode reconnection prevents stale cleanup from removing a live value. Removing an array path keeps other indices stable.
-
-`submit()` validates active fields and submits active values. Use `submit({ include: 'all' })` only when retained fields belong in the payload; validation still covers active fields only. Registering a parent object includes its complete object; register leaf paths instead when only selected children should be active. A form with no active fields is invalid. Dirty/touched metadata includes retained fields; validity considers active fields.
-
-Named UI Kit inputs currently accept literal string names. Controller commands accept strings and explicit nested tuples. `'user.email'` is one literal key, while `['user', 'email']` addresses an object. Numeric array indices and numeric string segments address the same path. Known keys and tuples infer values; dynamic or unknown names remain `unknown` and accept dynamic writes. Declare an explicit model with `Form.useController<Model>()` when defaults omit fields or contain values narrower than the intended model. The declaration surface requires TypeScript 5.4 or newer.
-
-```tsx
-form.setValue('name', 'New name');
-form.setValue(['rows', 0, 'email'], 'person@example.com');
-// Static keys and tuple leaves reject values of the wrong type.
-```
-
-Snapshots own copies of plain objects and arrays. Treat dates, files, other non-plain objects, and error payloads as immutable. Defaults and values on the controller take precedence over field defaults, including explicit null and undefined. Reusing a mutated input object does not replace its previously captured snapshot; send a new object.
-
-## Load defaults without erasing edits
-
-Use `adoptDefaultValues(response, { when: 'untouched' })` for a response that may arrive after typing. It replaces the baseline and adopts values at eligible paths, preserving touched edits. `when: 'clean'` protects dirty fields, while `when: 'always'` deliberately replaces them. Abort or ignore obsolete requests; the complete `AsyncDefaults` example demonstrates both request cleanup and a stale-response guard.
-
-Use `setDefaultValues(response)` when only the baseline should change. `{ currentValues: 'replace' }` replaces current values too. `reset({ values: response })` replaces baseline and values and clears interaction, validation, and submission error state. Defaults commands replace the baseline object, so omitted keys are removed from it.
-
-Programmatic writes do not touch fields or invoke `onValuesChange` unless requested. User writes do both by default. Review `{ source, touch, notify, validate }` for each imperative write. `onValuesChange` receives retained values and metadata describing the changed paths/source/kind.
-
-## Validation, custom controls, and submission
-
-Built-in named inputs register after commit and select only their value, errors, and validation status. Custom controls call `useFieldProps`, map their event/value API, then give the resolved props to `wrapWithField`. Forward the generated id, blur, disabled, read-only, and invalid state to the actual control; do not spread a controller onto a DOM element. The `CustomControl` example is typechecked against the public API.
-
-For modern custom validators, return an error (including a ReactNode), or throw/reject it. Return undefined, null, or an empty string on success. A legacy validator that resolves a data object must be adapted: a modern validator treats that result as an error. Use `ModernValidationRule` to check authored modern rules strictly; shared input props remain permissive enough for existing legacy rules. Legacy forms keep their existing validator behavior.
-
-Validators receive `{ signal, name, getValue, getValues }` as the third argument. Pass the signal to network requests. Superseded work settles as stale even if the validator ignores cancellation. Use `rulesKey` for dependencies captured by a validator whose function source stays the same (for example, an organization id). Keep service callbacks stable or include their revision in that key too. Equivalent rule signatures do not restart pending validation.
-
-`validationDelay` coalesces automatic validation; explicit validation and submission run immediately by default. Auto writes revalidate on-change fields and fields already showing errors. On-blur fields otherwise wait for blur. `errorPolicy` chooses first/all rule errors. Errors remain visible while revalidating and clear on nonvalidating edits.
-
-Root `onSubmit` receives the selected payload and an abort signal; `onSubmitFailed` receives validation or submission failures. Concurrent submits are ignored. Reset and owning-root release cancel pending submission. Submit start and reset clear `submitError`; ordinary edits keep it. `Form.Submit`, `Form.Reset`, and `Form.SubmitError` subscribe to the modern state. Native `action`/`method` forms continue browser navigation and bypass this pipeline.
+| Area | Migration decision |
+| --- | --- |
+| Field bindings and paths | Prefer `field={form.field(path, options)}`. Strings are literal keys; convert legacy dot notation to tuples for nested data. Do not configure the same binding through `field`, `name`, and `form`. |
+| Empty API values | Include `null` in the model where the API returns it. Built-in typed bindings display an empty state without rewriting the stored null. |
+| Render-time reads | Use `useValue`, `useFieldState`, or selectors. Imperative getters and the controller creator do not subscribe React. |
+| Late defaults | Defaults initialize once. Choose adoption to preserve edits, reset for a new editing session, or baseline-only updates deliberately. |
+| Programmatic writes | `setValue` / `setValues` do not touch or invoke `onValuesChange` by default. Review `source`, `touch`, `notify`, and `validate` options. |
+| Validator result | `undefined`, `null`, and an empty string succeed. Return an error or throw/reject to fail. Adapt validators that resolve a data object. |
+| Validator dependencies | `deps` contains external captures; `dependsOn` contains form paths for revalidation. Reads only cancel stale in-flight work. Ordinary validators do not need `rulesKey`. |
+| Hidden fields and payload | Unmounted fields retain drafts by default but leave the default active submission payload. `submitValues="all"` includes retained values and still validates only active fields. |
+| Actions | Modern Submit remains enabled after errors by default. Opt into `disableOnInvalid` if required. Reset follows `state.canReset`, which includes touched/validation/error state. |
+| Errors and cancellation | `onSubmitFailed` distinguishes `invalid` from `failed`. Reset and root unmount cancel submission; ordinary edits retain submit errors. |
+| Custom controls | Use `useFieldProps` and `wrapWithField`; `Form.Item` remains legacy-only. |
 
 ## Per-form migration checklist
 
@@ -96,9 +57,9 @@ Root `onSubmit` receives the selected payload and an abort signal; `onSubmitFail
 2. Check surrounding wrappers. Migrate a wrapper explicitly or choose a form that does not rely on its legacy instance API.
 3. Create a typed controller and move initial defaults into its creation options. Choose adoption/reset semantics for later data.
 4. Replace render-time getters and flags with narrow selectors or `Subscribe`. Update custom controls through `useFieldProps`.
-5. Adapt validators' success values and cancellation, and version captured dependencies with `rulesKey`.
+5. Adapt validators' success values and cancellation. Declare external captured inputs in `deps` and sibling form paths in `dependsOn`.
 6. Decide whether hidden fields are retained and whether submission uses active or all values. Verify the actual payload with conditional sections both visible and hidden.
-7. Test required/async errors, double submit, server failure, reset, unmount during requests, keyboard focus, and navigation guards. Confirm unaffected fields and the creator do not rerender on each keystroke.
+7. Test required/async errors, double submit, server failure, reset, unmount during requests, keyboard focus, and navigation guards. Modern Submit stays enabled after validation errors; pass `disableOnInvalid` to retain the legacy disabled-button behavior. Verify this visible change with QA. Confirm unaffected fields and the creator do not rerender on each keystroke.
 8. Run source and built-consumer type checks, the frozen legacy contract suite, React 18/19 compiler checks, and relevant browser checks. Review visual changes before merging.
 
 To revert a migrated form, render the preserved legacy component again and restore its legacy defaults/callback/validator contracts. Remount the boundary and deliberately transfer serializable draft values if needed. Do not cast the modern controller to a legacy instance or toggle hook implementations in place.

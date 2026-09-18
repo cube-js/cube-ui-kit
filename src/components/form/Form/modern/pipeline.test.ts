@@ -100,6 +100,9 @@ describe('modern validation pipeline', () => {
       if (command === 'manual error') store.setFieldErrors('a', ['manual']);
       expect(await pending).toMatchObject({ stale: true, isValid: false });
       expect(signal?.aborted).toBe(true);
+      // A changed rule now starts a replacement validation; settle it before
+      // asserting that the obsolete promise cannot publish over its result.
+      if (command === 'rules') await store.validate();
       const snapshot = store.getSnapshot();
       work.resolve('late');
       await Promise.resolve();
@@ -166,7 +169,7 @@ describe('modern validation pipeline', () => {
       rules: [makeRule('third')],
       rulesKey: 'new captured input',
     });
-    expect(store.getFieldSnapshot('a')?.status).toBe('unvalidated');
+    expect(store.getFieldSnapshot('a')?.status).toBe('validating');
     expect(rulesSignature([{ required: true }])).toBe(
       rulesSignature([{ required: true, message: 'new message' }]),
     );
@@ -258,7 +261,8 @@ describe('modern callback ownership and submission', () => {
     });
     expect(onSubmit).not.toHaveBeenCalled();
     expect(onSubmitFailed).toHaveBeenCalledExactlyOnceWith({
-      a: ['Required A'],
+      status: 'invalid',
+      errors: { a: ['Required A'] },
     });
     expect(store.getSnapshot().isSubmitting).toBe(false);
   });

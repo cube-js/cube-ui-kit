@@ -4,6 +4,34 @@ import { createFormStore } from './store';
 import { formValueEqual, getFieldKey } from './values';
 
 describe('modern store: phase 2 value and ownership conformance', () => {
+  it('derives reset availability from retained state and submission', async () => {
+    const store = createFormStore({ defaultValues: { a: 1 } });
+    const registration = store.register('a');
+    expect(store.getSnapshot().canReset).toBe(false);
+    await store.validate();
+    expect(store.getSnapshot().canReset).toBe(true);
+    store.reset();
+    expect(store.getSnapshot().canReset).toBe(false);
+    store.touch('a');
+    expect(store.getSnapshot().canReset).toBe(true);
+    store.reset();
+    store.setFieldErrors('a', ['Error']);
+    expect(store.getSnapshot().canReset).toBe(true);
+    store.reset();
+    store.setSubmitError('Failed');
+    expect(store.getSnapshot().canReset).toBe(true);
+    store.reset();
+    store.setValue('a', 2);
+    registration.release();
+    expect(store.getSnapshot().canReset).toBe(true);
+    const submission = store.startSubmission()!;
+    expect(store.getSnapshot().canReset).toBe(false);
+    submission.complete();
+    expect(store.getSnapshot().canReset).toBe(true);
+    store.reset();
+    expect(store.getSnapshot().canReset).toBe(false);
+  });
+
   it('seeds retained values before registration, with a stable branded identity', () => {
     const store = createFormStore({ defaultValues: { a: 1, b: null } });
     expect(store[FORM_BACKEND]).toBe('modern');
@@ -174,10 +202,11 @@ describe('immutable snapshots and selector subscriptions', () => {
     const store = createFormStore({ defaultValues: original });
     original.a.nested.value = 2;
     const initial = store.getSnapshot();
-    expect(initial.values.a?.nested.value).toBe(1);
+    expect(initial.values.a?.nested?.value).toBe(1);
     expect(Object.isFrozen(original.a)).toBe(false);
     expect(() => {
-      initial.values.a!.nested.value = 3;
+      // @ts-expect-error snapshots reject nested mutations both statically and at runtime
+      initial.values.a!.nested!.value = 3;
     }).toThrow();
     expect(() => {
       (initial.fields as Record<string, unknown>).a = {};
@@ -484,8 +513,8 @@ describe('nested paths and dynamic names', () => {
     const after = store.getSnapshot();
     expect(after.values.user).toBe(before.values.user);
     expect(after.values.rows?.[0]).toBe(before.values.rows?.[0]);
-    expect(before.values.rows?.[1].id).toBe(2);
-    expect(after.values.rows?.[1].id).toBe(20);
+    expect(before.values.rows?.[1]?.id).toBe(2);
+    expect(after.values.rows?.[1]?.id).toBe(20);
     expect(store.getActiveValues()).toEqual({
       user: { first: 'A' },
       rows: Object.assign(new Array(2), { 1: { id: 20 } }),

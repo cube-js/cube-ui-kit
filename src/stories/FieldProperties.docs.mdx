@@ -8,11 +8,16 @@ All input components in UI Kit (`TextInput`, `Select`, `ComboBox`, `Checkbox`, `
 
 When used inside a [Form](/docs/forms-form--docs), these properties are automatically inherited from the form context and can be overridden at the field level.
 
+For modern forms, follow the [use-case guide](/docs/forms-modernform--docs). Put binding and validation options on `form.field(path, options)` and presentation props on the input. The prop reference below also covers `name` bindings for shared controls and legacy forms; these are alternatives to the typed descriptor, not additional required setup.
+
 ## Identity & Form Integration
 
-- **`name`** `string` — Field name for form data binding. Required when used within a Form.
-- **`form`** `CubeFormInstance` — Form instance. Automatically provided when inside a Form context. Pass it explicitly to link an input to a form it is not nested in, or to override the surrounding form.
-- **`defaultValue`** `any` — Default value for the field in uncontrolled mode.
+- **`field`** `FormField<Value>` — Typed modern binding created by `form.field(path, options)`. Supports nested paths and takes precedence over `form` and `name`. Built-in bindings accept `null` and `undefined` alongside their normal model value; display fallbacks do not replace stored nulls.
+- **`name`** `string` — Field name for form data binding when a descriptor is not supplied.
+- **`form`** `CubeFormInstance | FormController<T>` — Legacy instance or modern controller. Automatically provided when inside a Form context. Pass it explicitly to link an input to a form it is not nested in, or to override the surrounding form.
+- **`defaultValue`** `any` — Initial field value. Modern controller values/defaults take precedence, including explicit `null` and `undefined`.
+- **`preserve`** `boolean` (modern default: `true`) — Retain the value after the last input for this field unmounts.
+- **`isEqual`** `(previous, next) => boolean` — Modern field dirty-value comparator.
 - **`id`** `string` — Unique ID for the field element.
 - **`idPrefix`** `string` — ID prefix to avoid collisions between multiple forms.
 
@@ -71,6 +76,10 @@ When used inside a [Form](/docs/forms-form--docs), these properties are automati
 - **`rules`** `ValidationRule[]` — Array of validation rules for the field.
 - **`validateTrigger`** `'onBlur' | 'onChange' | 'onSubmit'` — When to trigger validation.
 - **`validationDelay`** `number` — Debounce delay in milliseconds before running validation.
+- **`deps`** `readonly unknown[]` — Modern validator inputs captured from outside the form. Compared with `Object.is`; changes invalidate prior validation.
+- **`dependsOn`** `readonly FormPath[]` — Modern form paths that trigger revalidation, including conditional reads. Validator reads only cancel in-flight work.
+- **`rulesKey`** `string` — Manual modern function revision. Skips validator/transform source comparison; declarative constraints are always compared. Update it when a function or its captures change.
+- **`errorPolicy`** `'first' | 'all'` — Modern rule error collection policy, inherited from the controller by default.
 - **`showValid`** `boolean` — Whether to show the valid state icon after successful validation.
 - **`errorMessage`** `ReactNode` — Error message always displayed in danger state, regardless of validation state.
 - **`message`** `ReactNode` — _(deprecated)_ Use `errorMessage` for errors and `description` for help text.
@@ -91,38 +100,40 @@ The `rules` prop accepts an array of rule objects. Built-in validators include:
 - **`enum`** `any[]` — Value must be one of the allowed values.
 - **`whitespace`** `boolean` — Value must contain non-whitespace characters.
 - **`message`** `string` — Custom error message for the rule.
-- **`validator`** `(rule, value) => Promise<string | void>` — Custom async validation function.
+- **`validator`** `(rule, value, context) => result` — Custom rule function. In modern forms, return an error or throw/reject to fail; `undefined`, `null`, and an empty string succeed. The context provides `signal`, `name`, `getValue`, and `getValues`. Prefer descriptor `validate(value, context)` for an ordinary custom check with an inferred value type. Legacy validators retain their existing contract.
 
-```jsx
+```tsx
 <TextInput
-  name="email"
+  field={form.field('email', {
+    rules: [{ type: 'email', message: 'Enter a valid email' }],
+  })}
   label="Email Address"
   isRequired
-  rules={[
-    { required: true, message: 'Email is required' },
-    { type: 'email', message: 'Enter a valid email' },
-  ]}
 />
 ```
 
 ## Usage Example
 
-```jsx
+```tsx
 import { Form, TextInput, Select } from '@cube-dev/ui-kit';
 
 function ExampleForm() {
+  const form = Form.useController<{
+    name: string;
+    role: 'admin' | 'member' | null;
+  }>({ defaultValues: { name: '', role: null } });
+
   return (
-    <Form defaultValues={{ name: '', role: undefined }}>
+    <Form form={form}>
       <TextInput
-        name="name"
+        field={form.field('name', { rules: [{ min: 2 }] })}
         label="Full Name"
         description="As it appears on your ID"
         isRequired
-        rules={[{ required: true, min: 2 }]}
       />
 
       <Select
-        name="role"
+        field={form.field('role')}
         label="Role"
         tooltip="Your primary role in the organization"
         necessityIndicator="label"

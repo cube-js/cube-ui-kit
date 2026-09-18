@@ -1,15 +1,24 @@
 import { FORM_BACKEND, isModernFormController } from '../backend';
 
+import { createFormField } from './field';
 import { createFormStore } from './store';
 
 import type { ReactNode } from 'react';
-import type { FormValueAtPath } from './path-types';
+import type { FormField, FormFieldOptions } from './field';
 import type {
+  CheckedFormDependencies,
+  CheckedFormPath,
+  FormValueAtPath,
+} from './path-types';
+import type { FormReadValue } from './read-types';
+import type {
+  FieldState,
   FormState,
   FormStore,
   FormStoreOptions,
   SetValueOptions,
   ModernFieldValidationResult as StoreFieldValidationResult,
+  ModernSubmitFailure as StoreSubmitFailure,
   ModernSubmitResult as StoreSubmitResult,
   ModernValidationResult as StoreValidationResult,
 } from './types';
@@ -19,6 +28,15 @@ import type { FormPath } from './values';
 export type ModernValidationRule = StoreValidationRule<ReactNode>;
 export type ModernValidationResult = StoreValidationResult<ReactNode>;
 export type ModernFieldValidationResult = StoreFieldValidationResult<ReactNode>;
+export type ModernSubmitFailure = StoreSubmitFailure<ReactNode>;
+export type ModernFieldState<Value = unknown> = Omit<
+  FieldState<ReactNode>,
+  'value' | 'defaultValue'
+> & {
+  readonly value: FormReadValue<Value> | undefined;
+  readonly defaultValue: FormReadValue<Value> | undefined;
+};
+
 export type ModernSubmitResult = StoreSubmitResult<ReactNode>;
 
 export type ModernFormState<T extends object = Record<string, unknown>> =
@@ -26,7 +44,7 @@ export type ModernFormState<T extends object = Record<string, unknown>> =
 
 export type UseFormControllerOptions<
   T extends object = Record<string, unknown>,
-> = FormStoreOptions<T>;
+> = FormStoreOptions<T, ReactNode>;
 
 /** Public commands; registration and pipeline state tokens stay internal. */
 export type FormController<T extends object = Record<string, unknown>> =
@@ -38,7 +56,6 @@ export type FormController<T extends object = Record<string, unknown>> =
       | 'submit'
       | 'blur'
       | 'getSnapshot'
-      | 'getFieldSnapshot'
       | 'getValues'
       | 'getActiveValues'
       | 'subscribe'
@@ -53,14 +70,26 @@ export type FormController<T extends object = Record<string, unknown>> =
       | 'setSubmitError'
       | 'clearSubmitError'
     > & {
+      getFieldSnapshot<const Path extends FormPath>(
+        path: CheckedFormPath<T, Path>,
+      ): ModernFieldState<FormValueAtPath<T, Path>> | undefined;
       getValue<const Path extends FormPath>(
-        path: Path,
-      ): FormValueAtPath<T, Path> | undefined;
+        path: CheckedFormPath<T, Path>,
+      ): FormReadValue<FormValueAtPath<T, Path>> | undefined;
       setValue<const Path extends FormPath>(
-        path: Path,
+        path: CheckedFormPath<T, Path>,
         value: FormValueAtPath<T, NoInfer<Path>> | undefined,
         options?: SetValueOptions,
       ): void;
+      field<
+        const Path extends FormPath,
+        const Dependencies extends readonly FormPath[] = readonly FormPath[],
+      >(
+        path: CheckedFormPath<T, Path>,
+        options?: FormFieldOptions<T, FormValueAtPath<T, NoInfer<Path>>> & {
+          dependsOn?: Dependencies & CheckedFormDependencies<T, Dependencies>;
+        },
+      ): FormField<FormValueAtPath<T, Path>>;
     }
   >;
 
@@ -71,6 +100,8 @@ const CONTROLLER_STORE = Symbol.for('@cube-dev/ui-kit/form-controller-store');
 interface ControllerInternals<T extends object> {
   store: FormStore<T, ReactNode>;
   getServerSnapshot(): ModernFormState<T>;
+  getRootElement(): HTMLFormElement | undefined;
+  bindRootElement(element: HTMLFormElement | null): () => void;
 }
 
 /** Pure allocation for the creation hook; no listeners or external effects. */
@@ -79,11 +110,19 @@ export function createFormController<T extends object>(
 ): FormController<T> {
   const store = createFormStore<T, ReactNode>(options);
   const serverSnapshot = store.getSnapshot();
+  let rootElement: HTMLFormElement | undefined;
   const internals: ControllerInternals<T> = {
     store,
     getServerSnapshot: () => serverSnapshot,
+    getRootElement: () => rootElement,
+    bindRootElement(element) {
+      rootElement = element ?? undefined;
+      return () => {
+        if (rootElement === element) rootElement = undefined;
+      };
+    },
   };
-  return Object.freeze({
+  const controller = Object.freeze({
     [FORM_BACKEND]: 'modern' as const,
     [CONTROLLER_STORE]: internals,
     validate: store.validate,
@@ -106,7 +145,10 @@ export function createFormController<T extends object>(
     clearFieldErrors: store.clearFieldErrors,
     setSubmitError: store.setSubmitError,
     clearSubmitError: store.clearSubmitError,
+    field: (path: FormPath, config?: FormFieldOptions<T, unknown>) =>
+      createFormField(controller, path, config),
   }) as FormController<T>;
+  return controller;
 }
 
 export function getControllerInternals<T extends object>(

@@ -32,7 +32,7 @@ export interface CubeDateInputProps<T extends DateValue = DateValue>
   extends Omit<AriaDateFieldProps<T>, 'errorMessage' | 'form'>,
     BaseProps,
     ContainerStyleProps,
-    FieldBaseProps {
+    FieldBaseProps<T | null | undefined> {
   wrapperStyles?: Styles;
   inputStyles?: Styles;
   styles?: Styles;

@@ -26,7 +26,7 @@ export interface CubeRadioGroupProps
   extends BaseProps,
     Omit<AriaRadioGroupProps, 'errorMessage' | 'form'>,
     ContainerStyleProps,
-    FieldBaseProps {
+    FieldBaseProps<string | null | undefined> {
   groupStyles?: Styles;
   orientation?: 'horizontal' | 'vertical';
   value?: string;

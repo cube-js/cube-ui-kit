@@ -18,7 +18,7 @@ import { useFormController, useFormSelector } from './react';
 import type { FormController } from './controller';
 
 describe('modern React creation and selection', () => {
-  it('seeds colocated selectors synchronously and ignores later creation options', () => {
+  it('seeds defaults once and commits fresh creation callbacks', () => {
     const firstCallback = vi.fn();
     const secondCallback = vi.fn();
     const { result, rerender } = renderHook(
@@ -40,8 +40,8 @@ describe('modern React creation and selection', () => {
     expect(result.current.selected).toBe(2);
     expect(initial.getSnapshot().defaultValues.a).toBe(1);
     act(() => initial.setValue('a', 4, { source: 'user' }));
-    expect(firstCallback).toHaveBeenCalledTimes(1);
-    expect(secondCallback).not.toHaveBeenCalled();
+    expect(firstCallback).not.toHaveBeenCalled();
+    expect(secondCallback).toHaveBeenCalledTimes(1);
   });
 
   it('does not rerender the creator or an unchanged selection', () => {

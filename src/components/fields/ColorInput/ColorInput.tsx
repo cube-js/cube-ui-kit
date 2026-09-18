@@ -71,7 +71,7 @@ export interface CubeColorInputProps
     OuterStyleProps,
     BlockStyleProps,
     ColorStyleProps,
-    FieldBaseProps {
+    FieldBaseProps<string | null | undefined> {
   /** The selected color, as a color string. */
   value?: string | null;
   /** The initial color of an uncontrolled picker. */

@@ -183,7 +183,7 @@ export interface CubeSelectBaseProps<T>
     BaseStyleProps,
     OuterStyleProps,
     ColorStyleProps,
-    Omit<FieldBaseProps, 'tooltip'>,
+    Omit<FieldBaseProps<Key | null | undefined>, 'tooltip'>,
     CollectionBase<T>,
     Omit<
       AriaSelectProps<T>,

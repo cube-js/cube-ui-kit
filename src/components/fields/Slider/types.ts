@@ -12,7 +12,7 @@ export interface CubeSliderBaseProps<T>
   extends Omit<AriaSliderProps<T>, 'label' | 'form'>,
     BasePropsWithoutChildren,
     OuterStyleProps,
-    FieldBaseProps,
+    FieldBaseProps<T | null | undefined>,
     BlockStyleProps {
   inputStyles?: Styles;
   gradation?: string[];
