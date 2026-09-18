@@ -388,7 +388,21 @@ async function collectDocs(srcDir, computeOutput) {
 
   for (const docPath of files) {
     const outputPath = computeOutput(docPath);
-    const content = await fs.readFile(docPath, 'utf8');
+    let content = await fs.readFile(docPath, 'utf8');
+
+    // Storybook can render a shared Markdown guide through a Vite raw import.
+    // Include that same source in the packaged docs instead of leaving JSX.
+    for (const [, binding, source] of content.matchAll(
+      /^import (\w+) from ['"]([^'"]+\.md)\?raw['"];$/gm,
+    )) {
+      const tag = `<Markdown>{${binding}}</Markdown>`;
+      if (!content.includes(tag)) continue;
+      const markdown = await fs.readFile(
+        path.resolve(path.dirname(docPath), source),
+        'utf8',
+      );
+      content = content.replaceAll(tag, () => markdown.trimEnd());
+    }
 
     const companionPath = await findCompanionStoriesPath(docPath);
     let title = companionPath ? await extractStoryTitle(companionPath) : null;

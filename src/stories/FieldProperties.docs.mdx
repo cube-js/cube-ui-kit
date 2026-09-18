@@ -8,6 +8,8 @@ All input components in UI Kit (`TextInput`, `Select`, `ComboBox`, `Checkbox`, `
 
 When used inside a [Form](/docs/forms-form--docs), these properties are automatically inherited from the form context and can be overridden at the field level.
 
+For modern forms, follow the [use-case guide](/docs/forms-modernform--docs). Put binding and validation options on `form.field(path, options)` and presentation props on the input. The prop reference below also covers `name` bindings for shared controls and legacy forms; these are alternatives to the typed descriptor, not additional required setup.
+
 ## Identity & Form Integration
 
 - **`field`** `FormField<Value>` — Typed modern binding created by `form.field(path, options)`. Supports nested paths and takes precedence over `form` and `name`. Built-in bindings accept `null` and `undefined` alongside their normal model value; display fallbacks do not replace stored nulls.
@@ -98,38 +100,40 @@ The `rules` prop accepts an array of rule objects. Built-in validators include:
 - **`enum`** `any[]` — Value must be one of the allowed values.
 - **`whitespace`** `boolean` — Value must contain non-whitespace characters.
 - **`message`** `string` — Custom error message for the rule.
-- **`validator`** `(rule, value) => Promise<string | void>` — Custom async validation function.
+- **`validator`** `(rule, value, context) => result` — Custom rule function. In modern forms, return an error or throw/reject to fail; `undefined`, `null`, and an empty string succeed. The context provides `signal`, `name`, `getValue`, and `getValues`. Prefer descriptor `validate(value, context)` for an ordinary custom check with an inferred value type. Legacy validators retain their existing contract.
 
-```jsx
+```tsx
 <TextInput
-  name="email"
+  field={form.field('email', {
+    rules: [{ type: 'email', message: 'Enter a valid email' }],
+  })}
   label="Email Address"
   isRequired
-  rules={[
-    { required: true, message: 'Email is required' },
-    { type: 'email', message: 'Enter a valid email' },
-  ]}
 />
 ```
 
 ## Usage Example
 
-```jsx
+```tsx
 import { Form, TextInput, Select } from '@cube-dev/ui-kit';
 
 function ExampleForm() {
+  const form = Form.useController<{
+    name: string;
+    role: 'admin' | 'member' | null;
+  }>({ defaultValues: { name: '', role: null } });
+
   return (
-    <Form defaultValues={{ name: '', role: undefined }}>
+    <Form form={form}>
       <TextInput
-        name="name"
+        field={form.field('name', { rules: [{ min: 2 }] })}
         label="Full Name"
         description="As it appears on your ID"
         isRequired
-        rules={[{ required: true, min: 2 }]}
       />
 
       <Select
-        name="role"
+        field={form.field('role')}
         label="Role"
         tooltip="Your primary role in the organization"
         necessityIndicator="label"

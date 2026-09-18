@@ -460,46 +460,30 @@ DataTable also accepts nested column definitions for already-shaped pivot result
 
 ## Form System
 
-### Form Component
+### Modern forms
 
-`<Form>` wraps a native `<form>` and provides validation context:
+For a new modern form, create a typed controller, put defaults on the controller, and bind inputs with descriptors:
 
-```jsx
-const [form] = useForm();
+```tsx
+const form = Form.useController<{ email: string | null }>({
+  defaultValues: { email: null },
+});
 
-<Form form={form} onSubmit={(data) => save(data)}>
-  <TextInput name="email" label="Email" rules={[{ required: true }, { type: 'email' }]} />
-  <SubmitButton>Save</SubmitButton>
+<Form form={form} onSubmit={(values, { signal }) => save(values, signal)}>
+  <TextInput field={form.field('email')} label="Email" isRequired />
+  <Form.SubmitError />
+  <Form.Submit>Save</Form.Submit>
 </Form>
 ```
 
-### useForm Hook
+Inputs subscribe to their own values and errors. For other reactive UI, use `Form.useValue(form, path)` for one value, `Form.useFieldState(form, path)` for field metadata, or a selector for derived state. `<Form.Subscribe>` keeps an inline region's subscription separate from its parent. Keep imperative getters in handlers and effects.
 
-`Form.useController()` is the explicit modern alternative. Its creator does not subscribe; use `Form.useSelector(controller, selector, { isEqual })` or `<Form.Subscribe>` for reactive reads, and `Form.useControllerContext()` for descendant access. Named UI Kit inputs bind to modern controllers through commit-time registration and per-field subscriptions. Custom controls use `useFieldProps`; `Form.Item` remains legacy-only. Modern rules support cancellation, delayed validation, and ReactNode errors. Root callbacks and `Form.Submit`, `Form.Reset`, and `Form.SubmitError` use the modern pipeline; native action forms keep browser submission. Known keys and nested tuple commands infer their value types; dynamic paths stay supported. See the [Form documentation](/docs/forms-form--docs) for scope, defaults, and SSR contracts, and the [migration checklist](https://github.com/cube-js/cube-ui-kit/blob/main/docs/modern-form-migration.md) before converting an existing form.
+[Modern Form](/docs/forms-modernform--docs) explains which API to choose for server data, nullable values, nested fields, conditional sections, cross-field and remote validation, errors, and external actions. Use that guide for implementation recipes and the [migration checklist](https://github.com/cube-js/cube-ui-kit/blob/main/docs/modern-form-migration.md) when converting an existing form.
 
-For new modern forms, prefer `<TextInput field={form.field('email', { validate, deps })} />`; descriptors check names and value types and support nested tuple paths. Built-in bindings accept nullable model values without replacing stored `null` with display fallbacks; declare `null` in the model when it can come from the API. `Form.useValue(form, path)` and `Form.useFieldState(form, path)` provide narrow reactive reads; date-control values retain their methods and types. Hook callbacks stay fresh after commit; defaults change through explicit commands. Declare sibling validation dependencies with `dependsOn` and external captures with `deps`; reads only cancel stale in-flight work. Modern Submit stays enabled after validation errors by default. Both action buttons honor `onClick` cancellation; `state.canReset` exposes reset availability. Submission failures are discriminated by `status`, and explicit-controller action/error helpers work in external footers. `<Form submitValues="all">` includes retained values while continuing to validate active fields.
+### Legacy forms
 
-Returns a `CubeFormInstance` with:
+`Form.useForm()` and roots without a modern controller keep the legacy backend. `DialogForm` and `Form.Item` still use this contract. See [Form](/docs/forms-form--docs) and [FormInstance](/docs/forms-forminstance--docs) for legacy instance methods, defaults, and dot notation.
 
-- **Get/Set:** `getFieldValue`, `setFieldValue`, `getFieldsValue`, `setFieldsValue`, `getFormData`
-- **Validation:** `validateField`, `validateFields`, `resetFieldsValidation`
-- **State queries:** `isFieldValid`, `isFieldInvalid`, `isFieldTouched`, `isValid`, `isDirty`
-- **Errors:** `getFieldError`, `setFieldError`
+### Shared field integration
 
-### Validation Rules
-
-Async rule-based system. Each rule is an object with one of these properties:
-
-| Rule | Description |
-| --- | --- |
-| `required` | Field must have a value |
-| `type` | Type check: `email`, `url`, `number`, `integer`, `date`, `hex`, etc. |
-| `pattern` | Regex pattern match |
-| `min` / `max` | Length or value constraints |
-| `enum` | List of allowed values |
-| `whitespace` | Must contain non-whitespace content |
-| `validator` | Custom async function: `(rule, value) => Promise<void>` |
-
-### Field Integration
-
-Fields with a `name` prop inside `<Form>` automatically register with the form instance — no `<Field>` wrapper needed. The `useFieldProps` hook handles this internally.
+Built-in inputs have field support; they do not need a `Field` wrapper. Modern descriptors and legacy `name` bindings both connect through `useFieldProps`. Custom controls use that hook and `wrapWithField`. [Field Properties](/docs/getting-started-field-properties--docs) documents shared labels, validation, state, and presentation props.

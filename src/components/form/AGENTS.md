@@ -1,5 +1,7 @@
 # Form System
 
+Consumer guidance lives in [`docs/modern-form-guide.md`](../../../docs/modern-form-guide.md), rendered directly by `Form/ModernForm.docs.mdx` so Storybook and packaged docs share one source. Keep recipes there and migration differences in `docs/modern-form-migration.md`; label legacy references explicitly. Prefer typed descriptors, root callbacks for UI forms, and narrow subscriptions in examples; explain alternatives by their distinct use case.
+
 The rules for building form-attachable input components live in [`docs/rules/input-components.md`](../../../docs/rules/input-components.md) — hook order, the `useFieldProps` modes, id/label wiring, `wrapWithField`, validation props and the shared validation helpers.
 
 Read it before touching anything in this folder or in `src/components/fields/`.

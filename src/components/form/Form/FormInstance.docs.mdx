@@ -4,7 +4,9 @@ import { CubeFormInstance } from './use-form';
 
 <Meta title="Forms/FormInstance" />
 
-# FormInstance
+# FormInstance (legacy)
+
+This page describes `Form.useForm()` and `CubeFormInstance`. New modern forms use `Form.useController<Model>()`; see [Modern Form](/docs/forms-modernform--docs) for its commands and recipes. The methods and dot notation below are legacy-only.
 
 The `CubeFormInstance` is the core form management class that provides programmatic control over form state, validation, and data handling. It serves as the central API for interacting with form fields, managing validation states, and handling form submission workflows.
 
@@ -22,13 +24,7 @@ function MyComponent() {
 }
 ```
 
-Alternatively, you can create an instance directly:
-
-```tsx
-import { CubeFormInstance } from '@cube-dev/ui-kit';
-
-const formInstance = new CubeFormInstance();
-```
+`CubeFormInstance` is exported as a type for wrapper props and references. Use the hook to create a React form; the package does not export its constructor as a runtime API.
 
 ## Field Management
 
@@ -303,7 +299,7 @@ type CubeFieldData<Name extends string, Value> = {
 
 ## Best Practices
 
-1. **Always use the `useForm` hook** in React components rather than creating instances manually
+1. **For legacy forms, use the `useForm` hook** in React components rather than creating instances manually
 2. **Handle async validation errors** appropriately using try-catch blocks
 3. **Set initial values early** in the component lifecycle to avoid field state inconsistencies
 4. **Use dot notation** for nested object structures instead of managing complex object hierarchies manually
