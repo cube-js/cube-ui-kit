@@ -72,7 +72,7 @@ export interface FieldCoreProps<Value = unknown> {
   shouldUpdate?: boolean | ((prevValues, nextValues) => boolean);
   /** Validation rules */
   rules?: (FieldValidationRule | any[])[];
-  /** Manual modern rules revision, bypassing rule comparison. Update when any rule changes. */
+  /** Manual modern function revision, skipping source comparison. Declarative constraints are always compared. */
   rulesKey?: string;
   /** Modern field paths that trigger revalidation. Declare conditional validator reads too. */
   dependsOn?: readonly FormPath[];

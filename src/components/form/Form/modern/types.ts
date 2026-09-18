@@ -39,7 +39,7 @@ export interface FormState<T extends object, ErrorValue = unknown> {
 
 export interface RegistrationOptions<ErrorValue = unknown> {
   readonly rules?: readonly ModernValidationRule<ErrorValue>[];
-  /** Manual rules revision, bypassing automatic rule comparison. Update when any rule changes. */
+  /** Manual function revision, skipping source comparison. Declarative constraints are always compared. */
   readonly rulesKey?: string;
   /** Field paths that trigger revalidation after this field has been validated. Declare conditional reads too. */
   readonly dependsOn?: readonly FormPath[];

@@ -11,29 +11,48 @@ import { FieldFixture } from './field.fixture';
 import { createFormStore } from './store';
 
 describe('modern Form consumer workflows', () => {
-  it('revalidates when the descriptor validator is replaced', async () => {
-    const form = createFormController({ defaultValues: { name: 'Ada' } });
-    const view = render(
-      <TextInput
-        field={form.field('name', { validate: () => 'Strict error' })}
-        label="Name"
-      />,
-    );
-    await act(async () => {
-      await form.validate();
-    });
-    expect(view.getByText('Strict error')).toBeInTheDocument();
-    view.rerender(
-      <TextInput
-        field={form.field('name', { validate: () => undefined })}
-        label="Name"
-      />,
-    );
-    await waitFor(() =>
-      expect(form.getFieldSnapshot('name')?.status).toBe('valid'),
-    );
-    expect(view.queryByText('Strict error')).not.toBeInTheDocument();
-  });
+  it.each([undefined, [], ['org-1']])(
+    'revalidates a replacement descriptor validator with deps %j',
+    async (deps) => {
+      const form = createFormController({ defaultValues: { name: 'Ada' } });
+      const view = render(
+        <TextInput
+          field={form.field('name', { deps, validate: () => 'Strict error' })}
+          label="Name"
+        />,
+      );
+      await act(async () => {
+        await form.validate();
+      });
+      expect(view.getByText('Strict error')).toBeInTheDocument();
+      view.rerender(
+        <TextInput
+          field={form.field('name', { deps, validate: () => undefined })}
+          label="Name"
+        />,
+      );
+      await waitFor(() =>
+        expect(form.getFieldSnapshot('name')?.status).toBe('valid'),
+      );
+      expect(view.queryByText('Strict error')).not.toBeInTheDocument();
+    },
+  );
+
+  it.each([undefined, '', 'revision'])(
+    'keeps authored deps and defers function comparison until registration (rulesKey: %j)',
+    (rulesKey) => {
+      const form = createFormController({ defaultValues: { name: 'Ada' } });
+      const validate = () => undefined;
+      const source = vi.spyOn(validate, 'toString');
+      const deps = ['org-1'];
+      const field = form.field('name', { validate, deps, rulesKey });
+      expect(field.options.deps).toBe(deps);
+      expect(source).not.toHaveBeenCalled();
+      render(<TextInput field={field} label="Name" />);
+      if (rulesKey === undefined) expect(source).toHaveBeenCalled();
+      else expect(source).not.toHaveBeenCalled();
+    },
+  );
 
   it('validates descriptor paths immediately and preserves literal DOM names', () => {
     const form = createFormController<Record<string, string>>();
@@ -394,7 +413,7 @@ describe('modern Form consumer workflows', () => {
     expect(seen).toHaveBeenCalledWith('old');
   });
 
-  it('lets rulesKey explicitly version all rules', async () => {
+  it('compares declarative constraints with an unchanged rulesKey', async () => {
     const store = createFormStore({ defaultValues: { name: 'abc' } });
     const field = store.register('name', {
       rulesKey: 'organization',
@@ -402,8 +421,6 @@ describe('modern Form consumer workflows', () => {
     });
     await store.validate();
     field.update({ rulesKey: 'organization', rules: [{ min: 5 }] });
-    expect(store.getFieldSnapshot('name')?.status).toBe('valid');
-    field.update({ rulesKey: 'new rules', rules: [{ min: 5 }] });
     await waitFor(() =>
       expect(store.getFieldSnapshot('name')?.status).toBe('invalid'),
     );

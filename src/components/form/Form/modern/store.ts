@@ -574,7 +574,9 @@ export function createFormStore<
     assertLive();
     const normalized = normalizePath(path);
     const prepared = prepareRegistration(normalized, config);
-    const signature = prepared.rulesKey ?? rulesSignature(prepared.rules);
+    const signature = rulesSignature(prepared.rules, {
+      hashFunctions: prepared.rulesKey === undefined,
+    });
     const record = ensure(normalized);
     const registration: Registration<ErrorValue> = {
       options: prepared,
@@ -597,7 +599,9 @@ export function createFormStore<
       update(next: RegistrationOptions<ErrorValue>) {
         if (released || disposed) return;
         const prepared = prepareRegistration(record.path, next);
-        const signature = prepared.rulesKey ?? rulesSignature(prepared.rules);
+        const signature = rulesSignature(prepared.rules, {
+          hashFunctions: prepared.rulesKey === undefined,
+        });
         const validationChanged =
           registration.signature !== signature ||
           registration.options.rulesKey !== prepared.rulesKey ||

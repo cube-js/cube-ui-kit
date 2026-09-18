@@ -51,14 +51,12 @@ export function createFormField<T extends object, Value>(
     options: Object.freeze({
       ...registration,
       ...(validate && {
-        // The rule adapter has fixed source. Compare the authored validator too,
-        // while allowing equivalent inline closures to survive rerenders.
-        ...(registration.rulesKey === undefined && {
-          deps: [validate.toString(), ...(registration.deps ?? [])],
-        }),
         rules: [
           ...(registration.rules ?? []),
           {
+            // The adapter has fixed source. Retain the authored function for
+            // lazy rule comparison, without changing the consumer's deps.
+            authored: validate,
             validator: (_rule, value, context) =>
               validate(value, context as FormFieldContext<T>),
           },

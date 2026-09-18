@@ -1,19 +1,51 @@
 import { createFormStore } from './store';
 
 describe('validation dependency lifecycle', () => {
-  it('revalidates a replacement validator without explicit dependencies', async () => {
-    const store = createFormStore({ defaultValues: { a: 'value' } });
-    const registration = store.register('a', {
-      rules: [{ validator: () => 'Strict error' }],
-    });
-    await store.validate();
-    expect(store.getFieldSnapshot('a')?.errors).toEqual(['Strict error']);
-    registration.update({ rules: [{ validator: () => undefined }] });
-    await vi.waitFor(() => {
-      expect(store.getFieldSnapshot('a')?.status).toBe('valid');
-      expect(store.getFieldSnapshot('a')?.errors).toEqual([]);
-    });
-  });
+  it.each([undefined, [], ['org-1']])(
+    'revalidates a replacement validator with deps %j',
+    async (deps) => {
+      const store = createFormStore({ defaultValues: { a: 'value' } });
+      const registration = store.register('a', {
+        deps,
+        rules: [{ validator: () => 'Strict error' }],
+      });
+      await store.validate();
+      expect(store.getFieldSnapshot('a')?.errors).toEqual(['Strict error']);
+      registration.update({ deps, rules: [{ validator: () => undefined }] });
+      await vi.waitFor(() => {
+        expect(store.getFieldSnapshot('a')?.status).toBe('valid');
+        expect(store.getFieldSnapshot('a')?.errors).toEqual([]);
+      });
+    },
+  );
+
+  it.each(['', 'revision'])(
+    'versions functions explicitly without serializing them (rulesKey: %j)',
+    async (rulesKey) => {
+      const store = createFormStore({ defaultValues: { a: 'value' } });
+      const validate = () => 'Strict error';
+      const source = vi.spyOn(validate, 'toString');
+      const registration = store.register('a', {
+        rulesKey,
+        rules: [{ validator: validate }],
+      });
+      await store.validate();
+      const snapshot = store.getFieldSnapshot('a');
+      registration.update({
+        rulesKey,
+        rules: [{ validator: () => undefined }],
+      });
+      expect(store.getFieldSnapshot('a')).toBe(snapshot);
+      expect(source).not.toHaveBeenCalled();
+      registration.update({
+        rulesKey: `${rulesKey}:next`,
+        rules: [{ validator: () => undefined }],
+      });
+      await vi.waitFor(() =>
+        expect(store.getFieldSnapshot('a')?.status).toBe('valid'),
+      );
+    },
+  );
 
   it.each([false, true])(
     'only declared dependencies rerun validation, even after a short circuit (declared: %s)',
