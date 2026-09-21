@@ -3,6 +3,8 @@ import { useEffect, useRef, useState } from 'react';
 
 import { renderWithRoot, screen, userEvent, waitFor } from '../../../test';
 import { Button } from '../../actions/Button';
+import { Picker } from '../../fields/Picker';
+import { Select } from '../../fields/Select';
 
 import { Dialog } from './Dialog';
 import { DialogTrigger } from './DialogTrigger';
@@ -208,5 +210,138 @@ describe('DialogTrigger popover shouldCloseOnInteractOutside', () => {
     await waitFor(() =>
       expect(screen.queryByTestId('Dialog')).not.toBeInTheDocument(),
     );
+  });
+});
+
+/**
+ * A closing popup must not swallow the Dialog's `Escape` (CUB-4839).
+ *
+ * `useOverlay` stops propagation for every `Escape` it sees BEFORE checking
+ * whether this overlay is the topmost one allowed to act on it, and our
+ * overlays stay mounted through their exit transition. A popup that has just
+ * closed therefore used to eat the next `Escape` and do nothing with it, so the
+ * Dialog around it stayed open. See `useOverlayEscapeGuard`.
+ *
+ * In a browser rather than jsdom because the window only exists in real time:
+ * jsdom neither runs the exit transition nor keeps focus where the user left
+ * it, so the swallow is simply not reachable there.
+ *
+ * NOTE: there is deliberately no case here that presses `Escape` in the first
+ * moments after picking an option from a `Select` or `Picker`. Two OTHER
+ * swallows, both out of this change's scope, make that moment racy — see the
+ * PR description. Pressing `Escape` into a popup that is genuinely still open,
+ * as these cases do, exercises the same guard deterministically.
+ */
+describe('Escape and a closing popup inside a Dialog (CUB-4839)', () => {
+  const user = userEvent.setup();
+
+  function SelectApp() {
+    return (
+      <DialogTrigger type="modal">
+        <Button qa="Trigger">Open</Button>
+        <Dialog>
+          <Select qa="Sel" aria-label="Colour" width="300px">
+            <Select.Item key="blue">Blue</Select.Item>
+            <Select.Item key="red">Red</Select.Item>
+          </Select>
+        </Dialog>
+      </DialogTrigger>
+    );
+  }
+
+  function PickerApp() {
+    return (
+      <DialogTrigger type="modal">
+        <Button qa="Trigger">Open</Button>
+        <Dialog>
+          <Picker qa="Pick" aria-label="Colour" width="300px">
+            <Picker.Item key="blue">Blue</Picker.Item>
+            <Picker.Item key="red">Red</Picker.Item>
+          </Picker>
+        </Dialog>
+      </DialogTrigger>
+    );
+  }
+
+  async function openDialog(app: React.ReactElement) {
+    renderWithRoot(app);
+    await user.click(screen.getByTestId('Trigger'));
+    await screen.findByTestId('Dialog');
+  }
+
+  it('closes the Dialog on Escape with no prior interaction', async () => {
+    await openDialog(<SelectApp />);
+
+    await user.keyboard('{Escape}');
+
+    await waitFor(() =>
+      expect(screen.queryByTestId('Dialog')).not.toBeInTheDocument(),
+    );
+  });
+
+  // The regression itself: the inner popover is mid-exit when the second
+  // Escape arrives, and used to eat it.
+  it('closes the Dialog on the Escape after a nested popover was dismissed', async () => {
+    renderWithRoot(
+      <DialogTrigger type="modal">
+        <Button qa="Trigger">Open</Button>
+        <Dialog>
+          <DialogTrigger type="popover">
+            <Button qa="Inner">Inner</Button>
+            <Dialog qa="InnerDialog">
+              <Button qa="InnerBtn">Act</Button>
+            </Dialog>
+          </DialogTrigger>
+        </Dialog>
+      </DialogTrigger>,
+    );
+    await user.click(screen.getByTestId('Trigger'));
+    await screen.findByTestId('Dialog');
+
+    screen.getByTestId('Inner').focus();
+    await user.keyboard('{Enter}');
+    await screen.findByTestId('InnerDialog');
+
+    await user.keyboard('{Escape}');
+    await user.keyboard('{Escape}');
+
+    await waitFor(() =>
+      expect(screen.queryByTestId('Dialog')).not.toBeInTheDocument(),
+    );
+  });
+
+  // The other half of the contract. An Escape the popup CAN act on belongs to
+  // it alone: letting the key keep travelling, so a CLOSED popup stops eating
+  // it, must not turn one press into two closes.
+  it('closes only the Select list while the list is open', async () => {
+    await openDialog(<SelectApp />);
+
+    screen.getByTestId('Sel').focus();
+    await user.keyboard('{Enter}');
+    await screen.findByRole('listbox');
+
+    await user.keyboard('{Escape}');
+
+    await waitFor(() =>
+      expect(screen.queryByRole('listbox')).not.toBeInTheDocument(),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    expect(screen.getByTestId('Dialog')).toBeInTheDocument();
+  });
+
+  it('closes only the Picker popover while it is open', async () => {
+    await openDialog(<PickerApp />);
+
+    screen.getByTestId('Pick').focus();
+    await user.keyboard('{Enter}');
+    await screen.findByRole('listbox');
+
+    await user.keyboard('{Escape}');
+
+    await waitFor(() =>
+      expect(screen.queryByRole('listbox')).not.toBeInTheDocument(),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    expect(screen.getByTestId('Dialog')).toBeInTheDocument();
   });
 });

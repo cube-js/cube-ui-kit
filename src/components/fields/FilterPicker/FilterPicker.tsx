@@ -491,7 +491,15 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
       if ((e.key === 'ArrowUp' || e.key === 'ArrowDown') && !isPopoverOpen) {
         e.preventDefault();
         handleOpenChange(true);
+
+        return;
       }
+
+      // `useKeyboard` stops propagation for every key it sees unless the
+      // handler opts back out. This one owns nothing but the arrows above, so
+      // everything else has to keep travelling — `Escape` most of all, which
+      // a Dialog around the trigger needs to close on (CUB-4839).
+      e.continuePropagation();
     },
   });
 

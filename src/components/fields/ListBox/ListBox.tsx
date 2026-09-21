@@ -859,10 +859,20 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
         lastFocusSourceRef.current = 'keyboard';
       }
 
-      if (e.key === 'Escape' && onEscape) {
-        // Don't prevent default - let the overlay system handle closing
-        // But we'll call onEscape to potentially override the default selection clearing
-        onEscape();
+      if (e.key === 'Escape') {
+        // `useKeyboard` stops propagation for every key it sees unless the
+        // handler opts back out, so letting the default stand here swallowed
+        // the `Escape` before any surrounding overlay could close on it — a
+        // list inside a Dialog took two presses to dismiss it (CUB-4839).
+        // Leaving the default in place is what "let the overlay system handle
+        // closing" needed all along; only `preventDefault` was covered.
+        //
+        // Scoped to `Escape` on purpose: every other key keeps the propagation
+        // behaviour the list has always had.
+        e.continuePropagation();
+
+        // Called to potentially override the default selection clearing.
+        onEscape?.();
       }
     },
   });

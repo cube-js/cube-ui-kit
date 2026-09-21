@@ -53,6 +53,7 @@ import {
   useCombinedRefs,
 } from '../../../utils/react/index';
 import { useFocus } from '../../../utils/react/interactions';
+import { useOverlayEscapeGuard } from '../../../utils/react/useOverlayEscapeGuard';
 import { usePopoverSync } from '../../../utils/react/usePopoverSync';
 import { extractStyles } from '../../../utils/styles';
 import { ItemAction } from '../../actions';
@@ -639,7 +640,7 @@ export function ListBoxPopup({
 
   // Handle events that should cause the popup to close,
   // e.g. blur, clicking outside, or pressing the escape key.
-  let { overlayProps } = useOverlay(
+  let { overlayProps: rawOverlayProps } = useOverlay(
     {
       onClose: () => state.close(),
       shouldCloseOnBlur: true,
@@ -675,6 +676,10 @@ export function ListBoxPopup({
     },
     popoverRef,
   );
+
+  // A list that has already closed must not swallow the `Escape` meant for
+  // whatever surrounds it — see `useOverlayEscapeGuard`.
+  const overlayProps = useOverlayEscapeGuard(rawOverlayProps, state.isOpen);
 
   // Extract primary placement direction for consistent styling
   const placementDirection = placement?.split(' ')[0] || 'bottom';
