@@ -1,6 +1,9 @@
 import { useState } from 'react';
 
 import { renderWithRoot, screen, userEvent, waitFor } from '../../../../test';
+import { ComboBox } from '../../../fields/ComboBox/ComboBox';
+import { NumberInput } from '../../../fields/NumberInput/NumberInput';
+import { Switch } from '../../../fields/Switch/Switch';
 import { TextInput } from '../../../fields/TextInput/TextInput';
 import { Form } from '../index';
 
@@ -9,39 +12,137 @@ import type { FormController } from './controller';
 // Real focus/keyboard events exercise subscriptions across conditional field
 // unmount/remount and native form reset. No snapshots are needed for this gate.
 describe('modern subscriptions in Chromium', () => {
-  it('submits a nested descriptor from an external footer and preserves native Enter', async () => {
-    const save = vi.fn();
+  it.each(['legacy', 'modern'] as const)(
+    '%s custom combobox commits all typed text on native Enter',
+    async (backend) => {
+      const save = vi.fn();
+      const input = (
+        <ComboBox
+          name={backend === 'legacy' ? 'profile.tag' : ['profile', 'tag']}
+          label="Tag"
+          allowsCustomValue
+        >
+          <ComboBox.Item key="known">Known</ComboBox.Item>
+        </ComboBox>
+      );
+      function Modern() {
+        const form = Form.useController({
+          defaultValues: { profile: { tag: '' } },
+        });
+        return (
+          <Form form={form} onSubmit={save}>
+            {input}
+            <Form.Submit>Save</Form.Submit>
+          </Form>
+        );
+      }
+      renderWithRoot(
+        backend === 'legacy' ? (
+          <Form defaultValues={{ profile: { tag: '' } }} onSubmit={save}>
+            {input}
+            <Form.Submit>Save</Form.Submit>
+          </Form>
+        ) : (
+          <Modern />
+        ),
+      );
+      const combobox = screen.getByRole('combobox', { name: 'Tag' });
+      await userEvent.type(combobox, 'Custom');
+      await waitFor(() =>
+        expect(combobox).toHaveAttribute('aria-expanded', 'false'),
+      );
+      await userEvent.keyboard('{Enter}');
+      await waitFor(() => expect(save).toHaveBeenCalledTimes(1));
+      expect(save.mock.calls[0][0]).toEqual({ profile: { tag: 'Custom' } });
+    },
+  );
+
+  it('cancels native resets before nested React Aria controls can overwrite current values', async () => {
+    const changes = vi.fn();
+    let form!: FormController<{ profile: { count: number; enabled: boolean } }>;
     function Example() {
-      const form = Form.useController({
-        defaultValues: { profile: { name: 'Ada' }, retained: 'draft' },
-        onSubmit: save,
+      const [cancel, setCancel] = useState(true);
+      form = Form.useController({
+        defaultValues: { profile: { count: 3, enabled: false } },
+        onValuesChange: changes,
       });
       return (
-        <>
-          <Form form={form} submitValues="all">
-            <TextInput
-              field={form.field(['profile', 'name'])}
-              label="Nested name"
-            />
-            <Form.Submit>Inside</Form.Submit>
-          </Form>
-          <Form.Submit form={form}>Footer save</Form.Submit>
-        </>
+        <Form
+          form={form}
+          onReset={(event) => {
+            if (cancel) event.preventDefault();
+          }}
+        >
+          <NumberInput name={['profile', 'count']} label="Count" />
+          <Switch name={['profile', 'enabled']} label="Enabled" />
+          <button type="reset">Native reset</button>
+          <button type="button" onClick={() => setCancel(false)}>
+            Allow reset
+          </button>
+        </Form>
       );
     }
     renderWithRoot(<Example />);
-    const input = screen.getByRole('textbox', { name: 'Nested name' });
-    expect(input).toHaveValue('Ada');
-    await userEvent.type(input, '!');
-    await userEvent.click(screen.getByRole('button', { name: 'Footer save' }));
-    await waitFor(() => expect(save).toHaveBeenCalledTimes(1));
-    expect(save).toHaveBeenLastCalledWith(
-      { profile: { name: 'Ada!' }, retained: 'draft' },
-      expect.objectContaining({ include: 'all' }),
-    );
-    await userEvent.type(input, '{Enter}');
-    await waitFor(() => expect(save).toHaveBeenCalledTimes(2));
+    const count = screen.getByRole('textbox', { name: 'Count' });
+    const enabled = screen.getByRole('switch', { name: 'Enabled' });
+    await userEvent.clear(count);
+    await userEvent.type(count, '7');
+    await userEvent.click(enabled);
+    changes.mockClear();
+    await userEvent.click(screen.getByRole('button', { name: 'Native reset' }));
+    expect(count).toHaveValue('7');
+    expect(enabled).toBeChecked();
+    expect(form.getValues()).toEqual({ profile: { count: 7, enabled: true } });
+    expect(changes).not.toHaveBeenCalled();
+    await userEvent.click(screen.getByRole('button', { name: 'Allow reset' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Native reset' }));
+    expect(count).toHaveValue('3');
+    expect(enabled).not.toBeChecked();
+    expect(form.getValues()).toEqual({ profile: { count: 3, enabled: false } });
+    expect(changes).toHaveBeenCalledTimes(1);
   });
+
+  it.each(['descriptor', 'name'] as const)(
+    'submits a nested %s binding from an external footer and preserves native Enter',
+    async (binding) => {
+      const save = vi.fn();
+      function Example() {
+        const form = Form.useController({
+          defaultValues: { profile: { name: 'Ada' }, retained: 'draft' },
+          onSubmit: save,
+        });
+        return (
+          <>
+            <Form form={form} submitValues="all">
+              <TextInput
+                {...(binding === 'name'
+                  ? { name: ['profile', 'name'] as const }
+                  : { field: form.field(['profile', 'name']) })}
+                label="Nested name"
+              />
+              <Form.Submit>Inside</Form.Submit>
+            </Form>
+            <Form.Submit form={form}>Footer save</Form.Submit>
+          </>
+        );
+      }
+      renderWithRoot(<Example />);
+      const input = screen.getByRole('textbox', { name: 'Nested name' });
+      expect(input).toHaveValue('Ada');
+      expect(input).toHaveAttribute('name', 'profile.name');
+      await userEvent.type(input, '!');
+      await userEvent.click(
+        screen.getByRole('button', { name: 'Footer save' }),
+      );
+      await waitFor(() => expect(save).toHaveBeenCalledTimes(1));
+      expect(save).toHaveBeenLastCalledWith(
+        { profile: { name: 'Ada!' }, retained: 'draft' },
+        expect.objectContaining({ include: 'all' }),
+      );
+      await userEvent.type(input, '{Enter}');
+      await waitFor(() => expect(save).toHaveBeenCalledTimes(2));
+    },
+  );
 
   it('updates only affected selections while preserving focus and caret', async () => {
     const owner = vi.fn();

@@ -95,6 +95,10 @@ The `mods` property accepts the following modifiers you can override:
 />
 ```
 
+### Form Values and Resets
+
+When bound to a legacy or modern form, resetting updates the displayed filename and clears any obsolete native file selection. This also allows choosing the same file again. A nonempty string value can display a filename, but it cannot restore file bytes; the user must select the file again. With `type="text"`, the form stores the file's text content.
+
 ### With Validation
 
 Pass `isValid` or `isInvalid` to tint the border and show the matching state icon.

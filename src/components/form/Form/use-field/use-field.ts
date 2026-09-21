@@ -54,10 +54,10 @@ export type UseFieldParams = {
   unbound?: boolean;
 };
 
-export function useField<T extends FieldTypes, Props extends UseFieldProps<T>>(
-  props: Props,
-  params: UseFieldParams,
-): FieldReturnValue<T> {
+export function useField<
+  T extends FieldTypes,
+  Props extends UseFieldProps<T> & { name?: string },
+>(props: Props, params: UseFieldParams): FieldReturnValue<T> {
   props = useFormProps(props);
 
   let {
