@@ -496,10 +496,15 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
       }
 
       // `useKeyboard` stops propagation for every key it sees unless the
-      // handler opts back out. This one owns nothing but the arrows above, so
-      // everything else has to keep travelling — `Escape` most of all, which
-      // a Dialog around the trigger needs to close on (CUB-4839).
-      e.continuePropagation();
+      // handler opts back out, and this handler never acts on `Escape`. That
+      // key has to keep travelling: it is how whatever surrounds this — a
+      // Dialog, most often — gets dismissed (CUB-4839).
+      //
+      // Deliberately `Escape` alone. Releasing every key this handler ignores
+      // would also let `Enter`, typeahead and the rest out, which callers have
+      // always had contained here; dismissal is the one key that is meaningless
+      // to hold on to.
+      if (e.key === 'Escape') e.continuePropagation();
     },
   });
 

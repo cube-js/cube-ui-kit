@@ -2,4 +2,4 @@
 "@cube-dev/ui-kit": patch
 ---
 
-Stop a closing popup from swallowing the `Escape` meant for the Dialog around it. A `Select`, `Picker` or popover `DialogTrigger` inside a Dialog stays mounted for its exit transition while still holding focus, and React Aria's `useOverlay` claims every `Escape` it sees before checking whether it is the overlay allowed to act on one — so the key was consumed and nothing closed. `ListBox`, `Picker` and `FilterPicker` also stopped `Escape` from propagating out of keyboard handlers that never used it.
+Close a Dialog on the first `Escape` after a list inside it was used. Three separate swallows each kept it open: a popup that had already closed still claimed the key through `useOverlay`, focus was left on an option that detached before the key was dispatched, and the trigger's tooltip took it from a document-level listener once focus returned. Tooltips no longer open when a component hands focus back rather than the user arriving, and `ListBox`, `Picker` and `FilterPicker` no longer stop `Escape` propagating out of keyboard handlers that never used it.

@@ -1,5 +1,6 @@
 import { FocusableProvider } from '@react-aria/focus';
 import {
+  FocusEvent,
   HTMLAttributes,
   isValidElement,
   ReactElement,
@@ -15,7 +16,9 @@ import {
 } from 'react-aria';
 import { useTooltipTriggerState } from 'react-stately';
 
+import { useEvent } from '../../../_internal';
 import { isDevEnv } from '../../../utils/is-dev-env';
+import { isProgrammaticFocus } from '../../../utils/react/programmaticFocus';
 import { Block } from '../../Block';
 import { ActiveZone } from '../../content/ActiveZone/ActiveZone';
 import { DisplayTransition } from '../../helpers/DisplayTransition/DisplayTransition';
@@ -147,7 +150,7 @@ export function TooltipTrigger(props: CubeTooltipTriggerProps) {
 
   let state = useTooltipTriggerState({ delay, ...props, isDismissable: false });
 
-  let { triggerProps, tooltipProps } = useTooltipTrigger(
+  let { triggerProps: rawTriggerProps, tooltipProps } = useTooltipTrigger(
     {
       trigger: triggerAction,
       delay,
@@ -159,6 +162,23 @@ export function TooltipTrigger(props: CubeTooltipTriggerProps) {
     state,
     tooltipTriggerRef,
   );
+
+  // A tooltip answers a user arriving at the trigger. Focus handed back by a
+  // component — a popup returning it to the trigger it came from — is not that
+  // arrival, but the DOM event is identical and the modality is still
+  // "keyboard", so React Aria would show the tooltip anyway. It then absorbs
+  // the user's next `Escape` from its own document-level listener, which is
+  // how a Dialog ended up needing two presses to close (CUB-4839).
+  //
+  // Dropping the focus handler rather than closing after the fact: React Aria
+  // decides to show inside it, so this never starts and nothing flashes.
+  const onFocus = useEvent((event: FocusEvent<HTMLElement>) => {
+    if (isProgrammaticFocus()) return;
+
+    rawTriggerProps.onFocus?.(event);
+  });
+
+  const triggerProps = { ...rawTriggerProps, onFocus };
 
   let { overlayProps, arrowProps, placement, updatePosition } =
     useOverlayPosition({

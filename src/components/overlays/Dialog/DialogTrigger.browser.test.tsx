@@ -226,11 +226,11 @@ describe('DialogTrigger popover shouldCloseOnInteractOutside', () => {
  * jsdom neither runs the exit transition nor keeps focus where the user left
  * it, so the swallow is simply not reachable there.
  *
- * NOTE: there is deliberately no case here that presses `Escape` in the first
- * moments after picking an option from a `Select` or `Picker`. Two OTHER
- * swallows, both out of this change's scope, make that moment racy — see the
- * PR description. Pressing `Escape` into a popup that is genuinely still open,
- * as these cases do, exercises the same guard deterministically.
+ * Three swallows had to go for the first case below to pass: the closed
+ * popup's own `useOverlay`, focus left on a detaching option, and the
+ * trigger's tooltip claiming the key from a document-level listener. Each one
+ * alone is enough to keep the Dialog open, so this file guards all three
+ * together.
  */
 describe('Escape and a closing popup inside a Dialog (CUB-4839)', () => {
   const user = userEvent.setup();
@@ -268,6 +268,50 @@ describe('Escape and a closing popup inside a Dialog (CUB-4839)', () => {
     await user.click(screen.getByTestId('Trigger'));
     await screen.findByTestId('Dialog');
   }
+
+  it('closes the Dialog on ONE Escape right after a keyboard pick', async () => {
+    await openDialog(<SelectApp />);
+
+    screen.getByTestId('Sel').focus();
+    await user.keyboard('{Enter}');
+    await screen.findByRole('listbox');
+    await user.keyboard('{ArrowDown}{Enter}');
+
+    await user.keyboard('{Escape}');
+
+    await waitFor(() =>
+      expect(screen.queryByTestId('Dialog')).not.toBeInTheDocument(),
+    );
+  });
+
+  it('closes the Dialog on ONE Escape right after a mouse pick', async () => {
+    await openDialog(<SelectApp />);
+
+    await user.click(screen.getByTestId('Sel'));
+    await screen.findByRole('listbox');
+    await user.click(screen.getAllByRole('option')[0]);
+
+    await user.keyboard('{Escape}');
+
+    await waitFor(() =>
+      expect(screen.queryByTestId('Dialog')).not.toBeInTheDocument(),
+    );
+  });
+
+  it('closes the Dialog on ONE Escape right after a Picker pick', async () => {
+    await openDialog(<PickerApp />);
+
+    screen.getByTestId('Pick').focus();
+    await user.keyboard('{Enter}');
+    await screen.findByRole('listbox');
+    await user.keyboard('{ArrowDown}{Enter}');
+
+    await user.keyboard('{Escape}');
+
+    await waitFor(() =>
+      expect(screen.queryByTestId('Dialog')).not.toBeInTheDocument(),
+    );
+  });
 
   it('closes the Dialog on Escape with no prior interaction', async () => {
     await openDialog(<SelectApp />);
