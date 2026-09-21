@@ -5,6 +5,7 @@ import {
   forwardRef,
   ReactElement,
   useCallback,
+  useRef,
   useState,
 } from 'react';
 import { createPortal } from 'react-dom';
@@ -47,6 +48,24 @@ function Overlay(props: CubeOverlayProps, ref) {
     setExited(false);
   }
 
+  // Our `FocusScope` restores focus to the trigger when it unmounts, from
+  // inside React's own commit where nothing can wrap the call. The window has
+  // to be open before that lands, or the restored trigger's tooltip opens and
+  // eats the user's next `Escape` (CUB-4839).
+  //
+  // Keyed to `isOpen` closing rather than to the exit PHASE, because the phase
+  // is not always reported: under reduced motion `DisplayTransition` collapses
+  // its duration to zero, so `exit` and `unmounted` are set in one callback and
+  // React batches the `exit` render — and its notification — away entirely.
+  // Closing is the one signal that always arrives.
+  const wasOpen = useRef(!!isOpen);
+
+  if (wasOpen.current !== !!isOpen) {
+    wasOpen.current = !!isOpen;
+
+    if (!isOpen) markFocusRestoreWindow(EXIT_DURATION + 200);
+  }
+
   let { root } = useProviderProps({} as Props);
 
   let handlePhaseChange = useCallback(
@@ -61,12 +80,6 @@ function Overlay(props: CubeOverlayProps, ref) {
           onEntered?.();
           break;
         case 'exit':
-          // Our `FocusScope` restores focus to the trigger when it unmounts at
-          // the end of this transition, from inside React's own commit where
-          // nothing can wrap it. Declaring the window here is what stops the
-          // restored trigger's tooltip from opening and then eating the user's
-          // next `Escape` (CUB-4839).
-          markFocusRestoreWindow(EXIT_DURATION + 200);
           onExit?.();
           onExiting?.();
           break;

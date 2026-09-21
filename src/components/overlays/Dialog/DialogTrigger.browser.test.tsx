@@ -420,6 +420,68 @@ describe('Escape and a closing popup inside a Dialog (CUB-4839)', () => {
     );
   });
 
+  // Reduced motion is not a cosmetic variant here: `DisplayTransition`
+  // collapses its duration to zero, which makes the exit phase and the unmount
+  // land in one callback. Anything that hangs off the exit NOTIFICATION is
+  // batched away and never runs, so this is the case that catches a fix which
+  // only works while an animation is playing.
+  it('closes the Dialog on Escape after a restore, with reduced motion', async () => {
+    const realMatchMedia = window.matchMedia;
+
+    window.matchMedia = ((query: string) =>
+      query.includes('prefers-reduced-motion')
+        ? ({
+            matches: true,
+            media: query,
+            onchange: null,
+            addEventListener() {},
+            removeEventListener() {},
+            addListener() {},
+            removeListener() {},
+            dispatchEvent: () => false,
+          } as unknown as MediaQueryList)
+        : realMatchMedia.call(window, query)) as typeof window.matchMedia;
+
+    try {
+      renderWithRoot(
+        <DialogTrigger type="modal">
+          <Button qa="Trigger">Open</Button>
+          <Dialog>
+            <DialogTrigger type="popover">
+              <Button qa="Inner" tooltip="More options">
+                Inner
+              </Button>
+              <Dialog qa="InnerDialog">
+                <Button qa="InnerBtn">Act</Button>
+              </Dialog>
+            </DialogTrigger>
+          </Dialog>
+        </DialogTrigger>,
+      );
+
+      await user.click(screen.getByTestId('Trigger'));
+      await screen.findByTestId('Dialog');
+
+      screen.getByTestId('Inner').focus();
+      await user.keyboard('{Enter}');
+      await screen.findByTestId('InnerDialog');
+
+      await user.keyboard('{Escape}');
+      await waitFor(() =>
+        expect(screen.queryByTestId('InnerDialog')).not.toBeInTheDocument(),
+      );
+      await new Promise((resolve) => setTimeout(resolve, 600));
+
+      await user.keyboard('{Escape}');
+
+      await waitFor(() =>
+        expect(screen.queryByTestId('Dialog')).not.toBeInTheDocument(),
+      );
+    } finally {
+      window.matchMedia = realMatchMedia;
+    }
+  });
+
   it('closes only the Select list while the list is open', async () => {
     await openDialog(<SelectApp />);
 
