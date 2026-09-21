@@ -53,6 +53,8 @@ import {
   useCombinedRefs,
 } from '../../../utils/react/index';
 import { useFocus } from '../../../utils/react/interactions';
+import { focusProgrammatically } from '../../../utils/react/programmaticFocus';
+import { useOverlayEscapeGuard } from '../../../utils/react/useOverlayEscapeGuard';
 import { usePopoverSync } from '../../../utils/react/usePopoverSync';
 import { extractStyles } from '../../../utils/styles';
 import { ItemAction } from '../../actions';
@@ -364,6 +366,34 @@ function Select<T extends object>(
     containerRef: popoverRef as RefObject<HTMLElement | null>,
   });
 
+  // Hand focus back to the trigger the moment the list closes, rather than
+  // leaving it to the popup's `FocusScope`, which only restores when it
+  // UNMOUNTS — at the end of the exit transition (CUB-4839).
+  //
+  // For the length of that transition focus would otherwise sit on an option
+  // inside a popup that is going away, and the key a user presses next can
+  // land nowhere at all: once the option is detached focus drops to `<body>`,
+  // which takes the event out of the React tree entirely.
+  //
+  // `focusProgrammatically` so the trigger's tooltip does not read this as the
+  // user arriving and pop up — it would then swallow that next `Escape`.
+  //
+  // Guarded on focus still being INSIDE the popup, so this only finishes a
+  // hand-off the popup had already started: closing by clicking elsewhere
+  // leaves focus wherever the user put it.
+  useEffect(() => {
+    if (state.isOpen) return;
+
+    const popover = popoverRef.current;
+    const active = document.activeElement;
+
+    if (!popover || !active || !popover.contains(active)) return;
+
+    focusProgrammatically(triggerRef.current, { preventScroll: true });
+    // Both refs come from `useCombinedRefs`, so their identity never changes;
+    // listing them satisfies the rule without re-running this.
+  }, [state.isOpen, popoverRef, triggerRef]);
+
   let { labelProps, triggerProps, valueProps, menuProps } = useSelect(
     props,
     state,
@@ -640,7 +670,7 @@ export function ListBoxPopup({
 
   // Handle events that should cause the popup to close,
   // e.g. blur, clicking outside, or pressing the escape key.
-  let { overlayProps } = useOverlay(
+  let { overlayProps: rawOverlayProps } = useOverlay(
     {
       onClose: () => state.close(),
       shouldCloseOnBlur: true,
@@ -676,6 +706,10 @@ export function ListBoxPopup({
     },
     popoverRef,
   );
+
+  // A list that has already closed must not swallow the `Escape` meant for
+  // whatever surrounds it — see `useOverlayEscapeGuard`.
+  const overlayProps = useOverlayEscapeGuard(rawOverlayProps, state.isOpen);
 
   // Extract primary placement direction for consistent styling
   const placementDirection = placement?.split(' ')[0] || 'bottom';

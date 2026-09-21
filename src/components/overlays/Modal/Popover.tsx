@@ -5,6 +5,7 @@ import { OverlayProps, useModal, useOverlay } from 'react-aria';
 
 import { PlacementAxis } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
+import { useOverlayEscapeGuard } from '../../../utils/react/useOverlayEscapeGuard';
 
 import { Overlay } from './Overlay';
 import { TransitionState, WithCloseBehavior } from './types';
@@ -79,10 +80,14 @@ function Popover(props: CubePopoverProps, ref) {
   // frames, and `Escape` silently does nothing until the popover finishes
   // animating in. `Modal` and `Tray` call it from the same place for the same
   // reason.
-  let { overlayProps } = useOverlay(
+  let { overlayProps: rawOverlayProps } = useOverlay(
     { ...props, isDismissable: isDismissable && props.isOpen },
     domRef,
   );
+
+  // ...and a popover that has already closed must not answer for `Escape`
+  // while it animates out — see `useOverlayEscapeGuard`.
+  const overlayProps = useOverlayEscapeGuard(rawOverlayProps, props.isOpen);
 
   return (
     <Overlay {...otherProps}>

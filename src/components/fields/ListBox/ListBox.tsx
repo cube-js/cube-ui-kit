@@ -48,6 +48,7 @@ import { GripVerticalIcon } from '../../../icons/GripVerticalIcon';
 import { Icon } from '../../../icons/Icon';
 import { SIZE_NAME_TO_KEY, SIZES } from '../../../tokens';
 import { mergeProps, useCombinedRefs } from '../../../utils/react';
+import { allowEscapeToPropagate } from '../../../utils/react/escapePropagation';
 import { useFocus } from '../../../utils/react/interactions';
 import { extractStyles } from '../../../utils/styles';
 // Import Menu styled components for header and footer
@@ -844,9 +845,14 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     ],
   });
 
-  // Custom keyboard handling to prevent selection clearing on Escape while allowing overlay dismiss
+  // Custom keyboard handling: `Escape` has to leave the list so a surrounding
+  // overlay can close on it, while every other key stays contained. See
+  // `allowEscapeToPropagate` — "let the overlay system handle closing" is what
+  // the old comment here intended, but only `preventDefault` was ever covered.
   const { keyboardProps } = useKeyboard({
     onKeyDown: (e) => {
+      allowEscapeToPropagate(e);
+
       // Mark focus changes from keyboard navigation
       if (
         e.key === 'ArrowDown' ||
@@ -859,10 +865,9 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
         lastFocusSourceRef.current = 'keyboard';
       }
 
-      if (e.key === 'Escape' && onEscape) {
-        // Don't prevent default - let the overlay system handle closing
-        // But we'll call onEscape to potentially override the default selection clearing
-        onEscape();
+      if (e.key === 'Escape') {
+        // Called to potentially override the default selection clearing.
+        onEscape?.();
       }
     },
   });

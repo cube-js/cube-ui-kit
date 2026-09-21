@@ -3,6 +3,8 @@ import { useEffect, useRef, useState } from 'react';
 
 import { renderWithRoot, screen, userEvent, waitFor } from '../../../test';
 import { Button } from '../../actions/Button';
+import { Picker } from '../../fields/Picker';
+import { Select } from '../../fields/Select';
 
 import { Dialog } from './Dialog';
 import { DialogTrigger } from './DialogTrigger';
@@ -208,5 +210,307 @@ describe('DialogTrigger popover shouldCloseOnInteractOutside', () => {
     await waitFor(() =>
       expect(screen.queryByTestId('Dialog')).not.toBeInTheDocument(),
     );
+  });
+});
+
+/**
+ * A closing popup must not swallow the Dialog's `Escape` (CUB-4839).
+ *
+ * `useOverlay` stops propagation for every `Escape` it sees BEFORE checking
+ * whether this overlay is the topmost one allowed to act on it, and our
+ * overlays stay mounted through their exit transition. A popup that has just
+ * closed therefore used to eat the next `Escape` and do nothing with it, so the
+ * Dialog around it stayed open. See `useOverlayEscapeGuard`.
+ *
+ * In a browser rather than jsdom because the window only exists in real time:
+ * jsdom neither runs the exit transition nor keeps focus where the user left
+ * it, so the swallow is simply not reachable there.
+ *
+ * Three swallows had to go for the first case below to pass: the closed
+ * popup's own `useOverlay`, focus left on a detaching option, and the
+ * trigger's tooltip claiming the key from a document-level listener. Each one
+ * alone is enough to keep the Dialog open, so this file guards all three
+ * together.
+ */
+describe('Escape and a closing popup inside a Dialog (CUB-4839)', () => {
+  const user = userEvent.setup();
+
+  function SelectApp() {
+    return (
+      <DialogTrigger type="modal">
+        <Button qa="Trigger">Open</Button>
+        <Dialog>
+          <Select qa="Sel" aria-label="Colour" width="300px">
+            <Select.Item key="blue">Blue</Select.Item>
+            <Select.Item key="red">Red</Select.Item>
+          </Select>
+        </Dialog>
+      </DialogTrigger>
+    );
+  }
+
+  function PickerApp() {
+    return (
+      <DialogTrigger type="modal">
+        <Button qa="Trigger">Open</Button>
+        <Dialog>
+          <Picker qa="Pick" aria-label="Colour" width="300px">
+            <Picker.Item key="blue">Blue</Picker.Item>
+            <Picker.Item key="red">Red</Picker.Item>
+          </Picker>
+        </Dialog>
+      </DialogTrigger>
+    );
+  }
+
+  async function openDialog(app: React.ReactElement) {
+    renderWithRoot(app);
+    await user.click(screen.getByTestId('Trigger'));
+    await screen.findByTestId('Dialog');
+  }
+
+  it('closes the Dialog on ONE Escape right after a keyboard pick', async () => {
+    await openDialog(<SelectApp />);
+
+    screen.getByTestId('Sel').focus();
+    await user.keyboard('{Enter}');
+    await screen.findByRole('listbox');
+    await user.keyboard('{ArrowDown}{Enter}');
+
+    await user.keyboard('{Escape}');
+
+    await waitFor(() =>
+      expect(screen.queryByTestId('Dialog')).not.toBeInTheDocument(),
+    );
+  });
+
+  it('closes the Dialog on ONE Escape right after a mouse pick', async () => {
+    await openDialog(<SelectApp />);
+
+    await user.click(screen.getByTestId('Sel'));
+    await screen.findByRole('listbox');
+    await user.click(screen.getAllByRole('option')[0]);
+
+    await user.keyboard('{Escape}');
+
+    await waitFor(() =>
+      expect(screen.queryByTestId('Dialog')).not.toBeInTheDocument(),
+    );
+  });
+
+  it('closes the Dialog on ONE Escape right after a Picker pick', async () => {
+    await openDialog(<PickerApp />);
+
+    screen.getByTestId('Pick').focus();
+    await user.keyboard('{Enter}');
+    await screen.findByRole('listbox');
+    await user.keyboard('{ArrowDown}{Enter}');
+
+    await user.keyboard('{Escape}');
+
+    await waitFor(() =>
+      expect(screen.queryByTestId('Dialog')).not.toBeInTheDocument(),
+    );
+  });
+
+  it('closes the Dialog on Escape with no prior interaction', async () => {
+    await openDialog(<SelectApp />);
+
+    await user.keyboard('{Escape}');
+
+    await waitFor(() =>
+      expect(screen.queryByTestId('Dialog')).not.toBeInTheDocument(),
+    );
+  });
+
+  // The regression itself: the inner popover is mid-exit when the second
+  // Escape arrives, and used to eat it.
+  it('closes the Dialog on the Escape after a nested popover was dismissed', async () => {
+    renderWithRoot(
+      <DialogTrigger type="modal">
+        <Button qa="Trigger">Open</Button>
+        <Dialog>
+          <DialogTrigger type="popover">
+            <Button qa="Inner">Inner</Button>
+            <Dialog qa="InnerDialog">
+              <Button qa="InnerBtn">Act</Button>
+            </Dialog>
+          </DialogTrigger>
+        </Dialog>
+      </DialogTrigger>,
+    );
+    await user.click(screen.getByTestId('Trigger'));
+    await screen.findByTestId('Dialog');
+
+    screen.getByTestId('Inner').focus();
+    await user.keyboard('{Enter}');
+    await screen.findByTestId('InnerDialog');
+
+    await user.keyboard('{Escape}');
+    await user.keyboard('{Escape}');
+
+    await waitFor(() =>
+      expect(screen.queryByTestId('Dialog')).not.toBeInTheDocument(),
+    );
+  });
+
+  // The other half of the contract. An Escape the popup CAN act on belongs to
+  // it alone: letting the key keep travelling, so a CLOSED popup stops eating
+  // it, must not turn one press into two closes.
+  // Escape AFTER the popup has gone and focus is back on the trigger. A
+  // different path from the cases above, and one that stayed broken while
+  // those passed: the trigger's own keyboard handler held the key, and its
+  // tooltip claimed whatever got past.
+  it('closes the Dialog on Escape once focus is back on the Picker trigger', async () => {
+    await openDialog(<PickerApp />);
+
+    screen.getByTestId('Pick').focus();
+    await user.keyboard('{Enter}');
+    await screen.findByRole('listbox');
+    await user.keyboard('{ArrowDown}{Enter}');
+
+    await waitFor(() =>
+      expect(screen.queryByRole('listbox')).not.toBeInTheDocument(),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 600));
+
+    await user.keyboard('{Escape}');
+
+    await waitFor(() =>
+      expect(screen.queryByTestId('Dialog')).not.toBeInTheDocument(),
+    );
+  });
+
+  // The trigger here carries a tooltip on purpose: focus restored by a
+  // `FocusScope` used to open it, and its document-level listener then took
+  // the Escape meant for the Dialog.
+  it('closes the Dialog on Escape after a tooltip-bearing popover trigger is restored', async () => {
+    renderWithRoot(
+      <DialogTrigger type="modal">
+        <Button qa="Trigger">Open</Button>
+        <Dialog>
+          <DialogTrigger type="popover">
+            <Button qa="Inner" tooltip="More options">
+              Inner
+            </Button>
+            <Dialog qa="InnerDialog">
+              <Button qa="InnerBtn">Act</Button>
+            </Dialog>
+          </DialogTrigger>
+        </Dialog>
+      </DialogTrigger>,
+    );
+    await user.click(screen.getByTestId('Trigger'));
+    await screen.findByTestId('Dialog');
+
+    screen.getByTestId('Inner').focus();
+    await user.keyboard('{Enter}');
+    await screen.findByTestId('InnerDialog');
+
+    await user.keyboard('{Escape}');
+    await waitFor(() =>
+      expect(screen.queryByTestId('InnerDialog')).not.toBeInTheDocument(),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 600));
+
+    await user.keyboard('{Escape}');
+
+    await waitFor(() =>
+      expect(screen.queryByTestId('Dialog')).not.toBeInTheDocument(),
+    );
+  });
+
+  // Reduced motion is not a cosmetic variant here: `DisplayTransition`
+  // collapses its duration to zero, which makes the exit phase and the unmount
+  // land in one callback. Anything that hangs off the exit NOTIFICATION is
+  // batched away and never runs, so this is the case that catches a fix which
+  // only works while an animation is playing.
+  it('closes the Dialog on Escape after a restore, with reduced motion', async () => {
+    const realMatchMedia = window.matchMedia;
+
+    window.matchMedia = ((query: string) =>
+      query.includes('prefers-reduced-motion')
+        ? ({
+            matches: true,
+            media: query,
+            onchange: null,
+            addEventListener() {},
+            removeEventListener() {},
+            addListener() {},
+            removeListener() {},
+            dispatchEvent: () => false,
+          } as unknown as MediaQueryList)
+        : realMatchMedia.call(window, query)) as typeof window.matchMedia;
+
+    try {
+      renderWithRoot(
+        <DialogTrigger type="modal">
+          <Button qa="Trigger">Open</Button>
+          <Dialog>
+            <DialogTrigger type="popover">
+              <Button qa="Inner" tooltip="More options">
+                Inner
+              </Button>
+              <Dialog qa="InnerDialog">
+                <Button qa="InnerBtn">Act</Button>
+              </Dialog>
+            </DialogTrigger>
+          </Dialog>
+        </DialogTrigger>,
+      );
+
+      await user.click(screen.getByTestId('Trigger'));
+      await screen.findByTestId('Dialog');
+
+      screen.getByTestId('Inner').focus();
+      await user.keyboard('{Enter}');
+      await screen.findByTestId('InnerDialog');
+
+      await user.keyboard('{Escape}');
+      await waitFor(() =>
+        expect(screen.queryByTestId('InnerDialog')).not.toBeInTheDocument(),
+      );
+      await new Promise((resolve) => setTimeout(resolve, 600));
+
+      await user.keyboard('{Escape}');
+
+      await waitFor(() =>
+        expect(screen.queryByTestId('Dialog')).not.toBeInTheDocument(),
+      );
+    } finally {
+      window.matchMedia = realMatchMedia;
+    }
+  });
+
+  it('closes only the Select list while the list is open', async () => {
+    await openDialog(<SelectApp />);
+
+    screen.getByTestId('Sel').focus();
+    await user.keyboard('{Enter}');
+    await screen.findByRole('listbox');
+
+    await user.keyboard('{Escape}');
+
+    await waitFor(() =>
+      expect(screen.queryByRole('listbox')).not.toBeInTheDocument(),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    expect(screen.getByTestId('Dialog')).toBeInTheDocument();
+  });
+
+  it('closes only the Picker popover while it is open', async () => {
+    await openDialog(<PickerApp />);
+
+    screen.getByTestId('Pick').focus();
+    await user.keyboard('{Enter}');
+    await screen.findByRole('listbox');
+
+    await user.keyboard('{Escape}');
+
+    await waitFor(() =>
+      expect(screen.queryByRole('listbox')).not.toBeInTheDocument(),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    expect(screen.getByTestId('Dialog')).toBeInTheDocument();
   });
 });

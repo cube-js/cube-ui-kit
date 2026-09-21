@@ -22,7 +22,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import { FocusScope, Key, Placement, useKeyboard } from 'react-aria';
+import { FocusScope, Key, Placement } from 'react-aria';
 import { Section as BaseSection, ListState, useListState } from 'react-stately';
 
 import { useEvent } from '../../../_internal';
@@ -31,6 +31,7 @@ import { useI18n } from '../../../i18n';
 import { CloseIcon } from '../../../icons/CloseIcon';
 import { DirectionIcon } from '../../../icons/DirectionIcon';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
+import { allowEscapeToPropagate } from '../../../utils/react/escapePropagation';
 import { processSelectionArray } from '../../../utils/selection';
 import { extractStyles } from '../../../utils/styles';
 import { CubeItemButtonProps, ItemAction, ItemButton } from '../../actions';
@@ -50,6 +51,7 @@ import {
 import { ListBox } from '../ListBox';
 import { TriggerActions, TriggerIcon } from '../TriggerActions';
 
+import type { KeyboardEvent as RAKeyboardEvent } from '@react-types/shared';
 import type { FieldBaseProps } from '../../../shared';
 
 interface ItemWithKey {
@@ -486,14 +488,24 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
   // Popover sync is handled by the inner `DialogTrigger` (type="popover").
 
   // Keyboard handler for arrow keys to open popover
-  const { keyboardProps } = useKeyboard({
-    onKeyDown: (e) => {
+  // Deliberately NOT `useKeyboard`. `ItemButton` already runs whatever
+  // `onKeyDown` it is given through `useFocusable`'s own `useKeyboard`, and a
+  // second wrapper here would leave `continuePropagation()` releasing only the
+  // inner one while the outer still stopped the event — `Escape` reached the
+  // trigger and died there (CUB-4839). Handed over plain, this IS the outer
+  // wrapper's handler, so the opt-out applies to the event that travels.
+  const keyboardProps = {
+    onKeyDown: (e: RAKeyboardEvent) => {
+      allowEscapeToPropagate(e);
+
       if ((e.key === 'ArrowUp' || e.key === 'ArrowDown') && !isPopoverOpen) {
         e.preventDefault();
         handleOpenChange(true);
+
+        return;
       }
     },
-  });
+  };
 
   // Clear handler
   const clearValue = useEvent(() => {
