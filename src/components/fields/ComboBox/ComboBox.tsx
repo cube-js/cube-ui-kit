@@ -1046,6 +1046,9 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     }, 0);
   });
 
+  const lastSyncedSelectedKey = useRef<Key | null | undefined>(undefined);
+  const selectionClearedByTyping = useRef(false);
+
   // Input change handler
   const handleInputChange = useEvent(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1063,6 +1066,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
       // Only clear selection in allowsCustomValue mode
       // In normal mode, typing just filters - selection stays until explicitly changed
       if (allowsCustomValue && effectiveSelectedKey != null) {
+        selectionClearedByTyping.current = true;
         if (!isControlledKey) {
           setInternalSelectedKey(null);
         }
@@ -1107,9 +1111,9 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   ]);
 
   // Sync input value with controlled selectedKey
-  const lastSyncedSelectedKey = useRef<Key | null | undefined>(undefined);
-
   useEffect(() => {
+    const preserveTypedInput = selectionClearedByTyping.current;
+    selectionClearedByTyping.current = false;
     // Only run when selectedKey is controlled but inputValue is uncontrolled
     if (!isControlledKey || isControlledInput) return;
 
@@ -1123,13 +1127,23 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
 
     lastSyncedSelectedKey.current = effectiveSelectedKey;
 
+    // Acknowledging the selection cleared by this edit must not erase the
+    // text that caused it. Later external clears still reset the input.
+    if (preserveTypedInput && effectiveSelectedKey == null) return;
+
     // Get the expected label for the current selection
     const expectedLabel =
       effectiveSelectedKey != null ? getItemLabel(effectiveSelectedKey) : '';
 
     // Update the input value to match the selected key's label
     setInternalInputValue(expectedLabel);
-  }, [isControlledKey, isControlledInput, effectiveSelectedKey, getItemLabel]);
+  }, [
+    isControlledKey,
+    isControlledInput,
+    effectiveSelectedKey,
+    effectiveInputValue,
+    getItemLabel,
+  ]);
 
   // Input focus handler
   const handleInputFocus = useEvent((e: React.FocusEvent<HTMLInputElement>) => {

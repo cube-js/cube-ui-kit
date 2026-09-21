@@ -181,13 +181,12 @@ export function NullableProfileForm({
   return (
     <Form form={form} onSubmit={(values, { signal }) => save(values, signal)}>
       <TextInput
-        field={form.field('email', {
-          rules: [{ type: 'email', message: 'Enter a valid email' }],
-        })}
+        name="email"
+        rules={[{ type: 'email', message: 'Enter a valid email' }]}
         label="Email"
         isRequired
       />
-      <Switch field={form.field('notifications')} label="Notifications" />
+      <Switch name="notifications" label="Notifications" />
       <Form.SubmitError />
       <Form.Submit>Save</Form.Submit>
       <Form.Reset>Reset</Form.Reset>

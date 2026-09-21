@@ -47,7 +47,10 @@ const PeriodValueElement = tasty({
 });
 
 export interface CubePeriodPickerProps<T extends DateValue = DateValue>
-  extends Omit<AriaDatePickerProps<T>, 'errorMessage' | 'granularity' | 'form'>,
+  extends Omit<
+      AriaDatePickerProps<T>,
+      'errorMessage' | 'granularity' | 'form' | 'name'
+    >,
     BaseProps,
     ContainerStyleProps,
     FieldBaseProps<T | null | undefined> {

@@ -96,6 +96,8 @@ function getValueProps(
 }
 
 export interface CubeFieldProps<T extends FieldTypes> extends FieldBaseProps {
+  /** Legacy field name; nested fields use dot notation. */
+  name?: string;
   /** The initial value of the input. */
   defaultValue?: any;
   styles?: Styles;

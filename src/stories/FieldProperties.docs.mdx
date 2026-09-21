@@ -8,12 +8,12 @@ All input components in UI Kit (`TextInput`, `Select`, `ComboBox`, `Checkbox`, `
 
 When used inside a [Form](/docs/forms-form--docs), these properties are automatically inherited from the form context and can be overridden at the field level.
 
-For modern forms, follow the [use-case guide](/docs/forms-modernform--docs). Put binding and validation options on `form.field(path, options)` and presentation props on the input. The prop reference below also covers `name` bindings for shared controls and legacy forms; these are alternatives to the typed descriptor, not additional required setup.
+For modern forms, follow the [use-case guide](/docs/forms-modernform--docs). Bind with `name` and put validation options on the input, or choose `field={form.field(path, options)}` for model-aware type checking and validator inference. Keep presentation props on the input. These binding styles are alternatives; descriptors are not required for nested data.
 
 ## Identity & Form Integration
 
 - **`field`** `FormField<Value>` — Typed modern binding created by `form.field(path, options)`. Supports nested paths and takes precedence over `form` and `name`. Built-in bindings accept `null` and `undefined` alongside their normal model value; display fallbacks do not replace stored nulls.
-- **`name`** `string` — Field name for form data binding when a descriptor is not supplied.
+- **`name`** `string | readonly (string | number)[]` — Field name when a descriptor is not supplied. Modern forms accept literal strings or nested tuple paths, such as `['users', 0, 'email']`. Legacy forms accept strings only and retain dot notation.
 - **`form`** `CubeFormInstance | FormController<T>` — Legacy instance or modern controller. Automatically provided when inside a Form context. Pass it explicitly to link an input to a form it is not nested in, or to override the surrounding form.
 - **`defaultValue`** `any` — Initial field value. Modern controller values/defaults take precedence, including explicit `null` and `undefined`.
 - **`preserve`** `boolean` (modern default: `true`) — Retain the value after the last input for this field unmounts.
@@ -126,14 +126,15 @@ function ExampleForm() {
   return (
     <Form form={form}>
       <TextInput
-        field={form.field('name', { rules: [{ min: 2 }] })}
+        name="name"
+        rules={[{ min: 2 }]}
         label="Full Name"
         description="As it appears on your ID"
         isRequired
       />
 
       <Select
-        field={form.field('role')}
+        name="role"
         label="Role"
         tooltip="Your primary role in the organization"
         necessityIndicator="label"

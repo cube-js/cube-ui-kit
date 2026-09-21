@@ -188,6 +188,7 @@ export interface CubeSelectBaseProps<T>
     Omit<
       AriaSelectProps<T>,
       | 'errorMessage'
+      | 'name'
       | 'selectedKey'
       | 'defaultSelectedKey'
       | 'onSelectionChange'
