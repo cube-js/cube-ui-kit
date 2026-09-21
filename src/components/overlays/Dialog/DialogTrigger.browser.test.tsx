@@ -357,6 +357,69 @@ describe('Escape and a closing popup inside a Dialog (CUB-4839)', () => {
   // The other half of the contract. An Escape the popup CAN act on belongs to
   // it alone: letting the key keep travelling, so a CLOSED popup stops eating
   // it, must not turn one press into two closes.
+  // Escape AFTER the popup has gone and focus is back on the trigger. A
+  // different path from the cases above, and one that stayed broken while
+  // those passed: the trigger's own keyboard handler held the key, and its
+  // tooltip claimed whatever got past.
+  it('closes the Dialog on Escape once focus is back on the Picker trigger', async () => {
+    await openDialog(<PickerApp />);
+
+    screen.getByTestId('Pick').focus();
+    await user.keyboard('{Enter}');
+    await screen.findByRole('listbox');
+    await user.keyboard('{ArrowDown}{Enter}');
+
+    await waitFor(() =>
+      expect(screen.queryByRole('listbox')).not.toBeInTheDocument(),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 600));
+
+    await user.keyboard('{Escape}');
+
+    await waitFor(() =>
+      expect(screen.queryByTestId('Dialog')).not.toBeInTheDocument(),
+    );
+  });
+
+  // The trigger here carries a tooltip on purpose: focus restored by a
+  // `FocusScope` used to open it, and its document-level listener then took
+  // the Escape meant for the Dialog.
+  it('closes the Dialog on Escape after a tooltip-bearing popover trigger is restored', async () => {
+    renderWithRoot(
+      <DialogTrigger type="modal">
+        <Button qa="Trigger">Open</Button>
+        <Dialog>
+          <DialogTrigger type="popover">
+            <Button qa="Inner" tooltip="More options">
+              Inner
+            </Button>
+            <Dialog qa="InnerDialog">
+              <Button qa="InnerBtn">Act</Button>
+            </Dialog>
+          </DialogTrigger>
+        </Dialog>
+      </DialogTrigger>,
+    );
+    await user.click(screen.getByTestId('Trigger'));
+    await screen.findByTestId('Dialog');
+
+    screen.getByTestId('Inner').focus();
+    await user.keyboard('{Enter}');
+    await screen.findByTestId('InnerDialog');
+
+    await user.keyboard('{Escape}');
+    await waitFor(() =>
+      expect(screen.queryByTestId('InnerDialog')).not.toBeInTheDocument(),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 600));
+
+    await user.keyboard('{Escape}');
+
+    await waitFor(() =>
+      expect(screen.queryByTestId('Dialog')).not.toBeInTheDocument(),
+    );
+  });
+
   it('closes only the Select list while the list is open', async () => {
     await openDialog(<SelectApp />);
 

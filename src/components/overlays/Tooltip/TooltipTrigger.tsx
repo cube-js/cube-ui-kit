@@ -18,7 +18,7 @@ import { useTooltipTriggerState } from 'react-stately';
 
 import { useEvent } from '../../../_internal';
 import { isDevEnv } from '../../../utils/is-dev-env';
-import { isProgrammaticFocus } from '../../../utils/react/programmaticFocus';
+import { isFocusRestoration } from '../../../utils/react/programmaticFocus';
 import { Block } from '../../Block';
 import { ActiveZone } from '../../content/ActiveZone/ActiveZone';
 import { DisplayTransition } from '../../helpers/DisplayTransition/DisplayTransition';
@@ -172,8 +172,11 @@ export function TooltipTrigger(props: CubeTooltipTriggerProps) {
   //
   // Dropping the focus handler rather than closing after the fact: React Aria
   // decides to show inside it, so this never starts and nothing flashes.
+  //
+  // Covers both restore paths — ours and a `FocusScope`'s — see
+  // `programmaticFocus`.
   const onFocus = useEvent((event: FocusEvent<HTMLElement>) => {
-    if (isProgrammaticFocus()) return;
+    if (isFocusRestoration()) return;
 
     rawTriggerProps.onFocus?.(event);
   });

@@ -10,6 +10,7 @@ import {
 import { createPortal } from 'react-dom';
 
 import { Provider, useProviderProps } from '../../../provider';
+import { markFocusRestoreWindow } from '../../../utils/react/programmaticFocus';
 import { DisplayTransition } from '../../helpers/DisplayTransition/DisplayTransition';
 
 import { OpenTransitionContext } from './OpenTransitionContext';
@@ -60,6 +61,12 @@ function Overlay(props: CubeOverlayProps, ref) {
           onEntered?.();
           break;
         case 'exit':
+          // Our `FocusScope` restores focus to the trigger when it unmounts at
+          // the end of this transition, from inside React's own commit where
+          // nothing can wrap it. Declaring the window here is what stops the
+          // restored trigger's tooltip from opening and then eating the user's
+          // next `Escape` (CUB-4839).
+          markFocusRestoreWindow(EXIT_DURATION + 200);
           onExit?.();
           onExiting?.();
           break;
