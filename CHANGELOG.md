@@ -1,5 +1,19 @@
 # @cube-dev/ui-kit
 
+## 0.181.0
+
+### Minor Changes
+
+- [#1412](https://github.com/cube-js/cube-ui-kit/pull/1412) [`3fac2506`](https://github.com/cube-js/cube-ui-kit/commit/3fac25065d505835d173584046e653cb056f0af2) Thanks [@tenphi](https://github.com/tenphi)! - Improve the modern Form API before adoption: add typed field descriptors with nullable input bindings and value/state hooks, reject misspelled literal command paths, and expose immutable nested read types while preserving date-control value types. Controller callbacks now use the latest committed props; validators use explicit field/external dependencies and cancel stale in-flight reads. Rule comparison detects function replacements while keeping equivalent inline closures stable. Declarative constraints stay reactive with `rulesKey`; descriptor construction keeps public dependencies unchanged and defers function comparison until registration. Submit and Reset honor their controller outside the form, both honor click cancellation, modern Submit stays enabled after validation errors by default, reset availability is exposed as `canReset`, root payload selection supports retained values, and submission failures have discriminated results with explicit-controller error rendering. Existing legacy forms retain their API and behavior. Modern consumers should handle `onSubmitFailed` by its `status` and use `deps` for external validator inputs and `dependsOn` for sibling form paths.
+
+- [#1414](https://github.com/cube-js/cube-ui-kit/pull/1414) [`e10af40c`](https://github.com/cube-js/cube-ui-kit/commit/e10af40c67872f41d59d2deafbade95655e5d0ed) Thanks [@tenphi](https://github.com/tenphi)! - Allow nested tuple paths in input `name` props with modern form controllers, including numeric array indices and readonly tuples. Typed `field` descriptors remain optional. Normalize tuple names before forwarding to the DOM and reject them on legacy controllers, which retain string names and dot notation. Clarify the two binding styles in the Form guides.
+
+### Patch Changes
+
+- [#1415](https://github.com/cube-js/cube-ui-kit/pull/1415) [`eac9730f`](https://github.com/cube-js/cube-ui-kit/commit/eac9730f686a6853fbccb466d575bb648d2d518e) Thanks [@tenphi](https://github.com/tenphi)! - Close a Dialog on the first `Escape` after a list inside it was used. Several separate swallows each kept it open: a popup that had already closed still claimed the key through `useOverlay`, focus was left on an option that detached before the key was dispatched, trigger keyboard handlers stopped a key they never used, and the trigger's tooltip took whatever got past from a document-level listener once focus returned. Tooltips no longer open when focus is restored rather than the user arriving, and `ListBox`, `Picker` and `FilterPicker` now release `Escape` — and only `Escape` — to whatever surrounds them.
+
+- [#1414](https://github.com/cube-js/cube-ui-kit/pull/1414) [`e10af40c`](https://github.com/cube-js/cube-ui-kit/commit/e10af40c67872f41d59d2deafbade95655e5d0ed) Thanks [@tenphi](https://github.com/tenphi)! - Preserve the first typed character when editing a controlled ComboBox with custom values. Keep FileInput filenames and native selections synchronized with form resets and controlled value changes, including text uploads, and abort replaced or unmounted file reads. Both fixes apply to legacy and modern forms.
+
 ## 0.180.0
 
 ### Minor Changes
