@@ -87,7 +87,7 @@ it('should open and close popover', async () => {
 ### Form Integration
 
 ```tsx
-// Modern Form integration
+// Legacy name binding (renderWithForm uses Form.useForm)
 it('should integrate with Form', async () => {
   const { getByRole, formInstance } = renderWithForm(
     <TextInput name="test" label="test" />
