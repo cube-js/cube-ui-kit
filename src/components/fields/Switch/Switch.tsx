@@ -134,6 +134,8 @@ export interface CubeSwitchProps
     AriaSwitchProps {
   /** The form instance; redeclared for the same reason as in `Checkbox`. */
   form?: FieldBaseProps['form'];
+  /** Field name; modern forms also accept nested tuple paths. */
+  name?: FieldBaseProps['name'];
   inputStyles?: Styles;
   isLoading?: boolean;
   size?: 'large' | 'medium' | 'small';

@@ -50,12 +50,19 @@ export function useFieldBinding<
   const controller = modern
     ? (props.form as unknown as FormController<any>)
     : undefined;
-  const name = props.name ?? '';
-  const pathKey = controller ? getFieldKey(props.field?.path ?? name) : '';
-  const legacy = useField<T, P>(props, {
-    ...params,
-    unbound: params.unbound || modern,
-  });
+  const path = props.field?.path ?? props.name ?? '';
+  const name = typeof path === 'string' ? path : getFieldKey(path);
+  const pathKey = controller ? getFieldKey(path) : '';
+  if (!params.unbound && props.form && !modern && typeof path !== 'string') {
+    throw new Error('Tuple field names require a modern form controller.');
+  }
+  const legacy = useField<T, P & { name?: string }>(
+    { ...props, name },
+    {
+      ...params,
+      unbound: params.unbound || modern,
+    },
+  );
   const modernHandle = useMemo(
     () =>
       controller
@@ -113,11 +120,7 @@ export function useFieldBinding<
         (typeof props.shouldUpdate === 'function' &&
           !props.shouldUpdate(
             previous,
-            writePath(
-              previous,
-              normalizePath(props.field?.path ?? name),
-              value,
-            ),
+            writePath(previous, normalizePath(path), value),
           ))
       )
         return;

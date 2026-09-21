@@ -25,7 +25,7 @@ export interface CubeNumberInputProps
       CubeTextInputBaseProps,
       'defaultValue' | 'value' | 'onChange' | 'field'
     >,
-    Omit<AriaNumberFieldProps, 'validate' | 'form'> {
+    Omit<AriaNumberFieldProps, 'validate' | 'form' | 'name'> {
   field?: FieldBaseProps<number | null | undefined>['field'];
   /** Whether or to hide stepper */
   hideStepper?: boolean;

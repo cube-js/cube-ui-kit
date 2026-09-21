@@ -64,8 +64,8 @@ export interface FieldCoreProps<Value = unknown> {
   id?: string;
   /** The id prefix for the field to avoid collisions between forms */
   idPrefix?: string;
-  /** The field name */
-  name?: string;
+  /** Literal name, or a nested tuple path with a modern form controller. */
+  name?: FormPath;
   /** The form instance */
   form?: any;
   /** Function that checks whether to perform update of the form state. */

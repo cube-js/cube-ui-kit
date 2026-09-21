@@ -19,13 +19,15 @@ function EmailForm() {
 
   return (
     <Form form={form} onSubmit={(values, { signal }) => save(values, signal)}>
-      <TextInput field={form.field('email')} label="Email" isRequired />
+      <TextInput name="email" label="Email" isRequired />
       <Form.SubmitError />
       <Form.Submit>Save</Form.Submit>
     </Form>
   );
 }
 ```
+
+`name` is sufficient to bind an input. Modern forms also accept `name={['user', 'email']}` for nested data; `field={form.field(path)}` is optional and adds model-aware type checking and validator inference.
 
 `Form.useForm()` and roots without a modern controller keep the legacy backend. Existing forms need no API changes when upgrading. Use the [migration checklist](https://github.com/cube-js/cube-ui-kit/blob/main/docs/modern-form-migration.md) before converting one; `DialogForm` and `Form.Item` still require legacy forms.
 

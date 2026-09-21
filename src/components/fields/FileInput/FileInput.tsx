@@ -1,4 +1,5 @@
 import { createFocusableRef } from '@react-spectrum/utils';
+import { useControlledState } from '@react-stately/utils';
 import {
   BaseProps,
   BlockStyleProps,
@@ -11,13 +12,13 @@ import {
 import {
   forwardRef,
   RefObject,
-  useCallback,
+  useEffect,
   useImperativeHandle,
-  useMemo,
   useRef,
   useState,
 } from 'react';
 
+import { useEvent } from '../../../_internal/hooks/use-event';
 import { useI18n } from '../../../i18n';
 import { FieldBaseProps } from '../../../shared';
 import { useCombinedRefs } from '../../../utils/react';
@@ -30,6 +31,7 @@ import {
   wrapWithField,
 } from '../../form';
 
+import type { ChangeEvent } from 'react';
 import type { AriaTextFieldProps } from 'react-aria';
 import type { Props } from '../../../props';
 
@@ -127,6 +129,8 @@ export interface CubeFileInputProps
     FieldBaseProps<string | null | undefined> {
   /** The form instance; redeclared for the same reason as in `Checkbox`. */
   form?: FieldBaseProps['form'];
+  /** Field name; modern forms also accept nested tuple paths. */
+  name?: FieldBaseProps['name'];
   /**
    * The size of the input
    * @default default
@@ -146,22 +150,9 @@ export interface CubeFileInputProps
   /** The file types that the input should accept */
   accept?: string;
   value?: string;
+  defaultValue?: string;
   onChange?: (value: string) => void;
   placeholder?: string;
-}
-
-function extractContents(element, callback) {
-  const files = element?.files;
-
-  if (files && files.length > 0) {
-    const fileReader = new FileReader();
-
-    fileReader.onload = function () {
-      callback(fileReader.result);
-    };
-
-    fileReader.readAsText(files[0]);
-  }
 }
 
 function extractFileNameFromValue(value?: string) {
@@ -170,19 +161,12 @@ function extractFileNameFromValue(value?: string) {
     : undefined;
 }
 
-function FileInput(props: CubeFileInputProps, ref) {
+function FileInput(allProps: CubeFileInputProps, ref) {
   const { t } = useI18n();
 
-  props = useFieldProps(
-    { ...props },
-    {
-      defaultValidationTrigger: 'onChange',
-      valuePropsMapper: ({ value, onChange }) => ({
-        onChange,
-        value: props.type === 'file' || !props.type ? value : undefined,
-      }),
-    },
-  );
+  const props = useFieldProps(allProps, {
+    defaultValidationTrigger: 'onChange',
+  });
 
   let {
     id,
@@ -204,34 +188,55 @@ function FileInput(props: CubeFileInputProps, ref) {
   } = props;
 
   const [dragHover, setDragHover] = useState(false);
-  const defaultValue = useMemo(
-    () => (type === 'file' ? value : undefined),
-    [type, value],
+  const [currentValue, setValue] = useControlledState(
+    value,
+    props.defaultValue ?? '',
+    onChange,
   );
-  const defaultFileName = useMemo(
-    () => extractFileNameFromValue(defaultValue),
-    [],
-  );
-  const [fileName, setFileName] = useState<string | undefined>(defaultFileName);
+  const [selection, setSelection] = useState<{
+    value: string;
+    name: string;
+  }>();
+  const fileName =
+    type === 'file'
+      ? extractFileNameFromValue(currentValue)
+      : currentValue === selection?.value
+        ? selection?.name
+        : undefined;
+  const reader = useRef<FileReader | null>(null);
 
   let domRef = useRef(null);
 
   inputRef = useCombinedRefs(inputRef);
 
-  const onLocalChange = useCallback(
-    (event: any) => {
-      const value = event.target.value;
+  useEffect(() => {
+    // Browsers only allow clearing a file input programmatically. A reset or
+    // external value replacement must also release the old native selection.
+    if (inputRef.current && currentValue !== selection?.value) {
+      inputRef.current.value = '';
+    }
+  }, [currentValue, selection, inputRef]);
+  useEffect(() => () => reader.current?.abort(), [type]);
 
-      setFileName(extractFileNameFromValue(value));
-
-      if (type === 'file') {
-        onChange?.(value);
-      } else {
-        extractContents(event.target, onChange);
-      }
-    },
-    [onChange],
-  );
+  const onLocalChange = useEvent((event: ChangeEvent<HTMLInputElement>) => {
+    reader.current?.abort();
+    const file = event.target.files?.[0];
+    const name = file?.name ?? '';
+    const commit = (next: string) => {
+      setSelection({ value: next, name });
+      setValue(next);
+    };
+    if (type === 'file') {
+      commit(event.target.value);
+    } else if (file) {
+      const nextReader = new FileReader();
+      reader.current = nextReader;
+      nextReader.onload = () => commit(String(nextReader.result ?? ''));
+      nextReader.readAsText(file);
+    } else {
+      commit('');
+    }
+  });
 
   let styles = extractStyles(otherProps, CONTAINER_STYLES);
 
@@ -254,7 +259,7 @@ function FileInput(props: CubeFileInputProps, ref) {
       styles={inputStyles}
       isDisabled={isDisabled}
       mods={{
-        selected: !!value,
+        selected: !!fileName,
         'drag-hover': dragHover,
         ...getValidationMods({ isInvalid, isValid }),
       }}

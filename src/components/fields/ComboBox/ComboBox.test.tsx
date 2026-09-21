@@ -18,6 +18,27 @@ const items = [
 vi.mock('../../../_internal/hooks/use-warn');
 
 describe('<ComboBox />', () => {
+  it('honors a later external clear when the parent declined the selection cleared by typing', async () => {
+    const onSelectionChange = vi.fn();
+    const renderInput = (selectedKey: string | null) => (
+      <ComboBox
+        label="Tag"
+        allowsCustomValue
+        selectedKey={selectedKey}
+        onSelectionChange={onSelectionChange}
+      >
+        <ComboBox.Item key="known">Known</ComboBox.Item>
+      </ComboBox>
+    );
+    const view = renderWithRoot(renderInput('known'));
+    const input = view.getByRole('combobox', { name: 'Tag' });
+    await userEvent.type(input, '!');
+    expect(input).toHaveValue('Known!');
+    expect(onSelectionChange).toHaveBeenCalledWith(null);
+    view.rerender(renderInput(null));
+    expect(input).toHaveValue('');
+  });
+
   it('should handle basic functionality and popover state', async () => {
     const { getByRole, queryByRole, getByTestId } = renderWithRoot(
       <ComboBox label="test" placeholder="Select a color">

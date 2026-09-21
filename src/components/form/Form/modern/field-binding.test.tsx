@@ -22,6 +22,7 @@ import { useFieldProps } from '../use-field/use-field-props';
 import { createFormController, getControllerInternals } from './controller';
 
 import type { FieldBaseProps } from '../../../../shared/form';
+import type { CubeFormInstance } from '../use-form';
 import type { FormController } from './controller';
 
 function Control(
@@ -256,6 +257,68 @@ describe('modern field binding', () => {
     expect(view.getByRole('textbox')).toHaveValue('legacy');
   });
 
+  it('releases legacy registrations and aborts validation when a nested input changes backend', async () => {
+    const modern = createFormController({
+      defaultValues: { profile: { name: 'modern' } },
+    });
+    let legacy!: CubeFormInstance<any>;
+    let signal: AbortSignal | undefined;
+    const validator = vi.fn((_rule, _value, context) => {
+      signal = context.signal;
+      return new Promise(() => {});
+    });
+    function Fixture({ mode }: { mode: 'legacy' | 'modern' }) {
+      [legacy] = Form.useForm();
+      return (
+        <TextInput
+          form={mode === 'legacy' ? legacy : modern}
+          name={mode === 'legacy' ? 'profile.name' : ['profile', 'name']}
+          defaultValue="legacy"
+          label="Name"
+          rules={mode === 'modern' ? [{ validator }] : undefined}
+        />
+      );
+    }
+    const view = render(
+      <StrictMode>
+        <Fixture mode="legacy" />
+      </StrictMode>,
+    );
+    const input = view.getByRole('textbox', { name: 'Name' });
+    await userEvent.type(input, '!');
+    expect(legacy.getFormData()).toEqual({ profile: { name: 'legacy!' } });
+    view.rerender(
+      <StrictMode>
+        <Fixture mode="modern" />
+      </StrictMode>,
+    );
+    expect(view.getByRole('textbox', { name: 'Name' })).toBe(input);
+    expect(legacy.getFieldNames()).toEqual([]);
+    expect(input).toHaveValue('modern');
+    let pending!: ReturnType<typeof modern.validate>;
+    act(() => {
+      pending = modern.validate();
+    });
+    await waitFor(() => expect(validator).toHaveBeenCalledTimes(1));
+    view.rerender(
+      <StrictMode>
+        <Fixture mode="legacy" />
+      </StrictMode>,
+    );
+    expect(signal?.aborted).toBe(true);
+    await act(async () => {
+      expect((await pending).stale).toBe(true);
+    });
+    expect(modern.getActiveValues()).toEqual({});
+    expect(modern.getValue(['profile', 'name'])).toBe('modern');
+    expect(input).toHaveValue('legacy');
+    view.unmount();
+    expect(legacy.getFieldNames()).toEqual([]);
+    expect(
+      getControllerInternals(modern, 'test').store.debug.listenerCount(),
+    ).toBe(0);
+  });
+
   it.each([true, false])(
     'retains values through Strict Mode replay with preserve=%s',
     async (preserve) => {
@@ -350,38 +413,59 @@ describe('modern field binding', () => {
     ).toBe(0);
   });
 
-  it('hydrates stable input ids without mutating the server controller', async () => {
-    const form = createFormController({ defaultValues: { a: 'server' } });
-    function Fixture() {
-      const props = useFieldProps({
-        form,
-        name: 'a',
-        id: undefined as string | undefined,
-        value: undefined as string | undefined,
+  it.each(['literal', 'tuple', 'descriptor'] as const)(
+    'hydrates a %s binding with stable ids and catches intervening writes',
+    async (binding) => {
+      const form = createFormController({
+        defaultValues: { a: 'server', rows: [{ 'email.work': 'server' }] },
       });
-      return <input id={props.id} value={props.value} readOnly />;
-    }
-    const before = form.getSnapshot();
-    const container = document.createElement('div');
-    container.innerHTML = renderToString(<Fixture />);
-    document.body.append(container);
-    const id = container.querySelector('input')!.id;
-    expect(form.getSnapshot()).toBe(before);
-    expect(
-      getControllerInternals(form, 'test').store.debug.registrationCount(),
-    ).toBe(0);
-    form.setValue('a', 'client');
-    const onRecoverableError = vi.fn();
-    let root!: ReturnType<typeof hydrateRoot>;
-    await act(async () => {
-      root = hydrateRoot(container, <Fixture />, { onRecoverableError });
-    });
-    expect(container.querySelector('input')).toHaveValue('client');
-    expect(container.querySelector('input')!.id).toBe(id);
-    expect(onRecoverableError).not.toHaveBeenCalled();
-    act(() => root.unmount());
-    container.remove();
-  });
+      const path =
+        binding === 'literal' ? 'a' : (['rows', 0, 'email.work'] as const);
+      function Fixture() {
+        const props = useFieldProps({
+          form,
+          name: path,
+          ...(binding === 'descriptor' ? { field: form.field(path) } : {}),
+          id: undefined as string | undefined,
+          value: undefined as string | undefined,
+        });
+        return (
+          <input id={props.id} name={props.name} value={props.value} readOnly />
+        );
+      }
+      const before = form.getSnapshot();
+      const container = document.createElement('div');
+      container.innerHTML = renderToString(<Fixture />);
+      document.body.append(container);
+      const id = container.querySelector('input')!.id;
+      expect(container.querySelector('input')).toHaveValue('server');
+      expect(container.querySelector('input')).toHaveAttribute(
+        'name',
+        binding === 'literal' ? 'a' : 'rows.0.email\\.work',
+      );
+      expect(form.getSnapshot()).toBe(before);
+      expect(
+        getControllerInternals(form, 'test').store.debug.registrationCount(),
+      ).toBe(0);
+      form.setValue(path, 'client');
+      const onRecoverableError = vi.fn();
+      let root!: ReturnType<typeof hydrateRoot>;
+      await act(async () => {
+        root = hydrateRoot(container, <Fixture />, { onRecoverableError });
+      });
+      expect(container.querySelector('input')).toHaveValue('client');
+      expect(container.querySelector('input')!.id).toBe(id);
+      expect(onRecoverableError).not.toHaveBeenCalled();
+      act(() => root.unmount());
+      expect(
+        getControllerInternals(form, 'test').store.debug.registrationCount(),
+      ).toBe(0);
+      expect(
+        getControllerInternals(form, 'test').store.debug.listenerCount(),
+      ).toBe(0);
+      container.remove();
+    },
+  );
 
   it('honors shouldUpdate without touching or notifying a rejected change', async () => {
     const notify = vi.fn();
