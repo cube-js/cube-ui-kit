@@ -389,7 +389,9 @@ function Select<T extends object>(
     if (!popover || !active || !popover.contains(active)) return;
 
     focusProgrammatically(triggerRef.current, { preventScroll: true });
-  }, [state.isOpen]);
+    // Both refs come from `useCombinedRefs`, so their identity never changes;
+    // listing them satisfies the rule without re-running this.
+  }, [state.isOpen, popoverRef, triggerRef]);
 
   let { labelProps, triggerProps, valueProps, menuProps } = useSelect(
     props,
