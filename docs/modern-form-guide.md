@@ -1,6 +1,6 @@
 # Modern Form: choose the API for the job
 
-For a new modern form, start with `Form.useController<Model>()`, bind inputs with `field={form.field(path)}`, and submit through `<Form onSubmit={...}>` and `<Form.Submit>`. Add subscriptions only where other UI needs to read form state. The input components already subscribe to their own values and errors.
+For a new modern form, start with `Form.useController<Model>()`, bind inputs with `name="email"` or a nested tuple such as `name={['user', 'email']}`, and submit through `<Form onSubmit={...}>` and `<Form.Submit>`. Add subscriptions only where other UI needs to read form state. The input components already subscribe to their own values and errors. `field={form.field(path)}` is an optional alternative when you want model-checked paths, input value compatibility checks, or inferred custom-validator types.
 
 Existing `Form.useForm()` forms and roots without a modern controller use the legacy backend. Follow the [migration checklist](https://github.com/cube-js/cube-ui-kit/blob/main/docs/modern-form-migration.md) when converting one. `DialogForm` still requires a legacy instance; do not pass a modern controller through a cast.
 
@@ -29,13 +29,12 @@ function ProfileForm({
   return (
     <Form form={form} onSubmit={(values, { signal }) => save(values, signal)}>
       <TextInput
-        field={form.field('email', {
-          rules: [{ type: 'email', message: 'Enter a valid email' }],
-        })}
+        name="email"
+        rules={[{ type: 'email', message: 'Enter a valid email' }]}
         label="Email"
         isRequired
       />
-      <Switch field={form.field('notifications')} label="Notifications" />
+      <Switch name="notifications" label="Notifications" />
       <Form.SubmitError />
       <Form.Submit>Save</Form.Submit>
       <Form.Reset>Reset</Form.Reset>
@@ -52,14 +51,16 @@ The model describes possible values, including API `null`s. A text input display
 
 | Concern | Start here | Use the alternative when… |
 | --- | --- | --- |
-| Connect an input | `field={form.field(path, options)}` | `name="email"` keeps a shared legacy/modern wrapper working. Names are not checked against the controller's model. |
+| Connect an input | `name="email"` for a literal name, or `name={['user', 'email']}` for a nested modern path | `field={form.field(path, options)}` adds model-checked paths, input value compatibility, and validator inference. Neither binding requires the other. |
 | Locate the controller | Use the controller you created, or pass it as a prop | `Form.useControllerContext<Model>()` avoids prop threading in a descendant. It reads context without subscribing. |
-| Configure a field | Put `rules`, `validate`, dependencies, and retention on the descriptor | Input-level registration props support reusable controls with their own defaults and legacy callers. Avoid configuring the same option in both places. |
+| Configure a field | With `name`, put `rules`, dependencies, and retention on the input | With `field`, put these options and typed `validate` on the descriptor. Avoid configuring the same option in both places. |
 | Present a field | Input props such as `label`, `description`, `isRequired` | `rules: [{ required: true }]` is useful when required validation needs a custom message or no visible required marker. |
 | Handle submit/change/failure | Callbacks on the owning `<Form>` | Hook callbacks let a controller own behavior independently of a root, or provide defaults to a wrapper. Choose one location per callback. |
 | Initialize values | Controller `defaultValues` | Field `defaultValue` supplies a fallback for a reusable field missing from the controller's data. |
 
 `Form.Submit`, `Form.Reset`, and `Form.SubmitError` are aliases of the exported `SubmitButton`, `ResetButton`, and `SubmitError` components. This guide uses the `Form.*` names consistently; importing a standalone name does not select a different implementation.
+
+`name` uses the surrounding form, or an explicit `form={form}` outside it. Tuple names accept string and numeric segments and readonly arrays; inline tuples do not need memoization. Names are not checked against the surrounding controller's model because React context cannot infer its type. Tuple names require a modern controller; legacy forms retain string names and dot notation.
 
 A descriptor is pure configuration, so creating it inline is expected. It neither reads state nor registers a field; the mounted input registers after commit. It supplies the controller and path even outside the root, so adding `form` or `name` to the same input is unnecessary. If both are present, the descriptor wins. Descriptor options override only matching options they supply. In particular, descriptor `rules` or `validate` replaces input-level `rules`; put built-in rules and a custom validator together on the descriptor to run both.
 
@@ -171,7 +172,7 @@ Use `setValue(path, value)` for one path and `setValues(partial)` for several to
 | Validation case | Start here |
 | --- | --- |
 | Required field with a visible marker | Input `isRequired`; it adds required validation too. |
-| Email, length, range, pattern, or enum | Descriptor `rules` using the built-in constraints. |
+| Email, length, range, pattern, or enum | Input `rules` using the built-in constraints, or descriptor `rules` when using `field`. |
 | Custom domain check | Descriptor `validate(value, context)` for an inferred field value and checked reads. |
 | Several custom rules or existing shared rule objects | `rules: [{ validator(rule, value, context) { ... } }]`; use `ModernValidationRule` for strict modern rule typing. |
 | Validation depends on another form value | `dependsOn: ['password']`, or nested tuples such as `dependsOn: [['account', 'password']]`. |
@@ -235,7 +236,7 @@ Unmounting the last input at a path removes it from `activeValues` immediately a
 
 For a wizard, validate a step before unmounting it and choose `submitValues="all"` if previous steps belong in the final payload. That does not revalidate unmounted steps. If final submission must validate every step against the latest data, keep the relevant inputs mounted or perform whole-payload validation explicitly. A form with no active fields is invalid.
 
-Bind nested leaves with tuples: `field={form.field(['rows', index, 'email'])}`. A string such as `'user.email'` is one literal key, not dot notation. Numeric indices and numeric string segments address the same path. Removing an array path does not shift the other indices. Registering a parent object makes its complete value active; register leaf paths when only selected children belong in the active payload. Known literal paths are typechecked; widened dynamic paths are supported. The declaration surface requires TypeScript 5.4 or newer.
+Bind nested leaves directly with `name={['rows', index, 'email']}`. The optional typed equivalent is `field={form.field(['rows', index, 'email'])}`. A string such as `'user.email'` is one literal key, not dot notation. Numeric indices and numeric string segments address the same path. Removing an array path does not shift the other indices. Registering a parent object makes its complete value active; register leaf paths when only selected children belong in the active payload. Descriptor and controller-command literal paths are checked against the model; `name` accepts dynamic paths without those checks. The declaration surface requires TypeScript 5.4 or newer.
 
 `getValues()` / `state.values` contains all retained data; `getActiveValues()` / `state.activeValues` contains registered paths. Dirty/touched metadata includes retained fields, while validity concerns active fields.
 

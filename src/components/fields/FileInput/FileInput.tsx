@@ -127,6 +127,8 @@ export interface CubeFileInputProps
     FieldBaseProps<string | null | undefined> {
   /** The form instance; redeclared for the same reason as in `Checkbox`. */
   form?: FieldBaseProps['form'];
+  /** Field name; modern forms also accept nested tuple paths. */
+  name?: FieldBaseProps['name'];
   /**
    * The size of the input
    * @default default
@@ -170,19 +172,16 @@ function extractFileNameFromValue(value?: string) {
     : undefined;
 }
 
-function FileInput(props: CubeFileInputProps, ref) {
+function FileInput(allProps: CubeFileInputProps, ref) {
   const { t } = useI18n();
 
-  props = useFieldProps(
-    { ...props },
-    {
-      defaultValidationTrigger: 'onChange',
-      valuePropsMapper: ({ value, onChange }) => ({
-        onChange,
-        value: props.type === 'file' || !props.type ? value : undefined,
-      }),
-    },
-  );
+  const props = useFieldProps(allProps, {
+    defaultValidationTrigger: 'onChange',
+    valuePropsMapper: ({ value, onChange }) => ({
+      onChange,
+      value: allProps.type === 'file' || !allProps.type ? value : undefined,
+    }),
+  });
 
   let {
     id,

@@ -34,6 +34,11 @@ const defaultValuePropsMapper = ({ value, onChange }) => ({
   onChange,
 });
 
+/** Preserve the input's prop shape while exposing a DOM-safe name. */
+type ResolvedFieldProps<Props> = {
+  [Key in keyof Props]: Key extends 'name' ? string | undefined : Props[Key];
+};
+
 /**
  * The single entry point for input components (see
  * `docs/rules/input-components.md`).
@@ -48,7 +53,10 @@ const defaultValuePropsMapper = ({ value, onChange }) => ({
 export function useFieldProps<
   T extends FieldTypes,
   Props extends UseFieldProps<T>,
->(inputProps: Props, params: UseFieldPropsParams = {}): Props {
+>(
+  inputProps: Props,
+  params: UseFieldPropsParams = {},
+): ResolvedFieldProps<Props> {
   // Provider defaults, then form context, then the normalization of the
   // deprecated `validationState` prop into `isInvalid`/`isValid`.
   const provided = useProviderProps(inputProps);
@@ -180,7 +188,13 @@ export function useFieldProps<
     deps: _deps,
     ...domProps
   } = result;
-  useDebugValue(domProps);
+  // Standalone and group-scoped inputs do not merge a bound field's props.
+  // Their tuple must still become a string before React Aria or DOM forwarding.
+  const namedProps =
+    domProps.name != null && typeof domProps.name !== 'string'
+      ? { ...domProps, name: getFieldKey(domProps.name) }
+      : domProps;
+  useDebugValue(namedProps);
 
-  return domProps as Props;
+  return namedProps as ResolvedFieldProps<Props>;
 }

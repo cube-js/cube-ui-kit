@@ -39,7 +39,7 @@ The [Modern Form guide](modern-form-guide.md) is the reference for implementing 
 
 | Area | Migration decision |
 | --- | --- |
-| Field bindings and paths | Prefer `field={form.field(path, options)}`. Strings are literal keys; convert legacy dot notation to tuples for nested data. Do not configure the same binding through `field`, `name`, and `form`. |
+| Field bindings and paths | Use `name={path}` for ordinary binding or `field={form.field(path, options)}` for model-aware type checking. Strings are literal keys; convert legacy dot notation to tuple names for nested data. Do not configure the same binding through `field`, `name`, and `form`. |
 | Empty API values | Include `null` in the model where the API returns it. Built-in typed bindings display an empty state without rewriting the stored null. |
 | Render-time reads | Use `useValue`, `useFieldState`, or selectors. Imperative getters and the controller creator do not subscribe React. |
 | Late defaults | Defaults initialize once. Choose adoption to preserve edits, reset for a new editing session, or baseline-only updates deliberately. |

@@ -462,7 +462,7 @@ DataTable also accepts nested column definitions for already-shaped pivot result
 
 ### Modern forms
 
-For a new modern form, create a typed controller, put defaults on the controller, and bind inputs with descriptors:
+For a new modern form, create a typed controller, put defaults on the controller, and bind inputs with `name`. Modern names accept strings and nested tuples; `field` is an optional typed binding:
 
 ```tsx
 const form = Form.useController<{ email: string | null }>({
@@ -470,7 +470,7 @@ const form = Form.useController<{ email: string | null }>({
 });
 
 <Form form={form} onSubmit={(values, { signal }) => save(values, signal)}>
-  <TextInput field={form.field('email')} label="Email" isRequired />
+  <TextInput name="email" label="Email" isRequired />
   <Form.SubmitError />
   <Form.Submit>Save</Form.Submit>
 </Form>
@@ -486,4 +486,4 @@ Inputs subscribe to their own values and errors. For other reactive UI, use `For
 
 ### Shared field integration
 
-Built-in inputs have field support; they do not need a `Field` wrapper. Modern descriptors and legacy `name` bindings both connect through `useFieldProps`. Custom controls use that hook and `wrapWithField`. [Field Properties](/docs/getting-started-field-properties--docs) documents shared labels, validation, state, and presentation props.
+Built-in inputs have field support; they do not need a `Field` wrapper. Modern `name` and `field` bindings, and legacy string `name` bindings, connect through `useFieldProps`. Custom controls use that hook and `wrapWithField`. [Field Properties](/docs/getting-started-field-properties--docs) documents shared labels, validation, state, and presentation props.

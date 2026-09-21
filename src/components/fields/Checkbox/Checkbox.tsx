@@ -56,6 +56,8 @@ export interface CubeCheckboxProps
    * in-repo, where those types resolve to `any` (see tsconfig.json).
    */
   form?: FieldBaseProps['form'];
+  /** Field name; modern forms also accept nested tuple paths. */
+  name?: FieldBaseProps['name'];
   inputStyles?: Styles;
   isIndeterminate?: boolean;
   value?: string;
@@ -120,7 +122,7 @@ const CheckboxElement = tasty({
 });
 
 function Checkbox(
-  props: WithNullableSelected<CubeCheckboxProps>,
+  allProps: WithNullableSelected<CubeCheckboxProps>,
   ref: FocusableRef,
 ) {
   // Swap hooks depending on whether this checkbox is inside a CheckboxGroup.
@@ -128,11 +130,9 @@ function Checkbox(
   // but since the checkbox won't move in and out of a group, it should be safe.
   let groupState = useContext(CheckboxGroupContext);
 
-  props = castNullableIsSelected(props);
+  const originalProps = castNullableIsSelected(allProps);
 
-  let originalProps = props;
-
-  props = useFieldProps(props, {
+  const props = useFieldProps(originalProps, {
     defaultValidationTrigger: 'onChange',
     valuePropsMapper: ({ value, onChange }) => ({
       isSelected: value ?? false,
