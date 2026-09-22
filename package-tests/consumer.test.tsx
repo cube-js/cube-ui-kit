@@ -1,6 +1,8 @@
 import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { StrictMode } from 'react';
+import { hydrateRoot } from 'react-dom/client';
+import { renderToString } from 'react-dom/server';
 
 import {
   ControlledConsumer,
@@ -98,4 +100,30 @@ it('updates controlled selection and changed parent props', async () => {
   expect(screen.getByRole('status')).toHaveTextContent('Before: b');
   rerender(<ControlledConsumer prefix="After" />);
   expect(screen.getByRole('status')).toHaveTextContent('After: b');
+});
+
+it('hydrates server-rendered modern forms from the published output', async () => {
+  const submit = vi.fn();
+  const recover = vi.fn();
+  const ui = <ModernConsumer onSubmit={submit} />;
+  const container = document.createElement('div');
+  container.innerHTML = renderToString(ui);
+  document.body.appendChild(container);
+  let root: ReturnType<typeof hydrateRoot> | undefined;
+  try {
+    await act(async () => {
+      root = hydrateRoot(container, ui, { onRecoverableError: recover });
+    });
+    await userEvent.type(
+      screen.getByRole('textbox', { name: 'Name' }),
+      'Hydrated',
+    );
+    expect(screen.getByRole('status')).toHaveTextContent('Hydrated');
+    await userEvent.click(screen.getByRole('button', { name: 'Save' }));
+    await waitFor(() => expect(submit).toHaveBeenCalledTimes(1));
+    expect(recover).not.toHaveBeenCalled();
+  } finally {
+    await act(async () => root?.unmount());
+    container.remove();
+  }
 });
