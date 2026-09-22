@@ -270,8 +270,8 @@ module.exports = [
     // Note when checking locally: `size-limit` bundles the built `./dist`, it
     // does not build. Run `pnpm build` first or you will measure a stale bundle.
     // React Compiler: CI run 35740563285 measured 590,457 B, against
-    // main's 526,917 B. Generated memoization and the React 18 runtime add
-    // 63,540 B; leave 1,543 B headroom for platform variance.
+    // main's 526,925 B (run 35736611372). Generated memoization and the React
+    // 18 runtime add 63,532 B; leave 1,543 B headroom.
     limit: '592kB',
   },
   {
@@ -352,7 +352,7 @@ module.exports = [
     // (directional syntax, handler displacement, chunk conflicts) ship in every
     // bundle, because `isDevEnv()` is evaluated at runtime so one build serves
     // dev and production. Headroom stays small so real bloat still trips.
-    // The same Compiler build measures 131,349 B in CI (+11,655 B).
+    // The same Compiler build measures 131,349 B in CI (+11,662 B).
     // This includes the compatibility runtime and shared compiled components.
     limit: '133kB',
   },
