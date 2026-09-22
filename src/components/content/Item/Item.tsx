@@ -487,13 +487,18 @@ const ItemElement = tasty({
     Suffix: {
       ...ADDITION_STYLES,
       gridArea: 'suffix',
+      // The leading `1x` mirrors the trailing one on `Prefix` above, for the
+      // same reason: the grid supplies no gap, and `Label` drops its own
+      // trailing padding for any end content — including a suffix — so without
+      // it a suffix glyph renders flush against the label.
       padding: {
-        '': '$inline-padding right',
-        // Same reason — and the same restriction — as the minimum width above:
-        // a sibling run already carries `$side-padding` on both sides, so the
-        // suffix must not add the inline padding on top of it, exactly as it
-        // does not next to a right icon.
-        'has-right-icon | (has-actions & inside-wrapper)': 0,
+        '': '0 $inline-padding 0 1x',
+        // The TRAILING padding only. Same reason — and the same restriction —
+        // as the minimum width above: a sibling run already carries
+        // `$side-padding` on both sides, so the suffix must not add the inline
+        // padding on top of it, exactly as it does not next to a right icon.
+        // The gap to the label is unaffected by that and stays.
+        'has-right-icon | (has-actions & inside-wrapper)': '1x left',
       },
     },
 
