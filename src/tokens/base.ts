@@ -41,8 +41,17 @@ export const BASE_TOKENS: Styles = {
   '$sharp-radius': '0px',
 
   // Misc dimensions
-  /** Minimum dialog width (responsive) */
-  '$min-dialog-size': 'min(288px, calc(100vw - (2 * var(--gap))))',
+  /**
+   * Minimum dialog width (responsive).
+   *
+   * The viewport term must match the `100dvw - 8x` max-width that `Dialog`,
+   * `Modal` and `Tray` set, because CSS resolves `min-width` *after*
+   * `max-width`: if this floor can exceed that ceiling, the floor wins and the
+   * dialog overflows its own viewport. It did, below ~352px — an Excel/Sheets
+   * task pane is 300-350px, so every dialog there rendered 288px wide inside a
+   * 236px box.
+   */
+  '$min-dialog-size': 'min(288px, calc(100dvw - (8 * var(--gap))))',
 
   // Transitions
   /** Default transition duration */

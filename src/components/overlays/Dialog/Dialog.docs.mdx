@@ -63,6 +63,32 @@ These properties allow direct style application without using the `styles` prop:
 - **Block:** `border`, `blockBorder`, `inlineBorder`, `radius`, `shadow`, `outline`, `padding`, `blockPadding`, `inlinePadding`, `overflow`, `scrollbar`, `textAlign`
 - **Flow:** `flow`, `place`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gap`, `columnGap`, `rowGap`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`
 
+### Padding Tokens
+
+`Dialog` declares its own gutters as custom properties on the dialog root, so every slot inside it — `Header`, `Content`, `Footer` — resolves the same values. They are part of the public contract and safe to read from a consumer's own styles:
+
+| Token | Default | `type="popover"` | What it measures |
+| --- | --- | --- | --- |
+| `$dialog-padding-h` | `1.5x` | `1x` | Horizontal gutter on every slot |
+| `$dialog-content-padding-v` | `1.5x` | `1x` | `Content`'s vertical padding |
+| `$dialog-title-padding-v` | `1.5x` | `1x` | `Header`'s vertical padding |
+| `$dialog-footer-v` | `1.5x` | `1x` | `Footer`'s vertical padding |
+
+The case this exists for is a child that should span the full dialog width — an edge-to-edge table or divider — while its siblings keep the gutter. Take `Content`'s horizontal padding back and hand the same value to the siblings:
+
+```jsx
+<Dialog>
+  <Content styles={{ padding: '$dialog-content-padding-v 0' }}>
+    <Paragraph styles={{ padding: '0 $dialog-padding-h' }}>
+      Keeps the dialog's gutter.
+    </Paragraph>
+    <FullWidthTable />
+  </Content>
+</Dialog>
+```
+
+A `styles` override on a slot is merged into the slot's own styles rather than replacing them, so `Content` keeps its `flexGrow`, `overflow` and height rules while only the padding changes. In plain CSS the same values are readable as `var(--dialog-padding-h)` and `var(--dialog-content-padding-v)`.
+
 ### Modifiers
 
 The `mods` property accepts the following modifiers you can override:

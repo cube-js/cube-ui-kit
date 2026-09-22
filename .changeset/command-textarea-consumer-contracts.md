@@ -1,0 +1,5 @@
+---
+"@cube-dev/ui-kit": minor
+---
+
+`CommandTextArea` now tells a consumer where a pick landed and what the field is doing. `onCommand`'s `item` carries `start` and `end` — the range the inserted text occupies in the value passed to `onChange`, with `end` excluding any trailing space — which `commit` already computed to place the caret and then discarded; a consumer that anchors its own record to a pick no longer has to re-derive the offset by searching the new value, a search that silently mis-anchors when one option's text is a token-boundary prefix of another's. Two new callbacks report state the component already holds: `onOpenChange(isOpen)` for the suggestion popover, so a field with its own `Enter` behaviour can tell "pick the focused option" from "submit" without reading `aria-expanded` off the DOM, and `onActiveTokenChange(token)` for the component's own caret-aware scan result, so nobody has to run a second approximate copy of it. Neither fires for the closed / no-token state a field mounts in.

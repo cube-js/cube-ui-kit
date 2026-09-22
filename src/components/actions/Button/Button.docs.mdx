@@ -238,7 +238,7 @@ A disabled button keeps showing its tooltip. Browsers stop dispatching mouse eve
 ### ARIA Properties
 
 - `aria-label`, `aria-labelledby` – Accessible name.
-- `aria-pressed` – Managed automatically when `isSelected` is used.
+- `aria-pressed` – Derived from `isSelected`. Not emitted when the button renders as a link (`to`) or when the call site sets its own `role` — a button acting as a tab or an option wants `aria-selected` / `aria-current` instead. An explicit `aria-pressed` always wins.
 - `aria-disabled` – Announces the disabled state whenever the native `disabled` attribute cannot be used: on links, and on buttons that carry a tooltip.
 - Additional ARIA attributes supported by React Aria's `useButton`.
 

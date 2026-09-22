@@ -1,4 +1,4 @@
-import { CONTAINER_STYLES, tasty } from '@tenphi/tasty';
+import { CONTAINER_STYLES, filterBaseProps, tasty } from '@tenphi/tasty';
 import { forwardRef, ReactNode, useCallback, useMemo, useState } from 'react';
 
 import { DirectionIcon } from '../../../icons/DirectionIcon';
@@ -61,7 +61,7 @@ export interface CubeButtonSplitProps extends BaseProps, ContainerStyleProps {
 const STYLE_PROPS = CONTAINER_STYLES;
 
 const ButtonSplitElement = tasty({
-  tag: 'div',
+  as: 'div',
   qa: 'ButtonSplit',
   styles: {
     display: 'inline-flex',
@@ -87,6 +87,7 @@ export const ButtonSplit = forwardRef<HTMLDivElement, CubeButtonSplitProps>(
       menuProps,
       styles,
       children,
+      role,
       ...rest
     } = props;
 
@@ -151,10 +152,17 @@ export const ButtonSplit = forwardRef<HTMLDivElement, CubeButtonSplitProps>(
     return (
       <ButtonSplitContext.Provider value={contextValue}>
         <ButtonSplitElement
+          {...filterBaseProps(rest, { eventProps: true })}
           ref={ref}
           data-button-split
           styles={mergedStyles}
           qa={rest.qa}
+          // Custom mode renders peer buttons with no visible group label, which
+          // is exactly when a caller needs `aria-label` to land on something the
+          // AT will announce. `role` comes from `BaseProps`, so a caller that
+          // wants something else — including `presentation` to opt out — just
+          // passes it. Strict mode keeps its previous shape.
+          role={role ?? (isCustomMode ? 'group' : undefined)}
         >
           {isCustomMode ? (
             children

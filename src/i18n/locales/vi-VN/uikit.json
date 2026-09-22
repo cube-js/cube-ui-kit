@@ -47,9 +47,16 @@
     "customValue": "Giá trị tùy chỉnh",
     "filteredItems": "Các mục đã lọc"
   },
+  "filterPicker": {
+    "clearValue": "Xóa giá trị"
+  },
   "picker": {
     "all": "Tất cả",
-    "pickerAriaLabel": "Bộ chọn"
+    "pickerAriaLabel": "Bộ chọn",
+    "clearValue": "Xóa giá trị"
+  },
+  "select": {
+    "clearValue": "Xóa giá trị"
   },
   "comboBox": {
     "clearValue": "Xóa giá trị",

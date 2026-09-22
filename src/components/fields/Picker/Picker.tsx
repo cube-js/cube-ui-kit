@@ -128,6 +128,8 @@ export interface CubePickerProps<T>
   mods?: Record<string, boolean>;
   /** Whether the picker is clearable using a clear button in the rightIcon slot */
   isClearable?: boolean;
+  /** Accessible name for the built-in clear button. Defaults to a localized "Clear value". */
+  clearLabel?: string;
   /** Callback called when the clear button is pressed */
   onClear?: () => void;
   /**
@@ -266,6 +268,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
     onEscape,
     onOptionClick,
     isClearable,
+    clearLabel,
     onClear,
     sortSelectedToTop,
     onOpenChange,
@@ -640,6 +643,9 @@ export const Picker = forwardRef(function Picker<T extends object>(
             icon={<CloseIcon />}
             size={size}
             qa="PickerClearButton"
+            // See `Select`: `ItemAction` names itself from `aria-label` or a
+            // string `tooltip`, and warns for neither.
+            aria-label={clearLabel ?? t('picker.clearValue', 'Clear value')}
             // No explicit `type`/`theme` — the default `current` type inherits
             // the trigger's own text color, which already carries validation
             // state here, so this renders exactly as the explicit theme did

@@ -144,6 +144,8 @@ export interface CubeFilterPickerProps<T>
   mods?: Record<string, boolean>;
   /** Whether the filter picker is clearable using a clear button in the rightIcon slot */
   isClearable?: boolean;
+  /** Accessible name for the built-in clear button. Defaults to a localized "Clear value". */
+  clearLabel?: string;
   /** Callback called when the clear button is pressed */
   onClear?: () => void;
   /**
@@ -297,6 +299,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     onEscape,
     onOptionClick,
     isClearable,
+    clearLabel,
     isLoadingItems,
     searchValue,
     onSearchChange,
@@ -704,6 +707,11 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
             icon={<CloseIcon />}
             size={size}
             qa="FilterPickerClearButton"
+            // See `Select`: `ItemAction` names itself from `aria-label` or a
+            // string `tooltip`, and warns for neither.
+            aria-label={
+              clearLabel ?? t('filterPicker.clearValue', 'Clear value')
+            }
             // No explicit `type`/`theme` — see `Picker`: the default `current`
             // type inherits the trigger's text color, which already carries
             // validation state.

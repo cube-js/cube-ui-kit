@@ -100,8 +100,36 @@ export interface CubeCommandTextAreaProps<T>
   /**
    * Fired when the user picks a command (Enter/Tab/click). The option's
    * `textValue` is also inserted into the textarea regardless.
+   *
+   * `start` / `end` locate that insertion in the value handed to `onChange`, so
+   * a consumer can anchor its own record to the picked item rather than
+   * re-deriving the offset by searching the new value for the inserted text —
+   * a search that cannot tell two occurrences apart when one option's text is a
+   * prefix of another's.
    */
-  onCommand?: (key: Key, item: { textValue: string; [k: string]: any }) => void;
+  onCommand?: (
+    key: Key,
+    item: {
+      textValue: string;
+      /** Index in the new value where the inserted text starts. */
+      start: number;
+      /** Index where it ends, excluding any inserted trailing space. */
+      end: number;
+      [k: string]: any;
+    },
+  ) => void;
+  /**
+   * Fired when the command popover opens or closes. Lets a consumer with its own
+   * `Enter` behaviour tell "pick the focused option" from "submit" without
+   * reading `aria-expanded` off the DOM.
+   */
+  onOpenChange?: (isOpen: boolean) => void;
+  /**
+   * Fired when the active trigger token changes, with the component's own
+   * caret-aware scan result — `null` once the caret leaves a token. Saves a
+   * consumer running a second, approximate scan of the same value.
+   */
+  onActiveTokenChange?: (token: ActiveToken | null) => void;
   /** Insert a trailing space after the chosen command. Defaults to true. */
   insertSpaceAfter?: boolean;
   /** Keys of disabled options. */
@@ -231,6 +259,8 @@ function CommandTextArea<T extends object>(
     triggers = DEFAULT_TRIGGERS,
     filter,
     onCommand,
+    onOpenChange,
+    onActiveTokenChange,
     insertSpaceAfter = true,
     disabledKeys,
     direction = 'top',
@@ -394,6 +424,41 @@ function CommandTextArea<T extends object>(
   const isCommandMode = !!activeToken && activeToken.token !== dismissedToken;
   const shouldShowPopover = isCommandMode && filteredCount > 0;
 
+  // ---- reporting open state / active token to the consumer --------------
+  // Both are already computed here; without these a consumer with its own
+  // `Enter` handling has to read `aria-expanded` off the DOM and run a second,
+  // approximate copy of the scan above — neither of which is a contract.
+  // Seeded with the closed / no-token defaults so mounting in that state is not
+  // reported as a change, while mounting with a `value` that already holds a
+  // token is.
+  const notifiedOpenRef = useRef(false);
+
+  useEffect(() => {
+    if (notifiedOpenRef.current === shouldShowPopover) return;
+
+    notifiedOpenRef.current = shouldShowPopover;
+    onOpenChange?.(shouldShowPopover);
+  }, [shouldShowPopover, onOpenChange]);
+
+  // `activeToken` is a fresh object on every value/caret change, so compare the
+  // content rather than the identity — otherwise a consumer is re-notified for
+  // a token that has not actually moved.
+  const activeTokenSignature = activeToken
+    ? `${activeToken.trigger.char}\u0000${activeToken.token}\u0000${activeToken.start}\u0000${activeToken.end}`
+    : null;
+  const notifiedTokenRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (notifiedTokenRef.current === activeTokenSignature) return;
+
+    notifiedTokenRef.current = activeTokenSignature;
+    onActiveTokenChange?.(activeToken ?? null);
+    // `activeToken` is intentionally not a dependency: the signature above is
+    // its value-identity, and depending on the object would re-run this on every
+    // keystroke that leaves the token unchanged.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTokenSignature, onActiveTokenChange]);
+
   // ---- caret-anchored popover ------------------------------------------
   // A zero-size element positioned at the caret (both axes) drives the
   // popover's geometry; the wrapper remains the dismiss/outside-click trigger.
@@ -481,6 +546,12 @@ function CommandTextArea<T extends object>(
     const token = activeToken;
     const el = inputRef.current;
 
+    // Where the inserted text lands in the new value. Both branches below
+    // already compute this to place the caret; it is reported through
+    // `onCommand` instead of being thrown away. `end` excludes the trailing
+    // space, which is padding around the insertion rather than part of it.
+    let start = Math.min(caret, effectiveValue.length);
+
     if (token) {
       const next =
         effectiveValue.slice(0, token.start) +
@@ -489,6 +560,7 @@ function CommandTextArea<T extends object>(
         effectiveValue.slice(token.end);
       const caretPos =
         token.start + textValue.length + (insertSpaceAfter ? 1 : 0);
+      start = token.start;
       pendingCaretRef.current = caretPos;
       handleChange(next);
       // If controlled, caret is restored by the effect above; if not, set now.
@@ -502,14 +574,16 @@ function CommandTextArea<T extends object>(
       }
     } else if (el) {
       // Fallback: insert at caret.
-      const start = el.selectionStart ?? effectiveValue.length;
-      const end = el.selectionEnd ?? effectiveValue.length;
+      const selectionStart = el.selectionStart ?? effectiveValue.length;
+      const selectionEnd = el.selectionEnd ?? effectiveValue.length;
       const next =
-        effectiveValue.slice(0, start) +
+        effectiveValue.slice(0, selectionStart) +
         textValue +
         (insertSpaceAfter ? ' ' : '') +
-        effectiveValue.slice(end);
-      const caretPos = start + textValue.length + (insertSpaceAfter ? 1 : 0);
+        effectiveValue.slice(selectionEnd);
+      const caretPos =
+        selectionStart + textValue.length + (insertSpaceAfter ? 1 : 0);
+      start = selectionStart;
       pendingCaretRef.current = caretPos;
       handleChange(next);
     }
@@ -520,6 +594,11 @@ function CommandTextArea<T extends object>(
       ...((
         listState?.collection as Collection<Node<unknown>> | undefined
       )?.getItem(key)?.props ?? {}),
+      // After the item's own props: the range is the component's measurement of
+      // what it just did, so an item that happens to carry a `start`/`end` prop
+      // must not shadow it.
+      start,
+      end: start + textValue.length,
     });
   });
 

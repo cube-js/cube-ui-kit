@@ -47,9 +47,16 @@
     "customValue": "Custom value",
     "filteredItems": "Filtered items"
   },
+  "filterPicker": {
+    "clearValue": "Clear value"
+  },
   "picker": {
     "all": "All",
-    "pickerAriaLabel": "Picker"
+    "pickerAriaLabel": "Picker",
+    "clearValue": "Clear value"
+  },
+  "select": {
+    "clearValue": "Clear value"
   },
   "comboBox": {
     "clearValue": "Clear value",

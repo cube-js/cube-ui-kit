@@ -95,7 +95,11 @@ export const DEFAULTS: DefaultsRegistry = {
       props: {
         defaultTooltipPlacement: { kind: 'default', value: 'top' },
         isLoading: { kind: 'default', value: false },
-        isSelected: { kind: 'default', value: false },
+        isSelected: {
+          kind: 'skip',
+          reason: 'unverified',
+          note: 'Rendering <Button isSelected={false}> differs from omitting it, so the documented default could not be reproduced. Check for docs drift, an alias mapping, or a state-map style default. Docs say `false`.',
+        },
         size: {
           kind: 'skip',
           reason: 'conditional',
