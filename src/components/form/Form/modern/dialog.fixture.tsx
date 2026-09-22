@@ -4,6 +4,7 @@ import { Button } from '../../../actions/Button/Button';
 import { TextInput } from '../../../fields/TextInput/TextInput';
 import { DialogContainer } from '../../../overlays/Dialog/DialogContainer';
 import { DialogForm } from '../../../overlays/Dialog/DialogForm';
+import { DialogTrigger } from '../../../overlays/Dialog/DialogTrigger';
 import { Form } from '../index';
 
 import type { ModernDialogFormProps } from '../../../overlays/Dialog/DialogForm';
@@ -11,6 +12,27 @@ import type { ModernDialogFormProps } from '../../../overlays/Dialog/DialogForm'
 export interface DialogValues {
   profile: { name: string | null };
   hidden?: string;
+}
+
+export function PopoverDialogFixture(
+  props: ModernDialogFormProps<DialogValues>,
+) {
+  return (
+    <DialogTrigger type="popover" defaultOpen>
+      <Button>Open</Button>
+      <DialogForm title="Profile" {...props}>
+        {(dismiss) => (
+          <>
+            <TextInput name={['profile', 'name']} label="Name" isRequired />
+            <Form.SubmitError />
+            {typeof props.children === 'function'
+              ? props.children(dismiss)
+              : props.children}
+          </>
+        )}
+      </DialogForm>
+    </DialogTrigger>
+  );
 }
 
 /** The compiler gate asserts that this consumer actually gets compiled. */

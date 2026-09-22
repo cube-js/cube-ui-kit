@@ -16,7 +16,22 @@ import { useOpenTransitionContext } from '../Modal/OpenTransitionContext';
 import { useDialogContext } from './context';
 import { Dialog } from './Dialog';
 
+import type { FormController } from '../../form/Form/modern/controller';
 import type { ModernDialogFormProps } from './DialogForm';
+
+interface DialogSession<T extends object> {
+  form: FormController<T>;
+  preserve?: boolean;
+  ended: boolean;
+  wasOpen: boolean;
+}
+
+function finishSession<T extends object>(session?: DialogSession<T>) {
+  if (!session || session.ended) return;
+  session.ended = true;
+  getControllerInternals(session.form, '<DialogForm>').store.cancelSubmission();
+  if (!session.preserve) session.form.reset();
+}
 
 /** Modern dialogs own the editing session, including retained/hidden roots. */
 export function ModernDialogForm<T extends object>(
@@ -70,44 +85,43 @@ export function ModernDialogForm<T extends object>(
       ? transition?.transitionState === 'exit' ||
         transition?.transitionState === 'unmounted'
       : !isOpen;
-  const sessionEnded = useRef(false);
-  const finishSession = useEvent((target = form) => {
-    if (target !== form || sessionEnded.current) return;
-    sessionEnded.current = true;
-    getControllerInternals(target, '<DialogForm>').store.cancelSubmission();
-    if (!preserve) target.reset();
-  });
+  const session = useRef<DialogSession<T> | undefined>(undefined);
   const dismiss = useEvent(() => {
-    finishSession(form);
+    finishSession(session.current);
     onClose?.();
     onDismiss?.();
   });
   const submitted = useEvent(() => {
-    finishSession(form);
+    finishSession(session.current);
     onClose?.();
   });
 
   // Escape, outside clicks, and controlled closing belong to the container.
   // Only an open -> closed transition ends a session; hidden initial mounts
   // must not discard a controller that the caller has already populated.
-  const wasOpen = useRef(!isClosing);
   useLayoutEffect(() => {
-    if (isClosing && wasOpen.current) finishSession(form);
-    wasOpen.current = !isClosing;
-    if (!isClosing) sessionEnded.current = false;
-  }, [isClosing, form, finishSession]);
+    if (session.current?.form !== form) {
+      session.current = { form, preserve, ended: false, wasOpen: !isClosing };
+    }
+    const current = session.current;
+    current.preserve = preserve;
+    if (isClosing && current.wasOpen) finishSession(current);
+    if (!isClosing && !current.wasOpen) current.ended = false;
+    current.wasOpen = !isClosing;
+  });
 
   // Portals may relocate (remounting this component) and Strict Mode reconnects
   // effects. A replacement root owns the same session; only a detached
-  // controller should reset after real removal.
-  useLayoutEffect(
-    () => () => {
+  // controller should reset after real removal. Capture that controller's
+  // session, so replacing it cannot apply the new controller's preserve policy.
+  useLayoutEffect(() => {
+    const own = session.current;
+    return () => {
       queueMicrotask(() => {
-        if (!internals.getRootElement()) finishSession(form);
+        if (!internals.getRootElement()) finishSession(own);
       });
-    },
-    [form, internals, finishSession],
-  );
+    };
+  }, [form, internals]);
 
   return (
     <Dialog {...dialogProps} qa={`${qa || ''}Dialog`} onDismiss={dismiss}>
@@ -116,6 +130,7 @@ export function ModernDialogForm<T extends object>(
       </Header>
       <Content>
         <ModernFormRoot
+          data-popover-keep
           form={form}
           qa={qa || 'DialogForm'}
           name={name}

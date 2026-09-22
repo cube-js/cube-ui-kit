@@ -12,9 +12,10 @@ import { TextInput } from '../../../fields/TextInput/TextInput';
 import { DialogContainer } from '../../../overlays/Dialog/DialogContainer';
 import { DialogForm } from '../../../overlays/Dialog/DialogForm';
 import { DialogTrigger } from '../../../overlays/Dialog/DialogTrigger';
+import { Form } from '../index';
 
 import { createFormController } from './controller';
-import { DialogFixture } from './dialog.fixture';
+import { DialogFixture, PopoverDialogFixture } from './dialog.fixture';
 
 import type { DialogValues } from './dialog.fixture';
 
@@ -245,11 +246,13 @@ describe('modern DialogForm', () => {
     const oldForm = controller(oldSave);
     const nextForm = controller();
     const view = renderWithRoot(<DialogFixture form={oldForm} />);
+    await edit('Old draft');
     await userEvent.click(screen.getByRole('button', { name: 'Submit' }));
     await waitFor(() => expect(oldSave).toHaveBeenCalledTimes(1));
     view.rerender(<DialogFixture form={nextForm} />);
     await edit('Next controller');
     await act(async () => resolve());
+    expect(oldForm.getValue(['profile', 'name'])).toBe('Initial');
     expect(screen.getByRole('dialog')).toBeInTheDocument();
     expect(nextForm.getValue(['profile', 'name'])).toBe('Next controller');
     await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
@@ -278,6 +281,83 @@ describe('modern DialogForm', () => {
     expect(await reopen()).toHaveValue('Initial');
     expect(dismiss).toHaveBeenCalledTimes(1);
   });
+
+  it.each([false, true])(
+    'detached controllers retain edits only with preserve=%s',
+    async (preserve) => {
+      const oldForm = controller();
+      const nextForm = controller();
+      const view = renderWithRoot(
+        <DialogFixture form={oldForm} preserve={preserve} />,
+      );
+      await edit('Old draft');
+      // Each controller keeps the policy from its own last committed session.
+      view.rerender(<DialogFixture form={nextForm} preserve={!preserve} />);
+      await edit('New draft');
+      expect(oldForm.getValue(['profile', 'name'])).toBe(
+        preserve ? 'Old draft' : 'Initial',
+      );
+      expect(nextForm.getValue(['profile', 'name'])).toBe('New draft');
+      view.rerender(<DialogFixture form={oldForm} preserve={preserve} />);
+      expect(screen.getByRole('textbox', { name: 'Name' })).toHaveValue(
+        preserve ? 'Old draft' : 'Initial',
+      );
+      await act(async () => {});
+      expect(nextForm.getValue(['profile', 'name'])).toBe(
+        preserve ? 'Initial' : 'New draft',
+      );
+    },
+  );
+
+  it.each([false, true])(
+    'popover customActions=%s stays open through validation, failed saves, and pending retries',
+    async (customActions) => {
+      let resolve!: () => void;
+      let signal!: AbortSignal;
+      const failure = vi.fn();
+      const save = vi
+        .fn()
+        .mockRejectedValueOnce('Save failed')
+        .mockImplementation((_values, context) => {
+          signal = context.signal;
+          return new Promise<void>((done) => {
+            resolve = done;
+          });
+        });
+      const form = createFormController<DialogValues>({
+        defaultValues: { profile: { name: null } },
+        onSubmit: save,
+        onSubmitFailed: failure,
+      });
+      renderWithRoot(
+        <PopoverDialogFixture form={form} noActions={customActions}>
+          {customActions ? <Form.Submit>Submit</Form.Submit> : null}
+        </PopoverDialogFixture>,
+      );
+      await userEvent.click(screen.getByRole('button', { name: 'Submit' }));
+      await waitFor(() =>
+        expect(failure).toHaveBeenCalledWith(
+          expect.objectContaining({ status: 'invalid' }),
+        ),
+      );
+      expect(save).not.toHaveBeenCalled();
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+      await edit('Draft');
+      await userEvent.click(screen.getByRole('button', { name: 'Submit' }));
+      await screen.findByText('Save failed');
+      await userEvent.click(screen.getByRole('button', { name: 'Submit' }));
+      await waitFor(() => expect(save).toHaveBeenCalledTimes(2));
+      expect(signal.aborted).toBe(false);
+      expect(screen.getByRole('textbox', { name: 'Name' })).toHaveValue(
+        'Draft',
+      );
+      await act(async () => resolve());
+      await waitFor(() =>
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument(),
+      );
+      expect(signal.aborted).toBe(false);
+    },
+  );
 
   it('cancels in-flight submit validation without calling save', async () => {
     let resolve!: () => void;

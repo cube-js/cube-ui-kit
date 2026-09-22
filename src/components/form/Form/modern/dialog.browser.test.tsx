@@ -5,13 +5,72 @@ import {
   userEvent,
   waitFor,
 } from '../../../../test';
+import { Button } from '../../../actions/Button/Button';
+import { Form } from '../index';
 
 import { createFormController } from './controller';
-import { DialogFixture } from './dialog.fixture';
+import { DialogFixture, PopoverDialogFixture } from './dialog.fixture';
 
 import type { DialogValues } from './dialog.fixture';
 
 describe('modern DialogForm in Chromium', () => {
+  it.each([false, true])(
+    'popover customActions=%s keeps saves alive until success, while Cancel aborts them',
+    async (customActions) => {
+      let resolve!: () => void;
+      let signal!: AbortSignal;
+      const save = vi.fn((_values, context) => {
+        signal = context.signal;
+        return new Promise<void>((done) => {
+          resolve = done;
+        });
+      });
+      const form = createFormController<DialogValues>({
+        defaultValues: { profile: { name: 'Initial' } },
+        onSubmit: save,
+      });
+      renderWithRoot(
+        <PopoverDialogFixture form={form} noActions={customActions}>
+          {customActions
+            ? (dismiss) => (
+                <>
+                  <Form.Submit>Submit</Form.Submit>
+                  <Button onPress={dismiss}>Cancel</Button>
+                </>
+              )
+            : null}
+        </PopoverDialogFixture>,
+      );
+      await userEvent.type(
+        await screen.findByRole('textbox', { name: 'Name' }),
+        ' edit',
+      );
+      await userEvent.click(screen.getByRole('button', { name: 'Submit' }));
+      await waitFor(() => expect(save).toHaveBeenCalledTimes(1));
+      expect(signal.aborted).toBe(false);
+      expect(screen.getByRole('dialog')).toBeVisible();
+      expect(screen.getByRole('textbox', { name: 'Name' })).toHaveValue(
+        'Initial edit',
+      );
+      await act(async () => resolve());
+      await waitFor(() =>
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument(),
+      );
+      await userEvent.click(screen.getByRole('button', { name: 'Open' }));
+      expect(await screen.findByRole('textbox', { name: 'Name' })).toHaveValue(
+        'Initial',
+      );
+      await userEvent.click(screen.getByRole('button', { name: 'Submit' }));
+      await waitFor(() => expect(save).toHaveBeenCalledTimes(2));
+      await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+      expect(signal.aborted).toBe(true);
+      await act(async () => resolve());
+      await waitFor(() =>
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument(),
+      );
+    },
+  );
+
   it('submits with Enter, closes, and restores focus', async () => {
     const save = vi.fn();
     const form = createFormController<DialogValues>({

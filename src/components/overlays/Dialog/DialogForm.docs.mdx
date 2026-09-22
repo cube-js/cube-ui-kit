@@ -158,9 +158,11 @@ The parent owns `form` in this example. `preserve` keeps its draft on dismissal 
 
 - Modern forms use the same callback precedence as `Form`: root callbacks override controller callbacks; omitted callbacks fall back to the controller's latest committed callbacks. Automatic closing works for both, including imperative `form.submit()`.
 - Invalid fields and rejected saves leave the dialog open. Include `Form.SubmitError` to display save failures. Submit stays enabled after validation errors by default so the user can retry.
+- In a popover, modern form actions keep the dialog open while validating or saving. This also covers custom actions inside the form; successful submission and explicit dismissal control when it closes.
 - Explicit Submit/Cancel actions can close a dialog even when its trigger disables passive dismissal with `isDismissable={false}`. Escape and outside-click dismissal remain disabled.
 - Modern dismissal cancels pending submission even with `preserve`. The submitted callback receives an aborted signal; a late completion cannot close a reopened dialog. Pass the signal to abortable API work.
 - Modern values reset when the editing session ends unless `preserve` is set. This includes Cancel, the close button, Escape/outside closing, and removal of the dialog. Hidden dialogs also end the session when closed. A close followed by an immediate reopen has no delayed reset that can erase new edits.
+- Replacing the modern controller ends the detached controller's session using its last committed `preserve` setting. The new controller keeps its own values and editing session.
 - Legacy callers retain their existing callback and reset contracts, including the delayed reset after built-in Cancel and successful submit. Refer to [FormInstance (legacy)](/docs/forms-forminstance--docs) for its methods.
 
 ## Accessibility
