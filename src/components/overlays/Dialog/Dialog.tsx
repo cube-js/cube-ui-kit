@@ -99,6 +99,33 @@ const DialogElement = tasty({
       '': '1.5x',
       'type=popover': '1x',
     },
+
+    // A `<form>` sitting between the dialog and its slots passes the dialog's
+    // flex context through instead of breaking it.
+    //
+    // The dialog is a flex column whose `Content` grows and scrolls while
+    // `Header` and `Footer` stay put. Wrap the slots in a form — which every
+    // dialog with a submit button has to, since the buttons must be inside it —
+    // and the form becomes the flex child in their place. Its own
+    // `display: block` then makes `Content` size to its content, so the body
+    // never scrolls and the footer is pushed off the bottom of the dialog.
+    //
+    // `min-height: 0` is the half nobody guesses: a flex item's default
+    // `min-height: auto` refuses to shrink below its content, so `Content`
+    // cannot scroll no matter what overflow it sets. Consumers rediscovered
+    // this set by hand — see CUB-4920 — so the dialog states it once here.
+    //
+    // Direct child only (`$: '> form'` is a raw tag selector, no
+    // `data-element` needed). A form nested deeper is the consumer's own
+    // layout and is left alone.
+    Form: {
+      $: '> form',
+      display: 'flex',
+      flow: 'column',
+      flexGrow: 1,
+      height: 'min 0',
+      gap: 0,
+    },
   },
 });
 

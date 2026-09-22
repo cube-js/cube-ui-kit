@@ -6,6 +6,7 @@ import { useLayoutEffect } from '../../../utils/react/useLayoutEffect';
 import { Button } from '../../actions/Button/Button';
 import { ButtonGroup } from '../../actions/ButtonGroup/ButtonGroup';
 import { Content } from '../../content/Content';
+import { Footer } from '../../content/Footer';
 import { Header } from '../../content/Header';
 import { Title } from '../../content/Title';
 import { getControllerInternals } from '../../form/Form/modern/controller';
@@ -128,41 +129,51 @@ export function ModernDialogForm<T extends object>(
       <Header>
         <Title ellipsis>{title}</Title>
       </Header>
-      <Content>
-        <ModernFormRoot
-          data-popover-keep
-          form={form}
-          qa={qa || 'DialogForm'}
-          name={name}
-          defaultValues={defaultValues}
-          onSubmit={onSubmit}
-          onSubmitted={submitted}
-          onSubmitFailed={onSubmitFailed}
-          onValuesChange={onValuesChange}
-          onReset={onReset}
-          onResetCapture={onResetCapture}
-          submitValues={submitValues}
-          labelStyles={labelStyles}
-          labelPosition={labelPosition}
-          labelWidth={labelWidth}
-          orientation={orientation}
-          requiredMark={requiredMark}
-          necessityIndicator={necessityIndicator}
-          isDisabled={isDisabled}
-          isReadOnly={isReadOnly}
-          isInvalid={isInvalid}
-          isValid={isValid}
-          validationState={validationState}
-          validateTrigger={validateTrigger}
-          showValid={showValid}
-          action={action}
-          method={method}
-          target={target}
-          encType={encType}
-          autoComplete={autoComplete}
-        >
+      {/*
+        The form wraps BOTH slots rather than sitting inside `Content`, so the
+        actions can live in a pinned `Footer` while the body scrolls. They still
+        have to be inside the `<form>` for submit to work, which is why the form
+        is the outer one of the two (CUB-4920). `Dialog` gives a direct-child
+        form the flex context this needs.
+      */}
+      <ModernFormRoot
+        data-popover-keep
+        form={form}
+        qa={qa || 'DialogForm'}
+        name={name}
+        defaultValues={defaultValues}
+        onSubmit={onSubmit}
+        onSubmitted={submitted}
+        onSubmitFailed={onSubmitFailed}
+        onValuesChange={onValuesChange}
+        onReset={onReset}
+        onResetCapture={onResetCapture}
+        submitValues={submitValues}
+        labelStyles={labelStyles}
+        labelPosition={labelPosition}
+        labelWidth={labelWidth}
+        orientation={orientation}
+        requiredMark={requiredMark}
+        necessityIndicator={necessityIndicator}
+        isDisabled={isDisabled}
+        isReadOnly={isReadOnly}
+        isInvalid={isInvalid}
+        isValid={isValid}
+        validationState={validationState}
+        validateTrigger={validateTrigger}
+        showValid={showValid}
+        action={action}
+        method={method}
+        target={target}
+        encType={encType}
+        autoComplete={autoComplete}
+      >
+        <Content>
           {typeof children === 'function' ? children(dismiss) : children}
-          {!noActions && (
+        </Content>
+
+        {!noActions && (
+          <Footer>
             <ButtonGroup>
               <SubmitButton
                 qa={`${qa || ''}SubmitButton`}
@@ -177,9 +188,9 @@ export function ModernDialogForm<T extends object>(
                 {...cancelProps}
               />
             </ButtonGroup>
-          )}
-        </ModernFormRoot>
-      </Content>
+          </Footer>
+        )}
+      </ModernFormRoot>
     </Dialog>
   );
 }

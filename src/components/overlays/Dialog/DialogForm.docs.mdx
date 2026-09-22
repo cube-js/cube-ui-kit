@@ -156,6 +156,7 @@ The parent owns `form` in this example. `preserve` keeps its draft on dismissal 
 
 ## Behavior
 
+- Actions render in a pinned `Footer` beside the scrolling `Content`, so a long form scrolls its body while Submit and Cancel stay visible. The `<form>` wraps both slots, so the buttons are still inside it and native submit works. Set `noActions` to supply your own.
 - Modern forms use the same callback precedence as `Form`: root callbacks override controller callbacks; omitted callbacks fall back to the controller's latest committed callbacks. Automatic closing works for both, including imperative `form.submit()`.
 - Invalid fields and rejected saves leave the dialog open. Include `Form.SubmitError` to display save failures. Submit stays enabled after validation errors by default so the user can retry.
 - In a popover, modern form actions keep the dialog open while validating or saving. This also covers custom actions inside the form; successful submission and explicit dismissal control when it closes.
