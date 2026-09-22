@@ -64,7 +64,7 @@ export interface CubeDialogTriggerProps
   hideArrow?: boolean;
   /** The ref of the element the Dialog should visually attach itself to. Defaults to the trigger button if not defined. */
   targetRef?: RefObject<HTMLElement | null>;
-  /** Whether a modal type Dialog should be dismissable. */
+  /** Whether passive dismissal (Escape or an outside click) can close the dialog. Explicit dialog actions can still close it. */
   isDismissable?: boolean;
   /** Whether pressing the escape key to close the dialog should be disabled. */
   isKeyboardDismissDisabled?: boolean;
@@ -191,8 +191,8 @@ export function DialogTrigger(props: CubeDialogTriggerProps) {
     };
   }, []);
 
-  function onClose(action) {
-    if (isDismissable) {
+  function onClose(action, fromAction = false) {
+    if (isDismissable || fromAction) {
       onDismiss && onDismiss(action);
       state.close();
     }
@@ -476,7 +476,8 @@ function DialogTriggerBase(props: any) {
 
   let context = {
     type,
-    onClose,
+    // Explicit dialog actions can close even when passive dismissal is disabled.
+    onClose: (action?: string) => onClose?.(action, true),
     isDismissable,
     isOpen: state.isOpen,
     // Reaches `Dialog`'s `FocusScope`, which owns the restore for

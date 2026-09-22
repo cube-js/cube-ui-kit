@@ -177,13 +177,14 @@ function App() {
 ### Form Dialog with Validation
 
 ```tsx
-import { useDialogContainer, DialogForm } from '@cube-dev/ui-kit';
+import { useDialogContainer, DialogForm, Form, TextInput } from '@cube-dev/ui-kit';
 
 function UserFormDialog({ onSubmit, initialData, onCancel }) {
+  const form = Form.useController({ defaultValues: initialData });
   return (
     <DialogForm
       title="User Information"
-      defaultValues={initialData}
+      form={form}
       onSubmit={onSubmit}
       onDismiss={onCancel}
       submitProps={{
@@ -193,21 +194,19 @@ function UserFormDialog({ onSubmit, initialData, onCancel }) {
         label: 'Cancel'
       }}
     >
-      <Form.Item
+      <TextInput
+        label="Name"
         name="name"
         rules={[{ required: true, message: 'Name is required' }]}
-      >
-        <TextInput label="Name" />
-      </Form.Item>
-      <Form.Item
+      />
+      <TextInput
+        label="Email"
         name="email"
         rules={[
           { required: true, message: 'Email is required' },
           { type: 'email', message: 'Please enter a valid email' }
         ]}
-      >
-        <TextInput label="Email" />
-      </Form.Item>
+      />
     </DialogForm>
   );
 }
@@ -223,11 +222,10 @@ function App() {
       onSubmit: async (values) => {
         try {
           await saveUser(values);
-          userDialog.close();
           // Show success message
         } catch (error) {
           console.error('Failed to save user:', error);
-          // Handle error - form will stay open
+          throw error; // Keep the form open and show the error
         }
       },
       onCancel: () => userDialog.close()
@@ -240,9 +238,9 @@ function App() {
       onSubmit: async (values) => {
         try {
           await createUser(values);
-          userDialog.close();
         } catch (error) {
           console.error('Failed to create user:', error);
+          throw error;
         }
       },
       onCancel: () => userDialog.close()

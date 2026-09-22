@@ -165,14 +165,19 @@ const [color, setColor] = useState('#7a4dbf');
 ### Inside a form
 
 ```jsx
-<Form onSubmit={onSubmit}>
-  <ColorInput
-    name="accent"
-    label="Accent color"
-    format="oklch"
-    rules={[{ required: true, message: 'Pick an accent color' }]}
-  />
-</Form>
+function Example() {
+  const form = Form.useController();
+  return (
+    <Form form={form} onSubmit={onSubmit}>
+      <ColorInput
+        name="accent"
+        label="Accent color"
+        format="oklch"
+        rules={[{ required: true, message: 'Pick an accent color' }]}
+      />
+    </Form>
+  );
+}
 ```
 
 ### Opening on a specific space

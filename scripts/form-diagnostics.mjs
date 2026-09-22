@@ -48,6 +48,7 @@ const SCOPE = {
   'shared form surface': [
     'src/components/form/**/*.{ts,tsx}',
     'src/components/overlays/Dialog/DialogForm.tsx',
+    'src/components/overlays/Dialog/ModernDialogForm.tsx',
     'src/shared/form.ts',
   ],
   'input components': ['src/components/fields/**/*.{ts,tsx}'],

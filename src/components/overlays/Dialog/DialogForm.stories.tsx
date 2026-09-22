@@ -3,6 +3,7 @@ import { useState } from 'react';
 import {
   expect,
   userEvent,
+  waitFor,
   waitForElementToBeRemoved,
   within,
 } from 'storybook/test';
@@ -16,7 +17,7 @@ import { Input } from '../../fields/Input';
 import { Form } from '../../form/Form';
 
 import { DialogContainer } from './DialogContainer';
-import { CubeDialogFormProps, DialogForm } from './DialogForm';
+import { DialogForm, ModernDialogFormProps } from './DialogForm';
 import { DialogTrigger } from './DialogTrigger';
 
 export default {
@@ -25,17 +26,23 @@ export default {
   parameters: { controls: { exclude: baseProps } },
 } as Meta<typeof DialogForm>;
 
-const TemplateTrigger: StoryFn<CubeDialogFormProps> = (args) => {
+const TemplateTrigger: StoryFn<
+  Omit<ModernDialogFormProps<{ name: string; email: string }>, 'form'>
+> = (args) => {
+  const form = Form.useController({ defaultValues: { name: '', email: '' } });
   return (
     <DialogTrigger>
       <Button>Open</Button>
 
-      <DialogForm {...args} />
+      <DialogForm {...args} form={form} />
     </DialogTrigger>
   );
 };
 
-const TemplateContainer: StoryFn<CubeDialogFormProps> = (args) => {
+const TemplateContainer: StoryFn<
+  Omit<ModernDialogFormProps<{ name: string; email: string }>, 'form'>
+> = (args) => {
+  const form = Form.useController({ defaultValues: { name: '', email: '' } });
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -43,18 +50,22 @@ const TemplateContainer: StoryFn<CubeDialogFormProps> = (args) => {
       <Button onPress={() => setIsOpen(true)}>Open</Button>
 
       <DialogContainer isOpen={isOpen} onDismiss={() => setIsOpen(false)}>
-        <DialogForm {...args} />
+        <DialogForm {...args} form={form} />
       </DialogContainer>
     </>
   );
 };
 
-export const Default: StoryFn<CubeDialogFormProps> = (args) => {
+export const Default: StoryFn<
+  Omit<ModernDialogFormProps<{ name: string; email: string }>, 'form'>
+> = (args) => {
+  const form = Form.useController({ defaultValues: { name: '', email: '' } });
   return (
     <DialogTrigger>
       <Button>Open</Button>
 
       <DialogForm
+        form={form}
         title="User Information"
         onSubmit={async (data) => {
           console.log('Form submitted:', data);
@@ -88,7 +99,10 @@ const DIALOG_CHILDREN = (
       Are you sure you want to permanently delete&nbsp;
       <Text.Strong style={{ whiteSpace: 'pre' }}>deployment</Text.Strong>?
     </Paragraph>
-    <Form.Item
+    <Input.Text
+      aria-label="Deployment name"
+      placeholder="Enter deployment"
+      data-qa="DeleteDeploymentName"
       name="name"
       rules={[
         {
@@ -99,12 +113,7 @@ const DIALOG_CHILDREN = (
           },
         },
       ]}
-    >
-      <Input.Text
-        placeholder="Enter deployment"
-        data-qa="DeleteDeploymentName"
-      />
-    </Form.Item>
+    />
   </>
 );
 
@@ -143,7 +152,7 @@ AsyncExampleTrigger.play = async ({ viewMode, canvasElement }) => {
   await waitForElementToBeRemoved(dialog);
   await expect(dialog).not.toBeInTheDocument();
 };
-// Ends on the closed trigger `Default` already photographs.
+// This submission workflow ends on an empty, closed dialog; its behavior is asserted in play.
 AsyncExampleTrigger.parameters = NO_SNAPSHOT;
 
 AsyncExampleContainer.play = async ({ viewMode, canvasElement }) => {
@@ -165,5 +174,12 @@ AsyncExampleContainer.play = async ({ viewMode, canvasElement }) => {
   await waitForElementToBeRemoved(dialog);
   await expect(dialog).not.toBeInTheDocument();
 };
-// Ends on the closed trigger `Default` already photographs.
+// This submission workflow ends on an empty, closed dialog; its behavior is asserted in play.
 AsyncExampleContainer.parameters = NO_SNAPSHOT;
+
+Default.play = async ({ canvasElement, viewMode }) => {
+  if (viewMode === 'docs') return;
+  const canvas = within(canvasElement);
+  await userEvent.click(canvas.getByRole('button', { name: 'Open' }));
+  await waitFor(() => expect(canvas.getByRole('dialog')).toBeVisible());
+};

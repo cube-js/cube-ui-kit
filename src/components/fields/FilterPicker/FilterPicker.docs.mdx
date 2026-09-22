@@ -727,25 +727,30 @@ const [keyOrder, setKeyOrder] = useState([
 This component supports all [Field properties](/docs/getting-started-field-properties--docs) when used within a Form. The component automatically handles form validation, field states, and integrates with form submission.
 
 ```jsx
-<Form onSubmit={handleSubmit}>
-  <FilterPicker
-    name="categories"
-    label="Product Categories"
-    isRequired
-    selectionMode="multiple"
-    placeholder="Select categories..."
-    rules={[{ required: true }]}
-  >
-    <FilterPicker.Section title="Electronics">
-      <FilterPicker.Item key="phones">Phones</FilterPicker.Item>
-      <FilterPicker.Item key="laptops">Laptops</FilterPicker.Item>
-    </FilterPicker.Section>
-    <FilterPicker.Section title="Clothing">
-      <FilterPicker.Item key="shirts">Shirts</FilterPicker.Item>
-      <FilterPicker.Item key="pants">Pants</FilterPicker.Item>
-    </FilterPicker.Section>
-  </FilterPicker>
-</Form>
+function Example() {
+  const form = Form.useController();
+  return (
+    <Form form={form} onSubmit={handleSubmit}>
+      <FilterPicker
+        name="categories"
+        label="Product Categories"
+        isRequired
+        selectionMode="multiple"
+        placeholder="Select categories..."
+        rules={[{ required: true }]}
+      >
+        <FilterPicker.Section title="Electronics">
+          <FilterPicker.Item key="phones">Phones</FilterPicker.Item>
+          <FilterPicker.Item key="laptops">Laptops</FilterPicker.Item>
+        </FilterPicker.Section>
+        <FilterPicker.Section title="Clothing">
+          <FilterPicker.Item key="shirts">Shirts</FilterPicker.Item>
+          <FilterPicker.Item key="pants">Pants</FilterPicker.Item>
+        </FilterPicker.Section>
+      </FilterPicker>
+    </Form>
+  );
+}
 ```
 
 ## Advanced Features

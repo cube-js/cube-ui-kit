@@ -663,18 +663,22 @@ const groups = [
 This component supports all [Field properties](/docs/getting-started-field-properties--docs) when used within a Form. It integrates seamlessly with the form validation system and supports both controlled and uncontrolled modes.
 
 ```jsx
-<Form>
-  <Select
-    name="country"
-    label="Country"
-    isRequired
-    validationBehavior="native"
-  >
-    <Select.Item key="us">United States</Select.Item>
-    <Select.Item key="uk">United Kingdom</Select.Item>
-    <Select.Item key="ca">Canada</Select.Item>
-  </Select>
-</Form>
+function Example() {
+  const form = Form.useController();
+  return (
+    <Form form={form}>
+      <Select
+        name="country"
+        label="Country"
+        isRequired
+      >
+        <Select.Item key="us">United States</Select.Item>
+        <Select.Item key="uk">United Kingdom</Select.Item>
+        <Select.Item key="ca">Canada</Select.Item>
+      </Select>
+    </Form>
+  );
+}
 ```
 
 ## Suggested Improvements

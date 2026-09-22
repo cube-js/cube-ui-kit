@@ -9,6 +9,12 @@ export default {
   title: 'Forms/Field',
   component: Field,
   parameters: {
+    docs: {
+      description: {
+        component:
+          'Legacy compatibility reference. New forms bind built-in inputs directly; use isReadOnly for read-only input values.',
+      },
+    },
     controls: {
       exclude: baseProps,
     },

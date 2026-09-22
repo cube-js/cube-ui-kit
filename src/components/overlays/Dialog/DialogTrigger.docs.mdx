@@ -26,7 +26,7 @@ DialogTrigger serves as a wrapper around a Dialog and its associated trigger, li
 - **`placement`** `'top' | 'bottom' | 'left' | 'right' | 'top start' | 'top end' | 'bottom start' | 'bottom end' | 'left top' | 'left bottom' | 'right top' | 'right bottom'` — The placement of the dialog relative to its trigger
 - **`hideArrow`** `boolean` (default: `false`) — Whether a popover type Dialog's arrow should be hidden
 - **`mobileViewport`** `number` (default: `700`) — The screen breakpoint for the mobile type
-- **`isDismissable`** `boolean` (default: `true`) — Whether a modal type Dialog should be dismissable
+- **`isDismissable`** `boolean` (default: `true`) — Whether passive dismissal (Escape or an outside click) can close the dialog. Explicit dialog actions, such as Submit and Cancel, can still close it.
 - **`isKeyboardDismissDisabled`** `boolean` (default: `false`) — Whether pressing the escape key to close the dialog should be disabled
 - **`isOpen`** `boolean` — Whether the dialog is open (controlled)
 - **`defaultOpen`** `boolean` (default: `false`) — Whether the dialog is open by default (uncontrolled)

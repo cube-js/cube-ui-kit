@@ -43,8 +43,13 @@ export interface ModernFormProps<T extends object = Record<string, unknown>>
 
 const EMPTY_LEGACY_CONTEXT = {};
 
+/** Wrapper lifecycle hook, intentionally absent from the public Form props. */
+interface InternalModernFormProps<T extends object> extends ModernFormProps<T> {
+  onSubmitted?: () => void;
+}
+
 function ModernFormRoot<T extends object>(
-  props: ModernFormProps<T>,
+  props: InternalModernFormProps<T>,
   ref: Ref<HTMLFormElement>,
 ): ReactElement {
   const resolved = useValidationProps(useProviderProps(props));
@@ -67,6 +72,7 @@ function ModernFormRoot<T extends object>(
     isValid,
     defaultValues,
     onSubmit,
+    onSubmitted,
     onSubmitFailed,
     onValuesChange,
     submitValues = 'active',
@@ -90,14 +96,15 @@ function ModernFormRoot<T extends object>(
     );
   }
   const binding = useRef<CallbackBinding<T, ReactNode> | undefined>(undefined);
+  const handleSubmitted = useEvent(() => onSubmitted?.());
   useLayoutEffect(() => {
-    const token = store.bindCallbacks({});
+    const token = store.bindCallbacks({}, handleSubmitted);
     binding.current = token;
     return () => {
       token.release();
       if (binding.current === token) binding.current = undefined;
     };
-  }, [store]);
+  }, [store, handleSubmitted]);
   useLayoutEffect(() => {
     binding.current?.update({
       ...(onSubmit === undefined ? {} : { onSubmit }),
@@ -183,7 +190,7 @@ function ModernFormRoot<T extends object>(
 const _ModernFormRoot = forwardRef(ModernFormRoot) as unknown as <
   T extends object,
 >(
-  props: ModernFormProps<T> & { ref?: Ref<HTMLFormElement> },
+  props: InternalModernFormProps<T> & { ref?: Ref<HTMLFormElement> },
 ) => ReactElement;
 
 (_ModernFormRoot as any).displayName = 'ModernFormRoot';

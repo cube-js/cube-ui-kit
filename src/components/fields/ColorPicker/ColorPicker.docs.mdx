@@ -137,14 +137,19 @@ Give it an `aria-label` when you do: with no visible text, that is the only thin
 ### Inside a form
 
 ```jsx
-<Form onSubmit={onSubmit}>
-  <ColorPicker
-    name="accent"
-    label="Accent color"
-    format="oklch"
-    rules={[{ required: true, message: 'Pick an accent color' }]}
-  />
-</Form>
+function Example() {
+  const form = Form.useController();
+  return (
+    <Form form={form} onSubmit={onSubmit}>
+      <ColorPicker
+        name="accent"
+        label="Accent color"
+        format="oklch"
+        rules={[{ required: true, message: 'Pick an accent color' }]}
+      />
+    </Form>
+  );
+}
 ```
 
 ## Accessibility

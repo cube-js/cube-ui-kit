@@ -20,6 +20,7 @@ export default mergeConfig(config, {
           return;
         if (
           !id.includes('/Form/modern/') &&
+          !id.endsWith('/Dialog/ModernDialogForm.tsx') &&
           !/\/Form\/(ModernFormRoot\.tsx|use-field\/use-field-(binding\.ts|props\.tsx))$/.test(
             id,
           )
@@ -34,7 +35,7 @@ export default mergeConfig(config, {
           sourceMaps: true,
         });
         if (
-          /\/(submission|field)\.fixture\.tsx$/.test(id) &&
+          /\/(submission|field|dialog)\.fixture\.tsx$/.test(id) &&
           !result?.code?.includes('react-compiler-runtime')
         )
           throw new Error(

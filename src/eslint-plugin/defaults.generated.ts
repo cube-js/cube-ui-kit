@@ -235,6 +235,7 @@ export const DEFAULTS: DefaultsRegistry = {
     DialogForm: {
       props: {
         preserve: { kind: 'default', value: false },
+        submitValues: { kind: 'default', value: 'active' },
       },
     },
     DialogTrigger: {
@@ -314,6 +315,7 @@ export const DEFAULTS: DefaultsRegistry = {
         orientation: { kind: 'default', value: 'vertical' },
         requiredMark: { kind: 'default', value: true },
         showValid: { kind: 'default', value: false },
+        submitValues: { kind: 'default', value: 'active' },
         validateTrigger: { kind: 'default', value: 'onBlur' },
       },
     },

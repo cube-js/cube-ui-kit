@@ -810,13 +810,16 @@ export const MultipleControlledExample: StoryObj<
 MultipleControlledExample.parameters = NO_SNAPSHOT;
 
 export const InForm: StoryObj<CubeListBoxProps<any>>['render'] = () => {
-  const handleSubmit = (data: any) => {
+  const form = Form.useController<{ technology: string | null }>({
+    defaultValues: { technology: null },
+  });
+  const handleSubmit = (data: { readonly technology?: string | null }) => {
     console.log('Form submitted:', data);
     alert(`Selected: ${data.technology || 'None'}`);
   };
 
   return (
-    <Form style={{ maxWidth: '400px' }} onSubmit={handleSubmit}>
+    <Form form={form} style={{ maxWidth: '400px' }} onSubmit={handleSubmit}>
       <ListBox
         isRequired
         name="technology"

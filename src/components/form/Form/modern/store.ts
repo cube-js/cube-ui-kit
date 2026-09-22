@@ -149,7 +149,9 @@ export function createFormStore<
   let defaults = values;
   let submitError: unknown;
   let submission: AbortController | undefined;
-  let binding: { callbacks: FormCallbacks<T, ErrorValue> } | undefined;
+  let binding:
+    | { callbacks: FormCallbacks<T, ErrorValue>; onSubmitted?: () => void }
+    | undefined;
   let order = 0;
   let depth = 0;
   let notifying = false;
@@ -1018,13 +1020,14 @@ export function createFormStore<
 
   function bindCallbacks(
     callbacks: FormCallbacks<T, ErrorValue>,
+    onSubmitted?: () => void,
   ): CallbackBinding<T, ErrorValue> {
     assertLive();
     if (binding)
       developmentError(
         'A second Form root owns this controller; the newest callback binding wins.',
       );
-    const own = { callbacks: { ...callbacks } };
+    const own = { callbacks: { ...callbacks }, onSubmitted };
     binding = own;
     let released = false;
     return Object.freeze({
@@ -1090,6 +1093,7 @@ export function createFormStore<
           finish({ status: 'stale' });
           return;
         }
+        const owner = binding;
         const callbacks = resolveCallbacks();
         let result: ModernSubmitResult<ErrorValue>;
         if (!validation.isValid) {
@@ -1137,6 +1141,15 @@ export function createFormStore<
             result.status === 'failed' ? { error: result.error } : undefined,
           );
           finish(result);
+          // Finish before a wrapper closes/unmounts its root. Closing must not
+          // turn a successful submission into a stale result.
+          if (result.status === 'submitted' && binding === owner) {
+            try {
+              owner?.onSubmitted?.();
+            } catch (error) {
+              report(error);
+            }
+          }
         }
       };
       void run().catch((error) => {
@@ -1206,6 +1219,7 @@ export function createFormStore<
     validate,
     submit,
     bindCallbacks,
+    cancelSubmission,
     updateCallbacks(callbacks: FormCallbacks<T, ErrorValue>) {
       options.onSubmit = callbacks.onSubmit;
       options.onSubmitFailed = callbacks.onSubmitFailed;

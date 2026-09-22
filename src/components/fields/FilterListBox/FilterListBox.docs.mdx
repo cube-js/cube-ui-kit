@@ -569,25 +569,30 @@ const categories = [
 This component supports all [Field properties](/docs/getting-started-field-properties--docs) when used within a Form. The component automatically handles form validation, field states, and integrates with form submission.
 
 ```jsx
-<Form onSubmit={handleSubmit}>
-  <FilterListBox
-    name="skills"
-    label="Technical Skills"
-    isRequired
-    selectionMode="multiple"
-    searchPlaceholder="Search skills..."
-    rules={[{ required: true, min: 2 }]}
-  >
-    <FilterListBox.Section title="Frontend">
-      <FilterListBox.Item key="react">React</FilterListBox.Item>
-      <FilterListBox.Item key="vue">Vue.js</FilterListBox.Item>
-    </FilterListBox.Section>
-    <FilterListBox.Section title="Backend">
-      <FilterListBox.Item key="nodejs">Node.js</FilterListBox.Item>
-      <FilterListBox.Item key="python">Python</FilterListBox.Item>
-    </FilterListBox.Section>
-  </FilterListBox>
-</Form>
+function Example() {
+  const form = Form.useController();
+  return (
+    <Form form={form} onSubmit={handleSubmit}>
+      <FilterListBox
+        name="skills"
+        label="Technical Skills"
+        isRequired
+        selectionMode="multiple"
+        searchPlaceholder="Search skills..."
+        rules={[{ required: true, min: 2 }]}
+      >
+        <FilterListBox.Section title="Frontend">
+          <FilterListBox.Item key="react">React</FilterListBox.Item>
+          <FilterListBox.Item key="vue">Vue.js</FilterListBox.Item>
+        </FilterListBox.Section>
+        <FilterListBox.Section title="Backend">
+          <FilterListBox.Item key="nodejs">Node.js</FilterListBox.Item>
+          <FilterListBox.Item key="python">Python</FilterListBox.Item>
+        </FilterListBox.Section>
+      </FilterListBox>
+    </Form>
+  );
+}
 ```
 
 ## Advanced Features

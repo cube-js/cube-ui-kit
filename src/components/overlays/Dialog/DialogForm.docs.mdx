@@ -1,62 +1,62 @@
-import { Meta, Canvas, Story } from '@storybook/addon-docs/blocks';
-import { DialogForm } from './DialogForm';
+import { Meta, Canvas } from '@storybook/addon-docs/blocks';
 import * as DialogFormStories from './DialogForm.stories';
 
 <Meta of={DialogFormStories} />
 
 # DialogForm
 
-DialogForm combines [Dialog](/docs/overlays-dialog--docs) and [Form](/docs/forms-form--docs) functionality into a single component for collecting user input in a modal context. It provides automatic form submission handling, dialog closing, and default action buttons.
+DialogForm combines a dialog, a form, and submit/cancel actions. It closes after a successful submission and keeps the dialog open when validation or saving fails.
 
-**Recommended Usage:** Use the [`useDialogContainer`](/docs/overlays-usedialogcontainer--docs) hook for programmatic control over DialogForm. This provides a cleaner API and better state management compared to `DialogTrigger`.
+## Choose the implementation
+
+UI Kit has two form implementations. **Use the modern controller API for new forms.** Pass `form={Form.useController<Model>()}` to select it. `DialogForm` without a modern controller continues to use the legacy implementation, including existing `Form.useForm()` callers. The same input components work with either implementation.
+
+The examples below use modern controllers. See [Modern Form](/docs/forms-modernform--docs) for defaults, nullable API values, subscriptions, validation, and submission recipes. The [migration guide](https://github.com/cube-js/cube-ui-kit/blob/main/docs/modern-form-migration.md) explains differences from legacy forms.
 
 ## When to Use
 
-- Collect user input in a focused modal interface
-- Create forms that require user attention and confirmation
-- Build edit dialogs, creation modals, or settings forms
-- Handle form submission with automatic dialog closing
+- Collect input in a focused dialog, such as creating or editing a record
+- Confirm an operation that needs validated input
+- Close automatically after saving, with built-in loading and cancel actions
 
 ## Component
 
-<Story of={DialogFormStories.Default} />
+<Canvas of={DialogFormStories.Default} />
 
----
+## Properties
 
-### Properties
+- **`form`** `FormController<T> | CubeFormInstance<T>` — Modern controller (recommended) or legacy instance. Omitting it selects legacy behavior.
+- **`title`** `string` — Dialog title
+- **`danger`** `boolean` — Give the submit button the danger theme
+- **`submitProps`** `CubeButtonProps` (legacy) / `Omit<CubeSubmitButtonProps<T>, 'form'>` (modern) — Customize the submit button, including its label and modern `disableOnInvalid`
+- **`cancelProps`** `CubeButtonProps` — Customize the cancel button, including its label
+- **`preserve`** `boolean` (default: `false`) — Retain values when the editing session ends. Keep the controller mounted above the dialog to retain a draft across dialog unmounts.
+- **`noActions`** `boolean` — Hide the default submit/cancel buttons
+- **`children`** `ReactNode | ((dismiss: () => void) => ReactNode)` — Fields, or a render function for custom actions
+- **`onDismiss`** `() => void` — Called by the built-in Cancel/close button or the render function's `dismiss`. Handle Escape, outside clicks, and externally controlled closing on `DialogTrigger` or `DialogContainer`.
+- **`onSubmit`** `(values: FormValues<T>, context: ModernSubmitContext) => void | Promise<void>` — Modern submit callback. Resolve to close; throw/reject to keep the dialog open. The context supplies an `AbortSignal`.
+- **`onSubmitFailed`** `(failure: ModernSubmitFailure) => void | Promise<void>` — Distinguishes invalid fields from a failed save
+- **`onValuesChange`** `(values: FormValues<T>, change: FormChange) => void | Promise<void>` — Modern value-change callback
+- **`submitValues`** `'active' | 'all'` (default: `'active'`) — Modern native submission payload, including Enter. `'all'` includes retained values; validation still checks active fields.
+- **`onReset`** `(event: FormEvent<HTMLFormElement>) => void` — Modern native reset interception; `preventDefault()` cancels it
+- **`defaultValues`** `Partial<T>` — Legacy only. Seed modern defaults in `Form.useController()`.
+- **`size`** `'S' | 'M' | 'L' | 'small' | 'medium' | 'large'` — Dialog size
+- **`isDismissable`** `boolean` — Show the dialog's close affordance; configure Escape/outside-click dismissal on the container
+- **`closeIcon`** `ReactElement` — Custom close icon
+- **`closeButtonStyles`** `Styles` — Close button styles
 
-- **`title`** `string` — The title of the dialog
-- **`danger`** `boolean` — Whether the submit button has a danger theme
-- **`submitProps`** `CubeButtonProps` — Properties for submit button (use `label` to change text)
-- **`cancelProps`** `CubeButtonProps` — Properties for cancel button (use `label` to change text)
-- **`preserve`** `boolean` (default: `false`) — Preserve form values after submission/dismissal
-- **`noActions`** `boolean` — Hide default action buttons to manually specify them
-- **`size`** `'S' | 'M' | 'L' | 'small' | 'medium' | 'large'` — The size of the dialog
-- **`isDismissable`** `boolean` — Whether the dialog is dismissable
-- **`closeIcon`** `ReactElement` — Custom close icon element
-- **`closeButtonStyles`** `Styles` — Custom styles for the close button
-- **`name`** `string` — Form name
-- **`form`** `CubeFormInstance` — Form instance created by `useForm`
-- **`defaultValues`** `object` — Default field values
-- **`onSubmit`** `(data) => void | Promise` — Callback on form submit and success
-- **`onSubmitFailed`** `(error?) => void | Promise` — Callback on form submit and failure
-- **`onValuesChange`** `function` — Callback when any field value changes
-- **`orientation`** `'vertical' | 'horizontal'` — Layout orientation of the form
-- **`labelWidth`** `string` — The size of the side area with labels (only for `labelPosition="side"`)
-- **`labelPosition`** `'top' | 'side'` — Where to place labels relative to inputs
-- **`labelStyles`** `Styles` — Styles for the label
-- **`requiredMark`** `boolean` — Whether the field presents required mark
-- **`necessityIndicator`** `NecessityIndicator` — The type of necessity indicator
-- **`isReadOnly`** `boolean` — Whether the form is read only
-- **`isInvalid`** `boolean` — Invalid state for all fields in the form
-- **`isValid`** `boolean` — Valid state for all fields in the form
-- **`validationState`** `'valid' | 'invalid'` — _(deprecated)_ Use `isInvalid` / `isValid` instead
-- **`validateTrigger`** `ValidateTrigger` — On which event to perform validation
-- **`showValid`** `boolean` — Whether to show valid state
+Supports shared [Form presentation properties](/docs/forms-form--docs#properties), [Dialog styles](/docs/overlays-dialog--docs), and [Base properties](/docs/getting-started-base-properties--docs). Layout/style props style the dialog; label and form configuration props configure its inner form.
 
-### Base Properties
+### Form presentation properties
 
-Supports [Base properties](/docs/getting-started-base-properties--docs)
+- **`labelPosition`** `'top' | 'side' | 'split'` — Position field labels
+- **`labelStyles`** `Styles` — Field label styles
+- **`labelWidth`** `Styles['width']` — Modern inner form label width
+- **`orientation`** `'vertical' | 'horizontal'` — Modern inner form orientation
+- **`necessityIndicator`** `'icon' | 'label' | null` — Required/optional indicator style
+- **`isReadOnly`** `boolean` — Make fields read-only
+- **`isValid`** `boolean` — Show valid field styling
+- **`validationState`** `'valid' | 'invalid'` — Deprecated; use `isInvalid` / `isValid`
 
 ### Style Properties
 
@@ -69,253 +69,110 @@ These properties allow direct style application without using the `styles` prop:
 
 ## Examples
 
-### Basic DialogForm (Recommended)
+### Open a form with DialogTrigger
 
-Using `useDialogContainer` for programmatic control:
+Create the controller above the dialog. Put callbacks on `DialogForm` and bind inputs with `name`.
 
-```jsx
-import { useDialogContainer, DialogForm, Input, Button } from '@cube-dev/ui-kit';
+```tsx
+import { Button, DialogForm, DialogTrigger, Form, TextInput } from '@cube-dev/ui-kit';
 
-function UserFormDialog({ onSubmit, initialData }) {
+function EditProfile({ initialProfile, save }) {
+  const form = Form.useController<{ name: string | null; email: string | null }>({
+    defaultValues: initialProfile,
+  });
+
   return (
-    <DialogForm
-      title="User Information"
-      defaultValues={initialData}
-      onSubmit={onSubmit}
-    >
-      <Input.Text
-        name="name"
-        label="Name"
-        rules={[{ required: true, message: 'Name is required' }]}
-        placeholder="Enter your name"
-      />
-      <Input.Text
-        name="email"
-        label="Email"
-        type="email"
-        rules={[
-          { required: true, message: 'Email is required' },
-          { type: 'email', message: 'Please enter a valid email' }
-        ]}
-        placeholder="Enter your email"
-      />
+    <DialogTrigger>
+      <Button>Edit profile</Button>
+      <DialogForm
+        form={form}
+        title="Edit profile"
+        submitProps={{ label: 'Save' }}
+        onSubmit={(values, { signal }) => save(values, signal)}
+      >
+        <TextInput name="name" label="Name" isRequired />
+        <TextInput name="email" label="Email" rules={[{ type: 'email' }]} />
+        <Form.SubmitError />
+      </DialogForm>
+    </DialogTrigger>
+  );
+}
+```
+
+`defaultValues` is read once. For later API data, choose `adoptDefaultValues` to preserve edits or `reset({ values })` to start a new editing session. See [loading server data](/docs/forms-modernform--docs#load-server-data-refresh-defaults-or-discard-edits).
+
+### Programmatic opening
+
+Use [useDialogContainer](/docs/overlays-usedialogcontainer--docs) when there is no persistent trigger. Its content component can own a fresh controller for each mount.
+
+```tsx
+function UserFormDialog({ initialData, save }) {
+  const form = Form.useController({ defaultValues: initialData });
+  return (
+    <DialogForm form={form} title="User information" onSubmit={save}>
+      <TextInput name="name" label="Name" isRequired />
+      <Form.SubmitError />
     </DialogForm>
   );
 }
 
 function App() {
-  const userDialog = useDialogContainer(UserFormDialog);
-
-  const openDialog = () => {
-    userDialog.open({
-      initialData: { name: '', email: '' },
-      onSubmit: async (data) => {
-        await saveUser(data);
-        userDialog.close();
-      }
-    });
-  };
-
+  const dialog = useDialogContainer(UserFormDialog);
   return (
     <>
-      <Button onPress={openDialog}>Add User</Button>
-      {userDialog.rendered}
+      <Button onPress={() => dialog.open({ initialData: { name: '' }, save: saveUser })}>
+        Add user
+      </Button>
+      {dialog.rendered}
     </>
   );
 }
 ```
 
-### With DialogTrigger (Alternative)
+Do not call `dialog.close()` from the submit callback: `DialogForm` already closes on success. If reusing a mounted content component for another record, remount it with a record key or explicitly reset its controller.
 
-For simpler use cases, you can use `DialogTrigger`:
+### Custom actions and drafts
 
-```jsx
-<DialogTrigger>
-  <Button>Open Form</Button>
-  <DialogForm
-    title="User Information"
-    onSubmit={async (data) => {
-      await saveUser(data);
-    }}
-  >
-    <Input.Text
-      name="name"
-      label="Name"
-      rules={[{ required: true }]}
-      placeholder="Enter your name"
-    />
-    <Input.Text
-      name="email"
-      label="Email"
-      type="email"
-      rules={[
-        { required: true },
-        { type: 'email', message: 'Please enter a valid email' }
-      ]}
-      placeholder="Enter your email"
-    />
-  </DialogForm>
-</DialogTrigger>
+```tsx
+function DraftDialog({ form, save }) {
+  return (
+    <DialogForm form={form} title="Edit draft" preserve noActions onSubmit={save}>
+      {(dismiss) => (
+        <>
+          <TextInput name="title" label="Title" />
+          <Form.SubmitError />
+          <ButtonGroup>
+            <Form.Submit>Publish</Form.Submit>
+            <Button onPress={dismiss}>Keep draft and close</Button>
+          </ButtonGroup>
+        </>
+      )}
+    </DialogForm>
+  );
+}
 ```
 
-### Danger DialogForm
-
-```jsx
-<DialogForm
-  title="Delete Account"
-  danger
-  submitProps={{ label: 'Delete' }}
-  cancelProps={{ label: 'Keep Account' }}
-  onSubmit={async (data) => {
-    await deleteAccount(data.confirmation);
-  }}
->
-  <Input.Text
-    name="confirmation"
-    label="Type DELETE to confirm"
-    rules={[
-      { required: true },
-      { pattern: /^DELETE$/, message: 'Please type DELETE' }
-    ]}
-  />
-</DialogForm>
-```
-
-### Custom Actions with Access to Dismiss
-
-When you need custom action buttons, use `noActions` prop and the render function pattern:
-
-```jsx
-<DialogForm
-  title="Advanced Form"
-  noActions
-  onSubmit={handleSubmit}
->
-  {(dismiss) => (
-    <>
-      <Input.Text name="field1" label="Field 1" />
-      <Input.Text name="field2" label="Field 2" />
-
-      <ButtonGroup>
-        <SubmitButton>Save</SubmitButton>
-        <Button onPress={() => {
-          saveAsDraft();
-          dismiss();
-        }}>
-          Save as Draft
-        </Button>
-        <Button onPress={dismiss}>Cancel</Button>
-      </ButtonGroup>
-    </>
-  )}
-</DialogForm>
-```
-
-### Preserving Form Values
-
-Use `preserve` prop to keep form values when reopening the dialog:
-
-```jsx
-<DialogForm
-  title="Edit Draft"
-  preserve
-  defaultValues={draftData}
-  onSubmit={saveDraft}
->
-  <Input.Text name="title" label="Title" />
-  <TextArea name="content" label="Content" />
-</DialogForm>
-```
+The parent owns `form` in this example. `preserve` keeps its draft on dismissal and success; it cannot preserve a controller whose owning component is itself destroyed. It is separate from a field's `preserve` option, which controls retained values when that individual input unmounts.
 
 ## Behavior
 
-### Form Submission
-
-- On successful submission (`onSubmit`), the dialog automatically closes
-- Form fields are automatically reset after closing (unless `preserve` is true)
-- Reset happens after a 250ms delay to allow exit animations to complete
-
-### Dialog Dismissal
-
-- When dismissed via cancel button or Escape key, form fields are reset (unless `preserve` is true)
-- Both `onClose` (from dialog context) and `onDismiss` callbacks are triggered
-
-### Default Buttons
-
-- **Submit Button**: Labeled "Submit" by default, automatically handles form submission and loading states
-- **Cancel Button**: Labeled "Cancel" by default, dismisses the dialog and resets the form
-- Both buttons can be customized via `submitProps` and `cancelProps`
-- Hide default buttons with `noActions={true}` to provide custom actions
+- Modern forms use the same callback precedence as `Form`: root callbacks override controller callbacks; omitted callbacks fall back to the controller's latest committed callbacks. Automatic closing works for both, including imperative `form.submit()`.
+- Invalid fields and rejected saves leave the dialog open. Include `Form.SubmitError` to display save failures. Submit stays enabled after validation errors by default so the user can retry.
+- In a popover, modern form actions keep the dialog open while validating or saving. This also covers custom actions inside the form; successful submission and explicit dismissal control when it closes.
+- Explicit Submit/Cancel actions can close a dialog even when its trigger disables passive dismissal with `isDismissable={false}`. Escape and outside-click dismissal remain disabled.
+- Modern dismissal cancels pending submission even with `preserve`. The submitted callback receives an aborted signal; a late completion cannot close a reopened dialog. Pass the signal to abortable API work.
+- Modern values reset when the editing session ends unless `preserve` is set. This includes Cancel, the close button, Escape/outside closing, and removal of the dialog. Hidden dialogs also end the session when closed. A close followed by an immediate reopen has no delayed reset that can erase new edits.
+- Replacing the modern controller ends the detached controller's session using its last committed `preserve` setting. The new controller keeps its own values and editing session.
+- Legacy callers retain their existing callback and reset contracts, including the delayed reset after built-in Cancel and successful submit. Refer to [FormInstance (legacy)](/docs/forms-forminstance--docs) for its methods.
 
 ## Accessibility
 
-DialogForm combines accessibility features from both Dialog and Form:
-
-### Keyboard Navigation
-
-- `Tab` / `Shift + Tab` - Navigate through form fields and buttons
-- `Enter` - Submit the form (when on submit button)
-- `Escape` - Dismiss the dialog (if `isDismissable` is true)
-
-### Screen Reader Support
-
-- Dialog announces with proper title
-- Form fields have proper label associations
-- Validation errors are announced
-- Submit/cancel actions are clearly communicated
-- Focus management handles transitions between dialog open/close
-
-See [Dialog Accessibility](/docs/overlays-dialog--docs#accessibility) and [Form Accessibility](/docs/forms-form--docs#accessibility) for complete details.
-
-## Best Practices
-
-1. **Use useDialogContainer for programmatic control**: Preferred method for better state management
-
-   ```jsx
-   const dialog = useDialogContainer(MyFormDialog);
-   dialog.open({ initialData, onSubmit: handleSubmit });
-   ```
-
-2. **Provide clear titles**: Always set a descriptive `title` for context
-
-   ```jsx
-   <DialogForm title="Edit User Profile" onSubmit={save}>
-   ```
-
-3. **Use danger theme for destructive actions**: Apply `danger` for delete/remove operations
-
-   ```jsx
-   <DialogForm title="Delete Item" danger submitProps={{ label: 'Delete' }}>
-   ```
-
-4. **Customize button labels**: Make action buttons specific to the task
-
-   ```jsx
-   <DialogForm
-     title="Create Project"
-     submitProps={{ label: 'Create' }}
-     cancelProps={{ label: 'Discard' }}
-   >
-   ```
-
-5. **Handle submission errors**: Implement `onSubmitFailed` for error handling
-
-   ```jsx
-   <DialogForm
-     onSubmit={save}
-     onSubmitFailed={(error) => notify.error(error.message)}
-   >
-   ```
-
-6. **Use preserve for drafts**: Enable `preserve` when working with draft content
-   ```jsx
-   <DialogForm preserve title="Edit Draft" defaultValues={draft}>
-   ```
+Provide a descriptive title and visible input labels. Tab and Shift+Tab navigate controls, Enter submits using native form behavior, and Escape dismisses when allowed by the container. Dialog manages focus containment and restoration. See [Dialog accessibility](/docs/overlays-dialog--docs#accessibility).
 
 ## Related Components
 
-- [useDialogContainer](/docs/overlays-usedialogcontainer--docs) - **Recommended hook for programmatic dialog control**
-- [Dialog](/docs/overlays-dialog--docs) - Base dialog component
-- [Form](/docs/forms-form--docs) - Form component with validation
-- [DialogTrigger](/docs/overlays-dialogtrigger--docs) - Alternative: manages dialog open/close state
-- [AlertDialog](/docs/overlays-alertdialog--docs) - For simple confirmations without forms
+- [Form](/docs/forms-form--docs) — Shared form root and API selection
+- [Modern Form](/docs/forms-modernform--docs) — Recommended implementation recipes
+- [DialogTrigger](/docs/overlays-dialogtrigger--docs) — Open from a persistent trigger
+- [useDialogContainer](/docs/overlays-usedialogcontainer--docs) — Programmatic dialog control
+- [AlertDialog](/docs/overlays-alertdialog--docs) — Confirmations without form fields
