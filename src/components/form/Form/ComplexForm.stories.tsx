@@ -159,9 +159,12 @@ const Template: StoryFn<StoryProps> = (args) => {
         })}
       />
       <TextInput isDisabled name="text2" label="Text disabled" />
-      <FieldWrapper label="Custom field" tooltip="What?">
-        <Block>Test</Block>
-      </FieldWrapper>
+      <FieldWrapper
+        label="Custom field"
+        tooltip="What?"
+        labelPosition={args.labelPosition}
+        Component={<Block>Test</Block>}
+      />
       <TextInput
         name="email"
         type="email"

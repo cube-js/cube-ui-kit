@@ -12,7 +12,7 @@ export default {
     docs: {
       description: {
         component:
-          'Legacy compatibility reference. New forms bind built-in inputs directly; use FieldWrapper for read-only content.',
+          'Legacy compatibility reference. New forms bind built-in inputs directly; use isReadOnly for read-only input values.',
       },
     },
     controls: {
