@@ -95,6 +95,17 @@ The `mods` property accepts the following modifiers you can override:
 
 - **`dismissable`** `boolean` — Applied when the dialog can be dismissed with close button or Escape key
 
+`Footer` inside a dialog carries one modifier of its own:
+
+- **`content-overflow`** `boolean` — Applied while the dialog's `Content` is taller than the room it has, i.e. while it scrolls. The footer draws its top border only then, so the line separates the actions from a body that continues beneath them and is absent under a body that fits.
+
+The body is the `Content` that is a direct child of the dialog or of a direct-child `<form>`. A `border` in the footer's own styles replaces the default, so a footer can keep the line always or never draw it:
+
+```jsx
+<Footer styles={{ border: 'top' }}>{/* line always */}</Footer>
+<Footer styles={{ border: false }}>{/* line never */}</Footer>
+```
+
 ## Variants
 
 ### Types

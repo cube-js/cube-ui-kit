@@ -16,6 +16,9 @@ const STYLE_LIST = [...CONTAINER_STYLES, ...TEXT_STYLES];
 
 const ContentElement = tasty({
   qa: 'Content',
+  // Stable where `qa` is not: `Dialog` finds its body by this to watch it for
+  // overflow, and a consumer's own `qa` must not hide it.
+  'data-id': 'Content',
   as: 'section',
   styles: {
     gridArea: 'content',

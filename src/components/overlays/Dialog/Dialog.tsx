@@ -28,6 +28,7 @@ import { ItemButton } from '../../actions/ItemButton/ItemButton';
 import { useOpenTransitionContext } from '../Modal/OpenTransitionContext';
 
 import { useDialogContext } from './context';
+import { useContentOverflow } from './use-content-overflow';
 
 const STYLES_LIST = [
   ...BASE_STYLES,
@@ -285,6 +286,8 @@ const DialogContent = forwardRef(function DialogContent(
   // let hasHeader = useHasChild('[data-id="Header"]', domRef);
   // let hasFooter = useHasChild('[data-id="Footer"]', domRef);
 
+  const contentOverflows = useContentOverflow(domRef);
+
   let slots = {
     title: {
       level: 2,
@@ -317,6 +320,7 @@ const DialogContent = forwardRef(function DialogContent(
       },
     },
     footer: {
+      mods: { 'content-overflow': contentOverflows },
       styles: {
         display: 'flex',
         gap: '1x',
@@ -324,6 +328,14 @@ const DialogContent = forwardRef(function DialogContent(
         placeItems: 'baseline stretch',
         placeContent: 'space-between',
         padding: '$dialog-footer-v $dialog-padding-h',
+        // A line only while the body scrolls: the footer then sits over
+        // content that carries on beneath it, and the line is what says so.
+        // Under a body that fits, the actions simply end it and a rule there
+        // reads as clutter.
+        border: {
+          '': false,
+          'content-overflow': 'top',
+        },
       },
     },
     buttonGroup: {
