@@ -4,8 +4,8 @@ import { mergeConfig } from 'vitest/config';
 
 import config from './vitest.form-react.config';
 
-// Test-only compilation: published library output remains uncompiled. Target
-// React 18's runtime so this same gate runs in both React peer-version jobs.
+// Compile modern consumer fixtures as well as adapters. The release build
+// separately compiles library source through scripts/compiler/transform.mjs.
 export default mergeConfig(config, {
   plugins: [
     {

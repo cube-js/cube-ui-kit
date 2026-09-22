@@ -15,6 +15,12 @@ For styling engine internals see the [Tasty documentation](https://github.com/te
 - **injector.md** — Low-level style injector: `inject()`, `injectGlobal()`, deduplication, SSR.
 - **tasty-static.md** — Zero-runtime `tastyStatic()`, Babel plugin, Next.js/Vite integration.
 
+## React Compiler
+
+UI Kit ships components optimized with React Compiler and supports React 18 and 19. Your application does not need to enable Compiler to use this build. Adoption is incremental: functions with known compatibility diagnostics remain unoptimized, and the legacy form's mutable render paths are explicitly excluded.
+
+Compiling UI Kit does not make mutable legacy form reads in your application reactive. When enabling Compiler in an application, migrate those consumers to the modern Form subscriptions (`Form.useValue`, `Form.useSelector`, or `Form.Subscribe`) or keep the affected consumer components uncompiled with `"use no memo"`. Forms without an explicit instance still use the legacy implementation.
+
 ## Units
 
 Tasty provides custom units that map to CSS custom properties defined on the Root component. Use these instead of raw pixel values to keep styling consistent.

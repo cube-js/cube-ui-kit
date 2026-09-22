@@ -17,7 +17,11 @@ import type { TFunction } from 'i18next';
  * in so the string reacts to the active language. When omitted (non-component
  * callers), English defaults are used.
  */
-export function formatRelativeTime(timestamp: number, t?: TFunction): string {
+export function formatRelativeTime(
+  timestamp: number,
+  t?: TFunction,
+  now = Date.now(),
+): string {
   const translate = (
     key: string,
     defaultValue: string,
@@ -32,7 +36,6 @@ export function formatRelativeTime(timestamp: number, t?: TFunction): string {
       : defaultValue;
   };
 
-  const now = Date.now();
   const diffMs = now - timestamp;
 
   if (diffMs < 0) {

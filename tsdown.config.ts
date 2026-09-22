@@ -2,6 +2,8 @@ import { readFileSync } from 'node:fs';
 
 import { defineConfig } from 'tsdown';
 
+import { reactCompilerPlugin } from './scripts/compiler/transform.mjs';
+
 const pkg = JSON.parse(readFileSync('./package.json', 'utf-8'));
 const tastyPkg = JSON.parse(
   readFileSync('./node_modules/@tenphi/tasty/package.json', 'utf-8'),
@@ -28,6 +30,8 @@ const define = {
 };
 
 export default defineConfig({
+  plugins:
+    process.env.UIKIT_REACT_COMPILER === 'off' ? [] : [reactCompilerPlugin()],
   entry: {
     index: 'src/index.ts',
     // Second entry so `@cube-dev/ui-kit/eslint-plugin` stays version-locked to

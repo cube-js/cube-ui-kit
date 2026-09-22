@@ -58,8 +58,11 @@ jobs:
       - name: Check the Form compiler diagnostics ratchet
         run: pnpm diagnostics:form --check
 
+      - name: Check whole-library Compiler coverage
+        run: pnpm diagnostics:compiler
+
   form-react:
-    name: 'Modern Form / React ${{ matrix.react }}'
+    name: 'React Compiler / React ${{ matrix.react }}'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -83,6 +86,20 @@ jobs:
         run: pnpm test:form-react
       - name: Verify the same modern Form contract with React Compiler
         run: pnpm test:form-compiled
+      - name: Verify all components with the release compiler transform
+        run: pnpm test:compiled --maxWorkers=2
+      - name: Build and pack the compiled library
+        run: pnpm build && pnpm pack:test
+      - name: Verify packed output with compiled and uncompiled consumers
+        run: pnpm test:package
+      - name: Verify the uncompiled build as a behavior baseline
+        run: pnpm build:uncompiled && UIKIT_TEST_UNCOMPILED=1 pnpm test:package
+      - name: Upload compilation coverage
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: react-compiler-${{ matrix.react }}
+          path: dist/react-compiler-report.json
 
   browser-tests:
     name: 'Browser tests'
@@ -123,6 +140,8 @@ jobs:
 
       - name: Run the browser tests
         run: pnpm test:browser
+      - name: Run the browser tests with the release compiler transform
+        run: UIKIT_REACT_COMPILER=on pnpm test:browser
 
   deploy-chromatic:
     name: 'Prepare Storybook for review & tests'

@@ -82,15 +82,14 @@ export function PersistentNotificationsList({
   });
   const markReadTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Tick counter that increments every TIMESTAMP_REFRESH_INTERVAL to force
-  // re-render so relative timestamps (e.g. "5 min ago") stay up to date.
-  const [, setTick] = useState(0);
+  // Time is a reactive input, so memoized rows also refresh their labels.
+  const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
     if (items.length === 0) return;
 
     const interval = setInterval(() => {
-      setTick((t) => t + 1);
+      setNow(Date.now());
     }, TIMESTAMP_REFRESH_INTERVAL);
 
     return () => clearInterval(interval);
@@ -134,6 +133,7 @@ export function PersistentNotificationsList({
             {index > 0 && <Divider />}
             <PersistentNotificationListItem
               item={item}
+              now={now}
               onDismiss={handleDismiss}
             />
           </Fragment>
@@ -147,17 +147,19 @@ export function PersistentNotificationsList({
 
 interface PersistentNotificationListItemProps {
   item: PersistentNotificationItem;
+  now: number;
   onDismiss?: (item: PersistentNotificationItem) => void;
 }
 
 function PersistentNotificationListItem({
   item,
+  now,
   onDismiss,
 }: PersistentNotificationListItemProps) {
   const { t } = useI18n();
   const suffix = (
     <Text opacity={0.5} preset="c2">
-      {formatRelativeTime(item.createdAt, t)}
+      {formatRelativeTime(item.createdAt, t, now)}
     </Text>
   );
 

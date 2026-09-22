@@ -1,0 +1,1692 @@
+{
+  "src/_internal/hooks/use-chained-callback.ts": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/_internal/hooks/use-debounced-value.ts": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/_internal/hooks/use-deprecation-warning.ts": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/_internal/hooks/use-effect-once.ts": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/_internal/hooks/use-event.ts": {
+    "compiled": 0,
+    "diagnostics": {
+      "PreserveManualMemo": 1
+    },
+    "optOuts": 0
+  },
+  "src/_internal/hooks/use-is-first-render.ts": {
+    "compiled": 0,
+    "diagnostics": {
+      "Refs": 3
+    },
+    "optOuts": 0
+  },
+  "src/_internal/hooks/use-sync-ref.ts": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/_internal/hooks/use-timer/use-timer.ts": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/_internal/hooks/use-update-effect.ts": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/_internal/hooks/use-warn.ts": {
+    "compiled": 0,
+    "diagnostics": {
+      "Refs": 2
+    },
+    "optOuts": 0
+  },
+  "src/components/Block.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/GlobalStyles.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/GridProvider.tsx": {
+    "compiled": 0,
+    "diagnostics": {
+      "Todo": 1
+    },
+    "optOuts": 0
+  },
+  "src/components/Root.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/actions/Action/Action.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/actions/Banner/Banner.tsx": {
+    "compiled": 3,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/actions/Button/Button.tsx": {
+    "compiled": 0,
+    "diagnostics": {
+      "Todo": 1
+    },
+    "optOuts": 0
+  },
+  "src/components/actions/ButtonGroup/ButtonGroup.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/actions/ButtonSplit/ButtonSplit.tsx": {
+    "compiled": 0,
+    "diagnostics": {
+      "PreserveManualMemo": 1
+    },
+    "optOuts": 0
+  },
+  "src/components/actions/ButtonSplit/context.ts": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/actions/CommandMenu/CommandMenu.tsx": {
+    "compiled": 0,
+    "diagnostics": {
+      "PreserveManualMemo": 3
+    },
+    "optOuts": 0
+  },
+  "src/components/actions/ItemAction/ItemAction.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/actions/ItemActionContext.tsx": {
+    "compiled": 2,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/actions/ItemActionsWrapper.tsx": {
+    "compiled": 2,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/actions/ItemButton/ItemButton.tsx": {
+    "compiled": 0,
+    "diagnostics": {
+      "Refs": 3
+    },
+    "optOuts": 0
+  },
+  "src/components/actions/Link/Link.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/actions/Menu/Menu.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/actions/Menu/MenuItem.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/actions/Menu/MenuSection.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/actions/Menu/MenuTrigger.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/actions/Menu/SubMenuTrigger.tsx": {
+    "compiled": 0,
+    "diagnostics": {
+      "Immutability": 10
+    },
+    "optOuts": 0
+  },
+  "src/components/actions/Menu/SubmenuTriggerContext.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/actions/Menu/context.ts": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/actions/use-action.ts": {
+    "compiled": 0,
+    "diagnostics": {
+      "Hooks": 3
+    },
+    "optOuts": 0
+  },
+  "src/components/actions/use-anchored-menu.tsx": {
+    "compiled": 0,
+    "diagnostics": {
+      "Todo": 1
+    },
+    "optOuts": 0
+  },
+  "src/components/actions/use-context-menu.tsx": {
+    "compiled": 0,
+    "diagnostics": {
+      "Todo": 1
+    },
+    "optOuts": 0
+  },
+  "src/components/content/ActiveZone/ActiveZone.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/content/Alert/Alert.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/content/Alert/use-alert.ts": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/content/Avatar/Avatar.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/content/Badge/Badge.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/content/Card/Card.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/content/Content.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/content/CopyPasteBlock/CopyPasteBlock.tsx": {
+    "compiled": 0,
+    "diagnostics": {
+      "Todo": 1
+    },
+    "optOuts": 0
+  },
+  "src/components/content/CopySnippet/CopySnippet.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/content/Disclosure/Disclosure.tsx": {
+    "compiled": 7,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/content/Divider.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/content/Footer.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/content/Header.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/content/HotKeys/HotKeys.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/content/InfoBadge/InfoBadge.tsx": {
+    "compiled": 0,
+    "diagnostics": {
+      "Todo": 1
+    },
+    "optOuts": 0
+  },
+  "src/components/content/InlineInput/InlineInput.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/content/Item/Item.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/content/ItemBadge/ItemBadge.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/content/ItemCard/ItemCard.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/content/Layout/GridLayout.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/content/Layout/Layout.tsx": {
+    "compiled": 1,
+    "diagnostics": {
+      "Immutability": 1
+    },
+    "optOuts": 0
+  },
+  "src/components/content/Layout/LayoutBlock.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/content/Layout/LayoutCenter.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/content/Layout/LayoutContainer.tsx": {
+    "compiled": 0,
+    "diagnostics": {
+      "PreserveManualMemo": 2
+    },
+    "optOuts": 0
+  },
+  "src/components/content/Layout/LayoutContent.tsx": {
+    "compiled": 0,
+    "diagnostics": {
+      "PreserveManualMemo": 3
+    },
+    "optOuts": 0
+  },
+  "src/components/content/Layout/LayoutContext.tsx": {
+    "compiled": 6,
+    "diagnostics": {
+      "PreserveManualMemo": 9
+    },
+    "optOuts": 0
+  },
+  "src/components/content/Layout/LayoutFlex.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/content/Layout/LayoutFooter.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/content/Layout/LayoutGrid.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/content/Layout/LayoutHeader.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/content/Layout/LayoutPane.tsx": {
+    "compiled": 1,
+    "diagnostics": {
+      "PreserveManualMemo": 3
+    },
+    "optOuts": 0
+  },
+  "src/components/content/Layout/LayoutPanel.tsx": {
+    "compiled": 1,
+    "diagnostics": {
+      "Immutability": 1
+    },
+    "optOuts": 0
+  },
+  "src/components/content/Layout/LayoutPanelHeader.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/content/Layout/LayoutToolbar.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/content/Layout/hooks/useTinyScrollbar.ts": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/content/Paragraph.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/content/Placeholder/Placeholder.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/content/PrismCode/PrismCode.tsx": {
+    "compiled": 0,
+    "diagnostics": {
+      "Immutability": 1
+    },
+    "optOuts": 0
+  },
+  "src/components/content/PrismDiffCode/PrismDiffCode.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/content/Result/Result.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/content/Skeleton/Skeleton.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/content/Tag/Tag.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/content/Text.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/content/TextItem/TextItem.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/content/Title.tsx": {
+    "compiled": 3,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/content/Tree/Tree.tsx": {
+    "compiled": 0,
+    "diagnostics": {
+      "Todo": 1
+    },
+    "optOuts": 0
+  },
+  "src/components/content/Tree/TreeNode.tsx": {
+    "compiled": 0,
+    "diagnostics": {
+      "Todo": 1
+    },
+    "optOuts": 0
+  },
+  "src/components/content/Tree/use-checkbox-tree.ts": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/content/Tree/use-load-data.ts": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/content/use-auto-tooltip.tsx": {
+    "compiled": 0,
+    "diagnostics": {
+      "Immutability": 1
+    },
+    "optOuts": 0
+  },
+  "src/components/data/DataTable/DataTable.tsx": {
+    "compiled": 0,
+    "diagnostics": {
+      "Refs": 1
+    },
+    "optOuts": 0
+  },
+  "src/components/data/ItemTable/ItemTable.tsx": {
+    "compiled": 0,
+    "diagnostics": {
+      "Refs": 1
+    },
+    "optOuts": 0
+  },
+  "src/components/data/ItemTable/ItemTableBulkBar.tsx": {
+    "compiled": 0,
+    "diagnostics": {
+      "Todo": 1
+    },
+    "optOuts": 0
+  },
+  "src/components/data/ItemTable/ItemTableDragPreview.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/data/ItemTable/ItemTableFooter.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/data/ItemTable/ItemTableToolbar.tsx": {
+    "compiled": 3,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/data/TableBase/ColumnResizer.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/data/TableBase/TableHeaderCell.tsx": {
+    "compiled": 4,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/data/TableBase/TableRow.tsx": {
+    "compiled": 5,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/data/TableBase/TableView.tsx": {
+    "compiled": 2,
+    "diagnostics": {
+      "Suppression": 2
+    },
+    "optOuts": 0
+  },
+  "src/components/data/TableBase/use-cell-selection.ts": {
+    "compiled": 0,
+    "diagnostics": {
+      "Todo": 1
+    },
+    "optOuts": 0
+  },
+  "src/components/data/TableBase/use-column-order.ts": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/data/TableBase/use-container-width.ts": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/data/TableBase/use-row-move-animation.ts": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/data/TableBase/use-scrollability.ts": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/data/TableBase/use-table-columns.ts": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/data/TableBase/use-table-search.ts": {
+    "compiled": 0,
+    "diagnostics": {
+      "Suppression": 1
+    },
+    "optOuts": 0
+  },
+  "src/components/data/TableBase/use-table-selection.ts": {
+    "compiled": 0,
+    "diagnostics": {
+      "Refs": 1
+    },
+    "optOuts": 0
+  },
+  "src/components/data/TableBase/use-table-sort.ts": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/data/TableBase/use-table-sorts.ts": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/data/TableBase/use-table-storage.ts": {
+    "compiled": 0,
+    "diagnostics": {
+      "Refs": 1
+    },
+    "optOuts": 0
+  },
+  "src/components/data/TableBase/use-table-tree-state.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/fields/Checkbox/Checkbox.tsx": {
+    "compiled": 0,
+    "diagnostics": {
+      "Hooks": 2
+    },
+    "optOuts": 0
+  },
+  "src/components/fields/Checkbox/CheckboxGroup.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/fields/ColorInput/ColorInput.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/fields/ColorPicker/ColorPicker.tsx": {
+    "compiled": 0,
+    "diagnostics": {
+      "Refs": 1
+    },
+    "optOuts": 0
+  },
+  "src/components/fields/ColorSwatch/ColorSwatch.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/fields/ColorSwatchGroup/ColorSwatchGroup.tsx": {
+    "compiled": 1,
+    "diagnostics": {
+      "Refs": 1
+    },
+    "optOuts": 0
+  },
+  "src/components/fields/ComboBox/ComboBox.tsx": {
+    "compiled": 3,
+    "diagnostics": {
+      "Refs": 6,
+      "Immutability": 1
+    },
+    "optOuts": 0
+  },
+  "src/components/fields/CommandTextArea/CommandTextArea.tsx": {
+    "compiled": 0,
+    "diagnostics": {
+      "Suppression": 1
+    },
+    "optOuts": 0
+  },
+  "src/components/fields/CommandTextArea/useCaretAnchor.ts": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/fields/DatePicker/DateInput.tsx": {
+    "compiled": 0,
+    "diagnostics": {
+      "Immutability": 1
+    },
+    "optOuts": 0
+  },
+  "src/components/fields/DatePicker/DateInputBase.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/fields/DatePicker/DatePicker.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/fields/DatePicker/DatePickerButton.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/fields/DatePicker/DatePickerInput.tsx": {
+    "compiled": 0,
+    "diagnostics": {
+      "Immutability": 1
+    },
+    "optOuts": 0
+  },
+  "src/components/fields/DatePicker/DatePickerSegment.tsx": {
+    "compiled": 3,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/fields/DatePicker/DateRangePicker.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/fields/DatePicker/DateRangeSeparatedPicker.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/fields/DatePicker/MonthPicker.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/fields/DatePicker/PeriodPicker.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/fields/DatePicker/QuarterPicker.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/fields/DatePicker/TimeInput.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/fields/DatePicker/WeekPicker.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/fields/DatePicker/YearPicker.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/fields/DatePicker/utils.ts": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/fields/FileInput/FileInput.tsx": {
+    "compiled": 0,
+    "diagnostics": {
+      "Refs": 1
+    },
+    "optOuts": 0
+  },
+  "src/components/fields/FilterListBox/FilterListBox.tsx": {
+    "compiled": 0,
+    "diagnostics": {
+      "Hooks": 1
+    },
+    "optOuts": 0
+  },
+  "src/components/fields/FilterPicker/FilterPicker.tsx": {
+    "compiled": 0,
+    "diagnostics": {
+      "Refs": 8
+    },
+    "optOuts": 0
+  },
+  "src/components/fields/ListBox/DraggableListBox.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/fields/ListBox/ListBox.tsx": {
+    "compiled": 2,
+    "diagnostics": {
+      "Refs": 2,
+      "IncompatibleLibrary": 1
+    },
+    "optOuts": 0
+  },
+  "src/components/fields/ListBoxPopover/ListBoxPopover.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/fields/ListBoxPopover/useCompositeFocus.ts": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/fields/NumberInput/NumberInput.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/fields/NumberInput/StepButton.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/fields/PasswordInput/PasswordInput.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/fields/Picker/Picker.tsx": {
+    "compiled": 0,
+    "diagnostics": {
+      "Immutability": 1
+    },
+    "optOuts": 0
+  },
+  "src/components/fields/RadioGroup/Radio.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/fields/RadioGroup/RadioGroup.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/fields/RadioGroup/context.ts": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/fields/SearchComboBox/SearchComboBox.tsx": {
+    "compiled": 1,
+    "diagnostics": {
+      "Refs": 8
+    },
+    "optOuts": 0
+  },
+  "src/components/fields/SearchInput/SearchInput.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/fields/Select/Select.tsx": {
+    "compiled": 3,
+    "diagnostics": {
+      "Todo": 1
+    },
+    "optOuts": 0
+  },
+  "src/components/fields/Slider/Gradation.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/fields/Slider/HueSlider.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/fields/Slider/RangeSlider.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/fields/Slider/Slider.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/fields/Slider/SliderBase.tsx": {
+    "compiled": 0,
+    "diagnostics": {
+      "Refs": 1
+    },
+    "optOuts": 0
+  },
+  "src/components/fields/Slider/SliderInput.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/fields/Slider/SliderThumb.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/fields/Slider/SliderTrack.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/fields/Switch/Switch.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/fields/TextArea/TextArea.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/fields/TextInput/TextInput.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/fields/TextInput/useAutoSizeTextArea.ts": {
+    "compiled": 0,
+    "diagnostics": {
+      "Hooks": 5
+    },
+    "optOuts": 0
+  },
+  "src/components/fields/TextInputMapper/TextInputMapper.tsx": {
+    "compiled": 1,
+    "diagnostics": {
+      "UseMemo": 1
+    },
+    "optOuts": 0
+  },
+  "src/components/fields/TriggerActions.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/fields/color/ColorPanel.tsx": {
+    "compiled": 2,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/fields/color/context.ts": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/form/FieldWrapper/FieldWrapper.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/form/Form/Field.tsx": {
+    "compiled": 2,
+    "diagnostics": {
+      "Immutability": 1
+    },
+    "optOuts": 0
+  },
+  "src/components/form/Form/Form.tsx": {
+    "compiled": 3,
+    "diagnostics": {
+      "Todo": 1
+    },
+    "optOuts": 0
+  },
+  "src/components/form/Form/ModernFormRoot.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/form/Form/ResetButton/ResetButton.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 1
+  },
+  "src/components/form/Form/SubmitButton/SubmitButton.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 1
+  },
+  "src/components/form/Form/SubmitError.tsx": {
+    "compiled": 3,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/form/Form/modern/actions.tsx": {
+    "compiled": 2,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/form/Form/modern/context.ts": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/form/Form/modern/react.tsx": {
+    "compiled": 5,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/form/Form/use-field/use-field-binding.ts": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/form/Form/use-field/use-field-props.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/form/Form/use-field/use-field.ts": {
+    "compiled": 0,
+    "diagnostics": {
+      "Todo": 1
+    },
+    "optOuts": 0
+  },
+  "src/components/form/Form/use-form.tsx": {
+    "compiled": 0,
+    "diagnostics": {
+      "Immutability": 1
+    },
+    "optOuts": 0
+  },
+  "src/components/form/Label.tsx": {
+    "compiled": 2,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/form/validation/ValidationIndicator.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/form/validation/use-validation-props.ts": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/helpers/DisplayTransition/DisplayTransition.tsx": {
+    "compiled": 1,
+    "diagnostics": {
+      "Refs": 4
+    },
+    "optOuts": 0
+  },
+  "src/components/helpers/IconSwitch/IconSwitch.tsx": {
+    "compiled": 0,
+    "diagnostics": {
+      "Refs": 3
+    },
+    "optOuts": 0
+  },
+  "src/components/layout/Board/Board.tsx": {
+    "compiled": 1,
+    "diagnostics": {
+      "Suppression": 2
+    },
+    "optOuts": 0
+  },
+  "src/components/layout/Board/BoardProvider.tsx": {
+    "compiled": 0,
+    "diagnostics": {
+      "Refs": 3
+    },
+    "optOuts": 0
+  },
+  "src/components/layout/Board/BoardResponsive.tsx": {
+    "compiled": 0,
+    "diagnostics": {
+      "Suppression": 2
+    },
+    "optOuts": 0
+  },
+  "src/components/layout/Board/Widget.tsx": {
+    "compiled": 0,
+    "diagnostics": {
+      "Suppression": 1
+    },
+    "optOuts": 0
+  },
+  "src/components/layout/Board/WidgetHost.tsx": {
+    "compiled": 1,
+    "diagnostics": {
+      "Refs": 1
+    },
+    "optOuts": 0
+  },
+  "src/components/layout/Board/board-context.tsx": {
+    "compiled": 6,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/layout/Board/use-board-layout.ts": {
+    "compiled": 0,
+    "diagnostics": {
+      "Refs": 1
+    },
+    "optOuts": 0
+  },
+  "src/components/layout/Board/use-board-registry.ts": {
+    "compiled": 0,
+    "diagnostics": {
+      "Refs": 1
+    },
+    "optOuts": 0
+  },
+  "src/components/layout/Board/use-board-select-modifier-key.ts": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/layout/Board/use-board-selection.ts": {
+    "compiled": 0,
+    "diagnostics": {
+      "Refs": 1
+    },
+    "optOuts": 0
+  },
+  "src/components/layout/Flex.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/layout/Flow.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/layout/Grid.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/layout/Panel.tsx": {
+    "compiled": 0,
+    "diagnostics": {
+      "PreserveManualMemo": 2
+    },
+    "optOuts": 0
+  },
+  "src/components/layout/Prefix.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/layout/ResizablePanel.tsx": {
+    "compiled": 1,
+    "diagnostics": {
+      "Immutability": 2
+    },
+    "optOuts": 0
+  },
+  "src/components/layout/Space.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/layout/Suffix.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/navigation/Pagination/Pagination.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/navigation/Pagination/use-pagination.ts": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/navigation/Tabs/DraggableTabList.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/navigation/Tabs/TabButton.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/navigation/Tabs/TabDropIndicator.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/navigation/Tabs/TabPanel.tsx": {
+    "compiled": 1,
+    "diagnostics": {
+      "Refs": 1
+    },
+    "optOuts": 0
+  },
+  "src/components/navigation/Tabs/TabPicker.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/navigation/Tabs/Tabs.tsx": {
+    "compiled": 0,
+    "diagnostics": {
+      "Refs": 2
+    },
+    "optOuts": 0
+  },
+  "src/components/navigation/Tabs/TabsAction.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/navigation/Tabs/TabsContext.tsx": {
+    "compiled": 3,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/navigation/Tabs/use-tab-editing.ts": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/navigation/Tabs/use-tab-indicator.ts": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/organisms/StatsCard/StatsCard.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/other/Calendar/Calendar.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/other/Calendar/CalendarCell.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/other/Calendar/CalendarGrid.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/other/Calendar/CalendarHeader.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/other/Calendar/CalendarPanel.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/other/Calendar/PeriodCalendar.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/other/Calendar/PeriodGrid.tsx": {
+    "compiled": 0,
+    "diagnostics": {
+      "Refs": 1
+    },
+    "optOuts": 0
+  },
+  "src/components/other/Calendar/RangeCalendar.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/other/CubeLogo/CubeLogo.tsx": {
+    "compiled": 3,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/overlays/AlertDialog/AlertDialog.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/overlays/AlertDialog/AlertDialogApiProvider.tsx": {
+    "compiled": 2,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/overlays/AlertDialog/AlertDialogZone.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/overlays/Dialog/Dialog.tsx": {
+    "compiled": 1,
+    "diagnostics": {
+      "Todo": 2
+    },
+    "optOuts": 0
+  },
+  "src/components/overlays/Dialog/DialogContainer.tsx": {
+    "compiled": 0,
+    "diagnostics": {
+      "Refs": 1
+    },
+    "optOuts": 0
+  },
+  "src/components/overlays/Dialog/DialogForm.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 1
+  },
+  "src/components/overlays/Dialog/DialogTrigger.tsx": {
+    "compiled": 1,
+    "diagnostics": {
+      "Refs": 1,
+      "Immutability": 1
+    },
+    "optOuts": 0
+  },
+  "src/components/overlays/Dialog/ModernDialogForm.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/overlays/Dialog/context.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/overlays/Dialog/use-dialog-container.tsx": {
+    "compiled": 0,
+    "diagnostics": {
+      "Todo": 1
+    },
+    "optOuts": 0
+  },
+  "src/components/overlays/Modal/Modal.tsx": {
+    "compiled": 2,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/overlays/Modal/OpenTransitionContext.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/overlays/Modal/Overlay.tsx": {
+    "compiled": 0,
+    "diagnostics": {
+      "Refs": 2
+    },
+    "optOuts": 0
+  },
+  "src/components/overlays/Modal/Popover.tsx": {
+    "compiled": 2,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/overlays/Modal/Tray.tsx": {
+    "compiled": 2,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/overlays/Modal/Underlay.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/overlays/Notifications/Notification.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/overlays/Notifications/NotificationAction.tsx": {
+    "compiled": 2,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/overlays/Notifications/NotificationCard.tsx": {
+    "compiled": 3,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/overlays/Notifications/NotificationContext.ts": {
+    "compiled": 3,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/overlays/Notifications/NotificationItem.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/overlays/Notifications/OverlayContainer.tsx": {
+    "compiled": 2,
+    "diagnostics": {
+      "PreserveManualMemo": 1
+    },
+    "optOuts": 0
+  },
+  "src/components/overlays/Notifications/OverlayProvider.tsx": {
+    "compiled": 0,
+    "diagnostics": {
+      "Refs": 1
+    },
+    "optOuts": 0
+  },
+  "src/components/overlays/Notifications/PersistentNotificationsList.tsx": {
+    "compiled": 2,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/overlays/Notifications/use-notification-state.ts": {
+    "compiled": 0,
+    "diagnostics": {
+      "Refs": 1
+    },
+    "optOuts": 0
+  },
+  "src/components/overlays/Notifications/use-notifications.ts": {
+    "compiled": 0,
+    "diagnostics": {
+      "Refs": 10
+    },
+    "optOuts": 0
+  },
+  "src/components/overlays/Notifications/use-overlay-timers.ts": {
+    "compiled": 0,
+    "diagnostics": {
+      "Refs": 10
+    },
+    "optOuts": 0
+  },
+  "src/components/overlays/Notifications/use-persistent-notifications.ts": {
+    "compiled": 1,
+    "diagnostics": {
+      "PreserveManualMemo": 3
+    },
+    "optOuts": 0
+  },
+  "src/components/overlays/Notifications/use-persistent-state.ts": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/overlays/Notifications/use-toast-state.ts": {
+    "compiled": 0,
+    "diagnostics": {
+      "Refs": 1
+    },
+    "optOuts": 0
+  },
+  "src/components/overlays/Toast/ToastItem.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/overlays/Toast/index.ts": {
+    "compiled": 2,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/overlays/Toast/useProgressToast.tsx": {
+    "compiled": 0,
+    "diagnostics": {
+      "Refs": 1
+    },
+    "optOuts": 0
+  },
+  "src/components/overlays/Toast/useToast.tsx": {
+    "compiled": 0,
+    "diagnostics": {
+      "Immutability": 5
+    },
+    "optOuts": 0
+  },
+  "src/components/overlays/Tooltip/Tooltip.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/overlays/Tooltip/TooltipProvider.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/overlays/Tooltip/TooltipTrigger.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/portal/Portal.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/portal/PortalProvider.ts": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/portal/storybook/templates/CustomRoot.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/portal/storybook/templates/PortalOrder.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/portal/storybook/templates/basic.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/portal/usePortal.ts": {
+    "compiled": 0,
+    "diagnostics": {
+      "Refs": 1
+    },
+    "optOuts": 0
+  },
+  "src/components/shared/DraggableCollection.tsx": {
+    "compiled": 0,
+    "diagnostics": {
+      "Refs": 1
+    },
+    "optOuts": 0
+  },
+  "src/components/status/LoadingAnimation/LoadingAnimation.tsx": {
+    "compiled": 3,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/status/Spin/Cube.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/status/Spin/InternalSpinner.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/status/Spin/Spin.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/status/Spin/SpinsContainer.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/i18n/I18nProvider.tsx": {
+    "compiled": 2,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/i18n/useFormatter.ts": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/i18n/useI18n.ts": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/icons/DirectionIcon.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/icons/Icon.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/icons/wrap-icon.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/provider.tsx": {
+    "compiled": 1,
+    "diagnostics": {
+      "Refs": 1
+    },
+    "optOuts": 0
+  },
+  "src/providers/TrackingProvider.tsx": {
+    "compiled": 2,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/tokens/color-theme.ts": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/tokens/palette-config.ts": {
+    "compiled": 2,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/tokens/resolve.ts": {
+    "compiled": 4,
+    "diagnostics": {
+      "Suppression": 1
+    },
+    "optOuts": 0
+  },
+  "src/utils/react/RenderCache.tsx": {
+    "compiled": 0,
+    "diagnostics": {
+      "Refs": 5
+    },
+    "optOuts": 0
+  },
+  "src/utils/react/Slots.tsx": {
+    "compiled": 3,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/utils/react/interactions.ts": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/utils/react/sharedStore.ts": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/utils/react/useBufferedValue.ts": {
+    "compiled": 0,
+    "diagnostics": {
+      "Refs": 4
+    },
+    "optOuts": 0
+  },
+  "src/utils/react/useCombinedRefs.ts": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/utils/react/useControlledFocusVisible.ts": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/utils/react/useEventBus.ts": {
+    "compiled": 2,
+    "diagnostics": {
+      "Refs": 1
+    },
+    "optOuts": 0
+  },
+  "src/utils/react/useId.tsx": {
+    "compiled": 1,
+    "diagnostics": {
+      "Refs": 2
+    },
+    "optOuts": 0
+  },
+  "src/utils/react/useIsDarwin.ts": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/utils/react/useKeySymbols.ts": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/utils/react/useLocalStorage.ts": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/utils/react/useMergeStyles.ts": {
+    "compiled": 0,
+    "diagnostics": {
+      "UseMemo": 1
+    },
+    "optOuts": 0
+  },
+  "src/utils/react/useOverlayEscapeGuard.ts": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/utils/react/usePopoverSync.ts": {
+    "compiled": 2,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/utils/react/useScheme.ts": {
+    "compiled": 2,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/utils/react/useViewportSize.ts": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  }
+}

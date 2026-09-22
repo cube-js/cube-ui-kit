@@ -58,6 +58,9 @@ export function useField<
   T extends FieldTypes,
   Props extends UseFieldProps<T> & { name?: string },
 >(props: Props, params: UseFieldParams): FieldReturnValue<T> {
+  'use no memo';
+  // Legacy form state is mutable; preserve its render-time reads until migration.
+
   props = useFormProps(props);
 
   let {

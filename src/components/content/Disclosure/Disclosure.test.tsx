@@ -241,7 +241,10 @@ describe('<Disclosure />', () => {
       const ariaControls = trigger.getAttribute('aria-controls');
 
       expect(ariaControls).toBeTruthy();
-      expect(container.querySelector(`#${ariaControls}`)).toBeInTheDocument();
+      // React 18 useId values contain colons, which are not CSS selectors.
+      expect(container).toContainElement(
+        document.getElementById(ariaControls!),
+      );
     });
   });
 
