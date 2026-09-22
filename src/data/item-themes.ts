@@ -1413,13 +1413,45 @@ export const CURRENT_CARD_STYLES: Styles = {
 } as const;
 
 // ---------- CARD TYPE STYLES ----------
-// Card type only supports: default, success, danger, note themes (plus the
-// `current` theme — see `CURRENT_CARD_STYLES` above)
+// Card type supports: default, primary, success, danger, warning and note
+// themes (plus the `current` theme — see `CURRENT_CARD_STYLES` above). It has
+// no `special` flavour; see `PRIMARY_CARD_STYLES` for why the brand-purple card
+// is spelled `primary` rather than `special`.
+//
+// This list is the DATA, and it is deliberately one entry wider than what
+// `Item` admits: `Item`'s `CARD_THEMES` whitelist still omits `primary`, so
+// `<Item type="card" theme="primary">` renders correctly but warns. `Tag`
+// reaches `primary.card` because it passes `variant` straight through rather
+// than going via `theme`/`type`. Widening `Item` is a separate change — the
+// warning is the only thing standing in the way.
 
 export const DEFAULT_CARD_STYLES: Styles = {
   border: '#surface-text.20',
   fill: '#surface-3',
   color: '#surface-text-soft',
+} as const;
+
+// The brand-purple card — the soft counterpart of `default.primary`'s solid
+// fill, and the one card flavour whose name needs explaining, because there are
+// two purples in this file and neither of the obvious spellings is the right
+// one.
+//
+// NOT `special.card`: the `special` theme is a FIXED-MODE DARK purple anchored
+// on `#special-surface` with white text (see `SPECIAL_PRIMARY_STYLES`), so a
+// card cut from it would be a dark chip, not a pale one.
+//
+// NOT `default.card` either: `default` is the UNTINTED path, so its card is the
+// neutral grey one above. `primary` is the same brand theme with the tinted
+// surface added (`palette.ts` → `primaryTheme`), which is exactly what the
+// three-token card shape needs.
+//
+// So this takes the same `accent-surface.20` / `surface` / `accent-text` triple
+// as the status cards, and lands at hue 280.3 — one hue over from `note`
+// (302.3), which is what call sites reached for while this did not exist.
+export const PRIMARY_CARD_STYLES: Styles = {
+  border: '#primary-accent-surface.20',
+  fill: '#primary-surface',
+  color: '#primary-accent-text',
 } as const;
 
 export const SUCCESS_CARD_STYLES: Styles = {
@@ -1463,6 +1495,9 @@ export type ItemVariant =
   | 'default.link'
   | 'default.item'
   | 'default.card'
+  // Brand theme — `default` plus the tinted surface. Card only: every other
+  // flavour of the brand color is already reachable as a `default.*` variant.
+  | 'primary.card'
   | 'danger.primary'
   | 'danger.outline'
   | 'danger.outline-2'
@@ -1517,6 +1552,8 @@ export const ITEM_VARIANTS: Record<ItemVariant, Styles> = {
   'default.link': DEFAULT_LINK_STYLES,
   'default.item': DEFAULT_ITEM_STYLES,
   'default.card': DEFAULT_CARD_STYLES,
+  // Primary theme — card only
+  'primary.card': PRIMARY_CARD_STYLES,
   // Danger theme
   'danger.primary': DANGER_PRIMARY_STYLES,
   'danger.outline': DANGER_OUTLINE_STYLES,

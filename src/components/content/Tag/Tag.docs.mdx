@@ -30,7 +30,7 @@ Tags are compact, inline elements used to label, categorize, or organize items. 
 
 ### Properties
 
-- **`theme`** `'default' | 'danger' | 'success' | 'warning' | 'note' | 'special'` (default: `default`) — Visual theme of the tag
+- **`theme`** `'default' | 'primary' | 'danger' | 'success' | 'warning' | 'note' | 'special'` (default: `default`) — Visual theme of the tag
 - **`size`** `string` (default: `inline`) — Size of the tag
 - **`isClosable`** `boolean` (default: `false`) — Whether the tag can be closed
 - **`onClose`** `() => void` — Handler called when close button is pressed
@@ -73,8 +73,16 @@ Available themes:
 - **Note**: Violet, informational content
 - **Success**: Green, positive states or completed actions
 - **Danger**: Red, errors or destructive actions
-- **Special**: Purple, highlighted or premium features
+- **Primary**: Soft brand purple, for chips that reference a primary-colored entity
+- **Special**: Solid brand purple, for highlighted or premium features
 - **Disabled**: Gray, inactive or unavailable items
+
+`primary` and `special` are the same brand hue at two weights. `primary` is the soft card — pale fill, tinted border, colored text — matching `note`, `success`, `danger` and `warning` in everything but hue, so reach for it when a chip should sit quietly beside its content. `special` is a solid fill with white text, which carries far more weight on the page.
+
+```jsx
+<Tag theme="primary">Claimed by Group A</Tag>
+<Tag theme="special">Premium</Tag>
+```
 
 ### With Icons
 
