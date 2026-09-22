@@ -657,6 +657,7 @@ describe('<Picker />', () => {
 
     it('should be reachable by keyboard and activate without opening the popover', async () => {
       const onReset = vi.fn();
+      const user = userEvent.setup();
 
       const { getByTestId, queryByRole } = renderWithRoot(
         <Picker
@@ -673,19 +674,13 @@ describe('<Picker />', () => {
         </Picker>,
       );
 
-      await act(async () => {
-        await userEvent.tab();
-      });
+      await user.tab();
       expect(document.activeElement).toBe(getByTestId('PickerTrigger'));
 
-      await act(async () => {
-        await userEvent.tab();
-      });
+      await user.tab();
       expect(document.activeElement).toBe(getByTestId('ResetAction'));
 
-      await act(async () => {
-        await userEvent.keyboard('{Enter}');
-      });
+      await user.keyboard('{Enter}');
 
       expect(onReset).toHaveBeenCalledTimes(1);
       expect(queryByRole('listbox')).not.toBeInTheDocument();

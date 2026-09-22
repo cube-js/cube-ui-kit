@@ -175,6 +175,9 @@ function LegacyFormRoot<T extends FieldTypes>(
   props: CubeFormProps<T>,
   ref: Ref<HTMLFormElement>,
 ) {
+  'use no memo';
+  // Legacy form state is mutable; preserve its render-time reads until migration.
+
   props = useValidationProps(useProviderProps(props));
   let {
     qa,

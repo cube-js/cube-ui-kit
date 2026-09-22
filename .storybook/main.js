@@ -4,6 +4,8 @@ import { readFileSync } from 'node:fs';
 import react from '@vitejs/plugin-react';
 import remarkGfm from 'remark-gfm';
 
+import { reactCompilerPlugin } from '../scripts/compiler/transform.mjs';
+
 const pkg = JSON.parse(readFileSync('./package.json', 'utf-8'));
 const tastyPkg = JSON.parse(
   readFileSync('./node_modules/@tenphi/tasty/package.json', 'utf-8'),
@@ -45,7 +47,17 @@ const config = {
           !isReactPlugin(/** @type {any} */ (p).name ?? ''),
       );
 
-    config.plugins = [...existingPlugins, react({ jsxRuntime: 'automatic' })];
+    config.plugins = [
+      ...existingPlugins,
+      reactCompilerPlugin(),
+      react({ jsxRuntime: 'automatic' }),
+    ];
+
+    config.optimizeDeps ??= {};
+    config.optimizeDeps.include = [
+      ...(config.optimizeDeps.include ?? []),
+      'react-compiler-runtime',
+    ];
 
     config.build ??= {};
     config.build.rolldownOptions ??= {};

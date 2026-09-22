@@ -43,3 +43,5 @@ __screenshots__
 # Throwaway scripts written while investigating something — a Playwright probe,
 # a one-off scanner. `git add -A` will otherwise sweep them into a commit.
 .tmp-*
+
+dist-uncompiled

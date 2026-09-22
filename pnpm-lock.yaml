@@ -77,6 +77,9 @@ importers:
       react-aria:
         specifier: ^3.45.0
         version: 3.45.0(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+      react-compiler-runtime:
+        specifier: 1.0.0
+        version: 1.0.0(react@19.1.1)
       react-focus-lock:
         specifier: ^2.13.5
         version: 2.13.5(@types/react@19.1.10)(react@19.1.1)
@@ -270,9 +273,6 @@ importers:
       react:
         specifier: ^19.1.1
         version: 19.1.1
-      react-compiler-runtime:
-        specifier: 1.0.0
-        version: 1.0.0(react@19.1.1)
       react-dom:
         specifier: ^19.1.1
         version: 19.1.1(react@19.1.1)

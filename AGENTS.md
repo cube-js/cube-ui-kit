@@ -135,7 +135,7 @@ Bundled in `docs/glaze/` (same symlink/copy mechanism). Consult when working on 
 - **Accessibility:** `react-aria` + `react-stately`
 - **Icons:** `@tabler/icons-react` + custom icons in `src/icons/`
 - **Testing:** Vitest + React Testing Library + Chromatic
-- **Build:** tsdown (unbundled ESM, `es2022`)
+- **Build:** React Compiler → tsdown (unbundled ESM, `es2022`). See [`scripts/compiler/README.md`](scripts/compiler/README.md) for the shared transform, coverage baseline, and React 18/19 packaged-consumer tests. Review baseline changes explicitly; a successful build with known bailouts does not mean every function is optimized.
 - **Storybook:** v10 (`@storybook/react-vite`)
 - **React:** 18 and 19 supported
 
