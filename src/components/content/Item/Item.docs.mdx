@@ -78,6 +78,25 @@ These properties allow direct style application without using the `styles` prop:
 - **Color:** `color`, `fill`, `fade`, `image`
 - **Flow:** `flow`, `place`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gap`, `columnGap`, `rowGap`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`
 
+### Spacing Tokens
+
+`Item` lays its slots out on a grid with no gap, and `Label` drops its own inline padding whenever there is start or end content. A `prefix` or `suffix` therefore renders flush against the label by default, which is what most content wants — a checkbox, a kbd chip, a badge and a count are all boxes that already carry their own presence, and a gap on top of one reads as too much.
+
+A **bare glyph** is the case that needs spacing: it sits flush, while the same glyph in the `icon` slot looks spaced because that slot centres it inside a `$size`-wide square. Two tokens control it, both `0` by default:
+
+| Token         | Controls                                        |
+| ------------- | ----------------------------------------------- |
+| `$prefix-gap` | Space between the `Prefix` slot and the `Label` |
+| `$suffix-gap` | Space between the `Label` and the `Suffix` slot |
+
+```jsx
+<Item styles={{ '$prefix-gap': '1x' }} prefix={<MemberIcon />}>
+  Revenue
+</Item>
+```
+
+Set them on the item rather than overriding `Prefix` / `Suffix` padding directly — those slots carry state maps that drop the outer gutter next to an icon or an actions run, and a flat `padding` override silently replaces them.
+
 ### Modifiers
 
 The `mods` property accepts the following modifiers:

@@ -385,6 +385,18 @@ const ItemElement = tasty({
     '$inline-compensation': '.5x',
     '$min-inline-padding': '(1x - 1bw)',
 
+    // Gap between the `Prefix` / `Suffix` slots and the `Label`. Zero by
+    // default because most prefix and suffix content is a box that already
+    // carries its own presence — a checkbox, a kbd chip, a badge — and a gap
+    // on top of that reads as too much. A BARE GLYPH is the case that needs
+    // one: it sits flush against the label, where the same glyph in the `Icon`
+    // slot looks spaced because that slot centres it in a `$size` square.
+    //
+    // Set it at the call site for those:
+    //   <Item styles={{ '$prefix-gap': '1x' }} prefix={<MemberIcon />}>
+    '$prefix-gap': 0,
+    '$suffix-gap': 0,
+
     '$label-padding-left': {
       '': '$inline-padding',
       'has-start-content': '0',
@@ -472,32 +484,28 @@ const ItemElement = tasty({
     Prefix: {
       ...ADDITION_STYLES,
       gridArea: 'prefix',
-      // The grid supplies no gap, and `Label` drops its own left padding for any
-      // start content — including a prefix. Without a trailing padding here a
-      // prefix glyph renders flush against the label, while the same glyph in
-      // the `Icon` slot looks spaced because that slot is a `$size`-wide square
-      // that centres a smaller glyph. The leading padding is unchanged: the
-      // item's gutter, yielding to the icon slot when one is present.
+      // The trailing value is `$prefix-gap` (see the token above): the grid
+      // supplies no gap and `Label` drops its own left padding for any start
+      // content, so a bare prefix glyph would otherwise sit flush against the
+      // label. The leading value is the item's gutter, yielding to the icon
+      // slot when one is present.
       padding: {
-        '': '0 1x 0 $inline-padding',
-        'has-icon': '1x right',
+        '': '0 $prefix-gap 0 $inline-padding',
+        'has-icon': '$prefix-gap right',
       },
     },
 
     Suffix: {
       ...ADDITION_STYLES,
       gridArea: 'suffix',
-      // No leading padding here, deliberately — unlike `Prefix` above. A prefix
-      // is typically a bare glyph, so it needs the gap; suffix content is
-      // typically a box that already carries its own (a kbd chip, a badge,
-      // a count), and adding one on top double-spaces it.
+      // Mirror of `Prefix`: the leading value is `$suffix-gap`.
       padding: {
-        '': '$inline-padding right',
-        // Same reason — and the same restriction — as the minimum width above:
-        // a sibling run already carries `$side-padding` on both sides, so the
-        // suffix must not add the inline padding on top of it, exactly as it
-        // does not next to a right icon.
-        'has-right-icon | (has-actions & inside-wrapper)': 0,
+        '': '0 $inline-padding 0 $suffix-gap',
+        // The TRAILING padding only. Same reason — and the same restriction —
+        // as the minimum width above: a sibling run already carries
+        // `$side-padding` on both sides, so the suffix must not add the inline
+        // padding on top of it, exactly as it does not next to a right icon.
+        'has-right-icon | (has-actions & inside-wrapper)': '$suffix-gap left',
       },
     },
 
