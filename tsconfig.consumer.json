@@ -20,5 +20,5 @@
       "@cube-dev/ui-kit": ["./dist/index.d.ts"]
     }
   },
-  "include": ["typecheck/consumer/**/*.tsx"]
+  "include": ["typecheck/consumer/**/*.tsx", "package-tests/consumer.tsx"]
 }

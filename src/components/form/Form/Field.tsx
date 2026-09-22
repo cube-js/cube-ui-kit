@@ -121,6 +121,9 @@ interface CubeReplaceFieldProps<T extends FieldTypes>
 }
 
 export function Field<T extends FieldTypes>(props: CubeFieldProps<T>) {
+  'use no memo';
+  // Legacy form state is mutable; preserve its render-time reads until migration.
+
   const allProps: CubeFullFieldProps<T> = useValidationProps(
     useFormProps(props),
   );

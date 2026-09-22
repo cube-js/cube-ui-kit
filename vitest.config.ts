@@ -33,6 +33,8 @@ export default defineConfig({
     exclude: [
       '**/node_modules/**',
       '**/dist/**',
+      '**/dist-uncompiled/**',
+      '**/package-tests/**',
       '**/.claude/worktrees/**',
       '**/*.browser.test.{ts,tsx}',
     ],

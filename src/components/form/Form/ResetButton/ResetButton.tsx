@@ -24,6 +24,9 @@ function LegacyResetButton(
   },
   ref: FocusableRef<HTMLElement>,
 ) {
+  'use no memo';
+  // Legacy form state is mutable; preserve its render-time reads until migration.
+
   const providerProps = useProviderProps({} as CubeButtonProps);
 
   props = useFormProps(props);

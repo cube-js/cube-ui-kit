@@ -73,6 +73,9 @@ export function DialogForm<T extends FieldTypes = FieldTypes>(
 }
 
 function LegacyDialogForm<T extends FieldTypes>(props: CubeDialogFormProps<T>) {
+  'use no memo';
+  // Legacy form state is mutable; preserve its render-time reads until migration.
+
   let {
     qa,
     name,

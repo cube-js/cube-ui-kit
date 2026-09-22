@@ -1,4 +1,4 @@
-import { renderWithRoot, screen, userEvent, waitFor } from '../../../test';
+import { act, renderWithRoot, screen, userEvent, waitFor } from '../../../test';
 
 import { DataTable } from './DataTable';
 
@@ -689,7 +689,9 @@ describe('DataTable', () => {
           },
         },
       });
-      cell(0, 'region').dispatchEvent(event);
+      await act(async () => {
+        cell(0, 'region').dispatchEvent(event);
+      });
 
       // Rows by newline, cells by tab — what a spreadsheet pastes as a grid.
       expect(written['text/plain']).toBe('eu-west-1\t30\nus-east-1\t10');

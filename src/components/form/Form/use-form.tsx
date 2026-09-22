@@ -530,6 +530,9 @@ export function useForm<TSourceType extends FieldTypes>(
     onValuesChange?: CubeFormInstance<TSourceType>['onValuesChange'];
   } = {},
 ): [CubeFormInstance<TSourceType>] {
+  'use no memo';
+  // Legacy form state is mutable; preserve its render-time reads until migration.
+
   const { onSubmit, onValuesChange } = options;
 
   if (isModernFormController(form)) {
