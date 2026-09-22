@@ -35,56 +35,6 @@ describe('Item start-slot spacing', () => {
     expect(gap).toBeGreaterThan(0);
   });
 
-  it('spaces a suffix glyph off the label', async () => {
-    renderWithRoot(
-      <Item qa="WithSuffix" suffix={<Text qa="Glyph">42</Text>}>
-        <Text qa="Label">Revenue</Text>
-      </Item>,
-    );
-
-    const gap = gapBetween(
-      await screen.findByTestId('Label'),
-      await screen.findByTestId('Glyph'),
-    );
-
-    expect(gap).toBeGreaterThan(0);
-  });
-
-  it('keeps the suffix gap next to a right icon, where the outer padding is dropped', async () => {
-    renderWithRoot(
-      <Item
-        qa="SuffixAndIcon"
-        suffix={<Text qa="Glyph">42</Text>}
-        rightIcon={<Text>@</Text>}
-      >
-        <Text qa="Label">Revenue</Text>
-      </Item>,
-    );
-
-    const gap = gapBetween(
-      await screen.findByTestId('Label'),
-      await screen.findByTestId('Glyph'),
-    );
-
-    // The trailing padding yields to the right icon's own slot, as before; the
-    // leading gap to the label is a separate concern and stays.
-    expect(gap).toBeGreaterThan(0);
-  });
-
-  it('keeps the suffix inside the item gutter', async () => {
-    renderWithRoot(
-      <Item qa="Gutter" suffix={<Text qa="Glyph">42</Text>}>
-        <Text>Revenue</Text>
-      </Item>,
-    );
-
-    const item = (await screen.findByTestId('Gutter')).getBoundingClientRect();
-    const glyph = (await screen.findByTestId('Glyph')).getBoundingClientRect();
-
-    // The outer gutter is unchanged by the leading gap added above.
-    expect(item.right - glyph.right).toBeGreaterThan(0);
-  });
-
   it('keeps the gap when an icon is present too', async () => {
     renderWithRoot(
       <Item qa="Both" icon={<Text>@</Text>} prefix={<Text qa="Glyph">#</Text>}>

@@ -44,6 +44,26 @@ describe.each([
     expect(root.getBoundingClientRect().width).toBeCloseTo(400, 0);
   });
 
+  it('lets a style prop override the styles prop, as elsewhere in the kit', async () => {
+    // `extractStyles` folds `styles` in first and lets the individual style
+    // props override it. Re-applying `styles` on top of the extracted object
+    // inverts that and makes these three disagree with every other component.
+    renderWithRoot(
+      <div style={{ width: 400 }}>
+        <Field
+          aria-label={name}
+          qa="Field"
+          width="100%"
+          styles={{ width: '50%' }}
+        />
+      </div>,
+    );
+
+    const root = await screen.findByTestId('Field');
+
+    expect(root.getBoundingClientRect().width).toBeCloseTo(400, 0);
+  });
+
   it('keeps wrapperStyles winning over both', async () => {
     renderWithRoot(
       <div style={{ width: 400 }}>
