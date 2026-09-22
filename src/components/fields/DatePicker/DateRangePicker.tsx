@@ -69,7 +69,15 @@ function DateRangePicker<T extends DateValue>(
   });
   props = Object.assign({}, DEFAULT_DATE_PROPS, props);
 
-  let styles = extractStyles(props, CONTAINER_STYLES);
+  // The public type declares `ContainerStyleProps` and `styles`, so both have to
+  // reach the root — before this they were extracted and dropped, which made
+  // `width="100%"` type-check and do nothing. `wrapperStyles` stays the most
+  // specific of the three and keeps winning.
+  let styles: Styles = {
+    ...extractStyles(props, CONTAINER_STYLES),
+    ...props.styles,
+    ...props.wrapperStyles,
+  };
 
   let {
     qa,
@@ -135,7 +143,7 @@ function DateRangePicker<T extends DateValue>(
       ref={targetRef}
       qa={qa || 'DateRangePicker'}
       inputType="daterangepicker"
-      styles={props.wrapperStyles}
+      styles={styles}
       disableFocusRing={isFocusedButton}
       isDisabled={isDisabled}
       isInvalid={isInvalid}

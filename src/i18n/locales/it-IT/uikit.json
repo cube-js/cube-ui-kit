@@ -47,9 +47,16 @@
     "customValue": "Valore personalizzato",
     "filteredItems": "Elementi filtrati"
   },
+  "filterPicker": {
+    "clearValue": "Cancella valore"
+  },
   "picker": {
     "all": "Tutti",
-    "pickerAriaLabel": "Selettore"
+    "pickerAriaLabel": "Selettore",
+    "clearValue": "Cancella valore"
+  },
+  "select": {
+    "clearValue": "Cancella valore"
   },
   "comboBox": {
     "clearValue": "Cancella valore",

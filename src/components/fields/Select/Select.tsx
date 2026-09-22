@@ -42,6 +42,7 @@ import { Section as BaseSection, useSelectState } from 'react-stately';
 import { CubeTooltipProviderProps } from 'src/components/overlays/Tooltip/TooltipProvider';
 
 import { useEvent } from '../../../_internal';
+import { useI18n } from '../../../i18n';
 import { CloseIcon } from '../../../icons/CloseIcon';
 import { DirectionIcon } from '../../../icons/DirectionIcon';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
@@ -252,6 +253,8 @@ export interface CubeSelectBaseProps<T>
   theme?: 'default' | 'special';
   /** Whether the select is clearable using a clear button in the rightIcon slot */
   isClearable?: boolean;
+  /** Accessible name for the built-in clear button. Defaults to a localized "Clear value". */
+  clearLabel?: string;
   /** Callback called when the clear button is pressed */
   onClear?: () => void;
   /**
@@ -337,10 +340,12 @@ function Select<T extends object>(
     labelSuffix,
     suffixPosition = 'before',
     isClearable,
+    clearLabel,
     onOpenChange,
     form,
     ...otherProps
   } = props;
+  const { t } = useI18n();
   let state = useSelectState(props);
 
   // Generate a unique ID for this select instance
@@ -511,6 +516,10 @@ function Select<T extends object>(
             icon={<CloseIcon />}
             size={size}
             qa="SelectClearButton"
+            // `ItemAction` derives its accessible name from `aria-label` or a
+            // string `tooltip` and warns for neither, so an icon-only clear
+            // button without this reaches a screen reader unnamed.
+            aria-label={clearLabel ?? t('select.clearValue', 'Clear value')}
             // No explicit `type`/`theme`: the default `current` type paints
             // from the trigger's own inherited text color, so the button
             // matches whatever the field is showing instead of one palette.

@@ -472,9 +472,15 @@ const ItemElement = tasty({
     Prefix: {
       ...ADDITION_STYLES,
       gridArea: 'prefix',
+      // The grid supplies no gap, and `Label` drops its own left padding for any
+      // start content — including a prefix. Without a trailing padding here a
+      // prefix glyph renders flush against the label, while the same glyph in
+      // the `Icon` slot looks spaced because that slot is a `$size`-wide square
+      // that centres a smaller glyph. The leading padding is unchanged: the
+      // item's gutter, yielding to the icon slot when one is present.
       padding: {
-        '': '$inline-padding left',
-        'has-icon': 0,
+        '': '0 1x 0 $inline-padding',
+        'has-icon': '1x right',
       },
     },
 

@@ -27,7 +27,6 @@ import {
   WithNullableSelected,
 } from '../../../utils/react/nullableValue';
 import { extractStyles } from '../../../utils/styles';
-import { Text } from '../../content/Text';
 import {
   getValidationMods,
   INLINE_LABEL_STYLES,
@@ -260,9 +259,27 @@ function Checkbox(
   );
 
   const checkboxField = (
-    <CheckboxWrapperElement isHidden={isHidden} mods={mods}>
+    // `styles` is forwarded here as well as in the in-group branch below —
+    // it used to be extracted from props and then dropped on this path, so
+    // `<Checkbox styles={{ … }}>` outside a group was a silent no-op.
+    <CheckboxWrapperElement styles={styles} isHidden={isHidden} mods={mods}>
       {checkbox}
-      {children && <Text nowrap>{children}</Text>}
+      {children ? (
+        // Same element and preset as the in-group branch. This path used to
+        // force children through `<Text nowrap>`: `white-space: nowrap`
+        // inherits, so a label longer than a few words — or any custom node
+        // with two lines in it — could not wrap at all, and the label also
+        // missed the preset a grouped one picks up.
+        <Element
+          styles={INLINE_LABEL_STYLES}
+          mods={{
+            ...getValidationMods({ isInvalid, isValid }),
+            disabled: isDisabled,
+          }}
+        >
+          {children}
+        </Element>
+      ) : null}
     </CheckboxWrapperElement>
   );
 

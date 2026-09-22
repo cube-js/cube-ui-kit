@@ -269,7 +269,7 @@ module.exports = [
     //
     // Note when checking locally: `size-limit` bundles the built `./dist`, it
     // does not build. Run `pnpm build` first or you will measure a stale bundle.
-    limit: '526kB',
+    limit: '527kB',
   },
   {
     name: 'Tree shaking (just a Button)',

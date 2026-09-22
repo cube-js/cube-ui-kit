@@ -420,3 +420,133 @@ describe('<CommandTextArea />', () => {
     expect(getByRole('combobox')).toHaveValue('Hello there');
   });
 });
+
+describe('CommandTextArea consumer contracts', () => {
+  /**
+   * Without the range, the only way to learn where a pick landed is to diff the
+   * new value against the previous one and search for the inserted text — which
+   * cannot tell two occurrences apart when one option's text is a prefix of
+   * another's. `commit` computes the range to place the caret; these assert it
+   * is reported rather than discarded.
+   */
+  it('reports where the pick was inserted', async () => {
+    const onCommand = vi.fn();
+    const { getByRole, queryByRole } = renderWithRoot(
+      <CommandTextArea label="Message" onCommand={onCommand}>
+        {commandItems}
+      </CommandTextArea>,
+    );
+
+    const input = getByRole('combobox') as HTMLTextAreaElement;
+
+    await userEvent.type(input, '/cl');
+    await waitFor(() => expect(queryByRole('listbox')).toBeInTheDocument());
+    await waitFor(() =>
+      expect(input).toHaveAttribute(
+        'aria-activedescendant',
+        'ListBoxItem-/clear',
+      ),
+    );
+    await userEvent.keyboard('{Enter}');
+
+    await waitFor(() => expect(input.value).toBe('/clear '));
+
+    const [, item] = onCommand.mock.calls.at(-1)!;
+
+    expect(item.start).toBe(0);
+    // `end` excludes the trailing space that `insertSpaceAfter` adds.
+    expect(item.end).toBe('/clear'.length);
+    expect(input.value.slice(item.start, item.end)).toBe('/clear');
+  });
+
+  it('reports a range that is correct after leading text', async () => {
+    const onCommand = vi.fn();
+    const { getByRole, queryByRole } = renderWithRoot(
+      <CommandTextArea
+        label="Message"
+        triggers={[{ char: '/', atLineStart: false }]}
+        onCommand={onCommand}
+      >
+        {commandItems}
+      </CommandTextArea>,
+    );
+
+    const input = getByRole('combobox') as HTMLTextAreaElement;
+
+    await userEvent.type(input, 'run /cl');
+    await waitFor(() => expect(queryByRole('listbox')).toBeInTheDocument());
+    await waitFor(() =>
+      expect(input).toHaveAttribute(
+        'aria-activedescendant',
+        'ListBoxItem-/clear',
+      ),
+    );
+    await userEvent.keyboard('{Enter}');
+
+    await waitFor(() => expect(input.value).toBe('run /clear '));
+
+    const [, item] = onCommand.mock.calls.at(-1)!;
+
+    expect(item.start).toBe('run '.length);
+    expect(input.value.slice(item.start, item.end)).toBe('/clear');
+  });
+
+  /**
+   * A consumer with its own `Enter` behaviour has to tell "pick the focused
+   * option" from "submit". Its `onKeyDown` runs first (by design), so it needs
+   * the open state from somewhere other than the event — previously only
+   * `aria-expanded` on the DOM, which is not a contract.
+   */
+  it('reports the popover open state', async () => {
+    const onOpenChange = vi.fn();
+    const { getByRole, queryByRole } = renderWithRoot(
+      <CommandTextArea label="Message" onOpenChange={onOpenChange}>
+        {commandItems}
+      </CommandTextArea>,
+    );
+
+    const input = getByRole('combobox') as HTMLTextAreaElement;
+
+    // Mounting closed is not a change, so nothing is reported yet.
+    expect(onOpenChange).not.toHaveBeenCalled();
+
+    await userEvent.type(input, '/cl');
+    await waitFor(() => expect(queryByRole('listbox')).toBeInTheDocument());
+    await waitFor(() => expect(onOpenChange).toHaveBeenLastCalledWith(true));
+
+    await userEvent.keyboard('{Escape}');
+    await waitFor(() => expect(queryByRole('listbox')).not.toBeInTheDocument());
+    await waitFor(() => expect(onOpenChange).toHaveBeenLastCalledWith(false));
+  });
+
+  it('reports the active trigger token', async () => {
+    const onActiveTokenChange = vi.fn();
+    const { getByRole } = renderWithRoot(
+      <CommandTextArea
+        label="Message"
+        onActiveTokenChange={onActiveTokenChange}
+      >
+        {commandItems}
+      </CommandTextArea>,
+    );
+
+    const input = getByRole('combobox') as HTMLTextAreaElement;
+
+    expect(onActiveTokenChange).not.toHaveBeenCalled();
+
+    await userEvent.type(input, '/cl');
+
+    await waitFor(() => {
+      const token = onActiveTokenChange.mock.calls.at(-1)?.[0];
+
+      expect(token).toMatchObject({ token: '/cl', start: 0, end: 3 });
+      expect(token.trigger.char).toBe('/');
+    });
+
+    // Deleting back past the trigger clears the token.
+    await userEvent.clear(input);
+    await waitFor(() =>
+      expect(onActiveTokenChange).toHaveBeenLastCalledWith(null),
+    );
+  });
+});

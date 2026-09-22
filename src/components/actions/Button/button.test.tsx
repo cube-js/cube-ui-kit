@@ -198,3 +198,74 @@ describe('<Button />', () => {
     });
   });
 });
+
+describe('<Button /> aria-pressed', () => {
+  /**
+   * `isSelected` used to set `data-selected` and nothing else, so every Cloud
+   * call site using it for a real toggle hand-set `aria-pressed` alongside —
+   * while Button.docs.mdx said the component managed it. These pin the
+   * behaviour the docs describe, including the two cases it must NOT apply to.
+   */
+  it('derives aria-pressed from isSelected', () => {
+    render(
+      <Button isSelected data-qa="On">
+        Hi
+      </Button>,
+    );
+
+    expect(screen.getByTestId('On')).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('reports an unpressed toggle rather than omitting the state', () => {
+    render(
+      <Button isSelected={false} data-qa="Off">
+        Hi
+      </Button>,
+    );
+
+    // `isSelected={false}` says "a toggle, currently off", which a screen
+    // reader can only announce if the attribute is present.
+    expect(screen.getByTestId('Off')).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('adds nothing when isSelected is not used', () => {
+    render(<Button data-qa="Plain">Hi</Button>);
+
+    expect(screen.getByTestId('Plain')).not.toHaveAttribute('aria-pressed');
+  });
+
+  it('lets an explicit aria-pressed win', () => {
+    render(
+      <Button isSelected aria-pressed={false} data-qa="Explicit">
+        Hi
+      </Button>,
+    );
+
+    expect(screen.getByTestId('Explicit')).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    );
+  });
+
+  it('skips a link, where aria-pressed is not valid', () => {
+    render(
+      <Button isSelected to="/somewhere" data-qa="Link">
+        Hi
+      </Button>,
+    );
+
+    expect(screen.getByTestId('Link')).not.toHaveAttribute('aria-pressed');
+  });
+
+  it('skips a button the call site has given another role', () => {
+    // A selected tab or option needs `aria-selected` / `aria-current`, and only
+    // the call site knows which.
+    render(
+      <Button isSelected role="tab" data-qa="Tab">
+        Hi
+      </Button>,
+    );
+
+    expect(screen.getByTestId('Tab')).not.toHaveAttribute('aria-pressed');
+  });
+});

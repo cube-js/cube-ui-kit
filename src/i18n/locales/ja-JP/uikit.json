@@ -47,9 +47,16 @@
     "customValue": "カスタム値",
     "filteredItems": "フィルターされた項目"
   },
+  "filterPicker": {
+    "clearValue": "値をクリア"
+  },
   "picker": {
     "all": "すべて",
-    "pickerAriaLabel": "ピッカー"
+    "pickerAriaLabel": "ピッカー",
+    "clearValue": "値をクリア"
+  },
+  "select": {
+    "clearValue": "値をクリア"
   },
   "comboBox": {
     "clearValue": "値をクリア",

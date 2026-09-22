@@ -629,10 +629,29 @@ export const Button = forwardRef(function Button(
     const effectiveType =
       theme === 'special' && type === 'outline-2' ? 'outline' : type;
 
+    // `isSelected` is a toggle state, so mirror it into `aria-pressed` — the
+    // behaviour Button.docs.mdx has always described. An explicit
+    // `aria-pressed` from the call site still wins.
+    //
+    // Skipped when the button renders as a link (`to`), where `aria-pressed` is
+    // not a valid attribute, and when the call site sets its own `role` — a
+    // button acting as a tab or an option needs `aria-selected`/`aria-current`
+    // instead, and only the call site knows which.
+    //
+    // Applied *after* the spread: react-aria's `useButton` always returns an
+    // `aria-pressed` key (undefined when the caller passed none), so anything
+    // set before the spread is overwritten by it.
+    const ariaPressed =
+      allProps['aria-pressed'] ??
+      (isSelected != null && actionProps.as !== 'a' && allProps.role == null
+        ? isSelected
+        : undefined);
+
     return (
       <ButtonElement
         download={download}
         {...mergeProps(actionProps, tooltipTriggerProps || {}, inertProps)}
+        aria-pressed={ariaPressed}
         ref={handleRef}
         mods={{ ...actionProps.mods, ...modifiers }}
         disabled={isNativelyDisabled}

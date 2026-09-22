@@ -47,9 +47,16 @@
     "customValue": "Anpassat värde",
     "filteredItems": "Filtrerade objekt"
   },
+  "filterPicker": {
+    "clearValue": "Rensa värde"
+  },
   "picker": {
     "all": "Alla",
-    "pickerAriaLabel": "Väljare"
+    "pickerAriaLabel": "Väljare",
+    "clearValue": "Rensa värde"
+  },
+  "select": {
+    "clearValue": "Rensa värde"
   },
   "comboBox": {
     "clearValue": "Rensa värde",

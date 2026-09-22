@@ -47,9 +47,16 @@
     "customValue": "Benutzerdefinierter Wert",
     "filteredItems": "Gefilterte Einträge"
   },
+  "filterPicker": {
+    "clearValue": "Wert löschen"
+  },
   "picker": {
     "all": "Alle",
-    "pickerAriaLabel": "Auswahl"
+    "pickerAriaLabel": "Auswahl",
+    "clearValue": "Wert löschen"
+  },
+  "select": {
+    "clearValue": "Wert löschen"
   },
   "comboBox": {
     "clearValue": "Wert löschen",

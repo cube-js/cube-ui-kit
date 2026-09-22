@@ -33,7 +33,9 @@ Choose a different component when the interaction has another outcome:
 - **`items`** `Iterable<T>` — Data-driven option source (alternative to JSX children).
 - **`children`** `ReactNode | ((item) => ReactElement)` — Static items or a render function (same shape as `ComboBox` / `ListBox`).
 - **`filter`** `(textValue, query) => boolean | false` — Custom filter. Pass `false` to disable internal filtering (e.g. server-side).
-- **`onCommand`** `(key, item) => void` — Fired when the user picks a command. The option's `textValue` is inserted into the textarea regardless.
+- **`onCommand`** `(key, item) => void` — Fired when the user picks a command. The option's `textValue` is inserted into the textarea regardless. `item.start` / `item.end` locate the insertion in the value passed to `onChange`, so a consumer can anchor its own record to the pick instead of searching the new value for the inserted text.
+- **`onOpenChange`** `(isOpen: boolean) => void` — Fired when the suggestion popover opens or closes. Use it when the field needs its own `Enter` behaviour: `onKeyDown` runs before the component's own handling, so this is how you tell "pick the focused option" from "submit".
+- **`onActiveTokenChange`** `(token: ActiveToken | null) => void` — Fired when the active trigger token changes, with the component's own caret-aware scan result. `null` once the caret leaves a token.
 - **`insertSpaceAfter`** `boolean` (default: `true`) — Insert a trailing space after the chosen command.
 - **`disabledKeys`** `Iterable<Key>` — Keys of disabled options.
 - **`direction`** `'top' | 'bottom'` (default: `'top'`) — Popover placement. Chat inputs usually want `top`.

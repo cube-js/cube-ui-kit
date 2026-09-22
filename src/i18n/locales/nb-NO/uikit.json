@@ -47,9 +47,16 @@
     "customValue": "Egendefinert verdi",
     "filteredItems": "Filtrerte elementer"
   },
+  "filterPicker": {
+    "clearValue": "Tøm verdi"
+  },
   "picker": {
     "all": "Alle",
-    "pickerAriaLabel": "Velger"
+    "pickerAriaLabel": "Velger",
+    "clearValue": "Tøm verdi"
+  },
+  "select": {
+    "clearValue": "Tøm verdi"
   },
   "comboBox": {
     "clearValue": "Tøm verdi",
