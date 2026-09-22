@@ -38,6 +38,8 @@ Reach for a `RadioGroup` or `Picker` of swatches instead when the choice is limi
 - **`defaultOpen`** `boolean` (default: `false`) — Whether the popover is open initially
 - **`onOpenChange`** `(isOpen: boolean) => void` — Fired when the popover opens or closes
 - **`shouldFlip`** `boolean` (default: `true`) — Whether the popover may flip to the other side of the input
+- **`placement`** `Placement` (default: `bottom right`) — Placement of the popover relative to the anchor, as a React Aria placement string (e.g. `'bottom start'`, `'top end'`)
+- **`targetRef`** `RefObject<HTMLElement | null>` — The element the popover visually attaches to. Defaults to the field wrapper; use it to anchor the popover to an outer container so sibling controls' popovers line up
 - **`onFocus`** `(event: FocusEvent) => void` — Fired when the text input receives focus
 - **`onBlur`** `(event: FocusEvent) => void` — Fired when the text input loses focus
 

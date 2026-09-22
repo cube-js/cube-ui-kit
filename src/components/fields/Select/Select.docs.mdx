@@ -48,6 +48,8 @@ Choose a different component when the interaction has another shape:
 - **`clearLabel`** `string` — Accessible name for the built-in clear button. Defaults to a localized "Clear value".
 - **`actions`** `ReactNode` — Custom actions rendered inside the trigger, to the left of the built-in clear button and dropdown caret
 - **`shouldFlip`** `boolean` (default: `true`) — Whether dropdown should flip to fit in viewport
+- **`placement`** `Placement` (default: `${direction} end`) — Placement of the popover relative to the anchor, as a React Aria placement string (e.g. `'bottom start'`, `'top end'`)
+- **`targetRef`** `RefObject<HTMLElement | null>` — The element the popover visually attaches to. Defaults to the trigger; use it to anchor the popover to an outer container so sibling controls' popovers line up
 - **`overlayOffset`** `number` (default: `8`) — Distance between select and dropdown in pixels
 - **`items`** `Iterable<T>` — Item objects used when rendering dynamic collections
 - **`disabledKeys`** `Iterable<Key>` — Keys of items that are disabled

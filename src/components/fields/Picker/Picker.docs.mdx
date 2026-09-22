@@ -69,6 +69,8 @@ Choose a different component when the interaction has another shape:
 - **`triggerTooltip`** `string | TooltipProps` — Tooltip for the trigger button (separate from field tooltip)
 - **`triggerDescription`** `string` — Description for the trigger button (separate from field description)
 - **`shouldFlip`** `boolean` — Whether to flip the popover placement when it overflows
+- **`placement`** `Placement` (default: `bottom start`) — Placement of the popover relative to the anchor, as a React Aria placement string (e.g. `'bottom start'`, `'top end'`)
+- **`targetRef`** `RefObject<HTMLElement | null>` — The element the popover visually attaches to. Defaults to the trigger; use it to anchor the popover to an outer container so sibling controls' popovers line up
 - **`containerPadding`** `number` — Minimum padding between the popover and viewport edges
 - **`onSelectionChange`** `(keys: Key | Key[] | 'all' | null) => void` — Callback when selection changes
 - **`onClear`** `() => void` — Callback called when the clear button is pressed

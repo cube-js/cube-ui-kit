@@ -6,10 +6,11 @@ import {
   Styles,
   tasty,
 } from '@tenphi/tasty';
-import { forwardRef, useId, useRef } from 'react';
+import { forwardRef, RefObject, useId, useRef } from 'react';
 import {
   AriaDatePickerProps,
   DateValue,
+  Placement,
   useDatePicker,
   useFocusRing,
   useLocale,
@@ -62,6 +63,21 @@ export interface CubePeriodPickerProps<T extends DateValue = DateValue>
   styles?: Styles;
   size?: 'small' | 'medium' | 'large' | (string & {});
   shouldFlip?: boolean;
+  /**
+   * The ref of the element the popover should visually attach itself to.
+   * Defaults to the field wrapper.
+   *
+   * Forwarded to `DialogTrigger`, so the anchor also becomes what outside-click
+   * dismissal treats as the trigger.
+   */
+  targetRef?: RefObject<HTMLElement | null>;
+  /**
+   * Placement of the popover relative to the anchor.
+   * Accepts React Aria's `Placement` strings (e.g. `'bottom start'`,
+   * `'top start'`, `'right top'`, `'left top'`).
+   * @default 'bottom right'
+   */
+  placement?: Placement;
   /** Placeholder shown when no value is selected. */
   placeholder?: string;
   /** Override how the selected value is rendered as text. */
@@ -177,8 +193,8 @@ function PeriodPicker<T extends DateValue>(
           hideArrow
           type="popover"
           mobileType="tray"
-          placement="bottom right"
-          targetRef={targetRef}
+          placement={props.placement ?? 'bottom right'}
+          targetRef={props.targetRef ?? targetRef}
           isOpen={isOpen}
           shouldFlip={props.shouldFlip}
           onOpenChange={setOpen}
