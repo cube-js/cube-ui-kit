@@ -720,18 +720,22 @@ This component supports all [Field properties](/docs/getting-started-field-prope
 ### Form Example
 
 ```jsx
-<Form>
-  <ComboBox
-    name="country"
-    label="Country"
-    isRequired
-    validationBehavior="native"
-  >
-    <ComboBox.Item key="us">United States</ComboBox.Item>
-    <ComboBox.Item key="uk">United Kingdom</ComboBox.Item>
-    <ComboBox.Item key="ca">Canada</ComboBox.Item>
-  </ComboBox>
-</Form>
+function Example() {
+  const form = Form.useController();
+  return (
+    <Form form={form}>
+      <ComboBox
+        name="country"
+        label="Country"
+        isRequired
+      >
+        <ComboBox.Item key="us">United States</ComboBox.Item>
+        <ComboBox.Item key="uk">United Kingdom</ComboBox.Item>
+        <ComboBox.Item key="ca">Canada</ComboBox.Item>
+      </ComboBox>
+    </Form>
+  );
+}
 ```
 
 ## Suggested Improvements

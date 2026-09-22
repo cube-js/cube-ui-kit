@@ -76,7 +76,6 @@ export function ModernUsesSeparateAPIs() {
   const root = <Form form={modern} />;
 
   const dialog = (
-    // @ts-expect-error DialogForm is legacy-only until it gets a backend-aware implementation
     <DialogForm form={modern} title="Settings" onSubmit={() => {}}>
       <TextInput name="name" label="Name" />
     </DialogForm>

@@ -1,61 +1,63 @@
-import { Meta, Canvas, Story } from '@storybook/addon-docs/blocks';
+import { Meta, Canvas } from '@storybook/addon-docs/blocks';
 import * as FormStories from './Form.stories';
 
 <Meta of={FormStories} />
 
 # Form
 
-Forms allow users to enter data that can be submitted while providing alignment and styling for form fields. The Form component provides structure, validation, and state management for user input through a collection of input components with built-in field support.
+Form provides field binding, validation, submission, and shared layout. UI Kit ships **two implementations behind the same component**:
 
-## Choose the form API
+| Implementation | How to select it | When to use it |
+| --- | --- | --- |
+| **Modern (recommended)** | `const form = Form.useController<Model>()`, then `<Form form={form}>` | New forms and incremental migrations; typed models, narrow subscriptions, cancellable validation/submission, and React Compiler verification |
+| Legacy | `Form.useForm()` or a root without a modern controller | Existing forms that have not been migrated |
 
-For new modern forms, follow [Modern Form](/docs/forms-modernform--docs): typed bindings, loading server data, conditional sections, validation, subscriptions, and submission. The guide recommends one starting point for each case and explains when the alternatives are useful.
-
-```tsx
-function EmailForm() {
-  const form = Form.useController<{ email: string | null }>({
-    defaultValues: { email: null },
-  });
-
-  return (
-    <Form form={form} onSubmit={(values, { signal }) => save(values, signal)}>
-      <TextInput name="email" label="Email" isRequired />
-      <Form.SubmitError />
-      <Form.Submit>Save</Form.Submit>
-    </Form>
-  );
-}
-```
-
-`name` is sufficient to bind an input. Modern forms also accept `name={['user', 'email']}` for nested data; `field={form.field(path)}` is optional and adds model-aware type checking and validator inference.
-
-`Form.useForm()` and roots without a modern controller keep the legacy backend. Existing forms need no API changes when upgrading. Use the [migration checklist](https://github.com/cube-js/cube-ui-kit/blob/main/docs/modern-form-migration.md) before converting one; `DialogForm` and `Form.Item` still require legacy forms.
-
-**The reference and examples below describe the legacy backend.** Its instance methods, root `defaultValues`, and dot-separated paths do not apply to modern controllers. Shared layout and field presentation props work with both backends. See [Modern Form](/docs/forms-modernform--docs) for modern defaults and commands.
-
-## When to Use
-
-- When collecting user information or input data
-- When you need structured validation and error handling
-- When building login forms, registration forms, or data entry interfaces
-- When you need programmatic control over form state and submission
+All examples on this page use the modern API. Existing legacy forms continue to work. [FormInstance (legacy)](/docs/forms-forminstance--docs) and [Field (legacy)](/docs/forms-field--docs) document compatibility APIs. Follow the [migration checklist](https://github.com/cube-js/cube-ui-kit/blob/main/docs/modern-form-migration.md) when converting a form; changing the creation hook alone is not sufficient.
 
 ## Component
 
 <Canvas of={FormStories.Default} />
 
+## Start here
+
+```tsx
+import { Form, TextInput } from '@cube-dev/ui-kit';
+
+function EmailForm({ initialEmail, save }) {
+  const form = Form.useController<{ email: string | null }>({
+    defaultValues: { email: initialEmail },
+  });
+  return (
+    <Form form={form} onSubmit={(values, { signal }) => save(values, signal)}>
+      <TextInput name="email" label="Email" isRequired rules={[{ type: 'email' }]} />
+      <Form.SubmitError />
+      <Form.Submit>Save</Form.Submit>
+      <Form.Reset>Reset</Form.Reset>
+    </Form>
+  );
+}
+```
+
+Use `name` for ordinary bindings, including `name={['user', 'email']}` for nested data. Use an optional `field={form.field(path, options)}` descriptor for model-checked paths and inferred validator types. Modern strings are literal keys; dotted strings do not select nested data.
+
+The [Modern Form guide](/docs/forms-modernform--docs) is the implementation reference. It covers [API choices](/docs/forms-modernform--docs#pick-one-binding-and-one-owner-for-each-concern), [reactive reads](/docs/forms-modernform--docs#read-a-value-show-status-or-reveal-a-section), [server defaults](/docs/forms-modernform--docs#load-server-data-refresh-defaults-or-discard-edits), [validation](/docs/forms-modernform--docs#validate-simple-rules-sibling-fields-or-an-api-response), [conditional fields](/docs/forms-modernform--docs#hide-fields-use-nested-data-or-build-a-wizard), [submission](/docs/forms-modernform--docs#submit-display-server-errors-and-reset), and [custom controls](/docs/forms-modernform--docs#implement-a-reusable-custom-control).
+
 ## Properties
 
 ### Form-specific Properties
 
-- **`name`** `string` — Form name attribute
-- **`defaultValues`** `Partial<T>` — Default field values
-- **`onValuesChange`** `(data: T) => void` — Triggered when any field value changes
-- **`onSubmit`** `(data: T) => void | Promise<void>` — Triggered on successful form submission. When returning a promise, the form and submit button show loading state until resolved
-- **`onSubmitFailed`** `(error: any) => void` — Triggered when form submission fails
-- **`form`** `CubeFormInstance<T>` — Form instance created by `Form.useForm()`
-- **`labelWidth`** `Styles['width']` — Width of label area for side-positioned labels
-- **`orientation`** `'vertical' | 'horizontal'` (default: `vertical`) — Form layout orientation
+- **`form`** `FormController<T> | CubeFormInstance<T>` — Controller created by `Form.useController()` (recommended), or a legacy instance. Omitting it selects legacy behavior.
+- **`name`** `string` — Form name and prefix for generated field ids
+- **`onSubmit`** `(values: FormValues<T>, context: ModernSubmitContext) => void | Promise<void>` — Modern save callback after successful validation; context includes an `AbortSignal`
+- **`onSubmitFailed`** `(failure: ModernSubmitFailure) => void | Promise<void>` — Modern failure callback; inspect `status` for `'invalid'` or `'failed'`
+- **`onValuesChange`** `(values: FormValues<T>, change: FormChange) => void | Promise<void>` — Modern change callback with source, kind, and affected names
+- **`submitValues`** `'active' | 'all'` (default: `'active'`) — Modern native submission payload. Both modes validate active fields only.
+- **`onReset`** `(event: FormEvent<HTMLFormElement>) => void` — Modern native reset interception; `preventDefault()` cancels the reset
+- **`defaultValues`** `Partial<T>` — Legacy only. Modern defaults belong in the controller creation options; use explicit commands for later data.
+- **`labelWidth`** `Styles['width']` — Label-area width with side-positioned labels
+- **`orientation`** `'vertical' | 'horizontal'` (default: `'vertical'`) — Form layout
+
+Root callbacks override controller callbacks; omitted callbacks fall back to the latest committed hook callbacks. Keep each callback in one place. Values passed to modern callbacks are readonly and potentially incomplete; map them to your API request type where necessary.
 
 ### Inherited Form Properties
 
@@ -111,588 +113,65 @@ The `mods` property accepts the following modifiers:
 - **`has-split`** `boolean` — Applied when `labelPosition="split"`
 - **`horizontal`** `boolean` — Applied when `orientation="horizontal"`
 
-## Static Methods
-
-### Form.useForm
-
-```jsx
-const [form] = Form.useForm();
-```
-
-Creates a form instance for programmatic control. See [FormInstance documentation](/docs/forms-forminstance--docs) for detailed API.
-
-You can also pass options:
-
-```jsx
-const [form] = Form.useForm(undefined, undefined, {
-  onSubmit: async (data) => {
-    await apiCall(data);
-  },
-  onValuesChange: (data) => {
-    console.log('Changed:', data);
-  },
-});
-```
-
-### Form.Submit (SubmitButton)
-
-```jsx
-<Form.Submit>Submit</Form.Submit>
-```
-
-Specialized button that automatically handles form submission and loading states. When `onSubmit` returns a promise, the button shows a loading spinner until the promise resolves.
-
-### Form.Reset (ResetButton)
-
-```jsx
-<Form.Reset>Reset</Form.Reset>
-```
-
-Button that resets all form fields to their initial values.
-
-### Form.SubmitError
-
-```jsx
-<Form.SubmitError />
-```
-
-Component that displays submission errors returned from the `onSubmit` handler.
-
-### Form.Item (Field) - Deprecated
-
-```jsx
-<Form.Item name="email" label="Email">
-  <Input.Text />
-</Form.Item>
-```
-
-**Deprecated**: The Field wrapper is not recommended for regular use. Input components now have built-in field support, so you can pass field properties directly to them.
-
-The Field component should only be used when wrapping read-only content or custom components without built-in field support.
-
-## Built-in Field Support
-
-**All input components have built-in field support**, meaning you can pass field properties directly to them without needing a wrapper:
-
-```jsx
-// Recommended — direct field properties
-<Input.Text
-  name="email"
-  label="Email"
-  rules={[{ required: true, type: 'email' }]}
-  placeholder="Enter your email"
-/>
-
-// Deprecated — Field wrapper (still works but not recommended)
-<Field name="email" label="Email" rules={[{ required: true, type: 'email' }]}>
-  <Input.Text placeholder="Enter your email" />
-</Field>
-```
-
-### Field Properties for Input Components
-
-All input components within a Form accept these field-related properties:
-
-- **`name`** `string` — Field name for form data. Supports dot notation for nested objects (e.g. `"user.email"`)
-- **`label`** `ReactNode` — Field label text
-- **`description`** `ReactNode` — Help text displayed below the field
-- **`errorMessage`** `ReactNode` — Error message displayed when validation fails
-- **`rules`** `ValidationRule[]` — Validation rules array (see [Validation Rules](#validation-rules))
-- **`isRequired`** `boolean` — Whether the field is required. Marks the label, unlike a bare `required` rule — see [Necessity Indicators](/docs/getting-started-field-properties--docs#necessity-indicators)
-- **`isOptional`** `boolean` — Marks the label with an `(optional)` note. Presentational only
-- **`extra`** `ReactNode` — Additional content displayed next to the label
-- **`tooltip`** `ReactNode` — Tooltip content for the field label
-- **`labelSuffix`** `ReactNode` — Content appended after the label
-- **`isHidden`** `boolean` — Hides the field
-- **`validateTrigger`** `'onBlur' | 'onChange' | 'onSubmit'` — When to validate (overrides form-level setting)
-
-## Validation Rules
-
-The form uses an async rule-based validation system. Each rule is an object with one or more validators:
-
-### Built-in Validators
-
-- **`required`** `boolean` — Field must have a non-empty value
-- **`type`** `string` — Validates data type: `'string'`, `'number'`, `'boolean'`, `'email'`, `'url'`, `'integer'`, `'array'`, `'object'`, `'date'`, `'hex'`, `'regexp'`
-- **`pattern`** `RegExp` — Value must match the regex pattern
-- **`min`** `number` — Minimum length (for strings/arrays) or minimum value (for numbers)
-- **`max`** `number` — Maximum length (for strings/arrays) or maximum value (for numbers)
-- **`len`** `number` — Exact length (for strings/arrays) or exact value (for numbers)
-- **`enum`** `any[]` — Value must be one of the allowed values
-- **`whitespace`** `boolean` — String must not be only whitespace
-- **`validator`** `(rule, value) => Promise<void>` — Custom async validation function. Throw an `Error` to fail validation
-- **`transform`** `(value) => value` — Transform the value before validation
-- **`message`** `string` — Error message displayed when the rule fails
-
-### Rules Example
-
-```jsx
-<Input.Text
-  name="email"
-  label="Email"
-  rules={[
-    { required: true, message: 'Email is required' },
-    { type: 'email', message: 'Please enter a valid email' },
-  ]}
-/>
-
-<Input.Text
-  name="username"
-  label="Username"
-  rules={[
-    { required: true, message: 'Username is required' },
-    { min: 3, message: 'Must be at least 3 characters' },
-    { max: 20, message: 'Must be at most 20 characters' },
-    { pattern: /^[a-zA-Z0-9_]+$/, message: 'Only letters, numbers, and underscores' },
-  ]}
-/>
-
-<Input.Text
-  name="invite"
-  label="Invite Code"
-  rules={[
-    {
-      async validator(rule, value) {
-        const isValid = await checkInviteCode(value);
-        if (!isValid) {
-          throw new Error('Invalid invite code');
-        }
-      },
-    },
-  ]}
-/>
-```
-
-Rules can also be functions that receive the form instance, useful for cross-field validation:
-
-```jsx
-<Input.Password
-  name="confirmPassword"
-  label="Confirm Password"
-  rules={[
-    (form) => ({
-      async validator(rule, value) {
-        if (value !== form.getFieldValue('password')) {
-          throw new Error('Passwords do not match');
-        }
-      },
-    }),
-  ]}
-/>
-```
-
 ## Examples
 
-### Basic Form
+### Layout
 
-```jsx
-import { Form, Input, SubmitButton } from '@cube-dev/ui-kit';
-
-function BasicForm() {
-  function handleSubmit(data) {
-    console.log('Submitted:', data);
-  }
-
+```tsx
+function SearchForm() {
+  const form = Form.useController({ defaultValues: { query: '' } });
   return (
-    <Form onSubmit={handleSubmit}>
-      <Input.Text
-        name="email"
-        label="Email"
-        type="email"
-        rules={[
-          { required: true, message: 'Email is required' },
-          { type: 'email', message: 'Please enter a valid email' },
-        ]}
-        placeholder="Enter your email"
-      />
-
-      <Input.Password
-        name="password"
-        label="Password"
-        rules={[
-          { required: true, message: 'Password is required' },
-          { min: 6, message: 'Password must be at least 6 characters' },
-        ]}
-        placeholder="Enter your password"
-      />
-
-      <Form.SubmitError />
-      <SubmitButton>Submit</SubmitButton>
+    <Form form={form} orientation="horizontal" labelPosition="side">
+      <TextInput name="query" label="Query" />
+      <Form.Submit>Search</Form.Submit>
     </Form>
   );
 }
 ```
-
-### Login Form
-
-An example with async submission that shows loading state:
-
-```jsx
-import { Form, Field, SubmitButton, Input, SubmitError } from '@cube-dev/ui-kit';
-
-export function LoginForm() {
-  async function onSubmit(data) {
-    await Auth.login(data); // { email, password }
-  }
-
-  return (
-    <Form onSubmit={onSubmit} requiredMark={false}>
-      <Input.Text
-        name="email"
-        label="Email"
-        description="Your email"
-        type="email"
-        autoFocus
-        rules={[
-          { required: true, message: 'E-mail required' },
-          { type: 'email', message: 'Please enter a valid e-mail' },
-        ]}
-      />
-
-      <Input.Password
-        name="password"
-        label="Password"
-        rules={[{ required: true, message: 'Password required' }]}
-      />
-
-      <Form.SubmitError />
-      <SubmitButton>Submit</SubmitButton>
-    </Form>
-  );
-}
-```
-
-<Canvas of={FormStories.LoginForm} />
-
-### Horizontal Layout
 
 <Canvas of={FormStories.Horizontal} />
 
-```jsx
-<Form orientation="horizontal" labelPosition="side">
-  <Input.Text
-    name="email"
-    label="Email"
-    type="email"
-    size="small"
-    rules={[{ required: true, type: 'email' }]}
-    placeholder="Enter your email"
-  />
-  <Input.Password
-    name="password"
-    label="Password"
-    size="small"
-    rules={[{ required: true }]}
-    placeholder="Enter your password"
-  />
-  <SubmitButton size="small">Submit</SubmitButton>
-</Form>
+### Defaults and reset
+
+```tsx
+const form = Form.useController({ defaultValues: { email: 'user@example.com' } });
+// In an event handler, begin a new editing session with fetched values:
+form.reset({ values: { email: fetchedEmail } });
 ```
 
-### With Default Values
+Defaults initialize once. `adoptDefaultValues` can apply later API data while retaining user edits; `reset({ values })` replaces the baseline and current values. See the modern guide before choosing between them.
 
 <Canvas of={FormStories.WithDefaultValues} />
 
-```jsx
-<Form
-  defaultValues={{
-    email: 'user@example.com',
-    name: 'John Doe',
-  }}
-  onSubmit={handleSubmit}
->
-  <Input.Text name="email" label="Email" type="email" />
-  <Input.Text name="name" label="Name" />
-  <SubmitButton>Submit</SubmitButton>
+### Validation and save errors
+
+```tsx
+<Form form={form} onSubmit={save}>
+  <TextInput name="email" label="Email" isRequired />
+  <Form.SubmitError />
+  <Form.Submit>Save</Form.Submit>
 </Form>
 ```
 
-### Form with Validation
+A thrown/rejected save error appears through `Form.SubmitError`. Validation errors appear on their fields. Modern Submit remains enabled after validation errors by default; pass `disableOnInvalid` to opt into disabling it. Double submission is guarded while work is pending.
 
 <Canvas of={FormStories.WithValidationError} />
 
-### Complex Form with Different Input Types
+### Dialog forms
 
-```jsx
-<Form onSubmit={handleSubmit}>
-  <Input.Text
-    name="username"
-    label="Username"
-    rules={[{ required: true, min: 3 }]}
-    placeholder="Enter username"
-  />
+[DialogForm](/docs/overlays-dialogform--docs) accepts the same modern controller and handles closing after success. It also supports existing legacy callers.
 
-  <Input.Password
-    name="password"
-    label="Password"
-    rules={[{ required: true, min: 8 }]}
-  />
-
-  <Select
-    name="country"
-    label="Country"
-    rules={[{ required: true }]}
-    options={[
-      { value: 'us', label: 'United States' },
-      { value: 'uk', label: 'United Kingdom' },
-      { value: 'ca', label: 'Canada' },
-    ]}
-  />
-
-  <Checkbox
-    name="agree"
-    label="I agree to the terms and conditions"
-    rules={[{ required: true, message: 'You must agree to continue' }]}
-  />
-
-  <SubmitButton>Register</SubmitButton>
-</Form>
+```tsx
+<DialogForm form={form} title="Edit profile" onSubmit={save}>
+  <TextInput name="email" label="Email" />
+  <Form.SubmitError />
+</DialogForm>
 ```
 
-### Nested Field Names
+## React Compiler
 
-Use dot notation in field names to create nested data structures:
-
-```jsx
-<Form onSubmit={(data) => console.log(data)}>
-  <Input.Text name="user.firstName" label="First Name" />
-  <Input.Text name="user.lastName" label="Last Name" />
-  <Input.Text name="user.address.city" label="City" />
-
-  {/* Submits: { user: { firstName: '...', lastName: '...', address: { city: '...' } } } */}
-  <SubmitButton>Submit</SubmitButton>
-</Form>
-```
-
-### Programmatic Form Control
-
-```jsx
-function ControlledForm() {
-  const [form] = Form.useForm();
-
-  const handleReset = () => {
-    form.resetFields();
-  };
-
-  const handleFillDemo = () => {
-    form.setFieldsValue({
-      email: 'demo@example.com',
-      name: 'Demo User',
-    });
-  };
-
-  return (
-    <Form form={form} onSubmit={handleSubmit}>
-      <Input.Text name="email" label="Email" type="email" />
-      <Input.Text name="name" label="Name" />
-
-      <Space>
-        <SubmitButton>Submit</SubmitButton>
-        <Button onPress={handleReset}>Reset</Button>
-        <Button onPress={handleFillDemo}>Fill Demo Data</Button>
-      </Space>
-    </Form>
-  );
-}
-```
-
-### When to Use Field Component
-
-The Field component should **only** be used when wrapping read-only content or custom components that don't have built-in field support:
-
-```jsx
-<Form onSubmit={handleSubmit}>
-  {/* Regular inputs — use built-in field support */}
-  <Input.Text name="name" label="Name" rules={[{ required: true }]} />
-
-  {/* Read-only content — use Field wrapper */}
-  <Field name="readonly" label="Read-only Information">
-    <div>This is some read-only content that should look like a field</div>
-  </Field>
-
-  {/* Custom component without field support — use Field wrapper */}
-  <Field name="custom" label="Custom Component" rules={[{ required: true }]}>
-    <CustomComponent />
-  </Field>
-</Form>
-```
-
-### Dialog Form
-
-It's possible to create forms inside dialogs. The `DialogForm` contains all props of `Form` and `Dialog` components. When `onSubmit` returns a promise, the dialog stays open with a loading state until the promise resolves.
-
-```jsx
-import {
-  DialogForm,
-  Field,
-  Paragraph,
-  Input,
-  Text,
-} from '@cube-dev/ui-kit';
-
-export function ConfirmDeletionDialogForm({ name, onSubmit, onDismiss }) {
-  return (
-    <DialogForm
-      title="Delete Deployment"
-      onSubmit={onSubmit}
-      onDismiss={onDismiss}
-      submitProps={{
-        label: 'Delete',
-        theme: 'danger',
-      }}
-      cancelProps={{
-        label: 'I changed my mind',
-      }}
-    >
-      <Paragraph>
-        To delete the instance, please enter its full name:{' '}
-        <Text.Strong>{name}</Text.Strong>
-      </Paragraph>
-
-      <Input.Text
-        name="name"
-        rules={[
-          { required: true, message: 'This field is required' },
-          {
-            async validator(rule, value) {
-              if (value !== name) {
-                throw new Error('Incorrect name');
-              }
-            },
-          },
-        ]}
-        placeholder="Enter the name of the instance"
-      />
-    </DialogForm>
-  );
-}
-```
-
-## Known Differences with AntD Forms
-
-- `onSubmit` instead of `onSuccess`
-- `onSubmitFailed` instead of `onFailed`
-- `defaultValues` instead of `initialValues`
-- `onSubmit` can return a promise — the form and submit button show loading state until the promise resolves
-- Arrays inside form data are not supported
-- `preserve` is supported by modern controllers; it remains unimplemented in the legacy backend
-- The `Field` component is a virtual wrapper (does not render a DOM element)
-- Nested properties are handled via field names with `.` dot notation
-- Does not support `validating` state (but validation rules can be async)
+The modern controller, subscriptions, input binding, and dialog workflows are tested with React Compiler on React 18 and 19. The published library remains uncompiled. Consumer render code must use `Form.useValue`, `Form.useFieldState`, or selectors to subscribe; imperative getters do not subscribe. This does not make legacy mutable instance reads Compiler-safe.
 
 ## Accessibility
 
-### Keyboard Navigation
-
-- `Tab` - Moves focus through form fields in sequence
-- `Shift + Tab` - Moves focus backwards through form fields
-- `Enter` - Submits the form when focus is on a submit button
-- Form fields inherit their specific keyboard navigation patterns
-
-### Screen Reader Support
-
-- Form is announced as "form" to screen readers
-- Field labels are properly associated with their inputs
-- Validation errors are announced when they appear
-- Required fields are indicated to screen readers
-- Form submission status is communicated
-
-### ARIA Properties
-
-- Form uses proper semantic HTML (`<form>` element)
-- Fields are associated with labels via `htmlFor` and `id` attributes
-- Validation errors use `aria-describedby` to associate with fields
-- Required fields use `aria-required` attribute
-- Form submission state is indicated via loading states
-
-## Best Practices
-
-1. **Use direct field properties**: Pass field properties directly to input components instead of using Field wrapper
-
-   ```jsx
-   // Recommended
-   <Input.Text name="email" label="Email" type="email" rules={[{ required: true }]} />
-
-   // Deprecated
-   <Field name="email" label="Email" rules={[{ required: true }]}>
-     <Input.Text type="email" />
-   </Field>
-   ```
-
-2. **Provide clear labels**: Always include descriptive labels for form fields
-
-   ```jsx
-   <Input.Text name="email" label="Email Address" type="email" />
-   ```
-
-3. **Use appropriate validation**: Combine built-in validators for common cases and custom validators for complex logic
-
-   ```jsx
-   <Input.Text
-     name="email"
-     label="Email"
-     type="email"
-     rules={[
-       { required: true, message: 'Email is required' },
-       { type: 'email', message: 'Please enter a valid email' },
-     ]}
-   />
-   ```
-
-4. **Handle errors gracefully**: Always provide feedback for validation and submission errors
-
-   ```jsx
-   <Form onSubmit={handleSubmit} onSubmitFailed={handleError}>
-     {/* fields */}
-     <Form.SubmitError />
-   </Form>
-   ```
-
-5. **Use proper field types**: Choose appropriate input types for better UX and validation
-
-   ```jsx
-   <Input.Text type="email" />     {/* for email addresses */}
-   <Input.Password />              {/* for passwords */}
-   <Input.Number />                {/* for numeric input */}
-   ```
-
-6. **Group related fields**: Use logical grouping and layout for complex forms
-   ```jsx
-   <Form orientation="horizontal"> {/* for compact forms */}
-   <Form labelPosition="side">     {/* for wide layouts */}
-   ```
-
-## Integration with Input Components
-
-All input components automatically register with the parent Form and inherit form-level properties:
-
-- Validation triggers (`validateTrigger`)
-- Label positioning (`labelPosition`)
-- Required indicators (`requiredMark`)
-- Read-only state (`isReadOnly`)
-- Disabled state (`isDisabled`)
-
-Field properties can be passed directly to any input component:
-
-```jsx
-<Form>
-  <Input.Text name="text" label="Text Input" />
-  <Input.Password name="password" label="Password" />
-  <Select name="select" label="Select" options={[]} />
-  <Checkbox name="checkbox" label="Checkbox" />
-  <RadioGroup name="radio" label="Radio Group" options={[]} />
-  <DatePicker name="date" label="Date Picker" />
-  <Slider name="slider" label="Slider" />
-  <Switch name="switch" label="Switch" />
-</Form>
-```
-
-## Related Components
-
-- [FormInstance](/docs/forms-forminstance--docs) - Programmatic form control API
-- [Field](/docs/forms-field--docs) - Field wrapper (deprecated for regular use)
-- [Input.Text](/docs/forms-textinput--docs) - Text input field
-- [Input.Password](/docs/forms-passwordinput--docs) - Password input field
-- [Select](/docs/forms-select--docs) - Dropdown selection field
-- [Checkbox](/docs/forms-checkbox--docs) - Checkbox input field
-- [DialogForm](/docs/overlays-dialogform--docs) - Form within a dialog
+Use visible labels, clear validation messages, and native submit/reset buttons. Named inputs connect their labels and error messages automatically. Enter submits through the form; Tab and Shift+Tab navigate controls. Configure `isRequired` when a field needs both validation and a visible required indicator.

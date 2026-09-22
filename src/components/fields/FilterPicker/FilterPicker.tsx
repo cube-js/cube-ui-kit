@@ -191,23 +191,23 @@ const FilterPickerWrapper = tasty({
 });
 
 export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
-  props: CubeFilterPickerProps<T>,
+  inputProps: CubeFilterPickerProps<T>,
   ref: ForwardedRef<HTMLElement>,
 ) {
   const { t } = useI18n();
 
-  props = useFieldProps(props, {
+  const props = useFieldProps(inputProps, {
     valuePropsMapper: ({ value, onChange }) => {
       const fieldProps: Record<string, unknown> = {};
 
-      if (props.selectionMode === 'multiple') {
+      if (inputProps.selectionMode === 'multiple') {
         fieldProps.selectedKeys = value || [];
       } else {
         fieldProps.selectedKey = value ?? null;
       }
 
       fieldProps.onSelectionChange = (key: Key | null | 'all' | Key[]) => {
-        if (props.selectionMode === 'multiple') {
+        if (inputProps.selectionMode === 'multiple') {
           if (key === 'all') {
             onChange('all');
           } else {

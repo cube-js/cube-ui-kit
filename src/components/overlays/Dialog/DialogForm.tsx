@@ -1,18 +1,24 @@
 import { useI18n } from '../../../i18n';
-import { Button, ButtonGroup, CubeButtonProps } from '../../actions';
+import { Button } from '../../actions/Button/Button';
+import { ButtonGroup } from '../../actions/ButtonGroup/ButtonGroup';
 import { Content } from '../../content/Content';
 import { Header } from '../../content/Header';
 import { Title } from '../../content/Title';
-import {
-  CubeFormProps,
-  FieldTypes,
-  Form,
-  SubmitButton,
-  useForm,
-} from '../../form';
+import { isModernFormController } from '../../form/Form/backend';
+import { Form } from '../../form/Form/Form';
+import { SubmitButton } from '../../form/Form/SubmitButton/SubmitButton';
+import { useForm } from '../../form/Form/use-form';
 
 import { useDialogContext } from './context';
 import { CubeDialogProps, Dialog } from './Dialog';
+import { ModernDialogForm } from './ModernDialogForm';
+
+import type { ReactElement } from 'react';
+import type { CubeButtonProps } from '../../actions/Button/Button';
+import type { CubeFormProps } from '../../form/Form/Form';
+import type { ModernFormProps } from '../../form/Form/ModernFormRoot';
+import type { CubeSubmitButtonProps } from '../../form/Form/SubmitButton/SubmitButton';
+import type { FieldTypes } from '../../form/Form/types';
 
 export interface CubeDialogFormProps<T extends FieldTypes = FieldTypes>
   extends Omit<CubeDialogProps, 'children'>,
@@ -23,7 +29,7 @@ export interface CubeDialogFormProps<T extends FieldTypes = FieldTypes>
   submitProps?: CubeButtonProps;
   /** Properties for cancel button. Use `label` to change text. */
   cancelProps?: CubeButtonProps;
-  /** WIP. Preserve form values even if field is deleted */
+  /** Preserve form values after submission or dismissal. */
   preserve?: boolean;
   /** Whether to hide action button so developer can manually specify them */
   noActions?: boolean;
@@ -43,9 +49,30 @@ export interface CubeDialogFormRef {
 /**
  * DialogForms are a specific type of Dialog. They contain forms to fill.
  */
+export interface ModernDialogFormProps<T extends FieldTypes = FieldTypes>
+  extends Omit<CubeDialogFormProps<T>, keyof CubeFormProps<T> | 'submitProps'>,
+    Omit<ModernFormProps<T>, 'role' | 'children'> {
+  children?: CubeDialogFormProps<T>['children'];
+  submitProps?: Omit<CubeSubmitButtonProps<T>, 'form'>;
+}
+
 export function DialogForm<T extends FieldTypes = FieldTypes>(
   props: CubeDialogFormProps<T>,
-) {
+): ReactElement;
+export function DialogForm<T extends FieldTypes = FieldTypes>(
+  props: ModernDialogFormProps<T>,
+): ReactElement;
+export function DialogForm<T extends FieldTypes = FieldTypes>(
+  props: CubeDialogFormProps<T> | ModernDialogFormProps<T>,
+): ReactElement {
+  return isModernFormController(props.form) ? (
+    <ModernDialogForm {...(props as ModernDialogFormProps<T>)} />
+  ) : (
+    <LegacyDialogForm {...(props as CubeDialogFormProps<T>)} />
+  );
+}
+
+function LegacyDialogForm<T extends FieldTypes>(props: CubeDialogFormProps<T>) {
   let {
     qa,
     name,

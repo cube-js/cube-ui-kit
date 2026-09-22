@@ -71,7 +71,6 @@ export function ModernTypes() {
       }}
     />
   );
-  // @ts-expect-error existing wrappers remain legacy-only
   const dialog = <DialogForm form={form} title="Settings" />;
   const subscriber = (
     <Form.Subscribe form={form} selector={(state) => state.values.amount}>

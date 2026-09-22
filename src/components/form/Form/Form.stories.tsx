@@ -1,15 +1,17 @@
 import { Meta, StoryObj } from '@storybook/react-vite';
+import { expect, userEvent, within } from 'storybook/test';
 
-import { NO_SNAPSHOT } from '../../../stories/chromatic';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Input } from '../../fields/Input';
 import { Space } from '../../layout/Space';
 
-import { Field } from './Field';
-import { Form } from './Form';
 import { ResetButton } from './ResetButton';
 import { SubmitButton } from './SubmitButton';
 import { SubmitError } from './SubmitError';
+
+import { Form } from './index';
+
+import type { ModernFormProps } from './ModernFormRoot';
 
 const meta: Meta<typeof Form> = {
   title: 'Forms/Form',
@@ -46,12 +48,14 @@ const meta: Meta<typeof Form> = {
       description: 'Form name attribute',
     },
     defaultValues: {
-      control: { type: 'object' },
-      description: 'Default field values',
+      control: { type: null },
+      description:
+        'Legacy roots only. Modern defaults belong in Form.useController().',
     },
     form: {
       control: { type: null },
-      description: 'Form instance created by useForm',
+      description:
+        'Modern controller from Form.useController() (recommended), or a legacy useForm() instance',
     },
 
     /* Field Defaults */
@@ -164,60 +168,68 @@ const meta: Meta<typeof Form> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof Form>;
+type Story = StoryObj<
+  Omit<ModernFormProps<{ email: string; password: string }>, 'form'>
+>;
 
 export const Default: Story = {
-  render: (args) => (
-    <Form
-      onSubmit={(data) => {
-        console.log('Form submitted:', data);
-        return new Promise((resolve) => {
-          setTimeout(resolve, 1000);
-        });
-      }}
-      {...args}
-    >
-      <Input.Text
-        name="email"
-        label="Email"
-        type="email"
-        placeholder="Enter your email"
-        rules={[
-          {
-            required: true,
-            message: 'Email is required',
-          },
-          {
-            type: 'email',
-            message: 'Please enter a valid email address',
-          },
-        ]}
-      />
+  render: function Default(args) {
+    const form = Form.useController({
+      defaultValues: { email: '', password: '' },
+    });
+    return (
+      <Form
+        {...args}
+        form={form}
+        onSubmit={(data) => {
+          console.log('Form submitted:', data);
+          return new Promise((resolve) => {
+            setTimeout(resolve, 1000);
+          });
+        }}
+      >
+        <Input.Text
+          name="email"
+          label="Email"
+          type="email"
+          placeholder="Enter your email"
+          rules={[
+            {
+              required: true,
+              message: 'Email is required',
+            },
+            {
+              type: 'email',
+              message: 'Please enter a valid email address',
+            },
+          ]}
+        />
 
-      <Input.Password
-        name="password"
-        label="Password"
-        placeholder="Enter your password"
-        rules={[
-          {
-            required: true,
-            message: 'Password is required',
-          },
-          {
-            min: 6,
-            message: 'Password must be at least 6 characters',
-          },
-        ]}
-      />
+        <Input.Password
+          name="password"
+          label="Password"
+          placeholder="Enter your password"
+          rules={[
+            {
+              required: true,
+              message: 'Password is required',
+            },
+            {
+              min: 6,
+              message: 'Password must be at least 6 characters',
+            },
+          ]}
+        />
 
-      <SubmitError />
+        <SubmitError />
 
-      <Space>
-        <SubmitButton>Sign In</SubmitButton>
-        <ResetButton>Reset</ResetButton>
-      </Space>
-    </Form>
-  ),
+        <Space>
+          <SubmitButton>Sign In</SubmitButton>
+          <ResetButton>Reset</ResetButton>
+        </Space>
+      </Form>
+    );
+  },
   args: {
     orientation: 'vertical',
     labelPosition: 'top',
@@ -230,38 +242,43 @@ export const Default: Story = {
  * label, and `isOptional` is a note that changes no behaviour at all.
  */
 export const NecessityIndicators: Story = {
-  render: (args) => (
-    <Form {...args}>
-      <Input.Text
-        name="ruleOnly"
-        label="Email"
-        description="Required by a rule — validated and announced, but not marked"
-        rules={[{ required: true }]}
-      />
+  render: function NecessityIndicators(args) {
+    const form = Form.useController({
+      defaultValues: { email: '', password: '' },
+    });
+    return (
+      <Form {...args} form={form}>
+        <Input.Text
+          name="ruleOnly"
+          label="Email"
+          description="Required by a rule — validated and announced, but not marked"
+          rules={[{ required: true }]}
+        />
 
-      <Input.Text
-        name="required"
-        label="Email"
-        description="isRequired — adds the rule and marks the label"
-        isRequired
-      />
+        <Input.Text
+          name="required"
+          label="Email"
+          description="isRequired — adds the rule and marks the label"
+          isRequired
+        />
 
-      <Input.Text
-        name="requiredLabel"
-        label="Email"
-        description='The same, with necessityIndicator="label"'
-        isRequired
-        necessityIndicator="label"
-      />
+        <Input.Text
+          name="requiredLabel"
+          label="Email"
+          description='The same, with necessityIndicator="label"'
+          isRequired
+          necessityIndicator="label"
+        />
 
-      <Input.Text
-        name="optional"
-        label="Nickname"
-        description="isOptional — a note, never a rule"
-        isOptional
-      />
-    </Form>
-  ),
+        <Input.Text
+          name="optional"
+          label="Nickname"
+          description="isOptional — a note, never a rule"
+          isOptional
+        />
+      </Form>
+    );
+  },
   args: {
     orientation: 'vertical',
     labelPosition: 'top',
@@ -269,53 +286,59 @@ export const NecessityIndicators: Story = {
 };
 
 export const Horizontal: Story = {
-  render: (args) => (
-    <Form
-      orientation="horizontal"
-      labelPosition="side"
-      requiredMark={false}
-      onSubmit={(data) => {
-        console.log('Form submitted:', data);
-        return new Promise((resolve) => {
-          setTimeout(resolve, 1000);
-        });
-      }}
-      {...args}
-    >
-      <Input.Text
-        name="email"
-        label="Email"
-        type="email"
-        size="small"
-        placeholder="Enter your email"
-        rules={[
-          {
-            required: true,
-            message: 'Email is required',
-          },
-          {
-            type: 'email',
-            message: 'Please enter a valid email address',
-          },
-        ]}
-      />
+  render: function Horizontal(args) {
+    const form = Form.useController({
+      defaultValues: { email: '', password: '' },
+    });
+    return (
+      <Form
+        {...args}
+        form={form}
+        orientation="horizontal"
+        labelPosition="side"
+        requiredMark={false}
+        onSubmit={(data) => {
+          console.log('Form submitted:', data);
+          return new Promise((resolve) => {
+            setTimeout(resolve, 1000);
+          });
+        }}
+      >
+        <Input.Text
+          name="email"
+          label="Email"
+          type="email"
+          size="small"
+          placeholder="Enter your email"
+          rules={[
+            {
+              required: true,
+              message: 'Email is required',
+            },
+            {
+              type: 'email',
+              message: 'Please enter a valid email address',
+            },
+          ]}
+        />
 
-      <Input.Password
-        name="password"
-        label="Password"
-        size="small"
-        placeholder="Enter your password"
-        rules={[
-          {
-            required: true,
-            message: 'Password is required',
-          },
-        ]}
-      />
+        <Input.Password
+          name="password"
+          label="Password"
+          size="small"
+          placeholder="Enter your password"
+          rules={[
+            {
+              required: true,
+              message: 'Password is required',
+            },
+          ]}
+        />
 
-      <SubmitButton size="small">Sign In</SubmitButton>
-    </Form>
-  ),
+        <SubmitButton size="small">Sign In</SubmitButton>
+      </Form>
+    );
+  },
   args: {
     orientation: 'horizontal',
     labelPosition: 'side',
@@ -323,118 +346,135 @@ export const Horizontal: Story = {
 };
 
 export const WithValidationError: Story = {
-  render: (args) => (
-    <Form
-      requiredMark={false}
-      onSubmit={(data) => {
-        console.log('Form submitted:', data);
-        // Simulate server error
-        return Promise.reject('Invalid credentials. Please try again.');
-      }}
-      {...args}
-    >
-      <Input.Text
-        name="email"
-        label="Email"
-        type="email"
-        placeholder="Enter your email"
-        rules={[
-          {
-            required: true,
-            message: 'Email is required',
-          },
-          {
-            type: 'email',
-            message: 'Please enter a valid email address',
-          },
-        ]}
-      />
+  render: function WithValidationError(args) {
+    const form = Form.useController({
+      defaultValues: { email: '', password: '' },
+    });
+    return (
+      <Form
+        {...args}
+        form={form}
+        requiredMark={false}
+        onSubmit={(data) => {
+          console.log('Form submitted:', data);
+          // Simulate server error
+          return Promise.reject('Invalid credentials. Please try again.');
+        }}
+      >
+        <Input.Text
+          name="email"
+          label="Email"
+          type="email"
+          placeholder="Enter your email"
+          rules={[
+            {
+              required: true,
+              message: 'Email is required',
+            },
+            {
+              type: 'email',
+              message: 'Please enter a valid email address',
+            },
+          ]}
+        />
 
-      <Input.Password
-        name="password"
-        label="Password"
-        placeholder="Enter your password"
-        rules={[
-          {
-            required: true,
-            message: 'Password is required',
-          },
-        ]}
-      />
+        <Input.Password
+          name="password"
+          label="Password"
+          placeholder="Enter your password"
+          rules={[
+            {
+              required: true,
+              message: 'Password is required',
+            },
+          ]}
+        />
 
-      <SubmitError />
+        <SubmitError />
 
-      <Space>
-        <SubmitButton>Sign In</SubmitButton>
-        <ResetButton>Reset</ResetButton>
-      </Space>
-    </Form>
-  ),
+        <Space>
+          <SubmitButton>Sign In</SubmitButton>
+          <ResetButton>Reset</ResetButton>
+        </Space>
+      </Form>
+    );
+  },
   args: {
     orientation: 'vertical',
     labelPosition: 'top',
   },
-  // As written, this story never reaches the error state: filling both fields
-  // and pressing Sign In leaves the form as it was, so what it renders is
-  // exactly what `Default` renders and there is no reason to photograph it
-  // twice. `Forms/ComplexForm / ErrorMessage` is where the submit error is
-  // actually shown and snapshotted.
-  parameters: NO_SNAPSHOT,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.type(
+      canvas.getByRole('textbox', { name: 'Email' }),
+      'user@example.com',
+    );
+    await userEvent.type(
+      canvas.getByLabelText('Password', { selector: 'input' }),
+      'password',
+    );
+    await userEvent.click(canvas.getByRole('button', { name: 'Sign In' }));
+    await expect(await canvas.findByRole('alert')).toHaveTextContent(
+      'Invalid credentials',
+    );
+  },
 };
 
 export const WithDefaultValues: Story = {
-  render: (args) => (
-    <Form
-      defaultValues={{
-        email: 'user@example.com',
-        password: '',
-      }}
-      requiredMark={false}
-      onSubmit={(data) => {
-        console.log('Form submitted:', data);
-        return new Promise((resolve) => {
-          setTimeout(resolve, 1000);
-        });
-      }}
-      {...args}
-    >
-      <Input.Text
-        name="email"
-        label="Email"
-        type="email"
-        placeholder="Enter your email"
-        rules={[
-          {
-            required: true,
-            message: 'Email is required',
-          },
-          {
-            type: 'email',
-            message: 'Please enter a valid email address',
-          },
-        ]}
-      />
+  render: function WithDefaultValues(args) {
+    const form = Form.useController({
+      defaultValues: { email: 'user@example.com', password: '' },
+    });
+    return (
+      <Form
+        {...args}
+        form={form}
+        requiredMark={false}
+        onSubmit={(data) => {
+          console.log('Form submitted:', data);
+          return new Promise((resolve) => {
+            setTimeout(resolve, 1000);
+          });
+        }}
+      >
+        <Input.Text
+          name="email"
+          label="Email"
+          type="email"
+          placeholder="Enter your email"
+          rules={[
+            {
+              required: true,
+              message: 'Email is required',
+            },
+            {
+              type: 'email',
+              message: 'Please enter a valid email address',
+            },
+          ]}
+        />
 
-      <Input.Password
-        name="password"
-        label="Password"
-        placeholder="Enter your password"
-        rules={[
-          {
-            required: true,
-            message: 'Password is required',
-          },
-        ]}
-      />
+        <Input.Password
+          name="password"
+          label="Password"
+          placeholder="Enter your password"
+          rules={[
+            {
+              required: true,
+              message: 'Password is required',
+            },
+          ]}
+        />
 
-      <SubmitError />
+        <SubmitError />
 
-      <Space>
-        <SubmitButton>Sign In</SubmitButton>
-        <ResetButton>Reset</ResetButton>
-      </Space>
-    </Form>
-  ),
+        <Space>
+          <SubmitButton>Sign In</SubmitButton>
+          <ResetButton>Reset</ResetButton>
+        </Space>
+      </Form>
+    );
+  },
   args: {
     orientation: 'vertical',
     labelPosition: 'top',

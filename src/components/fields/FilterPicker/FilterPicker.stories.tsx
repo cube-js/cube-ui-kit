@@ -1856,16 +1856,16 @@ export const MultipleControlledExample = () => {
 };
 
 export const InForm = () => {
-  const [selectedTechnology, setSelectedTechnology] = useState<string | null>(
-    null,
-  );
+  const form = Form.useController<{ technology: string | null }>({
+    defaultValues: { technology: null },
+  });
 
-  const handleSubmit = (data: any) => {
+  const handleSubmit = (data: { readonly technology?: string | null }) => {
     alert(`Form submitted with technology: ${data.technology || 'None'}`);
   };
 
   return (
-    <Form style={{ width: '30x' }} onSubmit={handleSubmit}>
+    <Form form={form} style={{ width: '30x' }} onSubmit={handleSubmit}>
       <FilterPicker
         isRequired
         name="technology"
@@ -1873,8 +1873,6 @@ export const InForm = () => {
         description="Select your preferred technology stack"
         placeholder="Choose technology..."
         searchPlaceholder="Search technologies..."
-        selectedKey={selectedTechnology}
-        onSelectionChange={(key) => setSelectedTechnology(key as string | null)}
       >
         <FilterPicker.Section title="Frontend">
           {languages

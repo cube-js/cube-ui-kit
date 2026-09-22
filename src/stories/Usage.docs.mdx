@@ -460,6 +460,8 @@ DataTable also accepts nested column definitions for already-shaped pivot result
 
 ## Form System
 
+UI Kit provides modern and legacy implementations. **Use the modern API for new forms.** Existing callers remain on the legacy implementation until explicitly migrated.
+
 ### Modern forms
 
 For a new modern form, create a typed controller, put defaults on the controller, and bind inputs with `name`. Modern names accept strings and nested tuples; `field` is an optional typed binding:
@@ -482,7 +484,7 @@ Inputs subscribe to their own values and errors. For other reactive UI, use `For
 
 ### Legacy forms
 
-`Form.useForm()` and roots without a modern controller keep the legacy backend. `DialogForm` and `Form.Item` still use this contract. See [Form](/docs/forms-form--docs) and [FormInstance](/docs/forms-forminstance--docs) for legacy instance methods, defaults, and dot notation.
+`Form.useForm()` and roots without a modern controller keep the legacy backend. `DialogForm` also supports modern controllers; `Form.Item` remains legacy-only. See [FormInstance (legacy)](/docs/forms-forminstance--docs) for legacy instance methods, defaults, and dot notation.
 
 ### Shared field integration
 

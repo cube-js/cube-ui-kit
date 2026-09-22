@@ -820,12 +820,13 @@ This component supports all [Field properties](/docs/getting-started-field-prope
 import { Form, Picker } from '@cube-dev/ui-kit';
 
 function MyForm() {
+  const form = Form.useController();
   const handleSubmit = (values) => {
     console.log('Form values:', values);
   };
 
   return (
-    <Form onSubmit={handleSubmit}>
+    <Form form={form} onSubmit={handleSubmit}>
       <Picker
         name="category"
         label="Product Category"
@@ -839,7 +840,7 @@ function MyForm() {
         <Picker.Item key="books">Books</Picker.Item>
       </Picker>
 
-      <Button type="submit">Submit</Button>
+      <Form.Submit>Submit</Form.Submit>
     </Form>
   );
 }
@@ -848,26 +849,31 @@ function MyForm() {
 ### Multiple Selection in Forms
 
 ```jsx
-<Form onSubmit={handleSubmit}>
-  <Picker
-    name="tags"
-    label="Tags"
-    selectionMode="multiple"
-    isCheckable
-    placeholder="Select tags"
-    defaultValue={['tag1', 'tag2']}
-    rules={[
-      { required: true, message: 'At least one tag is required' },
-      { type: 'array', min: 2, message: 'Select at least 2 tags' }
-    ]}
-  >
-    <Picker.Item key="tag1">Tag 1</Picker.Item>
-    <Picker.Item key="tag2">Tag 2</Picker.Item>
-    <Picker.Item key="tag3">Tag 3</Picker.Item>
-  </Picker>
+function Example() {
+  const form = Form.useController();
+  return (
+    <Form form={form} onSubmit={handleSubmit}>
+      <Picker
+        name="tags"
+        label="Tags"
+        selectionMode="multiple"
+        isCheckable
+        placeholder="Select tags"
+        defaultValue={['tag1', 'tag2']}
+        rules={[
+          { required: true, message: 'At least one tag is required' },
+          { type: 'array', min: 2, message: 'Select at least 2 tags' }
+        ]}
+      >
+        <Picker.Item key="tag1">Tag 1</Picker.Item>
+        <Picker.Item key="tag2">Tag 2</Picker.Item>
+        <Picker.Item key="tag3">Tag 3</Picker.Item>
+      </Picker>
 
-  <Button type="submit">Submit</Button>
-</Form>
+      <Form.Submit>Submit</Form.Submit>
+    </Form>
+  );
+}
 ```
 
 ### Key Form Properties

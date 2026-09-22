@@ -1042,10 +1042,11 @@ export const MultipleControlledExample: StoryFn<
 MultipleControlledExample.parameters = NO_SNAPSHOT;
 
 export const InForm: StoryFn = () => {
+  const form = Form.useController({ defaultValues: { country: 'ca' } });
   return (
     <Form
+      form={form}
       style={{ width: '400px' }}
-      defaultValues={{ country: 'ca' }}
       onSubmit={(data) => {
         alert(`Form submitted with: ${JSON.stringify(data, null, 2)}`);
       }}

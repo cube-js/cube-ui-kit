@@ -65,19 +65,23 @@ export function DialogContainer(props: CubeDialogContainerProps) {
     type,
     onClose: onDismiss,
     isDismissable,
-    isOpen,
+    isOpen: isActuallyOpened,
   };
 
   return (
-    <Modal
-      isOpen={isActuallyOpened}
-      type={type}
-      hideOnClose={hideOnClose}
-      isDismissable={isDismissable}
-      isKeyboardDismissDisabled={isKeyboardDismissDisabled}
-      onClose={isDismissable ? onDismiss : undefined}
-    >
-      <DialogContext.Provider value={context}>{child}</DialogContext.Provider>
-    </Modal>
+    // The exit animation preserves its children. Keep live open state outside
+    // that snapshot so forms cancel immediately when the container closes.
+    <DialogContext.Provider value={context}>
+      <Modal
+        isOpen={isActuallyOpened}
+        type={type}
+        hideOnClose={hideOnClose}
+        isDismissable={isDismissable}
+        isKeyboardDismissDisabled={isKeyboardDismissDisabled}
+        onClose={isDismissable ? onDismiss : undefined}
+      >
+        <>{child}</>
+      </Modal>
+    </DialogContext.Provider>
   );
 }

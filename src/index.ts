@@ -227,6 +227,7 @@ export type {
   CubeDialogProps,
   CubeDialogFormRef,
   CubeDialogFormProps,
+  ModernDialogFormProps,
 } from './components/overlays/Dialog';
 export { Tooltip } from './components/overlays/Tooltip/Tooltip';
 export type { CubeTooltipProps } from './components/overlays/Tooltip/Tooltip';

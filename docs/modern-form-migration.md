@@ -31,7 +31,7 @@ The following API mapping describes migration choices; names are not mechanicall
 | `submit()` | `submit()` returns a tagged result such as `submitted`, `invalid`, or `failed` |
 | `Form.Item` wrapping a custom control | `useFieldProps` plus `wrapWithField` inside that control |
 
-`DialogForm` and Cloud's `NarrowForm` / `SaveableCard` currently expose legacy instance contracts. Keep their callers legacy until the wrapper itself is migrated and verified. Passing a modern controller through a cast does not migrate the wrapper. `Form.Item`, legacy mutable flags, and the legacy `FormContext` instance shape remain compatibility APIs.
+`DialogForm` supports both implementations. Pass a modern controller, move defaults to its creation options, and review dismissal/reset behavior: modern dialogs cancel pending submission and reset when the editing session ends unless `preserve` is set. Keep the controller outside the dialog when preserving drafts across unmounts. Cloud's `NarrowForm` / `SaveableCard` still expose legacy instance contracts; keep their callers legacy until those wrappers are migrated and verified. Passing a modern controller through a cast does not migrate the wrapper. `Form.Item`, legacy mutable flags, and the legacy `FormContext` instance shape remain compatibility APIs.
 
 ## Review the behavior changes
 

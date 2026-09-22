@@ -183,7 +183,10 @@ export interface FormStore<
   blur(path: FormPath): void;
   bindCallbacks(
     callbacks: FormCallbacks<T, ErrorValue>,
+    onSubmitted?: () => void,
   ): CallbackBinding<T, ErrorValue>;
+  /** Internal wrapper lifecycle command; does not discard retained drafts. */
+  cancelSubmission(): void;
   updateCallbacks(callbacks: FormCallbacks<T, ErrorValue>): void;
   setValue(path: FormPath, value: unknown, options?: SetValueOptions): void;
   setValues(values: Partial<T>, options?: SetValueOptions): void;

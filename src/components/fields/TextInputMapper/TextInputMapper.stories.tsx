@@ -142,36 +142,40 @@ const Template: StoryFn<CubeTextInputMapperProps> = ({ ...props }) => (
   />
 );
 
-const FormTemplate: StoryFn<CubeTextInputMapperProps> = ({ ...props }) => (
-  <Form
-    defaultValues={{ field: { name: 'value' } }}
-    onSubmit={(data) => console.log('! onSubmit', data)}
-  >
-    <TextInputMapper
-      name="field"
-      label="Field Mapper"
-      {...props}
-      onChange={(value) => console.log('! onChange', value)}
-    />
-    <Form.Submit>Submit</Form.Submit>
-  </Form>
-);
+const FormTemplate: StoryFn<CubeTextInputMapperProps> = ({ ...props }) => {
+  const form = Form.useController({
+    defaultValues: { field: { name: 'value' } },
+  });
+  return (
+    <Form form={form} onSubmit={(data) => console.log('! onSubmit', data)}>
+      <TextInputMapper
+        name="field"
+        label="Field Mapper"
+        {...props}
+        onChange={(value) => console.log('! onChange', value)}
+      />
+      <Form.Submit>Submit</Form.Submit>
+    </Form>
+  );
+};
 
-const FormTemplateSync: StoryFn<CubeTextInputMapperProps> = ({ ...props }) => (
-  <Form
-    defaultValues={{ field: { name: 'value' } }}
-    onSubmit={(data) => console.log('! onSubmit', data)}
-  >
-    <TextInputMapper
-      name="field"
-      label="Field Mapper"
-      {...props}
-      onChange={(value) => console.log('! onChange', value)}
-    />
-    <TextInput name="field.name" label="TextInput" />
-    <Form.Submit>Submit</Form.Submit>
-  </Form>
-);
+const FormTemplateSync: StoryFn<CubeTextInputMapperProps> = ({ ...props }) => {
+  const form = Form.useController({
+    defaultValues: { field: { name: 'value' } },
+  });
+  return (
+    <Form form={form} onSubmit={(data) => console.log('! onSubmit', data)}>
+      <TextInputMapper
+        name="field"
+        label="Field Mapper"
+        {...props}
+        onChange={(value) => console.log('! onChange', value)}
+      />
+      <TextInput name={['field', 'name']} label="TextInput" />
+      <Form.Submit>Submit</Form.Submit>
+    </Form>
+  );
+};
 
 export const Default = Template.bind({});
 Default.args = {};

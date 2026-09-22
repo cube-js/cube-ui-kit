@@ -659,20 +659,25 @@ const [selectedKey, setSelectedKey] = useState('apple');
 <Story of={ListBoxStories.InForm} />
 
 ```jsx
-<Form onSubmit={handleSubmit}>
-  <ListBox
-    name="technology"
-    label="Preferred Technology"
-    isRequired
-    selectionMode="single"
-  >
-    <ListBox.Section title="Frontend">
-      <ListBox.Item key="react">React</ListBox.Item>
-      <ListBox.Item key="vue">Vue.js</ListBox.Item>
-    </ListBox.Section>
-  </ListBox>
-  <Form.Submit>Submit</Form.Submit>
-</Form>
+function Example() {
+  const form = Form.useController();
+  return (
+    <Form form={form} onSubmit={handleSubmit}>
+      <ListBox
+        name="technology"
+        label="Preferred Technology"
+        isRequired
+        selectionMode="single"
+      >
+        <ListBox.Section title="Frontend">
+          <ListBox.Item key="react">React</ListBox.Item>
+          <ListBox.Item key="vue">Vue.js</ListBox.Item>
+        </ListBox.Section>
+      </ListBox>
+      <Form.Submit>Submit</Form.Submit>
+    </Form>
+  );
+}
 ```
 
 ### Reorderable
@@ -810,18 +815,23 @@ const [keyOrder, setKeyOrder] = useState([
 This component supports all [Field properties](/docs/getting-started-field-properties--docs) when used within a Form. The component automatically handles form validation, field states, and integrates with form submission.
 
 ```jsx
-<Form onSubmit={handleSubmit}>
-  <ListBox
-    name="preferences"
-    label="User Preferences"
-    isRequired
-    rules={[{ required: true }]}
-    selectionMode="multiple"
-  >
-    <ListBox.Item key="notifications">Email Notifications</ListBox.Item>
-    <ListBox.Item key="newsletter">Newsletter</ListBox.Item>
-  </ListBox>
-</Form>
+function Example() {
+  const form = Form.useController();
+  return (
+    <Form form={form} onSubmit={handleSubmit}>
+      <ListBox
+        name="preferences"
+        label="User Preferences"
+        isRequired
+        rules={[{ required: true }]}
+        selectionMode="multiple"
+      >
+        <ListBox.Item key="notifications">Email Notifications</ListBox.Item>
+        <ListBox.Item key="newsletter">Newsletter</ListBox.Item>
+      </ListBox>
+    </Form>
+  );
+}
 ```
 
 ## Performance

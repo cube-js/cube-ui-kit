@@ -4,14 +4,14 @@ import * as FieldStories from './Field.stories';
 
 <Meta of={FieldStories} />
 
-# Field
+# Field (legacy)
 
 The Field component is a **legacy wrapper** for form inputs that provides field-specific styling and behavior. Built-in input components already provide field support on both backends, so pass field properties directly to them. For custom controls in a modern controller form, use `useFieldProps` and `wrapWithField` as described in [Modern Form](/docs/forms-modernform--docs#implement-a-reusable-custom-control); `Field` / `Form.Item` does not support that backend.
 
 ## When to Use
 
 - **❌ Don't use** for regular input components (TextInput, Select, etc.) - they have built-in field support
-- **✅ Use only** when wrapping read-only content to make it appear as a form field
+- For read-only content in new code, use [FieldWrapper](/docs/forms-fieldwrapper--docs)
 - **✅ Use only** when wrapping custom components in legacy forms that don't have built-in field support
 
 ## Component

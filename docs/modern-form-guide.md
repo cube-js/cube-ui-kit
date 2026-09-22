@@ -2,7 +2,7 @@
 
 For a new modern form, start with `Form.useController<Model>()`, bind inputs with `name="email"` or a nested tuple such as `name={['user', 'email']}`, and submit through `<Form onSubmit={...}>` and `<Form.Submit>`. Add subscriptions only where other UI needs to read form state. The input components already subscribe to their own values and errors. `field={form.field(path)}` is an optional alternative when you want model-checked paths, input value compatibility checks, or inferred custom-validator types.
 
-Existing `Form.useForm()` forms and roots without a modern controller use the legacy backend. Follow the [migration checklist](https://github.com/cube-js/cube-ui-kit/blob/main/docs/modern-form-migration.md) when converting one. `DialogForm` still requires a legacy instance; do not pass a modern controller through a cast.
+**The modern implementation is recommended for new forms.** UI Kit also ships a legacy implementation for compatibility. Existing `Form.useForm()` forms and roots without a modern controller use the legacy backend. Follow the [migration checklist](https://github.com/cube-js/cube-ui-kit/blob/main/docs/modern-form-migration.md) when converting one. `DialogForm` also accepts a modern controller and is recommended for new dialog forms; it preserves the legacy implementation when no modern controller is supplied.
 
 Recipes: [API choices](#pick-one-binding-and-one-owner-for-each-concern), [reactive UI](#read-a-value-show-status-or-reveal-a-section), [server data](#load-server-data-refresh-defaults-or-discard-edits), [programmatic edits](#edit-values-from-an-event-handler), [validation](#validate-simple-rules-sibling-fields-or-an-api-response), [conditional fields and wizards](#hide-fields-use-nested-data-or-build-a-wizard), [submission](#submit-display-server-errors-and-reset), and [custom controls](#implement-a-reusable-custom-control).
 
@@ -267,3 +267,24 @@ Use the same field integration as built-in inputs: `FieldBaseProps<Value>`, `use
 The [compiled CustomControl example](https://github.com/cube-js/cube-ui-kit/blob/main/typecheck/consumer/modern-form-examples.tsx) shows the complete pattern. The [component creation guide](https://cube-ui-kit.vercel.app/?path=/docs/getting-started-create-component--docs) explains the shared field wrapper. `Form.Item` / `Field` belongs to the legacy backend; it is not a second way to connect a modern custom input.
 
 For SSR, seed the controller with the same serializable defaults on server and client. Initial hydration uses the creation snapshot before subscribers catch up with client state. Each mounted creator owns its controller; no manual disposal is needed.
+
+## Use a form in a dialog
+
+`DialogForm` selects the same implementation as `Form`: pass a modern controller for new dialogs. Create the controller above the dialog when its draft should survive unmounts, seed defaults in the creation hook, and put save callbacks on the root.
+
+```tsx
+function EditProfileDialog({ initialProfile, save }) {
+  const form = Form.useController<{ email: string | null }>({ defaultValues: initialProfile });
+  return (
+    <DialogTrigger>
+      <Button>Edit profile</Button>
+      <DialogForm form={form} title="Edit profile" onSubmit={(values, { signal }) => save(values, signal)}>
+        <TextInput name="email" label="Email" isRequired />
+        <Form.SubmitError />
+      </DialogForm>
+    </DialogTrigger>
+  );
+}
+```
+
+The dialog closes only after successful submission, including `form.submit()` and controller-configured callbacks. Validation or save errors keep it open. Closing cancels pending submission; late responses cannot close a reopened session. By default, ending the session resets values. Use `preserve` to retain the draft in a controller owned outside the dialog. `preserve` does not keep an unmounted controller alive. See the [DialogForm reference](https://cube-ui-kit.vercel.app/?path=/docs/overlays-dialogform--docs) for custom actions, container lifecycle, and legacy behavior.
