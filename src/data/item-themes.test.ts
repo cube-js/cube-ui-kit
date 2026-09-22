@@ -222,3 +222,39 @@ describe('current theme disabled fades', () => {
     expect(primary['-webkit-text-fill-color'][GATE]).toBeUndefined();
   });
 });
+
+/**
+ * The `card` type is the soft flavour — pale fill, tinted border, strong
+ * colored text — and every colored one is the SAME three tokens with the theme
+ * prefix swapped. That uniformity is the whole reason a new hue is a four-line
+ * change, and it is the thing that quietly rots: the tokens are per-theme, so a
+ * card written by hand against `-accent-surface` where its neighbours use
+ * `-surface` looks right in light mode and drifts in dark.
+ *
+ * `primary` is in this list because it is the one call sites could not spell
+ * (CUB-4527): the brand hue was reachable only as a SOLID fill, so a design
+ * asking for a soft purple chip settled for `note` — the same card one hue over
+ * (302.3 vs 280.3). Asserting its ramp is `#primary-*` is what keeps the two
+ * from collapsing back into one.
+ *
+ * `default` is excluded deliberately: it is the untinted path, so its card is
+ * neutral grey (`#surface-3`) rather than a brand ramp. `current` is excluded
+ * for the reason it always is — it mixes from `currentcolor`, not from tokens.
+ */
+describe('card variants', () => {
+  const COLORED_CARDS = [
+    'primary',
+    'success',
+    'danger',
+    'warning',
+    'note',
+  ] as const;
+
+  it.each(COLORED_CARDS)('%s.card uses its own theme ramp', (theme) => {
+    expect(ITEM_VARIANTS[`${theme}.card`]).toEqual({
+      border: `#${theme}-accent-surface.20`,
+      fill: `#${theme}-surface`,
+      color: `#${theme}-accent-text`,
+    });
+  });
+});

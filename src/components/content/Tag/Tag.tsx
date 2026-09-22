@@ -32,7 +32,19 @@ const TagElement = tasty(Item, {
 });
 
 export interface CubeTagProps extends CubeItemProps {
-  theme?: 'default' | 'danger' | 'success' | 'warning' | 'note' | 'special';
+  /**
+   * Visual theme. Every value but `special` is a soft card — pale fill, tinted
+   * border, strong colored text. `primary` and `special` are the same brand
+   * hue at two weights: `primary` is the soft card, `special` the solid fill.
+   */
+  theme?:
+    | 'default'
+    | 'primary'
+    | 'danger'
+    | 'success'
+    | 'warning'
+    | 'note'
+    | 'special';
   isClosable?: boolean;
   onClose?: () => void;
   closeButtonStyles?: Styles;
@@ -54,6 +66,11 @@ function Tag(allProps: CubeTagProps, ref) {
 
   let type = 'card';
 
+  // `special` is the SOLID brand chip, and it is spelled as the `default`
+  // theme's `primary` type rather than as a theme of its own. Not a typo to be
+  // tidied into `theme = 'primary'`: that is the SOFT brand card
+  // (`primary.card`), which is a different weight and reachable under its own
+  // name. The two are deliberately separate spellings of the same hue.
   if (theme === 'special') {
     theme = 'default';
     type = 'primary';

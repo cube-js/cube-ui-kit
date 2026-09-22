@@ -34,6 +34,7 @@ const meta = {
       control: 'radio',
       options: [
         undefined,
+        'primary',
         'warning',
         'note',
         'success',
@@ -157,6 +158,7 @@ export const Themes: Story = {
       <Tag theme="note">Note</Tag>
       <Tag theme="success">Success</Tag>
       <Tag theme="danger">Danger</Tag>
+      <Tag theme="primary">Primary</Tag>
       <Tag theme="special">Special</Tag>
       <Tag isDisabled>Disabled</Tag>
     </Space>
