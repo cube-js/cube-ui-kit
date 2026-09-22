@@ -17,12 +17,13 @@ import {
   MutableRefObject,
   ReactElement,
   ReactNode,
+  RefObject,
   useEffect,
   useMemo,
   useRef,
   useState,
 } from 'react';
-import { FocusScope, Key } from 'react-aria';
+import { FocusScope, Key, Placement } from 'react-aria';
 import { Section as BaseSection, ListState, useListState } from 'react-stately';
 
 import { useEvent } from '../../../_internal';
@@ -91,6 +92,22 @@ export interface CubePickerProps<T>
   isCheckable?: boolean;
   /** Whether to flip the popover placement */
   shouldFlip?: boolean;
+  /**
+   * The ref of the element the popover should visually attach itself to.
+   * Defaults to the trigger button.
+   *
+   * Forwarded to `DialogTrigger`, so the anchor also becomes what outside-click
+   * dismissal treats as the trigger. The popover's `minWidth` stays tied to the
+   * trigger button, not to this element.
+   */
+  targetRef?: RefObject<HTMLElement | null>;
+  /**
+   * Placement of the popover relative to the anchor.
+   * Accepts React Aria's `Placement` strings (e.g. `'bottom start'`,
+   * `'top start'`, `'right top'`, `'left top'`).
+   * @default 'bottom start'
+   */
+  placement?: Placement;
   /** Minimum padding in pixels between the popover and viewport edges */
   containerPadding?: number;
   /** Tooltip for the trigger button (separate from field tooltip) */
@@ -237,6 +254,8 @@ export const Picker = forwardRef(function Picker<T extends object>(
     shouldFocusWrap,
     children,
     shouldFlip = true,
+    targetRef,
+    placement = 'bottom start',
     containerPadding = 8,
     selectedKey,
     defaultSelectedKey,
@@ -786,7 +805,8 @@ export const Picker = forwardRef(function Picker<T extends object>(
     >
       <DialogTrigger
         type="popover"
-        placement="bottom start"
+        placement={placement}
+        targetRef={targetRef}
         isOpen={isPopoverOpen}
         containerPadding={containerPadding}
         shouldFlip={shouldFlip}

@@ -43,6 +43,8 @@ Use [ColorInput](/docs/forms-colorinput--docs) instead when the color has to be 
 - **`defaultOpen`** `boolean` (default: `false`) — Whether the popover is open initially
 - **`onOpenChange`** `(isOpen: boolean) => void` — Fired when the popover opens or closes
 - **`shouldFlip`** `boolean` (default: `true`) — Whether the popover may flip to the other side of the trigger
+- **`placement`** `Placement` (default: `bottom start`) — Placement of the popover relative to the anchor, as a React Aria placement string (e.g. `'bottom start'`, `'top end'`)
+- **`targetRef`** `RefObject<HTMLElement | null>` — The element the popover visually attaches to. Defaults to the trigger; use it to anchor the popover to an outer container so sibling controls' popovers line up
 
 There is no `formatMode`: with no text to reconcile, `format` alone decides how the value is written. Everything else about the color model — the notations it reads, the gamut handling, the three spaces — is identical to `ColorInput` and documented there.
 

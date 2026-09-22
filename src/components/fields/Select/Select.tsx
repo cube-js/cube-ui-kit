@@ -82,6 +82,7 @@ import { DisplayTransition } from '../../helpers';
 import { Portal } from '../../portal';
 import { TriggerActions, TriggerIcon } from '../TriggerActions';
 
+import type { Placement } from 'react-aria';
 import type { Props } from '../../../props';
 
 const SelectWrapperElement = tasty({
@@ -235,6 +236,26 @@ export interface CubeSelectBaseProps<T>
   listBoxStyles?: Styles;
   overlayStyles?: Styles;
   direction?: 'top' | 'bottom';
+  /**
+   * The ref of the element the popover should visually attach itself to.
+   * Defaults to the trigger button.
+   *
+   * Only the popover's POSITION follows this ref. The trigger keeps its own
+   * ref for focus, outside-click and dismiss logic, so anchoring to a wider
+   * container does not make clicks inside that container count as trigger
+   * presses. The popover's `minWidth` also stays tied to the trigger, not to
+   * this element.
+   */
+  targetRef?: RefObject<HTMLElement | null>;
+  /**
+   * Placement of the popover relative to the anchor.
+   * Accepts React Aria's `Placement` strings (e.g. `'bottom start'`,
+   * `'top start'`, `'right top'`, `'left top'`).
+   *
+   * Overrides `direction` when both are given.
+   * @default `${direction} end`
+   */
+  placement?: Placement;
   shouldFlip?: boolean;
   /** Minimum padding in pixels between the popover and viewport edges */
   containerPadding?: number;
@@ -328,6 +349,8 @@ function Select<T extends object>(
     descriptionPlacement,
     hotkeys,
     direction = 'bottom',
+    targetRef,
+    placement: placementProp,
     shouldFlip = true,
     containerPadding = 8,
     placeholder,
@@ -406,10 +429,13 @@ function Select<T extends object>(
   );
 
   let { overlayProps, placement } = useOverlayPosition({
-    targetRef: triggerRef,
+    // Position only. `triggerRef` stays the dismiss/focus anchor below, so a
+    // consumer can line this popover up with a row without that row's clicks
+    // reading as presses on the trigger.
+    targetRef: (targetRef ?? triggerRef) as RefObject<HTMLElement>,
     overlayRef: popoverRef,
     scrollRef: listBoxRef,
-    placement: `${direction} end`,
+    placement: placementProp ?? (`${direction} end` as Placement),
     shouldFlip: shouldFlip,
     isOpen: state.isOpen,
     onClose: state.close,

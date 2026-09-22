@@ -6,10 +6,11 @@ import {
   Styles,
   tasty,
 } from '@tenphi/tasty';
-import { forwardRef, ReactElement, useRef } from 'react';
+import { forwardRef, ReactElement, RefObject, useRef } from 'react';
 import {
   AriaDateRangePickerProps,
   DateValue,
+  Placement,
   useDatePicker,
   useDateRangePicker,
   useFocusRing,
@@ -56,6 +57,21 @@ export interface CubeDateRangeSeparatedPickerProps<
   size?: 'small' | 'medium' | 'large' | (string & {});
   maxVisibleMonths?: number;
   shouldFlip?: boolean;
+  /**
+   * The ref of the element the popover should visually attach itself to.
+   * Defaults to the field wrapper.
+   *
+   * Forwarded to `DialogTrigger`, so the anchor also becomes what outside-click
+   * dismissal treats as the trigger.
+   */
+  targetRef?: RefObject<HTMLElement | null>;
+  /**
+   * Placement of the popover relative to the anchor.
+   * Accepts React Aria's `Placement` strings (e.g. `'bottom start'`,
+   * `'top start'`, `'right top'`, `'left top'`).
+   * @default 'bottom right'
+   */
+  placement?: Placement;
   useLocale?: boolean;
 }
 
@@ -207,8 +223,8 @@ function DateRangeSeparatedPicker<T extends DateValue>(
             hideArrow
             type="popover"
             mobileType="tray"
-            placement="bottom right"
-            targetRef={targetRef}
+            placement={props.placement ?? 'bottom right'}
+            targetRef={props.targetRef ?? targetRef}
             isOpen={startState.isOpen}
             shouldFlip={props.shouldFlip}
             onOpenChange={startState.setOpen}
@@ -267,8 +283,8 @@ function DateRangeSeparatedPicker<T extends DateValue>(
             hideArrow
             type="popover"
             mobileType="tray"
-            placement="bottom right"
-            targetRef={targetRef}
+            placement={props.placement ?? 'bottom right'}
+            targetRef={props.targetRef ?? targetRef}
             isOpen={endState.isOpen}
             shouldFlip={props.shouldFlip}
             onOpenChange={endState.setOpen}

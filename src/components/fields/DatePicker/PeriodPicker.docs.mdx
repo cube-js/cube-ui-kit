@@ -44,6 +44,8 @@ In the month and quarter panels the year in the header is a button that opens a 
 - **`formatValue`** `(date: DateValue, picker: PickerType, locale: string) => string` — Overrides the displayed label
 - **`size`** `'small' | 'medium' | 'large' | (string & {})` (default: `medium`) — Field size
 - **`shouldFlip`** `boolean` (default: `true`) — Whether the popover flips to fit the viewport
+- **`placement`** `Placement` (default: `bottom right`) — Placement of the popover relative to the anchor, as a React Aria placement string (e.g. `'bottom start'`, `'top end'`)
+- **`targetRef`** `RefObject<HTMLElement | null>` — The element the popover visually attaches to. Defaults to the field wrapper; use it to anchor the popover to an outer container so sibling controls' popovers line up
 - **`isOpen`** `boolean` — Whether the popover is open (controlled)
 - **`defaultOpen`** `boolean` — Whether the popover is open by default (uncontrolled)
 - **`onChange`** `(value: DateValue | null) => void` — Fired when the selected period changes

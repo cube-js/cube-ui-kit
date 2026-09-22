@@ -34,6 +34,8 @@ A date picker combines a text input with a calendar interface, allowing users to
 - **`useLocale`** `boolean` (default: `undefined`) — Date segment formatting. Leave unset for the kit's own segment order; `true` uses the active locale's order; `false` forces `en-US`. Note that unset and `false` are **not** the same — unset applies extra segment formatting that `false` skips
 - **`maxVisibleMonths`** `number` (default: `1`) — Maximum number of months to display in calendar
 - **`shouldFlip`** `boolean` (default: `true`) — Whether the calendar popover should flip to fit in the viewport
+- **`placement`** `Placement` (default: `bottom right`) — Placement of the popover relative to the anchor, as a React Aria placement string (e.g. `'bottom start'`, `'top end'`)
+- **`targetRef`** `RefObject<HTMLElement | null>` — The element the popover visually attaches to. Defaults to the field wrapper; use it to anchor the popover to an outer container so sibling controls' popovers line up
 - **`isOpen`** `boolean` — Whether the calendar popover is open (controlled)
 - **`defaultOpen`** `boolean` — Whether the calendar popover is open by default (uncontrolled)
 - **`isDateUnavailable`** `(date: DateValue) => boolean` — Callback to mark specific dates as unavailable

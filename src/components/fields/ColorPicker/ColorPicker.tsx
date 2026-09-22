@@ -11,10 +11,12 @@ import {
   ForwardedRef,
   forwardRef,
   ReactNode,
+  RefObject,
   useEffect,
   useRef,
   useState,
 } from 'react';
+import { Placement } from 'react-aria';
 
 import { useEvent } from '../../../_internal';
 import { FieldBaseProps } from '../../../shared';
@@ -96,6 +98,21 @@ export interface CubeColorPickerProps
   onOpenChange?: (isOpen: boolean) => void;
   /** Whether the popover may flip to the other side of the trigger. */
   shouldFlip?: boolean;
+  /**
+   * The ref of the element the popover should visually attach itself to.
+   * Defaults to the trigger button.
+   *
+   * Forwarded to `DialogTrigger`, so the anchor also becomes what outside-click
+   * dismissal treats as the trigger.
+   */
+  targetRef?: RefObject<HTMLElement | null>;
+  /**
+   * Placement of the popover relative to the anchor.
+   * Accepts React Aria's `Placement` strings (e.g. `'bottom start'`,
+   * `'top start'`, `'right top'`, `'left top'`).
+   * @default 'bottom start'
+   */
+  placement?: Placement;
   /** Replaces the color shown on the trigger. Pass `null` for a swatch on its own. */
   children?: ReactNode;
   /** Shown on the trigger while there is no color. */
@@ -148,6 +165,8 @@ export const ColorPicker = forwardRef(function ColorPicker(
     defaultOpen,
     onOpenChange,
     shouldFlip,
+    targetRef,
+    placement = 'bottom start',
     children,
     placeholder = 'Pick a color',
     size,
@@ -239,7 +258,8 @@ export const ColorPicker = forwardRef(function ColorPicker(
         hideArrow
         type="popover"
         mobileType="tray"
-        placement="bottom start"
+        placement={placement}
+        targetRef={targetRef}
         isOpen={controlledOpen ?? isOpen}
         shouldFlip={shouldFlip}
         onOpenChange={handleOpenChange}

@@ -13,11 +13,12 @@ import {
   forwardRef,
   KeyboardEvent,
   MouseEvent,
+  RefObject,
   useEffect,
   useRef,
   useState,
 } from 'react';
-import { useTextField } from 'react-aria';
+import { Placement, useTextField } from 'react-aria';
 
 import { useEvent } from '../../../_internal';
 import { PipetteIcon } from '../../../icons/PipetteIcon';
@@ -92,6 +93,21 @@ export interface CubeColorInputProps
   onOpenChange?: (isOpen: boolean) => void;
   /** Whether the popover may flip to the other side of the input. */
   shouldFlip?: boolean;
+  /**
+   * The ref of the element the popover should visually attach itself to.
+   * Defaults to the field wrapper.
+   *
+   * Forwarded to `DialogTrigger`, so the anchor also becomes what outside-click
+   * dismissal treats as the trigger.
+   */
+  targetRef?: RefObject<HTMLElement | null>;
+  /**
+   * Placement of the popover relative to the anchor.
+   * Accepts React Aria's `Placement` strings (e.g. `'bottom start'`,
+   * `'top start'`, `'right top'`, `'left top'`).
+   * @default 'bottom right'
+   */
+  placement?: Placement;
   /** Text shown while the field is empty. */
   placeholder?: string;
   /** The size of the input. */
@@ -138,6 +154,8 @@ export const ColorInput = forwardRef(function ColorInput(
     defaultOpen,
     onOpenChange,
     shouldFlip,
+    targetRef: targetRefProp,
+    placement = 'bottom right',
     placeholder = 'Pick a color',
     size,
     isDisabled,
@@ -363,8 +381,8 @@ export const ColorInput = forwardRef(function ColorInput(
             hideArrow
             type="popover"
             mobileType="tray"
-            placement="bottom right"
-            targetRef={targetRef}
+            placement={placement}
+            targetRef={targetRefProp ?? targetRef}
             isOpen={controlledOpen ?? isOpen}
             shouldFlip={shouldFlip}
             onOpenChange={handleOpenChange}
