@@ -1,5 +1,15 @@
 # @cube-dev/ui-kit
 
+## 0.183.0
+
+### Minor Changes
+
+- [#1418](https://github.com/cube-js/cube-ui-kit/pull/1418) [`e78bdb03`](https://github.com/cube-js/cube-ui-kit/commit/e78bdb034c11aa8bc1babf1d04d448ce0b36b277) Thanks [@tenphi](https://github.com/tenphi)! - Support modern form controllers in DialogForm, including typed callbacks, automatic closing after successful submissions, and cancellation and draft retention across dialog sessions. Allow explicit dialog actions to close a DialogTrigger with passive dismissal disabled. Recommend the modern API in the form documentation and migrate Storybook form examples to modern controllers while retaining legacy compatibility references.
+
+- [#1420](https://github.com/cube-js/cube-ui-kit/pull/1420) [`318795f0`](https://github.com/cube-js/cube-ui-kit/commit/318795f05d57c345192d28a13d267ef951343de4) Thanks [@tenphi](https://github.com/tenphi)! - Publish components optimized with React Compiler for React 18 and 19, with no Compiler configuration required in consuming applications. Preserve the legacy form backend and explicitly exclude its mutable render paths from optimization. Fix notification relative timestamps so they continue updating with memoized rendering.
+
+  Normalize React 18 generated IDs in render probes so repeated renders compare consistently.
+
 ## 0.182.0
 
 ### Minor Changes
