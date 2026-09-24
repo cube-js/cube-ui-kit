@@ -133,8 +133,8 @@ export function ModernDialogForm<T extends object>(
         The form wraps BOTH slots rather than sitting inside `Content`, so the
         actions can live in a pinned `Footer` while the body scrolls. They still
         have to be inside the `<form>` for submit to work, which is why the form
-        is the outer one of the two (CUB-4920). `Dialog` gives a direct-child
-        form the flex context this needs.
+        is the outer one of the two (CUB-4920). A form placed directly in a
+        `Dialog` lays itself out as the dialog's column (see `FormElement`).
       */}
       <ModernFormRoot
         data-popover-keep

@@ -7,8 +7,8 @@ import { useLayoutEffect } from '../../../utils/react/useLayoutEffect';
 const OVERFLOW_THRESHOLD = 2;
 
 // The body is the `Content` the dialog itself lays out: a direct child, or the
-// direct child of a direct-child `<form>`. Those are the two shapes the
-// dialog's `> form` flex pass-through supports, so they are the two shapes in
+// direct child of a direct-child `<form>` (a `Form` placed there lays itself
+// out as the dialog's column; see `FormElement`). Those are the two shapes in
 // which `Content` is the thing that scrolls. A `Content` nested anywhere else is
 // part of the body, not the body.
 const BODY_SELECTOR =
