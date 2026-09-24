@@ -69,6 +69,7 @@ Choose a different component when the interaction has another shape:
 - **`triggerDescription`** `ReactNode` — Description text displayed within the trigger button (different from field-level description)
 - **`descriptionPlacement`** `'inline' | 'block'` — Controls how the trigger description is positioned
 - **`hotkeys`** `string` — Keyboard shortcut that triggers the select when pressed
+- **`tooltip`** `string | boolean | object` — Tooltip on the trigger (see [Notable Properties](#notable-properties)). The info badge next to the label is the field-level `labelTooltip`
 - **`containerPadding`** `number` (default: `8`) — Minimum padding in pixels between the popover and viewport edges
 - **`isOpen`** `boolean` — Whether the dropdown is open (controlled)
 - **`defaultOpen`** `boolean` — Whether the dropdown is open by default (uncontrolled)
@@ -95,6 +96,8 @@ Choose a different component when the interaction has another shape:
 - `string` - Simple tooltip text
 - `true` - Auto tooltip on overflow (shows selected value when truncated)
 - `object` - Advanced configuration with optional `auto` property
+
+It belongs to the trigger alone. The info badge next to the field's label is `labelTooltip` — before that prop existed, a `tooltip` on a labelled Select rendered in both places.
 
 **triggerDescription** - Text description displayed within the trigger button. Different from field-level description provided by FieldWrapper.
 

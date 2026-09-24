@@ -2,6 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 
+import { act, hoverWithPointer, renderWithRoot } from '../../../test';
 import { MenuContext } from '../Menu/context';
 
 import { CommandMenu } from './CommandMenu';
@@ -887,6 +888,62 @@ describe('CommandMenu', () => {
       const commandMenu = screen.getByTestId('TestCommandMenu');
       expect(commandMenu).not.toHaveAttribute('data-popover');
       expect(commandMenu).not.toHaveAttribute('data-tray');
+    });
+  });
+
+  // Every item with a `tooltip` used to get a second `TooltipProvider` around
+  // the one it renders itself, in or out of a section — a `div` inside the
+  // list. Opening one tooltip closes any other, so in a browser the two shut
+  // each other (see `Menu.browser.test.tsx`; jsdom's timing hides that).
+  describe('item tooltips', () => {
+    it.each([
+      ['string', 'top level', 'Create a new file'],
+      ['object', 'top level', { title: 'Create a new file' }],
+      ['string', 'section', 'Create a new file'],
+      ['object', 'section', { title: 'Create a new file' }],
+    ])('shows a %s tooltip at the %s, once', async (_, placement, tooltip) => {
+      const items = [
+        <CommandMenu.Item key="create" tooltip={tooltip}>
+          Create file
+        </CommandMenu.Item>,
+        <CommandMenu.Item key="open">Open folder</CommandMenu.Item>,
+      ];
+
+      renderWithRoot(
+        <CommandMenu aria-label="Commands">
+          {placement === 'section' ? (
+            <CommandMenu.Section key="files" title="Files">
+              {items}
+            </CommandMenu.Section>
+          ) : (
+            items
+          )}
+        </CommandMenu>,
+      );
+
+      const list =
+        placement === 'section'
+          ? screen.getByRole('group')
+          : screen.getByRole('menu');
+
+      for (const child of Array.from(list.children)) {
+        expect(child.tagName).toBe('LI');
+      }
+
+      await hoverWithPointer(
+        screen.getByRole('menuitem', { name: 'Create file' }),
+      );
+
+      await waitFor(() => {
+        expect(screen.getByRole('tooltip')).toHaveTextContent(
+          'Create a new file',
+        );
+      });
+
+      // Long enough for a competing tooltip to open and close this one.
+      await act(() => new Promise((resolve) => setTimeout(resolve, 400)));
+
+      expect(screen.getAllByRole('tooltip')).toHaveLength(1);
     });
   });
 });

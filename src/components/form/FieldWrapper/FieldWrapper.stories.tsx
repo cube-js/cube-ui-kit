@@ -47,7 +47,7 @@ Small.args = {
 // chromatic-overlay-reviewed: the info badge in the label row is the subject, not the tooltip it opens
 export const WithTooltip = Template.bind({});
 WithTooltip.args = {
-  tooltip: 'Long description',
+  labelTooltip: 'Long description',
 };
 
 export const WithErrorMessage = Template.bind({});
@@ -65,7 +65,7 @@ SideLabel.args = {
 export const SideLabelWithTooltip = Template.bind({});
 SideLabelWithTooltip.args = {
   labelPosition: 'side',
-  tooltip: <>Long description</>,
+  labelTooltip: <>Long description</>,
 };
 
 export const SideLabelWithMessage = Template.bind({});
@@ -101,7 +101,7 @@ WithExtraAndSuffix.args = {
 export const WithSuffixAndTooltip = Template.bind({});
 WithSuffixAndTooltip.args = {
   labelSuffix: 'Suffix',
-  tooltip: 'Long description',
+  labelTooltip: 'Long description',
 };
 
 // chromatic-overlay-reviewed: badge placement beside a suffix and extra
@@ -109,7 +109,7 @@ export const WithSuffixExtraAndTooltip = Template.bind({});
 WithSuffixExtraAndTooltip.args = {
   labelSuffix: 'Suffix',
   extra: 'Extra info',
-  tooltip: 'Long description',
+  labelTooltip: 'Long description',
 };
 
 export const WithButtonSuffix = Template.bind({});
@@ -123,7 +123,7 @@ WithButtonSuffixAndTooltip.args = {
   labelSuffix: (
     <Button type="clear" size="inline" icon={<IconCoin />} placeSelf="center" />
   ),
-  tooltip: 'Long description',
+  labelTooltip: 'Long description',
 };
 
 // New stories for description and errorMessage functionality
@@ -180,7 +180,7 @@ export const SplitLabelWithTooltip = Template.bind({});
 SplitLabelWithTooltip.args = {
   labelPosition: 'split',
   styles: { width: '(100vw - 6x)' },
-  tooltip: 'Long description',
+  labelTooltip: 'Long description',
 };
 
 export const SplitLabelWithDescription = Template.bind({});

@@ -187,7 +187,7 @@ export interface CubeSelectBaseProps<T>
     BaseStyleProps,
     OuterStyleProps,
     ColorStyleProps,
-    Omit<FieldBaseProps<Key | null | undefined>, 'tooltip'>,
+    FieldBaseProps<Key | null | undefined>,
     CollectionBase<T>,
     Omit<
       AriaSelectProps<T>,
@@ -213,7 +213,8 @@ export interface CubeSelectBaseProps<T>
   /** Keyboard shortcut that triggers the select when pressed */
   hotkeys?: string;
   /**
-   * Tooltip content and configuration for the trigger:
+   * Tooltip content and configuration for the trigger. The info badge next to
+   * the field's label is `labelTooltip`.
    * - string: simple tooltip text
    * - true: auto tooltip on overflow (shows selected value as tooltip when truncated)
    * - object: advanced configuration with optional auto property
@@ -660,12 +661,14 @@ function Select<T extends object>(
     </SelectWrapperElement>
   );
 
-  return wrapWithField<Omit<CubeSelectProps<T>, 'children'>>(
+  return wrapWithField<Omit<CubeSelectProps<T>, 'children' | 'tooltip'>>(
     selectField,
     ref,
     mergeProps(
       {
         ...props,
+        // The trigger's own. Handed on, it read as the legacy field `tooltip`.
+        tooltip: undefined,
       },
       { labelProps },
     ),

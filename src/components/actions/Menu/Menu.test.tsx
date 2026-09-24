@@ -6,6 +6,7 @@ import { createRef, useEffect, useRef, useState } from 'react';
 import {
   act,
   fireEvent,
+  hoverWithPointer,
   render,
   renderHook,
   renderWithRoot,
@@ -1109,6 +1110,43 @@ describe('<Menu />', () => {
     expect(getByRole('menu')).toBeInTheDocument();
     expect(getByText('Copy')).toBeInTheDocument();
     expect(getByText('Paste')).toBeInTheDocument();
+  });
+
+  // A section used to wrap every item with a `tooltip` in a second
+  // `TooltipProvider` — a `div` inside the group's list — on top of the one the
+  // item renders itself. Opening one tooltip closes any other, so the two shut
+  // each other and an object tooltip flashed and vanished.
+  it.each([
+    ['string', 'Copy selected text'],
+    ['object', { title: 'Copy selected text' }],
+  ])('shows a %s tooltip on an item in a section, once', async (_, tooltip) => {
+    renderWithRoot(
+      <Menu aria-label="Test menu">
+        <Menu.Section key="edit" title="Edit">
+          <Menu.Item key="copy" tooltip={tooltip}>
+            Copy
+          </Menu.Item>
+          <Menu.Item key="paste">Paste</Menu.Item>
+        </Menu.Section>
+      </Menu>,
+    );
+
+    for (const child of Array.from(screen.getByRole('group').children)) {
+      expect(child.tagName).toBe('LI');
+    }
+
+    await hoverWithPointer(screen.getByRole('menuitem', { name: 'Copy' }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('tooltip')).toHaveTextContent(
+        'Copy selected text',
+      );
+    });
+
+    // Long enough for a competing tooltip to open and close this one.
+    await act(() => new Promise((resolve) => setTimeout(resolve, 400)));
+
+    expect(screen.getAllByRole('tooltip')).toHaveLength(1);
   });
 });
 

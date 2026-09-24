@@ -1,3 +1,5 @@
+import { createRef } from 'react';
+
 import {
   hoverWithPointer,
   renderWithRoot,
@@ -85,6 +87,32 @@ describe('<Item />', () => {
 
       expect(onClick).not.toHaveBeenCalled();
     });
+  });
+});
+
+describe('labelRef', () => {
+  // `labelRef` used to fall through to the element's DOM attributes
+  // (`labelref="[object Object]"`) and never reach the label.
+  it('points at the label of an Item and an ItemButton', () => {
+    const itemRef = createRef<HTMLElement>();
+    const buttonRef = createRef<HTMLElement>();
+
+    renderWithRoot(
+      <>
+        <Item qa="Item" labelRef={itemRef}>
+          Item label
+        </Item>
+        <ItemButton qa="Button" labelRef={buttonRef}>
+          Button label
+        </ItemButton>
+      </>,
+    );
+
+    expect(itemRef.current).toHaveAttribute('data-element', 'Label');
+    expect(itemRef.current).toHaveTextContent('Item label');
+    expect(buttonRef.current).toHaveTextContent('Button label');
+    expect(screen.getByTestId('Item')).not.toHaveAttribute('labelref');
+    expect(screen.getByTestId('Button')).not.toHaveAttribute('labelref');
   });
 });
 

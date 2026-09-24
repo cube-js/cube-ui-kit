@@ -122,7 +122,7 @@ export interface CubeColorPickerProps
   /** The visual type of the trigger. */
   type?: CubeItemProps['type'];
   theme?: CubeItemProps['theme'];
-  /** Tooltip for the trigger, separate from the field tooltip. */
+  /** Tooltip for the trigger, separate from `labelTooltip`. */
   triggerTooltip?: CubeItemProps['tooltip'];
   /** Colors to offer under the editor, for picking without dialing one in. */
   swatches?: CubeColorSwatchItem[];

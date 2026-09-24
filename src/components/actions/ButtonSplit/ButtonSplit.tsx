@@ -174,6 +174,7 @@ export const ButtonSplit = forwardRef<HTMLDivElement, CubeButtonSplitProps>(
                 size={size}
                 isDisabled={isDisabled}
                 icon={currentAction?.icon}
+                tooltip={currentAction?.tooltip}
                 {...mergeProps(actionProps, { onPress: handleActionPress })}
               >
                 {currentAction?.label}

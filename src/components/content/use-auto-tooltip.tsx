@@ -1,6 +1,7 @@
 import {
   HTMLAttributes,
   ReactNode,
+  Ref,
   RefObject,
   useCallback,
   useEffect,
@@ -27,6 +28,20 @@ export interface UseAutoTooltipOptions {
   children: ReactNode;
   labelProps?: Props;
   isDynamicLabel?: boolean;
+  /**
+   * The caller's own ref to the label element. The hook owns the label's ref
+   * (it measures the node), so a caller that also needs the node hands its ref
+   * over here rather than attaching a second one.
+   */
+  labelRef?: Ref<HTMLElement>;
+}
+
+function assignRef(ref: unknown, element: HTMLElement | null) {
+  if (typeof ref === 'function') {
+    ref(element);
+  } else if (ref) {
+    (ref as { current: HTMLElement | null }).current = element;
+  }
 }
 
 export function useAutoTooltip({
@@ -34,6 +49,7 @@ export function useAutoTooltip({
   children,
   labelProps,
   isDynamicLabel = false,
+  labelRef: labelRefOption,
 }: UseAutoTooltipOptions) {
   // Determine if auto tooltip is enabled
   // Auto tooltip only works when children is a string (overflow detection needs text)
@@ -119,14 +135,9 @@ export function useAutoTooltip({
   // Attach ResizeObserver via callback ref to handle DOM node changes
   const handleLabelElementRef = useCallback(
     (element: HTMLElement | null) => {
-      // Call external callback ref to notify external refs
-      if (externalLabelRef) {
-        if (typeof externalLabelRef === 'function') {
-          externalLabelRef(element);
-        } else {
-          (externalLabelRef as any).current = element;
-        }
-      }
+      // Notify the external refs
+      assignRef(externalLabelRef, element);
+      assignRef(labelRefOption, element);
 
       // Disconnect previous observer
       if (resizeObserverRef.current) {
@@ -170,6 +181,7 @@ export function useAutoTooltip({
     },
     [
       externalLabelRef,
+      labelRefOption,
       isAutoTooltipEnabled,
       checkLabelOverflow,
       scheduleLabelOverflowCheck,

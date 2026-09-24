@@ -152,6 +152,10 @@ export function TooltipTrigger(props: CubeTooltipTriggerProps) {
 
   let { triggerProps: rawTriggerProps, tooltipProps } = useTooltipTrigger(
     {
+      // Without it a disabled tooltip still opened — invisibly, since nothing
+      // renders it — and while open React Aria's document-level listener eats
+      // every `Escape`, so a Dialog under the pointer would not close.
+      isDisabled,
       trigger: triggerAction,
       delay,
       isOpen,
@@ -213,7 +217,7 @@ export function TooltipTrigger(props: CubeTooltipTriggerProps) {
     return (
       <>
         {trigger(triggerProps, tooltipTriggerRef)}
-        <DisplayTransition isShown={state.isOpen}>
+        <DisplayTransition isShown={state.isOpen && !isDisabled}>
           {({ phase, isShown, ref: transitionRef }) => (
             <TooltipContext.Provider
               value={{

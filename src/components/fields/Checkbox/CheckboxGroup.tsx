@@ -71,7 +71,6 @@ function CheckboxGroup(props: WithNullableValue<CubeCheckboxGroupProps>, ref) {
     message,
     description,
     labelStyles,
-    tooltip,
     labelProps: baseLabelProps,
     labelSuffix,
     inputStyles,
