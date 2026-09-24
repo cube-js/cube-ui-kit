@@ -1,5 +1,7 @@
 import { userEvent } from 'vitest/browser';
 
+import { CheckIcon } from '../../../icons/CheckIcon';
+import { CloseIcon } from '../../../icons/CloseIcon';
 import { renderWithRoot, screen, waitFor } from '../../../test';
 
 import { Radio } from './Radio';
@@ -137,5 +139,57 @@ describe('Radio.Button whose label starts truncating while focused', () => {
 
     expect(input.isConnected).toBe(true);
     expect(input).toHaveFocus();
+  });
+});
+
+/**
+ * A radio's tooltip used to open on hover only. Its trigger props all landed on
+ * the `<label>`, while keyboard focus goes to the native input inside it, and
+ * React Aria ignores focus that bubbles up from a child — so the tooltip never
+ * opened from the keyboard, and the focused input was never described by it.
+ */
+describe('Radio tooltip on keyboard focus', () => {
+  it('opens on the focused option and follows arrow-key navigation', async () => {
+    renderWithRoot(
+      <>
+        <button type="button">Before</button>
+        <Radio.Tabs aria-label="Answer" defaultValue="yes">
+          <Radio.Button
+            value="yes"
+            icon={<CheckIcon />}
+            aria-label="Yes"
+            tooltip="Accept the change"
+          />
+          <Radio.Button
+            value="no"
+            icon={<CloseIcon />}
+            aria-label="No"
+            tooltip="Reject the change"
+          />
+        </Radio.Tabs>
+      </>,
+    );
+
+    const [yes, no] = screen.getAllByRole('radio');
+
+    screen.getByRole('button', { name: 'Before' }).focus();
+    await userEvent.keyboard('{Tab}');
+
+    expect(yes).toHaveFocus();
+
+    await waitFor(() => expect(tooltipTexts()).toEqual(['Accept the change']));
+
+    const tooltip = screen.getByRole('tooltip');
+
+    expect(yes.getAttribute('aria-describedby')?.split(' ')).toContain(
+      tooltip.id,
+    );
+
+    await userEvent.keyboard('{ArrowRight}');
+
+    expect(no).toHaveFocus();
+    expect(no).toBeChecked();
+
+    await waitFor(() => expect(tooltipTexts()).toEqual(['Reject the change']));
   });
 });

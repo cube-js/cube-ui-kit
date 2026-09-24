@@ -94,6 +94,39 @@ describe('<Checkbox /> tooltip', () => {
     expect(await screen.findByRole('tooltip')).toHaveTextContent('Sent weekly');
   });
 
+  it.each([
+    ['standalone', false],
+    ['grouped', true],
+  ])(
+    'opens a %s checkbox tooltip on keyboard focus and describes the input',
+    async (_, isGrouped) => {
+      const checkbox = (
+        <Checkbox value="email" tooltip="Sent weekly">
+          Email
+        </Checkbox>
+      );
+
+      renderWithRoot(
+        isGrouped ? (
+          <CheckboxGroup aria-label="Notifications">{checkbox}</CheckboxGroup>
+        ) : (
+          checkbox
+        ),
+      );
+
+      await userEvent.tab();
+
+      const input = screen.getByRole('checkbox');
+
+      expect(input).toHaveFocus();
+
+      const tooltip = await screen.findByRole('tooltip');
+
+      expect(tooltip).toHaveTextContent('Sent weekly');
+      expect(input).toHaveAttribute('aria-describedby', tooltip.id);
+    },
+  );
+
   it('keeps it apart from the field label badge', async () => {
     renderWithRoot(
       <Checkbox

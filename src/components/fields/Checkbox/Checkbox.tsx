@@ -37,6 +37,11 @@ import {
   wrapWithField,
 } from '../../form';
 import { HiddenInput } from '../../HiddenInput';
+import {
+  mergeTooltipFocusProps,
+  splitTooltipTriggerProps,
+  TooltipFocusProps,
+} from '../../overlays/Tooltip/split-trigger-props';
 
 import { CheckboxGroup } from './CheckboxGroup';
 import { CheckboxGroupContext } from './context';
@@ -63,8 +68,8 @@ export interface CubeCheckboxProps
   isIndeterminate?: boolean;
   value?: string;
   /**
-   * The checkbox's own tooltip, shown over the box and its inline label —
-   * also while the checkbox is disabled. A string, or `TooltipProvider` props
+   * The checkbox's own tooltip, shown on hover over the box and its inline
+   * label — also while the checkbox is disabled — and on keyboard focus. A string, or `TooltipProvider` props
    * (`title`, `placement`, …). The info badge next to a field label is
    * `labelTooltip`.
    */
@@ -258,12 +263,17 @@ function Checkbox(
     'inside-form': insideForm,
   };
 
-  const checkbox = (
+  // The input, where keyboard focus lands, takes the tooltip's focus-side
+  // trigger props; the wrapper keeps the hover side and positions the tooltip.
+  const renderCheckbox = (tooltipFocusProps?: TooltipFocusProps) => (
     <>
       <HiddenInput
         qa={qa || 'Checkbox'}
         data-input-type="checkbox"
-        {...mergeProps(inputProps, focusProps)}
+        {...mergeTooltipFocusProps(
+          mergeProps(inputProps, focusProps),
+          tooltipFocusProps,
+        )}
         ref={inputRef}
       />
       <CheckboxElement mods={mods} styles={inputStyles}>
@@ -274,36 +284,42 @@ function Checkbox(
 
   if (!groupState) {
     const checkboxField = renderWithTooltip(
-      (tooltipTriggerProps, tooltipRef) => (
-        // `styles` is forwarded here as well as in the in-group branch below —
-        // it used to be extracted from props and then dropped on this path, so
-        // `<Checkbox styles={{ … }}>` outside a group was a silent no-op.
-        <CheckboxWrapperElement
-          styles={styles}
-          isHidden={isHidden}
-          mods={mods}
-          {...tooltipTriggerProps}
-          ref={tooltipRef}
-        >
-          {checkbox}
-          {children ? (
-            // Same element and preset as the in-group branch. This path used to
-            // force children through `<Text nowrap>`: `white-space: nowrap`
-            // inherits, so a label longer than a few words — or any custom node
-            // with two lines in it — could not wrap at all, and the label also
-            // missed the preset a grouped one picks up.
-            <Element
-              styles={INLINE_LABEL_STYLES}
-              mods={{
-                ...getValidationMods({ isInvalid, isValid }),
-                disabled: isDisabled,
-              }}
-            >
-              {children}
-            </Element>
-          ) : null}
-        </CheckboxWrapperElement>
-      ),
+      (tooltipTriggerProps, tooltipRef) => {
+        const { pointerProps, focusProps: tooltipFocusProps } =
+          splitTooltipTriggerProps(tooltipTriggerProps);
+
+        return (
+          // `styles` is forwarded here as well as in the in-group branch
+          // below — it used to be extracted from props and then dropped on
+          // this path, so `<Checkbox styles={{ … }}>` outside a group was a
+          // silent no-op.
+          <CheckboxWrapperElement
+            styles={styles}
+            isHidden={isHidden}
+            mods={mods}
+            {...pointerProps}
+            ref={tooltipRef}
+          >
+            {renderCheckbox(tooltipFocusProps)}
+            {children ? (
+              // Same element and preset as the in-group branch. This path used
+              // to force children through `<Text nowrap>`: `white-space:
+              // nowrap` inherits, so a label longer than a few words — or any
+              // custom node with two lines in it — could not wrap at all, and
+              // the label also missed the preset a grouped one picks up.
+              <Element
+                styles={INLINE_LABEL_STYLES}
+                mods={{
+                  ...getValidationMods({ isInvalid, isValid }),
+                  disabled: isDisabled,
+                }}
+              >
+                {children}
+              </Element>
+            ) : null}
+          </CheckboxWrapperElement>
+        );
+      },
       'top',
     );
 
@@ -315,12 +331,15 @@ function Checkbox(
     });
   }
 
-  return renderWithTooltip(
-    (tooltipTriggerProps, tooltipRef) => (
+  return renderWithTooltip((tooltipTriggerProps, tooltipRef) => {
+    const { pointerProps, focusProps: tooltipFocusProps } =
+      splitTooltipTriggerProps(tooltipTriggerProps);
+
+    return (
       <CheckboxWrapperElement
         styles={styles}
         isHidden={isHidden}
-        {...mergeProps(hoverProps, tooltipTriggerProps)}
+        {...mergeProps(hoverProps, pointerProps)}
         {...filterBaseProps(otherProps)}
         ref={
           tooltipRef
@@ -333,7 +352,7 @@ function Checkbox(
             : domRef
         }
       >
-        {checkbox}
+        {renderCheckbox(tooltipFocusProps)}
         {label ?? children ? (
           <Element
             styles={labelStyles}
@@ -347,9 +366,8 @@ function Checkbox(
           </Element>
         ) : null}
       </CheckboxWrapperElement>
-    ),
-    'top',
-  );
+    );
+  }, 'top');
 }
 
 /**

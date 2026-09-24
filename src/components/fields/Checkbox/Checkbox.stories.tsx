@@ -31,7 +31,7 @@ export default {
     tooltip: {
       control: { type: 'text' },
       description:
-        'Tooltip shown on hover over the box and its inline label, including while disabled',
+        'Tooltip shown on hover over the box and its inline label (including while disabled) and on keyboard focus',
     },
 
     /* State */

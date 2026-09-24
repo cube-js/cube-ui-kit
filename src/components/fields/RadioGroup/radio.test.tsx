@@ -168,6 +168,40 @@ describe('<Radio /> and <RadioGroup />', () => {
       expect(screen.queryByRole('tooltip')).toBeNull();
     });
 
+    // Keyboard focus lands on the native input, which used to get none of the
+    // tooltip's trigger props: the tooltip opened on hover only, and a screen
+    // reader never heard it.
+    it.each([
+      ['classic', Radio.Group],
+      ['button', Radio.ButtonGroup],
+    ])(
+      'opens a %s radio tooltip on keyboard focus and describes the input',
+      async (_, Group) => {
+        renderWithRoot(
+          <Group aria-label="Group">
+            <Radio value="a" tooltip="Tip A" aria-describedby="hint">
+              Alpha
+            </Radio>
+          </Group>,
+        );
+
+        await userEvent.tab();
+
+        const input = screen.getByRole('radio');
+
+        expect(input).toHaveFocus();
+
+        const tooltip = await screen.findByRole('tooltip');
+
+        expect(tooltip).toHaveTextContent('Tip A');
+        // Joined with the input's own description, not replacing it.
+        expect(input.getAttribute('aria-describedby')?.split(' ')).toEqual([
+          'hint',
+          tooltip.id,
+        ]);
+      },
+    );
+
     // A button radio keeps a disabled auto tooltip mounted while its label
     // fits. That tooltip used to open anyway, unseen, and React Aria swallows
     // every `Escape` while a tooltip is open — so a Dialog would not close

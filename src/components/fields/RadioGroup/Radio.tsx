@@ -24,6 +24,10 @@ import {
 } from '../../form';
 import { HiddenInput } from '../../HiddenInput';
 import { RADIO_SIZE_MAP } from '../../navigation/Tabs/types';
+import {
+  mergeTooltipFocusProps,
+  splitTooltipTriggerProps,
+} from '../../overlays/Tooltip/split-trigger-props';
 
 import { useRadioProvider } from './context';
 import { RadioGroup } from './RadioGroup';
@@ -468,17 +472,20 @@ function Radio(props: CubeRadioProps, ref) {
         // Its label's room follows the group's, so whether it truncates can
         // change while it has focus — keep the tooltip from remounting it.
         isDynamicLabel
-        hiddenContent={
+        // A function, so the input — where keyboard focus lands — gets the
+        // tooltip's focus-side trigger props: the tooltip opens on focus and
+        // describes the control a screen reader announces.
+        hiddenContent={(tooltipFocusProps) => (
           <HiddenInput
             qa={qa || 'Radio'}
             data-input-type="radio"
             aria-label={ariaLabel}
-            {...inputProps}
+            {...mergeTooltipFocusProps(inputProps, tooltipFocusProps)}
             ref={inputRef}
             form={null}
             mods={{ button: isButton, disabled: isRadioDisabled }}
           />
-        }
+        )}
       >
         {label}
       </RadioButtonElement>
@@ -486,11 +493,15 @@ function Radio(props: CubeRadioProps, ref) {
   }
 
   // Render classic radio type
-  return renderWithTooltip(
-    (tooltipTriggerProps, tooltipRef) => (
+  return renderWithTooltip((tooltipTriggerProps, tooltipRef) => {
+    // Hover on the wrapper, focus on the input it holds (see the button branch).
+    const { pointerProps, focusProps: tooltipFocusProps } =
+      splitTooltipTriggerProps(tooltipTriggerProps);
+
+    return (
       <RadioWrapperElement
         styles={styles}
-        {...mergeProps(hoverProps, tooltipTriggerProps)}
+        {...mergeProps(hoverProps, pointerProps)}
         ref={
           tooltipRef
             ? // Written only when React attaches the node, never during render.
@@ -508,7 +519,10 @@ function Radio(props: CubeRadioProps, ref) {
           qa={qa || 'Radio'}
           data-input-type="radio"
           aria-label={ariaLabel}
-          {...mergeProps(inputProps, focusProps)}
+          {...mergeTooltipFocusProps(
+            mergeProps(inputProps, focusProps),
+            tooltipFocusProps,
+          )}
           ref={inputRef}
           mods={{ button: isButton }}
         />
@@ -526,9 +540,8 @@ function Radio(props: CubeRadioProps, ref) {
           </RadioLabelElement>
         )}
       </RadioWrapperElement>
-    ),
-    'top',
-  );
+    );
+  }, 'top');
 }
 
 /**

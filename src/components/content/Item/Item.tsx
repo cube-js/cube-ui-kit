@@ -40,6 +40,10 @@ import {
 import { ItemAction } from '../../actions/ItemAction';
 import { ItemActionProvider } from '../../actions/ItemActionContext';
 import { IconSwitch } from '../../helpers/IconSwitch/IconSwitch';
+import {
+  splitTooltipTriggerProps,
+  TooltipFocusProps,
+} from '../../overlays/Tooltip/split-trigger-props';
 import { CubeTooltipProviderProps } from '../../overlays/Tooltip/TooltipProvider';
 import { highlightText } from '../highlightText';
 import { HotKeys } from '../HotKeys/HotKeys';
@@ -216,8 +220,15 @@ export interface CubeItemProps extends BaseProps, ContainerStyleProps {
    * Passing such a node as `children` instead would make it part of the label:
    * the auto tooltip and `highlight` only work on a string label, and
    * `has-label` would render an empty, padded `Label` next to a lone icon.
+   *
+   * As a function it renders the element that takes focus, and receives the
+   * tooltip's focus-side trigger props to put on it (see
+   * `splitTooltipTriggerProps`): focus lands on that input, not on the item,
+   * so on the item they would never open the tooltip from the keyboard.
    */
-  hiddenContent?: ReactNode;
+  hiddenContent?:
+    | ReactNode
+    | ((tooltipFocusProps: TooltipFocusProps) => ReactNode);
   /**
    * @private
    * The label's room changes over the item's life — a radio tab in a
@@ -977,6 +988,11 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     tooltipTriggerProps?: HTMLAttributes<HTMLElement>,
     tooltipRef?: RefObject<HTMLElement>,
   ) => {
+    const { pointerProps: elementTooltipProps, focusProps: tooltipFocusProps } =
+      typeof hiddenContent === 'function'
+        ? splitTooltipTriggerProps(tooltipTriggerProps)
+        : { pointerProps: tooltipTriggerProps, focusProps: undefined };
+
     // Use callback ref to merge multiple refs without calling hooks
     const handleRef = (element: HTMLElement | null) => {
       // Set the component's forwarded ref
@@ -1009,12 +1025,14 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
         type={htmlType as any}
         {...mergeProps(
           isInert ? omitActivationEventProps(rest) : rest,
-          tooltipTriggerProps || {},
+          elementTooltipProps || {},
           inertProps,
         )}
         style={style}
       >
-        {hiddenContent}
+        {typeof hiddenContent === 'function'
+          ? hiddenContent(tooltipFocusProps ?? {})
+          : hiddenContent}
         {hasIconSlot && (
           <div data-element="Icon">
             <IconSwitch noWrapper contentKey={iconKey}>
