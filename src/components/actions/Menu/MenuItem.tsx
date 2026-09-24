@@ -76,6 +76,19 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
   // Selection indicator will be handled by Item component
   const isVirtualFocused = state.selectionManager.focusedKey === key;
 
+  // `mergeProps` chains handlers rather than replacing them, so a handler of
+  // the item's own passed to it again runs twice. `onKeyDown` used to be: Enter
+  // and Space each click the item, so every keyboard activation fired
+  // `onAction` twice. It is taken out here and passed once.
+  const { onKeyDown: itemOnKeyDown, ...itemOwnProps } = menuItemProps;
+  const onKeyDown = submenuContext?.onKeyDown
+    ? (e: KeyboardEvent) => {
+        // The submenu goes first; a key it handles is not the item's too.
+        submenuContext.onKeyDown?.(e);
+        if (!e.defaultPrevented) itemOnKeyDown?.(e);
+      }
+    : itemOnKeyDown;
+
   const mods = {
     ...itemMods,
     focused: isFocused || isVirtualFocused,
@@ -89,7 +102,7 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
   return (
     <FocusRing>
       <Item
-        {...mergeProps(menuItemProps, filteredItemProps, {
+        {...mergeProps({ ...itemOwnProps, onKeyDown }, filteredItemProps, {
           'data-popover-trigger': true,
           qa: itemQa ? itemQa : `MenuItem-${key}`,
           mods,
@@ -102,19 +115,9 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
           'aria-haspopup': submenuContext ? 'menu' : undefined,
           'aria-expanded': submenuContext?.isOpen,
           'data-has-submenu': submenuContext ? true : undefined,
-          onKeyDown: submenuContext?.onKeyDown
-            ? (e: KeyboardEvent) => {
-                // Call submenu handler first, if it prevents default, don't call the original
-                submenuContext.onKeyDown?.(e);
-                if (!e.defaultPrevented && menuItemProps.onKeyDown) {
-                  menuItemProps.onKeyDown(e);
-                }
-              }
-            : menuItemProps.onKeyDown,
-          onMouseEnter:
-            submenuContext?.onMouseEnter || menuItemProps.onMouseEnter,
-          onMouseLeave:
-            submenuContext?.onMouseLeave || menuItemProps.onMouseLeave,
+          // Chained after the item's own hover handlers.
+          onMouseEnter: submenuContext?.onMouseEnter,
+          onMouseLeave: submenuContext?.onMouseLeave,
         })}
         ref={elementRef}
         disableActionsFocus={true}

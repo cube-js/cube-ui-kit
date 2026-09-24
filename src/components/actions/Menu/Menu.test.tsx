@@ -499,6 +499,81 @@ describe('<Menu />', () => {
     expect(onAction).toHaveBeenCalled();
   });
 
+  // `MenuItem` used to hand React Aria's key handler to `mergeProps` a second
+  // time, and `mergeProps` chains handlers rather than replacing them. Enter
+  // and Space each click the item, so every keyboard activation ran the
+  // action twice.
+  describe('keyboard activation', () => {
+    it.each([
+      ['Enter', '{Enter}'],
+      ['Space', ' '],
+    ])('runs the action once on %s', async (_, key) => {
+      const onAction = vi.fn();
+      const onItemAction = vi.fn();
+
+      renderWithRoot(
+        <Menu aria-label="Test menu" onAction={onAction}>
+          <Menu.Item key="copy" onAction={onItemAction}>
+            Copy
+          </Menu.Item>
+          <Menu.Item key="paste">Paste</Menu.Item>
+        </Menu>,
+      );
+
+      await userEvent.tab();
+
+      expect(screen.getByRole('menuitem', { name: 'Copy' })).toHaveFocus();
+
+      await userEvent.keyboard(key);
+
+      expect(onAction).toHaveBeenCalledTimes(1);
+      expect(onAction).toHaveBeenCalledWith('copy');
+      expect(onItemAction).toHaveBeenCalledTimes(1);
+    });
+
+    it('runs the action of an item in a section once', async () => {
+      const onAction = vi.fn();
+
+      renderWithRoot(
+        <Menu aria-label="Test menu" onAction={onAction}>
+          <Menu.Section key="edit" title="Edit">
+            <Menu.Item key="copy">Copy</Menu.Item>
+          </Menu.Section>
+        </Menu>,
+      );
+
+      await userEvent.tab();
+      await userEvent.keyboard('{Enter}');
+
+      expect(onAction).toHaveBeenCalledTimes(1);
+    });
+
+    it('runs the action once in a menu opened from a trigger', async () => {
+      const onAction = vi.fn();
+
+      renderWithRoot(
+        <MenuTrigger>
+          <Button>Open</Button>
+          <Menu aria-label="Test menu" onAction={onAction}>
+            <Menu.Item key="copy">Copy</Menu.Item>
+            <Menu.Item key="paste">Paste</Menu.Item>
+          </Menu>
+        </MenuTrigger>,
+      );
+
+      await userEvent.click(screen.getByRole('button', { name: 'Open' }));
+
+      await waitFor(() => {
+        expect(screen.getByRole('menuitem', { name: 'Copy' })).toHaveFocus();
+      });
+
+      await userEvent.keyboard('{Enter}');
+
+      expect(onAction).toHaveBeenCalledTimes(1);
+      expect(onAction).toHaveBeenCalledWith('copy');
+    });
+  });
+
   it('should handle keyboard navigation with focus wrapping', async () => {
     const { getByRole } = renderWithRoot(
       <Menu shouldFocusWrap id="test-menu" aria-label="Test menu">

@@ -239,6 +239,94 @@ describe('<SubMenuTrigger />', () => {
       );
     });
 
+    // `MenuItem` used to run the trigger item's own key handler before the
+    // submenu's, and again after it, so Enter also clicked the trigger: the
+    // parent menu's `onAction` ran with the trigger's key, twice.
+    it('opens the submenu on Enter without running an action', async () => {
+      const onAction = vi.fn();
+      const onSubAction = vi.fn();
+
+      renderWithRoot(
+        <Menu aria-label="Test menu" onAction={onAction}>
+          <Menu.SubMenuTrigger key="share-menu">
+            <Menu.Item key="share">Share</Menu.Item>
+            <Menu aria-label="Share" onAction={onSubAction}>
+              <Menu.Item key="share-link">Copy link</Menu.Item>
+            </Menu>
+          </Menu.SubMenuTrigger>
+          <Menu.Item key="delete">Delete</Menu.Item>
+        </Menu>,
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('Share').closest('li')).toHaveAttribute(
+          'data-has-submenu',
+          'true',
+        );
+      });
+
+      await userEvent.tab();
+      await userEvent.keyboard('{Enter}');
+
+      await waitFor(() => {
+        expect(
+          screen.getByRole('menuitem', { name: 'Copy link' }),
+        ).toHaveFocus();
+      });
+
+      expect(onAction).not.toHaveBeenCalled();
+
+      await userEvent.keyboard('{Enter}');
+
+      expect(onSubAction).toHaveBeenCalledTimes(1);
+      expect(onSubAction).toHaveBeenCalledWith('share-link');
+    });
+
+    // Enter used to set a flag for the click it would synthesise. Without that
+    // click, a flag left set would swallow the next real one.
+    it('opens the submenu on a click after a keyboard open', async () => {
+      renderWithRoot(
+        <Menu aria-label="Test menu">
+          <Menu.SubMenuTrigger key="share-menu">
+            <Menu.Item key="share">Share</Menu.Item>
+            <Menu aria-label="Share">
+              <Menu.Item key="share-link">Copy link</Menu.Item>
+            </Menu>
+          </Menu.SubMenuTrigger>
+        </Menu>,
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('Share').closest('li')).toHaveAttribute(
+          'data-has-submenu',
+          'true',
+        );
+      });
+
+      await userEvent.tab();
+      await userEvent.keyboard('{Enter}');
+      await screen.findByRole('menuitem', { name: 'Copy link' });
+      await userEvent.keyboard('{Escape}');
+
+      await waitFor(() => {
+        expect(
+          screen.queryByRole('menuitem', { name: 'Copy link' }),
+        ).not.toBeInTheDocument();
+      });
+
+      await userEvent.click(screen.getByText('Share'));
+
+      // Sooner than the hover, which opens the submenu after 200ms by itself.
+      await waitFor(
+        () => {
+          expect(
+            screen.getByRole('menuitem', { name: 'Copy link' }),
+          ).toBeInTheDocument();
+        },
+        { timeout: 100 },
+      );
+    });
+
     it('should open submenu with Space key', async () => {
       const { getByRole, getByText } = renderWithRoot(
         <MenuTrigger>
