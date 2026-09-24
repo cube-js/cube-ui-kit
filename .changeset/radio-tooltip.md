@@ -1,5 +1,0 @@
----
-"@cube-dev/ui-kit": patch
----
-
-Fix `tooltip` props that were accepted but rendered nothing. A classic (`type="radio"`) `Radio` now shows its `tooltip`, including on a disabled option. A button or tabs `Radio` now truncates a label it has no room for and shows the auto tooltip the docs describe (`tooltip` defaults to `true`); with a `block` description the label keeps its full width, as before. A button `Radio` also supports `highlight` now, and an icon-only one renders as a square icon button matching `ItemButton` instead of carrying an empty, padded label (32px instead of 44px at the default size). Both previously broke because the radio's hidden input was treated as part of the label. `Tabs type="radio"` and `Layout.Header` now truncate a title they have no room for and show it in a tooltip, instead of letting it spill out; `Layout.Header` renders its title text directly in the heading, without the inner `<span>` it used to wrap it in. `labelRef` on `Item`, `ItemButton` and `Radio` (button or classic) now points at the label element instead of leaking to the DOM as a `labelref` attribute, and accepts a callback ref as well as a ref object.
