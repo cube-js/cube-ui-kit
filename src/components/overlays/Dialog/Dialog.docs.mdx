@@ -95,6 +95,17 @@ The `mods` property accepts the following modifiers you can override:
 
 - **`dismissable`** `boolean` — Applied when the dialog can be dismissed with close button or Escape key
 
+`Footer` inside a dialog carries one modifier of its own:
+
+- **`content-overflow`** `boolean` — Applied while the dialog's `Content` is taller than the room it has, i.e. while it scrolls. The footer draws its top border only then, so the line separates the actions from a body that continues beneath them and is absent under a body that fits.
+
+The body is the `Content` that is a direct child of the dialog or of a direct-child `<form>`. A `border` in the footer's own styles replaces the default, so a footer can keep the line always or never draw it:
+
+```jsx
+<Footer styles={{ border: 'top' }}>{/* line always */}</Footer>
+<Footer styles={{ border: false }}>{/* line never */}</Footer>
+```
+
 ## Variants
 
 ### Types
@@ -221,9 +232,25 @@ The `mods` property accepts the following modifiers you can override:
    </Dialog>
    ```
 
-3. **Accessibility**: Always provide a meaningful title for screen readers
-4. **Dismissal**: Use `isDismissable` for dialogs that users can close voluntarily
-5. **Focus Management**: Ensure focus moves to the most important action when dialog opens
+3. **Wrapping the slots in a form**: A `Form` may sit directly between `Dialog` and its slots, so the submit button is inside it. A `Form` placed there lays itself out as the dialog's slot column, so `Content` still scrolls and `Footer` still pins with no styles of your own:
+
+   ```jsx
+   <Dialog>
+     <Header><Title>Edit</Title></Header>
+     <Form>
+       <Content>{/* long body, scrolls */}</Content>
+       <Footer>
+         <Button type="primary" htmlType="submit">Save</Button>
+       </Footer>
+     </Form>
+   </Dialog>
+   ```
+
+   Only a **direct child** `Form` is treated this way. A form nested deeper, or a plain `<form>` element, is your own layout and is left alone. The layout is the form's own state rather than a rule in `Dialog`, so `styles` on the form still win: `<Form styles={{ gap: '1x' }}>` puts `1x` between the slots.
+
+4. **Accessibility**: Always provide a meaningful title for screen readers
+5. **Dismissal**: Use `isDismissable` for dialogs that users can close voluntarily
+6. **Focus Management**: Ensure focus moves to the most important action when dialog opens
 
 ## Integration with Overlays
 

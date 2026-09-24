@@ -2,6 +2,7 @@ import { useI18n } from '../../../i18n';
 import { Button } from '../../actions/Button/Button';
 import { ButtonGroup } from '../../actions/ButtonGroup/ButtonGroup';
 import { Content } from '../../content/Content';
+import { Footer } from '../../content/Footer';
 import { Header } from '../../content/Header';
 import { Title } from '../../content/Title';
 import { isModernFormController } from '../../form/Form/backend';
@@ -132,38 +133,47 @@ function LegacyDialogForm<T extends FieldTypes>(props: CubeDialogFormProps<T>) {
       <Header>
         <Title ellipsis>{title}</Title>
       </Header>
-      <Content>
-        <Form<T>
-          qa={qa || 'DialogForm'}
-          form={form}
-          name={name}
-          defaultValues={defaultValues}
-          labelStyles={labelStyles}
-          labelPosition={labelPosition}
-          requiredMark={requiredMark}
-          necessityIndicator={necessityIndicator}
-          isReadOnly={isReadOnly}
-          isInvalid={isInvalid}
-          isValid={isValid}
-          validateTrigger={validateTrigger}
-          onSubmit={async (data) => {
-            await onSubmit?.(data);
+      {/*
+        The form wraps BOTH slots rather than sitting inside `Content`, so the
+        actions can live in a pinned `Footer` while the body scrolls. They still
+        have to be inside the `<form>` for submit to work, which is why the form
+        is the outer one of the two (CUB-4920). A form placed directly in a
+        `Dialog` lays itself out as the dialog's column (see `FormElement`).
+      */}
+      <Form<T>
+        qa={qa || 'DialogForm'}
+        form={form}
+        name={name}
+        defaultValues={defaultValues}
+        labelStyles={labelStyles}
+        labelPosition={labelPosition}
+        requiredMark={requiredMark}
+        necessityIndicator={necessityIndicator}
+        isReadOnly={isReadOnly}
+        isInvalid={isInvalid}
+        isValid={isValid}
+        validateTrigger={validateTrigger}
+        onSubmit={async (data) => {
+          await onSubmit?.(data);
 
-            onClose?.();
+          onClose?.();
 
-            if (!preserve) {
-              // let animations finish before resetting the form
-              setTimeout(() => {
-                form.resetFields();
-              }, 250);
-            }
-          }}
-          onSubmitFailed={onSubmitFailed}
-          onValuesChange={onValuesChange}
-        >
+          if (!preserve) {
+            // let animations finish before resetting the form
+            setTimeout(() => {
+              form.resetFields();
+            }, 250);
+          }
+        }}
+        onSubmitFailed={onSubmitFailed}
+        onValuesChange={onValuesChange}
+      >
+        <Content>
           {typeof children === 'function' ? children(onLocalDismiss) : children}
+        </Content>
 
-          {!noActions ? (
+        {!noActions ? (
+          <Footer>
             <ButtonGroup>
               <SubmitButton
                 qa={`${qa || ''}SubmitButton`}
@@ -178,9 +188,9 @@ function LegacyDialogForm<T extends FieldTypes>(props: CubeDialogFormProps<T>) {
                 {...(cancelProps || {})}
               />
             </ButtonGroup>
-          ) : undefined}
-        </Form>
-      </Content>
+          </Footer>
+        ) : undefined}
+      </Form>
     </Dialog>
   );
 }
