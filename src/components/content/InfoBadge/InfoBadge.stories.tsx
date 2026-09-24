@@ -127,14 +127,14 @@ export const InsideClickableContainer: Story = {
   ),
 };
 
-/** Every field's `tooltip` prop renders an `InfoBadge` next to the label. */
+/** Every field's `labelTooltip` prop renders an `InfoBadge` next to the label. */
 export const InField: Story = {
   render: () => (
     <Switch
       label="Auto-suspend"
-      tooltip="Suspends the deployment after a period of inactivity."
+      labelTooltip="Suspends the deployment after a period of inactivity."
     />
   ),
-  // Produces the same badge-next-to-label as `InsideClickableContainer`; the point is that `tooltip` builds it for you.
+  // Produces the same badge-next-to-label as `InsideClickableContainer`; the point is that `labelTooltip` builds it for you.
   parameters: NO_SNAPSHOT,
 };

@@ -67,6 +67,8 @@ Pass an `actions` array to automatically render an action button and a trigger b
 
 Each action object requires `key` and `label`, and inherits all other props from `Menu.Item` (`icon`, `rightIcon`, `description`, `descriptionPlacement`, `prefix`, `suffix`, `hotkeys`, `textValue`, `isDisabled`, `qa`, `styles`, etc.).
 
+The action button shows the current action's `icon`, `label` and `tooltip`, so an action's tooltip appears both on its menu item and on the action button while that action is selected. `actionProps.tooltip` overrides it.
+
 ```jsx
 import { Button } from '@cube-dev/ui-kit';
 

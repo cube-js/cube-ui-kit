@@ -197,19 +197,8 @@ function Menu<T extends object>(
         />
       );
 
-      // Apply tooltip wrapper if tooltip property is provided
-      // if (item.props.tooltip) {
-      //   const tooltipProps =
-      //     typeof item.props.tooltip === 'string'
-      //       ? { title: item.props.tooltip }
-      //       : item.props.tooltip;
-
-      //   menuItem = (
-      //     <TooltipProvider key={item.key} placement="right" {...tooltipProps}>
-      //       {menuItem}
-      //     </TooltipProvider>
-      //   );
-      // }
+      // `MenuItem` renders the item's `tooltip` itself — wrapping it in a
+      // second provider makes the two tooltips close each other.
 
       // Apply custom wrapper if provided
       if (item.props?.wrapper) {

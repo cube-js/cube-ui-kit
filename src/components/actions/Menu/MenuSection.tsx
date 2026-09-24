@@ -1,8 +1,6 @@
 import { Styles } from '@tenphi/tasty';
 import { useMenuSection } from 'react-aria';
 
-import { TooltipProvider } from '../../overlays/Tooltip/TooltipProvider';
-
 import { MenuItem, MenuItemProps } from './MenuItem';
 import { StyledMenu, StyledSection, StyledSectionHeading } from './styled';
 
@@ -46,25 +44,8 @@ export function MenuSection<T>(props: CubeMenuSectionProps<T>) {
               />
             );
 
-            // Apply tooltip wrapper if tooltip property is provided
-            if (node.props.tooltip) {
-              const tooltipProps =
-                typeof node.props.tooltip === 'string'
-                  ? { title: node.props.tooltip }
-                  : node.props.tooltip;
-
-              menuItem = (
-                <TooltipProvider
-                  key={node.key}
-                  activeWrap
-                  placement="right"
-                  {...tooltipProps}
-                >
-                  {menuItem}
-                </TooltipProvider>
-              );
-            }
-
+            // `MenuItem` renders the item's `tooltip` itself, as `Menu` does
+            // for items outside a section.
             if (node.props.wrapper) {
               menuItem = node.props.wrapper(menuItem);
             }

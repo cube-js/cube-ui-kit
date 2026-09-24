@@ -169,7 +169,7 @@ const Token = tasty({
 
 // No `Note` / `Warning` block elements any more. Every caveat on this page is now
 // an `InfoBadge` beside the control it qualifies — reached through the field
-// `tooltip` prop, or placed directly where there is no field. A tuner is a dense
+// `labelTooltip` prop, or placed directly where there is no field. A tuner is a dense
 // column of controls, and a paragraph under each one pushed the next knob off the
 // screen to explain something you only need once.
 
@@ -472,7 +472,7 @@ function AccentSourceControls({ resolved }: { resolved?: Tokens }) {
         <ColorInput
           label="Color"
           size="small"
-          tooltip="Sets the accent hue, intensity, and tone from one hex color. The light, normal-contrast fill matches it when accessibility limits allow; dark and high-contrast variants adapt automatically. Colors that are too light for white text or too subtle against the page are adjusted."
+          labelTooltip="Sets the accent hue, intensity, and tone from one hex color. The light, normal-contrast fill matches it when accessibility limits allow; dark and high-contrast variants adapt automatically. Colors that are too light for white text or too subtle against the page are adjusted."
           value={seedColor(input.accent)}
           onChange={(accent) =>
             // Clearing the field is a change of path, so it lands back on a hue seed
@@ -500,7 +500,7 @@ function AccentSourceControls({ resolved }: { resolved?: Tokens }) {
         // No value in the label: the slider already prints it on the right, and
         // the same number twice on one line reads as two facts.
         label="Hue"
-        tooltip="Sets the brand hue used by the accent, primary, purple, and special colors, plus focus and loading states."
+        labelTooltip="Sets the brand hue used by the accent, primary, purple, and special colors, plus focus and loading states."
         value={Math.round(palette.hue)}
         onChange={(hue) =>
           setPalette((config) => ({
@@ -514,7 +514,7 @@ function AccentSourceControls({ resolved }: { resolved?: Tokens }) {
       {palette.pastel ? null : (
         <Slider
           label="Saturation"
-          tooltip="Controls the intensity of accent colors. Status themes inherit this value until customized; the base palette uses a small share while it follows the accent."
+          labelTooltip="Controls the intensity of accent colors. Status themes inherit this value until customized; the base palette uses a small share while it follows the accent."
           value={palette.saturation}
           onChange={(saturation) =>
             setPalette((config) => ({
@@ -550,7 +550,7 @@ function BaseSourceControls() {
         labelPosition="split"
         type="button"
         value={isOwn ? 'own' : 'accent'}
-        tooltip="Follow accent derives neutral UI colors from the accent seed. Own lets you set a separate base hue or color for surfaces, text, borders, and placeholders."
+        labelTooltip="Follow accent derives neutral UI colors from the accent seed. Own lets you set a separate base hue or color for surfaces, text, borders, and placeholders."
         onChange={(next) =>
           setPalette(({ base, ...config }) =>
             next === 'own'
@@ -577,7 +577,7 @@ function BaseSourceControls() {
         <ColorInput
           label="Color"
           size="small"
-          tooltip={`Sets the hue and saturation of neutral UI colors such as surfaces, text, and borders. The color's lightness is ignored so the surface hierarchy stays intact, and saturation is capped at ${MAX_BASE_SATURATION} to keep the palette neutral.`}
+          labelTooltip={`Sets the hue and saturation of neutral UI colors such as surfaces, text, and borders. The color's lightness is ignored so the surface hierarchy stays intact, and saturation is capped at ${MAX_BASE_SATURATION} to keep the palette neutral.`}
           value={seedColor(input.base)}
           onChange={(base) =>
             // Same shape as the accent field above, and for the same reason: one seed
@@ -602,7 +602,7 @@ function BaseSourceControls() {
         <>
           <HueSlider
             label="Hue"
-            tooltip="Sets the tint of neutral UI colors: surfaces, text, borders, and placeholders. Status surfaces keep their own semantic hues."
+            labelTooltip="Sets the tint of neutral UI colors: surfaces, text, borders, and placeholders. Status surfaces keep their own semantic hues."
             value={Math.round(palette.baseHue)}
             onChange={(hue) =>
               setPalette((config) => ({
@@ -614,7 +614,7 @@ function BaseSourceControls() {
           {palette.pastel ? null : (
             <Slider
               label="Saturation"
-              tooltip={
+              labelTooltip={
                 palette.surfaceMode === 'tinted'
                   ? 'Controls how strongly the base hue tints neutral UI colors. Values above about 25 produce little visible change because the base palette intentionally stays near-neutral.'
                   : 'Tints elevated surfaces, borders, and text, but not the page background. Choose Tinted surfaces to make the base hue visible on the page background too.'
@@ -811,7 +811,7 @@ function GlobalControls() {
         labelPosition="split"
         type="button"
         value={palette.surfaceMode}
-        tooltip="Neutral keeps the page background at the end of the tone scale. Tinted shifts the surface ramp slightly inward, giving the base hue room to appear across neutral and status surfaces."
+        labelTooltip="Neutral keeps the page background at the end of the tone scale. Tinted shifts the surface ramp slightly inward, giving the base hue room to appear across neutral and status surfaces."
         onChange={(surfaceMode) =>
           setPalette((config) => ({
             ...config,
@@ -966,7 +966,7 @@ function ContrastControls() {
   return (
     <Slider
       label="Contrast level"
-      tooltip={
+      labelTooltip={
         hasContrastTier()
           ? 'Raises the normal palette from its shipped contrast at 0 toward the high-contrast palette at 100. The separate high-contrast tier remains available until the level reaches 100.'
           : 'At 100, the normal palette already matches the high-contrast palette, so only one tier is generated. Lower the level to preview normal and high contrast separately.'
@@ -1465,7 +1465,7 @@ function StatusThemeButton({
             <ColorInput
               label="Color"
               size="small"
-              tooltip="Sets this status theme's hue, intensity, and tone from one hex color. The light, normal-contrast fill matches it when accessibility limits allow; dark and high-contrast variants adapt automatically. The color also seeds this theme's surfaces, borders, and text."
+              labelTooltip="Sets this status theme's hue, intensity, and tone from one hex color. The light, normal-contrast fill matches it when accessibility limits allow; dark and high-contrast variants adapt automatically. The color also seeds this theme's surfaces, borders, and text."
               value={seedColor(written)}
               onChange={(color) =>
                 // Clearing lands back on a hue pinned where the color left it. There is
@@ -1481,7 +1481,7 @@ function StatusThemeButton({
           ) : (
             <HueSlider
               label="Hue"
-              tooltip="Sets this status hue. Keep danger red, warning amber, and success green; as a starting point, separate status and brand hues by about 35° so tinted surfaces remain distinguishable."
+              labelTooltip="Sets this status hue. Keep danger red, warning amber, and success green; as a starting point, separate status and brand hues by about 35° so tinted surfaces remain distinguishable."
               value={Math.round(seed.hue)}
               onChange={(hue) =>
                 setPalette(
@@ -1518,7 +1518,7 @@ function StatusThemeButton({
           ) : (
             <Slider
               label="Saturation"
-              tooltip="Controls this status theme's intensity. It initially follows Accent saturation; once changed, it stays independent of later accent changes."
+              labelTooltip="Controls this status theme's intensity. It initially follows Accent saturation; once changed, it stays independent of later accent changes."
               value={seed.saturation}
               onChange={(saturation) =>
                 setPalette(
@@ -1736,7 +1736,7 @@ function ThemeBuilderControls({
         <GroupLabel>Syntax</GroupLabel>
         <Slider
           label="Code saturation"
-          tooltip="Controls only the intensity of syntax colors. Their hues are fixed and independent of the brand so code categories stay distinct."
+          labelTooltip="Controls only the intensity of syntax colors. Their hues are fixed and independent of the brand so code categories stay distinct."
           value={palette.themes.code.saturation}
           onChange={(saturation) =>
             setPalette((config) => ({

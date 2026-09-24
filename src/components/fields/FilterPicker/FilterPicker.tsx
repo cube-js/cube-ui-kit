@@ -63,17 +63,16 @@ interface ItemWithKey {
 }
 
 export interface CubeFilterPickerProps<T>
-  extends Omit<CubeFilterListBoxProps<T>, 'size' | 'tooltip' | 'shape'>,
-    Omit<CubeItemProps, 'children' | 'size'>,
+  extends Omit<CubeFilterListBoxProps<T>, 'size' | 'shape'>,
+    // `tooltip` is the trigger's, and on a picker the trigger's is spelled
+    // `triggerTooltip`; the label's info badge is `labelTooltip`.
+    Omit<CubeItemProps, 'children' | 'size' | 'tooltip'>,
     BasePropsWithoutChildren,
     BaseStyleProps,
     OuterStyleProps,
     ColorStyleProps,
-    Omit<
-      FieldBaseProps<
-        string | number | readonly (string | number)[] | null | undefined
-      >,
-      'tooltip'
+    FieldBaseProps<
+      string | number | readonly (string | number)[] | null | undefined
     >,
     Pick<
       CubeItemButtonProps,
@@ -118,7 +117,7 @@ export interface CubeFilterPickerProps<T>
   targetRef?: RefObject<HTMLElement | null>;
   /** Minimum padding in pixels between the popover and viewport edges */
   containerPadding?: number;
-  /** Tooltip for the trigger button (separate from field tooltip) */
+  /** Tooltip for the trigger button (separate from `labelTooltip`) */
   triggerTooltip?: CubeItemProps['tooltip'];
   /** Description for the trigger button (separate from field description) */
   triggerDescription?: CubeItemProps['description'];
@@ -971,7 +970,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     </FilterPickerWrapper>
   );
 
-  return wrapWithField<Omit<CubeFilterPickerProps<T>, 'children' | 'tooltip'>>(
+  return wrapWithField<Omit<CubeFilterPickerProps<T>, 'children'>>(
     filterPickerField,
     ref as any,
     props,

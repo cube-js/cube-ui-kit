@@ -174,6 +174,16 @@ export interface TabButtonProps {
   isLastTab?: boolean;
 }
 
+/** The same tooltip, kept mounted but unable to open. */
+function disableTooltip(tooltip: ParsedTab['tooltip']): ParsedTab['tooltip'] {
+  if (typeof tooltip === 'string') return { title: tooltip, isDisabled: true };
+  if (tooltip && typeof tooltip === 'object') {
+    return { ...tooltip, isDisabled: true };
+  }
+
+  return tooltip;
+}
+
 // =============================================================================
 // TabButton Component
 // =============================================================================
@@ -565,11 +575,22 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
   // `onTitleChange` updates the source asynchronously, e.g. inside a RAF).
   // For ReactNode titles (icons, badges, ...), preserve the original node.
   //
-  // For editable tabs, route the tab's `tooltip` prop through InlineInput so
-  // it owns the truncation + tooltip behaviour (and we pass `tooltip={false}`
-  // to `TabElement` below to avoid double tooltips).
+  // For editable tabs with a string title, route the tab's `tooltip` prop
+  // through InlineInput so it owns the truncation + tooltip behaviour (and we
+  // pass `tooltip={false}` to `TabElement` below to avoid double tooltips).
+  // InlineInput shows no tooltip over a custom display, so a ReactNode title
+  // keeps its tooltip on `TabElement`. It is disabled rather than dropped while
+  // the title is edited: dropping it would unwrap the tab, remounting it just
+  // as editing starts.
   const renderTitleDisplay =
     typeof tabData.title === 'string' ? undefined : () => tabData.title;
+  const tabElementTooltip = !effectiveIsEditable
+    ? tabTooltip
+    : !renderTitleDisplay
+      ? false
+      : isEditing
+        ? disableTooltip(tabTooltip)
+        : tabTooltip;
   const titleContent = effectiveIsEditable ? (
     <InlineInput
       ref={inlineInputRef}
@@ -659,7 +680,7 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
             type={itemType}
             shape={itemShape}
             actions={actions ? true : undefined}
-            tooltip={effectiveIsEditable ? false : tabTooltip}
+            tooltip={tabElementTooltip}
           >
             {titleContent}
           </TabElement>

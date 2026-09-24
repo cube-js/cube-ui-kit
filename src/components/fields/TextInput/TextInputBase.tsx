@@ -286,7 +286,6 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
     suffix,
     suffixPosition = 'before',
     wrapperRef,
-    tooltip,
     rows = 1,
     size = 'medium',
     autoComplete,

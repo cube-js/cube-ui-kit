@@ -68,7 +68,7 @@ export default {
     },
     triggerTooltip: {
       control: { type: null },
-      description: 'Tooltip for the trigger, separate from the field tooltip',
+      description: 'Tooltip for the trigger, separate from `labelTooltip`',
     },
     swatches: {
       control: { type: 'object' },
