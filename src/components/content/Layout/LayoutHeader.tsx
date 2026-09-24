@@ -6,8 +6,8 @@ import {
   Fragment,
   HTMLAttributes,
   ReactNode,
-  Ref,
-  RefCallback,
+  useMemo,
+  useRef,
 } from 'react';
 
 import { useI18n } from '../../../i18n';
@@ -36,7 +36,7 @@ const HeaderElement = tasty(LayoutContent, {
         "breadcrumbs breadcrumbs breadcrumbs extra" auto
         "back title suffix extra" max-content
         ".. subtitle subtitle extra" auto
-        / auto max-content 1fr minmax(0, auto)
+        / auto minmax(0, max-content) 1fr minmax(0, auto)
       `,
       gap: 0,
       placeContent: 'center stretch',
@@ -150,10 +150,17 @@ function LayoutHeader(
     ...otherProps
   } = props;
 
-  // Use auto tooltip for title overflow detection
+  // Use auto tooltip for title overflow detection. The heading is what clips
+  // (`overflow: hidden` + ellipsis), so it is both the element measured and
+  // the tooltip's anchor — one stable ref for the two, rather than a ref merged
+  // afresh on every render, which would re-attach the measuring ref (and
+  // rebuild its ResizeObserver) each time the header rendered.
+  const titleRef = useRef<HTMLElement>(null!);
+  const titleTooltip = useMemo(() => ({ targetRef: titleRef }), []);
   const { labelRef, renderWithTooltip } = useAutoTooltip({
-    tooltip: true,
+    tooltip: titleTooltip,
     children: typeof title === 'string' ? title : undefined,
+    labelRef: titleRef,
   });
 
   const hasBreadcrumbs = breadcrumbs && breadcrumbs.length > 0;
@@ -173,22 +180,21 @@ function LayoutHeader(
     );
   };
 
-  const renderTitle = (
-    tooltipProps?: HTMLAttributes<HTMLElement>,
-    tooltipRef?: Ref<HTMLElement>,
-  ) => {
+  const renderTitle = (tooltipProps?: HTMLAttributes<HTMLElement>) => {
     if (!title) return null;
 
     const TitleTag = `h${level}` as 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 
+    // Measured on the heading itself: an inline wrapper around the text
+    // reports a `clientWidth` of 0 and could never read as truncated.
     return (
       <TitleTag
-        ref={tooltipRef as Ref<HTMLHeadingElement>}
+        ref={labelRef}
         data-element="Title"
         data-level={level}
         {...tooltipProps}
       >
-        <span ref={labelRef as RefCallback<HTMLSpanElement>}>{title}</span>
+        {title}
       </TitleTag>
     );
   };

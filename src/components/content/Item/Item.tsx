@@ -15,6 +15,7 @@ import {
   MouseEvent,
   PointerEvent,
   ReactNode,
+  Ref,
   RefObject,
   useMemo,
 } from 'react';
@@ -208,9 +209,28 @@ export interface CubeItemProps extends BaseProps, ContainerStyleProps {
    */
   disabled?: boolean;
   /**
+   * @private
+   * Rendered inside the item's element but outside every slot, before them.
+   * For a node that has to live in the element without being part of what it
+   * shows — the visually hidden native input a button radio lays over itself.
+   * Passing such a node as `children` instead would make it part of the label:
+   * the auto tooltip and `highlight` only work on a string label, and
+   * `has-label` would render an empty, padded `Label` next to a lone icon.
+   */
+  hiddenContent?: ReactNode;
+  /**
+   * @private
+   * The label's room changes over the item's life — a radio tab in a
+   * responsive switch, say. The auto tooltip then stays mounted, disabled
+   * while the label fits, instead of wrapping the element only once the label
+   * truncates: that wrap remounts the element, which takes focus (and, for a
+   * radio, the native input it holds) with it.
+   */
+  isDynamicLabel?: boolean;
+  /**
    * Ref to access the label element directly
    */
-  labelRef?: RefObject<HTMLElement>;
+  labelRef?: Ref<HTMLElement>;
   /**
    * Heading level for the Label element when type="header" or type="card".
    * Changes the Label's HTML tag to the corresponding heading (h1-h6).
@@ -603,6 +623,10 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     highlightStyles,
     insideWrapper = false,
     showActions = false,
+    hiddenContent,
+    isDynamicLabel = false,
+    // Destructured so it reaches the label, not the element's DOM attributes.
+    labelRef: labelRefProp,
     tokens,
     ...rest
   } = props;
@@ -901,13 +925,14 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     tooltip,
     children,
     labelProps,
+    labelRef: labelRefProp,
     // A row inside an actions wrapper is dynamic whether or not the run holds
     // anything right now: the label's width is whatever `--actions-width` leaves
     // it, and the wrapper republishes that as the actions change. Holding the
     // flag steady is also what keeps the row from REMOUNTING when its actions
     // come and go — the resolved tooltip decides whether a provider wraps the
     // element, so a flag that flips restructures the tree around it.
-    isDynamicLabel: !!actions || insideWrapper,
+    isDynamicLabel: isDynamicLabel || !!actions || insideWrapper,
   });
 
   // A disabled item still has to be able to show its tooltip — that is usually
@@ -989,6 +1014,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
         )}
         style={style}
       >
+        {hiddenContent}
         {hasIconSlot && (
           <div data-element="Icon">
             <IconSwitch noWrapper contentKey={iconKey}>

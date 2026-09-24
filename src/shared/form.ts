@@ -147,8 +147,15 @@ export interface FieldBaseProps<Value = unknown>
   extra?: ReactNode;
   necessityIndicator?: NecessityIndicator | null;
   labelSuffix?: ReactNode;
-  /** A tooltip that is shown inside the label */
-  tooltip?: ReactNode;
+  /**
+   * Tooltip content for an info badge rendered next to the field's label.
+   * Shown only when the field renders a label (`label` or `forceField`).
+   *
+   * Formerly `tooltip`. That name now belongs to the control alone, as it does
+   * on `Item` and `Button`: a component that is both a field and a trigger —
+   * `Select`, `Radio` — no longer has one prop meaning two things.
+   */
+  labelTooltip?: ReactNode;
   /** Whether the element should receive focus on render */
   autoFocus?: boolean;
   /** Whether the field is hidden. */

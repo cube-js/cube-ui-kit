@@ -161,7 +161,7 @@ const Template: StoryFn<StoryProps> = (args) => {
       <TextInput isDisabled name="text2" label="Text disabled" />
       <FieldWrapper
         label="Custom field"
-        tooltip="What?"
+        labelTooltip="What?"
         labelPosition={args.labelPosition}
         Component={<Block>Test</Block>}
       />
@@ -185,7 +185,7 @@ const Template: StoryFn<StoryProps> = (args) => {
       <Select
         name={['select', 'one']}
         label="Select field"
-        tooltip="Additional field description"
+        labelTooltip="Additional field description"
       >
         <Select.Item key="one">One</Select.Item>
         <Select.Item key="two">Two</Select.Item>

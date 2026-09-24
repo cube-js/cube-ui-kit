@@ -1,4 +1,9 @@
-import { render, screen } from '../../../test';
+import {
+  hoverWithPointer,
+  render,
+  renderWithRoot,
+  screen,
+} from '../../../test';
 import { Button } from '../Button/Button';
 
 import { ButtonSplit } from './ButtonSplit';
@@ -75,5 +80,36 @@ describe('<ButtonSplit /> prop forwarding', () => {
     );
 
     expect(screen.getByTestId('Styled')).not.toHaveAttribute('width');
+  });
+});
+
+/**
+ * The action button shows the selected action's icon and label, but used to
+ * drop its `tooltip`, which only appeared on the action's menu item.
+ */
+describe('<ButtonSplit /> action tooltip', () => {
+  const actions = [
+    { key: 'deploy', label: 'Deploy', tooltip: 'Deploy to production' },
+    { key: 'stage', label: 'Stage' },
+  ];
+
+  it("shows the current action's tooltip on the action button", async () => {
+    renderWithRoot(<ButtonSplit actions={actions} />);
+
+    await hoverWithPointer(screen.getByRole('button', { name: 'Deploy' }));
+
+    expect(await screen.findByRole('tooltip')).toHaveTextContent(
+      'Deploy to production',
+    );
+  });
+
+  it('lets actionProps override it', async () => {
+    renderWithRoot(
+      <ButtonSplit actions={actions} actionProps={{ tooltip: 'Ship it' }} />,
+    );
+
+    await hoverWithPointer(screen.getByRole('button', { name: 'Deploy' }));
+
+    expect(await screen.findByRole('tooltip')).toHaveTextContent('Ship it');
   });
 });

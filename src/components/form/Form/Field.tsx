@@ -13,6 +13,7 @@ import { FieldBaseProps, LabelPosition } from '../../../shared/index';
 import { mergeProps } from '../../../utils/react/index';
 import { warn } from '../../../utils/warnings';
 import { FieldWrapper } from '../FieldWrapper/index';
+import { warnAboutLegacyTooltip } from '../legacy-tooltip';
 import { useValidationProps } from '../validation/index';
 
 import { useFormProps } from './Form';
@@ -134,7 +135,7 @@ export function Field<T extends FieldTypes>(props: CubeFieldProps<T>) {
     label,
     extra,
     necessityIndicator,
-    tooltip,
+    labelTooltip,
     isHidden,
     isDisabled,
     isLoading,
@@ -148,6 +149,10 @@ export function Field<T extends FieldTypes>(props: CubeFieldProps<T>) {
 
   if (typeof children === 'function') {
     children = children(form);
+  }
+
+  if (label) {
+    warnAboutLegacyTooltip(allProps);
   }
 
   let child = children == null ? null : Children.only(children);
@@ -201,7 +206,7 @@ export function Field<T extends FieldTypes>(props: CubeFieldProps<T>) {
           label={label}
           labelProps={labelProps}
           extra={extra}
-          tooltip={tooltip}
+          labelTooltip={labelTooltip}
           message={message}
           description={description}
           errorMessage={errorMessage}
@@ -283,8 +288,8 @@ export function Field<T extends FieldTypes>(props: CubeFieldProps<T>) {
     newProps.extra = extra;
   }
 
-  if (tooltip) {
-    newProps.tooltip = tooltip;
+  if (labelTooltip) {
+    newProps.labelTooltip = labelTooltip;
   }
 
   if (message !== undefined) {

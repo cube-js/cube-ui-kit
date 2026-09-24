@@ -6,6 +6,7 @@ import { FieldBaseProps, FormBaseProps } from '../../shared/index';
 import { mergeProps } from '../../utils/react/index';
 
 import { FieldWrapper } from './FieldWrapper/index';
+import { warnAboutLegacyTooltip } from './legacy-tooltip';
 
 // `children` is intentionally omitted: the input is passed as `component`, never through props.
 interface WrapWithFieldProps
@@ -42,7 +43,7 @@ export function wrapWithField<T extends WrapWithFieldProps>(
     fieldProps,
     fieldStyles,
     requiredMark = true,
-    tooltip,
+    labelTooltip,
     isHidden,
     labelSuffix,
   } = props;
@@ -50,6 +51,8 @@ export function wrapWithField<T extends WrapWithFieldProps>(
   if (!label && !forceField) {
     return component;
   }
+
+  warnAboutLegacyTooltip(props);
 
   // Merge fieldStyles as shorthand for fieldProps.styles (fieldStyles takes priority)
   const mergedFieldProps = fieldStyles
@@ -83,7 +86,7 @@ export function wrapWithField<T extends WrapWithFieldProps>(
         isInvalid,
         isValid,
         requiredMark,
-        tooltip,
+        labelTooltip,
         isHidden,
         labelSuffix,
         Component: component,

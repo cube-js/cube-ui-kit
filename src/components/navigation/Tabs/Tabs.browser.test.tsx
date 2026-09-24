@@ -181,3 +181,35 @@ describe('Tabs rename from the tab menu', () => {
     expect(onTitleChange).not.toHaveBeenCalled();
   });
 });
+
+/**
+ * A radio-type tab is sized by its content, but its label column used to be
+ * `max-content` like every other column, so a tab given less room than its
+ * title spilled the title out of the tab instead of truncating it — and the
+ * auto tooltip, which only fires on a truncated label, never did.
+ */
+describe('Radio-type tab with a title too long for it', () => {
+  const TITLE = 'A title far too long for the tab it names';
+
+  it('truncates the title and shows it in a tooltip', async () => {
+    renderWithRoot(
+      <Tabs type="radio" defaultActiveKey="a" width="200px">
+        <Tab key="a" title={TITLE} />
+        <Tab key="b" title="Beta" />
+      </Tabs>,
+    );
+
+    const [tab] = screen.getAllByRole('tab');
+    const label = tab.querySelector('[data-element="Label"]') as HTMLElement;
+
+    expect(label.scrollWidth).toBeGreaterThan(label.clientWidth);
+
+    // React Aria ignores a hover until a pointer move sets the modality.
+    await userEvent.hover(document.body);
+    await userEvent.hover(tab);
+
+    await waitFor(() =>
+      expect(screen.getByRole('tooltip')).toHaveTextContent(TITLE),
+    );
+  });
+});

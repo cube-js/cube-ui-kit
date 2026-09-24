@@ -9,7 +9,7 @@ import {
   Styles,
   tasty,
 } from '@tenphi/tasty';
-import { forwardRef, useContext, useMemo, useRef } from 'react';
+import { forwardRef, ReactElement, useContext, useMemo, useRef } from 'react';
 import {
   AriaCheckboxProps,
   useCheckbox,
@@ -27,6 +27,7 @@ import {
   WithNullableSelected,
 } from '../../../utils/react/nullableValue';
 import { extractStyles } from '../../../utils/styles';
+import { useAutoTooltip } from '../../content/use-auto-tooltip';
 import {
   getValidationMods,
   INLINE_LABEL_STYLES,
@@ -41,6 +42,7 @@ import { CheckboxGroup } from './CheckboxGroup';
 import { CheckboxGroupContext } from './context';
 
 import type { FocusableRef } from '@react-types/shared';
+import type { CubeTooltipProviderProps } from '../../overlays/Tooltip/TooltipProvider';
 
 export interface CubeCheckboxProps
   extends BaseProps,
@@ -60,6 +62,13 @@ export interface CubeCheckboxProps
   inputStyles?: Styles;
   isIndeterminate?: boolean;
   value?: string;
+  /**
+   * The checkbox's own tooltip, shown over the box and its inline label —
+   * also while the checkbox is disabled. A string, or `TooltipProvider` props
+   * (`title`, `placement`, …). The info badge next to a field label is
+   * `labelTooltip`.
+   */
+  tooltip?: string | Omit<CubeTooltipProviderProps, 'children'>;
 }
 
 const CheckboxWrapperElement = tasty({
@@ -157,6 +166,7 @@ function Checkbox(
     inputStyles,
     isHidden,
     form,
+    tooltip,
     // Pulled out so it stays off the `<label>` spread below. The Aria hooks read
     // it from `props` directly; `filterBaseProps` already dropped it at runtime,
     // but it typed as a DOM `FormEventHandler` there, which it is not.
@@ -179,6 +189,10 @@ function Checkbox(
 
   let inputRef = useRef(null);
   let domRef = useFocusableRef(ref, inputRef);
+
+  // Triggered by the wrapper rather than the input, so a disabled checkbox —
+  // whose input ignores the pointer — still shows it.
+  let { renderWithTooltip } = useAutoTooltip({ tooltip, children: null });
 
   const toggleState = useToggleState(props);
 
@@ -258,57 +272,83 @@ function Checkbox(
     </>
   );
 
-  const checkboxField = (
-    // `styles` is forwarded here as well as in the in-group branch below —
-    // it used to be extracted from props and then dropped on this path, so
-    // `<Checkbox styles={{ … }}>` outside a group was a silent no-op.
-    <CheckboxWrapperElement styles={styles} isHidden={isHidden} mods={mods}>
-      {checkbox}
-      {children ? (
-        // Same element and preset as the in-group branch. This path used to
-        // force children through `<Text nowrap>`: `white-space: nowrap`
-        // inherits, so a label longer than a few words — or any custom node
-        // with two lines in it — could not wrap at all, and the label also
-        // missed the preset a grouped one picks up.
-        <Element
-          styles={INLINE_LABEL_STYLES}
-          mods={{
-            ...getValidationMods({ isInvalid, isValid }),
-            disabled: isDisabled,
-          }}
-        >
-          {children}
-        </Element>
-      ) : null}
-    </CheckboxWrapperElement>
-  );
-
   if (!groupState) {
-    return wrapWithField(checkboxField, domRef, props);
+    const checkboxField = renderWithTooltip(
+      (tooltipTriggerProps, tooltipRef) => (
+        // `styles` is forwarded here as well as in the in-group branch below —
+        // it used to be extracted from props and then dropped on this path, so
+        // `<Checkbox styles={{ … }}>` outside a group was a silent no-op.
+        <CheckboxWrapperElement
+          styles={styles}
+          isHidden={isHidden}
+          mods={mods}
+          {...tooltipTriggerProps}
+          ref={tooltipRef}
+        >
+          {checkbox}
+          {children ? (
+            // Same element and preset as the in-group branch. This path used to
+            // force children through `<Text nowrap>`: `white-space: nowrap`
+            // inherits, so a label longer than a few words — or any custom node
+            // with two lines in it — could not wrap at all, and the label also
+            // missed the preset a grouped one picks up.
+            <Element
+              styles={INLINE_LABEL_STYLES}
+              mods={{
+                ...getValidationMods({ isInvalid, isValid }),
+                disabled: isDisabled,
+              }}
+            >
+              {children}
+            </Element>
+          ) : null}
+        </CheckboxWrapperElement>
+      ),
+      'top',
+    );
+
+    // `tooltip` is the checkbox's own here, not a legacy label badge.
+    // `renderWithTooltip` is typed for any node; here it returns an element.
+    return wrapWithField(checkboxField as ReactElement, domRef, {
+      ...props,
+      tooltip: undefined,
+    });
   }
 
-  return (
-    <CheckboxWrapperElement
-      styles={styles}
-      isHidden={isHidden}
-      {...hoverProps}
-      {...filterBaseProps(otherProps)}
-      ref={domRef}
-    >
-      {checkbox}
-      {label ?? children ? (
-        <Element
-          styles={labelStyles}
-          mods={{
-            ...getValidationMods({ isInvalid, isValid }),
-            disabled: isDisabled,
-          }}
-          {...(labelProps ? filterBaseProps(labelProps) : undefined)}
-        >
-          {label ?? children}
-        </Element>
-      ) : null}
-    </CheckboxWrapperElement>
+  return renderWithTooltip(
+    (tooltipTriggerProps, tooltipRef) => (
+      <CheckboxWrapperElement
+        styles={styles}
+        isHidden={isHidden}
+        {...mergeProps(hoverProps, tooltipTriggerProps)}
+        {...filterBaseProps(otherProps)}
+        ref={
+          tooltipRef
+            ? // Written only when React attaches the node, never during render.
+              (element: HTMLLabelElement | null) => {
+                (domRef as { current: HTMLElement | null }).current = element;
+                (tooltipRef as { current: HTMLElement | null }).current =
+                  element;
+              }
+            : domRef
+        }
+      >
+        {checkbox}
+        {label ?? children ? (
+          <Element
+            styles={labelStyles}
+            mods={{
+              ...getValidationMods({ isInvalid, isValid }),
+              disabled: isDisabled,
+            }}
+            {...(labelProps ? filterBaseProps(labelProps) : undefined)}
+          >
+            {label ?? children}
+          </Element>
+        ) : null}
+      </CheckboxWrapperElement>
+    ),
+    'top',
   );
 }
 

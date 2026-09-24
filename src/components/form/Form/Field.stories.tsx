@@ -33,9 +33,9 @@ export default {
       control: { type: 'text' },
       description: 'Additional information displayed below help text',
     },
-    tooltip: {
+    labelTooltip: {
       control: { type: 'text' },
-      description: 'Tooltip content for the field label',
+      description: 'Info badge content next to the field label',
     },
     errorMessage: {
       control: { type: 'text' },

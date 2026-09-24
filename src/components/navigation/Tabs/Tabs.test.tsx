@@ -1,6 +1,12 @@
 import { fireEvent, within } from '@testing-library/react';
 
-import { act, renderWithRoot, userEvent, waitFor } from '../../../test';
+import {
+  act,
+  hoverWithPointer,
+  renderWithRoot,
+  userEvent,
+  waitFor,
+} from '../../../test';
 import { Menu } from '../../actions/Menu';
 
 import { Tab, Tabs } from './Tabs';
@@ -944,6 +950,49 @@ describe('<Tabs />', () => {
       expect(inlineInput).toHaveAttribute('data-qa', 'InlineInput');
     });
 
+    // InlineInput shows no tooltip over a custom display, and the tab button
+    // was told not to show one either, so a ReactNode title lost its tooltip.
+    it('shows the tooltip of an editable tab whose title is not a string', async () => {
+      const { getByRole, findByRole } = renderWithRoot(
+        <Tabs defaultActiveKey="tab1" onTitleChange={vi.fn()}>
+          <Tab
+            key="tab1"
+            isEditable
+            title={<strong>Tab 1</strong>}
+            tooltip="Click to rename"
+          >
+            Content 1
+          </Tab>
+        </Tabs>,
+      );
+
+      await hoverWithPointer(getByRole('tab'));
+
+      expect(await findByRole('tooltip')).toHaveTextContent('Click to rename');
+    });
+
+    it('keeps that tab mounted when its title is edited', async () => {
+      const { getByRole, getByText, findByRole } = renderWithRoot(
+        <Tabs defaultActiveKey="tab1" onTitleChange={vi.fn()}>
+          <Tab
+            key="tab1"
+            isEditable
+            title={<strong>Tab 1</strong>}
+            tooltip="Click to rename"
+          >
+            Content 1
+          </Tab>
+        </Tabs>,
+      );
+
+      const tab = getByRole('tab');
+
+      await userEvent.dblClick(getByText('Tab 1'));
+      await findByRole('textbox');
+
+      expect(getByRole('tab')).toBe(tab);
+    });
+
     // Renaming from the tab menu is covered in `Tabs.browser.test.tsx`.
     // It moved because jsdom cannot referee it: the flow turns on a real
     // blur/focusin order across the menu popover's 350ms exit and on
@@ -952,6 +1001,23 @@ describe('<Tabs />', () => {
     // that the grace period works, not that renaming does. The browser spec
     // drives the real thing and asserts what the user gets: caret in the
     // input, title selected, typing commits.
+  });
+
+  describe('Tab picker', () => {
+    // The picker listed each tab's title and icon but dropped its `tooltip`.
+    it("shows a tab's tooltip on its picker entry", async () => {
+      const { getByRole, findByRole } = renderWithRoot(
+        <Tabs showTabPicker defaultActiveKey="tab1">
+          <Tab key="tab1" title="Tab 1" tooltip="The first tab" />
+          <Tab key="tab2" title="Tab 2" />
+        </Tabs>,
+      );
+
+      await userEvent.click(getByRole('button', { name: 'Select tab' }));
+      await hoverWithPointer(await findByRole('option', { name: 'Tab 1' }));
+
+      expect(await findByRole('tooltip')).toHaveTextContent('The first tab');
+    });
   });
 
   describe('Context menu modes', () => {

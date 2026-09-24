@@ -387,8 +387,12 @@ export const TabElement = tasty(Item, {
     },
     gridTemplate: {
       // extend
+      // Sized by content like a radio button, but the label column keeps a
+      // zero minimum (as `Item`'s `1sf` does), so a tab given less room than
+      // its title truncates it — and gets the auto tooltip — instead of
+      // spilling the title out of the tab.
       'type=radio':
-        '"icon prefix label suffix rightIcon actions" auto / max-content max-content max-content max-content max-content max-content',
+        '"icon prefix label suffix rightIcon actions" auto / max-content max-content minmax(0, max-content) max-content max-content max-content',
     },
     // File-type selection indicator: an inset shadow on the edge that faces
     // the panel area. Flips with placement so the highlight always sits on

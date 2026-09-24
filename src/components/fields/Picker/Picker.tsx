@@ -52,20 +52,16 @@ import type { KeyboardEvent as RAKeyboardEvent } from '@react-types/shared';
 import type { FieldBaseProps } from '../../../shared';
 
 export interface CubePickerProps<T>
-  extends Omit<
-      CubeListBoxProps<T>,
-      'size' | 'tooltip' | 'shape' | 'emptyLabel'
-    >,
-    Omit<CubeItemProps, 'children' | 'size'>,
+  extends Omit<CubeListBoxProps<T>, 'size' | 'shape' | 'emptyLabel'>,
+    // `tooltip` is the trigger's, and on a picker the trigger's is spelled
+    // `triggerTooltip`; the label's info badge is `labelTooltip`.
+    Omit<CubeItemProps, 'children' | 'size' | 'tooltip'>,
     BasePropsWithoutChildren,
     BaseStyleProps,
     OuterStyleProps,
     ColorStyleProps,
-    Omit<
-      FieldBaseProps<
-        string | number | readonly (string | number)[] | null | undefined
-      >,
-      'tooltip'
+    FieldBaseProps<
+      string | number | readonly (string | number)[] | null | undefined
     >,
     Pick<
       CubeItemButtonProps,
@@ -110,7 +106,7 @@ export interface CubePickerProps<T>
   placement?: Placement;
   /** Minimum padding in pixels between the popover and viewport edges */
   containerPadding?: number;
-  /** Tooltip for the trigger button (separate from field tooltip) */
+  /** Tooltip for the trigger button (separate from `labelTooltip`) */
   triggerTooltip?: CubeItemProps['tooltip'];
   /** Description for the trigger button (separate from field description) */
   triggerDescription?: CubeItemProps['description'];
@@ -888,7 +884,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
     </PickerWrapper>
   );
 
-  return wrapWithField<Omit<CubePickerProps<T>, 'children' | 'tooltip'>>(
+  return wrapWithField<Omit<CubePickerProps<T>, 'children'>>(
     pickerField,
     ref as any,
     props,

@@ -225,7 +225,7 @@ export const ButtonGroupRichContent: StoryFn<CubeRadioGroupProps> = () => (
         <Radio value="no" prefix="~" rightIcon={<CloseIcon />}>
           No
         </Radio>
-        <Radio value="maybe" icon={<ExclamationIcon />} />
+        <Radio value="maybe" icon={<ExclamationIcon />} aria-label="Maybe" />
       </Radio.ButtonGroup>
     </Space>
     <Space flow="column">

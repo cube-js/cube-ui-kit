@@ -99,6 +99,7 @@ export function TabPicker({
         <FilterPicker.Item
           key={tab.key}
           icon={tab.icon}
+          tooltip={tab.tooltip}
           textValue={
             typeof tab.title === 'string' ? tab.title : String(tab.key)
           }
