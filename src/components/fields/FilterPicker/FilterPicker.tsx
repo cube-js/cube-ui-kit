@@ -107,6 +107,15 @@ export interface CubeFilterPickerProps<T>
    * @default 'bottom start'
    */
   placement?: Placement;
+  /**
+   * The ref of the element the popover should visually attach itself to.
+   * Defaults to the trigger button.
+   *
+   * Forwarded to `DialogTrigger`, so the anchor also becomes what outside-click
+   * dismissal treats as the trigger. The popover's `minWidth` stays tied to the
+   * trigger button, not to this element.
+   */
+  targetRef?: RefObject<HTMLElement | null>;
   /** Minimum padding in pixels between the popover and viewport edges */
   containerPadding?: number;
   /** Tooltip for the trigger button (separate from field tooltip) */
@@ -259,6 +268,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     children,
     shouldFlip = true,
     placement = 'bottom start',
+    targetRef,
     containerPadding = 8,
     selectedKey,
     defaultSelectedKey,
@@ -860,6 +870,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
       <DialogTrigger
         type="popover"
         placement={placement}
+        targetRef={targetRef}
         isOpen={isPopoverOpen}
         containerPadding={containerPadding}
         shouldFlip={shouldFlip}

@@ -5,10 +5,11 @@ import {
   ContainerStyleProps,
   Styles,
 } from '@tenphi/tasty';
-import { forwardRef, useRef } from 'react';
+import { forwardRef, RefObject, useRef } from 'react';
 import {
   AriaDatePickerProps,
   DateValue,
+  Placement,
   useDatePicker,
   useFocusRing,
 } from 'react-aria';
@@ -43,6 +44,21 @@ export interface CubeDatePickerProps<T extends DateValue = DateValue>
   size?: 'small' | 'medium' | 'large' | (string & {});
   maxVisibleMonths?: number;
   shouldFlip?: boolean;
+  /**
+   * The ref of the element the popover should visually attach itself to.
+   * Defaults to the field wrapper.
+   *
+   * Forwarded to `DialogTrigger`, so the anchor also becomes what outside-click
+   * dismissal treats as the trigger.
+   */
+  targetRef?: RefObject<HTMLElement | null>;
+  /**
+   * Placement of the popover relative to the anchor.
+   * Accepts React Aria's `Placement` strings (e.g. `'bottom start'`,
+   * `'top start'`, `'right top'`, `'left top'`).
+   * @default 'bottom right'
+   */
+  placement?: Placement;
   useLocale?: boolean;
 }
 
@@ -143,8 +159,8 @@ function DatePicker<T extends DateValue>(
           hideArrow
           type="popover"
           mobileType="tray"
-          placement="bottom right"
-          targetRef={targetRef}
+          placement={props.placement ?? 'bottom right'}
+          targetRef={props.targetRef ?? targetRef}
           isOpen={isOpen}
           shouldFlip={props.shouldFlip}
           onOpenChange={setOpen}

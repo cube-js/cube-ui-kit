@@ -73,6 +73,8 @@ Choose a different component when the interaction has another shape:
 - **`headerStyles`** `Styles` — Custom styles for the header area when header prop is provided
 - **`footerStyles`** `Styles` — Custom styles for the footer area when footer prop is provided
 - **`shouldFlip`** `boolean` (default: `true`) — Whether to flip the popover placement when it overflows
+- **`placement`** `Placement` (default: `bottom start`) — Placement of the popover relative to the anchor, as a React Aria placement string (e.g. `'bottom start'`, `'top end'`)
+- **`targetRef`** `RefObject<HTMLElement | null>` — The element the popover visually attaches to. Defaults to the trigger; use it to anchor the popover to an outer container so sibling controls' popovers line up
 - **`containerPadding`** `number` (default: `8`) — Minimum padding in pixels between the popover and viewport edges
 - **`sortSelectedToTop`** `boolean` — Sort selected items to the top when the popover opens (only works with `items` prop, defaults to `true` when items are provided)
 - **`searchValue`** `string` — Controlled search input value
