@@ -127,6 +127,20 @@ const DialogElement = tasty({
       height: 'min 0',
       gap: 0,
     },
+
+    // `gap: 0` above does not reach `Form`'s own spacing. A vertical `Form` is
+    // a block, so tasty compiles its `gap: '2x'` to a bottom margin on every
+    // child but the last — which lands between `Content` and `Footer` and adds
+    // 16px on top of both slots' padding. Same selector shape as `Form`'s rule,
+    // plus the `form` type selector that outranks it.
+    //
+    // Tasty has no bottom-only margin, so this clears every side. A slot's own
+    // margin is lost with it, and a dialog slot is not meant to carry one: the
+    // dialog spaces its slots with their padding.
+    FormGap: {
+      $: '> form > :not(:last-child)',
+      margin: 0,
+    },
   },
 });
 

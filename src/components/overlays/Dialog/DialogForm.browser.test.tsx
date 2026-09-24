@@ -178,6 +178,72 @@ describe('DialogForm pins its footer', () => {
   });
 });
 
+/**
+ * The form sits between the dialog and its slots and must add no space of its
+ * own: `Content` ends where `Footer` begins, exactly as in a dialog with no
+ * form, so the actions sit as far below the last field as in every other
+ * dialog footer. A vertical `Form` spaces its children with bottom margins
+ * (tasty's `gap` fallback on a block), and the dialog's `gap: 0` does not reach
+ * them — left alone they put 16px between the slots, on top of both paddings.
+ */
+describe('the form adds no space between the slots', () => {
+  it.each([
+    [
+      'DialogForm',
+      () => (
+        <DialogForm title="Short" onSubmit={() => {}}>
+          <TextInput name="only" label="Only field" />
+        </DialogForm>
+      ),
+    ],
+    [
+      'the modern DialogForm branch',
+      () => (
+        <DialogForm
+          form={createFormController<{ only: string }>({ defaultValues: {} })}
+          title="Short"
+          onSubmit={() => {}}
+        >
+          <TextInput name="only" label="Only field" />
+        </DialogForm>
+      ),
+    ],
+    [
+      'a hand-composed Dialog > Form',
+      () => (
+        <Dialog>
+          <Form>
+            <Content>
+              <TextInput name="only" label="Only field" />
+            </Content>
+            <Footer>
+              <button type="button">Done</button>
+            </Footer>
+          </Form>
+        </Dialog>
+      ),
+    ],
+  ])('in %s', async (_, dialog) => {
+    renderWithRoot(
+      <DialogContainer isOpen onDismiss={() => {}}>
+        {dialog()}
+      </DialogContainer>,
+    );
+
+    const footer = await screen.findByTestId('Footer');
+    const content = screen.getByTestId('Content');
+
+    await opened();
+
+    const gap =
+      footer.getBoundingClientRect().top -
+      content.getBoundingClientRect().bottom;
+
+    // 1px of tolerance for sub-pixel rounding.
+    expect(Math.abs(gap)).toBeLessThanOrEqual(1);
+  });
+});
+
 describe('the footer line follows the body', () => {
   function LongOrShort({ long }: { long: boolean }) {
     return (
