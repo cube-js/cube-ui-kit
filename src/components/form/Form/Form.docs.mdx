@@ -168,7 +168,7 @@ A thrown/rejected save error appears through `Form.SubmitError`. Validation erro
 </DialogForm>
 ```
 
-A `Form` placed directly in a `Dialog`, wrapping its `Content` and `Footer`, lays itself out as the dialog's slot column: a flex column that grows into the dialog, lets `Content` scroll, and adds no space between the slots. That is the form's own state, so `styles` on the form still override it property by property. A form nested inside `Content` is an ordinary form.
+A `Form` placed directly in a `Dialog`, wrapping its `Content` and `Footer`, lays itself out as the dialog's slot column: a flex column that grows into the dialog, lets `Content` scroll, and adds no space between the slots. That is the form's own `@in-dialog` state, so `styles` on the form still override it property by property. You can also name the state to change only the in-dialog case: `<Form styles={{ gap: { '': '2x', '@in-dialog': '1x' } }}>`. A form nested inside `Content` is an ordinary form.
 
 ## React Compiler
 

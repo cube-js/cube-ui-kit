@@ -248,38 +248,52 @@ describe('the form adds no space between the slots', () => {
     expect(Math.abs(gap)).toBeLessThanOrEqual(1);
   });
 
-  it("lets the form's own styles win inside a dialog", async () => {
-    renderWithRoot(
-      <DialogContainer isOpen onDismiss={() => {}}>
-        <Dialog>
-          <Form styles={{ gap: '1x' }}>
-            <Content>
-              <TextInput name="only" label="Only field" />
-            </Content>
-            <Footer>
-              <button type="button">Done</button>
-            </Footer>
-          </Form>
-        </Dialog>
-      </DialogContainer>,
-    );
+  // The second case names the form's own `@in-dialog` state: a local state
+  // travels with the form's styles, so a consumer override can target the
+  // in-dialog case alone and leave the form's spacing elsewhere as it chose.
+  it.each([
+    ['a plain value', { gap: '1x' }],
+    ['the @in-dialog state', { gap: { '': '3x', '@in-dialog': '1x' } }],
+  ])(
+    "lets the form's own styles win inside a dialog: %s",
+    async (_, styles) => {
+      renderWithRoot(
+        <DialogContainer isOpen onDismiss={() => {}}>
+          <Dialog>
+            <Form styles={styles}>
+              <Content>
+                <TextInput name="only" label="Only field" />
+              </Content>
+              <Footer>
+                <button type="button">Done</button>
+              </Footer>
+            </Form>
+          </Dialog>
+        </DialogContainer>,
+      );
 
-    const footer = await screen.findByTestId('Footer');
-    const content = screen.getByTestId('Content');
+      const footer = await screen.findByTestId('Footer');
+      const content = screen.getByTestId('Content');
 
-    await opened();
+      await opened();
 
-    const form = content.parentElement!;
-    const gap =
-      footer.getBoundingClientRect().top -
-      content.getBoundingClientRect().bottom;
+      const form = content.parentElement!;
+      const gap =
+        footer.getBoundingClientRect().top -
+        content.getBoundingClientRect().bottom;
 
-    // The consumer's `1x` replaced the in-dialog `0`, and it is a real flex
-    // gap rather than the block fallback's margins.
-    expect(getComputedStyle(form).display).toBe('flex');
-    expect(parseFloat(getComputedStyle(form).rowGap)).toBeGreaterThan(0);
-    expect(gap).toBeCloseTo(parseFloat(getComputedStyle(form).rowGap), 0);
-  });
+      // The consumer's `1x` replaced the in-dialog `0`, and it is a real flex
+      // gap rather than the block fallback's margins. Exactly `1x` — not the
+      // form's `2x` default, nor the second case's `3x` outside a dialog.
+      const unit = parseFloat(getComputedStyle(form).getPropertyValue('--gap'));
+      const rowGap = parseFloat(getComputedStyle(form).rowGap);
+
+      expect(getComputedStyle(form).display).toBe('flex');
+      expect(unit).toBeGreaterThan(0);
+      expect(rowGap).toBeCloseTo(unit, 0);
+      expect(gap).toBeCloseTo(rowGap, 0);
+    },
+  );
 
   it('leaves a form nested inside Content an ordinary form', async () => {
     renderWithRoot(
