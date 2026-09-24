@@ -272,7 +272,15 @@ module.exports = [
     // React Compiler: CI run 35740563285 measured 590,457 B, against
     // main's 526,925 B (run 35736611372). Generated memoization and the React
     // 18 runtime add 63,532 B; leave 1,543 B headroom.
-    limit: '592kB',
+    //
+    // DialogForm's pinned footer (CUB-4920): 592,255 B against main's
+    // 591,841 B at 17416c42, both fresh builds. +414 B is the footer line that
+    // tracks whether a dialog's body scrolls (`use-content-overflow.ts`) and
+    // `Form`'s `@in-dialog` layout state. `main` itself sat 159 B under the old
+    // budget after #1425. CI run 35996121593 and a local build agreed to the
+    // byte on this branch's previous merge (592,275 B), so the macOS/Linux gap
+    // noted above did not show here. Leave 1,745 B headroom.
+    limit: '594kB',
   },
   {
     name: 'Tree shaking (just a Button)',
