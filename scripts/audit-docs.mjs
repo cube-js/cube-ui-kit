@@ -93,7 +93,7 @@ const ALLBASE_PROPS = new Set([
 ]);
 
 const FIELD_PROPS = new Set([
-  'label', 'name', 'description', 'extra', 'tooltip', 'errorMessage',
+  'label', 'name', 'description', 'extra', 'labelTooltip', 'errorMessage',
   'necessityIndicator', 'necessityLabel', 'labelSuffix', 'isRequired',
   'isDisabled', 'isReadOnly', 'isLoading', 'isHidden',
   'isInvalid', 'isValid', 'validationState',
@@ -164,6 +164,7 @@ const HTML_PASSTHROUGH_PROPS = new Set([
 const INTERNAL_PROPS = new Set([
   'insideWrapper', 'labelProps', 'descriptionProps', 'keyboardShortcutProps',
   'loadingSlot', 'defaultTooltipPlacement', 'labelRef', 'highlightStyles',
+  'hiddenContent', 'isDynamicLabel',
   'variant', 'insideForm', 'fieldProps', 'fieldStyles', 'messageStyles',
   'forceField', 'requiredMark', 'validateTrigger', 'showValid', 'idPrefix',
   'shouldUpdate', 'validationDelay', 'message', 'showActions',

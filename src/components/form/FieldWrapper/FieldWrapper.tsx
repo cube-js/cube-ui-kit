@@ -9,6 +9,7 @@ import { Text } from '../../content/Text';
 import { Flex } from '../../layout/Flex';
 import { Space } from '../../layout/Space';
 import { Label, NecessityIndicatorMark } from '../Label';
+import { warnAboutLegacyTooltip } from '../legacy-tooltip';
 import { getValidationMods } from '../validation/index';
 
 import { CubeFieldWrapperProps } from './types';
@@ -119,13 +120,15 @@ export const FieldWrapper = forwardRef(function FieldWrapper(
     isInvalid,
     isValid,
     requiredMark = true,
-    tooltip,
+    labelTooltip,
     isHidden,
     labelSuffix,
     children,
   } = props;
 
   const { t } = useI18n();
+
+  warnAboutLegacyTooltip(props);
 
   // `requiredMark={false}` drops the required marker, but the field is still
   // required — so the optional note has to keep losing to it rather than
@@ -177,7 +180,7 @@ export const FieldWrapper = forwardRef(function FieldWrapper(
             />
           </div>
 
-          {tooltip ? <InfoBadge tooltip={tooltip} /> : null}
+          {labelTooltip ? <InfoBadge tooltip={labelTooltip} /> : null}
 
           {labelSuffix ? <div>{labelSuffix}</div> : null}
         </Space>

@@ -27,7 +27,7 @@ For modern forms, follow the [use-case guide](/docs/forms-modernform--docs). Bin
 - **`labelPosition`** `'top' | 'side' | 'split'` (default: `top`) — Position of the label relative to the input.
 - **`description`** `ReactNode` — Description text placed below the label.
 - **`extra`** `ReactNode` — Additional content displayed next to the label.
-- **`tooltip`** `ReactNode` — Tooltip shown inside the label.
+- **`labelTooltip`** `ReactNode` — Content of an info badge shown next to the label. Only rendered when the field has a label. (Formerly `tooltip`. On most fields `tooltip` is gone; on `Select` and `Checkbox` it is the control's own tooltip, as on `Item` and `Button`.)
 - **`labelSuffix`** `ReactNode` — Content displayed after the label text.
 - **`labelProps`** `object` — Additional HTML props passed to the label element.
 - **`labelStyles`** `Styles` — Tasty styles for the label element.
@@ -136,7 +136,7 @@ function ExampleForm() {
       <Select
         name="role"
         label="Role"
-        tooltip="Your primary role in the organization"
+        labelTooltip="Your primary role in the organization"
         necessityIndicator="label"
         isRequired
       >

@@ -15,6 +15,7 @@ import { mergeProps } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
 import { extractStyles } from '../../../utils/styles';
 import { CubeItemProps, Item } from '../../content/Item/Item';
+import { useAutoTooltip } from '../../content/use-auto-tooltip';
 import {
   getValidationMods,
   getValidationTheme,
@@ -23,6 +24,10 @@ import {
 } from '../../form';
 import { HiddenInput } from '../../HiddenInput';
 import { RADIO_SIZE_MAP } from '../../navigation/Tabs/types';
+import {
+  mergeTooltipFocusProps,
+  splitTooltipTriggerProps,
+} from '../../overlays/Tooltip/split-trigger-props';
 
 import { useRadioProvider } from './context';
 import { RadioGroup } from './RadioGroup';
@@ -32,6 +37,27 @@ import type { AriaRadioProps } from 'react-aria';
 export { AriaRadioProps };
 export { useRadio };
 
+/**
+ * Same columns as `Item`, but none of them stretches — a radio button is sized
+ * by its content, not stretched like a list item. The label column still has a
+ * zero minimum, the way `Item`'s `1sf` does, so a radio given less room than
+ * its label truncates the label instead of overflowing the button — which is
+ * also what lets the auto tooltip (`tooltip` / `tooltip={true}`) fire.
+ */
+const RADIO_BUTTON_COLUMNS =
+  'max-content max-content minmax(0, max-content) max-content max-content max-content';
+
+/**
+ * A `block` description spans every column, and a spanning item's width goes
+ * to the columns with an intrinsic minimum. With a zero-minimum label column
+ * that is every column but the label's — so the description's width lands in
+ * the empty icon / prefix / suffix columns and the button grows to label plus
+ * description instead of the wider of the two. Only this layout keeps the
+ * all-`max-content` columns, and with them a label that does not truncate.
+ */
+const RADIO_BUTTON_BLOCK_COLUMNS =
+  'max-content max-content max-content max-content max-content max-content';
+
 const RadioButtonElement = tasty(Item, {
   qa: 'RadioButton',
   as: 'label',
@@ -39,19 +65,14 @@ const RadioButtonElement = tasty(Item, {
     preset: 't3m',
     lineHeight: '1em',
     flexGrow: 1,
-    // Same areas as `Item`, but every column is `max-content` — a radio button
-    // is sized by its content, not stretched like a list item. The
-    // `description` rows have to be repeated here because a plain string would
-    // replace `Item`'s whole state map and leave the description without a
-    // grid area to land in.
+    // Same areas as `Item`. The `description` rows have to be repeated here
+    // because a plain string would replace `Item`'s whole state map and leave
+    // the description without a grid area to land in.
     gridTemplate: {
-      '': '"icon prefix label suffix rightIcon actions" auto / max-content max-content max-content max-content max-content max-content',
-      'description=inline':
-        '"icon prefix description suffix rightIcon actions" auto / max-content max-content max-content max-content max-content max-content',
-      'description=inline & has-label':
-        '"icon prefix label suffix rightIcon actions" auto "icon prefix description suffix rightIcon actions" auto / max-content max-content max-content max-content max-content max-content',
-      'description=block':
-        '"icon prefix label suffix rightIcon actions" auto "description description description description description description" auto / max-content max-content max-content max-content max-content max-content',
+      '': `"icon prefix label suffix rightIcon actions" auto / ${RADIO_BUTTON_COLUMNS}`,
+      'description=inline': `"icon prefix description suffix rightIcon actions" auto / ${RADIO_BUTTON_COLUMNS}`,
+      'description=inline & has-label': `"icon prefix label suffix rightIcon actions" auto "icon prefix description suffix rightIcon actions" auto / ${RADIO_BUTTON_COLUMNS}`,
+      'description=block': `"icon prefix label suffix rightIcon actions" auto "description description description description description description" auto / ${RADIO_BUTTON_BLOCK_COLUMNS}`,
     },
     placeContent: 'center',
     shadow: {
@@ -180,6 +201,9 @@ const RadioLabelElement = tasty({
  * `ItemButton`. Kept as a runtime list so a new `Item` prop only has to be
  * added in one place.
  *
+ * A classic radio ignores all of them except `tooltip` and `labelRef`, which
+ * it resolves itself (see `useAutoTooltip` in `Radio`).
+ *
  * Deliberately absent:
  * - `size`, `type`, `theme`, `isSelected`, `isDisabled`, `mods`, `styles` —
  *   owned by the radio (they come from the prop/context/validation resolution
@@ -220,14 +244,18 @@ type RadioItemProps = Pick<CubeItemProps, (typeof ITEM_PROPS)[number]>;
 export interface CubeRadioProps
   extends BaseProps,
     AriaRadioProps,
-    Omit<FieldBaseProps, 'tooltip'>,
+    // `labelTooltip` belongs to the group's label: a single radio has none.
+    Omit<FieldBaseProps, 'labelTooltip'>,
     /**
      * Container style props apply to button-type radios (they style the `Item`
      * the radio renders). A classic radio only reads the outer subset —
      * everything else belongs to its inner circle and label.
      */
     ContainerStyleProps,
-    /** All of these apply to button/tabs-type radios only. */
+    /**
+     * All of these apply to button/tabs-type radios only, except `tooltip`
+     * and `labelRef`, which a classic radio supports too.
+     */
     RadioItemProps {
   'aria-label'?: string;
   /* The visual type of the radio button */
@@ -366,6 +394,18 @@ function Radio(props: CubeRadioProps, ref) {
   );
   let { hoverProps, isHovered } = useHover({ isDisabled: effectiveIsDisabled });
 
+  // A button radio hands `tooltip` to its `Item`, which resolves it around the
+  // element it renders. A classic radio has no `Item`, so it resolves its own —
+  // otherwise the prop the type accepts would render nothing at all.
+  let { labelRef: tooltipLabelRef, renderWithTooltip } = useAutoTooltip({
+    tooltip: isButton ? undefined : props.tooltip,
+    children: label,
+    labelRef: isButton ? undefined : props.labelRef,
+    // As for a button radio's `Item`: an auto tooltip that mounted only once
+    // the label truncated would remount the radio, and its focused input.
+    isDynamicLabel: true,
+  });
+
   let inputRef = useRef(null);
   let domRef = useFocusableRef(ref, inputRef);
 
@@ -426,52 +466,82 @@ function Radio(props: CubeRadioProps, ref) {
         }}
         styles={styles}
         {...mergeProps(hoverProps, focusProps)}
+        // Outside the label, so `Item` sees the label alone: its auto tooltip
+        // and `highlight` only work on a string label, and an input counted as
+        // label content gave an icon-only radio an empty, padded `Label`.
+        // Its label's room follows the group's, so whether it truncates can
+        // change while it has focus — keep the tooltip from remounting it.
+        isDynamicLabel
+        // A function, so the input — where keyboard focus lands — gets the
+        // tooltip's focus-side trigger props: the tooltip opens on focus and
+        // describes the control a screen reader announces.
+        hiddenContent={(tooltipFocusProps) => (
+          <HiddenInput
+            qa={qa || 'Radio'}
+            data-input-type="radio"
+            aria-label={ariaLabel}
+            {...mergeTooltipFocusProps(inputProps, tooltipFocusProps)}
+            ref={inputRef}
+            form={null}
+            mods={{ button: isButton, disabled: isRadioDisabled }}
+          />
+        )}
       >
-        <HiddenInput
-          qa={qa || 'Radio'}
-          data-input-type="radio"
-          aria-label={ariaLabel}
-          {...inputProps}
-          ref={inputRef}
-          form={null}
-          mods={{ button: isButton, disabled: isRadioDisabled }}
-        />
         {label}
       </RadioButtonElement>
     );
   }
 
   // Render classic radio type
-  return (
-    <RadioWrapperElement
-      styles={styles}
-      {...hoverProps}
-      ref={domRef}
-      mods={mods}
-      data-type={type}
-    >
-      <HiddenInput
-        qa={qa || 'Radio'}
-        data-input-type="radio"
-        aria-label={ariaLabel}
-        {...mergeProps(inputProps, focusProps)}
-        ref={inputRef}
-        mods={{ button: isButton }}
-      />
-      <RadioNormalElement data-element="Input" mods={mods} data-type={type}>
-        {RadioCircleElement}
-      </RadioNormalElement>
-      {label && (
-        <RadioLabelElement
-          mods={mods}
-          styles={labelStyles}
-          {...(labelProps ? filterBaseProps(labelProps) : undefined)}
-        >
-          {label}
-        </RadioLabelElement>
-      )}
-    </RadioWrapperElement>
-  );
+  return renderWithTooltip((tooltipTriggerProps, tooltipRef) => {
+    // Hover on the wrapper, focus on the input it holds (see the button branch).
+    const { pointerProps, focusProps: tooltipFocusProps } =
+      splitTooltipTriggerProps(tooltipTriggerProps);
+
+    return (
+      <RadioWrapperElement
+        styles={styles}
+        {...mergeProps(hoverProps, pointerProps)}
+        ref={
+          tooltipRef
+            ? // Written only when React attaches the node, never during render.
+              (element: HTMLLabelElement | null) => {
+                (domRef as { current: HTMLElement | null }).current = element;
+                (tooltipRef as { current: HTMLElement | null }).current =
+                  element;
+              }
+            : domRef
+        }
+        mods={mods}
+        data-type={type}
+      >
+        <HiddenInput
+          qa={qa || 'Radio'}
+          data-input-type="radio"
+          aria-label={ariaLabel}
+          {...mergeTooltipFocusProps(
+            mergeProps(inputProps, focusProps),
+            tooltipFocusProps,
+          )}
+          ref={inputRef}
+          mods={{ button: isButton }}
+        />
+        <RadioNormalElement data-element="Input" mods={mods} data-type={type}>
+          {RadioCircleElement}
+        </RadioNormalElement>
+        {label && (
+          <RadioLabelElement
+            ref={tooltipLabelRef}
+            mods={mods}
+            styles={labelStyles}
+            {...(labelProps ? filterBaseProps(labelProps) : undefined)}
+          >
+            {label}
+          </RadioLabelElement>
+        )}
+      </RadioWrapperElement>
+    );
+  }, 'top');
 }
 
 /**

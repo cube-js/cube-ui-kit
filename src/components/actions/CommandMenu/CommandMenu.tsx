@@ -27,7 +27,6 @@ import { extractStyles } from '../../../utils/styles';
 // `CollectionItem` (not react-stately's bare `Item`) is what CommandMenu
 // actually renders through `MenuItem`, so it carries the `Item` props.
 import { CollectionItem as Item } from '../../CollectionItem';
-import { TooltipProvider } from '../../overlays/Tooltip/TooltipProvider';
 import { useMenuContext } from '../Menu';
 import { CubeMenuProps } from '../Menu/Menu';
 import { MenuItem } from '../Menu/MenuItem';
@@ -423,25 +422,6 @@ function CommandMenu<T extends object>(
           onAction={item.onAction}
         />
       );
-
-      // Apply tooltip wrapper if tooltip property is provided
-      if (item.props.tooltip) {
-        const tooltipProps =
-          typeof item.props.tooltip === 'string'
-            ? { title: item.props.tooltip }
-            : item.props.tooltip;
-
-        menuItem = (
-          <TooltipProvider
-            key={item.key}
-            activeWrap
-            placement="right"
-            {...tooltipProps}
-          >
-            {menuItem}
-          </TooltipProvider>
-        );
-      }
 
       // Apply custom wrapper if provided
       if (item.props.wrapper) {

@@ -50,7 +50,7 @@ An accessible tabbed interface for organizing content into multiple panels, show
 - **`isReorderable`** `boolean` (default: `false`) — Enable drag-and-drop tab reordering. When a tab picker is shown, reordering is automatically enabled in the picker dropdown as well
 - **`keyOrder`** `string[]` — Controlled tab display order
 - **`onReorder`** `(newOrder: string[]) => void` — Callback when tabs are reordered
-- **`showTabPicker`** `boolean | 'auto'` (default: `false`) — Show dropdown tab picker
+- **`showTabPicker`** `boolean | 'auto'` (default: `false`) — Show dropdown tab picker. Each entry carries its tab's `icon` and `tooltip`
 - **`showScrollArrows`** `boolean | 'auto'` (default: `false`) — Show scroll navigation arrows
 - **`tabPickerPosition`** `'prefix' | 'suffix'` (default: `suffix`) — Position of the tab picker
 - **`scrollArrowsPosition`** `'prefix' | 'suffix'` (default: `suffix`) — Position of the scroll arrows
@@ -136,7 +136,7 @@ For individual tabs:
 - `medium` - Default size with t3m typography
 - `large` - Larger tabs with t3m typography
 
-**Note:** Radio type supports `large` (default, 40px total) and `medium` (32px total) sizes, mapped to Item button sizes `medium` (32px) and `xsmall` (24px) respectively.
+**Note:** Radio type supports `large` (default, 40px total) and `medium` (32px total) sizes, mapped to Item button sizes `medium` (32px) and `xsmall` (24px) respectively. A radio tab given less room than its title (an explicit `width`, say) truncates the title and shows it in a tooltip.
 
 <Story of={TabsStories.LargeSize} />
 
@@ -454,7 +454,7 @@ Add dropdown menus to tabs using the `menu` prop. This replaces the need for man
 
 Combine editable tabs with a menu for rename, duplicate, and delete actions. The inline editing UI is provided by [InlineInput](/docs/content-inlineinput--docs), which can also be used standalone elsewhere.
 
-> For editable tabs the `tooltip` prop is rendered by `InlineInput` rather than by the surrounding tab button. This keeps the tooltip in sync with the editing UI (and avoids a double tooltip) — the trigger area is the title content, not the entire tab button. Long titles also get an automatic ellipsis + overflow tooltip without any extra configuration.
+> For editable tabs with a string title the `tooltip` prop is rendered by `InlineInput` rather than by the surrounding tab button. This keeps the tooltip in sync with the editing UI (and avoids a double tooltip) — the trigger area is the title content, not the entire tab button. Long titles also get an automatic ellipsis + overflow tooltip without any extra configuration. An editable tab whose `title` is a ReactNode shows its `tooltip` on the tab button instead, hidden while the title is being edited.
 
 <Story of={TabsStories.WithEditableTabs} />
 

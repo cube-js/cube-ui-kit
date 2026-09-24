@@ -1,6 +1,12 @@
 import { RefObject } from 'react';
 
-import { renderWithRoot, screen } from '../../../test';
+import {
+  act,
+  hoverWithPointer,
+  renderWithRoot,
+  screen,
+  userEvent,
+} from '../../../test';
 
 import { TooltipProvider } from './TooltipProvider';
 
@@ -41,5 +47,46 @@ describe('<TooltipProvider />', () => {
 
     expect(screen.getByRole('button')).toBeInTheDocument();
     expect(nodes.size).toBe(1);
+  });
+
+  /**
+   * A disabled tooltip renders nothing, but its trigger used to open anyway.
+   * While open, React Aria stops every `Escape` at the document and describes
+   * the trigger by the id of a tooltip that is not there. `Item` and `Radio`
+   * keep a disabled auto tooltip mounted while their label fits, so this hit
+   * every button radio and every tab with actions.
+   */
+  it('keeps a disabled tooltip closed', async () => {
+    const onKeyDown = vi.fn();
+
+    renderWithRoot(
+      <div onKeyDown={(event) => onKeyDown(event.key)}>
+        <button type="button">Elsewhere</button>
+        <TooltipProvider isDisabled title="Tip">
+          {(triggerProps, ref?: RefObject<HTMLElement>) => (
+            <span
+              {...triggerProps}
+              ref={(element: HTMLSpanElement | null) => {
+                if (ref)
+                  (ref as { current: HTMLElement | null }).current = element;
+              }}
+            >
+              Trigger
+            </span>
+          )}
+        </TooltipProvider>
+      </div>,
+    );
+
+    screen.getByRole('button').focus();
+    await hoverWithPointer(screen.getByText('Trigger'));
+    // Past the default open delay.
+    await act(() => new Promise((resolve) => setTimeout(resolve, 400)));
+
+    expect(screen.getByText('Trigger')).not.toHaveAttribute('aria-describedby');
+
+    await userEvent.keyboard('{Escape}');
+
+    expect(onKeyDown).toHaveBeenCalledWith('Escape');
   });
 });

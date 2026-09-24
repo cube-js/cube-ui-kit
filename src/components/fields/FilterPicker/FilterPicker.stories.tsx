@@ -267,7 +267,7 @@ const meta: Meta<typeof FilterPicker> = {
     triggerTooltip: {
       control: { type: 'text' },
       description:
-        'Tooltip for the trigger button (separate from field tooltip)',
+        'Tooltip for the trigger button (separate from `labelTooltip`)',
     },
     triggerDescription: {
       control: { type: 'text' },
