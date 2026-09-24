@@ -168,6 +168,8 @@ A thrown/rejected save error appears through `Form.SubmitError`. Validation erro
 </DialogForm>
 ```
 
+A `Form` placed directly in a `Dialog`, wrapping its `Content` and `Footer`, lays itself out as the dialog's slot column: a flex column that grows into the dialog, lets `Content` scroll, and adds no space between the slots. That is the form's own state, so `styles` on the form still override it property by property. A form nested inside `Content` is an ordinary form.
+
 ## React Compiler
 
 The modern controller, subscriptions, input binding, and dialog workflows are tested with React Compiler on React 18 and 19. The published library remains uncompiled. Consumer render code must use `Form.useValue`, `Form.useFieldState`, or selectors to subscribe; imperative getters do not subscribe. This does not make legacy mutable instance reads Compiler-safe.

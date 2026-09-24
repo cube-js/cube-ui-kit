@@ -101,46 +101,9 @@ const DialogElement = tasty({
       'type=popover': '1x',
     },
 
-    // A `<form>` sitting between the dialog and its slots passes the dialog's
-    // flex context through instead of breaking it.
-    //
-    // The dialog is a flex column whose `Content` grows and scrolls while
-    // `Header` and `Footer` stay put. Wrap the slots in a form — which every
-    // dialog with a submit button has to, since the buttons must be inside it —
-    // and the form becomes the flex child in their place. Its own
-    // `display: block` then makes `Content` size to its content, so the body
-    // never scrolls and the footer is pushed off the bottom of the dialog.
-    //
-    // `min-height: 0` is the half nobody guesses: a flex item's default
-    // `min-height: auto` refuses to shrink below its content, so `Content`
-    // cannot scroll no matter what overflow it sets. Consumers rediscovered
-    // this set by hand — see CUB-4920 — so the dialog states it once here.
-    //
-    // Direct child only (`$: '> form'` is a raw tag selector, no
-    // `data-element` needed). A form nested deeper is the consumer's own
-    // layout and is left alone.
-    Form: {
-      $: '> form',
-      display: 'flex',
-      flow: 'column',
-      flexGrow: 1,
-      height: 'min 0',
-      gap: 0,
-    },
-
-    // `gap: 0` above does not reach `Form`'s own spacing. A vertical `Form` is
-    // a block, so tasty compiles its `gap: '2x'` to a bottom margin on every
-    // child but the last — which lands between `Content` and `Footer` and adds
-    // 16px on top of both slots' padding. Same selector shape as `Form`'s rule,
-    // plus the `form` type selector that outranks it.
-    //
-    // Tasty has no bottom-only margin, so this clears every side. A slot's own
-    // margin is lost with it, and a dialog slot is not meant to carry one: the
-    // dialog spaces its slots with their padding.
-    FormGap: {
-      $: '> form > :not(:last-child)',
-      margin: 0,
-    },
+    // A `Form` placed directly here (`Dialog > Form > Content + Footer`) lays
+    // itself out as this flex column — see `FormElement`. It is the form's own
+    // state rather than a rule here, so the form's `styles` still win.
   },
 });
 

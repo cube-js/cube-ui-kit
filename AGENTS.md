@@ -58,6 +58,21 @@ A state that only exists during an interaction — an open tooltip, a hover or f
 
 Inside `src/`, import the file that defines a thing rather than the barrel that re-exports it: `from '../../actions/ItemButton/ItemButton'`, not `from '../../actions'`. Same component either way, but the barrel also drags `Menu`, `CommandMenu`, `ButtonSplit` and everything they import into the graph. Three things read that graph — Chromatic's TurboSnap (which cannot scope a build around anything reachable from `<Root>`, so a barrel there costs a full 1000-snapshot rebuild), consumers' tree-shaking, and module init order around `Root`'s module-scope `configure()`. Icons are enforced by `no-restricted-imports`; the rest is on you, with `pnpm chromatic:check` as the backstop and `node scripts/chromatic-report.mjs --trace <file>` to price a change before making it. `index.ts` files are exempt — assembling the public surface is their job. Full rules: [coding.md](docs/rules/coding.md#imports).
 
+## Styling: Keep Components Customizable
+
+A consumer customizes an element by passing `styles` (or style props) to it, and every styling fix must leave that working. The trap is a parent fixing a child's layout from outside, with any of these:
+
+- a sub-element selector aimed at an element the parent does not render, such as `$: '> form'` or `$: '> form > :not(:last-child)'`;
+- a blanket reset on another component's children, such as `margin: 0` on every child;
+- a selector built to outrank another component's rule, using an extra type selector, a doubled class or `!important`.
+
+Such a rule only works by beating the child's own styles, so it also beats the consumer's `styles` on that element, and their padding, gap or layout override silently stops applying. Fix the element in the component that owns it:
+
+- **The child owns its context.** When a component must lay out differently inside another, give it a state in its own styles: `@parent(<mod>, >)` for the direct parent, `@parent(<mod>)` for any ancestor. The rule keeps the child's own specificity, and a consumer's `styles` key replaces it. Worked example: `Form`'s `IN_DIALOG` state in `Form.tsx`. It replaced two `Dialog` rules that silently beat a form's own `display` and `gap` styles.
+- **A parent passes values only through channels built for overriding.** Those channels are slot styles (a `SlotProvider` merges them under the consumer's own `styles`), custom properties the child reads (`$dialog-padding-h`), props and mods.
+- **Know what tasty's `gap` compiles to.** On `display: flex` or `grid` it becomes the CSS `gap` property. On `display: block` it becomes a bottom margin on every child but the last. Those margins land on whatever goes inside the container, and a `gap: 0` from outside never reaches them. So when a block container's spacing is wrong in some context, change the container's own `gap` for that context; don't reset its children. `Form` stays a block outside dialogs because a flex column would stretch a bare `Button` child to full width and stack inline content.
+- **Check before adding a rule.** Ask whether a consumer can still override it with ordinary `styles` on the element it affects. If their styles would lose, the rule is a hack: move the fix to the component that owns the element, and add a browser test that a consumer override still applies.
+
 ## Stories: The Snapshot Budget
 
 Chromatic bills per snapshot and a snapshot is one story, so every story is a recurring cost for as long as it exists. A story earns its snapshot by showing something no other story shows — and a surprising number do not: controlled/uncontrolled twins, props that only paint during a drag or hover, `DynamicSections` next to `WithSections`, a `Modal` story for a dialog whose default type is already `modal`. Keep those stories (the sidebar and the docs page still want them) and opt the photograph out with `NO_SNAPSHOT` from [`src/stories/chromatic.ts`](src/stories/chromatic.ts), with a comment saying why. Where several stories differ only in one enum value, one matrix story is both cheaper and a better review artefact — an inconsistency between two themes shows up in one image and not across two.

@@ -95,6 +95,19 @@ export interface FormRootComponent {
   ): ReactElement;
 }
 
+// A form placed directly in a `Dialog` sits between the dialog and its slots
+// (`Dialog > Form > Content + Footer`), so it takes over the dialog's own slot
+// layout: a flex column that grows into the dialog, lets `Content` shrink and
+// scroll (`min-height: 0` — a flex item's default `auto` refuses to shrink
+// below its content), and adds no space between the slots, whose padding
+// already spaces them. Direct child only: a form nested inside `Content` is an
+// ordinary form.
+//
+// It lives here, in the form's own styles, so a consumer's `styles` on the form
+// replace it key by key, inside a dialog as anywhere else. Last in each map, so
+// `orientation="horizontal"` cannot turn the slots into a row.
+const IN_DIALOG = '@parent(id=Dialog, >)';
+
 export const FormElement = tasty({
   as: 'form',
   qa: 'Form',
@@ -102,16 +115,30 @@ export const FormElement = tasty({
     display: {
       '': 'block',
       horizontal: 'flex',
+      [IN_DIALOG]: 'flex',
     },
     flow: {
       '': 'column',
       horizontal: 'row',
+      [IN_DIALOG]: 'column',
     },
     placeItems: {
       '': 'initial',
       horizontal: 'center',
+      [IN_DIALOG]: 'initial',
     },
-    gap: '2x',
+    gap: {
+      '': '2x',
+      [IN_DIALOG]: 0,
+    },
+    flexGrow: {
+      '': false,
+      [IN_DIALOG]: 1,
+    },
+    height: {
+      '': false,
+      [IN_DIALOG]: 'min 0',
+    },
     '$label-width': '25x',
   },
 });

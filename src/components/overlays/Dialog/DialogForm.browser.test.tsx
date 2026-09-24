@@ -22,9 +22,9 @@ import { DialogForm } from './DialogForm';
  *
  * 1. `DialogForm` renders its actions in a `Footer` beside `Content` rather
  *    than inside it, so they stay put while the body scrolls.
- * 2. `Dialog` hands a DIRECT-CHILD `<form>` its flex context, so the same shape
- *    composed by hand works without the consumer restating
- *    `display:flex / flexGrow:1 / height:'min 0' / gap:0`.
+ * 2. A `Form` placed directly in a `Dialog` lays itself out as the dialog's slot
+ *    column, so the same shape composed by hand works without the consumer
+ *    restating `display:flex / flexGrow:1 / height:'min 0' / gap:0`.
  * 3. The footer draws its top line only while the body scrolls. Whether it
  *    scrolls is layout too, and a line that never tracks it is only visible
  *    here.
@@ -183,8 +183,13 @@ describe('DialogForm pins its footer', () => {
  * own: `Content` ends where `Footer` begins, exactly as in a dialog with no
  * form, so the actions sit as far below the last field as in every other
  * dialog footer. A vertical `Form` spaces its children with bottom margins
- * (tasty's `gap` fallback on a block), and the dialog's `gap: 0` does not reach
- * them — left alone they put 16px between the slots, on top of both paddings.
+ * (tasty's `gap` fallback on a block), which would otherwise put 16px between
+ * the slots on top of both paddings.
+ *
+ * It is the form's own in-dialog state that does this, not a rule in the
+ * dialog, so the last two cases pin the other half of that choice: the form
+ * stays customizable inside a dialog, and a form nested in `Content` is left
+ * an ordinary form.
  */
 describe('the form adds no space between the slots', () => {
   it.each([
@@ -241,6 +246,65 @@ describe('the form adds no space between the slots', () => {
 
     // 1px of tolerance for sub-pixel rounding.
     expect(Math.abs(gap)).toBeLessThanOrEqual(1);
+  });
+
+  it("lets the form's own styles win inside a dialog", async () => {
+    renderWithRoot(
+      <DialogContainer isOpen onDismiss={() => {}}>
+        <Dialog>
+          <Form styles={{ gap: '1x' }}>
+            <Content>
+              <TextInput name="only" label="Only field" />
+            </Content>
+            <Footer>
+              <button type="button">Done</button>
+            </Footer>
+          </Form>
+        </Dialog>
+      </DialogContainer>,
+    );
+
+    const footer = await screen.findByTestId('Footer');
+    const content = screen.getByTestId('Content');
+
+    await opened();
+
+    const form = content.parentElement!;
+    const gap =
+      footer.getBoundingClientRect().top -
+      content.getBoundingClientRect().bottom;
+
+    // The consumer's `1x` replaced the in-dialog `0`, and it is a real flex
+    // gap rather than the block fallback's margins.
+    expect(getComputedStyle(form).display).toBe('flex');
+    expect(parseFloat(getComputedStyle(form).rowGap)).toBeGreaterThan(0);
+    expect(gap).toBeCloseTo(parseFloat(getComputedStyle(form).rowGap), 0);
+  });
+
+  it('leaves a form nested inside Content an ordinary form', async () => {
+    renderWithRoot(
+      <DialogContainer isOpen onDismiss={() => {}}>
+        <Dialog>
+          <Content>
+            <Form>
+              <TextInput name="first" label="First" />
+              <TextInput name="second" label="Second" />
+            </Form>
+          </Content>
+        </Dialog>
+      </DialogContainer>,
+    );
+
+    await opened();
+
+    const form = screen.getByTestId('Form');
+    const [first, second] = Array.from(form.children);
+
+    expect(getComputedStyle(form).display).toBe('block');
+    // The fields keep the form's usual `2x` between them.
+    expect(
+      second.getBoundingClientRect().top - first.getBoundingClientRect().bottom,
+    ).toBeGreaterThan(0);
   });
 });
 
