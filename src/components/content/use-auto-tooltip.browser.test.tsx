@@ -1,4 +1,4 @@
-import { useLayoutEffect, useState } from 'react';
+import { StrictMode, useLayoutEffect, useState } from 'react';
 import { flushSync } from 'react-dom';
 
 import { act, renderWithRoot, screen, waitFor } from '../../test';
@@ -293,6 +293,46 @@ describe('useAutoTooltip overflow measurement', () => {
     });
 
     /**
+     * The remount has to finish before the task that measured ends. Code that
+     * looks the label up after that holds a node React is about to replace,
+     * so its click goes nowhere. A Storybook play function is such code, and
+     * so is anything else that runs once a render has returned.
+     *
+     * A verdict set from the microtask and left to React's scheduler renders
+     * in a later task. That is what Chromatic caught: a Menu story whose
+     * truncated trigger button was clicked, and never opened its menu.
+     */
+    it('remounts the label before the next task can find it', async () => {
+      const env = globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean };
+      const wasActEnvironment = env.IS_REACT_ACT_ENVIRONMENT;
+
+      // Outside `act`, as production renders are: nothing drains React's
+      // scheduler before the test reads.
+      env.IS_REACT_ACT_ENVIRONMENT = false;
+
+      try {
+        // A synchronous render. Its `act` returns before the queued check
+        // runs, as a production render returns before it.
+        renderWithRoot(<RemountProbe />);
+
+        // Resumes after the queued check, like the play function's first read.
+        await Promise.resolve();
+
+        const found = screen.getByTestId('RemountLabel');
+
+        await new Promise((resolve) => setTimeout(resolve, 400));
+
+        expect(found.isConnected).toBe(true);
+        expect(screen.getByTestId('Status')).toHaveAttribute(
+          'data-active',
+          'true',
+        );
+      } finally {
+        env.IS_REACT_ACT_ENVIRONMENT = wasActEnvironment;
+      }
+    });
+
+    /**
      * The condition that kept failing in Chromatic while passing everywhere
      * else: observer callbacks are delivered as part of the rendering steps, so
      * a runner that is not producing frames — a background tab, or a headless
@@ -421,6 +461,49 @@ describe('useAutoTooltip overflow measurement', () => {
 
       await waitFor(() => {
         expect(label()).toHaveAttribute('data-overflowed', 'true');
+      });
+    });
+
+    /**
+     * React 18 Strict Mode replays every effect on mount, cleanup then setup,
+     * but leaves refs attached. React 19 detaches and re-attaches them too.
+     * Teardown kept in an effect therefore dropped the label and its observer
+     * in the replay while the label stayed mounted, and nothing brought them
+     * back: the queued first check found no node, and later resizes went
+     * unobserved. Only the React 18 run can fail here.
+     */
+    it('keeps measuring a label mounted in Strict Mode', async () => {
+      function Resizable() {
+        const [width, setWidth] = useState('80px');
+
+        return (
+          <>
+            <button type="button" onClick={() => setWidth('600px')}>
+              Grow
+            </button>
+            <Probe width={width} label={LONG_LABEL} />
+          </>
+        );
+      }
+
+      await act(async () => {
+        renderWithRoot(
+          <StrictMode>
+            <Resizable />
+          </StrictMode>,
+        );
+      });
+
+      await waitFor(() => {
+        expect(label()).toHaveAttribute('data-overflowed', 'true');
+      });
+
+      await act(async () => {
+        screen.getByRole('button', { name: 'Grow' }).click();
+      });
+
+      await waitFor(() => {
+        expect(label()).toHaveAttribute('data-overflowed', 'false');
       });
     });
   });

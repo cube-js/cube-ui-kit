@@ -10,6 +10,7 @@ import {
   useState,
 } from 'react';
 import { OverlayProps } from 'react-aria';
+import { flushSync } from 'react-dom';
 
 import {
   CubeTooltipProviderProps,
@@ -42,6 +43,36 @@ function assignRef(ref: unknown, element: HTMLElement | null) {
   } else if (ref) {
     (ref as { current: HTMLElement | null }).current = element;
   }
+}
+
+/** Overflow checks queued for the end of the current task, from every label. */
+const pendingOverflowChecks = new Set<() => void>();
+
+/**
+ * Runs every queued check in one pass and commits the verdicts that changed in
+ * one synchronous render.
+ *
+ * All reads happen before React touches the DOM again, so they share one
+ * layout. `flushSync` applies the verdicts, and the `TooltipProvider` remounts
+ * they cause, before paint and before any other task, so code that looks the
+ * label up after this task gets the node the verdict leaves in place, not one
+ * about to be replaced. Outside a React commit this is an ordinary sync
+ * render, not a nested update.
+ */
+function runOverflowChecks() {
+  const checks = Array.from(pendingOverflowChecks);
+
+  pendingOverflowChecks.clear();
+
+  flushSync(() => {
+    for (const check of checks) check();
+  });
+}
+
+function queueOverflowCheck(check: () => void) {
+  if (!pendingOverflowChecks.size) queueMicrotask(runOverflowChecks);
+
+  pendingOverflowChecks.add(check);
 }
 
 export function useAutoTooltip({
@@ -77,7 +108,6 @@ export function useAutoTooltip({
   const elementRef = useRef<HTMLElement | null>(null);
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
 
-  const measurePendingRef = useRef(false);
   const verdictRef = useRef(false);
 
   /**
@@ -117,30 +147,24 @@ export function useAutoTooltip({
    * are part of the rendering steps, so a runner that is not producing frames —
    * a background tab, or a headless browser running many stories at once — can
    * delay them past the point something asks whether the tooltip is active.
-   * Microtasks do not depend on a frame.
+   * Microtasks do not depend on a frame. See `runOverflowChecks` for how the
+   * verdicts are applied.
    */
   const scheduleLabelOverflowCheck = useCallback(() => {
-    if (measurePendingRef.current) return;
-
-    measurePendingRef.current = true;
-
-    queueMicrotask(() => {
-      measurePendingRef.current = false;
-      checkLabelOverflow();
-    });
+    queueOverflowCheck(checkLabelOverflow);
   }, [checkLabelOverflow]);
 
   useEffect(() => {
     if (isAutoTooltipEnabled) {
-      // Scheduled, not measured here. React 19 flushes a sync commit's passive
+      // Queued, not measured here. React 19 flushes a sync commit's passive
       // effects before the commit returns, so a verdict set from this effect
       // leaves that commit with an update pending — a nested update. A list
       // that commits each row on its own (ag-grid-react wraps every new row in
-      // `flushSync`) then gains one per row, and the 51st throws "Maximum update
-      // depth exceeded". The microtask lands after the commit and still before
-      // paint. In a sync commit the callback ref has already queued it, so this
-      // call is absorbed; it matters when the flag flips on for a label whose
-      // ref did not re-attach.
+      // `flushSync`) then gains one per row, and React throws "Maximum update
+      // depth exceeded" once the count passes 50. The queued check runs after
+      // the commit and still before paint. The callback ref has usually queued
+      // it already, so this call is absorbed. It matters when the flag flips on
+      // for a label whose ref did not re-attach.
       scheduleLabelOverflowCheck();
 
       return;
@@ -157,7 +181,11 @@ export function useAutoTooltip({
     setVerdict(false);
   }, [isAutoTooltipEnabled, scheduleLabelOverflowCheck, setVerdict]);
 
-  // Attach ResizeObserver via callback ref to handle DOM node changes
+  // Attach ResizeObserver via callback ref to handle DOM node changes. The ref
+  // also owns teardown: React hands it `null` when the label goes away. An
+  // unmount effect must not repeat that. React 18 Strict Mode replays effects
+  // without re-attaching refs, so the replay would drop the node and observer
+  // for good and strand the queued check.
   const handleLabelElementRef = useCallback(
     (element: HTMLElement | null) => {
       // Notify the external refs
@@ -213,21 +241,6 @@ export function useAutoTooltip({
       setVerdict,
     ],
   );
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      if (resizeObserverRef.current) {
-        try {
-          resizeObserverRef.current.disconnect();
-        } catch {
-          // do nothing
-        }
-        resizeObserverRef.current = null;
-      }
-      elementRef.current = null;
-    };
-  }, []);
 
   const finalLabelProps = useMemo(() => {
     const props = {
