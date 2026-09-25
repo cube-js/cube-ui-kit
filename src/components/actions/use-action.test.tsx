@@ -247,6 +247,28 @@ describe('useAction', () => {
 
     expect(result.current.actionProps.target).toBe('_blank');
   });
+
+  // A HashRouter warns for every path it cannot make sense of, so resolving
+  // the raw `!https://…` warned on every render of every such link.
+  it.each([
+    ['!https://cube.dev', 'https://cube.dev'],
+    ['!/docs', '/docs'],
+    ['@/docs', '/docs'],
+  ])('never hands the router the prefixed %s', (to, href) => {
+    const { adapter, mockUseHref } = createMockNavigationAdapter();
+
+    const { result } = renderHook(() => useAction({ to }, { current: null }), {
+      wrapper: ({ children }) => (
+        <TestWrapper navigation={adapter}>{children}</TestWrapper>
+      ),
+    });
+
+    for (const [arg] of mockUseHref.mock.calls) {
+      expect(String(arg)).not.toMatch(/^[!@]/);
+    }
+
+    expect(result.current.actionProps.href).toBe(href);
+  });
 });
 
 describe('performClickHandler', () => {

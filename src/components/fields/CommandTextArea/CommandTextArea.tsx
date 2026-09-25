@@ -25,6 +25,7 @@ import {
 } from '../../../utils/react/nullableValue';
 import { CollectionItem as Item } from '../../CollectionItem';
 import { useFieldProps } from '../../form';
+import { getListBoxOptionId } from '../ListBox/optionId';
 import {
   collectVisibleKeys,
   filterCollectionNodes,
@@ -742,7 +743,7 @@ function CommandTextArea<T extends object>(
       'aria-controls': shouldShowPopover ? listBoxId : undefined,
       'aria-activedescendant':
         shouldShowPopover && focusedKey != null
-          ? `ListBoxItem-${focusedKey}`
+          ? getListBoxOptionId(listBoxId, focusedKey)
           : undefined,
       onKeyDown: onKeyDownHandler,
       onSelect: syncCaret,

@@ -311,12 +311,11 @@ export const useAction = function useAction(
     isExternal,
   } = parseTo(to);
 
-  // Always call navigation hooks (using fallback when to is not provided)
-  const fallbackTo = to || '.';
   const navigate = navigation.useNavigate();
-  const resolvedHref = navigation.useHref(fallbackTo);
-  // Always resolve cleanTo href to avoid conditional hook calls
-  const cleanToHref = navigation.useHref(cleanTo || '.');
+  // Resolve the path with its `!` / `@` prefix stripped, and only that. Also
+  // resolving the raw `to` put `!https://…` through the router as a route,
+  // which a HashRouter warned about on every render.
+  const resolvedHref = navigation.useHref(cleanTo || '.');
 
   // Determine element type: 'a' for navigation, 'button' for actions
   as = to && !isHistoryNavigation ? 'a' : as || 'button';
@@ -332,7 +331,7 @@ export const useAction = function useAction(
       href =
         typeof cleanTo === 'string' && isExternal
           ? cleanTo // External URLs as-is
-          : cleanToHref;
+          : resolvedHref;
     } else {
       // Regular navigation
       href = resolvedHref;

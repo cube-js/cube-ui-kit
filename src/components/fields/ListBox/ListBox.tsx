@@ -4,9 +4,12 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 import {
   BASE_STYLES,
   BasePropsWithoutChildren,
+  BaseStyleProps,
   COLOR_STYLES,
+  ColorStyleProps,
   mergeStyles,
   OUTER_STYLES,
+  OuterStyleProps,
   Styles,
   tasty,
 } from '@tenphi/tasty';
@@ -295,7 +298,12 @@ export interface CubeListBoxProps<T>
   extends AriaListBoxProps<T>,
     CollectionBase<T>,
     FieldBaseProps<Key | readonly Key[] | null | undefined>,
-    BasePropsWithoutChildren {
+    BasePropsWithoutChildren,
+    // The style props `PROP_STYLES` extracts at runtime and the docs list;
+    // without these a `height` or `width` worked but failed to type-check.
+    BaseStyleProps,
+    OuterStyleProps,
+    ColorStyleProps {
   /** Custom styles for the list container */
   listStyles?: Styles;
   /** Custom styles for individual options */
@@ -1423,7 +1431,6 @@ function Option({
   const listBoxItem = (
     <ListBoxItem
       ref={combinedRef}
-      id={`ListBoxItem-${String(item.key)}`}
       data-key={String(item.key)}
       {...mergeProps(
         filteredOptionProps,

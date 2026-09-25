@@ -226,6 +226,9 @@ function Tooltip(
       {...tooltipProps}
       {...overlayProps}
       ref={combinedRef}
+      // `qa` is typed through `BaseProps` but nothing forwarded it, so a test
+      // had no way to tell one control's tooltip from another's.
+      qa={otherProps.qa}
       styles={styles}
       mods={mods}
       data-min-offset={minOffset}

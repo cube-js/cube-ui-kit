@@ -21,9 +21,10 @@ import {
   useRef,
   useState,
 } from 'react';
-import { useFilter, useKeyboard } from 'react-aria';
+import { useFilter, useId, useKeyboard } from 'react-aria';
 import { Section as BaseSection, useListState } from 'react-stately';
 
+import { useEvent } from '../../../_internal/hooks/use-event';
 import { useI18n } from '../../../i18n';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
 import { mergeProps, modAttrs, useCombinedRefs } from '../../../utils/react';
@@ -36,6 +37,7 @@ import {
 } from '../../CollectionItem';
 import { getValidationMods, useFieldProps, wrapWithField } from '../../form';
 import { CubeListBoxProps, ListBox } from '../ListBox/ListBox';
+import { getListBoxOptionId } from '../ListBox/optionId';
 import {
   DEFAULT_INPUT_STYLES,
   INPUT_WRAPPER_STYLES,
@@ -669,11 +671,21 @@ export const FilterListBox = forwardRef(function FilterListBox<
   const { isFocused, focusProps } = useFocus({ isDisabled });
 
   const listBoxRef = useRef<HTMLDivElement>(null);
+  // The search input points `aria-controls` and `aria-activedescendant` into
+  // the list, so the list needs an id the input knows.
+  const listBoxId = useId();
 
   // Ref to access internal ListBox state (selection manager, etc.)
   const listStateRef = useRef<any>(null);
 
-  // No separate focusedKey state needed; rely directly on selectionManager.focusedKey.
+  // The option under virtual focus, mirrored in state for the search input's
+  // `aria-activedescendant`: the listbox's own state update does not re-render
+  // this component. Every focus move below goes through `setVirtualFocus`.
+  const [activeOptionKey, setActiveOptionKey] = useState<Key | null>(null);
+  const setVirtualFocus = useEvent((key: Key | null) => {
+    listStateRef.current?.selectionManager.setFocusedKey(key);
+    setActiveOptionKey(key);
+  });
 
   // When the search value changes, the visible collection of items may change as well.
   // If the currently focused item is no longer visible, move virtual focus to the first
@@ -745,7 +757,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
 
     // If there are no visible items, reset the focused key so Enter won't select anything
     if (visibleKeys.length === 0) {
-      selectionManager.setFocusedKey(null);
+      setVirtualFocus(null);
       return;
     }
 
@@ -763,14 +775,17 @@ export const FilterListBox = forwardRef(function FilterListBox<
     if (currentFocused != null && visibleKeys.includes(currentFocused)) {
       const currentIsNewCustomValue =
         newCustomValueKey != null && currentFocused === newCustomValueKey;
-      if (customValueShouldBeFocused) {
-        if (currentIsNewCustomValue) return;
-      } else if (newCustomValueKey != null) {
-        // Custom value exists but isn't the priority (matches available) —
-        // any non-custom focus is fine.
-        if (!currentIsNewCustomValue) return;
-      } else {
-        // No custom value involved at all.
+      const keepsFocus = customValueShouldBeFocused
+        ? currentIsNewCustomValue
+        : newCustomValueKey != null
+          ? // Custom value exists but isn't the priority (matches available)
+            // — any non-custom focus is fine.
+            !currentIsNewCustomValue
+          : // No custom value involved at all.
+            true;
+
+      if (keepsFocus) {
+        setActiveOptionKey(currentFocused);
         return;
       }
     }
@@ -824,7 +839,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
     }
 
     // Set focus to the determined key
-    selectionManager.setFocusedKey(keyToFocus);
+    setVirtualFocus(keyToFocus);
   }, [
     searchValue,
     enhancedChildren,
@@ -832,6 +847,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
     selectedKey,
     selectedKeys,
     allowsCustomValue,
+    setVirtualFocus,
   ]);
 
   // Keyboard navigation handler for search input
@@ -899,7 +915,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
           if (listState.lastFocusSourceRef) {
             listState.lastFocusSourceRef.current = 'keyboard';
           }
-          selectionManager.setFocusedKey(nextKey);
+          setVirtualFocus(nextKey);
         }
       } else if (
         e.key === 'Home' ||
@@ -940,7 +956,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
         if (listState.lastFocusSourceRef) {
           listState.lastFocusSourceRef.current = 'keyboard';
         }
-        selectionManager.setFocusedKey(targetKey);
+        setVirtualFocus(targetKey);
       } else if (e.key === 'Enter' || (e.key === ' ' && !searchValue)) {
         const listState = listStateRef.current;
 
@@ -1076,9 +1092,10 @@ export const FilterListBox = forwardRef(function FilterListBox<
         role="combobox"
         aria-expanded="true"
         aria-haspopup="listbox"
+        aria-controls={listBoxId}
         aria-activedescendant={
-          listStateRef.current?.selectionManager.focusedKey != null
-            ? `ListBoxItem-${listStateRef.current?.selectionManager.focusedKey}`
+          activeOptionKey != null
+            ? getListBoxOptionId(listBoxId, activeOptionKey)
             : undefined
         }
         onChange={(e) => {
@@ -1113,6 +1130,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
       {searchInput}
       <ListBox
         ref={listBoxRef}
+        id={listBoxId}
         aria-label={innerAriaLabel}
         selectedKey={selectedKey}
         defaultSelectedKey={defaultSelectedKey}

@@ -72,7 +72,7 @@ setPaletteConfig((config) => ({ ...config, hue: 235 }));
 | **Layout** | Flex, Grid, Space, Flow, Panel, ResizablePanel, Prefix, Suffix |
 | **Actions** | Button, Button.Group, Button.Split, Link, Menu, CommandMenu |
 | **Content** | Text, Title, Paragraph, Card, Badge, Tag, Avatar, Alert, Skeleton, Placeholder, Disclosure, Divider, CopySnippet, PrismCode |
-| **Fields** | TextInput, NumberInput, PasswordInput, SearchInput, TextArea, Select, ComboBox, Checkbox, RadioGroup, Switch, Slider, DatePicker, FileInput, ListBox, FilterListBox, FilterPicker, Picker |
+| **Fields** | TextInput, NumberInput, PasswordInput, SearchInput, TextArea, Select, ComboBox, Checkbox, RadioGroup, Switch, Slider, DatePicker, FileInput, ListBox, FilterListBox, FilterPicker, Picker, TagInput |
 | **Form** | Form, FieldWrapper, SubmitButton, ResetButton |
 | **Overlays** | Dialog, AlertDialog, Modal, Tooltip, Toast, Notifications |
 | **Navigation** | Tabs, FileTabs |

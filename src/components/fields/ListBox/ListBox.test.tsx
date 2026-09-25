@@ -12,6 +12,8 @@ import {
   waitFor,
 } from '../../../test';
 
+import { getListBoxOptionId } from './optionId';
+
 vi.mock('../../../_internal/hooks/use-warn');
 
 describe('<ListBox />', () => {
@@ -20,6 +22,26 @@ describe('<ListBox />', () => {
     <ListBox.Item key="banana">Banana</ListBox.Item>,
     <ListBox.Item key="cherry">Cherry</ListBox.Item>,
   ];
+
+  it('names each option by getListBoxOptionId', () => {
+    const { getByRole } = render(
+      <ListBox id="fruits" label="Fruits">
+        <ListBox.Item key="apple">Apple</ListBox.Item>
+        <ListBox.Item key="dragon fruit">Dragon fruit</ListBox.Item>
+      </ListBox>,
+    );
+
+    // Inputs that drive the list with virtual focus point
+    // `aria-activedescendant` at these ids, so they must stay real.
+    expect(getByRole('option', { name: 'Apple' })).toHaveAttribute(
+      'id',
+      getListBoxOptionId('fruits', 'apple'),
+    );
+    expect(getByRole('option', { name: 'Dragon fruit' })).toHaveAttribute(
+      'id',
+      getListBoxOptionId('fruits', 'dragon fruit'),
+    );
+  });
 
   it('should work in uncontrolled mode', async () => {
     const onSelectionChange = vi.fn();
@@ -177,6 +199,21 @@ describe('<ListBox />', () => {
 
     const listbox = getByRole('listbox');
     expect(listbox).toHaveAttribute('aria-disabled', 'true');
+  });
+
+  it('should take the style props its docs list as styles, not attributes', () => {
+    // These were extracted at runtime but missing from the props type, so a
+    // documented `height` failed to type-check. The type-check is the test.
+    const { container } = render(
+      <ListBox label="Select a fruit" height="10x" width="20x" flexGrow={1}>
+        {basicItems}
+      </ListBox>,
+    );
+
+    const root = container.firstElementChild!;
+
+    expect(root).not.toHaveAttribute('height');
+    expect(root).not.toHaveAttribute('width');
   });
 
   it('should support sections', () => {

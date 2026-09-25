@@ -26,7 +26,7 @@
     "react-hooks/immutability": 9,
     "react-hooks/incompatible-library": 1,
     "react-hooks/preserve-manual-memoization": 5,
-    "react-hooks/refs": 49,
+    "react-hooks/refs": 41,
     "react-hooks/rules-of-hooks": 9,
     "react-hooks/set-state-in-effect": 4,
     "react-hooks/use-memo": 1
@@ -45,7 +45,7 @@
       "react-hooks/exhaustive-deps": 4,
       "react-hooks/immutability": 1,
       "react-hooks/preserve-manual-memoization": 2,
-      "react-hooks/refs": 9,
+      "react-hooks/refs": 3,
       "react-hooks/set-state-in-effect": 1
     },
     "src/components/fields/CommandTextArea/CommandTextArea.tsx": {
@@ -78,7 +78,7 @@
     },
     "src/components/fields/SearchComboBox/SearchComboBox.tsx": {
       "react-hooks/exhaustive-deps": 2,
-      "react-hooks/refs": 8,
+      "react-hooks/refs": 6,
       "react-hooks/set-state-in-effect": 1
     },
     "src/components/fields/Select/Select.tsx": {
