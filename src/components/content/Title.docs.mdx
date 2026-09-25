@@ -15,6 +15,7 @@ A heading component for section titles. Renders as `h1`–`h6` based on the `lev
 ## Properties
 
 - **`level`** `1 | 2 | 3 | 4 | 5 | 6` (default: `1`) — Heading level (maps to `h1`–`h6` tag and corresponding preset `h1`–`h6`)
+- **`slot`** `string` (default: `'title'`) — The slot to read provided props from, e.g. the `title` slot a `Dialog` labels itself with. Pass another name to opt out
 - **`ellipsis`** `boolean` — Truncate overflow with ellipsis
 - **`nowrap`** `boolean` — Prevent text wrapping
 - **`monospace`** `boolean` — Use monospace font
