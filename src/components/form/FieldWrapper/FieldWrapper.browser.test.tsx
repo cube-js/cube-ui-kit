@@ -28,4 +28,27 @@ describe('FieldWrapper label row', () => {
       labelHeight(plain.container),
     );
   });
+
+  // `labelSuffix` takes any content. A flex box drops the whitespace between
+  // its items, so mixed content must keep flowing inline, or `Up to 10 items`
+  // renders as `Up to10items`.
+  it('keeps the spaces in a mixed-content suffix', () => {
+    const { container } = renderWithRoot(
+      <TextInput
+        label="Region"
+        labelSuffix={
+          <>
+            <span data-part="lead">Up to</span> <strong>10</strong> items
+          </>
+        }
+      />,
+    );
+
+    const lead = container.querySelector('[data-part="lead"]')!;
+    const count = container.querySelector('strong')!;
+
+    expect(
+      count.getBoundingClientRect().left - lead.getBoundingClientRect().right,
+    ).toBeGreaterThan(0);
+  });
 });
