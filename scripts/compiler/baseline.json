@@ -885,6 +885,16 @@
     "diagnostics": {},
     "optOuts": 0
   },
+  "src/components/fields/TagInput/TagInput.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/fields/TagInput/TagList.tsx": {
+    "compiled": 2,
+    "diagnostics": {},
+    "optOuts": 0
+  },
   "src/components/fields/TextArea/TextArea.tsx": {
     "compiled": 1,
     "diagnostics": {},

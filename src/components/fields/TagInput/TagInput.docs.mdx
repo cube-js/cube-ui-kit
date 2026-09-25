@@ -1,0 +1,363 @@
+import { Meta, Story } from '@storybook/addon-docs/blocks';
+import * as TagInputStories from './TagInput.stories';
+
+<Meta of={TagInputStories} />
+
+# TagInput
+
+A multi-value field. The user types a value into a single-line input and commits it with Enter or a comma, and each value becomes a removable chip listed below the input. The same component covers free-form lists (email addresses, numbers, IAM principals) and picking several values from suggestions, with an optional custom value on top.
+
+## When to Use
+
+- The value is a list of short strings the user types or pastes: recipients, domains, bin boundaries, tags
+- The user picks several values from a long list and should see what is picked while searching for the next one
+- A list of options where the user may also add a value that is not in it (`allowsCustomValue`)
+- Not for a short, fixed list of options: use [FilterPicker](/docs/forms-filterpicker--docs) or [CheckboxGroup](/docs/forms-checkboxgroup--docs)
+
+## Component
+
+<Story of={TagInputStories.Default} />
+
+---
+
+### Properties
+
+- **`children`** `ReactNode | (item: T) => ReactElement` — `TagInput.Item` elements, or a render function for `items`, that suggest values. Without options the field accepts any typed value
+- **`items`** `Iterable<T>` — Options to suggest, as data
+- **`placeholder`** `string` — Placeholder text for the input
+- **`icon`** `ReactElement` — Icon element rendered before the input
+- **`prefix`** `ReactNode` — Input decoration before the main input
+- **`suffix`** `ReactNode` — Input decoration after the main input
+- **`suffixPosition`** `'before' | 'after'` — Whether the suffix goes before or after the validation and loading icons
+- **`tagProps`** `(value: string) => Partial<CubeTagProps>` — Props for each chip's `Tag` (theme, icon, label), by value
+- **`value`** `string[]` — The values in controlled mode
+- **`defaultValue`** `string[]` — The initial values in uncontrolled mode
+- **`inputValue`** `string` — The text being typed, in controlled mode
+- **`defaultInputValue`** `string` — The initial text being typed, in uncontrolled mode
+- **`allowsCustomValue`** `boolean` (default: `false`) — Whether typed values that are not among the options are accepted. Only applies when options are given
+- **`delimiters`** `string[]` (default: `[',']`) — Characters that commit the typed text and split pasted text. Pasted text is also split on line breaks
+- **`validateTag`** `(value: string) => boolean | string | null | undefined` — Checks one value before it becomes a chip. Return `false` or a message to reject it
+- **`shouldCommitOnBlur`** `boolean` (default: `true`) — Whether leaving the field commits the typed text
+- **`filter`** `((textValue: string, inputValue: string) => boolean) | false` — Custom filter for the options, or `false` to show every option
+- **`popoverTrigger`** `'focus' | 'input' | 'manual'` (default: `input`) — When the suggestions popover opens
+- **`hideTrigger`** `boolean` (default: `false`) — Whether to hide the button that toggles the popover
+- **`disabledKeys`** `Iterable<Key>` — Keys of options that cannot be picked
+- **`size`** `'small' | 'medium' | 'large'` (default: `medium`) — Size of the input. The chips follow it
+- **`direction`** `'bottom' | 'top'` (default: `bottom`) — Where the suggestions popover opens
+- **`shouldFlip`** `boolean` (default: `true`) — Whether the popover flips when there is no room
+- **`overlayOffset`** `number` (default: `8`) — Distance between the input and the popover, in pixels
+- **`containerPadding`** `number` (default: `8`) — Minimum space between the popover and the viewport edge, in pixels
+- **`autoComplete`** `string` (default: `off`) — HTML `autocomplete` attribute for the input
+- **`onChange`** `(value: string[]) => void` — Called with the whole new list of values
+- **`onInputChange`** `(value: string) => void` — Called when the text being typed changes
+- **`onOpenChange`** `(isOpen: boolean) => void` — Called when the suggestions popover opens or closes
+- **`onFocus`** `() => void` — Called when focus enters the component: the input, a chip or the popover
+- **`onBlur`** `() => void` — Called when focus leaves the component entirely
+- **`onKeyDown`** `(e: KeyboardEvent) => void` — Called when a key is pressed in the input, before the component handles it. Call `e.preventDefault()` to stop the built-in handling
+- **`inputRef`**, **`wrapperRef`**, **`popoverRef`**, **`listBoxRef`** `RefObject` — Refs to the input, the bordered input box, the popover and its listbox. The forwarded `ref` points at the root, which holds the input and the chips
+- **`mods`** `Record<string, boolean>` — Modifiers for the bordered input box, see [Modifiers](#modifiers)
+
+#### Notable Properties
+
+**delimiters** - Typing a delimiter commits the text before it, and pasting splits the text on every delimiter and line break, so a column copied from a spreadsheet or a comma-separated list becomes one chip per entry. A single pasted value is inserted as plain text for the user to finish. Pass `[]` when a value may contain a comma: only Enter and pasted line breaks separate values then.
+
+**validateTag** - Runs on every value about to become a chip. A rejected value stays in the input, the field turns invalid and the message shows below it until the text is edited. A value picked from the options is not checked. Values already in `value` that fail the check are drawn in the danger theme and carry the message as their description, so an invalid entry loaded from the server stands out. Duplicates are always refused, with a message of their own.
+
+**children / items** - Options turn the input into a combobox. Typing filters them and focuses the option whose label is exactly the typed text, or else the first match. Enter or a click toggles the focused option, and the popover stays open so the user can pick several in a row. A picked option shows a checked box. Without `allowsCustomValue`, typed text must match an option by key or label, and on blur a query that matches nothing is dropped. With it, the typed text is offered as its own option after the matches, the same way [FilterListBox](/docs/forms-filterlistbox--docs) does. An option in `disabledKeys` is refused however it is entered. A chip for an option shows the option's label, while the value holds its key. The label is remembered, so it survives server-side filtering (`filter={false}` with changing `items`).
+
+### Base Properties
+
+Supports [Base properties](/docs/getting-started-base-properties--docs)
+
+### Field Properties
+
+Supports all [Field properties](/docs/getting-started-field-properties--docs)
+
+### Styling Properties
+
+#### styles
+
+Customizes the root element, a column holding the input box and the chips.
+
+#### wrapperStyles
+
+Customizes the bordered input box.
+
+**Sub-elements:**
+
+- `Prefix` - Container for prefix content and icons
+- `Suffix` - Container for suffix content, validation icons and the popover trigger, which always comes last
+- `InputIcon` - Container for the left icon
+- `ValidationIcon` - Container for validation state icons
+- `State` - Container for the validation and loading icons
+
+#### inputStyles
+
+Customizes the text input element.
+
+#### tagListStyles
+
+Customizes the wrapping row of chips.
+
+#### tagStyles
+
+Customizes every chip. Use `tagProps` for per-value props.
+
+#### triggerStyles
+
+Customizes the button that toggles the popover.
+
+#### overlayStyles
+
+Customizes the popover.
+
+#### listBoxStyles
+
+Customizes the listbox in the popover.
+
+#### optionStyles
+
+Customizes each option.
+
+#### sectionStyles
+
+Customizes option sections.
+
+#### headingStyles
+
+Customizes option section headings.
+
+### Style Properties
+
+These properties allow direct style application without using the `styles` prop:
+
+- **Base:** `display`, `font`, `preset`, `hide`, `whiteSpace`, `opacity`, `transition`
+- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `blockMargin`, `inlineMargin`, `inset`, `blockInset`, `inlineInset`, `position`, `scrollMargin`, `blockScrollMargin`, `inlineScrollMargin`, `scrollPadding`, `blockScrollPadding`, `inlineScrollPadding`
+- **Dimension:** `width`, `height`, `blockSize`, `inlineSize`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`
+- **Block:** `border`, `blockBorder`, `inlineBorder`, `radius`, `shadow`, `outline`, `padding`, `blockPadding`, `inlinePadding`, `overflow`, `scrollbar`, `textAlign`
+- **Color:** `color`, `fill`, `fade`, `image`
+- **Flow:** `flow`, `place`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gap`, `columnGap`, `rowGap`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`
+
+### Modifiers
+
+The `mods` prop accepts the following modifiers for the bordered input box:
+
+- **`focused`** `boolean` — Forces focus ring appearance.
+- **`disabled`** `boolean` — Forces disabled appearance.
+- **`invalid`** `boolean` — Forces invalid state styling.
+- **`valid`** `boolean` — Forces valid state styling.
+- **`prefix`** `boolean` — Indicates presence of prefix content.
+- **`suffix`** `boolean` — Indicates presence of suffix content.
+
+## Variants
+
+### Sizes
+
+- `small` - Compact input with extra-small chips
+- `medium` - Default size, with extra-small chips
+- `large` - Emphasized input with small chips
+
+<Story of={TagInputStories.Sizes} />
+
+### Validation States
+
+<Story of={TagInputStories.Validation} />
+
+### Disabled and Read-only
+
+A disabled field's chips drop out of the Tab order. A read-only field keeps them focusable but shows no remove buttons and ignores Delete.
+
+<Story of={TagInputStories.DisabledAndReadOnly} />
+
+## Examples
+
+### Free-form Values
+
+```jsx
+const EMAIL = /^[^\s@,]+@[^\s@,]+\.[^\s@,]+$/;
+
+<TagInput
+  label="Also send to"
+  placeholder="name@company.com"
+  defaultValue={['ana@acme.com']}
+  validateTag={(value) => EMAIL.test(value) || 'Enter an email address'}
+/>;
+```
+
+### Pasting a List
+
+<Story of={TagInputStories.RejectedEntry} />
+
+Pasted text is split on delimiters and line breaks. Accepted entries become chips, rejected ones stay in the input with the message from `validateTag`.
+
+### Picking from Suggestions
+
+<Story of={TagInputStories.WithSuggestions} />
+
+```jsx
+<TagInput label="Allowed actions" placeholder="Search actions">
+  <TagInput.Item key="read">read</TagInput.Item>
+  <TagInput.Item key="refresh">refresh</TagInput.Item>
+  <TagInput.Item key="rebuild">rebuild</TagInput.Item>
+  <TagInput.Item key="deploy">deploy</TagInput.Item>
+</TagInput>
+```
+
+### Suggestions with Custom Values
+
+<Story of={TagInputStories.CustomValues} />
+
+```jsx
+<TagInput
+  allowsCustomValue
+  label="Allowed actions"
+  placeholder="Search or add an action"
+>
+  <TagInput.Item key="read">read</TagInput.Item>
+  <TagInput.Item key="refresh">refresh</TagInput.Item>
+</TagInput>
+```
+
+### Data-driven Options
+
+```jsx
+const members = [
+  { key: 'orders.count', label: 'Orders count' },
+  { key: 'orders.status', label: 'Order status' },
+];
+
+<TagInput label="Members" items={members}>
+  {(member) => <TagInput.Item key={member.key}>{member.label}</TagInput.Item>}
+</TagInput>;
+```
+
+### Per-chip Props
+
+<Story of={TagInputStories.ChipThemes} />
+
+```jsx
+<TagInput
+  label="Members"
+  defaultValue={['orders.count', 'orders.status']}
+  tagProps={(value) => ({
+    theme: isMeasure(value) ? 'primary' : 'success',
+  })}
+>
+  {members.map((key) => (
+    <TagInput.Item key={key}>{key}</TagInput.Item>
+  ))}
+</TagInput>
+```
+
+### Values with Commas
+
+```jsx
+<TagInput
+  label="Allowed IAM principals"
+  delimiters={[]}
+  description="Only Enter and pasted line breaks separate values."
+/>
+```
+
+### Many Values in a Narrow Field
+
+<Story of={TagInputStories.ManyValues} />
+
+```jsx
+<TagInput
+  label="Bin boundaries"
+  width="240px"
+  placeholder="Add a number"
+  defaultValue={['0', '10', '25', '50', '75', '100']}
+  validateTag={(value) => Number.isFinite(Number(value)) || 'Enter a number'}
+/>
+```
+
+### Controlled
+
+```jsx
+const [recipients, setRecipients] = useState(['ana@acme.com']);
+
+<TagInput label="Recipients" value={recipients} onChange={setRecipients} />;
+```
+
+### Side Label
+
+<Story of={TagInputStories.SideLabel} />
+
+```jsx
+<TagInput
+  labelPosition="side"
+  label="Also send to"
+  description="Press Enter or type a comma to add an address."
+/>
+```
+
+## Accessibility
+
+### Keyboard Navigation
+
+- `Tab` - Moves focus from the input to the chips, then out of the field. The chips are one Tab stop, and the popover trigger is not a Tab stop. Tabbing away closes the popover and commits the typed text
+- `Enter` - Commits the typed text. With the popover open, toggles the focused option. With nothing typed and the popover closed, submits the form
+- `,` (or another delimiter) - Commits the text before the caret and keeps the rest typed
+- `Escape` - Closes the popover, or clears the typed text when it is closed
+- `ArrowDown` / `ArrowUp` - Opens the popover or moves through the options
+- `Home` / `End` - Moves to the first or last option while the popover is open
+- `ArrowLeft` / `ArrowRight` - Moves between chips
+- `Delete` / `Backspace` - Removes the focused chip and focuses its neighbour, or the input when no chip is left
+
+### Screen Reader Support
+
+- Without options the input is a text field. With options it is a combobox with a multi-select listbox of checkable options
+- The input's description reads the current values ("Selected: …"), so the user hears what is already added
+- A polite live region announces "Added …" and "Removed …" when the user adds or removes a value. Changes made from outside the field are not announced
+- The chips are a grid named "Selected values" followed by the field's label. Each chip is a row, and its remove button reads "Remove" followed by the chip's label. An invalid chip is described by its validation message, not only by its color
+- A rejected value marks the input invalid. With a visible label its message is shown under the field and announced as an alert, again for each new attempt. Without one, the message is announced through the live region
+- A disabled field's chips are out of the Tab order. A read-only field's chips stay focusable, without remove buttons
+
+### ARIA Properties
+
+- `aria-describedby` - Adds the summary of current values to the input's own descriptions, such as one passed in `aria-describedby`
+- `aria-invalid` - Set while a typed value is rejected, or when the field is invalid
+- `role="combobox"`, `aria-expanded`, `aria-controls`, `aria-activedescendant`, `aria-autocomplete="list"` - Set when options are given. `aria-activedescendant` follows both arrow keys and clicks
+
+## Best Practices
+
+1. **Do**: Validate each value with `validateTag` and the whole list with `rules`
+
+   ```jsx
+   <TagInput
+     name="recipients"
+     validateTag={validateEmail}
+     rules={[{ max: 5, type: 'array', message: 'Up to five recipients' }]}
+   />
+   ```
+
+2. **Don't**: Use it for a handful of fixed options. A [CheckboxGroup](/docs/forms-checkboxgroup--docs) or [FilterPicker](/docs/forms-filterpicker--docs) shows the choices without typing
+
+3. **Do**: Say how to add a value in the `description` or `placeholder` when the delimiter is not obvious
+
+4. **Do**: Turn delimiters off with `delimiters={[]}` when a value may contain a comma
+
+## Integration with Forms
+
+The field value is an array of strings. With a `name`, the form stores the array and validates on change by default, and array rules like `{ type: 'array', max: 5 }` apply to it. The input itself holds only the text being typed, so it carries no `name` and a native form submission does not include it.
+
+```jsx
+<Form defaultValues={{ recipients: ['ana@acme.com'] }} onSubmit={save}>
+  <TagInput
+    name="recipients"
+    label="Recipients"
+    validateTag={validateEmail}
+    rules={[{ required: true, message: 'Add at least one recipient' }]}
+  />
+  <Form.Submit>Save</Form.Submit>
+</Form>
+```
+
+## Related Components
+
+- [FilterPicker](/docs/forms-filterpicker--docs) - Use for picking several values from a list behind a button, without typing new ones
+- [ComboBox](/docs/forms-combobox--docs) - Use for one value with suggestions
+- [CheckboxGroup](/docs/forms-checkboxgroup--docs) - Use for a short, fixed list of choices
+- [Tag](/docs/content-tag--docs) - The chip each value renders as

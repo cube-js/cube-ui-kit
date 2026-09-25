@@ -120,6 +120,20 @@
   "tag": {
     "close": "Schließen"
   },
+  "tagInput": {
+    "remove": "Entfernen",
+    "selectedValues": "Ausgewählte Werte",
+    "summary": "Ausgewählt: {{values}}",
+    "showOptions": "Optionen anzeigen",
+    "options": "Optionen",
+    "customValue": "Benutzerdefinierter Wert",
+    "added": "{{value}} hinzugefügt",
+    "removed": "{{value}} entfernt",
+    "invalidValue": "„{{value}}“ ist kein gültiger Wert",
+    "duplicateValue": "„{{value}}“ wurde bereits hinzugefügt",
+    "unknownValue": "„{{value}}“ ist nicht in der Liste",
+    "unavailableValue": "„{{value}}“ ist nicht verfügbar"
+  },
   "placeholder": {
     "contentIsLoading": "Inhalt wird geladen"
   },

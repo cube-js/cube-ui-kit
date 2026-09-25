@@ -37,6 +37,16 @@ export interface ListBoxPopoverProps {
   sectionStyles?: Styles;
   headingStyles?: Styles;
   selectedKey?: Key | null;
+  /**
+   * `'multiple'` lets the list hold several selected options. The list then
+   * reports the whole new selection on every toggle and never closes itself;
+   * the caller decides what a toggle means. Defaults to `'single'`.
+   */
+  selectionMode?: 'single' | 'multiple';
+  /** The selected keys in `'multiple'` mode. Ignored in `'single'` mode. */
+  selectedKeys?: Key[];
+  /** Whether options show a checkbox. Only applies in `'multiple'` mode. */
+  isCheckable?: boolean;
   isDisabled?: boolean;
   disabledKeys?: Iterable<Key>;
   items?: Iterable<any>;
@@ -147,6 +157,9 @@ export const ListBoxPopover = function ListBoxPopover(
     sectionStyles,
     headingStyles,
     selectedKey,
+    selectionMode = 'single',
+    selectedKeys,
+    isCheckable,
     isDisabled,
     disabledKeys,
     items,
@@ -289,7 +302,21 @@ export const ListBoxPopover = function ListBoxPopover(
                     ? label
                     : t('listBoxPopover.options', 'Options'))
                 }
-                selectedKey={selectedKey}
+                // Left unset in single mode, as before this prop existed: an
+                // explicit `'single'` switches on ListBox's no-toggle branch,
+                // which changes what re-picking the selected option does.
+                selectionMode={
+                  selectionMode === 'multiple' ? 'multiple' : undefined
+                }
+                selectedKey={
+                  selectionMode === 'single' ? selectedKey : undefined
+                }
+                selectedKeys={
+                  selectionMode === 'multiple' ? selectedKeys : undefined
+                }
+                isCheckable={
+                  selectionMode === 'multiple' ? isCheckable : undefined
+                }
                 isDisabled={isDisabled}
                 disabledKeys={disabledKeys}
                 shouldUseVirtualFocus={true}

@@ -120,6 +120,20 @@
   "tag": {
     "close": "Lukk"
   },
+  "tagInput": {
+    "remove": "Fjern",
+    "selectedValues": "Valgte verdier",
+    "summary": "Valgt: {{values}}",
+    "showOptions": "Vis alternativer",
+    "options": "Alternativer",
+    "customValue": "Egendefinert verdi",
+    "added": "{{value}} lagt til",
+    "removed": "{{value}} fjernet",
+    "invalidValue": "«{{value}}» er ikke en gyldig verdi",
+    "duplicateValue": "«{{value}}» er allerede lagt til",
+    "unknownValue": "«{{value}}» finnes ikke i listen",
+    "unavailableValue": "«{{value}}» er ikke tilgjengelig"
+  },
   "placeholder": {
     "contentIsLoading": "Innholdet lastes inn"
   },

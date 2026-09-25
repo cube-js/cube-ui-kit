@@ -120,6 +120,20 @@
   "tag": {
     "close": "Chiudi"
   },
+  "tagInput": {
+    "remove": "Rimuovi",
+    "selectedValues": "Valori selezionati",
+    "summary": "Selezionati: {{values}}",
+    "showOptions": "Mostra opzioni",
+    "options": "Opzioni",
+    "customValue": "Valore personalizzato",
+    "added": "Aggiunto: {{value}}",
+    "removed": "Rimosso: {{value}}",
+    "invalidValue": "\"{{value}}\" non è un valore valido",
+    "duplicateValue": "\"{{value}}\" è già presente",
+    "unknownValue": "\"{{value}}\" non è nell’elenco",
+    "unavailableValue": "\"{{value}}\" non è disponibile"
+  },
   "placeholder": {
     "contentIsLoading": "Caricamento del contenuto"
   },

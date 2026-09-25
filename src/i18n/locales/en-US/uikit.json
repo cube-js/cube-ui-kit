@@ -120,6 +120,20 @@
   "tag": {
     "close": "Close"
   },
+  "tagInput": {
+    "remove": "Remove",
+    "selectedValues": "Selected values",
+    "summary": "Selected: {{values}}",
+    "showOptions": "Show options",
+    "options": "Options",
+    "customValue": "Custom value",
+    "added": "Added {{value}}",
+    "removed": "Removed {{value}}",
+    "invalidValue": "\"{{value}}\" is not a valid value",
+    "duplicateValue": "\"{{value}}\" is already added",
+    "unknownValue": "\"{{value}}\" is not in the list",
+    "unavailableValue": "\"{{value}}\" is not available"
+  },
   "placeholder": {
     "contentIsLoading": "Content is loading"
   },
