@@ -35,7 +35,7 @@ An interactive button component built on top of `Item` that provides all the lay
 - **`hotkeys`** `string` — Keyboard shortcut that triggers the button (e.g., `"cmd+s"`, `"ctrl+alt+d"`)
 - **`tooltip`** `boolean | string | object` — Tooltip configuration: string for simple text, `true` for auto overflow tooltips, or object for advanced config with optional `auto` property
 - **`isDisabled`** `boolean` — Whether the button is disabled
-- **`isSelected`** `boolean` — Whether the button shows as selected with a checkmark (pairs with `icon="checkmark"`)
+- **`isSelected`** `boolean` — Whether the button shows as selected with a checkmark (pairs with `icon="checkmark"`). Announced as `aria-pressed`, so a button with `isSelected` is a toggle; see [ARIA Properties](#aria-properties)
 - **`to`** `string` — URL for link behavior (makes button act as link)
 - **`htmlType`** `'button' | 'submit' | 'reset'` — HTML button type attribute
 - **`description`** `string` — Secondary text shown below the main content
@@ -201,7 +201,7 @@ Three consequences worth knowing:
 
 - `aria-label` - Provides accessible label when text content isn't descriptive enough
 - `aria-disabled` - Indicates disabled state
-- `aria-pressed` - Indicates toggle state for toggle buttons
+- `aria-pressed` - Set from `isSelected`, so `isSelected={false}` announces an unpressed toggle. Not set on a link (`to`), on a button with its own `role` (a tab or option gets `aria-selected` instead), or on a trigger that reports `aria-expanded`. An explicit `aria-pressed` wins
 - `role` - Automatically set to "button" or "link" based on props
 
 ## Behaviour Inside Popovers

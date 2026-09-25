@@ -21,6 +21,7 @@ export interface TypographyPreset {
  * - `h1`-`h6`: Headings (bold by default)
  * - `t1`-`t4`: Text styles (regular weight)
  * - `t1m`-`t4m`: Text styles medium weight
+ * - `t4n`: 12px text at normal (400) weight — `t4` itself is 500
  * - `m1`-`m3`: Markdown/prose styles (larger line-height)
  * - `p1`-`p4`: Paragraph styles
  * - `c1`-`c3`: Caption/uppercase styles
@@ -142,6 +143,16 @@ export const TYPOGRAPHY_PRESETS: Record<string, TypographyPreset> = {
     letterSpacing: '0',
     fontWeight: '600',
     boldFontWeight: '700',
+    iconSize: '16px',
+  },
+  // The 12px step at normal weight: `t4` sits one step heavier than `t3` so
+  // small text keeps its presence, and this is the lighter option beside it.
+  t4n: {
+    fontSize: '12px',
+    lineHeight: '18px',
+    letterSpacing: '0',
+    fontWeight: '400',
+    boldFontWeight: '600',
     iconSize: '16px',
   },
 

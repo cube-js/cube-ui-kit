@@ -92,6 +92,20 @@ const DescriptionElement = tasty({
 });
 
 /**
+ * A flex box, not a block: in a block an inline-level suffix such as a `Badge`
+ * or a `Tag` sits in a line box whose strut adds a pixel under it, so the label
+ * row grew from 20px to 21px and its field stepped down out of line. Only a
+ * single element is a direct flex item; mixed content is wrapped in a `<span>`,
+ * because a flex box drops the whitespace between its items.
+ */
+const LabelSuffixElement = tasty({
+  styles: {
+    display: 'flex',
+    placeItems: 'center',
+  },
+});
+
+/**
  * A wrapper for form fields to provide additional decoration for inputs.
  * @internal Do not use this component directly.
  */
@@ -182,7 +196,13 @@ export const FieldWrapper = forwardRef(function FieldWrapper(
 
           {labelTooltip ? <InfoBadge tooltip={labelTooltip} /> : null}
 
-          {labelSuffix ? <div>{labelSuffix}</div> : null}
+          {labelSuffix ? (
+            <LabelSuffixElement>
+              {wrapNodeIfPlain(labelSuffix, () => (
+                <span>{labelSuffix}</span>
+              ))}
+            </LabelSuffixElement>
+          ) : null}
         </Space>
 
         {extra && <Text preset="t3">{extra}</Text>}

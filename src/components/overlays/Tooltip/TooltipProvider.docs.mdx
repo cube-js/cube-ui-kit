@@ -17,6 +17,7 @@ A convenience wrapper that combines `TooltipTrigger` and `Tooltip` into a single
 - **`title`** `ReactNode` — Tooltip content
 - **`tooltipStyles`** `Styles` — Custom styles for the tooltip container
 - **`width`** `string` — Tooltip width
+- **`qa`** `string` — `data-qa` for the rendered tooltip, so a test can find this trigger's tooltip rather than whichever one is open. Components that take a `tooltip` object accept it there too: `tooltip={{ title: 'Copy', qa: 'CopyTooltip' }}`
 - **`placement`** `Placement` (default: `'top'`) — Position of the tooltip relative to its trigger
 - **`offset`** `number` (default: `8`) — Distance between the tooltip and the trigger element
 - **`crossOffset`** `number` (default: `0`) — Cross-axis offset of the tooltip

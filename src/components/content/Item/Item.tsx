@@ -1015,7 +1015,9 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
         variant={theme && type ? resolveItemVariant(theme, type) : undefined}
         disabled={isNativelyDisabled}
         aria-disabled={finalIsDisabled}
-        aria-selected={isSelected}
+        // A row that reports `aria-pressed` is a toggle button, where
+        // `aria-selected` is not a valid state and screen readers ignore it.
+        aria-selected={rest['aria-pressed'] != null ? undefined : isSelected}
         mods={finalMods}
         styles={styles}
         tokens={{
@@ -1072,7 +1074,14 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
           </div>
         )}
         {actions && (
-          <div data-element="Actions" {...ACTIONS_EVENT_HANDLERS}>
+          <div
+            data-element="Actions"
+            // The handlers keep a press on an action from also pressing the
+            // row. The `true` placeholder has no actions to protect: it only
+            // reserves the sibling run's width, under that run's caret, so
+            // stopping presses there kept the caret from opening the trigger.
+            {...(actions !== true ? ACTIONS_EVENT_HANDLERS : null)}
+          >
             {actions !== true ? (
               <ItemActionProvider
                 type={type}
