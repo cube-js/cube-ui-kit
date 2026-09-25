@@ -179,6 +179,21 @@ describe('<ListBox />', () => {
     expect(listbox).toHaveAttribute('aria-disabled', 'true');
   });
 
+  it('should take the style props its docs list as styles, not attributes', () => {
+    // These were extracted at runtime but missing from the props type, so a
+    // documented `height` failed to type-check. The type-check is the test.
+    const { container } = render(
+      <ListBox label="Select a fruit" height="10x" width="20x" flexGrow={1}>
+        {basicItems}
+      </ListBox>,
+    );
+
+    const root = container.firstElementChild!;
+
+    expect(root).not.toHaveAttribute('height');
+    expect(root).not.toHaveAttribute('width');
+  });
+
   it('should support sections', () => {
     const { getByText, getByRole } = render(
       <ListBox label="Select an item">

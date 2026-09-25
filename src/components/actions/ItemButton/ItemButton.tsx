@@ -132,6 +132,22 @@ const ItemButton = forwardRef(function ItemButton(
 
   const withWrapper = hasHadActions.current;
 
+  // `isSelected` on a button is a toggle state, so it reads as `aria-pressed`,
+  // as `Button` does. Skipped on a link (`to`), for a call site's own `role` (a
+  // tab or option wants `aria-selected`), and on a trigger that reports
+  // `aria-expanded`, which is its state instead. An explicit value still wins.
+  //
+  // Set after the spread: `useButton` always returns an `aria-pressed` key,
+  // undefined when the caller passed none, which would overwrite it.
+  const ariaPressed =
+    allProps['aria-pressed'] ??
+    (allProps.isSelected != null &&
+    actionProps.as !== 'a' &&
+    allProps.role == null &&
+    allProps['aria-expanded'] == null
+      ? allProps.isSelected
+      : undefined);
+
   const renderButton = (showActions: boolean) => (
     <StyledItem
       // Two different questions. `insideWrapper` is "am I laid out for a
@@ -144,6 +160,7 @@ const ItemButton = forwardRef(function ItemButton(
       showActions={showActions}
       actions={actions ? true : undefined}
       {...(mergeProps(rest, actionProps) as any)}
+      aria-pressed={ariaPressed}
       ref={combinedRef}
       data-popover-dismiss=""
       htmlType={actionProps.type}

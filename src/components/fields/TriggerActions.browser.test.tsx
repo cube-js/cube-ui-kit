@@ -192,6 +192,55 @@ describe('trigger actions run', () => {
     );
   });
 
+  // The trigger keeps an empty `Actions` placeholder that reserves the run's
+  // width. Until the run is measured it is 0px wide and the label sits under
+  // the caret, so the cases above pass even with a placeholder that swallows
+  // presses; these wait for the measurement, which is the state a user meets.
+  it.each([
+    [
+      'Picker',
+      'PickerTrigger',
+      <Picker key="p" aria-label="picker" defaultSelectedKey="1">
+        {pickerItems}
+      </Picker>,
+    ],
+    [
+      'FilterPicker',
+      'FilterPicker',
+      <FilterPicker key="fp" aria-label="fp" defaultSelectedKey="1">
+        <FilterPicker.Item key="1">Blue</FilterPicker.Item>
+        <FilterPicker.Item key="2">Red</FilterPicker.Item>
+      </FilterPicker>,
+    ],
+    [
+      'Select',
+      'Select',
+      <Select key="s" aria-label="select" defaultSelectedKey="1">
+        <Select.Item key="1">Blue</Select.Item>
+        <Select.Item key="2">Red</Select.Item>
+      </Select>,
+    ],
+  ])(
+    'opens %s from its caret once the run has been measured',
+    async (_, qa, element) => {
+      renderWithRoot(element);
+
+      const trigger = screen.getByTestId(qa);
+      const caret = document.querySelector('[data-element="ActionIcon"]')!;
+      const placeholder = trigger.querySelector('[data-element="Actions"]')!;
+
+      await waitFor(() =>
+        expect(placeholder.getBoundingClientRect().width).toBeGreaterThan(0),
+      );
+
+      await clickAt(caret);
+
+      await waitFor(() =>
+        expect(screen.getByRole('listbox')).toBeInTheDocument(),
+      );
+    },
+  );
+
   it('keeps an icon-only trigger square when `rightIcon` is suppressed', () => {
     renderWithRoot(
       <>

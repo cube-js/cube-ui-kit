@@ -6,7 +6,9 @@ import {
   renderWithRoot,
   screen,
   userEvent,
+  waitFor,
 } from '../../../test';
+import { Button } from '../../actions/Button/Button';
 
 import { TooltipProvider } from './TooltipProvider';
 
@@ -88,5 +90,40 @@ describe('<TooltipProvider />', () => {
     await userEvent.keyboard('{Escape}');
 
     expect(onKeyDown).toHaveBeenCalledWith('Escape');
+  });
+
+  /**
+   * The provider used to forward only `tooltipStyles` and `width` to the
+   * tooltip, so a test had to find it by `role="tooltip"` — which works only
+   * while exactly one is open and never says whose it is.
+   */
+  it('puts its qa on the rendered tooltip', async () => {
+    renderWithRoot(
+      <TooltipProvider title="Tip" qa="TriggerTooltip">
+        <Button>Trigger</Button>
+      </TooltipProvider>,
+    );
+
+    await userEvent.tab();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('TriggerTooltip')).toHaveAttribute(
+        'role',
+        'tooltip',
+      ),
+    );
+    expect(screen.getByTestId('TriggerTooltip')).toHaveTextContent('Tip');
+  });
+
+  it('takes the qa from a component’s tooltip object', async () => {
+    renderWithRoot(
+      <Button tooltip={{ title: 'Tip', qa: 'ButtonTooltip' }}>Trigger</Button>,
+    );
+
+    await userEvent.tab();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('ButtonTooltip')).toHaveTextContent('Tip'),
+    );
   });
 });
