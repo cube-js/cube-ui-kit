@@ -95,7 +95,12 @@ const Container = tasty({
       '': 'center',
       compact: 'left',
     },
-    width: 'max 80ch',
+    boxSizing: 'border-box',
+    width: {
+      '': 'max 80ch',
+      // Fill the container so stacked actions share one width wherever the card sits
+      'size=large': '0 100% 80ch',
+    },
     margin: {
       '': '0 auto',
       compact: '0',
