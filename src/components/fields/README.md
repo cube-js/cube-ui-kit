@@ -19,6 +19,7 @@ Form field components with built-in validation, accessibility, and React Aria in
 - **ListBox** - Multi-select list with keyboard navigation
 - **FilterListBox** - Multi-select with filtering and grouping
 - **FilterPicker** - Dropdown multi-select with filtering
+- **TagInput** - Multi-value input that shows its values as removable chips
 
 ## Choice Fields
 

@@ -1,7 +1,12 @@
 import { act, waitFor } from '@testing-library/react';
 import { useState } from 'react';
 
-import { renderWithForm, renderWithRoot, userEvent } from '../../../test/index';
+import {
+  getActiveDescendant,
+  renderWithForm,
+  renderWithRoot,
+  userEvent,
+} from '../../../test/index';
 
 import { ComboBox } from './ComboBox';
 
@@ -261,6 +266,30 @@ describe('<ComboBox />', () => {
       expect(combobox).toHaveValue('Red'); // Reset to selection
     });
   }, 15000); // Increased timeout for flaky test
+
+  it('points aria-activedescendant at the option the arrow keys reach', async () => {
+    const { getByRole } = renderWithRoot(
+      <ComboBox label="Color">
+        {items.map((item) => (
+          <ComboBox.Item key={item.key}>{item.children}</ComboBox.Item>
+        ))}
+      </ComboBox>,
+    );
+    const combobox = getByRole('combobox');
+
+    await userEvent.type(combobox, 'r');
+    await waitFor(() =>
+      expect(getActiveDescendant(combobox)).toHaveAttribute('data-key', 'red'),
+    );
+
+    await userEvent.keyboard('{ArrowDown}');
+    await waitFor(() =>
+      expect(getActiveDescendant(combobox)).toHaveAttribute(
+        'data-key',
+        'orange',
+      ),
+    );
+  });
 
   it('should handle keyboard navigation', async () => {
     const { getByRole, queryByRole, getAllByRole } = renderWithRoot(

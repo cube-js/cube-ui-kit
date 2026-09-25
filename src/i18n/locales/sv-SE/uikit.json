@@ -120,6 +120,23 @@
   "tag": {
     "close": "Stäng"
   },
+  "tagInput": {
+    "remove": "Ta bort",
+    "selectedValues": "Valda värden",
+    "summary": "Valda: {{values}}.",
+    "showOptions": "Visa alternativ",
+    "options": "Alternativ",
+    "customValues": "Anpassade värden",
+    "added": "{{value}} har lagts till",
+    "removed": "{{value}} har tagits bort",
+    "invalidValue": "”{{value}}” är inte ett giltigt värde",
+    "duplicateValue": "”{{value}}” har redan lagts till",
+    "unknownValue": "”{{value}}” finns inte i listan",
+    "unavailableValue": "”{{value}}” är inte tillgänglig",
+    "limitReached": "Du kan lägga till upp till {{count}}",
+    "clearText": "Rensa text",
+    "backspaceHint": "Tryck på Backsteg för att gå till de valda värdena."
+  },
   "placeholder": {
     "contentIsLoading": "Innehållet läses in"
   },

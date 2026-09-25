@@ -8,6 +8,7 @@ import {
   RangeSlider,
   Slider,
   Switch,
+  TagInput,
   TextInput,
   TextInputMapper,
 } from '@cube-dev/ui-kit';
@@ -47,6 +48,8 @@ export function NullableFields({
   const wrongText = <TextInput field={enabled} />;
   // @ts-expect-error nullable arrays must still have the right element type
   const wrongGroup = <CheckboxGroup field={form.field('range')} />;
+  // @ts-expect-error nullable arrays must still hold strings
+  const wrongTags = <TagInput field={form.field('range')} />;
   // @ts-expect-error nullable string models still cannot bind to numeric inputs
   const wrongSlider = <Slider field={form.field('text')} />;
   // @ts-expect-error nullable scalar models cannot bind to range inputs
@@ -59,6 +62,7 @@ export function NullableFields({
       <Switch field={enabled} />
       <Checkbox field={enabled} />
       <CheckboxGroup field={form.field('tags')} />
+      <TagInput field={form.field('tags')} />
       <RadioGroup field={form.field('text')} />
       <FileInput field={form.field('text')} />
       <Slider field={form.field('amount')} />
@@ -69,6 +73,7 @@ export function NullableFields({
       {wrongToggle}
       {wrongText}
       {wrongGroup}
+      {wrongTags}
       {wrongSlider}
       {wrongRange}
       {wrongMapping}

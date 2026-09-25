@@ -120,6 +120,23 @@
   "tag": {
     "close": "Đóng"
   },
+  "tagInput": {
+    "remove": "Xóa",
+    "selectedValues": "Các giá trị đã chọn",
+    "summary": "Đã chọn: {{values}}.",
+    "showOptions": "Hiển thị tùy chọn",
+    "options": "Tùy chọn",
+    "customValues": "Giá trị tùy chỉnh",
+    "added": "Đã thêm {{value}}",
+    "removed": "Đã xóa {{value}}",
+    "invalidValue": "\"{{value}}\" không phải là giá trị hợp lệ",
+    "duplicateValue": "\"{{value}}\" đã được thêm",
+    "unknownValue": "\"{{value}}\" không có trong danh sách",
+    "unavailableValue": "\"{{value}}\" không khả dụng",
+    "limitReached": "Bạn có thể thêm tối đa {{count}}",
+    "clearText": "Xóa văn bản",
+    "backspaceHint": "Nhấn Backspace để chuyển đến các giá trị đã chọn."
+  },
   "placeholder": {
     "contentIsLoading": "Đang tải nội dung"
   },

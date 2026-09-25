@@ -24,6 +24,7 @@ import {
   Select,
   Slider,
   Switch,
+  TagInput,
   TextArea,
   TextInput,
   TextInputMapper,
@@ -56,6 +57,7 @@ export function ExplicitInstanceOnEveryInput({ modern = false }) {
       <CheckboxGroup name="checkboxes" label="Checkboxes" form={form}>
         <Checkbox value="one">One</Checkbox>
       </CheckboxGroup>
+      <TagInput name="tags" label="Tags" form={form} />
       <Switch name="switch" form={form}>
         Switch
       </Switch>

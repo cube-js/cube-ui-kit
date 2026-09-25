@@ -752,6 +752,21 @@ export const DEFAULTS: DefaultsRegistry = {
         tooltip: { kind: 'default', value: true },
       },
     },
+    TagInput: {
+      props: {
+        allowsCustomValue: { kind: 'default', value: false },
+        autoComplete: { kind: 'default', value: 'off' },
+        containerPadding: { kind: 'default', value: 8 },
+        direction: { kind: 'default', value: 'bottom' },
+        hideTrigger: { kind: 'default', value: false },
+        isClearable: { kind: 'default', value: false },
+        overlayOffset: { kind: 'default', value: 8 },
+        popoverTrigger: { kind: 'default', value: 'input' },
+        shouldCommitOnBlur: { kind: 'default', value: true },
+        shouldFlip: { kind: 'default', value: true },
+        size: { kind: 'default', value: 'medium' },
+      },
+    },
     Text: {
       props: {
         as: { kind: 'default', value: 'span' },

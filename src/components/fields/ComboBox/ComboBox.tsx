@@ -43,6 +43,7 @@ import {
   useFieldProps,
   wrapWithField,
 } from '../../form';
+import { getListBoxOptionId } from '../ListBox/optionId';
 import {
   filterCollectionNodes,
   getEdgeVisibleKey,
@@ -334,6 +335,8 @@ interface UseComboBoxKeyboardProps {
   onClosePopover: () => void;
   inputRef: RefObject<HTMLInputElement>;
   setIsFilterActive: (active: boolean) => void;
+  /** Called with the option the arrow keys moved virtual focus to. */
+  onVirtualFocus: (key: Key) => void;
   onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
 }
 
@@ -350,6 +353,7 @@ function useComboBoxKeyboard({
   onClosePopover,
   inputRef,
   setIsFilterActive,
+  onVirtualFocus,
   onKeyDown,
 }: UseComboBoxKeyboardProps) {
   const { keyboardProps } = useKeyboard({
@@ -379,6 +383,7 @@ function useComboBoxKeyboard({
         if (nextKey != null) {
           markKeyboardFocus(listState);
           listState.selectionManager.setFocusedKey(nextKey);
+          onVirtualFocus(nextKey);
         }
       } else if (e.key === 'Enter') {
         // If popover is open, try to select the focused item first
@@ -452,6 +457,7 @@ function useComboBoxKeyboard({
           if (targetKey != null) {
             markKeyboardFocus(listState);
             listState.selectionManager.setFocusedKey(targetKey);
+            onVirtualFocus(targetKey);
           }
         }
       }
@@ -485,7 +491,8 @@ interface ComboBoxInputProps {
   isPopoverOpen: boolean;
   hasResults: boolean;
   comboBoxId: string;
-  listStateRef: RefObject<any>;
+  /** The id of the option under virtual focus, while the popover is open. */
+  activeDescendant?: string;
 }
 
 const ComboBoxInput = forwardRef<HTMLInputElement, ComboBoxInputProps>(
@@ -511,7 +518,7 @@ const ComboBoxInput = forwardRef<HTMLInputElement, ComboBoxInputProps>(
       isPopoverOpen,
       hasResults,
       comboBoxId,
-      listStateRef,
+      activeDescendant,
     },
     ref,
   ) {
@@ -551,13 +558,7 @@ const ComboBoxInput = forwardRef<HTMLInputElement, ComboBoxInputProps>(
             ? `ComboBoxListBox-${comboBoxId}`
             : undefined
         }
-        aria-activedescendant={
-          isPopoverOpen &&
-          hasResults &&
-          listStateRef.current?.selectionManager.focusedKey != null
-            ? `ListBoxItem-${listStateRef.current?.selectionManager.focusedKey}`
-            : undefined
-        }
+        aria-activedescendant={activeDescendant}
       />
     );
   },
@@ -996,6 +997,10 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   // Ref to access internal ListBox state
   const listStateRef = useRef<any>(null);
   const focusInitAttemptsRef = useRef(0);
+  // The option under virtual focus, mirrored in state for the input's
+  // `aria-activedescendant`: the listbox's own state update does not re-render
+  // this component.
+  const [activeOptionKey, setActiveOptionKey] = useState<Key | null>(null);
 
   // Helper to get label from local collection
   const getItemLabel = useCallback(
@@ -1227,6 +1232,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     onClosePopover: () => setIsPopoverOpen(false),
     inputRef,
     setIsFilterActive,
+    onVirtualFocus: setActiveOptionKey,
     onKeyDown,
   });
 
@@ -1321,7 +1327,9 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
       }
     }
 
-    if (needsRefocus) {
+    if (!needsRefocus) {
+      setActiveOptionKey(currentFocusedKey);
+    } else {
       let keyToFocus: Key | null = null;
 
       // First try to focus on the selected key if it exists in the collection
@@ -1337,9 +1345,10 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
 
       if (keyToFocus != null) {
         selectionManager.setFocusedKey(keyToFocus);
+        setActiveOptionKey(keyToFocus);
       }
     }
-  }, [shouldShowPopover, effectiveSelectedKey]);
+  }, [shouldShowPopover, effectiveSelectedKey, setActiveOptionKey]);
 
   useLayoutEffect(() => {
     if (!shouldShowPopover) return;
@@ -1392,7 +1401,14 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
         isPopoverOpen={isPopoverOpen}
         hasResults={hasResults}
         comboBoxId={comboBoxId}
-        listStateRef={listStateRef}
+        activeDescendant={
+          shouldShowPopover && activeOptionKey != null
+            ? getListBoxOptionId(
+                `ComboBoxListBox-${comboBoxId}`,
+                activeOptionKey,
+              )
+            : undefined
+        }
         onChange={handleInputChange}
         onFocus={handleInputFocus}
       />
