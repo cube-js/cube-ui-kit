@@ -116,7 +116,14 @@ export function useAutoTooltip({
 
   useEffect(() => {
     if (isAutoTooltipEnabled) {
-      checkLabelOverflow();
+      // Scheduled, not measured here. React 19 flushes a sync commit's passive
+      // effects before the commit returns, so a verdict set from this effect
+      // leaves that commit with an update pending — a nested update. A list
+      // that commits each row on its own (ag-grid-react wraps every new row in
+      // `flushSync`) then gains one per row, and the 51st throws "Maximum update
+      // depth exceeded". The microtask lands after the commit and still before
+      // paint; it is shared with the callback ref, so this adds no second read.
+      scheduleLabelOverflowCheck();
 
       return;
     }
@@ -130,7 +137,7 @@ export function useAutoTooltip({
     // stale `true` would keep an auto tooltip mounted over content that is no
     // longer text. That is the default `Button` path, where `tooltip` is `true`.
     setIsLabelOverflowed(false);
-  }, [isAutoTooltipEnabled, checkLabelOverflow]);
+  }, [isAutoTooltipEnabled, scheduleLabelOverflowCheck]);
 
   // Attach ResizeObserver via callback ref to handle DOM node changes
   const handleLabelElementRef = useCallback(

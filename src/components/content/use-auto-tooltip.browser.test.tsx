@@ -1,4 +1,5 @@
-import { useLayoutEffect, useState } from 'react';
+import { Component, ReactNode, useLayoutEffect, useState } from 'react';
+import { flushSync } from 'react-dom';
 
 import { act, renderWithRoot, screen, waitFor } from '../../test';
 import { Button } from '../actions/Button/Button';
@@ -38,6 +39,28 @@ function spyOnLayoutReads() {
 }
 
 const LONG_LABEL = 'A label far too long to ever fit inside this narrow box';
+
+/** Renders the error that reached it, so a crash is an assertion, not a log. */
+class CrashBoundary extends Component<
+  { children: ReactNode },
+  { error: Error | null }
+> {
+  state: { error: Error | null } = { error: null };
+
+  static getDerivedStateFromError(error: Error) {
+    return { error };
+  }
+
+  render() {
+    const { error } = this.state;
+
+    return error ? (
+      <div data-qa="Crashed">{error.message}</div>
+    ) : (
+      this.props.children
+    );
+  }
+}
 
 /**
  * Auto-tooltip overflow measurement, in a real browser.
@@ -125,6 +148,83 @@ describe('useAutoTooltip overflow measurement', () => {
     }
 
     const label = () => screen.getByTestId('Label');
+
+    /**
+     * A list that commits each new row on its own must be able to mount far
+     * more than 50 auto-tooltip labels in one task. ag-grid-react 33 is such a
+     * list: it wraps every new row's cells in a `flushSync`.
+     *
+     * React 19 flushes a sync commit's passive effects before `flushSync`
+     * returns, at Default priority. A `setState` from there leaves that commit
+     * with work pending, which React counts as a nested update, and the count
+     * only resets on a commit that leaves nothing behind. One such update per
+     * row is a relay, and the row that takes the count past 50 throws "Maximum
+     * update depth exceeded" (React error 185). That is how a long Cloud
+     * workspace list crashed when it jumped back to the top (CUB-5055,
+     * CUB-4908): each overflowing label's mount effect measured synchronously
+     * and set the verdict from that flush.
+     *
+     * Every row overflows, so each one is a candidate link, and every verdict
+     * must still arrive once the rows have mounted.
+     */
+    it(
+      'lets a list mount rows one sync commit at a time',
+      { timeout: 60_000 },
+      async () => {
+        const ROWS = 80;
+        let addRow = () => {};
+
+        function Rows() {
+          const [count, setCount] = useState(0);
+
+          addRow = () => setCount((n) => n + 1);
+
+          return (
+            <>
+              {Array.from({ length: count }, (_, i) => (
+                <Probe key={i} width="80px" label={`${LONG_LABEL} ${i}`} />
+              ))}
+            </>
+          );
+        }
+
+        await act(async () => {
+          renderWithRoot(
+            <CrashBoundary>
+              <Rows />
+            </CrashBoundary>,
+          );
+        });
+
+        // Outside `act`, which would otherwise take over React's scheduling:
+        // the relay needs every row to commit, effects included, before the
+        // next `flushSync` starts — exactly what production does.
+        const env = globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean };
+        const wasActEnvironment = env.IS_REACT_ACT_ENVIRONMENT;
+
+        env.IS_REACT_ACT_ENVIRONMENT = false;
+
+        try {
+          for (let i = 0; i < ROWS; i++) {
+            flushSync(addRow);
+          }
+        } finally {
+          env.IS_REACT_ACT_ENVIRONMENT = wasActEnvironment;
+        }
+
+        expect(screen.queryByTestId('Crashed')).not.toBeInTheDocument();
+
+        const labels = screen.getAllByTestId('Label');
+
+        expect(labels).toHaveLength(ROWS);
+
+        await waitFor(() => {
+          for (const row of labels) {
+            expect(row).toHaveAttribute('data-overflowed', 'true');
+          }
+        });
+      },
+    );
 
     it('detects an overflowing label and activates its tooltip', async () => {
       await act(async () => {
