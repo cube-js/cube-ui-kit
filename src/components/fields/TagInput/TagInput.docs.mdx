@@ -295,15 +295,18 @@ Tab goes from the input to the chips. Backspace in the empty input does too, lan
 
 <Story of={TagInputStories.LockedAndClearable} />
 
-A locked chip has no remove button and the keyboard skips it. The clear button inside the input clears only the typed text, never the chips, and shows while there is text to clear.
+A locked chip has no remove button, and Delete, Backspace and the arrow keys skip it. TagInput only dims it, so say why it stays: a lock icon through `tagProps` and a `description` keep the chip from looking broken once it is the only one left. The clear button inside the input clears only the typed text, never the chips, and shows while there is text to clear.
 
 ```jsx
 <TagInput
   isClearable
   label="Owners"
+  description="You are always an owner."
   defaultValue={['you@acme.com', 'ana@acme.com']}
   tagProps={(value) =>
-    value === currentUser ? { isDisabled: true, children: `${value} (you)` } : undefined
+    value === currentUser
+      ? { isDisabled: true, icon: <LockIcon />, children: `${value} (you)` }
+      : undefined
   }
 />
 ```

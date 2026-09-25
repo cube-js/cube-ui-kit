@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 
+import { LockIcon } from '../../../icons/LockIcon';
 import { NO_SNAPSHOT } from '../../../stories/chromatic';
 import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
@@ -538,11 +539,16 @@ export const LockedAndClearable: StoryFn<CubeTagInputProps> = (args) => (
     isClearable
     label="Owners"
     placeholder="name@company.com"
+    description="You are always an owner."
     defaultInputValue="kim@acme"
     defaultValue={['you@acme.com', 'ana@acme.com', 'lee@acme.com']}
     tagProps={(value) =>
       value === 'you@acme.com'
-        ? { isDisabled: true, children: 'you@acme.com (you)' }
+        ? {
+            isDisabled: true,
+            icon: <LockIcon />,
+            children: 'you@acme.com (you)',
+          }
         : undefined
     }
   />
@@ -552,7 +558,7 @@ LockedAndClearable.parameters = {
   docs: {
     description: {
       story:
-        '`isClearable` adds a button to the input that clears the typed text; it shows while there is text. A chip with `isDisabled` from `tagProps` is locked: it has no remove button and the keyboard skips it.',
+        "`isClearable` adds a button to the input that clears the typed text; it shows while there is text. A chip with `isDisabled` from `tagProps` is locked: it has no remove button and Delete, Backspace and the arrow keys skip it. The lock icon and the description are the story's own, passed through `tagProps` and `description`, so the chip reads as locked even when it is the only one left.",
     },
   },
 };
