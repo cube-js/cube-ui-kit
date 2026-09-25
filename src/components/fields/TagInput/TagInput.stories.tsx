@@ -315,9 +315,11 @@ export const WithSuggestions: Story = {
 
     await userEvent.type(input, 're');
 
-    // The first match takes virtual focus a couple of frames after the list
-    // opens; that focus is part of the picture.
-    await waitFor(() => expect(activeOption(input)).toHaveTextContent('read'));
+    // The first match not added yet takes virtual focus a couple of frames
+    // after the list opens; that focus is part of the picture.
+    await waitFor(() =>
+      expect(activeOption(input)).toHaveTextContent('refresh'),
+    );
   },
 };
 

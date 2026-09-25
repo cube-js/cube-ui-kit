@@ -1466,6 +1466,19 @@ describe('<TagInput />', () => {
     });
   });
 
+  it('focuses the first match not added yet while typing', async () => {
+    const { getByRole } = renderWithRoot(
+      <Actions defaultValue={['read', 'rebuild']} />,
+    );
+    const input = getByRole('combobox');
+
+    await userEvent.type(input, 're');
+
+    await waitFor(() =>
+      expect(getActiveDescendant(input)).toHaveTextContent('refresh'),
+    );
+  });
+
   describe('custom values in the list', () => {
     function Custom(props: Partial<Parameters<typeof TagInput>[0]>) {
       return <Actions allowsCustomValue {...props} />;
