@@ -23,6 +23,8 @@ export interface CubeTitleProps
     PositionStyleProps {
   /** The level of the heading **/
   level?: 1 | 2 | 3 | 4 | 5 | 6;
+  /** The slot to read provided props from. Defaults to `title` */
+  slot?: string;
 }
 
 const TitleElement = tasty({

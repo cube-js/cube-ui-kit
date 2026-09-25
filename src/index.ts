@@ -160,6 +160,7 @@ export type { CubeFooterProps } from './components/content/Footer';
 export { Result } from './components/content/Result/Result';
 export type {
   CubeResultProps,
+  CubeResultSize,
   CubeResultStatus,
 } from './components/content/Result/Result';
 export { Layout, GridLayout } from './components/content/Layout';
