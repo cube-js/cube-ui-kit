@@ -16,7 +16,7 @@ import {
   DEFAULT_SATURATION,
   getPaletteConfig,
   getPaletteVersion,
-  usePaletteVersion,
+  usePaletteValue,
 } from './palette-config';
 
 import type { ColorMap, GlazeConfigOverride } from '@tenphi/glaze';
@@ -271,12 +271,11 @@ export function getColorTheme(config: ColorThemeConfig): ColorTheme {
  * ```
  */
 export function useColorTheme(config: ColorThemeConfig): ColorTheme {
-  // Subscribes this component to a re-seed. `getColorTheme` reads the version
-  // itself for its cache, so the value is unused here — the subscription is the
-  // point, and it is what makes the tokens below re-inject.
-  usePaletteVersion();
-
-  const theme = getColorTheme(config);
+  // Read through the store, not as a bare `getColorTheme(config)` call: that call
+  // is memoized on `config` in the compiled build, so a re-seed with the same
+  // config would keep injecting the old tokens. `getColorTheme` returns one
+  // identity per config until the palette changes, which is what a snapshot needs.
+  const theme = usePaletteValue(() => getColorTheme(config));
 
   useGlobalStyles('body', theme.tokens, {
     id: `cube-color-theme-${theme.name}`,
