@@ -93,6 +93,29 @@ export interface CubeTagInputProps<T = object>
   placeholder?: string;
   /** HTML `autocomplete` attribute for the input. */
   autoComplete?: string;
+  /**
+   * Which virtual keyboard the input asks for: `'email'` for addresses,
+   * `'decimal'` for numbers. The input stays a text input, so the browser does
+   * not validate what is typed.
+   */
+  inputMode?:
+    | 'none'
+    | 'text'
+    | 'tel'
+    | 'url'
+    | 'email'
+    | 'numeric'
+    | 'decimal'
+    | 'search';
+  /** The label of the virtual keyboard's Enter key. */
+  enterKeyHint?:
+    | 'enter'
+    | 'done'
+    | 'go'
+    | 'next'
+    | 'previous'
+    | 'search'
+    | 'send';
   /** Called when focus enters the component (input, chips or popover). Receives no event. */
   onFocus?: () => void;
   /** Called when focus leaves the component entirely. Receives no event. */
@@ -1194,11 +1217,12 @@ function TagInput<T extends object>(
         return;
       }
 
-      // With nothing typed, Enter keeps its usual meaning (submitting a form).
-      if (!term) return;
-
+      // Enter is for adding values and never submits a form, even with nothing
+      // typed: pressing it once more after the last value must not send a
+      // half-filled dialog.
       e.preventDefault();
-      commitDraft();
+
+      if (term) commitDraft();
 
       return;
     }

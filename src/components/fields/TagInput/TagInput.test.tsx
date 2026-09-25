@@ -130,7 +130,7 @@ describe('<TagInput />', () => {
       expect(onChange).toHaveBeenLastCalledWith(['Doe, Jane']);
     });
 
-    it('does not block form submission when nothing is typed', async () => {
+    it('never submits the form on Enter, even with nothing typed', async () => {
       const onSubmit = vi.fn((e) => e.preventDefault());
       const { getByRole } = render(
         <form onSubmit={onSubmit}>
@@ -140,10 +140,18 @@ describe('<TagInput />', () => {
       const input = getByRole('textbox');
 
       await userEvent.type(input, 'one{Enter}');
-      expect(onSubmit).not.toHaveBeenCalled();
-
       await userEvent.type(input, '{Enter}');
-      expect(onSubmit).toHaveBeenCalledTimes(1);
+
+      expect(onSubmit).not.toHaveBeenCalled();
+    });
+
+    it('passes the virtual keyboard hints to the input', () => {
+      const { getByRole } = render(
+        <TagInput label="Numbers" inputMode="decimal" enterKeyHint="done" />,
+      );
+
+      expect(getByRole('textbox')).toHaveAttribute('inputmode', 'decimal');
+      expect(getByRole('textbox')).toHaveAttribute('enterkeyhint', 'done');
     });
 
     it('commits the typed text when focus leaves the field', async () => {

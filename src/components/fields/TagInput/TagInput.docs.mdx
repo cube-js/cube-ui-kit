@@ -51,6 +51,8 @@ A multi-value field. The user types a value into a single-line input and commits
 - **`overlayOffset`** `number` (default: `8`) — Distance between the input and the popover, in pixels
 - **`containerPadding`** `number` (default: `8`) — Minimum space between the popover and the viewport edge, in pixels
 - **`autoComplete`** `string` (default: `off`) — HTML `autocomplete` attribute for the input
+- **`inputMode`** `'text' | 'email' | 'url' | 'tel' | 'numeric' | 'decimal' | 'search' | 'none'` — Which virtual keyboard the input asks for. The input stays a text input, so the browser does not validate what is typed
+- **`enterKeyHint`** `'enter' | 'done' | 'go' | 'next' | 'previous' | 'search' | 'send'` — The label of the virtual keyboard's Enter key
 - **`onChange`** `(value: string[]) => void` — Called with the whole new list of values
 - **`onInputChange`** `(value: string) => void` — Called when the text being typed changes
 - **`onClear`** `() => void` — Called when the clear button is pressed
@@ -326,6 +328,28 @@ A locked chip has no remove button and the keyboard skips it. The clear button i
 
 With the rewrite, `Ana@Acme.com` is a duplicate of `ana@acme.com` rather than a second chip.
 
+### Numbers
+
+The value is always a `string[]`. Map a numeric model at the boundary, and let `normalizeTag` write each number one way, so `10.0` is a duplicate of `10`:
+
+```jsx
+const [bounds, setBounds] = useState([0, 10, 25]);
+
+<TagInput
+  label="Bin boundaries"
+  inputMode="decimal"
+  delimiters={[',', ';', ' ']}
+  value={bounds.map(String)}
+  onChange={(next) => setBounds(next.map(Number).sort((a, b) => a - b))}
+  normalizeTag={(value) =>
+    Number.isFinite(Number(value)) ? String(Number(value)) : value
+  }
+  validateTag={(value) => Number.isFinite(Number(value)) || 'Enter a number'}
+/>;
+```
+
+For numbers written with thousands separators, turn the comma delimiter off and strip them in `normalizeTag`: `delimiters={[]}` with `normalizeTag={(value) => value.replaceAll(',', '')}`.
+
 ### Labels for Values Outside the Options
 
 When a value's label is not in the options, for example because the options are loaded on demand or leave out what is already picked, give the chip its label in `tagProps`:
@@ -366,7 +390,7 @@ const [recipients, setRecipients] = useState(['ana@acme.com']);
 
 - `Tab` - Moves focus from the input to the chips, then out of the field. The chips are one Tab stop; the popover trigger and the clear button are not Tab stops. Tabbing away closes the popover and commits the typed text
 - `Shift+Tab` - Moves back from the chips to the input
-- `Enter` - Commits the typed text. With the popover open, toggles the focused option, the one `aria-activedescendant` announces; with text typed, an option that is already a chip is refused as a duplicate rather than removed. With nothing typed and the popover closed, submits the form
+- `Enter` - Commits the typed text. With the popover open, toggles the focused option, the one `aria-activedescendant` announces; with text typed, an option that is already a chip is refused as a duplicate rather than removed. Never submits a surrounding form, even with nothing typed, so one Enter too many after the last value does not send a half-filled dialog
 - `,` (or another delimiter) - Commits the text before the caret and keeps the rest typed
 - `Escape` - Closes the popover, or clears the typed text when it is closed
 - `Backspace` in the empty input - Moves focus to the last chip without removing it, and closes the popover. A Backspace held down to clear the text stops at the empty input

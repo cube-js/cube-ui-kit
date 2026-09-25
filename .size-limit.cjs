@@ -295,7 +295,11 @@ module.exports = [
     // and locked chips, plus four strings in each of the twelve locales, which
     // every bundle registers. CI run 36139391623 measured 609,633 B, +2,513 B,
     // and a local build agreed to within a few bytes this time. Button is still
-    // 131,994 B. Leave 1,367 B headroom.
+    // 131,994 B.
+    //
+    // Then custom values listed in the popover and the clear button scoped to
+    // the typed text: 610.22 kB on a fresh local build, +590 B. Leave ~780 B
+    // headroom; the next TagInput change will likely have to raise this.
     limit: '611kB',
   },
   {

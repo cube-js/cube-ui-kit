@@ -177,6 +177,26 @@ const meta = {
       description: 'HTML `autocomplete` attribute for the input',
       table: { defaultValue: { summary: 'off' } },
     },
+    inputMode: {
+      options: [
+        'text',
+        'email',
+        'url',
+        'tel',
+        'numeric',
+        'decimal',
+        'search',
+        'none',
+      ],
+      control: { type: 'select' },
+      description:
+        'Which virtual keyboard the input asks for. The input stays a text input',
+    },
+    enterKeyHint: {
+      options: ['enter', 'done', 'go', 'next', 'previous', 'search', 'send'],
+      control: { type: 'select' },
+      description: "The label of the virtual keyboard's Enter key",
+    },
 
     /* Presentation */
     size: {
