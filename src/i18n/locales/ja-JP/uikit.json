@@ -120,6 +120,23 @@
   "tag": {
     "close": "閉じる"
   },
+  "tagInput": {
+    "remove": "削除",
+    "selectedValues": "選択された値",
+    "summary": "選択済み: {{values}}。",
+    "showOptions": "オプションを表示",
+    "options": "オプション",
+    "customValues": "カスタム値",
+    "added": "{{value}} を追加しました",
+    "removed": "{{value}} を削除しました",
+    "invalidValue": "「{{value}}」は有効な値ではありません",
+    "duplicateValue": "「{{value}}」はすでに追加されています",
+    "unknownValue": "「{{value}}」はリストにありません",
+    "unavailableValue": "「{{value}}」は利用できません",
+    "limitReached": "追加できるのは {{count}} 件までです",
+    "clearText": "テキストをクリア",
+    "backspaceHint": "Backspace キーで選択された値に移動します。"
+  },
   "placeholder": {
     "contentIsLoading": "コンテンツを読み込んでいます"
   },

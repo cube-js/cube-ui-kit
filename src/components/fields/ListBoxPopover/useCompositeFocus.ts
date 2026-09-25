@@ -22,7 +22,10 @@ export interface UseCompositeFocusReturn {
  * that clicking an option does not look like a blur of the whole component.
  *
  * Focus checks are deferred to the next animation frame to tolerate the
- * synchronous focus shuffles React Aria and portals perform on selection.
+ * synchronous focus shuffles React Aria and portals perform on selection. Focus
+ * that enters and leaves again within that frame still reports both edges, so a
+ * fast focus-type-blur sequence (an automated test, a quick Tab through) does
+ * not skip the blur.
  */
 export function useCompositeFocus({
   wrapperRef,
@@ -32,15 +35,27 @@ export function useCompositeFocus({
   isDisabled,
 }: UseCompositeFocusProps): UseCompositeFocusReturn {
   const wasInsideRef = useRef(false);
+  const enteredRef = useRef(false);
   const rafRef = useRef<number | null>(null);
 
   const checkFocus = useCallback(() => {
+    const entered = enteredRef.current;
+
+    enteredRef.current = false;
+
     if (isDisabled) return;
 
     const activeElement = document.activeElement;
     const isInside =
       (wrapperRef.current?.contains(activeElement) ?? false) ||
       (popoverRef.current?.contains(activeElement) ?? false);
+
+    if (!isInside && !wasInsideRef.current && entered) {
+      onFocus?.();
+      onBlur?.();
+
+      return;
+    }
 
     if (isInside !== wasInsideRef.current) {
       wasInsideRef.current = isInside;
@@ -52,21 +67,23 @@ export function useCompositeFocus({
     }
   }, [wrapperRef, popoverRef, onFocus, onBlur, isDisabled]);
 
-  const handleFocusOrBlur = useCallback(
-    (e: React.FocusEvent) => {
-      // Cancel any pending check
-      if (rafRef.current !== null) {
-        cancelAnimationFrame(rafRef.current);
-      }
+  const scheduleCheck = useCallback(() => {
+    // Cancel any pending check
+    if (rafRef.current !== null) {
+      cancelAnimationFrame(rafRef.current);
+    }
 
-      // Schedule focus check for next frame
-      rafRef.current = requestAnimationFrame(() => {
-        rafRef.current = null;
-        checkFocus();
-      });
-    },
-    [checkFocus],
-  );
+    // Schedule focus check for next frame
+    rafRef.current = requestAnimationFrame(() => {
+      rafRef.current = null;
+      checkFocus();
+    });
+  }, [checkFocus]);
+
+  const handleFocus = useCallback(() => {
+    enteredRef.current = true;
+    scheduleCheck();
+  }, [scheduleCheck]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -79,8 +96,8 @@ export function useCompositeFocus({
 
   return {
     compositeFocusProps: {
-      onFocus: handleFocusOrBlur,
-      onBlur: handleFocusOrBlur,
+      onFocus: handleFocus,
+      onBlur: scheduleCheck,
     },
   };
 }

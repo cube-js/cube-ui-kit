@@ -47,6 +47,7 @@ import {
   useValidationProps,
   wrapWithField,
 } from '../../form';
+import { getListBoxOptionId } from '../ListBox/optionId';
 import {
   filterCollectionNodes,
   getEdgeVisibleKey,
@@ -329,7 +330,10 @@ const SearchComboBoxInput = forwardRef<
       }
       aria-activedescendant={
         isExpanded && listStateRef.current?.selectionManager.focusedKey != null
-          ? `ListBoxItem-${listStateRef.current?.selectionManager.focusedKey}`
+          ? getListBoxOptionId(
+              `SearchComboBoxListBox-${searchComboBoxId}`,
+              listStateRef.current.selectionManager.focusedKey,
+            )
           : undefined
       }
     />

@@ -1,6 +1,11 @@
 import { act, waitFor } from '@testing-library/react';
 
-import { renderWithForm, renderWithRoot, userEvent } from '../../../test/index';
+import {
+  getActiveDescendant,
+  renderWithForm,
+  renderWithRoot,
+  userEvent,
+} from '../../../test/index';
 
 import { CommandTextArea } from './CommandTextArea';
 
@@ -193,10 +198,7 @@ describe('<CommandTextArea />', () => {
     await waitFor(() => expect(queryByRole('listbox')).toBeInTheDocument());
     // Wait until the first option is virtually focused (auto-focus init).
     await waitFor(() =>
-      expect(input).toHaveAttribute(
-        'aria-activedescendant',
-        'ListBoxItem-/clear',
-      ),
+      expect(getActiveDescendant(input)).toHaveAttribute('data-key', '/clear'),
     );
 
     await userEvent.keyboard('{Enter}');
@@ -236,18 +238,12 @@ describe('<CommandTextArea />', () => {
     await waitFor(() => expect(queryByRole('listbox')).toBeInTheDocument());
     // Auto-focus lands on the first option (/clear).
     await waitFor(() =>
-      expect(input).toHaveAttribute(
-        'aria-activedescendant',
-        'ListBoxItem-/clear',
-      ),
+      expect(getActiveDescendant(input)).toHaveAttribute('data-key', '/clear'),
     );
 
     await userEvent.keyboard('{ArrowDown}'); // -> /help (second option)
     await waitFor(() =>
-      expect(input).toHaveAttribute(
-        'aria-activedescendant',
-        'ListBoxItem-/help',
-      ),
+      expect(getActiveDescendant(input)).toHaveAttribute('data-key', '/help'),
     );
     await userEvent.keyboard('{Enter}');
 
@@ -279,10 +275,7 @@ describe('<CommandTextArea />', () => {
     });
     // Wait for auto-focus to land on the first matching option (@john).
     await waitFor(() =>
-      expect(input).toHaveAttribute(
-        'aria-activedescendant',
-        'ListBoxItem-@john',
-      ),
+      expect(getActiveDescendant(input)).toHaveAttribute('data-key', '@john'),
     );
 
     await userEvent.keyboard('{Enter}');
@@ -385,10 +378,7 @@ describe('<CommandTextArea />', () => {
     await waitFor(() => expect(queryByRole('listbox')).toBeInTheDocument());
     // Auto-focus lands on the first option (/clear).
     await waitFor(() =>
-      expect(input).toHaveAttribute(
-        'aria-activedescendant',
-        'ListBoxItem-/clear',
-      ),
+      expect(getActiveDescendant(input)).toHaveAttribute('data-key', '/clear'),
     );
 
     // Narrow the token so /clear no longer matches ("/h" -> /help, /share).
@@ -397,10 +387,7 @@ describe('<CommandTextArea />', () => {
     // Focus must move to the first still-visible option instead of staying on
     // the now-hidden /clear, so Enter commits a command the user can see.
     await waitFor(() =>
-      expect(input).toHaveAttribute(
-        'aria-activedescendant',
-        'ListBoxItem-/help',
-      ),
+      expect(getActiveDescendant(input)).toHaveAttribute('data-key', '/help'),
     );
 
     await userEvent.keyboard('{Enter}');
@@ -442,10 +429,7 @@ describe('CommandTextArea consumer contracts', () => {
     await userEvent.type(input, '/cl');
     await waitFor(() => expect(queryByRole('listbox')).toBeInTheDocument());
     await waitFor(() =>
-      expect(input).toHaveAttribute(
-        'aria-activedescendant',
-        'ListBoxItem-/clear',
-      ),
+      expect(getActiveDescendant(input)).toHaveAttribute('data-key', '/clear'),
     );
     await userEvent.keyboard('{Enter}');
 
@@ -476,10 +460,7 @@ describe('CommandTextArea consumer contracts', () => {
     await userEvent.type(input, 'run /cl');
     await waitFor(() => expect(queryByRole('listbox')).toBeInTheDocument());
     await waitFor(() =>
-      expect(input).toHaveAttribute(
-        'aria-activedescendant',
-        'ListBoxItem-/clear',
-      ),
+      expect(getActiveDescendant(input)).toHaveAttribute('data-key', '/clear'),
     );
     await userEvent.keyboard('{Enter}');
 

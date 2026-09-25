@@ -67,6 +67,7 @@ import {
   Tab,
   Tabs,
   Tag,
+  TagInput,
   Text,
   TextArea,
   TextInput,
@@ -456,6 +457,17 @@ export const FIXTURES: Fixture[] = [
       </FilterListBox>
     ),
     ignoreProps: ['label', 'children'],
+  },
+  {
+    name: 'TagInput',
+    render: (props) => (
+      <TagInput label="Tags" defaultValue={['1']} {...props}>
+        <TagInput.Item key="1">Blue</TagInput.Item>
+        <TagInput.Item key="2">Red</TagInput.Item>
+      </TagInput>
+    ),
+    conditions: [insideHorizontalForm],
+    ignoreProps: ['label', 'children', 'defaultValue'],
   },
   {
     name: 'SearchComboBox',

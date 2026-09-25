@@ -25,6 +25,7 @@ import {
   Select,
   Slider,
   Switch,
+  TagInput,
   TextArea,
   TextInput,
   TextInputMapper,
@@ -63,6 +64,7 @@ export function TupleNamesOnEveryInput() {
       >
         <Checkbox value="one">One</Checkbox>
       </CheckboxGroup>
+      <TagInput name={['fields', 'tags']} label="Tags" form={form} />
       <Switch name={['fields', 'switch']} form={form}>
         Switch
       </Switch>
