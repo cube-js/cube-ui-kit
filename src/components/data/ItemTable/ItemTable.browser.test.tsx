@@ -691,9 +691,14 @@ describe('treegrid focus and virtualization', () => {
     );
 
     treeRow('root-0').focus();
-    await act(() =>
-      realInput.keyboard('{ArrowRight}{ArrowRight}{ArrowRight}{ArrowRight}'),
-    );
+
+    // Expand root, enter branch, expand branch, enter leaf. Each press reads
+    // the tree the previous one committed, as real input always does. That
+    // needs one act per key: React 18 holds every update until the act scope
+    // ends, so a shared scope would show all four keys a collapsed root.
+    for (let press = 0; press < 4; press++) {
+      await act(() => realInput.keyboard('{ArrowRight}'));
+    }
 
     await vi.waitFor(() => expect(treeRow('leaf')).toHaveFocus());
   });
