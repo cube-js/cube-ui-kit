@@ -131,9 +131,9 @@ const Container = tasty({
     Value: {
       color: '#dark',
       preset: {
-        '': 'h2',
-        compact: 'h3',
-        'size=large': 'h1',
+        '': 'h3',
+        compact: 'h4',
+        'size=large': 'h2',
       },
       fontVariantNumeric: 'tabular-nums',
     },
