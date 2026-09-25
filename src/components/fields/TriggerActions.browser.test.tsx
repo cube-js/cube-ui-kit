@@ -310,4 +310,26 @@ describe('trigger actions run', () => {
       ),
     ).toBe(0);
   });
+
+  it('mounts the trigger at the width it keeps', async () => {
+    renderWithRoot(
+      <FilterPicker qa="Settled" aria-label="fruit" placeholder="Pick a fruit">
+        <FilterPicker.Item key="1">Blue</FilterPicker.Item>
+      </FilterPicker>,
+    );
+
+    const trigger = screen.getByTestId('Settled');
+    const widths = [trigger.getBoundingClientRect().width];
+
+    // The run is measured after mount. Publishing that width used to animate
+    // the row out from 0px, so for one transition the trigger grew by its caret,
+    // and FilterPicker sized a popover opened in that window from a half-grown
+    // trigger. Fifteen frames outlast the 80ms transition.
+    for (let frame = 0; frame < 15; frame++) {
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+      widths.push(trigger.getBoundingClientRect().width);
+    }
+
+    expect(new Set(widths).size).toBe(1);
+  });
 });

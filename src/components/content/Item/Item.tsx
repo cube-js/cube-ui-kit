@@ -120,6 +120,13 @@ export interface CubeItemProps extends BaseProps, ContainerStyleProps {
    */
   showActions?: boolean;
   /**
+   * When true and insideWrapper is true, the width reserved for the actions
+   * run changes without animating. The wrapper sets it while it publishes the
+   * width it measured on mount.
+   * @default false
+   */
+  skipActionsWidthTransition?: boolean;
+  /**
    * When true, preserves the actions width when hidden (only changes opacity).
    * Only applies when autoHideActions is true.
    * @default false
@@ -576,8 +583,13 @@ const ItemElement = tasty({
         'auto-hide-actions': 0,
         'auto-hide-actions & ((@interacted & !inside-wrapper) | (inside-wrapper & actions-shown))': 1,
       },
-      transition:
-        'width $transition ease-out, opacity $transition ease-out, padding $transition ease-out',
+      transition: {
+        '': 'width $transition ease-out, opacity $transition ease-out, padding $transition ease-out',
+        // The wrapper's first measurement lands here with no width transition,
+        // so the row starts at its reserved width instead of growing into it.
+        'skip-actions-width-transition':
+          'opacity $transition ease-out, padding $transition ease-out',
+      },
       interpolateSize: 'allow-keywords',
 
       // Size for the action buttons
@@ -634,6 +646,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     highlightStyles,
     insideWrapper = false,
     showActions = false,
+    skipActionsWidthTransition = false,
     hiddenContent,
     isDynamicLabel = false,
     // Destructured so it reaches the label, not the element's DOM attributes.
@@ -907,6 +920,8 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
       'preserve-actions-space': preserveActionsSpace === true,
       'inside-wrapper': insideWrapper,
       'actions-shown': showActions && insideWrapper,
+      'skip-actions-width-transition':
+        skipActionsWidthTransition && insideWrapper,
       checkmark: hasCheckmark,
       description: showDescription ? finalDescriptionPlacement : 'none',
     };
@@ -924,6 +939,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     preserveActionsSpace,
     hasLabel,
     showActions,
+    skipActionsWidthTransition,
     insideWrapper,
   ]);
 
