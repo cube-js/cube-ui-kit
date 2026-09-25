@@ -293,8 +293,9 @@ module.exports = [
     // Then the rest of the field's keyboard and value API: Backspace into the
     // chips, Escape and typing back out, Clear all, `maxTags`, `normalizeTag`
     // and locked chips, plus four strings in each of the twelve locales, which
-    // every bundle registers. 609.63 kB locally on a fresh build, +2.60 kB;
-    // CI read 90 B above local on the previous commit. Leave ~1.3 kB headroom.
+    // every bundle registers. CI run 36139391623 measured 609,633 B, +2,513 B,
+    // and a local build agreed to within a few bytes this time. Button is still
+    // 131,994 B. Leave 1,367 B headroom.
     limit: '611kB',
   },
   {

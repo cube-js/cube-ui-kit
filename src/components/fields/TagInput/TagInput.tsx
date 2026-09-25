@@ -952,7 +952,8 @@ function TagInput<T extends object>(
       removeValues([key]);
       setDraft('');
     } else if (!commitParts([key])) {
-      // A refused pick (past `maxTags`) keeps the query next to its message.
+      // An accepted pick clears the query. A refused one (past `maxTags`)
+      // keeps it, next to the message saying why.
       setDraft('');
     }
   });
