@@ -15,12 +15,25 @@ export interface CubeTooltipProviderProps
   title?: ReactNode;
   tooltipStyles?: Styles;
   width?: CubeTooltipProps['width'];
+  /**
+   * `data-qa` for the rendered tooltip, so a test can pick out this control's
+   * tooltip rather than whichever one is open. Also accepted in the `tooltip`
+   * object of components that build a provider from it.
+   */
+  qa?: string;
 }
 
 export function TooltipProvider(props: CubeTooltipProviderProps): ReactElement {
   const isSSR = useIsSSR();
-  const { title, children, tooltipStyles, width, isDisabled, ...otherProps } =
-    props;
+  const {
+    title,
+    children,
+    tooltipStyles,
+    width,
+    qa,
+    isDisabled,
+    ...otherProps
+  } = props;
 
   const isFunction = typeof children === 'function';
 
@@ -58,7 +71,11 @@ export function TooltipProvider(props: CubeTooltipProviderProps): ReactElement {
       {isDisabled ? (
         <div />
       ) : (
-        <Tooltip styles={tooltipStyles} {...(width ? { width } : null)}>
+        <Tooltip
+          styles={tooltipStyles}
+          {...(width ? { width } : null)}
+          {...(qa ? { qa } : null)}
+        >
           {title}
         </Tooltip>
       )}

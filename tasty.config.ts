@@ -351,7 +351,7 @@ export default {
     'h5',
     'h6',
 
-    // Text styles (t1-t4, with medium weight variants)
+    // Text styles (t1-t4, with medium weight variants, and t4n at normal weight)
     't1',
     't2',
     't2m',
@@ -359,6 +359,7 @@ export default {
     't3m',
     't4',
     't4m',
+    't4n',
 
     // Markdown/prose styles (m1-m3)
     'm1',
