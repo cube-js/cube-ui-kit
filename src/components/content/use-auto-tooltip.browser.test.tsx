@@ -1,4 +1,5 @@
-import { useLayoutEffect, useState } from 'react';
+import { StrictMode, useLayoutEffect, useState } from 'react';
+import { flushSync } from 'react-dom';
 
 import { act, renderWithRoot, screen, waitFor } from '../../test';
 import { Button } from '../actions/Button/Button';
@@ -126,6 +127,80 @@ describe('useAutoTooltip overflow measurement', () => {
 
     const label = () => screen.getByTestId('Label');
 
+    /**
+     * A list that commits each new row on its own must be able to mount far
+     * more than 50 auto-tooltip labels in one task. ag-grid-react 33 is such a
+     * list: it wraps every new row's cells in a `flushSync`.
+     *
+     * React 19 flushes a sync commit's passive effects before `flushSync`
+     * returns, at Default priority. A `setState` from there leaves that commit
+     * with work pending, which React counts as a nested update, and the count
+     * only resets on a commit that leaves nothing behind. One such update per
+     * row is a relay, and the row that takes the count past 50 throws "Maximum
+     * update depth exceeded" (React error 185). That is how a long Cloud
+     * workspace list crashed when it jumped back to the top (CUB-5055,
+     * CUB-4908): each overflowing label's mount effect measured synchronously
+     * and set the verdict from that flush.
+     *
+     * The crash is thrown straight out of the `flushSync` that schedules the
+     * update past the limit, so it fails the loop itself. Every row overflows,
+     * so each one is a candidate link, and every verdict must still arrive once
+     * the rows have mounted. React 18 counts only Sync-lane work as nested, so
+     * this guards React 19 behaviour; under 18 it would pass either way.
+     */
+    it(
+      'lets a list mount rows one sync commit at a time',
+      { timeout: 60_000 },
+      async () => {
+        const ROWS = 80;
+        let addRow = () => {};
+
+        function Rows() {
+          const [count, setCount] = useState(0);
+
+          addRow = () => setCount((n) => n + 1);
+
+          return (
+            <>
+              {Array.from({ length: count }, (_, i) => (
+                <Probe key={i} width="80px" label={`${LONG_LABEL} ${i}`} />
+              ))}
+            </>
+          );
+        }
+
+        await act(async () => {
+          renderWithRoot(<Rows />);
+        });
+
+        // Outside `act`, which would otherwise take over React's scheduling:
+        // the relay needs every row to commit, effects included, before the
+        // next `flushSync` starts — exactly what production does.
+        const env = globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean };
+        const wasActEnvironment = env.IS_REACT_ACT_ENVIRONMENT;
+
+        env.IS_REACT_ACT_ENVIRONMENT = false;
+
+        try {
+          for (let i = 0; i < ROWS; i++) {
+            flushSync(addRow);
+          }
+        } finally {
+          env.IS_REACT_ACT_ENVIRONMENT = wasActEnvironment;
+        }
+
+        const labels = screen.getAllByTestId('Label');
+
+        expect(labels).toHaveLength(ROWS);
+
+        await waitFor(() => {
+          for (const row of labels) {
+            expect(row).toHaveAttribute('data-overflowed', 'true');
+          }
+        });
+      },
+    );
+
     it('detects an overflowing label and activates its tooltip', async () => {
       await act(async () => {
         renderWithRoot(<Probe width="80px" label={LONG_LABEL} />);
@@ -215,6 +290,46 @@ describe('useAutoTooltip overflow measurement', () => {
         'data-active',
         'true',
       );
+    });
+
+    /**
+     * The remount has to finish before the task that measured ends. Code that
+     * looks the label up after that holds a node React is about to replace,
+     * so its click goes nowhere. A Storybook play function is such code, and
+     * so is anything else that runs once a render has returned.
+     *
+     * A verdict set from the microtask and left to React's scheduler renders
+     * in a later task. That is what Chromatic caught: a Menu story whose
+     * truncated trigger button was clicked, and never opened its menu.
+     */
+    it('remounts the label before the next task can find it', async () => {
+      const env = globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean };
+      const wasActEnvironment = env.IS_REACT_ACT_ENVIRONMENT;
+
+      // Outside `act`, as production renders are: nothing drains React's
+      // scheduler before the test reads.
+      env.IS_REACT_ACT_ENVIRONMENT = false;
+
+      try {
+        // A synchronous render. Its `act` returns before the queued check
+        // runs, as a production render returns before it.
+        renderWithRoot(<RemountProbe />);
+
+        // Resumes after the queued check, like the play function's first read.
+        await Promise.resolve();
+
+        const found = screen.getByTestId('RemountLabel');
+
+        await new Promise((resolve) => setTimeout(resolve, 400));
+
+        expect(found.isConnected).toBe(true);
+        expect(screen.getByTestId('Status')).toHaveAttribute(
+          'data-active',
+          'true',
+        );
+      } finally {
+        env.IS_REACT_ACT_ENVIRONMENT = wasActEnvironment;
+      }
     });
 
     /**
@@ -346,6 +461,49 @@ describe('useAutoTooltip overflow measurement', () => {
 
       await waitFor(() => {
         expect(label()).toHaveAttribute('data-overflowed', 'true');
+      });
+    });
+
+    /**
+     * React 18 Strict Mode replays every effect on mount, cleanup then setup,
+     * but leaves refs attached. React 19 detaches and re-attaches them too.
+     * Teardown kept in an effect therefore dropped the label and its observer
+     * in the replay while the label stayed mounted, and nothing brought them
+     * back: the queued first check found no node, and later resizes went
+     * unobserved. Only the React 18 run can fail here.
+     */
+    it('keeps measuring a label mounted in Strict Mode', async () => {
+      function Resizable() {
+        const [width, setWidth] = useState('80px');
+
+        return (
+          <>
+            <button type="button" onClick={() => setWidth('600px')}>
+              Grow
+            </button>
+            <Probe width={width} label={LONG_LABEL} />
+          </>
+        );
+      }
+
+      await act(async () => {
+        renderWithRoot(
+          <StrictMode>
+            <Resizable />
+          </StrictMode>,
+        );
+      });
+
+      await waitFor(() => {
+        expect(label()).toHaveAttribute('data-overflowed', 'true');
+      });
+
+      await act(async () => {
+        screen.getByRole('button', { name: 'Grow' }).click();
+      });
+
+      await waitFor(() => {
+        expect(label()).toHaveAttribute('data-overflowed', 'false');
       });
     });
   });

@@ -102,8 +102,20 @@ jobs:
           path: dist/react-compiler-report.json
 
   browser-tests:
-    name: 'Browser tests'
+    name: 'Browser tests / React ${{ matrix.react }}'
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - react: 19
+          # React 18 Strict Mode replays effects without re-attaching refs,
+          # which only a real browser measuring real labels can catch in
+          # `useAutoTooltip` and its consumers. The rest of the suite is not
+          # green on React 18 yet (ItemTable's treegrid focus test fails on
+          # main too), so this run is scoped to `content` until it is.
+          - react: 18
+            specs: src/components/content
     steps:
       - uses: actions/checkout@v7
 
@@ -119,6 +131,10 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install
+
+      - name: Install the React 18 consumer matrix
+        if: matrix.react == 18
+        run: pnpm add -D --save-exact react@18.3.1 react-dom@18.3.1 react-test-renderer@18.3.1
 
       # Cached by Playwright's own version, so a browser is only downloaded when
       # the dependency actually changes rather than on every run.
@@ -139,9 +155,9 @@ jobs:
         run: pnpm exec playwright install --with-deps chromium
 
       - name: Run the browser tests
-        run: pnpm test:browser
+        run: pnpm test:browser ${{ matrix.specs }}
       - name: Run the browser tests with the release compiler transform
-        run: UIKIT_REACT_COMPILER=on pnpm test:browser
+        run: UIKIT_REACT_COMPILER=on pnpm test:browser ${{ matrix.specs }}
 
   deploy-chromatic:
     name: 'Prepare Storybook for review & tests'

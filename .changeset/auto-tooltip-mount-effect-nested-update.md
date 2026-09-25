@@ -1,0 +1,5 @@
+---
+'@cube-dev/ui-kit': patch
+---
+
+Stop `useAutoTooltip` from setting its overflow verdict inside the mount effect. React 19 flushes a sync commit's passive effects before the commit returns, so an overflowing `Button`, `Item`, `TextItem`, `LayoutHeader`, `InlineInput` or `Radio` label made a nested update of every commit it mounted in. ag-grid-react 33 wraps every new row in `flushSync`, so a long table crashed with "Maximum update depth exceeded" once about 50 such rows mounted in one task, for example when it jumped back to its top. Labels now queue their checks for one shared microtask. It reads every pending label, then commits the verdicts that changed in a single `flushSync`, after the commit but still before paint and before any other task. The teardown moved from an unmount effect to the label's callback ref, so React 18 Strict Mode, which replays effects with refs still attached, no longer loses the measurement. After a synchronous `render` in a test, the verdict lands in a microtask: `await act(async () => …)` first, then look the label up, since turning the tooltip on remounts it under `TooltipProvider`.
