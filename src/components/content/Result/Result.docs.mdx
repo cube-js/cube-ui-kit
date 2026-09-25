@@ -7,12 +7,13 @@ import * as ResultStories from './Result.stories';
 
 # Result
 
-An empty state or result display with icon, title, and optional content. Supports status presets with built-in icons.
+An empty state or result display with icon, title, and optional content. Supports status presets with built-in icons, a prominent value, and an actions slot. The `large` size turns it into the vertical card used as the body of a confirmation or result dialog.
 
 ## When to Use
 
 - Empty states (no data, no results)
 - Success/error feedback after actions
+- Confirmation and result dialogs (payment complete, action failed)
 - 404, 403, 500 error pages
 - Informational messages
 
@@ -26,11 +27,34 @@ An empty state or result display with icon, title, and optional content. Support
 
 - **`status`** `'success' | 'error' | 'info' | 'warning' | 404 | 403 | 500` (default: `'info'`) — Predefined status with corresponding icon
 - **`title`** `ReactNode` — Main title text
+- **`value`** `ReactNode` — Prominent value between the title and the subtitle, e.g. an amount with currency
 - **`subtitle`** `ReactNode` — Secondary text below the title
 - **`subTitle`** `ReactNode` — Deprecated: use `subtitle` instead
-- **`icon`** `ReactNode` — Custom icon (overrides status icon)
+- **`icon`** `ReactNode` — Custom icon that replaces the status icon
+- **`size`** `'medium' | 'large'` (default: `'medium'`) — Visual scale. `large` is the dialog card: bigger icon and title, stacked full-width actions
 - **`isCompact`** `boolean` (default: `false`) — Compact horizontal layout
-- **`children`** `ReactNode` — Additional block content, e.g. a set of action buttons
+- **`actions`** `ReactNode` — Action buttons: a centered row by default, a stacked full-width column in the `large` size
+- **`children`** `ReactNode` — Free content between the text and the actions
+
+The elements render in this order: icon, title, value, subtitle, children, actions.
+
+### Base Properties
+
+Supports [Base properties](/docs/getting-started-base-properties--docs).
+
+### Styling Properties
+
+#### styles
+
+Customizes the root element of the component.
+
+**Sub-elements:**
+
+- `Icon` - The status icon wrapper. Colored by the `status` modifier. Not rendered when a custom `icon` is passed
+- `Title` - The text block holding the title, the value and the subtitle
+- `Value` - The prominent value. Uses tabular figures so amounts do not shift width
+- `Content` - The free `children` block
+- `Actions` - The `actions` block
 
 ### Style Defaults
 
@@ -39,14 +63,11 @@ An empty state or result display with icon, title, and optional content. Support
 - `placeContent` — `center` (switches to `start` when `isCompact`)
 - `placeItems` — `center` (switches to `start` when `isCompact`)
 - `gap` — `3x` (switches to `2x 1x` when `isCompact`)
-- `padding` — `6x 4x` (switches to `0` when `isCompact`)
+- `padding` — `6x 4x` (`0` when `isCompact`, `3x 1x` when `size="large"`)
 - `textAlign` — `center` (switches to `left` when `isCompact`)
-- `width` — `max 80ch` (caps the readable line length; override via the `width` prop)
+- `width` — `max 80ch` (caps the readable line length; override via the `width` prop). `100%` up to `80ch` when `size="large"`, so the stacked actions share one width wherever the card sits
 - `margin` — `0 auto` (centers Result horizontally within its parent; switches to `0` when `isCompact`)
-
-### Base Properties
-
-Supports [Base properties](/docs/getting-started-base-properties--docs).
+- `--icon-size` — `6x` (`10x` when `size="large"`)
 
 ### Style Properties
 
@@ -59,7 +80,38 @@ These properties allow direct style application without using the `styles` prop:
 - **Color:** `color`, `fill`, `fade`, `image`
 - **Flow:** `flow`, `place`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gap`, `columnGap`, `rowGap`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`
 
+### Modifiers
+
+The root element exposes these modifiers as `data-*` attributes:
+
+| Modifier | Type | Description |
+| --- | --- | --- |
+| `compact` | `boolean` | Set by `isCompact`: horizontal icon + title layout |
+| `size` | `'medium' \| 'large'` | Set by `size` |
+| `status` | `CubeResultStatus` | Set by `status`; drives the icon color |
+
+## Sizes
+
+- `medium` - Default. Icon `6x`, title `h4`, subtitle `t2m`, value `h3`, actions in a centered row
+- `large` - The dialog card. Icon `10x`, title `h2`, subtitle `t2` in `#dark-02`, value `h2`, actions stacked to the full width. Pass `size="large"` to the buttons to match
+
 ## Examples
+
+### Basic Usage
+
+```jsx
+<Result
+  status="success"
+  title="Successfully Purchased Cloud Server ECS!"
+  subtitle="Cloud server configuration takes 1-5 minutes, please wait."
+  actions={
+    <>
+      <Button type="primary">Go Console</Button>
+      <Button type="outline-2">Buy Again</Button>
+    </>
+  }
+/>
+```
 
 ### Info
 
@@ -75,15 +127,96 @@ These properties allow direct style application without using the `styles` prop:
 
 ### Custom Icon
 
+```jsx
+<Result
+  title="Access is denied!"
+  subtitle="Request access from the administrator."
+  icon={
+    <Icon color="#warning">
+      <IconLock />
+    </Icon>
+  }
+  actions={<Button>Request</Button>}
+/>
+```
+
 <Canvas of={ResultStories.CustomIcon} />
 
 ### Custom Title
 
 <Canvas of={ResultStories.CustomTitle} />
 
+### With a Value
+
+The `value` slot sits between the title and the subtitle. The title says what happened, the value says how much, the subtitle explains the details.
+
+```jsx
+<Result
+  status="success"
+  title="Payment complete"
+  value="$1,234.00"
+  subtitle="Charged to Visa **** 4242"
+  actions={<Button type="primary">Done</Button>}
+/>
+```
+
+<Canvas of={ResultStories.WithValue} />
+
 ### Compact
 
 <Canvas of={ResultStories.Compact} />
+
+### Large
+
+The `large` size is the vertical card for confirmation and result dialogs.
+
+```jsx
+<Result
+  size="large"
+  status="success"
+  title="Payment complete"
+  value="$1,234.00"
+  subtitle="Charged to Visa **** 4242"
+  actions={
+    <Button type="primary" size="large">
+      Done
+    </Button>
+  }
+/>
+```
+
+<Canvas of={ResultStories.Large} />
+
+Show a value only where money moved. A failed or unknown result leaves it out, so a large amount never reads as a charge that did not happen. Free `children` (an alert, details) stretch to the full width in this size.
+
+<Canvas of={ResultStories.LargeStatuses} />
+
+### In a Dialog
+
+Inside a `Dialog` the `large` Result is the whole body: no `Header` and no `Footer`. Its title takes the dialog `title` slot, so the dialog is labelled by it automatically.
+
+```jsx
+<DialogContainer isOpen={isOpen} onDismiss={close}>
+  <Dialog size="S">
+    <Content>
+      <Result
+        size="large"
+        status="success"
+        title="Payment complete"
+        value="$1,234.00"
+        subtitle="Charged to Visa **** 4242"
+        actions={
+          <Button type="primary" size="large" onPress={close}>
+            Done
+          </Button>
+        }
+      />
+    </Content>
+  </Dialog>
+</DialogContainer>
+```
+
+<Story of={ResultStories.InDialog} />
 
 ### Width Limit
 
@@ -93,6 +226,48 @@ The default `width: max 80ch` keeps long copy in a comfortable reading column ev
 
 <Canvas of={ResultStories.CustomWidth} />
 
+## Accessibility
+
+### Screen Reader Support
+
+- The title renders as an `h2` heading and the subtitle as an `h3`, so the result is reachable through heading navigation
+- Inside a `Dialog` without a `Header`, the title takes the dialog's `title` slot and becomes its accessible name
+
+### Keyboard Navigation
+
+- The component itself is not focusable; the buttons passed through `actions` keep their own keyboard behavior
+
+## Best Practices
+
+1. **Do**: Put the buttons in `actions` and keep `children` for content
+
+   ```jsx
+   <Result title="Payment failed" actions={<Button>Update card</Button>}>
+     <Alert>Nothing was charged.</Alert>
+   </Result>
+   ```
+
+2. **Don't**: Combine a `large` Result with a dialog `Header`. Both titles would take the dialog `title` slot and share one id
+
+   ```jsx
+   <Dialog>
+     <Header>
+       <Title>Payment</Title>
+     </Header>
+     <Content>
+       <Result size="large" title="Payment complete" />
+     </Content>
+   </Dialog>
+   ```
+
+3. **Value**: Show it only where the number is the outcome. Leave it out of a failed or uncertain result
+
+## Related Components
+
+- [Dialog](/docs/overlays-dialog--docs) - Host for the `large` Result card
+- [AlertDialog](/docs/overlays-alertdialog--docs) - Confirmation with a header and footer instead of a result card
+- [Alert](/docs/content-alert--docs) - Inline status message for the `children` slot
+
 ## Differences from Ant Design
 
 | There are differences | Ant Design property | Cube UIKit property |
@@ -101,4 +276,4 @@ The default `width: max 80ch` keeps long copy in a comfortable reading column ev
 |          No           |       `title`       |       `title`       |
 |          Yes          |     `subTitle`      |     `subtitle`      |
 |          No           |       `icon`        |       `icon`        |
-|          Yes          |       `extra`       |     `children`      |
+|          Yes          |       `extra`       |      `actions`      |

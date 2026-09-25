@@ -18,7 +18,7 @@ import { extractStyles } from '../../../utils/styles';
 import { Title } from '../Title';
 
 export interface CubeResultProps extends BaseProps, ContainerStyleProps {
-  /** Additional block content. For example, a set of buttons */
+  /** Free content between the text and the actions, e.g. an alert or details */
   children?: ReactNode;
   /** Custom icon element */
   icon?: ReactNode;
@@ -38,9 +38,20 @@ export interface CubeResultProps extends BaseProps, ContainerStyleProps {
   subtitle?: ReactNode;
   /** The title */
   title?: ReactNode;
+  /** A prominent value shown between the title and the subtitle, e.g. an amount with currency */
+  value?: ReactNode;
+  /** Action buttons. A centered row by default, a stacked full-width column in the `large` size */
+  actions?: ReactNode;
+  /**
+   * Visual scale. `large` is the dialog card: bigger icon and title, stacked full-width actions
+   * @default 'medium'
+   */
+  size?: CubeResultSize;
   /** Whether the result component has a compact presentation */
   isCompact?: boolean;
 }
+
+export type CubeResultSize = 'medium' | 'large';
 
 export type CubeResultStatus =
   | 'success'
@@ -51,13 +62,7 @@ export type CubeResultStatus =
   | 403
   | 500;
 
-type StatusIconMap = Record<
-  CubeResultStatus,
-  {
-    color: string;
-    component: ComponentType;
-  }
->;
+type StatusIconMap = Record<CubeResultStatus, ComponentType>;
 
 const Container = tasty({
   qa: 'ResultContainer',
@@ -67,7 +72,7 @@ const Container = tasty({
       '': 'flex',
       compact: 'grid',
     },
-    gridAreas: '"icon title" "content content"',
+    gridAreas: '"icon title" "content content" "actions actions"',
     flow: 'column',
     placeContent: {
       '': 'center',
@@ -84,28 +89,37 @@ const Container = tasty({
     padding: {
       '': '6x 4x',
       compact: '0',
+      'size=large': '3x 1x',
     },
     textAlign: {
       '': 'center',
       compact: 'left',
     },
-    width: 'max 80ch',
+    boxSizing: 'border-box',
+    width: {
+      '': 'max 80ch',
+      // Fill the container so stacked actions share one width wherever the card sits
+      'size=large': '0 100% 80ch',
+    },
     margin: {
       '': '0 auto',
       compact: '0',
     },
-    '--icon-size': '6x',
+    '--icon-size': {
+      '': '6x',
+      'size=large': '10x',
+    },
 
     Icon: {
       $: '>',
       display: 'grid',
       gridArea: 'icon',
-    },
-
-    Content: {
-      $: '>',
-      gridArea: 'content',
-      display: 'block',
+      color: {
+        '': '#purple-icon',
+        'status=success': '#success-icon',
+        'status=error': '#danger-icon',
+        'status=warning': '#warning-icon',
+      },
     },
 
     Title: {
@@ -118,47 +132,61 @@ const Container = tasty({
       placeSelf: 'center',
       textWrap: 'balance',
     },
+
+    Value: {
+      color: '#dark',
+      preset: {
+        '': 'h3',
+        compact: 'h4',
+        'size=large': 'h2',
+      },
+      fontVariantNumeric: 'tabular-nums',
+    },
+
+    Content: {
+      $: '>',
+      gridArea: 'content',
+      display: 'block',
+      placeSelf: {
+        '': 'auto',
+        'size=large': 'stretch',
+      },
+    },
+
+    Actions: {
+      $: '>',
+      gridArea: 'actions',
+      display: 'flex',
+      flow: {
+        '': 'row wrap',
+        'size=large': 'column',
+      },
+      gap: '1x',
+      placeContent: {
+        '': 'center',
+        compact: 'start',
+      },
+      placeItems: {
+        '': 'center',
+        'size=large': 'stretch',
+      },
+      placeSelf: {
+        '': 'auto',
+        'size=large': 'stretch',
+      },
+    },
   },
 });
 
 const statusIconMap: StatusIconMap = {
-  success: {
-    color: 'success',
-    component: () => <IconCircleCheckFilled />,
-  },
-  error: {
-    color: 'danger',
-    component: () => <IconCircleXFilled />,
-  },
-  info: {
-    color: 'purple',
-    component: () => <IconInfoCircleFilled />,
-  },
-  warning: {
-    color: 'warning',
-    component: () => <IconAlertTriangleFilled />,
-  },
-  404: {
-    color: 'purple',
-    component: () => {
-      // TODO: Needs to be implemented in the future
-      return null;
-    },
-  },
-  403: {
-    color: 'purple',
-    component: () => {
-      // TODO: Needs to be implemented in the future
-      return null;
-    },
-  },
-  500: {
-    color: 'purple',
-    component: () => {
-      // TODO: Needs to be implemented in the future
-      return null;
-    },
-  },
+  success: () => <IconCircleCheckFilled />,
+  error: () => <IconCircleXFilled />,
+  info: () => <IconInfoCircleFilled />,
+  warning: () => <IconAlertTriangleFilled />,
+  // TODO: Needs to be implemented in the future
+  404: () => null,
+  403: () => null,
+  500: () => null,
 };
 
 function Result(props: CubeResultProps, ref) {
@@ -170,6 +198,9 @@ function Result(props: CubeResultProps, ref) {
     subTitle,
     subtitle,
     title,
+    value,
+    actions,
+    size = 'medium',
     ...otherProps
   } = props;
 
@@ -181,19 +212,21 @@ function Result(props: CubeResultProps, ref) {
     );
   }
 
+  const isLarge = size === 'large';
+
   const iconNode = useMemo(() => {
     if (icon) {
       return icon;
     }
 
-    const { color, component: Component } =
+    const Component =
       status && statusIconMap.hasOwnProperty(status)
         ? statusIconMap[status]
         : statusIconMap.info;
 
     return (
-      <div data-element="Icon" style={{ color: `var(--${color}-color)` }}>
-        <Component data-element="Icon" />
+      <div data-element="Icon">
+        <Component />
       </div>
     );
   }, [icon, status]);
@@ -203,27 +236,36 @@ function Result(props: CubeResultProps, ref) {
   return (
     <Container
       {...mergeProps(filterBaseProps(otherProps, { eventProps: true }), {
-        mods: { compact: isCompact },
+        mods: { compact: isCompact, size, status: status ?? 'info' },
       })}
       ref={ref}
       styles={styles}
     >
       {iconNode}
-      {(title || subtitle) && (
+      {(title || value != null || subtitle) && (
         <div data-element="Title">
           {wrapNodeIfPlain(title, () => (
-            <Title level={2} preset={isCompact ? 'h5' : 'h4'}>
+            <Title level={2} preset={isCompact ? 'h5' : isLarge ? 'h2' : 'h4'}>
               {title}
             </Title>
           ))}
+          {value != null && <div data-element="Value">{value}</div>}
           {wrapNodeIfPlain(subtitle, () => (
-            <Title level={3} preset={isCompact ? 't3m' : 't2m'}>
+            <Title
+              // A name no provider defines: the dialog `title` slot must reach
+              // the title only, or both headings get the dialog's label id
+              slot="subtitle"
+              level={3}
+              preset={isCompact ? 't3m' : isLarge ? 't2' : 't2m'}
+              color={isLarge ? '#dark-02' : undefined}
+            >
               {subtitle}
             </Title>
           ))}
         </div>
       )}
       {children && <div data-element="Content">{children}</div>}
+      {actions && <div data-element="Actions">{actions}</div>}
     </Container>
   );
 }
