@@ -18,6 +18,7 @@ export * from './Slider';
 export * from './Switch/Switch';
 export * from './Select';
 export * from './ComboBox';
+export * from './TagInput';
 export * from './SearchComboBox';
 export * from './ListBox';
 export * from './FilterListBox';

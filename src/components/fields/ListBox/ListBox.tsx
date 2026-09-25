@@ -1423,7 +1423,6 @@ function Option({
   const listBoxItem = (
     <ListBoxItem
       ref={combinedRef}
-      id={`ListBoxItem-${String(item.key)}`}
       data-key={String(item.key)}
       {...mergeProps(
         filteredOptionProps,

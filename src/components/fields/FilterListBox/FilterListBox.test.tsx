@@ -1,7 +1,14 @@
 import { createRef, JSX } from 'react';
 
 import { FilterListBox } from '../../../index';
-import { act, render, renderWithRoot, userEvent } from '../../../test';
+import {
+  act,
+  getActiveDescendant,
+  render,
+  renderWithRoot,
+  userEvent,
+  waitFor,
+} from '../../../test';
 
 vi.mock('../../../_internal/hooks/use-warn');
 
@@ -26,6 +33,37 @@ describe('<FilterListBox />', () => {
   ];
 
   describe('Basic functionality', () => {
+    it('points aria-activedescendant at the option the arrow keys reach', async () => {
+      const { getByRole } = render(
+        <FilterListBox label="Fruit">{basicItems}</FilterListBox>,
+      );
+      const searchInput = getByRole('combobox');
+
+      expect(searchInput).toHaveAttribute(
+        'aria-controls',
+        getByRole('listbox').id,
+      );
+
+      // Typing focuses the first match; ArrowDown moves to the next one.
+      await userEvent.type(searchInput, 'e');
+
+      await waitFor(() =>
+        expect(getActiveDescendant(searchInput)).toHaveAttribute(
+          'data-key',
+          'apple',
+        ),
+      );
+
+      await userEvent.keyboard('{ArrowDown}');
+
+      await waitFor(() =>
+        expect(getActiveDescendant(searchInput)).toHaveAttribute(
+          'data-key',
+          'cherry',
+        ),
+      );
+    });
+
     it('should render with search input and options', () => {
       const { getByRole, getByPlaceholderText } = render(
         <FilterListBox

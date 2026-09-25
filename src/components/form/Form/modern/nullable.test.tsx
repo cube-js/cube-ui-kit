@@ -12,6 +12,7 @@ import { RadioGroup } from '../../../fields/RadioGroup/RadioGroup';
 import { RangeSlider } from '../../../fields/Slider/RangeSlider';
 import { Slider } from '../../../fields/Slider/Slider';
 import { Switch } from '../../../fields/Switch/Switch';
+import { TagInput } from '../../../fields/TagInput/TagInput';
 import { TextInput } from '../../../fields/TextInput/TextInput';
 import { TextInputMapper } from '../../../fields/TextInputMapper/TextInputMapper';
 import { Form } from '../index';
@@ -86,6 +87,33 @@ describe('nullable modern field models', () => {
       dirty: false,
       touched: false,
     });
+  });
+
+  it('keeps a null tag list null until a value is added, and restores it on reset', async () => {
+    const form = createFormController<{ tags: string[] | null }>({
+      defaultValues: { tags: null },
+    });
+    const view = renderWithRoot(
+      <StrictMode>
+        <Form form={form}>
+          <TagInput field={form.field('tags')} label="Tags" />
+          <Form.Reset>Reset</Form.Reset>
+        </Form>
+      </StrictMode>,
+    );
+
+    expect(form.getValues()).toEqual({ tags: null });
+    expect(view.queryByRole('grid')).not.toBeInTheDocument();
+
+    await userEvent.type(
+      view.getByRole('textbox', { name: 'Tags' }),
+      'news{Enter}',
+    );
+    expect(form.getValues()).toEqual({ tags: ['news'] });
+
+    await userEvent.click(view.getByRole('button', { name: 'Reset' }));
+    expect(form.getValues()).toEqual({ tags: null });
+    expect(view.queryByRole('grid')).not.toBeInTheDocument();
   });
 
   it('keeps empty scalar, range, file, and mapping fields null in submitted values', async () => {

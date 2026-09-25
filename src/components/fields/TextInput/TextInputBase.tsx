@@ -208,6 +208,12 @@ export interface CubeTextInputBaseProps
   suffix?: ReactNode;
   /** Suffix position goes before or after the validation and loading statuses */
   suffixPosition?: 'before' | 'after';
+  /**
+   * Controls placed last in the suffix, after the validation and loading
+   * statuses and after `suffix` whatever its position, such as a popover
+   * trigger.
+   */
+  actions?: ReactNode;
   /** Whether the input is multiline */
   multiLine?: boolean;
   /** Whether the input should have autofocus */
@@ -285,6 +291,7 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
     inputStyles = {},
     suffix,
     suffixPosition = 'before',
+    actions,
     wrapperRef,
     rows = 1,
     size = 'medium',
@@ -364,7 +371,7 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
       disabled: isDisabled,
       multiline: multiLine,
       prefix: !!prefix,
-      suffix: showValidationIndicator || !!suffix,
+      suffix: showValidationIndicator || !!suffix || !!actions,
       ...mods,
     }),
     [
@@ -379,6 +386,7 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
       multiLine,
       prefix,
       suffix,
+      actions,
     ],
   );
 
@@ -425,7 +433,7 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
         maxLength={maxLength}
         minLength={minLength}
       />
-      {showValidationIndicator || suffix ? (
+      {showValidationIndicator || suffix || actions ? (
         <div data-element="Suffix">
           {suffixPosition === 'before' ? suffix : null}
           <ValidationIndicator
@@ -434,6 +442,7 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
             isLoading={isLoading}
           />
           {suffixPosition === 'after' ? suffix : null}
+          {actions}
         </div>
       ) : null}
     </InputWrapperElement>
