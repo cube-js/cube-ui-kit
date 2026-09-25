@@ -123,7 +123,7 @@
   "tagInput": {
     "remove": "Fjern",
     "selectedValues": "Valgte verdier",
-    "summary": "Valgt: {{values}}",
+    "summary": "Valgt: {{values}}.",
     "showOptions": "Vis alternativer",
     "options": "Alternativer",
     "customValue": "Egendefinert verdi",
@@ -132,7 +132,11 @@
     "invalidValue": "«{{value}}» er ikke en gyldig verdi",
     "duplicateValue": "«{{value}}» er allerede lagt til",
     "unknownValue": "«{{value}}» finnes ikke i listen",
-    "unavailableValue": "«{{value}}» er ikke tilgjengelig"
+    "unavailableValue": "«{{value}}» er ikke tilgjengelig",
+    "limitReached": "Du kan legge til opptil {{count}}",
+    "clearAll": "Tøm alle",
+    "cleared": "Alle verdier er fjernet",
+    "backspaceHint": "Trykk på Tilbake for å gå til de valgte verdiene."
   },
   "placeholder": {
     "contentIsLoading": "Innholdet lastes inn"

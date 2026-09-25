@@ -79,7 +79,8 @@ const meta = {
     },
     tagProps: {
       control: { type: null },
-      description: "Props for each chip's Tag, by value",
+      description:
+        "Props for each chip's Tag, by value. A string `children` also names the value to screen readers; `isDisabled` locks the chip",
       table: { type: { summary: '(value: string) => Partial<CubeTagProps>' } },
     },
 
@@ -129,10 +130,27 @@ const meta = {
         },
       },
     },
+    normalizeTag: {
+      control: { type: null },
+      description:
+        'Rewrites a typed value before it is checked and added. Return an empty string to drop it',
+      table: { type: { summary: '(value: string) => string' } },
+    },
+    maxTags: {
+      control: { type: 'number' },
+      description:
+        'The most values the field holds. Values past it are refused and stay in the input',
+    },
     shouldCommitOnBlur: {
       control: { type: 'boolean' },
       description: 'Whether leaving the field commits the typed text',
       table: { defaultValue: { summary: true } },
+    },
+    isClearable: {
+      control: { type: 'boolean' },
+      description:
+        'Whether a button clears every value and the typed text. Locked chips stay',
+      table: { defaultValue: { summary: false } },
     },
     filter: {
       control: { type: null },
@@ -217,6 +235,11 @@ const meta = {
     onInputChange: {
       action: 'input-change',
       description: 'Called when the text being typed changes',
+      control: { type: null },
+    },
+    onClear: {
+      action: 'clear',
+      description: 'Called when the clear button is pressed',
       control: { type: null },
     },
     onOpenChange: {
@@ -455,6 +478,103 @@ ChipThemes.parameters = {
     },
   },
 };
+
+export const KeyboardToChips: Story = {
+  render: (args) => (
+    <TagInput
+      qa="Emails"
+      placeholder="name@company.com"
+      defaultValue={['ana@acme.com', 'ops-team@acme.com', 'lee@acme.com']}
+      {...args}
+    />
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const input = await canvas.findByTestId('Emails');
+
+    await userEvent.click(input);
+    await userEvent.keyboard('{Backspace}');
+
+    const rows = canvas.getAllByRole('row');
+
+    await waitFor(() => expect(rows[rows.length - 1]).toHaveFocus());
+  },
+};
+
+KeyboardToChips.parameters = {
+  docs: {
+    description: {
+      story:
+        'Backspace in the empty input moves to the last chip. The next Backspace removes it and moves to the one before; Escape or typing goes back to the input.',
+    },
+  },
+};
+
+export const LockedAndClearable: StoryFn<CubeTagInputProps> = (args) => (
+  <TagInput
+    {...args}
+    isClearable
+    label="Owners"
+    placeholder="name@company.com"
+    defaultValue={['you@acme.com', 'ana@acme.com', 'lee@acme.com']}
+    tagProps={(value) =>
+      value === 'you@acme.com'
+        ? { isDisabled: true, children: 'you@acme.com (you)' }
+        : undefined
+    }
+  />
+);
+
+LockedAndClearable.parameters = {
+  docs: {
+    description: {
+      story:
+        '`isClearable` adds a button that removes every value. A chip with `isDisabled` from `tagProps` is locked: it has no remove button, the keyboard skips it, and clearing keeps it.',
+    },
+  },
+};
+
+export const MaxTags: Story = {
+  args: { label: 'Reviewers', maxTags: 3, placeholder: 'name@company.com' },
+  render: (args) => (
+    <TagInput
+      qa="Reviewers"
+      defaultValue={['ana@acme.com', 'lee@acme.com']}
+      description="Up to three reviewers."
+      {...args}
+    />
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const input = await canvas.findByTestId('Reviewers');
+
+    await timeout(100);
+    await userEvent.click(input);
+    await userEvent.paste('kim@acme.com, joe@acme.com');
+
+    await waitFor(() =>
+      expect(canvas.getByText('You can add up to 3')).toBeVisible(),
+    );
+  },
+};
+
+// A refused value with its message is what `RejectedEntry` already shows.
+MaxTags.parameters = NO_SNAPSHOT;
+
+export const Normalized: StoryFn<CubeTagInputProps> = (args) => (
+  <TagInput
+    {...args}
+    placeholder="name@company.com"
+    description="Addresses are lowercased, so Ana@Acme.com is a duplicate."
+    defaultValue={['ana@acme.com']}
+    normalizeTag={(value) => value.toLowerCase()}
+    validateTag={validateEmail}
+  />
+);
+
+// The story is about typing: `normalizeTag` changes nothing in the field at
+// rest.
+Normalized.parameters = NO_SNAPSHOT;
 
 export const Controlled: StoryFn<CubeTagInputProps> = (args) => {
   const [value, setValue] = useState<string[]>(['ana@acme.com']);

@@ -759,6 +759,7 @@ export const DEFAULTS: DefaultsRegistry = {
         containerPadding: { kind: 'default', value: 8 },
         direction: { kind: 'default', value: 'bottom' },
         hideTrigger: { kind: 'default', value: false },
+        isClearable: { kind: 'default', value: false },
         overlayOffset: { kind: 'default', value: 8 },
         popoverTrigger: { kind: 'default', value: 'input' },
         shouldCommitOnBlur: { kind: 'default', value: true },

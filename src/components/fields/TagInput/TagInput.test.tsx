@@ -1,4 +1,4 @@
-import { act, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, waitFor, within } from '@testing-library/react';
 import { useState } from 'react';
 
 import { Button, Dialog, DialogTrigger, Field } from '../../../index';
@@ -76,7 +76,7 @@ describe('<TagInput />', () => {
     );
 
     expect(getByRole('textbox')).toHaveAccessibleDescription(
-      'Selected: a@x.com and b@x.com',
+      'Selected: a@x.com and b@x.com. Press Backspace to go to the selected values.',
     );
   });
 
@@ -386,6 +386,59 @@ describe('<TagInput />', () => {
 
       expect(queryByRole('grid')).not.toBeInTheDocument();
       expect(getByRole('textbox')).toHaveFocus();
+    });
+
+    it('moves to the last chip on Backspace in an empty input, then removes chips from the end', async () => {
+      const onChange = vi.fn();
+      const { getByRole, getAllByRole } = render(
+        <TagInput
+          label="Tags"
+          defaultValue={['one', 'two', 'three']}
+          onChange={onChange}
+        />,
+      );
+
+      await userEvent.click(getByRole('textbox'));
+      await userEvent.keyboard('{Backspace}');
+
+      // The first press only moves: nothing out of view is removed.
+      expect(onChange).not.toHaveBeenCalled();
+      expect(getAllByRole('row')[2]).toHaveFocus();
+
+      await userEvent.keyboard('{Backspace}');
+      expect(onChange).toHaveBeenLastCalledWith(['one', 'two']);
+      await waitFor(() => expect(getAllByRole('row')[1]).toHaveFocus());
+
+      await userEvent.keyboard('{Backspace}{Backspace}');
+      expect(onChange).toHaveBeenLastCalledWith([]);
+      expect(getByRole('textbox')).toHaveFocus();
+    });
+
+    it('keeps Backspace in the input while there is text', async () => {
+      const onChange = vi.fn();
+      const { getByRole } = render(
+        <TagInput label="Tags" defaultValue={['one']} onChange={onChange} />,
+      );
+      const input = getByRole('textbox');
+
+      await userEvent.type(input, 'ab{Backspace}');
+
+      expect(input).toHaveValue('a');
+      expect(input).toHaveFocus();
+    });
+
+    it('stops a held Backspace at the empty input', async () => {
+      const { getByRole } = render(
+        <TagInput label="Tags" defaultValue={['one']} />,
+      );
+      const input = getByRole('textbox');
+
+      await userEvent.type(input, 'a{Backspace}');
+      // user-event never marks a held key as repeating.
+      fireEvent.keyDown(input, { key: 'Backspace', repeat: true });
+
+      expect(input).toHaveValue('');
+      expect(input).toHaveFocus();
     });
 
     it('commits the typed text when tabbing into the chips', async () => {
@@ -732,7 +785,7 @@ describe('<TagInput />', () => {
       );
 
       expect(getByRole('textbox')).toHaveAccessibleDescription(
-        'Up to five Selected: a@x.com',
+        'Up to five Selected: a@x.com. Press Backspace to go to the selected values.',
       );
     });
 
@@ -1064,6 +1117,331 @@ describe('<TagInput />', () => {
 
       expect(onChange).toHaveBeenLastCalledWith(['two']);
       expect(input).toHaveValue('thr');
+    });
+  });
+
+  describe('leaving the chips', () => {
+    it('closes the list when Backspace moves to the chips', async () => {
+      const { getByRole, getAllByRole, queryByRole } = renderWithRoot(
+        <Actions popoverTrigger="focus" defaultValue={['read', 'deploy']} />,
+      );
+
+      await userEvent.click(getByRole('combobox'));
+      await waitFor(() => expect(getByRole('listbox')).toBeInTheDocument());
+
+      await userEvent.keyboard('{Backspace}');
+
+      expect(getAllByRole('row')[1]).toHaveFocus();
+      await waitFor(() => expect(queryByRole('listbox')).toBeNull());
+    });
+
+    it('goes back to the input with Escape', async () => {
+      const onOuterKeyDown = vi.fn();
+      const { getByRole, getAllByRole } = render(
+        <div onKeyDown={(e) => onOuterKeyDown(e.key)}>
+          <TagInput label="Tags" defaultValue={['one', 'two']} />
+        </div>,
+      );
+
+      await userEvent.click(getByRole('textbox'));
+      await userEvent.keyboard('{Backspace}');
+      expect(getAllByRole('row')[1]).toHaveFocus();
+
+      await userEvent.keyboard('{Escape}');
+
+      expect(getByRole('textbox')).toHaveFocus();
+      // Taken by the chips, so an enclosing dialog stays open.
+      expect(onOuterKeyDown).not.toHaveBeenCalledWith('Escape');
+    });
+
+    it('carries typing on a chip over to the input', async () => {
+      const { getByRole, getAllByRole } = render(
+        <TagInput label="Tags" defaultValue={['one', 'two', 'tea']} />,
+      );
+      const input = getByRole('textbox');
+
+      await userEvent.click(input);
+      await userEvent.tab();
+      expect(getAllByRole('row')[0]).toHaveFocus();
+
+      // `t` would otherwise jump to the chip it starts.
+      await userEvent.keyboard('t');
+
+      expect(input).toHaveFocus();
+      expect(input).toHaveValue('t');
+    });
+
+    it('removes one chip for a Delete held down', async () => {
+      const onChange = vi.fn();
+      const { getByRole, getAllByRole } = render(
+        <TagInput
+          label="Tags"
+          defaultValue={['one', 'two', 'three']}
+          onChange={onChange}
+        />,
+      );
+
+      await userEvent.click(getByRole('textbox'));
+      await userEvent.tab();
+      await userEvent.keyboard('{Delete}');
+      expect(onChange).toHaveBeenLastCalledWith(['two', 'three']);
+
+      await waitFor(() => expect(getAllByRole('row')[0]).toHaveFocus());
+      fireEvent.keyDown(getAllByRole('row')[0], {
+        key: 'Delete',
+        repeat: true,
+      });
+
+      expect(onChange).toHaveBeenCalledTimes(1);
+    });
+
+    it('describes the Backspace route in the input, unless read-only', () => {
+      const { getByRole, rerender } = render(
+        <TagInput label="Tags" defaultValue={['one']} />,
+      );
+
+      expect(getByRole('textbox')).toHaveAccessibleDescription(
+        'Selected: one. Press Backspace to go to the selected values.',
+      );
+
+      rerender(<TagInput isReadOnly label="Tags" defaultValue={['one']} />);
+
+      expect(getByRole('textbox')).toHaveAccessibleDescription(
+        'Selected: one.',
+      );
+    });
+  });
+
+  describe('clear button', () => {
+    it('clears the values and the text, then returns to the input', async () => {
+      const onChange = vi.fn();
+      const onClear = vi.fn();
+      const { getByRole, queryByRole, container } = render(
+        <TagInput
+          isClearable
+          label="Tags"
+          defaultValue={['one', 'two']}
+          onChange={onChange}
+          onClear={onClear}
+        />,
+      );
+      const input = getByRole('textbox');
+
+      await userEvent.type(input, 'thr');
+      await userEvent.click(getByRole('button', { name: 'Clear all Tags' }));
+
+      expect(onChange).toHaveBeenLastCalledWith([]);
+      expect(onClear).toHaveBeenCalledTimes(1);
+      expect(input).toHaveValue('');
+      expect(input).toHaveFocus();
+      expect(container.querySelector('[role="status"]')).toHaveTextContent(
+        'Removed all values',
+      );
+      expect(
+        queryByRole('button', { name: 'Clear all Tags' }),
+      ).not.toBeInTheDocument();
+    });
+
+    it('shows only when there is something to clear', async () => {
+      const { getByRole, queryByRole } = render(
+        <TagInput isClearable label="Tags" />,
+      );
+
+      expect(queryByRole('button', { name: /Clear all/ })).toBeNull();
+
+      await userEvent.type(getByRole('textbox'), 'a');
+
+      expect(getByRole('button', { name: /Clear all/ })).toBeInTheDocument();
+    });
+
+    it('is not offered when read-only', () => {
+      const { queryByRole } = render(
+        <TagInput isClearable isReadOnly label="Tags" defaultValue={['one']} />,
+      );
+
+      expect(queryByRole('button', { name: /Clear all/ })).toBeNull();
+    });
+  });
+
+  describe('maxTags', () => {
+    it('refuses values past the limit and keeps them typed', async () => {
+      const onChange = vi.fn();
+      const { getByRole, getByText } = render(
+        <TagInput
+          label="Tags"
+          maxTags={2}
+          defaultValue={['one']}
+          onChange={onChange}
+        />,
+      );
+      const input = getByRole('textbox');
+
+      await paste(input, 'two, three, four');
+
+      expect(onChange).toHaveBeenLastCalledWith(['one', 'two']);
+      expect(input).toHaveValue('three, four');
+      expect(input).toHaveAttribute('aria-invalid', 'true');
+      expect(getByText('You can add up to 2')).toBeInTheDocument();
+    });
+
+    it('refuses a pick past the limit and keeps the query', async () => {
+      const onChange = vi.fn();
+      const { getByRole, getByText } = renderWithRoot(
+        <Actions maxTags={1} defaultValue={['read']} onChange={onChange} />,
+      );
+      const input = getByRole('combobox');
+
+      await userEvent.type(input, 'dep');
+      await waitFor(() => expect(getActiveDescendant(input)).not.toBeNull());
+      await userEvent.keyboard('{Enter}');
+
+      expect(onChange).not.toHaveBeenCalled();
+      expect(input).toHaveValue('dep');
+      expect(getByText('You can add up to 1')).toBeInTheDocument();
+    });
+  });
+
+  describe('normalizeTag', () => {
+    it('rewrites typed values before the duplicate check', async () => {
+      const onChange = vi.fn();
+      const { getByRole, getByText } = render(
+        <TagInput
+          label="Recipients"
+          defaultValue={['a@x.com']}
+          normalizeTag={(value) => value.toLowerCase()}
+          onChange={onChange}
+        />,
+      );
+      const input = getByRole('textbox');
+
+      await userEvent.type(input, 'B@X.com{Enter}');
+      expect(onChange).toHaveBeenLastCalledWith(['a@x.com', 'b@x.com']);
+
+      await userEvent.type(input, 'A@X.COM{Enter}');
+      expect(onChange).toHaveBeenCalledTimes(1);
+      expect(input).toHaveValue('A@X.COM');
+      expect(getByText('"A@X.COM" is already added')).toBeInTheDocument();
+    });
+
+    it('drops a value it rewrites to nothing', async () => {
+      const onChange = vi.fn();
+      const { getByRole } = render(
+        <TagInput
+          label="Numbers"
+          normalizeTag={(value) => value.replace(/[^\d]/g, '')}
+          onChange={onChange}
+        />,
+      );
+
+      await paste(getByRole('textbox'), '1,000\nabc\n25');
+
+      expect(onChange).toHaveBeenLastCalledWith(['1', '000', '25']);
+    });
+
+    it('leaves picked options alone', async () => {
+      const onChange = vi.fn();
+      const { getByRole } = renderWithRoot(
+        <Actions
+          normalizeTag={(value) => value.toUpperCase()}
+          onChange={onChange}
+        />,
+      );
+
+      await userEvent.type(getByRole('combobox'), 'read{Enter}');
+
+      expect(onChange).toHaveBeenLastCalledWith(['read']);
+    });
+  });
+
+  describe('tagProps', () => {
+    it('keeps an invalid chip in the danger theme whatever theme it asks for', () => {
+      const { container } = render(
+        <TagInput
+          label="Recipients"
+          defaultValue={['a@x.com', 'bad']}
+          validateTag={validateEmail}
+          tagProps={() => ({ theme: 'success' })}
+        />,
+      );
+      const [valid, invalid] = Array.from(
+        container.querySelectorAll('[data-qa="Tag"]'),
+      );
+
+      expect(invalid.className).not.toBe(valid.className);
+    });
+
+    it('names a value by its chip label everywhere', async () => {
+      const titles: Record<string, string> = { u1: 'Ann', u2: 'Bob' };
+      const { getByRole, container } = render(
+        <TagInput
+          label="Owners"
+          defaultValue={['u1', 'u2']}
+          tagProps={(value) => ({ children: titles[value] })}
+        />,
+      );
+
+      expect(getByRole('textbox')).toHaveAccessibleDescription(
+        'Selected: Ann and Bob. Press Backspace to go to the selected values.',
+      );
+
+      await userEvent.click(getByRole('button', { name: 'Remove Ann' }));
+
+      expect(container.querySelector('[role="status"]')).toHaveTextContent(
+        'Removed Ann',
+      );
+    });
+
+    it('locks a chip with isDisabled', async () => {
+      const onChange = vi.fn();
+      const { getByRole, getAllByRole, queryByRole } = render(
+        <TagInput
+          isClearable
+          label="Owners"
+          defaultValue={['owner', 'one', 'two']}
+          tagProps={(value) =>
+            value === 'owner' ? { isDisabled: true } : undefined
+          }
+          onChange={onChange}
+        />,
+      );
+      const input = getByRole('textbox');
+
+      expect(queryByRole('button', { name: 'Remove owner' })).toBeNull();
+
+      // Backspace works back through the chips and stops short of the locked one.
+      await userEvent.click(input);
+      await userEvent.keyboard('{Backspace}{Backspace}');
+      await waitFor(() => expect(getAllByRole('row')[1]).toHaveFocus());
+      await userEvent.keyboard('{Backspace}');
+
+      expect(onChange).toHaveBeenLastCalledWith(['owner']);
+      expect(input).toHaveFocus();
+
+      await userEvent.keyboard('{Backspace}');
+      expect(input).toHaveFocus();
+      expect(queryByRole('button', { name: /Clear all/ })).toBeNull();
+    });
+
+    it('keeps a locked value when clearing and in the options', async () => {
+      const onChange = vi.fn();
+      const { getByRole } = renderWithRoot(
+        <Actions
+          isClearable
+          defaultValue={['read', 'deploy']}
+          tagProps={(value) =>
+            value === 'read' ? { isDisabled: true } : undefined
+          }
+          onChange={onChange}
+        />,
+      );
+
+      await userEvent.click(getByRole('button', { name: 'Clear all Actions' }));
+      expect(onChange).toHaveBeenLastCalledWith(['read']);
+
+      await userEvent.click(getByRole('button', { name: /Show options/ }));
+      const option = await waitFor(() => getByRole('option', { name: 'read' }));
+
+      expect(option).toHaveAttribute('aria-disabled', 'true');
     });
   });
 

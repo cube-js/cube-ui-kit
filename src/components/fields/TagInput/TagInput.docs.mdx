@@ -29,7 +29,7 @@ A multi-value field. The user types a value into a single-line input and commits
 - **`prefix`** `ReactNode` — Input decoration before the main input
 - **`suffix`** `ReactNode` — Input decoration after the main input
 - **`suffixPosition`** `'before' | 'after'` — Whether the suffix goes before or after the validation and loading icons
-- **`tagProps`** `(value: string) => Partial<CubeTagProps>` — Props for each chip's `Tag` (theme, icon, label), by value
+- **`tagProps`** `(value: string) => Partial<CubeTagProps>` — Props for each chip's `Tag` (theme, icon, label), by value. A string `children` also names the value to screen readers, and `isDisabled` locks the chip
 - **`value`** `string[]` — The values in controlled mode
 - **`defaultValue`** `string[]` — The initial values in uncontrolled mode
 - **`inputValue`** `string` — The text being typed, in controlled mode
@@ -37,7 +37,10 @@ A multi-value field. The user types a value into a single-line input and commits
 - **`allowsCustomValue`** `boolean` (default: `false`) — Whether typed values that are not among the options are accepted. Only applies when options are given
 - **`delimiters`** `string[]` (default: `[',']`) — Characters that commit the typed text and split pasted text. Pasted text is also split on line breaks
 - **`validateTag`** `(value: string) => boolean | string | null | undefined` — Checks one value before it becomes a chip. Return `false` or a message to reject it
+- **`normalizeTag`** `(value: string) => string` — Rewrites a typed value before it is checked and added. Return an empty string to drop it
+- **`maxTags`** `number` — The most values the field holds. Values past it are refused and stay in the input
 - **`shouldCommitOnBlur`** `boolean` (default: `true`) — Whether leaving the field commits the typed text
+- **`isClearable`** `boolean` (default: `false`) — Whether a button clears every value and the typed text. Locked chips stay
 - **`filter`** `((textValue: string, inputValue: string) => boolean) | false` — Custom filter for the options, or `false` to show every option
 - **`popoverTrigger`** `'focus' | 'input' | 'manual'` (default: `input`) — When the suggestions popover opens
 - **`hideTrigger`** `boolean` (default: `false`) — Whether to hide the button that toggles the popover
@@ -50,6 +53,7 @@ A multi-value field. The user types a value into a single-line input and commits
 - **`autoComplete`** `string` (default: `off`) — HTML `autocomplete` attribute for the input
 - **`onChange`** `(value: string[]) => void` — Called with the whole new list of values
 - **`onInputChange`** `(value: string) => void` — Called when the text being typed changes
+- **`onClear`** `() => void` — Called when the clear button is pressed
 - **`onOpenChange`** `(isOpen: boolean) => void` — Called when the suggestions popover opens or closes
 - **`onFocus`** `() => void` — Called when focus enters the component: the input, a chip or the popover
 - **`onBlur`** `() => void` — Called when focus leaves the component entirely
@@ -62,6 +66,12 @@ A multi-value field. The user types a value into a single-line input and commits
 **delimiters** - Typing a delimiter commits the text before it, and pasting splits the text on every delimiter and line break, so a column copied from a spreadsheet or a comma-separated list becomes one chip per entry. A single pasted value is inserted as plain text for the user to finish. Pass `[]` when a value may contain a comma: only Enter and pasted line breaks separate values then.
 
 **validateTag** - Runs on every value about to become a chip. A rejected value stays in the input, the field turns invalid and the message shows below it until the text is edited. A value picked from the options is not checked. Values already in `value` that fail the check are drawn in the danger theme and carry the message as their description, so an invalid entry loaded from the server stands out. Duplicates are always refused, with a message of their own.
+
+**normalizeTag** - Runs on typed text before anything else looks at it, so the duplicate check, `validateTag` and the new chip all see the rewritten value: lowercase an email address, strip thousands separators, write a number one way. The rejected text that stays in the input is what the user typed. Picked options keep their keys.
+
+**maxTags** - A hard limit on the number of values. Past it, typed, pasted and picked values are refused with a message and stay in the input, while values up to the limit are still added. For a limit that only flags the field, use a `rules` entry instead.
+
+**tagProps** - Called per value. Return a theme, an icon or `qa` for the chip. A string `children` replaces the chip's text and also names the value in the input's description and in the "Added"/"Removed" announcements, for values whose label does not come from the options. `isDisabled: true` locks the chip: it has no remove button, the keyboard skips it, its option cannot be unpicked, and Clear all keeps it. An invalid chip stays in the danger theme whatever theme it asks for.
 
 **children / items** - Options turn the input into a combobox. Typing filters them and focuses the option whose label is exactly the typed text, or else the first match. Enter or a click toggles the focused option, and the popover stays open so the user can pick several in a row. Typed text means "add": pressing Enter on an option that is already a chip refuses it as a duplicate, and unpicking it takes the arrow keys, a click, or an empty input. A picked option shows a checked box. Without `allowsCustomValue`, typed text must match an option by key or label, and on blur a query that matches nothing is dropped. With it, the typed text is offered as its own option after the matches, the same way [FilterListBox](/docs/forms-filterlistbox--docs) does. An option in `disabledKeys` is refused however it is entered. A chip for an option shows the option's label, while the value holds its key. The label is remembered, so it survives server-side filtering (`filter={false}` with changing `items`).
 
@@ -86,7 +96,7 @@ Customizes the bordered input box.
 **Sub-elements:**
 
 - `Prefix` - Container for prefix content and icons
-- `Suffix` - Container for suffix content, validation icons and the popover trigger, which always comes last
+- `Suffix` - Container for suffix content, validation icons, the clear button and the popover trigger, which always comes last
 - `InputIcon` - Container for the left icon
 - `ValidationIcon` - Container for validation state icons
 - `State` - Container for the validation and loading icons
@@ -273,6 +283,61 @@ const members = [
 />
 ```
 
+### Moving Between the Input and the Chips
+
+<Story of={TagInputStories.KeyboardToChips} />
+
+Tab goes from the input to the chips. Backspace in the empty input does too, landing on the last chip without removing it; the next Backspace removes it and moves to the one before. From a chip, Escape goes back to the input, and so does typing, which carries on in the input.
+
+### Locked Values and Clear All
+
+<Story of={TagInputStories.LockedAndClearable} />
+
+```jsx
+<TagInput
+  isClearable
+  label="Owners"
+  defaultValue={['you@acme.com', 'ana@acme.com']}
+  tagProps={(value) =>
+    value === currentUser ? { isDisabled: true, children: `${value} (you)` } : undefined
+  }
+/>
+```
+
+### A Limit on the Number of Values
+
+<Story of={TagInputStories.MaxTags} />
+
+```jsx
+<TagInput label="Reviewers" maxTags={3} description="Up to three reviewers." />
+```
+
+### Rewriting Typed Values
+
+```jsx
+<TagInput
+  label="Also send to"
+  normalizeTag={(value) => value.toLowerCase()}
+  validateTag={validateEmail}
+/>
+```
+
+With the rewrite, `Ana@Acme.com` is a duplicate of `ana@acme.com` rather than a second chip.
+
+### Labels for Values Outside the Options
+
+When a value's label is not in the options, for example because the options are loaded on demand or leave out what is already picked, give the chip its label in `tagProps`:
+
+```jsx
+<TagInput
+  label="Roles"
+  items={unpickedRoles}
+  tagProps={(id) => ({ children: roleTitles[id] })}
+>
+  {(role) => <TagInput.Item key={role.id}>{role.title}</TagInput.Item>}
+</TagInput>
+```
+
 ### Controlled
 
 ```jsx
@@ -297,27 +362,33 @@ const [recipients, setRecipients] = useState(['ana@acme.com']);
 
 ### Keyboard Navigation
 
-- `Tab` - Moves focus from the input to the chips, then out of the field. The chips are one Tab stop, and the popover trigger is not a Tab stop. Tabbing away closes the popover and commits the typed text
+- `Tab` - Moves focus from the input to the clear button, when there is one, then to the chips, then out of the field. The chips are one Tab stop, and the popover trigger is not a Tab stop. Tabbing away closes the popover and commits the typed text
+- `Shift+Tab` - Moves back from the chips to the input
 - `Enter` - Commits the typed text. With the popover open, toggles the focused option, the one `aria-activedescendant` announces; with text typed, an option that is already a chip is refused as a duplicate rather than removed. With nothing typed and the popover closed, submits the form
 - `,` (or another delimiter) - Commits the text before the caret and keeps the rest typed
 - `Escape` - Closes the popover, or clears the typed text when it is closed
+- `Backspace` in the empty input - Moves focus to the last chip without removing it, and closes the popover. A Backspace held down to clear the text stops at the empty input
 - `ArrowDown` / `ArrowUp` - Opens the popover or moves through the options
 - `Home` / `End` - Moves to the first or last option while the popover is open
-- `ArrowLeft` / `ArrowRight` - Moves between chips
-- `Delete` / `Backspace` - Removes the focused chip and focuses its neighbour, or the input when no chip is left
+- `ArrowLeft` / `ArrowRight` - Moves between chips. Locked chips are skipped
+- `Delete` / `Backspace` on a chip - Removes it and focuses its neighbour, or the input when no chip is left. Holding the key down removes one chip, not the whole row
+- `Escape` on a chip - Moves focus back to the input
+- Typing on a chip - Moves focus back to the input, where the typed character lands
 
 ### Screen Reader Support
 
 - Without options the input is a text field. With options it is a combobox with a multi-select listbox of checkable options
-- The input's description reads the current values ("Selected: …"), so the user hears what is already added
-- A polite live region announces "Added …" and "Removed …" when the user adds or removes a value. Changes made from outside the field are not announced
+- The input's description reads the current values ("Selected: …") and says that Backspace moves to them, so the user hears what is already added and how to reach it
+- Focus on a chip reads its label, its position and React Aria's hint to press Delete or Backspace to remove it
+- A polite live region announces "Added …", "Removed …" and "Removed all values" when the user adds, removes or clears values. Changes made from outside the field are not announced
 - The chips are a grid named "Selected values" followed by the field's label. Each chip is a row, and its remove button reads "Remove" followed by the chip's label. An invalid chip is described by its validation message, not only by its color
 - A rejected value marks the input invalid. With a visible label its message is shown under the field and announced as an alert, again for each new attempt. Without one, the message is announced through the live region
-- A disabled field's chips are out of the Tab order. A read-only field's chips stay focusable, without remove buttons
+- A disabled field's chips are out of the Tab order, and so are locked chips. A read-only field's chips stay focusable, without remove buttons
+- The clear button is named "Clear all" followed by the field's label
 
 ### ARIA Properties
 
-- `aria-describedby` - Adds the summary of current values to the input's own descriptions, such as one passed in `aria-describedby`
+- `aria-describedby` - Adds the summary of current values and the Backspace hint to the input's own descriptions, such as one passed in `aria-describedby`
 - `aria-invalid` - Set while a typed value is rejected, or when the field is invalid
 - `role="combobox"`, `aria-expanded`, `aria-controls`, `aria-activedescendant`, `aria-autocomplete="list"` - Set when options are given. `aria-activedescendant` follows both arrow keys and clicks
 

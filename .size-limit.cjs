@@ -288,8 +288,14 @@ module.exports = [
     // `TagList` ~25 kB, and the form and textfield hooks it reaches for the
     // first time the rest. The same run also carries the combobox
     // `aria-activedescendant` fix, which is a few hundred bytes. Button is
-    // unchanged at 131,994 B. Leave 1,880 B headroom.
-    limit: '609kB',
+    // unchanged at 131,994 B.
+    //
+    // Then the rest of the field's keyboard and value API: Backspace into the
+    // chips, Escape and typing back out, Clear all, `maxTags`, `normalizeTag`
+    // and locked chips, plus four strings in each of the twelve locales, which
+    // every bundle registers. 609.63 kB locally on a fresh build, +2.60 kB;
+    // CI read 90 B above local on the previous commit. Leave ~1.3 kB headroom.
+    limit: '611kB',
   },
   {
     name: 'Tree shaking (just a Button)',

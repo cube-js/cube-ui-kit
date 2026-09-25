@@ -123,7 +123,7 @@
   "tagInput": {
     "remove": "Xóa",
     "selectedValues": "Các giá trị đã chọn",
-    "summary": "Đã chọn: {{values}}",
+    "summary": "Đã chọn: {{values}}.",
     "showOptions": "Hiển thị tùy chọn",
     "options": "Tùy chọn",
     "customValue": "Giá trị tùy chỉnh",
@@ -132,7 +132,11 @@
     "invalidValue": "\"{{value}}\" không phải là giá trị hợp lệ",
     "duplicateValue": "\"{{value}}\" đã được thêm",
     "unknownValue": "\"{{value}}\" không có trong danh sách",
-    "unavailableValue": "\"{{value}}\" không khả dụng"
+    "unavailableValue": "\"{{value}}\" không khả dụng",
+    "limitReached": "Bạn có thể thêm tối đa {{count}}",
+    "clearAll": "Xóa tất cả",
+    "cleared": "Đã xóa tất cả giá trị",
+    "backspaceHint": "Nhấn Backspace để chuyển đến các giá trị đã chọn."
   },
   "placeholder": {
     "contentIsLoading": "Đang tải nội dung"

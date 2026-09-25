@@ -123,7 +123,7 @@
   "tagInput": {
     "remove": "Supprimer",
     "selectedValues": "Valeurs sélectionnées",
-    "summary": "Sélection : {{values}}",
+    "summary": "Sélection : {{values}}.",
     "showOptions": "Afficher les options",
     "options": "Options",
     "customValue": "Valeur personnalisée",
@@ -132,7 +132,11 @@
     "invalidValue": "« {{value}} » n’est pas une valeur valide",
     "duplicateValue": "« {{value}} » figure déjà dans la liste",
     "unknownValue": "« {{value}} » ne figure pas dans la liste",
-    "unavailableValue": "« {{value}} » n’est pas disponible"
+    "unavailableValue": "« {{value}} » n’est pas disponible",
+    "limitReached": "Vous pouvez en ajouter jusqu’à {{count}}",
+    "clearAll": "Tout effacer",
+    "cleared": "Toutes les valeurs ont été supprimées",
+    "backspaceHint": "Appuyez sur Retour arrière pour accéder aux valeurs sélectionnées."
   },
   "placeholder": {
     "contentIsLoading": "Chargement du contenu"

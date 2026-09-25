@@ -123,7 +123,7 @@
   "tagInput": {
     "remove": "Remove",
     "selectedValues": "Selected values",
-    "summary": "Selected: {{values}}",
+    "summary": "Selected: {{values}}.",
     "showOptions": "Show options",
     "options": "Options",
     "customValue": "Custom value",
@@ -132,7 +132,11 @@
     "invalidValue": "\"{{value}}\" is not a valid value",
     "duplicateValue": "\"{{value}}\" is already added",
     "unknownValue": "\"{{value}}\" is not in the list",
-    "unavailableValue": "\"{{value}}\" is not available"
+    "unavailableValue": "\"{{value}}\" is not available",
+    "limitReached": "You can add up to {{count}}",
+    "clearAll": "Clear all",
+    "cleared": "Removed all values",
+    "backspaceHint": "Press Backspace to go to the selected values."
   },
   "placeholder": {
     "contentIsLoading": "Content is loading"

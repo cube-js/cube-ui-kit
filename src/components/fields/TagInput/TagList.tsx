@@ -1,6 +1,6 @@
 import { Key, Node } from '@react-types/shared';
-import { Styles, tasty } from '@tenphi/tasty';
-import { RefObject, useRef } from 'react';
+import { mergeStyles, Styles, tasty } from '@tenphi/tasty';
+import { KeyboardEvent, RefObject, useRef } from 'react';
 import { useFocusRing, useId, useTag, useTagGroup } from 'react-aria';
 import { Item, ListState, useListState } from 'react-stately';
 
@@ -23,6 +23,8 @@ export interface TagListEntry {
   invalidMessage?: string;
   /** Extra props for this chip's `Tag`, from the `tagProps` callback. */
   tagProps?: Partial<CubeTagProps>;
+  /** Whether the chip is locked: it cannot be focused or removed. */
+  isDisabled?: boolean;
 }
 
 export interface TagListProps {
@@ -40,6 +42,8 @@ export interface TagListProps {
   styles?: Styles;
   tagStyles?: Styles;
   listRef?: RefObject<HTMLDivElement | null>;
+  /** The field's input, which Escape and typing on a chip return to. */
+  inputRef?: RefObject<HTMLInputElement | null>;
 }
 
 const TagListElement = tasty({
@@ -99,16 +103,39 @@ function TagRow({
   const { isFocusVisible, focusProps } = useFocusRing();
   const invalidId = useId();
   const entry = item.value as TagListEntry;
-  const canRemove = allowsRemoving && !isDisabled && !isReadOnly;
+  const isTagDisabled = isDisabled || state.disabledKeys.has(item.key);
+  const canRemove = allowsRemoving && !isTagDisabled && !isReadOnly;
+  const {
+    theme: tagTheme,
+    styles: ownTagStyles,
+    children: tagChildren,
+    // Locking goes through the list's disabled keys, so the tag group skips
+    // the chip too.
+    isDisabled: _isDisabled,
+    ...otherTagProps
+  } = entry.tagProps ?? {};
   const describedBy =
     [rowProps['aria-describedby'], entry.invalidMessage ? invalidId : null]
       .filter(Boolean)
       .join(' ') || undefined;
 
+  // The tag group removes on every Delete/Backspace, auto-repeat included: a
+  // key held down would clear the whole list.
+  const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+    if (e.repeat && (e.key === 'Delete' || e.key === 'Backspace')) {
+      e.preventDefault();
+
+      return;
+    }
+
+    rowProps.onKeyDown?.(e);
+  };
+
   return (
     <TagRowElement
       ref={ref}
       {...mergeProps(rowProps, focusProps)}
+      onKeyDown={handleKeyDown}
       aria-describedby={describedBy}
       mods={{ focused: isFocusVisible }}
     >
@@ -122,9 +149,11 @@ function TagRow({
         // tag is: every chip announcing itself would drown the list.
         {...gridCellProps}
         size={size}
-        theme={entry.invalidMessage ? 'danger' : 'default'}
-        styles={tagStyles}
-        isDisabled={isDisabled}
+        {...otherTagProps}
+        // An invalid value shows as one whatever theme the chip asks for.
+        theme={entry.invalidMessage ? 'danger' : tagTheme ?? 'default'}
+        styles={ownTagStyles ? mergeStyles(tagStyles, ownTagStyles) : tagStyles}
+        isDisabled={isTagDisabled}
         // The row takes the one Tab stop and removes on Delete/Backspace, so the
         // remove button stays out of the Tab order.
         disableActionsFocus
@@ -141,10 +170,9 @@ function TagRow({
             />
           ) : undefined
         }
-        {...entry.tagProps}
         role="gridcell"
       >
-        {entry.tagProps?.children ?? entry.label}
+        {tagChildren ?? entry.label}
       </Tag>
     </TagRowElement>
   );
@@ -167,6 +195,7 @@ export function TagList(props: TagListProps) {
     styles,
     tagStyles,
     listRef,
+    inputRef,
   } = props;
   const localRef = useRef<HTMLDivElement>(null);
   const ref = listRef ?? localRef;
@@ -175,8 +204,11 @@ export function TagList(props: TagListProps) {
 
   const state = useListState<TagListEntry>({
     items: tags,
-    // A disabled field's chips drop out of the Tab order along with its input.
-    disabledKeys: isDisabled ? tags.map((tag) => tag.key) : undefined,
+    // A disabled field's chips drop out of the Tab order along with its input,
+    // and so do locked ones.
+    disabledKeys: tags
+      .filter((tag) => isDisabled || tag.isDisabled)
+      .map((tag) => tag.key),
     children: (entry) => (
       <Item key={entry.key} textValue={entry.label}>
         {entry.label}
@@ -197,14 +229,52 @@ export function TagList(props: TagListProps) {
     ref,
   );
 
+  // The grid's type-to-select listens here, before any chip does.
+  const { onKeyDownCapture: onGridKeyDownCapture, ...otherGridProps } =
+    gridProps;
+
+  // Leaving the chips for the input they belong to: Escape, or typing, which
+  // carries on in the input. Taken before type-to-select, so a letter does not
+  // also jump to the chip it starts.
+  const handleKeyDownCapture = (e: KeyboardEvent<HTMLDivElement>) => {
+    const input = inputRef?.current;
+    const isPrintable =
+      e.key.length === 1 &&
+      e.key !== ' ' &&
+      !e.ctrlKey &&
+      !e.metaKey &&
+      !e.altKey;
+
+    if (
+      !input ||
+      input.disabled ||
+      e.nativeEvent.isComposing ||
+      (e.key !== 'Escape' && !isPrintable)
+    ) {
+      onGridKeyDownCapture?.(e);
+
+      return;
+    }
+
+    e.stopPropagation();
+    // The character itself is left to reach the input, which has focus by the
+    // time the browser inserts it.
+    if (e.key === 'Escape') e.preventDefault();
+
+    input.focus();
+  };
+
   return (
     <TagListElement
       ref={ref}
       qa={qa}
-      {...gridProps}
-      // Every chip of a disabled field is disabled, and the grid itself would
-      // otherwise stay a Tab stop that focuses nothing.
-      tabIndex={isDisabled ? -1 : gridProps.tabIndex}
+      {...otherGridProps}
+      onKeyDownCapture={handleKeyDownCapture}
+      // With every chip disabled or locked, the grid itself would otherwise
+      // stay a Tab stop that focuses nothing.
+      tabIndex={
+        state.disabledKeys.size === tags.length ? -1 : gridProps.tabIndex
+      }
       styles={styles}
     >
       {[...state.collection].map((item) => (

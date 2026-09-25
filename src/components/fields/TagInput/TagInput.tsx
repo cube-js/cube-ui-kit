@@ -30,6 +30,7 @@ import { Section as BaseSection, useListState } from 'react-stately';
 
 import { useEvent } from '../../../_internal';
 import { useFormatter, useI18n } from '../../../i18n';
+import { CloseIcon } from '../../../icons/CloseIcon';
 import { DirectionIcon } from '../../../icons/DirectionIcon';
 import { generateRandomId } from '../../../utils/random';
 import { mergeProps, useCombinedRefs } from '../../../utils/react';
@@ -116,8 +117,27 @@ export interface CubeTagInputProps<T = object>
    * danger theme. Values picked from the options are not checked.
    */
   validateTag?: (value: string) => TagValidationResult;
+  /**
+   * Rewrites a typed value before it is checked and added: lowercase an
+   * address, write a number one way. Duplicates are found after it runs.
+   * Return an empty string to drop the value. Values picked from the options
+   * are not rewritten.
+   */
+  normalizeTag?: (value: string) => string;
+  /**
+   * The most values the field holds. Values past it are refused with a
+   * message and stay in the input.
+   */
+  maxTags?: number;
   /** Whether leaving the field commits the typed text. @default true */
   shouldCommitOnBlur?: boolean;
+  /**
+   * Whether a button clears every value and the typed text. Locked chips
+   * (`tagProps` with `isDisabled`) stay.
+   */
+  isClearable?: boolean;
+  /** Called when the clear button is pressed. */
+  onClear?: () => void;
 
   /** Options to suggest, as data. Pair with a render function in `children`. */
   items?: Iterable<T>;
@@ -154,7 +174,11 @@ export interface CubeTagInputProps<T = object>
   /** Minimum space between the popover and the viewport edge, in pixels. @default 8 */
   containerPadding?: number;
 
-  /** Props for each chip's `Tag` (theme, icon, label, …), by value. */
+  /**
+   * Props for each chip's `Tag` (theme, icon, label, …), by value. A string
+   * `children` also names the value to screen readers. `isDisabled` locks the
+   * chip: it cannot be removed.
+   */
   tagProps?: (value: string) => Partial<CubeTagProps> | undefined;
 
   /** Left input icon. */
@@ -241,13 +265,23 @@ export function splitTagText(text: string, delimiters: string[]): string[] {
     .filter(Boolean);
 }
 
+/** A chip's own label, when `tagProps` gives it one as plain text. */
+function textLabel(node: ReactNode): string | undefined {
+  return typeof node === 'string' && node !== '' ? node : undefined;
+}
+
 // Safari reports the Enter that confirms an IME composition with
 // `isComposing: false`, but still with the composition key code.
 function isComposingKey(e: KeyboardEvent<HTMLInputElement>) {
   return e.nativeEvent.isComposing || e.keyCode === 229;
 }
 
-type RejectionReason = 'invalid' | 'duplicate' | 'unknown' | 'unavailable';
+type RejectionReason =
+  | 'invalid'
+  | 'duplicate'
+  | 'unknown'
+  | 'unavailable'
+  | 'limit';
 
 interface Rejection {
   text: string;
@@ -289,7 +323,11 @@ function TagInput<T extends object>(
     onKeyDown,
     delimiters = DEFAULT_DELIMITERS,
     validateTag,
+    normalizeTag,
+    maxTags,
     shouldCommitOnBlur = true,
+    isClearable,
+    onClear,
     items,
     children: renderChildren,
     allowsCustomValue,
@@ -356,7 +394,9 @@ function TagInput<T extends object>(
   const listBoxId = `TagInputListBox-${tagInputId}`;
   const tagListId = useId();
   const summaryId = useId();
+  const hintId = useId();
   const triggerId = useId();
+  const clearId = useId();
 
   // ---- values -------------------------------------------------------------
   const [values, setValues] = useControlledState<readonly string[]>(
@@ -450,6 +490,20 @@ function TagInput<T extends object>(
     (key: string) =>
       collection.getItem(key)?.textValue || knownLabels.get(key) || key,
     [collection, knownLabels],
+  );
+
+  // What a chip reads as, and what announcements name it by: a string label
+  // the chip is given, then the option's own.
+  const getTagLabel = useCallback(
+    (key: string) =>
+      textLabel(tagProps?.(key)?.children) ?? getOptionLabel(key),
+    [tagProps, getOptionLabel],
+  );
+
+  // A locked chip stays put: no remove button, Delete, unpick or Clear all.
+  const isTagLocked = useCallback(
+    (key: string) => !!tagProps?.(key)?.isDisabled,
+    [tagProps],
   );
 
   const disabledKeySet = useMemo(
@@ -746,6 +800,10 @@ function TagInput<T extends object>(
         return t('tagInput.unavailableValue', '"{{value}}" is not available', {
           value: rejection.text,
         });
+      case 'limit':
+        return t('tagInput.limitReached', 'You can add up to {{count}}', {
+          count: maxTags,
+        });
       default:
         return t('tagInput.invalidValue', '"{{value}}" is not a valid value', {
           value: rejection.text,
@@ -771,8 +829,19 @@ function TagInput<T extends object>(
     const rejected: Rejection[] = [];
 
     for (const part of parts) {
-      const optionKey = findOptionKey(part);
-      const nextValue = optionKey ?? part;
+      let optionKey = findOptionKey(part);
+      let typed = part;
+
+      // Only text of its own is rewritten; an option keeps its key.
+      if (optionKey == null && normalizeTag) {
+        typed = normalizeTag(part).trim();
+
+        if (!typed) continue;
+
+        optionKey = findOptionKey(typed);
+      }
+
+      const nextValue = optionKey ?? typed;
 
       if (optionKey != null && disabledKeySet.has(optionKey)) {
         rejected.push({ text: part, reason: 'unavailable' });
@@ -786,6 +855,11 @@ function TagInput<T extends object>(
 
       if (present.has(nextValue)) {
         rejected.push({ text: part, reason: 'duplicate' });
+        continue;
+      }
+
+      if (maxTags != null && present.size >= maxTags) {
+        rejected.push({ text: part, reason: 'limit' });
         continue;
       }
 
@@ -814,7 +888,7 @@ function TagInput<T extends object>(
       setValues([...uniqueValues, ...accepted]);
       messages.push(
         t('tagInput.added', 'Added {{value}}', {
-          value: formatList(accepted.map(getOptionLabel)),
+          value: formatList(accepted.map(getTagLabel)),
         }),
       );
     }
@@ -831,12 +905,27 @@ function TagInput<T extends object>(
     setDraft(commitParts(splitTagText(draft, delimiters)));
   });
 
-  const removeValues = useEvent((keys: string[]) => {
+  // Focusing the row itself tells the tag group which chip is focused, as a
+  // click would.
+  const focusLastTag = useEvent(() => {
+    const rows = tagListRef.current?.querySelectorAll<HTMLElement>(
+      '[role="row"]:not([aria-disabled="true"])',
+    );
+
+    rows?.[rows.length - 1]?.focus();
+  });
+
+  const removeValues = useEvent((requested: string[]) => {
+    const keys = requested.filter((key) => !isTagLocked(key));
+
+    if (!keys.length) return;
+
     const removed = new Set(keys);
     const next = uniqueValues.filter((value) => !removed.has(value));
 
-    // Focus leaves the list before the last chip unmounts under it.
-    if (!next.length) {
+    // Focus leaves the list before the last chip it can land on unmounts under
+    // it; locked chips take no focus.
+    if (!next.some((value) => !isTagLocked(value))) {
       inputRef.current?.focus();
     }
 
@@ -844,7 +933,7 @@ function TagInput<T extends object>(
     setTagError(null);
     announce(
       t('tagInput.removed', 'Removed {{value}}', {
-        value: formatList(keys.map(getOptionLabel)),
+        value: formatList(keys.map(getTagLabel)),
       }),
     );
   });
@@ -855,13 +944,16 @@ function TagInput<T extends object>(
    * list is back.
    */
   const toggleOption = useEvent((key: string) => {
+    if (isTagLocked(key)) return;
+
     setTagError(null);
 
     if (uniqueValues.includes(key)) {
       removeValues([key]);
       setDraft('');
-    } else {
-      setDraft(commitParts([key]));
+    } else if (!commitParts([key])) {
+      // A refused pick (past `maxTags`) keeps the query next to its message.
+      setDraft('');
     }
   });
 
@@ -950,6 +1042,29 @@ function TagInput<T extends object>(
       return;
     }
 
+    // The chips sit below the input, not beside the caret, so Backspace in an
+    // empty input moves to the last chip instead of removing it out of view.
+    // The chip comes into view with focus and says it is removable; the next
+    // Backspace removes it and moves to the one before.
+    if (
+      e.key === 'Backspace' &&
+      !draft &&
+      uniqueValues.some((value) => !isTagLocked(value))
+    ) {
+      if (isComposingKey(e)) return;
+
+      e.preventDefault();
+
+      // A held Backspace that just emptied the input stops there, so it does
+      // not run on into the chips.
+      if (e.repeat) return;
+
+      setIsPopoverOpen(false);
+      focusLastTag();
+
+      return;
+    }
+
     if (e.key === 'Enter') {
       if (isComposingKey(e)) return;
 
@@ -977,7 +1092,7 @@ function TagInput<T extends object>(
         ) {
           setTagError(
             rejectionMessage({
-              text: getOptionLabel(key),
+              text: getTagLabel(key),
               reason: 'duplicate',
             }),
           );
@@ -1145,10 +1260,11 @@ function TagInput<T extends object>(
   const tags = useMemo<TagListEntry[]>(
     () =>
       uniqueValues.map((value) => {
+        const ownProps = tagProps?.(value);
         const isOption =
           collection.getItem(value) != null || knownLabels.has(value);
         const result = !isOption && validateTag ? validateTag(value) : true;
-        const label = getOptionLabel(value);
+        const label = textLabel(ownProps?.children) ?? getOptionLabel(value);
 
         return {
           key: value,
@@ -1166,7 +1282,8 @@ function TagInput<T extends object>(
                     },
                   )
                 : undefined,
-          tagProps: tagProps?.(value),
+          tagProps: ownProps,
+          isDisabled: !!ownProps?.isDisabled,
         };
       }),
     [
@@ -1181,6 +1298,17 @@ function TagInput<T extends object>(
   );
 
   const effectiveIsInvalid = tagError ? true : isInvalid;
+  const hasRemovableTags = tags.some((tag) => !tag.isDisabled);
+  // Backspace in an empty input is how the keyboard gets to the chips without
+  // Tab; nothing on screen says so.
+  const hasBackspaceHint = isInteractive && hasRemovableTags;
+
+  // A locked value's option stays checked but cannot be unpicked.
+  const optionDisabledKeys = useMemo(() => {
+    const locked = tags.filter((tag) => tag.isDisabled).map((tag) => tag.key);
+
+    return locked.length ? [...disabledKeySet, ...locked] : disabledKeys;
+  }, [tags, disabledKeySet, disabledKeys]);
 
   // ---- input --------------------------------------------------------------
   const { labelProps, inputProps } = useTextField(
@@ -1203,6 +1331,15 @@ function TagInput<T extends object>(
   // send to", rather than the same words for every field on the page.
   const labelId = label ? (labelProps.id as string | undefined) : undefined;
 
+  // Joined, not replaced: the input keeps any description it already has.
+  const describedBy: string[] = [];
+
+  if (inputProps['aria-describedby']) {
+    describedBy.push(inputProps['aria-describedby']);
+  }
+  if (tags.length) describedBy.push(summaryId);
+  if (hasBackspaceHint) describedBy.push(hintId);
+
   const tagInputProps = mergeProps(
     inputProps,
     {
@@ -1212,11 +1349,7 @@ function TagInput<T extends object>(
       onFocus: handleInputFocus,
       autoComplete,
       'data-input-type': 'taginput',
-      // Joined, not replaced: the input keeps any description it already has.
-      'aria-describedby':
-        [inputProps['aria-describedby'], uniqueValues.length ? summaryId : null]
-          .filter(Boolean)
-          .join(' ') || undefined,
+      'aria-describedby': describedBy.join(' ') || undefined,
     },
     hasOptions
       ? {
@@ -1264,6 +1397,41 @@ function TagInput<T extends object>(
       />
     ) : null;
 
+  const clearAll = useEvent(() => {
+    // The button goes away with the values; keep focus in the field.
+    inputRef.current?.focus();
+
+    const kept = uniqueValues.filter(isTagLocked);
+
+    if (kept.length !== uniqueValues.length) {
+      setValues(kept);
+      announce(t('tagInput.cleared', 'Removed all values'));
+    }
+
+    setDraft('');
+    setTagError(null);
+    setIsPopoverOpen(false);
+    onClear?.();
+  });
+
+  const hasSomethingToClear = hasRemovableTags || draft !== '';
+  const canClear = !!isClearable && isInteractive && hasSomethingToClear;
+  const clearButton = canClear ? (
+    <ItemAction
+      id={clearId}
+      qa="TagInputClearButton"
+      icon={<CloseIcon />}
+      size={size}
+      aria-label={t('tagInput.clearAll', 'Clear all')}
+      aria-labelledby={labelId ? `${clearId} ${labelId}` : undefined}
+      onPress={clearAll}
+    />
+  ) : null;
+
+  // Not a bare fragment: an empty one would still mark the input as having a
+  // suffix.
+  const hasActions = clearButton != null || trigger != null;
+
   const tagInputField = (
     <TagInputElement
       ref={rootRef}
@@ -1283,7 +1451,14 @@ function TagInput<T extends object>(
         prefix={prefix}
         suffix={suffix}
         suffixPosition={suffixPosition}
-        actions={trigger}
+        actions={
+          hasActions ? (
+            <>
+              {clearButton}
+              {trigger}
+            </>
+          ) : null
+        }
         size={size}
         autoFocus={autoFocus}
         isDisabled={isDisabled}
@@ -1297,6 +1472,7 @@ function TagInput<T extends object>(
         <TagList
           id={tagListId}
           listRef={tagListRef}
+          inputRef={inputRef}
           aria-label={t('tagInput.selectedValues', 'Selected values')}
           aria-labelledby={labelId}
           tags={tags}
@@ -1311,9 +1487,17 @@ function TagInput<T extends object>(
       {/* Read only as the input's description, never on its own in browse mode. */}
       <span hidden id={summaryId}>
         {tags.length
-          ? t('tagInput.summary', 'Selected: {{values}}', {
+          ? t('tagInput.summary', 'Selected: {{values}}.', {
               values: formatList(tags.map((tag) => tag.label)),
             })
+          : null}
+      </span>
+      <span hidden id={hintId}>
+        {hasBackspaceHint
+          ? t(
+              'tagInput.backspaceHint',
+              'Press Backspace to go to the selected values.',
+            )
           : null}
       </span>
       <VisuallyHidden role="status" aria-live="polite" aria-atomic="true">
@@ -1343,7 +1527,7 @@ function TagInput<T extends object>(
           // Clicking back into the input keeps the list open for the next pick.
           shouldCloseOnTriggerInteraction={false}
           isDisabled={isDisabled}
-          disabledKeys={disabledKeys}
+          disabledKeys={optionDisabledKeys}
           listStateRef={listStateRef}
           label={label}
           ariaLabel={(props as { 'aria-label'?: string })['aria-label']}
