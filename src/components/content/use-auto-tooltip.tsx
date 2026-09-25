@@ -78,14 +78,30 @@ export function useAutoTooltip({
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
 
   const measurePendingRef = useRef(false);
+  const verdictRef = useRef(false);
+
+  /**
+   * Sets the verdict only when it changes. React skips an unchanged `setState`
+   * only while the component has no other update queued; otherwise the no-op is
+   * enqueued like any other update. From an effect flushed inside a sync commit
+   * that is a pending update, and a nested one — see the mount effect below.
+   * Mirroring the verdict makes every unchanged write free, whatever else the
+   * component has queued.
+   */
+  const setVerdict = useCallback((value: boolean) => {
+    if (verdictRef.current === value) return;
+
+    verdictRef.current = value;
+    setIsLabelOverflowed(value);
+  }, []);
 
   const checkLabelOverflow = useCallback(() => {
     const label = elementRef.current;
 
     if (!label) return;
 
-    setIsLabelOverflowed(label.scrollWidth > label.clientWidth);
-  }, []);
+    setVerdict(label.scrollWidth > label.clientWidth);
+  }, [setVerdict]);
 
   /**
    * Measure once the current task has finished, not inside it.
@@ -122,7 +138,9 @@ export function useAutoTooltip({
       // that commits each row on its own (ag-grid-react wraps every new row in
       // `flushSync`) then gains one per row, and the 51st throws "Maximum update
       // depth exceeded". The microtask lands after the commit and still before
-      // paint; it is shared with the callback ref, so this adds no second read.
+      // paint. In a sync commit the callback ref has already queued it, so this
+      // call is absorbed; it matters when the flag flips on for a label whose
+      // ref did not re-attach.
       scheduleLabelOverflowCheck();
 
       return;
@@ -136,8 +154,8 @@ export function useAutoTooltip({
     // being a string the label unmounts, so the new callback never runs and a
     // stale `true` would keep an auto tooltip mounted over content that is no
     // longer text. That is the default `Button` path, where `tooltip` is `true`.
-    setIsLabelOverflowed(false);
-  }, [isAutoTooltipEnabled, scheduleLabelOverflowCheck]);
+    setVerdict(false);
+  }, [isAutoTooltipEnabled, scheduleLabelOverflowCheck, setVerdict]);
 
   // Attach ResizeObserver via callback ref to handle DOM node changes
   const handleLabelElementRef = useCallback(
@@ -159,7 +177,7 @@ export function useAutoTooltip({
       elementRef.current = element;
 
       if (!isAutoTooltipEnabled) {
-        setIsLabelOverflowed(false);
+        setVerdict(false);
 
         return;
       }
@@ -192,6 +210,7 @@ export function useAutoTooltip({
       isAutoTooltipEnabled,
       checkLabelOverflow,
       scheduleLabelOverflowCheck,
+      setVerdict,
     ],
   );
 

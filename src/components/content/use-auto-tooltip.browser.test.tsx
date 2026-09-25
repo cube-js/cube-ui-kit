@@ -1,4 +1,4 @@
-import { Component, ReactNode, useLayoutEffect, useState } from 'react';
+import { useLayoutEffect, useState } from 'react';
 import { flushSync } from 'react-dom';
 
 import { act, renderWithRoot, screen, waitFor } from '../../test';
@@ -39,28 +39,6 @@ function spyOnLayoutReads() {
 }
 
 const LONG_LABEL = 'A label far too long to ever fit inside this narrow box';
-
-/** Renders the error that reached it, so a crash is an assertion, not a log. */
-class CrashBoundary extends Component<
-  { children: ReactNode },
-  { error: Error | null }
-> {
-  state: { error: Error | null } = { error: null };
-
-  static getDerivedStateFromError(error: Error) {
-    return { error };
-  }
-
-  render() {
-    const { error } = this.state;
-
-    return error ? (
-      <div data-qa="Crashed">{error.message}</div>
-    ) : (
-      this.props.children
-    );
-  }
-}
 
 /**
  * Auto-tooltip overflow measurement, in a real browser.
@@ -164,8 +142,11 @@ describe('useAutoTooltip overflow measurement', () => {
      * CUB-4908): each overflowing label's mount effect measured synchronously
      * and set the verdict from that flush.
      *
-     * Every row overflows, so each one is a candidate link, and every verdict
-     * must still arrive once the rows have mounted.
+     * The crash is thrown straight out of the `flushSync` that schedules the
+     * update past the limit, so it fails the loop itself. Every row overflows,
+     * so each one is a candidate link, and every verdict must still arrive once
+     * the rows have mounted. React 18 counts only Sync-lane work as nested, so
+     * this guards React 19 behaviour; under 18 it would pass either way.
      */
     it(
       'lets a list mount rows one sync commit at a time',
@@ -189,11 +170,7 @@ describe('useAutoTooltip overflow measurement', () => {
         }
 
         await act(async () => {
-          renderWithRoot(
-            <CrashBoundary>
-              <Rows />
-            </CrashBoundary>,
-          );
+          renderWithRoot(<Rows />);
         });
 
         // Outside `act`, which would otherwise take over React's scheduling:
@@ -211,8 +188,6 @@ describe('useAutoTooltip overflow measurement', () => {
         } finally {
           env.IS_REACT_ACT_ENVIRONMENT = wasActEnvironment;
         }
-
-        expect(screen.queryByTestId('Crashed')).not.toBeInTheDocument();
 
         const labels = screen.getAllByTestId('Label');
 
