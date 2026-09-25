@@ -1213,10 +1213,10 @@ describe('<TagInput />', () => {
   });
 
   describe('clear button', () => {
-    it('clears the values and the text, then returns to the input', async () => {
+    it('clears the typed text and keeps the values', async () => {
       const onChange = vi.fn();
       const onClear = vi.fn();
-      const { getByRole, queryByRole, container } = render(
+      const { getByRole, queryByRole, getAllByRole } = render(
         <TagInput
           isClearable
           label="Tags"
@@ -1228,38 +1228,59 @@ describe('<TagInput />', () => {
       const input = getByRole('textbox');
 
       await userEvent.type(input, 'thr');
-      await userEvent.click(getByRole('button', { name: 'Clear all Tags' }));
+      await userEvent.click(getByRole('button', { name: 'Clear text Tags' }));
 
-      expect(onChange).toHaveBeenLastCalledWith([]);
-      expect(onClear).toHaveBeenCalledTimes(1);
       expect(input).toHaveValue('');
       expect(input).toHaveFocus();
-      expect(container.querySelector('[role="status"]')).toHaveTextContent(
-        'Removed all values',
-      );
+      expect(onClear).toHaveBeenCalledTimes(1);
+      expect(onChange).not.toHaveBeenCalled();
+      expect(getAllByRole('row')).toHaveLength(2);
       expect(
-        queryByRole('button', { name: 'Clear all Tags' }),
+        queryByRole('button', { name: 'Clear text Tags' }),
       ).not.toBeInTheDocument();
     });
 
-    it('shows only when there is something to clear', async () => {
+    it('shows only while there is text', async () => {
       const { getByRole, queryByRole } = render(
-        <TagInput isClearable label="Tags" />,
+        <TagInput isClearable label="Tags" defaultValue={['one']} />,
       );
 
-      expect(queryByRole('button', { name: /Clear all/ })).toBeNull();
+      expect(queryByRole('button', { name: /Clear text/ })).toBeNull();
 
       await userEvent.type(getByRole('textbox'), 'a');
 
-      expect(getByRole('button', { name: /Clear all/ })).toBeInTheDocument();
+      expect(getByRole('button', { name: /Clear text/ })).toBeInTheDocument();
+    });
+
+    it('is not a Tab stop, so Tab still commits the text and reaches the chips', async () => {
+      const onChange = vi.fn();
+      const { getByRole, getAllByRole } = render(
+        <TagInput
+          isClearable
+          label="Tags"
+          defaultValue={['one']}
+          onChange={onChange}
+        />,
+      );
+
+      await userEvent.type(getByRole('textbox'), 'two');
+      await userEvent.tab();
+
+      expect(onChange).toHaveBeenLastCalledWith(['one', 'two']);
+      expect(getAllByRole('row')[0]).toHaveFocus();
     });
 
     it('is not offered when read-only', () => {
       const { queryByRole } = render(
-        <TagInput isClearable isReadOnly label="Tags" defaultValue={['one']} />,
+        <TagInput
+          isClearable
+          isReadOnly
+          label="Tags"
+          defaultInputValue="one"
+        />,
       );
 
-      expect(queryByRole('button', { name: /Clear all/ })).toBeNull();
+      expect(queryByRole('button', { name: /Clear text/ })).toBeNull();
     });
   });
 
@@ -1395,7 +1416,6 @@ describe('<TagInput />', () => {
       const onChange = vi.fn();
       const { getByRole, getAllByRole, queryByRole } = render(
         <TagInput
-          isClearable
           label="Owners"
           defaultValue={['owner', 'one', 'two']}
           tagProps={(value) =>
@@ -1419,29 +1439,140 @@ describe('<TagInput />', () => {
 
       await userEvent.keyboard('{Backspace}');
       expect(input).toHaveFocus();
-      expect(queryByRole('button', { name: /Clear all/ })).toBeNull();
     });
 
-    it('keeps a locked value when clearing and in the options', async () => {
-      const onChange = vi.fn();
+    it('keeps a locked value checked and disabled in the options', async () => {
       const { getByRole } = renderWithRoot(
         <Actions
-          isClearable
           defaultValue={['read', 'deploy']}
           tagProps={(value) =>
             value === 'read' ? { isDisabled: true } : undefined
           }
-          onChange={onChange}
         />,
       );
-
-      await userEvent.click(getByRole('button', { name: 'Clear all Actions' }));
-      expect(onChange).toHaveBeenLastCalledWith(['read']);
 
       await userEvent.click(getByRole('button', { name: /Show options/ }));
       const option = await waitFor(() => getByRole('option', { name: 'read' }));
 
       expect(option).toHaveAttribute('aria-disabled', 'true');
+    });
+  });
+
+  describe('custom values in the list', () => {
+    function Custom(props: Partial<Parameters<typeof TagInput>[0]>) {
+      return <Actions allowsCustomValue {...props} />;
+    }
+
+    const openList = async (getByRole) => {
+      await userEvent.click(getByRole('button', { name: /Show options/ }));
+
+      return waitFor(() => getByRole('listbox'));
+    };
+
+    it('lists picked custom values, checked, after the options', async () => {
+      const { getByRole } = renderWithRoot(
+        <Custom defaultValue={['read', 'zeta', 'audit']} />,
+      );
+      const listbox = await openList(getByRole);
+      const options = within(listbox).getAllByRole('option');
+
+      expect(options.map((option) => option.textContent)).toEqual([
+        'read',
+        'refresh',
+        'rebuild',
+        'deploy',
+        'audit',
+        'zeta',
+      ]);
+      expect(
+        within(listbox).getByRole('option', { name: 'audit' }),
+      ).toHaveAttribute('aria-selected', 'true');
+    });
+
+    it('unpicks one there, keeps the row unchecked, and picks it back', async () => {
+      const onChange = vi.fn();
+      const { getByRole } = renderWithRoot(
+        <Custom defaultValue={['read', 'audit']} onChange={onChange} />,
+      );
+      const listbox = await openList(getByRole);
+
+      await userEvent.click(
+        within(listbox).getByRole('option', { name: 'audit' }),
+      );
+
+      expect(onChange).toHaveBeenLastCalledWith(['read']);
+      const row = within(listbox).getByRole('option', { name: 'audit' });
+      expect(row).toHaveAttribute('aria-selected', 'false');
+
+      await userEvent.click(row);
+
+      expect(onChange).toHaveBeenLastCalledWith(['read', 'audit']);
+    });
+
+    it('narrows them with the typed text and does not offer one twice', async () => {
+      const onChange = vi.fn();
+      const { getByRole } = renderWithRoot(
+        <Custom defaultValue={['audit', 'debug']} onChange={onChange} />,
+      );
+      const input = getByRole('combobox');
+
+      await userEvent.type(input, 'aud');
+      const listbox = await waitFor(() => getByRole('listbox'));
+
+      expect(
+        within(listbox)
+          .getAllByRole('option')
+          .map((option) => option.textContent),
+      ).toEqual(['audit', 'aud']);
+
+      await userEvent.type(input, 'it');
+      await waitFor(() =>
+        expect(getActiveDescendant(input)).toHaveTextContent('audit'),
+      );
+      expect(within(listbox).getAllByRole('option')).toHaveLength(1);
+
+      // Typed text means "add", so the existing value is a duplicate.
+      await userEvent.keyboard('{Enter}');
+      expect(onChange).not.toHaveBeenCalled();
+    });
+
+    it('forgets an unpicked one once focus leaves the field', async () => {
+      const onBlur = vi.fn();
+      const { getByRole, queryByRole } = renderWithRoot(
+        <>
+          <Custom defaultValue={['read', 'audit']} onBlur={onBlur} />
+          <button>After</button>
+        </>,
+      );
+      const listbox = await openList(getByRole);
+
+      await userEvent.click(
+        within(listbox).getByRole('option', { name: 'audit' }),
+      );
+      // The pick hands focus back to the input a tick later.
+      await waitFor(() => expect(getByRole('combobox')).toHaveFocus());
+      // The first click outside only closes the list, as with every popover.
+      await userEvent.click(getByRole('button', { name: 'After' }));
+      await waitFor(() => expect(queryByRole('listbox')).toBeNull());
+      await userEvent.click(getByRole('button', { name: 'After' }));
+      await waitFor(() => expect(onBlur).toHaveBeenCalled());
+
+      const reopened = await openList(getByRole);
+
+      expect(
+        within(reopened).queryByRole('option', { name: 'audit' }),
+      ).toBeNull();
+    });
+
+    it('lists no outside values without allowsCustomValue', async () => {
+      const { getByRole } = renderWithRoot(
+        <Actions defaultValue={['read', 'audit']} />,
+      );
+      const listbox = await openList(getByRole);
+
+      expect(
+        within(listbox).queryByRole('option', { name: 'audit' }),
+      ).toBeNull();
     });
   });
 

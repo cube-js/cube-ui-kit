@@ -126,7 +126,7 @@
     "summary": "Đã chọn: {{values}}.",
     "showOptions": "Hiển thị tùy chọn",
     "options": "Tùy chọn",
-    "customValue": "Giá trị tùy chỉnh",
+    "customValues": "Giá trị tùy chỉnh",
     "added": "Đã thêm {{value}}",
     "removed": "Đã xóa {{value}}",
     "invalidValue": "\"{{value}}\" không phải là giá trị hợp lệ",
@@ -134,8 +134,7 @@
     "unknownValue": "\"{{value}}\" không có trong danh sách",
     "unavailableValue": "\"{{value}}\" không khả dụng",
     "limitReached": "Bạn có thể thêm tối đa {{count}}",
-    "clearAll": "Xóa tất cả",
-    "cleared": "Đã xóa tất cả giá trị",
+    "clearText": "Xóa văn bản",
     "backspaceHint": "Nhấn Backspace để chuyển đến các giá trị đã chọn."
   },
   "placeholder": {

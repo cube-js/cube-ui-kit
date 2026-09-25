@@ -132,8 +132,8 @@ export interface CubeTagInputProps<T = object>
   /** Whether leaving the field commits the typed text. @default true */
   shouldCommitOnBlur?: boolean;
   /**
-   * Whether a button clears every value and the typed text. Locked chips
-   * (`tagProps` with `isDisabled`) stay.
+   * Whether a button in the input clears the typed text. It shows while there
+   * is text; the chips have their own remove buttons.
    */
   isClearable?: boolean;
   /** Called when the clear button is pressed. */
@@ -466,10 +466,15 @@ function TagInput<T extends object>(
   const collection = localCollectionState.collection;
 
   const { contains } = useFilter({ sensitivity: 'base' });
-  const { isEqual: isSameText } = useMemo(() => {
+  const { isEqual: isSameText, compare: compareText } = useMemo(() => {
     const collator = new Intl.Collator(undefined, { sensitivity: 'base' });
+    // Numbers in order: 2 before 10.
+    const sorter = new Intl.Collator(undefined, { numeric: true });
 
-    return { isEqual: (a: string, b: string) => collator.compare(a, b) === 0 };
+    return {
+      isEqual: (a: string, b: string) => collator.compare(a, b) === 0,
+      compare: (a: string, b: string) => sorter.compare(a, b),
+    };
   }, []);
 
   const textFilterFn = useMemo<FilterFn>(
@@ -500,7 +505,7 @@ function TagInput<T extends object>(
     [tagProps, getOptionLabel],
   );
 
-  // A locked chip stays put: no remove button, Delete, unpick or Clear all.
+  // A locked chip stays put: no remove button, Delete or unpick.
   const isTagLocked = useCallback(
     (key: string) => !!tagProps?.(key)?.isDisabled,
     [tagProps],
@@ -576,35 +581,86 @@ function TagInput<T extends object>(
     return keys;
   }, [hasOptions, optionFilterFn, collection, disabledKeys]);
 
+  // Custom values unpicked in the list during this visit. They stay listed,
+  // unchecked, until focus leaves the field: the row does not vanish under the
+  // pointer, and it can be picked back.
+  const [unpickedCustomValues, setUnpickedCustomValues] = useState<
+    readonly string[]
+  >([]);
+
+  // The user's own values, listed after the options so they can be unpicked
+  // where they were picked. Only with `allowsCustomValue`: without it an
+  // unpicked value could not be added back. Sorted, so toggling one does not
+  // move it.
+  const customValueKeys = useMemo(() => {
+    if (!hasOptions || !allowsCustomValue) return [];
+
+    const keys = new Set(
+      [...uniqueValues, ...unpickedCustomValues].filter(
+        (value) => collection.getItem(value) == null && !knownLabels.has(value),
+      ),
+    );
+
+    return [...keys].sort(compareText);
+  }, [
+    hasOptions,
+    allowsCustomValue,
+    uniqueValues,
+    unpickedCustomValues,
+    collection,
+    knownLabels,
+    compareText,
+  ]);
+
+  // The typed text narrows them as it narrows the options, even when the
+  // options are filtered on the server (`filter={false}`): these rows are
+  // this component's own.
+  const visibleCustomKeys = useMemo(() => {
+    if (!isFilterActive || !term) return customValueKeys;
+
+    const matches = typeof filter === 'function' ? filter : contains;
+
+    return customValueKeys.filter((key) => matches(key, term));
+  }, [customValueKeys, isFilterActive, term, filter, contains]);
+
   // The typed text as a pickable row, when it would add something new.
   const customTerm =
     hasOptions &&
     allowsCustomValue &&
     term &&
     findOptionKey(term) == null &&
-    !uniqueValues.includes(term)
+    !uniqueValues.includes(term) &&
+    !customValueKeys.includes(term)
       ? term
       : null;
 
   const popoverChildren = useMemo(() => {
-    if (!customTerm) return children;
+    if (!customTerm && !visibleCustomKeys.length) return children;
 
-    const customOption = (
-      <Item key={customTerm} textValue={customTerm}>
-        {customTerm}
+    const customOptions = visibleCustomKeys.map((key) => (
+      <Item key={key} textValue={key}>
+        {key}
       </Item>
-    );
+    ));
+
+    if (customTerm) {
+      customOptions.push(
+        <Item key={customTerm} textValue={customTerm}>
+          {customTerm}
+        </Item>,
+      );
+    }
 
     if (!visibleOptionKeys.length) {
-      return customOption;
+      return customOptions;
     }
 
     const customSection = (
       <BaseSection
-        key="__custom_value__"
-        aria-label={t('tagInput.customValue', 'Custom value')}
+        key="__custom_values__"
+        aria-label={t('tagInput.customValues', 'Custom values')}
       >
-        {customOption}
+        {customOptions}
       </BaseSection>
     );
 
@@ -628,12 +684,25 @@ function TagInput<T extends object>(
       </BaseSection>,
       customSection,
     ];
-  }, [customTerm, children, visibleOptionKeys.length, collection, t]);
+  }, [
+    customTerm,
+    visibleCustomKeys,
+    children,
+    visibleOptionKeys.length,
+    collection,
+    t,
+  ]);
 
-  const hasResults = visibleOptionKeys.length > 0 || customTerm != null;
+  const hasResults =
+    visibleOptionKeys.length > 0 ||
+    visibleCustomKeys.length > 0 ||
+    customTerm != null;
   // Options rebuild on every render when they come from `items`, so effects
   // follow what is visible rather than the collection's identity.
-  const visibleOptionsSignature = visibleOptionKeys.join('\u0000');
+  const visibleOptionsSignature = [
+    ...visibleOptionKeys,
+    ...visibleCustomKeys,
+  ].join('\u0000');
 
   // ---- popover ------------------------------------------------------------
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
@@ -682,14 +751,30 @@ function TagInput<T extends object>(
 
   // An option whose label is exactly the typed text wins over the first match,
   // so typing "build" and pressing Enter picks "build", not "rebuild".
-  const exactOptionKey = term ? findOptionKey(term) : null;
-  const visibleTargetKeys: Key[] = customTerm
-    ? [...visibleOptionKeys, customTerm]
-    : visibleOptionKeys;
-  const preferredOptionKey =
-    exactOptionKey != null && visibleTargetKeys.includes(exactOptionKey)
-      ? exactOptionKey
-      : visibleTargetKeys[0] ?? null;
+  let exactOptionKey = term ? findOptionKey(term) : null;
+
+  if (exactOptionKey == null && term && customValueKeys.includes(term)) {
+    exactOptionKey = term;
+  }
+
+  const visibleTargetKeys: Key[] = [...visibleOptionKeys, ...visibleCustomKeys];
+
+  if (customTerm) visibleTargetKeys.push(customTerm);
+  // Typed text means "add", so past an exact match the first row that is not
+  // added yet wins: typing "def" next to a picked "undefined" lands on "def".
+  let preferredOptionKey: Key | null = null;
+
+  if (exactOptionKey != null && visibleTargetKeys.includes(exactOptionKey)) {
+    preferredOptionKey = exactOptionKey;
+  } else if (term) {
+    preferredOptionKey =
+      visibleTargetKeys.find((key) => !uniqueValues.includes(String(key))) ??
+      null;
+  }
+
+  if (preferredOptionKey == null) {
+    preferredOptionKey = visibleTargetKeys[0] ?? null;
+  }
   const focusTermRef = useRef<string | null>(null);
 
   // Focus the best match when the popover opens or the text changes, and
@@ -715,10 +800,6 @@ function TagInput<T extends object>(
 
     if (customTerm) visibleKeys.push(customTerm);
 
-    const preferredKey =
-      exactOptionKey != null && visibleKeys.includes(exactOptionKey)
-        ? exactOptionKey
-        : visibleKeys[0] ?? null;
     const isNewTerm = !!term && focusTermRef.current !== term;
 
     focusTermRef.current = term;
@@ -752,7 +833,7 @@ function TagInput<T extends object>(
             : { key: focused, term, source: 'auto' },
         );
       } else {
-        moveVirtualFocus(preferredKey, 'auto', term);
+        moveVirtualFocus(preferredOptionKey, 'auto', term);
       }
     };
 
@@ -767,7 +848,7 @@ function TagInput<T extends object>(
     visibleOptionsSignature,
     customTerm,
     term,
-    exactOptionKey,
+    preferredOptionKey,
     moveVirtualFocus,
     wrapperRef,
   ]);
@@ -951,6 +1032,12 @@ function TagInput<T extends object>(
     if (uniqueValues.includes(key)) {
       removeValues([key]);
       setDraft('');
+
+      if (customValueKeys.includes(key)) {
+        setUnpickedCustomValues((prev) =>
+          prev.includes(key) ? prev : [...prev, key],
+        );
+      }
     } else if (!commitParts([key])) {
       // An accepted pick clears the query. A refused one (past `maxTags`)
       // keeps it, next to the message saying why.
@@ -970,7 +1057,8 @@ function TagInput<T extends object>(
         ...uniqueValues.filter(
           (value) =>
             !next.has(value) &&
-            (collection.getItem(value) != null || value === customTerm),
+            (collection.getItem(value) != null ||
+              visibleCustomKeys.includes(value)),
         ),
       ];
 
@@ -1223,6 +1311,7 @@ function TagInput<T extends object>(
 
   const handleCompositeBlur = useEvent(() => {
     setIsPopoverOpen(false);
+    setUnpickedCustomValues([]);
     settleDraft();
     onBlur?.();
   });
@@ -1398,34 +1487,30 @@ function TagInput<T extends object>(
       />
     ) : null;
 
-  const clearAll = useEvent(() => {
-    // The button goes away with the values; keep focus in the field.
+  // Clears what is typed, as Escape does. The chips below have their own
+  // remove buttons, so a button inside the input is about the text only.
+  const clearText = useEvent(() => {
+    // The button goes away with the text; keep focus in the field.
     inputRef.current?.focus();
-
-    const kept = uniqueValues.filter(isTagLocked);
-
-    if (kept.length !== uniqueValues.length) {
-      setValues(kept);
-      announce(t('tagInput.cleared', 'Removed all values'));
-    }
-
     setDraft('');
     setTagError(null);
     setIsPopoverOpen(false);
     onClear?.();
   });
 
-  const hasSomethingToClear = hasRemovableTags || draft !== '';
-  const canClear = !!isClearable && isInteractive && hasSomethingToClear;
+  const canClear = !!isClearable && isInteractive && draft !== '';
   const clearButton = canClear ? (
     <ItemAction
       id={clearId}
       qa="TagInputClearButton"
       icon={<CloseIcon />}
       size={size}
-      aria-label={t('tagInput.clearAll', 'Clear all')}
+      // Escape does the same from the keyboard. As a Tab stop it would take
+      // focus just as tabbing away commits the text and removes it.
+      tabIndex={-1}
+      aria-label={t('tagInput.clearText', 'Clear text')}
       aria-labelledby={labelId ? `${clearId} ${labelId}` : undefined}
-      onPress={clearAll}
+      onPress={clearText}
     />
   ) : null;
 

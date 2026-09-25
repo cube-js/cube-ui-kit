@@ -126,7 +126,7 @@
     "summary": "Valgt: {{values}}.",
     "showOptions": "Vis alternativer",
     "options": "Alternativer",
-    "customValue": "Egendefinert verdi",
+    "customValues": "Egendefinerte verdier",
     "added": "{{value}} lagt til",
     "removed": "{{value}} fjernet",
     "invalidValue": "«{{value}}» er ikke en gyldig verdi",
@@ -134,8 +134,7 @@
     "unknownValue": "«{{value}}» finnes ikke i listen",
     "unavailableValue": "«{{value}}» er ikke tilgjengelig",
     "limitReached": "Du kan legge til opptil {{count}}",
-    "clearAll": "Tøm alle",
-    "cleared": "Alle verdier er fjernet",
+    "clearText": "Tøm tekst",
     "backspaceHint": "Trykk på Tilbake for å gå til de valgte verdiene."
   },
   "placeholder": {

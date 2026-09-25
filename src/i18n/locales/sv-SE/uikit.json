@@ -126,7 +126,7 @@
     "summary": "Valda: {{values}}.",
     "showOptions": "Visa alternativ",
     "options": "Alternativ",
-    "customValue": "Anpassat värde",
+    "customValues": "Anpassade värden",
     "added": "{{value}} har lagts till",
     "removed": "{{value}} har tagits bort",
     "invalidValue": "”{{value}}” är inte ett giltigt värde",
@@ -134,8 +134,7 @@
     "unknownValue": "”{{value}}” finns inte i listan",
     "unavailableValue": "”{{value}}” är inte tillgänglig",
     "limitReached": "Du kan lägga till upp till {{count}}",
-    "clearAll": "Rensa alla",
-    "cleared": "Alla värden har tagits bort",
+    "clearText": "Rensa text",
     "backspaceHint": "Tryck på Backsteg för att gå till de valda värdena."
   },
   "placeholder": {

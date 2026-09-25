@@ -126,7 +126,7 @@
     "summary": "Selected: {{values}}.",
     "showOptions": "Show options",
     "options": "Options",
-    "customValue": "Custom value",
+    "customValues": "Custom values",
     "added": "Added {{value}}",
     "removed": "Removed {{value}}",
     "invalidValue": "\"{{value}}\" is not a valid value",
@@ -134,8 +134,7 @@
     "unknownValue": "\"{{value}}\" is not in the list",
     "unavailableValue": "\"{{value}}\" is not available",
     "limitReached": "You can add up to {{count}}",
-    "clearAll": "Clear all",
-    "cleared": "Removed all values",
+    "clearText": "Clear text",
     "backspaceHint": "Press Backspace to go to the selected values."
   },
   "placeholder": {

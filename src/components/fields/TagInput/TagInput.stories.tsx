@@ -149,7 +149,7 @@ const meta = {
     isClearable: {
       control: { type: 'boolean' },
       description:
-        'Whether a button clears every value and the typed text. Locked chips stay',
+        'Whether a button in the input clears the typed text. It shows while there is text',
       table: { defaultValue: { summary: false } },
     },
     filter: {
@@ -516,6 +516,7 @@ export const LockedAndClearable: StoryFn<CubeTagInputProps> = (args) => (
     isClearable
     label="Owners"
     placeholder="name@company.com"
+    defaultInputValue="kim@acme"
     defaultValue={['you@acme.com', 'ana@acme.com', 'lee@acme.com']}
     tagProps={(value) =>
       value === 'you@acme.com'
@@ -529,7 +530,7 @@ LockedAndClearable.parameters = {
   docs: {
     description: {
       story:
-        '`isClearable` adds a button that removes every value. A chip with `isDisabled` from `tagProps` is locked: it has no remove button, the keyboard skips it, and clearing keeps it.',
+        '`isClearable` adds a button to the input that clears the typed text; it shows while there is text. A chip with `isDisabled` from `tagProps` is locked: it has no remove button and the keyboard skips it.',
     },
   },
 };

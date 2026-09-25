@@ -126,7 +126,7 @@
     "summary": "Sélection : {{values}}.",
     "showOptions": "Afficher les options",
     "options": "Options",
-    "customValue": "Valeur personnalisée",
+    "customValues": "Valeurs personnalisées",
     "added": "Ajouté : {{value}}",
     "removed": "Supprimé : {{value}}",
     "invalidValue": "« {{value}} » n’est pas une valeur valide",
@@ -134,8 +134,7 @@
     "unknownValue": "« {{value}} » ne figure pas dans la liste",
     "unavailableValue": "« {{value}} » n’est pas disponible",
     "limitReached": "Vous pouvez en ajouter jusqu’à {{count}}",
-    "clearAll": "Tout effacer",
-    "cleared": "Toutes les valeurs ont été supprimées",
+    "clearText": "Effacer le texte",
     "backspaceHint": "Appuyez sur Retour arrière pour accéder aux valeurs sélectionnées."
   },
   "placeholder": {

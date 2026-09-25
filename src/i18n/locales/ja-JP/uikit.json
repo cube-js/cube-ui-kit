@@ -126,7 +126,7 @@
     "summary": "選択済み: {{values}}。",
     "showOptions": "オプションを表示",
     "options": "オプション",
-    "customValue": "カスタム値",
+    "customValues": "カスタム値",
     "added": "{{value}} を追加しました",
     "removed": "{{value}} を削除しました",
     "invalidValue": "「{{value}}」は有効な値ではありません",
@@ -134,8 +134,7 @@
     "unknownValue": "「{{value}}」はリストにありません",
     "unavailableValue": "「{{value}}」は利用できません",
     "limitReached": "追加できるのは {{count}} 件までです",
-    "clearAll": "すべてクリア",
-    "cleared": "すべての値を削除しました",
+    "clearText": "テキストをクリア",
     "backspaceHint": "Backspace キーで選択された値に移動します。"
   },
   "placeholder": {

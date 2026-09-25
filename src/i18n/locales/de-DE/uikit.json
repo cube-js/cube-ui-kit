@@ -126,7 +126,7 @@
     "summary": "Ausgewählt: {{values}}.",
     "showOptions": "Optionen anzeigen",
     "options": "Optionen",
-    "customValue": "Benutzerdefinierter Wert",
+    "customValues": "Benutzerdefinierte Werte",
     "added": "{{value}} hinzugefügt",
     "removed": "{{value}} entfernt",
     "invalidValue": "„{{value}}“ ist kein gültiger Wert",
@@ -134,8 +134,7 @@
     "unknownValue": "„{{value}}“ ist nicht in der Liste",
     "unavailableValue": "„{{value}}“ ist nicht verfügbar",
     "limitReached": "Sie können bis zu {{count}} hinzufügen",
-    "clearAll": "Alle löschen",
-    "cleared": "Alle Werte entfernt",
+    "clearText": "Text löschen",
     "backspaceHint": "Drücken Sie die Rücktaste, um zu den ausgewählten Werten zu wechseln."
   },
   "placeholder": {
