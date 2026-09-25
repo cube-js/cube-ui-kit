@@ -606,7 +606,7 @@ function Select<T extends object>(
         mods={modifiers}
         actions={triggerActions}
       >
-        {({ showActions }) => (
+        {({ showActions, skipActionsWidthTransition }) => (
           <Item
             actions={hasTriggerActions || undefined}
             insideWrapper
@@ -617,6 +617,7 @@ function Select<T extends object>(
             ref={triggerRef}
             data-popover-trigger
             showActions={showActions}
+            skipActionsWidthTransition={skipActionsWidthTransition}
             styles={{ ...inputStyles, ...triggerStyles }}
             theme={theme}
             size={size}

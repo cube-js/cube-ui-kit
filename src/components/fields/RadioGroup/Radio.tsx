@@ -211,8 +211,8 @@ const RadioLabelElement = tasty({
  * - `shape` — the radius is owned by the button-group layout below, which keeps
  *   only the outer-side radius on the first/last radio so the group reads as one
  *   continuous control. Forwarding `shape` would have no effect.
- * - `htmlType`, `as`, `insideWrapper`, `showActions` — internal to `Item` /
- *   `ItemButton`.
+ * - `htmlType`, `as`, `insideWrapper`, `showActions`,
+ *   `skipActionsWidthTransition` — internal to `Item` / `ItemButton`.
  * - `actions`, `autoHideActions`, `preserveActionsSpace`,
  *   `disableActionsFocus` — a button radio renders as a `<label>`, and a click
  *   anywhere inside a label activates its control, so nested action buttons

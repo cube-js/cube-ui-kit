@@ -655,11 +655,12 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
         // start a drag if it were allowed to reach it.
         actionsProps={ACTIONS_EVENT_HANDLERS}
       >
-        {({ showActions }) => (
+        {({ showActions, skipActionsWidthTransition }) => (
           <TabElement
             insideWrapper
             preserveActionsSpace
             showActions={showActions}
+            skipActionsWidthTransition={skipActionsWidthTransition}
             autoHideActions={effectiveAutoHideActions}
             as="button"
             {...mergeProps(tabProps, hoverProps, focusProps, {

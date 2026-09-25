@@ -192,9 +192,14 @@ export function ItemActionIcon(props: { children: ReactNode }) {
 export interface ItemActionsWrapperProps {
   /**
    * The row or trigger the actions are laid over. Receives the resolved
-   * visibility so it can reserve space for the run while it is shown.
+   * visibility so it can reserve space for the run while it is shown, and
+   * whether the reserved width must jump rather than animate (`Item`'s
+   * `skipActionsWidthTransition`).
    */
-  children: (state: { showActions: boolean }) => ReactNode;
+  children: (state: {
+    showActions: boolean;
+    skipActionsWidthTransition: boolean;
+  }) => ReactNode;
   /**
    * The run's content. Rendering the wrapper with an empty run is supported and
    * costs nothing — the measured width is 0 — which is how a trigger keeps its
@@ -255,9 +260,14 @@ export function ItemActionsWrapper(props: ItemActionsWrapperProps) {
   const actionsRef = useRef<HTMLDivElement>(null);
   const [actionsWidth, setActionsWidth] = useState(0);
   const [areActionsVisible, setAreActionsVisible] = useState(false);
+  const [skipWidthTransition, setSkipWidthTransition] = useState(false);
+  const isMountPassRef = useRef(true);
 
   useLayoutEffect(() => {
     const el = actionsRef.current;
+    const isMountPass = isMountPassRef.current;
+
+    isMountPassRef.current = false;
 
     if (!el) return;
 
@@ -267,9 +277,19 @@ export function ItemActionsWrapper(props: ItemActionsWrapperProps) {
     const width = el.childElementCount ? Math.round(el.offsetWidth) : 0;
 
     if (width !== actionsWidth) {
+      // The width a run reports on mount is where the row starts, not a change
+      // to it. The `offsetWidth` read has already resolved the row at 0px, so
+      // publishing with the transition on made every trigger grow by its caret
+      // after mounting — and a click in that window sized FilterPicker's popover
+      // from a half-grown trigger. A run revealed later still slides open.
+      if (isMountPass) setSkipWidthTransition(true);
       setActionsWidth(width);
+    } else if (skipWidthTransition) {
+      // This pass's read resolved the row at its final width with the
+      // transition off, so turning it back on animates nothing.
+      setSkipWidthTransition(false);
     }
-  }, [actions, areActionsVisible, actionsWidth]);
+  }, [actions, areActionsVisible, actionsWidth, skipWidthTransition]);
 
   const [isFocusWithin, setIsFocusWithin] = useState(false);
   const [hasPressed, setHasPressed] = useState(false);
@@ -340,7 +360,10 @@ export function ItemActionsWrapper(props: ItemActionsWrapperProps) {
         } as CSSProperties
       }
     >
-      {children({ showActions: shouldShowActions })}
+      {children({
+        showActions: shouldShowActions,
+        skipActionsWidthTransition: skipWidthTransition,
+      })}
       {/*
         The run is rendered under whatever press context the row sits in, and a
         `PressResponder` in that context reaches EVERY `usePress` below it — so

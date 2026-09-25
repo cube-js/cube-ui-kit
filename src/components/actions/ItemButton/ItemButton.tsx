@@ -148,7 +148,10 @@ const ItemButton = forwardRef(function ItemButton(
       ? allProps.isSelected
       : undefined);
 
-  const renderButton = (showActions: boolean) => (
+  const renderButton = (
+    showActions: boolean,
+    skipActionsWidthTransition = false,
+  ) => (
     <StyledItem
       // Two different questions. `insideWrapper` is "am I laid out for a
       // sibling run", which stays true so the DOM does not restructure;
@@ -158,6 +161,7 @@ const ItemButton = forwardRef(function ItemButton(
       // reserved space for nothing would sit wider than it needs to.
       insideWrapper={withWrapper}
       showActions={showActions}
+      skipActionsWidthTransition={skipActionsWidthTransition}
       actions={actions ? true : undefined}
       {...(mergeProps(rest, actionProps) as any)}
       aria-pressed={ariaPressed}
@@ -186,7 +190,9 @@ const ItemButton = forwardRef(function ItemButton(
         disableActionsFocus={disableActionsFocus}
         isDisabled={finalIsDisabled}
       >
-        {({ showActions }) => renderButton(showActions)}
+        {({ showActions, skipActionsWidthTransition }) =>
+          renderButton(showActions, skipActionsWidthTransition)
+        }
       </ItemActionsWrapper>
     );
   }

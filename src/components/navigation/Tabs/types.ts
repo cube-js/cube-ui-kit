@@ -90,7 +90,8 @@ type OmittedItemProps =
   | 'actions' // Tab has its own actions definition
   | 'autoHideActions' // Tab has its own autoHideActions
   | 'insideWrapper' // Internal Item wrapper prop
-  | 'showActions'; // Internal Item wrapper prop
+  | 'showActions' // Internal Item wrapper prop
+  | 'skipActionsWidthTransition'; // Internal Item wrapper prop
 
 /** Common styling props for tabs - inherits style props from CubeItemProps */
 export interface TabStyleProps extends Omit<CubeItemProps, OmittedItemProps> {
