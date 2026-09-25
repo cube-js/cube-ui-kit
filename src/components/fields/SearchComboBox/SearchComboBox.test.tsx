@@ -1,7 +1,11 @@
 import { act, waitFor } from '@testing-library/react';
 import { useState } from 'react';
 
-import { renderWithRoot, userEvent } from '../../../test/index';
+import {
+  getActiveDescendant,
+  renderWithRoot,
+  userEvent,
+} from '../../../test/index';
 
 import { SearchComboBox } from './SearchComboBox';
 
@@ -121,22 +125,19 @@ describe('<SearchComboBox />', () => {
     await userEvent.type(input, 're');
 
     await waitFor(() => {
-      expect(input).toHaveAttribute('aria-activedescendant', 'ListBoxItem-red');
+      expect(getActiveDescendant(input)).toHaveAttribute('data-key', 'red');
     });
 
     await userEvent.keyboard('{ArrowDown}');
 
     await waitFor(() => {
-      expect(input).toHaveAttribute(
-        'aria-activedescendant',
-        'ListBoxItem-green',
-      );
+      expect(getActiveDescendant(input)).toHaveAttribute('data-key', 'green');
     });
 
     await userEvent.keyboard('{Home}');
 
     await waitFor(() => {
-      expect(input).toHaveAttribute('aria-activedescendant', 'ListBoxItem-red');
+      expect(getActiveDescendant(input)).toHaveAttribute('data-key', 'red');
     });
   });
 

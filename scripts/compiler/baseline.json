@@ -640,9 +640,8 @@
     "optOuts": 0
   },
   "src/components/fields/ComboBox/ComboBox.tsx": {
-    "compiled": 3,
+    "compiled": 4,
     "diagnostics": {
-      "Refs": 6,
       "Immutability": 1
     },
     "optOuts": 0
@@ -822,7 +821,7 @@
   "src/components/fields/SearchComboBox/SearchComboBox.tsx": {
     "compiled": 1,
     "diagnostics": {
-      "Refs": 8
+      "Refs": 6
     },
     "optOuts": 0
   },
