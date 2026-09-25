@@ -2,7 +2,7 @@ import { useGlobalStyles, useRawCSS } from '@tenphi/tasty';
 import { useMemo } from 'react';
 
 import { getTokens } from '../tokens';
-import { usePaletteVersion } from '../tokens/palette-config';
+import { usePaletteValue } from '../tokens/palette-config';
 
 import type { Styles } from '@tenphi/tasty';
 
@@ -284,13 +284,14 @@ export function GlobalStyles(props: GlobalStylesProps) {
   // Re-resolve the tokens whenever the palette is re-seeded at runtime (see
   // `src/tokens/palette-config.ts`). Nothing else has to re-render: every color
   // in the kit compiles to `var(--<name>-color)`, so replacing this one rule
-  // recolors the whole UI.
-  const paletteVersion = usePaletteVersion();
+  // recolors the whole UI. `getTokens()` returns a new map only when the palette
+  // changes, and taking it as the store value makes it the memo's dependency —
+  // a version listed in the deps but never read is dropped by React Compiler.
+  const tokens = usePaletteValue(getTokens);
 
-  // Merge token styles with body styles. getTokens() resolves glaze colors
-  // against the current palette config, memoized against its version.
+  // Merge token styles with body styles.
   const bodyTokenStyles = useMemo((): Styles => {
-    const styles: Styles = { ...getTokens() };
+    const styles: Styles = { ...tokens };
 
     // Add base body styles
     Object.assign(styles, BODY_STYLES);
@@ -302,7 +303,7 @@ export function GlobalStyles(props: GlobalStylesProps) {
     }
 
     return styles;
-  }, [bodyStyles, paletteVersion]);
+  }, [tokens, bodyStyles]);
 
   // Apply tokens and body styles via useGlobalStyles.
   //

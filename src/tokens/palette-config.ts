@@ -1007,6 +1007,11 @@ export function subscribePaletteConfig(listener: () => void): () => void {
 /**
  * Re-render on palette config changes. Returns the version, not the config, so
  * the snapshot is a primitive and React never warns about an uncached snapshot.
+ *
+ * The re-render alone does not refresh a value derived from the palette. Under
+ * React Compiler, a getter called beside this hook is memoized on the getter's
+ * own arguments, and a version that is only subscribed to — never read — is in
+ * none of its cache keys. Read derived values through {@link usePaletteValue}.
  */
 export function usePaletteVersion(): number {
   return useSyncExternalStore(
@@ -1014,6 +1019,23 @@ export function usePaletteVersion(): number {
     getPaletteVersion,
     getPaletteVersion,
   );
+}
+
+/**
+ * Read a value derived from the palette, and re-render when it changes.
+ *
+ * The value is the store snapshot, so it is what the caller's memoization
+ * depends on. That is the difference from calling a getter beside
+ * {@link usePaletteVersion}: the published build runs React Compiler, which keys
+ * each cache on what a component reads, so a subscribed-but-unread version drops
+ * out of every key and the derived value freezes at the first render.
+ *
+ * `read` must return the same identity until the palette changes — as
+ * `getPaletteConfig`, `getTokens` and `getColorTheme` do — or React re-renders
+ * forever.
+ */
+export function usePaletteValue<T>(read: () => T): T {
+  return useSyncExternalStore(subscribePaletteConfig, read, read);
 }
 
 /**
@@ -1041,7 +1063,12 @@ export function usePaletteConfig(): readonly [
   ResolvedPaletteConfig,
   typeof setPaletteConfig,
 ] {
+  // Still subscribed to the version: `invalidatePaletteTokens()` moves it without
+  // changing the config, and a caller reading tokens while rendering has to
+  // re-render for that too.
   usePaletteVersion();
 
-  return [getPaletteConfig(), setPaletteConfig];
+  const config = usePaletteValue(getPaletteConfig);
+
+  return [config, setPaletteConfig];
 }
