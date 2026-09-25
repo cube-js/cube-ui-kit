@@ -1,7 +1,7 @@
 import { act, waitFor, within } from '@testing-library/react';
 import { useState } from 'react';
 
-import { Field } from '../../../index';
+import { Button, Dialog, DialogTrigger, Field } from '../../../index';
 import {
   getActiveDescendant,
   render,
@@ -794,7 +794,10 @@ describe('<TagInput />', () => {
 
       expect(root).toHaveClass('custom');
       expect(root).toHaveStyle({ order: '2' });
-      expect(getByRole('textbox').closest('[data-custom]')).not.toBeNull();
+      // On the bordered box, not only on the input inside it.
+      expect(
+        container.querySelector('[data-qa="InputWrapper"]'),
+      ).toHaveAttribute('data-custom');
     });
 
     it('refuses a disabled option however it is entered', async () => {
@@ -920,6 +923,147 @@ describe('<TagInput />', () => {
       await userEvent.type(getByRole('combobox'), 'blu');
 
       expect(chipLabels(container)).toEqual(['Red']);
+    });
+  });
+
+  describe('second review fixes', () => {
+    it('still lets another popover close when its input is clicked', async () => {
+      const { getByRole, queryByTestId, getByTestId } = renderWithRoot(
+        <>
+          <DialogTrigger type="popover">
+            <Button qa="Open">Open</Button>
+            <Dialog qa="Popup">Popup</Dialog>
+          </DialogTrigger>
+          <Actions />
+        </>,
+      );
+
+      await userEvent.click(getByTestId('Open'));
+      await waitFor(() => expect(getByTestId('Popup')).toBeInTheDocument());
+
+      await userEvent.click(getByRole('combobox'));
+
+      await waitFor(() =>
+        expect(queryByTestId('Popup')).not.toBeInTheDocument(),
+      );
+    });
+
+    it('keeps its own list open when the input is clicked again', async () => {
+      const { getByRole } = renderWithRoot(<Actions />);
+      const input = getByRole('combobox');
+
+      await userEvent.type(input, 're');
+      await waitFor(() =>
+        expect(input).toHaveAttribute('aria-expanded', 'true'),
+      );
+      await userEvent.click(input);
+
+      expect(input).toHaveAttribute('aria-expanded', 'true');
+    });
+
+    it('picks the exact match even when Enter follows the typing at once', async () => {
+      const onChange = vi.fn();
+      const { getByRole } = renderWithRoot(
+        <TagInput label="Steps" onChange={onChange}>
+          <TagInput.Item key="rebuild">rebuild</TagInput.Item>
+          <TagInput.Item key="build">build</TagInput.Item>
+        </TagInput>,
+      );
+
+      await userEvent.type(getByRole('combobox'), 'build{Enter}');
+
+      expect(onChange).toHaveBeenLastCalledWith(['build']);
+    });
+
+    it('refuses a retyped option as a duplicate instead of removing it', async () => {
+      const onChange = vi.fn();
+      const { getByRole, getByText } = renderWithRoot(
+        <Actions defaultValue={['deploy']} onChange={onChange} />,
+      );
+      const input = getByRole('combobox');
+
+      await userEvent.type(input, 'deploy');
+      await waitFor(() =>
+        expect(getActiveDescendant(input)).toHaveTextContent('deploy'),
+      );
+      await userEvent.keyboard('{Enter}');
+
+      expect(onChange).not.toHaveBeenCalled();
+      expect(getByText('"deploy" is already added')).toBeInTheDocument();
+    });
+
+    it('unpicks an option the user moved to with the arrows', async () => {
+      const onChange = vi.fn();
+      const { getByRole } = renderWithRoot(
+        <Actions defaultValue={['refresh']} onChange={onChange} />,
+      );
+      const input = getByRole('combobox');
+
+      await userEvent.type(input, 're');
+      await waitFor(() =>
+        expect(getActiveDescendant(input)).toHaveTextContent('read'),
+      );
+      await userEvent.keyboard('{ArrowDown}');
+      await userEvent.keyboard('{Enter}');
+
+      expect(onChange).toHaveBeenLastCalledWith([]);
+    });
+
+    it('acts on the announced option after a close and reopen', async () => {
+      const onChange = vi.fn();
+      const { getByRole } = renderWithRoot(<Actions onChange={onChange} />);
+      const input = getByRole('combobox');
+
+      await userEvent.click(input);
+      await userEvent.keyboard('{ArrowDown}');
+      await waitFor(() =>
+        expect(getActiveDescendant(input)).toHaveTextContent('read'),
+      );
+      await userEvent.keyboard('{ArrowDown}{ArrowDown}{Escape}{ArrowDown}');
+      await waitFor(() =>
+        expect(getActiveDescendant(input)).toHaveTextContent('rebuild'),
+      );
+      await userEvent.keyboard('{Enter}');
+
+      expect(onChange).toHaveBeenLastCalledWith(['rebuild']);
+    });
+
+    it('announces a repeated rejection from a paste again', async () => {
+      const { getByRole, getByText } = render(
+        <TagInput label="Recipients" validateTag={validateEmail} />,
+      );
+      const input = getByRole('textbox') as HTMLInputElement;
+
+      await paste(input, 'a@x.com, bad');
+      const first = getByText('Enter an email address');
+
+      input.setSelectionRange(0, input.value.length);
+      await userEvent.paste('b@x.com, worse');
+
+      expect(input).toHaveValue('worse');
+      expect(getByText('Enter an email address')).not.toBe(first);
+    });
+
+    it('keeps the typed text when a prevented Tab is followed by a remove click', async () => {
+      const onChange = vi.fn();
+      const { getByRole } = render(
+        <TagInput
+          label="Tags"
+          defaultValue={['one', 'two']}
+          onChange={onChange}
+          onKeyDown={(e) => {
+            if (e.key === 'Tab') e.preventDefault();
+          }}
+        />,
+      );
+      const input = getByRole('textbox');
+
+      await userEvent.type(input, 'thr');
+      await userEvent.tab();
+      await userEvent.click(getByRole('button', { name: 'Remove one' }));
+
+      expect(onChange).toHaveBeenLastCalledWith(['two']);
+      expect(input).toHaveValue('thr');
     });
   });
 

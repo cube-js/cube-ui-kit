@@ -63,7 +63,7 @@ A multi-value field. The user types a value into a single-line input and commits
 
 **validateTag** - Runs on every value about to become a chip. A rejected value stays in the input, the field turns invalid and the message shows below it until the text is edited. A value picked from the options is not checked. Values already in `value` that fail the check are drawn in the danger theme and carry the message as their description, so an invalid entry loaded from the server stands out. Duplicates are always refused, with a message of their own.
 
-**children / items** - Options turn the input into a combobox. Typing filters them and focuses the option whose label is exactly the typed text, or else the first match. Enter or a click toggles the focused option, and the popover stays open so the user can pick several in a row. A picked option shows a checked box. Without `allowsCustomValue`, typed text must match an option by key or label, and on blur a query that matches nothing is dropped. With it, the typed text is offered as its own option after the matches, the same way [FilterListBox](/docs/forms-filterlistbox--docs) does. An option in `disabledKeys` is refused however it is entered. A chip for an option shows the option's label, while the value holds its key. The label is remembered, so it survives server-side filtering (`filter={false}` with changing `items`).
+**children / items** - Options turn the input into a combobox. Typing filters them and focuses the option whose label is exactly the typed text, or else the first match. Enter or a click toggles the focused option, and the popover stays open so the user can pick several in a row. Typed text means "add": pressing Enter on an option that is already a chip refuses it as a duplicate, and unpicking it takes the arrow keys, a click, or an empty input. A picked option shows a checked box. Without `allowsCustomValue`, typed text must match an option by key or label, and on blur a query that matches nothing is dropped. With it, the typed text is offered as its own option after the matches, the same way [FilterListBox](/docs/forms-filterlistbox--docs) does. An option in `disabledKeys` is refused however it is entered. A chip for an option shows the option's label, while the value holds its key. The label is remembered, so it survives server-side filtering (`filter={false}` with changing `items`).
 
 ### Base Properties
 
@@ -298,7 +298,7 @@ const [recipients, setRecipients] = useState(['ana@acme.com']);
 ### Keyboard Navigation
 
 - `Tab` - Moves focus from the input to the chips, then out of the field. The chips are one Tab stop, and the popover trigger is not a Tab stop. Tabbing away closes the popover and commits the typed text
-- `Enter` - Commits the typed text. With the popover open, toggles the focused option. With nothing typed and the popover closed, submits the form
+- `Enter` - Commits the typed text. With the popover open, toggles the focused option, the one `aria-activedescendant` announces; with text typed, an option that is already a chip is refused as a duplicate rather than removed. With nothing typed and the popover closed, submits the form
 - `,` (or another delimiter) - Commits the text before the caret and keeps the rest typed
 - `Escape` - Closes the popover, or clears the typed text when it is closed
 - `ArrowDown` / `ArrowUp` - Opens the popover or moves through the options

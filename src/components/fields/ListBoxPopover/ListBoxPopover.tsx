@@ -47,6 +47,14 @@ export interface ListBoxPopoverProps {
   selectedKeys?: Key[];
   /** Whether options show a checkbox. Only applies in `'multiple'` mode. */
   isCheckable?: boolean;
+  /**
+   * Whether a click inside the element `triggerRef` points at closes the
+   * popover, like any other outside click. Pass `false` when that element is
+   * where the user keeps working with the list open, such as an input that
+   * picks several options in a row. Only this popover is affected; others
+   * still close. Defaults to `true`.
+   */
+  shouldCloseOnTriggerInteraction?: boolean;
   isDisabled?: boolean;
   disabledKeys?: Iterable<Key>;
   items?: Iterable<any>;
@@ -160,6 +168,7 @@ export const ListBoxPopover = function ListBoxPopover(
     selectionMode = 'single',
     selectedKeys,
     isCheckable,
+    shouldCloseOnTriggerInteraction = true,
     isDisabled,
     disabledKeys,
     items,
@@ -230,6 +239,12 @@ export const ListBoxPopover = function ListBoxPopover(
       shouldCloseOnInteractOutside: (el) => {
         const menuTriggerEl = el.closest('[data-popover-trigger]');
         if (!menuTriggerEl) {
+          if (
+            !shouldCloseOnTriggerInteraction &&
+            triggerRef?.current?.contains(el)
+          ) {
+            return false;
+          }
           if (el.closest('[data-popover-keep]')) return false;
           // Plain interactive controls (Button, ItemButton) opt in via
           // `data-popover-dismiss` to dismiss us without losing their click

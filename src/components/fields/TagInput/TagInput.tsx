@@ -383,10 +383,17 @@ function TagInput<T extends object>(
     id: number;
     text: string;
   } | null>(null);
+  // Only ever grows: a clear and a new rejection can land in one batch.
+  const tagErrorIdRef = useRef(0);
   const setTagError = useEvent((text: string | null) => {
-    setTagErrorState((prev) =>
-      text == null ? null : { id: (prev?.id ?? 0) + 1, text },
-    );
+    if (text == null) {
+      setTagErrorState(null);
+
+      return;
+    }
+
+    tagErrorIdRef.current += 1;
+    setTagErrorState({ id: tagErrorIdRef.current, text });
   });
   const [announcement, setAnnouncement] = useState({ id: 0, text: '' });
 
@@ -595,18 +602,28 @@ function TagInput<T extends object>(
 
   // The option under virtual focus, mirrored in state for the input's
   // `aria-activedescendant`: the listbox's own state update does not re-render
-  // this component.
-  const [activeOptionKey, setActiveOptionKey] = useState<Key | null>(null);
+  // this component. It is also what Enter acts on, so Enter only ever picks the
+  // option a screen reader was told about. `term` is the text it was chosen
+  // for; `source` tells a user's own pick (arrows, a click) from focus the
+  // component placed while the text changed.
+  const [activeOption, setActiveOption] = useState<{
+    key: Key;
+    term: string;
+    source: 'auto' | 'user';
+  } | null>(null);
+  const activeOptionKey = activeOption?.key ?? null;
 
-  const moveVirtualFocus = useEvent((key: Key | null) => {
-    const listState = listStateRef.current;
+  const moveVirtualFocus = useEvent(
+    (key: Key | null, source: 'auto' | 'user', forTerm: string) => {
+      const listState = listStateRef.current;
 
-    if (!listState || key == null) return;
+      if (!listState || key == null) return;
 
-    markKeyboardFocus(listState);
-    listState.selectionManager.setFocusedKey(key);
-    setActiveOptionKey(key);
-  });
+      markKeyboardFocus(listState);
+      listState.selectionManager.setFocusedKey(key);
+      setActiveOption({ key, term: forTerm, source });
+    },
+  );
 
   // The popover is at least as wide as the input box.
   const [popoverMinWidth, setPopoverMinWidth] = useState<number>();
@@ -614,6 +631,13 @@ function TagInput<T extends object>(
   // An option whose label is exactly the typed text wins over the first match,
   // so typing "build" and pressing Enter picks "build", not "rebuild".
   const exactOptionKey = term ? findOptionKey(term) : null;
+  const visibleTargetKeys: Key[] = customTerm
+    ? [...visibleOptionKeys, customTerm]
+    : visibleOptionKeys;
+  const preferredOptionKey =
+    exactOptionKey != null && visibleTargetKeys.includes(exactOptionKey)
+      ? exactOptionKey
+      : visibleTargetKeys[0] ?? null;
   const focusTermRef = useRef<string | null>(null);
 
   // Focus the best match when the popover opens or the text changes, and
@@ -622,7 +646,7 @@ function TagInput<T extends object>(
   // collection can lag a render behind right after the text narrows.
   useLayoutEffect(() => {
     if (!shouldShowPopover) {
-      setActiveOptionKey(null);
+      setActiveOption(null);
       focusTermRef.current = null;
 
       return;
@@ -630,20 +654,18 @@ function TagInput<T extends object>(
 
     setPopoverMinWidth(wrapperRef.current?.offsetWidth);
 
-    const visibleKeys: Key[] = customTerm
-      ? [...visibleOptionKeys, customTerm]
-      : visibleOptionKeys;
-    const preferredKey =
-      exactOptionKey != null && visibleKeys.includes(exactOptionKey)
-        ? exactOptionKey
-        : visibleKeys[0] ?? null;
+    const visibleKeys = visibleTargetKeys;
+    const preferredKey = preferredOptionKey;
     const isNewTerm = !!term && focusTermRef.current !== term;
 
     focusTermRef.current = term;
 
     let attempts = 0;
+    let isCancelled = false;
 
     const tick = () => {
+      if (isCancelled) return;
+
       const listState = listStateRef.current;
 
       if (!listState) {
@@ -655,13 +677,28 @@ function TagInput<T extends object>(
       }
 
       const focused = listState.selectionManager.focusedKey;
+      const keepsFocus =
+        focused != null && visibleKeys.includes(focused) && !isNewTerm;
 
-      if (focused == null || !visibleKeys.includes(focused) || isNewTerm) {
-        moveVirtualFocus(preferredKey);
+      // Re-announced even when focus stays: after a close and reopen the list
+      // still has it, but the input no longer points at it.
+      if (keepsFocus) {
+        setActiveOption((prev) =>
+          prev?.key === focused
+            ? { ...prev, term }
+            : { key: focused, term, source: 'auto' },
+        );
+      } else {
+        moveVirtualFocus(preferredKey, 'auto', term);
       }
     };
 
     requestAnimationFrame(() => requestAnimationFrame(tick));
+
+    // Text typed after this pass was scheduled owns the focus now.
+    return () => {
+      isCancelled = true;
+    };
   }, [
     shouldShowPopover,
     visibleOptionsSignature,
@@ -840,7 +877,8 @@ function TagInput<T extends object>(
 
       if (clicked != null) {
         listStateRef.current?.selectionManager.setFocusedKey(clicked);
-        setActiveOptionKey(clicked);
+        // The pick clears the text.
+        setActiveOption({ key: clicked, term: '', source: 'user' });
       }
 
       // A click can take DOM focus off the input; keep typing where it was.
@@ -854,9 +892,10 @@ function TagInput<T extends object>(
   const isTabbingRef = useRef(false);
 
   const handleKeyDown = useEvent((e: KeyboardEvent<HTMLInputElement>) => {
-    isTabbingRef.current = e.key === 'Tab';
-
     onKeyDown?.(e);
+
+    // A Tab the consumer prevented moves no focus.
+    isTabbingRef.current = e.key === 'Tab' && !e.defaultPrevented;
 
     if (e.defaultPrevented || !isInteractive) return;
 
@@ -877,6 +916,8 @@ function TagInput<T extends object>(
       if (listState) {
         moveVirtualFocus(
           getNextVisibleKey(listState, e.key === 'ArrowDown' ? 1 : -1),
+          'user',
+          term,
         );
       }
 
@@ -889,6 +930,8 @@ function TagInput<T extends object>(
       if (listState) {
         moveVirtualFocus(
           getEdgeVisibleKey(listState, e.key === 'Home' ? 'first' : 'last'),
+          'user',
+          term,
         );
       }
 
@@ -898,13 +941,39 @@ function TagInput<T extends object>(
     if (e.key === 'Enter') {
       if (isComposingKey(e)) return;
 
-      const focusedKey = shouldShowPopover
-        ? listState?.selectionManager.focusedKey
+      // The announced option, unless the text changed since it was chosen and
+      // its focus pass has not run yet: then the best match for this text.
+      const isCurrent = activeOption != null && activeOption.term === term;
+      const targetKey = shouldShowPopover
+        ? isCurrent
+          ? activeOption.key
+          : preferredOptionKey
         : null;
 
-      if (focusedKey != null) {
+      if (targetKey != null) {
         e.preventDefault();
-        toggleOption(String(focusedKey));
+
+        const key = String(targetKey);
+
+        // Typed text means "add". An option that is already a chip is refused
+        // as a duplicate, as a comma or blur would; unpicking one takes the
+        // arrows, a click, or an empty input.
+        if (
+          term &&
+          uniqueValues.includes(key) &&
+          !(isCurrent && activeOption.source === 'user')
+        ) {
+          setTagError(
+            rejectionMessage({
+              text: getOptionLabel(key),
+              reason: 'duplicate',
+            }),
+          );
+
+          return;
+        }
+
+        toggleOption(key);
 
         return;
       }
@@ -1192,8 +1261,6 @@ function TagInput<T extends object>(
         qa={qa || 'TagInput'}
         inputRef={inputRef}
         wrapperRef={wrapperRef}
-        // Clicking back into the input keeps the list open for the next pick.
-        wrapperProps={hasOptions ? { 'data-popover-keep': '' } : undefined}
         inputProps={tagInputProps}
         mods={mods}
         icon={icon}
@@ -1257,6 +1324,8 @@ function TagInput<T extends object>(
           selectionMode="multiple"
           selectedKeys={uniqueValues}
           isCheckable
+          // Clicking back into the input keeps the list open for the next pick.
+          shouldCloseOnTriggerInteraction={false}
           isDisabled={isDisabled}
           disabledKeys={disabledKeys}
           listStateRef={listStateRef}
