@@ -280,7 +280,16 @@ module.exports = [
     // budget after #1425. CI run 35996121593 and a local build agreed to the
     // byte on this branch's previous merge (592,275 B), so the macOS/Linux gap
     // noted above did not show here. Leave 1,745 B headroom.
-    limit: '594kB',
+    //
+    // TagInput (CUB-4704): CI run 36131095996 measured 607,120 B against
+    // main's 592,255 B at b28d2cc6. +14,865 B is a new field and its first use
+    // of React Aria's tag group: of the ~71 kB minified it adds, `@react-aria/tag`
+    // and the `gridlist` and `grid` it builds on are ~35 kB, `TagInput` and
+    // `TagList` ~25 kB, and the form and textfield hooks it reaches for the
+    // first time the rest. The same run also carries the combobox
+    // `aria-activedescendant` fix, which is a few hundred bytes. Button is
+    // unchanged at 131,994 B. Leave 1,880 B headroom.
+    limit: '609kB',
   },
   {
     name: 'Tree shaking (just a Button)',

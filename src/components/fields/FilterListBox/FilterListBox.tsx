@@ -847,6 +847,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
     selectedKey,
     selectedKeys,
     allowsCustomValue,
+    setVirtualFocus,
   ]);
 
   // Keyboard navigation handler for search input

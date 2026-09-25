@@ -457,20 +457,22 @@ function TagInput<T extends object>(
     [disabledKeys],
   );
 
-  useEffect(() => {
+  // Called before the text changes (and the options with it) and when values
+  // are added, while the options still hold the labels.
+  const rememberLabels = useEvent((keys: readonly string[]) => {
     let next: Map<string, string> | null = null;
 
-    for (const value of uniqueValues) {
-      const label = collection.getItem(value)?.textValue;
+    for (const key of keys) {
+      const label = collection.getItem(key)?.textValue;
 
-      if (label && knownLabels.get(value) !== label) {
+      if (label && knownLabels.get(key) !== label) {
         if (!next) next = new Map(knownLabels);
-        next.set(value, label);
+        next.set(key, label);
       }
     }
 
     if (next) setKnownLabels(next);
-  }, [uniqueValues, collection, knownLabels]);
+  });
 
   /** The key of the option whose key or label is `text`, if any. */
   const findOptionKey = useCallback(
@@ -585,12 +587,8 @@ function TagInput<T extends object>(
   const shouldShowPopover =
     hasOptions && isInteractive && isPopoverOpen && hasResults;
 
-  useEffect(() => {
-    if (isPopoverOpen && hasOptions && !hasResults) {
-      setIsPopoverOpen(false);
-    }
-  }, [isPopoverOpen, hasOptions, hasResults]);
-
+  // With no matching option the popover hides but stays open, so it comes back
+  // as soon as the text matches again.
   const notifiedOpenRef = useRef(false);
 
   useEffect(() => {
@@ -645,8 +643,9 @@ function TagInput<T extends object>(
   // visible row. The keys come from this render's own filter: the listbox's
   // collection can lag a render behind right after the text narrows.
   useLayoutEffect(() => {
+    // `aria-activedescendant` is only set while the popover shows, so a stale
+    // active option needs no reset here; the next pass re-syncs it.
     if (!shouldShowPopover) {
-      setActiveOption(null);
       focusTermRef.current = null;
 
       return;
@@ -654,8 +653,18 @@ function TagInput<T extends object>(
 
     setPopoverMinWidth(wrapperRef.current?.offsetWidth);
 
-    const visibleKeys = visibleTargetKeys;
-    const preferredKey = preferredOptionKey;
+    // Rebuilt from the signature: the key arrays themselves are new on every
+    // render when options come from `items`. Collection keys are strings.
+    const visibleKeys: Key[] = visibleOptionsSignature
+      ? visibleOptionsSignature.split('\u0000')
+      : [];
+
+    if (customTerm) visibleKeys.push(customTerm);
+
+    const preferredKey =
+      exactOptionKey != null && visibleKeys.includes(exactOptionKey)
+        ? exactOptionKey
+        : visibleKeys[0] ?? null;
     const isNewTerm = !!term && focusTermRef.current !== term;
 
     focusTermRef.current = term;
@@ -705,6 +714,8 @@ function TagInput<T extends object>(
     customTerm,
     term,
     exactOptionKey,
+    moveVirtualFocus,
+    wrapperRef,
   ]);
 
   const setDraft = useEvent((next: string) => {
@@ -799,6 +810,7 @@ function TagInput<T extends object>(
     const messages: string[] = [];
 
     if (accepted.length) {
+      rememberLabels(accepted);
       setValues([...uniqueValues, ...accepted]);
       messages.push(
         t('tagInput.added', 'Added {{value}}', {
@@ -1018,6 +1030,9 @@ function TagInput<T extends object>(
         e.stopPropagation();
         setDraft('');
         setTagError(null);
+        // It may be open but hidden for want of a match; the full list must
+        // not appear when the text goes.
+        setIsPopoverOpen(false);
       }
     }
   });
@@ -1026,6 +1041,7 @@ function TagInput<T extends object>(
   // drop. Commit everything before the last separator and keep the rest typed.
   const handleInputChange = useEvent((next: string) => {
     setTagError(null);
+    rememberLabels(uniqueValues);
 
     const pattern = delimiterPattern(delimiters);
     const parts = pattern ? next.split(pattern) : [next];

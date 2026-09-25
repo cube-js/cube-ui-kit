@@ -1348,7 +1348,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
         setActiveOptionKey(keyToFocus);
       }
     }
-  }, [shouldShowPopover, effectiveSelectedKey]);
+  }, [shouldShowPopover, effectiveSelectedKey, setActiveOptionKey]);
 
   useLayoutEffect(() => {
     if (!shouldShowPopover) return;
