@@ -1,6 +1,7 @@
 import {
   Checkbox,
   CheckboxGroup,
+  ColorSwatchGroup,
   CommandTextArea,
   PasswordInput,
   Radio,
@@ -10,7 +11,13 @@ import {
   TextArea,
   TextInput,
 } from '../../../index';
-import { act, renderWithForm, userEvent, waitFor } from '../../../test/index';
+import {
+  act,
+  renderWithForm,
+  userEvent,
+  waitFor,
+  within,
+} from '../../../test/index';
 
 import { ResetButton } from './index';
 
@@ -29,12 +36,13 @@ const DEFAULTS = {
 /**
  * Until CUB-5075 most of these inputs rendered `form="[object Object]"`, so
  * they had no form owner and a native reset never reached them. Now React
- * Aria's `useFormReset` listener on each one writes the value it saw on its
- * first render through `onChange` when the reset event fires, as it already
- * did for `TextInput`. For a legacy field that is the value before the form
- * default applied (`[]` for `CheckboxGroup`), so `onValuesChange` sees those
- * writes. `ResetButton` resets the form a tick later, and the form default
- * must still be what every field ends up with.
+ * Aria's `useFormReset` listener on each one writes its initial value through
+ * `onChange` when the reset event fires, as it already did for `TextInput`,
+ * and `onValuesChange` sees those writes. Not all of them land on the default:
+ * `CheckboxGroup` ends at `[]`, because React Stately's `removeValue` filters
+ * the values from before the reset. `ResetButton` resets the form a tick
+ * later, so the form default must still be what every field ends up with, and
+ * no input may throw on the way (`ColorSwatchGroup` used to on `null`).
  */
 describe('native reset of a legacy form', () => {
   function Fields() {
@@ -58,18 +66,38 @@ describe('native reset of a legacy form', () => {
           <Select.Item key="one">One</Select.Item>
           <Select.Item key="two">Two</Select.Item>
         </Select>
+        {/* No default: its reset value is `null`. */}
+        <ColorSwatchGroup
+          name="swatch"
+          label="Swatch"
+          colors={['#ff0000', '#00ff00']}
+        />
         <ResetButton>Reset</ResetButton>
       </>
     );
   }
 
+  const errors: unknown[] = [];
+  const onError = (event: ErrorEvent) => errors.push(event.error);
+
+  beforeEach(() => {
+    errors.length = 0;
+    window.addEventListener('error', onError);
+  });
+
+  afterEach(() => {
+    window.removeEventListener('error', onError);
+  });
+
   it('should leave every field at its form default after ResetButton', async () => {
     const { formInstance, getByRole, container } = renderWithForm(<Fields />, {
       formProps: { defaultValues: DEFAULTS },
     });
+    const swatches = within(getByRole('radiogroup', { name: 'Swatch' }));
 
     await act(async () => {
       await userEvent.click(getByRole('checkbox', { name: 'Checkbox' }));
+      await userEvent.click(swatches.getAllByRole('radio')[0]);
       formInstance.setFieldsValue(
         {
           text: 'changed',
@@ -93,7 +121,7 @@ describe('native reset of a legacy form', () => {
       'input, textarea, select',
     );
 
-    expect(controls.length).toBeGreaterThan(9);
+    expect(controls.length).toBeGreaterThan(10);
     expect(
       Array.from(controls, (control) => control.form === formElement),
     ).not.toContain(false);
@@ -103,6 +131,7 @@ describe('native reset of a legacy form', () => {
     });
 
     await waitFor(() => expect(formInstance.isTouched).toBe(false));
+    expect(errors).toEqual([]);
     expect(formInstance.getFieldsValue()).toEqual(DEFAULTS);
     expect(getByRole('checkbox', { name: 'Checkbox' })).toBeChecked();
     expect(getByRole('switch', { name: 'Switch' })).toBeChecked();

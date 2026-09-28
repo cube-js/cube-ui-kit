@@ -330,8 +330,10 @@ export const ColorSwatchGroup = forwardRef(function ColorSwatchGroup(
     onChange?.(next);
   });
 
-  const handleChange = useEvent((nextKey: string) => {
-    const parsed = parseColor(nextKey);
+  // `null` arrives from React Aria's native form reset of a group that
+  // mounted with no value.
+  const handleChange = useEvent((nextKey: string | null) => {
+    const parsed = nextKey == null ? null : parseColor(nextKey);
 
     publish(parsed ? formatColor(parsed, format) : null);
   });
