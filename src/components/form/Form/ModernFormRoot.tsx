@@ -16,6 +16,7 @@ import {
 } from './Form';
 import { ModernControllerContext } from './modern/context';
 import { getControllerInternals } from './modern/controller';
+import { resetUnboundControls } from './reset-unbound-controls';
 
 import type { FormEvent, ReactElement, ReactNode, Ref } from 'react';
 import type { CubeFormProps, FormPresentationContextValue } from './Form';
@@ -126,6 +127,11 @@ function ModernFormRoot<T extends object>(
     otherProps.onReset?.(event);
     if (!event.defaultPrevented) {
       event.preventDefault();
+      const { fields } = form.getSnapshot();
+      resetUnboundControls(
+        event.currentTarget,
+        (name) => !!fields[name]?.active,
+      );
       form.reset();
     }
   });

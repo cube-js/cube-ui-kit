@@ -77,6 +77,13 @@ function Fields() {
         label="Swatch"
         colors={['#ff0000', '#00ff00']}
       />
+      {/* Bare controls the form does not own: the browser resets them. */}
+      <input name="token" aria-label="Token" defaultValue="initial" />
+      <input type="checkbox" name="agree" aria-label="Agree" defaultChecked />
+      <select name="plan" aria-label="Plan" defaultValue="pro">
+        <option value="free">Free</option>
+        <option value="pro">Pro</option>
+      </select>
       <ResetButton>Reset</ResetButton>
     </>
   );
@@ -94,6 +101,10 @@ function renderLegacy(nativeProps: NativeProps) {
     getValues: () => view.formInstance.getFieldsValue(),
     setValues: (values: typeof CHANGED) =>
       view.formInstance.setFieldsValue(values, true),
+    adoptDefaults: (values: typeof DEFAULTS) => {
+      view.formInstance.setInitialFieldsValue(values);
+      view.formInstance.resetFields();
+    },
   };
 }
 
@@ -114,6 +125,7 @@ function renderModern(nativeProps: NativeProps) {
     onValuesChange,
     getValues: () => form.getValues(),
     setValues: (values: typeof CHANGED) => form.setValues(values),
+    adoptDefaults: (values: typeof DEFAULTS) => form.reset({ values }),
   };
 }
 
@@ -125,8 +137,10 @@ function renderModern(nativeProps: NativeProps) {
  * `preventDefault`. A `CheckboxGroup` lands on `[]` that way, because React
  * Stately's `removeValue` filters the values from before the event. Both roots
  * reset the form once instead, in capture, before those listeners run, and
- * report the reset values to `onValuesChange` once. `action` changes nothing
- * here: it hands the browser the submit, not the form's values.
+ * report the reset values to `onValuesChange` once. That cancels the native
+ * reset, so the root runs it itself on the named controls it does not own.
+ * `action` changes nothing here: it hands the browser the submit, not the
+ * form's values.
  */
 describe.each([
   ['legacy', renderLegacy],
@@ -152,6 +166,12 @@ describe.each([
     await act(async () => {
       await userEvent.click(getByRole('checkbox', { name: 'Checkbox' }));
       await userEvent.click(swatches.getAllByRole('radio')[0]);
+      await userEvent.type(getByRole('textbox', { name: 'Token' }), '!');
+      await userEvent.click(getByRole('checkbox', { name: 'Agree' }));
+      await userEvent.selectOptions(
+        getByRole('combobox', { name: 'Plan' }),
+        'free',
+      );
       view.setValues(CHANGED);
     });
 
@@ -191,7 +211,11 @@ describe.each([
     expect(getByRole('checkbox', { name: 'One' })).toBeChecked();
     expect(getByRole('checkbox', { name: 'Two' })).not.toBeChecked();
     expect(getByRole('radio', { name: 'One' })).toBeChecked();
-    expect(container.querySelector('select')).toHaveValue('one');
+    expect(container.querySelector('select[name="select"]')).toHaveValue('one');
+    // The browser's own reset, for the controls the form does not own.
+    expect(getByRole('textbox', { name: 'Token' })).toHaveValue('initial');
+    expect(getByRole('checkbox', { name: 'Agree' })).toBeChecked();
+    expect(getByRole('combobox', { name: 'Plan' })).toHaveValue('pro');
   }
 
   describe.each<[string, NativeProps]>([
@@ -221,6 +245,30 @@ describe.each([
 
       expectDefaults(view);
     }, 10_000);
+
+    // The browser would put a checkbox back to what it rendered on mount, which
+    // is why the root cancels the native reset for the inputs it owns.
+    it('should keep bound inputs at defaults that arrived after mount', async () => {
+      const view = renderForm(nativeProps);
+      const adopted = { ...DEFAULTS, checkbox: false, switch: false };
+      const checkbox = view.getByRole('checkbox', { name: 'Checkbox' });
+      const toggle = view.getByRole('switch', { name: 'Switch' });
+
+      await act(async () => {
+        view.adoptDefaults(adopted);
+      });
+
+      await act(async () => {
+        view.container.querySelector('form')!.reset();
+        // Before React renders again, so a re-render cannot hide a native write.
+        expect(checkbox).not.toBeChecked();
+        expect(toggle).not.toBeChecked();
+      });
+
+      expect(view.getValues()).toEqual(adopted);
+      expect(checkbox).not.toBeChecked();
+      expect(toggle).not.toBeChecked();
+    });
   });
 });
 
@@ -231,11 +279,13 @@ describe('native reset of a modern action form', () => {
     const { container, getByRole } = renderWithRoot(
       <Form form={form} action="/save" method="post" onReset={onReset}>
         <TextInput name="text" label="Text" />
+        <input name="token" aria-label="Token" defaultValue="initial" />
       </Form>,
     );
 
     await act(async () => {
       await userEvent.type(getByRole('textbox', { name: 'Text' }), '!');
+      await userEvent.type(getByRole('textbox', { name: 'Token' }), '!');
     });
 
     await act(async () => {
@@ -245,5 +295,6 @@ describe('native reset of a modern action form', () => {
     expect(onReset).toHaveBeenCalledTimes(1);
     expect(form.getValues()).toEqual({ text: 'text!' });
     expect(getByRole('textbox', { name: 'Text' })).toHaveValue('text!');
+    expect(getByRole('textbox', { name: 'Token' })).toHaveValue('initial!');
   });
 });
