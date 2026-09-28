@@ -482,7 +482,6 @@ function Radio(props: CubeRadioProps, ref) {
             aria-label={ariaLabel}
             {...mergeTooltipFocusProps(inputProps, tooltipFocusProps)}
             ref={inputRef}
-            form={null}
             mods={{ button: isButton, disabled: isRadioDisabled }}
           />
         )}

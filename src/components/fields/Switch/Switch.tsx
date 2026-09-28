@@ -177,7 +177,13 @@ function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
   let inputRef = useRef(null);
   let domRef = useFocusableRef(ref, inputRef);
 
-  let { inputProps } = useSwitch(props, useToggleState(props), inputRef);
+  // React Aria writes `form` onto the input as the id of its `<form>`, so the
+  // form instance would render as `form="[object Object]"` and detach it.
+  let { inputProps } = useSwitch(
+    { ...props, form: undefined },
+    useToggleState(props),
+    inputRef,
+  );
 
   const mods = {
     checked: inputProps.checked,

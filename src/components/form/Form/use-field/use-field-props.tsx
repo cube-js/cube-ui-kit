@@ -13,6 +13,7 @@ import { getFieldKey } from '../modern/values';
 import { useFieldBinding } from './use-field-binding';
 
 import type { ValidateTrigger } from '../../../../shared/index';
+import type { ModernFormBrand } from '../backend';
 import type { FieldTypes } from '../types';
 import type { UseFieldProps } from './types';
 
@@ -34,9 +35,28 @@ const defaultValuePropsMapper = ({ value, onChange }) => ({
   onChange,
 });
 
-/** Preserve the input's prop shape while exposing a DOM-safe name. */
+/** Binding inputs `useFieldProps` always strips before it returns. */
+type StrippedFieldKey = 'field' | 'dependsOn' | 'deps';
+
+/**
+ * A modern controller is stripped at runtime, so each member of `form` that is
+ * one becomes `undefined`; a legacy instance survives, and `any` stays `any`.
+ * Distributive, so it still applies when `Props` is a type parameter.
+ */
+type ResolvedFieldForm<Form> = Form extends ModernFormBrand ? undefined : Form;
+
+/**
+ * The input's declared prop shape minus what the hook always strips: a DOM-safe
+ * name, no binding inputs, and no modern controller in `form`.
+ */
 type ResolvedFieldProps<Props> = {
-  [Key in keyof Props]: Key extends 'name' ? string | undefined : Props[Key];
+  [Key in keyof Props as Key extends StrippedFieldKey
+    ? never
+    : Key]: Key extends 'name'
+    ? string | undefined
+    : Key extends 'form'
+      ? ResolvedFieldForm<Props[Key]>
+      : Props[Key];
 };
 
 /**
@@ -196,5 +216,5 @@ export function useFieldProps<
       : domProps;
   useDebugValue(namedProps);
 
-  return namedProps as ResolvedFieldProps<Props>;
+  return namedProps as unknown as ResolvedFieldProps<Props>;
 }

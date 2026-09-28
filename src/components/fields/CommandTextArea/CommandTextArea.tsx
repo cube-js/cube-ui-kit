@@ -280,6 +280,8 @@ function CommandTextArea<T extends object>(
     onKeyDown,
     onFocus,
     onBlur,
+    // The form instance, not the DOM `form` id `useTextField` forwards.
+    form,
     ...otherProps
   } = props;
 
