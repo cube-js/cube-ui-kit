@@ -87,6 +87,17 @@ describe('native reset of a legacy form', () => {
 
     expect(formInstance.getFieldsValue()).not.toEqual(DEFAULTS);
 
+    // Every control belongs to the form, so the reset event reaches them all.
+    const formElement = container.querySelector('form');
+    const controls = container.querySelectorAll<HTMLInputElement>(
+      'input, textarea, select',
+    );
+
+    expect(controls.length).toBeGreaterThan(9);
+    expect(
+      Array.from(controls, (control) => control.form === formElement),
+    ).not.toContain(false);
+
     await act(async () => {
       await userEvent.click(getByRole('button', { name: 'Reset' }));
     });

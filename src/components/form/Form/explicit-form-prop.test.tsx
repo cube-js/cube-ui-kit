@@ -4,6 +4,8 @@ import {
   Checkbox,
   CheckboxGroup,
   ColorInput,
+  ColorPicker,
+  ColorSwatchGroup,
   ComboBox,
   CommandTextArea,
   DateInput,
@@ -14,9 +16,12 @@ import {
   FilterListBox,
   FilterPicker,
   ListBox,
+  MonthPicker,
   NumberInput,
   PasswordInput,
+  PeriodPicker,
   Picker,
+  QuarterPicker,
   Radio,
   RadioGroup,
   RangeSlider,
@@ -28,8 +33,10 @@ import {
   TextInput,
   TextInputMapper,
   TimeInput,
+  WeekPicker,
+  YearPicker,
 } from '../../../index';
-import { act, renderWithRoot, userEvent } from '../../../test/index';
+import { act, renderWithRoot, userEvent, waitFor } from '../../../test/index';
 
 import { Form, useForm } from './index';
 
@@ -45,6 +52,11 @@ const FORM_ATTACHABLE_INPUTS: [string, ReactElement<any>][] = [
     </CheckboxGroup>,
   ],
   ['ColorInput', <ColorInput label="ColorInput" />],
+  ['ColorPicker', <ColorPicker label="ColorPicker" swatches={['#ff0000']} />],
+  [
+    'ColorSwatchGroup',
+    <ColorSwatchGroup label="ColorSwatchGroup" colors={['#ff0000']} />,
+  ],
   [
     'ComboBox',
     <ComboBox label="ComboBox">
@@ -78,14 +90,17 @@ const FORM_ATTACHABLE_INPUTS: [string, ReactElement<any>][] = [
       <ListBox.Item key="one">One</ListBox.Item>
     </ListBox>,
   ],
+  ['MonthPicker', <MonthPicker label="MonthPicker" />],
   ['NumberInput', <NumberInput label="NumberInput" />],
   ['PasswordInput', <PasswordInput label="PasswordInput" />],
+  ['PeriodPicker', <PeriodPicker label="PeriodPicker" />],
   [
     'Picker',
     <Picker label="Picker">
       <Picker.Item key="one">One</Picker.Item>
     </Picker>,
   ],
+  ['QuarterPicker', <QuarterPicker label="QuarterPicker" />],
   ['RangeSlider', <RangeSlider label="RangeSlider" />],
   [
     'RadioGroup',
@@ -112,6 +127,8 @@ const FORM_ATTACHABLE_INPUTS: [string, ReactElement<any>][] = [
   ['TextInput', <TextInput label="TextInput" />],
   ['TextInputMapper', <TextInputMapper label="TextInputMapper" />],
   ['TimeInput', <TimeInput label="TimeInput" />],
+  ['WeekPicker', <WeekPicker label="WeekPicker" />],
+  ['YearPicker', <YearPicker label="YearPicker" />],
 ];
 
 /**
@@ -246,8 +263,8 @@ describe('explicit form prop', () => {
 // form instance there rendered `form="[object Object]"` and detached the input
 // from its form: Enter in it submitted nothing (CUB-5075).
 describe('form instance in the DOM', () => {
-  function formAttributes(container: HTMLElement) {
-    return [...container.querySelectorAll('[form]')].map((el) => el.outerHTML);
+  function formAttributes(root: ParentNode) {
+    return Array.from(root.querySelectorAll('[form]'), (el) => el.outerHTML);
   }
 
   describe.each(FORM_ATTACHABLE_INPUTS)('%s', (name, element) => {
@@ -286,5 +303,30 @@ describe('form instance in the DOM', () => {
 
       expect(formAttributes(container)).toEqual([]);
     });
+  });
+
+  // The swatches only mount with the popover, under the picker's form context.
+  it('should not leak a legacy instance from an open ColorPicker', async () => {
+    function Wrapper() {
+      const [form] = useForm();
+
+      return (
+        <Form form={form}>
+          <ColorPicker name="color" label="Color" swatches={['#ff0000']} />
+        </Form>
+      );
+    }
+
+    const { getByRole } = renderWithRoot(<Wrapper />);
+
+    await act(async () => {
+      await userEvent.click(getByRole('button', { name: /color/i }));
+    });
+    await waitFor(() => expect(getByRole('dialog')).toBeInTheDocument());
+
+    expect(
+      getByRole('dialog').querySelectorAll('input').length,
+    ).toBeGreaterThan(0);
+    expect(formAttributes(document.body)).toEqual([]);
   });
 });

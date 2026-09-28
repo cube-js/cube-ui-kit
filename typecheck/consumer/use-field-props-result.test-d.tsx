@@ -42,6 +42,18 @@ export function ModernControl(input: ModernControlProps) {
   return reassigned;
 }
 
+// The props type of a reusable wrapper is often a type parameter.
+export function GenericModernControl<Props extends OptionalModernControlProps>(
+  input: Props,
+) {
+  const props = useFieldProps(input);
+
+  // @ts-expect-error the controller is stripped for a generic props type too
+  props.form?.setValue('rows', [], { source: 'user' });
+
+  return props;
+}
+
 interface OptionalModernControlProps extends FieldBaseProps<string[]> {
   form?: FormController<Values>;
 }

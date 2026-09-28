@@ -350,6 +350,9 @@ export const ColorSwatchGroup = forwardRef(function ColorSwatchGroup(
   const { radioGroupProps, labelProps } = useRadioGroup(
     {
       ...props,
+      // React Aria hands `form` to every swatch's input as the id of its
+      // `<form>`, so the form instance would render as `form="[object Object]"`.
+      form: undefined,
       // Only name the group here when nothing else does: an `aria-label` set
       // unconditionally would outrank the visible label React Aria wires up.
       'aria-label': props.label ? undefined : ariaLabel ?? 'Colors',

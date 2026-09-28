@@ -39,18 +39,15 @@ const defaultValuePropsMapper = ({ value, onChange }) => ({
 type StrippedFieldKey = 'field' | 'dependsOn' | 'deps';
 
 /**
- * A modern controller is stripped at runtime, so a `form` that may hold one
- * may come back `undefined`; a legacy instance survives. `any` stays `any`.
+ * A modern controller is stripped at runtime, so each member of `form` that is
+ * one becomes `undefined`; a legacy instance survives, and `any` stays `any`.
+ * Distributive, so it still applies when `Props` is a type parameter.
  */
-type ResolvedFieldForm<Form> = 0 extends 1 & Form
-  ? Form
-  : [Extract<Form, ModernFormBrand>] extends [never]
-    ? Form
-    : Exclude<Form, ModernFormBrand> | undefined;
+type ResolvedFieldForm<Form> = Form extends ModernFormBrand ? undefined : Form;
 
 /**
- * The input's prop shape as the hook returns it at runtime: a DOM-safe name,
- * no binding inputs, and no modern controller.
+ * The input's declared prop shape minus what the hook always strips: a DOM-safe
+ * name, no binding inputs, and no modern controller in `form`.
  */
 type ResolvedFieldProps<Props> = {
   [Key in keyof Props as Key extends StrippedFieldKey
