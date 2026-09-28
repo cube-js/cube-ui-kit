@@ -43,6 +43,8 @@ function PasswordInput(
     suffix,
     multiLine,
     inputRef: propsInputRef,
+    // The form instance, not the DOM `form` id `useTextField` forwards.
+    form,
     isBuffered,
     ...rest
   } = props;

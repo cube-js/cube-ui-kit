@@ -423,8 +423,10 @@ function Select<T extends object>(
     // listing them satisfies the rule without re-running this.
   }, [state.isOpen, popoverRef, triggerRef]);
 
+  // React Aria hands `form` to `HiddenSelect` as the id of its `<form>`, so the
+  // form instance would render as `form="[object Object]"` on the `<select>`.
   let { labelProps, triggerProps, valueProps, menuProps } = useSelect(
-    props,
+    { ...props, form: undefined },
     state,
     triggerRef,
   );

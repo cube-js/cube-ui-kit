@@ -122,8 +122,10 @@ function RadioGroup(props: WithNullableValue<CubeRadioGroupProps>, ref) {
       type === 'button' || type === 'tabs' ? 'horizontal' : 'vertical';
   }
 
+  // React Aria hands `form` to every radio's input as the id of its `<form>`,
+  // so the form instance would render as `form="[object Object]"` on each.
   let { radioGroupProps: fieldProps, labelProps } = useRadioGroup(
-    { ...props, orientation },
+    { ...props, orientation, form: undefined },
     state,
   );
 

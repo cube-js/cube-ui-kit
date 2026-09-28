@@ -3,6 +3,7 @@ import { cloneElement } from 'react';
 import {
   Checkbox,
   CheckboxGroup,
+  ColorInput,
   ComboBox,
   CommandTextArea,
   DateInput,
@@ -159,6 +160,7 @@ describe('explicit form prop', () => {
         <ComboBox.Item key="one">One</ComboBox.Item>
       </ComboBox>,
     ],
+    ['ColorInput', <ColorInput label="ColorInput" />],
     ['CommandTextArea', <CommandTextArea label="CommandTextArea" />],
     ['DateInput', <DateInput label="DateInput" />],
     ['DatePicker', <DatePicker label="DatePicker" />],
@@ -202,6 +204,12 @@ describe('explicit form prop', () => {
       </RadioGroup>,
     ],
     [
+      'RadioGroup (buttons)',
+      <RadioGroup label="RadioGroup" type="button">
+        <Radio value="one">One</Radio>
+      </RadioGroup>,
+    ],
+    [
       'Select',
       <Select label="Select">
         <Select.Item key="one">One</Select.Item>
@@ -228,19 +236,28 @@ describe('explicit form prop', () => {
 
       expect(formInstance.getFieldInstance('field')).toBeDefined();
     });
-  });
 
-  it('should not leak the form prop into the DOM', () => {
-    let formInstance!: CubeFormInstance<any>;
+    // React Aria writes `form` onto native inputs as the id of their `<form>`,
+    // so a form instance there rendered `form="[object Object]"` and detached
+    // the input from its form: Enter in it submitted nothing (CUB-5075).
+    it('should not leak the form instance into the DOM', () => {
+      function Wrapper() {
+        const [form] = useForm();
 
-    function Wrapper() {
-      [formInstance] = useForm();
+        return (
+          <>
+            {cloneElement(element, { form, name: 'explicit' })}
+            <Form form={form}>{cloneElement(element, { name: 'nested' })}</Form>
+            {cloneElement(element, { form })}
+          </>
+        );
+      }
 
-      return <TextInput qa="Text" form={formInstance} name="text" />;
-    }
+      const { container } = renderWithRoot(<Wrapper />);
 
-    const { getByRole } = renderWithRoot(<Wrapper />);
-
-    expect(getByRole('textbox')).not.toHaveAttribute('form');
+      expect(
+        [...container.querySelectorAll('[form]')].map((el) => el.outerHTML),
+      ).toEqual([]);
+    });
   });
 });

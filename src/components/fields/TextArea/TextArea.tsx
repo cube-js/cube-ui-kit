@@ -53,6 +53,8 @@ function TextArea(
     inputProps: userInputProps,
     inputRef: propsInputRef,
     value,
+    // The form instance, not the DOM `form` id `useTextField` forwards.
+    form,
     isBuffered,
     ...otherProps
   } = props;

@@ -201,10 +201,13 @@ function Checkbox(
 
   const toggleState = useToggleState(props);
 
+  // React Aria writes `form` onto the input as the id of its `<form>`, so the
+  // form instance would render as `form="[object Object]"` and detach it.
   let { inputProps } = groupState
     ? useCheckboxGroupItem(
         {
           ...props,
+          form: undefined,
           // Value is optional for standalone checkboxes, but required for CheckboxGroup items;
           // it's passed explicitly here to avoid typescript error (requires strictNullChecks disabled).
           value: props.value || '',
@@ -219,6 +222,7 @@ function Checkbox(
     : useCheckbox(
         {
           ...props,
+          form: undefined,
           ...(typeof label === 'string' && label.trim()
             ? { 'aria-label': label }
             : {}),

@@ -82,7 +82,12 @@ function CheckboxGroup(props: WithNullableValue<CubeCheckboxGroupProps>, ref) {
   let styles = extractStyles(otherProps, CONTAINER_STYLES);
 
   let state = useCheckboxGroupState(props);
-  let { groupProps, labelProps } = useCheckboxGroup(props, state);
+  // React Aria hands `form` to every item's input as the id of its `<form>`,
+  // so the form instance would render as `form="[object Object]"` on each.
+  let { groupProps, labelProps } = useCheckboxGroup(
+    { ...props, form: undefined },
+    state,
+  );
 
   let radioGroup = (
     <CheckGroupElement
