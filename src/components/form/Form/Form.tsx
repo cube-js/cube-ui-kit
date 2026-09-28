@@ -31,6 +31,7 @@ import { useValidationProps } from '../validation/index';
 import { isModernFormController } from './backend';
 import { ModernControllerContext } from './modern/context';
 import { ModernFormRoot } from './ModernFormRoot';
+import { resetUnboundControls } from './reset-unbound-controls';
 import { FieldTypes } from './types';
 import { CubeFormData, CubeFormInstance, useForm } from './use-form';
 
@@ -316,10 +317,16 @@ function LegacyFormRoot<T extends FieldTypes>(
   // started with through `onChange` and ignores `preventDefault`; a
   // `CheckboxGroup` even lands on `[]`. Reset the form once instead, in
   // capture, before those listeners run, as `ModernFormRoot` does, and report
-  // the result to `onValuesChange`. With `action` the browser owns the reset.
+  // the result to `onValuesChange`. Also with `action`: it hands only the submit
+  // to the browser, and the form still owns every bound value. Controls it does
+  // not own get the browser's reset from `resetUnboundControls`.
   const handleReset = useEvent((event: FormEvent<HTMLFormElement>) => {
     event.stopPropagation();
     event.preventDefault();
+    resetUnboundControls(
+      event.currentTarget,
+      (name) => form.getFieldInstance(name) != null,
+    );
     form.resetFields();
     form.onValuesChange?.(form.getFormData());
   });
@@ -375,7 +382,7 @@ function LegacyFormRoot<T extends FieldTypes>(
         horizontal: isHorizontal,
       }}
       onSubmit={onSubmitCallback}
-      onResetCapture={otherProps.action == null ? handleReset : undefined}
+      onResetCapture={handleReset}
     >
       <ModernControllerContext.Provider value={null}>
         <FormPresentationContext.Provider value={presentation}>
