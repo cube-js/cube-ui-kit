@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 
 // =============================================================================
 // Types
@@ -47,39 +47,33 @@ export function useTabEditing({
 }: UseTabEditingOptions = {}): UseTabEditingResult {
   const [editingKey, setEditingKey] = useState<string | null>(null);
 
-  const startEditing = useCallback(
-    (key: string) => {
-      onChange?.(key);
-      setEditingKey(key);
-    },
-    [onChange],
-  );
+  const startEditing = (key: string) => {
+    onChange?.(key);
+    setEditingKey(key);
+  };
 
-  const cancelEditing = useCallback(() => {
+  const cancelEditing = () => {
     setEditingKey(null);
-  }, []);
+  };
 
-  const submitEditing = useCallback(
-    (
-      key: string,
-      newTitle: string,
-      tabOnTitleChange?: (title: string) => void,
-    ) => {
-      const trimmed = newTitle.trim();
+  const submitEditing = (
+    key: string,
+    newTitle: string,
+    tabOnTitleChange?: (title: string) => void,
+  ) => {
+    const trimmed = newTitle.trim();
 
-      if (trimmed) {
-        // Tab-level callback takes precedence
-        if (tabOnTitleChange) {
-          tabOnTitleChange(trimmed);
-        } else if (onTitleChange) {
-          onTitleChange(key, trimmed);
-        }
+    if (trimmed) {
+      // Tab-level callback takes precedence
+      if (tabOnTitleChange) {
+        tabOnTitleChange(trimmed);
+      } else if (onTitleChange) {
+        onTitleChange(key, trimmed);
       }
+    }
 
-      setEditingKey(null);
-    },
-    [onTitleChange],
-  );
+    setEditingKey(null);
+  };
 
   return {
     editingKey,

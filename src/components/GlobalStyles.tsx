@@ -1,5 +1,4 @@
 import { useGlobalStyles, useRawCSS } from '@tenphi/tasty';
-import { useMemo } from 'react';
 
 import { getTokens } from '../tokens';
 import { usePaletteValue } from '../tokens/palette-config';
@@ -289,21 +288,9 @@ export function GlobalStyles(props: GlobalStylesProps) {
   // a version listed in the deps but never read is dropped by React Compiler.
   const tokens = usePaletteValue(getTokens);
 
-  // Merge token styles with body styles.
-  const bodyTokenStyles = useMemo((): Styles => {
-    const styles: Styles = { ...tokens };
-
-    // Add base body styles
-    Object.assign(styles, BODY_STYLES);
-
-    // Override with custom body styles if provided
-    // Keys are passed through as-is (tasty handles both camelCase and kebab-case)
-    if (bodyStyles) {
-      Object.assign(styles, bodyStyles);
-    }
-
-    return styles;
-  }, [tokens, bodyStyles]);
+  // Merge token styles with the base body styles, then the custom ones. Keys
+  // are passed through as-is (tasty handles both camelCase and kebab-case).
+  const bodyTokenStyles: Styles = { ...tokens, ...BODY_STYLES, ...bodyStyles };
 
   // Apply tokens and body styles via useGlobalStyles.
   //

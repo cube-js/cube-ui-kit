@@ -1,5 +1,5 @@
 import { Styles, Tokens } from '@tenphi/tasty';
-import { RefObject, useMemo, useRef } from 'react';
+import { RefObject, useRef } from 'react';
 import {
   AriaSliderThumbOptions,
   useHover,
@@ -57,26 +57,15 @@ export function SliderThumb(props: SliderThumbProps) {
     state.values[index] === state.getThumbMaxValue(index) &&
     state.values[index] === state.getThumbMinValue(index);
 
-  const mods = useMemo(() => {
-    return {
-      hovered: isHovered,
-      dragged: isDragging,
-      focused: !isDragging && isFocused,
-      disabled: isDisabled,
-      collapsed: isCollapsed,
-      stuck: isStuck,
-      ...getValidationMods({ isInvalid, isValid }),
-    };
-  }, [
-    isHovered,
-    isCollapsed,
-    isStuck,
-    isDragging,
-    isFocused,
-    isDisabled,
-    isInvalid,
-    isValid,
-  ]);
+  const mods = {
+    hovered: isHovered,
+    dragged: isDragging,
+    focused: !isDragging && isFocused,
+    disabled: isDisabled,
+    collapsed: isCollapsed,
+    stuck: isStuck,
+    ...getValidationMods({ isInvalid, isValid }),
+  };
 
   return (
     <SliderThumbElement

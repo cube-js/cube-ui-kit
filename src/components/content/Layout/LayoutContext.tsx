@@ -228,8 +228,20 @@ export function LayoutProvider({
       registerOverlayPanel,
       dismissOverlayPanels,
     }),
-    // Only hasTransition and minContentSize can change - all other values are stable useEvent callbacks
-    [hasTransition, minContentSize],
+    // Only hasTransition and minContentSize can change - the callbacks are
+    // stable useEvent ones, listed so React Compiler can preserve the memo.
+    [
+      registerPanel,
+      unregisterPanel,
+      updatePanelSize,
+      setDragging,
+      markReady,
+      updateContainerSize,
+      hasTransition,
+      minContentSize,
+      registerOverlayPanel,
+      dismissOverlayPanels,
+    ],
   );
 
   // State context - changes when state updates
@@ -259,7 +271,7 @@ export function LayoutProvider({
       isPanelContainerReady,
       setPanelContainer,
     }),
-    [isPanelContainerReady],
+    [isPanelContainerReady, setPanelContainer],
   );
 
   return (

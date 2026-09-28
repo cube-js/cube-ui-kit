@@ -1,6 +1,6 @@
 import { useControlledState } from '@react-stately/utils';
 import { filterBaseProps, OUTER_STYLES, tasty } from '@tenphi/tasty';
-import { forwardRef, useMemo } from 'react';
+import { forwardRef } from 'react';
 
 import { useEvent } from '../../../_internal/hooks';
 import { useFormatter, useI18n } from '../../../i18n';
@@ -177,29 +177,23 @@ function Pagination(
     goTo(Number(value));
   });
 
-  const pageItems = useMemo(
-    () =>
-      type === 'numbers' && isCountable
-        ? getPaginationRange({
-            page: info.page,
-            totalPages,
-            siblingCount,
-            boundaryCount,
-          })
-        : [],
-    [type, isCountable, info.page, totalPages, siblingCount, boundaryCount],
-  );
+  const pageItems =
+    type === 'numbers' && isCountable
+      ? getPaginationRange({
+          page: info.page,
+          totalPages,
+          siblingCount,
+          boundaryCount,
+        })
+      : [];
 
   // `type="select"` materializes one entry per page, so it is only safe for
   // small page counts. Above the cap we fall back to `compact`, which reads the
   // same but renders a single label.
-  const selectEntries = useMemo(
-    () =>
-      type === 'select' && isCountable && totalPages <= 200
-        ? Array.from({ length: totalPages }, (_, i) => i + 1)
-        : null,
-    [type, isCountable, totalPages],
-  );
+  const selectEntries =
+    type === 'select' && isCountable && totalPages <= 200
+      ? Array.from({ length: totalPages }, (_, i) => i + 1)
+      : null;
 
   const isFirst = info.page <= 1;
   const isLast = isCountable ? info.page >= totalPages : !hasNextPage;

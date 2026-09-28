@@ -1,4 +1,4 @@
-import React, { RefObject, useCallback, useEffect, useRef } from 'react';
+import React, { RefObject, useEffect, useRef } from 'react';
 
 export interface UseCompositeFocusProps {
   wrapperRef: RefObject<HTMLElement>;
@@ -38,7 +38,7 @@ export function useCompositeFocus({
   const enteredRef = useRef(false);
   const rafRef = useRef<number | null>(null);
 
-  const checkFocus = useCallback(() => {
+  const checkFocus = () => {
     const entered = enteredRef.current;
 
     enteredRef.current = false;
@@ -65,9 +65,9 @@ export function useCompositeFocus({
         onBlur?.();
       }
     }
-  }, [wrapperRef, popoverRef, onFocus, onBlur, isDisabled]);
+  };
 
-  const scheduleCheck = useCallback(() => {
+  const scheduleCheck = () => {
     // Cancel any pending check
     if (rafRef.current !== null) {
       cancelAnimationFrame(rafRef.current);
@@ -78,12 +78,12 @@ export function useCompositeFocus({
       rafRef.current = null;
       checkFocus();
     });
-  }, [checkFocus]);
+  };
 
-  const handleFocus = useCallback(() => {
+  const handleFocus = () => {
     enteredRef.current = true;
     scheduleCheck();
-  }, [scheduleCheck]);
+  };
 
   // Cleanup on unmount
   useEffect(() => {

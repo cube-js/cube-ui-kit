@@ -12,7 +12,6 @@ import {
   forwardRef,
   useContext,
   useImperativeHandle,
-  useMemo,
   useRef,
 } from 'react';
 import { AriaTooltipProps, useTooltip } from 'react-aria';
@@ -208,13 +207,11 @@ function Tooltip(
   // Extract primary placement direction for consistent styling
   const placementDirection = placement?.split(' ')[0] || placement || 'top';
 
-  const mods = useMemo(() => {
-    return {
-      material: isMaterial,
-      light: isLight,
-      open: isShown ?? isOpen,
-    };
-  }, [isMaterial, isShown, isOpen, isLight]);
+  const mods = {
+    material: isMaterial,
+    light: isLight,
+    open: isShown ?? isOpen,
+  };
 
   // Update position when tooltip becomes visible
   useLayoutEffect(() => {

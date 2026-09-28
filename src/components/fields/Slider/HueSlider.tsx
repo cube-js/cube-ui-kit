@@ -1,5 +1,5 @@
 import { Styles, Tokens } from '@tenphi/tasty';
-import { forwardRef, useCallback, useMemo, useState } from 'react';
+import { forwardRef, useState } from 'react';
 
 import { CubeSliderProps, Slider } from './Slider';
 
@@ -68,45 +68,33 @@ function HueSlider(
   const currentHue = value ?? internalValue;
 
   // Handle onChange to update internal state in uncontrolled mode
-  const handleChange = useCallback(
-    (newValue: number) => {
-      if (value === undefined) {
-        setInternalValue(newValue);
-      }
-      onChange?.(newValue);
-    },
-    [value, onChange],
-  );
+  const handleChange = (newValue: number) => {
+    if (value === undefined) {
+      setInternalValue(newValue);
+    }
+    onChange?.(newValue);
+  };
 
   // Create dynamic thumb tokens with the current hue color
-  const thumbTokens: Tokens = useMemo(
-    () => ({
-      '#slider-thumb': `okhsl(${currentHue} ${HUE_SATURATION}% ${HUE_LIGHTNESS}%)`,
-      '#slider-thumb-hovered': `okhsl(${currentHue} ${HUE_SATURATION}% ${HUE_LIGHTNESS - 10}%)`,
-      ...userThumbTokens,
-    }),
-    [currentHue, userThumbTokens],
-  );
-  const thumbStyles: Styles = useMemo(
-    () => ({
-      outline: {
-        '': '1bw #slider-thumb-hovered.0',
-        focused: '1bw #slider-thumb-hovered',
-      },
-      ...userThumbStyles,
-    }),
-    [userThumbStyles],
-  );
+  const thumbTokens: Tokens = {
+    '#slider-thumb': `okhsl(${currentHue} ${HUE_SATURATION}% ${HUE_LIGHTNESS}%)`,
+    '#slider-thumb-hovered': `okhsl(${currentHue} ${HUE_SATURATION}% ${HUE_LIGHTNESS - 10}%)`,
+    ...userThumbTokens,
+  };
+  const thumbStyles: Styles = {
+    outline: {
+      '': '1bw #slider-thumb-hovered.0',
+      focused: '1bw #slider-thumb-hovered',
+    },
+    ...userThumbStyles,
+  };
 
-  const trackStyles: Styles = useMemo(
-    () => ({
-      ...(orientation === 'vertical'
-        ? verticalTrackStyles
-        : horizontalTrackStyles),
-      ...userTrackStyles,
-    }),
-    [orientation, userTrackStyles],
-  );
+  const trackStyles: Styles = {
+    ...(orientation === 'vertical'
+      ? verticalTrackStyles
+      : horizontalTrackStyles),
+    ...userTrackStyles,
+  };
 
   return (
     <Slider

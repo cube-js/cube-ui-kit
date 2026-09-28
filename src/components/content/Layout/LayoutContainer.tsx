@@ -7,13 +7,7 @@ import {
   Styles,
   tasty,
 } from '@tenphi/tasty';
-import {
-  ForwardedRef,
-  forwardRef,
-  HTMLAttributes,
-  ReactNode,
-  useMemo,
-} from 'react';
+import { ForwardedRef, forwardRef, HTMLAttributes, ReactNode } from 'react';
 
 import { useCombinedRefs } from '../../../utils/react';
 import { extractStyles } from '../../../utils/styles';
@@ -87,9 +81,10 @@ function LayoutContainer(
 
   const hasInnerStyles = Object.keys(innerStyles).length > 0;
 
-  const finalStyles = useMemo(() => {
-    return mergeStyles(styles, hasInnerStyles ? { Inner: innerStyles } : null);
-  }, [styles, hasInnerStyles, innerStyles]);
+  const finalStyles = mergeStyles(
+    styles,
+    hasInnerStyles ? { Inner: innerStyles } : null,
+  );
 
   const combinedInnerRef = useCombinedRefs(innerRefProp);
 

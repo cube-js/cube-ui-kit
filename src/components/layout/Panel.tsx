@@ -12,7 +12,7 @@ import {
   Styles,
   tasty,
 } from '@tenphi/tasty';
-import { ForwardedRef, forwardRef, ReactNode, useMemo } from 'react';
+import { ForwardedRef, forwardRef, ReactNode } from 'react';
 
 const PanelElement = tasty({
   as: 'section',
@@ -142,16 +142,13 @@ function Panel(props: CubePanelProps, ref: ForwardedRef<HTMLDivElement>) {
     }
   });
 
-  const appliedMods = useMemo(
-    () => ({
-      floating: isFloating,
-      stretched: isStretched,
-      card: isCard,
-      flex: isFlex,
-      ...mods,
-    }),
-    [isStretched, isCard, mods],
-  );
+  const appliedMods = {
+    floating: isFloating,
+    stretched: isStretched,
+    card: isCard,
+    flex: isFlex,
+    ...mods,
+  };
 
   return (
     <PanelElement

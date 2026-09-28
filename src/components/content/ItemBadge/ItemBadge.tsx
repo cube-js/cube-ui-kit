@@ -5,7 +5,6 @@ import {
   HTMLAttributes,
   ReactNode,
   RefObject,
-  useMemo,
 } from 'react';
 
 import {
@@ -145,55 +144,39 @@ export const ItemBadge = forwardRef<HTMLDivElement, CubeItemBadgeProps>(
     );
 
     // Build modifiers
-    const finalMods = useMemo(
-      () => ({
-        checkmark: hasCheckmark,
-        selected: isSelected,
-        loading: isLoading,
-        'has-label': !!children,
-        context: !!contextType,
-        ...mods,
-      }),
-      [hasCheckmark, isSelected, isLoading, children, contextType, mods],
-    );
+    const finalMods = {
+      checkmark: hasCheckmark,
+      selected: isSelected,
+      loading: isLoading,
+      'has-label': !!children,
+      context: !!contextType,
+      ...mods,
+    };
 
     // An explicit label always wins; a tooltip only fills in the accessible
     // name when there isn't one. Rich tooltip content can't serve as a name, so
     // only plain strings are used here.
-    const ariaLabel = useMemo(() => {
-      if (rest['aria-label']) {
-        return rest['aria-label'];
-      }
-      if (typeof tooltip === 'string') {
-        return tooltip;
-      }
-      if (typeof tooltip === 'object' && typeof tooltip.title === 'string') {
-        return tooltip.title;
-      }
-      return undefined;
-    }, [tooltip, rest]);
+    const ariaLabel =
+      rest['aria-label'] ||
+      (typeof tooltip === 'string'
+        ? tooltip
+        : typeof tooltip === 'object' && typeof tooltip.title === 'string'
+          ? tooltip.title
+          : undefined);
 
     // Determine if we should show tooltip (icon-only badges)
     const showTooltip = !children && tooltip;
 
     // Extract tooltip content and props
-    const tooltipContent = useMemo(() => {
-      if (typeof tooltip === 'string') {
-        return tooltip;
-      }
-      if (typeof tooltip === 'object' && tooltip.title) {
-        return tooltip.title;
-      }
-      return undefined;
-    }, [tooltip]);
+    const tooltipContent =
+      typeof tooltip === 'string'
+        ? tooltip
+        : typeof tooltip === 'object' && tooltip.title
+          ? tooltip.title
+          : undefined;
 
-    const tooltipProps = useMemo(() => {
-      if (typeof tooltip === 'object') {
-        const { title, ...rest } = tooltip;
-        return rest;
-      }
-      return {};
-    }, [tooltip]);
+    const { title: _title, ...tooltipProps } =
+      typeof tooltip === 'object' ? tooltip : {};
 
     const finalType = type;
 

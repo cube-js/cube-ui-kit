@@ -174,7 +174,7 @@ export function useTinyScrollbar(
   }, [enabled, ref, updateScrollState]);
 
   // Calculate vertical handle position and size
-  const calculateVHandle = useCallback(() => {
+  const calculateVHandle = () => {
     const { scrollHeight, clientHeight, scrollTop, hasOverflowY } = scrollState;
 
     if (!hasOverflowY || !enabled) {
@@ -195,10 +195,10 @@ export function useTinyScrollbar(
     const handleTop = 1 + Math.round(availableTrack * scrollRatio);
 
     return { top: handleTop, height: handleHeight };
-  }, [scrollState, enabled]);
+  };
 
   // Calculate horizontal handle position and size
-  const calculateHHandle = useCallback(() => {
+  const calculateHHandle = () => {
     const { scrollWidth, clientWidth, scrollLeft, hasOverflowX } = scrollState;
 
     if (!hasOverflowX || !enabled) {
@@ -216,7 +216,7 @@ export function useTinyScrollbar(
     const handleLeft = 1 + Math.round(availableTrack * scrollRatio);
 
     return { left: handleLeft, width: handleWidth };
-  }, [scrollState, enabled]);
+  };
 
   const vHandle = calculateVHandle();
   const hHandle = calculateHHandle();

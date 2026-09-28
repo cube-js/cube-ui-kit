@@ -16,7 +16,6 @@ import {
   useEffect,
   useImperativeHandle,
   useLayoutEffect,
-  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -730,42 +729,26 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
       (isEditing ||
         (isFocusVisible && isFocusWithin && isEditable && !ringSuppressed));
 
-    const mods = useMemo(
-      () => ({
-        editing: isEditing,
-        editable: isEditable,
-        focused: showFocusRing,
-        disabled: isDisabled,
-        'read-only': isReadOnly,
-        styled: isStyled,
-        empty: !displayedValue,
-        ...customMods,
-      }),
-      [
-        isEditing,
-        isEditable,
-        showFocusRing,
-        isDisabled,
-        isReadOnly,
-        isStyled,
-        displayedValue,
-        customMods,
-      ],
-    );
+    const mods = {
+      editing: isEditing,
+      editable: isEditable,
+      focused: showFocusRing,
+      disabled: isDisabled,
+      'read-only': isReadOnly,
+      styled: isStyled,
+      empty: !displayedValue,
+      ...customMods,
+    };
 
-    const mergedStyles = useMemo<Styles | undefined>(() => {
-      if (!stylesProp && !inputStyles) return undefined;
-      if (!inputStyles) return stylesProp;
-      const existingInput =
-        (stylesProp?.Input as Styles | undefined) ?? undefined;
-
-      return {
-        ...stylesProp,
-        Input: existingInput
-          ? { ...existingInput, ...inputStyles }
-          : inputStyles,
-      };
-    }, [stylesProp, inputStyles]);
+    const existingInput = stylesProp?.Input as Styles | undefined;
+    const mergedStyles: Styles | undefined = inputStyles
+      ? {
+          ...stylesProp,
+          Input: existingInput
+            ? { ...existingInput, ...inputStyles }
+            : inputStyles,
+        }
+      : stylesProp;
 
     const extractedStyles = extractStyles(
       otherProps,
@@ -773,13 +756,10 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
       mergedStyles,
     );
 
-    const tokens = useMemo(
-      () => ({
-        ...customTokens,
-        '$input-width': inputWidth != null ? `${inputWidth}px` : 'auto',
-      }),
-      [customTokens, inputWidth],
-    );
+    const tokens = {
+      ...customTokens,
+      '$input-width': inputWidth != null ? `${inputWidth}px` : 'auto',
+    };
 
     // In display mode, render the placeholder when the value is empty so the
     // component remains visible / clickable. Consumers using `renderDisplay`

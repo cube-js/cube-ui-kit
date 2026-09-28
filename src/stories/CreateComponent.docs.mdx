@@ -450,7 +450,9 @@ For input components that need to integrate with forms, see the [Field documenta
 
 7. **Keep it simple when appropriate**: Not every component needs all features - use what makes sense for your use case
 
-8. **Use named React imports**: Import `useCallback`, `useState`, `forwardRef` etc. directly from `'react'` instead of using `React.useCallback(...)`.
+8. **Use named React imports**: Import `useState`, `useRef`, `forwardRef` etc. directly from `'react'` instead of using `React.useState(...)`.
+
+   **Skip `useMemo` and `useCallback` for performance.** React Compiler memoizes compiled components and hooks at build time, so derived values, `mods` objects, context values and handlers are plain expressions. Keep a manual memo only where identity is part of the contract: a callback ref, an effect dependency, a `useSyncExternalStore` subscription, or a value created once per mount.
 
 9. **Use `useEvent` for stable callbacks**: When a callback doesn't need to trigger re-renders, prefer `useEvent` from `src/_internal/hooks/use-event` for a stable identity that always calls the latest implementation:
 

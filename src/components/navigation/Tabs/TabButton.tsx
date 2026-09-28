@@ -448,36 +448,20 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
     }
   });
 
-  const mods = useMemo(
-    () => ({
-      type: effectiveType,
-      placement,
-      active: isActive,
-      deletable: isDeletable,
-      disabled: isDisabled,
-      editing: isEditing,
-      hovered: isHovered,
-      focused: isFocused,
-      'focus-visible': effectiveFocusVisible,
-      draggable: isDraggable,
-      dragging: isDragging,
-      'drop-pending': isDropPending,
-    }),
-    [
-      effectiveType,
-      placement,
-      isActive,
-      isDeletable,
-      isDisabled,
-      isEditing,
-      isHovered,
-      isFocused,
-      effectiveFocusVisible,
-      isDraggable,
-      isDragging,
-      isDropPending,
-    ],
-  );
+  const mods = {
+    type: effectiveType,
+    placement,
+    active: isActive,
+    deletable: isDeletable,
+    disabled: isDisabled,
+    editing: isEditing,
+    hovered: isHovered,
+    focused: isFocused,
+    'focus-visible': effectiveFocusVisible,
+    draggable: isDraggable,
+    dragging: isDragging,
+    'drop-pending': isDropPending,
+  };
 
   // Scroll active tab into view
   useEffect(() => {

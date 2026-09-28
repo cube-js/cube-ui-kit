@@ -18,7 +18,6 @@ import {
   ReactElement,
   ReactNode,
   RefObject,
-  useCallback,
   useEffect,
   useLayoutEffect,
   useMemo,
@@ -295,6 +294,84 @@ function textLabel(node: ReactNode): string | undefined {
 
 // Safari reports the Enter that confirms an IME composition with
 // `isComposing: false`, but still with the composition key code.
+const textCollator = new Intl.Collator(undefined, { sensitivity: 'base' });
+// Numbers in order: 2 before 10.
+const textSorter = new Intl.Collator(undefined, { numeric: true });
+
+function isSameText(a: string, b: string) {
+  return textCollator.compare(a, b) === 0;
+}
+
+function compareText(a: string, b: string) {
+  return textSorter.compare(a, b);
+}
+
+/**
+ * The popover's rows: the options, then the user's own values and the typed
+ * text. Those go in a section of their own when there are options to set them
+ * apart from.
+ */
+function withCustomOptions(
+  children: ReactNode,
+  {
+    customKeys,
+    customTerm,
+    hasOptionRows,
+    hasSections,
+    optionsLabel,
+    customValuesLabel,
+  }: {
+    customKeys: string[];
+    customTerm: string | null;
+    hasOptionRows: boolean;
+    hasSections: boolean;
+    optionsLabel: string;
+    customValuesLabel: string;
+  },
+) {
+  if (!customTerm && !customKeys.length) return children;
+
+  const customOptions = customKeys.map((key) => (
+    <Item key={key} textValue={key}>
+      {key}
+    </Item>
+  ));
+
+  if (customTerm) {
+    customOptions.push(
+      <Item key={customTerm} textValue={customTerm}>
+        {customTerm}
+      </Item>,
+    );
+  }
+
+  if (!hasOptionRows) {
+    return customOptions;
+  }
+
+  const customSection = (
+    <BaseSection key="__custom_values__" aria-label={customValuesLabel}>
+      {customOptions}
+    </BaseSection>
+  );
+
+  // A section cannot nest in another one, so options that already come in
+  // sections only get the custom section appended.
+  if (hasSections) {
+    return [
+      ...(Array.isArray(children) ? children : [children]),
+      customSection,
+    ];
+  }
+
+  return [
+    <BaseSection key="__options__" aria-label={optionsLabel}>
+      {children as never}
+    </BaseSection>,
+    customSection,
+  ];
+}
+
 function isComposingKey(e: KeyboardEvent<HTMLInputElement>) {
   return e.nativeEvent.isComposing || e.keyCode === 229;
 }
@@ -429,10 +506,7 @@ function TagInput<T extends object>(
   );
   // A controlled value may repeat an entry; the chips are keyed by value, so
   // render each one once.
-  const uniqueValues = useMemo(
-    () => [...new Set((values ?? []).map(String))],
-    [values],
-  );
+  const uniqueValues = [...new Set((values ?? []).map(String))];
 
   // ---- typed text ---------------------------------------------------------
   const [draft, setDraftState] = useControlledState<string>(
@@ -489,21 +563,9 @@ function TagInput<T extends object>(
   const collection = localCollectionState.collection;
 
   const { contains } = useFilter({ sensitivity: 'base' });
-  const { isEqual: isSameText, compare: compareText } = useMemo(() => {
-    const collator = new Intl.Collator(undefined, { sensitivity: 'base' });
-    // Numbers in order: 2 before 10.
-    const sorter = new Intl.Collator(undefined, { numeric: true });
 
-    return {
-      isEqual: (a: string, b: string) => collator.compare(a, b) === 0,
-      compare: (a: string, b: string) => sorter.compare(a, b),
-    };
-  }, []);
-
-  const textFilterFn = useMemo<FilterFn>(
-    () => (filter === false ? () => true : filter || contains),
-    [filter, contains],
-  );
+  const textFilterFn: FilterFn =
+    filter === false ? () => true : filter || contains;
 
   const [isFilterActive, setIsFilterActive] = useState(false);
   const term = draft.trim();
@@ -514,30 +576,18 @@ function TagInput<T extends object>(
     () => new Map(),
   );
 
-  const getOptionLabel = useCallback(
-    (key: string) =>
-      collection.getItem(key)?.textValue || knownLabels.get(key) || key,
-    [collection, knownLabels],
-  );
+  const getOptionLabel = (key: string) =>
+    collection.getItem(key)?.textValue || knownLabels.get(key) || key;
 
   // What a chip reads as, and what announcements name it by: a string label
   // the chip is given, then the option's own.
-  const getTagLabel = useCallback(
-    (key: string) =>
-      textLabel(tagProps?.(key)?.children) ?? getOptionLabel(key),
-    [tagProps, getOptionLabel],
-  );
+  const getTagLabel = (key: string) =>
+    textLabel(tagProps?.(key)?.children) ?? getOptionLabel(key);
 
   // A locked chip stays put: no remove button, Delete or unpick.
-  const isTagLocked = useCallback(
-    (key: string) => !!tagProps?.(key)?.isDisabled,
-    [tagProps],
-  );
+  const isTagLocked = (key: string) => !!tagProps?.(key)?.isDisabled;
 
-  const disabledKeySet = useMemo(
-    () => new Set([...(disabledKeys ?? [])].map(String)),
-    [disabledKeys],
-  );
+  const disabledKeySet = new Set([...(disabledKeys ?? [])].map(String));
 
   // Called before the text changes (and the options with it) and when values
   // are added, while the options still hold the labels.
@@ -557,52 +607,42 @@ function TagInput<T extends object>(
   });
 
   /** The key of the option whose key or label is `text`, if any. */
-  const findOptionKey = useCallback(
-    (text: string): string | null => {
-      if (!hasOptions) return null;
+  const findOptionKey = (text: string): string | null => {
+    if (!hasOptions) return null;
 
-      for (const node of collection) {
-        const nodes = node.type === 'section' ? [...node.childNodes] : [node];
+    for (const node of collection) {
+      const nodes = node.type === 'section' ? [...node.childNodes] : [node];
 
-        for (const child of nodes) {
-          if (child.type !== 'item') continue;
+      for (const child of nodes) {
+        if (child.type !== 'item') continue;
 
-          if (
-            String(child.key) === text ||
-            isSameText(child.textValue || '', text)
-          ) {
-            return String(child.key);
-          }
+        if (
+          String(child.key) === text ||
+          isSameText(child.textValue || '', text)
+        ) {
+          return String(child.key);
         }
       }
+    }
 
-      return null;
-    },
-    [collection, hasOptions, isSameText],
-  );
+    return null;
+  };
 
-  const optionFilterFn = useCallback(
-    (nodes: Iterable<any>) => {
-      if (!isFilterActive || !term) return nodes;
+  const optionFilterFn = (nodes: Iterable<any>) => {
+    if (!isFilterActive || !term) return nodes;
 
-      return filterCollectionNodes(nodes, term, textFilterFn);
-    },
-    [isFilterActive, term, textFilterFn],
-  );
+    return filterCollectionNodes(nodes, term, textFilterFn);
+  };
 
-  const visibleOptionKeys = useMemo(() => {
-    if (!hasOptions) return [];
+  const visibleOptionKeys: Key[] = [];
 
-    const keys: Key[] = [];
-
+  if (hasOptions) {
     collectVisibleKeys(
       optionFilterFn(collection),
-      keys,
+      visibleOptionKeys,
       disabledKeys ? new Set(disabledKeys) : undefined,
     );
-
-    return keys;
-  }, [hasOptions, optionFilterFn, collection, disabledKeys]);
+  }
 
   // Custom values unpicked in the list during this visit. They stay listed,
   // unchecked, until focus leaves the field: the row does not vanish under the
@@ -615,36 +655,26 @@ function TagInput<T extends object>(
   // where they were picked. Only with `allowsCustomValue`: without it an
   // unpicked value could not be added back. Sorted, so toggling one does not
   // move it.
-  const customValueKeys = useMemo(() => {
-    if (!hasOptions || !allowsCustomValue) return [];
-
-    const keys = new Set(
-      [...uniqueValues, ...unpickedCustomValues].filter(
-        (value) => collection.getItem(value) == null && !knownLabels.has(value),
-      ),
-    );
-
-    return [...keys].sort(compareText);
-  }, [
-    hasOptions,
-    allowsCustomValue,
-    uniqueValues,
-    unpickedCustomValues,
-    collection,
-    knownLabels,
-    compareText,
-  ]);
+  const customValueKeys =
+    hasOptions && allowsCustomValue
+      ? [
+          ...new Set(
+            [...uniqueValues, ...unpickedCustomValues].filter(
+              (value) =>
+                collection.getItem(value) == null && !knownLabels.has(value),
+            ),
+          ),
+        ].sort(compareText)
+      : [];
 
   // The typed text narrows them as it narrows the options, even when the
   // options are filtered on the server (`filter={false}`): these rows are
   // this component's own.
-  const visibleCustomKeys = useMemo(() => {
-    if (!isFilterActive || !term) return customValueKeys;
-
-    const matches = typeof filter === 'function' ? filter : contains;
-
-    return customValueKeys.filter((key) => matches(key, term));
-  }, [customValueKeys, isFilterActive, term, filter, contains]);
+  const matchesTerm = typeof filter === 'function' ? filter : contains;
+  const visibleCustomKeys =
+    isFilterActive && term
+      ? customValueKeys.filter((key) => matchesTerm(key, term))
+      : customValueKeys;
 
   // The typed text as a pickable row, when it would add something new.
   const customTerm =
@@ -657,64 +687,14 @@ function TagInput<T extends object>(
       ? term
       : null;
 
-  const popoverChildren = useMemo(() => {
-    if (!customTerm && !visibleCustomKeys.length) return children;
-
-    const customOptions = visibleCustomKeys.map((key) => (
-      <Item key={key} textValue={key}>
-        {key}
-      </Item>
-    ));
-
-    if (customTerm) {
-      customOptions.push(
-        <Item key={customTerm} textValue={customTerm}>
-          {customTerm}
-        </Item>,
-      );
-    }
-
-    if (!visibleOptionKeys.length) {
-      return customOptions;
-    }
-
-    const customSection = (
-      <BaseSection
-        key="__custom_values__"
-        aria-label={t('tagInput.customValues', 'Custom values')}
-      >
-        {customOptions}
-      </BaseSection>
-    );
-
-    // A section cannot nest in another one, so options that already come in
-    // sections only get the custom section appended.
-    const hasSections = [...collection].some((node) => node.type === 'section');
-
-    if (hasSections) {
-      return [
-        ...(Array.isArray(children) ? children : [children]),
-        customSection,
-      ];
-    }
-
-    return [
-      <BaseSection
-        key="__options__"
-        aria-label={t('tagInput.options', 'Options')}
-      >
-        {children as never}
-      </BaseSection>,
-      customSection,
-    ];
-  }, [
+  const popoverChildren = withCustomOptions(children, {
+    customKeys: visibleCustomKeys,
     customTerm,
-    visibleCustomKeys,
-    children,
-    visibleOptionKeys.length,
-    collection,
-    t,
-  ]);
+    hasOptionRows: visibleOptionKeys.length > 0,
+    hasSections: [...collection].some((node) => node.type === 'section'),
+    optionsLabel: t('tagInput.options', 'Options'),
+    customValuesLabel: t('tagInput.customValues', 'Custom values'),
+  });
 
   const hasResults =
     visibleOptionKeys.length > 0 ||
@@ -1371,45 +1351,29 @@ function TagInput<T extends object>(
   });
 
   // ---- chips --------------------------------------------------------------
-  const tags = useMemo<TagListEntry[]>(
-    () =>
-      uniqueValues.map((value) => {
-        const ownProps = tagProps?.(value);
-        const isOption =
-          collection.getItem(value) != null || knownLabels.has(value);
-        const result = !isOption && validateTag ? validateTag(value) : true;
-        const label = textLabel(ownProps?.children) ?? getOptionLabel(value);
+  const tags: TagListEntry[] = uniqueValues.map((value) => {
+    const ownProps = tagProps?.(value);
+    const isOption =
+      collection.getItem(value) != null || knownLabels.has(value);
+    const result = !isOption && validateTag ? validateTag(value) : true;
+    const label = textLabel(ownProps?.children) ?? getOptionLabel(value);
 
-        return {
-          key: value,
-          label,
-          // Put in words as well as in color, for the chip's description.
-          invalidMessage:
-            typeof result === 'string'
-              ? result
-              : result === false
-                ? t(
-                    'tagInput.invalidValue',
-                    '"{{value}}" is not a valid value',
-                    {
-                      value: label,
-                    },
-                  )
-                : undefined,
-          tagProps: ownProps,
-          isDisabled: !!ownProps?.isDisabled,
-        };
-      }),
-    [
-      uniqueValues,
-      collection,
-      knownLabels,
-      validateTag,
-      getOptionLabel,
-      tagProps,
-      t,
-    ],
-  );
+    return {
+      key: value,
+      label,
+      // Put in words as well as in color, for the chip's description.
+      invalidMessage:
+        typeof result === 'string'
+          ? result
+          : result === false
+            ? t('tagInput.invalidValue', '"{{value}}" is not a valid value', {
+                value: label,
+              })
+            : undefined,
+      tagProps: ownProps,
+      isDisabled: !!ownProps?.isDisabled,
+    };
+  });
 
   const effectiveIsInvalid = tagError ? true : isInvalid;
   const hasRemovableTags = tags.some((tag) => !tag.isDisabled);
@@ -1418,11 +1382,10 @@ function TagInput<T extends object>(
   const hasBackspaceHint = isInteractive && hasRemovableTags;
 
   // A locked value's option stays checked but cannot be unpicked.
-  const optionDisabledKeys = useMemo(() => {
-    const locked = tags.filter((tag) => tag.isDisabled).map((tag) => tag.key);
-
-    return locked.length ? [...disabledKeySet, ...locked] : disabledKeys;
-  }, [tags, disabledKeySet, disabledKeys]);
+  const lockedKeys = tags.filter((tag) => tag.isDisabled).map((tag) => tag.key);
+  const optionDisabledKeys = lockedKeys.length
+    ? [...disabledKeySet, ...lockedKeys]
+    : disabledKeys;
 
   // ---- input --------------------------------------------------------------
   const { labelProps, inputProps } = useTextField(

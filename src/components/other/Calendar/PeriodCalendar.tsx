@@ -6,7 +6,7 @@ import {
   toCalendarDate,
   today,
 } from '@internationalized/date';
-import { KeyboardEvent, ReactElement, useMemo, useState } from 'react';
+import { KeyboardEvent, ReactElement, useState } from 'react';
 import { DateValue, useDateFormatter } from 'react-aria';
 
 import { useI18n } from '../../../i18n';
@@ -68,7 +68,7 @@ export function PeriodCalendar(props: CubePeriodCalendarProps) {
   let monthFormatter = useDateFormatter({ month: 'short', timeZone: 'UTC' });
 
   let selected = value ? toCalendarDate(value) : null;
-  let todayDate = useMemo(() => today(getLocalTimeZone()), []);
+  let todayDate = today(getLocalTimeZone());
 
   // A date inside the period the keyboard currently focuses. Drives both the
   // roving tab stop and which year / decade the panel shows.

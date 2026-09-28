@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 
 import { useEvent } from '../../../_internal/hooks';
 
@@ -125,6 +125,63 @@ function normalizeControlledChecked(
 }
 
 /**
+ * Derive `{ checked, halfChecked }` from the source-of-truth `checked` set
+ * by walking the tree bottom-up:
+ *
+ * - A parent is considered fully checked iff every eligible descendant
+ *   leaf is checked.
+ * - A parent is half-checked iff at least one eligible descendant is
+ *   checked or half-checked, but not all.
+ *
+ * Ineligible nodes (disabled / opt-out) are ignored when computing the
+ * parent's state — they neither force a parent into the unchecked nor
+ * half state.
+ */
+function resolveCheckedSets({
+  isCheckable,
+  sourceChecked,
+  ownHalfChecked,
+  treeData,
+  index,
+}: {
+  isCheckable: boolean;
+  sourceChecked: Set<string>;
+  /**
+   * If the consumer passed the object shape (`{ checked, halfChecked }`),
+   * they own the half-checked set and we use it as-is. With the array
+   * shape we still need to derive `halfChecked` ourselves — the consumer
+   * only provides `checked`, so parents should still light up
+   * indeterminate when only some descendants are checked.
+   */
+  ownHalfChecked: Set<string> | null;
+  treeData: CubeTreeNodeData[];
+  index: TreeIndex;
+}): Pick<CheckboxTree, 'checkedSet' | 'halfCheckedSet'> {
+  if (!isCheckable) {
+    return {
+      checkedSet: new Set<string>(),
+      halfCheckedSet: new Set<string>(),
+    };
+  }
+
+  if (ownHalfChecked) {
+    return {
+      checkedSet: new Set(sourceChecked),
+      halfCheckedSet: new Set(ownHalfChecked),
+    };
+  }
+
+  const checked = new Set(sourceChecked);
+  const half = new Set<string>();
+
+  for (const root of treeData) {
+    deriveCheckedState(root, index, checked, half);
+  }
+
+  return { checkedSet: checked, halfCheckedSet: half };
+}
+
+/**
  * Local hook implementing AntD-style cascading checkbox state.
  *
  * - `checked` and `halfChecked` are always derived together from a single
@@ -145,18 +202,8 @@ export function useCheckboxTree(opts: UseCheckboxTreeOptions): CheckboxTree {
     onCheck,
   } = opts;
 
-  /**
-   * Normalize the controlled `checkedKeys` prop into stable `Set` instances.
-   * Memoized on the `checkedKeys` reference so unrelated re-renders don't
-   * invalidate the derivation memo below — `normalizeControlledChecked`
-   * allocates fresh `Set`s each call, which would otherwise force
-   * `deriveCheckedState` to re-walk the entire tree on every render in
-   * controlled mode.
-   */
-  const controlled = useMemo(
-    () => normalizeControlledChecked(checkedKeys),
-    [checkedKeys],
-  );
+  /** Normalize the controlled `checkedKeys` prop into `Set` instances. */
+  const controlled = normalizeControlledChecked(checkedKeys);
   const isControlled = controlled != null;
   const wantsObjectShape = checkedKeys != null && !Array.isArray(checkedKeys);
 
@@ -168,58 +215,14 @@ export function useCheckboxTree(opts: UseCheckboxTreeOptions): CheckboxTree {
     ? controlled!.checked
     : uncontrolledChecked;
 
-  /**
-   * Derive `{ checked, halfChecked }` from the source-of-truth `checked` set
-   * by walking the tree bottom-up:
-   *
-   * - A parent is considered fully checked iff every eligible descendant
-   *   leaf is checked.
-   * - A parent is half-checked iff at least one eligible descendant is
-   *   checked or half-checked, but not all.
-   *
-   * Ineligible nodes (disabled / opt-out) are ignored when computing the
-   * parent's state — they neither force a parent into the unchecked nor
-   * half state.
-   */
-  const { checkedSet, halfCheckedSet } = useMemo(() => {
-    if (!isCheckable) {
-      return {
-        checkedSet: new Set<string>(),
-        halfCheckedSet: new Set<string>(),
-      };
-    }
-
-    /**
-     * If the consumer passed the object shape (`{ checked, halfChecked }`),
-     * they own the half-checked set and we use it as-is. With the array
-     * shape we still need to derive `halfChecked` ourselves — the consumer
-     * only provides `checked`, so parents should still light up
-     * indeterminate when only some descendants are checked.
-     */
-    if (isControlled && wantsObjectShape) {
-      return {
-        checkedSet: new Set(sourceChecked),
-        halfCheckedSet: new Set(controlled!.halfChecked),
-      };
-    }
-
-    const checked = new Set(sourceChecked);
-    const half = new Set<string>();
-
-    for (const root of treeData) {
-      deriveCheckedState(root, index, checked, half);
-    }
-
-    return { checkedSet: checked, halfCheckedSet: half };
-  }, [
+  const { checkedSet, halfCheckedSet } = resolveCheckedSets({
     isCheckable,
-    isControlled,
-    wantsObjectShape,
     sourceChecked,
-    controlled,
+    ownHalfChecked:
+      isControlled && wantsObjectShape ? controlled!.halfChecked : null,
     treeData,
     index,
-  ]);
+  });
 
   const toggle = useEvent((key: string) => {
     const node = index.byKey.get(key);
@@ -238,7 +241,7 @@ export function useCheckboxTree(opts: UseCheckboxTreeOptions): CheckboxTree {
      * whose "fully checked" status only exists in the derived set. Seeding
      * from `sourceChecked` causes a sibling subtree's parent key to be
      * missing from `next`, which would incorrectly drop the grandparent
-     * from the stored state (the next render's `useMemo` self-corrects,
+     * from the stored state (the next render's derivation self-corrects,
      * but the intermediate stored value violates the cascade invariant).
      */
     const next = new Set(checkedSet);

@@ -292,25 +292,20 @@ function useComboBoxFiltering({
 
   const { contains } = useFilter({ sensitivity: 'base' });
 
-  const textFilterFn = useMemo<FilterFn>(
-    () => (filter === false ? () => true : filter || contains),
-    [filter, contains],
-  );
+  const textFilterFn: FilterFn =
+    filter === false ? () => true : filter || contains;
 
   // Create a filter function for collection nodes
-  const filterFn = useCallback(
-    (nodes: Iterable<any>) => {
-      const term = effectiveInputValue.trim();
+  const filterFn = (nodes: Iterable<any>) => {
+    const term = effectiveInputValue.trim();
 
-      // Don't filter if not active or no search term
-      if (!isFilterActive || !term) {
-        return nodes;
-      }
+    // Don't filter if not active or no search term
+    if (!isFilterActive || !term) {
+      return nodes;
+    }
 
-      return filterCollectionNodes(nodes, term, textFilterFn);
-    },
-    [isFilterActive, effectiveInputValue, textFilterFn],
-  );
+    return filterCollectionNodes(nodes, term, textFilterFn);
+  };
 
   return {
     filterFn,

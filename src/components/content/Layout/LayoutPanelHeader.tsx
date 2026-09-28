@@ -4,7 +4,7 @@ import {
   ContainerStyleProps,
   tasty,
 } from '@tenphi/tasty';
-import { ForwardedRef, forwardRef, ReactNode, useCallback } from 'react';
+import { ForwardedRef, forwardRef, ReactNode } from 'react';
 
 import { useI18n } from '../../../i18n';
 import { CloseIcon } from '../../../icons/CloseIcon';
@@ -66,14 +66,14 @@ function LayoutPanelHeader(
   const panelContext = useLayoutPanelContext();
 
   // Close handler that works for both panel and dialog modes
-  const handleClose = useCallback(() => {
+  const handleClose = () => {
     // Call user-provided onClose callback
     onClose?.();
     // Update panel's internal open state
     panelContext?.onOpenChange(false);
     // If in dialog mode, also close the dialog
     dialogContext?.onClose?.();
-  }, [onClose, panelContext, dialogContext]);
+  };
 
   const closeAction = isClosable ? (
     <ItemAction
