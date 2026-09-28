@@ -316,7 +316,8 @@ function LegacyFormRoot<T extends FieldTypes>(
   // started with through `onChange` and ignores `preventDefault`; a
   // `CheckboxGroup` even lands on `[]`. Reset the form once instead, in
   // capture, before those listeners run, as `ModernFormRoot` does, and report
-  // the result to `onValuesChange`. With `action` the browser owns the reset.
+  // the result to `onValuesChange`. Also with `action`: it hands only the submit
+  // to the browser, and the form still owns every bound value.
   const handleReset = useEvent((event: FormEvent<HTMLFormElement>) => {
     event.stopPropagation();
     event.preventDefault();
@@ -375,7 +376,7 @@ function LegacyFormRoot<T extends FieldTypes>(
         horizontal: isHorizontal,
       }}
       onSubmit={onSubmitCallback}
-      onResetCapture={otherProps.action == null ? handleReset : undefined}
+      onResetCapture={handleReset}
     >
       <ModernControllerContext.Provider value={null}>
         <FormPresentationContext.Provider value={presentation}>

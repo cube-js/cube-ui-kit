@@ -120,6 +120,8 @@ function ModernFormRoot<T extends object>(
   const handleReset = useEvent((event: FormEvent<HTMLFormElement>) => {
     // React Aria's native reset listeners do not honor preventDefault. Handle
     // controller resets in capture, before they can write mount-time defaults.
+    // Also with `action`: it hands only the submit to the browser, and
+    // `Form.Reset` resets through this event.
     event.stopPropagation();
     otherProps.onReset?.(event);
     if (!event.defaultPrevented) {
@@ -165,8 +167,7 @@ function ModernFormRoot<T extends object>(
         horizontal: orientation === 'horizontal',
       }}
       onSubmit={otherProps.action == null ? handleSubmit : undefined}
-      onReset={otherProps.action == null ? undefined : otherProps.onReset}
-      onResetCapture={otherProps.action == null ? handleReset : undefined}
+      onResetCapture={handleReset}
     >
       <FormContext.Provider value={EMPTY_LEGACY_CONTEXT}>
         <ModernControllerContext.Provider value={form}>
