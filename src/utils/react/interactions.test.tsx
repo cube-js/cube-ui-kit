@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { useFocus } from './interactions';
@@ -53,6 +53,22 @@ describe('useFocus with onlyVisible', () => {
 
     await user.keyboard('a');
     expect(screen.getByTestId('only')).toHaveAttribute('data-focused');
+  });
+
+  it('keeps focus hidden when focus moves after typing in a text input', async () => {
+    const user = userEvent.setup();
+    render(
+      <>
+        <input data-qa="field" />
+        <Probe qa="target" />
+      </>,
+    );
+
+    await user.click(screen.getByTestId('field'));
+    await user.keyboard('a');
+    act(() => screen.getByTestId('target').focus());
+
+    expect(screen.getByTestId('target')).not.toHaveAttribute('data-focused');
   });
 
   it('does not re-render unfocused elements when the input modality switches', async () => {

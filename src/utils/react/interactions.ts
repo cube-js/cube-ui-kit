@@ -2,7 +2,7 @@ import {
   isFocusVisible as getIsFocusVisible,
   useFocusVisibleListener,
 } from '@react-aria/interactions';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useFocus as reactAriaUseFocus } from 'react-aria';
 
 export function useFocus(
@@ -19,13 +19,17 @@ export function useFocus(
     setIsFocused(false);
   }
 
-  // The input modality is global, so only a focused element takes it into state:
-  // updating it on every button re-rendered all of them on each keyboard/pointer
-  // switch.
+  // Keep the listener's value, not the raw global modality: react-aria ignores keys
+  // typed in a text input, so focus moved after typing there shows no ring.
+  let focusVisibleRef = useRef(getIsFocusVisible());
+  // Only a focused element takes it into state: updating state on every button
+  // re-rendered all of them on each keyboard/pointer switch.
   let isListening = onlyVisible && isFocused;
 
   useFocusVisibleListener(
     (visible) => {
+      focusVisibleRef.current = visible;
+
       if (isListening) {
         setIsFocusVisible(visible);
       }
@@ -39,7 +43,7 @@ export function useFocus(
       setIsFocused(focused);
 
       if (focused) {
-        setIsFocusVisible(getIsFocusVisible());
+        setIsFocusVisible(focusVisibleRef.current);
       }
     },
   });
