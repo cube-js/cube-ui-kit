@@ -33,16 +33,26 @@ const DEFAULTS = {
   select: 'one',
 };
 
+const CHANGED = {
+  text: 'changed',
+  textarea: 'changed',
+  password: 'changed',
+  command: 'changed',
+  switch: false,
+  checkboxes: ['two'],
+  radio: 'two',
+  select: 'two',
+};
+
 /**
  * Until CUB-5075 most of these inputs rendered `form="[object Object]"`, so
- * they had no form owner and a native reset never reached them. Now React
- * Aria's `useFormReset` listener on each one writes its initial value through
- * `onChange` when the reset event fires, as it already did for `TextInput`,
- * and `onValuesChange` sees those writes. Not all of them land on the default:
- * `CheckboxGroup` ends at `[]`, because React Stately's `removeValue` filters
- * the values from before the reset. `ResetButton` resets the form a tick
- * later, so the form default must still be what every field ends up with, and
- * no input may throw on the way (`ColorSwatchGroup` used to on `null`).
+ * they had no form owner and a native reset never reached them. With a form
+ * owner, React Aria's `useFormReset` listener on each input would write the
+ * value it started with through `onChange` on every native reset, and ignore
+ * `preventDefault`. A `CheckboxGroup` lands on `[]` that way, because React
+ * Stately's `removeValue` filters the values from before the event. The legacy
+ * root now resets the form once, in capture, before those listeners run, and
+ * reports the reset values to `onValuesChange`.
  */
 describe('native reset of a legacy form', () => {
   function Fields() {
@@ -66,7 +76,7 @@ describe('native reset of a legacy form', () => {
           <Select.Item key="one">One</Select.Item>
           <Select.Item key="two">Two</Select.Item>
         </Select>
-        {/* No default: its reset value is `null`. */}
+        {/* No default: React Aria's reset value for it is `null`. */}
         <ColorSwatchGroup
           name="swatch"
           label="Swatch"
@@ -89,36 +99,24 @@ describe('native reset of a legacy form', () => {
     window.removeEventListener('error', onError);
   });
 
-  // Drives eleven inputs through user-event, which can outrun the 5s default
-  // on a busy runner.
-  it('should leave every field at its form default after ResetButton', async () => {
-    const { formInstance, getByRole, container } = renderWithForm(<Fields />, {
-      formProps: { defaultValues: DEFAULTS },
+  async function renderChanged() {
+    const onValuesChange = vi.fn();
+    const view = renderWithForm(<Fields />, {
+      formProps: { defaultValues: DEFAULTS, onValuesChange },
     });
+    const { formInstance, getByRole, container } = view;
     const swatches = within(getByRole('radiogroup', { name: 'Swatch' }));
 
     await act(async () => {
       await userEvent.click(getByRole('checkbox', { name: 'Checkbox' }));
       await userEvent.click(swatches.getAllByRole('radio')[0]);
-      formInstance.setFieldsValue(
-        {
-          text: 'changed',
-          textarea: 'changed',
-          password: 'changed',
-          command: 'changed',
-          switch: false,
-          checkboxes: ['two'],
-          radio: 'two',
-          select: 'two',
-        },
-        true,
-      );
+      formInstance.setFieldsValue(CHANGED, true);
     });
 
     expect(formInstance.getFieldsValue()).not.toEqual(DEFAULTS);
 
     // Every control belongs to the form, so the reset event reaches them all.
-    const formElement = container.querySelector('form');
+    const formElement = container.querySelector('form')!;
     const controls = container.querySelectorAll<HTMLInputElement>(
       'input, textarea, select',
     );
@@ -128,16 +126,53 @@ describe('native reset of a legacy form', () => {
       Array.from(controls, (control) => control.form === formElement),
     ).not.toContain(false);
 
-    await act(async () => {
-      await userEvent.click(getByRole('button', { name: 'Reset' }));
-    });
+    onValuesChange.mockClear();
 
-    await waitFor(() => expect(formInstance.isTouched).toBe(false));
+    return { ...view, formElement, onValuesChange };
+  }
+
+  function expectDefaults({
+    formInstance,
+    getByRole,
+    container,
+    onValuesChange,
+  }: Awaited<ReturnType<typeof renderChanged>>) {
     expect(errors).toEqual([]);
     expect(formInstance.getFieldsValue()).toEqual(DEFAULTS);
+    // One report of the reset, and none of React Aria's per-input writes.
+    expect(onValuesChange).toHaveBeenCalledTimes(1);
+    expect(onValuesChange).toHaveBeenLastCalledWith(
+      expect.objectContaining(DEFAULTS),
+    );
     expect(getByRole('checkbox', { name: 'Checkbox' })).toBeChecked();
     expect(getByRole('switch', { name: 'Switch' })).toBeChecked();
+    expect(getByRole('checkbox', { name: 'One' })).toBeChecked();
+    expect(getByRole('checkbox', { name: 'Two' })).not.toBeChecked();
     expect(getByRole('radio', { name: 'One' })).toBeChecked();
     expect(container.querySelector('select')).toHaveValue('one');
+  }
+
+  // Drives eleven inputs through user-event, which can outrun the 5s default
+  // on a busy runner.
+  it('should reset every field to its form default through ResetButton', async () => {
+    const view = await renderChanged();
+
+    await act(async () => {
+      await userEvent.click(view.getByRole('button', { name: 'Reset' }));
+    });
+
+    await waitFor(() => expect(view.formInstance.isTouched).toBe(false));
+    expectDefaults(view);
+  }, 10_000);
+
+  it('should reset every field to its form default through form.reset()', async () => {
+    const view = await renderChanged();
+
+    await act(async () => {
+      view.formElement.reset();
+    });
+
+    expect(view.formInstance.isTouched).toBe(false);
+    expectDefaults(view);
   }, 10_000);
 });

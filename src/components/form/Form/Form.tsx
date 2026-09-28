@@ -10,6 +10,7 @@ import {
 import {
   ContextType,
   createContext,
+  FormEvent,
   FormHTMLAttributes,
   forwardRef,
   ReactElement,
@@ -19,6 +20,7 @@ import {
   useRef,
 } from 'react';
 
+import { useEvent } from '../../../_internal/hooks/use-event';
 import { Provider, useProviderProps } from '../../../provider';
 import { FormBaseProps } from '../../../shared/index';
 import { timeout } from '../../../utils/promise';
@@ -309,6 +311,19 @@ function LegacyFormRoot<T extends FieldTypes>(
     onValuesChange,
   });
 
+  // A native reset (`ResetButton` is `type="reset"`) reaches React Aria's
+  // `useFormReset` listener on every input, which writes the value the input
+  // started with through `onChange` and ignores `preventDefault`; a
+  // `CheckboxGroup` even lands on `[]`. Reset the form once instead, in
+  // capture, before those listeners run, as `ModernFormRoot` does, and report
+  // the result to `onValuesChange`. With `action` the browser owns the reset.
+  const handleReset = useEvent((event: FormEvent<HTMLFormElement>) => {
+    event.stopPropagation();
+    event.preventDefault();
+    form.resetFields();
+    form.onValuesChange?.(form.getFormData());
+  });
+
   let styles = extractStyles(otherProps, CONTAINER_STYLES);
 
   if (labelWidth) {
@@ -360,6 +375,7 @@ function LegacyFormRoot<T extends FieldTypes>(
         horizontal: isHorizontal,
       }}
       onSubmit={onSubmitCallback}
+      onResetCapture={otherProps.action == null ? handleReset : undefined}
     >
       <ModernControllerContext.Provider value={null}>
         <FormPresentationContext.Provider value={presentation}>
