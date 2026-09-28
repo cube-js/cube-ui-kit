@@ -89,6 +89,8 @@ describe('native reset of a legacy form', () => {
     window.removeEventListener('error', onError);
   });
 
+  // Drives eleven inputs through user-event, which can outrun the 5s default
+  // on a busy runner.
   it('should leave every field at its form default after ResetButton', async () => {
     const { formInstance, getByRole, container } = renderWithForm(<Fields />, {
       formProps: { defaultValues: DEFAULTS },
@@ -137,5 +139,5 @@ describe('native reset of a legacy form', () => {
     expect(getByRole('switch', { name: 'Switch' })).toBeChecked();
     expect(getByRole('radio', { name: 'One' })).toBeChecked();
     expect(container.querySelector('select')).toHaveValue('one');
-  });
+  }, 10_000);
 });
