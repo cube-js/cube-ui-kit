@@ -1,4 +1,4 @@
-import { cloneElement } from 'react';
+import { cloneElement, ReactElement } from 'react';
 
 import {
   Checkbox,
@@ -34,6 +34,85 @@ import { act, renderWithRoot, userEvent } from '../../../test/index';
 import { Form, useForm } from './index';
 
 import type { CubeFormInstance } from './use-form';
+
+/** Every form-attachable input, mounted bare; each test adds the form wiring it needs. */
+const FORM_ATTACHABLE_INPUTS: [string, ReactElement<any>][] = [
+  ['Checkbox', <Checkbox label="Checkbox" />],
+  [
+    'CheckboxGroup',
+    <CheckboxGroup label="CheckboxGroup">
+      <Checkbox value="one">One</Checkbox>
+    </CheckboxGroup>,
+  ],
+  ['ColorInput', <ColorInput label="ColorInput" />],
+  [
+    'ComboBox',
+    <ComboBox label="ComboBox">
+      <ComboBox.Item key="one">One</ComboBox.Item>
+    </ComboBox>,
+  ],
+  ['CommandTextArea', <CommandTextArea label="CommandTextArea" />],
+  ['DateInput', <DateInput label="DateInput" />],
+  ['DatePicker', <DatePicker label="DatePicker" />],
+  ['DateRangePicker', <DateRangePicker label="DateRangePicker" />],
+  [
+    'DateRangeSeparatedPicker',
+    <DateRangeSeparatedPicker label="DateRangeSeparatedPicker" />,
+  ],
+  ['FileInput', <FileInput label="FileInput" />],
+  [
+    'FilterListBox',
+    <FilterListBox label="FilterListBox">
+      <FilterListBox.Item key="one">One</FilterListBox.Item>
+    </FilterListBox>,
+  ],
+  [
+    'FilterPicker',
+    <FilterPicker label="FilterPicker">
+      <FilterPicker.Item key="one">One</FilterPicker.Item>
+    </FilterPicker>,
+  ],
+  [
+    'ListBox',
+    <ListBox label="ListBox">
+      <ListBox.Item key="one">One</ListBox.Item>
+    </ListBox>,
+  ],
+  ['NumberInput', <NumberInput label="NumberInput" />],
+  ['PasswordInput', <PasswordInput label="PasswordInput" />],
+  [
+    'Picker',
+    <Picker label="Picker">
+      <Picker.Item key="one">One</Picker.Item>
+    </Picker>,
+  ],
+  ['RangeSlider', <RangeSlider label="RangeSlider" />],
+  [
+    'RadioGroup',
+    <RadioGroup label="RadioGroup">
+      <Radio value="one">One</Radio>
+    </RadioGroup>,
+  ],
+  [
+    'RadioGroup (buttons)',
+    <RadioGroup label="RadioGroup" type="button">
+      <Radio value="one">One</Radio>
+    </RadioGroup>,
+  ],
+  [
+    'Select',
+    <Select label="Select">
+      <Select.Item key="one">One</Select.Item>
+    </Select>,
+  ],
+  ['Slider', <Slider label="Slider" />],
+  ['Switch', <Switch label="Switch" />],
+  ['TagInput', <TagInput label="TagInput" />],
+  ['TextArea', <TextArea label="TextArea" />],
+  ['TextInput', <TextInput label="TextInput" />],
+  ['TextInputMapper', <TextInputMapper label="TextInputMapper" />],
+  ['TimeInput', <TimeInput label="TimeInput" />],
+];
 
 /**
  * Inputs can be linked to a form via the `form` prop instead of relying on the `<Form />` context. These
@@ -146,83 +225,7 @@ describe('explicit form prop', () => {
     expect(outerForm.getFieldValue('text')).toBeUndefined();
   });
 
-  describe.each([
-    ['Checkbox', <Checkbox label="Checkbox" />],
-    [
-      'CheckboxGroup',
-      <CheckboxGroup label="CheckboxGroup">
-        <Checkbox value="one">One</Checkbox>
-      </CheckboxGroup>,
-    ],
-    [
-      'ComboBox',
-      <ComboBox label="ComboBox">
-        <ComboBox.Item key="one">One</ComboBox.Item>
-      </ComboBox>,
-    ],
-    ['ColorInput', <ColorInput label="ColorInput" />],
-    ['CommandTextArea', <CommandTextArea label="CommandTextArea" />],
-    ['DateInput', <DateInput label="DateInput" />],
-    ['DatePicker', <DatePicker label="DatePicker" />],
-    ['DateRangePicker', <DateRangePicker label="DateRangePicker" />],
-    [
-      'DateRangeSeparatedPicker',
-      <DateRangeSeparatedPicker label="DateRangeSeparatedPicker" />,
-    ],
-    ['FileInput', <FileInput label="FileInput" />],
-    [
-      'FilterListBox',
-      <FilterListBox label="FilterListBox">
-        <FilterListBox.Item key="one">One</FilterListBox.Item>
-      </FilterListBox>,
-    ],
-    [
-      'FilterPicker',
-      <FilterPicker label="FilterPicker">
-        <FilterPicker.Item key="one">One</FilterPicker.Item>
-      </FilterPicker>,
-    ],
-    [
-      'ListBox',
-      <ListBox label="ListBox">
-        <ListBox.Item key="one">One</ListBox.Item>
-      </ListBox>,
-    ],
-    ['NumberInput', <NumberInput label="NumberInput" />],
-    ['PasswordInput', <PasswordInput label="PasswordInput" />],
-    [
-      'Picker',
-      <Picker label="Picker">
-        <Picker.Item key="one">One</Picker.Item>
-      </Picker>,
-    ],
-    ['RangeSlider', <RangeSlider label="RangeSlider" />],
-    [
-      'RadioGroup',
-      <RadioGroup label="RadioGroup">
-        <Radio value="one">One</Radio>
-      </RadioGroup>,
-    ],
-    [
-      'RadioGroup (buttons)',
-      <RadioGroup label="RadioGroup" type="button">
-        <Radio value="one">One</Radio>
-      </RadioGroup>,
-    ],
-    [
-      'Select',
-      <Select label="Select">
-        <Select.Item key="one">One</Select.Item>
-      </Select>,
-    ],
-    ['Slider', <Slider label="Slider" />],
-    ['Switch', <Switch label="Switch" />],
-    ['TagInput', <TagInput label="TagInput" />],
-    ['TextArea', <TextArea label="TextArea" />],
-    ['TextInput', <TextInput label="TextInput" />],
-    ['TextInputMapper', <TextInputMapper label="TextInputMapper" />],
-    ['TimeInput', <TimeInput label="TimeInput" />],
-  ])('%s', (name, element) => {
+  describe.each(FORM_ATTACHABLE_INPUTS)('%s', (name, element) => {
     it('should register in a form passed via the form prop', () => {
       let formInstance!: CubeFormInstance<any>;
 
@@ -236,11 +239,19 @@ describe('explicit form prop', () => {
 
       expect(formInstance.getFieldInstance('field')).toBeDefined();
     });
+  });
+});
 
-    // React Aria writes `form` onto native inputs as the id of their `<form>`,
-    // so a form instance there rendered `form="[object Object]"` and detached
-    // the input from its form: Enter in it submitted nothing (CUB-5075).
-    it('should not leak the form instance into the DOM', () => {
+// React Aria writes `form` onto native inputs as the id of their `<form>`, so a
+// form instance there rendered `form="[object Object]"` and detached the input
+// from its form: Enter in it submitted nothing (CUB-5075).
+describe('form instance in the DOM', () => {
+  function formAttributes(container: HTMLElement) {
+    return [...container.querySelectorAll('[form]')].map((el) => el.outerHTML);
+  }
+
+  describe.each(FORM_ATTACHABLE_INPUTS)('%s', (name, element) => {
+    it('should not leak a legacy instance', () => {
       function Wrapper() {
         const [form] = useForm();
 
@@ -255,9 +266,25 @@ describe('explicit form prop', () => {
 
       const { container } = renderWithRoot(<Wrapper />);
 
-      expect(
-        [...container.querySelectorAll('[form]')].map((el) => el.outerHTML),
-      ).toEqual([]);
+      expect(formAttributes(container)).toEqual([]);
+    });
+
+    it('should not leak a modern controller', () => {
+      function Wrapper() {
+        const form = Form.useController();
+
+        return (
+          <>
+            {cloneElement(element, { form, name: 'explicit' })}
+            <Form form={form}>{cloneElement(element, { name: 'nested' })}</Form>
+            {cloneElement(element, { form })}
+          </>
+        );
+      }
+
+      const { container } = renderWithRoot(<Wrapper />);
+
+      expect(formAttributes(container)).toEqual([]);
     });
   });
 });
