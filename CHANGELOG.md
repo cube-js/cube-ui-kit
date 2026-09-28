@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.185.3
+
+### Patch Changes
+
+- [#1439](https://github.com/cube-js/cube-ui-kit/pull/1439) [`5f65c6a2`](https://github.com/cube-js/cube-ui-kit/commit/5f65c6a2ffda8ac5e60e114ccb06154478843045) Thanks [@tenphi](https://github.com/tenphi)! - Switching between keyboard and pointer input no longer re-renders every button, checkbox, switch, select and radio on the page. Their focus state now listens for the input modality only while the element is focused, so a click after a Tab or Escape press re-renders one element instead of all of them.
+
 ## 0.185.2
 
 ### Patch Changes
