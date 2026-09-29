@@ -1,4 +1,6 @@
-import React, { RefObject, useEffect, useRef } from 'react';
+import { FocusEvent, RefObject, useEffect, useRef } from 'react';
+
+import { useEvent } from '../../../_internal';
 
 export interface UseCompositeFocusProps {
   wrapperRef: RefObject<HTMLElement>;
@@ -10,8 +12,8 @@ export interface UseCompositeFocusProps {
 
 export interface UseCompositeFocusReturn {
   compositeFocusProps: {
-    onFocus: (e: React.FocusEvent) => void;
-    onBlur: (e: React.FocusEvent) => void;
+    onFocus: (e: FocusEvent) => void;
+    onBlur: (e: FocusEvent) => void;
   };
 }
 
@@ -21,11 +23,14 @@ export interface UseCompositeFocusReturn {
  * when it leaves both — essential for components whose overlay is portaled, so
  * that clicking an option does not look like a blur of the whole component.
  *
- * Focus checks are deferred to the next animation frame to tolerate the
- * synchronous focus shuffles React Aria and portals perform on selection. Focus
- * that enters and leaves again within that frame still reports both edges, so a
- * fast focus-type-blur sequence (an automated test, a quick Tab through) does
- * not skip the blur.
+ * Focus entering is reported as it happens. Focus leaving is too when the blur
+ * names where focus went (`relatedTarget`), so it runs before the click that
+ * caused it: a Save button sees what leaving the field committed, and an
+ * `onFocus` runs before a change made in the same press. A blur to nowhere
+ * (a node removed under focus, a programmatic `blur()`, a hop through the
+ * body) is checked a frame later, and focus that is back by then reports
+ * nothing. One caused by a mousedown outside is final and reported at once:
+ * Safari leaves focus nowhere when a button is clicked.
  */
 export function useCompositeFocus({
   wrapperRef,
@@ -35,54 +40,70 @@ export function useCompositeFocus({
   isDisabled,
 }: UseCompositeFocusProps): UseCompositeFocusReturn {
   const wasInsideRef = useRef(false);
-  const enteredRef = useRef(false);
   const rafRef = useRef<number | null>(null);
+  // Set from an outside mousedown until the task that handles it ends. The
+  // focus change is that mousedown's default action, so a blur that sees the
+  // flag was caused by it.
+  const isPressingOutsideRef = useRef(false);
 
-  const checkFocus = () => {
-    const entered = enteredRef.current;
+  const contains = (node: EventTarget | null) =>
+    node != null &&
+    ((wrapperRef.current?.contains(node as Node) ?? false) ||
+      (popoverRef.current?.contains(node as Node) ?? false));
 
-    enteredRef.current = false;
+  const cancelCheck = () => {
+    if (rafRef.current !== null) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
+  };
 
+  const handleDocumentMouseDown = useEvent((e: MouseEvent) => {
+    if (contains(e.target)) return;
+
+    isPressingOutsideRef.current = true;
+    setTimeout(() => {
+      isPressingOutsideRef.current = false;
+    }, 0);
+  });
+
+  const leave = () => {
+    cancelCheck();
+
+    if (!wasInsideRef.current) return;
+
+    wasInsideRef.current = false;
+    document.removeEventListener('mousedown', handleDocumentMouseDown, true);
+    onBlur?.();
+  };
+
+  const handleFocus = () => {
+    // A portaled popover's focus events also bubble to the wrapper through the
+    // React tree, so each edge is reported once however many times it arrives.
+    if (isDisabled || wasInsideRef.current) return;
+
+    wasInsideRef.current = true;
+    document.addEventListener('mousedown', handleDocumentMouseDown, true);
+    onFocus?.();
+  };
+
+  const handleBlur = (e: FocusEvent) => {
     if (isDisabled) return;
 
-    const activeElement = document.activeElement;
-    const isInside =
-      (wrapperRef.current?.contains(activeElement) ?? false) ||
-      (popoverRef.current?.contains(activeElement) ?? false);
+    const next = e.relatedTarget;
 
-    if (!isInside && !wasInsideRef.current && entered) {
-      onFocus?.();
-      onBlur?.();
+    if (next != null || isPressingOutsideRef.current) {
+      if (!contains(next)) leave();
 
       return;
     }
 
-    if (isInside !== wasInsideRef.current) {
-      wasInsideRef.current = isInside;
-      if (isInside) {
-        onFocus?.();
-      } else {
-        onBlur?.();
-      }
-    }
-  };
-
-  const scheduleCheck = () => {
-    // Cancel any pending check
-    if (rafRef.current !== null) {
-      cancelAnimationFrame(rafRef.current);
-    }
-
-    // Schedule focus check for next frame
+    cancelCheck();
     rafRef.current = requestAnimationFrame(() => {
       rafRef.current = null;
-      checkFocus();
-    });
-  };
 
-  const handleFocus = () => {
-    enteredRef.current = true;
-    scheduleCheck();
+      if (!contains(document.activeElement)) leave();
+    });
   };
 
   // Cleanup on unmount
@@ -91,13 +112,15 @@ export function useCompositeFocus({
       if (rafRef.current !== null) {
         cancelAnimationFrame(rafRef.current);
       }
+
+      document.removeEventListener('mousedown', handleDocumentMouseDown, true);
     };
-  }, []);
+  }, [handleDocumentMouseDown]);
 
   return {
     compositeFocusProps: {
       onFocus: handleFocus,
-      onBlur: scheduleCheck,
+      onBlur: handleBlur,
     },
   };
 }

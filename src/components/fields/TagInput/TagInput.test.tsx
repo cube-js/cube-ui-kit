@@ -281,7 +281,7 @@ describe('<TagInput />', () => {
       expect(getByText('"abc" is not a valid value')).toBeInTheDocument();
     });
 
-    it('refuses a duplicate', async () => {
+    it('refuses a duplicate and clears it, since the chip is there', async () => {
       const onChange = vi.fn();
       const { getByRole, getByText } = render(
         <TagInput label="Tags" defaultValue={['one']} onChange={onChange} />,
@@ -291,7 +291,7 @@ describe('<TagInput />', () => {
       await userEvent.type(input, 'one{Enter}');
 
       expect(onChange).not.toHaveBeenCalled();
-      expect(input).toHaveValue('one');
+      expect(input).toHaveValue('');
       expect(getByText('"one" is already added')).toBeInTheDocument();
     });
 
@@ -1051,6 +1051,7 @@ describe('<TagInput />', () => {
 
       expect(onChange).not.toHaveBeenCalled();
       expect(getByText('"deploy" is already added')).toBeInTheDocument();
+      expect(input).toHaveValue('');
     });
 
     it('unpicks an option the user moved to with the arrows', async () => {
@@ -1348,7 +1349,7 @@ describe('<TagInput />', () => {
 
       await userEvent.type(input, 'A@X.COM{Enter}');
       expect(onChange).toHaveBeenCalledTimes(1);
-      expect(input).toHaveValue('A@X.COM');
+      expect(input).toHaveValue('');
       expect(getByText('"A@X.COM" is already added')).toBeInTheDocument();
     });
 
@@ -1594,6 +1595,335 @@ describe('<TagInput />', () => {
       expect(
         within(listbox).queryByRole('option', { name: 'audit' }),
       ).toBeNull();
+    });
+  });
+
+  describe('matching text to options', () => {
+    function Statuses(props: Partial<Parameters<typeof TagInput>[0]>) {
+      return (
+        <TagInput label="Statuses" {...props}>
+          <TagInput.Item key="Active">Active</TagInput.Item>
+          <TagInput.Item key="active">active</TagInput.Item>
+        </TagInput>
+      );
+    }
+
+    function Cities(props: Partial<Parameters<typeof TagInput>[0]>) {
+      return (
+        <TagInput label="City" {...props}>
+          <TagInput.Item key="Paris">Paris</TagInput.Item>
+          <TagInput.Item key="Porto">Porto</TagInput.Item>
+        </TagInput>
+      );
+    }
+
+    it('adds the clicked option, not an earlier one in another case', async () => {
+      const onChange = vi.fn();
+      const { getByRole } = renderWithRoot(
+        <Statuses defaultValue={['Active']} onChange={onChange} />,
+      );
+
+      await userEvent.click(getByRole('button', { name: /Show options/ }));
+      await userEvent.click(
+        await waitFor(() => getByRole('option', { name: 'active' })),
+      );
+
+      expect(onChange).toHaveBeenLastCalledWith(['Active', 'active']);
+    });
+
+    it('adds the option the arrows moved to, not an earlier one in another case', async () => {
+      const onChange = vi.fn();
+      const { getByRole } = renderWithRoot(<Statuses onChange={onChange} />);
+      const input = getByRole('combobox');
+
+      await userEvent.click(input);
+      await userEvent.keyboard('{ArrowDown}');
+      await waitFor(() =>
+        expect(getActiveDescendant(input)).toHaveTextContent(/^Active$/),
+      );
+      await userEvent.keyboard('{ArrowDown}');
+      await waitFor(() =>
+        expect(getActiveDescendant(input)).toHaveTextContent(/^active$/),
+      );
+      await userEvent.keyboard('{Enter}');
+
+      expect(onChange).toHaveBeenLastCalledWith(['active']);
+    });
+
+    it('prefers an exact match anywhere over an earlier one in another case', async () => {
+      const onChange = vi.fn();
+      const { getByRole } = renderWithRoot(<Statuses onChange={onChange} />);
+      const input = getByRole('combobox');
+
+      await userEvent.type(input, 'active{Enter}');
+      expect(onChange).toHaveBeenLastCalledWith(['active']);
+
+      // Without an exact match, the first option in another case still wins.
+      await paste(input, 'ACTIVE\nactive');
+      expect(onChange).toHaveBeenLastCalledWith(['active', 'Active']);
+    });
+
+    it('matches an option key before another option label', async () => {
+      const onChange = vi.fn();
+      const { getByRole } = renderWithRoot(
+        <TagInput label="Countries" onChange={onChange}>
+          <TagInput.Item key="c1">us</TagInput.Item>
+          <TagInput.Item key="us">United States</TagInput.Item>
+        </TagInput>,
+      );
+
+      await userEvent.type(getByRole('combobox'), 'us,');
+
+      expect(onChange).toHaveBeenLastCalledWith(['us']);
+    });
+
+    it('still matches a label in another case without allowsCustomValue', async () => {
+      const onChange = vi.fn();
+      const { getByRole } = renderWithRoot(<Cities onChange={onChange} />);
+
+      await userEvent.type(getByRole('combobox'), 'paris{Enter}');
+
+      expect(onChange).toHaveBeenLastCalledWith(['Paris']);
+    });
+
+    it('adds text that matches an option only in another case as typed, with allowsCustomValue', async () => {
+      const onChange = vi.fn();
+      const { getByRole } = renderWithRoot(
+        <Cities allowsCustomValue onChange={onChange} />,
+      );
+      const input = getByRole('combobox');
+
+      await userEvent.type(input, 'paris');
+      // The typed text is offered, and focused, next to the option it resembles.
+      await waitFor(() =>
+        expect(getActiveDescendant(input)).toHaveTextContent(/^paris$/),
+      );
+      expect(getByRole('option', { name: 'Paris' })).toBeInTheDocument();
+      await userEvent.keyboard('{Enter}');
+      expect(onChange).toHaveBeenLastCalledWith(['paris']);
+
+      // Enter before the focus pass, a delimiter and a paste agree.
+      await userEvent.type(input, 'porto{Enter}');
+      expect(onChange).toHaveBeenLastCalledWith(['paris', 'porto']);
+
+      await userEvent.type(input, 'PARIS,');
+      expect(onChange).toHaveBeenLastCalledWith(['paris', 'porto', 'PARIS']);
+
+      await userEvent.type(input, 'Paris{Enter}');
+      expect(onChange).toHaveBeenLastCalledWith([
+        'paris',
+        'porto',
+        'PARIS',
+        'Paris',
+      ]);
+    });
+
+    it('commits text that matches an option only in another case as typed on blur', async () => {
+      const onChange = vi.fn();
+      const { getByRole } = renderWithRoot(
+        <>
+          <Cities allowsCustomValue onChange={onChange} />
+          <button>After</button>
+        </>,
+      );
+
+      await userEvent.type(getByRole('combobox'), 'paris');
+      // The first click outside only closes the list, as with every popover.
+      await userEvent.click(getByRole('button', { name: 'After' }));
+      await userEvent.click(getByRole('button', { name: 'After' }));
+
+      await waitFor(() => expect(onChange).toHaveBeenCalledTimes(1));
+      expect(onChange).toHaveBeenLastCalledWith(['paris']);
+    });
+  });
+
+  describe('refused values', () => {
+    it('hands no duplicate back to the input', async () => {
+      const onChange = vi.fn();
+      const { getByRole, getByText } = render(
+        <>
+          <TagInput
+            label="Principals"
+            delimiters={[]}
+            defaultValue={['a', 'b']}
+            onChange={onChange}
+          />
+          <button>After</button>
+        </>,
+      );
+      const input = getByRole('textbox');
+
+      await paste(input, 'a\nb\nc');
+
+      expect(onChange).toHaveBeenLastCalledWith(['a', 'b', 'c']);
+      expect(input).toHaveValue('');
+      expect(getByText('"a" is already added')).toBeInTheDocument();
+
+      // Nothing is left to commit as a value nobody typed.
+      await userEvent.click(getByRole('button', { name: 'After' }));
+      await act(() => new Promise((resolve) => setTimeout(resolve, 50)));
+      expect(onChange).toHaveBeenCalledTimes(1);
+    });
+
+    it('keeps only the first refused value when nothing can separate them', async () => {
+      const onChange = vi.fn();
+      const { getByRole, getByText } = render(
+        <>
+          <TagInput
+            label="Recipients"
+            delimiters={[]}
+            validateTag={validateEmail}
+            onChange={onChange}
+          />
+          <button>After</button>
+        </>,
+      );
+      const input = getByRole('textbox');
+
+      await paste(input, 'bad\nworse\nc@x.com');
+
+      expect(onChange).toHaveBeenLastCalledWith(['c@x.com']);
+      expect(input).toHaveValue('bad');
+      expect(getByText('Enter an email address')).toBeInTheDocument();
+
+      await userEvent.click(getByRole('button', { name: 'After' }));
+      await act(() => new Promise((resolve) => setTimeout(resolve, 50)));
+      expect(onChange).toHaveBeenCalledTimes(1);
+      expect(input).toHaveValue('bad');
+    });
+
+    it('explains the text it hands back, not a duplicate it dropped', async () => {
+      const { getByRole, getByText, queryByText } = render(
+        <TagInput
+          label="Recipients"
+          defaultValue={['a@x.com']}
+          validateTag={validateEmail}
+        />,
+      );
+      const input = getByRole('textbox');
+
+      await paste(input, 'a@x.com, bad, worse');
+
+      expect(input).toHaveValue('bad, worse');
+      expect(getByText('Enter an email address')).toBeInTheDocument();
+      expect(queryByText('"a@x.com" is already added')).toBeNull();
+    });
+  });
+
+  describe('focus timing', () => {
+    it('commits the typed text before a click outside is handled', async () => {
+      const seen: string[][] = [];
+
+      function Harness() {
+        const [values, setValues] = useState<string[]>([]);
+
+        return (
+          <>
+            <TagInput label="Tags" value={values} onChange={setValues} />
+            <button onClick={() => seen.push(values)}>Save</button>
+          </>
+        );
+      }
+
+      const { getByRole } = render(<Harness />);
+
+      await userEvent.type(getByRole('textbox'), 'one');
+      await userEvent.click(getByRole('button', { name: 'Save' }));
+
+      expect(seen).toEqual([['one']]);
+    });
+
+    it('commits the typed text before a press on something that takes no focus', async () => {
+      const seen: string[][] = [];
+
+      function Harness() {
+        const [values, setValues] = useState<string[]>([]);
+
+        return (
+          <>
+            <TagInput label="Tags" value={values} onChange={setValues} />
+            {/* Focus goes nowhere, as a clicked button leaves it in Safari. */}
+            <div role="button" onClick={() => seen.push(values)}>
+              Save
+            </div>
+          </>
+        );
+      }
+
+      const { getByRole } = render(<Harness />);
+
+      await userEvent.type(getByRole('textbox'), 'one');
+      await userEvent.click(getByRole('button', { name: 'Save' }));
+
+      expect(getByRole('textbox')).not.toHaveFocus();
+      expect(seen).toEqual([['one']]);
+    });
+
+    it('reports focus before a change made in the same press', async () => {
+      function Harness() {
+        const [isEmpty, setIsEmpty] = useState(false);
+
+        return (
+          <>
+            <button>Before</button>
+            <TagInput
+              label="Tags"
+              defaultValue={['one']}
+              onFocus={() => setIsEmpty(false)}
+              onChange={(next) => setIsEmpty(next.length === 0)}
+            />
+            <span data-qa="Empty">{isEmpty ? 'Add a tag' : ''}</span>
+          </>
+        );
+      }
+
+      const { getByRole, getByTestId } = render(<Harness />);
+
+      await userEvent.click(getByRole('button', { name: 'Before' }));
+      await userEvent.click(getByRole('button', { name: 'Remove one' }));
+      await act(() => new Promise((resolve) => setTimeout(resolve, 50)));
+
+      expect(getByRole('textbox')).toHaveFocus();
+      expect(getByTestId('Empty')).toHaveTextContent('Add a tag');
+    });
+
+    it('reports focus and blur as they happen', () => {
+      const onFocus = vi.fn();
+      const onBlur = vi.fn();
+      const { getByRole } = render(
+        <>
+          <TagInput label="Tags" onFocus={onFocus} onBlur={onBlur} />
+          <button>After</button>
+        </>,
+      );
+
+      act(() => getByRole('textbox').focus());
+      expect(onFocus).toHaveBeenCalledTimes(1);
+
+      act(() => getByRole('button', { name: 'After' }).focus());
+      expect(onBlur).toHaveBeenCalledTimes(1);
+    });
+
+    it('waits for focus that leaves to nowhere, and ignores it when it comes back', async () => {
+      const onFocus = vi.fn();
+      const onBlur = vi.fn();
+      const { getByRole } = render(
+        <TagInput label="Tags" onFocus={onFocus} onBlur={onBlur} />,
+      );
+      const input = getByRole('textbox');
+
+      act(() => input.focus());
+      act(() => {
+        input.blur();
+        input.focus();
+      });
+      await act(() => new Promise((resolve) => setTimeout(resolve, 50)));
+
+      expect(onFocus).toHaveBeenCalledTimes(1);
+      expect(onBlur).not.toHaveBeenCalled();
+
+      act(() => input.blur());
+      await waitFor(() => expect(onBlur).toHaveBeenCalledTimes(1));
     });
   });
 

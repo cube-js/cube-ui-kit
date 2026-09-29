@@ -1,5 +1,5 @@
 import { useControlledState } from '@react-stately/utils';
-import { Key } from '@react-types/shared';
+import { Node as CollectionNode, Key } from '@react-types/shared';
 import {
   BasePropsWithoutChildren,
   CONTAINER_STYLES,
@@ -117,7 +117,11 @@ export interface CubeTagInputProps<T = object>
     | 'send';
   /** Called when focus enters the component (input, chips or popover). Receives no event. */
   onFocus?: () => void;
-  /** Called when focus leaves the component entirely. Receives no event. */
+  /**
+   * Called when focus leaves the component entirely, after the typed text is
+   * committed and before the press that moved focus is handled. Receives no
+   * event.
+   */
   onBlur?: () => void;
   /**
    * Called when a key is pressed in the input, before the component handles it.
@@ -128,7 +132,8 @@ export interface CubeTagInputProps<T = object>
   /**
    * Characters that commit the typed text, and that pasted text is split on.
    * Pasted text is also always split on line breaks. Pass `[]` for values that
-   * may contain the default separator.
+   * may contain the default separator; only the first of several refused
+   * values then stays in the input.
    * @default [',']
    */
   delimiters?: string[];
@@ -171,6 +176,8 @@ export interface CubeTagInputProps<T = object>
   /**
    * Whether typed values that are not among the options are accepted. Only
    * applies when options are given; without options every value is custom.
+   * Text that matches an option only in case or accents is then added as
+   * typed; without it, that text picks the option.
    * @default false
    */
   allowsCustomValue?: boolean;
@@ -304,6 +311,44 @@ function isSameText(a: string, b: string) {
 
 function compareText(a: string, b: string) {
   return textSorter.compare(a, b);
+}
+
+interface OptionMatch {
+  /** The option whose key is the text, or else the first whose label is. */
+  exact: string | null;
+  /** The first option whose label is the text ignoring case and accents. */
+  loose: string | null;
+}
+
+/**
+ * The options typed text names. An exact match is looked for in the whole
+ * list before a loose one counts, so `active` finds `active` even after
+ * `Active`, and a key picked from the list always finds its own option.
+ */
+function matchOptionText(
+  collection: Iterable<CollectionNode<unknown>>,
+  text: string,
+): OptionMatch {
+  let byLabel: string | null = null;
+  let loose: string | null = null;
+
+  for (const node of collection) {
+    const nodes = node.type === 'section' ? [...node.childNodes] : [node];
+
+    for (const child of nodes) {
+      if (child.type !== 'item') continue;
+
+      const key = String(child.key);
+      const label = child.textValue || '';
+
+      if (key === text) return { exact: key, loose };
+
+      if (byLabel == null && label === text) byLabel = key;
+      if (loose == null && isSameText(label, text)) loose = key;
+    }
+  }
+
+  return { exact: byLabel, loose };
 }
 
 /**
@@ -606,26 +651,18 @@ function TagInput<T extends object>(
     if (next) setKnownLabels(next);
   });
 
-  /** The key of the option whose key or label is `text`, if any. */
+  /**
+   * The option typed text stands for, if any. Without `allowsCustomValue` a
+   * label in another case or without its accents counts, so `production`
+   * finds `Production`. With it, such text is a value of its own and is added
+   * as typed: `paris` is not `Paris` to a case-sensitive filter.
+   */
   const findOptionKey = (text: string): string | null => {
     if (!hasOptions) return null;
 
-    for (const node of collection) {
-      const nodes = node.type === 'section' ? [...node.childNodes] : [node];
+    const match = matchOptionText(collection, text);
 
-      for (const child of nodes) {
-        if (child.type !== 'item') continue;
-
-        if (
-          String(child.key) === text ||
-          isSameText(child.textValue || '', text)
-        ) {
-          return String(child.key);
-        }
-      }
-    }
-
-    return null;
+    return match.exact ?? (allowsCustomValue ? null : match.loose);
   };
 
   const optionFilterFn = (nodes: Iterable<any>) => {
@@ -676,12 +713,14 @@ function TagInput<T extends object>(
       ? customValueKeys.filter((key) => matchesTerm(key, term))
       : customValueKeys;
 
+  const termOptionKey = term ? findOptionKey(term) : null;
+
   // The typed text as a pickable row, when it would add something new.
   const customTerm =
     hasOptions &&
     allowsCustomValue &&
     term &&
-    findOptionKey(term) == null &&
+    termOptionKey == null &&
     !uniqueValues.includes(term) &&
     !customValueKeys.includes(term)
       ? term
@@ -752,12 +791,23 @@ function TagInput<T extends object>(
   // The popover is at least as wide as the input box.
   const [popoverMinWidth, setPopoverMinWidth] = useState<number>();
 
-  // An option whose label is exactly the typed text wins over the first match,
-  // so typing "build" and pressing Enter picks "build", not "rebuild".
-  let exactOptionKey = term ? findOptionKey(term) : null;
+  // The option the typed text names wins over the first match, so typing
+  // "build" and pressing Enter picks "build", not "rebuild".
+  let exactOptionKey = termOptionKey;
 
   if (exactOptionKey == null && term && customValueKeys.includes(term)) {
     exactOptionKey = term;
+  }
+
+  // Text that names a row only in another case is a value of its own, so its
+  // own row wins over that one: Enter adds `paris` as typed, not `Paris`.
+  if (
+    exactOptionKey == null &&
+    customTerm &&
+    (matchOptionText(collection, customTerm).loose != null ||
+      customValueKeys.some((key) => isSameText(key, customTerm)))
+  ) {
+    exactOptionKey = customTerm;
   }
 
   const visibleTargetKeys: Key[] = [...visibleOptionKeys, ...visibleCustomKeys];
@@ -895,15 +945,24 @@ function TagInput<T extends object>(
     }
   });
 
-  const joiner = delimiters[0] ? `${delimiters[0]} ` : ' ';
+  // Refused parts go back to the input joined by a delimiter, so they split
+  // back into the same values. A line break cannot join them: the input drops
+  // it. Typing a delimiter always leaves one to join with.
+  const joinDelimiter = delimiters.find(
+    (delimiter) => delimiter && !LINE_BREAK.test(delimiter),
+  );
+  const joiner = joinDelimiter ? `${joinDelimiter} ` : ' ';
 
   // Without a label or `forceField` there is no field wrapper to show the
   // message, so a rejection is announced instead.
   const hasFieldMessage = !!label || !!props.forceField;
 
   /**
-   * Turns typed parts into values. Accepted parts become chips; rejected ones
-   * come back as text for the input, with a message, so nothing typed is lost.
+   * Turns typed parts into values. Accepted parts become chips. Refused ones
+   * come back as text for the input, with a message, except a duplicate: it is
+   * a chip already, and the message says so. With no delimiter to join them,
+   * only the first refused part comes back, since glued together they would
+   * commit as one value nobody typed.
    */
   const commitParts = useEvent((parts: string[]): string => {
     if (!parts.length) return '';
@@ -964,7 +1023,13 @@ function TagInput<T extends object>(
       accepted.push(nextValue);
     }
 
-    const error = rejected.length ? rejectionMessage(rejected[0]) : null;
+    const returned = rejected.filter(
+      (rejection) => rejection.reason !== 'duplicate',
+    );
+    const kept = joinDelimiter ? returned : returned.slice(0, 1);
+    // The message is about the text left in the input, if there is any.
+    const shown = kept[0] ?? rejected[0];
+    const error = shown ? rejectionMessage(shown) : null;
     const messages: string[] = [];
 
     if (accepted.length) {
@@ -982,7 +1047,7 @@ function TagInput<T extends object>(
 
     setTagError(error);
 
-    return rejected.map((rejection) => rejection.text).join(joiner);
+    return kept.map((rejection) => rejection.text).join(joiner);
   });
 
   const commitDraft = useEvent(() => {
@@ -1025,7 +1090,8 @@ function TagInput<T extends object>(
   /**
    * Picks an option in the popover, or unpicks one that already is a chip. The
    * popover stays open for the next pick, and the query is cleared so the full
-   * list is back.
+   * list is back. A picked key finds its own option before any label does, so
+   * a pick is never swapped for a look-alike.
    */
   const toggleOption = useEvent((key: string) => {
     if (isTagLocked(key)) return;
@@ -1175,13 +1241,14 @@ function TagInput<T extends object>(
         const key = String(targetKey);
 
         // Typed text means "add". An option that is already a chip is refused
-        // as a duplicate, as a comma or blur would; unpicking one takes the
-        // arrows, a click, or an empty input.
+        // as a duplicate and the text cleared, as a comma or blur would;
+        // unpicking one takes the arrows, a click, or an empty input.
         if (
           term &&
           uniqueValues.includes(key) &&
           !(isCurrent && activeOption.source === 'user')
         ) {
+          setDraft('');
           setTagError(
             rejectionMessage({
               text: getTagLabel(key),
