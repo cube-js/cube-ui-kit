@@ -613,6 +613,14 @@ function TagInput<T extends object>(
   });
   const collection = localCollectionState.collection;
 
+  // An option's node. Sections are in the collection too, under keys of their
+  // own, but a value that shares one is still the user's own text.
+  const getOption = (key: string) => {
+    const node = collection.getItem(key);
+
+    return node?.type === 'item' ? node : null;
+  };
+
   const { contains } = useFilter({ sensitivity: 'base' });
 
   const textFilterFn: FilterFn =
@@ -628,7 +636,7 @@ function TagInput<T extends object>(
   );
 
   const getOptionLabel = (key: string) =>
-    collection.getItem(key)?.textValue || knownLabels.get(key) || key;
+    getOption(key)?.textValue || knownLabels.get(key) || key;
 
   // What a chip reads as, and what announcements name it by: a string label
   // the chip is given, then the option's own.
@@ -646,7 +654,7 @@ function TagInput<T extends object>(
     let next: Map<string, string> | null = null;
 
     for (const key of keys) {
-      const label = collection.getItem(key)?.textValue;
+      const label = getOption(key)?.textValue;
 
       if (label && knownLabels.get(key) !== label) {
         if (!next) next = new Map(knownLabels);
@@ -742,8 +750,7 @@ function TagInput<T extends object>(
       ? [
           ...new Set(
             [...uniqueValues, ...unpickedCustomValues].filter(
-              (value) =>
-                collection.getItem(value) == null && !knownLabels.has(value),
+              (value) => getOption(value) == null && !knownLabels.has(value),
             ),
           ),
         ].sort(compareText)
@@ -1141,7 +1148,7 @@ function TagInput<T extends object>(
     if (isTagLocked(key)) return;
 
     const source: CommitSource =
-      collection.getItem(key) != null
+      getOption(key) != null
         ? 'option'
         : customValueKeys.includes(key)
           ? 'custom'
@@ -1177,8 +1184,7 @@ function TagInput<T extends object>(
         ...uniqueValues.filter(
           (value) =>
             !next.has(value) &&
-            (collection.getItem(value) != null ||
-              visibleCustomKeys.includes(value)),
+            (getOption(value) != null || visibleCustomKeys.includes(value)),
         ),
       ];
 
@@ -1482,8 +1488,7 @@ function TagInput<T extends object>(
   // ---- chips --------------------------------------------------------------
   const tags: TagListEntry[] = uniqueValues.map((value) => {
     const ownProps = tagProps?.(value);
-    const isOption =
-      collection.getItem(value) != null || knownLabels.has(value);
+    const isOption = getOption(value) != null || knownLabels.has(value);
     const result = !isOption && validateTag ? validateTag(value) : true;
     const label = textLabel(ownProps?.children) ?? getOptionLabel(value);
 

@@ -1648,6 +1648,56 @@ describe('<TagInput />', () => {
     });
   });
 
+  describe("a value that shares a section's key", () => {
+    // Sections are in the collection under keys of their own, but are no
+    // options: text that names one is still the user's own.
+    function People(props: Partial<Parameters<typeof TagInput>[0]>) {
+      return (
+        <TagInput allowsCustomValue label="People" {...props}>
+          <TagInput.Section key="team" title="Team">
+            <TagInput.Item key="alice">Alice</TagInput.Item>
+          </TagInput.Section>
+        </TagInput>
+      );
+    }
+
+    it('checks its row as typed text', async () => {
+      const onChange = vi.fn();
+      const { getByRole } = renderWithRoot(
+        <People validateTag={() => false} onChange={onChange} />,
+      );
+
+      await userEvent.type(getByRole('combobox'), 'team');
+      const listbox = await waitFor(() => getByRole('listbox'));
+
+      await userEvent.click(
+        within(listbox).getByRole('option', { name: 'team' }),
+      );
+
+      expect(onChange).not.toHaveBeenCalled();
+    });
+
+    it('lists and labels it as a custom value', async () => {
+      const { getByRole, getByTestId } = renderWithRoot(
+        <People defaultValue={['team']} />,
+      );
+
+      expect(
+        within(getByTestId('TagInputTags')).getByRole('row'),
+      ).toHaveAttribute('aria-label', 'team');
+
+      await userEvent.click(getByRole('button', { name: /Show options/ }));
+      await waitFor(() => getByRole('listbox'));
+
+      expect(
+        within(getByRole('group', { name: 'Custom values' })).getByRole(
+          'option',
+          { name: 'team' },
+        ),
+      ).toHaveAttribute('aria-selected', 'true');
+    });
+  });
+
   describe('matching text to options', () => {
     function Statuses(props: Partial<Parameters<typeof TagInput>[0]>) {
       return (
