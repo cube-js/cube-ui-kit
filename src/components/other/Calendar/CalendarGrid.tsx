@@ -4,7 +4,7 @@ import {
   toCalendar,
 } from '@internationalized/date';
 import { tasty } from '@tenphi/tasty';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { DateValue, useCalendarGrid, useLocale } from 'react-aria';
 import { CalendarState, RangeCalendarState } from 'react-stately';
 
@@ -51,10 +51,9 @@ export function CalendarGrid(props: CubeCalendarGridProps) {
   let weeksInMonth = getWeeksInMonth(state.visibleRange.start, locale);
   let showWeekNumbers = pickerMode === 'week';
 
-  let today = useMemo(
-    () =>
-      toCalendar(getToday(state.timeZone), state.visibleRange.start.calendar),
-    [state.timeZone, state.visibleRange.start.calendar],
+  let today = toCalendar(
+    getToday(state.timeZone),
+    state.visibleRange.start.calendar,
   );
 
   // In week mode, hovering any day highlights the whole week row.

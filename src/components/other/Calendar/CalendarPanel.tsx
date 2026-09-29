@@ -8,7 +8,7 @@ import {
   toCalendar,
   today,
 } from '@internationalized/date';
-import { KeyboardEvent, ReactElement, Ref, useMemo, useState } from 'react';
+import { KeyboardEvent, ReactElement, Ref, useState } from 'react';
 import { DateValue, useDateFormatter } from 'react-aria';
 import { CalendarState, RangeCalendarState } from 'react-stately';
 
@@ -104,10 +104,7 @@ export function CalendarPanel(props: CubeCalendarPanelProps) {
     calendar: calendarId,
   });
 
-  let todayDate = useMemo(
-    () => toCalendar(today(timeZone), calendar),
-    [timeZone, calendar],
-  );
+  let todayDate = toCalendar(today(timeZone), calendar);
 
   let format = (formatter: Formatter, date: CalendarDate) =>
     formatter.format(date.toDate(timeZone));

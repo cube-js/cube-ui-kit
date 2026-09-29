@@ -1,5 +1,4 @@
 import { useControlledState } from '@react-stately/utils';
-import { useMemo } from 'react';
 import { Item, useTreeState } from 'react-stately';
 
 import { useEvent } from '../../../_internal/hooks';
@@ -32,6 +31,23 @@ export interface TableTreeStateResult<T> {
   expandedKeys: Set<Key>;
 }
 
+/**
+ * Current React Stately's legacy TreeCollection omits `getChildren`, while
+ * `useTreeItem` needs it for level/set-size/expanded metadata.
+ */
+function withGetChildren<T>(state: TreeState<T>): TreeState<T> {
+  const collection = state.collection;
+  if (typeof (collection as any).getChildren === 'function') return state;
+
+  const patched = Object.create(collection);
+  patched.getChildren = (key: Key) => {
+    const node = collection.getItem(key);
+    return node ? Array.from(node.childNodes) : [];
+  };
+
+  return { ...state, collection: patched };
+}
+
 export function useTableTreeState<T>(
   options: UseTableTreeStateOptions<T>,
 ): TableTreeStateResult<T> {
@@ -48,27 +64,18 @@ export function useTableTreeState<T>(
   } = options;
   const { t } = useI18n();
 
-  const controlledSet = useMemo(
-    () =>
-      controlledExpandedKeys === undefined
-        ? undefined
-        : new Set<Key>(controlledExpandedKeys),
-    [controlledExpandedKeys],
-  );
-  const defaultSet = useMemo(
-    () => new Set<Key>(defaultExpandedKeys ?? []),
-    [defaultExpandedKeys],
-  );
+  const controlledSet =
+    controlledExpandedKeys === undefined
+      ? undefined
+      : new Set<Key>(controlledExpandedKeys);
+  const defaultSet = new Set<Key>(defaultExpandedKeys ?? []);
   const [baseExpandedKeys, setBaseExpandedKeys] = useControlledState<Set<Key>>(
     controlledSet as Set<Key>,
     defaultSet,
   );
 
-  const effectiveExpandedKeys = useMemo(() => {
-    const keys = new Set(baseExpandedKeys);
-    forcedExpandedKeys?.forEach((key) => keys.add(key));
-    return keys;
-  }, [baseExpandedKeys, forcedExpandedKeys]);
+  const effectiveExpandedKeys = new Set(baseExpandedKeys);
+  forcedExpandedKeys?.forEach((key) => effectiveExpandedKeys.add(key));
 
   const handleExpandedChange = useEvent((next: Set<Key>) => {
     let toggledKey: Key | null = null;
@@ -127,64 +134,30 @@ export function useTableTreeState<T>(
     ),
   );
 
-  const ariaProps = useMemo(
-    () => ({
-      items: roots,
-      children: renderItem as any,
-      selectionMode: 'none' as const,
-      expandedKeys: effectiveExpandedKeys,
-      onExpandedChange: handleExpandedChange,
-      disabledKeys,
-      disabledBehavior: 'all' as const,
-      // Prevent `useTreeItem` from treating a row press as an implicit toggle.
-      // Tables keep row activation and expansion as separate interactions.
-      onAction: () => {},
-      'aria-label': ariaLabel ?? t('itemTable.table', 'Table'),
-    }),
-    [
-      roots,
-      renderItem,
-      effectiveExpandedKeys,
-      handleExpandedChange,
-      disabledKeys,
-      ariaLabel,
-      t,
-    ],
-  );
+  const ariaProps = {
+    items: roots,
+    children: renderItem as any,
+    selectionMode: 'none' as const,
+    expandedKeys: effectiveExpandedKeys,
+    onExpandedChange: handleExpandedChange,
+    disabledKeys,
+    disabledBehavior: 'all' as const,
+    // Prevent `useTreeItem` from treating a row press as an implicit toggle.
+    // Tables keep row activation and expansion as separate interactions.
+    onAction: () => {},
+    'aria-label': ariaLabel ?? t('itemTable.table', 'Table'),
+  };
 
   const baseState = useTreeState<TableTreeNode<T>>(ariaProps);
+  const state = withGetChildren(baseState);
 
-  // Current React Stately's legacy TreeCollection omits `getChildren`, while
-  // `useTreeItem` needs it for level/set-size/expanded metadata.
-  const state = useMemo(() => {
-    const collection = baseState.collection;
-    if (typeof (collection as any).getChildren === 'function') return baseState;
+  const visibleNodes = Array.from(state.collection.getKeys(), (key) =>
+    state.collection.getItem(key),
+  ).filter((node): node is Node<TableTreeNode<T>> => node?.type === 'item');
 
-    const patched = Object.create(collection);
-    patched.getChildren = (key: Key) => {
-      const node = collection.getItem(key);
-      return node ? Array.from(node.childNodes) : [];
-    };
-
-    return { ...baseState, collection: patched } as typeof baseState;
-  }, [baseState]);
-
-  const visibleNodes = useMemo(() => {
-    const output: Node<TableTreeNode<T>>[] = [];
-    for (const key of state.collection.getKeys()) {
-      const node = state.collection.getItem(key);
-      if (node?.type === 'item') output.push(node);
-    }
-    return output;
-  }, [state.collection]);
-
-  const visibleEntries = useMemo(
-    () =>
-      visibleNodes
-        .map((node) => node.value)
-        .filter((node): node is TableTreeNode<T> => node != null),
-    [visibleNodes],
-  );
+  const visibleEntries = visibleNodes
+    .map((node) => node.value)
+    .filter((node): node is TableTreeNode<T> => node != null);
 
   return {
     state,

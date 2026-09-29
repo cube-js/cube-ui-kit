@@ -1,6 +1,6 @@
 import { FocusableRef } from '@react-types/shared';
 import { tasty } from '@tenphi/tasty';
-import { forwardRef, useMemo } from 'react';
+import { forwardRef } from 'react';
 
 import {
   CubeItemButtonProps,
@@ -86,14 +86,11 @@ export const TabsAction = forwardRef(function TabsAction(
   const tabsPlacement = tabsContext?.placement ?? 'top';
   const tabsVertical = tabsPlacement === 'left' || tabsPlacement === 'right';
 
-  const combinedMods = useMemo(
-    () => ({
-      'tabs-type-file': tabsType === 'file',
-      'tabs-vertical': tabsVertical,
-      ...mods,
-    }),
-    [tabsType, tabsVertical, mods],
-  );
+  const combinedMods = {
+    'tabs-type-file': tabsType === 'file',
+    'tabs-vertical': tabsVertical,
+    ...mods,
+  };
 
   return (
     <TabsActionElement

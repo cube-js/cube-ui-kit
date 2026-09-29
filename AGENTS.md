@@ -58,6 +58,18 @@ A state that only exists during an interaction — an open tooltip, a hover or f
 
 Inside `src/`, import the file that defines a thing rather than the barrel that re-exports it: `from '../../actions/ItemButton/ItemButton'`, not `from '../../actions'`. Same component either way, but the barrel also drags `Menu`, `CommandMenu`, `ButtonSplit` and everything they import into the graph. Three things read that graph — Chromatic's TurboSnap (which cannot scope a build around anything reachable from `<Root>`, so a barrel there costs a full 1000-snapshot rebuild), consumers' tree-shaking, and module init order around `Root`'s module-scope `configure()`. Icons are enforced by `no-restricted-imports`; the rest is on you, with `pnpm chromatic:check` as the backstop and `node scripts/chromatic-report.mjs --trace <file>` to price a change before making it. `index.ts` files are exempt — assembling the public surface is their job. Full rules: [coding.md](docs/rules/coding.md#imports).
 
+## React Compiler: Skip Manual Memoization
+
+The build compiles `src/` with React Compiler, which memoizes every derived value, object and handler in the components and hooks it compiles. Don't add `useMemo`/`useCallback` for performance; write the plain expression, and move a multi-branch computation into a named module-level function. A manual memo is still right only where identity is the contract, because the compiler bails out of some functions and `pnpm test` runs uncompiled source:
+
+- callback refs;
+- values in effect dependencies, directly or through what they feed;
+- `useSyncExternalStore` subscriptions and snapshots;
+- values created once per mount (ids, instances);
+- context provider values and imperative API objects. `root.test.tsx` asserts the form context stays stable in the uncompiled run.
+
+List every dependency the memo reads, including stable `useEvent` callbacks. When manual deps differ from the ones the compiler infers, it skips the whole function (a `PreserveManualMemo` diagnostic). Leave functions that still bail out alone: removing their memos only loses memoization. After touching a component, run `pnpm diagnostics:compiler`. A new diagnostic or lower coverage fails the build; when coverage improves, ratchet the baseline with `--update` and review the diff. Full rules: [coding.md](docs/rules/coding.md#coding-rules), [scripts/compiler/README.md](scripts/compiler/README.md).
+
 ## Styling: Keep Components Customizable
 
 A consumer customizes an element by passing `styles` (or style props) to it, and every styling fix must leave that working. The trap is a parent fixing a child's layout from outside, with any of these:
@@ -125,6 +137,7 @@ Each component lives in `src/components/{category}/{ComponentName}/` and ships `
 - `pnpm chromatic:report` — snapshot inventory + TurboSnap blast radius. `pnpm chromatic:check` is the CI gate; `pnpm chromatic:duplicates` finds stories that photograph the same thing. All three read `storybook-static`, so run `pnpm build-storybook` first. See [The Snapshot Budget](#stories-the-snapshot-budget)
 - `pnpm add-icons` — add new icons from tabler
 - `pnpm audit-docs` — audit component API ↔ docs ↔ argTypes sync. Options: `--component=Name`, `--fix-stories`, `--fix-docs`, `--json`, `--verbose`, `--all-props`. **Run after changing a component's API or adding a new component.**
+- `pnpm diagnostics:compiler` — check every source file against the React Compiler coverage baseline (`scripts/compiler/baseline.json`); `--update` ratchets it after a reviewed change. See [React Compiler](#react-compiler-skip-manual-memoization)
 - `pnpm diagnostics:form` — report-only React Hooks / React Compiler diagnostics for the Form surface and input components, compared against a committed ratchet baseline (`--check` fails on growth, `--update` rewrites it). Not part of `pnpm lint`. See [`src/components/form/Form/legacy-contract/README.md`](src/components/form/Form/legacy-contract/README.md)
 - `pnpm audit-defaults` — regenerate the lint plugin's defaults registry (`src/eslint-plugin/defaults.generated.ts`). **Run whenever you change a default prop value.** `pnpm test` fails until the registry matches what the components actually render — see [eslint-plugin.md](docs/rules/eslint-plugin.md).
 - `pnpm run update-tasty` / `pnpm run update-glaze` — bump and pin `@tenphi/tasty` or `@tenphi/glaze` to the latest version. Pass `--version=X.Y.Z` to pin a specific version.

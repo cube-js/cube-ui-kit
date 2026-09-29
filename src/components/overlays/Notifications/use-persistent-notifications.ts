@@ -1,4 +1,4 @@
-import { Key, useMemo } from 'react';
+import { Key } from 'react';
 
 import { usePersistentNotificationsContext } from './NotificationContext';
 
@@ -41,16 +41,13 @@ export function usePersistentNotifications(): {
     markAllAsRead,
   } = usePersistentNotificationsContext();
 
-  return useMemo(
-    () => ({
-      items: persistentItems,
-      count: persistentItems.length,
-      remove: removePersistentItem,
-      clear: clearPersistentItems,
-      markAllAsRead,
-    }),
-    [persistentItems],
-  );
+  return {
+    items: persistentItems,
+    count: persistentItems.length,
+    remove: removePersistentItem,
+    clear: clearPersistentItems,
+    markAllAsRead,
+  };
 }
 
 /**
@@ -68,11 +65,8 @@ export function usePersistentNotifications(): {
 export function useNotificationsCount(): { total: number; unread: number } {
   const { persistentItems } = usePersistentNotificationsContext();
 
-  return useMemo(
-    () => ({
-      total: persistentItems.length,
-      unread: persistentItems.filter((i) => !i.isRead).length,
-    }),
-    [persistentItems],
-  );
+  return {
+    total: persistentItems.length,
+    unread: persistentItems.filter((i) => !i.isRead).length,
+  };
 }

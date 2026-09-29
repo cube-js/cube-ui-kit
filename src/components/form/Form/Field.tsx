@@ -6,7 +6,6 @@ import {
   PropsWithChildren,
   ReactElement,
   useContext,
-  useMemo,
 } from 'react';
 
 import { FieldBaseProps, LabelPosition } from '../../../shared/index';
@@ -352,10 +351,13 @@ const LegacyFieldContext = createContext<LegacyFieldContextValue>({
   insideLegacyField: false,
 });
 
+const INSIDE_LEGACY_FIELD: LegacyFieldContextValue = {
+  insideLegacyField: true,
+};
+
 function LegacyFieldProvider(props: PropsWithChildren<unknown>) {
-  const value = useMemo(() => ({ insideLegacyField: true }), []);
   return (
-    <LegacyFieldContext.Provider value={value}>
+    <LegacyFieldContext.Provider value={INSIDE_LEGACY_FIELD}>
       {props.children}
     </LegacyFieldContext.Provider>
   );

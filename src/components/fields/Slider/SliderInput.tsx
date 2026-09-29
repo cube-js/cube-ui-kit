@@ -1,5 +1,3 @@
-import { useCallback } from 'react';
-
 import { CubeNumberInputProps, NumberInput } from '../../../';
 
 import type { SliderState } from 'react-stately';
@@ -30,12 +28,9 @@ export function SliderInput(props: RangeInputProps) {
 
   const inputWidth = width || calculateWidth(max);
   const value = state.values[index];
-  const onChange = useCallback(
-    (value: number) => {
-      state.setThumbValue(index, value);
-    },
-    [index, state],
-  );
+  const onChange = (value: number) => {
+    state.setThumbValue(index, value);
+  };
 
   const maxLength = typeof max !== 'undefined' ? String(max).length : undefined;
 

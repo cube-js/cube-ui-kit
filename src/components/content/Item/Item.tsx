@@ -17,7 +17,6 @@ import {
   ReactNode,
   Ref,
   RefObject,
-  useMemo,
 } from 'react';
 import { OverlayProps } from 'react-aria';
 import { useHotkeys } from 'react-hotkeys-hook';
@@ -742,52 +741,33 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     typeof size === 'number' ? `${size}px` : isCustomSize ? size : undefined;
 
   // Base mods for icon resolution (without icon-dependent mods)
-  const baseMods = useMemo<ItemMods>(
-    () => ({
-      disabled: finalIsDisabled,
-      selected: isSelected === true,
-      loading: isLoading,
-      ...(!isCustomSize && { size: size as string }),
-      type,
-      theme,
-      shape: finalShape,
-      ...mods,
-    }),
-    [
-      finalIsDisabled,
-      isSelected,
-      isLoading,
-      size,
-      isCustomSize,
-      type,
-      theme,
-      finalShape,
-      mods,
-    ],
-  );
+  const baseMods: ItemMods = {
+    disabled: finalIsDisabled,
+    selected: isSelected === true,
+    loading: isLoading,
+    ...(!isCustomSize && { size: size as string }),
+    type,
+    theme,
+    shape: finalShape,
+    ...mods,
+  };
 
   // Resolve dynamic icon props (skip resolution for 'checkmark' special value)
-  const resolvedIcon = useMemo(() => {
-    if (hasCheckmark) {
-      return { content: null, hasSlot: true };
-    }
-    return resolveIcon(iconProp as DynamicIcon<ItemMods>, baseMods);
-  }, [iconProp, baseMods, hasCheckmark]);
+  const resolvedIcon = hasCheckmark
+    ? { content: null, hasSlot: true }
+    : resolveIcon(iconProp as DynamicIcon<ItemMods>, baseMods);
 
-  const resolvedRightIcon = useMemo(
-    () => resolveIcon(rightIconProp, baseMods),
-    [rightIconProp, baseMods],
-  );
+  const resolvedRightIcon = resolveIcon(rightIconProp, baseMods);
 
   // Determine which slot to use for loading when "auto" is selected
   // Must be computed before hasIconSlot/hasRightIconSlot since they depend on it
-  const resolvedLoadingSlot = useMemo(() => {
-    if (loadingSlot !== 'auto') return loadingSlot;
-
-    // Auto logic: prefer icon if present, then rightIcon, fallback to icon
-    if (resolvedRightIcon.hasSlot && !resolvedIcon.hasSlot) return 'rightIcon';
-    return 'icon'; // fallback
-  }, [loadingSlot, resolvedIcon.hasSlot, resolvedRightIcon.hasSlot]);
+  // Auto logic: prefer icon if present, then rightIcon, fallback to icon
+  const resolvedLoadingSlot =
+    loadingSlot !== 'auto'
+      ? loadingSlot
+      : resolvedRightIcon.hasSlot && !resolvedIcon.hasSlot
+        ? 'rightIcon'
+        : 'icon';
 
   // Determine if icon slots should render (original slot OR loading state targets this slot)
   const hasIconSlot =
@@ -796,11 +776,9 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     resolvedRightIcon.hasSlot ||
     (isLoading && resolvedLoadingSlot === 'rightIcon');
 
-  const showDescription = useMemo(() => {
-    const copyProps = { ...descriptionProps };
-    delete copyProps.id;
-    return !!(description || Object.keys(copyProps).length > 0);
-  }, [description, descriptionProps]);
+  const showDescription =
+    !!description ||
+    Object.keys(descriptionProps ?? {}).some((key) => key !== 'id');
 
   // Apply loading state to appropriate slots
   const finalIcon =
@@ -903,45 +881,27 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     [hotkeys, finalIsDisabled],
   );
 
-  const finalMods = useMemo<ItemMods>(() => {
-    return {
-      ...baseMods,
-      'has-icon': hasIconSlot,
-      'has-start-content': !!(hasIconSlot || finalPrefix),
-      'has-end-content': !!(hasRightIconSlot || finalSuffix || actions),
-      'has-right-icon': hasRightIconSlot,
-      'has-label': hasLabel,
-      'has-prefix': !!finalPrefix,
-      'has-suffix': !!finalSuffix,
-      'has-description': showDescription,
-      'has-actions': !!actions,
-      'has-actions-content': !!(actions && actions !== true),
-      'auto-hide-actions': autoHideActions === true,
-      'preserve-actions-space': preserveActionsSpace === true,
-      'inside-wrapper': insideWrapper,
-      'actions-shown': showActions && insideWrapper,
-      'skip-actions-width-transition':
-        skipActionsWidthTransition && insideWrapper,
-      checkmark: hasCheckmark,
-      description: showDescription ? finalDescriptionPlacement : 'none',
-    };
-  }, [
-    baseMods,
-    hasIconSlot,
-    hasRightIconSlot,
-    finalPrefix,
-    finalSuffix,
-    showDescription,
-    finalDescriptionPlacement,
-    hasCheckmark,
-    actions,
-    autoHideActions,
-    preserveActionsSpace,
-    hasLabel,
-    showActions,
-    skipActionsWidthTransition,
-    insideWrapper,
-  ]);
+  const finalMods: ItemMods = {
+    ...baseMods,
+    'has-icon': hasIconSlot,
+    'has-start-content': !!(hasIconSlot || finalPrefix),
+    'has-end-content': !!(hasRightIconSlot || finalSuffix || actions),
+    'has-right-icon': hasRightIconSlot,
+    'has-label': hasLabel,
+    'has-prefix': !!finalPrefix,
+    'has-suffix': !!finalSuffix,
+    'has-description': showDescription,
+    'has-actions': !!actions,
+    'has-actions-content': !!(actions && actions !== true),
+    'auto-hide-actions': autoHideActions === true,
+    'preserve-actions-space': preserveActionsSpace === true,
+    'inside-wrapper': insideWrapper,
+    'actions-shown': showActions && insideWrapper,
+    'skip-actions-width-transition':
+      skipActionsWidthTransition && insideWrapper,
+    checkmark: hasCheckmark,
+    description: showDescription ? finalDescriptionPlacement : 'none',
+  };
 
   const {
     labelProps: finalLabelProps,
@@ -974,30 +934,26 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
   });
 
   // Process children with highlight if applicable
-  const processedChildren = useMemo(() => {
-    if (typeof children === 'string' && highlight) {
-      return highlightText(
-        children,
-        highlight,
-        highlightCaseSensitive,
-        highlightStyles,
-      );
-    }
-    return children;
-  }, [children, highlight, highlightCaseSensitive, highlightStyles]);
+  const processedChildren =
+    typeof children === 'string' && highlight
+      ? highlightText(
+          children,
+          highlight,
+          highlightCaseSensitive,
+          highlightStyles,
+        )
+      : children;
 
   // Process description with highlight if applicable
-  const processedDescription = useMemo(() => {
-    if (typeof description === 'string' && highlight) {
-      return highlightText(
-        description,
-        highlight,
-        highlightCaseSensitive,
-        highlightStyles,
-      );
-    }
-    return description;
-  }, [description, highlight, highlightCaseSensitive, highlightStyles]);
+  const processedDescription =
+    typeof description === 'string' && highlight
+      ? highlightText(
+          description,
+          highlight,
+          highlightCaseSensitive,
+          highlightStyles,
+        )
+      : description;
 
   // Render function that creates the item element
   const renderItemElement = (

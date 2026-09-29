@@ -1,5 +1,5 @@
 import { CONTAINER_STYLES, filterBaseProps, tasty } from '@tenphi/tasty';
-import { forwardRef, ReactNode, useCallback, useMemo, useState } from 'react';
+import { forwardRef, ReactNode, useMemo, useState } from 'react';
 
 import { DirectionIcon } from '../../../icons/DirectionIcon';
 import { mergeProps } from '../../../utils/react';
@@ -98,41 +98,33 @@ export const ButtonSplit = forwardRef<HTMLDivElement, CubeButtonSplitProps>(
 
     const currentKey = isControlled ? controlledActionKey : uncontrolledKey;
 
-    const currentAction = useMemo(
-      () => actions?.find((a) => a.key === currentKey) ?? actions?.[0],
-      [actions, currentKey],
-    );
+    const currentAction =
+      actions?.find((a) => a.key === currentKey) ?? actions?.[0];
 
-    const handleActionPress = useCallback(() => {
+    const handleActionPress = () => {
       if (currentKey) {
         onAction?.(currentKey);
       }
-    }, [currentKey, onAction]);
+    };
 
-    const handleSelectionChange = useCallback(
-      (keys: string[]) => {
-        const newKey = keys[0];
+    const handleSelectionChange = (keys: string[]) => {
+      const newKey = keys[0];
 
-        if (newKey) {
-          if (!isControlled) {
-            setUncontrolledKey(newKey);
-          }
-
-          onActionChange?.(newKey);
+      if (newKey) {
+        if (!isControlled) {
+          setUncontrolledKey(newKey);
         }
-      },
-      [isControlled, onActionChange],
-    );
+
+        onActionChange?.(newKey);
+      }
+    };
 
     const containerStyles = extractStyles(rest, STYLE_PROPS);
 
-    const mergedStyles = useMemo<Styles>(
-      () => ({
-        ...containerStyles,
-        ...styles,
-      }),
-      [containerStyles, styles],
-    );
+    const mergedStyles: Styles = {
+      ...containerStyles,
+      ...styles,
+    };
 
     const contextValue = useMemo(
       () => ({

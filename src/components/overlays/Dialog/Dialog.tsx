@@ -12,7 +12,7 @@ import {
   Styles,
   tasty,
 } from '@tenphi/tasty';
-import { forwardRef, ReactElement, Ref, useEffect, useMemo } from 'react';
+import { forwardRef, ReactElement, Ref, useEffect } from 'react';
 import {
   AriaDialogProps,
   DismissButton,
@@ -160,9 +160,7 @@ export const Dialog = forwardRef(function Dialog(
 
   const context = useDialogContext();
 
-  const content = useMemo(() => {
-    return <DialogContent key="content" {...props} ref={ref} />;
-  }, [props, ref]);
+  const content = <DialogContent key="content" {...props} ref={ref} />;
 
   const shouldContainFocus =
     isEntered && !!context.isOpen && context.type !== 'panel';

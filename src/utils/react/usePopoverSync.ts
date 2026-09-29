@@ -1,4 +1,4 @@
-import { RefObject, useCallback, useContext, useEffect, useRef } from 'react';
+import { RefObject, useContext, useEffect, useRef } from 'react';
 
 import { EventBusContext, useEventBus } from './useEventBus';
 
@@ -309,11 +309,8 @@ export function useDismissParentPopover() {
   // Button render in those cases.
   const bus = useContext(EventBusContext);
   const emit = bus?.emit;
-  return useCallback(
-    (from: Element | null) => {
-      if (!from || !emit) return;
-      emit<PopoverDismissAncestorPayload>('popover:dismiss-ancestor', { from });
-    },
-    [emit],
-  );
+  return (from: Element | null) => {
+    if (!from || !emit) return;
+    emit<PopoverDismissAncestorPayload>('popover:dismiss-ancestor', { from });
+  };
 }

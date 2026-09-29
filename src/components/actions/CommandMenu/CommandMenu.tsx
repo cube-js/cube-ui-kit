@@ -12,8 +12,6 @@ import React, {
   ReactElement,
   ReactNode,
   Ref,
-  useCallback,
-  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -162,120 +160,112 @@ function CommandMenu<T extends object>(
   const [internalSearchValue, setInternalSearchValue] = useState('');
   const searchValue = controlledSearchValue ?? internalSearchValue;
 
-  const handleSearchChange = useCallback(
-    (value: string) => {
-      if (controlledSearchValue === undefined) {
-        setInternalSearchValue(value);
-      }
-      onSearchChange?.(value);
-    },
-    [controlledSearchValue, onSearchChange],
-  );
+  const handleSearchChange = (value: string) => {
+    if (controlledSearchValue === undefined) {
+      setInternalSearchValue(value);
+    }
+    onSearchChange?.(value);
+  };
 
   // Filter setup
   const { contains } = useFilter({ sensitivity: 'base' });
-  const textFilterFn = useMemo(
-    () => customFilter || contains,
-    [customFilter, contains],
-  );
+  const textFilterFn = customFilter || contains;
 
   // Enhanced filter function that supports keywords and forceMount
-  const enhancedFilter = useCallback(
-    (textValue: string, inputValue: string, item?: any) => {
-      // Always show force-mounted items
-      if (item?.forceMount) {
-        return true;
-      }
+  const enhancedFilter = (
+    textValue: string,
+    inputValue: string,
+    item?: any,
+  ) => {
+    // Always show force-mounted items
+    if (item?.forceMount) {
+      return true;
+    }
 
-      // If shouldFilter is false, show all items
-      if (!shouldFilter) {
-        return true;
-      }
+    // If shouldFilter is false, show all items
+    if (!shouldFilter) {
+      return true;
+    }
 
-      // Split input value into individual words and filter out empty strings
-      const searchWords = inputValue
-        .trim()
-        .toLowerCase()
-        .split(/\s+/)
-        .filter((word) => word.length > 0);
+    // Split input value into individual words and filter out empty strings
+    const searchWords = inputValue
+      .trim()
+      .toLowerCase()
+      .split(/\s+/)
+      .filter((word) => word.length > 0);
 
-      // If no search words, show all items
-      if (searchWords.length === 0) {
-        return true;
-      }
+    // If no search words, show all items
+    if (searchWords.length === 0) {
+      return true;
+    }
 
-      // Collect all searchable text for this item
-      const searchableTexts: string[] = [];
+    // Collect all searchable text for this item
+    const searchableTexts: string[] = [];
 
-      // Add main text value
-      searchableTexts.push(textValue.toLowerCase());
+    // Add main text value
+    searchableTexts.push(textValue.toLowerCase());
 
-      // Add keywords if available
-      if (item?.keywords && Array.isArray(item.keywords)) {
-        searchableTexts.push(
-          ...item.keywords.map((keyword: string) => keyword.toLowerCase()),
-        );
-      }
-
-      // Check if ALL search words match at least one of the searchable texts
-      return searchWords.every((searchWord) =>
-        searchableTexts.some((text) => text.includes(searchWord)),
+    // Add keywords if available
+    if (item?.keywords && Array.isArray(item.keywords)) {
+      searchableTexts.push(
+        ...item.keywords.map((keyword: string) => keyword.toLowerCase()),
       );
-    },
-    [shouldFilter],
-  );
+    }
+
+    // Check if ALL search words match at least one of the searchable texts
+    return searchWords.every((searchWord) =>
+      searchableTexts.some((text) => text.includes(searchWord)),
+    );
+  };
 
   // Collection filter for React Stately
-  const collectionFilter = useCallback(
-    (nodes: Iterable<any>): Iterable<any> => {
-      const term = searchValue.trim();
+  const collectionFilter = (nodes: Iterable<any>): Iterable<any> => {
+    const term = searchValue.trim();
 
-      // If no search term, return all nodes
-      if (!term) {
-        return nodes;
-      }
+    // If no search term, return all nodes
+    if (!term) {
+      return nodes;
+    }
 
-      // Split search term into words for multi-word filtering
-      const searchWords = term
-        .toLowerCase()
-        .split(/\s+/)
-        .filter((word) => word.length > 0);
+    // Split search term into words for multi-word filtering
+    const searchWords = term
+      .toLowerCase()
+      .split(/\s+/)
+      .filter((word) => word.length > 0);
 
-      // If no valid search words, return all nodes
-      if (searchWords.length === 0) {
-        return nodes;
-      }
+    // If no valid search words, return all nodes
+    if (searchWords.length === 0) {
+      return nodes;
+    }
 
-      // Recursive helper to filter sections and items
-      const filterNodes = (iter: Iterable<any>): any[] => {
-        const result: any[] = [];
+    // Recursive helper to filter sections and items
+    const filterNodes = (iter: Iterable<any>): any[] => {
+      const result: any[] = [];
 
-        for (const node of iter) {
-          if (node.type === 'section') {
-            const filteredChildren = filterNodes(node.childNodes);
+      for (const node of iter) {
+        if (node.type === 'section') {
+          const filteredChildren = filterNodes(node.childNodes);
 
-            if (filteredChildren.length) {
-              result.push({
-                ...node,
-                childNodes: filteredChildren,
-              });
-            }
-          } else {
-            const text = node.textValue ?? String(node.rendered ?? '');
+          if (filteredChildren.length) {
+            result.push({
+              ...node,
+              childNodes: filteredChildren,
+            });
+          }
+        } else {
+          const text = node.textValue ?? String(node.rendered ?? '');
 
-            if (enhancedFilter(text, term, node.props)) {
-              result.push(node);
-            }
+          if (enhancedFilter(text, term, node.props)) {
+            result.push(node);
           }
         }
+      }
 
-        return result;
-      };
+      return result;
+    };
 
-      return filterNodes(nodes);
-    },
-    [searchValue, enhancedFilter],
-  );
+    return filterNodes(nodes);
+  };
 
   // Create tree state with filter for both keyboard navigation and rendering
   const treeStateProps = {
@@ -294,48 +284,7 @@ function CommandMenu<T extends object>(
   const focusedKeyRef = useRef<React.Key | null>(null);
 
   // Apply filtering to collection items for rendering and empty state checks
-  const filteredCollectionItems = useMemo(() => {
-    const term = searchValue.trim();
-    if (!term) {
-      return collectionItems;
-    }
-
-    // Split search term into words for multi-word filtering
-    const searchWords = term
-      .toLowerCase()
-      .split(/\s+/)
-      .filter((word) => word.length > 0);
-
-    // If no valid search words, return all items
-    if (searchWords.length === 0) {
-      return collectionItems;
-    }
-
-    const filterNodes = (items: any[]): any[] => {
-      const result: any[] = [];
-
-      [...items].forEach((item) => {
-        if (item.type === 'section') {
-          const filteredChildren = filterNodes(item.childNodes);
-          if (filteredChildren.length) {
-            result.push({
-              ...item,
-              childNodes: filteredChildren,
-            });
-          }
-        } else {
-          const text = item.textValue ?? String(item.rendered ?? '');
-          if (enhancedFilter(text, term, item.props)) {
-            result.push(item);
-          }
-        }
-      });
-
-      return result;
-    };
-
-    return filterNodes(collectionItems);
-  }, [collectionItems, searchValue, enhancedFilter]);
+  const filteredCollectionItems = [...collectionFilter(collectionItems)];
 
   const hasFilteredItems = filteredCollectionItems.length > 0;
   const viewHasSections = filteredCollectionItems.some(
@@ -343,7 +292,7 @@ function CommandMenu<T extends object>(
   );
 
   // Helper function to find the first selectable item from filtered results
-  const findFirstSelectableItem = useCallback(() => {
+  const findFirstSelectableItem = () => {
     const { selectionManager } = treeState;
 
     const visit = (items: any[]): Key | null => {
@@ -362,7 +311,7 @@ function CommandMenu<T extends object>(
     };
 
     return visit(filteredCollectionItems);
-  }, [filteredCollectionItems, treeState.selectionManager]);
+  };
 
   // Create a ref for the menu container
   const menuRef = useRef<HTMLUListElement>(null);
@@ -380,67 +329,56 @@ function CommandMenu<T extends object>(
   );
 
   // Manual rendering of menu items (similar to Menu component)
-  const renderedItems = useMemo(() => {
-    const items: React.ReactNode[] = [];
-    let isFirstSection = true;
+  const renderedItems: React.ReactNode[] = [];
+  let isFirstSection = true;
 
-    filteredCollectionItems.forEach((item) => {
-      if (item.type === 'section') {
-        if (!isFirstSection) {
-          items.push(
-            <StyledDivider
-              key={`divider-${String(item.key)}`}
-              role="separator"
-              aria-orientation="horizontal"
-            />,
-          );
-        }
-
-        items.push(
-          <MenuSection
-            key={item.key}
-            item={item}
-            state={treeState}
-            styles={completeProps.sectionStyles}
-            itemStyles={completeProps.itemStyles}
-            headingStyles={completeProps.sectionHeadingStyles}
-            size={size}
+  filteredCollectionItems.forEach((item) => {
+    if (item.type === 'section') {
+      if (!isFirstSection) {
+        renderedItems.push(
+          <StyledDivider
+            key={`divider-${String(item.key)}`}
+            role="separator"
+            aria-orientation="horizontal"
           />,
         );
-
-        isFirstSection = false;
-        return;
       }
 
-      let menuItem = (
-        <MenuItem
+      renderedItems.push(
+        <MenuSection
           key={item.key}
           item={item}
           state={treeState}
-          styles={completeProps.itemStyles}
+          styles={completeProps.sectionStyles}
+          itemStyles={completeProps.itemStyles}
+          headingStyles={completeProps.sectionHeadingStyles}
           size={size}
-          onAction={item.onAction}
-        />
+        />,
       );
 
-      // Apply custom wrapper if provided
-      if (item.props.wrapper) {
-        menuItem = item.props.wrapper(menuItem);
-      }
+      isFirstSection = false;
+      return;
+    }
 
-      // Ensure every child has a stable key, even if the wrapper component didn't set one.
-      items.push(React.cloneElement(menuItem, { key: item.key }));
-    });
+    let menuItem = (
+      <MenuItem
+        key={item.key}
+        item={item}
+        state={treeState}
+        styles={completeProps.itemStyles}
+        size={size}
+        onAction={item.onAction}
+      />
+    );
 
-    return items;
-  }, [
-    filteredCollectionItems,
-    treeState,
-    completeProps.sectionStyles,
-    completeProps.itemStyles,
+    // Apply custom wrapper if provided
+    if (item.props.wrapper) {
+      menuItem = item.props.wrapper(menuItem);
+    }
 
-    completeProps.sectionHeadingStyles,
-  ]);
+    // Ensure every child has a stable key, even if the wrapper component didn't set one.
+    renderedItems.push(React.cloneElement(menuItem, { key: item.key }));
+  });
 
   // Auto-focus search input
   React.useEffect(() => {
@@ -502,10 +440,7 @@ function CommandMenu<T extends object>(
   }, [searchValue, findFirstSelectableItem, hasFilteredItems]);
 
   // Extract styles
-  const extractedStyles = useMemo(
-    () => extractStyles(props, CONTAINER_STYLES),
-    [props],
-  );
+  const extractedStyles = extractStyles(props, CONTAINER_STYLES);
 
   // Determine if we should show empty state based on actual filtered collection
   const hasSearchTerm = searchValue.trim().length > 0;
@@ -514,19 +449,14 @@ function CommandMenu<T extends object>(
   // Sync refs
   useSyncRef(contextProps, menuRef);
 
-  const mods = useMemo(() => {
-    // Determine mods based on menu context
-    let popoverMod = completeProps.mods?.popover;
-    let trayMod = completeProps.mods?.tray;
-
-    return {
-      sections: viewHasSections,
-      footer: !!footer,
-      header: !!header,
-      popover: popoverMod,
-      tray: trayMod,
-    };
-  }, [viewHasSections, footer, header, completeProps.mods]);
+  // Determine mods based on menu context
+  const mods = {
+    sections: viewHasSections,
+    footer: !!footer,
+    header: !!header,
+    popover: completeProps.mods?.popover,
+    tray: completeProps.mods?.tray,
+  };
 
   return (
     <StyledCommandMenu

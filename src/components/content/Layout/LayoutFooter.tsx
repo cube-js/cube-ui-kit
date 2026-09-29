@@ -1,5 +1,5 @@
 import { tasty } from '@tenphi/tasty';
-import { ForwardedRef, forwardRef, useMemo } from 'react';
+import { ForwardedRef, forwardRef } from 'react';
 
 import { CubeLayoutContentProps, LayoutContent } from './LayoutContent';
 
@@ -50,13 +50,10 @@ function LayoutFooter(
     ...otherProps
   } = props;
 
-  const finalMods = useMemo(
-    () => ({
-      inverted: invertOrder,
-      ...mods,
-    }),
-    [invertOrder, mods],
-  );
+  const finalMods = {
+    inverted: invertOrder,
+    ...mods,
+  };
 
   return (
     <FooterElement

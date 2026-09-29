@@ -1,10 +1,9 @@
 import { useCollator } from '@react-aria/i18n';
 import { useControlledState } from '@react-stately/utils';
-import { useMemo } from 'react';
 
 import { useEvent } from '../../../_internal/hooks';
 
-import { compareByColumn } from './use-table-sort';
+import { sortRows } from './use-table-sort';
 
 import type {
   CubeTableColumn,
@@ -142,46 +141,8 @@ export function useTableSorts<T>({
     },
   );
 
-  const sortedRows = useMemo(() => {
-    if (resolvedMode !== 'client' || !sorts.length) return rows;
-
-    const active = sorts
-      .map((sort) => ({
-        sort,
-        column: columns.find((entry) => entry.key === sort.columnKey),
-      }))
-      .filter(
-        (entry): entry is { sort: CubeTableSort; column: CubeTableColumn<T> } =>
-          entry.column != null,
-      );
-
-    if (!active.length) return rows;
-
-    // Not sorted in place: `rows` belongs to the caller and `sort` mutates.
-    // The original index is carried so the result is stable when every sort
-    // ties.
-    return rows
-      .map((row, index) => ({ row, index }))
-      .sort((a, b) => {
-        for (const { sort, column } of active) {
-          const result = compareByColumn(
-            column,
-            collator,
-            a.row,
-            a.index,
-            b.row,
-            b.index,
-          );
-
-          if (result !== 0) {
-            return result * (sort.direction === 'asc' ? 1 : -1);
-          }
-        }
-
-        return a.index - b.index;
-      })
-      .map((entry) => entry.row);
-  }, [resolvedMode, sorts, rows, columns, collator]);
+  const sortedRows =
+    resolvedMode === 'client' ? sortRows(rows, sorts, columns, collator) : rows;
 
   /** Where a column sits in the precedence, 1-based. `0` when unsorted. */
   const sortRank = useEvent(

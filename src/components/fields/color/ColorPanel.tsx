@@ -1,5 +1,5 @@
 import { Styles, tasty } from '@tenphi/tasty';
-import { ReactNode, useMemo } from 'react';
+import { ReactNode } from 'react';
 
 import { useEvent } from '../../../_internal';
 import { Radio } from '../RadioGroup';
@@ -182,13 +182,10 @@ export function ColorPanel(props: ColorPanelProps) {
     onSpaceChange,
   } = props;
 
-  const colorTokens = useMemo(
-    () => ({
-      '--color-picker-color': toHex(color),
-      '--color-picker-contrast-color': getContrastingColor(color),
-    }),
-    [color],
-  );
+  const colorTokens = {
+    '--color-picker-color': toHex(color),
+    '--color-picker-contrast-color': getContrastingColor(color),
+  };
 
   const handleSpaceChange = useEvent((value: string) => {
     onSpaceChange(value as ColorSpace);

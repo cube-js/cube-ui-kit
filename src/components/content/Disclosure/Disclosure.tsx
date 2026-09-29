@@ -322,40 +322,31 @@ const DisclosureComponent = forwardRef<HTMLDivElement, CubeDisclosureProps>(
       ],
     );
 
-    const stateContext = useMemo<DisclosureStateContext>(
-      () => ({
-        isExpanded,
-        toggle: state.toggle,
-        expand: state.expand,
-        collapse: state.collapse,
-      }),
-      [isExpanded, state.toggle, state.expand, state.collapse],
-    );
+    const stateContext: DisclosureStateContext = {
+      isExpanded,
+      toggle: state.toggle,
+      expand: state.expand,
+      collapse: state.collapse,
+    };
 
     const outerStyles = extractStyles(otherProps, OUTER_STYLES);
 
-    const finalMods = useMemo(
-      () => ({
-        expanded: isExpanded,
-        disabled: isDisabled,
-        shape,
-        ...mods,
-      }),
-      [isExpanded, isDisabled, shape, mods],
-    );
+    const finalMods = {
+      expanded: isExpanded,
+      disabled: isDisabled,
+      shape,
+      ...mods,
+    };
 
     const content =
       typeof children === 'function' ? children(stateContext) : children;
 
     // Declared on the root rather than the panel so both animations driven by
     // it — the panel height and the trigger radius — share one duration.
-    const tokens = useMemo(
-      () =>
-        transitionDuration != null
-          ? { '$disclosure-transition': `${transitionDuration}ms` }
-          : undefined,
-      [transitionDuration],
-    );
+    const tokens =
+      transitionDuration != null
+        ? { '$disclosure-transition': `${transitionDuration}ms` }
+        : undefined;
 
     return (
       <DisclosureContext.Provider value={contextValue}>
@@ -385,16 +376,13 @@ const DisclosureTrigger = forwardRef<
   const context = useDisclosureContext();
   const { buttonProps, isDisabled, isExpanded, shape, triggerProps } = context;
 
-  const finalMods = useMemo(
-    () => ({
-      expanded: isExpanded,
-      disabled: isDisabled,
-      shape,
-      selected: false,
-      ...mods,
-    }),
-    [isExpanded, isDisabled, shape, mods],
-  );
+  const finalMods = {
+    expanded: isExpanded,
+    disabled: isDisabled,
+    shape,
+    selected: false,
+    ...mods,
+  };
 
   // Default icon is a rotating chevron
   const defaultIcon = <TriggerIcon mods={{ expanded: isExpanded }} />;
@@ -432,13 +420,10 @@ const DisclosureContent = forwardRef<
     contentStyles,
   } = context;
 
-  const mergedStyles = useMemo<Styles>(
-    () => ({
-      ...contentStyles,
-      ...styles,
-    }),
-    [contentStyles, styles],
-  );
+  const mergedStyles: Styles = {
+    ...contentStyles,
+    ...styles,
+  };
 
   // Filter out hidden attribute from panelProps since we manage visibility via CSS height animation
   const { hidden, ...filteredPanelProps } = panelProps as Record<
@@ -512,13 +497,10 @@ const DisclosureGroup = forwardRef<HTMLDivElement, CubeDisclosureGroupProps>(
 
     const outerStyles = extractStyles(otherProps, OUTER_STYLES);
 
-    const finalStyles = useMemo<Styles>(
-      () => ({
-        ...outerStyles,
-        ...styles,
-      }),
-      [outerStyles, styles],
-    );
+    const finalStyles: Styles = {
+      ...outerStyles,
+      ...styles,
+    };
 
     return (
       <DisclosureGroupContext.Provider value={contextValue}>
@@ -622,23 +604,17 @@ const DisclosureItem = forwardRef<HTMLDivElement, CubeDisclosureItemProps>(
 
     const outerStyles = extractStyles(otherProps, OUTER_STYLES);
 
-    const finalStyles = useMemo<Styles>(
-      () => ({
-        ...outerStyles,
-        ...styles,
-      }),
-      [outerStyles, styles],
-    );
+    const finalStyles: Styles = {
+      ...outerStyles,
+      ...styles,
+    };
 
-    const finalMods = useMemo(
-      () => ({
-        expanded: isExpanded,
-        disabled: isDisabled,
-        shape,
-        ...mods,
-      }),
-      [isExpanded, isDisabled, shape, mods],
-    );
+    const finalMods = {
+      expanded: isExpanded,
+      disabled: isDisabled,
+      shape,
+      ...mods,
+    };
 
     return (
       <DisclosureContext.Provider value={contextValue}>

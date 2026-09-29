@@ -100,10 +100,8 @@
     "optOuts": 0
   },
   "src/components/actions/ButtonSplit/ButtonSplit.tsx": {
-    "compiled": 0,
-    "diagnostics": {
-      "PreserveManualMemo": 1
-    },
+    "compiled": 1,
+    "diagnostics": {},
     "optOuts": 0
   },
   "src/components/actions/ButtonSplit/context.ts": {
@@ -112,10 +110,8 @@
     "optOuts": 0
   },
   "src/components/actions/CommandMenu/CommandMenu.tsx": {
-    "compiled": 0,
-    "diagnostics": {
-      "PreserveManualMemo": 3
-    },
+    "compiled": 1,
+    "diagnostics": {},
     "optOuts": 0
   },
   "src/components/actions/ItemAction/ItemAction.tsx": {
@@ -168,7 +164,7 @@
   "src/components/actions/Menu/SubMenuTrigger.tsx": {
     "compiled": 0,
     "diagnostics": {
-      "Immutability": 10
+      "Immutability": 9
     },
     "optOuts": 0
   },
@@ -185,7 +181,7 @@
   "src/components/actions/use-action.ts": {
     "compiled": 0,
     "diagnostics": {
-      "Hooks": 3
+      "Hooks": 2
     },
     "optOuts": 0
   },
@@ -325,24 +321,18 @@
     "optOuts": 0
   },
   "src/components/content/Layout/LayoutContainer.tsx": {
-    "compiled": 0,
-    "diagnostics": {
-      "PreserveManualMemo": 2
-    },
+    "compiled": 1,
+    "diagnostics": {},
     "optOuts": 0
   },
   "src/components/content/Layout/LayoutContent.tsx": {
-    "compiled": 0,
-    "diagnostics": {
-      "PreserveManualMemo": 3
-    },
+    "compiled": 1,
+    "diagnostics": {},
     "optOuts": 0
   },
   "src/components/content/Layout/LayoutContext.tsx": {
-    "compiled": 6,
-    "diagnostics": {
-      "PreserveManualMemo": 9
-    },
+    "compiled": 7,
+    "diagnostics": {},
     "optOuts": 0
   },
   "src/components/content/Layout/LayoutFlex.tsx": {
@@ -366,10 +356,8 @@
     "optOuts": 0
   },
   "src/components/content/Layout/LayoutPane.tsx": {
-    "compiled": 1,
-    "diagnostics": {
-      "PreserveManualMemo": 3
-    },
+    "compiled": 2,
+    "diagnostics": {},
     "optOuts": 0
   },
   "src/components/content/Layout/LayoutPanel.tsx": {
@@ -471,10 +459,8 @@
     "optOuts": 0
   },
   "src/components/content/use-auto-tooltip.tsx": {
-    "compiled": 0,
-    "diagnostics": {
-      "Immutability": 1
-    },
+    "compiled": 1,
+    "diagnostics": {},
     "optOuts": 0
   },
   "src/components/data/DataTable/DataTable.tsx": {
@@ -1122,10 +1108,8 @@
     "optOuts": 0
   },
   "src/components/layout/Panel.tsx": {
-    "compiled": 0,
-    "diagnostics": {
-      "PreserveManualMemo": 2
-    },
+    "compiled": 1,
+    "diagnostics": {},
     "optOuts": 0
   },
   "src/components/layout/Prefix.tsx": {
@@ -1318,6 +1302,11 @@
     "diagnostics": {},
     "optOuts": 0
   },
+  "src/components/overlays/Dialog/use-content-overflow.ts": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
   "src/components/overlays/Dialog/use-dialog-container.tsx": {
     "compiled": 0,
     "diagnostics": {
@@ -1383,10 +1372,8 @@
     "optOuts": 0
   },
   "src/components/overlays/Notifications/OverlayContainer.tsx": {
-    "compiled": 2,
-    "diagnostics": {
-      "PreserveManualMemo": 1
-    },
+    "compiled": 3,
+    "diagnostics": {},
     "optOuts": 0
   },
   "src/components/overlays/Notifications/OverlayProvider.tsx": {
@@ -1423,10 +1410,8 @@
     "optOuts": 0
   },
   "src/components/overlays/Notifications/use-persistent-notifications.ts": {
-    "compiled": 1,
-    "diagnostics": {
-      "PreserveManualMemo": 3
-    },
+    "compiled": 2,
+    "diagnostics": {},
     "optOuts": 0
   },
   "src/components/overlays/Notifications/use-persistent-state.ts": {
@@ -1592,7 +1577,7 @@
     "optOuts": 0
   },
   "src/tokens/palette-config.ts": {
-    "compiled": 2,
+    "compiled": 3,
     "diagnostics": {},
     "optOuts": 0
   },

@@ -1,4 +1,3 @@
-import { useMemo } from 'react';
 import { useLocale } from 'react-aria';
 
 import { createFormatter } from './createFormatter';
@@ -26,5 +25,5 @@ import type { Formatter } from './createFormatter';
 export function useFormatter(): Formatter {
   const { locale } = useLocale();
 
-  return useMemo(() => createFormatter(locale), [locale]);
+  return createFormatter(locale);
 }

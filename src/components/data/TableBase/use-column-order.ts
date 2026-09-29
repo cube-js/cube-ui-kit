@@ -1,5 +1,5 @@
 import { useControlledState } from '@react-stately/utils';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 
 import { useEvent } from '../../../_internal/hooks';
 
@@ -158,17 +158,11 @@ export function useColumnOrder<T>({
     onColumnOrderChange as (value: string[]) => void,
   );
 
-  const ordered = useMemo(
-    () => applyColumnOrder(columns, order),
-    [columns, order],
-  );
+  const ordered = applyColumnOrder(columns, order);
 
   // Always the FULL source key list, in current order — so a key never drops out
   // of persisted state just because its column happened to be hidden.
-  const fullOrder = useMemo(
-    () => ordered.map((column) => column.key),
-    [ordered],
-  );
+  const fullOrder = ordered.map((column) => column.key);
 
   const reorder = useEvent((nextDraggable: string[]) => {
     const next = projectReorder(fullOrder, nextDraggable);

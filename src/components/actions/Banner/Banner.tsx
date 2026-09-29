@@ -6,7 +6,7 @@ import {
   IconX,
 } from '@tabler/icons-react';
 import { tasty } from '@tenphi/tasty';
-import { ReactNode, useMemo } from 'react';
+import { ReactNode } from 'react';
 
 import { useEvent } from '../../../_internal/hooks/use-event';
 import { useI18n } from '../../../i18n';
@@ -137,7 +137,7 @@ export function Banner(props: BannerProps) {
     onDismiss?.();
   });
 
-  const defaultIcon = useMemo(() => DEFAULT_ICONS[theme], [theme]);
+  const defaultIcon = DEFAULT_ICONS[theme];
 
   const hasActions = !!(actions || isDismissable);
 

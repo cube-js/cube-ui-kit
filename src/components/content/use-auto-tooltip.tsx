@@ -5,7 +5,6 @@ import {
   RefObject,
   useCallback,
   useEffect,
-  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -75,6 +74,82 @@ function queueOverflowCheck(check: () => void) {
   pendingOverflowChecks.add(check);
 }
 
+/**
+ * Whether the tooltip detects label overflow on its own. Overflow detection
+ * measures text, so it needs a string label.
+ */
+function isAutoTooltip(
+  tooltip: AutoTooltipValue | undefined,
+  children: ReactNode,
+): boolean {
+  if (typeof children !== 'string') return false;
+
+  // Boolean true enables auto overflow detection
+  if (tooltip === true) return true;
+  if (typeof tooltip === 'object') {
+    // If title is provided and auto is explicitly true, enable auto overflow detection
+    if (tooltip.title) {
+      return tooltip.auto === true;
+    }
+
+    // If no title is provided, default to auto=true unless explicitly disabled
+    return tooltip.auto !== undefined ? !!tooltip.auto : true;
+  }
+  return false;
+}
+
+/**
+ * The `TooltipProvider` props a tooltip resolves to, or `null` when no tooltip
+ * is rendered at all.
+ */
+function resolveTooltip({
+  tooltip,
+  children,
+  labelProps,
+  isDynamicLabel,
+  isLabelOverflowed,
+}: Omit<UseAutoTooltipOptions, 'labelRef'> & {
+  isLabelOverflowed: boolean;
+}): Omit<CubeTooltipProviderProps, 'children'> | null {
+  if (!tooltip) return null;
+
+  // String tooltip - simple case
+  if (typeof tooltip === 'string') {
+    return { title: tooltip };
+  }
+
+  const hasAutoContent =
+    !!(children || labelProps) && (isLabelOverflowed || isDynamicLabel);
+
+  // Boolean tooltip - auto tooltip on overflow
+  if (tooltip === true) {
+    if (!hasAutoContent) return null;
+
+    return {
+      title: children,
+      isDisabled: !isLabelOverflowed && isDynamicLabel,
+    };
+  }
+
+  // Object tooltip - advanced configuration
+  const { auto, ...tooltipProps } = tooltip;
+
+  // If title is provided and auto is not explicitly true, always show the tooltip
+  if (tooltipProps.title && auto !== true) {
+    return tooltipProps;
+  }
+
+  // If title is provided with auto=true, OR no title but auto behavior enabled
+  if (!hasAutoContent) return null;
+
+  return {
+    title: tooltipProps.title ?? children,
+    isDisabled:
+      !isLabelOverflowed && isDynamicLabel && tooltipProps.isDisabled !== true,
+    ...tooltipProps,
+  };
+}
+
 export function useAutoTooltip({
   tooltip,
   children,
@@ -82,25 +157,7 @@ export function useAutoTooltip({
   isDynamicLabel = false,
   labelRef: labelRefOption,
 }: UseAutoTooltipOptions) {
-  // Determine if auto tooltip is enabled
-  // Auto tooltip only works when children is a string (overflow detection needs text)
-  const isAutoTooltipEnabled = useMemo(() => {
-    if (typeof children !== 'string') return false;
-
-    // Boolean true enables auto overflow detection
-    if (tooltip === true) return true;
-    if (typeof tooltip === 'object') {
-      // If title is provided and auto is explicitly true, enable auto overflow detection
-      if (tooltip.title) {
-        return tooltip.auto === true;
-      }
-
-      // If no title is provided, default to auto=true unless explicitly disabled
-      const autoValue = tooltip.auto !== undefined ? tooltip.auto : true;
-      return !!autoValue;
-    }
-    return false;
-  }, [tooltip, children]);
+  const isAutoTooltipEnabled = isAutoTooltip(tooltip, children);
 
   // Track label overflow for auto tooltip (only when enabled)
   const externalLabelRef = (labelProps as any)?.ref;
@@ -242,65 +299,17 @@ export function useAutoTooltip({
     ],
   );
 
-  const finalLabelProps = useMemo(() => {
-    const props = {
-      ...(labelProps || {}),
-    };
+  const { ref: _labelPropsRef, ...finalLabelProps } = labelProps || {};
 
-    delete props.ref;
-
-    return props;
-  }, [labelProps]);
-
-  /**
-   * The `TooltipProvider` props this tooltip resolves to, or `null` when no
-   * tooltip is rendered at all. Resolved once so that both the rendering below
-   * and `isTooltipActive` speak about the same tooltip.
-   */
-  const resolvedTooltip = useMemo<Omit<
-    CubeTooltipProviderProps,
-    'children'
-  > | null>(() => {
-    if (!tooltip) return null;
-
-    // String tooltip - simple case
-    if (typeof tooltip === 'string') {
-      return { title: tooltip };
-    }
-
-    const hasAutoContent =
-      !!(children || labelProps) && (isLabelOverflowed || isDynamicLabel);
-
-    // Boolean tooltip - auto tooltip on overflow
-    if (tooltip === true) {
-      if (!hasAutoContent) return null;
-
-      return {
-        title: children,
-        isDisabled: !isLabelOverflowed && isDynamicLabel,
-      };
-    }
-
-    // Object tooltip - advanced configuration
-    const { auto, ...tooltipProps } = tooltip;
-
-    // If title is provided and auto is not explicitly true, always show the tooltip
-    if (tooltipProps.title && auto !== true) {
-      return tooltipProps;
-    }
-
-    // If title is provided with auto=true, OR no title but auto behavior enabled
-    if (!hasAutoContent) return null;
-
-    return {
-      title: tooltipProps.title ?? children,
-      isDisabled:
-        !isLabelOverflowed &&
-        isDynamicLabel &&
-        tooltipProps.isDisabled !== true,
-      ...tooltipProps,
-    };
-  }, [tooltip, children, labelProps, isLabelOverflowed, isDynamicLabel]);
+  // Resolved once so that both the rendering below and `isTooltipActive` speak
+  // about the same tooltip.
+  const resolvedTooltip = resolveTooltip({
+    tooltip,
+    children,
+    labelProps,
+    isDynamicLabel,
+    isLabelOverflowed,
+  });
 
   /** Whether a tooltip is rendered and able to open. */
   const isTooltipActive =

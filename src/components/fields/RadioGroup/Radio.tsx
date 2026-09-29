@@ -7,7 +7,7 @@ import {
   OUTER_STYLES,
   tasty,
 } from '@tenphi/tasty';
-import { forwardRef, useMemo, useRef } from 'react';
+import { forwardRef, useRef } from 'react';
 import { useHover, useRadio } from 'react-aria';
 
 import { FieldBaseProps } from '../../../shared';
@@ -423,27 +423,15 @@ function Radio(props: CubeRadioProps, ref) {
     inputRef,
   );
 
-  const mods = useMemo(
-    () => ({
-      checked: isRadioSelected,
-      ...getValidationMods({ isInvalid, isValid }),
-      disabled: isRadioDisabled,
-      hovered: isHovered,
-      button: isButton,
-      focused: isFocused,
-      tabs: effectiveType === 'tabs',
-    }),
-    [
-      isRadioSelected,
-      isInvalid,
-      isValid,
-      isRadioDisabled,
-      isHovered,
-      isButton,
-      isFocused,
-      effectiveType,
-    ],
-  );
+  const mods = {
+    checked: isRadioSelected,
+    ...getValidationMods({ isInvalid, isValid }),
+    disabled: isRadioDisabled,
+    hovered: isHovered,
+    button: isButton,
+    focused: isFocused,
+    tabs: effectiveType === 'tabs',
+  };
 
   // Render button type using Item
   if (isButton) {

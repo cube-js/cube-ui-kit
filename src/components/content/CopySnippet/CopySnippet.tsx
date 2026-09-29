@@ -1,6 +1,6 @@
 import { tasty } from '@tenphi/tasty';
 import copy from 'clipboard-copy';
-import { ReactNode, useMemo, useState } from 'react';
+import { ReactNode, useState } from 'react';
 
 import { useI18n } from '../../../i18n';
 import { CopyIcon } from '../../../icons/CopyIcon';
@@ -254,14 +254,12 @@ function CopySnippet(allProps: CubeCopySnippetProps) {
     }
   }
 
-  const mods = useMemo(() => {
-    return {
-      nowrap,
-      multiline: multiline || shouldWrap,
-      serif,
-      hidden: !!hideText,
-    };
-  }, [nowrap, multiline, shouldWrap, hideText, serif]);
+  const mods = {
+    nowrap,
+    multiline: multiline || shouldWrap,
+    serif,
+    hidden: !!hideText,
+  };
 
   const Snippet = (
     <CopySnippetElement mods={mods} {...props}>

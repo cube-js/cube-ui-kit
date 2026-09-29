@@ -1,4 +1,4 @@
-import { ForwardedRef, forwardRef, useCallback, useRef, useState } from 'react';
+import { ForwardedRef, forwardRef, useRef, useState } from 'react';
 import { useTextField } from 'react-aria';
 
 import { useI18n } from '../../../i18n';
@@ -72,9 +72,9 @@ function PasswordInput(
   // Merge user-provided labelProps with aria labelProps
   const mergedLabelProps = mergeProps(labelProps, userLabelProps);
 
-  const toggleType = useCallback(() => {
+  const toggleType = () => {
     setType((type) => (type === 'password' ? 'text' : 'password'));
-  }, []);
+  };
 
   const wrappedSuffix = (
     <>

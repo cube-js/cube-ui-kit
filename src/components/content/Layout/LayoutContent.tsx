@@ -13,7 +13,6 @@ import {
   forwardRef,
   HTMLAttributes,
   ReactNode,
-  useMemo,
   useRef,
 } from 'react';
 import { useHover } from 'react-aria';
@@ -145,33 +144,23 @@ function LayoutContent(
     isScrolling,
   } = useTinyScrollbar(internalInnerRef, isTinyScrollbar);
 
-  const scrollbarStyle = useMemo(() => {
-    if (!isTinyScrollbar) return {};
+  const scrollbarStyle = isTinyScrollbar
+    ? { ...handleVStyle, ...handleHStyle }
+    : {};
 
-    return {
-      ...handleVStyle,
-      ...handleHStyle,
-    };
-  }, [isTinyScrollbar, handleVStyle, handleHStyle]);
-
-  const mods = useMemo(
-    () => ({
-      ...externalMods,
-      scrollbar,
-      hovered: isHovered,
-      scrolling: isScrolling,
-    }),
-    [externalMods, scrollbar, isHovered, isScrolling],
-  );
+  const mods = {
+    ...externalMods,
+    scrollbar,
+    hovered: isHovered,
+    scrolling: isScrolling,
+  };
 
   // Merge styles: outer styles to root, inner styles to Inner element
-  const finalStyles = useMemo(() => {
-    return mergeStyles(
-      styles,
-      outerStyles,
-      innerStyles ? { Inner: innerStyles } : null,
-    );
-  }, [styles, outerStyles, innerStyles]);
+  const finalStyles = mergeStyles(
+    styles,
+    outerStyles,
+    innerStyles ? { Inner: innerStyles } : null,
+  );
 
   return (
     <ContentElement

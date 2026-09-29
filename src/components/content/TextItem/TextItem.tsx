@@ -6,7 +6,7 @@ import {
   tasty,
   TEXT_STYLES,
 } from '@tenphi/tasty';
-import { forwardRef, HTMLAttributes, RefObject, useMemo } from 'react';
+import { forwardRef, HTMLAttributes, RefObject } from 'react';
 import { OverlayProps } from 'react-aria';
 
 import { extractStyles } from '../../../utils/styles';
@@ -79,17 +79,15 @@ export const TextItem = forwardRef<HTMLElement, CubeTextItemProps>(
     });
 
     // Process children with highlight if applicable
-    const processedChildren = useMemo(() => {
-      if (typeof children === 'string' && highlight) {
-        return highlightText(
-          children,
-          highlight,
-          highlightCaseSensitive,
-          highlightStyles,
-        );
-      }
-      return children;
-    }, [children, highlight, highlightCaseSensitive, highlightStyles]);
+    const processedChildren =
+      typeof children === 'string' && highlight
+        ? highlightText(
+            children,
+            highlight,
+            highlightCaseSensitive,
+            highlightStyles,
+          )
+        : children;
 
     const renderElement = (
       tooltipTriggerProps?: HTMLAttributes<HTMLElement>,

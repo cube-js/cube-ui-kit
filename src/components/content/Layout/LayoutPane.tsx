@@ -15,7 +15,6 @@ import {
   ReactNode,
   useCallback,
   useEffect,
-  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -404,69 +403,46 @@ function LayoutPane(
   }, [providedSize, isDragging, clampValue]);
 
   // Reset to default size on double-click
-  const handleResetSize = useCallback(() => {
+  const handleResetSize = () => {
     const resetSize =
       typeof defaultSize === 'number' ? defaultSize : parseInt(defaultSize, 10);
     const clampedSize = clampValue(resetSize || 200);
     setSize(clampedSize);
     onSizeChange?.(clampedSize);
-  }, [defaultSize, clampValue, onSizeChange]);
+  };
 
-  const scrollbarStyle = useMemo(() => {
-    if (!isTinyScrollbar) return {};
+  const scrollbarStyle = isTinyScrollbar
+    ? { ...handleVStyle, ...handleHStyle }
+    : {};
 
-    return {
-      ...handleVStyle,
-      ...handleHStyle,
-    };
-  }, [isTinyScrollbar, handleVStyle, handleHStyle]);
-
-  const paneMods = useMemo(
-    () => ({
-      scrollbar,
-      hovered: isHovered,
-      scrolling: isScrolling,
-      handlerHovered: debouncedHandlerHovered,
-      focused: isHandlerFocused,
-      disabled: !isResizable,
-      edge: resizeEdge,
-      drag: isDragging,
-      ...mods,
-    }),
-    [
-      scrollbar,
-      isHovered,
-      isScrolling,
-      debouncedHandlerHovered,
-      isHandlerFocused,
-      isResizable,
-      resizeEdge,
-      isDragging,
-      mods,
-    ],
-  );
+  const paneMods = {
+    scrollbar,
+    hovered: isHovered,
+    scrolling: isScrolling,
+    handlerHovered: debouncedHandlerHovered,
+    focused: isHandlerFocused,
+    disabled: !isResizable,
+    edge: resizeEdge,
+    drag: isDragging,
+    ...mods,
+  };
 
   // Merge styles: outer styles to root, inner styles to Inner element
   // Size is NOT included here - it's set via CSS custom property in paneStyle for performance
-  const finalStyles = useMemo(() => {
-    return mergeStyles(
-      styles,
-      outerStyles,
-      innerStyles ? { Inner: innerStyles } : null,
-    );
-  }, [styles, outerStyles, innerStyles]);
+  const finalStyles = mergeStyles(
+    styles,
+    outerStyles,
+    innerStyles ? { Inner: innerStyles } : null,
+  );
 
   // Size is set via CSS custom property for performance during drag
   // This avoids expensive style recalculation on every mouse move
-  const paneStyle = useMemo(
-    () => ({
-      ...scrollbarStyle,
-      '--pane-size': `${size}px`,
-      '--min-size': typeof minSize === 'number' ? `${minSize}px` : minSize,
-      '--max-size': typeof maxSize === 'number' ? `${maxSize}px` : maxSize,
-    }),
-    [scrollbarStyle, size, minSize, maxSize],
-  );
+  const paneStyle = {
+    ...scrollbarStyle,
+    '--pane-size': `${size}px`,
+    '--min-size': typeof minSize === 'number' ? `${minSize}px` : minSize,
+    '--max-size': typeof maxSize === 'number' ? `${maxSize}px` : maxSize,
+  };
 
   return (
     <PaneElement

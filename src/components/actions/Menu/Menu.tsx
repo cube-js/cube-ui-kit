@@ -7,7 +7,7 @@ import {
   filterBaseProps,
   Styles,
 } from '@tenphi/tasty';
-import React, { ReactElement, ReactNode, Ref, useMemo } from 'react';
+import React, { ReactElement, ReactNode, Ref } from 'react';
 import { AriaMenuProps, useMenu } from 'react-aria';
 import { Section as BaseSection, useTreeState } from 'react-stately';
 
@@ -130,90 +130,79 @@ function Menu<T extends object>(
   const hasSections = collectionItems.some((item) => item.type === 'section');
 
   const { menuProps } = useMenu(completeProps, state, domRef);
-  const styles = useMemo(
-    () => extractStyles(completeProps, CONTAINER_STYLES),
-    [completeProps],
-  );
+  const styles = extractStyles(completeProps, CONTAINER_STYLES);
 
-  const wrapperMods = useMemo(() => {
-    return {
-      popover: completeProps.mods?.popover,
-      footer: !!footer,
-      header: !!header,
-    };
-  }, [completeProps.mods?.popover, footer, header]);
+  const wrapperMods = {
+    popover: completeProps.mods?.popover,
+    footer: !!footer,
+    header: !!header,
+  };
 
-  const menuMods = useMemo(() => {
-    return {
-      sections: hasSections,
-    };
-  }, [hasSections]);
+  const menuMods = {
+    sections: hasSections,
+  };
 
   // Sync the ref stored in the context object with the menu's DOM ref.
   // `useSyncRef` from @react-aria/utils expects the context object as the
   // first argument to keep it up-to-date, and a ref object as the second.
   useSyncRef(contextProps, domRef);
 
-  const renderedItems = useMemo(() => {
-    const items: React.ReactNode[] = [];
-    let isFirstSection = true;
+  const renderedItems: React.ReactNode[] = [];
+  let isFirstSection = true;
 
-    collectionItems.forEach((item) => {
-      if (item.type === 'section') {
-        if (!isFirstSection) {
-          items.push(
-            <StyledDivider
-              key={`divider-${String(item.key)}`}
-              role="separator"
-              aria-orientation="horizontal"
-            />,
-          );
-        }
-
-        items.push(
-          <MenuSection
-            key={item.key}
-            item={item}
-            state={state}
-            styles={sectionStyles}
-            itemStyles={itemStyles}
-            headingStyles={sectionHeadingStyles}
-            size={size}
+  collectionItems.forEach((item) => {
+    if (item.type === 'section') {
+      if (!isFirstSection) {
+        renderedItems.push(
+          <StyledDivider
+            key={`divider-${String(item.key)}`}
+            role="separator"
+            aria-orientation="horizontal"
           />,
         );
-
-        isFirstSection = false;
-        return;
       }
 
-      let menuItem = (
-        <MenuItem
+      renderedItems.push(
+        <MenuSection
           key={item.key}
           item={item}
           state={state}
-          styles={itemStyles}
+          styles={sectionStyles}
+          itemStyles={itemStyles}
+          headingStyles={sectionHeadingStyles}
           size={size}
-          onAction={item.onAction}
-        />
+        />,
       );
 
-      // `MenuItem` renders the item's `tooltip` itself — wrapping it in a
-      // second provider makes the two tooltips close each other.
+      isFirstSection = false;
+      return;
+    }
 
-      // Apply custom wrapper if provided
-      if (item.props?.wrapper) {
-        menuItem = item.props.wrapper(menuItem);
-      } else if ((item as any).wrapper) {
-        // Handle wrapper from collection nodes (e.g., SubMenuTrigger)
-        menuItem = (item as any).wrapper(menuItem);
-      }
+    let menuItem = (
+      <MenuItem
+        key={item.key}
+        item={item}
+        state={state}
+        styles={itemStyles}
+        size={size}
+        onAction={item.onAction}
+      />
+    );
 
-      // Ensure every child has a stable key, even if the wrapper component didn't set one.
-      items.push(React.cloneElement(menuItem, { key: item.key }));
-    });
+    // `MenuItem` renders the item's `tooltip` itself — wrapping it in a
+    // second provider makes the two tooltips close each other.
 
-    return items;
-  }, [collectionItems, state, sectionStyles, itemStyles, sectionHeadingStyles]);
+    // Apply custom wrapper if provided
+    if (item.props?.wrapper) {
+      menuItem = item.props.wrapper(menuItem);
+    } else if ((item as any).wrapper) {
+      // Handle wrapper from collection nodes (e.g., SubMenuTrigger)
+      menuItem = (item as any).wrapper(menuItem);
+    }
+
+    // Ensure every child has a stable key, even if the wrapper component didn't set one.
+    renderedItems.push(React.cloneElement(menuItem, { key: item.key }));
+  });
 
   return (
     <StyledMenuWrapper

@@ -1,4 +1,4 @@
-import { useContext, useMemo, useState } from 'react';
+import { useContext, useState } from 'react';
 import { useSyncExternalStoreWithSelector } from 'use-sync-external-store/with-selector.js';
 
 import { useLayoutEffect } from '../../../../utils/react/useLayoutEffect';
@@ -44,7 +44,7 @@ export function useFormValue<T extends object, const Path extends FormPath>(
   form: FormController<T>,
   path: CheckedFormPath<T, Path>,
 ): FormReadValue<FormValueAtPath<T, Path>> | undefined {
-  const normalized = useMemo(() => normalizePath(path), [path]);
+  const normalized = normalizePath(path);
   return useFormSelector(form, (state) =>
     readPath(state.values, normalized),
   ) as FormReadValue<FormValueAtPath<T, Path>> | undefined;
@@ -57,7 +57,7 @@ export function useFormFieldState<
   form: FormController<T>,
   path: CheckedFormPath<T, Path>,
 ): ModernFieldState<FormValueAtPath<T, Path>> | undefined {
-  const key = useMemo(() => getFieldKey(path), [path]);
+  const key = getFieldKey(path);
   return useFormSelector(form, (state) => state.fields[key]) as
     | ModernFieldState<FormValueAtPath<T, Path>>
     | undefined;

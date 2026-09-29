@@ -11,7 +11,7 @@ import {
   filterBaseProps,
   tasty,
 } from '@tenphi/tasty';
-import { ComponentType, forwardRef, ReactNode, useMemo } from 'react';
+import { ComponentType, forwardRef, ReactNode } from 'react';
 
 import { mergeProps, wrapNodeIfPlain } from '../../../utils/react';
 import { extractStyles } from '../../../utils/styles';
@@ -181,22 +181,16 @@ function Result(props: CubeResultProps, ref) {
     );
   }
 
-  const iconNode = useMemo(() => {
-    if (icon) {
-      return icon;
-    }
+  const { color, component: StatusIcon } =
+    status && statusIconMap.hasOwnProperty(status)
+      ? statusIconMap[status]
+      : statusIconMap.info;
 
-    const { color, component: Component } =
-      status && statusIconMap.hasOwnProperty(status)
-        ? statusIconMap[status]
-        : statusIconMap.info;
-
-    return (
-      <div data-element="Icon" style={{ color: `var(--${color}-color)` }}>
-        <Component data-element="Icon" />
-      </div>
-    );
-  }, [icon, status]);
+  const iconNode = icon || (
+    <div data-element="Icon" style={{ color: `var(--${color}-color)` }}>
+      <StatusIcon data-element="Icon" />
+    </div>
+  );
 
   const styles = extractStyles(otherProps, CONTAINER_STYLES);
 

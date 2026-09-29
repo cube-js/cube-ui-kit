@@ -1,5 +1,4 @@
 import { useControlledState } from '@react-stately/utils';
-import { useMemo } from 'react';
 import { useCollator } from 'react-aria';
 
 import { useEvent } from '../../../_internal/hooks';
@@ -133,34 +132,10 @@ export function useTableSort<T>({
     },
   );
 
-  const sortedRows = useMemo(() => {
-    if (resolvedMode !== 'client' || !sort) return rows;
-
-    const column = columns.find((entry) => entry.key === sort.columnKey);
-
-    if (!column) return rows;
-
-    const direction = sort.direction === 'asc' ? 1 : -1;
-
-    // `map`/`sort`/`map` rather than sorting in place: `rows` is the caller's
-    // array and `Array.prototype.sort` mutates. Carrying the original index also
-    // makes the sort stable across engines.
-    return rows
-      .map((row, index) => ({ row, index }))
-      .sort((a, b) => {
-        const result = compareByColumn(
-          column,
-          collator,
-          a.row,
-          a.index,
-          b.row,
-          b.index,
-        );
-
-        return result !== 0 ? result * direction : a.index - b.index;
-      })
-      .map((entry) => entry.row);
-  }, [resolvedMode, sort, rows, columns, collator]);
+  const sortedRows =
+    resolvedMode === 'client' && sort
+      ? sortRows(rows, [sort], columns, collator)
+      : rows;
 
   // The resolved mode is returned rather than left for the caller to derive
   // again: the renderer needs the same answer to decide whether a header is
@@ -173,6 +148,56 @@ export function useTableSort<T>({
     isSortable,
     mode: resolvedMode,
   };
+}
+
+/**
+ * `rows` ordered by `sorts`, the first sort taking precedence. Sorts naming a
+ * column the table does not have are skipped, and `rows` itself comes back when
+ * none is left.
+ *
+ * `map`/`sort`/`map` rather than sorting in place: `rows` is the caller's array
+ * and `Array.prototype.sort` mutates. Carrying the original index also makes the
+ * sort stable across engines, including when every sort ties.
+ */
+export function sortRows<T>(
+  rows: readonly T[],
+  sorts: readonly CubeTableSort[],
+  columns: CubeTableColumn<T>[],
+  collator: Intl.Collator,
+): readonly T[] {
+  const active = sorts
+    .map((sort) => ({
+      sort,
+      column: columns.find((entry) => entry.key === sort.columnKey),
+    }))
+    .filter(
+      (entry): entry is { sort: CubeTableSort; column: CubeTableColumn<T> } =>
+        entry.column != null,
+    );
+
+  if (!active.length) return rows;
+
+  return rows
+    .map((row, index) => ({ row, index }))
+    .sort((a, b) => {
+      for (const { sort, column } of active) {
+        const result = compareByColumn(
+          column,
+          collator,
+          a.row,
+          a.index,
+          b.row,
+          b.index,
+        );
+
+        if (result !== 0) {
+          return result * (sort.direction === 'asc' ? 1 : -1);
+        }
+      }
+
+      return a.index - b.index;
+    })
+    .map((entry) => entry.row);
 }
 
 export function compareByColumn<T>(

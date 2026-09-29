@@ -1,5 +1,4 @@
 import { Styles } from '@tenphi/tasty';
-import { useMemo } from 'react';
 
 import { getValidationMods } from '../../form';
 
@@ -29,15 +28,12 @@ export function SliderTrack(props: SliderTrackProps) {
 
   const showRangeTrack = !Number.isNaN(selectedTrack[1]);
 
-  const mods = useMemo(
-    () => ({
-      disabled: isDisabled,
-      horizontal: orientation === 'horizontal',
-      range: showRangeTrack,
-      ...getValidationMods({ isInvalid, isValid }),
-    }),
-    [isDisabled, showRangeTrack, orientation, isInvalid, isValid],
-  );
+  const mods = {
+    disabled: isDisabled,
+    horizontal: orientation === 'horizontal',
+    range: showRangeTrack,
+    ...getValidationMods({ isInvalid, isValid }),
+  };
 
   return (
     <SliderTrackContainerElement

@@ -190,19 +190,17 @@ function useItemPositions(visibleItems: OverlayItem[]): ItemPositionsResult {
     };
   }, [heights]);
 
-  const createRefCallback = useCallback(
+  const createRefCallback =
     (itemId: string, displayRef: (el: HTMLElement | null) => void) =>
-      (el: HTMLDivElement | null) => {
-        displayRef(el);
+    (el: HTMLDivElement | null) => {
+      displayRef(el);
 
-        if (el) {
-          itemRefs.current.set(itemId, el);
-        } else {
-          itemRefs.current.delete(itemId);
-        }
-      },
-    [],
-  );
+      if (el) {
+        itemRefs.current.set(itemId, el);
+      } else {
+        itemRefs.current.delete(itemId);
+      }
+    };
 
   const positions = useMemo(() => {
     const posMap = new Map<string, number>();
@@ -259,7 +257,7 @@ function useCollapseState(
   const containerRef = useRef<HTMLDivElement>(null);
   const boundsRef = useRef<DOMRect | null>(null);
 
-  const updateBounds = useCallback(() => {
+  const updateBounds = () => {
     const refs = itemRefs.current;
 
     if (!refs || refs.size === 0) {
@@ -295,7 +293,7 @@ function useCollapseState(
         toJSON: () => ({}),
       } as DOMRect;
     }
-  }, [itemRefs]);
+  };
 
   // Track mouse for collapse — expand when mouse leaves bounds
   useEffect(() => {
@@ -332,36 +330,33 @@ function useCollapseState(
     updateBounds();
   }, [allItems, updateBounds]);
 
-  const handleMouseEnter = useCallback(() => {
+  const handleMouseEnter = () => {
     updateBounds();
     onPauseChange(true);
 
     if (canCollapse) {
       setIsCollapsed(true);
     }
-  }, [updateBounds, canCollapse, onPauseChange]);
+  };
 
-  const handleMouseLeave = useCallback(() => {
+  const handleMouseLeave = () => {
     if (!isCollapsed) {
       onPauseChange(false);
     }
-  }, [isCollapsed, onPauseChange]);
+  };
 
-  const handleFocus = useCallback(() => {
+  const handleFocus = () => {
     onPauseChange(true);
-  }, [onPauseChange]);
+  };
 
-  const handleBlur = useCallback(
-    (e: FocusEvent) => {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(e.relatedTarget as Node)
-      ) {
-        onPauseChange(false);
-      }
-    },
-    [onPauseChange],
-  );
+  const handleBlur = (e: FocusEvent) => {
+    if (
+      containerRef.current &&
+      !containerRef.current.contains(e.relatedTarget as Node)
+    ) {
+      onPauseChange(false);
+    }
+  };
 
   return {
     isCollapsed,
@@ -468,40 +463,30 @@ export function OverlayContainer({
   // useCallback (not useEvent) because this is called during render.
   // useEvent defers the ref update to useLayoutEffect, so during render
   // it would still read the previous closure's positions/heights.
-  const getItemStyle = useCallback(
-    (item: OverlayItem, index: number, total: number) => {
-      const id = getItemId(item);
-      const baseTop =
-        positions.get(id) ?? lastPositionsRef.current?.get(id) ?? 0;
-      const height = heights[id] ?? DEFAULT_ITEM_HEIGHT;
+  const getItemStyle = (item: OverlayItem, index: number, total: number) => {
+    const id = getItemId(item);
+    const baseTop = positions.get(id) ?? lastPositionsRef.current?.get(id) ?? 0;
+    const height = heights[id] ?? DEFAULT_ITEM_HEIGHT;
 
-      if (!isCollapsed || !canCollapse) {
-        return { top: `${baseTop}px` };
-      }
+    if (!isCollapsed || !canCollapse) {
+      return { top: `${baseTop}px` };
+    }
 
-      const isNewest = index === total - 1;
-      const collapsedTop = COLLAPSE_VISIBLE_HEIGHT - CONTAINER_OFFSET - height;
+    const isNewest = index === total - 1;
+    const collapsedTop = COLLAPSE_VISIBLE_HEIGHT - CONTAINER_OFFSET - height;
 
-      return {
-        top: `${collapsedTop}px`,
-        zIndex: index,
-        opacity: isNewest ? 1 : 0,
-        pointerEvents: 'none' as const,
-      };
-    },
-    [isCollapsed, canCollapse, positions, heights, lastPositionsRef],
-  );
+    return {
+      top: `${collapsedTop}px`,
+      zIndex: index,
+      opacity: isNewest ? 1 : 0,
+      pointerEvents: 'none' as const,
+    };
+  };
 
   // Build a visibleIndex lookup map to avoid O(n²) findIndex inside render loop
-  const visibleIndexMap = useMemo(() => {
-    const map = new Map<string, number>();
-
-    visibleItems.forEach((item, index) => {
-      map.set(getItemId(item), index);
-    });
-
-    return map;
-  }, [visibleItems]);
+  const visibleIndexMap = new Map<string, number>(
+    visibleItems.map((item, index) => [getItemId(item), index]),
+  );
 
   if (allItems.length === 0) return null;
 

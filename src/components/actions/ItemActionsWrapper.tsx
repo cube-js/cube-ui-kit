@@ -5,7 +5,6 @@ import {
   HTMLAttributes,
   ReactNode,
   useLayoutEffect,
-  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -330,14 +329,12 @@ export function ItemActionsWrapper(props: ItemActionsWrapperProps) {
   // grounds that the host already faded the color they paint from — so without
   // this the wrapper would hand them a full-strength color and a disabled button
   // would sit next to full-strength actions. See `ITEM_RESTING_COLOR_VARIANTS`.
-  const finalMods = useMemo(() => {
-    return {
-      ...mods,
-      ...(shouldShowActions ? { 'actions-shown': true } : null),
-      ...(preserveActionsSpace ? { 'preserve-actions-space': true } : null),
-      disabled: isDisabled,
-    };
-  }, [mods, shouldShowActions, preserveActionsSpace, isDisabled]);
+  const finalMods = {
+    ...mods,
+    ...(shouldShowActions ? { 'actions-shown': true } : null),
+    ...(preserveActionsSpace ? { 'preserve-actions-space': true } : null),
+    disabled: isDisabled,
+  };
 
   return (
     <ItemActionsWrapperElement

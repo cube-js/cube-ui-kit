@@ -1,5 +1,4 @@
 import { useControlledState } from '@react-stately/utils';
-import { useMemo } from 'react';
 
 import { useEvent } from '../../../_internal/hooks';
 
@@ -148,10 +147,10 @@ export function usePagination<T>(
     setPageState(1);
   });
 
-  const pageItems = useMemo(
-    () => items.slice((info.page - 1) * pageSize, info.page * pageSize) as T[],
-    [items, info.page, pageSize],
-  );
+  const pageItems = items.slice(
+    (info.page - 1) * pageSize,
+    info.page * pageSize,
+  ) as T[];
 
   return { ...info, pageItems, setPage, setPageSize };
 }

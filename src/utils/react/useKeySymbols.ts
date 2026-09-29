@@ -1,5 +1,3 @@
-import { useMemo } from 'react';
-
 import { useIsDarwin } from './useIsDarwin';
 
 /* symbols that are identical on every OS */
@@ -61,21 +59,19 @@ export function useKeySymbols(combo: string): string[][] {
   const isDarwin = useIsDarwin(); // ⌘ by default during SSR
   const modifiers = isDarwin ? MAC : PC;
 
-  return useMemo(() => {
-    /** split on commas, trim each alternative */
-    return combo
-      .split(',')
-      .map((raw) => raw.trim().toLowerCase())
-      .filter(Boolean) // drop empty fragments
-      .map((alternative) =>
-        alternative.split('+').map((part) => {
-          const key = part.trim();
-          return (
-            modifiers[key] ?? // platform-specific modifier
-            COMMON[key] ?? // shared glyphs
-            part.toUpperCase() // plain key
-          );
-        }),
-      );
-  }, [combo, modifiers]);
+  /** split on commas, trim each alternative */
+  return combo
+    .split(',')
+    .map((raw) => raw.trim().toLowerCase())
+    .filter(Boolean) // drop empty fragments
+    .map((alternative) =>
+      alternative.split('+').map((part) => {
+        const key = part.trim();
+        return (
+          modifiers[key] ?? // platform-specific modifier
+          COMMON[key] ?? // shared glyphs
+          part.toUpperCase() // plain key
+        );
+      }),
+    );
 }
