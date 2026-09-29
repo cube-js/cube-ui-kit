@@ -1,0 +1,190 @@
+{
+  "projectId": "60f4fa77-ee6e-4f41-b5dd-84f450e9e9a8",
+  "pkg": "@cube-dev/ui-kit",
+  "globalName": "CubeUIKit",
+  "shape": "storybook",
+  "entry": "dist/index.js",
+  "buildCmd": "pnpm build",
+  "storybookConfigDir": ".storybook",
+  "storybookStatic": ".design-sync/sb-reference",
+  "readmeHeader": ".design-sync/conventions.md",
+  "provider": {
+    "component": "Root",
+    "props": {
+      "fontDisplay": "auto"
+    }
+  },
+  "titleMap": {
+    "Button.Split": "ButtonSplit",
+    "Colors": null,
+    "Theming": null,
+    "ComplexLayout": null,
+    "AdvancedStates": null,
+    "ComplexForm": null,
+    "Calendar": null
+  },
+  "docsMap": {
+    "Block": "src/components/Block.docs.mdx",
+    "Content": "src/components/content/Content.docs.mdx",
+    "Paragraph": "src/components/content/Paragraph.docs.mdx",
+    "Portal": "src/components/portal/Portal.docs.mdx",
+    "Text": "src/components/content/Text.docs.mdx"
+  },
+  "overrides": {
+    "Button": {
+      "cardMode": "column"
+    },
+    "ItemButton": {
+      "cardMode": "column"
+    },
+    "Item": {
+      "cardMode": "column"
+    },
+    "TextItem": {
+      "cardMode": "column"
+    },
+    "Layout": {
+      "cardMode": "column"
+    },
+    "Skeleton": {
+      "cardMode": "column"
+    },
+    "ColorInput": {
+      "cardMode": "column"
+    },
+    "DateRangePicker": {
+      "cardMode": "column",
+      "skip": [
+        "forms-daterangepicker--with-default-value-open"
+      ]
+    },
+    "DateRangeSeparatedPicker": {
+      "cardMode": "column",
+      "skip": [
+        "forms-daterangeseparatedpicker--with-default-value-open"
+      ]
+    },
+    "FieldWrapper": {
+      "cardMode": "column"
+    },
+    "FilterListBox": {
+      "cardMode": "column"
+    },
+    "FilterPicker": {
+      "cardMode": "column"
+    },
+    "ListBox": {
+      "cardMode": "column"
+    },
+    "Board": {
+      "cardMode": "column"
+    },
+    "Tabs": {
+      "cardMode": "column"
+    },
+    "Notification": {
+      "cardMode": "column"
+    },
+    "Content": {
+      "cardMode": "column",
+      "viewport": "900x2600"
+    },
+    "Menu": {
+      "cardMode": "single",
+      "primaryStory": "Default",
+      "skip": [
+        "actions-menu--inside-modal"
+      ]
+    },
+    "InlineInput": {
+      "cardMode": "single",
+      "primaryStory": "Default",
+      "skip": [
+        "content-inlineinput--single-click-trigger",
+        "content-inlineinput--manual-trigger"
+      ]
+    },
+    "DataTable": {
+      "cardMode": "single",
+      "primaryStory": "Default",
+      "skip": [
+        "data-datatable--tree-rows"
+      ]
+    },
+    "ItemTable": {
+      "cardMode": "single",
+      "primaryStory": "Default",
+      "viewport": "900x1050",
+      "skip": [
+        "data-itemtable--tree-rows"
+      ]
+    },
+    "Select": {
+      "cardMode": "single",
+      "primaryStory": "Default"
+    },
+    "Pagination": {
+      "cardMode": "single",
+      "primaryStory": "Default"
+    },
+    "Dialog": {
+      "cardMode": "single",
+      "primaryStory": "Default"
+    },
+    "CommandMenu": {
+      "viewport": "900x1000"
+    },
+    "Typography": {
+      "viewport": "900x900"
+    },
+    "PrismCode": {
+      "viewport": "900x1250"
+    },
+    "PrismDiffCode": {
+      "viewport": "900x1700"
+    },
+    "Form": {
+      "skip": [
+        "forms-form--with-validation-error"
+      ]
+    },
+    "FileInput": {
+      "skip": [
+        "forms-fileinput--long-file-name-overflow",
+        "forms-fileinput--extract-text"
+      ]
+    },
+    "TagInput": {
+      "skip": [
+        "forms-taginput--with-suggestions",
+        "forms-taginput--custom-values",
+        "forms-taginput--rejected-entry"
+      ],
+      "cardMode": "column"
+    },
+    "TextInputMapper": {
+      "skip": [
+        "forms-textinputmapper--with-value-and-new-mapping"
+      ]
+    },
+    "ResizablePanel": {
+      "skip": [
+        "layout-resizablepanel--resize-bottom",
+        "layout-resizablepanel--resize-top"
+      ]
+    },
+    "ButtonSplit": {
+      "cardMode": "column"
+    }
+  },
+  "storyImports": {
+    "shim": [
+      "components/overlays/Notifications/index",
+      "components/overlays/AlertDialog/AlertDialogApiProvider",
+      "utils/react/useEventBus"
+    ]
+  },
+  "componentSrcMap": {
+    "ButtonSplit": "src/components/actions/ButtonSplit/ButtonSplit.tsx"
+  }
+}
