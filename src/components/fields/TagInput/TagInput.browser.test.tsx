@@ -1,6 +1,12 @@
 import { useState } from 'react';
 
-import { render, screen, userEvent, waitFor } from '../../../test';
+import {
+  render,
+  renderWithRoot,
+  screen,
+  userEvent,
+  waitFor,
+} from '../../../test';
 
 import { TagInput } from './TagInput';
 
@@ -39,6 +45,46 @@ describe('<TagInput /> focus timing', () => {
 
     await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
     expect(onSubmit).toHaveBeenCalledWith(['one']);
+  });
+
+  // The list used to take an outside press for itself: a native button got no
+  // pointerdown, mousedown or click, so the first Save only closed the list.
+  it('saves on the first click while the list shows, with the typed text committed', async () => {
+    const onSubmit = vi.fn();
+
+    function Harness() {
+      const [values, setValues] = useState<string[]>([]);
+
+      return (
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            onSubmit(values);
+          }}
+        >
+          <TagInput
+            allowsCustomValue
+            label="Cities"
+            value={values}
+            onChange={setValues}
+          >
+            <TagInput.Item key="Paris">Paris</TagInput.Item>
+            <TagInput.Item key="Porto">Porto</TagInput.Item>
+          </TagInput>
+          <button type="submit">Save</button>
+        </form>
+      );
+    }
+
+    renderWithRoot(<Harness />);
+
+    await userEvent.type(screen.getByRole('combobox'), 'par');
+    await waitFor(() => expect(screen.getByRole('listbox')).toBeVisible());
+    await userEvent.click(screen.getByRole('button', { name: 'Save' }));
+
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
+    expect(onSubmit).toHaveBeenCalledWith(['par']);
+    await waitFor(() => expect(screen.queryByRole('listbox')).toBeNull());
   });
 
   it('reports focus before the change the same click makes', async () => {

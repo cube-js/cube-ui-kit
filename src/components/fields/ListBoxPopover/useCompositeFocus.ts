@@ -106,8 +106,13 @@ export function useCompositeFocus({
     });
   };
 
-  // Cleanup on unmount
+  // StrictMode unmounts and remounts effects after an `autoFocus` has already
+  // reported focus, so the listener focus added is put back here.
   useEffect(() => {
+    if (wasInsideRef.current) {
+      document.addEventListener('mousedown', handleDocumentMouseDown, true);
+    }
+
     return () => {
       if (rafRef.current !== null) {
         cancelAnimationFrame(rafRef.current);

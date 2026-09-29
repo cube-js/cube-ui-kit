@@ -55,6 +55,14 @@ export interface ListBoxPopoverProps {
    * still close. Defaults to `true`.
    */
   shouldCloseOnTriggerInteraction?: boolean;
+  /**
+   * Whether an outside press that closes the popover is kept from reaching
+   * what was pressed. With `false`, every outside press acts like one on a
+   * `data-popover-dismiss` control: it reaches its target, which can take
+   * focus, and the popover closes after it. A native Save button then saves
+   * on the first click. Defaults to `true`.
+   */
+  shouldBlockOutsidePress?: boolean;
   isDisabled?: boolean;
   disabledKeys?: Iterable<Key>;
   items?: Iterable<any>;
@@ -169,6 +177,7 @@ export const ListBoxPopover = function ListBoxPopover(
     selectedKeys,
     isCheckable,
     shouldCloseOnTriggerInteraction = true,
+    shouldBlockOutsidePress = true,
     isDisabled,
     disabledKeys,
     items,
@@ -248,9 +257,13 @@ export const ListBoxPopover = function ListBoxPopover(
           if (el.closest('[data-popover-keep]')) return false;
           // Plain interactive controls (Button, ItemButton) opt in via
           // `data-popover-dismiss` to dismiss us without losing their click
-          // to useOverlay's stopPropagation. Schedule the close after the
+          // to useOverlay's stopPropagation, and `shouldBlockOutsidePress`
+          // opts every outside element in. Schedule the close after the
           // click finishes so the button's onPress runs first.
-          if (el.closest('[data-popover-dismiss]')) {
+          if (
+            !shouldBlockOutsidePress ||
+            el.closest('[data-popover-dismiss]')
+          ) {
             setTimeout(onClose, 0);
             return false;
           }
