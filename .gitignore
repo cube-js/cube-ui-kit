@@ -45,3 +45,14 @@ __screenshots__
 .tmp-*
 
 dist-uncompiled
+
+# claude.ai/design sync (`/design-sync`). Committed: the durable inputs —
+# `.design-sync/config.json`, `NOTES.md`, `conventions.md`, `previews/`,
+# `overrides/`. Everything below is regenerated build output, transient
+# verification state, or a per-clone symlink.
+.design-sync/sb-reference/
+.design-sync/learnings/
+.design-sync/.cache/
+.design-sync/node_modules
+.ds-sync/
+ds-bundle/
