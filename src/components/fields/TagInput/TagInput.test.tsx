@@ -1531,6 +1531,28 @@ describe('<TagInput />', () => {
       expect(onChange).toHaveBeenLastCalledWith(['read', 'audit']);
     });
 
+    it('checks one picked back as it checks typed text', async () => {
+      const onChange = vi.fn();
+      const { getByRole } = renderWithRoot(
+        <Custom
+          defaultValue={['read', 'bad']}
+          validateTag={(value) => value !== 'bad'}
+          onChange={onChange}
+        />,
+      );
+      const listbox = await openList(getByRole);
+      const row = () => within(listbox).getByRole('option', { name: 'bad' });
+
+      await userEvent.click(row());
+      expect(onChange).toHaveBeenLastCalledWith(['read']);
+
+      // Only an option row is added as it is; the user's own value is text.
+      await userEvent.click(row());
+
+      expect(onChange).toHaveBeenCalledTimes(1);
+      expect(row()).toHaveAttribute('aria-selected', 'false');
+    });
+
     it('narrows them with the typed text and does not offer one twice', async () => {
       const onChange = vi.fn();
       const { getByRole } = renderWithRoot(

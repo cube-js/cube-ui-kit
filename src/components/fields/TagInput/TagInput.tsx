@@ -984,8 +984,8 @@ function TagInput<T extends object>(
    * come back as text for the input, with a message, except a duplicate: it is
    * a chip already, and the message says so. With no delimiter to join them,
    * only the first refused part comes back, since glued together they would
-   * commit as one value nobody typed. Keys picked from the list (`isPick`) are
-   * committed as they are, with no text matching.
+   * commit as one value nobody typed. Option keys picked from the list
+   * (`isPick`) are committed as they are, with no text matching.
    */
   const commitParts = useEvent((parts: string[], isPick = false): string => {
     if (!parts.length) return '';
@@ -1113,9 +1113,9 @@ function TagInput<T extends object>(
   /**
    * Picks an option in the popover, or unpicks one that already is a chip. The
    * popover stays open for the next pick, and the query is cleared so the full
-   * list is back. A picked row is added as its own key, never swapped for a
-   * look-alike, except the typed text's row: that one is the typed text, so
-   * it commits as a delimiter would.
+   * list is back. A picked option row is added as its own key, never swapped
+   * for a look-alike. The typed text's row and the user's own values are text,
+   * so they commit as a delimiter would, through `validateTag`.
    */
   const toggleOption = useEvent((key: string) => {
     if (isTagLocked(key)) return;
@@ -1131,7 +1131,7 @@ function TagInput<T extends object>(
           prev.includes(key) ? prev : [...prev, key],
         );
       }
-    } else if (!commitParts([key], key !== customTerm)) {
+    } else if (!commitParts([key], collection.getItem(key) != null)) {
       // An accepted pick clears the query. A refused one (past `maxTags`)
       // keeps it, next to the message saying why.
       setDraft('');
