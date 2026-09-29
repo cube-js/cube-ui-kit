@@ -56,13 +56,14 @@ export interface ListBoxPopoverProps {
    */
   shouldCloseOnTriggerInteraction?: boolean;
   /**
-   * Whether an outside press that closes the popover is kept from reaching
-   * what was pressed. With `false`, every outside press acts like one on a
-   * `data-popover-dismiss` control: it reaches its target, which can take
-   * focus, and the popover closes after it. A native Save button then saves
-   * on the first click. Defaults to `true`.
+   * Whether an outside press on a control (a button, a link, a form control,
+   * anything with `tabindex`, or something inside one) reaches it, as one on
+   * a `data-popover-dismiss` control does: the control can take focus, and
+   * the popover closes after it, so a native Save button saves on the first
+   * click. A press anywhere else, such as a dialog's backdrop, still only
+   * closes the popover. Defaults to `false`.
    */
-  shouldBlockOutsidePress?: boolean;
+  shouldPassControlPresses?: boolean;
   isDisabled?: boolean;
   disabledKeys?: Iterable<Key>;
   items?: Iterable<any>;
@@ -97,6 +98,10 @@ export interface ListBoxPopoverProps {
    */
   positionApiRef?: RefObject<{ updatePosition: () => void } | null>;
 }
+
+// What `shouldPassControlPresses` lets an outside press reach.
+const CONTROL_SELECTOR =
+  'button, a[href], input, select, textarea, [tabindex], [contenteditable]:not([contenteditable="false"])';
 
 const ListBoxPopoverWrapper = tasty({
   qa: 'ComboBoxOverlayWrapper',
@@ -177,7 +182,7 @@ export const ListBoxPopover = function ListBoxPopover(
     selectedKeys,
     isCheckable,
     shouldCloseOnTriggerInteraction = true,
-    shouldBlockOutsidePress = true,
+    shouldPassControlPresses = false,
     isDisabled,
     disabledKeys,
     items,
@@ -257,11 +262,13 @@ export const ListBoxPopover = function ListBoxPopover(
           if (el.closest('[data-popover-keep]')) return false;
           // Plain interactive controls (Button, ItemButton) opt in via
           // `data-popover-dismiss` to dismiss us without losing their click
-          // to useOverlay's stopPropagation, and `shouldBlockOutsidePress`
-          // opts every outside element in. Schedule the close after the
-          // click finishes so the button's onPress runs first.
+          // to useOverlay's stopPropagation, and `shouldPassControlPresses`
+          // opts every control in. Schedule the close after the click
+          // finishes so the button's onPress runs first. Only controls: the
+          // close lands before a slow click does, and a click on a dialog's
+          // backdrop would then find the dialog on top and close it too.
           if (
-            !shouldBlockOutsidePress ||
+            (shouldPassControlPresses && el.closest(CONTROL_SELECTOR)) ||
             el.closest('[data-popover-dismiss]')
           ) {
             setTimeout(onClose, 0);

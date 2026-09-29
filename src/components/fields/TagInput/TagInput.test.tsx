@@ -2064,6 +2064,28 @@ describe('<TagInput />', () => {
       expect(onSubmit).toHaveBeenCalledWith(['par']);
     });
 
+    it('only closes the list on a press outside that is not a control', async () => {
+      const onChange = vi.fn();
+      const { getByRole, getByTestId, queryByRole } = renderWithRoot(
+        <>
+          <TagInput allowsCustomValue label="Cities" onChange={onChange}>
+            <TagInput.Item key="Paris">Paris</TagInput.Item>
+          </TagInput>
+          <div data-qa="Blank">Blank space</div>
+        </>,
+      );
+      const input = getByRole('combobox');
+
+      await userEvent.type(input, 'par');
+      await waitFor(() => expect(getByRole('listbox')).toBeInTheDocument());
+      await userEvent.click(getByTestId('Blank'));
+
+      await waitFor(() => expect(queryByRole('listbox')).toBeNull());
+      expect(input).toHaveFocus();
+      expect(input).toHaveValue('par');
+      expect(onChange).not.toHaveBeenCalled();
+    });
+
     it('still commits before a press on something that takes no focus after a StrictMode autoFocus', async () => {
       const seen: string[][] = [];
 
