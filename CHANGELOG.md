@@ -1,5 +1,21 @@
 # @cube-dev/ui-kit
 
+## 0.186.0
+
+### Minor Changes
+
+- [#1443](https://github.com/cube-js/cube-ui-kit/pull/1443) [`e28ee207`](https://github.com/cube-js/cube-ui-kit/commit/e28ee2077f5c5f45fa266e3115c4bf890182504a) Thanks [@tenphi](https://github.com/tenphi)! - `TagInput` adds exactly the option that is clicked or picked with the arrow keys, as its own key. Typed text now names an option by its exact label, then by its key, anywhere in the list, before a case- or accent-insensitive match counts, and Enter, a delimiter, a paste and leaving the field always add the same option for the same text: the option the text names stays listed and focused even when the filter would hide it. With `allowsCustomValue`, text that matches an option only in case or accents is its own value and is added as typed (`paris` stays `paris` next to an option `Paris`); without it, `production` still adds `Production`.
+
+  `TagInput` no longer puts a refused duplicate back into the input: the value is already a chip, and the message says so. Escape clears a message even when the input is empty, and leaving the field clears one once nothing is left in the input, so a refused duplicate no longer leaves an empty field marked invalid. With `delimiters={[]}`, several refused values from one paste are no longer glued into one line that leaving the field would add as a single value; only the first stays in the input, with its message.
+
+  `TagInput` commits the typed text before the click that takes focus away is handled, so a Save button, a fast tap or a Playwright `click()` no longer submits a form without it. While the suggestions show, a press on an outside control (a button, a link, another field) is no longer swallowed by the list: it reaches the control, so a native Save button saves on the first click. A press anywhere else, such as a dialog's backdrop, still only closes the list. `TagInput`, `ComboBox`, `SearchComboBox` and `CommandTextArea` now report focus and blur as focus moves instead of a frame later, so a consumer `onFocus` runs before a change made in the same press rather than undoing what that change did.
+
+### Patch Changes
+
+- [#1445](https://github.com/cube-js/cube-ui-kit/pull/1445) [`8e8432cf`](https://github.com/cube-js/cube-ui-kit/commit/8e8432cf1e036c02886efd4d634cf965bf6fde32) Thanks [@tenphi](https://github.com/tenphi)! - `Badge` with `theme="disabled"` now keeps its label legible in the dark scheme. Its fill turns light there while the label stayed white (3.59:1); the label now follows the scheme (4.55:1 in dark, unchanged in light).
+
+- [#1441](https://github.com/cube-js/cube-ui-kit/pull/1441) [`f4697301`](https://github.com/cube-js/cube-ui-kit/commit/f4697301700e1072728a2cb1130edf76d3fada5d) Thanks [@tenphi](https://github.com/tenphi)! - React Compiler now optimizes `ButtonSplit`, `CommandMenu`, `Panel`, `Layout.Container`, `Layout.Content`, `Layout.Pane`, the layout provider, the notification stack and `usePersistentNotifications`. They used to skip compilation because their manual `useMemo` and `useCallback` calls could not be preserved. Manual memoization that the compiler already covers has been removed across the kit. `Panel` now applies its `floating` and `flex` modifiers when `isFloating` or `isFlex` change after mount; before, the old memo kept the first values.
+
 ## 0.185.3
 
 ### Patch Changes
