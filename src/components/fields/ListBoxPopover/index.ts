@@ -2,6 +2,7 @@ export { ListBoxPopover } from './ListBoxPopover';
 export type { ListBoxPopoverProps } from './ListBoxPopover';
 export { useCompositeFocus } from './useCompositeFocus';
 export type {
+  CompositeBlurInfo,
   UseCompositeFocusProps,
   UseCompositeFocusReturn,
 } from './useCompositeFocus';

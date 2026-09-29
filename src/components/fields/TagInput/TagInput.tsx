@@ -59,6 +59,7 @@ import { TagList, TagListEntry } from './TagList';
 
 import type { FieldBaseProps } from '../../../shared';
 import type { CubeTagProps } from '../../content/Tag/Tag';
+import type { CompositeBlurInfo } from '../ListBoxPopover';
 
 type FilterFn = (textValue: string, inputValue: string) => boolean;
 
@@ -1444,13 +1445,58 @@ function TagInput<T extends object>(
     return commitDraft();
   });
 
-  const handleCompositeBlur = useEvent(() => {
+  // Clearing a message moves what is below the field up by its line. When a
+  // press took focus away, that waits for the press to end, or the control
+  // pressed would move out from under the pointer and miss it.
+  const pendingClearRef = useRef<(() => void) | null>(null);
+
+  const cancelPendingClear = () => {
+    pendingClearRef.current?.();
+    pendingClearRef.current = null;
+  };
+
+  const clearTagErrorAfterPress = () => {
+    cancelPendingClear();
+
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    // A task after mouseup, so after the click the browser sends with it.
+    const handleMouseUp = () => {
+      timer = setTimeout(() => {
+        pendingClearRef.current = null;
+        setTagError(null);
+      }, 0);
+    };
+
+    document.addEventListener('mouseup', handleMouseUp, {
+      capture: true,
+      once: true,
+    });
+    pendingClearRef.current = () => {
+      document.removeEventListener('mouseup', handleMouseUp, true);
+      clearTimeout(timer);
+    };
+  };
+
+  useEffect(() => () => pendingClearRef.current?.(), []);
+
+  const handleCompositeFocus = useEvent(() => {
+    cancelPendingClear();
+    onFocus?.();
+  });
+
+  const handleCompositeBlur = useEvent(({ isPressing }: CompositeBlurInfo) => {
     setIsPopoverOpen(false);
     setUnpickedCustomValues([]);
 
+    const wasShowingMessage = tagError != null;
+
     // A message can only be about text in the input. Once none is left, as
     // after a refused duplicate, the field does not stay marked invalid.
-    if (!settleDraft()) setTagError(null);
+    if (!settleDraft()) {
+      // One set while settling is cleared in the same render, and never shows.
+      if (isPressing && wasShowingMessage) clearTagErrorAfterPress();
+      else setTagError(null);
+    }
 
     onBlur?.();
   });
@@ -1458,7 +1504,7 @@ function TagInput<T extends object>(
   const { compositeFocusProps } = useCompositeFocus({
     wrapperRef: rootRef as RefObject<HTMLElement>,
     popoverRef: popoverRef as RefObject<HTMLElement>,
-    onFocus,
+    onFocus: handleCompositeFocus,
     onBlur: handleCompositeBlur,
     isDisabled,
   });

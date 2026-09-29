@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { userEvent as pointer } from 'vitest/browser';
 
 import {
   render,
@@ -239,5 +240,41 @@ describe('<TagInput /> focus timing', () => {
       expect(onSubmit).toHaveBeenCalledWith(['ad']);
       expect(screen.getByRole('dialog')).toBeVisible();
     });
+  });
+});
+
+/**
+ * Clearing a message moves what is below the field up by its line. A press
+ * that takes focus away has to end on the control it began on, so the message
+ * waits for the press to end. The click is real pointer input: testing-library
+ * sends its events to the element whatever is under the pointer.
+ */
+describe('<TagInput /> leaving with a message shown', () => {
+  it('lets the control below take the press that clears it', async () => {
+    const onPress = vi.fn();
+
+    render(
+      <>
+        <TagInput label="Tags" defaultValue={['one']} />
+        <Button size="small" onPress={onPress}>
+          Next
+        </Button>
+      </>,
+    );
+
+    const input = screen.getByRole('textbox');
+
+    await userEvent.type(input, 'one{Enter}');
+    await waitFor(() =>
+      expect(screen.getByText('"one" is already added')).toBeVisible(),
+    );
+    expect(input).toHaveValue('');
+
+    await pointer.click(screen.getByRole('button', { name: 'Next' }));
+
+    expect(onPress).toHaveBeenCalledTimes(1);
+    await waitFor(() =>
+      expect(screen.queryByText('"one" is already added')).toBeNull(),
+    );
   });
 });
