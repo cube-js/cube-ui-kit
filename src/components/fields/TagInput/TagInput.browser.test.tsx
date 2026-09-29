@@ -176,8 +176,8 @@ describe('<TagInput /> focus timing', () => {
       renderWithRoot(<PolicyDialog onSubmit={vi.fn()} />);
 
       await openWithList('ad');
-      // A corner of the backdrop, well clear of the dialog.
-      await userEvent.click(backdrop(), { position: { x: 4, y: 4 } });
+      // The press lands on the backdrop itself, not on the dialog above it.
+      await userEvent.click(backdrop());
 
       await waitFor(() => expect(screen.queryByRole('listbox')).toBeNull());
       await new Promise((resolve) => setTimeout(resolve, 300));
@@ -186,7 +186,7 @@ describe('<TagInput /> focus timing', () => {
       expect(screen.getByRole('combobox')).toHaveValue('ad');
 
       // With the list gone, the same press is the dialog's again.
-      await userEvent.click(backdrop(), { position: { x: 4, y: 4 } });
+      await userEvent.click(backdrop());
       await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
     });
 

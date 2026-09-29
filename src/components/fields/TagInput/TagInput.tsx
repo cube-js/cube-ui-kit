@@ -434,6 +434,12 @@ interface Rejection {
   message?: string;
 }
 
+/**
+ * Where a committed part comes from: typed text, which may name an option, an
+ * option row's key, or a custom value's row, which is only ever itself.
+ */
+type CommitSource = 'text' | 'option' | 'custom';
+
 function TagInput<T extends object>(
   props: WithNullableValue<CubeTagInputProps<T>>,
   ref: ForwardedRef<HTMLDivElement>,
@@ -678,6 +684,21 @@ function TagInput<T extends object>(
     const typed = normalizeTag(text).trim();
 
     return { optionKey: typed ? findOptionKey(typed) : null, typed };
+  };
+
+  /**
+   * What a part commits as. Only typed text is matched to an option. An option
+   * row commits its own key; a custom value's row is the user's own text, so
+   * `normalizeTag` still rewrites it, but it never turns into an option.
+   */
+  const resolvePart = (part: string, source: CommitSource = 'text') => {
+    if (source === 'text') return resolveTypedText(part);
+    if (source === 'option') return { optionKey: part, typed: part };
+
+    return {
+      optionKey: null,
+      typed: normalizeTag ? normalizeTag(part).trim() : part,
+    };
   };
 
   const termOptionKey = term ? resolveTypedText(term).optionKey : null;
@@ -984,10 +1005,10 @@ function TagInput<T extends object>(
    * come back as text for the input, with a message, except a duplicate: it is
    * a chip already, and the message says so. With no delimiter to join them,
    * only the first refused part comes back, since glued together they would
-   * commit as one value nobody typed. Option keys picked from the list
-   * (`isPick`) are committed as they are, with no text matching.
+   * commit as one value nobody typed. A row picked from the list says where it
+   * comes from (`source`), so it is never matched to another option.
    */
-  const commitParts = useEvent((parts: string[], isPick = false): string => {
+  const commitParts = useEvent((parts: string[], source?: CommitSource) => {
     if (!parts.length) return '';
 
     const present = new Set(uniqueValues);
@@ -996,9 +1017,7 @@ function TagInput<T extends object>(
 
     for (const part of parts) {
       // Only text of its own is rewritten; an option keeps its key.
-      const { optionKey, typed } = isPick
-        ? { optionKey: part, typed: part }
-        : resolveTypedText(part);
+      const { optionKey, typed } = resolvePart(part, source);
 
       if (!typed) continue;
 
@@ -1113,12 +1132,20 @@ function TagInput<T extends object>(
   /**
    * Picks an option in the popover, or unpicks one that already is a chip. The
    * popover stays open for the next pick, and the query is cleared so the full
-   * list is back. A picked option row is added as its own key, never swapped
-   * for a look-alike. The typed text's row and the user's own values are text,
-   * so they commit as a delimiter would, through `validateTag`.
+   * list is back. A picked row is never swapped for an option with a similar
+   * or the same text. A custom value's row is still the user's own text, so
+   * `normalizeTag` and `validateTag` apply to it. The typed text's row is the
+   * typed text, so it commits as a delimiter would.
    */
   const toggleOption = useEvent((key: string) => {
     if (isTagLocked(key)) return;
+
+    const source: CommitSource =
+      collection.getItem(key) != null
+        ? 'option'
+        : customValueKeys.includes(key)
+          ? 'custom'
+          : 'text';
 
     setTagError(null);
 
@@ -1131,7 +1158,7 @@ function TagInput<T extends object>(
           prev.includes(key) ? prev : [...prev, key],
         );
       }
-    } else if (!commitParts([key], collection.getItem(key) != null)) {
+    } else if (!commitParts([key], source)) {
       // An accepted pick clears the query. A refused one (past `maxTags`)
       // keeps it, next to the message saying why.
       setDraft('');

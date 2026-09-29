@@ -1553,6 +1553,35 @@ describe('<TagInput />', () => {
       expect(row()).toHaveAttribute('aria-selected', 'false');
     });
 
+    it('picks one back as itself, not an option with the same text', async () => {
+      const onChange = vi.fn();
+      const { getByRole } = renderWithRoot(
+        <TagInput
+          allowsCustomValue
+          label="Regions"
+          defaultValue={['us']}
+          onChange={onChange}
+        >
+          <TagInput.Item key="c1">us</TagInput.Item>
+          <TagInput.Item key="c2">eu</TagInput.Item>
+        </TagInput>,
+      );
+      await openList(getByRole);
+      const row = () =>
+        within(getByRole('group', { name: 'Custom values' })).getByRole(
+          'option',
+          { name: 'us' },
+        );
+
+      await userEvent.click(row());
+      expect(onChange).toHaveBeenLastCalledWith([]);
+
+      await userEvent.click(row());
+
+      expect(onChange).toHaveBeenLastCalledWith(['us']);
+      expect(row()).toHaveAttribute('aria-selected', 'true');
+    });
+
     it('narrows them with the typed text and does not offer one twice', async () => {
       const onChange = vi.fn();
       const { getByRole } = renderWithRoot(
