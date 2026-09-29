@@ -17,7 +17,13 @@ const BadgeElement = tasty(Item, {
   size: 'inline',
   styles: {
     radius: 'round',
-    color: '#white',
+    color: {
+      '': '#white',
+      // Every other theme fills with a fixed accent; `disabled` fills with the
+      // adaptive `#surface-text-soft-2`, which turns light in dark, so its label
+      // flips with it (a fixed `#white` fell to 3.59:1 there).
+      'theme=disabled': '#surface',
+    },
     fill: {
       '': '#primary',
       ...FILL_STYLES,
