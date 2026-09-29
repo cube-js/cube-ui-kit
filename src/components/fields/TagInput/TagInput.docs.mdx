@@ -34,7 +34,7 @@ A multi-value field. The user types a value into a single-line input and commits
 - **`defaultValue`** `string[]` — The initial values in uncontrolled mode
 - **`inputValue`** `string` — The text being typed, in controlled mode
 - **`defaultInputValue`** `string` — The initial text being typed, in uncontrolled mode
-- **`allowsCustomValue`** `boolean` (default: `false`) — Whether typed values that are not among the options are accepted. Only applies when options are given
+- **`allowsCustomValue`** `boolean` (default: `false`) — Whether typed values that are not among the options are accepted. Only applies when options are given. Text that matches an option only in case or accents is then added as typed
 - **`delimiters`** `string[]` (default: `[',']`) — Characters that commit the typed text and split pasted text. Pasted text is also split on line breaks
 - **`validateTag`** `(value: string) => boolean | string | null | undefined` — Checks one value before it becomes a chip. Return `false` or a message to reject it
 - **`normalizeTag`** `(value: string) => string` — Rewrites a typed value before it is checked and added. Return an empty string to drop it
@@ -58,16 +58,16 @@ A multi-value field. The user types a value into a single-line input and commits
 - **`onClear`** `() => void` — Called when the clear button is pressed
 - **`onOpenChange`** `(isOpen: boolean) => void` — Called when the suggestions popover opens or closes
 - **`onFocus`** `() => void` — Called when focus enters the component: the input, a chip or the popover
-- **`onBlur`** `() => void` — Called when focus leaves the component entirely
+- **`onBlur`** `() => void` — Called when focus leaves the component entirely, after the typed text is committed and before the press that moved focus is handled, so a Save click sees the new value
 - **`onKeyDown`** `(e: KeyboardEvent) => void` — Called when a key is pressed in the input, before the component handles it. Call `e.preventDefault()` to stop the built-in handling
 - **`inputRef`**, **`wrapperRef`**, **`popoverRef`**, **`listBoxRef`** `RefObject` — Refs to the input, the bordered input box, the popover and its listbox. The forwarded `ref` points at the root, which holds the input and the chips
 - **`mods`** `Record<string, boolean>` — Modifiers for the bordered input box, see [Modifiers](#modifiers)
 
 #### Notable Properties
 
-**delimiters** - Typing a delimiter commits the text before it, and pasting splits the text on every delimiter and line break, so a column copied from a spreadsheet or a comma-separated list becomes one chip per entry. A single pasted value is inserted as plain text for the user to finish. Pass `[]` when a value may contain a comma: only Enter and pasted line breaks separate values then.
+**delimiters** - Typing a delimiter commits the text before it, and pasting splits the text on every delimiter and line break, so a column copied from a spreadsheet or a comma-separated list becomes one chip per entry. A single pasted value is inserted as plain text for the user to finish. Pass `[]` when a value may contain a comma: only Enter and pasted line breaks separate values then. Refused values go back to the input joined by the first delimiter, so they split into the same values again; with `[]` nothing can separate them in one line, so only the first refused value stays there, with its message.
 
-**validateTag** - Runs on every value about to become a chip. A rejected value stays in the input, the field turns invalid and the message shows below it until the text is edited. A value picked from the options is not checked. Values already in `value` that fail the check are drawn in the danger theme and carry the message as their description, so an invalid entry loaded from the server stands out. Duplicates are always refused, with a message of their own.
+**validateTag** - Runs on every value about to become a chip. A rejected value stays in the input, the field turns invalid and the message shows below it until the text is edited. A value picked from the options is not checked. Values already in `value` that fail the check are drawn in the danger theme and carry the message as their description, so an invalid entry loaded from the server stands out. Duplicates are always refused, with a message of their own, and leave the input: the value is there already, as a chip. When a paste mixes the two, the message is the one for the text left in the input. A message is cleared by Escape, and by leaving the field once nothing is left in the input, so a refused duplicate does not leave an empty field marked invalid.
 
 **normalizeTag** - Runs on typed text before anything else looks at it, so the duplicate check, `validateTag` and the new chip all see the rewritten value: lowercase an email address, strip thousands separators, write a number one way. The rejected text that stays in the input is what the user typed. Picked options keep their keys.
 
@@ -75,7 +75,7 @@ A multi-value field. The user types a value into a single-line input and commits
 
 **tagProps** - Called per value. Return a theme, an icon or `qa` for the chip. A string `children` replaces the chip's text and also names the value in the input's description and in the "Added"/"Removed" announcements, for values whose label does not come from the options. `isDisabled: true` locks the chip: it has no remove button, the keyboard skips it, and its option cannot be unpicked. An invalid chip stays in the danger theme whatever theme it asks for.
 
-**children / items** - Options turn the input into a combobox. Typing filters them and focuses the option whose label is exactly the typed text, or else the first match. Enter or a click toggles the focused option, and the popover stays open so the user can pick several in a row. Typed text means "add": pressing Enter on an option that is already a chip refuses it as a duplicate, and unpicking it takes the arrow keys, a click, or an empty input. A picked option shows a checked box. Without `allowsCustomValue`, typed text must match an option by key or label, and on blur a query that matches nothing is dropped. With it, the typed text is offered as its own option after the matches, the same way [FilterListBox](/docs/forms-filterlistbox--docs) does, and custom values already added are listed there too, checked and sorted, so they can be unpicked from the list as well as from their chips. One unpicked in the list stays there, unchecked, until focus leaves the field, so it can be picked back. An option in `disabledKeys` is refused however it is entered. A chip for an option shows the option's label, while the value holds its key. The label is remembered, so it survives server-side filtering (`filter={false}` with changing `items`).
+**children / items** - Options turn the input into a combobox. Typing filters them and focuses the option the typed text names, or else the first match. Enter or a click toggles the focused option, and the popover stays open so the user can pick several in a row. A picked option is added as its own key, whatever other options its text resembles. Typed text means "add": pressing Enter on an option that is already a chip refuses it as a duplicate, and unpicking it takes the arrow keys, a click, or an empty input. A picked option shows a checked box. Typed text names an option by its exact label, then by its key, anywhere in the list, before any looser match counts, so `active` finds `active` even when `Active` comes first. Enter, a delimiter, a paste and blur all go by the same rule, and the option the text names stays listed and focused even when the filter would hide it, as when a key is typed, so they always add the same option. Without `allowsCustomValue`, typed text must name an option, and a label in another case or without its accents counts too: `production` adds `Production`. On blur a query that names nothing is dropped. With `allowsCustomValue`, only an exact match counts: `paris` next to an option `Paris` is a value of its own, offered and focused as its own row and added as typed, since a case-sensitive filter treats the two apart. A press on a control outside while the popover shows (a button, a link, another field) is not taken by it: it reaches the control, so a Save button saves on the first click, with the typed text already committed. A press anywhere else, such as the backdrop of a dialog the field sits in, only closes the popover, and the dialog stays open. The typed text is offered as its own option after the matches, the same way [FilterListBox](/docs/forms-filterlistbox--docs) does, and custom values already added are listed there too, checked and sorted, so they can be unpicked from the list as well as from their chips. One unpicked in the list stays there, unchecked, until focus leaves the field, so it can be picked back. An option in `disabledKeys` is refused however it is entered. A chip for an option shows the option's label, while the value holds its key. The label is remembered, so it survives server-side filtering (`filter={false}` with changing `items`).
 
 ### Base Properties
 
@@ -200,7 +200,7 @@ const EMAIL = /^[^\s@,]+@[^\s@,]+\.[^\s@,]+$/;
 
 <Story of={TagInputStories.RejectedEntry} />
 
-Pasted text is split on delimiters and line breaks. Accepted entries become chips, rejected ones stay in the input with the message from `validateTag`.
+Pasted text is split on delimiters and line breaks. Accepted entries become chips, rejected ones stay in the input with the message from `validateTag`, and duplicates of existing chips are dropped with a message of their own.
 
 ### Picking from Suggestions
 
@@ -390,9 +390,9 @@ const [recipients, setRecipients] = useState(['ana@acme.com']);
 
 - `Tab` - Moves focus from the input to the chips, then out of the field. The chips are one Tab stop; the popover trigger and the clear button are not Tab stops. Tabbing away closes the popover and commits the typed text
 - `Shift+Tab` - Moves back from the chips to the input
-- `Enter` - Commits the typed text. With the popover open, toggles the focused option, the one `aria-activedescendant` announces; with text typed, an option that is already a chip is refused as a duplicate rather than removed. Never submits a surrounding form, even with nothing typed, so one Enter too many after the last value does not send a half-filled dialog
+- `Enter` - Commits the typed text. With the popover open, toggles the focused option, the one `aria-activedescendant` announces; with text typed, an option that is already a chip is refused as a duplicate rather than removed, and the text is cleared. Never submits a surrounding form, even with nothing typed, so one Enter too many after the last value does not send a half-filled dialog
 - `,` (or another delimiter) - Commits the text before the caret and keeps the rest typed
-- `Escape` - Closes the popover, or clears the typed text when it is closed
+- `Escape` - Closes the popover, or clears the typed text when it is closed. Either way it clears a message about the text, even once the input is empty
 - `Backspace` in the empty input - Moves focus to the last chip without removing it, and closes the popover. A Backspace held down to clear the text stops at the empty input
 - `ArrowDown` / `ArrowUp` - Opens the popover or moves through the options
 - `Home` / `End` - Moves to the first or last option while the popover is open

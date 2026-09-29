@@ -300,7 +300,7 @@ module.exports = [
     // Then custom values listed in the popover and the clear button scoped to
     // the typed text: 610.22 kB on a fresh local build, +590 B. Leave ~780 B
     // headroom; the next TagInput change will likely have to raise this.
-    limit: '611kB',
+    limit: '612kB',
   },
   {
     name: 'Tree shaking (just a Button)',

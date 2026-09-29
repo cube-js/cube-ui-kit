@@ -106,7 +106,7 @@ const meta = {
     allowsCustomValue: {
       control: { type: 'boolean' },
       description:
-        'Whether typed values that are not among the options are accepted. Only applies when options are given',
+        'Whether typed values that are not among the options are accepted. Only applies when options are given. Text that matches an option only in case or accents is then added as typed',
       table: { defaultValue: { summary: false } },
     },
 

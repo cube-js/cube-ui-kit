@@ -1,5 +1,5 @@
 import { useControlledState } from '@react-stately/utils';
-import { Key } from '@react-types/shared';
+import { Node as CollectionNode, Key } from '@react-types/shared';
 import {
   BasePropsWithoutChildren,
   CONTAINER_STYLES,
@@ -117,7 +117,11 @@ export interface CubeTagInputProps<T = object>
     | 'send';
   /** Called when focus enters the component (input, chips or popover). Receives no event. */
   onFocus?: () => void;
-  /** Called when focus leaves the component entirely. Receives no event. */
+  /**
+   * Called when focus leaves the component entirely, after the typed text is
+   * committed and before the press that moved focus is handled. Receives no
+   * event.
+   */
   onBlur?: () => void;
   /**
    * Called when a key is pressed in the input, before the component handles it.
@@ -128,7 +132,8 @@ export interface CubeTagInputProps<T = object>
   /**
    * Characters that commit the typed text, and that pasted text is split on.
    * Pasted text is also always split on line breaks. Pass `[]` for values that
-   * may contain the default separator.
+   * may contain the default separator; only the first of several refused
+   * values then stays in the input.
    * @default [',']
    */
   delimiters?: string[];
@@ -171,6 +176,8 @@ export interface CubeTagInputProps<T = object>
   /**
    * Whether typed values that are not among the options are accepted. Only
    * applies when options are given; without options every value is custom.
+   * Text that matches an option only in case or accents is then added as
+   * typed; without it, that text picks the option.
    * @default false
    */
   allowsCustomValue?: boolean;
@@ -306,6 +313,44 @@ function compareText(a: string, b: string) {
   return textSorter.compare(a, b);
 }
 
+interface OptionMatch {
+  /** The first option whose label is the text, or else the one whose key is. */
+  exact: string | null;
+  /** The first option whose label is the text ignoring case and accents. */
+  loose: string | null;
+}
+
+/**
+ * The options typed text names. The label comes first, since it is what the
+ * user sees, then the key. An exact match is looked for in the whole list
+ * before a loose one counts, so `active` finds `active` even after `Active`.
+ */
+function matchOptionText(
+  collection: Iterable<CollectionNode<unknown>>,
+  text: string,
+): OptionMatch {
+  let byKey: string | null = null;
+  let loose: string | null = null;
+
+  for (const node of collection) {
+    const nodes = node.type === 'section' ? [...node.childNodes] : [node];
+
+    for (const child of nodes) {
+      if (child.type !== 'item') continue;
+
+      const key = String(child.key);
+      const label = child.textValue || '';
+
+      if (label === text) return { exact: key, loose };
+
+      if (byKey == null && key === text) byKey = key;
+      if (loose == null && isSameText(label, text)) loose = key;
+    }
+  }
+
+  return { exact: byKey, loose };
+}
+
 /**
  * The popover's rows: the options, then the user's own values and the typed
  * text. Those go in a section of their own when there are options to set them
@@ -388,6 +433,12 @@ interface Rejection {
   reason: RejectionReason;
   message?: string;
 }
+
+/**
+ * Where a committed part comes from: typed text, which may name an option, an
+ * option row's key, or a custom value's row, which is only ever itself.
+ */
+type CommitSource = 'text' | 'option' | 'custom';
 
 function TagInput<T extends object>(
   props: WithNullableValue<CubeTagInputProps<T>>,
@@ -562,6 +613,14 @@ function TagInput<T extends object>(
   });
   const collection = localCollectionState.collection;
 
+  // An option's node. Sections are in the collection too, under keys of their
+  // own, but a value that shares one is still the user's own text.
+  const getOption = (key: string) => {
+    const node = collection.getItem(key);
+
+    return node?.type === 'item' ? node : null;
+  };
+
   const { contains } = useFilter({ sensitivity: 'base' });
 
   const textFilterFn: FilterFn =
@@ -577,7 +636,7 @@ function TagInput<T extends object>(
   );
 
   const getOptionLabel = (key: string) =>
-    collection.getItem(key)?.textValue || knownLabels.get(key) || key;
+    getOption(key)?.textValue || knownLabels.get(key) || key;
 
   // What a chip reads as, and what announcements name it by: a string label
   // the chip is given, then the option's own.
@@ -595,7 +654,7 @@ function TagInput<T extends object>(
     let next: Map<string, string> | null = null;
 
     for (const key of keys) {
-      const label = collection.getItem(key)?.textValue;
+      const label = getOption(key)?.textValue;
 
       if (label && knownLabels.get(key) !== label) {
         if (!next) next = new Map(knownLabels);
@@ -606,32 +665,63 @@ function TagInput<T extends object>(
     if (next) setKnownLabels(next);
   });
 
-  /** The key of the option whose key or label is `text`, if any. */
+  /**
+   * The option typed text stands for, if any. Without `allowsCustomValue` a
+   * label in another case or without its accents counts, so `production`
+   * finds `Production`. With it, such text is a value of its own and is added
+   * as typed: `paris` is not `Paris` to a case-sensitive filter.
+   */
   const findOptionKey = (text: string): string | null => {
     if (!hasOptions) return null;
 
-    for (const node of collection) {
-      const nodes = node.type === 'section' ? [...node.childNodes] : [node];
+    const match = matchOptionText(collection, text);
 
-      for (const child of nodes) {
-        if (child.type !== 'item') continue;
-
-        if (
-          String(child.key) === text ||
-          isSameText(child.textValue || '', text)
-        ) {
-          return String(child.key);
-        }
-      }
-    }
-
-    return null;
+    return match.exact ?? (allowsCustomValue ? null : match.loose);
   };
 
+  /**
+   * What typed text commits as: the option it names, or else the text itself,
+   * rewritten by `normalizeTag`, and the option that names if any. Enter, a
+   * delimiter, a paste and blur all go through this, so they agree.
+   */
+  const resolveTypedText = (text: string) => {
+    const optionKey = findOptionKey(text);
+
+    if (optionKey != null || !normalizeTag) return { optionKey, typed: text };
+
+    const typed = normalizeTag(text).trim();
+
+    return { optionKey: typed ? findOptionKey(typed) : null, typed };
+  };
+
+  /**
+   * What a part commits as. Only typed text is matched to an option. An option
+   * row commits its own key; a custom value's row is the user's own text, so
+   * `normalizeTag` still rewrites it, but it never turns into an option.
+   */
+  const resolvePart = (part: string, source: CommitSource = 'text') => {
+    if (source === 'text') return resolveTypedText(part);
+    if (source === 'option') return { optionKey: part, typed: part };
+
+    return {
+      optionKey: null,
+      typed: normalizeTag ? normalizeTag(part).trim() : part,
+    };
+  };
+
+  const termOptionKey = term ? resolveTypedText(term).optionKey : null;
+
+  // The option the text names stays listed even when the filter would hide
+  // it (a key typed, a custom filter), so Enter can land on it.
   const optionFilterFn = (nodes: Iterable<any>) => {
     if (!isFilterActive || !term) return nodes;
 
-    return filterCollectionNodes(nodes, term, textFilterFn);
+    return filterCollectionNodes(nodes, term, textFilterFn, {
+      keep:
+        termOptionKey == null
+          ? undefined
+          : (node) => String(node.key) === termOptionKey,
+    });
   };
 
   const visibleOptionKeys: Key[] = [];
@@ -660,8 +750,7 @@ function TagInput<T extends object>(
       ? [
           ...new Set(
             [...uniqueValues, ...unpickedCustomValues].filter(
-              (value) =>
-                collection.getItem(value) == null && !knownLabels.has(value),
+              (value) => getOption(value) == null && !knownLabels.has(value),
             ),
           ),
         ].sort(compareText)
@@ -681,7 +770,7 @@ function TagInput<T extends object>(
     hasOptions &&
     allowsCustomValue &&
     term &&
-    findOptionKey(term) == null &&
+    termOptionKey == null &&
     !uniqueValues.includes(term) &&
     !customValueKeys.includes(term)
       ? term
@@ -752,12 +841,23 @@ function TagInput<T extends object>(
   // The popover is at least as wide as the input box.
   const [popoverMinWidth, setPopoverMinWidth] = useState<number>();
 
-  // An option whose label is exactly the typed text wins over the first match,
-  // so typing "build" and pressing Enter picks "build", not "rebuild".
-  let exactOptionKey = term ? findOptionKey(term) : null;
+  // The option the typed text names wins over the first match, so typing
+  // "build" and pressing Enter picks "build", not "rebuild".
+  let exactOptionKey = termOptionKey;
 
   if (exactOptionKey == null && term && customValueKeys.includes(term)) {
     exactOptionKey = term;
+  }
+
+  // Text that names a row only in another case is a value of its own, so its
+  // own row wins over that one: Enter adds `paris` as typed, not `Paris`.
+  if (
+    exactOptionKey == null &&
+    customTerm &&
+    (matchOptionText(collection, customTerm).loose != null ||
+      customValueKeys.some((key) => isSameText(key, customTerm)))
+  ) {
+    exactOptionKey = customTerm;
   }
 
   const visibleTargetKeys: Key[] = [...visibleOptionKeys, ...visibleCustomKeys];
@@ -895,17 +995,27 @@ function TagInput<T extends object>(
     }
   });
 
-  const joiner = delimiters[0] ? `${delimiters[0]} ` : ' ';
+  // Refused parts go back to the input joined by a delimiter, so they split
+  // back into the same values. A line break cannot join them: the input drops
+  // it. Typing a delimiter always leaves one to join with.
+  const joinDelimiter = delimiters.find(
+    (delimiter) => delimiter && !LINE_BREAK.test(delimiter),
+  );
+  const joiner = joinDelimiter ? `${joinDelimiter} ` : ' ';
 
   // Without a label or `forceField` there is no field wrapper to show the
   // message, so a rejection is announced instead.
   const hasFieldMessage = !!label || !!props.forceField;
 
   /**
-   * Turns typed parts into values. Accepted parts become chips; rejected ones
-   * come back as text for the input, with a message, so nothing typed is lost.
+   * Turns typed parts into values. Accepted parts become chips. Refused ones
+   * come back as text for the input, with a message, except a duplicate: it is
+   * a chip already, and the message says so. With no delimiter to join them,
+   * only the first refused part comes back, since glued together they would
+   * commit as one value nobody typed. A row picked from the list says where it
+   * comes from (`source`), so it is never matched to another option.
    */
-  const commitParts = useEvent((parts: string[]): string => {
+  const commitParts = useEvent((parts: string[], source?: CommitSource) => {
     if (!parts.length) return '';
 
     const present = new Set(uniqueValues);
@@ -913,17 +1023,10 @@ function TagInput<T extends object>(
     const rejected: Rejection[] = [];
 
     for (const part of parts) {
-      let optionKey = findOptionKey(part);
-      let typed = part;
-
       // Only text of its own is rewritten; an option keeps its key.
-      if (optionKey == null && normalizeTag) {
-        typed = normalizeTag(part).trim();
+      const { optionKey, typed } = resolvePart(part, source);
 
-        if (!typed) continue;
-
-        optionKey = findOptionKey(typed);
-      }
+      if (!typed) continue;
 
       const nextValue = optionKey ?? typed;
 
@@ -964,7 +1067,13 @@ function TagInput<T extends object>(
       accepted.push(nextValue);
     }
 
-    const error = rejected.length ? rejectionMessage(rejected[0]) : null;
+    const returned = rejected.filter(
+      (rejection) => rejection.reason !== 'duplicate',
+    );
+    const kept = joinDelimiter ? returned : returned.slice(0, 1);
+    // The message is about the text left in the input, if there is any.
+    const shown = kept[0] ?? rejected[0];
+    const error = shown ? rejectionMessage(shown) : null;
     const messages: string[] = [];
 
     if (accepted.length) {
@@ -982,11 +1091,16 @@ function TagInput<T extends object>(
 
     setTagError(error);
 
-    return rejected.map((rejection) => rejection.text).join(joiner);
+    return kept.map((rejection) => rejection.text).join(joiner);
   });
 
+  /** Commits the typed text and returns what is left in the input. */
   const commitDraft = useEvent(() => {
-    setDraft(commitParts(splitTagText(draft, delimiters)));
+    const rest = commitParts(splitTagText(draft, delimiters));
+
+    setDraft(rest);
+
+    return rest;
   });
 
   // Focusing the row itself tells the tag group which chip is focused, as a
@@ -1025,10 +1139,20 @@ function TagInput<T extends object>(
   /**
    * Picks an option in the popover, or unpicks one that already is a chip. The
    * popover stays open for the next pick, and the query is cleared so the full
-   * list is back.
+   * list is back. A picked row is never swapped for an option with a similar
+   * or the same text. A custom value's row is still the user's own text, so
+   * `normalizeTag` and `validateTag` apply to it. The typed text's row is the
+   * typed text, so it commits as a delimiter would.
    */
   const toggleOption = useEvent((key: string) => {
     if (isTagLocked(key)) return;
+
+    const source: CommitSource =
+      getOption(key) != null
+        ? 'option'
+        : customValueKeys.includes(key)
+          ? 'custom'
+          : 'text';
 
     setTagError(null);
 
@@ -1041,7 +1165,7 @@ function TagInput<T extends object>(
           prev.includes(key) ? prev : [...prev, key],
         );
       }
-    } else if (!commitParts([key])) {
+    } else if (!commitParts([key], source)) {
       // An accepted pick clears the query. A refused one (past `maxTags`)
       // keeps it, next to the message saying why.
       setDraft('');
@@ -1060,8 +1184,7 @@ function TagInput<T extends object>(
         ...uniqueValues.filter(
           (value) =>
             !next.has(value) &&
-            (collection.getItem(value) != null ||
-              visibleCustomKeys.includes(value)),
+            (getOption(value) != null || visibleCustomKeys.includes(value)),
         ),
       ];
 
@@ -1175,13 +1298,14 @@ function TagInput<T extends object>(
         const key = String(targetKey);
 
         // Typed text means "add". An option that is already a chip is refused
-        // as a duplicate, as a comma or blur would; unpicking one takes the
-        // arrows, a click, or an empty input.
+        // as a duplicate and the text cleared, as a comma or blur would;
+        // unpicking one takes the arrows, a click, or an empty input.
         if (
           term &&
           uniqueValues.includes(key) &&
           !(isCurrent && activeOption.source === 'user')
         ) {
+          setDraft('');
           setTagError(
             rejectionMessage({
               text: getTagLabel(key),
@@ -1228,12 +1352,16 @@ function TagInput<T extends object>(
       return;
     }
 
+    // Escape takes back one thing at a time: the list, then the text. A
+    // message goes with either, or on its own when the input is already empty,
+    // as after a refused duplicate.
     if (e.key === 'Escape') {
       if (shouldShowPopover) {
         e.preventDefault();
         e.stopPropagation();
         setIsPopoverOpen(false);
-      } else if (draft) {
+        setTagError(null);
+      } else if (draft || tagError) {
         e.preventDefault();
         e.stopPropagation();
         setDraft('');
@@ -1299,24 +1427,31 @@ function TagInput<T extends object>(
   });
 
   // ---- focus --------------------------------------------------------------
-  // What leaving the input does to the typed text.
-  const settleDraft = useEvent(() => {
-    if (!term || !shouldCommitOnBlur || !isInteractive) return;
+  // What leaving the input does to the typed text. Returns the text left.
+  const settleDraft = useEvent((): string => {
+    if (!term) return '';
+    if (!shouldCommitOnBlur || !isInteractive) return draft;
 
-    if (hasOptions && !allowsCustomValue && findOptionKey(term) == null) {
+    if (hasOptions && !allowsCustomValue && termOptionKey == null) {
       // Leaving a filter query behind is not an entry: drop it, as ComboBox
       // does with text that matches no option.
       setDraft('');
       setTagError(null);
-    } else {
-      commitDraft();
+
+      return '';
     }
+
+    return commitDraft();
   });
 
   const handleCompositeBlur = useEvent(() => {
     setIsPopoverOpen(false);
     setUnpickedCustomValues([]);
-    settleDraft();
+
+    // A message can only be about text in the input. Once none is left, as
+    // after a refused duplicate, the field does not stay marked invalid.
+    if (!settleDraft()) setTagError(null);
+
     onBlur?.();
   });
 
@@ -1353,8 +1488,7 @@ function TagInput<T extends object>(
   // ---- chips --------------------------------------------------------------
   const tags: TagListEntry[] = uniqueValues.map((value) => {
     const ownProps = tagProps?.(value);
-    const isOption =
-      collection.getItem(value) != null || knownLabels.has(value);
+    const isOption = getOption(value) != null || knownLabels.has(value);
     const result = !isOption && validateTag ? validateTag(value) : true;
     const label = textLabel(ownProps?.children) ?? getOptionLabel(value);
 
@@ -1599,6 +1733,10 @@ function TagInput<T extends object>(
           isCheckable
           // Clicking back into the input keeps the list open for the next pick.
           shouldCloseOnTriggerInteraction={false}
+          // A press on an outside control reaches it, so a Save button saves
+          // on the first click: focus moves there, and the blur commits the
+          // text. A press elsewhere, as on a dialog's backdrop, only closes it.
+          shouldPassControlPresses
           isDisabled={isDisabled}
           disabledKeys={optionDisabledKeys}
           listStateRef={listStateRef}

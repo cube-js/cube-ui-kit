@@ -128,6 +128,11 @@ export interface FilterCollectionOptions {
    * option list (e.g. CommandTextArea) can opt in.
    */
   matchExtraFields?: boolean;
+  /**
+   * Keeps a node whatever the term, such as the option the typed text already
+   * names by its key.
+   */
+  keep?: (node: any) => boolean;
 }
 
 /**
@@ -187,13 +192,14 @@ export function filterCollectionNodes(
   }
 
   const matchExtraFields = options.matchExtraFields ?? false;
+  const matches = (node: any) =>
+    !!options.keep?.(node) ||
+    nodeMatchesTerm(node, term, textFilterFn, matchExtraFields);
 
   return [...nodes]
     .map((node: any) => {
       if (node.type === 'section' && node.childNodes) {
-        const filteredChildren = [...node.childNodes].filter((child: any) =>
-          nodeMatchesTerm(child, term, textFilterFn, matchExtraFields),
-        );
+        const filteredChildren = [...node.childNodes].filter(matches);
 
         if (filteredChildren.length === 0) {
           return null;
@@ -206,9 +212,7 @@ export function filterCollectionNodes(
         };
       }
 
-      return nodeMatchesTerm(node, term, textFilterFn, matchExtraFields)
-        ? node
-        : null;
+      return matches(node) ? node : null;
     })
     .filter(Boolean);
 }
