@@ -170,6 +170,8 @@ The component automatically respects the `prefers-reduced-motion` media query wh
 
 By default (`preserveContent={true}`), the component stores the children render function when content is visible and uses the stored version during exit transitions. This ensures the exiting content remains consistent even if the parent stops providing content immediately after hiding.
 
+Preservation ends when the phase reaches `unmounted`. With `exposeUnmounted={true}`, the render prop then uses the current children, including updates made while fully hidden. Controls kept mounted this way can stay reachable by keyboard and reveal their container on focus.
+
 ```jsx
 <DisplayTransition isShown={isVisible} preserveContent>
   {({ phase }) => (

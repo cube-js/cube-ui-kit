@@ -1,8 +1,9 @@
 import { useState } from 'react';
 
-import { act, renderWithRoot, userEvent } from '../../test/index';
+import { act, renderWithRoot, userEvent, waitFor } from '../../test/index';
 
-import { ItemButton } from './ItemButton';
+import { ItemAction } from './ItemAction/ItemAction';
+import { ItemButton } from './ItemButton/ItemButton';
 
 /**
  * The wrapper `ItemButton` puts around a row that has actions — the layer that
@@ -98,6 +99,36 @@ describe('<ItemActionsWrapper />', () => {
       row.parentElement?.querySelector('[data-element="Actions"]'),
     ).toBeInTheDocument();
     expect(row).not.toHaveAttribute('data-has-actions');
+  });
+
+  it('keeps actions added while hidden reachable by keyboard', async () => {
+    const { getByRole, rerender } = renderWithRoot(
+      <ItemButton autoHideActions actions={null}>
+        Row
+      </ItemButton>,
+    );
+
+    rerender(
+      <ItemButton autoHideActions actions={<ItemAction>Pin</ItemAction>}>
+        Row
+      </ItemButton>,
+    );
+
+    const row = getByRole('button', { name: 'Row' });
+    const wrapper = row.parentElement!;
+
+    expect(wrapper).not.toHaveAttribute('data-actions-shown');
+
+    await userEvent.tab();
+    expect(row).toHaveFocus();
+    expect(wrapper).not.toHaveAttribute('data-actions-shown');
+
+    await userEvent.tab();
+    expect(getByRole('button', { name: 'Pin' })).toHaveFocus();
+
+    await waitFor(() => {
+      expect(wrapper).toHaveAttribute('data-actions-shown');
+    });
   });
 
   it('does not wrap a row that never had actions', () => {

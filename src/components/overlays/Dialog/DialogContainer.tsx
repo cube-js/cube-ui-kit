@@ -1,10 +1,4 @@
-import {
-  Children,
-  isValidElement,
-  ReactElement,
-  ReactNode,
-  useRef,
-} from 'react';
+import { Children, isValidElement, ReactNode, useState } from 'react';
 
 import { Modal, WithCloseBehavior } from '../Modal';
 
@@ -52,14 +46,15 @@ export function DialogContainer(props: CubeDialogContainerProps) {
     throw new Error('Only a single child can be passed to DialogContainer.');
   }
 
-  const lastChild = useRef<ReactElement>(null);
   const child = isValidElement(childArray[0]) ? childArray[0] : null;
-
-  if (child) {
-    lastChild.current = child;
-  }
-
   const isActuallyOpened = typeof isOpen !== 'boolean' ? !!child : isOpen;
+  const [lastDialog, setLastDialog] = useState({ children, child });
+
+  // Children.toArray clones elements, so compare the source when retaining
+  // the last dialog to keep hideOnClose from remounting it or looping renders.
+  if ((child || isActuallyOpened) && children !== lastDialog.children) {
+    setLastDialog({ children, child });
+  }
 
   const context = {
     type,
@@ -80,7 +75,10 @@ export function DialogContainer(props: CubeDialogContainerProps) {
         isKeyboardDismissDisabled={isKeyboardDismissDisabled}
         onClose={isDismissable ? onDismiss : undefined}
       >
-        <>{child}</>
+        <>
+          {child ??
+            (hideOnClose && !isActuallyOpened ? lastDialog.child : null)}
+        </>
       </Modal>
     </DialogContext.Provider>
   );
