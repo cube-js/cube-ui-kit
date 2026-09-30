@@ -1,5 +1,19 @@
 # @cube-dev/ui-kit
 
+## 0.186.1
+
+### Patch Changes
+
+- [#1447](https://github.com/cube-js/cube-ui-kit/pull/1447) [`fafe283c`](https://github.com/cube-js/cube-ui-kit/commit/fafe283c223ea63ea39e5ae53c6bf3f35c832dd5) Thanks [@tenphi](https://github.com/tenphi)! - `TagInput` no longer swallows the click that takes focus away from it while a message is showing over an empty input. Leaving the field clears that message, which moves everything below the field up by a line. A press on a control below, such as a disclosure or a button, then ended off the control and did nothing. The message now stays until the press ends, and focus leaving by keyboard still clears it at once.
+
+- [#1446](https://github.com/cube-js/cube-ui-kit/pull/1446) [`54b8a032`](https://github.com/cube-js/cube-ui-kit/commit/54b8a032300236acf9456802da7fc9c835d75459) Thanks [@tenphi](https://github.com/tenphi)! - Update Tasty to 3.9.3 (from 3.9.2). Tasty used to drop a later state-map key whose value matched the default, so an earlier key won in the states the later one was written for. Several of the kit's style maps had that shape, so they now render as written.
+
+  **`Link` and `Button type="link"` with element children lose the button padding.** `<Link><span>Docs</span></Link>` measured 48×28px with 4px/7px padding; it now matches `<Link>Docs</Link>` at 34×20px with none. Links with text children or an icon are unchanged.
+
+  **Disabled fields keep a neutral border when they are also invalid or valid.** A disabled `TextInput` with `validationState="invalid"` kept a half-opacity danger border; it now has the same border as any disabled field. This covers every field on the shared input wrapper, including `TextInput`, `TextArea`, `PasswordInput`, `NumberInput`, `SearchInput`, `ComboBox`, `SearchComboBox` and the date and time inputs and pickers.
+
+  **Disabled and unavailable `Calendar` days no longer highlight on hover or press.** When a selected range covers such a day, the day keeps white text on its muted fill instead of dimmed text.
+
 ## 0.186.0
 
 ### Minor Changes
