@@ -143,6 +143,20 @@ describe('ListBox listGap', () => {
     },
   );
 
+  it('spaces a loose option from the section after it', async () => {
+    renderWithRoot(
+      <ListBox aria-label="Colors" listGap={6}>
+        <ListBox.Item key="red">Red</ListBox.Item>
+        <ListBox.Section>
+          <ListBox.Item key="green">Green</ListBox.Item>
+          <ListBox.Item key="blue">Blue</ListBox.Item>
+        </ListBox.Section>
+      </ListBox>,
+    );
+
+    await vi.waitFor(() => expect(gaps()).toEqual([6, 6]));
+  });
+
   it.each(LAYOUTS)(
     'keeps .5x below the last option of a %s list, which listStyles can take away',
     async (layout) => {
@@ -159,7 +173,7 @@ describe('ListBox listGap', () => {
     },
   );
 
-  it('draws the ring inside an option, where the scroll box cannot clip it', async () => {
+  it('draws the focus ring inside the option', async () => {
     renderWithRoot(
       <ListBox aria-label="Colors" shape="plain">
         {COLORS.map((color) => (
@@ -233,7 +247,12 @@ describe('ListBox listGap', () => {
   });
 
   describe('while dragging', () => {
-    function drag(element: Element, type: string, data: DataTransfer, y = 0) {
+    function drag(
+      element: Element,
+      type: string,
+      data: DataTransfer,
+      y: number,
+    ) {
       element.dispatchEvent(
         new DragEvent(type, {
           bubbles: true,
@@ -262,20 +281,11 @@ describe('ListBox listGap', () => {
       return data;
     }
 
-    const pause = (ms: number) =>
-      new Promise((resolve) => setTimeout(resolve, ms));
-
-    // React Aria settles the drop target on a repeated `dragover`.
     async function hover(list: HTMLElement, data: DataTransfer, y: number) {
       await act(async () => {
         drag(list, 'dragenter', data, y);
         drag(list, 'dragover', data, y);
       });
-      await pause(150);
-      await act(async () => {
-        drag(list, 'dragover', data, y);
-      });
-      await pause(150);
     }
 
     function indicator() {
@@ -300,8 +310,6 @@ describe('ListBox listGap', () => {
         </div>,
       );
 
-      await pause(300);
-
       const list = screen.getByRole('listbox');
       const options = () =>
         Array.from(list.querySelectorAll('li[data-key]'), (option) =>
@@ -314,7 +322,6 @@ describe('ListBox listGap', () => {
       await act(async () => {
         drag(red, 'dragstart', data, red.getBoundingClientRect().top + 5);
       });
-      await pause(100);
 
       // Between Green and Blue.
       const [, green, blue, cyan] = options();

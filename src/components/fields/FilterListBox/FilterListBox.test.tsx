@@ -793,6 +793,76 @@ describe('<FilterListBox />', () => {
     });
   });
 
+  describe('Focused option', () => {
+    const focusedKeys = (container: HTMLElement) =>
+      Array.from(
+        container.querySelectorAll('[role="option"][data-focused]'),
+        (option) => option.getAttribute('data-key'),
+      );
+
+    it.each([
+      ['a searchable', {}],
+      // DOM focus stays in the search input, but the list is not in virtual
+      // focus mode, so drag-and-drop gets real focus.
+      ['a reorderable', { isReorderable: true, onReorder: () => {} }],
+    ])('marks the option the arrow keys reach in %s list', async (_, props) => {
+      const { container, getByRole } = render(
+        <FilterListBox label="Fruit" {...props}>
+          {basicItems}
+        </FilterListBox>,
+      );
+      const searchInput = getByRole('combobox');
+
+      await userEvent.click(searchInput);
+      await userEvent.keyboard('{ArrowDown}');
+
+      await waitFor(() =>
+        expect(focusedKeys(container)).toEqual([
+          getActiveDescendant(searchInput)?.getAttribute('data-key'),
+        ]),
+      );
+      expect(focusedKeys(container)).not.toEqual([null]);
+    });
+
+    it('drops the mark once focus leaves', async () => {
+      const { container, getByRole } = render(
+        <>
+          <FilterListBox label="Fruit">{basicItems}</FilterListBox>
+          <button>Elsewhere</button>
+        </>,
+      );
+
+      await userEvent.click(getByRole('combobox'));
+      await userEvent.keyboard('{ArrowDown}');
+
+      await waitFor(() => expect(focusedKeys(container)).toHaveLength(1));
+
+      await userEvent.click(getByRole('button', { name: 'Elsewhere' }));
+
+      expect(focusedKeys(container)).toEqual([]);
+    });
+
+    it('skips disabled options with the arrow keys', async () => {
+      const { container, getByRole } = render(
+        <FilterListBox label="Fruit" disabledKeys={['banana']}>
+          {basicItems}
+        </FilterListBox>,
+      );
+      const searchInput = getByRole('combobox');
+
+      await userEvent.click(searchInput);
+      await userEvent.keyboard('{Home}{ArrowDown}');
+
+      await waitFor(() =>
+        expect(getActiveDescendant(searchInput)).toHaveAttribute(
+          'data-key',
+          'cherry',
+        ),
+      );
+      expect(focusedKeys(container)).toEqual(['cherry']);
+    });
+  });
+
   describe('Form integration', () => {
     it('should integrate with form field wrapper', () => {
       const { getByPlaceholderText } = render(
@@ -1290,7 +1360,9 @@ describe('<FilterListBox />', () => {
       );
 
       // Initially focus lands on the first real item.
-      let focused = document.querySelector('[role="option"][data-focused]');
+      let focused = getActiveDescendant(
+        document.querySelector('[role="combobox"]')!,
+      );
       expect(focused).toHaveTextContent('Apple');
 
       // User types — parent triggers fetch and sets isLoadingItems=true while
@@ -1319,7 +1391,9 @@ describe('<FilterListBox />', () => {
       expect(visibleTexts).not.toContain('Apple');
       expect(visibleTexts).not.toContain('Banana');
 
-      focused = document.querySelector('[role="option"][data-focused]');
+      focused = getActiveDescendant(
+        document.querySelector('[role="combobox"]')!,
+      );
       expect(focused).toHaveTextContent('zzz');
     });
 
@@ -1367,7 +1441,9 @@ describe('<FilterListBox />', () => {
         </FilterListBox>,
       );
 
-      let focused = document.querySelector('[role="option"][data-focused]');
+      let focused = getActiveDescendant(
+        document.querySelector('[role="combobox"]')!,
+      );
       expect(focused).toHaveTextContent('zzz');
 
       // Fetch resolves with an empty list (no matches). isLoadingItems flips
@@ -1385,7 +1461,9 @@ describe('<FilterListBox />', () => {
         </FilterListBox>,
       );
 
-      focused = document.querySelector('[role="option"][data-focused]');
+      focused = getActiveDescendant(
+        document.querySelector('[role="combobox"]')!,
+      );
       expect(focused).toHaveTextContent('zzz');
     });
 

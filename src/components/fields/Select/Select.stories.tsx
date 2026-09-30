@@ -136,6 +136,14 @@ export default {
         defaultValue: { summary: 8 },
       },
     },
+    listGap: {
+      control: { type: 'number' },
+      description: 'Space between options, in pixels',
+      table: {
+        defaultValue: { summary: '1bw' },
+        type: { summary: 'number' },
+      },
+    },
 
     /* State */
     isDisabled: {
@@ -253,14 +261,6 @@ export default {
       description: 'Styles for the dropdown list container',
       table: {
         type: { summary: 'Styles' },
-      },
-    },
-    listGap: {
-      control: { type: 'number' },
-      description: 'Space between options, in pixels',
-      table: {
-        defaultValue: { summary: '1bw' },
-        type: { summary: 'number' },
       },
     },
     optionStyles: {

@@ -809,14 +809,11 @@ export function ListBoxPopup({
                 <DismissButton onDismiss={() => state.close()} />
                 {(() => {
                   const renderedItems: React.ReactNode[] = [];
-                  let isFirstSection = true;
                   let hasSections = false;
 
                   for (const item of state.collection) {
                     if (item.type === 'section') {
-                      hasSections = true;
-
-                      if (!isFirstSection) {
+                      if (hasSections) {
                         renderedItems.push(
                           <ListDivider
                             key={`divider-${String(item.key)}`}
@@ -839,7 +836,7 @@ export function ListBoxPopup({
                         />,
                       );
 
-                      isFirstSection = false;
+                      hasSections = true;
                     } else {
                       renderedItems.push(
                         <Option

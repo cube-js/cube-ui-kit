@@ -21,7 +21,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import { useFilter, useId, useKeyboard } from 'react-aria';
+import { useFilter, useFocusWithin, useId, useKeyboard } from 'react-aria';
 import { Section as BaseSection, useListState } from 'react-stately';
 
 import { useEvent } from '../../../_internal/hooks/use-event';
@@ -38,6 +38,7 @@ import {
 import { getValidationMods, useFieldProps, wrapWithField } from '../../form';
 import { CubeListBoxProps, ListBox } from '../ListBox/ListBox';
 import { getListBoxOptionId } from '../ListBox/optionId';
+import { collectVisibleKeys } from '../ListBoxPopover/listNavigation';
 import {
   DEFAULT_INPUT_STYLES,
   INPUT_WRAPPER_STYLES,
@@ -670,6 +671,12 @@ export const FilterListBox = forwardRef(function FilterListBox<
   listRef = useCombinedRefs(listRef);
 
   const { isFocused, focusProps } = useFocus({ isDisabled });
+  // The search input moves the list's focused option, so the option shows as
+  // focused only while focus is in this component.
+  const [isFocusWithin, setIsFocusWithin] = useState(false);
+  const { focusWithinProps } = useFocusWithin({
+    onFocusWithinChange: setIsFocusWithin,
+  });
 
   const listBoxRef = useRef<HTMLDivElement>(null);
   // The search input points `aria-controls` and `aria-activedescendant` into
@@ -720,14 +727,14 @@ export const FilterListBox = forwardRef(function FilterListBox<
     let newCustomValueKey: Key | null = null;
     let customValueHasMatches = false;
 
-    const collectVisibleKeys = (
+    const collectFocusableKeys = (
       nodes: Iterable<any>,
       out: Key[],
       inCustomSection = false,
     ) => {
       for (const node of nodes) {
         if (node.type === 'item') {
-          out.push(node.key);
+          if (!listState.disabledKeys.has(node.key)) out.push(node.key);
           if (inCustomSection) {
             newCustomValueKey = node.key;
             customValueHasMatches = true;
@@ -735,13 +742,13 @@ export const FilterListBox = forwardRef(function FilterListBox<
         } else if (node.childNodes) {
           const isCustomSection =
             inCustomSection || node.key === '__custom_value__';
-          collectVisibleKeys(node.childNodes, out, isCustomSection);
+          collectFocusableKeys(node.childNodes, out, isCustomSection);
         }
       }
     };
 
     const visibleKeys: Key[] = [];
-    collectVisibleKeys(collection, visibleKeys);
+    collectFocusableKeys(collection, visibleKeys);
 
     // Detect the appended-at-top-level case (no items text-match). The custom
     // option is added with key === trimmed search term and lives directly in
@@ -862,20 +869,10 @@ export const FilterListBox = forwardRef(function FilterListBox<
 
         const { selectionManager, collection } = listState;
 
-        // Helper to collect visible item keys (supports sections)
-        // Collection is already filtered by React Stately via filterFn
-        const collectVisibleKeys = (nodes: Iterable<any>, out: Key[]) => {
-          for (const node of nodes) {
-            if (node.type === 'item') {
-              out.push(node.key);
-            } else if (node.childNodes) {
-              collectVisibleKeys(node.childNodes, out);
-            }
-          }
-        };
-
+        // The enabled keys of the visible items, sections included. The
+        // collection is already filtered by React Stately via filterFn.
         const visibleKeys: Key[] = [];
-        collectVisibleKeys(collection, visibleKeys);
+        collectVisibleKeys(collection, visibleKeys, listState.disabledKeys);
 
         if (visibleKeys.length === 0) return;
 
@@ -931,20 +928,10 @@ export const FilterListBox = forwardRef(function FilterListBox<
 
         const { selectionManager, collection } = listState;
 
-        // Helper to collect visible item keys (supports sections)
-        // Collection is already filtered by React Stately via filterFn
-        const collectVisibleKeys = (nodes: Iterable<any>, out: Key[]) => {
-          for (const node of nodes) {
-            if (node.type === 'item') {
-              out.push(node.key);
-            } else if (node.childNodes) {
-              collectVisibleKeys(node.childNodes, out);
-            }
-          }
-        };
-
+        // The enabled keys of the visible items, sections included. The
+        // collection is already filtered by React Stately via filterFn.
         const visibleKeys: Key[] = [];
-        collectVisibleKeys(collection, visibleKeys);
+        collectVisibleKeys(collection, visibleKeys, listState.disabledKeys);
 
         if (visibleKeys.length === 0) return;
 
@@ -1119,7 +1106,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
       qa="FilterListBoxWrapper"
       {...modAttrs(mods)}
       styles={styles}
-      {...focusProps}
+      {...mergeProps(focusProps, focusWithinProps)}
     >
       {header ? (
         <StyledHeaderWithoutBorder data-size={size} styles={headerStyles}>
@@ -1154,6 +1141,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
         disabledKeys={props.disabledKeys}
         focusOnHover={focusOnHover}
         shouldUseVirtualFocus={!(isReorderable && !searchValue.trim())}
+        isFocusWithin={isFocusWithin}
         showSelectAll={showSelectAll}
         selectAllLabel={selectAllLabel}
         footer={footer}

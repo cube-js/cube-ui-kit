@@ -44,6 +44,7 @@ A versatile list selection component that allows users to select one or more ite
 - **`footer`** `ReactNode` — Custom footer content
 - **`focusOnHover`** `boolean` (default: `true`) — Whether moving the pointer over an option will move DOM focus to that option
 - **`shouldUseVirtualFocus`** `boolean` (default: `false`) — Whether to use virtual focus instead of DOM focus
+- **`isFocusWithin`** `boolean` — For a list whose focused option is moved from an input outside it: whether focus is within that input's component
 - **`isCheckable`** `boolean` (default: `false`) — Whether to show checkboxes for multiple selection mode
 - **`shouldFocusWrap`** `boolean` (default: `false`) — Whether keyboard navigation should wrap around
 - **`description`** `string` — Field description
@@ -207,6 +208,12 @@ The `mods` property accepts the following modifiers you can override:
 
 - When `true`, uses virtual focus for keyboard navigation
 - DOM focus stays outside individual option elements (useful for searchable lists)
+
+**isFocusWithin** (`boolean`)
+
+- For a list whose focused option is moved from an input outside it, as FilterListBox's search input does
+- The focused option shows as focused only while this is `true`
+- Unset, the list's own focus decides; with `shouldUseVirtualFocus`, the focused option always shows
 
 **shouldFocusWrap** (`boolean`, default: `false`)
 
@@ -645,12 +652,15 @@ const [selectedKey, setSelectedKey] = useState('apple');
 <Story of={ListBoxStories.OptionGap} />
 
 ```jsx
-<ListBox label="Framework" listGap={4}>
-  <ListBox.Item key="react" type="outline" shape="card" description="A library for web and native user interfaces">
-    React
+<ListBox label="Permission" listGap={4} defaultSelectedKey="read">
+  <ListBox.Item key="read" type="outline" shape="card" description="View content and data">
+    Read
   </ListBox.Item>
-  <ListBox.Item key="vue" type="outline" shape="card" description="The progressive JavaScript framework">
-    Vue
+  <ListBox.Item key="write" type="outline" shape="card" description="Create and edit content">
+    Write
+  </ListBox.Item>
+  <ListBox.Item key="delete" type="outline" shape="card" description="Remove content permanently">
+    Delete
   </ListBox.Item>
 </ListBox>
 ```

@@ -154,8 +154,8 @@ const ListBoxItem = tasty(Item, {
   styles: {
     margin: {
       '': '$list-gap bottom',
-      // The last option. A drop indicator rendered after it doesn't count.
-      ':not(:has(~ [data-listboxitem]))': '0',
+      // The last child. A drop indicator rendered after it doesn't count.
+      ':not(:has(~ :not([data-drop-indicator])))': '0',
       all: '.5x',
     },
     // Inside the option: options sit a hairline apart, so a ring outside one
@@ -210,7 +210,6 @@ const SectionWrapperElement = tasty({
   as: 'li',
   styles: {
     display: 'block',
-    padding: 0,
   },
 });
 
@@ -396,6 +395,15 @@ export interface CubeListBoxProps<T>
    * Defaults to false for backward compatibility.
    */
   shouldUseVirtualFocus?: boolean;
+
+  /**
+   * For a list whose focused option is moved from an input outside it, as
+   * FilterListBox's search input does: whether focus is within that input's
+   * component. The focused option is marked only while it is `true`. Unset, the
+   * list's own focus decides, and with `shouldUseVirtualFocus` the focused
+   * option is always marked.
+   */
+  isFocusWithin?: boolean;
 
   /**
    * Callback fired when the user presses Escape key.
@@ -664,6 +672,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     selectedKeys,
     defaultSelectedKeys,
     shouldUseVirtualFocus,
+    isFocusWithin,
     onSelectionChange,
     disableSelectionToggle = false,
     allowDuplicateSelectionEvents,
@@ -932,6 +941,13 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
 
   const { isFocused, focusProps } = useFocus({ isDisabled });
 
+  // The focused key outlives focus, so an option shows as focused only while
+  // the list has it. With virtual focus DOM focus stays in an input, and the
+  // input's component says (`isFocusWithin`), or it always does.
+  const isListFocused =
+    isFocusWithin ??
+    (!!shouldUseVirtualFocus || listState.selectionManager.isFocused);
+
   // Use ref to ensure estimateSize always accesses current itemsArray
   const itemsArrayRef = useRef(itemsArray);
   itemsArrayRef.current = itemsArray;
@@ -1128,7 +1144,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
                       isInvalid={isInvalid}
                       isValid={isValid}
                       focusOnHover={focusOnHover}
-                      shouldUseVirtualFocus={shouldUseVirtualFocus}
+                      isListFocused={isListFocused}
                       isCheckable={isCheckable}
                       lastFocusSourceRef={lastFocusSourceRef}
                       dragState={dragState}
@@ -1175,7 +1191,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
                       isInvalid={isInvalid}
                       isValid={isValid}
                       focusOnHover={focusOnHover}
-                      shouldUseVirtualFocus={shouldUseVirtualFocus}
+                      isListFocused={isListFocused}
                       isCheckable={isCheckable}
                       // Measures the option's real height; the virtualizer adds the gap.
                       virtualRef={rowVirtualizer.measureElement as any}
@@ -1221,7 +1237,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
                           isInvalid={isInvalid}
                           isValid={isValid}
                           focusOnHover={focusOnHover}
-                          shouldUseVirtualFocus={shouldUseVirtualFocus}
+                          isListFocused={isListFocused}
                           isCheckable={isCheckable}
                           size={size}
                           lastFocusSourceRef={lastFocusSourceRef}
@@ -1243,7 +1259,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
                           isInvalid={isInvalid}
                           isValid={isValid}
                           focusOnHover={focusOnHover}
-                          shouldUseVirtualFocus={shouldUseVirtualFocus}
+                          isListFocused={isListFocused}
                           isCheckable={isCheckable}
                           lastFocusSourceRef={lastFocusSourceRef}
                           onClick={onOptionClick}
@@ -1289,7 +1305,7 @@ function Option({
   isInvalid,
   isValid,
   focusOnHover = false,
-  shouldUseVirtualFocus = false,
+  isListFocused = false,
   isCheckable,
   onClick: onOptionClick,
   virtualStyle,
@@ -1308,7 +1324,8 @@ function Option({
   isInvalid?: boolean;
   isValid?: boolean;
   focusOnHover?: boolean;
-  shouldUseVirtualFocus?: boolean;
+  /** Whether the list has focus, so its focused option shows as focused */
+  isListFocused?: boolean;
   isCheckable?: boolean;
   onClick?: (key: Key) => void;
   /** Inline style applied when virtualized (absolute positioning etc.) */
@@ -1350,13 +1367,7 @@ function Option({
 
   const { hoverProps, isHovered } = useHover({ isDisabled });
 
-  const {
-    optionProps,
-    isPressed,
-    labelProps,
-    descriptionProps,
-    isFocused: hasListFocus,
-  } = useOption(
+  const { optionProps, isPressed, labelProps, descriptionProps } = useOption(
     {
       key: item.key,
       isDisabled,
@@ -1368,14 +1379,10 @@ function Option({
     combinedRef,
   );
 
-  // With virtual focus DOM focus stays in an input, so the focused key alone
-  // marks the option. Otherwise the list must hold focus too: the focused key
-  // outlives it.
   const isFocused =
     !isDisabled &&
-    (shouldUseVirtualFocus
-      ? state.selectionManager.focusedKey === item.key
-      : hasListFocus);
+    isListFocused &&
+    state.selectionManager.focusedKey === item.key;
 
   // Filter out service props - all remaining props can be passed to Item
   const filteredItemProps = filterCollectionItemProps(item.props);
@@ -1571,7 +1578,7 @@ function ListBoxDropIndicator({
       ref={ref}
       role="option"
       {...dropIndicatorProps}
-      mods={{ 'drop-target': isDropTarget }}
+      mods={{ 'drop-indicator': true, 'drop-target': isDropTarget }}
     >
       <div data-element="Indicator" />
     </ListBoxDropIndicatorElement>
@@ -1589,7 +1596,7 @@ interface ListBoxSectionProps<T> {
   isInvalid?: boolean;
   isValid?: boolean;
   focusOnHover?: boolean;
-  shouldUseVirtualFocus?: boolean;
+  isListFocused?: boolean;
   isCheckable?: boolean;
   onClick?: (key: Key) => void;
   size?: 'small' | 'medium' | 'large';
@@ -1608,7 +1615,7 @@ function ListBoxSection<T>(props: ListBoxSectionProps<T>) {
     isInvalid,
     isValid,
     focusOnHover,
-    shouldUseVirtualFocus,
+    isListFocused,
     isCheckable,
     onClick: onOptionClick,
     lastFocusSourceRef,
@@ -1646,7 +1653,7 @@ function ListBoxSection<T>(props: ListBoxSectionProps<T>) {
               isInvalid={isInvalid}
               isValid={isValid}
               focusOnHover={focusOnHover}
-              shouldUseVirtualFocus={shouldUseVirtualFocus}
+              isListFocused={isListFocused}
               isCheckable={isCheckable}
               lastFocusSourceRef={lastFocusSourceRef}
               onClick={onOptionClick}

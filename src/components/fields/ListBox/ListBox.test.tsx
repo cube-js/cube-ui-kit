@@ -669,6 +669,26 @@ describe('<ListBox />', () => {
     expect(banana).not.toHaveAttribute('data-focused');
   });
 
+  it('drops the focused mod once the list is disabled', async () => {
+    const { getByRole, rerender } = render(
+      <ListBox label="Select a fruit">{basicItems}</ListBox>,
+    );
+
+    const banana = getByRole('option', { name: 'Banana' });
+
+    await userEvent.click(banana);
+
+    expect(banana).toHaveAttribute('data-focused');
+
+    rerender(
+      <ListBox isDisabled label="Select a fruit">
+        {basicItems}
+      </ListBox>,
+    );
+
+    expect(banana).not.toHaveAttribute('data-focused');
+  });
+
   it('should apply focused mod when navigating through sections', async () => {
     const { getByRole, getByText } = render(
       <ListBox label="Select an item">
