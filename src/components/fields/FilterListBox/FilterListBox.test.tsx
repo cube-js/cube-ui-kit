@@ -861,6 +861,25 @@ describe('<FilterListBox />', () => {
       expect(focusedKeys(container)).toEqual(['cherry']);
     });
 
+    it('wraps the arrow keys with shouldFocusWrap', async () => {
+      const { getByRole } = render(
+        <FilterListBox shouldFocusWrap label="Fruit">
+          {basicItems}
+        </FilterListBox>,
+      );
+      const searchInput = getByRole('combobox');
+
+      await userEvent.click(searchInput);
+      await userEvent.keyboard('{Home}{ArrowUp}');
+
+      await waitFor(() =>
+        expect(getActiveDescendant(searchInput)).toHaveAttribute(
+          'data-key',
+          'elderberry',
+        ),
+      );
+    });
+
     it('skips disabled options at the edges, on open and with Home and End', async () => {
       const { getByRole } = render(
         <FilterListBox label="Fruit" disabledKeys={['apple', 'elderberry']}>
