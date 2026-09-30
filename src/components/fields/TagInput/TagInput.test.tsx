@@ -2026,6 +2026,67 @@ describe('<TagInput />', () => {
       expect(input).not.toHaveAttribute('aria-invalid');
     });
 
+    it('clears it at once when Tab takes focus away', async () => {
+      const { getByRole, queryByText } = render(
+        <>
+          <TagInput label="Tags" defaultValue={['one']} />
+          <button>After</button>
+        </>,
+      );
+
+      await userEvent.type(getByRole('textbox'), 'one{Enter}');
+      // Past the chips, which are the field's own tab stop.
+      await userEvent.tab();
+      await userEvent.tab();
+
+      expect(getByRole('button', { name: 'After' })).toHaveFocus();
+      expect(queryByText('"one" is already added')).toBeNull();
+    });
+
+    // Clearing moves what is below the field up by a line; mid-press, the
+    // control pressed would move out from under the pointer.
+    it('keeps it until the press that takes focus away ends', async () => {
+      const { getByRole, getByText, queryByText } = render(
+        <>
+          <TagInput label="Tags" defaultValue={['one']} />
+          <button>After</button>
+        </>,
+      );
+      const after = getByRole('button', { name: 'After' });
+
+      await userEvent.type(getByRole('textbox'), 'one{Enter}');
+      fireEvent.mouseDown(after);
+      act(() => after.focus());
+
+      expect(getByText('"one" is already added')).toBeInTheDocument();
+
+      fireEvent.mouseUp(after);
+
+      await waitFor(() =>
+        expect(queryByText('"one" is already added')).toBeNull(),
+      );
+    });
+
+    it('keeps it when focus comes back before the press ends', async () => {
+      const { getByRole, getByText } = render(
+        <>
+          <TagInput label="Tags" defaultValue={['one']} />
+          <button>After</button>
+        </>,
+      );
+      const input = getByRole('textbox');
+      const after = getByRole('button', { name: 'After' });
+
+      await userEvent.type(input, 'one{Enter}');
+      fireEvent.mouseDown(after);
+      act(() => after.focus());
+      act(() => input.focus());
+      fireEvent.mouseUp(after);
+      await act(() => new Promise((resolve) => setTimeout(resolve, 10)));
+
+      expect(getByText('"one" is already added')).toBeInTheDocument();
+    });
+
     it('leaves no message behind when a duplicate is committed by leaving', async () => {
       const onChange = vi.fn();
       const { getByRole, queryByText } = render(

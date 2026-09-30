@@ -2,11 +2,19 @@ import { FocusEvent, RefObject, useEffect, useRef } from 'react';
 
 import { useEvent } from '../../../_internal';
 
+export interface CompositeBlurInfo {
+  /**
+   * Focus left for a mousedown outside, and that press has not ended yet. A
+   * layout change made now moves the control under the pointer.
+   */
+  isPressing: boolean;
+}
+
 export interface UseCompositeFocusProps {
   wrapperRef: RefObject<HTMLElement>;
   popoverRef: RefObject<HTMLElement>;
   onFocus?: () => void;
-  onBlur?: () => void;
+  onBlur?: (info: CompositeBlurInfo) => void;
   isDisabled?: boolean;
 }
 
@@ -74,7 +82,7 @@ export function useCompositeFocus({
 
     wasInsideRef.current = false;
     document.removeEventListener('mousedown', handleDocumentMouseDown, true);
-    onBlur?.();
+    onBlur?.({ isPressing: isPressingOutsideRef.current });
   };
 
   const handleFocus = () => {
