@@ -109,10 +109,11 @@ export const ListBoxElement = tasty({
   qa: 'ListBox',
   as: 'ul',
   styles: {
-    // Set from `listGap`.
-    '$list-gap': '1bw',
+    // Set from `listGap`. A section's list inherits it from the popup's.
+    '$list-gap': { '': '1bw', section: false },
     display: 'flex',
-    gap: '$list-gap',
+    // It spaces options: sections and dividers keep a hairline.
+    gap: { '': '$list-gap', sections: '1bw' },
     flow: 'column',
     margin: '0',
     padding: '0',
@@ -809,9 +810,12 @@ export function ListBoxPopup({
                 {(() => {
                   const renderedItems: React.ReactNode[] = [];
                   let isFirstSection = true;
+                  let hasSections = false;
 
                   for (const item of state.collection) {
                     if (item.type === 'section') {
+                      hasSections = true;
+
                       if (!isFirstSection) {
                         renderedItems.push(
                           <ListDivider
@@ -830,7 +834,6 @@ export function ListBoxPopup({
                           state={state}
                           optionStyles={optionStyles}
                           sectionStyles={undefined}
-                          listGapTokens={listGapTokens}
                           shouldUseVirtualFocus={shouldUseVirtualFocus}
                           size={listItemSize}
                         />,
@@ -855,6 +858,7 @@ export function ListBoxPopup({
                     <ListBoxElement
                       styles={listBoxStyles}
                       tokens={listGapTokens}
+                      mods={{ sections: hasSections }}
                       {...listBoxProps}
                       ref={listBoxRef}
                     >
@@ -929,8 +933,6 @@ interface SelectSectionProps<T> {
   optionStyles?: Styles;
   headingStyles?: Styles;
   sectionStyles?: Styles;
-  /** The list's `$list-gap`, repeated because a section list declares its own. */
-  listGapTokens?: Record<string, string>;
   shouldUseVirtualFocus?: boolean;
   size?: string;
 }
@@ -942,7 +944,6 @@ function SelectSection<T>(props: SelectSectionProps<T>) {
     optionStyles,
     headingStyles,
     sectionStyles,
-    listGapTokens,
     shouldUseVirtualFocus,
     size,
   } = props;
@@ -965,11 +966,7 @@ function SelectSection<T>(props: SelectSectionProps<T>) {
           {heading}
         </ListSectionHeading>
       )}
-      <ListBoxElement
-        {...groupProps}
-        tokens={listGapTokens}
-        mods={{ section: true }}
-      >
+      <ListBoxElement {...groupProps} mods={{ section: true }}>
         {[...item.childNodes]
           .filter((node: any) => state.collection.getItem(node.key))
           .map((node: any) => (

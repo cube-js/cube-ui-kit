@@ -78,7 +78,7 @@ Customizes the root wrapper element of the component.
 
 #### listStyles
 
-Customizes the list container element.
+Customizes the list container element. The list keeps `.5x` of padding below its last option; `listStyles={{ padding: 0 }}` takes it away.
 
 #### optionStyles
 
@@ -99,10 +99,6 @@ Customizes section wrapper elements.
 #### headingStyles
 
 Customizes section heading elements.
-
-#### listGap
-
-The space between options, in pixels (`number`, default: a hairline, `1bw`). It spaces flat, virtualized, sectioned and reorderable lists alike. Use it rather than a margin in `optionStyles`, which a flat list ignores: it is virtualized, so it positions its options itself.
 
 #### headerStyles
 
@@ -193,13 +189,12 @@ The `mods` property accepts the following modifiers you can override:
 - Use `plain` when embedding ListBox directly into another component
 - Use `popover` when using ListBox inside overlays (Dialog, ComboBox, Picker)
 
-**listGap** (`number`, default: `1bw`)
+**listGap** (`number`, default: a hairline, `1bw`)
 
 - The space between options, in pixels
-- Every component built on ListBox takes it too: FilterListBox, Picker, FilterPicker, ComboBox, SearchComboBox, TagInput, CommandTextArea, and Select
+- Use it rather than a margin in `optionStyles`: a flat list is virtualized and positions its options itself, so it ignores their margins
 - Card-like options (`type="outline"`, `shape="card"`) usually want `4` or more, so each one reads as its own choice
-
-<Story of={ListBoxStories.OptionGap} />
+- FilterListBox, Picker, FilterPicker, ComboBox, SearchComboBox, TagInput and CommandTextArea pass it to their ListBox. Select takes it too
 
 ### Focus and Interaction
 
@@ -645,6 +640,21 @@ const [selectedKey, setSelectedKey] = useState('apple');
 </ListBox>
 ```
 
+### Option Gap
+
+<Story of={ListBoxStories.OptionGap} />
+
+```jsx
+<ListBox label="Framework" listGap={4}>
+  <ListBox.Item key="react" type="outline" shape="card" description="A library for web and native user interfaces">
+    React
+  </ListBox.Item>
+  <ListBox.Item key="vue" type="outline" shape="card" description="The progressive JavaScript framework">
+    Vue
+  </ListBox.Item>
+</ListBox>
+```
+
 ### Custom Escape Handling
 
 <Story of={ListBoxStories.EscapeKeyHandling} />
@@ -727,7 +737,7 @@ const [keyOrder, setKeyOrder] = useState([
 
 ### Keyboard Navigation
 
-- `Tab` - Moves focus to/from the ListBox
+- `Tab` - Moves focus to/from the ListBox. A disabled ListBox is not in the Tab order
 - `Arrow Keys` - Navigate between options
 - `Space/Enter` - Select/deselect the focused option
 - `Home/End` - Move to first/last option

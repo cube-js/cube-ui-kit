@@ -85,6 +85,14 @@ export default {
       control: { type: null },
       description: 'Styles for the inner listbox',
     },
+    listGap: {
+      control: { type: 'number' },
+      description: 'Space between options, in pixels',
+      table: {
+        defaultValue: { summary: '1bw' },
+        type: { summary: 'number' },
+      },
+    },
     optionStyles: {
       control: { type: null },
       description: 'Styles for individual options',

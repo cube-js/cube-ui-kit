@@ -255,6 +255,14 @@ const meta: Meta<typeof FilterPicker> = {
       description:
         'Custom styles for the dropdown list container within the popover',
     },
+    listGap: {
+      control: { type: 'number' },
+      description: 'Space between options, in pixels',
+      table: {
+        defaultValue: { summary: '1bw' },
+        type: { summary: 'number' },
+      },
+    },
     popoverStyles: {
       control: false,
       description:

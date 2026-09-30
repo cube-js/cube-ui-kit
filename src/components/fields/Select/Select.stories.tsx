@@ -255,6 +255,14 @@ export default {
         type: { summary: 'Styles' },
       },
     },
+    listGap: {
+      control: { type: 'number' },
+      description: 'Space between options, in pixels',
+      table: {
+        defaultValue: { summary: '1bw' },
+        type: { summary: 'number' },
+      },
+    },
     optionStyles: {
       control: { type: 'object' },
       description: 'Styles for individual option items',

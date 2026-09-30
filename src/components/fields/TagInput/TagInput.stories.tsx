@@ -205,6 +205,14 @@ const meta = {
       description: 'Size of the input. The chips follow it',
       table: { defaultValue: { summary: 'medium' } },
     },
+    listGap: {
+      control: { type: 'number' },
+      description: 'Space between options, in pixels',
+      table: {
+        defaultValue: { summary: '1bw' },
+        type: { summary: 'number' },
+      },
+    },
     direction: {
       options: ['bottom', 'top'],
       control: { type: 'radio' },

@@ -240,6 +240,14 @@ const meta: any = {
         type: { summary: 'Styles' },
       },
     },
+    listGap: {
+      control: { type: 'number' },
+      description: 'Space between options, in pixels',
+      table: {
+        defaultValue: { summary: '1bw' },
+        type: { summary: 'number' },
+      },
+    },
     sectionStyles: {
       control: { type: null },
       table: {

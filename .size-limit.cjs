@@ -305,6 +305,12 @@ module.exports = [
     // cache that keeps hideOnClose input state. Main's matching CI measurement
     // is 611,839 B (run 36690725637). Allow 613 kB with under 1 kB headroom;
     // confirm the branch's exact measurement in CI before merging.
+    //
+    // ListBox `listGap` and its focus fixes (CUB-5046): 612,172 B on a fresh
+    // local build against main's 611,833 B at 5185f47f, also fresh: +339 B for
+    // the gap the options and the virtualizer share, virtual-focus-aware
+    // `focused`, and the disabled list's Tab stop. Button is unchanged at
+    // 132,463 B. Leave 828 B headroom; check it against the PR's CI run.
     limit: '613kB',
   },
   {

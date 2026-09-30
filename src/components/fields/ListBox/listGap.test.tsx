@@ -1,13 +1,6 @@
 import { ReactElement } from 'react';
 
-import {
-  act,
-  renderWithRoot,
-  screen,
-  userEvent,
-  waitFor,
-  within,
-} from '../../../test';
+import { act, renderWithRoot, screen, userEvent, waitFor } from '../../../test';
 import { ComboBox } from '../ComboBox/ComboBox';
 import { CommandTextArea } from '../CommandTextArea/CommandTextArea';
 import { FilterListBox } from '../FilterListBox/FilterListBox';
@@ -24,7 +17,7 @@ vi.mock('../../../_internal/hooks/use-warn');
 /**
  * `listGap` reaches the list from every component that renders one. The value
  * rides on the list as `$list-gap`, which spaces its options; the spacing
- * itself is measured in `ListBox.browser.test.tsx`.
+ * itself, Select's sections included, is measured in `ListBox.browser.test.tsx`.
  */
 describe('listGap', () => {
   const gapOf = (element: HTMLElement) =>
@@ -154,7 +147,9 @@ describe('listGap', () => {
     expect(gapOf(list)).toBe('4px');
   });
 
-  it.each(cases)(
+  // The wrappers pass `listGap` through as is; ListBox and Select turn it into
+  // the token.
+  it.each(cases.filter(([name]) => name === 'ListBox' || name === 'Select'))(
     '%s leaves the default gap alone',
     async (_name, render, how) => {
       renderWithRoot(render());
@@ -165,25 +160,4 @@ describe('listGap', () => {
       expect(gapOf(list)).toBe('');
     },
   );
-
-  // A Select section list declares its own `$list-gap`, so it gets the value too.
-  it('reaches the section lists of a Select', async () => {
-    renderWithRoot(
-      <Select aria-label="Colors" listGap={4}>
-        <Select.Section title="Warm">
-          <Select.Item key="red">Red</Select.Item>
-        </Select.Section>
-        <Select.Section title="Cool">
-          <Select.Item key="blue">Blue</Select.Item>
-        </Select.Section>
-      </Select>,
-    );
-    await open.button();
-
-    const list = await waitFor(() => screen.getByRole('listbox'));
-
-    for (const group of within(list).getAllByRole('group')) {
-      expect(gapOf(group)).toBe('4px');
-    }
-  });
 });

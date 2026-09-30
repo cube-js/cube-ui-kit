@@ -201,6 +201,24 @@ describe('<ListBox />', () => {
     expect(listbox).toHaveAttribute('aria-disabled', 'true');
   });
 
+  it('is not a Tab stop while disabled', async () => {
+    const { getByRole } = render(
+      <>
+        <button>Before</button>
+        <ListBox isDisabled label="Select a fruit">
+          {basicItems}
+        </ListBox>
+        <button>After</button>
+      </>,
+    );
+
+    await userEvent.click(getByRole('button', { name: 'Before' }));
+    await userEvent.tab();
+
+    expect(getByRole('listbox')).not.toHaveAttribute('tabindex');
+    expect(getByRole('button', { name: 'After' })).toHaveFocus();
+  });
+
   it('should take the style props its docs list as styles, not attributes', () => {
     // These were extracted at runtime but missing from the props type, so a
     // documented `height` failed to type-check. The type-check is the test.
@@ -630,6 +648,25 @@ describe('<ListBox />', () => {
     // Should still have a focused item (next one)
     const newFocusedItem = listbox.querySelector('[data-focused]');
     expect(newFocusedItem).toBeInTheDocument();
+  });
+
+  it('drops the focused mod once focus leaves the list', async () => {
+    const { getByRole } = render(
+      <>
+        <ListBox label="Select a fruit">{basicItems}</ListBox>
+        <button>Elsewhere</button>
+      </>,
+    );
+
+    const banana = getByRole('option', { name: 'Banana' });
+
+    await userEvent.click(banana);
+
+    expect(banana).toHaveAttribute('data-focused');
+
+    await userEvent.click(getByRole('button', { name: 'Elsewhere' }));
+
+    expect(banana).not.toHaveAttribute('data-focused');
   });
 
   it('should apply focused mod when navigating through sections', async () => {

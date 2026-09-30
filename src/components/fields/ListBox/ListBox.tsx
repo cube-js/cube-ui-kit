@@ -121,9 +121,12 @@ const ListElement = tasty({
     // same number to the virtualizer.
     '$list-gap': '1bw',
     display: 'block',
-    padding: 0,
+    // The space kept below the last option. Padding, so `listStyles` can take
+    // it away, and outside the content box, where a virtualized list sets its
+    // own height.
+    padding: '.5x bottom',
     listStyle: 'none',
-    boxSizing: 'border-box',
+    boxSizing: 'content-box',
     margin: {
       '': '.5x .5x 0 .5x',
       '[data-shape="plain"]': '0',
@@ -151,10 +154,13 @@ const ListBoxItem = tasty(Item, {
   styles: {
     margin: {
       '': '$list-gap bottom',
-      ':last-of-type': '0',
-      'draggable & :last-of-type': '.5x bottom',
+      // The last option. A drop indicator rendered after it doesn't count.
+      ':not(:has(~ [data-listboxitem]))': '0',
       all: '.5x',
     },
+    // Inside the option: options sit a hairline apart, so a ring outside one
+    // would cover its neighbour, and the scroll box would clip it at the edges.
+    outlineOffset: '-1bw',
     Icon: {
       cursor: {
         draggable: 'grab',
@@ -188,7 +194,11 @@ const ListBoxDropIndicatorElement = tasty({
       position: 'absolute',
       left: '.5x',
       right: '.5x',
-      top: '-1px',
+      // Centred in the gap between two options, or on the edge of the list.
+      top: {
+        '': '(-1px - $list-gap / 2)',
+        ':first-child | :last-child': '-1px',
+      },
       height: '2px',
       fill: '#primary',
       radius: 'round',
@@ -200,10 +210,7 @@ const SectionWrapperElement = tasty({
   as: 'li',
   styles: {
     display: 'block',
-    padding: {
-      '': 0,
-      ':last-of-type': '.5x bottom',
-    },
+    padding: 0,
   },
 });
 
@@ -950,19 +957,19 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       }
       return SIZES[SIZE_NAME_TO_KEY[size] as keyof typeof SIZES];
     },
-    measureElement: (el) => el.offsetHeight,
     // Options are positioned absolutely here, so their margins space nothing.
     // `1` matches the `1bw` default.
     gap: listGap ?? 1,
     overscan: 10,
   });
 
-  // Trigger remeasurement when items change (for filtering scenarios)
+  // Trigger remeasurement when items change (for filtering scenarios), and
+  // when the gap does: the virtualizer caches positions without it.
   useEffect(() => {
     if (shouldVirtualize) {
       rowVirtualizer.measure();
     }
-  }, [shouldVirtualize, itemsArray, rowVirtualizer]);
+  }, [shouldVirtualize, itemsArray, rowVirtualizer, listGap]);
 
   // Keep focused item visible, but only for keyboard navigation
   useLayoutEffect(() => {
@@ -1005,6 +1012,11 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   // event handlers (e.g. Arrow navigation *and* our Escape handler) are
   // preserved.
   const mergedListBoxProps = mergeProps(listBoxProps, keyboardProps);
+
+  // React Aria keeps a disabled list a Tab stop while no option has focus.
+  if (isDisabled) {
+    delete mergedListBoxProps.tabIndex;
+  }
 
   // Ordered keys for DnD reordering
   const orderedKeys = useMemo(() => {
@@ -1116,6 +1128,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
                       isInvalid={isInvalid}
                       isValid={isValid}
                       focusOnHover={focusOnHover}
+                      shouldUseVirtualFocus={shouldUseVirtualFocus}
                       isCheckable={isCheckable}
                       lastFocusSourceRef={lastFocusSourceRef}
                       dragState={dragState}
@@ -1141,8 +1154,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
               shouldVirtualize
                 ? {
                     position: 'relative',
-                    // Plus the .5x the list keeps below its last option.
-                    height: `${rowVirtualizer.getTotalSize() + 4}px`,
+                    height: `${rowVirtualizer.getTotalSize()}px`,
                   }
                 : undefined
             }
@@ -1163,9 +1175,9 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
                       isInvalid={isInvalid}
                       isValid={isValid}
                       focusOnHover={focusOnHover}
+                      shouldUseVirtualFocus={shouldUseVirtualFocus}
                       isCheckable={isCheckable}
-                      // We don't need to measure the element here, because the height is already set by the virtualizer
-                      // This is a workaround to avoid glitches when selecting/deselecting items
+                      // Measures the option's real height; the virtualizer adds the gap.
                       virtualRef={rowVirtualizer.measureElement as any}
                       virtualStyle={{
                         position: 'absolute',
@@ -1209,6 +1221,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
                           isInvalid={isInvalid}
                           isValid={isValid}
                           focusOnHover={focusOnHover}
+                          shouldUseVirtualFocus={shouldUseVirtualFocus}
                           isCheckable={isCheckable}
                           size={size}
                           lastFocusSourceRef={lastFocusSourceRef}
@@ -1230,6 +1243,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
                           isInvalid={isInvalid}
                           isValid={isValid}
                           focusOnHover={focusOnHover}
+                          shouldUseVirtualFocus={shouldUseVirtualFocus}
                           isCheckable={isCheckable}
                           lastFocusSourceRef={lastFocusSourceRef}
                           onClick={onOptionClick}
@@ -1275,6 +1289,7 @@ function Option({
   isInvalid,
   isValid,
   focusOnHover = false,
+  shouldUseVirtualFocus = false,
   isCheckable,
   onClick: onOptionClick,
   virtualStyle,
@@ -1293,6 +1308,7 @@ function Option({
   isInvalid?: boolean;
   isValid?: boolean;
   focusOnHover?: boolean;
+  shouldUseVirtualFocus?: boolean;
   isCheckable?: boolean;
   onClick?: (key: Key) => void;
   /** Inline style applied when virtualized (absolute positioning etc.) */
@@ -1314,7 +1330,6 @@ function Option({
 
   const isDisabled = isParentDisabled || state.disabledKeys.has(item.key);
   const isSelected = state.selectionManager.isSelected(item.key);
-  const isFocused = state.selectionManager.focusedKey === item.key;
 
   // Drag-and-drop support — only enable when both states are provided
   const isDraggable = !!dragState && !!dropState;
@@ -1335,7 +1350,13 @@ function Option({
 
   const { hoverProps, isHovered } = useHover({ isDisabled });
 
-  const { optionProps, isPressed, labelProps, descriptionProps } = useOption(
+  const {
+    optionProps,
+    isPressed,
+    labelProps,
+    descriptionProps,
+    isFocused: hasListFocus,
+  } = useOption(
     {
       key: item.key,
       isDisabled,
@@ -1346,6 +1367,15 @@ function Option({
     state,
     combinedRef,
   );
+
+  // With virtual focus DOM focus stays in an input, so the focused key alone
+  // marks the option. Otherwise the list must hold focus too: the focused key
+  // outlives it.
+  const isFocused =
+    !isDisabled &&
+    (shouldUseVirtualFocus
+      ? state.selectionManager.focusedKey === item.key
+      : hasListFocus);
 
   // Filter out service props - all remaining props can be passed to Item
   const filteredItemProps = filterCollectionItemProps(item.props);
@@ -1559,6 +1589,7 @@ interface ListBoxSectionProps<T> {
   isInvalid?: boolean;
   isValid?: boolean;
   focusOnHover?: boolean;
+  shouldUseVirtualFocus?: boolean;
   isCheckable?: boolean;
   onClick?: (key: Key) => void;
   size?: 'small' | 'medium' | 'large';
@@ -1577,6 +1608,7 @@ function ListBoxSection<T>(props: ListBoxSectionProps<T>) {
     isInvalid,
     isValid,
     focusOnHover,
+    shouldUseVirtualFocus,
     isCheckable,
     onClick: onOptionClick,
     lastFocusSourceRef,
@@ -1614,6 +1646,7 @@ function ListBoxSection<T>(props: ListBoxSectionProps<T>) {
               isInvalid={isInvalid}
               isValid={isValid}
               focusOnHover={focusOnHover}
+              shouldUseVirtualFocus={shouldUseVirtualFocus}
               isCheckable={isCheckable}
               lastFocusSourceRef={lastFocusSourceRef}
               onClick={onOptionClick}
