@@ -316,14 +316,11 @@ describe('DataTable column order', () => {
   });
 
   /**
-   * The pointer drag itself is not covered here, or anywhere.
-   *
-   * React Aria's drag-and-drop ignores events that did not come from a real user
-   * gesture — `src/components/data/AGENTS.md` records this, and `ItemTable`'s row
-   * reorder has the same gap for the same reason. Dispatching genuine
-   * `DragEvent`s with a real `DataTransfer` in headless Chromium gets as far as
-   * React Aria writing the drag payload and no further: `isDragging` never
-   * flips, so no drop target is ever resolved.
+   * The pointer drag itself is not covered here: jsdom cannot drive React
+   * Aria's drag-and-drop, and `ItemTable`'s row reorder has the same gap. The
+   * browser suite can, with a `DataTransfer` that keeps the effects React Aria
+   * sets (`src/components/data/AGENTS.md`; the helper is in
+   * `ListBox.browser.test.tsx`), but no DataTable browser test does yet.
    *
    * What is covered instead: the drop handlers land on the right element (above),
    * the keyboard path end to end, and the order maths. The pointer path is

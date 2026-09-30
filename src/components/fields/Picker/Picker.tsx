@@ -52,7 +52,10 @@ import type { KeyboardEvent as RAKeyboardEvent } from '@react-types/shared';
 import type { FieldBaseProps } from '../../../shared';
 
 export interface CubePickerProps<T>
-  extends Omit<CubeListBoxProps<T>, 'size' | 'shape' | 'emptyLabel'>,
+  extends Omit<
+      CubeListBoxProps<T>,
+      'size' | 'shape' | 'emptyLabel' | 'isFocusWithin'
+    >,
     // `tooltip` is the trigger's, and on a picker the trigger's is spelled
     // `triggerTooltip`; the label's info badge is `labelTooltip`.
     Omit<CubeItemProps, 'children' | 'size' | 'tooltip'>,

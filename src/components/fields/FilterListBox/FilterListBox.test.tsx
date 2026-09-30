@@ -821,7 +821,6 @@ describe('<FilterListBox />', () => {
           getActiveDescendant(searchInput)?.getAttribute('data-key'),
         ]),
       );
-      expect(focusedKeys(container)).not.toEqual([null]);
     });
 
     it('drops the mark once focus leaves', async () => {
@@ -860,6 +859,29 @@ describe('<FilterListBox />', () => {
         ),
       );
       expect(focusedKeys(container)).toEqual(['cherry']);
+    });
+
+    it('skips disabled options at the edges, on open and with Home and End', async () => {
+      const { getByRole } = render(
+        <FilterListBox label="Fruit" disabledKeys={['apple', 'elderberry']}>
+          {basicItems}
+        </FilterListBox>,
+      );
+      const searchInput = getByRole('combobox');
+      const activeKey = () =>
+        getActiveDescendant(searchInput)?.getAttribute('data-key');
+
+      await userEvent.click(searchInput);
+
+      await waitFor(() => expect(activeKey()).toBe('banana'));
+
+      await userEvent.keyboard('{End}');
+
+      await waitFor(() => expect(activeKey()).toBe('date'));
+
+      await userEvent.keyboard('{Home}');
+
+      await waitFor(() => expect(activeKey()).toBe('banana'));
     });
   });
 

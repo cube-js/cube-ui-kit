@@ -38,7 +38,11 @@ import {
 import { getValidationMods, useFieldProps, wrapWithField } from '../../form';
 import { CubeListBoxProps, ListBox } from '../ListBox/ListBox';
 import { getListBoxOptionId } from '../ListBox/optionId';
-import { collectVisibleKeys } from '../ListBoxPopover/listNavigation';
+import {
+  getEdgeVisibleKey,
+  getNextVisibleKey,
+  markKeyboardFocus,
+} from '../ListBoxPopover/listNavigation';
 import {
   DEFAULT_INPUT_STYLES,
   INPUT_WRAPPER_STYLES,
@@ -114,7 +118,8 @@ const StyledHeaderWithoutBorder = tasty(StyledHeader, {
 });
 
 export interface CubeFilterListBoxProps<T>
-  extends Omit<CubeListBoxProps<T>, 'filter'>,
+  // It sets `isFocusWithin` on its list itself.
+  extends Omit<CubeListBoxProps<T>, 'filter' | 'isFocusWithin'>,
     FieldBaseProps<
       string | number | readonly (string | number)[] | null | undefined
     > {
@@ -708,7 +713,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
     const { selectionManager, collection } = listState;
 
     // Walk the collection and:
-    //   1. Collect visible item keys (supports sections).
+    //   1. Collect the enabled keys of the visible items (supports sections).
     //   2. Detect the synthetic "new custom value" option — the one generated
     //      from the current search term when `allowsCustomValue` is true.
     //
@@ -867,52 +872,16 @@ export const FilterListBox = forwardRef(function FilterListBox<
         const listState = listStateRef.current;
         if (!listState) return;
 
-        const { selectionManager, collection } = listState;
-
-        // The enabled keys of the visible items, sections included. The
-        // collection is already filtered by React Stately via filterFn.
-        const visibleKeys: Key[] = [];
-        collectVisibleKeys(collection, visibleKeys, listState.disabledKeys);
-
-        if (visibleKeys.length === 0) return;
-
-        const isArrowDown = e.key === 'ArrowDown';
-        const direction = isArrowDown ? 1 : -1;
-
-        const currentKey = selectionManager.focusedKey;
-
-        let nextKey: Key | null = null;
-
-        if (currentKey == null) {
-          // If nothing focused yet, pick first/last depending on direction
-          nextKey = isArrowDown
-            ? visibleKeys[0]
-            : visibleKeys[visibleKeys.length - 1];
-        } else {
-          const currentIndex = visibleKeys.indexOf(currentKey);
-          if (currentIndex !== -1) {
-            const newIndex = currentIndex + direction;
-            if (newIndex >= 0 && newIndex < visibleKeys.length) {
-              nextKey = visibleKeys[newIndex];
-            } else if (shouldFocusWrap) {
-              // Wrap around
-              nextKey = isArrowDown
-                ? visibleKeys[0]
-                : visibleKeys[visibleKeys.length - 1];
-            }
-          } else {
-            // Fallback
-            nextKey = isArrowDown
-              ? visibleKeys[0]
-              : visibleKeys[visibleKeys.length - 1];
-          }
-        }
+        // The collection is already filtered by React Stately via filterFn;
+        // disabled options are skipped.
+        const nextKey = getNextVisibleKey(
+          listState,
+          e.key === 'ArrowDown' ? 1 : -1,
+          { wrap: shouldFocusWrap },
+        );
 
         if (nextKey != null) {
-          // Mark this focus change as keyboard navigation
-          if (listState.lastFocusSourceRef) {
-            listState.lastFocusSourceRef.current = 'keyboard';
-          }
+          markKeyboardFocus(listState);
           setVirtualFocus(nextKey);
         }
       } else if (
@@ -926,24 +895,14 @@ export const FilterListBox = forwardRef(function FilterListBox<
         const listState = listStateRef.current;
         if (!listState) return;
 
-        const { selectionManager, collection } = listState;
+        const targetKey = getEdgeVisibleKey(
+          listState,
+          e.key === 'Home' || e.key === 'PageUp' ? 'first' : 'last',
+        );
 
-        // The enabled keys of the visible items, sections included. The
-        // collection is already filtered by React Stately via filterFn.
-        const visibleKeys: Key[] = [];
-        collectVisibleKeys(collection, visibleKeys, listState.disabledKeys);
+        if (targetKey == null) return;
 
-        if (visibleKeys.length === 0) return;
-
-        const targetKey =
-          e.key === 'Home' || e.key === 'PageUp'
-            ? visibleKeys[0]
-            : visibleKeys[visibleKeys.length - 1];
-
-        // Mark this focus change as keyboard navigation
-        if (listState.lastFocusSourceRef) {
-          listState.lastFocusSourceRef.current = 'keyboard';
-        }
+        markKeyboardFocus(listState);
         setVirtualFocus(targetKey);
       } else if (e.key === 'Enter' || (e.key === ' ' && !searchValue)) {
         const listState = listStateRef.current;

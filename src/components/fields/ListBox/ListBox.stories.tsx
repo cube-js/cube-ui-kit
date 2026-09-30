@@ -126,6 +126,14 @@ const meta: any = {
         defaultValue: { summary: false },
       },
     },
+    isFocusWithin: {
+      control: { type: 'boolean' },
+      description:
+        "For a list whose focused option is moved from an input outside it: whether focus is within that input's component",
+      table: {
+        type: { summary: 'boolean' },
+      },
+    },
     isCheckable: {
       control: { type: 'boolean' },
       description: 'Whether to show checkboxes for multiple selection mode',

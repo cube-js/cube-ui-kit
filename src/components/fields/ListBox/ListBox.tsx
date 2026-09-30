@@ -942,11 +942,12 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   const { isFocused, focusProps } = useFocus({ isDisabled });
 
   // The focused key outlives focus, so an option shows as focused only while
-  // the list has it. With virtual focus DOM focus stays in an input, and the
-  // input's component says (`isFocusWithin`), or it always does.
+  // the list has it. A component whose input moves the key (FilterListBox)
+  // says whether focus is within it, in any focus mode. Otherwise the list's
+  // own focus decides, and with virtual focus the focused key alone marks it.
   const isListFocused =
     isFocusWithin ??
-    (!!shouldUseVirtualFocus || listState.selectionManager.isFocused);
+    (shouldUseVirtualFocus || listState.selectionManager.isFocused);
 
   // Use ref to ensure estimateSize always accesses current itemsArray
   const itemsArrayRef = useRef(itemsArray);
