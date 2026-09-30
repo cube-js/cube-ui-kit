@@ -445,6 +445,85 @@ describe('DisplayTransition', () => {
     expect(onRest).not.toHaveBeenCalledWith('enter');
   });
 
+  it('should update exposed content while initially unmounted', () => {
+    const { container, rerender } = render(
+      <DisplayTransition exposeUnmounted isShown={false}>
+        {({ phase, ref }) => (
+          <div ref={ref} data-phase={phase}>
+            original content
+          </div>
+        )}
+      </DisplayTransition>,
+    );
+
+    rerender(
+      <DisplayTransition exposeUnmounted isShown={false}>
+        {({ phase, ref }) => (
+          <div ref={ref} data-phase={phase}>
+            updated content
+          </div>
+        )}
+      </DisplayTransition>,
+    );
+
+    expect(phaseOf(container)).toBe('unmounted');
+    expect(container).toHaveTextContent('updated content');
+    expect(container).not.toHaveTextContent('original content');
+  });
+
+  it('should use current exposed content after exit and on later hidden updates', () => {
+    function Content({
+      isShown,
+      content,
+    }: {
+      isShown: boolean;
+      content: string;
+    }) {
+      return (
+        <DisplayTransition
+          exposeUnmounted
+          isShown={isShown}
+          animateOnMount={false}
+          duration={150}
+        >
+          {({ phase, ref }) => (
+            <div ref={ref} data-phase={phase}>
+              {content}
+            </div>
+          )}
+        </DisplayTransition>
+      );
+    }
+
+    const { container, rerender } = render(
+      <Content isShown content="original content" />,
+    );
+
+    rerender(<Content isShown={false} content="updated content" />);
+    expect(phaseOf(container)).toBe('entered');
+    expect(container).toHaveTextContent('original content');
+
+    act(() => {
+      vi.advanceTimersByTime(50);
+    });
+    expect(phaseOf(container)).toBe('exit');
+    expect(container).toHaveTextContent('original content');
+
+    act(() => {
+      vi.advanceTimersByTime(150);
+    });
+    expect(phaseOf(container)).toBe('unmounted');
+    expect(container).toHaveTextContent('updated content');
+
+    rerender(<Content isShown={false} content="latest content" />);
+    expect(phaseOf(container)).toBe('unmounted');
+    expect(container).toHaveTextContent('latest content');
+
+    rerender(<Content isShown={false} content="" />);
+    expect(container).toHaveTextContent('');
+    expect(container).not.toHaveTextContent('latest content');
+  });
+
   it('should preserve children content during exit when preserveContent=true (default)', () => {
     // This test verifies the fix for a bug where children would disappear instantly
     // during exit when the parent conditionally rendered children based on isShown
@@ -493,16 +572,22 @@ describe('DisplayTransition', () => {
     ).toBeInTheDocument();
     expect(container.textContent).toContain('original content');
 
-    // Advance through the entire exit flow
+    // The exit animation still renders the original content.
     act(() => {
-      vi.advanceTimersByTime(200);
+      vi.advanceTimersByTime(50);
+    });
+    expect(phaseOf(container)).toBe('exit');
+    expect(container.textContent).toContain('original content');
+
+    act(() => {
+      vi.advanceTimersByTime(150);
     });
 
-    // After completing the exit transition, should reach unmounted
-    // Content should have been preserved throughout the exit animation
+    // Once fully hidden, the parent's current null content takes over.
     expect(
       container.querySelector('[data-phase="unmounted"]'),
     ).toBeInTheDocument();
+    expect(container.textContent).not.toContain('original content');
   });
 
   it('should not preserve children content during exit when preserveContent=false', () => {

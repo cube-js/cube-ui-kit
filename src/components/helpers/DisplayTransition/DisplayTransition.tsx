@@ -377,12 +377,12 @@ export function DisplayTransition({
     storedChildrenRef.current = children;
   }
 
-  // When preserveContent is enabled, always use stored children:
-  // - During show: stored is updated above, so it equals current children
-  // - During hide: stored keeps the last shown content for the exit animation
-  const effectiveChildren = preserveContent
-    ? storedChildrenRef.current
-    : children;
+  // Preserve the last shown content through exit, but let exposed unmounted
+  // content update so newly added controls remain reachable by keyboard.
+  const effectiveChildren =
+    preserveContent && phase !== 'unmounted'
+      ? storedChildrenRef.current
+      : children;
 
   if (phase === 'unmounted' && !exposeUnmounted) return null;
   return effectiveChildren({
