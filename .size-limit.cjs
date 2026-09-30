@@ -300,8 +300,8 @@ module.exports = [
     // Then custom values listed in the popover and the clear button scoped to
     // the typed text: 610.22 kB on a fresh local build, +590 B. Leave ~780 B
     // headroom; the next TagInput change will likely have to raise this.
-    // Auto-hidden actions: fresh builds measure 611,830 B on main and
-    // 612,076 B with the fix (+246 B), including the compiled DialogContainer
+    // Auto-hidden actions: fresh builds measure 611,833 B on main and
+    // 612,076 B with the fix (+243 B), including the compiled DialogContainer
     // cache that keeps hideOnClose input state. Main's matching CI measurement
     // is 611,839 B (run 36690725637). Allow 613 kB with under 1 kB headroom;
     // confirm the branch's exact measurement in CI before merging.
