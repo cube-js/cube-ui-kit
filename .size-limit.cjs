@@ -306,11 +306,11 @@ module.exports = [
     // is 611,839 B (run 36690725637). Allow 613 kB with under 1 kB headroom;
     // confirm the branch's exact measurement in CI before merging.
     //
-    // ListBox `listGap` and its focus fixes (CUB-5046): 612,093 B on a fresh
-    // local build against main's 611,833 B at 5185f47f, also fresh: +260 B for
+    // ListBox `listGap` and its focus fixes (CUB-5046): 612,307 B on a fresh
+    // local build against main's 612,076 B at 64a1ec85, also fresh: +231 B for
     // the gap the options and the virtualizer share, `focused` that follows
     // the list's focus (and FilterListBox's), and the disabled list's Tab stop.
-    // Button is unchanged at 132,463 B. Leaves 907 B headroom.
+    // Button is unchanged at 132,467 B. Leaves 693 B headroom.
     limit: '613kB',
   },
   {
