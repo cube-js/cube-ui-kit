@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.186.2
+
+### Patch Changes
+
+- [#1449](https://github.com/cube-js/cube-ui-kit/pull/1449) [`64a1ec85`](https://github.com/cube-js/cube-ui-kit/commit/64a1ec859c9bd529c326ae4a2657118517187719) Thanks [@tenphi](https://github.com/tenphi)! - Fix auto-hidden item actions becoming unreachable by keyboard when added after an initially empty render. DisplayTransition now uses current children while fully hidden, preserving previous content only through the exit transition.
+
 ## 0.186.1
 
 ### Patch Changes
