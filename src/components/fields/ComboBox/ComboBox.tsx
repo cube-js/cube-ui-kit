@@ -874,6 +874,8 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
 
   // Composite blur handler - fires when focus leaves the entire component
   const handleCompositeBlur = useEvent(() => {
+    setIsPopoverOpen(false);
+
     // NOTE: Do NOT disable filter yet; we need it active for validity check
 
     // In allowsCustomValue mode
