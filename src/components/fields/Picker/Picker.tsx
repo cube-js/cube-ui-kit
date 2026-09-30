@@ -277,6 +277,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
     optionStyles,
     sectionStyles,
     headingStyles,
+    listGap,
     listRef,
     disallowEmptySelection,
     shouldUseVirtualFocus,
@@ -847,6 +848,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
                 optionStyles={optionStyles}
                 sectionStyles={sectionStyles}
                 headingStyles={headingStyles}
+                listGap={listGap}
                 listRef={listRef}
                 disallowEmptySelection={disallowEmptySelection}
                 allowDuplicateSelectionEvents={

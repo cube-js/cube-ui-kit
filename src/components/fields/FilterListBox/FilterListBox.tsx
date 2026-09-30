@@ -249,6 +249,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
     optionStyles,
     sectionStyles,
     headingStyles,
+    listGap,
     searchInputRef,
     listRef,
     message,
@@ -1145,6 +1146,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
         optionStyles={optionStyles}
         sectionStyles={sectionStyles}
         headingStyles={headingStyles}
+        listGap={listGap}
         isInvalid={isInvalid}
         isValid={isValid}
         disallowEmptySelection={props.disallowEmptySelection}

@@ -234,6 +234,14 @@ const meta: any = {
         type: { summary: 'Styles' },
       },
     },
+    listGap: {
+      control: { type: 'number' },
+      description: 'Space between options, in pixels',
+      table: {
+        defaultValue: { summary: '1bw' },
+        type: { summary: 'number' },
+      },
+    },
     headingStyles: {
       control: { type: null },
       table: {
@@ -296,6 +304,24 @@ const permissions = [
     description: 'Review and approve content',
   },
   { key: 'share', label: 'Share', description: 'Share content with others' },
+];
+
+const FRAMEWORKS = [
+  {
+    key: 'react',
+    label: 'React',
+    description: 'A JavaScript library for building user interfaces',
+  },
+  {
+    key: 'vue',
+    label: 'Vue.js',
+    description: 'The Progressive JavaScript Framework',
+  },
+  {
+    key: 'svelte',
+    label: 'Svelte',
+    description: 'Cybernetically enhanced web apps',
+  },
 ];
 
 const Template: StoryObj<CubeListBoxProps<any>>['render'] = (args) => (
@@ -1580,6 +1606,54 @@ export const DifferentShapes: Story = {
       description: {
         story:
           'The `shape` prop controls the visual styling of the ListBox. Use `card` for standalone use, `plain` for embedded use without decoration, and `popover` for use inside overlays where borders are handled by the container.',
+      },
+    },
+  },
+};
+
+export const OptionGap: Story = {
+  render: () => (
+    <Space gap="4x" flow="column">
+      <ListBox
+        label="Flat list"
+        description="Virtualized: the gap is added between positioned options"
+        listGap={4}
+        defaultSelectedKey="react"
+      >
+        {FRAMEWORKS.map(({ key, label, description }) => (
+          <ListBox.Item
+            key={key}
+            type="outline"
+            shape="card"
+            description={description}
+          >
+            {label}
+          </ListBox.Item>
+        ))}
+      </ListBox>
+
+      <ListBox
+        label="Sectioned list"
+        description="The same gap between the options of each section"
+        listGap={4}
+        defaultSelectedKey="carrot"
+      >
+        <ListBox.Section title="Fruits">
+          <ListBox.Item key="apple">Apple</ListBox.Item>
+          <ListBox.Item key="banana">Banana</ListBox.Item>
+        </ListBox.Section>
+        <ListBox.Section title="Vegetables">
+          <ListBox.Item key="carrot">Carrot</ListBox.Item>
+          <ListBox.Item key="broccoli">Broccoli</ListBox.Item>
+        </ListBox.Section>
+      </ListBox>
+    </Space>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          '`listGap` sets the space between options, in pixels. It defaults to a hairline, which suits plain options. Card-like options usually want more.',
       },
     },
   },

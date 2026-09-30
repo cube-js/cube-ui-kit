@@ -42,6 +42,7 @@ Choose a different component when the interaction has another shape:
 - **`defaultSelectedKeys`** `string[] | 'all'` — The default selected keys in uncontrolled multiple mode
 - **`items`** `Iterable<T>` — Array of items for dynamic content with render function pattern
 - **`size`** `'small' | 'medium' | 'large'` (default: `medium`) — Size of the picker component
+- **`listGap`** `number` — Space between options, in pixels. Defaults to a hairline (`1bw`)
 - **`type`** `'outline' | 'outline-2' | 'clear' | 'primary'` (default: `outline`) — Trigger button styling type
 - **`theme`** `'default' | 'danger'` (default: `default`) — Trigger button color theme
 - **`icon`** `ReactNode` — Icon displayed in the trigger button
@@ -138,6 +139,10 @@ Customizes section wrapper elements within the ListBox.
 #### headingStyles
 
 Customizes section heading elements within the ListBox.
+
+#### listGap
+
+The space between options, in pixels (`number`, default: a hairline, `1bw`). Passed to the inner ListBox, which spaces flat, virtualized and sectioned lists alike.
 
 #### headerStyles
 

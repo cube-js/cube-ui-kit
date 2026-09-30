@@ -162,6 +162,8 @@ export interface CubeCommandTextAreaProps<T>
   optionStyles?: any;
   sectionStyles?: any;
   headingStyles?: any;
+  /** Space between options, in pixels. Defaults to a hairline (`1bw`). */
+  listGap?: number;
 }
 
 const DEFAULT_TRIGGERS: CommandTrigger[] = [{ char: '/', atLineStart: true }];
@@ -273,6 +275,7 @@ function CommandTextArea<T extends object>(
     optionStyles,
     sectionStyles,
     headingStyles,
+    listGap,
     wrapperRef: propsWrapperRef,
     popoverRef: propsPopoverRef,
     listBoxRef: propsListBoxRef,
@@ -796,6 +799,7 @@ function CommandTextArea<T extends object>(
         optionHighlight={term}
         sectionStyles={sectionStyles}
         headingStyles={headingStyles}
+        listGap={listGap}
         isDisabled={isDisabled}
         disabledKeys={disabledKeys}
         items={items as any}

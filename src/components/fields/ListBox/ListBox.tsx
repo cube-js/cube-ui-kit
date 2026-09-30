@@ -117,6 +117,9 @@ const ListBoxWrapperElement = tasty({
 const ListElement = tasty({
   as: 'ul',
   styles: {
+    // The space between options. Set from `listGap`, which also hands the
+    // same number to the virtualizer.
+    '$list-gap': '1bw',
     display: 'block',
     padding: 0,
     listStyle: 'none',
@@ -147,7 +150,7 @@ const ListBoxItem = tasty(Item, {
   disableActionsFocus: true,
   styles: {
     margin: {
-      '': '1bw bottom',
+      '': '$list-gap bottom',
       ':last-of-type': '0',
       'draggable & :last-of-type': '.5x bottom',
       all: '.5x',
@@ -317,6 +320,11 @@ export interface CubeListBoxProps<T>
   sectionStyles?: Styles;
   /** Custom styles for section headings */
   headingStyles?: Styles;
+  /**
+   * Space between options, in pixels. Defaults to a hairline (`1bw`). It
+   * applies to flat, virtualized, sectioned and reorderable lists alike.
+   */
+  listGap?: number;
   /** Whether the ListBox is disabled */
   isDisabled?: boolean;
   /** The selected key in controlled single selection mode */
@@ -636,6 +644,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     optionHighlight,
     sectionStyles,
     headingStyles,
+    listGap,
     listRef,
     message,
     description,
@@ -937,13 +946,14 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       const currentItem: any = itemsArrayRef.current[index];
 
       if (currentItem?.props?.description) {
-        return SIZES.XL + 1;
+        return SIZES.XL;
       }
-      return SIZES[SIZE_NAME_TO_KEY[size] as keyof typeof SIZES] + 1;
+      return SIZES[SIZE_NAME_TO_KEY[size] as keyof typeof SIZES];
     },
-    measureElement: (el) => {
-      return el.offsetHeight + 1;
-    },
+    measureElement: (el) => el.offsetHeight,
+    // Options are positioned absolutely here, so their margins space nothing.
+    // `1` matches the `1bw` default.
+    gap: listGap ?? 1,
     overscan: 10,
   });
 
@@ -1030,6 +1040,9 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     ],
   );
 
+  const listGapTokens =
+    listGap == null ? undefined : { '$list-gap': `${listGap}px` };
+
   const listBoxField = (
     <ListBoxWrapperElement
       ref={ref}
@@ -1083,6 +1096,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
                 {...mergeProps(mergedListBoxProps, collectionProps)}
                 ref={listRef}
                 styles={listStyles}
+                tokens={listGapTokens}
                 aria-disabled={isDisabled || undefined}
                 mods={{ sections: false }}
                 data-shape={shape}
@@ -1118,6 +1132,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
             {...mergedListBoxProps}
             ref={listRef}
             styles={listStyles}
+            tokens={listGapTokens}
             aria-disabled={isDisabled || undefined}
             mods={{ sections: hasSections }}
             data-shape={shape}
@@ -1126,7 +1141,8 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
               shouldVirtualize
                 ? {
                     position: 'relative',
-                    height: `${rowVirtualizer.getTotalSize() + 3}px`,
+                    // Plus the .5x the list keeps below its last option.
+                    height: `${rowVirtualizer.getTotalSize() + 4}px`,
                   }
                 : undefined
             }

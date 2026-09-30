@@ -37,6 +37,7 @@ A versatile list selection component that allows users to select one or more ite
 - **`disabledKeys`** `Key[]` — Array of keys for disabled items
 - **`size`** `'small' | 'medium' | 'large'` (default: `medium`) — ListBox size
 - **`shape`** `'card' | 'plain' | 'popover'` (default: `card`) — Visual shape of the ListBox
+- **`listGap`** `number` — Space between options, in pixels. Defaults to a hairline (`1bw`)
 - **`filter`** `(nodes: Iterable<Node>) => Iterable<Node>` — Filter function for the list items
 - **`emptyLabel`** `ReactNode` (default: `No items`) — Label shown when no items are available
 - **`header`** `ReactNode` — Custom header content
@@ -98,6 +99,10 @@ Customizes section wrapper elements.
 #### headingStyles
 
 Customizes section heading elements.
+
+#### listGap
+
+The space between options, in pixels (`number`, default: a hairline, `1bw`). It spaces flat, virtualized, sectioned and reorderable lists alike. Use it rather than a margin in `optionStyles`, which a flat list ignores: it is virtualized, so it positions its options itself.
 
 #### headerStyles
 
@@ -187,6 +192,14 @@ The `mods` property accepts the following modifiers you can override:
 - `popover`: No border, but keeps margin and radius - suitable for overlay use
 - Use `plain` when embedding ListBox directly into another component
 - Use `popover` when using ListBox inside overlays (Dialog, ComboBox, Picker)
+
+**listGap** (`number`, default: `1bw`)
+
+- The space between options, in pixels
+- Every component built on ListBox takes it too: FilterListBox, Picker, FilterPicker, ComboBox, SearchComboBox, TagInput, CommandTextArea, and Select
+- Card-like options (`type="outline"`, `shape="card"`) usually want `4` or more, so each one reads as its own choice
+
+<Story of={ListBoxStories.OptionGap} />
 
 ### Focus and Interaction
 

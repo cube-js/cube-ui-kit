@@ -164,6 +164,8 @@ export interface CubeComboBoxProps<T>
   sectionStyles?: Styles;
   /** Custom styles for section headings */
   headingStyles?: Styles;
+  /** Space between options, in pixels. Defaults to a hairline (`1bw`). */
+  listGap?: number;
 
   /** Whether the combobox is disabled */
   isDisabled?: boolean;
@@ -634,6 +636,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     children: renderChildren,
     sectionStyles,
     headingStyles,
+    listGap,
     isReadOnly,
     overlayOffset = 8,
     containerPadding = 8,
@@ -1475,6 +1478,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
         optionStyles={optionStyles}
         sectionStyles={sectionStyles}
         headingStyles={headingStyles}
+        listGap={listGap}
         selectedKey={effectiveSelectedKey}
         isDisabled={isDisabled}
         disabledKeys={props.disabledKeys}

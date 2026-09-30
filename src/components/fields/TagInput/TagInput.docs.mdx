@@ -46,6 +46,7 @@ A multi-value field. The user types a value into a single-line input and commits
 - **`hideTrigger`** `boolean` (default: `false`) — Whether to hide the button that toggles the popover
 - **`disabledKeys`** `Iterable<Key>` — Keys of options that cannot be picked
 - **`size`** `'small' | 'medium' | 'large'` (default: `medium`) — Size of the input. The chips follow it
+- **`listGap`** `number` — Space between options, in pixels. Defaults to a hairline (`1bw`)
 - **`direction`** `'bottom' | 'top'` (default: `bottom`) — Where the suggestions popover opens
 - **`shouldFlip`** `boolean` (default: `true`) — Whether the popover flips when there is no room
 - **`overlayOffset`** `number` (default: `8`) — Distance between the input and the popover, in pixels
@@ -138,6 +139,10 @@ Customizes option sections.
 #### headingStyles
 
 Customizes option section headings.
+
+#### listGap
+
+The space between options, in pixels (`number`, default: a hairline, `1bw`). Passed to the inner ListBox, which spaces flat, virtualized and sectioned lists alike.
 
 ### Style Properties
 

@@ -44,6 +44,7 @@ Choose a different component when the interaction has another outcome:
 - **`isLoading`** `boolean` (default: `false`) — Whether items are being loaded (e.g. from a server)
 - **`loadingDelay`** `number` (default: `1000`) — Delay in ms before the loading indicator appears
 - **`size`** `'small' | 'medium' | 'large'` (default: `medium`) — Size of the component
+- **`listGap`** `number` — Space between options, in pixels. Defaults to a hairline (`1bw`)
 - **`disabledKeys`** `Iterable<Key>` — Keys of suggestions that cannot be selected
 - **`onSelect`** `(key: string, textValue: string) => void` — Fired when a suggestion is picked; the input clears afterwards
 - **`onSubmit`** `(value: string) => void` — Opt-in. Fired when Enter is pressed with no focused/available option; the input clears afterwards
@@ -116,6 +117,10 @@ Customizes section containers when using grouped suggestions.
 #### headingStyles
 
 Customizes section heading elements within grouped suggestions.
+
+#### listGap
+
+The space between options, in pixels (`number`, default: a hairline, `1bw`). Passed to the inner ListBox, which spaces flat, virtualized and sectioned lists alike.
 
 ### Style Properties
 

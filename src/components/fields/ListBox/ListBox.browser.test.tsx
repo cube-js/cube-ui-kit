@@ -63,3 +63,70 @@ describe('ListBox key propagation', () => {
     expect(seen).not.toContain('z');
   });
 });
+
+/**
+ * `listGap` spaces the options however the list lays them out. In a browser
+ * because two of the three layouts are the virtualizer's arithmetic, not CSS:
+ * a flat list positions its options absolutely, so their margins space
+ * nothing, and the virtualizer has to add the gap itself.
+ */
+describe('ListBox listGap', () => {
+  const COLORS = ['Red', 'Green', 'Blue'];
+
+  function gaps() {
+    const options = screen.getAllByRole('option');
+
+    return options
+      .slice(1)
+      .map((option, index) =>
+        Math.round(
+          option.getBoundingClientRect().top -
+            options[index].getBoundingClientRect().bottom,
+        ),
+      );
+  }
+
+  const layouts = {
+    flat: (gap?: number) => (
+      <ListBox aria-label="Colors" listGap={gap}>
+        {COLORS.map((color) => (
+          <ListBox.Item key={color}>{color}</ListBox.Item>
+        ))}
+      </ListBox>
+    ),
+    sectioned: (gap?: number) => (
+      <ListBox aria-label="Colors" listGap={gap}>
+        <ListBox.Section>
+          {COLORS.map((color) => (
+            <ListBox.Item key={color}>{color}</ListBox.Item>
+          ))}
+        </ListBox.Section>
+      </ListBox>
+    ),
+    reorderable: (gap?: number) => (
+      <ListBox isReorderable aria-label="Colors" listGap={gap}>
+        {COLORS.map((color) => (
+          <ListBox.Item key={color}>{color}</ListBox.Item>
+        ))}
+      </ListBox>
+    ),
+  };
+
+  it.each(Object.keys(layouts) as (keyof typeof layouts)[])(
+    'spaces a %s list by listGap',
+    async (layout) => {
+      renderWithRoot(layouts[layout](6));
+
+      await vi.waitFor(() => expect(gaps()).toEqual([6, 6]));
+    },
+  );
+
+  it.each(Object.keys(layouts) as (keyof typeof layouts)[])(
+    'keeps a hairline between the options of a %s list by default',
+    async (layout) => {
+      renderWithRoot(layouts[layout]());
+
+      await vi.waitFor(() => expect(gaps()).toEqual([1, 1]));
+    },
+  );
+});
