@@ -47,15 +47,14 @@ export function DialogContainer(props: CubeDialogContainerProps) {
   }
 
   const child = isValidElement(childArray[0]) ? childArray[0] : null;
+  const isActuallyOpened = typeof isOpen !== 'boolean' ? !!child : isOpen;
   const [lastDialog, setLastDialog] = useState({ children, child });
 
   // Children.toArray clones elements, so compare the source when retaining
   // the last dialog to keep hideOnClose from remounting it or looping renders.
-  if (child && children !== lastDialog.children) {
+  if ((child || isActuallyOpened) && children !== lastDialog.children) {
     setLastDialog({ children, child });
   }
-
-  const isActuallyOpened = typeof isOpen !== 'boolean' ? !!child : isOpen;
 
   const context = {
     type,
@@ -76,7 +75,10 @@ export function DialogContainer(props: CubeDialogContainerProps) {
         isKeyboardDismissDisabled={isKeyboardDismissDisabled}
         onClose={isDismissable ? onDismiss : undefined}
       >
-        <>{child ?? (hideOnClose ? lastDialog.child : null)}</>
+        <>
+          {child ??
+            (hideOnClose && !isActuallyOpened ? lastDialog.child : null)}
+        </>
       </Modal>
     </DialogContext.Provider>
   );

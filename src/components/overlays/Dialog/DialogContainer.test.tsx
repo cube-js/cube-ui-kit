@@ -39,6 +39,35 @@ describe('<DialogContainer />', () => {
     expect(input).toHaveValue('Draft');
   });
 
+  it('does not show a retained dialog when explicitly reopened without children', async () => {
+    const { getByRole, getByTestId, rerender } = renderWithRoot(
+      <DialogContainer hideOnClose isOpen>
+        <Dialog>
+          <input aria-label="Name" />
+        </Dialog>
+      </DialogContainer>,
+    );
+    const input = getByRole('textbox', { name: 'Name' });
+
+    rerender(<DialogContainer hideOnClose isOpen={false} />);
+
+    await waitFor(() => {
+      expect(getByTestId('Modal')).toHaveAttribute('data-unmounted');
+    });
+    expect(input).toBeInTheDocument();
+
+    rerender(<DialogContainer hideOnClose isOpen />);
+
+    expect(input).not.toBeInTheDocument();
+
+    rerender(<DialogContainer hideOnClose isOpen={false} />);
+
+    await waitFor(() => {
+      expect(getByTestId('Modal')).toHaveAttribute('data-unmounted');
+    });
+    expect(input).not.toBeInTheDocument();
+  });
+
   it('unmounts a conditional dialog after exit by default', async () => {
     const { getByRole, rerender } = renderWithRoot(
       <DialogContainer>
