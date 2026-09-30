@@ -152,6 +152,7 @@ const ListBoxItem = tasty(Item, {
   as: 'li',
   disableActionsFocus: true,
   styles: {
+    display: 'grid',
     margin: {
       '': '$list-gap bottom',
       // The last child. A drop indicator rendered after it doesn't count.

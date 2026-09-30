@@ -1,6 +1,6 @@
 import { ComponentProps } from 'react';
 
-import { act, renderWithRoot, screen, userEvent } from '../../../test';
+import { act, renderWithRoot, screen, userEvent, waitFor } from '../../../test';
 import { Select } from '../Select/Select';
 
 import { ListBox } from './ListBox';
@@ -344,5 +344,96 @@ describe('ListBox listGap', () => {
 
       expect(list.getBoundingClientRect().height).toBe(height);
     });
+  });
+});
+
+describe('ListBox loose options alongside sections', () => {
+  it.each([
+    ['default', undefined, 1, undefined],
+    ['none', '0', 0, undefined],
+    ['spaced', '2x', 16, undefined],
+    ['listGap', undefined, 6, 6],
+  ] as const)(
+    'stacks full-width loose options with %s spacing',
+    async (_name, gap, spacing, listGap) => {
+      renderWithRoot(
+        <ListBox
+          aria-label="Mixed fruit"
+          width="320px"
+          listStyles={{ gap }}
+          listGap={listGap}
+        >
+          <ListBox.Item key="loose-x">Loose x</ListBox.Item>
+          <ListBox.Item key="loose-y">Loose y</ListBox.Item>
+          <ListBox.Section key="section" title="More fruit">
+            <ListBox.Item key="pear">Pear</ListBox.Item>
+            <ListBox.Item key="peach">Peach</ListBox.Item>
+          </ListBox.Section>
+          <ListBox.Item key="loose-a">Loose a</ListBox.Item>
+          <ListBox.Item key="loose-b">Loose b</ListBox.Item>
+          <ListBox.Section key="other" title="Other fruit">
+            <ListBox.Item key="apple">Apple</ListBox.Item>
+          </ListBox.Section>
+          <ListBox.Item key="loose-c">Loose c</ListBox.Item>
+          <ListBox.Item key="loose-d">Loose d</ListBox.Item>
+        </ListBox>,
+      );
+
+      const pairs = [
+        ['Loose x', 'Loose y'],
+        ['Loose a', 'Loose b'],
+        ['Loose c', 'Loose d'],
+      ];
+      const list = screen.getByRole('listbox');
+
+      await waitFor(
+        () => {
+          const parent = list.getBoundingClientRect();
+
+          for (const [first, second] of pairs) {
+            const a = screen
+              .getByRole('option', { name: first })
+              .getBoundingClientRect();
+            const b = screen
+              .getByRole('option', { name: second })
+              .getBoundingClientRect();
+
+            expect(a.width).toBeCloseTo(parent.width, 1);
+            expect(b.width).toBeCloseTo(parent.width, 1);
+            expect(b.left).toBe(a.left);
+            expect(b.top - a.bottom).toBeCloseTo(spacing, 1);
+          }
+        },
+        { timeout: 1000 },
+      );
+    },
+  );
+
+  it('lets consumers override the loose option display and width', () => {
+    renderWithRoot(
+      <ListBox
+        aria-label="Custom fruit"
+        width="320px"
+        optionStyles={{ display: 'flex', width: '140px' }}
+      >
+        <ListBox.Item
+          key="loose"
+          styles={{ display: 'inline-grid', width: '120px' }}
+        >
+          Loose
+        </ListBox.Item>
+        <ListBox.Section key="section" title="More fruit">
+          <ListBox.Item key="pear">Pear</ListBox.Item>
+        </ListBox.Section>
+      </ListBox>,
+    );
+
+    const option = screen.getByRole('option', { name: 'Loose' });
+
+    expect(getComputedStyle(option).display).toBe('inline-grid');
+    expect(option.getBoundingClientRect().width).toBe(120);
+    const inherited = screen.getByRole('option', { name: 'Pear' });
+    expect(getComputedStyle(inherited).display).toBe('flex');
+    expect(inherited.getBoundingClientRect().width).toBe(140);
   });
 });
