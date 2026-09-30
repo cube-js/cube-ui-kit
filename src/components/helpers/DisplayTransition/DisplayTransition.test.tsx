@@ -520,8 +520,7 @@ describe('DisplayTransition', () => {
     expect(container).toHaveTextContent('latest content');
 
     rerender(<Content isShown={false} content="" />);
-    expect(container).toHaveTextContent('');
-    expect(container).not.toHaveTextContent('latest content');
+    expect(container.firstElementChild).toBeEmptyDOMElement();
   });
 
   it('should preserve children content during exit when preserveContent=true (default)', () => {
