@@ -1,4 +1,4 @@
-import { ComponentProps } from 'react';
+import { ComponentProps, useEffect, useLayoutEffect, useState } from 'react';
 
 import { act, renderWithRoot, screen, userEvent, waitFor } from '../../../test';
 import { Select } from '../Select/Select';
@@ -67,6 +67,22 @@ describe('ListBox key propagation', () => {
   });
 });
 
+/** The bounding boxes of every element with this role. */
+function rects(role: string) {
+  return screen
+    .queryAllByRole(role)
+    .map((element) => element.getBoundingClientRect());
+}
+
+/** The space between each pair of neighbouring options, rounded. */
+function gaps() {
+  const options = rects('option');
+
+  return options
+    .slice(1)
+    .map((option, index) => Math.round(option.top - options[index].bottom));
+}
+
 /**
  * `listGap` spaces the options however the list lays them out. In a browser
  * because a flat list is the virtualizer's arithmetic, not CSS: it positions
@@ -75,20 +91,6 @@ describe('ListBox key propagation', () => {
  */
 describe('ListBox listGap', () => {
   const COLORS = ['Red', 'Green', 'Blue'];
-
-  function rects(role: string) {
-    return screen
-      .queryAllByRole(role)
-      .map((element) => element.getBoundingClientRect());
-  }
-
-  function gaps() {
-    const options = rects('option');
-
-    return options
-      .slice(1)
-      .map((option, index) => Math.round(option.top - options[index].bottom));
-  }
 
   /** The space between the last option and the bottom of the list. */
   function spaceBelow() {
@@ -435,5 +437,200 @@ describe('ListBox loose options alongside sections', () => {
     const inherited = screen.getByRole('option', { name: 'Pear' });
     expect(getComputedStyle(inherited).display).toBe('flex');
     expect(inherited.getBoundingClientRect().width).toBe(140);
+  });
+});
+
+/**
+ * A virtualized list positions its options from measured heights, and starts
+ * from an estimate (32px for a medium option) for one it hasn't measured. A
+ * task that ends with options at their estimates can be painted, and an option
+ * taller than its estimate then overlaps the next one for a frame.
+ *
+ * The updates come from a timer with act() off, as a streaming parent's do:
+ * act() flushes effects at once, which hides a measurement made after commit.
+ * A MutationObserver reads the geometry at the end of every task that moved
+ * an option, which is what the browser may paint.
+ */
+describe('ListBox virtualized option heights', () => {
+  type Metric = { key: string; label: string };
+
+  // Each wraps in the 180px list, so the options are taller than the estimate.
+  const METRICS: Metric[] = [
+    { key: 'revenue', label: 'Revenue recognised net of refunds and credits' },
+    { key: 'bookings', label: 'Gross bookings before any discount is applied' },
+    { key: 'arr', label: 'Annual recurring revenue across every plan' },
+    { key: 'users', label: 'Monthly users who sent at least one message' },
+  ];
+  const PIPELINE = {
+    key: 'pipeline',
+    label: 'Pipeline value weighted by each stage probability',
+  };
+  const OTHER_METRICS: Metric[] = [
+    { key: 'churn', label: 'Churn' },
+    {
+      key: 'expansion',
+      label: 'Expansion revenue from upgrades and seat growth',
+    },
+    { key: 'signups', label: 'Signups' },
+    {
+      key: 'trials',
+      label: 'Trial accounts that converted within thirty days',
+    },
+  ];
+
+  // Labels wrap rather than truncate, as in Cube Cloud's question card.
+  const WRAPPING = { Label: { whiteSpace: 'normal' } };
+
+  let update: (next: (metrics: Metric[]) => Metric[]) => void = () => {};
+  let commits = 0;
+
+  function Metrics() {
+    const [metrics, setMetrics] = useState(METRICS);
+
+    useEffect(() => {
+      update = setMetrics;
+    });
+
+    // Commit as slowly as a busy page does. React's scheduler then yields to
+    // the browser before the passive effects, where a fast commit runs both
+    // in one task.
+    useLayoutEffect(() => {
+      const start = performance.now();
+
+      commits++;
+
+      while (performance.now() - start < 8);
+    });
+
+    return (
+      <div style={{ width: 180 }}>
+        <ListBox aria-label="Metrics" optionStyles={WRAPPING}>
+          {metrics.map((metric) => (
+            <ListBox.Item key={metric.key}>{metric.label}</ListBox.Item>
+          ))}
+        </ListBox>
+      </div>
+    );
+  }
+
+  /** Resolves once three frames pass with no option moving. */
+  function settled(list: Element) {
+    return new Promise<void>((resolve) => {
+      let quiet = 0;
+      const observer = new MutationObserver(() => (quiet = 0));
+      const tick = () => {
+        if (++quiet === 3) {
+          observer.disconnect();
+          resolve();
+        } else {
+          requestAnimationFrame(tick);
+        }
+      };
+
+      observer.observe(list, {
+        attributes: true,
+        childList: true,
+        subtree: true,
+      });
+      requestAnimationFrame(tick);
+    });
+  }
+
+  let actEnvironment: unknown;
+
+  beforeEach(() => {
+    actEnvironment = (globalThis as any).IS_REACT_ACT_ENVIRONMENT;
+    (globalThis as any).IS_REACT_ACT_ENVIRONMENT = false;
+  });
+
+  afterEach(() => {
+    (globalThis as any).IS_REACT_ACT_ENVIRONMENT = actEnvironment;
+  });
+
+  it('moves no option for a new array of the same options', async () => {
+    renderWithRoot(<Metrics />);
+
+    const list = screen.getByRole('listbox');
+
+    await vi.waitFor(() => expect(gaps()).toEqual([1, 1, 1]));
+    await settled(list);
+
+    // Every write is recorded, including one undone later in the same task,
+    // as dropping the measured heights would be.
+    const moves: string[] = [];
+    const observer = new MutationObserver((records) => {
+      for (const record of records) {
+        moves.push((record.target as HTMLElement).style.transform);
+      }
+    });
+
+    for (const option of screen.getAllByRole('option')) {
+      observer.observe(option, { attributeFilter: ['style'] });
+    }
+
+    const before = commits;
+
+    setTimeout(() => update((metrics) => [...metrics]));
+    await vi.waitFor(() => expect(commits).toBeGreaterThan(before));
+    await settled(list);
+    observer.disconnect();
+
+    expect(moves).toEqual([]);
+  });
+
+  it.each([
+    [
+      'a new option before the others',
+      (metrics: Metric[]) => [PIPELINE, ...metrics],
+    ],
+    ['as many different options', () => OTHER_METRICS],
+    [
+      'an option growing in place',
+      ([first, ...rest]: Metric[]) => [
+        {
+          ...first,
+          label: `${first.label}, before taxes and the fees we pass on`,
+        },
+        ...rest,
+      ],
+    ],
+  ])('keeps the options apart through %s', async (_, next) => {
+    renderWithRoot(<Metrics />);
+
+    const list = screen.getByRole('listbox');
+
+    await vi.waitFor(() => expect(gaps()).toEqual([1, 1, 1]));
+    await settled(list);
+
+    // Taller than the 32px estimate plus the 1px gap, or no overlap could show.
+    for (const option of screen.getAllByRole('option')) {
+      expect(option.getBoundingClientRect().height).toBeGreaterThan(33);
+    }
+
+    const overlapping: number[][] = [];
+    const observer = new MutationObserver(() => {
+      const current = gaps();
+
+      if (current.some((gap) => gap < 0)) overlapping.push(current);
+    });
+
+    observer.observe(list, {
+      attributes: true,
+      characterData: true,
+      childList: true,
+      subtree: true,
+    });
+    setTimeout(() => update(next));
+
+    await vi.waitFor(() =>
+      expect(
+        screen.getAllByRole('option').map((option) => option.textContent),
+      ).toEqual(next(METRICS).map(({ label }) => label)),
+    );
+    await settled(list);
+    observer.disconnect();
+
+    expect(overlapping).toEqual([]);
+    expect(gaps()).toEqual(Array(next(METRICS).length - 1).fill(1));
   });
 });

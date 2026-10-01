@@ -959,10 +959,6 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     isFocusWithin ??
     (shouldUseVirtualFocus || listState.selectionManager.isFocused);
 
-  // Use ref to ensure estimateSize always accesses current itemsArray
-  const itemsArrayRef = useRef(itemsArray);
-  itemsArrayRef.current = itemsArray;
-
   // Scroll container ref for virtualization
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -972,12 +968,13 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     // Use the actual item key to ensure React properly reconciles DOM elements
     // when items are filtered, added, or removed. Without this, the virtualizer
     // uses index-based keys which causes DOM reuse issues and style leaking.
-    getItemKey: (index: number) => {
-      const item = itemsArrayRef.current[index];
-      return item?.key ?? index;
-    },
+    // A new key function makes the virtualizer recompute positions from the
+    // heights it has measured per key. ListBox isn't compiled (useVirtualizer),
+    // so that is every render. Reading `itemsArray` keeps new items bringing a
+    // new function should it ever compile.
+    getItemKey: (index: number) => itemsArray[index]?.key ?? index,
     estimateSize: (index: number) => {
-      const currentItem: any = itemsArrayRef.current[index];
+      const currentItem: any = itemsArray[index];
 
       if (currentItem?.props?.description) {
         return SIZES.XL;
@@ -990,13 +987,14 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     overscan: 10,
   });
 
-  // Trigger remeasurement when items change (for filtering scenarios), and
-  // when the gap does: the virtualizer caches positions without it.
+  // The virtualizer caches positions without the gap, so re-measure when it
+  // changes. Not when the items do: their positions follow `getItemKey`, and
+  // `measure()` would drop every measured height.
   useEffect(() => {
     if (shouldVirtualize) {
       rowVirtualizer.measure();
     }
-  }, [shouldVirtualize, itemsArray, rowVirtualizer, listGap]);
+  }, [shouldVirtualize, rowVirtualizer, listGap]);
 
   // Keep focused item visible, but only for keyboard navigation
   useLayoutEffect(() => {
@@ -1341,7 +1339,7 @@ function Option({
   onClick?: (key: Key) => void;
   /** Inline style applied when virtualized (absolute positioning etc.) */
   virtualStyle?: CSSProperties;
-  /** Ref callback from react-virtual to measure row height */
+  /** react-virtual's `measureElement`, called with the option after every commit */
   virtualRef?: (element: HTMLElement | null) => void;
   /** Virtual index from react-virtual for data-index attribute */
   virtualIndex?: number;
@@ -1353,8 +1351,12 @@ function Option({
   dropState?: DroppableCollectionState;
 }) {
   const localRef = useRef<HTMLLIElement>(null);
-  // Merge local ref with react-virtual measure ref when provided
-  const combinedRef = useCombinedRefs(localRef, virtualRef);
+
+  // Measure during the commit. After it, the browser can paint the option at
+  // its estimated height first, overlapping the next one for a frame.
+  useLayoutEffect(() => {
+    virtualRef?.(localRef.current);
+  });
 
   const isDisabled = isParentDisabled || state.disabledKeys.has(item.key);
   const isSelected = state.selectionManager.isSelected(item.key);
@@ -1387,7 +1389,7 @@ function Option({
       shouldFocusOnHover: focusOnHover,
     },
     state,
-    combinedRef,
+    localRef,
   );
 
   const isFocused =
@@ -1494,7 +1496,7 @@ function Option({
 
   const listBoxItem = (
     <ListBoxItem
-      ref={combinedRef}
+      ref={localRef}
       data-key={String(item.key)}
       {...mergeProps(
         filteredOptionProps,
