@@ -2,7 +2,7 @@
 
 Modern Form is opt-in per form. Existing `Form.useForm()` calls, roots without a controller, and legacy wrappers continue to use the legacy engine. Start with a leaf form whose defaults, conditional fields, and submission payload are understood. Do not swap the backend of a mounted root: choose one component at a migration boundary and remount when changing that choice.
 
-The [compiled consumer examples](https://github.com/cube-js/cube-ui-kit/blob/main/typecheck/consumer/modern-form-examples.tsx) cover creation with a colocated selector, narrow descendant subscriptions, conditional fields, async defaults, a custom control, and cancellable validation. `pnpm build && pnpm test:types:consumer` checks those examples against the declarations consumers receive. React 18 and 19 run the adapter tests both with and without React Compiler; the published library itself remains uncompiled.
+The [compiled consumer examples](https://github.com/cube-js/cube-ui-kit/blob/main/typecheck/consumer/modern-form-examples.tsx) cover creation with a colocated selector, narrow descendant subscriptions, conditional fields, async defaults, a custom control, and cancellable validation. `pnpm build && pnpm test:types:consumer` checks those examples against the declarations consumers receive. The published library is compiled for React 18 and 19; CI checks adapters and packaged consumers both with and without React Compiler. See [the compiler guide](../scripts/compiler/README.md).
 
 ## Choose the backend explicitly
 

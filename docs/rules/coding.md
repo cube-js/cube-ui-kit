@@ -5,7 +5,7 @@
 - Do not run tests if you only changed stories or documentation since the last test run.
 - If you need to move or rename a file: use command line tools for that.
 - If you need to move a part of code from one file to another: First, write the code at the new place, then delete the code in the original place.
-- Don't implement backward compatibility unless asked.
+- Don't add new backward-compatibility layers unless asked. Preserve existing documented public contracts, including the frozen legacy Form behavior.
 
 # Coding rules
 
