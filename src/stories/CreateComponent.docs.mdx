@@ -452,7 +452,7 @@ For input components that need to integrate with forms, see the [Field documenta
 
 8. **Use named React imports**: Import `useState`, `useRef`, `forwardRef` etc. directly from `'react'` instead of using `React.useState(...)`.
 
-   **Skip `useMemo` and `useCallback` for performance.** React Compiler memoizes compiled components and hooks at build time, so derived values, `mods` objects, context values and handlers are plain expressions. Keep a manual memo only where identity is part of the contract: a callback ref, an effect dependency, a `useSyncExternalStore` subscription, or a value created once per mount.
+   **Skip `useMemo` and `useCallback` for performance.** React Compiler memoizes compiled components and hooks at build time, so derived values, `mods` objects and handlers are plain expressions. Keep a manual memo where identity is part of the contract: callback refs, effect dependencies, `useSyncExternalStore` subscriptions, per-mount values, context provider values and imperative APIs. Tests run uncompiled source, and known compiler bailouts retain their existing memos. See [React Compiler](https://github.com/cube-js/cube-ui-kit/blob/main/AGENTS.md#react-compiler-skip-manual-memoization).
 
 9. **Use `useEvent` for stable callbacks**: When a callback doesn't need to trigger re-renders, prefer `useEvent` from `src/_internal/hooks/use-event` for a stable identity that always calls the latest implementation:
 

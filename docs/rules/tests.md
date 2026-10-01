@@ -18,7 +18,7 @@ Test runner: **Vitest** (globals enabled — `vi`, `describe`, `it`, `expect` et
 - `renderWithRoot()` - Components using overlays, popovers, portals, modals, or complex interactions (Select, ComboBox, Menu, Dialog, etc.)
 - `renderWithForm()` - Form-integrated components (returns `{ formInstance, ...renderResult }`)
 
-Note: Root provides ModalProvider, PortalProvider, EventBusProvider, NotificationsProvider, and styled-components context. Most interactive components need it, but simple presentational components don't.
+Note: Root provides Tasty batching, i18n, modal, portal, event-bus, notification and alert-dialog providers. Most interactive components need it, but simple presentational components don't.
 
 ## User Interactions
 
@@ -212,7 +212,7 @@ Use `query*` when checking non-existence, `getAll*` for multiple elements.
 - ❌ Don't test implementation details
 - ❌ Don't overuse `act()` (userEvent handles it)
 - ❌ Don't query by class names when semantic queries work
-- ❌ Don't test `styles` or simple layout props (e.g., `icon` that just renders to slot)
+- ❌ Don't add specs just to inspect `styles` or simple layout props; use the probe. A layout or consumer-customization regression does need a behavior check, using a browser only when jsdom cannot observe the failure.
 - ❌ Don't forget to mock warnings for clean output
 
 ## Debugging

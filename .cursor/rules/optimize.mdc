@@ -2,4 +2,4 @@
 alwaysApply: true
 ---
 
-For verification, review, or simple edits: answer in 1 turn. Do not auto-search, do not read extra files, do not run multi-step loops. If context is needed, only use explicitly @-referenced files.
+Keep narrow verification and simple edits focused on the requested scope. For reviews, follow [the shared UI Kit review rules](../../docs/rules/review.md): read the relevant source, callers and authoring guidance, and verify candidates before reporting them. Do not expand the review into unrelated refactors or migrations.

@@ -38,6 +38,7 @@ Project-specific working rules for AI agents. Not published with the package.
 - [probe.md](docs/rules/probe.md) — `pnpm probe`: inspecting the HTML, CSS and tokens a render actually produces
 - [commit-changes.md](docs/rules/commit-changes.md) — commit message convention
 - [eslint-plugin.md](docs/rules/eslint-plugin.md) — the shipped lint rule + the defaults registry it checks against
+- [review.md](docs/rules/review.md) — shared UI Kit review checklist, scope and verification; the local `ui-review` skill reads this file
 
 ## Changesets
 
