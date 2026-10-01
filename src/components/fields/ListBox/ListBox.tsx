@@ -117,10 +117,16 @@ const ListBoxWrapperElement = tasty({
 const ListElement = tasty({
   as: 'ul',
   styles: {
+    // The space between options. Set from `listGap`, which also hands the
+    // same number to the virtualizer.
+    '$list-gap': '1bw',
     display: 'block',
-    padding: 0,
+    // The space kept below the last option. Padding, so `listStyles` can take
+    // it away, and outside the content box, where a virtualized list sets its
+    // own height.
+    padding: '.5x bottom',
     listStyle: 'none',
-    boxSizing: 'border-box',
+    boxSizing: 'content-box',
     margin: {
       '': '.5x .5x 0 .5x',
       '[data-shape="plain"]': '0',
@@ -147,11 +153,14 @@ const ListBoxItem = tasty(Item, {
   disableActionsFocus: true,
   styles: {
     margin: {
-      '': '1bw bottom',
-      ':last-of-type': '0',
-      'draggable & :last-of-type': '.5x bottom',
+      '': '$list-gap bottom',
+      // The last child. A drop indicator rendered after it doesn't count.
+      ':not(:has(~ :not([data-drop-indicator])))': '0',
       all: '.5x',
     },
+    // Inside the option: options sit a hairline apart, so a ring outside one
+    // would cover its neighbour, and the scroll box would clip it at the edges.
+    outlineOffset: '-1bw',
     Icon: {
       cursor: {
         draggable: 'grab',
@@ -185,7 +194,11 @@ const ListBoxDropIndicatorElement = tasty({
       position: 'absolute',
       left: '.5x',
       right: '.5x',
-      top: '-1px',
+      // Centred in the gap between two options, or on the edge of the list.
+      top: {
+        '': '(-1px - $list-gap / 2)',
+        ':first-child | :last-child': '-1px',
+      },
       height: '2px',
       fill: '#primary',
       radius: 'round',
@@ -197,10 +210,6 @@ const SectionWrapperElement = tasty({
   as: 'li',
   styles: {
     display: 'block',
-    padding: {
-      '': 0,
-      ':last-of-type': '.5x bottom',
-    },
   },
 });
 
@@ -317,6 +326,11 @@ export interface CubeListBoxProps<T>
   sectionStyles?: Styles;
   /** Custom styles for section headings */
   headingStyles?: Styles;
+  /**
+   * Space between options, in pixels. Defaults to a hairline (`1bw`). It
+   * applies to flat, virtualized, sectioned and reorderable lists alike.
+   */
+  listGap?: number;
   /** Whether the ListBox is disabled */
   isDisabled?: boolean;
   /** The selected key in controlled single selection mode */
@@ -381,6 +395,15 @@ export interface CubeListBoxProps<T>
    * Defaults to false for backward compatibility.
    */
   shouldUseVirtualFocus?: boolean;
+
+  /**
+   * For a list whose focused option is moved from an input outside it, as
+   * FilterListBox's search input does: whether focus is within that input's
+   * component. The focused option is marked only while it is `true`. Unset, the
+   * list's own focus decides, and with `shouldUseVirtualFocus` the focused
+   * option is always marked.
+   */
+  isFocusWithin?: boolean;
 
   /**
    * Callback fired when the user presses Escape key.
@@ -636,6 +659,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     optionHighlight,
     sectionStyles,
     headingStyles,
+    listGap,
     listRef,
     message,
     description,
@@ -648,6 +672,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     selectedKeys,
     defaultSelectedKeys,
     shouldUseVirtualFocus,
+    isFocusWithin,
     onSelectionChange,
     disableSelectionToggle = false,
     allowDuplicateSelectionEvents,
@@ -916,6 +941,14 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
 
   const { isFocused, focusProps } = useFocus({ isDisabled });
 
+  // The focused key outlives focus, so an option shows as focused only while
+  // the list has it. A component whose input moves the key (FilterListBox)
+  // says whether focus is within it, in any focus mode. Otherwise the list's
+  // own focus decides, and with virtual focus the focused key alone marks it.
+  const isListFocused =
+    isFocusWithin ??
+    (shouldUseVirtualFocus || listState.selectionManager.isFocused);
+
   // Use ref to ensure estimateSize always accesses current itemsArray
   const itemsArrayRef = useRef(itemsArray);
   itemsArrayRef.current = itemsArray;
@@ -937,22 +970,23 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       const currentItem: any = itemsArrayRef.current[index];
 
       if (currentItem?.props?.description) {
-        return SIZES.XL + 1;
+        return SIZES.XL;
       }
-      return SIZES[SIZE_NAME_TO_KEY[size] as keyof typeof SIZES] + 1;
+      return SIZES[SIZE_NAME_TO_KEY[size] as keyof typeof SIZES];
     },
-    measureElement: (el) => {
-      return el.offsetHeight + 1;
-    },
+    // Options are positioned absolutely here, so their margins space nothing.
+    // `1` matches the `1bw` default.
+    gap: listGap ?? 1,
     overscan: 10,
   });
 
-  // Trigger remeasurement when items change (for filtering scenarios)
+  // Trigger remeasurement when items change (for filtering scenarios), and
+  // when the gap does: the virtualizer caches positions without it.
   useEffect(() => {
     if (shouldVirtualize) {
       rowVirtualizer.measure();
     }
-  }, [shouldVirtualize, itemsArray, rowVirtualizer]);
+  }, [shouldVirtualize, itemsArray, rowVirtualizer, listGap]);
 
   // Keep focused item visible, but only for keyboard navigation
   useLayoutEffect(() => {
@@ -996,6 +1030,11 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   // preserved.
   const mergedListBoxProps = mergeProps(listBoxProps, keyboardProps);
 
+  // React Aria keeps a disabled list a Tab stop while no option has focus.
+  if (isDisabled) {
+    delete mergedListBoxProps.tabIndex;
+  }
+
   // Ordered keys for DnD reordering
   const orderedKeys = useMemo(() => {
     if (!isReorderable) {
@@ -1029,6 +1068,9 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       externalMods,
     ],
   );
+
+  const listGapTokens =
+    listGap == null ? undefined : { '$list-gap': `${listGap}px` };
 
   const listBoxField = (
     <ListBoxWrapperElement
@@ -1083,6 +1125,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
                 {...mergeProps(mergedListBoxProps, collectionProps)}
                 ref={listRef}
                 styles={listStyles}
+                tokens={listGapTokens}
                 aria-disabled={isDisabled || undefined}
                 mods={{ sections: false }}
                 data-shape={shape}
@@ -1102,6 +1145,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
                       isInvalid={isInvalid}
                       isValid={isValid}
                       focusOnHover={focusOnHover}
+                      isListFocused={isListFocused}
                       isCheckable={isCheckable}
                       lastFocusSourceRef={lastFocusSourceRef}
                       dragState={dragState}
@@ -1118,6 +1162,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
             {...mergedListBoxProps}
             ref={listRef}
             styles={listStyles}
+            tokens={listGapTokens}
             aria-disabled={isDisabled || undefined}
             mods={{ sections: hasSections }}
             data-shape={shape}
@@ -1126,7 +1171,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
               shouldVirtualize
                 ? {
                     position: 'relative',
-                    height: `${rowVirtualizer.getTotalSize() + 3}px`,
+                    height: `${rowVirtualizer.getTotalSize()}px`,
                   }
                 : undefined
             }
@@ -1147,9 +1192,9 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
                       isInvalid={isInvalid}
                       isValid={isValid}
                       focusOnHover={focusOnHover}
+                      isListFocused={isListFocused}
                       isCheckable={isCheckable}
-                      // We don't need to measure the element here, because the height is already set by the virtualizer
-                      // This is a workaround to avoid glitches when selecting/deselecting items
+                      // Measures the option's real height; the virtualizer adds the gap.
                       virtualRef={rowVirtualizer.measureElement as any}
                       virtualStyle={{
                         position: 'absolute',
@@ -1193,6 +1238,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
                           isInvalid={isInvalid}
                           isValid={isValid}
                           focusOnHover={focusOnHover}
+                          isListFocused={isListFocused}
                           isCheckable={isCheckable}
                           size={size}
                           lastFocusSourceRef={lastFocusSourceRef}
@@ -1214,6 +1260,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
                           isInvalid={isInvalid}
                           isValid={isValid}
                           focusOnHover={focusOnHover}
+                          isListFocused={isListFocused}
                           isCheckable={isCheckable}
                           lastFocusSourceRef={lastFocusSourceRef}
                           onClick={onOptionClick}
@@ -1259,6 +1306,7 @@ function Option({
   isInvalid,
   isValid,
   focusOnHover = false,
+  isListFocused = false,
   isCheckable,
   onClick: onOptionClick,
   virtualStyle,
@@ -1277,6 +1325,8 @@ function Option({
   isInvalid?: boolean;
   isValid?: boolean;
   focusOnHover?: boolean;
+  /** Whether the list has focus, so its focused option shows as focused */
+  isListFocused?: boolean;
   isCheckable?: boolean;
   onClick?: (key: Key) => void;
   /** Inline style applied when virtualized (absolute positioning etc.) */
@@ -1298,7 +1348,6 @@ function Option({
 
   const isDisabled = isParentDisabled || state.disabledKeys.has(item.key);
   const isSelected = state.selectionManager.isSelected(item.key);
-  const isFocused = state.selectionManager.focusedKey === item.key;
 
   // Drag-and-drop support — only enable when both states are provided
   const isDraggable = !!dragState && !!dropState;
@@ -1330,6 +1379,11 @@ function Option({
     state,
     combinedRef,
   );
+
+  const isFocused =
+    !isDisabled &&
+    isListFocused &&
+    state.selectionManager.focusedKey === item.key;
 
   // Filter out service props - all remaining props can be passed to Item
   const filteredItemProps = filterCollectionItemProps(item.props);
@@ -1525,7 +1579,7 @@ function ListBoxDropIndicator({
       ref={ref}
       role="option"
       {...dropIndicatorProps}
-      mods={{ 'drop-target': isDropTarget }}
+      mods={{ 'drop-indicator': true, 'drop-target': isDropTarget }}
     >
       <div data-element="Indicator" />
     </ListBoxDropIndicatorElement>
@@ -1543,6 +1597,7 @@ interface ListBoxSectionProps<T> {
   isInvalid?: boolean;
   isValid?: boolean;
   focusOnHover?: boolean;
+  isListFocused?: boolean;
   isCheckable?: boolean;
   onClick?: (key: Key) => void;
   size?: 'small' | 'medium' | 'large';
@@ -1561,6 +1616,7 @@ function ListBoxSection<T>(props: ListBoxSectionProps<T>) {
     isInvalid,
     isValid,
     focusOnHover,
+    isListFocused,
     isCheckable,
     onClick: onOptionClick,
     lastFocusSourceRef,
@@ -1598,6 +1654,7 @@ function ListBoxSection<T>(props: ListBoxSectionProps<T>) {
               isInvalid={isInvalid}
               isValid={isValid}
               focusOnHover={focusOnHover}
+              isListFocused={isListFocused}
               isCheckable={isCheckable}
               lastFocusSourceRef={lastFocusSourceRef}
               onClick={onOptionClick}

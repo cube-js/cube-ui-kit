@@ -93,6 +93,14 @@ const meta: any = {
         defaultValue: { summary: 'card' },
       },
     },
+    listGap: {
+      control: { type: 'number' },
+      description: 'Space between options, in pixels',
+      table: {
+        defaultValue: { summary: '1bw' },
+        type: { summary: 'number' },
+      },
+    },
     header: {
       control: { type: 'text' },
       description: 'Custom header content',
@@ -116,6 +124,14 @@ const meta: any = {
       description: 'Whether to use virtual focus instead of DOM focus',
       table: {
         defaultValue: { summary: false },
+      },
+    },
+    isFocusWithin: {
+      control: { type: 'boolean' },
+      description:
+        "For a list whose focused option is moved from an input outside it: whether focus is within that input's component",
+      table: {
+        type: { summary: 'boolean' },
       },
     },
     isCheckable: {
@@ -1580,6 +1596,62 @@ export const DifferentShapes: Story = {
       description: {
         story:
           'The `shape` prop controls the visual styling of the ListBox. Use `card` for standalone use, `plain` for embedded use without decoration, and `popover` for use inside overlays where borders are handled by the container.',
+      },
+    },
+  },
+};
+
+export const OptionGap: Story = {
+  render: () => {
+    const cards = permissions.slice(0, 3).map(({ key, label, description }) => (
+      <ListBox.Item
+        key={key}
+        type="outline"
+        shape="card"
+        description={description}
+      >
+        {label}
+      </ListBox.Item>
+    ));
+
+    return (
+      <Space gap="4x" flow="column">
+        <ListBox label="Default gap" defaultSelectedKey="read">
+          {cards}
+        </ListBox>
+
+        <ListBox label="listGap={4}" listGap={4} defaultSelectedKey="read">
+          {cards}
+        </ListBox>
+
+        <ListBox
+          label="listGap={4}, in sections"
+          listGap={4}
+          defaultSelectedKey="write"
+        >
+          <ListBox.Section title="Content">
+            {permissions.slice(0, 3).map(({ key, label }) => (
+              <ListBox.Item key={key} type="outline" shape="card">
+                {label}
+              </ListBox.Item>
+            ))}
+          </ListBox.Section>
+          <ListBox.Section title="Access">
+            {permissions.slice(3, 5).map(({ key, label }) => (
+              <ListBox.Item key={key} type="outline" shape="card">
+                {label}
+              </ListBox.Item>
+            ))}
+          </ListBox.Section>
+        </ListBox>
+      </Space>
+    );
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          '`listGap` sets the space between options, in pixels. It defaults to a hairline, which suits plain options. Card-like options usually want more, so each reads as its own choice.',
       },
     },
   },

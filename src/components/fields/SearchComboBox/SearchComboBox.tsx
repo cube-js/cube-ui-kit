@@ -187,6 +187,8 @@ export interface CubeSearchComboBoxProps<T>
   sectionStyles?: Styles;
   /** Custom styles for section headings */
   headingStyles?: Styles;
+  /** Space between options, in pixels. Defaults to a hairline (`1bw`). */
+  listGap?: number;
 
   /** Whether the search combobox is disabled */
   isDisabled?: boolean;
@@ -403,6 +405,7 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
     children: renderChildren,
     sectionStyles,
     headingStyles,
+    listGap,
     isReadOnly,
     overlayOffset = 8,
     containerPadding = 8,
@@ -1013,6 +1016,7 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
         optionStyles={optionStyles}
         sectionStyles={sectionStyles}
         headingStyles={headingStyles}
+        listGap={listGap}
         selectedKey={null}
         isDisabled={isDisabled}
         disabledKeys={disabledKeys}

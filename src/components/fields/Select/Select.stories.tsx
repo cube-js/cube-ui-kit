@@ -136,6 +136,14 @@ export default {
         defaultValue: { summary: 8 },
       },
     },
+    listGap: {
+      control: { type: 'number' },
+      description: 'Space between options, in pixels',
+      table: {
+        defaultValue: { summary: '1bw' },
+        type: { summary: 'number' },
+      },
+    },
 
     /* State */
     isDisabled: {

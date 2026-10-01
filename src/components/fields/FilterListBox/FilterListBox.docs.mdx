@@ -34,6 +34,7 @@ A searchable list selection component that combines a ListBox with an integrated
 - **`disallowEmptySelection`** `boolean` (default: `false`) — Whether to disallow empty selection
 - **`disabledKeys`** `Key[]` — Array of keys for disabled items
 - **`size`** `'small' | 'medium' | 'large'` (default: `medium`) — FilterListBox size
+- **`listGap`** `number` — Space between options, in pixels. Defaults to a hairline (`1bw`)
 - **`searchPlaceholder`** `string` (default: `Search...`) — Placeholder text in the search input
 - **`filter`** `((textValue: string, inputValue: string) => boolean) | false` — Custom filter function or `false` to disable filtering
 - **`emptyLabel`** `ReactNode` (default: context-aware: `No items` or `No results found`) — Label shown when the list is empty. When provided, overrides both defaults for any empty state

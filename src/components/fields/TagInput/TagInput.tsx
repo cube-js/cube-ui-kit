@@ -251,6 +251,8 @@ export interface CubeTagInputProps<T = object>
   sectionStyles?: Styles;
   /** Styles for option section headings. */
   headingStyles?: Styles;
+  /** Space between options, in pixels. Defaults to a hairline (`1bw`). */
+  listGap?: number;
 }
 
 const TagInputElement = tasty({
@@ -520,6 +522,7 @@ function TagInput<T extends object>(
     optionStyles,
     sectionStyles,
     headingStyles,
+    listGap,
     labelProps: userLabelProps,
     mods,
     className,
@@ -1774,6 +1777,7 @@ function TagInput<T extends object>(
           optionHighlight={isFilterActive ? term : undefined}
           sectionStyles={sectionStyles}
           headingStyles={headingStyles}
+          listGap={listGap}
           selectionMode="multiple"
           selectedKeys={uniqueValues}
           isCheckable

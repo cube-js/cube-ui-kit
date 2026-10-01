@@ -171,6 +171,14 @@ const meta: Meta<typeof FilterPicker> = {
       description:
         'Custom renderer for the summary shown inside the trigger when there is a selection',
     },
+    listGap: {
+      control: { type: 'number' },
+      description: 'Space between options, in pixels',
+      table: {
+        defaultValue: { summary: '1bw' },
+        type: { summary: 'number' },
+      },
+    },
 
     /* Behavior */
     isCheckable: {

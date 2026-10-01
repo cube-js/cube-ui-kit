@@ -37,12 +37,14 @@ A versatile list selection component that allows users to select one or more ite
 - **`disabledKeys`** `Key[]` — Array of keys for disabled items
 - **`size`** `'small' | 'medium' | 'large'` (default: `medium`) — ListBox size
 - **`shape`** `'card' | 'plain' | 'popover'` (default: `card`) — Visual shape of the ListBox
+- **`listGap`** `number` — Space between options, in pixels. Defaults to a hairline (`1bw`)
 - **`filter`** `(nodes: Iterable<Node>) => Iterable<Node>` — Filter function for the list items
 - **`emptyLabel`** `ReactNode` (default: `No items`) — Label shown when no items are available
 - **`header`** `ReactNode` — Custom header content
 - **`footer`** `ReactNode` — Custom footer content
 - **`focusOnHover`** `boolean` (default: `true`) — Whether moving the pointer over an option will move DOM focus to that option
 - **`shouldUseVirtualFocus`** `boolean` (default: `false`) — Whether to use virtual focus instead of DOM focus
+- **`isFocusWithin`** `boolean` — For a list whose focused option is moved from an input outside it: whether focus is within that input's component
 - **`isCheckable`** `boolean` (default: `false`) — Whether to show checkboxes for multiple selection mode
 - **`shouldFocusWrap`** `boolean` (default: `false`) — Whether keyboard navigation should wrap around
 - **`description`** `string` — Field description
@@ -77,7 +79,7 @@ Customizes the root wrapper element of the component.
 
 #### listStyles
 
-Customizes the list container element.
+Customizes the list container element. The list keeps `.5x` of padding below its last option; `listStyles={{ padding: 0 }}` takes it away.
 
 #### optionStyles
 
@@ -188,6 +190,13 @@ The `mods` property accepts the following modifiers you can override:
 - Use `plain` when embedding ListBox directly into another component
 - Use `popover` when using ListBox inside overlays (Dialog, ComboBox, Picker)
 
+**listGap** (`number`, default: a hairline, `1bw`)
+
+- The space between options, in pixels
+- Use it rather than a margin in `optionStyles`: a flat list is virtualized and positions its options itself, so it ignores their margins
+- Card-like options (`type="outline"`, `shape="card"`) usually want `4` or more, so each one reads as its own choice
+- FilterListBox, Picker, FilterPicker, ComboBox, SearchComboBox, TagInput and CommandTextArea pass it to their ListBox. Select takes it too
+
 ### Focus and Interaction
 
 **focusOnHover** (`boolean`, default: `true`)
@@ -199,6 +208,12 @@ The `mods` property accepts the following modifiers you can override:
 
 - When `true`, uses virtual focus for keyboard navigation
 - DOM focus stays outside individual option elements (useful for searchable lists)
+
+**isFocusWithin** (`boolean`)
+
+- For a list whose focused option is moved from an input outside it, as FilterListBox's search input does
+- The focused option shows as focused only while this is `true`
+- Unset, the list's own focus decides; with `shouldUseVirtualFocus`, the focused option always shows
 
 **shouldFocusWrap** (`boolean`, default: `false`)
 
@@ -632,6 +647,24 @@ const [selectedKey, setSelectedKey] = useState('apple');
 </ListBox>
 ```
 
+### Option Gap
+
+<Story of={ListBoxStories.OptionGap} />
+
+```jsx
+<ListBox label="Permission" listGap={4} defaultSelectedKey="read">
+  <ListBox.Item key="read" type="outline" shape="card" description="View content and data">
+    Read
+  </ListBox.Item>
+  <ListBox.Item key="write" type="outline" shape="card" description="Create and edit content">
+    Write
+  </ListBox.Item>
+  <ListBox.Item key="delete" type="outline" shape="card" description="Remove content permanently">
+    Delete
+  </ListBox.Item>
+</ListBox>
+```
+
 ### Custom Escape Handling
 
 <Story of={ListBoxStories.EscapeKeyHandling} />
@@ -714,7 +747,7 @@ const [keyOrder, setKeyOrder] = useState([
 
 ### Keyboard Navigation
 
-- `Tab` - Moves focus to/from the ListBox
+- `Tab` - Moves focus to/from the ListBox. A disabled ListBox is not in the Tab order
 - `Arrow Keys` - Navigate between options
 - `Space/Enter` - Select/deselect the focused option
 - `Home/End` - Move to first/last option

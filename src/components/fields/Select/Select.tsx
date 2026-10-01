@@ -109,8 +109,11 @@ export const ListBoxElement = tasty({
   qa: 'ListBox',
   as: 'ul',
   styles: {
+    // Set from `listGap`. A section's list inherits it from the popup's.
+    '$list-gap': { '': '1bw', section: false },
     display: 'flex',
-    gap: '1bw',
+    // It spaces options: sections and dividers keep a hairline.
+    gap: { '': '$list-gap', sections: '1bw' },
     flow: 'column',
     margin: '0',
     padding: '0',
@@ -235,6 +238,8 @@ export interface CubeSelectBaseProps<T>
   optionStyles?: Styles;
   triggerStyles?: Styles;
   listBoxStyles?: Styles;
+  /** Space between options, in pixels. Defaults to a hairline (`1bw`). */
+  listGap?: number;
   overlayStyles?: Styles;
   direction?: 'top' | 'bottom';
   /**
@@ -342,6 +347,7 @@ function Select<T extends object>(
     triggerStyles,
     optionStyles,
     listBoxStyles,
+    listGap,
     overlayStyles,
     suffix,
     actions,
@@ -655,6 +661,7 @@ function Select<T extends object>(
         placement={placement}
         state={state}
         listBoxStyles={listBoxStyles}
+        listGap={listGap}
         overlayStyles={overlayStyles}
         optionStyles={optionStyles}
         minWidth={triggerWidth}
@@ -683,6 +690,7 @@ export function ListBoxPopup({
   popoverRef,
   listBoxRef,
   listBoxStyles,
+  listGap,
   overlayStyles,
   optionStyles,
   overlayProps: parentOverlayProps,
@@ -697,6 +705,8 @@ export function ListBoxPopup({
   // For trigger+popover components, map 'small' size to 'medium' for list items
   // while preserving 'medium' and 'large' sizes
   const listItemSize = size === 'small' ? 'medium' : size;
+  const listGapTokens =
+    listGap == null ? undefined : { '$list-gap': `${listGap}px` };
 
   // Get props for the listbox
   let { listBoxProps } = useListBox(
@@ -799,11 +809,11 @@ export function ListBoxPopup({
                 <DismissButton onDismiss={() => state.close()} />
                 {(() => {
                   const renderedItems: React.ReactNode[] = [];
-                  let isFirstSection = true;
+                  let hasSections = false;
 
                   for (const item of state.collection) {
                     if (item.type === 'section') {
-                      if (!isFirstSection) {
+                      if (hasSections) {
                         renderedItems.push(
                           <ListDivider
                             key={`divider-${String(item.key)}`}
@@ -826,7 +836,7 @@ export function ListBoxPopup({
                         />,
                       );
 
-                      isFirstSection = false;
+                      hasSections = true;
                     } else {
                       renderedItems.push(
                         <Option
@@ -844,6 +854,8 @@ export function ListBoxPopup({
                   return (
                     <ListBoxElement
                       styles={listBoxStyles}
+                      tokens={listGapTokens}
+                      mods={{ sections: hasSections }}
                       {...listBoxProps}
                       ref={listBoxRef}
                     >

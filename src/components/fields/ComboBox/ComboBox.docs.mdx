@@ -42,6 +42,7 @@ A combobox component that combines a text input with a dropdown list, allowing u
 - **`filter`** `((textValue: string, inputValue: string) => boolean) | false` — Custom filter function or false to disable filtering. If not provided, uses default contains filter
 - **`hideTrigger`** `boolean` (default: `false`) — Whether to hide the trigger button
 - **`size`** `'small' | 'medium' | 'large'` (default: `medium`) — ComboBox size
+- **`listGap`** `number` — Space between options, in pixels. Defaults to a hairline (`1bw`)
 - **`necessityIndicator`** `'label' | 'icon'` — How the required state should be indicated
 - **`onSelectionChange`** `(key: Key | null) => void` — Callback fired when the selected option changes
 - **`onInputChange`** `(value: string) => void` — Callback fired when the input text changes

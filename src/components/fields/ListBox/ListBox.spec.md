@@ -95,6 +95,7 @@ interface BehaviorProps {
   isDisabled?: boolean;
   focusOnHover?: boolean;           // DOM focus follows pointer (default: true)
   shouldUseVirtualFocus?: boolean;  // Keep DOM focus external (default: false)
+  isFocusWithin?: boolean;          // An outside input's component has focus (FilterListBox)
   isCheckable?: boolean;            // Show checkboxes in multiple mode
   onEscape?: () => void;            // Custom escape key handling
   onOptionClick?: (key: Key) => void; // Click handler for option content

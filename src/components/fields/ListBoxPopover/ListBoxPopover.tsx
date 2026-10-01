@@ -36,6 +36,8 @@ export interface ListBoxPopoverProps {
   optionHighlight?: string;
   sectionStyles?: Styles;
   headingStyles?: Styles;
+  /** Space between options, in pixels. Defaults to a hairline (`1bw`). */
+  listGap?: number;
   selectedKey?: Key | null;
   /**
    * `'multiple'` lets the list hold several selected options. The list then
@@ -177,6 +179,7 @@ export const ListBoxPopover = function ListBoxPopover(
     optionHighlight,
     sectionStyles,
     headingStyles,
+    listGap,
     selectedKey,
     selectionMode = 'single',
     selectedKeys,
@@ -362,6 +365,7 @@ export const ListBoxPopover = function ListBoxPopover(
                 optionHighlight={optionHighlight}
                 sectionStyles={sectionStyles}
                 headingStyles={headingStyles}
+                listGap={listGap}
                 stateRef={listStateRef}
                 shape="popover"
                 emptyLabel={emptyLabel}
