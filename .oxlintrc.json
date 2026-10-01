@@ -100,6 +100,7 @@
     "tasty/valid-default-state-order": "warn",
     "tasty/consistent-token-usage": "warn",
     "tasty/prefer-auto-calc": "warn",
+    "tasty/prefer-state-negation": "warn",
     "tasty/prefer-custom-property-syntax": "warn",
     "tasty/prefer-hide": "warn",
     "tasty/no-raw-color-values": "warn",
