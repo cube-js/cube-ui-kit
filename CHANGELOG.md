@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.187.2
+
+### Patch Changes
+
+- [#1457](https://github.com/cube-js/cube-ui-kit/pull/1457) [`28aa645d`](https://github.com/cube-js/cube-ui-kit/commit/28aa645d8e1a59217e90dacb2f7a344e85b0509e) Thanks [@tenphi](https://github.com/tenphi)! - Fix the options of a virtualized `ListBox` (one without sections that isn't reorderable, including inside `ComboBox`, `SearchComboBox`, `TagInput`, `CommandTextArea`, `Picker`, `FilterPicker` and `FilterListBox`) overlapping for a frame. Options taller than their estimate, such as ones with a wrapped label, overlapped whenever the parent re-rendered with new items or children (even identical ones), or when a re-render made an option taller. A re-render now keeps the measured heights, and options are measured before the browser paints.
+
 ## 0.187.1
 
 ### Patch Changes
