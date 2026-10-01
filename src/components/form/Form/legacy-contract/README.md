@@ -129,5 +129,5 @@ The `refs` findings in the input components are dominated by `wrapWithField(comp
 ## Not in this folder
 
 - The Cloud AST-aware inventory (Phase 0, step 8) — a Cloud-repo artifact.
-- CI enforcement of `--check` — the ratchet is available but not yet wired into `pull-request.yml`; enable it once the team agrees the baseline is the floor.
+- The CI job definition — `.github/workflows/pull-request.yml` runs `pnpm diagnostics:form --check` to enforce the committed ratchet baseline.
 - Any fix. Every `[bug-eligible]` row needs its own compatibility review before the test flips.

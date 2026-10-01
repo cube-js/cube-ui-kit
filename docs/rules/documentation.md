@@ -104,7 +104,7 @@ The `mods` property accepts the following modifiers you can override:
 
 ```jsx
 <ComponentName arg="something" />
-````
+```
 
 ### [Additional Examples as needed]
 
@@ -148,26 +148,22 @@ The `mods` property accepts the following modifiers you can override:
 
 ## Integration with Forms
 
-[For input components only] This component supports all [Field properties](/field-properties.md) when used within a Form.
-
-## Suggested Improvements
-
-- Improvement 1: Description of potential enhancement
-- Improvement 2: Description of potential enhancement
-- Improvement 3: Description of potential enhancement
+[For input components only] This component supports all [Field properties](/docs/getting-started-field-properties--docs) when used within a Form.
 
 ## Related Components
 
 - [RelatedComponent1](/components/RelatedComponent1) - When to use instead
 - [RelatedComponent2](/components/RelatedComponent2) - Complementary component
 
-```
+````
+
+Include sections that describe the component's actual contract. Omit inapplicable variants, form integration and speculative improvement lists; document a current limitation only when it affects usage.
 
 ## Guidelines
 
 ### Properties
 
-- **Props List**: List all component-specific properties using the definition list format. Properties, types, defaults, and descriptions must match the `argTypes` defined in the corresponding `.stories.tsx` file. Format: `- **\`propName\`** \`type\` (default: \`value\`) — Description`
+- **Props List**: List all component-specific properties using the definition list format. Properties, types, defaults, and descriptions must match the `argTypes` defined in the corresponding `.stories.tsx` file. Format: ``- **`propName`** `type` (default: `value`) — Description``
 - **Base Properties**: Link to `/docs/getting-started-base-properties--docs` instead of listing (unless `qa` has special behavior)
 - **Styling Properties**: Document `styles`/`*Styles` props. List sub-elements that can be overridden (check component's tasty styles)
 - **Style Properties**: Managed by `pnpm audit-docs --fix-docs`. Groups props by category (Base, Position, Dimension, Block, Color, Text, Flow, Other). Do not edit manually.
@@ -214,7 +210,7 @@ For input components: "This component supports all [Field properties](/docs/gett
 - [ ] Modifiers listed with descriptions
 - [ ] Accessibility section complete
 - [ ] Best practices included
-- [ ] Suggested improvements section
+- [ ] Only relevant sections included; limitations describe current behavior
 - [ ] Style props vs styling props separated
 - [ ] Form integration noted (input components)
 - [ ] Base properties linked, not listed (except `qa`)
@@ -241,4 +237,3 @@ Use story links in the following format:
 ```
 
 Where `/docs/` is the standard prefix, `forms` is the section, `filterlistbox` is the lower-cased component name, and `--docs` is the standard suffix.
-```
