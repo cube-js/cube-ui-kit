@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.187.1
+
+### Patch Changes
+
+- [#1454](https://github.com/cube-js/cube-ui-kit/pull/1454) [`38087baa`](https://github.com/cube-js/cube-ui-kit/commit/38087baa25b9f9bed171513c3c30c5725b1be771) Thanks [@tenphi](https://github.com/tenphi)! - Fix tests on jsdom before 27 failing since 0.187.0 whenever a `ListBox` was on the page, including inside `Select`, `ComboBox`, `SearchComboBox`, `Picker`, `FilterPicker`, `FilterListBox`, `TagInput` and `CommandTextArea`. Every `getComputedStyle` call threw `Cannot read properties of null (reading 'children')`, which broke role queries, `toBeVisible` and user-event clicks. Options no longer use a `:has(~ …)` selector, and their spacing is unchanged.
+
 ## 0.187.0
 
 ### Minor Changes
