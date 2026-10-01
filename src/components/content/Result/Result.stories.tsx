@@ -186,12 +186,8 @@ Large.args = {
   subtitle: 'Charged $1,234.00 to Visa **** 4242',
   actions: (
     <>
-      <Button type="primary" size="large">
-        Done
-      </Button>
-      <Button type="outline-2" size="large">
-        View invoice
-      </Button>
+      <Button type="primary">Done</Button>
+      <Button type="outline-2">View invoice</Button>
     </>
   ),
 };
@@ -199,7 +195,7 @@ Large.parameters = {
   docs: {
     description: {
       story:
-        'The `large` size scales the icon, the title and the subtitle. The layout stays the same: the actions still sit in a centered row. Pass `size="large"` to the buttons to match.',
+        'The `large` size scales the icon, the title and the subtitle. The layout stays the same: the actions still sit in a centered row.',
     },
   },
 };
@@ -212,11 +208,7 @@ export const Stacked: StoryFn<CubeResultProps> = () => (
       status="success"
       title="Payment complete"
       subtitle="Charged $1,234.00 to Visa **** 4242"
-      actions={
-        <Button type="primary" size="large">
-          Done
-        </Button>
-      }
+      actions={<Button type="primary">Done</Button>}
     />
     <Result
       size="large"
@@ -226,12 +218,8 @@ export const Stacked: StoryFn<CubeResultProps> = () => (
       subtitle="$800.00 paid, $434.00 still due. Your card was declined."
       actions={
         <>
-          <Button type="primary" size="large">
-            Update card
-          </Button>
-          <Button type="outline-2" size="large">
-            Close
-          </Button>
+          <Button type="primary">Update card</Button>
+          <Button type="outline-2">Close</Button>
         </>
       }
     />
@@ -243,12 +231,8 @@ export const Stacked: StoryFn<CubeResultProps> = () => (
       subtitle="Your card was declined. Nothing was charged."
       actions={
         <>
-          <Button type="primary" size="large">
-            Update card
-          </Button>
-          <Button type="outline-2" size="large">
-            Close
-          </Button>
+          <Button type="primary">Update card</Button>
+          <Button type="outline-2">Close</Button>
         </>
       }
     />
@@ -257,11 +241,7 @@ export const Stacked: StoryFn<CubeResultProps> = () => (
       layout="stacked"
       title="Payment status unknown"
       subtitle="We couldn't confirm whether the payment went through. Check your invoices in a few minutes before paying again."
-      actions={
-        <Button type="primary" size="large">
-          Close
-        </Button>
-      }
+      actions={<Button type="primary">Close</Button>}
     >
       <Alert>Refreshing the invoices in the background.</Alert>
     </Result>
@@ -292,11 +272,7 @@ export const InDialog: StoryFn<CubeResultProps> = () => {
               title="Payment complete"
               subtitle="Charged $1,234.00 to Visa **** 4242"
               actions={
-                <Button
-                  type="primary"
-                  size="large"
-                  onPress={() => setIsOpen(false)}
-                >
+                <Button type="primary" onPress={() => setIsOpen(false)}>
                   Done
                 </Button>
               }

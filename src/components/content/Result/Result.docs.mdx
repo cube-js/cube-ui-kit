@@ -98,7 +98,7 @@ The root element exposes these modifiers as `data-*` attributes:
 The size scales the content and never changes the arrangement. `isCompact` has its own scale and ignores it.
 
 - `medium` - Default. Icon `6x`, title `h4`, subtitle `t2m`
-- `large` - Icon `10x`, title `h2`, subtitle `t2`. Pass `size="large"` to the buttons to match
+- `large` - Icon `10x`, title `h2`, subtitle `t2`
 
 ### Layouts
 
@@ -174,10 +174,10 @@ The `large` size scales the icon and the text. The actions stay in a centered ro
   subtitle="Charged $1,234.00 to Visa **** 4242"
   actions={
     <>
-      <Button type="primary" size="large">
+      <Button type="primary">
         Done
       </Button>
-      <Button type="outline-2" size="large">
+      <Button type="outline-2">
         View invoice
       </Button>
     </>
@@ -199,7 +199,7 @@ The `stacked` layout fills the container and stacks the actions to the full widt
   title="Payment complete"
   subtitle="Charged $1,234.00 to Visa **** 4242"
   actions={
-    <Button type="primary" size="large">
+    <Button type="primary">
       Done
     </Button>
   }
@@ -225,7 +225,7 @@ Inside a `Dialog` the stacked large Result is the whole body: no `Header` and no
         title="Payment complete"
         subtitle="Charged $1,234.00 to Visa **** 4242"
         actions={
-          <Button type="primary" size="large" onPress={close}>
+          <Button type="primary" onPress={close}>
             Done
           </Button>
         }
