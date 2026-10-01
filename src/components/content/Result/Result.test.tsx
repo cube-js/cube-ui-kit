@@ -1,5 +1,4 @@
 import { render, renderWithRoot, screen } from '../../../test';
-import { Button } from '../../actions/Button/Button';
 import { Dialog } from '../../overlays/Dialog/Dialog';
 import { DialogContainer } from '../../overlays/Dialog/DialogContainer';
 import { Content } from '../Content';
@@ -27,7 +26,10 @@ describe('<Result />', () => {
 
   it('renders actions after the free content', () => {
     render(
-      <Result title="Payment failed" actions={<Button>Update card</Button>}>
+      <Result
+        title="Payment failed"
+        actions={<Result.Action>Update card</Result.Action>}
+      >
         <p>Nothing was charged.</p>
       </Result>,
     );
@@ -88,6 +90,58 @@ describe('<Result />', () => {
     );
   });
 
+  it('sizes its actions after the Result unless the action sets a size or is a link', () => {
+    const { rerender } = render(
+      <Result title="Done" actions={<Result.Action>Close</Result.Action>} />,
+    );
+
+    expect(screen.getByRole('button', { name: 'Close' })).toHaveAttribute(
+      'data-size',
+      'medium',
+    );
+
+    rerender(
+      <Result
+        size="large"
+        title="Done"
+        actions={
+          <>
+            <Result.Action>Close</Result.Action>
+            <Result.Action size="small">Details</Result.Action>
+            <Result.Action type="link">Learn more</Result.Action>
+          </>
+        }
+      />,
+    );
+
+    expect(screen.getByRole('button', { name: 'Close' })).toHaveAttribute(
+      'data-size',
+      'large',
+    );
+    expect(screen.getByRole('button', { name: 'Details' })).toHaveAttribute(
+      'data-size',
+      'small',
+    );
+    expect(screen.getByRole('button', { name: 'Learn more' })).toHaveAttribute(
+      'data-size',
+      'inline',
+    );
+
+    rerender(
+      <Result
+        isCompact
+        size="large"
+        title="Done"
+        actions={<Result.Action>Close</Result.Action>}
+      />,
+    );
+
+    expect(screen.getByRole('button', { name: 'Close' })).toHaveAttribute(
+      'data-size',
+      'medium',
+    );
+  });
+
   it('replaces the status icon with a custom one', () => {
     render(<Result title="Locked" icon={<span data-qa="CustomIcon" />} />);
 
@@ -105,7 +159,7 @@ describe('<Result />', () => {
               status="success"
               title="Payment complete"
               subtitle="Charged $1,234.00 to Visa"
-              actions={<Button type="primary">Done</Button>}
+              actions={<Result.Action type="primary">Done</Result.Action>}
             />
           </Content>
         </Dialog>

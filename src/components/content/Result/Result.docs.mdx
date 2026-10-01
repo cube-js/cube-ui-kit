@@ -33,10 +33,14 @@ An empty state or result display with icon, title, and optional content. Support
 - **`size`** `'medium' | 'large'` (default: `'medium'`) — Visual scale: the icon size and the title and subtitle presets. Does not change the layout. Ignored when `isCompact` is set
 - **`layout`** `'default' | 'stacked'` (default: `'default'`) — Arrangement of the block. `stacked` fills the container and stacks the actions to the full width, as in a confirmation or result dialog. Ignored when `isCompact` is set
 - **`isCompact`** `boolean` (default: `false`) — Compact horizontal layout. Overrides `size` and `layout`
-- **`actions`** `ReactNode` — Action buttons: a centered row by default, a full-width column in the `stacked` layout
+- **`actions`** `ReactNode` — Action buttons as `Result.Action` elements: a centered row by default, a full-width column in the `stacked` layout
 - **`children`** `ReactNode` — Free content between the text and the actions
 
 The elements render in this order: icon, title, subtitle, children, actions.
+
+### Result.Action
+
+A `Button` for the `actions` slot. It takes every `Button` prop, and its `size` follows the Result's `size` unless you set one: `medium` buttons in a medium Result, `large` in a large one, `medium` when `isCompact`. A `type="link"` action keeps the `inline` size of a link `Button`. Set `type` on each action as on any `Button`.
 
 ### Base Properties
 
@@ -50,7 +54,7 @@ Customizes the root element of the component.
 
 **Sub-elements:**
 
-- `Icon` - The status icon wrapper. Colored by the `status` modifier. Not rendered when a custom `icon` is passed
+- `Icon` - The status icon wrapper. Colored by the `status` modifier, padded by a quarter of `--icon-size` so the room around the icon grows with it (no padding when `isCompact`). Not rendered when a custom `icon` is passed
 - `Title` - The text block holding the title and the subtitle
 - `Content` - The free `children` block
 - `Actions` - The `actions` block
@@ -62,7 +66,7 @@ Customizes the root element of the component.
 - `placeContent` — `center` (switches to `start` when `isCompact`)
 - `placeItems` — `center` (switches to `start` when `isCompact`)
 - `gap` — `3x` (switches to `2x 1x` when `isCompact`)
-- `padding` — `6x 4x` (`0` when `isCompact` or `layout="stacked"`: the host pads, e.g. a dialog `Content`)
+- `padding` — `6x 4x` (`0` when `isCompact`; `1.5x` when `layout="stacked"`, on top of the host's padding, e.g. a dialog `Content`)
 - `textAlign` — `center` (switches to `left` when `isCompact`)
 - `boxSizing` — `border-box`
 - `width` — `max 80ch` (caps the readable line length; override via the `width` prop). `100%` up to `80ch` when `layout="stacked"`, so the stacked actions share one width wherever the card sits
@@ -98,14 +102,14 @@ The root element exposes these modifiers as `data-*` attributes:
 The size scales the content and never changes the arrangement. `isCompact` has its own scale and ignores it.
 
 - `medium` - Default. Icon `6x`, title `h4`, subtitle `t2m`
-- `large` - Icon `10x`, title `h2`, subtitle `t2`
+- `large` - Icon `10x`, title `h2`, subtitle `t2`, `Result.Action` buttons `large`
 
 ### Layouts
 
 The layout arranges the block and never changes the scale. `isCompact` has its own arrangement and ignores it.
 
 - `default` - A centered column capped at `80ch`, actions in a centered row that wraps
-- `stacked` - Fills the container up to `80ch` with no padding of its own, actions stacked to the full width, free `children` stretched. Combine with `size="large"` for the vertical card of a confirmation or result dialog
+- `stacked` - Fills the container up to `80ch` with a `1.5x` padding of its own, actions stacked to the full width, free `children` stretched. Combine with `size="large"` for the vertical card of a confirmation or result dialog
 
 ## Examples
 
@@ -118,8 +122,8 @@ The layout arranges the block and never changes the scale. `isCompact` has its o
   subtitle="Cloud server configuration takes 1-5 minutes, please wait."
   actions={
     <>
-      <Button type="primary">Go Console</Button>
-      <Button type="outline-2">Buy Again</Button>
+      <Result.Action type="primary">Go Console</Result.Action>
+      <Result.Action type="outline-2">Buy Again</Result.Action>
     </>
   }
 />
@@ -148,7 +152,7 @@ The layout arranges the block and never changes the scale. `isCompact` has its o
       <IconLock />
     </Icon>
   }
-  actions={<Button>Request</Button>}
+  actions={<Result.Action>Request</Result.Action>}
 />
 ```
 
@@ -174,12 +178,12 @@ The `large` size scales the icon and the text. The actions stay in a centered ro
   subtitle="Charged $1,234.00 to Visa **** 4242"
   actions={
     <>
-      <Button type="primary">
+      <Result.Action type="primary">
         Done
-      </Button>
-      <Button type="outline-2">
+      </Result.Action>
+      <Result.Action>
         View invoice
-      </Button>
+      </Result.Action>
     </>
   }
 />
@@ -199,9 +203,9 @@ The `stacked` layout fills the container and stacks the actions to the full widt
   title="Payment complete"
   subtitle="Charged $1,234.00 to Visa **** 4242"
   actions={
-    <Button type="primary">
+    <Result.Action type="primary">
       Done
-    </Button>
+    </Result.Action>
   }
 />
 ```
@@ -225,9 +229,9 @@ Inside a `Dialog` the stacked large Result is the whole body: no `Header` and no
         title="Payment complete"
         subtitle="Charged $1,234.00 to Visa **** 4242"
         actions={
-          <Button type="primary" onPress={close}>
+          <Result.Action type="primary" onPress={close}>
             Done
-          </Button>
+          </Result.Action>
         }
       />
     </Content>
@@ -249,7 +253,7 @@ The default `width: max 80ch` keeps long copy in a comfortable reading column ev
 
 ### Keyboard Navigation
 
-- The component itself is not focusable; the buttons passed through `actions` keep their own keyboard behavior
+- The component itself is not focusable; the `Result.Action` buttons keep the keyboard behavior of `Button`
 
 ### Screen Reader Support
 
@@ -258,10 +262,10 @@ The default `width: max 80ch` keeps long copy in a comfortable reading column ev
 
 ## Best Practices
 
-1. **Do**: Put the buttons in `actions` and keep `children` for content
+1. **Do**: Put `Result.Action` buttons in `actions` and keep `children` for content
 
    ```jsx
-   <Result title="Payment failed" actions={<Button>Update card</Button>}>
+   <Result title="Payment failed" actions={<Result.Action>Update card</Result.Action>}>
      <Alert>Nothing was charged.</Alert>
    </Result>
    ```

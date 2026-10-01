@@ -36,7 +36,7 @@ export default {
     actions: {
       control: { type: null },
       description:
-        'Action buttons: a centered row by default, a full-width column in the `stacked` layout',
+        'Action buttons as `Result.Action` elements: a centered row by default, a full-width column in the `stacked` layout',
     },
     children: {
       control: { type: null },
@@ -101,8 +101,8 @@ Success.args = {
     'Order number: 2017182818828182881 Cloud server configuration takes 1-5 minutes, please wait.',
   actions: (
     <>
-      <Button type="primary">Go Console</Button>
-      <Button type="outline-2">Buy Again</Button>
+      <Result.Action type="primary">Go Console</Result.Action>
+      <Result.Action type="outline-2">Buy Again</Result.Action>
     </>
   ),
 };
@@ -111,14 +111,14 @@ export const Info = Template.bind({});
 Info.args = {
   status: 'info',
   title: 'Your operation has been executed',
-  actions: <Button type="primary">Go Console</Button>,
+  actions: <Result.Action type="primary">Go Console</Result.Action>,
 };
 
 export const Warning = Template.bind({});
 Warning.args = {
   status: 'warning',
   title: 'There are some problems with your operation',
-  actions: <Button type="primary">Go Console</Button>,
+  actions: <Result.Action type="primary">Go Console</Result.Action>,
 };
 
 export const Error = Template.bind({});
@@ -129,8 +129,8 @@ Error.args = {
     'Please check and modify the following information before resubmitting.',
   actions: (
     <>
-      <Button type="primary">Go Console</Button>
-      <Button type="outline-2">Buy Again</Button>
+      <Result.Action type="primary">Go Console</Result.Action>
+      <Result.Action type="outline-2">Buy Again</Result.Action>
     </>
   ),
 };
@@ -144,7 +144,7 @@ CustomIcon.args = {
       <IconLock />
     </Icon>
   ),
-  actions: <Button>Request</Button>,
+  actions: <Result.Action>Request</Result.Action>,
 };
 
 export const CustomTitle = Template.bind({});
@@ -160,7 +160,7 @@ CustomTitle.args = {
     </Text.Highlight>
   ),
   icon: <IconBulb />,
-  actions: <Button type="primary">Complete Now</Button>,
+  actions: <Result.Action type="primary">Complete Now</Result.Action>,
 };
 
 export const Compact = Template.bind({});
@@ -172,8 +172,8 @@ Compact.args = {
     'Order number: 2017182818828182881 Cloud server configuration takes 1-5 minutes, please wait.',
   actions: (
     <>
-      <Button type="primary">Go Console</Button>
-      <Button type="outline-2">Buy Again</Button>
+      <Result.Action type="primary">Go Console</Result.Action>
+      <Result.Action type="outline-2">Buy Again</Result.Action>
     </>
   ),
 };
@@ -186,8 +186,8 @@ Large.args = {
   subtitle: 'Charged $1,234.00 to Visa **** 4242',
   actions: (
     <>
-      <Button type="primary">Done</Button>
-      <Button type="outline-2">View invoice</Button>
+      <Result.Action type="primary">Done</Result.Action>
+      <Result.Action>View invoice</Result.Action>
     </>
   ),
 };
@@ -195,7 +195,7 @@ Large.parameters = {
   docs: {
     description: {
       story:
-        'The `large` size scales the icon, the title and the subtitle. The layout stays the same: the actions still sit in a centered row.',
+        'The `large` size scales the icon, the title and the subtitle. The layout stays the same: the actions still sit in a centered row. `Result.Action` buttons follow the size.',
     },
   },
 };
@@ -208,7 +208,7 @@ export const Stacked: StoryFn<CubeResultProps> = () => (
       status="success"
       title="Payment complete"
       subtitle="Charged $1,234.00 to Visa **** 4242"
-      actions={<Button type="primary">Done</Button>}
+      actions={<Result.Action type="primary">Done</Result.Action>}
     />
     <Result
       size="large"
@@ -218,8 +218,8 @@ export const Stacked: StoryFn<CubeResultProps> = () => (
       subtitle="$800.00 paid, $434.00 still due. Your card was declined."
       actions={
         <>
-          <Button type="primary">Update card</Button>
-          <Button type="outline-2">Close</Button>
+          <Result.Action type="primary">Update card</Result.Action>
+          <Result.Action>Close</Result.Action>
         </>
       }
     />
@@ -231,8 +231,8 @@ export const Stacked: StoryFn<CubeResultProps> = () => (
       subtitle="Your card was declined. Nothing was charged."
       actions={
         <>
-          <Button type="primary">Update card</Button>
-          <Button type="outline-2">Close</Button>
+          <Result.Action type="primary">Update card</Result.Action>
+          <Result.Action>Close</Result.Action>
         </>
       }
     />
@@ -241,7 +241,7 @@ export const Stacked: StoryFn<CubeResultProps> = () => (
       layout="stacked"
       title="Payment status unknown"
       subtitle="We couldn't confirm whether the payment went through. Check your invoices in a few minutes before paying again."
-      actions={<Button type="primary">Close</Button>}
+      actions={<Result.Action type="primary">Close</Result.Action>}
     >
       <Alert>Refreshing the invoices in the background.</Alert>
     </Result>
@@ -272,9 +272,9 @@ export const InDialog: StoryFn<CubeResultProps> = () => {
               title="Payment complete"
               subtitle="Charged $1,234.00 to Visa **** 4242"
               actions={
-                <Button type="primary" onPress={() => setIsOpen(false)}>
+                <Result.Action type="primary" onPress={() => setIsOpen(false)}>
                   Done
-                </Button>
+                </Result.Action>
               }
             />
           </Content>

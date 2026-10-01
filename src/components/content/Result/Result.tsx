@@ -1,3 +1,4 @@
+import { FocusableRef } from '@react-types/shared';
 import {
   IconAlertTriangleFilled,
   IconCircleCheckFilled,
@@ -11,10 +12,17 @@ import {
   filterBaseProps,
   tasty,
 } from '@tenphi/tasty';
-import { ComponentType, forwardRef, ReactNode } from 'react';
+import {
+  ComponentType,
+  createContext,
+  forwardRef,
+  ReactNode,
+  useContext,
+} from 'react';
 
 import { mergeProps, wrapNodeIfPlain } from '../../../utils/react';
 import { extractStyles } from '../../../utils/styles';
+import { Button, CubeButtonProps } from '../../actions/Button/Button';
 import { Title } from '../Title';
 
 export interface CubeResultProps extends BaseProps, ContainerStyleProps {
@@ -38,7 +46,10 @@ export interface CubeResultProps extends BaseProps, ContainerStyleProps {
   subtitle?: ReactNode;
   /** The title */
   title?: ReactNode;
-  /** Action buttons. A centered row by default, a full-width column in the `stacked` layout */
+  /**
+   * Action buttons, as `Result.Action` elements so they follow the Result's size.
+   * A centered row by default, a full-width column in the `stacked` layout
+   */
   actions?: ReactNode;
   /**
    * Visual scale: the icon size and the title and subtitle presets. Does not change the layout.
@@ -98,7 +109,8 @@ const Container = tasty({
       '': '6x 4x',
       // The host pads: a dialog `Content` or the page section the card fills
       compact: '0',
-      'layout=stacked': '0',
+      // Adds to the host's padding, e.g. a dialog `Content`
+      'layout=stacked': '1.5x',
     },
     textAlign: {
       '': 'center',
@@ -123,6 +135,11 @@ const Container = tasty({
       $: '>',
       display: 'grid',
       gridArea: 'icon',
+      // Room around the icon grows with it, so the large icon is not crowded
+      padding: {
+        '': '($icon-size / 4)',
+        compact: '0',
+      },
       color: {
         '': '#purple',
         'status=success': '#success',
@@ -175,6 +192,29 @@ const Container = tasty({
       },
     },
   },
+});
+
+const ResultSizeContext = createContext<CubeResultSize | undefined>(undefined);
+
+export type CubeResultActionProps = CubeButtonProps;
+
+/**
+ * A `Button` for the Result `actions` slot. Its size follows the Result's `size` unless set.
+ * A link keeps Button's own `inline` size
+ */
+const ResultAction = forwardRef(function ResultAction(
+  { size, ...props }: CubeResultActionProps,
+  ref: FocusableRef<HTMLElement>,
+) {
+  const resultSize = useContext(ResultSizeContext);
+
+  return (
+    <Button
+      ref={ref}
+      {...props}
+      size={size ?? (props.type === 'link' ? undefined : resultSize)}
+    />
+  );
 });
 
 const statusIconMap: StatusIconMap = {
@@ -263,13 +303,19 @@ function Result(props: CubeResultProps, ref) {
         </div>
       )}
       {children && <div data-element="Content">{children}</div>}
-      {actions && <div data-element="Actions">{actions}</div>}
+      {actions && (
+        <div data-element="Actions">
+          <ResultSizeContext.Provider value={size}>
+            {actions}
+          </ResultSizeContext.Provider>
+        </div>
+      )}
     </Container>
   );
 }
 
-const _Result = forwardRef(Result);
+const _Result = Object.assign(forwardRef(Result), { Action: ResultAction });
 
 _Result.displayName = 'Result';
 
-export { _Result as Result };
+export { _Result as Result, ResultAction };
