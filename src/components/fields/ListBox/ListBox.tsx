@@ -155,8 +155,10 @@ const ListBoxItem = tasty(Item, {
     display: 'grid',
     margin: {
       '': '$list-gap bottom',
-      // The last child. A drop indicator rendered after it doesn't count.
-      ':not(:has(~ :not([data-drop-indicator])))': '0',
+      // Mid-drag the last option is followed by a drop indicator, which takes
+      // the gap back (`ListBoxDropIndicatorElement`). Not `:has(~ …)`: see
+      // AGENTS.md → Styling.
+      ':last-child': '0',
       all: '.5x',
     },
     // Inside the option: options sit a hairline apart, so a ring outside one
@@ -185,6 +187,13 @@ const ListBoxDropIndicatorElement = tasty({
     position: 'relative',
     pointerEvents: 'none',
     height: 0,
+    // After the last option: cancels the `$list-gap` that option keeps while
+    // it is not the last child, so the list holds its height mid-drag. An
+    // `optionStyles` margin replaces that gap, and this then overshoots.
+    margin: {
+      '': 0,
+      ':last-child': '(-1 * $list-gap) top',
+    },
     opacity: {
       '': 0,
       'drop-target': 1,

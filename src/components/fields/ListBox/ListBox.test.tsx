@@ -1,3 +1,4 @@
+import { getCSSTextForNode } from '@tenphi/tasty';
 import { createRef } from 'react';
 
 import { Field, ListBox } from '../../../index';
@@ -876,5 +877,34 @@ describe('<ListBox />', () => {
         expect(screen.getByText('Out of season')).toBeInTheDocument();
       });
     });
+  });
+});
+
+/**
+ * A `:has()` that starts with `~` must stay out of ListBox's styles. jsdom
+ * before 27 (nwsapi) throws on it for any element without a parent, and its
+ * `getComputedStyle` walks up to `<html>`, so one such rule breaks every role
+ * query in a consumer still on that jsdom (AGENTS.md → Styling). This repo's
+ * jsdom can't reproduce the throw, so the test reads the rules instead.
+ */
+describe('ListBox styles', () => {
+  it('start no :has() with ~, which older jsdom throws on', () => {
+    const { container } = renderWithRoot(
+      <ListBox
+        isReorderable
+        aria-label="Colors"
+        listGap={4}
+        onReorder={() => {}}
+      >
+        <ListBox.Item key="red">Red</ListBox.Item>
+        <ListBox.Item key="green">Green</ListBox.Item>
+      </ListBox>,
+    );
+
+    const css = getCSSTextForNode(container);
+
+    // The option margin rule is there to be checked.
+    expect(css).toContain('var(--list-gap)');
+    expect(css).not.toMatch(/:has\(\s*~/);
   });
 });
