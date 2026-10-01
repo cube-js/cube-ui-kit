@@ -1,5 +1,19 @@
 # @cube-dev/ui-kit
 
+## 0.187.0
+
+### Minor Changes
+
+- [#1451](https://github.com/cube-js/cube-ui-kit/pull/1451) [`7bd42be9`](https://github.com/cube-js/cube-ui-kit/commit/7bd42be91356e9c27d29d80a0873852635b60ae8) Thanks [@tenphi](https://github.com/tenphi)! - `ListBox`: a disabled list is no longer a Tab stop. An option shows as focused only while the list has focus, and never while it is disabled, so its highlight or ring no longer stays behind once focus leaves. With `shouldUseVirtualFocus` the focused key alone marks it, as before. A component whose own input moves that key passes the new `isFocusWithin`, which then decides in either focus mode. `FilterListBox` does, so its options show as focused only while focus is within it. The option it focuses on open or after a search skips disabled options, and so do its arrow, Home and End keys. A focus ring is drawn inside the option, where a neighbouring option and the scroll box can't cover or clip it. A reorderable list keeps its height while an option is dragged past the last one.
+
+- [#1451](https://github.com/cube-js/cube-ui-kit/pull/1451) [`7bd42be9`](https://github.com/cube-js/cube-ui-kit/commit/7bd42be91356e9c27d29d80a0873852635b60ae8) Thanks [@tenphi](https://github.com/tenphi)! - `ListBox` takes `listGap`, the space between options in pixels. It defaults to the hairline options had before, and spaces flat (virtualized), sectioned and reorderable lists alike: a flat list positions its options itself, so it ignored a margin set through `optionStyles`. `FilterListBox`, `Picker`, `FilterPicker`, `ComboBox`, `SearchComboBox`, `TagInput`, `CommandTextArea` and `Select` pass it to their list; in a sectioned `Select` it spaces the options within each section, while sections, dividers and loose options between them keep their spacing. A reorderable list's drop indicator sits in the middle of the gap. The `.5x` a ListBox keeps below its last option is now the list's bottom padding, so `listStyles={{ padding: 0 }}` removes it, and a `height` set through `listStyles` no longer includes it.
+
+### Patch Changes
+
+- [#1452](https://github.com/cube-js/cube-ui-kit/pull/1452) [`fa658a00`](https://github.com/cube-js/cube-ui-kit/commit/fa658a0097e841b29f84bc02a7a5b753e525f383) Thanks [@tenphi](https://github.com/tenphi)! - Close the ComboBox popover when focus leaves the input and popover, including when pressing Shift+Tab to the previous control.
+
+- [#1452](https://github.com/cube-js/cube-ui-kit/pull/1452) [`fa658a00`](https://github.com/cube-js/cube-ui-kit/commit/fa658a0097e841b29f84bc02a7a5b753e525f383) Thanks [@tenphi](https://github.com/tenphi)! - Make loose options in sectioned ListBox lists full-width and vertically stacked, including lists used by FilterListBox, Picker and FilterPicker.
+
 ## 0.186.2
 
 ### Patch Changes
