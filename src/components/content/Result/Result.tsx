@@ -38,20 +38,28 @@ export interface CubeResultProps extends BaseProps, ContainerStyleProps {
   subtitle?: ReactNode;
   /** The title */
   title?: ReactNode;
-  /** A prominent value shown between the title and the subtitle, e.g. an amount with currency */
-  value?: ReactNode;
-  /** Action buttons. A centered row by default, a stacked full-width column in the `large` size */
+  /** Action buttons. A centered row by default, a full-width column in the `stacked` layout */
   actions?: ReactNode;
   /**
-   * Visual scale. `large` is the dialog card: bigger icon and title, stacked full-width actions
+   * Visual scale: the icon size and the title and subtitle presets. Does not change the layout.
+   * Ignored when `isCompact` is set
    * @default 'medium'
    */
   size?: CubeResultSize;
-  /** Whether the result component has a compact presentation */
+  /**
+   * Arrangement of the block. `stacked` fills the container and stacks the actions to the full width,
+   * as in a confirmation or result dialog. Combine with `size="large"` for the dialog card.
+   * Ignored when `isCompact` is set
+   * @default 'default'
+   */
+  layout?: CubeResultLayout;
+  /** Whether the result component has a compact presentation. Overrides `size` and `layout` */
   isCompact?: boolean;
 }
 
 export type CubeResultSize = 'medium' | 'large';
+
+export type CubeResultLayout = 'default' | 'stacked';
 
 export type CubeResultStatus =
   | 'success'
@@ -88,8 +96,9 @@ const Container = tasty({
     },
     padding: {
       '': '6x 4x',
+      // The host pads: a dialog `Content` or the page section the card fills
       compact: '0',
-      'size=large': '3x 1x',
+      'layout=stacked': '0',
     },
     textAlign: {
       '': 'center',
@@ -99,7 +108,7 @@ const Container = tasty({
     width: {
       '': 'max 80ch',
       // Fill the container so stacked actions share one width wherever the card sits
-      'size=large': '0 100% 80ch',
+      'layout=stacked': '0 100% 80ch',
     },
     margin: {
       '': '0 auto',
@@ -115,10 +124,10 @@ const Container = tasty({
       display: 'grid',
       gridArea: 'icon',
       color: {
-        '': '#purple-icon',
-        'status=success': '#success-icon',
-        'status=error': '#danger-icon',
-        'status=warning': '#warning-icon',
+        '': '#purple',
+        'status=success': '#success',
+        'status=error': '#danger',
+        'status=warning': '#warning',
       },
     },
 
@@ -133,23 +142,13 @@ const Container = tasty({
       textWrap: 'balance',
     },
 
-    Value: {
-      color: '#dark',
-      preset: {
-        '': 'h3',
-        compact: 'h4',
-        'size=large': 'h2',
-      },
-      fontVariantNumeric: 'tabular-nums',
-    },
-
     Content: {
       $: '>',
       gridArea: 'content',
       display: 'block',
       placeSelf: {
         '': 'auto',
-        'size=large': 'stretch',
+        'layout=stacked': 'stretch',
       },
     },
 
@@ -159,7 +158,7 @@ const Container = tasty({
       display: 'flex',
       flow: {
         '': 'row wrap',
-        'size=large': 'column',
+        'layout=stacked': 'column',
       },
       gap: '1x',
       placeContent: {
@@ -168,11 +167,11 @@ const Container = tasty({
       },
       placeItems: {
         '': 'center',
-        'size=large': 'stretch',
+        'layout=stacked': 'stretch',
       },
       placeSelf: {
         '': 'auto',
-        'size=large': 'stretch',
+        'layout=stacked': 'stretch',
       },
     },
   },
@@ -198,9 +197,9 @@ function Result(props: CubeResultProps, ref) {
     subTitle,
     subtitle,
     title,
-    value,
     actions,
     size = 'medium',
+    layout = 'default',
     ...otherProps
   } = props;
 
@@ -210,6 +209,13 @@ function Result(props: CubeResultProps, ref) {
     console.warn(
       'Don\'t use "icon" and "status" together, it can lead to possible errors.',
     );
+  }
+
+  // The compact grid has its own scale and arrangement; `size` and `layout`
+  // describe the centered column only, so they are dropped rather than mixed in
+  if (isCompact) {
+    size = 'medium';
+    layout = 'default';
   }
 
   const isLarge = size === 'large';
@@ -230,20 +236,19 @@ function Result(props: CubeResultProps, ref) {
   return (
     <Container
       {...mergeProps(filterBaseProps(otherProps, { eventProps: true }), {
-        mods: { compact: isCompact, size, status: status ?? 'info' },
+        mods: { compact: isCompact, size, layout, status: status ?? 'info' },
       })}
       ref={ref}
       styles={styles}
     >
       {iconNode}
-      {(title || value != null || subtitle) && (
+      {(title || subtitle) && (
         <div data-element="Title">
           {wrapNodeIfPlain(title, () => (
             <Title level={2} preset={isCompact ? 'h5' : isLarge ? 'h2' : 'h4'}>
               {title}
             </Title>
           ))}
-          {value != null && <div data-element="Value">{value}</div>}
           {wrapNodeIfPlain(subtitle, () => (
             <Title
               // A name no provider defines: the dialog `title` slot must reach
@@ -251,7 +256,6 @@ function Result(props: CubeResultProps, ref) {
               slot="subtitle"
               level={3}
               preset={isCompact ? 't3m' : isLarge ? 't2' : 't2m'}
-              color={isLarge ? '#dark-02' : undefined}
             >
               {subtitle}
             </Title>

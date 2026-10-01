@@ -7,7 +7,7 @@ import * as ResultStories from './Result.stories';
 
 # Result
 
-An empty state or result display with icon, title, and optional content. Supports status presets with built-in icons, a prominent value, and an actions slot. The `large` size turns it into the vertical card used as the body of a confirmation or result dialog.
+An empty state or result display with icon, title, and optional content. Supports status presets with built-in icons and an actions slot. The `large` size with the `stacked` layout is the vertical card used as the body of a confirmation or result dialog.
 
 ## When to Use
 
@@ -27,16 +27,16 @@ An empty state or result display with icon, title, and optional content. Support
 
 - **`status`** `'success' | 'error' | 'info' | 'warning' | 404 | 403 | 500` (default: `'info'`) — Predefined status with corresponding icon
 - **`title`** `ReactNode` — Main title text
-- **`value`** `ReactNode` — Prominent value between the title and the subtitle, e.g. an amount with currency
 - **`subtitle`** `ReactNode` — Secondary text below the title
 - **`subTitle`** `ReactNode` — Deprecated: use `subtitle` instead
 - **`icon`** `ReactNode` — Custom icon that replaces the status icon
-- **`size`** `'medium' | 'large'` (default: `'medium'`) — Visual scale. `large` is the dialog card: bigger icon and title, stacked full-width actions
-- **`isCompact`** `boolean` (default: `false`) — Compact horizontal layout
-- **`actions`** `ReactNode` — Action buttons: a centered row by default, a stacked full-width column in the `large` size
+- **`size`** `'medium' | 'large'` (default: `'medium'`) — Visual scale: the icon size and the title and subtitle presets. Does not change the layout. Ignored when `isCompact` is set
+- **`layout`** `'default' | 'stacked'` (default: `'default'`) — Arrangement of the block. `stacked` fills the container and stacks the actions to the full width, as in a confirmation or result dialog. Ignored when `isCompact` is set
+- **`isCompact`** `boolean` (default: `false`) — Compact horizontal layout. Overrides `size` and `layout`
+- **`actions`** `ReactNode` — Action buttons: a centered row by default, a full-width column in the `stacked` layout
 - **`children`** `ReactNode` — Free content between the text and the actions
 
-The elements render in this order: icon, title, value, subtitle, children, actions.
+The elements render in this order: icon, title, subtitle, children, actions.
 
 ### Base Properties
 
@@ -51,8 +51,7 @@ Customizes the root element of the component.
 **Sub-elements:**
 
 - `Icon` - The status icon wrapper. Colored by the `status` modifier. Not rendered when a custom `icon` is passed
-- `Title` - The text block holding the title, the value and the subtitle
-- `Value` - The prominent value. Uses tabular figures so amounts do not shift width
+- `Title` - The text block holding the title and the subtitle
 - `Content` - The free `children` block
 - `Actions` - The `actions` block
 
@@ -63,9 +62,10 @@ Customizes the root element of the component.
 - `placeContent` — `center` (switches to `start` when `isCompact`)
 - `placeItems` — `center` (switches to `start` when `isCompact`)
 - `gap` — `3x` (switches to `2x 1x` when `isCompact`)
-- `padding` — `6x 4x` (`0` when `isCompact`, `3x 1x` when `size="large"`)
+- `padding` — `6x 4x` (`0` when `isCompact` or `layout="stacked"`: the host pads, e.g. a dialog `Content`)
 - `textAlign` — `center` (switches to `left` when `isCompact`)
-- `width` — `max 80ch` (caps the readable line length; override via the `width` prop). `100%` up to `80ch` when `size="large"`, so the stacked actions share one width wherever the card sits
+- `boxSizing` — `border-box`
+- `width` — `max 80ch` (caps the readable line length; override via the `width` prop). `100%` up to `80ch` when `layout="stacked"`, so the stacked actions share one width wherever the card sits
 - `margin` — `0 auto` (centers Result horizontally within its parent; switches to `0` when `isCompact`)
 - `--icon-size` — `6x` (`10x` when `size="large"`)
 
@@ -87,13 +87,25 @@ The root element exposes these modifiers as `data-*` attributes:
 | Modifier | Type | Description |
 | --- | --- | --- |
 | `compact` | `boolean` | Set by `isCompact`: horizontal icon + title layout |
-| `size` | `'medium' \| 'large'` | Set by `size` |
+| `size` | `'medium' \| 'large'` | Set by `size`; `medium` when `isCompact` |
+| `layout` | `'default' \| 'stacked'` | Set by `layout`; `default` when `isCompact` |
 | `status` | `CubeResultStatus` | Set by `status`; drives the icon color |
 
-## Sizes
+## Variants
 
-- `medium` - Default. Icon `6x`, title `h4`, subtitle `t2m`, value `h3`, actions in a centered row
-- `large` - The dialog card. Icon `10x`, title `h2`, subtitle `t2` in `#dark-02`, value `h2`, actions stacked to the full width. Pass `size="large"` to the buttons to match
+### Sizes
+
+The size scales the content and never changes the arrangement. `isCompact` has its own scale and ignores it.
+
+- `medium` - Default. Icon `6x`, title `h4`, subtitle `t2m`
+- `large` - Icon `10x`, title `h2`, subtitle `t2`. Pass `size="large"` to the buttons to match
+
+### Layouts
+
+The layout arranges the block and never changes the scale. `isCompact` has its own arrangement and ignores it.
+
+- `default` - A centered column capped at `80ch`, actions in a centered row that wraps
+- `stacked` - Fills the container up to `80ch` with no padding of its own, actions stacked to the full width, free `children` stretched. Combine with `size="large"` for the vertical card of a confirmation or result dialog
 
 ## Examples
 
@@ -146,37 +158,46 @@ The root element exposes these modifiers as `data-*` attributes:
 
 <Canvas of={ResultStories.CustomTitle} />
 
-### With a Value
-
-The `value` slot sits between the title and the subtitle. The title says what happened, the value says how much, the subtitle explains the details.
-
-```jsx
-<Result
-  status="success"
-  title="Payment complete"
-  value="$1,234.00"
-  subtitle="Charged to Visa **** 4242"
-  actions={<Button type="primary">Done</Button>}
-/>
-```
-
-<Canvas of={ResultStories.WithValue} />
-
 ### Compact
 
 <Canvas of={ResultStories.Compact} />
 
 ### Large
 
-The `large` size is the vertical card for confirmation and result dialogs.
+The `large` size scales the icon and the text. The actions stay in a centered row.
 
 ```jsx
 <Result
   size="large"
   status="success"
   title="Payment complete"
-  value="$1,234.00"
-  subtitle="Charged to Visa **** 4242"
+  subtitle="Charged $1,234.00 to Visa **** 4242"
+  actions={
+    <>
+      <Button type="primary" size="large">
+        Done
+      </Button>
+      <Button type="outline-2" size="large">
+        View invoice
+      </Button>
+    </>
+  }
+/>
+```
+
+<Canvas of={ResultStories.Large} />
+
+### Stacked
+
+The `stacked` layout fills the container and stacks the actions to the full width. With `size="large"` it is the vertical card for confirmation and result dialogs.
+
+```jsx
+<Result
+  size="large"
+  layout="stacked"
+  status="success"
+  title="Payment complete"
+  subtitle="Charged $1,234.00 to Visa **** 4242"
   actions={
     <Button type="primary" size="large">
       Done
@@ -185,15 +206,13 @@ The `large` size is the vertical card for confirmation and result dialogs.
 />
 ```
 
-<Canvas of={ResultStories.Large} />
+Free `children` (an alert, details) stretch to the full width in this layout.
 
-Show a value only where money moved. A failed or unknown result leaves it out, so a large amount never reads as a charge that did not happen. Free `children` (an alert, details) stretch to the full width in this size.
-
-<Canvas of={ResultStories.LargeStatuses} />
+<Canvas of={ResultStories.Stacked} />
 
 ### In a Dialog
 
-Inside a `Dialog` the `large` Result is the whole body: no `Header` and no `Footer`. Its title takes the dialog `title` slot, so the dialog is labelled by it automatically.
+Inside a `Dialog` the stacked large Result is the whole body: no `Header` and no `Footer`. Its title takes the dialog `title` slot, so the dialog is labelled by it automatically.
 
 ```jsx
 <DialogContainer isOpen={isOpen} onDismiss={close}>
@@ -201,10 +220,10 @@ Inside a `Dialog` the `large` Result is the whole body: no `Header` and no `Foot
     <Content>
       <Result
         size="large"
+        layout="stacked"
         status="success"
         title="Payment complete"
-        value="$1,234.00"
-        subtitle="Charged to Visa **** 4242"
+        subtitle="Charged $1,234.00 to Visa **** 4242"
         actions={
           <Button type="primary" size="large" onPress={close}>
             Done
@@ -228,14 +247,14 @@ The default `width: max 80ch` keeps long copy in a comfortable reading column ev
 
 ## Accessibility
 
+### Keyboard Navigation
+
+- The component itself is not focusable; the buttons passed through `actions` keep their own keyboard behavior
+
 ### Screen Reader Support
 
 - The title renders as an `h2` heading and the subtitle as an `h3`, so the result is reachable through heading navigation
 - Inside a `Dialog` without a `Header`, the title takes the dialog's `title` slot and becomes its accessible name
-
-### Keyboard Navigation
-
-- The component itself is not focusable; the buttons passed through `actions` keep their own keyboard behavior
 
 ## Best Practices
 
@@ -247,7 +266,7 @@ The default `width: max 80ch` keeps long copy in a comfortable reading column ev
    </Result>
    ```
 
-2. **Don't**: Combine a `large` Result with a dialog `Header`. Both titles would take the dialog `title` slot and share one id
+2. **Don't**: Combine a Result with a dialog `Header`. Both titles would take the dialog `title` slot and share one id
 
    ```jsx
    <Dialog>
@@ -255,16 +274,14 @@ The default `width: max 80ch` keeps long copy in a comfortable reading column ev
        <Title>Payment</Title>
      </Header>
      <Content>
-       <Result size="large" title="Payment complete" />
+       <Result size="large" layout="stacked" title="Payment complete" />
      </Content>
    </Dialog>
    ```
 
-3. **Value**: Show it only where the number is the outcome. Leave it out of a failed or uncertain result
-
 ## Related Components
 
-- [Dialog](/docs/overlays-dialog--docs) - Host for the `large` Result card
+- [Dialog](/docs/overlays-dialog--docs) - Host for the stacked large Result card
 - [AlertDialog](/docs/overlays-alertdialog--docs) - Confirmation with a header and footer instead of a result card
 - [Alert](/docs/content-alert--docs) - Inline status message for the `children` slot
 

@@ -2,4 +2,4 @@
 "@cube-dev/ui-kit": minor
 ---
 
-`Result` gains a vertical card layout for confirmation and result dialogs: a `size="large"` scale with a bigger icon and title and stacked full-width actions, a `value` slot for a prominent amount between the title and the subtitle, and an `actions` slot for the buttons. Status icons now use the adaptive `*-icon` color tokens.
+`Result` gains what a confirmation or result dialog needs: an `actions` slot for the buttons, a `size="large"` scale with a bigger icon and text, and a `layout="stacked"` arrangement that fills the container and stacks the actions to the full width. Size and layout are independent, so a large result can keep its centered row of actions and a medium one can stack them. `isCompact` keeps its own scale and arrangement and ignores both.

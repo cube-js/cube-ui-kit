@@ -4,9 +4,9 @@ import { expect, userEvent, within } from 'storybook/test';
 
 import { Icon } from '../../../icons/Icon';
 import { Button } from '../../actions/Button';
-import { Dialog } from '../../overlays/Dialog';
+import { Dialog } from '../../overlays/Dialog/Dialog';
 import { DialogContainer } from '../../overlays/Dialog/DialogContainer';
-import { Alert } from '../Alert';
+import { Alert } from '../Alert/Alert';
 import { Content } from '../Content';
 import { Layout } from '../Layout';
 import { Text } from '../Text';
@@ -25,11 +25,6 @@ export default {
       control: 'text',
       description: 'Main title text',
     },
-    value: {
-      control: 'text',
-      description:
-        'Prominent value between the title and the subtitle, e.g. an amount with currency',
-    },
     subtitle: {
       control: 'text',
       description: 'Secondary text below the title',
@@ -41,7 +36,7 @@ export default {
     actions: {
       control: { type: null },
       description:
-        'Action buttons: a centered row by default, a stacked full-width column in the `large` size',
+        'Action buttons: a centered row by default, a full-width column in the `stacked` layout',
     },
     children: {
       control: { type: null },
@@ -70,9 +65,18 @@ export default {
       control: 'radio',
       options: ['medium', 'large'],
       description:
-        'Visual scale. `large` is the dialog card: bigger icon and title, stacked full-width actions',
+        'Visual scale: the icon size and the title and subtitle presets. Does not change the layout',
       table: {
         defaultValue: { summary: 'medium' },
+      },
+    },
+    layout: {
+      control: 'radio',
+      options: ['default', 'stacked'],
+      description:
+        'Arrangement of the block. `stacked` fills the container and stacks the actions to the full width, as in a confirmation or result dialog',
+      table: {
+        defaultValue: { summary: 'default' },
       },
     },
     isCompact: {
@@ -159,23 +163,6 @@ CustomTitle.args = {
   actions: <Button type="primary">Complete Now</Button>,
 };
 
-export const WithValue = Template.bind({});
-WithValue.args = {
-  status: 'success',
-  title: 'Payment complete',
-  value: '$1,234.00',
-  subtitle: 'Charged to Visa **** 4242',
-  actions: <Button type="primary">Done</Button>,
-};
-WithValue.parameters = {
-  docs: {
-    description: {
-      story:
-        'The `value` slot sits between the title and the subtitle: the title says what happened, the value says how much, the subtitle explains the details.',
-    },
-  },
-};
-
 export const Compact = Template.bind({});
 Compact.args = {
   isCompact: true,
@@ -196,32 +183,35 @@ Large.args = {
   size: 'large',
   status: 'success',
   title: 'Payment complete',
-  value: '$1,234.00',
-  subtitle: 'Charged to Visa **** 4242',
+  subtitle: 'Charged $1,234.00 to Visa **** 4242',
   actions: (
-    <Button type="primary" size="large">
-      Done
-    </Button>
+    <>
+      <Button type="primary" size="large">
+        Done
+      </Button>
+      <Button type="outline-2" size="large">
+        View invoice
+      </Button>
+    </>
   ),
-  width: 'max 360px',
 };
 Large.parameters = {
   docs: {
     description: {
       story:
-        'The `large` size is the vertical card for confirmation and result dialogs: a bigger icon and title, and the actions stacked to the full width. Pass `size="large"` to the buttons to match.',
+        'The `large` size scales the icon, the title and the subtitle. The layout stays the same: the actions still sit in a centered row. Pass `size="large"` to the buttons to match.',
     },
   },
 };
 
-export const LargeStatuses: StoryFn<CubeResultProps> = () => (
+export const Stacked: StoryFn<CubeResultProps> = () => (
   <Layout.Grid columns="repeat(auto-fill, minmax(320px, 1fr))" gap="4x">
     <Result
       size="large"
+      layout="stacked"
       status="success"
       title="Payment complete"
-      value="$1,234.00"
-      subtitle="Charged to Visa **** 4242"
+      subtitle="Charged $1,234.00 to Visa **** 4242"
       actions={
         <Button type="primary" size="large">
           Done
@@ -230,10 +220,10 @@ export const LargeStatuses: StoryFn<CubeResultProps> = () => (
     />
     <Result
       size="large"
+      layout="stacked"
       status="warning"
       title="Some invoices were paid"
-      value="$800.00"
-      subtitle="$434.00 still due. Your card was declined."
+      subtitle="$800.00 paid, $434.00 still due. Your card was declined."
       actions={
         <>
           <Button type="primary" size="large">
@@ -247,6 +237,7 @@ export const LargeStatuses: StoryFn<CubeResultProps> = () => (
     />
     <Result
       size="large"
+      layout="stacked"
       status="error"
       title="Payment failed"
       subtitle="Your card was declined. Nothing was charged."
@@ -263,6 +254,7 @@ export const LargeStatuses: StoryFn<CubeResultProps> = () => (
     />
     <Result
       size="large"
+      layout="stacked"
       title="Payment status unknown"
       subtitle="We couldn't confirm whether the payment went through. Check your invoices in a few minutes before paying again."
       actions={
@@ -275,11 +267,11 @@ export const LargeStatuses: StoryFn<CubeResultProps> = () => (
     </Result>
   </Layout.Grid>
 );
-LargeStatuses.parameters = {
+Stacked.parameters = {
   docs: {
     description: {
       story:
-        'A value is shown only where money moved. A failed or unknown payment leaves it out, so a large amount never reads as a charge that did not happen. Free `children` stretch to the full width in the `large` size.',
+        'The `stacked` layout fills the container and stacks the actions to the full width; with `size="large"` it is the vertical card of a confirmation or result dialog. Free `children` stretch to the full width too.',
     },
   },
 };
@@ -295,10 +287,10 @@ export const InDialog: StoryFn<CubeResultProps> = () => {
           <Content>
             <Result
               size="large"
+              layout="stacked"
               status="success"
               title="Payment complete"
-              value="$1,234.00"
-              subtitle="Charged to Visa **** 4242"
+              subtitle="Charged $1,234.00 to Visa **** 4242"
               actions={
                 <Button
                   type="primary"
@@ -328,7 +320,7 @@ InDialog.parameters = {
   docs: {
     description: {
       story:
-        'Inside a `Dialog` the `large` Result is the whole body: no `Header` and no `Footer`. Its title takes the dialog `title` slot, so the dialog is labelled by it. Keep the `Header` out, otherwise both titles get the same id.',
+        'Inside a `Dialog` the stacked large Result is the whole body: no `Header` and no `Footer`. Its title takes the dialog `title` slot, so the dialog is labelled by it. Keep the `Header` out, otherwise both titles get the same id.',
     },
   },
 };

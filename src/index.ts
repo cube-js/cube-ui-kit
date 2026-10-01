@@ -159,6 +159,7 @@ export { Footer } from './components/content/Footer';
 export type { CubeFooterProps } from './components/content/Footer';
 export { Result } from './components/content/Result/Result';
 export type {
+  CubeResultLayout,
   CubeResultProps,
   CubeResultSize,
   CubeResultStatus,

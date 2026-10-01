@@ -1,6 +1,6 @@
 import { render, renderWithRoot, screen } from '../../../test';
-import { Button } from '../../actions/Button';
-import { Dialog } from '../../overlays/Dialog';
+import { Button } from '../../actions/Button/Button';
+import { Dialog } from '../../overlays/Dialog/Dialog';
 import { DialogContainer } from '../../overlays/Dialog/DialogContainer';
 import { Content } from '../Content';
 
@@ -25,29 +25,6 @@ describe('<Result />', () => {
     ).toBeInTheDocument();
   });
 
-  it('renders the value between the title and the subtitle', () => {
-    render(
-      <Result
-        title="Payment complete"
-        value="$1,234.00"
-        subtitle="Charged to Visa"
-      />,
-    );
-
-    const title = screen.getByText('Payment complete');
-    const value = screen.getByText('$1,234.00');
-    const subtitle = screen.getByText('Charged to Visa');
-
-    expect(precedes(title, value)).toBe(true);
-    expect(precedes(value, subtitle)).toBe(true);
-  });
-
-  it('renders the value without a title or subtitle', () => {
-    render(<Result value="$1,234.00" />);
-
-    expect(screen.getByText('$1,234.00')).toBeInTheDocument();
-  });
-
   it('renders actions after the free content', () => {
     render(
       <Result title="Payment failed" actions={<Button>Update card</Button>}>
@@ -61,18 +38,53 @@ describe('<Result />', () => {
     expect(precedes(content, action)).toBe(true);
   });
 
-  it('exposes the size and status as modifiers', () => {
+  it('exposes the size, layout and status as modifiers', () => {
     const { rerender } = render(<Result qa="Result" title="Done" />);
 
     expect(screen.getByTestId('Result')).toHaveAttribute('data-size', 'medium');
+    expect(screen.getByTestId('Result')).toHaveAttribute(
+      'data-layout',
+      'default',
+    );
     expect(screen.getByTestId('Result')).toHaveAttribute('data-status', 'info');
 
-    rerender(<Result qa="Result" size="large" status="success" title="Done" />);
+    rerender(
+      <Result
+        qa="Result"
+        size="large"
+        layout="stacked"
+        status="success"
+        title="Done"
+      />,
+    );
 
     expect(screen.getByTestId('Result')).toHaveAttribute('data-size', 'large');
     expect(screen.getByTestId('Result')).toHaveAttribute(
+      'data-layout',
+      'stacked',
+    );
+    expect(screen.getByTestId('Result')).toHaveAttribute(
       'data-status',
       'success',
+    );
+  });
+
+  it('drops size and layout in the compact presentation', () => {
+    render(
+      <Result
+        isCompact
+        qa="Result"
+        size="large"
+        layout="stacked"
+        title="Done"
+      />,
+    );
+
+    expect(screen.getByTestId('Result')).toHaveAttribute('data-compact');
+    expect(screen.getByTestId('Result')).toHaveAttribute('data-size', 'medium');
+    expect(screen.getByTestId('Result')).toHaveAttribute(
+      'data-layout',
+      'default',
     );
   });
 
@@ -89,10 +101,10 @@ describe('<Result />', () => {
           <Content>
             <Result
               size="large"
+              layout="stacked"
               status="success"
               title="Payment complete"
-              value="$1,234.00"
-              subtitle="Charged to Visa"
+              subtitle="Charged $1,234.00 to Visa"
               actions={<Button type="primary">Done</Button>}
             />
           </Content>
