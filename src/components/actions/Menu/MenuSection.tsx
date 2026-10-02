@@ -1,4 +1,5 @@
 import { Styles } from '@tenphi/tasty';
+import { cloneElement } from 'react';
 import { useMenuSection } from 'react-aria';
 
 import { MenuItem, MenuItemProps } from './MenuItem';
@@ -45,12 +46,16 @@ export function MenuSection<T>(props: CubeMenuSectionProps<T>) {
             );
 
             // `MenuItem` renders the item's `tooltip` itself, as `Menu` does
-            // for items outside a section.
-            if (node.props.wrapper) {
+            // for items outside a section. A `SubMenuTrigger` puts its
+            // wrapper on the collection node rather than in the item's props.
+            if (node.props?.wrapper) {
               menuItem = node.props.wrapper(menuItem);
+            } else if ((node as any).wrapper) {
+              menuItem = (node as any).wrapper(menuItem);
             }
 
-            return menuItem;
+            // The wrapper's element doesn't carry the item's key.
+            return cloneElement(menuItem, { key: node.key });
           })}
         </StyledMenu>
       </StyledSection>

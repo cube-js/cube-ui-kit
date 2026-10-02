@@ -1587,9 +1587,22 @@ function TagInput<T extends object>(
     } as never,
     inputRef,
   );
-  // Names the chips and the trigger after the field: "Selected values, Also
-  // send to", rather than the same words for every field on the page.
+  // Names the chips, the buttons and the options after the field: "Selected
+  // values Also send to", rather than the same words for every field on the
+  // page. The ids go in the order the input reads them: the visible label,
+  // then `aria-labelledby`.
+  const ariaLabel = (props as { 'aria-label'?: string })['aria-label'];
+  const ariaLabelledby = (props as { 'aria-labelledby'?: string })[
+    'aria-labelledby'
+  ];
   const labelId = label ? (labelProps.id as string | undefined) : undefined;
+  const fieldLabelledby =
+    [labelId, ariaLabelledby].filter(Boolean).join(' ') || undefined;
+  // An `aria-label` has no element to point at, so its words are joined into
+  // each part's own name instead, ahead of the ids. That is the input's order
+  // too: given `aria-label` with a `label` or `aria-labelledby`, React Aria
+  // puts the input's own id first in its `aria-labelledby`, so it reads
+  // "Values Primary key" and the chips "Selected values, Values Primary key".
 
   // Joined, not replaced: the input keeps any description it already has.
   const describedBy: string[] = [];
@@ -1651,8 +1664,16 @@ function TagInput<T extends object>(
         tabIndex={-1}
         aria-expanded={shouldShowPopover}
         aria-haspopup="listbox"
-        aria-label={t('tagInput.showOptions', 'Show options')}
-        aria-labelledby={labelId ? `${triggerId} ${labelId}` : undefined}
+        aria-label={
+          ariaLabel
+            ? t('tagInput.showOptionsFor', 'Show options, {{label}}', {
+                label: ariaLabel,
+              })
+            : t('tagInput.showOptions', 'Show options')
+        }
+        aria-labelledby={
+          fieldLabelledby ? `${triggerId} ${fieldLabelledby}` : undefined
+        }
         onPress={handleTriggerPress}
       />
     ) : null;
@@ -1678,8 +1699,16 @@ function TagInput<T extends object>(
       // Escape does the same from the keyboard. As a Tab stop it would take
       // focus just as tabbing away commits the text and removes it.
       tabIndex={-1}
-      aria-label={t('tagInput.clearText', 'Clear text')}
-      aria-labelledby={labelId ? `${clearId} ${labelId}` : undefined}
+      aria-label={
+        ariaLabel
+          ? t('tagInput.clearTextFor', 'Clear text, {{label}}', {
+              label: ariaLabel,
+            })
+          : t('tagInput.clearText', 'Clear text')
+      }
+      aria-labelledby={
+        fieldLabelledby ? `${clearId} ${fieldLabelledby}` : undefined
+      }
       onPress={clearText}
     />
   ) : null;
@@ -1729,8 +1758,14 @@ function TagInput<T extends object>(
           id={tagListId}
           listRef={tagListRef}
           inputRef={inputRef}
-          aria-label={t('tagInput.selectedValues', 'Selected values')}
-          aria-labelledby={labelId}
+          aria-label={
+            ariaLabel
+              ? t('tagInput.selectedValuesFor', 'Selected values, {{label}}', {
+                  label: ariaLabel,
+                })
+              : t('tagInput.selectedValues', 'Selected values')
+          }
+          aria-labelledby={fieldLabelledby}
           tags={tags}
           size={TAG_SIZES[size] ?? 'xsmall'}
           isDisabled={isDisabled}
@@ -1790,8 +1825,10 @@ function TagInput<T extends object>(
           isDisabled={isDisabled}
           disabledKeys={optionDisabledKeys}
           listStateRef={listStateRef}
-          label={label}
-          ariaLabel={(props as { 'aria-label'?: string })['aria-label']}
+          // The ids the input reads, the visible label's among them, so the
+          // list reads as the input does, a label that is not a string too.
+          ariaLabel={ariaLabel}
+          ariaLabelledby={fieldLabelledby}
           compositeFocusProps={compositeFocusProps}
           filter={optionFilterFn}
           size={size}

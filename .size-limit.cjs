@@ -311,7 +311,14 @@ module.exports = [
     // the gap the options and the virtualizer share, `focused` that follows
     // the list's focus (and FilterListBox's), and the disabled list's Tab stop.
     // Button is unchanged at 132,467 B. Leaves 693 B headroom.
-    limit: '613kB',
+    //
+    // Ticket sweep (#1459): CI run 37006148310 measured 598.98 KiB, about
+    // 613,355 B, +0.18% (~1.1 kB) on main at 35bd33a. TagInput's composed
+    // part names and their three strings in each of the twelve locales, the
+    // column `cellStyles` wrapper through tasty, the Tabs strip observer, and
+    // the `label` deprecation warnings. Button moved +0.1% to 129.48 KiB
+    // (about 132,588 B), inside its budget. Allow 614 kB, about 645 B headroom.
+    limit: '614kB',
   },
   {
     name: 'Tree shaking (just a Button)',

@@ -697,4 +697,46 @@ describe('<SearchComboBox />', () => {
     });
     expect(onSelect).not.toHaveBeenCalled();
   });
+
+  it('skips the built-in Enter when onKeyDown prevents it', async () => {
+    let preventEnter = true;
+    const onSelect = vi.fn();
+    const onKeyDown = vi.fn((e: React.KeyboardEvent) => {
+      if (e.key === 'Enter' && preventEnter) e.preventDefault();
+    });
+
+    const { getByRole } = renderWithRoot(
+      <SearchComboBox label="Colors" onSelect={onSelect} onKeyDown={onKeyDown}>
+        {items.map((item) => (
+          <SearchComboBox.Item key={item.key}>
+            {item.children}
+          </SearchComboBox.Item>
+        ))}
+      </SearchComboBox>,
+    );
+
+    const input = getByRole('combobox');
+
+    await userEvent.type(input, 're');
+
+    await waitFor(() => {
+      expect(getByRole('listbox')).toBeInTheDocument();
+    });
+
+    await userEvent.keyboard('{Enter}');
+
+    expect(onKeyDown).toHaveBeenLastCalledWith(
+      expect.objectContaining({ key: 'Enter' }),
+    );
+    expect(onSelect).not.toHaveBeenCalled();
+    expect(input).toHaveValue('re');
+
+    preventEnter = false;
+    await userEvent.keyboard('{Enter}');
+
+    await waitFor(() => {
+      expect(onSelect).toHaveBeenCalledWith('red', 'Red');
+      expect(input).toHaveValue('');
+    });
+  });
 });

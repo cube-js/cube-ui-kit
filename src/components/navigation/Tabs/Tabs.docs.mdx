@@ -236,12 +236,17 @@ The `width` style prop (inherited from Item) is useful for file-style tabs where
 
 Optional wrapper for tabs when using explicit panel placement.
 
+- **`qa`** `string` — `data-qa` attribute on the `role="tablist"` element
+- **`qaVal`** `string` — `data-qaval` attribute on the `role="tablist"` element
+
 ```jsx
-<Tabs.List>
+<Tabs.List qa="ReportTabs">
   <Tab key="tab1" title="Tab 1" />
   <Tab key="tab2" title="Tab 2" />
 </Tabs.List>
 ```
+
+`Tabs.List` also works without `Tabs.Panel`, so wrap the tabs in it whenever a test needs a stable selector for the tab list. The `qa` prop on `Tabs` itself lands on the outer wrapper, not on the tab list.
 
 ### Tabs.Panel
 
@@ -743,7 +748,7 @@ When both are in the same slot:
 
 ### Navigation-Only Tabs
 
-Use tabs without panel content for navigation purposes.
+Use tabs without panel content for navigation purposes. Use this only when each tab leads to a different page or route; content that belongs to a tab goes in a panel (`renderPanel` or `Tab` children), so the tab can point screen readers at it.
 
 <Story of={TabsStories.NavigationOnly} />
 
@@ -956,7 +961,7 @@ When `Tabs` is rendered inside a [`Board`](/docs/layout-board--docs), tab switch
 - `aria-label` - Set via `label` prop on Tabs
 - `aria-selected` - Managed automatically for active tab
 - `aria-disabled` - Applied when `isDisabled` is true
-- `aria-controls` - Links tabs to their panels automatically
+- `aria-controls` - Links the selected tab to its panel automatically; omitted for a tab that has no panel
 - `aria-labelledby` - Links panels to their tabs automatically
 - `aria-haspopup` - Set to "menu" when tab has a menu
 

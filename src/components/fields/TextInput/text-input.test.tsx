@@ -56,4 +56,44 @@ describe('<TextInput />', () => {
     // Check if the ref is assigned to the input element
     expect(inputRef.current).toBe(input);
   });
+
+  describe('keyboard events', () => {
+    it('calls onKeyDown and onKeyUp with the key', async () => {
+      const onKeyDown = vi.fn((e) => e.key);
+      const onKeyUp = vi.fn((e) => e.key);
+      const { getByRole } = render(
+        <TextInput label="test" onKeyDown={onKeyDown} onKeyUp={onKeyUp} />,
+      );
+
+      await userEvent.type(getByRole('textbox'), 'a{Enter}');
+
+      expect(onKeyDown.mock.results.map((r) => r.value)).toEqual([
+        'a',
+        'Enter',
+      ]);
+      expect(onKeyUp.mock.results.map((r) => r.value)).toEqual(['a', 'Enter']);
+      expect(getByRole('textbox')).toHaveValue('a');
+    });
+
+    it('stops the key at the input unless the handler continues propagation', async () => {
+      const onOuterKeyDown = vi.fn();
+      const view = render(
+        <div onKeyDown={(e) => onOuterKeyDown(e.key)}>
+          <TextInput label="test" onKeyDown={() => {}} />
+        </div>,
+      );
+
+      await userEvent.type(view.getByRole('textbox'), 'a');
+      expect(onOuterKeyDown).not.toHaveBeenCalled();
+
+      view.rerender(
+        <div onKeyDown={(e) => onOuterKeyDown(e.key)}>
+          <TextInput label="test" onKeyDown={(e) => e.continuePropagation()} />
+        </div>,
+      );
+
+      await userEvent.type(view.getByRole('textbox'), 'b');
+      expect(onOuterKeyDown).toHaveBeenCalledWith('b');
+    });
+  });
 });

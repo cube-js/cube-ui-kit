@@ -28,8 +28,8 @@ The examples below use modern controllers. See [Modern Form](/docs/forms-modernf
 - **`form`** `FormController<T> | CubeFormInstance<T>` — Modern controller (recommended) or legacy instance. Omitting it selects legacy behavior.
 - **`title`** `string` — Dialog title
 - **`danger`** `boolean` — Give the submit button the danger theme
-- **`submitProps`** `CubeButtonProps` (legacy) / `Omit<CubeSubmitButtonProps<T>, 'form'>` (modern) — Customize the submit button, including its label and modern `disableOnInvalid`
-- **`cancelProps`** `CubeButtonProps` — Customize the cancel button, including its label
+- **`submitProps`** `CubeButtonProps` (legacy) / `Omit<CubeSubmitButtonProps<T>, 'form'>` (modern) — Customize the submit button, including its text (`children`) and modern `disableOnInvalid`
+- **`cancelProps`** `CubeButtonProps` — Customize the cancel button, including its text (`children`)
 - **`preserve`** `boolean` (default: `false`) — Retain values when the editing session ends. Keep the controller mounted above the dialog to retain a draft across dialog unmounts.
 - **`noActions`** `boolean` — Hide the default submit/cancel buttons
 - **`children`** `ReactNode | ((dismiss: () => void) => ReactNode)` — Fields, or a render function for custom actions
@@ -87,7 +87,7 @@ function EditProfile({ initialProfile, save }) {
       <DialogForm
         form={form}
         title="Edit profile"
-        submitProps={{ label: 'Save' }}
+        submitProps={{ children: 'Save' }}
         onSubmit={(values, { signal }) => save(values, signal)}
       >
         <TextInput name="name" label="Name" isRequired />

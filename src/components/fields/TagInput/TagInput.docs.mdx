@@ -408,13 +408,15 @@ const [recipients, setRecipients] = useState(['ana@acme.com']);
 - The input's description reads the current values ("Selected: …") and says that Backspace moves to them, so the user hears what is already added and how to reach it
 - Focus on a chip reads its label, its position and React Aria's hint to press Delete or Backspace to remove it
 - A polite live region announces "Added …" and "Removed …" when the user adds or removes a value. Changes made from outside the field are not announced
-- The chips are a grid named "Selected values" followed by the field's label. Each chip is a row, and its remove button reads "Remove" followed by the chip's label. An invalid chip is described by its validation message, not only by its color
+- The chips, the popover trigger, the clear button and the options listbox are named after the field, however the field is named. With a visible label or `aria-labelledby`, they point at the same elements: the grid reads "Selected values" followed by the field's name, the trigger "Show options" followed by it, and the listbox the field's name alone. An `aria-label` has no element to point at, so its text is joined in: "Selected values, …", "Show options, …", "Clear text, …", and the listbox takes the `aria-label`. Next to a visible label or `aria-labelledby` it comes first, as it does on the input itself: with `aria-label="Values"` and `aria-labelledby` pointing at "Primary key", the input reads "Values Primary key" and the grid "Selected values, Values Primary key". Each row of a table whose fields are labelled by a header and a row cell so gets its own names
+- Each chip is a row, and its remove button reads "Remove" followed by the chip's label. An invalid chip is described by its validation message, not only by its color
 - A rejected value marks the input invalid. With a visible label its message is shown under the field and announced as an alert, again for each new attempt. Without one, the message is announced through the live region
 - A disabled field's chips are out of the Tab order, and so are locked chips. A read-only field's chips stay focusable, without remove buttons
-- The clear button is named "Clear text" followed by the field's label. Escape does the same from the keyboard
+- The clear button is named "Clear text" followed by the field's name. Escape does the same from the keyboard
 
 ### ARIA Properties
 
+- `aria-label` / `aria-labelledby` - Name the input when there is no visible label, and through it the chips, the buttons and the listbox. Pass one of them, or `label`
 - `aria-describedby` - Adds the summary of current values and the Backspace hint to the input's own descriptions, such as one passed in `aria-describedby`
 - `aria-invalid` - Set while a typed value is rejected, or when the field is invalid
 - `role="combobox"`, `aria-expanded`, `aria-controls`, `aria-activedescendant`, `aria-autocomplete="list"` - Set when options are given. `aria-activedescendant` follows both arrow keys and clicks

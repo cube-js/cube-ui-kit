@@ -42,4 +42,19 @@ describe('<TextArea />', () => {
     expect(input).toHaveValue('Hello, World!');
     expect(formInstance.getFieldValue('test')).toEqual('Hello, World!');
   });
+
+  it('calls onKeyDown and onKeyUp with the key', async () => {
+    const onKeyDown = vi.fn((e) => e.key);
+    const onKeyUp = vi.fn((e) => e.key);
+    const { getByRole } = render(
+      <TextArea label="test" onKeyDown={onKeyDown} onKeyUp={onKeyUp} />,
+    );
+
+    await userEvent.type(getByRole('textbox'), 'a{Enter}');
+
+    expect(onKeyDown.mock.results.map((r) => r.value)).toEqual(['a', 'Enter']);
+    expect(onKeyUp.mock.results.map((r) => r.value)).toEqual(['a', 'Enter']);
+    // Nothing built in claims Enter: the newline still goes in.
+    expect(getByRole('textbox')).toHaveValue('a\n');
+  });
 });

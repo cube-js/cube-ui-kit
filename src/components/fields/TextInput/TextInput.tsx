@@ -14,10 +14,17 @@ import {
   TextInputBase,
 } from './TextInputBase';
 
-import type { FieldBaseProps } from '../../../shared/form';
+import type {
+  FieldBaseProps,
+  TextFieldKeyboardProps,
+} from '../../../shared/form';
 
+// `TextFieldKeyboardProps` is restated here because `WithNullableValue` is an
+// `Omit` over a base that extends an in-repo `any` (see `TextFieldKeyboardProps`),
+// which erases every named member of the base.
 export type CubeTextInputProps = WithNullableValue<CubeTextInputBaseProps> &
-  CubeBufferedValueProps & {
+  CubeBufferedValueProps &
+  TextFieldKeyboardProps & {
     field?: FieldBaseProps<string | null | undefined>['field'];
   };
 

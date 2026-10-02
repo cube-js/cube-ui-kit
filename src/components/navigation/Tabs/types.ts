@@ -344,7 +344,7 @@ export interface CubeTabPanelProps extends PanelBehaviorProps, QAProps {
   styles?: Styles;
 }
 
-export interface CubeTabListProps {
+export interface CubeTabListProps extends QAProps {
   /** Tab components. */
   children?: ReactNode;
 }

@@ -759,6 +759,58 @@ describe('<SubMenuTrigger />', () => {
       expect(getByText('Advanced')).toBeInTheDocument();
       expect(getByText('Developer')).toBeInTheDocument();
     });
+
+    // A trigger *inside* a section: the section used to read only an item's
+    // `wrapper` prop, never the one `SubMenuTrigger` puts on the collection
+    // node, so the item rendered as a plain item with no submenu (CUB-5262).
+    const triggerInSection = (
+      <Menu id="test-menu" aria-label="Test menu">
+        <Menu.Section title="Insert">
+          <Menu.Item key="text">Text</Menu.Item>
+          <Menu.SubMenuTrigger key="chart-menu">
+            <Menu.Item key="chart">Chart</Menu.Item>
+            <Menu>
+              <Menu.Item key="bar">Bar</Menu.Item>
+              <Menu.Item key="line">Line</Menu.Item>
+            </Menu>
+          </Menu.SubMenuTrigger>
+        </Menu.Section>
+        <Menu.Section title="Other">
+          <Menu.Item key="delete">Delete</Menu.Item>
+        </Menu.Section>
+      </Menu>
+    );
+
+    it('marks a trigger inside a section as having a submenu', async () => {
+      const { getByText } = renderWithRoot(triggerInSection);
+
+      const menuItem = getByText('Chart').closest('li');
+
+      await waitFor(
+        () => expect(menuItem).toHaveAttribute('data-has-submenu', 'true'),
+        { timeout: 2000 },
+      );
+      expect(menuItem).toHaveAttribute('aria-haspopup', 'menu');
+      expect(menuItem?.querySelector('[data-qa="RightIcon"]')).not.toBeNull();
+    });
+
+    it('opens a submenu placed inside a section on click and on hover', async () => {
+      const { getByText, queryByText } = renderWithRoot(triggerInSection);
+
+      await userEvent.click(getByText('Chart'));
+      await waitFor(() => expect(getByText('Bar')).toBeInTheDocument(), {
+        timeout: 2000,
+      });
+      expect(getByText('Line')).toBeInTheDocument();
+
+      await userEvent.keyboard('{Escape}');
+      await waitFor(() => expect(queryByText('Bar')).not.toBeInTheDocument());
+
+      await userEvent.hover(getByText('Chart'));
+      await waitFor(() => expect(getByText('Bar')).toBeInTheDocument(), {
+        timeout: 2000,
+      });
+    });
   });
 
   describe('Focus management', () => {

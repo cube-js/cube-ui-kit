@@ -1,3 +1,4 @@
+import { act } from '@testing-library/react';
 import { useState } from 'react';
 
 import {
@@ -212,4 +213,127 @@ describe('Radio-type tab with a title too long for it', () => {
       expect(screen.getByRole('tooltip')).toHaveTextContent(TITLE),
     );
   });
+});
+
+/**
+ * A strip mounted with its LAST tab active, in a bar too narrow for every tab.
+ * The active tab is scrolled into view on mount, but that commit lays the tabs
+ * out before their actions runs are measured, so every tab is still narrower
+ * than it is a frame later. The strip then grows past the edge and the tab that
+ * was "in view" ends up clipped or under the add button. jsdom has no layout.
+ */
+describe('Active tab at the end of a crowded strip', () => {
+  const nextFrame = () =>
+    new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+  // Inside `act`: the actions runs publish their widths through state.
+  const settle = () =>
+    act(async () => {
+      for (let i = 0; i < 5; i++) await nextFrame();
+    });
+
+  function CrowdedTabs({ activeTitle = 'Preset 2' }: { activeTitle?: string }) {
+    return (
+      <div style={{ width: 300 }}>
+        <Tabs
+          autoHideActions
+          defaultActiveKey="preset2"
+          menu={
+            <>
+              <Menu.Item key="rename">Rename</Menu.Item>
+              <Menu.Item key="delete">Delete</Menu.Item>
+            </>
+          }
+          suffix={<Tabs.Action qa="AddTab" aria-label="Add tab" />}
+          onDelete={() => {}}
+        >
+          <Tab key="default" title="Default" />
+          <Tab key="quarterly" title="Quarterly" />
+          <Tab key="preset" title="Preset" />
+          <Tab key="preset2" title={activeTitle} />
+        </Tabs>
+      </div>
+    );
+  }
+
+  it('keeps the active tab fully in view once the tabs reach their final size', async () => {
+    renderWithRoot(<CrowdedTabs />);
+
+    const tab = screen.getByTestId('Tab-preset2');
+    const scroller = tab.closest('[data-element="Scroll"]') as HTMLElement;
+    const addButton = screen.getByTestId('AddTab');
+
+    // Let the actions runs publish their widths and the strip settle.
+    await settle();
+
+    // Guard the guard: the strip must overflow, or nothing needs scrolling and
+    // the assertions below pass trivially.
+    expect(scroller.scrollWidth).toBeGreaterThan(scroller.clientWidth);
+
+    const tabRect = tab.parentElement!.getBoundingClientRect();
+    const scrollRect = scroller.getBoundingClientRect();
+    const addRect = addButton.getBoundingClientRect();
+
+    expect(tabRect.left).toBeGreaterThanOrEqual(scrollRect.left - 0.5);
+    expect(tabRect.right).toBeLessThanOrEqual(scrollRect.right + 0.5);
+    expect(tabRect.right).toBeLessThanOrEqual(addRect.left + 0.5);
+  });
+
+  /** Grow the active tab after the strip has settled, as a counter in its title would. */
+  async function growActiveTab(
+    rerender: (ui: React.ReactElement) => void,
+    scroller: HTMLElement,
+  ) {
+    const before = scroller.scrollLeft;
+
+    await act(async () => {
+      rerender(<CrowdedTabs activeTitle="Preset 2 (999)" />);
+    });
+
+    await settle();
+
+    return { before, after: scroller.scrollLeft };
+  }
+
+  it('re-scrolls when the active tab grows and the user has not touched the strip', async () => {
+    const { rerender } = renderWithRoot(<CrowdedTabs />);
+    const tab = screen.getByTestId('Tab-preset2');
+    const scroller = tab.closest('[data-element="Scroll"]') as HTMLElement;
+
+    await settle();
+
+    // Put the tab out of view programmatically: no user interaction, so the
+    // strip still follows the active tab.
+    scroller.scrollLeft = 0;
+
+    const { after } = await growActiveTab(rerender, scroller);
+
+    expect(after).toBeGreaterThan(0);
+  });
+
+  it.each(['wheel', 'pointerdown'] as const)(
+    'leaves a strip the user scrolled away (%s) alone when the active tab grows',
+    async (type) => {
+      const { rerender } = renderWithRoot(<CrowdedTabs />);
+      const tab = screen.getByTestId('Tab-preset2');
+      const scroller = tab.closest('[data-element="Scroll"]') as HTMLElement;
+
+      await settle();
+
+      expect(scroller.scrollLeft).toBeGreaterThan(0);
+
+      // The user scrolls the strip back to its start. A synthetic event does
+      // not scroll anything, so the scroll itself is set by hand.
+      scroller.dispatchEvent(
+        type === 'wheel'
+          ? new WheelEvent('wheel', { bubbles: true, deltaX: -1000 })
+          : new PointerEvent('pointerdown', { bubbles: true }),
+      );
+      scroller.scrollLeft = 0;
+
+      const { before, after } = await growActiveTab(rerender, scroller);
+
+      expect(before).toBe(0);
+      expect(after).toBe(0);
+    },
+  );
 });

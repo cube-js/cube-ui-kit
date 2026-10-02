@@ -88,3 +88,53 @@ describe('<ItemButton /> aria-pressed', () => {
     expect(trigger).not.toHaveAttribute('aria-pressed');
   });
 });
+
+describe('<ItemButton /> props meant for useAction', () => {
+  /**
+   * `useAction` consumes `navigationOptions`, but `ItemButton` left it in the
+   * props it spreads onto `Item`, so it also landed on the element as
+   * `navigationOptions="[object Object]"` and React warned about an unknown
+   * prop (CUB-5269).
+   */
+  it('keeps navigationOptions off the DOM element', () => {
+    const consoleError = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
+
+    renderWithRoot(
+      <ItemButton
+        to="/workbooks"
+        navigationOptions={{ state: { from: 'sidebar' } }}
+        qa="Link"
+      >
+        Workbooks
+      </ItemButton>,
+    );
+
+    const link = screen.getByTestId('Link');
+
+    expect(link).not.toHaveAttribute('navigationOptions');
+    expect(link).not.toHaveAttribute('navigationoptions');
+    expect(
+      consoleError.mock.calls.some((args) =>
+        String(args[0]).includes('navigationOptions'),
+      ),
+    ).toBe(false);
+
+    consoleError.mockRestore();
+  });
+
+  it('keeps the deprecated label off the DOM element', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    renderWithRoot(
+      <ItemButton label="Workbooks" qa="Labelled">
+        Workbooks
+      </ItemButton>,
+    );
+
+    expect(screen.getByTestId('Labelled')).not.toHaveAttribute('label');
+
+    warn.mockRestore();
+  });
+});

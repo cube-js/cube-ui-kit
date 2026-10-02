@@ -123,8 +123,10 @@
   "tagInput": {
     "remove": "Remover",
     "selectedValues": "Valores selecionados",
+    "selectedValuesFor": "Valores selecionados, {{label}}",
     "summary": "Selecionados: {{values}}.",
     "showOptions": "Mostrar opções",
+    "showOptionsFor": "Mostrar opções, {{label}}",
     "options": "Opções",
     "customValues": "Valores personalizados",
     "added": "Adicionado: {{value}}",
@@ -135,6 +137,7 @@
     "unavailableValue": "\"{{value}}\" não está disponível",
     "limitReached": "Você pode adicionar até {{count}}",
     "clearText": "Limpar texto",
+    "clearTextFor": "Limpar texto, {{label}}",
     "backspaceHint": "Pressione Backspace para ir aos valores selecionados."
   },
   "placeholder": {

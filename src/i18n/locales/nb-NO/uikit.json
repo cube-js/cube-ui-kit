@@ -123,8 +123,10 @@
   "tagInput": {
     "remove": "Fjern",
     "selectedValues": "Valgte verdier",
+    "selectedValuesFor": "Valgte verdier, {{label}}",
     "summary": "Valgt: {{values}}.",
     "showOptions": "Vis alternativer",
+    "showOptionsFor": "Vis alternativer, {{label}}",
     "options": "Alternativer",
     "customValues": "Egendefinerte verdier",
     "added": "{{value}} lagt til",
@@ -135,6 +137,7 @@
     "unavailableValue": "«{{value}}» er ikke tilgjengelig",
     "limitReached": "Du kan legge til opptil {{count}}",
     "clearText": "Tøm tekst",
+    "clearTextFor": "Tøm tekst, {{label}}",
     "backspaceHint": "Trykk på Tilbake for å gå til de valgte verdiene."
   },
   "placeholder": {

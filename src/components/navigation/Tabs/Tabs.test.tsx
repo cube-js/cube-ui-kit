@@ -45,6 +45,21 @@ describe('<Tabs />', () => {
       expect(getByTestId('TestTabs')).toBeInTheDocument();
     });
 
+    it('should add data-qa and data-qaval to the tab list', () => {
+      const { getByRole, getByTestId } = renderWithRoot(
+        <Tabs defaultActiveKey="tab1">
+          <Tabs.List qa="ReportTabs" qaVal="reports">
+            <Tab key="tab1" title="Tab 1" />
+          </Tabs.List>
+        </Tabs>,
+      );
+
+      const tabList = getByRole('tablist');
+
+      expect(getByTestId('ReportTabs')).toBe(tabList);
+      expect(tabList).toHaveAttribute('data-qaval', 'reports');
+    });
+
     it('should add data-qa to individual tabs', () => {
       const { getByTestId } = renderWithRoot(
         <Tabs defaultActiveKey="tab1">
@@ -769,6 +784,64 @@ describe('<Tabs />', () => {
 
       expect(tab).toHaveAttribute('aria-controls', panel.id);
       expect(panel).toHaveAttribute('aria-labelledby', tab.id);
+    });
+
+    it('should link tabs to panels rendered by renderPanel', () => {
+      const { getByRole } = renderWithRoot(
+        <Tabs defaultActiveKey="tab1" renderPanel={(key) => `Panel ${key}`}>
+          <Tab key="tab1" title="Tab 1" />
+        </Tabs>,
+      );
+
+      expect(getByRole('tab')).toHaveAttribute(
+        'aria-controls',
+        getByRole('tabpanel').id,
+      );
+    });
+
+    it('should not point aria-controls at a panel when there are no panels', () => {
+      const { getByRole, queryByRole } = renderWithRoot(
+        <Tabs defaultActiveKey="tab1">
+          <Tab key="tab1" title="Tab 1" />
+          <Tab key="tab2" title="Tab 2" />
+        </Tabs>,
+      );
+
+      expect(queryByRole('tabpanel')).not.toBeInTheDocument();
+      expect(getByRole('tab', { name: 'Tab 1' })).toHaveAttribute(
+        'aria-selected',
+        'true',
+      );
+      expect(getByRole('tab', { name: 'Tab 1' })).not.toHaveAttribute(
+        'aria-controls',
+      );
+    });
+
+    it('should not point aria-controls at a panel for a tab without content', async () => {
+      const { getByRole } = renderWithRoot(
+        <Tabs defaultActiveKey="tab1">
+          <Tabs.List>
+            <Tab key="tab1" title="Tab 1" />
+            <Tab key="tab2" title="Tab 2" />
+          </Tabs.List>
+          <Tabs.Panel key="tab1">Panel 1</Tabs.Panel>
+        </Tabs>,
+      );
+
+      expect(getByRole('tab', { name: 'Tab 1' })).toHaveAttribute(
+        'aria-controls',
+        getByRole('tabpanel').id,
+      );
+
+      await userEvent.click(getByRole('tab', { name: 'Tab 2' }));
+
+      expect(getByRole('tab', { name: 'Tab 2' })).toHaveAttribute(
+        'aria-selected',
+        'true',
+      );
+      expect(getByRole('tab', { name: 'Tab 2' })).not.toHaveAttribute(
+        'aria-controls',
+      );
     });
   });
 

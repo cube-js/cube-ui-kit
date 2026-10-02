@@ -76,6 +76,12 @@ export interface ListBoxPopoverProps {
   onClose: () => void;
   label?: ReactNode;
   ariaLabel?: string;
+  /**
+   * Ids of the elements that name the field, read after `label` or
+   * `ariaLabel`. Without either, they alone name the list, in place of the
+   * generic "Options".
+   */
+  ariaLabelledby?: string;
   compositeFocusProps: {
     onFocus: (e: React.FocusEvent) => void;
     onBlur: (e: React.FocusEvent) => void;
@@ -195,6 +201,7 @@ export const ListBoxPopover = function ListBoxPopover(
     onClose,
     label,
     ariaLabel,
+    ariaLabelledby,
     compositeFocusProps,
     filter,
     size = 'medium',
@@ -338,8 +345,11 @@ export const ListBoxPopover = function ListBoxPopover(
                   ariaLabel ||
                   (typeof label === 'string'
                     ? label
-                    : t('listBoxPopover.options', 'Options'))
+                    : ariaLabelledby
+                      ? undefined
+                      : t('listBoxPopover.options', 'Options'))
                 }
+                aria-labelledby={ariaLabelledby}
                 // Left unset in single mode, as before this prop existed: an
                 // explicit `'single'` switches on ListBox's no-toggle branch,
                 // which changes what re-picking the selected option does.

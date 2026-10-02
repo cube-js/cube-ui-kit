@@ -123,8 +123,10 @@
   "tagInput": {
     "remove": "削除",
     "selectedValues": "選択された値",
+    "selectedValuesFor": "選択された値、{{label}}",
     "summary": "選択済み: {{values}}。",
     "showOptions": "オプションを表示",
+    "showOptionsFor": "オプションを表示、{{label}}",
     "options": "オプション",
     "customValues": "カスタム値",
     "added": "{{value}} を追加しました",
@@ -135,6 +137,7 @@
     "unavailableValue": "「{{value}}」は利用できません",
     "limitReached": "追加できるのは {{count}} 件までです",
     "clearText": "テキストをクリア",
+    "clearTextFor": "テキストをクリア、{{label}}",
     "backspaceHint": "Backspace キーで選択された値に移動します。"
   },
   "placeholder": {

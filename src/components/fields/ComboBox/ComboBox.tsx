@@ -30,7 +30,7 @@ import { useI18n } from '../../../i18n';
 import { CloseIcon } from '../../../icons/CloseIcon';
 import { DirectionIcon } from '../../../icons/DirectionIcon';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
-import { FieldBaseProps } from '../../../shared';
+import { FieldBaseProps, TextFieldKeyboardProps } from '../../../shared';
 import { generateRandomId } from '../../../utils/random';
 import { useCombinedRefs, useLayoutEffect } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
@@ -100,8 +100,13 @@ export interface CubeComboBoxProps<T>
   onFocus?: () => void;
   /** Callback fired when focus leaves the component entirely. Does not receive event object. */
   onBlur?: () => void;
-  /** Callback fired when a key is pressed on the input */
-  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  /**
+   * Callback fired when a key is pressed on the input, before the built-in
+   * key handling. Receives React Aria's keyboard event: `e.preventDefault()`
+   * skips the built-in handling for the key, and propagation stops at the
+   * input unless the handler calls `e.continuePropagation()`.
+   */
+  onKeyDown?: TextFieldKeyboardProps['onKeyDown'];
 
   /** Popover trigger behavior: 'focus', 'input', or 'manual'. Defaults to 'input' */
   popoverTrigger?: PopoverTriggerAction;
@@ -334,7 +339,7 @@ interface UseComboBoxKeyboardProps {
   setIsFilterActive: (active: boolean) => void;
   /** Called with the option the arrow keys moved virtual focus to. */
   onVirtualFocus: (key: Key) => void;
-  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  onKeyDown?: TextFieldKeyboardProps['onKeyDown'];
 }
 
 function useComboBoxKeyboard({
@@ -355,8 +360,13 @@ function useComboBoxKeyboard({
 }: UseComboBoxKeyboardProps) {
   const { keyboardProps } = useKeyboard({
     onKeyDown: (e) => {
-      // Call user's handler first
-      onKeyDown?.(e as React.KeyboardEvent<HTMLInputElement>);
+      // The user's handler runs first, and a key it prevents is theirs: skip
+      // the built-in handling. Read `isDefaultPrevented()`, not
+      // `defaultPrevented` — `useKeyboard` hands over a copy of the event whose
+      // `defaultPrevented` field is fixed at the moment it was made.
+      onKeyDown?.(e);
+
+      if (e.isDefaultPrevented()) return;
 
       if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
         e.preventDefault();

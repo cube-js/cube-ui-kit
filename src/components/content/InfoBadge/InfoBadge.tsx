@@ -12,6 +12,7 @@ import {
   useMemo,
 } from 'react';
 
+import { useWarn } from '../../../_internal/hooks/use-warn';
 import { useI18n } from '../../../i18n';
 import { InfoCircleIcon } from '../../../icons/InfoCircleIcon';
 import { CubeItemActionProps, ItemAction } from '../../actions/ItemAction';
@@ -29,9 +30,15 @@ export interface CubeInfoBadgeProps
     Partial<
       Pick<
         CubeUseActionProps,
-        'to' | 'onPress' | 'navigationOptions' | 'target' | 'label'
+        'to' | 'onPress' | 'navigationOptions' | 'target'
       >
     > {
+  /**
+   * Overrides the badge's accessible name.
+   *
+   * @deprecated Use `aria-label`. It still overrides the name today.
+   */
+  label?: string;
   /**
    * Tooltip content. Either the content itself or a configuration object
    * `{ title, ...tooltipProps }` for advanced setups (placement, delay, etc.).
@@ -199,6 +206,13 @@ export const InfoBadge = forwardRef(function InfoBadge(
     styles,
     ...rest
   } = allProps;
+
+  useWarn(label !== undefined, {
+    key: 'info-badge-label-deprecated',
+    args: [
+      'The "label" property of InfoBadge is deprecated. Use "aria-label" instead.',
+    ],
+  });
 
   const isInteractive = to != null || onPress != null;
 
