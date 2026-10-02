@@ -1587,9 +1587,20 @@ function TagInput<T extends object>(
     } as never,
     inputRef,
   );
-  // Names the chips and the trigger after the field: "Selected values, Also
-  // send to", rather than the same words for every field on the page.
+  // Names the chips, the buttons and the options after the field: "Selected
+  // values Also send to", rather than the same words for every field on the
+  // page. The ids go in the order the input reads them: the visible label,
+  // then `aria-labelledby`.
+  const ariaLabel = (props as { 'aria-label'?: string })['aria-label'];
+  const ariaLabelledby = (props as { 'aria-labelledby'?: string })[
+    'aria-labelledby'
+  ];
   const labelId = label ? (labelProps.id as string | undefined) : undefined;
+  const fieldLabelledby =
+    [labelId, ariaLabelledby].filter(Boolean).join(' ') || undefined;
+  // A field named only by `aria-label` has no element to point at, so its
+  // words are joined into each part's own name instead.
+  const fieldAriaLabel = fieldLabelledby ? undefined : ariaLabel;
 
   // Joined, not replaced: the input keeps any description it already has.
   const describedBy: string[] = [];
@@ -1651,8 +1662,16 @@ function TagInput<T extends object>(
         tabIndex={-1}
         aria-expanded={shouldShowPopover}
         aria-haspopup="listbox"
-        aria-label={t('tagInput.showOptions', 'Show options')}
-        aria-labelledby={labelId ? `${triggerId} ${labelId}` : undefined}
+        aria-label={
+          fieldAriaLabel
+            ? t('tagInput.showOptionsFor', 'Show options, {{label}}', {
+                label: fieldAriaLabel,
+              })
+            : t('tagInput.showOptions', 'Show options')
+        }
+        aria-labelledby={
+          fieldLabelledby ? `${triggerId} ${fieldLabelledby}` : undefined
+        }
         onPress={handleTriggerPress}
       />
     ) : null;
@@ -1678,8 +1697,16 @@ function TagInput<T extends object>(
       // Escape does the same from the keyboard. As a Tab stop it would take
       // focus just as tabbing away commits the text and removes it.
       tabIndex={-1}
-      aria-label={t('tagInput.clearText', 'Clear text')}
-      aria-labelledby={labelId ? `${clearId} ${labelId}` : undefined}
+      aria-label={
+        fieldAriaLabel
+          ? t('tagInput.clearTextFor', 'Clear text, {{label}}', {
+              label: fieldAriaLabel,
+            })
+          : t('tagInput.clearText', 'Clear text')
+      }
+      aria-labelledby={
+        fieldLabelledby ? `${clearId} ${fieldLabelledby}` : undefined
+      }
       onPress={clearText}
     />
   ) : null;
@@ -1729,8 +1756,14 @@ function TagInput<T extends object>(
           id={tagListId}
           listRef={tagListRef}
           inputRef={inputRef}
-          aria-label={t('tagInput.selectedValues', 'Selected values')}
-          aria-labelledby={labelId}
+          aria-label={
+            fieldAriaLabel
+              ? t('tagInput.selectedValuesFor', 'Selected values, {{label}}', {
+                  label: fieldAriaLabel,
+                })
+              : t('tagInput.selectedValues', 'Selected values')
+          }
+          aria-labelledby={fieldLabelledby}
           tags={tags}
           size={TAG_SIZES[size] ?? 'xsmall'}
           isDisabled={isDisabled}
@@ -1791,7 +1824,8 @@ function TagInput<T extends object>(
           disabledKeys={optionDisabledKeys}
           listStateRef={listStateRef}
           label={label}
-          ariaLabel={(props as { 'aria-label'?: string })['aria-label']}
+          ariaLabel={ariaLabel}
+          ariaLabelledby={ariaLabelledby}
           compositeFocusProps={compositeFocusProps}
           filter={optionFilterFn}
           size={size}

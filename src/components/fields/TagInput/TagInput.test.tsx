@@ -86,6 +86,112 @@ describe('<TagInput />', () => {
     expect(queryByRole('grid')).not.toBeInTheDocument();
   });
 
+  describe('accessible names', () => {
+    function Named(props: Partial<Parameters<typeof TagInput>[0]>) {
+      return (
+        <>
+          <span id="tag-input-header">Primary key</span>
+          <span id="tag-input-cube">orders</span>
+          <TagInput isClearable defaultValue={['read']} {...props}>
+            {ACTIONS.map((action) => (
+              <TagInput.Item key={action}>{action}</TagInput.Item>
+            ))}
+          </TagInput>
+        </>
+      );
+    }
+
+    async function openOptions(getByRole: (...args: any[]) => HTMLElement) {
+      await userEvent.click(getByRole('button', { name: /Show options/ }));
+      await waitFor(() =>
+        expect(getByRole('option', { name: 'deploy' })).toBeInTheDocument(),
+      );
+    }
+
+    it('names the parts after a visible label', async () => {
+      const { getByRole } = renderWithRoot(<Named label="Actions" />);
+      const input = getByRole('combobox', { name: 'Actions' });
+
+      expect(
+        getByRole('grid', { name: 'Selected values Actions' }),
+      ).toBeInTheDocument();
+      expect(
+        getByRole('button', { name: 'Show options Actions' }),
+      ).toBeInTheDocument();
+
+      await userEvent.type(input, 'x');
+      expect(
+        getByRole('button', { name: 'Clear text Actions' }),
+      ).toBeInTheDocument();
+      await userEvent.clear(input);
+
+      await openOptions(getByRole);
+      expect(getByRole('listbox', { name: 'Actions' })).toBeInTheDocument();
+    });
+
+    it('names the parts after aria-labelledby', async () => {
+      const { getByRole } = renderWithRoot(
+        <Named aria-labelledby="tag-input-header tag-input-cube" />,
+      );
+      const input = getByRole('combobox', { name: 'Primary key orders' });
+
+      expect(
+        getByRole('grid', { name: 'Selected values Primary key orders' }),
+      ).toBeInTheDocument();
+      expect(
+        getByRole('button', { name: 'Show options Primary key orders' }),
+      ).toBeInTheDocument();
+
+      await userEvent.type(input, 'x');
+      expect(
+        getByRole('button', { name: 'Clear text Primary key orders' }),
+      ).toBeInTheDocument();
+      await userEvent.clear(input);
+
+      await openOptions(getByRole);
+      expect(
+        getByRole('listbox', { name: 'Primary key orders' }),
+      ).toBeInTheDocument();
+    });
+
+    it('names the parts after aria-label', async () => {
+      const { getByRole } = renderWithRoot(<Named aria-label="Values" />);
+      const input = getByRole('combobox', { name: 'Values' });
+
+      expect(
+        getByRole('grid', { name: 'Selected values, Values' }),
+      ).toBeInTheDocument();
+      expect(
+        getByRole('button', { name: 'Show options, Values' }),
+      ).toBeInTheDocument();
+
+      await userEvent.type(input, 'x');
+      expect(
+        getByRole('button', { name: 'Clear text, Values' }),
+      ).toBeInTheDocument();
+      await userEvent.clear(input);
+
+      await openOptions(getByRole);
+      expect(getByRole('listbox', { name: 'Values' })).toBeInTheDocument();
+    });
+
+    it('reads both a visible label and aria-labelledby', () => {
+      const { getByRole } = renderWithRoot(
+        <Named label="Actions" aria-labelledby="tag-input-cube" />,
+      );
+
+      expect(
+        getByRole('combobox', { name: 'Actions orders' }),
+      ).toBeInTheDocument();
+      expect(
+        getByRole('grid', { name: 'Selected values Actions orders' }),
+      ).toBeInTheDocument();
+      expect(
+        getByRole('button', { name: 'Show options Actions orders' }),
+      ).toBeInTheDocument();
+    });
+  });
+
   describe('typing', () => {
     it('commits the typed text on Enter and clears the input', async () => {
       const onChange = vi.fn();
