@@ -60,6 +60,9 @@ const ItemButton = forwardRef(function ItemButton(
     onPressEnd: _onPressEnd,
     onPressChange: _onPressChange,
     onPressUp: _onPressUp,
+    // Consumed by useAction (it reads `allProps`); kept off the DOM element.
+    navigationOptions: _navigationOptions,
+    label: _label,
     actions,
     actionsProps,
     size = 'medium',

@@ -17,7 +17,7 @@ A low-level action element that can render as `<button>`, `<a>`, or `<span>`. Wh
 ## Properties
 
 - **`to`** `NavigateArg` — Navigation target (renders as `<a>` when provided)
-- **`label`** `string` — Accessible label for screen readers
+- **`label`** `string` — **Deprecated.** Use `aria-label` for the accessible name and `children` for visible text
 - **`htmlType`** `'button' | 'submit' | 'reset'` — HTML button type
 - **`download`** `string` — Download attribute for link mode
 - **`onPress`** `() => void` — Press event handler (React Aria)

@@ -15,6 +15,7 @@ import { SubmitButton } from '../../form/Form/SubmitButton/SubmitButton';
 import { useOpenTransitionContext } from '../Modal/OpenTransitionContext';
 
 import { useDialogContext } from './context';
+import { withDefaultButtonText } from './default-button-text';
 import { Dialog } from './Dialog';
 
 import type { FormController } from '../../form/Form/modern/controller';
@@ -178,14 +179,18 @@ export function ModernDialogForm<T extends object>(
               <SubmitButton
                 qa={`${qa || ''}SubmitButton`}
                 theme={danger ? 'danger' : undefined}
-                label={t('dialogForm.submit', 'Submit')}
-                {...submitProps}
+                {...withDefaultButtonText(
+                  submitProps,
+                  t('dialogForm.submit', 'Submit'),
+                )}
               />
               <Button
                 qa={`${qa || ''}CancelButton`}
-                label={t('dialogForm.cancel', 'Cancel')}
                 onPress={dismiss}
-                {...cancelProps}
+                {...withDefaultButtonText(
+                  cancelProps,
+                  t('dialogForm.cancel', 'Cancel'),
+                )}
               />
             </ButtonGroup>
           </Footer>

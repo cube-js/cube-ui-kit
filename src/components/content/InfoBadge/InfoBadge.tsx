@@ -12,6 +12,7 @@ import {
   useMemo,
 } from 'react';
 
+import { useWarn } from '../../../_internal/hooks/use-warn';
 import { useI18n } from '../../../i18n';
 import { InfoCircleIcon } from '../../../icons/InfoCircleIcon';
 import { CubeItemActionProps, ItemAction } from '../../actions/ItemAction';
@@ -199,6 +200,13 @@ export const InfoBadge = forwardRef(function InfoBadge(
     styles,
     ...rest
   } = allProps;
+
+  useWarn(label !== undefined, {
+    key: 'info-badge-label-deprecated',
+    args: [
+      'The "label" property of InfoBadge is deprecated. Use "aria-label" instead.',
+    ],
+  });
 
   const isInteractive = to != null || onPress != null;
 

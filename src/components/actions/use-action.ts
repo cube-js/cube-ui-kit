@@ -4,7 +4,7 @@ import { AllBaseProps, filterBaseProps, TagName } from '@tenphi/tasty';
 import { useContext } from 'react';
 import { AriaButtonProps, useButton, useHover } from 'react-aria';
 
-import { useEvent } from '../../_internal';
+import { useEvent, useWarn } from '../../_internal';
 import { UIKitContext } from '../../provider';
 import { useTracking } from '../../providers/TrackingProvider';
 import { mergeProps } from '../../utils/react';
@@ -36,6 +36,10 @@ export interface CubeUseActionProps<
 > extends AllBaseProps<T>,
     Omit<AriaButtonProps, 'type'> {
   to?: NavigateArg;
+  /**
+   * @deprecated Use `aria-label` for the accessible name, and `children` for
+   * visible text. Not every action honours it: `ItemAction` ignores it.
+   */
   label?: string;
   htmlType?: 'button' | 'submit' | 'reset' | undefined;
   navigationOptions?: NavigateOptions;
@@ -298,6 +302,13 @@ export const useAction = function useAction(
   }: CubeUseActionProps,
   ref: FocusableRef<HTMLElement>,
 ) {
+  useWarn(label !== undefined, {
+    key: 'action-label-deprecated',
+    args: [
+      'The "label" property of Button, ItemButton, ItemAction and Action is deprecated. Use "aria-label" for the accessible name and "children" for visible text.',
+    ],
+  });
+
   const tracking = useTracking();
   const navigation = useContext(UIKitContext).navigation;
   const isDisabled = props.isDisabled;
@@ -356,7 +367,7 @@ export const useAction = function useAction(
 
   let { buttonProps, isPressed } = useButton(
     {
-      'aria-label': label, // @TODO: remove label prop
+      'aria-label': label, // deprecated, see `CubeUseActionProps.label`
       ...props,
       onPress: customOnPress,
     },

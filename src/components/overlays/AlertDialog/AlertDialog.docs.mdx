@@ -21,8 +21,8 @@ A modal dialog for important messages that require user acknowledgment. Extends 
 - **`danger`** `boolean` — Applies danger styling for destructive actions
 - **`noActions`** `boolean` — Hide the action buttons entirely
 - **`actions`** `object` — Customize buttons:
-  - `confirm` — Confirm button props or `false` to hide (default: `{ label: 'Ok', type: 'primary' }`)
-  - `cancel` — Cancel button props or `true` to show (default: hidden, uses `{ label: 'Cancel' }`)
+  - `confirm` — Confirm button props or `false` to hide (default: `{ children: 'Ok', type: 'primary' }`)
+  - `cancel` — Cancel button props or `true` to show (default: hidden, uses `{ children: 'Cancel' }`). Set a button's text with `children`; `label` still works but is deprecated
   - `secondary` — Optional secondary button props
 - **`size`** `'S' | 'M' | 'L' | 'small' | 'medium' | 'large'` — The size of the dialog
 - **`isDismissable`** `boolean` (default: `false`) — Whether the dialog is dismissable
@@ -56,7 +56,7 @@ These properties allow direct style application without using the `styles` prop:
     title="Confirm Delete"
     content="Are you sure you want to delete this item?"
     actions={{
-      confirm: { label: 'Delete', type: 'danger' },
+      confirm: { children: 'Delete', type: 'danger' },
       cancel: true,
     }}
   />

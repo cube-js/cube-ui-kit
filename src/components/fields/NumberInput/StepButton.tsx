@@ -4,7 +4,7 @@ import { useI18n } from '../../../i18n';
 import { CaretDownIcon } from '../../../icons/CaretDownIcon';
 import { CaretUpIcon } from '../../../icons/CaretUpIcon';
 import { DirectionIcon } from '../../../icons/DirectionIcon';
-import { Button } from '../../actions';
+import { Button } from '../../actions/Button/Button';
 
 const StepButtonElement = tasty(Button, {
   preventDefault: true,
@@ -47,7 +47,7 @@ export function StepButton(props) {
         up: props.direction === 'up',
         down: props.direction === 'down',
       }}
-      label={label}
+      aria-label={label}
       {...props}
     >
       <DirectionIcon

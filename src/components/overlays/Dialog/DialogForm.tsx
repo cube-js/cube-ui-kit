@@ -11,6 +11,7 @@ import { SubmitButton } from '../../form/Form/SubmitButton/SubmitButton';
 import { useForm } from '../../form/Form/use-form';
 
 import { useDialogContext } from './context';
+import { withDefaultButtonText } from './default-button-text';
 import { CubeDialogProps, Dialog } from './Dialog';
 import { ModernDialogForm } from './ModernDialogForm';
 
@@ -26,9 +27,9 @@ export interface CubeDialogFormProps<T extends FieldTypes = FieldTypes>
     Omit<CubeFormProps<T>, 'role' | 'children'> {
   /** Whether the submit button has a `danger` theme */
   danger?: boolean;
-  /** Properties for submit button. Use `label` to change text. */
+  /** Properties for submit button. Use `children` to change text. */
   submitProps?: CubeButtonProps;
-  /** Properties for cancel button. Use `label` to change text. */
+  /** Properties for cancel button. Use `children` to change text. */
   cancelProps?: CubeButtonProps;
   /** Preserve form values after submission or dismissal. */
   preserve?: boolean;
@@ -178,14 +179,18 @@ function LegacyDialogForm<T extends FieldTypes>(props: CubeDialogFormProps<T>) {
               <SubmitButton
                 qa={`${qa || ''}SubmitButton`}
                 theme={danger ? 'danger' : undefined}
-                label={t('dialogForm.submit', 'Submit')}
-                {...(submitProps || {})}
+                {...withDefaultButtonText(
+                  submitProps,
+                  t('dialogForm.submit', 'Submit'),
+                )}
               />
               <Button
                 qa={`${qa || ''}CancelButton`}
-                label={t('dialogForm.cancel', 'Cancel')}
                 onPress={onLocalDismiss}
-                {...(cancelProps || {})}
+                {...withDefaultButtonText(
+                  cancelProps,
+                  t('dialogForm.cancel', 'Cancel'),
+                )}
               />
             </ButtonGroup>
           </Footer>

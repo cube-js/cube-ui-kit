@@ -342,7 +342,7 @@ const DialogContent = forwardRef(function DialogContent(
         {isDismissable && (
           <CloseButton
             icon={closeIcon || <CloseIcon size={20} />}
-            label={t('dialog.dismiss', 'Dismiss')}
+            aria-label={t('dialog.dismiss', 'Dismiss')}
             onPress={() => onDismiss && onDismiss()}
           />
         )}

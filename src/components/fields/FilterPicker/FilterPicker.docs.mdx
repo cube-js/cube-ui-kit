@@ -174,7 +174,7 @@ These properties allow direct style application without using the `styles` prop:
 The `mods` property accepts the following modifiers you can override:
 
 - **`placeholder`** `boolean` — Applied when no selection is made
-- **`selected`** `boolean` — Applied when items are selected
+- **`selected`** `boolean` — Not set by the component. Pass `mods={{ selected: true }}` to give the trigger its brand-tinted selected fill, e.g. while a filter is active. Holding a value doesn't set it
 
 ## Sub-components
 
@@ -332,8 +332,8 @@ const categories = [
 
 ### Button Types
 
-- `outline` - Default outlined button style; `isSelected` adds brand-tinted fill
-- `clear` - Transparent background button; `isSelected` adds brand-tinted fill
+- `outline` - Default outlined button style; `mods={{ selected: true }}` adds a brand-tinted fill
+- `clear` - Transparent background button; `mods={{ selected: true }}` adds a brand-tinted fill
 - `primary` - Primary brand color button
 
 ### Sizes
