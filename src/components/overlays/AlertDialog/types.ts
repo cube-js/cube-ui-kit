@@ -24,10 +24,13 @@ export interface DialogProps
 
 export type AlertDialogResolveStatus = 'confirm' | 'secondary';
 
+/** What `useAlertDialogAPI().confirm()` resolves with. */
+export type AlertDialogConfirmStatus = AlertDialogResolveStatus | 'cancel';
+
 interface AlertDialogMeta {
   id: number;
   isClosed: boolean;
-  promise: Promise<AlertDialogResolveStatus>;
+  promise: Promise<AlertDialogConfirmStatus>;
   placement: 'top' | 'bottom';
   resolve: (status: AlertDialogResolveStatus) => void;
   reject: (reason) => void;

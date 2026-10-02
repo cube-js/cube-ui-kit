@@ -254,7 +254,13 @@ export {
   AlertDialog,
   useAlertDialogAPI,
 } from './components/overlays/AlertDialog';
-export type { CubeAlertDialogProps } from './components/overlays/AlertDialog';
+export type {
+  AlertDialogApi,
+  AlertDialogApiParams,
+  AlertDialogConfirmStatus,
+  AlertDialogResolveStatus,
+  CubeAlertDialogProps,
+} from './components/overlays/AlertDialog';
 
 export * from '@tenphi/tasty';
 export * from '@tenphi/glaze';

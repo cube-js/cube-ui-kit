@@ -55,12 +55,7 @@ export const UsingApi: StoryFn<DialogProps> = (args) => {
   return (
     <Button
       {...args}
-      onPress={async () =>
-        dialogAPI
-          .open(args)
-          .then(action('DialogClosed'))
-          .catch(action('DialogClosedWithReject'))
-      }
+      onPress={() => dialogAPI.confirm(args).then(action('DialogClosed'))}
     >
       Open Modal
     </Button>
@@ -83,7 +78,7 @@ export const UsingApiWithCancel: StoryFn<DialogProps> = (args) => {
       onPress={() => {
         const cancelDialog = new AbortController();
 
-        const openedDialog = dialogAPI.open(
+        const openedDialog = dialogAPI.confirm(
           {
             ...args,
             actions: {
@@ -97,9 +92,7 @@ export const UsingApiWithCancel: StoryFn<DialogProps> = (args) => {
           { cancelToken: cancelDialog.signal },
         );
 
-        openedDialog
-          .then(action('DialogClosed'))
-          .catch(action('DialogClosedWithReject'));
+        openedDialog.then(action('DialogClosed'));
       }}
     >
       Open Modal
