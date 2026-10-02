@@ -903,7 +903,7 @@ export const DynamicCollection = (props) => {
         {(item) => (
           <Menu.Item
             key={item.id}
-            icon={<Text styles={{ fontSize: '16px' }}>{item.icon}</Text>}
+            icon={<Text styles={{ fontSize: '2x' }}>{item.icon}</Text>}
             hotkeys={item.shortcut}
           >
             {item.label}
@@ -948,7 +948,7 @@ export const DynamicCollectionWithSections = (props) => {
             {(item) => (
               <Menu.Item
                 key={item.id}
-                icon={<Text styles={{ fontSize: '16px' }}>{item.icon}</Text>}
+                icon={<Text styles={{ fontSize: '2x' }}>{item.icon}</Text>}
                 hotkeys={item.shortcut}
               >
                 {item.label}

@@ -289,14 +289,6 @@ const DEFAULT_ICON_STYLES: Styles = {
   },
 };
 
-const ADDITION_STYLES: Styles = {
-  $: '>',
-  display: 'grid',
-  flow: 'column',
-  placeItems: 'center',
-  placeContent: 'stretch',
-};
-
 const ACTIONS_EVENT_HANDLERS = {
   onClick: (e: MouseEvent) => e.stopPropagation(),
   onPointerDown: (e: PointerEvent) => e.stopPropagation(),
@@ -470,8 +462,10 @@ const ItemElement = tasty({
         'max($block-padding, (($size - 4x) / 2) + $block-padding)',
     },
 
+    // eslint-disable-next-line tasty/no-style-spread -- icon base shared by Icon and RightIcon
     Icon: { ...DEFAULT_ICON_STYLES, gridArea: 'icon' },
 
+    // eslint-disable-next-line tasty/no-style-spread -- icon base shared by Icon and RightIcon
     RightIcon: { ...DEFAULT_ICON_STYLES, gridArea: 'rightIcon' },
 
     Label: {
@@ -519,7 +513,11 @@ const ItemElement = tasty({
     },
 
     Prefix: {
-      ...ADDITION_STYLES,
+      $: '>',
+      display: 'grid',
+      flow: 'column',
+      placeItems: 'center',
+      placeContent: 'stretch',
       gridArea: 'prefix',
       // The trailing value is `$prefix-gap` (see the token above): the grid
       // supplies no gap and `Label` drops its own left padding for any start
@@ -533,7 +531,11 @@ const ItemElement = tasty({
     },
 
     Suffix: {
-      ...ADDITION_STYLES,
+      $: '>',
+      display: 'grid',
+      flow: 'column',
+      placeItems: 'center',
+      placeContent: 'stretch',
       gridArea: 'suffix',
       // Mirror of `Prefix`: the leading value is `$suffix-gap`.
       padding: {

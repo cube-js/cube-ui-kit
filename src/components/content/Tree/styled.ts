@@ -153,6 +153,7 @@ const TOGGLE_BASE_STYLES: Styles = {
 export const TreeNodeToggle = tasty(Action, {
   qa: 'TreeNodeToggle',
   styles: {
+    // eslint-disable-next-line tasty/no-style-spread -- shared with TreeNodeTogglePlaceholder so leaf rows keep the toggle footprint
     ...TOGGLE_BASE_STYLES,
     color: { '': '#dark-02', ':hover': '#dark' },
     fill: { '': '#clear', ':hover': '#dark.04' },

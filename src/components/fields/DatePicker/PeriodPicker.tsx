@@ -20,7 +20,7 @@ import { useDatePickerState } from 'react-stately';
 import { useI18n } from '../../../i18n';
 import { FieldBaseProps } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
-import { extractStyles } from '../../../utils/styles';
+import { extractStyles, mergeStyleLayers } from '../../../utils/styles';
 import { useFieldProps, wrapWithField } from '../../form';
 import { Calendar } from '../../other/Calendar/Calendar';
 import { PeriodCalendar } from '../../other/Calendar/PeriodCalendar';
@@ -177,11 +177,15 @@ function PeriodPicker<T extends DateValue>(
       ref={targetRef}
       qa={qa || 'PeriodPicker'}
       inputType="datepicker"
-      styles={{ display: 'grid', ...styles, ...props.wrapperStyles }}
-      inputStyles={{
-        cursor: isDisabled || isReadOnly ? 'default' : 'pointer',
-        ...props.inputStyles,
-      }}
+      styles={mergeStyleLayers(
+        { display: 'grid' },
+        styles,
+        props.wrapperStyles,
+      )}
+      inputStyles={mergeStyleLayers(
+        { cursor: isDisabled || isReadOnly ? 'default' : 'pointer' },
+        props.inputStyles,
+      )}
       disableFocusRing={isFocusedButton}
       isDisabled={isDisabled}
       isInvalid={isInvalid}

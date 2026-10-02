@@ -26,6 +26,7 @@ const BadgeElement = tasty(Item, {
     },
     fill: {
       '': '#primary',
+      // eslint-disable-next-line tasty/no-style-spread -- per-theme fill states generated from THEMES
       ...FILL_STYLES,
     },
     preset: {

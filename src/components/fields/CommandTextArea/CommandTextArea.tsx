@@ -1,5 +1,4 @@
 import { Collection, Key, Node } from '@react-types/shared';
-import { Styles } from '@tenphi/tasty';
 import React, {
   ForwardedRef,
   forwardRef,
@@ -23,6 +22,7 @@ import {
   castNullableStringValue,
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
+import { mergeStyleLayers } from '../../../utils/styles';
 import { CollectionItem as Item } from '../../CollectionItem';
 import { useFieldProps } from '../../form';
 import { getListBoxOptionId } from '../ListBox/optionId';
@@ -732,10 +732,10 @@ function CommandTextArea<T extends object>(
   // cap. The concrete floor keeps the virtualized ListBox from collapsing to a
   // sliver (it has no intrinsic width), and `max-content` lets short option
   // lists size to their content. The user's `overlayStyles` still win on top.
-  const popoverOverlayStyles: Styles = {
-    width: '30x max-content 50vw',
-    ...overlayStyles,
-  };
+  const popoverOverlayStyles = mergeStyleLayers(
+    { width: '30x max-content 50vw' },
+    overlayStyles,
+  );
 
   // ---- assemble input props ---------------------------------------------
   const commandInputProps = mergeProps(

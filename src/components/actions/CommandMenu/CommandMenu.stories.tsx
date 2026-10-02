@@ -1275,30 +1275,24 @@ export const WithContextMenu = () => {
       onAction={onAction}
       {...props}
     >
-      <Menu.Item
-        key="copy"
-        icon={<Text styles={{ fontSize: '16px' }}>📋</Text>}
-      >
+      <Menu.Item key="copy" icon={<Text styles={{ fontSize: '2x' }}>📋</Text>}>
         Copy
       </Menu.Item>
-      <Menu.Item
-        key="paste"
-        icon={<Text styles={{ fontSize: '16px' }}>📄</Text>}
-      >
+      <Menu.Item key="paste" icon={<Text styles={{ fontSize: '2x' }}>📄</Text>}>
         Paste
       </Menu.Item>
-      <Menu.Item key="cut" icon={<Text styles={{ fontSize: '16px' }}>✂️</Text>}>
+      <Menu.Item key="cut" icon={<Text styles={{ fontSize: '2x' }}>✂️</Text>}>
         Cut
       </Menu.Item>
       <Menu.Item
         key="delete"
-        icon={<Text styles={{ fontSize: '16px' }}>🗑️</Text>}
+        icon={<Text styles={{ fontSize: '2x' }}>🗑️</Text>}
       >
         Delete
       </Menu.Item>
       <Menu.Item
         key="rename"
-        icon={<Text styles={{ fontSize: '16px' }}>✏️</Text>}
+        icon={<Text styles={{ fontSize: '2x' }}>✏️</Text>}
       >
         Rename
       </Menu.Item>

@@ -57,7 +57,7 @@ import { useFocus } from '../../../utils/react/interactions';
 import { focusProgrammatically } from '../../../utils/react/programmaticFocus';
 import { useOverlayEscapeGuard } from '../../../utils/react/useOverlayEscapeGuard';
 import { usePopoverSync } from '../../../utils/react/usePopoverSync';
-import { extractStyles } from '../../../utils/styles';
+import { extractStyles, mergeStyleLayers } from '../../../utils/styles';
 import { ItemAction } from '../../actions';
 import { isOwnActionsPress } from '../../actions/actions-run';
 import { ItemActionsWrapper } from '../../actions/ItemActionsWrapper';
@@ -626,7 +626,7 @@ function Select<T extends object>(
             data-popover-trigger
             showActions={showActions}
             skipActionsWidthTransition={skipActionsWidthTransition}
-            styles={{ ...inputStyles, ...triggerStyles }}
+            styles={mergeStyleLayers(inputStyles, triggerStyles)}
             theme={theme}
             size={size}
             shape={shape}
@@ -911,10 +911,10 @@ function Option({ item, state, styles, shouldUseVirtualFocus, size }) {
         pressed: isPressed,
       }}
       data-size={size}
-      styles={{
-        ...(styles as Styles),
-        ...(filteredItemProps.styles as Styles),
-      }}
+      styles={mergeStyleLayers(
+        styles as Styles,
+        filteredItemProps.styles as Styles,
+      )}
       labelProps={labelProps}
       descriptionProps={descriptionProps}
       defaultTooltipPlacement="right"
@@ -958,7 +958,9 @@ function SelectSection<T>(props: SelectSectionProps<T>) {
         <ListSectionHeading
           {...headingProps}
           size={size}
-          styles={{ ...headingStyles, '$inline-compensation': '0px' }}
+          styles={mergeStyleLayers(headingStyles, {
+            '$inline-compensation': '0px',
+          })}
         >
           {heading}
         </ListSectionHeading>

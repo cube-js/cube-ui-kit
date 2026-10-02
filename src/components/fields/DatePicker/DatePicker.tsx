@@ -18,7 +18,7 @@ import { useDatePickerState } from 'react-stately';
 import { useI18n } from '../../../i18n';
 import { FieldBaseProps } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
-import { extractStyles } from '../../../utils/styles';
+import { extractStyles, mergeStyleLayers } from '../../../utils/styles';
 import { useFieldProps, wrapWithField } from '../../form';
 import { Calendar } from '../../other/Calendar/Calendar';
 import { Dialog, DialogTrigger } from '../../overlays/Dialog';
@@ -79,10 +79,10 @@ function DatePicker<T extends DateValue>(
   // `props.styles` and lets the individual style props override it, which is the
   // precedence every other component uses; re-spreading `props.styles` here
   // would invert it. `wrapperStyles` stays the most specific and keeps winning.
-  let styles: Styles = {
-    ...extractStyles(props, CONTAINER_STYLES),
-    ...props.wrapperStyles,
-  };
+  let styles = mergeStyleLayers(
+    extractStyles(props, CONTAINER_STYLES),
+    props.wrapperStyles,
+  );
 
   let {
     qa,

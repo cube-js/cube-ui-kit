@@ -17,6 +17,7 @@ const CalendarCellElement = tasty({
 const CalendarButtonElement = tasty({
   'data-popover-keep': true,
   styles: {
+    // eslint-disable-next-line tasty/no-style-spread -- cell base shared with PeriodGrid
     ...CALENDAR_CELL_STYLES,
     width: '3x',
     height: '3x',

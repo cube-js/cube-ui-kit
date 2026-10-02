@@ -92,6 +92,7 @@ type ItemActionVariant =
 const ItemActionElement = tasty({
   qa: 'ItemAction',
   styles: {
+    // eslint-disable-next-line tasty/no-style-spread -- action base shared with ItemBadge
     ...ITEM_ACTION_BASE_STYLES,
     recipe: 'reset button',
     // Every variant below defines its own ring and overrides this one, which is
@@ -124,6 +125,7 @@ const ItemActionElement = tasty({
 
     Icon: {
       $: '>',
+      // eslint-disable-next-line tasty/no-style-spread -- Icon base shared with ItemBadge
       ...(ITEM_ACTION_BASE_STYLES.Icon as Styles),
       '$icon-size': 'min($local-icon-size, ($action-size - .25x))',
     },

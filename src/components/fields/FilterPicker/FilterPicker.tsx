@@ -33,7 +33,7 @@ import { DirectionIcon } from '../../../icons/DirectionIcon';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
 import { allowEscapeToPropagate } from '../../../utils/react/escapePropagation';
 import { processSelectionArray } from '../../../utils/selection';
-import { extractStyles } from '../../../utils/styles';
+import { extractStyles, mergeStyleLayers } from '../../../utils/styles';
 import { CubeItemButtonProps, ItemAction, ItemButton } from '../../actions';
 import { CubeItemProps } from '../../content/Item';
 import { Text } from '../../content/Text';
@@ -882,12 +882,14 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
             qa="FilterPickerOverlay"
             isDismissable={false}
             display="grid"
-            styles={{
-              gridRows: '1sf',
-              width: 'max($overlay-min-width, 30x) max-content 50vw',
-              '$overlay-min-width': '30x',
-              ...popoverStyles,
-            }}
+            styles={mergeStyleLayers(
+              {
+                gridRows: '1sf',
+                width: 'max($overlay-min-width, 30x) max-content 50vw',
+                '$overlay-min-width': '30x',
+              },
+              popoverStyles,
+            )}
             style={
               triggerWidthRef.current
                 ? ({

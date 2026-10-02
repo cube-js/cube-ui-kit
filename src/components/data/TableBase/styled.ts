@@ -6,11 +6,6 @@ import { Item } from '../../content/Item';
 import type { Styles } from '@tenphi/tasty';
 
 /**
- * Geometry shared by the three row groups. They cannot share a sub-element key,
- * so they share a const — the same technique `Item.tsx` uses for
- * `DEFAULT_ICON_STYLES` / `ADDITION_STYLES`.
- */
-/**
  * The refresh sweep: a band of reduced opacity travelling left to right, the
  * way ag-grid marks a grid that is reloading.
  *
@@ -28,11 +23,11 @@ const refreshSweep = keyframes({
   '100%': { 'mask-position': '0% 0' },
 });
 
-const ROW_STYLES: Styles = {
-  // The stretched `rowLink` anchor positions against this.
-  position: 'relative',
-};
-
+/**
+ * Geometry shared by the cells of every row group. They cannot share a
+ * sub-element key, so they share a const — the same technique `Item.tsx` uses
+ * for `DEFAULT_ICON_STYLES`.
+ */
 const CELL_STYLES: Styles = {
   boxSizing: 'border-box',
   // Row height lives on the CELLS, not the `<tr>`: table layout ignores
@@ -329,7 +324,7 @@ export const TableElement = tasty({
     },
     HeadRow: {
       $: '> Scroller > Table > Head >',
-      ...ROW_STYLES,
+      position: 'relative',
       // Header rows never carry interaction paint; neutralise the inherited
       // tokens so nothing can leak in from a row above.
       '#row-base': '#surface-2',
@@ -339,6 +334,7 @@ export const TableElement = tasty({
     },
     HeaderGroupCell: {
       $: '> Scroller > Table > Head > HeadRow >',
+      // eslint-disable-next-line tasty/no-style-spread -- cell geometry shared by the cells of every row group
       ...CELL_STYLES,
       padding: 0,
       paddingInline: 0,
@@ -353,6 +349,7 @@ export const TableElement = tasty({
     },
     HeaderCell: {
       $: '> Scroller > Table > Head > HeadRow >',
+      // eslint-disable-next-line tasty/no-style-spread -- cell geometry shared by the cells of every row group
       ...CELL_STYLES,
       // No padding at all: the `Item` inside fills the cell edge to edge and
       // supplies the indent itself, per side. That is what lets a leading icon
@@ -718,7 +715,6 @@ export const TableElement = tasty({
     },
     Row: {
       $: '> Scroller > Table > Body >',
-      ...ROW_STYLES,
       // `position: relative` (below) is also the containing block for
       // `RowLink`, which stretches over the whole row from inside the
       // row-header cell, and for the drop indicator.
@@ -801,6 +797,7 @@ export const TableElement = tasty({
     },
     Cell: {
       $: '> Scroller > Table > Body > Row >',
+      // eslint-disable-next-line tasty/no-style-spread -- cell geometry shared by the cells of every row group
       ...CELL_STYLES,
       // A row-header cell is a `<th>`, which the UA renders bold. Weight is the
       // table's decision, not the tag's — and a UA rule beats inheritance, so it
@@ -952,7 +949,7 @@ export const TableElement = tasty({
     },
     FootRow: {
       $: '> Scroller > Table > Foot >',
-      ...ROW_STYLES,
+      position: 'relative',
       '#row-base': '#surface-2',
       '#row-overlay': '#clear',
       '#row-text': '#surface-text',
@@ -960,6 +957,7 @@ export const TableElement = tasty({
     },
     FootCell: {
       $: '> Scroller > Table > Foot > FootRow >',
+      // eslint-disable-next-line tasty/no-style-spread -- cell geometry shared by the cells of every row group
       ...CELL_STYLES,
       border: '1bw #border top',
       preset: 't3m',
@@ -984,6 +982,7 @@ const TREE_TOGGLE_STYLES: Styles = {
 export const TableTreeToggle = tasty(Action, {
   qa: 'TableTreeToggle',
   styles: {
+    // eslint-disable-next-line tasty/no-style-spread -- shared with TableTreeTogglePlaceholder so leaf rows keep the toggle footprint
     ...TREE_TOGGLE_STYLES,
     color: { '': '#dark-02', ':hover': '#dark' },
     fill: { '': '#clear', ':hover': '#dark.04' },

@@ -20,6 +20,7 @@ import type { Props } from '../../../props';
 const TrayWrapperElement = tasty({
   qa: 'TrayWrapper',
   styles: {
+    // eslint-disable-next-line tasty/no-style-spread -- overlay wrapper base shared with ModalWrapper
     ...OVERLAY_WRAPPER_STYLES,
     placeContent: 'end center',
     placeItems: 'end center',

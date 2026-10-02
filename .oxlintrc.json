@@ -105,6 +105,9 @@
     "tasty/prefer-hide": "warn",
     "tasty/no-raw-color-values": "warn",
     "tasty/prefer-directional-shorthand": "warn",
+    "tasty/no-style-spread": "warn",
+    "tasty/no-state-in-selector": "warn",
+    "tasty/prefer-element-selector": "warn",
     "tasty/prefer-longhand-property": "error",
     "cube-ui-kit/no-redundant-default-prop": [
       "error",

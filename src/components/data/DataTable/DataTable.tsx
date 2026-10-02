@@ -8,7 +8,7 @@ import { useMultipleSelectionState } from 'react-stately';
 import { useEvent, useWarn } from '../../../_internal/hooks';
 import { useI18n } from '../../../i18n';
 import { useCombinedRefs } from '../../../utils/react';
-import { extractStyles } from '../../../utils/styles';
+import { extractStyles, mergeStyleLayers } from '../../../utils/styles';
 import { clampPage, getPageInfo } from '../../navigation/Pagination';
 import { DraggableCollection } from '../../shared/DraggableCollection';
 import { ItemTableFooter } from '../ItemTable/ItemTableFooter';
@@ -612,7 +612,10 @@ function DataTable<T = any>(
     onRangeChange: onCellRangeChange,
   });
 
-  const rootStyles = { ...extractStyles(props, CONTAINER_STYLES), ...styles };
+  const rootStyles = mergeStyleLayers(
+    extractStyles(props, CONTAINER_STYLES),
+    styles,
+  );
 
   const smallestPageSize = pageSizeOptions?.length
     ? Math.min(...pageSizeOptions)

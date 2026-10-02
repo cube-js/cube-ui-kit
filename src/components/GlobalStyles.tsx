@@ -2,6 +2,7 @@ import { useGlobalStyles, useRawCSS } from '@tenphi/tasty';
 
 import { getTokens } from '../tokens';
 import { usePaletteValue } from '../tokens/palette-config';
+import { mergeStyleLayers } from '../utils/styles';
 
 import type { Styles } from '@tenphi/tasty';
 
@@ -290,7 +291,7 @@ export function GlobalStyles(props: GlobalStylesProps) {
 
   // Merge token styles with the base body styles, then the custom ones. Keys
   // are passed through as-is (tasty handles both camelCase and kebab-case).
-  const bodyTokenStyles: Styles = { ...tokens, ...BODY_STYLES, ...bodyStyles };
+  const bodyTokenStyles = mergeStyleLayers(tokens, BODY_STYLES, bodyStyles);
 
   // Apply tokens and body styles via useGlobalStyles.
   //

@@ -25,6 +25,7 @@ const AlertElement = tasty({
     },
     fill: {
       '': '#clear',
+      // eslint-disable-next-line tasty/no-style-spread -- per-theme fill states generated from THEMES
       ...Object.keys(THEMES).reduce((map, type) => {
         map[`type=${type}`] = THEMES[type].fill;
 
@@ -33,6 +34,7 @@ const AlertElement = tasty({
     },
     border: {
       '': '#clear',
+      // eslint-disable-next-line tasty/no-style-spread -- per-theme border states generated from THEMES
       ...Object.keys(THEMES).reduce((map, type) => {
         map[`type=${type}`] = THEMES[type].border;
 
