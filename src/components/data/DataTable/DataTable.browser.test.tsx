@@ -755,6 +755,99 @@ describe('DataTable column colors', () => {
 });
 
 /**
+ * Column `cellStyles` against the table's own cell paint, in the tier that runs
+ * the cascade. The table paints cells through a long sub-element chain, so a
+ * column's class only wins because its rule is built to outrank that chain —
+ * jsdom can show the rule exists, not that it wins.
+ */
+describe('DataTable column cellStyles cascade', () => {
+  const TOTAL = { ...ROWS[0], id: 'total', region: 'Total' };
+
+  /** The computed value of `color: <token>`, read off a bare element. */
+  function tokenColor(token: string): string {
+    const probe = document.createElement('span');
+
+    probe.style.color = `var(--${token}-color)`;
+    document.body.appendChild(probe);
+
+    try {
+      return getComputedStyle(probe).color;
+    } finally {
+      probe.remove();
+    }
+  }
+
+  const colorOf = (selector: string) =>
+    getComputedStyle(grid().querySelector<HTMLElement>(selector)!).color;
+  const body = (key: string) =>
+    `tbody tr[data-element="Row"]:not([data-pinned]) [data-key="${key}"]`;
+  const total = (key: string) => `tr[data-pinned="bottom"] [data-key="${key}"]`;
+
+  it('beats the default cell colour, a tint and the table-level cellStyles', async () => {
+    renderWithRoot(
+      <DataTable
+        data={ROWS.slice(0, 3)}
+        pinnedBottomRows={[TOTAL]}
+        cellStyles={{ color: '#success-text' }}
+        columns={[
+          { key: 'region', title: 'Region' },
+          {
+            key: 'channel',
+            title: 'Channel',
+            cellStyles: { color: '#danger-text' },
+          },
+          {
+            key: 'orders',
+            title: 'Orders',
+            dataType: 'number',
+            // Cloud's CSV preview: dim only the pinned "…" row.
+            cellStyles: (ctx) =>
+              ctx.section === 'pinnedBottom'
+                ? { color: '#surface-text-soft-2' }
+                : undefined,
+          },
+          {
+            key: 'revenue',
+            title: 'Revenue',
+            dataType: 'number',
+            color: '#0ea5e9',
+            cellStyles: { color: '#danger-text' },
+          },
+        ]}
+        height="420px"
+        width="800px"
+      />,
+    );
+
+    await vi.waitFor(() =>
+      expect(grid().querySelector(total('orders'))).not.toBeNull(),
+    );
+
+    const danger = tokenColor('danger-text');
+    const success = tokenColor('success-text');
+    const soft = tokenColor('surface-text-soft-2');
+
+    // The three are distinct, or the assertions below prove nothing.
+    expect(new Set([danger, success, soft]).size).toBe(3);
+
+    // The table-level slot still reaches a column with no styles of its own…
+    expect(colorOf(body('region'))).toBe(success);
+    // …and a column's own styles win over it, over the table's default paint
+    // and over the column's tint.
+    expect(colorOf(body('channel'))).toBe(danger);
+    expect(colorOf(body('revenue'))).toBe(danger);
+
+    // The function form, on a number column, only where it returned styles.
+    expect(colorOf(total('orders'))).toBe(soft);
+    expect(colorOf(body('orders'))).toBe(success);
+    expect(
+      getComputedStyle(grid().querySelector(total('orders'))!)
+        .fontVariantNumeric,
+    ).toBe('tabular-nums');
+  });
+});
+
+/**
  * `rowSize` in the only tier that can measure a rendered row.
  *
  * jsdom can assert which token won, but every element there is zero-sized, so it

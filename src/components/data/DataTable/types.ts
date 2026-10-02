@@ -25,7 +25,9 @@ import type {
 export interface CubeDataTableColumn<T = any> extends CubeTableColumn<T> {
   /**
    * Drives the default alignment and numeric font. `number` right-aligns and
-   * switches to tabular figures so digits line up down the column.
+   * switches to tabular figures so digits line up down the column. The figures
+   * sit under the column's own `cellStyles`, in either form, so those still
+   * apply and can override them.
    */
   dataType?: 'string' | 'number' | 'boolean' | 'date' | 'unknown';
 }

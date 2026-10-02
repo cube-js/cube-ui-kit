@@ -151,7 +151,7 @@ interface CubeItemTableColumn<T> {
   compare?: (a, b, rowA, rowB) => number;  // client-side comparator
 
   render?: (value, row, i, ctx) => ReactNode;
-  cellStyles?: Styles | ((ctx) => Styles | undefined);
+  cellStyles?: Styles | ((ctx) => Styles | undefined); // tasty styles for this column's body cells
   cellProps?: (ctx) => Record<string, any> | undefined;
 
   align?: 'start' | 'center' | 'end';
@@ -162,6 +162,8 @@ interface CubeItemTableColumn<T> {
   meta?: Record<string, unknown>;
 }
 ```
+
+**`cellStyles` is tasty, not inline CSS.** Tokens, units, presets, recipes and state maps all work, and a state key asks about the cell itself, so `{ color: { '': '#surface-text', '@own(pinned=bottom)': '#surface-text-soft-2' } }` dims only a pinned row. The function form runs per cell with the same `ctx` as `render`, for styles that depend on the row: `(ctx) => ctx.isSelected ? { fill: '#purple.10' } : undefined`. Cells with equal styles share one class, so a function that returns a few distinct objects costs a few classes, not one per cell. A column's own styles win over the table's cell paint, its `color` tint and the table-level `cellStyles`.
 
 **The value pipeline is the escape hatch.** `getValue`, `format` and `compare` exist so a column whose displayed text differs from its raw value stays sortable, searchable and copyable. `render` is for appearance only — sorting and searching never see its output, which is why an object-valued column with no `format` renders empty rather than `"[object Object]"`.
 

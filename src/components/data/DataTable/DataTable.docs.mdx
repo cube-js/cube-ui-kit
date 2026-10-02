@@ -150,6 +150,24 @@ Per column, on `CubeDataTableColumn`: `isReorderable`, `color` and `colorScope` 
 
 Presentational, not a Cube type. `number` right-aligns the column and switches it to tabular figures, so digits line up down the column and a total lines up with the rows above it.
 
+The figures sit under the column's own `cellStyles`, so those still apply in either form. A function is still called per cell, and its result is merged over the figures.
+
+#### Column `cellStyles`
+
+Tasty styles for one column's body cells, exactly as in [ItemTable](/docs/data-itemtable--docs): tokens, units, presets and state maps all work, and a state key asks about the cell itself. The function form runs per cell with the cell's context, which is how a pinned row is styled apart from the body:
+
+```jsx
+{
+  key: 'orders',
+  title: 'Orders',
+  dataType: 'number',
+  cellStyles: (ctx) =>
+    ctx.section === 'pinnedBottom' ? { color: '#surface-text-soft-2' } : undefined,
+}
+```
+
+Cells with equal styles share one class, so a function that returns a few distinct objects costs a few classes, however many rows there are. A column's own styles win over the table's cell paint, its `color` tint and the table-level `cellStyles` below.
+
 Loading, empty and error states, pagination, footer slots, virtualization, column resize and persistence all behave exactly as they do in `ItemTable` — they come from the shared renderer.
 
 ### Base Properties

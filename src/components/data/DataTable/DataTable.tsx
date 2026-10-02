@@ -40,6 +40,7 @@ import { useTableStorage } from '../TableBase/use-table-storage';
 import { useTableTreeState } from '../TableBase/use-table-tree-state';
 
 import type { Key } from '@react-types/shared';
+import type { Styles } from '@tenphi/tasty';
 import type { ForwardedRef, ReactElement } from 'react';
 import type {
   CubeTableColumnGroupHeader,
@@ -96,6 +97,30 @@ function buildColumnModel<T>(
   visit(definitions, []);
 
   return { columns, headerPaths };
+}
+
+/** What `dataType: 'number'` adds to a column's own `cellStyles`. */
+const NUMERIC_CELL_STYLES: Styles = { fontVariantNumeric: 'tabular-nums' };
+
+/**
+ * Folds the numeric default under a column's own `cellStyles`, in either form.
+ * A function stays a function, called per cell with its result merged over the
+ * default, so a numeric column keeps reacting to its cell context.
+ */
+function numericCellStyles<T>(
+  cellStyles: CubeDataTableColumn<T>['cellStyles'],
+): CubeDataTableColumn<T>['cellStyles'] {
+  if (typeof cellStyles === 'function') {
+    return (ctx) => {
+      const own = cellStyles(ctx);
+
+      return own ? { ...NUMERIC_CELL_STYLES, ...own } : NUMERIC_CELL_STYLES;
+    };
+  }
+
+  return cellStyles
+    ? { ...NUMERIC_CELL_STYLES, ...cellStyles }
+    : NUMERIC_CELL_STYLES;
 }
 
 function defaultGetRowKey<T>(rowKey: string) {
@@ -262,12 +287,7 @@ function DataTable<T = any>(
           ...column,
           align: column.align ?? (isNumeric ? 'end' : 'start'),
           cellStyles: isNumeric
-            ? {
-                fontVariantNumeric: 'tabular-nums',
-                ...(typeof column.cellStyles === 'object'
-                  ? column.cellStyles
-                  : null),
-              }
+            ? numericCellStyles(column.cellStyles)
             : column.cellStyles,
         } as CubeDataTableColumn<T>;
       }),
