@@ -54,7 +54,7 @@ Customizes the root element of the component.
 
 **Sub-elements:**
 
-- `Icon` - The status icon wrapper. Colored by the `status` modifier, padded by a quarter of `--icon-size` on every side so the room around the icon grows with it, and that room is the whole distance to the title (no padding when `isCompact`). Wraps a custom `icon` too, with the same room and without a status color. Not rendered for a status without an icon (`404`, `403`, `500`)
+- `Icon` - The status icon wrapper. Colored by the `status` modifier, padded on every side by `3x`, or a quarter of `--icon-size` when that is larger (an icon above `12x`), so the room never drops below the spacing between the other blocks, and that room is the whole distance to the title (no padding when `isCompact`). Wraps a custom `icon` too, with the same room and without a status color. Not rendered for a status without an icon (`404`, `403`, `500`)
 - `Title` - The text block holding the title and the subtitle
 - `Content` - The free `children` block
 - `Actions` - The `actions` block

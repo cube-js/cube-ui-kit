@@ -142,9 +142,10 @@ const Container = tasty({
       $: '>',
       display: 'grid',
       gridArea: 'icon',
-      // Room around the icon grows with it, so the large icon is not crowded
+      // At least the 3x between the other blocks; an icon above 12x gets a
+      // quarter of its size, so a big one is not crowded
       padding: {
-        '': '($icon-size / 4)',
+        '': 'max($icon-size / 4, 3x)',
         compact: '0',
       },
       // A custom icon keeps its own color
