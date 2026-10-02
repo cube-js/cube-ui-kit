@@ -60,22 +60,24 @@ export function AlertDialogZone(props: DialogZoneProps) {
       } as unknown as T;
     };
 
-    if (typeof actions === 'undefined') return {};
+    // `AlertDialog` shows the confirm button unless it is `false`, so an
+    // omitted one has to resolve too, not fall through to the dismissal.
+    const { confirm = true, secondary, cancel } = actions ?? {};
 
     return {
-      confirm: mergeActionProps(actions.confirm, 'confirm'),
-      secondary: mergeActionProps(actions.secondary, 'secondary'),
+      confirm: mergeActionProps(confirm, 'confirm'),
+      secondary: mergeActionProps(secondary, 'secondary'),
       cancel:
-        typeof actions.cancel === 'undefined'
+        typeof cancel === 'undefined'
           ? undefined
-          : typeof actions.cancel === 'boolean'
-            ? actions.cancel
+          : typeof cancel === 'boolean'
+            ? cancel
               ? { onPress: () => reject(undefined) }
               : false
             : {
-                ...(actions.cancel as CubeButtonProps),
+                ...(cancel as CubeButtonProps),
                 onPress: (e) => {
-                  (actions.cancel as CubeButtonProps).onPress?.(e);
+                  (cancel as CubeButtonProps).onPress?.(e);
                   reject(undefined);
                 },
               },

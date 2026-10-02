@@ -93,8 +93,10 @@ export function AlertDialogApiProvider(props) {
         };
 
         setOpenedDialog((openedDialog) => {
-          // we already have opened dialog, so we reject opening another
-          if (openedDialog !== null) {
+          // Another dialog is open, so this one can't be. One that is only
+          // animating out gives way: its cleanup checks the id, so it leaves
+          // the new dialog alone.
+          if (openedDialog !== null && !openedDialog.meta.isClosed) {
             currentDialog.meta.reject(
               new Error(
                 "Another dialog is already opened. It's a bad practice to open more than one <AlertDialog /> at the same time",
@@ -129,11 +131,8 @@ export function AlertDialogApiProvider(props) {
  * and with an `Error` when the dialog cannot open. Handle the rejection, and
  * tell the two apart: a cancel is not a failure.
  *
- * Configure `actions.confirm` explicitly. The default Ok button, shown when it
- * is omitted, rejects with `undefined` instead of resolving `'confirm'`.
- *
- * ***Important*** only one alert dialog can be open at a time. `open` rejects
- * while another one is open, and for about 300 ms after one closes.
+ * ***Important*** only one alert dialog can be open at a time: `open` rejects
+ * while another one is open. A dialog that is already closing gives way.
  *
  * @example opening dialog on Button click.
  * const { open } = useAlertDialogAPI();

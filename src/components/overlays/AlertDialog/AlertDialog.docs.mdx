@@ -74,7 +74,7 @@ These properties allow direct style application without using the `styles` prop:
 
 ## Imperative API
 
-`useAlertDialogAPI()` opens an alert dialog from an event handler, with no `DialogTrigger` to render. It works anywhere under `<Root>`.
+`useAlertDialogAPI()` opens an alert dialog from code, such as an event handler, with no `DialogTrigger` to render. It works anywhere under `<Root>`.
 
 - **`open(props, params?)`** `Promise<'confirm' | 'secondary'>` — Opens the dialog. Resolves with the action the user picked, and rejects when the dialog closes without one or cannot open.
 
@@ -89,7 +89,7 @@ These properties allow direct style application without using the `styles` prop:
 
 - **`cancelToken`** `AbortSignal` — Closes the dialog when aborted
 
-Configure `actions.confirm` explicitly, as `true` or as button props. When it is omitted, the dialog still shows a default Ok button, but pressing it rejects with `undefined` instead of resolving `'confirm'`.
+The confirm button resolves `'confirm'` whether you configure `actions.confirm` or leave the default Ok button. Set it to `false` to hide it.
 
 ### How the promise settles
 
@@ -101,7 +101,7 @@ Configure `actions.confirm` explicitly, as `true` or as button props. When it is
 | `cancelToken` aborted, before or while the dialog is open | rejects with `undefined` |
 | `content` calls `resolve(status)` | resolves `status` |
 | `content` calls `reject(reason)` | rejects with `reason` (`undefined` for `reject()`) |
-| Another alert dialog is open or still closing | rejects with an `Error` |
+| Another alert dialog is open | rejects with an `Error` |
 
 A rejection with `undefined` is a cancel: the user chose not to act, so return quietly. Anything else is a real failure; rethrow it or report it. A caller with no rejection handler leaves an unhandled rejection on every cancel.
 
@@ -167,4 +167,4 @@ Passing a signal that is already aborted rejects with `undefined` right away, wi
 
 ### One dialog at a time
 
-Only one alert dialog can be open. A closed dialog also stays mounted for about 300 ms while it animates out, and `open` rejects with an `Error` during that time too. So a second dialog opened straight from the first one's result, such as a follow-up confirmation, fails to open. Open dialogs from event handlers rather than from a mount effect: in development, React's StrictMode runs the effect twice, and its second `open` lands while the first dialog is closing.
+Only one alert dialog can be open: while one is, `open` rejects with an `Error`. A dialog that is already closing gives way to the new one, so a follow-up dialog opened from the previous one's result, such as a second confirmation, shows normally.
