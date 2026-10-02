@@ -618,8 +618,11 @@ export const DEFAULTS: DefaultsRegistry = {
     },
     Result: {
       props: {
+        boxSizing: { kind: 'default', value: 'border-box' },
         flow: { kind: 'default', value: 'column' },
         isCompact: { kind: 'default', value: false },
+        layout: { kind: 'default', value: 'default' },
+        size: { kind: 'default', value: 'medium' },
         status: { kind: 'default', value: 'info' },
       },
     },
@@ -812,6 +815,7 @@ export const DEFAULTS: DefaultsRegistry = {
         gridArea: { kind: 'default', value: 'title' },
         level: { kind: 'default', value: 1 },
         margin: { kind: 'default', value: 0 },
+        slot: { kind: 'default', value: 'title' },
       },
     },
     Tooltip: {
