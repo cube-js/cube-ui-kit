@@ -245,6 +245,18 @@ export const Stacked: StoryFn<CubeResultProps> = () => (
     >
       <Alert>Refreshing the invoices in the background.</Alert>
     </Result>
+    <Result
+      size="large"
+      layout="stacked"
+      title="Access is denied"
+      subtitle="Request access from the administrator."
+      icon={
+        <Icon color="#warning">
+          <IconLock />
+        </Icon>
+      }
+      actions={<Result.Action type="primary">Request access</Result.Action>}
+    />
   </Layout.Grid>
 );
 Stacked.parameters = {

@@ -54,7 +54,7 @@ Customizes the root element of the component.
 
 **Sub-elements:**
 
-- `Icon` - The status icon wrapper. Colored by the `status` modifier, padded by a quarter of `--icon-size` so the room around the icon grows with it (no padding when `isCompact`). Not rendered when a custom `icon` is passed
+- `Icon` - The status icon wrapper. Colored by the `status` modifier, padded by a quarter of `--icon-size` on every side so the room around the icon grows with it, and that room is the whole distance to the title (no padding when `isCompact`). Wraps a custom `icon` too, with the same room and without a status color. Not rendered for a status without an icon (`404`, `403`, `500`)
 - `Title` - The text block holding the title and the subtitle
 - `Content` - The free `children` block
 - `Actions` - The `actions` block
@@ -65,7 +65,7 @@ Customizes the root element of the component.
 - `flow` — `column`
 - `placeContent` — `center` (switches to `start` when `isCompact`)
 - `placeItems` — `center` (switches to `start` when `isCompact`)
-- `gap` — `3x` (switches to `2x 1x` when `isCompact`)
+- `gap` — `0`; `Content` and `Actions` keep `3x` from the block above with a top margin (`2x 1x` and no margins when `isCompact`)
 - `padding` — `6x 4x` (`0` when `isCompact`; `1.5x` when `layout="stacked"`, on top of the host's padding, e.g. a dialog `Content`)
 - `textAlign` — `center` (switches to `left` when `isCompact`)
 - `boxSizing` — `border-box`
@@ -93,7 +93,7 @@ The root element exposes these modifiers as `data-*` attributes:
 | `compact` | `boolean` | Set by `isCompact`: horizontal icon + title layout |
 | `size` | `'medium' \| 'large'` | Set by `size`; `medium` when `isCompact` |
 | `layout` | `'default' \| 'stacked'` | Set by `layout`; `default` when `isCompact` |
-| `status` | `CubeResultStatus` | Set by `status`; drives the icon color |
+| `status` | `CubeResultStatus` | Set by `status`, `info` by default; drives the icon color. Not set when a custom `icon` is passed |
 
 ## Variants
 

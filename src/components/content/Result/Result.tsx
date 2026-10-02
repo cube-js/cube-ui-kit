@@ -81,7 +81,8 @@ export type CubeResultStatus =
   | 403
   | 500;
 
-type StatusIconMap = Record<CubeResultStatus, ComponentType>;
+// `null` for a status without an icon, so no empty slot is rendered
+type StatusIconMap = Record<CubeResultStatus, ComponentType | null>;
 
 const Container = tasty({
   qa: 'ResultContainer',
@@ -101,8 +102,10 @@ const Container = tasty({
       '': 'center',
       compact: 'start',
     },
+    // Outside compact the blocks below the title space themselves, so the
+    // icon's own room is the whole distance to the title
     gap: {
-      '': '3x',
+      '': '0',
       compact: '2x 1x',
     },
     padding: {
@@ -140,8 +143,10 @@ const Container = tasty({
         '': '($icon-size / 4)',
         compact: '0',
       },
+      // A custom icon keeps its own color
       color: {
-        '': '#purple',
+        '': 'inherit',
+        'status=info': '#purple',
         'status=success': '#success',
         'status=error': '#danger',
         'status=warning': '#warning',
@@ -163,6 +168,10 @@ const Container = tasty({
       $: '>',
       gridArea: 'content',
       display: 'block',
+      margin: {
+        '': 'top 3x',
+        compact: '0',
+      },
       placeSelf: {
         '': 'auto',
         'layout=stacked': 'stretch',
@@ -173,6 +182,10 @@ const Container = tasty({
       $: '>',
       gridArea: 'actions',
       display: 'flex',
+      margin: {
+        '': 'top 3x',
+        compact: '0',
+      },
       flow: {
         '': 'row wrap',
         'layout=stacked': 'column',
@@ -223,9 +236,9 @@ const statusIconMap: StatusIconMap = {
   info: () => <IconInfoCircleFilled />,
   warning: () => <IconAlertTriangleFilled />,
   // TODO: Needs to be implemented in the future
-  404: () => null,
-  403: () => null,
-  500: () => null,
+  404: null,
+  403: null,
+  500: null,
 };
 
 function Result(props: CubeResultProps, ref) {
@@ -260,23 +273,26 @@ function Result(props: CubeResultProps, ref) {
 
   const isLarge = size === 'large';
 
-  const StatusIcon =
-    status && statusIconMap.hasOwnProperty(status)
-      ? statusIconMap[status]
-      : statusIconMap.info;
+  // An unknown status falls back to `info` for the color too, not only the icon
+  const knownStatus: CubeResultStatus =
+    status && statusIconMap.hasOwnProperty(status) ? status : 'info';
+  const StatusIcon = statusIconMap[knownStatus];
 
-  const iconNode = icon || (
-    <div data-element="Icon">
-      <StatusIcon />
-    </div>
-  );
+  // A custom icon shares the status icon's wrapper, so it gets the same room
+  const iconContent = icon || (StatusIcon && <StatusIcon />);
+  const iconNode = iconContent && <div data-element="Icon">{iconContent}</div>;
 
   const styles = extractStyles(otherProps, CONTAINER_STYLES);
 
   return (
     <Container
       {...mergeProps(filterBaseProps(otherProps, { eventProps: true }), {
-        mods: { compact: isCompact, size, layout, status: status ?? 'info' },
+        mods: {
+          compact: isCompact,
+          size,
+          layout,
+          status: icon ? undefined : knownStatus,
+        },
       })}
       ref={ref}
       styles={styles}

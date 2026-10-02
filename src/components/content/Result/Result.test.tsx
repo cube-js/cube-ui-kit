@@ -142,10 +142,47 @@ describe('<Result />', () => {
     );
   });
 
-  it('replaces the status icon with a custom one', () => {
-    render(<Result title="Locked" icon={<span data-qa="CustomIcon" />} />);
+  it('renders no icon slot for a status without an icon', () => {
+    render(<Result title="Not found" status={404} />);
 
-    expect(screen.getByTestId('CustomIcon')).toBeInTheDocument();
+    expect(
+      screen
+        .getByTestId('ResultContainer')
+        .querySelector('[data-element="Icon"]'),
+    ).toBeNull();
+  });
+
+  it('puts a custom icon in the status icon wrapper without a status color', () => {
+    const { rerender } = render(
+      <Result title="Locked" icon={<span data-qa="CustomIcon" />} />,
+    );
+
+    const wrapper = screen.getByTestId('CustomIcon').parentElement;
+
+    expect(wrapper).toHaveAttribute('data-element', 'Icon');
+    expect(wrapper?.parentElement).toBe(screen.getByTestId('ResultContainer'));
+    expect(wrapper?.querySelector('svg')).toBeNull();
+    expect(screen.getByTestId('ResultContainer')).not.toHaveAttribute(
+      'data-status',
+    );
+
+    // Still uncolored when `status` is passed too
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    rerender(
+      <Result
+        title="Locked"
+        status="warning"
+        icon={<span data-qa="CustomIcon" />}
+      />,
+    );
+
+    expect(screen.getByTestId('ResultContainer')).not.toHaveAttribute(
+      'data-status',
+    );
+    expect(warn).toHaveBeenCalled();
+
+    warn.mockRestore();
   });
 
   it('labels a dialog with its title when the dialog has no header', () => {
