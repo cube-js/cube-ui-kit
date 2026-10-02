@@ -50,8 +50,11 @@ function wrap(styles: Styles): Styles {
   if (!wrapped) {
     // Recipes resolve only at the top level of a style object, so they are
     // expanded before the styles move one level down.
-    const cell: Styles = { ...resolveRecipes(styles), $: SELF };
-    const top: Styles = {};
+    const cell: Record<string, unknown> = {
+      ...resolveRecipes(styles),
+      $: SELF,
+    };
+    const top: Record<string, unknown> = {};
 
     for (const key of TOP_LEVEL_KEYS) {
       if (key in cell) {
@@ -60,7 +63,7 @@ function wrap(styles: Styles): Styles {
       }
     }
 
-    wrapped = { ...top, ColumnCell: cell };
+    wrapped = { ...top, ColumnCell: cell } as Styles;
     WRAPPED.set(styles, wrapped);
   }
 

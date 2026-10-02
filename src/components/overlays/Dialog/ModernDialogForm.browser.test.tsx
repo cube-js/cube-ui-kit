@@ -14,9 +14,10 @@ import { DialogForm } from './DialogForm';
  * A modern `DialogForm` (one driven by a controller) marked its whole `<form>`
  * `data-popover-keep`, so a press on its buttons would not dismiss a popover
  * the dialog lives in. A field's listbox reads the same attribute as "a click
- * here is not outside me", so an open `ComboBox`, `Select`, `Picker` or
- * `FilterPicker` stayed open on a click anywhere in the dialog and closed only
- * on a click outside it (CUB-5251). The form now opts out of press dismissal
+ * here is not outside me", so an open `Picker` or `FilterPicker` stayed open
+ * on a click anywhere in the dialog and closed only on a click outside it
+ * (CUB-5251). `ComboBox` and `Select` close on blur either way; they are here
+ * for coverage. The form now opts out of press dismissal
  * alone, with `data-popover-keep-on-press`. The legacy branch never set either.
  * Real clicks need a browser: whether the click moves focus, and where, is
  * what decides it.

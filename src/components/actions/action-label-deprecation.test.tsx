@@ -106,6 +106,26 @@ describe('action `label` deprecation', () => {
     ).toHaveTextContent('Submit');
   });
 
+  it('keeps the default text beside an icon given as a function', () => {
+    renderWithRoot(
+      <DialogContainer isOpen onDismiss={() => {}}>
+        <DialogForm
+          title="Edit"
+          submitProps={{
+            icon: ({ loading }) => (loading ? <IconTrash /> : null),
+          }}
+          onSubmit={() => {}}
+        >
+          Body
+        </DialogForm>
+      </DialogContainer>,
+    );
+
+    expect(screen.getByRole('button', { name: 'Submit' })).toHaveTextContent(
+      'Submit',
+    );
+  });
+
   it('lets `children` set a dialog button text', () => {
     renderWithRoot(
       <DialogContainer isOpen onDismiss={() => {}}>
