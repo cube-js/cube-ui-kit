@@ -34,7 +34,7 @@ import { DirectionIcon } from '../../../icons/DirectionIcon';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
 import { allowEscapeToPropagate } from '../../../utils/react/escapePropagation';
 import { processSelectionArray } from '../../../utils/selection';
-import { extractStyles } from '../../../utils/styles';
+import { extractStyles, mergeStyleLayers } from '../../../utils/styles';
 import { CubeItemButtonProps, ItemAction, ItemButton } from '../../actions';
 import { CubeItemProps } from '../../content/Item';
 import { Text } from '../../content/Text';
@@ -817,13 +817,14 @@ export const Picker = forwardRef(function Picker<T extends object>(
           <Dialog
             qa="PickerOverlay"
             display="grid"
-            styles={{
-              gridRows: '1sf',
-              width: 'max($overlay-min-width, 30x) max-content 50vw',
-              '$overlay-min-width': '30x',
-              // eslint-disable-next-line tasty/no-style-spread -- consumer `popoverStyles` override the default overlay sizing
-              ...popoverStyles,
-            }}
+            styles={mergeStyleLayers(
+              {
+                gridRows: '1sf',
+                width: 'max($overlay-min-width, 30x) max-content 50vw',
+                '$overlay-min-width': '30x',
+              },
+              popoverStyles,
+            )}
             style={
               triggerWidthRef.current
                 ? ({

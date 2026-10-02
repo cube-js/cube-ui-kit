@@ -19,7 +19,7 @@ import { useDateRangePickerState } from 'react-stately';
 import { useI18n } from '../../../i18n';
 import { FieldBaseProps } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
-import { extractStyles } from '../../../utils/styles';
+import { extractStyles, mergeStyleLayers } from '../../../utils/styles';
 import { useFieldProps, wrapWithField } from '../../form';
 import { Space } from '../../layout/Space';
 import { RangeCalendar } from '../../other/Calendar/RangeCalendar';
@@ -91,12 +91,10 @@ function DateRangePicker<T extends DateValue>(
   // `props.styles` and lets the individual style props override it, which is the
   // precedence every other component uses; re-spreading `props.styles` here
   // would invert it. `wrapperStyles` stays the most specific and keeps winning.
-  let styles: Styles = {
-    // eslint-disable-next-line tasty/no-style-spread -- extracted container style props are the base that `wrapperStyles` overrides
-    ...extractStyles(props, CONTAINER_STYLES),
-    // eslint-disable-next-line tasty/no-style-spread -- `wrapperStyles` override the extracted container style props
-    ...props.wrapperStyles,
-  };
+  let styles = mergeStyleLayers(
+    extractStyles(props, CONTAINER_STYLES),
+    props.wrapperStyles,
+  );
 
   let {
     qa,

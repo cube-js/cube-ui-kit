@@ -21,7 +21,7 @@ import { Section, useTreeState } from 'react-stately';
 import { useI18n } from '../../../i18n';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
 import { mergeProps } from '../../../utils/react';
-import { extractStyles } from '../../../utils/styles';
+import { extractStyles, mergeStyleLayers } from '../../../utils/styles';
 // `CollectionItem` (not react-stately's bare `Item`) is what CommandMenu
 // actually renders through `MenuItem`, so it carries the `Item` props.
 import { CollectionItem as Item } from '../../CollectionItem';
@@ -465,15 +465,14 @@ function CommandMenu<T extends object>(
       qa={qa || 'CommandMenu'}
       data-size={size}
       mods={mods}
-      styles={mergeProps(extractedStyles, styles)}
+      styles={mergeStyleLayers(extractedStyles, styles)}
     >
       {/* Header */}
       {header && (
         <StyledHeader
           role="presentation"
           data-size={size}
-          // eslint-disable-next-line tasty/no-style-spread -- consumer `headerStyles` override the default borderless header
-          styles={{ border: 'none', ...headerStyles }}
+          styles={mergeStyleLayers({ border: 'none' }, headerStyles)}
         >
           {header}
         </StyledHeader>

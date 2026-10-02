@@ -57,7 +57,7 @@ import { useFocus } from '../../../utils/react/interactions';
 import { focusProgrammatically } from '../../../utils/react/programmaticFocus';
 import { useOverlayEscapeGuard } from '../../../utils/react/useOverlayEscapeGuard';
 import { usePopoverSync } from '../../../utils/react/usePopoverSync';
-import { extractStyles } from '../../../utils/styles';
+import { extractStyles, mergeStyleLayers } from '../../../utils/styles';
 import { ItemAction } from '../../actions';
 import { isOwnActionsPress } from '../../actions/actions-run';
 import { ItemActionsWrapper } from '../../actions/ItemActionsWrapper';
@@ -626,8 +626,7 @@ function Select<T extends object>(
             data-popover-trigger
             showActions={showActions}
             skipActionsWidthTransition={skipActionsWidthTransition}
-            // eslint-disable-next-line tasty/no-style-spread -- `triggerStyles` override the deprecated `inputStyles` alias
-            styles={{ ...inputStyles, ...triggerStyles }}
+            styles={mergeStyleLayers(inputStyles, triggerStyles)}
             theme={theme}
             size={size}
             shape={shape}
@@ -912,12 +911,10 @@ function Option({ item, state, styles, shouldUseVirtualFocus, size }) {
         pressed: isPressed,
       }}
       data-size={size}
-      styles={{
-        // eslint-disable-next-line tasty/no-style-spread -- select-wide `optionStyles`, overridden by the item's own styles below
-        ...(styles as Styles),
-        // eslint-disable-next-line tasty/no-style-spread -- the item's own styles override the select-wide `optionStyles`
-        ...(filteredItemProps.styles as Styles),
-      }}
+      styles={mergeStyleLayers(
+        styles as Styles,
+        filteredItemProps.styles as Styles,
+      )}
       labelProps={labelProps}
       descriptionProps={descriptionProps}
       defaultTooltipPlacement="right"
@@ -961,8 +958,9 @@ function SelectSection<T>(props: SelectSectionProps<T>) {
         <ListSectionHeading
           {...headingProps}
           size={size}
-          // eslint-disable-next-line tasty/no-style-spread -- consumer `headingStyles`, with the inline compensation pinned after them
-          styles={{ ...headingStyles, '$inline-compensation': '0px' }}
+          styles={mergeStyleLayers(headingStyles, {
+            '$inline-compensation': '0px',
+          })}
         >
           {heading}
         </ListSectionHeading>

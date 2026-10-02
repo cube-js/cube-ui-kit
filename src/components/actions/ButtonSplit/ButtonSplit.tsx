@@ -3,7 +3,7 @@ import { forwardRef, ReactNode, useMemo, useState } from 'react';
 
 import { DirectionIcon } from '../../../icons/DirectionIcon';
 import { mergeProps } from '../../../utils/react';
-import { extractStyles } from '../../../utils/styles';
+import { extractStyles, mergeStyleLayers } from '../../../utils/styles';
 import { Button } from '../Button/Button';
 import { Menu } from '../Menu/Menu';
 
@@ -121,8 +121,7 @@ export const ButtonSplit = forwardRef<HTMLDivElement, CubeButtonSplitProps>(
 
     const containerStyles = extractStyles(rest, STYLE_PROPS);
 
-    // eslint-disable-next-line tasty/no-style-spread -- consumer `styles` override the extracted container style props
-    const mergedStyles: Styles = { ...containerStyles, ...styles };
+    const mergedStyles = mergeStyleLayers(containerStyles, styles);
 
     const contextValue = useMemo(
       () => ({

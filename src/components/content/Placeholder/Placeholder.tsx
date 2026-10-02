@@ -10,7 +10,7 @@ import {
 import { forwardRef } from 'react';
 
 import { useI18n } from '../../../i18n';
-import { extractStyles } from '../../../utils/styles';
+import { extractStyles, mergeStyleLayers } from '../../../utils/styles';
 
 // Create the placeholder animation using keyframes helper
 const placeholderAnimation = keyframes({
@@ -91,11 +91,7 @@ export const Placeholder = forwardRef(function Placeholder(
       {...filterBaseProps(props, { eventProps: true })}
       ref={ref}
       mods={{ animated: !isStatic, circle }}
-      styles={{
-        height: size,
-        // eslint-disable-next-line tasty/no-style-spread -- consumer styles override the `size`-derived height
-        ...styles,
-      }}
+      styles={mergeStyleLayers({ height: size }, styles)}
     />
   );
 });

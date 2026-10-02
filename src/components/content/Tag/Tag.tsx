@@ -4,6 +4,7 @@ import { ItemVariant } from 'src/data/item-themes';
 
 import { useI18n } from '../../../i18n';
 import { CloseIcon } from '../../../icons/CloseIcon';
+import { mergeStyleLayers } from '../../../utils/styles';
 import { CubeItemProps, Item } from '../Item';
 
 const TagElement = tasty(Item, {
@@ -87,8 +88,7 @@ function Tag(allProps: CubeTagProps, ref) {
         isClosable ? (
           <Item.Action
             aria-label={t('tag.close', 'Close')}
-            // eslint-disable-next-line tasty/no-style-spread -- consumer `closeButtonStyles` override the default close-button color
-            styles={{ color: '#current', ...closeButtonStyles }}
+            styles={mergeStyleLayers({ color: '#current' }, closeButtonStyles)}
             icon={<CloseIcon />}
             onPress={onClose}
           />

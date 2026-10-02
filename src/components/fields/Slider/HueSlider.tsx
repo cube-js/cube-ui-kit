@@ -1,6 +1,8 @@
 import { Styles, Tokens } from '@tenphi/tasty';
 import { forwardRef, useState } from 'react';
 
+import { mergeStyleLayers } from '../../../utils/styles';
+
 import { CubeSliderProps, Slider } from './Slider';
 
 import type { FocusableRef } from '@react-types/shared';
@@ -81,23 +83,20 @@ function HueSlider(
     '#slider-thumb-hovered': `okhsl(${currentHue} ${HUE_SATURATION}% ${HUE_LIGHTNESS - 10}%)`,
     ...userThumbTokens,
   };
-  const thumbStyles: Styles = {
-    outline: {
-      '': '1bw #slider-thumb-hovered.0',
-      focused: '1bw #slider-thumb-hovered',
+  const thumbStyles = mergeStyleLayers(
+    {
+      outline: {
+        '': '1bw #slider-thumb-hovered.0',
+        focused: '1bw #slider-thumb-hovered',
+      },
     },
-    // eslint-disable-next-line tasty/no-style-spread -- consumer `thumbStyles` override the default focus outline
-    ...userThumbStyles,
-  };
+    userThumbStyles,
+  );
 
-  const trackStyles: Styles = {
-    // eslint-disable-next-line tasty/no-style-spread -- orientation base that consumer `trackStyles` override
-    ...(orientation === 'vertical'
-      ? verticalTrackStyles
-      : horizontalTrackStyles),
-    // eslint-disable-next-line tasty/no-style-spread -- consumer `trackStyles` override the orientation base
-    ...userTrackStyles,
-  };
+  const trackStyles = mergeStyleLayers(
+    orientation === 'vertical' ? verticalTrackStyles : horizontalTrackStyles,
+    userTrackStyles,
+  );
 
   return (
     <Slider

@@ -384,9 +384,7 @@ const OutsideGripElement = tasty({
       '': 0,
       revealed: 1,
     },
-    // `theme` goes first: listed after `opacity`, it overrode the opacity
-    // entry's duration and easing.
-    transition: 'theme, opacity $disclosure-transition ease-in-out',
+    transition: 'opacity $disclosure-transition ease-in-out, theme',
     // Anchored to the edge it resizes and centred along it, so the control reads
     // as belonging to that edge rather than floating near it.
     left: {

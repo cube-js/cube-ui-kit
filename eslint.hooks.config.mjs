@@ -8,6 +8,7 @@
 //
 // Every rule runs at `warn`: the point is to *see* the diagnostics, not to fail
 // the build on them. Zero is not yet required (Form modernization plan, §8.1).
+import tasty from '@tenphi/eslint-plugin-tasty';
 import tsParser from '@typescript-eslint/parser';
 import reactHooks from 'eslint-plugin-react-hooks';
 
@@ -37,7 +38,13 @@ export default [
         ecmaFeatures: { jsx: true },
       },
     },
-    plugins: { 'react-hooks': reactHooks },
+    // `tasty` is registered, with none of its rules on, only so the source's
+    // `eslint-disable-next-line tasty/…` comments resolve: an unknown rule in a
+    // directive is reported as a finding against that rule. Those directives
+    // are for oxlint, which runs the tasty rules, so they are never "used" here
+    // and unused-directive reports are off.
+    plugins: { 'react-hooks': reactHooks, tasty },
+    linterOptions: { reportUnusedDisableDirectives: 'off' },
     rules,
   },
 ];
