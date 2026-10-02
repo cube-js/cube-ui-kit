@@ -33,6 +33,12 @@ So `Row` publishes `#row-base`, `#row-overlay`, `#row-text` and `$dim`, and cell
 
 Use `@own(...)` for an element's own state.
 
+## Per-column `cellStyles` outrank the `Cell` chain on purpose
+
+The table paints cells through `> Scroller > Table > Body > Row > Cell`, a specificity of (0,7,0). A column's `cellStyles` are per cell and dynamic, so they cannot merge into `styles.Cell`. `column-styles.ts` resolves them with `computeStyles` into a class on the cell, whose doubled class alone (0,2,0) would lose every property the table also sets. The rule is therefore anchored on six repeated `[data-column-styles]` attributes, (0,8,0). Lengthen the `Cell` chain and this must grow too. `DataTable.browser.test.tsx` ("column cellStyles cascade") fails if it does not.
+
+Never spread `cellStyles` into `style`. A token there is an invalid inline value that the browser drops without a trace.
+
 ## The row state matrix must not be one map
 
 Tasty coalesces entries in a single state map that share a serialized value, promotes them to the group's maximum priority, and negates them against everything below — silently turning a middle-priority compound rule into FALSE. See `src/data/AGENTS.md`.

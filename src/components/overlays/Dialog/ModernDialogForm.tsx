@@ -15,6 +15,7 @@ import { SubmitButton } from '../../form/Form/SubmitButton/SubmitButton';
 import { useOpenTransitionContext } from '../Modal/OpenTransitionContext';
 
 import { useDialogContext } from './context';
+import { withDefaultButtonText } from './default-button-text';
 import { Dialog } from './Dialog';
 
 import type { FormController } from '../../form/Form/modern/controller';
@@ -135,9 +136,16 @@ export function ModernDialogForm<T extends object>(
         have to be inside the `<form>` for submit to work, which is why the form
         is the outer one of the two (CUB-4920). A form placed directly in a
         `Dialog` lays itself out as the dialog's column (see `FormElement`).
+
+        A press on any of its buttons, custom actions included, must not
+        dismiss a popover the dialog lives in: a save has to survive
+        validation and a slow request. Only presses, though. The broader
+        `data-popover-keep` also tells a field's open listbox that a click
+        anywhere in the form is not outside it, so the listbox stayed open
+        (CUB-5251).
       */}
       <ModernFormRoot
-        data-popover-keep
+        data-popover-keep-on-press
         form={form}
         qa={qa || 'DialogForm'}
         name={name}
@@ -178,14 +186,18 @@ export function ModernDialogForm<T extends object>(
               <SubmitButton
                 qa={`${qa || ''}SubmitButton`}
                 theme={danger ? 'danger' : undefined}
-                label={t('dialogForm.submit', 'Submit')}
-                {...submitProps}
+                {...withDefaultButtonText(
+                  submitProps,
+                  t('dialogForm.submit', 'Submit'),
+                )}
               />
               <Button
                 qa={`${qa || ''}CancelButton`}
-                label={t('dialogForm.cancel', 'Cancel')}
                 onPress={dismiss}
-                {...cancelProps}
+                {...withDefaultButtonText(
+                  cancelProps,
+                  t('dialogForm.cancel', 'Cancel'),
+                )}
               />
             </ButtonGroup>
           </Footer>

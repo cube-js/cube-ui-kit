@@ -37,7 +37,7 @@ import { POPOVER_PLACEMENT_BY_TABS_PLACEMENT } from './popover-placement';
 import { TabContainer, TabElement } from './styled';
 import { TabDropIndicator } from './TabDropIndicator';
 import { useTabsContext } from './TabsContext';
-import { ParsedTab, RADIO_SIZE_MAP } from './types';
+import { ParsedTab, RADIO_SIZE_MAP, TabPlacement } from './types';
 
 import type { Key, Node } from '@react-types/shared';
 import type { KeyboardEvent, MouseEvent, PointerEvent } from 'react';
@@ -172,6 +172,12 @@ export interface TabButtonProps {
   tabData: ParsedTab;
   /** Whether this is the last tab (for drop indicator) */
   isLastTab?: boolean;
+  /**
+   * Whether a tabpanel renders for this tab. Without one, `aria-controls` is
+   * dropped: it would name an id nothing on the page has.
+   * @default true
+   */
+  hasPanel?: boolean;
 }
 
 /** The same tooltip, kept mounted but unable to open. */
@@ -183,6 +189,48 @@ function disableTooltip(tooltip: ParsedTab['tooltip']): ParsedTab['tooltip'] {
 
   return tooltip;
 }
+
+/**
+ * Scroll the tab strip, and only the strip, so the tab is fully inside it.
+ * Unlike `scrollIntoView` this never scrolls the page: it runs in response to a
+ * layout change rather than to the user, so it must not move anything else.
+ */
+function scrollTabIntoStrip(tab: HTMLElement, placement: TabPlacement) {
+  const strip = tab.closest<HTMLElement>('[data-element="Scroll"]');
+
+  if (!strip) return;
+
+  const isVertical = placement === 'left' || placement === 'right';
+  const stripRect = strip.getBoundingClientRect();
+  const tabRect = tab.getBoundingClientRect();
+  const start = isVertical
+    ? tabRect.top - stripRect.top
+    : tabRect.left - stripRect.left;
+  const end = isVertical
+    ? tabRect.bottom - stripRect.bottom
+    : tabRect.right - stripRect.right;
+
+  // `nearest`: the smallest move that shows the tab, favouring its start when
+  // it is longer than the strip.
+  const delta = start < 0 ? start : end > 0 ? Math.min(end, start) : 0;
+
+  if (!delta) return;
+
+  if (isVertical) strip.scrollTop += delta;
+  else strip.scrollLeft += delta;
+}
+
+/**
+ * Events on the tab bar that mean the user has taken over the strip's scroll
+ * position. Listened for on the whole `Bar`, not just the `Scroll` element: the
+ * custom scrollbar and the scroll arrows sit outside it.
+ */
+const STRIP_INTERACTION_EVENTS = [
+  'wheel',
+  'pointerdown',
+  'touchstart',
+  'keydown',
+] as const;
 
 // =============================================================================
 // TabButton Component
@@ -199,7 +247,12 @@ function disableTooltip(tooltip: ParsedTab['tooltip']): ParsedTab['tooltip'] {
  * - Drag-and-drop reordering
  * - Focus and hover states
  */
-export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
+export function TabButton({
+  item,
+  tabData,
+  isLastTab,
+  hasPanel = true,
+}: TabButtonProps) {
   const { t } = useI18n();
   const editTabTitleLabel = t('tabs.editTabTitle', 'Edit tab title');
 
@@ -228,7 +281,12 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
   const ref = useRef<HTMLButtonElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const inlineInputRef = useRef<CubeInlineInputRef>(null);
-  const { tabProps } = useTab({ key: item.key }, state, ref);
+  const { tabProps: ariaTabProps } = useTab({ key: item.key }, state, ref);
+  // React Aria points the selected tab at `<id>-tabpanel-<key>` whether or not
+  // a panel renders. Navigation-only tabs have none, so the link would dangle.
+  const { 'aria-controls': _ariaControls, ...tabPropsWithoutControls } =
+    ariaTabProps;
+  const tabProps = hasPanel ? ariaTabProps : tabPropsWithoutControls;
 
   // Drag-and-drop support - only enable when both states are provided
   const isDraggable = !!dragState && !!dropState;
@@ -463,12 +521,49 @@ export function TabButton({ item, tabData, isLastTab }: TabButtonProps) {
     'drop-pending': isDropPending,
   };
 
-  // Scroll active tab into view
+  const keepActiveTabInStrip = useEvent(() => {
+    if (ref.current) scrollTabIntoStrip(ref.current, placement);
+  });
+
+  // Scroll the active tab into view, and keep it there while it settles. The
+  // mount commit lays a tab out before its actions run is measured, so it grows
+  // by the run's width a frame later: a tab scrolled into view at its first
+  // size can end up past the strip's edge. So the active tab's own size changes
+  // re-scroll the strip, until the user first interacts with the tab bar
+  // (wheel, pointer, touch or a key). From then on the strip stays where they
+  // left it, even if the tab resizes, until a tab becomes active again. Keyed
+  // off interaction events, not `scroll`: the re-scroll fires `scroll` too.
   useEffect(() => {
-    if (ref.current && isActive) {
-      ref.current.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
+    const tab = ref.current;
+
+    if (!tab || !isActive) return;
+
+    tab.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
+
+    if (typeof ResizeObserver === 'undefined') return;
+
+    const bar = tab.closest<HTMLElement>('[data-element="Bar"]');
+    const observer = new ResizeObserver(keepActiveTabInStrip);
+    const stopFollowing = () => {
+      observer.disconnect();
+
+      for (const type of STRIP_INTERACTION_EVENTS) {
+        bar?.removeEventListener(type, stopFollowing, true);
+      }
+    };
+
+    observer.observe(tab);
+
+    for (const type of STRIP_INTERACTION_EVENTS) {
+      // Capture: a tab's own handlers may stop these from bubbling.
+      bar?.addEventListener(type, stopFollowing, {
+        capture: true,
+        passive: true,
+      });
     }
-  }, [isActive]);
+
+    return stopFollowing;
+  }, [isActive, keepActiveTabInStrip]);
 
   // Overflow trigger (hidden in context-only mode)
   const menuAction =

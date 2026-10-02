@@ -1,6 +1,7 @@
 import { Styles } from '@tenphi/tasty';
 import { ReactNode } from 'react';
 
+import type { KeyboardEvent as AriaKeyboardEvent } from '@react-types/shared';
 import type { FormField } from '../components/form/Form/modern/field';
 import type {
   ModernValidationContext,
@@ -136,6 +137,34 @@ export interface ToggleSelectionProps {
   defaultSelected?: boolean;
   /** Handler that is called when the selection state changes. */
   onChange?: (isSelected: boolean) => void;
+}
+
+/**
+ * Keyboard handlers for the text fields built on `useTextField` /
+ * `useNumberField` — `TextInput`, `TextArea`, `PasswordInput`, `NumberInput`.
+ * `ComboBox` and `SearchComboBox` reuse `onKeyDown`: their input runs it
+ * through `useKeyboard`, so it receives the same event.
+ *
+ * React Aria already attaches these to the `<input>` / `<textarea>`. They are
+ * re-declared for the same reason as `ToggleSelectionProps`: the
+ * `AriaTextFieldProps` / `AriaNumberFieldProps` the fields extend resolve to
+ * `any` under this repo's `preserveSymlinks` TS setting, so the handlers were
+ * accepted without a type and the event parameter was `any`.
+ *
+ * In-repo this types the props interfaces, not JSX: `forwardRef` passes the
+ * props through `Omit<P, 'ref'>`, and the `Omit<Aria…Props>` index signature
+ * erases every named member again. Consumers compile against `dist/`, where
+ * the Aria types resolve and the components are typed in full.
+ *
+ * Keep these signatures identical to React Aria's `KeyboardEvents`: the
+ * handler receives React Aria's keyboard event, whose propagation stops after
+ * the handler unless it calls `e.continuePropagation()`.
+ */
+export interface TextFieldKeyboardProps {
+  /** Handler that is called when a key is pressed. */
+  onKeyDown?: (e: AriaKeyboardEvent) => void;
+  /** Handler that is called when a key is released. */
+  onKeyUp?: (e: AriaKeyboardEvent) => void;
 }
 
 export interface FieldBaseProps<Value = unknown>

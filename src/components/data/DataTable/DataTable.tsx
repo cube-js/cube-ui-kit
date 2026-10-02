@@ -40,6 +40,7 @@ import { useTableStorage } from '../TableBase/use-table-storage';
 import { useTableTreeState } from '../TableBase/use-table-tree-state';
 
 import type { Key } from '@react-types/shared';
+import type { Styles } from '@tenphi/tasty';
 import type { ForwardedRef, ReactElement } from 'react';
 import type {
   CubeTableColumnGroupHeader,
@@ -96,6 +97,44 @@ function buildColumnModel<T>(
   visit(definitions, []);
 
   return { columns, headerPaths };
+}
+
+/** What `dataType: 'number'` adds to a column's own `cellStyles`. */
+const NUMERIC_CELL_STYLES: Styles = { fontVariantNumeric: 'tabular-nums' };
+
+/**
+ * The merge per consumer object, so a `cellStyles` that returns a shared
+ * constant keeps one identity per cell rather than a fresh object on every
+ * call — which is what `column-styles.ts` and tasty key their caches on.
+ */
+const NUMERIC_MERGED = new WeakMap<Styles, Styles>();
+
+function withNumeric(own: Styles | null | undefined): Styles {
+  if (!own) return NUMERIC_CELL_STYLES;
+
+  let merged = NUMERIC_MERGED.get(own);
+
+  if (!merged) {
+    merged = { ...NUMERIC_CELL_STYLES, ...own };
+    NUMERIC_MERGED.set(own, merged);
+  }
+
+  return merged;
+}
+
+/**
+ * Folds the numeric default under a column's own `cellStyles`, in either form.
+ * A function stays a function, called per cell with its result merged over the
+ * default, so a numeric column keeps reacting to its cell context.
+ */
+function numericCellStyles<T>(
+  cellStyles: CubeDataTableColumn<T>['cellStyles'],
+): CubeDataTableColumn<T>['cellStyles'] {
+  if (typeof cellStyles === 'function') {
+    return (ctx) => withNumeric(cellStyles(ctx));
+  }
+
+  return withNumeric(cellStyles);
 }
 
 function defaultGetRowKey<T>(rowKey: string) {
@@ -262,12 +301,7 @@ function DataTable<T = any>(
           ...column,
           align: column.align ?? (isNumeric ? 'end' : 'start'),
           cellStyles: isNumeric
-            ? {
-                fontVariantNumeric: 'tabular-nums',
-                ...(typeof column.cellStyles === 'object'
-                  ? column.cellStyles
-                  : null),
-              }
+            ? numericCellStyles(column.cellStyles)
             : column.cellStyles,
         } as CubeDataTableColumn<T>;
       }),

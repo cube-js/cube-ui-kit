@@ -217,6 +217,7 @@ Like `Button`, an `ItemButton` press inside an open popover **dismisses that pop
     Toggle Mode
   </ItemButton>
   ```
+- **Presses only via `data-popover-keep-on-press`** — the same opt-out without making a click in the subtree count as inside a popover opened from it. See [Button](/docs/actions-button--docs).
 - **Custom non-Cube triggers** — call `useDismissParentPopover()` directly if you build a control on top of something other than `Button` / `ItemButton`.
 
 The dismiss is dispatched via the EventBus, which defers with `setTimeout(0)` — so synchronous `onPress` handlers (and the React state updates they trigger) flush BEFORE the popover closes. This makes the "open a hoisted modal from a popover footer" pattern work without flicker: the modal mounts first, then the popover closes behind it.

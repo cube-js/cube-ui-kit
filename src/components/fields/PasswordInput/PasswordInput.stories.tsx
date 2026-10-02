@@ -112,6 +112,16 @@ export default {
       description: 'Callback fired when the input receives focus',
       control: { type: null },
     },
+    onKeyDown: {
+      action: 'keyDown',
+      description: 'Callback fired when a key is pressed in the input',
+      control: { type: null },
+    },
+    onKeyUp: {
+      action: 'keyUp',
+      description: 'Callback fired when a key is released in the input',
+      control: { type: null },
+    },
 
     suffixPosition: {
       options: ['before', 'after'],

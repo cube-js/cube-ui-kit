@@ -60,6 +60,9 @@ const ItemButton = forwardRef(function ItemButton(
     onPressEnd: _onPressEnd,
     onPressChange: _onPressChange,
     onPressUp: _onPressUp,
+    // Consumed by useAction (it reads `allProps`); kept off the DOM element.
+    navigationOptions: _navigationOptions,
+    label: _label,
     actions,
     actionsProps,
     size = 'medium',
@@ -80,7 +83,8 @@ const ItemButton = forwardRef(function ItemButton(
   // Default: pressing an ItemButton inside an open popover closes that
   // popover. Opt-outs: `data-popover-trigger` on self (applied by
   // FilterPicker / Picker / Select / MenuTrigger for their own triggers) and
-  // `data-popover-keep` on self or any ancestor. Modals don't subscribe.
+  // `data-popover-keep` or `data-popover-keep-on-press` (presses only, see
+  // Button) on self or any ancestor. Modals don't subscribe.
   const dismissParentPopover = useDismissParentPopover();
   const buttonElementRef = useRef<HTMLElement | null>(null);
 
@@ -89,7 +93,9 @@ const ItemButton = forwardRef(function ItemButton(
     const el = buttonElementRef.current;
     if (!el) return;
     if (el.hasAttribute('data-popover-trigger')) return;
-    if (el.closest('[data-popover-keep]')) return;
+    if (el.closest('[data-popover-keep], [data-popover-keep-on-press]')) {
+      return;
+    }
     dismissParentPopover(el);
   });
 

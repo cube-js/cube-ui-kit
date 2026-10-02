@@ -1,3 +1,5 @@
+import { getCSSTextForNode } from '@tenphi/tasty';
+
 import { renderWithRoot, screen, within } from '../../../test';
 import { getColumnText, readPath } from '../TableBase/use-table-columns';
 
@@ -98,6 +100,55 @@ describe('<ItemTable />', () => {
 
     expect(screen.getByText('Ada')).toBeInTheDocument();
     expect(screen.getByText('Grace')).toBeInTheDocument();
+  });
+
+  it('resolves column.cellStyles through tasty, tokens included', () => {
+    renderWithRoot(
+      <ItemTable
+        data={ROWS}
+        columns={[
+          {
+            key: 'name',
+            title: 'Name',
+            isRowHeader: true,
+            cellStyles: { color: '#surface-text-soft-2' },
+          },
+          {
+            key: 'count',
+            title: 'Count',
+            cellStyles: ({ rowIndex }) =>
+              rowIndex === 1 ? { fill: '#danger-bg' } : undefined,
+            // A `className` of the consumer's own joins the column's, it does
+            // not replace it.
+            cellProps: () => ({ className: 'consumer-cell' }),
+          },
+        ]}
+      />,
+    );
+
+    const css = (cell: Element) => {
+      const host = document.createElement('div');
+
+      host.appendChild(cell.cloneNode(false));
+
+      return getCSSTextForNode(host);
+    };
+    const name = screen.getByText('Alpha').closest('[data-element="Cell"]')!;
+    const counts = Array.from(
+      document.querySelectorAll(
+        'tbody [data-element="Cell"][data-key="count"]',
+      ),
+    );
+
+    // The row-header `<th>` takes it like any other cell.
+    expect(name.tagName).toBe('TH');
+    expect(name.getAttribute('style') ?? '').not.toContain('surface-text');
+    expect(css(name)).toContain('color: var(--surface-text-soft-2-color)');
+
+    expect(counts[0].className).toBe('consumer-cell');
+    expect(counts[1].classList).toContain('consumer-cell');
+    expect(counts[1].classList.length).toBeGreaterThan(1);
+    expect(css(counts[1])).toContain('var(--danger-bg-color)');
   });
 
   it('applies column.format to the displayed value', () => {

@@ -1,4 +1,5 @@
 import { useVirtualizer } from '@tanstack/react-virtual';
+import clsx from 'clsx';
 import {
   Fragment,
   useCallback,
@@ -35,6 +36,7 @@ import {
   isColumnMenuSortKey,
   processColumnMenuItems,
 } from './column-menu';
+import { columnCellClassName } from './column-styles';
 import { buildColumnTints, tintSlot } from './column-tint';
 import { ColumnResizer } from './ColumnResizer';
 import {
@@ -1652,10 +1654,15 @@ export function TableView<T = any>(props: TableViewProps<T>) {
         content
       );
 
-    const resolvedCellStyles =
+    // Resolved through tasty, not spread into `style`: the type is `Styles`, and
+    // an inline style takes none of its tokens, units or state maps — a
+    // `#surface-text-soft-2` there is an invalid value the browser drops.
+    const columnClassName = columnCellClassName(
       typeof column.cellStyles === 'function'
         ? column.cellStyles(ctx)
-        : column.cellStyles;
+        : column.cellStyles,
+    );
+    const extraCellProps = column.cellProps?.(ctx);
 
     const CellTag = column.isRowHeader ? 'th' : 'td';
 
@@ -1693,11 +1700,15 @@ export function TableView<T = any>(props: TableViewProps<T>) {
           : { role: 'gridcell' as const })}
         {...cellSelectionProps(rangeKey, column.key, pinnedEdge)}
         aria-colindex={column.ariaColIndex}
-        style={{
-          ...pinStyle(column),
-          ...(resolvedCellStyles as CSSProperties),
-        }}
-        {...column.cellProps?.(ctx)}
+        // The anchor the column class's rule is built on (`column-styles.ts`).
+        data-column-styles={columnClassName ? '' : undefined}
+        style={pinStyle(column)}
+        {...extraCellProps}
+        // Joined rather than replaced, so a `className` from `cellProps` does
+        // not silently drop the column's styles.
+        className={
+          clsx(columnClassName, extraCellProps?.className) || undefined
+        }
       >
         {displayContent}
         {link !== undefined ? (

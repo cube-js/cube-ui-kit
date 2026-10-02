@@ -23,6 +23,10 @@ export interface CubeActionProps<
     TextStyleProps,
     Omit<AriaButtonProps, 'type'> {
   to?: NavigateArg;
+  /**
+   * @deprecated Use `aria-label` for the accessible name, and `children` for
+   * visible text.
+   */
   label?: string;
   htmlType?: 'button' | 'submit' | 'reset' | undefined;
   download?: string;

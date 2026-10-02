@@ -46,6 +46,31 @@ A number input component that allows users to enter numeric values and increment
 - **`onChange`** `function` — Callback fired when the input value changes
 - **`onBlur`** `function` — Callback fired when the input loses focus
 - **`onFocus`** `function` — Callback fired when the input receives focus
+- **`onKeyDown`** `(e: KeyboardEvent) => void` — Callback fired when a key is pressed in the input. See [Keyboard Events](#keyboard-events)
+- **`onKeyUp`** `(e: KeyboardEvent) => void` — Callback fired when a key is released in the input
+
+#### Keyboard Events
+
+`onKeyDown` and `onKeyUp` are attached to the `<input>` by React Aria's `useNumberField`, which handles some keys itself and runs that handling **before** your `onKeyDown`:
+
+- `ArrowUp` / `ArrowDown` and `PageUp` / `PageDown` step the value, unless a modifier key is held
+- `Home` / `End` set the value to `minValue` / `maxValue`, when those are set
+- `Enter` commits the typed number, firing `onChange` when the value changed
+
+Because they run first, `e.preventDefault()` in `onKeyDown` cannot cancel them: it cancels only what the browser would do with the key, such as submitting a surrounding form on `Enter`. That makes NumberInput the exception among the fields with built-in key handling (`ComboBox`, `SearchComboBox`, `TagInput` and `CommandTextArea` run your handler first and skip their own handling for a key you prevent), and it is what makes an `Enter` handler work here: by the time it runs, the typed number is committed and any `onChange` for it has fired.
+
+```jsx
+<NumberInput
+  label="Limit"
+  onChange={setLimit}
+  onKeyDown={(e) => {
+    // `onChange` has already been called with the committed number.
+    if (e.key === 'Enter') onCommit();
+  }}
+/>
+```
+
+The handler receives React Aria's keyboard event rather than a plain React one. Keys other than `Enter` continue to ancestors as usual; `Enter` stops at the input unless you call `e.continuePropagation()`.
 
 ### Base Properties
 
@@ -145,7 +170,9 @@ The `mods` prop accepts the following modifiers you can override:
 - `Tab` – Moves focus to the input field
 - `Shift + Tab` – Moves focus away from the input
 - Arrow keys – Increment/decrement value
+- `PageUp`/`PageDown` – Increment/decrement value
 - `Home`/`End` – Set to min/max value
+- `Enter` – Commits the typed value
 - Standard text editing shortcuts
 
 ### Screen Reader Support

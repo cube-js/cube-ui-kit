@@ -163,7 +163,7 @@ These properties allow direct style application without using the `styles` prop:
 The `mods` property accepts the following modifiers you can override:
 
 - **`placeholder`** `boolean` — Applied when no selection is made
-- **`selected`** `boolean` — Applied when items are selected
+- **`selected`** `boolean` — Not set by the component. Pass `mods={{ selected: true }}` to give the trigger its brand-tinted selected fill, e.g. while a filter is active. Holding a value doesn't set it
 
 ## Sub-components
 
@@ -332,8 +332,8 @@ For large datasets or dynamic content, use the `items` prop with a render functi
 
 The trigger button supports various visual styles via the `type` prop:
 
-- **`outline`** (default) — Outlined button with border. Use case: Standard form inputs. `isSelected` adds brand-tinted fill.
-- **`clear`** — Transparent background. Use case: Toolbar actions, compact interfaces. `isSelected` adds brand-tinted fill.
+- **`outline`** (default) — Outlined button with border. Use case: Standard form inputs. `mods={{ selected: true }}` adds a brand-tinted fill.
+- **`clear`** — Transparent background. Use case: Toolbar actions, compact interfaces. `mods={{ selected: true }}` adds a brand-tinted fill.
 - **`primary`** — Primary brand color. Use case: Emphasized selections
 
 ### Trigger Button Themes

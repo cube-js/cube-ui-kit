@@ -188,10 +188,7 @@ function UserFormDialog({ onSubmit, initialData, onCancel }) {
       onSubmit={onSubmit}
       onDismiss={onCancel}
       submitProps={{
-        label: 'Save User'
-      }}
-      cancelProps={{
-        label: 'Cancel'
+        children: 'Save User'
       }}
     >
       <TextInput
@@ -274,11 +271,11 @@ function ConfirmDialog({ message, onConfirm, onCancel, danger }) {
       danger={danger}
       actions={{
         confirm: {
-          label: 'Confirm',
+          children: 'Confirm',
           onPress: onConfirm
         },
         cancel: {
-          label: 'Cancel',
+          children: 'Cancel',
           onPress: onCancel
         }
       }}
@@ -293,7 +290,7 @@ function InfoDialog({ title, content }) {
       content={content}
       actions={{
         confirm: {
-          label: 'OK'
+          children: 'OK'
         },
         cancel: false
       }}

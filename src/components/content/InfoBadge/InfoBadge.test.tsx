@@ -163,16 +163,19 @@ describe('<InfoBadge />', () => {
     ['static', {}],
     ['interactive', { to: '!https://docs.cube.dev', tooltipSuffix: null }],
     ['interactive with a suffix', { onPress: () => {} }],
-  ])('lets `label` override the name when %s', (_, props) => {
-    renderWithRoot(
-      <InfoBadge {...props} label="Region docs" tooltip="Where it runs." />,
-    );
+  ])(
+    'still lets the deprecated `label` override the name when %s',
+    (_, props) => {
+      renderWithRoot(
+        <InfoBadge {...props} label="Region docs" tooltip="Where it runs." />,
+      );
 
-    expect(screen.getByTestId('InfoBadge')).toHaveAttribute(
-      'aria-label',
-      'Region docs',
-    );
-  });
+      expect(screen.getByTestId('InfoBadge')).toHaveAttribute(
+        'aria-label',
+        'Region docs',
+      );
+    },
+  );
 
   it.each([
     ['static', {}],

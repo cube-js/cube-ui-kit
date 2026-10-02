@@ -90,6 +90,21 @@ function getRawKey(element: ReactElement): string | null {
   return keyStr.startsWith('.$') ? keyStr.slice(2) : keyStr;
 }
 
+/**
+ * Whether a tabpanel renders for this tab when it is selected. `renderPanel`
+ * renders one for every tab; otherwise only a tab with content (its own
+ * children or a `Tabs.Panel`) gets one, matching the static panel renderer.
+ */
+function tabHasPanel(
+  tab: ParsedTab,
+  explicitPanels: Map<string, ParsedPanel>,
+  hasRenderPanel: boolean,
+): boolean {
+  if (hasRenderPanel) return true;
+
+  return (explicitPanels.get(tab.key)?.content ?? tab.content) != null;
+}
+
 // =============================================================================
 // Tab Component (configuration only - not rendered directly)
 // =============================================================================
@@ -246,18 +261,20 @@ function TabsComponent(
   // =========================================================================
   // Parse children to extract tabs and explicit panels
   // =========================================================================
-  const { parsedTabs, explicitPanels, hasAnyContent } = useMemo(() => {
+  const { parsedTabs, explicitPanels, hasAnyContent, listQa } = useMemo(() => {
     const childArray = Children.toArray(children);
     const tabs: ParsedTab[] = [];
     const panels = new Map<string, ParsedPanel>();
     let hasExplicitList = false;
     let tabChildren: ReactNode[] = [];
+    let tabListQa: Pick<CubeTabListProps, 'qa' | 'qaVal'> = {};
 
     // Check for explicit Tabs.List / Tabs.Panel structure
     for (const child of childArray) {
       if (isTabListElement(child)) {
         hasExplicitList = true;
         tabChildren = Children.toArray(child.props.children);
+        tabListQa = { qa: child.props.qa, qaVal: child.props.qaVal };
       } else if (isTabPanelElement(child)) {
         const key = getRawKey(child as ReactElement);
 
@@ -307,6 +324,7 @@ function TabsComponent(
       parsedTabs: tabs,
       explicitPanels: panels,
       hasAnyContent: hasContent,
+      listQa: tabListQa,
     };
   }, [children]);
 
@@ -597,6 +615,8 @@ function TabsComponent(
       {...mergeProps(tabListProps, collectionProps)}
       ref={listRef}
       data-element="TabList"
+      data-qa={listQa.qa}
+      data-qaval={listQa.qaVal}
     >
       <TabsProvider value={contextValue}>
         {orderedParsedTabs.map((tab, index) => {
@@ -609,6 +629,7 @@ function TabsComponent(
               item={item}
               tabData={tab}
               isLastTab={index === orderedParsedTabs.length - 1}
+              hasPanel={tabHasPanel(tab, explicitPanels, !!renderPanel)}
             />
           );
         })}

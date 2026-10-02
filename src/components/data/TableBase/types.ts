@@ -312,6 +312,17 @@ export interface CubeTableColumn<T = any> {
     rowIndex: number,
     ctx: CubeTableCellContext<T>,
   ) => ReactNode;
+  /**
+   * Tasty styles for this column's body cells: tokens (`#surface-text-soft-2`),
+   * units, presets, recipes and state maps all work, and a state key asks about
+   * the cell itself (`@own(pinned=bottom)`). They win over the table's own cell
+   * paint, its column tint and the table-level `cellStyles`.
+   *
+   * The function form runs per cell, so it can vary with `ctx` (the row, its
+   * section, its selection). Cells whose styles are equal share one class, so a
+   * function returning a few distinct objects costs a few classes, not one per
+   * cell.
+   */
   cellStyles?: Styles | ((ctx: CubeTableCellContext<T>) => Styles | undefined);
   cellProps?: (ctx: CubeTableCellContext<T>) => Record<string, any> | undefined;
 

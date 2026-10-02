@@ -123,8 +123,10 @@
   "tagInput": {
     "remove": "Xóa",
     "selectedValues": "Các giá trị đã chọn",
+    "selectedValuesFor": "Các giá trị đã chọn, {{label}}",
     "summary": "Đã chọn: {{values}}.",
     "showOptions": "Hiển thị tùy chọn",
+    "showOptionsFor": "Hiển thị tùy chọn, {{label}}",
     "options": "Tùy chọn",
     "customValues": "Giá trị tùy chỉnh",
     "added": "Đã thêm {{value}}",
@@ -135,6 +137,7 @@
     "unavailableValue": "\"{{value}}\" không khả dụng",
     "limitReached": "Bạn có thể thêm tối đa {{count}}",
     "clearText": "Xóa văn bản",
+    "clearTextFor": "Xóa văn bản, {{label}}",
     "backspaceHint": "Nhấn Backspace để chuyển đến các giá trị đã chọn."
   },
   "placeholder": {

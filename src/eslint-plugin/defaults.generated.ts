@@ -368,7 +368,7 @@ export const DEFAULTS: DefaultsRegistry = {
       props: {
         autoHideActions: { kind: 'default', value: false },
         descriptionPlacement: { kind: 'default', value: 'inline' },
-        disableActionsFocus: { kind: 'default', value: true },
+        disableActionsFocus: { kind: 'default', value: false },
         highlightCaseSensitive: { kind: 'default', value: false },
         isLoading: { kind: 'default', value: false },
         isSelected: {

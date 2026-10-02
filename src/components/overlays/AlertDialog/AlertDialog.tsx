@@ -10,6 +10,7 @@ import { Header } from '../../content/Header';
 import { Paragraph } from '../../content/Paragraph';
 import { Title } from '../../content/Title';
 import { useDialogContext } from '../Dialog/context';
+import { withDefaultButtonText } from '../Dialog/default-button-text';
 import { CubeDialogProps, Dialog } from '../Dialog/Dialog';
 
 import type { CubeButtonProps } from '../../actions/Button/Button';
@@ -37,14 +38,6 @@ function AlertDialog(props: CubeAlertDialogProps, ref) {
   const { onClose } = useDialogContext();
   const { t } = useI18n();
 
-  const DEFAULT_CONFIRM_PROPS: CubeButtonProps = {
-    label: t('alertDialog.confirm', 'Ok'),
-    type: 'primary',
-  };
-  const DEFAULT_CANCEL_PROPS: CubeButtonProps = {
-    label: t('alertDialog.cancel', 'Cancel'),
-  };
-
   const { danger, actions, title, styles, noActions, content, ...otherProps } =
     props;
 
@@ -57,18 +50,21 @@ function AlertDialog(props: CubeAlertDialogProps, ref) {
   // the confirm button is present by default
   confirmProps =
     confirmProps !== false
-      ? {
-          ...DEFAULT_CONFIRM_PROPS,
-          ...(typeof confirmProps === 'object' ? confirmProps : null),
-        }
+      ? withDefaultButtonText(
+          {
+            type: 'primary',
+            ...(typeof confirmProps === 'object' ? confirmProps : null),
+          },
+          t('alertDialog.confirm', 'Ok'),
+        )
       : undefined;
 
   // the cancel button is hidden by default
   cancelProps = cancelProps
-    ? {
-        ...DEFAULT_CANCEL_PROPS,
-        ...(typeof cancelProps === 'object' ? cancelProps : null),
-      }
+    ? withDefaultButtonText(
+        typeof cancelProps === 'object' ? cancelProps : undefined,
+        t('alertDialog.cancel', 'Cancel'),
+      )
     : undefined;
 
   return (

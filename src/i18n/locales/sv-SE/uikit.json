@@ -123,8 +123,10 @@
   "tagInput": {
     "remove": "Ta bort",
     "selectedValues": "Valda värden",
+    "selectedValuesFor": "Valda värden, {{label}}",
     "summary": "Valda: {{values}}.",
     "showOptions": "Visa alternativ",
+    "showOptionsFor": "Visa alternativ, {{label}}",
     "options": "Alternativ",
     "customValues": "Anpassade värden",
     "added": "{{value}} har lagts till",
@@ -135,6 +137,7 @@
     "unavailableValue": "”{{value}}” är inte tillgänglig",
     "limitReached": "Du kan lägga till upp till {{count}}",
     "clearText": "Rensa text",
+    "clearTextFor": "Rensa text, {{label}}",
     "backspaceHint": "Tryck på Backsteg för att gå till de valda värdena."
   },
   "placeholder": {

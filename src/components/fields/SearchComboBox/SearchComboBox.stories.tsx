@@ -155,6 +155,12 @@ const meta = {
       description: 'Callback fired when the popover opens or closes',
       control: { type: null },
     },
+    onKeyDown: {
+      action: 'key-down',
+      description:
+        'Callback fired when a key is pressed on the input, before the built-in key handling. Call `e.preventDefault()` to skip that handling for the key',
+      control: { type: null },
+    },
   },
 } satisfies Meta<typeof SearchComboBox>;
 
