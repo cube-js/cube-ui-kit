@@ -265,6 +265,8 @@ There are three ways to keep the popover open when a Button is pressed:
    </div>
    ```
 
+   On a wrapper, `data-popover-keep` also tells any popover opened from inside it (a field's listbox, a menu) that a click in the wrapper is not outside, so that popover stays open. When only presses should be ignored, use `data-popover-keep-on-press` instead. A modern `DialogForm` marks its `<form>` this way.
+
 3. **Custom non-Cube triggers.** Call `useDismissParentPopover()` yourself if your control should dismiss the popover but does not extend `Button` / `ItemButton`:
    ```jsx
    const dismiss = useDismissParentPopover();

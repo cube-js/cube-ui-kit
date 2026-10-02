@@ -88,6 +88,24 @@ describe('action `label` deprecation', () => {
     expect(deprecationWarnings(warnSpy)).toHaveLength(0);
   });
 
+  it('keeps the default text on a dialog button named by `aria-label`', () => {
+    renderWithRoot(
+      <DialogContainer isOpen onDismiss={() => {}}>
+        <DialogForm
+          title="Edit"
+          submitProps={{ 'aria-label': 'Save the draft' }}
+          onSubmit={() => {}}
+        >
+          Body
+        </DialogForm>
+      </DialogContainer>,
+    );
+
+    expect(
+      screen.getByRole('button', { name: 'Save the draft' }),
+    ).toHaveTextContent('Submit');
+  });
+
   it('lets `children` set a dialog button text', () => {
     renderWithRoot(
       <DialogContainer isOpen onDismiss={() => {}}>

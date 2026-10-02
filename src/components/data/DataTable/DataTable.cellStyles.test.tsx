@@ -1,4 +1,4 @@
-import { getCSSTextForNode } from '@tenphi/tasty';
+import { getCSSText, getCSSTextForNode } from '@tenphi/tasty';
 
 import { renderWithRoot, screen } from '../../../test';
 
@@ -144,6 +144,39 @@ describe('DataTable column cellStyles', () => {
 
     expect(css).toContain('[data-pinned="bottom"]');
     expect(css).toContain('color: var(--purple-color)');
+  });
+
+  it('registers keyframes and rewrites the animation that names them', () => {
+    renderWithRoot(
+      <DataTable
+        data={ROWS}
+        columns={[
+          {
+            key: 'region',
+            title: 'Region',
+            cellStyles: {
+              animation: 'column-flash 1s',
+              '@keyframes': {
+                'column-flash': {
+                  from: { opacity: 0 },
+                  to: { opacity: 1 },
+                },
+              },
+            },
+          },
+        ]}
+      />,
+    );
+
+    // Tasty reads `@keyframes` only from the top level of the object it
+    // computes. Moved into the cell's sub-element along with everything else,
+    // it was never registered and the animation named nothing.
+    const name = /animation: (column-flash-[\w-]+) 1s/.exec(
+      ownCss(bodyCells('region')[0]),
+    )?.[1];
+
+    expect(name).toBeDefined();
+    expect(getCSSText()).toMatch(new RegExp(`@keyframes ${name}\\s*\\{`));
   });
 
   describe('on a number column', () => {

@@ -30,13 +30,37 @@ const SELF = `&${`[${COLUMN_STYLES_ATTR}]`.repeat(6)}`;
  */
 const WRAPPED = new WeakMap<Styles, Styles>();
 
+/**
+ * Keys tasty reads only from the top level of the object handed to
+ * `computeStyles`: the at-rule definitions it registers next to the class.
+ * Left inside `ColumnCell`, a `@keyframes` block would never be registered and
+ * the cell's `animation` would name nothing, so these stay at the top.
+ */
+const TOP_LEVEL_KEYS = [
+  '@keyframes',
+  '@property',
+  '@font-face',
+  '@counter-style',
+  '@function',
+] as const;
+
 function wrap(styles: Styles): Styles {
   let wrapped = WRAPPED.get(styles);
 
   if (!wrapped) {
     // Recipes resolve only at the top level of a style object, so they are
     // expanded before the styles move one level down.
-    wrapped = { ColumnCell: { ...resolveRecipes(styles), $: SELF } };
+    const cell: Styles = { ...resolveRecipes(styles), $: SELF };
+    const top: Styles = {};
+
+    for (const key of TOP_LEVEL_KEYS) {
+      if (key in cell) {
+        top[key] = cell[key];
+        delete cell[key];
+      }
+    }
+
+    wrapped = { ...top, ColumnCell: cell };
     WRAPPED.set(styles, wrapped);
   }
 
@@ -53,9 +77,12 @@ function wrap(styles: Styles): Styles {
  * the first cell, a lookup costs a small serialization and a map hit; the CSS
  * is built once.
  *
- * The styles land on the cell itself, so a state key in them (`@own(...)`,
- * `:hover`, a local `@state`) asks about the cell, the same as it would in
- * `styles.Cell`.
+ * The styles land on the cell itself, so a bare state key in them (`hovered`,
+ * `:hover`, a local `@state`) asks about the cell. That is NOT how `styles.Cell`
+ * reads one: a sub-element's bare keys resolve against the table root, so a map
+ * copied from the table-level `cellStyles` that keys on `shape=card` or
+ * `column-dividers` matches nothing here. `@own(...)` asks about the cell in
+ * both places.
  */
 export function columnCellClassName(
   styles: Styles | null | undefined,

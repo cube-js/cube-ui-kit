@@ -53,7 +53,7 @@ Choose a different component when the interaction has another outcome:
 - **`onOpenChange`** `(isOpen: boolean) => void` — Fired when the popover opens or closes
 - **`onFocus`** `() => void` — Fired when focus enters the component
 - **`onBlur`** `() => void` — Fired when focus leaves the component
-- **`onKeyDown`** `(e: KeyboardEvent) => void` — Fired when a key is pressed on the input, before the component's own key handling. Call `e.preventDefault()` to skip that handling for the key: a prevented `Enter` selects nothing and does not call `onSubmit`, a prevented `ArrowDown` does not open the popover
+- **`onKeyDown`** `(e: KeyboardEvent) => void` — Fired when a key is pressed on the input, before the component's own key handling. Call `e.preventDefault()` to skip that handling for the key: a prevented `Enter` selects nothing and does not call `onSubmit`, a prevented `ArrowDown` does not open the popover. The event is React Aria's keyboard event, whose propagation stops at the input unless the handler calls `e.continuePropagation()`
 - **`prefix`** `ReactNode` — Content rendered before the input
 - **`suffix`** `ReactNode` — Content rendered after the input
 - **`suffixPosition`** `'before' | 'after'` (default: `before`) — Position of suffix relative to status icons

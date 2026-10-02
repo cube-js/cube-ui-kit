@@ -34,7 +34,7 @@ import { DirectionIcon } from '../../../icons/DirectionIcon';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
 import { SearchIcon } from '../../../icons/SearchIcon';
 import { useProviderProps } from '../../../provider';
-import { FieldBaseProps } from '../../../shared';
+import { FieldBaseProps, TextFieldKeyboardProps } from '../../../shared';
 import { generateRandomId } from '../../../utils/random';
 import { useCombinedRefs } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
@@ -129,8 +129,13 @@ export interface CubeSearchComboBoxProps<T>
   onFocus?: () => void;
   /** Callback fired when focus leaves the component entirely. Does not receive event object. */
   onBlur?: () => void;
-  /** Callback fired when a key is pressed on the input */
-  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  /**
+   * Callback fired when a key is pressed on the input, before the built-in
+   * key handling. Receives React Aria's keyboard event: `e.preventDefault()`
+   * skips the built-in handling for the key, and propagation stops at the
+   * input unless the handler calls `e.continuePropagation()`.
+   */
+  onKeyDown?: TextFieldKeyboardProps['onKeyDown'];
 
   /** Popover trigger behavior: 'focus', 'input', or 'manual'. Defaults to 'input' */
   popoverTrigger?: PopoverTriggerAction;
@@ -702,7 +707,7 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
       // the built-in handling. Read `isDefaultPrevented()`, not
       // `defaultPrevented` — `useKeyboard` hands over a copy of the event whose
       // `defaultPrevented` field is fixed at the moment it was made.
-      onKeyDown?.(e as React.KeyboardEvent<HTMLInputElement>);
+      onKeyDown?.(e);
 
       if (e.isDefaultPrevented()) return;
 

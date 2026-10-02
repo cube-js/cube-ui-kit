@@ -142,6 +142,8 @@ export interface ToggleSelectionProps {
 /**
  * Keyboard handlers for the text fields built on `useTextField` /
  * `useNumberField` — `TextInput`, `TextArea`, `PasswordInput`, `NumberInput`.
+ * `ComboBox` and `SearchComboBox` reuse `onKeyDown`: their input runs it
+ * through `useKeyboard`, so it receives the same event.
  *
  * React Aria already attaches these to the `<input>` / `<textarea>`. They are
  * re-declared for the same reason as `ToggleSelectionProps`: the

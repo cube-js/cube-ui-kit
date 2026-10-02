@@ -220,6 +220,18 @@ function scrollTabIntoStrip(tab: HTMLElement, placement: TabPlacement) {
   else strip.scrollLeft += delta;
 }
 
+/**
+ * Events on the tab bar that mean the user has taken over the strip's scroll
+ * position. Listened for on the whole `Bar`, not just the `Scroll` element: the
+ * custom scrollbar and the scroll arrows sit outside it.
+ */
+const STRIP_INTERACTION_EVENTS = [
+  'wheel',
+  'pointerdown',
+  'touchstart',
+  'keydown',
+] as const;
+
 // =============================================================================
 // TabButton Component
 // =============================================================================
@@ -516,9 +528,11 @@ export function TabButton({
   // Scroll the active tab into view, and keep it there while it settles. The
   // mount commit lays a tab out before its actions run is measured, so it grows
   // by the run's width a frame later: a tab scrolled into view at its first
-  // size can end up past the strip's edge. Only the active tab's own size
-  // changes re-scroll, never a scroll, so a strip the user has scrolled away
-  // stays where they left it.
+  // size can end up past the strip's edge. So the active tab's own size changes
+  // re-scroll the strip, until the user first interacts with the tab bar
+  // (wheel, pointer, touch or a key). From then on the strip stays where they
+  // left it, even if the tab resizes, until a tab becomes active again. Keyed
+  // off interaction events, not `scroll`: the re-scroll fires `scroll` too.
   useEffect(() => {
     const tab = ref.current;
 
@@ -528,11 +542,27 @@ export function TabButton({
 
     if (typeof ResizeObserver === 'undefined') return;
 
+    const bar = tab.closest<HTMLElement>('[data-element="Bar"]');
     const observer = new ResizeObserver(keepActiveTabInStrip);
+    const stopFollowing = () => {
+      observer.disconnect();
+
+      for (const type of STRIP_INTERACTION_EVENTS) {
+        bar?.removeEventListener(type, stopFollowing, true);
+      }
+    };
 
     observer.observe(tab);
 
-    return () => observer.disconnect();
+    for (const type of STRIP_INTERACTION_EVENTS) {
+      // Capture: a tab's own handlers may stop these from bubbling.
+      bar?.addEventListener(type, stopFollowing, {
+        capture: true,
+        passive: true,
+      });
+    }
+
+    return stopFollowing;
   }, [isActive, keepActiveTabInStrip]);
 
   // Overflow trigger (hidden in context-only mode)

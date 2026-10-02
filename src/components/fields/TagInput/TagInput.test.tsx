@@ -175,6 +175,53 @@ describe('<TagInput />', () => {
       expect(getByRole('listbox', { name: 'Values' })).toBeInTheDocument();
     });
 
+    it('reads aria-label ahead of aria-labelledby, as the input does', async () => {
+      const { getByRole } = renderWithRoot(
+        <Named aria-label="Values" aria-labelledby="tag-input-header" />,
+      );
+      // React Aria points the input at itself first, so it reads both.
+      const input = getByRole('combobox', { name: 'Values Primary key' });
+
+      expect(
+        getByRole('grid', { name: 'Selected values, Values Primary key' }),
+      ).toBeInTheDocument();
+      expect(
+        getByRole('button', { name: 'Show options, Values Primary key' }),
+      ).toBeInTheDocument();
+
+      await userEvent.type(input, 'x');
+      expect(
+        getByRole('button', { name: 'Clear text, Values Primary key' }),
+      ).toBeInTheDocument();
+      await userEvent.clear(input);
+
+      await openOptions(getByRole);
+      expect(
+        getByRole('listbox', { name: 'Values Primary key' }),
+      ).toBeInTheDocument();
+    });
+
+    it('reads aria-label ahead of a visible label, as the input does', async () => {
+      const { getByRole } = renderWithRoot(
+        <Named label="Actions" aria-label="Values" />,
+      );
+
+      expect(
+        getByRole('combobox', { name: 'Values Actions' }),
+      ).toBeInTheDocument();
+      expect(
+        getByRole('grid', { name: 'Selected values, Values Actions' }),
+      ).toBeInTheDocument();
+      expect(
+        getByRole('button', { name: 'Show options, Values Actions' }),
+      ).toBeInTheDocument();
+
+      await openOptions(getByRole);
+      expect(
+        getByRole('listbox', { name: 'Values Actions' }),
+      ).toBeInTheDocument();
+    });
+
     it('reads both a visible label and aria-labelledby', () => {
       const { getByRole } = renderWithRoot(
         <Named label="Actions" aria-labelledby="tag-input-cube" />,

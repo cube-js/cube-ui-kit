@@ -120,7 +120,7 @@ const DIALOG_CHILDREN = (
 export const AsyncExampleTrigger = TemplateTrigger.bind({});
 AsyncExampleTrigger.args = {
   title: 'Confirm delete',
-  submitProps: { theme: 'danger', label: 'Delete', qa: 'Delete' },
+  submitProps: { theme: 'danger', children: 'Delete', qa: 'Delete' },
   onSubmit: () => new Promise((resolve) => setTimeout(resolve, 500)),
   children: DIALOG_CHILDREN,
 };
@@ -128,7 +128,7 @@ AsyncExampleTrigger.args = {
 export const AsyncExampleContainer = TemplateContainer.bind({});
 AsyncExampleContainer.args = {
   title: 'Confirm delete',
-  submitProps: { theme: 'danger', label: 'Delete', qa: 'Delete' },
+  submitProps: { theme: 'danger', children: 'Delete', qa: 'Delete' },
   onSubmit: () => new Promise((resolve) => setTimeout(resolve, 500)),
   children: DIALOG_CHILDREN,
 };

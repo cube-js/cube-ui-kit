@@ -63,7 +63,7 @@ A combobox component that combines a text input with a dropdown list, allowing u
 
 #### Notable Properties
 
-**onKeyDown** - Runs before ComboBox's own key handling, listed under [Keyboard Navigation](#keyboard-navigation). Calling `e.preventDefault()` takes the key over: ComboBox skips its handling for that event, so a prevented `ArrowDown` does not open the popover or move focus, and a prevented `Enter` does not select the focused option or commit a custom value. Without `preventDefault()` the built-in handling runs as usual after your handler. The event is React Aria's keyboard event, whose propagation stops at the input unless you call `e.continuePropagation()`.
+**onKeyDown** - Runs before ComboBox's own key handling, listed under [Keyboard Navigation](#keyboard-navigation). Calling `e.preventDefault()` takes the key over: ComboBox skips its handling for that event, so a prevented `ArrowDown` does not open the popover or move focus, and a prevented `Enter` does not select the focused option or commit a custom value. Without `preventDefault()` the built-in handling runs as usual after your handler. The event is React Aria's keyboard event (`KeyboardEvent` from `@react-types/shared`), whose propagation stops at the input unless you call `e.continuePropagation()`.
 
 ```jsx
 <ComboBox
@@ -81,6 +81,32 @@ A combobox component that combines a text input with a dropdown list, allowing u
     <ComboBox.Item key={user.id}>{user.name}</ComboBox.Item>
   ))}
 </ComboBox>
+```
+
+**Enter inside a form.** `preventDefault()` stops the browser's form submission and ComboBox's own handling together; it cannot stop just one. With `allowsCustomValue`, the popover closed and text that matches no option, the built-in `Enter` commits the typed value and lets the event through, so the surrounding form submits. A handler that prevents that `Enter` stops both: the form does not submit, and the value is not committed until the input loses focus (when `shouldCommitOnBlur` is on, the default). In earlier versions such a handler stopped only the submit, and the value was still committed on `Enter`. To keep that behavior, commit the value in your handler:
+
+```jsx
+const [selectedKey, setSelectedKey] = useState(null);
+
+<ComboBox
+  allowsCustomValue
+  label="Tag"
+  selectedKey={selectedKey}
+  onSelectionChange={setSelectedKey}
+  onKeyDown={(e) => {
+    if (e.key === 'Enter' && !isOpen) {
+      // Stops the form submit and the built-in commit
+      e.preventDefault();
+      // so commit the typed value here
+      setSelectedKey(e.currentTarget.value.trim() || null);
+    }
+  }}
+  onOpenChange={setIsOpen}
+>
+  {tags.map((tag) => (
+    <ComboBox.Item key={tag}>{tag}</ComboBox.Item>
+  ))}
+</ComboBox>;
 ```
 
 **defaultInputValue** - Sets the initial input value in uncontrolled mode. This is useful when you want to display a specific text in the input field on mount without selecting any option. When both `defaultInputValue` and `defaultSelectedKey` are provided, `defaultInputValue` takes priority. The value can be changed by the user and is not enforced after initial render.

@@ -1598,9 +1598,11 @@ function TagInput<T extends object>(
   const labelId = label ? (labelProps.id as string | undefined) : undefined;
   const fieldLabelledby =
     [labelId, ariaLabelledby].filter(Boolean).join(' ') || undefined;
-  // A field named only by `aria-label` has no element to point at, so its
-  // words are joined into each part's own name instead.
-  const fieldAriaLabel = fieldLabelledby ? undefined : ariaLabel;
+  // An `aria-label` has no element to point at, so its words are joined into
+  // each part's own name instead, ahead of the ids. That is the input's order
+  // too: given `aria-label` with a `label` or `aria-labelledby`, React Aria
+  // puts the input's own id first in its `aria-labelledby`, so it reads
+  // "Values Primary key" and the chips "Selected values, Values Primary key".
 
   // Joined, not replaced: the input keeps any description it already has.
   const describedBy: string[] = [];
@@ -1663,9 +1665,9 @@ function TagInput<T extends object>(
         aria-expanded={shouldShowPopover}
         aria-haspopup="listbox"
         aria-label={
-          fieldAriaLabel
+          ariaLabel
             ? t('tagInput.showOptionsFor', 'Show options, {{label}}', {
-                label: fieldAriaLabel,
+                label: ariaLabel,
               })
             : t('tagInput.showOptions', 'Show options')
         }
@@ -1698,9 +1700,9 @@ function TagInput<T extends object>(
       // focus just as tabbing away commits the text and removes it.
       tabIndex={-1}
       aria-label={
-        fieldAriaLabel
+        ariaLabel
           ? t('tagInput.clearTextFor', 'Clear text, {{label}}', {
-              label: fieldAriaLabel,
+              label: ariaLabel,
             })
           : t('tagInput.clearText', 'Clear text')
       }
@@ -1757,9 +1759,9 @@ function TagInput<T extends object>(
           listRef={tagListRef}
           inputRef={inputRef}
           aria-label={
-            fieldAriaLabel
+            ariaLabel
               ? t('tagInput.selectedValuesFor', 'Selected values, {{label}}', {
-                  label: fieldAriaLabel,
+                  label: ariaLabel,
                 })
               : t('tagInput.selectedValues', 'Selected values')
           }
@@ -1823,9 +1825,10 @@ function TagInput<T extends object>(
           isDisabled={isDisabled}
           disabledKeys={optionDisabledKeys}
           listStateRef={listStateRef}
-          label={label}
+          // The ids the input reads, the visible label's among them, so the
+          // list reads as the input does, a label that is not a string too.
           ariaLabel={ariaLabel}
-          ariaLabelledby={ariaLabelledby}
+          ariaLabelledby={fieldLabelledby}
           compositeFocusProps={compositeFocusProps}
           filter={optionFilterFn}
           size={size}

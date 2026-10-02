@@ -30,9 +30,15 @@ export interface CubeInfoBadgeProps
     Partial<
       Pick<
         CubeUseActionProps,
-        'to' | 'onPress' | 'navigationOptions' | 'target' | 'label'
+        'to' | 'onPress' | 'navigationOptions' | 'target'
       >
     > {
+  /**
+   * Overrides the badge's accessible name.
+   *
+   * @deprecated Use `aria-label`. It still overrides the name today.
+   */
+  label?: string;
   /**
    * Tooltip content. Either the content itself or a configuration object
    * `{ title, ...tooltipProps }` for advanced setups (placement, delay, etc.).

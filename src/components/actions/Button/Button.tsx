@@ -426,6 +426,9 @@ export const Button = forwardRef(function Button(
   //     type='popover' so triggers don't dismiss the popover they live in)
   //   - `data-popover-keep` on self or any ancestor (manual opt-out for
   //     toggles, custom inline editors, etc.)
+  //   - `data-popover-keep-on-press` on self or any ancestor: the same opt-out
+  //     for presses only. Unlike `data-popover-keep`, it does not stop a click
+  //     in the subtree from closing a nested popover (a field's listbox).
   // Modals/trays don't subscribe at all, so this is a no-op there.
   const dismissParentPopover = useDismissParentPopover();
   const buttonElementRef = useRef<HTMLElement | null>(null);
@@ -435,7 +438,9 @@ export const Button = forwardRef(function Button(
     const el = buttonElementRef.current;
     if (!el) return;
     if (el.hasAttribute('data-popover-trigger')) return;
-    if (el.closest('[data-popover-keep]')) return;
+    if (el.closest('[data-popover-keep], [data-popover-keep-on-press]')) {
+      return;
+    }
     dismissParentPopover(el);
   });
 

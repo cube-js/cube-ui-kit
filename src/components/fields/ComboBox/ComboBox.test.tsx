@@ -1503,5 +1503,103 @@ describe('<ComboBox />', () => {
         expect(queryByRole('listbox')).not.toBeInTheDocument();
       });
     });
+
+    // Without a handler, Enter on an unmatched custom value with the popover
+    // closed commits it and lets the form submit (see "should allow form
+    // submission with single Enter press…"). A handler that prevents Enter
+    // takes the key over, so it stops both: the value commits on blur instead.
+    it('stops both the custom-value commit and the form submit when Enter is prevented', async () => {
+      const onSubmit = vi.fn();
+      const onKeyDown = vi.fn((e: React.KeyboardEvent) => {
+        if (e.key === 'Enter') e.preventDefault();
+      });
+      const { getByRole, formInstance } = renderWithForm(
+        <ComboBox
+          allowsCustomValue
+          name="tag"
+          label="Tag"
+          onKeyDown={onKeyDown}
+        >
+          {items.map((item) => (
+            <ComboBox.Item key={item.key}>{item.children}</ComboBox.Item>
+          ))}
+        </ComboBox>,
+        { formProps: { onSubmit } },
+      );
+      const combobox = getByRole('combobox');
+
+      await userEvent.type(combobox, 'CustomValue');
+      await waitFor(() => {
+        expect(combobox).toHaveAttribute('aria-expanded', 'false');
+      });
+
+      await act(async () => {
+        await userEvent.keyboard('{Enter}');
+      });
+
+      expect(onSubmit).not.toHaveBeenCalled();
+      expect(formInstance.getFieldValue('tag')).toBeUndefined();
+      expect(combobox).toHaveValue('CustomValue');
+
+      await act(async () => {
+        combobox.blur();
+      });
+
+      await waitFor(() => {
+        expect(formInstance.getFieldValue('tag')).toBe('CustomValue');
+      });
+      expect(onSubmit).not.toHaveBeenCalled();
+    });
+
+    it('lets a handler that prevents Enter commit the custom value itself', async () => {
+      const onSubmit = vi.fn((e: React.FormEvent) => e.preventDefault());
+
+      function Controlled() {
+        const [selectedKey, setSelectedKey] = useState<string | null>(null);
+
+        return (
+          <form onSubmit={onSubmit}>
+            <ComboBox
+              allowsCustomValue
+              label="Tag"
+              selectedKey={selectedKey}
+              onSelectionChange={setSelectedKey}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  // Stops the form submit and the built-in commit…
+                  e.preventDefault();
+                  // …so commit the typed value here.
+                  setSelectedKey(
+                    (e.currentTarget as HTMLInputElement).value.trim() || null,
+                  );
+                }
+              }}
+            >
+              {items.map((item) => (
+                <ComboBox.Item key={item.key}>{item.children}</ComboBox.Item>
+              ))}
+            </ComboBox>
+            <button type="submit">Submit</button>
+            <output data-qa="selected">{selectedKey ?? ''}</output>
+          </form>
+        );
+      }
+
+      const { getByRole, getByTestId } = renderWithRoot(<Controlled />);
+      const combobox = getByRole('combobox');
+
+      await userEvent.type(combobox, 'CustomValue');
+      await waitFor(() => {
+        expect(combobox).toHaveAttribute('aria-expanded', 'false');
+      });
+
+      await act(async () => {
+        await userEvent.keyboard('{Enter}');
+      });
+
+      expect(onSubmit).not.toHaveBeenCalled();
+      expect(getByTestId('selected')).toHaveTextContent('CustomValue');
+      expect(combobox).toHaveValue('CustomValue');
+    });
   });
 });

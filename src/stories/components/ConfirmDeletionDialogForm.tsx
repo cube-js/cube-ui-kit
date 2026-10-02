@@ -22,11 +22,11 @@ export function ConfirmDeletionDialogForm<T extends FieldTypes>(
     <DialogForm
       title="Delete Deployment"
       submitProps={{
-        label: 'Delete',
+        children: 'Delete',
         theme: 'danger',
       }}
       cancelProps={{
-        label: 'I changed my mind',
+        children: 'I changed my mind',
       }}
       onSubmit={onSubmit}
       onDismiss={onDismiss}
