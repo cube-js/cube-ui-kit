@@ -17,9 +17,13 @@ import {
   TextInputBase,
 } from '../TextInput';
 
+import type { TextFieldKeyboardProps } from '../../../shared/form';
+
 export interface CubePasswordInputProps
   extends WithNullableValue<CubeTextInputBaseProps>,
-    CubeBufferedValueProps {}
+    CubeBufferedValueProps,
+    // Restated: `WithNullableValue` erases the base's named members in-repo.
+    TextFieldKeyboardProps {}
 
 function PasswordInput(
   props: CubePasswordInputProps,

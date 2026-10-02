@@ -23,7 +23,7 @@ import {
 } from 'react';
 import { AriaNumberFieldProps, AriaTextFieldProps, useHover } from 'react-aria';
 
-import { FieldBaseProps } from '../../../shared';
+import { FieldBaseProps, TextFieldKeyboardProps } from '../../../shared';
 import { mergeProps, useCombinedRefs } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
 import { extractStyles } from '../../../utils/styles';
@@ -198,6 +198,7 @@ export interface CubeTextInputBaseProps
     BaseStyleProps,
     ColorStyleProps,
     Omit<AriaTextFieldProps, 'validate' | 'form' | 'name'>,
+    TextFieldKeyboardProps,
     FieldBaseProps {
   validate?: AriaTextFieldProps['validate'] | AriaNumberFieldProps['validate'];
   /** Left input icon */

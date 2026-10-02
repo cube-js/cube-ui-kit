@@ -18,14 +18,20 @@ import { CubeTextInputBaseProps, TextInputBase } from '../TextInput';
 
 import { StepButton } from './StepButton';
 
-import type { FieldBaseProps } from '../../../shared/form';
+import type {
+  FieldBaseProps,
+  TextFieldKeyboardProps,
+} from '../../../shared/form';
 
 export interface CubeNumberInputProps
   extends Omit<
       CubeTextInputBaseProps,
       'defaultValue' | 'value' | 'onChange' | 'field'
     >,
-    Omit<AriaNumberFieldProps, 'validate' | 'form' | 'name'> {
+    Omit<AriaNumberFieldProps, 'validate' | 'form' | 'name'>,
+    // Declared directly: both `Omit`s above are over types that are, or extend,
+    // an in-repo `any`, which erases the members they would otherwise carry.
+    TextFieldKeyboardProps {
   field?: FieldBaseProps<number | null | undefined>['field'];
   /** Whether or to hide stepper */
   hideStepper?: boolean;

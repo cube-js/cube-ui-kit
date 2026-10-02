@@ -216,6 +216,12 @@ const meta = {
         'Callback fired when focus leaves the ComboBox wrapper element',
       control: { type: null },
     },
+    onKeyDown: {
+      action: 'keyDown',
+      description:
+        'Callback fired when a key is pressed on the input, before the built-in key handling. Call `e.preventDefault()` to skip that handling for the key',
+      control: { type: null },
+    },
 
     prefix: {
       control: { type: null },

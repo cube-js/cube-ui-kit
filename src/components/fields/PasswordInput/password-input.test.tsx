@@ -71,4 +71,17 @@ describe('<PasswordInput />', () => {
     expect(passwordInput).toHaveValue('test');
     expect(formInstance.getFieldValue('test')).toBe('test');
   });
+
+  it('calls onKeyDown and onKeyUp with the key', async () => {
+    const onKeyDown = vi.fn((e) => e.key);
+    const onKeyUp = vi.fn((e) => e.key);
+    const { getByTestId } = renderWithRoot(
+      <PasswordInput label="test" onKeyDown={onKeyDown} onKeyUp={onKeyUp} />,
+    );
+
+    await userEvent.type(getByTestId('Input'), 'a{Enter}');
+
+    expect(onKeyDown.mock.results.map((r) => r.value)).toEqual(['a', 'Enter']);
+    expect(onKeyUp.mock.results.map((r) => r.value)).toEqual(['a', 'Enter']);
+  });
 });

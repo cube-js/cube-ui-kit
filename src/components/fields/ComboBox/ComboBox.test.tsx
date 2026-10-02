@@ -1410,4 +1410,98 @@ describe('<ComboBox />', () => {
 
     expect(getByRole('combobox')).not.toHaveAttribute('aria-required');
   });
+
+  describe('onKeyDown', () => {
+    const renderComboBox = (
+      onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void,
+      onSelectionChange?: (key: unknown) => void,
+    ) =>
+      renderWithRoot(
+        <ComboBox
+          label="test"
+          onKeyDown={onKeyDown}
+          onSelectionChange={onSelectionChange}
+        >
+          {items.map((item) => (
+            <ComboBox.Item key={item.key}>{item.children}</ComboBox.Item>
+          ))}
+        </ComboBox>,
+      );
+
+    it('runs the user handler with the key and keeps the built-in ArrowDown', async () => {
+      const onKeyDown = vi.fn((e: React.KeyboardEvent) => e.key);
+      const { getByRole, queryByRole } = renderComboBox(onKeyDown);
+      const combobox = getByRole('combobox');
+
+      await act(async () => {
+        combobox.focus();
+        await userEvent.keyboard('{ArrowDown}');
+      });
+
+      expect(onKeyDown).toHaveReturnedWith('ArrowDown');
+      await waitFor(() => {
+        expect(queryByRole('listbox')).toBeInTheDocument();
+      });
+    });
+
+    it('skips the built-in ArrowDown when the handler prevents it', async () => {
+      const onKeyDown = vi.fn((e: React.KeyboardEvent) => {
+        if (e.key === 'ArrowDown') e.preventDefault();
+      });
+      const { getByRole, queryByRole } = renderComboBox(onKeyDown);
+      const combobox = getByRole('combobox');
+
+      await act(async () => {
+        combobox.focus();
+        await userEvent.keyboard('{ArrowDown}');
+      });
+
+      expect(onKeyDown).toHaveBeenCalledTimes(1);
+      expect(queryByRole('listbox')).not.toBeInTheDocument();
+      expect(combobox).toHaveAttribute('aria-expanded', 'false');
+    });
+
+    it('selects the focused option on Enter unless the handler prevents it', async () => {
+      let preventEnter = true;
+      const onSelectionChange = vi.fn();
+      const onKeyDown = vi.fn((e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' && preventEnter) e.preventDefault();
+      });
+      const { getByRole, queryByRole } = renderComboBox(
+        onKeyDown,
+        onSelectionChange,
+      );
+      const combobox = getByRole('combobox');
+
+      await userEvent.type(combobox, 'r');
+      await waitFor(() => {
+        expect(getActiveDescendant(combobox)).toHaveAttribute(
+          'data-key',
+          'red',
+        );
+      });
+
+      // Prevented: the popover stays open and nothing is selected.
+      await act(async () => {
+        await userEvent.keyboard('{Enter}');
+      });
+
+      expect(onSelectionChange).not.toHaveBeenCalled();
+      expect(queryByRole('listbox')).toBeInTheDocument();
+      expect(combobox).toHaveValue('r');
+
+      // Not prevented: the built-in Enter selects the focused option.
+      preventEnter = false;
+
+      await act(async () => {
+        await userEvent.keyboard('{Enter}');
+      });
+
+      await waitFor(() => {
+        expect(onSelectionChange).toHaveBeenCalledWith('red');
+        expect(combobox).toHaveValue('Red');
+        expect(queryByRole('listbox')).not.toBeInTheDocument();
+      });
+    });
+  });
 });

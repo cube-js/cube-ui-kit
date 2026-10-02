@@ -698,7 +698,13 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
   // Keyboard navigation
   const { keyboardProps } = useKeyboard({
     onKeyDown: (e) => {
+      // The user's handler runs first, and a key it prevents is theirs: skip
+      // the built-in handling. Read `isDefaultPrevented()`, not
+      // `defaultPrevented` — `useKeyboard` hands over a copy of the event whose
+      // `defaultPrevented` field is fixed at the moment it was made.
       onKeyDown?.(e as React.KeyboardEvent<HTMLInputElement>);
+
+      if (e.isDefaultPrevented()) return;
 
       if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
         e.preventDefault();

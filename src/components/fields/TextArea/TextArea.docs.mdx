@@ -75,6 +75,30 @@ These properties allow direct style application without using the `styles` prop:
 - **`onChange`** `function` — Callback fired when the input value changes
 - **`onBlur`** `function` — Callback fired when the input loses focus
 - **`onFocus`** `function` — Callback fired when the input receives focus
+- **`onKeyDown`** `(e: KeyboardEvent) => void` — Callback fired when a key is pressed in the textarea. See [Keyboard Events](#keyboard-events)
+- **`onKeyUp`** `(e: KeyboardEvent) => void` — Callback fired when a key is released in the textarea
+
+### Keyboard Events
+
+`onKeyDown` and `onKeyUp` are attached to the `<textarea>` by React Aria's `useTextField`. TextArea has no key handling of its own, so the handler simply receives the event: `e.preventDefault()` cancels only what the browser would do with the key, such as inserting a newline on `Enter`.
+
+The handler receives React Aria's keyboard event rather than a plain React one, and once you pass `onKeyDown` the key stops at the textarea: React Aria stops its propagation after your handler. A parent's `onKeyDown` no longer sees it, and neither does a surrounding `Dialog`, so `Escape` stops closing it. Call `e.continuePropagation()` for the keys that should travel on:
+
+```jsx
+<TextArea
+  label="Comment"
+  onKeyDown={(e) => {
+    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+      e.preventDefault(); // no newline
+      send();
+    } else {
+      e.continuePropagation(); // let Escape still close a Dialog
+    }
+  }}
+/>
+```
+
+The fields that do handle keys themselves (`ComboBox`, `SearchComboBox`, `TagInput`, `CommandTextArea`) run your `onKeyDown` first and skip their own handling for a key you prevent. `NumberInput` is the exception: React Aria runs its stepping and `Enter` commit before your handler.
 
 ### Base Properties
 

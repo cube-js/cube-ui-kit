@@ -53,7 +53,7 @@ Choose a different component when the interaction has another outcome:
 - **`onOpenChange`** `(isOpen: boolean) => void` — Fired when the popover opens or closes
 - **`onFocus`** `() => void` — Fired when focus enters the component
 - **`onBlur`** `() => void` — Fired when focus leaves the component
-- **`onKeyDown`** `(e: KeyboardEvent) => void` — Fired when a key is pressed on the input
+- **`onKeyDown`** `(e: KeyboardEvent) => void` — Fired when a key is pressed on the input, before the component's own key handling. Call `e.preventDefault()` to skip that handling for the key: a prevented `Enter` selects nothing and does not call `onSubmit`, a prevented `ArrowDown` does not open the popover
 - **`prefix`** `ReactNode` — Content rendered before the input
 - **`suffix`** `ReactNode` — Content rendered after the input
 - **`suffixPosition`** `'before' | 'after'` (default: `before`) — Position of suffix relative to status icons
@@ -247,6 +247,8 @@ useEffect(() => {
 - `Escape` - Closes the popover (if open) or clears the input (if clearable and popover closed)
 - `Home` / `End` - Moves focus to the first / last suggestion (when the popover is open)
 - Typing - Filters suggestions based on the input value
+
+An `onKeyDown` handler runs before all of these and can skip any of them for a key by calling `e.preventDefault()`.
 
 ### ARIA Properties
 
