@@ -213,3 +213,62 @@ describe('Radio-type tab with a title too long for it', () => {
     );
   });
 });
+
+/**
+ * A strip mounted with its LAST tab active, in a bar too narrow for every tab.
+ * The active tab is scrolled into view on mount, but that commit lays the tabs
+ * out before their actions runs are measured, so every tab is still narrower
+ * than it is a frame later. The strip then grows past the edge and the tab that
+ * was "in view" ends up clipped or under the add button. jsdom has no layout.
+ */
+describe('Active tab at the end of a crowded strip', () => {
+  const nextFrame = () =>
+    new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+
+  function CrowdedTabs() {
+    return (
+      <div style={{ width: 300 }}>
+        <Tabs
+          autoHideActions
+          defaultActiveKey="preset2"
+          menu={
+            <>
+              <Menu.Item key="rename">Rename</Menu.Item>
+              <Menu.Item key="delete">Delete</Menu.Item>
+            </>
+          }
+          suffix={<Tabs.Action qa="AddTab" aria-label="Add tab" />}
+          onDelete={() => {}}
+        >
+          <Tab key="default" title="Default" />
+          <Tab key="quarterly" title="Quarterly" />
+          <Tab key="preset" title="Preset" />
+          <Tab key="preset2" title="Preset 2" />
+        </Tabs>
+      </div>
+    );
+  }
+
+  it('keeps the active tab fully in view once the tabs reach their final size', async () => {
+    renderWithRoot(<CrowdedTabs />);
+
+    const tab = screen.getByTestId('Tab-preset2');
+    const scroller = tab.closest('[data-element="Scroll"]') as HTMLElement;
+    const addButton = screen.getByTestId('AddTab');
+
+    // Let the actions runs publish their widths and the strip settle.
+    for (let i = 0; i < 5; i++) await nextFrame();
+
+    // Guard the guard: the strip must overflow, or nothing needs scrolling and
+    // the assertions below pass trivially.
+    expect(scroller.scrollWidth).toBeGreaterThan(scroller.clientWidth);
+
+    const tabRect = tab.parentElement!.getBoundingClientRect();
+    const scrollRect = scroller.getBoundingClientRect();
+    const addRect = addButton.getBoundingClientRect();
+
+    expect(tabRect.left).toBeGreaterThanOrEqual(scrollRect.left - 0.5);
+    expect(tabRect.right).toBeLessThanOrEqual(scrollRect.right + 0.5);
+    expect(tabRect.right).toBeLessThanOrEqual(addRect.left + 0.5);
+  });
+});
