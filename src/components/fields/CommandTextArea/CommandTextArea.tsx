@@ -734,6 +734,7 @@ function CommandTextArea<T extends object>(
   // lists size to their content. The user's `overlayStyles` still win on top.
   const popoverOverlayStyles: Styles = {
     width: '30x max-content 50vw',
+    // eslint-disable-next-line tasty/no-style-spread -- consumer `overlayStyles` override the default popover width
     ...overlayStyles,
   };
 

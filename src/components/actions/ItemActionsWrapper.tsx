@@ -58,6 +58,7 @@ const ItemActionsWrapperElement = tasty({
     // actions laid over the same row — which paint from the color this element
     // hands down — stayed at their resting tint. The variants restate it,
     // because that is where the colors keyed on it live.
+    // eslint-disable-next-line tasty/no-style-spread -- shared with ITEM_RESTING_COLOR_VARIANTS, which declare the same states
     ...ROW_STATE_ALIASES,
 
     // The one layout the row does not want its actions centred in. A block

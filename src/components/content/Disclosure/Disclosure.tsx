@@ -420,10 +420,8 @@ const DisclosureContent = forwardRef<
     contentStyles,
   } = context;
 
-  const mergedStyles: Styles = {
-    ...contentStyles,
-    ...styles,
-  };
+  // eslint-disable-next-line tasty/no-style-spread -- the item's own `styles` override the group's shared `contentStyles`
+  const mergedStyles: Styles = { ...contentStyles, ...styles };
 
   // Filter out hidden attribute from panelProps since we manage visibility via CSS height animation
   const { hidden, ...filteredPanelProps } = panelProps as Record<
@@ -497,10 +495,8 @@ const DisclosureGroup = forwardRef<HTMLDivElement, CubeDisclosureGroupProps>(
 
     const outerStyles = extractStyles(otherProps, OUTER_STYLES);
 
-    const finalStyles: Styles = {
-      ...outerStyles,
-      ...styles,
-    };
+    // eslint-disable-next-line tasty/no-style-spread -- consumer `styles` override the extracted outer style props
+    const finalStyles: Styles = { ...outerStyles, ...styles };
 
     return (
       <DisclosureGroupContext.Provider value={contextValue}>
@@ -604,10 +600,8 @@ const DisclosureItem = forwardRef<HTMLDivElement, CubeDisclosureItemProps>(
 
     const outerStyles = extractStyles(otherProps, OUTER_STYLES);
 
-    const finalStyles: Styles = {
-      ...outerStyles,
-      ...styles,
-    };
+    // eslint-disable-next-line tasty/no-style-spread -- consumer `styles` override the extracted outer style props
+    const finalStyles: Styles = { ...outerStyles, ...styles };
 
     const finalMods = {
       expanded: isExpanded,

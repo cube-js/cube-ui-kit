@@ -26,6 +26,7 @@ const DateInputWrapperElement = tasty({
   qa: 'DateInputWrapper',
   role: 'presentation',
   styles: {
+    // eslint-disable-next-line tasty/no-style-spread -- input wrapper base shared with TextInput, ComboBox, SearchComboBox and FilterListBox
     ...INPUT_WRAPPER_STYLES,
     display: 'flex',
   },
@@ -34,6 +35,7 @@ const DateInputWrapperElement = tasty({
 const DateInputElement = tasty({
   role: 'presentation',
   styles: {
+    // eslint-disable-next-line tasty/no-style-spread -- input base shared with TextInput, ComboBox, SearchComboBox and FilterListBox
     ...DEFAULT_INPUT_STYLES,
     height: {
       '': '($size-md - 2bw)',

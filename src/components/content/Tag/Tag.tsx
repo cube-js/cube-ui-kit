@@ -87,6 +87,7 @@ function Tag(allProps: CubeTagProps, ref) {
         isClosable ? (
           <Item.Action
             aria-label={t('tag.close', 'Close')}
+            // eslint-disable-next-line tasty/no-style-spread -- consumer `closeButtonStyles` override the default close-button color
             styles={{ color: '#current', ...closeButtonStyles }}
             icon={<CloseIcon />}
             onPress={onClose}

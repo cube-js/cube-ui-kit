@@ -821,6 +821,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
               gridRows: '1sf',
               width: 'max($overlay-min-width, 30x) max-content 50vw',
               '$overlay-min-width': '30x',
+              // eslint-disable-next-line tasty/no-style-spread -- consumer `popoverStyles` override the default overlay sizing
               ...popoverStyles,
             }}
             style={

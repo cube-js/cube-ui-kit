@@ -202,6 +202,7 @@ function ItemTable<T = any>(
   // Style props (`height`, `maxHeight`, `margin`, …) land on the root frame.
   // `height` matters most: there is no page-scroll mode, so bounding the table
   // is what turns the body into a scroller and pins the header.
+  // eslint-disable-next-line tasty/no-style-spread -- consumer `styles` override the extracted container style props
   const rootStyles = { ...extractStyles(props, CONTAINER_STYLES), ...styles };
 
   const resolvedGetRowKey = useMemo(

@@ -83,6 +83,7 @@ const FilterListBoxWrapperElement = tasty({
 const SearchWrapperElement = tasty({
   qa: 'FilterListBoxSearchWrapper',
   styles: {
+    // eslint-disable-next-line tasty/no-style-spread -- input wrapper base shared with TextInput, ComboBox, SearchComboBox and DateInputBase
     ...INPUT_WRAPPER_STYLES,
     border: 'bottom',
     radius: '1r top',
@@ -100,6 +101,7 @@ const SearchWrapperElement = tasty({
 const SearchInputElement = tasty({
   as: 'input',
   styles: {
+    // eslint-disable-next-line tasty/no-style-spread -- input base shared with TextInput, ComboBox, SearchComboBox and DateInputBase
     ...DEFAULT_INPUT_STYLES,
     fill: '#clear',
     padding: {

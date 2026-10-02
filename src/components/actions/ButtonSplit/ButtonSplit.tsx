@@ -121,10 +121,8 @@ export const ButtonSplit = forwardRef<HTMLDivElement, CubeButtonSplitProps>(
 
     const containerStyles = extractStyles(rest, STYLE_PROPS);
 
-    const mergedStyles: Styles = {
-      ...containerStyles,
-      ...styles,
-    };
+    // eslint-disable-next-line tasty/no-style-spread -- consumer `styles` override the extracted container style props
+    const mergedStyles: Styles = { ...containerStyles, ...styles };
 
     const contextValue = useMemo(
       () => ({

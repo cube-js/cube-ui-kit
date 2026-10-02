@@ -117,7 +117,7 @@ const PlaceholderElement = tasty({
     border: '#primary.40',
     zIndex: 2,
     pointerEvents: 'none',
-    transition: 'inset 80ms linear, width 80ms linear, height 80ms linear',
+    transition: 'inset linear, width linear, height linear',
     boxSizing: 'border-box',
   },
 });

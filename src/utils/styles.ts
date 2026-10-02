@@ -23,7 +23,9 @@ export function extractStyles(
   const record = props as Record<string, unknown>;
 
   const styles: Styles = {
+    // eslint-disable-next-line tasty/no-style-spread -- component defaults are the base layer that `props.styles` overrides
     ...defaultStyles,
+    // eslint-disable-next-line tasty/no-style-spread -- `props.styles` override the component defaults
     ...(!ignoreSet.has('styles') &&
     record.styles &&
     typeof record.styles === 'object'

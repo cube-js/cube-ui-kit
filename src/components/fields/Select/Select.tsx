@@ -626,6 +626,7 @@ function Select<T extends object>(
             data-popover-trigger
             showActions={showActions}
             skipActionsWidthTransition={skipActionsWidthTransition}
+            // eslint-disable-next-line tasty/no-style-spread -- `triggerStyles` override the deprecated `inputStyles` alias
             styles={{ ...inputStyles, ...triggerStyles }}
             theme={theme}
             size={size}
@@ -912,7 +913,9 @@ function Option({ item, state, styles, shouldUseVirtualFocus, size }) {
       }}
       data-size={size}
       styles={{
+        // eslint-disable-next-line tasty/no-style-spread -- select-wide `optionStyles`, overridden by the item's own styles below
         ...(styles as Styles),
+        // eslint-disable-next-line tasty/no-style-spread -- the item's own styles override the select-wide `optionStyles`
         ...(filteredItemProps.styles as Styles),
       }}
       labelProps={labelProps}
@@ -958,6 +961,7 @@ function SelectSection<T>(props: SelectSectionProps<T>) {
         <ListSectionHeading
           {...headingProps}
           size={size}
+          // eslint-disable-next-line tasty/no-style-spread -- consumer `headingStyles`, with the inline compensation pinned after them
           styles={{ ...headingStyles, '$inline-compensation': '0px' }}
         >
           {heading}

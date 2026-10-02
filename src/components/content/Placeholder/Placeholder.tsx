@@ -93,6 +93,7 @@ export const Placeholder = forwardRef(function Placeholder(
       mods={{ animated: !isStatic, circle }}
       styles={{
         height: size,
+        // eslint-disable-next-line tasty/no-style-spread -- consumer styles override the `size`-derived height
         ...styles,
       }}
     />

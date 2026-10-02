@@ -612,6 +612,7 @@ function DataTable<T = any>(
     onRangeChange: onCellRangeChange,
   });
 
+  // eslint-disable-next-line tasty/no-style-spread -- consumer `styles` override the extracted container style props
   const rootStyles = { ...extractStyles(props, CONTAINER_STYLES), ...styles };
 
   const smallestPageSize = pageSizeOptions?.length

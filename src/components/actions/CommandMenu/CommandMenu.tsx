@@ -472,6 +472,7 @@ function CommandMenu<T extends object>(
         <StyledHeader
           role="presentation"
           data-size={size}
+          // eslint-disable-next-line tasty/no-style-spread -- consumer `headerStyles` override the default borderless header
           styles={{ border: 'none', ...headerStyles }}
         >
           {header}

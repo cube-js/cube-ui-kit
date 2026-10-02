@@ -177,6 +177,7 @@ function PeriodPicker<T extends DateValue>(
       ref={targetRef}
       qa={qa || 'PeriodPicker'}
       inputType="datepicker"
+      // eslint-disable-next-line tasty/no-style-spread -- consumer `styles`, then `wrapperStyles`, override the default grid display
       styles={{ display: 'grid', ...styles, ...props.wrapperStyles }}
       inputStyles={{
         cursor: isDisabled || isReadOnly ? 'default' : 'pointer',

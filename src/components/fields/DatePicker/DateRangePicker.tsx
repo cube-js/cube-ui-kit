@@ -92,7 +92,9 @@ function DateRangePicker<T extends DateValue>(
   // precedence every other component uses; re-spreading `props.styles` here
   // would invert it. `wrapperStyles` stays the most specific and keeps winning.
   let styles: Styles = {
+    // eslint-disable-next-line tasty/no-style-spread -- extracted container style props are the base that `wrapperStyles` overrides
     ...extractStyles(props, CONTAINER_STYLES),
+    // eslint-disable-next-line tasty/no-style-spread -- `wrapperStyles` override the extracted container style props
     ...props.wrapperStyles,
   };
 

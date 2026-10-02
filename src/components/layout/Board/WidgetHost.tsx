@@ -313,7 +313,7 @@ const GripElement = tasty({
       '': 0,
       revealed: 1,
     },
-    transition: 'opacity 120ms ease-in-out',
+    transition: 'opacity $disclosure-transition ease-in-out',
     borderTop: {
       '': '0',
       '[data-axis="ne"] | [data-axis="nw"]': '2px solid #dark.40',
@@ -384,7 +384,9 @@ const OutsideGripElement = tasty({
       '': 0,
       revealed: 1,
     },
-    transition: 'opacity 120ms ease-in-out, theme',
+    // `theme` goes first: listed after `opacity`, it overrode the opacity
+    // entry's duration and easing.
+    transition: 'theme, opacity $disclosure-transition ease-in-out',
     // Anchored to the edge it resizes and centred along it, so the control reads
     // as belonging to that edge rather than floating near it.
     left: {
@@ -579,7 +581,7 @@ const EdgeGripElement = tasty({
       '': 0,
       revealed: 1,
     },
-    transition: 'opacity 120ms ease-in-out',
+    transition: 'opacity $disclosure-transition ease-in-out',
     // A column of 5 dots for the vertical edges (e/w), a row of 5 for n/s.
     gridColumns: {
       '': '3px',

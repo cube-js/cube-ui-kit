@@ -140,7 +140,9 @@ export const StyledItem = tasty({
   as: 'li',
   styles: {
     // Base button-like styles merged from Action/Button defaults
+    // eslint-disable-next-line tasty/no-style-spread -- the menu item starts from Button's default styles
     ...DEFAULT_BUTTON_STYLES,
+    // eslint-disable-next-line tasty/no-style-spread -- `default.clear` theme shared with Button, ItemAction and ItemBadge
     ...DEFAULT_CLEAR_STYLES,
 
     // Override specifics for menu context

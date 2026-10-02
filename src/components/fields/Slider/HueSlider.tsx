@@ -86,13 +86,16 @@ function HueSlider(
       '': '1bw #slider-thumb-hovered.0',
       focused: '1bw #slider-thumb-hovered',
     },
+    // eslint-disable-next-line tasty/no-style-spread -- consumer `thumbStyles` override the default focus outline
     ...userThumbStyles,
   };
 
   const trackStyles: Styles = {
+    // eslint-disable-next-line tasty/no-style-spread -- orientation base that consumer `trackStyles` override
     ...(orientation === 'vertical'
       ? verticalTrackStyles
       : horizontalTrackStyles),
+    // eslint-disable-next-line tasty/no-style-spread -- consumer `trackStyles` override the orientation base
     ...userTrackStyles,
   };
 
