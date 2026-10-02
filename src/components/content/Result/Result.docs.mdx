@@ -66,7 +66,7 @@ Customizes the root element of the component.
 - `placeContent` — `center` (switches to `start` when `isCompact`)
 - `placeItems` — `center` (switches to `start` when `isCompact`)
 - `gap` — `0`; `Content` and `Actions` keep `3x` from the block above with a top margin (`2x 1x` and no margins when `isCompact`)
-- `padding` — `6x 4x` (`0` when `isCompact`; `1.5x` when `layout="stacked"`, on top of the host's padding, e.g. a dialog `Content`)
+- `padding` — `6x 4x` (`0` when `isCompact`; `1.5x` when `layout="stacked"`, and `0` for a stacked Result inside a `Dialog`, whose `Content` already pads it. The `@in-dialog` state is the Result's own, so `styles={{ padding: { 'layout=stacked & @in-dialog': '1x' } }}` sets it and keeps the rest of the default padding)
 - `textAlign` — `center` (switches to `left` when `isCompact`)
 - `boxSizing` — `border-box`
 - `width` — `max 80ch` (caps the readable line length; override via the `width` prop). `100%` up to `80ch` when `layout="stacked"`, so the stacked actions share one width wherever the card sits
@@ -109,7 +109,7 @@ The size scales the content and never changes the arrangement. `isCompact` has i
 The layout arranges the block and never changes the scale. `isCompact` has its own arrangement and ignores it.
 
 - `default` - A centered column capped at `80ch`, actions in a centered row that wraps
-- `stacked` - Fills the container up to `80ch` with a `1.5x` padding of its own, actions stacked to the full width, free `children` stretched. Combine with `size="large"` for the vertical card of a confirmation or result dialog
+- `stacked` - Fills the container up to `80ch` with a `1.5x` padding of its own (none inside a `Dialog`), actions stacked to the full width, free `children` stretched. Combine with `size="large"` for the vertical card of a confirmation or result dialog
 
 ## Examples
 

@@ -88,6 +88,9 @@ const Container = tasty({
   qa: 'ResultContainer',
   as: 'section',
   styles: {
+    // Any ancestor: the Result sits in the dialog's `Content`, not in `Dialog`
+    '@in-dialog': '@parent(id=Dialog)',
+
     display: {
       '': 'flex',
       compact: 'grid',
@@ -112,8 +115,9 @@ const Container = tasty({
       '': '6x 4x',
       // The host pads: a dialog `Content` or the page section the card fills
       compact: '0',
-      // Adds to the host's padding, e.g. a dialog `Content`
       'layout=stacked': '1.5x',
+      // The dialog's `Content` already pads it
+      'layout=stacked & @in-dialog': '0',
     },
     textAlign: {
       '': 'center',
