@@ -102,7 +102,7 @@ Success.args = {
   actions: (
     <>
       <Result.Action type="primary">Go Console</Result.Action>
-      <Result.Action type="outline-2">Buy Again</Result.Action>
+      <Result.Action>Buy Again</Result.Action>
     </>
   ),
 };
@@ -130,7 +130,7 @@ Error.args = {
   actions: (
     <>
       <Result.Action type="primary">Go Console</Result.Action>
-      <Result.Action type="outline-2">Buy Again</Result.Action>
+      <Result.Action>Buy Again</Result.Action>
     </>
   ),
 };
@@ -173,7 +173,7 @@ Compact.args = {
   actions: (
     <>
       <Result.Action type="primary">Go Console</Result.Action>
-      <Result.Action type="outline-2">Buy Again</Result.Action>
+      <Result.Action>Buy Again</Result.Action>
     </>
   ),
 };
