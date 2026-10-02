@@ -50,19 +50,8 @@ describe('<Button />', () => {
     );
   });
 
-  it.each([
-    ['none', {}],
-    ['icon', { icon: <IconCopy /> }],
-  ])(`should warn if %s specified`, (_, value) => {
-    const spy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-
-    render(<Button {...value} />);
-
-    expect(spy).toHaveBeenCalled();
-
-    spy.mockRestore();
-  });
-
+  // Runs before the cases below that do warn: the warning fires once per page
+  // per key, so after them a regression here would log nothing.
   it.each([
     ['aria-label', { 'aria-label': 'test' }],
     ['aria-labelledby', { 'aria-labelledby': 'test' }],
@@ -93,6 +82,19 @@ describe('<Button />', () => {
     expect(
       spy.mock.calls.filter((args) => args.includes('accessibility issue:')),
     ).toHaveLength(0);
+
+    spy.mockRestore();
+  });
+
+  it.each([
+    ['none', {}],
+    ['icon', { icon: <IconCopy /> }],
+  ])(`should warn if %s specified`, (_, value) => {
+    const spy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    render(<Button {...value} />);
+
+    expect(spy).toHaveBeenCalled();
 
     spy.mockRestore();
   });
