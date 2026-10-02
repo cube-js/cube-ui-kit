@@ -157,9 +157,12 @@ export { Header } from './components/content/Header';
 export type { CubeHeaderProps } from './components/content/Header';
 export { Footer } from './components/content/Footer';
 export type { CubeFooterProps } from './components/content/Footer';
-export { Result } from './components/content/Result/Result';
+export { Result, ResultAction } from './components/content/Result/Result';
 export type {
+  CubeResultActionProps,
+  CubeResultLayout,
   CubeResultProps,
+  CubeResultSize,
   CubeResultStatus,
 } from './components/content/Result/Result';
 export { Layout, GridLayout } from './components/content/Layout';
