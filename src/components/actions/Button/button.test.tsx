@@ -85,9 +85,14 @@ describe('<Button />', () => {
   ])('should not warn if %s is provided', (_, value) => {
     const spy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
+    spy.mockClear();
     render(<Button {...value} />);
 
-    expect(spy).not.toHaveBeenCalled();
+    // Only the accessibility warning is under test: a `label` case also logs
+    // the (once-per-page) deprecation of `label` itself.
+    expect(
+      spy.mock.calls.filter((args) => args.includes('accessibility issue:')),
+    ).toHaveLength(0);
 
     spy.mockRestore();
   });
