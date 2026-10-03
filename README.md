@@ -141,6 +141,10 @@ pnpm size             # Check bundle size limits
 pnpm chromatic        # Run visual regression tests
 ```
 
+### Agent reviews
+
+Local agent reviews follow the [UI Kit review rules](docs/rules/review.md), including [Entropy review](docs/rules/entropy.md#entropy-review). Use `$ui-review` in Codex or `/ui-review` in Claude for a full review, and `$entropy-review` or `/entropy-review` respectively for a focused complexity assessment.
+
 ### Project Structure
 
 ```
