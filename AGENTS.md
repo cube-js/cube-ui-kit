@@ -31,6 +31,7 @@ pnpm list @tenphi/tasty @tenphi/glaze
 Project-specific working rules for AI agents. Not published with the package.
 
 - [coding.md](docs/rules/coding.md) — development flow, code style, **import rules**, Markdown formatting, knowledge maintenance
+- [entropy.md](docs/rules/entropy.md) — proportional complexity in code, public APIs, consumer usage and UX; Entropy review and developer exceptions
 - [input-components.md](docs/rules/input-components.md) — form-attachable input components (`useFieldProps`, validation props, `wrapWithField`)
 - [storybook.md](docs/rules/storybook.md) — `.stories.tsx` and `.docs.mdx` authoring, including the `play`-function rule below
 - [documentation.md](docs/rules/documentation.md) — `.docs.mdx` structure + update flow
@@ -39,6 +40,10 @@ Project-specific working rules for AI agents. Not published with the package.
 - [commit-changes.md](docs/rules/commit-changes.md) — commit message convention
 - [eslint-plugin.md](docs/rules/eslint-plugin.md) — the shipped lint rule + the defaults registry it checks against
 - [review.md](docs/rules/review.md) — shared UI Kit review checklist, scope and verification; the local `ui-review` skill reads this file
+
+## Entropy rule
+
+Every task follows the [Entropy rule](docs/rules/entropy.md): added complexity must serve validated requirements and remain proportional to the capability delivered. Prefer safe simplification in the affected area, and consider the burden on component maintainers, consumers and end users together. Record any developer-accepted exception with its reason and scope. Every UI Kit review includes an Entropy review; use `$entropy-review` in Codex or `/entropy-review` in Claude for a focused pass.
 
 ## Changesets
 

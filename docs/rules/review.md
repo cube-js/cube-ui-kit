@@ -22,6 +22,10 @@ Actively try to disprove each candidate. Check surrounding branches, provider de
 
 Attach verification limits to each affected finding. Say what code proves and what a probe or test established; if runtime behavior was inferred only, label it `not verified — read-only`. Drop candidates whose premise cannot be established. Do not turn a missing tool or failing environment into a component bug.
 
+## Entropy review
+
+Include the [Entropy review](entropy.md#entropy-review) in every UI Kit review, covering the changed implementation, public APIs, consumer usage and applicable UX. Follow its proportionality test and developer exception procedure. Keep findings tied to introduced complexity, a concrete maintenance or user burden, and a verified simpler alternative; do not require unrelated cleanup or treat visual preference as a violation. A focused pass is available through the local `entropy-review` skill.
+
 ## Components and public APIs
 
 ### Reuse an implementation whose contract fits
@@ -172,4 +176,4 @@ Flag consumer-facing runtime or public API changes without a changeset. Docs-onl
 
 Return findings in the current conversation, most severe first, with file and line, rule heading, concrete problem and the smallest fix. Distinguish blocking behavior/API defects from maintenance findings. Do not edit files, post comments, file issues or change baselines during a review unless the user explicitly requests that separate action.
 
-If nothing is found, say so and mention only material verification limits. Omit lists of passed checks or refuted candidates. Clear defects outside this checklist still belong in the review; unsupported stylistic preferences do not.
+If nothing is found, say so and mention only material verification limits and material developer-accepted entropy exceptions with their scope and acceptance reference. Omit lists of passed checks or refuted candidates. Clear defects outside this checklist still belong in the review; unsupported stylistic preferences do not.
