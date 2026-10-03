@@ -66,7 +66,7 @@ A focused Entropy review states its scope/base and concludes `pass`, `changes ne
 
 The policy applies established ideas to UI Kit; these sources motivate the rule rather than provide a formula for scoring changes.
 
-- [Lehman's law of increasing complexity](https://users.ece.utexas.edu/~perry/work/papers/feast1.old.pdf): evolving software requires deliberate work to maintain or reduce complexity.
-- [Brooks, No Silver Bullet](https://www.cs.unc.edu/techreports/86-020.pdf): distinguish difficulty inherent in the problem from difficulty in its implementation.
-- [Ousterhout, The Nature of Complexity](https://web.stanford.edu/~ouster/cgi-bin/cs190-winter18/lecture.php?topic=complexity): investigate change amplification, cognitive load and hard-to-discover dependencies.
-- [Sweller and colleagues, Cognitive Architecture and Instructional Design](https://link.springer.com/article/10.1007/s10648-019-09465-5): distinguish inherent learning difficulty from burden introduced by presentation. Applying that distinction to developer experience and UX is this policy's design interpretation.
+- Lehman and colleagues, Metrics and Laws of Software Evolution: evolving software requires deliberate work to maintain or reduce complexity.
+- Frederick P. Brooks Jr., No Silver Bullet — Essence and Accident in Software Engineering: distinguish difficulty inherent in the problem from difficulty in its implementation.
+- John Ousterhout, A Philosophy of Software Design: investigate change amplification, cognitive load and hard-to-discover dependencies.
+- John Sweller, Jeroen J. G. van Merriënboer and Fred Paas, Cognitive Architecture and Instructional Design: 20 Years Later: distinguish inherent learning difficulty from burden introduced by presentation. Applying that distinction to developer experience and UX is this policy's design interpretation.
