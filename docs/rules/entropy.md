@@ -66,6 +66,8 @@ A focused Entropy review states its scope/base and concludes `pass`, `changes ne
 
 The policy applies established ideas to UI Kit; these sources motivate the rule rather than provide a formula for scoring changes.
 
+The references below are attribution only, not required reading. Agents must not search for, retrieve or read the cited works as part of implementation or review; the rules in this document are self-contained.
+
 - Lehman and colleagues, Metrics and Laws of Software Evolution: evolving software requires deliberate work to maintain or reduce complexity.
 - Frederick P. Brooks Jr., No Silver Bullet — Essence and Accident in Software Engineering: distinguish difficulty inherent in the problem from difficulty in its implementation.
 - John Ousterhout, A Philosophy of Software Design: investigate change amplification, cognitive load and hard-to-discover dependencies.
