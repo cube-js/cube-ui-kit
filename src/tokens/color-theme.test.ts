@@ -119,9 +119,7 @@ describe('getColorTheme', () => {
       string
     >;
 
-    // Banding that resolves to the same colour is not banding. This is also what
-    // keeps the two out of tasty's value-coalescing trap when they end up in one
-    // state map.
+    // Banding that resolves to the same colour is not banding.
     for (const scheme of SCHEMES) {
       expect(band[scheme]).not.toBe(base[scheme]);
     }

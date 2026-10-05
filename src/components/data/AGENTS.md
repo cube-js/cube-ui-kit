@@ -39,15 +39,15 @@ The table paints cells through `> Scroller > Table > Body > Row > Cell`, a speci
 
 Never spread `cellStyles` into `style`. A token there is an invalid inline value that the browser drops without a trace.
 
-## The row state matrix must not be one map
+## Row paint separates independent responsibilities
 
-Tasty coalesces entries in a single state map that share a serialized value, promotes them to the group's maximum priority, and negates them against everything below — silently turning a middle-priority compound rule into FALSE. See `src/data/AGENTS.md`.
+`styled.ts` keeps the row's base, interaction overlay and text/dimming independent, so changing one does not require enumerating combinations with the others:
 
-A combined `selected × hovered × focused × disabled × dimmed × odd` map is 64 entries and would be riddled with collisions. `styled.ts` splits it three ways:
+1. `odd` and `pinned` choose the opaque `#row-base`.
+2. Interaction states choose `#row-overlay`.
+3. `dimmed` and `disabled` choose `#row-text`, while `dimmed` also drives `$dim`.
 
-1. `odd` lives alone in `#row-base`, with two distinct values.
-2. `dimmed` never appears in a fill map — it drives `$dim` and `#row-text`.
-3. Every value string inside `#row-overlay` is unique.
+Tasty preserves authored priority when values repeat; value uniqueness is not a requirement. See `src/data/AGENTS.md`.
 
 There is a regression test asserting a `selected + hovered` row computes a different background than a merely `hovered` one. Keep it.
 

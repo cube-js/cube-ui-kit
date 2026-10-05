@@ -11,10 +11,8 @@ import { ITEM_RESTING_COLOR_VARIANTS, ITEM_VARIANTS } from './item-themes';
  * `special` works in white alpha over a fixed dark base. A blanket edit against
  * any one of those shapes silently shifts the others.
  *
- * The chips are asserted to differ only in their final alpha, and to differ at
- * all: two entries in one state-map must not serialize to the same string, or
- * Tasty's `mergeEntriesByValue` pass coalesces them at the group's max priority
- * and negates `selected & (hovered | focused)`. See `SPECIAL_CLEAR_STYLES`.
+ * The chips are exactly equal. Tasty preserves authored state priority when
+ * values repeat, so disabling selection needs no artificial alpha difference.
  */
 describe('ITEM_VARIANTS', () => {
   const VARIANTS = [
@@ -57,15 +55,6 @@ describe('ITEM_VARIANTS', () => {
     'current.clear',
   ] as const;
 
-  /** `'#surface-2 #primary-accent-surface.09'` -> `['#surface-2 #primary-accent-surface', 0.09]` */
-  function splitAlpha(value: string): [string, number] {
-    const match = value.match(/^(.*?)(\.\d+)$/);
-
-    if (!match) return [value, 1];
-
-    return [match[1], Number(match[2])];
-  }
-
   it('lists every variant that carries the state', () => {
     const carriers = Object.entries(ITEM_VARIANTS)
       .filter(([, styles]) => {
@@ -83,20 +72,11 @@ describe('ITEM_VARIANTS', () => {
   });
 
   it.each(VARIANTS)(
-    '%s keeps the selected chip when disabled, changing only the alpha',
+    '%s keeps exactly the selected chip when disabled',
     (variant) => {
       const fill = ITEM_VARIANTS[variant].fill as Record<string, string>;
-      const [enabledToken, enabledAlpha] = splitAlpha(fill.selected);
-      const [disabledToken, disabledAlpha] = splitAlpha(
-        fill['selected & disabled'],
-      );
 
-      // Same layers, same token — only the alpha may move.
-      expect(disabledToken).toBe(enabledToken);
-      // Down, never up: a dead control must not out-read a live one.
-      expect(disabledAlpha).toBeLessThan(enabledAlpha);
-      // Distinct strings, or `mergeEntriesByValue` coalesces them.
-      expect(fill['selected & disabled']).not.toBe(fill.selected);
+      expect(fill['selected & disabled']).toBe(fill.selected);
     },
   );
 
