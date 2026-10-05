@@ -142,12 +142,18 @@ describe('<ItemButton /> props meant for useAction', () => {
 describe('<ItemButton /> disabled', () => {
   it('shows its focus ring while disabled with a tooltip', async () => {
     renderWithRoot(
-      <ItemButton isDisabled tooltip="Not enough permissions" qa="Locked">
+      <ItemButton
+        isDisabled
+        type="outline"
+        tooltip="Not enough permissions"
+        qa="Locked"
+      >
         Locked
       </ItemButton>,
     );
 
     // The tooltip keeps it a Tab stop, so the ring has to show where focus is.
+    // The default `item` type has no ring: rows show focus with their fill.
     await userEvent.tab();
 
     const button = screen.getByTestId('Locked');

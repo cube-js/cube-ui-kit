@@ -1280,9 +1280,11 @@ export const CURRENT_PRIMARY_STYLES: Styles = {
   // the same pin `DEFAULT_PRIMARY_STYLES.fill` documents. Without it the resting
   // rule emits no `background-image` at all, so hover has nothing to animate
   // from.
+  // A disabled chip can still hold focus (a tooltip Tab stop), and the overlay
+  // there would read as live, so it stays on the resting layer.
   fill: {
     '': '#current #black.0',
-    'hovered | focused': '#current #black.08',
+    '(hovered | focused) & !disabled': '#current #black.08',
     pressed: '#current #black.16',
   },
   // Disabled is expressed HERE and nowhere else, and that is the whole trick.
