@@ -117,6 +117,19 @@ describe('useFocus with onlyVisible', () => {
     expect(screen.getByTestId('only')).toHaveAttribute('data-focused');
   });
 
+  it('reports focus once enabled when it took focus while disabled', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(<Probe qa="only" isDisabled />);
+
+    // A disabled control with a tooltip stays a Tab stop.
+    await user.tab();
+    expect(screen.getByTestId('only')).toHaveFocus();
+    expect(screen.getByTestId('only')).not.toHaveAttribute('data-focused');
+
+    rerender(<Probe qa="only" />);
+    expect(screen.getByTestId('only')).toHaveAttribute('data-focused');
+  });
+
   it('does not report focus when re-enabled after focus moved away', async () => {
     const user = userEvent.setup();
     const { rerender } = render(

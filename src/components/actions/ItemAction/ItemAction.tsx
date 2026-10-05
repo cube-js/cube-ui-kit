@@ -268,7 +268,7 @@ export const ItemAction = forwardRef(function ItemAction(
   );
 
   // Set tabIndex when in context. A loading action keeps focus it already has,
-  // but Tab skips it, as it skips a loading `Button`.
+  // but Tab skips it until loading ends, tooltip or not.
   const finalTabIndex = disableActionsFocus || isLoading ? -1 : rest.tabIndex;
 
   // Extract tooltip content and props
