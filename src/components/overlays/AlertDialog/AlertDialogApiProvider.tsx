@@ -4,16 +4,22 @@ import invariant from 'tiny-invariant';
 import { AlertDialogZone } from './AlertDialogZone';
 import { AlertDialogResolveStatus, Dialog, DialogProps } from './types';
 
-const DialogApiContext = createContext<DialogApi | null>(null);
+const DialogApiContext = createContext<AlertDialogApi | null>(null);
 
-interface DialogApi {
+export interface AlertDialogApi {
+  /**
+   * Opens the dialog. Resolves with the action the user picked. Rejects with
+   * `undefined` when the dialog closes without one (Cancel, dismissal or an
+   * aborted `cancelToken`), and with an `Error` when it cannot open.
+   */
   open: (
     dialogProps: DialogProps,
-    params?: DialogApiParams,
+    params?: AlertDialogApiParams,
   ) => Promise<AlertDialogResolveStatus>;
 }
 
-interface DialogApiParams {
+export interface AlertDialogApiParams {
+  /** Closes the dialog when aborted, rejecting the promise with `undefined`. */
   cancelToken?: AbortSignal;
 }
 
@@ -24,7 +30,8 @@ export function AlertDialogApiProvider(props) {
   const [openedDialog, setOpenedDialog] = useState<Dialog | null>(null);
   const id = useRef(0);
 
-  const api = useMemo<DialogApi>(
+  // A context value: consumers rely on its identity staying the same.
+  const api = useMemo<AlertDialogApi>(
     () => ({
       open: (dialogProps, params = {}) => {
         const { onDismiss, ...restProps } = dialogProps;
@@ -35,11 +42,14 @@ export function AlertDialogApiProvider(props) {
           meta: { id: currentId, isClosed: false, isVisible: true },
         } as unknown as Dialog;
 
+        // Aborting is a cancel, so it settles the promise the way Cancel does.
+        const onAbort = () => currentDialog.meta.reject(undefined);
+
         const close = () => {
           if (currentDialog.meta.isClosed) return;
 
           currentDialog.meta.isClosed = true;
-          params.cancelToken?.removeEventListener('abort', close);
+          cancelToken?.removeEventListener('abort', onAbort);
 
           setOpenedDialog((currentState) =>
             currentState?.meta.id !== currentId
@@ -59,9 +69,7 @@ export function AlertDialogApiProvider(props) {
           );
         };
 
-        if (cancelToken?.aborted)
-          return new Promise<AlertDialogResolveStatus>(() => {});
-        cancelToken?.addEventListener('abort', close, { once: true });
+        if (cancelToken?.aborted) return Promise.reject(undefined);
 
         currentDialog.meta.promise = new Promise((resolve, reject) => {
           currentDialog.meta.resolve = (status: AlertDialogResolveStatus) => {
@@ -74,6 +82,8 @@ export function AlertDialogApiProvider(props) {
           };
         });
 
+        cancelToken?.addEventListener('abort', onAbort, { once: true });
+
         currentDialog.props = {
           ...restProps,
           onDismiss: (e) => {
@@ -83,8 +93,10 @@ export function AlertDialogApiProvider(props) {
         };
 
         setOpenedDialog((openedDialog) => {
-          // we already have opened dialog, so we reject opening another
-          if (openedDialog !== null) {
+          // Another dialog is open, so this one can't be. One that is only
+          // animating out gives way: its cleanup checks the id, so it leaves
+          // the new dialog alone.
+          if (openedDialog !== null && !openedDialog.meta.isClosed) {
             currentDialog.meta.reject(
               new Error(
                 "Another dialog is already opened. It's a bad practice to open more than one <AlertDialog /> at the same time",
@@ -114,58 +126,62 @@ export function AlertDialogApiProvider(props) {
 /**
  * Hook gives the ability to open `<AlertDialog />` imperatively.
  *
- * ***Important*** it's commonly a bad practice when you open multiple dialogs in a row;
- * that means this api will reject all dialogs when there is already open one
+ * `open` resolves with the action the user picked. It rejects with `undefined`
+ * when the user cancels or dismisses the dialog, or its `cancelToken` aborts,
+ * and with an `Error` when the dialog cannot open. Handle the rejection, and
+ * tell the two apart: a cancel is not a failure.
  *
- * @example calling in a side effect
- * const alertDialogAPI = useAlertDialogAPI();
- *
- * useEffect(() => {
- *   const abortDialog = new AbortController();
- *   const openedDialog = alertDialogAPI.open({
- *     title: 'Are you sure?',
- *     content: <Paragraph>Test content</Paragraph>
- *   }, {
- *      cancelToken: abortDialog.signal
- *   });
- *
- *   openedDialog
- *     .then((status) => {
- *       // User confirmed or used secondary action
- *       if (status === 'confirm') {
- *         // Handle confirm
- *       } else if (status === 'secondary') {
- *         // Handle secondary action
- *       }
- *     })
- *     .catch(() => {
- *       // User cancelled or dismissed the dialog
- *       // Handle cancel/dismiss
- *     })
- *
- *   return () => {
- *     abortDialog.abort();
- *   }
- * }, [])
+ * ***Important*** only one alert dialog can be open at a time: `open` rejects
+ * while another one is open. A dialog that is already closing gives way.
  *
  * @example opening dialog on Button click.
- * const alertDialogAPI = useAlertDialogAPI();
+ * const { open } = useAlertDialogAPI();
  *
- * const onPress = useCallback(() => {
- *   alertDialogAPI.open({...})
- *     .then((status) => {
- *       if (status === 'confirm') {
- *         // Handle confirm
- *       }
- *     })
- *     .catch(() => {
- *       // Handle cancel/dismiss
- *     })
- * }, [])
+ * const onPress = async () => {
+ *   let status;
  *
- * return <Button onPress={onPress}>New issue</Button>
+ *   try {
+ *     status = await open({
+ *       title: 'Delete the item?',
+ *       danger: true,
+ *       actions: { confirm: { children: 'Delete' }, cancel: true },
+ *     });
+ *   } catch (reason) {
+ *     // Cancel or dismissal
+ *     if (reason === undefined) return;
+ *
+ *     // A real failure, e.g. another dialog is already open
+ *     throw reason;
+ *   }
+ *
+ *   if (status === 'confirm') {
+ *     // Handle confirm
+ *   }
+ * };
+ *
+ * return <Button onPress={onPress}>Delete</Button>
+ *
+ * @example closing the dialog from code with a cancel token.
+ * const { open } = useAlertDialogAPI();
+ * const controllerRef = useRef<AbortController | null>(null);
+ *
+ * const onPress = () => {
+ *   // A signal stays aborted, so every dialog needs a fresh controller.
+ *   controllerRef.current = new AbortController();
+ *
+ *   open(
+ *     { title: 'Waiting for approval', actions: { confirm: { children: 'Hide' } } },
+ *     { cancelToken: controllerRef.current.signal },
+ *   ).catch((reason) => {
+ *     // Aborting rejects with `undefined`, like Cancel does
+ *     if (reason !== undefined) throw reason;
+ *   });
+ * };
+ *
+ * // Later, e.g. when the approval arrives:
+ * controllerRef.current?.abort();
  */
-export function useAlertDialogAPI(): DialogApi {
+export function useAlertDialogAPI(): AlertDialogApi {
   const api = useContext(DialogApiContext);
 
   invariant(
