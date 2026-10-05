@@ -3,6 +3,7 @@
 - Don't respond with "You're right!", "Great idea!" and so on. Get straight to the point.
 - **Stop and describe the reason**, if you can't closely implement the task, or need a different approach from what was asked, or noticed a critical mistake in the prompt.
 - Do not run tests if you only changed stories or documentation since the last test run.
+- Follow the [Entropy rule](entropy.md) during implementation: justify added complexity and prefer safe, task-relevant simplification. Record scoped developer exceptions rather than silently waiving the rule.
 - If you need to move or rename a file: use command line tools for that.
 - If you need to move a part of code from one file to another: First, write the code at the new place, then delete the code in the original place.
 - Don't add new backward-compatibility layers unless asked. Preserve existing documented public contracts, including the frozen legacy Form behavior.
