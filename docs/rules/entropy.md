@@ -30,8 +30,6 @@ These signals guide investigation; none is an automatic violation.
 
 For library changes, inspect supported overrides and representative callers as well as internals. An additional prop can simplify consumer code; an internal abstraction can increase it. Keep distinct contracts separate, and do not break the frozen legacy Form contract to make implementation smaller.
 
-For example, a proposal to resolve a dialog promise on cancel or dismiss can replace rejection handling with a check for the closing action before continuing. If callers still need equivalent branching and no behavior, correctness or usability requirement improves, flag the API change for lacking a demonstrated benefit, even if its ongoing entropy is Neutral. Record the migration cost separately. A verified improvement in cancellation semantics or another required outcome can justify the change; this example is not a blanket rule about promises.
-
 For UX, name the user goal and relevant audience. Compare the concepts, decisions, steps and information the user must remember before and after the change. Use familiar control semantics and expose complexity when it becomes useful. Hiding a frequently needed action or removing a helpful label can increase burden even when the screen looks simpler. Verify interaction, focus, keyboard behavior and layout through the shared review procedure where relevant; screenshots alone cannot prove task difficulty.
 
 ## Entropy change level
