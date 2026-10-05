@@ -39,6 +39,25 @@ describe('<InfoBadge />', () => {
     expect(onPress).toHaveBeenCalledTimes(1);
   });
 
+  it('keeps a disabled interactive badge focusable, with its focus ring', async () => {
+    const onPress = vi.fn();
+
+    renderWithRoot(
+      <InfoBadge isDisabled tooltip="Details" onPress={onPress} />,
+    );
+
+    await userEvent.tab();
+
+    const button = screen.getByRole('button');
+
+    expect(button).toHaveFocus();
+    expect(button).toHaveAttribute('data-focused');
+
+    await userEvent.keyboard('{Enter}');
+
+    expect(onPress).not.toHaveBeenCalled();
+  });
+
   it('does not propagate presses to a clickable container', async () => {
     const onContainerClick = vi.fn();
     const onPress = vi.fn();

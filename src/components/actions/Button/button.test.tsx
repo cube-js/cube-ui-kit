@@ -195,15 +195,22 @@ describe('<Button />', () => {
     });
 
     it.each([
-      ['ArrowDown', '{ArrowDown}'],
-      ['Enter', '{Enter}'],
-      ['Space', ' '],
+      ['ArrowDown', 'disabled', '{ArrowDown}'],
+      ['Enter', 'disabled', '{Enter}'],
+      ['Space', 'disabled', ' '],
+      ['ArrowDown', 'loading', '{ArrowDown}'],
+      ['Enter', 'loading', '{Enter}'],
+      ['Space', 'loading', ' '],
     ])(
-      'should not open its menu with %s while disabled with a tooltip',
-      async (_name, key) => {
+      'should not open its menu with %s while %s with a tooltip',
+      async (_name, state, key) => {
         renderWithRoot(
           <MenuTrigger>
-            <Button isDisabled tooltip="Not enough permissions">
+            <Button
+              isDisabled={state === 'disabled'}
+              isLoading={state === 'loading'}
+              tooltip="Not enough permissions"
+            >
               More
             </Button>
             <Menu aria-label="Actions">

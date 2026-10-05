@@ -200,14 +200,19 @@ describe('<ItemAction />', () => {
       });
     });
 
-    it('should show its focus ring while disabled with a tooltip', async () => {
-      renderWithRoot(
+    it('should show its focus ring while disabled with a tooltip and once enabled', async () => {
+      const { rerender } = renderWithRoot(
         <ItemAction isDisabled icon={<IconEdit />} tooltip="Edit" />,
       );
 
       await userEvent.tab();
 
       const action = screen.getByRole('button', { name: 'Edit' });
+
+      expect(action).toHaveFocus();
+      expect(action).toHaveAttribute('data-focused');
+
+      rerender(<ItemAction icon={<IconEdit />} tooltip="Edit" />);
 
       expect(action).toHaveFocus();
       expect(action).toHaveAttribute('data-focused');
@@ -284,6 +289,7 @@ describe('<ItemAction />', () => {
       await userEvent.tab();
 
       expect(link).toHaveFocus();
+      expect(link).toHaveAttribute('data-focused');
 
       await userEvent.click(link);
 

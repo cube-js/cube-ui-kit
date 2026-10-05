@@ -33,9 +33,10 @@ export function useFocus(onlyVisible = false) {
     [isListening],
   );
 
-  // No blur fires when the focused element is replaced (a tooltip wrapper added
-  // or dropped), disabled through a `fieldset` or stripped of its tabIndex, so
-  // after each render a focus the element no longer has is dropped.
+  // No blur reaches React when the focused element is replaced (a tooltip
+  // wrapper added or dropped), disabled through a `fieldset` or stripped of its
+  // tabIndex, so after each render of this control a focus its element no
+  // longer holds is dropped.
   let focusedElementRef = useRef<Element | null>(null);
 
   useLayoutEffect(() => {

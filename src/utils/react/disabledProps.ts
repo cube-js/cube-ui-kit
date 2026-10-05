@@ -69,7 +69,8 @@ export interface DisabledElementProps {
   isNativelyDisabled: boolean;
   /**
    * Whether the element is disabled through `aria-disabled` only and therefore
-   * has to be kept inert by hand.
+   * has to be kept inert by hand: spread `inertProps` and drop the activation
+   * handlers with `omitActivationEventProps`.
    */
   isInert: boolean;
   /** Props that mark the element disabled and inert. Spread them last. */

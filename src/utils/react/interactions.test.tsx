@@ -110,7 +110,9 @@ describe('useFocus with onlyVisible', () => {
 
     expect(unfocusedRenders).toBe(0);
   });
+});
 
+describe('useFocus when its element loses focus', () => {
   it('drops focus when its element is replaced without a blur', async () => {
     const user = userEvent.setup();
     const { rerender } = render(<Probe qa="only" />);
