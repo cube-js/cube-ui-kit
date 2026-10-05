@@ -26,9 +26,9 @@ Each host re-exports it as its own `.Action` — `Item.Action`, `ItemButton.Acti
 - **`icon`** `ReactNode | 'checkmark'` — Icon element or `'checkmark'` for a selection indicator
 - **`type`** `'primary' | 'outline' | 'clear'` (default: `'clear'`) — Visual type. `clear` is borderless and paints nothing at rest, so a row full of actions does not read as busy.
 - **`theme`** `'current' | 'default' | 'danger' | 'success' | 'warning' | 'note' | 'special'` (default: `'current'`) — Color theme. `current` derives every color from the inherited `currentcolor`, so the action tracks whatever row hosts it without being told the row's type or theme. Name any other theme to have the action paint itself instead.
-- **`isLoading`** `boolean` (default: `false`) — Shows loading spinner
+- **`isLoading`** `boolean` (default: `false`) — Shows a loading spinner in the icon slot and disables the action, like `Button`. `isDisabled={false}` does not re-enable a loading action.
 - **`isSelected`** `boolean` (default: `false`) — Selected state (works with `icon="checkmark"`)
-- **`isDisabled`** `boolean` (default: `false`) — Disables the action. Inherits from parent; use `isDisabled={false}` to override.
+- **`isDisabled`** `boolean` (default: `false`) — Disables the action. Inherits from parent; use `isDisabled={false}` to override. A disabled action with a tooltip keeps showing it.
 - **`tooltip`** `string | object` — Tooltip content (shown for icon-only buttons)
 - **`onPress`** `() => void` — Press event handler
 

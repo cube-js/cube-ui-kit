@@ -34,7 +34,7 @@ import {
 } from '../../../data/item-themes';
 import { CheckIcon } from '../../../icons/CheckIcon';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
-import { mergeProps } from '../../../utils/react';
+import { getDisabledElementProps, mergeProps } from '../../../utils/react';
 import { TooltipProvider } from '../../overlays/Tooltip/TooltipProvider';
 import { useItemActionContext } from '../ItemActionContext';
 import { CubeUseActionProps, useAction } from '../use-action';
@@ -200,8 +200,11 @@ export const ItemAction = forwardRef(function ItemAction(
     ...rest
   } = allProps;
 
-  // Inherit disabled state from context, but allow local override
-  const isDisabled = isDisabledProp ?? contextIsDisabled;
+  // Inherit disabled state from context, but allow local override. Loading
+  // always disables, as on `Button`: a second press while the first is still
+  // running would run the action again, so not even `isDisabled={false}`
+  // re-enables a loading action.
+  const isDisabled = isLoading || (isDisabledProp ?? contextIsDisabled);
 
   // Whether that disabled state came from the host row rather than this action's
   // own prop. The `current` theme paints from the inherited color, and a
@@ -228,7 +231,8 @@ export const ItemAction = forwardRef(function ItemAction(
     loading: isLoading,
     'has-label': !!children,
     context: !!contextType,
-    'has-icon': !!icon,
+    // The spinner takes the icon slot, so it needs the icon's padding.
+    'has-icon': !!finalIcon,
     'inherit-disabled': isDisabledInherited,
     ...mods,
   };
@@ -244,8 +248,11 @@ export const ItemAction = forwardRef(function ItemAction(
         ? tooltip.title
         : undefined);
 
-  // Call useAction hook
-  const { actionProps } = useAction(
+  // `isDisabled` is dropped from the element: tasty would turn it into the
+  // native `disabled` attribute, which `getDisabledElementProps` decides below.
+  const {
+    actionProps: { isDisabled: _isDisabled, ...actionProps },
+  } = useAction(
     {
       ...rest,
       isDisabled,
@@ -273,6 +280,17 @@ export const ItemAction = forwardRef(function ItemAction(
   const { title: _title, ...tooltipProps } =
     typeof tooltip === 'object' ? tooltip : {};
 
+  // A disabled or loading action still has to show its tooltip, which is
+  // usually the only label an icon-only action has. The native `disabled`
+  // attribute would make the browser drop the hover that opens it, so with a
+  // tooltip the action is marked `aria-disabled` and kept inert instead, as on
+  // `Button`.
+  const { isNativelyDisabled, inertProps } = getDisabledElementProps({
+    isDisabled,
+    keepEvents: !!(showTooltip && tooltipContent),
+    as: typeof actionProps.as === 'string' ? actionProps.as : undefined,
+  });
+
   const finalType = type;
 
   // Render function that accepts tooltip trigger props and ref
@@ -282,7 +300,7 @@ export const ItemAction = forwardRef(function ItemAction(
   ) => {
     // Merge tooltip ref with actionProps if provided
     const mergedProps = tooltipRef
-      ? mergeProps(actionProps, tooltipTriggerProps || {}, {
+      ? mergeProps(actionProps, tooltipTriggerProps || {}, inertProps, {
           ref: (element: HTMLElement | null) => {
             // Set the tooltip ref
             if (tooltipRef) {
@@ -299,11 +317,12 @@ export const ItemAction = forwardRef(function ItemAction(
             }
           },
         })
-      : mergeProps(actionProps, tooltipTriggerProps || {});
+      : mergeProps(actionProps, tooltipTriggerProps || {}, inertProps);
 
     return (
       <ItemActionElement
         {...mergedProps}
+        disabled={isNativelyDisabled}
         variant={`${theme}.${finalType}` as ItemActionVariant}
         data-theme={theme}
         data-type={finalType}
