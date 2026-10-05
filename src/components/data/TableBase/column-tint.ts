@@ -210,11 +210,7 @@ export function buildColumnTints<T>(
 /**
  * `#cell-base` / `#cell-text` for the body.
  *
- * The band and the pinned-total fill share ONE grouped key rather than two
- * entries with the same value: tasty coalesces entries in a state map that
- * serialize identically, promotes them to the group's maximum priority and
- * negates them against everything below — which would silently turn the plain
- * tint branch into `false`. See `src/components/data/AGENTS.md`.
+ * Odd and pinned rows share the deeper band fill.
  */
 function cellTintStyles(paints: Map<string, TintPaint>): Styles {
   const base: Record<string, string> = { '': '#row-base' };
@@ -222,8 +218,7 @@ function cellTintStyles(paints: Map<string, TintPaint>): Styles {
 
   for (const [slot, paint] of paints) {
     base[`@own(tint=${slot})`] = paint.fill;
-    // Only worth a rule when it differs; an identical value here is exactly what
-    // the coalescing trap eats.
+    // Skip a redundant band rule when its fill already matches the plain tint.
     if (paint.fillBand !== paint.fill) {
       base[`@own(tint=${slot}) & (@own(odd) | @own(pinned))`] = paint.fillBand;
     }

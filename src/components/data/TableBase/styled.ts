@@ -277,8 +277,7 @@ export const TableElement = tasty({
         // A flat, fully opaque mask is a no-op, so there is nothing to sweep —
         // the table still fades, it just does not move. A loading state can
         // last a long time, and this one would otherwise animate continuously
-        // beside the data with no way to stop it. Written as its own gradient
-        // rather than `none` so it cannot merge with the default above.
+        // beside the data with no way to stop it.
         '@media(prefers-reduced-motion)':
           'linear-gradient(90deg, #black 0%, #black 100%)',
       },
@@ -369,10 +368,6 @@ export const TableElement = tasty({
       preset: 't3m',
       border: '1bw #border bottom, $column-divider #border right',
       zIndex: { '': 'auto', '@own(pin=start | pin=end)': 3 },
-      // One entry, not two sharing a value: tasty coalesces entries in a state
-      // map that serialize identically, promotes them to the group's maximum
-      // priority and negates them against everything below — see the row state
-      // matrix below and `src/data/AGENTS.md`.
       fill: {
         '': '#cell-base #row-overlay',
         '(@own(sortable) & @own(:hover)) | @own(menu-open)':
@@ -409,8 +404,7 @@ export const TableElement = tasty({
        * `$resizer-offset`.
        *
        * `:focus-visible` as well as `:hover`, so a keyboard user gets the same
-       * hint. One grouped key rather than two entries sharing `.4`: a state map
-       * whose entries serialize identically gets coalesced and negated.
+       * hint.
        */
       '$sort-hint': {
         '': 0,
@@ -751,19 +745,12 @@ export const TableElement = tasty({
       },
 
       /* ─── the row state matrix ─────────────────────────────────────────
-       * Three orthogonal maps rather than one. Deliberate: tasty coalesces
-       * entries in a single state map that share a serialized value, promoting
-       * them to the group's maximum priority and negating them against
-       * everything below — which silently turns a middle-priority compound
-       * rule into FALSE (see src/data/AGENTS.md). A combined
-       * `selected × hovered × focused × disabled × dimmed × odd` map is 64
-       * entries and would be riddled with collisions.
+       * Keep base, interaction overlay and text/dimming independent so each
+       * responsibility can change without enumerating their combinations.
        *
-       *   1. `odd` lives alone in `#row-base`, with two distinct values.
-       *   2. `dimmed` never appears in a fill map — it drives `$dim`/`#row-text`.
-       *   3. Every value string inside `#row-overlay` is unique.
-       *   4. The bare '' default is exempt from merging, so it may repeat a
-       *      value used elsewhere.
+       *   1. `odd` and `pinned` choose the opaque `#row-base`.
+       *   2. Interaction states choose `#row-overlay`.
+       *   3. `dimmed` and `disabled` choose `#row-text`; `dimmed` drives `$dim`.
        * ────────────────────────────────────────────────────────────────── */
       '#row-base': {
         '': '#surface',
@@ -853,20 +840,11 @@ export const TableElement = tasty({
       // against the ROOT, which is exactly right here — the vertical rule is a
       // property of the table, not of one cell.
       //
-      // Every value string is distinct, which is what keeps this map safe from
-      // tasty's identical-value merge (see src/data/AGENTS.md). That is also why
-      // the two "no closing edge" cases used to be OR'd into one key; the state
-      // row no longer needs it, since it is a `StateCell` rather than a `Cell`.
       // Two groups, so the horizontal and the vertical rule vary independently:
       // the trailing group's width is `$column-divider`, which already knows
       // whether this table rules its columns and whether this is the last one.
       // Directions a group does not name come out zero-width, which is how the
       // middle entry drops the bottom edge without touching the rule.
-      //
-      // Three entries, three distinct values — a map whose entries share a
-      // serialized value gets merged and negated against everything below it
-      // (see src/data/AGENTS.md), which is what an exhaustive
-      // dividers × last-column × last-row matrix would have walked into.
       border: {
         '': '1bw #border bottom, $column-divider #border right',
         // The frame or the footer already draws the closing edge; a second one
@@ -1044,10 +1022,7 @@ export const TableHeaderItem = tasty(Item, {
      * `padding`, and a shorthand landing after a longhand wipes it — the
      * longhand form compiled away silently and every column kept the default.
      *
-     * One map rather than per-side rules so the four combinations stay
-     * explicit, and every value string is distinct — a state map whose entries
-     * share a serialized value gets merged and negated (see
-     * src/data/AGENTS.md).
+     * One map keeps the four icon combinations explicit.
      */
     padding: {
       '': '0 $cell-padding-x',
