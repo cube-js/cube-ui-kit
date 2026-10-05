@@ -71,3 +71,100 @@ These properties allow direct style application without using the `styles` prop:
   content="A new version is available. Please refresh to update."
 />
 ```
+
+## Imperative API
+
+`useAlertDialogAPI()` opens an alert dialog from code, such as an event handler, with no `DialogTrigger` to render. It works anywhere under `<Root>`.
+
+- **`open(props, params?)`** `Promise<'confirm' | 'secondary'>` — Opens the dialog. Resolves with the action the user picked, and rejects when the dialog closes without one or cannot open.
+
+`props` takes the properties above, plus:
+
+- **`type`** — The dialog container type, as on `DialogContainer`
+- **`isDismissable`** `boolean` (default: `true`) — Whether Escape and a click outside close the dialog
+- **`onDismiss`** `(action?: string) => void` — Called when an action button, Escape or a click outside closes the dialog. An action button passes its name: `'confirm'`, `'secondary'` or `'cancel'`
+- **`content`** can also be a function `({ resolve, reject }) => ReactNode`, for content that closes the dialog itself
+
+`params` takes:
+
+- **`cancelToken`** `AbortSignal` — Closes the dialog when aborted
+
+The confirm button resolves `'confirm'` whether you configure `actions.confirm` or leave the default Ok button. Set it to `false` to hide it.
+
+### How the promise settles
+
+| Event | Promise |
+| --- | --- |
+| Confirm or secondary action | resolves `'confirm'` / `'secondary'` |
+| Cancel action | rejects with `undefined` |
+| Escape or a click outside | rejects with `undefined` |
+| `cancelToken` aborted, before or while the dialog is open | rejects with `undefined` |
+| `content` calls `resolve(status)` | resolves `status` |
+| `content` calls `reject(reason)` | rejects with `reason` (`undefined` for `reject()`) |
+| Another alert dialog is open | rejects with an `Error` |
+
+A rejection with `undefined` is a cancel: the user chose not to act, so return quietly. Anything else is a real failure; rethrow it or report it. A caller with no rejection handler leaves an unhandled rejection on every cancel.
+
+### Confirming an action
+
+```jsx
+const { open } = useAlertDialogAPI();
+
+const onDelete = async () => {
+  let status;
+
+  try {
+    status = await open({
+      title: 'Delete the item?',
+      content: 'This cannot be undone.',
+      danger: true,
+      actions: { confirm: { children: 'Delete' }, cancel: true },
+    });
+  } catch (reason) {
+    // Cancel, Escape or a click outside
+    if (reason === undefined) return;
+
+    // A real failure, such as another dialog being open
+    throw reason;
+  }
+
+  if (status === 'confirm') await deleteItem();
+};
+
+<Button onPress={onDelete}>Delete</Button>;
+```
+
+Keep the action itself outside the `try`, so its own errors are not mistaken for a dialog result.
+
+### Closing the dialog from code
+
+```jsx
+const { open } = useAlertDialogAPI();
+const controllerRef = useRef(null);
+
+const onRequestApproval = () => {
+  // A signal stays aborted, so each dialog needs a fresh controller.
+  controllerRef.current = new AbortController();
+
+  open(
+    {
+      title: 'Waiting for approval',
+      content: 'The dialog closes when the approval arrives.',
+      actions: { confirm: { children: 'Hide' } },
+    },
+    { cancelToken: controllerRef.current.signal },
+  ).catch((reason) => {
+    // Aborting rejects with `undefined`, like Cancel does
+    if (reason !== undefined) throw reason;
+  });
+};
+
+// Later, for example when the approval arrives:
+controllerRef.current?.abort();
+```
+
+Passing a signal that is already aborted rejects with `undefined` right away, without showing the dialog.
+
+### One dialog at a time
+
+Only one alert dialog can be open: while one is, `open` rejects with an `Error`. A dialog that is already closing gives way to the new one, so a follow-up dialog opened from the previous one's result, such as a second confirmation, shows normally.
