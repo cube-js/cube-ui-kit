@@ -841,20 +841,11 @@ export const TableElement = tasty({
       // against the ROOT, which is exactly right here — the vertical rule is a
       // property of the table, not of one cell.
       //
-      // Every value string is distinct, which is what keeps this map safe from
-      // tasty's identical-value merge (see src/data/AGENTS.md). That is also why
-      // the two "no closing edge" cases used to be OR'd into one key; the state
-      // row no longer needs it, since it is a `StateCell` rather than a `Cell`.
       // Two groups, so the horizontal and the vertical rule vary independently:
       // the trailing group's width is `$column-divider`, which already knows
       // whether this table rules its columns and whether this is the last one.
       // Directions a group does not name come out zero-width, which is how the
       // middle entry drops the bottom edge without touching the rule.
-      //
-      // Three entries, three distinct values — a map whose entries share a
-      // serialized value gets merged and negated against everything below it
-      // (see src/data/AGENTS.md), which is what an exhaustive
-      // dividers × last-column × last-row matrix would have walked into.
       border: {
         '': '1bw #border bottom, $column-divider #border right',
         // The frame or the footer already draws the closing edge; a second one
@@ -1032,10 +1023,7 @@ export const TableHeaderItem = tasty(Item, {
      * `padding`, and a shorthand landing after a longhand wipes it — the
      * longhand form compiled away silently and every column kept the default.
      *
-     * One map rather than per-side rules so the four combinations stay
-     * explicit, and every value string is distinct — a state map whose entries
-     * share a serialized value gets merged and negated (see
-     * src/data/AGENTS.md).
+     * One map keeps the four icon combinations explicit.
      */
     padding: {
       '': '0 $cell-padding-x',
