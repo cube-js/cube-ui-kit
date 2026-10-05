@@ -142,14 +142,6 @@ export const DEFAULT_OUTLINE_STYLES: Styles = {
   // `tone: 'max'` label resolved to literal white in light mode. Building the
   // chip from the neutral disabled tone at brand chroma fixed the weight but
   // read over-saturated next to the enabled selected chips it sits beside.
-  //
-  // The `.08` is `selected`'s own `.09` minus a hair, and the difference is
-  // deliberately imperceptible: the two entries must not serialize to the SAME
-  // string. Tasty's `mergeEntriesByValue` pass coalesces equal values into one
-  // OR-entry at the group's max priority, so a literal reuse of `.09` would
-  // merge `selected` into `selected & disabled` and then negate against
-  // `selected & (hovered | focused)` — the "selected-hover stays dark" bug that
-  // `SPECIAL_CLEAR_STYLES` documents at length, which escapes it the same way.
   fill: {
     '': '#surface-2 #surface-text.0',
     hovered: '#surface-2 #surface-text.03',
@@ -158,7 +150,7 @@ export const DEFAULT_OUTLINE_STYLES: Styles = {
     'selected & (hovered | focused)': '#surface-2 #primary-accent-surface.12',
     'selected & pressed': '#surface-2 #primary-accent-surface.18',
     disabled: '#surface-2 #disabled-surface',
-    'selected & disabled': '#surface-2 #primary-accent-surface.08',
+    'selected & disabled': '#surface-2 #primary-accent-surface.09',
   },
   color: {
     '': '#surface-text-soft',
@@ -183,7 +175,7 @@ export const DEFAULT_OUTLINE_2_STYLES: Styles = {
     'selected & (hovered | focused)': '#surface-3 #primary-accent-surface.12',
     'selected & pressed': '#surface-3 #primary-accent-surface.15',
     disabled: '#surface-3 #disabled-surface',
-    'selected & disabled': '#surface-3 #primary-accent-surface.08',
+    'selected & disabled': '#surface-3 #primary-accent-surface.09',
   },
 } as const;
 
@@ -206,7 +198,7 @@ export const DEFAULT_CLEAR_STYLES: Styles = {
     'selected & (hovered | focused)': '#primary-accent-surface.12',
     'selected & pressed': '#primary-accent-surface.18',
     disabled: 'transparent',
-    'selected & disabled': '#primary-accent-surface.08',
+    'selected & disabled': '#primary-accent-surface.09',
   },
   // Selected label mirrors LINK: soft at rest, `#primary-accent-text` on
   // hover. See DEFAULT_OUTLINE_STYLES.
@@ -307,7 +299,7 @@ export const DANGER_OUTLINE_STYLES: Styles = {
     'selected & (hovered | focused)': '#surface-2 #danger-accent-surface.12',
     'selected & pressed': '#surface-2 #danger-accent-surface.18',
     disabled: '#surface-2 #disabled-surface',
-    'selected & disabled': '#surface-2 #danger-accent-surface.08',
+    'selected & disabled': '#surface-2 #danger-accent-surface.09',
   },
   color: {
     '': '#danger-accent-text-soft',
@@ -327,7 +319,7 @@ export const DANGER_OUTLINE_2_STYLES: Styles = {
     'selected & (hovered | focused)': '#surface-3 #danger-accent-surface.12',
     'selected & pressed': '#surface-3 #danger-accent-surface.18',
     disabled: '#surface-3 #disabled-surface',
-    'selected & disabled': '#surface-3 #danger-accent-surface.08',
+    'selected & disabled': '#surface-3 #danger-accent-surface.09',
   },
 } as const;
 
@@ -350,7 +342,7 @@ export const DANGER_CLEAR_STYLES: Styles = {
     'selected & (hovered | focused)': '#danger-accent-text.12',
     'selected & pressed': '#danger-accent-text.18',
     disabled: 'transparent',
-    'selected & disabled': '#danger-accent-text.08',
+    'selected & disabled': '#danger-accent-text.09',
   },
   color: {
     '': '#danger-accent-text-soft',
@@ -438,7 +430,7 @@ export const SUCCESS_OUTLINE_STYLES: Styles = {
     'selected & (hovered | focused)': '#surface-2 #success-accent-surface.12',
     'selected & pressed': '#surface-2 #success-accent-surface.18',
     disabled: '#surface-2 #disabled-surface',
-    'selected & disabled': '#surface-2 #success-accent-surface.08',
+    'selected & disabled': '#surface-2 #success-accent-surface.09',
   },
   color: {
     '': '#success-accent-text-soft',
@@ -458,7 +450,7 @@ export const SUCCESS_OUTLINE_2_STYLES: Styles = {
     'selected & (hovered | focused)': '#surface-3 #success-accent-surface.12',
     'selected & pressed': '#surface-3 #success-accent-surface.18',
     disabled: '#surface-3 #disabled-surface',
-    'selected & disabled': '#surface-3 #success-accent-surface.08',
+    'selected & disabled': '#surface-3 #success-accent-surface.09',
   },
 } as const;
 
@@ -479,7 +471,7 @@ export const SUCCESS_CLEAR_STYLES: Styles = {
     'selected & (hovered | focused)': '#success-accent-text.12',
     'selected & pressed': '#success-accent-text.18',
     disabled: 'transparent',
-    'selected & disabled': '#success-accent-text.08',
+    'selected & disabled': '#success-accent-text.09',
   },
   color: {
     '': '#success-accent-text-soft',
@@ -567,7 +559,7 @@ export const WARNING_OUTLINE_STYLES: Styles = {
     'selected & (hovered | focused)': '#surface-2 #warning-accent-surface.12',
     'selected & pressed': '#surface-2 #warning-accent-surface.18',
     disabled: '#surface-2 #disabled-surface',
-    'selected & disabled': '#surface-2 #warning-accent-surface.08',
+    'selected & disabled': '#surface-2 #warning-accent-surface.09',
   },
   color: {
     '': '#warning-accent-text-soft',
@@ -587,7 +579,7 @@ export const WARNING_OUTLINE_2_STYLES: Styles = {
     'selected & (hovered | focused)': '#surface-3 #warning-accent-surface.12',
     'selected & pressed': '#surface-3 #warning-accent-surface.18',
     disabled: '#surface-3 #disabled-surface',
-    'selected & disabled': '#surface-3 #warning-accent-surface.08',
+    'selected & disabled': '#surface-3 #warning-accent-surface.09',
   },
 } as const;
 
@@ -608,7 +600,7 @@ export const WARNING_CLEAR_STYLES: Styles = {
     'selected & (hovered | focused)': '#warning-accent-text.12',
     'selected & pressed': '#warning-accent-text.18',
     disabled: 'transparent',
-    'selected & disabled': '#warning-accent-text.08',
+    'selected & disabled': '#warning-accent-text.09',
   },
   color: {
     '': '#warning-accent-text-soft',
@@ -696,7 +688,7 @@ export const NOTE_OUTLINE_STYLES: Styles = {
     'selected & (hovered | focused)': '#surface-2 #note-accent-surface.12',
     'selected & pressed': '#surface-2 #note-accent-surface.18',
     disabled: '#surface-2 #disabled-surface',
-    'selected & disabled': '#surface-2 #note-accent-surface.08',
+    'selected & disabled': '#surface-2 #note-accent-surface.09',
   },
   color: {
     '': '#note-accent-text-soft',
@@ -716,7 +708,7 @@ export const NOTE_OUTLINE_2_STYLES: Styles = {
     'selected & (hovered | focused)': '#surface-3 #note-accent-surface.12',
     'selected & pressed': '#surface-3 #note-accent-surface.18',
     disabled: '#surface-3 #disabled-surface',
-    'selected & disabled': '#surface-3 #note-accent-surface.08',
+    'selected & disabled': '#surface-3 #note-accent-surface.09',
   },
 } as const;
 
@@ -737,7 +729,7 @@ export const NOTE_CLEAR_STYLES: Styles = {
     'selected & (hovered | focused)': '#note-accent-text.12',
     'selected & pressed': '#note-accent-text.18',
     disabled: 'transparent',
-    'selected & disabled': '#note-accent-text.08',
+    'selected & disabled': '#note-accent-text.09',
   },
   color: {
     '': '#note-accent-text-soft',
@@ -828,15 +820,6 @@ export const SPECIAL_OUTLINE_STYLES: Styles = {
   // light themes is preserved, just with white-alpha steps that are tuned
   // to read against the dark base.
   //
-  // IMPORTANT: every alpha step within a single state-map must be a unique
-  // value string. Tasty's `mergeEntriesByValue` pass coalesces entries that
-  // share a serialized value into a single OR-condition entry whose priority
-  // is the *max* of the merged group. If `hovered` and `disabled` were both
-  // `#white.12`, the merged entry would sit at the higher priority and
-  // negate against the `selected & (hovered | focused)` rule below, making
-  // the latter resolve to FALSE for `selected & hovered`. Keeping every
-  // alpha distinct sidesteps the collision.
-  //
   // Focus ring uses the fixed-mode `#special-accent-text` so the indicator
   // stays scheme-invariant alongside the rest of the special theme — see
   // `SPECIAL_PRIMARY_STYLES.outline` for the full rationale.
@@ -859,10 +842,8 @@ export const SPECIAL_OUTLINE_STYLES: Styles = {
     disabled: '#special-surface #white.04',
     // Stays in the white-alpha register: the base here is a fixed dark tone.
     // Like the colored themes, a disabled SELECTED control keeps the chip it
-    // has when enabled and fades only the label — `.17` rather than a literal
-    // reuse of `selected`'s `.18` so the two do not serialize identically and
-    // trip `mergeEntriesByValue`, exactly as `SPECIAL_CLEAR_STYLES` documents.
-    'selected & disabled': '#special-surface #white.17',
+    // has when enabled and fades only the label.
+    'selected & disabled': '#special-surface #white.18',
   },
   // Mirrors the colored-theme soft→opaque pattern (`*-accent-text-soft` →
   // `*-accent-text`) using white-alpha steps: default is slightly muted so
@@ -874,7 +855,7 @@ export const SPECIAL_OUTLINE_STYLES: Styles = {
   // hits at 1.73. They used to measure 3.24 and 4.21: not only too legible for
   // a dead control, but the wrong way round, since the selected one out-read
   // the plain one. The two alphas differ because they resolve against different chips
-  // (`.04` and `.17`), which lands them on the same contrast rather than the
+  // (`.04` and `.18`), which lands them on the same contrast rather than the
   // same opacity.
   color: {
     '': '#white.8',
@@ -893,20 +874,6 @@ export const SPECIAL_CLEAR_STYLES: Styles = {
   // slightly tinted on hover → more tinted on press, i.e. progressively
   // letting the dark base bleed through. This keeps the monotonic-contrast
   // pattern semantically (hover < pressed) while preserving the inversion.
-  //
-  // IMPORTANT: every alpha step within a single state-map must be a unique
-  // value string. Tasty's `mergeEntriesByValue` pass coalesces entries that
-  // share a serialized value into a single OR-condition entry whose priority
-  // is the *max* of the merged group, which then negates against lower-
-  // priority rules. If `'hovered | focused'` and `'selected & disabled'`
-  // both used `#white.12`, the merged entry would sit at priority 7 and
-  // negate against `'selected & (hovered | focused)'` (priority 4), making
-  // it resolve to FALSE for `selected & hovered` — which is exactly the
-  // "selected-hover stays dark" bug. `'selected & disabled'` therefore uses
-  // `#white.98` rather than a literal reuse of `selected`'s `#white`: the 2%
-  // of dark base bleeding through is invisible, and the string is distinct.
-  // The default `''` and `disabled` may share `#white.0` because Tasty keeps
-  // the TRUE/default entry separate from non-defaults during merging.
   //
   // Disabling a SELECTED control keeps the white pill and fades only the
   // label, the same rule the rest of this file follows — the chip is what says
@@ -934,7 +901,7 @@ export const SPECIAL_CLEAR_STYLES: Styles = {
     'selected & (hovered | focused)': '#white.94',
     'selected & pressed': '#white.88',
     disabled: '#white.0',
-    'selected & disabled': '#white.98',
+    'selected & disabled': '#white',
   },
   // Non-selected mirrors the colored-theme soft→opaque pattern with
   // white-alpha steps. Selected keeps its inverted look — dark accent-text
@@ -998,12 +965,6 @@ export const SPECIAL_ITEM_STYLES: Styles = {
 // color rather than a faded one. The alpha steps are then mixed off that same
 // color, which is why the whole ramp tracks the context automatically.
 //
-// IMPORTANT: every alpha step within one state-map must be a unique value
-// string — Tasty's `mergeEntriesByValue` pass coalesces equal values into one
-// OR-entry at the group's max priority, which then negates against
-// lower-priority rules. So no two steps in one map may share an alpha. See
-// `SPECIAL_OUTLINE_STYLES` for the full explanation.
-//
 // A note on `disabled`: fading the label also fades the element's own
 // `currentcolor`, so every other alpha is multiplied by .4 on that state.
 // Disabled `fill`/`border` are therefore written PRE-MULTIPLIED where they need
@@ -1017,17 +978,10 @@ export const SPECIAL_ITEM_STYLES: Styles = {
 // redirect when the page is the wrong answer. See `CURRENT_PRIMARY_STYLES`.
 
 // The alpha ramp for the item flavour, held in custom properties rather than
-// written inline in `fill`. Two reasons:
-//
-// 1. Unlike the brand tokens, `#current` alphas do NOT adapt to the color
-//    scheme, so one ramp cannot serve both. Each step therefore carries the base
-//    entry for the light scheme and an `@dark` counterpart.
-// 2. Writing both ramps straight into one `fill` map would put twelve alpha
-//    values in a single state-map, and Tasty's `mergeEntriesByValue` pass
-//    coalesces any two equal value strings into one OR-entry at the group's max
-//    priority, which then negates against lower-priority rules. Giving each
-//    step its own 2-entry map keeps every value string unique by construction —
-//    the constraint that `SPECIAL_OUTLINE_STYLES` documents the hard way.
+// written inline in `fill`. Unlike the brand tokens, `#current` alphas do not
+// adapt to the color scheme, so one ramp cannot serve both. Each step carries
+// a light value and an `@dark` counterpart, keeping scheme calibration separate
+// from the interaction states that consume the ramp.
 //
 // THE DARK STEPS ARE DERIVED, NOT AUTHORED. The same alpha is not the same step
 // in both schemes, and the direction is the opposite of what it looks like: near
