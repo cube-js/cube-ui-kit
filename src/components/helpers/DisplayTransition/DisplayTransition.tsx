@@ -31,10 +31,18 @@ export type DisplayTransitionProps = {
   respectReducedMotion?: boolean;
   /** Preserve children content during exit transition. When true, uses stored children from when content was visible. @default true */
   preserveContent?: boolean;
-  /** Render-prop gets { phase, isShown, ref }. Bind ref to the transitioned element for native event detection. */
+  /** Render-prop gets { phase, isShown, isExiting, ref }. Bind ref to the transitioned element for native event detection. */
   children: (props: {
     phase: ReportedPhase;
     isShown: boolean;
+    /**
+     * True from the render where the `isShown` prop turns false until the
+     * phase reaches `'unmounted'`. Unlike `phase` and this `isShown`, which
+     * still report the shown state for the two frames before the exit starts,
+     * it never lags the prop, and unlike the values the render prop closes
+     * over, `preserveContent` never freezes it.
+     */
+    isExiting: boolean;
     ref: RefCallback<HTMLElement>;
   }) => ReactNode;
 };
@@ -391,6 +399,7 @@ export function DisplayTransition({
         ? 'entered'
         : reportedPhase,
     isShown: isShownNow,
+    isExiting: !targetShown && phase !== 'unmounted',
     ref: refCallback,
   });
 }

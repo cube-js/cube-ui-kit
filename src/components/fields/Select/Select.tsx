@@ -786,12 +786,15 @@ export function ListBoxPopup({
   return (
     <Portal>
       <DisplayTransition isShown={state.isOpen && !isDisabled}>
-        {({ phase, isShown, ref: transitionRef }) => (
+        {({ phase, isShown, isExiting, ref: transitionRef }) => (
           <SelectOverlayWrapper
             {...overlayProps}
             {...parentOverlayProps}
             ref={popoverRef}
             style={parentOverlayProps?.style}
+            // A press on the list while it fades out must not close the
+            // overlay under it (CUB-5293) — see `Overlay`.
+            data-react-aria-top-layer={isExiting || undefined}
           >
             <OverlayElement
               ref={transitionRef}

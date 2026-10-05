@@ -31,7 +31,7 @@ A headless helper component that manages enter and exit animation states for sho
 - **`onRest`** `(transition: 'enter' | 'exit') => void` — Fires after enter settles or after exit completes (unmount)
 - **`onPhaseChange`** `(phase: ReportedPhase) => void` — Fires when the transition phase changes
 - **`onToggle`** `(isShown: boolean) => void` — Fires when the derived `isShown` value changes
-- **`children`** `(props: { phase, isShown, ref }) => ReactNode` — Render prop receiving the current phase, visibility state, and a ref callback to bind to the transitioned element
+- **`children`** `(props: { phase, isShown, isExiting, ref }) => ReactNode` — Render prop receiving the current phase, visibility state, whether the content is exiting, and a ref callback to bind to the transitioned element
 
 ### Base Properties
 
@@ -47,6 +47,8 @@ The component manages four distinct phases:
 - **`exit`** — Content is exiting, exit animation should start (isShown: `false`)
 
 The render prop receives an object `{ phase, isShown }` where `isShown` is only `true` during the `entered` phase.
+
+It also receives `isExiting`, which is `true` from the render where the `isShown` prop turns `false` until the phase reaches `unmounted`. `phase` still reports `entered`, and `isShown` stays `true`, for the two frames before the exit starts, and values the render prop closes over stay at their shown-state reading while `preserveContent` replays it, so `isExiting` is the way to tell closing content from shown content. The kit's overlays use it to mark a closing overlay with `data-react-aria-top-layer`, so a press on it never counts as a press outside the overlay underneath.
 
 ## Examples
 
