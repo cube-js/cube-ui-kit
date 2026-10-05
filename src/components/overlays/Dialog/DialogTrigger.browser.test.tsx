@@ -1,8 +1,16 @@
 import { FocusableRefValue } from '@react-types/shared';
 import { useEffect, useRef, useState } from 'react';
 
-import { renderWithRoot, screen, userEvent, waitFor } from '../../../test';
+import {
+  fireEvent,
+  renderWithRoot,
+  screen,
+  userEvent,
+  waitFor,
+} from '../../../test';
 import { Button } from '../../actions/Button';
+import { ComboBox } from '../../fields/ComboBox';
+import { FilterPicker } from '../../fields/FilterPicker';
 import { Picker } from '../../fields/Picker';
 import { Select } from '../../fields/Select';
 
@@ -511,6 +519,168 @@ describe('Escape and a closing popup inside a Dialog (CUB-4839)', () => {
       expect(screen.queryByRole('listbox')).not.toBeInTheDocument(),
     );
     await new Promise((resolve) => setTimeout(resolve, 500));
+    expect(screen.getByTestId('Dialog')).toBeInTheDocument();
+  });
+});
+
+/**
+ * A press on a list that is fading out must not close the Dialog around it
+ * (CUB-5293).
+ *
+ * Our overlays stay mounted, and clickable, through their exit transition, but
+ * React Aria takes an overlay off its stack of visible overlays the moment it
+ * closes. A press on a closing list therefore counted as a press outside the
+ * Dialog, which was the topmost overlay again, and dismissed it with everything
+ * typed into it. A list closes on its own when the content around its trigger
+ * scrolls (`useCloseOnScroll`), so a trackpad's momentum was enough to get
+ * there.
+ *
+ * In a browser rather than jsdom because the window is the exit transition,
+ * which jsdom does not run.
+ */
+describe('A press on a closing list inside a Dialog (CUB-5293)', () => {
+  // No delay between the close and the press, so nothing can finish the fade
+  // in between: the 80 ms fade of a Select or ComboBox list is too short for a
+  // slower click to hit reliably.
+  const user = userEvent.setup({ delay: null });
+
+  function App({ children }: { children: React.ReactNode }) {
+    return (
+      <DialogTrigger type="modal">
+        <Button qa="Trigger">Open</Button>
+        <Dialog>
+          <div data-qa="Body">{children}</div>
+        </Dialog>
+      </DialogTrigger>
+    );
+  }
+
+  // What a scroll of the content around a trigger does: `useCloseOnScroll`
+  // closes the list.
+  function scrollBody() {
+    fireEvent.scroll(screen.getByTestId('Body'));
+  }
+
+  /**
+   * Opens the list behind `triggerQa`, closes it with `close`, and presses its
+   * second option, `Red`, while it fades out. Fails if the list was already
+   * gone by the press, so a fade that ends early cannot make a case pass
+   * vacuously.
+   */
+  async function pressOptionOfClosingList(
+    app: React.ReactElement,
+    triggerQa: string,
+    close: () => void | Promise<void> = scrollBody,
+  ) {
+    renderWithRoot(app);
+    await user.click(screen.getByTestId('Trigger'));
+    await screen.findByTestId('Dialog');
+
+    const trigger = screen.getByTestId(triggerQa);
+
+    await user.click(trigger);
+    await screen.findByRole('listbox');
+
+    await close();
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+
+    const option = screen.getAllByRole('option')[1];
+    let pressedWhileFading = false;
+    // On `window` in the capture phase: the Dialog's outside-press handler
+    // stops the event at `document`, before it would reach the option.
+    const onPointerDown = (event: PointerEvent) => {
+      if (event.target === option) pressedWhileFading = option.isConnected;
+    };
+
+    window.addEventListener('pointerdown', onPointerDown, true);
+
+    try {
+      await user.click(option);
+    } finally {
+      window.removeEventListener('pointerdown', onPointerDown, true);
+    }
+
+    expect(pressedWhileFading).toBe(true);
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
+
+  it('keeps the Dialog open and picks the option: FilterPicker', async () => {
+    await pressOptionOfClosingList(
+      <App>
+        <FilterPicker qa="Fp" aria-label="Colour" placeholder="Pick">
+          <FilterPicker.Item key="blue">Blue</FilterPicker.Item>
+          <FilterPicker.Item key="red">Red</FilterPicker.Item>
+        </FilterPicker>
+      </App>,
+      'Fp',
+    );
+
+    expect(screen.getByTestId('Dialog')).toBeInTheDocument();
+    expect(screen.getByTestId('Fp')).toHaveTextContent('Red');
+  });
+
+  it('keeps the Dialog open and picks the option: Select', async () => {
+    await pressOptionOfClosingList(
+      <App>
+        <Select qa="Sel" aria-label="Colour" width="300px">
+          <Select.Item key="blue">Blue</Select.Item>
+          <Select.Item key="red">Red</Select.Item>
+        </Select>
+      </App>,
+      'Sel',
+    );
+
+    expect(screen.getByTestId('Dialog')).toBeInTheDocument();
+    expect(screen.getByTestId('Sel')).toHaveTextContent('Red');
+  });
+
+  it('keeps the Dialog open and picks the option: ComboBox', async () => {
+    await pressOptionOfClosingList(
+      <App>
+        <ComboBox qa="Cb" aria-label="Colour" width="300px">
+          <ComboBox.Item key="blue">Blue</ComboBox.Item>
+          <ComboBox.Item key="red">Red</ComboBox.Item>
+        </ComboBox>
+      </App>,
+      'ComboBoxTrigger',
+      // A ComboBox does not close on scroll, so close it the other usual way.
+      () => user.keyboard('{Escape}'),
+    );
+
+    expect(screen.getByTestId('Dialog')).toBeInTheDocument();
+    expect(screen.getByRole('combobox')).toHaveValue('Red');
+  });
+
+  // The same window, one overlay up: a second click on a nested Dialog that
+  // the first click closed.
+  it('keeps the Dialog open when a nested Dialog is pressed while closing', async () => {
+    renderWithRoot(
+      <DialogTrigger type="modal">
+        <Button qa="Trigger">Open</Button>
+        <Dialog>
+          <DialogTrigger type="modal">
+            <Button qa="Inner">Open inner</Button>
+            <Dialog qa="InnerDialog">
+              <div data-qa="InnerBody">Inner</div>
+            </Dialog>
+          </DialogTrigger>
+        </Dialog>
+      </DialogTrigger>,
+    );
+    await user.click(screen.getByTestId('Trigger'));
+    await screen.findByTestId('Dialog');
+    await user.click(screen.getByTestId('Inner'));
+    await screen.findByTestId('InnerDialog');
+
+    const innerBody = screen.getByTestId('InnerBody');
+
+    await user.keyboard('{Escape}');
+    expect(innerBody).toBeInTheDocument();
+
+    await user.click(innerBody);
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    expect(screen.queryByTestId('InnerDialog')).not.toBeInTheDocument();
     expect(screen.getByTestId('Dialog')).toBeInTheDocument();
   });
 });

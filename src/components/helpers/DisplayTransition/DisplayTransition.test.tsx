@@ -589,6 +589,51 @@ describe('DisplayTransition', () => {
     expect(container.textContent).not.toContain('original content');
   });
 
+  it('should report isExiting from the render that hides it until it unmounts', () => {
+    function Exiting({ isShown }: { isShown: boolean }) {
+      return (
+        <DisplayTransition
+          exposeUnmounted
+          isShown={isShown}
+          animateOnMount={false}
+          duration={150}
+        >
+          {({ phase, isExiting, ref }) => (
+            <div ref={ref} data-phase={phase} data-exiting={isExiting} />
+          )}
+        </DisplayTransition>
+      );
+    }
+
+    const exitingOf = (container: HTMLElement) =>
+      container.querySelector('[data-exiting]')?.getAttribute('data-exiting');
+
+    const { container, rerender } = render(<Exiting isShown />);
+
+    expect(exitingOf(container)).toBe('false');
+
+    rerender(<Exiting isShown={false} />);
+
+    // Already exiting while `phase` still reports the frame before the exit.
+    expect(phaseOf(container)).toBe('entered');
+    expect(exitingOf(container)).toBe('true');
+
+    act(() => {
+      vi.advanceTimersByTime(50);
+    });
+    expect(phaseOf(container)).toBe('exit');
+    expect(exitingOf(container)).toBe('true');
+
+    act(() => {
+      vi.advanceTimersByTime(150);
+    });
+    expect(phaseOf(container)).toBe('unmounted');
+    expect(exitingOf(container)).toBe('false');
+
+    rerender(<Exiting isShown />);
+    expect(exitingOf(container)).toBe('false');
+  });
+
   it('should not preserve children content during exit when preserveContent=false', () => {
     interface TestWrapperProps {
       isShown: boolean;

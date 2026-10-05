@@ -108,7 +108,7 @@ function Overlay(props: CubeOverlayProps, ref) {
         duration={EXIT_DURATION}
         onPhaseChange={handlePhaseChange}
       >
-        {({ phase, isShown }) => {
+        {({ phase, isShown, isExiting }) => {
           return (
             <OpenTransitionContext.Provider
               value={{ transitionState: phase as ReportedPhase }}
@@ -122,6 +122,14 @@ function Overlay(props: CubeOverlayProps, ref) {
                     {
                       isOpen: isShown,
                       transitionState: phase,
+                      // A closed overlay leaves React Aria's stack of visible
+                      // overlays at once, but stays on screen, and clickable,
+                      // while it fades out. A press on it then counts as a
+                      // press outside whatever overlay is topmost again, so a
+                      // click on a fading list closed the Dialog under it
+                      // (CUB-5293). React Aria never treats a press inside a
+                      // top-layer element as outside.
+                      'data-react-aria-top-layer': isExiting || undefined,
                     } as any,
                   ),
               )}
