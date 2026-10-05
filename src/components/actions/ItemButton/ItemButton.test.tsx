@@ -156,4 +156,21 @@ describe('<ItemButton /> disabled', () => {
     expect(button).toHaveAttribute('aria-disabled', 'true');
     expect(button).toHaveAttribute('data-focused');
   });
+
+  it('does not click its container with Enter while disabled with a tooltip', async () => {
+    const onClick = vi.fn();
+
+    renderWithRoot(
+      <div onClick={onClick}>
+        <ItemButton isDisabled tooltip="Not enough permissions">
+          Locked
+        </ItemButton>
+      </div>,
+    );
+
+    await userEvent.tab();
+    await userEvent.keyboard('{Enter}');
+
+    expect(onClick).not.toHaveBeenCalled();
+  });
 });

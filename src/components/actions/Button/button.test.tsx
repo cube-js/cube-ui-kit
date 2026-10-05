@@ -232,6 +232,31 @@ describe('<Button />', () => {
       },
     );
 
+    it.each([
+      ['Enter', '{Enter}'],
+      ['Space', ' '],
+    ])(
+      'should not click its container with %s while disabled with a tooltip',
+      async (_name, key) => {
+        const onClick = vi.fn();
+
+        renderWithRoot(
+          <div onClick={onClick}>
+            <Button isDisabled tooltip="Not enough permissions">
+              Save
+            </Button>
+          </div>,
+        );
+
+        await userEvent.tab();
+        await userEvent.keyboard(key);
+
+        // The browser turns Enter and Space on a focused button into a click,
+        // which would reach the container's handler.
+        expect(onClick).not.toHaveBeenCalled();
+      },
+    );
+
     it('should mark a disabled link with aria-disabled', () => {
       render(
         <Button isDisabled to="/somewhere" qa="Link">

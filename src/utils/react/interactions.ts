@@ -2,6 +2,7 @@ import {
   isFocusVisible as getIsFocusVisible,
   useFocusVisibleListener,
 } from '@react-aria/interactions';
+import { getActiveElement, getOwnerDocument } from '@react-aria/utils';
 import { useRef, useState } from 'react';
 import { useFocus as reactAriaUseFocus } from 'react-aria';
 
@@ -42,7 +43,8 @@ export function useFocus(onlyVisible = false) {
   useLayoutEffect(() => {
     let element = focusedElementRef.current;
 
-    if (isFocused && element !== element?.ownerDocument.activeElement) {
+    // React Aria's own check, which also looks inside a shadow root.
+    if (isFocused && element !== getActiveElement(getOwnerDocument(element))) {
       setIsFocused(false);
     }
   });

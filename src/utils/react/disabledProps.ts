@@ -1,4 +1,4 @@
-import type { SyntheticEvent } from 'react';
+import type { KeyboardEvent, SyntheticEvent } from 'react';
 import type { Props } from '../../props';
 
 /**
@@ -37,15 +37,28 @@ const ACTIVATION_EVENT_PROPS = [
 ] as const;
 
 function preventActivation(event: SyntheticEvent) {
-  // Without the native attribute a click (or Enter/Space, which the browser
-  // turns into a click) still runs the default action and would submit the
-  // surrounding form.
+  // Without the native attribute a click still runs the default action and
+  // would submit the surrounding form or follow the link.
   event.preventDefault();
+}
+
+function preventKeyActivation(event: KeyboardEvent) {
+  // Enter and Space on the focused element make the browser click it, and that
+  // click would reach the ancestors' handlers. Keys from a focused descendant
+  // are left alone.
+  if (
+    event.target === event.currentTarget &&
+    (event.key === 'Enter' || event.key === ' ')
+  ) {
+    event.preventDefault();
+  }
 }
 
 const INERT_PROPS: Props = {
   'aria-disabled': true,
   onClick: preventActivation,
+  onKeyDown: preventKeyActivation,
+  onKeyUp: preventKeyActivation,
 };
 
 const EMPTY_PROPS: Props = {};
