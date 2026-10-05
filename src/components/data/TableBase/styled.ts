@@ -277,8 +277,7 @@ export const TableElement = tasty({
         // A flat, fully opaque mask is a no-op, so there is nothing to sweep —
         // the table still fades, it just does not move. A loading state can
         // last a long time, and this one would otherwise animate continuously
-        // beside the data with no way to stop it. Written as its own gradient
-        // rather than `none` so it cannot merge with the default above.
+        // beside the data with no way to stop it.
         '@media(prefers-reduced-motion)':
           'linear-gradient(90deg, #black 0%, #black 100%)',
       },
