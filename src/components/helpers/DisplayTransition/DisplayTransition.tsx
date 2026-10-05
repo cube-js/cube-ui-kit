@@ -36,10 +36,11 @@ export type DisplayTransitionProps = {
     phase: ReportedPhase;
     isShown: boolean;
     /**
-     * True from the render where `isShown` turns false until the phase reaches
-     * `'unmounted'`. Unlike `phase`, which still reports `'entered'` for the
-     * frame before the exit starts, it never lags the driver, and unlike the
-     * values the render prop closes over, `preserveContent` never freezes it.
+     * True from the render where the `isShown` prop turns false until the
+     * phase reaches `'unmounted'`. Unlike `phase` and this `isShown`, which
+     * still report the shown state for the two frames before the exit starts,
+     * it never lags the prop, and unlike the values the render prop closes
+     * over, `preserveContent` never freezes it.
      */
     isExiting: boolean;
     ref: RefCallback<HTMLElement>;

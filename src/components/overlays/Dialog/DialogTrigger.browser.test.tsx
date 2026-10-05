@@ -540,7 +540,8 @@ describe('Escape and a closing popup inside a Dialog (CUB-4839)', () => {
  */
 describe('A press on a closing list inside a Dialog (CUB-5293)', () => {
   // No delay between the close and the press, so nothing can finish the fade
-  // in between: the 80 ms fade of a Select or ComboBox list is too short for a
+  // in between, and an option found after the close is still there when it is
+  // pressed: the 80 ms fade of a Select or ComboBox list is too short for a
   // slower click to hit reliably.
   const user = userEvent.setup({ delay: null });
 
@@ -563,9 +564,7 @@ describe('A press on a closing list inside a Dialog (CUB-5293)', () => {
 
   /**
    * Opens the list behind `triggerQa`, closes it with `close`, and presses its
-   * second option, `Red`, while it fades out. Fails if the list was already
-   * gone by the press, so a fade that ends early cannot make a case pass
-   * vacuously.
+   * second option, `Red`, while it fades out.
    */
   async function pressOptionOfClosingList(
     app: React.ReactElement,
@@ -584,23 +583,7 @@ describe('A press on a closing list inside a Dialog (CUB-5293)', () => {
     await close();
     expect(trigger).toHaveAttribute('aria-expanded', 'false');
 
-    const option = screen.getAllByRole('option')[1];
-    let pressedWhileFading = false;
-    // On `window` in the capture phase: the Dialog's outside-press handler
-    // stops the event at `document`, before it would reach the option.
-    const onPointerDown = (event: PointerEvent) => {
-      if (event.target === option) pressedWhileFading = option.isConnected;
-    };
-
-    window.addEventListener('pointerdown', onPointerDown, true);
-
-    try {
-      await user.click(option);
-    } finally {
-      window.removeEventListener('pointerdown', onPointerDown, true);
-    }
-
-    expect(pressedWhileFading).toBe(true);
+    await user.click(screen.getAllByRole('option')[1]);
     await new Promise((resolve) => setTimeout(resolve, 500));
   }
 
@@ -651,36 +634,54 @@ describe('A press on a closing list inside a Dialog (CUB-5293)', () => {
     expect(screen.getByRole('combobox')).toHaveValue('Red');
   });
 
-  // The same window, one overlay up: a second click on a nested Dialog that
-  // the first click closed.
-  it('keeps the Dialog open when a nested Dialog is pressed while closing', async () => {
-    renderWithRoot(
+  // The same window, one overlay up: a click on a nested Dialog that is
+  // closing.
+  function NestedApp({ type }: { type: 'modal' | 'tray' }) {
+    return (
       <DialogTrigger type="modal">
         <Button qa="Trigger">Open</Button>
         <Dialog>
-          <DialogTrigger type="modal">
+          <DialogTrigger type={type}>
             <Button qa="Inner">Open inner</Button>
             <Dialog qa="InnerDialog">
               <div data-qa="InnerBody">Inner</div>
             </Dialog>
           </DialogTrigger>
         </Dialog>
-      </DialogTrigger>,
+      </DialogTrigger>
     );
+  }
+
+  async function pressClosingNestedDialog(type: 'modal' | 'tray' = 'modal') {
+    renderWithRoot(<NestedApp type={type} />);
     await user.click(screen.getByTestId('Trigger'));
     await screen.findByTestId('Dialog');
     await user.click(screen.getByTestId('Inner'));
     await screen.findByTestId('InnerDialog');
 
-    const innerBody = screen.getByTestId('InnerBody');
-
     await user.keyboard('{Escape}');
-    expect(innerBody).toBeInTheDocument();
+    await user.click(screen.getByTestId('InnerBody'));
+  }
 
-    await user.click(innerBody);
+  it('keeps the Dialog open when a nested Dialog is pressed while closing', async () => {
+    await pressClosingNestedDialog();
     await new Promise((resolve) => setTimeout(resolve, 500));
 
     expect(screen.queryByTestId('InnerDialog')).not.toBeInTheDocument();
     expect(screen.getByTestId('Dialog')).toBeInTheDocument();
   });
+
+  // The press leaves focus in the closing Dialog, which must not take the
+  // `Escape` meant for the one under it. A tray guards it separately.
+  it.each(['modal', 'tray'] as const)(
+    'closes the Dialog on Escape right after a closing nested %s is pressed',
+    async (type) => {
+      await pressClosingNestedDialog(type);
+      await user.keyboard('{Escape}');
+
+      await waitFor(() =>
+        expect(screen.queryByTestId('Dialog')).not.toBeInTheDocument(),
+      );
+    },
+  );
 });

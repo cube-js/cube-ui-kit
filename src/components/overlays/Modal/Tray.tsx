@@ -9,6 +9,7 @@ import {
 } from 'react-aria';
 
 import { mergeProps } from '../../../utils/react';
+import { useOverlayEscapeGuard } from '../../../utils/react/useOverlayEscapeGuard';
 
 import { OVERLAY_WRAPPER_STYLES } from './Modal';
 import { Overlay } from './Overlay';
@@ -88,10 +89,13 @@ function Tray(props: CubeTrayProps, ref) {
   } = props;
   let domRef = useObjectRef(ref);
 
-  let { overlayProps, underlayProps } = useOverlay(
+  let { overlayProps: rawOverlayProps, underlayProps } = useOverlay(
     { ...props, isDismissable: true, shouldCloseOnInteractOutside },
     domRef,
   );
+
+  // Same as `Modal`: a tray pressed while it closes must not take `Escape`.
+  const overlayProps = useOverlayEscapeGuard(rawOverlayProps, props.isOpen);
 
   return (
     <Overlay {...otherProps}>

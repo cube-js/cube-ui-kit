@@ -4,6 +4,7 @@ import { forwardRef, ReactNode } from 'react';
 import { useModal, useOverlay, usePreventScroll } from 'react-aria';
 
 import { mergeProps } from '../../../utils/react';
+import { useOverlayEscapeGuard } from '../../../utils/react/useOverlayEscapeGuard';
 
 import { Overlay } from './Overlay';
 import { ModalProps, TransitionState, WithCloseBehavior } from './types';
@@ -87,7 +88,15 @@ function Modal(props: CubeModalProps, ref) {
   let { qa, children, onClose, type, styles, ...otherProps } = props;
   let domRef = useObjectRef(ref);
 
-  let { overlayProps, underlayProps } = useOverlay({ ...props }, domRef);
+  let { overlayProps: rawOverlayProps, underlayProps } = useOverlay(
+    { ...props },
+    domRef,
+  );
+
+  // Focus can stay in a modal while it closes, after a press on it or a close
+  // that restores focus nowhere; it must not answer for `Escape` meanwhile —
+  // see `useOverlayEscapeGuard`.
+  const overlayProps = useOverlayEscapeGuard(rawOverlayProps, props.isOpen);
 
   return (
     <Overlay {...otherProps}>
