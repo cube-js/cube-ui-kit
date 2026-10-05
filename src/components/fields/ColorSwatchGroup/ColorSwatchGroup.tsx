@@ -223,7 +223,7 @@ function Swatch({
   );
   // `useRadio` reports selection but not focus, and the swatch is the only
   // thing a keyboard user can see — without this the ring never appears.
-  const { isFocused, focusProps } = useFocus({ isDisabled }, true);
+  const { isFocused, focusProps } = useFocus(true);
 
   return (
     <SwatchElement

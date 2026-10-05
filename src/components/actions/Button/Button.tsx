@@ -63,6 +63,7 @@ import {
   DynamicIcon,
   getDisabledElementProps,
   mergeProps,
+  omitActivationEventProps,
   resolveIcon,
   useDismissParentPopover,
 } from '../../../utils/react';
@@ -591,11 +592,17 @@ export const Button = forwardRef(function Button(
   // so when a tooltip is present the button is marked `aria-disabled` and kept
   // inert instead. The attribute is skipped for links too, where it is not
   // valid markup and `aria-disabled` is the only thing announcing the state.
-  const { isNativelyDisabled, inertProps } = getDisabledElementProps({
+  const { isNativelyDisabled, isInert, inertProps } = getDisabledElementProps({
     isDisabled: isDisabledElement,
     keepEvents: isTooltipActive,
     as: typeof actionProps.as === 'string' ? actionProps.as : undefined,
   });
+
+  // Without the native attribute, handlers a parent passed in (a `MenuTrigger`'s
+  // `onKeyDown`) would still activate the button.
+  const elementProps = isInert
+    ? omitActivationEventProps(actionProps)
+    : actionProps;
 
   // Render function that creates the button element
   const renderButtonElement = (
@@ -655,7 +662,7 @@ export const Button = forwardRef(function Button(
     return (
       <ButtonElement
         download={download}
-        {...mergeProps(actionProps, tooltipTriggerProps || {}, inertProps)}
+        {...mergeProps(elementProps, tooltipTriggerProps || {}, inertProps)}
         aria-pressed={ariaPressed}
         ref={handleRef}
         mods={{ ...actionProps.mods, ...modifiers }}

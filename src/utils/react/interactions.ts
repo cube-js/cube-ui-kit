@@ -5,10 +5,13 @@ import {
 import { useRef, useState } from 'react';
 import { useFocus as reactAriaUseFocus } from 'react-aria';
 
-export function useFocus(
-  { isDisabled }: { isDisabled?: boolean },
-  onlyVisible = false,
-) {
+import { useLayoutEffect } from './useLayoutEffect';
+
+/**
+ * Whether the element holds focus, disabled or not: a control that keeps
+ * focus while `aria-disabled` still shows where focus is.
+ */
+export function useFocus(onlyVisible = false) {
   let [isFocused, setIsFocused] = useState(false);
   let [isFocusVisible, setIsFocusVisible] = useState(false);
 
@@ -30,10 +33,23 @@ export function useFocus(
     [isListening],
   );
 
-  // Tracked while disabled too: an `aria-disabled` control keeps focus, and no
-  // focus event fires when it is enabled again. A natively disabled one loses
-  // focus, and React Aria reports that blur itself.
+  // No blur fires when the focused element is replaced (a tooltip wrapper added
+  // or dropped), disabled through a `fieldset` or stripped of its tabIndex, so
+  // after each render a focus the element no longer has is dropped.
+  let focusedElementRef = useRef<Element | null>(null);
+
+  useLayoutEffect(() => {
+    let element = focusedElementRef.current;
+
+    if (isFocused && element !== element?.ownerDocument.activeElement) {
+      setIsFocused(false);
+    }
+  });
+
   let { focusProps } = reactAriaUseFocus({
+    onFocus: (event) => {
+      focusedElementRef.current = event.target;
+    },
     onFocusChange: (focused) => {
       setIsFocused(focused);
 
@@ -45,7 +61,6 @@ export function useFocus(
 
   return {
     focusProps,
-    isFocused:
-      !isDisabled && isFocused && (onlyVisible ? isFocusVisible : true),
+    isFocused: isFocused && (onlyVisible ? isFocusVisible : true),
   };
 }

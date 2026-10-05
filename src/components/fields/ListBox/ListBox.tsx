@@ -949,7 +949,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     listRef,
   );
 
-  const { isFocused, focusProps } = useFocus({ isDisabled });
+  const { isFocused, focusProps } = useFocus();
 
   // The focused key outlives focus, so an option shows as focused only while
   // the list has it. A component whose input moves the key (FilterListBox)

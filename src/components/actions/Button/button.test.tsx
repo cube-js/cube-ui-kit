@@ -8,6 +8,8 @@ import {
   userEvent,
   waitFor,
 } from '../../../test';
+import { Menu } from '../Menu/Menu';
+import { MenuTrigger } from '../Menu/MenuTrigger';
 
 import { Button } from './Button';
 
@@ -182,12 +184,46 @@ describe('<Button />', () => {
       // the button is unavailable, so keyboard users have to be able to read it.
       await userEvent.tab();
 
-      expect(screen.getByRole('button')).toHaveFocus();
+      const button = screen.getByRole('button');
+
+      expect(button).toHaveFocus();
+      expect(button).toHaveAttribute('data-focused');
 
       await waitFor(() => {
         expect(screen.getByText('Not enough permissions')).toBeInTheDocument();
       });
     });
+
+    it.each([
+      ['ArrowDown', '{ArrowDown}'],
+      ['Enter', '{Enter}'],
+      ['Space', ' '],
+    ])(
+      'should not open its menu with %s while disabled with a tooltip',
+      async (_name, key) => {
+        renderWithRoot(
+          <MenuTrigger>
+            <Button isDisabled tooltip="Not enough permissions">
+              More
+            </Button>
+            <Menu aria-label="Actions">
+              <Menu.Item key="copy">Copy</Menu.Item>
+            </Menu>
+          </MenuTrigger>,
+        );
+
+        await userEvent.tab();
+
+        expect(screen.getByRole('button', { name: 'More' })).toHaveFocus();
+
+        await userEvent.keyboard(key);
+
+        // `MenuTrigger` hands the trigger its own key handler, which ignores
+        // the trigger's disabled state; without the native attribute it has to
+        // be dropped.
+        expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+      },
+    );
 
     it('should mark a disabled link with aria-disabled', () => {
       render(

@@ -314,7 +314,7 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
   }
 
   let ElementType: 'textarea' | 'input' = multiLine ? 'textarea' : 'input';
-  let { isFocused, focusProps } = useFocus({ isDisabled });
+  let { isFocused, focusProps } = useFocus();
   let { hoverProps, isHovered } = useHover({ isDisabled });
   let domRef = useRef(null);
 

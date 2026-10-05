@@ -480,7 +480,7 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
     selectionMode: 'none',
   });
 
-  const { isFocused, focusProps } = useFocus({ isDisabled });
+  const { isFocused, focusProps } = useFocus();
   const validationIcon = getValidationIcon({ isInvalid, isValid });
 
   const listStateRef = useRef<any>(null);

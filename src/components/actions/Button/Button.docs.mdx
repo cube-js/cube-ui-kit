@@ -204,7 +204,7 @@ import { IconPlus } from '@tabler/icons-react';
 </Button>;
 ```
 
-A disabled button keeps showing its tooltip. Browsers stop dispatching mouse events on elements carrying the native `disabled` attribute, so a button that has a tooltip is marked with `aria-disabled` instead and kept inert: `onPress` never fires and clicks (including the ones Enter and Space produce) do nothing. Such a button also stays in the tab order, so keyboard users can focus it and read the tooltip. Buttons rendered as links (`to`) are always marked this way, since `disabled` is not a valid attribute on an anchor.
+A disabled button keeps showing its tooltip. Browsers stop dispatching mouse events on elements carrying the native `disabled` attribute, so a button that has a tooltip is marked with `aria-disabled` instead and kept inert: `onPress` never fires and clicks (including the ones Enter and Space produce) do nothing. Such a button also stays in the tab order, so keyboard users can focus it, see its focus ring and read the tooltip, and the keys that would open a `MenuTrigger` menu do nothing. Buttons rendered as links (`to`) are always marked this way, since `disabled` is not a valid attribute on an anchor.
 
 <Story of={ButtonStories.DisabledWithTooltip} />
 

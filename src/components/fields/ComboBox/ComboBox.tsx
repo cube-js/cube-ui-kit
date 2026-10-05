@@ -822,7 +822,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     selectionMode: 'none', // Don't manage selection in this state
   });
 
-  const { isFocused, focusProps } = useFocus({ isDisabled });
+  const { isFocused, focusProps } = useFocus();
 
   // Helper to check if current input value is valid
   const checkInputValidity = useCallback(() => {

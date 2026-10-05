@@ -213,7 +213,7 @@ export const ItemAction = forwardRef(function ItemAction(
   // The host row is disabled too. The `current` theme paints from the inherited
   // color, which a disabled host has already faded, so fading a second time
   // washes the label out (see `CURRENT_ITEM_STYLES.color`). And like a disabled
-  // fieldset, a disabled host leaves its actions out of the tab order.
+  // fieldset, a disabled host leaves its button actions out of the tab order.
   const isDisabledInherited = !!contextIsDisabled && isDisabled;
 
   // Determine if we should show a checkmark

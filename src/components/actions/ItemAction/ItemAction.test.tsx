@@ -87,14 +87,14 @@ describe('<ItemAction />', () => {
       expect(screen.getByRole('button', { name: 'Next' })).toHaveFocus();
     });
 
-    it('should show its focus ring again once loading ends', async () => {
+    it('should keep its focus ring while loading', async () => {
       const { rerender } = render(<ItemAction>Connect</ItemAction>);
 
       await userEvent.tab();
-      await userEvent.keyboard('{Enter}');
 
+      // Focus stays on the action, so the ring that shows where it is stays too.
       rerender(<ItemAction isLoading>Connect</ItemAction>);
-      expect(screen.getByRole('button')).not.toHaveAttribute('data-focused');
+      expect(screen.getByRole('button')).toHaveAttribute('data-focused');
 
       rerender(<ItemAction>Connect</ItemAction>);
       expect(screen.getByRole('button')).toHaveAttribute('data-focused');
@@ -200,6 +200,19 @@ describe('<ItemAction />', () => {
       });
     });
 
+    it('should show its focus ring while disabled with a tooltip', async () => {
+      renderWithRoot(
+        <ItemAction isDisabled icon={<IconEdit />} tooltip="Edit" />,
+      );
+
+      await userEvent.tab();
+
+      const action = screen.getByRole('button', { name: 'Edit' });
+
+      expect(action).toHaveFocus();
+      expect(action).toHaveAttribute('data-focused');
+    });
+
     it('should stay inert while disabled with a tooltip', async () => {
       const onPress = vi.fn();
 
@@ -252,6 +265,30 @@ describe('<ItemAction />', () => {
         expect(screen.queryByRole('menu')).not.toBeInTheDocument();
       },
     );
+
+    it('should keep a disabled link in the tab order', async () => {
+      const onPress = vi.fn();
+
+      render(
+        <ItemAction isDisabled to="/somewhere" onPress={onPress}>
+          Open
+        </ItemAction>,
+      );
+
+      const link = screen.getByRole('link');
+
+      // `disabled` is not valid on an anchor, so only ARIA announces the state.
+      expect(link).toHaveAttribute('aria-disabled', 'true');
+      expect(link).not.toHaveAttribute('disabled');
+
+      await userEvent.tab();
+
+      expect(link).toHaveFocus();
+
+      await userEvent.click(link);
+
+      expect(onPress).not.toHaveBeenCalled();
+    });
 
     it('should keep an action disabled by its row natively disabled', () => {
       render(

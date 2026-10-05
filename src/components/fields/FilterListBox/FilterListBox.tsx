@@ -677,7 +677,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
   searchInputRef = useCombinedRefs(searchInputRef);
   listRef = useCombinedRefs(listRef);
 
-  const { isFocused, focusProps } = useFocus({ isDisabled });
+  const { isFocused, focusProps } = useFocus();
   // The search input moves the list's focused option, so the option shows as
   // focused only while focus is in this component.
   const [isFocusWithin, setIsFocusWithin] = useState(false);

@@ -374,7 +374,7 @@ export const useAction = function useAction(
     domRef,
   );
   let { hoverProps, isHovered } = useHover({ isDisabled });
-  let { focusProps, isFocused } = useFocus({ isDisabled }, true);
+  let { focusProps, isFocused } = useFocus(true);
 
   const customProps =
     to && !isHistoryNavigation
@@ -391,7 +391,9 @@ export const useAction = function useAction(
       mods: {
         hovered: isHovered && !isDisabled,
         pressed: isPressed && !isDisabled,
-        focused: isFocused && !isDisabled,
+        // A disabled action that keeps focus (`aria-disabled`, see
+        // `getDisabledElementProps`) still shows where focus is.
+        focused: isFocused,
         disabled: isDisabled,
         ...mods,
       },
