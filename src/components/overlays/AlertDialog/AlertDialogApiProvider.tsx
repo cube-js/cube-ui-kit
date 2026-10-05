@@ -2,50 +2,26 @@ import { createContext, useContext, useMemo, useRef, useState } from 'react';
 import invariant from 'tiny-invariant';
 
 import { AlertDialogZone } from './AlertDialogZone';
-import {
-  AlertDialogResolveStatus,
-  AlertDialogStatus,
-  Dialog,
-  DialogProps,
-} from './types';
+import { AlertDialogResolveStatus, Dialog, DialogProps } from './types';
 
-interface AlertDialogController {
-  show: (
-    dialogProps: DialogProps,
-    params: AlertDialogApiParams,
-    resolveOnCancel: boolean,
-  ) => Promise<AlertDialogStatus>;
-}
+const DialogApiContext = createContext<AlertDialogApi | null>(null);
 
-const DialogApiContext = createContext<AlertDialogController | null>(null);
-
-export interface AlertDialogApi<ResolveOnCancel extends boolean = false> {
+export interface AlertDialogApi {
   /**
-   * Opens the dialog. Resolves with the action the user picked. When the
-   * dialog closes without one (Cancel, dismissal or an aborted `cancelToken`)
-   * it rejects with `undefined`, or resolves `'cancel'` with `resolveOnCancel`.
-   * It rejects with an `Error` when the dialog cannot open.
+   * Opens the dialog. Resolves with the action the user picked. Rejects with
+   * `undefined` when the dialog closes without one (Cancel, dismissal or an
+   * aborted `cancelToken`), and with an `Error` when it cannot open. A cancel
+   * is not reported as an unhandled rejection when the promise is ignored.
    */
   open: (
     dialogProps: DialogProps,
     params?: AlertDialogApiParams,
-  ) => Promise<
-    ResolveOnCancel extends true ? AlertDialogStatus : AlertDialogResolveStatus
-  >;
+  ) => Promise<AlertDialogResolveStatus>;
 }
 
 export interface AlertDialogApiParams {
   /** Closes the dialog when aborted, which settles it as a cancel. */
   cancelToken?: AbortSignal;
-}
-
-export interface AlertDialogApiOptions {
-  /**
-   * Resolve `'cancel'` instead of rejecting with `undefined` when the dialog
-   * closes without an action. Opt-in while callers migrate; it is planned to
-   * become the default.
-   */
-  resolveOnCancel?: boolean;
 }
 
 function isThenable(value: unknown): value is PromiseLike<unknown> {
@@ -61,6 +37,23 @@ function runHandler(handler: (() => unknown) | undefined): unknown {
   } catch (error) {
     return Promise.reject(error);
   }
+}
+
+/**
+ * Runs the button's `onPress` and the dialog's callback for the same action.
+ * Returns a promise when either does, so the dialog waits for both.
+ */
+function runActionHandlers(handlers: ((() => unknown) | undefined)[]) {
+  const pending = handlers.map(runHandler).filter(isThenable);
+
+  return pending.length ? Promise.all(pending) : undefined;
+}
+
+/** A cancel rejection nobody listens to is not an error worth reporting. */
+function ignoreUnhandled<T>(promise: Promise<T>) {
+  promise.catch(() => {});
+
+  return promise;
 }
 
 /** Reports a failed action handler without throwing into the press. */
@@ -93,10 +86,11 @@ export function AlertDialogApiProvider(props) {
   );
   const id = useRef(0);
 
-  // A context value: consumers rely on its identity staying the same.
-  const controller = useMemo<AlertDialogController>(
+  // A context value: callers put `open` in effect dependencies, so its
+  // identity has to stay the same.
+  const api = useMemo<AlertDialogApi>(
     () => ({
-      show: (dialogProps, params, resolveOnCancel) => {
+      open: (dialogProps, params = {}) => {
         const { onDismiss, onConfirm, onSecondary, onCancel, ...restProps } =
           dialogProps;
         const { cancelToken } = params;
@@ -105,9 +99,7 @@ export function AlertDialogApiProvider(props) {
         if (cancelToken?.aborted) {
           onCancel?.();
 
-          return resolveOnCancel
-            ? Promise.resolve('cancel')
-            : Promise.reject(undefined);
+          return ignoreUnhandled(Promise.reject(undefined));
         }
 
         const currentId = ++id.current;
@@ -158,7 +150,7 @@ export function AlertDialogApiProvider(props) {
           return true;
         };
 
-        let resolvePromise!: (status: AlertDialogStatus) => void;
+        let resolvePromise!: (status: AlertDialogResolveStatus) => void;
         let rejectPromise!: (reason: unknown) => void;
 
         currentDialog.meta.promise = new Promise((resolve, reject) => {
@@ -182,22 +174,19 @@ export function AlertDialogApiProvider(props) {
             return;
           }
 
-          if (resolveOnCancel) {
-            resolvePromise('cancel');
-          } else {
-            rejectPromise(undefined);
-          }
-
+          ignoreUnhandled(currentDialog.meta.promise);
+          rejectPromise(undefined);
           onCancel?.();
         };
 
-        // The confirm and secondary buttons: run the handler, and settle once
-        // it has finished. A handler that throws or rejects keeps the dialog
-        // open for another try.
-        currentDialog.meta.act = (status) => {
-          const result = runHandler(
+        // The confirm and secondary buttons: run the handlers, and settle
+        // once they have finished. A handler that throws or rejects keeps the
+        // dialog open for another try.
+        currentDialog.meta.act = (status, onPress) => {
+          const result = runActionHandlers([
+            onPress,
             status === 'confirm' ? onConfirm : onSecondary,
-          );
+          ]);
 
           if (!isThenable(result)) {
             currentDialog.meta.resolve(status);
@@ -262,7 +251,7 @@ export function AlertDialogApiProvider(props) {
   );
 
   return (
-    <DialogApiContext.Provider value={controller}>
+    <DialogApiContext.Provider value={api}>
       <AlertDialogZone
         openedDialog={openedDialog}
         pendingAction={pendingAction}
@@ -278,17 +267,16 @@ export function AlertDialogApiProvider(props) {
  * Pass the action as `onConfirm`. If it returns a promise, the dialog waits
  * for it with the button loading, and stays open if it fails.
  *
- * With `resolveOnCancel`, a dialog closed without an action resolves
- * `'cancel'`, so the returned promise can be ignored. Without it, `open`
- * rejects with `undefined` on a cancel, which callers must tell apart from a
- * real failure. `resolveOnCancel` is planned to become the default.
+ * The returned promise resolves with the action the user picked and rejects
+ * with `undefined` on a cancel. A caller that runs everything in the callbacks
+ * can ignore it: an ignored cancel is not reported as an unhandled rejection.
  *
  * ***Important*** only one alert dialog can be open at a time: `open` rejects
  * with an `Error` while another one is open. A dialog that is already closing
  * gives way.
  *
  * @example running the action from the dialog.
- * const { open } = useAlertDialogAPI({ resolveOnCancel: true });
+ * const { open } = useAlertDialogAPI();
  *
  * const onPress = () => {
  *   open({
@@ -301,50 +289,30 @@ export function AlertDialogApiProvider(props) {
  *
  * return <Button onPress={onPress}>Delete</Button>
  *
- * @example branching on the result.
- * const { open } = useAlertDialogAPI({ resolveOnCancel: true });
+ * @example closing the dialog from code with a cancel token.
+ * const { open } = useAlertDialogAPI();
+ * const controllerRef = useRef<AbortController | null>(null);
  *
- * const onLeave = async () => {
- *   const status = await open({
- *     title: 'Unsaved changes',
- *     actions: {
- *       confirm: { children: 'Save' },
- *       secondary: { children: 'Discard' },
- *       cancel: true,
- *     },
- *     onConfirm: () => save(),
- *   });
+ * const onPress = () => {
+ *   // A signal stays aborted, so every dialog needs a fresh controller.
+ *   controllerRef.current = new AbortController();
  *
- *   // 'cancel' is truthy: compare, don't test it
- *   if (status === 'cancel') return;
- *
- *   navigate('/');
+ *   open(
+ *     { title: 'Waiting for approval', actions: { confirm: { children: 'Hide' } } },
+ *     { cancelToken: controllerRef.current.signal },
+ *   );
  * };
+ *
+ * // Later, e.g. when the approval arrives:
+ * controllerRef.current?.abort();
  */
-export function useAlertDialogAPI(): AlertDialogApi;
-export function useAlertDialogAPI(
-  options: AlertDialogApiOptions & { resolveOnCancel: true },
-): AlertDialogApi<true>;
-export function useAlertDialogAPI(
-  options?: AlertDialogApiOptions,
-): AlertDialogApi<boolean>;
-export function useAlertDialogAPI(
-  options: AlertDialogApiOptions = {},
-): AlertDialogApi<boolean> {
-  const controller = useContext(DialogApiContext);
-  const resolveOnCancel = !!options.resolveOnCancel;
+export function useAlertDialogAPI(): AlertDialogApi {
+  const api = useContext(DialogApiContext);
 
   invariant(
-    controller !== null,
+    api !== null,
     "You can't use DialogApi outside of <Root /> component. Please, check if your component is descendant of <Root/> component",
   );
 
-  // Callers put `open` in effect dependencies, so it has to stay the same.
-  return useMemo(
-    () => ({
-      open: (dialogProps, params = {}) =>
-        controller.show(dialogProps, params, resolveOnCancel),
-    }),
-    [controller, resolveOnCancel],
-  );
+  return api;
 }

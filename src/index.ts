@@ -256,10 +256,8 @@ export {
 } from './components/overlays/AlertDialog';
 export type {
   AlertDialogApi,
-  AlertDialogApiOptions,
   AlertDialogApiParams,
   AlertDialogResolveStatus,
-  AlertDialogStatus,
   CubeAlertDialogProps,
 } from './components/overlays/AlertDialog';
 

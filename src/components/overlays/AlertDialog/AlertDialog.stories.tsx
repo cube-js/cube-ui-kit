@@ -89,10 +89,10 @@ export const UsingApiWithCancel: StoryFn<DialogProps> = (args) => {
             actions: {
               confirm: {
                 qa: 'CancelToken',
-                onPress: () => cancelDialog.abort(),
                 children: 'Click to close via cancel token',
               },
             },
+            onConfirm: () => cancelDialog.abort(),
           },
           { cancelToken: cancelDialog.signal },
         );
@@ -123,23 +123,25 @@ UsingApiWithCancel.play = async ({ canvasElement }) => {
 };
 
 export const UsingApiWithAsyncConfirm: StoryFn<DialogProps> = (args) => {
-  const dialogAPI = useAlertDialogAPI({ resolveOnCancel: true });
+  const dialogAPI = useAlertDialogAPI();
 
   return (
     <Button
-      onPress={() =>
-        dialogAPI
-          .open({
-            ...args,
-            title: 'Delete the item?',
-            danger: true,
-            actions: { confirm: { children: 'Delete' }, cancel: true },
-            // The dialog waits, with the button loading, until this settles.
-            onConfirm: () =>
-              new Promise((resolve) => setTimeout(resolve, 2000)),
-          })
-          .then(action('DialogClosed'))
-      }
+      onPress={() => {
+        // Everything happens in the callbacks, so the promise is ignored.
+        void dialogAPI.open({
+          ...args,
+          title: 'Delete the item?',
+          danger: true,
+          actions: { confirm: { children: 'Delete' }, cancel: true },
+          // The dialog waits, with the button loading, until this settles.
+          onConfirm: () =>
+            new Promise((resolve) => setTimeout(resolve, 2000)).then(
+              action('onConfirm done'),
+            ),
+          onCancel: action('onCancel'),
+        });
+      }}
     >
       Delete
     </Button>

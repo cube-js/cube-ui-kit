@@ -11,15 +11,34 @@ import { CubeDialogContainerProps } from '../Dialog';
 
 import { CubeAlertDialogProps } from './AlertDialog';
 
+import type { CubeButtonProps } from '../../actions/Button/Button';
+
 export interface Dialog {
   props: DialogProps;
   meta: AlertDialogMeta;
 }
 
+/** A confirm or secondary button opened through `useAlertDialogAPI`. */
+export interface AlertDialogApiActionProps
+  extends Omit<CubeButtonProps, 'onPress'> {
+  /**
+   * @deprecated Use `onConfirm` or `onSecondary` on the dialog instead. It
+   * behaves the same way.
+   */
+  onPress?: CubeButtonProps['onPress'];
+}
+
+export interface AlertDialogApiActions {
+  confirm?: AlertDialogApiActionProps | boolean;
+  secondary?: AlertDialogApiActionProps;
+  cancel?: CubeButtonProps | boolean;
+}
+
 export interface DialogProps
   extends Omit<CubeDialogContainerProps, 'onDismiss' | 'children'>,
-    Omit<CubeAlertDialogProps, 'type' | 'id' | 'content'> {
+    Omit<CubeAlertDialogProps, 'type' | 'id' | 'content' | 'actions'> {
   content: ReactNode | (({ resolve, reject }) => ReactNode);
+  actions?: AlertDialogApiActions;
   /**
    * Runs when the confirm button is pressed. If it returns a promise, the
    * dialog stays open with the button loading until it settles: it closes
@@ -38,18 +57,18 @@ export interface DialogProps
 
 export type AlertDialogResolveStatus = 'confirm' | 'secondary';
 
-/** What `open` resolves with when `resolveOnCancel` is on. */
-export type AlertDialogStatus = AlertDialogResolveStatus | 'cancel';
-
 interface AlertDialogMeta {
   id: number;
   isClosed: boolean;
-  promise: Promise<AlertDialogStatus>;
+  promise: Promise<AlertDialogResolveStatus>;
   placement: 'top' | 'bottom';
   resolve: (status: AlertDialogResolveStatus) => void;
   reject: (reason) => void;
-  /** Runs the action's handler, then resolves with its status. */
-  act: (status: AlertDialogResolveStatus) => void;
+  /**
+   * Runs the button's `onPress` and the dialog's handler for the action, then
+   * resolves with its status.
+   */
+  act: (status: AlertDialogResolveStatus, onPress?: () => unknown) => void;
   isVisible?: boolean;
   dialogType?: 'info' | 'confirm' | 'form';
 }

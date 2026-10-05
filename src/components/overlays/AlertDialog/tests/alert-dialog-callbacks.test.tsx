@@ -9,17 +9,13 @@ import {
   within,
 } from '../../../../test';
 import { Button } from '../../../actions/Button/Button';
-import {
-  AlertDialogApi,
-  AlertDialogApiOptions,
-  useAlertDialogAPI,
-} from '../AlertDialogApiProvider';
+import { AlertDialogApi, useAlertDialogAPI } from '../AlertDialogApiProvider';
 import { DialogProps } from '../types';
 
-let api!: AlertDialogApi<boolean>;
+let api!: AlertDialogApi;
 
-function ApiGrabber(props: { options?: AlertDialogApiOptions }) {
-  api = useAlertDialogAPI(props.options);
+function ApiGrabber() {
+  api = useAlertDialogAPI();
 
   return null;
 }
@@ -279,8 +275,104 @@ describe('open() callbacks', () => {
   });
 });
 
-describe('useAlertDialogAPI({ resolveOnCancel: true })', () => {
-  const options = { resolveOnCancel: true };
+describe('actions onPress', () => {
+  it('waits for an async actions.confirm.onPress like onConfirm', async () => {
+    const error = new Error('Delete failed');
+    let attempt = 0;
+    const onPress = vi.fn(() =>
+      ++attempt === 1 ? Promise.reject(error) : Promise.resolve(),
+    );
+
+    renderWithRoot(<ApiGrabber />);
+
+    const result = outcome(
+      openDialog({
+        actions: { confirm: { children: 'Delete', onPress }, cancel: true },
+      }),
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'Delete' }));
+    await waitFor(() => expect(reportError).toHaveBeenCalledWith(error));
+
+    // The failure kept the dialog open, so the user can retry.
+    expect(await settledYet(result)).toBe('pending');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Delete' }));
+
+    expect(onPress).toHaveBeenCalledTimes(2);
+    expect(onPress).toHaveBeenLastCalledWith(
+      expect.objectContaining({ type: 'press' }),
+    );
+    await expect(result).resolves.toEqual({ resolved: 'confirm' });
+  });
+
+  it('shows loading while an async actions.secondary.onPress runs', async () => {
+    const work = deferred();
+
+    renderWithRoot(<ApiGrabber />);
+
+    const result = outcome(
+      openDialog({
+        actions: {
+          confirm: true,
+          secondary: { children: 'Discard', onPress: () => work.promise },
+        },
+      }),
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'Discard' }));
+
+    expect(screen.getByRole('button', { name: 'Discard' })).toHaveAttribute(
+      'data-loading',
+    );
+    expect(await settledYet(result)).toBe('pending');
+
+    await act(async () => work.resolve());
+
+    await expect(result).resolves.toEqual({ resolved: 'secondary' });
+  });
+
+  it('runs both onPress and onConfirm, and waits for both', async () => {
+    const press = deferred();
+    const confirm = deferred();
+
+    renderWithRoot(<ApiGrabber />);
+
+    const result = outcome(
+      openDialog({
+        actions: {
+          confirm: { children: 'Delete', onPress: () => press.promise },
+        },
+        onConfirm: () => confirm.promise,
+      }),
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'Delete' }));
+    await act(async () => confirm.resolve());
+
+    // `onConfirm` is done, but the button's own `onPress` is not.
+    expect(await settledYet(result)).toBe('pending');
+
+    await act(async () => press.resolve());
+
+    await expect(result).resolves.toEqual({ resolved: 'confirm' });
+  });
+});
+
+describe('an ignored promise', () => {
+  const unhandled = vi.fn();
+
+  beforeEach(() => {
+    unhandled.mockClear();
+    process.on('unhandledRejection', unhandled);
+  });
+
+  afterEach(() => {
+    process.off('unhandledRejection', unhandled);
+  });
+
+  /** Lets Node decide whether a rejection went unhandled. */
+  const flush = () => new Promise((resolve) => setTimeout(resolve, 20));
 
   it.each([
     [
@@ -288,79 +380,44 @@ describe('useAlertDialogAPI({ resolveOnCancel: true })', () => {
       () => userEvent.click(screen.getByRole('button', { name: 'Cancel' })),
     ],
     ['Escape', () => userEvent.keyboard('{Escape}')],
-  ])('resolves cancel on %s', async (_name, dismiss) => {
-    renderWithRoot(<ApiGrabber options={options} />);
+    [
+      'content calling reject()',
+      () => userEvent.click(screen.getByRole('button', { name: 'Close' })),
+    ],
+  ])('is not an unhandled rejection on %s', async (_name, dismiss) => {
+    const onCancel = vi.fn();
 
-    const promise = openDialog({ actions: { confirm: true, cancel: true } });
+    renderWithRoot(<ApiGrabber />);
+
+    void openDialog({
+      content: ({ reject }) => <Button onPress={() => reject()}>Close</Button>,
+      actions: { confirm: true, cancel: true },
+      onCancel,
+    });
 
     await screen.findByRole('alertdialog');
     await dismiss();
+    await flush();
 
-    await expect(promise).resolves.toBe('cancel');
+    expect(onCancel).toHaveBeenCalledTimes(1);
+    expect(unhandled).not.toHaveBeenCalled();
   });
 
-  it('resolves cancel when the cancel token aborts, before or while open', async () => {
-    renderWithRoot(<ApiGrabber options={options} />);
+  it('is not an unhandled rejection when the cancel token aborts', async () => {
+    renderWithRoot(<ApiGrabber />);
 
     const open = new AbortController();
-    const whileOpen = openDialog({}, open.signal);
 
+    void openDialog({}, open.signal);
     act(() => open.abort());
-    await expect(whileOpen).resolves.toBe('cancel');
 
     const early = new AbortController();
 
     early.abort();
-    await expect(openDialog({}, early.signal)).resolves.toBe('cancel');
-  });
+    void openDialog({}, early.signal);
+    await flush();
 
-  it('still resolves the action status', async () => {
-    renderWithRoot(<ApiGrabber options={options} />);
-
-    const promise = openDialog({ actions: { confirm: true } });
-
-    await userEvent.click(screen.getByRole('button', { name: 'Ok' }));
-    await expect(promise).resolves.toBe('confirm');
-  });
-
-  it('still rejects with an error when another dialog is open', async () => {
-    renderWithRoot(<ApiGrabber options={options} />);
-
-    const first = openDialog({ title: 'First' });
-
-    await expect(openDialog({ title: 'Second' })).rejects.toThrow(
-      'Another dialog is already opened',
-    );
-
-    await userEvent.keyboard('{Escape}');
-    await expect(first).resolves.toBe('cancel');
-  });
-
-  it('treats content reject() as a cancel and reject(reason) as a failure', async () => {
-    const error = new Error('Failed');
-
-    renderWithRoot(<ApiGrabber options={options} />);
-
-    const cancelled = openDialog({
-      content: ({ reject }) => <Button onPress={() => reject()}>Close</Button>,
-    });
-
-    await userEvent.click(screen.getByRole('button', { name: 'Close' }));
-    await expect(cancelled).resolves.toBe('cancel');
-    await waitFor(() =>
-      expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument(),
-    );
-
-    const failed = outcome(
-      openDialog({
-        content: ({ reject }) => (
-          <Button onPress={() => reject(error)}>Fail</Button>
-        ),
-      }),
-    );
-
-    await userEvent.click(screen.getByRole('button', { name: 'Fail' }));
-    await expect(failed).resolves.toEqual({ rejected: error });
+    expect(unhandled).not.toHaveBeenCalled();
   });
 });
 
@@ -371,7 +428,7 @@ describe('useAlertDialogAPI() identity', () => {
     function Consumer() {
       const [, setCount] = useState(0);
 
-      seen.add(useAlertDialogAPI({ resolveOnCancel: true }).open);
+      seen.add(useAlertDialogAPI().open);
 
       return <Button onPress={() => setCount((c) => c + 1)}>Rerender</Button>;
     }

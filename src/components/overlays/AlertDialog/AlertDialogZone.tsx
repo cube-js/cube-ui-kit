@@ -56,15 +56,14 @@ export function AlertDialogZone(props: DialogZoneProps) {
           : false) as unknown as T;
       }
 
-      const onPress = action.onPress;
+      const { onPress } = action as CubeButtonProps;
 
       return {
         ...(action as CubeButtonProps),
         ...lock(status),
-        onPress: (e) => {
-          onPress?.(e);
-          act(status);
-        },
+        // The same as the dialog's `onConfirm` / `onSecondary`: awaited, with
+        // the dialog kept open while it runs.
+        onPress: (e) => act(status, onPress && (() => onPress(e))),
       } as unknown as T;
     };
 
