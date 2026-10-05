@@ -1,6 +1,6 @@
 # Entropy rule and Entropy review
 
-**Project entropy is avoidable complexity that increases the effort required to understand, change or use the system.** In UI Kit, consider component maintainers, developers consuming the public API and people using the rendered controls. Entropy is an engineering metaphor, not a numeric score or a thermodynamic quantity.
+**Project entropy is complexity that increases the effort required to understand, change or use the system.** The rule distinguishes required complexity from avoidable burden. In UI Kit, consider component maintainers, developers consuming the public API and people using the rendered controls. Entropy is an engineering metaphor, not a numeric score or a thermodynamic quantity.
 
 ## Entropy rule
 
@@ -9,6 +9,7 @@ Every task may introduce only complexity justified by its validated requirements
 - Choose the simplest viable design that preserves correctness, accessibility, demonstrated performance needs and supported public contracts. Necessary complexity is valid; fewer lines, files, props or visible controls do not by themselves establish simplicity.
 - Keep added concepts, state, configuration and special cases proportional to the capability delivered. Ask whether a materially simpler design satisfies the same requirements; task size and implementation time do not justify additional complexity.
 - Put responsibility in its owning component or layer. Evaluate the whole affected path: moving work into another module, dependency, public API or every consumer does not by itself reduce complexity.
+- Require a demonstrated benefit for an API change. Flag a change that merely exchanges one obligation or problem for another without improving the validated requirements, even when ongoing complexity is unchanged. Include migration work, new failure modes and lost contracts in that judgment.
 - Prefer existing patterns and implementations when their contracts fit. Do not force different contracts into one abstraction, invent speculative flexibility or add indirection merely to remove similar-looking code.
 - Simplify safely within the task's scope. Preserve behavior and supported customization, and verify any refactoring using the applicable authoring and testing rules. Do not demand unrelated cleanup, a rewrite or removal of compatibility the task must preserve.
 - Document any accepted avoidable complexity through the exception procedure below. An exception does not waive correctness, accessibility, security or public-contract requirements.
@@ -29,13 +30,33 @@ These signals guide investigation; none is an automatic violation.
 
 For library changes, inspect supported overrides and representative callers as well as internals. An additional prop can simplify consumer code; an internal abstraction can increase it. Keep distinct contracts separate, and do not break the frozen legacy Form contract to make implementation smaller.
 
+For example, a proposal to resolve a dialog promise on cancel or dismiss can replace rejection handling with a check for the closing action before continuing. If callers still need equivalent branching and no behavior, correctness or usability requirement improves, flag the API change for lacking a demonstrated benefit, even if its ongoing entropy is Neutral. Record the migration cost separately. A verified improvement in cancellation semantics or another required outcome can justify the change; this example is not a blanket rule about promises.
+
 For UX, name the user goal and relevant audience. Compare the concepts, decisions, steps and information the user must remember before and after the change. Use familiar control semantics and expose complexity when it becomes useful. Hiding a frequently needed action or removing a helpful label can increase burden even when the screen looks simpler. Verify interaction, focus, keyboard behavior and layout through the shared review procedure where relevant; screenshots alone cannot prove task difficulty.
+
+## Entropy change level
+
+Every Entropy review, including the pass within a broader UI Kit review, reports `Entropy change: <level> — <affected context>; <brief rationale>`. Compare the ongoing effort before and after the change in the component, API, consumer path or UX flow it affects. Include necessary effects on owners and callers, but judge the magnitude relative to that context, not the whole project. Report materially different directions in affected areas separately; do not average them away or offset an unjustified burden with unrelated cleanup.
+
+| Level | Meaning within the affected context |
+| --- | --- |
+| Neutral | No material change in ongoing effort to understand, change or use the affected path. |
+| Slightly Increased | A small, straightforward addition to ongoing effort. |
+| Moderately Increased | Noticeably more reasoning, coordination or decision-making on relevant tasks. |
+| Significantly Increased | The affected path becomes substantially harder to understand, change or use. |
+| Slightly Decreased | A small, straightforward reduction in ongoing effort. |
+| Moderately Decreased | Noticeably less reasoning, coordination or decision-making on relevant tasks. |
+| Significantly Decreased | The affected path becomes substantially easier to understand, change or use. |
+
+These are qualitative judgments supported by concrete before/after scenarios, not numeric scores or count thresholds. State migration costs and demonstrated benefits separately. A level does not determine severity or approval: Neutral can still require changes for an API change without a demonstrated benefit, and an increase can be justified or explicitly accepted. Assess the current implementation; a promised follow-up does not make its present burden Neutral or Decreased. If evidence is insufficient to assign a level, state that the assessment is unverified and name the missing context.
 
 ## Developer exceptions
 
 A developer may explicitly accept a scoped complexity tradeoff in task instructions, a PR description or a PR comment. Agents may propose and document exceptions, and must honor an existing developer acceptance that covers the current change; they must not infer acceptance from silence or approve their own exception.
 
 Possible reasons include a verified pre-existing UI Kit limitation, an upstream defect in Tasty or React Aria, a platform constraint, supported compatibility or an urgent fix where a broader change would add disproportionate risk. First consider a safe fix in the owning layer. A dependency issue or deadline alone does not automatically exempt the change.
+
+A concrete follow-up task is also a valid basis for accepting a bounded, temporary entropy increase when the required refactoring is too large or risky for the current task. Record its reference, the complexity it will remove and its completion criteria, alongside the reason for deferral and the developer's scoped acceptance. A tracked issue or a defined task in a developer-accepted plan can supply this evidence; a vague promise to clean up later cannot. Report the current increase and the pending follow-up. Reassess the exception if that task is cancelled or the accepted scope changes.
 
 Record:
 
@@ -50,17 +71,17 @@ An accepted exception covers only that tradeoff. Keep reviewing the rest of the 
 
 ## Entropy review
 
-Use [the shared review scope and verification procedure](review.md#verify-candidates-before-reporting). Review complexity introduced or amplified by the requested change, reading owners and callers for context without requiring migrations of untouched code.
+Use [the shared review scope and verification procedure](review.md#verify-candidates-before-reporting). Review complexity introduced or amplified by the requested change and API changes without a demonstrated benefit, reading owners and callers for context without requiring migrations of untouched code.
 
 1. Identify the validated requirements and constraints. If missing context prevents judging a design, state the uncertainty rather than inventing requirements or reporting a violation.
-2. Identify added and removed complexity across implementation, public APIs, consumer usage and applicable UX. Assess each affected area; unrelated cleanup does not cancel an unjustified burden elsewhere.
-3. For each candidate, name who bears the cost and a concrete maintenance or user scenario. Actively check whether the complexity is required, whether an existing abstraction really fits and whether a simpler alternative preserves the same requirements.
-4. Check recorded developer exceptions before reporting. Respect accepted scope, and distinguish a proposed exception awaiting acceptance from an accepted one.
+2. Identify added and removed complexity across implementation, public APIs, consumer usage and applicable UX. Classify the entropy change in each materially distinct affected context using the levels above, and explain it with a before/after scenario.
+3. For each candidate, name who bears the cost and a concrete maintenance or user scenario. Actively check whether the complexity is required, whether an existing abstraction really fits and whether a simpler alternative preserves the same requirements. For API changes, verify the benefit against new obligations, problems and migration cost even when the level is Neutral; retaining the existing contract can be the smallest improvement.
+4. Check recorded developer exceptions and any required follow-up task before reporting. Respect accepted scope, and distinguish a proposed exception awaiting acceptance from an accepted one. Do not count deferred refactoring as a completed reduction.
 5. Report only established findings, using the shared review format. Each finding needs a file and line, the relevant rule, the concrete burden, evidence and the smallest verified improvement. When a tradeoff needs developer acceptance, describe it as a design decision awaiting acceptance rather than claiming a behavior defect.
 
 Do not block a change with only “this increases entropy,” personal preference, raw counts or speculative future maintenance. Severity follows the demonstrated consequence. Drop refuted candidates; record material verification limits without claiming a pass for unexamined behavior.
 
-A focused Entropy review states its scope/base and concludes `pass`, `changes needed`, `exception accepted` or `unverified`. Include verified findings, material accepted exceptions and any limits that affect the conclusion. Use `changes needed` while a confirmed avoidable burden remains unresolved or its proposed exception lacks developer acceptance; use `exception accepted` only when all remaining avoidable complexity is covered by recorded developer acceptance. Use `unverified` when missing context or evidence prevents a conclusion. In a broader UI Kit review, include entropy findings, material exceptions and verification limits with the other results; do not duplicate the report or list routine passed checks.
+A focused Entropy review states its scope/base, entropy change level with affected context and rationale, and concludes `pass`, `changes needed`, `exception accepted` or `unverified`. Include verified findings, material accepted exceptions, their required follow-ups and any limits that affect the conclusion. Use `changes needed` while a confirmed avoidable burden or API change without a demonstrated benefit remains unresolved, or its proposed exception lacks developer acceptance; use `exception accepted` only when all remaining tradeoffs requiring an exception are covered by recorded developer acceptance. Use `unverified` when missing context or evidence prevents a conclusion. In a broader UI Kit review, include the brief entropy change assessment even when there are no findings, and include findings, material exceptions, required follow-ups and verification limits with the other results; do not duplicate the report or list routine passed checks.
 
 ## Background
 

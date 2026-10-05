@@ -43,7 +43,7 @@ Project-specific working rules for AI agents. Not published with the package.
 
 ## Entropy rule
 
-Every task follows the [Entropy rule](docs/rules/entropy.md): added complexity must serve validated requirements and remain proportional to the capability delivered. Prefer safe simplification in the affected area, and consider the burden on component maintainers, consumers and end users together. Record any developer-accepted exception with its reason and scope. Every UI Kit review includes an Entropy review.
+Every task follows the [Entropy rule](docs/rules/entropy.md): added complexity must serve validated requirements and remain proportional to the capability delivered. Prefer safe simplification in the affected area, and consider the burden on component maintainers, consumers and end users together. Record any developer-accepted exception with its reason and scope. Every UI Kit review includes an Entropy review and reports the entropy change level in the affected context.
 
 ## Changesets
 
