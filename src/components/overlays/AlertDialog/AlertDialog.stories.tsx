@@ -89,10 +89,10 @@ export const UsingApiWithCancel: StoryFn<DialogProps> = (args) => {
             actions: {
               confirm: {
                 qa: 'CancelToken',
-                onPress: () => cancelDialog.abort(),
                 children: 'Click to close via cancel token',
               },
             },
+            onConfirm: () => cancelDialog.abort(),
           },
           { cancelToken: cancelDialog.signal },
         );
@@ -121,3 +121,47 @@ UsingApiWithCancel.play = async ({ canvasElement }) => {
     expect(queryByRole('alertdialog')).not.toBeInTheDocument(),
   );
 };
+
+export const UsingApiWithAsyncConfirm: StoryFn<DialogProps> = (args) => {
+  const dialogAPI = useAlertDialogAPI();
+
+  return (
+    <Button
+      onPress={() => {
+        // Everything happens in the callbacks, so the promise is ignored.
+        void dialogAPI.open({
+          ...args,
+          title: 'Delete the item?',
+          danger: true,
+          actions: { confirm: { children: 'Delete' }, cancel: true },
+          // The dialog waits, with the button loading, until this settles.
+          onConfirm: () =>
+            new Promise((resolve) => setTimeout(resolve, 2000)).then(
+              action('onConfirm done'),
+            ),
+          onCancel: action('onCancel'),
+        });
+      }}
+    >
+      Delete
+    </Button>
+  );
+};
+UsingApiWithAsyncConfirm.play = async ({ canvasElement }) => {
+  const { getByRole, findByRole } = within(canvasElement);
+
+  await userEvent.click(getByRole('button', { name: 'Delete' }));
+
+  const dialog = await findByRole('alertdialog');
+
+  await userEvent.click(within(dialog).getByRole('button', { name: 'Delete' }));
+
+  await waitFor(() =>
+    expect(
+      within(dialog).getByRole('button', { name: 'Delete' }),
+    ).toHaveAttribute('data-loading'),
+  );
+};
+// Shows `Button`'s loading state, which its own stories already capture; this
+// one demonstrates the API waiting for `onConfirm`.
+UsingApiWithAsyncConfirm.parameters = NO_SNAPSHOT;

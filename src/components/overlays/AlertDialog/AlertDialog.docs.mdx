@@ -80,6 +80,9 @@ These properties allow direct style application without using the `styles` prop:
 
 `props` takes the properties above, plus:
 
+- **`onConfirm`** `() => unknown` — Runs when the confirm button is pressed. If it returns a promise, the dialog stays open until it settles (see below)
+- **`onSecondary`** `() => unknown` — The same, for the secondary button
+- **`onCancel`** `() => void` — Runs when the dialog settles as a cancel: the Cancel button, Escape, a click outside, an aborted `cancelToken`, or `content` calling `reject()`
 - **`type`** — The dialog container type, as on `DialogContainer`
 - **`isDismissable`** `boolean` (default: `true`) — Whether Escape and a click outside close the dialog
 - **`onDismiss`** `(action?: string) => void` — Called when an action button, Escape or a click outside closes the dialog. An action button passes its name: `'confirm'`, `'secondary'` or `'cancel'`
@@ -91,11 +94,57 @@ These properties allow direct style application without using the `styles` prop:
 
 The confirm button resolves `'confirm'` whether you configure `actions.confirm` or leave the default Ok button. Set it to `false` to hide it.
 
+### Running the action
+
+Pass the action as `onConfirm` and ignore the returned promise. A cancel then needs no handling: an ignored cancel is not reported as an unhandled rejection.
+
+```jsx
+const { open } = useAlertDialogAPI();
+
+const onDelete = () => {
+  open({
+    title: 'Delete the item?',
+    content: 'This cannot be undone.',
+    danger: true,
+    actions: { confirm: { children: 'Delete' }, cancel: true },
+    onConfirm: () => deleteItem(),
+  });
+};
+
+<Button onPress={onDelete}>Delete</Button>;
+```
+
+When `onConfirm` or `onSecondary` returns a promise, the dialog waits for it:
+
+- The pressed button shows a loading state, the other buttons are disabled, and Escape and a click outside are ignored.
+- When the promise resolves, the dialog closes and `open` resolves with the button's status.
+- When it rejects, or the handler throws, the dialog stays open with its buttons enabled again, so the user can retry or cancel. The error is passed to `reportError`, which reaches error reporting such as Sentry. To show it to the user, catch it inside the handler, for example with a toast.
+
+`actions.confirm.onPress` and `actions.secondary.onPress` behave the same way, but they are deprecated: put the action in `onConfirm` or `onSecondary`. If both are set, both run and the dialog waits for both.
+
+A choice between two actions needs no promise either:
+
+```jsx
+open({
+  title: 'Unsaved changes',
+  actions: {
+    confirm: { children: 'Save' },
+    secondary: { children: 'Discard' },
+    cancel: true,
+  },
+  onConfirm: async () => {
+    await save();
+    navigate('/');
+  },
+  onSecondary: () => navigate('/'),
+});
+```
+
 ### How the promise settles
 
 | Event | Promise |
 | --- | --- |
-| Confirm or secondary action | resolves `'confirm'` / `'secondary'` |
+| Confirm or secondary action | resolves `'confirm'` / `'secondary'`, once its handler has finished |
 | Cancel action | rejects with `undefined` |
 | Escape or a click outside | rejects with `undefined` |
 | `cancelToken` aborted, before or while the dialog is open | rejects with `undefined` |
@@ -103,38 +152,25 @@ The confirm button resolves `'confirm'` whether you configure `actions.confirm` 
 | `content` calls `reject(reason)` | rejects with `reason` (`undefined` for `reject()`) |
 | Another alert dialog is open | rejects with an `Error` |
 
-A rejection with `undefined` is a cancel: the user chose not to act, so return quietly. Anything else is a real failure; rethrow it or report it. A caller with no rejection handler leaves an unhandled rejection on every cancel.
+A rejection with `undefined` is a cancel: the user chose not to act. Anything else is a real failure. An ignored promise stays quiet on a cancel and still reports a real failure as an unhandled rejection. Once you `await` the promise or chain `.then`, the cancel reaches your code, so handle it there.
 
-### Confirming an action
+### Waiting for the result
+
+Await the promise only when the caller itself needs the answer, such as a guard that returns whether the user agreed:
 
 ```jsx
-const { open } = useAlertDialogAPI();
-
-const onDelete = async () => {
-  let status;
-
+const confirmLeave = async () => {
   try {
-    status = await open({
-      title: 'Delete the item?',
-      content: 'This cannot be undone.',
-      danger: true,
-      actions: { confirm: { children: 'Delete' }, cancel: true },
-    });
+    return (await open({ title: 'Leave the page?', actions: { cancel: true } })) === 'confirm';
   } catch (reason) {
     // Cancel, Escape or a click outside
-    if (reason === undefined) return;
+    if (reason === undefined) return false;
 
     // A real failure, such as another dialog being open
     throw reason;
   }
-
-  if (status === 'confirm') await deleteItem();
 };
-
-<Button onPress={onDelete}>Delete</Button>;
 ```
-
-Keep the action itself outside the `try`, so its own errors are not mistaken for a dialog result.
 
 ### Closing the dialog from code
 
@@ -153,18 +189,15 @@ const onRequestApproval = () => {
       actions: { confirm: { children: 'Hide' } },
     },
     { cancelToken: controllerRef.current.signal },
-  ).catch((reason) => {
-    // Aborting rejects with `undefined`, like Cancel does
-    if (reason !== undefined) throw reason;
-  });
+  );
 };
 
 // Later, for example when the approval arrives:
 controllerRef.current?.abort();
 ```
 
-Passing a signal that is already aborted rejects with `undefined` right away, without showing the dialog.
+Aborting settles the dialog as a cancel. A signal that is already aborted settles it right away, without showing the dialog.
 
 ### One dialog at a time
 
-Only one alert dialog can be open: while one is, `open` rejects with an `Error`. A dialog that is already closing gives way to the new one, so a follow-up dialog opened from the previous one's result, such as a second confirmation, shows normally.
+Only one alert dialog can be open: while one is, `open` rejects with an `Error`. A dialog that is already closing gives way to the new one, so a follow-up dialog opened from the previous one's result, such as a second confirmation, shows normally. The dialog is still open while its `onConfirm` runs, so open a follow-up after the handler, not from inside it.
