@@ -494,6 +494,12 @@ export function OverlayContainer({
     <Portal>
       <OverlayContainerElement
         ref={containerRef}
+        // Portaled outside any open Dialog, so React Aria would count a press
+        // on a toast as a press outside it: the Dialog closed and the action
+        // never ran. A top layer is never "outside", stays reachable by focus
+        // from a Dialog's contained scope and visible to screen readers, as
+        // React Aria's own toast region does.
+        data-react-aria-top-layer=""
         onFocus={handleFocus}
         onBlur={handleBlur}
       >
