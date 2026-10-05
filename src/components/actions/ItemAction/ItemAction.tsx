@@ -34,7 +34,11 @@ import {
 } from '../../../data/item-themes';
 import { CheckIcon } from '../../../icons/CheckIcon';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
-import { getDisabledElementProps, mergeProps } from '../../../utils/react';
+import {
+  getDisabledElementProps,
+  mergeProps,
+  omitActivationEventProps,
+} from '../../../utils/react';
 import { TooltipProvider } from '../../overlays/Tooltip/TooltipProvider';
 import { useItemActionContext } from '../ItemActionContext';
 import { CubeUseActionProps, useAction } from '../use-action';
@@ -207,10 +211,12 @@ export const ItemAction = forwardRef(function ItemAction(
   const isDisabled = isLoading || (isDisabledProp ?? contextIsDisabled);
 
   // Whether that disabled state came from the host row rather than this action's
-  // own prop. The `current` theme paints from the inherited color, and a
-  // disabled host has already faded it — so fading a second time washes the
-  // label out. See `CURRENT_ITEM_STYLES.color`.
-  const isDisabledInherited = isDisabledProp == null && !!contextIsDisabled;
+  // own prop; inside a disabled row, loading counts as the row's. The `current`
+  // theme paints from the inherited color, and a disabled host has already faded
+  // it — so fading a second time washes the label out. See
+  // `CURRENT_ITEM_STYLES.color`.
+  const isDisabledInherited =
+    !!contextIsDisabled && (isDisabledProp == null || isLoading);
 
   // Determine if we should show a checkmark
   const hasCheckmark = icon === 'checkmark';
@@ -266,9 +272,6 @@ export const ItemAction = forwardRef(function ItemAction(
   // Set tabIndex when in context
   const finalTabIndex = disableActionsFocus ? -1 : rest.tabIndex;
 
-  // Determine if we should show tooltip (icon-only buttons)
-  const showTooltip = !children && tooltip;
-
   // Extract tooltip content and props
   const tooltipContent =
     typeof tooltip === 'string'
@@ -280,16 +283,24 @@ export const ItemAction = forwardRef(function ItemAction(
   const { title: _title, ...tooltipProps } =
     typeof tooltip === 'object' ? tooltip : {};
 
-  // A disabled or loading action still has to show its tooltip, which is
-  // usually the only label an icon-only action has. The native `disabled`
-  // attribute would make the browser drop the hover that opens it, so with a
-  // tooltip the action is marked `aria-disabled` and kept inert instead, as on
-  // `Button`.
-  const { isNativelyDisabled, inertProps } = getDisabledElementProps({
+  // Only icon-only actions show their tooltip.
+  const hasTooltip = !children && !!tooltipContent;
+
+  // Native `disabled` drops focus and the hover a tooltip needs. A loading
+  // action keeps both, so a keyboard press doesn't lose its place, and so does
+  // one that disables itself while showing a tooltip, often its only label. One
+  // disabled by its host stays native: the host takes it out of the tab order.
+  const { isNativelyDisabled, isInert, inertProps } = getDisabledElementProps({
     isDisabled,
-    keepEvents: !!(showTooltip && tooltipContent),
+    keepEvents: isLoading || (hasTooltip && !isDisabledInherited),
     as: typeof actionProps.as === 'string' ? actionProps.as : undefined,
   });
+
+  // Without the native attribute, handlers a parent passed in (a `MenuTrigger`'s
+  // `onKeyDown`) would still activate the action.
+  const elementProps = isInert
+    ? omitActivationEventProps(actionProps)
+    : actionProps;
 
   const finalType = type;
 
@@ -300,7 +311,7 @@ export const ItemAction = forwardRef(function ItemAction(
   ) => {
     // Merge tooltip ref with actionProps if provided
     const mergedProps = tooltipRef
-      ? mergeProps(actionProps, tooltipTriggerProps || {}, inertProps, {
+      ? mergeProps(elementProps, tooltipTriggerProps || {}, inertProps, {
           ref: (element: HTMLElement | null) => {
             // Set the tooltip ref
             if (tooltipRef) {
@@ -317,7 +328,7 @@ export const ItemAction = forwardRef(function ItemAction(
             }
           },
         })
-      : mergeProps(actionProps, tooltipTriggerProps || {}, inertProps);
+      : mergeProps(elementProps, tooltipTriggerProps || {}, inertProps);
 
     return (
       <ItemActionElement
@@ -336,7 +347,7 @@ export const ItemAction = forwardRef(function ItemAction(
   };
 
   // Wrap with tooltip if needed
-  if (showTooltip && tooltipContent) {
+  if (hasTooltip) {
     return (
       <TooltipProvider title={tooltipContent} {...tooltipProps}>
         {(triggerProps, tooltipRef) => renderButton(triggerProps, tooltipRef)}

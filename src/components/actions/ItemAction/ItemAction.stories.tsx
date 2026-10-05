@@ -65,7 +65,8 @@ const meta: Meta<typeof ItemAction> = {
     /* State */
     isLoading: {
       control: 'boolean',
-      description: 'Shows loading spinner and disables interaction',
+      description:
+        'Shows loading spinner and disables interaction; isDisabled={false} does not re-enable it',
       table: {
         defaultValue: { summary: false },
       },

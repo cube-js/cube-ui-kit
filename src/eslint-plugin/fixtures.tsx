@@ -279,7 +279,8 @@ export const FIXTURES: Fixture[] = [
     /**
      * Every prop `ItemAction` reads off `ItemActionContext` needs a condition
      * here, because the fallback chain is `prop ?? context ?? literal`
-     * (`ItemAction.tsx`: `isDisabled = isDisabledProp ?? contextIsDisabled`).
+     * (`ItemAction.tsx`: `isDisabledProp ?? contextIsDisabled`, which loading
+     * overrides).
      * Probed bare, the literal wins and the prop looks like a plain default;
      * probed under a provider that supplies a different value, the prop is what
      * stops the inherited one from applying. `<Item isDisabled>` renders its

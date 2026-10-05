@@ -1,4 +1,4 @@
-import { IconEdit } from '@tabler/icons-react';
+import { IconDots, IconEdit } from '@tabler/icons-react';
 
 import {
   hoverWithPointer,
@@ -9,6 +9,8 @@ import {
   waitFor,
 } from '../../../test';
 import { ItemActionProvider } from '../ItemActionContext';
+import { Menu } from '../Menu/Menu';
+import { MenuTrigger } from '../Menu/MenuTrigger';
 
 import { ItemAction } from './ItemAction';
 
@@ -26,9 +28,11 @@ describe('<ItemAction />', () => {
       const action = screen.getByRole('button');
 
       await userEvent.click(action);
+      await userEvent.keyboard('{Enter}');
+      await userEvent.keyboard(' ');
 
       expect(onPress).not.toHaveBeenCalled();
-      expect(action).toBeDisabled();
+      expect(action).toHaveAttribute('aria-disabled', 'true');
       expect(action).toHaveAttribute('data-loading');
       expect(action).toHaveAttribute('data-disabled');
     });
@@ -44,10 +48,27 @@ describe('<ItemAction />', () => {
         </ItemAction>,
       );
 
-      await userEvent.click(screen.getByRole('button'));
+      const action = screen.getByRole('button');
+
+      await userEvent.click(action);
 
       expect(onPress).not.toHaveBeenCalled();
-      expect(screen.getByRole('button')).toBeDisabled();
+      expect(action).toHaveAttribute('aria-disabled', 'true');
+    });
+
+    it('should keep focus when it starts loading', async () => {
+      const { rerender } = render(<ItemAction>Connect</ItemAction>);
+
+      await userEvent.tab();
+
+      rerender(<ItemAction isLoading>Connect</ItemAction>);
+
+      const action = screen.getByRole('button');
+
+      // The native attribute would make the browser move focus to the body,
+      // losing a keyboard user's place mid-press.
+      expect(action).not.toBeDisabled();
+      expect(action).toHaveFocus();
     });
 
     it('should press again once loading ends', async () => {
@@ -105,6 +126,21 @@ describe('<ItemAction />', () => {
 
       expect(onPress).not.toHaveBeenCalled();
     });
+
+    it('should not fade twice when loading inside a disabled row', () => {
+      render(
+        <ItemActionProvider isDisabled>
+          <ItemAction isLoading isDisabled={false}>
+            Connect
+          </ItemAction>
+        </ItemActionProvider>,
+      );
+
+      // The row has already faded the color the action paints from.
+      expect(screen.getByRole('button')).toHaveAttribute(
+        'data-inherit-disabled',
+      );
+    });
   });
 
   describe('disabled state', () => {
@@ -151,11 +187,49 @@ describe('<ItemAction />', () => {
 
       await userEvent.click(action);
 
-      action.focus();
+      expect(action).toHaveFocus();
+
       await userEvent.keyboard('{Enter}');
       await userEvent.keyboard(' ');
 
       expect(onPress).not.toHaveBeenCalled();
+    });
+
+    it.each([['{ArrowDown}'], ['{Enter}'], [' ']])(
+      'should not open its menu with %s while disabled with a tooltip',
+      async (key) => {
+        renderWithRoot(
+          <MenuTrigger>
+            <ItemAction isDisabled icon={<IconDots />} tooltip="More" />
+            <Menu aria-label="Actions">
+              <Menu.Item key="copy">Copy</Menu.Item>
+            </Menu>
+          </MenuTrigger>,
+        );
+
+        await userEvent.tab();
+
+        expect(screen.getByRole('button', { name: 'More' })).toHaveFocus();
+
+        await userEvent.keyboard(key);
+
+        // `MenuTrigger` hands the trigger its own key handler, which ignores
+        // the trigger's disabled state; without the native attribute it has to
+        // be dropped.
+        expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+      },
+    );
+
+    it('should keep an action disabled by its row natively disabled', () => {
+      render(
+        <ItemActionProvider isDisabled>
+          <ItemAction icon={<IconEdit />} tooltip="Edit" />
+        </ItemActionProvider>,
+      );
+
+      // A disabled row or field takes its actions out of the tab order, as a
+      // disabled fieldset does.
+      expect(screen.getByRole('button', { name: 'Edit' })).toBeDisabled();
     });
 
     it('should let isDisabled={false} override a disabled row', async () => {
