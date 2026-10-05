@@ -5,9 +5,11 @@ import { AlertDialog, CubeAlertDialogActionsProps } from './AlertDialog';
 import { AlertDialogResolveStatus, Dialog } from './types';
 
 import type { CubeButtonProps } from '../../actions/Button/Button';
+import type { PendingAction } from './AlertDialogApiProvider';
 
 export interface DialogZoneProps {
   openedDialog: Dialog | null;
+  pendingAction?: PendingAction | null;
 }
 
 const PORTAL_KEY = 'AlertDialogZone';
@@ -16,7 +18,7 @@ const PORTAL_KEY = 'AlertDialogZone';
  * @internal Do not use it
  */
 export function AlertDialogZone(props: DialogZoneProps) {
-  const { openedDialog } = props;
+  const { openedDialog, pendingAction } = props;
 
   if (openedDialog === null) return <Portal key={PORTAL_KEY} />;
 
@@ -28,7 +30,12 @@ export function AlertDialogZone(props: DialogZoneProps) {
     content,
     ...options
   } = openedDialog.props;
-  const { resolve, reject, isVisible, dialogType } = openedDialog.meta;
+  const { id, resolve, reject, act, isVisible, dialogType } = openedDialog.meta;
+  // While an action's handler runs, its button shows loading and the rest
+  // of the dialog is locked.
+  const pending = pendingAction?.id === id ? pendingAction.status : null;
+  const lock = (status?: AlertDialogResolveStatus) =>
+    pending ? { isLoading: pending === status, isDisabled: true } : null;
 
   const _actions: CubeAlertDialogActionsProps = (() => {
     const mergeActionProps = <
@@ -45,7 +52,7 @@ export function AlertDialogZone(props: DialogZoneProps) {
 
       if (typeof action === 'boolean') {
         return (action
-          ? { onPress: () => resolve(status) }
+          ? { ...lock(status), onPress: () => act(status) }
           : false) as unknown as T;
       }
 
@@ -53,9 +60,10 @@ export function AlertDialogZone(props: DialogZoneProps) {
 
       return {
         ...(action as CubeButtonProps),
+        ...lock(status),
         onPress: (e) => {
           onPress?.(e);
-          resolve(status);
+          act(status);
         },
       } as unknown as T;
     };
@@ -72,10 +80,11 @@ export function AlertDialogZone(props: DialogZoneProps) {
           ? undefined
           : typeof cancel === 'boolean'
             ? cancel
-              ? { onPress: () => reject(undefined) }
+              ? { ...lock(), onPress: () => reject(undefined) }
               : false
             : {
                 ...(cancel as CubeButtonProps),
+                ...lock(),
                 onPress: (e) => {
                   (cancel as CubeButtonProps).onPress?.(e);
                   reject(undefined);
@@ -88,7 +97,7 @@ export function AlertDialogZone(props: DialogZoneProps) {
     <Portal key={PORTAL_KEY}>
       <DialogContainer
         isOpen={isVisible}
-        isDismissable={isDismissable}
+        isDismissable={isDismissable && !pending}
         type={type}
         onDismiss={onDismiss}
       >

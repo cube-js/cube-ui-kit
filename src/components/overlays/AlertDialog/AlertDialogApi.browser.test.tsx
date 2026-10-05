@@ -1,3 +1,5 @@
+import { userEvent as browserEvent } from 'vitest/browser';
+
 import {
   act,
   renderWithRoot,
@@ -62,5 +64,70 @@ describe('useAlertDialogAPI() in a browser', () => {
 
     await userEvent.click(within(dialog).getByRole('button', { name: 'Ok' }));
     await expect(second).resolves.toBe('confirm');
+  });
+
+  /**
+   * A click outside goes through React Aria's interact-outside handling, which
+   * needs real pointer events. The first dialog proves that click dismisses;
+   * the second that it is ignored while `onConfirm` runs.
+   */
+  it('ignores a click outside while onConfirm runs', async () => {
+    const clickOutside = () =>
+      browserEvent.click(screen.getByTestId('Underlay'), {
+        position: { x: 5, y: 5 },
+      });
+
+    renderWithRoot(<ApiGrabber />);
+
+    let idle!: Promise<unknown>;
+
+    act(() => {
+      idle = api.open({ title: 'Idle', actions: { confirm: true } });
+    });
+
+    const idleRejection = expect(idle).rejects.toEqual(undefined);
+
+    await screen.findByRole('alertdialog');
+    await clickOutside();
+    await idleRejection;
+    await waitFor(() =>
+      expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument(),
+    );
+
+    let finish!: () => void;
+    let busy!: Promise<unknown>;
+
+    act(() => {
+      busy = api.open({
+        title: 'Busy',
+        actions: { confirm: { children: 'Delete' }, cancel: true },
+        onConfirm: () => new Promise<void>((resolve) => (finish = resolve)),
+      });
+    });
+
+    const dialog = await screen.findByRole('alertdialog');
+    const confirmButton = within(dialog).getByRole('button', {
+      name: 'Delete',
+    });
+
+    await browserEvent.click(confirmButton);
+
+    expect(confirmButton).toHaveAttribute('data-loading');
+    expect(
+      within(dialog).getByRole('button', { name: 'Cancel' }),
+    ).toBeDisabled();
+
+    await clickOutside();
+    await browserEvent.keyboard('{Escape}');
+    await new Promise((resolve) => setTimeout(resolve, 400));
+
+    expect(screen.getByRole('alertdialog')).toBeVisible();
+
+    act(() => finish());
+
+    await expect(busy).resolves.toBe('confirm');
+    await waitFor(() =>
+      expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument(),
+    );
   });
 });
