@@ -5,6 +5,8 @@ import {
 import { useRef, useState } from 'react';
 import { useFocus as reactAriaUseFocus } from 'react-aria';
 
+import { useLayoutEffect } from './useLayoutEffect';
+
 export function useFocus(
   { isDisabled }: { isDisabled?: boolean },
   onlyVisible = false,
@@ -37,8 +39,28 @@ export function useFocus(
     [isListening],
   );
 
+  // No focus event fires when a control is re-enabled while it still holds
+  // focus (an `aria-disabled` one keeps it), so that is read from the DOM.
+  let focusedElementRef = useRef<Element | null>(null);
+
+  useLayoutEffect(() => {
+    let element = focusedElementRef.current;
+
+    if (
+      !isDisabled &&
+      element &&
+      element === element.ownerDocument.activeElement
+    ) {
+      setIsFocused(true);
+      setIsFocusVisible(focusVisibleRef.current);
+    }
+  }, [isDisabled]);
+
   let { focusProps } = reactAriaUseFocus({
     isDisabled,
+    onFocus: (event) => {
+      focusedElementRef.current = event.target;
+    },
     onFocusChange: (focused) => {
       setIsFocused(focused);
 

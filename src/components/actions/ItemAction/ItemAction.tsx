@@ -210,13 +210,11 @@ export const ItemAction = forwardRef(function ItemAction(
   // re-enables a loading action.
   const isDisabled = isLoading || (isDisabledProp ?? contextIsDisabled);
 
-  // Whether that disabled state came from the host row rather than this action's
-  // own prop; inside a disabled row, loading counts as the row's. The `current`
-  // theme paints from the inherited color, and a disabled host has already faded
-  // it — so fading a second time washes the label out. See
-  // `CURRENT_ITEM_STYLES.color`.
-  const isDisabledInherited =
-    !!contextIsDisabled && (isDisabledProp == null || isLoading);
+  // The host row is disabled too. The `current` theme paints from the inherited
+  // color, which a disabled host has already faded, so fading a second time
+  // washes the label out (see `CURRENT_ITEM_STYLES.color`). And like a disabled
+  // fieldset, a disabled host leaves its actions out of the tab order.
+  const isDisabledInherited = !!contextIsDisabled && isDisabled;
 
   // Determine if we should show a checkmark
   const hasCheckmark = icon === 'checkmark';
@@ -269,8 +267,9 @@ export const ItemAction = forwardRef(function ItemAction(
     ref,
   );
 
-  // Set tabIndex when in context
-  const finalTabIndex = disableActionsFocus ? -1 : rest.tabIndex;
+  // Set tabIndex when in context. A loading action keeps focus it already has,
+  // but Tab skips it, as it skips a loading `Button`.
+  const finalTabIndex = disableActionsFocus || isLoading ? -1 : rest.tabIndex;
 
   // Extract tooltip content and props
   const tooltipContent =
@@ -286,10 +285,10 @@ export const ItemAction = forwardRef(function ItemAction(
   // Only icon-only actions show their tooltip.
   const hasTooltip = !children && !!tooltipContent;
 
-  // Native `disabled` drops focus and the hover a tooltip needs. A loading
-  // action keeps both, so a keyboard press doesn't lose its place, and so does
-  // one that disables itself while showing a tooltip, often its only label. One
-  // disabled by its host stays native: the host takes it out of the tab order.
+  // Native `disabled` drops focus. A loading action keeps it, so a keyboard
+  // press doesn't lose its place. So does an action that disables itself while
+  // showing a tooltip, often its only label, which keyboard users reach and read
+  // as on `Button`. One whose host is disabled too stays native.
   const { isNativelyDisabled, isInert, inertProps } = getDisabledElementProps({
     isDisabled,
     keepEvents: isLoading || (hasTooltip && !isDisabledInherited),

@@ -56,7 +56,8 @@ export interface DisabledElementOptions {
   /**
    * Whether the element has to keep receiving pointer and focus events while
    * disabled. Set it when the element hosts a tooltip: the tooltip is there to
-   * explain why the element is unavailable, so hover has to reach it.
+   * explain why the element is unavailable, so hover has to reach it. Or when
+   * it has to keep focus, as a loading action does while a keyboard press runs.
    */
   keepEvents?: boolean;
   /** The tag the component renders. */

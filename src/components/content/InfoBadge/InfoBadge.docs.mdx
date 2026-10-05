@@ -28,8 +28,8 @@ Every field's `labelTooltip` prop already renders an `InfoBadge` next to the lab
 - **`theme`** `'default' | 'danger' | 'success'` (default: `'default'`) — Color theme. The default `default` + `clear` combination is brand-tinted; any other combination uses the theme's own colors.
 - **`to`** `string | number | object` — Navigation target. Renders the badge as a link. Supports the `!` (new tab) and `@` (native navigation) prefixes.
 - **`onPress`** `(e: PressEvent) => void` — Press handler. Renders the badge as a button.
-- **`isLoading`** `boolean` — Replace the icon with a loading spinner
-- **`isDisabled`** `boolean` — Disable the badge
+- **`isLoading`** `boolean` — Replace the icon with a loading spinner. An interactive badge can't be pressed or followed while loading.
+- **`isDisabled`** `boolean` — Disable the badge. An interactive badge stays reachable by keyboard, so its tooltip can still be read.
 
 ### Accessibility
 

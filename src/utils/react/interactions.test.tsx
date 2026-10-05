@@ -5,8 +5,16 @@ import { useFocus } from './interactions';
 
 let unfocusedRenders = 0;
 
-function Probe({ qa, countRenders }: { qa: string; countRenders?: boolean }) {
-  const { focusProps, isFocused } = useFocus({}, true);
+function Probe({
+  qa,
+  countRenders,
+  isDisabled,
+}: {
+  qa: string;
+  countRenders?: boolean;
+  isDisabled?: boolean;
+}) {
+  const { focusProps, isFocused } = useFocus({ isDisabled }, true);
 
   if (countRenders) {
     unfocusedRenders++;
@@ -90,5 +98,49 @@ describe('useFocus with onlyVisible', () => {
     await user.keyboard('a');
 
     expect(unfocusedRenders).toBe(0);
+  });
+
+  it('reports focus again when re-enabled while still focused', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(<Probe qa="only" />);
+
+    await user.tab();
+    expect(screen.getByTestId('only')).toHaveAttribute('data-focused');
+
+    // An `aria-disabled` control keeps DOM focus while disabled, and no focus
+    // event fires when it is enabled again.
+    rerender(<Probe qa="only" isDisabled />);
+    expect(screen.getByTestId('only')).not.toHaveAttribute('data-focused');
+
+    rerender(<Probe qa="only" />);
+    expect(screen.getByTestId('only')).toHaveFocus();
+    expect(screen.getByTestId('only')).toHaveAttribute('data-focused');
+  });
+
+  it('does not report focus when re-enabled after focus moved away', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(
+      <>
+        <Probe qa="only" />
+        <button data-qa="other">other</button>
+      </>,
+    );
+
+    await user.tab();
+    rerender(
+      <>
+        <Probe qa="only" isDisabled />
+        <button data-qa="other">other</button>
+      </>,
+    );
+    act(() => screen.getByTestId('other').focus());
+    rerender(
+      <>
+        <Probe qa="only" />
+        <button data-qa="other">other</button>
+      </>,
+    );
+
+    expect(screen.getByTestId('only')).not.toHaveAttribute('data-focused');
   });
 });

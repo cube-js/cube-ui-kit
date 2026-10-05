@@ -1101,10 +1101,9 @@ export const CURRENT_ITEM_STYLES: Styles = {
     // Two mods say "someone above already did it", and both are set by exactly
     // one caller:
     //
-    //   `inherit-disabled`  `ItemAction`, when its disabled state came from the
-    //                       surrounding `ItemActionProvider` rather than its own
-    //                       prop — the host row already faded the color it paints
-    //                       from.
+    //   `inherit-disabled`  `ItemAction`, when it is disabled and so is the
+    //                       surrounding `ItemActionProvider` — the host row
+    //                       already faded the color it paints from.
     //   `inside-wrapper`    `ItemButton`, on the row it renders inside
     //                       `ActionsWrapper`. The wrapper reproduces this same
     //                       disabled color (see `ITEM_RESTING_COLOR_VARIANTS`) so

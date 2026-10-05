@@ -28,12 +28,14 @@ describe('<ItemAction />', () => {
       const action = screen.getByRole('button');
 
       await userEvent.click(action);
+
+      expect(action).toHaveFocus();
+
       await userEvent.keyboard('{Enter}');
       await userEvent.keyboard(' ');
 
       expect(onPress).not.toHaveBeenCalled();
       expect(action).toHaveAttribute('aria-disabled', 'true');
-      expect(action).toHaveAttribute('data-loading');
       expect(action).toHaveAttribute('data-disabled');
     });
 
@@ -66,9 +68,36 @@ describe('<ItemAction />', () => {
       const action = screen.getByRole('button');
 
       // The native attribute would make the browser move focus to the body,
-      // losing a keyboard user's place mid-press.
+      // losing a keyboard user's place mid-press. jsdom keeps focus either way,
+      // so the attribute is what this checks.
       expect(action).not.toBeDisabled();
       expect(action).toHaveFocus();
+    });
+
+    it('should leave the tab order while loading', async () => {
+      render(
+        <>
+          <ItemAction isLoading>Connect</ItemAction>
+          <button>Next</button>
+        </>,
+      );
+
+      await userEvent.tab();
+
+      expect(screen.getByRole('button', { name: 'Next' })).toHaveFocus();
+    });
+
+    it('should show its focus ring again once loading ends', async () => {
+      const { rerender } = render(<ItemAction>Connect</ItemAction>);
+
+      await userEvent.tab();
+      await userEvent.keyboard('{Enter}');
+
+      rerender(<ItemAction isLoading>Connect</ItemAction>);
+      expect(screen.getByRole('button')).not.toHaveAttribute('data-focused');
+
+      rerender(<ItemAction>Connect</ItemAction>);
+      expect(screen.getByRole('button')).toHaveAttribute('data-focused');
     });
 
     it('should press again once loading ends', async () => {
@@ -195,9 +224,13 @@ describe('<ItemAction />', () => {
       expect(onPress).not.toHaveBeenCalled();
     });
 
-    it.each([['{ArrowDown}'], ['{Enter}'], [' ']])(
+    it.each([
+      ['ArrowDown', '{ArrowDown}'],
+      ['Enter', '{Enter}'],
+      ['Space', ' '],
+    ])(
       'should not open its menu with %s while disabled with a tooltip',
-      async (key) => {
+      async (_name, key) => {
         renderWithRoot(
           <MenuTrigger>
             <ItemAction isDisabled icon={<IconDots />} tooltip="More" />
@@ -230,6 +263,21 @@ describe('<ItemAction />', () => {
       // A disabled row or field takes its actions out of the tab order, as a
       // disabled fieldset does.
       expect(screen.getByRole('button', { name: 'Edit' })).toBeDisabled();
+    });
+
+    it('should stay natively disabled when it and its row are both disabled', () => {
+      render(
+        <ItemActionProvider isDisabled>
+          <ItemAction isDisabled icon={<IconEdit />} tooltip="Edit" />
+        </ItemActionProvider>,
+      );
+
+      const action = screen.getByRole('button', { name: 'Edit' });
+
+      // The row has already faded the color the action paints from, and takes
+      // it out of the tab order.
+      expect(action).toBeDisabled();
+      expect(action).toHaveAttribute('data-inherit-disabled');
     });
 
     it('should let isDisabled={false} override a disabled row', async () => {

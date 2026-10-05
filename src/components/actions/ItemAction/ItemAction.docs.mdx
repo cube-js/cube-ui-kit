@@ -26,9 +26,9 @@ Each host re-exports it as its own `.Action` — `Item.Action`, `ItemButton.Acti
 - **`icon`** `ReactNode | 'checkmark'` — Icon element or `'checkmark'` for a selection indicator
 - **`type`** `'primary' | 'outline' | 'clear'` (default: `'clear'`) — Visual type. `clear` is borderless and paints nothing at rest, so a row full of actions does not read as busy.
 - **`theme`** `'current' | 'default' | 'danger' | 'success' | 'warning' | 'note' | 'special'` (default: `'current'`) — Color theme. `current` derives every color from the inherited `currentcolor`, so the action tracks whatever row hosts it without being told the row's type or theme. Name any other theme to have the action paint itself instead.
-- **`isLoading`** `boolean` (default: `false`) — Shows a loading spinner in the icon slot and disables the action, like `Button`, so a second press does not run it again. `isDisabled={false}` does not re-enable a loading action. It stays focusable while loading, so a keyboard press keeps its place.
+- **`isLoading`** `boolean` (default: `false`) — Shows a loading spinner in the icon slot and disables the action, like `Button`, so a second press does not run it again. `isDisabled={false}` does not re-enable a loading action. It keeps focus it already has, so a keyboard press keeps its place, but Tab skips it until loading ends.
 - **`isSelected`** `boolean` (default: `false`) — Selected state (works with `icon="checkmark"`)
-- **`isDisabled`** `boolean` (default: `false`) — Disables the action. Inherits from parent; use `isDisabled={false}` to override. An action disabled by its own prop keeps its tooltip and stays in the tab order, so keyboard users can read it; one disabled by its parent is skipped.
+- **`isDisabled`** `boolean` (default: `false`) — Disables the action. Inherits from parent; use `isDisabled={false}` to override. As on `Button`, a disabled action leaves the tab order, unless it is an icon-only action with a tooltip that disables itself: that one keeps its tooltip and stays reachable, so keyboard users can read it. Inside a disabled parent, every disabled action is skipped.
 - **`tooltip`** `string | object` — Tooltip content (shown for icon-only buttons)
 - **`onPress`** `() => void` — Press event handler
 
