@@ -94,6 +94,7 @@ export const DEFAULTS: DefaultsRegistry = {
     Button: {
       props: {
         defaultTooltipPlacement: { kind: 'default', value: 'top' },
+        isDisabled: { kind: 'default', value: false },
         isLoading: { kind: 'default', value: false },
         isSelected: {
           kind: 'skip',
