@@ -19,7 +19,6 @@ import {
   ReactNode,
   RefObject,
   useEffect,
-  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -50,18 +49,22 @@ import {
   getNextVisibleKey,
   ListBoxPopover,
   ListStateLike,
-  markKeyboardFocus,
   useCompositeFocus,
 } from '../ListBoxPopover';
 import { TextInputBase } from '../TextInput/TextInputBase';
 
 import { TagList, TagListEntry } from './TagList';
+import { useActiveOption } from './useActiveOption';
+import { useTagError } from './useTagError';
 
 import type { FieldBaseProps } from '../../../shared';
 import type { CubeTagProps } from '../../content/Tag/Tag';
 import type { CompositeBlurInfo } from '../ListBoxPopover';
 
 type FilterFn = (textValue: string, inputValue: string) => boolean;
+
+/** `filter={false}`: the options come filtered already, as from a server. */
+const showEveryOption: FilterFn = () => true;
 
 export type TagInputPopoverTrigger = 'focus' | 'input' | 'manual';
 
@@ -369,7 +372,7 @@ function withCustomOptions(
     optionsLabel,
     customValuesLabel,
   }: {
-    customKeys: string[];
+    customKeys: readonly string[];
     customTerm: string | null;
     hasOptionRows: boolean;
     hasSections: boolean;
@@ -420,6 +423,121 @@ function withCustomOptions(
   ];
 }
 
+interface CustomRows {
+  /** The user's own values, as rows. */
+  keys: readonly string[];
+  /** The ones the typed text leaves listed. */
+  visibleKeys: readonly string[];
+  /** The typed text as a pickable row, when it would add something new. */
+  typedKey: string | null;
+}
+
+const NO_CUSTOM_ROWS: CustomRows = {
+  keys: [],
+  visibleKeys: [],
+  typedKey: null,
+};
+
+/**
+ * The rows listed after the options: the user's own values, so they can be
+ * unpicked where they were picked, and the typed text. `unpicked` holds the
+ * custom values unpicked during this visit, which stay listed.
+ */
+function getCustomRows({
+  values,
+  unpicked,
+  isOption,
+  term,
+  isFiltering,
+  matches,
+  termOptionKey,
+}: {
+  values: readonly string[];
+  unpicked: readonly string[];
+  /** Whether a value is an option, or was one when it was picked. */
+  isOption: (value: string) => boolean;
+  term: string;
+  /** Whether the typed text narrows the rows. */
+  isFiltering: boolean;
+  matches: FilterFn;
+  /** The option the typed text names, if any. */
+  termOptionKey: string | null;
+}): CustomRows {
+  // Sorted, so toggling one does not move it.
+  const keys = [
+    ...new Set([...values, ...unpicked].filter((value) => !isOption(value))),
+  ].sort(compareText);
+
+  return {
+    keys,
+    visibleKeys:
+      isFiltering && term ? keys.filter((key) => matches(key, term)) : keys,
+    typedKey:
+      term &&
+      termOptionKey == null &&
+      !values.includes(term) &&
+      !keys.includes(term)
+        ? term
+        : null,
+  };
+}
+
+/**
+ * The row the typed text names: the option it stands for, or else a custom
+ * value it spells. Text that names a row only in another case is a value of
+ * its own, so its own row wins over that one: Enter adds `paris` as typed, not
+ * `Paris`.
+ */
+function getExactRowKey(
+  collection: Iterable<CollectionNode<unknown>>,
+  {
+    term,
+    termOptionKey,
+    customTerm,
+    customValueKeys,
+  }: {
+    term: string;
+    termOptionKey: string | null;
+    customTerm: string | null;
+    customValueKeys: readonly string[];
+  },
+): string | null {
+  if (termOptionKey != null) return termOptionKey;
+  if (term && customValueKeys.includes(term)) return term;
+
+  if (
+    customTerm &&
+    (matchOptionText(collection, customTerm).loose != null ||
+      customValueKeys.some((key) => isSameText(key, customTerm)))
+  ) {
+    return customTerm;
+  }
+
+  return null;
+}
+
+/**
+ * The row the focus pass lands on, and Enter with it. The row the typed text
+ * names wins over the first match, so typing "build" and pressing Enter picks
+ * "build", not "rebuild". Typed text means "add", so past an exact match the
+ * first row that is not added yet wins: typing "def" next to a picked
+ * "undefined" lands on "def".
+ */
+function getPreferredRowKey(
+  rows: readonly Key[],
+  exactKey: Key | null,
+  term: string,
+  values: readonly string[],
+): Key | null {
+  if (exactKey != null && rows.includes(exactKey)) return exactKey;
+
+  const firstNew = term
+    ? rows.find((key) => !values.includes(String(key)))
+    : undefined;
+
+  return firstNew ?? rows[0] ?? null;
+}
+
 function isComposingKey(e: KeyboardEvent<HTMLInputElement>) {
   return e.nativeEvent.isComposing || e.keyCode === 229;
 }
@@ -442,6 +560,156 @@ interface Rejection {
  * option row's key, or a custom value's row, which is only ever itself.
  */
 type CommitSource = 'text' | 'option' | 'custom';
+
+/** What a value must pass to become a chip. */
+interface TagRules {
+  /** Keys of options that cannot be picked. */
+  disabledKeys: ReadonlySet<string>;
+  /** Only options are accepted: there are options, and no custom values. */
+  isOptionOnly: boolean;
+  maxTags?: number;
+  validateTag?: (value: string) => TagValidationResult;
+}
+
+/**
+ * Why a value is refused, or `null` when it may be added. `optionKey` is the
+ * option the part resolved to, if any: an option is not validated. `present`
+ * holds the values already there, the ones this commit accepted so far among
+ * them.
+ */
+function getRejection(
+  value: string,
+  optionKey: string | null,
+  present: ReadonlySet<string>,
+  { disabledKeys, isOptionOnly, maxTags, validateTag }: TagRules,
+): Omit<Rejection, 'text'> | null {
+  if (optionKey != null && disabledKeys.has(optionKey)) {
+    return { reason: 'unavailable' };
+  }
+
+  if (optionKey == null && isOptionOnly) return { reason: 'unknown' };
+  if (present.has(value)) return { reason: 'duplicate' };
+  if (maxTags != null && present.size >= maxTags) return { reason: 'limit' };
+
+  if (optionKey == null && validateTag) {
+    const result = validateTag(value);
+
+    if (result === false || typeof result === 'string') {
+      return {
+        reason: 'invalid',
+        message: typeof result === 'string' ? result : undefined,
+      };
+    }
+  }
+
+  return null;
+}
+
+/** The input's combobox wiring, for a field with options to suggest. */
+function getComboboxProps(
+  listBoxId: string,
+  isOpen: boolean,
+  activeKey: Key | null,
+) {
+  return {
+    role: 'combobox',
+    'aria-autocomplete': 'list',
+    'aria-haspopup': 'listbox',
+    'aria-expanded': isOpen,
+    'aria-controls': isOpen ? listBoxId : undefined,
+    'aria-activedescendant':
+      isOpen && activeKey != null
+        ? getListBoxOptionId(listBoxId, activeKey)
+        : undefined,
+  };
+}
+
+interface FieldButtonProps {
+  id: string;
+  size: CubeTagInputProps['size'];
+  /** The field's `aria-label`, joined into the button's own name. */
+  ariaLabel?: string;
+  /** The ids that label the field, read after the button's own name. */
+  fieldLabelledby?: string;
+  onPress: () => void;
+}
+
+/** The button in the input that toggles the suggestions popover. */
+function TagInputTrigger({
+  id,
+  size,
+  ariaLabel,
+  fieldLabelledby,
+  onPress,
+  isOpen,
+  isDisabled,
+  styles,
+}: FieldButtonProps & {
+  isOpen: boolean;
+  isDisabled: boolean;
+  styles?: Styles;
+}) {
+  const { t } = useI18n();
+
+  return (
+    <ItemAction
+      data-popover-trigger
+      id={id}
+      qa="TagInputTrigger"
+      icon={<DirectionIcon to={isOpen ? 'up' : 'down'} />}
+      size={size}
+      isDisabled={isDisabled}
+      styles={styles}
+      mods={{ pressed: isOpen }}
+      // Arrow keys open the list from the input, so the button stays out of
+      // the Tab order and Tab goes from the input straight to the chips.
+      tabIndex={-1}
+      aria-expanded={isOpen}
+      aria-haspopup="listbox"
+      aria-label={
+        ariaLabel
+          ? t('tagInput.showOptionsFor', 'Show options, {{label}}', {
+              label: ariaLabel,
+            })
+          : t('tagInput.showOptions', 'Show options')
+      }
+      aria-labelledby={fieldLabelledby ? `${id} ${fieldLabelledby}` : undefined}
+      onPress={onPress}
+    />
+  );
+}
+
+/** The button in the input that clears the typed text. */
+function TagInputClearButton({
+  id,
+  size,
+  ariaLabel,
+  fieldLabelledby,
+  onPress,
+}: FieldButtonProps) {
+  const { t } = useI18n();
+
+  return (
+    <ItemAction
+      id={id}
+      qa="TagInputClearButton"
+      icon={<CloseIcon />}
+      size={size}
+      // Escape does the same from the keyboard. As a Tab stop it would take
+      // focus just as tabbing away commits the text and removes it.
+      tabIndex={-1}
+      aria-label={
+        ariaLabel
+          ? t('tagInput.clearTextFor', 'Clear text, {{label}}', {
+              label: ariaLabel,
+            })
+          : t('tagInput.clearText', 'Clear text')
+      }
+      aria-labelledby={fieldLabelledby ? `${id} ${fieldLabelledby}` : undefined}
+      onPress={onPress}
+    />
+  );
+}
 
 function TagInput<T extends object>(
   props: WithNullableValue<CubeTagInputProps<T>>,
@@ -569,24 +837,8 @@ function TagInput<T extends object>(
     defaultInputValue ?? '',
     onInputChange,
   );
-  // The id gives a repeated rejection a fresh message node, so it is announced
-  // again.
-  const [tagError, setTagErrorState] = useState<{
-    id: number;
-    text: string;
-  } | null>(null);
-  // Only ever grows: a clear and a new rejection can land in one batch.
-  const tagErrorIdRef = useRef(0);
-  const setTagError = useEvent((text: string | null) => {
-    if (text == null) {
-      setTagErrorState(null);
-
-      return;
-    }
-
-    tagErrorIdRef.current += 1;
-    setTagErrorState({ id: tagErrorIdRef.current, text });
-  });
+  const { tagError, setTagError, clearTagErrorAfterPress, cancelPendingClear } =
+    useTagError();
   const [announcement, setAnnouncement] = useState({ id: 0, text: '' });
 
   // ---- options ------------------------------------------------------------
@@ -628,7 +880,7 @@ function TagInput<T extends object>(
   const { contains } = useFilter({ sensitivity: 'base' });
 
   const textFilterFn: FilterFn =
-    filter === false ? () => true : filter || contains;
+    filter === false ? showEveryOption : filter || contains;
 
   const [isFilterActive, setIsFilterActive] = useState(false);
   const term = draft.trim();
@@ -745,40 +997,27 @@ function TagInput<T extends object>(
     readonly string[]
   >([]);
 
-  // The user's own values, listed after the options so they can be unpicked
-  // where they were picked. Only with `allowsCustomValue`: without it an
-  // unpicked value could not be added back. Sorted, so toggling one does not
-  // move it.
-  const customValueKeys =
-    hasOptions && allowsCustomValue
-      ? [
-          ...new Set(
-            [...uniqueValues, ...unpickedCustomValues].filter(
-              (value) => getOption(value) == null && !knownLabels.has(value),
-            ),
-          ),
-        ].sort(compareText)
-      : [];
-
-  // The typed text narrows them as it narrows the options, even when the
-  // options are filtered on the server (`filter={false}`): these rows are
-  // this component's own.
-  const matchesTerm = typeof filter === 'function' ? filter : contains;
-  const visibleCustomKeys =
-    isFilterActive && term
-      ? customValueKeys.filter((key) => matchesTerm(key, term))
-      : customValueKeys;
-
-  // The typed text as a pickable row, when it would add something new.
-  const customTerm =
-    hasOptions &&
-    allowsCustomValue &&
-    term &&
-    termOptionKey == null &&
-    !uniqueValues.includes(term) &&
-    !customValueKeys.includes(term)
-      ? term
-      : null;
+  // The user's own values and the typed text, listed after the options. Only
+  // with `allowsCustomValue`: without it an unpicked value could not be added
+  // back.
+  const {
+    keys: customValueKeys,
+    visibleKeys: visibleCustomKeys,
+    typedKey: customTerm,
+  } = hasOptions && allowsCustomValue
+    ? getCustomRows({
+        values: uniqueValues,
+        unpicked: unpickedCustomValues,
+        isOption: (value) => getOption(value) != null || knownLabels.has(value),
+        term,
+        isFiltering: isFilterActive,
+        // The typed text narrows them as it narrows the options, even when
+        // the options are filtered on the server (`filter={false}`): these
+        // rows are this component's own.
+        matches: typeof filter === 'function' ? filter : contains,
+        termOptionKey,
+      })
+    : NO_CUSTOM_ROWS;
 
   const popoverChildren = withCustomOptions(children, {
     customKeys: visibleCustomKeys,
@@ -817,148 +1056,33 @@ function TagInput<T extends object>(
     onOpenChange?.(shouldShowPopover);
   }, [shouldShowPopover, onOpenChange]);
 
-  // The option under virtual focus, mirrored in state for the input's
-  // `aria-activedescendant`: the listbox's own state update does not re-render
-  // this component. It is also what Enter acts on, so Enter only ever picks the
-  // option a screen reader was told about. `term` is the text it was chosen
-  // for; `source` tells a user's own pick (arrows, a click) from focus the
-  // component placed while the text changed.
-  const [activeOption, setActiveOption] = useState<{
-    key: Key;
-    term: string;
-    source: 'auto' | 'user';
-  } | null>(null);
-  const activeOptionKey = activeOption?.key ?? null;
-
-  const moveVirtualFocus = useEvent(
-    (key: Key | null, source: 'auto' | 'user', forTerm: string) => {
-      const listState = listStateRef.current;
-
-      if (!listState || key == null) return;
-
-      markKeyboardFocus(listState);
-      listState.selectionManager.setFocusedKey(key);
-      setActiveOption({ key, term: forTerm, source });
-    },
-  );
-
-  // The popover is at least as wide as the input box.
-  const [popoverMinWidth, setPopoverMinWidth] = useState<number>();
-
-  // The option the typed text names wins over the first match, so typing
-  // "build" and pressing Enter picks "build", not "rebuild".
-  let exactOptionKey = termOptionKey;
-
-  if (exactOptionKey == null && term && customValueKeys.includes(term)) {
-    exactOptionKey = term;
-  }
-
-  // Text that names a row only in another case is a value of its own, so its
-  // own row wins over that one: Enter adds `paris` as typed, not `Paris`.
-  if (
-    exactOptionKey == null &&
-    customTerm &&
-    (matchOptionText(collection, customTerm).loose != null ||
-      customValueKeys.some((key) => isSameText(key, customTerm)))
-  ) {
-    exactOptionKey = customTerm;
-  }
-
   const visibleTargetKeys: Key[] = [...visibleOptionKeys, ...visibleCustomKeys];
 
   if (customTerm) visibleTargetKeys.push(customTerm);
-  // Typed text means "add", so past an exact match the first row that is not
-  // added yet wins: typing "def" next to a picked "undefined" lands on "def".
-  let preferredOptionKey: Key | null = null;
 
-  if (exactOptionKey != null && visibleTargetKeys.includes(exactOptionKey)) {
-    preferredOptionKey = exactOptionKey;
-  } else if (term) {
-    preferredOptionKey =
-      visibleTargetKeys.find((key) => !uniqueValues.includes(String(key))) ??
-      null;
-  }
-
-  if (preferredOptionKey == null) {
-    preferredOptionKey = visibleTargetKeys[0] ?? null;
-  }
-  const focusTermRef = useRef<string | null>(null);
-
-  // Focus the best match when the popover opens or the text changes, and
-  // whenever the focused option is filtered out, so Enter always acts on a
-  // visible row. The keys come from this render's own filter: the listbox's
-  // collection can lag a render behind right after the text narrows.
-  useLayoutEffect(() => {
-    // `aria-activedescendant` is only set while the popover shows, so a stale
-    // active option needs no reset here; the next pass re-syncs it.
-    if (!shouldShowPopover) {
-      focusTermRef.current = null;
-
-      return;
-    }
-
-    setPopoverMinWidth(wrapperRef.current?.offsetWidth);
-
-    // Rebuilt from the signature: the key arrays themselves are new on every
-    // render when options come from `items`. Collection keys are strings.
-    const visibleKeys: Key[] = visibleOptionsSignature
-      ? visibleOptionsSignature.split('\u0000')
-      : [];
-
-    if (customTerm) visibleKeys.push(customTerm);
-
-    const isNewTerm = !!term && focusTermRef.current !== term;
-
-    focusTermRef.current = term;
-
-    let attempts = 0;
-    let isCancelled = false;
-
-    const tick = () => {
-      if (isCancelled) return;
-
-      const listState = listStateRef.current;
-
-      if (!listState) {
-        attempts += 1;
-
-        if (attempts < 8) requestAnimationFrame(tick);
-
-        return;
-      }
-
-      const focused = listState.selectionManager.focusedKey;
-      const keepsFocus =
-        focused != null && visibleKeys.includes(focused) && !isNewTerm;
-
-      // Re-announced even when focus stays: after a close and reopen the list
-      // still has it, but the input no longer points at it.
-      if (keepsFocus) {
-        setActiveOption((prev) =>
-          prev?.key === focused
-            ? { ...prev, term }
-            : { key: focused, term, source: 'auto' },
-        );
-      } else {
-        moveVirtualFocus(preferredOptionKey, 'auto', term);
-      }
-    };
-
-    requestAnimationFrame(() => requestAnimationFrame(tick));
-
-    // Text typed after this pass was scheduled owns the focus now.
-    return () => {
-      isCancelled = true;
-    };
-  }, [
-    shouldShowPopover,
-    visibleOptionsSignature,
-    customTerm,
+  const preferredOptionKey = getPreferredRowKey(
+    visibleTargetKeys,
+    getExactRowKey(collection, {
+      term,
+      termOptionKey,
+      customTerm,
+      customValueKeys,
+    }),
     term,
-    preferredOptionKey,
-    moveVirtualFocus,
-    wrapperRef,
-  ]);
+    uniqueValues,
+  );
+
+  const { activeOption, setActiveOption, moveVirtualFocus, popoverMinWidth } =
+    useActiveOption({
+      listStateRef,
+      wrapperRef,
+      isOpen: shouldShowPopover,
+      visibleOptionsSignature,
+      customTerm,
+      term,
+      preferredOptionKey,
+    });
+  const activeOptionKey = activeOption?.key ?? null;
 
   const setDraft = useEvent((next: string) => {
     setDraftState(next);
@@ -1022,6 +1146,12 @@ function TagInput<T extends object>(
   const commitParts = useEvent((parts: string[], source?: CommitSource) => {
     if (!parts.length) return '';
 
+    const rules: TagRules = {
+      disabledKeys: disabledKeySet,
+      isOptionOnly: hasOptions && !allowsCustomValue,
+      maxTags,
+      validateTag,
+    };
     const present = new Set(uniqueValues);
     const accepted: string[] = [];
     const rejected: Rejection[] = [];
@@ -1033,38 +1163,11 @@ function TagInput<T extends object>(
       if (!typed) continue;
 
       const nextValue = optionKey ?? typed;
+      const rejection = getRejection(nextValue, optionKey, present, rules);
 
-      if (optionKey != null && disabledKeySet.has(optionKey)) {
-        rejected.push({ text: part, reason: 'unavailable' });
+      if (rejection) {
+        rejected.push({ text: part, ...rejection });
         continue;
-      }
-
-      if (optionKey == null && hasOptions && !allowsCustomValue) {
-        rejected.push({ text: part, reason: 'unknown' });
-        continue;
-      }
-
-      if (present.has(nextValue)) {
-        rejected.push({ text: part, reason: 'duplicate' });
-        continue;
-      }
-
-      if (maxTags != null && present.size >= maxTags) {
-        rejected.push({ text: part, reason: 'limit' });
-        continue;
-      }
-
-      if (optionKey == null && validateTag) {
-        const result = validateTag(nextValue);
-
-        if (result === false || typeof result === 'string') {
-          rejected.push({
-            text: part,
-            reason: 'invalid',
-            message: typeof result === 'string' ? result : undefined,
-          });
-          continue;
-        }
       }
 
       present.add(nextValue);
@@ -1214,6 +1317,148 @@ function TagInput<T extends object>(
   // the chips (commit the text) from a click on a remove button (keep it).
   const isTabbingRef = useRef(false);
 
+  const handleArrowKey = useEvent((e: KeyboardEvent<HTMLInputElement>) => {
+    if (!hasOptions) return;
+
+    e.preventDefault();
+
+    if (!shouldShowPopover) {
+      if (!hasResults) setIsFilterActive(false);
+      setIsPopoverOpen(true);
+
+      return;
+    }
+
+    const listState = listStateRef.current;
+
+    if (listState) {
+      moveVirtualFocus(
+        getNextVisibleKey(listState, e.key === 'ArrowDown' ? 1 : -1),
+        'user',
+        term,
+      );
+    }
+  });
+
+  const handleEdgeKey = useEvent((e: KeyboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+
+    const listState = listStateRef.current;
+
+    if (listState) {
+      moveVirtualFocus(
+        getEdgeVisibleKey(listState, e.key === 'Home' ? 'first' : 'last'),
+        'user',
+        term,
+      );
+    }
+  });
+
+  // The chips sit below the input, not beside the caret, so Backspace in an
+  // empty input moves to the last chip instead of removing it out of view.
+  // The chip comes into view with focus and says it is removable; the next
+  // Backspace removes it and moves to the one before.
+  const handleBackspaceKey = useEvent((e: KeyboardEvent<HTMLInputElement>) => {
+    if (isComposingKey(e)) return;
+
+    e.preventDefault();
+
+    // A held Backspace that just emptied the input stops there, so it does
+    // not run on into the chips.
+    if (e.repeat) return;
+
+    setIsPopoverOpen(false);
+    focusLastTag();
+  });
+
+  const handleEnterKey = useEvent((e: KeyboardEvent<HTMLInputElement>) => {
+    if (isComposingKey(e)) return;
+
+    // The announced option, unless the text changed since it was chosen and
+    // its focus pass has not run yet: then the best match for this text.
+    const isCurrent = activeOption != null && activeOption.term === term;
+    const targetKey = shouldShowPopover
+      ? isCurrent
+        ? activeOption.key
+        : preferredOptionKey
+      : null;
+
+    if (targetKey != null) {
+      e.preventDefault();
+
+      const key = String(targetKey);
+
+      // Typed text means "add". An option that is already a chip is refused
+      // as a duplicate and the text cleared, as a comma or blur would;
+      // unpicking one takes the arrows, a click, or an empty input.
+      if (
+        term &&
+        uniqueValues.includes(key) &&
+        !(isCurrent && activeOption.source === 'user')
+      ) {
+        setDraft('');
+        setTagError(
+          rejectionMessage({
+            text: getTagLabel(key),
+            reason: 'duplicate',
+          }),
+        );
+
+        return;
+      }
+
+      toggleOption(key);
+
+      return;
+    }
+
+    // Enter is for adding values and never submits a form, even with nothing
+    // typed: pressing it once more after the last value must not send a
+    // half-filled dialog.
+    e.preventDefault();
+
+    if (term) commitDraft();
+  });
+
+  const handleDelimiterKey = useEvent((e: KeyboardEvent<HTMLInputElement>) => {
+    if (isComposingKey(e)) return;
+
+    e.preventDefault();
+
+    // The separator splits the text where it is typed: what comes before the
+    // caret is committed, what comes after stays in the input.
+    const el = e.currentTarget;
+    const start = el.selectionStart ?? draft.length;
+    const end = el.selectionEnd ?? start;
+    const rejected = commitParts(
+      splitTagText(draft.slice(0, start), delimiters),
+    );
+
+    setDraft(
+      [rejected, draft.slice(end).trimStart()].filter(Boolean).join(joiner),
+    );
+  });
+
+  // Escape takes back one thing at a time: the list, then the text. A message
+  // goes with either, or on its own when the input is already empty, as after
+  // a refused duplicate.
+  const handleEscapeKey = useEvent((e: KeyboardEvent<HTMLInputElement>) => {
+    if (shouldShowPopover) {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsPopoverOpen(false);
+      setTagError(null);
+    } else if (draft || tagError) {
+      e.preventDefault();
+      e.stopPropagation();
+      setDraft('');
+      setTagError(null);
+      // It may be open but hidden for want of a match; the full list must
+      // not appear when the text goes.
+      setIsPopoverOpen(false);
+    }
+  });
+
   const handleKeyDown = useEvent((e: KeyboardEvent<HTMLInputElement>) => {
     onKeyDown?.(e);
 
@@ -1222,158 +1467,22 @@ function TagInput<T extends object>(
 
     if (e.defaultPrevented || !isInteractive) return;
 
-    const listState = listStateRef.current;
-
     if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-      if (!hasOptions) return;
-
-      e.preventDefault();
-
-      if (!shouldShowPopover) {
-        if (!hasResults) setIsFilterActive(false);
-        setIsPopoverOpen(true);
-
-        return;
-      }
-
-      if (listState) {
-        moveVirtualFocus(
-          getNextVisibleKey(listState, e.key === 'ArrowDown' ? 1 : -1),
-          'user',
-          term,
-        );
-      }
-
-      return;
-    }
-
-    if ((e.key === 'Home' || e.key === 'End') && shouldShowPopover) {
-      e.preventDefault();
-
-      if (listState) {
-        moveVirtualFocus(
-          getEdgeVisibleKey(listState, e.key === 'Home' ? 'first' : 'last'),
-          'user',
-          term,
-        );
-      }
-
-      return;
-    }
-
-    // The chips sit below the input, not beside the caret, so Backspace in an
-    // empty input moves to the last chip instead of removing it out of view.
-    // The chip comes into view with focus and says it is removable; the next
-    // Backspace removes it and moves to the one before.
-    if (
+      handleArrowKey(e);
+    } else if ((e.key === 'Home' || e.key === 'End') && shouldShowPopover) {
+      handleEdgeKey(e);
+    } else if (
       e.key === 'Backspace' &&
       !draft &&
       uniqueValues.some((value) => !isTagLocked(value))
     ) {
-      if (isComposingKey(e)) return;
-
-      e.preventDefault();
-
-      // A held Backspace that just emptied the input stops there, so it does
-      // not run on into the chips.
-      if (e.repeat) return;
-
-      setIsPopoverOpen(false);
-      focusLastTag();
-
-      return;
-    }
-
-    if (e.key === 'Enter') {
-      if (isComposingKey(e)) return;
-
-      // The announced option, unless the text changed since it was chosen and
-      // its focus pass has not run yet: then the best match for this text.
-      const isCurrent = activeOption != null && activeOption.term === term;
-      const targetKey = shouldShowPopover
-        ? isCurrent
-          ? activeOption.key
-          : preferredOptionKey
-        : null;
-
-      if (targetKey != null) {
-        e.preventDefault();
-
-        const key = String(targetKey);
-
-        // Typed text means "add". An option that is already a chip is refused
-        // as a duplicate and the text cleared, as a comma or blur would;
-        // unpicking one takes the arrows, a click, or an empty input.
-        if (
-          term &&
-          uniqueValues.includes(key) &&
-          !(isCurrent && activeOption.source === 'user')
-        ) {
-          setDraft('');
-          setTagError(
-            rejectionMessage({
-              text: getTagLabel(key),
-              reason: 'duplicate',
-            }),
-          );
-
-          return;
-        }
-
-        toggleOption(key);
-
-        return;
-      }
-
-      // Enter is for adding values and never submits a form, even with nothing
-      // typed: pressing it once more after the last value must not send a
-      // half-filled dialog.
-      e.preventDefault();
-
-      if (term) commitDraft();
-
-      return;
-    }
-
-    if (delimiters.includes(e.key)) {
-      if (isComposingKey(e)) return;
-
-      e.preventDefault();
-
-      // The separator splits the text where it is typed: what comes before the
-      // caret is committed, what comes after stays in the input.
-      const el = e.currentTarget;
-      const start = el.selectionStart ?? draft.length;
-      const end = el.selectionEnd ?? start;
-      const rejected = commitParts(
-        splitTagText(draft.slice(0, start), delimiters),
-      );
-
-      setDraft(
-        [rejected, draft.slice(end).trimStart()].filter(Boolean).join(joiner),
-      );
-
-      return;
-    }
-
-    // Escape takes back one thing at a time: the list, then the text. A
-    // message goes with either, or on its own when the input is already empty,
-    // as after a refused duplicate.
-    if (e.key === 'Escape') {
-      if (shouldShowPopover) {
-        e.preventDefault();
-        e.stopPropagation();
-        setIsPopoverOpen(false);
-        setTagError(null);
-      } else if (draft || tagError) {
-        e.preventDefault();
-        e.stopPropagation();
-        setDraft('');
-        setTagError(null);
-        // It may be open but hidden for want of a match; the full list must
-        // not appear when the text goes.
-        setIsPopoverOpen(false);
-      }
+      handleBackspaceKey(e);
+    } else if (e.key === 'Enter') {
+      handleEnterKey(e);
+    } else if (delimiters.includes(e.key)) {
+      handleDelimiterKey(e);
+    } else if (e.key === 'Escape') {
+      handleEscapeKey(e);
     }
   });
 
@@ -1447,40 +1556,6 @@ function TagInput<T extends object>(
 
     return commitDraft();
   });
-
-  // Clearing a message moves what is below the field up by its line. When a
-  // press took focus away, that waits for the press to end, or the control
-  // pressed would move out from under the pointer and miss it.
-  const pendingClearRef = useRef<(() => void) | null>(null);
-
-  const cancelPendingClear = () => {
-    pendingClearRef.current?.();
-    pendingClearRef.current = null;
-  };
-
-  const clearTagErrorAfterPress = () => {
-    cancelPendingClear();
-
-    let timer: ReturnType<typeof setTimeout> | undefined;
-    // A task after mouseup, so after the click the browser sends with it.
-    const handleMouseUp = () => {
-      timer = setTimeout(() => {
-        pendingClearRef.current = null;
-        setTagError(null);
-      }, 0);
-    };
-
-    document.addEventListener('mouseup', handleMouseUp, {
-      capture: true,
-      once: true,
-    });
-    pendingClearRef.current = () => {
-      document.removeEventListener('mouseup', handleMouseUp, true);
-      clearTimeout(timer);
-    };
-  };
-
-  useEffect(() => () => pendingClearRef.current?.(), []);
 
   const handleCompositeFocus = useEvent(() => {
     cancelPendingClear();
@@ -1625,17 +1700,7 @@ function TagInput<T extends object>(
       'aria-describedby': describedBy.join(' ') || undefined,
     },
     hasOptions
-      ? {
-          role: 'combobox',
-          'aria-autocomplete': 'list',
-          'aria-haspopup': 'listbox',
-          'aria-expanded': shouldShowPopover,
-          'aria-controls': shouldShowPopover ? listBoxId : undefined,
-          'aria-activedescendant':
-            shouldShowPopover && activeOptionKey != null
-              ? getListBoxOptionId(listBoxId, activeOptionKey)
-              : undefined,
-        }
+      ? getComboboxProps(listBoxId, shouldShowPopover, activeOptionKey)
       : null,
   );
 
@@ -1650,30 +1715,14 @@ function TagInput<T extends object>(
 
   const trigger =
     hasOptions && !hideTrigger ? (
-      <ItemAction
-        data-popover-trigger
+      <TagInputTrigger
         id={triggerId}
-        qa="TagInputTrigger"
-        icon={<DirectionIcon to={shouldShowPopover ? 'up' : 'down'} />}
         size={size}
+        ariaLabel={ariaLabel}
+        fieldLabelledby={fieldLabelledby}
+        isOpen={shouldShowPopover}
         isDisabled={!isInteractive}
         styles={triggerStyles}
-        mods={{ pressed: shouldShowPopover }}
-        // Arrow keys open the list from the input, so the button stays out of
-        // the Tab order and Tab goes from the input straight to the chips.
-        tabIndex={-1}
-        aria-expanded={shouldShowPopover}
-        aria-haspopup="listbox"
-        aria-label={
-          ariaLabel
-            ? t('tagInput.showOptionsFor', 'Show options, {{label}}', {
-                label: ariaLabel,
-              })
-            : t('tagInput.showOptions', 'Show options')
-        }
-        aria-labelledby={
-          fieldLabelledby ? `${triggerId} ${fieldLabelledby}` : undefined
-        }
         onPress={handleTriggerPress}
       />
     ) : null;
@@ -1691,24 +1740,11 @@ function TagInput<T extends object>(
 
   const canClear = !!isClearable && isInteractive && draft !== '';
   const clearButton = canClear ? (
-    <ItemAction
+    <TagInputClearButton
       id={clearId}
-      qa="TagInputClearButton"
-      icon={<CloseIcon />}
       size={size}
-      // Escape does the same from the keyboard. As a Tab stop it would take
-      // focus just as tabbing away commits the text and removes it.
-      tabIndex={-1}
-      aria-label={
-        ariaLabel
-          ? t('tagInput.clearTextFor', 'Clear text, {{label}}', {
-              label: ariaLabel,
-            })
-          : t('tagInput.clearText', 'Clear text')
-      }
-      aria-labelledby={
-        fieldLabelledby ? `${clearId} ${fieldLabelledby}` : undefined
-      }
+      ariaLabel={ariaLabel}
+      fieldLabelledby={fieldLabelledby}
       onPress={clearText}
     />
   ) : null;
