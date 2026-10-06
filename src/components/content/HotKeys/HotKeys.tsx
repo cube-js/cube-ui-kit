@@ -5,7 +5,7 @@ import {
   filterBaseProps,
   tasty,
 } from '@tenphi/tasty';
-import { forwardRef, Fragment } from 'react';
+import { Children, forwardRef, Fragment } from 'react';
 
 import { useKeySymbols } from '../../../utils/react/useKeySymbols';
 import { extractStyles } from '../../../utils/styles';
@@ -59,13 +59,17 @@ const KeyElement = tasty({
 export interface CubeHotKeysProps
   extends BasePropsWithoutChildren,
     ContainerStyleProps {
-  children: string;
+  /**
+   * Key combinations, such as `"mod+k, ctrl+k"`. An array of text, which
+   * `<Trans>` passes to a component slot, is joined into one string first.
+   */
+  children?: string | readonly (string | number)[];
   type?: 'default' | 'primary' | 'inherit';
 }
 
 function HotKeys(props: CubeHotKeysProps, ref) {
-  const { children: keys, type, ...otherProps } = props;
-  const parsedKeys = useKeySymbols(keys);
+  const { children, type, ...otherProps } = props;
+  const parsedKeys = useKeySymbols(Children.toArray(children).join(''));
   const styles = extractStyles(otherProps, CONTAINER_STYLES);
 
   return (

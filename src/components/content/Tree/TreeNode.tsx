@@ -7,6 +7,7 @@ import { DirectionIcon } from '../../../icons/DirectionIcon';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
 import { MoreIcon } from '../../../icons/MoreIcon';
 import { mergeProps, mergeRefs } from '../../../utils/react';
+import { allowEscapeToPropagate } from '../../../utils/react/escapePropagation';
 import { CubeItemActionProps, ItemAction } from '../../actions/ItemAction';
 import { CubeMenuProps, Menu, MenuTrigger } from '../../actions/Menu';
 import { useContextMenu } from '../../actions/use-context-menu';
@@ -28,7 +29,6 @@ import type {
   MouseEvent,
   ReactNode,
   Ref,
-  SyntheticEvent,
 } from 'react';
 import type { TreeState } from 'react-stately';
 import type {
@@ -37,10 +37,6 @@ import type {
   TreeItemProps,
   TreeNodeState,
 } from './types';
-
-const stopPropagation = (e: SyntheticEvent) => {
-  e.stopPropagation();
-};
 
 /** Check whether a `menu` ReactNode actually contains anything. */
 function isMenuEmpty(menu: ReactNode): boolean {
@@ -127,8 +123,16 @@ function TreeNodeInner(props: TreeNodeProps) {
 
   const rowRef = useRef<HTMLDivElement>(null);
 
+  // For lazy rows with no children yet, still render a toggle unless
+  // explicitly marked as leaf.
+  const isLeaf =
+    data.isLeaf === true || (data.isLeaf !== false && !node.hasChildNodes);
+
+  // React Aria counts a row as a parent only with more than one child (it
+  // expects the row's content first). `hasChildItems` makes single-child and
+  // lazy rows expandable: `aria-expanded` and arrow-key expansion.
   const { rowProps, gridCellProps, expandButtonProps, isPressed } = useTreeItem(
-    { node },
+    { node, hasChildItems: !isLeaf },
     state,
     rowRef,
   );
@@ -143,10 +147,6 @@ function TreeNodeInner(props: TreeNodeProps) {
   const isFocused =
     state.selectionManager.isFocused &&
     state.selectionManager.focusedKey === node.key;
-  // For lazy rows with no children yet, still render a toggle unless
-  // explicitly marked as leaf.
-  const isLeaf =
-    data.isLeaf === true || (data.isLeaf !== false && !node.hasChildNodes);
   const isRowCheckable = isCheckable && data.isCheckable !== false;
 
   const nodeState: TreeNodeState = {
@@ -358,7 +358,8 @@ function TreeNodeInner(props: TreeNodeProps) {
       data-element="Checkbox"
       role="presentation"
       onClick={handleWrapperClick}
-      onKeyDown={stopPropagation}
+      // Hold the checkbox's keys here, but let Escape reach a surrounding overlay.
+      onKeyDown={allowEscapeToPropagate}
     >
       <Checkbox
         isSelected={isChecked}

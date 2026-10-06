@@ -24,7 +24,7 @@ A component that displays keyboard shortcuts in a visually appealing and accessi
 
 ### Properties
 
-- **`children`** `string` — Key combination string (e.g., "mod+k, ctrl+k")
+- **`children`** `string | (string | number)[]` — Key combination string (e.g., "mod+k, ctrl+k"). An array of text, such as the one `<Trans>` passes to a component slot, is joined into one string first.
 - **`type`** `'default' | 'primary' | 'inherit'` (default: `default`) — Visual appearance type: default (subtle), primary (high contrast), or inherit (adapts to parent color)
 
 ### Base Properties
@@ -118,6 +118,18 @@ The inherit type is particularly useful when the HotKeys component needs to matc
   <HotKeys type="inherit" aria-label="Search">mod+k</HotKeys>
   <span> to search</span>
 </div>
+```
+
+### Inside a Translation
+
+`HotKeys` can fill a `<Trans>` component slot. The keys come from the translated string:
+
+```jsx
+<Trans
+  i18nKey="search.hint"
+  defaults="Press <hotkeys>mod+k</hotkeys> to search"
+  components={{ hotkeys: <HotKeys type="inherit" /> }}
+/>
 ```
 
 ### With Accessibility Labels
@@ -241,7 +253,7 @@ The inherit type is particularly useful when the HotKeys component needs to matc
 
 ## Key Format
 
-The component children accepts a string with the following format:
+The keys (a string, or text children joined into one string) use the following format:
 
 - **Single key**: `"enter"`, `"space"`, `"a"`
 - **Key combinations**: `"mod+k"`, `"ctrl+shift+p"`

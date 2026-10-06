@@ -148,6 +148,7 @@ export type {
   TreeSelectionMode,
   TreeContextMenu,
   TreeNodeState,
+  TreeItemProps,
 } from './components/content/Tree';
 export { GridProvider } from './components/GridProvider';
 export type { CubeGridProviderProps } from './components/GridProvider';

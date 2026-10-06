@@ -275,6 +275,17 @@ const meta = {
       description: 'Override styles for `[data-element="Row"]`',
       table: { type: { summary: 'Styles' } },
     },
+    itemProps: {
+      control: { type: null },
+      description:
+        'Per-row `Item` props (`prefix`, `suffix`, `actions`, `description`, `tooltip`, …), as an object or resolved for each row from its data and state',
+      table: {
+        type: {
+          summary:
+            'TreeItemProps | ((data: CubeTreeNodeData, state: TreeNodeState) => TreeItemProps)',
+        },
+      },
+    },
   },
 } satisfies Meta<typeof Tree>;
 

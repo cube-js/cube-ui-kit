@@ -9,4 +9,5 @@ export type {
   TreeSelectionMode,
   TreeContextMenu,
   TreeNodeState,
+  TreeItemProps,
 } from './types';

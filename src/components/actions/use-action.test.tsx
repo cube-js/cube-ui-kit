@@ -143,6 +143,20 @@ describe('parseTo', () => {
       isExternal: true,
     });
   });
+
+  it.each(['tel:+15550100', '!//example.com'])(
+    'treats %s as external',
+    (to) => {
+      expect(parseTo(to).isExternal).toBe(true);
+    },
+  );
+
+  it.each(['/a:b', '..?t=a:b', '/models/cube:orders', '!/a:b', '@/a:b'])(
+    'keeps a literal colon in %s as router navigation',
+    (to) => {
+      expect(parseTo(to).isExternal).toBe(false);
+    },
+  );
 });
 
 describe('useAction', () => {
@@ -424,6 +438,22 @@ describe('performClickHandler', () => {
       { qa: 'TestQa', href: 'https://example.com', type: 'native' },
       evt.target,
     );
+  });
+
+  it('navigates in the router, without a reload, to a path with a colon', () => {
+    const evt = createMockEvent();
+
+    performClickHandler(evt, {
+      navigate: mockNavigate,
+      resolvedHref: '/models/cube:orders',
+      to: '/models/cube:orders',
+      onPress: mockOnPress,
+      tracking: mockTracking,
+      navigationOptions: undefined,
+    });
+
+    expect(mockNavigate).toHaveBeenCalledWith('/models/cube:orders', undefined);
+    expect(window.location.assign).not.toHaveBeenCalled();
   });
 
   it('should handle router navigation with options', () => {
