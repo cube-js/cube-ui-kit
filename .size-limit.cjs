@@ -400,6 +400,15 @@ module.exports = [
     // dev and production. Headroom stays small so real bloat still trips.
     // The same Compiler build measures 131,349 B in CI (+11,662 B).
     // This includes the compatibility runtime and shared compiled components.
-    limit: '133kB',
+    //
+    // Item description tooltip (CUB-4254): 133.28 kB on a fresh local build
+    // against main's 132.98 kB at 15728a41, also fresh: +300 B. `useAutoTooltip`
+    // now measures a description beside the label and keeps one observer for
+    // both; `Button` loads the hook, so it carries that code although it passes
+    // no description. `main` already sat 20 B under the old budget, so any
+    // change to the hook had to raise it. `All` moves by the same ~290 B to
+    // 613.57 kB and stays inside 614 kB. Raised to 134 kB, about 720 B headroom;
+    // confirm against CI's number.
+    limit: '134kB',
   },
 ];
