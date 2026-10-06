@@ -953,6 +953,36 @@ describe('<Tree />', () => {
     });
   });
 
+  describe('keys from a row checkbox (CUB-5357)', () => {
+    it('lets Escape reach an ancestor and holds other keys', async () => {
+      const seen: string[] = [];
+      const { getAllByRole } = renderWithRoot(
+        <div onKeyDown={(event) => seen.push(event.key)}>
+          <Tree
+            isCheckable
+            selectionMode="none"
+            treeData={SAMPLE}
+            defaultExpandedKeys={['fruits']}
+          />
+        </div>,
+      );
+
+      // ArrowRight on a leaf row (Apple) moves focus to its checkbox.
+      act(() => getAllByRole('row')[1].focus());
+      await userEvent.keyboard('{ArrowRight}');
+      expect(document.activeElement).toBe(getAllByRole('checkbox')[1]);
+      seen.length = 0;
+
+      // Not ArrowUp/ArrowDown: React Aria re-dispatches those from inside a
+      // row to the grid for row navigation, so they never reach the wrapper.
+      await userEvent.keyboard('{Enter}z');
+      expect(seen).toEqual([]);
+
+      await userEvent.keyboard('{Escape}');
+      expect(seen).toEqual(['Escape']);
+    });
+  });
+
   describe('Space chaining in checkable trees', () => {
     it('toggles the checkbox AND selects the row in selectionMode=single', async () => {
       const onCheck = vi.fn();
