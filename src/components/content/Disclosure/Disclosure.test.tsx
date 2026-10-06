@@ -298,6 +298,56 @@ describe('<Disclosure />', () => {
       ).toBeInTheDocument();
     });
   });
+
+  describe('DOM and event props', () => {
+    it('forwards base DOM and event props to its root', async () => {
+      const onPointerEnter = vi.fn();
+      const { getByTestId } = renderWithRoot(
+        <Disclosure
+          qa="Root"
+          id="sql-api"
+          className="custom"
+          style={{ marginTop: 3 }}
+          theme="danger"
+          data-section="sql"
+          aria-describedby="hint"
+          onPointerEnter={onPointerEnter}
+        >
+          <Disclosure.Trigger>Toggle</Disclosure.Trigger>
+        </Disclosure>,
+      );
+      const root = getByTestId('Root');
+
+      expect(root).toHaveAttribute('id', 'sql-api');
+      expect(root).toHaveClass('custom');
+      expect(root).toHaveStyle({ marginTop: '3px' });
+      expect(root).toHaveAttribute('data-theme', 'danger');
+      expect(root).toHaveAttribute('data-section', 'sql');
+      expect(root).toHaveAttribute('aria-describedby', 'hint');
+
+      await userEvent.hover(root);
+
+      expect(onPointerEnter).toHaveBeenCalled();
+    });
+
+    it("merges the caller's tokens with transitionDuration, which wins", () => {
+      const { getByTestId } = renderWithRoot(
+        <Disclosure
+          qa="Root"
+          transitionDuration={120}
+          tokens={{ '$disclosure-transition': '1s', '$accent-size': '2px' }}
+        >
+          <Disclosure.Trigger>Toggle</Disclosure.Trigger>
+        </Disclosure>,
+      );
+      const root = getByTestId('Root');
+
+      expect(root.style.getPropertyValue('--disclosure-transition')).toBe(
+        '120ms',
+      );
+      expect(root.style.getPropertyValue('--accent-size')).toBe('2px');
+    });
+  });
 });
 
 describe('<Disclosure.Group />', () => {
@@ -450,6 +500,62 @@ describe('<Disclosure.Group />', () => {
     triggers.forEach((trigger) => {
       expect(trigger).toBeDisabled();
     });
+  });
+});
+
+describe('<Disclosure.Group /> and <Disclosure.Item /> DOM props', () => {
+  it('forwards base DOM and event props to the group root', async () => {
+    const onMouseEnter = vi.fn();
+    const { getByTestId } = renderWithRoot(
+      <Disclosure.Group
+        qa="Group"
+        id="settings"
+        data-section="settings"
+        tokens={{ '$accent-size': '2px' }}
+        onMouseEnter={onMouseEnter}
+      >
+        <Disclosure.Item id="one">
+          <Disclosure.Trigger>One</Disclosure.Trigger>
+        </Disclosure.Item>
+      </Disclosure.Group>,
+    );
+    const group = getByTestId('Group');
+
+    expect(group).toHaveAttribute('id', 'settings');
+    expect(group).toHaveAttribute('data-section', 'settings');
+    expect(group.style.getPropertyValue('--accent-size')).toBe('2px');
+
+    await userEvent.hover(group);
+
+    expect(onMouseEnter).toHaveBeenCalled();
+  });
+
+  it('keeps an item id as its group key, not its DOM id', async () => {
+    const onExpandedChange = vi.fn();
+    const onMouseEnter = vi.fn();
+    const { getByTestId, getByRole } = renderWithRoot(
+      <Disclosure.Group onExpandedChange={onExpandedChange}>
+        <Disclosure.Item
+          id="one"
+          qa="Item"
+          data-section="one"
+          onMouseEnter={onMouseEnter}
+        >
+          <Disclosure.Trigger>One</Disclosure.Trigger>
+        </Disclosure.Item>
+      </Disclosure.Group>,
+    );
+    const item = getByTestId('Item');
+
+    expect(item).not.toHaveAttribute('id');
+    expect(item).toHaveAttribute('data-key', 'one');
+    expect(item).toHaveAttribute('data-section', 'one');
+
+    await userEvent.hover(item);
+    await userEvent.click(getByRole('button', { name: 'One' }));
+
+    expect(onMouseEnter).toHaveBeenCalled();
+    expect(onExpandedChange).toHaveBeenCalledWith(new Set(['one']));
   });
 });
 

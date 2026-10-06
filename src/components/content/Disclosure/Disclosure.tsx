@@ -1,6 +1,7 @@
 import {
+  AllBaseProps,
   BaseProps,
-  BasePropsWithoutChildren,
+  filterBaseProps,
   OUTER_STYLES,
   OuterStyleProps,
   Styles,
@@ -61,7 +62,7 @@ interface DisclosureGroupContextValue {
 }
 
 export interface CubeDisclosureProps
-  extends BasePropsWithoutChildren,
+  extends Omit<AllBaseProps, 'children'>,
     OuterStyleProps {
   /** Controls expanded state in controlled mode */
   isExpanded?: boolean;
@@ -90,7 +91,9 @@ export interface CubeDisclosureContentProps extends BaseProps {
   children?: ReactNode;
 }
 
-export interface CubeDisclosureGroupProps extends BaseProps, OuterStyleProps {
+export interface CubeDisclosureGroupProps
+  extends AllBaseProps,
+    OuterStyleProps {
   /** Allow more than one disclosure to be open */
   allowsMultipleExpanded?: boolean;
   /** Controlled expanded keys */
@@ -109,9 +112,9 @@ export interface CubeDisclosureGroupProps extends BaseProps, OuterStyleProps {
 }
 
 export interface CubeDisclosureItemProps
-  extends Omit<BasePropsWithoutChildren, 'id'>,
+  extends Omit<AllBaseProps, 'id' | 'children'>,
     OuterStyleProps {
-  /** Unique identifier for the disclosure item in a group */
+  /** Unique identifier for the disclosure item in a group. It is the group key, not the DOM `id`. */
   id?: Key;
   /** Children content */
   children?: ReactNode;
@@ -267,8 +270,9 @@ const DisclosureComponent = forwardRef<HTMLDivElement, CubeDisclosureProps>(
       children,
       shape = 'default',
       transitionDuration,
-      qa,
       mods,
+      tokens,
+      theme,
       ...otherProps
     } = props;
 
@@ -342,20 +346,22 @@ const DisclosureComponent = forwardRef<HTMLDivElement, CubeDisclosureProps>(
       typeof children === 'function' ? children(stateContext) : children;
 
     // Declared on the root rather than the panel so both animations driven by
-    // it — the panel height and the trigger radius — share one duration.
-    const tokens =
+    // it — the panel height and the trigger radius — share one duration. It
+    // wins over a caller's token, so the CSS keeps pace with the unmount timer.
+    const finalTokens =
       transitionDuration != null
-        ? { '$disclosure-transition': `${transitionDuration}ms` }
-        : undefined;
+        ? { ...tokens, '$disclosure-transition': `${transitionDuration}ms` }
+        : tokens;
 
     return (
       <DisclosureContext.Provider value={contextValue}>
         <DisclosureRoot
+          {...filterBaseProps(otherProps, { eventProps: true })}
           ref={ref}
-          qa={qa}
           mods={finalMods}
           styles={outerStyles}
-          tokens={tokens}
+          tokens={finalTokens}
+          theme={theme}
         >
           {content}
         </DisclosureRoot>
@@ -470,9 +476,10 @@ const DisclosureGroup = forwardRef<HTMLDivElement, CubeDisclosureGroupProps>(
       triggerProps,
       contentStyles,
       children,
-      qa,
       mods,
       styles,
+      tokens,
+      theme,
       ...otherProps
     } = props;
 
@@ -499,7 +506,14 @@ const DisclosureGroup = forwardRef<HTMLDivElement, CubeDisclosureGroupProps>(
 
     return (
       <DisclosureGroupContext.Provider value={contextValue}>
-        <GroupRoot ref={ref} qa={qa} mods={mods} styles={finalStyles}>
+        <GroupRoot
+          {...filterBaseProps(otherProps, { eventProps: true })}
+          ref={ref}
+          mods={mods}
+          styles={finalStyles}
+          tokens={tokens}
+          theme={theme}
+        >
           {children}
         </GroupRoot>
       </DisclosureGroupContext.Provider>
@@ -521,9 +535,10 @@ const DisclosureItem = forwardRef<HTMLDivElement, CubeDisclosureItemProps>(
       defaultExpanded,
       onExpandedChange,
       shape = 'default',
-      qa,
       mods,
       styles,
+      tokens,
+      theme,
       ...otherProps
     } = props;
 
@@ -611,10 +626,12 @@ const DisclosureItem = forwardRef<HTMLDivElement, CubeDisclosureItemProps>(
     return (
       <DisclosureContext.Provider value={contextValue}>
         <DisclosureRoot
+          {...filterBaseProps(otherProps, { eventProps: true })}
           ref={ref}
-          qa={qa}
           mods={finalMods}
           styles={finalStyles}
+          tokens={tokens}
+          theme={theme}
           data-key={id}
         >
           {children}
