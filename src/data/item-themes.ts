@@ -1101,10 +1101,9 @@ export const CURRENT_ITEM_STYLES: Styles = {
     // Two mods say "someone above already did it", and both are set by exactly
     // one caller:
     //
-    //   `inherit-disabled`  `ItemAction`, when its disabled state came from the
-    //                       surrounding `ItemActionProvider` rather than its own
-    //                       prop — the host row already faded the color it paints
-    //                       from.
+    //   `inherit-disabled`  `ItemAction`, when it is disabled and so is the
+    //                       surrounding `ItemActionProvider` — the host row
+    //                       already faded the color it paints from.
     //   `inside-wrapper`    `ItemButton`, on the row it renders inside
     //                       `ActionsWrapper`. The wrapper reproduces this same
     //                       disabled color (see `ITEM_RESTING_COLOR_VARIANTS`) so
@@ -1281,9 +1280,11 @@ export const CURRENT_PRIMARY_STYLES: Styles = {
   // the same pin `DEFAULT_PRIMARY_STYLES.fill` documents. Without it the resting
   // rule emits no `background-image` at all, so hover has nothing to animate
   // from.
+  // A disabled chip can still hold focus (a tooltip Tab stop), and the overlay
+  // there would read as live, so it stays on the resting layer.
   fill: {
     '': '#current #black.0',
-    'hovered | focused': '#current #black.08',
+    '(hovered | focused) & !disabled': '#current #black.08',
     pressed: '#current #black.16',
   },
   // Disabled is expressed HERE and nowhere else, and that is the whole trick.

@@ -5,18 +5,37 @@ import { useFocus } from './interactions';
 
 let unfocusedRenders = 0;
 
-function Probe({ qa, countRenders }: { qa: string; countRenders?: boolean }) {
-  const { focusProps, isFocused } = useFocus({}, true);
+function Probe({
+  qa,
+  countRenders,
+  isDisabled,
+  isWrapped,
+}: {
+  qa: string;
+  countRenders?: boolean;
+  isDisabled?: boolean;
+  isWrapped?: boolean;
+}) {
+  const { focusProps, isFocused } = useFocus(true);
 
   if (countRenders) {
     unfocusedRenders++;
   }
 
-  return (
-    <button data-qa={qa} data-focused={isFocused || undefined} {...focusProps}>
+  const button = (
+    <button
+      data-qa={qa}
+      data-focused={isFocused || undefined}
+      disabled={isDisabled}
+      {...focusProps}
+    >
       {qa}
     </button>
   );
+
+  // A wrapper that comes and goes makes React replace the element, as a
+  // tooltip trigger added or dropped around a control does.
+  return isWrapped ? <span>{button}</span> : button;
 }
 
 describe('useFocus with onlyVisible', () => {
@@ -90,5 +109,35 @@ describe('useFocus with onlyVisible', () => {
     await user.keyboard('a');
 
     expect(unfocusedRenders).toBe(0);
+  });
+});
+
+describe('useFocus when its element loses focus', () => {
+  it('drops focus when its element is replaced without a blur', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(<Probe qa="only" />);
+
+    await user.tab();
+    expect(screen.getByTestId('only')).toHaveAttribute('data-focused');
+
+    rerender(<Probe qa="only" isWrapped />);
+
+    expect(document.body).toHaveFocus();
+    expect(screen.getByTestId('only')).not.toHaveAttribute('data-focused');
+  });
+
+  it('drops focus when its element is natively disabled', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(<Probe qa="only" />);
+
+    await user.tab();
+    rerender(<Probe qa="only" isDisabled />);
+    await act(async () => {});
+
+    // Browsers move focus off a disabled element without a blur React sees;
+    // React Aria watches the attribute and reports it. jsdom keeps focus, so
+    // the element staying unmarked once enabled is what shows the blur came.
+    rerender(<Probe qa="only" />);
+    expect(screen.getByTestId('only')).not.toHaveAttribute('data-focused');
   });
 });

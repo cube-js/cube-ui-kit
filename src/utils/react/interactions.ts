@@ -2,22 +2,37 @@ import {
   isFocusVisible as getIsFocusVisible,
   useFocusVisibleListener,
 } from '@react-aria/interactions';
+import { getActiveElement, getOwnerDocument } from '@react-aria/utils';
 import { useRef, useState } from 'react';
 import { useFocus as reactAriaUseFocus } from 'react-aria';
 
-export function useFocus(
-  { isDisabled }: { isDisabled?: boolean },
-  onlyVisible = false,
-) {
+import { useLayoutEffect } from './useLayoutEffect';
+
+/**
+ * Whether the element holds focus, disabled or not: a control that keeps
+ * focus while `aria-disabled` still shows where focus is.
+ */
+export function useFocus(onlyVisible = false) {
   let [isFocused, setIsFocused] = useState(false);
   let [isFocusVisible, setIsFocusVisible] = useState(false);
 
-  // React-aria detaches focus handlers when disabled, so blur events
-  // aren't captured. Clear stale focus synchronously during render
-  // to avoid a one-frame glitch (useEffect would be too late).
-  if (isDisabled && isFocused) {
-    setIsFocused(false);
-  }
+  // No blur reaches React when the focused element is replaced (a tooltip
+  // wrapper added or dropped), disabled through a `fieldset` or stripped of its
+  // tabIndex. So a focus the element no longer holds is dropped after each
+  // render of this control and, when the change came from elsewhere without
+  // re-rendering it, on the next key or pointer press React Aria reports (keys
+  // typed in a text field don't count).
+  let focusedElementRef = useRef<Element | null>(null);
+
+  let dropLostFocus = () => {
+    let element = focusedElementRef.current;
+
+    // React Aria's own check, which also looks inside a shadow root.
+    if (element && element !== getActiveElement(getOwnerDocument(element))) {
+      focusedElementRef.current = null;
+      setIsFocused(false);
+    }
+  };
 
   // Keep the listener's value, not the raw global modality: react-aria ignores keys
   // typed in a text input, so focus moved after typing there shows no ring.
@@ -29,6 +44,7 @@ export function useFocus(
   useFocusVisibleListener(
     (visible) => {
       focusVisibleRef.current = visible;
+      dropLostFocus();
 
       if (isListening) {
         setIsFocusVisible(visible);
@@ -37,8 +53,17 @@ export function useFocus(
     [isListening],
   );
 
+  useLayoutEffect(() => {
+    dropLostFocus();
+  });
+
   let { focusProps } = reactAriaUseFocus({
-    isDisabled,
+    onFocus: (event) => {
+      focusedElementRef.current = event.target;
+    },
+    onBlur: () => {
+      focusedElementRef.current = null;
+    },
     onFocusChange: (focused) => {
       setIsFocused(focused);
 

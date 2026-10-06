@@ -189,7 +189,7 @@ function Checkbox(
     [groupState, labelStyles],
   );
 
-  let { isFocused, focusProps } = useFocus({ isDisabled }, true);
+  let { isFocused, focusProps } = useFocus(true);
   let { hoverProps, isHovered } = useHover({ isDisabled });
 
   let inputRef = useRef(null);

@@ -1,4 +1,4 @@
-import { render, renderWithRoot, screen } from '../../../test';
+import { render, renderWithRoot, screen, userEvent } from '../../../test';
 import { Disclosure } from '../../content/Disclosure/Disclosure';
 
 import { ItemButton } from './ItemButton';
@@ -136,5 +136,47 @@ describe('<ItemButton /> props meant for useAction', () => {
     expect(screen.getByTestId('Labelled')).not.toHaveAttribute('label');
 
     warn.mockRestore();
+  });
+});
+
+describe('<ItemButton /> disabled', () => {
+  it('shows its focus ring while disabled with a tooltip', async () => {
+    renderWithRoot(
+      <ItemButton
+        isDisabled
+        type="outline"
+        tooltip="Not enough permissions"
+        qa="Locked"
+      >
+        Locked
+      </ItemButton>,
+    );
+
+    // The tooltip keeps it a Tab stop, so the ring has to show where focus is.
+    // The default `item` type has no ring: rows show focus with their fill.
+    await userEvent.tab();
+
+    const button = screen.getByTestId('Locked');
+
+    expect(button).toHaveFocus();
+    expect(button).toHaveAttribute('aria-disabled', 'true');
+    expect(button).toHaveAttribute('data-focused');
+  });
+
+  it('does not click its container with Enter while disabled with a tooltip', async () => {
+    const onClick = vi.fn();
+
+    renderWithRoot(
+      <div onClick={onClick}>
+        <ItemButton isDisabled tooltip="Not enough permissions">
+          Locked
+        </ItemButton>
+      </div>,
+    );
+
+    await userEvent.tab();
+    await userEvent.keyboard('{Enter}');
+
+    expect(onClick).not.toHaveBeenCalled();
   });
 });

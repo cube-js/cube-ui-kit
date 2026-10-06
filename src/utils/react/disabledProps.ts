@@ -1,4 +1,4 @@
-import type { SyntheticEvent } from 'react';
+import type { KeyboardEvent, SyntheticEvent } from 'react';
 import type { Props } from '../../props';
 
 /**
@@ -37,15 +37,28 @@ const ACTIVATION_EVENT_PROPS = [
 ] as const;
 
 function preventActivation(event: SyntheticEvent) {
-  // Without the native attribute a click (or Enter/Space, which the browser
-  // turns into a click) still runs the default action and would submit the
-  // surrounding form.
+  // Without the native attribute a click still runs the default action and
+  // would submit the surrounding form or follow the link.
   event.preventDefault();
+}
+
+function preventKeyActivation(event: KeyboardEvent) {
+  // Enter and Space on the focused element make the browser click it, and that
+  // click would reach the ancestors' handlers. Keys from a focused descendant
+  // are left alone.
+  if (
+    event.target === event.currentTarget &&
+    (event.key === 'Enter' || event.key === ' ')
+  ) {
+    event.preventDefault();
+  }
 }
 
 const INERT_PROPS: Props = {
   'aria-disabled': true,
   onClick: preventActivation,
+  onKeyDown: preventKeyActivation,
+  onKeyUp: preventKeyActivation,
 };
 
 const EMPTY_PROPS: Props = {};
@@ -56,7 +69,8 @@ export interface DisabledElementOptions {
   /**
    * Whether the element has to keep receiving pointer and focus events while
    * disabled. Set it when the element hosts a tooltip: the tooltip is there to
-   * explain why the element is unavailable, so hover has to reach it.
+   * explain why the element is unavailable, so hover has to reach it. Or when
+   * it has to keep focus, as a loading action does while a keyboard press runs.
    */
   keepEvents?: boolean;
   /** The tag the component renders. */
@@ -68,7 +82,8 @@ export interface DisabledElementProps {
   isNativelyDisabled: boolean;
   /**
    * Whether the element is disabled through `aria-disabled` only and therefore
-   * has to be kept inert by hand.
+   * has to be kept inert by hand: spread `inertProps` and drop the activation
+   * handlers with `omitActivationEventProps`.
    */
   isInert: boolean;
   /** Props that mark the element disabled and inert. Spread them last. */

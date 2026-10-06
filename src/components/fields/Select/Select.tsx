@@ -452,7 +452,7 @@ function Select<T extends object>(
     containerPadding: containerPadding,
   });
 
-  let { isFocused, focusProps } = useFocus({ isDisabled }, true);
+  let { isFocused, focusProps } = useFocus(true);
   let { hoverProps, isHovered } = useHover({ isDisabled });
 
   // Get props for the button based on the trigger props from useSelect
@@ -897,7 +897,7 @@ function Option({ item, state, styles, shouldUseVirtualFocus, size }) {
 
   // Handle focus events, so we can apply highlighted
   // style to the focused option
-  let { isFocused, focusProps } = useFocus({ isDisabled });
+  let { isFocused, focusProps } = useFocus();
 
   // Filter out service props - all remaining props can be passed to Item
   const filteredItemProps = filterCollectionItemProps(item.props);

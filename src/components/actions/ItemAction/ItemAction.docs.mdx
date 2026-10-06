@@ -26,9 +26,9 @@ Each host re-exports it as its own `.Action` — `Item.Action`, `ItemButton.Acti
 - **`icon`** `ReactNode | 'checkmark'` — Icon element or `'checkmark'` for a selection indicator
 - **`type`** `'primary' | 'outline' | 'clear'` (default: `'clear'`) — Visual type. `clear` is borderless and paints nothing at rest, so a row full of actions does not read as busy.
 - **`theme`** `'current' | 'default' | 'danger' | 'success' | 'warning' | 'note' | 'special'` (default: `'current'`) — Color theme. `current` derives every color from the inherited `currentcolor`, so the action tracks whatever row hosts it without being told the row's type or theme. Name any other theme to have the action paint itself instead.
-- **`isLoading`** `boolean` (default: `false`) — Shows loading spinner
+- **`isLoading`** `boolean` (default: `false`) — Shows a loading spinner in the icon slot and disables the action, like `Button`, so a second press does not run it again. `isDisabled={false}` does not re-enable a loading action.
 - **`isSelected`** `boolean` (default: `false`) — Selected state (works with `icon="checkmark"`)
-- **`isDisabled`** `boolean` (default: `false`) — Disables the action. Inherits from parent; use `isDisabled={false}` to override.
+- **`isDisabled`** `boolean` (default: `false`) — Disables the action. Inherits from parent; use `isDisabled={false}` to override. Which disabled actions keyboard users can still reach is covered under Accessibility.
 - **`tooltip`** `string | object` — Tooltip content (shown for icon-only buttons)
 - **`onPress`** `() => void` — Press event handler
 
@@ -43,6 +43,14 @@ Supports [Base properties](/docs/getting-started-base-properties--docs).
 ```jsx
 <ItemAction icon={<IconEdit />} tooltip="Edit" onPress={() => edit()} />
 <ItemAction icon={<IconTrash />} tooltip="Delete" theme="danger" />
+```
+
+### Loading action
+
+`isLoading` replaces the icon with a spinner and disables the action until the work ends, so there is no need to pair it with `isDisabled`.
+
+```jsx
+<ItemAction icon={<IconRefresh />} tooltip="Refresh" isLoading={isFetching} onPress={refetch} />
 ```
 
 ### Checkmark action
@@ -67,3 +75,23 @@ Supports [Base properties](/docs/getting-started-base-properties--docs).
   Document.pdf
 </ItemButton>
 ```
+
+## Accessibility
+
+### Keyboard Navigation
+
+- `Tab` – Moves focus to the action.
+- `Space` / `Enter` – Activates the action.
+
+A disabled or loading action stays reachable only where keyboard users need it:
+
+- As on `Button`, a disabled action leaves the tab order, unless it is an icon-only action with a tooltip that disables itself. That one stays a Tab stop and shows its focus ring, so keyboard users can read the tooltip.
+- Inside a disabled parent, every disabled button action leaves the tab order.
+- A disabled link action (`to`) stays a Tab stop, even inside a disabled parent.
+- A loading action keeps focus it already has, and its focus ring, so a keyboard press keeps its place, but Tab skips it until loading ends.
+- A disabled or loading action that holds focus ignores the keys that would open a `MenuTrigger` menu.
+
+### ARIA Properties
+
+- `aria-label` – Taken from a plain-text `tooltip` when none is passed.
+- `aria-disabled` – Announces the disabled state where the native `disabled` attribute would drop focus or hover: on a loading action, an icon-only action with a tooltip that disables itself, and a link action. The action is kept inert: activation handlers are dropped and clicks do nothing.

@@ -34,7 +34,11 @@ import {
 } from '../../../data/item-themes';
 import { CheckIcon } from '../../../icons/CheckIcon';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
-import { mergeProps } from '../../../utils/react';
+import {
+  getDisabledElementProps,
+  mergeProps,
+  omitActivationEventProps,
+} from '../../../utils/react';
 import { TooltipProvider } from '../../overlays/Tooltip/TooltipProvider';
 import { useItemActionContext } from '../ItemActionContext';
 import { CubeUseActionProps, useAction } from '../use-action';
@@ -200,14 +204,17 @@ export const ItemAction = forwardRef(function ItemAction(
     ...rest
   } = allProps;
 
-  // Inherit disabled state from context, but allow local override
-  const isDisabled = isDisabledProp ?? contextIsDisabled;
+  // Inherit disabled state from context, but allow local override. Loading
+  // always disables, as on `Button`: a second press while the first is still
+  // running would run the action again, so not even `isDisabled={false}`
+  // re-enables a loading action.
+  const isDisabled = isLoading || (isDisabledProp ?? contextIsDisabled);
 
-  // Whether that disabled state came from the host row rather than this action's
-  // own prop. The `current` theme paints from the inherited color, and a
-  // disabled host has already faded it — so fading a second time washes the
-  // label out. See `CURRENT_ITEM_STYLES.color`.
-  const isDisabledInherited = isDisabledProp == null && !!contextIsDisabled;
+  // The host row is disabled too. The `current` theme paints from the inherited
+  // color, which a disabled host has already faded, so fading a second time
+  // washes the label out (see `CURRENT_ITEM_STYLES.color`). And like a disabled
+  // fieldset, a disabled host leaves its button actions out of the tab order.
+  const isDisabledInherited = !!contextIsDisabled && isDisabled;
 
   // Determine if we should show a checkmark
   const hasCheckmark = icon === 'checkmark';
@@ -228,7 +235,8 @@ export const ItemAction = forwardRef(function ItemAction(
     loading: isLoading,
     'has-label': !!children,
     context: !!contextType,
-    'has-icon': !!icon,
+    // The spinner takes the icon slot, so it needs the icon's padding.
+    'has-icon': !!finalIcon,
     'inherit-disabled': isDisabledInherited,
     ...mods,
   };
@@ -244,8 +252,11 @@ export const ItemAction = forwardRef(function ItemAction(
         ? tooltip.title
         : undefined);
 
-  // Call useAction hook
-  const { actionProps } = useAction(
+  // `isDisabled` is dropped from the element: tasty would turn it into the
+  // native `disabled` attribute, which `getDisabledElementProps` decides below.
+  const {
+    actionProps: { isDisabled: _isDisabled, ...actionProps },
+  } = useAction(
     {
       ...rest,
       isDisabled,
@@ -256,11 +267,9 @@ export const ItemAction = forwardRef(function ItemAction(
     ref,
   );
 
-  // Set tabIndex when in context
-  const finalTabIndex = disableActionsFocus ? -1 : rest.tabIndex;
-
-  // Determine if we should show tooltip (icon-only buttons)
-  const showTooltip = !children && tooltip;
+  // Set tabIndex when in context. A loading action keeps focus it already has,
+  // but Tab skips it until loading ends, tooltip or not.
+  const finalTabIndex = disableActionsFocus || isLoading ? -1 : rest.tabIndex;
 
   // Extract tooltip content and props
   const tooltipContent =
@@ -273,6 +282,25 @@ export const ItemAction = forwardRef(function ItemAction(
   const { title: _title, ...tooltipProps } =
     typeof tooltip === 'object' ? tooltip : {};
 
+  // Only icon-only actions show their tooltip.
+  const hasTooltip = !children && !!tooltipContent;
+
+  // Native `disabled` drops focus. A loading action keeps it, so a keyboard
+  // press doesn't lose its place. So does an action that disables itself while
+  // showing a tooltip, often its only label, which keyboard users reach and read
+  // as on `Button`. One whose host is disabled too stays native.
+  const { isNativelyDisabled, isInert, inertProps } = getDisabledElementProps({
+    isDisabled,
+    keepEvents: isLoading || (hasTooltip && !isDisabledInherited),
+    as: typeof actionProps.as === 'string' ? actionProps.as : undefined,
+  });
+
+  // Without the native attribute, handlers a parent passed in (a `MenuTrigger`'s
+  // `onKeyDown`) would still activate the action.
+  const elementProps = isInert
+    ? omitActivationEventProps(actionProps)
+    : actionProps;
+
   const finalType = type;
 
   // Render function that accepts tooltip trigger props and ref
@@ -282,7 +310,7 @@ export const ItemAction = forwardRef(function ItemAction(
   ) => {
     // Merge tooltip ref with actionProps if provided
     const mergedProps = tooltipRef
-      ? mergeProps(actionProps, tooltipTriggerProps || {}, {
+      ? mergeProps(elementProps, tooltipTriggerProps || {}, inertProps, {
           ref: (element: HTMLElement | null) => {
             // Set the tooltip ref
             if (tooltipRef) {
@@ -299,11 +327,12 @@ export const ItemAction = forwardRef(function ItemAction(
             }
           },
         })
-      : mergeProps(actionProps, tooltipTriggerProps || {});
+      : mergeProps(elementProps, tooltipTriggerProps || {}, inertProps);
 
     return (
       <ItemActionElement
         {...mergedProps}
+        disabled={isNativelyDisabled}
         variant={`${theme}.${finalType}` as ItemActionVariant}
         data-theme={theme}
         data-type={finalType}
@@ -317,7 +346,7 @@ export const ItemAction = forwardRef(function ItemAction(
   };
 
   // Wrap with tooltip if needed
-  if (showTooltip && tooltipContent) {
+  if (hasTooltip) {
     return (
       <TooltipProvider title={tooltipContent} {...tooltipProps}>
         {(triggerProps, tooltipRef) => renderButton(triggerProps, tooltipRef)}

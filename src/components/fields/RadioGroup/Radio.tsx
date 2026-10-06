@@ -388,10 +388,7 @@ function Radio(props: CubeRadioProps, ref) {
   let effectiveIsDisabled =
     baseIsDisabled === true || (isLoadingButton && isDisabled !== false);
 
-  let { isFocused, focusProps } = useFocus(
-    { isDisabled: effectiveIsDisabled },
-    true,
-  );
+  let { isFocused, focusProps } = useFocus(true);
   let { hoverProps, isHovered } = useHover({ isDisabled: effectiveIsDisabled });
 
   // A button radio hands `tooltip` to its `Item`, which resolves it around the

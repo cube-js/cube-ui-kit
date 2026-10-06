@@ -48,7 +48,7 @@ function ActiveZone(
   const domRef = useFocusableRef(ref);
 
   let { hoverProps, isHovered } = useHover({ isDisabled });
-  let { focusProps, isFocused } = useFocus({ isDisabled });
+  let { focusProps, isFocused } = useFocus();
   let { focusableProps } = useFocusable(props, domRef);
 
   return (
