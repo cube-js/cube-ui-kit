@@ -171,7 +171,7 @@ export const formPropNames = new Set([
   'encType',
   'method',
   'target',
-]);
+] as const);
 
 export interface CubeFormProps<T extends FieldTypes = FieldTypes>
   extends FormBaseProps,
