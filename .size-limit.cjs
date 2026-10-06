@@ -318,7 +318,18 @@ module.exports = [
     // column `cellStyles` wrapper through tasty, the Tabs strip observer, and
     // the `label` deprecation warnings. Button moved +0.1% to 129.48 KiB
     // (about 132,588 B), inside its budget. Allow 614 kB, about 645 B headroom.
-    limit: '614kB',
+    //
+    // Cognitive complexity refactors (CUB-5348): 619,150 B on a fresh local
+    // build against main's 613,630 B at 3864acdb, also fresh: +5,520 B. CI
+    // measured the branch on the previous main at 604.23 KiB (about 618,731 B),
+    // consistent with that. 3,844 B of it is `ItemTable` and its six new hooks
+    // compiling: the render-time `layoutRef` write that kept it out of React
+    // Compiler is gone, and the same build with those files opted out measures
+    // 615,306 B. The other 1,676 B is the split itself (TagInput, Item,
+    // ItemTable, TableView into more modules and functions); with the compiler
+    // off on both sides the gap is 1,429 B. Button shrinks by 368 B to
+    // 133,004 B. Allow 620 kB, about 850 B headroom.
+    limit: '620kB',
   },
   {
     name: 'Tree shaking (just a Button)',

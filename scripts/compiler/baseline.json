@@ -284,7 +284,7 @@
     "optOuts": 0
   },
   "src/components/content/Item/Item.tsx": {
-    "compiled": 1,
+    "compiled": 3,
     "diagnostics": {},
     "optOuts": 0
   },
@@ -405,7 +405,7 @@
     "optOuts": 0
   },
   "src/components/content/Result/Result.tsx": {
-    "compiled": 1,
+    "compiled": 2,
     "diagnostics": {},
     "optOuts": 0
   },
@@ -471,10 +471,8 @@
     "optOuts": 0
   },
   "src/components/data/ItemTable/ItemTable.tsx": {
-    "compiled": 0,
-    "diagnostics": {
-      "Refs": 1
-    },
+    "compiled": 1,
+    "diagnostics": {},
     "optOuts": 0
   },
   "src/components/data/ItemTable/ItemTableBulkBar.tsx": {
@@ -499,6 +497,36 @@
     "diagnostics": {},
     "optOuts": 0
   },
+  "src/components/data/ItemTable/use-item-table-column-widths.ts": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/data/ItemTable/use-item-table-drag-drop.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/data/ItemTable/use-item-table-pagination.ts": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/data/ItemTable/use-item-table-selection.ts": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/data/ItemTable/use-item-table-sort.ts": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/data/ItemTable/use-item-table-tree-model.ts": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
   "src/components/data/TableBase/ColumnResizer.tsx": {
     "compiled": 1,
     "diagnostics": {},
@@ -515,10 +543,15 @@
     "optOuts": 0
   },
   "src/components/data/TableBase/TableView.tsx": {
-    "compiled": 2,
+    "compiled": 1,
     "diagnostics": {
       "Suppression": 2
     },
+    "optOuts": 0
+  },
+  "src/components/data/TableBase/TreeGridTable.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
     "optOuts": 0
   },
   "src/components/data/TableBase/use-cell-selection.ts": {
@@ -526,6 +559,11 @@
     "diagnostics": {
       "Todo": 1
     },
+    "optOuts": 0
+  },
+  "src/components/data/TableBase/use-column-menu.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
     "optOuts": 0
   },
   "src/components/data/TableBase/use-column-order.ts": {
@@ -871,12 +909,22 @@
     "optOuts": 0
   },
   "src/components/fields/TagInput/TagInput.tsx": {
-    "compiled": 1,
+    "compiled": 3,
     "diagnostics": {},
     "optOuts": 0
   },
   "src/components/fields/TagInput/TagList.tsx": {
     "compiled": 2,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/fields/TagInput/useActiveOption.ts": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/fields/TagInput/useTagError.ts": {
+    "compiled": 1,
     "diagnostics": {},
     "optOuts": 0
   },
