@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.190.3
+
+### Patch Changes
+
+- [#1472](https://github.com/cube-js/cube-ui-kit/pull/1472) [`225b7e41`](https://github.com/cube-js/cube-ui-kit/commit/225b7e41f4a6720b4c19acc28e5910e4972f7d16) Thanks [@tenphi](https://github.com/tenphi)! - React Compiler now optimizes `ItemTable`, which used to skip compilation because it wrote a ref during render. With client pagination (the default), changing `data` in place no longer updates the table, which it already did not while rows were sorted, searched or shown as a tree: pass a new array instead.
+
 ## 0.190.2
 
 ### Patch Changes
