@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
-import { useEvent } from '../../../_internal';
+import { useEvent } from '../../../_internal/hooks/use-event';
 
 export interface TagError {
   /** New for every rejection, so a repeated one is announced again. */
