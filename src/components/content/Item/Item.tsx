@@ -901,8 +901,8 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
   const hasCheckmark = iconProp === 'checkmark';
 
   const { sizeMod, sizeToken } = resolveItemSize(size);
-  // Built before the hooks below. Spread in the JSX, `sizeToken` kept React
-  // Compiler from memoizing the mods, slots and hotkeys derived in between.
+  // Built outside `renderItemElement`: read inside that closure, `sizeToken`
+  // kept React Compiler from memoizing the mods, slots and hotkeys before it.
   const finalTokens = { ...tokens, ...(sizeToken ? { $size: sizeToken } : {}) };
 
   // Base mods for icon resolution (without icon-dependent mods)

@@ -164,6 +164,8 @@ function startLine(file, { offset, line }) {
   while (i >= 0 && isSpace(bytes[i])) i--;
 
   // `(…): Type =>`: the parameter list closes at the `)` before the colon.
+  // Prettier's `arrowParens: "always"` rules out a bare `x =>` in `src/`,
+  // which this would walk past.
   if (bytes[i] !== CLOSE_PAREN) {
     while (
       i >= 0 &&

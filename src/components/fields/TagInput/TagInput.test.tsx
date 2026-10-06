@@ -889,10 +889,13 @@ describe('<TagInput />', () => {
       expect(getActiveDescendant(input)).toHaveTextContent('read');
 
       await userEvent.keyboard('{Escape}');
+      expect(input).toHaveAttribute('aria-expanded', 'false');
 
       // Closed, Home and End move the caret as in any input.
-      expect(fireEvent.keyDown(input, { key: 'Home' })).toBe(true);
-      expect(fireEvent.keyDown(input, { key: 'End' })).toBe(true);
+      await userEvent.keyboard('{Home}');
+      expect((input as HTMLInputElement).selectionStart).toBe(0);
+      await userEvent.keyboard('{End}');
+      expect((input as HTMLInputElement).selectionStart).toBe(2);
     });
   });
 

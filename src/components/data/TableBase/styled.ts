@@ -974,9 +974,9 @@ export const TableTreeTogglePlaceholder = tasty({
 
 /**
  * The header cell's content. `Item` lives INSIDE the `<th>`, never as the `<th>`
- * itself — it emits `aria-selected` (in `renderItemElement`, unless the row sets
- * `aria-pressed`), which on a `columnheader` would claim the column is selected
- * rather than sorted.
+ * itself — it emits `aria-selected` whenever `isSelected` is set (in
+ * `renderItemElement`, unless the row sets `aria-pressed`), which on a
+ * `columnheader` would claim the column is selected rather than sorted.
  *
  * Keeping it inside also means the `<th>` owns the interaction fill while
  * `Item` contributes only layout, and — the real prize — `Item`'s `Actions`
