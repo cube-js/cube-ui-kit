@@ -26,6 +26,12 @@ export type AutoTooltipValue =
 export interface UseAutoTooltipOptions {
   tooltip: AutoTooltipValue | undefined;
   children: ReactNode;
+  /**
+   * Secondary text that truncates alongside the label, such as `Item`'s
+   * description. A string description is measured with the label, and the auto
+   * tooltip shows whichever of the two is cut off.
+   */
+  description?: ReactNode;
   labelProps?: Props;
   isDynamicLabel?: boolean;
   /**
@@ -34,6 +40,8 @@ export interface UseAutoTooltipOptions {
    * over here rather than attaching a second one.
    */
   labelRef?: Ref<HTMLElement>;
+  /** The caller's own ref to the description element, as `labelRef`. */
+  descriptionRef?: Ref<HTMLElement>;
 }
 
 function assignRef(ref: unknown, element: HTMLElement | null) {
@@ -75,15 +83,11 @@ function queueOverflowCheck(check: () => void) {
 }
 
 /**
- * Whether the tooltip detects label overflow on its own. Overflow detection
- * measures text, so it needs a string label.
+ * Whether the tooltip value asks to detect overflow on its own. What it
+ * measures is decided separately: overflow detection measures text, so only a
+ * string label or description takes part.
  */
-function isAutoTooltip(
-  tooltip: AutoTooltipValue | undefined,
-  children: ReactNode,
-): boolean {
-  if (typeof children !== 'string') return false;
-
+function allowsAutoTooltip(tooltip: AutoTooltipValue | undefined): boolean {
   // Boolean true enables auto overflow detection
   if (tooltip === true) return true;
   if (typeof tooltip === 'object') {
@@ -98,6 +102,34 @@ function isAutoTooltip(
   return false;
 }
 
+/** Which measured parts are cut off. */
+type Truncation = 'none' | 'label' | 'description' | 'both';
+
+/**
+ * What the auto tooltip shows: the text that is cut off, and nothing the row
+ * already shows in full. When both parts are, the description goes below the
+ * label as the tooltip's `Description`, styled as secondary text.
+ */
+function getAutoTitle(
+  children: ReactNode,
+  description: ReactNode,
+  truncation: Truncation,
+): ReactNode {
+  if (truncation === 'description') return description;
+  if (truncation === 'both') {
+    return (
+      <>
+        {children}
+        <div data-element="Description">{description}</div>
+      </>
+    );
+  }
+
+  // The label is cut off, or nothing is and the tooltip stays mounted but
+  // disabled for a dynamic label.
+  return children;
+}
+
 /**
  * The `TooltipProvider` props a tooltip resolves to, or `null` when no tooltip
  * is rendered at all.
@@ -105,11 +137,12 @@ function isAutoTooltip(
 function resolveTooltip({
   tooltip,
   children,
+  description,
   labelProps,
   isDynamicLabel,
-  isLabelOverflowed,
-}: Omit<UseAutoTooltipOptions, 'labelRef'> & {
-  isLabelOverflowed: boolean;
+  truncation,
+}: Omit<UseAutoTooltipOptions, 'labelRef' | 'descriptionRef'> & {
+  truncation: Truncation;
 }): Omit<CubeTooltipProviderProps, 'children'> | null {
   if (!tooltip) return null;
 
@@ -118,16 +151,18 @@ function resolveTooltip({
     return { title: tooltip };
   }
 
+  const isOverflowed = truncation !== 'none';
+  const autoTitle = getAutoTitle(children, description, truncation);
   const hasAutoContent =
-    !!(children || labelProps) && (isLabelOverflowed || isDynamicLabel);
+    !!(autoTitle || labelProps) && (isOverflowed || isDynamicLabel);
 
   // Boolean tooltip - auto tooltip on overflow
   if (tooltip === true) {
     if (!hasAutoContent) return null;
 
     return {
-      title: children,
-      isDisabled: !isLabelOverflowed && isDynamicLabel,
+      title: autoTitle,
+      isDisabled: !isOverflowed && isDynamicLabel,
     };
   }
 
@@ -143,29 +178,85 @@ function resolveTooltip({
   if (!hasAutoContent) return null;
 
   return {
-    title: tooltipProps.title ?? children,
+    title: tooltipProps.title ?? autoTitle,
     isDisabled:
-      !isLabelOverflowed && isDynamicLabel && tooltipProps.isDisabled !== true,
+      !isOverflowed && isDynamicLabel && tooltipProps.isDisabled !== true,
     ...tooltipProps,
   };
+}
+
+/** Whether a measured node's text is cut off. */
+function isTruncated(element: HTMLElement | null): boolean {
+  return !!element && element.scrollWidth > element.clientWidth;
+}
+
+function measureTruncation(
+  label: HTMLElement | null,
+  description: HTMLElement | null,
+): Truncation {
+  const isLabelCut = isTruncated(label);
+  const isDescriptionCut = isTruncated(description);
+
+  if (isLabelCut) return isDescriptionCut ? 'both' : 'label';
+
+  return isDescriptionCut ? 'description' : 'none';
+}
+
+interface MeasuredNodes {
+  label: HTMLElement | null;
+  description: HTMLElement | null;
+  observer: ResizeObserver | null;
+}
+
+/**
+ * Points the hook's one observer at the nodes now measured, so a row with a
+ * label and a description still costs a single observer. It re-points by
+ * disconnecting and observing again rather than with `unobserve`: those are
+ * the only two calls the hook has ever made, so a consumer's test stub that
+ * implements just them keeps working.
+ */
+function observeMeasuredNodes(measured: MeasuredNodes, onResize: () => void) {
+  try {
+    measured.observer?.disconnect();
+  } catch {
+    // do nothing
+  }
+
+  const { label, description } = measured;
+
+  if (!label && !description) return;
+
+  measured.observer ??= new ResizeObserver(() => onResize());
+
+  if (label) measured.observer.observe(label);
+  if (description) measured.observer.observe(description);
 }
 
 export function useAutoTooltip({
   tooltip,
   children,
+  description,
   labelProps,
   isDynamicLabel = false,
   labelRef: labelRefOption,
+  descriptionRef: descriptionRefOption,
 }: UseAutoTooltipOptions) {
-  const isAutoTooltipEnabled = isAutoTooltip(tooltip, children);
+  const allowsAuto = allowsAutoTooltip(tooltip);
+  const isLabelMeasured = allowsAuto && typeof children === 'string';
+  const isDescriptionMeasured = allowsAuto && typeof description === 'string';
+  const isAutoTooltipEnabled = isLabelMeasured || isDescriptionMeasured;
 
-  // Track label overflow for auto tooltip (only when enabled)
+  // Track overflow for auto tooltip (only when enabled)
   const externalLabelRef = (labelProps as any)?.ref;
-  const [isLabelOverflowed, setIsLabelOverflowed] = useState(false);
-  const elementRef = useRef<HTMLElement | null>(null);
-  const resizeObserverRef = useRef<ResizeObserver | null>(null);
+  const [truncation, setTruncation] = useState<Truncation>('none');
+  // The nodes being measured, and the one observer watching all of them.
+  const measuredRef = useRef<MeasuredNodes>({
+    label: null,
+    description: null,
+    observer: null,
+  });
 
-  const verdictRef = useRef(false);
+  const verdictRef = useRef<Truncation>('none');
 
   /**
    * Sets the verdict only when it changes. React skips an unchanged `setState`
@@ -175,19 +266,19 @@ export function useAutoTooltip({
    * Mirroring the verdict makes every unchanged write free, whatever else the
    * component has queued.
    */
-  const setVerdict = useCallback((value: boolean) => {
+  const setVerdict = useCallback((value: Truncation) => {
     if (verdictRef.current === value) return;
 
     verdictRef.current = value;
-    setIsLabelOverflowed(value);
+    setTruncation(value);
   }, []);
 
-  const checkLabelOverflow = useCallback(() => {
-    const label = elementRef.current;
+  const checkOverflow = useCallback(() => {
+    const { label, description } = measuredRef.current;
 
-    if (!label) return;
+    if (!label && !description) return;
 
-    setVerdict(label.scrollWidth > label.clientWidth);
+    setVerdict(measureTruncation(label, description));
   }, [setVerdict]);
 
   /**
@@ -207,9 +298,9 @@ export function useAutoTooltip({
    * Microtasks do not depend on a frame. See `runOverflowChecks` for how the
    * verdicts are applied.
    */
-  const scheduleLabelOverflowCheck = useCallback(() => {
-    queueOverflowCheck(checkLabelOverflow);
-  }, [checkLabelOverflow]);
+  const scheduleOverflowCheck = useCallback(() => {
+    queueOverflowCheck(checkOverflow);
+  }, [checkOverflow]);
 
   useEffect(() => {
     if (isAutoTooltipEnabled) {
@@ -219,10 +310,11 @@ export function useAutoTooltip({
       // that commits each row on its own (ag-grid-react wraps every new row in
       // `flushSync`) then gains one per row, and React throws "Maximum update
       // depth exceeded" once the count passes 50. The queued check runs after
-      // the commit and still before paint. The callback ref has usually queued
-      // it already, so this call is absorbed. It matters when the flag flips on
-      // for a label whose ref did not re-attach.
-      scheduleLabelOverflowCheck();
+      // the commit and still before paint. The callback refs have usually
+      // queued it already, so this call is absorbed. It matters when what is
+      // measured changes without a node re-attaching — the description stops
+      // being a string, say, while the label stays.
+      scheduleOverflowCheck();
 
       return;
     }
@@ -233,39 +325,28 @@ export function useAutoTooltip({
     // auto tooltips are on, and therefore keeps the last verdict — and only
     // attaches the new one if the label still exists. When `children` stops
     // being a string the label unmounts, so the new callback never runs and a
-    // stale `true` would keep an auto tooltip mounted over content that is no
+    // stale verdict would keep an auto tooltip mounted over content that is no
     // longer text. That is the default `Button` path, where `tooltip` is `true`.
-    setVerdict(false);
-  }, [isAutoTooltipEnabled, scheduleLabelOverflowCheck, setVerdict]);
+    setVerdict('none');
+  }, [
+    isAutoTooltipEnabled,
+    isLabelMeasured,
+    isDescriptionMeasured,
+    scheduleOverflowCheck,
+    setVerdict,
+  ]);
 
-  // Attach ResizeObserver via callback ref to handle DOM node changes. The ref
-  // also owns teardown: React hands it `null` when the label goes away. An
-  // unmount effect must not repeat that. React 18 Strict Mode replays effects
-  // without re-attaching refs, so the replay would drop the node and observer
-  // for good and strand the queued check.
-  const handleLabelElementRef = useCallback(
-    (element: HTMLElement | null) => {
-      // Notify the external refs
-      assignRef(externalLabelRef, element);
-      assignRef(labelRefOption, element);
+  // The callback refs own the observer: React hands them `null` when a node
+  // goes away. An unmount effect must not repeat that. React 18 Strict Mode
+  // replays effects without re-attaching refs, so the replay would drop the
+  // nodes and observer for good and strand the queued check.
+  const attachMeasuredNode = useCallback(
+    (part: 'label' | 'description', element: HTMLElement | null) => {
+      const measured = measuredRef.current;
 
-      // Disconnect previous observer
-      if (resizeObserverRef.current) {
-        try {
-          resizeObserverRef.current.disconnect();
-        } catch {
-          // do nothing
-        }
-        resizeObserverRef.current = null;
-      }
-
-      elementRef.current = element;
-
-      if (!isAutoTooltipEnabled) {
-        setVerdict(false);
-
-        return;
-      }
+      measured[part] = element;
+      // The observer covers every later size change.
+      observeMeasuredNodes(measured, checkOverflow);
 
       // No node to measure. Leave the previous verdict alone rather than
       // clearing it: turning the verdict on mounts `TooltipProvider`, which
@@ -275,28 +356,32 @@ export function useAutoTooltip({
       // loop that never settles.
       if (!element) return;
 
-      // Do NOT measure synchronously here — see `scheduleLabelOverflowCheck`.
-      // This covers the node the ref just handed us, including the fresh one
-      // React creates when `TooltipProvider` mounts and remounts the label.
-      scheduleLabelOverflowCheck();
-
-      // The observer covers every later size change.
-      const obs = new ResizeObserver(() => {
-        checkLabelOverflow();
-      });
-
-      resizeObserverRef.current = obs;
-
-      obs.observe(element);
+      // Do NOT measure synchronously here — see `scheduleOverflowCheck`. This
+      // covers the node the ref just handed us, including the fresh one React
+      // creates when `TooltipProvider` mounts and remounts the element.
+      scheduleOverflowCheck();
     },
-    [
-      externalLabelRef,
-      labelRefOption,
-      isAutoTooltipEnabled,
-      checkLabelOverflow,
-      scheduleLabelOverflowCheck,
-      setVerdict,
-    ],
+    [checkOverflow, scheduleOverflowCheck],
+  );
+
+  const handleLabelElementRef = useCallback(
+    (element: HTMLElement | null) => {
+      // Notify the external refs
+      assignRef(externalLabelRef, element);
+      assignRef(labelRefOption, element);
+
+      attachMeasuredNode('label', isLabelMeasured ? element : null);
+    },
+    [externalLabelRef, labelRefOption, isLabelMeasured, attachMeasuredNode],
+  );
+
+  const handleDescriptionElementRef = useCallback(
+    (element: HTMLElement | null) => {
+      assignRef(descriptionRefOption, element);
+
+      attachMeasuredNode('description', isDescriptionMeasured ? element : null);
+    },
+    [descriptionRefOption, isDescriptionMeasured, attachMeasuredNode],
   );
 
   const { ref: _labelPropsRef, ...finalLabelProps } = labelProps || {};
@@ -306,9 +391,10 @@ export function useAutoTooltip({
   const resolvedTooltip = resolveTooltip({
     tooltip,
     children,
+    description,
     labelProps,
     isDynamicLabel,
-    isLabelOverflowed,
+    truncation,
   });
 
   /** Whether a tooltip is rendered and able to open. */
@@ -333,8 +419,9 @@ export function useAutoTooltip({
 
   return {
     labelRef: handleLabelElementRef,
+    descriptionRef: handleDescriptionElementRef,
     labelProps: finalLabelProps,
-    isLabelOverflowed,
+    isOverflowed: truncation !== 'none',
     isAutoTooltipEnabled,
     hasTooltip: !!tooltip,
     isTooltipActive,
