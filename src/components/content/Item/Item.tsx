@@ -169,7 +169,8 @@ export interface CubeItemProps extends BaseProps, ContainerStyleProps {
   /**
    * Tooltip content and configuration:
    * - string: simple tooltip text
-   * - true: auto tooltip on overflow (shows children as tooltip when truncated)
+   * - true: auto tooltip on overflow (shows the label, and a string description,
+   *   when either one is truncated)
    * - object: advanced configuration with optional auto property
    */
   tooltip?:
@@ -908,13 +909,22 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
   const {
     labelProps: finalLabelProps,
     labelRef,
+    descriptionRef,
     renderWithTooltip,
     isTooltipActive,
   } = useAutoTooltip({
     tooltip,
     children,
+    // The description truncates exactly like the label, so it is measured with
+    // it and shown in the same tooltip. Raw, not highlighted: the tooltip shows
+    // plain text.
+    description,
     labelProps,
     labelRef: labelRefProp,
+    // The hook owns the description's ref, so one passed in `descriptionProps`
+    // is handed to it rather than lost under the spread below.
+    descriptionRef: (descriptionProps as { ref?: Ref<HTMLElement> } | undefined)
+      ?.ref,
     // A row inside an actions wrapper is dynamic whether or not the run holds
     // anything right now: the label's width is whatever `--actions-width` leaves
     // it, and the wrapper republishes that as the actions change. Holding the
@@ -1035,7 +1045,11 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
             })()
           : null}
         {showDescription ? (
-          <div data-element="Description" {...descriptionProps}>
+          <div
+            data-element="Description"
+            {...descriptionProps}
+            ref={descriptionRef}
+          >
             {processedDescription}
           </div>
         ) : null}

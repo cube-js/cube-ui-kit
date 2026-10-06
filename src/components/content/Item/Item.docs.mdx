@@ -402,13 +402,13 @@ Use `preserveActionsSpace` together with `autoHideActions` to keep the actions a
 
 ### With Tooltip
 
-By default, Item shows an auto tooltip when content overflows.
+By default, Item shows an auto tooltip when content overflows. The label and a string `description` are both checked: when either one is truncated, the tooltip shows the full label with the description on the line below. A description that wraps (`type="card"` and `type="header"`) only triggers it if a word too long to break overflows. Pass `tooltip={false}` to turn the check off, for example in a very long list that renders every row at once.
 
 **Type:** `string | boolean | object`
 
 **Values:**
 
-- `true` (default) - Shows tooltip with item content when text overflows
+- `true` (default) - Shows the label and description in a tooltip when either one is truncated
 - `false` - Disables tooltip entirely
 - `string` - Shows tooltip with the specified text (always visible, not auto)
 - `object` - Advanced configuration:
@@ -421,6 +421,11 @@ By default, Item shows an auto tooltip when content overflows.
 {/* Auto tooltip on overflow (default) */}
 <Item style={{ width: '200px' }}>
   This is a very long text that will show a tooltip when overflowed
+</Item>
+
+{/* A truncated description shows in the tooltip too */}
+<Item description="participant.with.a.long.address@example-company.com" style={{ width: '200px' }}>
+  Jane Doe
 </Item>
 
 {/* Disable tooltip */}

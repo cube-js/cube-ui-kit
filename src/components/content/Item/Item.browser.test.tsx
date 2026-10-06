@@ -1,4 +1,6 @@
-import { renderWithRoot, screen } from '../../../test';
+import { userEvent } from 'vitest/browser';
+
+import { act, renderWithRoot, screen, waitFor } from '../../../test';
 import { Text } from '../Text';
 
 import { Item } from './Item';
@@ -129,5 +131,46 @@ describe('Item start/end slot spacing', () => {
 
     expect(prefix.left - item.left).toBeGreaterThan(0);
     expect(item.right - suffix.right).toBeGreaterThan(0);
+  });
+});
+
+/**
+ * The description truncates exactly like the label, and used to be the one
+ * part a hover could never reveal: an email cut off in a fixed-width cell had
+ * no way to be read (CUB-4254). The row has one tooltip, so it shows both.
+ *
+ * jsdom lays nothing out, so truncation is only observable in a real browser.
+ */
+describe('Item auto tooltip', () => {
+  const EMAIL = 'participant.with.a.long.address@example-company.com';
+
+  it('shows a truncated description under the label', async () => {
+    // The verdict lands in a microtask after the commit, and turning it on
+    // remounts the row under `TooltipProvider`. Let both happen before looking
+    // the row up, or the hover lands on a detached node.
+    await act(async () => {
+      renderWithRoot(
+        <Item qa="Row" description={EMAIL} styles={{ width: '200px' }}>
+          Jane Doe
+        </Item>,
+      );
+    });
+
+    const row = screen.getByTestId('Row');
+    const label = row.querySelector('[data-element="Label"]')!;
+    const description = row.querySelector('[data-element="Description"]')!;
+
+    expect(label.scrollWidth).toBe(label.clientWidth);
+    expect(description.scrollWidth).toBeGreaterThan(description.clientWidth);
+
+    // React Aria ignores a hover until a pointer move sets the modality.
+    await userEvent.hover(document.body);
+    await userEvent.hover(row);
+
+    await waitFor(() =>
+      expect(screen.getByRole('tooltip').textContent).toBe(
+        `Jane Doe\n${EMAIL}`,
+      ),
+    );
   });
 });

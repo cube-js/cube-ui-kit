@@ -1,4 +1,4 @@
-import { StrictMode, useLayoutEffect, useState } from 'react';
+import { ReactNode, StrictMode, useLayoutEffect, useState } from 'react';
 import { flushSync } from 'react-dom';
 
 import { act, renderWithRoot, screen, waitFor } from '../../test';
@@ -102,25 +102,46 @@ describe('useAutoTooltip overflow measurement', () => {
   );
 
   describe('still measures overflow off the commit path', () => {
-    /** Exposes the hook's overflow verdict, with the label it measures. */
-    function Probe({ width, label }: { width: string; label: string }) {
-      const { labelRef, isLabelOverflowed, isTooltipActive } = useAutoTooltip({
-        tooltip: true,
-        children: label,
-        labelProps: undefined,
-      });
+    /**
+     * Exposes the hook's overflow verdict, with the label it measures and, when
+     * given one, the description.
+     */
+    function Probe({
+      width,
+      label,
+      description,
+    }: {
+      width: string;
+      label: string;
+      description?: ReactNode;
+    }) {
+      const { labelRef, descriptionRef, isOverflowed, isTooltipActive } =
+        useAutoTooltip({
+          tooltip: true,
+          children: label,
+          description,
+          labelProps: undefined,
+        });
 
       return (
         <div style={{ width }}>
           <div
             ref={labelRef as never}
             data-qa="Label"
-            data-overflowed={String(isLabelOverflowed)}
+            data-overflowed={String(isOverflowed)}
             data-tooltip-active={String(isTooltipActive)}
             style={{ whiteSpace: 'nowrap', overflow: 'hidden' }}
           >
             {label}
           </div>
+          {description != null ? (
+            <div
+              ref={descriptionRef as never}
+              style={{ whiteSpace: 'nowrap', overflow: 'hidden' }}
+            >
+              {description}
+            </div>
+          ) : null}
         </div>
       );
     }
@@ -222,6 +243,75 @@ describe('useAutoTooltip overflow measurement', () => {
 
       expect(label()).toHaveAttribute('data-overflowed', 'false');
       expect(label()).toHaveAttribute('data-tooltip-active', 'false');
+    });
+
+    /**
+     * The description truncates like the label, so either one being cut off
+     * activates the tooltip. A short label next to an email is the case that
+     * asked for it (CUB-4254).
+     */
+    it('detects a truncated description while the label fits', async () => {
+      await act(async () => {
+        renderWithRoot(
+          <Probe width="200px" label="Short" description={LONG_LABEL} />,
+        );
+      });
+
+      await waitFor(() => {
+        expect(label()).toHaveAttribute('data-overflowed', 'true');
+      });
+      expect(label()).toHaveAttribute('data-tooltip-active', 'true');
+    });
+
+    // Overflow detection measures text, and the tooltip could not show a node
+    // description anyway, so only a string description takes part.
+    it('does not measure a description that is not a string', async () => {
+      await act(async () => {
+        renderWithRoot(
+          <Probe
+            width="200px"
+            label="Short"
+            description={<span>{LONG_LABEL}</span>}
+          />,
+        );
+      });
+
+      await waitFor(() => expect(spy.counter.reads).toBeGreaterThan(0));
+
+      expect(label()).toHaveAttribute('data-overflowed', 'false');
+      expect(label()).toHaveAttribute('data-tooltip-active', 'false');
+    });
+
+    // The label and the description share one observer, so this fails if the
+    // description is measured once on mount but never observed.
+    it('re-measures when the description is resized', async () => {
+      function Resizable() {
+        const [width, setWidth] = useState('600px');
+
+        return (
+          <>
+            <button type="button" onClick={() => setWidth('200px')}>
+              Shrink
+            </button>
+            <Probe width={width} label="Short" description={LONG_LABEL} />
+          </>
+        );
+      }
+
+      await act(async () => {
+        renderWithRoot(<Resizable />);
+      });
+
+      await waitFor(() => expect(spy.counter.reads).toBeGreaterThan(0));
+      expect(label()).toHaveAttribute('data-overflowed', 'false');
+
+      await act(async () => {
+        screen.getByRole('button', { name: 'Shrink' }).click();
+      });
+
+      await waitFor(() => {
+        expect(label()).toHaveAttribute('data-overflowed', 'true');
+      });
     });
 
     /**
