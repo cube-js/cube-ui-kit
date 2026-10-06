@@ -95,6 +95,18 @@ const TooltipElement = tasty({
       '': 1,
       '!open': 0.001,
     },
+
+    // A secondary line under the title — the description an auto tooltip
+    // shows when a row's label and description are both cut off. Lighter and
+    // dimmed like the row's own description, from the tooltip's own color, so
+    // it follows the `light` variant. Direct children only: a tooltip whose
+    // body is an `Item` keeps that item's description as it is.
+    Description: {
+      $: '>',
+      display: 'block',
+      preset: 't4n',
+      opacity: 0.75,
+    },
   },
 });
 

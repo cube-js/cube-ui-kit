@@ -29,7 +29,7 @@ export interface UseAutoTooltipOptions {
   /**
    * Secondary text that truncates alongside the label, such as `Item`'s
    * description. A string description is measured with the label, and the auto
-   * tooltip shows both whenever either one is cut off.
+   * tooltip shows whichever of the two is cut off.
    */
   description?: ReactNode;
   labelProps?: Props;
@@ -102,23 +102,32 @@ function allowsAutoTooltip(tooltip: AutoTooltipValue | undefined): boolean {
   return false;
 }
 
-/**
- * What the auto tooltip shows: the label, then a string description on a line
- * of its own. Both come whichever one was cut off, so the content does not
- * change with the width.
- */
-function getAutoTitle(children: ReactNode, description: ReactNode): ReactNode {
-  if (typeof description !== 'string' || !description) return children;
-  if (!children) return description;
+/** Which measured parts are cut off. */
+type Truncation = 'none' | 'label' | 'description' | 'both';
 
-  // The tooltip renders `white-space: pre-line`, so the break shows.
-  return (
-    <>
-      {children}
-      {'\n'}
-      {description}
-    </>
-  );
+/**
+ * What the auto tooltip shows: the text that is cut off, and nothing the row
+ * already shows in full. When both parts are, the description goes below the
+ * label as the tooltip's `Description`, styled as secondary text.
+ */
+function getAutoTitle(
+  children: ReactNode,
+  description: ReactNode,
+  truncation: Truncation,
+): ReactNode {
+  if (truncation === 'description') return description;
+  if (truncation === 'both') {
+    return (
+      <>
+        {children}
+        <div data-element="Description">{description}</div>
+      </>
+    );
+  }
+
+  // The label is cut off, or nothing is and the tooltip stays mounted but
+  // disabled for a dynamic label.
+  return children;
 }
 
 /**
@@ -131,9 +140,9 @@ function resolveTooltip({
   description,
   labelProps,
   isDynamicLabel,
-  isOverflowed,
+  truncation,
 }: Omit<UseAutoTooltipOptions, 'labelRef' | 'descriptionRef'> & {
-  isOverflowed: boolean;
+  truncation: Truncation;
 }): Omit<CubeTooltipProviderProps, 'children'> | null {
   if (!tooltip) return null;
 
@@ -142,7 +151,8 @@ function resolveTooltip({
     return { title: tooltip };
   }
 
-  const autoTitle = getAutoTitle(children, description);
+  const isOverflowed = truncation !== 'none';
+  const autoTitle = getAutoTitle(children, description, truncation);
   const hasAutoContent =
     !!(autoTitle || labelProps) && (isOverflowed || isDynamicLabel);
 
@@ -178,6 +188,18 @@ function resolveTooltip({
 /** Whether a measured node's text is cut off. */
 function isTruncated(element: HTMLElement | null): boolean {
   return !!element && element.scrollWidth > element.clientWidth;
+}
+
+function measureTruncation(
+  label: HTMLElement | null,
+  description: HTMLElement | null,
+): Truncation {
+  const isLabelCut = isTruncated(label);
+  const isDescriptionCut = isTruncated(description);
+
+  if (isLabelCut) return isDescriptionCut ? 'both' : 'label';
+
+  return isDescriptionCut ? 'description' : 'none';
 }
 
 interface MeasuredNodes {
@@ -226,7 +248,7 @@ export function useAutoTooltip({
 
   // Track overflow for auto tooltip (only when enabled)
   const externalLabelRef = (labelProps as any)?.ref;
-  const [isOverflowed, setIsOverflowed] = useState(false);
+  const [truncation, setTruncation] = useState<Truncation>('none');
   // The nodes being measured, and the one observer watching all of them.
   const measuredRef = useRef<MeasuredNodes>({
     label: null,
@@ -234,7 +256,7 @@ export function useAutoTooltip({
     observer: null,
   });
 
-  const verdictRef = useRef(false);
+  const verdictRef = useRef<Truncation>('none');
 
   /**
    * Sets the verdict only when it changes. React skips an unchanged `setState`
@@ -244,11 +266,11 @@ export function useAutoTooltip({
    * Mirroring the verdict makes every unchanged write free, whatever else the
    * component has queued.
    */
-  const setVerdict = useCallback((value: boolean) => {
+  const setVerdict = useCallback((value: Truncation) => {
     if (verdictRef.current === value) return;
 
     verdictRef.current = value;
-    setIsOverflowed(value);
+    setTruncation(value);
   }, []);
 
   const checkOverflow = useCallback(() => {
@@ -256,7 +278,7 @@ export function useAutoTooltip({
 
     if (!label && !description) return;
 
-    setVerdict(isTruncated(label) || isTruncated(description));
+    setVerdict(measureTruncation(label, description));
   }, [setVerdict]);
 
   /**
@@ -303,9 +325,9 @@ export function useAutoTooltip({
     // auto tooltips are on, and therefore keeps the last verdict — and only
     // attaches the new one if the label still exists. When `children` stops
     // being a string the label unmounts, so the new callback never runs and a
-    // stale `true` would keep an auto tooltip mounted over content that is no
+    // stale verdict would keep an auto tooltip mounted over content that is no
     // longer text. That is the default `Button` path, where `tooltip` is `true`.
-    setVerdict(false);
+    setVerdict('none');
   }, [
     isAutoTooltipEnabled,
     isLabelMeasured,
@@ -372,7 +394,7 @@ export function useAutoTooltip({
     description,
     labelProps,
     isDynamicLabel,
-    isOverflowed,
+    truncation,
   });
 
   /** Whether a tooltip is rendered and able to open. */
@@ -399,7 +421,7 @@ export function useAutoTooltip({
     labelRef: handleLabelElementRef,
     descriptionRef: handleDescriptionElementRef,
     labelProps: finalLabelProps,
-    isOverflowed,
+    isOverflowed: truncation !== 'none',
     isAutoTooltipEnabled,
     hasTooltip: !!tooltip,
     isTooltipActive,

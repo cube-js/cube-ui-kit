@@ -169,8 +169,8 @@ export interface CubeItemProps extends BaseProps, ContainerStyleProps {
   /**
    * Tooltip content and configuration:
    * - string: simple tooltip text
-   * - true: auto tooltip on overflow (shows the label, and a string description,
-   *   when either one is truncated)
+   * - true: auto tooltip on overflow (shows whichever of the label and a string
+   *   description is truncated)
    * - object: advanced configuration with optional auto property
    */
   tooltip?:

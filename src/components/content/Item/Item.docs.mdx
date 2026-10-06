@@ -402,13 +402,13 @@ Use `preserveActionsSpace` together with `autoHideActions` to keep the actions a
 
 ### With Tooltip
 
-By default, Item shows an auto tooltip when content overflows. The label and a string `description` are both checked: when either one is truncated, the tooltip shows the full label with the description on the line below. A description that wraps (`type="card"` and `type="header"`) only triggers it if a word too long to break overflows. Pass `tooltip={false}` to turn the check off, for example in a very long list that renders every row at once.
+By default, Item shows an auto tooltip when content overflows. The label and a string `description` are both checked, and the tooltip shows the text that is cut off: the label, the description, or both — then the description sits below the label as lighter secondary text. Text the row already shows in full is left out. A description that wraps (`type="card"` and `type="header"`) only triggers it if a word too long to break overflows. Pass `tooltip={false}` to turn the check off, for example in a very long list that renders every row at once.
 
 **Type:** `string | boolean | object`
 
 **Values:**
 
-- `true` (default) - Shows the label and description in a tooltip when either one is truncated
+- `true` (default) - Shows the truncated label and/or description in a tooltip
 - `false` - Disables tooltip entirely
 - `string` - Shows tooltip with the specified text (always visible, not auto)
 - `object` - Advanced configuration:
