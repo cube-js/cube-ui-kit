@@ -1,4 +1,6 @@
-import { renderWithRoot, screen, userEvent } from '../../../test';
+import { page } from 'vitest/browser';
+
+import { renderWithRoot, screen, userEvent, waitFor } from '../../../test';
 import { Button } from '../../actions/Button';
 import { ItemAction } from '../../actions/ItemAction';
 import { Dialog } from '../Dialog/Dialog';
@@ -88,5 +90,86 @@ describe('Toasts and notifications over a Dialog', () => {
 
     expect(onPress).toHaveBeenCalledTimes(1);
     expect(screen.getByTestId('Dialog')).toBeInTheDocument();
+  });
+});
+
+/**
+ * The toast and notification wrapper is sized to its content and capped at
+ * `min(100vw - 4x, 50x)`. It used to floor at `max-content` too, and a CSS
+ * minimum beats the maximum, so with an unwrapped label a long toast ran past
+ * the cap and off both edges of a narrow pane.
+ *
+ * In a browser because jsdom lays nothing out.
+ */
+describe('Toast and notification width', () => {
+  const user = userEvent.setup();
+  const CAP = 400; // 50x
+  const LONG =
+    'The workbook was saved, but two of its sheets still refer to a data source that no longer exists.';
+
+  afterEach(async () => {
+    // Other specs in this project assume the default 414x896.
+    await page.viewport(414, 896);
+  });
+
+  function Shows({ title }: { title: string }) {
+    const toast = useToast();
+    const { notify } = useNotifications();
+
+    return (
+      <>
+        <Button qa="ShowToast" onPress={() => toast({ title })}>
+          Toast
+        </Button>
+        <Button qa="ShowNotification" onPress={() => notify({ title })}>
+          Notify
+        </Button>
+      </>
+    );
+  }
+
+  async function show(kind: 'Toast' | 'Notification', title: string) {
+    renderWithRoot(<Shows title={title} />);
+    await user.click(screen.getByTestId(`Show${kind}`));
+
+    const item = await screen.findByTestId(kind);
+
+    await waitFor(() => {
+      expect(item.getBoundingClientRect().width).toBeGreaterThan(0);
+    });
+
+    return item;
+  }
+
+  it.each([
+    ['Toast', 300],
+    ['Toast', 1280],
+    ['Notification', 300],
+    ['Notification', 1280],
+  ] as const)('keeps a long %s inside a %ipx viewport', async (kind, width) => {
+    await page.viewport(width, 800);
+
+    const item = await show(kind, LONG);
+    const rect = item.getBoundingClientRect();
+
+    expect(rect.left).toBeGreaterThanOrEqual(0);
+    expect(rect.right).toBeLessThanOrEqual(width);
+    expect(rect.width).toBeLessThanOrEqual(CAP);
+
+    // A toast's label wraps, so none of the message is cut off. A
+    // notification keeps its one-line title with an ellipsis.
+    if (kind === 'Toast') {
+      const label = item.querySelector<HTMLElement>('[data-element="Label"]')!;
+
+      expect(label.scrollWidth).toBeLessThanOrEqual(label.clientWidth);
+    }
+  });
+
+  it('sizes a short toast to its content', async () => {
+    await page.viewport(1280, 800);
+
+    const item = await show('Toast', 'Saved');
+
+    expect(item.getBoundingClientRect().width).toBeLessThan(CAP / 2);
   });
 });

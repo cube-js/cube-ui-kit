@@ -30,6 +30,11 @@ const StyledItem = tasty(Item, {
       'has-actions': 'auto',
     },
 
+    // A long message wraps at the wrapper's cap instead of running past it.
+    Label: {
+      whiteSpace: 'normal',
+    },
+
     Description: {
       preset: 't4',
     },
