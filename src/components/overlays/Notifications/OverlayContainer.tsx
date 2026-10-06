@@ -6,6 +6,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useReducer,
   useRef,
   useState,
 } from 'react';
@@ -53,9 +54,9 @@ const OverlayItemWrapper = tasty({
       'isMeasured & isShown': 'translateX(-50%) translateY(0)',
     },
     // Sized to its content: the container has no width of its own. Capped,
-    // never floored, so a long toast wraps inside the viewport.
-    width: 'max-content',
-    maxWidth: 'min((100vw - 4x), 50x)',
+    // never floored, so a long toast wraps inside the viewport. The cap
+    // matches NotificationCard's own width.
+    width: 'initial max-content min((100vw - 4x), 50x)',
     pointerEvents: 'auto',
     transition: {
       '': 'opacity $transition ease-in, transform $transition ease-in',
@@ -142,6 +143,20 @@ function useItemPositions(visibleItems: OverlayItem[]): ItemPositionsResult {
       setHeights(newHeights);
     }
   });
+
+  // A wrapped toast changes height with the viewport, not only on a render.
+  // Re-render on a resize so the measurement above restacks the items.
+  const [, remeasure] = useReducer((count: number) => count + 1, 0);
+
+  useEffect(() => {
+    if (typeof ResizeObserver === 'undefined') return;
+
+    const observer = new ResizeObserver(() => remeasure());
+
+    itemRefs.current.forEach((el) => observer.observe(el));
+
+    return () => observer.disconnect();
+  }, [visibleItems]);
 
   // After heights change, schedule settledIds update for the next frame.
   // This ensures the item is painted at its correct position (with no top

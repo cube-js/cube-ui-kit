@@ -106,19 +106,31 @@ describe('Toast and notification width', () => {
   const CAP = 400; // 50x
   const LONG =
     'The workbook was saved, but two of its sheets still refer to a data source that no longer exists.';
+  // One word wider than the cap: it has to break, not be clipped.
+  const URL =
+    'Exported to https://example.com/workspaces/acme/reports/quarterly-revenue-breakdown-by-region-2026-q3.csv';
 
   afterEach(async () => {
     // Other specs in this project assume the default 414x896.
     await page.viewport(414, 896);
   });
 
-  function Shows({ title }: { title: string }) {
+  function Shows({
+    title,
+    description,
+  }: {
+    title: string;
+    description?: string;
+  }) {
     const toast = useToast();
     const { notify } = useNotifications();
 
     return (
       <>
-        <Button qa="ShowToast" onPress={() => toast({ title })}>
+        <Button
+          qa="ShowToast"
+          onPress={() => toast({ title, description, duration: null })}
+        >
           Toast
         </Button>
         <Button qa="ShowNotification" onPress={() => notify({ title })}>
@@ -128,8 +140,12 @@ describe('Toast and notification width', () => {
     );
   }
 
-  async function show(kind: 'Toast' | 'Notification', title: string) {
-    renderWithRoot(<Shows title={title} />);
+  async function show(
+    kind: 'Toast' | 'Notification',
+    title: string,
+    description?: string,
+  ) {
+    renderWithRoot(<Shows title={title} description={description} />);
     await user.click(screen.getByTestId(`Show${kind}`));
 
     const item = await screen.findByTestId(kind);
@@ -139,6 +155,20 @@ describe('Toast and notification width', () => {
     });
 
     return item;
+  }
+
+  function expectNothingCutOff(item: HTMLElement) {
+    for (const name of ['Label', 'Description']) {
+      const element = item.querySelector<HTMLElement>(
+        `[data-element="${name}"]`,
+      );
+
+      if (element) {
+        expect(element.scrollWidth, name).toBeLessThanOrEqual(
+          element.clientWidth,
+        );
+      }
+    }
   }
 
   it.each([
@@ -159,10 +189,64 @@ describe('Toast and notification width', () => {
     // A toast's label wraps, so none of the message is cut off. A
     // notification keeps its one-line title with an ellipsis.
     if (kind === 'Toast') {
-      const label = item.querySelector<HTMLElement>('[data-element="Label"]')!;
-
-      expect(label.scrollWidth).toBeLessThanOrEqual(label.clientWidth);
+      expectNothingCutOff(item);
     }
+  });
+
+  it.each([300, 1280])(
+    'breaks a word wider than a toast in a %ipx viewport',
+    async (width) => {
+      await page.viewport(width, 800);
+
+      const item = await show('Toast', URL, URL);
+      const rect = item.getBoundingClientRect();
+
+      expect(rect.left).toBeGreaterThanOrEqual(0);
+      expect(rect.right).toBeLessThanOrEqual(width);
+      expectNothingCutOff(item);
+    },
+  );
+
+  it('restacks toasts when a resize wraps one of them', async () => {
+    await page.viewport(1280, 800);
+
+    function ShowsTwo() {
+      const toast = useToast();
+
+      return (
+        <Button
+          qa="ShowTwo"
+          onPress={() => {
+            toast({ title: LONG, duration: null });
+            toast({ title: 'Saved', duration: null });
+          }}
+        >
+          Show
+        </Button>
+      );
+    }
+
+    renderWithRoot(<ShowsTwo />);
+    await user.click(screen.getByTestId('ShowTwo'));
+
+    const edges = () =>
+      screen
+        .getAllByTestId('Toast')
+        .map((toast) => toast.getBoundingClientRect())
+        .sort((a, b) => a.top - b.top);
+
+    await waitFor(() => {
+      expect(edges()).toHaveLength(2);
+    });
+
+    await page.viewport(300, 800);
+    // A fixed wait covers the `top` transition. A `waitFor` would pass
+    // without the fix too, once some later render restacks the toasts.
+    await new Promise((resolve) => setTimeout(resolve, 600));
+
+    const [upper, lower] = edges();
+
+    expect(lower.top).toBeGreaterThanOrEqual(upper.bottom);
   });
 
   it('sizes a short toast to its content', async () => {

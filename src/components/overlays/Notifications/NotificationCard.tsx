@@ -20,6 +20,7 @@ import type { DismissReason, NotificationType } from './types';
 
 const StyledItem = tasty(Item, {
   styles: {
+    // Same cap as OverlayContainer's item wrapper; change both together.
     width: {
       '': 'max min((100vw - 4x), 50x)',
       flat: '100%',
