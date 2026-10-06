@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.190.2
+
+### Patch Changes
+
+- [#1471](https://github.com/cube-js/cube-ui-kit/pull/1471) [`3864acdb`](https://github.com/cube-js/cube-ui-kit/commit/3864acdb8205494724c0288567cafc4d79405f1e) Thanks [@tenphi](https://github.com/tenphi)! - `Item`'s auto tooltip now covers a truncated `description`, not only the label. Hovering the row shows the text that is cut off — the description, the label, or both, with the description below the label in a lighter `t4n` style. A row whose label truncates while its description fits shows the same tooltip as before. Components built on `Item` (`ItemButton`, `ListBox` and `Menu` options, `Select` and `Picker` triggers) get the same behavior. `Tooltip` gains a `Description` sub-element for that secondary line, which `tooltipStyles` can override. Pass `tooltip={false}` to turn it off.
+
 ## 0.190.1
 
 ### Patch Changes
