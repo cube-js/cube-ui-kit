@@ -19,6 +19,10 @@ permissions:
 jobs:
   size-limit:
     name: 'Measure size of the library'
+    # The Version Packages PR changes no code, so it cannot move the size. Its
+    # tree is measured anyway once it lands, by the push run that becomes the
+    # next baseline.
+    if: github.head_ref != 'changeset-release/main'
     runs-on: ubuntu-latest
     env:
       REPORT_FOLDER: './size-limit-report'

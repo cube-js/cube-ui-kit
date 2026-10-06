@@ -20,9 +20,17 @@ on:
   schedule:
     - cron: '15 21 * * 3'
 
+# A new push to a PR supersedes the analysis of the previous one. Runs on main
+# queue instead, so every merged commit is still analyzed.
+concurrency:
+  group: codeql-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   analyze:
     name: Analyze
+    # The Version Packages PR changes no code; main is analyzed when it lands.
+    if: github.head_ref != 'changeset-release/main'
     runs-on: ubuntu-latest
     permissions:
       actions: read

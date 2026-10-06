@@ -164,7 +164,15 @@ jobs:
     outputs:
       published: ${{ steps.changesets.outputs.published }}
     steps:
+      # Without persisted credentials, so `git push` below authenticates with
+      # the PAT changesets writes to `~/.netrc`. A persisted `GITHUB_TOKEN`
+      # takes precedence over it, which made every update of the Version
+      # Packages PR a push by `github-actions[bot]`. Those runs never start:
+      # they wait for an approval at `action_required`, and the PR's checks
+      # are left behind on the commit that first opened it.
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
       # Installs the pnpm pinned by `packageManager` — the same field pnpm reads
       # to switch itself locally, so CI and a contributor cannot drift apart.
@@ -207,6 +215,8 @@ jobs:
           # GITHUB_TOKEN, so the Version Packages PR never received the checks
           # `main` requires (Build & canary release, Tests & lint, UI Tests,
           # UI Review) and could only ever be merged with an admin override.
+          # It covers both the API calls and the branch push; see the checkout
+          # step above for the push.
           GITHUB_TOKEN: ${{ secrets.UIKIT_GITHUB_TOKEN }}
           # NPM_TOKEN not needed - using trusted publishing (OIDC)
 
