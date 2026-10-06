@@ -901,6 +901,9 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
   const hasCheckmark = iconProp === 'checkmark';
 
   const { sizeMod, sizeToken } = resolveItemSize(size);
+  // Built before the hooks below. Spread in the JSX, `sizeToken` kept React
+  // Compiler from memoizing the mods, slots and hotkeys derived in between.
+  const finalTokens = { ...tokens, ...(sizeToken ? { $size: sizeToken } : {}) };
 
   // Base mods for icon resolution (without icon-dependent mods)
   const baseMods: ItemMods = {
@@ -1077,10 +1080,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
         aria-selected={rest['aria-pressed'] != null ? undefined : isSelected}
         mods={finalMods}
         styles={styles}
-        tokens={{
-          ...tokens,
-          ...(sizeToken ? { $size: sizeToken } : {}),
-        }}
+        tokens={finalTokens}
         type={htmlType as any}
         {...mergeProps(
           isInert ? omitActivationEventProps(rest) : rest,
