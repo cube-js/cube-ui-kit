@@ -139,6 +139,17 @@ function source(file) {
 const OPEN_PAREN = 0x28;
 const CLOSE_PAREN = 0x29;
 
+const COLON = 0x3a;
+const isSpace = (byte) => /\s/.test(String.fromCharCode(byte));
+
+/** The index of the first non-space byte after `i`. */
+function nextNonSpace(bytes, i) {
+  let j = i + 1;
+  while (j < bytes.length && isSpace(bytes[j])) j++;
+
+  return j;
+}
+
 /**
  * The line a function starts on. oxlint points at the function's name, or at
  * the `=>` of an arrow function, which sits after a parameter list that may
@@ -150,8 +161,18 @@ function startLine(file, { offset, line }) {
   if (bytes.toString('utf8', offset, offset + 2) !== '=>') return line;
 
   let i = offset - 1;
-  while (i >= 0 && /\s/.test(String.fromCharCode(bytes[i]))) i--;
-  if (bytes[i] !== CLOSE_PAREN) return line;
+  while (i >= 0 && isSpace(bytes[i])) i--;
+
+  // `(…): Type =>`: the parameter list closes at the `)` before the colon.
+  if (bytes[i] !== CLOSE_PAREN) {
+    while (
+      i >= 0 &&
+      !(bytes[i] === CLOSE_PAREN && bytes[nextNonSpace(bytes, i)] === COLON)
+    ) {
+      i--;
+    }
+    if (i < 0) return line;
+  }
 
   for (let depth = 0; i >= 0; i--) {
     if (bytes[i] === CLOSE_PAREN) depth++;
