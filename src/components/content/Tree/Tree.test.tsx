@@ -2,7 +2,7 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 import userEvent from '@testing-library/user-event';
 import { createRef, useState } from 'react';
 
-import { act, renderWithRoot, waitFor } from '../../../test';
+import { act, renderWithRoot, screen, waitFor } from '../../../test';
 import { Menu } from '../../actions/Menu';
 
 import { Tree } from './Tree';
@@ -893,6 +893,92 @@ describe('<Tree />', () => {
       // its own ref for banana, and effect 2's ref still says apple,
       // so it bails.
       expect(indices).not.toContain(1);
+    });
+  });
+
+  describe('expandable rows with fewer than two children (CUB-5381)', () => {
+    const row = (name: string) => screen.getByRole('row', { name });
+
+    it('reports aria-expanded and toggles with the arrow keys on a single-child row', async () => {
+      const { queryByText } = renderWithRoot(
+        <Tree
+          treeData={[
+            {
+              key: 'parent',
+              title: 'Parent',
+              children: [{ key: 'child', title: 'Child' }],
+            },
+            { key: 'leaf', title: 'Leaf' },
+          ]}
+        />,
+      );
+
+      expect(row('Parent')).toHaveAttribute('aria-expanded', 'false');
+      expect(row('Leaf')).not.toHaveAttribute('aria-expanded');
+
+      act(() => row('Parent').focus());
+      await userEvent.keyboard('{ArrowRight}');
+
+      expect(row('Parent')).toHaveAttribute('aria-expanded', 'true');
+      expect(queryByText('Child')).toBeInTheDocument();
+      expect(row('Child')).not.toHaveAttribute('aria-expanded');
+
+      await userEvent.keyboard('{ArrowLeft}');
+
+      expect(row('Parent')).toHaveAttribute('aria-expanded', 'false');
+      expect(queryByText('Child')).not.toBeInTheDocument();
+    });
+
+    it('reports aria-expanded and toggles with the arrow keys on a lazy row', async () => {
+      const loadData = vi.fn(() => new Promise<void>(() => {}));
+      renderWithRoot(
+        <Tree
+          treeData={[{ key: 'lazy', title: 'Lazy', isLeaf: false }]}
+          loadData={loadData}
+        />,
+      );
+
+      expect(row('Lazy')).toHaveAttribute('aria-expanded', 'false');
+
+      act(() => row('Lazy').focus());
+      await userEvent.keyboard('{ArrowRight}');
+
+      expect(row('Lazy')).toHaveAttribute('aria-expanded', 'true');
+      expect(loadData).toHaveBeenCalledTimes(1);
+
+      await userEvent.keyboard('{ArrowLeft}');
+
+      expect(row('Lazy')).toHaveAttribute('aria-expanded', 'false');
+    });
+  });
+
+  describe('keys from a row checkbox (CUB-5357)', () => {
+    it('lets Escape reach an ancestor and holds other keys', async () => {
+      const seen: string[] = [];
+      const { getAllByRole } = renderWithRoot(
+        <div onKeyDown={(event) => seen.push(event.key)}>
+          <Tree
+            isCheckable
+            selectionMode="none"
+            treeData={SAMPLE}
+            defaultExpandedKeys={['fruits']}
+          />
+        </div>,
+      );
+
+      // ArrowRight on a leaf row (Apple) moves focus to its checkbox.
+      act(() => getAllByRole('row')[1].focus());
+      await userEvent.keyboard('{ArrowRight}');
+      expect(document.activeElement).toBe(getAllByRole('checkbox')[1]);
+      seen.length = 0;
+
+      // Not ArrowUp/ArrowDown: React Aria re-dispatches those from inside a
+      // row to the grid for row navigation, so they never reach the wrapper.
+      await userEvent.keyboard('{Enter}z');
+      expect(seen).toEqual([]);
+
+      await userEvent.keyboard('{Escape}');
+      expect(seen).toEqual(['Escape']);
     });
   });
 
