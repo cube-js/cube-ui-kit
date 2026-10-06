@@ -6,13 +6,13 @@ import {
   useCallback,
   useEffect,
   useMemo,
-  useReducer,
   useRef,
   useState,
 } from 'react';
 
 import { useEvent } from '../../../_internal';
 import { useLayoutEffect } from '../../../utils/react/useLayoutEffect';
+import { useViewportSize } from '../../../utils/react/useViewportSize';
 import { DisplayTransition } from '../../helpers/DisplayTransition/DisplayTransition';
 import { Portal } from '../../portal';
 import { ToastItem } from '../Toast/ToastItem';
@@ -145,15 +145,10 @@ function useItemPositions(visibleItems: OverlayItem[]): ItemPositionsResult {
   });
 
   // A wrapped toast changes height with the viewport, not only on a render.
-  // Re-render on a resize so the measurement above restacks the items. The
-  // window, not the items: the Portal remounts them once it has its root.
-  const [, remeasure] = useReducer((count: number) => count + 1, 0);
-
-  useEffect(() => {
-    window.addEventListener('resize', remeasure);
-
-    return () => window.removeEventListener('resize', remeasure);
-  }, []);
+  // Re-rendering on a viewport resize lets the measurement above restack the
+  // items. A height change from content that re-renders on its own, outside
+  // this container, still waits for the container's next render.
+  useViewportSize();
 
   // After heights change, schedule settledIds update for the next frame.
   // This ensures the item is painted at its correct position (with no top
