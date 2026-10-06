@@ -56,6 +56,7 @@ The component's data shape (`treeData`) and the public callback shape are design
 - **`menuTriggerProps`** `Partial<CubeMenuTriggerProps>` — Forwarded to every per-row `MenuTrigger`.
 - **`menuProps`** `Partial<CubeMenuProps<object>>` — Forwarded to every per-row `Menu` (both the overflow `⋮` menu and the right-click context menu). If you pass `onAction` here, it is **chained with** the tree-level `onAction`/per-node `data.onAction` callbacks (it does not override them) and receives the same normalized action key.
 - **`rowStyles`** `Styles` — Override styles for `[data-element="Row"]`.
+- **`itemProps`** `TreeItemProps | ((data: CubeTreeNodeData, state: TreeNodeState) => TreeItemProps)` — Per-row `Item` props (`prefix`, `suffix`, `actions`, `description`, `tooltip`, …), as an object or resolved for each row from its data and state. `TreeItemProps` and `TreeNodeState` are exported for typing the callback.
 
 #### `CubeTreeNodeData`
 
