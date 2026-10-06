@@ -63,7 +63,11 @@ import type { CompositeBlurInfo } from '../ListBoxPopover';
 
 type FilterFn = (textValue: string, inputValue: string) => boolean;
 
-/** `filter={false}`: the options come filtered already, as from a server. */
+/**
+ * `filter={false}`: the options come filtered already, as from a server.
+ * Named rather than inline in the ternary that picks it: SonarJS charges a
+ * function in a ternary branch to every later line of the component.
+ */
 const showEveryOption: FilterFn = () => true;
 
 export type TagInputPopoverTrigger = 'focus' | 'input' | 'manual';

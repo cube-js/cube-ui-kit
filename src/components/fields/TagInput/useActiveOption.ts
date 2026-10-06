@@ -143,6 +143,7 @@ export function useActiveOption({
     term,
     preferredOptionKey,
     moveVirtualFocus,
+    listStateRef,
     wrapperRef,
   ]);
 

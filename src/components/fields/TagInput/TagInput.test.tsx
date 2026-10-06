@@ -874,6 +874,26 @@ describe('<TagInput />', () => {
       expect(input).toHaveAttribute('aria-expanded', 'false');
       expect(input).toHaveValue('re');
     });
+
+    it('moves to the first and last option on Home and End while open', async () => {
+      const { getByRole } = renderWithRoot(<Actions />);
+      const input = getByRole('combobox');
+
+      await userEvent.type(input, 're');
+      await waitFor(() =>
+        expect(getActiveDescendant(input)).toHaveTextContent('read'),
+      );
+      await userEvent.keyboard('{End}');
+      expect(getActiveDescendant(input)).toHaveTextContent('rebuild');
+      await userEvent.keyboard('{Home}');
+      expect(getActiveDescendant(input)).toHaveTextContent('read');
+
+      await userEvent.keyboard('{Escape}');
+
+      // Closed, Home and End move the caret as in any input.
+      expect(fireEvent.keyDown(input, { key: 'Home' })).toBe(true);
+      expect(fireEvent.keyDown(input, { key: 'End' })).toBe(true);
+    });
   });
 
   describe('review fixes', () => {
