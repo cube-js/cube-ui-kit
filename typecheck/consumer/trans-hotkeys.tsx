@@ -14,8 +14,8 @@ export function TransHotKeys() {
       />
       <HotKeys>mod+k, ctrl+k</HotKeys>
       <HotKeys>{['mod+', 'k']}</HotKeys>
-      {/* @ts-expect-error keys are text, not elements */}
       <HotKeys>
+        {/* @ts-expect-error keys are text, not elements */}
         <span>mod+k</span>
       </HotKeys>
     </>
