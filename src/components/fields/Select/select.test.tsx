@@ -15,7 +15,7 @@ describe('<Select />', () => {
   // Under React 18 a `ref` reaches only a `forwardRef` component, and CI runs
   // this suite on React 18 too.
   it('forwards its ref to the field', () => {
-    let field: unknown = null;
+    let field: HTMLDivElement | null = null;
     const { getByTestId } = renderWithRoot(
       <Select
         ref={(node) => {

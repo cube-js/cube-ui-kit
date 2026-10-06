@@ -1,4 +1,5 @@
-import { ComboBox, Select } from '@cube-dev/ui-kit';
+import { Select } from '@cube-dev/ui-kit';
+import { useRef } from 'react';
 
 /**
  * `Select` keeps its item type through `items`, as `ComboBox` does, so a
@@ -28,14 +29,13 @@ export function ResourceSelect({ resources }: { resources: Resource[] }) {
   );
 }
 
-export function ResourceComboBox({ resources }: { resources: Resource[] }) {
-  return (
-    <ComboBox label="Resource" items={resources}>
-      {(item) => {
-        assertType<Equal<typeof item, Resource>>();
+/** The ref receives the field's `div`, as `ComboBox`'s does. */
+export function SelectWithRef() {
+  const ref = useRef<HTMLDivElement>(null);
 
-        return <ComboBox.Item key={item.id}>{item.type}</ComboBox.Item>;
-      }}
-    </ComboBox>
+  return (
+    <Select ref={ref} label="Fruit">
+      <Select.Item key="apple">Apple</Select.Item>
+    </Select>
   );
 }
