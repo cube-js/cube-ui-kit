@@ -16,7 +16,10 @@ export interface ColumnSortState {
   /** This column's entry in the sort, or `null` when it is unsorted. */
   activeSort: CubeTableSort | null;
   isSorted: boolean;
-  /** 1-based precedence, or `null` when it is not worth showing. */
+  /**
+   * 1-based precedence while more than one column is sorted (`0` for an
+   * unsorted column then), or `null` when it is not worth showing.
+   */
   rank: number | null;
 }
 

@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useTree } from 'react-aria';
 
-import { mergeProps } from '../../../utils/react';
+import { mergeProps } from '../../../utils/react/mergeProps';
 
 import type { Key } from '@react-types/shared';
 import type {
