@@ -23,6 +23,7 @@ A skeleton loading indicator with preset layouts. Composes `Placeholder` compone
 - **`tabs`** `number` (default: `3`) — Number of tabs (for tabs layout)
 - **`cards`** `number` (default: `3`) — Number of stat cards (for stats layout)
 - **`isStatic`** `boolean` (default: `false`) — Disable shimmer animation
+- **`children`** `ReactNode` — Replaces the placeholder body in the `page`, `content` and `tabs` layouts. The page's header row and the tab strip stay. Other layouts ignore it.
 - **`size`** `string` (default: `'2x'`) — Height of individual placeholder elements (from Placeholder)
 - **`circle`** `boolean` — Render placeholder as a circle (1:1 aspect ratio with round radius)
 - **`template`** `string` — CSS grid-template shorthand for the skeleton root grid layout
@@ -53,4 +54,14 @@ These properties allow direct style application without using the `styles` prop:
 <Skeleton layout="table" rows={5} columns={4} />
 
 <Skeleton layout="chart" columns={8} />
+```
+
+### Custom Body
+
+In the `page`, `content` and `tabs` layouts, `children` replace the default placeholder lines:
+
+```jsx
+<Skeleton layout="tabs" tabs={5}>
+  <Placeholder height="30x" />
+</Skeleton>
 ```

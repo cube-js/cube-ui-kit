@@ -222,6 +222,7 @@ export function Skeleton({
   lines,
   tabs,
   cards,
+  children,
   ...props
 }: CubeSkeletonProps) {
   layout = layout || 'page';
@@ -234,9 +235,12 @@ export function Skeleton({
       lines,
       tabs,
       cards,
+      children,
       rootProps: { qa: 'Skeleton', ...props },
     })
   ) : (
-    <Placeholder qa="Skeleton" isStatic={isStatic} {...props} />
+    <Placeholder qa="Skeleton" isStatic={isStatic} {...props}>
+      {children}
+    </Placeholder>
   );
 }
