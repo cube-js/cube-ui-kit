@@ -127,8 +127,16 @@ function TreeNodeInner(props: TreeNodeProps) {
 
   const rowRef = useRef<HTMLDivElement>(null);
 
+  // For lazy rows with no children yet, still render a toggle unless
+  // explicitly marked as leaf.
+  const isLeaf =
+    data.isLeaf === true || (data.isLeaf !== false && !node.hasChildNodes);
+
+  // Without `hasChildItems`, React Aria counts a row as a parent only with
+  // more than one child (it expects the row's content as the first), so
+  // single-child and lazy rows lost `aria-expanded` and arrow-key expansion.
   const { rowProps, gridCellProps, expandButtonProps, isPressed } = useTreeItem(
-    { node },
+    { node, hasChildItems: !isLeaf },
     state,
     rowRef,
   );
@@ -143,10 +151,6 @@ function TreeNodeInner(props: TreeNodeProps) {
   const isFocused =
     state.selectionManager.isFocused &&
     state.selectionManager.focusedKey === node.key;
-  // For lazy rows with no children yet, still render a toggle unless
-  // explicitly marked as leaf.
-  const isLeaf =
-    data.isLeaf === true || (data.isLeaf !== false && !node.hasChildNodes);
   const isRowCheckable = isCheckable && data.isCheckable !== false;
 
   const nodeState: TreeNodeState = {

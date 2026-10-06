@@ -293,7 +293,7 @@ Tree implements the [`treegrid` ARIA pattern](https://www.w3.org/WAI/ARIA/apg/pa
 
 ### Screen Reader Support
 
-- Each row reports `aria-level`, `aria-posinset`, `aria-setsize`, and `aria-expanded` so screen readers can announce the position and expansion state.
+- Each row reports `aria-level`, `aria-posinset`, `aria-setsize`, and `aria-expanded` so screen readers can announce the position and expansion state. Every expandable row carries `aria-expanded`, including a row with a single child and a lazy row (`isLeaf: false`) whose children have not loaded yet; leaf rows omit it.
 - When `isCheckable` is enabled, the row carries `aria-checked` (`true`, `false`, or `mixed` for the indeterminate state).
 - Disabled rows expose `aria-disabled="true"`.
 

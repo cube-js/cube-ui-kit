@@ -896,6 +896,63 @@ describe('<Tree />', () => {
     });
   });
 
+  describe('expandable rows with fewer than two children (CUB-5381)', () => {
+    const row = (key: string) =>
+      document.querySelector(`[role="row"][data-qa-key="${key}"]`)!;
+
+    it('reports aria-expanded and toggles with the arrow keys on a single-child row', async () => {
+      const { queryByText } = renderWithRoot(
+        <Tree
+          treeData={[
+            {
+              key: 'parent',
+              title: 'Parent',
+              children: [{ key: 'child', title: 'Child' }],
+            },
+            { key: 'leaf', title: 'Leaf' },
+          ]}
+        />,
+      );
+
+      expect(row('parent')).toHaveAttribute('aria-expanded', 'false');
+      expect(row('leaf')).not.toHaveAttribute('aria-expanded');
+
+      act(() => (row('parent') as HTMLElement).focus());
+      await userEvent.keyboard('{ArrowRight}');
+
+      expect(row('parent')).toHaveAttribute('aria-expanded', 'true');
+      expect(queryByText('Child')).toBeInTheDocument();
+      expect(row('child')).not.toHaveAttribute('aria-expanded');
+
+      await userEvent.keyboard('{ArrowLeft}');
+
+      expect(row('parent')).toHaveAttribute('aria-expanded', 'false');
+      expect(queryByText('Child')).not.toBeInTheDocument();
+    });
+
+    it('reports aria-expanded and toggles with the arrow keys on a lazy row', async () => {
+      const loadData = vi.fn(() => new Promise<void>(() => {}));
+      renderWithRoot(
+        <Tree
+          treeData={[{ key: 'lazy', title: 'Lazy', isLeaf: false }]}
+          loadData={loadData}
+        />,
+      );
+
+      expect(row('lazy')).toHaveAttribute('aria-expanded', 'false');
+
+      act(() => (row('lazy') as HTMLElement).focus());
+      await userEvent.keyboard('{ArrowRight}');
+
+      expect(row('lazy')).toHaveAttribute('aria-expanded', 'true');
+      expect(loadData).toHaveBeenCalledTimes(1);
+
+      await userEvent.keyboard('{ArrowLeft}');
+
+      expect(row('lazy')).toHaveAttribute('aria-expanded', 'false');
+    });
+  });
+
   describe('Space chaining in checkable trees', () => {
     it('toggles the checkbox AND selects the row in selectionMode=single', async () => {
       const onCheck = vi.fn();
