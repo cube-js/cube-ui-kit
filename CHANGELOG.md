@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.190.5
+
+### Patch Changes
+
+- [#1476](https://github.com/cube-js/cube-ui-kit/pull/1476) [`65dce5a4`](https://github.com/cube-js/cube-ui-kit/commit/65dce5a4d62800ebeecd9ec39b2e4e1690bf1ed3) Thanks [@tenphi](https://github.com/tenphi)! - Update Tasty to 3.9.9 with fixes for font styles, nested selectors, DOM attribute forwarding, and styled component and filtered prop types.
+
 ## 0.190.4
 
 ### Patch Changes
