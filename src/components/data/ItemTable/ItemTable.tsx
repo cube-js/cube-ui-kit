@@ -1,33 +1,18 @@
-import { useCollator } from '@react-aria/i18n';
-import { useControlledState } from '@react-stately/utils';
 import { CONTAINER_STYLES } from '@tenphi/tasty';
 import { forwardRef, useMemo, useRef, useState } from 'react';
 
-import { useEvent, useWarn } from '../../../_internal/hooks';
 import { useI18n } from '../../../i18n';
 import { useCombinedRefs } from '../../../utils/react';
 import { extractStyles, mergeStyleLayers } from '../../../utils/styles';
-import { clampPage, getPageInfo } from '../../navigation/Pagination';
 import { DraggableCollection } from '../../shared/DraggableCollection';
 import {
   ROW_MENU_COLUMN_KEY,
   ROW_MENU_COLUMN_WIDTH,
 } from '../TableBase/row-menu';
-import {
-  buildTableTree,
-  filterTableTree,
-  flattenTableTree,
-  isTableTreeDescendant,
-  reindexTableTree,
-  sortTableTree,
-} from '../TableBase/table-tree';
+import { filterTableTree } from '../TableBase/table-tree';
 import { TableView } from '../TableBase/TableView';
 import { useContainerWidth } from '../TableBase/use-container-width';
-import {
-  freezeColumnWidths,
-  getColumnText,
-  useTableColumns,
-} from '../TableBase/use-table-columns';
+import { getColumnText } from '../TableBase/use-table-columns';
 import {
   matchesTableSearch,
   useTableSearch,
@@ -35,32 +20,28 @@ import {
 import {
   SELECTION_COLUMN_KEY,
   SELECTION_COLUMN_WIDTH,
-  useTableSelection,
 } from '../TableBase/use-table-selection';
-import { compareByColumn, useTableSort } from '../TableBase/use-table-sort';
 import { useTableStorage } from '../TableBase/use-table-storage';
 import { useTableTreeState } from '../TableBase/use-table-tree-state';
 
 import { ItemTableBulkBar } from './ItemTableBulkBar';
-import { ItemTableDragPreview } from './ItemTableDragPreview';
 import { ItemTableFooter } from './ItemTableFooter';
 import {
   ItemTableChromeProvider,
   ItemTableSearch,
   ItemTableToolbar,
 } from './ItemTableToolbar';
+import { useItemTableColumnWidths } from './use-item-table-column-widths';
+import { useItemTableDragDrop } from './use-item-table-drag-drop';
+import { useItemTablePagination } from './use-item-table-pagination';
+import { useItemTableSelection } from './use-item-table-selection';
+import { useItemTableSort } from './use-item-table-sort';
+import { useItemTableTreeModel } from './use-item-table-tree-model';
 
 import type { Key } from '@react-types/shared';
 import type { ForwardedRef, ReactElement, ReactNode } from 'react';
-import type {
-  CubeTableColumnLayout,
-  CubeTableRowContext,
-  CubeTableSort,
-} from '../TableBase/types';
+import type { CubeTableRowContext } from '../TableBase/types';
 import type { CubeItemTableProps } from './types';
-
-/** Stable identity, so the uncontrolled default does not change every render. */
-const EMPTY_WIDTHS: Record<string, number> = {};
 
 function defaultGetRowKey<T>(rowKey: string) {
   return (row: T, index: number): Key => {
@@ -212,56 +193,15 @@ function ItemTable<T = any>(
     [getRowKey, rowKey],
   );
 
-  const treeModel = useMemo(
-    () =>
-      getRowChildren
-        ? buildTableTree(data, getRowChildren, resolvedGetRowKey)
-        : null,
-    [data, getRowChildren, resolvedGetRowKey],
-  );
-
-  useWarn(treeModel != null && treeModel.duplicateKeys.length > 0, {
-    key: ['item-table-tree-duplicate-keys'],
-    args: [
-      'ItemTable:',
-      'Tree row keys must be unique across the complete hierarchy. Duplicate rows were ignored.',
-    ],
-  });
-  useWarn(treeModel != null && treeModel.cyclicKeys.length > 0, {
-    key: ['item-table-tree-cyclic-keys'],
-    args: [
-      'ItemTable:',
-      'Tree data contains a cycle. Cyclic descendants were ignored.',
-    ],
-  });
-  useWarn(treeModel != null && isReorderable, {
-    key: ['item-table-tree-reorder-unsupported'],
-    args: [
-      'ItemTable:',
-      '`isReorderable` is ignored in tree mode. Use `dropOnRow` for folder-style moves.',
-    ],
-  });
-
-  const resolvedTreeColumnKey = useMemo(() => {
-    if (!treeModel) return undefined;
-    const visibleColumns = columns.filter((column) => !column.isHidden);
-    return visibleColumns.some((column) => column.key === treeColumnKey)
-      ? treeColumnKey
-      : visibleColumns[0]?.key;
-  }, [treeModel, columns, treeColumnKey]);
-
-  useWarn(
-    treeModel != null &&
-      treeColumnKey != null &&
-      resolvedTreeColumnKey !== treeColumnKey,
-    {
-      key: ['item-table-tree-column-invalid', treeColumnKey],
-      args: [
-        'ItemTable:',
-        '`treeColumnKey` must identify a visible data column. Falling back to the first visible column.',
-      ],
-    },
-  );
+  const { treeModel, treeColumnKey: resolvedTreeColumnKey } =
+    useItemTableTreeModel<T>({
+      data,
+      columns,
+      getRowKey: resolvedGetRowKey,
+      getRowChildren,
+      treeColumnKey,
+      isReorderable,
+    });
 
   const {
     searchValue,
@@ -300,124 +240,45 @@ function ItemTable<T = any>(
   const {
     sort,
     sortedRows,
+    sortedTreeRoots,
+    mode: resolvedSortMode,
     toggleSort,
     setColumnSort,
-    mode: resolvedSortMode,
-  } = useTableSort<T>({
+  } = useItemTableSort<T>({
     columns,
-    rows: treeModel
-      ? searchedTree?.roots.map((node) => node.row) ?? []
-      : searchedRows,
-    mode: treeModel ? 'server' : sortMode,
+    rows: searchedRows,
+    tree: searchedTree,
+    mode: sortMode,
     sort: sortProp,
-    // Only restore what the table owns: a controlled `sort` belongs to the page,
-    // and overriding it here would fight the page's own source of truth.
-    defaultSort:
-      sortProp === undefined && storage.has('sort')
-        ? storage.initial.sort ?? defaultSort
-        : defaultSort,
-    onSortChange: useEvent((next: CubeTableSort | null) => {
-      if (sortProp === undefined) storage.write({ sort: next });
-      onSortChange?.(next);
-    }),
+    defaultSort,
+    onSortChange,
+    storage,
   });
-
-  const collator = useCollator({ numeric: true, sensitivity: 'base' });
-  const treeSortMode = treeModel
-    ? sortMode ??
-      (columns.some((column) => column.isSortable) ? 'client' : 'off')
-    : resolvedSortMode;
-  const processedTreeRoots = useMemo(() => {
-    const roots = searchedTree?.roots ?? [];
-    if (treeSortMode !== 'client' || !sort) return roots;
-    const column = columns.find((entry) => entry.key === sort.columnKey);
-    if (!column) return roots;
-
-    return sortTableTree(roots, (a, b) => {
-      const result = compareByColumn(
-        column,
-        collator,
-        a.row,
-        a.sourceIndex,
-        b.row,
-        b.sourceIndex,
-      );
-      return result * (sort.direction === 'asc' ? 1 : -1);
-    });
-  }, [searchedTree, treeSortMode, sort, columns, collator]);
 
   // Search → sort → paginate. Paging last, so a page always reflects the rows
   // the user is actually looking at.
-  //
-  // Deliberately not `usePagination`: that hook owns an in-memory array, and in
-  // server mode `data` is a single page. Deriving the bounds from it would clamp
-  // the page to 1 and swallow every page change.
-  const [pageSize, setPageSizeState] = useControlledState<number>(
-    pageSizeProp as number,
-    pageSizeProp === undefined && storage.has('pageSize')
-      ? storage.initial.pageSize ?? defaultPageSize
-      : defaultPageSize,
-    onPageSizeChange as (value: number) => void,
-  );
-  const [page, setPageState] = useControlledState<number>(
-    pageProp as number,
-    defaultPage ?? 1,
-    onPageChange as (value: number) => void,
-  );
-
-  const isInfinite = paginationMode === 'infinite';
-  // Infinite scroll replaces the page control rather than adding to it.
-  const isPaginated = paginationMode !== 'off' && !isInfinite;
-  const isServerPaginated = paginationMode === 'server';
-  const total = isServerPaginated
-    ? totalProp ?? 0
-    : treeModel
-      ? processedTreeRoots.length
-      : sortedRows.length;
-
-  const pageInfo = getPageInfo({
-    page,
-    pageSize,
-    total,
-    totalPages: isServerPaginated ? totalPages : undefined,
+  const pagination = useItemTablePagination<T>({
+    mode: paginationMode,
+    rows: sortedRows,
+    treeRoots: sortedTreeRoots,
+    isTree: treeModel != null,
+    pageSize: pageSizeProp,
+    defaultPageSize,
+    onPageSizeChange,
+    pageSizeOptions,
+    page: pageProp,
+    defaultPage,
+    onPageChange,
+    total: totalProp,
+    totalPages,
+    hasNextPage,
+    summary,
+    autoHide: autoHidePagination,
+    storage,
   });
-
-  const setPage = useEvent((next: number) =>
-    setPageState(clampPage(next, pageInfo.totalPages)),
-  );
-  const setPageSize = useEvent((next: number) => {
-    setPageSizeState(next);
-
-    if (pageSizeProp === undefined) storage.write({ pageSize: next });
-
-    // The old page index points at different rows under a new page size, so
-    // staying on it would silently move the user.
-    setPageState(1);
-  });
-
-  const flatVisibleRows =
-    paginationMode === 'client'
-      ? sortedRows.slice(
-          (pageInfo.page - 1) * pageSize,
-          pageInfo.page * pageSize,
-        )
-      : sortedRows;
-
-  const pageTreeRoots = useMemo(
-    () =>
-      reindexTableTree(
-        paginationMode === 'client'
-          ? processedTreeRoots.slice(
-              (pageInfo.page - 1) * pageSize,
-              pageInfo.page * pageSize,
-            )
-          : processedTreeRoots,
-      ),
-    [processedTreeRoots, paginationMode, pageInfo.page, pageSize],
-  );
 
   const treeState = useTableTreeState<T>({
-    roots: pageTreeRoots,
+    roots: pagination.pageTreeRoots,
     allNodesByKey: treeModel?.byKey ?? new Map(),
     expandedKeys,
     defaultExpandedKeys,
@@ -438,79 +299,29 @@ function ItemTable<T = any>(
   const visibleTreeEntries = treeModel ? treeState.visibleEntries : [];
   const visibleRows = treeModel
     ? visibleTreeEntries.map((entry) => entry.row)
-    : flatVisibleRows;
+    : pagination.pageRows;
   const visibleRowKeys = treeModel
     ? visibleTreeEntries.map((entry) => entry.key)
     : undefined;
-  const pageTreeEntries = treeModel ? flattenTableTree(pageTreeRoots) : [];
-  const filteredTreeEntries = treeModel
-    ? flattenTableTree(processedTreeRoots)
-    : [];
-  const selectionTree = useMemo(() => {
-    if (!treeModel) return undefined;
 
-    // Selection follows the tree the user can currently act on. In
-    // particular, a search that retains only an ancestor path must not let a
-    // checked ancestor reach siblings that the search removed.
-    const childrenOf = new Map<Key, Key[]>();
-    const parentOf = new Map<Key, Key | null>();
-
-    flattenTableTree(processedTreeRoots).forEach((node) => {
-      childrenOf.set(
-        node.key,
-        node.children.map((child) => child.key),
-      );
-      parentOf.set(node.key, node.parentKey);
-    });
-
-    return {
-      rootKeys: processedTreeRoots.map((node) => node.key),
-      childrenOf,
-      parentOf,
-      behavior: treeSelectionBehavior,
-    };
-  }, [treeModel, processedTreeRoots, treeSelectionBehavior]);
-
-  // A bulk action with no way to select rows is a contradiction, so supplying
-  // any implies multiple selection unless the consumer says otherwise.
-  const resolvedSelectionMode =
-    selectionMode ?? (bulkActions?.length ? 'multiple' : 'none');
-
-  const selection = useTableSelection<T>({
+  const selection = useItemTableSelection<T>({
     rows: visibleRows,
     rowKeys: visibleRowKeys,
-    pageRows: treeModel
-      ? pageTreeEntries.map((entry) => entry.row)
-      : visibleRows,
-    pageRowKeys: treeModel
-      ? pageTreeEntries.map((entry) => entry.key)
-      : undefined,
-    // The wider set the header checkbox can reach under
-    // `selectAllMode="filtered"`. In server mode the client only ever holds one
-    // page, so the two coincide.
-    filteredRows: treeModel
-      ? (paginationMode === 'client'
-          ? filteredTreeEntries
-          : pageTreeEntries
-        ).map((entry) => entry.row)
-      : paginationMode === 'client'
-        ? sortedRows
-        : visibleRows,
-    filteredRowKeys: treeModel
-      ? (paginationMode === 'client'
-          ? filteredTreeEntries
-          : pageTreeEntries
-        ).map((entry) => entry.key)
-      : undefined,
+    sortedRows,
+    isTree: treeModel != null,
+    sortedTreeRoots,
+    pageTreeRoots: pagination.pageTreeRoots,
+    paginationMode,
     getRowKey: resolvedGetRowKey,
-    selectionMode: resolvedSelectionMode,
+    selectionMode,
+    bulkActions,
     selectedKeys: selectedKeysProp,
     defaultSelectedKeys,
     onSelectionChange,
     selectAllMode,
     isRowSelectable,
     disabledKeys,
-    tree: selectionTree,
+    treeSelectionBehavior,
   });
 
   // A `ReactNode` menu applies to every row; a function decides per row. The
@@ -558,82 +369,17 @@ function ItemTable<T = any>(
     [selection.isEnabled, size],
   );
 
-  /**
-   * Column widths, in three layers.
-   *
-   * The draft exists because a resize has to be visible *while* it happens, and
-   * a controlled `columnWidths` cannot be: the consumer only learns the new
-   * width from `onColumnResize`, which fires when the gesture ends. Without a
-   * draft a controlled table simply would not move under the pointer.
-   */
-  const [ownColumnWidths, setOwnColumnWidths] = useState<
-    Record<string, number>
-  >(
-    () =>
-      (columnWidthsProp === undefined && storage.has('columnWidths')
-        ? storage.initial.columnWidths ?? defaultColumnWidths
-        : defaultColumnWidths) ?? EMPTY_WIDTHS,
-  );
-  const [draftColumnWidths, setDraftColumnWidths] = useState<Record<
-    string,
-    number
-  > | null>(null);
-
-  /**
-   * The same draft, in a ref.
-   *
-   * A keyboard resize runs `useMove`'s whole start → move → end cycle inside
-   * one key press, so the end handler would read the state from before the
-   * move. The ref is what it actually settles on; the state exists only to
-   * trigger the render.
-   */
-  const draftColumnWidthsRef = useRef<Record<string, number> | null>(null);
-
-  const baseColumnWidths = columnWidthsProp ?? ownColumnWidths;
-  const columnWidths = draftColumnWidths ?? baseColumnWidths;
-
-  /** `layout` is computed below; `useEvent` only reads this when a drag runs. */
-  const layoutRef = useRef<CubeTableColumnLayout<T> | null>(null);
-
-  const handleColumnResize = useEvent((key: string, width: number) => {
-    // First move of a drag freezes every column, so this changes exactly one
-    // width instead of re-splitting the flex pool. See `freezeColumnWidths`.
-    const base =
-      draftColumnWidthsRef.current ??
-      freezeColumnWidths(layoutRef.current, baseColumnWidths);
-
-    draftColumnWidthsRef.current = { ...base, [key]: Math.round(width) };
-    setDraftColumnWidths(draftColumnWidthsRef.current);
-  });
-
-  // Once at the end: a callback per pixel would be unusable, and persisting
-  // every frame would hammer `localStorage`.
-  const handleColumnResizeEnd = useEvent((key: string) => {
-    const next = draftColumnWidthsRef.current ?? baseColumnWidths;
-
-    if (columnWidthsProp === undefined) {
-      setOwnColumnWidths(next);
-      storage.write({ columnWidths: next });
-    }
-
-    onColumnResize?.(key, next[key], next);
-
-    // The prop (or `ownColumnWidths`) is the source of truth again. A
-    // controlled consumer that ignores the callback reverts, which is what
-    // being controlled means.
-    draftColumnWidthsRef.current = null;
-    setDraftColumnWidths(null);
-  });
-
-  const layout = useTableColumns<T>({
-    columns,
-    containerWidth,
-    columnWidths,
-    leadingColumns,
-    trailingColumns,
-  });
-
-  layoutRef.current = layout;
+  const { layout, handleColumnResize, handleColumnResizeEnd } =
+    useItemTableColumnWidths<T>({
+      columns,
+      containerWidth,
+      leadingColumns,
+      trailingColumns,
+      columnWidths: columnWidthsProp,
+      defaultColumnWidths,
+      onColumnResize,
+      storage,
+    });
 
   const hasBulkSelection =
     bulkActions != null &&
@@ -675,30 +421,9 @@ function ItemTable<T = any>(
       )
     : null;
 
-  /**
-   * Pagination that cannot do anything is noise: one page of five rows still
-   * renders "1–5 of 5", a page-size selector whose every option shows the same
-   * five rows, and a solitary "1" button.
-   *
-   * "Cannot do anything" is both conditions together — a single page *and* a
-   * total that even the smallest page size would not split. A 15-row single
-   * page stays, because choosing "10 / page" would genuinely paginate it.
-   */
-  const smallestPageSize = pageSizeOptions?.length
-    ? Math.min(...pageSizeOptions)
-    : pageSize;
-
-  const isPaginationUseless =
-    autoHidePagination &&
-    !hasNextPage &&
-    pageInfo.totalPages <= 1 &&
-    total <= smallestPageSize;
-
-  const showPagination = isPaginated && !isPaginationUseless;
-
   const hasFooter =
     footer !== undefined ||
-    showPagination ||
+    pagination.control != null ||
     footerStart != null ||
     footerCenter != null ||
     footerEnd != null;
@@ -710,49 +435,22 @@ function ItemTable<T = any>(
           center={footerCenter}
           end={footerEnd}
           styles={footerStyles}
-          pagination={
-            showPagination
-              ? {
-                  page: pageInfo.page,
-                  pageSize,
-                  total,
-                  totalPages: pageInfo.totalPages,
-                  pageSizeOptions,
-                  summary,
-                  hasNextPage,
-                  onPageChange: setPage,
-                  onPageSizeChange: setPageSize,
-                }
-              : undefined
-          }
+          pagination={pagination.control}
         />
       )
     : null;
 
   const bodyRef = useRef<HTMLTableSectionElement>(null);
 
-  const rowKeys = useMemo(
-    () =>
-      visibleRows.map((row, index) =>
-        String(visibleRowKeys?.[index] ?? resolvedGetRowKey(row, index)),
-      ),
-    [visibleRows, visibleRowKeys, resolvedGetRowKey],
-  );
-
-  const handleReorder = useEvent((nextKeys: string[]) => {
-    const byKey = new Map(
-      visibleRows.map((row, index) => [
-        String(resolvedGetRowKey(row, index)),
-        row,
-      ]),
-    );
-
-    onReorder?.(
-      nextKeys,
-      nextKeys
-        .map((key) => byKey.get(key))
-        .filter((row): row is T => row !== undefined),
-    );
+  const drag = useItemTableDragDrop<T>({
+    rows: visibleRows,
+    rowKeys: visibleRowKeys,
+    getRowKey: resolvedGetRowKey,
+    treeModel,
+    isReorderable,
+    onReorder,
+    dropOnRow,
+    getItemDragInfo,
   });
 
   /**
@@ -784,9 +482,13 @@ function ItemTable<T = any>(
       // `isPaginated` already excludes infinite scroll, where every loaded row
       // is in `visibleRows` and there is no page to offset by.
       rowIndexOffset={
-        treeModel ? 0 : isPaginated ? (pageInfo.page - 1) * pageSize : 0
+        treeModel
+          ? 0
+          : pagination.isPaginated
+            ? (pagination.page - 1) * pagination.pageSize
+            : 0
       }
-      totalRowCount={treeModel ? visibleRows.length : total}
+      totalRowCount={treeModel ? visibleRows.length : pagination.total}
       getRowKey={resolvedGetRowKey}
       layout={layout}
       onScrollerRef={setScrollerEl}
@@ -808,11 +510,11 @@ function ItemTable<T = any>(
       selectionTooltip={selectionTooltip}
       rowLink={rowLink}
       onRowAction={onRowAction}
-      onLoadMore={isInfinite ? onLoadMore : undefined}
+      onLoadMore={pagination.isInfinite ? onLoadMore : undefined}
       hasMore={hasMore}
       isLoadingMore={isLoadingMore}
       loadMoreMargin={loadMoreMargin}
-      isReorderable={isDragEnabled}
+      isReorderable={drag.isEnabled}
       isResizable={isResizable}
       onColumnResize={handleColumnResize}
       onColumnResizeEnd={handleColumnResizeEnd}
@@ -829,7 +531,7 @@ function ItemTable<T = any>(
       toolbar={toolbarNode}
       footer={footerNode}
       isFiltered={isFiltered ?? isSearching}
-      sortMode={treeSortMode}
+      sortMode={resolvedSortMode}
       sort={sort}
       onColumnSort={toggleSort}
       onColumnSortChange={setColumnSort}
@@ -862,77 +564,7 @@ function ItemTable<T = any>(
     />
   );
 
-  const rowByKeyForDrop = useMemo(() => {
-    const map = new Map<string, T>();
-
-    visibleRows.forEach((row, index) =>
-      map.set(
-        String(visibleRowKeys?.[index] ?? resolvedGetRowKey(row, index)),
-        row,
-      ),
-    );
-
-    return map;
-  }, [visibleRows, visibleRowKeys, resolvedGetRowKey]);
-
-  const handleItemDrop = useEvent((targetKey: Key, draggedKeys: Key[]) => {
-    if (!dropOnRow) return;
-
-    const target = rowByKeyForDrop.get(String(targetKey));
-
-    if (!target) return;
-
-    const draggedKeySet = new Set(draggedKeys);
-    const topmostDraggedKeys = treeModel
-      ? draggedKeys.filter((key) => {
-          let parent = treeModel.parentOf.get(key);
-          while (parent != null) {
-            if (draggedKeySet.has(parent)) return false;
-            parent = treeModel.parentOf.get(parent);
-          }
-          return true;
-        })
-      : draggedKeys;
-
-    if (
-      treeModel &&
-      topmostDraggedKeys.some((key) =>
-        isTableTreeDescendant(treeModel, targetKey, key),
-      )
-    ) {
-      return;
-    }
-
-    const dragged = topmostDraggedKeys
-      .map((key) => rowByKeyForDrop.get(String(key)))
-      // A row cannot be dropped on itself.
-      .filter((row): row is T => row !== undefined && row !== target);
-
-    if (!dragged.length) return;
-    if (dropOnRow.isAllowed && !dropOnRow.isAllowed(dragged, target)) return;
-
-    void dropOnRow.onDrop(dragged, target);
-  });
-
-  const renderDragPreview = useEvent((keys: Key[]) => (
-    <ItemTableDragPreview<T>
-      rows={keys
-        .map((key) => rowByKeyForDrop.get(String(key)))
-        .filter((row): row is T => row !== undefined)}
-      getItemDragInfo={getItemDragInfo!}
-    />
-  ));
-
-  const shouldAcceptItemDrop = useEvent((targetKey: Key) => {
-    const target = rowByKeyForDrop.get(String(targetKey));
-
-    return target != null && (dropOnRow?.isTarget(target) ?? false);
-  });
-
-  // Dropping onto a row and reordering both need the drag machinery.
-  const isDragEnabled = (!treeModel && isReorderable) || dropOnRow != null;
-
-  const table = isDragEnabled ? (
+  const table = drag.isEnabled ? (
     <DraggableCollection
       state={{
         collection: selection.collection,
@@ -944,12 +576,12 @@ function ItemTable<T = any>(
       // children, so pointing it at the table root would leave every drop
       // unresolvable — the row lifts but never lands.
       listRef={bodyRef}
-      orderedKeys={rowKeys}
+      orderedKeys={drag.orderedKeys}
       orientation="vertical"
-      onReorder={!treeModel && isReorderable ? handleReorder : undefined}
-      onItemDrop={dropOnRow ? handleItemDrop : undefined}
-      shouldAcceptItemDrop={dropOnRow ? shouldAcceptItemDrop : undefined}
-      renderPreview={getItemDragInfo ? renderDragPreview : undefined}
+      onReorder={drag.onReorder}
+      onItemDrop={drag.onItemDrop}
+      shouldAcceptItemDrop={drag.shouldAcceptItemDrop}
+      renderPreview={drag.renderPreview}
     >
       {(dragState, dropState, collectionProps) =>
         renderTable(dragState, dropState, collectionProps)

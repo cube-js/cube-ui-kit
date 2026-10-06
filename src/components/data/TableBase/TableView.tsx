@@ -8,18 +8,15 @@ import {
   useRef,
   useState,
 } from 'react';
-import { useTree, useTreeItem, VisuallyHidden } from 'react-aria';
+import { useTreeItem, VisuallyHidden } from 'react-aria';
 
 import { useEvent } from '../../../_internal/hooks';
 import { useI18n } from '../../../i18n';
-import { ArrowNarrowDownIcon } from '../../../icons/ArrowNarrowDownIcon';
-import { ArrowNarrowUpIcon } from '../../../icons/ArrowNarrowUpIcon';
 import { DirectionIcon } from '../../../icons/DirectionIcon';
 import { MoreIcon } from '../../../icons/MoreIcon';
 import { getColorTheme, useColorTheme } from '../../../tokens/color-theme';
 import { usePaletteVersion } from '../../../tokens/palette-config';
 import { SIZE_NAME_TO_KEY, SIZES } from '../../../tokens/sizes';
-import { mergeProps } from '../../../utils/react';
 import { Action } from '../../actions/Action/Action';
 import { ItemAction } from '../../actions/ItemAction/ItemAction';
 import { Menu, MenuTrigger } from '../../actions/Menu';
@@ -31,11 +28,7 @@ import { Checkbox } from '../../fields/Checkbox';
 import { useToast } from '../../overlays/Toast';
 import { TooltipProvider } from '../../overlays/Tooltip/TooltipProvider';
 
-import {
-  COLUMN_MENU_SORT_DIRECTION,
-  isColumnMenuSortKey,
-  processColumnMenuItems,
-} from './column-menu';
+import { renderColumnHeaderContent, resolveColumnSort } from './column-header';
 import { columnCellClassName } from './column-styles';
 import { buildColumnTints, tintSlot } from './column-tint';
 import { ColumnResizer } from './ColumnResizer';
@@ -52,8 +45,10 @@ import {
 } from './styled';
 import { TableHeaderCell } from './TableHeaderCell';
 import { TableRow, TableRowDropIndicator } from './TableRow';
+import { TreeGridTable } from './TreeGridTable';
 import { selectionRowKey } from './types';
 import { toTsv } from './use-cell-selection';
+import { useColumnMenu } from './use-column-menu';
 import { getDraggableColumnKeys, isColumnDraggable } from './use-column-order';
 import { useRowMoveAnimation } from './use-row-move-animation';
 import { useScrollability } from './use-scrollability';
@@ -67,7 +62,6 @@ import type { Key, Node } from '@react-types/shared';
 import type { Styles } from '@tenphi/tasty';
 import type {
   CSSProperties,
-  FocusEvent as ReactFocusEvent,
   KeyboardEvent as ReactKeyboardEvent,
   MouseEvent as ReactMouseEvent,
   ReactNode,
@@ -77,14 +71,13 @@ import type {
 import type { TreeState } from 'react-stately';
 import type { NavigateArg } from '../../../providers/navigation.types';
 import type { ColorThemeConfig } from '../../../tokens/color-theme';
-import type { CubeColumnMenuContext } from './column-menu';
+import type { ColumnSortState } from './column-header';
 import type { TableTreeNode } from './table-tree';
 import type {
   CubeResolvedColumn,
   CubeTableCellContext,
   CubeTableColumnGroupHeader,
   CubeTableColumnLayout,
-  CubeTableHeaderContext,
   CubeTableLayoutProps,
   CubeTableLoadingIndicator,
   CubeTableRowContext,
@@ -424,166 +417,86 @@ function pinStyle(column: CubeResolvedColumn): CSSProperties | undefined {
   return { ['--pin-offset' as any]: `${column.pinOffset}px` };
 }
 
+/** What a data cell shows: `column.render`'s output, or the display text. */
+function renderCellContent<T>(
+  column: CubeResolvedColumn<T>,
+  row: T,
+  rowIndex: number,
+  ctx: CubeTableCellContext<T>,
+): ReactNode {
+  const value = column.isStructural
+    ? undefined
+    : getColumnValue(column, row, rowIndex);
+
+  // Without `render`, the cell shows the column's display text — which is
+  // what `format` produces, and what client sort, search and copy all agree
+  // on. `getColumnText` returns null for a value it cannot turn into text
+  // (an object with no `format`), so we render nothing rather than
+  // "[object Object]".
+  const rendered = column.render
+    ? column.render(value, row, rowIndex, ctx)
+    : column.isStructural
+      ? null
+      : getColumnText(column, row, rowIndex);
+
+  const isText =
+    typeof rendered === 'string' ||
+    typeof rendered === 'number' ||
+    typeof rendered === 'bigint';
+
+  // Bare text gets ellipsis + an automatic tooltip when it overflows.
+  // `TextItem` rather than `Item` deliberately: `Item` runs `useHotkeys` on
+  // every instance, which at one per cell would be hundreds of subscriptions
+  // churned on every scroll tick.
+  //
+  // An `autoHeight` column skips it — `TextItem` exists to truncate, and this
+  // column has opted into wrapping instead.
+  return isText && !column.autoHeight ? (
+    <TextItem>{String(rendered)}</TextItem>
+  ) : isText ? (
+    String(rendered)
+  ) : (
+    (rendered as ReactNode)
+  );
+}
+
 /**
- * Hook boundary for the native table. Flat tables deliberately avoid this
- * component so their DOM and keyboard behaviour remain exactly as before.
+ * A tree column's cell content: indented to the row's level, with the expand
+ * toggle — or a placeholder holding its place on a leaf — before the value.
  */
-function TreeGridTable<T>(props: {
-  tree: NonNullable<TableViewProps<T>['tree']>;
-  tableProps: Record<string, any>;
-  style?: CSSProperties;
-  children: ReactNode;
-}) {
-  const { tree, tableProps, style, children } = props;
-  const ref = useRef<HTMLTableElement>(null);
-  const pendingFocusKey = useRef<Key | null>(null);
-  const { gridProps } = useTree(tree.ariaProps as any, tree.state, ref);
-
-  // A virtualized destination may not exist until the focused key makes the
-  // parent virtualizer scroll and render another window. Retry after each
-  // render until that row mounts, then complete the keyboard focus move.
-  useEffect(() => {
-    const key = pendingFocusKey.current;
-    if (key == null) return;
-
-    // A real focus move wins over the delayed virtual-row focus. Losing the
-    // old row to virtualization leaves focus on <body>, whereas tabbing or
-    // clicking elsewhere leaves a concrete active element we must respect.
-    const activeElement = document.activeElement;
-    if (
-      activeElement &&
-      activeElement !== document.body &&
-      !ref.current?.contains(activeElement)
-    ) {
-      pendingFocusKey.current = null;
-      return;
-    }
-
-    const target = Array.from(
-      ref.current?.querySelectorAll<HTMLTableRowElement>(
-        'tbody tr[data-element="Row"][data-key]',
-      ) ?? [],
-    ).find((element) => element.dataset.key === String(key));
-
-    if (target) {
-      pendingFocusKey.current = null;
-      target.focus();
-    }
-  });
-
-  const handleBlurCapture = (event: ReactFocusEvent<HTMLTableElement>) => {
-    const pendingKey = pendingFocusKey.current;
-    const nextTarget = event.relatedTarget;
-
-    if (pendingKey != null && nextTarget instanceof Element) {
-      const nextRow = nextTarget.closest<HTMLTableRowElement>(
-        'tbody tr[data-element="Row"][data-key]',
-      );
-
-      if (nextRow?.dataset.key !== String(pendingKey)) {
-        pendingFocusKey.current = null;
-      }
-    }
-
-    (gridProps as any).onBlurCapture?.(event);
-  };
-
-  const handleKeyDownCapture = (
-    event: ReactKeyboardEvent<HTMLTableElement>,
-  ) => {
-    const row = (event.target as HTMLElement).closest<HTMLTableRowElement>(
-      'tbody tr[data-element="Row"][data-key]',
-    );
-
-    // Inputs, links and menus embedded in a row retain their own shortcuts.
-    if (!row || event.target !== row) {
-      (gridProps as any).onKeyDownCapture?.(event);
-      return;
-    }
-
-    // While a virtual destination is still mounting, subsequent key presses
-    // continue from that logical key rather than repeatedly targeting the old
-    // DOM row that still owns focus.
-    const currentKey = pendingFocusKey.current ?? row.dataset.key;
-    const index = tree.entries.findIndex(
-      (entry) => String(entry.key) === String(currentKey),
-    );
-    const entry = tree.entries[index];
-    if (!entry) return;
-
-    const focusEntry = (next: TableTreeNode<T> | undefined) => {
-      if (!next) return false;
-      tree.state.selectionManager.setFocusedKey(next.key);
-      const target = Array.from(
-        ref.current?.querySelectorAll<HTMLTableRowElement>(
-          'tbody tr[data-element="Row"][data-key]',
-        ) ?? [],
-      ).find((element) => element.dataset.key === String(next.key));
-      if (target) {
-        pendingFocusKey.current = null;
-        target.focus();
-      } else pendingFocusKey.current = next.key;
-      return true;
-    };
-
-    const hasChildren = entry.children.length > 0;
-    const isExpanded = tree.state.expandedKeys.has(entry.key);
-    let handled = false;
-
-    if (event.key === 'ArrowRight' && hasChildren) {
-      if (isExpanded) handled = focusEntry(entry.children[0]);
-      else {
-        tree.state.toggleKey(entry.key);
-        handled = true;
-      }
-    } else if (event.key === 'ArrowLeft') {
-      if (hasChildren && isExpanded) {
-        tree.state.toggleKey(entry.key);
-        handled = true;
-      } else if (entry.parentKey != null) {
-        handled = focusEntry(
-          tree.entries.find((candidate) => candidate.key === entry.parentKey),
-        );
-      }
-    } else if (event.key === 'ArrowDown') {
-      handled = focusEntry(tree.entries[index + 1]);
-    } else if (event.key === 'ArrowUp') {
-      handled = focusEntry(tree.entries[index - 1]);
-    }
-
-    if (handled) {
-      event.preventDefault();
-      event.stopPropagation();
-      return;
-    }
-
-    // React Aria still sees the DOM row that owned focus before the virtual
-    // destination mounted. If a logical navigation key has no action there
-    // (a boundary, leaf, or collapsed root), consuming it avoids falling
-    // through and applying that key to the stale row instead.
-    if (
-      pendingFocusKey.current != null &&
-      ['ArrowDown', 'ArrowUp', 'ArrowRight', 'ArrowLeft'].includes(event.key)
-    ) {
-      event.preventDefault();
-      event.stopPropagation();
-      return;
-    }
-
-    (gridProps as any).onKeyDownCapture?.(event);
-  };
-
+function renderTreeCellContent<T>(
+  entry: TableTreeNode<T>,
+  isExpanded: boolean,
+  expandButtonProps:
+    | ReturnType<typeof useTreeItem>['expandButtonProps']
+    | undefined,
+  content: ReactNode,
+) {
   return (
-    <table
-      {...mergeProps(gridProps, tableProps)}
-      ref={ref}
-      role="treegrid"
-      style={style}
-      onBlurCapture={handleBlurCapture}
-      onKeyDownCapture={handleKeyDownCapture}
+    <div
+      data-element="TreeContent"
+      style={
+        {
+          '--tree-level': String(entry.level),
+        } as CSSProperties
+      }
     >
-      {children}
-    </table>
+      {entry.children.length > 0 ? (
+        <TableTreeToggle
+          {...expandButtonProps}
+          data-element="TreeToggle"
+          tabIndex={-1}
+        >
+          <DirectionIcon to={isExpanded ? 'bottom' : 'right'} />
+        </TableTreeToggle>
+      ) : (
+        <TableTreeTogglePlaceholder
+          data-element="TreeToggle"
+          aria-hidden="true"
+        />
+      )}
+      <div data-element="TreeValue">{content}</div>
+    </div>
   );
 }
 
@@ -710,18 +623,6 @@ export function TableView<T = any>(props: TableViewProps<T>) {
 
   const [scrollerEl, setScrollerEl] = useState<HTMLDivElement | null>(null);
   const scrollerRef = useRef<HTMLDivElement | null>(null);
-  /**
-   * The column whose menu is open, held for the whole table rather than per
-   * header cell.
-   *
-   * `renderHeaderCell` is a closure inside this component, not a component of
-   * its own, so it cannot hold state — and only one column menu can be open at a
-   * time anyway. Controlled rather than letting `MenuTrigger` own it: Shift+F10
-   * has to be able to open it from the `<th>`, and the trigger is not a tab stop.
-   */
-  const [openMenuColumnKey, setOpenMenuColumnKey] = useState<string | null>(
-    null,
-  );
   // `bodyRef` is optional — only the drag-and-drop path supplies one — but the
   // move animation needs the `<tbody>` either way, so it keeps its own and both
   // are filled from one callback.
@@ -1257,20 +1158,17 @@ export function TableView<T = any>(props: TableViewProps<T>) {
       );
     }
 
+    return renderColumnHeaderCell(column, rowSpan);
+  }
+
+  /** A data column's header cell: its sort, menu, resize handle and drag. */
+  function renderColumnHeaderCell(
+    column: CubeResolvedColumn<T>,
+    rowSpan: number,
+  ) {
     const header = column.header;
-    // One resolution path for both shapes, so every consumer of `isSorted`
-    // below stays unaware of which one the caller supplied.
-    const activeSorts = sorts ?? (sort ? [sort] : []);
-    const sortIndex = activeSorts.findIndex(
-      (entry) => entry.columnKey === column.key,
-    );
-    const activeSort = sortIndex === -1 ? null : activeSorts[sortIndex];
-    const isSorted = activeSort != null;
-    // Only worth showing when more than one column is sorted — a lone "1"
-    // beside an arrow is noise.
-    const sortRank = activeSorts.length > 1 ? sortIndex + 1 : null;
-    const isSortable =
-      sortMode !== 'off' && !column.isStructural && column.isSortable === true;
+    const sortState = resolveColumnSort(column, sortMode, sorts, sort);
+    const { activeSort, isSorted, isSortable } = sortState;
 
     // A structural column has no content to make room for, and resizing needs
     // somewhere to write the result.
@@ -1280,128 +1178,13 @@ export function TableView<T = any>(props: TableViewProps<T>) {
       onColumnResize != null &&
       onColumnResizeEnd != null;
 
-    const ctx: CubeTableHeaderContext = {
-      columnKey: column.key,
-      columnIndex: column.index,
-      sort: activeSort?.direction ?? null,
-      isSortable,
-      isResizing: false,
-      width: column.width,
-    };
-
-    // The arrow keeps its slot even when unsorted, so turning a sort on and off
-    // never shifts the label.
-    //
-    // Two glyphs rather than one flipped with `scale`. A narrow arrow flipped
-    // vertically does land on its own opposite, but rendering the real icon is
-    // what keeps that true — a glyph that is not perfectly symmetric would come
-    // out subtly wrong, and nothing would say why.
-    //
-    // Unsorted shows the UP arrow, because that is what the first press gives:
-    // the hint predicts the press rather than advertising that one is possible.
-    const sortIndicator = isSortable ? (
-      <div
-        data-element="SortIndicator"
-        data-rank={sortRank ?? undefined}
-        data-sorted={isSorted ? '' : undefined}
-        data-dir={activeSort?.direction}
-        aria-hidden="true"
-      >
-        {activeSort?.direction === 'desc' ? (
-          <ArrowNarrowDownIcon />
-        ) : (
-          <ArrowNarrowUpIcon />
-        )}
-      </div>
-    ) : null;
-
-    // The arrow belongs in the `rightIcon` slot: that slot is sized and aligned
-    // for an icon, while `suffix` is a text slot and puts the glyph on the
-    // label's baseline.
-    //
-    // A `header.rightIcon` the consumer asked for keeps the slot, and the arrow
-    // falls back to `suffix` — rare, and better than dropping either one.
-    const hasCustomRightIcon = header?.rightIcon != null;
-    const rightIcon = hasCustomRightIcon ? header!.rightIcon : sortIndicator;
-
-    const suffixContent = hasCustomRightIcon ? sortIndicator : null;
-    const suffix =
-      header?.suffix != null || suffixContent ? (
-        <>
-          {header?.suffix}
-          {suffixContent}
-        </>
-      ) : undefined;
-
-    const menuItems = resolveColumnMenu(column);
+    const menuItems = columnMenu.resolveColumnMenu(column);
     const hasMenu = menuItems != null;
-    const isContextOnly = columnContextMenu === 'context-only';
 
-    const menuAction =
-      hasMenu && !isContextOnly ? (
-        <MenuTrigger
-          isOpen={openMenuColumnKey === column.key}
-          // `bottom end`: the trigger sits at the column's trailing edge, so a
-          // start-aligned popover hangs off the table on the last column.
-          placement="bottom end"
-          onOpenChange={(open) =>
-            setOpenMenuColumnKey(open ? column.key : null)
-          }
-        >
-          <ItemAction
-            // The grid is one tab stop; the trigger is reached from the header
-            // cell with Shift+F10, matching the row menu.
-            tabIndex={-1}
-            icon={<MoreIcon />}
-            aria-label={t('itemTable.columnMenu', 'Column menu')}
-            {...columnMenuTriggerProps}
-            {...header?.menuTriggerProps}
-          />
-          <Menu
-            {...columnMenuProps}
-            {...header?.menuProps}
-            onAction={columnMenuActionHandler(column, false)}
-          >
-            {processColumnMenuItems(
-              menuItems,
-              columnMenuContext(column, isSortable, activeSort),
-            )}
-          </Menu>
-        </MenuTrigger>
-      ) : null;
-
-    // The consumer's own actions first, the overflow menu last — matching Tabs.
-    const actions =
-      header?.actions != null || menuAction ? (
-        <>
-          {header?.actions}
-          {menuAction}
-        </>
-      ) : undefined;
-
-    const content = header?.render ? (
-      header.render(ctx)
-    ) : column.title == null && !header ? null : (
-      <TableHeaderItem
-        icon={header?.icon}
-        rightIcon={rightIcon}
-        prefix={header?.prefix}
-        suffix={suffix}
-        description={header?.description}
-        descriptionPlacement={header?.descriptionPlacement}
-        tooltip={header?.tooltip ?? true}
-        theme={header?.theme}
-        actions={actions}
-        autoHideActions={header?.autoHideActions ?? true}
-        // Without it the actions slot animates its width from 0 on hover, which
-        // re-truncates the label — so the header text shifts under the cursor.
-        // Only the opacity should move; `TabElement` reserves the space for the
-        // same reason.
-        preserveActionsSpace={actions != null}
-        styles={header?.styles}
-      >
-        {column.title}
-      </TableHeaderItem>
+    const content = renderColumnHeaderContent(
+      column,
+      sortState,
+      columnMenu.renderColumnMenuTrigger(column, menuItems, sortState),
     );
 
     const isDraggable = isColumnDraggable(column, isColumnReorderable);
@@ -1426,7 +1209,8 @@ export function TableView<T = any>(props: TableViewProps<T>) {
           'data-resizable': canResize ? '' : undefined,
           'data-last-column': lastColumnFlag(column),
           'data-sorted': isSorted ? '' : undefined,
-          'data-menu-open': openMenuColumnKey === column.key ? '' : undefined,
+          'data-menu-open':
+            columnMenu.openMenuColumnKey === column.key ? '' : undefined,
           'data-tint': tintSlot(tints, column.key, 'header'),
           role: 'columnheader',
           scope: 'col',
@@ -1440,49 +1224,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
           'aria-sort': activeSort ? ARIA_SORT[activeSort.direction] : undefined,
           'aria-haspopup': hasMenu ? 'menu' : undefined,
           style: pinStyle(column),
-          // React Aria's Alt+Arrow reorder reads `focusedKey`, and nothing else
-          // sets it — `useDroppableCollection` only ever reads it.
-          onFocus: isColumnReorderable
-            ? () => onColumnFocus?.(isDraggable ? column.key : null)
-            : undefined,
-          onClick: isSortable ? () => onColumnSort?.(column.key) : undefined,
-          // Both `true` and `'context-only'` answer to a right-click, and
-          // `false` already made `hasMenu` false in `resolveColumnMenu`.
-          onContextMenu: hasMenu
-            ? (event: ReactMouseEvent) =>
-                openColumnContextMenu(column, isSortable, activeSort, event)
-            : undefined,
-          onKeyDown:
-            isSortable || hasMenu
-              ? (event: ReactKeyboardEvent) => {
-                  // Shift+F10 is the standard keyboard route to a context menu,
-                  // and the only route to this one — the trigger is not a tab
-                  // stop.
-                  if (event.key === 'F10' && event.shiftKey && hasMenu) {
-                    if (isContextOnly) {
-                      openColumnContextMenu(
-                        column,
-                        isSortable,
-                        activeSort,
-                        event,
-                      );
-                    } else {
-                      event.preventDefault();
-                      // The Scroller listens for Shift+F10 too, for the row menu.
-                      event.stopPropagation();
-                      setOpenMenuColumnKey(column.key);
-                    }
-
-                    return;
-                  }
-
-                  if (!isSortable) return;
-                  if (event.key !== 'Enter' && event.key !== ' ') return;
-                  // Space would scroll the grid otherwise.
-                  event.preventDefault();
-                  onColumnSort?.(column.key);
-                }
-              : undefined,
+          ...columnHeaderHandlers(column, sortState, hasMenu, isDraggable),
         }}
       >
         {content}
@@ -1496,6 +1238,54 @@ export function TableView<T = any>(props: TableViewProps<T>) {
         ) : null}
       </TableHeaderCell>
     );
+  }
+
+  /**
+   * A data column's header as a control: a press or Enter/Space sorts it, a
+   * right-click or Shift+F10 opens its menu, and focus feeds Alt+Arrow
+   * reordering.
+   */
+  function columnHeaderHandlers(
+    column: CubeResolvedColumn<T>,
+    sortState: ColumnSortState,
+    hasMenu: boolean,
+    isDraggable: boolean,
+  ) {
+    const { isSortable } = sortState;
+
+    return {
+      // React Aria's Alt+Arrow reorder reads `focusedKey`, and nothing else
+      // sets it — `useDroppableCollection` only ever reads it.
+      onFocus: isColumnReorderable
+        ? () => onColumnFocus?.(isDraggable ? column.key : null)
+        : undefined,
+      onClick: isSortable ? () => onColumnSort?.(column.key) : undefined,
+      // Both `true` and `'context-only'` answer to a right-click, and
+      // `false` already made `hasMenu` false in `resolveColumnMenu`.
+      onContextMenu: hasMenu
+        ? (event: ReactMouseEvent) =>
+            columnMenu.openColumnContextMenu(column, sortState, event)
+        : undefined,
+      onKeyDown:
+        isSortable || hasMenu
+          ? (event: ReactKeyboardEvent) => {
+              // Shift+F10 is the standard keyboard route to a context menu,
+              // and the only route to this one — the trigger is not a tab
+              // stop.
+              if (event.key === 'F10' && event.shiftKey && hasMenu) {
+                columnMenu.openColumnMenuFromKeyboard(column, sortState, event);
+
+                return;
+              }
+
+              if (!isSortable) return;
+              if (event.key !== 'Enter' && event.key !== ' ') return;
+              // Space would scroll the grid otherwise.
+              event.preventDefault();
+              onColumnSort?.(column.key);
+            }
+          : undefined,
+    };
   }
 
   function renderCell(
@@ -1581,78 +1371,18 @@ export function TableView<T = any>(props: TableViewProps<T>) {
       tree: pinnedEdge == null ? treeRowState(rowIndex) : undefined,
     };
 
-    const value = column.isStructural
-      ? undefined
-      : getColumnValue(column, row, rowIndex);
-
-    // Without `render`, the cell shows the column's display text — which is
-    // what `format` produces, and what client sort, search and copy all agree
-    // on. `getColumnText` returns null for a value it cannot turn into text
-    // (an object with no `format`), so we render nothing rather than
-    // "[object Object]".
-    const rendered = column.render
-      ? column.render(value, row, rowIndex, ctx)
-      : column.isStructural
-        ? null
-        : getColumnText(column, row, rowIndex);
-
-    const isText =
-      typeof rendered === 'string' ||
-      typeof rendered === 'number' ||
-      typeof rendered === 'bigint';
-
-    // Bare text gets ellipsis + an automatic tooltip when it overflows.
-    // `TextItem` rather than `Item` deliberately: `Item` runs `useHotkeys` on
-    // every instance, which at one per cell would be hundreds of subscriptions
-    // churned on every scroll tick.
-    //
-    // An `autoHeight` column skips it — `TextItem` exists to truncate, and this
-    // column has opted into wrapping instead.
-    const content =
-      isText && !column.autoHeight ? (
-        <TextItem>{String(rendered)}</TextItem>
-      ) : isText ? (
-        String(rendered)
-      ) : (
-        (rendered as ReactNode)
-      );
+    const content = renderCellContent(column, row, rowIndex, ctx);
 
     const treeEntry = pinnedEdge == null ? tree?.entries[rowIndex] : undefined;
     const displayContent =
-      treeEntry && column.key === tree?.columnKey ? (
-        <div
-          data-element="TreeContent"
-          style={
-            {
-              '--tree-level': String(treeEntry.level),
-            } as CSSProperties
-          }
-        >
-          {treeEntry.children.length > 0 ? (
-            <TableTreeToggle
-              {...treeItemAria?.expandButtonProps}
-              data-element="TreeToggle"
-              tabIndex={-1}
-            >
-              <DirectionIcon
-                to={
-                  tree.state.expandedKeys.has(treeEntry.key)
-                    ? 'bottom'
-                    : 'right'
-                }
-              />
-            </TableTreeToggle>
-          ) : (
-            <TableTreeTogglePlaceholder
-              data-element="TreeToggle"
-              aria-hidden="true"
-            />
-          )}
-          <div data-element="TreeValue">{content}</div>
-        </div>
-      ) : (
-        content
-      );
+      treeEntry && column.key === tree?.columnKey
+        ? renderTreeCellContent(
+            treeEntry,
+            tree.state.expandedKeys.has(treeEntry.key),
+            treeItemAria?.expandButtonProps,
+            content,
+          )
+        : content;
 
     // Resolved through tasty, not spread into `style`: the type is `Styles`, and
     // an inline style takes none of its tokens, units or state maps — a
@@ -2222,89 +1952,14 @@ export function TableView<T = any>(props: TableViewProps<T>) {
    * `targetRef` to a `<th>` would bind its listener with fixed props — the same
    * reason the row menu leaves it unattached.
    * ──────────────────────────────────────────────────────────────────────── */
-
-  function resolveColumnMenu(column: CubeResolvedColumn<T>): ReactNode | null {
-    if (columnContextMenu === false || column.isStructural) return null;
-
-    const items = column.header?.menu;
-
-    return isMenuEmpty(items) ? null : items;
-  }
-
-  /** The reserved sort keys, labelled here so `column-menu.ts` stays pure. */
-  function columnMenuContext(
-    column: CubeResolvedColumn<T>,
-    isSortable: boolean,
-    activeSort: CubeTableSort | null,
-  ): CubeColumnMenuContext {
-    return {
-      isSortable,
-      sort: activeSort?.direction ?? null,
-      disallowSortRemoval: column.disallowSortRemoval === true,
-      labels: {
-        'sort-asc': t('itemTable.sortAscending', 'Sort ascending'),
-        'sort-desc': t('itemTable.sortDescending', 'Sort descending'),
-        'clear-sort': t('itemTable.clearSort', 'Clear sort'),
-      },
-    };
-  }
-
-  function columnMenuActionHandler(
-    column: CubeResolvedColumn<T>,
-    closeAfter: boolean,
-  ) {
-    return (action: Key) => {
-      const normalized = normalizeMenuAction(action);
-
-      // The table's own keys are applied first, then the consumer hears about
-      // them anyway — so a key can be both understood here and observed there.
-      if (isColumnMenuSortKey(normalized)) {
-        onColumnSortChange?.(
-          column.key,
-          COLUMN_MENU_SORT_DIRECTION[normalized],
-        );
-      }
-
-      column.header?.onMenuAction?.(normalized);
-      onColumnMenuAction?.(normalized, column.key);
-
-      // `useContextMenu` leaves its popover open after an action; see
-      // `menuActionHandler` above.
-      if (closeAfter) contextMenu.close();
-    };
-  }
-
-  const openColumnContextMenu = useEvent(
-    (
-      column: CubeResolvedColumn<T>,
-      isSortable: boolean,
-      activeSort: CubeTableSort | null,
-      event: ReactMouseEvent | ReactKeyboardEvent,
-    ) => {
-      const items = resolveColumnMenu(column);
-
-      if (items == null) return;
-
-      event.preventDefault();
-      // The Scroller listens for Shift+F10 too, for the row menu.
-      event.stopPropagation();
-      contextMenu.open(
-        {
-          ...columnMenuProps,
-          ...column.header?.menuProps,
-          children: processColumnMenuItems(
-            items,
-            columnMenuContext(column, isSortable, activeSort),
-          ),
-          onAction: columnMenuActionHandler(column, true),
-        },
-        undefined,
-        'clientX' in event.nativeEvent
-          ? (event.nativeEvent as MouseEvent)
-          : undefined,
-      );
-    },
-  );
+  const columnMenu = useColumnMenu<T>({
+    contextMenu,
+    columnContextMenu,
+    columnMenuProps,
+    columnMenuTriggerProps,
+    onColumnSortChange,
+    onColumnMenuAction,
+  });
 
   /** Resolves the row a pointer or keyboard event landed in. */
   function rowFromEvent(target: EventTarget | null) {
@@ -2491,29 +2146,38 @@ export function TableView<T = any>(props: TableViewProps<T>) {
       selection?.selectionMode === 'multiple' ? true : undefined,
   } as const;
 
-  let bodyContent: ReactNode;
+  const tableStyle =
+    layout.totalWidth != null ? { width: layout.totalWidth } : undefined;
 
-  if (error != null) {
-    bodyContent = renderStateRow(error);
-  } else if (showSkeleton) {
-    bodyContent = renderSkeletonRows();
-  } else if (showBlank) {
-    bodyContent = null;
-  } else if (!hasRows) {
-    bodyContent = renderStateRow(isFiltered ? noResultsLabel : emptyLabel);
-  } else if (shouldVirtualize) {
-    bodyContent = (
-      <>
-        {renderSpacerRow(paddingTop, 'top')}
-        {virtualItems.map((v) =>
-          withDropIndicators(rows[v.index], v.index, true),
-        )}
-        {renderSpacerRow(paddingBottom, 'bottom')}
-      </>
-    );
-  } else {
-    bodyContent = rows.map((row, index) => withDropIndicators(row, index));
+  /**
+   * What `<tbody>` holds between the pinned rows: the error, the loading
+   * skeleton, nothing at all, the empty state, or the rows — in that order of
+   * precedence.
+   */
+  function renderBodyContent(): ReactNode {
+    if (error != null) return renderStateRow(error);
+    if (showSkeleton) return renderSkeletonRows();
+    if (showBlank) return null;
+    if (!hasRows) {
+      return renderStateRow(isFiltered ? noResultsLabel : emptyLabel);
+    }
+
+    if (shouldVirtualize) {
+      return (
+        <>
+          {renderSpacerRow(paddingTop, 'top')}
+          {virtualItems.map((v) =>
+            withDropIndicators(rows[v.index], v.index, true),
+          )}
+          {renderSpacerRow(paddingBottom, 'bottom')}
+        </>
+      );
+    }
+
+    return rows.map((row, index) => withDropIndicators(row, index));
   }
+
+  const bodyContent = renderBodyContent();
 
   const tableContent = (
     <>
@@ -2699,26 +2363,11 @@ export function TableView<T = any>(props: TableViewProps<T>) {
         }}
       >
         {tree ? (
-          <TreeGridTable
-            tree={tree}
-            tableProps={tableProps}
-            style={
-              layout.totalWidth != null
-                ? { width: layout.totalWidth }
-                : undefined
-            }
-          >
+          <TreeGridTable tree={tree} tableProps={tableProps} style={tableStyle}>
             {tableContent}
           </TreeGridTable>
         ) : (
-          <table
-            {...tableProps}
-            style={
-              layout.totalWidth != null
-                ? { width: layout.totalWidth }
-                : undefined
-            }
-          >
+          <table {...tableProps} style={tableStyle}>
             {tableContent}
           </table>
         )}

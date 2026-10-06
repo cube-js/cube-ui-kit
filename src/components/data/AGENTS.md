@@ -53,7 +53,7 @@ There is a regression test asserting a `selected + hovered` row computes a diffe
 
 ## `Item` goes inside the `<th>`, never as the `<th>`
 
-`Item` emits `aria-selected` unconditionally (`Item.tsx:964`), which on a `columnheader` claims the column is _selected_ rather than _sorted_. It is also `inline-grid` with its own intrinsic size, and it paints its own hover/pressed ramp.
+`Item` emits `aria-selected` whenever `isSelected` is set (in `renderItemElement`, unless the row sets `aria-pressed`), which on a `columnheader` claims the column is _selected_ rather than _sorted_. It is also `inline-grid` with its own intrinsic size, and it paints its own hover/pressed ramp.
 
 So `TableHeaderItem` sits inside the header cell: the `<th>` owns the interaction fill and the ARIA, `Item` contributes layout. The prize is that `Item`'s `Actions` slot already stops click/pointer/Enter/Space propagation, so pressing a column menu can never trigger the sort.
 
