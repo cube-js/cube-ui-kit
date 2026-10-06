@@ -17,9 +17,18 @@ permissions:
 
 # Note: Canary publishing is handled by publish.yml workflow
 
+# The Version Packages PR (`changeset-release/main`) changes only versions,
+# changelogs and spent changesets. `main` takes only PRs that are up to date and
+# green, so its code is exactly what the last merged PR already tested here, and
+# the jobs below skip it rather than test the same tree again. A job skipped by
+# its `if` reports success, so the required `Tests & lint` check still passes;
+# `skip-chromatic` reports the required `UI Tests` and `UI Review` statuses.
+# `Build & canary release` (publish.yml) still builds the tree about to ship.
+
 jobs:
   tests:
     name: 'Tests & lint'
+    if: github.head_ref != 'changeset-release/main'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -62,7 +71,8 @@ jobs:
         run: pnpm diagnostics:compiler
 
   form-react:
-    name: 'React Compiler / React ${{ matrix.react }}'
+    name: 'React Compiler / React ${{ matrix.react }} / Form & package'
+    if: github.head_ref != 'changeset-release/main'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -86,8 +96,6 @@ jobs:
         run: pnpm test:form-react
       - name: Verify the same modern Form contract with React Compiler
         run: pnpm test:form-compiled
-      - name: Verify all components with the release compiler transform
-        run: pnpm test:compiled --maxWorkers=2
       - name: Build and pack the compiled library
         run: pnpm build && pnpm pack:test
       - name: Verify packed output with compiled and uncompiled consumers
@@ -101,19 +109,48 @@ jobs:
           name: react-compiler-${{ matrix.react }}
           path: dist/react-compiler-report.json
 
-  browser-tests:
-    name: 'Browser tests / React ${{ matrix.react }}'
+  # The full jsdom suite through the release compiler transform, on the same
+  # React matrix. At ~5.5 minutes it is most of the compiler checks' time, so
+  # it runs beside the Form and package checks above rather than among them.
+  compiled-tests:
+    name: 'React Compiler / React ${{ matrix.react }} / All components'
+    if: github.head_ref != 'changeset-release/main'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - react: 19
-          # React 18 is a supported peer, and it differs from 19 where only a
-          # real browser can see it: Strict Mode replays effects without
-          # re-attaching refs, which `useAutoTooltip` and its consumers have
-          # to survive while measuring real labels.
-          - react: 18
+        react: [18, 19]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Install the React 18 consumer matrix
+        if: matrix.react == 18
+        run: pnpm add -D --save-exact react@18.3.1 react-dom@18.3.1 react-test-renderer@18.3.1
+      - name: Verify all components with the release compiler transform
+        run: pnpm test:compiled --maxWorkers=2
+
+  browser-tests:
+    name: 'Browser tests / React ${{ matrix.react }} / Compiler ${{ matrix.compiler }}'
+    if: github.head_ref != 'changeset-release/main'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # React 18 is a supported peer, and it differs from 19 where only a
+        # real browser can see it: Strict Mode replays effects without
+        # re-attaching refs, which `useAutoTooltip` and its consumers have
+        # to survive while measuring real labels.
+        react: [19, 18]
+        # Uncompiled source and the release compiler transform. Each is a
+        # full ~4.5-minute run of the suite, so they run as parallel jobs
+        # rather than as two steps of one.
+        compiler: ['off', 'on']
     steps:
       - uses: actions/checkout@v7
 
@@ -152,13 +189,14 @@ jobs:
       - name: Install Chromium
         run: pnpm exec playwright install --with-deps chromium
 
-      - name: Run the browser tests
+      - name: Run the browser tests (compiler ${{ matrix.compiler }})
         run: pnpm test:browser
-      - name: Run the browser tests with the release compiler transform
-        run: UIKIT_REACT_COMPILER=on pnpm test:browser
+        env:
+          UIKIT_REACT_COMPILER: ${{ matrix.compiler }}
 
   deploy-chromatic:
     name: 'Prepare Storybook for review & tests'
+    if: github.head_ref != 'changeset-release/main'
     runs-on: ubuntu-latest
     environment:
       name: Chromatic staging
@@ -242,3 +280,26 @@ jobs:
               repo: context.repo,
               prNumber: context.payload.pull_request.number
             })
+
+  # Chromatic's own statuses, `UI Tests` and `UI Review`, are required checks,
+  # so the Version Packages PR cannot simply go without a build: `skip` records
+  # the commit as passing instead. A real build there is pure cost. Nobody
+  # reviews it, the build that follows the release on main photographs the
+  # same tree, and it has run with TurboSnap disabled, snapshotting all ~1100
+  # stories.
+  skip-chromatic:
+    name: 'Skip Storybook review for the release PR'
+    if: github.head_ref == 'changeset-release/main'
+    runs-on: ubuntu-latest
+    steps:
+      # Full history, as for a real build: Chromatic reads the PR head commit's
+      # details from git before it decides to skip.
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Mark the commit as passing in Chromatic
+        uses: chromaui/action@v11
+        with:
+          skip: true
+          projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
