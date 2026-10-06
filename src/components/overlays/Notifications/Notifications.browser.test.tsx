@@ -127,13 +127,13 @@ describe('Toast and notification width', () => {
 
     return (
       <>
-        <Button
-          qa="ShowToast"
-          onPress={() => toast({ title, description, duration: null })}
-        >
+        <Button qa="ShowToast" onPress={() => toast({ title, description })}>
           Toast
         </Button>
-        <Button qa="ShowNotification" onPress={() => notify({ title })}>
+        <Button
+          qa="ShowNotification"
+          onPress={() => notify({ title, description })}
+        >
           Notify
         </Button>
       </>
@@ -207,6 +207,20 @@ describe('Toast and notification width', () => {
     },
   );
 
+  // At 300px: the URL fits a desktop-width notification anyway.
+  it('breaks a word wider than a notification description', async () => {
+    await page.viewport(300, 800);
+
+    const item = await show('Notification', 'Exported', URL);
+    const description = item.querySelector<HTMLElement>(
+      '[data-element="Description"]',
+    )!;
+
+    expect(description.scrollWidth).toBeLessThanOrEqual(
+      description.clientWidth,
+    );
+  });
+
   it('restacks toasts when a resize wraps one of them', async () => {
     await page.viewport(1280, 800);
 
@@ -217,8 +231,8 @@ describe('Toast and notification width', () => {
         <Button
           qa="ShowTwo"
           onPress={() => {
-            toast({ title: LONG, duration: null });
-            toast({ title: 'Saved', duration: null });
+            toast({ title: LONG });
+            toast({ title: 'Saved' });
           }}
         >
           Show
