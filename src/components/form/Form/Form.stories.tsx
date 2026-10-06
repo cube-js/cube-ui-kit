@@ -74,6 +74,11 @@ const meta: Meta<typeof Form> = {
         defaultValue: { summary: 'icon' },
       },
     },
+    isDisabled: {
+      control: { type: 'boolean' },
+      description:
+        'Disables every field in the form, plus Form.Submit and Form.Reset. Other buttons do not inherit it',
+    },
     isReadOnly: {
       control: { type: 'boolean' },
       description: 'Whether fields are read-only by default',

@@ -35,7 +35,7 @@ An accessible collapsible container that reveals or hides additional content. Bu
 
 ### Base Properties
 
-Supports [Base properties](/docs/getting-started-base-properties--docs). `Disclosure`, `Disclosure.Group` and `Disclosure.Item` forward DOM attributes (`id`, `className`, `style`, `aria-*`, `data-*`) and event handlers to their root, so hover props from `useHover` can go straight on the disclosure:
+Supports [Base properties](/docs/getting-started-base-properties--docs). `Disclosure`, `Disclosure.Group` and `Disclosure.Item` forward DOM attributes (`id`, `className`, `style`, `aria-*`, `data-*`), `theme`, `tokens` and event handlers to their root. The exception is `id` on `Disclosure.Item`, which is the item's group key, not its DOM `id` (see Disclosure.Item below). Hover props from `useHover` can go straight on the disclosure:
 
 ```jsx
 <Disclosure {...hoverProps}>

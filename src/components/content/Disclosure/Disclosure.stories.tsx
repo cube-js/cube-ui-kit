@@ -68,7 +68,7 @@ const meta = {
     transitionDuration: {
       control: 'number',
       description:
-        'Duration for DisplayTransition animation in milliseconds. When undefined, uses default CSS transition timing',
+        'Duration for DisplayTransition animation in milliseconds. When undefined, uses default CSS transition timing. It sets the `$disclosure-transition` token, which wins over the same key in `tokens`',
       table: {
         type: { summary: 'number' },
       },

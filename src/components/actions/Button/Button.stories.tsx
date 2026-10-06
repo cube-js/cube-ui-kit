@@ -80,6 +80,14 @@ export default {
     },
 
     /* State */
+    isDisabled: {
+      control: { type: 'boolean' },
+      description:
+        'Disables the button. Not inherited from Provider or Form, unlike fields; Form.Submit and Form.Reset are the exceptions (default: false)',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
     isLoading: {
       control: { type: 'boolean' },
       description:

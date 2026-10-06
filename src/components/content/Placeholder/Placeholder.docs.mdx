@@ -43,6 +43,16 @@ These properties allow direct style application without using the `styles` prop:
 - **Color:** `color`, `fill`, `fade`, `image`
 - **Flow:** `flow`, `place`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gap`, `columnGap`, `rowGap`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`
 
+## Examples
+
+```jsx
+<Placeholder width="200px" height="24px" />
+
+<Placeholder circle size="4x" />
+
+<Placeholder isStatic width="100%" />
+```
+
 ## Detecting Loading Placeholders
 
 Every Placeholder, including the ones inside `Skeleton`, renders a `data-loading-placeholder` attribute. Use it to find content that is still loading, for example in a performance observer or an end-to-end test:
@@ -55,14 +65,4 @@ The attribute doesn't depend on the locale, and a `qa` or `aria-label` prop does
 
 ## Accessibility
 
-Placeholder renders a `region` labelled with the localized "Content is loading" text, so assistive technology announces the loading state.
-
-## Examples
-
-```jsx
-<Placeholder width="200px" height="24px" />
-
-<Placeholder circle size="4x" />
-
-<Placeholder isStatic width="100%" />
-```
+Placeholder renders a `region` landmark labelled with the localized "Content is loading" text, so screen-reader users can find content that is still loading. The region has no content, so don't rely on it to announce the loading state: add a status message where one is needed.
