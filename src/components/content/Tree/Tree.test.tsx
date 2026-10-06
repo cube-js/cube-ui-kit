@@ -2,7 +2,7 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 import userEvent from '@testing-library/user-event';
 import { createRef, useState } from 'react';
 
-import { act, renderWithRoot, waitFor } from '../../../test';
+import { act, renderWithRoot, screen, waitFor } from '../../../test';
 import { Menu } from '../../actions/Menu';
 
 import { Tree } from './Tree';
@@ -897,8 +897,7 @@ describe('<Tree />', () => {
   });
 
   describe('expandable rows with fewer than two children (CUB-5381)', () => {
-    const row = (key: string) =>
-      document.querySelector(`[role="row"][data-qa-key="${key}"]`)!;
+    const row = (name: string) => screen.getByRole('row', { name });
 
     it('reports aria-expanded and toggles with the arrow keys on a single-child row', async () => {
       const { queryByText } = renderWithRoot(
@@ -914,19 +913,19 @@ describe('<Tree />', () => {
         />,
       );
 
-      expect(row('parent')).toHaveAttribute('aria-expanded', 'false');
-      expect(row('leaf')).not.toHaveAttribute('aria-expanded');
+      expect(row('Parent')).toHaveAttribute('aria-expanded', 'false');
+      expect(row('Leaf')).not.toHaveAttribute('aria-expanded');
 
-      act(() => (row('parent') as HTMLElement).focus());
+      act(() => row('Parent').focus());
       await userEvent.keyboard('{ArrowRight}');
 
-      expect(row('parent')).toHaveAttribute('aria-expanded', 'true');
+      expect(row('Parent')).toHaveAttribute('aria-expanded', 'true');
       expect(queryByText('Child')).toBeInTheDocument();
-      expect(row('child')).not.toHaveAttribute('aria-expanded');
+      expect(row('Child')).not.toHaveAttribute('aria-expanded');
 
       await userEvent.keyboard('{ArrowLeft}');
 
-      expect(row('parent')).toHaveAttribute('aria-expanded', 'false');
+      expect(row('Parent')).toHaveAttribute('aria-expanded', 'false');
       expect(queryByText('Child')).not.toBeInTheDocument();
     });
 
@@ -939,17 +938,17 @@ describe('<Tree />', () => {
         />,
       );
 
-      expect(row('lazy')).toHaveAttribute('aria-expanded', 'false');
+      expect(row('Lazy')).toHaveAttribute('aria-expanded', 'false');
 
-      act(() => (row('lazy') as HTMLElement).focus());
+      act(() => row('Lazy').focus());
       await userEvent.keyboard('{ArrowRight}');
 
-      expect(row('lazy')).toHaveAttribute('aria-expanded', 'true');
+      expect(row('Lazy')).toHaveAttribute('aria-expanded', 'true');
       expect(loadData).toHaveBeenCalledTimes(1);
 
       await userEvent.keyboard('{ArrowLeft}');
 
-      expect(row('lazy')).toHaveAttribute('aria-expanded', 'false');
+      expect(row('Lazy')).toHaveAttribute('aria-expanded', 'false');
     });
   });
 

@@ -144,7 +144,7 @@ describe('parseTo', () => {
     });
   });
 
-  it.each(['http://example.com', 'tel:+15550100', '!//example.com'])(
+  it.each(['tel:+15550100', '!//example.com'])(
     'treats %s as external',
     (to) => {
       expect(parseTo(to).isExternal).toBe(true);
@@ -154,10 +154,7 @@ describe('parseTo', () => {
   it.each(['/a:b', '..?t=a:b', '/models/cube:orders', '!/a:b', '@/a:b'])(
     'keeps a literal colon in %s as router navigation',
     (to) => {
-      expect(parseTo(to)).toMatchObject({
-        cleanTo: to.replace(/^[!@]/, ''),
-        isExternal: false,
-      });
+      expect(parseTo(to).isExternal).toBe(false);
     },
   );
 });

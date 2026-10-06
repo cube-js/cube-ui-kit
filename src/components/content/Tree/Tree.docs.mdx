@@ -123,7 +123,7 @@ The following row-level modifiers are emitted automatically. They are useful whe
 
 ### Selection Modes
 
-- `none` — Row click does not select. Useful in pure-display or pure- checkable trees.
+- `none` — Row click does not select; pressing an expandable row toggles it. Useful in pure-display or pure- checkable trees.
 - `single` (default) — One row selected at a time.
 - `multiple` — Multi-select with keyboard modifiers and shift-range.
 
@@ -294,7 +294,7 @@ Tree implements the [`treegrid` ARIA pattern](https://www.w3.org/WAI/ARIA/apg/pa
 
 ### Screen Reader Support
 
-- Each row reports `aria-level`, `aria-posinset`, `aria-setsize`, and `aria-expanded` so screen readers can announce the position and expansion state. Every expandable row carries `aria-expanded`, including a row with a single child and a lazy row (`isLeaf: false`) whose children have not loaded yet; leaf rows omit it.
+- Each row reports `aria-level`, `aria-posinset` and `aria-setsize`. Expandable rows also report `aria-expanded`, including a lazy row (`isLeaf: false`) whose children have not loaded yet.
 - When `isCheckable` is enabled, the row carries `aria-checked` (`true`, `false`, or `mixed` for the indeterminate state).
 - Disabled rows expose `aria-disabled="true"`.
 

@@ -128,9 +128,9 @@ function TreeNodeInner(props: TreeNodeProps) {
   const isLeaf =
     data.isLeaf === true || (data.isLeaf !== false && !node.hasChildNodes);
 
-  // Without `hasChildItems`, React Aria counts a row as a parent only with
-  // more than one child (it expects the row's content as the first), so
-  // single-child and lazy rows lost `aria-expanded` and arrow-key expansion.
+  // React Aria counts a row as a parent only with more than one child (it
+  // expects the row's content first). `hasChildItems` makes single-child and
+  // lazy rows expandable: `aria-expanded` and arrow-key expansion.
   const { rowProps, gridCellProps, expandButtonProps, isPressed } = useTreeItem(
     { node, hasChildItems: !isLeaf },
     state,
