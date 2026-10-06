@@ -34,6 +34,7 @@ import {
   getDisabledElementProps,
   mergeProps,
   omitActivationEventProps,
+  ResolvedIcon,
   resolveIcon,
 } from '../../../utils/react';
 import { ItemAction } from '../../actions/ItemAction';
@@ -45,7 +46,7 @@ import {
 } from '../../overlays/Tooltip/split-trigger-props';
 import { CubeTooltipProviderProps } from '../../overlays/Tooltip/TooltipProvider';
 import { highlightText } from '../highlightText';
-import { HotKeys } from '../HotKeys/HotKeys';
+import { CubeHotKeysProps, HotKeys } from '../HotKeys/HotKeys';
 import { ItemBadge } from '../ItemBadge';
 import { useAutoTooltip } from '../use-auto-tooltip';
 
@@ -604,6 +605,219 @@ const ItemElement = tasty({
   styleProps: CONTAINER_STYLES,
 });
 
+// Valid type+theme combinations. `current` is a theme like any other here: it
+// has a flavour for every type, so it is listed wherever `default` is.
+const STANDARD_THEMES = [
+  'default',
+  'success',
+  'danger',
+  'warning',
+  'note',
+  'special',
+  'current',
+];
+const CARD_THEMES = [
+  'default',
+  'success',
+  'danger',
+  'warning',
+  'note',
+  'current',
+];
+const HEADER_THEMES = ['default'];
+
+/**
+ * Warns about prop combinations the item does not support: a theme its type
+ * has no flavour for, and the icons or loading state the "link" type cannot
+ * show.
+ */
+function useItemPropWarnings({
+  type,
+  theme,
+  icon,
+  rightIcon,
+  isLoading,
+}: {
+  type: string;
+  theme: string;
+  icon: CubeItemProps['icon'];
+  rightIcon: CubeItemProps['rightIcon'];
+  isLoading: boolean;
+}) {
+  const isInvalidCombination =
+    (type === 'header' && !HEADER_THEMES.includes(theme)) ||
+    (type === 'card' && !CARD_THEMES.includes(theme)) ||
+    (!['header', 'card'].includes(type) && !STANDARD_THEMES.includes(theme));
+
+  useWarn(isInvalidCombination, {
+    key: ['Item', 'invalid-type-theme', type, theme],
+    args: [
+      `Item: Invalid type+theme combination. type="${type}" does not support theme="${theme}".` +
+        (type === 'header'
+          ? ' The "header" type only supports theme: default.'
+          : type === 'card'
+            ? ' The "card" type only supports themes: default, success, danger, warning, note, current.'
+            : ' Standard types support themes: default, success, danger, warning, note, special, current.'),
+    ],
+  });
+
+  // Warn if link type is used with icons or loading state
+  const hasLinkWithIcons = type === 'link' && (icon || rightIcon);
+  const hasLinkWithLoading = type === 'link' && isLoading;
+  const hasLinkRestrictions = hasLinkWithIcons || hasLinkWithLoading;
+
+  const linkRestrictionMessages: string[] = [];
+  if (hasLinkWithIcons) {
+    linkRestrictionMessages.push('icons (`icon` or `rightIcon` props)');
+  }
+  if (hasLinkWithLoading) {
+    linkRestrictionMessages.push('loading state (`isLoading` prop)');
+  }
+
+  useWarn(hasLinkRestrictions, {
+    key: ['Item', 'link-restrictions'],
+    args: [
+      `Item: The "link" type does not support ${linkRestrictionMessages.join(' or ')}. Remove these props when using type="link".`,
+    ],
+  });
+}
+
+/**
+ * Splits `size` between the two ways the element takes it. A named size sets
+ * the `size` mod, which picks the matching `$size` in the styles; any other
+ * value (a number of pixels or a custom length) sets the `$size` token itself.
+ */
+function resolveItemSize(size: NonNullable<CubeItemProps['size']>): {
+  sizeMod?: string;
+  sizeToken?: string;
+} {
+  if (typeof size === 'number') return { sizeToken: `${size}px` };
+
+  if ((ITEM_SIZE_VALUES as readonly string[]).includes(size)) {
+    return { sizeMod: size };
+  }
+
+  return { sizeToken: size };
+}
+
+/**
+ * The slot the loading icon replaces, or `undefined` when the item is not
+ * loading. Auto logic: prefer icon if present, then rightIcon, fallback to
+ * icon.
+ */
+function resolveLoadingSlot(
+  loadingSlot: NonNullable<CubeItemProps['loadingSlot']>,
+  isLoading: boolean,
+  icon: ResolvedIcon,
+  rightIcon: ResolvedIcon,
+) {
+  if (!isLoading) return undefined;
+  if (loadingSlot !== 'auto') return loadingSlot;
+
+  return rightIcon.hasSlot && !icon.hasSlot ? 'rightIcon' : 'icon';
+}
+
+/** What an icon slot renders, and the key its `IconSwitch` transitions on. */
+interface IconSlot {
+  hasSlot: boolean;
+  content: ReactNode;
+  key: string;
+}
+
+/** A stable key for icon transitions, based on the icon type. */
+function getIconKey(icon: ReactNode) {
+  if (isValidElement(icon)) {
+    return (
+      (icon.type as any)?.displayName || (icon.type as any)?.name || 'icon'
+    );
+  }
+
+  return icon ? 'icon' : 'empty';
+}
+
+/**
+ * Applies the loading state to an icon slot. The slot renders when it has an
+ * icon or an empty slot was asked for, or when the loading state targets it:
+ * the loading icon then replaces the icon.
+ */
+function resolveIconSlot(icon: ResolvedIcon, isLoadingSlot: boolean): IconSlot {
+  if (isLoadingSlot) {
+    return { hasSlot: true, content: <LoadingIcon />, key: 'loading' };
+  }
+
+  return {
+    hasSlot: icon.hasSlot,
+    content: icon.content,
+    key: getIconKey(icon.content),
+  };
+}
+
+/**
+ * Which HotKeys flavour the shortcut hint wears. `inherit` paints the hint's
+ * glyphs and rim from `currentcolor`, so it tracks whatever the row labels
+ * itself with; `primary` pins the hint to `#white`; `default` is a neutral
+ * `#dark.65` chip built for a page-colored row.
+ *
+ * The whole `current` theme wants `inherit`: every flavour there derives its
+ * label from the inherited color, and a fixed hint cannot follow that. The
+ * neutral `#dark.65`-on-`#dark.04` chip all but vanishes on a dark overlay,
+ * which is exactly where this theme is meant to be used.
+ *
+ * `current.primary` is included despite painting its label with
+ * `-webkit-text-fill-color` rather than `color`. The hint renders inside the
+ * `Suffix` slot, and `CURRENT_PRIMARY_STYLES` recolors that slot to the label
+ * color — so `currentcolor` there is the LABEL, not the fill. An earlier
+ * version of this comment claimed the opposite and sent it to `primary`, which
+ * put a `#white` hint on a light fill (measured cr 2.17 on a `#note` container
+ * in dark mode).
+ */
+function getHotkeysType(theme: string, type: string): CubeHotKeysProps['type'] {
+  if (theme === 'current') return 'inherit';
+
+  return type === 'primary' ? 'primary' : 'default';
+}
+
+/** Registers `hotkeys` as a global shortcut that clicks the item. */
+function useHotkeyClick<T extends HTMLElement>(
+  hotkeys: string | undefined,
+  isDisabled: boolean,
+  ref: ForwardedRef<T>,
+) {
+  useHotkeys(
+    typeof hotkeys === 'string' ? hotkeys.toLowerCase() : '',
+    () => {
+      if (!hotkeys) return;
+      if (isDisabled) return;
+      // Simulate a click on the element so all existing handlers run
+      if (ref && typeof ref === 'object' && ref.current) {
+        (ref.current as HTMLElement).click();
+      }
+    },
+    {
+      enableOnContentEditable: true,
+      enabled: !!hotkeys,
+      preventDefault: true,
+      enableOnFormTags: true,
+    },
+    [hotkeys, isDisabled],
+  );
+}
+
+/**
+ * Highlights matches of `highlight` in a plain-string label or description.
+ * Any other content is returned as is.
+ */
+function highlightContent(
+  content: ReactNode,
+  highlight: string | undefined,
+  caseSensitive: boolean,
+  highlightStyles: Styles | undefined,
+): ReactNode {
+  return typeof content === 'string' && highlight
+    ? highlightText(content, highlight, caseSensitive, highlightStyles)
+    : content;
+}
+
 const Item = <T extends HTMLElement = HTMLDivElement>(
   props: CubeItemProps,
   ref: ForwardedRef<T>,
@@ -675,80 +889,25 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
   const finalIsDisabled =
     isDisabledProp === true || (isLoading && isDisabledProp !== false);
 
-  // Validate type+theme combinations. `current` is a theme like any other here:
-  // it has a flavour for every type, so it is listed wherever `default` is.
-  const STANDARD_THEMES = [
-    'default',
-    'success',
-    'danger',
-    'warning',
-    'note',
-    'special',
-    'current',
-  ];
-  const CARD_THEMES = [
-    'default',
-    'success',
-    'danger',
-    'warning',
-    'note',
-    'current',
-  ];
-  const HEADER_THEMES = ['default'];
-
-  const isInvalidCombination =
-    (type === 'header' && !HEADER_THEMES.includes(theme)) ||
-    (type === 'card' && !CARD_THEMES.includes(theme)) ||
-    (!['header', 'card'].includes(type) && !STANDARD_THEMES.includes(theme));
-
-  useWarn(isInvalidCombination, {
-    key: ['Item', 'invalid-type-theme', type, theme],
-    args: [
-      `Item: Invalid type+theme combination. type="${type}" does not support theme="${theme}".` +
-        (type === 'header'
-          ? ' The "header" type only supports theme: default.'
-          : type === 'card'
-            ? ' The "card" type only supports themes: default, success, danger, warning, note, current.'
-            : ' Standard types support themes: default, success, danger, warning, note, special, current.'),
-    ],
-  });
-
-  // Warn if link type is used with icons or loading state
-  const hasLinkWithIcons = type === 'link' && (iconProp || rightIconProp);
-  const hasLinkWithLoading = type === 'link' && isLoading;
-  const hasLinkRestrictions = hasLinkWithIcons || hasLinkWithLoading;
-
-  const linkRestrictionMessages: string[] = [];
-  if (hasLinkWithIcons) {
-    linkRestrictionMessages.push('icons (`icon` or `rightIcon` props)');
-  }
-  if (hasLinkWithLoading) {
-    linkRestrictionMessages.push('loading state (`isLoading` prop)');
-  }
-
-  useWarn(hasLinkRestrictions, {
-    key: ['Item', 'link-restrictions'],
-    args: [
-      `Item: The "link" type does not support ${linkRestrictionMessages.join(' or ')}. Remove these props when using type="link".`,
-    ],
+  useItemPropWarnings({
+    type,
+    theme,
+    icon: iconProp,
+    rightIcon: rightIconProp,
+    isLoading,
   });
 
   // Determine if we should show a checkmark instead of icon
   const hasCheckmark = iconProp === 'checkmark';
 
-  // Determine if size is custom (number or unrecognized string)
-  const isCustomSize =
-    typeof size === 'number' ||
-    !(ITEM_SIZE_VALUES as readonly string[]).includes(size);
-  const sizeTokenValue =
-    typeof size === 'number' ? `${size}px` : isCustomSize ? size : undefined;
+  const { sizeMod, sizeToken } = resolveItemSize(size);
 
   // Base mods for icon resolution (without icon-dependent mods)
   const baseMods: ItemMods = {
     disabled: finalIsDisabled,
     selected: isSelected === true,
     loading: isLoading,
-    ...(!isCustomSize && { size: size as string }),
+    ...(sizeMod !== undefined && { size: sizeMod }),
     type,
     theme,
     shape: finalShape,
@@ -762,101 +921,40 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
 
   const resolvedRightIcon = resolveIcon(rightIconProp, baseMods);
 
-  // Determine which slot to use for loading when "auto" is selected
-  // Must be computed before hasIconSlot/hasRightIconSlot since they depend on it
-  // Auto logic: prefer icon if present, then rightIcon, fallback to icon
-  const resolvedLoadingSlot =
-    loadingSlot !== 'auto'
-      ? loadingSlot
-      : resolvedRightIcon.hasSlot && !resolvedIcon.hasSlot
-        ? 'rightIcon'
-        : 'icon';
+  // Determine which slot to use for loading
+  const loadingTarget = resolveLoadingSlot(
+    loadingSlot,
+    isLoading,
+    resolvedIcon,
+    resolvedRightIcon,
+  );
 
-  // Determine if icon slots should render (original slot OR loading state targets this slot)
-  const hasIconSlot =
-    resolvedIcon.hasSlot || (isLoading && resolvedLoadingSlot === 'icon');
-  const hasRightIconSlot =
-    resolvedRightIcon.hasSlot ||
-    (isLoading && resolvedLoadingSlot === 'rightIcon');
+  // Apply loading state to appropriate slots. The checkmark keeps the icon
+  // slot even when the loading state targets it.
+  const iconSlot: IconSlot = hasCheckmark
+    ? { hasSlot: true, content: <CheckIcon />, key: 'checkmark' }
+    : resolveIconSlot(resolvedIcon, loadingTarget === 'icon');
+  const rightIconSlot = resolveIconSlot(
+    resolvedRightIcon,
+    loadingTarget === 'rightIcon',
+  );
 
   const showDescription =
     !!description ||
     Object.keys(descriptionProps ?? {}).some((key) => key !== 'id');
 
-  // Apply loading state to appropriate slots
-  const finalIcon =
-    isLoading && resolvedLoadingSlot === 'icon' ? (
-      <LoadingIcon />
-    ) : (
-      resolvedIcon.content
-    );
-  const finalRightIcon =
-    isLoading && resolvedLoadingSlot === 'rightIcon' ? (
-      <LoadingIcon />
-    ) : (
-      resolvedRightIcon.content
-    );
-
-  // Generate stable keys for icon transitions based on icon type
-  const iconKey = hasCheckmark
-    ? 'checkmark'
-    : isLoading && resolvedLoadingSlot === 'icon'
-      ? 'loading'
-      : isValidElement(finalIcon)
-        ? (finalIcon.type as any)?.displayName ||
-          (finalIcon.type as any)?.name ||
-          'icon'
-        : finalIcon
-          ? 'icon'
-          : 'empty';
-
-  const rightIconKey =
-    isLoading && resolvedLoadingSlot === 'rightIcon'
-      ? 'loading'
-      : isValidElement(finalRightIcon)
-        ? (finalRightIcon.type as any)?.displayName ||
-          (finalRightIcon.type as any)?.name ||
-          'icon'
-        : finalRightIcon
-          ? 'icon'
-          : 'empty';
-  const finalPrefix =
-    isLoading && resolvedLoadingSlot === 'prefix' ? <LoadingIcon /> : prefix;
-
-  // Which HotKeys flavour the shortcut hint wears. `inherit` paints the hint's
-  // glyphs and rim from `currentcolor`, so it tracks whatever the row labels
-  // itself with; `primary` pins the hint to `#white`; `default` is a neutral
-  // `#dark.65` chip built for a page-colored row.
-  //
-  // The whole `current` theme wants `inherit`: every flavour there derives its
-  // label from the inherited color, and a fixed hint cannot follow that. The
-  // neutral `#dark.65`-on-`#dark.04` chip all but vanishes on a dark overlay,
-  // which is exactly where this theme is meant to be used.
-  //
-  // `current.primary` is included despite painting its label with
-  // `-webkit-text-fill-color` rather than `color`. The hint renders inside the
-  // `Suffix` slot, and `CURRENT_PRIMARY_STYLES` recolors that slot to the label
-  // color — so `currentcolor` there is the LABEL, not the fill. An earlier
-  // version of this comment claimed the opposite and sent it to `primary`, which
-  // put a `#white` hint on a light fill (measured cr 2.17 on a `#note` container
-  // in dark mode).
-  const hotkeysType =
-    theme === 'current'
-      ? 'inherit'
-      : type === 'primary'
-        ? 'primary'
-        : 'default';
+  const finalPrefix = loadingTarget === 'prefix' ? <LoadingIcon /> : prefix;
 
   // Build final suffix: loading icon, custom suffix, or HotKeys hint
   const finalSuffix =
-    isLoading && resolvedLoadingSlot === 'suffix' ? (
+    loadingTarget === 'suffix' ? (
       <LoadingIcon />
     ) : (
       suffix ??
       (hotkeys ? (
         <HotKeys
           {...(keyboardShortcutProps as any)}
-          type={hotkeysType}
+          type={getHotkeysType(theme, type)}
           styles={{ padding: '1x left', opacity: finalIsDisabled ? 0.5 : 1 }}
         >
           {hotkeys}
@@ -865,31 +963,14 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     );
 
   // Register global hotkey if provided
-  useHotkeys(
-    typeof hotkeys === 'string' ? hotkeys.toLowerCase() : '',
-    () => {
-      if (!hotkeys) return;
-      if (finalIsDisabled) return;
-      // Simulate a click on the element so all existing handlers run
-      if (ref && typeof ref === 'object' && ref.current) {
-        (ref.current as HTMLElement).click();
-      }
-    },
-    {
-      enableOnContentEditable: true,
-      enabled: !!hotkeys,
-      preventDefault: true,
-      enableOnFormTags: true,
-    },
-    [hotkeys, finalIsDisabled],
-  );
+  useHotkeyClick(hotkeys, finalIsDisabled, ref);
 
   const finalMods: ItemMods = {
     ...baseMods,
-    'has-icon': hasIconSlot,
-    'has-start-content': !!(hasIconSlot || finalPrefix),
-    'has-end-content': !!(hasRightIconSlot || finalSuffix || actions),
-    'has-right-icon': hasRightIconSlot,
+    'has-icon': iconSlot.hasSlot,
+    'has-start-content': !!(iconSlot.hasSlot || finalPrefix),
+    'has-end-content': !!(rightIconSlot.hasSlot || finalSuffix || actions),
+    'has-right-icon': rightIconSlot.hasSlot,
     'has-label': hasLabel,
     'has-prefix': !!finalPrefix,
     'has-suffix': !!finalSuffix,
@@ -945,27 +1026,19 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     as: (rest as { as?: string }).as,
   });
 
-  // Process children with highlight if applicable
-  const processedChildren =
-    typeof children === 'string' && highlight
-      ? highlightText(
-          children,
-          highlight,
-          highlightCaseSensitive,
-          highlightStyles,
-        )
-      : children;
-
-  // Process description with highlight if applicable
-  const processedDescription =
-    typeof description === 'string' && highlight
-      ? highlightText(
-          description,
-          highlight,
-          highlightCaseSensitive,
-          highlightStyles,
-        )
-      : description;
+  // Process children and description with highlight if applicable
+  const processedChildren = highlightContent(
+    children,
+    highlight,
+    highlightCaseSensitive,
+    highlightStyles,
+  );
+  const processedDescription = highlightContent(
+    description,
+    highlight,
+    highlightCaseSensitive,
+    highlightStyles,
+  );
 
   // Render function that creates the item element
   const renderItemElement = (
@@ -1006,7 +1079,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
         styles={styles}
         tokens={{
           ...tokens,
-          ...(sizeTokenValue ? { $size: sizeTokenValue } : {}),
+          ...(sizeToken ? { $size: sizeToken } : {}),
         }}
         type={htmlType as any}
         {...mergeProps(
@@ -1019,10 +1092,10 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
         {typeof hiddenContent === 'function'
           ? hiddenContent(tooltipFocusProps ?? {})
           : hiddenContent}
-        {hasIconSlot && (
+        {iconSlot.hasSlot && (
           <div data-element="Icon">
-            <IconSwitch noWrapper contentKey={iconKey}>
-              {hasCheckmark ? <CheckIcon /> : finalIcon}
+            <IconSwitch noWrapper contentKey={iconSlot.key}>
+              {iconSlot.content}
             </IconSwitch>
           </div>
         )}
@@ -1054,10 +1127,10 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
           </div>
         ) : null}
         {finalSuffix && <div data-element="Suffix">{finalSuffix}</div>}
-        {hasRightIconSlot && (
+        {rightIconSlot.hasSlot && (
           <div data-element="RightIcon">
-            <IconSwitch noWrapper contentKey={rightIconKey}>
-              {finalRightIcon}
+            <IconSwitch noWrapper contentKey={rightIconSlot.key}>
+              {rightIconSlot.content}
             </IconSwitch>
           </div>
         )}
