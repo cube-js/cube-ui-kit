@@ -80,6 +80,7 @@
     "audit-defaults": "UPDATE_DEFAULTS=1 vitest run src/eslint-plugin/defaults.test.ts && prettier --write src/eslint-plugin/defaults.generated.ts",
     "diagnostics:compiler": "node scripts/compiler/report.mjs",
     "diagnostics:form": "node scripts/form-diagnostics.mjs",
+    "diagnostics:complexity": "node scripts/complexity-report.mjs",
     "update-tasty": "pnpm add @tenphi/tasty@${npm_config_version:-latest} --save-exact",
     "update-glaze": "pnpm add @tenphi/glaze@${npm_config_version:-latest} --save-exact",
     "test:form-compiled": "vitest run --config vitest.form-compiled.config.ts"
@@ -173,6 +174,7 @@
     "dedent": "^0.7.0",
     "eslint": "^10.8.0",
     "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-sonarjs": "^4.2.2",
     "husky": "^6.0.0",
     "jiti": "^2.6.1",
     "jsdom": "^29.1.1",
