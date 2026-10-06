@@ -145,18 +145,15 @@ function useItemPositions(visibleItems: OverlayItem[]): ItemPositionsResult {
   });
 
   // A wrapped toast changes height with the viewport, not only on a render.
-  // Re-render on a resize so the measurement above restacks the items.
+  // Re-render on a resize so the measurement above restacks the items. The
+  // window, not the items: the Portal remounts them once it has its root.
   const [, remeasure] = useReducer((count: number) => count + 1, 0);
 
   useEffect(() => {
-    if (typeof ResizeObserver === 'undefined') return;
+    window.addEventListener('resize', remeasure);
 
-    const observer = new ResizeObserver(() => remeasure());
-
-    itemRefs.current.forEach((el) => observer.observe(el));
-
-    return () => observer.disconnect();
-  }, [visibleItems]);
+    return () => window.removeEventListener('resize', remeasure);
+  }, []);
 
   // After heights change, schedule settledIds update for the next frame.
   // This ensures the item is painted at its correct position (with no top

@@ -235,14 +235,16 @@ describe('Toast and notification width', () => {
         .map((toast) => toast.getBoundingClientRect())
         .sort((a, b) => a.top - b.top);
 
+    const settle = () => new Promise((resolve) => setTimeout(resolve, 600));
+
     await waitFor(() => {
       expect(edges()).toHaveLength(2);
     });
-
+    // Fixed waits, not `waitFor`: a render still pending from showing the
+    // toasts would restack them after the resize and hide a missing fix.
+    await settle();
     await page.viewport(300, 800);
-    // A fixed wait covers the `top` transition. A `waitFor` would pass
-    // without the fix too, once some later render restacks the toasts.
-    await new Promise((resolve) => setTimeout(resolve, 600));
+    await settle();
 
     const [upper, lower] = edges();
 
