@@ -14,9 +14,10 @@ export default {
       control: {
         type: 'text',
       },
-      description: 'Key combination string (e.g., "mod+k, ctrl+k")',
+      description:
+        'Key combination string (e.g., "mod+k, ctrl+k"). An array of text, such as the one `<Trans>` passes to a component slot, is joined into one string first.',
       table: {
-        type: { summary: 'string' },
+        type: { summary: 'string | (string | number)[]' },
       },
     },
     type: {
