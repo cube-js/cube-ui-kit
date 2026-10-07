@@ -56,6 +56,8 @@ export default {
     '#surface-2-text-soft',
     '#surface-3-text',
     '#surface-3-text-soft',
+    // Fixed-mode surface emitted by the special palette theme.
+    '#special-surface',
 
     // ---- Glaze: accent system (default theme) ----
     '#accent-surface',

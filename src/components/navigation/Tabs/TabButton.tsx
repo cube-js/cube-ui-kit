@@ -714,6 +714,7 @@ export function TabButton({
         <TabDropIndicator
           target={{ type: 'item', key: item.key, dropPosition: 'before' }}
           dropState={dropState}
+          // oxlint-disable-next-line tasty/valid-value -- Drop position is item ordering, not CSS positioning.
           position="before"
         />
       )}
@@ -772,6 +773,7 @@ export function TabButton({
         <TabDropIndicator
           target={{ type: 'item', key: item.key, dropPosition: 'after' }}
           dropState={dropState}
+          // oxlint-disable-next-line tasty/valid-value -- Drop position is item ordering, not CSS positioning.
           position="after"
         />
       )}

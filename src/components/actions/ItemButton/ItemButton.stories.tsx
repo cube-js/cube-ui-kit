@@ -430,7 +430,13 @@ export const WithLoading: Story = {
             >
               Loading (auto - replaces rightIcon)
             </ItemButton>
-            <ItemButton {...cleanArgs} isLoading={true} prefix="$" suffix=".00">
+            <ItemButton
+              {...cleanArgs}
+              isLoading={true}
+              // oxlint-disable-next-line tasty/valid-value -- Item prefixes are rendered content, not CSS prefix values.
+              prefix="$"
+              suffix=".00"
+            >
               Loading (auto - no icons, fallback to icon)
             </ItemButton>
           </Space>
@@ -484,6 +490,7 @@ export const WithLoading: Story = {
               isLoading={true}
               loadingSlot="prefix"
               icon={<IconFile />}
+              // oxlint-disable-next-line tasty/valid-value -- Item prefixes are rendered content, not CSS prefix values.
               prefix="$"
             >
               Loading in prefix slot
@@ -862,6 +869,7 @@ export const WithActionsLayouts: Story = {
           <ItemButton
             {...args}
             type="outline"
+            // oxlint-disable-next-line tasty/valid-value -- Item prefixes are rendered content, not CSS prefix values.
             prefix="$"
             actions={
               <>
@@ -875,6 +883,7 @@ export const WithActionsLayouts: Story = {
           <ItemButton
             {...args}
             type="outline"
+            // oxlint-disable-next-line tasty/valid-value -- Item prefixes are rendered content, not CSS prefix values.
             prefix="$"
             wrapperStyles={{ width: 'max 250px' }}
             actions={
@@ -896,6 +905,7 @@ export const WithActionsLayouts: Story = {
             {...args}
             type="outline"
             icon={<IconFile />}
+            // oxlint-disable-next-line tasty/valid-value -- Item prefixes are rendered content, not CSS prefix values.
             prefix="$"
             actions={
               <>
@@ -910,6 +920,7 @@ export const WithActionsLayouts: Story = {
             {...args}
             type="outline"
             icon={<IconFile />}
+            // oxlint-disable-next-line tasty/valid-value -- Item prefixes are rendered content, not CSS prefix values.
             prefix="$"
             wrapperStyles={{ width: 'max 250px' }}
             actions={

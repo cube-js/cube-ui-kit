@@ -1361,7 +1361,7 @@ export const InsideLayout: Story = {
     layout: 'fullscreen',
   },
   render: (args) => (
-    <Layout height="400px" fill="#light-02">
+    <Layout height="400px" fill="#surface-2">
       <Tabs {...args} defaultActiveKey="tab1">
         <Tab key="tab1" title="Dashboard">
           <Layout fill="#purple.15">

@@ -1450,7 +1450,7 @@ export const MenuSynchronization = () => {
               </Menu.Item>
             </Menu>
           </MenuTrigger>
-          <Paragraph preset="t5" color="#dark-03" margin="2x 0 0 0">
+          <Paragraph preset="t4" color="#dark-03" margin="2x 0 0 0">
             Click this button, then try right-clicking on any placement
             container below to test menu synchronization.
           </Paragraph>
@@ -1466,7 +1466,7 @@ export const MenuSynchronization = () => {
           >
             Edit Menu {isOpen1 ? '(Open)' : ''}
           </Button>
-          <Paragraph preset="t5" color="#dark-03" margin="1x 0 0 0">
+          <Paragraph preset="t4" color="#dark-03" margin="1x 0 0 0">
             Anchored menu with editing actions
           </Paragraph>
         </Card>
@@ -1475,10 +1475,10 @@ export const MenuSynchronization = () => {
           ref={targetRef3}
           border
           padding="3x"
-          background={isOpen3 ? '#purple-10' : undefined}
+          background={isOpen3 ? '#purple.10' : undefined}
         >
           {rendered3}
-          <Paragraph preset="t5" color="#dark-03" margin="1x 0 0 0">
+          <Paragraph preset="t4" color="#dark-03" margin="1x 0 0 0">
             Right-click to open context menu
           </Paragraph>
         </Card>
