@@ -324,7 +324,6 @@ export const TextOverflow: StoryFn<CubeItemProps> = (args) => (
       {...args}
       styles={{ width: '180px' }}
       icon={<IconCoin />}
-      // oxlint-disable-next-line tasty/valid-value -- Item prefixes are rendered content, not CSS prefix values.
       prefix="$"
       suffix=".00"
     >
@@ -387,7 +386,6 @@ export const ExtraWidth: StoryFn<CubeItemProps> = (args) => (
       {...args}
       styles={{ width: '400px' }}
       icon={<IconCoin />}
-      // oxlint-disable-next-line tasty/valid-value -- Item prefixes are rendered content, not CSS prefix values.
       prefix="$"
       suffix=".00"
     >
@@ -787,7 +785,6 @@ export const CombinedFeatures: StoryFn<CubeItemProps> = (args) => (
       as="button"
       icon={<IconCoin />}
       rightIcon={<IconSettings />}
-      // oxlint-disable-next-line tasty/valid-value -- Item prefixes are rendered content, not CSS prefix values.
       prefix="$"
       suffix=".doc"
       description="Advanced save operation"
@@ -836,7 +833,6 @@ export const WithLoading: StoryFn<CubeItemProps> = (args) => (
         {...args}
         isLoading={true}
         // loadingSlot="auto" is default - will fallback to icon slot
-        // oxlint-disable-next-line tasty/valid-value -- Item prefixes are rendered content, not CSS prefix values.
         prefix="$"
         suffix=".00"
       >
@@ -869,7 +865,6 @@ export const WithLoading: StoryFn<CubeItemProps> = (args) => (
         isLoading={true}
         loadingSlot="prefix"
         icon={<IconUser />}
-        // oxlint-disable-next-line tasty/valid-value -- Item prefixes are rendered content, not CSS prefix values.
         prefix="$"
       >
         Explicit prefix slot
@@ -1295,7 +1290,6 @@ export const DescriptionWithComplexContent: StoryFn<CubeItemProps> = (args) => (
         {...args}
         type="outline"
         icon={<IconCoin />}
-        // oxlint-disable-next-line tasty/valid-value -- Item prefixes are rendered content, not CSS prefix values.
         prefix="$"
         suffix=".99"
         description="Price information"
@@ -1343,7 +1337,6 @@ export const DescriptionWithComplexContent: StoryFn<CubeItemProps> = (args) => (
         {...args}
         type="outline"
         icon={<IconCoin />}
-        // oxlint-disable-next-line tasty/valid-value -- Item prefixes are rendered content, not CSS prefix values.
         prefix="$"
         suffix=".99"
         description="Premium pricing tier with annual billing discount"
@@ -1695,7 +1688,6 @@ export const WithActions: StoryFn<CubeItemProps> = (args) => (
         {...args}
         type="outline"
         icon={<IconCoin />}
-        // oxlint-disable-next-line tasty/valid-value -- Item prefixes are rendered content, not CSS prefix values.
         prefix="$"
         suffix=".99"
         actions={
