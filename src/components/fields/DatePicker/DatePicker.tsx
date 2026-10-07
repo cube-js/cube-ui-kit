@@ -179,7 +179,7 @@ function DatePicker<T extends DateValue>(
               <TimeInput
                 padding="1x"
                 label={t('datePicker.time', 'Time')}
-                value={state.timeValue ?? undefined}
+                value={state.timeValue}
                 placeholderValue={timePlaceholder}
                 granularity={timeGranularity}
                 minValue={timeMinValue}

@@ -1,4 +1,4 @@
-import { CalendarDate } from '@internationalized/date';
+import { CalendarDate, CalendarDateTime } from '@internationalized/date';
 
 import { renderWithRoot, userEvent, waitFor, within } from '../../../test';
 import { Button } from '../../actions/Button';
@@ -28,6 +28,32 @@ describe('<DatePicker />', () => {
     expect(within(heading).getByRole('button', { name: month })).toBeTruthy();
     expect(within(heading).getByRole('button', { name: year })).toBeTruthy();
   };
+
+  it('clears the open time field when the controlled date is reset', async () => {
+    const value = new CalendarDateTime(2025, 6, 15, 12, 34);
+    const { baseElement, rerender } = renderWithRoot(
+      <DatePicker label="Date" value={value} granularity="minute" />,
+    );
+
+    await user.click(
+      baseElement.querySelector('[data-popover-trigger]') as HTMLElement,
+    );
+    const dialog = await waitFor(() => {
+      const element = baseElement.querySelector('[data-qa="Dialog"]');
+      expect(element).toBeTruthy();
+      return element as HTMLElement;
+    });
+    const hour = within(dialog).getByRole('spinbutton', { name: /hour/i });
+    const minute = within(dialog).getByRole('spinbutton', { name: /minute/i });
+
+    expect(hour).toHaveAttribute('aria-valuenow', '12');
+    expect(minute).toHaveAttribute('aria-valuenow', '34');
+
+    rerender(<DatePicker label="Date" value={null} granularity="minute" />);
+
+    expect(hour).toHaveAttribute('data-placeholder', 'true');
+    expect(minute).toHaveAttribute('data-placeholder', 'true');
+  });
 
   describe('calendar popover month navigation', () => {
     it('clicking next-month inside a nested popover keeps the parent popover open', async () => {

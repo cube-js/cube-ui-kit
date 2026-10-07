@@ -11,8 +11,7 @@ import {
 /**
  * The info badge next to a field's label is `labelTooltip`; `tooltip` is the
  * control's own. A consumer must see the old spelling as an error on every
- * field — including the ones whose React Aria-derived props this repo's own
- * `preserveSymlinks` setup cannot check — except `Select`, where `tooltip`
+ * field, including React Aria-derived props, except `Select`, where `tooltip`
  * remains the trigger's tooltip, and `Checkbox`, where it is the checkbox's.
  */
 export function FieldLabelTooltips() {

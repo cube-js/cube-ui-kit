@@ -1,5 +1,11 @@
 import { tasty } from '@tenphi/tasty';
-import { ForwardedRef, forwardRef, RefObject, useRef } from 'react';
+import {
+  ForwardedRef,
+  forwardRef,
+  KeyboardEvent,
+  RefObject,
+  useRef,
+} from 'react';
 import {
   AriaNumberFieldProps,
   mergeProps as mergeAriaProps,
@@ -96,14 +102,21 @@ function NumberInput(
     incrementButtonProps,
     decrementButtonProps,
   } = useNumberField(
-    { ...props, onKeyDown: undefined },
+    { ...props, onKeyDown: undefined, onKeyUp: undefined },
     state,
     inputRef as RefObject<HTMLInputElement>,
   );
-  // The kit's keyboard contract runs native number commits before user handlers.
+  // Keep native commits and user callbacks inside one Aria event wrapper so
+  // continuePropagation can still undo the native shortcut's propagation stop.
   let { keyboardProps } = useKeyboard({
-    isDisabled: props.isDisabled || props.isReadOnly,
-    onKeyDown: props.onKeyDown,
+    isDisabled: props.isDisabled,
+    onKeyDown: (event) => {
+      inputProps.onKeyDown?.(event as KeyboardEvent<HTMLInputElement>);
+      // NumberInput historically lets every key except Enter reach ancestors.
+      if (event.key !== 'Enter') event.continuePropagation();
+      props.onKeyDown?.(event);
+    },
+    onKeyUp: props.onKeyUp,
   });
 
   // Merge user-provided labelProps with aria labelProps
@@ -136,8 +149,7 @@ function NumberInput(
         // through react-aria's own `mergeProps` updates that seed, so the
         // input, its label and the steppers' `aria-controls` follow the id
         // when the form binding changes after mount.
-        mergeAriaProps(inputProps, { id: props.id }),
-        keyboardProps,
+        mergeAriaProps({ ...inputProps, ...keyboardProps }, { id: props.id }),
         { 'data-input-type': 'numberinput' },
         userInputProps,
       )}

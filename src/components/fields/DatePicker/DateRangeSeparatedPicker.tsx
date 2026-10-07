@@ -270,16 +270,14 @@ function DateRangeSeparatedPicker<T extends DateValue>(
                 <TimeInput
                   padding="1x"
                   label={t('datePicker.time', 'Time')}
-                  value={startState.timeValue ?? undefined}
+                  value={startState.timeValue}
                   placeholderValue={timePlaceholder}
                   granularity={timeGranularity}
                   minValue={timeMinValue}
                   maxValue={timeMaxValue}
                   hourCycle={props.hourCycle}
                   hideTimeZone={props.hideTimeZone}
-                  onChange={(value) =>
-                    startState.setTimeValue(value as TimeValue)
-                  }
+                  onChange={startState.setTimeValue}
                 />
               )}
             </Dialog>
@@ -335,16 +333,14 @@ function DateRangeSeparatedPicker<T extends DateValue>(
                 <TimeInput
                   padding="1x"
                   label={t('datePicker.time', 'Time')}
-                  value={endState.timeValue ?? undefined}
+                  value={endState.timeValue}
                   placeholderValue={timePlaceholder}
                   granularity={timeGranularity}
                   minValue={timeMinValue}
                   maxValue={timeMaxValue}
                   hourCycle={props.hourCycle}
                   hideTimeZone={props.hideTimeZone}
-                  onChange={(value) =>
-                    endState.setTimeValue(value as TimeValue)
-                  }
+                  onChange={endState.setTimeValue}
                 />
               )}
             </Dialog>

@@ -44,7 +44,7 @@ export interface CubeMenuProps<T>
       | 'defaultSelectedKeys'
       | 'onSelectionChange'
     > {
-  children?: ReactNode;
+  children?: ReactNode | CollectionChildren<T>;
   onAction?: (key: Key) => void;
   // @deprecated
   header?: ReactNode;

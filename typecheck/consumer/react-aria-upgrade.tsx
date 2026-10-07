@@ -58,6 +58,9 @@ export function AriaUpgradeConsumer() {
         <Button>Open</Button>
         <Dialog aria-label="Details">Content</Dialog>
       </DialogTrigger>
+      <Menu items={[{ id: 'save', label: 'Save' }]}>
+        {(item) => <Menu.Item key={item.id}>{item.label}</Menu.Item>}
+      </Menu>
       <Menu onAction={(key) => String(key)}>
         <Menu.Item key="save">Save</Menu.Item>
       </Menu>

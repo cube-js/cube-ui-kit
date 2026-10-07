@@ -54,7 +54,7 @@ Flag new internal barrel imports that widen the dependency graph; import the def
 
 ### Check the public types consumers receive
 
-Flag unchecked or broken public props, missing exports or form-instance/DOM-form conflicts. In-repo `Aria*Props` can silently resolve to `any`; inspect built declarations and consumer fixtures. Follow [TypeScript & Exports](../../AGENTS.md#typescript--exports).
+Flag unchecked or broken public props, missing exports or form-instance/DOM-form conflicts. Adobe's consolidated `Aria*Props` are checked in-repo; also inspect built declarations and consumer fixtures for public contract regressions. Follow [TypeScript & Exports](../../AGENTS.md#typescript--exports).
 
 ## Layout and color
 
