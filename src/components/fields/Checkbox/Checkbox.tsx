@@ -94,7 +94,6 @@ const CheckboxWrapperElement = tasty({
 });
 
 const CheckboxElement = tasty({
-  qa: 'Checkbox',
   styles: {
     display: 'grid',
     placeItems: 'center',
@@ -280,7 +279,7 @@ function Checkbox(
         )}
         ref={inputRef}
       />
-      <CheckboxElement mods={mods} styles={inputStyles}>
+      <CheckboxElement data-element="Input" mods={mods} styles={inputStyles}>
         {markIcon}
       </CheckboxElement>
     </>

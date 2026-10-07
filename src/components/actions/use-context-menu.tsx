@@ -2,6 +2,7 @@ import { Pressable } from '@react-aria/interactions';
 import {
   ComponentProps,
   ComponentType,
+  createRef,
   MouseEvent,
   PointerEvent,
   ReactElement,
@@ -112,7 +113,13 @@ export function useContextMenu<
     y: number;
   } | null>(null);
   const targetRef = useRef<E>(null);
-  const invisibleAnchorRef = useRef<HTMLSpanElement>(null);
+  // Moving a zero-size anchor does not fire ResizeObserver. A fresh ref for
+  // each point makes MenuTrigger refresh its positioning and observation while
+  // keeping the menu itself mounted, including its current focus and selection.
+  const invisibleAnchorRef = useMemo(
+    () => createRef<HTMLSpanElement>(),
+    [anchorPosition],
+  );
   const popoverRef = useRef<HTMLDivElement>(null);
   const setupRef = useRef(false);
 
@@ -356,6 +363,7 @@ export function useContextMenu<
     isOpen,
     defaultTriggerProps,
     anchorPosition,
+    invisibleAnchorRef,
     t,
   ]);
 
