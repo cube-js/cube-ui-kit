@@ -54,6 +54,32 @@ describe('<NumberInput />', () => {
     expect(getByRole('textbox')).toHaveValue('2');
   });
 
+  it.each([
+    ['ArrowUp', true],
+    ['4', false],
+  ] as const)(
+    'exposes native default prevention for %s before the callback',
+    (key, prevented) => {
+      const onKeyDown = vi.fn((event) => [
+        event.defaultPrevented,
+        event.isDefaultPrevented(),
+        event.nativeEvent.defaultPrevented,
+      ]);
+      const { getByRole } = render(
+        <NumberInput label="test" defaultValue={1} onKeyDown={onKeyDown} />,
+      );
+
+      fireEvent.keyDown(getByRole('textbox'), { key });
+
+      expect(onKeyDown).toHaveBeenCalledTimes(1);
+      expect(onKeyDown.mock.results[0].value).toEqual([
+        prevented,
+        prevented,
+        prevented,
+      ]);
+    },
+  );
+
   it.each(['Enter', 'ArrowUp'])(
     'lets onKeyDown continue %s after native number handling',
     (key) => {

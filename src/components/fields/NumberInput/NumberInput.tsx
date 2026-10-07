@@ -112,6 +112,7 @@ function NumberInput(
     isDisabled: props.isDisabled,
     onKeyDown: (event) => {
       inputProps.onKeyDown?.(event as KeyboardEvent<HTMLInputElement>);
+      event.defaultPrevented = event.isDefaultPrevented();
       // NumberInput historically lets every key except Enter reach ancestors.
       if (event.key !== 'Enter') event.continuePropagation();
       props.onKeyDown?.(event);
