@@ -1,5 +1,25 @@
 # @cube-dev/ui-kit
 
+## 0.190.6
+
+### Patch Changes
+
+- [#1480](https://github.com/cube-js/cube-ui-kit/pull/1480) [`5372f55c`](https://github.com/cube-js/cube-ui-kit/commit/5372f55c1de25106c84d4338f50e2cb99e89bbd6) Thanks [@tenphi](https://github.com/tenphi)! - `Button`'s docs now list `isDisabled` with its `false` default, so the `no-redundant-default-prop` lint rule flags a redundant `isDisabled={false}` on `Button`. They and the `Form` docs also say that `<Provider isDisabled>` and `<Form isDisabled>` disable fields and `Form.Submit`/`Form.Reset`, but not `Button`, `ItemButton` or `ItemAction`.
+
+- [#1480](https://github.com/cube-js/cube-ui-kit/pull/1480) [`5372f55c`](https://github.com/cube-js/cube-ui-kit/commit/5372f55c1de25106c84d4338f50e2cb99e89bbd6) Thanks [@tenphi](https://github.com/tenphi)! - `Disclosure`, `Disclosure.Group` and `Disclosure.Item` forward DOM attributes (`id`, `className`, `style`, `aria-*`, `data-*`), `theme` and event handlers to their root, and their types accept them. A caller's `tokens` now merge with the `$disclosure-transition` token instead of being dropped. `Disclosure.Item`'s `id` stays its group key and isn't rendered as the DOM `id`.
+
+- [#1480](https://github.com/cube-js/cube-ui-kit/pull/1480) [`5372f55c`](https://github.com/cube-js/cube-ui-kit/commit/5372f55c1de25106c84d4338f50e2cb99e89bbd6) Thanks [@tenphi](https://github.com/tenphi)! - `DisplayTransition` finishes a transition when its `ref` is wrapped in a function that is new on every render, such as an inline wrapper or an unmemoized `mergeRefs` in code that React Compiler doesn't compile. React detaches such a ref and re-attaches the same element on each render, and that dropped the transition listeners. A re-render after the transition had started then left an exit unfinished, with the element still mounted, and `onRest('enter')` never fired.
+
+- [#1480](https://github.com/cube-js/cube-ui-kit/pull/1480) [`5372f55c`](https://github.com/cube-js/cube-ui-kit/commit/5372f55c1de25106c84d4338f50e2cb99e89bbd6) Thanks [@tenphi](https://github.com/tenphi)! - `Placeholder`, and so every `Skeleton` placeholder, renders a `data-loading-placeholder` attribute: a locale-independent way to detect loading content that a `qa` or `aria-label` prop doesn't replace. Match it instead of the translated "Content is loading" label.
+
+- [#1480](https://github.com/cube-js/cube-ui-kit/pull/1480) [`5372f55c`](https://github.com/cube-js/cube-ui-kit/commit/5372f55c1de25106c84d4338f50e2cb99e89bbd6) Thanks [@tenphi](https://github.com/tenphi)! - `Select` keeps its item type, as `ComboBox` and `Picker` do, so a render-function child gets the item from `items` instead of `object`. With a `label`, its `ref` now reaches the field under React 18 as well, and is typed as the `HTMLDivElement` it receives rather than a `DOMRefValue`.
+
+- [#1480](https://github.com/cube-js/cube-ui-kit/pull/1480) [`5372f55c`](https://github.com/cube-js/cube-ui-kit/commit/5372f55c1de25106c84d4338f50e2cb99e89bbd6) Thanks [@tenphi](https://github.com/tenphi)! - `Slider` and `RangeSlider` pass their `ref` on under React 18 too; it was dropped there. `forwardRefWithGenerics`, which caused it and is no longer used, is deprecated: use `forwardRef` with a cast that restores the generic, as `Select` does.
+
+- [#1480](https://github.com/cube-js/cube-ui-kit/pull/1480) [`5372f55c`](https://github.com/cube-js/cube-ui-kit/commit/5372f55c1de25106c84d4338f50e2cb99e89bbd6) Thanks [@tenphi](https://github.com/tenphi)! - `toast({ duration: null })` keeps the toast until it is dismissed, as the docs say. It used to fall back to the 5-second default, which only a missing `duration` should do. Notifications already handled `null` this way.
+
+- [#1480](https://github.com/cube-js/cube-ui-kit/pull/1480) [`5372f55c`](https://github.com/cube-js/cube-ui-kit/commit/5372f55c1de25106c84d4338f50e2cb99e89bbd6) Thanks [@tenphi](https://github.com/tenphi)! - A long toast now stays within `min(100vw - 4x, 50x)` and wraps its message, breaking a word that is wider than the toast, such as a URL. Its wrapper used to have a `max-content` minimum width, which beat the cap, so the toast ran off both edges of a narrow viewport. A notification's description now breaks such a word too. Toasts and notifications also restack when a viewport resize changes their height, instead of overlapping until the next render.
+
 ## 0.190.5
 
 ### Patch Changes
