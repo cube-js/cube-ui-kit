@@ -1,4 +1,4 @@
-import { Key, Node } from '@react-types/shared';
+import { FocusableElement, Key, Node } from '@react-types/shared';
 import { Styles } from '@tenphi/tasty';
 import { KeyboardEvent, useContext, useRef } from 'react';
 import { FocusRing, useMenuItem } from 'react-aria';
@@ -82,7 +82,7 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
   // `onAction` twice. It is taken out here and passed once.
   const { onKeyDown: itemOnKeyDown, ...itemOwnProps } = menuItemProps;
   const onKeyDown = submenuContext?.onKeyDown
-    ? (e: KeyboardEvent) => {
+    ? (e: KeyboardEvent<FocusableElement>) => {
         // The submenu goes first; a key it handles is not the item's too.
         submenuContext.onKeyDown?.(e);
         if (!e.defaultPrevented) itemOnKeyDown?.(e);

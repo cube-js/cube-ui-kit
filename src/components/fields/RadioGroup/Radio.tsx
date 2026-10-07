@@ -243,7 +243,7 @@ type RadioItemProps = Pick<CubeItemProps, (typeof ITEM_PROPS)[number]>;
 
 export interface CubeRadioProps
   extends BaseProps,
-    AriaRadioProps,
+    Omit<AriaRadioProps, 'value'>,
     // `labelTooltip` belongs to the group's label: a single radio has none.
     Omit<FieldBaseProps, 'labelTooltip'>,
     /**
@@ -263,7 +263,7 @@ export interface CubeRadioProps
   buttonType?: CubeItemProps['type'];
   value?: string;
   /* Size of the button (for button type only) */
-  size?: Omit<CubeItemProps['size'], 'inline'>;
+  size?: Exclude<CubeItemProps['size'], 'inline'>;
 }
 
 function Radio(props: CubeRadioProps, ref) {
@@ -415,6 +415,7 @@ function Radio(props: CubeRadioProps, ref) {
       name,
       ...props,
       isDisabled: effectiveIsDisabled,
+      value: props.value ?? '',
     },
     state,
     inputRef,

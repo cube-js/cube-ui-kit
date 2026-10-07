@@ -157,6 +157,6 @@ export function processColumnMenuItems(
  */
 export function columnSortMenu(
   keys: readonly CubeColumnMenuSortKey[] = COLUMN_MENU_SORT_KEYS,
-): ReactNode {
+) {
   return keys.map((key) => <Menu.Item key={key}>{null}</Menu.Item>);
 }

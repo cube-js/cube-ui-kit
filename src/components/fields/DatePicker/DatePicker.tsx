@@ -32,7 +32,10 @@ import { DateFieldBase } from './types';
 import { useFocusManagerRef } from './utils';
 
 export interface CubeDatePickerProps<T extends DateValue = DateValue>
-  extends Omit<AriaDatePickerProps<T>, 'errorMessage' | 'form' | 'name'>,
+  extends Omit<
+      AriaDatePickerProps<T>,
+      'errorMessage' | 'form' | 'name' | keyof DateFieldBase<T>
+    >,
     DateFieldBase<T>,
     BaseProps,
     ContainerStyleProps,
@@ -63,12 +66,12 @@ export interface CubeDatePickerProps<T extends DateValue = DateValue>
 }
 
 function DatePicker<T extends DateValue>(
-  props: CubeDatePickerProps<T>,
+  rawProps: CubeDatePickerProps<T>,
   ref: FocusableRef<HTMLElement>,
 ) {
   const { t } = useI18n();
 
-  props = useFieldProps(props, {
+  let props = useFieldProps(rawProps, {
     defaultValidationTrigger: 'onBlur',
   });
   props = Object.assign({}, DEFAULT_DATE_PROPS, props);
@@ -125,7 +128,7 @@ function DatePicker<T extends DateValue>(
     calendarProps,
   } = useDatePicker(props, state, targetRef);
 
-  let placeholder: DateValue | undefined = placeholderValue;
+  let placeholder: DateValue | undefined = placeholderValue ?? undefined;
   let timePlaceholder =
     placeholder && 'hour' in placeholder ? placeholder : undefined;
   let timeMinValue =
@@ -176,7 +179,7 @@ function DatePicker<T extends DateValue>(
               <TimeInput
                 padding="1x"
                 label={t('datePicker.time', 'Time')}
-                value={state.timeValue}
+                value={state.timeValue ?? undefined}
                 placeholderValue={timePlaceholder}
                 granularity={timeGranularity}
                 minValue={timeMinValue}

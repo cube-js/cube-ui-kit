@@ -30,7 +30,7 @@ import { DialogContext } from './context';
 export type CubeDialogClose = (close: () => void) => ReactElement;
 
 export interface CubeDialogTriggerProps
-  extends OverlayTriggerProps,
+  extends Omit<OverlayTriggerProps, 'type'>,
     PositionProps,
     WithCloseBehavior {
   /** The Dialog and its trigger element. See the DialogTrigger [Content section](#content) for more information on what to provide as children. */
@@ -420,7 +420,7 @@ function PopoverTrigger(allProps) {
       hideOnClose={hideOnClose}
       isOpen={state.isOpen}
       style={popoverProps.style}
-      placement={placement}
+      placement={placement ?? undefined}
       arrowProps={arrowProps}
       isKeyboardDismissDisabled={isKeyboardDismissDisabled}
       hideArrow={hideArrow}

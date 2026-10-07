@@ -1,7 +1,9 @@
 import { ReactElement } from 'react';
-import { OverlayProps } from 'react-aria';
+import { AriaOverlayProps } from 'react-aria';
 
 import { ReportedPhase } from '../../helpers/DisplayTransition/DisplayTransition';
+
+import { CubeOverlayProps } from './Overlay';
 
 export type CloseBehavior = 'remove' | 'hide';
 export type TransitionStatus = ReportedPhase;
@@ -14,7 +16,7 @@ export interface TransitionState {
   transitionState?: TransitionStatus;
 }
 
-export interface ModalProps extends Omit<OverlayProps, 'nodeRef'> {
+export interface ModalProps extends AriaOverlayProps, CubeOverlayProps {
   children: ReactElement;
   isOpen?: boolean;
   onClose?: () => void;

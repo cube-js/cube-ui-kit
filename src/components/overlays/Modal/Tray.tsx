@@ -1,8 +1,8 @@
 import { useObjectRef } from '@react-aria/utils';
 import { BaseProps, Styles, tasty } from '@tenphi/tasty';
-import { forwardRef, ReactNode } from 'react';
+import { ForwardedRef, forwardRef, ReactNode } from 'react';
 import {
-  OverlayProps,
+  AriaOverlayProps,
   useModal,
   useOverlay,
   usePreventScroll,
@@ -12,8 +12,8 @@ import { mergeProps } from '../../../utils/react';
 import { useOverlayEscapeGuard } from '../../../utils/react/useOverlayEscapeGuard';
 
 import { OVERLAY_WRAPPER_STYLES } from './Modal';
-import { Overlay } from './Overlay';
-import { TransitionState, WithCloseBehavior } from './types';
+import { CubeOverlayProps, Overlay } from './Overlay';
+import { TransitionState } from './types';
 import { Underlay } from './Underlay';
 
 import type { Props } from '../../../props';
@@ -50,7 +50,7 @@ const TrayElement = tasty({
   },
 });
 
-export interface CubeTrayProps extends OverlayProps, WithCloseBehavior {
+export interface CubeTrayProps extends AriaOverlayProps, CubeOverlayProps {
   container?: HTMLElement;
   qa?: BaseProps['qa'];
   onClose?: (action?: string) => void;
@@ -76,7 +76,7 @@ interface CubeTrayWrapperProps extends CubeTrayProps, TransitionState {
   overlayProps?: Props;
 }
 
-function Tray(props: CubeTrayProps, ref) {
+function Tray(props: CubeTrayProps, ref: ForwardedRef<HTMLElement>) {
   let {
     qa,
     children,

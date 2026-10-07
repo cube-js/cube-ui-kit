@@ -6,7 +6,7 @@ import {
   Styles,
   tasty,
 } from '@tenphi/tasty';
-import { forwardRef, RefObject, useId, useRef } from 'react';
+import { forwardRef, ReactElement, RefObject, useId, useRef } from 'react';
 import {
   AriaDatePickerProps,
   DateValue,
@@ -84,13 +84,13 @@ export interface CubePeriodPickerProps<T extends DateValue = DateValue>
   formatValue?: (date: DateValue, picker: PickerType, locale: string) => string;
 }
 
-function PeriodPicker<T extends DateValue>(
-  props: CubePeriodPickerProps<T>,
+function PeriodPickerImpl<T extends DateValue>(
+  rawProps: CubePeriodPickerProps<T>,
   ref: FocusableRef<HTMLElement>,
 ) {
   const { t } = useI18n();
 
-  props = useFieldProps(props, {
+  let props = useFieldProps(rawProps, {
     defaultValidationTrigger: 'onBlur',
   });
 
@@ -235,8 +235,10 @@ function PeriodPicker<T extends DateValue>(
   });
 }
 
-const _PeriodPicker = forwardRef(PeriodPicker);
+const _PeriodPicker = forwardRef(PeriodPickerImpl);
 
 _PeriodPicker.displayName = 'PeriodPicker';
 
-export { _PeriodPicker as PeriodPicker };
+export const PeriodPicker = _PeriodPicker as <T extends DateValue = DateValue>(
+  props: CubePeriodPickerProps<T> & { ref?: FocusableRef<HTMLElement> },
+) => ReactElement | null;

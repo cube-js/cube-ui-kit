@@ -203,7 +203,7 @@ function Tooltip(
 
   const styles = extractStyles(otherProps, CONTAINER_STYLES);
 
-  let { tooltipProps } = useTooltip({ ...props, isDismissable: false }, state);
+  let { tooltipProps } = useTooltip(props, state);
 
   // Sync ref with overlayRef from context.
   useImperativeHandle(ref, () => createDOMRef(finalOverlayRef));

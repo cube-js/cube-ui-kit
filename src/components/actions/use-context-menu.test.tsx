@@ -1,5 +1,4 @@
-// NOTE: Type checking is disabled in this test file to prevent
-// noisy errors from complex generic typings that do not affect runtime behaviour.
+import { Key } from '@react-types/shared';
 import { createRef, useState } from 'react';
 
 import {
@@ -40,7 +39,7 @@ describe('useContextMenu', () => {
   const TestMenuComponent = ({
     onAction,
   }: {
-    onAction?: (key: string) => void;
+    onAction?: (key: Key) => void;
   }) => (
     <Menu onAction={onAction}>
       <Menu.Item key="edit">Edit</Menu.Item>
@@ -54,7 +53,7 @@ describe('useContextMenu', () => {
   const TestSubMenuComponent = ({
     onAction,
   }: {
-    onAction?: (key: string) => void;
+    onAction?: (key: Key) => void;
   }) => (
     <Menu onAction={onAction}>
       <Menu.Item key="edit">Edit</Menu.Item>
@@ -73,7 +72,7 @@ describe('useContextMenu', () => {
     onAction,
     searchPlaceholder,
   }: {
-    onAction?: (key: string) => void;
+    onAction?: (key: Key) => void;
     searchPlaceholder?: string;
   }) => (
     <CommandMenu

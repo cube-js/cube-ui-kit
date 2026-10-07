@@ -268,7 +268,7 @@ function TreeNodeInner(props: TreeNodeProps) {
   // strictly: our shortcuts → react-aria default.
   const composedKeyDown = useEvent((e: KeyboardEvent<HTMLDivElement>) => {
     if (handleKeyDown(e)) return;
-    rowProps.onKeyDown?.(e as unknown as globalThis.KeyboardEvent);
+    rowProps.onKeyDown?.(e);
   });
 
   // ---- Mods ----------------------------------------------------------------

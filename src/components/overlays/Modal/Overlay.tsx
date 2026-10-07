@@ -4,6 +4,7 @@ import {
   cloneElement,
   forwardRef,
   ReactElement,
+  ReactNode,
   useCallback,
   useRef,
   useState,
@@ -17,14 +18,19 @@ import { DisplayTransition } from '../../helpers/DisplayTransition/DisplayTransi
 import { OpenTransitionContext } from './OpenTransitionContext';
 import { WithCloseBehavior } from './types';
 
-import type { OverlayProps } from 'react-aria';
 import type { Props } from '../../../props';
 import type { ReportedPhase } from '../../helpers/DisplayTransition/DisplayTransition';
 
-export interface CubeOverlayProps
-  extends Omit<OverlayProps, 'container' | 'nodeRef'>,
-    WithCloseBehavior {
+export interface CubeOverlayProps extends WithCloseBehavior {
+  children?: ReactNode;
+  isOpen?: boolean;
   container?: HTMLElement | null;
+  onEnter?: () => void;
+  onEntering?: () => void;
+  onEntered?: () => void;
+  onExit?: () => void;
+  onExiting?: () => void;
+  onExited?: () => void;
 }
 
 const EXIT_DURATION = 350;

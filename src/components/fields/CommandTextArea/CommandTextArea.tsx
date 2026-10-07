@@ -1,4 +1,9 @@
-import { Collection, Key, Node } from '@react-types/shared';
+import {
+  KeyboardEvent as AriaKeyboardEvent,
+  Collection,
+  Key,
+  Node,
+} from '@react-types/shared';
 import React, {
   ForwardedRef,
   forwardRef,
@@ -12,7 +17,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { useFilter, useTextField } from 'react-aria';
+import { AriaTextFieldProps, useFilter, useTextField } from 'react-aria';
 import { Section as BaseSection, useListState } from 'react-stately';
 
 import { useEvent } from '../../../_internal';
@@ -77,7 +82,13 @@ export interface ActiveToken {
 export type CommandTextAreaFilterFn = TextFilterFn;
 
 export interface CubeCommandTextAreaProps<T>
-  extends Omit<CubeTextInputBaseProps, 'children' | 'multiLine'> {
+  extends Omit<
+    CubeTextInputBaseProps,
+    'children' | 'multiLine' | 'onFocus' | 'onBlur' | 'validate'
+  > {
+  onFocus?: () => void;
+  onBlur?: Parameters<typeof useCompositeFocus>[0]['onBlur'];
+  validate?: AriaTextFieldProps<HTMLTextAreaElement>['validate'];
   /** Whether the textarea should resize to fit its content. */
   autoSize?: boolean;
   /** Max visible rows when `autoSize` is true. Defaults to 10. */
@@ -146,7 +157,7 @@ export interface CubeCommandTextAreaProps<T>
 
   // Refs
   /** Ref for the textarea element. */
-  inputRef?: RefObject<HTMLTextAreaElement>;
+  inputRef?: RefObject<HTMLTextAreaElement | null>;
   /** Ref for the wrapper element (popover anchor). */
   wrapperRef?: RefObject<HTMLDivElement>;
   /** Ref for the popover overlay element. */
@@ -610,7 +621,7 @@ function CommandTextArea<T extends object>(
 
   // ---- keyboard navigation (only while the popover is open) -------------
   const onKeyDownHandler = useCallback(
-    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    (e: AriaKeyboardEvent) => {
       onKeyDown?.(e);
       if (e.defaultPrevented) return;
 

@@ -8,7 +8,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import { OverlayProps } from 'react-aria';
+import { PositionProps } from 'react-aria';
 import { flushSync } from 'react-dom';
 
 import {
@@ -406,7 +406,7 @@ export function useAutoTooltip({
       tooltipTriggerProps?: HTMLAttributes<HTMLElement>,
       tooltipRef?: RefObject<HTMLElement>,
     ) => ReactNode,
-    defaultTooltipPlacement: OverlayProps['placement'],
+    defaultTooltipPlacement: PositionProps['placement'],
   ) => {
     if (!resolvedTooltip) return renderElement();
 

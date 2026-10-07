@@ -189,6 +189,7 @@ export interface CubeSelectBaseProps<T>
     Omit<
       AriaSelectProps<T>,
       | 'errorMessage'
+      | 'form'
       | 'name'
       | 'selectedKey'
       | 'defaultSelectedKey'
@@ -305,10 +306,10 @@ export interface CubeSelectProps<T> extends CubeSelectBaseProps<T> {
 const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
 
 function Select<T extends object>(
-  props: CubeSelectProps<T>,
+  rawProps: CubeSelectProps<T>,
   ref: ForwardedRef<HTMLDivElement>,
 ) {
-  props = useFieldProps(props, {
+  let props = useFieldProps(rawProps, {
     defaultValidationTrigger: 'onChange',
     valuePropsMapper: ({ value, onChange }) => ({
       selectedKey: value ?? null,

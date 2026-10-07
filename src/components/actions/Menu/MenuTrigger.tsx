@@ -7,6 +7,7 @@ import {
   MutableRefObject,
   ReactElement,
   Ref,
+  RefObject,
   useEffect,
   useMemo,
   useRef,
@@ -33,9 +34,12 @@ import { MenuContext, MenuContextValue } from './context';
 
 export type { AriaMenuTriggerProps };
 
-export type CubeMenuTriggerProps = AriaMenuTriggerProps &
+export type CubeMenuTriggerProps = Omit<AriaMenuTriggerProps, 'children'> &
   PositionProps & {
     isDisabled?: boolean;
+    defaultOpen?: boolean;
+    onOpenChange?: (isOpen: boolean) => void;
+    targetRef?: RefObject<HTMLElement | null>;
     children: [
       ReactElement | ((state: MenuTriggerState) => ReactElement),
       ReactElement,
@@ -113,7 +117,7 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: Ref<HTMLElement>) {
   });
 
   if (typeof menuTrigger === 'function') {
-    menuTrigger = (menuTrigger as CubeMenuTriggerProps['children'][0])(state);
+    menuTrigger = menuTrigger(state);
   }
 
   const { menuTriggerProps, menuProps } = useMenuTrigger(
@@ -310,7 +314,7 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: Ref<HTMLElement>) {
         isNonModal
         isOpen={state.isOpen}
         style={positionProps.style}
-        placement={placement}
+        placement={placement ?? undefined}
         shouldCloseOnInteractOutside={shouldCloseOnInteractOutside}
         onClose={state.close}
       >

@@ -41,9 +41,6 @@ export function SliderInput(props: RangeInputProps) {
       {...otherProps}
       hideStepper
       size="small"
-      wrapperStyles={{
-        width: inputWidth,
-      }}
       textAlign="center"
       formatOptions={formatOptions}
       value={value}

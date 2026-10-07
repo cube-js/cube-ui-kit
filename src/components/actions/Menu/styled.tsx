@@ -1,7 +1,7 @@
 import { mergeStyles, tasty } from '@tenphi/tasty';
 
 import { DEFAULT_CLEAR_STYLES } from '../../../data/item-themes';
-import { Space } from '../../layout/Space';
+import { CubeSpaceProps, Space } from '../../layout/Space';
 import { DEFAULT_BUTTON_STYLES } from '../Button/Button';
 
 export const StyledMenuWrapper = tasty({
@@ -185,7 +185,9 @@ export const StyledItem = tasty({
   }),
 });
 
-export const StyledSectionHeading = tasty(Space, {
+export const StyledSectionHeading = tasty<
+  CubeSpaceProps & { size?: 'small' | 'medium' | (string & {}) }
+>(Space, {
   qa: 'SectionHeading',
   as: 'div',
   styles: {

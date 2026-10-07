@@ -41,10 +41,10 @@ export interface CubeDateInputProps<T extends DateValue = DateValue>
 }
 
 function DateInput<T extends DateValue>(
-  props: CubeDateInputProps<T>,
+  rawProps: CubeDateInputProps<T>,
   ref: FocusableRef<HTMLElement>,
 ) {
-  props = useFieldProps(props, {
+  let props = useFieldProps(rawProps, {
     defaultValidationTrigger: 'onBlur',
     valuePropsMapper: ({ value, onChange }) => ({
       value: typeof value === 'string' ? parseAbsoluteDate(value) : value,

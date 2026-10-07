@@ -32,7 +32,6 @@ const CalendarTitleElement = tasty(Title, {
 });
 
 const CalendarTitleButton = tasty(Button, {
-  'data-popover-keep': true,
   type: 'clear',
   size: 'xsmall',
 });
@@ -64,6 +63,7 @@ export function CalendarHeader(props: CubeCalendarHeaderProps) {
         {segments?.length
           ? segments.map(({ key, label, onPress, isDisabled }) => (
               <CalendarTitleButton
+                data-popover-keep
                 key={key}
                 isDisabled={isDisabled}
                 onPress={onPress}

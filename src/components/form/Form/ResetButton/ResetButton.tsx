@@ -14,7 +14,7 @@ import { CubeFormInstance } from '../use-form';
 import type { FormController } from '../modern/controller';
 
 export interface CubeResetButtonProps<T extends FieldTypes = FieldTypes>
-  extends CubeButtonProps {
+  extends Omit<CubeButtonProps, 'form'> {
   form?: CubeFormInstance<T> | FormController<T>;
 }
 

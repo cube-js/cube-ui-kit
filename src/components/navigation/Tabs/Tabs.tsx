@@ -711,7 +711,7 @@ function TabsComponent(
   const tabPickerElement = shouldShowTabPicker ? (
     <TabPicker
       tabs={orderedParsedTabs}
-      selectedKey={state.selectedKey}
+      selectedKey={state.selectedKey == null ? null : String(state.selectedKey)}
       size={size}
       type={effectiveType}
       placement={placement}

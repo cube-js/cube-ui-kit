@@ -8,13 +8,8 @@ import type { CubeTextAreaProps } from './TextArea/TextArea';
 import type { CubeTextInputProps } from './TextInput/TextInput';
 
 /**
- * `onKeyDown` / `onKeyUp` on the text fields, and `onKeyDown` on the
- * comboboxes, are a typed contract, with React Aria's signature. Compiled by `pnpm test:types`; nothing here runs. In-repo
- * the Aria prop types resolve to `any` (`preserveSymlinks`), so without the
- * explicit `TextFieldKeyboardProps` every one of these would be `any`.
- *
- * Plain conditional types rather than `expectTypeOf`: under the same setting
- * `expectTypeOf` resolves to `any` here, so it accepts any comparison.
+ * Keyboard callbacks keep React Aria's event signature, including
+ * `continuePropagation`. Compiled by `pnpm test:types`; nothing here runs.
  */
 type KeyboardHandler = ((e: KeyboardEvent) => void) | undefined;
 

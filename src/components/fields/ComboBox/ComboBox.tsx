@@ -1,4 +1,4 @@
-import { FocusableRef, Key } from '@react-types/shared';
+import { CollectionChildren, FocusableRef, Key } from '@react-types/shared';
 import {
   BASE_STYLES,
   BasePropsWithoutChildren,
@@ -817,7 +817,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   // Create local collection state for reading item data (labels, etc.)
   // This allows us to read item labels even before the popover opens
   const localCollectionState = useListState({
-    children,
+    children: children as CollectionChildren<T>,
     items: sortedItems,
     selectionMode: 'none', // Don't manage selection in this state
   });

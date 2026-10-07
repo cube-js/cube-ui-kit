@@ -52,18 +52,9 @@ import type { CubeTooltipProviderProps } from '../../overlays/Tooltip/TooltipPro
 export interface CubeCheckboxProps
   extends BaseProps,
     ContainerStyleProps,
-    AriaCheckboxProps,
+    Omit<AriaCheckboxProps, 'form' | 'name'>,
     ToggleSelectionProps,
     FieldBaseProps<boolean | null | undefined> {
-  /**
-   * The form instance. Redeclared so that it wins over react-aria's DOM
-   * `form: string` attribute when a consumer resolves react-aria's types for
-   * real; `Omit<AriaCheckboxProps, 'form'>` would erase every other prop
-   * in-repo, where those types resolve to `any` (see tsconfig.json).
-   */
-  form?: FieldBaseProps['form'];
-  /** Field name; modern forms also accept nested tuple paths. */
-  name?: FieldBaseProps['name'];
   inputStyles?: Styles;
   isIndeterminate?: boolean;
   value?: string;

@@ -46,7 +46,10 @@ const DateRangeDash = tasty({
 
 export interface CubeDateRangeSeparatedPickerProps<
   T extends DateValue = DateValue,
-> extends Omit<AriaDateRangePickerProps<T>, 'errorMessage' | 'form' | 'name'>,
+> extends Omit<
+      AriaDateRangePickerProps<T>,
+      'errorMessage' | 'form' | 'name' | keyof DateFieldBase<T>
+    >,
     BaseProps,
     ContainerStyleProps,
     DateFieldBase<T>,
@@ -76,12 +79,12 @@ export interface CubeDateRangeSeparatedPickerProps<
 }
 
 function DateRangeSeparatedPicker<T extends DateValue>(
-  props: CubeDateRangeSeparatedPickerProps<T>,
+  rawProps: CubeDateRangeSeparatedPickerProps<T>,
   ref: FocusableRef<HTMLElement>,
 ) {
   const { t } = useI18n();
 
-  props = useFieldProps(props, {
+  let props = useFieldProps(rawProps, {
     defaultValidationTrigger: 'onBlur',
   });
   props = Object.assign({}, DEFAULT_DATE_PROPS, props);
@@ -113,17 +116,22 @@ function DateRangeSeparatedPicker<T extends DateValue>(
     ...props,
   });
 
-  let startState = useDatePickerState({
+  let startDateProps = {
     ...props,
-    onChange: null,
+    onChange: undefined,
+    validate: undefined,
     value: state.value?.start,
-  });
-
-  let endState = useDatePickerState({
+    defaultValue: props.defaultValue?.start,
+  };
+  let endDateProps = {
     ...props,
-    onChange: null,
+    onChange: undefined,
+    validate: undefined,
     value: state.value?.end,
-  });
+    defaultValue: props.defaultValue?.end,
+  };
+  let startState = useDatePickerState(startDateProps);
+  let endState = useDatePickerState(endDateProps);
 
   let startFocusRingProps = useFocusRing({
     within: true,
@@ -151,10 +159,10 @@ function DateRangeSeparatedPicker<T extends DateValue>(
   let { groupProps, labelProps, startFieldProps, endFieldProps } =
     useDateRangePicker(props, state, targetRef);
 
-  let startProps = useDatePicker(props, startState, targetRef);
-  let endProps = useDatePicker(props, endState, targetRef);
+  let startProps = useDatePicker(startDateProps, startState, targetRef);
+  let endProps = useDatePicker(endDateProps, endState, targetRef);
 
-  let placeholder: DateValue | undefined = placeholderValue;
+  let placeholder: DateValue | undefined = placeholderValue ?? undefined;
   let timePlaceholder =
     placeholder && 'hour' in placeholder ? placeholder : undefined;
   let timeMinValue =
@@ -166,7 +174,7 @@ function DateRangeSeparatedPicker<T extends DateValue>(
     state.granularity === 'minute' ||
     state.granularity === 'second'
       ? state.granularity
-      : null;
+      : undefined;
   let showTimeField = !!timeGranularity;
 
   // let visibleMonths = useVisibleMonths(maxVisibleMonths);
@@ -183,8 +191,12 @@ function DateRangeSeparatedPicker<T extends DateValue>(
         newRange.end = newRange.start;
       }
 
-      state.setValue(newRange);
-      startProps.calendarProps.onChange(value);
+      if (newRange.end) {
+        state.setValue({ start: newRange.start, end: newRange.end });
+      } else {
+        state.setDateTime('start', newRange.start);
+      }
+      startProps.calendarProps.onChange?.(value);
       startState.setOpen(false);
     } else {
       const newRange = { ...state.value, end: value };
@@ -197,8 +209,12 @@ function DateRangeSeparatedPicker<T extends DateValue>(
         newRange.start = newRange.end;
       }
 
-      state.setValue(newRange);
-      endProps.calendarProps.onChange(value);
+      if (newRange.start) {
+        state.setValue({ start: newRange.start, end: newRange.end });
+      } else {
+        state.setDateTime('end', newRange.end);
+      }
+      endProps.calendarProps.onChange?.(value);
       endState.setOpen(false);
     }
   }
@@ -245,7 +261,7 @@ function DateRangeSeparatedPicker<T extends DateValue>(
                 }
                 selectedRange={
                   state.value?.start && state.value?.end
-                    ? state.value
+                    ? { start: state.value.start, end: state.value.end }
                     : undefined
                 }
                 onChange={(value: DateValue) => onChange(value, 'start')}
@@ -254,14 +270,16 @@ function DateRangeSeparatedPicker<T extends DateValue>(
                 <TimeInput
                   padding="1x"
                   label={t('datePicker.time', 'Time')}
-                  value={startState.timeValue}
+                  value={startState.timeValue ?? undefined}
                   placeholderValue={timePlaceholder}
                   granularity={timeGranularity}
                   minValue={timeMinValue}
                   maxValue={timeMaxValue}
                   hourCycle={props.hourCycle}
                   hideTimeZone={props.hideTimeZone}
-                  onChange={startState.setTimeValue}
+                  onChange={(value) =>
+                    startState.setTimeValue(value as TimeValue)
+                  }
                 />
               )}
             </Dialog>
@@ -306,7 +324,7 @@ function DateRangeSeparatedPicker<T extends DateValue>(
                 }
                 selectedRange={
                   state.value?.start && state.value?.end
-                    ? state.value
+                    ? { start: state.value.start, end: state.value.end }
                     : undefined
                 }
                 onChange={(value: DateValue) => {
@@ -317,14 +335,16 @@ function DateRangeSeparatedPicker<T extends DateValue>(
                 <TimeInput
                   padding="1x"
                   label={t('datePicker.time', 'Time')}
-                  value={endState.timeValue}
+                  value={endState.timeValue ?? undefined}
                   placeholderValue={timePlaceholder}
                   granularity={timeGranularity}
                   minValue={timeMinValue}
                   maxValue={timeMaxValue}
                   hourCycle={props.hourCycle}
                   hideTimeZone={props.hideTimeZone}
-                  onChange={endState.setTimeValue}
+                  onChange={(value) =>
+                    endState.setTimeValue(value as TimeValue)
+                  }
                 />
               )}
             </Dialog>

@@ -16,7 +16,7 @@ import { CubeUseActionProps, useAction } from '../use-action';
 
 export interface CubeItemButtonProps
   extends Omit<CubeItemProps, 'size'>,
-    Omit<CubeUseActionProps, 'as'> {
+    Omit<CubeUseActionProps, keyof CubeItemProps | 'as'> {
   /**
    * The row's trailing controls, rendered beside the button rather than inside
    * it. Pass `null` to keep an empty run — the row reserves no space for it, and

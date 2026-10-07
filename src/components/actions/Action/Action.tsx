@@ -21,7 +21,7 @@ export interface CubeActionProps<
     BaseStyleProps,
     ContainerStyleProps,
     TextStyleProps,
-    Omit<AriaButtonProps, 'type'> {
+    Omit<AriaButtonProps, keyof AllBaseProps<T> | 'type'> {
   to?: NavigateArg;
   /**
    * @deprecated Use `aria-label` for the accessible name, and `children` for

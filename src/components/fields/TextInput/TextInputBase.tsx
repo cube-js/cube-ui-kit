@@ -13,6 +13,7 @@ import {
   tasty,
 } from '@tenphi/tasty';
 import {
+  FocusEventHandler,
   forwardRef,
   ReactElement,
   ReactNode,
@@ -197,10 +198,22 @@ export interface CubeTextInputBaseProps
     BlockStyleProps,
     BaseStyleProps,
     ColorStyleProps,
-    Omit<AriaTextFieldProps, 'validate' | 'form' | 'name'>,
+    Omit<
+      AriaTextFieldProps<HTMLInputElement | HTMLTextAreaElement>,
+      | 'validate'
+      | 'form'
+      | 'name'
+      | 'errorMessage'
+      | 'onKeyDown'
+      | 'onKeyUp'
+      | 'onFocus'
+      | 'onBlur'
+    >,
     TextFieldKeyboardProps,
     FieldBaseProps {
   validate?: AriaTextFieldProps['validate'] | AriaNumberFieldProps['validate'];
+  onFocus?: FocusEventHandler<HTMLInputElement | HTMLTextAreaElement>;
+  onBlur?: FocusEventHandler<HTMLInputElement | HTMLTextAreaElement>;
   /** Left input icon */
   icon?: ReactElement | null;
   /** Input decoration before the main input */
@@ -224,9 +237,9 @@ export interface CubeTextInputBaseProps
   /** Direct input wrapper props */
   wrapperProps?: Props;
   /** The input ref */
-  inputRef?: RefObject<HTMLInputElement | HTMLTextAreaElement>;
+  inputRef?: RefObject<HTMLInputElement | HTMLTextAreaElement | null>;
   /** The wrapper ref */
-  wrapperRef?: RefObject<HTMLDivElement>;
+  wrapperRef?: RefObject<HTMLDivElement | null>;
   /** Whether the input has the loading status */
   isLoading?: boolean;
   /** The loading status indicator */

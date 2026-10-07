@@ -12,7 +12,7 @@ import { CubeFormInstance } from '../use-form';
 import type { FormController } from '../modern/controller';
 
 export interface CubeSubmitButtonProps<T extends FieldTypes = FieldTypes>
-  extends CubeButtonProps {
+  extends Omit<CubeButtonProps, 'form'> {
   form?: CubeFormInstance<T> | FormController<T>;
   /** Modern forms: disable after validation fails. Defaults to false so submit can show errors. */
   disableOnInvalid?: boolean;

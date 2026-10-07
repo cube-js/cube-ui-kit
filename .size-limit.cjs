@@ -329,7 +329,10 @@ module.exports = [
     // ItemTable, TableView into more modules and functions); with the compiler
     // off on both sides the gap is 1,429 B. Button shrinks by 368 B to
     // 133,004 B. Allow 620 kB, about 850 B headroom.
-    limit: '620kB',
+    // Consolidated Aria/Stately: 622.43 kB on a fresh local build against
+    // main's 619.70 kB. The dependency and interaction adapters add 2.73 kB.
+    // Confirm the final reading in CI before merging; keep headroom small.
+    limit: '624kB',
   },
   {
     name: 'Tree shaking (just a Button)',
@@ -421,6 +424,8 @@ module.exports = [
     // budget, so any change to the hook had to raise it. `All` moves by ~350 B
     // to 613.63 kB and stays inside 614 kB. Raised to 134 kB, about 630 B
     // headroom; confirm against CI's number.
-    limit: '134kB',
+    // Consolidated Aria/Stately: 134.78 kB locally against main's 133.25 kB,
+    // both fresh builds. Shared accessibility code adds 1.53 kB. Confirm in CI.
+    limit: '136kB',
   },
 ];

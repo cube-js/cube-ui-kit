@@ -1,6 +1,6 @@
 import { useObjectRef } from '@react-aria/utils';
 import { BaseProps, Styles, tasty } from '@tenphi/tasty';
-import { forwardRef, ReactNode } from 'react';
+import { ForwardedRef, forwardRef, ReactNode } from 'react';
 import { useModal, useOverlay, usePreventScroll } from 'react-aria';
 
 import { mergeProps } from '../../../utils/react';
@@ -84,7 +84,7 @@ export interface CubeModalProps
   shouldCloseOnInteractOutside?: (element: Element) => boolean;
 }
 
-function Modal(props: CubeModalProps, ref) {
+function Modal(props: CubeModalProps, ref: ForwardedRef<HTMLElement>) {
   let { qa, children, onClose, type, styles, ...otherProps } = props;
   let domRef = useObjectRef(ref);
 

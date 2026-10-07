@@ -94,7 +94,7 @@ function DraggableRow(props: TableRowProps) {
       extra={{
         ...mergeProps(props.rowProps, dragResult.dragProps),
         'data-draggable': '',
-        'data-dragging': dragResult.isDragging ? '' : undefined,
+        'data-dragging': dragState!.isDragging(rowKey) ? '' : undefined,
         'data-drop-target': isOnTarget ? '' : undefined,
       }}
     />
@@ -104,15 +104,12 @@ function DraggableRow(props: TableRowProps) {
 function TreeRow<T>(props: TableRowProps<T>) {
   const { tree } = props;
   const rowRef = useRef<HTMLTableRowElement>(null);
-  const treeItemAria = useTreeItem(
-    {
-      node: tree!.node,
-      hasChildItems: tree!.entry.children.length > 0,
-      isVirtualized: tree!.isVirtualized,
-    },
-    tree!.state,
-    rowRef,
-  );
+  const treeItemOptions = {
+    node: tree!.node,
+    hasChildItems: tree!.entry.children.length > 0,
+    isVirtualized: tree!.isVirtualized,
+  };
+  const treeItemAria = useTreeItem(treeItemOptions, tree!.state, rowRef);
 
   const rowProps = mergeProps(treeItemAria.rowProps, props.rowProps);
 

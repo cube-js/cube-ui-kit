@@ -45,7 +45,7 @@ export interface CubeCalendarGridProps {
 export function CalendarGrid(props: CubeCalendarGridProps) {
   let { state, selectedRange, pickerMode = 'day' } = props;
   let { locale } = useLocale();
-  let { gridProps, headerProps, weekDays } = useCalendarGrid(props, state);
+  let { gridProps, headerProps, weekDays } = useCalendarGrid({}, state);
 
   // Get the number of weeks in the month, so we can render the proper number of rows.
   let weeksInMonth = getWeeksInMonth(state.visibleRange.start, locale);

@@ -1,20 +1,13 @@
 import { useObjectRef, useSyncRef } from '@react-aria/utils';
-import { FocusStrategy } from '@react-types/shared';
+import { CollectionChildren, FocusStrategy, Key } from '@react-types/shared';
 import {
-  BaseProps,
+  BasePropsWithoutChildren,
   CONTAINER_STYLES,
   ContainerStyleProps,
   filterBaseProps,
   Styles,
 } from '@tenphi/tasty';
-import React, {
-  Key,
-  ReactElement,
-  ReactNode,
-  Ref,
-  useRef,
-  useState,
-} from 'react';
+import React, { ReactElement, ReactNode, Ref, useRef, useState } from 'react';
 import { useFilter, useMenu } from 'react-aria';
 import { Section, useTreeState } from 'react-stately';
 
@@ -58,7 +51,7 @@ export interface CommandMenuItem {
 }
 
 export interface CubeCommandMenuProps<T>
-  extends BaseProps,
+  extends BasePropsWithoutChildren,
     ContainerStyleProps,
     Omit<
       CubeMenuProps<T>,
@@ -119,6 +112,7 @@ function CommandMenu<T extends object>(
     selectedKeys,
     defaultSelectedKeys,
     onSelectionChange,
+    onAction,
     header,
     footer,
     ...restMenuProps
@@ -151,6 +145,7 @@ function CommandMenu<T extends object>(
     : undefined;
 
   const completeProps = mergeProps(contextProps, restMenuProps, {
+    onAction: onAction ? (key: Key) => onAction(key) : undefined,
     selectedKeys: ariaSelectedKeys,
     defaultSelectedKeys: ariaDefaultSelectedKeys,
     onSelectionChange: handleSelectionChange,
@@ -270,6 +265,7 @@ function CommandMenu<T extends object>(
   // Create tree state with filter for both keyboard navigation and rendering
   const treeStateProps = {
     ...completeProps,
+    children: completeProps.children as CollectionChildren<T>,
     filter: collectionFilter,
     shouldUseVirtualFocus: true, // Always use virtual focus for CommandMenu
   };
@@ -280,8 +276,8 @@ function CommandMenu<T extends object>(
   const hasSections = collectionItems.some((item) => item.type === 'section');
 
   // Track focused key for aria-activedescendant
-  const [focusedKey, setFocusedKey] = React.useState<React.Key | null>(null);
-  const focusedKeyRef = useRef<React.Key | null>(null);
+  const [focusedKey, setFocusedKey] = React.useState<Key | null>(null);
+  const focusedKeyRef = useRef<Key | null>(null);
 
   // Apply filtering to collection items for rendering and empty state checks
   const filteredCollectionItems = [...collectionFilter(collectionItems)];
@@ -321,7 +317,6 @@ function CommandMenu<T extends object>(
     {
       ...completeProps,
       'aria-label': 'Command palette menu',
-      filter: collectionFilter,
       shouldUseVirtualFocus: true,
     },
     treeState,
@@ -616,7 +611,7 @@ function CommandMenu<T extends object>(
               // Trigger action for the focused item (like Menu does)
               // First check if there's a selection mode, if so, handle selection
               if (treeState.selectionManager.selectionMode !== 'none') {
-                treeState.selectionManager.select(currentFocusedKey, e);
+                treeState.selectionManager.select(currentFocusedKey);
               } else {
                 // Default behavior: trigger action
                 const node = treeState.collection.getItem(currentFocusedKey);

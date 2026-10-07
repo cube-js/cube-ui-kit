@@ -1,5 +1,4 @@
-// NOTE: Type checking is disabled in this test file to prevent
-// noisy errors from complex generic typings that do not affect runtime behaviour.
+import { Key } from '@react-types/shared';
 import { useState } from 'react';
 
 import { act, renderWithRoot, userEvent, waitFor } from '../../test';
@@ -13,7 +12,7 @@ describe('useAnchoredMenu', () => {
   const TestMenuComponent = ({
     onAction,
   }: {
-    onAction?: (key: string) => void;
+    onAction?: (key: Key) => void;
   }) => (
     <Menu onAction={onAction}>
       <Menu.Item key="edit">Edit</Menu.Item>
@@ -26,7 +25,7 @@ describe('useAnchoredMenu', () => {
   const TestSubMenuComponent = ({
     onAction,
   }: {
-    onAction?: (key: string) => void;
+    onAction?: (key: Key) => void;
   }) => (
     <Menu onAction={onAction}>
       <Menu.Item key="edit">Edit</Menu.Item>

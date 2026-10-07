@@ -18,7 +18,7 @@ import {
   Ref,
   RefObject,
 } from 'react';
-import { OverlayProps } from 'react-aria';
+import { PositionProps } from 'react-aria';
 import { useHotkeys } from 'react-hotkeys-hook';
 
 import { useWarn } from '../../../_internal/hooks/use-warn';
@@ -212,7 +212,7 @@ export interface CubeItemProps extends BaseProps, ContainerStyleProps {
    * Default tooltip placement for the item.
    * @default "top"
    */
-  defaultTooltipPlacement?: OverlayProps['placement'];
+  defaultTooltipPlacement?: PositionProps['placement'];
   /**
    * @private
    * The native `disabled` attribute, which `useAction` forwards through

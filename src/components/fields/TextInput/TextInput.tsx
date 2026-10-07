@@ -1,5 +1,5 @@
-import { ForwardedRef, forwardRef, useRef } from 'react';
-import { useTextField } from 'react-aria';
+import { ForwardedRef, forwardRef, RefObject, useRef } from 'react';
+import { AriaTextFieldProps, useTextField } from 'react-aria';
 
 import { chain, mergeProps, useBufferedValue } from '../../../utils/react';
 import {
@@ -19,23 +19,23 @@ import type {
   TextFieldKeyboardProps,
 } from '../../../shared/form';
 
-// `TextFieldKeyboardProps` is restated here because `WithNullableValue` is an
-// `Omit` over a base that extends an in-repo `any` (see `TextFieldKeyboardProps`),
-// which erases every named member of the base.
-export type CubeTextInputProps = WithNullableValue<CubeTextInputBaseProps> &
+export type CubeTextInputProps = WithNullableValue<
+  Omit<CubeTextInputBaseProps, 'validate'>
+> &
   CubeBufferedValueProps &
   TextFieldKeyboardProps & {
     field?: FieldBaseProps<string | null | undefined>['field'];
+    validate?: AriaTextFieldProps['validate'];
   };
 
 export { useTextField };
 
 export const TextInput = forwardRef(function TextInput(
-  props: CubeTextInputProps,
+  rawProps: CubeTextInputProps,
   ref: ForwardedRef<HTMLElement>,
 ) {
-  props = castNullableStringValue(props);
-  props = useFieldProps(props, {
+  rawProps = castNullableStringValue(rawProps);
+  let props = useFieldProps(rawProps, {
     defaultValidationTrigger: 'onBlur',
     valuePropsMapper: ({ value, onChange }) => ({
       onChange,
@@ -69,7 +69,7 @@ export const TextInput = forwardRef(function TextInput(
       onChange: buffered.onChange,
       onBlur: chain(restProps.onBlur, buffered.reset),
     },
-    inputRef,
+    inputRef as RefObject<HTMLInputElement | null>,
   );
 
   // Merge user-provided labelProps with aria labelProps

@@ -35,8 +35,12 @@ export interface CubeSearchInputProps
       | 'validateTrigger'
       | 'insideForm'
       | 'idPrefix'
+      | 'validate'
     >,
-    SearchFieldProps,
+    Omit<
+      SearchFieldProps,
+      'onKeyDown' | 'onKeyUp' | 'errorMessage' | 'onFocus' | 'onBlur'
+    >,
     CubeBufferedValueProps {
   /** Whether the search input is clearable using ESC keyboard button or clear button inside the input */
   isClearable?: boolean;
@@ -64,7 +68,7 @@ export const SearchInput = forwardRef(function SearchInput(
     ...restProps
   } = props;
 
-  let inputRef = useRef(null);
+  let inputRef = useRef<HTMLInputElement>(null);
 
   // Hold the typed text locally until the controlled value catches up — see `useBufferedValue`.
   // Applied before the state hook, so `state.value` (and the clear button) follow the draft.
@@ -139,7 +143,7 @@ export const SearchInput = forwardRef(function SearchInput(
                       }
                       onPress={(e) => {
                         // Call the original clear functionality
-                        clearButtonProps.onPress?.();
+                        clearButtonProps.onPress?.(e);
                         // Call the onClear callback
                         onClear?.();
                       }}

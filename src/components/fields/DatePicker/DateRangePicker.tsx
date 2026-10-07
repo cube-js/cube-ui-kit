@@ -45,7 +45,10 @@ const DateRangeDash = tasty({
 });
 
 export interface CubeDateRangePickerProps<T extends DateValue = DateValue>
-  extends Omit<AriaDateRangePickerProps<T>, 'errorMessage' | 'form' | 'name'>,
+  extends Omit<
+      AriaDateRangePickerProps<T>,
+      'errorMessage' | 'form' | 'name' | keyof DateFieldBase<T>
+    >,
     BaseProps,
     DateFieldBase<T>,
     ContainerStyleProps,
@@ -75,12 +78,12 @@ export interface CubeDateRangePickerProps<T extends DateValue = DateValue>
 }
 
 function DateRangePicker<T extends DateValue>(
-  props: CubeDateRangePickerProps<T>,
+  rawProps: CubeDateRangePickerProps<T>,
   ref: FocusableRef<HTMLElement>,
 ) {
   const { t } = useI18n();
 
-  props = useFieldProps(props, {
+  let props = useFieldProps(rawProps, {
     defaultValidationTrigger: 'onBlur',
   });
   props = Object.assign({}, DEFAULT_DATE_PROPS, props);
@@ -141,7 +144,7 @@ function DateRangePicker<T extends DateValue>(
     calendarProps,
   } = useDateRangePicker(props, state, targetRef);
 
-  let placeholder: DateValue | undefined = placeholderValue;
+  let placeholder: DateValue | undefined = placeholderValue ?? undefined;
   let timePlaceholder =
     placeholder && 'hour' in placeholder ? placeholder : undefined;
   let timeMinValue =
@@ -187,7 +190,10 @@ function DateRangePicker<T extends DateValue>(
             isDisabled={isDisabled}
           />
           <Dialog {...dialogProps} width="max-content">
-            <RangeCalendar {...calendarProps} />
+            <RangeCalendar
+              {...calendarProps}
+              isDateUnavailable={props.isDateUnavailable}
+            />
             {showTimeField && (
               <Space>
                 <TimeInput

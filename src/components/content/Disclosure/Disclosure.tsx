@@ -31,6 +31,8 @@ import { extractStyles, mergeStyleLayers } from '../../../utils/styles';
 import { CubeItemButtonProps, ItemButton } from '../../actions/ItemButton';
 import { DisplayTransition } from '../../helpers';
 
+import type { Key as AriaKey } from '@react-types/shared';
+
 // ============================================================================
 // Types
 // ============================================================================
@@ -44,8 +46,8 @@ export interface DisclosureStateContext {
 
 interface DisclosureContextValue {
   state: DisclosureState;
-  buttonProps: Record<string, unknown>;
-  panelProps: Record<string, unknown>;
+  buttonProps: ReturnType<typeof useDisclosure>['buttonProps'];
+  panelProps: ReturnType<typeof useDisclosure>['panelProps'];
   panelRef: RefObject<HTMLDivElement | null>;
   isDisabled: boolean;
   isExpanded: boolean;
@@ -238,7 +240,6 @@ const TriggerIcon = tasty(RightIcon, {
 const StyledTrigger = tasty(ItemButton, {
   qa: 'DisclosureTrigger',
   type: 'header',
-  'data-popover-keep': true,
   styles: {
     radius: {
       '': '1r',
@@ -395,6 +396,7 @@ const DisclosureTrigger = forwardRef<
 
   return (
     <StyledTrigger
+      data-popover-keep
       ref={ref}
       icon={icon ?? defaultIcon}
       isDisabled={isDisabled}
@@ -430,10 +432,7 @@ const DisclosureContent = forwardRef<
   const mergedStyles = mergeStyleLayers(contentStyles, styles);
 
   // Filter out hidden attribute from panelProps since we manage visibility via CSS height animation
-  const { hidden, ...filteredPanelProps } = panelProps as Record<
-    string,
-    unknown
-  >;
+  const { hidden, ...filteredPanelProps } = panelProps;
 
   return (
     <DisplayTransition
@@ -485,8 +484,10 @@ const DisclosureGroup = forwardRef<HTMLDivElement, CubeDisclosureGroupProps>(
 
     const groupState = useDisclosureGroupState({
       allowsMultipleExpanded,
-      expandedKeys,
-      defaultExpandedKeys,
+      // Stately stores keys unchanged; retain React bigint keys and their
+      // identity while crossing its narrower string/number type boundary.
+      expandedKeys: expandedKeys as Iterable<AriaKey> | undefined,
+      defaultExpandedKeys: defaultExpandedKeys as Iterable<AriaKey> | undefined,
       onExpandedChange,
       isDisabled,
     });
@@ -554,7 +555,7 @@ const DisclosureItem = forwardRef<HTMLDivElement, CubeDisclosureItemProps>(
 
     // Determine expanded state from group or local props
     const groupIsExpanded = groupContext
-      ? groupContext.groupState.expandedKeys.has(id)
+      ? groupContext.groupState.expandedKeys.has(id as AriaKey)
       : undefined;
 
     // When disabled, force expanded to false
@@ -569,7 +570,7 @@ const DisclosureItem = forwardRef<HTMLDivElement, CubeDisclosureItemProps>(
         if (isDisabled) return;
 
         if (groupContext) {
-          groupContext.groupState.toggleKey(id);
+          groupContext.groupState.toggleKey(id as AriaKey);
         }
         onExpandedChange?.(expanded);
       },
