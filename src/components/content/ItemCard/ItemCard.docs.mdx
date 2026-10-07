@@ -5,13 +5,13 @@ import * as ItemCardStories from './ItemCard.stories';
 
 # ItemCard
 
-A convenience wrapper around `Item type="card"` that provides a more natural card API by mapping `title` to the card heading and `children` to the card body.
+A card for content with a heading, a body and optional inline actions. It wraps `Item type="card"`, mapping `title` to the heading and `children` to the body. The default theme uses the same neutral surface and border as `Card`; semantic themes add status colors.
 
 ## When to Use
 
-- When displaying notification-style messages (success, error, warning, info)
-- For status banners or alert cards
-- When you need a card with a heading and body content
+- To group content or controls under a heading
+- For status messages that need a heading, body and optional actions
+- Use [Card](/docs/content-card--docs) when you only need a container, or [Alert](/docs/content-alert--docs) for a concise status message
 
 ## Component
 
@@ -23,6 +23,7 @@ A convenience wrapper around `Item type="card"` that provides a more natural car
 
 - **`title`** `ReactNode` — Card heading (mapped to Item's `children`)
 - **`children`** `ReactNode` — Card body content (mapped to Item's `description`)
+- **`theme`** `'default' | 'success' | 'danger' | 'warning' | 'note'` (default: `default`) — Neutral surface or semantic status theme
 - **`size`** `'xsmall' | 'small' | 'medium' | 'large' | 'xlarge'` (default: `medium`) — Size of the card
 - **`icon`** `ReactNode` — Icon displayed before the content
 - **`rightIcon`** `ReactNode` — Icon displayed after the content
@@ -50,7 +51,7 @@ Supports [Base properties](/docs/getting-started-base-properties--docs)
 
 #### styles
 
-Inherits all styling from `Item`. See [Item documentation](/docs/content-item--docs) for sub-elements and modifiers.
+Inherits styling from `Item`, with `fill="#surface"` and `border="#border"` for the default theme. Semantic themes retain their tinted surfaces and borders. Ordinary style props and `styles` override these defaults. See [Item documentation](/docs/content-item--docs) for sub-elements and modifiers.
 
 ## Variants
 
@@ -64,13 +65,15 @@ Inherits all styling from `Item`. See [Item documentation](/docs/content-item--d
 
 ### Themes
 
-Use the `theme` prop to apply a semantic color scheme:
+Use the default theme for grouped content and a semantic theme when color communicates a status:
 
-- `default` — Standard card appearance
+- `default` — Neutral `#surface` fill and `#border` border
 - `success` — Green theme for positive outcomes
 - `danger` — Red theme for errors or destructive states
 - `warning` — Amber theme for caution
 - `note` — Violet theme for informational context
+
+<Story of={ItemCardStories.Themes} />
 
 ## Examples
 
@@ -94,18 +97,72 @@ Use the `theme` prop to apply a semantic color scheme:
 </ItemCard>
 ```
 
-### With Actions
+### Cases
 
-Use `ItemCard.Action` to add inline action buttons such as dismiss or close.
+<Story of={ItemCardStories.Cases} />
+
+### With a Close Button
+
+Use `ItemCard.Action` with an accessible name and an `onPress` handler. The application owns dismissal and moves focus to an appropriate control when the card disappears. This example offers a restore button and focuses it after dismissal; restoring the card focuses its close button without moving focus on the initial render.
 
 ```jsx
-<ItemCard
-  title="Deployment Complete"
-  icon={<IconCheck />}
-  theme="success"
-  actions={<ItemCard.Action icon={<IconX />} aria-label="Dismiss" />}
->
-  Your changes are now live in production.
+function DismissibleNotice() {
+  const [isDismissed, setIsDismissed] = useState(false);
+  const focusTarget = useRef(null);
+  const didInteract = useRef(false);
+
+  useEffect(() => {
+    if (didInteract.current) focusTarget.current?.focus();
+  }, [isDismissed]);
+
+  function toggleNotice() {
+    didInteract.current = true;
+    setIsDismissed((value) => !value);
+  }
+
+  return isDismissed ? (
+    <Button ref={focusTarget} onPress={toggleNotice}>
+      Restore setup notice
+    </Button>
+  ) : (
+    <ItemCard
+      title="Setup notice"
+      actions={
+        <ItemCard.Action
+          ref={focusTarget}
+          icon={<IconX />}
+          aria-label="Dismiss setup notice"
+          onPress={toggleNotice}
+        />
+      }
+    >
+      Connect a data source to start exploring your data.
+    </ItemCard>
+  );
+}
+```
+
+### Rich Body Content
+
+The body accepts React nodes, including labelled controls. Keep the card itself presentational when its body contains interactive elements.
+
+```jsx
+<ItemCard title="Notification settings">
+  <Space flow="column" gap="1.5x">
+    <Text>Choose what to include in scheduled refresh notifications.</Text>
+    <Checkbox defaultSelected>Send email notifications</Checkbox>
+    <Switch label="Include query details" />
+  </Space>
+</ItemCard>
+```
+
+### Transparent Surface
+
+Use `fill="transparent"` when the surrounding container should supply the surface. The default border still separates the content.
+
+```jsx
+<ItemCard title="Details" fill="transparent">
+  Content on the surrounding surface.
 </ItemCard>
 ```
 
@@ -123,12 +180,14 @@ The `level` prop controls the semantic HTML heading tag (h1-h6) for the title. D
 
 ### Keyboard Navigation
 
-- `Tab` - Moves focus to the component when focusable
-- `Space/Enter` - Activates the component when used as a button
+- `Tab` - Moves focus through inline actions and controls in the body
+- `Space/Enter` - Activates a focused action button
+- Dismissal should move focus to an appropriate remaining control
 
 ### Screen Reader Support
 
 - Title renders as a semantic heading (h1-h6) via the `level` prop for proper document structure
+- Icon-only actions need an accessible name such as `aria-label="Dismiss setup notice"`
 - Inherits all accessibility features from `Item`
 
 ### ARIA Properties
@@ -144,6 +203,8 @@ The `level` prop controls the semantic HTML heading tag (h1-h6) for the title. D
      Your changes are now live in production.
    </ItemCard>
    ```
+
+   Body text wraps. Long titles remain on one line and show an overflow tooltip by default.
 
 2. **Don't**: Use without a title
    ```jsx

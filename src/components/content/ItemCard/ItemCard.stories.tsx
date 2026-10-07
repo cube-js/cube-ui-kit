@@ -5,12 +5,19 @@ import {
   IconNote,
   IconX,
 } from '@tabler/icons-react';
+import { useEffect, useRef, useState } from 'react';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 
 import { baseProps } from '../../../stories/lists/baseProps';
+import { Button } from '../../actions/Button/Button';
+import { Checkbox } from '../../fields/Checkbox/Checkbox';
+import { Switch } from '../../fields/Switch/Switch';
 import { Space } from '../../layout/Space';
+import { Text } from '../Text';
 
 import { CubeItemCardProps, ItemCard } from './ItemCard';
 
+import type { FocusableRefValue } from '@react-types/shared';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta = {
@@ -40,7 +47,7 @@ const meta = {
     theme: {
       options: ['default', 'success', 'danger', 'warning', 'note'],
       control: { type: 'radio' },
-      description: 'Card theme',
+      description: 'Neutral surface by default, or a semantic status theme',
       table: { defaultValue: { summary: 'default' } },
     },
     level: {
@@ -118,17 +125,10 @@ export const Sizes = (args: CubeItemCardProps) => (
       size="medium"
       title="Medium Card"
       icon={<IconInfoCircle />}
-      actions={<ItemCard.Action icon={<IconX />} aria-label="Dismiss" />}
     >
       Default size suitable for most use cases.
     </ItemCard>
-    <ItemCard
-      {...args}
-      size="large"
-      title="Large Card"
-      icon={<IconCheck />}
-      actions={<ItemCard.Action icon={<IconX />} aria-label="Dismiss" />}
-    >
+    <ItemCard {...args} size="large" title="Large Card" icon={<IconCheck />}>
       Larger size for prominent notifications.
     </ItemCard>
     <ItemCard
@@ -136,9 +136,127 @@ export const Sizes = (args: CubeItemCardProps) => (
       size="xlarge"
       title="Extra Large Card"
       icon={<IconAlertTriangle />}
-      actions={<ItemCard.Action icon={<IconX />} aria-label="Dismiss" />}
     >
       Extra large size for emphasized alerts.
     </ItemCard>
   </Space>
 );
+
+const THEMES = [
+  { theme: 'default', title: 'Default', icon: <IconInfoCircle /> },
+  { theme: 'success', title: 'Success', icon: <IconCheck /> },
+  { theme: 'danger', title: 'Danger', icon: <IconAlertTriangle /> },
+  { theme: 'warning', title: 'Warning', icon: <IconAlertTriangle /> },
+  { theme: 'note', title: 'Note', icon: <IconNote /> },
+] as const;
+
+export const Themes: Story = {
+  render: (args) => (
+    <Space flow="column" width="max 400px">
+      {THEMES.map(({ theme, title, icon }) => (
+        <ItemCard {...args} key={theme} theme={theme} title={title} icon={icon}>
+          A heading and body with the {theme} theme.
+        </ItemCard>
+      ))}
+    </Space>
+  ),
+};
+
+function CasesStory(args: CubeItemCardProps) {
+  const [isDismissed, setIsDismissed] = useState(false);
+  const focusTarget = useRef<FocusableRefValue<HTMLButtonElement>>(null);
+  const didInteract = useRef(false);
+
+  useEffect(() => {
+    if (didInteract.current) focusTarget.current?.focus();
+  }, [isDismissed]);
+
+  function toggleNotice() {
+    didInteract.current = true;
+    setIsDismissed((value) => !value);
+  }
+
+  return (
+    <Space flow="column" width="max 400px" gap="2x">
+      {isDismissed ? (
+        <Button ref={focusTarget} onPress={toggleNotice}>
+          Restore setup notice
+        </Button>
+      ) : (
+        <ItemCard
+          {...args}
+          title="Setup notice"
+          icon={<IconInfoCircle />}
+          actions={
+            <ItemCard.Action
+              ref={focusTarget}
+              icon={<IconX />}
+              aria-label="Dismiss setup notice"
+              onPress={toggleNotice}
+            />
+          }
+        >
+          Connect a data source to start exploring your data.
+        </ItemCard>
+      )}
+      <ItemCard {...args} title="Notification settings">
+        <Space flow="column" gap="1.5x">
+          <Text>
+            Choose what to include in scheduled refresh notifications.
+          </Text>
+          <Checkbox defaultSelected>Send email notifications</Checkbox>
+          <Switch label="Include query details" />
+        </Space>
+      </ItemCard>
+      <ItemCard
+        {...args}
+        width="max 280px"
+        title="A long heading in a narrow card"
+      >
+        The body wraps to keep additional details readable when space is
+        limited, while the heading keeps its single-line layout and overflow
+        tooltip.
+      </ItemCard>
+    </Space>
+  );
+}
+
+export const Cases: Story = {
+  render: CasesStory,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await userEvent.click(
+      canvas.getByRole('button', { name: 'Dismiss setup notice' }),
+    );
+    await waitFor(() => {
+      expect(
+        canvas.queryByRole('heading', { name: 'Setup notice' }),
+      ).toBeNull();
+      expect(
+        canvas.getByRole('button', { name: 'Restore setup notice' }),
+      ).toHaveFocus();
+    });
+
+    await userEvent.keyboard('{Enter}');
+    await waitFor(() =>
+      expect(
+        canvas.getByRole('button', { name: 'Dismiss setup notice' }),
+      ).toHaveFocus(),
+    );
+    await userEvent.keyboard(' ');
+    await waitFor(() =>
+      expect(
+        canvas.getByRole('button', { name: 'Restore setup notice' }),
+      ).toHaveFocus(),
+    );
+    await userEvent.keyboard('{Enter}');
+    await waitFor(() => {
+      const close = canvas.getByRole('button', {
+        name: 'Dismiss setup notice',
+      });
+      expect(close).toBeVisible();
+      expect(close).toHaveFocus();
+    });
+  },
+};
