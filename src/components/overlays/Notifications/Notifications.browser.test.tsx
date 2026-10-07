@@ -336,9 +336,14 @@ describe('Toast collapse on pointer movement', () => {
       });
       expect(moves).not.toHaveBeenCalled();
 
-      // Wait for the enter animation and any resulting collapse to finish.
-      await act(() => new Promise((resolve) => setTimeout(resolve, 500)));
-      expect(toast.getBoundingClientRect().top).toBeGreaterThanOrEqual(16);
+      // Measurement and the enter animation must settle before checking geometry.
+      await waitFor(
+        () => {
+          expect(toast.getBoundingClientRect().top).toBeGreaterThanOrEqual(16);
+        },
+        { timeout: 2000 },
+      );
+      expect(moves).not.toHaveBeenCalled();
 
       await act(() => realInput.hover(toast.parentElement!));
       await waitFor(() => {
