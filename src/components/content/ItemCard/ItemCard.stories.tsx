@@ -211,7 +211,7 @@ function CasesStory(args: CubeItemCardProps) {
       <ItemCard
         {...args}
         width="max 280px"
-        title="A long heading in a narrow card"
+        title="A much longer heading that cannot fit in a narrow card"
       >
         The body wraps to keep additional details readable when space is
         limited, while the heading keeps its single-line layout and overflow
