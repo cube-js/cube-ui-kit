@@ -153,6 +153,7 @@ Each component lives in `src/components/{category}/{ComponentName}/` and ships `
 
 ## Environment
 
+- Tasty's experimental type-aware JSX analysis is enabled only in this repo's `.oxlintrc.json` through `settings.tasty.typeAwareJSX`, using `tsconfig.json` and the installed TypeScript. It distinguishes semantic props such as drop ordering and Item content from style props. Unresolved or erased prop types keep the name heuristic and may still need individual ignores. Cold lint runs load the TypeScript project; the setting is not part of the published Tasty config or plugin presets, so consumers such as Cloud remain opt-in.
 - Node 24, pinned in `.nvmrc` and used by every CI job including publish — OIDC trusted publishing requires npm ≥ 11.5.1, which Node 24 ships and Node 22 (npm 10.x) does not. pnpm `^10`, pinned to `pnpm@10.34.5` via `packageManager`; no Corepack involved. Note the published package still declares `engines.node >=22.0.0` — that is the floor for consumers, not for building this repo.
 - After `pnpm install`, run `pnpm rebuild esbuild` (postinstall is blocked in `pnpm-workspace.yaml`). Do this at the start of every task — see [Before You Start](#before-you-start).
 - Husky hooks: `pre-commit` runs `pnpm lint-staged`; `pre-push` runs `pnpm test`. Skip only intentionally (`--no-verify` or `HUSKY=0`).
