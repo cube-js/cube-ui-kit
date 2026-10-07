@@ -329,21 +329,25 @@ describe('Toast collapse on pointer movement', () => {
       moves.mockClear();
       enters.mockClear();
 
-      const toast = await screen.findByTestId('Toast');
+      await screen.findByTestId('Toast');
 
       await waitFor(() => {
         expect(enters.mock.results.some(({ value }) => value)).toBe(true);
       });
       expect(moves).not.toHaveBeenCalled();
 
-      // Measurement and the enter animation must settle before checking geometry.
+      // Portal can replace its initial inline node before the entrance settles.
       await waitFor(
         () => {
-          expect(toast.getBoundingClientRect().top).toBeGreaterThanOrEqual(16);
+          expect(
+            screen.getByTestId('Toast').getBoundingClientRect().top,
+          ).toBeGreaterThanOrEqual(16);
         },
         { timeout: 2000 },
       );
       expect(moves).not.toHaveBeenCalled();
+
+      const toast = screen.getByTestId('Toast');
 
       await act(() => realInput.hover(toast.parentElement!));
       await waitFor(() => {
