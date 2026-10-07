@@ -26,6 +26,9 @@ interface ProbeProps {
   hasTransition?: boolean;
   /** Skip binding the ref, leaving the hook with no element to listen on. */
   detached?: boolean;
+  /** Bind the ref through a new wrapper, as an inline or merged ref does. */
+  wrapRef?: boolean;
+  preserveContent?: boolean;
 }
 
 function Probe({
@@ -34,6 +37,8 @@ function Probe({
   onRest,
   hasTransition = true,
   detached = false,
+  wrapRef = false,
+  preserveContent,
 }: ProbeProps) {
   return (
     <DisplayTransition
@@ -41,11 +46,18 @@ function Probe({
       animateOnMount={false}
       duration={duration}
       isShown={isShown}
+      preserveContent={preserveContent}
       onRest={onRest}
     >
       {({ phase, isShown: shown, ref }) => (
         <div
-          ref={detached ? undefined : (ref as RefCallback<HTMLDivElement>)}
+          ref={
+            detached
+              ? undefined
+              : wrapRef
+                ? (node: HTMLDivElement | null) => ref(node)
+                : (ref as RefCallback<HTMLDivElement>)
+          }
           data-phase={phase}
           data-qa="probe"
           data-shown={shown}
@@ -144,6 +156,39 @@ describe('DisplayTransition timing with real transitions', () => {
     await waitFor(() => expect(phaseOf()).toBe('unmounted'), { timeout: 1000 });
 
     expect(onRest).toHaveBeenCalledWith('exit');
+  });
+
+  it('finishes the exit when a wrapped ref re-attaches mid-transition', async () => {
+    // A ref wrapped inline or by `mergeRefs`, as `Tooltip` binds it, is a new
+    // function every render, so React detaches it and re-attaches the same
+    // node. After `transitionstart` has cancelled the fallback timer, only the
+    // listeners on that node can end the exit. `preserveContent={false}` lets
+    // the rerender's wrapped ref reach the element while it exits.
+    const onRest = vi.fn();
+
+    const { rerender } = renderWithRoot(
+      <Probe isShown={true} preserveContent={false} onRest={onRest} />,
+    );
+
+    const started = new Promise((resolve) =>
+      probe().addEventListener('transitionstart', resolve, { once: true }),
+    );
+
+    rerender(<Probe isShown={false} preserveContent={false} onRest={onRest} />);
+
+    await started;
+    // The next animation-frame callback runs after this event's dispatch, so
+    // the hook's own listener has seen `transitionstart` by then.
+    await act(() => new Promise((resolve) => requestAnimationFrame(resolve)));
+
+    rerender(
+      <Probe wrapRef isShown={false} preserveContent={false} onRest={onRest} />,
+    );
+
+    await waitFor(() => expect(phaseOf()).toBe('unmounted'), { timeout: 1000 });
+
+    expect(onRest).toHaveBeenCalledWith('exit');
+    expect(onRest).toHaveBeenCalledTimes(1);
   });
 
   it('keeps the element shown when re-shown mid-collapse', async () => {

@@ -151,6 +151,53 @@ describe('Toast', () => {
     });
   });
 
+  describe('Duration', () => {
+    beforeEach(() => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    function DurationComponent() {
+      const toast = useToast();
+
+      return (
+        <div>
+          <Button onPress={() => toast({ title: 'Stays', duration: null })}>
+            Show Persistent
+          </Button>
+          <Button onPress={() => toast({ title: 'Goes' })}>Show Default</Button>
+        </div>
+      );
+    }
+
+    it('should keep a toast with `duration: null` and dismiss one without a duration', async () => {
+      const { getByRole, getByText, queryByText } = renderWithRoot(
+        <DurationComponent />,
+      );
+
+      await act(async () => {
+        getByRole('button', { name: 'Show Persistent' }).click();
+        getByRole('button', { name: 'Show Default' }).click();
+      });
+
+      expect(getByText('Stays')).toBeInTheDocument();
+      expect(getByText('Goes')).toBeInTheDocument();
+
+      // Past the 5000ms default, with room for the exit transition.
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(6000);
+      });
+
+      await waitFor(() => {
+        expect(queryByText('Goes')).not.toBeInTheDocument();
+      });
+      expect(getByText('Stays')).toBeInTheDocument();
+    });
+  });
+
   describe('Declarative Toast', () => {
     it('should render toast while mounted', async () => {
       const { getByText } = renderWithRoot(

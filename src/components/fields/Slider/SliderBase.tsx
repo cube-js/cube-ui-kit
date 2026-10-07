@@ -1,9 +1,11 @@
 import { useFocusableRef } from '@react-spectrum/utils';
-import { DOMRef, FocusableRef } from '@react-types/shared';
+import { FocusableRef, FocusableRefValue } from '@react-types/shared';
 import { OUTER_STYLES, tasty } from '@tenphi/tasty';
 import {
   ForwardedRef,
   forwardRef,
+  ForwardRefRenderFunction,
+  ReactElement,
   ReactNode,
   RefObject,
   useMemo,
@@ -12,7 +14,7 @@ import {
 import { useNumberFormatter, useSlider } from 'react-aria';
 import { useSliderState } from 'react-stately';
 
-import { forwardRefWithGenerics, mergeProps } from '../../../utils/react';
+import { mergeProps } from '../../../utils/react';
 import { extractStyles } from '../../../utils/styles';
 import { Text } from '../../content/Text';
 import { getValidationMods, useFieldProps, wrapWithField } from '../../form';
@@ -42,7 +44,10 @@ const LabelValueElement = tasty(Text, {
   },
 });
 
-function SliderBase(allProps: SliderBaseProps, ref: DOMRef<HTMLDivElement>) {
+function SliderBase(
+  allProps: SliderBaseProps,
+  ref: FocusableRef<HTMLDivElement>,
+) {
   let props = useFieldProps(allProps, {
     defaultValidationTrigger: 'onChange',
     valuePropsMapper: ({ value, onChange }) => ({
@@ -237,7 +242,17 @@ function SliderBase(allProps: SliderBaseProps, ref: DOMRef<HTMLDivElement>) {
   });
 }
 
-const _SliderBase = forwardRefWithGenerics(SliderBase);
+// `forwardRef`, not a plain function reading `props.ref`: React 18 never
+// passes `ref` to a plain function component. The cast keeps the props as
+// declared, since `forwardRef`'s `Omit<…, 'ref'>` loses the required `children`.
+const _SliderBase = forwardRef(
+  SliderBase as ForwardRefRenderFunction<
+    FocusableRefValue<HTMLDivElement>,
+    any
+  >,
+) as unknown as (
+  props: SliderBaseProps & { ref?: FocusableRef<HTMLDivElement> },
+) => ReactElement;
 
 (_SliderBase as any).displayName = 'SliderBase';
 

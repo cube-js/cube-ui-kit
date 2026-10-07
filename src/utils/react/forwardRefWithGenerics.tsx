@@ -2,25 +2,11 @@ import { DOMRef } from '@react-types/shared';
 import { ReactElement } from 'react';
 
 /**
- * A helper for creating forwardRef components with generic types.
- * This solves the issue where React's forwardRef doesn't work well with generic components,
- * especially when props include required children from CollectionBase<T> or similar types.
- *
- * @example
- * ```tsx
- * function MySelect<T extends object>(
- *   props: MySelectProps<T>,
- *   ref: DOMRef<HTMLDivElement>
- * ) {
- *   // component implementation
- *   return <div ref={ref}>...</div>;
- * }
- *
- * const MySelectWithRef = forwardRefWithGenerics(MySelect);
- *
- * // Usage:
- * <MySelectWithRef<ItemType> items={items} ref={myRef} />
- * ```
+ * @deprecated Use `forwardRef` with a cast that restores the generic, as
+ * `Select`, `ComboBox` and `Picker` do. This helper returns a plain function
+ * component that reads `ref` from its props, and React 18 never passes `ref`
+ * to one, so the ref is dropped there. Its returned `<T>` is unused too, so
+ * the component's props lose their item generic.
  */
 export function forwardRefWithGenerics<
   TProps extends Record<string, any>,

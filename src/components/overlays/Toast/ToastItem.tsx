@@ -30,8 +30,16 @@ const StyledItem = tasty(Item, {
       'has-actions': 'auto',
     },
 
+    // A long message wraps at the wrapper's cap instead of running past it,
+    // and a word wider than the cap, such as a URL, breaks too.
+    Label: {
+      whiteSpace: 'normal',
+      overflowWrap: 'anywhere',
+    },
+
     Description: {
       preset: 't4',
+      overflowWrap: 'anywhere',
     },
   },
 });

@@ -140,7 +140,7 @@ A fixture must render the component for real — required props, collection chil
 
 ## Excluding one prop on one component
 
-Every exclusion is scoped to a component _and_ a prop: `curatedSkips` and `ignoreProps` are keyed by prop name on a single fixture, and the registry is `component -> prop -> entry` throughout. Excluding a prop name globally is deliberately not possible — `isDisabled` is a genuine plain default on `ButtonSplit`, `Disclosure`, `InlineInput`, `Portal` and `Tree`, and an inherited override only on `ItemAction`. A name-level exclusion would silence the former to protect the latter.
+Every exclusion is scoped to a component _and_ a prop: `curatedSkips` and `ignoreProps` are keyed by prop name on a single fixture, and the registry is `component -> prop -> entry` throughout. Excluding a prop name globally is deliberately not possible — `isDisabled` is a genuine plain default on `Button`, `ButtonSplit`, `Disclosure`, `InlineInput`, `Portal` and `Tree`, and an inherited override only on `ItemAction`. A name-level exclusion would silence the former to protect the latter.
 
 Which of the three to reach for:
 

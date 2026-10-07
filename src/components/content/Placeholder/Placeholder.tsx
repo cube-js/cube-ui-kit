@@ -89,6 +89,9 @@ export const Placeholder = forwardRef(function Placeholder(
       role="region"
       aria-label={t('placeholder.contentIsLoading', 'Content is loading')}
       {...filterBaseProps(props, { eventProps: true })}
+      // The documented way to detect a loading placeholder. Fixed, so a
+      // caller's `qa` or a translated `aria-label` doesn't change it.
+      data-loading-placeholder=""
       ref={ref}
       mods={{ animated: !isStatic, circle }}
       styles={mergeStyleLayers({ height: size }, styles)}

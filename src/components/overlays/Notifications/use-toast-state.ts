@@ -84,9 +84,12 @@ export function useToastState(
     idCounter.current += 1;
     const internalId = `toast-${idCounter.current}-${Date.now()}`;
     const dedupeKey = generateToastDedupeKey(data);
+    // Only a missing duration takes the default: `null` keeps the toast.
     const duration = isProgress
       ? null
-      : data.duration ?? DEFAULT_TOAST_DURATION;
+      : data.duration === undefined
+        ? DEFAULT_TOAST_DURATION
+        : data.duration;
 
     const newToast: InternalToast = {
       ...data,

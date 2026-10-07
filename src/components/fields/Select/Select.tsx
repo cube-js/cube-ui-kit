@@ -1,9 +1,4 @@
-import {
-  AriaLabelingProps,
-  CollectionBase,
-  DOMRef,
-  Key,
-} from '@react-types/shared';
+import { AriaLabelingProps, CollectionBase, Key } from '@react-types/shared';
 import {
   BASE_STYLES,
   BasePropsWithoutChildren,
@@ -17,6 +12,9 @@ import {
 } from '@tenphi/tasty';
 import React, {
   cloneElement,
+  ForwardedRef,
+  forwardRef,
+  ForwardRefRenderFunction,
   ReactElement,
   ReactNode,
   RefObject,
@@ -48,11 +46,7 @@ import { DirectionIcon } from '../../../icons/DirectionIcon';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
 import { FieldBaseProps } from '../../../shared/index';
 import { generateRandomId } from '../../../utils/random';
-import {
-  forwardRefWithGenerics,
-  mergeProps,
-  useCombinedRefs,
-} from '../../../utils/react/index';
+import { mergeProps, useCombinedRefs } from '../../../utils/react/index';
 import { useFocus } from '../../../utils/react/interactions';
 import { focusProgrammatically } from '../../../utils/react/programmaticFocus';
 import { useOverlayEscapeGuard } from '../../../utils/react/useOverlayEscapeGuard';
@@ -312,7 +306,7 @@ const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
 
 function Select<T extends object>(
   props: CubeSelectProps<T>,
-  ref: DOMRef<HTMLDivElement>,
+  ref: ForwardedRef<HTMLDivElement>,
 ) {
   props = useFieldProps(props, {
     defaultValidationTrigger: 'onChange',
@@ -986,7 +980,13 @@ function SelectSection<T>(props: SelectSectionProps<T>) {
   );
 }
 
-const _Select = forwardRefWithGenerics(Select);
+// `forwardRef` can't carry the item generic, so the cast restores it, as in
+// ComboBox and Picker.
+const _Select = forwardRef(
+  Select as ForwardRefRenderFunction<HTMLDivElement, any>,
+) as unknown as <T>(
+  props: CubeSelectProps<T> & { ref?: ForwardedRef<HTMLDivElement> },
+) => ReactElement;
 
 (_Select as any).cubeInputType = 'Select';
 

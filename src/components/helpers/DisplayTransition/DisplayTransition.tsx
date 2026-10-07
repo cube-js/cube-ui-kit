@@ -84,6 +84,7 @@ export function DisplayTransition({
   const elementRef = useRef<HTMLElement | null>(null);
   const transitionStartedRef = useRef(false);
   const eventListenersRef = useRef<{
+    element: HTMLElement;
     onTransitionStart: (e: TransitionEvent) => void;
     onTransitionEnd: (e: TransitionEvent) => void;
     onTransitionCancel: (e: TransitionEvent) => void;
@@ -140,9 +141,9 @@ export function DisplayTransition({
   };
 
   const cleanupEventListeners = () => {
-    const element = elementRef.current;
     const listeners = eventListenersRef.current;
-    if (element && listeners) {
+    if (listeners) {
+      const { element } = listeners;
       element.removeEventListener(
         'transitionstart',
         listeners.onTransitionStart,
@@ -210,6 +211,7 @@ export function DisplayTransition({
       };
 
       eventListenersRef.current = {
+        element,
         onTransitionStart,
         onTransitionEnd,
         onTransitionCancel,
@@ -362,17 +364,18 @@ export function DisplayTransition({
     }
   }, [isShownNow, onToggleEvent]);
 
-  // Ref callback to attach to transitioned element
-  // MUST be memoized so React doesn't re-call it on re-renders,
-  // which would cleanup event listeners mid-transition
+  // Ref callback to attach to the transitioned element. A consumer that wraps
+  // it inline or with `mergeRefs`, as `Tooltip` does, hands React a new ref
+  // every render, so React detaches it and re-attaches the same node. Keep the
+  // listeners on that node: once `transitionstart` has cancelled the fallback
+  // timer, only they can end the transition, and without them the element
+  // would stay mounted. A different node removes them.
   const refCallback: RefCallback<HTMLElement> = useCallback((node) => {
-    if (node) {
-      elementRef.current = node;
-      // Don't call ensureEnterFlow() here - useLayoutEffect handles RAF scheduling
-      // to ensure symmetric timing with exit flow
-    } else {
+    elementRef.current = node;
+    // Don't call ensureEnterFlow() here - useLayoutEffect handles RAF scheduling
+    // to ensure symmetric timing with exit flow
+    if (node && eventListenersRef.current?.element !== node) {
       cleanupEventListeners();
-      elementRef.current = null;
     }
   }, []);
 

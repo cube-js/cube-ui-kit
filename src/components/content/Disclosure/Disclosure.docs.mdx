@@ -30,12 +30,19 @@ An accessible collapsible container that reveals or hides additional content. Bu
 - **`onExpandedChange`** `(isExpanded: boolean) => void` — Callback fired when expanded state changes
 - **`isDisabled`** `boolean` (default: `false`) — Disables trigger interactions and force-closes the content
 - **`shape`** `'default' | 'card' | 'sharp'` (default: `default`) — Visual shape variant: default (no styling), card (border/radius), sharp (radius 0)
-- **`transitionDuration`** `number` — Duration for DisplayTransition animation in milliseconds. When undefined, uses default CSS transition timing
+- **`transitionDuration`** `number` — Duration for DisplayTransition animation in milliseconds. When undefined, uses default CSS transition timing. It sets the `$disclosure-transition` token, which wins over the same key in `tokens`
 - **`children`** `ReactNode | ((state: DisclosureStateContext) => ReactNode)` — Disclosure.Trigger and Disclosure.Content components
 
 ### Base Properties
 
-Supports [Base properties](/docs/getting-started-base-properties--docs)
+Supports [Base properties](/docs/getting-started-base-properties--docs). `Disclosure`, `Disclosure.Group` and `Disclosure.Item` forward DOM attributes (`id`, `className`, `style`, `aria-*`, `data-*`), `theme`, `tokens` and event handlers to their root. The exception is `id` on `Disclosure.Item`, which is the item's group key, not its DOM `id` (see Disclosure.Item below). Hover props from `useHover` can go straight on the disclosure:
+
+```jsx
+<Disclosure {...hoverProps}>
+  <Disclosure.Trigger>Query</Disclosure.Trigger>
+  <Disclosure.Content>…</Disclosure.Content>
+</Disclosure>
+```
 
 ## Compound Components
 
@@ -55,7 +62,7 @@ Container for multiple disclosure items that coordinates their expanded states. 
 
 ### Disclosure.Item
 
-Individual disclosure within a group. Must have a unique `id` prop when used inside `Disclosure.Group`.
+Individual disclosure within a group. Must have a unique `id` prop when used inside `Disclosure.Group`. That `id` is the item's key in the group's `expandedKeys`, so it isn't rendered as the DOM `id`.
 
 ## Styling
 

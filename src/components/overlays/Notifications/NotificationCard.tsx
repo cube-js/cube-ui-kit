@@ -20,6 +20,7 @@ import type { DismissReason, NotificationType } from './types';
 
 const StyledItem = tasty(Item, {
   styles: {
+    // Same cap as OverlayContainer's item wrapper; change both together.
     width: {
       '': 'max min((100vw - 4x), 50x)',
       flat: '100%',
@@ -34,8 +35,11 @@ const StyledItem = tasty(Item, {
     },
     transition: 'theme, inset',
 
+    // A word wider than the card, such as a URL, breaks instead of being
+    // clipped. The title keeps its one-line ellipsis.
     Description: {
       preset: 't4',
+      overflowWrap: 'anywhere',
     },
   },
 });
