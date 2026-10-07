@@ -5,11 +5,20 @@ import { Item } from '../Item/Item';
 import { ItemCard } from './ItemCard';
 
 const THEMES = ['success', 'danger', 'warning', 'note', 'current'] as const;
+const DESCRIPTION_OVERRIDES = [
+  ['NestedReset', { 'type=card | type=header': null }],
+  ['NestedInherit', { '': '@inherit' }],
+] as const;
 
 function surface(element: Element) {
   const style = getComputedStyle(element);
 
-  return [style.backgroundColor, style.borderTopColor, style.borderTopStyle];
+  return [
+    style.backgroundColor,
+    style.borderTopColor,
+    style.borderTopStyle,
+    style.borderTopWidth,
+  ];
 }
 
 describe('ItemCard surface customization', () => {
@@ -80,6 +89,42 @@ describe('ItemCard surface customization', () => {
         >
           Reset styles
         </Item>
+        <ItemCard
+          qa="StateReset"
+          title="Reset state maps"
+          styles={{ fill: { '': null }, border: { '': null } }}
+        />
+        <Item
+          qa="StateResetReference"
+          type="card"
+          styles={{ fill: { '': null }, border: { '': null } }}
+        >
+          Reset state maps
+        </Item>
+        <ItemCard
+          qa="InheritedFill"
+          title="Inherit owning fill"
+          styles={{ fill: { '': '@inherit' } }}
+        />
+        {DESCRIPTION_OVERRIDES.map(([name, opacity]) => (
+          <div key={name}>
+            <ItemCard
+              qa={name}
+              title="Nested description styles"
+              styles={{ Description: { opacity } }}
+            >
+              Body
+            </ItemCard>
+            <Item
+              qa={`${name}Reference`}
+              type="card"
+              description="Body"
+              styles={{ Description: { opacity } }}
+            >
+              Nested description styles
+            </Item>
+          </div>
+        ))}
       </>,
     );
 
@@ -91,9 +136,26 @@ describe('ItemCard surface customization', () => {
         surface(screen.getByTestId(`Item-${theme}`)),
       );
     }
-    for (const name of ['Variant', 'StyleProps', 'Styles', 'Reset']) {
+    for (const name of [
+      'Variant',
+      'StyleProps',
+      'Styles',
+      'Reset',
+      'StateReset',
+    ]) {
       expect(surface(screen.getByTestId(name))).toEqual(
         surface(screen.getByTestId(`${name}Reference`)),
+      );
+    }
+    expect(surface(screen.getByTestId('InheritedFill'))).toEqual(
+      surface(screen.getByTestId('NeutralReference')),
+    );
+    const description = (qa: string) =>
+      screen.getByTestId(qa).querySelector('[data-element="Description"]')!;
+
+    for (const name of ['NestedReset', 'NestedInherit']) {
+      expect(getComputedStyle(description(name)).opacity).toEqual(
+        getComputedStyle(description(`${name}Reference`)).opacity,
       );
     }
   });

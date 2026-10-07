@@ -601,7 +601,16 @@ const ItemElement = tasty({
       '$side-padding': '(($size - $action-size - 2bw) / 2)',
     },
   },
-  variants: ITEM_VARIANTS,
+  variants: {
+    ...ITEM_VARIANTS,
+    // ItemCard's palette stays local so consumer directives reach this owner.
+    'default.item-card': {
+      // eslint-disable-next-line tasty/no-style-spread -- inherit the shared card foreground and palette defaults
+      ...ITEM_VARIANTS['default.card'],
+      fill: '#surface',
+      border: '#border',
+    },
+  },
   styleProps: CONTAINER_STYLES,
 });
 
@@ -1072,7 +1081,13 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
         ref={handleRef}
         // Shared with `ItemButton`, which repeats this lookup on the wrapper that
         // carries the row color to actions rendered outside the row.
-        variant={theme && type ? resolveItemVariant(theme, type) : undefined}
+        variant={
+          theme && type
+            ? type === 'card' && theme === 'default' && mods?.['item-card']
+              ? 'default.item-card'
+              : resolveItemVariant(theme, type)
+            : undefined
+        }
         disabled={isNativelyDisabled}
         aria-disabled={finalIsDisabled}
         // A row that reports `aria-pressed` is a toggle button, where

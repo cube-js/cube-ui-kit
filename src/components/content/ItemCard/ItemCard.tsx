@@ -1,6 +1,5 @@
 import { ForwardedRef, forwardRef, ReactNode } from 'react';
 
-import { mergeStyleLayers } from '../../../utils/styles';
 import { ItemAction } from '../../actions/ItemAction/ItemAction';
 import { CubeItemProps, Item } from '../Item/Item';
 
@@ -12,25 +11,15 @@ export interface CubeItemCardProps
   children?: ReactNode;
 }
 
-const DEFAULT_STYLES = {
-  fill: { 'theme=default': '#surface' },
-  border: { 'theme=default': '#border' },
-};
-
 const _ItemCard = forwardRef(function ItemCard(
   { title, children, ...props }: CubeItemCardProps,
   ref: ForwardedRef<HTMLElement>,
 ) {
-  const styles = mergeStyleLayers(
-    props.variant ? undefined : DEFAULT_STYLES,
-    props.styles,
-  );
-
   return (
     <Item
       ref={ref}
       {...props}
-      styles={styles}
+      mods={{ 'item-card': true, ...props.mods }}
       type="card"
       description={children}
     >
