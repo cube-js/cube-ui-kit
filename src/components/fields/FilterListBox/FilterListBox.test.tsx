@@ -1005,7 +1005,7 @@ describe('<FilterListBox />', () => {
       const { container } = render(
         <FilterListBox
           label="Select a fruit"
-          searchInputStyles={{ fill: '#red' }}
+          searchInputStyles={{ fill: '#danger' }}
         >
           {basicItems}
         </FilterListBox>,
@@ -1018,7 +1018,10 @@ describe('<FilterListBox />', () => {
 
     it('should apply custom styles to options', () => {
       const { container } = render(
-        <FilterListBox label="Select a fruit" optionStyles={{ color: '#blue' }}>
+        <FilterListBox
+          label="Select a fruit"
+          optionStyles={{ color: '#primary' }}
+        >
           {basicItems}
         </FilterListBox>,
       );

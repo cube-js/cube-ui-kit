@@ -270,13 +270,13 @@ export const WithTextStyling: Story = {
 export const InConstrainedContainer: Story = {
   render: () => (
     <Space flow="column" gap="2x">
-      <Block width="150px" fill="#gray.05" padding="1x">
+      <Block width="150px" fill="#surface-2" padding="1x">
         <TextItem>Very narrow container</TextItem>
       </Block>
-      <Block width="250px" fill="#gray.05" padding="1x">
+      <Block width="250px" fill="#surface-2" padding="1x">
         <TextItem>Medium width container with more space for text</TextItem>
       </Block>
-      <Block width="400px" fill="#gray.05" padding="1x">
+      <Block width="400px" fill="#surface-2" padding="1x">
         <TextItem>
           Wide container that can fit longer text without truncation
         </TextItem>

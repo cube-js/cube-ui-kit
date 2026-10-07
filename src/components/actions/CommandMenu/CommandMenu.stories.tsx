@@ -1322,7 +1322,7 @@ export const WithContextMenu = () => {
 
       <Card
         ref={targetRef}
-        border="dashed #green"
+        border="dashed #success"
         position="relative"
         padding="4x"
       >

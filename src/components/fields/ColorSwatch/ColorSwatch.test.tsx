@@ -21,6 +21,7 @@ describe('<ColorSwatch />', () => {
   });
 
   it('marks an unparsable color empty rather than guessing', () => {
+    // oxlint-disable-next-line tasty/valid-value -- Intentionally invalid color exercises the empty fallback.
     const { getByTestId } = render(<ColorSwatch qa="Swatch" color="nope" />);
 
     expect(getByTestId('Swatch')).toHaveAttribute('data-empty');
