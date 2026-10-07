@@ -284,6 +284,11 @@ describe('Toast collapse on pointer movement', () => {
   it('keeps a toast mounted under a resting pointer expanded until the pointer moves', async () => {
     await page.viewport(300, 800);
 
+    let completeSave!: () => void;
+    const saved = new Promise<void>((resolve) => {
+      completeSave = resolve;
+    });
+
     function Shows() {
       const toast = useToast();
 
@@ -297,8 +302,7 @@ describe('Toast collapse on pointer movement', () => {
             transform: 'translateX(-50%)',
           }}
           onPress={() => {
-            // Mount after the click is finished, without another pointer move.
-            setTimeout(() => toast({ title: 'Saved under the pointer' }), 150);
+            void saved.then(() => toast({ title: 'Saved under the pointer' }));
           }}
         >
           Save
@@ -325,15 +329,27 @@ describe('Toast collapse on pointer movement', () => {
     document.addEventListener('mouseenter', enters, true);
 
     try {
-      await act(() => realInput.click(screen.getByTestId('ShowToast')));
+      await act(() =>
+        page
+          .getByRole('button', { name: 'Save', exact: true })
+          .click({ position: { x: 1, y: 1 } }),
+      );
       moves.mockClear();
       enters.mockClear();
 
-      await screen.findByTestId('Toast');
-
-      await waitFor(() => {
-        expect(enters.mock.results.some(({ value }) => value)).toBe(true);
+      expect(screen.queryByTestId('Toast')).toBeNull();
+      // Complete the save only after the real click and event reset have finished.
+      await act(async () => {
+        completeSave();
+        await saved;
       });
+
+      await waitFor(
+        () => {
+          expect(enters.mock.results.some(({ value }) => value)).toBe(true);
+        },
+        { timeout: 2000 },
+      );
       expect(moves).not.toHaveBeenCalled();
 
       // Portal can replace its initial inline node before the entrance settles.
@@ -347,19 +363,32 @@ describe('Toast collapse on pointer movement', () => {
       );
       expect(moves).not.toHaveBeenCalled();
 
-      const toast = screen.getByTestId('Toast');
-
-      await act(() => realInput.hover(toast.parentElement!));
-      await waitFor(() => {
-        expect(toast.getBoundingClientRect().bottom).toBeLessThanOrEqual(11);
-      });
+      await act(() =>
+        page
+          .elementLocator(screen.getByTestId('Toast').parentElement!)
+          .hover({ position: { x: 1, y: 1 }, timeout: 2000 }),
+      );
+      expect(moves).toHaveBeenCalled();
+      await waitFor(
+        () => {
+          expect(
+            screen.getByTestId('Toast').getBoundingClientRect().bottom,
+          ).toBeLessThanOrEqual(11);
+        },
+        { timeout: 2000 },
+      );
 
       await act(() =>
         realInput.hover(document.body, { position: { x: 1, y: 1 } }),
       );
-      await waitFor(() => {
-        expect(toast.getBoundingClientRect().top).toBeGreaterThanOrEqual(16);
-      });
+      await waitFor(
+        () => {
+          expect(
+            screen.getByTestId('Toast').getBoundingClientRect().top,
+          ).toBeGreaterThanOrEqual(16);
+        },
+        { timeout: 2000 },
+      );
     } finally {
       document.removeEventListener('mousemove', moves);
       document.removeEventListener('mouseenter', enters, true);
