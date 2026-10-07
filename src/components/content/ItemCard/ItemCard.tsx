@@ -12,13 +12,14 @@ export interface CubeItemCardProps
 }
 
 const _ItemCard = forwardRef(function ItemCard(
-  { title, children, ...props }: CubeItemCardProps,
+  { title, children, variant, ...props }: CubeItemCardProps,
   ref: ForwardedRef<HTMLElement>,
 ) {
   return (
     <Item
       ref={ref}
       {...props}
+      {...(variant === undefined ? {} : { variant })}
       mods={{ 'item-card': true, ...props.mods }}
       type="card"
       description={children}

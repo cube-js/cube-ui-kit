@@ -23,7 +23,7 @@ A card for content with a heading, a body and optional inline actions. It wraps 
 
 - **`title`** `ReactNode` — Card heading (mapped to Item's `children`)
 - **`children`** `ReactNode` — Card body content (mapped to Item's `description`)
-- **`theme`** `'default' | 'success' | 'danger' | 'warning' | 'note'` (default: `default`) — Neutral surface or semantic status theme
+- **`theme`** `'default' | 'success' | 'danger' | 'warning' | 'note' | 'current'` (default: `default`) — Neutral surface, semantic status or inherited-color theme
 - **`size`** `'xsmall' | 'small' | 'medium' | 'large' | 'xlarge'` (default: `medium`) — Size of the card
 - **`icon`** `ReactNode` — Icon displayed before the content
 - **`rightIcon`** `ReactNode` — Icon displayed after the content
@@ -72,6 +72,8 @@ Use the default theme for grouped content and a semantic theme when color commun
 - `danger` — Red theme for errors or destructive states
 - `warning` — Amber theme for caution
 - `note` — Violet theme for informational context
+
+The `current` theme uses the inherited foreground color for its tinted surface and border. See [Item documentation](/docs/content-item--docs) for theme styling.
 
 <Story of={ItemCardStories.Themes} />
 

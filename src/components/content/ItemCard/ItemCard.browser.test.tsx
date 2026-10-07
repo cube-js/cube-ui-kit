@@ -40,6 +40,17 @@ describe('ItemCard surface customization', () => {
     renderWithRoot(
       <>
         <ItemCard qa="Neutral" title="Neutral card" />
+        <ItemCard
+          qa="UndefinedVariant"
+          title="Undefined variant"
+          variant={undefined}
+        />
+        <ItemCard
+          qa="UndefinedSemanticVariant"
+          title="Undefined semantic variant"
+          theme="danger"
+          variant={undefined}
+        />
         <Card qa="NeutralReference">Neutral container</Card>
         {THEMES.map((theme) => (
           <div key={theme}>
@@ -130,6 +141,12 @@ describe('ItemCard surface customization', () => {
 
     expect(surface(await screen.findByTestId('Neutral'))).toEqual(
       surface(screen.getByTestId('NeutralReference')),
+    );
+    expect(surface(screen.getByTestId('UndefinedVariant'))).toEqual(
+      surface(screen.getByTestId('NeutralReference')),
+    );
+    expect(surface(screen.getByTestId('UndefinedSemanticVariant'))).toEqual(
+      surface(screen.getByTestId('Item-danger')),
     );
     for (const theme of THEMES) {
       expect(surface(screen.getByTestId(`Card-${theme}`))).toEqual(

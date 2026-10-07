@@ -45,9 +45,10 @@ const meta = {
 
     /* Presentation */
     theme: {
-      options: ['default', 'success', 'danger', 'warning', 'note'],
+      options: ['default', 'success', 'danger', 'warning', 'note', 'current'],
       control: { type: 'radio' },
-      description: 'Neutral surface by default, or a semantic status theme',
+      description:
+        'Neutral surface by default, or a semantic status or inherited-color theme',
       table: { defaultValue: { summary: 'default' } },
     },
     level: {
