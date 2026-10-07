@@ -440,6 +440,7 @@ export const DEFAULTS: DefaultsRegistry = {
         level: { kind: 'default', value: 3 },
         preserveActionsSpace: { kind: 'default', value: false },
         size: { kind: 'default', value: 'medium' },
+        theme: { kind: 'default', value: 'default' },
         tooltip: { kind: 'default', value: true },
       },
     },

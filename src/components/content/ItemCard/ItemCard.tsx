@@ -1,6 +1,6 @@
 import { ForwardedRef, forwardRef, ReactNode } from 'react';
 
-import { ItemAction } from '../../actions/ItemAction';
+import { ItemAction } from '../../actions/ItemAction/ItemAction';
 import { CubeItemProps, Item } from '../Item/Item';
 
 export interface CubeItemCardProps
@@ -12,11 +12,18 @@ export interface CubeItemCardProps
 }
 
 const _ItemCard = forwardRef(function ItemCard(
-  { title, children, ...props }: CubeItemCardProps,
+  { title, children, variant, ...props }: CubeItemCardProps,
   ref: ForwardedRef<HTMLElement>,
 ) {
   return (
-    <Item ref={ref} {...props} type="card" description={children}>
+    <Item
+      ref={ref}
+      {...props}
+      {...(variant === undefined ? {} : { variant })}
+      mods={{ 'item-card': true, ...props.mods }}
+      type="card"
+      description={children}
+    >
       {title}
     </Item>
   );
