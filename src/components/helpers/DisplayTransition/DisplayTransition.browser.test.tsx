@@ -177,7 +177,8 @@ describe('DisplayTransition timing with real transitions', () => {
     rerender(<Probe isShown={false} preserveContent={false} onRest={onRest} />);
 
     await started;
-    // One more frame, so the hook's own listener has seen `transitionstart`.
+    // The next animation-frame callback runs after this event's dispatch, so
+    // the hook's own listener has seen `transitionstart` by then.
     await act(() => new Promise((resolve) => requestAnimationFrame(resolve)));
 
     rerender(
@@ -187,6 +188,7 @@ describe('DisplayTransition timing with real transitions', () => {
     await waitFor(() => expect(phaseOf()).toBe('unmounted'), { timeout: 1000 });
 
     expect(onRest).toHaveBeenCalledWith('exit');
+    expect(onRest).toHaveBeenCalledTimes(1);
   });
 
   it('keeps the element shown when re-shown mid-collapse', async () => {

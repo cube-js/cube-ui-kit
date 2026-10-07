@@ -369,7 +369,7 @@ export function DisplayTransition({
   // every render, so React detaches it and re-attaches the same node. Keep the
   // listeners on that node: once `transitionstart` has cancelled the fallback
   // timer, only they can end the transition, and without them the element
-  // would stay mounted. Only a different node replaces them.
+  // would stay mounted. A different node removes them.
   const refCallback: RefCallback<HTMLElement> = useCallback((node) => {
     elementRef.current = node;
     // Don't call ensureEnterFlow() here - useLayoutEffect handles RAF scheduling
