@@ -1,9 +1,11 @@
-import { act, waitFor } from '@testing-library/react';
+import { act, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 
 import { renderWithRoot } from '../../../test/render';
 import { Button } from '../../actions/Button/Button';
 import { Item } from '../../content/Item/Item';
+import { useToastContext } from '../Notifications/NotificationContext';
 
 import { ToastItem } from './ToastItem';
 
@@ -292,6 +294,87 @@ describe('Toast', () => {
       await userEvent.click(getByRole('button', { name: 'Cancel' }));
 
       expect(onPress).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('Empty stack reset', () => {
+    beforeEach(() => vi.useFakeTimers());
+    afterEach(() => vi.useRealTimers());
+
+    it.each([
+      ['effect', useEffect],
+      ['layout effect', useLayoutEffect],
+    ] as const)(
+      'dismisses a timed toast queued by a %s after a hovered stack empties',
+      (_, useQueueEffect) => {
+        let api!: ReturnType<typeof useToastContext>;
+
+        function QueueNextToast() {
+          const context = useToastContext();
+          api = context;
+          const hadToast = useRef(false);
+          const queued = useRef(false);
+
+          useQueueEffect(() => {
+            if (context.toasts.length) {
+              hadToast.current = true;
+            } else if (hadToast.current && !queued.current) {
+              queued.current = true;
+              context.addToast({
+                id: 'second',
+                title: 'Second',
+                duration: 400,
+              });
+            }
+          }, [context]);
+
+          return null;
+        }
+
+        const { getByTestId, getByText, queryByText } = renderWithRoot(
+          <QueueNextToast />,
+        );
+        act(() =>
+          api.addToast({ id: 'first', title: 'First', duration: null }),
+        );
+        act(() => vi.advanceTimersByTime(500));
+        fireEvent.mouseEnter(getByTestId('Toast').parentElement!);
+        act(() => api.removeToast('first'));
+        act(() => vi.advanceTimersByTime(500));
+
+        expect(queryByText('First')).not.toBeInTheDocument();
+        expect(getByText('Second')).toBeInTheDocument();
+        fireEvent.mouseLeave(getByTestId('Toast').parentElement!);
+        act(() => vi.advanceTimersByTime(400));
+
+        expect(
+          api.toasts.find((toast) => toast.id === 'second')?.isExiting,
+        ).toBe(true);
+        act(() => vi.advanceTimersByTime(500));
+        expect(queryByText('Second')).not.toBeInTheDocument();
+      },
+    );
+
+    it('keeps an active timer deadline when the toast updates', () => {
+      let api!: ReturnType<typeof useToastContext>;
+
+      function CaptureContext() {
+        api = useToastContext();
+
+        return null;
+      }
+
+      renderWithRoot(<CaptureContext />);
+      act(() =>
+        api.addToast({ id: 'active', title: 'Active', duration: 1000 }),
+      );
+      act(() => vi.advanceTimersByTime(300));
+      act(() => api.updateToast('active', { title: 'Updated' }));
+      act(() => vi.advanceTimersByTime(700));
+
+      expect(api.toasts.find((toast) => toast.id === 'active')?.isExiting).toBe(
+        true,
+      );
     });
   });
 

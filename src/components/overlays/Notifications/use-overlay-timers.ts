@@ -109,27 +109,24 @@ function createTimerManager(
     pausedMap.forEach((info, internalId) => {
       const item = findItem(internalId);
 
+      if (!item || item.isExiting || timersMap.has(internalId)) return;
+
       if (info.remaining <= 0) {
         pausedMap.delete(internalId);
-
-        if (item && !item.isExiting) {
-          onTimeout(item.id ?? item.internalId);
-        }
+        onTimeout(item.id ?? item.internalId);
 
         return;
       }
 
-      if (item && !item.isExiting) {
-        const timer = setTimeout(() => {
-          onTimeout(item.id ?? item.internalId);
-        }, info.remaining);
+      const timer = setTimeout(() => {
+        onTimeout(item.id ?? item.internalId);
+      }, info.remaining);
 
-        timersMap.set(internalId, timer);
-        pausedMap.set(internalId, {
-          remaining: info.remaining,
-          startedAt: Date.now(),
-        });
-      }
+      timersMap.set(internalId, timer);
+      pausedMap.set(internalId, {
+        remaining: info.remaining,
+        startedAt: Date.now(),
+      });
     });
   };
 
@@ -219,6 +216,16 @@ export function useOverlayTimers(deps: OverlayTimersDeps): OverlayTimers {
       toastManager.current!.pauseAll();
       notifManager.current!.pauseAll();
     } else {
+      toastManager.current!.resumeAll();
+      notifManager.current!.resumeAll();
+    }
+  });
+
+  // An effect can enqueue an item while paused just before an empty-stack
+  // reset resumes timers. Retry once that item reaches the committed lookup,
+  // preserving the deadlines of timers that are already running.
+  useEffect(() => {
+    if (!isPausedRef.current) {
       toastManager.current!.resumeAll();
       notifManager.current!.resumeAll();
     }

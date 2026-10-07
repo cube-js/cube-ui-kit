@@ -247,6 +247,7 @@ function useItemPositions(visibleItems: OverlayItem[]): ItemPositionsResult {
 interface CollapseStateResult {
   isCollapsed: boolean;
   handleMouseEnter: () => void;
+  handleMouseMove: () => void;
   handleMouseLeave: () => void;
   handleFocus: () => void;
   handleBlur: (e: FocusEvent) => void;
@@ -335,16 +336,25 @@ function useCollapseState(
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, [isCollapsed, onPauseChange]);
 
-  // Update bounds when items change
+  // An empty container must not carry hover state into the next toast stack.
   useEffect(() => {
     updateBounds();
-  }, [allItems, updateBounds]);
+
+    if (allItems.length === 0) {
+      setIsCollapsed(false);
+      onPauseChange(false);
+    }
+  }, [allItems, updateBounds, onPauseChange]);
 
   const handleMouseEnter = () => {
-    updateBounds();
     onPauseChange(true);
+  };
 
-    if (canCollapse) {
+  // Layout and enter animations can put an item under a stationary pointer
+  // and fire mouseenter. Collapse only after the user moves over the stack.
+  const handleMouseMove = () => {
+    if (canCollapse && !isCollapsed) {
+      updateBounds();
       setIsCollapsed(true);
     }
   };
@@ -371,6 +381,7 @@ function useCollapseState(
   return {
     isCollapsed,
     handleMouseEnter,
+    handleMouseMove,
     handleMouseLeave,
     handleFocus,
     handleBlur,
@@ -441,6 +452,7 @@ export function OverlayContainer({
   const {
     isCollapsed,
     handleMouseEnter,
+    handleMouseMove,
     handleMouseLeave,
     handleFocus,
     handleBlur,
@@ -534,6 +546,7 @@ export function OverlayContainer({
                   mods={{ isShown, isMeasured: settledIds.has(itemId) }}
                   style={getItemStyle(item, visibleIndex, visibleItems.length)}
                   onMouseEnter={handleMouseEnter}
+                  onMouseMove={handleMouseMove}
                   onMouseLeave={handleMouseLeave}
                 >
                   {item.kind === 'toast' ? (

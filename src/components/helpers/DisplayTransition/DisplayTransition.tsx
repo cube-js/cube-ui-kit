@@ -85,6 +85,7 @@ export function DisplayTransition({
   const transitionStartedRef = useRef(false);
   const eventListenersRef = useRef<{
     element: HTMLElement;
+    complete: () => void;
     onTransitionStart: (e: TransitionEvent) => void;
     onTransitionEnd: (e: TransitionEvent) => void;
     onTransitionCancel: (e: TransitionEvent) => void;
@@ -212,6 +213,7 @@ export function DisplayTransition({
 
       eventListenersRef.current = {
         element,
+        complete,
         onTransitionStart,
         onTransitionEnd,
         onTransitionCancel,
@@ -369,13 +371,18 @@ export function DisplayTransition({
   // every render, so React detaches it and re-attaches the same node. Keep the
   // listeners on that node: once `transitionstart` has cancelled the fallback
   // timer, only they can end the transition, and without them the element
-  // would stay mounted. A different node removes them.
+  // would stay mounted. A different node ends that wait through the fallback.
   const refCallback: RefCallback<HTMLElement> = useCallback((node) => {
     elementRef.current = node;
     // Don't call ensureEnterFlow() here - useLayoutEffect handles RAF scheduling
     // to ensure symmetric timing with exit flow
-    if (node && eventListenersRef.current?.element !== node) {
+    const listeners = eventListenersRef.current;
+    if (node && listeners && listeners.element !== node) {
       cleanupEventListeners();
+      clearTimer();
+      // Defer completion so a driver change in this commit can cancel it in
+      // the layout effect. The replacement may have no transition to await.
+      timerRef.current = setTimeout(listeners.complete, 150);
     }
   }, []);
 

@@ -1,10 +1,11 @@
-import { page } from 'vitest/browser';
+import { page, userEvent as realInput } from 'vitest/browser';
 
-import { renderWithRoot, screen, userEvent, waitFor } from '../../../test';
+import { act, renderWithRoot, screen, userEvent, waitFor } from '../../../test';
 import { Button } from '../../actions/Button';
 import { ItemAction } from '../../actions/ItemAction';
 import { Dialog } from '../Dialog/Dialog';
 import { DialogTrigger } from '../Dialog/DialogTrigger';
+import { useProgressToast } from '../Toast/useProgressToast';
 import { useToast } from '../Toast/useToast';
 
 import { NotificationAction } from './NotificationAction';
@@ -272,4 +273,205 @@ describe('Toast and notification width', () => {
 
     expect(item.getBoundingClientRect().width).toBeLessThan(CAP / 2);
   });
+});
+
+describe('Toast collapse on pointer movement', () => {
+  afterEach(async () => {
+    await realInput.hover(document.body, { position: { x: 1, y: 1 } });
+    await page.viewport(414, 896);
+  });
+
+  it('keeps a toast mounted under a resting pointer expanded until the pointer moves', async () => {
+    await page.viewport(300, 800);
+
+    let completeSave!: () => void;
+    const saved = new Promise<void>((resolve) => {
+      completeSave = resolve;
+    });
+
+    function Shows() {
+      const toast = useToast();
+
+      return (
+        <Button
+          qa="ShowToast"
+          styles={{
+            position: 'fixed',
+            top: '2x',
+            left: '50%',
+            transform: 'translateX(-50%)',
+          }}
+          onPress={() => {
+            void saved.then(() => toast({ title: 'Saved under the pointer' }));
+          }}
+        >
+          Save
+        </Button>
+      );
+    }
+
+    renderWithRoot(<Shows />);
+    const moves = vi.fn();
+    const enters = vi.fn((event: MouseEvent) => {
+      const target = event.target;
+
+      if (
+        target instanceof HTMLElement &&
+        target.querySelector('[data-qa="Toast"]')
+      ) {
+        return event.isTrusted;
+      }
+
+      return false;
+    });
+
+    document.addEventListener('mousemove', moves);
+    document.addEventListener('mouseenter', enters, true);
+
+    try {
+      await act(() =>
+        page
+          .getByRole('button', { name: 'Save', exact: true })
+          .click({ position: { x: 1, y: 1 } }),
+      );
+      moves.mockClear();
+      enters.mockClear();
+
+      expect(screen.queryByTestId('Toast')).toBeNull();
+      // Complete the save only after the real click and event reset have finished.
+      await act(async () => {
+        completeSave();
+        await saved;
+      });
+
+      await waitFor(
+        () => {
+          expect(enters.mock.results.some(({ value }) => value)).toBe(true);
+        },
+        { timeout: 2000 },
+      );
+      expect(moves).not.toHaveBeenCalled();
+
+      // Portal can replace its initial inline node before the entrance settles.
+      await waitFor(
+        () => {
+          expect(
+            screen.getByTestId('Toast').getBoundingClientRect().top,
+          ).toBeGreaterThanOrEqual(16);
+        },
+        { timeout: 2000 },
+      );
+      expect(moves).not.toHaveBeenCalled();
+
+      await act(() =>
+        page
+          .elementLocator(screen.getByTestId('Toast').parentElement!)
+          .hover({ position: { x: 1, y: 1 }, timeout: 2000 }),
+      );
+      expect(moves).toHaveBeenCalled();
+      await waitFor(
+        () => {
+          expect(
+            screen.getByTestId('Toast').getBoundingClientRect().bottom,
+          ).toBeLessThanOrEqual(11);
+        },
+        { timeout: 2000 },
+      );
+
+      await act(() =>
+        realInput.hover(document.body, { position: { x: 1, y: 1 } }),
+      );
+      await waitFor(
+        () => {
+          expect(
+            screen.getByTestId('Toast').getBoundingClientRect().top,
+          ).toBeGreaterThanOrEqual(16);
+        },
+        { timeout: 2000 },
+      );
+    } finally {
+      document.removeEventListener('mousemove', moves);
+      document.removeEventListener('mouseenter', enters, true);
+    }
+  });
+
+  it('expands a new toast after the previous collapsed stack is removed', async () => {
+    function Shows({ title }: { title: string | null }) {
+      useProgressToast(title ? { title, isLoading: true } : null);
+
+      return null;
+    }
+
+    const { rerender } = renderWithRoot(<Shows title="First toast" />);
+    const first = await screen.findByTestId('Toast');
+
+    await act(() =>
+      realInput.hover(document.body, { position: { x: 1, y: 1 } }),
+    );
+    await act(() => new Promise((resolve) => setTimeout(resolve, 500)));
+    await act(() => realInput.hover(first.parentElement!));
+    await waitFor(() => {
+      expect(first.getBoundingClientRect().bottom).toBeLessThanOrEqual(11);
+    });
+
+    rerender(<Shows title={null} />);
+    await waitFor(() => expect(screen.queryByTestId('Toast')).toBeNull());
+
+    // Keep the real pointer at its old position while the new toast mounts.
+    rerender(<Shows title="Next toast" />);
+    const next = await screen.findByTestId('Toast');
+
+    await waitFor(() => {
+      expect(next.getBoundingClientRect().top).toBeGreaterThanOrEqual(16);
+    });
+  });
+
+  it.each(['actionable toast', 'notification'] as const)(
+    'keeps %s expanded when the pointer moves over it',
+    async (kind) => {
+      function Shows() {
+        const toast = useToast();
+        const { notify } = useNotifications();
+
+        return (
+          <Button
+            qa="Show"
+            onPress={() => {
+              if (kind === 'actionable toast') {
+                toast({
+                  title: 'Saved',
+                  duration: null,
+                  actions: <ItemAction>Undo</ItemAction>,
+                });
+              } else {
+                notify({ title: 'Deployed', duration: null });
+              }
+            }}
+          >
+            Show
+          </Button>
+        );
+      }
+
+      renderWithRoot(<Shows />);
+      await userEvent.click(screen.getByTestId('Show'));
+
+      const item = await screen.findByTestId(
+        kind === 'actionable toast' ? 'Toast' : 'Notification',
+      );
+
+      await act(() =>
+        realInput.hover(document.body, { position: { x: 1, y: 1 } }),
+      );
+      await act(() => realInput.hover(item));
+      await act(() => new Promise((resolve) => setTimeout(resolve, 500)));
+
+      expect(item.getBoundingClientRect().top).toBeGreaterThanOrEqual(16);
+      expect(
+        screen.getByRole('button', {
+          name: kind === 'actionable toast' ? 'Undo' : 'Dismiss',
+        }),
+      ).toBeVisible();
+    },
+  );
 });

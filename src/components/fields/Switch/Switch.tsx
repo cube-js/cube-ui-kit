@@ -42,7 +42,6 @@ const SwitchWrapperElement = tasty({
 });
 
 const SwitchElement = tasty({
-  qa: 'Switch',
   styles: {
     boxSizing: 'border-box',
     position: 'relative',
@@ -210,7 +209,12 @@ function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
         ref={inputRef}
         id={id}
       />
-      <SwitchElement mods={mods} data-size={size} styles={inputStyles}>
+      <SwitchElement
+        data-element="Input"
+        mods={mods}
+        data-size={size}
+        styles={inputStyles}
+      >
         <div data-element="Thumb" aria-hidden="true" />
       </SwitchElement>
       {children ? <Text nowrap>{children}</Text> : null}

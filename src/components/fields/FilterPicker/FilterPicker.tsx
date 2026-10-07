@@ -85,6 +85,8 @@ export interface CubeFilterPickerProps<T>
       | 'hotkeys'
       | 'shape'
     > {
+  /** Accessible name for the picker trigger when there is no visible label. */
+  'aria-label'?: string;
   /** Placeholder text when no selection is made */
   placeholder?: string;
   /** Size of the picker component */
@@ -233,6 +235,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
   let {
     qa,
     label,
+    'aria-label': ariaLabel,
     extra,
     id,
     icon,
@@ -766,7 +769,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
       descriptionPlacement={descriptionPlacement}
       styles={triggerStyles}
       {...keyboardProps}
-      aria-label={`${props['aria-label'] ?? props.label ?? ''}`}
+      aria-label={`${ariaLabel ?? label ?? ''}`}
     >
       {triggerContent}
     </ItemButton>
@@ -902,7 +905,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
               <FilterListBox
                 autoFocus
                 items={items ? (finalItems as typeof props.items) : undefined}
-                aria-label={`${props['aria-label'] ?? props.label ?? ''} ${t(
+                aria-label={`${ariaLabel ?? label ?? ''} ${t(
                   'picker.pickerAriaLabel',
                   'Picker',
                 )}`}

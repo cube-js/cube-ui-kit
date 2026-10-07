@@ -77,6 +77,8 @@ export interface CubePickerProps<T>
       | 'hotkeys'
       | 'shape'
     > {
+  /** Accessible name for the picker trigger when there is no visible label. */
+  'aria-label'?: string;
   /** Placeholder text when no selection is made */
   placeholder?: string;
   /** Size of the picker component */
@@ -221,6 +223,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
     id,
     qa,
     label,
+    'aria-label': ariaLabel,
     extra,
     icon,
     rightIcon,
@@ -709,7 +712,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
       descriptionPlacement={descriptionPlacement}
       styles={triggerStyles}
       {...keyboardProps}
-      aria-label={`${props['aria-label'] ?? props.label ?? ''}`}
+      aria-label={`${ariaLabel ?? label ?? ''}`}
     >
       {triggerContent}
     </ItemButton>
@@ -837,7 +840,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
               <ListBox
                 autoFocus
                 items={items ? (finalItems as typeof props.items) : undefined}
-                aria-label={`${props['aria-label'] ?? props.label ?? ''} ${t(
+                aria-label={`${ariaLabel ?? label ?? ''} ${t(
                   'picker.pickerAriaLabel',
                   'Picker',
                 )}`}

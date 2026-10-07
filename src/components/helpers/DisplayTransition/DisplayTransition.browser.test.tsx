@@ -28,6 +28,8 @@ interface ProbeProps {
   detached?: boolean;
   /** Bind the ref through a new wrapper, as an inline or merged ref does. */
   wrapRef?: boolean;
+  /** Replace the bound DOM element without remounting DisplayTransition. */
+  elementKey?: string;
   preserveContent?: boolean;
 }
 
@@ -38,6 +40,7 @@ function Probe({
   hasTransition = true,
   detached = false,
   wrapRef = false,
+  elementKey,
   preserveContent,
 }: ProbeProps) {
   return (
@@ -51,6 +54,7 @@ function Probe({
     >
       {({ phase, isShown: shown, ref }) => (
         <div
+          key={elementKey}
           ref={
             detached
               ? undefined
@@ -188,6 +192,81 @@ describe('DisplayTransition timing with real transitions', () => {
     await waitFor(() => expect(phaseOf()).toBe('unmounted'), { timeout: 1000 });
 
     expect(onRest).toHaveBeenCalledWith('exit');
+    expect(onRest).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([
+    ['exit', true, false, 'unmounted'],
+    ['enter', false, true, 'entered'],
+  ] as const)(
+    'settles %s when the bound element is replaced after transitionstart',
+    async (direction, initialShown, targetShown, expectedPhase) => {
+      const onRest = vi.fn();
+      const { rerender } = renderWithRoot(
+        <Probe
+          isShown={initialShown}
+          preserveContent={false}
+          onRest={onRest}
+        />,
+      );
+      const oldElement = probe();
+      const started = new Promise((resolve) =>
+        oldElement.addEventListener('transitionstart', resolve, { once: true }),
+      );
+
+      rerender(
+        <Probe isShown={targetShown} preserveContent={false} onRest={onRest} />,
+      );
+      await started;
+      await act(() => new Promise((resolve) => requestAnimationFrame(resolve)));
+
+      rerender(
+        <Probe
+          elementKey="replacement"
+          isShown={targetShown}
+          preserveContent={false}
+          onRest={onRest}
+        />,
+      );
+      expect(probe()).not.toBe(oldElement);
+
+      await waitFor(() => expect(onRest).toHaveBeenCalledWith(direction), {
+        timeout: 1500,
+      });
+      expect(phaseOf()).toBe(expectedPhase);
+      await settle(250);
+      expect(onRest).toHaveBeenCalledTimes(1);
+    },
+  );
+
+  it("cancels a replaced element's exit when re-shown in the same commit", async () => {
+    const onRest = vi.fn();
+    const { rerender } = renderWithRoot(
+      <Probe isShown={true} preserveContent={false} onRest={onRest} />,
+    );
+    const oldElement = probe();
+    const started = new Promise((resolve) =>
+      oldElement.addEventListener('transitionstart', resolve, { once: true }),
+    );
+
+    rerender(<Probe isShown={false} preserveContent={false} onRest={onRest} />);
+    await started;
+    await act(() => new Promise((resolve) => requestAnimationFrame(resolve)));
+
+    rerender(
+      <Probe
+        elementKey="replacement"
+        isShown={true}
+        preserveContent={false}
+        onRest={onRest}
+      />,
+    );
+    expect(probe()).not.toBe(oldElement);
+
+    await waitFor(() => expect(onRest).toHaveBeenCalledWith('enter'));
+    await settle(250);
+    expect(phaseOf()).toBe('entered');
+    expect(heightOf()).toBeCloseTo(80, 0);
     expect(onRest).toHaveBeenCalledTimes(1);
   });
 
