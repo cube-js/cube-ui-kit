@@ -309,6 +309,7 @@ function LayoutInner(
     delete transitionStyle.overflowInline;
     delete transitionStyle.overflowBlock;
     transitionStyle.overflow = 'clip';
+    transitionStyle.overflowClipMargin = '0px';
   }
 
   const mods = useMemo(

@@ -22,6 +22,7 @@ function ToggleLayout({
   ancestorPointerEvents,
   panelPointerEvents,
   layoutStyle,
+  layoutClipMargin,
 }: {
   side: Side;
   initiallyOpen?: boolean;
@@ -34,6 +35,7 @@ function ToggleLayout({
   ancestorPointerEvents?: 'none' | 'auto';
   panelPointerEvents?: 'none' | 'auto';
   layoutStyle?: CSSProperties;
+  layoutClipMargin?: string;
 }) {
   const [isOpen, setIsOpen] = useState(initiallyOpen);
 
@@ -57,6 +59,7 @@ function ToggleLayout({
           styles={{
             $transition: '1s',
             pointerEvents: layoutPointerEvents,
+            overflowClipMargin: layoutClipMargin,
           }}
         >
           <button>Main content</button>
@@ -153,6 +156,36 @@ function outsidePoint(side: Side, layout: DOMRect) {
 
 // jsdom cannot observe transformed painting or browser hit testing.
 describe('Layout.Panel animation bounds', () => {
+  it.each(['inline', 'stylesheet'] as const)(
+    'contains motion with a configured %s clip margin and restores its latest value',
+    async (source) => {
+      await page.viewport(800, 600);
+      const props = (margin: string) =>
+        source === 'inline'
+          ? { layoutStyle: { overflowClipMargin: margin } }
+          : { layoutClipMargin: margin };
+      const view = renderWithRoot(
+        <ToggleLayout side="left" {...props('20px')} />,
+      );
+      await userEvent.click(
+        screen.getByRole('button', { name: 'Toggle panel' }),
+      );
+      const { panel, animations } = await freezeSlide();
+      await act(async () => new Promise(requestAnimationFrame));
+      const layout = screen.getByTestId('bounded-layout');
+      const [x, y] = outsidePoint('left', layout.getBoundingClientRect());
+      expect(panel.contains(document.elementFromPoint(x, y))).toBe(false);
+      expect(getComputedStyle(layout).overflowClipMargin).toBe('0px');
+      view.rerender(<ToggleLayout side="left" {...props('40px')} />);
+      expect(getComputedStyle(layout).overflowClipMargin).toBe('0px');
+      await act(async () =>
+        animations.forEach((animation) => animation.finish()),
+      );
+      await expectIdleOverflow();
+      expect(getComputedStyle(layout).overflowClipMargin).toBe('40px');
+    },
+  );
+
   it.each([
     ['left', 'overflowInline'],
     ['bottom', 'overflowBlock'],
