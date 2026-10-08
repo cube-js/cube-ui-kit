@@ -1,5 +1,21 @@
 # @cube-dev/ui-kit
 
+## 0.190.7
+
+### Patch Changes
+
+- [#1485](https://github.com/cube-js/cube-ui-kit/pull/1485) [`09ee2973`](https://github.com/cube-js/cube-ui-kit/commit/09ee2973904d52b20bf8c9c6f83596662fc7cdda) Thanks [@tenphi](https://github.com/tenphi)! - Reposition an already-open context menu when its target is right-clicked again or `open()` is called at a new point, preserving the mounted menu and its focus.
+
+- [#1485](https://github.com/cube-js/cube-ui-kit/pull/1485) [`09ee2973`](https://github.com/cube-js/cube-ui-kit/commit/09ee2973904d52b20bf8c9c6f83596662fc7cdda) Thanks [@tenphi](https://github.com/tenphi)! - Fix DisplayTransition getting stuck when its bound element is replaced during a native CSS transition. Exit completes and unmounts content, and enter completion still fires once; interrupted transitions cancel the pending completion.
+
+- [#1482](https://github.com/cube-js/cube-ui-kit/pull/1482) [`a124c117`](https://github.com/cube-js/cube-ui-kit/commit/a124c1176465e9c060686464061b7e5c2359ad44) Thanks [@tenphi](https://github.com/tenphi)! - Align the default ItemCard with neutral card surfaces and borders while preserving semantic themes and consumer styling overrides.
+
+- [#1485](https://github.com/cube-js/cube-ui-kit/pull/1485) [`09ee2973`](https://github.com/cube-js/cube-ui-kit/commit/09ee2973904d52b20bf8c9c6f83596662fc7cdda) Thanks [@tenphi](https://github.com/tenphi)! - Keep toasts visible when they appear under a resting pointer, and collapse the toast stack only after the pointer moves over it. Empty stacks no longer carry hover state into subsequent toasts, and effect-queued timed toasts retain their dismissal timers.
+
+- [#1484](https://github.com/cube-js/cube-ui-kit/pull/1484) [`e579b129`](https://github.com/cube-js/cube-ui-kit/commit/e579b12903c8dc1e04264820da40d06727ba039d) Thanks [@tenphi](https://github.com/tenphi)! - Recognize the existing `#special-surface` palette token in the Tasty tooling configuration.
+
+- [#1485](https://github.com/cube-js/cube-ui-kit/pull/1485) [`09ee2973`](https://github.com/cube-js/cube-ui-kit/commit/09ee2973904d52b20bf8c9c6f83596662fc7cdda) Thanks [@tenphi](https://github.com/tenphi)! - Make Checkbox and Switch qa selectors identify only their hidden interactive input. The visual box or track now uses data-element="Input" instead of data-qa="Checkbox" or data-qa="Switch"; target that marker or use inputStyles when customizing the visual element. Picker and FilterPicker no longer duplicate their trigger's aria-label on the generic wrapper.
+
 ## 0.190.6
 
 ### Patch Changes
