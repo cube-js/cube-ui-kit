@@ -1,19 +1,30 @@
 import tsParser from '@typescript-eslint/parser';
 
 const isEffectEvent = (node) =>
-  node?.name === 'useEffectEvent' || node?.value === 'useEffectEvent';
+  (node?.type === 'Identifier' && node.name === 'useEffectEvent') ||
+  (node?.type === 'Literal' && node.value === 'useEffectEvent') ||
+  (node?.type === 'TemplateLiteral' &&
+    node.expressions.length === 0 &&
+    node.quasis[0].value.cooked === 'useEffectEvent');
 
-// Comments are not tokens. Aliased imports and computed member access still
-// contain this token, so they cannot evade selection for the strict pass.
+// Inspect syntax rather than raw text so static computed keys, including
+// escaped strings, select the strict pass while comments do not.
 export function usesEffectEvent(source) {
-  const { tokens } = tsParser.parse(source, {
+  const ast = tsParser.parse(source, {
     sourceType: 'module',
     ecmaFeatures: { jsx: true },
-    tokens: true,
   });
-  return tokens.some(
-    (token) => token.value.replaceAll(/["']/g, '') === 'useEffectEvent',
-  );
+  const pending = [ast];
+  while (pending.length) {
+    const node = pending.pop();
+    if (isEffectEvent(node)) return true;
+    for (const value of Object.values(node)) {
+      if (Array.isArray(value))
+        pending.push(...value.filter((child) => child?.type));
+      else if (value?.type) pending.push(value);
+    }
+  }
+  return false;
 }
 
 export const effectEventImports = {
@@ -49,9 +60,10 @@ export const effectEventImports = {
             for (const { identifier } of binding.references) {
               const parent = identifier.parent;
               if (
-                parent.type !== 'CallExpression' ||
-                parent.callee !== identifier ||
-                parent.optional
+                parent.type !== 'TSTypeQuery' &&
+                (parent.type !== 'CallExpression' ||
+                  parent.callee !== identifier ||
+                  parent.optional)
               )
                 report(identifier);
             }

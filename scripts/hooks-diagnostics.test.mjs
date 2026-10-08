@@ -40,6 +40,21 @@ it('accepts a local effect-owned listener with reactive resource configuration',
   ).toEqual([]);
 });
 
+it('accepts erased type queries without allowing runtime hook aliases', async () => {
+  expect(
+    await lint(
+      component(
+        'type Callback = Parameters<typeof useEffectEvent>[0]; useEffect(() => subscribe(onEvent), [subscribe]); return null;',
+      ),
+    ),
+  ).toEqual([]);
+  expect(
+    await lint(
+      "import type { useEffectEvent } from 'react'; export type Hook = typeof useEffectEvent;",
+    ),
+  ).toEqual([]);
+});
+
 it.each([
   'onEvent(); return null;',
   'return <button onClick={onEvent} />;',
@@ -59,6 +74,8 @@ it.each([
   "import { useEffectEvent as useEvent } from 'react';",
   "import * as React from 'react'; const hook = React.useEffectEvent;",
   "import React from 'react'; const hook = React['useEffectEvent'];",
+  "import React from 'react'; const hook = React[`useEffectEvent`];",
+  "import React from 'react'; const hook = React['use\\u0045ffectEvent'];",
   "import React from 'react'; const { useEffectEvent: hook } = React;",
   "import { useEffectEvent } from './wrapper';",
   "import { useEffectEvent } from 'react'; const hook = useEffectEvent;",
