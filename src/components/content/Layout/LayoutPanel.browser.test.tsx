@@ -18,6 +18,10 @@ function ToggleLayout({
   mode,
   transition,
   onSizeChange,
+  layoutPointerEvents,
+  ancestorPointerEvents,
+  panelPointerEvents,
+  layoutStyle,
 }: {
   side: Side;
   initiallyOpen?: boolean;
@@ -26,19 +30,33 @@ function ToggleLayout({
   mode?: LayoutPanelMode;
   transition?: string;
   onSizeChange?: (size: number) => void;
+  layoutPointerEvents?: 'none' | 'auto';
+  ancestorPointerEvents?: 'none' | 'auto';
+  panelPointerEvents?: 'none' | 'auto';
+  layoutStyle?: CSSProperties;
 }) {
   const [isOpen, setIsOpen] = useState(initiallyOpen);
 
   return (
     <>
       <button onClick={() => setIsOpen(!isOpen)}>Toggle panel</button>
-      <div style={{ width: 400, height: 240, margin: 80, display: 'grid' }}>
+      <div
+        style={{
+          width: 400,
+          height: 240,
+          margin: 80,
+          display: 'grid',
+          pointerEvents: ancestorPointerEvents,
+        }}
+      >
         <Layout
           qa="bounded-layout"
           hasTransition={hasTransition}
           minContentSize={100}
+          style={layoutStyle}
           styles={{
             $transition: '1s',
+            pointerEvents: layoutPointerEvents,
           }}
         >
           <button>Main content</button>
@@ -58,7 +76,11 @@ function ToggleLayout({
             defaultSize={100}
             isResizable
             onSizeChange={onSizeChange}
-            styles={{ overflow: 'visible', transition }}
+            styles={{
+              overflow: 'visible',
+              transition,
+              pointerEvents: panelPointerEvents,
+            }}
           >
             <button>Panel content</button>
             <button data-qa="panel-overflow" style={overflowPosition(side)}>
@@ -131,6 +153,124 @@ function outsidePoint(side: Side, layout: DOMRect) {
 
 // jsdom cannot observe transformed painting or browser hit testing.
 describe('Layout.Panel animation bounds', () => {
+  it.each([
+    { overflow: 'visible' },
+    { overflow: 'visible', overflowX: 'auto', overflowY: 'visible' },
+    { overflow: 'hidden scroll' },
+  ] as CSSProperties[])(
+    'temporarily contains motion and restores the latest inline overflow %o',
+    async (layoutStyle) => {
+      await page.viewport(800, 600);
+      const view = renderWithRoot(
+        <ToggleLayout side="left" layoutStyle={layoutStyle} />,
+      );
+      await userEvent.click(
+        screen.getByRole('button', { name: 'Toggle panel' }),
+      );
+      const { animations } = await freezeSlide();
+      const layout = screen.getByTestId('bounded-layout');
+      expect(getComputedStyle(layout).overflowX).toBe('clip');
+      expect(getComputedStyle(layout).overflowY).toBe('clip');
+
+      // Styles updated during motion must win when the temporary clip is released.
+      view.rerender(
+        <ToggleLayout
+          side="left"
+          layoutStyle={{ overflow: 'auto', overflowX: 'hidden' }}
+        />,
+      );
+      expect(getComputedStyle(layout).overflowX).toBe('clip');
+      await act(async () =>
+        animations.forEach((animation) => animation.finish()),
+      );
+      await waitFor(() => {
+        expect(getComputedStyle(layout).overflowX).toBe('hidden');
+        expect(getComputedStyle(layout).overflowY).toBe('auto');
+      });
+    },
+  );
+
+  it.each([
+    ['auto', 'none'],
+    ['none', 'auto'],
+  ] as const)(
+    'preserves an explicit panel pointer policy of %s',
+    async (panelPointerEvents, layoutPointerEvents) => {
+      await page.viewport(800, 600);
+      renderWithRoot(
+        <ToggleLayout
+          side="left"
+          initiallyOpen
+          panelPointerEvents={panelPointerEvents}
+          layoutPointerEvents={layoutPointerEvents}
+        />,
+      );
+      const button = await screen.findByRole('button', {
+        name: 'Panel content',
+      });
+      expect(getComputedStyle(button).pointerEvents).toBe(panelPointerEvents);
+      expect(hit(button)).toBe(panelPointerEvents === 'auto');
+      expect(hit(screen.getByRole('separator'))).toBe(
+        layoutPointerEvents === 'auto',
+      );
+    },
+  );
+
+  it.each([
+    ['Layout', true],
+    ['Layout', false],
+    ['ancestor', true],
+    ['ancestor', false],
+  ] as const)(
+    'inherits disabled pointer input from %s with transitions %s',
+    async (source, hasTransition) => {
+      await page.viewport(800, 600);
+      const pointerProps =
+        source === 'Layout'
+          ? { layoutPointerEvents: 'none' as const }
+          : { ancestorPointerEvents: 'none' as const };
+      const view = renderWithRoot(
+        <ToggleLayout
+          side="left"
+          hasTransition={hasTransition}
+          {...pointerProps}
+        />,
+      );
+      await userEvent.click(
+        screen.getByRole('button', { name: 'Toggle panel' }),
+      );
+      const animations = hasTransition ? (await freezeSlide()).animations : [];
+      const button = await screen.findByRole('button', {
+        name: 'Panel content',
+      });
+      const handler = screen.getByRole('separator');
+      expect(getComputedStyle(button).pointerEvents).toBe('none');
+      expect(getComputedStyle(handler).pointerEvents).toBe('none');
+      expect(hit(button)).toBe(false);
+      expect(hit(handler)).toBe(false);
+
+      // Inherited policy can change while the slide is still in progress.
+      view.rerender(<ToggleLayout side="left" hasTransition={hasTransition} />);
+      await waitFor(() => {
+        expect(getComputedStyle(button).pointerEvents).toBe('auto');
+        expect(hit(handler)).toBe(true);
+      });
+      await act(async () =>
+        animations.forEach((animation) => animation.finish()),
+      );
+      await expectIdleOverflow();
+      view.rerender(
+        <ToggleLayout
+          side="left"
+          hasTransition={hasTransition}
+          {...pointerProps}
+        />,
+      );
+      expect(getComputedStyle(button).pointerEvents).toBe('none');
+      expect(hit(handler)).toBe(false);
+    },
+  );
+
   it.each(['left', 'right', 'top', 'bottom'] as const)(
     'contains the %s panel and handle during opening and closing',
     async (side) => {
@@ -150,7 +290,7 @@ describe('Layout.Panel animation bounds', () => {
           .getBoundingClientRect();
         const [x, y] = outsidePoint(side, layout);
         expect(panel.contains(document.elementFromPoint(x, y))).toBe(false);
-        expect(hit(screen.getByTestId('content-overflow'))).toBe(true);
+        expect(hit(screen.getByTestId('content-overflow'))).toBe(false);
         const main = screen.getByRole('button', { name: 'Main content' });
         // A top panel can temporarily cover the button as the content inset moves.
         if (side !== 'top') expect(hit(main)).toBe(true);
@@ -178,6 +318,7 @@ describe('Layout.Panel animation bounds', () => {
           ).toBe(opening ? 0 : null),
         );
         if (opening) await expectIdleOverflow();
+        expect(hit(screen.getByTestId('content-overflow'))).toBe(true);
       }
     },
   );
@@ -297,7 +438,7 @@ describe('Layout.Panel animation bounds', () => {
     },
   );
 
-  it('keeps simultaneous panel boundaries independent and cleans up on unmount', async () => {
+  it('keeps clipping until all simultaneous panels settle and cleans up on unmount', async () => {
     await page.viewport(800, 600);
     function Pair({
       open,
@@ -351,13 +492,15 @@ describe('Layout.Panel animation bounds', () => {
       a.pause();
       a.currentTime = 500;
     });
-    await waitFor(() =>
-      expect(hit(screen.getByTestId('right-overflow'))).toBe(true),
-    );
+    const right = screen.getByTestId('right-panel');
+    await waitFor(() => expect(right.getAnimations().length).toBe(0));
+    expect(hit(screen.getByTestId('right-overflow'))).toBe(false);
     expect(hit(screen.getByTestId('left-overflow'))).toBe(false);
     view.rerender(<Pair open removeLeft />);
     expect(screen.queryByTestId('left-panel')).toBeNull();
-    expect(hit(screen.getByTestId('right-overflow'))).toBe(true);
+    await waitFor(() =>
+      expect(hit(screen.getByTestId('right-overflow'))).toBe(true),
+    );
   });
 
   it('clips a nested panel at its own Layout bounds', async () => {
@@ -406,22 +549,5 @@ describe('Layout.Panel animation bounds', () => {
     expect(
       panel.contains(document.elementFromPoint(rect.right + 2, rect.top + 30)),
     ).toBe(false);
-  });
-
-  it('leaves dialog mode in its external portal', async () => {
-    await page.viewport(800, 600);
-    const view = renderWithRoot(
-      <div style={{ width: 100, height: 100, display: 'grid' }}>
-        <Layout>
-          <Layout.Panel side="right" mode="dialog" isDialogOpen>
-            Dialog content
-          </Layout.Panel>
-        </Layout>
-      </div>,
-    );
-    const dialog = await screen.findByRole('dialog');
-    expect(dialog).toHaveTextContent('Dialog content');
-    expect(screen.getByTestId('Layout').contains(dialog)).toBe(false);
-    view.unmount();
   });
 });

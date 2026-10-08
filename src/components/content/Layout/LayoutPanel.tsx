@@ -61,7 +61,6 @@ const PanelElement = tasty({
   styles: {
     container: 'panel / inline-size',
     position: 'absolute',
-    pointerEvents: 'auto',
     display: 'flex',
     flow: 'column',
     overflow: 'hidden',
@@ -129,7 +128,6 @@ const ResizeHandlerElement = tasty({
   qa: 'PanelResizeHandler',
   styles: {
     position: 'absolute',
-    pointerEvents: 'auto',
 
     // Handler size
     width: {

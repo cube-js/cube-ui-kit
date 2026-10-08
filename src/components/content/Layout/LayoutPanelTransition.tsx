@@ -1,15 +1,9 @@
-import { tasty } from '@tenphi/tasty';
-import { ReactNode, useLayoutEffect, useRef, useState } from 'react';
+import { ReactNode, useContext, useLayoutEffect, useState } from 'react';
 
-const BoundaryElement = tasty({
-  styles: {
-    position: 'absolute',
-    inset: 0,
-    pointerEvents: 'none',
-    // Unlike hidden, clip cannot scroll when offscreen content receives focus.
-    overflow: { '': 'visible', clipping: 'clip' },
-  },
-});
+import {
+  LayoutPanelTransitionContext,
+  useLayoutRefsContext,
+} from './LayoutContext';
 
 /** Receives live visibility from DisplayTransition, even with preserved children. */
 export function LayoutPanelTransition({
@@ -21,7 +15,10 @@ export function LayoutPanelTransition({
   isExiting: boolean;
   children: ReactNode;
 }) {
-  const boundaryRef = useRef<HTMLDivElement>(null);
+  const registerPanelTransition = useContext(
+    LayoutPanelTransitionContext,
+  )?.registerPanelTransition;
+  const panelContainerRef = useLayoutRefsContext()?.panelContainerRef;
   const [state, setState] = useState({
     isShown,
     isExiting,
@@ -34,6 +31,10 @@ export function LayoutPanelTransition({
   }
 
   useLayoutEffect(() => {
+    if (state.isClipping) return registerPanelTransition?.();
+  }, [state.isClipping, registerPanelTransition]);
+
+  useLayoutEffect(() => {
     if (!isShown || isExiting || !state.isClipping) return;
 
     let cancelled = false;
@@ -41,8 +42,9 @@ export function LayoutPanelTransition({
     const settle = () => {
       if (cancelled) return;
 
-      // Only the panel and handle slide; descendant animations must not hold clipping.
-      const animations = Array.from(boundaryRef.current?.children ?? [])
+      // The Layout shares one clip, so wait for every direct panel and handle slide.
+      // Descendant animations must not hold clipping.
+      const animations = Array.from(panelContainerRef?.current?.children ?? [])
         .flatMap((element) => element.getAnimations?.() ?? [])
         .filter(
           (animation) =>
@@ -70,11 +72,7 @@ export function LayoutPanelTransition({
       cancelled = true;
       cancelAnimationFrame(frame);
     };
-  }, [isShown, isExiting, state.isClipping]);
+  }, [isShown, isExiting, state.isClipping, panelContainerRef]);
 
-  return (
-    <BoundaryElement ref={boundaryRef} mods={{ clipping: state.isClipping }}>
-      {children}
-    </BoundaryElement>
-  );
+  return <>{children}</>;
 }

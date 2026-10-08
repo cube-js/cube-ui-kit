@@ -2,4 +2,4 @@
 '@cube-dev/ui-kit': patch
 ---
 
-Keep Layout.Panel slide animations and resize handles inside their Layout bounds while preserving normal content and idle panel overflow.
+Keep Layout.Panel slide animations and resize handles inside their Layout bounds. Temporarily clip the Layout during panel motion and restore its configured overflow once all panels settle, without changing inherited pointer interaction.

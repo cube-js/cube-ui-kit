@@ -21,6 +21,7 @@ import {
   KeyboardEvent,
   ReactNode,
   useCallback,
+  useContext,
   useEffect,
   useMemo,
   useRef,
@@ -33,6 +34,7 @@ import { extractStyles } from '../../../utils/styles';
 import { Alert } from '../Alert';
 
 import {
+  LayoutPanelTransitionContext,
   LayoutProvider,
   useLayoutActionsContext,
   useLayoutRefsContext,
@@ -244,6 +246,8 @@ function LayoutInner(
   const markReady = layoutActions?.markReady;
   const dismissOverlayPanels = layoutActions?.dismissOverlayPanels;
   const hasOverlayPanels = layoutState?.hasOverlayPanels ?? false;
+  const isClippingPanels =
+    useContext(LayoutPanelTransitionContext)?.isClippingPanels ?? false;
 
   // Mark layout as ready after first paint
   // Using useEffect + requestAnimationFrame ensures:
@@ -295,6 +299,15 @@ function LayoutInner(
 
     return baseStyle as CSSProperties;
   }, [panelSizes, style]);
+
+  // Remove consumer longhands while clipping so they cannot override the shorthand.
+  // Restoring the original style object also restores the latest consumer values.
+  const transitionStyle = { ...insetStyle };
+  if (isClippingPanels) {
+    delete transitionStyle.overflowX;
+    delete transitionStyle.overflowY;
+    transitionStyle.overflow = 'clip';
+  }
 
   const mods = useMemo(
     () => ({
@@ -368,7 +381,7 @@ function LayoutInner(
       {...filterBaseProps(otherProps, { eventProps: true })}
       mods={mods}
       styles={finalStyles}
-      style={insetStyle}
+      style={transitionStyle}
       onKeyDown={hasOverlayPanels ? handleKeyDown : undefined}
     >
       {/* All children go inside the Inner element - panels will portal themselves out */}
