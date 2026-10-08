@@ -15,6 +15,7 @@ import React, {
   ForwardedRef,
   forwardRef,
   ForwardRefRenderFunction,
+  KeyboardEvent,
   ReactElement,
   ReactNode,
   RefObject,
@@ -897,9 +898,25 @@ function Option({ item, state, styles, shouldUseVirtualFocus, size }) {
   // Filter out service props - all remaining props can be passed to Item
   const filteredItemProps = filterCollectionItemProps(item.props);
 
+  const keyboardProps = {
+    onKeyDown(event: KeyboardEvent<HTMLLIElement>) {
+      // Committing an option refocuses the trigger during keydown. Cancel
+      // Enter's native activation there, preserving Control+Enter context
+      // menus and activation of links or controls inside the option.
+      if (
+        event.key === 'Enter' &&
+        !event.ctrlKey &&
+        event.target === event.currentTarget &&
+        item.props?.href == null
+      ) {
+        event.preventDefault();
+      }
+    },
+  };
+
   return (
     <OptionItem
-      {...mergeProps(optionProps, focusProps, filteredItemProps)}
+      {...mergeProps(optionProps, focusProps, filteredItemProps, keyboardProps)}
       ref={ref}
       mods={{
         listboxitem: true,
