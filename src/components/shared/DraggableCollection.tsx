@@ -4,6 +4,7 @@ import {
   RefObject,
   useCallback,
   useEffect,
+  useEffectEvent,
   useMemo,
   useRef,
 } from 'react';
@@ -26,7 +27,7 @@ import {
   useDroppableCollectionState,
 } from 'react-stately';
 
-import { useEvent } from '../../_internal/hooks';
+import { useEvent } from '../../_internal/hooks/use-event';
 
 import type { Collection, DropOperation, Key, Node } from '@react-types/shared';
 
@@ -266,22 +267,23 @@ export function DraggableCollection({
   // browsers (Safari) don't fire `dragend` synchronously, leaving react-aria's
   // `isDragging` stale until a second keypress.
   const isDragActive = dragState.draggingKeys.size > 0;
-  const endDragRef = useRef(dragState.endDrag);
-  endDragRef.current = dragState.endDrag;
+  const cancelNativeDrag = useEffectEvent(() => {
+    dragState.endDrag({
+      type: 'dragend',
+      keys: new Set(dragKeysRef.current),
+      x: 0,
+      y: 0,
+      dropOperation: 'cancel',
+      isInternal: false,
+    });
+  });
 
   useEffect(() => {
     if (!isDragActive) return;
 
     const handleEscape = (e: globalThis.KeyboardEvent) => {
       if (e.key === 'Escape') {
-        endDragRef.current({
-          type: 'dragend',
-          keys: new Set(dragKeysRef.current),
-          x: 0,
-          y: 0,
-          dropOperation: 'cancel',
-          isInternal: false,
-        });
+        cancelNativeDrag();
       }
     };
 

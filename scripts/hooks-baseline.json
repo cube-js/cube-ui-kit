@@ -174,10 +174,6 @@
     },
     "src/components/layout/Board/Widget.tsx": { "react-hooks/refs": 2 },
     "src/components/layout/Board/WidgetHost.tsx": { "react-hooks/refs": 1 },
-    "src/components/layout/ResizablePanel.tsx": {
-      "react-hooks/exhaustive-deps": 3,
-      "react-hooks/immutability": 2
-    },
     "src/components/navigation/Tabs/TabPanel.tsx": { "react-hooks/refs": 1 },
     "src/components/navigation/Tabs/Tabs.tsx": { "react-hooks/refs": 2 },
     "src/components/navigation/Tabs/use-tab-indicator.ts": {
@@ -234,11 +230,9 @@
       "react-hooks/exhaustive-deps": 1
     },
     "src/components/portal/usePortal.ts": {
-      "react-hooks/refs": 1,
       "react-hooks/set-state-in-effect": 1
     },
     "src/components/Root.tsx": { "react-hooks/exhaustive-deps": 1 },
-    "src/components/shared/DraggableCollection.tsx": { "react-hooks/refs": 1 },
     "src/components/status/LoadingAnimation/LoadingAnimation.tsx": {
       "react-hooks/exhaustive-deps": 1
     },
@@ -258,11 +252,11 @@
     }
   },
   "totals": {
-    "react-hooks/exhaustive-deps": 79,
-    "react-hooks/immutability": 30,
+    "react-hooks/exhaustive-deps": 76,
+    "react-hooks/immutability": 28,
     "react-hooks/incompatible-library": 3,
     "react-hooks/preserve-manual-memoization": 11,
-    "react-hooks/refs": 117,
+    "react-hooks/refs": 115,
     "react-hooks/rules-of-hooks": 9,
     "react-hooks/set-state-in-effect": 17,
     "react-hooks/use-memo": 2

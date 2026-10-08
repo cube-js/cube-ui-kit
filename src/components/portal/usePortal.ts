@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useEffectEvent, useState } from 'react';
 import invariant from 'tiny-invariant';
 
 import { usePortalContext } from './PortalProvider';
@@ -10,10 +10,9 @@ import { PortalProps } from './types';
 export function usePortal(props: PortalProps) {
   const { children, isDisabled = false, root = null, onMount } = props;
 
-  const onMountRef = useRef(onMount);
+  const notifyMount = useEffectEvent(() => onMount?.());
   const portalContext = usePortalContext();
   const [mountRoot, setMountRoot] = useState<HTMLElement | null>(null);
-  onMountRef.current = onMount;
 
   useEffect(() => {
     if (!isDisabled) {
@@ -32,7 +31,7 @@ export function usePortal(props: PortalProps) {
 
   useEffect(() => {
     if (isDisabled || mountRoot) {
-      onMountRef.current?.();
+      notifyMount();
     }
   }, [isDisabled, mountRoot]);
 

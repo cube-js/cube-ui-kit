@@ -1162,10 +1162,8 @@
     "optOuts": 0
   },
   "src/components/layout/ResizablePanel.tsx": {
-    "compiled": 1,
-    "diagnostics": {
-      "Immutability": 2
-    },
+    "compiled": 2,
+    "diagnostics": {},
     "optOuts": 0
   },
   "src/components/layout/Space.tsx": {
@@ -1533,17 +1531,13 @@
     "optOuts": 0
   },
   "src/components/portal/usePortal.ts": {
-    "compiled": 0,
-    "diagnostics": {
-      "Refs": 1
-    },
+    "compiled": 1,
+    "diagnostics": {},
     "optOuts": 0
   },
   "src/components/shared/DraggableCollection.tsx": {
-    "compiled": 0,
-    "diagnostics": {
-      "Refs": 1
-    },
+    "compiled": 1,
+    "diagnostics": {},
     "optOuts": 0
   },
   "src/components/status/LoadingAnimation/LoadingAnimation.tsx": {
