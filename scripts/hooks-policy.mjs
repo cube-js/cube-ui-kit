@@ -22,11 +22,12 @@ export const effectEventImports = {
     schema: [],
     messages: {
       canonical:
-        'Import useEffectEvent directly from react without aliases or namespace access so the official Hooks rules can enforce its contract.',
+        'Import useEffectEvent directly from react and call it without aliases, wrappers or namespace access so the official Hooks rules can enforce its contract.',
     },
   },
   create(context) {
     const report = (node) => context.report({ node, messageId: 'canonical' });
+    const sourceCode = context.sourceCode;
     return {
       ImportDeclaration(node) {
         for (const specifier of node.specifiers) {
@@ -35,15 +36,32 @@ export const effectEventImports = {
             isEffectEvent(specifier.imported) &&
             (node.source.value !== 'react' ||
               specifier.local.name !== 'useEffectEvent')
-          )
+          ) {
             report(specifier);
+          } else if (
+            specifier.type === 'ImportSpecifier' &&
+            isEffectEvent(specifier.imported)
+          ) {
+            const [binding] = sourceCode.getDeclaredVariables(specifier);
+            // The pinned Hooks plugin recognizes only a direct canonical call.
+            // Check binding references so assignments and TS wrappers cannot
+            // disguise an Effect Event hook as an ordinary function.
+            for (const { identifier } of binding.references) {
+              const parent = identifier.parent;
+              if (
+                parent.type !== 'CallExpression' ||
+                parent.callee !== identifier ||
+                parent.optional
+              )
+                report(identifier);
+            }
+          }
         }
       },
       MemberExpression(node) {
         if (isEffectEvent(node.property)) report(node);
       },
       VariableDeclarator(node) {
-        if (node.init?.name === 'useEffectEvent') report(node);
         if (node.id.type === 'ObjectPattern') {
           for (const property of node.id.properties)
             if (isEffectEvent(property.key)) report(property);

@@ -62,6 +62,11 @@ it.each([
   "import React from 'react'; const { useEffectEvent: hook } = React;",
   "import { useEffectEvent } from './wrapper';",
   "import { useEffectEvent } from 'react'; const hook = useEffectEvent;",
+  "import { useEffectEvent } from 'react'; let hook; hook = useEffectEvent;",
+  "import { useEffectEvent } from 'react'; const hook = useEffectEvent as typeof useEffectEvent;",
+  "import { useEffectEvent } from 'react'; const hook = useEffectEvent satisfies typeof useEffectEvent;",
+  "import { useEffectEvent } from 'react'; const hook = useEffectEvent!;",
+  "import { useEffectEvent } from 'react'; function Panel() { const onEvent = (useEffectEvent as typeof useEffectEvent)(() => {}); onEvent(); return null; }",
   "export { useEffectEvent } from 'react';",
 ])(
   'rejects hook forms the official plugin cannot track: %s',
