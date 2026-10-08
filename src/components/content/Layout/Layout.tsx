@@ -306,6 +306,8 @@ function LayoutInner(
   if (isClippingPanels) {
     delete transitionStyle.overflowX;
     delete transitionStyle.overflowY;
+    delete transitionStyle.overflowInline;
+    delete transitionStyle.overflowBlock;
     transitionStyle.overflow = 'clip';
   }
 

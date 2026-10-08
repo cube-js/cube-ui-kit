@@ -154,6 +154,43 @@ function outsidePoint(side: Side, layout: DOMRect) {
 // jsdom cannot observe transformed painting or browser hit testing.
 describe('Layout.Panel animation bounds', () => {
   it.each([
+    ['left', 'overflowInline'],
+    ['bottom', 'overflowBlock'],
+  ] as const)(
+    'contains motion when %s logical overflow changes during the slide',
+    async (side, property) => {
+      await page.viewport(800, 600);
+      const view = renderWithRoot(
+        <ToggleLayout
+          side={side}
+          layoutStyle={{ overflow: 'visible', [property]: 'hidden' }}
+        />,
+      );
+      await userEvent.click(
+        screen.getByRole('button', { name: 'Toggle panel' }),
+      );
+      const { panel, animations } = await freezeSlide();
+      view.rerender(
+        <ToggleLayout
+          side={side}
+          layoutStyle={{ overflow: 'visible', [property]: 'visible' }}
+        />,
+      );
+      const layout = screen.getByTestId('bounded-layout');
+      expect(getComputedStyle(layout).overflowX).toBe('clip');
+      expect(getComputedStyle(layout).overflowY).toBe('clip');
+      const [x, y] = outsidePoint(side, layout.getBoundingClientRect());
+      expect(panel.contains(document.elementFromPoint(x, y))).toBe(false);
+      await act(async () =>
+        animations.forEach((animation) => animation.finish()),
+      );
+      await expectIdleOverflow();
+      expect(getComputedStyle(layout).overflowX).toBe('visible');
+      expect(getComputedStyle(layout).overflowY).toBe('visible');
+    },
+  );
+
+  it.each([
     { overflow: 'visible' },
     { overflow: 'visible', overflowX: 'auto', overflowY: 'visible' },
     { overflow: 'hidden scroll' },
