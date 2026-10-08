@@ -1,14 +1,14 @@
 import { useObjectRef } from '@react-aria/utils';
 import { BaseProps, tasty } from '@tenphi/tasty';
-import { forwardRef, HTMLAttributes } from 'react';
-import { OverlayProps, useModal, useOverlay } from 'react-aria';
+import { ForwardedRef, forwardRef, HTMLAttributes } from 'react';
+import { AriaOverlayProps, useModal, useOverlay } from 'react-aria';
 
 import { PlacementAxis } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
 import { useOverlayEscapeGuard } from '../../../utils/react/useOverlayEscapeGuard';
 
-import { Overlay } from './Overlay';
-import { TransitionState, WithCloseBehavior } from './types';
+import { CubeOverlayProps, Overlay } from './Overlay';
+import { TransitionState } from './types';
 
 import type { Props } from '../../../props';
 
@@ -43,8 +43,8 @@ const PopoverElement = tasty({
 
 export interface CubePopoverProps
   extends BaseProps,
-    Omit<OverlayProps, 'children' | 'nodeRef'>,
-    WithCloseBehavior,
+    AriaOverlayProps,
+    CubeOverlayProps,
     TransitionState {
   container?: HTMLElement;
   placement?: PlacementAxis;
@@ -58,7 +58,7 @@ export interface CubePopoverProps
   shouldCloseOnInteractOutside?: (element: Element) => boolean;
 }
 
-function Popover(props: CubePopoverProps, ref) {
+function Popover(props: CubePopoverProps, ref: ForwardedRef<HTMLElement>) {
   let {
     qa,
     style,

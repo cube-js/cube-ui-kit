@@ -146,9 +146,9 @@ export function TooltipTrigger(props: CubeTooltipTriggerProps) {
 
   let internalRef = useRef<HTMLElement>(null!);
   let tooltipTriggerRef = externalRef ?? internalRef;
-  let overlayRef = useRef<HTMLElement | null>(null);
+  let overlayRef = useRef<HTMLDivElement>(null);
 
-  let state = useTooltipTriggerState({ delay, ...props, isDismissable: false });
+  let state = useTooltipTriggerState({ delay, ...props });
 
   let { triggerProps: rawTriggerProps, tooltipProps } = useTooltipTrigger(
     {
@@ -160,7 +160,6 @@ export function TooltipTrigger(props: CubeTooltipTriggerProps) {
       delay,
       isOpen,
       onOpenChange,
-      isDismissable: false,
       defaultOpen,
     },
     state,
@@ -194,7 +193,6 @@ export function TooltipTrigger(props: CubeTooltipTriggerProps) {
       overlayRef,
       offset,
       crossOffset,
-      isDismissable: false,
       isOpen: state.isOpen,
     });
 

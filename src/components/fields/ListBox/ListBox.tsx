@@ -41,6 +41,7 @@ import {
   Section as BaseSection,
   DraggableCollectionState,
   DroppableCollectionState,
+  ListProps,
   useListState,
 } from 'react-stately';
 
@@ -79,8 +80,6 @@ import { DraggableListBox } from './DraggableListBox';
 
 import type { CollectionBase, Key } from '@react-types/shared';
 import type { FieldBaseProps } from '../../../shared';
-
-type FirstArg<F> = F extends (...args: infer A) => any ? A[0] : never;
 
 const ListBoxWrapperElement = tasty({
   qa: 'ListBox',
@@ -314,7 +313,10 @@ function renderCheckboxIcon({
 }
 
 export interface CubeListBoxProps<T>
-  extends AriaListBoxProps<T>,
+  extends Omit<
+      AriaListBoxProps<T>,
+      'autoFocus' | 'selectedKeys' | 'defaultSelectedKeys' | 'onSelectionChange'
+    >,
     CollectionBase<T>,
     FieldBaseProps<Key | readonly Key[] | null | undefined>,
     BasePropsWithoutChildren,
@@ -758,10 +760,9 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   ]);
 
   // Prepare props for useListState with correct selection props
-  const listStateProps: FirstArg<typeof useListState> = {
+  const listStateProps: ListProps<T> = {
     ...props,
     onSelectionChange: wrappedOnSelectionChange,
-    isDisabled,
     disabledBehavior: 'all',
     filter,
     selectionMode: props.selectionMode || 'single',
@@ -783,8 +784,6 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
           : new Set(defaultSelectedKeys as Key[]);
     }
     // Remove single-selection props if any
-    delete listStateProps.selectedKey;
-    delete listStateProps.defaultSelectedKey;
   } else {
     // For single-selection we convert the scalar key props that our public
     // API exposes into the Set-based props that React Stately expects.
@@ -799,8 +798,6 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     }
 
     // Remove the single-value props so we don't pass unsupported keys through.
-    delete listStateProps.selectedKey;
-    delete listStateProps.defaultSelectedKey;
   }
 
   const listState = useListState(listStateProps);
@@ -821,7 +818,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     }
 
     // React Stately exposes the raw selection value which is either the string "all"
-    // (when `selectAll(true)` was used) **or** a Set of item keys.
+    // (when `selectAll()` was used) **or** a Set of item keys.
     const rawSelection: any = (listState.selectionManager as any).rawSelection;
 
     // Fast path – user pressed our "Select All" control previously.
@@ -858,7 +855,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       wrappedOnSelectionChange?.(new Set());
     } else {
       // Some or none selected, select all
-      listState.selectionManager.selectAll(true);
+      listState.selectionManager.selectAll();
       // Manually call the wrapped handler since React Aria might not trigger it
       wrappedOnSelectionChange?.('all');
       forceUpdate({});
@@ -938,12 +935,12 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       ...props,
       id: id,
       'aria-label': props['aria-label'] || label?.toString(),
-      isDisabled,
       // Only disable isVirtualized for reorderable lists (DnD needs real DOM focus).
       // Section-based lists keep isVirtualized: true to preserve ARIA attributes.
       isVirtualized: !isReorderable,
       shouldUseVirtualFocus: shouldUseVirtualFocus ?? false,
       escapeKeyBehavior: onEscape ? 'none' : 'clearSelection',
+      onSelectionChange: wrappedOnSelectionChange,
     },
     listState,
     listRef,
@@ -1376,7 +1373,7 @@ function Option({
     dragState ?? mockDragState,
   );
   const effectiveDragProps = isDraggable ? dragResult.dragProps : {};
-  const isDragging = isDraggable && dragResult.isDragging;
+  const isDragging = isDraggable && !!dragState?.isDragging(item.key);
 
   const { hoverProps, isHovered } = useHover({ isDisabled });
 

@@ -28,7 +28,7 @@ export interface CubeDialogFormProps<T extends FieldTypes = FieldTypes>
   /** Whether the submit button has a `danger` theme */
   danger?: boolean;
   /** Properties for submit button. Use `children` to change text. */
-  submitProps?: CubeButtonProps;
+  submitProps?: Omit<CubeButtonProps, 'form'>;
   /** Properties for cancel button. Use `children` to change text. */
   cancelProps?: CubeButtonProps;
   /** Preserve form values after submission or dismissal. */

@@ -46,6 +46,14 @@ import { CubeUseActionProps, useAction } from '../use-action';
 export interface CubeItemActionProps
   extends Omit<CubeUseActionProps, 'as' | 'htmlType'>,
     Omit<BaseProps, 'as'> {
+  size?:
+    | 'xsmall'
+    | 'small'
+    | 'medium'
+    | 'large'
+    | 'xlarge'
+    | 'inline'
+    | (string & {});
   icon?: ReactNode | 'checkmark';
   children?: ReactNode;
   isLoading?: boolean;

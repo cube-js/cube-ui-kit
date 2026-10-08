@@ -303,7 +303,7 @@ export function TabButton({
     dragState ?? mockDragState,
   );
   const effectiveDragProps = isDraggable ? dragResult.dragProps : {};
-  const isDragging = isDraggable && dragResult.isDragging;
+  const isDragging = isDraggable && dragState.isDragging(item.key);
 
   // Controlled state for menu trigger (enables keyboard opening with Shift+F10)
   const [isMenuOpen, setIsMenuOpen] = useState(false);

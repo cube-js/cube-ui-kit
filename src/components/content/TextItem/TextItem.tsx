@@ -7,7 +7,7 @@ import {
   TEXT_STYLES,
 } from '@tenphi/tasty';
 import { forwardRef, HTMLAttributes, RefObject } from 'react';
-import { OverlayProps } from 'react-aria';
+import { PositionProps } from 'react-aria';
 
 import { extractStyles } from '../../../utils/styles';
 import { highlightText } from '../highlightText';
@@ -43,7 +43,7 @@ export interface CubeTextItemProps extends CubeTextProps {
    * Default tooltip placement.
    * @default "top"
    */
-  tooltipPlacement?: OverlayProps['placement'];
+  tooltipPlacement?: PositionProps['placement'];
 }
 
 const TextItemElement = tasty(Text, {

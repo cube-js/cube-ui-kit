@@ -3,10 +3,8 @@ import { RangeValue } from '@react-types/shared';
 import { DateValue } from 'react-aria';
 
 /**
- * `AriaCalendarProps` silently resolves to nothing under `preserveSymlinks`
- * (see AGENTS.md → TypeScript & Exports), so `extends AriaCalendarProps`
- * contributes no members and every prop below would go unchecked. Declare the
- * ones the calendars genuinely support instead.
+ * Shared UI Kit calendar props stay explicit so the single-date and range
+ * calendars preserve the same date constraints and nullable public values.
  */
 export interface CalendarCoreProps {
   /** The earliest date a user may select. */

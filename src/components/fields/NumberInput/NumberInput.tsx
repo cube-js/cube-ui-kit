@@ -1,8 +1,15 @@
 import { tasty } from '@tenphi/tasty';
-import { ForwardedRef, forwardRef, RefObject, useRef } from 'react';
+import {
+  ForwardedRef,
+  forwardRef,
+  KeyboardEvent,
+  RefObject,
+  useRef,
+} from 'react';
 import {
   AriaNumberFieldProps,
   mergeProps as mergeAriaProps,
+  useKeyboard,
   useLocale,
   useNumberField,
 } from 'react-aria';
@@ -18,6 +25,7 @@ import { CubeTextInputBaseProps, TextInputBase } from '../TextInput';
 
 import { StepButton } from './StepButton';
 
+import type { TextInputDOMEvents } from '@react-types/shared';
 import type {
   FieldBaseProps,
   TextFieldKeyboardProps,
@@ -26,11 +34,19 @@ import type {
 export interface CubeNumberInputProps
   extends Omit<
       CubeTextInputBaseProps,
-      'defaultValue' | 'value' | 'onChange' | 'field'
+      | 'defaultValue'
+      | 'value'
+      | 'onChange'
+      | 'field'
+      | 'validate'
+      | 'onFocus'
+      | 'onBlur'
+      | keyof TextInputDOMEvents
     >,
-    Omit<AriaNumberFieldProps, 'validate' | 'form' | 'name'>,
-    // Declared directly: both `Omit`s above are over types that are, or extend,
-    // an in-repo `any`, which erases the members they would otherwise carry.
+    Omit<
+      AriaNumberFieldProps,
+      'form' | 'name' | 'errorMessage' | 'onKeyDown' | 'onKeyUp'
+    >,
     TextFieldKeyboardProps {
   field?: FieldBaseProps<number | null | undefined>['field'];
   /** Whether or to hide stepper */
@@ -55,11 +71,11 @@ const StepperContainer = tasty({
 });
 
 function NumberInput(
-  props: WithNullableValue<CubeNumberInputProps>,
+  rawProps: WithNullableValue<CubeNumberInputProps>,
   ref: ForwardedRef<HTMLElement>,
 ) {
-  props = castNullableNumberValue(props);
-  props = useFieldProps(props);
+  rawProps = castNullableNumberValue(rawProps);
+  let props = useFieldProps(rawProps);
 
   let {
     hideStepper,
@@ -85,7 +101,24 @@ function NumberInput(
     inputProps,
     incrementButtonProps,
     decrementButtonProps,
-  } = useNumberField(props, state, inputRef as RefObject<HTMLInputElement>);
+  } = useNumberField(
+    { ...props, onKeyDown: undefined, onKeyUp: undefined },
+    state,
+    inputRef as RefObject<HTMLInputElement>,
+  );
+  // Keep native commits and user callbacks inside one Aria event wrapper so
+  // continuePropagation can still undo the native shortcut's propagation stop.
+  let { keyboardProps } = useKeyboard({
+    isDisabled: props.isDisabled,
+    onKeyDown: (event) => {
+      inputProps.onKeyDown?.(event as KeyboardEvent<HTMLInputElement>);
+      event.defaultPrevented = event.isDefaultPrevented();
+      // NumberInput historically lets every key except Enter reach ancestors.
+      if (event.key !== 'Enter') event.continuePropagation();
+      props.onKeyDown?.(event);
+    },
+    onKeyUp: props.onKeyUp,
+  });
 
   // Merge user-provided labelProps with aria labelProps
   const mergedLabelProps = mergeProps(labelProps, userLabelProps);
@@ -117,7 +150,7 @@ function NumberInput(
         // through react-aria's own `mergeProps` updates that seed, so the
         // input, its label and the steppers' `aria-controls` follow the id
         // when the form binding changes after mount.
-        mergeAriaProps(inputProps, { id: props.id }),
+        mergeAriaProps({ ...inputProps, ...keyboardProps }, { id: props.id }),
         { 'data-input-type': 'numberinput' },
         userInputProps,
       )}

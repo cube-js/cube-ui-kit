@@ -21,6 +21,7 @@ import {
 import {
   DraggableCollectionState,
   DroppableCollectionState,
+  MultipleSelectionManager,
   useDraggableCollectionState,
   useDroppableCollectionState,
 } from 'react-stately';
@@ -37,21 +38,22 @@ const getAllowedDropOperations = (): DropOperation[] => ['move'];
  */
 export function createMockDragState(
   collection: Collection<Node<any>>,
-  selectionManager: Record<string, any>,
+  selectionManager: MultipleSelectionManager,
 ): DraggableCollectionState {
   return {
     collection,
     selectionManager,
     isDragging: () => false,
     getKeysForDrag: () => new Set<Key>(),
+    getItems: () => [],
     draggedKey: null,
     draggingKeys: new Set<Key>(),
     getAllowedDropOperations: () => [],
-    preview: null,
     isDisabled: false,
     startDrag: () => {},
+    moveDrag: () => {},
     endDrag: () => {},
-  } as DraggableCollectionState;
+  };
 }
 
 // =============================================================================
@@ -61,7 +63,7 @@ export function createMockDragState(
 export interface DraggableCollectionProps {
   state: {
     collection: Collection<Node<any>>;
-    selectionManager: { selectedKeys: Set<Key> } & Record<string, any>;
+    selectionManager: MultipleSelectionManager;
     disabledKeys: Set<Key>;
   };
   listRef: RefObject<HTMLElement | null>;
@@ -273,7 +275,8 @@ export function DraggableCollection({
     const handleEscape = (e: globalThis.KeyboardEvent) => {
       if (e.key === 'Escape') {
         endDragRef.current({
-          type: 'cancel',
+          type: 'dragend',
+          keys: new Set(dragKeysRef.current),
           x: 0,
           y: 0,
           dropOperation: 'cancel',
@@ -333,17 +336,20 @@ export function DraggableCollection({
 
   return (
     <>
-      {children(
-        dragState,
-        dropState,
-        mergeProps(collectionProps, { onKeyDownCapture: handleKeyDownCapture }),
-      )}
+      {children(dragState, dropState, {
+        ...mergeProps(collectionProps, {
+          onKeyDownCapture: handleKeyDownCapture,
+        }),
+      })}
       {renderPreview ? (
         // Rendered off-screen by React Aria and snapshotted at drag start. The
         // keys come from the ref rather than the `DragItem`s the render
         // function is handed, which only carry `text/plain`.
         <DragPreview ref={previewRef}>
-          {() => renderPreview(dragKeysRef.current)}
+          {() => {
+            const preview = renderPreview(dragKeysRef.current);
+            return preview ? <>{preview}</> : null;
+          }}
         </DragPreview>
       ) : null}
     </>

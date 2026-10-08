@@ -34,7 +34,7 @@ export type {
 export interface CubeUseActionProps<
   T extends TagName = 'a' | 'button' | 'span' | 'div',
 > extends AllBaseProps<T>,
-    Omit<AriaButtonProps, 'type'> {
+    Omit<AriaButtonProps, keyof AllBaseProps<T> | 'type'> {
   to?: NavigateArg;
   /**
    * @deprecated Use `aria-label` for the accessible name, and `children` for
@@ -364,12 +364,15 @@ export const useAction = function useAction(
     });
   });
 
+  // Native DOM props keep their HTML event targets and value types. Aria
+  // handles the same element and forwards value without changing it.
   let { buttonProps, isPressed } = useButton(
     {
       'aria-label': label, // deprecated, see `CubeUseActionProps.label`
       ...props,
       onPress: customOnPress,
-    },
+      type: htmlType ?? 'button',
+    } as AriaButtonProps,
     domRef,
   );
   let { hoverProps, isHovered } = useHover({ isDisabled });

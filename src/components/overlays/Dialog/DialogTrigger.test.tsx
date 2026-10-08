@@ -1,5 +1,6 @@
 import { ClearPressResponder } from '@react-aria/interactions';
 import { useRef, useState } from 'react';
+import { flushSync } from 'react-dom';
 
 import { renderWithRoot, userEvent, waitFor } from '../../../test';
 import { Button } from '../../actions/Button';
@@ -99,8 +100,8 @@ describe.each(['popover', 'modal'] as const)(
     // `DialogTrigger.browser.test.tsx`. Their verdict depends on real
     // blur/focusin ordering across the exit animation, which jsdom decides
     // differently run to run — the same spec caught the bug in `modal` on one
-    // run and `popover` on the next. What stays here is deterministic in
-    // jsdom: focus moved synchronously inside the action's own handler.
+    // run and `popover` on the next. The synchronous case commits the close
+    // before moving focus, so a still-active FocusScope cannot reclaim it.
 
     it('leaves focus where an action put it', async () => {
       function App() {
@@ -118,7 +119,7 @@ describe.each(['popover', 'modal'] as const)(
                 <Button
                   qa="Act"
                   onPress={() => {
-                    setOpen(false);
+                    flushSync(() => setOpen(false));
                     outsideRef.current?.focus();
                   }}
                 >

@@ -5,7 +5,7 @@ import { CubeButtonProps } from '../../components/actions/Button/Button';
 /** Converts AriaButtonProps to CubeButtonProps */
 export function ariaToCubeButtonProps(
   props: AriaButtonProps<'button'>,
-): CubeButtonProps {
+): Omit<AriaButtonProps<'button'>, 'type'> & Pick<CubeButtonProps, 'htmlType'> {
   const { type, ...filteredProps } = props;
 
   return {
@@ -20,8 +20,10 @@ export function cubeToAriaButtonProps(
 ): AriaButtonProps<'button'> {
   const { htmlType, ...filteredProps } = props;
 
+  // Cube's handlers target its supported HTML elements; Aria declares the
+  // same events against a broader Element/FocusableElement boundary.
   return {
     ...filteredProps,
     type: htmlType,
-  };
+  } as AriaButtonProps<'button'>;
 }

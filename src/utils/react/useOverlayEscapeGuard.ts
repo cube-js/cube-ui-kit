@@ -1,3 +1,5 @@
+import { getEventTarget, nodeContains } from '@react-aria/utils';
+
 import { useEvent } from '../../_internal';
 
 import type { DOMAttributes, KeyboardEvent } from 'react';
@@ -34,6 +36,20 @@ export function useOverlayEscapeGuard<T extends OverlayDOMProps>(
   const onKeyDown = useEvent((event: KeyboardEvent<any>) => {
     // Decline it, so it reaches whoever can actually act on it.
     if (event.key === 'Escape' && !isOpen) return;
+
+    // Aria's shortcut handler ignores physical DOM outsiders. A closing
+    // popup still bubbles Escape through its logical React portal ancestry.
+    // Let the open ancestor's handler retain its topmost-overlay check.
+    const target = getEventTarget(event);
+    if (event.key === 'Escape' && !nodeContains(event.currentTarget, target)) {
+      overlayProps.onKeyDown?.({
+        ...event,
+        currentTarget: target,
+        preventDefault: () => event.preventDefault(),
+        stopPropagation: () => event.stopPropagation(),
+      });
+      return;
+    }
 
     overlayProps.onKeyDown?.(event);
   });

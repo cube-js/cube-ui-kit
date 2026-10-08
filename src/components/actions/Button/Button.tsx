@@ -17,7 +17,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import { OverlayProps } from 'react-aria';
+import { Placement } from 'react-aria';
 
 import { useEvent } from '../../../_internal';
 import { useIsFirstRender } from '../../../_internal/hooks/use-is-first-render';
@@ -144,7 +144,7 @@ export interface CubeButtonProps extends CubeActionProps {
    * Default tooltip placement for the button.
    * @default "top"
    */
-  defaultTooltipPlacement?: OverlayProps['placement'];
+  defaultTooltipPlacement?: Placement;
 }
 
 export type ButtonVariant =

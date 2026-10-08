@@ -55,13 +55,14 @@ function HeaderCell(
 function DraggableHeaderCell(props: TableHeaderCellProps) {
   const { columnKey, hasAction, isLastDraggable, dragState, dropState } = props;
 
-  const { dragProps, isDragging } = useDraggableItem(
+  const { dragProps } = useDraggableItem(
     // `hasAction` re-gates React Aria's Enter/Space capture behind Alt, so plain
     // Enter still reaches the header's own sort handler instead of starting a
     // keyboard drag session.
     { key: columnKey, hasAction },
     dragState as DraggableCollectionState,
   );
+  const isDragging = dragState!.isDragging(columnKey);
 
   return (
     <HeaderCell

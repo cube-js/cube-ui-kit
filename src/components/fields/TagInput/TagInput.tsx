@@ -1705,7 +1705,7 @@ function TagInput<T extends object>(
     },
     hasOptions
       ? getComboboxProps(listBoxId, shouldShowPopover, activeOptionKey)
-      : null,
+      : undefined,
   );
 
   const handleTriggerPress = useEvent(() => {

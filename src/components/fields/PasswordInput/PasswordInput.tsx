@@ -1,5 +1,5 @@
-import { ForwardedRef, forwardRef, useRef, useState } from 'react';
-import { useTextField } from 'react-aria';
+import { ForwardedRef, forwardRef, RefObject, useRef, useState } from 'react';
+import { AriaTextFieldProps, useTextField } from 'react-aria';
 
 import { useI18n } from '../../../i18n';
 import { EyeIcon } from '../../../icons/EyeIcon';
@@ -20,19 +20,20 @@ import {
 import type { TextFieldKeyboardProps } from '../../../shared/form';
 
 export interface CubePasswordInputProps
-  extends WithNullableValue<CubeTextInputBaseProps>,
+  extends WithNullableValue<Omit<CubeTextInputBaseProps, 'validate'>>,
     CubeBufferedValueProps,
-    // Restated: `WithNullableValue` erases the base's named members in-repo.
-    TextFieldKeyboardProps {}
+    TextFieldKeyboardProps {
+  validate?: AriaTextFieldProps['validate'];
+}
 
 function PasswordInput(
-  props: CubePasswordInputProps,
+  rawProps: CubePasswordInputProps,
   ref: ForwardedRef<HTMLElement>,
 ) {
   const { t } = useI18n();
 
-  props = castNullableStringValue(props);
-  props = useFieldProps(props, {
+  rawProps = castNullableStringValue(rawProps);
+  let props = useFieldProps(rawProps, {
     defaultValidationTrigger: 'onBlur',
     valuePropsMapper: ({ value, onChange }) => ({
       value: value?.toString() ?? '',
@@ -70,7 +71,7 @@ function PasswordInput(
       onBlur: chain(rest.onBlur, buffered.reset),
       type,
     },
-    inputRef,
+    inputRef as RefObject<HTMLInputElement | null>,
   );
 
   // Merge user-provided labelProps with aria labelProps

@@ -130,19 +130,15 @@ export interface CubeSwitchProps
     BlockStyleProps,
     FieldBaseProps<boolean | null | undefined>,
     ToggleSelectionProps,
-    AriaSwitchProps {
-  /** The form instance; redeclared for the same reason as in `Checkbox`. */
-  form?: FieldBaseProps['form'];
-  /** Field name; modern forms also accept nested tuple paths. */
-  name?: FieldBaseProps['name'];
+    Omit<AriaSwitchProps, 'form' | 'name'> {
   inputStyles?: Styles;
   isLoading?: boolean;
   size?: 'large' | 'medium' | 'small';
 }
 
-function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
-  props = castNullableIsSelected(props);
-  props = useFieldProps(props, {
+function Switch(rawProps: WithNullableSelected<CubeSwitchProps>, ref) {
+  rawProps = castNullableIsSelected(rawProps);
+  let props = useFieldProps(rawProps, {
     defaultValidationTrigger: 'onChange',
     valuePropsMapper: ({ value, onChange }) => ({
       isSelected: value != null ? value : false,

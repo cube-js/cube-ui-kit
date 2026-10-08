@@ -17,11 +17,9 @@ import { Form } from './index';
  * instance, and the rejection of a modern controller everywhere a legacy
  * instance is expected.
  *
- * The in-repo check resolves react-aria's `Aria*Props` to `any`
- * (`preserveSymlinks`, see `tsconfig.json`), so `ExternalInstance` alone does
- * not prove that a consumer may pass an instance to a kit input; the
- * consumer-facing fixture in `typecheck/consumer/` (compiled against `dist/`
- * by `pnpm test:types:consumer`) does.
+ * Source fixtures check the field's Form instance contract. The fixtures in
+ * `typecheck/consumer/`, compiled against `dist/` by
+ * `pnpm test:types:consumer`, also verify the emitted public declarations.
  */
 
 interface Values {

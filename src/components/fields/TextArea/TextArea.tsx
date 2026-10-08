@@ -1,5 +1,5 @@
-import { ForwardedRef, forwardRef, useRef } from 'react';
-import { useTextField } from 'react-aria';
+import { ForwardedRef, forwardRef, RefObject, useRef } from 'react';
+import { AriaTextFieldProps, useTextField } from 'react-aria';
 
 import { chain, mergeProps, useBufferedValue } from '../../../utils/react';
 import {
@@ -17,9 +17,16 @@ import { useAutoSizeTextArea } from '../TextInput/useAutoSizeTextArea';
 import type { FieldBaseProps } from '../../../shared/form';
 
 export interface CubeTextAreaProps
-  extends CubeTextInputBaseProps,
+  extends Omit<
+      CubeTextInputBaseProps,
+      'validate' | 'inputRef' | 'onFocus' | 'onBlur'
+    >,
     CubeBufferedValueProps {
   field?: FieldBaseProps<string | null | undefined>['field'];
+  inputRef?: RefObject<HTMLTextAreaElement | null>;
+  validate?: AriaTextFieldProps<HTMLTextAreaElement>['validate'];
+  onFocus?: AriaTextFieldProps<HTMLTextAreaElement>['onFocus'];
+  onBlur?: AriaTextFieldProps<HTMLTextAreaElement>['onBlur'];
   /** Whether the textarea should change its size depends on the content */
   autoSize?: boolean;
   /** Max number of visible rows when autoSize is `true`. Defaults to 10  */
@@ -30,11 +37,11 @@ export interface CubeTextAreaProps
 }
 
 function TextArea(
-  props: WithNullableValue<CubeTextAreaProps>,
+  rawProps: WithNullableValue<CubeTextAreaProps>,
   ref: ForwardedRef<HTMLElement>,
 ) {
-  props = castNullableStringValue(props);
-  props = useFieldProps(props, {
+  rawProps = castNullableStringValue(rawProps);
+  let props = useFieldProps(rawProps, {
     defaultValidationTrigger: 'onBlur',
     valuePropsMapper: ({ value, onChange }) => ({
       onChange,

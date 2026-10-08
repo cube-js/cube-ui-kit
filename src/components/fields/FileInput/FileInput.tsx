@@ -125,19 +125,15 @@ export interface CubeFileInputProps
     PositionStyleProps,
     ContainerStyleProps,
     BlockStyleProps,
-    AriaTextFieldProps,
+    Omit<AriaTextFieldProps, 'form' | 'name' | 'errorMessage'>,
     FieldBaseProps<string | null | undefined> {
-  /** The form instance; redeclared for the same reason as in `Checkbox`. */
-  form?: FieldBaseProps['form'];
-  /** Field name; modern forms also accept nested tuple paths. */
-  name?: FieldBaseProps['name'];
   /**
    * The size of the input
    * @default default
    */
   size?: 'small' | 'default' | 'large' | string;
   /** The input ref */
-  inputRef?: RefObject<HTMLInputElement>;
+  inputRef?: RefObject<HTMLInputElement | null>;
   /** Style map for the input */
   inputStyles?: Styles;
   /**

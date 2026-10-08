@@ -59,26 +59,29 @@ export function castNullableField<T>(
   return props;
 }
 
+// Values are intentionally permissive: the helpers above coerce input models.
+// A generic indexed access unioned with `any` has the same type, but declaration
+// emit can inline its type parameter outside the generic scope.
 export type WithNullableValue<T extends Props> = Omit<
   T,
   'value' | 'defaultValue'
 > & {
-  value?: T['value'] | any;
-  defaultValue?: T['defaultValue'] | any;
+  value?: any;
+  defaultValue?: any;
 };
 
 export type WithNullableSelected<T extends Props> = Omit<
   T,
   'isSelected' | 'defaultSelected'
 > & {
-  isSelected?: T['isSelected'] | any;
-  defaultSelected?: T['defaultSelected'] | any;
+  isSelected?: any;
+  defaultSelected?: any;
 };
 
 export type WithNullableSelectedKey<T extends Props> = Omit<
   T,
   'selectedKey' | 'defaultSelectedKey'
 > & {
-  selectedKey?: T['selectedKey'] | any;
-  defaultSelectedKey?: T['defaultSelectedKey'] | any;
+  selectedKey?: any;
+  defaultSelectedKey?: any;
 };

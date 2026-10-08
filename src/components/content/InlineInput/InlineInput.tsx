@@ -21,7 +21,7 @@ import {
 } from 'react';
 import {
   FocusScope,
-  OverlayProps,
+  PositionProps,
   useFocusRing,
   useFocusWithin,
 } from 'react-aria';
@@ -140,7 +140,7 @@ export interface CubeInlineInputProps
    */
   tooltip?: AutoTooltipValue;
   /** Default tooltip placement. @default 'top' */
-  tooltipPlacement?: OverlayProps['placement'];
+  tooltipPlacement?: PositionProps['placement'];
 
   /** Convenience prop for styling the `Input` sub-element. Merged into `styles.Input`. */
   inputStyles?: Styles;

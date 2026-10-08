@@ -26,13 +26,17 @@ const DateInputElement = tasty({
 });
 
 interface CubeDatePickerInputProps<T extends DateValue>
-  extends Omit<AriaDatePickerProps<T>, 'errorMessage' | 'form'>,
-    DateFieldBase<T> {
+  extends Omit<
+      AriaDatePickerProps<T>,
+      'errorMessage' | 'form' | keyof DateFieldBase<T>
+    >,
+    Omit<DateFieldBase<T>, 'minValue' | 'maxValue' | 'placeholderValue'> {
+  minValue?: DateValue | null;
+  maxValue?: DateValue | null;
+  placeholderValue?: T | null;
   hideValidationIcon?: boolean;
   maxGranularity?: Granularity;
   useLocale?: boolean;
-  onFocus?: () => void;
-  onBlur?: () => void;
 }
 
 export function DatePickerInput<T extends DateValue>(
@@ -43,6 +47,9 @@ export function DatePickerInput<T extends DateValue>(
   let { locale } = useLocale();
   let state = useDateFieldState({
     ...props,
+    minValue: props.minValue ?? undefined,
+    maxValue: props.maxValue ?? undefined,
+    placeholderValue: props.placeholderValue ?? undefined,
     locale: useLocaleProp ? locale : 'en-US',
     createCalendar,
   });
@@ -52,13 +59,8 @@ export function DatePickerInput<T extends DateValue>(
   }
 
   const { focusWithinProps } = useFocusWithin({
-    onFocusWithinChange: (isFocused) => {
-      if (isFocused) {
-        props.onFocus?.();
-      } else {
-        props.onBlur?.();
-      }
-    },
+    onFocusWithin: props.onFocus,
+    onBlurWithin: props.onBlur,
   });
 
   let { fieldProps } = useDateField(props, state, ref);

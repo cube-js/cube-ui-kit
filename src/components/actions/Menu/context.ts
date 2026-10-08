@@ -1,5 +1,5 @@
 import { FocusStrategy } from '@react-types/shared';
-import React, { HTMLAttributes, MutableRefObject, useContext } from 'react';
+import React, { HTMLAttributes, RefObject, useContext } from 'react';
 
 export interface MenuContextValue
   extends Omit<HTMLAttributes<HTMLElement>, 'autoFocus'> {
@@ -7,7 +7,7 @@ export interface MenuContextValue
   closeOnSelect?: boolean;
   shouldFocusWrap?: boolean;
   autoFocus?: boolean | FocusStrategy;
-  ref?: MutableRefObject<HTMLUListElement>;
+  ref?: RefObject<HTMLUListElement | null>;
   mods?: {
     popover?: boolean;
     tray?: boolean;

@@ -47,9 +47,12 @@ export interface CubeCheckboxGroupProps
   inputStyles?: Styles;
 }
 
-function CheckboxGroup(props: WithNullableValue<CubeCheckboxGroupProps>, ref) {
-  props = castNullableArrayValue(props);
-  props = useFieldProps(props, {
+function CheckboxGroup(
+  rawProps: WithNullableValue<CubeCheckboxGroupProps>,
+  ref,
+) {
+  rawProps = castNullableArrayValue(rawProps);
+  let props = useFieldProps(rawProps, {
     defaultValidationTrigger: 'onChange',
     valuePropsMapper: ({ value, onChange }) => ({
       value: value != null ? value : [],

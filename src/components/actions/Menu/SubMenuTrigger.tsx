@@ -121,7 +121,7 @@ function InternalSubMenuTrigger(props: InternalSubMenuTriggerProps) {
 
   // Strip keyboard/press handlers that we will implement ourselves
   const { menuTriggerProps: rawTriggerProps, menuProps } = useMenuTrigger(
-    { type: 'submenu', isDisabled },
+    { type: 'menu', isDisabled },
     state,
     domTriggerRef,
   );
@@ -138,17 +138,18 @@ function InternalSubMenuTrigger(props: InternalSubMenuTriggerProps) {
     ...menuTriggerProps
   } = rawTriggerProps;
 
-  const { overlayProps: positionProps } = useOverlayPosition({
-    targetRef: domTriggerRef,
-    overlayRef: popoverRef,
-    scrollRef: menuRef,
-    placement,
-    offset: offset as number,
-    crossOffset: crossOffset as number,
-    shouldFlip,
-    isOpen: state.isOpen,
-    onClose: state.close,
-  });
+  const { overlayProps: positionProps, placement: resolvedPlacement } =
+    useOverlayPosition({
+      targetRef: domTriggerRef,
+      overlayRef: popoverRef,
+      scrollRef: menuRef,
+      placement,
+      offset: offset as number,
+      crossOffset: crossOffset as number,
+      shouldFlip,
+      isOpen: state.isOpen,
+      onClose: state.close,
+    });
 
   /**
    * Build a MenuContext for the nested menu so it behaves just like a regular
@@ -392,7 +393,7 @@ function InternalSubMenuTrigger(props: InternalSubMenuTriggerProps) {
           isNonModal
           isOpen={!parentContext.isClosing}
           style={positionProps.style}
-          placement={placement as Placement}
+          placement={resolvedPlacement ?? undefined}
           shouldCloseOnInteractOutside={shouldCloseOnInteractOutside}
           onClose={state.close}
           // Spread any additional overlay props

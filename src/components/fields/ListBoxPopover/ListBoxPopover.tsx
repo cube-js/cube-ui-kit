@@ -1,3 +1,4 @@
+import { getEventTarget, isFocusWithin } from '@react-aria/utils';
 import { Key } from '@react-types/shared';
 import { Styles, tasty } from '@tenphi/tasty';
 import React, {
@@ -8,8 +9,9 @@ import React, {
   useEffect,
   useRef,
 } from 'react';
-import { useOverlay, useOverlayPosition } from 'react-aria';
+import { useInteractOutside, useOverlay, useOverlayPosition } from 'react-aria';
 
+import { useEvent } from '../../../_internal/hooks/use-event';
 import { useI18n } from '../../../i18n';
 import { mergeProps } from '../../../utils/react';
 import { DisplayTransition } from '../../helpers';
@@ -253,6 +255,26 @@ export const ListBoxPopover = function ListBoxPopover(
     };
   }, [positionApiRef, updatePosition]);
 
+  const getOutsidePressBehavior = (el: Element) => {
+    const menuTriggerEl = el.closest('[data-popover-trigger]');
+    if (menuTriggerEl) {
+      return menuTriggerEl === triggerRef.current ? 'consume' : 'ignore';
+    }
+    if (
+      (!shouldCloseOnTriggerInteraction && triggerRef.current?.contains(el)) ||
+      el.closest('[data-popover-keep]')
+    ) {
+      return 'ignore';
+    }
+    if (
+      (shouldPassControlPresses && el.closest(CONTROL_SELECTOR)) ||
+      el.closest('[data-popover-dismiss]')
+    ) {
+      return 'pass';
+    }
+    return 'consume';
+  };
+
   // Overlay behavior (dismiss on outside click, escape)
   const { overlayProps: overlayBehaviorProps } = useOverlay(
     {
@@ -261,37 +283,35 @@ export const ListBoxPopover = function ListBoxPopover(
       isOpen,
       isDismissable: true,
       shouldCloseOnInteractOutside: (el) => {
-        const menuTriggerEl = el.closest('[data-popover-trigger]');
-        if (!menuTriggerEl) {
-          if (
-            !shouldCloseOnTriggerInteraction &&
-            triggerRef?.current?.contains(el)
-          ) {
-            return false;
-          }
-          if (el.closest('[data-popover-keep]')) return false;
-          // Plain interactive controls (Button, ItemButton) opt in via
-          // `data-popover-dismiss` to dismiss us without losing their click
-          // to useOverlay's stopPropagation, and `shouldPassControlPresses`
-          // opts every control in. Schedule the close after the click
-          // finishes so the button's onPress runs first. Only controls: the
-          // close lands before a slow click does, and a click on a dialog's
-          // backdrop would then find the dialog on top and close it too.
-          if (
-            (shouldPassControlPresses && el.closest(CONTROL_SELECTOR)) ||
-            el.closest('[data-popover-dismiss]')
-          ) {
-            setTimeout(onClose, 0);
-            return false;
-          }
-          return true;
+        const behavior = getOutsidePressBehavior(el);
+        if (behavior === 'pass') {
+          // Leave the control's press intact and close after its action.
+          setTimeout(onClose, 0);
         }
-        if (menuTriggerEl === triggerRef?.current) return true;
-        return false;
+        return behavior === 'consume';
       },
     },
     mergedPopoverRef as any,
   );
+
+  const preserveOutsidePressFocus = useEvent((event: PointerEvent) => {
+    if (
+      (isFocusWithin(triggerRef.current) ||
+        isFocusWithin(mergedPopoverRef.current)) &&
+      getOutsidePressBehavior(getEventTarget(event) as Element) === 'consume'
+    ) {
+      event.preventDefault();
+    }
+  });
+
+  // Aria now permits outside presses to move focus. Consumed presses must
+  // only dismiss this list; a blur would also commit the field's draft.
+  useInteractOutside({
+    ref: mergedPopoverRef,
+    isDisabled: !isOpen,
+    onInteractOutsideStart: preserveOutsidePressFocus,
+    onInteractOutside: preserveOutsidePressFocus,
+  });
 
   // Extract primary placement direction for consistent styling
   const placementDirection = placement?.split(' ')[0] || direction;

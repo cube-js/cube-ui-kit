@@ -348,6 +348,8 @@ export const ColorInput = forwardRef(function ColorInput(
     <TextInputBase
       {...props}
       ref={ref}
+      value={text}
+      defaultValue={props.defaultValue ?? undefined}
       qa={qa || 'ColorInput'}
       size={size}
       autoComplete="off"

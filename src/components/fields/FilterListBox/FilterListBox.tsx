@@ -1,4 +1,4 @@
-import { Key } from '@react-types/shared';
+import { ItemElement, Key } from '@react-types/shared';
 import {
   BASE_STYLES,
   COLOR_STYLES,
@@ -640,7 +640,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
           key="__filtered_items__"
           aria-label={t('filterListBox.filteredItems', 'Filtered items')}
         >
-          {childrenToProcess}
+          {childrenToProcess as ItemElement<unknown>[]}
         </BaseSection>
       );
 

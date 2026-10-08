@@ -205,7 +205,7 @@ function CopyPasteBlock(
       mods={{ error: !!error }}
       data-size={size}
       styles={styles}
-      tabIndex="0"
+      tabIndex={0}
       {...props}
       {...clipboardProps}
     >

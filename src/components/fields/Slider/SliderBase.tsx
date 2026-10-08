@@ -33,7 +33,9 @@ export interface SliderBaseChildArguments {
   isValid?: boolean;
 }
 
-export interface SliderBaseProps<T = number[]> extends CubeSliderBaseProps<T> {
+export interface SliderBaseProps<T = number[]>
+  extends Omit<CubeSliderBaseProps<T>, 'field'> {
+  field?: CubeSliderBaseProps<number | number[]>['field'];
   children: (opts: SliderBaseChildArguments) => ReactNode;
 }
 

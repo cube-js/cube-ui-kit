@@ -7,7 +7,6 @@ import { DirectionIcon } from '../../../icons/DirectionIcon';
 import { Button } from '../../actions/Button/Button';
 
 const StepButtonElement = tasty(Button, {
-  preventDefault: true,
   type: 'clear',
   styles: {
     width: '($local-size * 1.25)',
@@ -41,7 +40,6 @@ export function StepButton(props) {
 
   return (
     <StepButtonElement
-      preventDefault
       type="clear"
       mods={{
         up: props.direction === 'up',

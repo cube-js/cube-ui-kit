@@ -1,5 +1,6 @@
 import { FocusableRefValue } from '@react-types/shared';
 import { useEffect, useRef, useState } from 'react';
+import { flushSync } from 'react-dom';
 
 import {
   fireEvent,
@@ -101,6 +102,44 @@ describe.each(['popover', 'modal'] as const)(
         expect(panel).toHaveFocus();
       },
     );
+
+    it('leaves focus where an action put it after a committed close', async () => {
+      function SynchronousFocusApp() {
+        const outsideRef = useRef<HTMLButtonElement>(null);
+        const [isOpen, setOpen] = useState(false);
+
+        return (
+          <>
+            <button ref={outsideRef} type="button" data-qa="Outside">
+              Outside
+            </button>
+            <DialogTrigger type={type} isOpen={isOpen} onOpenChange={setOpen}>
+              <Button qa="Trigger">Open</Button>
+              <Dialog aria-label="Focus hand-off">
+                <Button
+                  qa="Act"
+                  onPress={() => {
+                    flushSync(() => setOpen(false));
+                    outsideRef.current?.focus();
+                  }}
+                >
+                  Hand focus off
+                </Button>
+              </Dialog>
+            </DialogTrigger>
+          </>
+        );
+      }
+
+      const user = userEvent.setup();
+      renderWithRoot(<SynchronousFocusApp />);
+      await user.click(screen.getByTestId('Trigger'));
+      await screen.findByTestId('Dialog');
+      await user.click(screen.getByTestId('Act'));
+      await new Promise((resolve) => setTimeout(resolve, 600));
+
+      expect(screen.getByTestId('Outside')).toHaveFocus();
+    });
 
     it('never restores focus to the trigger with shouldRestoreFocus={false}', async () => {
       const user = userEvent.setup();

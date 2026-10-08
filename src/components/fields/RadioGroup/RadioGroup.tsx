@@ -33,7 +33,7 @@ export interface CubeRadioGroupProps
   defaultValue?: string;
   onChange?: (value: string) => void;
   /* Size for all radio buttons in the group */
-  size?: Omit<CubeItemProps['size'], 'inline'>;
+  size?: Exclude<CubeItemProps['size'], 'inline'>;
   /* Button type for all button-style radios (ignored in tabs mode). When set to 'primary', selected buttons use 'primary' and non-selected use 'outline' with isSelected appearance */
   buttonType?: CubeItemProps['type'];
   /* Visual type for all radios in the group: radio (default), button, or tabs */
@@ -84,11 +84,11 @@ const RadioGroupElement = tasty({
   },
 });
 
-function RadioGroup(props: WithNullableValue<CubeRadioGroupProps>, ref) {
-  let orientation = props.orientation;
+function RadioGroup(rawProps: WithNullableValue<CubeRadioGroupProps>, ref) {
+  let orientation = rawProps.orientation;
 
-  props = castNullableStringValue(props);
-  props = useFieldProps(props, { defaultValidationTrigger: 'onChange' });
+  rawProps = castNullableStringValue(rawProps);
+  let props = useFieldProps(rawProps, { defaultValidationTrigger: 'onChange' });
 
   let {
     qa,

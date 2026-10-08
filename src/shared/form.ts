@@ -115,17 +115,8 @@ export interface FieldCoreProps<Value = unknown> {
 /**
  * Selection contract for the toggle-style fields — `Switch` and `Checkbox`.
  *
- * These props belong to React Aria (`AriaSwitchProps` / `AriaCheckboxProps`),
- * and the components already forward them to `useSwitch` / `useCheckbox`
- * unchanged. They are re-declared here because those Aria types currently
- * resolve to `any` under this repo's `preserveSymlinks` TS setting (see the note
- * in `tsconfig.json`): extending an `any` base contributes no members, so
- * `onChange` silently vanished from the public prop types and every controlled
- * call site needed a `@ts-expect-error`.
- *
- * Keep these signatures identical to React Aria's. Once `preserveSymlinks` is
- * gone and the Aria types resolve for real, this interface becomes redundant and
- * can be dropped.
+ * These signatures mirror React Aria's selection props and keep the shared
+ * toggle contract explicit when combined with UI Kit's field props.
  *
  * `Radio` deliberately does not use this: a single radio has no `onChange` in
  * React Aria — selection is owned by its `Radio.Group`.
@@ -145,16 +136,8 @@ export interface ToggleSelectionProps {
  * `ComboBox` and `SearchComboBox` reuse `onKeyDown`: their input runs it
  * through `useKeyboard`, so it receives the same event.
  *
- * React Aria already attaches these to the `<input>` / `<textarea>`. They are
- * re-declared for the same reason as `ToggleSelectionProps`: the
- * `AriaTextFieldProps` / `AriaNumberFieldProps` the fields extend resolve to
- * `any` under this repo's `preserveSymlinks` TS setting, so the handlers were
- * accepted without a type and the event parameter was `any`.
- *
- * In-repo this types the props interfaces, not JSX: `forwardRef` passes the
- * props through `Omit<P, 'ref'>`, and the `Omit<Aria…Props>` index signature
- * erases every named member again. Consumers compile against `dist/`, where
- * the Aria types resolve and the components are typed in full.
+ * React Aria attaches these to the input or textarea. Declaring them here
+ * gives all supported text fields the same public keyboard event contract.
  *
  * Keep these signatures identical to React Aria's `KeyboardEvents`: the
  * handler receives React Aria's keyboard event, whose propagation stops after

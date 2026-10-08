@@ -1,5 +1,10 @@
 import { useObjectRef, useSyncRef } from '@react-aria/utils';
-import { FocusStrategy, ItemProps } from '@react-types/shared';
+import {
+  CollectionChildren,
+  FocusStrategy,
+  ItemProps,
+  Key,
+} from '@react-types/shared';
 import {
   BasePropsWithoutChildren,
   CONTAINER_STYLES,
@@ -33,8 +38,14 @@ export interface CubeMenuProps<T>
     ContainerStyleProps,
     Omit<
       AriaMenuProps<T>,
-      'selectedKeys' | 'defaultSelectedKeys' | 'onSelectionChange'
+      | 'children'
+      | 'onAction'
+      | 'selectedKeys'
+      | 'defaultSelectedKeys'
+      | 'onSelectionChange'
     > {
+  children?: ReactNode | CollectionChildren<T>;
+  onAction?: (key: Key) => void;
   // @deprecated
   header?: ReactNode;
   footer?: ReactNode;
@@ -83,11 +94,11 @@ function Menu<T extends object>(
     sectionStyles,
     sectionHeadingStyles,
     size = 'medium',
-    focusOnHover = false,
     qa,
     selectedKeys,
     defaultSelectedKeys,
     onSelectionChange,
+    onAction,
     ...rest
   } = props;
   const domRef = useObjectRef(ref);
@@ -116,16 +127,17 @@ function Menu<T extends object>(
     : undefined;
 
   const completeProps = mergeProps(contextProps, rest, {
-    focusOnHover,
+    onAction: onAction ? (key: Key) => onAction(key) : undefined,
     selectedKeys: ariaSelectedKeys,
     defaultSelectedKeys: ariaDefaultSelectedKeys,
     onSelectionChange: handleSelectionChange,
   });
 
   // Props used for collection building.
-  const treeProps = completeProps as typeof completeProps;
-
-  const state = useTreeState(treeProps as typeof completeProps);
+  const state = useTreeState({
+    ...completeProps,
+    children: completeProps.children as CollectionChildren<T>,
+  });
   const collectionItems = [...state.collection];
   const hasSections = collectionItems.some((item) => item.type === 'section');
 
@@ -185,7 +197,6 @@ function Menu<T extends object>(
         state={state}
         styles={itemStyles}
         size={size}
-        onAction={item.onAction}
       />
     );
 

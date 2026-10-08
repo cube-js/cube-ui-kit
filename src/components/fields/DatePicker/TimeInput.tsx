@@ -26,7 +26,10 @@ import { Granularity } from './types';
 import { useFocusManagerRef } from './utils';
 
 export interface CubeTimeInputProps<T extends TimeValue = TimeValue>
-  extends Omit<AriaTimeFieldProps<T>, 'errorMessage' | 'form' | 'name'>,
+  extends Omit<
+      AriaTimeFieldProps<TimeValue>,
+      'errorMessage' | 'form' | 'name' | 'value' | 'onChange' | 'granularity'
+    >,
     BaseProps,
     ContainerStyleProps,
     FieldBaseProps<TimeValue | null | undefined> {
@@ -34,7 +37,7 @@ export interface CubeTimeInputProps<T extends TimeValue = TimeValue>
   inputStyles?: Styles;
   styles?: Styles;
   size?: 'small' | 'medium' | 'large' | (string & {});
-  value?: TimeValue;
+  value?: TimeValue | null;
   /** The minimum allowed date that a user may select. */
   minValue?: TimeValue;
   /** The maximum allowed date that a user may select. */
@@ -56,10 +59,10 @@ export interface CubeTimeInputProps<T extends TimeValue = TimeValue>
 }
 
 function TimeInput<T extends TimeValue>(
-  props: CubeTimeInputProps<T>,
+  rawProps: CubeTimeInputProps<T>,
   ref: FocusableRef<HTMLElement>,
 ) {
-  props = useFieldProps(props, {
+  let props = useFieldProps(rawProps, {
     defaultValidationTrigger: 'onBlur',
   });
   props = Object.assign({}, DEFAULT_TIME_PROPS, props);
@@ -81,14 +84,17 @@ function TimeInput<T extends TimeValue>(
   } = props;
 
   let domRef = useFocusManagerRef(ref);
-  // let { locale } = useLocale();
-  let state = useTimeFieldState({
+  let timeProps = {
     ...props,
-    locale: 'en-US',
-  });
+    granularity: props.granularity === 'day' ? undefined : props.granularity,
+    // Aria clears with null; retain the kit's legacy nonnullable callback
+    // declaration while forwarding exactly the same values as before.
+    onChange: props.onChange as AriaTimeFieldProps<TimeValue>['onChange'],
+  };
+  let state = useTimeFieldState({ ...timeProps, locale: 'en-US' });
 
   let fieldRef = useRef(null);
-  let { labelProps, fieldProps } = useTimeField(props, state, fieldRef);
+  let { labelProps, fieldProps } = useTimeField(timeProps, state, fieldRef);
 
   const timeInput = (
     <DateInputBase
