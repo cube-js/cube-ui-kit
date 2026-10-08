@@ -17,7 +17,9 @@ export function usePortal(props: PortalProps) {
   useEffect(() => {
     if (!isDisabled) {
       const contextRoot = portalContext.root;
-      const currentRoot = root?.current ?? null;
+      // Keep the ref in this closure so Compiler tracks identity, not a node assigned during commit.
+      const explicitRoot = root;
+      const currentRoot = explicitRoot?.current ?? null;
       const currentContextRoot = contextRoot?.current ?? null;
 
       invariant(

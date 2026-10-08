@@ -1,6 +1,6 @@
 import { createRef } from 'react';
 
-import { render } from '../../test';
+import { render, renderWithRoot } from '../../test';
 
 import { Portal } from './Portal';
 
@@ -64,4 +64,27 @@ it('preserves inline content and current notifications when disabled and re-enab
   expect(root.current.textContent).toBe('Content');
   expect(container.textContent).toBe('');
   expect(second).toHaveBeenCalledTimes(1);
+});
+
+it.each([
+  ['standalone', render],
+  ['with a provider fallback', renderWithRoot],
+])('follows a new empty target ref %s', (_, renderPortal) => {
+  const firstRoot = createRef<HTMLDivElement>();
+  const secondRoot = createRef<HTMLDivElement>();
+  const view = (root: typeof firstRoot, hasTarget: boolean) => (
+    <>
+      <Portal root={root}>Content</Portal>
+      {hasTarget ? <div ref={root} data-qa="Target" /> : null}
+    </>
+  );
+  const { rerender, getByTestId } = renderPortal(view(firstRoot, true));
+  expect(getByTestId('Target')).toHaveTextContent('Content');
+
+  rerender(view(firstRoot, false));
+  rerender(view(firstRoot, false));
+  expect(firstRoot.current).toBeNull();
+  expect(secondRoot.current).toBeNull();
+  rerender(view(secondRoot, true));
+  expect(getByTestId('Target')).toHaveTextContent('Content');
 });
