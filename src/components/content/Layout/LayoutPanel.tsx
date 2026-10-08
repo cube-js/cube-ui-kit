@@ -45,6 +45,7 @@ import {
   useLayoutRefsContext,
   useLayoutStateContext,
 } from './LayoutContext';
+import { LayoutPanelTransition } from './LayoutPanelTransition';
 import { clampSize, getOppositeSide, resolveCssSize } from './utils';
 
 // Resize handler dimensions
@@ -60,6 +61,7 @@ const PanelElement = tasty({
   styles: {
     container: 'panel / inline-size',
     position: 'absolute',
+    pointerEvents: 'auto',
     display: 'flex',
     flow: 'column',
     overflow: 'hidden',
@@ -127,6 +129,7 @@ const ResizeHandlerElement = tasty({
   qa: 'PanelResizeHandler',
   styles: {
     position: 'absolute',
+    pointerEvents: 'auto',
 
     // Handler size
     width: {
@@ -850,9 +853,11 @@ function LayoutPanel(
   if (hasTransition) {
     return createPortal(
       <DisplayTransition isShown={isOpen} animateOnMount={false}>
-        {({ isShown, ref: transitionRef }) =>
-          renderPanelContent(!isShown, transitionRef)
-        }
+        {({ isShown, isExiting, ref: transitionRef }) => (
+          <LayoutPanelTransition isShown={isShown} isExiting={isExiting}>
+            {renderPanelContent(!isShown, transitionRef)}
+          </LayoutPanelTransition>
+        )}
       </DisplayTransition>,
       portalContainer,
     );

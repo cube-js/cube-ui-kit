@@ -370,6 +370,11 @@
     "diagnostics": {},
     "optOuts": 0
   },
+  "src/components/content/Layout/LayoutPanelTransition.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
   "src/components/content/Layout/LayoutToolbar.tsx": {
     "compiled": 1,
     "diagnostics": {},
