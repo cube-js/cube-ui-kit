@@ -20,10 +20,8 @@
     "optOuts": 0
   },
   "src/_internal/hooks/use-event.ts": {
-    "compiled": 0,
-    "diagnostics": {
-      "PreserveManualMemo": 1
-    },
+    "compiled": 1,
+    "diagnostics": {},
     "optOuts": 0
   },
   "src/_internal/hooks/use-is-first-render.ts": {
@@ -592,10 +590,8 @@
     "optOuts": 0
   },
   "src/components/data/TableBase/use-table-search.ts": {
-    "compiled": 0,
-    "diagnostics": {
-      "Suppression": 1
-    },
+    "compiled": 1,
+    "diagnostics": {},
     "optOuts": 0
   },
   "src/components/data/TableBase/use-table-selection.ts": {

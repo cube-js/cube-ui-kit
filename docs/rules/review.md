@@ -1,6 +1,6 @@
 # UI Kit review
 
-Use these rules for reviews of `@cube-dev/ui-kit` changes. They adapt Cloud's shared UI review patterns to a library that implements controls, owns its styling and supports React 18 and 19. Local reviewers use the same checklist through the `ui-review` skill; this file does not install an automated GitHub reviewer.
+Use these rules for reviews of `@cube-dev/ui-kit` changes. They adapt Cloud's shared UI review patterns to a library that implements controls, owns its styling and requires React 19.3 or newer. Local reviewers use the same checklist through the `ui-review` skill; this file does not install an automated GitHub reviewer.
 
 ## Scope
 
@@ -98,7 +98,7 @@ Flag disabled or selected items that bypass their collection's supported API, or
 
 ### Keep callbacks current for the work they trigger
 
-Flag stale closures or unnecessary resubscriptions for callbacks that need current state. Use the existing stable `useEvent` helper when appropriate. Keep dependencies whose changes intentionally drive an effect; see [Coding rules](coding.md#coding-rules).
+Follow the [React Compiler and callback rules](react-compiler.md). Use plain handlers by default, local Effect Events for effect-owned callbacks, and `useEvent` only for a verified retained-reference contract. Preserve reactive resource dependencies, complete manual memo dependencies, lifecycle ownership, both execution modes, and the diagnostics ratchets. Reject suppressed Effect Event misuse and claims of speedups without measurements.
 
 ### Prevent stale async work from overwriting current state
 

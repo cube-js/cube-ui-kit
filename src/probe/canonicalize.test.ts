@@ -4,6 +4,8 @@ it.each([
   ['«r0»', '«r9»'],
   [':r0:', ':ra:'],
   [':R1H2:', ':R3H4:'],
+  ['_r_0_', '_r_a_'],
+  ['_R_1H2_', '_R_3H4_'],
 ])(
   'normalizes generated IDs and preserves label references (%s)',
   (first, second) => {
@@ -15,8 +17,14 @@ it.each([
   },
 );
 
-it('keeps different IDs distinct so broken label references remain visible', () => {
-  const correct = '<label for=":r0:">Name</label><input id=":r0:">';
-  const broken = '<label for=":r0:">Name</label><input id=":r1:">';
-  expect(canonicalizeIds(broken)).not.toBe(canonicalizeIds(correct));
-});
+it.each([
+  [':r0:', ':r1:'],
+  ['_r_0_', '_r_1_'],
+])(
+  'keeps different IDs distinct so broken label references remain visible (%s)',
+  (first, second) => {
+    const correct = `<label for="${first}">Name</label><input id="${first}">`;
+    const broken = `<label for="${first}">Name</label><input id="${second}">`;
+    expect(canonicalizeIds(broken)).not.toBe(canonicalizeIds(correct));
+  },
+);

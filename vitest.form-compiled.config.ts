@@ -2,6 +2,7 @@ import { transformSync } from '@babel/core';
 import compiler from 'babel-plugin-react-compiler';
 import { mergeConfig } from 'vitest/config';
 
+import { moduleSpecifiers } from './scripts/compiler/check-package.mjs';
 import config from './vitest.form-react.config';
 
 // Compile modern consumer fixtures as well as adapters. The release build
@@ -31,12 +32,14 @@ export default mergeConfig(config, {
           babelrc: false,
           configFile: false,
           parserOpts: { plugins: ['typescript', 'jsx'] },
-          plugins: [[compiler, { target: '18', panicThreshold: 'all_errors' }]],
+          plugins: [[compiler, { target: '19', panicThreshold: 'all_errors' }]],
           sourceMaps: true,
         });
         if (
           /\/(submission|field|dialog)\.fixture\.tsx$/.test(id) &&
-          !result?.code?.includes('react-compiler-runtime')
+          !moduleSpecifiers(result?.code ?? '').includes(
+            'react/compiler-runtime',
+          )
         )
           throw new Error(
             'Form consumer fixture did not compile: this gate must exercise compiled code.',

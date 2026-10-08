@@ -30,6 +30,7 @@ pnpm list @tenphi/tasty @tenphi/glaze
 
 Project-specific working rules for AI agents. Not published with the package.
 
+- [react-compiler.md](docs/rules/react-compiler.md) — React 19, callbacks, Effect Events, memoization and lifecycle ownership
 - [coding.md](docs/rules/coding.md) — development flow, code style, **import rules**, Markdown formatting, knowledge maintenance
 - [entropy.md](docs/rules/entropy.md) — proportional complexity in code, public APIs, consumer usage and UX; Entropy review and developer exceptions
 - [input-components.md](docs/rules/input-components.md) — form-attachable input components (`useFieldProps`, validation props, `wrapWithField`)
@@ -66,15 +67,9 @@ Inside `src/`, import the file that defines a thing rather than the barrel that 
 
 ## React Compiler: Skip Manual Memoization
 
-The build compiles `src/` with React Compiler, which memoizes every derived value, object and handler in the components and hooks it compiles. Don't add `useMemo`/`useCallback` for performance; write the plain expression, and move a multi-branch computation into a named module-level function. A manual memo is still right only where identity is the contract, because the compiler bails out of some functions and `pnpm test` runs uncompiled source:
+The build compiles runtime source with React Compiler 1.0.0 targeting React 19, using the native `react/compiler-runtime`. Consumers require React and React DOM 19.3 or newer. Write plain derived values and ordinary handlers; use local `useEffectEvent` callbacks for effect-owned work and retain `useEvent` only for a demonstrated retained-reference contract. Manual memoization does not own a permanent per-mount lifetime. Follow the canonical [React Compiler and callback rules](docs/rules/react-compiler.md).
 
-- callback refs;
-- values in effect dependencies, directly or through what they feed;
-- `useSyncExternalStore` subscriptions and snapshots;
-- values created once per mount (ids, instances);
-- context provider values and imperative API objects. `root.test.tsx` asserts the form context stays stable in the uncompiled run.
-
-List every dependency the memo reads, including stable `useEvent` callbacks. When manual deps differ from the ones the compiler infers, it skips the whole function (a `PreserveManualMemo` diagnostic). Leave functions that still bail out alone: removing their memos only loses memoization. After touching a component, run `pnpm diagnostics:compiler`. A new diagnostic or lower coverage fails the build; when coverage improves, ratchet the baseline with `--update` and review the diff. Full rules: [coding.md](docs/rules/coding.md#coding-rules), [scripts/compiler/README.md](scripts/compiler/README.md).
+Run `pnpm diagnostics:compiler` and `pnpm diagnostics:hooks --check` after touching runtime source. Both ratchets reject regressions; every module adopting Effect Events also passes strict official hook/dependency rules without inline suppressions. Ratchet only verified improvements and review the baseline diff. Keep compiled and uncompiled behavior correct; preserve legacy Form opt-outs.
 
 ## Styling: Keep Components Customizable
 
@@ -146,7 +141,9 @@ Each component lives in `src/components/{category}/{ComponentName}/` and ships `
 - `pnpm add-icons` — add new icons from tabler
 - `pnpm audit-docs` — audit component API ↔ docs ↔ argTypes sync. Options: `--component=Name`, `--fix-stories`, `--fix-docs`, `--json`, `--verbose`, `--all-props`. **Run after changing a component's API or adding a new component.**
 - `pnpm diagnostics:compiler` — check every source file against the React Compiler coverage baseline (`scripts/compiler/baseline.json`); `--update` ratchets it after a reviewed change. See [React Compiler](#react-compiler-skip-manual-memoization)
-- `pnpm diagnostics:form` — report-only React Hooks / React Compiler diagnostics for the Form surface and input components, compared against a committed ratchet baseline (`--check` fails on growth, `--update` rewrites it). Not part of `pnpm lint`. See [`src/components/form/Form/legacy-contract/README.md`](src/components/form/Form/legacy-contract/README.md)
+- `pnpm diagnostics:hooks --check` — whole runtime-source official Hooks ratchet plus strict Effect Event adoption checks. `--update` tightens the canonical baseline after reviewed improvements. See [React Compiler rules](docs/rules/react-compiler.md).
+- `pnpm diagnostics:form` — Form/input view of the same Hooks baseline; `--check` rejects growth. Update through `diagnostics:hooks --update`. See [`src/components/form/Form/legacy-contract/README.md`](src/components/form/Form/legacy-contract/README.md)
+- `pnpm check:react-package` — verify supported React peers and native compiler imports before publishing or testing a packed build.
 - `pnpm diagnostics:complexity` — every function in `src/` ranked by cognitive complexity (SonarSource's metric, from `eslint-plugin-sonarjs` running in oxlint), worst first. Options: `--limit N`, `--all`, `pnpm -s … --json`. `.oxlintrc.json` caps every function with the same rule (`sonarjs/cognitive-complexity`), so `pnpm lint` fails CI if any function exceeds it. The ceiling only goes down: when a refactor leaves the worst function lower, lower the ceiling to match (the report says when). A new function too complex to fit is a sign to extract hooks, sub-components or pure helpers, not to raise the ceiling. One quirk of the plugin (4.2.2): a ternary branch that is itself a function (`cond ? () => true : fn`) adds a level of nesting to everything after it in the enclosing function, so hoist such a function to a named constant. See [`scripts/complexity-report.mjs`](scripts/complexity-report.mjs)
 - `pnpm audit-defaults` — regenerate the lint plugin's defaults registry (`src/eslint-plugin/defaults.generated.ts`). **Run whenever you change a default prop value.** `pnpm test` fails until the registry matches what the components actually render — see [eslint-plugin.md](docs/rules/eslint-plugin.md).
 - `pnpm run update-tasty` / `pnpm run update-glaze` — bump and pin `@tenphi/tasty` or `@tenphi/glaze` to the latest version. Pass `--version=X.Y.Z` to pin a specific version.

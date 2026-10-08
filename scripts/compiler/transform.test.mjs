@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
+import { moduleSpecifiers } from './check-package.mjs';
 import { checkReport, compileReact } from './transform.mjs';
 
 const filename = '/consumer/Counter.tsx';
 
 describe('React Compiler coverage gate', () => {
-  it('emits the React 18 runtime for a compiled component', () => {
+  it('emits the native React 19 runtime for a compiled component', () => {
     const result = compileReact(
       `
       import { useState } from 'react';
@@ -16,7 +17,7 @@ describe('React Compiler coverage gate', () => {
     `,
       filename,
     );
-    expect(result.code).toContain('react-compiler-runtime');
+    expect(moduleSpecifiers(result.code)).toContain('react/compiler-runtime');
     expect(result.report.compiled).toContain('Counter');
     expect(result.report.diagnostics).toEqual({});
   });

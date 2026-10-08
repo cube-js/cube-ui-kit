@@ -74,7 +74,7 @@
     "clear:dist": "rimraf ./dist",
     "prepack": "node scripts/prepare-docs.mjs",
     "postpack": "node scripts/cleanup-docs.mjs",
-    "release": "pnpm build && changeset publish --provenance",
+    "release": "pnpm build && pnpm check:react-package && changeset publish --provenance",
     "add-icons": "cd src/icons && node add-new-icon.js && pnpm fix",
     "audit-docs": "node scripts/audit-docs.mjs",
     "audit-defaults": "UPDATE_DEFAULTS=1 vitest run src/eslint-plugin/defaults.test.ts && prettier --write src/eslint-plugin/defaults.generated.ts",
@@ -83,15 +83,17 @@
     "diagnostics:complexity": "node scripts/complexity-report.mjs",
     "update-tasty": "pnpm add @tenphi/tasty@${npm_config_version:-latest} --save-exact",
     "update-glaze": "pnpm add @tenphi/glaze@${npm_config_version:-latest} --save-exact",
-    "test:form-compiled": "vitest run --config vitest.form-compiled.config.ts"
+    "test:form-compiled": "vitest run --config vitest.form-compiled.config.ts",
+    "diagnostics:hooks": "node scripts/hooks-diagnostics.mjs",
+    "check:react-package": "node scripts/compiler/check-package.mjs"
   },
   "keywords": [
     "uikit"
   ],
   "author": "Cube Dev Team",
   "peerDependencies": {
-    "react": "^18.0.0 || ^19.0.0",
-    "react-dom": "^18.0.0 || ^19.0.0"
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
   },
   "dependencies": {
     "@internationalized/date": "^3.12.4",
@@ -117,11 +119,9 @@
     "prism-react-renderer": "^2.4.1",
     "prismjs": "^1.30.0",
     "react-aria": "^3.52.1",
-    "react-compiler-runtime": "1.0.0",
     "react-focus-lock": "^2.13.5",
     "react-hotkeys-hook": "^5.1.0",
     "react-i18next": "^17.0.8",
-    "react-is": "^18.3.1",
     "react-keyed-flatten-children": "^1.3.0",
     "react-stately": "^3.50.0",
     "react-types": "^0.1.0",
@@ -155,10 +155,8 @@
     "@types/babel__core": "^7.20.5",
     "@types/babel__helper-plugin-utils": "^7.10.3",
     "@types/node": "^24.0.0",
-    "@types/react": "^19.1.10",
-    "@types/react-dom": "^19.1.7",
-    "@types/react-is": "^18.2.4",
-    "@types/react-test-renderer": "^18.0.7",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
     "@types/use-sync-external-store": "1.7.0",
     "@typescript-eslint/parser": "^8.69.0",
     "@uiw/react-codemirror": "^4.25.4",
@@ -184,10 +182,9 @@
     "oxlint": "^1.72.0",
     "playwright": "^1.62.1",
     "prettier": "^3.2.5",
-    "react": "^19.1.1",
-    "react-dom": "^19.1.1",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
     "react-router": "^6.22.3",
-    "react-test-renderer": "^19.1.1",
     "remark-gfm": "^4.0.1",
     "rimraf": "^6.0.1",
     "serve-handler": "^6.1.6",

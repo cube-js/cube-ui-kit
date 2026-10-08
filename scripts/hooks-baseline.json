@@ -1,0 +1,270 @@
+{
+  "tooling": {
+    "eslint": "10.8.0",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "@typescript-eslint/parser": "8.69.0"
+  },
+  "filesLinted": 682,
+  "files": {
+    "src/_internal/hooks/use-deprecation-warning.ts": {
+      "react-hooks/exhaustive-deps": 2
+    },
+    "src/_internal/hooks/use-effect-once.ts": {
+      "react-hooks/exhaustive-deps": 1
+    },
+    "src/_internal/hooks/use-is-first-render.ts": { "react-hooks/refs": 3 },
+    "src/_internal/hooks/use-timer/use-timer.ts": {
+      "react-hooks/exhaustive-deps": 2,
+      "react-hooks/set-state-in-effect": 2
+    },
+    "src/_internal/hooks/use-update-effect.ts": {
+      "react-hooks/exhaustive-deps": 2
+    },
+    "src/_internal/hooks/use-warn.ts": { "react-hooks/refs": 2 },
+    "src/components/actions/CommandMenu/CommandMenu.tsx": {
+      "react-hooks/exhaustive-deps": 1,
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/actions/Menu/SubMenuTrigger.tsx": {
+      "react-hooks/exhaustive-deps": 4,
+      "react-hooks/immutability": 9
+    },
+    "src/components/actions/use-anchored-menu.tsx": {
+      "react-hooks/exhaustive-deps": 1
+    },
+    "src/components/actions/use-context-menu.tsx": {
+      "react-hooks/exhaustive-deps": 2
+    },
+    "src/components/content/Layout/Layout.tsx": {
+      "react-hooks/exhaustive-deps": 1,
+      "react-hooks/immutability": 2,
+      "react-hooks/preserve-manual-memoization": 4
+    },
+    "src/components/content/Layout/LayoutPane.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/content/Layout/LayoutPanel.tsx": {
+      "react-hooks/exhaustive-deps": 1,
+      "react-hooks/immutability": 1,
+      "react-hooks/preserve-manual-memoization": 2,
+      "react-hooks/set-state-in-effect": 2
+    },
+    "src/components/content/PrismCode/PrismCode.tsx": {
+      "react-hooks/immutability": 1
+    },
+    "src/components/content/Tree/Tree.tsx": {
+      "react-hooks/exhaustive-deps": 2,
+      "react-hooks/incompatible-library": 1
+    },
+    "src/components/content/Tree/TreeNode.tsx": { "react-hooks/refs": 3 },
+    "src/components/data/DataTable/DataTable.tsx": { "react-hooks/refs": 1 },
+    "src/components/data/TableBase/TableView.tsx": {
+      "react-hooks/incompatible-library": 1
+    },
+    "src/components/data/TableBase/use-scrollability.ts": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/data/TableBase/use-table-selection.ts": {
+      "react-hooks/refs": 1
+    },
+    "src/components/data/TableBase/use-table-storage.ts": {
+      "react-hooks/refs": 1
+    },
+    "src/components/fields/Checkbox/Checkbox.tsx": {
+      "react-hooks/immutability": 1,
+      "react-hooks/preserve-manual-memoization": 1,
+      "react-hooks/rules-of-hooks": 2
+    },
+    "src/components/fields/ColorSwatchGroup/ColorSwatchGroup.tsx": {
+      "react-hooks/refs": 1
+    },
+    "src/components/fields/ComboBox/ComboBox.tsx": {
+      "react-hooks/exhaustive-deps": 4,
+      "react-hooks/immutability": 1,
+      "react-hooks/preserve-manual-memoization": 2,
+      "react-hooks/refs": 3,
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/fields/CommandTextArea/CommandTextArea.tsx": {
+      "react-hooks/exhaustive-deps": 3,
+      "react-hooks/preserve-manual-memoization": 1,
+      "react-hooks/refs": 8,
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/fields/DatePicker/DateInput.tsx": {
+      "react-hooks/immutability": 1
+    },
+    "src/components/fields/DatePicker/DatePickerInput.tsx": {
+      "react-hooks/immutability": 1
+    },
+    "src/components/fields/FileInput/FileInput.tsx": {
+      "react-hooks/immutability": 1,
+      "react-hooks/refs": 1
+    },
+    "src/components/fields/FilterListBox/FilterListBox.tsx": {
+      "react-hooks/exhaustive-deps": 1,
+      "react-hooks/rules-of-hooks": 1
+    },
+    "src/components/fields/ListBox/ListBox.tsx": {
+      "react-hooks/exhaustive-deps": 2,
+      "react-hooks/incompatible-library": 1,
+      "react-hooks/refs": 2
+    },
+    "src/components/fields/Picker/Picker.tsx": {
+      "react-hooks/exhaustive-deps": 1
+    },
+    "src/components/fields/SearchComboBox/SearchComboBox.tsx": {
+      "react-hooks/exhaustive-deps": 2,
+      "react-hooks/refs": 6,
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/fields/Select/Select.tsx": {
+      "react-hooks/exhaustive-deps": 1,
+      "react-hooks/immutability": 1,
+      "react-hooks/preserve-manual-memoization": 1
+    },
+    "src/components/fields/Slider/SliderBase.tsx": { "react-hooks/refs": 1 },
+    "src/components/fields/TextInput/TextInputBase.tsx": {
+      "react-hooks/rules-of-hooks": 6
+    },
+    "src/components/fields/TextInput/useAutoSizeTextArea.ts": {
+      "react-hooks/refs": 4
+    },
+    "src/components/fields/TextInputMapper/TextInputMapper.tsx": {
+      "react-hooks/exhaustive-deps": 4,
+      "react-hooks/refs": 2,
+      "react-hooks/set-state-in-effect": 1,
+      "react-hooks/use-memo": 1
+    },
+    "src/components/form/Form/Field.tsx": { "react-hooks/immutability": 1 },
+    "src/components/form/Form/Form.tsx": { "react-hooks/refs": 6 },
+    "src/components/form/Form/use-field/use-field.ts": {
+      "react-hooks/exhaustive-deps": 2
+    },
+    "src/components/form/Form/use-form.tsx": {
+      "react-hooks/immutability": 1,
+      "react-hooks/refs": 6
+    },
+    "src/components/GridProvider.tsx": { "react-hooks/exhaustive-deps": 3 },
+    "src/components/helpers/DisplayTransition/DisplayTransition.tsx": {
+      "react-hooks/exhaustive-deps": 2,
+      "react-hooks/refs": 4
+    },
+    "src/components/helpers/IconSwitch/IconSwitch.tsx": {
+      "react-hooks/refs": 3
+    },
+    "src/components/layout/Board/Board.tsx": {
+      "react-hooks/exhaustive-deps": 5,
+      "react-hooks/refs": 2,
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/layout/Board/BoardProvider.tsx": { "react-hooks/refs": 3 },
+    "src/components/layout/Board/BoardResponsive.tsx": {
+      "react-hooks/refs": 2
+    },
+    "src/components/layout/Board/use-board-layout.ts": {
+      "react-hooks/refs": 1
+    },
+    "src/components/layout/Board/use-board-registry.ts": {
+      "react-hooks/refs": 1
+    },
+    "src/components/layout/Board/use-board-selection.ts": {
+      "react-hooks/refs": 1,
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/layout/Board/Widget.tsx": { "react-hooks/refs": 2 },
+    "src/components/layout/Board/WidgetHost.tsx": { "react-hooks/refs": 1 },
+    "src/components/layout/ResizablePanel.tsx": {
+      "react-hooks/exhaustive-deps": 3,
+      "react-hooks/immutability": 2
+    },
+    "src/components/navigation/Tabs/TabPanel.tsx": { "react-hooks/refs": 1 },
+    "src/components/navigation/Tabs/Tabs.tsx": { "react-hooks/refs": 2 },
+    "src/components/navigation/Tabs/use-tab-indicator.ts": {
+      "react-hooks/exhaustive-deps": 2
+    },
+    "src/components/other/Calendar/PeriodGrid.tsx": { "react-hooks/refs": 1 },
+    "src/components/overlays/Dialog/Dialog.tsx": {
+      "react-hooks/exhaustive-deps": 1
+    },
+    "src/components/overlays/Dialog/DialogTrigger.tsx": {
+      "react-hooks/exhaustive-deps": 2,
+      "react-hooks/immutability": 2,
+      "react-hooks/refs": 2
+    },
+    "src/components/overlays/Dialog/use-dialog-container.tsx": {
+      "react-hooks/exhaustive-deps": 1
+    },
+    "src/components/overlays/Modal/Overlay.tsx": { "react-hooks/refs": 2 },
+    "src/components/overlays/Notifications/Notification.tsx": {
+      "react-hooks/exhaustive-deps": 2
+    },
+    "src/components/overlays/Notifications/OverlayContainer.tsx": {
+      "react-hooks/exhaustive-deps": 3,
+      "react-hooks/set-state-in-effect": 2
+    },
+    "src/components/overlays/Notifications/OverlayProvider.tsx": {
+      "react-hooks/exhaustive-deps": 3,
+      "react-hooks/refs": 1
+    },
+    "src/components/overlays/Notifications/use-notification-state.ts": {
+      "react-hooks/refs": 1
+    },
+    "src/components/overlays/Notifications/use-notifications.ts": {
+      "react-hooks/exhaustive-deps": 1,
+      "react-hooks/refs": 10
+    },
+    "src/components/overlays/Notifications/use-overlay-timers.ts": {
+      "react-hooks/exhaustive-deps": 1,
+      "react-hooks/refs": 10
+    },
+    "src/components/overlays/Notifications/use-toast-state.ts": {
+      "react-hooks/refs": 1
+    },
+    "src/components/overlays/Toast/index.ts": {
+      "react-hooks/exhaustive-deps": 2
+    },
+    "src/components/overlays/Toast/useProgressToast.tsx": {
+      "react-hooks/refs": 1
+    },
+    "src/components/overlays/Toast/useToast.tsx": {
+      "react-hooks/immutability": 5
+    },
+    "src/components/overlays/Tooltip/Tooltip.tsx": {
+      "react-hooks/exhaustive-deps": 1
+    },
+    "src/components/portal/usePortal.ts": {
+      "react-hooks/refs": 1,
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/Root.tsx": { "react-hooks/exhaustive-deps": 1 },
+    "src/components/shared/DraggableCollection.tsx": { "react-hooks/refs": 1 },
+    "src/components/status/LoadingAnimation/LoadingAnimation.tsx": {
+      "react-hooks/exhaustive-deps": 1
+    },
+    "src/icons/DirectionIcon.tsx": { "react-hooks/exhaustive-deps": 1 },
+    "src/provider.tsx": { "react-hooks/refs": 1 },
+    "src/utils/react/RenderCache.tsx": { "react-hooks/refs": 5 },
+    "src/utils/react/useBufferedValue.ts": { "react-hooks/refs": 4 },
+    "src/utils/react/useEventBus.ts": { "react-hooks/exhaustive-deps": 2 },
+    "src/utils/react/useId.tsx": {
+      "react-hooks/exhaustive-deps": 1,
+      "react-hooks/refs": 2
+    },
+    "src/utils/react/useIsDarwin.ts": { "react-hooks/set-state-in-effect": 1 },
+    "src/utils/react/useMergeStyles.ts": {
+      "react-hooks/exhaustive-deps": 2,
+      "react-hooks/use-memo": 1
+    }
+  },
+  "totals": {
+    "react-hooks/exhaustive-deps": 79,
+    "react-hooks/immutability": 30,
+    "react-hooks/incompatible-library": 3,
+    "react-hooks/preserve-manual-memoization": 11,
+    "react-hooks/refs": 117,
+    "react-hooks/rules-of-hooks": 9,
+    "react-hooks/set-state-in-effect": 17,
+    "react-hooks/use-memo": 2
+  }
+}

@@ -28,7 +28,7 @@ Peer dependencies:
 pnpm add react react-dom
 ```
 
-React 18 and 19 are both supported.
+React and React DOM 19.3 or newer are required (React 19). Upgrade both together before adopting this release. UI Kit ships compiled output using the native React compiler runtime; applications do not need to enable React Compiler.
 
 ## Quick Start
 

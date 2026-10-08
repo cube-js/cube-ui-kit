@@ -102,11 +102,11 @@ Every mutation rerenders the whole owner subtree because the only publication me
 
 ## React Hooks / Compiler diagnostics (report-only)
 
-`pnpm diagnostics:form` runs the official `eslint-plugin-react-hooks` 7.1.1 rules (the compiler-backed set: `rules-of-hooks`, `exhaustive-deps`, `refs`, `immutability`, `set-state-in-effect`, `preserve-manual-memoization`, `use-memo`, `incompatible-library`, …) over the Form surface and the input components through `eslint.hooks.config.mjs`. It is not part of `pnpm lint`; every rule is `warn`, and the committed [`diagnostics-baseline.json`](./diagnostics-baseline.json) is a ratchet:
+`pnpm diagnostics:form` runs the official `eslint-plugin-react-hooks` 7.1.1 rules (the compiler-backed set: `rules-of-hooks`, `exhaustive-deps`, `refs`, `immutability`, `set-state-in-effect`, `preserve-manual-memoization`, `use-memo`, `incompatible-library`, …) over the Form surface and the input components through `eslint.hooks.config.mjs`. The Form command is a filtered view of the whole-runtime-source ratchet in [`scripts/hooks-baseline.json`](../../../../../scripts/hooks-baseline.json). Recommended rules record existing debt; Effect Event adopters also pass strict hook/dependency rules without inline suppressions. CI checks the shared baseline:
 
 - `pnpm diagnostics:form` prints the report and never fails.
 - `pnpm diagnostics:form --check` fails if any file+rule count grew against the baseline.
-- `pnpm diagnostics:form --update` rewrites the baseline after a reviewed change (a decrease should always be committed).
+- `pnpm diagnostics:hooks --update` rewrites the baseline after a reviewed change (a decrease should always be committed).
 - `--verbose` lists every message; `--json` dumps the raw report.
 
 Baseline on `b204a4d7`: 114 diagnostics. After the dual-backend shell (plan Phase 3) `use-field-props.tsx` has no findings — its five conditional hooks and the render-phase ref read are gone — `use-field.ts` lost the effect that reassigned a render variable, and the remaining legacy-engine findings sit in `use-field.ts`, `use-form.tsx`, `Form.tsx` and `Field.tsx`, the legacy adapter modules. Current counts (also the committed baseline):

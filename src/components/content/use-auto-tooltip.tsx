@@ -337,9 +337,9 @@ export function useAutoTooltip({
   ]);
 
   // The callback refs own the observer: React hands them `null` when a node
-  // goes away. An unmount effect must not repeat that. React 18 Strict Mode
-  // replays effects without re-attaching refs, so the replay would drop the
-  // nodes and observer for good and strand the queued check.
+  // goes away. Effect cleanup must not discard nodes still owned by refs:
+  // reconnecting effects would otherwise strand queued measurements. Let
+  // attachment/detachment update observer ownership symmetrically.
   const attachMeasuredNode = useCallback(
     (part: 'label' | 'description', element: HTMLElement | null) => {
       const measured = measuredRef.current;

@@ -2,7 +2,7 @@ import { ReactNode, useEffect, useRef } from 'react';
 
 import { act, renderHook } from '../../test';
 
-import { EventBusProvider, useEventBus } from './useEventBus';
+import { EventBusContext, EventBusProvider, useEventBus } from './useEventBus';
 import { useDismissParentPopover, usePopoverSync } from './usePopoverSync';
 
 const HookWrapper = ({ children }: { children: ReactNode }) => (
@@ -14,6 +14,76 @@ const flushBus = () =>
   act(() => new Promise((resolve) => setTimeout(resolve, 0)));
 
 describe('usePopoverSync', () => {
+  it('keeps subscriptions with fresh callbacks/refs and cleans up on disable and unmount', () => {
+    const listeners = new Map<string, (data: any) => void>();
+    const off = vi.fn();
+    const on = vi.fn((event: string, listener: (data: any) => void) => {
+      listeners.set(event, listener);
+      return () => {
+        off(event);
+        listeners.delete(event);
+      };
+    });
+    const emit = vi.fn();
+    const bus = { on, off, emit, emitSync: vi.fn() };
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <EventBusContext.Provider value={bus}>
+        {children}
+      </EventBusContext.Provider>
+    );
+    const first = vi.fn();
+    const second = vi.fn();
+    const container = document.createElement('div');
+    const button = document.createElement('button');
+    container.append(button);
+    const { rerender, unmount } = renderHook(
+      ({ onClose, containerRef, enabled }) =>
+        usePopoverSync({
+          menuId: 'registration',
+          isOpen: true,
+          onClose,
+          containerRef,
+          enabled,
+        }),
+      {
+        wrapper,
+        initialProps: {
+          onClose: first,
+          containerRef: { current: document.createElement('div') },
+          enabled: true,
+        },
+      },
+    );
+    expect(on).toHaveBeenCalledTimes(2);
+    rerender({
+      onClose: second,
+      containerRef: { current: container },
+      enabled: true,
+    });
+    expect(on).toHaveBeenCalledTimes(2);
+    expect(off).not.toHaveBeenCalled();
+    act(() => listeners.get('popover:dismiss-ancestor')?.({ from: button }));
+    expect(first).not.toHaveBeenCalled();
+    expect(second).toHaveBeenCalledTimes(1);
+    rerender({
+      onClose: second,
+      containerRef: { current: container },
+      enabled: false,
+    });
+    expect(off).toHaveBeenCalledTimes(2);
+    expect(listeners.size).toBe(0);
+    rerender({
+      onClose: second,
+      containerRef: { current: container },
+      enabled: true,
+    });
+    expect(on).toHaveBeenCalledTimes(4);
+    expect(emit).toHaveBeenCalledTimes(2);
+    unmount();
+    expect(off).toHaveBeenCalledTimes(4);
+    expect(listeners.size).toBe(0);
+  });
+
   it('emits popover:open once on the false -> true transition and not on idle re-renders', async () => {
     const observer = vi.fn();
 

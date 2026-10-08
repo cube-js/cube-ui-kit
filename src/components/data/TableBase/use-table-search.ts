@@ -1,7 +1,7 @@
 import { useControlledState } from '@react-stately/utils';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
 
-import { useDebouncedValue, useEvent } from '../../../_internal/hooks';
+import { useDebouncedValue } from '../../../_internal/hooks/use-debounced-value';
 
 import { getColumnText } from './use-table-columns';
 
@@ -107,20 +107,19 @@ export function useTableSearch<T>({
     setDraft(committed);
   }, [committed]);
 
+  const commitSearch = useEffectEvent((next: string) => setCommitted(next));
+
   useEffect(() => {
     if (debounced === pushedRef.current) return;
 
     pushedRef.current = debounced;
-    setCommitted(debounced);
-    // `committed` is deliberately not a dependency: reacting to it here would
-    // fight the effect above and push a stale draft back out.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    commitSearch(debounced);
   }, [debounced]);
 
   const searchValue = draft;
   const query = debounced.trim().toLowerCase();
 
-  const setSearchValue = useEvent((next: string) => setDraft(next));
+  const setSearchValue = setDraft;
 
   const searchedRows = useMemo(() => {
     if (mode !== 'client' || !query) return rows;
