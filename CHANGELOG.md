@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.190.8
+
+### Patch Changes
+
+- [#1486](https://github.com/cube-js/cube-ui-kit/pull/1486) [`d6123e27`](https://github.com/cube-js/cube-ui-kit/commit/d6123e27854dc42390d0fb70553d008b24dea8a8) Thanks [@tenphi](https://github.com/tenphi)! - Update React Aria to 3.52.1, React Stately to 3.50.0 and the related Adobe accessibility and internationalization packages together. Preserve UI Kit's overlay dismissal, field keyboard handling and Menu callback contracts while adopting the consolidated upstream types.
+
+  Custom calendar implementations supplied to date controls must implement the new `@internationalized/date` methods `getMaximumMonthsInYear` and `getMaximumDaysInMonth`. Built-in calendars already support them.
+
 ## 0.190.7
 
 ### Patch Changes
