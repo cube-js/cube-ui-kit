@@ -106,7 +106,11 @@ describe('Select native keyboard selection on macOS', () => {
         document.activeElement as HTMLElement,
       );
       onOpenChange.mockClear();
-      await act(() => userEvent.keyboard('{ArrowDown}{Enter}'));
+      await act(() => userEvent.keyboard('{ArrowDown}'));
+      await waitFor(() =>
+        expect(screen.getByRole('option', { name: 'Red' })).toHaveFocus(),
+      );
+      await act(() => userEvent.keyboard('{Enter}'));
       expect(trigger).toHaveTextContent('Red');
       expect(onSelectionChange).toHaveBeenCalledExactlyOnceWith('red');
       expect(onKeyDown).toHaveBeenCalledTimes(1);
@@ -183,6 +187,7 @@ describe('Select native keyboard selection on macOS', () => {
   it('preserves Enter activation of a link option', async () => {
     const originalUrl = location.href;
     const onClick = vi.fn();
+    const onKeyDown = vi.fn();
     renderWithRoot(
       <Select label="Destination" defaultSelectedKey="blue">
         <Select.Item key="blue">Blue</Select.Item>
@@ -191,6 +196,7 @@ describe('Select native keyboard selection on macOS', () => {
           as="a"
           href="#select-destination"
           onClick={onClick}
+          onKeyDown={onKeyDown}
         >
           Destination
         </Select.Item>
@@ -205,7 +211,12 @@ describe('Select native keyboard selection on macOS', () => {
       );
       await act(() => userEvent.keyboard('{Enter}'));
       expect(location.hash).toBe('#select-destination');
-      expect(onClick).toHaveBeenCalledTimes(1);
+      expect(onKeyDown).toHaveBeenCalledTimes(1);
+      expect(onKeyDown.mock.calls[0][0].nativeEvent.isTrusted).toBe(true);
+      expect(onKeyDown.mock.calls[0][0].nativeEvent.defaultPrevented).toBe(
+        false,
+      );
+      expect(onClick).toHaveBeenCalled();
     } finally {
       history.replaceState(null, '', originalUrl);
     }
