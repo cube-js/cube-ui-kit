@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.190.9
+
+### Patch Changes
+
+- [#1490](https://github.com/cube-js/cube-ui-kit/pull/1490) [`b0a1c506`](https://github.com/cube-js/cube-ui-kit/commit/b0a1c50665a3c59aadae7f0e21aa017b66fabafa) Thanks [@tenphi](https://github.com/tenphi)! - Keep Select closed after choosing an option with Enter on macOS, while preserving focus restoration, Control+Enter context menus, and native link and nested control activation.
+
 ## 0.190.8
 
 ### Patch Changes
