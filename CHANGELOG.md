@@ -1,5 +1,15 @@
 # @cube-dev/ui-kit
 
+## 0.191.0
+
+### Minor Changes
+
+- [#1489](https://github.com/cube-js/cube-ui-kit/pull/1489) [`d4c46ef7`](https://github.com/cube-js/cube-ui-kit/commit/d4c46ef7078121cb524851e8c435084dfe7ecd8b) Thanks [@tenphi](https://github.com/tenphi)! - Require React and React DOM 19.3 or newer. Upgrade both together before adopting this release. UI Kit now uses React's native compiler runtime and no longer supports React 18. Applications do not need to enable React Compiler to use the compiled package. Table search, popover subscriptions, portal mount notifications, drag cancellation and panel resize notifications use Effect Events to read current callback data while preserving their lifecycle behavior. ResizablePanel now accepts controlled size updates to zero. Probe output normalizes React 19.3 generated IDs.
+
+### Patch Changes
+
+- [#1492](https://github.com/cube-js/cube-ui-kit/pull/1492) [`d9c8cb20`](https://github.com/cube-js/cube-ui-kit/commit/d9c8cb205e02a818c8617544276bd891713eb740) Thanks [@tenphi](https://github.com/tenphi)! - Keep Layout.Panel slide animations and resize handles inside their Layout bounds, and move the main content in sync with panel toggling. Temporarily clip the Layout during panel motion and restore its configured overflow once all panels settle, without changing inherited pointer interaction.
+
 ## 0.190.9
 
 ### Patch Changes
