@@ -127,8 +127,11 @@ export function PickerConsumer() {
         selectedKey={selectedKey}
         onSelectionChange={(key) => setSelectedKey(key as string)}
       >
-        <FilterPicker.Item key="apple">Apple</FilterPicker.Item>
-        <FilterPicker.Item key="banana">Banana</FilterPicker.Item>
+        {/* Sections render without virtualization; jsdom has no list geometry. */}
+        <FilterPicker.Section title="Options">
+          <FilterPicker.Item key="apple">Apple</FilterPicker.Item>
+          <FilterPicker.Item key="banana">Banana</FilterPicker.Item>
+        </FilterPicker.Section>
       </FilterPicker>
       <output aria-label="Selection">{selectedKey ?? 'Empty'}</output>
     </Root>
