@@ -2,6 +2,7 @@ import {
   createContext,
   MutableRefObject,
   ReactNode,
+  useCallback,
   useContext,
   useMemo,
   useRef,
@@ -216,10 +217,10 @@ export function LayoutProvider({
     overlayPanelCallbacks.current.forEach((dismiss) => dismiss());
   });
 
-  const registerPanelTransition = useEvent(() => {
+  const registerPanelTransition = useCallback(() => {
     setPanelTransitionCount((count) => count + 1);
     return () => setPanelTransitionCount((count) => count - 1);
-  });
+  }, [setPanelTransitionCount]);
 
   const updateContainerSize = useEvent((width: number, height: number) => {
     setContainerWidth((prev) => (prev === width ? prev : width));
