@@ -65,8 +65,8 @@ Choose a different component when the interaction has another shape:
 - **`selectAllLabel`** `string` (default: `All`) — Label for the "Select All" option
 - **`description`** `string` — Field description
 - **`message`** `string` — Help or error message
-- **`listBoxStyles`** `Styles` — Custom styles for the dropdown list container within the popover
-- **`popoverStyles`** `Styles` — Custom styles for the popover dialog that contains the FilterListBox
+- **`listBoxStyles`** `Styles` — Custom styles for the dropdown list container in every dialog presentation
+- **`popoverStyles`** `Styles` — Custom styles for the dialog container in every presentation
 - **`triggerStyles`** `Styles` — Custom styles for the trigger button element
 - **`triggerTooltip`** `string | TooltipProps` — Tooltip for the trigger button (separate from `labelTooltip`)
 - **`triggerDescription`** `string` — Description for the trigger button (separate from field description)
@@ -120,7 +120,7 @@ Customizes the trigger button element.
 
 #### listBoxStyles
 
-Customizes the dropdown list container within the popover.
+Customizes the dropdown list container in every dialog presentation.
 
 **Sub-elements:**
 
@@ -128,7 +128,7 @@ Customizes the dropdown list container within the popover.
 
 #### popoverStyles
 
-Customizes the popover dialog that contains the FilterListBox.
+Customizes the Dialog that contains the FilterListBox in every presentation. Popover sizing defaults apply only to the effective `popover` presentation; these consumer styles apply afterward.
 
 **Sub-elements:**
 

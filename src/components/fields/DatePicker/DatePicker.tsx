@@ -181,7 +181,11 @@ function DatePicker<T extends DateValue>(
             {...mergeProps(buttonProps, focusPropsButton)}
             isDisabled={isDisabled}
           />
-          <Dialog {...dialogProps} width={{ 'type=popover': 'max-content' }}>
+          <Dialog
+            {...dialogProps}
+            width={{ 'type=popover': 'max-content' }}
+            overflow="auto"
+          >
             <Calendar {...calendarProps} />
             {showTimeField && (
               <TimeInput

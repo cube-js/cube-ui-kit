@@ -48,10 +48,13 @@ import { ColorSwatchGroup, CubeColorSwatchItem } from '../ColorSwatchGroup';
 import type { CubeDialogTriggerProps } from '../../overlays/Dialog/DialogTrigger';
 
 /**
- * A popover caps its height at half the viewport. The panel can exceed that on
- * a short screen, and would otherwise spill outside the popover's own border.
+ * Keep every panel control reachable when the dialog height is limited by a
+ * short viewport.
  */
-const POPOVER_STYLES: Styles = { overflow: { 'type=popover': 'auto' } };
+const DIALOG_STYLES: Styles = {
+  overflow: 'auto',
+  padding: { '!type=popover': '5x top' },
+};
 
 /**
  * The rule separating the palette from the editor. `Divider` is not used: it
@@ -298,7 +301,7 @@ export const ColorPicker = forwardRef(function ColorPicker(
         <Dialog
           aria-label="Color picker"
           width={{ 'type=popover': 'max-content' }}
-          styles={POPOVER_STYLES}
+          styles={DIALOG_STYLES}
         >
           {/* Marks the subtree so a nested swatch group drops its custom-color
               escape hatch, which is a picker and would recurse forever. */}

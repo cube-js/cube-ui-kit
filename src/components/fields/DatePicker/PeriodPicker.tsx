@@ -221,7 +221,12 @@ function PeriodPickerImpl<T extends DateValue>(
             isReadOnly={isReadOnly}
             styles={props.triggerStyles}
           />
-          <Dialog {...dialogProps} width={{ 'type=popover': 'max-content' }}>
+          <Dialog
+            {...dialogProps}
+            width={{ 'type=popover': 'max-content' }}
+            overflow="auto"
+            padding={{ '!type=popover': '5x top' }}
+          >
             {panel}
           </Dialog>
         </DialogTrigger>

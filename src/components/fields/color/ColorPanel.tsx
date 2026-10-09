@@ -28,7 +28,7 @@ const PanelElement = tasty({
     flow: 'row',
     gap: '1x',
     padding: '1x',
-    width: '34x',
+    width: '0 34x (100% - 2x)',
   },
 });
 
@@ -166,7 +166,7 @@ function ChannelRow({ channel, color, isDisabled, onChange }: ChannelRowProps) {
 }
 
 /**
- * The popover body shared by `ColorInput` and `ColorPicker`: a preview, a
+ * The dialog body shared by `ColorInput` and `ColorPicker`: a preview, a
  * switch between the three color concepts, and one gradient slider per channel
  * of the active one.
  */

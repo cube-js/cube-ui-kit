@@ -196,7 +196,11 @@ function DateRangePicker<T extends DateValue>(
             {...mergeProps(buttonProps, focusPropsButton)}
             isDisabled={isDisabled}
           />
-          <Dialog {...dialogProps} width={{ 'type=popover': 'max-content' }}>
+          <Dialog
+            {...dialogProps}
+            width={{ 'type=popover': 'max-content' }}
+            overflow="auto"
+          >
             <RangeCalendar
               {...calendarProps}
               isDateUnavailable={props.isDateUnavailable}

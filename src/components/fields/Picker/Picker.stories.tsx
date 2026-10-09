@@ -19,7 +19,7 @@ const meta = {
   parameters: {
     layout: 'centered',
   },
-  argTypes: PICKER_DIALOG_ARGS,
+  argTypes: { ...PICKER_DIALOG_ARGS },
   tags: ['autodocs'],
 } satisfies Meta<typeof Picker>;
 

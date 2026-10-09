@@ -264,6 +264,7 @@ function DateRangeSeparatedPicker<T extends DateValue>(
             <Dialog
               {...startProps.dialogProps}
               width={{ 'type=popover': 'max-content' }}
+              overflow="auto"
             >
               <Calendar
                 {...startProps.calendarProps}
@@ -328,6 +329,7 @@ function DateRangeSeparatedPicker<T extends DateValue>(
             <Dialog
               {...endProps.dialogProps}
               width={{ 'type=popover': 'max-content' }}
+              overflow="auto"
             >
               <Calendar
                 {...endProps.calendarProps}

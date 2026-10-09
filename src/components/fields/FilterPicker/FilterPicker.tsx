@@ -93,9 +93,9 @@ export interface CubeFilterPickerProps<T>
   placeholder?: string;
   /** Size of the picker component */
   size?: 'small' | 'medium' | 'large';
-  /** Custom styles for the list box popover */
+  /** Custom styles for the list box in every dialog presentation. */
   listBoxStyles?: Styles;
-  /** Custom styles for the popover container */
+  /** Custom styles for the dialog container in every presentation. */
   popoverStyles?: Styles;
   /** Custom styles for the trigger button */
   triggerStyles?: Styles;

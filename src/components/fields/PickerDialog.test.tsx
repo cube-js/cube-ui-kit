@@ -1,14 +1,9 @@
 import { parseDate } from '@internationalized/date';
+import { act, screen, waitFor, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 
-import {
-  act,
-  renderWithRoot,
-  screen,
-  userEvent,
-  waitFor,
-  within,
-} from '../../test';
 import { pickerDialogCases } from '../../test/picker-dialog';
+import { renderWithRoot } from '../../test/render';
 
 import { ColorInput } from './ColorInput/ColorInput';
 import { ColorPicker } from './ColorPicker/ColorPicker';

@@ -266,12 +266,12 @@ const meta: Meta<typeof FilterPicker> = {
     listBoxStyles: {
       control: false,
       description:
-        'Custom styles for the dropdown list container within the popover',
+        'Custom styles for the dropdown list container in every dialog presentation',
     },
     popoverStyles: {
       control: false,
       description:
-        'Custom styles for the popover dialog that contains the FilterListBox',
+        'Custom styles for the dialog container in every presentation',
     },
     triggerStyles: {
       control: false,

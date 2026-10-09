@@ -67,8 +67,8 @@ Choose a different component when the interaction has another shape:
 - **`renderSummary`** `((args: { selectedLabels, selectedKeys, selectionMode }) => ReactNode) | false` — Custom renderer for the summary shown inside the trigger
 - **`header`** `ReactNode` — Custom header content in the popover
 - **`footer`** `ReactNode` — Custom footer content in the popover
-- **`listBoxStyles`** `Styles` — Custom styles for the ListBox within the popover
-- **`popoverStyles`** `Styles` — Custom styles for the popover container
+- **`listBoxStyles`** `Styles` — Custom styles for the ListBox in every dialog presentation
+- **`popoverStyles`** `Styles` — Custom styles for the dialog container in every presentation
 - **`triggerStyles`** `Styles` — Custom styles for the trigger button
 - **`triggerTooltip`** `string | TooltipProps` — Tooltip for the trigger button (separate from `labelTooltip`)
 - **`triggerDescription`** `string` — Description for the trigger button (separate from field description)
@@ -109,7 +109,7 @@ Customizes the DialogTrigger wrapper that contains the trigger button and manage
 
 #### listBoxStyles
 
-Customizes the ListBox component styles within the popover. See [ListBox documentation](/docs/forms-listbox--docs) for available sub-elements.
+Customizes the ListBox component styles in every dialog presentation. See [ListBox documentation](/docs/forms-listbox--docs) for available sub-elements.
 
 **Sub-elements:**
 
@@ -121,7 +121,7 @@ Customizes the ListBox component styles within the popover. See [ListBox documen
 
 #### popoverStyles
 
-Customizes the popover Dialog that contains the ListBox. See [Dialog documentation](/docs/overlays-dialog--docs) for available sub-elements.
+Customizes the Dialog that contains the ListBox in every presentation. Popover sizing defaults apply only to the effective `popover` presentation; these consumer styles apply afterward. See [Dialog documentation](/docs/overlays-dialog--docs) for available sub-elements.
 
 **Sub-elements:**
 
