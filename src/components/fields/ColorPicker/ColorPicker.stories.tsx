@@ -3,6 +3,10 @@ import { useState } from 'react';
 
 import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
+import {
+  openPickerDialog,
+  PICKER_DIALOG_ARGS,
+} from '../../../stories/PickerDialogArgs';
 import { Space } from '../../layout/Space';
 import { COLOR_FORMATS } from '../color/color';
 
@@ -17,6 +21,7 @@ export default {
     },
   },
   argTypes: {
+    ...PICKER_DIALOG_ARGS,
     /* Content */
     value: {
       control: { type: 'text' },
@@ -211,7 +216,9 @@ WithSwatches.parameters = {
 };
 
 export const Open = Template.bind({});
-Open.args = { defaultValue: '#7a4dbf', defaultOpen: true };
+Open.args = { defaultValue: '#7a4dbf', dialogType: 'popover' };
+Open.play = async ({ canvasElement }) =>
+  openPickerDialog(canvasElement, 'popover');
 
 export const Controlled: StoryFn<CubeColorPickerProps> = (args) => {
   const [color, setColor] = useState<string | null>('#7a4dbf');
@@ -240,3 +247,8 @@ Controlled.parameters = {
     },
   },
 };
+
+export const Tray = Template.bind({});
+Tray.args = { defaultValue: '#7a4dbf', dialogType: 'tray' };
+Tray.play = async ({ canvasElement }) =>
+  openPickerDialog(canvasElement, 'tray');

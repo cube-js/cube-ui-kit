@@ -26,6 +26,9 @@ Use [ColorInput](/docs/forms-colorinput--docs) instead when the color has to be 
 
 ### Properties
 
+- **`dialogType`** `'modal' | 'popover' | 'tray' | 'fullscreen' | 'fullscreenTakeover' | 'panel'` (default: `popover`) — Overlay presentation. The existing styling `type`, where available, remains independent.
+- **`dialogMobileType`** `'modal' | 'popover' | 'tray' | 'fullscreen' | 'fullscreenTakeover' | 'panel'` (default: `dialogType`) — Explicit mobile presentation override. Omitted or `undefined` always inherits the effective `dialogType`.
+
 - **`value`** `string | null` — The selected color (controlled)
 - **`defaultValue`** `string | null` — The selected color (uncontrolled)
 - **`onChange`** `(value: string | null) => void` — Fired with the color string
@@ -207,3 +210,14 @@ This component supports all [Field properties](/docs/getting-started-field-prope
 - [ColorInput](/docs/forms-colorinput--docs) — the same popover behind a text field
 - [Picker](/docs/forms-picker--docs) — the same trigger-plus-popover shape, for lists
 - [HueSlider](/docs/forms-hueslider--docs) — just the hue axis
+
+## Dialog presentation
+
+`dialogType` selects the overlay on desktop and mobile. Only an explicitly specified `dialogMobileType` changes the presentation at DialogTrigger's mobile breakpoint (700px). Anchors, placement, arrows and trigger-width sizing apply only to the effective popover presentation.
+
+```tsx
+<ColorPicker dialogType="tray" aria-label="Choose a value" />
+<ColorPicker dialogType="popover" dialogMobileType="tray" aria-label="Choose a value" />
+```
+
+Date and color pickers now default to `popover` on mobile as well. To keep the previous mobile tray presentation, set `dialogMobileType="tray"`.

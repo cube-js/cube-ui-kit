@@ -34,7 +34,7 @@ import { DirectionIcon } from '../../../icons/DirectionIcon';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
 import { allowEscapeToPropagate } from '../../../utils/react/escapePropagation';
 import { processSelectionArray } from '../../../utils/selection';
-import { extractStyles, mergeStyleLayers } from '../../../utils/styles';
+import { extractStyles } from '../../../utils/styles';
 import { CubeItemButtonProps, ItemAction, ItemButton } from '../../actions';
 import { CubeItemProps } from '../../content/Item';
 import { Text } from '../../content/Text';
@@ -44,12 +44,14 @@ import {
   useFieldProps,
   wrapWithField,
 } from '../../form';
-import { Dialog, DialogTrigger } from '../../overlays/Dialog';
+import { DialogTrigger } from '../../overlays/Dialog/DialogTrigger';
 import { CubeListBoxProps, ListBox } from '../ListBox/ListBox';
+import { PickerDialog } from '../PickerDialog';
 import { TriggerActions, TriggerIcon } from '../TriggerActions';
 
 import type { KeyboardEvent as RAKeyboardEvent } from '@react-types/shared';
 import type { FieldBaseProps } from '../../../shared';
+import type { CubeDialogTriggerProps } from '../../overlays/Dialog/DialogTrigger';
 
 export interface CubePickerProps<T>
   extends Omit<
@@ -102,6 +104,10 @@ export interface CubePickerProps<T>
    * trigger button, not to this element.
    */
   targetRef?: RefObject<HTMLElement | null>;
+  /** Overlay presentation, independent of the trigger's styling type. Defaults to popover. */
+  dialogType?: CubeDialogTriggerProps['type'];
+  /** Explicit mobile overlay override. When omitted, mobile inherits dialogType. */
+  dialogMobileType?: CubeDialogTriggerProps['mobileType'];
   /**
    * Placement of the popover relative to the anchor.
    * Accepts React Aria's `Placement` strings (e.g. `'bottom start'`,
@@ -249,6 +255,8 @@ export const Picker = forwardRef(function Picker<T extends object>(
     styles,
     listBoxStyles,
     popoverStyles,
+    dialogType = 'popover',
+    dialogMobileType,
     type = 'outline',
     theme = 'default',
     shape,
@@ -513,7 +521,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
     onOpenChange?.(isOpen);
   });
 
-  // Popover sync is handled by the inner `DialogTrigger` (type="popover").
+  // Overlay synchronization is handled by DialogTrigger for its effective type.
 
   // Keyboard handler for arrow keys to open popover
   // Deliberately NOT `useKeyboard`. `ItemButton` already runs whatever
@@ -688,7 +696,6 @@ export const Picker = forwardRef(function Picker<T extends object>(
   const triggerElement = (
     <ItemButton
       ref={triggerRef as any}
-      data-popover-trigger
       id={id}
       qa={qa || 'PickerTrigger'}
       type={type}
@@ -807,7 +814,8 @@ export const Picker = forwardRef(function Picker<T extends object>(
       >)}
     >
       <DialogTrigger
-        type="popover"
+        type={dialogType}
+        mobileType={dialogMobileType}
         placement={placement}
         targetRef={targetRef}
         isOpen={isPopoverOpen}
@@ -817,78 +825,69 @@ export const Picker = forwardRef(function Picker<T extends object>(
       >
         {triggerElement}
         {() => (
-          <Dialog
+          <PickerDialog
             qa="PickerOverlay"
-            display="grid"
-            styles={mergeStyleLayers(
-              {
-                gridRows: '1sf',
-                width: 'max($overlay-min-width, 30x) max-content 50vw',
-                '$overlay-min-width': '30x',
-              },
-              popoverStyles,
-            )}
-            style={
-              triggerWidthRef.current
-                ? ({
-                    '--overlay-min-width': `${triggerWidthRef.current}px`,
-                  } as any)
-                : undefined
-            }
+            aria-label={`${ariaLabel ?? label ?? ''} ${t('picker.pickerAriaLabel', 'Picker')}`}
+            popoverStyles={popoverStyles}
+            triggerWidth={triggerWidthRef.current}
           >
-            <FocusScope restoreFocus>
-              <ListBox
-                autoFocus
-                items={items ? (finalItems as typeof props.items) : undefined}
-                aria-label={`${ariaLabel ?? label ?? ''} ${t(
-                  'picker.pickerAriaLabel',
-                  'Picker',
-                )}`}
-                selectedKey={
-                  selectionMode === 'single' ? effectiveSelectedKey : undefined
-                }
-                selectedKeys={
-                  selectionMode === 'multiple'
-                    ? effectiveSelectedKeys
-                    : undefined
-                }
-                listStyles={listStyles}
-                optionStyles={optionStyles}
-                sectionStyles={sectionStyles}
-                headingStyles={headingStyles}
-                listGap={listGap}
-                listRef={listRef}
-                disallowEmptySelection={disallowEmptySelection}
-                allowDuplicateSelectionEvents={
-                  selectionMode === 'single' && !!disallowEmptySelection
-                }
-                disabledKeys={disabledKeys}
-                focusOnHover={focusOnHover}
-                shouldFocusWrap={shouldFocusWrap}
-                selectionMode={selectionMode}
-                isInvalid={isInvalid}
-                isValid={isValid}
-                isDisabled={isDisabled}
-                isLoading={isLoading}
-                stateRef={internalListStateRef}
-                isCheckable={isCheckable}
-                shape="popover"
-                showSelectAll={showSelectAll}
-                selectAllLabel={selectAllLabel}
-                header={header}
-                footer={footer}
-                headerStyles={headerStyles}
-                footerStyles={footerStyles}
-                qa={`${props.qa || 'Picker'}ListBox`}
-                allValueProps={allValueProps}
-                onEscape={handleEscape}
-                onOptionClick={handleOptionClick}
-                onSelectionChange={handleSelectionChange}
-              >
-                {children as CollectionChildren<T>}
-              </ListBox>
-            </FocusScope>
-          </Dialog>
+            {(isPopover) => (
+              <FocusScope restoreFocus>
+                <ListBox
+                  autoFocus
+                  items={items ? (finalItems as typeof props.items) : undefined}
+                  aria-label={`${ariaLabel ?? label ?? ''} ${t(
+                    'picker.pickerAriaLabel',
+                    'Picker',
+                  )}`}
+                  selectedKey={
+                    selectionMode === 'single'
+                      ? effectiveSelectedKey
+                      : undefined
+                  }
+                  selectedKeys={
+                    selectionMode === 'multiple'
+                      ? effectiveSelectedKeys
+                      : undefined
+                  }
+                  listStyles={listStyles}
+                  optionStyles={optionStyles}
+                  sectionStyles={sectionStyles}
+                  headingStyles={headingStyles}
+                  listGap={listGap}
+                  listRef={listRef}
+                  disallowEmptySelection={disallowEmptySelection}
+                  allowDuplicateSelectionEvents={
+                    selectionMode === 'single' && !!disallowEmptySelection
+                  }
+                  disabledKeys={disabledKeys}
+                  focusOnHover={focusOnHover}
+                  shouldFocusWrap={shouldFocusWrap}
+                  selectionMode={selectionMode}
+                  isInvalid={isInvalid}
+                  isValid={isValid}
+                  isDisabled={isDisabled}
+                  isLoading={isLoading}
+                  stateRef={internalListStateRef}
+                  isCheckable={isCheckable}
+                  shape={isPopover ? 'popover' : 'plain'}
+                  showSelectAll={showSelectAll}
+                  selectAllLabel={selectAllLabel}
+                  header={header}
+                  footer={footer}
+                  headerStyles={headerStyles}
+                  footerStyles={footerStyles}
+                  qa={`${props.qa || 'Picker'}ListBox`}
+                  allValueProps={allValueProps}
+                  onEscape={handleEscape}
+                  onOptionClick={handleOptionClick}
+                  onSelectionChange={handleSelectionChange}
+                >
+                  {children as CollectionChildren<T>}
+                </ListBox>
+              </FocusScope>
+            )}
+          </PickerDialog>
         )}
       </DialogTrigger>
     </PickerWrapper>

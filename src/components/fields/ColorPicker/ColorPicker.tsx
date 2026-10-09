@@ -30,7 +30,8 @@ import {
   useFieldProps,
   wrapWithField,
 } from '../../form';
-import { Dialog, DialogTrigger } from '../../overlays/Dialog';
+import { Dialog } from '../../overlays/Dialog/Dialog';
+import { DialogTrigger } from '../../overlays/Dialog/DialogTrigger';
 import { ColorSpace } from '../color/channels';
 import {
   ColorFormat,
@@ -44,11 +45,13 @@ import { ColorInput } from '../ColorInput';
 import { ColorSwatch } from '../ColorSwatch';
 import { ColorSwatchGroup, CubeColorSwatchItem } from '../ColorSwatchGroup';
 
+import type { CubeDialogTriggerProps } from '../../overlays/Dialog/DialogTrigger';
+
 /**
  * A popover caps its height at half the viewport. The panel can exceed that on
  * a short screen, and would otherwise spill outside the popover's own border.
  */
-const POPOVER_STYLES: Styles = { overflow: 'auto' };
+const POPOVER_STYLES: Styles = { overflow: { 'type=popover': 'auto' } };
 
 /**
  * The rule separating the palette from the editor. `Divider` is not used: it
@@ -106,6 +109,10 @@ export interface CubeColorPickerProps
    * dismissal treats as the trigger.
    */
   targetRef?: RefObject<HTMLElement | null>;
+  /** Overlay presentation, independent of the trigger's styling type. Defaults to popover. */
+  dialogType?: CubeDialogTriggerProps['type'];
+  /** Explicit mobile overlay override. When omitted, mobile inherits dialogType. */
+  dialogMobileType?: CubeDialogTriggerProps['mobileType'];
   /**
    * Placement of the popover relative to the anchor.
    * Accepts React Aria's `Placement` strings (e.g. `'bottom start'`,
@@ -164,6 +171,8 @@ export const ColorPicker = forwardRef(function ColorPicker(
     isOpen: controlledOpen,
     defaultOpen,
     onOpenChange,
+    dialogType = 'popover',
+    dialogMobileType,
     shouldFlip,
     targetRef,
     placement = 'bottom start',
@@ -256,8 +265,8 @@ export const ColorPicker = forwardRef(function ColorPicker(
     <ColorPickerWrapper styles={styles}>
       <DialogTrigger
         hideArrow
-        type="popover"
-        mobileType="tray"
+        type={dialogType}
+        mobileType={dialogMobileType}
         placement={placement}
         targetRef={targetRef}
         isOpen={controlledOpen ?? isOpen}
@@ -265,7 +274,6 @@ export const ColorPicker = forwardRef(function ColorPicker(
         onOpenChange={handleOpenChange}
       >
         <ItemButton
-          data-popover-trigger
           id={id}
           qa={qa || 'ColorPickerTrigger'}
           data-input-type="colorpicker"
@@ -289,7 +297,7 @@ export const ColorPicker = forwardRef(function ColorPicker(
         </ItemButton>
         <Dialog
           aria-label="Color picker"
-          width="max-content"
+          width={{ 'type=popover': 'max-content' }}
           styles={POPOVER_STYLES}
         >
           {/* Marks the subtree so a nested swatch group drops its custom-color

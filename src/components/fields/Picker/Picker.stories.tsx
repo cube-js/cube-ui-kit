@@ -4,6 +4,10 @@ import { Key } from 'react-aria';
 
 import { ReloadIcon } from '../../../icons/ReloadIcon';
 import { NO_SNAPSHOT } from '../../../stories/chromatic';
+import {
+  openPickerDialog,
+  PICKER_DIALOG_ARGS,
+} from '../../../stories/PickerDialogArgs';
 import { Text } from '../../content/Text';
 import { Flex } from '../../layout/Flex';
 
@@ -15,6 +19,7 @@ const meta = {
   parameters: {
     layout: 'centered',
   },
+  argTypes: PICKER_DIALOG_ARGS,
   tags: ['autodocs'],
 } satisfies Meta<typeof Picker>;
 
@@ -463,4 +468,16 @@ export const LoadingState: Story = {
       <Picker.Item key={fruit.key}>{fruit.label}</Picker.Item>
     )),
   },
+};
+
+export const Popover: Story = {
+  ...SingleSelection,
+  args: { ...SingleSelection.args, dialogType: 'popover' },
+  play: async ({ canvasElement }) => openPickerDialog(canvasElement, 'popover'),
+};
+
+export const Tray: Story = {
+  ...SingleSelection,
+  args: { ...SingleSelection.args, dialogType: 'tray' },
+  play: async ({ canvasElement }) => openPickerDialog(canvasElement, 'tray'),
 };

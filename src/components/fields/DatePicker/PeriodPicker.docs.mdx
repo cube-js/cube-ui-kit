@@ -34,6 +34,9 @@ In the month and quarter panels the year in the header is a button that opens a 
 
 ### Properties
 
+- **`dialogType`** `'modal' | 'popover' | 'tray' | 'fullscreen' | 'fullscreenTakeover' | 'panel'` (default: `popover`) — Overlay presentation. The existing styling `type`, where available, remains independent.
+- **`dialogMobileType`** `'modal' | 'popover' | 'tray' | 'fullscreen' | 'fullscreenTakeover' | 'panel'` (default: `dialogType`) — Explicit mobile presentation override. Omitted or `undefined` always inherits the effective `dialogType`.
+
 - **`picker`** `'week' | 'month' | 'quarter' | 'year'` (default: `month`) — Which period is selected. The four named components set it for you; only the base `PeriodPicker` takes it directly
 - **`value`** `DateValue` — The current value (controlled), snapped to the period start
 - **`defaultValue`** `DateValue` — The default value (uncontrolled)
@@ -124,3 +127,14 @@ Periods that fall entirely outside `minValue` / `maxValue` are disabled, and the
 - [DatePicker](/docs/forms-datepicker--docs) — pick an exact day
 - [DateRangePicker](/docs/forms-daterangepicker--docs) — pick a start and end date
 - [Calendar](/docs/other-calendar--docs) — the panels these fields render
+
+## Dialog presentation
+
+`dialogType` selects the overlay on desktop and mobile. Only an explicitly specified `dialogMobileType` changes the presentation at DialogTrigger's mobile breakpoint (700px). Anchors, placement, arrows and trigger-width sizing apply only to the effective popover presentation.
+
+```tsx
+<PeriodPicker dialogType="tray" aria-label="Choose a value" />
+<PeriodPicker dialogType="popover" dialogMobileType="tray" aria-label="Choose a value" />
+```
+
+Date and color pickers now default to `popover` on mobile as well. To keep the previous mobile tray presentation, set `dialogMobileType="tray"`.

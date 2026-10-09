@@ -12,6 +12,10 @@ import { SettingsIcon } from '../../../icons/SettingsIcon';
 import { UserIcon } from '../../../icons/UserIcon';
 import { NO_SNAPSHOT } from '../../../stories/chromatic';
 import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
+import {
+  openPickerDialog,
+  PICKER_DIALOG_ARGS,
+} from '../../../stories/PickerDialogArgs';
 import { Button } from '../../actions/Button/Button';
 import { Badge } from '../../content/Badge/Badge';
 import { Paragraph } from '../../content/Paragraph';
@@ -40,6 +44,7 @@ const meta: Meta<typeof FilterPicker> = {
     },
   },
   argTypes: {
+    ...PICKER_DIALOG_ARGS,
     /* Content */
     selectedKey: {
       control: { type: 'text' },
@@ -2674,4 +2679,27 @@ export const Reorderable: StoryObj<typeof FilterPicker> = {
       },
     },
   },
+};
+
+export const Popover: Story = {
+  ...Default,
+  args: { ...Default.args, dialogType: 'popover' },
+  play: async ({ canvasElement }) => openPickerDialog(canvasElement, 'popover'),
+};
+
+export const Tray: Story = {
+  ...Default,
+  args: { ...Default.args, dialogType: 'tray' },
+  play: async ({ canvasElement }) => openPickerDialog(canvasElement, 'tray'),
+};
+
+export const MobileTray: Story = {
+  ...Default,
+  args: { ...Default.args, dialogType: 'popover', dialogMobileType: 'tray' },
+  parameters: { chromatic: { viewports: [390] } },
+  play: async ({ canvasElement }) =>
+    openPickerDialog(
+      canvasElement,
+      window.innerWidth <= 700 ? 'tray' : 'popover',
+    ),
 };

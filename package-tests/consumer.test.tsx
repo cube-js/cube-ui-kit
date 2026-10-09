@@ -10,6 +10,7 @@ import {
   ImplicitConsumer,
   LegacyConsumer,
   ModernConsumer,
+  PickerConsumer,
 } from './consumer';
 
 it('updates modern tuple fields and selectors, submits once, and resets nullable defaults', async () => {
@@ -126,4 +127,23 @@ it('hydrates server-rendered modern forms from the published output', async () =
     await act(async () => root?.unmount());
     container.remove();
   }
+});
+
+it('selects through the packaged tray picker and restores trigger focus', async () => {
+  render(<PickerConsumer />);
+  const trigger = screen.getByRole('button', { name: 'Fruit' });
+  await userEvent.click(trigger);
+  const dialog = await screen.findByRole('dialog');
+  expect(dialog).toHaveAttribute('data-type', 'tray');
+  const search = screen.getByRole('searchbox');
+  await waitFor(() => expect(search).toHaveFocus());
+  await userEvent.type(search, 'Ban');
+  await userEvent.click(await screen.findByRole('option', { name: 'Banana' }));
+  await waitFor(() =>
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument(),
+  );
+  expect(screen.getByRole('status', { name: 'Selection' })).toHaveTextContent(
+    'banana',
+  );
+  await waitFor(() => expect(trigger).toHaveFocus());
 });

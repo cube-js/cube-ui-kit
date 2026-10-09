@@ -33,7 +33,7 @@ import { DirectionIcon } from '../../../icons/DirectionIcon';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
 import { allowEscapeToPropagate } from '../../../utils/react/escapePropagation';
 import { processSelectionArray } from '../../../utils/selection';
-import { extractStyles, mergeStyleLayers } from '../../../utils/styles';
+import { extractStyles } from '../../../utils/styles';
 import { CubeItemButtonProps, ItemAction, ItemButton } from '../../actions';
 import { CubeItemProps } from '../../content/Item';
 import { Text } from '../../content/Text';
@@ -43,16 +43,18 @@ import {
   useFieldProps,
   wrapWithField,
 } from '../../form';
-import { Dialog, DialogTrigger } from '../../overlays/Dialog';
+import { DialogTrigger } from '../../overlays/Dialog/DialogTrigger';
 import {
   CubeFilterListBoxProps,
   FilterListBox,
 } from '../FilterListBox/FilterListBox';
 import { ListBox } from '../ListBox';
+import { PickerDialog } from '../PickerDialog';
 import { TriggerActions, TriggerIcon } from '../TriggerActions';
 
 import type { KeyboardEvent as RAKeyboardEvent } from '@react-types/shared';
 import type { FieldBaseProps } from '../../../shared';
+import type { CubeDialogTriggerProps } from '../../overlays/Dialog/DialogTrigger';
 
 interface ItemWithKey {
   key?: string | number;
@@ -117,6 +119,10 @@ export interface CubeFilterPickerProps<T>
    * trigger button, not to this element.
    */
   targetRef?: RefObject<HTMLElement | null>;
+  /** Overlay presentation, independent of the trigger's styling type. Defaults to popover. */
+  dialogType?: CubeDialogTriggerProps['type'];
+  /** Explicit mobile overlay override. When omitted, mobile inherits dialogType. */
+  dialogMobileType?: CubeDialogTriggerProps['mobileType'];
   /** Minimum padding in pixels between the popover and viewport edges */
   containerPadding?: number;
   /** Tooltip for the trigger button (separate from `labelTooltip`) */
@@ -262,6 +268,8 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     styles,
     listBoxStyles,
     popoverStyles,
+    dialogType = 'popover',
+    dialogMobileType,
     type = 'outline',
     theme = 'default',
     shape,
@@ -501,7 +509,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     onOpenChange?.(isOpen);
   });
 
-  // Popover sync is handled by the inner `DialogTrigger` (type="popover").
+  // Overlay synchronization is handled by DialogTrigger for its effective type.
 
   // Keyboard handler for arrow keys to open popover
   // Deliberately NOT `useKeyboard`. `ItemButton` already runs whatever
@@ -745,7 +753,6 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
   const triggerElement = (
     <ItemButton
       ref={triggerRef as any}
-      data-popover-trigger
       qa={qa || 'FilterPicker'}
       id={id}
       type={type}
@@ -871,7 +878,8 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
       {...filterBaseProps(otherProps, { eventProps: true })}
     >
       <DialogTrigger
-        type="popover"
+        type={dialogType}
+        mobileType={dialogMobileType}
         placement={placement}
         targetRef={targetRef}
         isOpen={isPopoverOpen}
@@ -881,97 +889,87 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
       >
         {triggerElement}
         {() => (
-          <Dialog
+          <PickerDialog
             qa="FilterPickerOverlay"
-            isDismissable={false}
-            display="grid"
-            styles={mergeStyleLayers(
-              {
-                gridRows: '1sf',
-                width: 'max($overlay-min-width, 30x) max-content 50vw',
-                '$overlay-min-width': '30x',
-              },
-              popoverStyles,
-            )}
-            style={
-              triggerWidthRef.current
-                ? ({
-                    '--overlay-min-width': `${triggerWidthRef.current}px`,
-                  } as any)
-                : undefined
-            }
+            aria-label={`${ariaLabel ?? label ?? ''} ${t('picker.pickerAriaLabel', 'Picker')}`}
+            popoverStyles={popoverStyles}
+            triggerWidth={triggerWidthRef.current}
           >
-            <FocusScope restoreFocus>
-              <FilterListBox
-                autoFocus
-                items={items ? (finalItems as typeof props.items) : undefined}
-                aria-label={`${ariaLabel ?? label ?? ''} ${t(
-                  'picker.pickerAriaLabel',
-                  'Picker',
-                )}`}
-                _internalCollection={localCollectionState.collection}
-                selectedKey={
-                  selectionMode === 'single' ? mappedSelectedKey : undefined
-                }
-                selectedKeys={
-                  selectionMode === 'multiple' ? mappedSelectedKeys : undefined
-                }
-                searchPlaceholder={searchPlaceholder}
-                filter={filter}
-                searchValue={searchValue}
-                listStyles={listStyles}
-                optionStyles={optionStyles}
-                sectionStyles={sectionStyles}
-                headingStyles={headingStyles}
-                listGap={listGap}
-                listRef={listRef}
-                disallowEmptySelection={disallowEmptySelection}
-                allowDuplicateSelectionEvents={
-                  selectionMode === 'single' && !!disallowEmptySelection
-                }
-                emptyLabel={emptyLabel}
-                searchInputStyles={searchInputStyles}
-                searchInputRef={searchInputRef}
-                disabledKeys={disabledKeys}
-                focusOnHover={focusOnHover}
-                shouldFocusWrap={shouldFocusWrap}
-                allowsCustomValue={allowsCustomValue}
-                selectionMode={selectionMode}
-                isInvalid={isInvalid}
-                isValid={isValid}
-                isDisabled={isDisabled}
-                isLoading={isLoading}
-                isLoadingItems={isLoadingItems}
-                stateRef={listStateRef}
-                isCheckable={isCheckable}
-                mods={{
-                  popover: true,
-                }}
-                size={size === 'small' ? 'medium' : size}
-                showSelectAll={showSelectAll}
-                selectAllLabel={selectAllLabel}
-                header={header}
-                footer={footer}
-                headerStyles={headerStyles}
-                footerStyles={footerStyles}
-                allValueProps={allValueProps}
-                customValueProps={customValueProps}
-                newCustomValueProps={newCustomValueProps}
-                isReorderable={isReorderable}
-                onSearchChange={onSearchChange}
-                onReorder={onReorder}
-                onEscape={handleEscape}
-                onOptionClick={handleOptionClick}
-                onSelectionChange={handleSelectionChange}
-              >
-                {
-                  (children
-                    ? (children as CollectionChildren<T>)
-                    : undefined) as CollectionChildren<T>
-                }
-              </FilterListBox>
-            </FocusScope>
-          </Dialog>
+            {(isPopover) => (
+              <FocusScope restoreFocus>
+                <FilterListBox
+                  autoFocus
+                  items={items ? (finalItems as typeof props.items) : undefined}
+                  aria-label={`${ariaLabel ?? label ?? ''} ${t(
+                    'picker.pickerAriaLabel',
+                    'Picker',
+                  )}`}
+                  _internalCollection={localCollectionState.collection}
+                  selectedKey={
+                    selectionMode === 'single' ? mappedSelectedKey : undefined
+                  }
+                  selectedKeys={
+                    selectionMode === 'multiple'
+                      ? mappedSelectedKeys
+                      : undefined
+                  }
+                  searchPlaceholder={searchPlaceholder}
+                  filter={filter}
+                  searchValue={searchValue}
+                  listStyles={listStyles}
+                  optionStyles={optionStyles}
+                  sectionStyles={sectionStyles}
+                  headingStyles={headingStyles}
+                  listGap={listGap}
+                  listRef={listRef}
+                  disallowEmptySelection={disallowEmptySelection}
+                  allowDuplicateSelectionEvents={
+                    selectionMode === 'single' && !!disallowEmptySelection
+                  }
+                  emptyLabel={emptyLabel}
+                  searchInputStyles={searchInputStyles}
+                  searchInputRef={searchInputRef}
+                  disabledKeys={disabledKeys}
+                  focusOnHover={focusOnHover}
+                  shouldFocusWrap={shouldFocusWrap}
+                  allowsCustomValue={allowsCustomValue}
+                  selectionMode={selectionMode}
+                  isInvalid={isInvalid}
+                  isValid={isValid}
+                  isDisabled={isDisabled}
+                  isLoading={isLoading}
+                  isLoadingItems={isLoadingItems}
+                  stateRef={listStateRef}
+                  isCheckable={isCheckable}
+                  mods={{
+                    popover: isPopover,
+                  }}
+                  size={size === 'small' ? 'medium' : size}
+                  showSelectAll={showSelectAll}
+                  selectAllLabel={selectAllLabel}
+                  header={header}
+                  footer={footer}
+                  headerStyles={headerStyles}
+                  footerStyles={footerStyles}
+                  allValueProps={allValueProps}
+                  customValueProps={customValueProps}
+                  newCustomValueProps={newCustomValueProps}
+                  isReorderable={isReorderable}
+                  onSearchChange={onSearchChange}
+                  onReorder={onReorder}
+                  onEscape={handleEscape}
+                  onOptionClick={handleOptionClick}
+                  onSelectionChange={handleSelectionChange}
+                >
+                  {
+                    (children
+                      ? (children as CollectionChildren<T>)
+                      : undefined) as CollectionChildren<T>
+                  }
+                </FilterListBox>
+              </FocusScope>
+            )}
+          </PickerDialog>
         )}
       </DialogTrigger>
     </FilterPickerWrapper>

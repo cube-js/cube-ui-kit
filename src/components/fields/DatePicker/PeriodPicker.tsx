@@ -24,12 +24,15 @@ import { extractStyles, mergeStyleLayers } from '../../../utils/styles';
 import { useFieldProps, wrapWithField } from '../../form';
 import { Calendar } from '../../other/Calendar/Calendar';
 import { PeriodCalendar } from '../../other/Calendar/PeriodCalendar';
-import { Dialog, DialogTrigger } from '../../overlays/Dialog';
+import { Dialog } from '../../overlays/Dialog/Dialog';
+import { DialogTrigger } from '../../overlays/Dialog/DialogTrigger';
 
 import { DateInputBase } from './DateInputBase';
 import { DatePickerButton } from './DatePickerButton';
 import { formatPeriod, PickerType, snapToPeriod } from './period';
 import { useFocusManagerRef } from './utils';
+
+import type { CubeDialogTriggerProps } from '../../overlays/Dialog/DialogTrigger';
 
 const PeriodValueElement = tasty({
   qa: 'PeriodPickerValue',
@@ -71,6 +74,10 @@ export interface CubePeriodPickerProps<T extends DateValue = DateValue>
    * dismissal treats as the trigger.
    */
   targetRef?: RefObject<HTMLElement | null>;
+  /** Overlay presentation, independent of the trigger's styling type. Defaults to popover. */
+  dialogType?: CubeDialogTriggerProps['type'];
+  /** Explicit mobile overlay override. When omitted, mobile inherits dialogType. */
+  dialogMobileType?: CubeDialogTriggerProps['mobileType'];
   /**
    * Placement of the popover relative to the anchor.
    * Accepts React Aria's `Placement` strings (e.g. `'bottom start'`,
@@ -90,9 +97,10 @@ function PeriodPickerImpl<T extends DateValue>(
 ) {
   const { t } = useI18n();
 
-  let props = useFieldProps(rawProps, {
+  const resolvedProps = useFieldProps(rawProps, {
     defaultValidationTrigger: 'onBlur',
   });
+  let { dialogType = 'popover', dialogMobileType, ...props } = resolvedProps;
 
   let styles = extractStyles(props, CONTAINER_STYLES);
 
@@ -195,8 +203,8 @@ function PeriodPickerImpl<T extends DateValue>(
       suffix={
         <DialogTrigger
           hideArrow
-          type="popover"
-          mobileType="tray"
+          type={dialogType}
+          mobileType={dialogMobileType}
           placement={props.placement ?? 'bottom right'}
           targetRef={props.targetRef ?? targetRef}
           isOpen={isOpen}
@@ -213,7 +221,7 @@ function PeriodPickerImpl<T extends DateValue>(
             isReadOnly={isReadOnly}
             styles={props.triggerStyles}
           />
-          <Dialog {...dialogProps} width="max-content">
+          <Dialog {...dialogProps} width={{ 'type=popover': 'max-content' }}>
             {panel}
           </Dialog>
         </DialogTrigger>

@@ -32,6 +32,9 @@ Choose a different component when the interaction has another shape:
 
 ### Properties
 
+- **`dialogType`** `'modal' | 'popover' | 'tray' | 'fullscreen' | 'fullscreenTakeover' | 'panel'` (default: `popover`) — Overlay presentation. The existing styling `type`, where available, remains independent.
+- **`dialogMobileType`** `'modal' | 'popover' | 'tray' | 'fullscreen' | 'fullscreenTakeover' | 'panel'` (default: `dialogType`) — Explicit mobile presentation override. Omitted or `undefined` always inherits the effective `dialogType`.
+
 - **`selectedKey`** `string` — The selected key in controlled mode
 - **`defaultSelectedKey`** `string` — The default selected key in uncontrolled mode
 - **`selectedKeys`** `string[] | 'all'` — The selected keys in controlled multiple mode. Use "all" to select all items or an array of keys.
@@ -985,3 +988,12 @@ When using the dynamic content pattern (`items` prop) without sections, FilterPi
 - [SearchComboBox](/docs/forms-searchcombobox--docs) - Use for search-and-act flows that clear after each result
 - [ListBox](/docs/forms-listbox--docs) - Use for basic list selection without search
 - [Button](/docs/actions-button--docs) - The underlying trigger component
+
+## Dialog presentation
+
+`dialogType` selects the overlay on desktop and mobile. Only an explicitly specified `dialogMobileType` changes the presentation at DialogTrigger's mobile breakpoint (700px). Anchors, placement, arrows and trigger-width sizing apply only to the effective popover presentation.
+
+```tsx
+<FilterPicker dialogType="tray" aria-label="Choose a value" />
+<FilterPicker dialogType="popover" dialogMobileType="tray" aria-label="Choose a value" />
+```

@@ -5,6 +5,10 @@ import { userEvent, within } from 'storybook/test';
 import { NO_SNAPSHOT } from '../../../stories/chromatic';
 import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
+import {
+  openPickerDialog,
+  PICKER_DIALOG_ARGS,
+} from '../../../stories/PickerDialogArgs';
 import { Space } from '../../layout/Space';
 
 import { MonthPicker } from './MonthPicker';
@@ -22,6 +26,7 @@ export default {
     },
   },
   argTypes: {
+    ...PICKER_DIALOG_ARGS,
     label: { control: { type: 'text' } },
     placeholder: { control: { type: 'text' } },
     size: {
@@ -106,10 +111,11 @@ export const Validation: StoryFn<CubePeriodPickerProps> = (props) => (
 );
 
 export const Open = MonthTemplate.bind({});
-Open.args = { defaultValue: parseDate('2026-08-01') };
-Open.play = async ({ canvasElement }) => {
-  const canvas = within(canvasElement);
-  const button = await canvas.getByRole('button');
+Open.args = { defaultValue: parseDate('2026-08-01'), dialogType: 'popover' };
+Open.play = async ({ canvasElement }) =>
+  openPickerDialog(canvasElement, 'popover');
 
-  await userEvent.click(button);
-};
+export const Tray = MonthTemplate.bind({});
+Tray.args = { ...Open.args, dialogType: 'tray' };
+Tray.play = async ({ canvasElement }) =>
+  openPickerDialog(canvasElement, 'tray');

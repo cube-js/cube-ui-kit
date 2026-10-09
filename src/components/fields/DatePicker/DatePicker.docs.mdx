@@ -24,6 +24,9 @@ A date picker combines a text input with a calendar interface, allowing users to
 
 ### Properties
 
+- **`dialogType`** `'modal' | 'popover' | 'tray' | 'fullscreen' | 'fullscreenTakeover' | 'panel'` (default: `popover`) — Overlay presentation. The existing styling `type`, where available, remains independent.
+- **`dialogMobileType`** `'modal' | 'popover' | 'tray' | 'fullscreen' | 'fullscreenTakeover' | 'panel'` (default: `dialogType`) — Explicit mobile presentation override. Omitted or `undefined` always inherits the effective `dialogType`.
+
 - **`value`** `DateValue` — The current date value (controlled)
 - **`defaultValue`** `DateValue` — The default date value (uncontrolled)
 - **`placeholderValue`** `DateValue` — Date used as placeholder when calendar opens
@@ -239,3 +242,19 @@ This component supports all [Field properties](/docs/getting-started-field-prope
 
 - [DateRangePicker](/docs/forms-daterangepicker--docs) - For selecting date ranges
 - [TimeInput](/docs/forms-timeinput--docs) - For time-only selection
+
+## Dialog presentation
+
+`dialogType` selects the overlay on desktop and mobile. Only an explicitly specified `dialogMobileType` changes the presentation at DialogTrigger's mobile breakpoint (700px). Anchors, placement, arrows and trigger-width sizing apply only to the effective popover presentation. This contract also applies to `DateRangePicker` and to both start/end triggers of `DateRangeSeparatedPicker`.
+
+```tsx
+<DatePicker dialogType="tray" aria-label="Choose a value" />
+<DatePicker dialogType="popover" dialogMobileType="tray" aria-label="Choose a value" />
+```
+
+Date and color pickers now default to `popover` on mobile as well. To keep the previous mobile tray presentation, set `dialogMobileType="tray"`.
+
+```tsx
+<DateRangePicker dialogType="tray" aria-label="Date range" />
+<DateRangeSeparatedPicker dialogType="popover" dialogMobileType="tray" aria-label="Start and end dates" />
+```
