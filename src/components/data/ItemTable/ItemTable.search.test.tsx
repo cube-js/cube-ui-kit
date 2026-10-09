@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 import { renderWithRoot, screen, userEvent, waitFor } from '../../../test';
 
 import { ItemTable } from './ItemTable';
@@ -313,5 +315,66 @@ describe('ItemTable search', () => {
     // and the committed term exists precisely so it does not.
     expect(searchBox()).toHaveValue('gr');
     expect(onSearchChange).not.toHaveBeenCalled();
+  });
+
+  it('uses the current callback when a pending debounce commits', async () => {
+    const first = vi.fn();
+    const second = vi.fn();
+    const table = (onSearchChange: (value: string) => void) => (
+      <ItemTable
+        data={ROWS}
+        columns={COLUMNS}
+        isSearchable
+        searchDelay={200}
+        onSearchChange={onSearchChange}
+      />
+    );
+    const { rerender } = renderWithRoot(table(first));
+    await userEvent.type(searchBox(), 'grace');
+    expect(first).not.toHaveBeenCalled();
+    rerender(table(second));
+    await waitFor(() => expect(second).toHaveBeenCalledWith('grace'));
+    expect(first).not.toHaveBeenCalled();
+    expect(second).toHaveBeenCalledTimes(1);
+  });
+
+  it('lets an external controlled value replace a pending draft without echoing it', async () => {
+    const onSearchChange = vi.fn();
+    const table = (searchValue: string) => (
+      <ItemTable
+        data={ROWS}
+        columns={COLUMNS}
+        isSearchable
+        searchDelay={200}
+        searchValue={searchValue}
+        onSearchChange={onSearchChange}
+      />
+    );
+    const { rerender } = renderWithRoot(table(''));
+    await userEvent.type(searchBox(), 'ad');
+    rerender(table('grace'));
+    expect(searchBox()).toHaveValue('grace');
+    await waitFor(() => expect(names()).toEqual(['billing-etl']));
+    expect(onSearchChange).not.toHaveBeenCalled();
+  });
+
+  it('preserves every character when a zero-delay controlled callback echoes the term', async () => {
+    function ControlledSearch() {
+      const [value, setValue] = useState('');
+      return (
+        <ItemTable
+          data={ROWS}
+          columns={COLUMNS}
+          isSearchable
+          searchDelay={0}
+          searchValue={value}
+          onSearchChange={setValue}
+        />
+      );
+    }
+    renderWithRoot(<ControlledSearch />);
+    await userEvent.type(searchBox(), 'grace');
+    await waitFor(() => expect(names()).toEqual(['billing-etl']));
+    expect(searchBox()).toHaveValue('grace');
   });
 });

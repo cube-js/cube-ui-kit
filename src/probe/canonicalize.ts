@@ -45,7 +45,9 @@ export function canonicalizeIds(text: string): string {
       // It is also the tighter reading: an unterminated `«r0` should not
       // swallow the next ID.
       .replace(/«[^«»]*»/g, replace)
-      // React 18 uses colon-delimited client and server IDs, including
+      // React 19.3 client/server IDs, including server hook suffixes.
+      .replace(/_[rR]_[0-9a-v]+(?:H[0-9a-v]+)?_/g, replace)
+      // Previously captured markup uses colon-delimited IDs, including
       // server hook suffixes such as :R1H2:. Keep the same reference mapping.
       .replace(/:[rR][0-9a-v]+(?:H[0-9a-v]+)?:/g, replace)
       // react-aria mints its own counter-based IDs in several shapes:

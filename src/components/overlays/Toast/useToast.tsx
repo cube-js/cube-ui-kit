@@ -1,5 +1,4 @@
 import { isValidElement, Key, ReactNode, useMemo } from 'react';
-import { isFragment } from 'react-is';
 
 import { CheckIcon } from '../../../icons/CheckIcon';
 import { DangerIcon } from '../../../icons/DangerIcon';
@@ -42,7 +41,6 @@ function isToastData(data: ToastData | ReactNode): data is ToastData {
   // ReactNode includes: ReactElement | string | number | boolean | null | undefined | Iterable<ReactNode>
   const isReactNode =
     isValidElement(data) ||
-    isFragment(data) ||
     typeof data === 'string' ||
     typeof data === 'number' ||
     typeof data === 'boolean' ||

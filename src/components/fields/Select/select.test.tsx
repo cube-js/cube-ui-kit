@@ -12,8 +12,6 @@ import { Select } from './Select';
 vi.mock('../../../_internal/hooks/use-warn');
 
 describe('<Select />', () => {
-  // Under React 18 a `ref` reaches only a `forwardRef` component, and CI runs
-  // this suite on React 18 too.
   it('forwards its ref to the field', () => {
     let field: HTMLDivElement | null = null;
     const { getByTestId } = renderWithRoot(

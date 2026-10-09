@@ -7,8 +7,6 @@ import { Slider } from './Slider';
 
 import type { FocusableRefValue } from '@react-types/shared';
 
-// Under React 18 a `ref` reaches only a `forwardRef` component, and CI runs
-// this suite on React 18 too.
 describe('Slider ref', () => {
   it('reaches a Slider', () => {
     const ref = createRef<FocusableRefValue<HTMLDivElement>>();

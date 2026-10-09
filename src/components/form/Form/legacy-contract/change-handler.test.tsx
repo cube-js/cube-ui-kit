@@ -167,7 +167,7 @@ describe('legacy contract: one user change is one form update (§7.1 #20)', () =
       const setFieldValue = vi.spyOn(formInstance, 'setFieldValue');
 
       // userEvent flushes each interaction. Wrapping the whole workflow in
-      // act blocks React 18 from mounting the options that findByRole awaits.
+      // act blocks React from mounting the options that findByRole awaits.
       await interact();
 
       await waitFor(() =>

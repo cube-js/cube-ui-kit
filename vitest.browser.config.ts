@@ -24,7 +24,7 @@ const tastyPkg = JSON.parse(
 export default defineConfig({
   // Compiler injects this import after Vite's dependency scan. Prebundle it
   // up front so discovering it cannot reload a running browser test.
-  optimizeDeps: { include: ['react-compiler-runtime'] },
+  optimizeDeps: { include: ['react/compiler-runtime'] },
   plugins:
     process.env.UIKIT_REACT_COMPILER === 'on' ? [reactCompilerPlugin()] : [],
   define: {

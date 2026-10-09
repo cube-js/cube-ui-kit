@@ -4,14 +4,16 @@ import {
   ForwardedRef,
   forwardRef,
   useEffect,
+  useEffectEvent,
   useMemo,
-  useRef,
   useState,
 } from 'react';
 import { useHover, useMove } from 'react-aria';
 
-import { useDebouncedValue, useEvent } from '../../_internal/hooks';
-import { mergeProps, useCombinedRefs } from '../../utils/react';
+import { useDebouncedValue } from '../../_internal/hooks/use-debounced-value';
+import { useEvent } from '../../_internal/hooks/use-event';
+import { mergeProps } from '../../utils/react/mergeProps';
+import { useCombinedRefs } from '../../utils/react/useCombinedRefs';
 
 import { CubePanelProps, Panel } from './Panel';
 
@@ -230,7 +232,6 @@ function ResizablePanel(
   props: CubeResizablePanelProps,
   ref: ForwardedRef<HTMLDivElement>,
 ) {
-  const timerRef = useRef<ReturnType<typeof setTimeout>>(null);
   const isControllable = typeof props.size === 'number';
   const {
     isDisabled,
@@ -245,6 +246,23 @@ function ResizablePanel(
   const isHorizontal = direction === 'left' || direction === 'right';
 
   ref = useCombinedRefs(ref);
+
+  function clamp(size: number) {
+    if (typeof maxSize === 'number') {
+      size = Math.min(maxSize, size);
+    }
+
+    if (typeof minSize === 'number' || !minSize) {
+      size = Math.max((minSize as number) || 0, size);
+    }
+
+    return Math.max(size, 0);
+  }
+
+  const [size, setSize] = useState<number>(
+    providedSize != null ? clamp(providedSize) : 200,
+  );
+  const [visualSize, setVisualSize] = useState<number | null>(null);
 
   const onResize = useEvent(() => {
     if (ref?.current) {
@@ -263,23 +281,6 @@ function ResizablePanel(
     ref,
     onResize,
   });
-
-  function clamp(size: number) {
-    if (typeof maxSize === 'number') {
-      size = Math.min(maxSize, size);
-    }
-
-    if (typeof minSize === 'number' || !minSize) {
-      size = Math.max((minSize as number) || 0, size);
-    }
-
-    return Math.max(size, 0);
-  }
-
-  let [size, setSize] = useState<number>(
-    providedSize != null ? clamp(providedSize) : 200,
-  );
-  let [visualSize, setVisualSize] = useState<number | null>(null);
 
   let { moveProps } = useMove({
     onMoveStart(e) {
@@ -321,9 +322,9 @@ function ResizablePanel(
   // Since we sync provided size and the local one in two ways,
   // we need a way to prevent infinite loop in some cases.
   // We will run this in setTimeout and make sure it will get the most recent state.
-  const notifyChange = useEvent(() => {
+  const reconcileProvidedSize = useEffectEvent(() => {
     setSize((size) => {
-      if (providedSize && Math.abs(providedSize - size) > 0.5) {
+      if (providedSize != null && Math.abs(providedSize - size) > 0.5) {
         return providedSize;
       }
 
@@ -333,26 +334,29 @@ function ResizablePanel(
 
   useEffect(() => {
     onResize();
-  }, [size, isDisabled]);
+  }, [size, isDisabled, isHorizontal, onResize]);
+
+  // Notifications follow measurement/drag changes. Callback replacement and
+  // controlled-prop updates must not echo a previous measurement to the parent.
+  const notifySizeChange = useEffectEvent(
+    (next: number | null, dragging: boolean) => {
+      if (
+        !dragging &&
+        next != null &&
+        (providedSize == null || Math.abs(providedSize - next) > 0.5)
+      ) {
+        onSizeChange?.(Math.round(next));
+      }
+    },
+  );
 
   useEffect(() => {
-    if (
-      !isDragging &&
-      visualSize != null &&
-      (providedSize == null || Math.abs(providedSize - visualSize) > 0.5)
-    ) {
-      onSizeChange?.(Math.round(visualSize));
-    }
+    notifySizeChange(visualSize, isDragging);
   }, [visualSize, isDragging]);
 
   useEffect(() => {
-    timerRef.current = setTimeout(notifyChange, 500);
-
-    return () => {
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
-      }
-    };
+    const timer = setTimeout(reconcileProvidedSize, 500);
+    return () => clearTimeout(timer);
   }, [providedSize]);
 
   const mods = useMemo(() => {

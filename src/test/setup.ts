@@ -26,7 +26,7 @@ global.ResizeObserver = class ResizeObserver {
 
 configure({ testIdAttribute: 'data-qa', asyncUtilTimeout: 15000 });
 
-// Configure React 18 testing environment to support act()
+// Configure the React testing environment to support act()
 // This tells React that we're in a testing environment and should use act() for updates
 global.IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -61,7 +61,7 @@ const suppressedConsoleError = (...args: any[]) => {
   const firstArg = args[0];
   if (typeof firstArg === 'string') {
     const msg = firstArg.toLowerCase();
-    // React 18/19 act() environment/config warnings
+    // React act() environment/config warnings
     if (
       msg.includes(
         'the current testing environment is not configured to support act',

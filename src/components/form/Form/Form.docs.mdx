@@ -173,7 +173,7 @@ A `Form` placed directly in a `Dialog`, wrapping its `Content` and `Footer`, lay
 
 ## React Compiler
 
-The modern controller, subscriptions, input binding, and dialog workflows are tested with React Compiler on React 18 and 19. The published library remains uncompiled. Consumer render code must use `Form.useValue`, `Form.useFieldState`, or selectors to subscribe; imperative getters do not subscribe. This does not make legacy mutable instance reads Compiler-safe.
+The modern controller, subscriptions, input binding, and dialog workflows are tested with React Compiler on React 19.3. The published library is compiled using React’s native compiler runtime; consumers do not need to enable Compiler. Consumer render code must use `Form.useValue`, `Form.useFieldState`, or selectors to subscribe; imperative getters do not subscribe. This does not make legacy mutable instance reads Compiler-safe.
 
 ## Accessibility
 

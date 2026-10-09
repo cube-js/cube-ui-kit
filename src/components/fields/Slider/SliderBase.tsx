@@ -244,9 +244,9 @@ function SliderBase(
   });
 }
 
-// `forwardRef`, not a plain function reading `props.ref`: React 18 never
-// passes `ref` to a plain function component. The cast keeps the props as
-// declared, since `forwardRef`'s `Omit<…, 'ref'>` loses the required `children`.
+// Preserve the existing FocusableRef wrapper contract. The cast keeps the
+// props as declared, since `forwardRef`'s `Omit<…, 'ref'>` loses required
+// `children`; migrate this wrapper with its public declaration fixtures.
 const _SliderBase = forwardRef(
   SliderBase as ForwardRefRenderFunction<
     FocusableRefValue<HTMLDivElement>,

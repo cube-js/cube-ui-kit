@@ -2,6 +2,7 @@ import { resolve } from 'node:path';
 
 import { defineConfig } from 'vitest/config';
 
+import { moduleSpecifiers } from './scripts/compiler/check-package.mjs';
 import { compileReact } from './scripts/compiler/transform.mjs';
 
 export default defineConfig({
@@ -33,7 +34,9 @@ export default defineConfig({
                     'DialogConsumer',
                     'ControlledConsumer',
                   ].every((name) => report.compiled.includes(name)) ||
-                  !result.code.includes('react-compiler-runtime')
+                  !moduleSpecifiers(result.code).includes(
+                    'react/compiler-runtime',
+                  )
                 ) {
                   throw new Error(
                     'Package consumer must actually compile without diagnostics.',

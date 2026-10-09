@@ -2,7 +2,7 @@
 
 Modern Form is opt-in per form. Existing `Form.useForm()` calls, roots without a controller, and legacy wrappers continue to use the legacy engine. Start with a leaf form whose defaults, conditional fields, and submission payload are understood. Do not swap the backend of a mounted root: choose one component at a migration boundary and remount when changing that choice.
 
-The [compiled consumer examples](https://github.com/cube-js/cube-ui-kit/blob/main/typecheck/consumer/modern-form-examples.tsx) cover creation with a colocated selector, narrow descendant subscriptions, conditional fields, async defaults, a custom control, and cancellable validation. `pnpm build && pnpm test:types:consumer` checks those examples against the declarations consumers receive. The published library is compiled for React 18 and 19; CI checks adapters and packaged consumers both with and without React Compiler. See [the compiler guide](../scripts/compiler/README.md).
+The [compiled consumer examples](https://github.com/cube-js/cube-ui-kit/blob/main/typecheck/consumer/modern-form-examples.tsx) cover creation with a colocated selector, narrow descendant subscriptions, conditional fields, async defaults, a custom control, and cancellable validation. `pnpm build && pnpm test:types:consumer` checks those examples against the declarations consumers receive. The published library is compiled for React 19.3 or newer; CI checks adapters and packaged consumers both with and without React Compiler. See [the compiler guide](../scripts/compiler/README.md).
 
 ## Choose the backend explicitly
 
@@ -60,6 +60,6 @@ The [Modern Form guide](modern-form-guide.md) is the reference for implementing 
 5. Adapt validators' success values and cancellation. Declare external captured inputs in `deps` and sibling form paths in `dependsOn`.
 6. Decide whether hidden fields are retained and whether submission uses active or all values. Verify the actual payload with conditional sections both visible and hidden.
 7. Test required/async errors, double submit, server failure, reset, unmount during requests, keyboard focus, and navigation guards. Modern Submit stays enabled after validation errors; pass `disableOnInvalid` to retain the legacy disabled-button behavior. Verify this visible change with QA. Confirm unaffected fields and the creator do not rerender on each keystroke.
-8. Run source and built-consumer type checks, the frozen legacy contract suite, React 18/19 compiler checks, and relevant browser checks. Review visual changes before merging.
+8. Run source and built-consumer type checks, the frozen legacy contract suite, React 19 source/compiled checks, and relevant browser checks. Review visual changes before merging.
 
 To revert a migrated form, render the preserved legacy component again and restore its legacy defaults/callback/validator contracts. Remount the boundary and deliberately transfer serializable draft values if needed. Do not cast the modern controller to a legacy instance or toggle hook implementations in place.

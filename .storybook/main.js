@@ -56,7 +56,7 @@ const config = {
     config.optimizeDeps ??= {};
     config.optimizeDeps.include = [
       ...(config.optimizeDeps.include ?? []),
-      'react-compiler-runtime',
+      'react/compiler-runtime',
     ];
 
     config.build ??= {};

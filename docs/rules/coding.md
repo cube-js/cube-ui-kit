@@ -11,8 +11,7 @@
 # Coding rules
 
 - Use named imports from react (like `useState`) instead of using the `React` instance. Avoid: `React.useState`.
-- Prefer stable `useEvent` callbacks when it's possible.
-- **Don't add `useMemo` or `useCallback` for performance.** The build runs React Compiler over `src/`, and it memoizes every derived value, object and handler in a component or hook it compiles. Write the plain expression. Reach for a manual memo only where the identity itself is the contract, because the compiler bails out of some functions and `pnpm test` runs uncompiled source: a callback ref, a value in an effect's dependencies (directly or through what it feeds), a `useSyncExternalStore` subscription, a value created once per mount (an id, an instance), or an imperative API object in a context. A multi-branch computation reads better as a named module-level function than as a memo. Check that a changed file still compiles with `pnpm diagnostics:compiler` — see [scripts/compiler/README.md](../../scripts/compiler/README.md).
+- Follow [React Compiler and callback rules](react-compiler.md): plain handlers and derived values by default; local Effect Events for effect-owned notifications; `useEvent` only for verified retention contracts. Keep resource dependencies reactive, manual memo dependencies complete, and per-mount lifetime in state/ref ownership. Run both diagnostics ratchets after runtime edits.
 
 # Imports
 

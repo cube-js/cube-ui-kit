@@ -29,7 +29,7 @@ export function compileReact(source, id) {
       [
         compiler,
         {
-          target: '18',
+          target: '19',
           // Known diagnostics bail out of that function only. The ratchet below
           // rejects new diagnostics instead of silently reducing our coverage.
           panicThreshold: 'none',

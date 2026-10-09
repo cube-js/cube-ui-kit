@@ -16,7 +16,7 @@ concurrency:
 permissions:
   contents: write
   pull-requests: write
-  id-token: write  # Required for trusted publishing (OIDC)
+  id-token: write # Required for trusted publishing (OIDC)
 
 jobs:
   publish-canary:
@@ -52,7 +52,7 @@ jobs:
           echo "OIDC available: ${{ env.ACTIONS_ID_TOKEN_REQUEST_URL != '' }}"
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
       - name: Set version info
         id: version
@@ -67,6 +67,9 @@ jobs:
 
       - name: Build project
         run: pnpm build
+
+      - name: Verify React peers and native compiler package output
+        run: pnpm check:react-package
 
       - name: Clear .npmrc auth token (use OIDC instead)
         run: npm config delete //registry.npmjs.org/:_authToken || true
@@ -198,7 +201,7 @@ jobs:
           echo "OIDC available: ${{ env.ACTIONS_ID_TOKEN_REQUEST_URL != '' }}"
 
       - name: Install Dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
       - name: Clear .npmrc auth token (use OIDC instead)
         run: npm config delete //registry.npmjs.org/:_authToken || true
@@ -256,7 +259,7 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
       - name: Publish to Chromatic
         id: publish_chromatic

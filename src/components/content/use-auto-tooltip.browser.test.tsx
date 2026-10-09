@@ -166,8 +166,8 @@ describe('useAutoTooltip overflow measurement', () => {
      * The crash is thrown straight out of the `flushSync` that schedules the
      * update past the limit, so it fails the loop itself. Every row overflows,
      * so each one is a candidate link, and every verdict must still arrive once
-     * the rows have mounted. React 18 counts only Sync-lane work as nested, so
-     * this guards React 19 behaviour; under 18 it would pass either way.
+     * the rows have mounted. This guards React's nested-update behavior for
+     * mount measurements scheduled across synchronous commits.
      */
     it(
       'lets a list mount rows one sync commit at a time',
@@ -555,12 +555,9 @@ describe('useAutoTooltip overflow measurement', () => {
     });
 
     /**
-     * React 18 Strict Mode replays every effect on mount, cleanup then setup,
-     * but leaves refs attached. React 19 detaches and re-attaches them too.
-     * Teardown kept in an effect therefore dropped the label and its observer
-     * in the replay while the label stayed mounted, and nothing brought them
-     * back: the queued first check found no node, and later resizes went
-     * unobserved. Only the React 18 run can fail here.
+     * Strict Mode replays attachment and effect lifecycles. The label must
+     * retain observer ownership after replay, complete its queued first
+     * measurement, and react to later resizes.
      */
     it('keeps measuring a label mounted in Strict Mode', async () => {
       function Resizable() {

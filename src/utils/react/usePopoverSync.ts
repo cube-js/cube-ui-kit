@@ -1,4 +1,10 @@
-import { RefObject, useContext, useEffect, useRef } from 'react';
+import {
+  RefObject,
+  useContext,
+  useEffect,
+  useEffectEvent,
+  useRef,
+} from 'react';
 
 import { EventBusContext, useEventBus } from './useEventBus';
 
@@ -139,9 +145,9 @@ function isLogicalDescendantOf(
  * race that surfaces only under rapid trigger switching, which is hard to
  * reproduce in tests):
  *
- * 1. `isOpen` and `onClose` are read through refs inside the listener, so the
- *    subscription effect's dep array does NOT include `isOpen`/`onClose`. This
- *    keeps the listener identity stable across open/close transitions and
+ * 1. Effect Events read current `isOpen`, `onClose` and container data, so the
+ *    subscription effect's dep array includes only resource configuration. This
+ *    keeps the existing subscriptions across open/close transitions and
  *    avoids the unsubscribe-emit-resubscribe window where an emit can be
  *    delivered to a stale listener (or no listener).
  * 2. The emit fires only on the `false -> true` transition, gated by
@@ -164,20 +170,9 @@ export function usePopoverSync({
 }: UsePopoverSyncOptions): void {
   const { emit, on } = useEventBus();
 
-  const isOpenRef = useRef(isOpen);
-  useEffect(() => {
-    isOpenRef.current = isOpen;
-  }, [isOpen]);
-
-  const onCloseRef = useRef(onClose);
-  useEffect(() => {
-    onCloseRef.current = onClose;
-  }, [onClose]);
-
-  // Track the latest containerRef via a stable ref-of-refs so the listener
-  // never resubscribes when callers pass freshly-created ref wrappers across
-  // renders. Same pattern as `onCloseRef` above — without this the listener's
-  // effect would churn for any caller that doesn't memoize its refs.
+  // Track the latest containerRef via a stable ref-of-refs so the
+  // registry getters always see newly supplied ref wrappers. These getters
+  // are retained outside effects and cannot use Effect Events.
   const containerRefRef = useRef(containerRef);
   useEffect(() => {
     containerRefRef.current = containerRef;
@@ -188,48 +183,30 @@ export function usePopoverSync({
     triggerRefRef.current = triggerRef;
   }, [triggerRef]);
 
+  const onPeerOpen = useEffectEvent((data: PopoverOpenPayload) => {
+    if (data.menuId === menuId || !isOpen) return;
+    const container = containerRef?.current ?? null;
+    // Logical containment follows registry links across sibling portals.
+    if (isLogicalDescendantOf(data.triggerEl, menuId, container)) return;
+    onClose();
+  });
+
+  const onDismissAncestor = useEffectEvent(
+    (data: PopoverDismissAncestorPayload) => {
+      if (!isOpen) return;
+      const container = containerRef?.current;
+      const from = data?.from;
+      if (!container || !from) return;
+      if (container.contains(from)) onClose();
+    },
+  );
+
   useEffect(() => {
     if (!enabled) return;
 
-    // `popover:open` listener — gated on `closeOnPeerOpen`. Modals/trays opt
-    // out so a peer popover opening cannot bypass the dialog's
-    // `isDismissable` / `onClose` handling and call `state.close()` directly.
-    // Note: the EMIT side (lower in this hook) still fires regardless, so
-    // opening a modal still correctly dismisses peer popovers.
-    const offOpen = closeOnPeerOpen
-      ? on('popover:open', (data: PopoverOpenPayload) => {
-          if (data.menuId === menuId || !isOpenRef.current) return;
-          const container = containerRefRef.current?.current ?? null;
-          // Nested-popover guard: stay open when the opening peer's trigger is
-          // a LOGICAL descendant of our overlay. Direct DOM containment only
-          // covers the first level — for grand-child popovers the trigger lives
-          // in a sibling portal, so we walk the registered popover chain back
-          // up via each parent's trigger element. Without this, opening a
-          // third-level `SubMenuTrigger` would close every ancestor menu.
-          if (isLogicalDescendantOf(data.triggerEl, menuId, container)) return;
-          onCloseRef.current();
-        })
-      : null;
-
-    // `popover:dismiss-ancestor` is emitted by `Button` / `ItemButton` (and any
-    // consumer using `useDismissParentPopover`) after their `onPress` runs.
-    // Only popover-type overlays subscribe; modals/trays opt out via
-    // `dismissOnInnerButtonPress: false` so a Button inside a Dialog content
-    // does NOT auto-close the Dialog.
+    const offOpen = closeOnPeerOpen ? on('popover:open', onPeerOpen) : null;
     const offDismiss = dismissOnInnerButtonPress
-      ? on(
-          'popover:dismiss-ancestor',
-          (data: PopoverDismissAncestorPayload) => {
-            if (!isOpenRef.current) return;
-            const container = containerRefRef.current?.current;
-            const from = data?.from;
-            // Require both a container and an originating element so we can do
-            // the contains-check. Hosts without `containerRef` (e.g.
-            // `use-anchored-menu`, `use-context-menu`) are silently no-op.
-            if (!container || !from) return;
-            if (container.contains(from)) onCloseRef.current();
-          },
-        )
+      ? on('popover:dismiss-ancestor', onDismissAncestor)
       : null;
 
     return () => {

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useEffectEvent, useState } from 'react';
 import invariant from 'tiny-invariant';
 
 import { usePortalContext } from './PortalProvider';
@@ -10,15 +10,16 @@ import { PortalProps } from './types';
 export function usePortal(props: PortalProps) {
   const { children, isDisabled = false, root = null, onMount } = props;
 
-  const onMountRef = useRef(onMount);
+  const notifyMount = useEffectEvent(() => onMount?.());
   const portalContext = usePortalContext();
   const [mountRoot, setMountRoot] = useState<HTMLElement | null>(null);
-  onMountRef.current = onMount;
 
   useEffect(() => {
     if (!isDisabled) {
       const contextRoot = portalContext.root;
-      const currentRoot = root?.current ?? null;
+      // Keep the ref in this closure so Compiler tracks identity, not a node assigned during commit.
+      const explicitRoot = root;
+      const currentRoot = explicitRoot?.current ?? null;
       const currentContextRoot = contextRoot?.current ?? null;
 
       invariant(
@@ -32,7 +33,7 @@ export function usePortal(props: PortalProps) {
 
   useEffect(() => {
     if (isDisabled || mountRoot) {
-      onMountRef.current?.();
+      notifyMount();
     }
   }, [isDisabled, mountRoot]);
 

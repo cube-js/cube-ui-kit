@@ -219,3 +219,7 @@ Use `query*` when checking non-existence, `getAll*` for multiple elements.
 
 - `screen.debug()` - print DOM
 - `waitFor(() => {...}, { timeout: 5000 })` - custom timeout
+
+## React 19 and compiled behavior
+
+Follow the [React Compiler rules](react-compiler.md). Run affected behavior in source and release-compiled modes. Preserve Strict Mode, hydration, observer/ref cleanup, accessibility, and frozen Form contracts. Callback migrations check current committed data, resource configuration and cleanup, and retained identity only where that is a real contract. Built/packed consumer fixtures cover public declarations and native runtime imports. Whole-library Hooks diagnostics and Compiler coverage must not regress; a baseline update is not a fix for a failing gate.
