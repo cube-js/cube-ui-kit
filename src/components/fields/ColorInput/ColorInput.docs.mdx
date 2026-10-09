@@ -10,10 +10,6 @@ An input for a single color. It reads and writes color **text** — hex, `rgb()`
 
 Every conversion goes through [Glaze](https://github.com/tenphi/glaze), so the canonical value the picker holds is OKHSL: bounded on every channel, and always inside the sRGB gamut. That is what makes an out-of-gamut state impossible and lets the same value be re-serialized into any of the supported notations without drift.
 
-## Popover presentation
-
-The picker always opens an anchored popover on desktop and mobile. Its presentation is fixed. On mobile, the popover replaces the previous tray layout.
-
 ## When to Use
 
 - Theme and branding forms — a seed color, an accent, a chart series color
