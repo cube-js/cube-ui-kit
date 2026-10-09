@@ -65,7 +65,13 @@ function ToggleLayout({
           <button>Main content</button>
           <button
             data-qa="content-overflow"
-            style={{ position: 'absolute', top: -30, left: 130 }}
+            style={{
+              position: 'absolute',
+              // Keep the marker outside on an axis the content inset cannot move.
+              ...(side === 'top'
+                ? { top: 130, right: '100%' }
+                : { top: -30, left: 130 }),
+            }}
           >
             Content overflow
           </button>
@@ -497,6 +503,16 @@ describe('Layout.Panel animation bounds', () => {
           screen.getByRole('button', { name: 'Toggle panel' }),
         );
         const { panel, animations } = await freezeSlide();
+        if (side === 'top') {
+          // Content can settle while the panel is paused; overflow stays outside.
+          await act(async () => {
+            screen
+              .getByTestId('bounded-layout')
+              .querySelector('[data-element="Inner"]')!
+              .getAnimations()
+              .forEach((animation) => animation.finish());
+          });
+        }
         const layout = screen
           .getByTestId('bounded-layout')
           .getBoundingClientRect();
