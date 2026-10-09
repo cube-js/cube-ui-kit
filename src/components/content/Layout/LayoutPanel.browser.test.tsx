@@ -141,6 +141,44 @@ async function freezeSlide() {
   return { panel, animations };
 }
 
+async function expectSynchronizedSlide(side: Side) {
+  const panel = await screen.findByTestId('sliding-panel');
+  await waitFor(() => {
+    expect(
+      panel
+        .getAnimations()
+        .some(
+          (animation) =>
+            animation instanceof CSSTransition &&
+            animation.transitionProperty === 'transform' &&
+            animation.startTime !== null,
+        ),
+    ).toBe(true);
+  });
+  const inner = screen
+    .getByTestId('bounded-layout')
+    .querySelector<HTMLElement>('[data-element="Inner"]')!;
+  const handler = screen.getByTestId('PanelResizeHandler');
+  const transition = (element: HTMLElement, property: string) =>
+    element
+      .getAnimations()
+      .find(
+        (animation) =>
+          animation instanceof CSSTransition &&
+          animation.transitionProperty === property,
+      )!;
+  const panelStart = transition(panel, 'transform').startTime as number;
+  expect(
+    Math.abs((transition(inner, side).startTime as number) - panelStart),
+  ).toBeLessThan(1);
+  expect(
+    Math.abs(
+      (transition(handler, 'transform').startTime as number) - panelStart,
+    ),
+  ).toBeLessThan(1);
+  return [panel, handler, inner].flatMap((element) => element.getAnimations());
+}
+
 function outsidePoint(side: Side, layout: DOMRect) {
   switch (side) {
     case 'left':
@@ -156,6 +194,110 @@ function outsidePoint(side: Side, layout: DOMRect) {
 
 // jsdom cannot observe transformed painting or browser hit testing.
 describe('Layout.Panel animation bounds', () => {
+  // Native animation timelines expose a frame mismatch that jsdom cannot observe.
+  it.each(['left', 'right', 'top', 'bottom'] as const)(
+    'starts the %s panel, handler and content motion together on opening and closing',
+    async (side) => {
+      await page.viewport(800, 600);
+      renderWithRoot(<ToggleLayout side={side} />);
+      const toggle = screen.getByRole('button', { name: 'Toggle panel' });
+      await userEvent.click(toggle);
+      const entering = await expectSynchronizedSlide(side);
+      await act(async () =>
+        entering.forEach((animation) => animation.finish()),
+      );
+      await expectIdleOverflow();
+      await userEvent.click(toggle);
+      const exiting = await expectSynchronizedSlide(side);
+      await act(async () => exiting.forEach((animation) => animation.finish()));
+      await waitFor(() =>
+        expect(screen.queryByTestId('sliding-panel')).toBeNull(),
+      );
+      expect(
+        screen
+          .getByTestId('bounded-layout')
+          .style.getPropertyValue(`--inset-${side}`),
+      ).toBe('0px');
+    },
+  );
+
+  it.each(['disabled', 'dialog'] as const)(
+    'initializes visual visibility when enabling an animated panel from %s mode',
+    async (previousMode) => {
+      await page.viewport(800, 600);
+      const view = renderWithRoot(
+        <ToggleLayout
+          side="left"
+          openOverride={false}
+          hasTransition={previousMode !== 'disabled'}
+          mode={previousMode === 'dialog' ? 'dialog' : 'default'}
+        />,
+      );
+      view.rerender(<ToggleLayout side="left" openOverride />);
+      await expectIdleOverflow();
+      await waitFor(() =>
+        expect(
+          getComputedStyle(screen.getByTestId('sliding-panel'))
+            .transitionProperty,
+        ).toBe('transform'),
+      );
+      expect(
+        screen
+          .getByTestId('bounded-layout')
+          .style.getPropertyValue('--inset-left'),
+      ).toBe('102px');
+      view.rerender(<ToggleLayout side="left" openOverride={false} />);
+      const animations = await expectSynchronizedSlide('left');
+      await act(async () =>
+        animations.forEach((animation) => animation.finish()),
+      );
+      await waitFor(() =>
+        expect(screen.queryByTestId('sliding-panel')).toBeNull(),
+      );
+      expect(
+        screen
+          .getByTestId('bounded-layout')
+          .style.getPropertyValue('--inset-left'),
+      ).toBe('0px');
+    },
+  );
+
+  it.each(['close', 'sticky'] as const)(
+    'clears content insets after changing side and %s during transition reconfiguration',
+    async (change) => {
+      await page.viewport(800, 600);
+      const view = renderWithRoot(<ToggleLayout side="left" initiallyOpen />);
+      await expectIdleOverflow();
+      await waitFor(() =>
+        expect(
+          getComputedStyle(screen.getByTestId('sliding-panel'))
+            .transitionProperty,
+        ).toBe('transform'),
+      );
+      view.rerender(
+        <ToggleLayout
+          side="right"
+          openOverride={change !== 'close'}
+          mode={change === 'sticky' ? 'sticky' : 'default'}
+        />,
+      );
+      if (change === 'close') {
+        const { animations } = await freezeSlide();
+        await act(async () =>
+          animations.forEach((animation) => animation.finish()),
+        );
+        await waitFor(() =>
+          expect(screen.queryByTestId('sliding-panel')).toBeNull(),
+        );
+      } else {
+        await expectIdleOverflow();
+      }
+      const layout = screen.getByTestId('bounded-layout');
+      expect(layout.style.getPropertyValue('--inset-left')).toBe('0px');
+      expect(layout.style.getPropertyValue('--inset-right')).toBe('0px');
+    },
+  );
+
   it.each(['inline', 'stylesheet'] as const)(
     'contains motion with a configured %s clip margin and restores its latest value',
     async (source) => {
