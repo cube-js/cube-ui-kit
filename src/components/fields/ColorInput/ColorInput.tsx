@@ -383,7 +383,6 @@ export const ColorInput = forwardRef(function ColorInput(
           <DialogTrigger
             hideArrow
             type="popover"
-            mobileType="popover"
             placement={placement}
             targetRef={targetRefProp ?? targetRef}
             isOpen={controlledOpen ?? isOpen}

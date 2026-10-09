@@ -162,7 +162,6 @@ function DatePicker<T extends DateValue>(
         <DialogTrigger
           hideArrow
           type="popover"
-          mobileType="popover"
           placement={props.placement ?? 'bottom right'}
           targetRef={props.targetRef ?? targetRef}
           isOpen={isOpen}

@@ -258,7 +258,6 @@ export const ColorPicker = forwardRef(function ColorPicker(
       <DialogTrigger
         hideArrow
         type="popover"
-        mobileType="popover"
         placement={placement}
         targetRef={targetRef}
         isOpen={controlledOpen ?? isOpen}

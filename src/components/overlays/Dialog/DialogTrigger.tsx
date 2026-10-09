@@ -49,7 +49,7 @@ export interface CubeDialogTriggerProps
     | 'fullscreen'
     | 'fullscreenTakeover'
     | 'panel';
-  /** The type of Dialog that should be rendered when on a mobile device. See DialogTrigger [types section](#dialog-types) for an explanation on each. */
+  /** The type of Dialog rendered on mobile, defaulting to `type`. See DialogTrigger [types section](#dialog-types) for an explanation on each. */
   mobileType?:
     | 'modal'
     | 'tray'
@@ -125,7 +125,7 @@ export function DialogTrigger(props: CubeDialogTriggerProps) {
   // if a function is passed as the second child, it won't appear in toArray
   let [trigger, content] = children;
 
-  // On small devices, show a modal or tray instead of a popover.
+  // Apply the mobile type at the configured breakpoint.
   let isMobile = useMediaQuery(`(max-width: ${mobileViewport}px)`);
   if (isMobile) {
     // handle cases where desktop popovers need a close button for the mobile modal view

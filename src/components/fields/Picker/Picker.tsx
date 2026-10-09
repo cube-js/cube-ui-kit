@@ -818,7 +818,6 @@ export const Picker = forwardRef(function Picker<T extends object>(
     >
       <DialogTrigger
         type="popover"
-        mobileType="popover"
         placement={placement}
         targetRef={targetRef}
         isOpen={isPopoverOpen}

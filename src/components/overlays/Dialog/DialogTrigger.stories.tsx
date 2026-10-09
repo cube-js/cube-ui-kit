@@ -53,8 +53,10 @@ export default {
         'popover',
       ],
       control: { type: 'radio' },
-      description:
-        'The type of Dialog that should be rendered when on a mobile device',
+      description: 'The Dialog type on mobile; inherits type unless overridden',
+      table: {
+        defaultValue: { summary: 'type' },
+      },
     },
     placement: {
       options: [

@@ -22,7 +22,7 @@ DialogTrigger serves as a wrapper around a Dialog and its associated trigger, li
 
 - **`children`** — The Dialog and its trigger element
 - **`type`** `'modal' | 'popover' | 'tray' | 'fullscreen' | 'fullscreenTakeover' | 'panel'` (default: `modal`) — The type of Dialog that should be rendered
-- **`mobileType`** `'modal' | 'tray' | 'fullscreen' | 'fullscreenTakeover' | 'panel' | 'popover'` — The type of Dialog that should be rendered when on a mobile device
+- **`mobileType`** `'modal' | 'tray' | 'fullscreen' | 'fullscreenTakeover' | 'panel' | 'popover'` (default: `type`) — The Dialog type on mobile. Inherits `type` unless overridden, so `type="popover"` stays a popover on mobile without an explicit `mobileType`.
 - **`placement`** `'top' | 'bottom' | 'left' | 'right' | 'top start' | 'top end' | 'bottom start' | 'bottom end' | 'left top' | 'left bottom' | 'right top' | 'right bottom'` — The placement of the dialog relative to its trigger
 - **`hideArrow`** `boolean` (default: `false`) — Whether a popover type Dialog's arrow should be hidden
 - **`mobileViewport`** `number` (default: `700`) — The screen breakpoint for the mobile type

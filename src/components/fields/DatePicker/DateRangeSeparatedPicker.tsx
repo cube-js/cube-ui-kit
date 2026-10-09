@@ -239,7 +239,6 @@ function DateRangeSeparatedPicker<T extends DateValue>(
           <DialogTrigger
             hideArrow
             type="popover"
-            mobileType="popover"
             placement={props.placement ?? 'bottom right'}
             targetRef={props.targetRef ?? targetRef}
             isOpen={startState.isOpen}
@@ -303,7 +302,6 @@ function DateRangeSeparatedPicker<T extends DateValue>(
           <DialogTrigger
             hideArrow
             type="popover"
-            mobileType="popover"
             placement={props.placement ?? 'bottom right'}
             targetRef={props.targetRef ?? targetRef}
             isOpen={endState.isOpen}

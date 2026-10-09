@@ -178,7 +178,6 @@ function DateRangePicker<T extends DateValue>(
         <DialogTrigger
           hideArrow
           type="popover"
-          mobileType="popover"
           placement={placement}
           targetRef={targetRefProp ?? targetRef}
           isOpen={isOpen}
