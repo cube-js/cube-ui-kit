@@ -45,6 +45,7 @@ import {
   useLayoutRefsContext,
   useLayoutStateContext,
 } from './LayoutContext';
+import { LayoutPanelTransition } from './LayoutPanelTransition';
 import { clampSize, getOppositeSide, resolveCssSize } from './utils';
 
 // Resize handler dimensions
@@ -483,6 +484,18 @@ function LayoutPanel(
   // Panel open state
   const [internalIsOpen, setInternalIsOpen] = useState(defaultIsOpen);
   const isOpen = providedIsOpen ?? internalIsOpen;
+  const isTransitionActive =
+    hasTransition && !isDialogMode && layoutRefs.isPanelContainerReady;
+  const [visualState, setVisualState] = useState({
+    isShown: isOpen,
+    isTransitionActive,
+  });
+
+  // A newly mounted DisplayTransition starts at the requested visibility.
+  if (visualState.isTransitionActive !== isTransitionActive) {
+    setVisualState({ isShown: isOpen, isTransitionActive });
+  }
+  const isPanelShown = isTransitionActive ? visualState.isShown : isOpen;
 
   // Dialog open state
   const [internalIsDialogOpen, setInternalIsDialogOpen] =
@@ -625,7 +638,7 @@ function LayoutPanel(
   // loop. `clampValue` depends on the opposite panel's context size, so clamping here
   // would create a period-2 oscillation through shared context. CSS --max-size handles
   // visual clamping immediately; the auto-shrink effect converges `size` state.
-  const effectivePanelSize = isOpen && mode === 'default' ? size : 0;
+  const effectivePanelSize = isPanelShown && mode === 'default' ? size : 0;
   const effectiveInsetSize = Math.round(
     effectivePanelSize +
       (isResizable && effectivePanelSize > 0 ? RESIZABLE_INSET_OFFSET : 0),
@@ -849,10 +862,16 @@ function LayoutPanel(
   // Panel with transition - portal to panel container
   if (hasTransition) {
     return createPortal(
-      <DisplayTransition isShown={isOpen} animateOnMount={false}>
-        {({ isShown, ref: transitionRef }) =>
-          renderPanelContent(!isShown, transitionRef)
-        }
+      <DisplayTransition
+        isShown={isOpen}
+        animateOnMount={false}
+        onToggle={(isShown) => setVisualState({ isShown, isTransitionActive })}
+      >
+        {({ isShown, isExiting, ref: transitionRef }) => (
+          <LayoutPanelTransition isShown={isShown} isExiting={isExiting}>
+            {renderPanelContent(!isShown, transitionRef)}
+          </LayoutPanelTransition>
+        )}
       </DisplayTransition>,
       portalContainer,
     );

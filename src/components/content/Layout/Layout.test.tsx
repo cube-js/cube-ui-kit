@@ -91,6 +91,19 @@ describe('Layout', () => {
     expect(screen.getByText('Panel text')).toBeInTheDocument();
   });
 
+  it('leaves dialog panels in their external portal', async () => {
+    renderWithRoot(
+      <Layout>
+        <Layout.Panel side="right" mode="dialog" isDialogOpen>
+          Dialog content
+        </Layout.Panel>
+      </Layout>,
+    );
+    const dialog = await screen.findByRole('dialog');
+    expect(dialog).toHaveTextContent('Dialog content');
+    expect(screen.getByTestId('Layout').contains(dialog)).toBe(false);
+  });
+
   it('renders Layout.PanelHeader', () => {
     renderWithRoot(
       <Layout>

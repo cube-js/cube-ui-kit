@@ -2,6 +2,7 @@ import {
   createContext,
   MutableRefObject,
   ReactNode,
+  useCallback,
   useContext,
   useMemo,
   useRef,
@@ -79,6 +80,12 @@ export const LayoutStateContext = createContext<LayoutStateContextValue | null>(
   null,
 );
 
+/** Private transition coordination; not part of the public Layout context API. */
+export const LayoutPanelTransitionContext = createContext<{
+  isClippingPanels: boolean;
+  registerPanelTransition: () => () => void;
+} | null>(null);
+
 export function useLayoutActionsContext(): LayoutActionsContextValue | null {
   return useContext(LayoutActionsContext);
 }
@@ -143,6 +150,7 @@ export function LayoutProvider({
   const [isDragging, setIsDragging] = useState(false);
   const [isReady, setIsReady] = useState(false);
   const [hasOverlayPanels, setHasOverlayPanels] = useState(false);
+  const [panelTransitionCount, setPanelTransitionCount] = useState(0);
   const [containerWidth, setContainerWidth] = useState(0);
   const [containerHeight, setContainerHeight] = useState(0);
 
@@ -208,6 +216,11 @@ export function LayoutProvider({
   const dismissOverlayPanels = useEvent(() => {
     overlayPanelCallbacks.current.forEach((dismiss) => dismiss());
   });
+
+  const registerPanelTransition = useCallback(() => {
+    setPanelTransitionCount((count) => count + 1);
+    return () => setPanelTransitionCount((count) => count - 1);
+  }, [setPanelTransitionCount]);
 
   const updateContainerSize = useEvent((width: number, height: number) => {
     setContainerWidth((prev) => (prev === width ? prev : width));
@@ -278,7 +291,14 @@ export function LayoutProvider({
     <LayoutRefsContext.Provider value={refsValue}>
       <LayoutActionsContext.Provider value={actionsValue}>
         <LayoutStateContext.Provider value={stateValue}>
-          {children}
+          <LayoutPanelTransitionContext.Provider
+            value={{
+              isClippingPanels: panelTransitionCount > 0,
+              registerPanelTransition,
+            }}
+          >
+            {children}
+          </LayoutPanelTransitionContext.Provider>
         </LayoutStateContext.Provider>
       </LayoutActionsContext.Provider>
     </LayoutRefsContext.Provider>
@@ -294,7 +314,9 @@ export function LayoutContextReset({ children }: { children: ReactNode }) {
     <LayoutRefsContext.Provider value={null}>
       <LayoutActionsContext.Provider value={null}>
         <LayoutStateContext.Provider value={null}>
-          {children}
+          <LayoutPanelTransitionContext.Provider value={null}>
+            {children}
+          </LayoutPanelTransitionContext.Provider>
         </LayoutStateContext.Provider>
       </LayoutActionsContext.Provider>
     </LayoutRefsContext.Provider>
