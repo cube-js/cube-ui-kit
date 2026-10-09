@@ -23,7 +23,8 @@ import { extractStyles, mergeStyleLayers } from '../../../utils/styles';
 import { useFieldProps, wrapWithField } from '../../form';
 import { Space } from '../../layout/Space';
 import { RangeCalendar } from '../../other/Calendar/RangeCalendar';
-import { Dialog, DialogTrigger } from '../../overlays/Dialog';
+import { Dialog } from '../../overlays/Dialog/Dialog';
+import { DialogTrigger } from '../../overlays/Dialog/DialogTrigger';
 
 import { DateInputBase } from './DateInputBase';
 import { DatePickerButton } from './DatePickerButton';
@@ -177,7 +178,6 @@ function DateRangePicker<T extends DateValue>(
         <DialogTrigger
           hideArrow
           type="popover"
-          mobileType="tray"
           placement={placement}
           targetRef={targetRefProp ?? targetRef}
           isOpen={isOpen}
@@ -189,7 +189,7 @@ function DateRangePicker<T extends DateValue>(
             {...mergeProps(buttonProps, focusPropsButton)}
             isDisabled={isDisabled}
           />
-          <Dialog {...dialogProps} width="max-content">
+          <Dialog {...dialogProps} width="max-content" overflow="auto">
             <RangeCalendar
               {...calendarProps}
               isDateUnavailable={props.isDateUnavailable}

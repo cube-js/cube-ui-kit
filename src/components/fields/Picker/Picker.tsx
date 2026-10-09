@@ -33,6 +33,7 @@ import { CloseIcon } from '../../../icons/CloseIcon';
 import { DirectionIcon } from '../../../icons/DirectionIcon';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
 import { allowEscapeToPropagate } from '../../../utils/react/escapePropagation';
+import { isTextOnly } from '../../../utils/react/isTextOnly';
 import { processSelectionArray } from '../../../utils/selection';
 import { extractStyles, mergeStyleLayers } from '../../../utils/styles';
 import { CubeItemButtonProps, ItemAction, ItemButton } from '../../actions';
@@ -44,7 +45,8 @@ import {
   useFieldProps,
   wrapWithField,
 } from '../../form';
-import { Dialog, DialogTrigger } from '../../overlays/Dialog';
+import { Dialog } from '../../overlays/Dialog/Dialog';
+import { DialogTrigger } from '../../overlays/Dialog/DialogTrigger';
 import { CubeListBoxProps, ListBox } from '../ListBox/ListBox';
 import { TriggerActions, TriggerIcon } from '../TriggerActions';
 
@@ -319,6 +321,14 @@ export const Picker = forwardRef(function Picker<T extends object>(
   // Popover state — used as controlled prop for DialogTrigger
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const triggerRef = useRef<FocusableRefValue<HTMLButtonElement>>(null);
+  const triggerAriaLabel =
+    ariaLabel ??
+    (isTextOnly(label)
+      ? String(label ?? '')
+      : t('picker.pickerAriaLabel', 'Picker'));
+  const pickerAriaLabel =
+    `${ariaLabel ?? (isTextOnly(label) ? String(label ?? '') : '')} ${t('picker.pickerAriaLabel', 'Picker')}`.trim();
+
   // Measured lazily on popover open instead of on every render
   const triggerWidthRef = useRef<number | undefined>(undefined);
 
@@ -712,7 +722,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
       descriptionPlacement={descriptionPlacement}
       styles={triggerStyles}
       {...keyboardProps}
-      aria-label={`${ariaLabel ?? label ?? ''}`}
+      aria-label={triggerAriaLabel}
     >
       {triggerContent}
     </ItemButton>
@@ -819,6 +829,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
         {() => (
           <Dialog
             qa="PickerOverlay"
+            aria-label={pickerAriaLabel}
             display="grid"
             styles={mergeStyleLayers(
               {
@@ -840,10 +851,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
               <ListBox
                 autoFocus
                 items={items ? (finalItems as typeof props.items) : undefined}
-                aria-label={`${ariaLabel ?? label ?? ''} ${t(
-                  'picker.pickerAriaLabel',
-                  'Picker',
-                )}`}
+                aria-label={pickerAriaLabel}
                 selectedKey={
                   selectionMode === 'single' ? effectiveSelectedKey : undefined
                 }

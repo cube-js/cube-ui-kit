@@ -21,7 +21,8 @@ import { mergeProps } from '../../../utils/react';
 import { extractStyles, mergeStyleLayers } from '../../../utils/styles';
 import { useFieldProps, wrapWithField } from '../../form';
 import { Calendar } from '../../other/Calendar/Calendar';
-import { Dialog, DialogTrigger } from '../../overlays/Dialog';
+import { Dialog } from '../../overlays/Dialog/Dialog';
+import { DialogTrigger } from '../../overlays/Dialog/DialogTrigger';
 
 import { DateInputBase } from './DateInputBase';
 import { DatePickerButton } from './DatePickerButton';
@@ -161,7 +162,6 @@ function DatePicker<T extends DateValue>(
         <DialogTrigger
           hideArrow
           type="popover"
-          mobileType="tray"
           placement={props.placement ?? 'bottom right'}
           targetRef={props.targetRef ?? targetRef}
           isOpen={isOpen}
@@ -173,7 +173,7 @@ function DatePicker<T extends DateValue>(
             {...mergeProps(buttonProps, focusPropsButton)}
             isDisabled={isDisabled}
           />
-          <Dialog {...dialogProps} width="max-content">
+          <Dialog {...dialogProps} width="max-content" overflow="auto">
             <Calendar {...calendarProps} />
             {showTimeField && (
               <TimeInput

@@ -23,7 +23,8 @@ import { mergeProps } from '../../../utils/react';
 import { extractStyles, mergeStyleLayers } from '../../../utils/styles';
 import { useFieldProps, wrapWithField } from '../../form';
 import { Calendar } from '../../other/Calendar/Calendar';
-import { Dialog, DialogTrigger } from '../../overlays/Dialog';
+import { Dialog } from '../../overlays/Dialog/Dialog';
+import { DialogTrigger } from '../../overlays/Dialog/DialogTrigger';
 
 import { DateInputBase } from './DateInputBase';
 import { DatePickerButton } from './DatePickerButton';
@@ -238,7 +239,6 @@ function DateRangeSeparatedPicker<T extends DateValue>(
           <DialogTrigger
             hideArrow
             type="popover"
-            mobileType="tray"
             placement={props.placement ?? 'bottom right'}
             targetRef={props.targetRef ?? targetRef}
             isOpen={startState.isOpen}
@@ -253,7 +253,11 @@ function DateRangeSeparatedPicker<T extends DateValue>(
               )}
               isDisabled={isDisabled}
             />
-            <Dialog {...startProps.dialogProps} width="max-content">
+            <Dialog
+              {...startProps.dialogProps}
+              width="max-content"
+              overflow="auto"
+            >
               <Calendar
                 {...startProps.calendarProps}
                 defaultFocusedValue={
@@ -298,7 +302,6 @@ function DateRangeSeparatedPicker<T extends DateValue>(
           <DialogTrigger
             hideArrow
             type="popover"
-            mobileType="tray"
             placement={props.placement ?? 'bottom right'}
             targetRef={props.targetRef ?? targetRef}
             isOpen={endState.isOpen}
@@ -314,7 +317,11 @@ function DateRangeSeparatedPicker<T extends DateValue>(
               {...mergeProps(endFocusProps.focusProps, endProps.buttonProps)}
               isDisabled={isDisabled}
             />
-            <Dialog {...endProps.dialogProps} width="max-content">
+            <Dialog
+              {...endProps.dialogProps}
+              width="max-content"
+              overflow="auto"
+            >
               <Calendar
                 {...endProps.calendarProps}
                 defaultFocusedValue={

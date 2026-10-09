@@ -26,7 +26,8 @@ import { FieldBaseProps } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
 import { ItemAction, ItemActionProvider } from '../../actions';
 import { useFieldProps } from '../../form';
-import { Dialog, DialogTrigger } from '../../overlays/Dialog';
+import { Dialog } from '../../overlays/Dialog/Dialog';
+import { DialogTrigger } from '../../overlays/Dialog/DialogTrigger';
 import { ColorSpace } from '../color/channels';
 import {
   ColorFormat,
@@ -382,7 +383,6 @@ export const ColorInput = forwardRef(function ColorInput(
           <DialogTrigger
             hideArrow
             type="popover"
-            mobileType="tray"
             placement={placement}
             targetRef={targetRefProp ?? targetRef}
             isOpen={controlledOpen ?? isOpen}

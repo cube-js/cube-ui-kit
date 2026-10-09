@@ -30,7 +30,8 @@ import {
   useFieldProps,
   wrapWithField,
 } from '../../form';
-import { Dialog, DialogTrigger } from '../../overlays/Dialog';
+import { Dialog } from '../../overlays/Dialog/Dialog';
+import { DialogTrigger } from '../../overlays/Dialog/DialogTrigger';
 import { ColorSpace } from '../color/channels';
 import {
   ColorFormat,
@@ -257,7 +258,6 @@ export const ColorPicker = forwardRef(function ColorPicker(
       <DialogTrigger
         hideArrow
         type="popover"
-        mobileType="tray"
         placement={placement}
         targetRef={targetRef}
         isOpen={controlledOpen ?? isOpen}

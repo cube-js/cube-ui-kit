@@ -24,7 +24,8 @@ import { extractStyles, mergeStyleLayers } from '../../../utils/styles';
 import { useFieldProps, wrapWithField } from '../../form';
 import { Calendar } from '../../other/Calendar/Calendar';
 import { PeriodCalendar } from '../../other/Calendar/PeriodCalendar';
-import { Dialog, DialogTrigger } from '../../overlays/Dialog';
+import { Dialog } from '../../overlays/Dialog/Dialog';
+import { DialogTrigger } from '../../overlays/Dialog/DialogTrigger';
 
 import { DateInputBase } from './DateInputBase';
 import { DatePickerButton } from './DatePickerButton';
@@ -196,7 +197,6 @@ function PeriodPickerImpl<T extends DateValue>(
         <DialogTrigger
           hideArrow
           type="popover"
-          mobileType="tray"
           placement={props.placement ?? 'bottom right'}
           targetRef={props.targetRef ?? targetRef}
           isOpen={isOpen}
@@ -213,7 +213,7 @@ function PeriodPickerImpl<T extends DateValue>(
             isReadOnly={isReadOnly}
             styles={props.triggerStyles}
           />
-          <Dialog {...dialogProps} width="max-content">
+          <Dialog {...dialogProps} width="max-content" overflow="auto">
             {panel}
           </Dialog>
         </DialogTrigger>
