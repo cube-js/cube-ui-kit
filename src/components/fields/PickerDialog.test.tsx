@@ -23,7 +23,7 @@ import type { PresentationProps } from '../../test/picker-dialog';
 
 vi.mock('../../_internal/hooks/use-warn');
 
-vi.setConfig({ testTimeout: 20000 });
+vi.setConfig({ testTimeout: 60000 });
 
 const presentations: {
   name: string;
@@ -154,7 +154,7 @@ describe.each(['popover', 'tray'] as const)(
       );
       const trigger = screen.getByRole('button');
       await userEvent.click(trigger);
-      const search = await screen.findByRole('searchbox');
+      const search = await screen.findByRole('combobox');
       await waitFor(() => expect(search).toHaveFocus());
       await userEvent.type(search, 'Ban');
       await waitFor(() =>

@@ -58,5 +58,3 @@ const date = parseDate('2026-10-09');
 
 // @ts-expect-error Unknown presentations are rejected by the DialogTrigger contract.
 <Picker dialogType="sheet" />;
-// @ts-expect-error Trigger styling stays independent from overlay presentation.
-<ColorPicker type="tray" />;

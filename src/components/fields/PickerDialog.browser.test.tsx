@@ -45,8 +45,10 @@ describe('Picker presentation sizing', () => {
       renderWithRoot(
         <Picker
           label="Fruit"
+          // oxlint-disable-next-line tasty/consistent-token-usage -- Deliberately exceed the overlay width to catch leaked trigger sizing.
           width="600px"
           dialogType={dialogType}
+          // oxlint-disable-next-line tasty/consistent-token-usage -- Assert the consumer's exact width survives default style layers.
           popoverStyles={{ width: '280px' }}
         >
           <Picker.Item key="apple">Apple</Picker.Item>

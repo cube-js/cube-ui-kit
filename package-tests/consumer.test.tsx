@@ -135,7 +135,7 @@ it('selects through the packaged tray picker and restores trigger focus', async 
   await userEvent.click(trigger);
   const dialog = await screen.findByRole('dialog');
   expect(dialog).toHaveAttribute('data-type', 'tray');
-  const search = screen.getByRole('searchbox');
+  const search = screen.getByRole('combobox');
   await waitFor(() => expect(search).toHaveFocus());
   await userEvent.type(search, 'Ban');
   await userEvent.click(await screen.findByRole('option', { name: 'Banana' }));
