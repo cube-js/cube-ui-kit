@@ -4,10 +4,7 @@ import { userEvent, within } from 'storybook/test';
 import { NO_SNAPSHOT } from '../../../stories/chromatic';
 import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
-import {
-  openPickerDialog,
-  PICKER_DIALOG_ARGS,
-} from '../../../stories/PickerDialogArgs';
+import { openPickerPopover } from '../../../stories/PickerPopover';
 import { Space } from '../../layout/Space';
 
 import { CubeDatePickerProps, DatePicker } from './DatePicker';
@@ -22,7 +19,6 @@ export default {
     },
   },
   argTypes: {
-    ...PICKER_DIALOG_ARGS,
     /* Content */
     label: {
       control: { type: 'text' },
@@ -317,9 +313,13 @@ export const WithDefaultValue = Template.bind({});
 WithDefaultValue.args = { defaultValue: new Date('2023-10-04 12:14') };
 
 export const WithDefaultValueOpen = Template.bind({});
-WithDefaultValueOpen.args = { ...WithDefaultValue.args, dialogType: 'popover' };
-WithDefaultValueOpen.play = async ({ canvasElement }) =>
-  openPickerDialog(canvasElement, 'popover');
+WithDefaultValueOpen.args = WithDefaultValue.args;
+WithDefaultValueOpen.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement);
+  const button = await canvas.getByRole('button');
+
+  await userEvent.click(button);
+};
 
 export const Validation: StoryFn<CubeDatePickerProps> = (props) => (
   <Space gap="2x" flow="column" placeItems="start">
@@ -345,13 +345,9 @@ WithLimitedRange.parameters = NO_SNAPSHOT;
 export const WithLocale = Template.bind({});
 WithLocale.args = { useLocale: true };
 
-export const Tray = Template.bind({});
-Tray.args = { ...WithDefaultValueOpen.args, dialogType: 'tray' };
-Tray.play = async ({ canvasElement }) =>
-  openPickerDialog(canvasElement, 'tray');
-
 export const MobilePopover = Template.bind({});
-MobilePopover.args = { ...WithDefaultValue.args, dialogType: 'popover' };
+MobilePopover.args = WithDefaultValue.args;
 MobilePopover.parameters = { chromatic: { viewports: [390] } };
-MobilePopover.play = async ({ canvasElement }) =>
-  openPickerDialog(canvasElement, 'popover');
+MobilePopover.play = async ({ canvasElement }) => {
+  await openPickerPopover(canvasElement);
+};

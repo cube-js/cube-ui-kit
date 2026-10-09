@@ -278,7 +278,7 @@ function extractPropsFromDocs(content) {
 }
 
 /**
- * Shared argType presets live in `src/stories` and are spread into story argTypes
+ * Shared argType presets live in `src/stories/FormFieldArgs.ts` and are spread into story argTypes
  * (`...VALIDATION_ARGS`). Map every preset name onto the prop names it contributes, so the spread reads
  * as those props instead of as a prop literally named `VALIDATION_ARGS`.
  */
@@ -289,15 +289,12 @@ async function loadSharedArgTypePresets() {
 
   sharedArgTypePresets = new Map();
 
-  const sources = await Promise.all(
-    ['FormFieldArgs.ts', 'PickerDialogArgs.ts'].map((file) =>
-      fs.readFile(path.join(ROOT, 'src/stories', file), 'utf8'),
-    ),
-  );
-  const source = sources.join('\n');
+  const source = await fs
+    .readFile(path.join(ROOT, 'src/stories/FormFieldArgs.ts'), 'utf8')
+    .catch(() => '');
 
   // Each preset is a top-level `export const NAME = { … };` object literal.
-  const presetPattern = /export const (\w+) = \{([\s\S]*?)\n\}(?: as const)?;/g;
+  const presetPattern = /export const (\w+) = \{([\s\S]*?)\n\};/g;
   let match;
 
   while ((match = presetPattern.exec(source)) !== null) {

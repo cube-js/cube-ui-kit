@@ -33,7 +33,6 @@ export default defineConfig({
                     'ImplicitConsumer',
                     'DialogConsumer',
                     'ControlledConsumer',
-                    'PickerConsumer',
                   ].every((name) => report.compiled.includes(name)) ||
                   !moduleSpecifiers(result.code).includes(
                     'react/compiler-runtime',

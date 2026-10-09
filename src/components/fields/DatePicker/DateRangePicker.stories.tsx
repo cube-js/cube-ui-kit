@@ -3,10 +3,7 @@ import { userEvent, within } from 'storybook/test';
 
 import { ICON_ARG, VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
-import {
-  openPickerDialog,
-  PICKER_DIALOG_ARGS,
-} from '../../../stories/PickerDialogArgs';
+import { openPickerPopover } from '../../../stories/PickerPopover';
 import { Space } from '../../layout/Space';
 
 import { CubeDateRangePickerProps, DateRangePicker } from './DateRangePicker';
@@ -21,7 +18,6 @@ export default {
     },
   },
   argTypes: {
-    ...PICKER_DIALOG_ARGS,
     ...ICON_ARG,
     ...VALIDATION_ARGS,
   },
@@ -50,9 +46,13 @@ WithDefaultValue.args = {
 };
 
 export const WithDefaultValueOpen = Template.bind({});
-WithDefaultValueOpen.args = { ...WithDefaultValue.args, dialogType: 'popover' };
-WithDefaultValueOpen.play = async ({ canvasElement }) =>
-  openPickerDialog(canvasElement, 'popover');
+WithDefaultValueOpen.args = WithDefaultValue.args;
+WithDefaultValueOpen.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement);
+  const button = await canvas.getByRole('button');
+
+  await userEvent.click(button);
+};
 
 export const WithSecondGranularity = Template.bind({});
 WithSecondGranularity.args = {
@@ -79,7 +79,9 @@ Small.args = { size: 'small' };
 export const WithLocale = Template.bind({});
 WithLocale.args = { useLocale: true };
 
-export const Tray = Template.bind({});
-Tray.args = { ...WithDefaultValueOpen.args, dialogType: 'tray' };
-Tray.play = async ({ canvasElement }) =>
-  openPickerDialog(canvasElement, 'tray');
+export const MobilePopover = Template.bind({});
+MobilePopover.args = WithDefaultValue.args;
+MobilePopover.parameters = { chromatic: { viewports: [390] } };
+MobilePopover.play = async ({ canvasElement }) => {
+  await openPickerPopover(canvasElement);
+};

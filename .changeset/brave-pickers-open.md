@@ -2,4 +2,4 @@
 "@cube-dev/ui-kit": minor
 ---
 
-Add `dialogType` and `dialogMobileType` to Picker, FilterPicker, DatePicker, DateRangePicker, DateRangeSeparatedPicker, PeriodPicker, ColorPicker and ColorInput. Overlay presentation is independent of trigger styling. Mobile now always inherits `dialogType` unless explicitly overridden; date and color pickers therefore default to popover on mobile instead of tray. Set `dialogMobileType="tray"` to retain their previous mobile presentation. Picker and FilterPicker also provide named dialogs and an explicit dismiss button in non-popover presentations.
+Use anchored popovers for Picker, FilterPicker, DatePicker, DateRangePicker, DateRangeSeparatedPicker, PeriodPicker, ColorPicker and ColorInput on desktop and mobile. Date and color pickers now use popovers on mobile instead of trays. Picker presentation is fixed, while existing trigger styling, selection and open-state APIs remain unchanged.

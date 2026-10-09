@@ -9,13 +9,6 @@ import { PeriodPicker } from '../components/fields/DatePicker/PeriodPicker';
 import { FilterPicker } from '../components/fields/FilterPicker/FilterPicker';
 import { Picker } from '../components/fields/Picker/Picker';
 
-import type { CubeDialogTriggerProps } from '../components/overlays/Dialog/DialogTrigger';
-
-export interface PresentationProps {
-  dialogType?: CubeDialogTriggerProps['type'];
-  dialogMobileType?: CubeDialogTriggerProps['mobileType'];
-}
-
 const date = parseDate('2026-10-09');
 const range = { start: date, end: date.add({ days: 3 }) };
 const items = [
@@ -23,11 +16,11 @@ const items = [
   { key: 'banana', label: 'Banana' },
 ];
 
-export const pickerDialogCases = [
+export const pickerPopoverCases = [
   {
     name: 'Picker',
-    render: (props: PresentationProps) => (
-      <Picker label="Test picker" items={items} {...props}>
+    render: () => (
+      <Picker label="Test picker" type="primary" items={items}>
         {(item) => <Picker.Item key={item.key}>{item.label}</Picker.Item>}
       </Picker>
     ),
@@ -35,8 +28,8 @@ export const pickerDialogCases = [
   },
   {
     name: 'FilterPicker',
-    render: (props: PresentationProps) => (
-      <FilterPicker label="Test picker" items={items} {...props}>
+    render: () => (
+      <FilterPicker label="Test picker" type="primary" items={items}>
         {(item) => (
           <FilterPicker.Item key={item.key}>{item.label}</FilterPicker.Item>
         )}
@@ -46,48 +39,34 @@ export const pickerDialogCases = [
   },
   {
     name: 'DatePicker',
-    render: (props: PresentationProps) => (
-      <DatePicker label="Test picker" defaultValue={date} {...props} />
-    ),
+    render: () => <DatePicker label="Test picker" defaultValue={date} />,
     triggerIndex: 0,
   },
   {
     name: 'DateRangePicker',
-    render: (props: PresentationProps) => (
-      <DateRangePicker label="Test picker" defaultValue={range} {...props} />
-    ),
+    render: () => <DateRangePicker label="Test picker" defaultValue={range} />,
     triggerIndex: 0,
   },
   ...[0, 1].map((triggerIndex) => ({
     name: `DateRangeSeparatedPicker ${triggerIndex ? 'end' : 'start'}`,
-    render: (props: PresentationProps) => (
-      <DateRangeSeparatedPicker
-        label="Test picker"
-        defaultValue={range}
-        {...props}
-      />
+    render: () => (
+      <DateRangeSeparatedPicker label="Test picker" defaultValue={range} />
     ),
     triggerIndex,
   })),
   {
     name: 'PeriodPicker',
-    render: (props: PresentationProps) => (
-      <PeriodPicker label="Test picker" defaultValue={date} {...props} />
-    ),
+    render: () => <PeriodPicker label="Test picker" defaultValue={date} />,
     triggerIndex: 0,
   },
   {
     name: 'ColorPicker',
-    render: (props: PresentationProps) => (
-      <ColorPicker label="Test picker" defaultValue="#ff0000" {...props} />
-    ),
+    render: () => <ColorPicker label="Test picker" defaultValue="#ff0000" />,
     triggerIndex: 0,
   },
   {
     name: 'ColorInput',
-    render: (props: PresentationProps) => (
-      <ColorInput label="Test picker" defaultValue="#ff0000" {...props} />
-    ),
+    render: () => <ColorInput label="Test picker" defaultValue="#ff0000" />,
     triggerIndex: 0,
   },
 ];

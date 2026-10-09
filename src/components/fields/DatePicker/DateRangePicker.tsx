@@ -35,7 +35,6 @@ import { DateFieldBase } from './types';
 import { useFocusManagerRef } from './utils';
 
 import type { ReactElement, Ref } from 'react';
-import type { CubeDialogTriggerProps } from '../../overlays/Dialog/DialogTrigger';
 
 const DateRangeDash = tasty({
   'aria-hidden': 'true',
@@ -69,10 +68,6 @@ export interface CubeDateRangePickerProps<T extends DateValue = DateValue>
    * dismissal treats as the trigger.
    */
   targetRef?: RefObject<HTMLElement | null>;
-  /** Overlay presentation, independent of the trigger's styling type. Defaults to popover. */
-  dialogType?: CubeDialogTriggerProps['type'];
-  /** Explicit mobile overlay override. When omitted, mobile inherits dialogType. */
-  dialogMobileType?: CubeDialogTriggerProps['mobileType'];
   /**
    * Placement of the popover relative to the anchor.
    * Accepts React Aria's `Placement` strings (e.g. `'bottom start'`,
@@ -89,10 +84,9 @@ function DateRangePicker<T extends DateValue>(
 ) {
   const { t } = useI18n();
 
-  const resolvedProps = useFieldProps(rawProps, {
+  let props = useFieldProps(rawProps, {
     defaultValidationTrigger: 'onBlur',
   });
-  let { dialogType = 'popover', dialogMobileType, ...props } = resolvedProps;
   props = Object.assign({}, DEFAULT_DATE_PROPS, props);
 
   // The public type declares `ContainerStyleProps` and `styles`, so both have to
@@ -183,8 +177,8 @@ function DateRangePicker<T extends DateValue>(
       suffix={
         <DialogTrigger
           hideArrow
-          type={dialogType}
-          mobileType={dialogMobileType}
+          type="popover"
+          mobileType="popover"
           placement={placement}
           targetRef={targetRefProp ?? targetRef}
           isOpen={isOpen}
@@ -196,11 +190,7 @@ function DateRangePicker<T extends DateValue>(
             {...mergeProps(buttonProps, focusPropsButton)}
             isDisabled={isDisabled}
           />
-          <Dialog
-            {...dialogProps}
-            width={{ 'type=popover': 'max-content' }}
-            overflow="auto"
-          >
+          <Dialog {...dialogProps} width="max-content" overflow="auto">
             <RangeCalendar
               {...calendarProps}
               isDateUnavailable={props.isDateUnavailable}

@@ -35,8 +35,6 @@ import { TimeInput } from './TimeInput';
 import { DateFieldBase } from './types';
 import { useFocusManagerRef } from './utils';
 
-import type { CubeDialogTriggerProps } from '../../overlays/Dialog/DialogTrigger';
-
 const DateRangeDash = tasty({
   'aria-hidden': 'true',
   'data-qa': 'DateRangeDash',
@@ -71,10 +69,6 @@ export interface CubeDateRangeSeparatedPickerProps<
    * dismissal treats as the trigger.
    */
   targetRef?: RefObject<HTMLElement | null>;
-  /** Overlay presentation, independent of the trigger's styling type. Defaults to popover. */
-  dialogType?: CubeDialogTriggerProps['type'];
-  /** Explicit mobile overlay override. When omitted, mobile inherits dialogType. */
-  dialogMobileType?: CubeDialogTriggerProps['mobileType'];
   /**
    * Placement of the popover relative to the anchor.
    * Accepts React Aria's `Placement` strings (e.g. `'bottom start'`,
@@ -91,10 +85,9 @@ function DateRangeSeparatedPicker<T extends DateValue>(
 ) {
   const { t } = useI18n();
 
-  const resolvedProps = useFieldProps(rawProps, {
+  let props = useFieldProps(rawProps, {
     defaultValidationTrigger: 'onBlur',
   });
-  let { dialogType = 'popover', dialogMobileType, ...props } = resolvedProps;
   props = Object.assign({}, DEFAULT_DATE_PROPS, props);
 
   // The public type declares `ContainerStyleProps` and `styles`, so both have to
@@ -245,8 +238,8 @@ function DateRangeSeparatedPicker<T extends DateValue>(
         suffix={
           <DialogTrigger
             hideArrow
-            type={dialogType}
-            mobileType={dialogMobileType}
+            type="popover"
+            mobileType="popover"
             placement={props.placement ?? 'bottom right'}
             targetRef={props.targetRef ?? targetRef}
             isOpen={startState.isOpen}
@@ -263,7 +256,7 @@ function DateRangeSeparatedPicker<T extends DateValue>(
             />
             <Dialog
               {...startProps.dialogProps}
-              width={{ 'type=popover': 'max-content' }}
+              width="max-content"
               overflow="auto"
             >
               <Calendar
@@ -309,8 +302,8 @@ function DateRangeSeparatedPicker<T extends DateValue>(
         suffix={
           <DialogTrigger
             hideArrow
-            type={dialogType}
-            mobileType={dialogMobileType}
+            type="popover"
+            mobileType="popover"
             placement={props.placement ?? 'bottom right'}
             targetRef={props.targetRef ?? targetRef}
             isOpen={endState.isOpen}
@@ -328,7 +321,7 @@ function DateRangeSeparatedPicker<T extends DateValue>(
             />
             <Dialog
               {...endProps.dialogProps}
-              width={{ 'type=popover': 'max-content' }}
+              width="max-content"
               overflow="auto"
             >
               <Calendar

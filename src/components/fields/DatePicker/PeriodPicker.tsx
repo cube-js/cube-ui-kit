@@ -32,8 +32,6 @@ import { DatePickerButton } from './DatePickerButton';
 import { formatPeriod, PickerType, snapToPeriod } from './period';
 import { useFocusManagerRef } from './utils';
 
-import type { CubeDialogTriggerProps } from '../../overlays/Dialog/DialogTrigger';
-
 const PeriodValueElement = tasty({
   qa: 'PeriodPickerValue',
   styles: {
@@ -74,10 +72,6 @@ export interface CubePeriodPickerProps<T extends DateValue = DateValue>
    * dismissal treats as the trigger.
    */
   targetRef?: RefObject<HTMLElement | null>;
-  /** Overlay presentation, independent of the trigger's styling type. Defaults to popover. */
-  dialogType?: CubeDialogTriggerProps['type'];
-  /** Explicit mobile overlay override. When omitted, mobile inherits dialogType. */
-  dialogMobileType?: CubeDialogTriggerProps['mobileType'];
   /**
    * Placement of the popover relative to the anchor.
    * Accepts React Aria's `Placement` strings (e.g. `'bottom start'`,
@@ -97,10 +91,9 @@ function PeriodPickerImpl<T extends DateValue>(
 ) {
   const { t } = useI18n();
 
-  const resolvedProps = useFieldProps(rawProps, {
+  let props = useFieldProps(rawProps, {
     defaultValidationTrigger: 'onBlur',
   });
-  let { dialogType = 'popover', dialogMobileType, ...props } = resolvedProps;
 
   let styles = extractStyles(props, CONTAINER_STYLES);
 
@@ -203,8 +196,8 @@ function PeriodPickerImpl<T extends DateValue>(
       suffix={
         <DialogTrigger
           hideArrow
-          type={dialogType}
-          mobileType={dialogMobileType}
+          type="popover"
+          mobileType="popover"
           placement={props.placement ?? 'bottom right'}
           targetRef={props.targetRef ?? targetRef}
           isOpen={isOpen}
@@ -221,12 +214,7 @@ function PeriodPickerImpl<T extends DateValue>(
             isReadOnly={isReadOnly}
             styles={props.triggerStyles}
           />
-          <Dialog
-            {...dialogProps}
-            width={{ 'type=popover': 'max-content' }}
-            overflow="auto"
-            padding={{ '!type=popover': '5x top' }}
-          >
+          <Dialog {...dialogProps} width="max-content" overflow="auto">
             {panel}
           </Dialog>
         </DialogTrigger>

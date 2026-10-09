@@ -1,14 +1,10 @@
 import { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
 import { Key } from 'react-aria';
-import { expect, waitFor, within } from 'storybook/test';
 
 import { ReloadIcon } from '../../../icons/ReloadIcon';
 import { NO_SNAPSHOT } from '../../../stories/chromatic';
-import {
-  openPickerDialog,
-  PICKER_DIALOG_ARGS,
-} from '../../../stories/PickerDialogArgs';
+import { openPickerPopover } from '../../../stories/PickerPopover';
 import { Text } from '../../content/Text';
 import { Flex } from '../../layout/Flex';
 
@@ -20,7 +16,6 @@ const meta = {
   parameters: {
     layout: 'centered',
   },
-  argTypes: { ...PICKER_DIALOG_ARGS },
   tags: ['autodocs'],
 } satisfies Meta<typeof Picker>;
 
@@ -471,25 +466,10 @@ export const LoadingState: Story = {
   },
 };
 
-export const Popover: Story = {
+export const MobilePopover: Story = {
   ...SingleSelection,
-  args: { ...SingleSelection.args, dialogType: 'popover' },
-  play: async ({ canvasElement }) => openPickerDialog(canvasElement, 'popover'),
-};
-
-export const Tray: Story = {
-  ...SingleSelection,
-  args: {
-    ...SingleSelection.args,
-    label: <strong>Favorite Fruit</strong>,
-    dialogType: 'tray',
-  },
+  parameters: { chromatic: { viewports: [390] } },
   play: async ({ canvasElement }) => {
-    await openPickerDialog(canvasElement, 'tray');
-    await waitFor(() =>
-      expect(
-        within(document.body).getByRole('heading', { name: /Favorite Fruit/ }),
-      ).toBeVisible(),
-    );
+    await openPickerPopover(canvasElement);
   },
 };

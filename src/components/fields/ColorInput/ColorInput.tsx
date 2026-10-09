@@ -41,8 +41,6 @@ import { useIsInsideColorPopover } from '../color/context';
 import { ColorSwatch } from '../ColorSwatch';
 import { TextInputBase } from '../TextInput/TextInputBase';
 
-import type { CubeDialogTriggerProps } from '../../overlays/Dialog/DialogTrigger';
-
 /**
  * How the text in the input relates to the committed value.
  *
@@ -56,13 +54,10 @@ import type { CubeDialogTriggerProps } from '../../overlays/Dialog/DialogTrigger
 export type ColorInputFormatMode = 'forced' | 'derive' | 'free';
 
 /**
- * Keep every panel control reachable when the dialog height is limited by a
- * short viewport.
+ * A popover caps its height at half the viewport. The panel can exceed that on
+ * a short screen, and would otherwise spill outside the popover's own border.
  */
-const DIALOG_STYLES: Styles = {
-  overflow: 'auto',
-  padding: { '!type=popover': '5x top' },
-};
+const POPOVER_STYLES: Styles = { overflow: 'auto' };
 
 /** What the popover starts from when there is no color to edit yet. */
 const FALLBACK_COLOR: ColorValue = { h: 264, s: 0.8, l: 0.6 };
@@ -107,10 +102,6 @@ export interface CubeColorInputProps
    * dismissal treats as the trigger.
    */
   targetRef?: RefObject<HTMLElement | null>;
-  /** Overlay presentation, independent of the trigger's styling type. Defaults to popover. */
-  dialogType?: CubeDialogTriggerProps['type'];
-  /** Explicit mobile overlay override. When omitted, mobile inherits dialogType. */
-  dialogMobileType?: CubeDialogTriggerProps['mobileType'];
   /**
    * Placement of the popover relative to the anchor.
    * Accepts React Aria's `Placement` strings (e.g. `'bottom start'`,
@@ -163,8 +154,6 @@ export const ColorInput = forwardRef(function ColorInput(
     isOpen: controlledOpen,
     defaultOpen,
     onOpenChange,
-    dialogType = 'popover',
-    dialogMobileType,
     shouldFlip,
     targetRef: targetRefProp,
     placement = 'bottom right',
@@ -393,8 +382,8 @@ export const ColorInput = forwardRef(function ColorInput(
         isInsidePopover ? null : (
           <DialogTrigger
             hideArrow
-            type={dialogType}
-            mobileType={dialogMobileType}
+            type="popover"
+            mobileType="popover"
             placement={placement}
             targetRef={targetRefProp ?? targetRef}
             isOpen={controlledOpen ?? isOpen}
@@ -420,8 +409,8 @@ export const ColorInput = forwardRef(function ColorInput(
             </ItemActionProvider>
             <Dialog
               aria-label="Color picker"
-              width={{ 'type=popover': 'max-content' }}
-              styles={DIALOG_STYLES}
+              width="max-content"
+              styles={POPOVER_STYLES}
             >
               <ColorPanel
                 color={color ?? FALLBACK_COLOR}

@@ -8,6 +8,10 @@ import * as PickerStories from './Picker.stories';
 
 A button-triggered field for keeping one or more selected values from a predefined list **without a visible search field**. Picker is suited to compact controls that need multiple selection, checkboxes, select-all, sections, or a custom summary in the trigger.
 
+## Popover presentation
+
+The picker always opens an anchored popover on desktop and mobile. Its presentation is fixed. The `type` prop styles the trigger and does not change the popover presentation.
+
 ## When to Use
 
 - The selected value or values must persist after the popover closes
@@ -31,9 +35,6 @@ Choose a different component when the interaction has another shape:
 ---
 
 ### Properties
-
-- **`dialogType`** `'modal' | 'popover' | 'tray' | 'fullscreen' | 'fullscreenTakeover' | 'panel'` (default: `popover`) — Overlay presentation. The existing styling `type`, where available, remains independent.
-- **`dialogMobileType`** `'modal' | 'popover' | 'tray' | 'fullscreen' | 'fullscreenTakeover' | 'panel'` (default: `dialogType`) — Explicit mobile presentation override. Omitted or `undefined` always inherits the effective `dialogType`.
 
 - **`placeholder`** `string` — Placeholder text when no selection is made
 - **`description`** `string` — Description text displayed below the label
@@ -67,8 +68,8 @@ Choose a different component when the interaction has another shape:
 - **`renderSummary`** `((args: { selectedLabels, selectedKeys, selectionMode }) => ReactNode) | false` — Custom renderer for the summary shown inside the trigger
 - **`header`** `ReactNode` — Custom header content in the popover
 - **`footer`** `ReactNode` — Custom footer content in the popover
-- **`listBoxStyles`** `Styles` — Custom styles for the ListBox in every dialog presentation
-- **`popoverStyles`** `Styles` — Custom styles for the dialog container in every presentation
+- **`listBoxStyles`** `Styles` — Custom styles for the ListBox within the popover
+- **`popoverStyles`** `Styles` — Custom styles for the popover container
 - **`triggerStyles`** `Styles` — Custom styles for the trigger button
 - **`triggerTooltip`** `string | TooltipProps` — Tooltip for the trigger button (separate from `labelTooltip`)
 - **`triggerDescription`** `string` — Description for the trigger button (separate from field description)
@@ -109,7 +110,7 @@ Customizes the DialogTrigger wrapper that contains the trigger button and manage
 
 #### listBoxStyles
 
-Customizes the ListBox component styles in every dialog presentation. See [ListBox documentation](/docs/forms-listbox--docs) for available sub-elements.
+Customizes the ListBox component styles within the popover. See [ListBox documentation](/docs/forms-listbox--docs) for available sub-elements.
 
 **Sub-elements:**
 
@@ -121,7 +122,7 @@ Customizes the ListBox component styles in every dialog presentation. See [ListB
 
 #### popoverStyles
 
-Customizes the Dialog that contains the ListBox in every presentation. Popover sizing defaults apply only to the effective `popover` presentation; these consumer styles apply afterward. See [Dialog documentation](/docs/overlays-dialog--docs) for available sub-elements.
+Customizes the popover Dialog that contains the ListBox. See [Dialog documentation](/docs/overlays-dialog--docs) for available sub-elements.
 
 **Sub-elements:**
 
@@ -677,7 +678,7 @@ The Picker component is built with React Aria hooks and provides comprehensive a
 
 The component automatically manages ARIA attributes:
 
-- **`aria-label`** — Text name for the trigger and popover when the label is rich or absent. Other presentations use their rendered heading as the dialog name.
+- **`aria-label`** — Labels the trigger when no visible label exists
 - **`aria-labelledby`** — Associates the label with the trigger
 - **`aria-describedby`** — Associates help text and error messages
 
@@ -1081,12 +1082,3 @@ Optimize complex item content with the `textValue` prop for better accessibility
 - [Menu](/docs/actions-menu--docs) - Use with MenuTrigger for action-oriented dropdowns
 - [Button](/docs/actions-button--docs) - The underlying trigger component
 - [Dialog](/docs/overlays-dialog--docs) - The popover container component
-
-## Dialog presentation
-
-`dialogType` selects the overlay on desktop and mobile. Only an explicitly specified `dialogMobileType` changes the presentation at DialogTrigger's mobile breakpoint (700px). Anchors, placement, arrows and trigger-width sizing apply only to the effective popover presentation.
-
-```tsx
-<Picker dialogType="tray" aria-label="Choose a value" />
-<Picker dialogType="popover" dialogMobileType="tray" aria-label="Choose a value" />
-```

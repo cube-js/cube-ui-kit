@@ -33,8 +33,9 @@ import { CloseIcon } from '../../../icons/CloseIcon';
 import { DirectionIcon } from '../../../icons/DirectionIcon';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
 import { allowEscapeToPropagate } from '../../../utils/react/escapePropagation';
+import { isTextOnly } from '../../../utils/react/isTextOnly';
 import { processSelectionArray } from '../../../utils/selection';
-import { extractStyles } from '../../../utils/styles';
+import { extractStyles, mergeStyleLayers } from '../../../utils/styles';
 import { CubeItemButtonProps, ItemAction, ItemButton } from '../../actions';
 import { CubeItemProps } from '../../content/Item';
 import { Text } from '../../content/Text';
@@ -44,14 +45,13 @@ import {
   useFieldProps,
   wrapWithField,
 } from '../../form';
+import { Dialog } from '../../overlays/Dialog/Dialog';
 import { DialogTrigger } from '../../overlays/Dialog/DialogTrigger';
 import { CubeListBoxProps, ListBox } from '../ListBox/ListBox';
-import { PickerDialog } from '../PickerDialog';
 import { TriggerActions, TriggerIcon } from '../TriggerActions';
 
 import type { KeyboardEvent as RAKeyboardEvent } from '@react-types/shared';
 import type { FieldBaseProps } from '../../../shared';
-import type { CubeDialogTriggerProps } from '../../overlays/Dialog/DialogTrigger';
 
 export interface CubePickerProps<T>
   extends Omit<
@@ -79,15 +79,15 @@ export interface CubePickerProps<T>
       | 'hotkeys'
       | 'shape'
     > {
-  /** Text name for the trigger and popover when the label is rich or absent. */
+  /** Accessible name for the picker trigger when there is no visible label. */
   'aria-label'?: string;
   /** Placeholder text when no selection is made */
   placeholder?: string;
   /** Size of the picker component */
   size?: 'small' | 'medium' | 'large';
-  /** Custom styles for the list box in every dialog presentation. */
+  /** Custom styles for the list box popover */
   listBoxStyles?: Styles;
-  /** Custom styles for the dialog container in every presentation. */
+  /** Custom styles for the popover container */
   popoverStyles?: Styles;
   /** Custom styles for the trigger button */
   triggerStyles?: Styles;
@@ -104,10 +104,6 @@ export interface CubePickerProps<T>
    * trigger button, not to this element.
    */
   targetRef?: RefObject<HTMLElement | null>;
-  /** Overlay presentation, independent of the trigger's styling type. Defaults to popover. */
-  dialogType?: CubeDialogTriggerProps['type'];
-  /** Explicit mobile overlay override. When omitted, mobile inherits dialogType. */
-  dialogMobileType?: CubeDialogTriggerProps['mobileType'];
   /**
    * Placement of the popover relative to the anchor.
    * Accepts React Aria's `Placement` strings (e.g. `'bottom start'`,
@@ -255,8 +251,6 @@ export const Picker = forwardRef(function Picker<T extends object>(
     styles,
     listBoxStyles,
     popoverStyles,
-    dialogType = 'popover',
-    dialogMobileType,
     type = 'outline',
     theme = 'default',
     shape,
@@ -306,14 +300,6 @@ export const Picker = forwardRef(function Picker<T extends object>(
     ...otherProps
   } = props;
 
-  const textLabel =
-    ariaLabel ??
-    (typeof label === 'string' || typeof label === 'number'
-      ? String(label)
-      : undefined);
-  const pickerCaption = t('picker.pickerAriaLabel', 'Picker');
-  const dialogName = `${textLabel ?? ''} ${pickerCaption}`.trim();
-
   styles = extractStyles(otherProps, PROP_STYLES, styles);
 
   // Warn if isCheckable is false in single selection mode
@@ -335,6 +321,14 @@ export const Picker = forwardRef(function Picker<T extends object>(
   // Popover state — used as controlled prop for DialogTrigger
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const triggerRef = useRef<FocusableRefValue<HTMLButtonElement>>(null);
+  const triggerAriaLabel =
+    ariaLabel ??
+    (isTextOnly(label)
+      ? String(label ?? '')
+      : t('picker.pickerAriaLabel', 'Picker'));
+  const pickerAriaLabel =
+    `${ariaLabel ?? (isTextOnly(label) ? String(label ?? '') : '')} ${t('picker.pickerAriaLabel', 'Picker')}`.trim();
+
   // Measured lazily on popover open instead of on every render
   const triggerWidthRef = useRef<number | undefined>(undefined);
 
@@ -529,7 +523,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
     onOpenChange?.(isOpen);
   });
 
-  // Overlay synchronization is handled by DialogTrigger for its effective type.
+  // Popover sync is handled by the inner `DialogTrigger` (type="popover").
 
   // Keyboard handler for arrow keys to open popover
   // Deliberately NOT `useKeyboard`. `ItemButton` already runs whatever
@@ -704,6 +698,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
   const triggerElement = (
     <ItemButton
       ref={triggerRef as any}
+      data-popover-trigger
       id={id}
       qa={qa || 'PickerTrigger'}
       type={type}
@@ -727,7 +722,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
       descriptionPlacement={descriptionPlacement}
       styles={triggerStyles}
       {...keyboardProps}
-      aria-label={textLabel ?? (label ? pickerCaption : undefined)}
+      aria-label={triggerAriaLabel}
     >
       {triggerContent}
     </ItemButton>
@@ -822,8 +817,8 @@ export const Picker = forwardRef(function Picker<T extends object>(
       >)}
     >
       <DialogTrigger
-        type={dialogType}
-        mobileType={dialogMobileType}
+        type="popover"
+        mobileType="popover"
         placement={placement}
         targetRef={targetRef}
         isOpen={isPopoverOpen}
@@ -833,71 +828,76 @@ export const Picker = forwardRef(function Picker<T extends object>(
       >
         {triggerElement}
         {() => (
-          <PickerDialog
+          <Dialog
             qa="PickerOverlay"
-            aria-label={dialogName}
-            heading={
-              <>
-                {ariaLabel ?? label} {pickerCaption}
-              </>
-            }
-            popoverStyles={popoverStyles}
-            triggerWidth={triggerWidthRef.current}
-          >
-            {(isPopover) => (
-              <FocusScope restoreFocus>
-                <ListBox
-                  autoFocus
-                  items={items ? (finalItems as typeof props.items) : undefined}
-                  aria-label={dialogName}
-                  selectedKey={
-                    selectionMode === 'single'
-                      ? effectiveSelectedKey
-                      : undefined
-                  }
-                  selectedKeys={
-                    selectionMode === 'multiple'
-                      ? effectiveSelectedKeys
-                      : undefined
-                  }
-                  listStyles={listStyles}
-                  optionStyles={optionStyles}
-                  sectionStyles={sectionStyles}
-                  headingStyles={headingStyles}
-                  listGap={listGap}
-                  listRef={listRef}
-                  disallowEmptySelection={disallowEmptySelection}
-                  allowDuplicateSelectionEvents={
-                    selectionMode === 'single' && !!disallowEmptySelection
-                  }
-                  disabledKeys={disabledKeys}
-                  focusOnHover={focusOnHover}
-                  shouldFocusWrap={shouldFocusWrap}
-                  selectionMode={selectionMode}
-                  isInvalid={isInvalid}
-                  isValid={isValid}
-                  isDisabled={isDisabled}
-                  isLoading={isLoading}
-                  stateRef={internalListStateRef}
-                  isCheckable={isCheckable}
-                  shape={isPopover ? 'popover' : 'plain'}
-                  showSelectAll={showSelectAll}
-                  selectAllLabel={selectAllLabel}
-                  header={header}
-                  footer={footer}
-                  headerStyles={headerStyles}
-                  footerStyles={footerStyles}
-                  qa={`${props.qa || 'Picker'}ListBox`}
-                  allValueProps={allValueProps}
-                  onEscape={handleEscape}
-                  onOptionClick={handleOptionClick}
-                  onSelectionChange={handleSelectionChange}
-                >
-                  {children as CollectionChildren<T>}
-                </ListBox>
-              </FocusScope>
+            aria-label={pickerAriaLabel}
+            display="grid"
+            styles={mergeStyleLayers(
+              {
+                gridRows: '1sf',
+                width: 'max($overlay-min-width, 30x) max-content 50vw',
+                '$overlay-min-width': '30x',
+              },
+              popoverStyles,
             )}
-          </PickerDialog>
+            style={
+              triggerWidthRef.current
+                ? ({
+                    '--overlay-min-width': `${triggerWidthRef.current}px`,
+                  } as any)
+                : undefined
+            }
+          >
+            <FocusScope restoreFocus>
+              <ListBox
+                autoFocus
+                items={items ? (finalItems as typeof props.items) : undefined}
+                aria-label={pickerAriaLabel}
+                selectedKey={
+                  selectionMode === 'single' ? effectiveSelectedKey : undefined
+                }
+                selectedKeys={
+                  selectionMode === 'multiple'
+                    ? effectiveSelectedKeys
+                    : undefined
+                }
+                listStyles={listStyles}
+                optionStyles={optionStyles}
+                sectionStyles={sectionStyles}
+                headingStyles={headingStyles}
+                listGap={listGap}
+                listRef={listRef}
+                disallowEmptySelection={disallowEmptySelection}
+                allowDuplicateSelectionEvents={
+                  selectionMode === 'single' && !!disallowEmptySelection
+                }
+                disabledKeys={disabledKeys}
+                focusOnHover={focusOnHover}
+                shouldFocusWrap={shouldFocusWrap}
+                selectionMode={selectionMode}
+                isInvalid={isInvalid}
+                isValid={isValid}
+                isDisabled={isDisabled}
+                isLoading={isLoading}
+                stateRef={internalListStateRef}
+                isCheckable={isCheckable}
+                shape="popover"
+                showSelectAll={showSelectAll}
+                selectAllLabel={selectAllLabel}
+                header={header}
+                footer={footer}
+                headerStyles={headerStyles}
+                footerStyles={footerStyles}
+                qa={`${props.qa || 'Picker'}ListBox`}
+                allValueProps={allValueProps}
+                onEscape={handleEscape}
+                onOptionClick={handleOptionClick}
+                onSelectionChange={handleSelectionChange}
+              >
+                {children as CollectionChildren<T>}
+              </ListBox>
+            </FocusScope>
+          </Dialog>
         )}
       </DialogTrigger>
     </PickerWrapper>

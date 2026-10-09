@@ -5,10 +5,7 @@ import { NO_SNAPSHOT } from '../../../stories/chromatic';
 import { ICON_ARG, VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
 import { waitForOverlay } from '../../../stories/interactions';
 import { baseProps } from '../../../stories/lists/baseProps';
-import {
-  openPickerDialog,
-  PICKER_DIALOG_ARGS,
-} from '../../../stories/PickerDialogArgs';
+import { openPickerPopover } from '../../../stories/PickerPopover';
 import { Space } from '../../layout/Space';
 
 import {
@@ -26,7 +23,6 @@ export default {
     },
   },
   argTypes: {
-    ...PICKER_DIALOG_ARGS,
     ...ICON_ARG,
     ...VALIDATION_ARGS,
   },
@@ -55,11 +51,21 @@ WithDefaultValue.args = {
 };
 
 export const WithDefaultValueOpen = Template.bind({});
-WithDefaultValueOpen.args = { ...WithDefaultValue.args, dialogType: 'popover' };
+WithDefaultValueOpen.args = WithDefaultValue.args;
 // Without this the story photographs a closed picker — identical to
 // `WithDefaultValue` — and the calendar it is named for goes untested.
-WithDefaultValueOpen.play = async ({ canvasElement }) =>
-  openPickerDialog(canvasElement, 'popover');
+WithDefaultValueOpen.play = async ({ canvasElement }) => {
+  // Two calendar triggers (start and end) plus the segment buttons, so the
+  // `getByRole('button')` the single-field pickers use is ambiguous here. Nor
+  // can the trigger be found by accessible name: it carries both `aria-label`
+  // and an `aria-labelledby`, and `aria-labelledby` wins, so its name is the
+  // field's label rather than "Calendar". Query the attribute directly.
+  const start = canvasElement.querySelector('button[aria-label="Calendar"]');
+
+  await userEvent.click(start);
+
+  await waitForOverlay('dialog');
+};
 
 export const WithSecondGranularity = Template.bind({});
 WithSecondGranularity.args = {
@@ -88,14 +94,19 @@ Small.args = { size: 'small' };
 export const WithLocale = Template.bind({});
 WithLocale.args = { useLocale: true };
 
-export const Tray = Template.bind({});
-Tray.args = { ...WithDefaultValueOpen.args, dialogType: 'tray' };
-Tray.play = async ({ canvasElement }) =>
-  openPickerDialog(canvasElement, 'tray');
+export const MobilePopover = Template.bind({});
+MobilePopover.args = WithDefaultValue.args;
+MobilePopover.parameters = { chromatic: { viewports: [390] } };
+MobilePopover.play = async ({ canvasElement }) => {
+  await openPickerPopover(canvasElement);
+};
 
-export const EndTray = Template.bind({});
-EndTray.args = { ...WithDefaultValueOpen.args, dialogType: 'tray' };
-EndTray.play = async ({ canvasElement }) =>
-  openPickerDialog(canvasElement, 'tray', 1);
-// Same tray layout as Tray; this story checks the second trigger's wiring.
-EndTray.parameters = NO_SNAPSHOT;
+export const MobileEndPopover = Template.bind({});
+MobileEndPopover.args = WithDefaultValue.args;
+// Same calendar layout as MobilePopover; this checks the second trigger wiring.
+MobileEndPopover.parameters = {
+  chromatic: { ...NO_SNAPSHOT.chromatic, viewports: [390] },
+};
+MobileEndPopover.play = async ({ canvasElement }) => {
+  await openPickerPopover(canvasElement, 1);
+};

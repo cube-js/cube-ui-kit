@@ -5,10 +5,7 @@ import { userEvent, within } from 'storybook/test';
 import { NO_SNAPSHOT } from '../../../stories/chromatic';
 import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
-import {
-  openPickerDialog,
-  PICKER_DIALOG_ARGS,
-} from '../../../stories/PickerDialogArgs';
+import { openPickerPopover } from '../../../stories/PickerPopover';
 import { Text } from '../../content/Text';
 import { Title } from '../../content/Title';
 import { Flow } from '../../layout/Flow';
@@ -29,7 +26,6 @@ export default {
     width: '30x',
   },
   argTypes: {
-    ...PICKER_DIALOG_ARGS,
     /* Content */
     value: {
       control: { type: 'text' },
@@ -270,20 +266,23 @@ export const Validation: StoryFn<CubeColorInputProps> = (args) => (
 );
 
 export const Open = Template.bind({});
-Open.args = { defaultValue: '#7a4dbf', dialogType: 'popover' };
-Open.play = async ({ canvasElement }) =>
-  openPickerDialog(canvasElement, 'popover');
+Open.args = { defaultValue: '#7a4dbf', defaultOpen: true };
 
 export const OpensOnTrigger: StoryFn<CubeColorInputProps> = (args) => (
   <ColorInput aria-label="Brand color" {...args} />
 );
 OpensOnTrigger.args = { defaultValue: '#7a4dbf' };
-OpensOnTrigger.play = async ({ canvasElement }) =>
-  openPickerDialog(canvasElement, 'popover');
-// Ends on the same panel as Open; this story demonstrates an accessible trigger label.
+OpensOnTrigger.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement);
+
+  await userEvent.click(canvas.getByRole('button'));
+};
+// Ends on the same open panel `Open` renders via `defaultOpen`; this story proves the click path, which a snapshot cannot show.
 OpensOnTrigger.parameters = NO_SNAPSHOT;
 
-export const Tray = Template.bind({});
-Tray.args = { defaultValue: '#7a4dbf', dialogType: 'tray' };
-Tray.play = async ({ canvasElement }) =>
-  openPickerDialog(canvasElement, 'tray');
+export const MobilePopover = Template.bind({});
+MobilePopover.args = WithValue.args;
+MobilePopover.parameters = { chromatic: { viewports: [390] } };
+MobilePopover.play = async ({ canvasElement }) => {
+  await openPickerPopover(canvasElement);
+};

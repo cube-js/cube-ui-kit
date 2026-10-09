@@ -3,7 +3,6 @@ import {
   Checkbox,
   DialogForm,
   DialogTrigger,
-  FilterPicker,
   Form,
   Root,
   Select,
@@ -112,28 +111,6 @@ export function ControlledConsumer({ prefix }: { prefix: string }) {
       <output>
         {prefix}: {value}
       </output>
-    </Root>
-  );
-}
-
-export function PickerConsumer() {
-  const [selectedKey, setSelectedKey] = useState<string | number | null>(null);
-  return (
-    <Root>
-      <FilterPicker
-        aria-label="Fruit"
-        type="primary"
-        dialogType="tray"
-        selectedKey={selectedKey}
-        onSelectionChange={(key) => setSelectedKey(key as string)}
-      >
-        {/* Sections render without virtualization; jsdom has no list geometry. */}
-        <FilterPicker.Section title="Options">
-          <FilterPicker.Item key="apple">Apple</FilterPicker.Item>
-          <FilterPicker.Item key="banana">Banana</FilterPicker.Item>
-        </FilterPicker.Section>
-      </FilterPicker>
-      <output aria-label="Selection">{selectedKey ?? 'Empty'}</output>
     </Root>
   );
 }

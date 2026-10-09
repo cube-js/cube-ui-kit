@@ -10,6 +10,10 @@ An input for a single color. It reads and writes color **text** — hex, `rgb()`
 
 Every conversion goes through [Glaze](https://github.com/tenphi/glaze), so the canonical value the picker holds is OKHSL: bounded on every channel, and always inside the sRGB gamut. That is what makes an out-of-gamut state impossible and lets the same value be re-serialized into any of the supported notations without drift.
 
+## Popover presentation
+
+The picker always opens an anchored popover on desktop and mobile. Its presentation is fixed. On mobile, the popover replaces the previous tray layout.
+
 ## When to Use
 
 - Theme and branding forms — a seed color, an accent, a chart series color
@@ -25,9 +29,6 @@ Reach for a `RadioGroup` or `Picker` of swatches instead when the choice is limi
 ---
 
 ### Properties
-
-- **`dialogType`** `'modal' | 'popover' | 'tray' | 'fullscreen' | 'fullscreenTakeover' | 'panel'` (default: `popover`) — Overlay presentation. The existing styling `type`, where available, remains independent.
-- **`dialogMobileType`** `'modal' | 'popover' | 'tray' | 'fullscreen' | 'fullscreenTakeover' | 'panel'` (default: `dialogType`) — Explicit mobile presentation override. Omitted or `undefined` always inherits the effective `dialogType`.
 
 - **`value`** `string | null` — The selected color (controlled)
 - **`defaultValue`** `string | null` — The selected color (uncontrolled)
@@ -263,14 +264,3 @@ This component supports all [Field properties](/docs/getting-started-field-prope
 - [HueSlider](/docs/forms-hueslider--docs) — just the hue axis, when only a hue is needed
 - [Slider](/docs/forms-slider--docs) — the primitive each channel is built from
 - [TextInput](/docs/forms-textinput--docs) — the input chrome this component reuses
-
-## Dialog presentation
-
-`dialogType` selects the overlay on desktop and mobile. Only an explicitly specified `dialogMobileType` changes the presentation at DialogTrigger's mobile breakpoint (700px). Anchors, placement, arrows and trigger-width sizing apply only to the effective popover presentation.
-
-```tsx
-<ColorInput dialogType="tray" aria-label="Choose a value" />
-<ColorInput dialogType="popover" dialogMobileType="tray" aria-label="Choose a value" />
-```
-
-Date and color pickers now default to `popover` on mobile as well. To keep the previous mobile tray presentation, set `dialogMobileType="tray"`.

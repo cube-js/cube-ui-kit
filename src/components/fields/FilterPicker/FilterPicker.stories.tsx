@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from 'react';
-import { expect, userEvent, waitFor, within } from 'storybook/test';
+import { userEvent, within } from 'storybook/test';
 
 import { CheckIcon } from '../../../icons/CheckIcon';
 import { DatabaseIcon } from '../../../icons/DatabaseIcon';
@@ -12,10 +12,7 @@ import { SettingsIcon } from '../../../icons/SettingsIcon';
 import { UserIcon } from '../../../icons/UserIcon';
 import { NO_SNAPSHOT } from '../../../stories/chromatic';
 import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
-import {
-  openPickerDialog,
-  PICKER_DIALOG_ARGS,
-} from '../../../stories/PickerDialogArgs';
+import { openPickerPopover } from '../../../stories/PickerPopover';
 import { Button } from '../../actions/Button/Button';
 import { Badge } from '../../content/Badge/Badge';
 import { Paragraph } from '../../content/Paragraph';
@@ -44,7 +41,6 @@ const meta: Meta<typeof FilterPicker> = {
     },
   },
   argTypes: {
-    ...PICKER_DIALOG_ARGS,
     /* Content */
     selectedKey: {
       control: { type: 'text' },
@@ -266,12 +262,12 @@ const meta: Meta<typeof FilterPicker> = {
     listBoxStyles: {
       control: false,
       description:
-        'Custom styles for the dropdown list container in every dialog presentation',
+        'Custom styles for the dropdown list container within the popover',
     },
     popoverStyles: {
       control: false,
       description:
-        'Custom styles for the dialog container in every presentation',
+        'Custom styles for the popover dialog that contains the FilterListBox',
     },
     triggerStyles: {
       control: false,
@@ -2681,36 +2677,10 @@ export const Reorderable: StoryObj<typeof FilterPicker> = {
   },
 };
 
-export const Popover: Story = {
+export const MobilePopover: Story = {
   ...Default,
-  args: { ...Default.args, dialogType: 'popover' },
-  play: async ({ canvasElement }) => openPickerDialog(canvasElement, 'popover'),
-};
-
-export const Tray: Story = {
-  ...Default,
-  args: {
-    ...Default.args,
-    label: <strong>Favorite Fruit</strong>,
-    dialogType: 'tray',
-  },
-  play: async ({ canvasElement }) => {
-    await openPickerDialog(canvasElement, 'tray');
-    await waitFor(() =>
-      expect(
-        within(document.body).getByRole('heading', { name: /Favorite Fruit/ }),
-      ).toBeVisible(),
-    );
-  },
-};
-
-export const MobileTray: Story = {
-  ...Default,
-  args: { ...Default.args, dialogType: 'popover', dialogMobileType: 'tray' },
   parameters: { chromatic: { viewports: [390] } },
-  play: async ({ canvasElement }) =>
-    openPickerDialog(
-      canvasElement,
-      window.innerWidth <= 700 ? 'tray' : 'popover',
-    ),
+  play: async ({ canvasElement }) => {
+    await openPickerPopover(canvasElement);
+  },
 };

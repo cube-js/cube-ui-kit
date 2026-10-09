@@ -205,8 +205,6 @@ export const DEFAULTS: DefaultsRegistry = {
     },
     DatePicker: {
       props: {
-        dialogMobileType: { kind: 'default', value: 'dialogType' },
-        dialogType: { kind: 'default', value: 'popover' },
         granularity: { kind: 'default', value: 'day' },
         hideTimeZone: { kind: 'default', value: true },
         hourCycle: { kind: 'default', value: 24 },
@@ -294,8 +292,6 @@ export const DEFAULTS: DefaultsRegistry = {
       props: {
         allowsCustomValue: { kind: 'default', value: false },
         containerPadding: { kind: 'default', value: 8 },
-        dialogMobileType: { kind: 'default', value: 'dialogType' },
-        dialogType: { kind: 'default', value: 'popover' },
         disallowEmptySelection: { kind: 'default', value: false },
         htmlType: { kind: 'default', value: 'button' },
         isCheckable: { kind: 'default', value: false },
@@ -569,8 +565,6 @@ export const DEFAULTS: DefaultsRegistry = {
     },
     Picker: {
       props: {
-        dialogMobileType: { kind: 'default', value: 'dialogType' },
-        dialogType: { kind: 'default', value: 'popover' },
         disallowEmptySelection: { kind: 'default', value: false },
         isCheckable: { kind: 'default', value: false },
         isClearable: { kind: 'default', value: false },
