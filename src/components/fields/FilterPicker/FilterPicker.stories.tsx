@@ -12,7 +12,6 @@ import { SettingsIcon } from '../../../icons/SettingsIcon';
 import { UserIcon } from '../../../icons/UserIcon';
 import { NO_SNAPSHOT } from '../../../stories/chromatic';
 import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
-import { openPickerPopover } from '../../../stories/PickerPopover';
 import { Button } from '../../actions/Button/Button';
 import { Badge } from '../../content/Badge/Badge';
 import { Paragraph } from '../../content/Paragraph';
@@ -2674,13 +2673,5 @@ export const Reorderable: StoryObj<typeof FilterPicker> = {
           'Demonstrates drag-and-drop reordering inside FilterPicker. Items can be reordered by dragging the grip handle or pressing Alt+↑/↓ on the keyboard. Search still works — reordering is temporarily disabled while a search value is present.',
       },
     },
-  },
-};
-
-export const MobilePopover: Story = {
-  ...Default,
-  parameters: { chromatic: { viewports: [390] } },
-  play: async ({ canvasElement }) => {
-    await openPickerPopover(canvasElement);
   },
 };

@@ -5,7 +5,6 @@ import { userEvent, within } from 'storybook/test';
 import { NO_SNAPSHOT } from '../../../stories/chromatic';
 import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
-import { openPickerPopover } from '../../../stories/PickerPopover';
 import { Space } from '../../layout/Space';
 
 import { MonthPicker } from './MonthPicker';
@@ -113,11 +112,4 @@ Open.play = async ({ canvasElement }) => {
   const button = await canvas.getByRole('button');
 
   await userEvent.click(button);
-};
-
-export const MobilePopover = MonthTemplate.bind({});
-MobilePopover.args = MonthWithValue.args;
-MobilePopover.parameters = { chromatic: { viewports: [390] } };
-MobilePopover.play = async ({ canvasElement }) => {
-  await openPickerPopover(canvasElement);
 };

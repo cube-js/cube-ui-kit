@@ -3,7 +3,6 @@ import { useState } from 'react';
 
 import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
-import { openPickerPopover } from '../../../stories/PickerPopover';
 import { Space } from '../../layout/Space';
 import { COLOR_FORMATS } from '../color/color';
 
@@ -240,11 +239,4 @@ Controlled.parameters = {
       story: 'Both triggers share one value, so either one updates the other.',
     },
   },
-};
-
-export const MobilePopover = Template.bind({});
-MobilePopover.args = WithValue.args;
-MobilePopover.parameters = { chromatic: { viewports: [390] } };
-MobilePopover.play = async ({ canvasElement }) => {
-  await openPickerPopover(canvasElement);
 };

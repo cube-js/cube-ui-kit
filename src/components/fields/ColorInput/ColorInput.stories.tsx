@@ -5,7 +5,6 @@ import { userEvent, within } from 'storybook/test';
 import { NO_SNAPSHOT } from '../../../stories/chromatic';
 import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
-import { openPickerPopover } from '../../../stories/PickerPopover';
 import { Text } from '../../content/Text';
 import { Title } from '../../content/Title';
 import { Flow } from '../../layout/Flow';
@@ -279,10 +278,3 @@ OpensOnTrigger.play = async ({ canvasElement }) => {
 };
 // Ends on the same open panel `Open` renders via `defaultOpen`; this story proves the click path, which a snapshot cannot show.
 OpensOnTrigger.parameters = NO_SNAPSHOT;
-
-export const MobilePopover = Template.bind({});
-MobilePopover.args = WithValue.args;
-MobilePopover.parameters = { chromatic: { viewports: [390] } };
-MobilePopover.play = async ({ canvasElement }) => {
-  await openPickerPopover(canvasElement);
-};

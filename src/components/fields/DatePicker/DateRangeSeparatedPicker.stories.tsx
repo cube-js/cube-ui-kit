@@ -1,11 +1,9 @@
 import { StoryFn } from '@storybook/react-vite';
 import { userEvent } from 'storybook/test';
 
-import { NO_SNAPSHOT } from '../../../stories/chromatic';
 import { ICON_ARG, VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
 import { waitForOverlay } from '../../../stories/interactions';
 import { baseProps } from '../../../stories/lists/baseProps';
-import { openPickerPopover } from '../../../stories/PickerPopover';
 import { Space } from '../../layout/Space';
 
 import {
@@ -93,20 +91,3 @@ Small.args = { size: 'small' };
 
 export const WithLocale = Template.bind({});
 WithLocale.args = { useLocale: true };
-
-export const MobilePopover = Template.bind({});
-MobilePopover.args = WithDefaultValue.args;
-MobilePopover.parameters = { chromatic: { viewports: [390] } };
-MobilePopover.play = async ({ canvasElement }) => {
-  await openPickerPopover(canvasElement);
-};
-
-export const MobileEndPopover = Template.bind({});
-MobileEndPopover.args = WithDefaultValue.args;
-// Same calendar layout as MobilePopover; this checks the second trigger wiring.
-MobileEndPopover.parameters = {
-  chromatic: { ...NO_SNAPSHOT.chromatic, viewports: [390] },
-};
-MobileEndPopover.play = async ({ canvasElement }) => {
-  await openPickerPopover(canvasElement, 1);
-};

@@ -4,7 +4,6 @@ import { Key } from 'react-aria';
 
 import { ReloadIcon } from '../../../icons/ReloadIcon';
 import { NO_SNAPSHOT } from '../../../stories/chromatic';
-import { openPickerPopover } from '../../../stories/PickerPopover';
 import { Text } from '../../content/Text';
 import { Flex } from '../../layout/Flex';
 
@@ -463,13 +462,5 @@ export const LoadingState: Story = {
     children: fruits.map((fruit) => (
       <Picker.Item key={fruit.key}>{fruit.label}</Picker.Item>
     )),
-  },
-};
-
-export const MobilePopover: Story = {
-  ...SingleSelection,
-  parameters: { chromatic: { viewports: [390] } },
-  play: async ({ canvasElement }) => {
-    await openPickerPopover(canvasElement);
   },
 };

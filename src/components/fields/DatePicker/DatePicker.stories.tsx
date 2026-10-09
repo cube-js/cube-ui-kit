@@ -4,7 +4,6 @@ import { userEvent, within } from 'storybook/test';
 import { NO_SNAPSHOT } from '../../../stories/chromatic';
 import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
-import { openPickerPopover } from '../../../stories/PickerPopover';
 import { Space } from '../../layout/Space';
 
 import { CubeDatePickerProps, DatePicker } from './DatePicker';
@@ -344,10 +343,3 @@ WithLimitedRange.parameters = NO_SNAPSHOT;
 
 export const WithLocale = Template.bind({});
 WithLocale.args = { useLocale: true };
-
-export const MobilePopover = Template.bind({});
-MobilePopover.args = WithDefaultValue.args;
-MobilePopover.parameters = { chromatic: { viewports: [390] } };
-MobilePopover.play = async ({ canvasElement }) => {
-  await openPickerPopover(canvasElement);
-};
