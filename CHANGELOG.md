@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.192.0
+
+### Minor Changes
+
+- [#1494](https://github.com/cube-js/cube-ui-kit/pull/1494) [`8804c942`](https://github.com/cube-js/cube-ui-kit/commit/8804c942e97d61e534e30a4e26fad4b8a83d87a3) Thanks [@tenphi](https://github.com/tenphi)! - Use anchored popovers for Picker, FilterPicker, DatePicker, DateRangePicker, DateRangeSeparatedPicker, PeriodPicker, ColorPicker and ColorInput on desktop and mobile. Date and color pickers now use popovers on mobile instead of trays. Picker presentation is fixed, while existing trigger styling, selection and open-state APIs remain unchanged.
+
 ## 0.191.0
 
 ### Minor Changes
