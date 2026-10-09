@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from 'react';
-import { userEvent, within } from 'storybook/test';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 
 import { CheckIcon } from '../../../icons/CheckIcon';
 import { DatabaseIcon } from '../../../icons/DatabaseIcon';
@@ -2689,8 +2689,19 @@ export const Popover: Story = {
 
 export const Tray: Story = {
   ...Default,
-  args: { ...Default.args, dialogType: 'tray' },
-  play: async ({ canvasElement }) => openPickerDialog(canvasElement, 'tray'),
+  args: {
+    ...Default.args,
+    label: <strong>Favorite Fruit</strong>,
+    dialogType: 'tray',
+  },
+  play: async ({ canvasElement }) => {
+    await openPickerDialog(canvasElement, 'tray');
+    await waitFor(() =>
+      expect(
+        within(document.body).getByRole('heading', { name: /Favorite Fruit/ }),
+      ).toBeVisible(),
+    );
+  },
 };
 
 export const MobileTray: Story = {

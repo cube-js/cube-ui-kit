@@ -17,6 +17,7 @@ const POPOVER_STYLES: Styles = {
 
 interface PickerDialogProps extends Omit<CubeDialogProps, 'children'> {
   children: (isPopover: boolean) => ReactNode;
+  heading: ReactNode;
   popoverStyles?: Styles;
   triggerWidth?: number;
 }
@@ -24,6 +25,7 @@ interface PickerDialogProps extends Omit<CubeDialogProps, 'children'> {
 // Read the presentation selected by DialogTrigger, including its mobile override.
 export function PickerDialog({
   children,
+  heading,
   popoverStyles,
   triggerWidth,
   ...props
@@ -35,6 +37,7 @@ export function PickerDialog({
   return (
     <Dialog
       {...props}
+      aria-label={isPopover ? props['aria-label'] : undefined}
       isDismissable={!isPopover}
       styles={mergeStyleLayers(
         isPopover ? POPOVER_STYLES : undefined,
@@ -51,7 +54,7 @@ export function PickerDialog({
       ) : (
         <>
           <Header>
-            <Title>{props['aria-label']}</Title>
+            <Title>{heading}</Title>
           </Header>
           <Content>{content}</Content>
         </>

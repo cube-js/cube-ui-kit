@@ -286,3 +286,79 @@ describe.each(['popover', 'tray'] as const)(
     );
   },
 );
+
+describe.each([
+  { name: 'Picker', Component: Picker },
+  { name: 'FilterPicker', Component: FilterPicker },
+])('$name rich picker labels', ({ Component }) => {
+  it.each(['popover', 'tray'] as const)(
+    'preserves a zero label in %s',
+    async (dialogType) => {
+      renderWithRoot(
+        <Component label={0} dialogType={dialogType}>
+          <Component.Item key="apple">Apple</Component.Item>
+        </Component>,
+      );
+      const trigger = screen.getByRole('button');
+      expect(trigger).toHaveAccessibleName('0');
+      await userEvent.click(trigger);
+      expect(await screen.findByRole('dialog')).toHaveAccessibleName(
+        '0 Picker',
+      );
+    },
+  );
+
+  it.each([
+    {
+      dialogType: 'popover' as const,
+      ariaLabel: undefined,
+      dialogName: 'Picker',
+    },
+    {
+      dialogType: 'tray' as const,
+      ariaLabel: undefined,
+      dialogName: 'Fruit Picker',
+    },
+    {
+      dialogType: 'popover' as const,
+      ariaLabel: 'Fruit selection',
+      dialogName: 'Fruit selection Picker',
+    },
+    {
+      dialogType: 'tray' as const,
+      ariaLabel: 'Fruit selection',
+      dialogName: 'Fruit selection Picker',
+    },
+  ])(
+    'preserves label markup in $dialogType with aria-label=$ariaLabel',
+    async ({ dialogType, ariaLabel, dialogName }) => {
+      renderWithRoot(
+        <Component
+          label={<strong>Fruit</strong>}
+          aria-label={ariaLabel}
+          dialogType={dialogType}
+        >
+          <Component.Item key="apple">Apple</Component.Item>
+        </Component>,
+      );
+      const trigger = screen.getByRole('button');
+      expect(trigger).toHaveAccessibleName(ariaLabel ?? 'Picker');
+      await userEvent.click(trigger);
+      const dialog = await screen.findByRole('dialog');
+      expect(dialog).toHaveAccessibleName(dialogName);
+      expect(within(dialog).getByRole('listbox')).not.toHaveAccessibleName(
+        /object Object/,
+      );
+      if (dialogType === 'tray') {
+        expect(within(dialog).getByRole('heading')).toHaveTextContent(
+          dialogName,
+        );
+        if (!ariaLabel) {
+          expect(
+            within(dialog).getByRole('heading').querySelector('strong'),
+          ).toHaveTextContent('Fruit');
+        }
+      }
+    },
+  );
+});

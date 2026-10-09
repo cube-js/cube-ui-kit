@@ -1,6 +1,7 @@
 import { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
 import { Key } from 'react-aria';
+import { expect, waitFor, within } from 'storybook/test';
 
 import { ReloadIcon } from '../../../icons/ReloadIcon';
 import { NO_SNAPSHOT } from '../../../stories/chromatic';
@@ -478,6 +479,17 @@ export const Popover: Story = {
 
 export const Tray: Story = {
   ...SingleSelection,
-  args: { ...SingleSelection.args, dialogType: 'tray' },
-  play: async ({ canvasElement }) => openPickerDialog(canvasElement, 'tray'),
+  args: {
+    ...SingleSelection.args,
+    label: <strong>Favorite Fruit</strong>,
+    dialogType: 'tray',
+  },
+  play: async ({ canvasElement }) => {
+    await openPickerDialog(canvasElement, 'tray');
+    await waitFor(() =>
+      expect(
+        within(document.body).getByRole('heading', { name: /Favorite Fruit/ }),
+      ).toBeVisible(),
+    );
+  },
 };

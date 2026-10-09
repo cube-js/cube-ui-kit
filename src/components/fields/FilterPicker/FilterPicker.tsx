@@ -87,7 +87,7 @@ export interface CubeFilterPickerProps<T>
       | 'hotkeys'
       | 'shape'
     > {
-  /** Accessible name for the picker trigger when there is no visible label. */
+  /** Text name for the trigger and popover when the label is rich or absent. */
   'aria-label'?: string;
   /** Placeholder text when no selection is made */
   placeholder?: string;
@@ -331,6 +331,14 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     form,
     ...otherProps
   } = props;
+
+  const textLabel =
+    ariaLabel ??
+    (typeof label === 'string' || typeof label === 'number'
+      ? String(label)
+      : undefined);
+  const pickerCaption = t('picker.pickerAriaLabel', 'Picker');
+  const dialogName = `${textLabel ?? ''} ${pickerCaption}`.trim();
 
   const sortSelectedToTopExplicit = sortSelectedToTopProp !== undefined;
   const sortSelectedToTop = sortSelectedToTopProp ?? (items ? true : false);
@@ -776,7 +784,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
       descriptionPlacement={descriptionPlacement}
       styles={triggerStyles}
       {...keyboardProps}
-      aria-label={`${ariaLabel ?? label ?? ''}`}
+      aria-label={textLabel ?? (label ? pickerCaption : undefined)}
     >
       {triggerContent}
     </ItemButton>
@@ -891,7 +899,12 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
         {() => (
           <PickerDialog
             qa="FilterPickerOverlay"
-            aria-label={`${ariaLabel ?? label ?? ''} ${t('picker.pickerAriaLabel', 'Picker')}`}
+            aria-label={dialogName}
+            heading={
+              <>
+                {ariaLabel ?? label} {pickerCaption}
+              </>
+            }
             popoverStyles={popoverStyles}
             triggerWidth={triggerWidthRef.current}
           >
@@ -900,10 +913,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
                 <FilterListBox
                   autoFocus
                   items={items ? (finalItems as typeof props.items) : undefined}
-                  aria-label={`${ariaLabel ?? label ?? ''} ${t(
-                    'picker.pickerAriaLabel',
-                    'Picker',
-                  )}`}
+                  aria-label={dialogName}
                   _internalCollection={localCollectionState.collection}
                   selectedKey={
                     selectionMode === 'single' ? mappedSelectedKey : undefined
