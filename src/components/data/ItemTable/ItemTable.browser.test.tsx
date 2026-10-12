@@ -1044,6 +1044,8 @@ describe('virtualized row estimates', () => {
     const scroller = grid().parentElement!;
     const heightBefore = scroller.scrollHeight;
     const row = grid().querySelector<HTMLElement>('tr[data-key="0"]')!;
+    const contentStart =
+      row.getBoundingClientRect().top - scroller.getBoundingClientRect().top;
     expect(row.getBoundingClientRect().height).toBe(200);
 
     rerender(table(80));
@@ -1051,6 +1053,20 @@ describe('virtualized row estimates', () => {
       expect(scroller.scrollHeight - heightBefore).toBeGreaterThan(70_000),
     );
     expect(row.getBoundingClientRect().height).toBe(200);
+    scroller.scrollTop = 1_800;
+    await nextFrame();
+    await nextFrame();
+    const retained = grid().querySelector<HTMLElement>('tr[data-key="2"]')!;
+    await vi.waitFor(() =>
+      expect(
+        Math.abs(
+          retained.getBoundingClientRect().top -
+            scroller.getBoundingClientRect().top +
+            scroller.scrollTop -
+            (contentStart + 400),
+        ),
+      ).toBeLessThanOrEqual(1),
+    );
   });
 });
 
@@ -1125,6 +1141,90 @@ it.each(['before', 'after'] as const)(
       );
     } finally {
       fonts.delete(font);
+    }
+  },
+);
+
+it.each(['scroll', 'commit'] as const)(
+  'refreshes unchanged-count font replacements after a %s',
+  async (update) => {
+    const fonts = document.fonts as FontFaceSet & Set<FontFace>;
+    const placeholder = new FontFace(
+      'ItemTablePlaceholderFont',
+      'local("Arial"), local("Liberation Sans")',
+    );
+    const font = new FontFace(
+      'ItemTableReplacementFont',
+      'local("Arial"), local("Liberation Sans")',
+    );
+    const data = Array.from({ length: 1_000 }, (_, index) => ({
+      id: String(index),
+      name: 'WWWWWWWW',
+    }));
+    const columns = [
+      { key: 'name', title: 'Name', width: 112, minWidth: 112, maxWidth: 112 },
+    ];
+    const table = (animated: boolean) => (
+      <ItemTable
+        data={data}
+        columns={columns}
+        paginationMode="off"
+        isVirtualized
+        isRowMoveAnimated={animated}
+        rowHeight={40}
+        width="112px"
+        height="160px"
+        cellStyles={{
+          fontFamily: 'ItemTableReplacementFont, monospace',
+          fontSize: '10px',
+          lineHeight: '20px',
+          letterSpacing: '4px',
+        }}
+      />
+    );
+    try {
+      await placeholder.load();
+      fonts.add(placeholder);
+      const { rerender } = renderWithRoot(table(false));
+      const cell = () =>
+        grid().querySelector<HTMLElement>(
+          'tr[data-key="0"] [data-qa="TextItem"]',
+        )!;
+      await vi.waitFor(() => expect(cell().clientWidth).toBe(80));
+      await nextFrame();
+      await nextFrame();
+      expect(cell().scrollWidth).toBe(80);
+      const initialBox = cell().getBoundingClientRect();
+      await font.load();
+      const count = fonts.size;
+      fonts.delete(placeholder);
+      fonts.add(font);
+      expect(fonts.size).toBe(count);
+      await vi.waitFor(() => expect(cell().scrollWidth).toBeGreaterThan(80));
+      expect(cell().getBoundingClientRect().width).toBe(initialBox.width);
+      expect(cell().getBoundingClientRect().height).toBe(initialBox.height);
+
+      if (update === 'scroll') {
+        const scroller = grid().parentElement!;
+        scroller.scrollTop = 40;
+        await nextFrame();
+        await nextFrame();
+        scroller.scrollTop = 0;
+        await new Promise((resolve) => setTimeout(resolve, 200));
+      } else {
+        rerender(table(true));
+        await nextFrame();
+        await nextFrame();
+      }
+      await realInput.hover(headerCell('name'));
+      await realInput.hover(cell());
+      await vi.waitFor(
+        () => expect(screen.getByRole('tooltip')).toHaveTextContent('WWWWWWWW'),
+        { timeout: 3_000 },
+      );
+    } finally {
+      fonts.delete(font);
+      fonts.delete(placeholder);
     }
   },
 );

@@ -3,7 +3,7 @@ import { render } from '@testing-library/react';
 import { useTableTooltipRefresh } from './use-table-tooltip-refresh';
 
 function Scope({ scroller }: { scroller: HTMLDivElement | null }) {
-  useTableTooltipRefresh(scroller);
+  useTableTooltipRefresh(scroller, false);
   return null;
 }
 

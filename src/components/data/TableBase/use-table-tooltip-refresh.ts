@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 
 import { refreshAutoTooltipsWithin } from '../../content/use-auto-tooltip';
 
@@ -15,20 +15,15 @@ const APPEARANCE_ELEMENTS = new Set([
   'Cell',
 ]);
 
-export function useTableTooltipRefresh(scroller: HTMLDivElement | null) {
-  const fontCountRef = useRef<number | undefined>(undefined);
-
-  // Adding an already-loaded FontFace need not emit loadingdone. Check it on
-  // commits, including scroll, without remeasuring an unchanged font set.
+export function useTableTooltipRefresh(
+  scroller: HTMLDivElement | null,
+  isScrolling: boolean,
+) {
+  // A commit can change inherited appearance without changing the box or
+  // font-set size. Refresh at rest, including the commit that settles scroll.
   useEffect(() => {
     const root = scroller?.parentElement;
-    if (!root) return;
-    const fontCount = (document.fonts as FontFaceSet & ReadonlySet<FontFace>)
-      ?.size;
-    if (fontCountRef.current !== fontCount) {
-      fontCountRef.current = fontCount;
-      refreshAutoTooltipsWithin(root);
-    }
+    if (root && !isScrolling) refreshAutoTooltipsWithin(root);
   });
 
   useEffect(() => {

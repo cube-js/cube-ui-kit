@@ -1724,15 +1724,13 @@ export function TableView<T = any>(props: TableViewProps<T>) {
   // Key identity no longer resets estimates on every render. Size changes do.
   useLayoutEffect(() => {
     virtualizer.measure();
+    // Rebuild positions before remeasurement compares old and new row sizes.
+    virtualizer.getTotalSize();
     localBodyRef.current
       ?.querySelectorAll<HTMLTableRowElement>('tr[data-index]')
       .forEach((element) => virtualizer.measureElement(element));
   }, [estimatedRowHeight, virtualizer]);
-  useTableTooltipRefresh(scrollerEl);
-
-  // `scrollerEl` is referenced only to re-render on the pass where the scroller
-  // first exists, so the virtualizer re-reads `getScrollElement` and attaches.
-  void scrollerEl;
+  useTableTooltipRefresh(scrollerEl, virtualizer.isScrolling);
 
   const focusedTreeKey = tree?.state.selectionManager.focusedKey;
   useEffect(() => {
