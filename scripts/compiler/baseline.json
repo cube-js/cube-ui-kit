@@ -145,7 +145,7 @@
     "optOuts": 0
   },
   "src/components/actions/Menu/MenuItem.tsx": {
-    "compiled": 1,
+    "compiled": 2,
     "diagnostics": {},
     "optOuts": 0
   },
@@ -177,10 +177,8 @@
     "optOuts": 0
   },
   "src/components/actions/use-action.ts": {
-    "compiled": 0,
-    "diagnostics": {
-      "Hooks": 2
-    },
+    "compiled": 1,
+    "diagnostics": {},
     "optOuts": 0
   },
   "src/components/actions/use-anchored-menu.tsx": {
@@ -1559,6 +1557,13 @@
   "src/providers/TrackingProvider.tsx": {
     "compiled": 2,
     "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/providers/use-navigation.ts": {
+    "compiled": 0,
+    "diagnostics": {
+      "Hooks": 2
+    },
     "optOuts": 0
   },
   "src/tokens/color-theme.ts": {

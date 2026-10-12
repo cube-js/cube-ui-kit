@@ -22,6 +22,7 @@ const tastyPkg = JSON.parse(
  * each other's specs.
  */
 export default defineConfig({
+  resolve: { dedupe: ['react', 'react-dom'] },
   // Compiler injects this import after Vite's dependency scan. Prebundle it
   // up front so discovering it cannot reload a running browser test.
   optimizeDeps: { include: ['react/compiler-runtime'] },

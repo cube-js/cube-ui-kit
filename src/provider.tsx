@@ -59,7 +59,7 @@ export function Provider(allProps: PropsWithChildren<ProviderProps>) {
       isRequired,
       isInvalid,
       isValid,
-      navigation: navigation || defaultNavigationAdapter,
+      navigation,
       root,
     }),
     [

@@ -23,6 +23,7 @@ import { Icon } from '../../../icons/Icon';
 import { MoreIcon } from '../../../icons/MoreIcon';
 import { PlusIcon } from '../../../icons/PlusIcon';
 import { TrashIcon } from '../../../icons/TrashIcon';
+import { NO_SNAPSHOT } from '../../../stories/chromatic';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Block } from '../../Block';
 import { Alert } from '../../content/Alert';
@@ -2312,4 +2313,40 @@ ActionOpensPanel.parameters = {
         'A menu action that opens a surface hands focus off to it. `MenuTrigger` skips its focus restore whenever the action already moved focus outside the closing menu, so the opened panel keeps focus with a single `focus()` call. Use `shouldRestoreFocus={false}` when the surface claims focus later than the restore (async load, entry animation).',
     },
   },
+};
+
+export const NavigationLinks = () => (
+  <Menu aria-label="Workbooks" styles={{ width: '36x' }}>
+    <Menu.Section title="Recent workbooks">
+      <Menu.Item
+        key="recent"
+        to={{ pathname: '/workbooks/42', search: '?chatId=abc' }}
+      >
+        Recent workbook
+      </Menu.Item>
+      <Menu.Item key="disabled" to="/workbooks/private" isDisabled>
+        Unavailable workbook
+      </Menu.Item>
+    </Menu.Section>
+    <Menu.Item key="browse" to="/workbooks">
+      Browse all
+    </Menu.Item>
+    <Menu.Item key="docs" to="!https://cube.dev/docs">
+      Documentation
+    </Menu.Item>
+    <Menu.Item key="create" icon={<IconPlus />}>
+      Create workbook
+    </Menu.Item>
+  </Menu>
+);
+
+// Link semantics preserve the existing Menu appearance, already photographed.
+NavigationLinks.parameters = NO_SNAPSHOT;
+NavigationLinks.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement);
+  await waitFor(() =>
+    expect(
+      canvas.getByRole('menuitem', { name: 'Recent workbook' }),
+    ).toHaveAttribute('href', '/workbooks/42?chatId=abc'),
+  );
 };

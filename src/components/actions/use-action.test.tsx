@@ -169,7 +169,7 @@ describe('useAction', () => {
       ),
     });
 
-    expect(mockUseHref).toHaveBeenCalledWith('/test');
+    expect(mockUseHref).toHaveBeenCalledWith('/test', undefined);
   });
 
   it('should call hooks with fallback when no to prop', () => {
@@ -181,7 +181,7 @@ describe('useAction', () => {
       ),
     });
 
-    expect(mockUseHref).toHaveBeenCalledWith('.');
+    expect(mockUseHref).toHaveBeenCalledWith('.', undefined);
   });
 
   it('should return button element for history navigation', () => {

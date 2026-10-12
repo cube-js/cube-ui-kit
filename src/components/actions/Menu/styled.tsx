@@ -61,6 +61,18 @@ export const StyledMenu = tasty({
   },
 });
 
+// The anchor owns the row styling and focus; this preserves valid list markup.
+export const StyledLinkItem = tasty({
+  as: 'li',
+  styles: {
+    display: 'grid',
+    listStyle: 'none',
+    margin: 0,
+    padding: 0,
+    flexShrink: 0,
+  },
+});
+
 export const StyledDivider = tasty({
   qa: 'Divider',
   as: 'li',

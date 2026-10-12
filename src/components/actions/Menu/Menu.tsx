@@ -18,9 +18,9 @@ import { Section as BaseSection, useTreeState } from 'react-stately';
 
 import { mergeProps } from '../../../utils/react';
 import { extractStyles } from '../../../utils/styles';
-import { CollectionItem } from '../../CollectionItem';
 
 import { useMenuContext } from './context';
+import { MenuCollectionItem } from './MenuCollectionItem';
 import { MenuItem } from './MenuItem';
 import { MenuSection } from './MenuSection';
 import { MenuTrigger } from './MenuTrigger';
@@ -279,14 +279,14 @@ const Section = Object.assign(BaseSection, {
 }) as SectionComponent;
 
 type __MenuComponent = typeof _Menu & {
-  Item: typeof CollectionItem;
+  Item: typeof MenuCollectionItem;
   Section: typeof Section;
   SubMenuTrigger: typeof SubMenuTrigger;
   Trigger: typeof MenuTrigger;
 };
 
 const __Menu = Object.assign(_Menu as __MenuComponent, {
-  Item: CollectionItem,
+  Item: MenuCollectionItem,
   Section,
   SubMenuTrigger,
   Trigger: MenuTrigger,

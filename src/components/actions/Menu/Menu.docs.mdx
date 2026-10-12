@@ -175,6 +175,34 @@ For detailed information about all available item properties, see [Item document
 - **`textValue`** `string` — Text for typeahead search
 - **`wrapper`** `(item: ReactElement) => ReactElement` — Function to wrap the item
 - **`onAction`** `() => void` — Callback fired when item is activated
+- **`to`** `string \| Path` — Application destination, resolved by Root's navigation adapter; takes precedence over `href`
+- **`navigationOptions`** `NavigateOptions` — Router options such as `replace`, `state`, `relative`, and `preventScrollReset`
+- **`href`** `string` — Link destination when `to` is omitted
+- **`target`**, **`rel`**, **`download`**, **`ping`**, **`referrerPolicy`** — Native anchor attributes
+
+#### Navigation Items
+
+Navigation items render native anchors. An ordinary click or Enter/Space activation uses the navigation adapter passed to [Root](/docs/getting-started-root--docs) and closes the menu. Modified clicks, middle clicks, downloads, other targets, and external destinations retain browser link behavior. Right-click offers the browser's link commands. Disabled links have no destination and cannot navigate.
+
+```tsx
+<MenuTrigger>
+  <Button>Workbooks</Button>
+  <Menu>
+    <Menu.Section title="Recent workbooks">
+      <Menu.Item key="recent" to={{ pathname: '/workbooks/42', search: '?chatId=abc' }}>
+        Recent workbook
+      </Menu.Item>
+    </Menu.Section>
+    <Menu.Item key="browse" to="/workbooks">Browse all</Menu.Item>
+    <Menu.Item key="docs" to="!https://cube.dev/docs">Documentation</Menu.Item>
+    <Menu.Item key="create" onAction={createWorkbook}>Create workbook</Menu.Item>
+  </Menu>
+</MenuTrigger>
+```
+
+As with other UI Kit actions, a `!` prefix opens `to` in a new tab and an `@` prefix forces native navigation. Use `onAction` for commands, including history actions. Link `onAction` callbacks still run during activation; navigation itself belongs to `to` or `href`, so the callback should not navigate again. Submenu parents open their submenu and ignore destinations; links inside the submenu behave normally. Inline actions render beside the anchor and retain item styling and disabled state.
+
+<Story of={MenuStories.NavigationLinks} />
 
 #### Example with Rich Items
 

@@ -1,6 +1,7 @@
 export * from './Menu';
 export * from './MenuTrigger';
 export * from './MenuItem';
+export type { CubeMenuItemProps } from './MenuCollectionItem';
 export * from './MenuSection';
 export * from './SubMenuTrigger';
 export * from './context';
