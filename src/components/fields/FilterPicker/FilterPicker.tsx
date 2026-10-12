@@ -31,8 +31,8 @@ import { useI18n } from '../../../i18n';
 import { CloseIcon } from '../../../icons/CloseIcon';
 import { DirectionIcon } from '../../../icons/DirectionIcon';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
-import { allowEscapeToPropagate } from '../../../utils/react/escapePropagation';
 import { isTextOnly } from '../../../utils/react/isTextOnly';
+import { allowOverlayKeysToPropagate } from '../../../utils/react/overlayKeyPropagation';
 import { processSelectionArray } from '../../../utils/selection';
 import { extractStyles, mergeStyleLayers } from '../../../utils/styles';
 import { CubeItemButtonProps, ItemAction, ItemButton } from '../../actions';
@@ -522,7 +522,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
   // wrapper's handler, so the opt-out applies to the event that travels.
   const keyboardProps = {
     onKeyDown: (e: RAKeyboardEvent) => {
-      allowEscapeToPropagate(e);
+      allowOverlayKeysToPropagate(e);
 
       if ((e.key === 'ArrowUp' || e.key === 'ArrowDown') && !isPopoverOpen) {
         e.preventDefault();

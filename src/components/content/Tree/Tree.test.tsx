@@ -953,7 +953,7 @@ describe('<Tree />', () => {
   });
 
   describe('keys from a row checkbox (CUB-5357)', () => {
-    it('lets Escape reach an ancestor and holds other keys', async () => {
+    it('lets Escape and Tab reach an ancestor and holds other keys', async () => {
       const seen: string[] = [];
       const { getAllByRole } = renderWithRoot(
         <div onKeyDown={(event) => seen.push(event.key)}>
@@ -979,6 +979,10 @@ describe('<Tree />', () => {
 
       await userEvent.keyboard('{Escape}');
       expect(seen).toEqual(['Escape']);
+
+      // Tab last: it takes focus out of the tree.
+      await userEvent.keyboard('{Tab}');
+      expect(seen).toEqual(['Escape', 'Tab']);
     });
   });
 

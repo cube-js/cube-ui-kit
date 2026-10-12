@@ -7,7 +7,7 @@ import { DirectionIcon } from '../../../icons/DirectionIcon';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
 import { MoreIcon } from '../../../icons/MoreIcon';
 import { mergeProps, mergeRefs } from '../../../utils/react';
-import { allowEscapeToPropagate } from '../../../utils/react/escapePropagation';
+import { allowOverlayKeysToPropagate } from '../../../utils/react/overlayKeyPropagation';
 import { CubeItemActionProps, ItemAction } from '../../actions/ItemAction';
 import { CubeMenuProps, Menu, MenuTrigger } from '../../actions/Menu';
 import { useContextMenu } from '../../actions/use-context-menu';
@@ -358,8 +358,9 @@ function TreeNodeInner(props: TreeNodeProps) {
       data-element="Checkbox"
       role="presentation"
       onClick={handleWrapperClick}
-      // Hold the checkbox's keys here, but let Escape reach a surrounding overlay.
-      onKeyDown={allowEscapeToPropagate}
+      // Hold the checkbox's keys here, but let Escape and Tab reach the tree and
+      // a surrounding overlay.
+      onKeyDown={allowOverlayKeysToPropagate}
     >
       <Checkbox
         isSelected={isChecked}

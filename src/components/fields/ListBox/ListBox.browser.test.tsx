@@ -8,8 +8,9 @@ import { ListBox } from './ListBox';
 /**
  * What the list lets out, and what it keeps (CUB-4839).
  *
- * `Escape` has to leave so a surrounding overlay can close on it. Nothing else
- * may follow it out: ancestors run shortcuts off plain keys, and a list that
+ * `Escape` has to leave so a surrounding overlay can close on it, and `Tab` so
+ * a surrounding Dialog can keep focus inside (CUB-5603). Nothing else may
+ * follow them out: ancestors run shortcuts off plain keys, and a list that
  * leaked `Enter` into a surrounding form would submit it.
  *
  * In a browser rather than jsdom because the bug this guards is a property of
@@ -47,6 +48,14 @@ describe('ListBox key propagation', () => {
     await user.keyboard('{Escape}');
 
     expect(seen).toContain('Escape');
+  });
+
+  it('lets Tab out', async () => {
+    const seen = setup();
+
+    await user.keyboard('{Tab}');
+
+    expect(seen).toContain('Tab');
   });
 
   it('still holds a key pressed AFTER Escape', async () => {

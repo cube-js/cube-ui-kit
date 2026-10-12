@@ -10,13 +10,21 @@ type MaybeAugmentedKeyboardEvent = KeyboardEvent<any> & {
 };
 
 /**
- * Let `Escape` keep travelling out of a trigger or list, and hold every other
- * key exactly as before (CUB-4839).
+ * Keys whose final handling belongs to the overlay around a control, not to
+ * the control. `Escape` dismisses it (CUB-4839). `Tab` is how its `FocusScope`
+ * keeps focus inside: React Aria contains focus from a `keydown` listener on
+ * the document, so a `Tab` held here left a Dialog's first or last control
+ * unable to wrap (CUB-5603).
+ */
+const OVERLAY_KEYS = new Set(['Escape', 'Tab']);
+
+/**
+ * Let `Escape` and `Tab` keep travelling out of a trigger or list, and hold
+ * every other key exactly as before.
  *
- * `Escape` is how whatever surrounds a control — a Dialog, most often — gets
- * dismissed, and these handlers never act on it. Every other key stays
- * contained: releasing them too would let `Enter` and typeahead reach ancestor
- * shortcuts and form submits, which callers have always had held here.
+ * Every other key stays contained: releasing them too would let `Enter` and
+ * typeahead reach ancestor shortcuts and form submits, which callers have
+ * always had held here.
  *
  * Shape-aware because the same `onKeyDown` is reached two ways and the DEFAULT
  * is opposite between them:
@@ -33,11 +41,13 @@ type MaybeAugmentedKeyboardEvent = KeyboardEvent<any> & {
  * Getting this backwards is silent in one direction and loud in the other:
  * calling `stopPropagation()` on a plain event really does stop it.
  */
-export function allowEscapeToPropagate(event: MaybeAugmentedKeyboardEvent) {
-  const isEscape = event.key === 'Escape';
+export function allowOverlayKeysToPropagate(
+  event: MaybeAugmentedKeyboardEvent,
+) {
+  const isOverlayKey = OVERLAY_KEYS.has(event.key);
 
   if (typeof event.continuePropagation === 'function') {
-    if (isEscape) {
+    if (isOverlayKey) {
       event.continuePropagation();
     } else if (event.isPropagationStopped?.() === false) {
       // Only ever called when the flag is already clear, which is the one case
@@ -48,5 +58,5 @@ export function allowEscapeToPropagate(event: MaybeAugmentedKeyboardEvent) {
     return;
   }
 
-  if (!isEscape) event.stopPropagation();
+  if (!isOverlayKey) event.stopPropagation();
 }

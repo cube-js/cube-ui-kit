@@ -1,6 +1,7 @@
 import { FocusableRefValue } from '@react-types/shared';
 import { useEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
+import { userEvent as browserUserEvent } from 'vitest/browser';
 
 import {
   fireEvent,
@@ -723,4 +724,186 @@ describe('A press on a closing list inside a Dialog (CUB-5293)', () => {
       );
     },
   );
+});
+
+/**
+ * Tab and Shift+Tab around a picker trigger inside a Dialog (CUB-5603).
+ *
+ * The Dialog's `FocusScope` keeps focus inside it from a `keydown` listener on
+ * the document. The trigger's key handler held `Tab` along with every other key
+ * but `Escape`, so from the first or the last control in the Dialog focus could
+ * not wrap and stayed on the trigger. A `Button` in the same place wrapped.
+ *
+ * In a browser, with real key presses, because both halves are the browser's:
+ * React Aria's containment listener, and Tab's own default action when nothing
+ * prevents it.
+ */
+describe.each([
+  [
+    'FilterPicker',
+    () => (
+      <FilterPicker qa="Pick" aria-label="Colour" placeholder="Pick">
+        <FilterPicker.Item key="blue">Blue</FilterPicker.Item>
+        <FilterPicker.Item key="red">Red</FilterPicker.Item>
+      </FilterPicker>
+    ),
+  ],
+  [
+    'Picker',
+    () => (
+      <Picker qa="Pick" aria-label="Colour" placeholder="Pick">
+        <Picker.Item key="blue">Blue</Picker.Item>
+        <Picker.Item key="red">Red</Picker.Item>
+      </Picker>
+    ),
+  ],
+])('Tab around a %s trigger inside a Dialog (CUB-5603)', (_, renderPicker) => {
+  const keyboard = browserUserEvent;
+
+  function App({ pickerAt }: { pickerAt: 'first' | 'last' }) {
+    return (
+      <DialogTrigger type="modal" isDismissable={false}>
+        <Button qa="Trigger">Open</Button>
+        <Dialog>
+          {pickerAt === 'first' && renderPicker()}
+          <Button qa="Second">Second</Button>
+          <Button qa="Third">Third</Button>
+          {pickerAt === 'last' && renderPicker()}
+        </Dialog>
+      </DialogTrigger>
+    );
+  }
+
+  async function focusPickerIn(pickerAt: 'first' | 'last') {
+    renderWithRoot(<App pickerAt={pickerAt} />);
+    await userEvent.click(screen.getByTestId('Trigger'));
+    await screen.findByTestId('Dialog');
+
+    const trigger = screen.getByTestId('Pick');
+
+    // The Dialog moves focus in on its own a tick after opening.
+    await waitFor(() =>
+      expect(screen.getByTestId('Dialog')).toContainElement(
+        document.activeElement as HTMLElement,
+      ),
+    );
+    trigger.focus();
+    expect(trigger).toHaveFocus();
+
+    return trigger;
+  }
+
+  it('wraps Shift+Tab from a trigger placed first to the last control', async () => {
+    await focusPickerIn('first');
+
+    await keyboard.tab({ shift: true });
+
+    expect(screen.getByTestId('Third')).toHaveFocus();
+  });
+
+  it('wraps Tab from a trigger placed last to the first control', async () => {
+    await focusPickerIn('last');
+
+    await keyboard.tab();
+
+    expect(screen.getByTestId('Second')).toHaveFocus();
+  });
+
+  it('moves Tab and Shift+Tab between neighbours as before', async () => {
+    const trigger = await focusPickerIn('first');
+
+    await keyboard.tab();
+    expect(screen.getByTestId('Second')).toHaveFocus();
+
+    await keyboard.tab({ shift: true });
+    expect(trigger).toHaveFocus();
+  });
+
+  it('keeps Tab inside the open popup', async () => {
+    await focusPickerIn('first');
+
+    await keyboard.keyboard('{ArrowDown}');
+    const listbox = await screen.findByRole('listbox');
+    const popup = listbox.closest('[data-qa="Dialog"], [role="dialog"]')!;
+
+    await keyboard.tab();
+    expect(popup).toContainElement(document.activeElement as HTMLElement);
+
+    await keyboard.tab({ shift: true });
+    expect(popup).toContainElement(document.activeElement as HTMLElement);
+  });
+
+  // Only Tab joins Escape: a typed key still stops at the trigger, so it can't
+  // reach an ancestor's shortcut.
+  it('lets Tab out of the trigger and still holds other keys', async () => {
+    const seen: string[] = [];
+
+    renderWithRoot(
+      <div onKeyDown={(event) => seen.push(event.key)}>{renderPicker()}</div>,
+    );
+    screen.getByTestId('Pick').focus();
+
+    await keyboard.keyboard('z');
+    expect(seen).toEqual([]);
+
+    await keyboard.tab();
+    expect(seen).toEqual(['Tab']);
+  });
+
+  // Escape still belongs to the innermost layer: it closes the popup and
+  // leaves the Dialog, and focus returns to a trigger that wraps again.
+  it('wraps again after Escape closed its popup, and keeps the Dialog open', async () => {
+    const trigger = await focusPickerIn('first');
+
+    await keyboard.keyboard('{ArrowDown}');
+    await screen.findByRole('listbox');
+    await keyboard.keyboard('{Escape}');
+
+    await waitFor(() =>
+      expect(screen.queryByRole('listbox')).not.toBeInTheDocument(),
+    );
+    await waitFor(() => expect(trigger).toHaveFocus());
+    expect(screen.getByTestId('Dialog')).toBeInTheDocument();
+
+    await keyboard.tab({ shift: true });
+
+    expect(screen.getByTestId('Third')).toHaveFocus();
+  });
+});
+
+// The popup's search field drives the list from the keyboard; none of that
+// goes through the trigger's handler, and it has to keep working in a Dialog.
+it('filters and picks from the FilterPicker search field inside a Dialog (CUB-5603)', async () => {
+  renderWithRoot(
+    <DialogTrigger type="modal">
+      <Button qa="Trigger">Open</Button>
+      <Dialog>
+        <FilterPicker qa="Pick" aria-label="Colour" placeholder="Pick">
+          <FilterPicker.Item key="blue">Blue</FilterPicker.Item>
+          <FilterPicker.Item key="red">Red</FilterPicker.Item>
+        </FilterPicker>
+      </Dialog>
+    </DialogTrigger>,
+  );
+  await userEvent.click(screen.getByTestId('Trigger'));
+  await screen.findByTestId('Dialog');
+  screen.getByTestId('Pick').focus();
+
+  await browserUserEvent.keyboard('{ArrowDown}');
+  const search = await screen.findByRole('combobox');
+
+  await waitFor(() => expect(search).toHaveFocus());
+  await browserUserEvent.keyboard('re');
+  await waitFor(() =>
+    expect(screen.getAllByRole('option').map((o) => o.textContent)).toEqual([
+      'Red',
+    ]),
+  );
+  await browserUserEvent.keyboard('{ArrowDown}{Enter}');
+
+  await waitFor(() =>
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument(),
+  );
+  expect(screen.getByTestId('Pick')).toHaveTextContent('Red');
+  expect(screen.getByTestId('Dialog')).toBeInTheDocument();
 });
