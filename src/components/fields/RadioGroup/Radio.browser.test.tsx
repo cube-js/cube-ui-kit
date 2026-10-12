@@ -261,6 +261,7 @@ describe('Disabled Radio.Button with a tooltip', () => {
 
   // The selected radio is the group's tab stop, and the browser used to stop
   // there first when it lay ahead of the disabled one in the Tab's direction.
+  // Passing through it would open its tooltip and scroll to it.
   it('lets Tab leave the group from a disabled radio the arrow keys reached', async () => {
     renderWithRoot(
       <>
@@ -289,8 +290,17 @@ describe('Disabled Radio.Button with a tooltip', () => {
     await userEvent.keyboard('{ArrowLeft}');
     expect(no).toHaveFocus();
 
+    const onSelectedFocus = vi.fn();
+
+    maybe.addEventListener('focus', onSelectedFocus);
+
     await userEvent.keyboard('{Tab}');
     expect(screen.getByRole('button', { name: 'After' })).toHaveFocus();
+    expect(onSelectedFocus).not.toHaveBeenCalled();
+
+    await waitFor(() => expect(maybe).toHaveAttribute('tabindex', '0'));
+    await userEvent.keyboard('{Shift>}{Tab}{/Shift}');
+    expect(maybe).toHaveFocus();
   });
 
   it('lets Shift+Tab leave the group from a disabled radio the arrow keys reached', async () => {
@@ -313,8 +323,17 @@ describe('Disabled Radio.Button with a tooltip', () => {
     await userEvent.keyboard('{Tab}{ArrowRight}');
     expect(no).toHaveFocus();
 
+    const onSelectedFocus = vi.fn();
+
+    yes.addEventListener('focus', onSelectedFocus);
+
     await userEvent.keyboard('{Shift>}{Tab}{/Shift}');
     expect(screen.getByRole('button', { name: 'Before' })).toHaveFocus();
+    expect(onSelectedFocus).not.toHaveBeenCalled();
     expect(yes).toBeChecked();
+
+    await waitFor(() => expect(yes).toHaveAttribute('tabindex', '0'));
+    await userEvent.keyboard('{Tab}');
+    expect(yes).toHaveFocus();
   });
 });

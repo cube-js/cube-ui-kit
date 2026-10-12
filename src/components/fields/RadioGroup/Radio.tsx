@@ -223,8 +223,9 @@ function ignoreChange(event: ChangeEvent) {
 /**
  * Tab leaves the group from a focused disabled radio, as it does from the
  * group's tab stop, the selected radio. Left to itself the browser would stop
- * on the selected radio first: focus moves there, and the key's default
- * action, or a surrounding `FocusScope`, carries on from it.
+ * on the selected radio first when it lies ahead, so that radio gives up its
+ * tab stop for this one key. Focusing it on the way out instead would open its
+ * tooltip and scroll to it.
  */
 function leaveGroupOnTab(
   event: KeyboardEvent<HTMLInputElement>,
@@ -247,9 +248,19 @@ function leaveGroupOnTab(
     .closest('[role="radiogroup"]')
     ?.querySelectorAll<HTMLInputElement>('input[type="radio"]');
 
-  Array.from(radios ?? [])
-    .find((radio) => radio.value === selectedValue)
-    ?.focus();
+  let selected = Array.from(radios ?? []).find(
+    (radio) => radio.value === selectedValue,
+  );
+
+  if (!selected || selected.disabled) return;
+
+  let { tabIndex } = selected;
+
+  selected.tabIndex = -1;
+  // The key's default action, or a `FocusScope`, moves focus synchronously.
+  setTimeout(() => {
+    selected.tabIndex = tabIndex;
+  });
 }
 
 const RadioLabelElement = tasty({
