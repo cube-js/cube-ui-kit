@@ -747,7 +747,7 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
   // transitioning. In that window we fall back to the parent-computed
   // `visibleItemKeys` so a matching query commits via `onSelect` instead of
   // leaking through to `onSubmit`.
-  const getEnterKey = (listState: ListStateLike | null): Key | null => {
+  const getKeyToSelect = (listState: ListStateLike | null): Key | null => {
     const visibleKeys = listState ? getVisibleKeys(listState) : visibleItemKeys;
     const focusedKey = listState?.selectionManager.focusedKey;
 
@@ -766,7 +766,7 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
     // an empty open, intent can be open while nothing is mounted, and a stale
     // `listStateRef` must not be committed.
     const listState = listStateRef.current;
-    const keyToSelect = shouldShowPopover ? getEnterKey(listState) : null;
+    const keyToSelect = shouldShowPopover ? getKeyToSelect(listState) : null;
 
     if (keyToSelect != null) {
       if (listState) {

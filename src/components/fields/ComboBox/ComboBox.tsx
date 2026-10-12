@@ -903,7 +903,9 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   }, [effectiveInputValue, filterFn, localCollectionState.collection]);
 
   // ---- blur ---------------------------------------------------------------
-  // Writes the selected key, unless it is controlled.
+  // Writes the selected key, unless it is controlled. Unlike `setInputText` it
+  // does not report: each blur outcome calls `onSelectionChange` itself, in
+  // the order it has always fired relative to `onInputChange`.
   const setSelectedKey = (key: Key | null) => {
     if (!isControlledKey) setInternalSelectedKey(key);
   };
@@ -944,9 +946,9 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     }
   };
 
-  // In non-custom-value mode: auto-select the only filtered result; clear
-  // invalid input (no exact match, not a single result) when clearOnBlur is
-  // set or the input is empty.
+  // In non-custom-value mode: auto-select the exact match, or the only filtered
+  // result; clear invalid input (no exact match, not a single result) when
+  // clearOnBlur is set or the input is empty.
   const settleOptionOnBlur = () => {
     const { isInputValid, singleMatchKey } = checkInputValidity();
 
