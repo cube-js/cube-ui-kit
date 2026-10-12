@@ -252,7 +252,8 @@ function leaveGroupOnTab(
     (radio) => radio.value === selectedValue,
   );
 
-  if (!selected || selected.disabled) return;
+  // Already dropped by an earlier Tab that moved nothing: its restore is due.
+  if (!selected || selected.disabled || selected.tabIndex < 0) return;
 
   let { tabIndex } = selected;
 

@@ -322,6 +322,26 @@ describe('<Radio /> and <RadioGroup />', () => {
       },
     );
 
+    // Tab from a disabled radio drops the selected radio's tab stop until the
+    // key is done; a second Tab before then must not keep it dropped.
+    it('gives the tab stop back after two quick Tabs from a disabled radio', async () => {
+      renderWithRoot(
+        <Radio.ButtonGroup isDisabled aria-label="Group" defaultValue="a">
+          <Options tooltip="Not on this plan" />
+        </Radio.ButtonGroup>,
+      );
+
+      const [alpha, beta] = screen.getAllByRole('radio');
+
+      act(() => beta.focus());
+      fireEvent.keyDown(beta, { key: 'Tab' });
+      fireEvent.keyDown(beta, { key: 'Tab' });
+      // Queued after both restores, so it runs after them.
+      await act(() => new Promise((resolve) => setTimeout(resolve)));
+
+      expect(alpha).toHaveAttribute('tabindex', '0');
+    });
+
     // With a visible label the group renders inside a field, with only an
     // aria-label it renders bare. React Aria's arrow handler, which focuses the
     // next radio and selects it, has to stay on the group either way.
