@@ -484,6 +484,8 @@ function ResizablePanelExample() {
 
 Use `sizeStorageKey` to persist panel size to localStorage. The size is automatically restored on mount.
 
+Dialog mode retains the inline panel size without shrinking or persisting it against the dialog host's content space. When returning to an inline mode, the current host bounds and explicit size constraints apply again.
+
 ```jsx
 <Layout height="100dvh">
   <Layout.Panel

@@ -403,6 +403,17 @@ export interface CubeLayoutPanelProps extends BaseProps, ContainerStyleProps {
   children?: ReactNode;
 }
 
+function matchesContainerSize(
+  container: HTMLElement | null | undefined,
+  isHorizontal: boolean,
+  dimension: number,
+) {
+  return (
+    (isHorizontal ? container?.offsetWidth : container?.offsetHeight) ===
+    dimension
+  );
+}
+
 function LayoutPanel(
   props: CubeLayoutPanelProps,
   ref: ForwardedRef<HTMLDivElement>,
@@ -469,7 +480,7 @@ function LayoutPanel(
   const ownInsetOffset = isResizable ? RESIZABLE_INSET_OFFSET : 0;
   const naturalMax = useMemo(
     () =>
-      containerDimension > 0
+      !isDialogMode && containerDimension > 0
         ? Math.max(
             0,
             containerDimension -
@@ -478,7 +489,13 @@ function LayoutPanel(
               ownInsetOffset,
           )
         : Infinity,
-    [containerDimension, oppositePanelSize, minContentSize, ownInsetOffset],
+    [
+      isDialogMode,
+      containerDimension,
+      oppositePanelSize,
+      minContentSize,
+      ownInsetOffset,
+    ],
   );
 
   // Panel open state
@@ -537,14 +554,18 @@ function LayoutPanel(
   );
 
   // Resolve user's maxSize to pixels for JS-level clamping.
-  // String values (e.g. "50%") can only be resolved once we know the container size.
+  // Percentage bounds belong to the inline host, not the dialog's host.
   const resolvedMax = useMemo(() => {
     if (typeof maxSize === 'number') return maxSize;
-    if (typeof maxSize === 'string' && containerDimension > 0) {
+    if (
+      typeof maxSize === 'string' &&
+      containerDimension > 0 &&
+      (!isDialogMode || !maxSize.trim().endsWith('%'))
+    ) {
       return resolveCssSize(maxSize, containerDimension);
     }
     return undefined;
-  }, [maxSize, containerDimension]);
+  }, [maxSize, containerDimension, isDialogMode]);
 
   // Effective max combines user's maxSize with natural boundary
   const effectiveMax = useMemo(() => {
@@ -564,12 +585,12 @@ function LayoutPanel(
 
   const { moveProps } = useMove({
     onMoveStart() {
-      if (!isResizable) return;
+      if (!isResizable || isDialogMode) return;
       setIsDragging(true);
       setContextDragging(true);
     },
     onMove(e) {
-      if (!isResizable) return;
+      if (!isResizable || isDialogMode) return;
 
       let delta: number;
 
@@ -592,6 +613,7 @@ function LayoutPanel(
     onMoveEnd() {
       setIsDragging(false);
       setContextDragging(false);
+      if (isDialogMode && !isDragging) return;
       // Round to integer on release and notify parent
       setSize((currentSize) => {
         const finalSize = Math.round(clampValue(currentSize));
@@ -608,16 +630,47 @@ function LayoutPanel(
   // This prevents resetting size when only isDragging changes (which would cause a flash)
   useEffect(() => {
     if (prevProvidedSizeRef.current !== providedSize) {
+      if (
+        !isDialogMode &&
+        !matchesContainerSize(
+          layoutRefs.panelContainerRef.current?.parentElement,
+          isHorizontal,
+          containerDimension,
+        )
+      ) {
+        return;
+      }
+
       prevProvidedSizeRef.current = providedSize;
       if (typeof providedSize === 'number' && !isDragging) {
         setSize(clampValue(providedSize));
       }
     }
-  }, [providedSize, isDragging, clampValue]);
+  }, [
+    providedSize,
+    isDragging,
+    clampValue,
+    isDialogMode,
+    isHorizontal,
+    containerDimension,
+    layoutRefs.panelContainerRef,
+  ]);
 
-  // Auto-shrink: re-clamp when container resizes or opposite panel changes
+  // Dialogs retain inline size; only inline panels follow the host's bounds.
   useEffect(() => {
-    if (!isDragging && containerDimension > 0) {
+    if (!isDialogMode && !isDragging && containerDimension > 0) {
+      // A responsive mode switch can precede ResizeObserver's new measurement.
+      // Wait for matching host bounds before shrinking and persisting size.
+      if (
+        !matchesContainerSize(
+          layoutRefs.panelContainerRef.current?.parentElement,
+          isHorizontal,
+          containerDimension,
+        )
+      ) {
+        return;
+      }
+
       setSize((prev) => {
         const clamped = clampValue(prev);
 
@@ -629,7 +682,14 @@ function LayoutPanel(
         return clamped;
       });
     }
-  }, [isDragging, clampValue, containerDimension]);
+  }, [
+    isDialogMode,
+    isDragging,
+    clampValue,
+    containerDimension,
+    isHorizontal,
+    layoutRefs.panelContainerRef,
+  ]);
 
   // Register panel with layout context
   // Include handler outside portion (minus border overlap) for proper content inset
