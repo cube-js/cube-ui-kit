@@ -198,10 +198,10 @@ describe('Radio tooltip on keyboard focus', () => {
  * A disabled radio with a tooltip stays focusable, so the keyboard can read why
  * it is disabled (CUB-5387). It must stay as inert as a natively disabled one.
  *
- * In a browser because these are the browser's own default actions: a click on
- * the input laid over the button, Space, and — without a visible label, where
- * React Aria's handler is absent — the arrow-key radio navigation that checks
- * the next radio and fires a click on it.
+ * In a browser because a click on the input laid over the button and Space are
+ * the browser's own default actions, and because its own arrow-key radio
+ * navigation, which checks the next radio, must stay out of the way of React
+ * Aria's, with a visible label and without one.
  */
 describe('Disabled Radio.Button with a tooltip', () => {
   beforeAll(async () => {

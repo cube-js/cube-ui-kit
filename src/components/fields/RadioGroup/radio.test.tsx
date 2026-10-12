@@ -10,6 +10,7 @@ import {
   screen,
   userEvent,
   waitFor,
+  within,
 } from '../../../test';
 
 import { Radio } from './Radio';
@@ -314,9 +315,9 @@ describe('<Radio /> and <RadioGroup />', () => {
       },
     );
 
-    // Two keyboard paths. With a visible label the group is a field and React
-    // Aria's arrow handler moves focus and selects; without one the browser's
-    // own radio navigation does, through a click.
+    // With a visible label the group renders inside a field, with only an
+    // aria-label it renders bare. React Aria's arrow handler, which focuses the
+    // next radio and selects it, has to stay on the group either way.
     describe.each([
       ['a visible label', { label: 'Group' }],
       ['only an aria-label', { 'aria-label': 'Group' }],
@@ -437,6 +438,102 @@ describe('<Radio /> and <RadioGroup />', () => {
 
         await userEvent.tab();
         expect(screen.getByRole('button', { name: 'After' })).toHaveFocus();
+      },
+    );
+  });
+
+  // Without a visible label `wrapWithField` renders no field wrapper, which is
+  // where the group's role, name, arrow keys and focus handling used to go.
+  describe('group without a visible label', () => {
+    const GROUPS = [
+      ['button', Radio.ButtonGroup, 'horizontal'],
+      ['classic', Radio.Group, 'vertical'],
+      ['tabs', Radio.Tabs, 'horizontal'],
+    ] as const;
+
+    it.each(GROUPS)(
+      'is a %s radiogroup named by its aria-label',
+      (_, Group, orientation) => {
+        renderWithRoot(
+          <Group aria-label="Plan">
+            <Radio value="a">Alpha</Radio>
+            <Radio value="b">Beta</Radio>
+          </Group>,
+        );
+
+        const group = screen.getByRole('radiogroup', { name: 'Plan' });
+
+        expect(group).toHaveAttribute('aria-orientation', orientation);
+        expect(group).toHaveAttribute('data-input-type', 'radiogroup');
+        expect(within(group).getAllByRole('radio')).toHaveLength(2);
+      },
+    );
+
+    it('keeps the role on the group when a label adds a field', () => {
+      renderWithRoot(
+        <Radio.Group label="Plan" description="Billed monthly">
+          <Radio value="a">Alpha</Radio>
+        </Radio.Group>,
+      );
+
+      expect(screen.getByRole('radiogroup', { name: 'Plan' })).toHaveAttribute(
+        'data-input-type',
+        'radiogroup',
+      );
+    });
+
+    it.each(GROUPS)(
+      'tells a %s group when focus enters and leaves it',
+      async (_, Group) => {
+        const onFocus = vi.fn();
+        const onBlur = vi.fn();
+
+        renderWithRoot(
+          <>
+            <Group aria-label="Plan" onFocus={onFocus} onBlur={onBlur}>
+              <Radio value="a">Alpha</Radio>
+              <Radio value="b">Beta</Radio>
+            </Group>
+            <button type="button">After</button>
+          </>,
+        );
+
+        await userEvent.tab();
+        expect(onFocus).toHaveBeenCalledTimes(1);
+        expect(onBlur).not.toHaveBeenCalled();
+
+        await userEvent.tab();
+        expect(screen.getByRole('button', { name: 'After' })).toHaveFocus();
+        expect(onBlur).toHaveBeenCalledTimes(1);
+      },
+    );
+
+    // With nothing selected, Tab enters the group at either end, as React Aria
+    // resets the group's tab stop when focus leaves it.
+    it.each(GROUPS)(
+      'lets Shift+Tab enter an unselected %s group at its last radio',
+      async (_, Group) => {
+        renderWithRoot(
+          <>
+            <Group aria-label="Plan">
+              <Radio value="a">Alpha</Radio>
+              <Radio value="b">Beta</Radio>
+              <Radio value="c">Gamma</Radio>
+            </Group>
+            <button type="button">After</button>
+          </>,
+        );
+
+        const [alpha, , gamma] = screen.getAllByRole('radio');
+
+        await userEvent.tab();
+        expect(alpha).toHaveFocus();
+
+        await userEvent.tab();
+        expect(screen.getByRole('button', { name: 'After' })).toHaveFocus();
+
+        await userEvent.tab({ shift: true });
+        expect(gamma).toHaveFocus();
       },
     );
   });

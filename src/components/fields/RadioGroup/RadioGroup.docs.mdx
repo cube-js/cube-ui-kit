@@ -307,7 +307,7 @@ Put the reason in each option's `tooltip`. The options stay reachable from the k
 
 ### Keyboard Navigation
 
-- `Tab` - Moves focus to the radio group (or first radio if none selected)
+- `Tab` - Moves focus to the selected radio, or with none selected to the first radio (`Shift + Tab` coming back: the last)
 - `Arrow Keys` - Navigate between radio options within the group
 - `Space` - Selects the focused radio option
 - `Shift + Tab` - Moves focus away from the radio group
@@ -323,12 +323,12 @@ A disabled option with a tooltip stays in this navigation so its tooltip can be 
 
 ### ARIA Properties
 
-- `aria-label` - Provides accessible label when no visible label exists
+- `aria-label` - Names the group when no visible label exists
 - `aria-labelledby` - References external label elements
 - `aria-describedby` - References additional descriptive text
 - `aria-required` - Indicates if selection is required
 - `aria-invalid` - Indicates validation state for the group
-- `role="radiogroup"` - Identifies the container as a radio group
+- `role="radiogroup"` - Identifies the element that holds the radios as a radio group, with a visible label or only an `aria-label`
 
 ## Best Practices
 

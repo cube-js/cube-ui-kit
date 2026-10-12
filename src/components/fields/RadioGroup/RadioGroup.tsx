@@ -155,7 +155,7 @@ function RadioGroup(rawProps: WithNullableValue<CubeRadioGroupProps>, ref) {
 
   // React Aria hands `form` to every radio's input as the id of its `<form>`,
   // so the form instance would render as `form="[object Object]"` on each.
-  let { radioGroupProps: fieldProps, labelProps } = useRadioGroup(
+  let { radioGroupProps, labelProps } = useRadioGroup(
     { ...props, orientation, form: undefined },
     state,
   );
@@ -170,6 +170,12 @@ function RadioGroup(rawProps: WithNullableValue<CubeRadioGroupProps>, ref) {
   let radioGroup = (
     <RadioGroupElement
       ref={groupRef}
+      // On the group, not on the field wrapper: without a visible label there
+      // is no wrapper, and the group would lose its role, its name, the arrow
+      // keys and its focus handling with it.
+      {...mergeProps(radioGroupProps, groupFocusProps)}
+      // `useRadioGroup` seeds its id once; the current one follows the form
+      // binding.
       id={id}
       qa={qa || 'RadioGroup'}
       styles={styles}
@@ -183,7 +189,6 @@ function RadioGroup(rawProps: WithNullableValue<CubeRadioGroupProps>, ref) {
         tabs: type === 'tabs',
         focused: isFocusWithinVisible,
       }}
-      {...groupFocusProps}
     >
       <FormScopeMask
         value={{
@@ -211,7 +216,6 @@ function RadioGroup(rawProps: WithNullableValue<CubeRadioGroupProps>, ref) {
 
   return wrapWithField(radioGroup, domRef, {
     ...props,
-    fieldProps,
     labelProps: mergeProps(baseLabelProps, labelProps),
   });
 }
