@@ -1,4 +1,4 @@
-import { CSSProperties, useState } from 'react';
+import { CSSProperties, useState, useSyncExternalStore } from 'react';
 import { cdp, page, userEvent } from 'vitest/browser';
 
 import {
@@ -206,6 +206,50 @@ function outsidePoint(side: Side, layout: DOMRect) {
 
 const DIALOG_SIZE_KEY = 'layout-panel-dialog-size';
 
+const MOBILE_PANEL_QUERY = '(max-width: 919px)';
+
+function subscribePanelViewport(listener: () => void) {
+  const media = window.matchMedia(MOBILE_PANEL_QUERY);
+  media.addEventListener('change', listener);
+  return () => media.removeEventListener('change', listener);
+}
+
+function getResponsivePanelMode(): LayoutPanelMode {
+  return window.matchMedia(MOBILE_PANEL_QUERY).matches ? 'dialog' : 'default';
+}
+
+function ResponsivePanelLayout({
+  onSizeChange,
+}: {
+  onSizeChange: (size: number) => void;
+}) {
+  const mode = useSyncExternalStore(
+    subscribePanelViewport,
+    getResponsivePanelMode,
+  );
+
+  return (
+    <div style={{ width: '100vw', height: 640, display: 'grid' }}>
+      <Layout qa="responsive-layout">
+        <button>Page action</button>
+        <Layout.Panel
+          qa="responsive-panel"
+          side="right"
+          mode={mode}
+          defaultSize={400}
+          minSize={300}
+          maxSize={800}
+          isResizable
+          sizeStorageKey={DIALOG_SIZE_KEY}
+          onSizeChange={onSizeChange}
+        >
+          <button>Panel action</button>
+        </Layout.Panel>
+      </Layout>
+    </div>
+  );
+}
+
 function SizedPanelLayout({
   width,
   height = 640,
@@ -366,6 +410,41 @@ describe('Layout.Panel dialog size preservation', () => {
       expect(onSizeChange).not.toHaveBeenCalled();
       if (mode === 'default') {
         expect(screen.getByTestId('sized-panel').offsetWidth).toBe(410);
+      }
+    }
+  });
+
+  it('preserves resized width when iframe measurement precedes responsive mode delivery', async () => {
+    await page.viewport(1440, 900);
+    localStorage.setItem(DIALOG_SIZE_KEY, '560');
+    const onSizeChange = vi.fn();
+    renderWithRoot(<ResponsivePanelLayout onSizeChange={onSizeChange} />);
+    await waitFor(() =>
+      expect(screen.getByTestId('responsive-panel').offsetWidth).toBe(560),
+    );
+    await act(async () => screen.getByRole('separator').focus());
+    await userEvent.keyboard('{ArrowLeft}');
+    await waitFor(() =>
+      expect(screen.getByTestId('responsive-panel').offsetWidth).toBe(570),
+    );
+    expect(localStorage.getItem(DIALOG_SIZE_KEY)).toBe('570');
+    onSizeChange.mockClear();
+
+    for (let cycle = 0; cycle < 3; cycle += 1) {
+      for (const width of [375, 390, 768, 919, 920, 390, 1440]) {
+        await page.viewport(width, 745);
+        await waitFor(() =>
+          expect(screen.queryByRole('separator') !== null).toBe(width >= 920),
+        );
+        await act(async () => {
+          await new Promise(requestAnimationFrame);
+          await new Promise(requestAnimationFrame);
+        });
+        expect(localStorage.getItem(DIALOG_SIZE_KEY)).toBe('570');
+        expect(onSizeChange).not.toHaveBeenCalled();
+        if (width >= 920) {
+          expect(screen.getByTestId('responsive-panel').offsetWidth).toBe(570);
+        }
       }
     }
   });
@@ -568,7 +647,9 @@ describe('Layout.Panel dialog size preservation', () => {
     );
     await settleLayout(700);
     expect(screen.getByTestId('sized-panel').offsetWidth).toBe(350);
-    expect(localStorage.getItem(DIALOG_SIZE_KEY)).toBe('350');
+    await waitFor(() =>
+      expect(localStorage.getItem(DIALOG_SIZE_KEY)).toBe('350'),
+    );
     expect(onSizeChange).toHaveBeenLastCalledWith(350);
     view.rerender(
       <SizedPanelLayout width={1440} onSizeChange={onSizeChange} />,

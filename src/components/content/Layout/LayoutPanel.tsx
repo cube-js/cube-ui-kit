@@ -659,28 +659,32 @@ function LayoutPanel(
   // Dialogs retain inline size; only inline panels follow the host's bounds.
   useEffect(() => {
     if (!isDialogMode && !isDragging && containerDimension > 0) {
-      // A responsive mode switch can precede ResizeObserver's new measurement.
-      // Wait for matching host bounds before shrinking and persisting size.
-      if (
-        !matchesContainerSize(
-          layoutRefs.panelContainerRef.current?.parentElement,
-          isHorizontal,
-          containerDimension,
-        )
-      ) {
-        return;
-      }
-
-      setSize((prev) => {
-        const clamped = clampValue(prev);
-
-        if (clamped !== prev) {
-          onSizeChange?.(Math.round(clamped));
-          setStoredSize(Math.round(clamped));
+      // In an iframe ResizeObserver can precede responsive mode delivery.
+      // Let that mode settle before shrinking and persisting the inline size.
+      const frame = requestAnimationFrame(() => {
+        if (
+          !matchesContainerSize(
+            layoutRefs.panelContainerRef.current?.parentElement,
+            isHorizontal,
+            containerDimension,
+          )
+        ) {
+          return;
         }
 
-        return clamped;
+        setSize((prev) => {
+          const clamped = clampValue(prev);
+
+          if (clamped !== prev) {
+            onSizeChange?.(Math.round(clamped));
+            setStoredSize(Math.round(clamped));
+          }
+
+          return clamped;
+        });
       });
+
+      return () => cancelAnimationFrame(frame);
     }
   }, [
     isDialogMode,

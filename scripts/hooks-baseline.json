@@ -12,7 +12,9 @@
     "src/_internal/hooks/use-effect-once.ts": {
       "react-hooks/exhaustive-deps": 1
     },
-    "src/_internal/hooks/use-is-first-render.ts": { "react-hooks/refs": 3 },
+    "src/_internal/hooks/use-is-first-render.ts": {
+      "react-hooks/refs": 3
+    },
     "src/_internal/hooks/use-timer/use-timer.ts": {
       "react-hooks/exhaustive-deps": 2,
       "react-hooks/set-state-in-effect": 2
@@ -20,7 +22,9 @@
     "src/_internal/hooks/use-update-effect.ts": {
       "react-hooks/exhaustive-deps": 2
     },
-    "src/_internal/hooks/use-warn.ts": { "react-hooks/refs": 2 },
+    "src/_internal/hooks/use-warn.ts": {
+      "react-hooks/refs": 2
+    },
     "src/components/actions/CommandMenu/CommandMenu.tsx": {
       "react-hooks/exhaustive-deps": 1,
       "react-hooks/set-state-in-effect": 1
@@ -47,7 +51,7 @@
       "react-hooks/exhaustive-deps": 1,
       "react-hooks/immutability": 1,
       "react-hooks/preserve-manual-memoization": 2,
-      "react-hooks/set-state-in-effect": 2
+      "react-hooks/set-state-in-effect": 1
     },
     "src/components/content/PrismCode/PrismCode.tsx": {
       "react-hooks/immutability": 1
@@ -56,8 +60,12 @@
       "react-hooks/exhaustive-deps": 2,
       "react-hooks/incompatible-library": 1
     },
-    "src/components/content/Tree/TreeNode.tsx": { "react-hooks/refs": 3 },
-    "src/components/data/DataTable/DataTable.tsx": { "react-hooks/refs": 1 },
+    "src/components/content/Tree/TreeNode.tsx": {
+      "react-hooks/refs": 3
+    },
+    "src/components/data/DataTable/DataTable.tsx": {
+      "react-hooks/refs": 1
+    },
     "src/components/data/TableBase/TableView.tsx": {
       "react-hooks/incompatible-library": 1
     },
@@ -123,7 +131,9 @@
       "react-hooks/immutability": 1,
       "react-hooks/preserve-manual-memoization": 1
     },
-    "src/components/fields/Slider/SliderBase.tsx": { "react-hooks/refs": 1 },
+    "src/components/fields/Slider/SliderBase.tsx": {
+      "react-hooks/refs": 1
+    },
     "src/components/fields/TextInput/TextInputBase.tsx": {
       "react-hooks/rules-of-hooks": 6
     },
@@ -136,8 +146,12 @@
       "react-hooks/set-state-in-effect": 1,
       "react-hooks/use-memo": 1
     },
-    "src/components/form/Form/Field.tsx": { "react-hooks/immutability": 1 },
-    "src/components/form/Form/Form.tsx": { "react-hooks/refs": 6 },
+    "src/components/form/Form/Field.tsx": {
+      "react-hooks/immutability": 1
+    },
+    "src/components/form/Form/Form.tsx": {
+      "react-hooks/refs": 6
+    },
     "src/components/form/Form/use-field/use-field.ts": {
       "react-hooks/exhaustive-deps": 2
     },
@@ -145,7 +159,9 @@
       "react-hooks/immutability": 1,
       "react-hooks/refs": 6
     },
-    "src/components/GridProvider.tsx": { "react-hooks/exhaustive-deps": 3 },
+    "src/components/GridProvider.tsx": {
+      "react-hooks/exhaustive-deps": 3
+    },
     "src/components/helpers/DisplayTransition/DisplayTransition.tsx": {
       "react-hooks/exhaustive-deps": 2,
       "react-hooks/refs": 4
@@ -153,12 +169,18 @@
     "src/components/helpers/IconSwitch/IconSwitch.tsx": {
       "react-hooks/refs": 3
     },
-    "src/components/navigation/Tabs/TabPanel.tsx": { "react-hooks/refs": 1 },
-    "src/components/navigation/Tabs/Tabs.tsx": { "react-hooks/refs": 2 },
+    "src/components/navigation/Tabs/TabPanel.tsx": {
+      "react-hooks/refs": 1
+    },
+    "src/components/navigation/Tabs/Tabs.tsx": {
+      "react-hooks/refs": 2
+    },
     "src/components/navigation/Tabs/use-tab-indicator.ts": {
       "react-hooks/exhaustive-deps": 2
     },
-    "src/components/other/Calendar/PeriodGrid.tsx": { "react-hooks/refs": 1 },
+    "src/components/other/Calendar/PeriodGrid.tsx": {
+      "react-hooks/refs": 1
+    },
     "src/components/overlays/Dialog/Dialog.tsx": {
       "react-hooks/exhaustive-deps": 1
     },
@@ -170,7 +192,9 @@
     "src/components/overlays/Dialog/use-dialog-container.tsx": {
       "react-hooks/exhaustive-deps": 1
     },
-    "src/components/overlays/Modal/Overlay.tsx": { "react-hooks/refs": 2 },
+    "src/components/overlays/Modal/Overlay.tsx": {
+      "react-hooks/refs": 2
+    },
     "src/components/overlays/Notifications/Notification.tsx": {
       "react-hooks/exhaustive-deps": 2
     },
@@ -211,20 +235,34 @@
     "src/components/portal/usePortal.ts": {
       "react-hooks/set-state-in-effect": 1
     },
-    "src/components/Root.tsx": { "react-hooks/exhaustive-deps": 1 },
+    "src/components/Root.tsx": {
+      "react-hooks/exhaustive-deps": 1
+    },
     "src/components/status/LoadingAnimation/LoadingAnimation.tsx": {
       "react-hooks/exhaustive-deps": 1
     },
-    "src/icons/DirectionIcon.tsx": { "react-hooks/exhaustive-deps": 1 },
-    "src/provider.tsx": { "react-hooks/refs": 1 },
-    "src/utils/react/RenderCache.tsx": { "react-hooks/refs": 5 },
-    "src/utils/react/useBufferedValue.ts": { "react-hooks/refs": 4 },
-    "src/utils/react/useEventBus.ts": { "react-hooks/exhaustive-deps": 2 },
+    "src/icons/DirectionIcon.tsx": {
+      "react-hooks/exhaustive-deps": 1
+    },
+    "src/provider.tsx": {
+      "react-hooks/refs": 1
+    },
+    "src/utils/react/RenderCache.tsx": {
+      "react-hooks/refs": 5
+    },
+    "src/utils/react/useBufferedValue.ts": {
+      "react-hooks/refs": 4
+    },
+    "src/utils/react/useEventBus.ts": {
+      "react-hooks/exhaustive-deps": 2
+    },
     "src/utils/react/useId.tsx": {
       "react-hooks/exhaustive-deps": 1,
       "react-hooks/refs": 2
     },
-    "src/utils/react/useIsDarwin.ts": { "react-hooks/set-state-in-effect": 1 },
+    "src/utils/react/useIsDarwin.ts": {
+      "react-hooks/set-state-in-effect": 1
+    },
     "src/utils/react/useMergeStyles.ts": {
       "react-hooks/exhaustive-deps": 2,
       "react-hooks/use-memo": 1
@@ -237,7 +275,7 @@
     "react-hooks/preserve-manual-memoization": 11,
     "react-hooks/refs": 102,
     "react-hooks/rules-of-hooks": 9,
-    "react-hooks/set-state-in-effect": 15,
+    "react-hooks/set-state-in-effect": 14,
     "react-hooks/use-memo": 2
   }
 }
