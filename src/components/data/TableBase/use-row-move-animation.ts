@@ -53,9 +53,8 @@ export function useRowMoveAnimation({
   const previousRef = useRef<Map<string, number> | null>(null);
   const previousOrderRef = useRef<string[]>([]);
 
-  // No dependency array: the previous positions have to be captured after every
-  // commit, because any of them may turn out to be the one a reorder starts
-  // from.
+  // No dependency array: positions are captured after every enabled commit,
+  // because any of them may be the one a reorder starts from.
   useLayoutEffect(() => {
     const body = bodyRef.current;
 
