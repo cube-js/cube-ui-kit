@@ -758,11 +758,15 @@ describe.each([
     ),
   ],
 ])('Tab around a %s trigger inside a Dialog (CUB-5603)', (_, renderPicker) => {
-  const keyboard = browserUserEvent;
-
-  function App({ pickerAt }: { pickerAt: 'first' | 'last' }) {
+  function App({
+    pickerAt,
+    isDismissable = false,
+  }: {
+    pickerAt: 'first' | 'last';
+    isDismissable?: boolean;
+  }) {
     return (
-      <DialogTrigger type="modal" isDismissable={false}>
+      <DialogTrigger type="modal" isDismissable={isDismissable}>
         <Button qa="Trigger">Open</Button>
         <Dialog>
           {pickerAt === 'first' && renderPicker()}
@@ -774,18 +778,26 @@ describe.each([
     );
   }
 
-  async function focusPickerIn(pickerAt: 'first' | 'last') {
-    renderWithRoot(<App pickerAt={pickerAt} />);
+  async function focusPickerIn(
+    pickerAt: 'first' | 'last',
+    isDismissable?: boolean,
+  ) {
+    renderWithRoot(<App pickerAt={pickerAt} isDismissable={isDismissable} />);
     await userEvent.click(screen.getByTestId('Trigger'));
     await screen.findByTestId('Dialog');
 
     const trigger = screen.getByTestId('Pick');
 
-    // The Dialog moves focus in on its own a tick after opening.
+    // The Dialog moves focus in on its own a tick after opening, and contains
+    // it only once its opening transition has ended: a Tab before that falls
+    // out of it.
     await waitFor(() =>
       expect(screen.getByTestId('Dialog')).toContainElement(
         document.activeElement as HTMLElement,
       ),
+    );
+    await waitFor(() =>
+      expect(screen.getByTestId('Modal')).toHaveAttribute('data-entered'),
     );
     trigger.focus();
     expect(trigger).toHaveFocus();
@@ -796,7 +808,7 @@ describe.each([
   it('wraps Shift+Tab from a trigger placed first to the last control', async () => {
     await focusPickerIn('first');
 
-    await keyboard.tab({ shift: true });
+    await browserUserEvent.tab({ shift: true });
 
     expect(screen.getByTestId('Third')).toHaveFocus();
   });
@@ -804,7 +816,7 @@ describe.each([
   it('wraps Tab from a trigger placed last to the first control', async () => {
     await focusPickerIn('last');
 
-    await keyboard.tab();
+    await browserUserEvent.tab();
 
     expect(screen.getByTestId('Second')).toHaveFocus();
   });
@@ -812,24 +824,24 @@ describe.each([
   it('moves Tab and Shift+Tab between neighbours as before', async () => {
     const trigger = await focusPickerIn('first');
 
-    await keyboard.tab();
+    await browserUserEvent.tab();
     expect(screen.getByTestId('Second')).toHaveFocus();
 
-    await keyboard.tab({ shift: true });
+    await browserUserEvent.tab({ shift: true });
     expect(trigger).toHaveFocus();
   });
 
   it('keeps Tab inside the open popup', async () => {
     await focusPickerIn('first');
 
-    await keyboard.keyboard('{ArrowDown}');
+    await browserUserEvent.keyboard('{ArrowDown}');
     const listbox = await screen.findByRole('listbox');
     const popup = listbox.closest('[data-qa="Dialog"], [role="dialog"]')!;
 
-    await keyboard.tab();
+    await browserUserEvent.tab();
     expect(popup).toContainElement(document.activeElement as HTMLElement);
 
-    await keyboard.tab({ shift: true });
+    await browserUserEvent.tab({ shift: true });
     expect(popup).toContainElement(document.activeElement as HTMLElement);
   });
 
@@ -843,29 +855,50 @@ describe.each([
     );
     screen.getByTestId('Pick').focus();
 
-    await keyboard.keyboard('z');
+    await browserUserEvent.keyboard('z');
     expect(seen).toEqual([]);
 
-    await keyboard.tab();
+    await browserUserEvent.tab();
     expect(seen).toEqual(['Tab']);
   });
 
-  // Escape still belongs to the innermost layer: it closes the popup and
-  // leaves the Dialog, and focus returns to a trigger that wraps again.
-  it('wraps again after Escape closed its popup, and keeps the Dialog open', async () => {
-    const trigger = await focusPickerIn('first');
+  // Escape still belongs to the innermost layer: the first one closes the
+  // popup alone, the next one the Dialog.
+  it('closes its popup on Escape, and the Dialog on the next one', async () => {
+    const trigger = await focusPickerIn('first', true);
 
-    await keyboard.keyboard('{ArrowDown}');
+    await browserUserEvent.keyboard('{ArrowDown}');
     await screen.findByRole('listbox');
-    await keyboard.keyboard('{Escape}');
+    await browserUserEvent.keyboard('{Escape}');
 
     await waitFor(() =>
       expect(screen.queryByRole('listbox')).not.toBeInTheDocument(),
     );
     await waitFor(() => expect(trigger).toHaveFocus());
+    await new Promise((resolve) => setTimeout(resolve, 500));
     expect(screen.getByTestId('Dialog')).toBeInTheDocument();
 
-    await keyboard.tab({ shift: true });
+    await browserUserEvent.keyboard('{Escape}');
+
+    await waitFor(() =>
+      expect(screen.queryByTestId('Dialog')).not.toBeInTheDocument(),
+    );
+  });
+
+  // Focus returns from the closed popup to a trigger that wraps again.
+  it('wraps again after Escape closed its popup', async () => {
+    const trigger = await focusPickerIn('first');
+
+    await browserUserEvent.keyboard('{ArrowDown}');
+    await screen.findByRole('listbox');
+    await browserUserEvent.keyboard('{Escape}');
+
+    await waitFor(() =>
+      expect(screen.queryByRole('listbox')).not.toBeInTheDocument(),
+    );
+    await waitFor(() => expect(trigger).toHaveFocus());
+
+    await browserUserEvent.tab({ shift: true });
 
     expect(screen.getByTestId('Third')).toHaveFocus();
   });
