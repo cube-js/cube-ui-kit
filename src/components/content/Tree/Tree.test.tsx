@@ -980,7 +980,7 @@ describe('<Tree />', () => {
       await userEvent.keyboard('{Escape}');
       expect(seen).toEqual(['Escape']);
 
-      // Tab last: it takes focus out of the tree.
+      // Tab last: it moves focus.
       await userEvent.keyboard('{Tab}');
       expect(seen).toEqual(['Escape', 'Tab']);
     });
