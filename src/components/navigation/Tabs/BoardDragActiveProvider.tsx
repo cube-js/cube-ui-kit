@@ -21,8 +21,8 @@ export interface CubeBoardDragActiveProviderProps {
 /**
  * Publishes "a board-widget drag is in flight" to the UI Kit components that
  * react to one — today `Tabs`, which spring-loads a tab when a dragged widget
- * hovers its header and keeps every panel mounted for the drag's duration so
- * the tab a widget is being pulled out of cannot unmount mid-gesture.
+ * hovers its header and keeps visited panels mounted for the drag's duration
+ * so the tab a widget is being pulled out of cannot unmount mid-gesture.
  *
  * The board itself lives outside this package (Cube Cloud owns it), so this is
  * its only way to reach `Tabs`. Wrap the subtree your board renders and pass
@@ -31,6 +31,10 @@ export interface CubeBoardDragActiveProviderProps {
  * ```tsx
  * <BoardDragActiveProvider isActive={dragState != null}>{children}</BoardDragActiveProvider>
  * ```
+ *
+ * Spring-loading listens for native `pointerenter` on the tab headers, so the
+ * board's drag must not capture the pointer (React Aria's `useMove` does not)
+ * and the dragged element must be `pointer-events: none`.
  *
  * Nesting is last-one-wins, like any context: an inner board's `false` while an
  * outer board drags would read as "no drag" to the tabs inside it. Provide it

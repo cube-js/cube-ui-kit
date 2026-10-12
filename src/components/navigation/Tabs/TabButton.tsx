@@ -325,10 +325,11 @@ export function TabButton({
 
   // Spring-load: when a `BoardDragActiveProvider` reports a widget drag,
   // hovering an inactive tab header for a moment opens it, so the user
-  // can drop the widget into (or move it between) tabs. React Aria's `useMove`
-  // uses window listeners without pointer capture and the dragged widget is
-  // `pointer-events: none`, so the tab header still receives native pointer
-  // enter/leave during the drag. `false` outside a provider, so nothing changes.
+  // can drop the widget into (or move it between) tabs. This relies on the
+  // board's drag not capturing the pointer and its dragged widget being
+  // `pointer-events: none` (see `BoardDragActiveProvider`), so the tab header
+  // still receives native pointer enter/leave during the drag. `false` outside
+  // a provider, so nothing changes.
   const isBoardDragActive = useBoardDragActive();
   const [isDropPending, setIsDropPending] = useState(false);
   const springLoadTimerRef = useRef<number | null>(null);
