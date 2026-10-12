@@ -4,10 +4,9 @@ import { mergeStyles, Styles } from '@tenphi/tasty';
 import {
   AnchorHTMLAttributes,
   KeyboardEvent,
-  RefObject,
+  MouseEvent,
   useContext,
   useRef,
-  useState,
 } from 'react';
 import { FocusRing, RouterProvider, useMenuItem } from 'react-aria';
 import { TreeState } from 'react-stately';
@@ -55,8 +54,7 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
 }
 
 function MenuLinkItem<T>(props: MenuItemProps<T>) {
-  const [isPressed, setIsPressed] = useState(false);
-  const linkRef = useRef<HTMLElement>(null);
+  const activatedLink = useRef<HTMLAnchorElement>(null);
   const { to, href, navigationOptions } = props.item.props;
   const { cleanTo: parsedTo, nativeRoute } = parseTo(to);
   const isCurrentDocument = props.item.props[CURRENT_DOCUMENT_LINK];
@@ -78,24 +76,49 @@ function MenuLinkItem<T>(props: MenuItemProps<T>) {
     (itemProps.isLoading && itemProps.isDisabled !== false);
   const isVirtualFocused =
     props.state.selectionManager.focusedKey === props.item.key;
-  const { Actions: actionStyles, ...rowStyles } = mergeStyles(
+  const { Actions: rawActions, ...rowStyles } = mergeStyleLayers(
     itemProps.styles,
     props.styles,
   );
-  const sharedStyles = Object.fromEntries(
+  const actionStyles = rawActions as Styles | null | false | undefined;
+  const actionTokens = Object.fromEntries(
     Object.entries(rowStyles).filter(
-      ([key]) => /^[#@$]/.test(key) && key !== '$',
+      ([key]) => /^[#$]/.test(key) && key !== '$',
     ),
   );
-  const wrapperStyles = mergeStyleLayers(
-    sharedStyles,
-    {
-      color: rowStyles.color,
-      // eslint-disable-next-line tasty/valid-sub-element -- Forward the consumer's typed slot to the sibling run that owns it.
-      Actions: actionStyles,
-    },
+  const inheritedColor = mergeStyleLayers(
+    { color: rowStyles.color },
     { color: itemProps.color },
   );
+  // Resets must reach the element that supplies the layout/palette defaults.
+  const wrapperStyles = {
+    color: inheritedColor.color === null ? null : undefined,
+    Actions:
+      // eslint-disable-next-line tasty/valid-sub-element -- Preserve the typed Actions slot's object and whole-slot reset forms.
+      actionStyles === null || actionStyles === false
+        ? actionStyles
+        : Object.fromEntries(
+            Object.entries(actionStyles || {}).filter(
+              ([, value]) => value === null || value === false,
+            ),
+          ),
+  };
+  const siblingActionStyles =
+    actionStyles && actionStyles.color === null
+      ? { ...actionStyles, color: undefined }
+      : actionStyles;
+  const siblingActions = mergeStyleLayers(
+    actionTokens,
+    inheritedColor,
+    siblingActionStyles || undefined,
+  );
+  // Keep consumer predicates on the row, including CSS focus and hover states.
+  const linkStyles = {
+    // eslint-disable-next-line tasty/no-style-spread -- Forward the consumer's complete row styles before adding the sibling slot.
+    ...rowStyles,
+    // eslint-disable-next-line tasty/no-nested-selector -- Tasty's sub-element $ selector cannot leave the row; sibling actions must retain its state context.
+    '& ~ [data-element="Actions"]': siblingActions,
+  };
   return (
     <StyledLinkItem role="none">
       <ItemActionsWrapper
@@ -109,12 +132,6 @@ function MenuLinkItem<T>(props: MenuItemProps<T>) {
         preserveActionsSpace={itemProps.preserveActionsSpace}
         styles={wrapperStyles}
         tokens={itemProps.tokens}
-        mods={{
-          ...itemProps.mods,
-          focused: isVirtualFocused,
-          pressed: isPressed,
-          selected: props.state.selectionManager.isSelected(props.item.key),
-        }}
       >
         {({ showActions, skipActionsWidthTransition }) => (
           <RouterProvider
@@ -123,7 +140,7 @@ function MenuLinkItem<T>(props: MenuItemProps<T>) {
               if (nativeRoute && cleanTo === '') window.location.reload();
               else if (isCurrentDocument || nativeRoute || isExternal) {
                 // Aria intercepts same-origin URLs; retain the anchor's native attributes.
-                const nativeLink = linkRef.current?.cloneNode(false) as
+                const nativeLink = activatedLink.current?.cloneNode(false) as
                   | HTMLAnchorElement
                   | undefined;
                 nativeLink?.click();
@@ -133,11 +150,14 @@ function MenuLinkItem<T>(props: MenuItemProps<T>) {
           >
             <MenuItemContent
               {...props}
-              styles={rowStyles}
+              styles={linkStyles}
               showActions={showActions}
               skipActionsWidthTransition={skipActionsWidthTransition}
-              onPressChange={setIsPressed}
-              linkRef={linkRef}
+              onClick={(event) => {
+                activatedLink.current =
+                  event.currentTarget as HTMLAnchorElement;
+                itemProps[MENU_LINK_CLICK]?.(event);
+              }}
             />
           </RouterProvider>
         )}
@@ -150,8 +170,7 @@ function MenuItemContent<T>(
   props: MenuItemProps<T> & {
     showActions?: boolean;
     skipActionsWidthTransition?: boolean;
-    onPressChange?: (isPressed: boolean) => void;
-    linkRef?: RefObject<HTMLElement | null>;
+    onClick?: (event: MouseEvent<FocusableElement>) => void;
   },
 ) {
   const {
@@ -200,9 +219,7 @@ function MenuItemContent<T>(
   const ref = useRef<HTMLElement>(null);
 
   // Use the triggerRef from submenu context if present
-  const elementRef = (submenuContext?.triggerRef ??
-    props.linkRef ??
-    ref) as any;
+  const elementRef = (submenuContext?.triggerRef ?? ref) as any;
 
   const {
     menuItemProps,
@@ -224,8 +241,7 @@ function MenuItemContent<T>(
       closeOnSelect: submenuContext ? false : closeOnSelect, // Don't close on submenu trigger selection
       isVirtualized,
       onAction: submenuContext?.onAction || onAction,
-      onPressChange: props.onPressChange,
-      onClick: itemProps[MENU_LINK_CLICK],
+      onClick: props.onClick ?? itemProps[MENU_LINK_CLICK],
     },
     state,
     elementRef,

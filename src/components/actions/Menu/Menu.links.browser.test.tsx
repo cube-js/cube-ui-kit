@@ -1,6 +1,7 @@
 import pointerUserEvent from '@testing-library/user-event';
 import { useRef, useState } from 'react';
 import { RouterProvider, useLink } from 'react-aria';
+import { flushSync } from 'react-dom';
 import {
   MemoryRouter,
   Route,
@@ -63,6 +64,56 @@ describe('Menu navigation links', () => {
     await screen.findByRole('menu');
     return screen.getByRole('menuitem', { name: 'Workbook' });
   }
+
+  it.each(['onAction', 'onClick'] as const)(
+    'retains native navigation when %s synchronously removes the menu',
+    async (callback) => {
+      const pathname = `/__menu-link-test/unmount-${callback}`;
+      const navigate = vi.fn();
+      const onActivate = vi.fn();
+      function App() {
+        const [open, setOpen] = useState(true);
+        const deactivate = () => {
+          onActivate();
+          flushSync(() => setOpen(false));
+        };
+        return (
+          <Root navigation={{ useHref: String, useNavigate: () => navigate }}>
+            {open && (
+              <Menu aria-label="Destinations">
+                <Menu.Item
+                  key="link"
+                  href={location.origin + pathname}
+                  {...{ [callback]: deactivate }}
+                >
+                  Destination
+                </Menu.Item>
+              </Menu>
+            )}
+          </Root>
+        );
+      }
+      render(<App />);
+      await userEvent.click(
+        screen.getByRole('menuitem', { name: 'Destination' }),
+        { noWaitAfter: true },
+      );
+      expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+      expect(navigate).not.toHaveBeenCalled();
+      expect(onActivate).toHaveBeenCalledTimes(1);
+      await waitFor(
+        async () => {
+          const requests: { url: string }[] = await (
+            await fetch('/__menu-link-test/requests')
+          ).json();
+          expect(requests.some((request) => request.url === pathname)).toBe(
+            true,
+          );
+        },
+        { timeout: 1500 },
+      );
+    },
+  );
 
   it.each(['none', 'single', 'multiple'] as const)(
     'honors cancelled navigation in %s selection mode',
@@ -870,6 +921,107 @@ describe('Menu navigation links', () => {
     }).parentElement!;
     expect(getComputedStyle(run).color).toBe(getComputedStyle(row).color);
     expect(getComputedStyle(run).padding).toBe('16px');
+    expect(getComputedStyle(run).padding).toBe(
+      getComputedStyle(commandRun).padding,
+    );
+  });
+
+  it('evaluates local focus predicates on the link for sibling controls', async () => {
+    const styles = {
+      '@focus': ':focus',
+      color: { '': '#purple-text', '@focus': '#danger-text' },
+      Actions: { padding: { '': '0x', '@focus': '2x' } },
+    };
+    render(
+      <Root>
+        <Menu aria-label="Destinations">
+          <Menu.Item
+            key="link"
+            to={destination}
+            styles={styles}
+            actions={<Menu.Item.Action>Link action</Menu.Item.Action>}
+          >
+            Link
+          </Menu.Item>
+          <Menu.Item
+            key="command"
+            styles={styles}
+            actions={<Menu.Item.Action>Command action</Menu.Item.Action>}
+          >
+            Command
+          </Menu.Item>
+        </Menu>
+      </Root>,
+    );
+    const row = screen.getByRole('menuitem', { name: 'Link' });
+    const run = screen.getByRole('button', {
+      name: 'Link action',
+    }).parentElement!;
+    const command = screen.getByRole('menuitem', { name: 'Command' });
+    const commandRun = screen.getByRole('button', {
+      name: 'Command action',
+    }).parentElement!;
+    const restingColor = getComputedStyle(row).color;
+    expect(getComputedStyle(run).padding).toBe('0px');
+    await act(() => row.focus());
+    await waitFor(() => {
+      expect(row).toHaveFocus();
+      expect(getComputedStyle(row).color).not.toBe(restingColor);
+      expect(getComputedStyle(run).color).toBe(getComputedStyle(row).color);
+      expect(getComputedStyle(run).padding).toBe('16px');
+    });
+    await act(() => command.focus());
+    await waitFor(() => {
+      expect(getComputedStyle(run).padding).toBe('0px');
+      expect(getComputedStyle(run).color).toBe(getComputedStyle(row).color);
+      expect(getComputedStyle(commandRun).color).toBe(
+        getComputedStyle(command).color,
+      );
+      expect(getComputedStyle(commandRun).padding).toBe('16px');
+    });
+  });
+
+  it.each([
+    { color: null },
+    { Actions: { padding: null } },
+    { Actions: null },
+    { color: '#purple-text', Actions: { color: null } },
+  ])('preserves explicit style resets on sibling controls: %o', (styles) => {
+    render(
+      <Root>
+        <Menu aria-label="Destinations">
+          <Menu.Item
+            key="link"
+            to={destination}
+            theme="special"
+            styles={styles}
+            actions={<Menu.Item.Action>Link action</Menu.Item.Action>}
+          >
+            Link
+          </Menu.Item>
+          <Menu.Item
+            key="command"
+            theme="special"
+            styles={styles}
+            actions={<Menu.Item.Action>Command action</Menu.Item.Action>}
+          >
+            Command
+          </Menu.Item>
+        </Menu>
+      </Root>,
+    );
+    const row = screen.getByRole('menuitem', { name: 'Link' });
+    const command = screen.getByRole('menuitem', { name: 'Command' });
+    const run = screen.getByRole('button', {
+      name: 'Link action',
+    }).parentElement!;
+    const commandRun = screen.getByRole('button', {
+      name: 'Command action',
+    }).parentElement!;
+    expect(getComputedStyle(row).color).toBe(getComputedStyle(command).color);
+    expect(getComputedStyle(run).color).toBe(
+      getComputedStyle(commandRun).color,
+    );
     expect(getComputedStyle(run).padding).toBe(
       getComputedStyle(commandRun).padding,
     );
