@@ -333,7 +333,14 @@ module.exports = [
     // +2,799 B against main's 619,833 B (run 37641760486, 09ee2973).
     // The dependency and interaction adapters fit in 624 kB with 1,368 B
     // headroom; the Linux measurement confirms the provisional local budget.
-    limit: '624kB',
+    //
+    // Board removal and the complexity ceiling at 39: 603,780 B on a fresh
+    // local build against main's 623,828 B at 3d887a5c, also fresh (CI run
+    // 38276267152 measured main at 623,832 B): -20,048 B. Board, its grid
+    // engine and the six `board.*` strings in twelve locales leave; only
+    // `BoardDragActiveProvider` stays, next to Tabs. Button is unchanged at
+    // 133,144 B. Lowered to 605 kB, about 1,220 B headroom; confirm in CI.
+    limit: '605kB',
   },
   {
     name: 'Tree shaking (just a Button)',
