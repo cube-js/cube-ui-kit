@@ -613,6 +613,7 @@ function LayoutPanel(
     onMoveEnd() {
       setIsDragging(false);
       setContextDragging(false);
+      if (isDialogMode && !isDragging) return;
       // Round to integer on release and notify parent
       setSize((currentSize) => {
         const finalSize = Math.round(clampValue(currentSize));
