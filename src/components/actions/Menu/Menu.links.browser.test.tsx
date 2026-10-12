@@ -321,7 +321,7 @@ describe('Menu navigation links', () => {
     expect(navigate).toHaveBeenCalledExactlyOnceWith(path, options);
   });
 
-  it.each(['Control', 'Meta', 'Shift', 'Alt'])(
+  it.each(['Control', 'Meta', 'Shift', 'Alt'] as const)(
     'leaves %s-click native without same-tab routing',
     async (modifier) => {
       const { navigate } = renderMenu();
@@ -332,9 +332,7 @@ describe('Menu navigation links', () => {
       document.addEventListener('contextmenu', record, true);
       try {
         await act(async () => {
-          await userEvent.keyboard(`{${modifier}>}`);
-          await userEvent.click(link);
-          await userEvent.keyboard(`{/${modifier}}`);
+          await userEvent.click(link, { modifiers: [modifier] });
         });
         expect(navigate).not.toHaveBeenCalled();
         expect(clicks).toHaveLength(1);
@@ -1187,6 +1185,151 @@ describe('Menu navigation links', () => {
     }).parentElement!;
     expect(getComputedStyle(colorRun).color).toBe(
       getComputedStyle(colorRow).color,
+    );
+  });
+
+  it.each([
+    { hide: true },
+    { styles: { display: 'none' } },
+    { style: { display: 'none' } },
+  ])('hides the link and its actions together: %o', (props) => {
+    render(
+      <Root>
+        <Menu aria-label="Destinations">
+          <Menu.Item
+            key="hidden"
+            to={destination}
+            qa="Hidden link"
+            {...props}
+            actions={
+              <Menu.Item.Action qa="Hidden action">Delete</Menu.Item.Action>
+            }
+          >
+            Destination
+          </Menu.Item>
+        </Menu>
+      </Root>,
+    );
+    for (const qa of ['Hidden link', 'Hidden action']) {
+      expect(screen.getByTestId(qa).getBoundingClientRect().width).toBe(0);
+      expect(screen.getByTestId(qa).getBoundingClientRect().height).toBe(0);
+    }
+  });
+
+  it.each([{ opacity: 0.25 }, { style: { opacity: 0.25 } }])(
+    'fades the link and its actions once: %o',
+    (props) => {
+      render(
+        <Root>
+          <Menu aria-label="Destinations">
+            <Menu.Item
+              key="link"
+              to={destination}
+              {...props}
+              actions={<Menu.Item.Action>Delete</Menu.Item.Action>}
+            >
+              Destination
+            </Menu.Item>
+          </Menu>
+        </Root>,
+      );
+      function effectiveOpacity(element: HTMLElement) {
+        let opacity = 1;
+        for (
+          let current: HTMLElement | null = element;
+          current;
+          current = current.parentElement
+        )
+          opacity *= Number(getComputedStyle(current).opacity);
+        return opacity;
+      }
+      expect(effectiveOpacity(screen.getByRole('menuitem'))).toBe(0.25);
+      expect(
+        effectiveOpacity(screen.getByRole('button', { name: 'Delete' })),
+      ).toBe(0.25);
+    },
+  );
+
+  it.each([{ margin: '2x top' }, { style: { marginTop: 16 } }])(
+    'keeps actions aligned when the row has a margin: %o',
+    (props) => {
+      render(
+        <Root>
+          <Menu aria-label="Destinations">
+            <Menu.Item
+              key="link"
+              to={destination}
+              {...props}
+              actions={<Menu.Item.Action>Delete</Menu.Item.Action>}
+            >
+              Destination
+            </Menu.Item>
+          </Menu>
+        </Root>,
+      );
+      const row = screen.getByRole('menuitem').getBoundingClientRect();
+      const action = screen
+        .getByRole('button', { name: 'Delete' })
+        .getBoundingClientRect();
+      expect(action.y + action.height / 2).toBeCloseTo(row.y + row.height / 2);
+    },
+  );
+
+  it('orders the entire link row in the menu flex layout', () => {
+    render(
+      <Root>
+        <Menu aria-label="Destinations">
+          <Menu.Item key="command">First</Menu.Item>
+          <Menu.Item key="link" to={destination} order={-1}>
+            Destination
+          </Menu.Item>
+        </Menu>
+      </Root>,
+    );
+    expect(
+      screen
+        .getByRole('menuitem', { name: 'Destination' })
+        .getBoundingClientRect().top,
+    ).toBeLessThan(
+      screen.getByRole('menuitem', { name: 'First' }).getBoundingClientRect()
+        .top,
+    );
+  });
+
+  it('evaluates whole-row layout states on the focused anchor', async () => {
+    render(
+      <Root>
+        <Menu aria-label="Destinations">
+          <Menu.Item
+            key="link"
+            to={destination}
+            styles={{
+              '@focus': ':focus',
+              '$row-opacity': '.25',
+              opacity: { '': '$row-opacity', '@focus': '.5' },
+              margin: { '': '0x', '@focus': '2x top' },
+            }}
+            actions={<Menu.Item.Action>Delete</Menu.Item.Action>}
+          >
+            Destination
+          </Menu.Item>
+        </Menu>
+      </Root>,
+    );
+    const row = screen.getByRole('menuitem');
+    const owner = row.closest('li')!;
+    expect(getComputedStyle(owner).opacity).toBe('0.25');
+    await act(() => row.focus());
+    await waitFor(() => {
+      expect(getComputedStyle(owner).opacity).toBe('0.5');
+      expect(getComputedStyle(owner).marginTop).toBe('16px');
+    });
+    const rowRect = row.getBoundingClientRect();
+    const action = screen
+      .getByRole('button', { name: 'Delete' })
+      .getBoundingClientRect();
+    expect(action.y + action.height / 2).toBeCloseTo(
+      rowRect.y + rowRect.height / 2,
     );
   });
 

@@ -299,6 +299,7 @@ export function ItemActionsWrapper(props: ItemActionsWrapperProps) {
       setSkipWidthTransition(false);
     }
 
+    if (typeof ResizeObserver === 'undefined') return;
     const observer = new ResizeObserver(() => {
       if (actionsRef.current !== el) return;
       setActionsWidth(el.childElementCount ? Math.round(el.offsetWidth) : 0);

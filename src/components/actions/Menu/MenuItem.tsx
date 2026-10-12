@@ -1,11 +1,20 @@
 import { openLink } from '@react-aria/utils';
 import { FocusableElement, Key, Node } from '@react-types/shared';
-import { mergeStyles, Styles } from '@tenphi/tasty';
+import {
+  CONTAINER_STYLES,
+  mergeStyles,
+  POSITION_STYLES,
+  renderStyles,
+  Styles,
+  useRawCSS,
+} from '@tenphi/tasty';
 import {
   AnchorHTMLAttributes,
+  CSSProperties,
   KeyboardEvent,
   MouseEvent,
   useContext,
+  useId,
   useRef,
 } from 'react';
 import { FocusRing, RouterProvider, useMenuItem } from 'react-aria';
@@ -15,7 +24,7 @@ import { RightIcon } from '../../../icons/RightIcon';
 import { isExternalUrl } from '../../../providers/navigation-url';
 import { useNavigation } from '../../../providers/use-navigation';
 import { mergeProps } from '../../../utils/react';
-import { mergeStyleLayers } from '../../../utils/styles';
+import { extractStyles, mergeStyleLayers } from '../../../utils/styles';
 import { filterCollectionItemProps } from '../../CollectionItem';
 import { Item } from '../../content/Item/Item';
 import {
@@ -56,6 +65,125 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
   );
 }
 
+const DEFAULT_OWNER_STYLES: Styles = {
+  display: 'grid',
+  margin: 0,
+  flexShrink: 0,
+};
+const OWNER_STYLE_PROPS = [
+  'hide',
+  'opacity',
+  'visibility',
+  ...POSITION_STYLES,
+  'width',
+  'inlineSize',
+  'flex',
+  'flexBasis',
+  'flexGrow',
+  'flexShrink',
+];
+const OWNER_CSS_KEYS = [
+  'opacity',
+  'visibility',
+  'order',
+  'position',
+  'inset',
+  'top',
+  'right',
+  'bottom',
+  'left',
+  'insetBlock',
+  'insetBlockStart',
+  'insetBlockEnd',
+  'insetInline',
+  'insetInlineStart',
+  'insetInlineEnd',
+  'width',
+  'minWidth',
+  'maxWidth',
+  'inlineSize',
+  'minInlineSize',
+  'maxInlineSize',
+  'flex',
+  'flexGrow',
+  'flexShrink',
+  'flexBasis',
+  'gridArea',
+  'gridRow',
+  'gridRowStart',
+  'gridRowEnd',
+  'gridColumn',
+  'gridColumnStart',
+  'gridColumnEnd',
+  'alignSelf',
+  'justifySelf',
+  'placeSelf',
+  'zIndex',
+  'margin',
+  'marginTop',
+  'marginRight',
+  'marginBottom',
+  'marginLeft',
+  'marginBlock',
+  'marginBlockStart',
+  'marginBlockEnd',
+  'marginInline',
+  'marginInlineStart',
+  'marginInlineEnd',
+  'scrollMargin',
+  'scrollMarginTop',
+  'scrollMarginRight',
+  'scrollMarginBottom',
+  'scrollMarginLeft',
+  'scrollMarginBlock',
+  'scrollMarginBlockStart',
+  'scrollMarginBlockEnd',
+  'scrollMarginInline',
+  'scrollMarginInlineStart',
+  'scrollMarginInlineEnd',
+  'transform',
+  'transformOrigin',
+  'translate',
+  'rotate',
+  'scale',
+];
+const isSharedCSS = (key: string) =>
+  key === 'display' || key === 'transition' || key.startsWith('--');
+const filterInlineStyles = (
+  style: CSSProperties | undefined,
+  owner: boolean,
+): CSSProperties | undefined =>
+  style &&
+  Object.fromEntries(
+    Object.entries(style).filter(([key]) =>
+      owner
+        ? OWNER_CSS_KEYS.includes(key) || isSharedCSS(key)
+        : !OWNER_CSS_KEYS.includes(key),
+    ),
+  );
+function projectOwnerStyles(styles: Styles, id: string) {
+  return renderStyles(styles)
+    .rules.map((rule) => {
+      const selector = (rule.selector || '')
+        .split('|||')
+        .map((suffix) => {
+          const owner = `[data-element="MenuLink"]:has(> * > [data-menu-link-anchor="${id}"])`;
+          // CSS forbids nested :has(); structural predicates match the row owner.
+          const subject = suffix.toLowerCase().includes(':has(')
+            ? owner + suffix
+            : `[data-element="MenuLink"]:has(> * > [data-menu-link-anchor="${id}"]${suffix})`;
+          return (rule.rootPrefix ? rule.rootPrefix + ' ' : '') + subject;
+        })
+        .join(',');
+      const css = selector + ' { ' + rule.declarations + ' }';
+      return [
+        ...(rule.atRules || []),
+        ...(rule.startingStyle ? ['@starting-style'] : []),
+      ].reduceRight((body, at) => at + ' { ' + body + ' }', css);
+    })
+    .join('\n');
+}
+
 function MenuLinkItem<T>(props: MenuItemProps<T>) {
   const activatedLink = useRef<HTMLAnchorElement>(null);
   const { to, href, navigationOptions } = props.item.props;
@@ -79,10 +207,40 @@ function MenuLinkItem<T>(props: MenuItemProps<T>) {
     (itemProps.isLoading && itemProps.isDisabled !== false);
   const isVirtualFocused =
     props.state.selectionManager.focusedKey === props.item.key;
-  const { Actions: rawActions, ...rowStyles } = mergeStyleLayers(
-    itemProps.styles,
-    props.styles,
+  const rawLinkId = useId();
+  const linkMarker = Array.from(rawLinkId, (c) =>
+    c.codePointAt(0)!.toString(16),
+  ).join('-');
+  const allRowStyles = mergeStyleLayers(itemProps.styles, props.styles);
+  const { styles: _styles, ...directProps } = itemProps;
+  const ownerInput = mergeStyleLayers(
+    allRowStyles,
+    extractStyles(
+      directProps,
+      OWNER_STYLE_PROPS.concat('display', 'transition'),
+    ),
   );
+  const ownerStyles = mergeStyleLayers(
+    DEFAULT_OWNER_STYLES,
+    Object.fromEntries(
+      Object.entries(ownerInput).filter(
+        ([key]) =>
+          OWNER_STYLE_PROPS.includes(key) ||
+          key === 'display' ||
+          key === 'transition' ||
+          (/^[#@$]/.test(key) && key !== '$'),
+      ),
+    ),
+  );
+  const ownerInlineStyle = filterInlineStyles(itemProps.style, true);
+  const { Actions: rawActions, ...rowStyles } = Object.fromEntries(
+    Object.entries(allRowStyles).filter(
+      ([key]) => !OWNER_STYLE_PROPS.includes(key),
+    ),
+  ) as Styles;
+  useRawCSS(projectOwnerStyles(ownerStyles, linkMarker), {
+    id: 'menu-owner-' + linkMarker,
+  });
   const actionStyles = rawActions as Styles | null | false | undefined;
   const actionTokens = Object.fromEntries(
     Object.entries(rowStyles).filter(
@@ -127,7 +285,12 @@ function MenuLinkItem<T>(props: MenuItemProps<T>) {
       siblingActions,
   };
   return (
-    <StyledLinkItem role="none">
+    <StyledLinkItem
+      role="none"
+      data-element="MenuLink"
+      style={ownerInlineStyle}
+      tokens={itemProps.tokens}
+    >
       <ItemActionsWrapper
         actions={itemProps.actions}
         type={itemProps.type}
@@ -159,6 +322,7 @@ function MenuLinkItem<T>(props: MenuItemProps<T>) {
             <MenuItemContent
               {...props}
               styles={linkStyles}
+              linkMarker={linkMarker}
               showActions={showActions}
               skipActionsWidthTransition={skipActionsWidthTransition}
               onClick={(event) => {
@@ -176,6 +340,7 @@ function MenuLinkItem<T>(props: MenuItemProps<T>) {
 
 function MenuItemContent<T>(
   props: MenuItemProps<T> & {
+    linkMarker?: string;
     showActions?: boolean;
     skipActionsWidthTransition?: boolean;
     onClick?: (event: MouseEvent<FocusableElement>) => void;
@@ -300,24 +465,38 @@ function MenuItemContent<T>(
   const content = (
     <FocusRing>
       <Item
-        {...mergeProps({ ...itemOwnProps, onKeyDown }, filteredItemProps, {
-          'data-popover-trigger': true,
-          qa: itemQa ? itemQa : `MenuItem-${key}`,
-          mods,
-          styles: isLink ? styles : mergeStyles(ownStyles, styles),
-          'data-size': size,
-          as: isLink ? 'a' : 'li',
-          href: isLink && !isDisabled ? renderedHref : undefined,
-          labelProps,
-          descriptionProps,
-          keyboardShortcutProps,
-          'aria-haspopup': submenuContext ? 'menu' : undefined,
-          'aria-expanded': submenuContext?.isOpen,
-          'data-has-submenu': submenuContext ? true : undefined,
-          // Chained after the item's own hover handlers.
-          onMouseEnter: submenuContext?.onMouseEnter,
-          onMouseLeave: submenuContext?.onMouseLeave,
-        })}
+        {...mergeProps(
+          { ...itemOwnProps, onKeyDown },
+          isLink
+            ? Object.fromEntries(
+                Object.entries(filteredItemProps).filter(
+                  ([key]) => !OWNER_STYLE_PROPS.includes(key),
+                ),
+              )
+            : filteredItemProps,
+          {
+            'data-popover-trigger': true,
+            qa: itemQa ? itemQa : `MenuItem-${key}`,
+            mods,
+            styles: isLink ? styles : mergeStyles(ownStyles, styles),
+            'data-menu-link-anchor': props.linkMarker,
+            style: isLink
+              ? filterInlineStyles(filteredItemProps.style, false)
+              : filteredItemProps.style,
+            'data-size': size,
+            as: isLink ? 'a' : 'li',
+            href: isLink && !isDisabled ? renderedHref : undefined,
+            labelProps,
+            descriptionProps,
+            keyboardShortcutProps,
+            'aria-haspopup': submenuContext ? 'menu' : undefined,
+            'aria-expanded': submenuContext?.isOpen,
+            'data-has-submenu': submenuContext ? true : undefined,
+            // Chained after the item's own hover handlers.
+            onMouseEnter: submenuContext?.onMouseEnter,
+            onMouseLeave: submenuContext?.onMouseLeave,
+          },
+        )}
         ref={elementRef}
         insideWrapper={isLink}
         actions={

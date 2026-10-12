@@ -65,11 +65,8 @@ export const StyledMenu = tasty({
 export const StyledLinkItem = tasty({
   as: 'li',
   styles: {
-    display: 'grid',
     listStyle: 'none',
-    margin: 0,
     padding: 0,
-    flexShrink: 0,
   },
 });
 
