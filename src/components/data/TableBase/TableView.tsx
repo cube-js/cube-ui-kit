@@ -4,6 +4,7 @@ import {
   Fragment,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -57,6 +58,7 @@ import {
   ROW_NUMBER_COLUMN_KEY,
   SELECTION_COLUMN_KEY,
 } from './use-table-selection';
+import { useTableTooltipRefresh } from './use-table-tooltip-refresh';
 
 import type { Key, Node } from '@react-types/shared';
 import type { Styles } from '@tenphi/tasty';
@@ -1701,15 +1703,16 @@ export function TableView<T = any>(props: TableViewProps<T>) {
   // `getScrollElement` is read from a ref, not the state value: the virtualizer
   // consults it from a layout effect, and a closure over state can still hold
   // the `null` from the first render.
+  const estimatedRowHeight =
+    (rowHeight ??
+      (rowSizeKey
+        ? SIZES[rowSizeKey]
+        : ESTIMATED_ROW_HEIGHT[size ?? 'medium'])) + 1;
   const virtualizer = useVirtualizer({
     count: shouldVirtualize ? rows.length : 0,
     getScrollElement: () => scrollerRef.current,
     getItemKey,
-    estimateSize: () =>
-      (rowHeight ??
-        (rowSizeKey
-          ? SIZES[rowSizeKey]
-          : ESTIMATED_ROW_HEIGHT[size ?? 'medium'])) + 1,
+    estimateSize: () => estimatedRowHeight,
     measureElement: (element) => element.getBoundingClientRect().height,
     // Rows beyond each viewport edge. Higher than a list's, because a fast
     // flick outruns React's re-render and the gap shows as blank rows — and a
@@ -1717,6 +1720,15 @@ export function TableView<T = any>(props: TableViewProps<T>) {
     // cheap.
     overscan,
   });
+
+  // Key identity no longer resets estimates on every render. Size changes do.
+  useLayoutEffect(() => {
+    virtualizer.measure();
+    localBodyRef.current
+      ?.querySelectorAll<HTMLTableRowElement>('tr[data-index]')
+      .forEach((element) => virtualizer.measureElement(element));
+  }, [estimatedRowHeight, virtualizer]);
+  useTableTooltipRefresh(scrollerEl);
 
   // `scrollerEl` is referenced only to re-render on the pass where the scroller
   // first exists, so the virtualizer re-reads `getScrollElement` and attaches.

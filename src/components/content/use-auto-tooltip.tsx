@@ -54,6 +54,17 @@ function assignRef(ref: unknown, element: HTMLElement | null) {
 
 /** Overflow checks queued for the end of the current task, from every label. */
 const pendingOverflowChecks = new Set<() => void>();
+const overflowChecksByNode = new WeakMap<HTMLElement, Set<() => void>>();
+
+/** Refresh a retained tooltip tree after inherited appearance changes. */
+export function refreshAutoTooltipsWithin(element: HTMLElement) {
+  for (const node of [
+    element,
+    ...Array.from(element.querySelectorAll<HTMLElement>('*')),
+  ]) {
+    overflowChecksByNode.get(node)?.forEach(queueOverflowCheck);
+  }
+}
 
 /**
  * Runs every queued check in one pass and commits the verdicts that changed in
@@ -350,7 +361,24 @@ export function useAutoTooltip({
     (part: 'label' | 'description', element: HTMLElement | null) => {
       const measured = measuredRef.current;
 
+      const previous = measured[part];
       measured[part] = element;
+
+      if (
+        previous &&
+        previous !== measured.label &&
+        previous !== measured.description
+      ) {
+        const checks = overflowChecksByNode.get(previous);
+        checks?.delete(checkOverflow);
+        if (!checks?.size) overflowChecksByNode.delete(previous);
+      }
+      if (element) {
+        const checks = overflowChecksByNode.get(element) ?? new Set();
+        checks.add(checkOverflow);
+        overflowChecksByNode.set(element, checks);
+      }
+
       // The observer covers every later size change.
       observeMeasuredNodes(measured, checkOverflow);
 

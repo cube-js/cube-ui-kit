@@ -59,7 +59,7 @@ So `TableHeaderItem` sits inside the header cell: the `<th>` owns the interactio
 
 **At most one `Item` per body row.** `Item` runs `useHotkeys` on every instance even with no `hotkeys` prop, and its `@interacted` alias uses `:has()`. One per cell would churn hundreds of subscriptions per scroll tick. Every other cell uses `TextItem`.
 
-Keep the virtualizer's `getItemKey` callback stable until rows or their key resolver change: TanStack invalidates the full position cache on callback identity changes. Default cell text belongs in `TableCellContent` so release compilation can retain unchanged text/tooltip trees as the row window moves; calling the renderer as a plain helper recreates them on every scroll.
+Keep the virtualizer's `getItemKey` callback stable until rows or their key resolver change: TanStack invalidates the full position cache on callback identity changes. Default cell text belongs in `TableCellContent` so release compilation can retain unchanged text/tooltip trees as the row window moves; calling the renderer as a plain helper recreates them on every scroll. The table owns attribute observation for inherited appearance changes, since a fixed-size label can overflow differently without a ResizeObserver delivery. Changing the height estimate explicitly resets virtual measurements and remeasures mounted rows.
 
 ## Column reordering excludes pinned columns
 

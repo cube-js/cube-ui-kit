@@ -910,3 +910,221 @@ describe('virtualized row identity', () => {
     );
   });
 });
+
+describe('default cell tooltip appearance', () => {
+  it.each(['table', 'column', 'cellProps', 'selection'] as const)(
+    'refreshes overflow when %s typography changes inside a fixed-size label',
+    async (scope) => {
+      const data = [{ id: 'a', name: '12345678' }];
+      const columns = [
+        {
+          key: 'name',
+          title: 'Name',
+          width: 112,
+          minWidth: 112,
+          maxWidth: 112,
+        },
+      ];
+      const appearance = (letterSpacing: string) => ({
+        fontFamily: 'monospace',
+        fontSize: '10px',
+        lineHeight: '20px',
+        letterSpacing,
+      });
+      const selectionColumns = [
+        {
+          ...columns[0],
+          cellStyles: ({ isSelected }: { isSelected: boolean }) =>
+            appearance(isSelected ? '20px' : '4px'),
+        },
+      ];
+      const table = (letterSpacing: string) => (
+        <ItemTable
+          data={data}
+          columns={
+            scope === 'table'
+              ? columns
+              : scope === 'selection'
+                ? selectionColumns
+                : [
+                    {
+                      ...columns[0],
+                      ...(scope === 'column'
+                        ? { cellStyles: appearance(letterSpacing) }
+                        : {
+                            cellProps: () => ({
+                              style: appearance(letterSpacing),
+                            }),
+                          }),
+                    },
+                  ]
+          }
+          selectionMode={scope === 'selection' ? 'single' : undefined}
+          selectedKeys={
+            scope === 'selection'
+              ? letterSpacing === '20px'
+                ? ['a']
+                : []
+              : undefined
+          }
+          paginationMode="off"
+          isRowMoveAnimated={false}
+          width="112px"
+          height="160px"
+          cellStyles={scope === 'table' ? appearance(letterSpacing) : undefined}
+        />
+      );
+      const { rerender } = renderWithRoot(table('4px'));
+      const label = () =>
+        bodyCell('name').querySelector<HTMLElement>('[data-qa="TextItem"]')!;
+      await vi.waitFor(() => expect(label().clientWidth).toBe(80));
+      await nextFrame();
+      await nextFrame();
+      const initialBox = label().getBoundingClientRect();
+      expect(label().scrollWidth).toBe(label().clientWidth);
+
+      rerender(table('20px'));
+      await vi.waitFor(() =>
+        expect(label().scrollWidth).toBeGreaterThan(label().clientWidth),
+      );
+      expect(label().getBoundingClientRect().width).toBe(initialBox.width);
+      expect(label().getBoundingClientRect().height).toBe(initialBox.height);
+      await realInput.hover(headerCell('name'));
+      await realInput.hover(label());
+      await vi.waitFor(
+        () => expect(screen.getByRole('tooltip')).toHaveTextContent('12345678'),
+        { timeout: 3_000 },
+      );
+
+      await realInput.hover(headerCell('name'));
+      rerender(table('4px'));
+      await nextFrame();
+      await nextFrame();
+      await vi.waitFor(() =>
+        expect(screen.queryByRole('tooltip')).not.toBeInTheDocument(),
+      );
+      await realInput.hover(label());
+      await new Promise((resolve) => setTimeout(resolve, 1_000));
+      expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
+    },
+  );
+});
+
+describe('virtualized row estimates', () => {
+  it('refreshes offscreen estimates when the configured height changes', async () => {
+    const data = Array.from({ length: 2_000 }, (_, index) => ({
+      id: String(index),
+      name: `Row ${index}`,
+    }));
+    const columns = [{ key: 'name', title: 'Name' }];
+    const getRowKey = (row: (typeof data)[number]) => row.id;
+    const getRowProps = ({ row }: { row: (typeof data)[number] }) =>
+      Number(row.id) < 100 ? { height: 200 } : undefined;
+    const table = (rowHeight: number) => (
+      <ItemTable
+        data={data}
+        columns={columns}
+        getRowKey={getRowKey}
+        getRowProps={getRowProps}
+        rowHeight={rowHeight}
+        headerHeight={40}
+        paginationMode="off"
+        isVirtualized
+        isRowMoveAnimated={false}
+        height="300px"
+        width="500px"
+      />
+    );
+    const { rerender } = renderWithRoot(table(40));
+    await vi.waitFor(() =>
+      expect(grid().querySelector('tr[data-key="0"]')).not.toBeNull(),
+    );
+    await nextFrame();
+    await nextFrame();
+    const scroller = grid().parentElement!;
+    const heightBefore = scroller.scrollHeight;
+    const row = grid().querySelector<HTMLElement>('tr[data-key="0"]')!;
+    expect(row.getBoundingClientRect().height).toBe(200);
+
+    rerender(table(80));
+    await vi.waitFor(() =>
+      expect(scroller.scrollHeight - heightBefore).toBeGreaterThan(70_000),
+    );
+    expect(row.getBoundingClientRect().height).toBe(200);
+  });
+});
+
+it.each(['before', 'after'] as const)(
+  'refreshes a retained cell when a font is registered %s loading',
+  async (registration) => {
+    const fonts = document.fonts as FontFaceSet & Set<FontFace>;
+    const font = new FontFace(
+      'ItemTableLateFont',
+      'local("Arial"), local("Liberation Sans")',
+    );
+    const data = Array.from({ length: 1_000 }, (_, index) => ({
+      id: String(index),
+      name: 'WWWWWWWW',
+    }));
+    const columns = [
+      { key: 'name', title: 'Name', width: 112, minWidth: 112, maxWidth: 112 },
+    ];
+    try {
+      renderWithRoot(
+        <ItemTable
+          data={data}
+          columns={columns}
+          paginationMode="off"
+          isVirtualized
+          isRowMoveAnimated={false}
+          rowHeight={40}
+          width="112px"
+          height="160px"
+          cellStyles={{
+            fontFamily: 'ItemTableLateFont, monospace',
+            fontSize: '10px',
+            lineHeight: '20px',
+            letterSpacing: '4px',
+          }}
+        />,
+      );
+      const cell = () =>
+        grid().querySelector<HTMLElement>(
+          'tr[data-key="0"] [data-qa="TextItem"]',
+        )!;
+      await vi.waitFor(() => expect(cell().clientWidth).toBe(80));
+      await nextFrame();
+      await nextFrame();
+      expect(cell().scrollWidth).toBe(80);
+      const initialBox = cell().getBoundingClientRect();
+      if (registration === 'before') {
+        fonts.add(font);
+        await fonts.load('10px ItemTableLateFont', 'WWWWWWWW');
+      } else {
+        await font.load();
+        fonts.add(font);
+      }
+      await vi.waitFor(() => expect(cell().scrollWidth).toBeGreaterThan(80));
+      expect(cell().getBoundingClientRect().width).toBe(initialBox.width);
+      expect(cell().getBoundingClientRect().height).toBe(initialBox.height);
+
+      if (registration === 'after') {
+        const scroller = grid().parentElement!;
+        scroller.scrollTop = 40;
+        await nextFrame();
+        await nextFrame();
+        scroller.scrollTop = 0;
+        await nextFrame();
+        await nextFrame();
+      }
+      await realInput.hover(headerCell('name'));
+      await realInput.hover(cell());
+      await vi.waitFor(
+        () => expect(screen.getByRole('tooltip')).toHaveTextContent('WWWWWWWW'),
+        { timeout: 3_000 },
+      );
+    } finally {
+      fonts.delete(font);
+    }
+  },
+);

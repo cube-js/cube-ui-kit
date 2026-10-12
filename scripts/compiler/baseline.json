@@ -623,6 +623,11 @@
     },
     "optOuts": 0
   },
+  "src/components/data/TableBase/use-table-tooltip-refresh.ts": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
   "src/components/data/TableBase/use-table-tree-state.tsx": {
     "compiled": 1,
     "diagnostics": {},
