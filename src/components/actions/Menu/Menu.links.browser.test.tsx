@@ -1318,6 +1318,171 @@ describe('Menu navigation links', () => {
     },
   );
 
+  it.each([
+    { styles: { maxWidth: '160px' } },
+    { styles: { transform: 'translateX(16px)' } },
+    { styles: { width: '50%' } },
+    { width: 'calc(50% - 1x)' },
+    { style: { width: '50%' } },
+    { style: { maxWidth: '50%' } },
+  ])(
+    'keeps the anchor and actions inside the complete styled row: %j',
+    (props) => {
+      render(
+        <Root>
+          <Menu aria-label="Widths" styles={{ width: '30x' }}>
+            <Menu.Item
+              key="link"
+              to={destination}
+              qa="link"
+              {...props}
+              actions={
+                <Menu.Item.Action qa="link-action">Delete</Menu.Item.Action>
+              }
+            >
+              Row
+            </Menu.Item>
+            <Menu.Item
+              key="command"
+              qa="command"
+              {...props}
+              actions={
+                <Menu.Item.Action qa="command-action">Delete</Menu.Item.Action>
+              }
+            >
+              Row
+            </Menu.Item>
+          </Menu>
+        </Root>,
+      );
+      const row = screen.getByTestId('link');
+      const command = screen.getByTestId('command').getBoundingClientRect();
+      const anchor = row.getBoundingClientRect();
+      const owner = row.closest('li')!.getBoundingClientRect();
+      expect(anchor.width).toBe(command.width);
+      expect(owner.width).toBe(command.width);
+      expect(anchor.left).toBe(command.left);
+      expect(owner.left).toBe(command.left);
+      const action = screen.getByTestId('link-action').getBoundingClientRect();
+      const commandAction = screen
+        .getByTestId('command-action')
+        .getBoundingClientRect();
+      expect(action.right).toBe(commandAction.right);
+      expect(action.right).toBeLessThanOrEqual(anchor.right);
+    },
+  );
+
+  it('keeps the entire native row inert, including its independent actions', async () => {
+    const onPress = vi.fn();
+    const navigate = vi.fn();
+    render(
+      <Root navigation={{ useHref: String, useNavigate: () => navigate }}>
+        <Menu aria-label="Destinations">
+          <Menu.Item
+            key="link"
+            to={destination}
+            inert
+            actions={
+              <Menu.Item.Action onPress={onPress}>Delete</Menu.Item.Action>
+            }
+          >
+            Destination
+          </Menu.Item>
+        </Menu>
+      </Root>,
+    );
+    const row = screen.getByRole('menuitem', {
+      name: 'Destination',
+      hidden: true,
+    });
+    const action = screen.getByRole('button', { name: 'Delete', hidden: true });
+    expect(row.closest('li')).toHaveAttribute('inert');
+    await userEvent.click(action, { force: true });
+    await act(() => action.focus());
+    expect(document.activeElement).not.toBe(action);
+    expect(onPress).not.toHaveBeenCalled();
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
+  it('hides the native row and its actions from accessibility together', () => {
+    render(
+      <Root>
+        <Menu aria-label="Destinations">
+          <Menu.Item
+            key="link"
+            to={destination}
+            aria-hidden
+            actions={<Menu.Item.Action>Delete</Menu.Item.Action>}
+          >
+            Destination
+          </Menu.Item>
+        </Menu>
+      </Root>,
+    );
+    expect(screen.queryByRole('menuitem')).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Delete' }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('removes row-owned CSS when menus are repeatedly unmounted', () => {
+    const ownerRuleCount = () =>
+      [...Array.from(document.styleSheets), ...document.adoptedStyleSheets]
+        .flatMap((sheet) => Array.from(sheet.cssRules))
+        .filter((rule) => rule.cssText.includes('data-menu-link-anchor'))
+        .length;
+    const before = ownerRuleCount();
+    for (let index = 0; index < 3; index++) {
+      const { unmount } = render(
+        <Root>
+          <Menu aria-label="Destinations">
+            <Menu.Item key="link" to={destination} opacity=".5">
+              Destination
+            </Menu.Item>
+          </Menu>
+        </Root>,
+      );
+      const row = screen.getByRole('menuitem');
+      expect(getComputedStyle(row.closest('li')!).opacity).toBe('0.5');
+      expect(ownerRuleCount()).toBeGreaterThan(before);
+      unmount();
+      expect(ownerRuleCount()).toBe(before);
+    }
+  });
+
+  it.each([
+    { overflow: 'hidden' },
+    { styles: { overflow: 'hidden' } },
+    { style: { overflow: 'hidden' } },
+  ])('clips independent actions to the complete native row: %j', (props) => {
+    render(
+      <Root>
+        <Menu aria-label="Destinations" styles={{ width: '30x' }}>
+          <Menu.Item
+            key="link"
+            to={destination}
+            height="16px"
+            {...props}
+            actions={<Menu.Item.Action>Delete</Menu.Item.Action>}
+          >
+            Destination
+          </Menu.Item>
+        </Menu>
+      </Root>,
+    );
+    const row = screen.getByRole('menuitem');
+    const action = screen.getByRole('button', { name: 'Delete' });
+    const rect = row.getBoundingClientRect();
+    const button = action.getBoundingClientRect();
+    expect(button.top).toBeLessThan(rect.top);
+    const hit = document.elementFromPoint(
+      button.left + button.width / 2,
+      rect.top - 1,
+    );
+    expect(hit?.closest('[data-element="Actions"]')).toBeNull();
+    expect(getComputedStyle(row.closest('li')!).overflow).toBe('hidden');
+  });
+
   it('orders the entire link row in the menu flex layout', () => {
     render(
       <Root>

@@ -2,11 +2,11 @@ import { openLink } from '@react-aria/utils';
 import { FocusableElement, Key, Node } from '@react-types/shared';
 import {
   CONTAINER_STYLES,
+  getConfig,
   mergeStyles,
   POSITION_STYLES,
   renderStyles,
   Styles,
-  useRawCSS,
 } from '@tenphi/tasty';
 import {
   AnchorHTMLAttributes,
@@ -74,6 +74,7 @@ const OWNER_STYLE_PROPS = [
   'hide',
   'opacity',
   'visibility',
+  'overflow',
   ...POSITION_STYLES,
   'width',
   'inlineSize',
@@ -85,6 +86,9 @@ const OWNER_STYLE_PROPS = [
 const OWNER_CSS_KEYS = [
   'opacity',
   'visibility',
+  'overflow',
+  'overflowX',
+  'overflowY',
   'order',
   'position',
   'inset',
@@ -148,17 +152,14 @@ const OWNER_CSS_KEYS = [
   'scale',
 ];
 const isSharedCSS = (key: string) =>
-  [
-    'width',
-    'minWidth',
-    'maxWidth',
-    'inlineSize',
-    'minInlineSize',
-    'maxInlineSize',
-  ].includes(key) ||
   key === 'display' ||
   key === 'transition' ||
+  key === 'overflow' ||
+  key === 'overflowX' ||
+  key === 'overflowY' ||
   key.startsWith('--');
+const isOwnerStyle = (key: string) =>
+  OWNER_STYLE_PROPS.includes(key) || OWNER_CSS_KEYS.includes(key);
 const filterInlineStyles = (
   style: CSSProperties | undefined,
   owner: boolean,
@@ -237,7 +238,7 @@ function MenuLinkItem<T>(props: MenuItemProps<T>) {
     Object.fromEntries(
       Object.entries(ownerInput).filter(
         ([key]) =>
-          OWNER_STYLE_PROPS.includes(key) ||
+          isOwnerStyle(key) ||
           key === 'display' ||
           key === 'transition' ||
           (/^[#@$]/.test(key) && key !== '$'),
@@ -247,14 +248,9 @@ function MenuLinkItem<T>(props: MenuItemProps<T>) {
   const ownerInlineStyle = filterInlineStyles(itemProps.style, true);
   const { Actions: rawActions, ...rowStyles } = Object.fromEntries(
     Object.entries(allRowStyles).filter(
-      ([key]) =>
-        !OWNER_STYLE_PROPS.includes(key) ||
-        ['width', 'inlineSize'].includes(key),
+      ([key]) => !isOwnerStyle(key) || isSharedCSS(key),
     ),
   ) as Styles;
-  useRawCSS(projectOwnerStyles(ownerStyles, linkMarker), {
-    id: 'menu-owner-' + linkMarker,
-  });
   const actionStyles = rawActions as Styles | null | false | undefined;
   const actionTokens = Object.fromEntries(
     Object.entries(rowStyles).filter(
@@ -289,6 +285,8 @@ function MenuLinkItem<T>(props: MenuItemProps<T>) {
   const linkStyles = {
     // eslint-disable-next-line tasty/no-style-spread -- Forward the consumer's complete row styles before adding the sibling slot.
     ...rowStyles,
+    // Dimensions resolve once on the owner; the anchor fills that row.
+    width: '0 auto initial',
     // eslint-disable-next-line tasty/no-nested-selector -- Tasty's sub-element $ cannot leave the row; its sibling context supplies normal color inheritance.
     '& ~ [data-element="ActionsContext"]': mergeStyleLayers(
       actionTokens,
@@ -304,7 +302,14 @@ function MenuLinkItem<T>(props: MenuItemProps<T>) {
       data-element="MenuLink"
       style={ownerInlineStyle}
       tokens={itemProps.tokens}
+      inert={itemProps.inert}
+      aria-hidden={itemProps['aria-hidden']}
+      dir={itemProps.dir}
+      lang={itemProps.lang}
     >
+      <style nonce={getConfig().nonce}>
+        {projectOwnerStyles(ownerStyles, linkMarker)}
+      </style>
       <ItemActionsWrapper
         actions={itemProps.actions}
         type={itemProps.type}
@@ -484,9 +489,7 @@ function MenuItemContent<T>(
           isLink
             ? Object.fromEntries(
                 Object.entries(filteredItemProps).filter(
-                  ([key]) =>
-                    !OWNER_STYLE_PROPS.includes(key) ||
-                    ['width', 'inlineSize'].includes(key),
+                  ([key]) => !isOwnerStyle(key) || isSharedCSS(key),
                 ),
               )
             : filteredItemProps,
