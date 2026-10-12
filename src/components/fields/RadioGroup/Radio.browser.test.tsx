@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { userEvent } from 'vitest/browser';
 
 import { CheckIcon } from '../../../icons/CheckIcon';
@@ -335,5 +336,51 @@ describe('Disabled Radio.Button with a tooltip', () => {
     await waitFor(() => expect(yes).toHaveAttribute('tabindex', '0'));
     await userEvent.keyboard('{Tab}');
     expect(yes).toHaveFocus();
+  });
+
+  it('leaves no stale tab stop when leaving the group moves the selection', async () => {
+    function Answer() {
+      const [value, setValue] = useState('maybe');
+
+      return (
+        <>
+          <button type="button">Before</button>
+          <Radio.ButtonGroup
+            isDisabled
+            aria-label="Answer"
+            value={value}
+            onBlur={() => setValue('yes')}
+          >
+            <Radio.Button value="yes" tooltip="Not on this plan">
+              Yes
+            </Radio.Button>
+            <Radio.Button value="no" tooltip="Not on this plan">
+              No
+            </Radio.Button>
+            <Radio.Button value="maybe" tooltip="Not on this plan">
+              Maybe
+            </Radio.Button>
+          </Radio.ButtonGroup>
+          <button type="button">After</button>
+        </>
+      );
+    }
+
+    renderWithRoot(<Answer />);
+
+    const radios = screen.getAllByRole('radio');
+
+    screen.getByRole('button', { name: 'Before' }).focus();
+    await userEvent.keyboard('{Tab}{ArrowLeft}{Tab}');
+    expect(screen.getByRole('button', { name: 'After' })).toHaveFocus();
+
+    await waitFor(() => expect(radios[0]).toBeChecked());
+    // Queued after the restore's timeout, so it runs after it.
+    await new Promise((resolve) => setTimeout(resolve));
+    expect(radios.map((radio) => radio.getAttribute('tabindex'))).toEqual([
+      '0',
+      '-1',
+      '-1',
+    ]);
   });
 });

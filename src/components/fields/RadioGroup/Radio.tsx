@@ -258,8 +258,9 @@ function leaveGroupOnTab(
 
   selected.tabIndex = -1;
   // The key's default action, or a `FocusScope`, moves focus synchronously.
+  // A blur handler may have moved the selection, and its tab stop, meanwhile.
   setTimeout(() => {
-    selected.tabIndex = tabIndex;
+    if (selected.checked) selected.tabIndex = tabIndex;
   });
 }
 
