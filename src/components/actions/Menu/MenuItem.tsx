@@ -18,7 +18,10 @@ import { mergeProps } from '../../../utils/react';
 import { mergeStyleLayers } from '../../../utils/styles';
 import { filterCollectionItemProps } from '../../CollectionItem';
 import { Item } from '../../content/Item/Item';
-import { ItemActionsWrapper } from '../ItemActionsWrapper';
+import {
+  DEFAULT_ACTIONS_STYLES,
+  ItemActionsWrapper,
+} from '../ItemActionsWrapper';
 import { parseTo } from '../use-action';
 
 import { useMenuContext } from './context';
@@ -90,34 +93,38 @@ function MenuLinkItem<T>(props: MenuItemProps<T>) {
     { color: rowStyles.color },
     { color: itemProps.color },
   );
-  // Resets must reach the element that supplies the layout/palette defaults.
+  const siblingActions =
+    actionStyles === null || actionStyles === false
+      ? actionStyles
+      : mergeStyleLayers(
+          DEFAULT_ACTIONS_STYLES,
+          { '@block-description': '[data-description="block"]' },
+          actionStyles,
+        );
+  // The run's complete style map is owned by the anchor, including its defaults.
   const wrapperStyles = {
-    color: inheritedColor.color === null ? null : undefined,
-    Actions:
-      // eslint-disable-next-line tasty/valid-sub-element -- Preserve the typed Actions slot's object and whole-slot reset forms.
-      actionStyles === null || actionStyles === false
-        ? actionStyles
-        : Object.fromEntries(
-            Object.entries(actionStyles || {}).filter(
-              ([, value]) => value === null || value === false,
-            ),
-          ),
+    color:
+      inheritedColor.color === null || inheritedColor.color === false
+        ? inheritedColor.color
+        : undefined,
+    // eslint-disable-next-line tasty/valid-sub-element -- Remove the wrapper defaults; the row owns the merged Actions map below.
+    Actions: null,
+    ActionsChild: { $: '>ActionsContext>Actions>*' },
+    ActionIcon: { $: '>ActionsContext>Actions>' },
+    ActionsContext: { $: '>', display: 'contents' },
   };
-  const siblingActionStyles =
-    actionStyles && actionStyles.color === null
-      ? { ...actionStyles, color: undefined }
-      : actionStyles;
-  const siblingActions = mergeStyleLayers(
-    actionTokens,
-    inheritedColor,
-    siblingActionStyles || undefined,
-  );
   // Keep consumer predicates on the row, including CSS focus and hover states.
   const linkStyles = {
     // eslint-disable-next-line tasty/no-style-spread -- Forward the consumer's complete row styles before adding the sibling slot.
     ...rowStyles,
-    // eslint-disable-next-line tasty/no-nested-selector -- Tasty's sub-element $ selector cannot leave the row; sibling actions must retain its state context.
-    '& ~ [data-element="Actions"]': siblingActions,
+    // eslint-disable-next-line tasty/no-nested-selector -- Tasty's sub-element $ cannot leave the row; its sibling context supplies normal color inheritance.
+    '& ~ [data-element="ActionsContext"]': mergeStyleLayers(
+      actionTokens,
+      inheritedColor,
+    ),
+    // eslint-disable-next-line tasty/no-nested-selector -- Apply the consumer's slot with the row's predicate context and its own inherited color.
+    '& ~ [data-element="ActionsContext"] > [data-element="Actions"]':
+      siblingActions,
   };
   return (
     <StyledLinkItem role="none">
@@ -132,6 +139,7 @@ function MenuLinkItem<T>(props: MenuItemProps<T>) {
         preserveActionsSpace={itemProps.preserveActionsSpace}
         styles={wrapperStyles}
         tokens={itemProps.tokens}
+        actionsContext
       >
         {({ showActions, skipActionsWidthTransition }) => (
           <RouterProvider

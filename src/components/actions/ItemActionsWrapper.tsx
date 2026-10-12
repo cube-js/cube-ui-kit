@@ -42,6 +42,61 @@ import { ItemActionProvider } from './ItemActionContext';
  * `data-trigger-action`, which `isOwnActionsPress` resolves back to the row it
  * belongs to. See `actions-run.ts`.
  */
+export const DEFAULT_ACTIONS_STYLES: Styles = {
+  $: '>',
+  position: 'absolute',
+  // Both insets set, so the run's BOX spans the row and `placeItems: center`
+  // puts the actions on its centre line. What sits in the box does not grow
+  // with it — every child is a fixed `$action-size`, which is capped so a
+  // large row does not get oversized buttons.
+  inset: {
+    '': '1bw right dock',
+    'type=card': '(1bw + .5x) right dock',
+    '@block-description': '1bw 1bw auto auto',
+    'type=card & @block-description': '(1bw + .5x) (1bw + .5x) auto auto',
+  },
+  display: 'flex',
+  gap: '1bw',
+  placeItems: 'center',
+  placeContent: 'center end',
+
+  // The run lies OVER the row. Left opaque, its padding and the gaps between
+  // its actions eat presses that belong to the row behind it, and a
+  // non-interactive control inside it (a picker's caret) could never reach
+  // its own trigger. The run itself is therefore transparent to the pointer
+  // and its children opt back in — see `ActionsChild` — so a child that
+  // wants to stay transparent, like that caret, only has to say so.
+  pointerEvents: 'none',
+
+  padding: '0 $side-padding',
+  // Only where the run is top-anchored: there the box has no bottom to
+  // measure from, so `$size` is what gives it one. Everywhere else the two
+  // insets decide the height, and this floor would force the box back to
+  // `$size` and re-anchor it at the top.
+  height: {
+    '': 'min 0',
+    '@block-description': 'min ($size - 2bw)',
+  },
+  opacity: {
+    '': 1,
+    '!actions-shown': 0,
+  },
+  // The run slides in as it fades, but only where it was taking no space to
+  // begin with. Where the space is reserved the run has a fixed place in the
+  // layout, and sliding it would read as the actions drifting rather than
+  // appearing.
+  translate: {
+    '': '0 0',
+    '!actions-shown & !preserve-actions-space': '.5x 0',
+  },
+  transition: 'theme, translate',
+
+  // Size for the action buttons
+  '$action-size': 'min(max((2x + 2bw), ($size - 1x - 2bw)), (3x - 2bw))',
+  // Side padding for the button
+  '$side-padding': '(($size - $action-size - 2bw) / 2)',
+};
+
 const ItemActionsWrapperElement = tasty({
   // Actions default to the `current` type, which paints from the inherited
   // `currentcolor` — but they are rendered as a SIBLING of the row here, not
@@ -85,60 +140,8 @@ const ItemActionsWrapperElement = tasty({
       'size=xlarge': '$size-xl',
     },
 
-    Actions: {
-      $: '>',
-      position: 'absolute',
-      // Both insets set, so the run's BOX spans the row and `placeItems: center`
-      // puts the actions on its centre line. What sits in the box does not grow
-      // with it — every child is a fixed `$action-size`, which is capped so a
-      // large row does not get oversized buttons.
-      inset: {
-        '': '1bw right dock',
-        'type=card': '(1bw + .5x) right dock',
-        '@block-description': '1bw 1bw auto auto',
-        'type=card & @block-description': '(1bw + .5x) (1bw + .5x) auto auto',
-      },
-      display: 'flex',
-      gap: '1bw',
-      placeItems: 'center',
-      placeContent: 'center end',
-
-      // The run lies OVER the row. Left opaque, its padding and the gaps between
-      // its actions eat presses that belong to the row behind it, and a
-      // non-interactive control inside it (a picker's caret) could never reach
-      // its own trigger. The run itself is therefore transparent to the pointer
-      // and its children opt back in — see `ActionsChild` — so a child that
-      // wants to stay transparent, like that caret, only has to say so.
-      pointerEvents: 'none',
-
-      padding: '0 $side-padding',
-      // Only where the run is top-anchored: there the box has no bottom to
-      // measure from, so `$size` is what gives it one. Everywhere else the two
-      // insets decide the height, and this floor would force the box back to
-      // `$size` and re-anchor it at the top.
-      height: {
-        '': 'min 0',
-        '@block-description': 'min ($size - 2bw)',
-      },
-      opacity: {
-        '': 1,
-        '!actions-shown': 0,
-      },
-      // The run slides in as it fades, but only where it was taking no space to
-      // begin with. Where the space is reserved the run has a fixed place in the
-      // layout, and sliding it would read as the actions drifting rather than
-      // appearing.
-      translate: {
-        '': '0 0',
-        '!actions-shown & !preserve-actions-space': '.5x 0',
-      },
-      transition: 'theme, translate',
-
-      // Size for the action buttons
-      '$action-size': 'min(max((2x + 2bw), ($size - 1x - 2bw)), (3x - 2bw))',
-      // Side padding for the button
-      '$side-padding': '(($size - $action-size - 2bw) / 2)',
-    },
+    // eslint-disable-next-line tasty/valid-sub-element -- Share the typed default slot with Menu's anchor-owned sibling layout.
+    Actions: DEFAULT_ACTIONS_STYLES,
 
     // Whatever a caller put in the run: interactive again, so the transparency
     // above applies only to the space BETWEEN and AROUND the actions. `*`
@@ -206,6 +209,8 @@ export interface ItemActionsWrapperProps {
    * markup stable across states that do and do not have trailing controls.
    */
   actions?: ReactNode;
+  /** Give the sibling run a separate inheritance context without moving its ref. */
+  actionsContext?: boolean;
   type?: string;
   theme?: string;
   /** `Item`'s size token, or a pixel number. */
@@ -247,6 +252,7 @@ export function ItemActionsWrapper(props: ItemActionsWrapperProps) {
   const {
     children,
     actions,
+    actionsContext,
     type = 'item',
     theme = 'default',
     size = 'medium',
@@ -292,7 +298,21 @@ export function ItemActionsWrapper(props: ItemActionsWrapperProps) {
       // transition off, so turning it back on animates nothing.
       setSkipWidthTransition(false);
     }
-  }, [actions, areActionsVisible, actionsWidth, skipWidthTransition]);
+
+    const observer = new ResizeObserver(() => {
+      if (actionsRef.current !== el) return;
+      setActionsWidth(el.childElementCount ? Math.round(el.offsetWidth) : 0);
+    });
+    observer.observe(el, { box: 'border-box' });
+    return () => observer.disconnect();
+  }, [
+    actions,
+    areActionsVisible,
+    actionsWidth,
+    skipWidthTransition,
+    autoHideActions,
+    preserveActionsSpace,
+  ]);
 
   const [isFocusWithin, setIsFocusWithin] = useState(false);
   const [hasPressed, setHasPressed] = useState(false);
@@ -340,6 +360,43 @@ export function ItemActionsWrapper(props: ItemActionsWrapperProps) {
     disabled: isDisabled,
   };
 
+  const actionsRun =
+    autoHideActions && !preserveActionsSpace ? (
+      <DisplayTransition
+        exposeUnmounted
+        isShown={shouldShowActions}
+        onPhaseChange={(phase) => {
+          setAreActionsVisible(phase !== 'unmounted');
+        }}
+      >
+        {({ ref: transitionRef }) => {
+          return (
+            <div
+              {...focusWithinProps}
+              {...actionsProps}
+              ref={(node: any) => {
+                actionsRef.current = node;
+                transitionRef(node);
+              }}
+              data-element="Actions"
+              data-trigger-action={actionsContext ? undefined : ''}
+            >
+              {actions}
+            </div>
+          );
+        }}
+      </DisplayTransition>
+    ) : (
+      <div
+        ref={actionsRef}
+        {...actionsProps}
+        data-element="Actions"
+        data-trigger-action={actionsContext ? undefined : ''}
+      >
+        {actions}
+      </div>
+    );
+
   return (
     <ItemActionsWrapperElement
       {...hoverProps}
@@ -382,40 +439,12 @@ export function ItemActionsWrapper(props: ItemActionsWrapperProps) {
           disableActionsFocus={disableActionsFocus}
           isDisabled={isDisabled}
         >
-          {autoHideActions && !preserveActionsSpace ? (
-            <DisplayTransition
-              exposeUnmounted
-              isShown={shouldShowActions}
-              onPhaseChange={(phase) => {
-                setAreActionsVisible(phase !== 'unmounted');
-              }}
-            >
-              {({ ref: transitionRef }) => {
-                return (
-                  <div
-                    {...focusWithinProps}
-                    {...actionsProps}
-                    ref={(node: any) => {
-                      actionsRef.current = node;
-                      transitionRef(node);
-                    }}
-                    data-element="Actions"
-                    data-trigger-action=""
-                  >
-                    {actions}
-                  </div>
-                );
-              }}
-            </DisplayTransition>
-          ) : (
-            <div
-              ref={actionsRef}
-              {...actionsProps}
-              data-element="Actions"
-              data-trigger-action=""
-            >
-              {actions}
+          {actionsContext ? (
+            <div data-element="ActionsContext" data-trigger-action="">
+              {actionsRun}
             </div>
+          ) : (
+            actionsRun
           )}
         </ItemActionProvider>
       </ClearPressResponder>

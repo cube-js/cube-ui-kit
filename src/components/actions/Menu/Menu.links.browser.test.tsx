@@ -930,7 +930,7 @@ describe('Menu navigation links', () => {
     const styles = {
       '@focus': ':focus',
       color: { '': '#purple-text', '@focus': '#danger-text' },
-      Actions: { padding: { '': '0x', '@focus': '2x' } },
+      Actions: { color: '#current', padding: { '': '0x', '@focus': '2x' } },
     };
     render(
       <Root>
@@ -969,10 +969,16 @@ describe('Menu navigation links', () => {
       expect(getComputedStyle(row).color).not.toBe(restingColor);
       expect(getComputedStyle(run).color).toBe(getComputedStyle(row).color);
       expect(getComputedStyle(run).padding).toBe('16px');
+      expect(getComputedStyle(row).getPropertyValue('--actions-width')).toBe(
+        `${Math.round(run.getBoundingClientRect().width)}px`,
+      );
     });
     await act(() => command.focus());
     await waitFor(() => {
       expect(getComputedStyle(run).padding).toBe('0px');
+      expect(getComputedStyle(row).getPropertyValue('--actions-width')).toBe(
+        `${Math.round(run.getBoundingClientRect().width)}px`,
+      );
       expect(getComputedStyle(run).color).toBe(getComputedStyle(row).color);
       expect(getComputedStyle(commandRun).color).toBe(
         getComputedStyle(command).color,
@@ -983,9 +989,11 @@ describe('Menu navigation links', () => {
 
   it.each([
     { color: null },
+    { color: false },
     { Actions: { padding: null } },
     { Actions: null },
     { color: '#purple-text', Actions: { color: null } },
+    { color: '#purple-text', Actions: { color: false } },
   ])('preserves explicit style resets on sibling controls: %o', (styles) => {
     render(
       <Root>
@@ -1018,7 +1026,9 @@ describe('Menu navigation links', () => {
     const commandRun = screen.getByRole('button', {
       name: 'Command action',
     }).parentElement!;
-    expect(getComputedStyle(row).color).toBe(getComputedStyle(command).color);
+    // Removing all row color styling exposes the native anchor's UA color.
+    if (styles.color !== false)
+      expect(getComputedStyle(row).color).toBe(getComputedStyle(command).color);
     expect(getComputedStyle(run).color).toBe(
       getComputedStyle(commandRun).color,
     );
@@ -1026,6 +1036,77 @@ describe('Menu navigation links', () => {
       getComputedStyle(commandRun).padding,
     );
   });
+
+  it.each(['currentcolor', 'inherit', 'unset', '#current', '#current.5'])(
+    'resolves Actions color %s against the row color',
+    (color) => {
+      const styles = {
+        color: '#purple-text',
+        Actions: { color },
+      };
+      render(
+        <Root>
+          <Menu aria-label="Destinations">
+            <Menu.Item
+              key="link"
+              to={destination}
+              theme="special"
+              styles={styles}
+              actions={<Menu.Item.Action>Link action</Menu.Item.Action>}
+            >
+              Link
+            </Menu.Item>
+            <Menu.Item
+              key="command"
+              theme="special"
+              styles={styles}
+              actions={<Menu.Item.Action>Command action</Menu.Item.Action>}
+            >
+              Command
+            </Menu.Item>
+          </Menu>
+        </Root>,
+      );
+      const run = screen.getByRole('button', {
+        name: 'Link action',
+      }).parentElement!;
+      const commandRun = screen.getByRole('button', {
+        name: 'Command action',
+      }).parentElement!;
+      expect(getComputedStyle(run).color).toBe(
+        getComputedStyle(commandRun).color,
+      );
+    },
+  );
+
+  it.each([{ '': 'relative', focused: '' }, { focused: '' }])(
+    'merges Actions defaults with a conditional style map: %o',
+    async (position) => {
+      render(
+        <Root>
+          <Menu aria-label="Destinations">
+            <Menu.Item
+              key="link"
+              to={destination}
+              styles={{ Actions: { position } }}
+              actions={<Menu.Item.Action>Delete</Menu.Item.Action>}
+            >
+              Destination
+            </Menu.Item>
+          </Menu>
+        </Root>,
+      );
+      const row = screen.getByRole('menuitem', { name: 'Destination' });
+      const run = screen.getByRole('button', { name: 'Delete' }).parentElement!;
+      expect(getComputedStyle(run).position).toBe(
+        position[''] ? 'relative' : 'absolute',
+      );
+      await act(() => row.focus());
+      await waitFor(() =>
+        expect(getComputedStyle(run).position).toBe('static'),
+      );
+    },
+  );
 
   it('shares style token declarations with sibling controls', () => {
     render(
