@@ -59,8 +59,9 @@ function collectItemKeys(nodes: Iterable<any>, keys: Key[] = []): Key[] {
 
 /**
  * The key an arrow press moves to: the next enabled key after `currentKey` in
- * `direction`, wrapping round to the first enabled one. With nothing focused,
- * or the focused key filtered out, it starts from the first enabled key.
+ * `direction`, wrapping round to the first enabled key in that direction (the
+ * last one going up). With nothing focused, or the focused key filtered out,
+ * it starts from that same key.
  */
 function getNextEnabledKey(
   keys: Key[],
@@ -68,13 +69,15 @@ function getNextEnabledKey(
   direction: 1 | -1,
   isDisabled: (key: Key) => boolean,
 ): Key | null {
-  const ordered = direction === 1 ? keys : [...keys].reverse();
   const isEnabled = (key: Key) => !isDisabled(key);
-  const start = currentKey == null ? -1 : ordered.indexOf(currentKey);
+  const index = currentKey == null ? -1 : keys.indexOf(currentKey);
+  const ahead =
+    direction === 1
+      ? keys.slice(index + 1)
+      : keys.slice(0, Math.max(index, 0)).reverse();
+  const ordered = direction === 1 ? keys : [...keys].reverse();
 
-  return (
-    ordered.slice(start + 1).find(isEnabled) ?? ordered.find(isEnabled) ?? null
-  );
+  return ahead.find(isEnabled) ?? ordered.find(isEnabled) ?? null;
 }
 
 export interface CommandMenuItem {
@@ -328,26 +331,10 @@ function CommandMenu<T extends object>(
   );
 
   // Helper function to find the first selectable item from filtered results
-  const findFirstSelectableItem = () => {
-    const { selectionManager } = treeState;
-
-    const visit = (items: any[]): Key | null => {
-      for (const node of items) {
-        if (node?.type === 'section') {
-          const childResult = visit(Array.from(node.childNodes ?? []));
-          if (childResult != null) return childResult;
-        } else if (
-          node?.type === 'item' &&
-          !selectionManager.isDisabled(node.key)
-        ) {
-          return node.key;
-        }
-      }
-      return null;
-    };
-
-    return visit(filteredCollectionItems);
-  };
+  const findFirstSelectableItem = () =>
+    collectItemKeys(filteredCollectionItems).find(
+      (key) => !treeState.selectionManager.isDisabled(key),
+    ) ?? null;
 
   // Create a ref for the menu container
   const menuRef = useRef<HTMLUListElement>(null);

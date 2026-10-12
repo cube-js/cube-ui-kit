@@ -229,6 +229,102 @@ describe('CommandMenu', () => {
     expect(onAction).toHaveBeenCalledWith('1');
   });
 
+  it('skips disabled items with arrow keys, including across the wrap', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <CommandMenu qa="TestMenu" disabledKeys={['2']}>
+        {items.map((item) => (
+          <CommandMenu.Item key={item.id} id={item.id}>
+            {item.textValue}
+          </CommandMenu.Item>
+        ))}
+      </CommandMenu>,
+    );
+
+    const searchInput = screen.getByPlaceholderText('Search commands...');
+    const expectFocused = (key: string) =>
+      expect(searchInput).toHaveAttribute(
+        'aria-activedescendant',
+        `TestMenu-menu-option-${key}`,
+      );
+
+    await user.click(searchInput);
+
+    await user.keyboard('{ArrowDown}');
+    expectFocused('1');
+    await user.keyboard('{ArrowDown}');
+    expectFocused('3');
+    await user.keyboard('{ArrowDown}');
+    expectFocused('1');
+    await user.keyboard('{ArrowUp}');
+    expectFocused('3');
+    await user.keyboard('{ArrowUp}');
+    expectFocused('1');
+  });
+
+  it('moves between sections with arrow keys', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <CommandMenu qa="TestMenu">
+        <CommandMenu.Section key="files" title="Files">
+          <CommandMenu.Item key="1">Create file</CommandMenu.Item>
+          <CommandMenu.Item key="2">Open folder</CommandMenu.Item>
+        </CommandMenu.Section>
+        <CommandMenu.Section key="documents" title="Documents">
+          <CommandMenu.Item key="3">Save document</CommandMenu.Item>
+        </CommandMenu.Section>
+      </CommandMenu>,
+    );
+
+    const searchInput = screen.getByPlaceholderText('Search commands...');
+    const expectFocused = (key: string) =>
+      expect(searchInput).toHaveAttribute(
+        'aria-activedescendant',
+        `TestMenu-menu-option-${key}`,
+      );
+
+    await user.click(searchInput);
+
+    await user.keyboard('{ArrowDown}{ArrowDown}{ArrowDown}');
+    expectFocused('3');
+    await user.keyboard('{ArrowDown}');
+    expectFocused('1');
+    await user.keyboard('{ArrowUp}');
+    expectFocused('3');
+    await user.keyboard('{ArrowUp}');
+    expectFocused('2');
+  });
+
+  it('triggers action with Space only while the search is empty', async () => {
+    const user = userEvent.setup();
+    const onAction = vi.fn();
+
+    render(
+      <CommandMenu onAction={onAction as any} {...({} as any)}>
+        {items.map((item) => (
+          <CommandMenu.Item key={item.id} id={item.id}>
+            {item.textValue}
+          </CommandMenu.Item>
+        ))}
+      </CommandMenu>,
+    );
+
+    const searchInput = screen.getByPlaceholderText('Search commands...');
+    await user.click(searchInput);
+
+    await user.keyboard('{ArrowDown} ');
+    expect(onAction).toHaveBeenCalledWith('1');
+
+    onAction.mockClear();
+    await user.type(searchInput, 'Create');
+    await user.keyboard(' ');
+
+    expect(onAction).not.toHaveBeenCalled();
+    expect(searchInput).toHaveValue('Create ');
+  });
+
   it('supports selection mode when explicitly set', async () => {
     const user = userEvent.setup();
     const onSelectionChange = vi.fn();
