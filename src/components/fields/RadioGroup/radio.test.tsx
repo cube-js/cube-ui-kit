@@ -3,6 +3,7 @@ import { createRef } from 'react';
 import { CheckIcon } from '../../../icons/CheckIcon';
 import {
   act,
+  fireEvent,
   hoverWithPointer,
   renderWithForm,
   renderWithRoot,
@@ -226,6 +227,218 @@ describe('<Radio /> and <RadioGroup />', () => {
 
       expect(onKeyDown).toHaveBeenCalledWith('Escape');
     });
+  });
+
+  // A disabled radio's tooltip is usually the reason it is disabled. A natively
+  // disabled input never takes focus, so only a mouse could read it.
+  describe('disabled radio with a tooltip (CUB-5387)', () => {
+    const GROUPS = [
+      ['button', Radio.ButtonGroup],
+      ['classic', Radio.Group],
+    ] as const;
+
+    function Options({ tooltip }: { tooltip?: string }) {
+      return (
+        <>
+          <Radio value="a" tooltip={tooltip}>
+            Alpha
+          </Radio>
+          <Radio value="b" tooltip={tooltip}>
+            Beta
+          </Radio>
+          <Radio value="c" tooltip={tooltip}>
+            Gamma
+          </Radio>
+        </>
+      );
+    }
+
+    it.each(GROUPS)(
+      'keeps a disabled %s radio focusable and opens its tooltip on focus',
+      async (_, Group) => {
+        renderWithRoot(
+          <Group isDisabled aria-label="Group">
+            <Radio value="a" tooltip="Not on this plan">
+              Alpha
+            </Radio>
+          </Group>,
+        );
+
+        await userEvent.tab();
+
+        const input = screen.getByRole('radio');
+
+        expect(input).toHaveFocus();
+        expect(input).not.toHaveAttribute('disabled');
+        expect(input).toHaveAttribute('aria-disabled', 'true');
+        expect(await screen.findByRole('tooltip')).toHaveTextContent(
+          'Not on this plan',
+        );
+      },
+    );
+
+    it.each(GROUPS)(
+      'gives a fully disabled %s group one tab stop',
+      async (_, Group) => {
+        renderWithRoot(
+          <>
+            <Group isDisabled aria-label="Group">
+              <Options tooltip="Not on this plan" />
+            </Group>
+            <button type="button">After</button>
+          </>,
+        );
+
+        const [alpha] = screen.getAllByRole('radio');
+
+        await userEvent.tab();
+        expect(alpha).toHaveFocus();
+
+        await userEvent.tab();
+        expect(screen.getByRole('button', { name: 'After' })).toHaveFocus();
+      },
+    );
+
+    it.each(GROUPS)(
+      'puts the tab stop of a disabled %s group on its selected radio',
+      async (_, Group) => {
+        renderWithRoot(
+          <Group isDisabled aria-label="Group" defaultValue="b">
+            <Options tooltip="Not on this plan" />
+          </Group>,
+        );
+
+        await userEvent.tab();
+
+        expect(screen.getAllByRole('radio')[1]).toHaveFocus();
+      },
+    );
+
+    // Two keyboard paths. With a visible label the group is a field and React
+    // Aria's arrow handler moves focus and selects; without one the browser's
+    // own radio navigation does, through a click.
+    describe.each([
+      ['a visible label', { label: 'Group' }],
+      ['only an aria-label', { 'aria-label': 'Group' }],
+    ] as const)('in a group with %s', (_, labelling) => {
+      it.each(GROUPS)(
+        'lets nothing change the selection of a disabled %s group',
+        async (_, Group) => {
+          const onChange = vi.fn();
+
+          renderWithRoot(
+            <Group
+              isDisabled
+              {...labelling}
+              defaultValue="a"
+              onChange={onChange}
+            >
+              <Options tooltip="Not on this plan" />
+            </Group>,
+          );
+
+          const [alpha, beta] = screen.getAllByRole('radio');
+
+          await userEvent.tab();
+          await userEvent.keyboard('{ArrowRight}');
+          expect(beta).toHaveFocus();
+          await userEvent.keyboard(' ');
+          await userEvent.click(beta);
+
+          expect(onChange).not.toHaveBeenCalled();
+          expect(alpha).toBeChecked();
+          expect(beta).not.toBeChecked();
+        },
+      );
+
+      it.each(GROUPS)(
+        'lets the arrow keys reach a disabled %s radio without selecting it',
+        async (_, Group) => {
+          const onChange = vi.fn();
+
+          renderWithRoot(
+            <Group {...labelling} defaultValue="a" onChange={onChange}>
+              <Radio value="a">Alpha</Radio>
+              <Radio isDisabled value="b" tooltip="Not on this plan">
+                Beta
+              </Radio>
+              <Radio value="c">Gamma</Radio>
+            </Group>,
+          );
+
+          const [alpha, beta, gamma] = screen.getAllByRole('radio');
+
+          await userEvent.tab();
+          await userEvent.keyboard('{ArrowDown}');
+
+          expect(beta).toHaveFocus();
+          expect(alpha).toBeChecked();
+          expect(await screen.findByRole('tooltip')).toHaveTextContent(
+            'Not on this plan',
+          );
+
+          await userEvent.keyboard(' ');
+          await userEvent.click(beta);
+          expect(onChange).not.toHaveBeenCalled();
+          expect(alpha).toBeChecked();
+
+          // On past it, the arrows select again.
+          await userEvent.keyboard('{ArrowDown}');
+          expect(gamma).toHaveFocus();
+          expect(onChange).toHaveBeenCalledWith('c');
+        },
+      );
+    });
+
+    // A click does not move focus in every browser (Safari): focus can stay on
+    // another group's disabled radio that has the clicked radio's value.
+    it.each(GROUPS)(
+      "lets a click select in one %s group while focus rests on another group's disabled radio",
+      async (_, Group) => {
+        const onChange = vi.fn();
+
+        renderWithRoot(
+          <>
+            <Group isDisabled aria-label="First">
+              <Options tooltip="Not on this plan" />
+            </Group>
+            <Group aria-label="Second" onChange={onChange}>
+              <Options />
+            </Group>
+          </>,
+        );
+
+        const radios = screen.getAllByRole('radio');
+
+        act(() => radios[0].focus());
+        fireEvent.click(radios[3]);
+
+        expect(radios[0]).toHaveFocus();
+        expect(onChange).toHaveBeenCalledWith('a');
+        expect(radios[3]).toBeChecked();
+      },
+    );
+
+    it.each(GROUPS)(
+      'leaves a disabled %s radio without a tooltip natively disabled',
+      async (_, Group) => {
+        renderWithRoot(
+          <>
+            <Group isDisabled aria-label="Group">
+              <Options />
+            </Group>
+            <button type="button">After</button>
+          </>,
+        );
+
+        for (const radio of screen.getAllByRole('radio')) {
+          expect(radio).toHaveAttribute('disabled');
+        }
+
+        await userEvent.tab();
+        expect(screen.getByRole('button', { name: 'After' })).toHaveFocus();
+      },
+    );
   });
 
   // The native input is not label content. Handed to `Item` as a child, it made

@@ -193,3 +193,69 @@ describe('Radio tooltip on keyboard focus', () => {
     await waitFor(() => expect(tooltipTexts()).toEqual(['Reject the change']));
   });
 });
+
+/**
+ * A disabled radio with a tooltip stays focusable, so the keyboard can read why
+ * it is disabled (CUB-5387). It must stay as inert as a natively disabled one.
+ *
+ * In a browser because these are the browser's own default actions: a click on
+ * the input laid over the button, Space, and — without a visible label, where
+ * React Aria's handler is absent — the arrow-key radio navigation that checks
+ * the next radio and fires a click on it.
+ */
+describe('Disabled Radio.Button with a tooltip', () => {
+  beforeAll(async () => {
+    await userEvent.hover(document.body);
+  });
+
+  it.each([
+    ['a visible label', { label: 'Answer' }],
+    ['only an aria-label', { 'aria-label': 'Answer' }],
+  ] as const)(
+    'is reached by the keyboard and never selected, in a group with %s',
+    async (_, labelling) => {
+      const onChange = vi.fn();
+
+      renderWithRoot(
+        <>
+          <button type="button">Before</button>
+          <Radio.ButtonGroup
+            {...labelling}
+            defaultValue="yes"
+            onChange={onChange}
+          >
+            <Radio.Button value="yes">Yes</Radio.Button>
+            <Radio.Button isDisabled value="no" tooltip="Not on this plan">
+              No
+            </Radio.Button>
+            <Radio.Button value="maybe">Maybe</Radio.Button>
+          </Radio.ButtonGroup>
+        </>,
+      );
+
+      const [yes, no, maybe] = screen.getAllByRole('radio');
+
+      screen.getByRole('button', { name: 'Before' }).focus();
+      await userEvent.keyboard('{Tab}');
+      await userEvent.keyboard('{ArrowRight}');
+
+      expect(no).toHaveFocus();
+      await waitFor(() => expect(tooltipTexts()).toEqual(['Not on this plan']));
+
+      await userEvent.keyboard(' ');
+      // Forced: Playwright waits for an `aria-disabled` element to become
+      // enabled before clicking it, and a user's click does not.
+      await userEvent.click(no, { force: true });
+
+      expect(yes).toBeChecked();
+      expect(no).not.toBeChecked();
+      expect(onChange).not.toHaveBeenCalled();
+
+      await userEvent.keyboard('{ArrowRight}');
+
+      expect(maybe).toHaveFocus();
+      expect(maybe).toBeChecked();
+      expect(onChange).toHaveBeenCalledWith('maybe');
+    },
+  );
+});

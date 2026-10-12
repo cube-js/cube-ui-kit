@@ -1,4 +1,4 @@
-import { useObjectRef } from '@react-aria/utils';
+import { getActiveElement, useObjectRef } from '@react-aria/utils';
 import {
   BaseProps,
   CONTAINER_STYLES,
@@ -6,9 +6,9 @@ import {
   Styles,
   tasty,
 } from '@tenphi/tasty';
-import { forwardRef } from 'react';
+import { forwardRef, useRef } from 'react';
 import { AriaRadioGroupProps, useFocusRing, useRadioGroup } from 'react-aria';
-import { useRadioGroupState } from 'react-stately';
+import { RadioGroupState, useRadioGroupState } from 'react-stately';
 
 import { FieldBaseProps } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
@@ -84,6 +84,25 @@ const RadioGroupElement = tasty({
   },
 });
 
+/**
+ * Whether focus rests on this group's radio with this value while it is
+ * disabled. Only a radio kept focusable for its tooltip can be: a natively
+ * disabled one never takes focus (see `Radio`). Another group may use the
+ * same values, and a click does not always move focus (Safari), so the radio
+ * has to be inside this group.
+ */
+function isFocusedDisabledRadio(group: Element | null, value: string | null) {
+  let element = getActiveElement();
+
+  return (
+    element instanceof HTMLInputElement &&
+    element.type === 'radio' &&
+    element.value === value &&
+    element.getAttribute('aria-disabled') === 'true' &&
+    group?.contains(element) === true
+  );
+}
+
 function RadioGroup(rawProps: WithNullableValue<CubeRadioGroupProps>, ref) {
   let orientation = rawProps.orientation;
 
@@ -114,7 +133,19 @@ function RadioGroup(rawProps: WithNullableValue<CubeRadioGroupProps>, ref) {
 
   styles = extractStyles(otherProps, CONTAINER_STYLES, styles);
 
-  let state = useRadioGroupState(props);
+  let groupRef = useRef<HTMLDivElement>(null);
+  let baseState = useRadioGroupState(props);
+  // The arrow keys focus the next radio and select it. A disabled radio that
+  // keeps focus for its tooltip is reached that way too, and has to stop the
+  // selection the way a read-only group does: focus moves, the value stays.
+  let state: RadioGroupState = {
+    ...baseState,
+    setSelectedValue(value) {
+      if (!isFocusedDisabledRadio(groupRef.current, value)) {
+        baseState.setSelectedValue(value);
+      }
+    },
+  };
 
   // Set default orientation based on type
   if (orientation == null) {
@@ -138,6 +169,7 @@ function RadioGroup(rawProps: WithNullableValue<CubeRadioGroupProps>, ref) {
 
   let radioGroup = (
     <RadioGroupElement
+      ref={groupRef}
       id={id}
       qa={qa || 'RadioGroup'}
       styles={styles}

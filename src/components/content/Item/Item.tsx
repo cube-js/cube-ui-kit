@@ -232,11 +232,16 @@ export interface CubeItemProps extends BaseProps, ContainerStyleProps {
    * As a function it renders the element that takes focus, and receives the
    * tooltip's focus-side trigger props to put on it (see
    * `splitTooltipTriggerProps`): focus lands on that input, not on the item,
-   * so on the item they would never open the tooltip from the keyboard.
+   * so on the item they would never open the tooltip from the keyboard. It
+   * also learns whether the tooltip can open, which decides whether a
+   * disabled input has to keep its focus (see `getDisabledElementProps`).
    */
   hiddenContent?:
     | ReactNode
-    | ((tooltipFocusProps: TooltipFocusProps) => ReactNode);
+    | ((
+        tooltipFocusProps: TooltipFocusProps,
+        isTooltipActive: boolean,
+      ) => ReactNode);
   /**
    * @private
    * The label's room changes over the item's life — a radio tab in a
@@ -1105,7 +1110,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
         style={style}
       >
         {typeof hiddenContent === 'function'
-          ? hiddenContent(tooltipFocusProps ?? {})
+          ? hiddenContent(tooltipFocusProps ?? {}, isTooltipActive)
           : hiddenContent}
         {iconSlot.hasSlot && (
           <div data-element="Icon">
