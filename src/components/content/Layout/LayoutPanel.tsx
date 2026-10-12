@@ -554,14 +554,18 @@ function LayoutPanel(
   );
 
   // Resolve user's maxSize to pixels for JS-level clamping.
-  // String values (e.g. "50%") can only be resolved once we know the container size.
+  // Percentage bounds belong to the inline host, not the dialog's host.
   const resolvedMax = useMemo(() => {
     if (typeof maxSize === 'number') return maxSize;
-    if (typeof maxSize === 'string' && containerDimension > 0) {
+    if (
+      typeof maxSize === 'string' &&
+      containerDimension > 0 &&
+      (!isDialogMode || !maxSize.trim().endsWith('%'))
+    ) {
       return resolveCssSize(maxSize, containerDimension);
     }
     return undefined;
-  }, [maxSize, containerDimension]);
+  }, [maxSize, containerDimension, isDialogMode]);
 
   // Effective max combines user's maxSize with natural boundary
   const effectiveMax = useMemo(() => {
@@ -581,12 +585,12 @@ function LayoutPanel(
 
   const { moveProps } = useMove({
     onMoveStart() {
-      if (!isResizable) return;
+      if (!isResizable || isDialogMode) return;
       setIsDragging(true);
       setContextDragging(true);
     },
     onMove(e) {
-      if (!isResizable) return;
+      if (!isResizable || isDialogMode) return;
 
       let delta: number;
 

@@ -363,12 +363,13 @@ describe('Layout.Panel dialog size preservation', () => {
   });
 
   it.each([
-    [550, 550],
-    [900, 800],
-    [100, 300],
-  ])(
-    'applies controlled dialog size %s within explicit bounds',
-    async (size, expected) => {
+    [550, 800, 550],
+    [900, 800, 800],
+    [100, 800, 300],
+    [550, '50%', 550],
+  ] as const)(
+    'applies controlled dialog size %s within maximum %s',
+    async (size, maxSize, expected) => {
       await page.viewport(1440, 900);
       const onSizeChange = vi.fn();
       const view = renderWithRoot(
@@ -376,6 +377,7 @@ describe('Layout.Panel dialog size preservation', () => {
           width={390}
           mode="dialog"
           size={400}
+          maxSize={maxSize}
           onSizeChange={onSizeChange}
         />,
       );
@@ -385,6 +387,7 @@ describe('Layout.Panel dialog size preservation', () => {
           width={390}
           mode="dialog"
           size={size}
+          maxSize={maxSize}
           onSizeChange={onSizeChange}
         />,
       );
@@ -393,6 +396,7 @@ describe('Layout.Panel dialog size preservation', () => {
         <SizedPanelLayout
           width={1440}
           size={size}
+          maxSize={maxSize}
           onSizeChange={onSizeChange}
         />,
       );
@@ -402,6 +406,85 @@ describe('Layout.Panel dialog size preservation', () => {
       expect(localStorage.getItem(DIALOG_SIZE_KEY)).toBeNull();
     },
   );
+
+  it('ends an inline drag at its last visible size when switching to dialog', async () => {
+    await page.viewport(1440, 900);
+    const onSizeChange = vi.fn();
+    const view = renderWithRoot(
+      <SizedPanelLayout width={1440} onSizeChange={onSizeChange} />,
+    );
+    await settleLayout(1440);
+    const rect = screen.getByRole('separator').getBoundingClientRect();
+    const x = rect.x + rect.width / 2;
+    const y = rect.y + rect.height / 2;
+    await act(async () => {
+      screen.getByRole('separator').dispatchEvent(
+        new PointerEvent('pointerdown', {
+          bubbles: true,
+          clientX: x,
+          clientY: y,
+          button: 0,
+          buttons: 1,
+          pointerId: 4,
+          pointerType: 'mouse',
+        }),
+      );
+      window.dispatchEvent(
+        new PointerEvent('pointermove', {
+          bubbles: true,
+          clientX: x - 10,
+          clientY: y,
+          buttons: 1,
+          pointerId: 4,
+          pointerType: 'mouse',
+        }),
+      );
+    });
+    await waitFor(() =>
+      expect(screen.getByTestId('sized-panel').offsetWidth).toBe(410),
+    );
+    view.rerender(
+      <SizedPanelLayout
+        width={390}
+        mode="dialog"
+        onSizeChange={onSizeChange}
+      />,
+    );
+    await settleLayout(390);
+    expect(screen.queryByRole('separator')).toBeNull();
+    await act(async () => {
+      window.dispatchEvent(
+        new PointerEvent('pointermove', {
+          bubbles: true,
+          clientX: x - 50,
+          clientY: y,
+          buttons: 1,
+          pointerId: 4,
+          pointerType: 'mouse',
+        }),
+      );
+    });
+    await act(async () => {
+      window.dispatchEvent(
+        new PointerEvent('pointerup', {
+          bubbles: true,
+          clientX: x - 50,
+          clientY: y,
+          button: 0,
+          buttons: 0,
+          pointerId: 4,
+          pointerType: 'mouse',
+        }),
+      );
+    });
+    view.rerender(
+      <SizedPanelLayout width={1440} onSizeChange={onSizeChange} />,
+    );
+    await settleLayout(1440);
+    expect(screen.getByTestId('sized-panel').offsetWidth).toBe(410);
+    expect(localStorage.getItem(DIALOG_SIZE_KEY)).toBe('410');
+    expect(onSizeChange).toHaveBeenCalledExactlyOnceWith(410);
+  });
 
   it('applies a new controlled size when returning from a narrow dialog host', async () => {
     await page.viewport(1440, 900);
