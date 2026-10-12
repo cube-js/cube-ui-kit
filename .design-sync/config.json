@@ -76,9 +76,6 @@
     "ListBox": {
       "cardMode": "column"
     },
-    "Board": {
-      "cardMode": "column"
-    },
     "Tabs": {
       "cardMode": "column"
     },

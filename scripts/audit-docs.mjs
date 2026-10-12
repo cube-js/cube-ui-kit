@@ -826,8 +826,8 @@ async function readTsxFile(filePath) {
  *
  * A component that repurposes a style prop for something else omits it from the
  * style-prop interface and destructures it as an ordinary prop, so it never
- * reaches `extractStyles` — `Board`'s `margin` is the grid gap, not a CSS
- * margin. The `extractStyles` call still names the full style list, so without
+ * reaches `extractStyles` — a grid whose `margin` is the gap between cells,
+ * not a CSS margin. The `extractStyles` call still names the full style list, so without
  * this the audit would demand the docs list a prop the component does not
  * accept.
  */

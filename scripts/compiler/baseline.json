@@ -1080,72 +1080,6 @@
     },
     "optOuts": 0
   },
-  "src/components/layout/Board/Board.tsx": {
-    "compiled": 1,
-    "diagnostics": {
-      "Suppression": 2
-    },
-    "optOuts": 0
-  },
-  "src/components/layout/Board/BoardProvider.tsx": {
-    "compiled": 0,
-    "diagnostics": {
-      "Refs": 3
-    },
-    "optOuts": 0
-  },
-  "src/components/layout/Board/BoardResponsive.tsx": {
-    "compiled": 0,
-    "diagnostics": {
-      "Suppression": 2
-    },
-    "optOuts": 0
-  },
-  "src/components/layout/Board/Widget.tsx": {
-    "compiled": 0,
-    "diagnostics": {
-      "Suppression": 1
-    },
-    "optOuts": 0
-  },
-  "src/components/layout/Board/WidgetHost.tsx": {
-    "compiled": 1,
-    "diagnostics": {
-      "Refs": 1
-    },
-    "optOuts": 0
-  },
-  "src/components/layout/Board/board-context.tsx": {
-    "compiled": 6,
-    "diagnostics": {},
-    "optOuts": 0
-  },
-  "src/components/layout/Board/use-board-layout.ts": {
-    "compiled": 0,
-    "diagnostics": {
-      "Refs": 1
-    },
-    "optOuts": 0
-  },
-  "src/components/layout/Board/use-board-registry.ts": {
-    "compiled": 0,
-    "diagnostics": {
-      "Refs": 1
-    },
-    "optOuts": 0
-  },
-  "src/components/layout/Board/use-board-select-modifier-key.ts": {
-    "compiled": 1,
-    "diagnostics": {},
-    "optOuts": 0
-  },
-  "src/components/layout/Board/use-board-selection.ts": {
-    "compiled": 0,
-    "diagnostics": {
-      "Refs": 1
-    },
-    "optOuts": 0
-  },
   "src/components/layout/Flex.tsx": {
     "compiled": 1,
     "diagnostics": {},
@@ -1193,6 +1127,11 @@
   },
   "src/components/navigation/Pagination/use-pagination.ts": {
     "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/navigation/Tabs/BoardDragActiveProvider.tsx": {
+    "compiled": 2,
     "diagnostics": {},
     "optOuts": 0
   },

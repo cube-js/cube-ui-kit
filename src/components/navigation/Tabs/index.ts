@@ -1,4 +1,5 @@
 export { Tabs, Tab, TabsAction } from './Tabs';
+export { BoardDragActiveProvider } from './BoardDragActiveProvider';
 export type {
   CubeTabsProps,
   CubeTabProps,
@@ -10,3 +11,4 @@ export type {
   TabsActionPosition,
 } from './types';
 export type { CubeTabsActionProps } from './TabsAction';
+export type { CubeBoardDragActiveProviderProps } from './BoardDragActiveProvider';

@@ -20,8 +20,8 @@ export interface ColumnResizerProps<T> {
  *
  * `useMove` rather than raw pointer events: it normalises pointer, touch and
  * **keyboard** into one stream, so arrow keys resize without any extra work —
- * an affordance ag-grid never gave Cloud. The same hook drives `Board`'s widget
- * resizing, so the interaction model matches.
+ * an affordance ag-grid never gave Cloud. The same hook drives `ResizablePanel`,
+ * so the interaction model matches.
  */
 export function ColumnResizer<T>(props: ColumnResizerProps<T>) {
   const { column, label, onResize, onResizeEnd } = props;

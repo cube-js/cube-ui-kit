@@ -52,54 +52,6 @@ export { Panel } from './components/layout/Panel';
 export type { CubePanelProps } from './components/layout/Panel';
 export { ResizablePanel } from './components/layout/ResizablePanel';
 export type { CubeResizablePanelProps } from './components/layout/ResizablePanel';
-export {
-  Board,
-  BoardDragActiveProvider,
-  BoardProvider,
-  BoardResponsive,
-  BoardWidget,
-  verticalCompactor,
-  horizontalCompactor,
-  noCompactor,
-  getCompactor,
-  gridBounds,
-  minMaxSize,
-  containerBounds,
-  boundedX,
-  boundedY,
-  aspectRatio,
-  snapToGrid,
-  minSize,
-  maxSize,
-  placeInFreeSlot,
-  distributeEvenly,
-  BOARD_SELECTION_CANCEL,
-} from './components/layout/Board';
-export type {
-  CubeBoardProps,
-  BoardSelectionMode,
-  CubeBoardWidgetProps,
-  CubeBoardDragActiveProviderProps,
-  CubeBoardProviderProps,
-  CubeBoardResponsiveProps,
-  BoardCompactType,
-  BoardGridLines,
-  BoardInteractionInfo,
-  BoardBreakpoints,
-  BoardBreakpointCols,
-  BoardResponsiveLayouts,
-  Layout as BoardLayout,
-  LayoutItem as BoardLayoutItem,
-  ResizeHandleAxis as BoardResizeHandleAxis,
-  BoardResizeGripPlacement,
-  BoardCornerPlacement,
-  BoardLayoutChangeInfo,
-  BoardLayoutChangeReason,
-  CollisionMode as BoardCollisionMode,
-  Compactor as BoardCompactor,
-  LayoutConstraint as BoardLayoutConstraint,
-  WidgetTransferInfo as BoardWidgetTransferInfo,
-} from './components/layout/Board';
 export { Root } from './components/Root';
 export type { CubeRootProps } from './components/Root';
 export { DisplayTransition } from './components/helpers/DisplayTransition/DisplayTransition';
