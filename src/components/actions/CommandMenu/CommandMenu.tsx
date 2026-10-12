@@ -7,7 +7,14 @@ import {
   filterBaseProps,
   Styles,
 } from '@tenphi/tasty';
-import React, { ReactElement, ReactNode, Ref, useRef, useState } from 'react';
+import React, {
+  KeyboardEvent,
+  ReactElement,
+  ReactNode,
+  Ref,
+  useRef,
+  useState,
+} from 'react';
 import { useFilter, useMenu } from 'react-aria';
 import { Section, useTreeState } from 'react-stately';
 
@@ -36,6 +43,39 @@ import {
   StyledLoadingWrapper,
   StyledSearchInput,
 } from './styled';
+
+/** The keys of the items in `nodes`, in order, including those in sections. */
+function collectItemKeys(nodes: Iterable<any>, keys: Key[] = []): Key[] {
+  for (const node of nodes) {
+    if (node?.type === 'section') {
+      collectItemKeys(node.childNodes ?? [], keys);
+    } else if (node?.type === 'item') {
+      keys.push(node.key);
+    }
+  }
+
+  return keys;
+}
+
+/**
+ * The key an arrow press moves to: the next enabled key after `currentKey` in
+ * `direction`, wrapping round to the first enabled one. With nothing focused,
+ * or the focused key filtered out, it starts from the first enabled key.
+ */
+function getNextEnabledKey(
+  keys: Key[],
+  currentKey: Key | null,
+  direction: 1 | -1,
+  isDisabled: (key: Key) => boolean,
+): Key | null {
+  const ordered = direction === 1 ? keys : [...keys].reverse();
+  const isEnabled = (key: Key) => !isDisabled(key);
+  const start = currentKey == null ? -1 : ordered.indexOf(currentKey);
+
+  return (
+    ordered.slice(start + 1).find(isEnabled) ?? ordered.find(isEnabled) ?? null
+  );
+}
 
 export interface CommandMenuItem {
   // Standard item props
@@ -434,6 +474,78 @@ function CommandMenu<T extends object>(
     prevSearchValueRef.current = currentSearchValue;
   }, [searchValue, findFirstSelectableItem, hasFilteredItems]);
 
+  // ---- search input keyboard ----------------------------------------------
+  const handleArrowKey = (e: KeyboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+
+    const { selectionManager } = treeState;
+    // Use the ref to get the current focused key synchronously
+    const currentKey = focusedKeyRef.current || selectionManager.focusedKey;
+    const nextKey = getNextEnabledKey(
+      collectItemKeys(filteredCollectionItems),
+      currentKey,
+      e.key === 'ArrowDown' ? 1 : -1,
+      (key) => selectionManager.isDisabled(key),
+    );
+
+    if (nextKey != null) {
+      selectionManager.setFocusedKey(nextKey);
+      setFocusedKey(nextKey);
+      focusedKeyRef.current = nextKey; // Update ref immediately
+    }
+  };
+
+  // Default behavior: trigger the menu's action and the item's own.
+  const triggerAction = (key: Key) => {
+    const node = treeState.collection.getItem(key);
+
+    if (!node) return;
+
+    // Call the tree state's action handler
+    const onAction = (completeProps as any).onAction;
+    if (onAction) {
+      onAction(key);
+    }
+    // Also call the item's individual onAction if it exists
+    if (node.props?.onAction) {
+      node.props.onAction(key);
+    }
+  };
+
+  // Runs the focused item, like Menu does: selects it when the menu has a
+  // selection mode, otherwise triggers its action.
+  const handleActionKey = (e: KeyboardEvent<HTMLInputElement>) => {
+    const currentFocusedKey =
+      focusedKey || treeState.selectionManager.focusedKey;
+
+    if (currentFocusedKey == null) return;
+
+    e.preventDefault();
+
+    if (treeState.selectionManager.selectionMode !== 'none') {
+      treeState.selectionManager.select(currentFocusedKey);
+    } else {
+      triggerAction(currentFocusedKey);
+    }
+
+    // Close the menu if we're in a trigger context and closeOnSelect is enabled (default behavior)
+    const { onClose, closeOnSelect } = contextProps;
+    if (onClose && closeOnSelect !== false) {
+      onClose();
+    }
+  };
+
+  const handleSearchKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      handleArrowKey(e);
+    } else if (e.key === 'Enter' || (e.key === ' ' && !searchValue.trim())) {
+      handleActionKey(e);
+    } else if (e.key === 'Escape' && searchValue) {
+      e.preventDefault();
+      handleSearchChange('');
+    }
+  };
+
   // Extract styles
   const extractedStyles = extractStyles(props, CONTAINER_STYLES);
 
@@ -491,156 +603,7 @@ function CommandMenu<T extends object>(
             : undefined
         }
         onChange={(e) => handleSearchChange(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-            e.preventDefault();
-
-            const isArrowDown = e.key === 'ArrowDown';
-            const { selectionManager } = treeState;
-            // Use the ref to get the current focused key synchronously
-            const currentKey =
-              focusedKeyRef.current || selectionManager.focusedKey;
-
-            // Helper function to get all visible item keys accounting for sections
-            const getVisibleItemKeys = (): Key[] => {
-              const keys: Key[] = [];
-
-              const visit = (items: any[]) => {
-                for (const node of items) {
-                  if (node?.type === 'section') {
-                    visit(Array.from(node.childNodes ?? []));
-                  } else if (node?.type === 'item') {
-                    keys.push(node.key);
-                  }
-                }
-              };
-
-              visit(filteredCollectionItems);
-              return keys;
-            };
-
-            // Helper function to find next selectable key in a direction
-            const findNextSelectableKey = (
-              currentIndex: number,
-              direction: 'forward' | 'backward',
-              visibleKeys: Key[],
-            ) => {
-              const increment = direction === 'forward' ? 1 : -1;
-
-              for (
-                let i = currentIndex + increment;
-                i >= 0 && i < visibleKeys.length;
-                i += increment
-              ) {
-                const key = visibleKeys[i];
-                if (!selectionManager.isDisabled(key)) {
-                  return key;
-                }
-              }
-
-              return null;
-            };
-
-            // Helper function to find first or last selectable key
-            const findFirstLastSelectableKey = (
-              direction: 'forward' | 'backward',
-              visibleKeys: Key[],
-            ) => {
-              const keysToCheck =
-                direction === 'forward'
-                  ? visibleKeys
-                  : [...visibleKeys].reverse();
-
-              for (const key of keysToCheck) {
-                if (!selectionManager.isDisabled(key)) {
-                  return key;
-                }
-              }
-
-              return null;
-            };
-
-            const visibleKeys = getVisibleItemKeys();
-
-            if (visibleKeys.length === 0) {
-              return; // No visible items to navigate
-            }
-
-            let nextKey;
-            const direction = isArrowDown ? 'forward' : 'backward';
-
-            if (currentKey == null) {
-              // No current focus, start from the first/last item
-              nextKey = findFirstLastSelectableKey(direction, visibleKeys);
-            } else {
-              // Find current position in visible keys
-              const currentIndex = visibleKeys.indexOf(currentKey);
-
-              if (currentIndex === -1) {
-                // Current key not in visible items, start from beginning/end
-                nextKey = findFirstLastSelectableKey(direction, visibleKeys);
-              } else {
-                // Find next selectable item from current position
-                nextKey = findNextSelectableKey(
-                  currentIndex,
-                  direction,
-                  visibleKeys,
-                );
-
-                // If no next key found, wrap to first/last selectable item
-                if (nextKey == null) {
-                  nextKey = findFirstLastSelectableKey(direction, visibleKeys);
-                }
-              }
-            }
-
-            if (nextKey != null) {
-              selectionManager.setFocusedKey(nextKey);
-              setFocusedKey(nextKey);
-              focusedKeyRef.current = nextKey; // Update ref immediately
-            }
-          } else if (
-            e.key === 'Enter' ||
-            (e.key === ' ' && !searchValue.trim())
-          ) {
-            const currentFocusedKey =
-              focusedKey || treeState.selectionManager.focusedKey;
-            if (currentFocusedKey != null) {
-              e.preventDefault();
-
-              // Trigger action for the focused item (like Menu does)
-              // First check if there's a selection mode, if so, handle selection
-              if (treeState.selectionManager.selectionMode !== 'none') {
-                treeState.selectionManager.select(currentFocusedKey);
-              } else {
-                // Default behavior: trigger action
-                const node = treeState.collection.getItem(currentFocusedKey);
-                if (node) {
-                  // Call the tree state's action handler
-                  const onAction = (completeProps as any).onAction;
-                  if (onAction) {
-                    onAction(currentFocusedKey);
-                  }
-                  // Also call the item's individual onAction if it exists
-                  if (node.props?.onAction) {
-                    node.props.onAction(currentFocusedKey);
-                  }
-                }
-              }
-
-              // Close the menu if we're in a trigger context and closeOnSelect is enabled (default behavior)
-              const { onClose, closeOnSelect } = contextProps;
-              if (onClose && closeOnSelect !== false) {
-                onClose();
-              }
-            }
-          } else if (e.key === 'Escape') {
-            if (searchValue) {
-              e.preventDefault();
-              handleSearchChange('');
-            }
-          }
-        }}
+        onKeyDown={handleSearchKeyDown}
       />
 
       {/* Loading State */}
