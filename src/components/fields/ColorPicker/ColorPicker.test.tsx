@@ -5,11 +5,34 @@ import {
   renderWithRoot,
   userEvent,
   waitFor,
+  within,
 } from '../../../test';
 
 import { ColorPicker } from './ColorPicker';
 
 vi.mock('../../../_internal/hooks/use-warn');
+
+/**
+ * The colour-space tabs keep their hints while disabled, so they stay
+ * focusable and are only `aria-disabled` (see `Radio`); a click leaves the
+ * space as it was. The swatches have no tooltip and are natively disabled.
+ */
+async function expectPanelRadiosLocked(getByRole) {
+  const palette = within(getByRole('radiogroup', { name: 'Palette' }));
+
+  for (const swatch of palette.getAllByRole('radio')) {
+    expect(swatch).toBeDisabled();
+  }
+
+  const spaces = within(getByRole('radiogroup', { name: 'Color space' }));
+
+  for (const space of spaces.getAllByRole('radio')) {
+    expect(space).toHaveAttribute('aria-disabled', 'true');
+  }
+
+  await userEvent.click(spaces.getByRole('radio', { name: 'RGB' }));
+  expect(spaces.getByRole('radio', { name: 'HST' })).toBeChecked();
+}
 
 describe('<ColorPicker />', () => {
   const openPopover = async (getByRole) => {
@@ -190,9 +213,7 @@ describe('<ColorPicker />', () => {
       expect(slider).toBeDisabled();
     }
 
-    for (const swatch of getAllByRole('radio')) {
-      expect(swatch).toBeDisabled();
-    }
+    await expectPanelRadiosLocked(getByRole);
   }, 10000);
 
   it('leaves an open panel uneditable while loading', async () => {
@@ -214,9 +235,7 @@ describe('<ColorPicker />', () => {
       expect(slider).toBeDisabled();
     }
 
-    for (const swatch of getAllByRole('radio')) {
-      expect(swatch).toBeDisabled();
-    }
+    await expectPanelRadiosLocked(getByRole);
 
     expect(getAllByRole('textbox')[0]).toBeDisabled();
   }, 10000);
