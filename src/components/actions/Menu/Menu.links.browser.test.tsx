@@ -1,3 +1,4 @@
+import pointerUserEvent from '@testing-library/user-event';
 import { useRef, useState } from 'react';
 import { RouterProvider, useLink } from 'react-aria';
 import {
@@ -692,7 +693,7 @@ describe('Menu navigation links', () => {
     render(
       <Root>
         <Menu aria-label="Destinations">
-          <Menu.Item key="reload" to="@">
+          <Menu.Item key="reload" to="@" target="_blank">
             Reload
           </Menu.Item>
           <Menu.Item key="command" to="">
@@ -704,10 +705,51 @@ describe('Menu navigation links', () => {
     expect(screen.getByRole('menuitem', { name: 'Reload' }).tagName).toBe('A');
     expect(screen.getByRole('menuitem', { name: 'Reload' })).toHaveAttribute(
       'href',
-      '.',
+      '',
     );
+    expect(
+      (screen.getByRole('menuitem', { name: 'Reload' }) as HTMLAnchorElement)
+        .href,
+    ).toBe(location.href.split('#')[0]);
     expect(screen.getByRole('menuitem', { name: 'Command' }).tagName).toBe(
       'LI',
+    );
+  });
+
+  it('preserves direct color style-prop precedence on sibling controls', () => {
+    render(
+      <Root>
+        <Menu aria-label="Destinations">
+          <Menu.Item
+            key="link"
+            to={destination}
+            color="#purple"
+            styles={{ color: '#danger-text' }}
+            actions={<Menu.Item.Action>Link action</Menu.Item.Action>}
+          >
+            Link
+          </Menu.Item>
+          <Menu.Item
+            key="command"
+            color="#purple"
+            styles={{ color: '#danger-text' }}
+            actions={<Menu.Item.Action>Command action</Menu.Item.Action>}
+          >
+            Command
+          </Menu.Item>
+        </Menu>
+      </Root>,
+    );
+    const row = screen.getByRole('menuitem', { name: 'Link' });
+    const linkRun = screen.getByRole('button', {
+      name: 'Link action',
+    }).parentElement!;
+    const commandRun = screen.getByRole('button', {
+      name: 'Command action',
+    }).parentElement!;
+    expect(getComputedStyle(linkRun).color).toBe(getComputedStyle(row).color);
+    expect(getComputedStyle(linkRun).color).toBe(
+      getComputedStyle(commandRun).color,
     );
   });
 
@@ -765,5 +807,47 @@ describe('Menu navigation links', () => {
     expect(getComputedStyle(colorRun).color).toBe(
       getComputedStyle(colorRow).color,
     );
+  });
+
+  it('keeps sibling color and Actions maps in the row press state', async () => {
+    render(
+      <Root navigation={{ useHref: String, useNavigate: () => vi.fn() }}>
+        <Menu aria-label="Destinations">
+          <Menu.Item
+            key="link"
+            to={destination}
+            styles={{
+              color: { '': '#purple-text', pressed: '#danger-text' },
+              Actions: { padding: { '': '0x', pressed: '2x' } },
+            }}
+            actions={<Menu.Item.Action>Delete</Menu.Item.Action>}
+          >
+            Destination
+          </Menu.Item>
+        </Menu>
+      </Root>,
+    );
+    const row = screen.getByRole('menuitem', { name: 'Destination' });
+    const run = screen.getByRole('button', { name: 'Delete' }).parentElement!;
+    const restingColor = getComputedStyle(row).color;
+    const pointer = pointerUserEvent.setup();
+    await act(() => pointer.pointer({ keys: '[MouseLeft>]', target: row }));
+    try {
+      await waitFor(
+        () => {
+          expect(row).toHaveAttribute('data-pressed');
+          expect(getComputedStyle(row).color).not.toBe(restingColor);
+          expect(getComputedStyle(run).color).toBe(getComputedStyle(row).color);
+          expect(getComputedStyle(run).padding).toBe('16px');
+        },
+        { timeout: 1000 },
+      );
+    } finally {
+      await act(() => pointer.pointer({ keys: '[/MouseLeft]', target: row }));
+    }
+    await waitFor(() => {
+      expect(row).not.toHaveAttribute('data-pressed');
+      expect(getComputedStyle(run).padding).toBe('0px');
+    });
   });
 });

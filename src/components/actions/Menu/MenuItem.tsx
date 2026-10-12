@@ -1,7 +1,13 @@
 import { openLink } from '@react-aria/utils';
 import { FocusableElement, Key, Node } from '@react-types/shared';
 import { mergeStyles, Styles } from '@tenphi/tasty';
-import { AnchorHTMLAttributes, KeyboardEvent, useContext, useRef } from 'react';
+import {
+  AnchorHTMLAttributes,
+  KeyboardEvent,
+  useContext,
+  useRef,
+  useState,
+} from 'react';
 import { FocusRing, RouterProvider, useMenuItem } from 'react-aria';
 import { TreeState } from 'react-stately';
 
@@ -47,6 +53,7 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
 }
 
 function MenuLinkItem<T>(props: MenuItemProps<T>) {
+  const [isPressed, setIsPressed] = useState(false);
   const { to, href, navigationOptions } = props.item.props;
   const { cleanTo: parsedTo, nativeRoute } = parseTo(to);
   const isCurrentDocument = props.item.props[CURRENT_DOCUMENT_LINK];
@@ -56,11 +63,12 @@ function MenuLinkItem<T>(props: MenuItemProps<T>) {
     isExternal ? '.' : cleanTo || '.',
     { relative: navigationOptions?.relative },
   );
-  const linkHref = isCurrentDocument
-    ? ''
-    : isExternal
-      ? String(cleanTo)
-      : resolvedHref;
+  const linkHref =
+    isCurrentDocument || (nativeRoute && cleanTo === '')
+      ? ''
+      : isExternal
+        ? String(cleanTo)
+        : resolvedHref;
   const itemProps = props.item.props;
   const isDisabled =
     props.state.selectionManager.isDisabled(props.item.key) ||
@@ -71,8 +79,11 @@ function MenuLinkItem<T>(props: MenuItemProps<T>) {
     itemProps.styles,
     props.styles,
   );
-  // eslint-disable-next-line tasty/valid-sub-element -- Forward the consumer's typed slot to the sibling run that owns it.
-  const wrapperStyles = { color: rowStyles.color, Actions: actionStyles };
+  const wrapperStyles = {
+    color: itemProps.color !== undefined ? itemProps.color : rowStyles.color,
+    // eslint-disable-next-line tasty/valid-sub-element -- Forward the consumer's typed slot to the sibling run that owns it.
+    Actions: actionStyles,
+  };
   return (
     <StyledLinkItem role="none">
       <ItemActionsWrapper
@@ -89,6 +100,7 @@ function MenuLinkItem<T>(props: MenuItemProps<T>) {
         mods={{
           ...itemProps.mods,
           focused: isVirtualFocused,
+          pressed: isPressed,
           selected: props.state.selectionManager.isSelected(props.item.key),
         }}
       >
@@ -108,6 +120,7 @@ function MenuLinkItem<T>(props: MenuItemProps<T>) {
               styles={rowStyles}
               showActions={showActions}
               skipActionsWidthTransition={skipActionsWidthTransition}
+              onPressChange={setIsPressed}
             />
           </RouterProvider>
         )}
@@ -120,6 +133,7 @@ function MenuItemContent<T>(
   props: MenuItemProps<T> & {
     showActions?: boolean;
     skipActionsWidthTransition?: boolean;
+    onPressChange?: (isPressed: boolean) => void;
   },
 ) {
   const {
@@ -190,6 +204,7 @@ function MenuItemContent<T>(
       closeOnSelect: submenuContext ? false : closeOnSelect, // Don't close on submenu trigger selection
       isVirtualized,
       onAction: submenuContext?.onAction || onAction,
+      onPressChange: props.onPressChange,
     },
     state,
     elementRef,
