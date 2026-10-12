@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.192.1
+
+### Patch Changes
+
+- [#1496](https://github.com/cube-js/cube-ui-kit/pull/1496) [`bdc1cc70`](https://github.com/cube-js/cube-ui-kit/commit/bdc1cc70ad2b0bab7bcbbe687240a3c2ee2db3ec) Thanks [@tenphi](https://github.com/tenphi)! - Preserve inline Layout.Panel sizes when switching to dialog mode or resizing the dialog's host.
+
+- [#1497](https://github.com/cube-js/cube-ui-kit/pull/1497) [`c076ab70`](https://github.com/cube-js/cube-ui-kit/commit/c076ab7027e18900fb64c4cf671f65bcc828aaaa) Thanks [@tenphi](https://github.com/tenphi)! - Reduce ItemTable and DataTable scrolling work by retaining virtual row keys and unchanged default cell text, and skip row-position reads while movement animation is disabled. Keep virtual height estimates and tooltip overflow detection current when row sizes, text or inherited table styling change.
+
 ## 0.192.0
 
 ### Minor Changes
