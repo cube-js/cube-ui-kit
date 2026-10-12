@@ -36,7 +36,7 @@ import {
 import { useRadioProvider } from './context';
 import { RadioGroup } from './RadioGroup';
 
-import type { ChangeEvent } from 'react';
+import type { ChangeEvent, KeyboardEvent } from 'react';
 import type { AriaRadioProps } from 'react-aria';
 import type { RadioGroupState } from 'react-stately';
 
@@ -218,6 +218,38 @@ function getRovingTabIndex(state: RadioGroupState, value: string) {
  */
 function ignoreChange(event: ChangeEvent) {
   event.stopPropagation();
+}
+
+/**
+ * Tab leaves the group from a focused disabled radio, as it does from the
+ * group's tab stop, the selected radio. Left to itself the browser would stop
+ * on the selected radio first: focus moves there, and the key's default
+ * action, or a surrounding `FocusScope`, carries on from it.
+ */
+function leaveGroupOnTab(
+  event: KeyboardEvent<HTMLInputElement>,
+  selectedValue: string | null,
+) {
+  let input = event.currentTarget;
+
+  if (
+    event.key !== 'Tab' ||
+    event.altKey ||
+    event.ctrlKey ||
+    event.metaKey ||
+    selectedValue == null ||
+    input.value === selectedValue
+  ) {
+    return;
+  }
+
+  let radios = input
+    .closest('[role="radiogroup"]')
+    ?.querySelectorAll<HTMLInputElement>('input[type="radio"]');
+
+  Array.from(radios ?? [])
+    .find((radio) => radio.value === selectedValue)
+    ?.focus();
 }
 
 const RadioLabelElement = tasty({
@@ -463,10 +495,10 @@ function Radio(props: CubeRadioProps, ref) {
   // kept inert instead. `useRadio` gives a disabled radio no tab stop and does
   // not track its focus, so both are restored here; `RadioGroup` keeps the
   // arrow keys from selecting it.
-  let getInputProps = (isTooltipActive: boolean) => {
+  let getInputProps = (hasActiveTooltip: boolean) => {
     let { isInert, inertProps } = getDisabledElementProps({
       isDisabled: isRadioDisabled,
-      keepEvents: isTooltipActive,
+      keepEvents: hasActiveTooltip,
       as: 'input',
     });
 
@@ -479,7 +511,11 @@ function Radio(props: CubeRadioProps, ref) {
         tabIndex: getRovingTabIndex(state, value),
         onChange: ignoreChange,
       },
-      { onFocus: () => state.setLastFocusedValue(value) },
+      {
+        onFocus: () => state.setLastFocusedValue(value),
+        onKeyDown: (event: KeyboardEvent<HTMLInputElement>) =>
+          leaveGroupOnTab(event, state.selectedValue),
+      },
       inertProps,
     );
   };
@@ -575,7 +611,8 @@ function Radio(props: CubeRadioProps, ref) {
             tooltipFocusProps,
           )}
           ref={inputRef}
-          mods={{ button: isButton }}
+          // Not left to the native `disabled`, which an inert radio drops.
+          mods={{ button: isButton, disabled: isRadioDisabled }}
         />
         <RadioNormalElement data-element="Input" mods={mods} data-type={type}>
           {RadioCircleElement}

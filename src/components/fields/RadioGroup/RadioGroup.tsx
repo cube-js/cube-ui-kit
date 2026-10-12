@@ -22,6 +22,8 @@ import { FormScopeMask, useFieldProps, wrapWithField } from '../../form';
 
 import { RadioContext } from './context';
 
+import type { KeyboardEvent } from 'react';
+
 export interface CubeRadioGroupProps
   extends BaseProps,
     Omit<AriaRadioGroupProps, 'errorMessage' | 'form' | 'name'>,
@@ -85,21 +87,18 @@ const RadioGroupElement = tasty({
 });
 
 /**
- * Whether focus rests on this group's radio with this value while it is
- * disabled. Only a radio kept focusable for its tooltip can be: a natively
- * disabled one never takes focus (see `Radio`). Another group may use the
- * same values, and a click does not always move focus (Safari), so the radio
- * has to be inside this group.
+ * Whether focus rests on the radio with this value while it is disabled. Only
+ * a radio kept focusable for its tooltip can be: a natively disabled one never
+ * takes focus (see `Radio`).
  */
-function isFocusedDisabledRadio(group: Element | null, value: string | null) {
+function isFocusedDisabledRadio(value: string | null) {
   let element = getActiveElement();
 
   return (
     element instanceof HTMLInputElement &&
     element.type === 'radio' &&
     element.value === value &&
-    element.getAttribute('aria-disabled') === 'true' &&
-    group?.contains(element) === true
+    element.getAttribute('aria-disabled') === 'true'
   );
 }
 
@@ -133,17 +132,18 @@ function RadioGroup(rawProps: WithNullableValue<CubeRadioGroupProps>, ref) {
 
   styles = extractStyles(otherProps, CONTAINER_STYLES, styles);
 
-  let groupRef = useRef<HTMLDivElement>(null);
   let baseState = useRadioGroupState(props);
   // The arrow keys focus the next radio and select it. A disabled radio that
   // keeps focus for its tooltip is reached that way too, and has to stop the
   // selection the way a read-only group does: focus moves, the value stays.
+  // Only the arrow keys: a click elsewhere or a form reset still selects.
+  let isArrowKeyRef = useRef(false);
   let state: RadioGroupState = {
     ...baseState,
     setSelectedValue(value) {
-      if (!isFocusedDisabledRadio(groupRef.current, value)) {
-        baseState.setSelectedValue(value);
-      }
+      if (isArrowKeyRef.current && isFocusedDisabledRadio(value)) return;
+
+      baseState.setSelectedValue(value);
     },
   };
 
@@ -160,6 +160,13 @@ function RadioGroup(rawProps: WithNullableValue<CubeRadioGroupProps>, ref) {
     state,
   );
 
+  let { onKeyDown: onArrowKey, ...groupProps } = radioGroupProps;
+  let onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    isArrowKeyRef.current = true;
+    onArrowKey?.(event);
+    isArrowKeyRef.current = false;
+  };
+
   // Keyboard-only focus ring on the group container (button/tabs layouts).
   // `within: true` tracks focus on any descendant radio. We read
   // `isFocusVisible` (not `isFocused`), which is keyboard-gated — mouse
@@ -169,11 +176,11 @@ function RadioGroup(rawProps: WithNullableValue<CubeRadioGroupProps>, ref) {
 
   let radioGroup = (
     <RadioGroupElement
-      ref={groupRef}
       // On the group, not on the field wrapper: without a visible label there
       // is no wrapper, and the group would lose its role, its name, the arrow
       // keys and its focus handling with it.
-      {...mergeProps(radioGroupProps, groupFocusProps)}
+      {...mergeProps(groupProps, groupFocusProps)}
+      onKeyDown={onKeyDown}
       // `useRadioGroup` seeds its id once; the current one follows the form
       // binding.
       id={id}

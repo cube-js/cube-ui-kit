@@ -62,7 +62,7 @@ A `button`- or `tabs`-type radio renders an [Item](/docs/content-item--docs), so
 - **`icon`**, **`rightIcon`** — Icons before / after the label
 - **`prefix`**, **`suffix`** — Content before / after the label
 - **`description`**, **`descriptionPlacement`**, **`descriptionProps`** — Secondary line, placed `inline` (default) or `block`
-- **`tooltip`** — Tooltip content, or `true` to show one only when the label is truncated. A button radio defaults to `true`; its label truncates only when the radio gets less room than it (an explicit `width`, say), and never with a `block` description, which keeps the label at full width. A classic radio's label wraps instead of truncating, so it shows a tooltip only when given content. Either way a disabled option still shows its tooltip — a good place to say why it is unavailable. Tooltips open on hover and when the option takes keyboard focus, and describe its input to screen readers. A disabled option whose tooltip can open stays focusable for that reason: it is marked `aria-disabled` rather than natively disabled, and stays unselectable (see [Keyboard Navigation](#keyboard-navigation)). The info badge next to the group's label is the group's `labelTooltip`
+- **`tooltip`** — Tooltip content, or `true` to show one only when the label is truncated. A button radio defaults to `true`; its label truncates only when the radio gets less room than it (an explicit `width`, say), and never with a `block` description, which keeps the label at full width. A classic radio's label wraps instead of truncating, so it shows a tooltip only when given content. Either way a disabled option still shows its tooltip — a good place to say why it is unavailable. Tooltips open on hover and when the option takes keyboard focus, and describe its input to screen readers. A disabled option whose tooltip can open stays focusable for that reason: it is marked `aria-disabled` rather than natively disabled, so a plain `<form>` submits it when it is selected, and it stays unselectable (see [Keyboard Navigation](#keyboard-navigation)). The info badge next to the group's label is the group's `labelTooltip`
 - **`hotkeys`**, **`keyboardShortcutProps`** — Keyboard shortcut that selects the option, rendered as a hint
 - **`isLoading`**, **`loadingSlot`** — Replaces a slot with a spinner and disables the option
 - **`highlight`**, **`highlightCaseSensitive`**, **`highlightStyles`** — Highlights a substring of the label
@@ -312,7 +312,7 @@ Put the reason in each option's `tooltip`. The options stay reachable from the k
 - `Space` - Selects the focused radio option
 - `Shift + Tab` - Moves focus away from the radio group
 
-A disabled option with a tooltip stays in this navigation so its tooltip can be read: the arrow keys stop on it without selecting it, and `Space` and clicks do nothing. A disabled group whose options have tooltips keeps one tab stop, on the selected option when there is one. Without a tooltip a disabled option is skipped, and a disabled group has no tab stop.
+A disabled option with a tooltip stays in this navigation so its tooltip can be read: the arrow keys stop on it without selecting it, `Tab` and `Shift + Tab` leave the group from it, and `Space` and clicks do nothing. A disabled group whose options all have tooltips keeps one tab stop, on the selected option when there is one. Without a tooltip a disabled option is skipped, and a disabled group has no tab stop; neither has one when its selected option is disabled without a tooltip.
 
 ### Screen Reader Support
 

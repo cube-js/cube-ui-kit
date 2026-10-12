@@ -17,6 +17,22 @@ import { Radio } from './Radio';
 
 vi.mock('../../../_internal/hooks/use-warn');
 
+function Options({ tooltip }: { tooltip?: string }) {
+  return (
+    <>
+      <Radio value="a" tooltip={tooltip}>
+        Alpha
+      </Radio>
+      <Radio value="b" tooltip={tooltip}>
+        Beta
+      </Radio>
+      <Radio value="c" tooltip={tooltip}>
+        Gamma
+      </Radio>
+    </>
+  );
+}
+
 describe('<Radio /> and <RadioGroup />', () => {
   it('should work without form', async () => {
     const { getAllByRole } = renderWithRoot(
@@ -236,23 +252,8 @@ describe('<Radio /> and <RadioGroup />', () => {
     const GROUPS = [
       ['button', Radio.ButtonGroup],
       ['classic', Radio.Group],
+      ['tabs', Radio.Tabs],
     ] as const;
-
-    function Options({ tooltip }: { tooltip?: string }) {
-      return (
-        <>
-          <Radio value="a" tooltip={tooltip}>
-            Alpha
-          </Radio>
-          <Radio value="b" tooltip={tooltip}>
-            Beta
-          </Radio>
-          <Radio value="c" tooltip={tooltip}>
-            Gamma
-          </Radio>
-        </>
-      );
-    }
 
     it.each(GROUPS)(
       'keeps a disabled %s radio focusable and opens its tooltip on focus',
@@ -272,6 +273,8 @@ describe('<Radio /> and <RadioGroup />', () => {
         expect(input).toHaveFocus();
         expect(input).not.toHaveAttribute('disabled');
         expect(input).toHaveAttribute('aria-disabled', 'true');
+        // Its disabled styles, the cursor among them, key off this.
+        expect(input).toHaveAttribute('data-disabled');
         expect(await screen.findByRole('tooltip')).toHaveTextContent(
           'Not on this plan',
         );
@@ -290,13 +293,17 @@ describe('<Radio /> and <RadioGroup />', () => {
           </>,
         );
 
-        const [alpha] = screen.getAllByRole('radio');
+        const [alpha, , gamma] = screen.getAllByRole('radio');
 
         await userEvent.tab();
         expect(alpha).toHaveFocus();
 
         await userEvent.tab();
         expect(screen.getByRole('button', { name: 'After' })).toHaveFocus();
+
+        // With nothing selected, Shift+Tab comes back in at the other end.
+        await userEvent.tab({ shift: true });
+        expect(gamma).toHaveFocus();
       },
     );
 
@@ -391,6 +398,35 @@ describe('<Radio /> and <RadioGroup />', () => {
       );
     });
 
+    // Only the arrow keys are held back: a form reset restores the default
+    // even while focus rests on the disabled radio that holds it.
+    it('lets a form reset select a disabled default that has focus', async () => {
+      const onChange = vi.fn();
+
+      renderWithRoot(
+        <form>
+          <Radio.Group label="Group" defaultValue="b" onChange={onChange}>
+            <Radio value="a">Alpha</Radio>
+            <Radio isDisabled value="b" tooltip="Not on this plan">
+              Beta
+            </Radio>
+          </Radio.Group>
+        </form>,
+      );
+
+      const [alpha, beta] = screen.getAllByRole('radio');
+
+      await userEvent.click(alpha);
+      await userEvent.keyboard('{ArrowDown}');
+      expect(beta).toHaveFocus();
+      expect(alpha).toBeChecked();
+
+      act(() => beta.closest('form')!.reset());
+
+      expect(beta).toBeChecked();
+      expect(onChange).toHaveBeenLastCalledWith('b');
+    });
+
     // A click does not move focus in every browser (Safari): focus can stay on
     // another group's disabled radio that has the clicked radio's value.
     it.each(GROUPS)(
@@ -456,8 +492,7 @@ describe('<Radio /> and <RadioGroup />', () => {
       (_, Group, orientation) => {
         renderWithRoot(
           <Group aria-label="Plan">
-            <Radio value="a">Alpha</Radio>
-            <Radio value="b">Beta</Radio>
+            <Options />
           </Group>,
         );
 
@@ -465,7 +500,7 @@ describe('<Radio /> and <RadioGroup />', () => {
 
         expect(group).toHaveAttribute('aria-orientation', orientation);
         expect(group).toHaveAttribute('data-input-type', 'radiogroup');
-        expect(within(group).getAllByRole('radio')).toHaveLength(2);
+        expect(within(group).getAllByRole('radio')).toHaveLength(3);
       },
     );
 
@@ -491,8 +526,7 @@ describe('<Radio /> and <RadioGroup />', () => {
         renderWithRoot(
           <>
             <Group aria-label="Plan" onFocus={onFocus} onBlur={onBlur}>
-              <Radio value="a">Alpha</Radio>
-              <Radio value="b">Beta</Radio>
+              <Options />
             </Group>
             <button type="button">After</button>
           </>,
@@ -516,9 +550,7 @@ describe('<Radio /> and <RadioGroup />', () => {
         renderWithRoot(
           <>
             <Group aria-label="Plan">
-              <Radio value="a">Alpha</Radio>
-              <Radio value="b">Beta</Radio>
-              <Radio value="c">Gamma</Radio>
+              <Options />
             </Group>
             <button type="button">After</button>
           </>,

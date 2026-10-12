@@ -258,4 +258,63 @@ describe('Disabled Radio.Button with a tooltip', () => {
       expect(onChange).toHaveBeenCalledWith('maybe');
     },
   );
+
+  // The selected radio is the group's tab stop, and the browser used to stop
+  // there first when it lay ahead of the disabled one in the Tab's direction.
+  it('lets Tab leave the group from a disabled radio the arrow keys reached', async () => {
+    renderWithRoot(
+      <>
+        <button type="button">Before</button>
+        <Radio.ButtonGroup isDisabled aria-label="Answer" defaultValue="maybe">
+          <Radio.Button value="yes" tooltip="Not on this plan">
+            Yes
+          </Radio.Button>
+          <Radio.Button value="no" tooltip="Not on this plan">
+            No
+          </Radio.Button>
+          <Radio.Button value="maybe" tooltip="Not on this plan">
+            Maybe
+          </Radio.Button>
+        </Radio.ButtonGroup>
+        <button type="button">After</button>
+      </>,
+    );
+
+    const [, no, maybe] = screen.getAllByRole('radio');
+
+    screen.getByRole('button', { name: 'Before' }).focus();
+    await userEvent.keyboard('{Tab}');
+    expect(maybe).toHaveFocus();
+
+    await userEvent.keyboard('{ArrowLeft}');
+    expect(no).toHaveFocus();
+
+    await userEvent.keyboard('{Tab}');
+    expect(screen.getByRole('button', { name: 'After' })).toHaveFocus();
+  });
+
+  it('lets Shift+Tab leave the group from a disabled radio the arrow keys reached', async () => {
+    renderWithRoot(
+      <>
+        <button type="button">Before</button>
+        <Radio.ButtonGroup aria-label="Answer" defaultValue="yes">
+          <Radio.Button value="yes">Yes</Radio.Button>
+          <Radio.Button isDisabled value="no" tooltip="Not on this plan">
+            No
+          </Radio.Button>
+          <Radio.Button value="maybe">Maybe</Radio.Button>
+        </Radio.ButtonGroup>
+      </>,
+    );
+
+    const [yes, no] = screen.getAllByRole('radio');
+
+    screen.getByRole('button', { name: 'Before' }).focus();
+    await userEvent.keyboard('{Tab}{ArrowRight}');
+    expect(no).toHaveFocus();
+
+    await userEvent.keyboard('{Shift>}{Tab}{/Shift}');
+    expect(screen.getByRole('button', { name: 'Before' })).toHaveFocus();
+    expect(yes).toBeChecked();
+  });
 });
