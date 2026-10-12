@@ -1,4 +1,8 @@
-import { FocusableRef, Key } from '@react-types/shared';
+import {
+  KeyboardEvent as AriaKeyboardEvent,
+  FocusableRef,
+  Key,
+} from '@react-types/shared';
 import {
   BASE_STYLES,
   BasePropsWithoutChildren,
@@ -54,6 +58,7 @@ import {
   getNextVisibleKey,
   getVisibleKeys,
   ListBoxPopover,
+  ListStateLike,
   markKeyboardFocus,
   useCompositeFocus,
 } from '../ListBoxPopover';
@@ -700,7 +705,109 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
     isDisabled,
   });
 
-  // Keyboard navigation
+  // ---- keyboard -----------------------------------------------------------
+  // Moves the virtual focus to `key`, if there is one, and scrolls it into view.
+  const focusOption = (listState: ListStateLike, key: Key | null) => {
+    if (key == null) return;
+
+    markKeyboardFocus(listState);
+    listState.selectionManager.setFocusedKey(key);
+    bumpFocus();
+  };
+
+  const handleArrowKey = (e: AriaKeyboardEvent) => {
+    e.preventDefault();
+
+    if (!shouldShowPopover) {
+      // Open intent may already be set while nothing is shown (loading delay).
+      if (!isPopoverOpen) {
+        if (!hasResults) setIsFilterActive(false);
+        setIsPopoverOpen(true);
+      }
+
+      return;
+    }
+
+    const listState = listStateRef.current;
+
+    if (listState) {
+      focusOption(
+        listState,
+        getNextVisibleKey(listState, e.key === 'ArrowDown' ? 1 : -1),
+      );
+    }
+  };
+
+  // The option Enter commits. Prefer the highlighted option, but only when
+  // it's still visible (further typing may have filtered it out); otherwise
+  // fall back to the first visible option so typing a match and pressing
+  // Enter always selects the top result.
+  //
+  // `listStateRef` can still be null while the popover is mounting/
+  // transitioning. In that window we fall back to the parent-computed
+  // `visibleItemKeys` so a matching query commits via `onSelect` instead of
+  // leaking through to `onSubmit`.
+  const getEnterKey = (listState: ListStateLike | null): Key | null => {
+    const visibleKeys = listState ? getVisibleKeys(listState) : visibleItemKeys;
+    const focusedKey = listState?.selectionManager.focusedKey;
+
+    return focusedKey != null && visibleKeys.includes(focusedKey)
+      ? focusedKey
+      : visibleKeys[0] ?? null;
+  };
+
+  // Enter commits an option, else submits the raw text, else does nothing
+  // (keeping any empty state visible). It never reaches a surrounding form.
+  const handleEnterKey = (e: AriaKeyboardEvent) => {
+    e.preventDefault();
+
+    // Commit an option only when the overlay is actually shown. Gate on
+    // `shouldShowPopover` (not `isPopoverOpen`): during the loading delay or
+    // an empty open, intent can be open while nothing is mounted, and a stale
+    // `listStateRef` must not be committed.
+    const listState = listStateRef.current;
+    const keyToSelect = shouldShowPopover ? getEnterKey(listState) : null;
+
+    if (keyToSelect != null) {
+      if (listState) {
+        listState.selectionManager.select(keyToSelect, e);
+      } else {
+        // No mounted list state to route through — commit directly.
+        handleSelectionChange(keyToSelect);
+      }
+    } else if (onSubmit && trimmedInput) {
+      handleSubmit(trimmedInput);
+    }
+  };
+
+  const handleEscapeKey = (e: AriaKeyboardEvent) => {
+    if (isPopoverOpen) {
+      e.preventDefault();
+      setIsPopoverOpen(false);
+      inputRef.current?.focus();
+    } else if (effectiveInputValue) {
+      // Always preventDefault: type="search" clears natively on Escape
+      // unless cancelled, which would bypass isClearable={false}.
+      e.preventDefault();
+      if (isClearable) clearValue();
+    }
+  };
+
+  const handleEdgeKey = (e: AriaKeyboardEvent) => {
+    if (!shouldShowPopover) return;
+
+    e.preventDefault();
+
+    const listState = listStateRef.current;
+
+    if (listState) {
+      focusOption(
+        listState,
+        getEdgeVisibleKey(listState, e.key === 'Home' ? 'first' : 'last'),
+      );
+    }
+  };
+
   const { keyboardProps } = useKeyboard({
     onKeyDown: (e) => {
       // The user's handler runs first, and a key it prevents is theirs: skip
@@ -711,111 +818,21 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
 
       if (e.isDefaultPrevented()) return;
 
-      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-        e.preventDefault();
-
-        if (!shouldShowPopover) {
-          if (!isPopoverOpen) {
-            if (!hasResults) {
-              setIsFilterActive(false);
-            }
-            setIsPopoverOpen(true);
-          }
-          return;
-        }
-
-        const listState = listStateRef.current;
-        if (!listState) return;
-
-        const isArrowDown = e.key === 'ArrowDown';
-        const nextKey = getNextVisibleKey(listState, isArrowDown ? 1 : -1);
-
-        if (nextKey != null) {
-          markKeyboardFocus(listState);
-          listState.selectionManager.setFocusedKey(nextKey);
-          bumpFocus();
-        }
-      } else if (e.key === 'Enter') {
-        // Commit an option only when the overlay is actually shown. Prefer the
-        // highlighted option, but only when it's still visible (further typing
-        // may have filtered it out); otherwise fall back to the first visible
-        // option so typing a match and pressing Enter always selects the top
-        // result.
-        //
-        // `listStateRef` can still be null while the popover is mounting/
-        // transitioning. In that window we fall back to the parent-computed
-        // `visibleItemKeys` so a matching query commits via `onSelect` instead
-        // of leaking through to `onSubmit`.
-        //
-        // Gate on `shouldShowPopover` (not `isPopoverOpen`): during the loading
-        // delay or an empty open, intent can be open while nothing is mounted,
-        // and a stale `listStateRef` must not be committed.
-        if (shouldShowPopover) {
-          const listState = listStateRef.current;
-          const visibleKeys = listState
-            ? getVisibleKeys(listState)
-            : visibleItemKeys;
-          const focusedKey = listState?.selectionManager.focusedKey;
-          const keyToSelect =
-            focusedKey != null && visibleKeys.includes(focusedKey)
-              ? focusedKey
-              : visibleKeys[0] ?? null;
-
-          if (keyToSelect != null) {
-            e.preventDefault();
-
-            if (listState) {
-              listState.selectionManager.select(keyToSelect, e);
-            } else {
-              // No mounted list state to route through — commit directly.
-              handleSelectionChange(keyToSelect);
-            }
-
-            return;
-          }
-        }
-
-        // No option available — optionally submit the raw text.
-        const value = trimmedInput;
-        if (onSubmit && value) {
-          e.preventDefault();
-          handleSubmit(value);
-          return;
-        }
-
-        // Without onSubmit, Enter is a no-op (keep any empty state visible).
-        e.preventDefault();
-      } else if (e.key === 'Escape') {
-        if (isPopoverOpen) {
-          e.preventDefault();
-          setIsPopoverOpen(false);
-          inputRef.current?.focus();
-        } else if (effectiveInputValue) {
-          // Always preventDefault: type="search" clears natively on Escape
-          // unless cancelled, which would bypass isClearable={false}.
-          e.preventDefault();
-          if (isClearable) {
-            clearValue();
-          }
-        }
-      } else if (e.key === 'Home' || e.key === 'End') {
-        if (shouldShowPopover) {
-          e.preventDefault();
-
-          const listState = listStateRef.current;
-          if (!listState) return;
-
-          const targetKey = getEdgeVisibleKey(
-            listState,
-            e.key === 'Home' ? 'first' : 'last',
-          );
-
-          if (targetKey != null) {
-            markKeyboardFocus(listState);
-            listState.selectionManager.setFocusedKey(targetKey);
-            bumpFocus();
-          }
-        }
+      switch (e.key) {
+        case 'ArrowDown':
+        case 'ArrowUp':
+          handleArrowKey(e);
+          break;
+        case 'Enter':
+          handleEnterKey(e);
+          break;
+        case 'Escape':
+          handleEscapeKey(e);
+          break;
+        case 'Home':
+        case 'End':
+          handleEdgeKey(e);
+          break;
       }
     },
   });

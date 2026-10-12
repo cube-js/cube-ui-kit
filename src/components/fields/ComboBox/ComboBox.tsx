@@ -1,4 +1,9 @@
-import { CollectionChildren, FocusableRef, Key } from '@react-types/shared';
+import {
+  KeyboardEvent as AriaKeyboardEvent,
+  CollectionChildren,
+  FocusableRef,
+  Key,
+} from '@react-types/shared';
 import {
   BASE_STYLES,
   BasePropsWithoutChildren,
@@ -49,6 +54,7 @@ import {
   getEdgeVisibleKey,
   getNextVisibleKey,
   ListBoxPopover,
+  ListStateLike,
   markKeyboardFocus,
   useCompositeFocus,
 } from '../ListBoxPopover';
@@ -358,6 +364,104 @@ function useComboBoxKeyboard({
   onVirtualFocus,
   onKeyDown,
 }: UseComboBoxKeyboardProps) {
+  // Moves the virtual focus to `key`, if there is one, and scrolls it into view.
+  const focusOption = (listState: ListStateLike, key: Key | null) => {
+    if (key == null) return;
+
+    markKeyboardFocus(listState);
+    listState.selectionManager.setFocusedKey(key);
+    onVirtualFocus(key);
+  };
+
+  const handleArrowKey = (e: AriaKeyboardEvent) => {
+    e.preventDefault();
+
+    // Open popover if closed
+    if (!isPopoverOpen) {
+      // If opening with no filtered results, disable filter to show all items
+      if (!hasResults) setIsFilterActive(false);
+      onOpenPopover();
+
+      return;
+    }
+
+    const listState = listStateRef.current;
+
+    if (listState) {
+      focusOption(
+        listState,
+        getNextVisibleKey(listState, e.key === 'ArrowDown' ? 1 : -1),
+      );
+    }
+  };
+
+  // With no results, Enter commits the typed text as a custom value or clears
+  // the selection.
+  const commitWithoutResults = (e: AriaKeyboardEvent) => {
+    if (!allowsCustomValue) {
+      e.preventDefault();
+      onSelectionChange(null);
+
+      return;
+    }
+
+    const value = effectiveInputValue.trim();
+
+    // Commit the custom value
+    onSelectionChange((value as unknown as Key) ?? (null as unknown as Key));
+
+    // If popover is closed and we have a value, allow Enter to propagate for form submission
+    // If popover is open OR value is empty, prevent default to avoid premature submission
+    if (isPopoverOpen || !value) e.preventDefault();
+  };
+
+  const handleEnterKey = (e: AriaKeyboardEvent) => {
+    const listState = isPopoverOpen ? listStateRef.current : null;
+    const focusedKey = listState?.selectionManager.focusedKey;
+
+    if (focusedKey != null) {
+      // If popover is open, select the focused item first
+      e.preventDefault();
+      listState.selectionManager.select(focusedKey, e);
+      // Ensure the popover closes even if selection stays the same
+      onClosePopover();
+      inputRef.current?.focus();
+    } else if (!hasResults) {
+      // If no results, handle empty input or custom values
+      commitWithoutResults(e);
+    } else if ((effectiveInputValue || '').trim() === '') {
+      // Clear selection if input is empty and popover is closed (or no focused item)
+      e.preventDefault();
+      onSelectionChange(null);
+    }
+  };
+
+  const handleEscapeKey = (e: AriaKeyboardEvent) => {
+    if (isPopoverOpen) {
+      e.preventDefault();
+      onClosePopover();
+      inputRef.current?.focus();
+    } else if (effectiveInputValue && isClearable) {
+      e.preventDefault();
+      onClearValue();
+    }
+  };
+
+  const handleEdgeKey = (e: AriaKeyboardEvent) => {
+    if (!isPopoverOpen) return;
+
+    e.preventDefault();
+
+    const listState = listStateRef.current;
+
+    if (listState) {
+      focusOption(
+        listState,
+        getEdgeVisibleKey(listState, e.key === 'Home' ? 'first' : 'last'),
+      );
+    }
+  };
+
   const { keyboardProps } = useKeyboard({
     onKeyDown: (e) => {
       // The user's handler runs first, and a key it prevents is theirs: skip
@@ -368,105 +472,21 @@ function useComboBoxKeyboard({
 
       if (e.isDefaultPrevented()) return;
 
-      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-        e.preventDefault();
-
-        // Open popover if closed
-        if (!isPopoverOpen) {
-          // If opening with no filtered results, disable filter to show all items
-          if (!hasResults) {
-            setIsFilterActive(false);
-          }
-          onOpenPopover();
-          return;
-        }
-
-        const listState = listStateRef.current;
-        if (!listState) return;
-
-        const isArrowDown = e.key === 'ArrowDown';
-        const nextKey = getNextVisibleKey(listState, isArrowDown ? 1 : -1);
-
-        if (nextKey != null) {
-          markKeyboardFocus(listState);
-          listState.selectionManager.setFocusedKey(nextKey);
-          onVirtualFocus(nextKey);
-        }
-      } else if (e.key === 'Enter') {
-        // If popover is open, try to select the focused item first
-        if (isPopoverOpen) {
-          const listState = listStateRef.current;
-          if (listState) {
-            const keyToSelect = listState.selectionManager.focusedKey;
-
-            if (keyToSelect != null) {
-              e.preventDefault();
-              listState.selectionManager.select(keyToSelect, e);
-              // Ensure the popover closes even if selection stays the same
-              onClosePopover();
-              inputRef.current?.focus();
-              return;
-            }
-          }
-        }
-
-        // If no results, handle empty input or custom values
-        if (!hasResults) {
-          if (allowsCustomValue) {
-            const value = effectiveInputValue.trim();
-
-            // Commit the custom value
-            onSelectionChange(
-              (value as unknown as Key) ?? (null as unknown as Key),
-            );
-
-            // If popover is closed and we have a value, allow Enter to propagate for form submission
-            // If popover is open OR value is empty, prevent default to avoid premature submission
-            if (isPopoverOpen || !value) {
-              e.preventDefault();
-            }
-          } else {
-            e.preventDefault();
-            onSelectionChange(null);
-          }
-
-          return;
-        }
-
-        // Clear selection if input is empty and popover is closed (or no focused item)
-        const trimmed = (effectiveInputValue || '').trim();
-        if (trimmed === '') {
-          e.preventDefault();
-          onSelectionChange(null);
-          return;
-        }
-      } else if (e.key === 'Escape') {
-        if (isPopoverOpen) {
-          e.preventDefault();
-          onClosePopover();
-          inputRef.current?.focus();
-        } else if (effectiveInputValue && isClearable) {
-          e.preventDefault();
-          onClearValue();
-        }
-      } else if (e.key === 'Home' || e.key === 'End') {
-        if (isPopoverOpen) {
-          e.preventDefault();
-
-          const listState = listStateRef.current;
-          if (!listState) return;
-
-          const targetKey = getEdgeVisibleKey(
-            listState,
-            e.key === 'Home' ? 'first' : 'last',
-          );
-
-          if (targetKey != null) {
-            markKeyboardFocus(listState);
-            listState.selectionManager.setFocusedKey(targetKey);
-            onVirtualFocus(targetKey);
-          }
-        }
+      switch (e.key) {
+        case 'ArrowDown':
+        case 'ArrowUp':
+          handleArrowKey(e);
+          break;
+        case 'Enter':
+          handleEnterKey(e);
+          break;
+        case 'Escape':
+          handleEscapeKey(e);
+          break;
+        case 'Home':
+        case 'End':
+          handleEdgeKey(e);
+          break;
       }
     },
   });
@@ -882,114 +902,83 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     return { isInputValid: false, singleMatchKey: null, filteredCount };
   }, [effectiveInputValue, filterFn, localCollectionState.collection]);
 
+  // ---- blur ---------------------------------------------------------------
+  // Writes the selected key, unless it is controlled.
+  const setSelectedKey = (key: Key | null) => {
+    if (!isControlledKey) setInternalSelectedKey(key);
+  };
+
+  // Writes the input text, unless it is controlled, and reports it.
+  const setInputText = (value: string) => {
+    if (!isControlledInput) setInternalInputValue(value);
+    onInputChange?.(value);
+  };
+
+  const clearSelectionAndInput = () => {
+    externalOnSelectionChange?.(null);
+    setSelectedKey(null);
+    setInputText('');
+  };
+
+  // Reset input to show current selection (or empty if none)
+  const restoreSelectedLabel = () => {
+    setInputText(
+      effectiveSelectedKey != null ? getItemLabel(effectiveSelectedKey) : '',
+    );
+  };
+
+  // In allowsCustomValue mode: commit the input value if it's non-empty and
+  // nothing is selected, clear the selection if the input is empty.
+  const settleCustomValueOnBlur = () => {
+    if (
+      shouldCommitOnBlur &&
+      effectiveInputValue &&
+      effectiveSelectedKey == null
+    ) {
+      externalOnSelectionChange?.(effectiveInputValue as string);
+      setSelectedKey(effectiveInputValue as Key);
+    } else if (!String(effectiveInputValue).trim()) {
+      clearSelectionAndInput();
+    } else {
+      restoreSelectedLabel();
+    }
+  };
+
+  // In non-custom-value mode: auto-select the only filtered result; clear
+  // invalid input (no exact match, not a single result) when clearOnBlur is
+  // set or the input is empty.
+  const settleOptionOnBlur = () => {
+    const { isInputValid, singleMatchKey } = checkInputValidity();
+
+    if (
+      isInputValid &&
+      singleMatchKey != null &&
+      singleMatchKey !== effectiveSelectedKey
+    ) {
+      const label = getItemLabel(singleMatchKey);
+
+      setSelectedKey(singleMatchKey);
+      setInputText(label);
+      externalOnSelectionChange?.(singleMatchKey as string | null);
+    } else if (!isInputValid && (clearOnBlur || !effectiveInputValue.trim())) {
+      clearSelectionAndInput();
+    } else {
+      restoreSelectedLabel();
+    }
+  };
+
   // Composite blur handler - fires when focus leaves the entire component
   const handleCompositeBlur = useEvent(() => {
     setIsPopoverOpen(false);
 
-    // NOTE: Do NOT disable filter yet; we need it active for validity check
-
-    // In allowsCustomValue mode
     if (allowsCustomValue) {
-      // Commit the input value if it's non-empty and nothing is selected
-      if (
-        shouldCommitOnBlur &&
-        effectiveInputValue &&
-        effectiveSelectedKey == null
-      ) {
-        externalOnSelectionChange?.(effectiveInputValue as string);
-        if (!isControlledKey) {
-          setInternalSelectedKey(effectiveInputValue as Key);
-        }
-        onBlur?.();
-        setIsFilterActive(false);
-        return;
-      }
-
-      // Clear selection if input is empty
-      if (!String(effectiveInputValue).trim()) {
-        externalOnSelectionChange?.(null);
-        if (!isControlledKey) {
-          setInternalSelectedKey(null);
-        }
-        if (!isControlledInput) {
-          setInternalInputValue('');
-        }
-        onInputChange?.('');
-        onBlur?.();
-        setIsFilterActive(false);
-        return;
-      }
+      settleCustomValueOnBlur();
+    } else {
+      settleOptionOnBlur();
     }
 
-    // In non-custom-value mode, validate input and handle accordingly
-    if (!allowsCustomValue) {
-      const { isInputValid, singleMatchKey } = checkInputValidity();
-
-      // If there's exactly one filtered result, auto-select it
-      if (
-        isInputValid &&
-        singleMatchKey != null &&
-        singleMatchKey !== effectiveSelectedKey
-      ) {
-        const label = getItemLabel(singleMatchKey);
-
-        if (!isControlledKey) {
-          setInternalSelectedKey(singleMatchKey);
-        }
-        if (!isControlledInput) {
-          setInternalInputValue(label);
-        }
-        onInputChange?.(label);
-        externalOnSelectionChange?.(singleMatchKey as string | null);
-        onBlur?.();
-        setIsFilterActive(false);
-        return;
-      }
-
-      // If input is invalid (no exact match, not a single result)
-      if (!isInputValid) {
-        const trimmedInput = effectiveInputValue.trim();
-
-        // Clear if clearOnBlur is set or input is empty
-        if (clearOnBlur || !trimmedInput) {
-          externalOnSelectionChange?.(null);
-          if (!isControlledKey) {
-            setInternalSelectedKey(null);
-          }
-          if (!isControlledInput) {
-            setInternalInputValue('');
-          }
-          onInputChange?.('');
-          onBlur?.();
-          setIsFilterActive(false);
-          return;
-        }
-
-        // Reset input to current selected value (or empty if none)
-        const nextValue =
-          effectiveSelectedKey != null
-            ? getItemLabel(effectiveSelectedKey)
-            : '';
-
-        if (!isControlledInput) {
-          setInternalInputValue(nextValue);
-        }
-        onInputChange?.(nextValue);
-        onBlur?.();
-        setIsFilterActive(false);
-        return;
-      }
-    }
-
-    // Fallback: Reset input to show current selection (or empty if none)
-    const nextValue =
-      effectiveSelectedKey != null ? getItemLabel(effectiveSelectedKey) : '';
-
-    if (!isControlledInput) {
-      setInternalInputValue(nextValue);
-    }
-    onInputChange?.(nextValue);
     onBlur?.();
+    // Only now: the validity check above needs the filter still active.
     setIsFilterActive(false);
   });
 
