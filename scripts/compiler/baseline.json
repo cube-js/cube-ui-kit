@@ -546,7 +546,7 @@
     "optOuts": 0
   },
   "src/components/data/TableBase/TableView.tsx": {
-    "compiled": 1,
+    "compiled": 2,
     "diagnostics": {
       "Suppression": 2
     },
@@ -621,6 +621,11 @@
     "diagnostics": {
       "Refs": 1
     },
+    "optOuts": 0
+  },
+  "src/components/data/TableBase/use-table-tooltip-refresh.ts": {
+    "compiled": 1,
+    "diagnostics": {},
     "optOuts": 0
   },
   "src/components/data/TableBase/use-table-tree-state.tsx": {

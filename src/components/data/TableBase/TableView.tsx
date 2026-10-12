@@ -4,6 +4,7 @@ import {
   Fragment,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -57,6 +58,7 @@ import {
   ROW_NUMBER_COLUMN_KEY,
   SELECTION_COLUMN_KEY,
 } from './use-table-selection';
+import { useTableTooltipRefresh } from './use-table-tooltip-refresh';
 
 import type { Key, Node } from '@react-types/shared';
 import type { Styles } from '@tenphi/tasty';
@@ -417,46 +419,57 @@ function pinStyle(column: CubeResolvedColumn): CSSProperties | undefined {
   return { ['--pin-offset' as any]: `${column.pinOffset}px` };
 }
 
-/** What a data cell shows: `column.render`'s output, or the display text. */
+/** Default text keeps its tooltip tree while the virtual window moves. */
+function TableCellContent<T>({
+  column,
+  row,
+  rowIndex,
+}: {
+  column: CubeResolvedColumn<T>;
+  row: T;
+  rowIndex: number;
+}): ReactNode {
+  const text = getColumnText(column, row, rowIndex);
+  return column.autoHeight || text == null ? text : <TextItem>{text}</TextItem>;
+}
+
+function renderCellValue(rendered: ReactNode, autoHeight?: boolean): ReactNode {
+  const isText =
+    typeof rendered === 'string' ||
+    typeof rendered === 'number' ||
+    typeof rendered === 'bigint';
+
+  // TextItem supplies truncation and its tooltip without Item's hotkey hooks.
+  // Wrapping columns render the text directly instead.
+  return isText && !autoHeight ? (
+    <TextItem>{String(rendered)}</TextItem>
+  ) : isText ? (
+    String(rendered)
+  ) : (
+    rendered
+  );
+}
+
 function renderCellContent<T>(
   column: CubeResolvedColumn<T>,
   row: T,
   rowIndex: number,
   ctx: CubeTableCellContext<T>,
 ): ReactNode {
-  const value = column.isStructural
-    ? undefined
-    : getColumnValue(column, row, rowIndex);
+  if (!column.render) {
+    return column.isStructural ? null : (
+      <TableCellContent column={column} row={row} rowIndex={rowIndex} />
+    );
+  }
 
-  // Without `render`, the cell shows the column's display text — which is
-  // what `format` produces, and what client sort, search and copy all agree
-  // on. `getColumnText` returns null for a value it cannot turn into text
-  // (an object with no `format`), so we render nothing rather than
-  // "[object Object]".
-  const rendered = column.render
-    ? column.render(value, row, rowIndex, ctx)
-    : column.isStructural
-      ? null
-      : getColumnText(column, row, rowIndex);
-
-  const isText =
-    typeof rendered === 'string' ||
-    typeof rendered === 'number' ||
-    typeof rendered === 'bigint';
-
-  // Bare text gets ellipsis + an automatic tooltip when it overflows.
-  // `TextItem` rather than `Item` deliberately: `Item` runs `useHotkeys` on
-  // every instance, which at one per cell would be hundreds of subscriptions
-  // churned on every scroll tick.
-  //
-  // An `autoHeight` column skips it — `TextItem` exists to truncate, and this
-  // column has opted into wrapping instead.
-  return isText && !column.autoHeight ? (
-    <TextItem>{String(rendered)}</TextItem>
-  ) : isText ? (
-    String(rendered)
-  ) : (
-    (rendered as ReactNode)
+  return renderCellValue(
+    column.render(
+      column.isStructural ? undefined : getColumnValue(column, row, rowIndex),
+      row,
+      rowIndex,
+      ctx,
+    ),
+    column.autoHeight,
   );
 }
 
@@ -1679,23 +1692,27 @@ export function TableView<T = any>(props: TableViewProps<T>) {
     (isVirtualized === true ||
       (isVirtualized === 'auto' && rows.length > virtualizeThreshold));
 
-  const rowsRef = useRef(rows);
-
-  rowsRef.current = rows;
+  // TanStack invalidates every cached position when this callback changes.
+  // Keep its wiring stable during scroll renders, including without Compiler.
+  const getItemKey = useCallback(
+    (index: number) =>
+      String(rowKeys?.[index] ?? getRowKey(rows[index], index)),
+    [rows, rowKeys, getRowKey],
+  );
 
   // `getScrollElement` is read from a ref, not the state value: the virtualizer
   // consults it from a layout effect, and a closure over state can still hold
   // the `null` from the first render.
+  const estimatedRowHeight =
+    (rowHeight ??
+      (rowSizeKey
+        ? SIZES[rowSizeKey]
+        : ESTIMATED_ROW_HEIGHT[size ?? 'medium'])) + 1;
   const virtualizer = useVirtualizer({
     count: shouldVirtualize ? rows.length : 0,
     getScrollElement: () => scrollerRef.current,
-    getItemKey: (index) =>
-      String(rowKeys?.[index] ?? getRowKey(rowsRef.current[index], index)),
-    estimateSize: () =>
-      (rowHeight ??
-        (rowSizeKey
-          ? SIZES[rowSizeKey]
-          : ESTIMATED_ROW_HEIGHT[size ?? 'medium'])) + 1,
+    getItemKey,
+    estimateSize: () => estimatedRowHeight,
     measureElement: (element) => element.getBoundingClientRect().height,
     // Rows beyond each viewport edge. Higher than a list's, because a fast
     // flick outruns React's re-render and the gap shows as blank rows — and a
@@ -1704,9 +1721,16 @@ export function TableView<T = any>(props: TableViewProps<T>) {
     overscan,
   });
 
-  // `scrollerEl` is referenced only to re-render on the pass where the scroller
-  // first exists, so the virtualizer re-reads `getScrollElement` and attaches.
-  void scrollerEl;
+  // Key identity no longer resets estimates on every render. Size changes do.
+  useLayoutEffect(() => {
+    virtualizer.measure();
+    // Rebuild positions before remeasurement compares old and new row sizes.
+    virtualizer.getTotalSize();
+    localBodyRef.current
+      ?.querySelectorAll<HTMLTableRowElement>('tr[data-index]')
+      .forEach((element) => virtualizer.measureElement(element));
+  }, [estimatedRowHeight, virtualizer]);
+  useTableTooltipRefresh(scrollerEl, virtualizer.isScrolling);
 
   const focusedTreeKey = tree?.state.selectionManager.focusedKey;
   useEffect(() => {

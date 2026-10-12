@@ -222,6 +222,36 @@ describe('useAutoTooltip overflow measurement', () => {
       },
     );
 
+    it.each(['label', 'description'] as const)(
+      're-measures changed %s text in an unchanged fixed-width node',
+      async (part) => {
+        const content = (value: string) => (
+          <Probe
+            width="80px"
+            label={part === 'label' ? value : 'Short'}
+            description={part === 'description' ? value : undefined}
+          />
+        );
+        const { rerender } = renderWithRoot(content('Short'));
+        await waitFor(() => expect(spy.counter.reads).toBeGreaterThan(0));
+        // Let the observer's initial delivery settle before changing only text.
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        const node = label();
+
+        rerender(content(LONG_LABEL));
+        await waitFor(() =>
+          expect(label()).toHaveAttribute('data-overflowed', 'true'),
+        );
+        expect(label()).toBe(node);
+
+        rerender(content('Short'));
+        await waitFor(() =>
+          expect(label()).toHaveAttribute('data-overflowed', 'false'),
+        );
+        expect(label()).toBe(node);
+      },
+    );
+
     it('detects an overflowing label and activates its tooltip', async () => {
       await act(async () => {
         renderWithRoot(<Probe width="80px" label={LONG_LABEL} />);
@@ -317,10 +347,9 @@ describe('useAutoTooltip overflow measurement', () => {
     /**
      * Regression guard for the provider-remount cycle.
      *
-     * Real consumers differ from the Probe above in two ways that matter, and
-     * together they broke the first version of this fix: `TextItem` and friends
-     * build their callback ref inline, so React detaches and re-attaches on
-     * every render, and turning the verdict on mounts `TooltipProvider`, which
+     * A consumer can rebuild its callback ref on every render, making React
+     * detach and re-attach it. Turning the verdict on also mounts
+     * `TooltipProvider`, which
      * remounts the label underneath it. Clearing the verdict when the node goes
      * away therefore undoes the measurement that had just been made, and the
      * tooltip never activates — five Chromatic stories, none of them visible to
@@ -342,8 +371,8 @@ describe('useAutoTooltip overflow measurement', () => {
             (triggerProps, ref) => (
               <div
                 {...triggerProps}
-                // Inline, so its identity changes every render — exactly what
-                // TextItem, Item and Button's own wrappers do.
+                // Deliberately unstable, to cover consumers whose ref changes
+                // even when the label node stays the same.
                 ref={(element: HTMLElement | null) => {
                   if (ref) (ref as { current: unknown }).current = element;
                   labelRef(element);

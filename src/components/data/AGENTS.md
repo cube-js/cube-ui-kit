@@ -59,6 +59,8 @@ So `TableHeaderItem` sits inside the header cell: the `<th>` owns the interactio
 
 **At most one `Item` per body row.** `Item` runs `useHotkeys` on every instance even with no `hotkeys` prop, and its `@interacted` alias uses `:has()`. One per cell would churn hundreds of subscriptions per scroll tick. Every other cell uses `TextItem`.
 
+Keep the virtualizer's `getItemKey` callback stable until rows or their key resolver change: TanStack invalidates the full position cache on callback identity changes. Default cell text belongs in `TableCellContent` so release compilation can retain unchanged text/tooltip trees as the row window moves; calling the renderer as a plain helper recreates them on every scroll. The table owns attribute/font observation and overflow refresh on non-scrolling commits, since a fixed-size label can overflow differently without a ResizeObserver delivery. Scrolling retains cell trees; its settled commit refreshes the mounted window. Changing the height estimate explicitly resets virtual measurements and remeasures mounted rows.
+
 ## Column reordering excludes pinned columns
 
 Three independent reasons, all pointing the same way. A pinned `<th>` is `position: sticky`, so under horizontal scroll its rect sits on top of columns it is nowhere near, and React Aria's drop-target search is a binary search over those rects. `use-table-columns` hoists pinned columns to the edges regardless of source order, so a cross-boundary drop would be undone the moment it landed. And `pin` is already the ordering authority there.
