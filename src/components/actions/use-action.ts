@@ -4,6 +4,7 @@ import { AllBaseProps, filterBaseProps, TagName } from '@tenphi/tasty';
 import { AriaButtonProps, useButton, useHover } from 'react-aria';
 
 import { useEvent, useWarn } from '../../_internal';
+import { isExternalUrl } from '../../providers/navigation-url';
 import { useTracking } from '../../providers/TrackingProvider';
 import { useNavigation } from '../../providers/use-navigation';
 import { mergeProps } from '../../utils/react';
@@ -67,17 +68,6 @@ export function openLink(href, target?) {
   link.click();
 
   document.body.removeChild(link);
-}
-
-const URL_SCHEME = /^[a-z][a-z\d+.-]*:/i;
-
-/**
- * Checks if a URL is external: it starts with a URL scheme (`https:`,
- * `mailto:`) or is protocol-relative (`//host`). A colon later in a path or
- * query (`/models/cube:orders`, `..?thread=a:b`) stays router navigation.
- */
-function isExternalUrl(url: string): boolean {
-  return URL_SCHEME.test(url) || url.startsWith('//');
 }
 
 export function parseTo(to: NavigateArg | undefined): {

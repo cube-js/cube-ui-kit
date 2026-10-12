@@ -10,6 +10,9 @@ export interface CubeMenuItemProps<T> extends CubeCollectionItemProps<T> {
   navigationOptions?: NavigateOptions;
 }
 
+// Aria recognizes links by a truthy collection href; preserve the native empty URL.
+export const CURRENT_DOCUMENT_LINK = Symbol('Menu.Item current document');
+
 function MenuCollectionItem<T>(
   _props: CubeMenuItemProps<T>,
 ): ReactElement | null {
@@ -23,14 +26,18 @@ const _MenuCollectionItem: typeof MenuCollectionItem &
     Action: CollectionItem.Action,
     Badge: CollectionItem.Badge,
     getCollectionNode<T>(props: CubeMenuItemProps<T>, context: unknown) {
-      const { cleanTo, newTab } = parseTo(props.to);
+      const { newTab } = parseTo(props.to);
+      const isCurrentDocument = props.to == null && props.href === '';
 
-      // SelectionManager must recognize destinations before rendering the row.
-      // Path objects stay intact; the row's navigation adapter resolves the URL.
+      // The raw `to` also recognizes bare !/@ destinations. The row resolves it.
       return (CollectionItem as any).getCollectionNode(
         {
           ...props,
-          href: cleanTo ?? props.href,
+          href:
+            props.to === ''
+              ? undefined
+              : props.to ?? (isCurrentDocument ? '.' : props.href),
+          [CURRENT_DOCUMENT_LINK]: isCurrentDocument,
           target: newTab ? '_blank' : props.target,
           rel: newTab ? props.rel ?? 'noopener noreferrer' : props.rel,
         },

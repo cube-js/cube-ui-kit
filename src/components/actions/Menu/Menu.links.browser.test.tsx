@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
+import { RouterProvider, useLink } from 'react-aria';
 import {
   MemoryRouter,
   Route,
@@ -429,6 +430,39 @@ describe('Menu navigation links', () => {
     }
   });
 
+  it.each(['href', 'to'])(
+    'keeps same-origin absolute %s destinations native',
+    async (prop) => {
+      const originalUrl = location.href;
+      const destination = new URL(originalUrl);
+      destination.hash = '#absolute-destination';
+      const navigate = vi.fn();
+      render(
+        <Root
+          navigation={{
+            useHref: (to) => String(to),
+            useNavigate: () => navigate,
+          }}
+        >
+          <Menu aria-label="Destinations">
+            <Menu.Item key="link" {...{ [prop]: destination.href }}>
+              Destination
+            </Menu.Item>
+          </Menu>
+        </Root>,
+      );
+      try {
+        await userEvent.click(
+          screen.getByRole('menuitem', { name: 'Destination' }),
+        );
+        expect(location.hash).toBe('#absolute-destination');
+        expect(navigate).not.toHaveBeenCalled();
+      } finally {
+        history.replaceState(null, '', originalUrl);
+      }
+    },
+  );
+
   it.each([{ isDisabled: true }, { isLoading: true }])(
     'keeps unavailable to links inert: %j',
     async (props) => {
@@ -496,5 +530,240 @@ describe('Menu navigation links', () => {
     expect(navigate).not.toHaveBeenCalled();
     await userEvent.keyboard('{Enter}');
     expect(navigate).toHaveBeenCalledExactlyOnceWith(destination, undefined);
+  });
+
+  it('activates only once while Space is held and does not activate during composition', async () => {
+    const navigate = vi.fn();
+    render(
+      <Root
+        navigation={{
+          useHref: (to) => String(to),
+          useNavigate: () => navigate,
+        }}
+      >
+        <Menu aria-label="Destinations">
+          <Menu.Item key="link" to={destination}>
+            Destination
+          </Menu.Item>
+        </Menu>
+      </Root>,
+    );
+    const link = screen.getByRole('menuitem', { name: 'Destination' });
+    await act(() => link.focus());
+    await userEvent.keyboard('[Space>3/]');
+    expect(navigate).toHaveBeenCalledTimes(1);
+    navigate.mockClear();
+    // Browser keyboard drivers cannot create an IME composition event.
+    await act(() => {
+      link.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: ' ',
+          bubbles: true,
+          isComposing: true,
+        }),
+      );
+      link.dispatchEvent(
+        new KeyboardEvent('keyup', {
+          key: ' ',
+          bubbles: true,
+          isComposing: true,
+        }),
+      );
+    });
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
+  it.each(['/help', destination])(
+    'preserves the inherited Aria router for an independent action: %s',
+    async (href) => {
+      const rowNavigate = vi.fn();
+      const actionNavigate = vi.fn();
+      const actionOptions = { replace: true };
+      function InlineLink() {
+        const ref = useRef<HTMLAnchorElement>(null);
+        const { linkProps } = useLink(
+          { href, routerOptions: actionOptions as never },
+          ref,
+        );
+        return (
+          <a {...linkProps} ref={ref}>
+            Help
+          </a>
+        );
+      }
+      render(
+        <RouterProvider
+          navigate={actionNavigate}
+          useHref={(href) => `/app${href}`}
+        >
+          <Root
+            navigation={{
+              useHref: (to) => String(to),
+              useNavigate: () => rowNavigate,
+            }}
+          >
+            <Menu aria-label="Destinations">
+              <Menu.Item
+                key="link"
+                to={destination}
+                navigationOptions={{ state: 'row' }}
+                actions={<InlineLink />}
+              >
+                Destination
+              </Menu.Item>
+            </Menu>
+          </Root>
+        </RouterProvider>,
+      );
+      const action = screen.getByRole('link', { name: 'Help' });
+      expect(action).toHaveAttribute('href', `/app${href}`);
+      await userEvent.click(action);
+      expect(actionNavigate).toHaveBeenCalledExactlyOnceWith(
+        href,
+        actionOptions,
+      );
+      expect(rowNavigate).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each(['@folder', '!folder'])(
+    'preserves literal native href paths: %s',
+    async (href) => {
+      const navigate = vi.fn();
+      render(
+        <Root
+          navigation={{
+            useHref: (to) => String(to),
+            useNavigate: () => navigate,
+          }}
+        >
+          <Menu aria-label="Destinations">
+            <Menu.Item key="link" href={href}>
+              Destination
+            </Menu.Item>
+          </Menu>
+        </Root>,
+      );
+      const link = screen.getByRole('menuitem', { name: 'Destination' });
+      expect(link).toHaveAttribute('href', href);
+      expect(link).not.toHaveAttribute('target');
+      await userEvent.click(link);
+      expect(navigate).toHaveBeenCalledExactlyOnceWith(href, undefined);
+    },
+  );
+
+  it('keeps an empty native href as a current-document link rather than a selected command', async () => {
+    const navigate = vi.fn();
+    const onSelectionChange = vi.fn();
+    render(
+      <Root
+        navigation={{
+          useHref: (to) => String(to),
+          useNavigate: () => navigate,
+        }}
+      >
+        <Menu
+          aria-label="Destinations"
+          selectionMode="multiple"
+          onSelectionChange={onSelectionChange}
+        >
+          <Menu.Item
+            key="link"
+            href=""
+            onClick={(event) => event.preventDefault()}
+          >
+            Current document
+          </Menu.Item>
+        </Menu>
+      </Root>,
+    );
+    const link = screen.getByRole('menuitemcheckbox', {
+      name: 'Current document',
+    });
+    expect(link.tagName).toBe('A');
+    expect(link).toHaveAttribute('href', '');
+    expect((link as HTMLAnchorElement).href).toBe(location.href);
+    await userEvent.click(link);
+    expect(navigate).not.toHaveBeenCalled();
+    expect(onSelectionChange).not.toHaveBeenCalled();
+  });
+
+  it('recognizes a bare native reload destination and leaves an empty to as a command', () => {
+    render(
+      <Root>
+        <Menu aria-label="Destinations">
+          <Menu.Item key="reload" to="@">
+            Reload
+          </Menu.Item>
+          <Menu.Item key="command" to="">
+            Command
+          </Menu.Item>
+        </Menu>
+      </Root>,
+    );
+    expect(screen.getByRole('menuitem', { name: 'Reload' }).tagName).toBe('A');
+    expect(screen.getByRole('menuitem', { name: 'Reload' })).toHaveAttribute(
+      'href',
+      '.',
+    );
+    expect(screen.getByRole('menuitem', { name: 'Command' }).tagName).toBe(
+      'LI',
+    );
+  });
+
+  it('preserves the Actions styling slot and the row color on sibling controls', () => {
+    render(
+      <Root>
+        <Menu aria-label="Destinations">
+          <Menu.Item
+            key="link"
+            to={destination}
+            styles={{
+              color: '#purple',
+              Actions: { padding: '2x', color: '#danger-text' },
+            }}
+            actions={<ItemButton>Delete link</ItemButton>}
+          >
+            Link
+          </Menu.Item>
+          <Menu.Item
+            key="command"
+            styles={{
+              color: '#purple',
+              Actions: { padding: '2x', color: '#danger-text' },
+            }}
+            actions={<ItemButton>Delete command</ItemButton>}
+          >
+            Command
+          </Menu.Item>
+          <Menu.Item
+            key="color"
+            to="/color"
+            styles={{ color: '#purple' }}
+            tokens={{ '#purple': '#danger-text' }}
+            actions={<ItemButton>Delete color</ItemButton>}
+          >
+            Color
+          </Menu.Item>
+        </Menu>
+      </Root>,
+    );
+    const linkRun = screen.getByRole('button', {
+      name: 'Delete link',
+    }).parentElement!;
+    const commandRun = screen.getByRole('button', {
+      name: 'Delete command',
+    }).parentElement!;
+    expect(getComputedStyle(linkRun).padding).toBe('16px');
+    expect(getComputedStyle(linkRun).color).toBe(
+      getComputedStyle(commandRun).color,
+    );
+    const colorRow = screen.getByRole('menuitem', { name: 'Color' });
+    const colorRun = screen.getByRole('button', {
+      name: 'Delete color',
+    }).parentElement!;
+    expect(getComputedStyle(colorRun).color).toBe(
+      getComputedStyle(colorRow).color,
+    );
   });
 });

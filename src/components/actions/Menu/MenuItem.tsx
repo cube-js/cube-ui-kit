@@ -1,11 +1,12 @@
 import { openLink } from '@react-aria/utils';
 import { FocusableElement, Key, Node } from '@react-types/shared';
-import { Styles } from '@tenphi/tasty';
+import { mergeStyles, Styles } from '@tenphi/tasty';
 import { AnchorHTMLAttributes, KeyboardEvent, useContext, useRef } from 'react';
 import { FocusRing, RouterProvider, useMenuItem } from 'react-aria';
 import { TreeState } from 'react-stately';
 
 import { RightIcon } from '../../../icons/RightIcon';
+import { isExternalUrl } from '../../../providers/navigation-url';
 import { useNavigation } from '../../../providers/use-navigation';
 import { mergeProps } from '../../../utils/react';
 import { filterCollectionItemProps } from '../../CollectionItem';
@@ -14,6 +15,7 @@ import { ItemActionsWrapper } from '../ItemActionsWrapper';
 import { parseTo } from '../use-action';
 
 import { useMenuContext } from './context';
+import { CURRENT_DOCUMENT_LINK } from './MenuCollectionItem';
 import { StyledLinkItem } from './styled';
 import { SubmenuTriggerContext } from './SubmenuTriggerContext';
 
@@ -36,29 +38,101 @@ export interface MenuItemProps<T> {
 
 /** @private */
 export function MenuItem<T>(props: MenuItemProps<T>) {
-  const { to, href, navigationOptions } = props.item.props;
-  const { cleanTo, isExternal, nativeRoute } = parseTo(to ?? href);
-  const { navigate, resolvedHref } = useNavigation(
-    isExternal ? '.' : cleanTo ?? '.',
-    { relative: navigationOptions?.relative },
-  );
-  const linkHref = isExternal ? String(cleanTo) : resolvedHref;
-
-  return (
-    <RouterProvider
-      useHref={() => linkHref}
-      navigate={() => {
-        if (nativeRoute) window.location.assign(linkHref);
-        else if (cleanTo !== undefined) navigate(cleanTo, navigationOptions);
-      }}
-    >
-      <MenuItemContent {...props} />
-    </RouterProvider>
+  const submenuContext = useContext(SubmenuTriggerContext);
+  return props.item.props.href != null && !submenuContext ? (
+    <MenuLinkItem {...props} />
+  ) : (
+    <MenuItemContent {...props} />
   );
 }
 
-function MenuItemContent<T>(props: MenuItemProps<T>) {
-  const { item, state, styles, isVirtualized, onAction, size, id } = props;
+function MenuLinkItem<T>(props: MenuItemProps<T>) {
+  const { to, href, navigationOptions } = props.item.props;
+  const { cleanTo: parsedTo, nativeRoute } = parseTo(to);
+  const isCurrentDocument = props.item.props[CURRENT_DOCUMENT_LINK];
+  const cleanTo = to != null ? parsedTo : isCurrentDocument ? '' : href;
+  const isExternal = typeof cleanTo === 'string' && isExternalUrl(cleanTo);
+  const { navigate, resolvedHref } = useNavigation(
+    isExternal ? '.' : cleanTo || '.',
+    { relative: navigationOptions?.relative },
+  );
+  const linkHref = isCurrentDocument
+    ? ''
+    : isExternal
+      ? String(cleanTo)
+      : resolvedHref;
+  const itemProps = props.item.props;
+  const isDisabled =
+    props.state.selectionManager.isDisabled(props.item.key) ||
+    (itemProps.isLoading && itemProps.isDisabled !== false);
+  const isVirtualFocused =
+    props.state.selectionManager.focusedKey === props.item.key;
+  const { Actions: actionStyles, ...rowStyles } = mergeStyles(
+    itemProps.styles,
+    props.styles,
+  );
+  // eslint-disable-next-line tasty/valid-sub-element -- Forward the consumer's typed slot to the sibling run that owns it.
+  const wrapperStyles = { color: rowStyles.color, Actions: actionStyles };
+  return (
+    <StyledLinkItem role="none">
+      <ItemActionsWrapper
+        actions={itemProps.actions}
+        type={itemProps.type}
+        theme={itemProps.theme}
+        size={props.size === 'small' ? 'small' : 'medium'}
+        isDisabled={isDisabled}
+        disableActionsFocus
+        autoHideActions={itemProps.autoHideActions && !isVirtualFocused}
+        preserveActionsSpace={itemProps.preserveActionsSpace}
+        styles={wrapperStyles}
+        tokens={itemProps.tokens}
+        mods={{
+          ...itemProps.mods,
+          focused: isVirtualFocused,
+          selected: props.state.selectionManager.isSelected(props.item.key),
+        }}
+      >
+        {({ showActions, skipActionsWidthTransition }) => (
+          <RouterProvider
+            useHref={() => linkHref}
+            navigate={() => {
+              if (nativeRoute && cleanTo === '') window.location.reload();
+              else if (isCurrentDocument || nativeRoute || isExternal)
+                window.location.assign(linkHref);
+              else if (cleanTo !== undefined)
+                navigate(cleanTo, navigationOptions);
+            }}
+          >
+            <MenuItemContent
+              {...props}
+              styles={rowStyles}
+              showActions={showActions}
+              skipActionsWidthTransition={skipActionsWidthTransition}
+            />
+          </RouterProvider>
+        )}
+      </ItemActionsWrapper>
+    </StyledLinkItem>
+  );
+}
+
+function MenuItemContent<T>(
+  props: MenuItemProps<T> & {
+    showActions?: boolean;
+    skipActionsWidthTransition?: boolean;
+  },
+) {
+  const {
+    item,
+    state,
+    styles,
+    isVirtualized,
+    onAction,
+    size,
+    id,
+    showActions = false,
+    skipActionsWidthTransition = false,
+  } = props;
   const { onClose, closeOnSelect } = useMenuContext();
   const { rendered, key, props: itemProps } = item;
 
@@ -78,6 +152,7 @@ function MenuItemContent<T>(props: MenuItemProps<T>) {
     download: _download,
     ping: _ping,
     referrerPolicy: _referrerPolicy,
+    styles: ownStyles,
     ...filteredItemProps
   } = filterCollectionItemProps(itemProps);
 
@@ -133,13 +208,15 @@ function MenuItemContent<T>(props: MenuItemProps<T>) {
     ...itemOwnProps
   } = menuItemProps as typeof menuItemProps &
     Pick<AnchorHTMLAttributes<HTMLAnchorElement>, 'href'>;
-  const isLink = !!itemProps.href && !submenuContext;
+  const isLink = itemProps.href != null && !submenuContext;
   const onKeyDown = (e: KeyboardEvent<FocusableElement>) => {
     // Aria 3.52.1 clicks menu links on Space down, then opens them again on up.
     // Use its existing click path once without registering the second press.
     if (isLink && !isDisabled && e.key === ' ') {
+      if (e.nativeEvent.isComposing) return;
       e.preventDefault();
       e.stopPropagation();
+      if (e.repeat) return;
       openLink(e.currentTarget as HTMLAnchorElement, e, false);
       return;
     }
@@ -160,17 +237,14 @@ function MenuItemContent<T>(props: MenuItemProps<T>) {
     menuitem: true,
   };
 
-  const renderItem = (
-    showActions = false,
-    skipActionsWidthTransition = false,
-  ) => (
+  const content = (
     <FocusRing>
       <Item
         {...mergeProps({ ...itemOwnProps, onKeyDown }, filteredItemProps, {
           'data-popover-trigger': true,
           qa: itemQa ? itemQa : `MenuItem-${key}`,
           mods,
-          styles,
+          styles: isLink ? styles : mergeStyles(ownStyles, styles),
           'data-size': size,
           as: isLink ? 'a' : 'li',
           href: isLink && !isDisabled ? renderedHref : undefined,
@@ -207,26 +281,5 @@ function MenuItemContent<T>(props: MenuItemProps<T>) {
     </FocusRing>
   );
 
-  if (!isLink) return renderItem();
-
-  return (
-    <StyledLinkItem role="none">
-      <ItemActionsWrapper
-        actions={filteredItemProps.actions}
-        type={filteredItemProps.type}
-        theme={filteredItemProps.theme}
-        size={size === 'small' ? 'small' : 'medium'}
-        isDisabled={isDisabled}
-        disableActionsFocus
-        autoHideActions={
-          filteredItemProps.autoHideActions && !(isFocused || isVirtualFocused)
-        }
-        preserveActionsSpace={filteredItemProps.preserveActionsSpace}
-      >
-        {({ showActions, skipActionsWidthTransition }) =>
-          renderItem(showActions, skipActionsWidthTransition)
-        }
-      </ItemActionsWrapper>
-    </StyledLinkItem>
-  );
+  return content;
 }

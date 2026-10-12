@@ -233,6 +233,8 @@ export interface ItemActionsWrapperProps {
   mods?: Mods;
   /** Styles for the wrapper element — the one that is the row's layout box. */
   styles?: Styles;
+  /** Tokens shared with the row, including its consumer palette overrides. */
+  tokens?: CubeItemProps['tokens'];
   /** Extra props spread on the run's container, e.g. event handlers. */
   actionsProps?: HTMLAttributes<HTMLDivElement>;
 }
@@ -254,6 +256,7 @@ export function ItemActionsWrapper(props: ItemActionsWrapperProps) {
     preserveActionsSpace = false,
     mods,
     styles,
+    tokens,
     actionsProps,
   } = props;
 
@@ -348,6 +351,7 @@ export function ItemActionsWrapper(props: ItemActionsWrapperProps) {
       data-theme={theme}
       mods={finalMods}
       styles={styles}
+      tokens={tokens}
       style={
         {
           '--actions-width':
