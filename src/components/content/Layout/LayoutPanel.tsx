@@ -15,6 +15,7 @@ import {
   RefCallback,
   useCallback,
   useEffect,
+  useEffectEvent,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -657,33 +658,34 @@ function LayoutPanel(
   ]);
 
   // Dialogs retain inline size; only inline panels follow the host's bounds.
+  const applyInlineBounds = useEffectEvent(() => {
+    if (
+      !matchesContainerSize(
+        layoutRefs.panelContainerRef.current?.parentElement,
+        isHorizontal,
+        containerDimension,
+      )
+    ) {
+      return;
+    }
+
+    setSize((prev) => {
+      const clamped = clampValue(prev);
+
+      if (clamped !== prev) {
+        onSizeChange?.(Math.round(clamped));
+        setStoredSize(Math.round(clamped));
+      }
+
+      return clamped;
+    });
+  });
+
   useEffect(() => {
     if (!isDialogMode && !isDragging && containerDimension > 0) {
       // In an iframe ResizeObserver can precede responsive mode delivery.
       // Let that mode settle before shrinking and persisting the inline size.
-      const frame = requestAnimationFrame(() => {
-        if (
-          !matchesContainerSize(
-            layoutRefs.panelContainerRef.current?.parentElement,
-            isHorizontal,
-            containerDimension,
-          )
-        ) {
-          return;
-        }
-
-        setSize((prev) => {
-          const clamped = clampValue(prev);
-
-          if (clamped !== prev) {
-            onSizeChange?.(Math.round(clamped));
-            setStoredSize(Math.round(clamped));
-          }
-
-          return clamped;
-        });
-      });
-
+      const frame = requestAnimationFrame(() => applyInlineBounds());
       return () => cancelAnimationFrame(frame);
     }
   }, [

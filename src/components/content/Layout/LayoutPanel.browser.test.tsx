@@ -449,6 +449,87 @@ describe('Layout.Panel dialog size preservation', () => {
     }
   });
 
+  it.each(['callback replacement', 'unmount'] as const)(
+    'retains pending clamp ownership through %s',
+    async (change) => {
+      await page.viewport(1440, 900);
+      localStorage.setItem(DIALOG_SIZE_KEY, '560');
+      const callbackA = vi.fn();
+      const callbackB = vi.fn();
+      const view = renderWithRoot(
+        <SizedPanelLayout
+          width={1440}
+          maxSize="50%"
+          onSizeChange={callbackA}
+        />,
+      );
+      await settleLayout(1440);
+      expect(screen.getByTestId('sized-panel').offsetWidth).toBe(560);
+
+      const frames = new Map<number, FrameRequestCallback>();
+      let frameId = 1000000;
+      const requestFrame = vi
+        .spyOn(window, 'requestAnimationFrame')
+        .mockImplementation((callback) => {
+          frameId += 1;
+          frames.set(frameId, callback);
+          return frameId;
+        });
+      const cancelFrame = vi
+        .spyOn(window, 'cancelAnimationFrame')
+        .mockImplementation((id) => frames.delete(id));
+
+      try {
+        view.rerender(
+          <SizedPanelLayout
+            width={700}
+            maxSize="50%"
+            onSizeChange={callbackA}
+          />,
+        );
+        await waitFor(() => {
+          const panel = screen.getByTestId('sized-panel');
+          expect(panel.offsetWidth).toBe(350);
+          expect(panel.style.getPropertyValue('--max-size')).toBe(
+            'min(50%, 378px)',
+          );
+          expect(frames.size).toBeGreaterThan(0);
+        });
+        expect(localStorage.getItem(DIALOG_SIZE_KEY)).toBe('560');
+        expect(callbackA).not.toHaveBeenCalled();
+
+        if (change === 'unmount') {
+          view.unmount();
+        } else {
+          view.rerender(
+            <SizedPanelLayout
+              width={700}
+              maxSize="50%"
+              onSizeChange={callbackB}
+            />,
+          );
+        }
+        await act(async () => {
+          const ready = [...frames.values()];
+          frames.clear();
+          ready.forEach((callback) => callback(performance.now()));
+        });
+        expect(callbackA).not.toHaveBeenCalled();
+        if (change === 'unmount') {
+          expect(callbackB).not.toHaveBeenCalled();
+          expect(localStorage.getItem(DIALOG_SIZE_KEY)).toBe('560');
+        } else {
+          expect(callbackB).toHaveBeenCalledExactlyOnceWith(350);
+          expect(localStorage.getItem(DIALOG_SIZE_KEY)).toBe('350');
+        }
+      } finally {
+        view.unmount();
+        requestFrame.mockRestore();
+        cancelFrame.mockRestore();
+      }
+    },
+  );
+
   it.each([
     [550, 800, 550],
     [900, 800, 800],
