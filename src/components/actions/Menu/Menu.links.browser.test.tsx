@@ -1275,6 +1275,49 @@ describe('Menu navigation links', () => {
     },
   );
 
+  it.each(['small', 'medium'] as const)(
+    'preserves narrow, token and inline widths at %s size',
+    (size) => {
+      render(
+        <Root>
+          <Menu aria-label="Widths" size={size} styles={{ width: '30x' }}>
+            {[
+              { width: '16px' },
+              { width: '$size' },
+              { style: { width: '16px' } },
+            ].flatMap((props, index) => [
+              <Menu.Item
+                key={`link${index}`}
+                to={destination}
+                qa={`link${index}`}
+                {...props}
+              >
+                Row
+              </Menu.Item>,
+              <Menu.Item
+                key={`command${index}`}
+                qa={`command${index}`}
+                {...props}
+              >
+                Row
+              </Menu.Item>,
+            ])}
+          </Menu>
+        </Root>,
+      );
+      for (let index = 0; index < 3; index++) {
+        const row = screen.getByTestId(`link${index}`);
+        const expectedWidth = screen
+          .getByTestId(`command${index}`)
+          .getBoundingClientRect().width;
+        expect(row.getBoundingClientRect().width).toBe(expectedWidth);
+        expect(row.closest('li')!.getBoundingClientRect().width).toBe(
+          expectedWidth,
+        );
+      }
+    },
+  );
+
   it('orders the entire link row in the menu flex layout', () => {
     render(
       <Root>

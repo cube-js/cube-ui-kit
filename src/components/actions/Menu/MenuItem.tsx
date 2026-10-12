@@ -26,7 +26,7 @@ import { useNavigation } from '../../../providers/use-navigation';
 import { mergeProps } from '../../../utils/react';
 import { extractStyles, mergeStyleLayers } from '../../../utils/styles';
 import { filterCollectionItemProps } from '../../CollectionItem';
-import { Item } from '../../content/Item/Item';
+import { DEFAULT_ITEM_WIDTH_STYLES, Item } from '../../content/Item/Item';
 import {
   DEFAULT_ACTIONS_STYLES,
   ItemActionsWrapper,
@@ -148,7 +148,17 @@ const OWNER_CSS_KEYS = [
   'scale',
 ];
 const isSharedCSS = (key: string) =>
-  key === 'display' || key === 'transition' || key.startsWith('--');
+  [
+    'width',
+    'minWidth',
+    'maxWidth',
+    'inlineSize',
+    'minInlineSize',
+    'maxInlineSize',
+  ].includes(key) ||
+  key === 'display' ||
+  key === 'transition' ||
+  key.startsWith('--');
 const filterInlineStyles = (
   style: CSSProperties | undefined,
   owner: boolean,
@@ -158,7 +168,7 @@ const filterInlineStyles = (
     Object.entries(style).filter(([key]) =>
       owner
         ? OWNER_CSS_KEYS.includes(key) || isSharedCSS(key)
-        : !OWNER_CSS_KEYS.includes(key),
+        : !OWNER_CSS_KEYS.includes(key) || isSharedCSS(key),
     ),
   );
 function projectOwnerStyles(styles: Styles, id: string) {
@@ -222,6 +232,8 @@ function MenuLinkItem<T>(props: MenuItemProps<T>) {
   );
   const ownerStyles = mergeStyleLayers(
     DEFAULT_OWNER_STYLES,
+    DEFAULT_ITEM_WIDTH_STYLES,
+    { $size: props.size === 'small' ? '$size-sm' : '$size-md' },
     Object.fromEntries(
       Object.entries(ownerInput).filter(
         ([key]) =>
@@ -235,7 +247,9 @@ function MenuLinkItem<T>(props: MenuItemProps<T>) {
   const ownerInlineStyle = filterInlineStyles(itemProps.style, true);
   const { Actions: rawActions, ...rowStyles } = Object.fromEntries(
     Object.entries(allRowStyles).filter(
-      ([key]) => !OWNER_STYLE_PROPS.includes(key),
+      ([key]) =>
+        !OWNER_STYLE_PROPS.includes(key) ||
+        ['width', 'inlineSize'].includes(key),
     ),
   ) as Styles;
   useRawCSS(projectOwnerStyles(ownerStyles, linkMarker), {
@@ -470,7 +484,9 @@ function MenuItemContent<T>(
           isLink
             ? Object.fromEntries(
                 Object.entries(filteredItemProps).filter(
-                  ([key]) => !OWNER_STYLE_PROPS.includes(key),
+                  ([key]) =>
+                    !OWNER_STYLE_PROPS.includes(key) ||
+                    ['width', 'inlineSize'].includes(key),
                 ),
               )
             : filteredItemProps,

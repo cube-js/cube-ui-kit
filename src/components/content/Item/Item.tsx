@@ -86,6 +86,21 @@ export type ItemMods = Mods<{
   shape?: string;
 }>;
 
+export const DEFAULT_ITEM_WIDTH_STYLES: Styles = {
+  width: {
+    '': 'min $size',
+    // An actions run is end content just like a right icon — a trigger that
+    // puts its caret in the run instead of the `rightIcon` slot must keep the
+    // same minimum as one that does not. Only for a SIBLING run: an in-grid
+    // one is laid out by this element's own columns, which already sized the
+    // row before the run existed, and widening it there would push a tab's or
+    // a tag's border out past its content.
+    'has-icon & (has-right-icon | (has-actions & inside-wrapper))':
+      'min ($size * 2)',
+    'size=inline': 'min (1lh + 2bw)',
+  },
+};
+
 export interface CubeItemProps extends BaseProps, ContainerStyleProps {
   icon?: DynamicIcon<ItemMods> | 'checkmark';
   rightIcon?: DynamicIcon<ItemMods>;
@@ -352,18 +367,7 @@ const ItemElement = tasty({
       '': 'min $size',
       'size=inline': '(1lh + 2bw)',
     },
-    width: {
-      '': 'min $size',
-      // An actions run is end content just like a right icon — a trigger that
-      // puts its caret in the run instead of the `rightIcon` slot must keep the
-      // same minimum as one that does not. Only for a SIBLING run: an in-grid
-      // one is laid out by this element's own columns, which already sized the
-      // row before the run existed, and widening it there would push a tab's or
-      // a tag's border out past its content.
-      'has-icon & (has-right-icon | (has-actions & inside-wrapper))':
-        'min ($size * 2)',
-      'size=inline': 'min (1lh + 2bw)',
-    },
+    width: DEFAULT_ITEM_WIDTH_STYLES.width,
     border: '#clear',
     fill: {
       '': '#dark.0',
