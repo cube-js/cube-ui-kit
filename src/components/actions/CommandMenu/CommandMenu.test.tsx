@@ -263,6 +263,38 @@ describe('CommandMenu', () => {
     expectFocused('1');
   });
 
+  it('skips disabled edge items when wrapping or starting unfocused', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <CommandMenu qa="TestMenu" disabledKeys={['1', '3']}>
+        {items.map((item) => (
+          <CommandMenu.Item key={item.id} id={item.id}>
+            {item.textValue}
+          </CommandMenu.Item>
+        ))}
+      </CommandMenu>,
+    );
+
+    const searchInput = screen.getByPlaceholderText('Search commands...');
+    const expectFocused = (key: string) =>
+      expect(searchInput).toHaveAttribute(
+        'aria-activedescendant',
+        `TestMenu-menu-option-${key}`,
+      );
+
+    await user.click(searchInput);
+
+    // Nothing focused yet: ArrowUp starts from the last enabled item.
+    await user.keyboard('{ArrowUp}');
+    expectFocused('2');
+    // Both edges are disabled, so each wrap comes back to the only enabled item.
+    await user.keyboard('{ArrowDown}');
+    expectFocused('2');
+    await user.keyboard('{ArrowUp}');
+    expectFocused('2');
+  });
+
   it('moves between sections with arrow keys', async () => {
     const user = userEvent.setup();
 
