@@ -4,6 +4,7 @@ import { mergeStyles, Styles } from '@tenphi/tasty';
 import {
   AnchorHTMLAttributes,
   KeyboardEvent,
+  RefObject,
   useContext,
   useRef,
   useState,
@@ -15,13 +16,14 @@ import { RightIcon } from '../../../icons/RightIcon';
 import { isExternalUrl } from '../../../providers/navigation-url';
 import { useNavigation } from '../../../providers/use-navigation';
 import { mergeProps } from '../../../utils/react';
+import { mergeStyleLayers } from '../../../utils/styles';
 import { filterCollectionItemProps } from '../../CollectionItem';
 import { Item } from '../../content/Item/Item';
 import { ItemActionsWrapper } from '../ItemActionsWrapper';
 import { parseTo } from '../use-action';
 
 import { useMenuContext } from './context';
-import { CURRENT_DOCUMENT_LINK } from './MenuCollectionItem';
+import { CURRENT_DOCUMENT_LINK, MENU_LINK_CLICK } from './MenuCollectionItem';
 import { StyledLinkItem } from './styled';
 import { SubmenuTriggerContext } from './SubmenuTriggerContext';
 
@@ -54,6 +56,7 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
 
 function MenuLinkItem<T>(props: MenuItemProps<T>) {
   const [isPressed, setIsPressed] = useState(false);
+  const linkRef = useRef<HTMLElement>(null);
   const { to, href, navigationOptions } = props.item.props;
   const { cleanTo: parsedTo, nativeRoute } = parseTo(to);
   const isCurrentDocument = props.item.props[CURRENT_DOCUMENT_LINK];
@@ -79,11 +82,20 @@ function MenuLinkItem<T>(props: MenuItemProps<T>) {
     itemProps.styles,
     props.styles,
   );
-  const wrapperStyles = {
-    color: itemProps.color !== undefined ? itemProps.color : rowStyles.color,
-    // eslint-disable-next-line tasty/valid-sub-element -- Forward the consumer's typed slot to the sibling run that owns it.
-    Actions: actionStyles,
-  };
+  const sharedStyles = Object.fromEntries(
+    Object.entries(rowStyles).filter(
+      ([key]) => /^[#@$]/.test(key) && key !== '$',
+    ),
+  );
+  const wrapperStyles = mergeStyleLayers(
+    sharedStyles,
+    {
+      color: rowStyles.color,
+      // eslint-disable-next-line tasty/valid-sub-element -- Forward the consumer's typed slot to the sibling run that owns it.
+      Actions: actionStyles,
+    },
+    { color: itemProps.color },
+  );
   return (
     <StyledLinkItem role="none">
       <ItemActionsWrapper
@@ -109,9 +121,13 @@ function MenuLinkItem<T>(props: MenuItemProps<T>) {
             useHref={() => linkHref}
             navigate={() => {
               if (nativeRoute && cleanTo === '') window.location.reload();
-              else if (isCurrentDocument || nativeRoute || isExternal)
-                window.location.assign(linkHref);
-              else if (cleanTo !== undefined)
+              else if (isCurrentDocument || nativeRoute || isExternal) {
+                // Aria intercepts same-origin URLs; retain the anchor's native attributes.
+                const nativeLink = linkRef.current?.cloneNode(false) as
+                  | HTMLAnchorElement
+                  | undefined;
+                nativeLink?.click();
+              } else if (cleanTo !== undefined)
                 navigate(cleanTo, navigationOptions);
             }}
           >
@@ -121,6 +137,7 @@ function MenuLinkItem<T>(props: MenuItemProps<T>) {
               showActions={showActions}
               skipActionsWidthTransition={skipActionsWidthTransition}
               onPressChange={setIsPressed}
+              linkRef={linkRef}
             />
           </RouterProvider>
         )}
@@ -134,6 +151,7 @@ function MenuItemContent<T>(
     showActions?: boolean;
     skipActionsWidthTransition?: boolean;
     onPressChange?: (isPressed: boolean) => void;
+    linkRef?: RefObject<HTMLElement | null>;
   },
 ) {
   const {
@@ -182,7 +200,9 @@ function MenuItemContent<T>(
   const ref = useRef<HTMLElement>(null);
 
   // Use the triggerRef from submenu context if present
-  const elementRef = (submenuContext?.triggerRef ?? ref) as any;
+  const elementRef = (submenuContext?.triggerRef ??
+    props.linkRef ??
+    ref) as any;
 
   const {
     menuItemProps,
@@ -205,6 +225,7 @@ function MenuItemContent<T>(
       isVirtualized,
       onAction: submenuContext?.onAction || onAction,
       onPressChange: props.onPressChange,
+      onClick: itemProps[MENU_LINK_CLICK],
     },
     state,
     elementRef,

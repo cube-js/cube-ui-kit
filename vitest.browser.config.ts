@@ -9,6 +9,8 @@ const pkg = JSON.parse(readFileSync('./package.json', 'utf-8'));
 const tastyPkg = JSON.parse(
   readFileSync('./node_modules/@tenphi/tasty/package.json', 'utf-8'),
 );
+const menuLinkRequests: { url: string; method?: string; referrer?: string }[] =
+  [];
 
 /**
  * The browser project, run separately from the jsdom suite.
@@ -26,8 +28,31 @@ export default defineConfig({
   // Compiler injects this import after Vite's dependency scan. Prebundle it
   // up front so discovering it cannot reload a running browser test.
   optimizeDeps: { include: ['react/compiler-runtime'] },
-  plugins:
-    process.env.UIKIT_REACT_COMPILER === 'on' ? [reactCompilerPlugin()] : [],
+  plugins: [
+    ...(process.env.UIKIT_REACT_COMPILER === 'on'
+      ? [reactCompilerPlugin()]
+      : []),
+    {
+      name: 'menu-native-link-destinations',
+      configureServer(server) {
+        server.middlewares.use((request, response, next) => {
+          if (!request.url?.startsWith('/__menu-link-test/')) return next();
+          if (request.url === '/__menu-link-test/requests') {
+            response.setHeader('content-type', 'application/json');
+            response.end(JSON.stringify(menuLinkRequests));
+            return;
+          }
+          menuLinkRequests.push({
+            url: request.url,
+            method: request.method,
+            referrer: request.headers.referer,
+          });
+          // Native navigation to 204 preserves the test iframe and its client.
+          response.writeHead(204).end();
+        });
+      },
+    },
+  ],
   define: {
     __UIKIT_VERSION__: JSON.stringify(pkg.version),
     __TASTY_VERSION__: JSON.stringify(tastyPkg.version),

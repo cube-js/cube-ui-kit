@@ -64,6 +64,78 @@ describe('Menu navigation links', () => {
     return screen.getByRole('menuitem', { name: 'Workbook' });
   }
 
+  it.each(['none', 'single', 'multiple'] as const)(
+    'honors cancelled navigation in %s selection mode',
+    async (selectionMode) => {
+      const navigate = vi.fn();
+      const onClick = vi.fn((event) => event.preventDefault());
+      render(
+        <Root navigation={{ useHref: String, useNavigate: () => navigate }}>
+          <Menu aria-label="Destinations" selectionMode={selectionMode}>
+            <Menu.Item key="link" to={destination} onClick={onClick}>
+              Destination
+            </Menu.Item>
+          </Menu>
+        </Root>,
+      );
+      await userEvent.click(screen.getByText('Destination'));
+      expect(onClick).toHaveBeenCalledTimes(1);
+      expect(navigate).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each(['noreferrer', 'policy', 'ping'])(
+    'preserves native navigation attributes: %s',
+    async (variant) => {
+      const navigate = vi.fn();
+      const onAction = vi.fn();
+      const pathname = `/__menu-link-test/${variant}`;
+      const href = `${location.origin}${pathname}`;
+      render(
+        <Root navigation={{ useHref: String, useNavigate: () => navigate }}>
+          <Menu aria-label="Destinations" onAction={onAction}>
+            <Menu.Item
+              key="link"
+              href={variant === 'policy' ? undefined : href}
+              to={variant === 'policy' ? `@${pathname}` : undefined}
+              rel={variant === 'noreferrer' ? 'noreferrer' : undefined}
+              referrerPolicy={variant === 'policy' ? 'no-referrer' : undefined}
+              ping={variant === 'ping' ? '/__menu-link-test/audit' : undefined}
+            >
+              Destination
+            </Menu.Item>
+          </Menu>
+        </Root>,
+      );
+      await userEvent.click(
+        screen.getByRole('menuitem', { name: 'Destination' }),
+        { noWaitAfter: true },
+      );
+      await waitFor(
+        async () => {
+          const requests: {
+            url: string;
+            method?: string;
+            referrer?: string;
+          }[] = await (await fetch('/__menu-link-test/requests')).json();
+          const request = requests.find((request) => request.url === pathname);
+          expect(request).toBeDefined();
+          if (variant === 'ping') {
+            expect(requests).toContainEqual(
+              expect.objectContaining({
+                url: '/__menu-link-test/audit',
+                method: 'POST',
+              }),
+            );
+          } else expect(request?.referrer).toBeUndefined();
+        },
+        { timeout: 1500 },
+      );
+      expect(navigate).not.toHaveBeenCalled();
+      expect(onAction).toHaveBeenCalledExactlyOnceWith('link');
+    },
+  );
+
   it('renders a native anchor and routes an ordinary click once before closing', async () => {
     const { navigate, onAction, onItemAction } = renderMenu();
     const link = await openMenu();
@@ -716,23 +788,72 @@ describe('Menu navigation links', () => {
     );
   });
 
-  it('preserves direct color style-prop precedence on sibling controls', () => {
+  it.each([
+    { color: '#purple', styles: { color: '#danger-text' } },
+    {
+      color: { pressed: '#danger-text' },
+      styles: { color: '#purple-text' },
+    },
+  ])(
+    'preserves direct color style-prop merging on sibling controls: %o',
+    (props) => {
+      render(
+        <Root>
+          <Menu aria-label="Destinations">
+            <Menu.Item
+              key="link"
+              to={destination}
+              {...props}
+              actions={<Menu.Item.Action>Link action</Menu.Item.Action>}
+            >
+              Link
+            </Menu.Item>
+            <Menu.Item
+              key="command"
+              {...props}
+              actions={<Menu.Item.Action>Command action</Menu.Item.Action>}
+            >
+              Command
+            </Menu.Item>
+          </Menu>
+        </Root>,
+      );
+      const row = screen.getByRole('menuitem', { name: 'Link' });
+      const linkRun = screen.getByRole('button', {
+        name: 'Link action',
+      }).parentElement!;
+      const commandRun = screen.getByRole('button', {
+        name: 'Command action',
+      }).parentElement!;
+      expect(getComputedStyle(linkRun).color).toBe(getComputedStyle(row).color);
+      expect(getComputedStyle(linkRun).color).toBe(
+        getComputedStyle(commandRun).color,
+      );
+    },
+  );
+
+  it('preserves named style states for sibling color and Actions maps', () => {
+    const styles = {
+      '@highlight': '[data-accent]',
+      color: { '': '#dark', '@highlight': '#purple-text' },
+      Actions: { padding: { '': '0x', '@highlight': '2x' } },
+    };
     render(
       <Root>
         <Menu aria-label="Destinations">
           <Menu.Item
             key="link"
             to={destination}
-            color="#purple"
-            styles={{ color: '#danger-text' }}
+            mods={{ accent: true }}
+            styles={styles}
             actions={<Menu.Item.Action>Link action</Menu.Item.Action>}
           >
             Link
           </Menu.Item>
           <Menu.Item
             key="command"
-            color="#purple"
-            styles={{ color: '#danger-text' }}
+            mods={{ accent: true }}
+            styles={styles}
             actions={<Menu.Item.Action>Command action</Menu.Item.Action>}
           >
             Command
@@ -741,16 +862,43 @@ describe('Menu navigation links', () => {
       </Root>,
     );
     const row = screen.getByRole('menuitem', { name: 'Link' });
-    const linkRun = screen.getByRole('button', {
+    const run = screen.getByRole('button', {
       name: 'Link action',
     }).parentElement!;
     const commandRun = screen.getByRole('button', {
       name: 'Command action',
     }).parentElement!;
-    expect(getComputedStyle(linkRun).color).toBe(getComputedStyle(row).color);
-    expect(getComputedStyle(linkRun).color).toBe(
-      getComputedStyle(commandRun).color,
+    expect(getComputedStyle(run).color).toBe(getComputedStyle(row).color);
+    expect(getComputedStyle(run).padding).toBe('16px');
+    expect(getComputedStyle(run).padding).toBe(
+      getComputedStyle(commandRun).padding,
     );
+  });
+
+  it('shares style token declarations with sibling controls', () => {
+    render(
+      <Root>
+        <Menu aria-label="Destinations">
+          <Menu.Item
+            key="link"
+            to={destination}
+            styles={{
+              '#purple': '#danger-text',
+              '$menu-action-padding': '2x',
+              color: '#purple',
+              Actions: { padding: '$menu-action-padding' },
+            }}
+            actions={<Menu.Item.Action>Delete</Menu.Item.Action>}
+          >
+            Destination
+          </Menu.Item>
+        </Menu>
+      </Root>,
+    );
+    const row = screen.getByRole('menuitem', { name: 'Destination' });
+    const run = screen.getByRole('button', { name: 'Delete' }).parentElement!;
+    expect(getComputedStyle(run).color).toBe(getComputedStyle(row).color);
+    expect(getComputedStyle(run).padding).toBe('16px');
   });
 
   it('preserves the Actions styling slot and the row color on sibling controls', () => {
