@@ -198,6 +198,282 @@ function outsidePoint(side: Side, layout: DOMRect) {
   }
 }
 
+const DIALOG_SIZE_KEY = 'layout-panel-dialog-size';
+
+function SizedPanelLayout({
+  width,
+  height = 640,
+  mode = 'default',
+  isDialogOpen = false,
+  size,
+  maxSize = 800,
+  onSizeChange,
+}: {
+  width: number;
+  height?: number;
+  mode?: LayoutPanelMode;
+  isDialogOpen?: boolean;
+  size?: number;
+  maxSize?: number | string;
+  onSizeChange: (size: number) => void;
+}) {
+  return (
+    <div style={{ width, height, display: 'grid' }}>
+      <Layout qa="sized-layout">
+        <button>Page action</button>
+        <Layout.Panel
+          qa="sized-panel"
+          side="right"
+          mode={mode}
+          size={size}
+          defaultSize={400}
+          minSize={300}
+          maxSize={maxSize}
+          isResizable
+          sizeStorageKey={DIALOG_SIZE_KEY}
+          onSizeChange={onSizeChange}
+          isDialogOpen={isDialogOpen}
+          dialogProps={{ type: 'fullscreenTakeover' }}
+        >
+          <button>Panel action</button>
+        </Layout.Panel>
+      </Layout>
+    </div>
+  );
+}
+
+async function settleLayout(width: number) {
+  await waitFor(() =>
+    expect(screen.getByTestId('sized-layout').offsetWidth).toBe(width),
+  );
+  // Let the real ResizeObserver and the effects responding to it settle.
+  await act(async () => {
+    await new Promise(requestAnimationFrame);
+    await new Promise(requestAnimationFrame);
+  });
+}
+
+// Stored sizing depends on actual host measurements, which jsdom cannot supply.
+describe('Layout.Panel dialog size preservation', () => {
+  beforeEach(() => localStorage.removeItem(DIALOG_SIZE_KEY));
+  afterEach(() => localStorage.removeItem(DIALOG_SIZE_KEY));
+
+  it.each([
+    [null, false],
+    [null, true],
+    [400, false],
+    [400, true],
+    [560, false],
+    [560, true],
+  ] as const)(
+    'preserves initial stored size %s through a mobile dialog with open=%s',
+    async (storedSize, isDialogOpen) => {
+      await page.viewport(1440, 900);
+      if (storedSize !== null) {
+        localStorage.setItem(DIALOG_SIZE_KEY, String(storedSize));
+      }
+      const onSizeChange = vi.fn();
+      const view = renderWithRoot(
+        <SizedPanelLayout
+          width={390}
+          mode="dialog"
+          isDialogOpen={isDialogOpen}
+          onSizeChange={onSizeChange}
+        />,
+      );
+      await settleLayout(390);
+      expect(localStorage.getItem(DIALOG_SIZE_KEY)).toBe(
+        storedSize === null ? null : String(storedSize),
+      );
+      expect(onSizeChange).not.toHaveBeenCalled();
+      expect(screen.queryByRole('separator')).toBeNull();
+      expect(
+        screen
+          .getByTestId('sized-layout')
+          .style.getPropertyValue('--inset-right'),
+      ).toBe('0px');
+
+      for (const [width, height] of [
+        [375, 450],
+        [768, 640],
+        [919, 640],
+      ]) {
+        view.rerender(
+          <SizedPanelLayout
+            width={width}
+            height={height}
+            mode="dialog"
+            isDialogOpen={isDialogOpen}
+            onSizeChange={onSizeChange}
+          />,
+        );
+        await settleLayout(width);
+      }
+
+      view.rerender(
+        <SizedPanelLayout width={1440} onSizeChange={onSizeChange} />,
+      );
+      await settleLayout(1440);
+      expect(screen.getByTestId('sized-panel').offsetWidth).toBe(
+        storedSize ?? 400,
+      );
+      expect(onSizeChange).not.toHaveBeenCalled();
+      expect(localStorage.getItem(DIALOG_SIZE_KEY)).toBe(
+        storedSize === null ? null : String(storedSize),
+      );
+    },
+  );
+
+  it('retains a resized width through simultaneous mode and host changes', async () => {
+    await page.viewport(1440, 900);
+    const onSizeChange = vi.fn();
+    const view = renderWithRoot(
+      <SizedPanelLayout width={920} onSizeChange={onSizeChange} />,
+    );
+    await settleLayout(920);
+    const separator = screen.getByRole('separator');
+    await act(async () => separator.focus());
+    await userEvent.keyboard('{ArrowLeft}');
+    await waitFor(() =>
+      expect(screen.getByTestId('sized-panel').offsetWidth).toBe(410),
+    );
+    expect(localStorage.getItem(DIALOG_SIZE_KEY)).toBe('410');
+    onSizeChange.mockClear();
+
+    for (const [width, mode] of [
+      [390, 'dialog'],
+      [920, 'default'],
+      [919, 'dialog'],
+      [920, 'default'],
+    ] as const) {
+      view.rerender(
+        <SizedPanelLayout
+          width={width}
+          mode={mode}
+          onSizeChange={onSizeChange}
+        />,
+      );
+      await settleLayout(width);
+      expect(localStorage.getItem(DIALOG_SIZE_KEY)).toBe('410');
+      expect(onSizeChange).not.toHaveBeenCalled();
+      if (mode === 'default') {
+        expect(screen.getByTestId('sized-panel').offsetWidth).toBe(410);
+      }
+    }
+  });
+
+  it.each([
+    [550, 550],
+    [900, 800],
+    [100, 300],
+  ])(
+    'applies controlled dialog size %s within explicit bounds',
+    async (size, expected) => {
+      await page.viewport(1440, 900);
+      const onSizeChange = vi.fn();
+      const view = renderWithRoot(
+        <SizedPanelLayout
+          width={390}
+          mode="dialog"
+          size={400}
+          onSizeChange={onSizeChange}
+        />,
+      );
+      await settleLayout(390);
+      view.rerender(
+        <SizedPanelLayout
+          width={390}
+          mode="dialog"
+          size={size}
+          onSizeChange={onSizeChange}
+        />,
+      );
+      await settleLayout(390);
+      view.rerender(
+        <SizedPanelLayout
+          width={1440}
+          size={size}
+          onSizeChange={onSizeChange}
+        />,
+      );
+      await settleLayout(1440);
+      expect(screen.getByTestId('sized-panel').offsetWidth).toBe(expected);
+      expect(onSizeChange).not.toHaveBeenCalled();
+      expect(localStorage.getItem(DIALOG_SIZE_KEY)).toBeNull();
+    },
+  );
+
+  it('applies a new controlled size when returning from a narrow dialog host', async () => {
+    await page.viewport(1440, 900);
+    const onSizeChange = vi.fn();
+    const view = renderWithRoot(
+      <SizedPanelLayout
+        width={390}
+        mode="dialog"
+        size={400}
+        onSizeChange={onSizeChange}
+      />,
+    );
+    await settleLayout(390);
+    view.rerender(
+      <SizedPanelLayout width={1440} size={550} onSizeChange={onSizeChange} />,
+    );
+    await settleLayout(1440);
+    expect(screen.getByTestId('sized-panel').offsetWidth).toBe(550);
+    expect(onSizeChange).not.toHaveBeenCalled();
+    expect(localStorage.getItem(DIALOG_SIZE_KEY)).toBeNull();
+  });
+
+  it('retains size with percentage bounds in dialog and clamps to real inline bounds on return', async () => {
+    await page.viewport(1440, 900);
+    localStorage.setItem(DIALOG_SIZE_KEY, '560');
+    const onSizeChange = vi.fn();
+    const view = renderWithRoot(
+      <SizedPanelLayout
+        width={390}
+        mode="dialog"
+        maxSize="50%"
+        onSizeChange={onSizeChange}
+      />,
+    );
+    await settleLayout(390);
+    expect(localStorage.getItem(DIALOG_SIZE_KEY)).toBe('560');
+    expect(onSizeChange).not.toHaveBeenCalled();
+
+    view.rerender(
+      <SizedPanelLayout
+        width={1440}
+        maxSize="50%"
+        onSizeChange={onSizeChange}
+      />,
+    );
+    await settleLayout(1440);
+    expect(screen.getByTestId('sized-panel').offsetWidth).toBe(560);
+    view.rerender(
+      <SizedPanelLayout
+        width={700}
+        maxSize="50%"
+        onSizeChange={onSizeChange}
+      />,
+    );
+    await settleLayout(700);
+    expect(screen.getByTestId('sized-panel').offsetWidth).toBe(350);
+    expect(localStorage.getItem(DIALOG_SIZE_KEY)).toBe('350');
+    expect(onSizeChange).toHaveBeenLastCalledWith(350);
+    view.rerender(
+      <SizedPanelLayout width={1440} onSizeChange={onSizeChange} />,
+    );
+    await settleLayout(1440);
+    expect(screen.getByTestId('sized-panel').offsetWidth).toBe(350);
+    await userEvent.dblClick(screen.getByRole('separator'));
+    await waitFor(() =>
+      expect(screen.getByTestId('sized-panel').offsetWidth).toBe(400),
+    );
+    expect(localStorage.getItem(DIALOG_SIZE_KEY)).toBe('400');
+    expect(onSizeChange).toHaveBeenLastCalledWith(400);
+  });
+});
+
 // jsdom cannot observe transformed painting or browser hit testing.
 describe('Layout.Panel animation bounds', () => {
   // Native animation timelines expose a frame mismatch that jsdom cannot observe.
