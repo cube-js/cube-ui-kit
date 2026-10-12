@@ -138,7 +138,7 @@
     // A ceiling on any one function's cognitive complexity, which only goes
     // down: when the worst function improves, lower it to the new worst.
     // `pnpm diagnostics:complexity` ranks the functions and says when.
-    "sonarjs/cognitive-complexity": ["error", 57]
+    "sonarjs/cognitive-complexity": ["error", 39]
   },
   "overrides": [
     {
