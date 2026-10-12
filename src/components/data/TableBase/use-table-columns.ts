@@ -118,6 +118,220 @@ export interface UseTableColumnsOptions<T> {
   trailingColumns?: CubeTableColumn<T>[];
 }
 
+/** A column's sizing inputs, before the container is split between columns. */
+interface ColumnSpec<T> {
+  column: CubeTableColumn<T>;
+  isStructural: boolean;
+  fixed: number | null;
+  minWidth: number;
+  maxWidth: number | null;
+  flex: number | null;
+}
+
+/**
+ * The visible columns in visual order. Pinned columns lead and trail
+ * regardless of their position in the source array, so `aria-colindex` and DOM
+ * order agree and nothing needs CSS `order:` to be reshuffled.
+ */
+function orderColumns<T>(columns: CubeTableColumn<T>[]): CubeTableColumn<T>[] {
+  const visible = columns.filter((column) => !column.isHidden);
+
+  return [
+    ...visible.filter((c) => c.pin === 'start'),
+    ...visible.filter((c) => !c.pin),
+    ...visible.filter((c) => c.pin === 'end'),
+  ];
+}
+
+function toColumnSpec<T>(
+  column: CubeTableColumn<T>,
+  isStructural: boolean,
+  columnWidths: Record<string, number> | undefined,
+): ColumnSpec<T> {
+  const explicit = columnWidths?.[column.key] ?? column.width;
+  const minWidth =
+    column.minWidth ??
+    (explicit != null ? explicit : isStructural ? 0 : DEFAULT_MIN_WIDTH);
+
+  return {
+    column,
+    isStructural,
+    fixed: explicit ?? null,
+    minWidth,
+    maxWidth: column.maxWidth ?? null,
+    flex: explicit != null ? null : column.flex ?? 1,
+  };
+}
+
+function sumFlex<T>(specs: ColumnSpec<T>[]): number {
+  return specs.reduce((sum, s) => sum + (s.flex ?? 1), 0);
+}
+
+/**
+ * Splits `available` pixels across the flex columns by weight. Each pass
+ * assigns proportional widths, freezes whatever hit a bound, and re-splits the
+ * leftover among the rest.
+ */
+function distributeFlexWidths<T>(
+  flexSpecs: ColumnSpec<T>[],
+  available: number,
+  resolved: Map<string, number>,
+): void {
+  let remaining = available;
+  let pool = flexSpecs;
+
+  while (pool.length > 0) {
+    const totalFlex = sumFlex(pool);
+    const nextPool: typeof pool = [];
+    let consumed = 0;
+
+    for (const spec of pool) {
+      const ideal = (remaining * (spec.flex ?? 1)) / (totalFlex || 1);
+      const clamped = clamp(ideal, spec.minWidth, spec.maxWidth);
+
+      if (clamped !== ideal) {
+        resolved.set(spec.column.key, clamped);
+        consumed += clamped;
+      } else {
+        nextPool.push(spec);
+      }
+    }
+
+    if (nextPool.length === pool.length) {
+      // Nothing was clamped this pass — the proportional split stands.
+      const totalLeft = sumFlex(nextPool);
+      for (const spec of nextPool) {
+        resolved.set(
+          spec.column.key,
+          (remaining * (spec.flex ?? 1)) / (totalLeft || 1),
+        );
+      }
+      break;
+    }
+
+    remaining -= consumed;
+    pool = nextPool;
+  }
+}
+
+/**
+ * Each column's pixel width, keyed by column key; none before the container is
+ * measured. When even the minimums do not fit, every column takes its minimum
+ * and the table overflows.
+ */
+function resolveWidths<T>(
+  specs: ColumnSpec<T>[],
+  containerWidth: number | null,
+): { resolved: Map<string, number>; isOverflowing: boolean } {
+  const resolved = new Map<string, number>();
+  const isMeasured = containerWidth != null && containerWidth > 0;
+
+  if (!isMeasured) return { resolved, isOverflowing: false };
+
+  const minTotal = specs.reduce((sum, s) => sum + (s.fixed ?? s.minWidth), 0);
+
+  if (minTotal > containerWidth) {
+    for (const spec of specs) {
+      resolved.set(spec.column.key, spec.fixed ?? spec.minWidth);
+    }
+
+    return { resolved, isOverflowing: true };
+  }
+
+  const fixedTotal = specs.reduce((sum, s) => sum + (s.fixed ?? 0), 0);
+
+  distributeFlexWidths(
+    specs.filter((s) => s.fixed == null),
+    containerWidth - fixedTotal,
+    resolved,
+  );
+
+  for (const spec of specs) {
+    if (spec.fixed != null) resolved.set(spec.column.key, spec.fixed);
+  }
+
+  return { resolved, isOverflowing: false };
+}
+
+/**
+ * Sets each pinned column's sticky offset, which accumulates inwards from its
+ * edge, and marks the innermost pinned column on each side. Returns the width
+ * pinned to each side.
+ */
+function applyPinOffsets<T>(columns: CubeResolvedColumn<T>[]): {
+  pinnedStartWidth: number;
+  pinnedEndWidth: number;
+} {
+  let pinnedStartWidth = 0;
+  let pinnedEndWidth = 0;
+
+  for (const column of columns) {
+    if (column.pin !== 'start') continue;
+    column.pinOffset = pinnedStartWidth;
+    pinnedStartWidth += column.width ?? column.minWidth;
+  }
+
+  for (let i = columns.length - 1; i >= 0; i--) {
+    const column = columns[i];
+    if (column.pin !== 'end') continue;
+    column.pinOffset = pinnedEndWidth;
+    pinnedEndWidth += column.width ?? column.minWidth;
+  }
+
+  const lastPinnedStart = columns.filter((c) => c.pin === 'start').at(-1);
+  const firstPinnedEnd = columns.find((c) => c.pin === 'end');
+
+  if (lastPinnedStart) lastPinnedStart.isPinEdge = true;
+  if (firstPinnedEnd) firstPinnedEnd.isPinEdge = true;
+
+  return { pinnedStartWidth, pinnedEndWidth };
+}
+
+function resolveColumnLayout<T>({
+  columns,
+  containerWidth,
+  columnWidths,
+  leadingColumns,
+  trailingColumns,
+}: UseTableColumnsOptions<T>): CubeTableColumnLayout<T> {
+  const leading = leadingColumns ?? [];
+  const trailing = trailingColumns ?? [];
+  const structuralKeys = new Set([...leading, ...trailing].map((c) => c.key));
+  const specs = orderColumns([...leading, ...columns, ...trailing]).map(
+    (column) =>
+      toColumnSpec(column, structuralKeys.has(column.key), columnWidths),
+  );
+  const { resolved, isOverflowing } = resolveWidths(specs, containerWidth);
+
+  const out: CubeResolvedColumn<T>[] = specs.map((spec, index) => ({
+    ...spec.column,
+    index,
+    ariaColIndex: index + 1,
+    width: resolved.get(spec.column.key) ?? null,
+    minWidth: spec.minWidth,
+    maxWidth: spec.maxWidth,
+    flex: spec.flex,
+    align: spec.column.align ?? 'start',
+    pinOffset: null,
+    isPinEdge: false,
+    isStructural: spec.isStructural,
+  }));
+
+  const { pinnedStartWidth, pinnedEndWidth } = applyPinOffsets(out);
+
+  const totalWidth = out.every((c) => c.width != null)
+    ? out.reduce((sum, c) => sum + (c.width ?? 0), 0)
+    : null;
+
+  return {
+    columns: out,
+    pinnedStartWidth,
+    pinnedEndWidth,
+    totalWidth,
+    isOverflowing,
+  };
+}
+
 /**
  * Normalizes the public column list into resolved leaves: visual order, ARIA
  * indices, pixel widths, and sticky offsets for pinned columns.
@@ -136,154 +350,15 @@ export function useTableColumns<T>({
   leadingColumns,
   trailingColumns,
 }: UseTableColumnsOptions<T>): CubeTableColumnLayout<T> {
-  return useMemo(() => {
-    const visible = [
-      ...(leadingColumns ?? []),
-      ...columns,
-      ...(trailingColumns ?? []),
-    ].filter((column) => !column.isHidden);
-
-    // Pinned columns lead and trail regardless of their position in the source
-    // array, so `aria-colindex` and DOM order agree and nothing needs CSS
-    // `order:` to be reshuffled.
-    const ordered = [
-      ...visible.filter((c) => c.pin === 'start'),
-      ...visible.filter((c) => !c.pin),
-      ...visible.filter((c) => c.pin === 'end'),
-    ];
-
-    const structuralKeys = new Set(
-      [...(leadingColumns ?? []), ...(trailingColumns ?? [])].map((c) => c.key),
-    );
-
-    const specs = ordered.map((column) => {
-      const isStructural = structuralKeys.has(column.key);
-      const explicit = columnWidths?.[column.key] ?? column.width;
-      const minWidth =
-        column.minWidth ??
-        (explicit != null ? explicit : isStructural ? 0 : DEFAULT_MIN_WIDTH);
-
-      return {
-        column,
-        isStructural,
-        fixed: explicit ?? null,
-        minWidth,
-        maxWidth: column.maxWidth ?? null,
-        flex: explicit != null ? null : column.flex ?? 1,
-      };
-    });
-
-    const resolved = new Map<string, number>();
-    let isOverflowing = false;
-
-    if (containerWidth != null && containerWidth > 0) {
-      const fixedTotal = specs.reduce((sum, s) => sum + (s.fixed ?? 0), 0);
-      const flexSpecs = specs.filter((s) => s.fixed == null);
-      const minTotal = specs.reduce(
-        (sum, s) => sum + (s.fixed ?? s.minWidth),
-        0,
-      );
-
-      if (minTotal > containerWidth) {
-        isOverflowing = true;
-        for (const spec of specs) {
-          resolved.set(spec.column.key, spec.fixed ?? spec.minWidth);
-        }
-      } else {
-        let remaining = containerWidth - fixedTotal;
-        let pool = flexSpecs;
-
-        // Each pass assigns proportional widths, freezes whatever hit a bound,
-        // and re-splits the leftover among the rest.
-        while (pool.length > 0) {
-          const totalFlex = pool.reduce((sum, s) => sum + (s.flex ?? 1), 0);
-          const nextPool: typeof pool = [];
-          let consumed = 0;
-
-          for (const spec of pool) {
-            const ideal = (remaining * (spec.flex ?? 1)) / (totalFlex || 1);
-            const clamped = clamp(ideal, spec.minWidth, spec.maxWidth);
-
-            if (clamped !== ideal) {
-              resolved.set(spec.column.key, clamped);
-              consumed += clamped;
-            } else {
-              nextPool.push(spec);
-            }
-          }
-
-          if (nextPool.length === pool.length) {
-            // Nothing was clamped this pass — the proportional split stands.
-            const totalLeft = nextPool.reduce(
-              (sum, s) => sum + (s.flex ?? 1),
-              0,
-            );
-            for (const spec of nextPool) {
-              resolved.set(
-                spec.column.key,
-                (remaining * (spec.flex ?? 1)) / (totalLeft || 1),
-              );
-            }
-            break;
-          }
-
-          remaining -= consumed;
-          pool = nextPool;
-        }
-
-        for (const spec of specs) {
-          if (spec.fixed != null) resolved.set(spec.column.key, spec.fixed);
-        }
-      }
-    }
-
-    let pinnedStartWidth = 0;
-    let pinnedEndWidth = 0;
-
-    const out: CubeResolvedColumn<T>[] = specs.map((spec, index) => ({
-      ...spec.column,
-      index,
-      ariaColIndex: index + 1,
-      width: resolved.get(spec.column.key) ?? null,
-      minWidth: spec.minWidth,
-      maxWidth: spec.maxWidth,
-      flex: spec.flex,
-      align: spec.column.align ?? 'start',
-      pinOffset: null,
-      isPinEdge: false,
-      isStructural: spec.isStructural,
-    }));
-
-    // Sticky offsets accumulate inwards from each edge.
-    for (const column of out) {
-      if (column.pin !== 'start') continue;
-      column.pinOffset = pinnedStartWidth;
-      pinnedStartWidth += column.width ?? column.minWidth;
-    }
-
-    for (let i = out.length - 1; i >= 0; i--) {
-      const column = out[i];
-      if (column.pin !== 'end') continue;
-      column.pinOffset = pinnedEndWidth;
-      pinnedEndWidth += column.width ?? column.minWidth;
-    }
-
-    const lastPinnedStart = out.filter((c) => c.pin === 'start').at(-1);
-    const firstPinnedEnd = out.find((c) => c.pin === 'end');
-
-    if (lastPinnedStart) lastPinnedStart.isPinEdge = true;
-    if (firstPinnedEnd) firstPinnedEnd.isPinEdge = true;
-
-    const totalWidth = out.every((c) => c.width != null)
-      ? out.reduce((sum, c) => sum + (c.width ?? 0), 0)
-      : null;
-
-    return {
-      columns: out,
-      pinnedStartWidth,
-      pinnedEndWidth,
-      totalWidth,
-      isOverflowing,
-    };
-  }, [columns, containerWidth, columnWidths, leadingColumns, trailingColumns]);
+  return useMemo(
+    () =>
+      resolveColumnLayout({
+        columns,
+        containerWidth,
+        columnWidths,
+        leadingColumns,
+        trailingColumns,
+      }),
+    [columns, containerWidth, columnWidths, leadingColumns, trailingColumns],
+  );
 }
