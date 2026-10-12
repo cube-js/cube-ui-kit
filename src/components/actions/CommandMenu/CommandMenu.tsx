@@ -61,7 +61,7 @@ function collectItemKeys(nodes: Iterable<any>, keys: Key[] = []): Key[] {
  * The key an arrow press moves to: the next enabled key after `currentKey` in
  * `direction`, wrapping round to the first enabled key in that direction (the
  * last one going up). With nothing focused, or the focused key filtered out,
- * it starts from that same key.
+ * it returns that key.
  */
 function getNextEnabledKey(
   keys: Key[],
