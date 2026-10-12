@@ -171,6 +171,7 @@ function LayoutInner(
 
   useResizeObserver({
     ref: localRef,
+    box: 'border-box',
     onResize: useCallback(() => {
       if (localRef.current) {
         updateContainerSize?.(
