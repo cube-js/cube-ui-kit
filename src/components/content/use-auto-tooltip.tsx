@@ -302,6 +302,10 @@ export function useAutoTooltip({
     queueOverflowCheck(checkOverflow);
   }, [checkOverflow]);
 
+  // Text can change its overflow without changing the observed box size.
+  const measuredLabel = isLabelMeasured ? children : undefined;
+  const measuredDescription = isDescriptionMeasured ? description : undefined;
+
   useEffect(() => {
     if (isAutoTooltipEnabled) {
       // Queued, not measured here. React 19 flushes a sync commit's passive
@@ -332,6 +336,8 @@ export function useAutoTooltip({
     isAutoTooltipEnabled,
     isLabelMeasured,
     isDescriptionMeasured,
+    measuredLabel,
+    measuredDescription,
     scheduleOverflowCheck,
     setVerdict,
   ]);

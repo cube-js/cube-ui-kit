@@ -843,3 +843,70 @@ describe('treegrid focus and virtualization', () => {
     expect(onExpand).not.toHaveBeenCalled();
   });
 });
+
+describe('virtualized row identity', () => {
+  it('keeps scrolling work proportional to the mounted window and refreshes changed data', async () => {
+    const rows = Array.from({ length: 2_000 }, (_, index) => ({
+      id: `row-${index}`,
+      name: `Row ${index}`,
+    }));
+    const getRowKey = vi.fn((row: (typeof rows)[number]) => row.id);
+    const columns = [{ key: 'name', title: 'Name' }];
+    const table = (data: typeof rows) => (
+      <ItemTable
+        data={data}
+        columns={columns}
+        getRowKey={getRowKey}
+        paginationMode="off"
+        isVirtualized
+        isRowMoveAnimated={false}
+        rowHeight={40}
+        height="300px"
+      />
+    );
+    const { rerender } = renderWithRoot(table(rows));
+    await vi.waitFor(() =>
+      expect(grid().querySelector('tbody tr[data-key="row-0"]')).not.toBeNull(),
+    );
+    await nextFrame();
+    await nextFrame();
+    getRowKey.mockClear();
+
+    const scroller = grid().parentElement!;
+    scroller.scrollTop = 1_200;
+    await vi.waitFor(() =>
+      expect(
+        grid().querySelector('tbody tr[data-key="row-35"]'),
+      ).not.toBeNull(),
+    );
+    await nextFrame();
+    await nextFrame();
+
+    // Mounted rows need keys, but a scroll must not invalidate all 2,000 entries.
+    expect(getRowKey.mock.calls.length).toBeLessThan(rows.length);
+
+    const reversed = rows.toReversed();
+    rerender(table(reversed));
+    scroller.scrollTop = 0;
+    await vi.waitFor(() =>
+      expect(
+        grid().querySelector('tbody tr[data-key="row-1999"]')?.textContent,
+      ).toBe('Row 1999'),
+    );
+    rerender(table([{ id: 'replacement', name: 'Replacement' }]));
+    await vi.waitFor(() =>
+      expect(
+        grid().querySelector('tbody tr[data-key="replacement"]')?.textContent,
+      ).toBe('Replacement'),
+    );
+    expect(
+      grid().querySelectorAll('tbody tr[data-element="Row"]'),
+    ).toHaveLength(1);
+    rerender(table([{ id: 'replacement', name: 'Updated' }]));
+    await vi.waitFor(() =>
+      expect(
+        grid().querySelector('tbody tr[data-key="replacement"]')?.textContent,
+      ).toBe('Updated'),
+    );
+  });
+});

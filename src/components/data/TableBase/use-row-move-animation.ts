@@ -59,7 +59,12 @@ export function useRowMoveAnimation({
   useLayoutEffect(() => {
     const body = bodyRef.current;
 
-    if (!body) return;
+    if (!body || !isEnabled || prefersReducedMotion()) {
+      // Enabling starts a fresh snapshot; disabled frames need no geometry.
+      previousRef.current = null;
+      previousOrderRef.current = [];
+      return;
+    }
 
     const rows = Array.from(
       body.querySelectorAll<HTMLTableRowElement>(
@@ -83,10 +88,7 @@ export function useRowMoveAnimation({
     previousRef.current = next;
     previousOrderRef.current = nextOrder;
 
-    // Checked per commit rather than once: the setting can change mid-session,
-    // and the position bookkeeping above must keep running either way so the
-    // animation is correct the moment it is turned back on.
-    if (!isEnabled || prefersReducedMotion() || !previous) return;
+    if (!previous) return;
 
     // Animate a REORDER, never a relayout.
     //
