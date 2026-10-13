@@ -176,13 +176,13 @@ For detailed information about all available item properties, see [Item document
 - **`wrapper`** `(item: ReactElement) => ReactElement` — Function to wrap the item
 - **`onAction`** `() => void` — Callback fired when item is activated
 - **`to`** `string \| Path` — Application destination, resolved by Root's navigation adapter; takes precedence over `href`
-- **`navigationOptions`** `NavigateOptions` — Router options such as `replace`, `state`, `relative`, and `preventScrollReset`
+- **`navigationOptions`** `NavigateOptions` — Options forwarded during client navigation, such as `replace`, `state`, `relative`, and `preventScrollReset`
 - **`href`** `string` — Link destination when `to` is omitted
 - **`target`**, **`rel`**, **`download`**, **`ping`**, **`referrerPolicy`** — Native anchor attributes
 
 #### Navigation Items
 
-Navigation items render native anchors. An ordinary click or Enter/Space activation uses the navigation adapter passed to [Root](/docs/getting-started-root--docs) and closes the menu. Modified clicks, middle clicks, downloads, other targets, and external destinations retain browser link behavior. Right-click offers the browser's link commands. Disabled links have no destination and cannot navigate.
+Navigation items render native anchors. An ordinary click or Enter/Space activation uses the navigation adapter passed to [Root](/docs/getting-started-root--docs) and closes the menu. Without a custom adapter, activation stays native and preserves the anchor's attributes. Modified clicks, middle clicks, downloads, other targets, and external destinations retain browser link behavior. Right-click offers the browser's link commands. Disabled links have no destination and cannot navigate.
 
 ```tsx
 <MenuTrigger>
