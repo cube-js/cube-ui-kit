@@ -2,6 +2,7 @@ import { act } from 'react';
 import { userEvent as realInput } from 'vitest/browser';
 
 import { renderWithRoot, screen } from '../../../test';
+import { Menu } from '../../actions/Menu';
 import { DataTable } from '../DataTable/DataTable';
 
 import { ItemTable } from './ItemTable';
@@ -128,6 +129,7 @@ describe('ItemTable body column window', () => {
     cols[0].pin = 'start';
     cols[99].pin = 'end';
     cols[50].isRowHeader = true;
+    cols[20].key = 'column-gap:c6';
     cols[20].render = () => <input aria-label="Draft" defaultValue="draft" />;
     cols[30].cellStyles = { height: '180px' };
     cols[75].autoHeight = true;
@@ -144,10 +146,14 @@ describe('ItemTable body column window', () => {
     const height = bodyRow().getBoundingClientRect().height;
     await scrollTo(14000);
     await vi.waitFor(() => expect(cell('c95')).toBeInTheDocument());
-    for (const key of ['c0', 'c99', 'c50', 'c20', 'c30', 'c75'])
+    for (const key of ['c0', 'c99', 'c50', 'column-gap:c6', 'c30', 'c75'])
       expect(cell(key)).toBeInTheDocument();
     expect(screen.getAllByRole('textbox', { name: 'Draft' })[0]).toBe(input);
     expect(input.value).toBe('draft changed');
+    await scrollTo(0);
+    expect(screen.getAllByRole('textbox', { name: 'Draft' })[0]).toBe(input);
+    expect(input.value).toBe('draft changed');
+    await scrollTo(14000);
     expect(bodyRow().getBoundingClientRect().height).toBe(height);
     expect(bodyRow().querySelector('[data-element="RowLink"]')).toHaveAttribute(
       'href',
@@ -198,6 +204,182 @@ describe('ItemTable body column window', () => {
     expect(
       bodyRow().querySelector('[data-element="ColumnSpacer"]'),
     ).not.toBeInTheDocument();
+  });
+
+  it('preserves row height through loading and complete-body transitions', async () => {
+    const { rerender } = renderWithRoot(<Table isVirtualized={false} />);
+    const height = bodyRow().getBoundingClientRect().height;
+    rerender(<Table />);
+    await vi.waitFor(() =>
+      expect(
+        bodyRow().querySelectorAll('[data-element="Cell"]').length,
+      ).toBeLessThan(20),
+    );
+    expect(bodyRow().getBoundingClientRect().height).toBe(height);
+    await scrollTo(6000);
+    expect(bodyRow().getBoundingClientRect().height).toBe(height);
+    rerender(<Table data={[]} isLoading skeletonRowCount={2} />);
+    await vi.waitFor(() =>
+      expect(grid().querySelectorAll('tr[data-placeholder]')).toHaveLength(2),
+    );
+    const placeholder = grid().querySelector<HTMLTableRowElement>(
+      'tr[data-placeholder]',
+    )!;
+    expect(placeholder.getBoundingClientRect().height).toBe(height);
+    expect(
+      placeholder.querySelectorAll('[data-element="Cell"]').length,
+    ).toBeLessThan(20);
+    expect(
+      Array.from(placeholder.cells).reduce((sum, td) => sum + td.colSpan, 0),
+    ).toBe(100);
+    rerender(<Table />);
+    await vi.waitFor(() => expect(cell('c40')).toBeInTheDocument());
+    expect(bodyRow().getBoundingClientRect().height).toBe(height);
+  });
+
+  it('keeps intrinsic text height with compact rows and empty visible cells', async () => {
+    const data = [
+      Object.fromEntries([
+        ['id', 'r0'],
+        ...columns().map((col) => [col.key, {}]),
+        ['c95', 'Text'],
+      ]),
+    ];
+    renderWithRoot(
+      <ItemTable
+        data={data}
+        columns={columns()}
+        getRowKey={(row) => row.id}
+        paginationMode="off"
+        isRowMoveAnimated={false}
+        rowHeight={18}
+        width="600px"
+        height="300px"
+      />,
+    );
+    await vi.waitFor(() =>
+      expect(bodyRow()?.querySelectorAll('[data-element="Cell"]')).toHaveLength(
+        100,
+      ),
+    );
+    const height = bodyRow().getBoundingClientRect().height;
+    expect(height).toBeGreaterThan(19);
+    await scrollTo(14000);
+    expect(bodyRow().getBoundingClientRect().height).toBe(height);
+  });
+
+  it('aligns the final body column when an omitted run exceeds native colspan', async () => {
+    const cols = Array.from({ length: 1100 }, (_, index) => ({
+      key: `c${index}`,
+      title: `Column ${index}`,
+      width: 150,
+    }));
+    const data = [
+      Object.fromEntries([
+        ['id', 'r0'],
+        ...cols.map((col) => [col.key, col.key]),
+      ]),
+    ];
+    renderWithRoot(<Table data={data} cols={cols} />);
+    await vi.waitFor(() =>
+      expect(
+        bodyRow()?.querySelectorAll('[data-element="Cell"]').length,
+      ).toBeLessThan(20),
+    );
+    expect(
+      Array.from(bodyRow().cells).reduce((sum, td) => sum + td.colSpan, 0),
+    ).toBe(1100);
+    await scrollTo(scroller().scrollWidth);
+    await vi.waitFor(() => expect(cell('c1099')).toBeInTheDocument());
+    expect(
+      Math.abs(
+        cell('c1099')!.getBoundingClientRect().left -
+          header('c1099').getBoundingClientRect().left,
+      ),
+    ).toBeLessThanOrEqual(1);
+  });
+
+  it('keeps row selection, actions and menu controls usable while windowed', async () => {
+    const onSelectionChange = vi.fn(),
+      onRowAction = vi.fn(),
+      onRowMenuAction = vi.fn();
+    renderWithRoot(
+      <Table
+        selectionMode="multiple"
+        onSelectionChange={onSelectionChange}
+        onRowAction={onRowAction}
+        rowContextMenu
+        rowMenu={<Menu.Item key="inspect">Inspect record</Menu.Item>}
+        onRowMenuAction={onRowMenuAction}
+      />,
+    );
+    await scrollTo(6000);
+    await act(() =>
+      realInput.click(
+        bodyRow().querySelector<HTMLElement>('[data-kind="selection"] input')!,
+      ),
+    );
+    await vi.waitFor(() =>
+      expect(onSelectionChange).toHaveBeenCalledWith(
+        ['r0'],
+        [expect.objectContaining({ id: 'r0' })],
+      ),
+    );
+    expect(onRowAction).not.toHaveBeenCalled();
+    await scrollTo(6000);
+    await vi.waitFor(() => expect(cell('c40')).toBeInTheDocument());
+    await act(() => realInput.click(cell('c40')!));
+    expect(onRowAction).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'r0' }),
+      'r0',
+    );
+    await act(() =>
+      realInput.click(
+        bodyRow().querySelector<HTMLElement>('[data-kind="actions"] button')!,
+      ),
+    );
+    await vi.waitFor(() =>
+      expect(
+        screen.getByRole('menuitem', { name: 'Inspect record' }),
+      ).toBeInTheDocument(),
+    );
+    await act(() =>
+      realInput.click(screen.getByRole('menuitem', { name: 'Inspect record' })),
+    );
+    expect(onRowMenuAction).toHaveBeenCalledWith(
+      'inspect',
+      expect.objectContaining({ id: 'r0' }),
+      'r0',
+    );
+  });
+
+  it('reorders a focused DataTable header with the native keyboard delegate', async () => {
+    const onColumnOrderChange = vi.fn();
+    renderWithRoot(
+      <DataTable
+        data={rows()}
+        columns={columns()}
+        getRowKey={(row) => row.id}
+        width="600px"
+        height="300px"
+        isRowMoveAnimated={false}
+        isColumnReorderable
+        onColumnOrderChange={onColumnOrderChange}
+      />,
+    );
+    await scrollTo(6000);
+    await act(async () => header('c40').focus());
+    await act(() => realInput.keyboard('{Alt>}{ArrowRight}{/Alt}'));
+    await vi.waitFor(() => expect(onColumnOrderChange).toHaveBeenCalled());
+    const order = onColumnOrderChange.mock.lastCall![0];
+    expect(order.slice(40, 42)).toEqual(['c41', 'c40']);
+    expect(cell('c40')).toHaveAttribute('aria-colindex', '42');
+    expect(
+      Math.abs(
+        cell('c40')!.getBoundingClientRect().left -
+          header('c40').getBoundingClientRect().left,
+      ),
+    ).toBeLessThanOrEqual(1);
   });
 
   it('keeps offscreen header focus and keyboard resizing aligned with the body', async () => {

@@ -70,6 +70,29 @@ describe('column window model', () => {
     );
     expect(segments.filter((s) => !s.column).length).toBeGreaterThan(2);
   });
+  it('splits gaps at the native colspan limit and isolates consumer keys', () => {
+    const cols = Array.from({ length: 1500 }, (_, index) => ({
+      ...columns()[0],
+      key: `c${index}`,
+      index,
+      ariaColIndex: index + 1,
+    }));
+    cols[1400].key = 'column-gap:c6';
+    cols[1400].render = () => 'retained';
+    const segments = getColumnWindowSegments(cols, { first: 0, last: 5 });
+    expect(
+      segments.reduce(
+        (sum, segment) => sum + (segment.column ? 1 : segment.span),
+        0,
+      ),
+    ).toBe(1500);
+    expect(
+      segments.every((segment) => segment.column || segment.span <= 1000),
+    ).toBe(true);
+    expect(new Set(segments.map((segment) => segment.key)).size).toBe(
+      segments.length,
+    );
+  });
   it('uses current variable widths and sticky lane widths', () => {
     const current = layout();
     current.columns[0].width = 1000;

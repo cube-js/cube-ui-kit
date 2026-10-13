@@ -18,6 +18,7 @@ import { MoreIcon } from '../../../icons/MoreIcon';
 import { getColorTheme, useColorTheme } from '../../../tokens/color-theme';
 import { usePaletteVersion } from '../../../tokens/palette-config';
 import { SIZE_NAME_TO_KEY, SIZES } from '../../../tokens/sizes';
+import { TYPOGRAPHY_PRESETS } from '../../../tokens/typography';
 import { Action } from '../../actions/Action/Action';
 import { ItemAction } from '../../actions/ItemAction/ItemAction';
 import { Menu, MenuTrigger } from '../../actions/Menu';
@@ -648,6 +649,9 @@ export function TableView<T = any>(props: TableViewProps<T>) {
       !rowStyles &&
       !cellStyles &&
       (!contentPreset || contentPreset === 't4') &&
+      (rowHeight == null ||
+        rowHeight >=
+          parseFloat(TYPOGRAPHY_PRESETS[contentPreset ?? 't3'].lineHeight)) &&
       canWindowColumns(columns, styles),
     tree?.columnKey,
   );
@@ -983,7 +987,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
   function renderSkeletonCell(column: CubeResolvedColumn<T>) {
     return (
       <td
-        key={column.key}
+        key={`column-cell:${column.key}`}
         data-element="Cell"
         data-pin={column.pin}
         data-pin-edge={column.isPinEdge ? '' : undefined}
@@ -1083,7 +1087,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
 
     return (
       <td
-        key={column.key}
+        key={`column-cell:${column.key}`}
         data-element="Cell"
         data-key={column.key}
         data-kind="selection"
@@ -1130,7 +1134,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
 
     return (
       <td
-        key={column.key}
+        key={`column-cell:${column.key}`}
         data-element="Cell"
         data-key={column.key}
         data-kind="actions"
@@ -1373,7 +1377,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
     if (column.key === ROW_NUMBER_COLUMN_KEY) {
       return (
         <td
-          key={column.key}
+          key={`column-cell:${column.key}`}
           data-element="Cell"
           data-key={column.key}
           data-kind="row-number"
@@ -1459,7 +1463,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
 
     return (
       <CellTag
-        key={column.key}
+        key={`column-cell:${column.key}`}
         data-element="Cell"
         data-key={column.key}
         data-pin={column.pin}

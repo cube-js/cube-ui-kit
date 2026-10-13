@@ -107,10 +107,12 @@ export function getColumnWindowSegments<T>(
       retainColumn(column, treeColumnKey)
     ) {
       flushGap();
-      segments.push({ key: column.key, column });
+      segments.push({ key: `column-cell:${column.key}`, column });
     } else {
       if (!omitted) firstOmittedKey = column.key;
       omitted++;
+      // Native table cells clamp colSpan to 1000.
+      if (omitted === 1000) flushGap();
     }
   }
   flushGap();

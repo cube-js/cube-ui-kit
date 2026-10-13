@@ -63,7 +63,7 @@ Keep the virtualizer's `getItemKey` callback stable until rows or their key reso
 
 ## Body column windowing
 
-Keep headers and the complete colgroup/layout mounted: native Tab, menu anchors, grouped spans, resizers and React Aria's reorder delegate require their full DOM. Window only safe default text body cells, with hidden colspan gaps covering the omitted logical columns. Retain pins, structural/row-header/tree columns and height/state-bearing custom cells. Arbitrary cellProps spans or body/descendant typography overrides require full rendering. Do not filter the model used by selection/copy or renumber aria-colindex. Scrolling reads logical inline offset (absolute scrollLeft in modern RTL), and publishes state only when the column band changes.
+Keep headers and the complete colgroup/layout mounted: native Tab, menu anchors, grouped spans, resizers and React Aria's reorder delegate require their full DOM. Window only safe default text body cells, with hidden colspan gaps covering the omitted logical columns. Retain pins, structural/row-header/tree columns and height/state-bearing custom cells. Arbitrary cellProps spans, compact explicit row heights below the text line box, or body/descendant typography overrides require full rendering. Do not filter the model used by selection/copy or renumber aria-colindex. Scrolling reads logical inline offset (absolute scrollLeft in modern RTL), and publishes state only when the column band changes.
 
 ## Column reordering excludes pinned columns
 

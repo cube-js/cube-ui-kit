@@ -860,6 +860,7 @@ export const TableElement = tasty({
 
     ColumnSpacer: {
       $: '> Scroller > Table > Body > Row >',
+      boxSizing: 'border-box',
       height: '($row-height + 1bw)',
       padding: 0,
       fill: '#row-base #row-overlay',
