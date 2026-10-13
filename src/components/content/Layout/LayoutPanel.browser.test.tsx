@@ -1,4 +1,4 @@
-import { CSSProperties, useState } from 'react';
+import { CSSProperties, useState, useSyncExternalStore } from 'react';
 import { cdp, page, userEvent } from 'vitest/browser';
 
 import {
@@ -206,6 +206,50 @@ function outsidePoint(side: Side, layout: DOMRect) {
 
 const DIALOG_SIZE_KEY = 'layout-panel-dialog-size';
 
+const MOBILE_PANEL_QUERY = '(max-width: 919px)';
+
+function subscribePanelViewport(listener: () => void) {
+  const media = window.matchMedia(MOBILE_PANEL_QUERY);
+  media.addEventListener('change', listener);
+  return () => media.removeEventListener('change', listener);
+}
+
+function getResponsivePanelMode(): LayoutPanelMode {
+  return window.matchMedia(MOBILE_PANEL_QUERY).matches ? 'dialog' : 'default';
+}
+
+function ResponsivePanelLayout({
+  onSizeChange,
+}: {
+  onSizeChange: (size: number) => void;
+}) {
+  const mode = useSyncExternalStore(
+    subscribePanelViewport,
+    getResponsivePanelMode,
+  );
+
+  return (
+    <div style={{ width: '100vw', height: 640, display: 'grid' }}>
+      <Layout qa="responsive-layout">
+        <button>Page action</button>
+        <Layout.Panel
+          qa="responsive-panel"
+          side="right"
+          mode={mode}
+          defaultSize={400}
+          minSize={300}
+          maxSize={800}
+          isResizable
+          sizeStorageKey={DIALOG_SIZE_KEY}
+          onSizeChange={onSizeChange}
+        >
+          <button>Panel action</button>
+        </Layout.Panel>
+      </Layout>
+    </div>
+  );
+}
+
 function SizedPanelLayout({
   width,
   height = 640,
@@ -369,6 +413,122 @@ describe('Layout.Panel dialog size preservation', () => {
       }
     }
   });
+
+  it('preserves resized width when iframe measurement precedes responsive mode delivery', async () => {
+    await page.viewport(1440, 900);
+    localStorage.setItem(DIALOG_SIZE_KEY, '560');
+    const onSizeChange = vi.fn();
+    renderWithRoot(<ResponsivePanelLayout onSizeChange={onSizeChange} />);
+    await waitFor(() =>
+      expect(screen.getByTestId('responsive-panel').offsetWidth).toBe(560),
+    );
+    await act(async () => screen.getByRole('separator').focus());
+    await userEvent.keyboard('{ArrowLeft}');
+    await waitFor(() =>
+      expect(screen.getByTestId('responsive-panel').offsetWidth).toBe(570),
+    );
+    expect(localStorage.getItem(DIALOG_SIZE_KEY)).toBe('570');
+    onSizeChange.mockClear();
+
+    for (let cycle = 0; cycle < 3; cycle += 1) {
+      for (const width of [375, 390, 768, 919, 920, 390, 1440]) {
+        await page.viewport(width, 745);
+        await waitFor(() =>
+          expect(screen.queryByRole('separator') !== null).toBe(width >= 920),
+        );
+        await act(async () => {
+          await new Promise(requestAnimationFrame);
+          await new Promise(requestAnimationFrame);
+        });
+        expect(localStorage.getItem(DIALOG_SIZE_KEY)).toBe('570');
+        expect(onSizeChange).not.toHaveBeenCalled();
+        if (width >= 920) {
+          expect(screen.getByTestId('responsive-panel').offsetWidth).toBe(570);
+        }
+      }
+    }
+  });
+
+  it.each(['callback replacement', 'unmount'] as const)(
+    'retains pending clamp ownership through %s',
+    async (change) => {
+      await page.viewport(1440, 900);
+      localStorage.setItem(DIALOG_SIZE_KEY, '560');
+      const callbackA = vi.fn();
+      const callbackB = vi.fn();
+      const view = renderWithRoot(
+        <SizedPanelLayout
+          width={1440}
+          maxSize="50%"
+          onSizeChange={callbackA}
+        />,
+      );
+      await settleLayout(1440);
+      expect(screen.getByTestId('sized-panel').offsetWidth).toBe(560);
+
+      const frames = new Map<number, FrameRequestCallback>();
+      let frameId = 1000000;
+      const requestFrame = vi
+        .spyOn(window, 'requestAnimationFrame')
+        .mockImplementation((callback) => {
+          frameId += 1;
+          frames.set(frameId, callback);
+          return frameId;
+        });
+      const cancelFrame = vi
+        .spyOn(window, 'cancelAnimationFrame')
+        .mockImplementation((id) => frames.delete(id));
+
+      try {
+        view.rerender(
+          <SizedPanelLayout
+            width={700}
+            maxSize="50%"
+            onSizeChange={callbackA}
+          />,
+        );
+        await waitFor(() => {
+          const panel = screen.getByTestId('sized-panel');
+          expect(panel.offsetWidth).toBe(350);
+          expect(panel.style.getPropertyValue('--max-size')).toBe(
+            'min(50%, 378px)',
+          );
+          expect(frames.size).toBeGreaterThan(0);
+        });
+        expect(localStorage.getItem(DIALOG_SIZE_KEY)).toBe('560');
+        expect(callbackA).not.toHaveBeenCalled();
+
+        if (change === 'unmount') {
+          view.unmount();
+        } else {
+          view.rerender(
+            <SizedPanelLayout
+              width={700}
+              maxSize="50%"
+              onSizeChange={callbackB}
+            />,
+          );
+        }
+        await act(async () => {
+          const ready = [...frames.values()];
+          frames.clear();
+          ready.forEach((callback) => callback(performance.now()));
+        });
+        expect(callbackA).not.toHaveBeenCalled();
+        if (change === 'unmount') {
+          expect(callbackB).not.toHaveBeenCalled();
+          expect(localStorage.getItem(DIALOG_SIZE_KEY)).toBe('560');
+        } else {
+          expect(callbackB).toHaveBeenCalledExactlyOnceWith(350);
+          expect(localStorage.getItem(DIALOG_SIZE_KEY)).toBe('350');
+        }
+      } finally {
+        view.unmount();
+        requestFrame.mockRestore();
+        cancelFrame.mockRestore();
+      }
+    },
+  );
 
   it.each([
     [550, 800, 550],
@@ -568,7 +728,9 @@ describe('Layout.Panel dialog size preservation', () => {
     );
     await settleLayout(700);
     expect(screen.getByTestId('sized-panel').offsetWidth).toBe(350);
-    expect(localStorage.getItem(DIALOG_SIZE_KEY)).toBe('350');
+    await waitFor(() =>
+      expect(localStorage.getItem(DIALOG_SIZE_KEY)).toBe('350'),
+    );
     expect(onSizeChange).toHaveBeenLastCalledWith(350);
     view.rerender(
       <SizedPanelLayout width={1440} onSizeChange={onSizeChange} />,
