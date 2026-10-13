@@ -36,6 +36,61 @@ const HookWrapper = ({ children }: { children: React.ReactNode }) => (
 );
 
 describe('<Menu />', () => {
+  it.each(['command', 'inline command', 'to', 'href'])(
+    'forwards a consumer keyboard handler once for a %s row',
+    async (kind) => {
+      const onKeyDown = vi.fn();
+      const onItemAction = vi.fn();
+      const onMenuAction = vi.fn();
+      const navigate = vi.fn();
+      render(
+        <Root navigation={{ useHref: String, useNavigate: () => navigate }}>
+          <Menu aria-label="Keyboard contract" onAction={onMenuAction}>
+            <Menu.Item
+              key="workbook"
+              tooltip={false}
+              onKeyDown={onKeyDown}
+              onAction={onItemAction}
+              {...(kind === 'to'
+                ? { to: '/workbooks/keyboard' }
+                : kind === 'href'
+                  ? { href: '/workbooks/keyboard' }
+                  : kind === 'inline command'
+                    ? {
+                        actions: (
+                          <Menu.Item.Action>Extra action</Menu.Item.Action>
+                        ),
+                      }
+                    : {})}
+            >
+              Workbook
+            </Menu.Item>
+          </Menu>
+        </Root>,
+      );
+      const item = screen.getByRole('menuitem', { name: 'Workbook' });
+      await act(async () => item.focus());
+      await userEvent.keyboard('{F2}');
+      expect(onKeyDown).toHaveBeenCalledTimes(1);
+      expect(onKeyDown.mock.calls[0][0].key).toBe('F2');
+      expect(onItemAction).not.toHaveBeenCalled();
+      expect(onMenuAction).not.toHaveBeenCalled();
+      expect(navigate).not.toHaveBeenCalled();
+      onKeyDown.mockClear();
+      await userEvent.keyboard('{Enter}');
+      expect(onKeyDown).toHaveBeenCalledTimes(1);
+      expect(onKeyDown.mock.calls[0][0].key).toBe('Enter');
+      expect(onItemAction).toHaveBeenCalledExactlyOnceWith();
+      expect(onMenuAction).toHaveBeenCalledExactlyOnceWith('workbook');
+      if (kind === 'to' || kind === 'href')
+        expect(navigate).toHaveBeenCalledExactlyOnceWith(
+          '/workbooks/keyboard',
+          undefined,
+        );
+      else expect(navigate).not.toHaveBeenCalled();
+    },
+  );
+
   const basicItems = [
     <Menu.Item key="copy">Copy</Menu.Item>,
     <Menu.Item key="paste">Paste</Menu.Item>,

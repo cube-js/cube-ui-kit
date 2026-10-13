@@ -8,6 +8,50 @@ import { CommandMenu } from './CommandMenu';
 
 describe('CommandMenu navigation items', () => {
   it.each(['command', 'to', 'href'])(
+    'forwards a %s item keyboard handler once from the search input',
+    async (kind) => {
+      const user = userEvent.setup();
+      const onKeyDown = vi.fn();
+      const itemAction = vi.fn();
+      const menuAction = vi.fn();
+      const navigate = vi.fn();
+      render(
+        <Root navigation={{ useHref: String, useNavigate: () => navigate }}>
+          <CommandMenu onAction={menuAction}>
+            <CommandMenu.Item
+              key="workbook"
+              tooltip={false}
+              onKeyDown={onKeyDown}
+              onAction={itemAction}
+              {...(kind === 'to'
+                ? { to: '/workbooks/keyboard' }
+                : kind === 'href'
+                  ? { href: '/workbooks/keyboard' }
+                  : {})}
+            >
+              Workbook
+            </CommandMenu.Item>
+          </CommandMenu>
+        </Root>,
+      );
+      const search = screen.getByRole('searchbox');
+      await user.click(search);
+      await user.keyboard('{ArrowDown}{Enter}');
+      expect(onKeyDown).toHaveBeenCalledTimes(1);
+      expect(onKeyDown.mock.calls[0][0].key).toBe('Enter');
+      expect(itemAction).toHaveBeenCalledExactlyOnceWith();
+      expect(menuAction).toHaveBeenCalledExactlyOnceWith('workbook');
+      expect(search).toHaveFocus();
+      if (kind === 'to' || kind === 'href')
+        expect(navigate).toHaveBeenCalledExactlyOnceWith(
+          '/workbooks/keyboard',
+          undefined,
+        );
+      else expect(navigate).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each(['command', 'to', 'href'])(
     'preserves a consumer-provided accessible label on a %s item',
     async (kind) => {
       const user = userEvent.setup();

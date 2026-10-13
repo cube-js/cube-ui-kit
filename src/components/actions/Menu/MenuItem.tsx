@@ -437,7 +437,10 @@ function MenuItemContent<T>(
           },
         )}
         {...{
-          onKeyDown,
+          onKeyDown: (event: KeyboardEvent<FocusableElement>) => {
+            onKeyDown(event);
+            filteredItemProps.onKeyDown?.(event);
+          },
           onPointerDown: (event: PointerEvent<FocusableElement>) => {
             onPointerDown(event);
             filteredItemProps.onPointerDown?.(event);
