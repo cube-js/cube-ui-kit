@@ -394,6 +394,64 @@ describe('Menu navigation links', () => {
     );
   });
 
+  it('activates commands and both link layouts once through their hotkeys', async () => {
+    const navigate = vi.fn();
+    const commandAction = vi.fn();
+    const linkAction = vi.fn();
+    const inlineLinkAction = vi.fn();
+    const independentAction = vi.fn();
+    const menuAction = vi.fn();
+    render(
+      <Root navigation={{ useHref: String, useNavigate: () => navigate }}>
+        <Menu aria-label="Shortcuts" onAction={menuAction}>
+          <Menu.Item key="command" hotkeys="F8" onAction={commandAction}>
+            Command
+          </Menu.Item>
+          <Menu.Item
+            key="link"
+            to="/hotkey-link"
+            hotkeys="F9"
+            onAction={linkAction}
+          >
+            Link
+          </Menu.Item>
+          <Menu.Item
+            key="inline-link"
+            to="/hotkey-inline-link"
+            hotkeys="F10"
+            onAction={inlineLinkAction}
+            actions={
+              <Menu.Item.Action onPress={independentAction}>
+                Delete
+              </Menu.Item.Action>
+            }
+          >
+            Link with actions
+          </Menu.Item>
+        </Menu>
+      </Root>,
+    );
+    await act(() => screen.getByRole('menuitem', { name: 'Command' }).focus());
+    await userEvent.keyboard('{F8}');
+    expect(commandAction).toHaveBeenCalledTimes(1);
+    expect(navigate).not.toHaveBeenCalled();
+    await userEvent.keyboard('{F9}');
+    expect(linkAction).toHaveBeenCalledTimes(1);
+    expect(navigate).toHaveBeenCalledExactlyOnceWith('/hotkey-link', undefined);
+    await userEvent.keyboard('{F10}');
+    expect(inlineLinkAction).toHaveBeenCalledTimes(1);
+    expect(navigate).toHaveBeenCalledTimes(2);
+    expect(navigate).toHaveBeenLastCalledWith('/hotkey-inline-link', undefined);
+    expect(menuAction.mock.calls).toEqual([
+      ['command'],
+      ['link'],
+      ['inline-link'],
+    ]);
+    expect(commandAction).toHaveBeenCalledTimes(1);
+    expect(linkAction).toHaveBeenCalledTimes(1);
+    expect(independentAction).not.toHaveBeenCalled();
+  });
+
   it('uses a real router for relative Path destinations', async () => {
     function RoutedMenu() {
       const location = useLocation();
@@ -432,58 +490,65 @@ describe('Menu navigation links', () => {
     );
   });
 
-  it('renders inline actions beside the link and keeps the focused anchor across action updates', async () => {
+  it('preserves row focus and independent actions when action content changes', async () => {
     const navigate = vi.fn();
     const action = vi.fn();
-    function App() {
-      const [showActions, setShowActions] = useState(false);
-      return (
-        <>
-          <button onClick={() => setShowActions(!showActions)}>
-            Toggle actions
-          </button>
-          <Menu aria-label="Workbooks">
-            <Menu.Item
-              key="workbook"
-              to={destination}
-              autoHideActions
-              actions={
-                showActions ? (
-                  <ItemButton onPress={action}>Delete</ItemButton>
-                ) : null
-              }
-              styles={{ padding: '3x', color: '#purple' }}
-            >
-              Workbook
-            </Menu.Item>
-          </Menu>
-        </>
-      );
-    }
-    render(
+    const content = (showActions: boolean, actionLabel = 'Delete') => (
       <Root
         navigation={{
           useHref: (to) => String(to),
           useNavigate: () => navigate,
         }}
       >
-        <App />
-      </Root>,
+        <Menu aria-label="Workbooks">
+          <Menu.Item
+            key="workbook"
+            to={destination}
+            autoHideActions
+            actions={
+              showActions ? (
+                <ItemButton onPress={action}>{actionLabel}</ItemButton>
+              ) : null
+            }
+            styles={{ padding: '3x', color: '#purple' }}
+          >
+            Workbook
+          </Menu.Item>
+        </Menu>
+      </Root>
     );
-    const link = screen.getByRole('menuitem', { name: 'Workbook' });
-    await act(() => link.focus());
-    await userEvent.click(
-      screen.getByRole('button', { name: 'Toggle actions' }),
-    );
+    const { rerender } = render(content(false));
+    const initialRow = screen.getByRole('menuitem', { name: 'Workbook' });
+    await act(() => initialRow.focus());
+    await act(() => {
+      flushSync(() => rerender(content(true)));
+      expect(screen.getByRole('menuitem', { name: 'Workbook' })).toHaveFocus();
+    });
+    const row = screen.getByRole('menuitem', { name: 'Workbook' });
     const deleteButton = await screen.findByRole('button', { name: 'Delete' });
-    expect(link).not.toContainElement(deleteButton);
-    expect(screen.getByRole('menuitem', { name: 'Workbook' })).toBe(link);
-    await act(() => link.focus());
+    const nativeLink = row.querySelector('a[data-menu-native-link]');
+    expect(nativeLink).toHaveAttribute('href', destination);
+    expect(nativeLink).not.toContainElement(deleteButton);
+    expect(row).toHaveFocus();
     await waitFor(() => expect(deleteButton).toBeVisible());
-    expect(getComputedStyle(link).paddingTop).toBe('24px');
-    await userEvent.click(deleteButton);
+    expect(getComputedStyle(row).paddingTop).toBe('24px');
+    await act(() => rerender(content(true, 'Remove')));
+    expect(screen.getByRole('menuitem', { name: 'Workbook' })).toBe(row);
+    expect(row).toHaveFocus();
+    const removeButton = await screen.findByRole('button', { name: 'Remove' });
+    expect(nativeLink).not.toContainElement(removeButton);
+    await userEvent.click(removeButton);
     expect(action).toHaveBeenCalledTimes(1);
     expect(navigate).not.toHaveBeenCalled();
+    await act(() => row.focus());
+    await act(() => {
+      flushSync(() => rerender(content(false)));
+      expect(screen.getByRole('menuitem', { name: 'Workbook' })).toHaveFocus();
+    });
+    const finalRow = screen.getByRole('menuitem', { name: 'Workbook' });
+    expect(finalRow).toHaveAttribute('href', destination);
+    expect(finalRow).toHaveFocus();
+    expect(getComputedStyle(finalRow).paddingTop).toBe('24px');
   });
 
   it.each([
@@ -924,7 +989,7 @@ describe('Menu navigation links', () => {
     );
   });
 
-  it('evaluates local focus predicates on the link for sibling controls', async () => {
+  it('evaluates local focus predicates on the row for independent controls', async () => {
     const styles = {
       '@focus': ':focus',
       color: { '': '#purple-text', '@focus': '#danger-text' },
@@ -967,16 +1032,10 @@ describe('Menu navigation links', () => {
       expect(getComputedStyle(row).color).not.toBe(restingColor);
       expect(getComputedStyle(run).color).toBe(getComputedStyle(row).color);
       expect(getComputedStyle(run).padding).toBe('16px');
-      expect(getComputedStyle(row).getPropertyValue('--actions-width')).toBe(
-        `${Math.round(run.getBoundingClientRect().width)}px`,
-      );
     });
     await act(() => command.focus());
     await waitFor(() => {
       expect(getComputedStyle(run).padding).toBe('0px');
-      expect(getComputedStyle(row).getPropertyValue('--actions-width')).toBe(
-        `${Math.round(run.getBoundingClientRect().width)}px`,
-      );
       expect(getComputedStyle(run).color).toBe(getComputedStyle(row).color);
       expect(getComputedStyle(commandRun).color).toBe(
         getComputedStyle(command).color,
@@ -1024,9 +1083,7 @@ describe('Menu navigation links', () => {
     const commandRun = screen.getByRole('button', {
       name: 'Command action',
     }).parentElement!;
-    // Removing all row color styling exposes the native anchor's UA color.
-    if (styles.color !== false)
-      expect(getComputedStyle(row).color).toBe(getComputedStyle(command).color);
+    expect(getComputedStyle(row).color).toBe(getComputedStyle(command).color);
     expect(getComputedStyle(run).color).toBe(
       getComputedStyle(commandRun).color,
     );
@@ -1091,18 +1148,31 @@ describe('Menu navigation links', () => {
             >
               Destination
             </Menu.Item>
+            <Menu.Item
+              key="command"
+              styles={{ Actions: { position } }}
+              actions={<Menu.Item.Action>Command action</Menu.Item.Action>}
+            >
+              Command
+            </Menu.Item>
           </Menu>
         </Root>,
       );
       const row = screen.getByRole('menuitem', { name: 'Destination' });
       const run = screen.getByRole('button', { name: 'Delete' }).parentElement!;
+      const command = screen.getByRole('menuitem', { name: 'Command' });
+      const commandRun = screen.getByRole('button', {
+        name: 'Command action',
+      }).parentElement!;
       expect(getComputedStyle(run).position).toBe(
-        position[''] ? 'relative' : 'absolute',
+        getComputedStyle(commandRun).position,
       );
       await act(() => row.focus());
       await waitFor(() =>
         expect(getComputedStyle(run).position).toBe('static'),
       );
+      await act(() => command.focus());
+      expect(getComputedStyle(commandRun).position).toBe('static');
     },
   );
 
@@ -1311,8 +1381,190 @@ describe('Menu navigation links', () => {
           .getByTestId(`command${index}`)
           .getBoundingClientRect().width;
         expect(row.getBoundingClientRect().width).toBe(expectedWidth);
-        expect(row.closest('li')!.getBoundingClientRect().width).toBe(
-          expectedWidth,
+      }
+    },
+  );
+
+  it.each(
+    [false, true].flatMap((actions) => [
+      { mode: 'direct', actions, props: { height: '50%' } },
+      { mode: 'styles', actions, props: { styles: { height: '50%' } } },
+      { mode: 'inline', actions, props: { style: { height: '50%' } } },
+    ]),
+  )(
+    'resolves percentage height against the menu once ($mode, actions=$actions)',
+    ({ actions, props }) => {
+      render(
+        <Root>
+          <Menu
+            aria-label="Heights"
+            styles={{ width: '30x' }}
+            menuStyles={{
+              // eslint-disable-next-line tasty/consistent-token-usage -- The percentage-height regression uses an exact 400px containing block.
+              height: '400px',
+            }}
+          >
+            <Menu.Item
+              key="link"
+              to={destination}
+              {...props}
+              actions={
+                actions ? (
+                  <Menu.Item.Action>Delete link</Menu.Item.Action>
+                ) : undefined
+              }
+            >
+              Link
+            </Menu.Item>
+            <Menu.Item
+              key="command"
+              {...props}
+              actions={
+                actions ? (
+                  <Menu.Item.Action>Delete command</Menu.Item.Action>
+                ) : undefined
+              }
+            >
+              Command
+            </Menu.Item>
+          </Menu>
+        </Root>,
+      );
+      const row = screen.getByRole('menuitem', { name: 'Link' });
+      const command = screen.getByRole('menuitem', { name: 'Command' });
+      expect(screen.getByRole('menu').getBoundingClientRect().height).toBe(400);
+      expect(command.getBoundingClientRect().height).toBe(196);
+      expect(row.getBoundingClientRect().height).toBe(196);
+    },
+  );
+
+  it.each(
+    [false, true].flatMap((actions) => [
+      {
+        mode: 'direct',
+        actions,
+        props: {
+          width: '100px',
+          padding: '10px',
+          border: '1px solid #dark',
+          styles: { boxSizing: 'content-box' as const },
+        },
+      },
+      {
+        mode: 'styles',
+        actions,
+        props: {
+          styles: {
+            width: '100px',
+            padding: '10px',
+            border: '1px solid #dark',
+            boxSizing: 'content-box' as const,
+          },
+        },
+      },
+      {
+        mode: 'inline',
+        actions,
+        props: {
+          style: {
+            width: '100px',
+            padding: '10px',
+            border: '1px solid transparent',
+            boxSizing: 'content-box' as const,
+          },
+        },
+      },
+    ]),
+  )(
+    'preserves the content-box padding and border footprint ($mode, actions=$actions)',
+    ({ actions, props }) => {
+      render(
+        <Root>
+          <Menu aria-label="Widths" styles={{ width: '30x' }}>
+            <Menu.Item
+              key="link"
+              to={destination}
+              {...props}
+              actions={
+                actions ? (
+                  <Menu.Item.Action>Delete link</Menu.Item.Action>
+                ) : undefined
+              }
+            >
+              Link
+            </Menu.Item>
+            <Menu.Item
+              key="command"
+              {...props}
+              actions={
+                actions ? (
+                  <Menu.Item.Action>Delete command</Menu.Item.Action>
+                ) : undefined
+              }
+            >
+              Command
+            </Menu.Item>
+          </Menu>
+        </Root>,
+      );
+      const row = screen.getByRole('menuitem', { name: 'Link' });
+      const command = screen.getByRole('menuitem', { name: 'Command' });
+      expect(getComputedStyle(command).width).toBe('100px');
+      expect(command.getBoundingClientRect().width).toBe(122);
+      expect(getComputedStyle(row).width).toBe('100px');
+      expect(row.getBoundingClientRect().width).toBe(122);
+    },
+  );
+
+  it.each([false, true])(
+    'inherits the command color after resetting root color (actions=%s)',
+    (actions) => {
+      render(
+        <Root>
+          <Menu aria-label="Colors">
+            <Menu.Item
+              key="link"
+              to={destination}
+              styles={{ color: false }}
+              actions={
+                actions ? (
+                  <Menu.Item.Action>Delete link</Menu.Item.Action>
+                ) : undefined
+              }
+            >
+              Link
+            </Menu.Item>
+            <Menu.Item
+              key="command"
+              styles={{ color: false }}
+              actions={
+                actions ? (
+                  <Menu.Item.Action>Delete command</Menu.Item.Action>
+                ) : undefined
+              }
+            >
+              Command
+            </Menu.Item>
+          </Menu>
+        </Root>,
+      );
+      const row = screen.getByRole('menuitem', { name: 'Link' });
+      const command = screen.getByRole('menuitem', { name: 'Command' });
+      const nativeLink = actions
+        ? row.querySelector('a[data-menu-native-link]')!
+        : row;
+      expect(getComputedStyle(row).color).toBe(getComputedStyle(command).color);
+      expect(getComputedStyle(nativeLink).color).toBe(
+        getComputedStyle(command).color,
+      );
+      if (actions) {
+        expect(
+          getComputedStyle(screen.getByRole('button', { name: 'Delete link' }))
+            .color,
+        ).toBe(
+          getComputedStyle(
+            screen.getByRole('button', { name: 'Delete command' }),
+          ).color,
         );
       }
     },
@@ -1425,28 +1677,33 @@ describe('Menu navigation links', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('removes row-owned CSS when menus are repeatedly unmounted', () => {
-    const ownerRuleCount = () =>
-      [...Array.from(document.styleSheets), ...document.adoptedStyleSheets]
-        .flatMap((sheet) => Array.from(sheet.cssRules))
-        .filter((rule) => rule.cssText.includes('data-menu-link-anchor'))
-        .length;
-    const before = ownerRuleCount();
+  it('keeps row styling from growing CSS across repeated menu mounts', () => {
+    const ruleCount = () =>
+      [
+        ...Array.from(document.styleSheets),
+        ...document.adoptedStyleSheets,
+      ].flatMap((sheet) => Array.from(sheet.cssRules)).length;
+    const content = (
+      <Root>
+        <Menu aria-label="Destinations">
+          <Menu.Item key="link" to={destination} opacity=".5">
+            Destination
+          </Menu.Item>
+        </Menu>
+      </Root>
+    );
+    const warmup = render(content);
+    expect(getComputedStyle(screen.getByRole('menuitem')).opacity).toBe('0.5');
+    const mountedRules = ruleCount();
+    warmup.unmount();
+    const unmountedRules = ruleCount();
     for (let index = 0; index < 3; index++) {
-      const { unmount } = render(
-        <Root>
-          <Menu aria-label="Destinations">
-            <Menu.Item key="link" to={destination} opacity=".5">
-              Destination
-            </Menu.Item>
-          </Menu>
-        </Root>,
-      );
+      const { unmount } = render(content);
       const row = screen.getByRole('menuitem');
-      expect(getComputedStyle(row.closest('li')!).opacity).toBe('0.5');
-      expect(ownerRuleCount()).toBeGreaterThan(before);
+      expect(getComputedStyle(row).opacity).toBe('0.5');
+      expect(ruleCount()).toBeLessThanOrEqual(mountedRules);
       unmount();
-      expect(ownerRuleCount()).toBe(before);
+      expect(ruleCount()).toBe(unmountedRules);
     }
   });
 
@@ -1458,19 +1715,36 @@ describe('Menu navigation links', () => {
     render(
       <Root>
         <Menu aria-label="Destinations" styles={{ width: '30x' }}>
+          <Menu.Item key="before">Before destination</Menu.Item>
           <Menu.Item
             key="link"
             to={destination}
-            height="16px"
+            height="2x"
             {...props}
+            styles={{
+              overflow: 'styles' in props ? props.styles.overflow : undefined,
+              Actions: { translate: '0 -2x' },
+            }}
             actions={<Menu.Item.Action>Delete</Menu.Item.Action>}
           >
             Destination
           </Menu.Item>
         </Menu>
+        <Menu aria-label="Visible actions" styles={{ width: '30x' }}>
+          <Menu.Item key="before">Before control</Menu.Item>
+          <Menu.Item
+            key="control"
+            height="2x"
+            overflow="visible"
+            styles={{ Actions: { translate: '0 -2x' } }}
+            actions={<Menu.Item.Action>Control action</Menu.Item.Action>}
+          >
+            Control
+          </Menu.Item>
+        </Menu>
       </Root>,
     );
-    const row = screen.getByRole('menuitem');
+    const row = screen.getByRole('menuitem', { name: 'Destination' });
     const action = screen.getByRole('button', { name: 'Delete' });
     const rect = row.getBoundingClientRect();
     const button = action.getBoundingClientRect();
@@ -1480,7 +1754,22 @@ describe('Menu navigation links', () => {
       rect.top - 1,
     );
     expect(hit?.closest('[data-element="Actions"]')).toBeNull();
-    expect(getComputedStyle(row.closest('li')!).overflow).toBe('hidden');
+    expect(getComputedStyle(row).overflow).toBe('hidden');
+    const control = screen.getByRole('menuitem', { name: 'Control' });
+    const controlAction = screen.getByRole('button', {
+      name: 'Control action',
+    });
+    const controlRect = control.getBoundingClientRect();
+    const controlButton = controlAction.getBoundingClientRect();
+    expect(controlButton.top).toBeLessThan(controlRect.top);
+    expect(
+      document
+        .elementFromPoint(
+          controlButton.left + controlButton.width / 2,
+          controlRect.top - 1,
+        )
+        ?.closest('button'),
+    ).toBe(controlAction);
   });
 
   it('orders the entire link row in the menu flex layout', () => {

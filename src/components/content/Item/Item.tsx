@@ -7,15 +7,19 @@ import {
   tasty,
 } from '@tenphi/tasty';
 import {
+  AnchorHTMLAttributes,
   ForwardedRef,
   forwardRef,
+  ForwardRefExoticComponent,
   HTMLAttributes,
   isValidElement,
   KeyboardEvent,
   MouseEvent,
   PointerEvent,
+  PropsWithoutRef,
   ReactNode,
   Ref,
+  RefAttributes,
   RefObject,
 } from 'react';
 import { PositionProps } from 'react-aria';
@@ -85,21 +89,6 @@ export type ItemMods = Mods<{
   theme?: string;
   shape?: string;
 }>;
-
-export const DEFAULT_ITEM_WIDTH_STYLES: Styles = {
-  width: {
-    '': 'min $size',
-    // An actions run is end content just like a right icon — a trigger that
-    // puts its caret in the run instead of the `rightIcon` slot must keep the
-    // same minimum as one that does not. Only for a SIBLING run: an in-grid
-    // one is laid out by this element's own columns, which already sized the
-    // row before the run existed, and widening it there would push a tab's or
-    // a tag's border out past its content.
-    'has-icon & (has-right-icon | (has-actions & inside-wrapper))':
-      'min ($size * 2)',
-    'size=inline': 'min (1lh + 2bw)',
-  },
-};
 
 export interface CubeItemProps extends BaseProps, ContainerStyleProps {
   icon?: DynamicIcon<ItemMods> | 'checkmark';
@@ -367,7 +356,18 @@ const ItemElement = tasty({
       '': 'min $size',
       'size=inline': '(1lh + 2bw)',
     },
-    width: DEFAULT_ITEM_WIDTH_STYLES.width,
+    width: {
+      '': 'min $size',
+      // An actions run is end content just like a right icon — a trigger that
+      // puts its caret in the run instead of the `rightIcon` slot must keep the
+      // same minimum as one that does not. Only for a SIBLING run: an in-grid
+      // one is laid out by this element's own columns, which already sized the
+      // row before the run existed, and widening it there would push a tab's or
+      // a tag's border out past its content.
+      'has-icon & (has-right-icon | (has-actions & inside-wrapper))':
+        'min ($size * 2)',
+      'size=inline': 'min (1lh + 2bw)',
+    },
     border: '#clear',
     fill: {
       '': '#dark.0',
@@ -482,6 +482,9 @@ const ItemElement = tasty({
     Label: {
       $: '>',
       margin: 0,
+      color: { '': '', 'native-link': 'inherit' },
+      outline: { '': '', 'native-link': 0 },
+      textDecoration: { '': '', 'native-link': 'none' },
       gridArea: 'label',
       display: 'block',
       placeSelf: 'center start',
@@ -500,6 +503,7 @@ const ItemElement = tasty({
     Description: {
       $: '>',
       gridArea: 'description',
+      display: { '': '', 'native-link': 'block' },
       preset: {
         '': 't4',
         'type=card | type=header': 't3',
@@ -507,6 +511,8 @@ const ItemElement = tasty({
       placeSelf: 'center start',
       boxSizing: 'border-box',
       color: 'inherit',
+      outline: { '': '', 'native-link': 0 },
+      textDecoration: { '': '', 'native-link': 'none' },
       opacity: {
         '': 0.75,
         'type=card | type=header': 1,
@@ -836,8 +842,14 @@ function highlightContent(
     : content;
 }
 
+interface ItemWithNativeLinksProps extends CubeItemProps {
+  nativeLinkProps?: AnchorHTMLAttributes<HTMLAnchorElement>;
+  onNativeLinkElement?: (element: HTMLAnchorElement | null) => void;
+  onNativeElement?: (element: HTMLElement | null) => void;
+}
+
 const Item = <T extends HTMLElement = HTMLDivElement>(
-  props: CubeItemProps,
+  props: ItemWithNativeLinksProps,
   ref: ForwardedRef<T>,
 ) => {
   let {
@@ -885,6 +897,9 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     isDynamicLabel = false,
     // Destructured so it reaches the label, not the element's DOM attributes.
     labelRef: labelRefProp,
+    nativeLinkProps,
+    onNativeLinkElement,
+    onNativeElement,
     tokens,
     ...rest
   } = props;
@@ -998,6 +1013,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     'has-description': showDescription,
     'has-actions': !!actions,
     'has-actions-content': !!(actions && actions !== true),
+    'native-link': !!nativeLinkProps,
     'auto-hide-actions': autoHideActions === true,
     'preserve-actions-space': preserveActionsSpace === true,
     'inside-wrapper': insideWrapper,
@@ -1073,6 +1089,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
 
     // Use callback ref to merge multiple refs without calling hooks
     const handleRef = (element: HTMLElement | null) => {
+      onNativeElement?.(element);
       // Set the component's forwarded ref
       if (typeof ref === 'function') {
         ref(element as T | null);
@@ -1126,6 +1143,22 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
         {finalPrefix && <div data-element="Prefix">{finalPrefix}</div>}
         {children || labelProps
           ? (() => {
+              if (nativeLinkProps) {
+                return (
+                  <a
+                    data-element="Label"
+                    {...nativeLinkProps}
+                    {...finalLabelProps}
+                    data-menu-native-link=""
+                    ref={(element) => {
+                      labelRef(element);
+                      onNativeLinkElement?.(element);
+                    }}
+                  >
+                    {processedChildren}
+                  </a>
+                );
+              }
               const LabelTag =
                 type === 'header' || type === 'card'
                   ? (`h${level}` as const)
@@ -1142,13 +1175,32 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
             })()
           : null}
         {showDescription ? (
-          <div
-            data-element="Description"
-            {...descriptionProps}
-            ref={descriptionRef}
-          >
-            {processedDescription}
-          </div>
+          nativeLinkProps ? (
+            <a
+              data-element="Description"
+              {...nativeLinkProps}
+              {...descriptionProps}
+              data-menu-native-link=""
+              ref={
+                !hasLabel
+                  ? (element) => {
+                      descriptionRef(element);
+                      onNativeLinkElement?.(element);
+                    }
+                  : descriptionRef
+              }
+            >
+              {processedDescription}
+            </a>
+          ) : (
+            <div
+              data-element="Description"
+              {...descriptionProps}
+              ref={descriptionRef}
+            >
+              {processedDescription}
+            </div>
+          )
         ) : null}
         {finalSuffix && <div data-element="Suffix">{finalSuffix}</div>}
         {rightIconSlot.hasSlot && (
@@ -1186,10 +1238,16 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
   return renderWithTooltip(renderItemElement, defaultTooltipPlacement);
 };
 
-const _Item = Object.assign(forwardRef(Item), {
+const _Item = Object.assign(forwardRef<HTMLElement, CubeItemProps>(Item), {
   Action: ItemAction,
   Badge: ItemBadge,
 });
+
+/** @private Keeps menu links in the existing label/description grid slots. */
+export const ItemWithNativeLinks = _Item as typeof _Item &
+  ForwardRefExoticComponent<
+    PropsWithoutRef<ItemWithNativeLinksProps> & RefAttributes<HTMLElement>
+  >;
 
 export { _Item as Item };
 

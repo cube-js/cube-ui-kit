@@ -2331,6 +2331,16 @@ export const NavigationLinks = () => (
     <Menu.Item key="browse" to="/workbooks">
       Browse all
     </Menu.Item>
+    <Menu.Item
+      key="saved"
+      to="/workbooks/saved"
+      description="Open the saved workbook"
+      actions={
+        <Menu.Item.Action icon={<MoreIcon />} aria-label="Workbook actions" />
+      }
+    >
+      Saved workbook
+    </Menu.Item>
     <Menu.Item key="docs" to="!https://cube.dev/docs">
       Documentation
     </Menu.Item>
@@ -2348,5 +2358,11 @@ NavigationLinks.play = async ({ canvasElement }) => {
     expect(
       canvas.getByRole('menuitem', { name: 'Recent workbook' }),
     ).toHaveAttribute('href', '/workbooks/42?chatId=abc'),
+  );
+  await waitFor(() =>
+    expect(canvas.getByText('Saved workbook')).toHaveAttribute(
+      'href',
+      '/workbooks/saved',
+    ),
   );
 };

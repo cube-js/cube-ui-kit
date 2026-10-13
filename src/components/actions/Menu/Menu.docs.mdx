@@ -81,7 +81,7 @@ Customizes individual menu items.
 **Sub-elements:**
 
 - `Icon` - Icon element within menu items
-- `Text` - Main text content of menu items
+- `Label` - Main text content of menu items
 - `Description` - Secondary text content for items with descriptions
 
 #### sectionStyles
@@ -200,9 +200,9 @@ Navigation items render native anchors. An ordinary click or Enter/Space activat
 </MenuTrigger>
 ```
 
-As with other UI Kit actions, a `!` prefix opens `to` in a new tab and an `@` prefix forces native navigation. Use `onAction` for commands, including history actions. Link `onAction` callbacks still run during activation; navigation itself belongs to `to` or `href`, so the callback should not navigate again. Submenu parents open their submenu and ignore destinations; links inside the submenu behave normally. Inline actions render beside the anchor and retain item styling and disabled state.
+As with other UI Kit actions, a `!` prefix opens `to` in a new tab and an `@` prefix forces native navigation. Use `onAction` for commands, including history actions. Link `onAction` callbacks still run during activation; navigation itself belongs to `to` or `href`, so the callback should not navigate again. Submenu parents open their submenu and ignore destinations; links inside the submenu behave normally.
 
-Link rows use a containing list item so inline actions remain outside the anchor. Visibility, opacity and outer layout styles affect the complete row; focus and press states follow the anchor. Structural `:has()` predicates for whole-row styles match the containing list item, so use descendant selectors when checking item content. Named modifiers and styling slots remain the preferred customization API.
+Without inline actions, the complete item is an anchor. With inline actions, the label and description are native anchors inside Item's existing layout; use these text cells for browser link commands. The row retains keyboard focus, activation and Item styling, and the action buttons remain independent controls. This keeps sizing, visibility and focus styles on the same element that owns Item's layout. Named modifiers and styling slots remain the preferred customization API.
 
 <Story of={MenuStories.NavigationLinks} />
 

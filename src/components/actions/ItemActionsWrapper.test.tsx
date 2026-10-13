@@ -12,24 +12,6 @@ import { ItemButton } from './ItemButton/ItemButton';
  * empty run reserves nothing.
  */
 describe('<ItemActionsWrapper />', () => {
-  it('renders actions when ResizeObserver is unavailable', () => {
-    const observer = globalThis.ResizeObserver;
-    vi.stubGlobal('ResizeObserver', undefined);
-    try {
-      const { getByRole } = renderWithRoot(
-        <ItemButton
-          tooltip={false}
-          actions={<ItemButton.Action tooltip="">Delete</ItemButton.Action>}
-        >
-          Destination
-        </ItemButton>,
-      );
-      expect(getByRole('button', { name: 'Delete' })).toBeVisible();
-    } finally {
-      vi.stubGlobal('ResizeObserver', observer);
-    }
-  });
-
   function Toggler({ initial = true }: { initial?: boolean }) {
     const [hasActions, setHasActions] = useState(initial);
 

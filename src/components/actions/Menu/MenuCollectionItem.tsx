@@ -32,14 +32,18 @@ const _MenuCollectionItem: typeof MenuCollectionItem &
       const isLink =
         props.to !== '' && (props.to != null || props.href != null);
 
-      // The raw `to` also recognizes bare !/@ destinations. The row resolves it.
+      // A private href marks links for Aria; the row resolves the actual `to`.
       return (CollectionItem as any).getCollectionNode(
         {
           ...props,
           href:
             props.to === ''
               ? undefined
-              : props.to ?? (isCurrentDocument ? '.' : props.href),
+              : props.to != null
+                ? '.'
+                : isCurrentDocument
+                  ? '.'
+                  : props.href,
           [CURRENT_DOCUMENT_LINK]: isCurrentDocument,
           // Selectable items also consume collection onClick; let Menu own it once.
           onClick: isLink ? undefined : props.onClick,

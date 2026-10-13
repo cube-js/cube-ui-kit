@@ -1,20 +1,13 @@
-import { openLink } from '@react-aria/utils';
+import { ClearPressResponder } from '@react-aria/interactions';
+import { openLink, shouldClientNavigate } from '@react-aria/utils';
 import { FocusableElement, Key, Node } from '@react-types/shared';
-import {
-  CONTAINER_STYLES,
-  getConfig,
-  mergeStyles,
-  POSITION_STYLES,
-  renderStyles,
-  Styles,
-} from '@tenphi/tasty';
+import { mergeStyles, Styles } from '@tenphi/tasty';
 import {
   AnchorHTMLAttributes,
-  CSSProperties,
   KeyboardEvent,
   MouseEvent,
+  PointerEvent,
   useContext,
-  useId,
   useRef,
 } from 'react';
 import { FocusRing, RouterProvider, useMenuItem } from 'react-aria';
@@ -24,18 +17,12 @@ import { RightIcon } from '../../../icons/RightIcon';
 import { isExternalUrl } from '../../../providers/navigation-url';
 import { useNavigation } from '../../../providers/use-navigation';
 import { mergeProps } from '../../../utils/react';
-import { extractStyles, mergeStyleLayers } from '../../../utils/styles';
 import { filterCollectionItemProps } from '../../CollectionItem';
-import { DEFAULT_ITEM_WIDTH_STYLES, Item } from '../../content/Item/Item';
-import {
-  DEFAULT_ACTIONS_STYLES,
-  ItemActionsWrapper,
-} from '../ItemActionsWrapper';
+import { Item, ItemWithNativeLinks } from '../../content/Item/Item';
 import { parseTo } from '../use-action';
 
 import { useMenuContext } from './context';
 import { CURRENT_DOCUMENT_LINK, MENU_LINK_CLICK } from './MenuCollectionItem';
-import { StyledLinkItem } from './styled';
 import { SubmenuTriggerContext } from './SubmenuTriggerContext';
 
 export type MenuSelectionType = 'checkbox' | 'radio' | 'checkmark';
@@ -65,138 +52,11 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
   );
 }
 
-const DEFAULT_OWNER_STYLES: Styles = {
-  display: 'grid',
-  margin: 0,
-  flexShrink: 0,
-};
-const OWNER_STYLE_PROPS = [
-  'hide',
-  'opacity',
-  'visibility',
-  'overflow',
-  ...POSITION_STYLES,
-  'width',
-  'inlineSize',
-  'flex',
-  'flexBasis',
-  'flexGrow',
-  'flexShrink',
-];
-const OWNER_CSS_KEYS = [
-  'opacity',
-  'visibility',
-  'overflow',
-  'overflowX',
-  'overflowY',
-  'order',
-  'position',
-  'inset',
-  'top',
-  'right',
-  'bottom',
-  'left',
-  'insetBlock',
-  'insetBlockStart',
-  'insetBlockEnd',
-  'insetInline',
-  'insetInlineStart',
-  'insetInlineEnd',
-  'width',
-  'minWidth',
-  'maxWidth',
-  'inlineSize',
-  'minInlineSize',
-  'maxInlineSize',
-  'flex',
-  'flexGrow',
-  'flexShrink',
-  'flexBasis',
-  'gridArea',
-  'gridRow',
-  'gridRowStart',
-  'gridRowEnd',
-  'gridColumn',
-  'gridColumnStart',
-  'gridColumnEnd',
-  'alignSelf',
-  'justifySelf',
-  'placeSelf',
-  'zIndex',
-  'margin',
-  'marginTop',
-  'marginRight',
-  'marginBottom',
-  'marginLeft',
-  'marginBlock',
-  'marginBlockStart',
-  'marginBlockEnd',
-  'marginInline',
-  'marginInlineStart',
-  'marginInlineEnd',
-  'scrollMargin',
-  'scrollMarginTop',
-  'scrollMarginRight',
-  'scrollMarginBottom',
-  'scrollMarginLeft',
-  'scrollMarginBlock',
-  'scrollMarginBlockStart',
-  'scrollMarginBlockEnd',
-  'scrollMarginInline',
-  'scrollMarginInlineStart',
-  'scrollMarginInlineEnd',
-  'transform',
-  'transformOrigin',
-  'translate',
-  'rotate',
-  'scale',
-];
-const isSharedCSS = (key: string) =>
-  key === 'display' ||
-  key === 'transition' ||
-  key === 'overflow' ||
-  key === 'overflowX' ||
-  key === 'overflowY' ||
-  key.startsWith('--');
-const isOwnerStyle = (key: string) =>
-  OWNER_STYLE_PROPS.includes(key) || OWNER_CSS_KEYS.includes(key);
-const filterInlineStyles = (
-  style: CSSProperties | undefined,
-  owner: boolean,
-): CSSProperties | undefined =>
-  style &&
-  Object.fromEntries(
-    Object.entries(style).filter(([key]) =>
-      owner
-        ? OWNER_CSS_KEYS.includes(key) || isSharedCSS(key)
-        : !OWNER_CSS_KEYS.includes(key) || isSharedCSS(key),
-    ),
-  );
-function projectOwnerStyles(styles: Styles, id: string) {
-  return renderStyles(styles)
-    .rules.map((rule) => {
-      const selector = (rule.selector || '')
-        .split('|||')
-        .map((suffix) => {
-          const owner = `[data-element="MenuLink"]:has(> * > [data-menu-link-anchor="${id}"])`;
-          // CSS forbids nested :has(); structural predicates match the row owner.
-          const subject = suffix.toLowerCase().includes(':has(')
-            ? owner + suffix
-            : `[data-element="MenuLink"]:has(> * > [data-menu-link-anchor="${id}"]${suffix})`;
-          return (rule.rootPrefix ? rule.rootPrefix + ' ' : '') + subject;
-        })
-        .join(',');
-      const css = selector + ' { ' + rule.declarations + ' }';
-      return [
-        ...(rule.atRules || []),
-        ...(rule.startingStyle ? ['@starting-style'] : []),
-      ].reduceRight((body, at) => at + ' { ' + body + ' }', css);
-    })
-    .join('\n');
-}
-
 function MenuLinkItem<T>(props: MenuItemProps<T>) {
   const activatedLink = useRef<HTMLAnchorElement>(null);
+  const linkRef = useRef<HTMLAnchorElement>(null);
+  const nativeElementRef = useRef<HTMLElement>(null);
+  const restoreFocusRef = useRef(false);
   const { to, href, navigationOptions } = props.item.props;
   const { cleanTo: parsedTo, nativeRoute } = parseTo(to);
   const isCurrentDocument = props.item.props[CURRENT_DOCUMENT_LINK];
@@ -213,169 +73,124 @@ function MenuLinkItem<T>(props: MenuItemProps<T>) {
         ? String(cleanTo)
         : resolvedHref;
   const itemProps = props.item.props;
-  const isDisabled =
-    props.state.selectionManager.isDisabled(props.item.key) ||
-    (itemProps.isLoading && itemProps.isDisabled !== false);
-  const isVirtualFocused =
-    props.state.selectionManager.focusedKey === props.item.key;
-  const rawLinkId = useId();
-  const linkMarker = Array.from(rawLinkId, (c) =>
-    c.codePointAt(0)!.toString(16),
-  ).join('-');
-  const allRowStyles = mergeStyleLayers(itemProps.styles, props.styles);
-  const { styles: _styles, ...directProps } = itemProps;
-  const ownerInput = mergeStyleLayers(
-    allRowStyles,
-    extractStyles(
-      directProps,
-      OWNER_STYLE_PROPS.concat('display', 'transition'),
-    ),
-  );
-  const ownerStyles = mergeStyleLayers(
-    DEFAULT_OWNER_STYLES,
-    DEFAULT_ITEM_WIDTH_STYLES,
-    { $size: props.size === 'small' ? '$size-sm' : '$size-md' },
-    Object.fromEntries(
-      Object.entries(ownerInput).filter(
-        ([key]) =>
-          isOwnerStyle(key) ||
-          key === 'display' ||
-          key === 'transition' ||
-          (/^[#@$]/.test(key) && key !== '$'),
-      ),
-    ),
-  );
-  const ownerInlineStyle = filterInlineStyles(itemProps.style, true);
-  const { Actions: rawActions, ...rowStyles } = Object.fromEntries(
-    Object.entries(allRowStyles).filter(
-      ([key]) => !isOwnerStyle(key) || isSharedCSS(key),
-    ),
-  ) as Styles;
-  const actionStyles = rawActions as Styles | null | false | undefined;
-  const actionTokens = Object.fromEntries(
-    Object.entries(rowStyles).filter(
-      ([key]) => /^[#$]/.test(key) && key !== '$',
-    ),
-  );
-  const inheritedColor = mergeStyleLayers(
-    { color: rowStyles.color },
-    { color: itemProps.color },
-  );
-  const siblingActions =
-    actionStyles === null || actionStyles === false
-      ? actionStyles
-      : mergeStyleLayers(
-          DEFAULT_ACTIONS_STYLES,
-          { '@block-description': '[data-description="block"]' },
-          actionStyles,
-        );
-  // The run's complete style map is owned by the anchor, including its defaults.
-  const wrapperStyles = {
-    color:
-      inheritedColor.color === null || inheritedColor.color === false
-        ? inheritedColor.color
-        : undefined,
-    // eslint-disable-next-line tasty/valid-sub-element -- Remove the wrapper defaults; the row owns the merged Actions map below.
-    Actions: null,
-    ActionsChild: { $: '>ActionsContext>Actions>*' },
-    ActionIcon: { $: '>ActionsContext>Actions>' },
-    ActionsContext: { $: '>', display: 'contents' },
+  const hasActions = !!itemProps.actions && itemProps.actions !== true;
+  const onNativeLinkElement = (element: HTMLAnchorElement | null) => {
+    linkRef.current = element;
   };
-  // Keep consumer predicates on the row, including CSS focus and hover states.
-  const linkStyles = {
-    // eslint-disable-next-line tasty/no-style-spread -- Forward the consumer's complete row styles before adding the sibling slot.
-    ...rowStyles,
-    // Dimensions resolve once on the owner; the anchor fills that row.
-    width: '0 auto initial',
-    // eslint-disable-next-line tasty/no-nested-selector -- Tasty's sub-element $ cannot leave the row; its sibling context supplies normal color inheritance.
-    '& ~ [data-element="ActionsContext"]': mergeStyleLayers(
-      actionTokens,
-      inheritedColor,
-    ),
-    // eslint-disable-next-line tasty/no-nested-selector -- Apply the consumer's slot with the row's predicate context and its own inherited color.
-    '& ~ [data-element="ActionsContext"] > [data-element="Actions"]':
-      siblingActions,
+  const onNativeElement = (element: HTMLElement | null) => {
+    if (!element) {
+      restoreFocusRef.current =
+        nativeElementRef.current ===
+        nativeElementRef.current?.ownerDocument.activeElement;
+    }
+    nativeElementRef.current = element;
+    if (element && restoreFocusRef.current) {
+      restoreFocusRef.current = false;
+      element.focus({ preventScroll: true });
+    }
   };
+  const onClick = (event: MouseEvent<FocusableElement>) => {
+    const target = event.target as Element;
+    activatedLink.current = hasActions
+      ? target.closest?.<HTMLAnchorElement>('a[data-menu-native-link]') ??
+        linkRef.current
+      : (event.currentTarget as HTMLAnchorElement);
+    itemProps[MENU_LINK_CLICK]?.(event);
+  };
+  const openNative = (event?: MouseEvent<FocusableElement>) => {
+    const anchor = activatedLink.current;
+    if (!anchor) return;
+    const nativeLink = anchor.cloneNode(false) as HTMLAnchorElement;
+    if (nativeRoute && cleanTo === '') window.location.reload();
+    else if (event) openLink(nativeLink, event, false);
+    else nativeLink.click();
+  };
+
+  if (hasActions) {
+    return (
+      <MenuItemContent
+        {...props}
+        nativeLinkHref={linkHref}
+        onNativeLinkElement={onNativeLinkElement}
+        onNativeElement={onNativeElement}
+        onClick={onClick}
+        onNavigate={(event) => {
+          const anchor = activatedLink.current;
+          if (
+            !anchor?.hasAttribute('href') ||
+            event.defaultPrevented ||
+            event.button !== 0
+          )
+            return;
+          if (nativeRoute && cleanTo === '') {
+            event.preventDefault();
+            window.location.reload();
+            return;
+          }
+          if (
+            shouldClientNavigate(anchor, event) &&
+            !isCurrentDocument &&
+            !nativeRoute &&
+            !isExternal
+          ) {
+            event.preventDefault();
+            if (cleanTo !== undefined) navigate(cleanTo, navigationOptions);
+          } else if (
+            !(event.target instanceof Element) ||
+            !anchor.contains(event.target)
+          ) {
+            openNative(event);
+          }
+        }}
+      />
+    );
+  }
+
   return (
-    <StyledLinkItem
-      role="none"
-      data-element="MenuLink"
-      style={ownerInlineStyle}
-      tokens={itemProps.tokens}
-      inert={itemProps.inert}
-      aria-hidden={itemProps['aria-hidden']}
-      dir={itemProps.dir}
-      lang={itemProps.lang}
+    <RouterProvider
+      useHref={() => linkHref}
+      navigate={() => {
+        if (isCurrentDocument || nativeRoute || isExternal) openNative();
+        else if (cleanTo !== undefined) navigate(cleanTo, navigationOptions);
+      }}
     >
-      <style nonce={getConfig().nonce}>
-        {projectOwnerStyles(ownerStyles, linkMarker)}
-      </style>
-      <ItemActionsWrapper
-        actions={itemProps.actions}
-        type={itemProps.type}
-        theme={itemProps.theme}
-        size={props.size === 'small' ? 'small' : 'medium'}
-        isDisabled={isDisabled}
-        disableActionsFocus
-        autoHideActions={itemProps.autoHideActions && !isVirtualFocused}
-        preserveActionsSpace={itemProps.preserveActionsSpace}
-        styles={wrapperStyles}
-        tokens={itemProps.tokens}
-        actionsContext
-      >
-        {({ showActions, skipActionsWidthTransition }) => (
-          <RouterProvider
-            useHref={() => linkHref}
-            navigate={() => {
-              if (nativeRoute && cleanTo === '') window.location.reload();
-              else if (isCurrentDocument || nativeRoute || isExternal) {
-                // Aria intercepts same-origin URLs; retain the anchor's native attributes.
-                const nativeLink = activatedLink.current?.cloneNode(false) as
-                  | HTMLAnchorElement
-                  | undefined;
-                nativeLink?.click();
-              } else if (cleanTo !== undefined)
-                navigate(cleanTo, navigationOptions);
-            }}
-          >
-            <MenuItemContent
-              {...props}
-              styles={linkStyles}
-              linkMarker={linkMarker}
-              showActions={showActions}
-              skipActionsWidthTransition={skipActionsWidthTransition}
-              onClick={(event) => {
-                activatedLink.current =
-                  event.currentTarget as HTMLAnchorElement;
-                itemProps[MENU_LINK_CLICK]?.(event);
-              }}
-            />
-          </RouterProvider>
-        )}
-      </ItemActionsWrapper>
-    </StyledLinkItem>
+      <li role="none" style={{ display: 'contents' }}>
+        <MenuItemContent
+          {...props}
+          nativeRoot
+          onClick={onClick}
+          onNativeElement={onNativeElement}
+        />
+      </li>
+    </RouterProvider>
   );
+}
+
+function normalizeNativeRootColor(color: Styles['color']): Styles['color'] {
+  if (color === false || color === '') return 'inherit';
+  if (!color || typeof color !== 'object' || Array.isArray(color)) return color;
+  const entries = Object.entries(color);
+  return entries.some(([, value]) => value === false || value === '')
+    ? Object.fromEntries(
+        entries.map(([state, value]) => [
+          state,
+          value === false || value === '' ? 'inherit' : value,
+        ]),
+      )
+    : color;
 }
 
 function MenuItemContent<T>(
   props: MenuItemProps<T> & {
-    linkMarker?: string;
-    showActions?: boolean;
-    skipActionsWidthTransition?: boolean;
+    nativeRoot?: boolean;
+    nativeLinkHref?: string;
+    onNativeLinkElement?: (element: HTMLAnchorElement | null) => void;
+    onNativeElement?: (element: HTMLElement | null) => void;
+    onNavigate?: (event: MouseEvent<FocusableElement>) => void;
     onClick?: (event: MouseEvent<FocusableElement>) => void;
   },
 ) {
-  const {
-    item,
-    state,
-    styles,
-    isVirtualized,
-    onAction,
-    size,
-    id,
-    showActions = false,
-    skipActionsWidthTransition = false,
-  } = props;
+  const { item, state, styles, isVirtualized, onAction, size, id } = props;
   const { onClose, closeOnSelect } = useMenuContext();
   const { rendered, key, props: itemProps } = item;
 
@@ -409,7 +224,6 @@ function MenuItemContent<T>(
     (filteredItemProps.isLoading && filteredItemProps.isDisabled !== false);
 
   const ref = useRef<HTMLElement>(null);
-
   // Use the triggerRef from submenu context if present
   const elementRef = (submenuContext?.triggerRef ?? ref) as any;
 
@@ -448,21 +262,60 @@ function MenuItemContent<T>(
   // `onAction` twice. It is taken out here and passed once.
   const {
     onKeyDown: itemOnKeyDown,
+    onPointerDown: itemOnPointerDown,
     href: renderedHref,
+    target: renderedTarget,
+    rel: renderedRel,
+    download: renderedDownload,
+    ping: renderedPing,
+    referrerPolicy: renderedPolicy,
     ...itemOwnProps
   } = menuItemProps as typeof menuItemProps &
-    Pick<AnchorHTMLAttributes<HTMLAnchorElement>, 'href'>;
+    AnchorHTMLAttributes<HTMLAnchorElement>;
   const isLink = itemProps.href != null && !submenuContext;
-  const onKeyDown = (e: KeyboardEvent<FocusableElement>) => {
-    // Aria 3.52.1 clicks menu links on Space down, then opens them again on up.
-    // Use its existing click path once without registering the second press.
-    if (isLink && !isDisabled && e.key === ' ') {
-      if (e.nativeEvent.isComposing) return;
-      e.preventDefault();
-      e.stopPropagation();
-      if (e.repeat) return;
-      openLink(e.currentTarget as HTMLAnchorElement, e, false);
+  const onPointerDown = (event: PointerEvent<FocusableElement>) => {
+    // A modified native gesture must not start Aria's delayed-click fallback.
+    if (
+      props.onNativeLinkElement &&
+      (event.ctrlKey || event.metaKey || event.altKey || event.shiftKey)
+    )
       return;
+    itemOnPointerDown?.(event);
+  };
+  const onKeyDown = (e: KeyboardEvent<FocusableElement>) => {
+    if (isLink && !isDisabled && (e.key === ' ' || e.key === 'Enter')) {
+      if (e.nativeEvent.isComposing || (e.key === ' ' && e.repeat)) {
+        e.preventDefault();
+        e.stopPropagation();
+        return;
+      }
+      if (props.nativeRoot && e.key === ' ') {
+        // Aria opens a focused anchor again on keyup; use its click path once.
+        e.preventDefault();
+        e.stopPropagation();
+        openLink(e.currentTarget as HTMLAnchorElement, e, false);
+        return;
+      }
+      if (
+        !props.nativeRoot &&
+        (e.ctrlKey || e.metaKey || e.altKey || e.shiftKey)
+      ) {
+        itemOnKeyDown?.(e);
+        e.preventDefault();
+        e.stopPropagation();
+        e.currentTarget.dispatchEvent(
+          new window.MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            detail: 1,
+            ctrlKey: e.ctrlKey,
+            metaKey: e.metaKey,
+            altKey: e.altKey,
+            shiftKey: e.shiftKey,
+          }),
+        );
+        return;
+      }
     }
     if (submenuContext?.onKeyDown) {
       // The submenu goes first; a key it handles is not the item's too.
@@ -481,30 +334,64 @@ function MenuItemContent<T>(
     menuitem: true,
   };
 
+  const ItemComponent = props.onNativeElement ? ItemWithNativeLinks : Item;
+  const mergedStyles = mergeStyles(ownStyles, styles);
+  const nativeColor = props.nativeRoot
+    ? normalizeNativeRootColor(mergedStyles?.color)
+    : mergedStyles?.color;
+  const contentStyles =
+    nativeColor !== mergedStyles?.color
+      ? { ...mergedStyles, color: nativeColor }
+      : mergedStyles;
+  const directColor = props.nativeRoot
+    ? normalizeNativeRootColor(filteredItemProps.color)
+    : filteredItemProps.color;
+  const contentProps =
+    directColor !== filteredItemProps.color
+      ? { ...filteredItemProps, color: directColor }
+      : filteredItemProps;
+  const nativeLinkProps: AnchorHTMLAttributes<HTMLAnchorElement> | undefined =
+    props.onNativeLinkElement
+      ? {
+          href: isDisabled ? undefined : props.nativeLinkHref,
+          target: itemProps.target,
+          rel: itemProps.rel,
+          download: itemProps.download,
+          ping: itemProps.ping,
+          referrerPolicy: itemProps.referrerPolicy,
+          tabIndex: -1,
+          'aria-hidden': true,
+          role: 'none',
+          onMouseDown: (event) => {
+            if (!isDisabled && menuItemProps.tabIndex != null)
+              elementRef.current?.focus({ preventScroll: true });
+            event.preventDefault();
+          },
+        }
+      : undefined;
+
   const content = (
     <FocusRing>
-      <Item
+      <ItemComponent
         {...mergeProps(
-          { ...itemOwnProps, onKeyDown },
-          isLink
-            ? Object.fromEntries(
-                Object.entries(filteredItemProps).filter(
-                  ([key]) => !isOwnerStyle(key) || isSharedCSS(key),
-                ),
-              )
-            : filteredItemProps,
+          { ...itemOwnProps, onKeyDown, onPointerDown },
+          contentProps,
           {
             'data-popover-trigger': true,
             qa: itemQa ? itemQa : `MenuItem-${key}`,
             mods,
-            styles: isLink ? styles : mergeStyles(ownStyles, styles),
-            'data-menu-link-anchor': props.linkMarker,
-            style: isLink
-              ? filterInlineStyles(filteredItemProps.style, false)
-              : filteredItemProps.style,
+            styles: contentStyles,
+            style: filteredItemProps.style,
             'data-size': size,
-            as: isLink ? 'a' : 'li',
-            href: isLink && !isDisabled ? renderedHref : undefined,
+            'data-menu-native-link': props.nativeRoot ? '' : undefined,
+            as: props.nativeRoot ? 'a' : 'li',
+            href: props.nativeRoot && !isDisabled ? renderedHref : undefined,
+            target: props.nativeRoot ? renderedTarget : undefined,
+            rel: props.nativeRoot ? renderedRel : undefined,
+            download: props.nativeRoot ? renderedDownload : undefined,
+            ping: props.nativeRoot ? renderedPing : undefined,
+            referrerPolicy: props.nativeRoot ? renderedPolicy : undefined,
+            onClick: isDisabled ? undefined : props.onNavigate,
             labelProps,
             descriptionProps,
             keyboardShortcutProps,
@@ -517,16 +404,18 @@ function MenuItemContent<T>(
           },
         )}
         ref={elementRef}
-        insideWrapper={isLink}
+        nativeLinkProps={nativeLinkProps}
+        onNativeLinkElement={props.onNativeLinkElement}
+        onNativeElement={props.onNativeElement}
         actions={
-          isLink
-            ? filteredItemProps.actions
-              ? true
-              : undefined
-            : filteredItemProps.actions
+          props.onNativeLinkElement && filteredItemProps.actions ? (
+            <ClearPressResponder>
+              {filteredItemProps.actions}
+            </ClearPressResponder>
+          ) : (
+            filteredItemProps.actions
+          )
         }
-        showActions={showActions}
-        skipActionsWidthTransition={skipActionsWidthTransition}
         disableActionsFocus={true}
         rightIcon={submenuContext ? <RightIcon /> : filteredItemProps.rightIcon}
         defaultTooltipPlacement="right"
@@ -535,7 +424,7 @@ function MenuItemContent<T>(
         size={size === 'small' ? 'small' : 'medium'}
       >
         {rendered}
-      </Item>
+      </ItemComponent>
     </FocusRing>
   );
 
