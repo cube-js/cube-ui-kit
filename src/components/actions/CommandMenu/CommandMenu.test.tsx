@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import React from 'react';
 
 import { act, hoverWithPointer, renderWithRoot } from '../../../test';
+import { Root } from '../../Root';
 import { MenuContext } from '../Menu/context';
 
 import { CommandMenu } from './CommandMenu';
@@ -215,6 +216,63 @@ describe('CommandMenu', () => {
 
     expect(onAction).toHaveBeenCalledWith('1');
   });
+
+  it.each(['{Enter}', ' '])(
+    'activates distinct numeric and string collection keys with %s',
+    async (activation) => {
+      const user = userEvent.setup();
+      const navigate = vi.fn();
+      const onAction = vi.fn();
+      const numberAction = vi.fn();
+      const stringAction = vi.fn();
+      const keyedItems = [
+        {
+          id: 1,
+          label: 'Number workbook',
+          to: '/number',
+          onAction: numberAction,
+        },
+        {
+          id: '1',
+          label: 'String workbook',
+          to: '/string',
+          onAction: stringAction,
+        },
+      ];
+
+      render(
+        <Root navigation={{ useHref: String, useNavigate: () => navigate }}>
+          <CommandMenu items={keyedItems} onAction={onAction}>
+            {(item) => (
+              <CommandMenu.Item to={item.to} onAction={item.onAction}>
+                {item.label}
+              </CommandMenu.Item>
+            )}
+          </CommandMenu>
+        </Root>,
+      );
+
+      const search = screen.getByRole('searchbox');
+      const numberItem = screen.getByRole('menuitem', {
+        name: 'Number workbook',
+      });
+      const stringItem = screen.getByRole('menuitem', {
+        name: 'String workbook',
+      });
+      expect(numberItem.id).not.toBe(stringItem.id);
+      await user.click(search);
+      await user.keyboard('{ArrowDown}{ArrowDown}');
+      expect(search).toHaveAttribute('aria-activedescendant', stringItem.id);
+      expect(document.getElementById(stringItem.id)).toBe(stringItem);
+      await user.keyboard(activation);
+
+      expect(stringAction).toHaveBeenCalledExactlyOnceWith();
+      expect(numberAction).not.toHaveBeenCalled();
+      expect(onAction).toHaveBeenCalledExactlyOnceWith('1');
+      expect(navigate).toHaveBeenCalledExactlyOnceWith('/string', undefined);
+      expect(search).toHaveFocus();
+    },
+  );
 
   it('skips disabled items with arrow keys, including across the wrap', async () => {
     const user = userEvent.setup();

@@ -15,6 +15,89 @@ describe('Visible native menu targets', () => {
     document.documentElement.removeAttribute('data-menu-label');
   });
 
+  it('tracks an existing ancestor becoming a query container before a sibling resize', async () => {
+    const settleLayout = () =>
+      new Promise<void>((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+      );
+    render(
+      <Root>
+        <style>
+          {
+            '@container (max-width:300px) { [data-qa="query-target"] [data-element="Label"] { visibility:hidden; } }'
+          }
+        </style>
+        <div style={{ width: '600px', display: 'flex' }}>
+          <div data-qa="query-container" style={{ flex: 1, minWidth: 0 }}>
+            <Menu aria-label="Container changes" styles={{ width: '32x' }}>
+              <Menu.Item key="command" tooltip={false}>
+                Command
+              </Menu.Item>
+              <Menu.Item
+                key="workbook"
+                qa="query-target"
+                to="/destination"
+                tooltip={false}
+                description="Visible description"
+                styles={{
+                  Label: { width: '20x' },
+                  Description: { width: '20x' },
+                }}
+              >
+                Workbook
+              </Menu.Item>
+            </Menu>
+          </div>
+          <div
+            data-qa="query-sibling"
+            style={{ width: '200px', flexShrink: 0 }}
+          >
+            Sibling
+          </div>
+        </div>
+      </Root>,
+    );
+    const command = screen.getByRole('menuitem', { name: 'Command' });
+    await act(async () => {
+      command.focus();
+      await settleLayout();
+    });
+    const container = screen.getByTestId('query-container');
+    const sibling = screen.getByTestId('query-sibling');
+    const row = screen.getByTestId('query-target');
+    const label = row.querySelector<HTMLElement>('[data-element="Label"]')!;
+    const description = row.querySelector<HTMLElement>(
+      '[data-element="Description"]',
+    )!;
+    expect(getComputedStyle(container).containerType).toBe('normal');
+    expect(container.getBoundingClientRect().width).toBe(400);
+    expect(label.getBoundingClientRect().width).toBe(160);
+    expect(description.getBoundingClientRect().width).toBe(160);
+    expect(screen.getByRole('menuitem', { name: 'Workbook' })).toBe(label);
+    await act(async () => {
+      container.style.containerType = 'inline-size';
+      await settleLayout();
+    });
+    expect(container.getBoundingClientRect().width).toBe(400);
+    await act(async () => {
+      sibling.style.width = '400px';
+      await settleLayout();
+    });
+    await waitFor(() =>
+      expect(screen.getByRole('menuitem', { name: 'Workbook' })).toBe(
+        description,
+      ),
+    );
+    expect(getComputedStyle(label).visibility).toBe('hidden');
+    expect(getComputedStyle(description).visibility).toBe('visible');
+    expect(container.getBoundingClientRect().width).toBe(200);
+    expect(label.getBoundingClientRect().width).toBe(160);
+    expect(description.getBoundingClientRect().width).toBe(160);
+    expect(row.querySelector('[data-element="Label"]')).toBe(label);
+    expect(screen.getByTestId('query-container')).toBe(container);
+    expect(command).toHaveFocus();
+  });
+
   it('preserves outside focus requested by a parent while Label hides', async () => {
     let hideLabel: (() => void) | undefined;
     function App() {

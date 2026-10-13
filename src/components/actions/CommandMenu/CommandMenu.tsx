@@ -325,7 +325,7 @@ function CommandMenu<T extends object>(
       (!actions || actions === true)
     )
       return String(item.props.id);
-    return `${menuId}-option-${encodeURIComponent(String(key))}`;
+    return `${menuId}-option-${typeof key}-${encodeURIComponent(String(key))}`;
   };
 
   const collectionItems = [...treeState.collection];

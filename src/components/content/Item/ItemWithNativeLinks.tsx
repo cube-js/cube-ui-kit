@@ -132,6 +132,7 @@ function useNativeMenuItemTarget(
     let alive = true;
     let queued = false;
     let watched: Element[] = [];
+    let resizeTargets: Element[] = [];
     let row: Element | null = null;
     let rescueArmed = false;
     const queue = () => {
@@ -224,19 +225,25 @@ function useNativeMenuItemTarget(
         elements.push(ancestor);
         ancestor = ancestor.parentElement;
       }
+      const nextResizeTargets = elements.filter(
+        (node) =>
+          slots.includes(node as HTMLAnchorElement) ||
+          view.getComputedStyle(node).containerType !== 'normal',
+      );
       setRow(slots[0]?.closest('[data-menuitem]') ?? null);
       if (
         elements.length === watched.length &&
-        elements.every((node, index) => node === watched[index])
+        elements.every((node, index) => node === watched[index]) &&
+        nextResizeTargets.length === resizeTargets.length &&
+        nextResizeTargets.every((node, index) => node === resizeTargets[index])
       )
         return;
       watched = elements;
+      resizeTargets = nextResizeTargets;
       resize?.disconnect();
       mutation.disconnect();
       for (const node of elements) {
-        const isSlot = slots.includes(node as HTMLAnchorElement);
-        if (isSlot || view.getComputedStyle(node).containerType !== 'normal')
-          resize?.observe(node);
+        if (resizeTargets.includes(node)) resize?.observe(node);
         mutation.observe(node, { attributes: true, childList: node === row });
       }
     };
