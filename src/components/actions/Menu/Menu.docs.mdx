@@ -182,7 +182,7 @@ For detailed information about all available item properties, see [Item document
 - **`to`** `string \| Path` — Application destination, resolved by Root's navigation adapter; takes precedence over `href`
 - **`navigationOptions`** `NavigateOptions` — Options forwarded during client navigation, such as `replace`, `state`, `relative`, and `preventScrollReset`
 - **`href`** `string` — Link destination when `to` is omitted
-- **`target`**, **`rel`**, **`download`**, **`ping`**, **`referrerPolicy`** — Native anchor attributes
+- **`target`**, **`rel`**, **`download`**, **`ping`**, **`referrerPolicy`**, **`hrefLang`** — Native anchor attributes
 
 #### Navigation Items
 
@@ -219,7 +219,7 @@ An item's `onAction()` and the Menu's `onAction(key)` compose: when both are sup
 
 Use the item callback for a command that belongs to that item, or handle commands centrally using the Menu callback and item keys. Supplying both is useful for additional observation, such as recording an activation; avoid executing the same command in both callbacks.
 
-The label and description provide native anchors; use these text cells for browser link commands. The complete row retains ordinary click activation. The primary native anchor owns the menu-item semantics and keyboard focus, while Item's original list element owns layout and styling. Command text has no link destination.
+The label, description and leading icon provide native anchors; use these content cells for browser link commands. The complete row retains ordinary click activation. The primary native anchor owns the menu-item semantics and keyboard focus, while Item's original list element owns layout and styling. Command content has no link destination.
 
 <Story of={MenuStories.NavigationLinks} />
 
@@ -253,7 +253,9 @@ Keep the label and description non-interactive: text, icons and decorative badge
 
 #### Focus and Selector Migration
 
-The original `li` retains Item's layout, style slots, modifiers and forwarded ref. A navigation row, or a command row with inline actions, places the primary menu-item role and DOM focus on its primary content anchor; a command without inline actions keeps its menu-item role and focus on the `li`. The command anchor has no `href`. Inline actions remain outside that primary focus target.
+The original `li` retains Item's layout, style slots, modifiers and forwarded ref. A navigation row, or a command row with inline actions, places the primary menu-item role and DOM focus on its first visible content anchor: Label, then Description, then the leading Icon. A command without inline actions keeps its menu-item role and focus on the `li`. The command anchor has no `href`. Inline actions remain outside that primary focus target.
+
+Keep at least one of those content slots visible, and give icon-only items a meaningful `aria-label` or `aria-labelledby`. If styles hide the active Label while a Description or Icon remains visible, the primary semantics and focus move together to that slot. Explicit accessible names remain in effect. Heading items retain their heading element and level.
 
 Use the item's `focused` modifier for row focus styles. It marks the active collection row, including the row associated with a focused inline action. Existing style props and named sub-element overrides continue to style the same layout elements.
 
@@ -276,6 +278,8 @@ Consumer CSS that literally targets `li:focus` or assumes the `li` has `role="me
 | The actual focusable menu item | `[role="menuitem"]`, `[role="menuitemcheckbox"]` or `[role="menuitemradio"]` |
 
 Do not use the forwarded row ref or a role selector as a proxy for the primary focus target. A row's semantic role can move to its anchor when a destination or inline action is added. `:focus-within` tracks DOM focus anywhere inside the row; use the `focused` modifier for the collection's active-row state, including virtual focus.
+
+Use named style slots or their `data-element` markers for content styling. Selectors that depend on the Label, Description or Icon being a particular HTML tag need to allow their native anchor host.
 
 #### Example with Rich Items
 
@@ -528,8 +532,9 @@ Screen-reader wording varies by reader and browser. Provide descriptive names fo
 
 - `aria-label` - Provides accessible label for the menu
 - `aria-labelledby` - References element that labels the menu
-- `aria-activedescendant` - Indicates the active primary item when virtual focus is enabled; default menu navigation moves DOM focus directly to items
 - `aria-orientation` - Indicates menu orientation (vertical by default)
+
+Default Menu navigation moves DOM focus directly to items. CommandMenu owns the search input's `aria-controls` and `aria-activedescendant` relationship. A custom consumer using Menu's virtual-focus mode must own that relationship on its focused controller; enabling virtual focus alone does not supply it.
 
 ## Best Practices
 

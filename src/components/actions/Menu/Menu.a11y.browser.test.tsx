@@ -141,7 +141,10 @@ describe('Mixed menu accessibility', () => {
         });
       render(
         <Root>
-          <Menu aria-label="Keyboard consumers" onKeyDown={record('menu')}>
+          <Menu
+            aria-label="Keyboard consumers"
+            {...{ onKeyDown: record('menu') }}
+          >
             <Menu.Item key="plain" onKeyDown={record('plain')}>
               Plain command
             </Menu.Item>
@@ -194,7 +197,7 @@ describe('Mixed menu accessibility', () => {
       });
       render(
         <Root>
-          <Menu aria-label="Consumer cancellation" onKeyDown={menuKey}>
+          <Menu aria-label="Consumer cancellation" {...{ onKeyDown: menuKey }}>
             <Menu.Item
               key="command"
               onKeyDown={itemKey}
@@ -376,7 +379,11 @@ describe('Mixed menu accessibility', () => {
     const itemKey = vi.fn();
     render(
       <Root>
-        <Menu aria-label="Parent shortcuts" onKeyDown={menuKey}>
+        <Menu
+          aria-label="Parent shortcuts"
+          styles={{ width: '32x' }}
+          {...{ onKeyDown: menuKey }}
+        >
           <Menu.SubMenuTrigger>
             <Menu.Item
               key="share"

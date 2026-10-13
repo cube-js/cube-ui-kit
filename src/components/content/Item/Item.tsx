@@ -836,12 +836,19 @@ function highlightContent(
     : content;
 }
 
-interface ItemWithNativeLinksProps extends CubeItemProps {
+export interface ItemWithNativeLinksProps extends CubeItemProps {
   nativeLinkProps?: AnchorHTMLAttributes<HTMLAnchorElement>;
   nativeMenuItemProps?: AnchorHTMLAttributes<HTMLAnchorElement> & {
     'data-menu-native-primary'?: string;
     'data-key'?: string;
     'data-collection'?: string;
+  };
+  nativePrimarySlot?: 'label' | 'description' | 'icon';
+  nativeLabelReferenceId?: string;
+  nativeSlotRefs?: {
+    label: (element: HTMLAnchorElement | null) => void;
+    description: (element: HTMLAnchorElement | null) => void;
+    icon: (element: HTMLAnchorElement | null) => void;
   };
   onInlineFocus?: HTMLAttributes<HTMLDivElement>['onFocus'];
   onNativeLinkElement?: (element: HTMLAnchorElement | null) => void;
@@ -910,6 +917,9 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     labelRef: labelRefProp,
     nativeLinkProps,
     nativeMenuItemProps,
+    nativePrimarySlot = 'label',
+    nativeLabelReferenceId,
+    nativeSlotRefs,
     onInlineFocus,
     onNativeLinkElement,
     onNativeElement,
@@ -1148,13 +1158,33 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
         {typeof hiddenContent === 'function'
           ? hiddenContent(tooltipFocusProps ?? {}, isTooltipActive)
           : hiddenContent}
-        {iconSlot.hasSlot && (
-          <div data-element="Icon">
-            <IconSwitch noWrapper contentKey={iconSlot.key}>
-              {iconSlot.content}
-            </IconSwitch>
-          </div>
-        )}
+        {iconSlot.hasSlot &&
+          (nativeLinkProps ? (
+            <NativeItemLink
+              data-element="Icon"
+              {...nativeLinkProps}
+              {...(nativeMenuItemProps && nativePrimarySlot === 'icon'
+                ? mergeProps(nativeMenuItemProps, tooltipFocusProps)
+                : null)}
+              aria-hidden={
+                nativeMenuItemProps && nativePrimarySlot === 'icon'
+                  ? undefined
+                  : true
+              }
+              data-menu-native-link=""
+              ref={nativeSlotRefs?.icon}
+            >
+              <IconSwitch noWrapper contentKey={iconSlot.key}>
+                {iconSlot.content}
+              </IconSwitch>
+            </NativeItemLink>
+          ) : (
+            <div data-element="Icon">
+              <IconSwitch noWrapper contentKey={iconSlot.key}>
+                {iconSlot.content}
+              </IconSwitch>
+            </div>
+          ))}
         {finalPrefix && <div data-element="Prefix">{finalPrefix}</div>}
         {children || labelProps
           ? (() => {
@@ -1168,18 +1198,21 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
                   <LabelTag
                     data-element="Label"
                     {...finalLabelProps}
+                    id={nativeLabelReferenceId ?? finalLabelProps.id}
                     ref={(element: HTMLElement | null) => {
                       labelRef(element);
                     }}
                   >
                     <NativeItemLink
                       {...nativeLinkProps}
-                      {...mergeProps(nativeMenuItemProps, tooltipFocusProps)}
+                      {...(nativePrimarySlot === 'label'
+                        ? mergeProps(nativeMenuItemProps, tooltipFocusProps)
+                        : null)}
                       aria-hidden={undefined}
                       display="inline"
                       data-menu-native-link=""
                       ref={(element: HTMLAnchorElement | null) => {
-                        onNativeLinkElement?.(element);
+                        nativeSlotRefs?.label(element);
                       }}
                     >
                       {processedChildren}
@@ -1193,11 +1226,14 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
                     data-element="Label"
                     {...nativeLinkProps}
                     {...finalLabelProps}
-                    {...mergeProps(nativeMenuItemProps, tooltipFocusProps)}
+                    id={nativeLabelReferenceId ?? finalLabelProps.id}
+                    {...(nativePrimarySlot === 'label'
+                      ? mergeProps(nativeMenuItemProps, tooltipFocusProps)
+                      : null)}
                     data-menu-native-link=""
                     ref={(element: HTMLAnchorElement | null) => {
                       labelRef(element);
-                      onNativeLinkElement?.(element);
+                      nativeSlotRefs?.label(element);
                     }}
                   >
                     {processedChildren}
@@ -1221,18 +1257,19 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
               data-element="Description"
               {...nativeLinkProps}
               {...descriptionProps}
-              {...(!hasLabel
+              {...(nativePrimarySlot === 'description'
                 ? mergeProps(nativeMenuItemProps, tooltipFocusProps)
                 : null)}
-              data-menu-native-link=""
-              ref={
-                !hasLabel
-                  ? (element: HTMLAnchorElement | null) => {
-                      descriptionRef(element);
-                      onNativeLinkElement?.(element);
-                    }
-                  : descriptionRef
+              aria-hidden={
+                nativePrimarySlot === 'description'
+                  ? undefined
+                  : nativeLinkProps['aria-hidden']
               }
+              data-menu-native-link=""
+              ref={(element: HTMLAnchorElement | null) => {
+                descriptionRef(element);
+                nativeSlotRefs?.description(element);
+              }}
             >
               {processedDescription}
             </NativeItemLink>
@@ -1290,7 +1327,7 @@ const _Item = Object.assign(forwardRef<HTMLElement, CubeItemProps>(Item), {
 });
 
 /** @private Keeps menu links in the existing label/description grid slots. */
-export const ItemWithNativeLinks = _Item as typeof _Item &
+export const ItemWithNativeSlots = _Item as typeof _Item &
   ForwardRefExoticComponent<
     PropsWithoutRef<ItemWithNativeLinksProps> & RefAttributes<HTMLElement>
   >;

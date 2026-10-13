@@ -284,6 +284,11 @@
     "diagnostics": {},
     "optOuts": 0
   },
+  "src/components/content/Item/ItemWithNativeLinks.tsx": {
+    "compiled": 2,
+    "diagnostics": {},
+    "optOuts": 0
+  },
   "src/components/content/ItemBadge/ItemBadge.tsx": {
     "compiled": 1,
     "diagnostics": {},

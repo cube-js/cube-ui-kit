@@ -129,7 +129,7 @@ For detailed information about all available item properties, see the [Menu.Item
 - **`to`** `string | Path` — Application destination resolved by Root's navigation adapter; takes precedence over `href`
 - **`navigationOptions`** `NavigateOptions` — Options for client navigation, such as `replace`, `state`, `relative` and `preventScrollReset`
 - **`href`** `string` — Native destination when `to` is omitted
-- **`target`**, **`rel`**, **`download`**, **`ping`**, **`referrerPolicy`** — Native anchor attributes
+- **`target`**, **`rel`**, **`download`**, **`ping`**, **`referrerPolicy`**, **`hrefLang`** — Native anchor attributes
 
 #### CommandMenu-specific Properties
 
@@ -163,7 +163,7 @@ Filtering, Arrow keys and Enter use the same primary items for both commands and
 
 Navigation items expose `menuitem` semantics without a checked state, including when other items are checkboxes or radio choices. Supply `aria-current` to identify a destination that represents the current page.
 
-The primary native anchor exposes the menu-item semantics and destination, while the original Item row retains its layout and style slots. Follow [Menu's focus and selector migration guidance](/docs/actions-menu--docs#focus-and-selector-migration) for custom selectors. CommandMenu uses virtual focus: the search input keeps DOM focus and identifies the active primary menu item with `aria-activedescendant`. Inline actions are unsupported in this virtual-focus mode; use a separate primary item for each command or a DOM-focus Menu when independent row actions are required.
+The primary native anchor exposes the menu-item semantics and destination, while the original Item row retains its layout and style slots. The primary target follows the first visible Label, Description or leading Icon; keep one of these slots visible and give icon-only items a meaningful accessible name. Follow [Menu's focus and selector migration guidance](/docs/actions-menu--docs#focus-and-selector-migration) for custom selectors. CommandMenu uses virtual focus: the search input keeps DOM focus and identifies the active primary menu item with `aria-activedescendant`, including when styling moves the primary target to another content slot. Inline actions are unsupported in this virtual-focus mode; use a separate primary item for each command or a DOM-focus Menu when independent row actions are required.
 
 <Story of={CommandMenuStories.NavigationLinks} />
 

@@ -25,7 +25,7 @@ import {
   COLLECTION_ITEM_CLICK,
   filterCollectionItemProps,
 } from '../../CollectionItem';
-import { ItemWithNativeLinks } from '../../content/Item/Item';
+import { ItemWithNativeLinks } from '../../content/Item/ItemWithNativeLinks';
 import { parseTo } from '../use-action';
 
 import { useMenuContext } from './context';
@@ -479,6 +479,13 @@ function MenuItemContent<T>(
               )
             : undefined
         }
+        nativeMenuItemShouldFocus={isFocused && menuItemProps.tabIndex != null}
+        nativeMenuItemName={{
+          label: consumerSemanticProps['aria-label'],
+          labelledBy: consumerSemanticProps['aria-labelledby'],
+          descriptionFromContent:
+            consumerSemanticProps['aria-describedby'] == null,
+        }}
         onNativeLinkElement={(element) => {
           if (primaryInCell) updateSemanticElement(element);
           props.onNativeLinkElement?.(element);
