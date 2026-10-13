@@ -179,7 +179,7 @@ Then:
 Chromatic bills per snapshot, and a snapshot is one story. Every story you add is a recurring cost on every build for as long as it exists, so a story earns its snapshot by showing something no other story shows. Plenty of stories do not, and they are not obvious from the name:
 
 - **Behaviour demos.** Whatever a `Controlled` story proves happens in a `useState` the camera cannot see. At rest it renders the same tree as `Default`.
-- **Props that only matter during an interaction.** `compact`, `isResizable`, `disabledKeys`, `showGridLines="drag"`, `hideOnClose`, `focusOnHover` — none of them paint anything until the user drags, opens or hovers.
+- **Props that only matter during an interaction.** `disabledKeys`, `hideOnClose`, `focusOnHover` — none of them paint anything until the user opens or hovers.
 - **API twins.** `DynamicSections` next to `WithSections`, `WithItemsProp` next to `Default`: same output, different way of building it.
 - **Values that are already the default.** A `Modal` story for a dialog whose default type is `modal`, a `SizeMedium` for a component whose default size is medium.
 
@@ -193,9 +193,9 @@ export const Controlled = Template.bind({});
 Controlled.parameters = NO_SNAPSHOT;
 
 // Or, merged with parameters the story already has:
-export const GridLines = Template.bind({});
-GridLines.parameters = {
-  // `showGridLines="drag"` paints nothing until a drag starts.
+export const FocusOnHover = Template.bind({});
+FocusOnHover.parameters = {
+  // `focusOnHover` paints nothing until the pointer moves over an option.
   ...NO_SNAPSHOT,
   docs: { description: { story: '…' } },
 };

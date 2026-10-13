@@ -397,6 +397,93 @@ describe('<ComboBox />', () => {
     expect(queryByTestId('ComboBoxClearButton')).not.toBeInTheDocument();
   });
 
+  describe('Enter and Escape with the popover closed', () => {
+    const renderSelected = (props: Record<string, unknown> = {}) => {
+      const onSelectionChange = vi.fn();
+      const view = renderWithRoot(
+        <ComboBox
+          label="test"
+          defaultSelectedKey="red"
+          onSelectionChange={onSelectionChange}
+          {...props}
+        >
+          {items.map((item) => (
+            <ComboBox.Item key={item.key}>{item.children}</ComboBox.Item>
+          ))}
+        </ComboBox>,
+      );
+
+      return {
+        combobox: view.getByRole('combobox'),
+        queryByRole: view.queryByRole,
+        onSelectionChange,
+      };
+    };
+
+    it('clears the value on Escape when clearable', async () => {
+      const onClear = vi.fn();
+      const { combobox, onSelectionChange } = renderSelected({
+        isClearable: true,
+        onClear,
+      });
+
+      expect(combobox).toHaveValue('Red');
+
+      await act(async () => {
+        combobox.focus();
+        await userEvent.keyboard('{Escape}');
+      });
+
+      expect(onClear).toHaveBeenCalledTimes(1);
+      expect(onSelectionChange).toHaveBeenCalledWith(null);
+      expect(combobox).toHaveValue('');
+    });
+
+    it('keeps the value on Escape when not clearable', async () => {
+      const { combobox, onSelectionChange } = renderSelected();
+
+      await act(async () => {
+        combobox.focus();
+        await userEvent.keyboard('{Escape}');
+      });
+
+      expect(onSelectionChange).not.toHaveBeenCalled();
+      expect(combobox).toHaveValue('Red');
+    });
+
+    it('clears the selection on Enter when the typed text matches nothing', async () => {
+      const { combobox, queryByRole, onSelectionChange } = renderSelected();
+
+      await userEvent.clear(combobox);
+      await userEvent.type(combobox, 'zzz');
+      expect(queryByRole('listbox')).not.toBeInTheDocument();
+      onSelectionChange.mockClear();
+
+      await act(async () => {
+        await userEvent.keyboard('{Enter}');
+      });
+
+      expect(onSelectionChange).toHaveBeenCalledWith(null);
+    });
+
+    it('clears the selection on Enter when the input is empty', async () => {
+      const { combobox, queryByRole, onSelectionChange } = renderSelected();
+
+      await userEvent.clear(combobox);
+      await act(async () => {
+        await userEvent.keyboard('{Escape}');
+      });
+      expect(queryByRole('listbox')).not.toBeInTheDocument();
+      onSelectionChange.mockClear();
+
+      await act(async () => {
+        await userEvent.keyboard('{Enter}');
+      });
+
+      expect(onSelectionChange).toHaveBeenCalledWith(null);
+    });
+  });
+
   it('should clear in a single click while the popover is open (controlled + external filter)', async () => {
     function ControlledCombo() {
       const [inputValue, setInputValue] = useState('Red');

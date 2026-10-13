@@ -1219,7 +1219,7 @@ export const InfiniteScroll: Story = {
 
 /**
  * `isResizable` puts a grab handle on every column's trailing edge. It is built
- * on React Aria's `useMove`, the same hook that drives `Board`'s widgets, so the
+ * on React Aria's `useMove`, the same hook that drives `ResizablePanel`, so the
  * handle takes **keyboard** input for free: focus it and use the arrow keys,
  * or Home/End to jump to the column's minimum and maximum. ag-grid never gave
  * Cloud that.

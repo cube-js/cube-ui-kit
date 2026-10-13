@@ -627,6 +627,22 @@ const SelectAllOption = ({
   );
 };
 
+/**
+ * A public selection prop as the Set-based value React Stately expects: a key
+ * array (or `'all'`, passed through) in multiple mode, a single key (or
+ * `null` for none) in single mode.
+ */
+function toStatelySelection(
+  value: 'all' | Key[] | Key | null,
+  isMultiple: boolean,
+): 'all' | Set<Key> {
+  if (isMultiple) {
+    return value === 'all' ? 'all' : new Set(value as Key[]);
+  }
+
+  return value == null ? new Set() : new Set([value as Key]);
+}
+
 export const ListBox = forwardRef(function ListBox<T extends object>(
   props: CubeListBoxProps<T>,
   ref: ForwardedRef<HTMLDivElement>,
@@ -769,35 +785,23 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     allowDuplicateSelectionEvents,
   };
 
-  // Set selection props based on mode
-  if (listStateProps.selectionMode === 'multiple') {
-    if (selectedKeys !== undefined) {
-      // Handle "all" selection by passing it directly to React Aria
-      listStateProps.selectedKeys =
-        selectedKeys === 'all' ? 'all' : new Set(selectedKeys as Key[]);
-    }
-    if (defaultSelectedKeys !== undefined) {
-      // Handle "all" default selection
-      listStateProps.defaultSelectedKeys =
-        defaultSelectedKeys === 'all'
-          ? 'all'
-          : new Set(defaultSelectedKeys as Key[]);
-    }
-    // Remove single-selection props if any
-  } else {
-    // For single-selection we convert the scalar key props that our public
-    // API exposes into the Set-based props that React Stately expects.
-    if (selectedKey !== undefined) {
-      listStateProps.selectedKeys =
-        selectedKey == null ? new Set() : new Set([selectedKey]);
-    }
+  // Set selection props based on mode: the array props in multiple mode, the
+  // scalar key props in single mode.
+  const isMultiple = listStateProps.selectionMode === 'multiple';
+  const selection = isMultiple ? selectedKeys : selectedKey;
+  const defaultSelection = isMultiple
+    ? defaultSelectedKeys
+    : defaultSelectedKey;
 
-    if (defaultSelectedKey !== undefined) {
-      listStateProps.defaultSelectedKeys =
-        defaultSelectedKey == null ? new Set() : new Set([defaultSelectedKey]);
-    }
+  if (selection !== undefined) {
+    listStateProps.selectedKeys = toStatelySelection(selection, isMultiple);
+  }
 
-    // Remove the single-value props so we don't pass unsupported keys through.
+  if (defaultSelection !== undefined) {
+    listStateProps.defaultSelectedKeys = toStatelySelection(
+      defaultSelection,
+      isMultiple,
+    );
   }
 
   const listState = useListState(listStateProps);

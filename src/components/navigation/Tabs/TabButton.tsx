@@ -30,9 +30,9 @@ import {
   CubeInlineInputRef,
   InlineInput,
 } from '../../content/InlineInput/InlineInput';
-import { useBoardDragActive } from '../../layout/Board/board-context';
 import { createMockDragState } from '../../shared/DraggableCollection';
 
+import { useBoardDragActive } from './BoardDragActiveProvider';
 import { POPOVER_PLACEMENT_BY_TABS_PLACEMENT } from './popover-placement';
 import { TabContainer, TabElement } from './styled';
 import { TabDropIndicator } from './TabDropIndicator';
@@ -64,7 +64,7 @@ const ACTIONS_EVENT_HANDLERS = {
 // hover hint is misleading inside a clickable tab.
 const INLINE_INPUT_STYLES = { cursor: 'inherit' } as const;
 
-// How long a dragged Board widget must hover a tab header before that tab
+// How long a dragged board widget must hover a tab header before that tab
 // spring-loads (opens). Long enough to avoid accidental switches while crossing
 // tabs, short enough to feel responsive.
 const SPRING_LOAD_DELAY = 500;
@@ -323,12 +323,13 @@ export function TabButton({
   const isDeletable = !!onDelete;
   const isEditing = editingKey === item.key;
 
-  // Spring-load: when this Tabs sits inside a Board and a widget is being
-  // dragged, hovering an inactive tab header for a moment opens it, so the user
-  // can drop the widget into (or move it between) tabs. React Aria's `useMove`
-  // uses window listeners without pointer capture and the dragged widget is
-  // `pointer-events: none`, so the tab header still receives native pointer
-  // enter/leave during the drag. `false` outside a Board, so nothing changes.
+  // Spring-load: when a `BoardDragActiveProvider` reports a widget drag,
+  // hovering an inactive tab header for a moment opens it, so the user
+  // can drop the widget into (or move it between) tabs. This relies on the
+  // board's drag not capturing the pointer and its dragged widget being
+  // `pointer-events: none` (see `BoardDragActiveProvider`), so the tab header
+  // still receives native pointer enter/leave during the drag. `false` outside
+  // a provider, so nothing changes.
   const isBoardDragActive = useBoardDragActive();
   const [isDropPending, setIsDropPending] = useState(false);
   const springLoadTimerRef = useRef<number | null>(null);

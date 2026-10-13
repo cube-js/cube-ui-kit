@@ -6,7 +6,6 @@ import {
   Avatar,
   Badge,
   Banner,
-  Board,
   Button,
   ButtonSplit,
   Checkbox,
@@ -552,20 +551,6 @@ export const FIXTURES: Fixture[] = [
     ignoreProps: ['title'],
     // ItemCard renders through `Item`, which reflects `aria-selected`.
     curatedSkips: { isSelected: ARIA_SELECTED_SKIP },
-  },
-  {
-    name: 'Board',
-    // jsdom measures 0, so an explicit width is required for widgets to lay out.
-    render: (props) => (
-      <Board
-        width={1200}
-        defaultLayout={[{ i: 'a', x: 0, y: 0, w: 2, h: 2 }]}
-        {...props}
-      >
-        <Board.Widget id="a">Widget A</Board.Widget>
-      </Board>
-    ),
-    ignoreProps: ['width', 'defaultLayout', 'children'],
   },
   {
     name: 'Form',

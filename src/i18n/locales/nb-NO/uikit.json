@@ -165,14 +165,6 @@
     "openContextMenu": "Åpne kontekstmeny",
     "contextMenu": "context-menu"
   },
-  "board": {
-    "widget": "Widget",
-    "draggableWidget": "Flyttbar widget",
-    "selected": "Valgt",
-    "widgetSelected": "{{name}} valgt",
-    "widgetsSelected": "{{count}} widgeter valgt",
-    "selectionCleared": "Valget er fjernet"
-  },
   "pagination": {
     "ariaLabel": "Paginering",
     "firstPage": "Første side",

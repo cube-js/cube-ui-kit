@@ -755,7 +755,7 @@ They do compose if you need it — set `isReorderable` as well and a row that re
 <ItemTable isResizable storageKey="deployments" data={rows} columns={columns} />
 ```
 
-It is built on React Aria's `useMove` — the same hook behind `Board`'s widgets — so the handle takes **keyboard** input for free: focus it and use the arrow keys, or Home/End to jump to the column's minimum and maximum. Widths clamp to each column's `minWidth` / `maxWidth`, and a column opts out with `isResizable: false`.
+It is built on React Aria's `useMove` — the same hook behind `ResizablePanel` — so the handle takes **keyboard** input for free: focus it and use the arrow keys, or Home/End to jump to the column's minimum and maximum. Widths clamp to each column's `minWidth` / `maxWidth`, and a column opts out with `isResizable: false`.
 
 `onColumnResize` fires once the gesture ends rather than on every pixel, and `columnWidths` is in the default `persist` list, so pairing `isResizable` with `storageKey` makes a resized table come back the way the user left it.
 
