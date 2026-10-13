@@ -25,7 +25,7 @@ describe('parsePushedShas', () => {
 
 describe('canSkip', () => {
   const state = { clean: true, tree: 't1', key: 'k1' };
-  const stamp = { tree: 't1', key: 'k1' };
+  const stamp = 't1 k1';
 
   it('reuses a passed run of the same clean tree', () => {
     expect(canSkip({ stamp, state, pushedTrees: [] })).toBe(true);
@@ -38,8 +38,7 @@ describe('canSkip', () => {
       'the working tree has changes',
       { stamp, state: { ...state, clean: false } },
     ],
-    ['another tree passed', { stamp: { ...stamp, tree: 't0' }, state }],
-    ['Node or the install changed', { stamp: { ...stamp, key: 'k0' }, state }],
+    ['another tree passed', { stamp: 't0 k1', state }],
   ])('runs the suite when %s', (_, input) => {
     expect(canSkip({ ...input, pushedTrees: [] })).toBe(false);
   });
@@ -69,6 +68,12 @@ describe('main', () => {
   const passing = () => vi.fn(() => 0);
 
   beforeEach(() => {
+    // A git hook in a linked worktree exports GIT_DIR, which would point every
+    // git command here at the repository being pushed instead of `dir`.
+    for (const name of Object.keys(process.env)) {
+      if (name.startsWith('GIT_')) vi.stubEnv(name, undefined);
+    }
+
     dir = mkdtempSync(join(tmpdir(), 'test-once-'));
     git('init', '-q');
     git('config', 'user.email', 'test@example.com');
@@ -82,6 +87,7 @@ describe('main', () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.unstubAllEnvs();
     rmSync(dir, { recursive: true, force: true });
   });
 
@@ -106,6 +112,27 @@ describe('main', () => {
   it.each([
     ['a changed file', () => write('a.txt', 'two')],
     ['an untracked file', () => write('b.test.mjs', 'it()')],
+    [
+      'an untracked file git status is set to hide',
+      () => {
+        git('config', 'status.showUntrackedFiles', 'no');
+        write('b.test.mjs', 'it()');
+      },
+    ],
+    [
+      'a changed file marked assume-unchanged',
+      () => {
+        git('update-index', '--assume-unchanged', 'a.txt');
+        write('a.txt', 'two');
+      },
+    ],
+    [
+      'a changed file marked skip-worktree',
+      () => {
+        git('update-index', '--skip-worktree', 'a.txt');
+        write('a.txt', 'two');
+      },
+    ],
   ])('neither reuses nor records a run with %s', (_, change) => {
     const run = passing();
 
@@ -131,12 +158,47 @@ describe('main', () => {
     expect(run).toHaveBeenCalledTimes(2);
   });
 
+  it('keeps no record when the install changes while the suite runs', () => {
+    const run = vi.fn(() => {
+      write(
+        'node_modules/.pnpm/lock.yaml',
+        `lockfileVersion: ${run.mock.calls.length}`,
+      );
+
+      return 0;
+    });
+
+    main([], { cwd: dir, run });
+    main([], { cwd: dir, run });
+
+    expect(run).toHaveBeenCalledTimes(2);
+  });
+
   it('runs the suite again after the install changes', () => {
     const run = passing();
 
     main([], { cwd: dir, run });
     write('node_modules/.pnpm/lock.yaml', 'lockfileVersion: 9\nchanged: true');
     main([], { cwd: dir, run });
+
+    expect(run).toHaveBeenCalledTimes(2);
+  });
+
+  it('runs the suite again under another Node version', () => {
+    const run = passing();
+    const version = Object.getOwnPropertyDescriptor(process, 'version');
+
+    main([], { cwd: dir, run });
+
+    try {
+      Object.defineProperty(process, 'version', {
+        ...version,
+        value: 'v0.0.0',
+      });
+      main([], { cwd: dir, run });
+    } finally {
+      Object.defineProperty(process, 'version', version);
+    }
 
     expect(run).toHaveBeenCalledTimes(2);
   });
