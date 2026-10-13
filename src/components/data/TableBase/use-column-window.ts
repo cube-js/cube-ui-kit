@@ -1,7 +1,7 @@
 import { CONTAINER_STYLES } from '@tenphi/tasty';
 import { useLayoutEffect, useState } from 'react';
 
-import { useEvent } from '../../../_internal/hooks';
+import { useEvent } from '../../../_internal/hooks/use-event';
 
 import type { Styles } from '@tenphi/tasty';
 import type { CubeResolvedColumn, CubeTableColumnLayout } from './types';
@@ -141,11 +141,16 @@ export function useColumnWindow<T>(
     const table = scroller?.querySelector('table');
     if (!table) return;
     const computed = getComputedStyle(table);
-    const height = parseFloat(computed.getPropertyValue('--row-height'));
+    const rowHeight = computed.getPropertyValue('--row-height').trim();
+    const height = parseFloat(rowHeight);
     const lineHeight = parseFloat(computed.lineHeight);
     // Empty default cells can be shorter than text. Measure the inherited
     // tokens, since Root can override both typography and the size scale.
-    setFitsRow(height >= lineHeight);
+    setFitsRow(
+      rowHeight.endsWith('px') &&
+        Number.isFinite(height) &&
+        height >= lineHeight,
+    );
   });
 
   useLayoutEffect(() => {

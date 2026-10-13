@@ -1,8 +1,9 @@
 import { act } from 'react';
-import { userEvent as realInput } from 'vitest/browser';
+import { page, userEvent as realInput } from 'vitest/browser';
 
 import { renderWithRoot, screen } from '../../../test';
-import { Menu } from '../../actions/Menu';
+import { SlotProvider } from '../../../utils/react/Slots';
+import { Menu } from '../../actions/Menu/Menu';
 import { Root } from '../../Root';
 import { DataTable } from '../DataTable/DataTable';
 
@@ -269,7 +270,7 @@ describe('ItemTable body column window', () => {
     expect(bodyRow().getBoundingClientRect().height).toBe(height);
   });
 
-  it.each(['typography', 'size'] as const)(
+  it.each(['typography', 'size', 'relative'] as const)(
     'uses inherited %s tokens and refreshes eligibility when they change',
     async (kind) => {
       const data = [
@@ -280,7 +281,8 @@ describe('ItemTable body column window', () => {
         ]),
       ];
       const token = kind === 'typography' ? '$t3-line-height' : '$size-lg';
-      const value = kind === 'typography' ? '48px' : '18px';
+      const value =
+        kind === 'typography' ? '48px' : kind === 'relative' ? '25%' : '18px';
       const content = <Table data={data} />;
       const { rerender } = renderWithRoot(<Root>{content}</Root>);
       await vi.waitFor(() =>
@@ -307,6 +309,86 @@ describe('ItemTable body column window', () => {
       expect(bodyRow().getBoundingClientRect().height).toBe(41);
     },
   );
+
+  it('preserves default text-slot customization when a provider changes', async () => {
+    const data = [
+      Object.fromEntries([
+        ['id', 'r0'],
+        ...columns().map((col) => [col.key, {}]),
+        ['c95', 'Text'],
+      ]),
+    ];
+    const content = <Table data={data} />;
+    const { rerender } = renderWithRoot(<SlotProvider>{content}</SlotProvider>);
+    await vi.waitFor(() =>
+      expect(
+        bodyRow()?.querySelectorAll('[data-element="Cell"]').length,
+      ).toBeLessThan(20),
+    );
+    rerender(
+      <SlotProvider slots={{ text: { styles: { lineHeight: '48px' } } }}>
+        {content}
+      </SlotProvider>,
+    );
+    await vi.waitFor(() =>
+      expect(bodyRow().querySelectorAll('[data-element="Cell"]')).toHaveLength(
+        100,
+      ),
+    );
+    const height = bodyRow().getBoundingClientRect().height;
+    expect(height).toBe(49);
+    await scrollTo(14000);
+    expect(bodyRow().getBoundingClientRect().height).toBe(height);
+    rerender(<SlotProvider>{content}</SlotProvider>);
+    await vi.waitFor(() =>
+      expect(
+        bodyRow().querySelectorAll('[data-element="Cell"]').length,
+      ).toBeLessThan(20),
+    );
+    expect(bodyRow().getBoundingClientRect().height).toBe(41);
+  });
+
+  it('refreshes responsive typography even when the scroller size stays fixed', async () => {
+    const width = window.innerWidth,
+      height = window.innerHeight;
+    try {
+      await page.viewport(1200, 800);
+      const data = [
+        Object.fromEntries([
+          ['id', 'r0'],
+          ...columns().map((col) => [col.key, {}]),
+          ['c95', 'Text'],
+        ]),
+      ];
+      renderWithRoot(
+        <>
+          <style>{`[data-qa="ResponsiveColumnScope"] {--t3-line-height:20px} @media(max-width:1000px) {[data-qa="ResponsiveColumnScope"] {--t3-line-height:48px}}`}</style>
+          <div data-qa="ResponsiveColumnScope">
+            <Table data={data} />
+          </div>
+        </>,
+      );
+      await vi.waitFor(() =>
+        expect(
+          bodyRow()?.querySelectorAll('[data-element="Cell"]').length,
+        ).toBeLessThan(20),
+      );
+      expect(bodyRow().getBoundingClientRect().height).toBe(41);
+      const scrollerWidth = scroller().clientWidth;
+      await act(() => page.viewport(900, 800));
+      await vi.waitFor(() =>
+        expect(
+          bodyRow().querySelectorAll('[data-element="Cell"]'),
+        ).toHaveLength(100),
+      );
+      expect(scroller().clientWidth).toBe(scrollerWidth);
+      expect(bodyRow().getBoundingClientRect().height).toBe(49);
+      await scrollTo(14000);
+      expect(bodyRow().getBoundingClientRect().height).toBe(49);
+    } finally {
+      await page.viewport(width, height);
+    }
+  });
 
   it('aligns the final body column when an omitted run exceeds native colspan', async () => {
     const cols = Array.from({ length: 1100 }, (_, index) => ({

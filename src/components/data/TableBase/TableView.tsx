@@ -18,6 +18,7 @@ import { MoreIcon } from '../../../icons/MoreIcon';
 import { getColorTheme, useColorTheme } from '../../../tokens/color-theme';
 import { usePaletteVersion } from '../../../tokens/palette-config';
 import { SIZE_NAME_TO_KEY, SIZES } from '../../../tokens/sizes';
+import { useSlotProps } from '../../../utils/react/Slots';
 import { Action } from '../../actions/Action/Action';
 import { ItemAction } from '../../actions/ItemAction/ItemAction';
 import { Menu, MenuTrigger } from '../../actions/Menu';
@@ -637,6 +638,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
 
   const [scrollerEl, setScrollerEl] = useState<HTMLDivElement | null>(null);
   const scrollerRef = useRef<HTMLDivElement | null>(null);
+  const textSlotProps = useSlotProps({}, 'text');
   // DataTable's default t4 preset has the same single-line cell layout.
   // Consumer typography overrides need the complete intrinsic body layout.
   const { segments: bodyColumns, refreshAppearance } = useColumnWindow(
@@ -647,6 +649,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
       !bodyStyles &&
       !rowStyles &&
       !cellStyles &&
+      Object.keys(textSlotProps).length === 0 &&
       (!contentPreset || contentPreset === 't4') &&
       canWindowColumns(columns, styles),
     tree?.columnKey,

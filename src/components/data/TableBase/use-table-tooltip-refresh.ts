@@ -38,6 +38,7 @@ export function useTableTooltipRefresh(
       onAppearanceChange?.();
       refreshAutoTooltipsWithin(root);
     };
+    window.addEventListener('resize', refresh, { passive: true });
     const observer = new MutationObserver((records) => {
       if (
         records.some(
@@ -64,6 +65,7 @@ export function useTableTooltipRefresh(
     }
     return () => {
       observer.disconnect();
+      window.removeEventListener('resize', refresh);
       document.fonts?.removeEventListener('loadingdone', refresh);
     };
   }, [onAppearanceChange, scroller]);

@@ -63,7 +63,7 @@ Keep the virtualizer's `getItemKey` callback stable until rows or their key reso
 
 ## Body column windowing
 
-Keep headers and the complete colgroup/layout mounted: native Tab, menu anchors, grouped spans, resizers and React Aria's reorder delegate require their full DOM. Window only safe default text body cells, with hidden colspan gaps covering the omitted logical columns. Retain pins, structural/row-header/tree columns and height/state-bearing custom cells. Arbitrary cellProps spans, row-height floors below the inherited text line box, or body/descendant typography overrides require full rendering. Do not filter the model used by selection/copy or renumber aria-colindex. Scrolling reads logical inline offset (absolute scrollLeft in modern RTL), and publishes state only when the column band changes.
+Keep headers and the complete colgroup/layout mounted: native Tab, menu anchors, grouped spans, resizers and React Aria's reorder delegate require their full DOM. Window only safe default text body cells, with hidden colspan gaps covering the omitted logical columns. Retain pins, structural/row-header/tree columns and height/state-bearing custom cells. Text-slot overrides, relative row-height tokens, arbitrary cellProps spans, row-height floors below the inherited text line box, or body/descendant typography overrides require full rendering. Do not filter the model used by selection/copy or renumber aria-colindex. Scrolling reads logical inline offset (absolute scrollLeft in modern RTL), and publishes state only when the column band changes.
 
 ## Column reordering excludes pinned columns
 
@@ -88,4 +88,4 @@ What that buys is the thing the delegate actually needs: the draggable set is on
 
 Reach for it when a change touches geometry, sticky positioning, pointer hit-testing, focus order, or an observer. Three things cannot be tested any other way: React Aria's drag-and-drop, `IntersectionObserver`, which never fires in a hidden document, and `useMove`, which needs real pointer and key events. In the browser suite (Chromium), synthetic drag events reach a drop target only with a `DataTransfer` whose `effectAllowed` and `dropEffect` keep what React Aria sets. A bare one ignores those writes outside a real drag, so the drag stops once React Aria has written its payload. `ListBox.browser.test.tsx` ("while dragging") has the helper.
 
-Column eligibility compares the actual inherited row-height token and table line height. Reuse the existing table appearance/font notifications to refresh it; do not add computed-style reads on vertical scroll or a second ancestor observer.
+Column eligibility compares the actual inherited row-height token (a resolved finite pixel length) and table line height. Reuse the existing table appearance/font notifications to refresh it; do not add computed-style reads on vertical scroll or a second ancestor observer.
