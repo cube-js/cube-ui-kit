@@ -25,6 +25,43 @@ describe('CommandMenu', () => {
     { id: '3', textValue: 'Save document' },
   ];
 
+  it.each([undefined, false])(
+    'aligns loading-item keyboard focus and activation with isDisabled=%s',
+    async (isDisabled) => {
+      const user = userEvent.setup();
+      const onAction = vi.fn();
+      render(
+        <Root>
+          <CommandMenu onAction={onAction}>
+            <CommandMenu.Item
+              key="loading"
+              isLoading
+              isDisabled={isDisabled}
+              tooltip={false}
+            >
+              Loading workbook
+            </CommandMenu.Item>
+            <CommandMenu.Item key="ready" tooltip={false}>
+              Ready workbook
+            </CommandMenu.Item>
+          </CommandMenu>
+        </Root>,
+      );
+      const search = screen.getByRole('searchbox');
+      const expectedKey = isDisabled === false ? 'loading' : 'ready';
+      const expectedItem = screen.getByRole('menuitem', {
+        name: isDisabled === false ? 'Loading workbook' : 'Ready workbook',
+      });
+      await user.click(search);
+      await user.keyboard('{ArrowDown}');
+      expect(search).toHaveAttribute('aria-activedescendant', expectedItem.id);
+      expect(document.getElementById(expectedItem.id)).toBe(expectedItem);
+      await user.keyboard('{Enter}');
+      expect(onAction).toHaveBeenCalledExactlyOnceWith(expectedKey);
+      expect(search).toHaveFocus();
+    },
+  );
+
   it('renders with search input and menu items', () => {
     render(
       <CommandMenu>
@@ -271,6 +308,108 @@ describe('CommandMenu', () => {
       expect(onAction).toHaveBeenCalledExactlyOnceWith('1');
       expect(navigate).toHaveBeenCalledExactlyOnceWith('/string', undefined);
       expect(search).toHaveFocus();
+    },
+  );
+
+  it.each([false, true])(
+    'preserves typed-key actions through filtering and reordering (section=%s)',
+    async (section) => {
+      const user = userEvent.setup();
+      const navigate = vi.fn();
+      const onAction = vi.fn();
+      const numberAction = vi.fn();
+      const stringAction = vi.fn();
+      const keyedItems = [
+        {
+          id: 1,
+          label: 'Number workbook',
+          to: '/number',
+          onAction: numberAction,
+        },
+        {
+          id: '1',
+          label: 'String workbook',
+          to: '/string',
+          onAction: stringAction,
+        },
+      ];
+      let reverse: (() => void) | undefined;
+      const renderItem = (item: (typeof keyedItems)[number]) => (
+        <CommandMenu.Item to={item.to} onAction={item.onAction}>
+          {item.label}
+        </CommandMenu.Item>
+      );
+      function App() {
+        const [orderedItems, setOrderedItems] = React.useState(keyedItems);
+        reverse = () => setOrderedItems((current) => [...current].reverse());
+        return (
+          <Root navigation={{ useHref: String, useNavigate: () => navigate }}>
+            {section ? (
+              <CommandMenu onAction={onAction}>
+                <CommandMenu.Section title="Workbooks" items={orderedItems}>
+                  {renderItem}
+                </CommandMenu.Section>
+              </CommandMenu>
+            ) : (
+              <CommandMenu items={orderedItems} onAction={onAction}>
+                {renderItem}
+              </CommandMenu>
+            )}
+          </Root>
+        );
+      }
+      render(<App />);
+      const search = screen.getByRole('searchbox');
+      const numberId = screen.getByRole('menuitem', {
+        name: 'Number workbook',
+      }).id;
+      const stringId = screen.getByRole('menuitem', {
+        name: 'String workbook',
+      }).id;
+      expect(numberId).not.toBe(stringId);
+      let activations = 0;
+      const activate = async (name: string, id: string, key: 1 | '1') => {
+        await waitFor(() => {
+          const item = screen.getByRole('menuitem', { name });
+          expect(search).toHaveAttribute('aria-activedescendant', id);
+          expect(document.getElementById(id)).toBe(item);
+          expect(item).toHaveAccessibleName(name);
+          expect(item).toBeVisible();
+        });
+        await user.keyboard('{Enter}');
+        activations++;
+        expect(onAction).toHaveBeenCalledTimes(activations);
+        expect(navigate).toHaveBeenCalledTimes(activations);
+        expect(onAction).toHaveBeenLastCalledWith(key);
+        expect(navigate).toHaveBeenLastCalledWith(
+          key === 1 ? '/number' : '/string',
+          undefined,
+        );
+        expect(search).toHaveFocus();
+      };
+      await user.click(search);
+      await user.keyboard('{ArrowDown}{ArrowDown}');
+      await activate('String workbook', stringId, '1');
+      expect(stringAction).toHaveBeenCalledTimes(1);
+      expect(numberAction).not.toHaveBeenCalled();
+      await user.type(search, 'String');
+      expect(
+        screen.queryByRole('menuitem', { name: 'Number workbook' }),
+      ).toBeNull();
+      await activate('String workbook', stringId, '1');
+      expect(stringAction).toHaveBeenCalledTimes(2);
+      expect(numberAction).not.toHaveBeenCalled();
+      await user.clear(search);
+      await act(() => reverse?.());
+      await activate('String workbook', stringId, '1');
+      expect(stringAction).toHaveBeenCalledTimes(3);
+      expect(numberAction).not.toHaveBeenCalled();
+      await user.keyboard('{ArrowDown}');
+      await activate('Number workbook', numberId, 1);
+      expect(numberAction).toHaveBeenCalledTimes(1);
+      expect(stringAction).toHaveBeenCalledTimes(3);
+      expect(onAction).toHaveBeenCalledTimes(4);
+      expect(navigate).toHaveBeenCalledTimes(4);
     },
   );
 

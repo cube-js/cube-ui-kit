@@ -20,7 +20,7 @@ import { mergeProps } from '../../../utils/react';
 import { extractStyles } from '../../../utils/styles';
 
 import { useMenuContext } from './context';
-import { MenuCollectionItem } from './MenuCollectionItem';
+import { getMenuItemReactKey, MenuCollectionItem } from './MenuCollectionItem';
 import { MenuItem } from './MenuItem';
 import { MenuSection } from './MenuSection';
 import { MenuTrigger } from './MenuTrigger';
@@ -251,11 +251,12 @@ function Menu<T extends object>(
   let isFirstSection = true;
 
   collectionItems.forEach((item) => {
+    const reactKey = getMenuItemReactKey(item.key);
     if (item.type === 'section') {
       if (!isFirstSection) {
         renderedItems.push(
           <StyledDivider
-            key={`divider-${String(item.key)}`}
+            key={`divider-${reactKey}`}
             role="separator"
             aria-orientation="horizontal"
           />,
@@ -264,7 +265,7 @@ function Menu<T extends object>(
 
       renderedItems.push(
         <MenuSection
-          key={item.key}
+          key={reactKey}
           item={item}
           state={state}
           styles={sectionStyles}
@@ -280,7 +281,7 @@ function Menu<T extends object>(
 
     let menuItem = (
       <MenuItem
-        key={item.key}
+        key={reactKey}
         item={item}
         state={state}
         styles={itemStyles}
@@ -300,7 +301,7 @@ function Menu<T extends object>(
     }
 
     // Ensure every child has a stable key, even if the wrapper component didn't set one.
-    renderedItems.push(React.cloneElement(menuItem, { key: item.key }));
+    renderedItems.push(React.cloneElement(menuItem, { key: reactKey }));
   });
 
   return (

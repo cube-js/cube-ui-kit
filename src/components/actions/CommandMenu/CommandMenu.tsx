@@ -25,7 +25,10 @@ import { mergeProps } from '../../../utils/react';
 import { extractStyles, mergeStyleLayers } from '../../../utils/styles';
 import { useMenuContext } from '../Menu/context';
 import { CubeMenuProps } from '../Menu/Menu';
-import { MenuCollectionItem as Item } from '../Menu/MenuCollectionItem';
+import {
+  getMenuItemReactKey,
+  MenuCollectionItem as Item,
+} from '../Menu/MenuCollectionItem';
 import { MenuItem } from '../Menu/MenuItem';
 import { MenuSection } from '../Menu/MenuSection';
 import { MenuTrigger } from '../Menu/MenuTrigger';
@@ -366,11 +369,12 @@ function CommandMenu<T extends object>(
   let isFirstSection = true;
 
   filteredCollectionItems.forEach((item) => {
+    const reactKey = getMenuItemReactKey(item.key);
     if (item.type === 'section') {
       if (!isFirstSection) {
         renderedItems.push(
           <StyledDivider
-            key={`divider-${String(item.key)}`}
+            key={`divider-${reactKey}`}
             role="separator"
             aria-orientation="horizontal"
           />,
@@ -379,7 +383,7 @@ function CommandMenu<T extends object>(
 
       renderedItems.push(
         <MenuSection
-          key={item.key}
+          key={reactKey}
           item={item}
           state={treeState}
           styles={completeProps.sectionStyles}
@@ -396,7 +400,7 @@ function CommandMenu<T extends object>(
 
     let menuItem = (
       <MenuItem
-        key={item.key}
+        key={reactKey}
         item={item}
         state={treeState}
         styles={completeProps.itemStyles}
@@ -411,7 +415,7 @@ function CommandMenu<T extends object>(
     }
 
     // Ensure every child has a stable key, even if the wrapper component didn't set one.
-    renderedItems.push(React.cloneElement(menuItem, { key: item.key }));
+    renderedItems.push(React.cloneElement(menuItem, { key: reactKey }));
   });
 
   // Auto-focus search input

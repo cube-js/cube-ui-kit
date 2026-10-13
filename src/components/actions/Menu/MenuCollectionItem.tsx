@@ -9,7 +9,7 @@ import {
 } from '../../CollectionItem';
 import { parseTo } from '../use-action';
 
-import type { LinkDOMProps } from '@react-types/shared';
+import type { Key, LinkDOMProps } from '@react-types/shared';
 
 export interface CubeMenuItemProps<T>
   extends CubeCollectionItemBaseProps<T>,
@@ -22,6 +22,10 @@ export interface CubeMenuItemProps<T>
 
 // Aria recognizes links by a truthy collection href; preserve the native empty URL.
 export const CURRENT_DOCUMENT_LINK = Symbol('Menu.Item current document');
+
+export function getMenuItemReactKey(key: Key): string {
+  return `${typeof key}:${String(key)}`;
+}
 
 function MenuCollectionItem<T>(
   _props: CubeMenuItemProps<T>,
@@ -45,6 +49,7 @@ const _MenuCollectionItem: typeof MenuCollectionItem &
       return (Item as any).getCollectionNode(
         {
           ...props,
+          isDisabled: props.isDisabled ?? (props.isLoading ? true : undefined),
           href:
             props.to === ''
               ? undefined

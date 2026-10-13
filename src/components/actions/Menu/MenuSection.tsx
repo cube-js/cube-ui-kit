@@ -3,6 +3,7 @@ import { Styles } from '@tenphi/tasty';
 import { cloneElement } from 'react';
 import { useMenuSection } from 'react-aria';
 
+import { getMenuItemReactKey } from './MenuCollectionItem';
 import { MenuItem, MenuItemProps } from './MenuItem';
 import { StyledMenu, StyledSection, StyledSectionHeading } from './styled';
 
@@ -37,9 +38,10 @@ export function MenuSection<T>(props: CubeMenuSectionProps<T>) {
         )}
         <StyledMenu {...groupProps} mods={{ section: true }}>
           {[...item.childNodes].map((node) => {
+            const reactKey = getMenuItemReactKey(node.key);
             let menuItem = (
               <MenuItem
-                key={node.key}
+                key={reactKey}
                 item={node}
                 styles={itemStyles}
                 state={state}
@@ -58,7 +60,7 @@ export function MenuSection<T>(props: CubeMenuSectionProps<T>) {
             }
 
             // The wrapper's element doesn't carry the item's key.
-            return cloneElement(menuItem, { key: node.key });
+            return cloneElement(menuItem, { key: reactKey });
           })}
         </StyledMenu>
       </StyledSection>

@@ -188,6 +188,8 @@ For detailed information about all available item properties, see [Item document
 
 Navigation items render native anchors. An ordinary click or Enter/Space activation uses the navigation adapter passed to [Root](/docs/getting-started-root--docs) and closes the menu. Without a custom adapter, activation stays native and preserves the anchor's attributes. Modified clicks, middle clicks, downloads, other targets, and external destinations retain browser link behavior. Right-click offers the browser's link commands. Disabled links have no destination and cannot navigate.
 
+Loading items are disabled by default. Set `isDisabled={false}` to keep a loading item available; `disabledKeys` still applies.
+
 Links expose `menuitem` semantics even in a selectable menu. Only selectable commands expose `menuitemradio` or `menuitemcheckbox` and a checked state; opening a destination does not select it. Use `aria-current` when a link needs to identify the current page.
 
 ```tsx

@@ -36,6 +36,43 @@ const HookWrapper = ({ children }: { children: React.ReactNode }) => (
 );
 
 describe('<Menu />', () => {
+  it.each([undefined, false])(
+    'aligns loading-item keyboard focus and activation with isDisabled=%s',
+    async (isDisabled) => {
+      const onAction = vi.fn();
+      render(
+        <Root>
+          <Menu
+            aria-label="Loading items"
+            autoFocus="first"
+            onAction={onAction}
+          >
+            <Menu.Item
+              key="loading"
+              isLoading
+              isDisabled={isDisabled}
+              tooltip={false}
+            >
+              Loading workbook
+            </Menu.Item>
+            <Menu.Item key="ready" tooltip={false}>
+              Ready workbook
+            </Menu.Item>
+          </Menu>
+        </Root>,
+      );
+      const expectedKey = isDisabled === false ? 'loading' : 'ready';
+      const expectedItem = screen.getByRole('menuitem', {
+        name: isDisabled === false ? 'Loading workbook' : 'Ready workbook',
+      });
+      await waitFor(() => expect(expectedItem).toHaveFocus());
+      await userEvent.keyboard('{End}{Home}');
+      expect(expectedItem).toHaveFocus();
+      await userEvent.keyboard('{Enter}');
+      expect(onAction).toHaveBeenCalledExactlyOnceWith(expectedKey);
+    },
+  );
+
   it.each(['command', 'inline command', 'to', 'href'])(
     'forwards a consumer keyboard handler once for a %s row',
     async (kind) => {
