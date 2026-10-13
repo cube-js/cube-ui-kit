@@ -1,4 +1,4 @@
-import { useObjectRef } from '@react-aria/utils';
+import { getActiveElement, useObjectRef } from '@react-aria/utils';
 import {
   BaseProps,
   CONTAINER_STYLES,
@@ -6,9 +6,9 @@ import {
   Styles,
   tasty,
 } from '@tenphi/tasty';
-import { forwardRef } from 'react';
+import { forwardRef, useRef } from 'react';
 import { AriaRadioGroupProps, useFocusRing, useRadioGroup } from 'react-aria';
-import { useRadioGroupState } from 'react-stately';
+import { RadioGroupState, useRadioGroupState } from 'react-stately';
 
 import { FieldBaseProps } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
@@ -21,6 +21,8 @@ import { CubeItemProps } from '../../content/Item/Item';
 import { FormScopeMask, useFieldProps, wrapWithField } from '../../form';
 
 import { RadioContext } from './context';
+
+import type { KeyboardEvent } from 'react';
 
 export interface CubeRadioGroupProps
   extends BaseProps,
@@ -84,6 +86,22 @@ const RadioGroupElement = tasty({
   },
 });
 
+/**
+ * Whether focus rests on the radio with this value while it is disabled. Only
+ * a radio kept focusable for its tooltip can be: a natively disabled one never
+ * takes focus (see `Radio`).
+ */
+function isFocusedDisabledRadio(value: string | null) {
+  let element = getActiveElement();
+
+  return (
+    element instanceof HTMLInputElement &&
+    element.type === 'radio' &&
+    element.value === value &&
+    element.getAttribute('aria-disabled') === 'true'
+  );
+}
+
 function RadioGroup(rawProps: WithNullableValue<CubeRadioGroupProps>, ref) {
   let orientation = rawProps.orientation;
 
@@ -114,7 +132,20 @@ function RadioGroup(rawProps: WithNullableValue<CubeRadioGroupProps>, ref) {
 
   styles = extractStyles(otherProps, CONTAINER_STYLES, styles);
 
-  let state = useRadioGroupState(props);
+  let baseState = useRadioGroupState(props);
+  // The arrow keys focus the next radio and select it. A disabled radio that
+  // keeps focus for its tooltip is reached that way too, and has to stop the
+  // selection the way a read-only group does: focus moves, the value stays.
+  // Only the arrow keys: a click elsewhere or a form reset still selects.
+  let isArrowKeyRef = useRef(false);
+  let state: RadioGroupState = {
+    ...baseState,
+    setSelectedValue(value) {
+      if (isArrowKeyRef.current && isFocusedDisabledRadio(value)) return;
+
+      baseState.setSelectedValue(value);
+    },
+  };
 
   // Set default orientation based on type
   if (orientation == null) {
@@ -124,10 +155,17 @@ function RadioGroup(rawProps: WithNullableValue<CubeRadioGroupProps>, ref) {
 
   // React Aria hands `form` to every radio's input as the id of its `<form>`,
   // so the form instance would render as `form="[object Object]"` on each.
-  let { radioGroupProps: fieldProps, labelProps } = useRadioGroup(
+  let { radioGroupProps, labelProps } = useRadioGroup(
     { ...props, orientation, form: undefined },
     state,
   );
+
+  let { onKeyDown: onArrowKey, ...groupProps } = radioGroupProps;
+  let onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    isArrowKeyRef.current = true;
+    onArrowKey?.(event);
+    isArrowKeyRef.current = false;
+  };
 
   // Keyboard-only focus ring on the group container (button/tabs layouts).
   // `within: true` tracks focus on any descendant radio. We read
@@ -138,6 +176,13 @@ function RadioGroup(rawProps: WithNullableValue<CubeRadioGroupProps>, ref) {
 
   let radioGroup = (
     <RadioGroupElement
+      // On the group, not on the field wrapper: without a visible label there
+      // is no wrapper, and the group would lose its role, its name, the arrow
+      // keys and its focus handling with it.
+      {...mergeProps(groupProps, groupFocusProps)}
+      onKeyDown={onKeyDown}
+      // `useRadioGroup` seeds its id once; the current one follows the form
+      // binding.
       id={id}
       qa={qa || 'RadioGroup'}
       styles={styles}
@@ -151,7 +196,6 @@ function RadioGroup(rawProps: WithNullableValue<CubeRadioGroupProps>, ref) {
         tabs: type === 'tabs',
         focused: isFocusWithinVisible,
       }}
-      {...groupFocusProps}
     >
       <FormScopeMask
         value={{
@@ -179,7 +223,6 @@ function RadioGroup(rawProps: WithNullableValue<CubeRadioGroupProps>, ref) {
 
   return wrapWithField(radioGroup, domRef, {
     ...props,
-    fieldProps,
     labelProps: mergeProps(baseLabelProps, labelProps),
   });
 }

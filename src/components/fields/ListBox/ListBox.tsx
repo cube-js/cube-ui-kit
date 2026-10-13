@@ -52,8 +52,8 @@ import { GripVerticalIcon } from '../../../icons/GripVerticalIcon';
 import { Icon } from '../../../icons/Icon';
 import { SIZE_NAME_TO_KEY, SIZES } from '../../../tokens';
 import { mergeProps, useCombinedRefs } from '../../../utils/react';
-import { allowEscapeToPropagate } from '../../../utils/react/escapePropagation';
 import { useFocus } from '../../../utils/react/interactions';
+import { allowOverlayKeysToPropagate } from '../../../utils/react/overlayKeyPropagation';
 import { extractStyles } from '../../../utils/styles';
 // Import Menu styled components for header and footer
 import {
@@ -889,13 +889,13 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     ],
   });
 
-  // Custom keyboard handling: `Escape` has to leave the list so a surrounding
-  // overlay can close on it, while every other key stays contained. See
-  // `allowEscapeToPropagate` — "let the overlay system handle closing" is what
-  // the old comment here intended, but only `preventDefault` was ever covered.
+  // Custom keyboard handling: `Escape` and `Tab` have to leave the list so a
+  // surrounding overlay can close on the one and keep focus inside with the
+  // other, while every other key stays contained. See
+  // `allowOverlayKeysToPropagate`.
   const { keyboardProps } = useKeyboard({
     onKeyDown: (e) => {
-      allowEscapeToPropagate(e);
+      allowOverlayKeysToPropagate(e);
 
       // Mark focus changes from keyboard navigation
       if (

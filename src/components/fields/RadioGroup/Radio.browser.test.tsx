@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { userEvent } from 'vitest/browser';
 
 import { CheckIcon } from '../../../icons/CheckIcon';
@@ -191,5 +192,195 @@ describe('Radio tooltip on keyboard focus', () => {
     expect(no).toBeChecked();
 
     await waitFor(() => expect(tooltipTexts()).toEqual(['Reject the change']));
+  });
+});
+
+/**
+ * A disabled radio with a tooltip stays focusable, so the keyboard can read why
+ * it is disabled (CUB-5387). It must stay as inert as a natively disabled one.
+ *
+ * In a browser because a click on the input laid over the button and Space are
+ * the browser's own default actions, and because its own arrow-key radio
+ * navigation, which checks the next radio, must stay out of the way of React
+ * Aria's, with a visible label and without one.
+ */
+describe('Disabled Radio.Button with a tooltip', () => {
+  beforeAll(async () => {
+    await userEvent.hover(document.body);
+  });
+
+  it.each([
+    ['a visible label', { label: 'Answer' }],
+    ['only an aria-label', { 'aria-label': 'Answer' }],
+  ] as const)(
+    'is reached by the keyboard and never selected, in a group with %s',
+    async (_, labelling) => {
+      const onChange = vi.fn();
+
+      renderWithRoot(
+        <>
+          <button type="button">Before</button>
+          <Radio.ButtonGroup
+            {...labelling}
+            defaultValue="yes"
+            onChange={onChange}
+          >
+            <Radio.Button value="yes">Yes</Radio.Button>
+            <Radio.Button isDisabled value="no" tooltip="Not on this plan">
+              No
+            </Radio.Button>
+            <Radio.Button value="maybe">Maybe</Radio.Button>
+          </Radio.ButtonGroup>
+        </>,
+      );
+
+      const [yes, no, maybe] = screen.getAllByRole('radio');
+
+      screen.getByRole('button', { name: 'Before' }).focus();
+      await userEvent.keyboard('{Tab}');
+      await userEvent.keyboard('{ArrowRight}');
+
+      expect(no).toHaveFocus();
+      await waitFor(() => expect(tooltipTexts()).toEqual(['Not on this plan']));
+
+      await userEvent.keyboard(' ');
+      // Forced: Playwright waits for an `aria-disabled` element to become
+      // enabled before clicking it, and a user's click does not.
+      await userEvent.click(no, { force: true });
+
+      expect(yes).toBeChecked();
+      expect(no).not.toBeChecked();
+      expect(onChange).not.toHaveBeenCalled();
+
+      await userEvent.keyboard('{ArrowRight}');
+
+      expect(maybe).toHaveFocus();
+      expect(maybe).toBeChecked();
+      expect(onChange).toHaveBeenCalledWith('maybe');
+    },
+  );
+
+  // The selected radio is the group's tab stop, and the browser used to stop
+  // there first when it lay ahead of the disabled one in the Tab's direction.
+  // Passing through it would open its tooltip and scroll to it.
+  it('lets Tab leave the group from a disabled radio the arrow keys reached', async () => {
+    renderWithRoot(
+      <>
+        <button type="button">Before</button>
+        <Radio.ButtonGroup isDisabled aria-label="Answer" defaultValue="maybe">
+          <Radio.Button value="yes" tooltip="Not on this plan">
+            Yes
+          </Radio.Button>
+          <Radio.Button value="no" tooltip="Not on this plan">
+            No
+          </Radio.Button>
+          <Radio.Button value="maybe" tooltip="Not on this plan">
+            Maybe
+          </Radio.Button>
+        </Radio.ButtonGroup>
+        <button type="button">After</button>
+      </>,
+    );
+
+    const [, no, maybe] = screen.getAllByRole('radio');
+
+    screen.getByRole('button', { name: 'Before' }).focus();
+    await userEvent.keyboard('{Tab}');
+    expect(maybe).toHaveFocus();
+
+    await userEvent.keyboard('{ArrowLeft}');
+    expect(no).toHaveFocus();
+
+    const onSelectedFocus = vi.fn();
+
+    maybe.addEventListener('focus', onSelectedFocus);
+
+    await userEvent.keyboard('{Tab}');
+    expect(screen.getByRole('button', { name: 'After' })).toHaveFocus();
+    expect(onSelectedFocus).not.toHaveBeenCalled();
+
+    await waitFor(() => expect(maybe).toHaveAttribute('tabindex', '0'));
+    await userEvent.keyboard('{Shift>}{Tab}{/Shift}');
+    expect(maybe).toHaveFocus();
+  });
+
+  it('lets Shift+Tab leave the group from a disabled radio the arrow keys reached', async () => {
+    renderWithRoot(
+      <>
+        <button type="button">Before</button>
+        <Radio.ButtonGroup aria-label="Answer" defaultValue="yes">
+          <Radio.Button value="yes">Yes</Radio.Button>
+          <Radio.Button isDisabled value="no" tooltip="Not on this plan">
+            No
+          </Radio.Button>
+          <Radio.Button value="maybe">Maybe</Radio.Button>
+        </Radio.ButtonGroup>
+      </>,
+    );
+
+    const [yes, no] = screen.getAllByRole('radio');
+
+    screen.getByRole('button', { name: 'Before' }).focus();
+    await userEvent.keyboard('{Tab}{ArrowRight}');
+    expect(no).toHaveFocus();
+
+    const onSelectedFocus = vi.fn();
+
+    yes.addEventListener('focus', onSelectedFocus);
+
+    await userEvent.keyboard('{Shift>}{Tab}{/Shift}');
+    expect(screen.getByRole('button', { name: 'Before' })).toHaveFocus();
+    expect(onSelectedFocus).not.toHaveBeenCalled();
+    expect(yes).toBeChecked();
+
+    await waitFor(() => expect(yes).toHaveAttribute('tabindex', '0'));
+    await userEvent.keyboard('{Tab}');
+    expect(yes).toHaveFocus();
+  });
+
+  it('leaves no stale tab stop when leaving the group moves the selection', async () => {
+    function Answer() {
+      const [value, setValue] = useState('maybe');
+
+      return (
+        <>
+          <button type="button">Before</button>
+          <Radio.ButtonGroup
+            isDisabled
+            aria-label="Answer"
+            value={value}
+            onBlur={() => setValue('yes')}
+          >
+            <Radio.Button value="yes" tooltip="Not on this plan">
+              Yes
+            </Radio.Button>
+            <Radio.Button value="no" tooltip="Not on this plan">
+              No
+            </Radio.Button>
+            <Radio.Button value="maybe" tooltip="Not on this plan">
+              Maybe
+            </Radio.Button>
+          </Radio.ButtonGroup>
+          <button type="button">After</button>
+        </>
+      );
+    }
+
+    renderWithRoot(<Answer />);
+
+    const radios = screen.getAllByRole('radio');
+
+    screen.getByRole('button', { name: 'Before' }).focus();
+    await userEvent.keyboard('{Tab}{ArrowLeft}{Tab}');
+    expect(screen.getByRole('button', { name: 'After' })).toHaveFocus();
+
+    await waitFor(() => expect(radios[0]).toBeChecked());
+    // Queued after the restore's timeout, so it runs after it.
+    await new Promise((resolve) => setTimeout(resolve));
+    expect(radios.map((radio) => radio.getAttribute('tabindex'))).toEqual([
+      '0',
+      '-1',
+      '-1',
+    ]);
   });
 });

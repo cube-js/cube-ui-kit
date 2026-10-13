@@ -12,6 +12,10 @@ import { useHover, useRadio } from 'react-aria';
 
 import { FieldBaseProps } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
+import {
+  getDisabledElementProps,
+  omitActivationEventProps,
+} from '../../../utils/react/disabledProps';
 import { useFocus } from '../../../utils/react/interactions';
 import { extractStyles } from '../../../utils/styles';
 import { CubeItemProps, Item } from '../../content/Item/Item';
@@ -32,7 +36,9 @@ import {
 import { useRadioProvider } from './context';
 import { RadioGroup } from './RadioGroup';
 
+import type { ChangeEvent, KeyboardEvent } from 'react';
 import type { AriaRadioProps } from 'react-aria';
+import type { RadioGroupState } from 'react-stately';
 
 export { AriaRadioProps };
 export { useRadio };
@@ -189,6 +195,75 @@ const RadioNormalElement = tasty({
 });
 
 const RadioCircleElement = <div data-element="RadioCircle" />;
+
+/**
+ * The tab stop `useRadio` gives an enabled radio and drops for a disabled one:
+ * the selected radio or, with nothing selected, every radio until one of them
+ * takes focus, so Tab enters the group from either end.
+ */
+function getRovingTabIndex(state: RadioGroupState, value: string) {
+  if (state.selectedValue != null) {
+    return state.selectedValue === value ? 0 : -1;
+  }
+
+  return state.lastFocusedValue == null || state.lastFocusedValue === value
+    ? 0
+    : -1;
+}
+
+/**
+ * React reports a click on an inert radio as a change: the browser checks it
+ * before the click is cancelled. Kept as a handler rather than dropped, or
+ * React would warn about a `checked` input without one.
+ */
+function ignoreChange(event: ChangeEvent) {
+  event.stopPropagation();
+}
+
+/**
+ * Tab leaves the group from a focused disabled radio, as it does from the
+ * group's tab stop, the selected radio. Left to itself the browser would stop
+ * on the selected radio first when it lies ahead, so that radio gives up its
+ * tab stop for this one key. Focusing it on the way out instead would open its
+ * tooltip and scroll to it.
+ */
+function leaveGroupOnTab(
+  event: KeyboardEvent<HTMLInputElement>,
+  selectedValue: string | null,
+) {
+  let input = event.currentTarget;
+
+  if (
+    event.key !== 'Tab' ||
+    event.altKey ||
+    event.ctrlKey ||
+    event.metaKey ||
+    selectedValue == null ||
+    input.value === selectedValue
+  ) {
+    return;
+  }
+
+  let radios = input
+    .closest('[role="radiogroup"]')
+    ?.querySelectorAll<HTMLInputElement>('input[type="radio"]');
+
+  let selected = Array.from(radios ?? []).find(
+    (radio) => radio.value === selectedValue,
+  );
+
+  // Already dropped by an earlier Tab that moved nothing: its restore is due.
+  if (!selected || selected.disabled || selected.tabIndex < 0) return;
+
+  let { tabIndex } = selected;
+
+  selected.tabIndex = -1;
+  // The key's default action, or a `FocusScope`, moves focus synchronously.
+  // A blur handler may have moved the selection, and its tab stop, meanwhile.
+  setTimeout(() => {
+    if (selected.checked) selected.tabIndex = tabIndex;
+  });
+}
 
 const RadioLabelElement = tasty({
   qa: 'RadioLabel',
@@ -394,7 +469,11 @@ function Radio(props: CubeRadioProps, ref) {
   // A button radio hands `tooltip` to its `Item`, which resolves it around the
   // element it renders. A classic radio has no `Item`, so it resolves its own —
   // otherwise the prop the type accepts would render nothing at all.
-  let { labelRef: tooltipLabelRef, renderWithTooltip } = useAutoTooltip({
+  let {
+    labelRef: tooltipLabelRef,
+    renderWithTooltip,
+    isTooltipActive,
+  } = useAutoTooltip({
     tooltip: isButton ? undefined : props.tooltip,
     children: label,
     labelRef: isButton ? undefined : props.labelRef,
@@ -406,6 +485,8 @@ function Radio(props: CubeRadioProps, ref) {
   let inputRef = useRef(null);
   let domRef = useFocusableRef(ref, inputRef);
 
+  let value = props.value ?? '';
+
   let {
     inputProps,
     isDisabled: isRadioDisabled,
@@ -415,11 +496,42 @@ function Radio(props: CubeRadioProps, ref) {
       name,
       ...props,
       isDisabled: effectiveIsDisabled,
-      value: props.value ?? '',
+      value,
     },
     state,
     inputRef,
   );
+
+  // A disabled radio with a tooltip to show keeps its focus, as a disabled
+  // `Button` does: the tooltip is usually the reason it is disabled, and focus
+  // is how the keyboard opens it (CUB-5387). It is marked `aria-disabled` and
+  // kept inert instead. `useRadio` gives a disabled radio no tab stop and does
+  // not track its focus, so both are restored here; `RadioGroup` keeps the
+  // arrow keys from selecting it.
+  let getInputProps = (hasActiveTooltip: boolean) => {
+    let { isInert, inertProps } = getDisabledElementProps({
+      isDisabled: isRadioDisabled,
+      keepEvents: hasActiveTooltip,
+      as: 'input',
+    });
+
+    if (!isInert) return inputProps;
+
+    return mergeProps(
+      {
+        ...omitActivationEventProps(inputProps),
+        disabled: false,
+        tabIndex: getRovingTabIndex(state, value),
+        onChange: ignoreChange,
+      },
+      {
+        onFocus: () => state.setLastFocusedValue(value),
+        onKeyDown: (event: KeyboardEvent<HTMLInputElement>) =>
+          leaveGroupOnTab(event, state.selectedValue),
+      },
+      inertProps,
+    );
+  };
 
   const mods = {
     checked: isRadioSelected,
@@ -461,12 +573,15 @@ function Radio(props: CubeRadioProps, ref) {
         // A function, so the input — where keyboard focus lands — gets the
         // tooltip's focus-side trigger props: the tooltip opens on focus and
         // describes the control a screen reader announces.
-        hiddenContent={(tooltipFocusProps) => (
+        hiddenContent={(tooltipFocusProps, isItemTooltipActive) => (
           <HiddenInput
             qa={qa || 'Radio'}
             data-input-type="radio"
             aria-label={ariaLabel}
-            {...mergeTooltipFocusProps(inputProps, tooltipFocusProps)}
+            {...mergeTooltipFocusProps(
+              getInputProps(isItemTooltipActive),
+              tooltipFocusProps,
+            )}
             ref={inputRef}
             mods={{ button: isButton, disabled: isRadioDisabled }}
           />
@@ -505,11 +620,12 @@ function Radio(props: CubeRadioProps, ref) {
           data-input-type="radio"
           aria-label={ariaLabel}
           {...mergeTooltipFocusProps(
-            mergeProps(inputProps, focusProps),
+            mergeProps(getInputProps(isTooltipActive), focusProps),
             tooltipFocusProps,
           )}
           ref={inputRef}
-          mods={{ button: isButton }}
+          // Not left to the native `disabled`, which an inert radio drops.
+          mods={{ button: isButton, disabled: isRadioDisabled }}
         />
         <RadioNormalElement data-element="Input" mods={mods} data-type={type}>
           {RadioCircleElement}
