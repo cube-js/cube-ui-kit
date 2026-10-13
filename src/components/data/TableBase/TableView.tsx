@@ -18,7 +18,6 @@ import { MoreIcon } from '../../../icons/MoreIcon';
 import { getColorTheme, useColorTheme } from '../../../tokens/color-theme';
 import { usePaletteVersion } from '../../../tokens/palette-config';
 import { SIZE_NAME_TO_KEY, SIZES } from '../../../tokens/sizes';
-import { TYPOGRAPHY_PRESETS } from '../../../tokens/typography';
 import { Action } from '../../actions/Action/Action';
 import { ItemAction } from '../../actions/ItemAction/ItemAction';
 import { Menu, MenuTrigger } from '../../actions/Menu';
@@ -640,7 +639,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
   const scrollerRef = useRef<HTMLDivElement | null>(null);
   // DataTable's default t4 preset has the same single-line cell layout.
   // Consumer typography overrides need the complete intrinsic body layout.
-  const bodyColumns = useColumnWindow(
+  const { segments: bodyColumns, refreshAppearance } = useColumnWindow(
     layout,
     scrollerEl,
     isVirtualized !== false &&
@@ -649,9 +648,6 @@ export function TableView<T = any>(props: TableViewProps<T>) {
       !rowStyles &&
       !cellStyles &&
       (!contentPreset || contentPreset === 't4') &&
-      (rowHeight == null ||
-        rowHeight >=
-          parseFloat(TYPOGRAPHY_PRESETS[contentPreset ?? 't3'].lineHeight)) &&
       canWindowColumns(columns, styles),
     tree?.columnKey,
   );
@@ -1785,7 +1781,11 @@ export function TableView<T = any>(props: TableViewProps<T>) {
       ?.querySelectorAll<HTMLTableRowElement>('tr[data-index]')
       .forEach((element) => virtualizer.measureElement(element));
   }, [estimatedRowHeight, virtualizer]);
-  useTableTooltipRefresh(scrollerEl, virtualizer.isScrolling);
+  useTableTooltipRefresh(
+    scrollerEl,
+    virtualizer.isScrolling,
+    refreshAppearance,
+  );
 
   const focusedTreeKey = tree?.state.selectionManager.focusedKey;
   useEffect(() => {

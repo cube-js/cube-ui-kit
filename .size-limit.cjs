@@ -341,7 +341,7 @@ module.exports = [
     // `BoardDragActiveProvider` stays, next to Tabs. Button is unchanged at
     // 133,144 B. Lowered to 605 kB, about 1,220 B headroom; confirm in CI.
     // Body column windowing: fresh release-compiled builds on the same machine
-    // measure 605.39 kB against main's 604.37 kB at 9dbf967a (+1.02 kB).
+    // measure 605,637 B against main's 604,370 B at 9dbf967a (+1,267 B).
     // Button stays exactly 133,148 B: the window and its compatibility checks
     // tree-shake with TableBase. Allow 606 kB and confirm the figure in CI.
     limit: '606kB',

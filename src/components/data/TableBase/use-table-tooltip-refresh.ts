@@ -18,18 +18,26 @@ const APPEARANCE_ELEMENTS = new Set([
 export function useTableTooltipRefresh(
   scroller: HTMLDivElement | null,
   isScrolling: boolean,
+  onAppearanceChange?: () => void,
 ) {
   // A commit can change inherited appearance without changing the box or
   // font-set size. Refresh at rest, including the commit that settles scroll.
   useEffect(() => {
     const root = scroller?.parentElement;
-    if (root && !isScrolling) refreshAutoTooltipsWithin(root);
+    if (root && !isScrolling) {
+      onAppearanceChange?.();
+      refreshAutoTooltipsWithin(root);
+    }
   });
 
   useEffect(() => {
     const root = scroller?.parentElement;
     if (!root) return;
 
+    const refresh = () => {
+      onAppearanceChange?.();
+      refreshAutoTooltipsWithin(root);
+    };
     const observer = new MutationObserver((records) => {
       if (
         records.some(
@@ -42,10 +50,9 @@ export function useTableTooltipRefresh(
       ) {
         // One scan per delivery also covers sibling/state selector changes.
         // Spacer height and tooltip-trigger mutations need no refresh.
-        refreshAutoTooltipsWithin(root);
+        refresh();
       }
     });
-    const refresh = () => refreshAutoTooltipsWithin(root);
     document.fonts?.addEventListener('loadingdone', refresh);
     observer.observe(root, { attributes: true, subtree: true });
     for (
@@ -59,5 +66,5 @@ export function useTableTooltipRefresh(
       observer.disconnect();
       document.fonts?.removeEventListener('loadingdone', refresh);
     };
-  }, [scroller]);
+  }, [onAppearanceChange, scroller]);
 }

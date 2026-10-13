@@ -126,21 +126,33 @@ describe('column window model', () => {
 
 describe('column window lifecycle', () => {
   it('updates the current scroller/layout and cleans up observers and listeners', () => {
-    const observers: { disconnect: ReturnType<typeof vi.fn> }[] = [];
+    const observers: {
+      disconnect: ReturnType<typeof vi.fn>;
+      notify: () => void;
+    }[] = [];
     vi.stubGlobal(
       'ResizeObserver',
       class {
         observe = vi.fn();
         disconnect = vi.fn();
-        constructor() {
-          observers.push(this);
+        constructor(notify: () => void) {
+          observers.push({ disconnect: this.disconnect, notify });
         }
       },
     );
     const first = document.createElement('div');
     const second = document.createElement('div');
-    for (const element of [first, second])
-      Object.defineProperty(element, 'clientWidth', { value: 600 });
+    for (const element of [first, second]) {
+      Object.defineProperty(element, 'clientWidth', {
+        value: 600,
+        configurable: true,
+      });
+      const table = document.createElement('table');
+      table.style.lineHeight = '20px';
+      table.style.setProperty('--row-height', '40px');
+      element.append(table);
+    }
+    document.body.append(first, second);
     const removed = vi.spyOn(first, 'removeEventListener');
     const current = layout();
     const { result, rerender, unmount } = renderHook(
@@ -148,44 +160,68 @@ describe('column window lifecycle', () => {
         useColumnWindow(resolved, scroller, enabled),
       { initialProps: { scroller: first, enabled: true, resolved: current } },
     );
-    expect(result.current.some((segment) => segment.column?.key === 'c0')).toBe(
-      true,
-    );
+    expect(
+      result.current.segments.some((segment) => segment.column?.key === 'c0'),
+    ).toBe(true);
     act(() => {
       first.scrollLeft = 6000;
       first.dispatchEvent(new Event('scroll'));
     });
     expect(
-      result.current.some((segment) => segment.column?.key === 'c40'),
+      result.current.segments.some((segment) => segment.column?.key === 'c40'),
     ).toBe(true);
-    expect(result.current.some((segment) => segment.column?.key === 'c0')).toBe(
-      false,
-    );
+    expect(
+      result.current.segments.some((segment) => segment.column?.key === 'c0'),
+    ).toBe(false);
     const window = result.current;
     act(() => {
       first.scrollTop = 2000;
       first.dispatchEvent(new Event('scroll'));
     });
     expect(result.current).toBe(window);
+    act(() => {
+      Object.defineProperty(first, 'clientWidth', {
+        value: 20000,
+        configurable: true,
+      });
+      observers[0].notify();
+    });
+    expect(result.current.segments).toHaveLength(100);
+    first.querySelector('table')!.style.lineHeight = '48px';
+    act(() => {
+      Object.defineProperty(first, 'clientWidth', {
+        value: 600,
+        configurable: true,
+      });
+      observers[0].notify();
+    });
+    expect(result.current.segments).toHaveLength(100);
+    act(() => {
+      first.querySelector('table')!.style.lineHeight = '20px';
+      result.current.refreshAppearance();
+    });
+    expect(result.current.segments.length).toBeLessThan(20);
     rerender({ scroller: first, enabled: false, resolved: current });
-    expect(result.current).toHaveLength(100);
+    expect(result.current.segments).toHaveLength(100);
     expect(observers[0].disconnect).toHaveBeenCalledOnce();
     expect(removed).toHaveBeenCalledWith('scroll', expect.any(Function));
     second.scrollLeft = 12000;
     rerender({ scroller: second, enabled: true, resolved: current });
     expect(
-      result.current.some((segment) => segment.column?.key === 'c80'),
+      result.current.segments.some((segment) => segment.column?.key === 'c80'),
     ).toBe(true);
     const changed = layout();
     changed.columns[0].width = 1000;
     changed.totalWidth! += 850;
     rerender({ scroller: second, enabled: true, resolved: changed });
     expect(
-      result.current.some((segment) => segment.column?.key === 'c73'),
+      result.current.segments.some((segment) => segment.column?.key === 'c73'),
     ).toBe(true);
     unmount();
     for (const observer of observers)
       expect(observer.disconnect).toHaveBeenCalledOnce();
+    first.remove();
+    second.remove();
     vi.unstubAllGlobals();
   });
 });

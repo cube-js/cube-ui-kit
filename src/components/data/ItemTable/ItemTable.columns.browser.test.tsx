@@ -3,6 +3,7 @@ import { userEvent as realInput } from 'vitest/browser';
 
 import { renderWithRoot, screen } from '../../../test';
 import { Menu } from '../../actions/Menu';
+import { Root } from '../../Root';
 import { DataTable } from '../DataTable/DataTable';
 
 import { ItemTable } from './ItemTable';
@@ -267,6 +268,45 @@ describe('ItemTable body column window', () => {
     await scrollTo(14000);
     expect(bodyRow().getBoundingClientRect().height).toBe(height);
   });
+
+  it.each(['typography', 'size'] as const)(
+    'uses inherited %s tokens and refreshes eligibility when they change',
+    async (kind) => {
+      const data = [
+        Object.fromEntries([
+          ['id', 'r0'],
+          ...columns().map((col) => [col.key, {}]),
+          ['c95', 'Text'],
+        ]),
+      ];
+      const token = kind === 'typography' ? '$t3-line-height' : '$size-lg';
+      const value = kind === 'typography' ? '48px' : '18px';
+      const content = <Table data={data} />;
+      const { rerender } = renderWithRoot(<Root>{content}</Root>);
+      await vi.waitFor(() =>
+        expect(
+          bodyRow()?.querySelectorAll('[data-element="Cell"]').length,
+        ).toBeLessThan(20),
+      );
+      rerender(<Root tokens={{ [token]: value }}>{content}</Root>);
+      await vi.waitFor(() =>
+        expect(
+          bodyRow().querySelectorAll('[data-element="Cell"]'),
+        ).toHaveLength(100),
+      );
+      const height = bodyRow().getBoundingClientRect().height;
+      expect(height).toBe(kind === 'typography' ? 49 : 21);
+      await scrollTo(14000);
+      expect(bodyRow().getBoundingClientRect().height).toBe(height);
+      rerender(<Root>{content}</Root>);
+      await vi.waitFor(() =>
+        expect(
+          bodyRow().querySelectorAll('[data-element="Cell"]').length,
+        ).toBeLessThan(20),
+      );
+      expect(bodyRow().getBoundingClientRect().height).toBe(41);
+    },
+  );
 
   it('aligns the final body column when an omitted run exceeds native colspan', async () => {
     const cols = Array.from({ length: 1100 }, (_, index) => ({

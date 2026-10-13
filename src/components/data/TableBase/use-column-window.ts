@@ -1,6 +1,8 @@
 import { CONTAINER_STYLES } from '@tenphi/tasty';
 import { useLayoutEffect, useState } from 'react';
 
+import { useEvent } from '../../../_internal/hooks';
+
 import type { Styles } from '@tenphi/tasty';
 import type { CubeResolvedColumn, CubeTableColumnLayout } from './types';
 
@@ -126,6 +128,25 @@ export function useColumnWindow<T>(
   treeColumnKey?: string,
 ) {
   const [range, setRange] = useState<ColumnWindowRange | null>(null);
+  const [fitsRow, setFitsRow] = useState(false);
+  const refreshAppearance = useEvent(() => {
+    if (
+      !isEnabled ||
+      !scroller ||
+      scroller.clientWidth <= 0 ||
+      layout.totalWidth! <= scroller.clientWidth
+    ) {
+      return;
+    }
+    const table = scroller?.querySelector('table');
+    if (!table) return;
+    const computed = getComputedStyle(table);
+    const height = parseFloat(computed.getPropertyValue('--row-height'));
+    const lineHeight = parseFloat(computed.lineHeight);
+    // Empty default cells can be shorter than text. Measure the inherited
+    // tokens, since Root can override both typography and the size scale.
+    setFitsRow(height >= lineHeight);
+  });
 
   useLayoutEffect(() => {
     if (!isEnabled || !scroller) {
@@ -141,19 +162,26 @@ export function useColumnWindow<T>(
       // Vertical scroll and movement within the same column band add no render.
       setRange((previous) => (sameRange(previous, next) ? previous : next));
     };
+    refreshAppearance();
     update();
-    const observer = new ResizeObserver(update);
+    const observer = new ResizeObserver(() => {
+      refreshAppearance();
+      update();
+    });
     observer.observe(scroller);
     scroller.addEventListener('scroll', update, { passive: true });
     return () => {
       observer.disconnect();
       scroller.removeEventListener('scroll', update);
     };
-  }, [isEnabled, layout, scroller]);
+  }, [isEnabled, layout, refreshAppearance, scroller]);
 
-  return getColumnWindowSegments(
-    layout.columns,
-    isEnabled ? range : null,
-    treeColumnKey,
-  );
+  return {
+    segments: getColumnWindowSegments(
+      layout.columns,
+      isEnabled && fitsRow ? range : null,
+      treeColumnKey,
+    ),
+    refreshAppearance,
+  };
 }
