@@ -1,5 +1,15 @@
 # @cube-dev/ui-kit
 
+## 0.193.1
+
+### Patch Changes
+
+- [#1500](https://github.com/cube-js/cube-ui-kit/pull/1500) [`260b5b01`](https://github.com/cube-js/cube-ui-kit/commit/260b5b01c1c98771d8d1edb8527fdbf93a1781b7) Thanks [@tenphi](https://github.com/tenphi)! - Keep a disabled `Radio` or `Radio.Button` focusable while its tooltip can open, so the keyboard can open the tooltip as the mouse does: it is usually the reason the option is disabled. Such a radio is marked `aria-disabled` and stays inert: a disabled group whose options all have tooltips keeps one tab stop, the arrow keys stop on a disabled option without selecting it, `Tab` leaves the group from it, and `Space` and clicks change nothing. Not being natively disabled, a selected one is part of a plain `<form>`'s submitted data. A disabled radio without a tooltip is natively disabled, as before. The color-space tabs of a read-only or loading `ColorPicker` panel, and of a read-only `ColorInput` panel, are such radios: the keyboard now reaches them and their hints.
+
+- [#1500](https://github.com/cube-js/cube-ui-kit/pull/1500) [`260b5b01`](https://github.com/cube-js/cube-ui-kit/commit/260b5b01c1c98771d8d1edb8527fdbf93a1781b7) Thanks [@tenphi](https://github.com/tenphi)! - Let `Tab` and `Shift+Tab` wrap inside a Dialog from a `FilterPicker` or `Picker` trigger: focus on a trigger placed first or last used to stay put instead of moving to the other end. `Tab` from a `ListBox` inside a Dialog wraps the same way, and `Tab` from a `Tree` row checkbox now leaves the tree, as it does from a row. `Enter`, arrow keys and typeahead still stay with the control, and `Escape` still closes an open popup before the Dialog.
+
+- [#1500](https://github.com/cube-js/cube-ui-kit/pull/1500) [`260b5b01`](https://github.com/cube-js/cube-ui-kit/commit/260b5b01c1c98771d8d1edb8527fdbf93a1781b7) Thanks [@tenphi](https://github.com/tenphi)! - Keep the `radiogroup` role and name on a `RadioGroup`, `Radio.ButtonGroup` or `Radio.Tabs` that has an `aria-label` and no visible `label`. Such a group lost its role and name, `aria-orientation`, its `onFocus` and `onBlur`, and `Shift+Tab` entry at its last radio when nothing is selected. With a visible label too, the `radiogroup` role and the group's ARIA and `data-*` props now sit on the element that holds the radios instead of the field wrapper. A role query or a `data-qa` given to a labelled group therefore finds the group rather than the whole field, and a `fieldProps` given to the group now reaches the field wrapper.
+
 ## 0.193.0
 
 ### Minor Changes
