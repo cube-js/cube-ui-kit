@@ -49,7 +49,7 @@ export interface CubeSubMenuTriggerProps extends AriaMenuTriggerProps {
   /**
    * Sub-menu trigger and the sub-menu itself. Must be exactly two React nodes.
    *
-   * 1) Trigger – **must render `<li role="menuitem">`** (usually `Menu.Item`).
+   * 1) Trigger – a `Menu.Item` with its semantic menuitem inside a list row.
    * 2) Sub-menu – a `<Menu>` element.
    */
   children: [ReactNode, ReactElement];
@@ -426,7 +426,11 @@ function InternalSubMenuTrigger(props: InternalSubMenuTriggerProps) {
                     e.stopPropagation();
                     state.close();
                     // Return focus to trigger
-                    domTriggerRef.current?.focus();
+                    (
+                      domTriggerRef.current?.querySelector<HTMLElement>(
+                        '[data-menu-native-primary]',
+                      ) ?? domTriggerRef.current
+                    )?.focus();
                   }
                   // Call original handler if exists
                   (menu.props as any).onKeyDown?.(e);

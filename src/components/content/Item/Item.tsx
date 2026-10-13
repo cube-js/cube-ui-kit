@@ -838,6 +838,12 @@ function highlightContent(
 
 interface ItemWithNativeLinksProps extends CubeItemProps {
   nativeLinkProps?: AnchorHTMLAttributes<HTMLAnchorElement>;
+  nativeMenuItemProps?: AnchorHTMLAttributes<HTMLAnchorElement> & {
+    'data-menu-native-primary'?: string;
+    'data-key'?: string;
+    'data-collection'?: string;
+  };
+  onInlineFocus?: HTMLAttributes<HTMLDivElement>['onFocus'];
   onNativeLinkElement?: (element: HTMLAnchorElement | null) => void;
   onNativeElement?: (element: HTMLElement | null) => void;
 }
@@ -903,6 +909,8 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     // Destructured so it reaches the label, not the element's DOM attributes.
     labelRef: labelRefProp,
     nativeLinkProps,
+    nativeMenuItemProps,
+    onInlineFocus,
     onNativeLinkElement,
     onNativeElement,
     tokens,
@@ -1087,7 +1095,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     tooltipRef?: RefObject<HTMLElement>,
   ) => {
     const { pointerProps: elementTooltipProps, focusProps: tooltipFocusProps } =
-      typeof hiddenContent === 'function'
+      typeof hiddenContent === 'function' || nativeMenuItemProps
         ? splitTooltipTriggerProps(tooltipTriggerProps)
         : { pointerProps: tooltipTriggerProps, focusProps: undefined };
 
@@ -1132,6 +1140,9 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
           elementTooltipProps || {},
           inertProps,
         )}
+        {...(nativeMenuItemProps
+          ? { 'aria-disabled': undefined, 'aria-selected': undefined }
+          : null)}
         style={style}
       >
         {typeof hiddenContent === 'function'
@@ -1163,6 +1174,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
                   >
                     <NativeItemLink
                       {...nativeLinkProps}
+                      {...mergeProps(nativeMenuItemProps, tooltipFocusProps)}
                       aria-hidden={undefined}
                       display="inline"
                       data-menu-native-link=""
@@ -1181,6 +1193,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
                     data-element="Label"
                     {...nativeLinkProps}
                     {...finalLabelProps}
+                    {...mergeProps(nativeMenuItemProps, tooltipFocusProps)}
                     data-menu-native-link=""
                     ref={(element: HTMLAnchorElement | null) => {
                       labelRef(element);
@@ -1208,6 +1221,9 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
               data-element="Description"
               {...nativeLinkProps}
               {...descriptionProps}
+              {...(!hasLabel
+                ? mergeProps(nativeMenuItemProps, tooltipFocusProps)
+                : null)}
               data-menu-native-link=""
               ref={
                 !hasLabel
@@ -1241,6 +1257,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
         {actions && (
           <div
             data-element="Actions"
+            onFocus={onInlineFocus}
             // The handlers keep a press on an action from also pressing the
             // row. The `true` placeholder has no actions to protect: it only
             // reserves the sibling run's width, under that run's caret, so
@@ -1252,6 +1269,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
                 type={type}
                 theme={theme}
                 disableActionsFocus={disableActionsFocus}
+                menuItemAction={!!nativeMenuItemProps}
                 isDisabled={finalIsDisabled}
               >
                 {actions}

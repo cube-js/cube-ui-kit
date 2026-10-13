@@ -7,16 +7,15 @@ import { MenuItem, MenuItemProps } from './MenuItem';
 import { StyledMenu, StyledSection, StyledSectionHeading } from './styled';
 
 export interface CubeMenuSectionProps<T> extends Omit<MenuItemProps<T>, 'id'> {
-  /** The id each item in the section gets, as `MenuItem`'s `id`. */
-  getItemId?: (key: Key) => string;
   itemStyles?: Styles;
   headingStyles?: Styles;
   size?: 'small' | 'medium' | (string & {});
+  itemId?: (key: Key) => string;
 }
 
 /** @private */
 export function MenuSection<T>(props: CubeMenuSectionProps<T>) {
-  const { item, state, styles, itemStyles, headingStyles, size, getItemId } =
+  const { item, state, styles, itemStyles, headingStyles, size } =
     props;
   const heading = item.rendered;
   const { itemProps, headingProps, groupProps } = useMenuSection({
@@ -41,11 +40,11 @@ export function MenuSection<T>(props: CubeMenuSectionProps<T>) {
             let menuItem = (
               <MenuItem
                 key={node.key}
-                id={getItemId?.(node.key)}
                 item={node}
                 styles={itemStyles}
                 state={state}
                 size={size}
+                id={props.itemId?.(node.key)}
               />
             );
 

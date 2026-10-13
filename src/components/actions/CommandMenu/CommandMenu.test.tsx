@@ -7,6 +7,16 @@ import { MenuContext } from '../Menu/context';
 
 import { CommandMenu } from './CommandMenu';
 
+function expectActiveItem(search: HTMLElement, key: string) {
+  const activeId = search.getAttribute('aria-activedescendant');
+  expect(activeId).toBeTruthy();
+  const item = document.getElementById(activeId!);
+  expect(item).toHaveAttribute('role', 'menuitem');
+  expect(item).toHaveAttribute('data-key', key);
+  const menu = document.getElementById(search.getAttribute('aria-controls')!);
+  expect(menu).toContainElement(item);
+}
+
 describe('CommandMenu', () => {
   const items = [
     { id: '1', textValue: 'Create file' },
@@ -80,14 +90,8 @@ describe('CommandMenu', () => {
     expect(searchInput).toHaveFocus();
 
     // First item should be virtually focused (aria-activedescendant)
-    expect(searchInput).toHaveAttribute(
-      'aria-activedescendant',
-      'TestMenu-menu-option-1',
-    );
-    // ...and the id names the item itself, or a screen reader hears nothing.
-    expect(document.getElementById('TestMenu-menu-option-1')).toHaveTextContent(
-      'Create file',
-    );
+    expectActiveItem(searchInput, '1');
+    expect(document.getElementById(searchInput.getAttribute('aria-activedescendant')!)).toHaveAccessibleName('Create file');
 
     // Press arrow down again - should move to second item
     await user.keyboard('{ArrowDown}');
@@ -96,10 +100,7 @@ describe('CommandMenu', () => {
     expect(searchInput).toHaveFocus();
 
     // Second item should be virtually focused
-    expect(searchInput).toHaveAttribute(
-      'aria-activedescendant',
-      'TestMenu-menu-option-2',
-    );
+    expectActiveItem(searchInput, '2');
 
     // Press arrow up - should move back to first item
     await user.keyboard('{ArrowUp}');
@@ -108,10 +109,7 @@ describe('CommandMenu', () => {
     expect(searchInput).toHaveFocus();
 
     // First item should be virtually focused again
-    expect(searchInput).toHaveAttribute(
-      'aria-activedescendant',
-      'TestMenu-menu-option-1',
-    );
+    expectActiveItem(searchInput, '1');
   });
 
   it('navigates through filtered items with arrow keys when search input has value', async () => {
@@ -145,10 +143,7 @@ describe('CommandMenu', () => {
     expect(searchInput).toHaveFocus();
 
     // The filtered item should be virtually focused
-    expect(searchInput).toHaveAttribute(
-      'aria-activedescendant',
-      'TestMenu-menu-option-1',
-    );
+    expectActiveItem(searchInput, '1');
 
     // Clear and type "Save" to test navigation with different filter
     await user.clear(searchInput);
@@ -166,10 +161,7 @@ describe('CommandMenu', () => {
     expect(searchInput).toHaveFocus();
 
     // The filtered item should be virtually focused
-    expect(searchInput).toHaveAttribute(
-      'aria-activedescendant',
-      'TestMenu-menu-option-3',
-    );
+    expectActiveItem(searchInput, '3');
 
     // Clear and type "a" to match multiple items ("Create file" and "Save document")
     await user.clear(searchInput);
@@ -185,28 +177,19 @@ describe('CommandMenu', () => {
     await user.keyboard('{ArrowDown}');
 
     // Second filtered item should be virtually focused
-    expect(searchInput).toHaveAttribute(
-      'aria-activedescendant',
-      'TestMenu-menu-option-3',
-    );
+    expectActiveItem(searchInput, '3');
 
     // Press arrow down again - should wrap to first filtered item ('Create file')
     await user.keyboard('{ArrowDown}');
 
     // First filtered item should be virtually focused
-    expect(searchInput).toHaveAttribute(
-      'aria-activedescendant',
-      'TestMenu-menu-option-1',
-    );
+    expectActiveItem(searchInput, '1');
 
     // Press arrow up - should move to last filtered item ('Save document')
     await user.keyboard('{ArrowUp}');
 
     // Last filtered item should be virtually focused
-    expect(searchInput).toHaveAttribute(
-      'aria-activedescendant',
-      'TestMenu-menu-option-3',
-    );
+    expectActiveItem(searchInput, '3');
   });
 
   it('triggers action with Enter key', async () => {
@@ -247,11 +230,7 @@ describe('CommandMenu', () => {
     );
 
     const searchInput = screen.getByPlaceholderText('Search commands...');
-    const expectFocused = (key: string) =>
-      expect(searchInput).toHaveAttribute(
-        'aria-activedescendant',
-        `TestMenu-menu-option-${key}`,
-      );
+    const expectFocused = (key: string) => expectActiveItem(searchInput, key);
 
     await user.click(searchInput);
 
@@ -281,11 +260,7 @@ describe('CommandMenu', () => {
     );
 
     const searchInput = screen.getByPlaceholderText('Search commands...');
-    const expectFocused = (key: string) =>
-      expect(searchInput).toHaveAttribute(
-        'aria-activedescendant',
-        `TestMenu-menu-option-${key}`,
-      );
+    const expectFocused = (key: string) => expectActiveItem(searchInput, key);
 
     await user.click(searchInput);
 
@@ -315,16 +290,7 @@ describe('CommandMenu', () => {
     );
 
     const searchInput = screen.getByPlaceholderText('Search commands...');
-    const expectFocused = (key: string) => {
-      expect(searchInput).toHaveAttribute(
-        'aria-activedescendant',
-        `TestMenu-menu-option-${key}`,
-      );
-      // An item in a section gets its id through the section.
-      expect(
-        document.getElementById(`TestMenu-menu-option-${key}`),
-      ).not.toBeNull();
-    };
+    const expectFocused = (key: string) => expectActiveItem(searchInput, key);
 
     await user.click(searchInput);
 
@@ -718,10 +684,7 @@ describe('CommandMenu', () => {
 
     // Check that the first matching item is virtually focused
     await waitFor(() => {
-      const activeDescendant = searchInput.getAttribute(
-        'aria-activedescendant',
-      );
-      expect(activeDescendant).toMatch(/-menu-option-1$/);
+      expectActiveItem(searchInput, '1');
     });
   });
 
@@ -750,12 +713,7 @@ describe('CommandMenu', () => {
 
     // Check that the correct item is virtually focused
     await waitFor(() => {
-      const activeDescendant = searchInput.getAttribute(
-        'aria-activedescendant',
-      );
-      expect(activeDescendant).toBeTruthy();
-      // Since "Open folder" has id="2", it should be focused when filtered
-      expect(activeDescendant).toContain('menu-option-2');
+      expectActiveItem(searchInput, '2');
     });
   });
 
@@ -780,10 +738,7 @@ describe('CommandMenu', () => {
 
     // Verify an item is focused first
     await waitFor(() => {
-      const activeDescendant = searchInput.getAttribute(
-        'aria-activedescendant',
-      );
-      expect(activeDescendant).toMatch(/-menu-option-1$/);
+      expectActiveItem(searchInput, '1');
     });
 
     // Clear and type something that won't match

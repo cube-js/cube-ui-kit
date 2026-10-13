@@ -66,6 +66,8 @@ import {
   CollectionItem,
   CubeCollectionItemProps,
   filterCollectionItemProps,
+  filterSelectionItemProps,
+  getValueSelectionState,
 } from '../../CollectionItem';
 import { Item } from '../../content/Item/Item';
 import {
@@ -804,7 +806,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     );
   }
 
-  const listState = useListState(listStateProps);
+  const listState = getValueSelectionState(useListState(listStateProps));
 
   useLayoutEffect(() => {
     const selected = listState.selectionManager.selectedKeys;
@@ -1403,7 +1405,9 @@ function Option({
     state.selectionManager.focusedKey === item.key;
 
   // Filter out service props - all remaining props can be passed to Item
-  const filteredItemProps = filterCollectionItemProps(item.props);
+  const filteredItemProps = filterSelectionItemProps(
+    filterCollectionItemProps(item.props),
+  );
 
   // Determine icon: drag handle > checkbox > user icon > default
   const effectiveIcon = useMemo(() => {
@@ -1491,7 +1495,7 @@ function Option({
     'aria-disabled': ariaDisabled,
     role,
     ...filteredOptionProps
-  } = optionProps;
+  } = filterSelectionItemProps(optionProps);
 
   const theme = getValidationTheme(
     'default' as const,

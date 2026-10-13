@@ -139,7 +139,7 @@ export default {
       description: 'Whether keyboard navigation should wrap around',
       table: {
         type: { summary: 'boolean' },
-        defaultValue: { summary: false },
+        defaultValue: { summary: true },
       },
     },
 
@@ -2336,7 +2336,10 @@ export const NavigationLinks = () => (
       to="/workbooks/saved"
       description="Open the saved workbook"
       actions={
-        <Menu.Item.Action icon={<MoreIcon />} aria-label="Workbook actions" />
+        <Menu.Item.Action
+          icon={<MoreIcon />}
+          aria-label="Actions for Saved workbook"
+        />
       }
     >
       Saved workbook
@@ -2354,6 +2357,7 @@ export const NavigationLinks = () => (
 NavigationLinks.parameters = NO_SNAPSHOT;
 NavigationLinks.play = async ({ canvasElement }) => {
   const canvas = within(canvasElement);
+  const initialLocation = window.location.href;
   await waitFor(() =>
     expect(canvas.getByText('Recent workbook').closest('a')).toHaveAttribute(
       'href',
@@ -2367,12 +2371,41 @@ NavigationLinks.play = async ({ canvasElement }) => {
     ),
   );
   const recent = canvas.getByRole('menuitem', { name: 'Recent workbook' });
-  expect(recent.tagName).toBe('LI');
-  expect(recent).not.toHaveAttribute('href');
+  expect(recent.tagName).toBe('A');
+  expect(recent).toHaveAttribute('href', '/workbooks/42?chatId=abc');
+  expect(recent).not.toHaveAttribute('aria-hidden');
+  expect(recent.closest('li')).toHaveAttribute('role', 'none');
   expect(
     canvas.getByText('Unavailable workbook').closest('a'),
   ).not.toHaveAttribute('href');
-  expect(canvas.getByText('Saved workbook').closest('a')).not.toContainElement(
-    canvas.getByRole('button', { name: 'Workbook actions' }),
-  );
+  const saved = canvas.getByRole('menuitem', {
+    name: 'Saved workbook',
+    exact: true,
+  });
+  const action = canvas.getByRole('menuitem', {
+    name: 'Actions for Saved workbook',
+  });
+  expect(saved).not.toContainElement(action);
+  expect(action.parentElement?.closest('[role^="menuitem"]')).toBeNull();
+  expect(saved).toHaveAccessibleDescription('Open the saved workbook');
+  expect(
+    canvas.getByRole('menuitem', { name: 'Create workbook' }).tagName,
+  ).toBe('LI');
+
+  recent.focus();
+  for (const name of [
+    'Browse all',
+    'Saved workbook',
+    'Actions for Saved workbook',
+    'Documentation',
+    'Create workbook',
+  ]) {
+    await userEvent.keyboard('{ArrowDown}');
+    await waitFor(() =>
+      expect(canvas.getByRole('menuitem', { name, exact: true })).toHaveFocus(),
+    );
+  }
+  await userEvent.keyboard('{Home}');
+  expect(window.location.href).toBe(initialLocation);
+  await waitFor(() => expect(recent).toHaveFocus());
 };

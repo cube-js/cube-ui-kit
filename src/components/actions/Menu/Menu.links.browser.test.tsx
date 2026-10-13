@@ -53,11 +53,13 @@ describe('Menu navigation links', () => {
           </Menu>
         </Root>,
       );
-      const row = screen.getByRole('menuitem');
-      const placeholder = row.querySelector<HTMLElement>(
+      const row = screen.getByRole('menuitem', { name: 'Destination' });
+      const placeholder = getRowElement(row).querySelector<HTMLElement>(
         '[data-element=Actions]',
       )!;
-      expect(row).not.toHaveAttribute('data-has-actions-content');
+      expect(getRowElement(row)).not.toHaveAttribute(
+        'data-has-actions-content',
+      );
       expect(placeholder).toBeEmptyDOMElement();
       expect(placeholder.getBoundingClientRect().width).toBe(48);
       await userEvent.click(placeholder);
@@ -73,8 +75,14 @@ describe('Menu navigation links', () => {
     return (await fetch('/__menu-link-test/requests')).json();
   }
 
-  function getNativeLink(row: HTMLElement): HTMLAnchorElement {
-    const label = row.querySelector('[data-element=Label]')!;
+  function getRowElement(item: HTMLElement): HTMLLIElement {
+    return item.closest<HTMLLIElement>('li')!;
+  }
+
+  function getNativeLink(item: HTMLElement): HTMLAnchorElement {
+    if (item.matches('a[data-menu-native-link]'))
+      return item as HTMLAnchorElement;
+    const label = getRowElement(item).querySelector('[data-element=Label]')!;
     return (
       label.closest<HTMLAnchorElement>('a') ??
       label.querySelector<HTMLAnchorElement>('a')!
@@ -507,7 +515,7 @@ describe('Menu navigation links', () => {
       expect(onAction).toHaveBeenCalledTimes(1);
       expect(menuAction).toHaveBeenCalledExactlyOnceWith('link');
       expect(navigate).toHaveBeenCalledExactlyOnceWith(destination, undefined);
-      expect(row).not.toHaveAttribute('data-pressed');
+      expect(getRowElement(row)).not.toHaveAttribute('data-pressed');
     },
   );
 
@@ -634,7 +642,7 @@ describe('Menu navigation links', () => {
       expect(onAction).toHaveBeenCalledTimes(1);
       expect(menuAction).toHaveBeenCalledExactlyOnceWith('link');
       expect(navigate).toHaveBeenCalledExactlyOnceWith(destination, undefined);
-      expect(row).not.toHaveAttribute('data-pressed');
+      expect(getRowElement(row)).not.toHaveAttribute('data-pressed');
     },
   );
 
@@ -680,7 +688,7 @@ describe('Menu navigation links', () => {
                 ':last-child': '2r bottom',
               },
               marginLeft: { '': 0, ':nth-child(2)': '1x' },
-              opacity: { '': 0.6, ':has(+ [role=menuitem])': 1 },
+              opacity: { '': 0.6, ':has(+ [data-menuitem])': 1 },
             }}
           >
             {topology === 'section' ? (
@@ -693,8 +701,8 @@ describe('Menu navigation links', () => {
       );
       for (const [index, { name }] of rows.entries()) {
         const row = screen.getByRole('menuitem', { name });
-        const style = getComputedStyle(row);
-        expect(row.getBoundingClientRect().width).toBe(180);
+        const style = getComputedStyle(getRowElement(row));
+        expect(getRowElement(row).getBoundingClientRect().width).toBe(180);
         expect(style.marginLeft).toBe(index === 1 ? '8px' : '0px');
         expect(style.borderTopLeftRadius).toBe(index === 0 ? '12px' : '0px');
         expect(style.borderTopRightRadius).toBe(index === 0 ? '12px' : '0px');
@@ -780,7 +788,9 @@ describe('Menu navigation links', () => {
       const row = screen.getByTestId('typography-menu');
       const control = screen.getByTestId('typography-control');
       control.tabIndex = -1;
-      const label = row.querySelector<HTMLElement>('[data-element=Label]')!;
+      const label = getRowElement(row).querySelector<HTMLElement>(
+        '[data-element=Label]',
+      )!;
       const controlLabel = control.querySelector<HTMLElement>(
         '[data-element=Label]',
       )!;
@@ -796,7 +806,7 @@ describe('Menu navigation links', () => {
         };
       };
       expect(typography(label)).toEqual(typography(controlLabel));
-      await act(() => row.focus());
+      await act(() => getNativeLink(row).focus());
       const focused = typography(label);
       await act(() => control.focus());
       expect(focused).toEqual(typography(controlLabel));
@@ -807,11 +817,13 @@ describe('Menu navigation links', () => {
     const { navigate, onAction, onItemAction } = renderMenu();
     const link = await openMenu();
 
-    expect(link.tagName).toBe('LI');
+    expect(link.tagName).toBe('A');
+    expect(getRowElement(link).tagName).toBe('LI');
+    expect(getRowElement(link)).toHaveAttribute('role', 'none');
     expect(getNativeLink(link).tagName).toBe('A');
     expect(getNativeLink(link)).toHaveAttribute('href', destination);
-    expect(link.parentElement!.tagName).toBe('UL');
-    expect(link).not.toHaveAttribute('href');
+    expect(getRowElement(link).parentElement!.tagName).toBe('UL');
+    expect(getRowElement(link)).not.toHaveAttribute('href');
     expect(
       screen.getByRole('menuitem', { name: 'Create workbook' }).tagName,
     ).toBe('LI');
@@ -891,7 +903,7 @@ describe('Menu navigation links', () => {
           </Menu>
         </Root>,
       );
-      const link = screen.getByRole('menuitemcheckbox', { name: 'Workbook' });
+      const link = screen.getByRole('menuitem', { name: 'Workbook' });
       await act(() => link.focus());
       await userEvent.keyboard(key);
       expect(navigate).toHaveBeenCalledExactlyOnceWith(destination, undefined);
@@ -935,6 +947,8 @@ describe('Menu navigation links', () => {
     );
     expect(link).not.toHaveAttribute('to');
     expect(link).not.toHaveAttribute('navigationOptions');
+    expect(getRowElement(link)).not.toHaveAttribute('to');
+    expect(getRowElement(link)).not.toHaveAttribute('navigationOptions');
     expect(resolve).toHaveBeenCalledWith(path, { relative: 'path' });
     await userEvent.click(link);
     expect(navigate).toHaveBeenCalledExactlyOnceWith(path, options);
@@ -1147,13 +1161,15 @@ describe('Menu navigation links', () => {
       expect(screen.getByRole('menuitem', { name: 'Workbook' })).toHaveFocus();
     });
     const row = screen.getByRole('menuitem', { name: 'Workbook' });
-    const deleteButton = await screen.findByRole('button', { name: 'Delete' });
-    const nativeLink = row.querySelector('a[data-menu-native-link]');
+    const deleteButton = await screen.findByRole('button', {
+      name: 'Delete',
+    });
+    const nativeLink = getNativeLink(row);
     expect(nativeLink).toHaveAttribute('href', destination);
     expect(nativeLink).not.toContainElement(deleteButton);
     expect(row).toHaveFocus();
     await waitFor(() => expect(deleteButton).toBeVisible());
-    expect(getComputedStyle(row).paddingTop).toBe('24px');
+    expect(getComputedStyle(getRowElement(row)).paddingTop).toBe('24px');
     await act(() => rerender(content(true, 'Remove')));
     expect(screen.getByRole('menuitem', { name: 'Workbook' })).toBe(row);
     expect(row).toHaveFocus();
@@ -1170,7 +1186,7 @@ describe('Menu navigation links', () => {
     const finalRow = screen.getByRole('menuitem', { name: 'Workbook' });
     expect(getNativeLink(finalRow)).toHaveAttribute('href', destination);
     expect(finalRow).toHaveFocus();
-    expect(getComputedStyle(finalRow).paddingTop).toBe('24px');
+    expect(getComputedStyle(getRowElement(finalRow)).paddingTop).toBe('24px');
   });
 
   it.each([
@@ -1491,10 +1507,11 @@ describe('Menu navigation links', () => {
         </Menu>
       </Root>,
     );
-    const link = screen.getByRole('menuitemcheckbox', {
+    const link = screen.getByRole('menuitem', {
       name: 'Current document',
     });
-    expect(link.tagName).toBe('LI');
+    expect(link.tagName).toBe('A');
+    expect(getRowElement(link).tagName).toBe('LI');
     expect(getNativeLink(link).tagName).toBe('A');
     expect(getNativeLink(link)).toHaveAttribute('href', '');
     expect(getNativeLink(link).href).toBe(location.href);
@@ -1610,13 +1627,15 @@ describe('Menu navigation links', () => {
         </Root>,
       );
       const row = screen.getByRole('menuitem', { name: 'Link' });
-      const linkRun = screen.getByRole('button', {
+      const linkRun = screen.getByRole('menuitem', {
         name: 'Link action',
       }).parentElement!;
-      const commandRun = screen.getByRole('button', {
+      const commandRun = screen.getByRole('menuitem', {
         name: 'Command action',
       }).parentElement!;
-      expect(getComputedStyle(linkRun).color).toBe(getComputedStyle(row).color);
+      expect(getComputedStyle(linkRun).color).toBe(
+        getComputedStyle(getRowElement(row)).color,
+      );
       expect(getComputedStyle(linkRun).color).toBe(
         getComputedStyle(commandRun).color,
       );
@@ -1642,7 +1661,7 @@ describe('Menu navigation links', () => {
           {
             variant: 'default false',
             styles: {
-              '@focus': ':focus',
+              '@focus': '[data-focused]',
               textDecoration: { '': false, '@focus': 'underline' },
             },
             resting: 'none',
@@ -1651,7 +1670,7 @@ describe('Menu navigation links', () => {
           {
             variant: 'default empty',
             styles: {
-              '@focus': ':focus',
+              '@focus': '[data-focused]',
               textDecoration: { '': '', '@focus': 'underline' },
             },
             resting: 'none',
@@ -1660,7 +1679,7 @@ describe('Menu navigation links', () => {
           {
             variant: 'focused false',
             styles: {
-              '@focus': ':focus',
+              '@focus': '[data-focused]',
               textDecoration: { '': 'underline', '@focus': false },
             },
             resting: 'underline',
@@ -1669,7 +1688,7 @@ describe('Menu navigation links', () => {
           {
             variant: 'focused empty',
             styles: {
-              '@focus': ':focus',
+              '@focus': '[data-focused]',
               textDecoration: { '': 'underline', '@focus': '' },
             },
             resting: 'underline',
@@ -1720,12 +1739,20 @@ describe('Menu navigation links', () => {
       );
       const row = screen.getByRole('menuitem', { name: 'Link' });
       const command = screen.getByRole('menuitem', { name: 'Command' });
-      expect(getComputedStyle(command).textDecorationLine).toBe(resting);
-      expect(getComputedStyle(row).textDecorationLine).toBe(resting);
+      expect(getComputedStyle(getRowElement(command)).textDecorationLine).toBe(
+        resting,
+      );
+      expect(getComputedStyle(getRowElement(row)).textDecorationLine).toBe(
+        resting,
+      );
       await act(() => row.focus());
-      expect(getComputedStyle(row).textDecorationLine).toBe(focused);
+      expect(getComputedStyle(getRowElement(row)).textDecorationLine).toBe(
+        focused,
+      );
       await act(() => command.focus());
-      expect(getComputedStyle(command).textDecorationLine).toBe(focused);
+      expect(getComputedStyle(getRowElement(command)).textDecorationLine).toBe(
+        focused,
+      );
     },
   );
 
@@ -1759,13 +1786,15 @@ describe('Menu navigation links', () => {
       </Root>,
     );
     const row = screen.getByRole('menuitem', { name: 'Link' });
-    const run = screen.getByRole('button', {
+    const run = screen.getByRole('menuitem', {
       name: 'Link action',
     }).parentElement!;
-    const commandRun = screen.getByRole('button', {
+    const commandRun = screen.getByRole('menuitem', {
       name: 'Command action',
     }).parentElement!;
-    expect(getComputedStyle(run).color).toBe(getComputedStyle(row).color);
+    expect(getComputedStyle(run).color).toBe(
+      getComputedStyle(getRowElement(row)).color,
+    );
     expect(getComputedStyle(run).padding).toBe('16px');
     expect(getComputedStyle(run).padding).toBe(
       getComputedStyle(commandRun).padding,
@@ -1812,17 +1841,20 @@ describe('Menu navigation links', () => {
       const row = screen.getByRole('menuitem', { name: 'Link' });
       const command = screen.getByRole('menuitem', { name: 'Command' });
       expect(
-        getComputedStyle(row.querySelector(`[data-element="${slot}"]`)!).color,
+        getComputedStyle(
+          getRowElement(row).querySelector(`[data-element="${slot}"]`)!,
+        ).color,
       ).toBe(
-        getComputedStyle(command.querySelector(`[data-element="${slot}"]`)!)
-          .color,
+        getComputedStyle(
+          getRowElement(command).querySelector(`[data-element="${slot}"]`)!,
+        ).color,
       );
     },
   );
 
   it('evaluates local focus predicates on the row for independent controls', async () => {
     const styles = {
-      '@focus': ':focus',
+      '@focus': '[data-focused]',
       color: { '': '#purple-text', '@focus': '#danger-text' },
       Actions: { color: '#current', padding: { '': '0x', '@focus': '2x' } },
     };
@@ -1848,28 +1880,32 @@ describe('Menu navigation links', () => {
       </Root>,
     );
     const row = screen.getByRole('menuitem', { name: 'Link' });
-    const run = screen.getByRole('button', {
+    const run = screen.getByRole('menuitem', {
       name: 'Link action',
     }).parentElement!;
     const command = screen.getByRole('menuitem', { name: 'Command' });
-    const commandRun = screen.getByRole('button', {
+    const commandRun = screen.getByRole('menuitem', {
       name: 'Command action',
     }).parentElement!;
-    const restingColor = getComputedStyle(row).color;
+    const restingColor = getComputedStyle(getRowElement(row)).color;
     expect(getComputedStyle(run).padding).toBe('0px');
     await act(() => row.focus());
     await waitFor(() => {
       expect(row).toHaveFocus();
-      expect(getComputedStyle(row).color).not.toBe(restingColor);
-      expect(getComputedStyle(run).color).toBe(getComputedStyle(row).color);
+      expect(getComputedStyle(getRowElement(row)).color).not.toBe(restingColor);
+      expect(getComputedStyle(run).color).toBe(
+        getComputedStyle(getRowElement(row)).color,
+      );
       expect(getComputedStyle(run).padding).toBe('16px');
     });
     await act(() => command.focus());
     await waitFor(() => {
       expect(getComputedStyle(run).padding).toBe('0px');
-      expect(getComputedStyle(run).color).toBe(getComputedStyle(row).color);
+      expect(getComputedStyle(run).color).toBe(
+        getComputedStyle(getRowElement(row)).color,
+      );
       expect(getComputedStyle(commandRun).color).toBe(
-        getComputedStyle(command).color,
+        getComputedStyle(getRowElement(command)).color,
       );
       expect(getComputedStyle(commandRun).padding).toBe('16px');
     });
@@ -1908,13 +1944,15 @@ describe('Menu navigation links', () => {
     );
     const row = screen.getByRole('menuitem', { name: 'Link' });
     const command = screen.getByRole('menuitem', { name: 'Command' });
-    const run = screen.getByRole('button', {
+    const run = screen.getByRole('menuitem', {
       name: 'Link action',
     }).parentElement!;
-    const commandRun = screen.getByRole('button', {
+    const commandRun = screen.getByRole('menuitem', {
       name: 'Command action',
     }).parentElement!;
-    expect(getComputedStyle(row).color).toBe(getComputedStyle(command).color);
+    expect(getComputedStyle(getRowElement(row)).color).toBe(
+      getComputedStyle(getRowElement(command)).color,
+    );
     expect(getComputedStyle(run).color).toBe(
       getComputedStyle(commandRun).color,
     );
@@ -1953,10 +1991,10 @@ describe('Menu navigation links', () => {
           </Menu>
         </Root>,
       );
-      const run = screen.getByRole('button', {
+      const run = screen.getByRole('menuitem', {
         name: 'Link action',
       }).parentElement!;
-      const commandRun = screen.getByRole('button', {
+      const commandRun = screen.getByRole('menuitem', {
         name: 'Command action',
       }).parentElement!;
       expect(getComputedStyle(run).color).toBe(
@@ -1990,9 +2028,11 @@ describe('Menu navigation links', () => {
         </Root>,
       );
       const row = screen.getByRole('menuitem', { name: 'Destination' });
-      const run = screen.getByRole('button', { name: 'Delete' }).parentElement!;
+      const run = screen.getByRole('menuitem', {
+        name: 'Delete',
+      }).parentElement!;
       const command = screen.getByRole('menuitem', { name: 'Command' });
-      const commandRun = screen.getByRole('button', {
+      const commandRun = screen.getByRole('menuitem', {
         name: 'Command action',
       }).parentElement!;
       expect(getComputedStyle(run).position).toBe(
@@ -2028,8 +2068,10 @@ describe('Menu navigation links', () => {
       </Root>,
     );
     const row = screen.getByRole('menuitem', { name: 'Destination' });
-    const run = screen.getByRole('button', { name: 'Delete' }).parentElement!;
-    expect(getComputedStyle(run).color).toBe(getComputedStyle(row).color);
+    const run = screen.getByRole('menuitem', { name: 'Delete' }).parentElement!;
+    expect(getComputedStyle(run).color).toBe(
+      getComputedStyle(getRowElement(row)).color,
+    );
     expect(getComputedStyle(run).padding).toBe('16px');
   });
 
@@ -2085,7 +2127,7 @@ describe('Menu navigation links', () => {
       name: 'Delete color',
     }).parentElement!;
     expect(getComputedStyle(colorRun).color).toBe(
-      getComputedStyle(colorRow).color,
+      getComputedStyle(getRowElement(colorRow)).color,
     );
   });
 
@@ -2144,9 +2186,11 @@ describe('Menu navigation links', () => {
           opacity *= Number(getComputedStyle(current).opacity);
         return opacity;
       }
-      expect(effectiveOpacity(screen.getByRole('menuitem'))).toBe(0.25);
       expect(
-        effectiveOpacity(screen.getByRole('button', { name: 'Delete' })),
+        effectiveOpacity(screen.getByRole('menuitem', { name: 'Destination' })),
+      ).toBe(0.25);
+      expect(
+        effectiveOpacity(screen.getByRole('menuitem', { name: 'Delete' })),
       ).toBe(0.25);
     },
   );
@@ -2168,9 +2212,11 @@ describe('Menu navigation links', () => {
           </Menu>
         </Root>,
       );
-      const row = screen.getByRole('menuitem').getBoundingClientRect();
+      const row = getRowElement(
+        screen.getByRole('menuitem', { name: 'Destination' }),
+      ).getBoundingClientRect();
       const action = screen
-        .getByRole('button', { name: 'Delete' })
+        .getByRole('menuitem', { name: 'Delete' })
         .getBoundingClientRect();
       expect(action.y + action.height / 2).toBeCloseTo(row.y + row.height / 2);
     },
@@ -2211,7 +2257,9 @@ describe('Menu navigation links', () => {
         const expectedWidth = screen
           .getByTestId(`command${index}`)
           .getBoundingClientRect().width;
-        expect(row.getBoundingClientRect().width).toBe(expectedWidth);
+        expect(getRowElement(row).getBoundingClientRect().width).toBe(
+          expectedWidth,
+        );
       }
     },
   );
@@ -2264,8 +2312,8 @@ describe('Menu navigation links', () => {
       const row = screen.getByRole('menuitem', { name: 'Link' });
       const command = screen.getByRole('menuitem', { name: 'Command' });
       expect(screen.getByRole('menu').getBoundingClientRect().height).toBe(400);
-      expect(command.getBoundingClientRect().height).toBe(196);
-      expect(row.getBoundingClientRect().height).toBe(196);
+      expect(getRowElement(command).getBoundingClientRect().height).toBe(196);
+      expect(getRowElement(row).getBoundingClientRect().height).toBe(196);
     },
   );
 
@@ -2340,10 +2388,10 @@ describe('Menu navigation links', () => {
       );
       const row = screen.getByRole('menuitem', { name: 'Link' });
       const command = screen.getByRole('menuitem', { name: 'Command' });
-      expect(getComputedStyle(command).width).toBe('100px');
-      expect(command.getBoundingClientRect().width).toBe(122);
-      expect(getComputedStyle(row).width).toBe('100px');
-      expect(row.getBoundingClientRect().width).toBe(122);
+      expect(getComputedStyle(getRowElement(command)).width).toBe('100px');
+      expect(getRowElement(command).getBoundingClientRect().width).toBe(122);
+      expect(getComputedStyle(getRowElement(row)).width).toBe('100px');
+      expect(getRowElement(row).getBoundingClientRect().width).toBe(122);
     },
   );
 
@@ -2382,17 +2430,20 @@ describe('Menu navigation links', () => {
       const row = screen.getByRole('menuitem', { name: 'Link' });
       const command = screen.getByRole('menuitem', { name: 'Command' });
       const nativeLink = getNativeLink(row);
-      expect(getComputedStyle(row).color).toBe(getComputedStyle(command).color);
+      expect(getComputedStyle(getRowElement(row)).color).toBe(
+        getComputedStyle(getRowElement(command)).color,
+      );
       expect(getComputedStyle(nativeLink).color).toBe(
-        getComputedStyle(command).color,
+        getComputedStyle(getRowElement(command)).color,
       );
       if (actions) {
         expect(
-          getComputedStyle(screen.getByRole('button', { name: 'Delete link' }))
-            .color,
+          getComputedStyle(
+            screen.getByRole('menuitem', { name: 'Delete link' }),
+          ).color,
         ).toBe(
           getComputedStyle(
-            screen.getByRole('button', { name: 'Delete command' }),
+            screen.getByRole('menuitem', { name: 'Delete command' }),
           ).color,
         );
       }
@@ -2438,18 +2489,21 @@ describe('Menu navigation links', () => {
       );
       const row = screen.getByTestId('link');
       const command = screen.getByTestId('command').getBoundingClientRect();
-      const anchor = row.getBoundingClientRect();
+      const frame = getRowElement(row).getBoundingClientRect();
       const owner = row.closest('li')!.getBoundingClientRect();
-      expect(anchor.width).toBe(command.width);
+      const anchor = getNativeLink(row).getBoundingClientRect();
+      expect(frame.width).toBe(command.width);
       expect(owner.width).toBe(command.width);
-      expect(anchor.left).toBe(command.left);
+      expect(frame.left).toBe(command.left);
       expect(owner.left).toBe(command.left);
+      expect(anchor.left).toBeGreaterThanOrEqual(owner.left);
+      expect(anchor.right).toBeLessThanOrEqual(owner.right);
       const action = screen.getByTestId('link-action').getBoundingClientRect();
       const commandAction = screen
         .getByTestId('command-action')
         .getBoundingClientRect();
       expect(action.right).toBe(commandAction.right);
-      expect(action.right).toBeLessThanOrEqual(anchor.right);
+      expect(action.right).toBeLessThanOrEqual(frame.right);
     },
   );
 
@@ -2476,7 +2530,10 @@ describe('Menu navigation links', () => {
       name: 'Destination',
       hidden: true,
     });
-    const action = screen.getByRole('button', { name: 'Delete', hidden: true });
+    const action = screen.getByRole('menuitem', {
+      name: 'Delete',
+      hidden: true,
+    });
     expect(row.closest('li')).toHaveAttribute('inert');
     await userEvent.click(action, { force: true });
     await act(() => action.focus());
@@ -2502,7 +2559,7 @@ describe('Menu navigation links', () => {
     );
     expect(screen.queryByRole('menuitem')).not.toBeInTheDocument();
     expect(
-      screen.queryByRole('button', { name: 'Delete' }),
+      screen.queryByRole('menuitem', { name: 'Delete' }),
     ).not.toBeInTheDocument();
   });
 
@@ -2522,14 +2579,18 @@ describe('Menu navigation links', () => {
       </Root>
     );
     const warmup = render(content);
-    expect(getComputedStyle(screen.getByRole('menuitem')).opacity).toBe('0.5');
+    expect(
+      getComputedStyle(
+        getRowElement(screen.getByRole('menuitem', { name: 'Destination' })),
+      ).opacity,
+    ).toBe('0.5');
     const mountedRules = ruleCount();
     warmup.unmount();
     const unmountedRules = ruleCount();
     for (let index = 0; index < 3; index++) {
       const { unmount } = render(content);
-      const row = screen.getByRole('menuitem');
-      expect(getComputedStyle(row).opacity).toBe('0.5');
+      const row = screen.getByRole('menuitem', { name: 'Destination' });
+      expect(getComputedStyle(getRowElement(row)).opacity).toBe('0.5');
       expect(ruleCount()).toBeLessThanOrEqual(mountedRules);
       unmount();
       expect(ruleCount()).toBe(unmountedRules);
@@ -2574,8 +2635,8 @@ describe('Menu navigation links', () => {
       </Root>,
     );
     const row = screen.getByRole('menuitem', { name: 'Destination' });
-    const action = screen.getByRole('button', { name: 'Delete' });
-    const rect = row.getBoundingClientRect();
+    const action = screen.getByRole('menuitem', { name: 'Delete' });
+    const rect = getRowElement(row).getBoundingClientRect();
     const button = action.getBoundingClientRect();
     expect(button.top).toBeLessThan(rect.top);
     const hit = document.elementFromPoint(
@@ -2583,12 +2644,12 @@ describe('Menu navigation links', () => {
       rect.top - 1,
     );
     expect(hit?.closest('[data-element="Actions"]')).toBeNull();
-    expect(getComputedStyle(row).overflow).toBe('hidden');
+    expect(getComputedStyle(getRowElement(row)).overflow).toBe('hidden');
     const control = screen.getByRole('menuitem', { name: 'Control' });
-    const controlAction = screen.getByRole('button', {
+    const controlAction = screen.getByRole('menuitem', {
       name: 'Control action',
     });
-    const controlRect = control.getBoundingClientRect();
+    const controlRect = getRowElement(control).getBoundingClientRect();
     const controlButton = controlAction.getBoundingClientRect();
     expect(controlButton.top).toBeLessThan(controlRect.top);
     expect(
@@ -2613,12 +2674,13 @@ describe('Menu navigation links', () => {
       </Root>,
     );
     expect(
-      screen
-        .getByRole('menuitem', { name: 'Destination' })
-        .getBoundingClientRect().top,
+      getRowElement(
+        screen.getByRole('menuitem', { name: 'Destination' }),
+      ).getBoundingClientRect().top,
     ).toBeLessThan(
-      screen.getByRole('menuitem', { name: 'First' }).getBoundingClientRect()
-        .top,
+      getRowElement(
+        screen.getByRole('menuitem', { name: 'First' }),
+      ).getBoundingClientRect().top,
     );
   });
 
@@ -2630,7 +2692,7 @@ describe('Menu navigation links', () => {
             key="link"
             to={destination}
             styles={{
-              '@focus': ':focus',
+              '@focus': '[data-focused]',
               '$row-opacity': '.25',
               opacity: { '': '$row-opacity', '@focus': '.5' },
               margin: { '': '0x', '@focus': '2x top' },
@@ -2642,7 +2704,7 @@ describe('Menu navigation links', () => {
         </Menu>
       </Root>,
     );
-    const row = screen.getByRole('menuitem');
+    const row = screen.getByRole('menuitem', { name: 'Destination' });
     const owner = row.closest('li')!;
     expect(getComputedStyle(owner).opacity).toBe('0.25');
     await act(() => row.focus());
@@ -2650,9 +2712,9 @@ describe('Menu navigation links', () => {
       expect(getComputedStyle(owner).opacity).toBe('0.5');
       expect(getComputedStyle(owner).marginTop).toBe('16px');
     });
-    const rowRect = row.getBoundingClientRect();
+    const rowRect = getRowElement(row).getBoundingClientRect();
     const action = screen
-      .getByRole('button', { name: 'Delete' })
+      .getByRole('menuitem', { name: 'Delete' })
       .getBoundingClientRect();
     expect(action.y + action.height / 2).toBeCloseTo(
       rowRect.y + rowRect.height / 2,
@@ -2678,16 +2740,20 @@ describe('Menu navigation links', () => {
       </Root>,
     );
     const row = screen.getByRole('menuitem', { name: 'Destination' });
-    const run = screen.getByRole('button', { name: 'Delete' }).parentElement!;
-    const restingColor = getComputedStyle(row).color;
+    const run = screen.getByRole('menuitem', { name: 'Delete' }).parentElement!;
+    const restingColor = getComputedStyle(getRowElement(row)).color;
     const pointer = pointerUserEvent.setup();
     await act(() => pointer.pointer({ keys: '[MouseLeft>]', target: row }));
     try {
       await waitFor(
         () => {
-          expect(row).toHaveAttribute('data-pressed');
-          expect(getComputedStyle(row).color).not.toBe(restingColor);
-          expect(getComputedStyle(run).color).toBe(getComputedStyle(row).color);
+          expect(getRowElement(row)).toHaveAttribute('data-pressed');
+          expect(getComputedStyle(getRowElement(row)).color).not.toBe(
+            restingColor,
+          );
+          expect(getComputedStyle(run).color).toBe(
+            getComputedStyle(getRowElement(row)).color,
+          );
           expect(getComputedStyle(run).padding).toBe('16px');
         },
         { timeout: 1000 },
@@ -2696,7 +2762,7 @@ describe('Menu navigation links', () => {
       await act(() => pointer.pointer({ keys: '[/MouseLeft]', target: row }));
     }
     await waitFor(() => {
-      expect(row).not.toHaveAttribute('data-pressed');
+      expect(getRowElement(row)).not.toHaveAttribute('data-pressed');
       expect(getComputedStyle(run).padding).toBe('0px');
     });
   });

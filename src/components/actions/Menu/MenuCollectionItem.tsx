@@ -1,13 +1,22 @@
 import { ReactElement } from 'react';
+import { Item } from 'react-stately';
 
 import { NavigateOptions, To } from '../../../providers/navigation.types';
-import { CollectionItem, CubeCollectionItemProps } from '../../CollectionItem';
+import {
+  CollectionItem,
+  CubeCollectionItemBaseProps,
+} from '../../CollectionItem';
 import { parseTo } from '../use-action';
 
-export interface CubeMenuItemProps<T> extends CubeCollectionItemProps<T> {
+import type { LinkDOMProps } from '@react-types/shared';
+
+export interface CubeMenuItemProps<T>
+  extends CubeCollectionItemBaseProps<T>,
+    LinkDOMProps {
   /** Application destination. Takes precedence over href. */
   to?: To;
   navigationOptions?: NavigateOptions;
+  [key: string]: any;
 }
 
 // Aria recognizes links by a truthy collection href; preserve the native empty URL.
@@ -33,7 +42,7 @@ const _MenuCollectionItem: typeof MenuCollectionItem &
         props.to !== '' && (props.to != null || props.href != null);
 
       // A private href marks links for Aria; the row resolves the actual `to`.
-      return (CollectionItem as any).getCollectionNode(
+      return (Item as any).getCollectionNode(
         {
           ...props,
           href:

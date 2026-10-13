@@ -46,6 +46,55 @@ export interface MenuItemProps<T> {
   size?: 'small' | 'medium' | (string & {});
 }
 
+// The primary control owns accessibility; the list row keeps styling and presses.
+function splitMenuItemProps(props: Record<string, any>, semanticId = false) {
+  const rowProps: Record<string, any> = {};
+  const semanticProps: Record<string, any> = {};
+  for (const [key, value] of Object.entries(props)) {
+    if (
+      (key.startsWith('aria-') && key !== 'aria-hidden') ||
+      (semanticId && key === 'id') ||
+      [
+        'role',
+        'tabIndex',
+        'onFocus',
+        'onBlur',
+        'data-key',
+        'data-collection',
+      ].includes(key)
+    )
+      semanticProps[key] = value;
+    else rowProps[key] = value;
+  }
+  return { rowProps, semanticProps };
+}
+
+function primaryMenuItemProps(
+  ariaProps: Record<string, any>,
+  consumerProps: Record<string, any>,
+  isLink: boolean,
+  id: string | undefined,
+  type: string | undefined,
+) {
+  const props = mergeProps(ariaProps, consumerProps);
+  // Destinations cannot change the menu's checked selection.
+  if (isLink) {
+    props.role = 'menuitem';
+    props['aria-checked'] = undefined;
+  }
+  if (!('aria-labelledby' in consumerProps)) {
+    props['aria-labelledby'] =
+      consumerProps['aria-label'] != null
+        ? undefined
+        : id && type !== 'header' && type !== 'card'
+          ? id
+          : ariaProps['aria-labelledby'];
+  }
+  props['aria-hidden'] = undefined;
+  props['data-menu-native-primary'] = '';
+  return props;
+}
+
 /** @private */
 export function MenuItem<T>(props: MenuItemProps<T>) {
   const submenuContext = useContext(SubmenuTriggerContext);
@@ -59,8 +108,6 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
 function MenuLinkItem<T>(props: MenuItemProps<T>) {
   const activatedLink = useRef<HTMLAnchorElement>(null);
   const linkRef = useRef<HTMLAnchorElement>(null);
-  const nativeElementRef = useRef<HTMLElement>(null);
-  const restoreFocusRef = useRef(false);
   const { to, href, navigationOptions } = props.item.props;
   const { cleanTo: parsedTo, nativeRoute } = parseTo(to);
   const isCurrentDocument = props.item.props[CURRENT_DOCUMENT_LINK];
@@ -80,18 +127,6 @@ function MenuLinkItem<T>(props: MenuItemProps<T>) {
   const onNativeLinkElement = (element: HTMLAnchorElement | null) => {
     linkRef.current = element;
   };
-  const onNativeElement = (element: HTMLElement | null) => {
-    if (!element) {
-      restoreFocusRef.current =
-        nativeElementRef.current ===
-        nativeElementRef.current?.ownerDocument.activeElement;
-    }
-    nativeElementRef.current = element;
-    if (element && restoreFocusRef.current) {
-      restoreFocusRef.current = false;
-      element.focus({ preventScroll: true });
-    }
-  };
   const onClick = (event: MouseEvent<FocusableElement>) => {
     const target = event.target as Element;
     activatedLink.current =
@@ -109,7 +144,6 @@ function MenuLinkItem<T>(props: MenuItemProps<T>) {
       {...props}
       nativeLinkHref={linkHref}
       onNativeLinkElement={onNativeLinkElement}
-      onNativeElement={onNativeElement}
       onClick={onClick}
       onNavigate={(event) => {
         const anchor = activatedLink.current;
@@ -143,7 +177,6 @@ function MenuItemContent<T>(
   props: MenuItemProps<T> & {
     nativeLinkHref?: string;
     onNativeLinkElement?: (element: HTMLAnchorElement | null) => void;
-    onNativeElement?: (element: HTMLElement | null) => void;
     onNavigate?: (event: MouseEvent<FocusableElement>) => void;
     onClick?: (event: MouseEvent<FocusableElement>) => void;
   },
@@ -181,8 +214,19 @@ function MenuItemContent<T>(
     (filteredItemProps.isLoading && filteredItemProps.isDisabled !== false);
 
   const ref = useRef<HTMLElement>(null);
-  // Use the triggerRef from submenu context if present
-  const elementRef = (submenuContext?.triggerRef ?? ref) as any;
+  const rowRef = useRef<HTMLElement>(null);
+  const restoreFocusRef = useRef(false);
+  const elementRef = ref;
+  const updateSemanticElement = (element: HTMLElement | null) => {
+    if (!element)
+      restoreFocusRef.current =
+        ref.current === ref.current?.ownerDocument.activeElement;
+    ref.current = element;
+    if (element && restoreFocusRef.current) {
+      restoreFocusRef.current = false;
+      element.focus({ preventScroll: true });
+    }
+  };
 
   const {
     menuItemProps,
@@ -240,6 +284,15 @@ function MenuItemContent<T>(
   } = menuItemProps as typeof menuItemProps &
     AnchorHTMLAttributes<HTMLAnchorElement>;
   const isLink = itemProps.href != null && !submenuContext;
+  const primaryInCell =
+    isLink ||
+    (!!filteredItemProps.actions && filteredItemProps.actions !== true);
+  const { rowProps: rowItemProps, semanticProps } = splitMenuItemProps(
+    itemOwnProps,
+    props.id != null,
+  );
+  const { rowProps: rowConsumerProps, semanticProps: consumerSemanticProps } =
+    splitMenuItemProps(filteredItemProps);
   const skippedPointerUp = useRef<globalThis.PointerEvent | null>(null);
   const { addGlobalListener, removeAllGlobalListeners } = useGlobalListeners();
   const onPointerDown = (event: PointerEvent<FocusableElement>) => {
@@ -281,13 +334,18 @@ function MenuItemContent<T>(
     itemOnPointerUp?.(event);
   };
   const onKeyDown = (e: KeyboardEvent<FocusableElement>) => {
-    if (isLink && !isDisabled && (e.key === ' ' || e.key === 'Enter')) {
+    if (primaryInCell && (e.key === ' ' || e.key === 'Enter')) {
+      if (isDisabled) {
+        e.preventDefault();
+        e.stopPropagation();
+        return;
+      }
       if (e.nativeEvent.isComposing || (e.key === ' ' && e.repeat)) {
         e.preventDefault();
         e.stopPropagation();
         return;
       }
-      if (e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) {
+      if (isLink && (e.ctrlKey || e.metaKey || e.altKey || e.shiftKey)) {
         itemOnKeyDown?.(e);
         e.preventDefault();
         e.stopPropagation();
@@ -310,6 +368,18 @@ function MenuItemContent<T>(
       submenuContext.onKeyDown?.(e);
       if (!e.defaultPrevented) itemOnKeyDown?.(e);
     } else itemOnKeyDown?.(e);
+    // Aria records Enter but expects an A to have native link activation.
+    if (
+      primaryInCell &&
+      !isLink &&
+      !submenuContext &&
+      e.key === 'Enter' &&
+      !e.nativeEvent.isComposing
+    ) {
+      e.preventDefault();
+      e.stopPropagation();
+      elementRef.current?.click();
+    }
   };
 
   const mods = {
@@ -323,7 +393,7 @@ function MenuItemContent<T>(
   };
 
   const nativeLinkProps: AnchorHTMLAttributes<HTMLAnchorElement> | undefined =
-    props.onNativeLinkElement
+    props.onNativeLinkElement || primaryInCell
       ? {
           href: isLink && !isDisabled ? props.nativeLinkHref : undefined,
           target: itemProps.target,
@@ -345,26 +415,29 @@ function MenuItemContent<T>(
   const content = (
     <FocusRing>
       <ItemWithNativeLinks
-        {...mergeProps({ ...itemOwnProps, onKeyDown }, filteredItemProps, {
-          'data-popover-trigger': true,
-          qa: itemQa ? itemQa : `MenuItem-${key}`,
-          mods,
-          styles,
-          style: filteredItemProps.style,
-          'data-size': size,
-          as: 'li',
-          onClick: isDisabled ? undefined : props.onNavigate,
-          labelProps,
-          descriptionProps,
-          keyboardShortcutProps,
-          'aria-haspopup': submenuContext ? 'menu' : undefined,
-          'aria-expanded': submenuContext?.isOpen,
-          'data-has-submenu': submenuContext ? true : undefined,
-          // Chained after the item's own hover handlers.
-          onMouseEnter: submenuContext?.onMouseEnter,
-          onMouseLeave: submenuContext?.onMouseLeave,
-        })}
+        {...mergeProps(
+          primaryInCell ? rowItemProps : itemOwnProps,
+          primaryInCell ? rowConsumerProps : filteredItemProps,
+          {
+            'data-popover-trigger': true,
+            qa: itemQa ? itemQa : `MenuItem-${key}`,
+            mods,
+            styles,
+            style: filteredItemProps.style,
+            'data-size': size,
+            as: 'li',
+            onClick: isDisabled ? undefined : props.onNavigate,
+            labelProps,
+            descriptionProps,
+            keyboardShortcutProps,
+            'data-has-submenu': submenuContext ? true : undefined,
+            // Chained after the item's own hover handlers.
+            onMouseEnter: submenuContext?.onMouseEnter,
+            onMouseLeave: submenuContext?.onMouseLeave,
+          },
+        )}
         {...{
+          onKeyDown,
           onPointerDown: (event: PointerEvent<FocusableElement>) => {
             onPointerDown(event);
             filteredItemProps.onPointerDown?.(event);
@@ -374,12 +447,38 @@ function MenuItemContent<T>(
             filteredItemProps.onPointerUp?.(event);
           },
         }}
-        ref={elementRef}
+        role={primaryInCell ? 'none' : itemOwnProps.role}
+        ref={submenuContext?.triggerRef ?? rowRef}
         nativeLinkProps={nativeLinkProps}
-        onNativeLinkElement={props.onNativeLinkElement}
-        onNativeElement={props.onNativeElement}
+        onInlineFocus={
+          primaryInCell
+            ? (e) => {
+                state.selectionManager.setFocused(false);
+                state.selectionManager.setFocusedKey(key);
+                e.stopPropagation();
+              }
+            : undefined
+        }
+        nativeMenuItemProps={
+          primaryInCell
+            ? primaryMenuItemProps(
+                semanticProps,
+                consumerSemanticProps,
+                isLink,
+                props.id,
+                filteredItemProps.type,
+              )
+            : undefined
+        }
+        onNativeLinkElement={(element) => {
+          if (primaryInCell) updateSemanticElement(element);
+          props.onNativeLinkElement?.(element);
+        }}
+        onNativeElement={(element) => {
+          if (!primaryInCell) updateSemanticElement(element);
+        }}
         actions={
-          props.onNativeLinkElement &&
+          primaryInCell &&
           filteredItemProps.actions &&
           filteredItemProps.actions !== true ? (
             <ClearPressResponder>

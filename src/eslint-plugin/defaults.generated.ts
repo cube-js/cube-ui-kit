@@ -497,7 +497,7 @@ export const DEFAULTS: DefaultsRegistry = {
       props: {
         autoFocus: { kind: 'default', value: false },
         selectionMode: { kind: 'default', value: 'none' },
-        shouldFocusWrap: { kind: 'default', value: false },
+        shouldFocusWrap: { kind: 'default', value: true },
         size: { kind: 'default', value: 'medium' },
       },
     },

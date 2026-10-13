@@ -184,20 +184,22 @@ describe('Select native keyboard selection on macOS', () => {
     }
   });
 
-  it('preserves Enter activation of a link option', async () => {
+  it('selects an untyped destination option without native navigation', async () => {
     const originalUrl = location.href;
-    const onClick = vi.fn();
+    const onSelectionChange = vi.fn();
     const onKeyDown = vi.fn();
+    const destination: Record<string, unknown> = {
+      as: 'a',
+      href: '#select-destination',
+    };
     renderWithRoot(
-      <Select label="Destination" defaultSelectedKey="blue">
+      <Select
+        label="Destination"
+        defaultSelectedKey="blue"
+        onSelectionChange={onSelectionChange}
+      >
         <Select.Item key="blue">Blue</Select.Item>
-        <Select.Item
-          key="link"
-          as="a"
-          href="#select-destination"
-          onClick={onClick}
-          onKeyDown={onKeyDown}
-        >
+        <Select.Item key="link" {...destination} onKeyDown={onKeyDown}>
           Destination
         </Select.Item>
       </Select>,
@@ -206,17 +208,17 @@ describe('Select native keyboard selection on macOS', () => {
       await act(() =>
         userEvent.click(screen.getByRole('button', { name: /Destination/ })),
       );
-      await act(() =>
-        screen.getByRole('option', { name: 'Destination' }).focus(),
-      );
+      const option = screen.getByRole('option', { name: 'Destination' });
+      expect(option).not.toHaveAttribute('href');
+      await act(() => option.focus());
       await act(() => userEvent.keyboard('{Enter}'));
-      expect(location.hash).toBe('#select-destination');
+      expect(location.href).toBe(originalUrl);
+      expect(onSelectionChange).toHaveBeenCalledExactlyOnceWith('link');
       expect(onKeyDown).toHaveBeenCalledTimes(1);
       expect(onKeyDown.mock.calls[0][0].nativeEvent.isTrusted).toBe(true);
       expect(onKeyDown.mock.calls[0][0].nativeEvent.defaultPrevented).toBe(
-        false,
+        true,
       );
-      expect(onClick).toHaveBeenCalled();
     } finally {
       history.replaceState(null, '', originalUrl);
     }

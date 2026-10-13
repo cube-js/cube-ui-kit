@@ -69,11 +69,10 @@ describe('<Menu />', () => {
       </Menu>,
     );
     const reload = screen.getByRole('menuitem', { name: 'Reload' });
-    const anchor = reload.querySelector<HTMLAnchorElement>(
-      'a[data-menu-native-link]',
-    )!;
-    expect(reload.tagName).toBe('LI');
-    expect(reload).not.toHaveAttribute('href');
+    const anchor = reload as HTMLAnchorElement;
+    expect(reload.tagName).toBe('A');
+    expect(reload.closest('li')).toHaveAttribute('role', 'none');
+    expect(reload.closest('li')).not.toHaveAttribute('href');
     expect(anchor).toHaveAttribute('href', '');
     expect(anchor.href).toBe(location.href.split('#')[0]);
     expect(screen.getByRole('menuitem', { name: 'Command' }).tagName).toBe(
@@ -111,13 +110,13 @@ describe('<Menu />', () => {
       </Root>
     );
     const { rerender } = render(content(destination));
-    await userEvent.click(screen.getByRole('button', { name: 'Count 0' }));
-    const action = screen.getByRole('button', { name: 'Count 1' });
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Count 0' }));
+    const action = screen.getByRole('menuitem', { name: 'Count 1' });
     expect(navigate).not.toHaveBeenCalled();
     expect(onClick).not.toHaveBeenCalled();
     for (const href of [undefined, '/again', undefined, '/last']) {
       await act(() => rerender(content(href)));
-      expect(screen.getByRole('button', { name: 'Count 1' })).toBe(action);
+      expect(screen.getByRole('menuitem', { name: 'Count 1' })).toBe(action);
       if (href === undefined) {
         const row = screen.getByRole('menuitem', { name: 'Destination' });
         await act(() => row.focus());
@@ -138,7 +137,7 @@ describe('<Menu />', () => {
     expect(onClick).toHaveBeenCalledTimes(1);
     expect(onItemAction).toHaveBeenCalledTimes(1);
     expect(onMenuAction).toHaveBeenCalledExactlyOnceWith('row');
-    expect(screen.getByRole('button', { name: 'Count 1' })).toBe(action);
+    expect(screen.getByRole('menuitem', { name: 'Count 1' })).toBe(action);
   });
 
   it.each([false, true])(
@@ -191,24 +190,37 @@ describe('<Menu />', () => {
         incrementDescription();
       });
       if (actions)
-        await userEvent.click(screen.getByRole('button', { name: 'Count 0' }));
+        await userEvent.click(
+          screen.getByRole('menuitem', { name: 'Count 0' }),
+        );
       const label = screen.getByTestId('state-label');
       const description = screen.getByTestId('state-description');
       const action = actions
-        ? screen.getByRole('button', { name: 'Count 1' })
+        ? screen.getByRole('menuitem', { name: 'Count 1' })
         : undefined;
-      const row = screen.getByTestId('state-row');
-      await act(() => row.focus());
+      const frame = screen.getByTestId('state-row');
+      const primary = screen.getByRole('menuitem', { name: 'Label 1' });
+      await act(() => primary.focus());
       for (const href of [undefined, '/again', undefined, '/last']) {
         await act(() => rerender(content(href)));
         expect(screen.getByTestId('state-label')).toBe(label);
         expect(screen.getByTestId('state-description')).toBe(description);
         expect(label).toHaveTextContent('Label 1');
         expect(description).toHaveTextContent('Description 1');
-        expect(screen.getByRole('menuitem', { name: 'Label 1' })).toBe(row);
-        expect(row).toHaveFocus();
+        expect(screen.getByTestId('state-row')).toBe(frame);
+        const currentPrimary = screen.getByRole('menuitem', {
+          name: 'Label 1',
+        });
+        expect(currentPrimary).toHaveFocus();
+        expect(currentPrimary.closest('li')).toBe(frame);
+        expect(currentPrimary.tagName).toBe(
+          actions || href !== undefined ? 'A' : 'LI',
+        );
+        if (actions) expect(currentPrimary).toBe(primary);
         if (actions)
-          expect(screen.getByRole('button', { name: 'Count 1' })).toBe(action);
+          expect(screen.getByRole('menuitem', { name: 'Count 1' })).toBe(
+            action,
+          );
       }
       expect(navigate).not.toHaveBeenCalled();
     },
@@ -261,17 +273,17 @@ describe('<Menu />', () => {
       expect(labelRef.current).toBe(heading);
       expect(commandRef.current).toBe(commandHeading);
       expect(heading).toHaveAttribute('data-element', 'Label');
-      expect(
-        screen.getByRole('menuitem', { name: 'Destination' }),
-      ).toContainElement(heading);
+      const primary = screen.getByRole('menuitem', { name: 'Destination' });
+      expect(primary.closest('li')).toContainElement(heading);
       const anchor =
         heading.querySelector<HTMLAnchorElement>('a[data-menu-native-link]') ??
         heading.closest<HTMLAnchorElement>('a[data-menu-native-link]');
+      expect(primary).toBe(anchor);
       expect(anchor).toHaveAttribute('href', '/heading');
       expect(commandHeading.querySelector('a[href]')).toBeNull();
       if (actions)
         expect(anchor).not.toContainElement(
-          screen.getByRole('button', { name: 'Delete' }),
+          screen.getByRole('menuitem', { name: 'Delete' }),
         );
     },
   );

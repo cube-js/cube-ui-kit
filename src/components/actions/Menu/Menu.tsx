@@ -1,4 +1,4 @@
-import { useObjectRef, useSyncRef } from '@react-aria/utils';
+import { isFocusable, useObjectRef, useSyncRef } from '@react-aria/utils';
 import {
   CollectionChildren,
   FocusStrategy,
@@ -12,7 +12,7 @@ import {
   filterBaseProps,
   Styles,
 } from '@tenphi/tasty';
-import React, { ReactElement, ReactNode, Ref } from 'react';
+import React, { KeyboardEvent, ReactElement, ReactNode, Ref } from 'react';
 import { AriaMenuProps, useMenu } from 'react-aria';
 import { Section as BaseSection, useTreeState } from 'react-stately';
 
@@ -142,6 +142,76 @@ function Menu<T extends object>(
   const hasSections = collectionItems.some((item) => item.type === 'section');
 
   const { menuProps } = useMenu(completeProps, state, domRef);
+  const handleInlineNavigation = (event: KeyboardEvent<HTMLUListElement>) => {
+    const menu = event.currentTarget;
+    const item = (event.target as HTMLElement).closest<HTMLElement>(
+      '[role^="menuitem"]',
+    );
+    if (
+      !item ||
+      item.closest('[role="menu"]') !== menu ||
+      event.altKey ||
+      event.ctrlKey ||
+      event.metaKey ||
+      event.nativeEvent.isComposing ||
+      !menu.querySelector('[data-element="Actions"] [role^="menuitem"]')
+    )
+      return;
+    const row = item.closest<HTMLElement>('[data-menuitem]');
+    // Search and page navigation remain owned by the Aria collection of rows.
+    if (
+      item.closest('[data-element="Actions"]') &&
+      (event.key === 'PageUp' ||
+        event.key === 'PageDown' ||
+        (event.key.length === 1 && event.key !== ' '))
+    ) {
+      row?.querySelector<HTMLElement>('[data-menu-native-primary]')?.focus();
+      return;
+    }
+    if (event.shiftKey) return;
+    const items = Array.from(
+      menu.querySelectorAll<HTMLElement>('[role^="menuitem"]'),
+    ).filter(
+      (element) =>
+        element.closest('[role="menu"]') === menu &&
+        !element.hasAttribute('disabled') &&
+        element.getAttribute('aria-disabled') !== 'true' &&
+        isFocusable(element),
+    );
+    const index = items.indexOf(item);
+    if (index < 0) return;
+    let next: HTMLElement | undefined;
+    if (event.key === 'ArrowDown')
+      next =
+        items[index + 1] ??
+        (completeProps.shouldFocusWrap !== false ? items[0] : undefined);
+    else if (event.key === 'ArrowUp')
+      next =
+        items[index - 1] ??
+        (completeProps.shouldFocusWrap !== false ? items.at(-1) : undefined);
+    else if (event.key === 'Home') next = items[0];
+    else if (event.key === 'End') next = items.at(-1);
+    else if (
+      (event.key === 'ArrowRight' || event.key === 'ArrowLeft') &&
+      row &&
+      !item.hasAttribute('aria-haspopup')
+    ) {
+      const rowItems = items.filter(
+        (element) => element.closest('[data-menuitem]') === row,
+      );
+      const forward =
+        event.key ===
+        (getComputedStyle(row).direction === 'rtl'
+          ? 'ArrowLeft'
+          : 'ArrowRight');
+      next = rowItems[rowItems.indexOf(item) + (forward ? 1 : -1)];
+    }
+    if (next) {
+      event.preventDefault();
+      event.stopPropagation();
+      next.focus();
+    }
+  };
   const styles = extractStyles(completeProps, CONTAINER_STYLES);
 
   // `useMenu` already put the id and the name on the `menu` list. Repeated on
@@ -251,6 +321,7 @@ function Menu<T extends object>(
           menuProps,
         )}
         ref={domRef}
+        onKeyDownCapture={handleInlineNavigation}
         role={menuProps.role ?? 'menu'}
       >
         {renderedItems}
