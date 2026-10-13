@@ -24,6 +24,49 @@ import { MenuTrigger } from './MenuTrigger';
 describe('Menu navigation links', () => {
   const destination = '/workbooks/42?chatId=abc';
 
+  it.each(
+    [false, true].flatMap((link) =>
+      [false, true].map((insideWrapper) => ({ link, insideWrapper })),
+    ),
+  )(
+    'preserves the empty action placeholder for link=$link insideWrapper=$insideWrapper',
+    async ({ link, insideWrapper }) => {
+      const navigate = vi.fn();
+      const onAction = vi.fn();
+      render(
+        <Root navigation={{ useHref: String, useNavigate: () => navigate }}>
+          <Menu
+            aria-label="Destinations"
+            styles={{ width: '30x' }}
+            onAction={onAction}
+          >
+            <Menu.Item
+              key="destination"
+              to={link ? destination : undefined}
+              actions={true}
+              insideWrapper={insideWrapper}
+              tokens={{ '$actions-width': '6x' }}
+              tooltip={false}
+            >
+              Destination
+            </Menu.Item>
+          </Menu>
+        </Root>,
+      );
+      const row = screen.getByRole('menuitem');
+      const placeholder = row.querySelector<HTMLElement>(
+        '[data-element=Actions]',
+      )!;
+      expect(row).not.toHaveAttribute('data-has-actions-content');
+      expect(placeholder).toBeEmptyDOMElement();
+      expect(placeholder.getBoundingClientRect().width).toBe(48);
+      await userEvent.click(placeholder);
+      expect(onAction).toHaveBeenCalledTimes(1);
+      expect(navigate).toHaveBeenCalledTimes(link ? 1 : 0);
+      if (link) expect(navigate).toHaveBeenCalledWith(destination, undefined);
+    },
+  );
+
   async function nativeRequests(): Promise<
     { url: string; method?: string; referrer?: string }[]
   > {

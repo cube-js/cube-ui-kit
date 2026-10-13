@@ -370,7 +370,9 @@ function MenuItemContent<T>(
         onNativeLinkElement={props.onNativeLinkElement}
         onNativeElement={props.onNativeElement}
         actions={
-          props.onNativeLinkElement && filteredItemProps.actions ? (
+          props.onNativeLinkElement &&
+          filteredItemProps.actions &&
+          filteredItemProps.actions !== true ? (
             <ClearPressResponder>
               {filteredItemProps.actions}
             </ClearPressResponder>
