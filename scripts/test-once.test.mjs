@@ -1,9 +1,16 @@
-import { execFileSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { execFileSync, spawnSync } from 'node:child_process';
+import {
+  copyFileSync,
+  mkdirSync,
+  mkdtempSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { canSkip, main, parsePushedShas } from './test-once.mjs';
+import { main, parsePushedShas } from './test-once.mjs';
 
 const A = 'a'.repeat(40);
 const B = 'b'.repeat(40);
@@ -21,30 +28,15 @@ describe('parsePushedShas', () => {
   it('leaves out a deleted ref, which sends nothing', () => {
     expect(parsePushedShas(`(delete) ${ZERO} refs/heads/x ${A}\n`)).toEqual([]);
   });
-});
 
-describe('canSkip', () => {
-  const state = { clean: true, tree: 't1', key: 'k1' };
-  const stamp = 't1 k1';
-
-  it('reuses a passed run of the same clean tree', () => {
-    expect(canSkip({ stamp, state, pushedTrees: [] })).toBe(true);
-    expect(canSkip({ stamp, state, pushedTrees: ['t1', 't1'] })).toBe(true);
+  it('reads a local ref typed with spaces from the end of the line', () => {
+    expect(
+      parsePushedShas(`HEAD^{/x ${B} y} ${A} refs/heads/z ${ZERO}\n`),
+    ).toEqual([A]);
   });
 
-  it.each([
-    ['no run passed yet', { stamp: null, state }],
-    [
-      'the working tree has changes',
-      { stamp, state: { ...state, clean: false } },
-    ],
-    ['another tree passed', { stamp: 't0 k1', state }],
-  ])('runs the suite when %s', (_, input) => {
-    expect(canSkip({ ...input, pushedTrees: [] })).toBe(false);
-  });
-
-  it('runs the suite when a pushed ref has another tree', () => {
-    expect(canSkip({ stamp, state, pushedTrees: ['t1', 't2'] })).toBe(false);
+  it('rejects a line it cannot read', () => {
+    expect(() => parsePushedShas(`refs/heads/x ${A}\n`)).toThrow();
   });
 });
 
@@ -89,6 +81,7 @@ describe('main', () => {
     vi.restoreAllMocks();
     vi.unstubAllEnvs();
     rmSync(dir, { recursive: true, force: true });
+    rmSync(`${dir}-link`, { force: true });
   });
 
   it('runs the suite once for a clean tree, then reuses the pass', () => {
@@ -106,6 +99,16 @@ describe('main', () => {
 
     expect(main([], { cwd: dir, run })).toBe(1);
     expect(main([], { cwd: dir, run })).toBe(1);
+    expect(run).toHaveBeenCalledTimes(2);
+  });
+
+  it('runs the suite again for a new commit', () => {
+    const run = passing();
+
+    main([], { cwd: dir, run });
+    commit('a.txt', 'two');
+    main([], { cwd: dir, run });
+
     expect(run).toHaveBeenCalledTimes(2);
   });
 
@@ -133,42 +136,44 @@ describe('main', () => {
         write('a.txt', 'two');
       },
     ],
-  ])('neither reuses nor records a run with %s', (_, change) => {
+  ])('does not reuse a run with %s', (_, change) => {
     const run = passing();
 
     main([], { cwd: dir, run });
     change();
     main([], { cwd: dir, run });
-    main([], { cwd: dir, run });
-
-    expect(run).toHaveBeenCalledTimes(3);
-  });
-
-  it('keeps no record when a file changes while the suite runs', () => {
-    const run = vi.fn(() => {
-      write('a.txt', 'edited meanwhile');
-
-      return 0;
-    });
-
-    main([], { cwd: dir, run });
-    git('checkout', '-q', '--', 'a.txt');
-    main([], { cwd: dir, run });
 
     expect(run).toHaveBeenCalledTimes(2);
   });
 
-  it('keeps no record when the install changes while the suite runs', () => {
+  it.each([
+    [
+      'a file changes',
+      () => write('a.txt', 'edited meanwhile'),
+      () => git('checkout', '-q', '--', 'a.txt'),
+    ],
+    [
+      'a file is edited and restored',
+      () => {
+        write('a.txt', 'edited meanwhile');
+        git('checkout', '-q', '--', 'a.txt');
+      },
+      () => {},
+    ],
+    [
+      'the install changes',
+      () => write('node_modules/.pnpm/lock.yaml', 'lockfileVersion: 10'),
+      () => write('node_modules/.pnpm/lock.yaml', 'lockfileVersion: 9'),
+    ],
+  ])('keeps no record when %s while the suite runs', (_, during, after) => {
     const run = vi.fn(() => {
-      write(
-        'node_modules/.pnpm/lock.yaml',
-        `lockfileVersion: ${run.mock.calls.length}`,
-      );
+      if (run.mock.calls.length === 1) during();
 
       return 0;
     });
 
     main([], { cwd: dir, run });
+    after();
     main([], { cwd: dir, run });
 
     expect(run).toHaveBeenCalledTimes(2);
@@ -184,23 +189,64 @@ describe('main', () => {
     expect(run).toHaveBeenCalledTimes(2);
   });
 
-  it('runs the suite again under another Node version', () => {
+  it.each([
+    ['version', 'v0.0.0'],
+    ['arch', 'other'],
+  ])('runs the suite again under another Node %s', (property, value) => {
     const run = passing();
-    const version = Object.getOwnPropertyDescriptor(process, 'version');
+    const descriptor = Object.getOwnPropertyDescriptor(process, property);
 
     main([], { cwd: dir, run });
 
     try {
-      Object.defineProperty(process, 'version', {
-        ...version,
-        value: 'v0.0.0',
-      });
+      Object.defineProperty(process, property, { ...descriptor, value });
       main([], { cwd: dir, run });
     } finally {
-      Object.defineProperty(process, 'version', version);
+      Object.defineProperty(process, property, descriptor);
     }
 
     expect(run).toHaveBeenCalledTimes(2);
+  });
+
+  it.each(['NODE_OPTIONS', 'TZ', 'UPDATE_DEFAULTS'])(
+    'runs the suite again when %s changes',
+    (name) => {
+      const run = passing();
+
+      main([], { cwd: dir, run });
+      vi.stubEnv(name, '1');
+      main([], { cwd: dir, run });
+
+      expect(run).toHaveBeenCalledTimes(2);
+    },
+  );
+
+  it.each([
+    ['through a symlink', []],
+    ['with --preserve-symlinks-main', ['--preserve-symlinks-main']],
+  ])('runs the suite from the command line %s', (_, flags) => {
+    // A copy, so the script reads this repository, not the real checkout.
+    mkdirSync(join(dir, 'scripts'));
+    copyFileSync(
+      join(import.meta.dirname, 'test-once.mjs'),
+      join(dir, 'scripts/test-once.mjs'),
+    );
+    mkdirSync(join(dir, 'bin'));
+    writeFileSync(join(dir, 'bin/pnpm'), '#!/bin/sh\nexit 1\n', {
+      mode: 0o755,
+    });
+    symlinkSync(dir, `${dir}-link`);
+
+    const result = spawnSync(
+      process.execPath,
+      [...flags, `${dir}-link/scripts/test-once.mjs`],
+      {
+        env: { ...process.env, PATH: `${dir}/bin:${process.env.PATH}` },
+        input: '',
+      },
+    );
+
+    expect(result.status).toBe(1);
   });
 
   describe('before a push', () => {
@@ -209,19 +255,21 @@ describe('main', () => {
       const run = passing();
 
       main([], { cwd: dir, run });
-      const input = () => `refs/heads/main ${head} refs/heads/main ${ZERO}\n`;
+      const input = () =>
+        `refs/heads/main ${head} refs/heads/main ${ZERO}\n(delete) ${ZERO} refs/heads/gone ${A}\n`;
 
       expect(main(['--pre-push'], { cwd: dir, run, input })).toBe(0);
       expect(run).toHaveBeenCalledTimes(1);
     });
 
-    it('runs the suite for a pushed commit with another tree', () => {
+    it('runs the suite when any pushed ref has another tree', () => {
       const old = git('rev-parse', 'HEAD');
       const run = passing();
+      const head = commit('a.txt', 'two');
 
-      commit('a.txt', 'two');
       main([], { cwd: dir, run });
-      const input = () => `refs/heads/old ${old} refs/heads/old ${ZERO}\n`;
+      const input = () =>
+        `refs/heads/main ${head} refs/heads/main ${ZERO}\nrefs/heads/old ${old} refs/heads/old ${ZERO}\n`;
 
       main(['--pre-push'], { cwd: dir, run, input });
 

@@ -1,22 +1,31 @@
 #!/usr/bin/env node
 /**
- * Runs the full jsdom suite (`pnpm test`) unless this exact tree has already
- * passed it. The pre-push hook calls it with `--pre-push`, so pushing a tree
- * that `pnpm test:once`, or an earlier push, already tested skips the rerun.
+ * Runs the full jsdom suite (`pnpm test`) unless this exact tree is the last
+ * one that passed it in this worktree. The pre-push hook calls it with
+ * `--pre-push`, which also requires every pushed ref to point at that tree;
+ * otherwise it runs the suite on the working tree, as `pnpm test` did.
  *
  * A run is reused by content only, never by which files changed: the same git
- * tree, Node version and installed dependencies, on a working tree with no
- * changes and no untracked files. Ignored files are outside the key, since a
- * push never carries them. Whatever it cannot establish, it runs the suite for.
+ * tree, Node version and architecture, installed dependencies and
+ * `KEYED_ENV`, on a working tree with no changes and no untracked files, where
+ * no tracked file was written while the suite ran. Ignored files are outside
+ * the key, since a push never carries them. Whatever it cannot establish, it
+ * runs the suite for.
  */
 import { execFileSync, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { readFileSync, realpathSync, writeFileSync } from 'node:fs';
+import { lstatSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { isatty } from 'node:tty';
 import { fileURLToPath } from 'node:url';
 
 const root = resolve(import.meta.dirname, '..');
+// Environment variables that change what the suite checks.
+const KEYED_ENV = ['NODE_OPTIONS', 'TZ', 'UPDATE_DEFAULTS'];
 const DELETED = /^0+$/;
+// `<local ref> <local sha> <remote ref> <remote sha>`, read from the end: the
+// local ref is the source as typed, which can contain spaces.
+const PUSH_LINE = / ([0-9a-f]{40,64}) \S+ [0-9a-f]{40,64}$/;
 // `git ls-files -v` tags: lowercase for assume-unchanged, S for skip-worktree.
 // Edits to those files never show in `git status`.
 const HIDDEN = /^([a-z]|S) /m;
@@ -25,22 +34,15 @@ const HIDDEN = /^([a-z]|S) /m;
 export function parsePushedShas(input) {
   return input
     .split('\n')
-    .map((line) => line.trim().split(/\s+/)[1])
-    .filter((sha) => sha && !DELETED.test(sha));
-}
+    .filter((line) => line !== '')
+    .map((line) => {
+      const sha = PUSH_LINE.exec(line)?.[1];
 
-/** What a passed run of `state` is recorded as; a tree with changes has none. */
-function runId(state) {
-  return state?.clean ? `${state.tree} ${state.key}` : null;
-}
+      if (!sha) throw new Error(`Unexpected pre-push line: ${line}`);
 
-/** Whether the passed run recorded in `stamp` covers `state` and every pushed tree. */
-export function canSkip({ stamp, state, pushedTrees }) {
-  return (
-    stamp != null &&
-    stamp === runId(state) &&
-    pushedTrees.every((tree) => tree === state.tree)
-  );
+      return sha;
+    })
+    .filter((sha) => !DELETED.test(sha));
 }
 
 function git(cwd, ...args) {
@@ -60,8 +62,26 @@ function readState(cwd) {
   return {
     clean: status === '' && !HIDDEN.test(git(cwd, 'ls-files', '-v')),
     tree: git(cwd, 'rev-parse', 'HEAD^{tree}'),
-    key: `${process.version} ${installHash}`,
+    key: JSON.stringify([
+      process.version,
+      process.arch,
+      ...KEYED_ENV.map((name) => process.env[name] ?? null),
+      installHash,
+    ]),
   };
+}
+
+/** What a passed run of `state` is recorded as; a tree with changes has none. */
+function runId(state) {
+  return state?.clean ? `${state.tree} ${state.key}` : null;
+}
+
+/** Whether no tracked file was written since `time`, even with its content restored. */
+function untouchedSince(cwd, time) {
+  return git(cwd, 'ls-files', '-z')
+    .split('\0')
+    .filter(Boolean)
+    .every((file) => lstatSync(resolve(cwd, file)).mtimeMs < time);
 }
 
 /** Per worktree, inside the git directory, so it never shows up as a change. */
@@ -105,7 +125,9 @@ function runSuite(cwd) {
 }
 
 function readInput() {
-  return process.stdin.isTTY ? '' : readFileSync(0, 'utf8');
+  // `process.stdin.isTTY` would open fd 0 as non-blocking, and a read before
+  // git has written its lines would then fail.
+  return isatty(0) ? '' : readFileSync(0, 'utf8');
 }
 
 export function main(
@@ -117,8 +139,13 @@ export function main(
     ? attempt(() => readPushedTrees(input(), cwd))
     : [];
   const stamp = attempt(() => readFileSync(stampPath(cwd), 'utf8'));
+  const id = runId(before);
 
-  if (before && pushedTrees && canSkip({ stamp, state: before, pushedTrees })) {
+  if (
+    id &&
+    stamp === id &&
+    pushedTrees?.every((tree) => tree === before.tree)
+  ) {
     console.log(
       `test-once: the full jsdom suite already passed on tree ${before.tree.slice(0, 8)}; skipping it.`,
     );
@@ -126,22 +153,27 @@ export function main(
     return 0;
   }
 
+  const started = Date.now();
   const status = run(cwd);
-  // An edit or an install during the run leaves a result for a state no one has.
-  const id = status === 0 ? runId(attempt(() => readState(cwd))) : null;
 
-  if (id && id === runId(before)) {
+  // An edit, even a reverted one, or an install during the run leaves a
+  // result for a state no one has.
+  if (
+    status === 0 &&
+    id &&
+    runId(attempt(() => readState(cwd))) === id &&
+    attempt(() => untouchedSince(cwd, started))
+  ) {
     attempt(() => writeFileSync(stampPath(cwd), id));
   }
 
   return status;
 }
 
-// Node resolves symlinks in import.meta.url, so compare real paths: a mismatch
-// would exit 0 without running anything.
+// Node can keep a symlinked path in either one, and a mismatch would exit 0
+// without running anything, so compare real paths.
 if (
-  process.argv[1] &&
-  fileURLToPath(import.meta.url) ===
-    attempt(() => realpathSync(process.argv[1]))
+  attempt(() => realpathSync(process.argv[1])) ===
+  realpathSync(fileURLToPath(import.meta.url))
 )
   process.exit(main(process.argv.slice(2)));
