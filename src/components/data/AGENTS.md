@@ -61,6 +61,10 @@ So `TableHeaderItem` sits inside the header cell: the `<th>` owns the interactio
 
 Keep the virtualizer's `getItemKey` callback stable until rows or their key resolver change: TanStack invalidates the full position cache on callback identity changes. Default cell text belongs in `TableCellContent` so release compilation can retain unchanged text/tooltip trees as the row window moves; calling the renderer as a plain helper recreates them on every scroll. The table owns attribute/font observation and overflow refresh on non-scrolling commits, since a fixed-size label can overflow differently without a ResizeObserver delivery. Scrolling retains cell trees; its settled commit refreshes the mounted window. Changing the height estimate explicitly resets virtual measurements and remeasures mounted rows.
 
+## Body column windowing
+
+Keep headers and the complete colgroup/layout mounted: native Tab, menu anchors, grouped spans, resizers and React Aria's reorder delegate require their full DOM. Window only safe default text body cells, with hidden colspan gaps covering the omitted logical columns. Retain pins, structural/row-header/tree columns and height/state-bearing custom cells. Arbitrary cellProps spans or body/descendant typography overrides require full rendering. Do not filter the model used by selection/copy or renumber aria-colindex. Scrolling reads logical inline offset (absolute scrollLeft in modern RTL), and publishes state only when the column band changes.
+
 ## Column reordering excludes pinned columns
 
 Three independent reasons, all pointing the same way. A pinned `<th>` is `position: sticky`, so under horizontal scroll its rect sits on top of columns it is nowhere near, and React Aria's drop-target search is a binary search over those rects. `use-table-columns` hoists pinned columns to the edges regardless of source order, so a cross-boundary drop would be undone the moment it landed. And `pin` is already the ordering authority there.

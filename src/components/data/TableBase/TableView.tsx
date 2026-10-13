@@ -51,6 +51,7 @@ import { selectionRowKey } from './types';
 import { toTsv } from './use-cell-selection';
 import { useColumnMenu } from './use-column-menu';
 import { getDraggableColumnKeys, isColumnDraggable } from './use-column-order';
+import { canWindowColumns, useColumnWindow } from './use-column-window';
 import { useRowMoveAnimation } from './use-row-move-animation';
 import { useScrollability } from './use-scrollability';
 import { getColumnText, getColumnValue } from './use-table-columns';
@@ -636,6 +637,20 @@ export function TableView<T = any>(props: TableViewProps<T>) {
 
   const [scrollerEl, setScrollerEl] = useState<HTMLDivElement | null>(null);
   const scrollerRef = useRef<HTMLDivElement | null>(null);
+  // DataTable's default t4 preset has the same single-line cell layout.
+  // Consumer typography overrides need the complete intrinsic body layout.
+  const bodyColumns = useColumnWindow(
+    layout,
+    scrollerEl,
+    isVirtualized !== false &&
+      !isAutoHeight &&
+      !bodyStyles &&
+      !rowStyles &&
+      !cellStyles &&
+      (!contentPreset || contentPreset === 't4') &&
+      canWindowColumns(columns, styles),
+    tree?.columnKey,
+  );
   // `bodyRef` is optional — only the drag-and-drop path supplies one — but the
   // move animation needs the `<tbody>` either way, so it keeps its own and both
   // are filled from one callback.
@@ -946,6 +961,42 @@ export function TableView<T = any>(props: TableViewProps<T>) {
     );
   }
 
+  function renderColumnSpacer(
+    key: string,
+    span: number,
+    pinnedEdge?: 'top' | 'bottom',
+    isLastRow = false,
+  ) {
+    return (
+      <td
+        key={key}
+        data-element="ColumnSpacer"
+        data-pinned={pinnedEdge}
+        data-last-row={isLastRow ? '' : undefined}
+        colSpan={span}
+        aria-hidden="true"
+        role="presentation"
+      />
+    );
+  }
+
+  function renderSkeletonCell(column: CubeResolvedColumn<T>) {
+    return (
+      <td
+        key={column.key}
+        data-element="Cell"
+        data-pin={column.pin}
+        data-pin-edge={column.isPinEdge ? '' : undefined}
+        data-align={column.align}
+        role="gridcell"
+        aria-colindex={column.ariaColIndex}
+        style={pinStyle(column)}
+      >
+        <Placeholder />
+      </td>
+    );
+  }
+
   function renderSkeletonRows(
     count = skeletonRowCount,
     keyPrefix = 'skeleton',
@@ -959,20 +1010,11 @@ export function TableView<T = any>(props: TableViewProps<T>) {
         aria-rowindex={bodyRowIndex(rowIndex)}
         aria-busy="true"
       >
-        {columns.map((column) => (
-          <td
-            key={column.key}
-            data-element="Cell"
-            data-pin={column.pin}
-            data-pin-edge={column.isPinEdge ? '' : undefined}
-            data-align={column.align}
-            role="gridcell"
-            aria-colindex={column.ariaColIndex}
-            style={pinStyle(column)}
-          >
-            <Placeholder />
-          </td>
-        ))}
+        {bodyColumns.map((segment) =>
+          segment.column
+            ? renderSkeletonCell(segment.column)
+            : renderColumnSpacer(segment.key, segment.span),
+        )}
       </tr>
     ));
   }
@@ -1488,8 +1530,10 @@ export function TableView<T = any>(props: TableViewProps<T>) {
         role="row"
         aria-rowindex={pinnedRowIndex(index, edge)}
       >
-        {columns.map((column) =>
-          renderCell(column, row, index, rowKey, false, edge),
+        {bodyColumns.map((segment) =>
+          segment.column
+            ? renderCell(segment.column, row, index, rowKey, false, edge)
+            : renderColumnSpacer(segment.key, segment.span, edge),
         )}
       </tr>
     );
@@ -1503,16 +1547,23 @@ export function TableView<T = any>(props: TableViewProps<T>) {
   ) {
     const rowKey = bodyRowKey(row, rowIndex);
 
-    return columns.map((column) =>
-      renderCell(
-        column,
-        row,
-        rowIndex,
-        rowKey,
-        rowIndex === rows.length - 1,
-        undefined,
-        treeItemAria,
-      ),
+    return bodyColumns.map((segment) =>
+      segment.column
+        ? renderCell(
+            segment.column,
+            row,
+            rowIndex,
+            rowKey,
+            rowIndex === rows.length - 1,
+            undefined,
+            treeItemAria,
+          )
+        : renderColumnSpacer(
+            segment.key,
+            segment.span,
+            undefined,
+            rowIndex === rows.length - 1,
+          ),
     );
   }
 

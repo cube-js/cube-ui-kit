@@ -562,7 +562,15 @@ Overscroll is locked per axis, and only where the table can actually scroll, so 
 
 A native table cannot absolutely position a `<tr>` without breaking the table box, so the offset comes from leading and trailing spacer rows. Those are `aria-hidden`, and `aria-rowcount` / `aria-rowindex` continue to describe the whole dataset rather than the mounted window.
 
-Virtualization is skipped for the empty, error and loading states, and turns off entirely with `isVirtualized={false}`.
+Virtualization is skipped for the empty and error states, and turns off entirely with `isVirtualized={false}`. Loading placeholders use the same body-column window as records.
+
+Wide bounded tables also window default text cells horizontally, with a small overscan band. Headers and the complete column layout remain mounted, so header Tab order, menus, resizing, sticky columns and logical ARIA indices remain available. Offscreen body runs become hidden colspan spacers; scrolling mounts their text cells when they approach the viewport.
+
+Pinned and structural columns, row headers, the tree column, wrapping columns, custom renderers and per-column cell styles remain mounted. This preserves row naming, controls, drafts and measured row heights. Arbitrary `cellProps`, custom body/row/cell styling or text/descendant overrides supplied through `styles` keep the complete body layout. Auto-height and explicitly disabled virtualization also render all columns.
+
+```jsx
+<ItemTable height="420px" width="900px" paginationMode="off" data={rows} columns={wideTextColumns} />
+```
 
 ### Wrapping Cells
 

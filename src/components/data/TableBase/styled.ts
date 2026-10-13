@@ -858,6 +858,19 @@ export const TableElement = tasty({
       },
     },
 
+    ColumnSpacer: {
+      $: '> Scroller > Table > Body > Row >',
+      height: '($row-height + 1bw)',
+      padding: 0,
+      fill: '#row-base #row-overlay',
+      opacity: '$dim',
+      border: {
+        '': '1bw #border bottom',
+        '(shape=card | has-footer) & @own(last-row)': 0,
+        '@own(pinned=bottom)': '1bw #border top',
+      },
+    },
+
     /**
      * The single full-span cell that carries the empty / no-results / error
      * content.

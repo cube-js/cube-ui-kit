@@ -42,7 +42,8 @@ function bodyRowRules(css: string): Rule[] {
   return parseRules(css).filter(
     (rule) =>
       rule.selector.includes('[data-element="Body"] > [data-element="Row"]') &&
-      !rule.selector.includes('[data-element="Cell"]'),
+      !rule.selector.includes('[data-element="Cell"]') &&
+      !rule.selector.includes('[data-element="ColumnSpacer"]'),
   );
 }
 
