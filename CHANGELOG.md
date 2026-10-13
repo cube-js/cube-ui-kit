@@ -1,5 +1,15 @@
 # @cube-dev/ui-kit
 
+## 0.193.0
+
+### Minor Changes
+
+- [#1499](https://github.com/cube-js/cube-ui-kit/pull/1499) [`d25060f1`](https://github.com/cube-js/cube-ui-kit/commit/d25060f1425dbacd3b17bdb2f0b6a829a295bfb7) Thanks [@tenphi](https://github.com/tenphi)! - Remove `Board` and its grid engine from UI Kit; Cube Cloud now owns the dashboard board. Removed exports: `Board` (with `Board.Widget`, `Board.Provider` and `Board.Responsive`), `BoardProvider`, `BoardResponsive`, `BoardWidget`, `BOARD_SELECTION_CANCEL`, `placeInFreeSlot`, `distributeEvenly`, the compactors (`verticalCompactor`, `horizontalCompactor`, `noCompactor`, `getCompactor`), the layout constraints (`gridBounds`, `minMaxSize`, `containerBounds`, `boundedX`, `boundedY`, `aspectRatio`, `snapToGrid`, `minSize`, `maxSize`), every `Board*` and `CubeBoard*` type except `CubeBoardDragActiveProviderProps`, and the `board.*` translation strings. `BoardDragActiveProvider` stays: wrap a board's subtree in it to make the `Tabs` inside spring-load and keep their panels mounted during a widget drag.
+
+### Patch Changes
+
+- [#1501](https://github.com/cube-js/cube-ui-kit/pull/1501) [`703325bd`](https://github.com/cube-js/cube-ui-kit/commit/703325bd8d6278639571926249261f0ab21a6ba6) Thanks [@tenphi](https://github.com/tenphi)! - Preserve a resized panel's desktop width when iframe resizing switches it to dialog mode.
+
 ## 0.192.1
 
 ### Patch Changes
