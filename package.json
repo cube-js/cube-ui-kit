@@ -46,6 +46,7 @@
     "test:package": "vitest run --config vitest.package.config.ts",
     "watch": "tsdown --watch",
     "test": "vitest run",
+    "test:once": "node scripts/test-once.mjs",
     "test:form-store": "vitest run --config vitest.form-store.config.ts",
     "test:form-react": "vitest run --config vitest.form-react.config.ts",
     "test:browser": "vitest run --config vitest.browser.config.ts",

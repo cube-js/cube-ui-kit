@@ -132,6 +132,7 @@ Each component lives in `src/components/{category}/{ComponentName}/` and ships `
 - `pnpm storybook` — start Storybook on port 6060
 - `pnpm build` — build library (`tsdown`, unbundled ESM)
 - `pnpm test` — run all tests (Vitest); add `-- ComponentName` to filter, `-u` to update snapshots
+- `pnpm test:once` — the full `pnpm test` run, skipped when this exact clean tree has already passed it with the same Node version and install. The pre-push hook uses it, so a run here covers the next push of the same tree. See [`scripts/test-once.mjs`](scripts/test-once.mjs)
 - `pnpm test:browser` — run the `*.browser.test.tsx` specs in real Chromium (layout, pointer, observers)
 - `pnpm probe` — print the HTML, CSS or tokens a snippet actually produces, with the real config loaded. `pnpm probe:browser` for computed values, geometry and screenshots. See [Inspecting Rendered HTML & CSS](#inspecting-rendered-html--css--pnpm-probe)
 - `pnpm fix` — lint + format (Oxlint + Prettier)
@@ -153,7 +154,7 @@ Each component lives in `src/components/{category}/{ComponentName}/` and ships `
 - Tasty's experimental type-aware JSX analysis is enabled only in this repo's `.oxlintrc.json` through `settings.tasty.typeAwareJSX`, using `tsconfig.json` and the installed TypeScript. It distinguishes semantic props such as drop ordering and Item content from style props. Unresolved or erased prop types keep the name heuristic and may still need individual ignores. Cold lint runs load the TypeScript project; the setting is not part of the published Tasty config or plugin presets, so consumers such as Cloud remain opt-in.
 - Node 24, pinned in `.nvmrc` and used by every CI job including publish — OIDC trusted publishing requires npm ≥ 11.5.1, which Node 24 ships and Node 22 (npm 10.x) does not. pnpm `^10`, pinned to `pnpm@10.34.5` via `packageManager`; no Corepack involved. Note the published package still declares `engines.node >=22.0.0` — that is the floor for consumers, not for building this repo.
 - After `pnpm install`, run `pnpm rebuild esbuild` (postinstall is blocked in `pnpm-workspace.yaml`). Do this at the start of every task — see [Before You Start](#before-you-start).
-- Husky hooks: `pre-commit` runs `pnpm lint-staged`; `pre-push` runs `pnpm test`. Skip only intentionally (`--no-verify` or `HUSKY=0`).
+- Husky hooks: `pre-commit` runs `pnpm lint-staged`; `pre-push` runs the full `pnpm test` through `scripts/test-once.mjs`, which skips it only for a tree that already passed it (`pnpm test:once`). The record sits in the git directory, per worktree, and is reused only when the working tree is clean, every pushed commit has that tree, and Node and the install are unchanged; it never selects tests by changed files. Skip only intentionally (`--no-verify` or `HUSKY=0`).
 - No external services or databases required for local development.
 
 ## Tasty Documentation
