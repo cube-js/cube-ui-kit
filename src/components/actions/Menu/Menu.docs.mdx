@@ -174,7 +174,7 @@ For detailed information about all available item properties, see [Item document
 
 - **`textValue`** `string` — Text for typeahead search
 - **`wrapper`** `(item: ReactElement) => ReactElement` — Function to wrap the item
-- **`onAction`** `() => void` — Callback fired when item is activated
+- **`onAction`** `() => void` — Callback fired when this item is activated, before the Menu's `onAction(key)`
 - **`to`** `string \| Path` — Application destination, resolved by Root's navigation adapter; takes precedence over `href`
 - **`navigationOptions`** `NavigateOptions` — Options forwarded during client navigation, such as `replace`, `state`, `relative`, and `preventScrollReset`
 - **`href`** `string` — Link destination when `to` is omitted
@@ -201,6 +201,17 @@ Navigation items render native anchors. An ordinary click or Enter/Space activat
 ```
 
 As with other UI Kit actions, a `!` prefix opens `to` in a new tab and an `@` prefix forces native navigation. Use `onAction` for commands, including history actions. Link `onAction` callbacks still run during activation; navigation itself belongs to `to` or `href`, so the callback should not navigate again. Submenu parents open their submenu and ignore destinations; links inside the submenu behave normally.
+
+An item's `onAction()` and the Menu's `onAction(key)` compose: when both are supplied, the item callback runs first and the Menu callback runs second, once each. Mouse activation, Enter, Space and the item's hotkey use the same callbacks. Disabled items invoke neither callback. A submenu parent only opens its submenu; its command callbacks do not run. An inline `Menu.Item.Action` handles its own activation independently and does not invoke either callback for the containing row.
+
+```tsx
+<Menu onAction={(key) => recordMenuActivation(key)}>
+  <Menu.Item key="create" onAction={createWorkbook}>Create workbook</Menu.Item>
+  <Menu.Item key="browse" to="/workbooks">Browse all</Menu.Item>
+</Menu>
+```
+
+Use the item callback for a command that belongs to that item, or handle commands centrally using the Menu callback and item keys. Supplying both is useful for additional observation, such as recording an activation; avoid executing the same command in both callbacks.
 
 The label and description provide native anchors; use these text cells for browser link commands. The complete row retains ordinary click and keyboard activation, while Item's original list element owns layout, focus and styling. Inline action controls remain independent. This preserves sizing, structural style conditions, visibility and focus styles. Command text has no link destination.
 

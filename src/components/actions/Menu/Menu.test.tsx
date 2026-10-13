@@ -719,6 +719,123 @@ describe('<Menu />', () => {
     expect(onAction).toHaveBeenCalled();
   });
 
+  describe('item and menu action callbacks', () => {
+    const destinations = [
+      ['command', {}],
+      ['to', { to: '/action-destination' }],
+      ['href', { href: '/action-destination' }],
+    ];
+    const callbackCombinations = ['item', 'menu', 'both'];
+
+    it.each(
+      destinations.flatMap(([destination, destinationProps]) =>
+        callbackCombinations.map((callbacks) => ({
+          destination,
+          destinationProps,
+          callbacks,
+        })),
+      ),
+    )(
+      'uses the same activation path for $callbacks callbacks on a $destination row',
+      async ({ destination, destinationProps, callbacks }) => {
+        const calls = [];
+        const itemAction = vi.fn((...args) => calls.push(['item', ...args]));
+        const menuAction = vi.fn((...args) => calls.push(['menu', ...args]));
+        const navigate = vi.fn();
+        const onClose = vi.fn();
+        render(
+          <Root navigation={{ useHref: String, useNavigate: () => navigate }}>
+            <Menu
+              aria-label="Actions"
+              onAction={callbacks === 'item' ? undefined : menuAction}
+              onClose={onClose}
+            >
+              <Menu.Item
+                key="destination"
+                {...destinationProps}
+                hotkeys="a"
+                onAction={callbacks === 'menu' ? undefined : itemAction}
+              >
+                Destination
+              </Menu.Item>
+            </Menu>
+          </Root>,
+        );
+        const row = screen.getByRole('menuitem', { name: 'Destination' });
+        const expectedCalls = [];
+        if (callbacks !== 'menu') expectedCalls.push(['item']);
+        if (callbacks !== 'item') expectedCalls.push(['menu', 'destination']);
+
+        for (const key of [undefined, '{Enter}', ' ', 'a']) {
+          if (key === undefined) await userEvent.click(row);
+          else {
+            await act(() => row.focus());
+            await userEvent.keyboard(key);
+          }
+          expect(calls).toEqual(expectedCalls);
+          expect(onClose).toHaveBeenCalledTimes(1);
+          expect(navigate).toHaveBeenCalledTimes(
+            destination === 'command' ? 0 : 1,
+          );
+          if (destination !== 'command')
+            expect(navigate).toHaveBeenCalledWith(
+              '/action-destination',
+              undefined,
+            );
+          calls.length = 0;
+          itemAction.mockClear();
+          menuAction.mockClear();
+          onClose.mockClear();
+          navigate.mockClear();
+        }
+      },
+    );
+
+    it.each(
+      [false, true].flatMap((inlineAction) =>
+        ['mouse', 'hotkey'].map((activation) => ({ inlineAction, activation })),
+      ),
+    )(
+      'opens a submenu without invoking commands (inline=$inlineAction, activation=$activation)',
+      async ({ inlineAction, activation }) => {
+        const itemAction = vi.fn();
+        const menuAction = vi.fn();
+        renderWithRoot(
+          <Menu aria-label="Actions" onAction={menuAction}>
+            <Menu.SubMenuTrigger>
+              <Menu.Item
+                key="share"
+                hotkeys="a"
+                onAction={inlineAction ? itemAction : undefined}
+              >
+                Share
+              </Menu.Item>
+              <Menu aria-label="Share">
+                <Menu.Item key="copy-link">Copy link</Menu.Item>
+              </Menu>
+            </Menu.SubMenuTrigger>
+          </Menu>,
+        );
+        const row = screen.getByRole('menuitem', { name: 'Share' });
+        if (activation === 'mouse')
+          await userEvent.click(row, { skipHover: true });
+        else {
+          await act(() => row.focus());
+          await userEvent.keyboard('a');
+        }
+        await waitFor(
+          () =>
+            expect(
+              screen.getByRole('menuitem', { name: 'Copy link' }),
+            ).toBeInTheDocument(),
+          { timeout: 2000 },
+        );
+        expect(itemAction).not.toHaveBeenCalled();
+        expect(menuAction).not.toHaveBeenCalled();
+      },
+    );
+  });
+
   // `MenuItem` used to hand React Aria's key handler to `mergeProps` a second
   // time, and `mergeProps` chains handlers rather than replacing them. Enter
   // and Space each click the item, so every keyboard activation ran the

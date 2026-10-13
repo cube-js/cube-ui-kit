@@ -199,12 +199,21 @@ function MenuItemContent<T>(
       isSelected: state.selectionManager.isSelected(key),
       isDisabled: isDisabledKey,
       'aria-label': item['aria-label'],
+      'aria-haspopup': submenuContext ? 'menu' : undefined,
+      'aria-expanded': submenuContext
+        ? submenuContext.isOpen
+          ? 'true'
+          : 'false'
+        : undefined,
       key,
       onClose: submenuContext ? undefined : onClose, // Don't close menu for submenu triggers
       closeOnSelect: submenuContext ? false : closeOnSelect, // Don't close on submenu trigger selection
       isVirtualized,
-      onAction: submenuContext?.onAction || onAction,
-      onClick: props.onClick ?? itemProps[MENU_LINK_CLICK],
+      onAction,
+      onClick: (event) => {
+        (props.onClick ?? itemProps[MENU_LINK_CLICK])?.(event);
+        submenuContext?.onAction?.();
+      },
     },
     state,
     elementRef,
