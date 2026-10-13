@@ -17,7 +17,7 @@ For styling engine internals see the [Tasty documentation](https://github.com/te
 
 ## Navigation
 
-Pass your router's `useHref` and `useNavigate` hooks through `Root`'s `navigation` adapter. `Menu.Item`, like `Button`, `ItemButton`, and `Link`, accepts `to` destinations; Menu items with destinations render native anchors and keep modified-click, middle-click, and link context-menu behavior. Use `navigationOptions` for router options and `target`, `rel`, or `download` for native link behavior. Nested providers and overlays inherit the adapter unless they explicitly supply another one.
+Pass your router's `useHref` and `useNavigate` hooks through `Root`'s `navigation` adapter. `Menu.Item`, like `Button`, `ItemButton`, and `Link`, accepts `to` destinations. Its label and description expose native anchors for modified-click, middle-click and link context-menu commands; the complete row supports ordinary click and keyboard activation. Use `navigationOptions` for router options and `target`, `rel`, or `download` for native link behavior. Nested providers and overlays inherit the adapter unless they explicitly supply another one.
 
 ## React Compiler
 

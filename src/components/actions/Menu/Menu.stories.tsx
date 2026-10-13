@@ -2355,14 +2355,24 @@ NavigationLinks.parameters = NO_SNAPSHOT;
 NavigationLinks.play = async ({ canvasElement }) => {
   const canvas = within(canvasElement);
   await waitFor(() =>
-    expect(
-      canvas.getByRole('menuitem', { name: 'Recent workbook' }),
-    ).toHaveAttribute('href', '/workbooks/42?chatId=abc'),
+    expect(canvas.getByText('Recent workbook').closest('a')).toHaveAttribute(
+      'href',
+      '/workbooks/42?chatId=abc',
+    ),
   );
   await waitFor(() =>
-    expect(canvas.getByText('Saved workbook')).toHaveAttribute(
+    expect(canvas.getByText('Saved workbook').closest('a')).toHaveAttribute(
       'href',
       '/workbooks/saved',
     ),
+  );
+  const recent = canvas.getByRole('menuitem', { name: 'Recent workbook' });
+  expect(recent.tagName).toBe('LI');
+  expect(recent).not.toHaveAttribute('href');
+  expect(
+    canvas.getByText('Unavailable workbook').closest('a'),
+  ).not.toHaveAttribute('href');
+  expect(canvas.getByText('Saved workbook').closest('a')).not.toContainElement(
+    canvas.getByRole('button', { name: 'Workbook actions' }),
   );
 };

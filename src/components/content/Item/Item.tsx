@@ -1147,6 +1147,34 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
         {finalPrefix && <div data-element="Prefix">{finalPrefix}</div>}
         {children || labelProps
           ? (() => {
+              const LabelTag =
+                type === 'header' || type === 'card'
+                  ? (`h${level}` as const)
+                  : 'div';
+              if (nativeLinkProps && LabelTag !== 'div') {
+                // Preserve the heading's semantics, typography and label ref.
+                return (
+                  <LabelTag
+                    data-element="Label"
+                    {...finalLabelProps}
+                    ref={(element: HTMLElement | null) => {
+                      labelRef(element);
+                    }}
+                  >
+                    <NativeItemLink
+                      {...nativeLinkProps}
+                      aria-hidden={undefined}
+                      display="inline"
+                      data-menu-native-link=""
+                      ref={(element: HTMLAnchorElement | null) => {
+                        onNativeLinkElement?.(element);
+                      }}
+                    >
+                      {processedChildren}
+                    </NativeItemLink>
+                  </LabelTag>
+                );
+              }
               if (nativeLinkProps) {
                 return (
                   <NativeItemLink
@@ -1163,10 +1191,6 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
                   </NativeItemLink>
                 );
               }
-              const LabelTag =
-                type === 'header' || type === 'card'
-                  ? (`h${level}` as const)
-                  : 'div';
               return (
                 <LabelTag
                   data-element="Label"

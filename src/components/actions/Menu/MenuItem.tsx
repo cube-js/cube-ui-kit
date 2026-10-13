@@ -1,7 +1,11 @@
 import { ClearPressResponder } from '@react-aria/interactions';
-import { openLink, shouldClientNavigate } from '@react-aria/utils';
+import {
+  openLink,
+  shouldClientNavigate,
+  useGlobalListeners,
+} from '@react-aria/utils';
 import { FocusableElement, Key, Node } from '@react-types/shared';
-import { mergeStyles, Styles } from '@tenphi/tasty';
+import { Styles } from '@tenphi/tasty';
 import {
   AnchorHTMLAttributes,
   KeyboardEvent,
@@ -10,7 +14,7 @@ import {
   useContext,
   useRef,
 } from 'react';
-import { FocusRing, RouterProvider, useMenuItem } from 'react-aria';
+import { FocusRing, useMenuItem } from 'react-aria';
 import { TreeState } from 'react-stately';
 
 import { RightIcon } from '../../../icons/RightIcon';
@@ -45,9 +49,7 @@ export interface MenuItemProps<T> {
 /** @private */
 export function MenuItem<T>(props: MenuItemProps<T>) {
   const submenuContext = useContext(SubmenuTriggerContext);
-  const hasActions =
-    !!props.item.props.actions && props.item.props.actions !== true;
-  return (props.item.props.href != null || hasActions) && !submenuContext ? (
+  return !submenuContext ? (
     <MenuLinkItem {...props} />
   ) : (
     <MenuItemContent {...props} />
@@ -75,7 +77,6 @@ function MenuLinkItem<T>(props: MenuItemProps<T>) {
         ? String(cleanTo)
         : resolvedHref;
   const itemProps = props.item.props;
-  const hasActions = !!itemProps.actions && itemProps.actions !== true;
   const onNativeLinkElement = (element: HTMLAnchorElement | null) => {
     linkRef.current = element;
   };
@@ -93,105 +94,53 @@ function MenuLinkItem<T>(props: MenuItemProps<T>) {
   };
   const onClick = (event: MouseEvent<FocusableElement>) => {
     const target = event.target as Element;
-    activatedLink.current = hasActions
-      ? target.closest?.<HTMLAnchorElement>('a[data-menu-native-link]') ??
-        linkRef.current
-      : (event.currentTarget as HTMLAnchorElement);
+    activatedLink.current =
+      target.closest?.<HTMLAnchorElement>('a[data-menu-native-link]') ??
+      linkRef.current;
     itemProps[MENU_LINK_CLICK]?.(event);
   };
-  const openNative = (event?: MouseEvent<FocusableElement>) => {
+  const openNative = (event: MouseEvent<FocusableElement>) => {
     const anchor = activatedLink.current;
     if (!anchor) return;
-    const nativeLink = anchor.cloneNode(false) as HTMLAnchorElement;
-    if (event) openLink(nativeLink, event, false);
-    else nativeLink.click();
+    openLink(anchor.cloneNode(false) as HTMLAnchorElement, event, false);
   };
-
-  if (hasActions) {
-    return (
-      <MenuItemContent
-        {...props}
-        nativeLinkHref={linkHref}
-        onNativeLinkElement={onNativeLinkElement}
-        onNativeElement={onNativeElement}
-        onClick={onClick}
-        onNavigate={(event) => {
-          const anchor = activatedLink.current;
-          if (
-            !anchor?.hasAttribute('href') ||
-            event.defaultPrevented ||
-            event.button !== 0
-          )
-            return;
-          if (
-            shouldClientNavigate(anchor, event) &&
-            !isDefault &&
-            !isCurrentDocument &&
-            !nativeRoute &&
-            !isExternal
-          ) {
-            event.preventDefault();
-            if (cleanTo !== undefined) navigate(cleanTo, navigationOptions);
-          } else if (
-            !(event.target instanceof Element) ||
-            !anchor.contains(event.target)
-          ) {
-            openNative(event);
-          }
-        }}
-      />
-    );
-  }
-
   return (
-    <RouterProvider
-      useHref={() => linkHref}
-      navigate={() => {
-        if (isDefault || isCurrentDocument || nativeRoute || isExternal)
-          openNative();
-        else if (cleanTo !== undefined) navigate(cleanTo, navigationOptions);
+    <MenuItemContent
+      {...props}
+      nativeLinkHref={linkHref}
+      onNativeLinkElement={onNativeLinkElement}
+      onNativeElement={onNativeElement}
+      onClick={onClick}
+      onNavigate={(event) => {
+        const anchor = activatedLink.current;
+        if (
+          !anchor?.hasAttribute('href') ||
+          event.defaultPrevented ||
+          event.button !== 0
+        )
+          return;
+        if (
+          shouldClientNavigate(anchor, event) &&
+          !isDefault &&
+          !isCurrentDocument &&
+          !nativeRoute &&
+          !isExternal
+        ) {
+          event.preventDefault();
+          if (cleanTo !== undefined) navigate(cleanTo, navigationOptions);
+        } else if (
+          !(event.target instanceof Element) ||
+          !anchor.contains(event.target)
+        ) {
+          openNative(event);
+        }
       }}
-    >
-      <li role="none" style={{ display: 'contents' }}>
-        <MenuItemContent
-          {...props}
-          nativeRoot
-          onClick={onClick}
-          onNativeElement={onNativeElement}
-        />
-      </li>
-    </RouterProvider>
+    />
   );
-}
-
-function normalizeNativeReset(
-  value: Styles['color'],
-  replacement?: 'inherit',
-): Styles['color'];
-function normalizeNativeReset(
-  value: Styles['textDecoration'],
-  replacement: 'none',
-): Styles['textDecoration'];
-function normalizeNativeReset(
-  value: Styles['color'] | Styles['textDecoration'],
-  replacement = 'inherit',
-): Styles['color'] | Styles['textDecoration'] {
-  if (value === false || value === '') return replacement;
-  if (!value || typeof value !== 'object' || Array.isArray(value)) return value;
-  const entries = Object.entries(value);
-  return entries.some(([, value]) => value === false || value === '')
-    ? Object.fromEntries(
-        entries.map(([state, value]) => [
-          state,
-          value === false || value === '' ? replacement : value,
-        ]),
-      )
-    : value;
 }
 
 function MenuItemContent<T>(
   props: MenuItemProps<T> & {
-    nativeRoot?: boolean;
     nativeLinkHref?: string;
     onNativeLinkElement?: (element: HTMLAnchorElement | null) => void;
     onNativeElement?: (element: HTMLElement | null) => void;
@@ -219,7 +168,6 @@ function MenuItemContent<T>(
     download: _download,
     ping: _ping,
     referrerPolicy: _referrerPolicy,
-    styles: ownStyles,
     ...filteredItemProps
   } = filterCollectionItemProps(itemProps);
 
@@ -273,26 +221,49 @@ function MenuItemContent<T>(
     onKeyDown: itemOnKeyDown,
     onPointerDown: itemOnPointerDown,
     onPointerUp: itemOnPointerUp,
-    href: renderedHref,
-    target: renderedTarget,
-    rel: renderedRel,
-    download: renderedDownload,
-    ping: renderedPing,
-    referrerPolicy: renderedPolicy,
+    href: _renderedHref,
+    target: _renderedTarget,
+    rel: _renderedRel,
+    download: _renderedDownload,
+    ping: _renderedPing,
+    referrerPolicy: _renderedPolicy,
     ...itemOwnProps
   } = menuItemProps as typeof menuItemProps &
     AnchorHTMLAttributes<HTMLAnchorElement>;
   const isLink = itemProps.href != null && !submenuContext;
+  const skippedPointerUp = useRef<globalThis.PointerEvent | null>(null);
+  const { addGlobalListener, removeAllGlobalListeners } = useGlobalListeners();
   const onPointerDown = (event: PointerEvent<FocusableElement>) => {
+    skippedPointerUp.current = null;
+    removeAllGlobalListeners();
     // A modified native gesture must not start Aria's delayed-click fallback.
     if (
       isLink &&
       (event.ctrlKey || event.metaKey || event.altKey || event.shiftKey)
-    )
+    ) {
+      const pointerId = event.pointerId;
+      const ownerDocument = event.currentTarget.ownerDocument;
+      const recordSkippedUp = (up: globalThis.PointerEvent) => {
+        if (up.pointerId !== pointerId) return;
+        skippedPointerUp.current = up;
+        removeAllGlobalListeners();
+      };
+      const clearSkippedUp = (cancel: globalThis.PointerEvent) => {
+        if (cancel.pointerId !== pointerId) return;
+        skippedPointerUp.current = null;
+        removeAllGlobalListeners();
+      };
+      addGlobalListener(ownerDocument, 'pointerup', recordSkippedUp, true);
+      addGlobalListener(ownerDocument, 'pointercancel', clearSkippedUp, true);
       return;
+    }
     itemOnPointerDown?.(event);
   };
   const onPointerUp = (event: PointerEvent<FocusableElement>) => {
+    if (skippedPointerUp.current === event.nativeEvent) {
+      skippedPointerUp.current = null;
+      return;
+    }
     if (
       isLink &&
       (event.ctrlKey || event.metaKey || event.altKey || event.shiftKey)
@@ -307,17 +278,7 @@ function MenuItemContent<T>(
         e.stopPropagation();
         return;
       }
-      if (props.nativeRoot && e.key === ' ') {
-        // Aria opens a focused anchor again on keyup; use its click path once.
-        e.preventDefault();
-        e.stopPropagation();
-        openLink(e.currentTarget as HTMLAnchorElement, e, false);
-        return;
-      }
-      if (
-        !props.nativeRoot &&
-        (e.ctrlKey || e.metaKey || e.altKey || e.shiftKey)
-      ) {
+      if (e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) {
         itemOnKeyDown?.(e);
         e.preventDefault();
         e.stopPropagation();
@@ -352,40 +313,17 @@ function MenuItemContent<T>(
     menuitem: true,
   };
 
-  const mergedStyles = mergeStyles(ownStyles, styles);
-  const nativeColor = props.nativeRoot
-    ? normalizeNativeReset(mergedStyles?.color)
-    : mergedStyles?.color;
-  const nativeDecoration = props.nativeRoot
-    ? normalizeNativeReset(mergedStyles?.textDecoration, 'none')
-    : mergedStyles?.textDecoration;
-  const contentStyles =
-    nativeColor !== mergedStyles?.color ||
-    nativeDecoration !== mergedStyles?.textDecoration
-      ? {
-          ...mergedStyles,
-          color: nativeColor,
-          textDecoration: nativeDecoration,
-        }
-      : mergedStyles;
-  const directColor = props.nativeRoot
-    ? normalizeNativeReset(filteredItemProps.color)
-    : filteredItemProps.color;
-  const contentProps =
-    directColor !== filteredItemProps.color
-      ? { ...filteredItemProps, color: directColor }
-      : filteredItemProps;
   const nativeLinkProps: AnchorHTMLAttributes<HTMLAnchorElement> | undefined =
-    props.onNativeLinkElement && isLink
+    props.onNativeLinkElement
       ? {
-          href: isDisabled ? undefined : props.nativeLinkHref,
+          href: isLink && !isDisabled ? props.nativeLinkHref : undefined,
           target: itemProps.target,
           rel: itemProps.rel,
           download: itemProps.download,
           ping: itemProps.ping,
           referrerPolicy: itemProps.referrerPolicy,
           tabIndex: -1,
-          'aria-hidden': true,
+          'aria-hidden': isLink || undefined,
           role: 'none',
           onMouseDown: (event) => {
             if (!isDisabled && menuItemProps.tabIndex != null)
@@ -398,36 +336,35 @@ function MenuItemContent<T>(
   const content = (
     <FocusRing>
       <ItemWithNativeLinks
-        {...mergeProps(
-          { ...itemOwnProps, onKeyDown, onPointerDown, onPointerUp },
-          contentProps,
-          {
-            'data-popover-trigger': true,
-            qa: itemQa ? itemQa : `MenuItem-${key}`,
-            mods,
-            styles: contentStyles,
-            style: filteredItemProps.style,
-            'data-size': size,
-            'data-menu-native-link': props.nativeRoot ? '' : undefined,
-            as: props.nativeRoot ? 'a' : 'li',
-            href: props.nativeRoot && !isDisabled ? renderedHref : undefined,
-            target: props.nativeRoot ? renderedTarget : undefined,
-            rel: props.nativeRoot ? renderedRel : undefined,
-            download: props.nativeRoot ? renderedDownload : undefined,
-            ping: props.nativeRoot ? renderedPing : undefined,
-            referrerPolicy: props.nativeRoot ? renderedPolicy : undefined,
-            onClick: isDisabled ? undefined : props.onNavigate,
-            labelProps,
-            descriptionProps,
-            keyboardShortcutProps,
-            'aria-haspopup': submenuContext ? 'menu' : undefined,
-            'aria-expanded': submenuContext?.isOpen,
-            'data-has-submenu': submenuContext ? true : undefined,
-            // Chained after the item's own hover handlers.
-            onMouseEnter: submenuContext?.onMouseEnter,
-            onMouseLeave: submenuContext?.onMouseLeave,
+        {...mergeProps({ ...itemOwnProps, onKeyDown }, filteredItemProps, {
+          'data-popover-trigger': true,
+          qa: itemQa ? itemQa : `MenuItem-${key}`,
+          mods,
+          styles,
+          style: filteredItemProps.style,
+          'data-size': size,
+          as: 'li',
+          onClick: isDisabled ? undefined : props.onNavigate,
+          labelProps,
+          descriptionProps,
+          keyboardShortcutProps,
+          'aria-haspopup': submenuContext ? 'menu' : undefined,
+          'aria-expanded': submenuContext?.isOpen,
+          'data-has-submenu': submenuContext ? true : undefined,
+          // Chained after the item's own hover handlers.
+          onMouseEnter: submenuContext?.onMouseEnter,
+          onMouseLeave: submenuContext?.onMouseLeave,
+        })}
+        {...{
+          onPointerDown: (event: PointerEvent<FocusableElement>) => {
+            onPointerDown(event);
+            filteredItemProps.onPointerDown?.(event);
           },
-        )}
+          onPointerUp: (event: PointerEvent<FocusableElement>) => {
+            onPointerUp(event);
+            filteredItemProps.onPointerUp?.(event);
+          },
+        }}
         ref={elementRef}
         nativeLinkProps={nativeLinkProps}
         onNativeLinkElement={props.onNativeLinkElement}

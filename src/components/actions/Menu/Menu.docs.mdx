@@ -202,7 +202,7 @@ Navigation items render native anchors. An ordinary click or Enter/Space activat
 
 As with other UI Kit actions, a `!` prefix opens `to` in a new tab and an `@` prefix forces native navigation. Use `onAction` for commands, including history actions. Link `onAction` callbacks still run during activation; navigation itself belongs to `to` or `href`, so the callback should not navigate again. Submenu parents open their submenu and ignore destinations; links inside the submenu behave normally.
 
-Without inline actions, the complete item is an anchor. With inline actions, the label and description are native anchors inside Item's existing layout; use these text cells for browser link commands. The row retains keyboard focus, activation and Item styling, and the action buttons remain independent controls. This keeps sizing, visibility and focus styles on the same element that owns Item's layout. Named modifiers and styling slots remain the preferred customization API.
+The label and description provide native anchors; use these text cells for browser link commands. The complete row retains ordinary click and keyboard activation, while Item's original list element owns layout, focus and styling. Inline action controls remain independent. This preserves sizing, structural style conditions, visibility and focus styles. Command text has no link destination.
 
 <Story of={MenuStories.NavigationLinks} />
 
