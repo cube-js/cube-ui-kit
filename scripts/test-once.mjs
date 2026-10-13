@@ -20,15 +20,26 @@ import { isatty } from 'node:tty';
 import { fileURLToPath } from 'node:url';
 
 const root = resolve(import.meta.dirname, '..');
-// Environment variables that change what the suite checks.
-const KEYED_ENV = ['NODE_OPTIONS', 'TZ', 'UPDATE_DEFAULTS'];
+// Environment variables that change what the suite checks, through Vitest
+// (CI, NODE_ENV), the runtime (locale, time zone, NODE_OPTIONS) or a test
+// (UPDATE_DEFAULTS). A test that starts reading another one adds it here.
+const KEYED_ENV = [
+  'CI',
+  'LANG',
+  'LC_ALL',
+  'LC_MESSAGES',
+  'NODE_ENV',
+  'NODE_OPTIONS',
+  'TZ',
+  'UPDATE_DEFAULTS',
+];
 const DELETED = /^0+$/;
 // `<local ref> <local sha> <remote ref> <remote sha>`, read from the end: the
 // local ref is the source as typed, which can contain spaces.
 const PUSH_LINE = / ([0-9a-f]{40,64}) \S+ [0-9a-f]{40,64}$/;
 // `git ls-files -v` tags: lowercase for assume-unchanged, S for skip-worktree.
 // Edits to those files never show in `git status`.
-const HIDDEN = /^([a-z]|S) /m;
+const HIDDEN = /^[a-zS] /m;
 
 /** The local shas a push sends, from git's pre-push input; a deletion sends none. */
 export function parsePushedShas(input) {
@@ -65,7 +76,7 @@ function readState(cwd) {
     key: JSON.stringify([
       process.version,
       process.arch,
-      ...KEYED_ENV.map((name) => process.env[name] ?? null),
+      ...KEYED_ENV.map((name) => process.env[name]),
       installHash,
     ]),
   };
@@ -74,6 +85,18 @@ function readState(cwd) {
 /** What a passed run of `state` is recorded as; a tree with changes has none. */
 function runId(state) {
   return state?.clean ? `${state.tree} ${state.key}` : null;
+}
+
+/**
+ * Writes a marker and returns its mtime: the run's start on the clock the
+ * filesystem stamps files with, which can trail `Date.now()` (Linux).
+ */
+function markStart(cwd) {
+  const marker = `${stampPath(cwd)}-start`;
+
+  writeFileSync(marker, '');
+
+  return lstatSync(marker).mtimeMs;
 }
 
 /** Whether no tracked file was written since `time`, even with its content restored. */
@@ -153,14 +176,14 @@ export function main(
     return 0;
   }
 
-  const started = Date.now();
+  const started = id ? attempt(() => markStart(cwd)) : null;
   const status = run(cwd);
 
   // An edit, even a reverted one, or an install during the run leaves a
   // result for a state no one has.
   if (
     status === 0 &&
-    id &&
+    started &&
     runId(attempt(() => readState(cwd))) === id &&
     attempt(() => untouchedSince(cwd, started))
   ) {

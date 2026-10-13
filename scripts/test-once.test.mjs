@@ -1,10 +1,11 @@
 import { execFileSync, spawnSync } from 'node:child_process';
 import {
-  copyFileSync,
   mkdirSync,
   mkdtempSync,
+  readFileSync,
   rmSync,
   symlinkSync,
+  utimesSync,
   writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -54,6 +55,13 @@ describe('main', () => {
     write(file, text);
     git('add', '-A');
     git('commit', '-q', '-m', file);
+
+    // Older than any run's start, whatever the filesystem clock's granularity.
+    const past = new Date(Date.now() - 60_000);
+
+    for (const tracked of git('ls-files', '-z').split('\0').filter(Boolean)) {
+      utimesSync(join(dir, tracked), past, past);
+    }
 
     return git('rev-parse', 'HEAD');
   };
@@ -208,45 +216,70 @@ describe('main', () => {
     expect(run).toHaveBeenCalledTimes(2);
   });
 
-  it.each(['NODE_OPTIONS', 'TZ', 'UPDATE_DEFAULTS'])(
-    'runs the suite again when %s changes',
-    (name) => {
-      const run = passing();
-
-      main([], { cwd: dir, run });
-      vi.stubEnv(name, '1');
-      main([], { cwd: dir, run });
-
-      expect(run).toHaveBeenCalledTimes(2);
-    },
-  );
-
   it.each([
-    ['through a symlink', []],
-    ['with --preserve-symlinks-main', ['--preserve-symlinks-main']],
-  ])('runs the suite from the command line %s', (_, flags) => {
-    // A copy, so the script reads this repository, not the real checkout.
-    mkdirSync(join(dir, 'scripts'));
-    copyFileSync(
-      join(import.meta.dirname, 'test-once.mjs'),
-      join(dir, 'scripts/test-once.mjs'),
-    );
-    mkdirSync(join(dir, 'bin'));
-    writeFileSync(join(dir, 'bin/pnpm'), '#!/bin/sh\nexit 1\n', {
-      mode: 0o755,
-    });
-    symlinkSync(dir, `${dir}-link`);
+    'CI',
+    'LANG',
+    'LC_ALL',
+    'LC_MESSAGES',
+    'NODE_ENV',
+    'NODE_OPTIONS',
+    'TZ',
+    'UPDATE_DEFAULTS',
+  ])('runs the suite again when %s changes', (name) => {
+    const run = passing();
 
-    const result = spawnSync(
-      process.execPath,
-      [...flags, `${dir}-link/scripts/test-once.mjs`],
-      {
+    main([], { cwd: dir, run });
+    vi.stubEnv(name, '1');
+    main([], { cwd: dir, run });
+
+    expect(run).toHaveBeenCalledTimes(2);
+  });
+
+  describe('from the command line', () => {
+    // The fake pnpm fails, so exit status 1 means the suite ran.
+    const cli = (args, input) =>
+      spawnSync(process.execPath, args, {
         env: { ...process.env, PATH: `${dir}/bin:${process.env.PATH}` },
-        input: '',
-      },
-    );
+        input,
+      }).status;
 
-    expect(result.status).toBe(1);
+    beforeEach(() => {
+      mkdirSync(join(dir, 'scripts'));
+      mkdirSync(join(dir, 'bin'));
+      writeFileSync(join(dir, 'bin/pnpm'), '#!/bin/sh\nexit 1\n', {
+        mode: 0o755,
+      });
+      // A copy, so the script reads this repository, not the real checkout.
+      commit(
+        'scripts/test-once.mjs',
+        readFileSync(join(import.meta.dirname, 'test-once.mjs'), 'utf8'),
+      );
+    });
+
+    it.each([
+      ['through a symlink', []],
+      ['with --preserve-symlinks-main', ['--preserve-symlinks-main']],
+    ])('runs the suite %s', (_, flags) => {
+      symlinkSync(dir, `${dir}-link`);
+
+      expect(cli([...flags, `${dir}-link/scripts/test-once.mjs`])).toBe(1);
+    });
+
+    it.each([
+      ['skips a pushed ref at the tree that passed', 'HEAD', 0],
+      ['runs the suite for a pushed ref at another tree', 'HEAD~1', 1],
+    ])('%s, read from stdin', (_, ref, status) => {
+      const sha = git('rev-parse', ref);
+
+      main([], { cwd: dir, run: () => 0 });
+
+      expect(
+        cli(
+          [`${dir}/scripts/test-once.mjs`, '--pre-push'],
+          `refs/heads/x ${sha} refs/heads/x ${ZERO}\n`,
+        ),
+      ).toBe(status);
+    });
   });
 
   describe('before a push', () => {
