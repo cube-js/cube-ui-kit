@@ -22,7 +22,7 @@ import { Menu } from './Menu';
 import { MenuTrigger } from './MenuTrigger';
 
 describe('Menu navigation links', () => {
-  const destination = '/workbooks/42?chatId=abc';
+  const destination = '/__menu-link-test/workbooks/42?chatId=abc';
 
   it.each(
     [false, true].flatMap((link) =>
