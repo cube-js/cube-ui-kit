@@ -147,7 +147,7 @@ export function useColumnWindow<T>(
     // Empty default cells can be shorter than text. Measure the inherited
     // tokens, since Root can override both typography and the size scale.
     setFitsRow(
-      rowHeight.endsWith('px') &&
+      rowHeight === `${height}px` &&
         Number.isFinite(height) &&
         height >= lineHeight,
     );

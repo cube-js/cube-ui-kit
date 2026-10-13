@@ -201,6 +201,18 @@ describe('column window lifecycle', () => {
       result.current.refreshAppearance();
     });
     expect(result.current.segments.length).toBeLessThan(20);
+    act(() => {
+      first
+        .querySelector('table')!
+        .style.setProperty('--row-height', '40px - 30px');
+      result.current.refreshAppearance();
+    });
+    expect(result.current.segments).toHaveLength(100);
+    act(() => {
+      first.querySelector('table')!.style.setProperty('--row-height', '40px');
+      result.current.refreshAppearance();
+    });
+    expect(result.current.segments.length).toBeLessThan(20);
     rerender({ scroller: first, enabled: false, resolved: current });
     expect(result.current.segments).toHaveLength(100);
     expect(observers[0].disconnect).toHaveBeenCalledOnce();
