@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import React from 'react';
+import React, { useState } from 'react';
 
 import { act, hoverWithPointer, renderWithRoot } from '../../../test';
 import { Root } from '../../Root';
@@ -340,7 +340,7 @@ describe('CommandMenu', () => {
         </CommandMenu.Item>
       );
       function App() {
-        const [orderedItems, setOrderedItems] = React.useState(keyedItems);
+        const [orderedItems, setOrderedItems] = useState(keyedItems);
         reverse = () => setOrderedItems((current) => [...current].reverse());
         return (
           <Root navigation={{ useHref: String, useNavigate: () => navigate }}>
