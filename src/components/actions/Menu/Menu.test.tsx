@@ -91,6 +91,124 @@ describe('<Menu />', () => {
     },
   );
 
+  it.each(['to', 'href'] as const)(
+    'puts hrefLang on every native %s destination and keeps it off the row',
+    (destinationProp) => {
+      renderWithRoot(
+        <Menu aria-label="Destination languages">
+          <Menu.Item
+            key="workbook"
+            {...{ [destinationProp]: '/workbooks/french' }}
+            hrefLang="fr"
+            description="Open the French workbook"
+          >
+            French workbook
+          </Menu.Item>
+        </Menu>,
+      );
+      const primary = screen.getByRole('menuitem', {
+        name: 'French workbook',
+      });
+      const row = primary.closest('li')!;
+      const anchors = row.querySelectorAll('a');
+      expect(anchors).toHaveLength(2);
+      for (const anchor of anchors)
+        expect(anchor).toHaveAttribute('hreflang', 'fr');
+      expect(row).not.toHaveAttribute('hreflang');
+    },
+  );
+
+  it.each([false, true])(
+    'ignores held Enter repetitions for a command (inline actions=%s)',
+    async (inlineActions) => {
+      const itemAction = vi.fn();
+      const menuAction = vi.fn();
+      const repeats: boolean[] = [];
+      renderWithRoot(
+        <MenuContext.Provider value={{ closeOnSelect: false }}>
+          <Menu aria-label="Held command" onAction={menuAction}>
+            <Menu.Item
+              key="command"
+              onAction={itemAction}
+              onKeyDown={(event) => repeats.push(event.repeat)}
+              actions={
+                inlineActions ? (
+                  <Menu.Item.Action aria-label="Command settings">
+                    Settings
+                  </Menu.Item.Action>
+                ) : undefined
+              }
+            >
+              Command
+            </Menu.Item>
+          </Menu>
+        </MenuContext.Provider>,
+      );
+      await act(() =>
+        screen.getByRole('menuitem', { name: 'Command' }).focus(),
+      );
+      await userEvent.keyboard('{Enter>}');
+      // user-event repeats omit KeyboardEvent.repeat; supply the held-key events.
+      const command = screen.getByRole('menuitem', { name: 'Command' });
+      fireEvent.keyDown(command, { key: 'Enter', repeat: true });
+      fireEvent.keyDown(command, { key: 'Enter', repeat: true });
+      await userEvent.keyboard('{/Enter}');
+      expect(repeats).toEqual([false, true, true]);
+      expect(itemAction).toHaveBeenCalledExactlyOnceWith();
+      expect(menuAction).toHaveBeenCalledExactlyOnceWith('command');
+    },
+  );
+
+  it.each(['item', 'header', 'card'] as const)(
+    'retains a same-key submenu %s label when inline actions appear and disappear',
+    async (type) => {
+      let mounts = 0;
+      function StatefulLabel() {
+        const [instance] = useState(() => ++mounts);
+        return <span>Share instance {instance}</span>;
+      }
+      const content = (withActions: boolean) => (
+        <Menu aria-label="Stateful submenu">
+          <Menu.SubMenuTrigger>
+            <Menu.Item
+              key="share"
+              type={type}
+              textValue="Share"
+              tooltip={false}
+              actions={
+                withActions ? (
+                  <Menu.Item.Action aria-label="Share settings">
+                    Settings
+                  </Menu.Item.Action>
+                ) : undefined
+              }
+            >
+              <StatefulLabel />
+            </Menu.Item>
+            <Menu aria-label="Share commands">
+              <Menu.Item key="copy">Copy</Menu.Item>
+            </Menu>
+          </Menu.SubMenuTrigger>
+        </Menu>
+      );
+      const { rerender } = renderWithRoot(content(false));
+      expect(screen.getByText('Share instance 1')).toBeInTheDocument();
+      expect(mounts).toBe(1);
+      await act(() => rerender(content(true)));
+      expect(screen.getByText('Share instance 1')).toBeInTheDocument();
+      expect(mounts).toBe(1);
+      expect(
+        screen.getByRole('menuitem', { name: 'Share settings' }),
+      ).toBeInTheDocument();
+      await act(() => rerender(content(false)));
+      expect(screen.getByText('Share instance 1')).toBeInTheDocument();
+      expect(mounts).toBe(1);
+      expect(
+        screen.queryByRole('menuitem', { name: 'Share settings' }),
+      ).not.toBeInTheDocument();
+    },
+  );
+
   const basicItems = [
     <Menu.Item key="copy">Copy</Menu.Item>,
     <Menu.Item key="paste">Paste</Menu.Item>,

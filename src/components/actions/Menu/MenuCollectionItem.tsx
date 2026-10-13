@@ -3,6 +3,7 @@ import { Item } from 'react-stately';
 
 import { NavigateOptions, To } from '../../../providers/navigation.types';
 import {
+  COLLECTION_ITEM_CLICK,
   CollectionItem,
   CubeCollectionItemBaseProps,
 } from '../../CollectionItem';
@@ -21,7 +22,6 @@ export interface CubeMenuItemProps<T>
 
 // Aria recognizes links by a truthy collection href; preserve the native empty URL.
 export const CURRENT_DOCUMENT_LINK = Symbol('Menu.Item current document');
-export const MENU_LINK_CLICK = Symbol('Menu.Item link click');
 
 function MenuCollectionItem<T>(
   _props: CubeMenuItemProps<T>,
@@ -56,7 +56,7 @@ const _MenuCollectionItem: typeof MenuCollectionItem &
           [CURRENT_DOCUMENT_LINK]: isCurrentDocument,
           // Selectable items also consume collection onClick; let Menu own it once.
           onClick: isLink ? undefined : props.onClick,
-          [MENU_LINK_CLICK]: isLink ? props.onClick : undefined,
+          [COLLECTION_ITEM_CLICK]: isLink ? props.onClick : undefined,
           target: newTab ? '_blank' : props.target,
           rel: newTab ? props.rel ?? 'noopener noreferrer' : props.rel,
         },

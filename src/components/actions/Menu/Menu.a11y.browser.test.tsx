@@ -1,3 +1,4 @@
+import { KeyboardEvent } from 'react';
 import { flushSync } from 'react-dom';
 import { userEvent } from 'vitest/browser';
 
@@ -119,6 +120,105 @@ describe('Mixed menu accessibility', () => {
     await act(() => userEvent.keyboard('{Tab}'));
     expect(screen.getByRole('button', { name: 'After menu' })).toHaveFocus();
   });
+  it.each([
+    ['Plain command', 'ArrowDown', 'Command with action'],
+    ['Command with action', 'ArrowDown', 'Command settings'],
+    ['Destination', 'Home', 'Plain command'],
+    ['Command with action', 'End', 'Last command'],
+  ])(
+    'forwards keyboard consumers before moving from %s with %s',
+    async (origin, key, target) => {
+      const observed: Array<{
+        handler: string;
+        currentTarget: string;
+        focus: Element | null;
+      }> = [];
+      const record = (handler: string) => (event: KeyboardEvent<HTMLElement>) =>
+        observed.push({
+          handler,
+          currentTarget: event.currentTarget.tagName,
+          focus: document.activeElement,
+        });
+      render(
+        <Root>
+          <Menu aria-label="Keyboard consumers" onKeyDown={record('menu')}>
+            <Menu.Item key="plain" onKeyDown={record('plain')}>
+              Plain command
+            </Menu.Item>
+            <Menu.Item
+              key="command"
+              onKeyDown={record('command')}
+              actions={
+                <Menu.Item.Action aria-label="Command settings">
+                  Settings
+                </Menu.Item.Action>
+              }
+            >
+              Command with action
+            </Menu.Item>
+            <Menu.Item key="link" to="/destination" onKeyDown={record('link')}>
+              Destination
+            </Menu.Item>
+            <Menu.Item key="last">Last command</Menu.Item>
+          </Menu>
+        </Root>,
+      );
+      const primary = screen.getByRole('menuitem', { name: origin });
+      await act(() => primary.focus());
+      await act(() => userEvent.keyboard(`{${key}}`));
+      expect(observed).toEqual([
+        {
+          handler:
+            origin === 'Plain command'
+              ? 'plain'
+              : origin === 'Destination'
+                ? 'link'
+                : 'command',
+          currentTarget: 'LI',
+          focus: primary,
+        },
+        { handler: 'menu', currentTarget: 'UL', focus: primary },
+      ]);
+      expect(screen.getByRole('menuitem', { name: target })).toHaveFocus();
+    },
+  );
+
+  it.each(['item', 'menu'] as const)(
+    'honors %s keyboard cancellation before inline navigation',
+    async (owner) => {
+      const itemKey = vi.fn((event) => {
+        if (owner === 'item') event.preventDefault();
+      });
+      const menuKey = vi.fn((event) => {
+        if (owner === 'menu') event.preventDefault();
+      });
+      render(
+        <Root>
+          <Menu aria-label="Consumer cancellation" onKeyDown={menuKey}>
+            <Menu.Item
+              key="command"
+              onKeyDown={itemKey}
+              actions={
+                <Menu.Item.Action aria-label="Command settings">
+                  Settings
+                </Menu.Item.Action>
+              }
+            >
+              Command
+            </Menu.Item>
+            <Menu.Item key="last">Last command</Menu.Item>
+          </Menu>
+        </Root>,
+      );
+      const primary = screen.getByRole('menuitem', { name: 'Command' });
+      await act(() => primary.focus());
+      await act(() => userEvent.keyboard('{ArrowDown}'));
+      expect(itemKey).toHaveBeenCalledTimes(1);
+      expect(menuKey).toHaveBeenCalledTimes(1);
+      expect(primary).toHaveFocus();
+    },
+  );
+
   it.each(['single', 'multiple'] as const)(
     'keeps %s selection semantics and Space close policy on the primary control',
     async (selectionMode) => {
@@ -270,6 +370,52 @@ describe('Mixed menu accessibility', () => {
       expect(navigate).not.toHaveBeenCalled();
     },
   );
+
+  it('keeps submenu inline shortcuts separate from its primary trigger', async () => {
+    const menuKey = vi.fn();
+    const itemKey = vi.fn();
+    render(
+      <Root>
+        <Menu aria-label="Parent shortcuts" onKeyDown={menuKey}>
+          <Menu.SubMenuTrigger>
+            <Menu.Item
+              key="share"
+              onKeyDown={itemKey}
+              actions={
+                <Menu.Item.Action aria-label="Share settings">
+                  Settings
+                </Menu.Item.Action>
+              }
+            >
+              Share
+            </Menu.Item>
+            <Menu aria-label="Share submenu">
+              <Menu.Item key="copy">Copy link</Menu.Item>
+            </Menu>
+          </Menu.SubMenuTrigger>
+        </Menu>
+      </Root>,
+    );
+    const primary = screen.getByRole('menuitem', { name: 'Share' });
+    const action = screen.getByRole('menuitem', { name: 'Share settings' });
+    await act(() => action.focus());
+    await act(() => userEvent.keyboard('{ArrowRight}'));
+    expect(action).toHaveFocus();
+    expect(screen.queryByRole('menu', { name: 'Share submenu' })).toBeNull();
+    expect(itemKey).toHaveBeenCalledTimes(1);
+    expect(menuKey).toHaveBeenCalledTimes(1);
+    await act(() => userEvent.keyboard('{ArrowLeft}'));
+    expect(primary).toHaveFocus();
+    expect(itemKey).toHaveBeenCalledTimes(2);
+    expect(menuKey).toHaveBeenCalledTimes(2);
+    await act(() => userEvent.keyboard('{ArrowRight}'));
+    await waitFor(() =>
+      expect(screen.getByRole('menuitem', { name: 'Copy link' })).toHaveFocus(),
+    );
+    expect(itemKey).toHaveBeenCalledTimes(3);
+    // The submenu trigger owns its opening key and stops bubbling to the menu.
+    expect(menuKey).toHaveBeenCalledTimes(2);
+  });
 
   it('opens a submenu with inline actions on Right and restores its primary control on Escape', async () => {
     const itemAction = vi.fn();

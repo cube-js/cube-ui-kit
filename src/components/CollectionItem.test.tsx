@@ -51,6 +51,60 @@ function SelectionField({
 describe('value-selection collection items', () => {
   it.each(
     (['ListBox', 'ComboBox', 'Select'] as const).flatMap((kind) =>
+      (['selection', 'menu', 'stately'] as const).flatMap((factory) =>
+        ['to', 'href'].map((destination) => ({ kind, factory, destination })),
+      ),
+    ),
+  )(
+    '$kind preserves $factory option click callbacks when $destination is stripped',
+    async ({ kind, factory, destination }) => {
+      const ItemFactory =
+        factory === 'menu'
+          ? Menu.Item
+          : factory === 'stately'
+            ? StatelyItem
+            : CollectionItem;
+
+      async function selectOption(navigationProps: Record<string, unknown>) {
+        const onClick = vi.fn();
+        const onSelectionChange = vi.fn();
+        const navigate = vi.fn();
+        const view = renderWithRoot(
+          <RouterProvider navigate={navigate}>
+            <SelectionField kind={kind} onSelectionChange={onSelectionChange}>
+              <ItemFactory key="red" {...navigationProps} {...{ onClick }}>
+                Red
+              </ItemFactory>
+            </SelectionField>
+          </RouterProvider>,
+        );
+
+        if (kind === 'ComboBox') {
+          await userEvent.type(view.getByRole('combobox'), 'Re');
+        } else if (kind === 'Select') {
+          await userEvent.click(view.getByRole('button', { name: 'Colors' }));
+        }
+
+        const option = view.getByRole('option', { name: 'Red' });
+        expect(option).not.toHaveAttribute('href');
+        await userEvent.click(option);
+        expect(onSelectionChange).toHaveBeenCalledExactlyOnceWith('red');
+        expect(navigate).not.toHaveBeenCalled();
+        view.unmount();
+
+        return onClick.mock.calls.length;
+      }
+
+      const baselineCalls = await selectOption({});
+      expect(baselineCalls).toBeGreaterThan(0);
+      expect(await selectOption({ [destination]: '/unexpected' })).toBe(
+        baselineCalls,
+      );
+    },
+  );
+
+  it.each(
+    (['ListBox', 'ComboBox', 'Select'] as const).flatMap((kind) =>
       (['menu', 'stately'] as const).flatMap((factory) =>
         (['li', 'a'] as const).flatMap((tag) =>
           (['click', 'Enter'] as const).map((activation) => ({
@@ -253,6 +307,7 @@ describe('value-selection collection items', () => {
   );
 
   it('keeps navigation on Menu.Item and preserves collection item statics', async () => {
+    const onClick = vi.fn();
     const navigate = vi.fn();
     const navigation: NavigationAdapter = {
       useNavigate: () => navigate,
@@ -264,7 +319,7 @@ describe('value-selection collection items', () => {
     const view = render(
       <Root navigation={navigation}>
         <Menu aria-label="Workbooks">
-          <Menu.Item key="workbooks" to="/workbooks">
+          <Menu.Item key="workbooks" to="/workbooks" onClick={onClick}>
             Workbooks
           </Menu.Item>
         </Menu>
@@ -275,6 +330,7 @@ describe('value-selection collection items', () => {
     expect(item).toHaveAttribute('href', '/workbooks');
     await userEvent.click(item);
     expect(navigate).toHaveBeenCalledExactlyOnceWith('/workbooks', undefined);
+    expect(onClick).toHaveBeenCalledTimes(1);
     expect(CollectionItem.Action).toBe(Menu.Item.Action);
     expect(CollectionItem.Badge).toBe(Menu.Item.Badge);
   });

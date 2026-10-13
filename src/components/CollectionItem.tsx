@@ -9,6 +9,9 @@ import { ItemBadge } from './content/ItemBadge';
 import type { LinkDOMProps, Node } from '@react-types/shared';
 import type { ListState } from 'react-stately';
 
+// Menu defers link clicks; selection controls restore them when removing links.
+export const COLLECTION_ITEM_CLICK = Symbol('CollectionItem deferred click');
+
 export interface CubeCollectionItemBaseProps<T>
   extends Omit<ItemProps<T>, keyof LinkDOMProps>,
     Omit<CubeItemProps, 'children' | keyof LinkDOMProps> {
@@ -70,13 +73,18 @@ const NAVIGATION_PROPS = [
 
 /** Keeps options as value selections even when a different item factory is used. */
 export function filterSelectionItemProps(
-  itemProps: Record<string, any> | undefined,
-): Record<string, any> {
+  itemProps: Record<PropertyKey, any> | undefined,
+): Record<PropertyKey, any> {
   const filtered = { ...itemProps };
 
   for (const key of NAVIGATION_PROPS) {
     delete filtered[key];
   }
+
+  if (filtered[COLLECTION_ITEM_CLICK] !== undefined) {
+    filtered.onClick = filtered[COLLECTION_ITEM_CLICK];
+  }
+  delete filtered[COLLECTION_ITEM_CLICK];
 
   return filtered;
 }

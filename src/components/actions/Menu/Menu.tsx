@@ -141,13 +141,18 @@ function Menu<T extends object>(
   const collectionItems = [...state.collection];
   const hasSections = collectionItems.some((item) => item.type === 'section');
 
-  const { menuProps } = useMenu(completeProps, state, domRef);
+  const { menuProps } = useMenu(
+    { ...completeProps, onKeyDown: undefined },
+    state,
+    domRef,
+  );
   const handleInlineNavigation = (event: KeyboardEvent<HTMLUListElement>) => {
     const menu = event.currentTarget;
     const item = (event.target as HTMLElement).closest<HTMLElement>(
       '[role^="menuitem"]',
     );
     if (
+      event.defaultPrevented ||
       !item ||
       item.closest('[role="menu"]') !== menu ||
       event.altKey ||
@@ -210,6 +215,7 @@ function Menu<T extends object>(
       event.preventDefault();
       event.stopPropagation();
       next.focus();
+      return true;
     }
   };
   const styles = extractStyles(completeProps, CONTAINER_STYLES);
@@ -321,7 +327,11 @@ function Menu<T extends object>(
           menuProps,
         )}
         ref={domRef}
-        onKeyDownCapture={handleInlineNavigation}
+        onKeyDown={(event) => {
+          completeProps.onKeyDown?.(event);
+          if (!event.defaultPrevented && !handleInlineNavigation(event))
+            menuProps.onKeyDown?.(event);
+        }}
         role={menuProps.role ?? 'menu'}
       >
         {renderedItems}

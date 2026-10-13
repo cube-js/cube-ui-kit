@@ -21,12 +21,15 @@ import { RightIcon } from '../../../icons/RightIcon';
 import { isExternalUrl } from '../../../providers/navigation-url';
 import { useNavigation } from '../../../providers/use-navigation';
 import { mergeProps } from '../../../utils/react';
-import { filterCollectionItemProps } from '../../CollectionItem';
+import {
+  COLLECTION_ITEM_CLICK,
+  filterCollectionItemProps,
+} from '../../CollectionItem';
 import { ItemWithNativeLinks } from '../../content/Item/Item';
 import { parseTo } from '../use-action';
 
 import { useMenuContext } from './context';
-import { CURRENT_DOCUMENT_LINK, MENU_LINK_CLICK } from './MenuCollectionItem';
+import { CURRENT_DOCUMENT_LINK } from './MenuCollectionItem';
 import { SubmenuTriggerContext } from './SubmenuTriggerContext';
 
 export type MenuSelectionType = 'checkbox' | 'radio' | 'checkmark';
@@ -132,7 +135,7 @@ function MenuLinkItem<T>(props: MenuItemProps<T>) {
     activatedLink.current =
       target.closest?.<HTMLAnchorElement>('a[data-menu-native-link]') ??
       linkRef.current;
-    itemProps[MENU_LINK_CLICK]?.(event);
+    itemProps[COLLECTION_ITEM_CLICK]?.(event);
   };
   const openNative = (event: MouseEvent<FocusableElement>) => {
     const anchor = activatedLink.current;
@@ -201,6 +204,7 @@ function MenuItemContent<T>(
     download: _download,
     ping: _ping,
     referrerPolicy: _referrerPolicy,
+    hrefLang: _hrefLang,
     ...filteredItemProps
   } = filterCollectionItemProps(itemProps);
 
@@ -255,7 +259,7 @@ function MenuItemContent<T>(
       isVirtualized,
       onAction,
       onClick: (event) => {
-        (props.onClick ?? itemProps[MENU_LINK_CLICK])?.(event);
+        (props.onClick ?? itemProps[COLLECTION_ITEM_CLICK])?.(event);
         submenuContext?.onAction?.();
       },
     },
@@ -280,6 +284,7 @@ function MenuItemContent<T>(
     download: _renderedDownload,
     ping: _renderedPing,
     referrerPolicy: _renderedPolicy,
+    hrefLang: _renderedHrefLang,
     ...itemOwnProps
   } = menuItemProps as typeof menuItemProps &
     AnchorHTMLAttributes<HTMLAnchorElement>;
@@ -334,6 +339,8 @@ function MenuItemContent<T>(
     itemOnPointerUp?.(event);
   };
   const onKeyDown = (e: KeyboardEvent<FocusableElement>) => {
+    // Inline controls own activation; the menu handles their row navigation.
+    if ((e.target as HTMLElement).closest('[data-element="Actions"]')) return;
     if (primaryInCell && (e.key === ' ' || e.key === 'Enter')) {
       if (isDisabled) {
         e.preventDefault();
@@ -374,6 +381,7 @@ function MenuItemContent<T>(
       !isLink &&
       !submenuContext &&
       e.key === 'Enter' &&
+      !e.repeat &&
       !e.nativeEvent.isComposing
     ) {
       e.preventDefault();
@@ -392,25 +400,23 @@ function MenuItemContent<T>(
     menuitem: true,
   };
 
-  const nativeLinkProps: AnchorHTMLAttributes<HTMLAnchorElement> | undefined =
-    props.onNativeLinkElement || primaryInCell
-      ? {
-          href: isLink && !isDisabled ? props.nativeLinkHref : undefined,
-          target: itemProps.target,
-          rel: itemProps.rel,
-          download: itemProps.download,
-          ping: itemProps.ping,
-          referrerPolicy: itemProps.referrerPolicy,
-          tabIndex: -1,
-          'aria-hidden': isLink || undefined,
-          role: 'none',
-          onMouseDown: (event) => {
-            if (!isDisabled && menuItemProps.tabIndex != null)
-              elementRef.current?.focus({ preventScroll: true });
-            event.preventDefault();
-          },
-        }
-      : undefined;
+  const nativeLinkProps: AnchorHTMLAttributes<HTMLAnchorElement> = {
+    href: isLink && !isDisabled ? props.nativeLinkHref : undefined,
+    target: itemProps.target,
+    rel: itemProps.rel,
+    download: itemProps.download,
+    ping: itemProps.ping,
+    referrerPolicy: itemProps.referrerPolicy,
+    hrefLang: itemProps.hrefLang,
+    tabIndex: -1,
+    'aria-hidden': isLink || undefined,
+    role: 'none',
+    onMouseDown: (event) => {
+      if (!isDisabled && menuItemProps.tabIndex != null)
+        elementRef.current?.focus({ preventScroll: true });
+      event.preventDefault();
+    },
+  };
 
   const content = (
     <FocusRing>
