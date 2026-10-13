@@ -56,6 +56,28 @@ describe('<Menu />', () => {
     expect(getByText('Cut')).toBeInTheDocument();
   });
 
+  it('recognizes a bare native reload destination and leaves an empty to as a command', () => {
+    renderWithRoot(
+      <Menu aria-label="Destinations">
+        <Menu.Item key="reload" to="@" target="_blank">
+          Reload
+        </Menu.Item>
+        <Menu.Item key="command" to="">
+          Command
+        </Menu.Item>
+      </Menu>,
+    );
+    const reload = screen.getByRole('menuitem', { name: 'Reload' });
+    expect(reload.tagName).toBe('A');
+    expect(reload).toHaveAttribute('href', '');
+    expect((reload as HTMLAnchorElement).href).toBe(
+      location.href.split('#')[0],
+    );
+    expect(screen.getByRole('menuitem', { name: 'Command' }).tagName).toBe(
+      'LI',
+    );
+  });
+
   it('should call onAction when menu item is clicked', async () => {
     const onAction = vi.fn();
 

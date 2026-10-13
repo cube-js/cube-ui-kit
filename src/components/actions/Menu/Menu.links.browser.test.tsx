@@ -23,6 +23,12 @@ import { MenuTrigger } from './MenuTrigger';
 describe('Menu navigation links', () => {
   const destination = '/workbooks/42?chatId=abc';
 
+  async function nativeRequests(): Promise<
+    { url: string; method?: string; referrer?: string }[]
+  > {
+    return (await fetch('/__menu-link-test/requests')).json();
+  }
+
   function renderMenu() {
     const navigate = vi.fn();
     const onAction = vi.fn();
@@ -184,6 +190,170 @@ describe('Menu navigation links', () => {
       );
       expect(navigate).not.toHaveBeenCalled();
       expect(onAction).toHaveBeenCalledExactlyOnceWith('link');
+    },
+  );
+
+  it.each(
+    [false, true].flatMap((actions) =>
+      ['pointer', 'keyboard'].flatMap((activation) =>
+        ['noreferrer', 'policy', 'ping'].map((attribute) => ({
+          actions,
+          activation,
+          attribute,
+        })),
+      ),
+    ),
+  )(
+    'preserves default-adapter relative native attributes ($attribute, $activation, actions=$actions)',
+    async ({ actions, activation, attribute }) => {
+      const pathname = `/__menu-link-test/default-${attribute}-${activation}-${actions}`;
+      const audit = `${pathname}-audit`;
+      const onAction = vi.fn();
+      const menuAction = vi.fn();
+      function App() {
+        const [open, setOpen] = useState(true);
+        return (
+          <Root>
+            {open && (
+              <Menu aria-label="Destinations" onAction={menuAction}>
+                <Menu.Item
+                  key="link"
+                  to={pathname}
+                  rel={attribute === 'noreferrer' ? 'noreferrer' : undefined}
+                  referrerPolicy={
+                    attribute === 'policy' ? 'no-referrer' : undefined
+                  }
+                  ping={attribute === 'ping' ? audit : undefined}
+                  actions={
+                    actions ? (
+                      <Menu.Item.Action>Delete</Menu.Item.Action>
+                    ) : undefined
+                  }
+                  onAction={() => {
+                    onAction();
+                    if (activation === 'keyboard')
+                      flushSync(() => setOpen(false));
+                  }}
+                >
+                  Destination
+                </Menu.Item>
+              </Menu>
+            )}
+          </Root>
+        );
+      }
+      render(<App />);
+      const row = screen.getByRole('menuitem', { name: 'Destination' });
+      if (activation === 'keyboard') {
+        await act(() => row.focus());
+        await userEvent.keyboard('{Enter}');
+        expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+      } else {
+        await userEvent.click(screen.getByText('Destination'), {
+          noWaitAfter: true,
+        });
+      }
+      await waitFor(
+        async () => {
+          const requests = await nativeRequests();
+          const request = requests.find((request) => request.url === pathname);
+          expect(request).toBeDefined();
+          if (attribute === 'ping') {
+            expect(requests).toContainEqual(
+              expect.objectContaining({ url: audit, method: 'POST' }),
+            );
+          } else expect(request?.referrer).toBeUndefined();
+        },
+        { timeout: 1500 },
+      );
+      expect(onAction).toHaveBeenCalledTimes(1);
+      expect(menuAction).toHaveBeenCalledExactlyOnceWith('link');
+    },
+  );
+
+  it.each(
+    [false, true].flatMap((actions) =>
+      (['Meta', 'Shift', 'Alt', 'Control'] as const).map((modifier) => ({
+        actions,
+        modifier,
+      })),
+    ),
+  )(
+    'keeps the first modified pointer gesture native ($modifier, actions=$actions)',
+    async ({ actions, modifier }) => {
+      const pathname = `/__menu-link-test/first-${modifier}-${actions}`;
+      const navigate = vi.fn();
+      const onAction = vi.fn();
+      const onClick = vi.fn();
+      const events: MouseEvent[] = [];
+      const record = (event: MouseEvent) => events.push(event);
+      render(
+        <Root navigation={{ useHref: String, useNavigate: () => navigate }}>
+          <Menu aria-label="Destinations" onAction={onAction}>
+            <Menu.Item
+              key="link"
+              to={pathname}
+              onClick={onClick}
+              actions={
+                actions ? (
+                  <Menu.Item.Action>Delete</Menu.Item.Action>
+                ) : undefined
+              }
+            >
+              Destination
+            </Menu.Item>
+          </Menu>
+        </Root>,
+      );
+      document.addEventListener('click', record, true);
+      document.addEventListener('contextmenu', record, true);
+      try {
+        await userEvent.click(screen.getByText('Destination'), {
+          modifiers: [modifier],
+          noWaitAfter: true,
+        });
+        // Aria's fallback is delayed; this must stay native after it settles.
+        await new Promise((resolve) => setTimeout(resolve, 150));
+        expect(navigate).not.toHaveBeenCalled();
+        expect(events).toHaveLength(1);
+        expect(events[0].isTrusted).toBe(true);
+        expect(events[0].defaultPrevented).toBe(false);
+        const modifierKey = {
+          Meta: 'metaKey',
+          Shift: 'shiftKey',
+          Alt: 'altKey',
+          Control: 'ctrlKey',
+        } as const;
+        expect(events[0][modifierKey[modifier]]).toBe(true);
+        const contextMenu =
+          modifier === 'Control' && navigator.platform.startsWith('Mac');
+        if (contextMenu) {
+          expect(events[0].type).toBe('contextmenu');
+          expect(onClick).not.toHaveBeenCalled();
+          expect(onAction).not.toHaveBeenCalled();
+        } else {
+          expect(events[0].type).toBe('click');
+          expect(onClick).toHaveBeenCalledTimes(1);
+          expect(onAction).toHaveBeenCalledExactlyOnceWith('link');
+          if (
+            modifier === 'Meta' ||
+            modifier === 'Shift' ||
+            modifier === 'Control'
+          ) {
+            await waitFor(
+              async () => {
+                expect(await nativeRequests()).toContainEqual(
+                  expect.objectContaining({ url: pathname }),
+                );
+              },
+              { timeout: 1500 },
+            );
+          }
+        }
+      } finally {
+        document.removeEventListener('click', record, true);
+        document.removeEventListener('contextmenu', record, true);
+      }
     },
   );
 
@@ -875,31 +1045,138 @@ describe('Menu navigation links', () => {
     expect(onSelectionChange).not.toHaveBeenCalled();
   });
 
-  it('recognizes a bare native reload destination and leaves an empty to as a command', () => {
-    render(
-      <Root>
-        <Menu aria-label="Destinations">
-          <Menu.Item key="reload" to="@" target="_blank">
-            Reload
-          </Menu.Item>
-          <Menu.Item key="command" to="">
-            Command
+  it.each(
+    [false, true].flatMap((actions) =>
+      (
+        ['blank-pointer', 'blank-Enter', 'Meta-Enter', 'Meta-Space'] as const
+      ).map((activation) => ({ actions, activation })),
+    ),
+  )(
+    'retains bare-@ native targets and modifiers ($activation, actions=$actions)',
+    async ({ actions, activation }) => {
+      const pathname = `/__menu-link-test/bare-${activation}-${actions}`;
+      const sourcePath = `${pathname}-source`;
+      const originalUrl = location.href;
+      const navigate = vi.fn();
+      const onAction = vi.fn();
+      render(
+        <Root navigation={{ useHref: String, useNavigate: () => navigate }}>
+          <Menu aria-label="Destinations" onAction={onAction}>
+            <Menu.Item
+              key="link"
+              to="@"
+              target={activation.startsWith('blank') ? '_blank' : undefined}
+              actions={
+                actions ? (
+                  <Menu.Item.Action>Delete</Menu.Item.Action>
+                ) : undefined
+              }
+            >
+              Current document
+            </Menu.Item>
+          </Menu>
+        </Root>,
+      );
+      const row = screen.getByRole('menuitem', { name: 'Current document' });
+      const anchor = actions
+        ? row.querySelector<HTMLAnchorElement>('a[data-menu-native-link]')!
+        : (row as HTMLAnchorElement);
+      expect(anchor).toHaveAttribute('href', '');
+      // Both destinations return 204: a faulty source reload cannot reload the test runner.
+      history.replaceState(null, '', sourcePath);
+      anchor.href = location.origin + pathname;
+      try {
+        if (activation === 'blank-pointer') {
+          await userEvent.click(screen.getByText('Current document'), {
+            noWaitAfter: true,
+          });
+        } else {
+          await act(() => row.focus());
+          await userEvent.keyboard(
+            activation.startsWith('Meta')
+              ? activation === 'Meta-Space'
+                ? '{Meta>} {/Meta}'
+                : '{Meta>}{Enter}{/Meta}'
+              : '{Enter}',
+          );
+        }
+        await waitFor(
+          async () => {
+            const requests = await nativeRequests();
+            expect(requests).toContainEqual(
+              expect.objectContaining({ url: pathname }),
+            );
+            expect(requests).not.toContainEqual(
+              expect.objectContaining({ url: sourcePath }),
+            );
+          },
+          { timeout: 1500 },
+        );
+        expect(navigate).not.toHaveBeenCalled();
+        expect(onAction).toHaveBeenCalledExactlyOnceWith('link');
+      } finally {
+        history.replaceState(null, '', originalUrl);
+      }
+    },
+  );
+
+  it('preserves public action state when a stable row changes between a link and a command', async () => {
+    const navigate = vi.fn();
+    const onClick = vi.fn();
+    const onItemAction = vi.fn();
+    const onMenuAction = vi.fn();
+    function StatefulAction() {
+      const [count, setCount] = useState(0);
+      return (
+        <Menu.Item.Action onPress={() => setCount((value) => value + 1)}>
+          Count {count}
+        </Menu.Item.Action>
+      );
+    }
+    const content = (href: string | undefined) => (
+      <Root navigation={{ useHref: String, useNavigate: () => navigate }}>
+        <Menu aria-label="Destinations" onAction={onMenuAction}>
+          <Menu.Item
+            key="row"
+            href={href}
+            actions={<StatefulAction />}
+            onClick={onClick}
+            onAction={onItemAction}
+          >
+            Destination
           </Menu.Item>
         </Menu>
-      </Root>,
+      </Root>
     );
-    expect(screen.getByRole('menuitem', { name: 'Reload' }).tagName).toBe('A');
-    expect(screen.getByRole('menuitem', { name: 'Reload' })).toHaveAttribute(
-      'href',
-      '',
-    );
-    expect(
-      (screen.getByRole('menuitem', { name: 'Reload' }) as HTMLAnchorElement)
-        .href,
-    ).toBe(location.href.split('#')[0]);
-    expect(screen.getByRole('menuitem', { name: 'Command' }).tagName).toBe(
-      'LI',
-    );
+    const { rerender } = render(content(destination));
+    await userEvent.click(screen.getByRole('button', { name: 'Count 0' }));
+    const action = screen.getByRole('button', { name: 'Count 1' });
+    expect(navigate).not.toHaveBeenCalled();
+    expect(onClick).not.toHaveBeenCalled();
+    for (const href of [undefined, '/again', undefined, '/last']) {
+      await act(() => rerender(content(href)));
+      expect(screen.getByRole('button', { name: 'Count 1' })).toBe(action);
+      if (href === undefined) {
+        const row = screen.getByRole('menuitem', { name: 'Destination' });
+        await act(() => row.focus());
+        await userEvent.keyboard('{Enter}');
+        expect(navigate).not.toHaveBeenCalled();
+        expect(onClick).toHaveBeenCalledTimes(1);
+        expect(onItemAction).toHaveBeenCalledTimes(1);
+        expect(onMenuAction).toHaveBeenCalledExactlyOnceWith('row');
+        onClick.mockClear();
+        onItemAction.mockClear();
+        onMenuAction.mockClear();
+      }
+    }
+    const row = screen.getByRole('menuitem', { name: 'Destination' });
+    await act(() => row.focus());
+    await userEvent.keyboard('{Enter}');
+    expect(navigate).toHaveBeenCalledExactlyOnceWith('/last', undefined);
+    expect(onClick).toHaveBeenCalledTimes(1);
+    expect(onItemAction).toHaveBeenCalledTimes(1);
+    expect(onMenuAction).toHaveBeenCalledExactlyOnceWith('row');
+    expect(screen.getByRole('button', { name: 'Count 1' })).toBe(action);
   });
 
   it.each([
@@ -943,6 +1220,112 @@ describe('Menu navigation links', () => {
       expect(getComputedStyle(linkRun).color).toBe(
         getComputedStyle(commandRun).color,
       );
+    },
+  );
+
+  it.each(
+    [false, true].flatMap((actions) =>
+      (
+        [
+          {
+            variant: 'false',
+            styles: { textDecoration: false },
+            resting: 'none',
+            focused: 'none',
+          },
+          {
+            variant: 'empty',
+            styles: { textDecoration: '' },
+            resting: 'none',
+            focused: 'none',
+          },
+          {
+            variant: 'default false',
+            styles: {
+              '@focus': ':focus',
+              textDecoration: { '': false, '@focus': 'underline' },
+            },
+            resting: 'none',
+            focused: 'underline',
+          },
+          {
+            variant: 'default empty',
+            styles: {
+              '@focus': ':focus',
+              textDecoration: { '': '', '@focus': 'underline' },
+            },
+            resting: 'none',
+            focused: 'underline',
+          },
+          {
+            variant: 'focused false',
+            styles: {
+              '@focus': ':focus',
+              textDecoration: { '': 'underline', '@focus': false },
+            },
+            resting: 'underline',
+            focused: 'none',
+          },
+          {
+            variant: 'focused empty',
+            styles: {
+              '@focus': ':focus',
+              textDecoration: { '': 'underline', '@focus': '' },
+            },
+            resting: 'underline',
+            focused: 'none',
+          },
+          {
+            variant: 'underline',
+            styles: { textDecoration: 'underline' },
+            resting: 'underline',
+            focused: 'underline',
+          },
+        ] as const
+      ).map((variant) => ({ ...variant, actions })),
+    ),
+  )(
+    'matches command root text-decoration resets and explicit values ($variant, actions=$actions)',
+    async ({ actions, styles, resting, focused }) => {
+      render(
+        <Root>
+          <Menu aria-label="Decorations">
+            <Menu.Item
+              key="link"
+              to={destination}
+              styles={styles}
+              description="Link description"
+              actions={
+                actions ? (
+                  <Menu.Item.Action>Delete link</Menu.Item.Action>
+                ) : undefined
+              }
+            >
+              Link
+            </Menu.Item>
+            <Menu.Item
+              key="command"
+              styles={styles}
+              description="Command description"
+              actions={
+                actions ? (
+                  <Menu.Item.Action>Delete command</Menu.Item.Action>
+                ) : undefined
+              }
+            >
+              Command
+            </Menu.Item>
+          </Menu>
+        </Root>,
+      );
+      const row = screen.getByRole('menuitem', { name: 'Link' });
+      const command = screen.getByRole('menuitem', { name: 'Command' });
+      expect(getComputedStyle(command).textDecorationLine).toBe(resting);
+      expect(getComputedStyle(row).textDecorationLine).toBe(resting);
+      await act(() => row.focus());
+      expect(getComputedStyle(row).textDecorationLine).toBe(focused);
+      await act(() => command.focus());
+      expect(getComputedStyle(command).textDecorationLine).toBe(focused);
     },
   );
 

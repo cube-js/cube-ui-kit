@@ -45,7 +45,9 @@ export interface MenuItemProps<T> {
 /** @private */
 export function MenuItem<T>(props: MenuItemProps<T>) {
   const submenuContext = useContext(SubmenuTriggerContext);
-  return props.item.props.href != null && !submenuContext ? (
+  const hasActions =
+    !!props.item.props.actions && props.item.props.actions !== true;
+  return (props.item.props.href != null || hasActions) && !submenuContext ? (
     <MenuLinkItem {...props} />
   ) : (
     <MenuItemContent {...props} />
@@ -62,7 +64,7 @@ function MenuLinkItem<T>(props: MenuItemProps<T>) {
   const isCurrentDocument = props.item.props[CURRENT_DOCUMENT_LINK];
   const cleanTo = to != null ? parsedTo : isCurrentDocument ? '' : href;
   const isExternal = typeof cleanTo === 'string' && isExternalUrl(cleanTo);
-  const { navigate, resolvedHref } = useNavigation(
+  const { navigate, resolvedHref, isDefault } = useNavigation(
     isExternal ? '.' : cleanTo || '.',
     { relative: navigationOptions?.relative },
   );
@@ -101,8 +103,7 @@ function MenuLinkItem<T>(props: MenuItemProps<T>) {
     const anchor = activatedLink.current;
     if (!anchor) return;
     const nativeLink = anchor.cloneNode(false) as HTMLAnchorElement;
-    if (nativeRoute && cleanTo === '') window.location.reload();
-    else if (event) openLink(nativeLink, event, false);
+    if (event) openLink(nativeLink, event, false);
     else nativeLink.click();
   };
 
@@ -122,13 +123,9 @@ function MenuLinkItem<T>(props: MenuItemProps<T>) {
             event.button !== 0
           )
             return;
-          if (nativeRoute && cleanTo === '') {
-            event.preventDefault();
-            window.location.reload();
-            return;
-          }
           if (
             shouldClientNavigate(anchor, event) &&
+            !isDefault &&
             !isCurrentDocument &&
             !nativeRoute &&
             !isExternal
@@ -150,7 +147,8 @@ function MenuLinkItem<T>(props: MenuItemProps<T>) {
     <RouterProvider
       useHref={() => linkHref}
       navigate={() => {
-        if (isCurrentDocument || nativeRoute || isExternal) openNative();
+        if (isDefault || isCurrentDocument || nativeRoute || isExternal)
+          openNative();
         else if (cleanTo !== undefined) navigate(cleanTo, navigationOptions);
       }}
     >
@@ -166,18 +164,29 @@ function MenuLinkItem<T>(props: MenuItemProps<T>) {
   );
 }
 
-function normalizeNativeRootColor(color: Styles['color']): Styles['color'] {
-  if (color === false || color === '') return 'inherit';
-  if (!color || typeof color !== 'object' || Array.isArray(color)) return color;
-  const entries = Object.entries(color);
+function normalizeNativeReset(
+  value: Styles['color'],
+  replacement?: 'inherit',
+): Styles['color'];
+function normalizeNativeReset(
+  value: Styles['textDecoration'],
+  replacement: 'none',
+): Styles['textDecoration'];
+function normalizeNativeReset(
+  value: Styles['color'] | Styles['textDecoration'],
+  replacement = 'inherit',
+): Styles['color'] | Styles['textDecoration'] {
+  if (value === false || value === '') return replacement;
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return value;
+  const entries = Object.entries(value);
   return entries.some(([, value]) => value === false || value === '')
     ? Object.fromEntries(
         entries.map(([state, value]) => [
           state,
-          value === false || value === '' ? 'inherit' : value,
+          value === false || value === '' ? replacement : value,
         ]),
       )
-    : color;
+    : value;
 }
 
 function MenuItemContent<T>(
@@ -263,6 +272,7 @@ function MenuItemContent<T>(
   const {
     onKeyDown: itemOnKeyDown,
     onPointerDown: itemOnPointerDown,
+    onPointerUp: itemOnPointerUp,
     href: renderedHref,
     target: renderedTarget,
     rel: renderedRel,
@@ -276,11 +286,19 @@ function MenuItemContent<T>(
   const onPointerDown = (event: PointerEvent<FocusableElement>) => {
     // A modified native gesture must not start Aria's delayed-click fallback.
     if (
-      props.onNativeLinkElement &&
+      isLink &&
       (event.ctrlKey || event.metaKey || event.altKey || event.shiftKey)
     )
       return;
     itemOnPointerDown?.(event);
+  };
+  const onPointerUp = (event: PointerEvent<FocusableElement>) => {
+    if (
+      isLink &&
+      (event.ctrlKey || event.metaKey || event.altKey || event.shiftKey)
+    )
+      return;
+    itemOnPointerUp?.(event);
   };
   const onKeyDown = (e: KeyboardEvent<FocusableElement>) => {
     if (isLink && !isDisabled && (e.key === ' ' || e.key === 'Enter')) {
@@ -336,21 +354,29 @@ function MenuItemContent<T>(
 
   const mergedStyles = mergeStyles(ownStyles, styles);
   const nativeColor = props.nativeRoot
-    ? normalizeNativeRootColor(mergedStyles?.color)
+    ? normalizeNativeReset(mergedStyles?.color)
     : mergedStyles?.color;
+  const nativeDecoration = props.nativeRoot
+    ? normalizeNativeReset(mergedStyles?.textDecoration, 'none')
+    : mergedStyles?.textDecoration;
   const contentStyles =
-    nativeColor !== mergedStyles?.color
-      ? { ...mergedStyles, color: nativeColor }
+    nativeColor !== mergedStyles?.color ||
+    nativeDecoration !== mergedStyles?.textDecoration
+      ? {
+          ...mergedStyles,
+          color: nativeColor,
+          textDecoration: nativeDecoration,
+        }
       : mergedStyles;
   const directColor = props.nativeRoot
-    ? normalizeNativeRootColor(filteredItemProps.color)
+    ? normalizeNativeReset(filteredItemProps.color)
     : filteredItemProps.color;
   const contentProps =
     directColor !== filteredItemProps.color
       ? { ...filteredItemProps, color: directColor }
       : filteredItemProps;
   const nativeLinkProps: AnchorHTMLAttributes<HTMLAnchorElement> | undefined =
-    props.onNativeLinkElement
+    props.onNativeLinkElement && isLink
       ? {
           href: isDisabled ? undefined : props.nativeLinkHref,
           target: itemProps.target,
@@ -373,7 +399,7 @@ function MenuItemContent<T>(
     <FocusRing>
       <ItemWithNativeLinks
         {...mergeProps(
-          { ...itemOwnProps, onKeyDown, onPointerDown },
+          { ...itemOwnProps, onKeyDown, onPointerDown, onPointerUp },
           contentProps,
           {
             'data-popover-trigger': true,
