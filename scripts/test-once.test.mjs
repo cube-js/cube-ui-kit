@@ -187,6 +187,21 @@ describe('main', () => {
     expect(run).toHaveBeenCalledTimes(2);
   });
 
+  it('runs the suite every time below the top of the work tree', () => {
+    const run = passing();
+    const sub = join(dir, 'sub');
+
+    mkdirSync(join(sub, 'node_modules/.pnpm'), { recursive: true });
+    writeFileSync(
+      join(sub, 'node_modules/.pnpm/lock.yaml'),
+      'lockfileVersion: 9',
+    );
+    main([], { cwd: sub, run });
+    main([], { cwd: sub, run });
+
+    expect(run).toHaveBeenCalledTimes(2);
+  });
+
   it('runs the suite again after the install changes', () => {
     const run = passing();
 
@@ -229,7 +244,7 @@ describe('main', () => {
     const run = passing();
 
     main([], { cwd: dir, run });
-    vi.stubEnv(name, '1');
+    vi.stubEnv(name, `${process.env[name] ?? ''}-changed`);
     main([], { cwd: dir, run });
 
     expect(run).toHaveBeenCalledTimes(2);

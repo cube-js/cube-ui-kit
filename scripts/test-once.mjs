@@ -23,6 +23,8 @@ const root = resolve(import.meta.dirname, '..');
 // Environment variables that change what the suite checks, through Vitest
 // (CI, NODE_ENV), the runtime (locale, time zone, NODE_OPTIONS) or a test
 // (UPDATE_DEFAULTS). A test that starts reading another one adds it here.
+// Vitest also enters CI mode on a provider's variable (JENKINS_URL, …), which
+// only rejects a committed `.only`; that is left to CI.
 const KEYED_ENV = [
   'CI',
   'LANG',
@@ -66,6 +68,11 @@ function git(cwd, ...args) {
 
 /** Whether the working tree is clean, its tree, and what else a run depends on. */
 function readState(cwd) {
+  // Outside the top of its own repository, git would report an enclosing one.
+  if (git(cwd, 'rev-parse', '--show-prefix') !== '') {
+    throw new Error(`${cwd} is not the top of a work tree`);
+  }
+
   const installed = readFileSync(resolve(cwd, 'node_modules/.pnpm/lock.yaml'));
   const installHash = createHash('sha256').update(installed).digest('hex');
   const status = git(cwd, 'status', '--porcelain', '--untracked-files=normal');
