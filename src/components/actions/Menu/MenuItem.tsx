@@ -18,7 +18,7 @@ import { isExternalUrl } from '../../../providers/navigation-url';
 import { useNavigation } from '../../../providers/use-navigation';
 import { mergeProps } from '../../../utils/react';
 import { filterCollectionItemProps } from '../../CollectionItem';
-import { Item, ItemWithNativeLinks } from '../../content/Item/Item';
+import { ItemWithNativeLinks } from '../../content/Item/Item';
 import { parseTo } from '../use-action';
 
 import { useMenuContext } from './context';
@@ -334,7 +334,6 @@ function MenuItemContent<T>(
     menuitem: true,
   };
 
-  const ItemComponent = props.onNativeElement ? ItemWithNativeLinks : Item;
   const mergedStyles = mergeStyles(ownStyles, styles);
   const nativeColor = props.nativeRoot
     ? normalizeNativeRootColor(mergedStyles?.color)
@@ -372,7 +371,7 @@ function MenuItemContent<T>(
 
   const content = (
     <FocusRing>
-      <ItemComponent
+      <ItemWithNativeLinks
         {...mergeProps(
           { ...itemOwnProps, onKeyDown, onPointerDown },
           contentProps,
@@ -424,7 +423,7 @@ function MenuItemContent<T>(
         size={size === 'small' ? 'small' : 'medium'}
       >
         {rendered}
-      </ItemComponent>
+      </ItemWithNativeLinks>
     </FocusRing>
   );
 

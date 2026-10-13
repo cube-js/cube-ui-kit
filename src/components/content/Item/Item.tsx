@@ -482,9 +482,6 @@ const ItemElement = tasty({
     Label: {
       $: '>',
       margin: 0,
-      color: { '': '', 'native-link': 'inherit' },
-      outline: { '': '', 'native-link': 0 },
-      textDecoration: { '': '', 'native-link': 'none' },
       gridArea: 'label',
       display: 'block',
       placeSelf: 'center start',
@@ -503,7 +500,6 @@ const ItemElement = tasty({
     Description: {
       $: '>',
       gridArea: 'description',
-      display: { '': '', 'native-link': 'block' },
       preset: {
         '': 't4',
         'type=card | type=header': 't3',
@@ -511,8 +507,6 @@ const ItemElement = tasty({
       placeSelf: 'center start',
       boxSizing: 'border-box',
       color: 'inherit',
-      outline: { '': '', 'native-link': 0 },
-      textDecoration: { '': '', 'native-link': 'none' },
       opacity: {
         '': 0.75,
         'type=card | type=header': 1,
@@ -848,6 +842,17 @@ interface ItemWithNativeLinksProps extends CubeItemProps {
   onNativeElement?: (element: HTMLElement | null) => void;
 }
 
+// Native defaults stay beneath the owning Item's slot styles and their resets.
+const NativeItemLink = tasty({
+  as: 'a',
+  styles: {
+    display: 'block',
+    color: 'inherit',
+    textDecoration: 'none',
+    outline: 0,
+  },
+});
+
 const Item = <T extends HTMLElement = HTMLDivElement>(
   props: ItemWithNativeLinksProps,
   ref: ForwardedRef<T>,
@@ -1013,7 +1018,6 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     'has-description': showDescription,
     'has-actions': !!actions,
     'has-actions-content': !!(actions && actions !== true),
-    'native-link': !!nativeLinkProps,
     'auto-hide-actions': autoHideActions === true,
     'preserve-actions-space': preserveActionsSpace === true,
     'inside-wrapper': insideWrapper,
@@ -1145,18 +1149,18 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
           ? (() => {
               if (nativeLinkProps) {
                 return (
-                  <a
+                  <NativeItemLink
                     data-element="Label"
                     {...nativeLinkProps}
                     {...finalLabelProps}
                     data-menu-native-link=""
-                    ref={(element) => {
+                    ref={(element: HTMLAnchorElement | null) => {
                       labelRef(element);
                       onNativeLinkElement?.(element);
                     }}
                   >
                     {processedChildren}
-                  </a>
+                  </NativeItemLink>
                 );
               }
               const LabelTag =
@@ -1176,14 +1180,14 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
           : null}
         {showDescription ? (
           nativeLinkProps ? (
-            <a
+            <NativeItemLink
               data-element="Description"
               {...nativeLinkProps}
               {...descriptionProps}
               data-menu-native-link=""
               ref={
                 !hasLabel
-                  ? (element) => {
+                  ? (element: HTMLAnchorElement | null) => {
                       descriptionRef(element);
                       onNativeLinkElement?.(element);
                     }
@@ -1191,7 +1195,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
               }
             >
               {processedDescription}
-            </a>
+            </NativeItemLink>
           ) : (
             <div
               data-element="Description"

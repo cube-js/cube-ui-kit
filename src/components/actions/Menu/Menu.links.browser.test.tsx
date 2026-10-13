@@ -989,6 +989,54 @@ describe('Menu navigation links', () => {
     );
   });
 
+  it.each(
+    ['Label', 'Description'].flatMap((slot) =>
+      [false, null, { '': false }, { '': '' }].map((color) => ({
+        slot,
+        color,
+      })),
+    ),
+  )(
+    'inherits row color when the native $slot color is reset to $color',
+    ({ slot, color }) => {
+      const styles = {
+        color: '#purple-text',
+        Label: { color: slot === 'Label' ? color : undefined },
+        Description: { color: slot === 'Description' ? color : undefined },
+      };
+      render(
+        <Root>
+          <Menu aria-label="Slot colors">
+            <Menu.Item
+              key="link"
+              to={destination}
+              styles={styles}
+              description="Link details"
+              actions={<Menu.Item.Action>Delete link</Menu.Item.Action>}
+            >
+              Link
+            </Menu.Item>
+            <Menu.Item
+              key="command"
+              styles={styles}
+              description="Command details"
+            >
+              Command
+            </Menu.Item>
+          </Menu>
+        </Root>,
+      );
+      const row = screen.getByRole('menuitem', { name: 'Link' });
+      const command = screen.getByRole('menuitem', { name: 'Command' });
+      expect(
+        getComputedStyle(row.querySelector(`[data-element="${slot}"]`)!).color,
+      ).toBe(
+        getComputedStyle(command.querySelector(`[data-element="${slot}"]`)!)
+          .color,
+      );
+    },
+  );
+
   it('evaluates local focus predicates on the row for independent controls', async () => {
     const styles = {
       '@focus': ':focus',
