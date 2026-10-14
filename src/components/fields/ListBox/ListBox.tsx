@@ -520,7 +520,7 @@ const SelectAllOption = ({
       : label;
 
   const markIcon = isIndeterminate ? (
-    <Icon size={12} stroke={3}>
+    <Icon size={12} stroke={3} aria-hidden="true">
       <IconMinus />
     </Icon>
   ) : (
@@ -1037,7 +1037,11 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   // Merge React Aria listbox props with custom keyboard props so both sets of
   // event handlers (e.g. Arrow navigation *and* our Escape handler) are
   // preserved.
-  const mergedListBoxProps = mergeProps(listBoxProps, keyboardProps);
+  // `useListBox` takes no validation state, so the list would look invalid
+  // without a screen reader ever hearing it.
+  const mergedListBoxProps = mergeProps(listBoxProps, keyboardProps, {
+    'aria-invalid': isInvalid || undefined,
+  });
 
   // React Aria keeps a disabled list a Tab stop while no option has focus.
   if (isDisabled) {

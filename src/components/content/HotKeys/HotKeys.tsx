@@ -7,6 +7,7 @@ import {
 } from '@tenphi/tasty';
 import { Children, forwardRef, Fragment } from 'react';
 
+import { useI18n } from '../../../i18n';
 import { useKeySymbols } from '../../../utils/react/useKeySymbols';
 import { extractStyles } from '../../../utils/styles';
 import { Space } from '../../layout/Space';
@@ -15,7 +16,6 @@ import { Text } from '../Text';
 const StyledHotKeys = tasty(Space, {
   qa: 'HotKeys',
   role: 'group',
-  'aria-label': 'Keyboard shortcuts',
   styles: {
     display: 'inline-flex',
     flow: 'row',
@@ -69,12 +69,14 @@ export interface CubeHotKeysProps
 
 function HotKeys(props: CubeHotKeysProps, ref) {
   const { children, type, ...otherProps } = props;
+  const { t } = useI18n();
   const parsedKeys = useKeySymbols(Children.toArray(children).join(''));
   const styles = extractStyles(otherProps, CONTAINER_STYLES);
 
   return (
     <StyledHotKeys
       qa="HotKeys"
+      aria-label={t('hotKeys.ariaLabel', 'Keyboard shortcuts')}
       {...filterBaseProps(otherProps, { eventProps: true, labelable: true })}
       ref={ref}
       styles={styles}
@@ -83,14 +85,16 @@ function HotKeys(props: CubeHotKeysProps, ref) {
         <Fragment key={groupIndex}>
           {groupIndex > 0 && (
             <Text color="#dark-03" role="separator" aria-hidden="true">
-              or
+              {t('hotKeys.or', 'or')}
             </Text>
           )}
           <Space
             flow="row"
             gap="0.25x"
             role="group"
-            aria-label={`Key combination ${groupIndex + 1}`}
+            aria-label={t('hotKeys.combination', 'Key combination {{index}}', {
+              index: groupIndex + 1,
+            })}
           >
             {keyGroup.map((key, keyIndex) => (
               <KeyElement
@@ -98,7 +102,7 @@ function HotKeys(props: CubeHotKeysProps, ref) {
                 data-type={type}
                 as="kbd"
                 role="text"
-                aria-label={`Key ${key}`}
+                aria-label={t('hotKeys.key', 'Key {{key}}', { key })}
               >
                 {key}
               </KeyElement>

@@ -23,7 +23,10 @@ import { Action } from '../../actions/Action/Action';
 import { ItemAction } from '../../actions/ItemAction/ItemAction';
 import { Menu, MenuTrigger } from '../../actions/Menu';
 import { useContextMenu } from '../../actions/use-context-menu';
-import { Placeholder } from '../../content/Placeholder/Placeholder';
+import {
+  Placeholder,
+  PlaceholderGroupContext,
+} from '../../content/Placeholder/Placeholder';
 import { Skeleton } from '../../content/Skeleton/Skeleton';
 import { TextItem } from '../../content/TextItem';
 import { Checkbox } from '../../fields/Checkbox';
@@ -995,7 +998,10 @@ export function TableView<T = any>(props: TableViewProps<T>) {
         aria-colindex={column.ariaColIndex}
         style={pinStyle(column)}
       >
-        <Placeholder />
+        {/* The row is `aria-busy`, which already says it is loading. */}
+        <PlaceholderGroupContext.Provider value>
+          <Placeholder />
+        </PlaceholderGroupContext.Provider>
       </td>
     );
   }

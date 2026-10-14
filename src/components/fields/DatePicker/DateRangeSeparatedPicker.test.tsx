@@ -22,6 +22,25 @@ describe('<DateRangeSeparatedPicker />', () => {
     });
   };
 
+  it('names each calendar button for its endpoint', () => {
+    const { getByRole } = renderWithRoot(
+      <DateRangeSeparatedPicker aria-label="Range" />,
+    );
+
+    // React Aria names both "Calendar", which tells a screen reader user
+    // nothing about which date the button opens.
+    expect(
+      getByRole('button', {
+        name: /^Show calendar for the start date/,
+      }),
+    ).toBeInTheDocument();
+    expect(
+      getByRole('button', {
+        name: /^Show calendar for the end date/,
+      }),
+    ).toBeInTheDocument();
+  });
+
   it('renders both endpoints from an uncontrolled default range', async () => {
     const { baseElement, getAllByRole } = renderWithRoot(
       <DateRangeSeparatedPicker

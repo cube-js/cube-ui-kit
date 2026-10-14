@@ -2,6 +2,7 @@ import { Styles, tasty } from '@tenphi/tasty';
 import { ReactNode } from 'react';
 
 import { useEvent } from '../../../_internal';
+import { useI18n } from '../../../i18n';
 import { Radio } from '../RadioGroup';
 import { Slider } from '../Slider';
 
@@ -181,6 +182,7 @@ export function ColorPanel(props: ColorPanelProps) {
     onChange,
     onSpaceChange,
   } = props;
+  const { t } = useI18n();
 
   const colorTokens = {
     '--color-picker-color': toHex(color),
@@ -196,7 +198,7 @@ export function ColorPanel(props: ColorPanelProps) {
       {input}
       <PreviewElement>{formatColor(color, previewFormat)}</PreviewElement>
       <Radio.Tabs
-        aria-label="Color space"
+        aria-label={t('colorPicker.colorSpace', 'Color space')}
         value={space}
         isDisabled={isDisabled}
         styles={SPACE_STYLES}

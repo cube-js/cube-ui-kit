@@ -38,6 +38,7 @@ Project-specific working rules for AI agents. Not published with the package.
 - [documentation.md](docs/rules/documentation.md) — `.docs.mdx` structure + update flow
 - [tests.md](docs/rules/tests.md) — Vitest + React Testing Library patterns
 - [probe.md](docs/rules/probe.md) — `pnpm probe`: inspecting the HTML, CSS and tokens a render actually produces
+- [screen-reader.md](docs/rules/screen-reader.md) — the virtual screen reader: `pnpm probe render --sr` and the spec helpers, with the limits that make a silence the simulator's rather than the component's
 - [commit-changes.md](docs/rules/commit-changes.md) — commit message convention
 - [eslint-plugin.md](docs/rules/eslint-plugin.md) — the shipped lint rule + the defaults registry it checks against
 - [review.md](docs/rules/review.md) — shared UI Kit review checklist, scope and verification; the local `ui-review` skill reads this file
@@ -110,6 +111,12 @@ Use it as freely as you like, either tier: it is a throwaway question-answering 
 
 The DOM helpers behind it live in `src/probe/` and ship as the `@cube-dev/ui-kit/probe` entry, which Cube Cloud's own `yarn probe` imports. Changing them is a change to published API.
 
+## Hearing What a Screen Reader Says
+
+"What does a screen reader announce here?" is one call: `pnpm probe render --sr`, on either tier. It reads the page with [`@guidepup/virtual-screen-reader`](https://www.guidepup.dev/docs/virtual) and prints each phrase — `button, Save`, `checkbox, Accept, not checked`, `polite: Added two`. A snippet that exports `play({ reader, screen, userEvent, waitFor, within })` drives keys and focus first, and `--sr` then prints what was said during `play` as well. Use it before you claim or fix anything about names, descriptions, states, reading order, modal containment or announcements.
+
+In specs, use `startScreenReader()` / `readWithScreenReader()` from `src/test/screen-reader.ts`, imported by path. **Never call the package's `virtual.start()` directly**: it is a singleton whose unstopped sessions keep writing into later specs' logs. It is a simulator with blind spots — an inserted `role="alert"` is silent, and `press()` re-focuses the element under its cursor — so **read [`docs/rules/screen-reader.md`](docs/rules/screen-reader.md)** before trusting a silence, and confirm a new pattern with VoiceOver or NVDA.
+
 ## Project Structure
 
 ```
@@ -134,7 +141,7 @@ Each component lives in `src/components/{category}/{ComponentName}/` and ships `
 - `pnpm test` — run all tests (Vitest); add `-- ComponentName` to filter, `-u` to update snapshots
 - `pnpm test:once` — the full `pnpm test` (no test arguments), skipped when this exact tree is the last one that passed it in this worktree: a clean working tree (no changes, no untracked files, no tracked file written during that run) with the same Node, install and test environment (`KEYED_ENV` in the script; a test that reads another environment variable adds it there). It never selects tests by changed files. See [`scripts/test-once.mjs`](scripts/test-once.mjs)
 - `pnpm test:browser` — run the `*.browser.test.tsx` specs in real Chromium (layout, pointer, observers)
-- `pnpm probe` — print the HTML, CSS or tokens a snippet actually produces, with the real config loaded. `pnpm probe:browser` for computed values, geometry and screenshots. See [Inspecting Rendered HTML & CSS](#inspecting-rendered-html--css--pnpm-probe)
+- `pnpm probe` — print the HTML, CSS or tokens a snippet actually produces, with the real config loaded. `pnpm probe:browser` for computed values, geometry and screenshots; `render --sr` for what a screen reader says. See [Inspecting Rendered HTML & CSS](#inspecting-rendered-html--css--pnpm-probe) and [Hearing What a Screen Reader Says](#hearing-what-a-screen-reader-says)
 - `pnpm fix` — lint + format (Oxlint + Prettier)
 - `pnpm size` — check bundle size limits
 - `pnpm chromatic` — visual regression
@@ -215,4 +222,5 @@ Full rules in [`src/i18n/README.md`](src/i18n/README.md). The short version:
 - **QA selectors:** `qa` prop → `data-qa` attribute → `screen.getByTestId('name')` (`testIdAttribute` is configured to `data-qa`).
 - **Tasty snapshots:** `toMatchTastySnapshot()` captures markup + CSS together.
 - **Not every question needs a spec.** If you only want to _see_ what something renders, run [`pnpm probe`](#inspecting-rendered-html--css--pnpm-probe) instead of writing a spec to delete afterwards.
+- **Screen reader:** `startScreenReader()` / `readWithScreenReader()` from `src/test/screen-reader.ts` assert what a user hears. See [Hearing What a Screen Reader Says](#hearing-what-a-screen-reader-says).
 - Patterns: see [docs/rules/tests.md](docs/rules/tests.md).

@@ -53,6 +53,9 @@ Options
   --full-css          render: do not subtract the baseline
   --canonical         render: normalise tasty hashes and React IDs (for
                       diffing). Applies on both tiers.
+  --sr                render: read the page with a virtual screen reader and
+                      print what it speaks, then the HTML (no CSS). Applies
+                      on both tiers.
   --json              print the raw result JSON
 
 Options for 'pnpm probe:browser' only (these need a real browser)
@@ -70,12 +73,39 @@ Notes
   or leave bare JSX as the last expression. '@cube-dev/ui-kit' is aliased to
   this working copy's src, so a snippet reads exactly like consumer code.
 
+  A snippet may also export 'play', run after the mount and before anything
+  is captured: play({ reader, screen, userEvent, waitFor, within }). 'reader'
+  is the virtual screen reader; --sr prints what it said during play, before
+  the reading of the final page.
+
 Example
   pnpm probe render <<'TSX'
   import { Button } from '@cube-dev/ui-kit';
   <Button type="primary">Hello</Button>
   TSX
 `.trim();
+
+/**
+ * `--sr` reads a rendered snippet, so it means nothing to the other modes. And
+ * its text output has no CSS, so `--full-css` beside it would be dropped unseen
+ * — except under `--json`, which keeps both.
+ */
+function checkScreenReaderOptions(options) {
+  if (!options.screenReader) return null;
+
+  if (options.mode !== 'render') {
+    return `probe ${options.mode}: --sr reads a rendered snippet. Use 'probe render --sr'.`;
+  }
+
+  if (options.fullCss && !options.json) {
+    return (
+      `probe render: --sr prints what a screen reader speaks and no CSS, so ` +
+      `--full-css has no effect beside it. Add --json to keep both, or run them separately.`
+    );
+  }
+
+  return null;
+}
 
 function parseArgs(argv) {
   const [mode, ...rest] = argv;
@@ -118,6 +148,8 @@ function parseArgs(argv) {
       options.fullCss = true;
     } else if (arg === '--canonical') {
       options.canonical = true;
+    } else if (arg === '--sr') {
+      options.screenReader = true;
     } else if (arg === '--json') {
       options.json = true;
     } else if (arg === '--hc') {
@@ -300,6 +332,13 @@ function main() {
     process.exit(1);
   }
 
+  const screenReaderError = checkScreenReaderOptions(options);
+
+  if (screenReaderError) {
+    console.error(screenReaderError);
+    process.exit(1);
+  }
+
   // Fresh id per invocation: the absence of THIS run's result file is the
   // unambiguous signal that the harness itself failed, and a leftover file
   // from an earlier run must never be mistaken for an answer.
@@ -322,6 +361,7 @@ function main() {
     outPath,
     fullCss: Boolean(options.fullCss),
     canonical: Boolean(options.canonical),
+    screenReader: Boolean(options.screenReader),
   };
 
   if (options.mode === 'styles') {
@@ -408,6 +448,9 @@ function main() {
         PROBE_JSDOM_VERSION: readJsdomVersion(),
         // Selects vitest's non-TTY reporter.
         CI: '1',
+        // Testing Library colours the DOM it prints when a query in `play`
+        // fails, and the escape codes would land in the reported message.
+        COLORS: 'false',
       },
     },
   );
@@ -517,7 +560,11 @@ function print(result, options, harnessLog = '') {
 
   if (result.ok === false) {
     console.error(
-      `Snippet failed to ${result.kind === 'compile' ? 'compile' : 'render'}:\n`,
+      {
+        play: `The snippet's play() failed:\n`,
+        read: `The screen reader could not read the page:\n`,
+        compile: `Snippet failed to compile:\n`,
+      }[result.kind] ?? `Snippet failed to render:\n`,
     );
     console.error(result.message);
     printHarnessLog();
@@ -594,6 +641,20 @@ function print(result, options, harnessLog = '') {
     console.log(`=== SCREENSHOT ===\n${result.screenshotPath}\n`);
   }
 
+  const printSpoken = (title, phrases) => {
+    console.log(`=== ${title} ===`);
+    console.log(phrases.length ? phrases.join('\n') : '(nothing is announced)');
+    console.log('');
+  };
+
+  if (result.spokenDuringPlay) {
+    printSpoken('SCREEN READER — during play()', result.spokenDuringPlay);
+  }
+
+  if (result.spoken) {
+    printSpoken('SCREEN READER — reading the page', result.spoken);
+  }
+
   if (result.mode === 'render') {
     console.log('=== HTML ===');
     console.log(result.html);
@@ -606,8 +667,11 @@ function print(result, options, harnessLog = '') {
       }
     }
 
-    console.log(`\n=== CSS (${result.ruleCount} rules) ===`);
-    console.log(result.css);
+    // Under `--sr` the question is what is announced; the CSS stays in `--json`.
+    if (!result.spoken) {
+      console.log(`\n=== CSS (${result.ruleCount} rules) ===`);
+      console.log(result.css);
+    }
   }
 
   if (result.warnings?.length) {

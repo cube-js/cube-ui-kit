@@ -64,7 +64,9 @@
   },
   "commandMenu": {
     "searchPlaceholder": "Tìm kiếm lệnh...",
-    "empty": "Không tìm thấy lệnh"
+    "empty": "Không tìm thấy lệnh",
+    "menu": "Menu lệnh",
+    "loading": "Đang tải lệnh"
   },
   "listBoxPopover": {
     "options": "Tùy chọn"
@@ -73,6 +75,7 @@
     "time": "Thời gian",
     "startTime": "Thời gian bắt đầu",
     "endTime": "Thời gian kết thúc",
+    "showStartCalendar": "Hiển thị lịch cho ngày bắt đầu",
     "showEndCalendar": "Hiển thị lịch cho ngày kết thúc",
     "selectWeek": "Chọn tuần",
     "selectMonth": "Chọn tháng",
@@ -102,7 +105,8 @@
   "textInputMapper": {
     "key": "Khóa",
     "value": "Giá trị",
-    "removeMapping": "Xóa ánh xạ"
+    "removeMapping": "Xóa ánh xạ",
+    "mapping": "Ánh xạ"
   },
   "copySnippet": {
     "title": "Ví dụ mã",
@@ -148,10 +152,17 @@
   },
   "layout": {
     "closePanel": "Đóng bảng điều khiển",
-    "goBack": "Quay lại"
+    "goBack": "Quay lại",
+    "resizePaneRight": "Đổi kích thước ngăn (phải)",
+    "resizePaneBottom": "Đổi kích thước ngăn (dưới)",
+    "resizeLeftPanel": "Đổi kích thước bảng điều khiển bên trái",
+    "resizeTopPanel": "Đổi kích thước bảng điều khiển phía trên",
+    "resizeRightPanel": "Đổi kích thước bảng điều khiển bên phải",
+    "resizeBottomPanel": "Đổi kích thước bảng điều khiển phía dưới"
   },
   "tree": {
-    "actions": "Hành động"
+    "actions": "Hành động",
+    "ariaLabel": "Cây"
   },
   "banner": {
     "hideBanner": "Ẩn biểu ngữ"
@@ -204,5 +215,27 @@
     "copiedCells_one": "Đã sao chép {{count}} ô",
     "copiedCells_other": "Đã sao chép {{count}} ô",
     "refreshing": "Đang làm mới"
+  },
+  "buttonSplit": {
+    "moreOptions": "Tùy chọn khác"
+  },
+  "colorInput": {
+    "openColorPicker": "Mở bộ chọn màu"
+  },
+  "colorPicker": {
+    "colorPicker": "Bộ chọn màu",
+    "colorValue": "Giá trị màu",
+    "palette": "Bảng màu",
+    "colorSpace": "Không gian màu"
+  },
+  "colorSwatchGroup": {
+    "colors": "Màu",
+    "customColor": "Màu tùy chỉnh"
+  },
+  "hotKeys": {
+    "ariaLabel": "Phím tắt",
+    "combination": "Tổ hợp phím {{index}}",
+    "key": "Phím {{key}}",
+    "or": "hoặc"
   }
 }

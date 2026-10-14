@@ -144,6 +144,18 @@ function Menu<T extends object>(
   const { menuProps } = useMenu(completeProps, state, domRef);
   const styles = extractStyles(completeProps, CONTAINER_STYLES);
 
+  // `useMenu` already put the id and the name on the `menu` list. Repeated on
+  // the wrapper, the id is a duplicate — a trigger's `aria-controls` finds the
+  // wrapper first — and the name labels a plain `div`.
+  const {
+    id: _id,
+    'aria-label': _ariaLabel,
+    'aria-labelledby': _ariaLabelledBy,
+    'aria-describedby': _ariaDescribedBy,
+    'aria-details': _ariaDetails,
+    ...wrapperProps
+  } = filterBaseProps(completeProps) as Record<string, unknown>;
+
   const wrapperMods = {
     popover: completeProps.mods?.popover,
     footer: !!footer,
@@ -220,7 +232,7 @@ function Menu<T extends object>(
       qa={qa}
       styles={styles}
       mods={wrapperMods}
-      {...(filterBaseProps(completeProps) as Record<string, unknown>)}
+      {...wrapperProps}
     >
       {header ? (
         <StyledHeader data-size={size} styles={headerStyles}>

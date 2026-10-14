@@ -8,7 +8,8 @@
 | --- | --- |
 | `locales.ts` | `SUPPORTED_LOCALES` (the 12 Cloud locales), `SupportedLocale`, `LOCALE_LABELS`, `isSupportedLocale`. Self-contained — no dependency on the cloud `cross-runtime` package. |
 | `instance.ts` | Creates the default instance, eagerly registers all 12 `uikit` bundles, and exports `getI18n()` plus the request-safe `createUIKitI18n(locale)` factory. |
-| `useI18n.ts` | Internal hook every UI Kit component uses: `useTranslation('uikit')`. It reads the nearest provider (including a request-local one) and falls back to the default instance outside a provider. Not part of the public barrel. |
+| `namespace.ts` | `UIKIT_I18N_NAMESPACE` on its own, so a component reading strings does not import the instance and every locale bundle with it. |
+| `useI18n.ts` | Internal hook every UI Kit component uses: `useTranslation('uikit')`. It reads the nearest provider (including a request-local one) and falls back to the default instance outside a provider, once something has loaded it — `<Root>` always does. Not part of the public barrel. |
 | `I18nProvider.tsx` | The UI Kit's single provider — composes `<I18nextProvider>` (translated strings) and React Aria's `<I18nProvider>` (locale formatting). Rendered once by `Root`. |
 | `index.ts` | Public UI Kit i18n API: `getI18n`, `addUIKitLocale`, `I18nProvider`, the formatters, locale exports. |
 | `locales/<locale>/uikit.json` | One bundle per locale. `en-US` is the source of truth. |

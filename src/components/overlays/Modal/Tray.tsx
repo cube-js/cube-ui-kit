@@ -9,9 +9,14 @@ import {
 } from 'react-aria';
 
 import { mergeProps } from '../../../utils/react';
+import { mergeRefs } from '../../../utils/react/useCombinedRefs';
 import { useOverlayEscapeGuard } from '../../../utils/react/useOverlayEscapeGuard';
 
 import { OVERLAY_WRAPPER_STYLES } from './Modal';
+import {
+  ModalContainmentProvider,
+  useModalContainment,
+} from './modal-containment';
 import { CubeOverlayProps, Overlay } from './Overlay';
 import { TransitionState } from './types';
 import { Underlay } from './Underlay';
@@ -97,21 +102,29 @@ function Tray(props: CubeTrayProps, ref: ForwardedRef<HTMLElement>) {
   // Same as `Modal`: a tray pressed while it closes must not take `Escape`.
   const overlayProps = useOverlayEscapeGuard(rawOverlayProps, props.isOpen);
 
+  // Same as `Modal`: the page behind an open tray is hidden.
+  const { containment, ref: containmentRef } = useModalContainment(
+    !isNonModal,
+    !!props.isOpen,
+  );
+
   return (
-    <Overlay {...otherProps}>
-      <Underlay {...underlayProps} />
-      <TrayWrapper
-        ref={domRef}
-        qa={qa}
-        overlayProps={overlayProps}
-        isFixedHeight={isFixedHeight}
-        isNonModal={isNonModal}
-        styles={styles}
-        onClose={onClose}
-      >
-        {children}
-      </TrayWrapper>
-    </Overlay>
+    <ModalContainmentProvider value={containment}>
+      <Overlay {...otherProps}>
+        <Underlay {...underlayProps} />
+        <TrayWrapper
+          ref={mergeRefs(domRef, containmentRef)}
+          qa={qa}
+          overlayProps={overlayProps}
+          isFixedHeight={isFixedHeight}
+          isNonModal={isNonModal}
+          styles={styles}
+          onClose={onClose}
+        >
+          {children}
+        </TrayWrapper>
+      </Overlay>
+    </ModalContainmentProvider>
   );
 }
 

@@ -143,19 +143,16 @@ describe('action `label` deprecation', () => {
 
   it('keeps a consumer `label` on dialog buttons, and warns once', () => {
     renderWithRoot(
-      <>
-        <DialogContainer isOpen onDismiss={() => {}}>
-          <DialogForm
-            title="Edit"
-            submitProps={{ label: 'Save' }}
-            cancelProps={{ label: 'Discard' }}
-            onSubmit={() => {}}
-          >
-            Body
-          </DialogForm>
-        </DialogContainer>
-        <Button label="Plain" />
-      </>,
+      <DialogContainer isOpen onDismiss={() => {}}>
+        <DialogForm
+          title="Edit"
+          submitProps={{ label: 'Save' }}
+          cancelProps={{ label: 'Discard' }}
+          onSubmit={() => {}}
+        >
+          <Button label="Plain" />
+        </DialogForm>
+      </DialogContainer>,
     );
 
     // The consumer's text wins over the dialog's default.

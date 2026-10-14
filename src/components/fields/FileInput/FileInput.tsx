@@ -21,7 +21,7 @@ import {
 import { useEvent } from '../../../_internal/hooks/use-event';
 import { useI18n } from '../../../i18n';
 import { FieldBaseProps } from '../../../shared';
-import { useCombinedRefs } from '../../../utils/react';
+import { mergeProps, useCombinedRefs } from '../../../utils/react';
 import { extractStyles } from '../../../utils/styles';
 import { Action } from '../../actions';
 import {
@@ -31,6 +31,7 @@ import {
   wrapWithField,
 } from '../../form';
 
+import type { AriaLabelingProps } from '@react-types/shared';
 import type { ChangeEvent } from 'react';
 import type { AriaTextFieldProps } from 'react-aria';
 import type { Props } from '../../../props';
@@ -236,6 +237,23 @@ function FileInput(allProps: CubeFileInputProps, ref) {
 
   let styles = extractStyles(otherProps, CONTAINER_STYLES);
 
+  // The button is the control: the label points at the hidden native input so
+  // that clicking it opens the file dialog, but the button is what takes focus.
+  // So it names itself — the label, or its own `aria-label`, then what it says
+  // — and takes the field's description and message.
+  const {
+    'aria-label': ariaLabel,
+    'aria-labelledby': ariaLabelledBy,
+    'aria-describedby': ariaDescribedBy,
+  } = props as AriaLabelingProps;
+  // A caller's own label id is kept: the trigger refers to whichever it is.
+  const labelId = props.labelProps?.id ?? `${id}-label`;
+  const triggerId = `${id}-trigger`;
+  const chooseFileId = `${id}-choose-file`;
+  const fileNameId = `${id}-file-name`;
+  const nameSource =
+    ariaLabelledBy ?? (props.label ? labelId : ariaLabel ? triggerId : null);
+
   // Expose imperative interface for ref
   useImperativeHandle(ref, () => ({
     ...createFocusableRef(domRef, inputRef),
@@ -252,6 +270,12 @@ function FileInput(allProps: CubeFileInputProps, ref) {
   const fileInput = (
     <FileInputElement
       ref={domRef}
+      id={triggerId}
+      aria-label={ariaLabel}
+      aria-labelledby={[nameSource, chooseFileId, fileNameId]
+        .filter(Boolean)
+        .join(' ')}
+      aria-describedby={ariaDescribedBy}
       styles={inputStyles}
       isDisabled={isDisabled}
       mods={{
@@ -289,10 +313,10 @@ function FileInput(allProps: CubeFileInputProps, ref) {
         }}
         {...inputProps}
       />
-      <div data-element="Button">
+      <div id={chooseFileId} data-element="Button">
         {t('fileInput.chooseFile', 'Choose file')}
       </div>
-      <div data-element={fileName ? 'Value' : 'Placeholder'}>
+      <div id={fileNameId} data-element={fileName ? 'Value' : 'Placeholder'}>
         {fileName ||
           placeholder ||
           t('fileInput.noFileSelected', 'No file selected')}
@@ -303,6 +327,7 @@ function FileInput(allProps: CubeFileInputProps, ref) {
 
   return wrapWithField(fileInput, domRef, {
     ...props,
+    labelProps: mergeProps(props.labelProps, { id: labelId }),
   });
 }
 

@@ -5,8 +5,10 @@ import { AriaOverlayProps, useModal, useOverlay } from 'react-aria';
 
 import { PlacementAxis } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
+import { mergeRefs } from '../../../utils/react/useCombinedRefs';
 import { useOverlayEscapeGuard } from '../../../utils/react/useOverlayEscapeGuard';
 
+import { useModalLayerRef } from './modal-containment';
 import { CubeOverlayProps, Overlay } from './Overlay';
 import { TransitionState } from './types';
 
@@ -89,10 +91,13 @@ function Popover(props: CubePopoverProps, ref: ForwardedRef<HTMLElement>) {
   // while it animates out — see `useOverlayEscapeGuard`.
   const overlayProps = useOverlayEscapeGuard(rawOverlayProps, props.isOpen);
 
+  // Opened inside a modal, it stays readable while the modal hides the page.
+  const layerRef = useModalLayerRef();
+
   return (
     <Overlay {...otherProps}>
       <PopoverWrapper
-        ref={domRef}
+        ref={mergeRefs(domRef, layerRef)}
         qa={qa}
         style={style}
         styles={styles}

@@ -4,6 +4,7 @@ import { useEvent } from '../../../../_internal/index';
 import { useProviderProps } from '../../../../provider';
 import { mergeProps } from '../../../../utils/react/index';
 import { warn } from '../../../../utils/warnings';
+import { useFieldDescribedBy } from '../../FieldWrapper/field-description';
 import { useValidationProps } from '../../validation/index';
 import { isModernFormController } from '../backend';
 import { useInsideLegacyField } from '../Field';
@@ -214,7 +215,17 @@ export function useFieldProps<
     domProps.name != null && typeof domProps.name !== 'string'
       ? { ...domProps, name: getFieldKey(domProps.name) }
       : domProps;
-  useDebugValue(namedProps);
+  // Every input forwards `aria-describedby` to its control, so pointing it at
+  // the field's description and message here reaches all of them.
+  const describedBy = useFieldDescribedBy(
+    namedProps.id,
+    namedProps['aria-describedby'],
+  );
+  const describedProps =
+    describedBy === namedProps['aria-describedby']
+      ? namedProps
+      : { ...namedProps, 'aria-describedby': describedBy };
+  useDebugValue(describedProps);
 
-  return namedProps as unknown as ResolvedFieldProps<Props>;
+  return describedProps as unknown as ResolvedFieldProps<Props>;
 }

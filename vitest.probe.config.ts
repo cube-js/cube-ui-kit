@@ -37,6 +37,10 @@ export default defineConfig(
       // on every invocation, which is the latency you actually feel.
       isolate: false,
       fileParallelism: false,
+      // A snippet's `play` can `waitFor` up to the 15s `asyncUtilTimeout` from
+      // `src/test/setup.ts`. Vitest's 5s default would kill the run first, and
+      // the probe would report a harness failure instead of play's own error.
+      testTimeout: 60_000,
     },
   }),
 );

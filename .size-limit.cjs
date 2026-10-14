@@ -344,7 +344,13 @@ module.exports = [
     // measure 605,746 B against main's 604,370 B at 9dbf967a (+1,376 B).
     // Button stays exactly 133,148 B: the window and its compatibility checks
     // tree-shake with TableBase. Allow 606 kB and confirm the figure in CI.
-    limit: '606kB',
+    //
+    // Screen reader fixes: 609.76 kB on a fresh local build against main's
+    // 605.75 kB at 92561aa4, also fresh: +4.01 kB. Modal containment
+    // (`modal-containment.ts` and React Aria's `ariaHideOutside`), linked field
+    // descriptions, and 23 accessible-name strings in each of the twelve
+    // locales. Allow 611 kB, about 1.2 kB headroom; confirm in CI.
+    limit: '611kB',
   },
   {
     name: 'Tree shaking (just a Button)',
@@ -439,6 +445,18 @@ module.exports = [
     // Consolidated Aria/Stately: CI run 37645724070 measured 134,798 B,
     // +1,531 B against main's 133,267 B (run 37641760486, 09ee2973).
     // Shared accessibility code fits in 136 kB with 1,202 B headroom.
-    limit: '136kB',
+    //
+    // Screen reader fixes: 152.64 kB on a fresh local build against main's
+    // 133.15 kB at 92561aa4, also fresh: +19.49 kB. 17.79 kB of it is
+    // react-i18next and i18next's core. `Button.Split` is a static of `Button`,
+    // and `ButtonSplit` and `HotKeys` (through `Menu` and `Item`) now translate
+    // the names they set, so `{ Button }` reaches `useI18n` for the first time.
+    // An app pays none of it: `<Root>` already loads i18n through
+    // `I18nProvider`. The twelve locale bundles stay out, because `useI18n`
+    // reads its namespace from `namespace.ts` rather than from the instance;
+    // with them this entry measured 167.52 kB. The other 1.7 kB is modal
+    // containment, which `Menu`'s tray and `Tooltip` reach, and the `Menu`
+    // naming fixes. Allow 153 kB, about 360 B headroom; confirm in CI.
+    limit: '153kB',
   },
 ];

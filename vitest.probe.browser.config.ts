@@ -42,6 +42,8 @@ export default defineConfig(
     },
     test: {
       include: ['src/test/probe/harness.browser.probe.tsx'],
+      // Room for a `play` that waits — see `vitest.probe.config.ts`.
+      testTimeout: 60_000,
       browser: {
         // `commands.writeFile` is gated on `allowWrite`, which silently flips to
         // false when `api.host` is set to anything but localhost. Left unset on

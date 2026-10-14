@@ -167,11 +167,10 @@ function ConditionalDialog() {
 - Dialog announces as "dialog" to screen readers
 - Focus is trapped within the dialog when open
 - Focus management is handled automatically
-- Modal state is properly communicated to assistive technologies
 
 ### ARIA Properties
 
-- `aria-modal` - Set to true to indicate modal behavior
+- `aria-modal` - Not set. While a modal, fullscreen or tray dialog is open, the page behind it is `aria-hidden` instead, so a screen reader's reading cursor stays in the dialog. Lists, menus and popovers opened from the dialog render outside it and stay readable, which `aria-modal` would prevent. Popover and panel dialogs leave the page readable
 - `aria-labelledby` - Links dialog to its title automatically
 - `aria-describedby` - Links dialog to its description content
 - `role` - Set to "dialog" for proper semantic meaning

@@ -15,6 +15,15 @@ describe('<Placeholder />', () => {
     });
   });
 
+  it('is a loading region, not an empty live region', () => {
+    renderWithRoot(<Placeholder />);
+
+    // A live region with nothing in it never speaks.
+    expect(
+      screen.getByRole('region', { name: 'Content is loading' }),
+    ).not.toHaveAttribute('aria-live');
+  });
+
   it('keeps its marker when the caller sets qa and aria-label', () => {
     renderWithRoot(
       <>

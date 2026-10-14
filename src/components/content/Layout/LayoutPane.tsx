@@ -21,6 +21,7 @@ import {
 import { useFocusRing, useHover, useMove } from 'react-aria';
 
 import { useDebouncedValue } from '../../../_internal/hooks';
+import { useI18n } from '../../../i18n';
 import { mergeProps, useCombinedRefs } from '../../../utils/react';
 import { extractStyles } from '../../../utils/styles';
 
@@ -259,6 +260,7 @@ function PaneResizeHandler(props: PaneResizeHandlerProps) {
     onHoverChange,
     onFocusChange,
   } = props;
+  const { t } = useI18n();
   const { hoverProps, isHovered } = useHover({
     onHoverChange,
   });
@@ -277,7 +279,10 @@ function PaneResizeHandler(props: PaneResizeHandlerProps) {
         tabIndex: isDisabled ? undefined : 0,
         role: 'separator',
         'aria-orientation': isHorizontal ? 'vertical' : 'horizontal',
-        'aria-label': `Resize pane ${edge}`,
+        'aria-label':
+          edge === 'right'
+            ? t('layout.resizePaneRight', 'Resize pane right')
+            : t('layout.resizePaneBottom', 'Resize pane bottom'),
         onDoubleClick: isDisabled ? undefined : onDoubleClick,
       })}
     >

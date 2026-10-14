@@ -12,6 +12,11 @@ import { Label, NecessityIndicatorMark } from '../Label';
 import { warnAboutLegacyTooltip } from '../legacy-tooltip';
 import { getValidationMods } from '../validation/index';
 
+import {
+  getFieldDescriptionId,
+  getFieldMessageId,
+  useFieldTextId,
+} from './field-description';
 import { CubeFieldWrapperProps } from './types';
 
 const FieldElement = tasty({
@@ -131,6 +136,7 @@ export const FieldWrapper = forwardRef(function FieldWrapper(
     description,
     errorMessage,
     Component,
+    controlId,
     isInvalid,
     isValid,
     requiredMark = true,
@@ -210,12 +216,27 @@ export const FieldWrapper = forwardRef(function FieldWrapper(
     </Label>
   ) : null;
 
+  // Determine which message to display (errorMessage takes precedence, then message for backward compatibility)
+  const displayMessage = errorMessage || message;
+  const isErrorMessage = !!errorMessage;
+  const isMessageShown = !!displayMessage && !isDisabled;
+
+  // An id only on what is actually rendered, registered for the control's
+  // `aria-describedby` — see `useFieldDescribedBy`.
+  const descriptionId =
+    controlId && description ? getFieldDescriptionId(controlId) : undefined;
+  const messageId =
+    controlId && isMessageShown ? getFieldMessageId(controlId) : undefined;
+
+  useFieldTextId(descriptionId);
+  useFieldTextId(messageId);
+
   // Create description component with proper styling
   const createDescriptionComponent = () => {
     if (!description) return null;
 
     return (
-      <DescriptionElement data-element="Description">
+      <DescriptionElement id={descriptionId} data-element="Description">
         {wrapNodeIfPlain(description, () => (
           <span>{description}</span>
         ))}
@@ -237,10 +258,6 @@ export const FieldWrapper = forwardRef(function FieldWrapper(
     'has-description': !!description,
     ...getValidationMods({ isInvalid, isValid }),
   };
-
-  // Determine which message to display (errorMessage takes precedence, then message for backward compatibility)
-  const displayMessage = errorMessage || message;
-  const isErrorMessage = !!errorMessage;
 
   // Merge fieldProps with styles to ensure both are applied
   const mergedFieldProps = styles
@@ -265,8 +282,9 @@ export const FieldWrapper = forwardRef(function FieldWrapper(
         <div data-element="InputArea">
           {Component}
           {descriptionForInput}
-          {displayMessage && !isDisabled && (
+          {isMessageShown && (
             <MessageElement
+              id={messageId}
               mods={{
                 ...mods,
                 // Force invalid state for errorMessage regardless of the validation state

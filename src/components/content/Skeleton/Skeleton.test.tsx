@@ -3,7 +3,7 @@ import { render, screen } from '../../../test';
 import { Skeleton } from './Skeleton';
 
 const placeholders = () =>
-  screen.queryAllByRole('region', { name: 'Content is loading' });
+  document.querySelectorAll('[data-loading-placeholder]');
 
 describe('<Skeleton />', () => {
   it.each([
@@ -28,5 +28,14 @@ describe('<Skeleton />', () => {
     render(<Skeleton layout="content" lines={3} />);
 
     expect(placeholders()).toHaveLength(3);
+  });
+
+  it('is one loading region, not one per placeholder', () => {
+    render(<Skeleton layout="page" lines={3} />);
+
+    expect(
+      screen.getAllByRole('region', { name: 'Content is loading' }),
+    ).toHaveLength(1);
+    expect(screen.getByTestId('Skeleton')).toHaveAttribute('role', 'region');
   });
 });

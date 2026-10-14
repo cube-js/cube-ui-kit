@@ -25,6 +25,7 @@ import { useFocusRing, useHover, useMove } from 'react-aria';
 import { createPortal } from 'react-dom';
 
 import { useDebouncedValue } from '../../../_internal/hooks';
+import { useI18n } from '../../../i18n';
 import {
   mergeProps,
   useCombinedRefs,
@@ -301,6 +302,14 @@ interface ResizeHandlerProps {
 
 function ResizeHandler(props: ResizeHandlerProps) {
   const { side, isDisabled, mods, moveProps, style, onDoubleClick } = props;
+  const { t } = useI18n();
+  // One key per side: a translated sentence can't take the side as a word.
+  const label = {
+    left: t('layout.resizeLeftPanel', 'Resize left panel'),
+    top: t('layout.resizeTopPanel', 'Resize top panel'),
+    right: t('layout.resizeRightPanel', 'Resize right panel'),
+    bottom: t('layout.resizeBottomPanel', 'Resize bottom panel'),
+  }[side];
   const { hoverProps, isHovered } = useHover({});
   const { focusProps, isFocusVisible } = useFocusRing();
   const isHorizontal = side === 'left' || side === 'right';
@@ -321,7 +330,7 @@ function ResizeHandler(props: ResizeHandlerProps) {
         tabIndex: isDisabled ? undefined : 0,
         role: 'separator',
         'aria-orientation': isHorizontal ? 'vertical' : 'horizontal',
-        'aria-label': `Resize ${side} panel`,
+        'aria-label': label,
         onDoubleClick: isDisabled ? undefined : onDoubleClick,
       })}
     >

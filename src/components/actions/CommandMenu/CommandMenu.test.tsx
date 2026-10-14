@@ -84,6 +84,10 @@ describe('CommandMenu', () => {
       'aria-activedescendant',
       'TestMenu-menu-option-1',
     );
+    // ...and the id names the item itself, or a screen reader hears nothing.
+    expect(document.getElementById('TestMenu-menu-option-1')).toHaveTextContent(
+      'Create file',
+    );
 
     // Press arrow down again - should move to second item
     await user.keyboard('{ArrowDown}');
@@ -311,11 +315,16 @@ describe('CommandMenu', () => {
     );
 
     const searchInput = screen.getByPlaceholderText('Search commands...');
-    const expectFocused = (key: string) =>
+    const expectFocused = (key: string) => {
       expect(searchInput).toHaveAttribute(
         'aria-activedescendant',
         `TestMenu-menu-option-${key}`,
       );
+      // An item in a section gets its id through the section.
+      expect(
+        document.getElementById(`TestMenu-menu-option-${key}`),
+      ).not.toBeNull();
+    };
 
     await user.click(searchInput);
 
@@ -712,7 +721,7 @@ describe('CommandMenu', () => {
       const activeDescendant = searchInput.getAttribute(
         'aria-activedescendant',
       );
-      expect(activeDescendant).toMatch(/CommandMenu-menu-option-1/);
+      expect(activeDescendant).toMatch(/-menu-option-1$/);
     });
   });
 
@@ -774,7 +783,7 @@ describe('CommandMenu', () => {
       const activeDescendant = searchInput.getAttribute(
         'aria-activedescendant',
       );
-      expect(activeDescendant).toMatch(/CommandMenu-menu-option-1/);
+      expect(activeDescendant).toMatch(/-menu-option-1$/);
     });
 
     // Clear and type something that won't match
@@ -974,6 +983,50 @@ describe('CommandMenu', () => {
     // Verify the display shows both selected items
     selectedDisplay = screen.getByText(/Selected:/);
     expect(selectedDisplay).toHaveTextContent(/Selected:.*1.*2/);
+  });
+
+  it('gives two menus without a qa different item ids, valid for any key', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <>
+        <CommandMenu>
+          <CommandMenu.Item key="new file">Create file</CommandMenu.Item>
+        </CommandMenu>
+        <CommandMenu>
+          <CommandMenu.Item key="new file">Create file</CommandMenu.Item>
+        </CommandMenu>
+      </>,
+    );
+
+    const [first, second] = screen.getAllByRole('combobox');
+
+    await user.click(first);
+    await user.keyboard('{ArrowDown}');
+    await user.click(second);
+    await user.keyboard('{ArrowDown}');
+
+    const firstId = first.getAttribute('aria-activedescendant')!;
+    const secondId = second.getAttribute('aria-activedescendant')!;
+
+    expect(firstId).not.toBe(secondId);
+    // An id reference with a space in it names two ids, neither of them.
+    expect(firstId).not.toMatch(/\s/);
+    expect(document.getElementById(firstId)).toHaveTextContent('Create file');
+    expect(document.getElementById(secondId)).toHaveTextContent('Create file');
+  });
+
+  it('names the search input, not the wrapper, with its aria-label', () => {
+    render(
+      <CommandMenu aria-label="Commands">
+        {items.map((item) => (
+          <CommandMenu.Item key={item.id}>{item.textValue}</CommandMenu.Item>
+        ))}
+      </CommandMenu>,
+    );
+
+    expect(screen.getByRole('combobox')).toHaveAccessibleName('Commands');
+    expect(screen.getByTestId('CommandMenu')).not.toHaveAttribute('aria-label');
   });
 
   describe('CommandMenu mods', () => {

@@ -64,7 +64,9 @@
   },
   "commandMenu": {
     "searchPlaceholder": "Rechercher des commandes...",
-    "empty": "Aucune commande trouvée"
+    "empty": "Aucune commande trouvée",
+    "menu": "Menu des commandes",
+    "loading": "Chargement des commandes"
   },
   "listBoxPopover": {
     "options": "Options"
@@ -73,6 +75,7 @@
     "time": "Heure",
     "startTime": "Heure de début",
     "endTime": "Heure de fin",
+    "showStartCalendar": "Afficher le calendrier de la date de début",
     "showEndCalendar": "Afficher le calendrier de la date de fin",
     "selectWeek": "Sélectionner une semaine",
     "selectMonth": "Sélectionner un mois",
@@ -102,7 +105,8 @@
   "textInputMapper": {
     "key": "Clé",
     "value": "Valeur",
-    "removeMapping": "Supprimer la correspondance"
+    "removeMapping": "Supprimer la correspondance",
+    "mapping": "Correspondance"
   },
   "copySnippet": {
     "title": "Exemple de code",
@@ -148,10 +152,17 @@
   },
   "layout": {
     "closePanel": "Fermer le panneau",
-    "goBack": "Retour"
+    "goBack": "Retour",
+    "resizePaneRight": "Redimensionner la zone (droite)",
+    "resizePaneBottom": "Redimensionner la zone (bas)",
+    "resizeLeftPanel": "Redimensionner le panneau gauche",
+    "resizeTopPanel": "Redimensionner le panneau supérieur",
+    "resizeRightPanel": "Redimensionner le panneau droit",
+    "resizeBottomPanel": "Redimensionner le panneau inférieur"
   },
   "tree": {
-    "actions": "Actions"
+    "actions": "Actions",
+    "ariaLabel": "Arborescence"
   },
   "banner": {
     "hideBanner": "Masquer la bannière"
@@ -204,5 +215,27 @@
     "copiedCells_one": "{{count}} cellule copiée",
     "copiedCells_other": "{{count}} cellules copiées",
     "refreshing": "Actualisation"
+  },
+  "buttonSplit": {
+    "moreOptions": "Plus d'options"
+  },
+  "colorInput": {
+    "openColorPicker": "Ouvrir le sélecteur de couleur"
+  },
+  "colorPicker": {
+    "colorPicker": "Sélecteur de couleur",
+    "colorValue": "Valeur de la couleur",
+    "palette": "Palette",
+    "colorSpace": "Espace colorimétrique"
+  },
+  "colorSwatchGroup": {
+    "colors": "Couleurs",
+    "customColor": "Couleur personnalisée"
+  },
+  "hotKeys": {
+    "ariaLabel": "Raccourcis clavier",
+    "combination": "Combinaison de touches {{index}}",
+    "key": "Touche {{key}}",
+    "or": "ou"
   }
 }

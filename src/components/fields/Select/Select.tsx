@@ -50,6 +50,7 @@ import { generateRandomId } from '../../../utils/random';
 import { mergeProps, useCombinedRefs } from '../../../utils/react/index';
 import { useFocus } from '../../../utils/react/interactions';
 import { focusProgrammatically } from '../../../utils/react/programmaticFocus';
+import { mergeRefs } from '../../../utils/react/useCombinedRefs';
 import { useOverlayEscapeGuard } from '../../../utils/react/useOverlayEscapeGuard';
 import { usePopoverSync } from '../../../utils/react/usePopoverSync';
 import { extractStyles, mergeStyleLayers } from '../../../utils/styles';
@@ -74,6 +75,7 @@ import {
   wrapWithField,
 } from '../../form';
 import { DisplayTransition } from '../../helpers';
+import { useModalLayerRef } from '../../overlays/Modal/modal-containment';
 import { Portal } from '../../portal';
 import { TriggerActions, TriggerIcon } from '../TriggerActions';
 
@@ -758,6 +760,10 @@ export function ListBoxPopup({
   // whatever surrounds it — see `useOverlayEscapeGuard`.
   const overlayProps = useOverlayEscapeGuard(rawOverlayProps, state.isOpen);
 
+  // Opened inside a modal, the list stays readable while the modal hides the
+  // page.
+  const layerRef = useModalLayerRef();
+
   // Extract primary placement direction for consistent styling
   const placementDirection = placement?.split(' ')[0] || 'bottom';
 
@@ -786,7 +792,7 @@ export function ListBoxPopup({
           <SelectOverlayWrapper
             {...overlayProps}
             {...parentOverlayProps}
-            ref={popoverRef}
+            ref={mergeRefs(popoverRef, layerRef)}
             style={parentOverlayProps?.style}
             // A press on the list while it fades out must not close the
             // overlay under it (CUB-5293) — see `Overlay`.

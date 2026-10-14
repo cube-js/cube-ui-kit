@@ -38,10 +38,11 @@ export type BannerActionProps = Omit<CubeItemActionProps, 'preset' | 'type'>;
 export type BannerLinkProps = Omit<CubeButtonProps, 'type' | 'size' | 'color'>;
 
 const DEFAULT_ICONS: Record<BannerTheme, ReactNode> = {
-  danger: <IconExclamationCircle />,
-  warning: <IconAlertTriangle />,
-  note: <IconInfoCircle />,
-  success: <IconCircleCheck />,
+  // Decorative: the banner's text carries the message.
+  danger: <IconExclamationCircle aria-hidden="true" />,
+  warning: <IconAlertTriangle aria-hidden="true" />,
+  note: <IconInfoCircle aria-hidden="true" />,
+  success: <IconCircleCheck aria-hidden="true" />,
 };
 
 const BannerElement = tasty(Item, {

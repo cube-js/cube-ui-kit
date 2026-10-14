@@ -221,12 +221,13 @@ function Checkbox(
         inputRef,
       );
 
+  // Decorative: the input already announces checked, unchecked and mixed.
   let markIcon = isIndeterminate ? (
-    <Icon size={12} stroke={3}>
+    <Icon size={12} stroke={3} aria-hidden="true">
       <IconMinus />
     </Icon>
   ) : (
-    <Icon size={12} stroke={3}>
+    <Icon size={12} stroke={3} aria-hidden="true">
       <IconCheck />
     </Icon>
   );

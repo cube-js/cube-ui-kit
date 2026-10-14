@@ -13,6 +13,7 @@ import { useRadio, useRadioGroup } from 'react-aria';
 import { useRadioGroupState } from 'react-stately';
 
 import { useEvent } from '../../../_internal';
+import { useI18n } from '../../../i18n';
 import { FieldBaseProps } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
@@ -259,6 +260,7 @@ export const ColorSwatchGroup = forwardRef(function ColorSwatchGroup(
   allProps: CubeColorSwatchGroupProps,
   ref: ForwardedRef<HTMLElement>,
 ) {
+  const { t } = useI18n();
   const props = useFieldProps(allProps, {
     defaultValidationTrigger: 'onChange',
     valuePropsMapper: ({ value, onChange }) => ({
@@ -342,6 +344,9 @@ export const ColorSwatchGroup = forwardRef(function ColorSwatchGroup(
     value: selectedKey ?? null,
     isDisabled,
     isReadOnly: props.isReadOnly,
+    // Becomes the group's `aria-invalid`, which is what says the field is
+    // invalid to a screen reader; the red outline says it only to the eye.
+    isInvalid,
     onChange: handleChange,
   });
 
@@ -357,7 +362,9 @@ export const ColorSwatchGroup = forwardRef(function ColorSwatchGroup(
       form: undefined,
       // Only name the group here when nothing else does: an `aria-label` set
       // unconditionally would outrank the visible label React Aria wires up.
-      'aria-label': props.label ? undefined : ariaLabel ?? 'Colors',
+      'aria-label': props.label
+        ? undefined
+        : ariaLabel ?? t('colorSwatchGroup.colors', 'Colors'),
       orientation: 'horizontal',
     },
     state,
@@ -391,7 +398,7 @@ export const ColorSwatchGroup = forwardRef(function ColorSwatchGroup(
       </RadiosElement>
       {showCustom ? (
         <ColorPicker
-          aria-label="Custom color"
+          aria-label={t('colorSwatchGroup.customColor', 'Custom color')}
           qa="ColorSwatchGroupCustom"
           format={format}
           type="clear"

@@ -12,6 +12,7 @@ import React, {
   ReactElement,
   ReactNode,
   Ref,
+  useId,
   useRef,
   useState,
 } from 'react';
@@ -318,6 +319,15 @@ function CommandMenu<T extends object>(
   const collectionItems = [...treeState.collection];
   const hasSections = collectionItems.some((item) => item.type === 'section');
 
+  // The search input keeps focus and points `aria-activedescendant` at the
+  // item the arrow keys moved to, so each item needs an id it can name.
+  // Unique without a `qa`, so a second menu's items never share these ids;
+  // the key is encoded because an id reference can't hold a space.
+  const autoId = useId();
+  const menuId = `${qa || `CommandMenu${autoId}`}-menu`;
+  const getItemId = (key: Key) =>
+    `${menuId}-option-${encodeURIComponent(String(key))}`;
+
   // Track focused key for aria-activedescendant
   const [focusedKey, setFocusedKey] = React.useState<Key | null>(null);
   const focusedKeyRef = useRef<Key | null>(null);
@@ -343,7 +353,7 @@ function CommandMenu<T extends object>(
   const { menuProps } = useMenu(
     {
       ...completeProps,
-      'aria-label': 'Command palette menu',
+      'aria-label': t('commandMenu.menu', 'Command menu'),
       shouldUseVirtualFocus: true,
     },
     treeState,
@@ -370,6 +380,7 @@ function CommandMenu<T extends object>(
         <MenuSection
           key={item.key}
           item={item}
+          getItemId={getItemId}
           state={treeState}
           styles={completeProps.sectionStyles}
           itemStyles={completeProps.itemStyles}
@@ -385,6 +396,7 @@ function CommandMenu<T extends object>(
     let menuItem = (
       <MenuItem
         key={item.key}
+        id={getItemId(item.key)}
         item={item}
         state={treeState}
         styles={completeProps.itemStyles}
@@ -552,9 +564,17 @@ function CommandMenu<T extends object>(
     tray: completeProps.mods?.tray,
   };
 
+  const {
+    'aria-label': _ariaLabel,
+    'aria-labelledby': _ariaLabelledBy,
+    'aria-describedby': _ariaDescribedBy,
+    'aria-details': _ariaDetails,
+    ...wrapperProps
+  } = filterBaseProps(props) as Record<string, unknown>;
+
   return (
     <StyledCommandMenu
-      {...(filterBaseProps(props) as Record<string, unknown>)}
+      {...wrapperProps}
       ref={domRef}
       qa={qa || 'CommandMenu'}
       data-size={size}
@@ -580,15 +600,18 @@ function CommandMenu<T extends object>(
         value={searchValue}
         styles={searchInputStyles}
         data-size={size}
-        aria-controls={`${qa || 'CommandMenu'}-menu`}
+        aria-controls={menuId}
         role="combobox"
         aria-expanded="true"
         aria-haspopup="listbox"
         aria-activedescendant={
-          focusedKey != null
-            ? `${qa || 'CommandMenu'}-menu-option-${focusedKey}`
-            : undefined
+          focusedKey != null ? getItemId(focusedKey) : undefined
         }
+        // The input is the control a screen reader lands on, so the menu's
+        // name is its name. Kept off the wrapper, a plain `div`.
+        aria-label={completeProps['aria-label']}
+        aria-labelledby={completeProps['aria-labelledby']}
+        aria-describedby={completeProps['aria-describedby']}
         onChange={(e) => handleSearchChange(e.target.value)}
         onKeyDown={handleSearchKeyDown}
       />
@@ -598,7 +621,7 @@ function CommandMenu<T extends object>(
         <StyledLoadingWrapper>
           <LoadingIcon
             role="progressbar"
-            aria-label="Loading commands"
+            aria-label={t('commandMenu.loading', 'Loading commands')}
             aria-hidden={false}
           />
         </StyledLoadingWrapper>
@@ -609,8 +632,8 @@ function CommandMenu<T extends object>(
         <StyledMenu
           {...menuProps}
           ref={menuRef}
-          id={`${qa || 'CommandMenu'}-menu`}
-          aria-label="Command menu"
+          id={menuId}
+          aria-label={t('commandMenu.menu', 'Command menu')}
           qa="Menu"
           data-size={size}
           mods={mods}
