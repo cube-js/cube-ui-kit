@@ -9,6 +9,7 @@ import type { CubeResolvedColumn, CubeTableColumnLayout } from './types';
 // Keep nearby cells ready for a horizontal flick without multiplying the
 // mounted row window by the entire column collection.
 const COLUMN_OVERSCAN = 300;
+const MAX_REFILL_COLUMNS = 1;
 const SAFE_FRAME_STYLES = new Set<string>(
   CONTAINER_STYLES.filter(
     (key) => !['font', 'preset', 'whiteSpace'].includes(key),
@@ -52,9 +53,11 @@ export function getColumnWindowRange<T>(
   layout: CubeTableColumnLayout<T>,
   offset: number,
   viewportWidth: number,
+  overscanStart = COLUMN_OVERSCAN,
+  overscanEnd = COLUMN_OVERSCAN,
 ): ColumnWindowRange {
-  const start = Math.max(0, offset + layout.pinnedStartWidth - COLUMN_OVERSCAN);
-  const end = offset + viewportWidth - layout.pinnedEndWidth + COLUMN_OVERSCAN;
+  const start = Math.max(0, offset + layout.pinnedStartWidth - overscanStart);
+  const end = offset + viewportWidth - layout.pinnedEndWidth + overscanEnd;
   let position = 0;
   let first = layout.columns.length;
   let last = -1;
@@ -69,6 +72,44 @@ export function getColumnWindowRange<T>(
   }
 
   return { first, last };
+}
+
+/** Refill the moving edge without rebuilding rows at every column boundary. */
+export function getBufferedColumnWindowRange<T>(
+  layout: CubeTableColumnLayout<T>,
+  previous: ColumnWindowRange | null,
+  offset: number,
+  viewportWidth: number,
+): ColumnWindowRange {
+  const required = getColumnWindowRange(layout, offset, viewportWidth);
+  if (!previous) return required;
+  // Native scroll extents round fractional widths; no ahead buffer is
+  // needed within a pixel of either endpoint.
+  if (offset <= 0 || offset >= layout.totalWidth! - viewportWidth - 1)
+    return required;
+  const extendsStart = required.first < previous.first;
+  const extendsEnd = required.last > previous.last;
+  if (!extendsStart && !extendsEnd) {
+    const first = Math.max(previous.first, required.first - MAX_REFILL_COLUMNS);
+    const last = Math.min(previous.last, required.last + MAX_REFILL_COLUMNS);
+    return first === previous.first && last === previous.last
+      ? previous
+      : { first, last };
+  }
+  // Both edges moving means the viewport/layout changed, not one scroll edge.
+  if (extendsStart && extendsEnd) return required;
+  const refilled = getColumnWindowRange(
+    layout,
+    offset,
+    viewportWidth,
+    extendsStart ? COLUMN_OVERSCAN * 2 : COLUMN_OVERSCAN,
+    extendsEnd ? COLUMN_OVERSCAN * 2 : COLUMN_OVERSCAN,
+  );
+  // A pixel-only refill retains too many narrow cells during diagonal scroll.
+  return {
+    first: Math.max(refilled.first, required.first - MAX_REFILL_COLUMNS),
+    last: Math.min(refilled.last, required.last + MAX_REFILL_COLUMNS),
+  };
 }
 
 /** Preserve height-bearing cells, native controls and row naming offscreen. */
@@ -127,11 +168,22 @@ export function useColumnWindow<T>(
   isEnabled: boolean,
   treeColumnKey?: string,
 ) {
+  const isWindowEnabled =
+    isEnabled &&
+    layout.columns.some((column) => !retainColumn(column, treeColumnKey));
   const [range, setRange] = useState<ColumnWindowRange | null>(null);
   const [fitsRow, setFitsRow] = useState(false);
+  const resetRange = () => {
+    const width = scroller?.clientWidth ?? 0;
+    const next =
+      isWindowEnabled && scroller && width > 0 && layout.totalWidth! > width
+        ? getColumnWindowRange(layout, Math.abs(scroller.scrollLeft), width)
+        : null;
+    setRange((previous) => (sameRange(previous, next) ? previous : next));
+  };
   const refreshAppearance = useEvent(() => {
     if (
-      !isEnabled ||
+      !isWindowEnabled ||
       !scroller ||
       scroller.clientWidth <= 0 ||
       layout.totalWidth! <= scroller.clientWidth
@@ -154,37 +206,58 @@ export function useColumnWindow<T>(
   });
 
   useLayoutEffect(() => {
-    if (!isEnabled || !scroller) {
+    if (!isWindowEnabled || !scroller) {
       return;
     }
 
-    const update = () => {
+    const update = (reset = false) => {
       const width = scroller.clientWidth;
-      const next =
-        width > 0 && layout.totalWidth! > width
-          ? getColumnWindowRange(layout, Math.abs(scroller.scrollLeft), width)
-          : null;
-      // Vertical scroll and movement within the same column band add no render.
-      setRange((previous) => (sameRange(previous, next) ? previous : next));
+      const offset = Math.abs(scroller.scrollLeft);
+      // Only changed bands add a render. New rows use the ordinary band,
+      // so diagonal scrolling does not multiply the extra refill cells.
+      setRange((previous) => {
+        const next =
+          width > 0 && layout.totalWidth! > width
+            ? getBufferedColumnWindowRange(
+                layout,
+                reset ? null : previous,
+                offset,
+                width,
+              )
+            : null;
+        return sameRange(previous, next) ? previous : next;
+      });
+    };
+    let lastOffset = Math.abs(scroller.scrollLeft);
+    let lastVerticalOffset = scroller.scrollTop;
+    const onScroll = () => {
+      const offset = Math.abs(scroller.scrollLeft);
+      const verticalOffset = scroller.scrollTop;
+      const reset = verticalOffset !== lastVerticalOffset;
+      lastVerticalOffset = verticalOffset;
+      if (offset === lastOffset && !reset) return;
+      lastOffset = offset;
+      update(reset);
     };
     refreshAppearance();
-    update();
+    update(true);
     const observer = new ResizeObserver(() => {
       refreshAppearance();
-      update();
+      update(true);
     });
     observer.observe(scroller);
-    scroller.addEventListener('scroll', update, { passive: true });
+    scroller.addEventListener('scroll', onScroll, { passive: true });
     return () => {
       observer.disconnect();
-      scroller.removeEventListener('scroll', update);
+      scroller.removeEventListener('scroll', onScroll);
     };
-  }, [isEnabled, layout, refreshAppearance, scroller]);
+  }, [isWindowEnabled, layout, refreshAppearance, scroller]);
 
   return {
+    resetRange,
     segments: getColumnWindowSegments(
       layout.columns,
-      isEnabled && fitsRow ? range : null,
+      isWindowEnabled && fitsRow ? range : null,
       treeColumnKey,
     ),
     refreshAppearance,

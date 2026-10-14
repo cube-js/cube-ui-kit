@@ -1,7 +1,7 @@
 import { act } from 'react';
 import { page, userEvent as realInput } from 'vitest/browser';
 
-import { renderWithRoot, screen } from '../../../test';
+import { cleanup, renderWithRoot, screen } from '../../../test';
 import { SlotProvider } from '../../../utils/react/Slots';
 import { Menu } from '../../actions/Menu/Menu';
 import { Root } from '../../Root';
@@ -77,6 +77,80 @@ function Table({
 }
 
 describe('ItemTable body column window', () => {
+  // Gesture tests control timeouts; layout, observers and RAF stay real.
+  // Zero-interval polling leaves the clock for the explicit rest step.
+  afterEach(() => {
+    cleanup();
+    vi.useRealTimers();
+  });
+
+  it('retains cells through buffered horizontal movement and releases the refill at rest', async () => {
+    renderWithRoot(<Table />);
+    await vi.waitFor(() => {
+      expect(cell('c0')).toBeInTheDocument();
+      expect(scroller().parentElement).toHaveAttribute('data-scroll-x');
+    });
+    await new Promise((resolve) =>
+      requestAnimationFrame(() => requestAnimationFrame(resolve)),
+    );
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    await scrollTo(200);
+    await vi.waitFor(() => expect(cell('c8')).toBeInTheDocument(), {
+      interval: 0,
+    });
+    const retained = Array.from(
+      bodyRow().querySelectorAll('[data-element="Cell"]'),
+    );
+    await scrollTo(240);
+    const moved = Array.from(
+      bodyRow().querySelectorAll('[data-element="Cell"]'),
+    );
+    expect(moved).toHaveLength(retained.length);
+    expect(moved.every((element, index) => element === retained[index])).toBe(
+      true,
+    );
+    for (const key of ['c2', 'c3', 'c4', 'c5', 'c6']) {
+      expect(cell(key)).toBeInTheDocument();
+      expect(cell(key)!.getBoundingClientRect().left).toBeCloseTo(
+        header(key).getBoundingClientRect().left,
+        0,
+      );
+    }
+    await act(async () => {
+      await vi.runOnlyPendingTimersAsync();
+    });
+    await vi.waitFor(() => expect(cell('c8')).not.toBeInTheDocument(), {
+      interval: 0,
+    });
+    expect(bodyRow().getBoundingClientRect().height).toBe(41);
+    expect(scroller().scrollWidth).toBeGreaterThanOrEqual(15000);
+  });
+
+  it('drops the refill when vertical movement starts during a horizontal gesture', async () => {
+    renderWithRoot(<Table data={rows(2000)} />);
+    await vi.waitFor(() =>
+      expect(scroller().parentElement).toHaveAttribute('data-scroll-x'),
+    );
+    await new Promise((resolve) =>
+      requestAnimationFrame(() => requestAnimationFrame(resolve)),
+    );
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    await scrollTo(200);
+    await vi.waitFor(() => expect(cell('c8')).toBeInTheDocument(), {
+      interval: 0,
+    });
+    await scrollTo(200, 200);
+    expect(cell('c8')).not.toBeInTheDocument();
+    await scrollTo(360, 400);
+    expect(cell('c8')).toBeInTheDocument();
+    expect(cell('c9')).not.toBeInTheDocument();
+    expect(bodyRow().getBoundingClientRect().height).toBe(41);
+    expect(cell('c4')!.getBoundingClientRect().left).toBeCloseTo(
+      header('c4').getBoundingClientRect().left,
+      0,
+    );
+  });
+
   it('bounds wide body cells while preserving scroll extent, headers and logical indices', async () => {
     renderWithRoot(<Table data={rows(2000)} />);
     await vi.waitFor(() =>
