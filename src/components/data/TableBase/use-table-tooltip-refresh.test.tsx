@@ -5,13 +5,51 @@ import { useTableTooltipRefresh } from './use-table-tooltip-refresh';
 function Scope({
   scroller,
   onAppearanceChange,
+  isScrolling = false,
+  onRest,
 }: {
   scroller: HTMLDivElement | null;
   onAppearanceChange?: () => void;
+  isScrolling?: boolean;
+  onRest?: () => void;
 }) {
-  useTableTooltipRefresh(scroller, false, onAppearanceChange);
+  useTableTooltipRefresh(scroller, isScrolling, onAppearanceChange, onRest);
   return null;
 }
+
+it('notifies rest separately from appearance changes during a gesture', () => {
+  const root = document.createElement('div');
+  const scroller = document.createElement('div');
+  root.append(scroller);
+  document.body.append(root);
+  const onRest = vi.fn();
+  const onAppearanceChange = vi.fn();
+  const { rerender, unmount } = render(
+    <Scope
+      scroller={scroller}
+      isScrolling
+      onRest={onRest}
+      onAppearanceChange={onAppearanceChange}
+    />,
+  );
+  try {
+    expect(onRest).not.toHaveBeenCalled();
+    window.dispatchEvent(new Event('resize'));
+    expect(onAppearanceChange).toHaveBeenCalledOnce();
+    expect(onRest).not.toHaveBeenCalled();
+    rerender(
+      <Scope
+        scroller={scroller}
+        onRest={onRest}
+        onAppearanceChange={onAppearanceChange}
+      />,
+    );
+    expect(onRest).toHaveBeenCalledOnce();
+  } finally {
+    unmount();
+    root.remove();
+  }
+});
 
 it('releases appearance observation when its root changes or unmounts', () => {
   const observe = vi

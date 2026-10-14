@@ -344,12 +344,15 @@ module.exports = [
     // measure 605,746 B against main's 604,370 B at 9dbf967a (+1,376 B).
     // Button stays exactly 133,148 B: the window and its compatibility checks
     // tree-shake with TableBase. Allow 606 kB and confirm the figure in CI.
+    // Horizontal buffer reuse: fresh 0.193.2 release builds measure 606,171 B
+    // against main's 605,741 B (+430 B), with Button unchanged at 133,148 B.
+    // Allow 607 kB (829 B headroom) and confirm the measurement in Linux CI.
     //
-    // Screen reader fixes: 609.76 kB on a fresh local build against main's
-    // 605.75 kB at 92561aa4, also fresh: +4.01 kB. Modal containment
+    // Screen reader fixes: 610.16 kB on a fresh local build merged with main
+    // at d91cd10d, against that main's 606.17 kB: +3.99 kB. Modal containment
     // (`modal-containment.ts` and React Aria's `ariaHideOutside`), linked field
     // descriptions, and 23 accessible-name strings in each of the twelve
-    // locales. Allow 611 kB, about 1.2 kB headroom; confirm in CI.
+    // locales. Allow 611 kB, about 840 B headroom; confirm in CI.
     limit: '611kB',
   },
   {
