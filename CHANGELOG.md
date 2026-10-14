@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.193.2
+
+### Patch Changes
+
+- [#1506](https://github.com/cube-js/cube-ui-kit/pull/1506) [`f56a596e`](https://github.com/cube-js/cube-ui-kit/commit/f56a596e52e6fe39c2982c26d6330dcf5a046cc0) Thanks [@tenphi](https://github.com/tenphi)! - Reduce wide ItemTable and DataTable scrolling work by rendering the visible body-column window. Keep headers, pinned and structural columns, row naming, wrapping and custom cells mounted to preserve keyboard access, menus, state and measured row heights. Preserve complete layout for custom body styling, arbitrary cell DOM props and explicitly disabled virtualization.
+
 ## 0.193.1
 
 ### Patch Changes
