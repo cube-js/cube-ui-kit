@@ -223,6 +223,54 @@ describe('column window model', () => {
 });
 
 describe('column window lifecycle', () => {
+  it('skips all-retained ranges and resumes tracking when a default column returns', () => {
+    const observe = vi.spyOn(ResizeObserver.prototype, 'observe');
+    const scroller = document.createElement('div');
+    const added = vi.spyOn(scroller, 'addEventListener');
+    Object.defineProperty(scroller, 'clientWidth', { value: 600 });
+    const table = document.createElement('table');
+    table.style.lineHeight = '20px';
+    table.style.setProperty('--row-height', '40px');
+    scroller.append(table);
+    const cols = columns();
+    cols.forEach((column) => {
+      column.render = () => null;
+    });
+    const current = layout(cols);
+    const { result, rerender, unmount } = renderHook(
+      ({ resolved }) => useColumnWindow(resolved, scroller, true),
+      { initialProps: { resolved: current } },
+    );
+    try {
+      const retained = result.current;
+      expect(retained.segments).toHaveLength(100);
+      act(() => {
+        scroller.scrollLeft = 6000;
+        scroller.dispatchEvent(new Event('scroll'));
+      });
+      expect(result.current).toBe(retained);
+      expect(observe).not.toHaveBeenCalled();
+      expect(added.mock.calls.some(([type]) => type === 'scroll')).toBe(false);
+      const defaults = cols.map((column, index) =>
+        index === 10 ? { ...column, render: undefined } : column,
+      );
+      rerender({ resolved: layout(defaults) });
+      expect(observe).toHaveBeenCalledOnce();
+      expect(
+        result.current.segments.some(
+          (segment) => segment.column?.key === 'c10',
+        ),
+      ).toBe(false);
+      rerender({ resolved: current });
+      expect(result.current.segments).toHaveLength(100);
+      expect(observe).toHaveBeenCalledOnce();
+    } finally {
+      unmount();
+      observe.mockRestore();
+      added.mockRestore();
+    }
+  });
+
   it('updates the current scroller/layout and cleans up observers and listeners', () => {
     const observers: {
       disconnect: ReturnType<typeof vi.fn>;

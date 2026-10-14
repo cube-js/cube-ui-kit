@@ -168,19 +168,22 @@ export function useColumnWindow<T>(
   isEnabled: boolean,
   treeColumnKey?: string,
 ) {
+  const isWindowEnabled =
+    isEnabled &&
+    layout.columns.some((column) => !retainColumn(column, treeColumnKey));
   const [range, setRange] = useState<ColumnWindowRange | null>(null);
   const [fitsRow, setFitsRow] = useState(false);
   const resetRange = () => {
     const width = scroller?.clientWidth ?? 0;
     const next =
-      isEnabled && scroller && width > 0 && layout.totalWidth! > width
+      isWindowEnabled && scroller && width > 0 && layout.totalWidth! > width
         ? getColumnWindowRange(layout, Math.abs(scroller.scrollLeft), width)
         : null;
     setRange((previous) => (sameRange(previous, next) ? previous : next));
   };
   const refreshAppearance = useEvent(() => {
     if (
-      !isEnabled ||
+      !isWindowEnabled ||
       !scroller ||
       scroller.clientWidth <= 0 ||
       layout.totalWidth! <= scroller.clientWidth
@@ -203,7 +206,7 @@ export function useColumnWindow<T>(
   });
 
   useLayoutEffect(() => {
-    if (!isEnabled || !scroller) {
+    if (!isWindowEnabled || !scroller) {
       return;
     }
 
@@ -248,13 +251,13 @@ export function useColumnWindow<T>(
       observer.disconnect();
       scroller.removeEventListener('scroll', onScroll);
     };
-  }, [isEnabled, layout, refreshAppearance, scroller]);
+  }, [isWindowEnabled, layout, refreshAppearance, scroller]);
 
   return {
     resetRange,
     segments: getColumnWindowSegments(
       layout.columns,
-      isEnabled && fitsRow ? range : null,
+      isWindowEnabled && fitsRow ? range : null,
       treeColumnKey,
     ),
     refreshAppearance,
