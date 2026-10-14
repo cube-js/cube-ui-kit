@@ -1,4 +1,4 @@
-import { createRef, StrictMode } from 'react';
+import { createRef, StrictMode, useLayoutEffect } from 'react';
 import { page } from 'vitest/browser';
 
 import { act, renderWithRoot, screen, waitFor } from '../../../test';
@@ -8,6 +8,135 @@ import { TooltipTrigger } from './TooltipTrigger';
 
 describe('tooltip positioning', () => {
   afterEach(async () => page.viewport(1000, 800));
+  it.each([false, true])(
+    'positions before the first painted frame (defaultOpen: %s)',
+    async (defaultOpen) => {
+      const target = createRef<HTMLButtonElement>();
+      const frames: {
+        top: number;
+        expectedTop: number;
+        phase: string | null;
+      }[] = [];
+      function FirstFrame() {
+        useLayoutEffect(() => {
+          const frame = requestAnimationFrame(() => {
+            const overlay = screen.getByRole('tooltip');
+            frames.push({
+              top: overlay.getBoundingClientRect().top,
+              expectedTop: target.current!.getBoundingClientRect().bottom + 17,
+              phase: overlay.getAttribute('data-phase'),
+            });
+          });
+          return () => cancelAnimationFrame(frame);
+        }, []);
+        return 'First frame';
+      }
+      const content = (isOpen?: boolean) => (
+        <StrictMode>
+          <div style={{ padding: 150 }}>
+            <TooltipTrigger
+              defaultOpen={defaultOpen}
+              isOpen={isOpen}
+              placement="bottom"
+              offset={17}
+            >
+              {(props, ref) => (
+                <button
+                  {...props}
+                  ref={(node) => {
+                    ref.current = node!;
+                    target.current = node;
+                  }}
+                  type="button"
+                >
+                  Target
+                </button>
+              )}
+              <Tooltip
+                styles={{ transition: false, translate: false, scale: false }}
+              >
+                <FirstFrame />
+              </Tooltip>
+            </TooltipTrigger>
+          </div>
+        </StrictMode>
+      );
+      const { rerender } = renderWithRoot(
+        content(defaultOpen ? undefined : false),
+      );
+      if (!defaultOpen) rerender(content(true));
+      await waitFor(() => expect(frames.length).toBeGreaterThan(0));
+      expect(frames[0].phase).toBe('enter');
+      expect(Math.abs(frames[0].top - frames[0].expectedTop)).toBeLessThan(1);
+    },
+  );
+
+  it('keeps a second Root positioned after the first unmounts with reduced motion', async () => {
+    const matchMedia = window.matchMedia.bind(window);
+    vi.spyOn(window, 'matchMedia').mockImplementation((query) => {
+      const media = matchMedia(query);
+      if (query === '(prefers-reduced-motion: reduce)') {
+        Object.defineProperty(media, 'matches', { value: true });
+      }
+      return media;
+    });
+    const content = (name: string, isOpen: boolean, padding = 150) => (
+      <StrictMode>
+        <div style={{ padding }}>
+          <TooltipTrigger isOpen={isOpen} placement="bottom" offset={17}>
+            {(props, ref) => (
+              <button {...props} ref={ref as never} type="button">
+                {name}
+              </button>
+            )}
+            <Tooltip qa={name}>{name} details</Tooltip>
+          </TooltipTrigger>
+        </div>
+      </StrictMode>
+    );
+    const first = renderWithRoot(content('First root', true));
+    const second = renderWithRoot(content('Second root', false));
+    try {
+      second.rerender(content('Second root', true));
+      await waitFor(() =>
+        expect(screen.getAllByRole('tooltip')).toHaveLength(2),
+      );
+      first.unmount();
+      second.rerender(content('Second root', true, 220));
+      await act(async () => {
+        window.dispatchEvent(new Event('resize'));
+        await new Promise(requestAnimationFrame);
+      });
+      await waitFor(() => {
+        const overlay = screen.getByRole('tooltip');
+        expect(overlay).toHaveTextContent('Second root details');
+        expect(overlay).toHaveAttribute('data-phase', 'entered');
+        expect(
+          Math.abs(
+            overlay.getBoundingClientRect().top -
+              screen.getByRole('button').getBoundingClientRect().bottom -
+              17,
+          ),
+        ).toBeLessThan(1);
+      });
+      second.rerender(content('Second root', false, 220));
+      await waitFor(() =>
+        expect(screen.queryByRole('tooltip')).not.toBeInTheDocument(),
+      );
+      second.rerender(content('Second root', true, 220));
+      await waitFor(() =>
+        expect(screen.getByRole('tooltip')).toHaveAttribute(
+          'data-phase',
+          'entered',
+        ),
+      );
+    } finally {
+      first.unmount();
+      second.unmount();
+      vi.restoreAllMocks();
+    }
+  });
+
   it('positions on first open, follows overlay size, and uses current options after exit/reopen', async () => {
     await page.viewport(1000, 700);
     const first = createRef<HTMLButtonElement>();
