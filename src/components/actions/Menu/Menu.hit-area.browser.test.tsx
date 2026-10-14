@@ -514,4 +514,57 @@ describe('Native menu row hit area', () => {
       expect(navigate).not.toHaveBeenCalled();
     },
   );
+
+  it('preserves an implicit label for a custom inline menuitem button', async () => {
+    const command = vi.fn();
+    const itemAction = vi.fn();
+    const menuAction = vi.fn();
+    const navigate = vi.fn();
+    render(
+      <Root navigation={{ useHref: String, useNavigate: () => navigate }}>
+        <Menu
+          aria-label="Workbooks"
+          styles={{ width: '36x' }}
+          onAction={menuAction}
+        >
+          <Menu.Item
+            key="saved"
+            to="/__menu-link-test/button-label"
+            tooltip={false}
+            onAction={itemAction}
+            actions={
+              <label>
+                <span>Delete saved</span>
+                <button
+                  role="menuitem"
+                  tabIndex={-1}
+                  aria-label="Delete saved workbook"
+                  onClick={command}
+                >
+                  Delete
+                </button>
+              </label>
+            }
+          >
+            Saved workbook
+          </Menu.Item>
+        </Menu>
+      </Root>,
+    );
+    const bounds = screen.getByText('Delete saved').getBoundingClientRect();
+    await pressAt(
+      bounds.left + bounds.width / 2,
+      bounds.top + bounds.height / 2,
+    );
+    expect(command).toHaveBeenCalledTimes(1);
+    const button = screen.getByRole('menuitem', {
+      name: 'Delete saved workbook',
+    });
+    expect(button).toHaveFocus();
+    await act(async () => userEvent.keyboard('{Enter}'));
+    expect(command).toHaveBeenCalledTimes(2);
+    expect(itemAction).not.toHaveBeenCalled();
+    expect(menuAction).not.toHaveBeenCalled();
+    expect(navigate).not.toHaveBeenCalled();
+  });
 });

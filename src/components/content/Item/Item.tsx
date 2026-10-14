@@ -887,7 +887,7 @@ const NATIVE_ROW_TARGET_STYLES: Styles = {
 // A zero-specificity default restores controls inside pointer-transparent
 // slots. Consumer styles win even when their class was injected earlier.
 const NATIVE_ROW_CONTROL_SELECTOR =
-  ':where([data-menu-native-row]) :where([data-element=Prefix],[data-element=Suffix],[data-element=Actions]) :where(a[href],button,input,select,textarea,label[for],label:has(input),[tabindex],[contenteditable=""],[contenteditable="true"],[contenteditable="plaintext-only"],[role="button"],[role="checkbox"],[role="switch"],[role="menuitem"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="radio"],[role="textbox"],[role="combobox"],[role="slider"],[role="spinbutton"],[role="link"])';
+  ':where([data-menu-native-row]) :where([data-element=Prefix],[data-element=Suffix],[data-element=Actions]) :where(a[href],button,input,select,textarea,label[for],label:has(button,input,select,textarea),[tabindex],[contenteditable=""],[contenteditable="true"],[contenteditable="plaintext-only"],[role="button"],[role="checkbox"],[role="switch"],[role="menuitem"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="radio"],[role="textbox"],[role="combobox"],[role="slider"],[role="spinbutton"],[role="link"])';
 const NATIVE_ROW_CONTROL_STYLES: Styles = { pointerEvents: 'auto' };
 
 const Item = <T extends HTMLElement = HTMLDivElement>(
