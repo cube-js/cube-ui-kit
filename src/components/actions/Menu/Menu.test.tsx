@@ -17,6 +17,7 @@ import {
 import { EventBusProvider } from '../../../utils/react/useEventBus';
 import { Select } from '../../fields';
 import { Dialog, DialogTrigger } from '../../overlays/Dialog';
+import { Root } from '../../Root';
 import { Button } from '../Button';
 import { CommandMenu } from '../CommandMenu';
 import { ItemButton } from '../ItemButton/ItemButton';
@@ -35,6 +36,216 @@ const HookWrapper = ({ children }: { children: React.ReactNode }) => (
 );
 
 describe('<Menu />', () => {
+  it.each([undefined, false])(
+    'aligns loading-item keyboard focus and activation with isDisabled=%s',
+    async (isDisabled) => {
+      const onAction = vi.fn();
+      render(
+        <Root>
+          <Menu
+            aria-label="Loading items"
+            autoFocus="first"
+            onAction={onAction}
+          >
+            <Menu.Item
+              key="loading"
+              isLoading
+              isDisabled={isDisabled}
+              tooltip={false}
+            >
+              Loading workbook
+            </Menu.Item>
+            <Menu.Item key="ready" tooltip={false}>
+              Ready workbook
+            </Menu.Item>
+          </Menu>
+        </Root>,
+      );
+      const expectedKey = isDisabled === false ? 'loading' : 'ready';
+      const expectedItem = screen.getByRole('menuitem', {
+        name: isDisabled === false ? 'Loading workbook' : 'Ready workbook',
+      });
+      await waitFor(() => expect(expectedItem).toHaveFocus());
+      await userEvent.keyboard('{End}{Home}');
+      expect(expectedItem).toHaveFocus();
+      await userEvent.keyboard('{Enter}');
+      expect(onAction).toHaveBeenCalledExactlyOnceWith(expectedKey);
+    },
+  );
+
+  it.each(['command', 'inline command', 'to', 'href'])(
+    'forwards a consumer keyboard handler once for a %s row',
+    async (kind) => {
+      const onKeyDown = vi.fn();
+      const onItemAction = vi.fn();
+      const onMenuAction = vi.fn();
+      const navigate = vi.fn();
+      render(
+        <Root navigation={{ useHref: String, useNavigate: () => navigate }}>
+          <Menu aria-label="Keyboard contract" onAction={onMenuAction}>
+            <Menu.Item
+              key="workbook"
+              tooltip={false}
+              onKeyDown={onKeyDown}
+              onAction={onItemAction}
+              {...(kind === 'to'
+                ? { to: '/workbooks/keyboard' }
+                : kind === 'href'
+                  ? { href: '/workbooks/keyboard' }
+                  : kind === 'inline command'
+                    ? {
+                        actions: (
+                          <Menu.Item.Action>Extra action</Menu.Item.Action>
+                        ),
+                      }
+                    : {})}
+            >
+              Workbook
+            </Menu.Item>
+          </Menu>
+        </Root>,
+      );
+      const item = screen.getByRole('menuitem', { name: 'Workbook' });
+      await act(async () => item.focus());
+      await userEvent.keyboard('{F2}');
+      expect(onKeyDown).toHaveBeenCalledTimes(1);
+      expect(onKeyDown.mock.calls[0][0].key).toBe('F2');
+      expect(onItemAction).not.toHaveBeenCalled();
+      expect(onMenuAction).not.toHaveBeenCalled();
+      expect(navigate).not.toHaveBeenCalled();
+      onKeyDown.mockClear();
+      await userEvent.keyboard('{Enter}');
+      expect(onKeyDown).toHaveBeenCalledTimes(1);
+      expect(onKeyDown.mock.calls[0][0].key).toBe('Enter');
+      expect(onItemAction).toHaveBeenCalledExactlyOnceWith();
+      expect(onMenuAction).toHaveBeenCalledExactlyOnceWith('workbook');
+      if (kind === 'to' || kind === 'href')
+        expect(navigate).toHaveBeenCalledExactlyOnceWith(
+          '/workbooks/keyboard',
+          undefined,
+        );
+      else expect(navigate).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each(['to', 'href'] as const)(
+    'puts hrefLang on every native %s destination and keeps it off the row',
+    (destinationProp) => {
+      renderWithRoot(
+        <Menu aria-label="Destination languages">
+          <Menu.Item
+            key="workbook"
+            {...{ [destinationProp]: '/workbooks/french' }}
+            hrefLang="fr"
+            description="Open the French workbook"
+          >
+            French workbook
+          </Menu.Item>
+        </Menu>,
+      );
+      const primary = screen.getByRole('menuitem', {
+        name: 'French workbook',
+      });
+      const row = primary.closest('li')!;
+      const anchors = row.querySelectorAll('a');
+      expect(Array.from(anchors)).toContain(primary);
+      for (const anchor of anchors)
+        expect(anchor).toHaveAttribute('hreflang', 'fr');
+      expect(row).not.toHaveAttribute('hreflang');
+    },
+  );
+
+  it.each([false, true])(
+    'ignores held Enter repetitions for a command (inline actions=%s)',
+    async (inlineActions) => {
+      const itemAction = vi.fn();
+      const menuAction = vi.fn();
+      const repeats: boolean[] = [];
+      renderWithRoot(
+        <MenuContext.Provider value={{ closeOnSelect: false }}>
+          <Menu aria-label="Held command" onAction={menuAction}>
+            <Menu.Item
+              key="command"
+              onAction={itemAction}
+              onKeyDown={(event) => repeats.push(event.repeat)}
+              actions={
+                inlineActions ? (
+                  <Menu.Item.Action aria-label="Command settings">
+                    Settings
+                  </Menu.Item.Action>
+                ) : undefined
+              }
+            >
+              Command
+            </Menu.Item>
+          </Menu>
+        </MenuContext.Provider>,
+      );
+      await act(() =>
+        screen.getByRole('menuitem', { name: 'Command' }).focus(),
+      );
+      await userEvent.keyboard('{Enter>}');
+      // user-event repeats omit KeyboardEvent.repeat; supply the held-key events.
+      const command = screen.getByRole('menuitem', { name: 'Command' });
+      fireEvent.keyDown(command, { key: 'Enter', repeat: true });
+      fireEvent.keyDown(command, { key: 'Enter', repeat: true });
+      await userEvent.keyboard('{/Enter}');
+      expect(repeats).toEqual([false, true, true]);
+      expect(itemAction).toHaveBeenCalledExactlyOnceWith();
+      expect(menuAction).toHaveBeenCalledExactlyOnceWith('command');
+    },
+  );
+
+  it.each(['item', 'header', 'card'] as const)(
+    'retains a same-key submenu %s label when inline actions appear and disappear',
+    async (type) => {
+      let mounts = 0;
+      function StatefulLabel() {
+        const [instance] = useState(() => ++mounts);
+        return <span>Share instance {instance}</span>;
+      }
+      const content = (withActions: boolean) => (
+        <Menu aria-label="Stateful submenu">
+          <Menu.SubMenuTrigger>
+            <Menu.Item
+              key="share"
+              type={type}
+              textValue="Share"
+              tooltip={false}
+              actions={
+                withActions ? (
+                  <Menu.Item.Action aria-label="Share settings">
+                    Settings
+                  </Menu.Item.Action>
+                ) : undefined
+              }
+            >
+              <StatefulLabel />
+            </Menu.Item>
+            <Menu aria-label="Share commands">
+              <Menu.Item key="copy">Copy</Menu.Item>
+            </Menu>
+          </Menu.SubMenuTrigger>
+        </Menu>
+      );
+      const { rerender } = renderWithRoot(content(false));
+      expect(screen.getByText('Share instance 1')).toBeInTheDocument();
+      expect(mounts).toBe(1);
+      await act(() => rerender(content(true)));
+      expect(screen.getByText('Share instance 1')).toBeInTheDocument();
+      expect(mounts).toBe(1);
+      expect(
+        screen.getByRole('menuitem', { name: 'Share settings' }),
+      ).toBeInTheDocument();
+      await act(() => rerender(content(false)));
+      expect(screen.getByText('Share instance 1')).toBeInTheDocument();
+      expect(mounts).toBe(1);
+      expect(
+        screen.queryByRole('menuitem', { name: 'Share settings' }),
+      ).not.toBeInTheDocument();
+    },
+  );
+
   const basicItems = [
     <Menu.Item key="copy">Copy</Menu.Item>,
     <Menu.Item key="paste">Paste</Menu.Item>,
@@ -55,6 +266,240 @@ describe('<Menu />', () => {
     expect(getByText('Paste')).toBeInTheDocument();
     expect(getByText('Cut')).toBeInTheDocument();
   });
+
+  it('recognizes a bare native reload destination and leaves an empty to as a command', () => {
+    renderWithRoot(
+      <Menu aria-label="Destinations">
+        <Menu.Item key="reload" to="@" target="_blank">
+          Reload
+        </Menu.Item>
+        <Menu.Item key="command" to="">
+          Command
+        </Menu.Item>
+      </Menu>,
+    );
+    const reload = screen.getByRole('menuitem', { name: 'Reload' });
+    const anchor = reload as HTMLAnchorElement;
+    expect(reload.tagName).toBe('A');
+    expect(reload.closest('li')).toHaveAttribute('role', 'none');
+    expect(reload.closest('li')).not.toHaveAttribute('href');
+    expect(anchor).toHaveAttribute('href', '');
+    expect(anchor.href).toBe(location.href.split('#')[0]);
+    expect(screen.getByRole('menuitem', { name: 'Command' }).tagName).toBe(
+      'LI',
+    );
+  });
+
+  it('preserves public action state when a stable row changes between a link and a command', async () => {
+    const destination = '/workbooks/42?chatId=abc';
+    const navigate = vi.fn();
+    const onClick = vi.fn();
+    const onItemAction = vi.fn();
+    const onMenuAction = vi.fn();
+    function StatefulAction() {
+      const [count, setCount] = useState(0);
+      return (
+        <Menu.Item.Action onPress={() => setCount((value) => value + 1)}>
+          Count {count}
+        </Menu.Item.Action>
+      );
+    }
+    const content = (href: string | undefined) => (
+      <Root navigation={{ useHref: String, useNavigate: () => navigate }}>
+        <Menu aria-label="Destinations" onAction={onMenuAction}>
+          <Menu.Item
+            key="row"
+            href={href}
+            actions={<StatefulAction />}
+            onClick={onClick}
+            onAction={onItemAction}
+          >
+            Destination
+          </Menu.Item>
+        </Menu>
+      </Root>
+    );
+    const { rerender } = render(content(destination));
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Count 0' }));
+    const action = screen.getByRole('menuitem', { name: 'Count 1' });
+    expect(navigate).not.toHaveBeenCalled();
+    expect(onClick).not.toHaveBeenCalled();
+    for (const href of [undefined, '/again', undefined, '/last']) {
+      await act(() => rerender(content(href)));
+      expect(screen.getByRole('menuitem', { name: 'Count 1' })).toBe(action);
+      if (href === undefined) {
+        const row = screen.getByRole('menuitem', { name: 'Destination' });
+        await act(() => row.focus());
+        await userEvent.keyboard('{Enter}');
+        expect(navigate).not.toHaveBeenCalled();
+        expect(onClick).toHaveBeenCalledTimes(1);
+        expect(onItemAction).toHaveBeenCalledTimes(1);
+        expect(onMenuAction).toHaveBeenCalledExactlyOnceWith('row');
+        onClick.mockClear();
+        onItemAction.mockClear();
+        onMenuAction.mockClear();
+      }
+    }
+    const row = screen.getByRole('menuitem', { name: 'Destination' });
+    await act(() => row.focus());
+    await userEvent.keyboard('{Enter}');
+    expect(navigate).toHaveBeenCalledExactlyOnceWith('/last', undefined);
+    expect(onClick).toHaveBeenCalledTimes(1);
+    expect(onItemAction).toHaveBeenCalledTimes(1);
+    expect(onMenuAction).toHaveBeenCalledExactlyOnceWith('row');
+    expect(screen.getByRole('menuitem', { name: 'Count 1' })).toBe(action);
+  });
+
+  it.each([false, true])(
+    'preserves Label and Description child state through href changes (actions=%s)',
+    async (actions) => {
+      const navigate = vi.fn();
+      let incrementLabel: () => void;
+      let incrementDescription: () => void;
+      function StatefulLabel() {
+        const [count, setCount] = useState(0);
+        useEffect(() => {
+          incrementLabel = () => setCount((value) => value + 1);
+        }, []);
+        return <span data-qa="state-label">Label {count}</span>;
+      }
+      function StatefulDescription() {
+        const [count, setCount] = useState(0);
+        useEffect(() => {
+          incrementDescription = () => setCount((value) => value + 1);
+        }, []);
+        return <span data-qa="state-description">Description {count}</span>;
+      }
+      function StatefulAction() {
+        const [count, setCount] = useState(0);
+        return (
+          <Menu.Item.Action onPress={() => setCount((value) => value + 1)}>
+            Count {count}
+          </Menu.Item.Action>
+        );
+      }
+      const content = (href: string | undefined) => (
+        <Root navigation={{ useHref: String, useNavigate: () => navigate }}>
+          <Menu aria-label="State">
+            <Menu.Item
+              key="row"
+              qa="state-row"
+              href={href}
+              textValue="Destination"
+              description={<StatefulDescription />}
+              actions={actions ? <StatefulAction /> : undefined}
+            >
+              <StatefulLabel />
+            </Menu.Item>
+          </Menu>
+        </Root>
+      );
+      const { rerender } = render(content('/first'));
+      await act(() => {
+        incrementLabel();
+        incrementDescription();
+      });
+      if (actions)
+        await userEvent.click(
+          screen.getByRole('menuitem', { name: 'Count 0' }),
+        );
+      const label = screen.getByTestId('state-label');
+      const description = screen.getByTestId('state-description');
+      const action = actions
+        ? screen.getByRole('menuitem', { name: 'Count 1' })
+        : undefined;
+      const frame = screen.getByTestId('state-row');
+      const primary = screen.getByRole('menuitem', { name: 'Label 1' });
+      await act(() => primary.focus());
+      for (const href of [undefined, '/again', undefined, '/last']) {
+        await act(() => rerender(content(href)));
+        expect(screen.getByTestId('state-label')).toBe(label);
+        expect(screen.getByTestId('state-description')).toBe(description);
+        expect(label).toHaveTextContent('Label 1');
+        expect(description).toHaveTextContent('Description 1');
+        expect(screen.getByTestId('state-row')).toBe(frame);
+        const currentPrimary = screen.getByRole('menuitem', {
+          name: 'Label 1',
+        });
+        expect(currentPrimary).toHaveFocus();
+        expect(currentPrimary.closest('li')).toBe(frame);
+        expect(currentPrimary.tagName).toBe(
+          actions || href !== undefined ? 'A' : 'LI',
+        );
+        if (actions) expect(currentPrimary).toBe(primary);
+        if (actions)
+          expect(screen.getByRole('menuitem', { name: 'Count 1' })).toBe(
+            action,
+          );
+      }
+      expect(navigate).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each(
+    (['header', 'card'] as const).flatMap((type) =>
+      ([1, 3, 6] as const).flatMap((level) =>
+        [false, true].map((actions) => ({ type, level, actions })),
+      ),
+    ),
+  )(
+    'preserves heading labels, levels, names and refs ($type, level=$level, actions=$actions)',
+    ({ type, level, actions }) => {
+      const labelRef = createRef<HTMLElement>();
+      const commandRef = createRef<HTMLElement>();
+      renderWithRoot(
+        <Menu aria-label="Headings">
+          <Menu.Item
+            key="link"
+            to="/heading"
+            type={type}
+            level={level}
+            labelRef={labelRef}
+            actions={
+              actions ? <Menu.Item.Action>Delete</Menu.Item.Action> : undefined
+            }
+          >
+            Destination
+          </Menu.Item>
+          <Menu.Item
+            key="command"
+            type={type}
+            level={level}
+            labelRef={commandRef}
+          >
+            Command
+          </Menu.Item>
+        </Menu>,
+      );
+      const heading = screen.getByRole('heading', {
+        name: 'Destination',
+        level,
+      });
+      const commandHeading = screen.getByRole('heading', {
+        name: 'Command',
+        level,
+      });
+      expect(heading.tagName).toBe(`H${level}`);
+      expect(labelRef.current).toBe(heading);
+      expect(commandRef.current).toBe(commandHeading);
+      expect(heading).toHaveAttribute('data-element', 'Label');
+      const primary = screen.getByRole('menuitem', { name: 'Destination' });
+      expect(primary.closest('li')).toContainElement(heading);
+      const anchor =
+        heading.querySelector<HTMLAnchorElement>('a[data-menu-native-link]') ??
+        heading.closest<HTMLAnchorElement>('a[data-menu-native-link]');
+      expect(primary).not.toBe(anchor);
+      expect(primary).toHaveAttribute('href', '/heading');
+      expect(primary).toHaveAccessibleName('Destination');
+      expect(anchor).toHaveAttribute('href', '/heading');
+      expect(anchor).toHaveAttribute('aria-hidden', 'true');
+      expect(commandHeading.querySelector('a[href]')).toBeNull();
+      if (actions)
+        expect(anchor).not.toContainElement(
+          screen.getByRole('menuitem', { name: 'Delete' }),
+        );
+    },
+  );
 
   it('should call onAction when menu item is clicked', async () => {
     const onAction = vi.fn();
@@ -497,6 +942,123 @@ describe('<Menu />', () => {
     });
 
     expect(onAction).toHaveBeenCalled();
+  });
+
+  describe('item and menu action callbacks', () => {
+    const destinations = [
+      ['command', {}],
+      ['to', { to: '/action-destination' }],
+      ['href', { href: '/action-destination' }],
+    ];
+    const callbackCombinations = ['item', 'menu', 'both'];
+
+    it.each(
+      destinations.flatMap(([destination, destinationProps]) =>
+        callbackCombinations.map((callbacks) => ({
+          destination,
+          destinationProps,
+          callbacks,
+        })),
+      ),
+    )(
+      'uses the same activation path for $callbacks callbacks on a $destination row',
+      async ({ destination, destinationProps, callbacks }) => {
+        const calls = [];
+        const itemAction = vi.fn((...args) => calls.push(['item', ...args]));
+        const menuAction = vi.fn((...args) => calls.push(['menu', ...args]));
+        const navigate = vi.fn();
+        const onClose = vi.fn();
+        render(
+          <Root navigation={{ useHref: String, useNavigate: () => navigate }}>
+            <Menu
+              aria-label="Actions"
+              onAction={callbacks === 'item' ? undefined : menuAction}
+              onClose={onClose}
+            >
+              <Menu.Item
+                key="destination"
+                {...destinationProps}
+                hotkeys="a"
+                onAction={callbacks === 'menu' ? undefined : itemAction}
+              >
+                Destination
+              </Menu.Item>
+            </Menu>
+          </Root>,
+        );
+        const row = screen.getByRole('menuitem', { name: 'Destination' });
+        const expectedCalls = [];
+        if (callbacks !== 'menu') expectedCalls.push(['item']);
+        if (callbacks !== 'item') expectedCalls.push(['menu', 'destination']);
+
+        for (const key of [undefined, '{Enter}', ' ', 'a']) {
+          if (key === undefined) await userEvent.click(row);
+          else {
+            await act(() => row.focus());
+            await userEvent.keyboard(key);
+          }
+          expect(calls).toEqual(expectedCalls);
+          expect(onClose).toHaveBeenCalledTimes(1);
+          expect(navigate).toHaveBeenCalledTimes(
+            destination === 'command' ? 0 : 1,
+          );
+          if (destination !== 'command')
+            expect(navigate).toHaveBeenCalledWith(
+              '/action-destination',
+              undefined,
+            );
+          calls.length = 0;
+          itemAction.mockClear();
+          menuAction.mockClear();
+          onClose.mockClear();
+          navigate.mockClear();
+        }
+      },
+    );
+
+    it.each(
+      [false, true].flatMap((inlineAction) =>
+        ['mouse', 'hotkey'].map((activation) => ({ inlineAction, activation })),
+      ),
+    )(
+      'opens a submenu without invoking commands (inline=$inlineAction, activation=$activation)',
+      async ({ inlineAction, activation }) => {
+        const itemAction = vi.fn();
+        const menuAction = vi.fn();
+        renderWithRoot(
+          <Menu aria-label="Actions" onAction={menuAction}>
+            <Menu.SubMenuTrigger>
+              <Menu.Item
+                key="share"
+                hotkeys="a"
+                onAction={inlineAction ? itemAction : undefined}
+              >
+                Share
+              </Menu.Item>
+              <Menu aria-label="Share">
+                <Menu.Item key="copy-link">Copy link</Menu.Item>
+              </Menu>
+            </Menu.SubMenuTrigger>
+          </Menu>,
+        );
+        const row = screen.getByRole('menuitem', { name: 'Share' });
+        if (activation === 'mouse')
+          await userEvent.click(row, { skipHover: true });
+        else {
+          await act(() => row.focus());
+          await userEvent.keyboard('a');
+        }
+        await waitFor(
+          () =>
+            expect(
+              screen.getByRole('menuitem', { name: 'Copy link' }),
+            ).toBeInTheDocument(),
+          { timeout: 2000 },
+        );
+        expect(itemAction).not.toHaveBeenCalled();
+        expect(menuAction).not.toHaveBeenCalled();
+      },
+    );
   });
 
   // `MenuItem` used to hand React Aria's key handler to `mergeProps` a second

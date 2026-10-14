@@ -16,6 +16,7 @@ import { expect, findByRole, userEvent, waitFor, within } from 'storybook/test';
 
 import { EditIcon } from '../../../icons/EditIcon';
 import { TrashIcon } from '../../../icons/TrashIcon';
+import { NO_SNAPSHOT } from '../../../stories/chromatic';
 import { Block } from '../../Block';
 import { Card } from '../../content/Card/Card';
 import { HotKeys } from '../../content/HotKeys';
@@ -130,7 +131,8 @@ export default {
     /* Menu Props */
     onAction: {
       action: 'action',
-      description: 'Callback fired when an item is selected',
+      description:
+        'Callback fired when an item is activated, after its own onAction()',
     },
     onSelectionChange: {
       action: 'selectionChange',
@@ -1376,3 +1378,80 @@ WithContextMenu.play = async ({ canvasElement, viewMode }) => {
   await expect(findByText('Paste')).resolves.toBeInTheDocument();
   await expect(findByText('Cut')).resolves.toBeInTheDocument();
 };
+
+export const NavigationLinks: StoryFn<CubeCommandMenuProps<object>> = () => (
+  <CommandMenu aria-label="Workbooks" width="36x">
+    <CommandMenu.Item key="create" icon={<IconPlus />}>
+      Create workbook
+    </CommandMenu.Item>
+    <CommandMenu.Section title="Recent workbooks">
+      <CommandMenu.Item
+        key="saved"
+        to={{ pathname: '/workbooks/saved', search: '?view=table' }}
+        description="Open the saved workbook"
+      >
+        Saved workbook
+      </CommandMenu.Item>
+      <CommandMenu.Item key="disabled" to="/workbooks/private" isDisabled>
+        Unavailable workbook
+      </CommandMenu.Item>
+    </CommandMenu.Section>
+    <CommandMenu.Item key="browse" to="/workbooks">
+      Browse all
+    </CommandMenu.Item>
+  </CommandMenu>
+);
+
+NavigationLinks.storyName = 'Mixed commands and links';
+// Navigation semantics and virtual focus keep the existing palette appearance.
+NavigationLinks.parameters = NO_SNAPSHOT;
+NavigationLinks.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement);
+  const search = canvas.getByRole('searchbox', { name: 'Search commands...' });
+  await userEvent.click(search);
+  await userEvent.type(search, 'Saved');
+  const destination = await canvas.findByRole('menuitem', {
+    name: 'Saved workbook',
+  });
+  expect(destination.tagName).toBe('A');
+  expect(destination).toHaveAttribute('href', '/workbooks/saved?view=table');
+  expect(destination).not.toHaveAttribute('aria-hidden');
+  expect(destination).toHaveAccessibleDescription('Open the saved workbook');
+  const bounds = destination.closest('li')!.getBoundingClientRect();
+  expect(
+    document
+      .elementFromPoint(bounds.right - 8, bounds.top + bounds.height / 2)
+      ?.closest('a'),
+  ).toHaveAttribute('href', '/workbooks/saved?view=table');
+
+  expect(canvas.queryByRole('menuitem', { name: 'Browse all' })).toBeNull();
+  await waitFor(() => {
+    expect(search).toHaveFocus();
+    expect(search).toHaveAttribute('aria-activedescendant', destination.id);
+    expect(canvas.getByRole('menu')).toHaveAttribute(
+      'id',
+      search.getAttribute('aria-controls'),
+    );
+  });
+};
+
+export const NavigationOnly: StoryFn<CubeCommandMenuProps<object>> = () => (
+  <CommandMenu aria-label="Workbook navigation" width="36x">
+    <CommandMenu.Item key="all" to="/workbooks">
+      All workbooks
+    </CommandMenu.Item>
+    <CommandMenu.Item
+      key="recent"
+      to="/workbooks/recent"
+      keywords={['history']}
+    >
+      Recent workbooks
+    </CommandMenu.Item>
+    <CommandMenu.Item key="docs" to="!https://cube.dev/docs">
+      Documentation
+    </CommandMenu.Item>
+  </CommandMenu>
+);
+
+// Navigation and search reuse the palette layout already covered by visual stories.
+NavigationOnly.parameters = NO_SNAPSHOT;

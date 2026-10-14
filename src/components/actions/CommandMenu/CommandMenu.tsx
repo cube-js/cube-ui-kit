@@ -23,11 +23,12 @@ import { useI18n } from '../../../i18n';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
 import { mergeProps } from '../../../utils/react';
 import { extractStyles, mergeStyleLayers } from '../../../utils/styles';
-// `CollectionItem` (not react-stately's bare `Item`) is what CommandMenu
-// actually renders through `MenuItem`, so it carries the `Item` props.
-import { CollectionItem as Item } from '../../CollectionItem';
-import { useMenuContext } from '../Menu';
+import { useMenuContext } from '../Menu/context';
 import { CubeMenuProps } from '../Menu/Menu';
+import {
+  getMenuItemReactKey,
+  MenuCollectionItem as Item,
+} from '../Menu/MenuCollectionItem';
 import { MenuItem } from '../Menu/MenuItem';
 import { MenuSection } from '../Menu/MenuSection';
 import { MenuTrigger } from '../Menu/MenuTrigger';
@@ -164,6 +165,8 @@ function CommandMenu<T extends object>(
 
   const domRef = useObjectRef(ref);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const instanceId = useId();
+  const menuId = `${qa || 'CommandMenu'}-${instanceId}-menu`;
   const contextProps = useMenuContext();
 
   // Convert string[] to Set<Key> for React Aria compatibility
@@ -315,22 +318,23 @@ function CommandMenu<T extends object>(
   };
 
   const treeState = useTreeState(treeStateProps);
+  const itemId = (key: Key) => {
+    const item = treeState.collection.getItem(key);
+    const actions = item?.props.actions;
+    // A plain command's layout and semantic target share the consumer's DOM id.
+    if (
+      item?.props.id != null &&
+      item.props.href == null &&
+      (!actions || actions === true)
+    )
+      return String(item.props.id);
+    return `${menuId}-option-${typeof key}-${encodeURIComponent(String(key))}`;
+  };
 
   const collectionItems = [...treeState.collection];
   const hasSections = collectionItems.some((item) => item.type === 'section');
 
-  // The search input keeps focus and points `aria-activedescendant` at the
-  // item the arrow keys moved to, so each item needs an id it can name.
-  // Unique without a `qa`, so a second menu's items never share these ids;
-  // the key is encoded because an id reference can't hold a space.
-  const autoId = useId();
-  const menuId = `${qa || `CommandMenu${autoId}`}-menu`;
-  const getItemId = (key: Key) =>
-    `${menuId}-option-${encodeURIComponent(String(key))}`;
-
-  // Track focused key for aria-activedescendant
-  const [focusedKey, setFocusedKey] = React.useState<Key | null>(null);
-  const focusedKeyRef = useRef<Key | null>(null);
+  const focusedKey = treeState.selectionManager.focusedKey;
 
   // Apply filtering to collection items for rendering and empty state checks
   const filteredCollectionItems = [...collectionFilter(collectionItems)];
@@ -365,11 +369,12 @@ function CommandMenu<T extends object>(
   let isFirstSection = true;
 
   filteredCollectionItems.forEach((item) => {
+    const reactKey = getMenuItemReactKey(item.key);
     if (item.type === 'section') {
       if (!isFirstSection) {
         renderedItems.push(
           <StyledDivider
-            key={`divider-${String(item.key)}`}
+            key={`divider-${reactKey}`}
             role="separator"
             aria-orientation="horizontal"
           />,
@@ -378,14 +383,14 @@ function CommandMenu<T extends object>(
 
       renderedItems.push(
         <MenuSection
-          key={item.key}
+          key={reactKey}
           item={item}
-          getItemId={getItemId}
           state={treeState}
           styles={completeProps.sectionStyles}
           itemStyles={completeProps.itemStyles}
           headingStyles={completeProps.sectionHeadingStyles}
           size={size}
+          itemId={itemId}
         />,
       );
 
@@ -395,13 +400,12 @@ function CommandMenu<T extends object>(
 
     let menuItem = (
       <MenuItem
-        key={item.key}
-        id={getItemId(item.key)}
+        key={reactKey}
         item={item}
         state={treeState}
         styles={completeProps.itemStyles}
         size={size}
-        onAction={item.onAction}
+        id={itemId(item.key)}
       />
     );
 
@@ -411,7 +415,7 @@ function CommandMenu<T extends object>(
     }
 
     // Ensure every child has a stable key, even if the wrapper component didn't set one.
-    renderedItems.push(React.cloneElement(menuItem, { key: item.key }));
+    renderedItems.push(React.cloneElement(menuItem, { key: reactKey }));
   });
 
   // Auto-focus search input
@@ -456,16 +460,12 @@ function CommandMenu<T extends object>(
     if (currentSearchValue !== prevSearchValue && currentSearchValue !== '') {
       const firstSelectableKey = findFirstSelectableItem();
 
-      if (firstSelectableKey && hasFilteredItems) {
+      if (firstSelectableKey != null && hasFilteredItems) {
         // Focus the first item in the selection manager
         treeState.selectionManager.setFocusedKey(firstSelectableKey);
-        setFocusedKey(firstSelectableKey);
-        focusedKeyRef.current = firstSelectableKey;
       } else {
         // Clear focus if no items are available
         treeState.selectionManager.setFocusedKey(null);
-        setFocusedKey(null);
-        focusedKeyRef.current = null;
       }
     }
 
@@ -478,8 +478,7 @@ function CommandMenu<T extends object>(
     e.preventDefault();
 
     const { selectionManager } = treeState;
-    // Use the ref to get the current focused key synchronously
-    const currentKey = focusedKeyRef.current || selectionManager.focusedKey;
+    const currentKey = selectionManager.focusedKey;
     const nextKey = getNextEnabledKey(
       collectItemKeys(filteredCollectionItems),
       currentKey,
@@ -489,52 +488,66 @@ function CommandMenu<T extends object>(
 
     if (nextKey != null) {
       selectionManager.setFocusedKey(nextKey);
-      setFocusedKey(nextKey);
-      focusedKeyRef.current = nextKey; // Update ref immediately
     }
   };
 
-  // Default behavior: trigger the menu's action and the item's own.
-  const triggerAction = (key: Key) => {
-    const node = treeState.collection.getItem(key);
-
-    if (!node) return;
-
-    // Call the tree state's action handler
-    const onAction = (completeProps as any).onAction;
-    if (onAction) {
-      onAction(key);
-    }
-    // Also call the item's individual onAction if it exists
-    if (node.props?.onAction) {
-      node.props.onAction(key);
-    }
-  };
-
-  // Runs the focused item, like Menu does: selects it when the menu has a
-  // selection mode, otherwise triggers its action.
+  // Use the rendered item's Aria handlers for commands, selection and navigation.
   const handleActionKey = (e: KeyboardEvent<HTMLInputElement>) => {
-    const currentFocusedKey =
-      focusedKey || treeState.selectionManager.focusedKey;
-
-    if (currentFocusedKey == null) return;
-
     e.preventDefault();
-
-    if (treeState.selectionManager.selectionMode !== 'none') {
-      treeState.selectionManager.select(currentFocusedKey);
-    } else {
-      triggerAction(currentFocusedKey);
+    e.stopPropagation();
+    if (
+      e.repeat ||
+      focusedKey == null ||
+      treeState.selectionManager.isDisabled(focusedKey)
+    )
+      return;
+    const item = menuRef.current?.ownerDocument.getElementById(
+      itemId(focusedKey),
+    );
+    if (!item || !menuRef.current?.contains(item)) return;
+    const shouldActivate = item.dispatchEvent(
+      new window.KeyboardEvent('keydown', {
+        key: e.key,
+        code: e.code,
+        ctrlKey: e.ctrlKey,
+        metaKey: e.metaKey,
+        altKey: e.altKey,
+        shiftKey: e.shiftKey,
+        bubbles: true,
+        cancelable: true,
+      }),
+    );
+    // An anchor's Enter handler leaves its native default action to the browser.
+    if (shouldActivate && e.key === 'Enter') {
+      item.dispatchEvent(
+        new window.MouseEvent('click', {
+          ctrlKey: e.ctrlKey,
+          metaKey: e.metaKey,
+          altKey: e.altKey,
+          shiftKey: e.shiftKey,
+          bubbles: true,
+          cancelable: true,
+          detail: 1,
+        }),
+      );
     }
-
-    // Close the menu if we're in a trigger context and closeOnSelect is enabled (default behavior)
-    const { onClose, closeOnSelect } = contextProps;
-    if (onClose && closeOnSelect !== false) {
-      onClose();
-    }
+    // The real keyup belongs to the search input, so balance the item's press here.
+    item.dispatchEvent(
+      new window.KeyboardEvent('keyup', {
+        key: e.key,
+        code: e.code,
+        ctrlKey: e.ctrlKey,
+        metaKey: e.metaKey,
+        altKey: e.altKey,
+        shiftKey: e.shiftKey,
+        bubbles: true,
+        cancelable: true,
+      }),
+    );
   };
 
   const handleSearchKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.nativeEvent.isComposing) return;
     if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
       handleArrowKey(e);
     } else if (e.key === 'Enter' || (e.key === ' ' && !searchValue.trim())) {
@@ -551,6 +564,13 @@ function CommandMenu<T extends object>(
   // Determine if we should show empty state based on actual filtered collection
   const hasSearchTerm = searchValue.trim().length > 0;
   const showEmptyState = hasSearchTerm && !hasFilteredItems && !isLoading;
+  const activeDescendant =
+    !isLoading &&
+    !showEmptyState &&
+    focusedKey != null &&
+    collectItemKeys(filteredCollectionItems).includes(focusedKey)
+      ? itemId(focusedKey)
+      : undefined;
 
   // Sync refs
   useSyncRef(contextProps, menuRef);
@@ -600,18 +620,13 @@ function CommandMenu<T extends object>(
         value={searchValue}
         styles={searchInputStyles}
         data-size={size}
-        aria-controls={menuId}
-        role="combobox"
-        aria-expanded="true"
-        aria-haspopup="listbox"
-        aria-activedescendant={
-          focusedKey != null ? getItemId(focusedKey) : undefined
-        }
-        // The input is the control a screen reader lands on, so the menu's
-        // name is its name. Kept off the wrapper, a plain `div`.
-        aria-label={completeProps['aria-label']}
+        aria-label={completeProps['aria-label'] ?? searchPlaceholder}
         aria-labelledby={completeProps['aria-labelledby']}
         aria-describedby={completeProps['aria-describedby']}
+        aria-details={completeProps['aria-details']}
+        aria-controls={!isLoading && !showEmptyState ? menuId : undefined}
+        role="searchbox"
+        aria-activedescendant={activeDescendant}
         onChange={(e) => handleSearchChange(e.target.value)}
         onKeyDown={handleSearchKeyDown}
       />

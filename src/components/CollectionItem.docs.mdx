@@ -10,6 +10,10 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 ListBox, FilterListBox, Select, ComboBox, FilterPicker, Picker, Menu, CommandMenu
 
+The parent component determines an item's semantics. `Menu.Item` and `CommandMenu.Item` can mix commands (`onAction`) with navigation links (`to` or `href`). See [Menu](/docs/actions-menu--docs) for keyboard behavior and inline actions, and [CommandMenu](/docs/actions-commandmenu--docs) for searchable menus.
+
+ListBox, ComboBox, SearchComboBox, Select, Picker and their filtering variants render selection options. Their `.Item` APIs reject navigation props, and the controls ignore destinations even when given an item from another factory. Use a menu or command menu when activating a suggestion should navigate.
+
 ## Usage Patterns
 
 There are two ways to provide items to collection components:
@@ -118,7 +122,7 @@ const items = [{
 - **`onAction`** `() => void` — Callback fired when the item is activated (Menu items)
 - **`wrapper`** `(item: ReactElement) => ReactElement` — Function to wrap the rendered item
 
-Extends all [Item component](/docs/content-item--docs) props.
+Supports [Item component](/docs/content-item--docs) content and styling props. Navigation props are available only on `Menu.Item` and `CommandMenu.Item`.
 
 ### Base Properties
 

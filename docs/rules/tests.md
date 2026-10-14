@@ -243,3 +243,5 @@ Use `query*` when checking non-existence, `getAll*` for multiple elements.
 ## React 19 and compiled behavior
 
 Follow the [React Compiler rules](react-compiler.md). Run affected behavior in source and release-compiled modes. Preserve Strict Mode, hydration, observer/ref cleanup, accessibility, and frozen Form contracts. Callback migrations check current committed data, resource configuration and cleanup, and retained identity only where that is a real contract. Built/packed consumer fixtures cover public declarations and native runtime imports. Whole-library Hooks diagnostics and Compiler coverage must not regress; a baseline update is not a fix for a failing gate.
+
+For trusted CDP pointer input in browser specs, translate iframe coordinates using its bounding rectangle and `offsetWidth`/`offsetHeight` scale, including scaled border offsets. Vitest can scale its test iframe; adding only its left/top offsets can send whitespace clicks outside the rendered row.

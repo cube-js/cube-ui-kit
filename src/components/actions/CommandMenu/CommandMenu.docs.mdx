@@ -6,12 +6,12 @@ import * as CommandMenuStories from './CommandMenu.stories';
 
 # CommandMenu
 
-A searchable, keyboard-first surface for finding and executing application actions. CommandMenu renders the searchable menu content; wrap it in `CommandMenu.Trigger` for a button-anchored popover or place it in a `Dialog` for a global command palette.
+A searchable, keyboard-first surface for finding and executing application commands or opening navigation destinations. CommandMenu renders the searchable menu content; wrap it in `CommandMenu.Trigger` for a button-anchored popover or place it in a `Dialog` for a global command palette.
 
 ## When to use
 
 - Users need to search a large or changing set of application commands
-- The primary result of choosing an item is executing an action
+- Choosing an item executes a command or opens a destination
 - Keyboard-first discovery, aliases (`keywords`), and shortcut hints are important
 - A trigger-based command popover or modal global command palette is needed
 
@@ -46,7 +46,7 @@ Choose a different component when the interaction has another outcome:
 - **`autoFocus`** `boolean | FocusStrategy` (default: `true`) — Whether to auto-focus the search input
 - **`items`** `Iterable<T>` — Collection of items for dynamic content with render function pattern
 - **`disabledKeys`** `Iterable<Key>` — Keys of items that should be disabled
-- **`onAction`** `(key: Key) => void` — Callback fired when an item is selected
+- **`onAction`** `(key: Key) => void` — Callback fired when an item is activated, after its own `onAction()`
 - **`isDisabled`** `boolean` — Whether the command menu is disabled
 - **`header`** `ReactNode` — Optional header content above the search input
 - **`footer`** `ReactNode` — Optional footer content below the menu
@@ -125,13 +125,51 @@ For detailed information about all available item properties, see the [Menu.Item
 - **`hotkeys`** `string` — Keyboard shortcut that triggers this item
 - **`tooltip`** `string | boolean | object` — Tooltip configuration
 - **`isDisabled`** `boolean` — Whether the item is disabled
-- **`onAction`** `() => void` — Callback fired when item is activated
+- **`onAction`** `() => void` — Callback fired when the item is activated, before the CommandMenu's `onAction(key)`
+- **`to`** `string | Path` — Application destination resolved by Root's navigation adapter; takes precedence over `href`
+- **`navigationOptions`** `NavigateOptions` — Options for client navigation, such as `replace`, `state`, `relative` and `preventScrollReset`
+- **`href`** `string` — Native destination when `to` is omitted
+- **`target`**, **`rel`**, **`download`**, **`ping`**, **`referrerPolicy`**, **`hrefLang`** — Native anchor attributes
 
 #### CommandMenu-specific Properties
 
 - **`keywords`** `string[]` — Additional search terms for better discoverability
 - **`forceMount`** `boolean` — Whether to always show this item regardless of search filter
 - **`textValue`** `string` — Text value for search filtering (if different from children)
+
+#### Mixed Commands and Navigation
+
+The same searchable collection can contain commands and links. Give commands an `onAction` and navigation destinations a `to` or `href`; do not navigate again in the action callback. CommandMenu.Item uses the same navigation behavior as [Menu.Item](/docs/actions-menu--docs#navigation-items): ordinary activation uses Root's navigation adapter, while modified clicks, middle clicks, downloads, external destinations and other targets retain native browser behavior. A `!` prefix on `to` opens a new tab, and an `@` prefix forces native navigation.
+
+```tsx
+<CommandMenu aria-label="Workbooks" onAction={recordActivation}>
+  <CommandMenu.Item key="create" onAction={createWorkbook} keywords={['new']}>
+    Create workbook
+  </CommandMenu.Item>
+  <CommandMenu.Section title="Recent workbooks">
+    <CommandMenu.Item
+      key="saved"
+      to={{ pathname: '/workbooks/saved', search: '?view=table' }}
+      description="Open the saved workbook"
+    >
+      Saved workbook
+    </CommandMenu.Item>
+  </CommandMenu.Section>
+  <CommandMenu.Item key="browse" to="/workbooks">Browse all</CommandMenu.Item>
+</CommandMenu>
+```
+
+Filtering, Arrow keys and Enter use the same primary items for both commands and links. The item's `onAction()` runs first, then the CommandMenu's `onAction(key)`, once each. Space activates the highlighted item only while the search is empty; while typing a query, Space inserts text. Disabled items cannot activate or navigate. Selection modes select commands; navigation items open their destination without becoming selected.
+
+Loading items are disabled by default. Set `isDisabled={false}` to keep a loading item available; `disabledKeys` still applies.
+
+Navigation items expose `menuitem` semantics without a checked state, including when other items are checkboxes or radio choices. Supply `aria-current` to identify a destination that represents the current page.
+
+The primary native anchor covers the complete row and exposes the menu-item semantics and destination, while the original Item row retains its layout and style slots. Padding, gaps and whitespace support native browser link commands. Give icon-only items a meaningful accessible name. Follow [Menu's focus and selector migration guidance](/docs/actions-menu--docs#focus-and-selector-migration) for custom selectors. CommandMenu uses virtual focus: the search input keeps DOM focus and identifies the active primary menu item with `aria-activedescendant`, including when styles hide an individual content slot. Inline actions are unsupported in this virtual-focus mode; use a separate primary item for each command or a DOM-focus Menu when independent row actions are required.
+
+<Story of={CommandMenuStories.NavigationOnly} />
+
+<Story of={CommandMenuStories.NavigationLinks} />
 
 #### Example with Enhanced Search
 
@@ -175,17 +213,17 @@ Alias for MenuTrigger component. See [Menu.Trigger documentation](/docs/actions-
 The CommandMenu component provides comprehensive keyboard support:
 
 - **Search Input Focus**: The search input is automatically focused when the palette opens
-- **Arrow Keys**: Navigate through filtered options while keeping search input focused
-- **Enter**: Select the currently highlighted option
+- **ArrowUp/ArrowDown**: Navigate through enabled filtered items while keeping the search input focused
+- **Enter**: Activate the currently highlighted command or navigation destination
+- **Space**: Activate the highlighted item only when the search is empty; otherwise insert a space into the query
 - **Escape**: Clear search term or close the palette
 - **Tab**: Navigate between focusable elements
 
 ### Screen Reader Support
 
-- Proper ARIA roles and labels for search and menu functionality
-- Live region announcements for state changes
-- Support for `aria-activedescendant` for virtual focus
-- Descriptive labels for loading and empty states
+The named search input has `searchbox` semantics and controls a `menu`, rather than a listbox of form options. Its `aria-activedescendant` points to the actual highlighted menu item, including items inside sections and native navigation anchors. Generated IDs are unique per palette. A plain command retains its consumer-provided DOM `id`; keep explicit IDs non-empty and unique within the page. Empty and loading states clear references to items that are no longer rendered.
+
+Give the palette an `aria-label` or `aria-labelledby` to name its search input, and use `aria-describedby` for search instructions. `searchPlaceholder` supplies the input name when no explicit name is provided. Screen-reader wording and virtual-focus behavior vary by reader and browser; verify the consuming application's browser/reader combination. The [WAI-ARIA active-descendant requirements](https://www.w3.org/TR/wai-aria-1.2/#aria-activedescendant) permit a searchbox to reference an item owned by its controlled menu.
 
 ### Focus Management
 
@@ -449,14 +487,8 @@ The CommandMenu supports enhanced search capabilities:
 ### Performance
 
 - The component uses efficient filtering with React Stately's collection system
-- Search filtering is debounced to prevent excessive re-renders
-- Virtual focus is used to maintain performance with large option sets
-
-### Accessibility Compliance
-
-- Meets WCAG 2.1 AA standards for keyboard navigation
-- Supports screen readers with proper ARIA attributes
-- Implements virtual focus pattern for optimal accessibility
+- Filtering updates as the search value changes
+- Virtual focus keeps the search input focused during item navigation
 
 ### Browser Support
 

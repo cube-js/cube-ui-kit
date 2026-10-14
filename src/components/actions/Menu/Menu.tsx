@@ -1,4 +1,4 @@
-import { useObjectRef, useSyncRef } from '@react-aria/utils';
+import { isFocusable, useObjectRef, useSyncRef } from '@react-aria/utils';
 import {
   CollectionChildren,
   FocusStrategy,
@@ -12,15 +12,15 @@ import {
   filterBaseProps,
   Styles,
 } from '@tenphi/tasty';
-import React, { ReactElement, ReactNode, Ref } from 'react';
+import React, { KeyboardEvent, ReactElement, ReactNode, Ref } from 'react';
 import { AriaMenuProps, useMenu } from 'react-aria';
 import { Section as BaseSection, useTreeState } from 'react-stately';
 
 import { mergeProps } from '../../../utils/react';
 import { extractStyles } from '../../../utils/styles';
-import { CollectionItem } from '../../CollectionItem';
 
 import { useMenuContext } from './context';
+import { getMenuItemReactKey, MenuCollectionItem } from './MenuCollectionItem';
 import { MenuItem } from './MenuItem';
 import { MenuSection } from './MenuSection';
 import { MenuTrigger } from './MenuTrigger';
@@ -141,7 +141,83 @@ function Menu<T extends object>(
   const collectionItems = [...state.collection];
   const hasSections = collectionItems.some((item) => item.type === 'section');
 
-  const { menuProps } = useMenu(completeProps, state, domRef);
+  const { menuProps } = useMenu(
+    { ...completeProps, onKeyDown: undefined },
+    state,
+    domRef,
+  );
+  const handleInlineNavigation = (event: KeyboardEvent<HTMLUListElement>) => {
+    const menu = event.currentTarget;
+    const item = (event.target as HTMLElement).closest<HTMLElement>(
+      '[role^="menuitem"]',
+    );
+    if (
+      event.defaultPrevented ||
+      !item ||
+      item.closest('[role="menu"]') !== menu ||
+      event.altKey ||
+      event.ctrlKey ||
+      event.metaKey ||
+      event.nativeEvent.isComposing ||
+      !menu.querySelector('[data-element="Actions"] [role^="menuitem"]')
+    )
+      return;
+    const row = item.closest<HTMLElement>('[data-menuitem]');
+    // Search and page navigation remain owned by the Aria collection of rows.
+    if (
+      item.closest('[data-element="Actions"]') &&
+      (event.key === 'PageUp' ||
+        event.key === 'PageDown' ||
+        (event.key.length === 1 && event.key !== ' '))
+    ) {
+      row?.querySelector<HTMLElement>('[data-menu-native-primary]')?.focus();
+      return;
+    }
+    if (event.shiftKey) return;
+    const items = Array.from(
+      menu.querySelectorAll<HTMLElement>('[role^="menuitem"]'),
+    ).filter(
+      (element) =>
+        element.closest('[role="menu"]') === menu &&
+        !element.hasAttribute('disabled') &&
+        element.getAttribute('aria-disabled') !== 'true' &&
+        isFocusable(element),
+    );
+    const index = items.indexOf(item);
+    if (index < 0) return;
+    let next: HTMLElement | undefined;
+    if (event.key === 'ArrowDown')
+      next =
+        items[index + 1] ??
+        (completeProps.shouldFocusWrap !== false ? items[0] : undefined);
+    else if (event.key === 'ArrowUp')
+      next =
+        items[index - 1] ??
+        (completeProps.shouldFocusWrap !== false ? items.at(-1) : undefined);
+    else if (event.key === 'Home') next = items[0];
+    else if (event.key === 'End') next = items.at(-1);
+    else if (
+      (event.key === 'ArrowRight' || event.key === 'ArrowLeft') &&
+      row &&
+      !item.hasAttribute('aria-haspopup')
+    ) {
+      const rowItems = items.filter(
+        (element) => element.closest('[data-menuitem]') === row,
+      );
+      const forward =
+        event.key ===
+        (getComputedStyle(row).direction === 'rtl'
+          ? 'ArrowLeft'
+          : 'ArrowRight');
+      next = rowItems[rowItems.indexOf(item) + (forward ? 1 : -1)];
+    }
+    if (next) {
+      event.preventDefault();
+      event.stopPropagation();
+      next.focus();
+      return true;
+    }
+  };
   const styles = extractStyles(completeProps, CONTAINER_STYLES);
 
   // `useMenu` already put the id and the name on the `menu` list. Repeated on
@@ -175,11 +251,12 @@ function Menu<T extends object>(
   let isFirstSection = true;
 
   collectionItems.forEach((item) => {
+    const reactKey = getMenuItemReactKey(item.key);
     if (item.type === 'section') {
       if (!isFirstSection) {
         renderedItems.push(
           <StyledDivider
-            key={`divider-${String(item.key)}`}
+            key={`divider-${reactKey}`}
             role="separator"
             aria-orientation="horizontal"
           />,
@@ -188,7 +265,7 @@ function Menu<T extends object>(
 
       renderedItems.push(
         <MenuSection
-          key={item.key}
+          key={reactKey}
           item={item}
           state={state}
           styles={sectionStyles}
@@ -204,7 +281,7 @@ function Menu<T extends object>(
 
     let menuItem = (
       <MenuItem
-        key={item.key}
+        key={reactKey}
         item={item}
         state={state}
         styles={itemStyles}
@@ -224,7 +301,7 @@ function Menu<T extends object>(
     }
 
     // Ensure every child has a stable key, even if the wrapper component didn't set one.
-    renderedItems.push(React.cloneElement(menuItem, { key: item.key }));
+    renderedItems.push(React.cloneElement(menuItem, { key: reactKey }));
   });
 
   return (
@@ -251,6 +328,11 @@ function Menu<T extends object>(
           menuProps,
         )}
         ref={domRef}
+        onKeyDown={(event) => {
+          completeProps.onKeyDown?.(event);
+          if (!event.defaultPrevented && !handleInlineNavigation(event))
+            menuProps.onKeyDown?.(event);
+        }}
         role={menuProps.role ?? 'menu'}
       >
         {renderedItems}
@@ -279,14 +361,14 @@ const Section = Object.assign(BaseSection, {
 }) as SectionComponent;
 
 type __MenuComponent = typeof _Menu & {
-  Item: typeof CollectionItem;
+  Item: typeof MenuCollectionItem;
   Section: typeof Section;
   SubMenuTrigger: typeof SubMenuTrigger;
   Trigger: typeof MenuTrigger;
 };
 
 const __Menu = Object.assign(_Menu as __MenuComponent, {
-  Item: CollectionItem,
+  Item: MenuCollectionItem,
   Section,
   SubMenuTrigger,
   Trigger: MenuTrigger,

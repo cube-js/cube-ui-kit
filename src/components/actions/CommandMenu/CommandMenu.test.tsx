@@ -1,11 +1,22 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import React from 'react';
+import React, { useState } from 'react';
 
 import { act, hoverWithPointer, renderWithRoot } from '../../../test';
+import { Root } from '../../Root';
 import { MenuContext } from '../Menu/context';
 
 import { CommandMenu } from './CommandMenu';
+
+function expectActiveItem(search: HTMLElement, key: string) {
+  const activeId = search.getAttribute('aria-activedescendant');
+  expect(activeId).toBeTruthy();
+  const item = document.getElementById(activeId!);
+  expect(item).toHaveAttribute('role', 'menuitem');
+  expect(item).toHaveAttribute('data-key', key);
+  const menu = document.getElementById(search.getAttribute('aria-controls')!);
+  expect(menu).toContainElement(item);
+}
 
 describe('CommandMenu', () => {
   const items = [
@@ -13,6 +24,43 @@ describe('CommandMenu', () => {
     { id: '2', textValue: 'Open folder' },
     { id: '3', textValue: 'Save document' },
   ];
+
+  it.each([undefined, false])(
+    'aligns loading-item keyboard focus and activation with isDisabled=%s',
+    async (isDisabled) => {
+      const user = userEvent.setup();
+      const onAction = vi.fn();
+      render(
+        <Root>
+          <CommandMenu onAction={onAction}>
+            <CommandMenu.Item
+              key="loading"
+              isLoading
+              isDisabled={isDisabled}
+              tooltip={false}
+            >
+              Loading workbook
+            </CommandMenu.Item>
+            <CommandMenu.Item key="ready" tooltip={false}>
+              Ready workbook
+            </CommandMenu.Item>
+          </CommandMenu>
+        </Root>,
+      );
+      const search = screen.getByRole('searchbox');
+      const expectedKey = isDisabled === false ? 'loading' : 'ready';
+      const expectedItem = screen.getByRole('menuitem', {
+        name: isDisabled === false ? 'Loading workbook' : 'Ready workbook',
+      });
+      await user.click(search);
+      await user.keyboard('{ArrowDown}');
+      expect(search).toHaveAttribute('aria-activedescendant', expectedItem.id);
+      expect(document.getElementById(expectedItem.id)).toBe(expectedItem);
+      await user.keyboard('{Enter}');
+      expect(onAction).toHaveBeenCalledExactlyOnceWith(expectedKey);
+      expect(search).toHaveFocus();
+    },
+  );
 
   it('renders with search input and menu items', () => {
     render(
@@ -80,14 +128,12 @@ describe('CommandMenu', () => {
     expect(searchInput).toHaveFocus();
 
     // First item should be virtually focused (aria-activedescendant)
-    expect(searchInput).toHaveAttribute(
-      'aria-activedescendant',
-      'TestMenu-menu-option-1',
-    );
-    // ...and the id names the item itself, or a screen reader hears nothing.
-    expect(document.getElementById('TestMenu-menu-option-1')).toHaveTextContent(
-      'Create file',
-    );
+    expectActiveItem(searchInput, '1');
+    expect(
+      document.getElementById(
+        searchInput.getAttribute('aria-activedescendant')!,
+      ),
+    ).toHaveAccessibleName('Create file');
 
     // Press arrow down again - should move to second item
     await user.keyboard('{ArrowDown}');
@@ -96,10 +142,7 @@ describe('CommandMenu', () => {
     expect(searchInput).toHaveFocus();
 
     // Second item should be virtually focused
-    expect(searchInput).toHaveAttribute(
-      'aria-activedescendant',
-      'TestMenu-menu-option-2',
-    );
+    expectActiveItem(searchInput, '2');
 
     // Press arrow up - should move back to first item
     await user.keyboard('{ArrowUp}');
@@ -108,10 +151,7 @@ describe('CommandMenu', () => {
     expect(searchInput).toHaveFocus();
 
     // First item should be virtually focused again
-    expect(searchInput).toHaveAttribute(
-      'aria-activedescendant',
-      'TestMenu-menu-option-1',
-    );
+    expectActiveItem(searchInput, '1');
   });
 
   it('navigates through filtered items with arrow keys when search input has value', async () => {
@@ -145,10 +185,7 @@ describe('CommandMenu', () => {
     expect(searchInput).toHaveFocus();
 
     // The filtered item should be virtually focused
-    expect(searchInput).toHaveAttribute(
-      'aria-activedescendant',
-      'TestMenu-menu-option-1',
-    );
+    expectActiveItem(searchInput, '1');
 
     // Clear and type "Save" to test navigation with different filter
     await user.clear(searchInput);
@@ -166,10 +203,7 @@ describe('CommandMenu', () => {
     expect(searchInput).toHaveFocus();
 
     // The filtered item should be virtually focused
-    expect(searchInput).toHaveAttribute(
-      'aria-activedescendant',
-      'TestMenu-menu-option-3',
-    );
+    expectActiveItem(searchInput, '3');
 
     // Clear and type "a" to match multiple items ("Create file" and "Save document")
     await user.clear(searchInput);
@@ -185,28 +219,19 @@ describe('CommandMenu', () => {
     await user.keyboard('{ArrowDown}');
 
     // Second filtered item should be virtually focused
-    expect(searchInput).toHaveAttribute(
-      'aria-activedescendant',
-      'TestMenu-menu-option-3',
-    );
+    expectActiveItem(searchInput, '3');
 
     // Press arrow down again - should wrap to first filtered item ('Create file')
     await user.keyboard('{ArrowDown}');
 
     // First filtered item should be virtually focused
-    expect(searchInput).toHaveAttribute(
-      'aria-activedescendant',
-      'TestMenu-menu-option-1',
-    );
+    expectActiveItem(searchInput, '1');
 
     // Press arrow up - should move to last filtered item ('Save document')
     await user.keyboard('{ArrowUp}');
 
     // Last filtered item should be virtually focused
-    expect(searchInput).toHaveAttribute(
-      'aria-activedescendant',
-      'TestMenu-menu-option-3',
-    );
+    expectActiveItem(searchInput, '3');
   });
 
   it('triggers action with Enter key', async () => {
@@ -233,6 +258,165 @@ describe('CommandMenu', () => {
     expect(onAction).toHaveBeenCalledWith('1');
   });
 
+  it.each(['{Enter}', ' '])(
+    'activates distinct numeric and string collection keys with %s',
+    async (activation) => {
+      const user = userEvent.setup();
+      const navigate = vi.fn();
+      const onAction = vi.fn();
+      const numberAction = vi.fn();
+      const stringAction = vi.fn();
+      const keyedItems = [
+        {
+          id: 1,
+          label: 'Number workbook',
+          to: '/number',
+          onAction: numberAction,
+        },
+        {
+          id: '1',
+          label: 'String workbook',
+          to: '/string',
+          onAction: stringAction,
+        },
+      ];
+
+      render(
+        <Root navigation={{ useHref: String, useNavigate: () => navigate }}>
+          <CommandMenu items={keyedItems} onAction={onAction}>
+            {(item) => (
+              <CommandMenu.Item to={item.to} onAction={item.onAction}>
+                {item.label}
+              </CommandMenu.Item>
+            )}
+          </CommandMenu>
+        </Root>,
+      );
+
+      const search = screen.getByRole('searchbox');
+      const numberItem = screen.getByRole('menuitem', {
+        name: 'Number workbook',
+      });
+      const stringItem = screen.getByRole('menuitem', {
+        name: 'String workbook',
+      });
+      expect(numberItem.id).not.toBe(stringItem.id);
+      await user.click(search);
+      await user.keyboard('{ArrowDown}{ArrowDown}');
+      expect(search).toHaveAttribute('aria-activedescendant', stringItem.id);
+      expect(document.getElementById(stringItem.id)).toBe(stringItem);
+      await user.keyboard(activation);
+
+      expect(stringAction).toHaveBeenCalledExactlyOnceWith();
+      expect(numberAction).not.toHaveBeenCalled();
+      expect(onAction).toHaveBeenCalledExactlyOnceWith('1');
+      expect(navigate).toHaveBeenCalledExactlyOnceWith('/string', undefined);
+      expect(search).toHaveFocus();
+    },
+  );
+
+  it.each([false, true])(
+    'preserves typed-key actions through filtering and reordering (section=%s)',
+    async (section) => {
+      const user = userEvent.setup();
+      const navigate = vi.fn();
+      const onAction = vi.fn();
+      const numberAction = vi.fn();
+      const stringAction = vi.fn();
+      const keyedItems = [
+        {
+          id: 1,
+          label: 'Number workbook',
+          to: '/number',
+          onAction: numberAction,
+        },
+        {
+          id: '1',
+          label: 'String workbook',
+          to: '/string',
+          onAction: stringAction,
+        },
+      ];
+      let reverse: (() => void) | undefined;
+      const renderItem = (item: (typeof keyedItems)[number]) => (
+        <CommandMenu.Item to={item.to} onAction={item.onAction}>
+          {item.label}
+        </CommandMenu.Item>
+      );
+      function App() {
+        const [orderedItems, setOrderedItems] = useState(keyedItems);
+        reverse = () => setOrderedItems((current) => [...current].reverse());
+        return (
+          <Root navigation={{ useHref: String, useNavigate: () => navigate }}>
+            {section ? (
+              <CommandMenu onAction={onAction}>
+                <CommandMenu.Section title="Workbooks" items={orderedItems}>
+                  {renderItem}
+                </CommandMenu.Section>
+              </CommandMenu>
+            ) : (
+              <CommandMenu items={orderedItems} onAction={onAction}>
+                {renderItem}
+              </CommandMenu>
+            )}
+          </Root>
+        );
+      }
+      render(<App />);
+      const search = screen.getByRole('searchbox');
+      const numberId = screen.getByRole('menuitem', {
+        name: 'Number workbook',
+      }).id;
+      const stringId = screen.getByRole('menuitem', {
+        name: 'String workbook',
+      }).id;
+      expect(numberId).not.toBe(stringId);
+      let activations = 0;
+      const activate = async (name: string, id: string, key: 1 | '1') => {
+        await waitFor(() => {
+          const item = screen.getByRole('menuitem', { name });
+          expect(search).toHaveAttribute('aria-activedescendant', id);
+          expect(document.getElementById(id)).toBe(item);
+          expect(item).toHaveAccessibleName(name);
+          expect(item).toBeVisible();
+        });
+        await user.keyboard('{Enter}');
+        activations++;
+        expect(onAction).toHaveBeenCalledTimes(activations);
+        expect(navigate).toHaveBeenCalledTimes(activations);
+        expect(onAction).toHaveBeenLastCalledWith(key);
+        expect(navigate).toHaveBeenLastCalledWith(
+          key === 1 ? '/number' : '/string',
+          undefined,
+        );
+        expect(search).toHaveFocus();
+      };
+      await user.click(search);
+      await user.keyboard('{ArrowDown}{ArrowDown}');
+      await activate('String workbook', stringId, '1');
+      expect(stringAction).toHaveBeenCalledTimes(1);
+      expect(numberAction).not.toHaveBeenCalled();
+      await user.type(search, 'String');
+      expect(
+        screen.queryByRole('menuitem', { name: 'Number workbook' }),
+      ).toBeNull();
+      await activate('String workbook', stringId, '1');
+      expect(stringAction).toHaveBeenCalledTimes(2);
+      expect(numberAction).not.toHaveBeenCalled();
+      await user.clear(search);
+      await act(() => reverse?.());
+      await activate('String workbook', stringId, '1');
+      expect(stringAction).toHaveBeenCalledTimes(3);
+      expect(numberAction).not.toHaveBeenCalled();
+      await user.keyboard('{ArrowDown}');
+      await activate('Number workbook', numberId, 1);
+      expect(numberAction).toHaveBeenCalledTimes(1);
+      expect(stringAction).toHaveBeenCalledTimes(3);
+      expect(onAction).toHaveBeenCalledTimes(4);
+      expect(navigate).toHaveBeenCalledTimes(4);
+    },
+  );
+
   it('skips disabled items with arrow keys, including across the wrap', async () => {
     const user = userEvent.setup();
 
@@ -247,11 +431,7 @@ describe('CommandMenu', () => {
     );
 
     const searchInput = screen.getByPlaceholderText('Search commands...');
-    const expectFocused = (key: string) =>
-      expect(searchInput).toHaveAttribute(
-        'aria-activedescendant',
-        `TestMenu-menu-option-${key}`,
-      );
+    const expectFocused = (key: string) => expectActiveItem(searchInput, key);
 
     await user.click(searchInput);
 
@@ -281,11 +461,7 @@ describe('CommandMenu', () => {
     );
 
     const searchInput = screen.getByPlaceholderText('Search commands...');
-    const expectFocused = (key: string) =>
-      expect(searchInput).toHaveAttribute(
-        'aria-activedescendant',
-        `TestMenu-menu-option-${key}`,
-      );
+    const expectFocused = (key: string) => expectActiveItem(searchInput, key);
 
     await user.click(searchInput);
 
@@ -315,16 +491,7 @@ describe('CommandMenu', () => {
     );
 
     const searchInput = screen.getByPlaceholderText('Search commands...');
-    const expectFocused = (key: string) => {
-      expect(searchInput).toHaveAttribute(
-        'aria-activedescendant',
-        `TestMenu-menu-option-${key}`,
-      );
-      // An item in a section gets its id through the section.
-      expect(
-        document.getElementById(`TestMenu-menu-option-${key}`),
-      ).not.toBeNull();
-    };
+    const expectFocused = (key: string) => expectActiveItem(searchInput, key);
 
     await user.click(searchInput);
 
@@ -718,10 +885,7 @@ describe('CommandMenu', () => {
 
     // Check that the first matching item is virtually focused
     await waitFor(() => {
-      const activeDescendant = searchInput.getAttribute(
-        'aria-activedescendant',
-      );
-      expect(activeDescendant).toMatch(/-menu-option-1$/);
+      expectActiveItem(searchInput, '1');
     });
   });
 
@@ -750,12 +914,7 @@ describe('CommandMenu', () => {
 
     // Check that the correct item is virtually focused
     await waitFor(() => {
-      const activeDescendant = searchInput.getAttribute(
-        'aria-activedescendant',
-      );
-      expect(activeDescendant).toBeTruthy();
-      // Since "Open folder" has id="2", it should be focused when filtered
-      expect(activeDescendant).toContain('menu-option-2');
+      expectActiveItem(searchInput, '2');
     });
   });
 
@@ -780,10 +939,7 @@ describe('CommandMenu', () => {
 
     // Verify an item is focused first
     await waitFor(() => {
-      const activeDescendant = searchInput.getAttribute(
-        'aria-activedescendant',
-      );
-      expect(activeDescendant).toMatch(/-menu-option-1$/);
+      expectActiveItem(searchInput, '1');
     });
 
     // Clear and type something that won't match
@@ -999,7 +1155,7 @@ describe('CommandMenu', () => {
       </>,
     );
 
-    const [first, second] = screen.getAllByRole('combobox');
+    const [first, second] = screen.getAllByRole('searchbox');
 
     await user.click(first);
     await user.keyboard('{ArrowDown}');
@@ -1012,8 +1168,12 @@ describe('CommandMenu', () => {
     expect(firstId).not.toBe(secondId);
     // An id reference with a space in it names two ids, neither of them.
     expect(firstId).not.toMatch(/\s/);
-    expect(document.getElementById(firstId)).toHaveTextContent('Create file');
-    expect(document.getElementById(secondId)).toHaveTextContent('Create file');
+    expect(document.getElementById(firstId)).toHaveAccessibleName(
+      'Create file',
+    );
+    expect(document.getElementById(secondId)).toHaveAccessibleName(
+      'Create file',
+    );
   });
 
   it('names the search input, not the wrapper, with its aria-label', () => {
@@ -1025,7 +1185,7 @@ describe('CommandMenu', () => {
       </CommandMenu>,
     );
 
-    expect(screen.getByRole('combobox')).toHaveAccessibleName('Commands');
+    expect(screen.getByRole('searchbox')).toHaveAccessibleName('Commands');
     expect(screen.getByTestId('CommandMenu')).not.toHaveAttribute('aria-label');
   });
 

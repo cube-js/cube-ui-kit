@@ -15,6 +15,10 @@ For styling engine internals see the [Tasty documentation](https://github.com/te
 - **injector.md** — Low-level style injector: `inject()`, `injectGlobal()`, deduplication, SSR.
 - **tasty-static.md** — Zero-runtime `tastyStatic()`, Babel plugin, Next.js/Vite integration.
 
+## Navigation
+
+Pass your router's `useHref` and `useNavigate` hooks through `Root`'s `navigation` adapter. `Menu.Item`, like `Button`, `ItemButton`, and `Link`, accepts `to` destinations. Its label and description expose native anchors for modified-click, middle-click and link context-menu commands; the complete row supports ordinary click and keyboard activation. Use `navigationOptions` for router options and `target`, `rel`, or `download` for native link behavior. Nested providers and overlays inherit the adapter unless they explicitly supply another one.
+
 ## React Compiler
 
 UI Kit ships components optimized with React Compiler and requires React and React DOM 19.3 or newer. Your application does not need to enable Compiler to use this build. Adoption is incremental: functions with known compatibility diagnostics remain unoptimized, and the legacy form's mutable render paths are explicitly excluded.

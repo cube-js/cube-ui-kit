@@ -1,0 +1,2780 @@
+import pointerUserEvent from '@testing-library/user-event';
+import { useRef, useState } from 'react';
+import { RouterProvider, useLink } from 'react-aria';
+import { flushSync } from 'react-dom';
+import {
+  MemoryRouter,
+  Route,
+  Routes,
+  useHref,
+  useLocation,
+  useNavigate,
+} from 'react-router';
+import { cdp, userEvent } from 'vitest/browser';
+
+import { act, render, screen, waitFor } from '../../../test';
+import { Item } from '../../content/Item/Item';
+import { Root } from '../../Root';
+import { Button } from '../Button/Button';
+import { ItemButton } from '../ItemButton/ItemButton';
+
+import { Menu } from './Menu';
+import { MenuTrigger } from './MenuTrigger';
+
+describe('Menu navigation links', () => {
+  const destination = '/__menu-link-test/workbooks/42?chatId=abc';
+
+  it.each(
+    [false, true].flatMap((link) =>
+      [false, true].map((insideWrapper) => ({ link, insideWrapper })),
+    ),
+  )(
+    'preserves the empty action placeholder for link=$link insideWrapper=$insideWrapper',
+    async ({ link, insideWrapper }) => {
+      const navigate = vi.fn();
+      const onAction = vi.fn();
+      render(
+        <Root navigation={{ useHref: String, useNavigate: () => navigate }}>
+          <Menu
+            aria-label="Destinations"
+            styles={{ width: '30x' }}
+            onAction={onAction}
+          >
+            <Menu.Item
+              key="destination"
+              to={link ? destination : undefined}
+              actions={true}
+              insideWrapper={insideWrapper}
+              tokens={{ '$actions-width': '6x' }}
+              tooltip={false}
+            >
+              Destination
+            </Menu.Item>
+          </Menu>
+        </Root>,
+      );
+      const row = screen.getByRole('menuitem', { name: 'Destination' });
+      const placeholder = getRowElement(row).querySelector<HTMLElement>(
+        '[data-element=Actions]',
+      )!;
+      expect(getRowElement(row)).not.toHaveAttribute(
+        'data-has-actions-content',
+      );
+      expect(placeholder).toBeEmptyDOMElement();
+      expect(placeholder.getBoundingClientRect().width).toBe(48);
+      const target = link ? row : placeholder;
+      const targetRect = target.getBoundingClientRect();
+      const placeholderRect = placeholder.getBoundingClientRect();
+      await userEvent.click(target, {
+        position: {
+          x: placeholderRect.left + placeholderRect.width / 2 - targetRect.left,
+          y: placeholderRect.top + placeholderRect.height / 2 - targetRect.top,
+        },
+      });
+      expect(onAction).toHaveBeenCalledTimes(1);
+      expect(navigate).toHaveBeenCalledTimes(link ? 1 : 0);
+      if (link) expect(navigate).toHaveBeenCalledWith(destination, undefined);
+    },
+  );
+
+  async function nativeRequests(): Promise<
+    { url: string; method?: string; referrer?: string }[]
+  > {
+    return (await fetch('/__menu-link-test/requests')).json();
+  }
+
+  function getRowElement(item: HTMLElement): HTMLLIElement {
+    return item.closest<HTMLLIElement>('li')!;
+  }
+
+  function getNativeLink(item: HTMLElement): HTMLAnchorElement {
+    const label = getRowElement(item).querySelector('[data-element=Label]')!;
+    return (
+      label.closest<HTMLAnchorElement>('a') ??
+      label.querySelector<HTMLAnchorElement>('a')!
+    );
+  }
+
+  function mousePosition(element: Element) {
+    const rect = element.getBoundingClientRect();
+    const frame = window.frameElement as HTMLElement | null;
+    const frameRect = frame?.getBoundingClientRect();
+    return {
+      x:
+        rect.left +
+        rect.width / 2 +
+        (frameRect?.left ?? 0) +
+        (frame?.clientLeft ?? 0),
+      y:
+        rect.top +
+        rect.height / 2 +
+        (frameRect?.top ?? 0) +
+        (frame?.clientTop ?? 0),
+    };
+  }
+
+  function renderMenu() {
+    const navigate = vi.fn();
+    const onAction = vi.fn();
+    const onItemAction = vi.fn();
+
+    render(
+      <Root
+        navigation={{
+          useHref: (to) => String(to),
+          useNavigate: () => navigate,
+        }}
+      >
+        <MenuTrigger>
+          <Button>Workbooks</Button>
+          <Menu onAction={onAction} disabledKeys={['disabled']}>
+            <Menu.Section title="Recent workbooks">
+              <Menu.Item
+                key="workbook"
+                href={destination}
+                onAction={onItemAction}
+              >
+                Workbook
+              </Menu.Item>
+              <Menu.Item key="disabled" href="/disabled">
+                Unavailable
+              </Menu.Item>
+            </Menu.Section>
+            <Menu.Item key="create">Create workbook</Menu.Item>
+          </Menu>
+        </MenuTrigger>
+      </Root>,
+    );
+
+    return { navigate, onAction, onItemAction };
+  }
+
+  async function openMenu() {
+    await userEvent.click(screen.getByRole('button', { name: 'Workbooks' }));
+    await screen.findByRole('menu');
+    return screen.getByRole('menuitem', { name: 'Workbook' });
+  }
+
+  it.each(['onAction', 'onClick'] as const)(
+    'retains native navigation when %s synchronously removes the menu',
+    async (callback) => {
+      const pathname = `/__menu-link-test/unmount-${callback}`;
+      const navigate = vi.fn();
+      const onActivate = vi.fn();
+      function App() {
+        const [open, setOpen] = useState(true);
+        const deactivate = () => {
+          onActivate();
+          flushSync(() => setOpen(false));
+        };
+        return (
+          <Root navigation={{ useHref: String, useNavigate: () => navigate }}>
+            {open && (
+              <Menu aria-label="Destinations">
+                <Menu.Item
+                  key="link"
+                  href={location.origin + pathname}
+                  {...{ [callback]: deactivate }}
+                >
+                  Destination
+                </Menu.Item>
+              </Menu>
+            )}
+          </Root>
+        );
+      }
+      render(<App />);
+      await userEvent.click(
+        screen.getByRole('menuitem', { name: 'Destination' }),
+        { noWaitAfter: true },
+      );
+      expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+      expect(navigate).not.toHaveBeenCalled();
+      expect(onActivate).toHaveBeenCalledTimes(1);
+      await waitFor(
+        async () => {
+          const requests: { url: string }[] = await (
+            await fetch('/__menu-link-test/requests')
+          ).json();
+          expect(requests.some((request) => request.url === pathname)).toBe(
+            true,
+          );
+        },
+        { timeout: 1500 },
+      );
+    },
+  );
+
+  it.each(['none', 'single', 'multiple'] as const)(
+    'honors cancelled navigation in %s selection mode',
+    async (selectionMode) => {
+      const navigate = vi.fn();
+      const onClick = vi.fn((event) => event.preventDefault());
+      render(
+        <Root navigation={{ useHref: String, useNavigate: () => navigate }}>
+          <Menu aria-label="Destinations" selectionMode={selectionMode}>
+            <Menu.Item key="link" to={destination} onClick={onClick}>
+              Destination
+            </Menu.Item>
+          </Menu>
+        </Root>,
+      );
+      await userEvent.click(screen.getByText('Destination'));
+      expect(onClick).toHaveBeenCalledTimes(1);
+      expect(navigate).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each(['noreferrer', 'policy', 'ping'])(
+    'preserves native navigation attributes: %s',
+    async (variant) => {
+      const navigate = vi.fn();
+      const onAction = vi.fn();
+      const pathname = `/__menu-link-test/${variant}`;
+      const href = `${location.origin}${pathname}`;
+      render(
+        <Root navigation={{ useHref: String, useNavigate: () => navigate }}>
+          <Menu aria-label="Destinations" onAction={onAction}>
+            <Menu.Item
+              key="link"
+              href={variant === 'policy' ? undefined : href}
+              to={variant === 'policy' ? `@${pathname}` : undefined}
+              rel={variant === 'noreferrer' ? 'noreferrer' : undefined}
+              referrerPolicy={variant === 'policy' ? 'no-referrer' : undefined}
+              ping={variant === 'ping' ? '/__menu-link-test/audit' : undefined}
+            >
+              Destination
+            </Menu.Item>
+          </Menu>
+        </Root>,
+      );
+      await userEvent.click(
+        screen.getByRole('menuitem', { name: 'Destination' }),
+        { noWaitAfter: true },
+      );
+      await waitFor(
+        async () => {
+          const requests: {
+            url: string;
+            method?: string;
+            referrer?: string;
+          }[] = await (await fetch('/__menu-link-test/requests')).json();
+          const request = requests.find((request) => request.url === pathname);
+          expect(request).toBeDefined();
+          if (variant === 'ping') {
+            expect(requests).toContainEqual(
+              expect.objectContaining({
+                url: '/__menu-link-test/audit',
+                method: 'POST',
+              }),
+            );
+          } else expect(request?.referrer).toBeUndefined();
+        },
+        { timeout: 1500 },
+      );
+      expect(navigate).not.toHaveBeenCalled();
+      expect(onAction).toHaveBeenCalledExactlyOnceWith('link');
+    },
+  );
+
+  it.each(
+    [false, true].flatMap((actions) =>
+      ['pointer', 'keyboard'].flatMap((activation) =>
+        ['noreferrer', 'policy', 'ping'].map((attribute) => ({
+          actions,
+          activation,
+          attribute,
+        })),
+      ),
+    ),
+  )(
+    'preserves default-adapter relative native attributes ($attribute, $activation, actions=$actions)',
+    async ({ actions, activation, attribute }) => {
+      const pathname = `/__menu-link-test/default-${attribute}-${activation}-${actions}`;
+      const audit = `${pathname}-audit`;
+      const onAction = vi.fn();
+      const menuAction = vi.fn();
+      function App() {
+        const [open, setOpen] = useState(true);
+        return (
+          <Root>
+            {open && (
+              <Menu aria-label="Destinations" onAction={menuAction}>
+                <Menu.Item
+                  key="link"
+                  to={pathname}
+                  rel={attribute === 'noreferrer' ? 'noreferrer' : undefined}
+                  referrerPolicy={
+                    attribute === 'policy' ? 'no-referrer' : undefined
+                  }
+                  ping={attribute === 'ping' ? audit : undefined}
+                  actions={
+                    actions ? (
+                      <Menu.Item.Action>Delete</Menu.Item.Action>
+                    ) : undefined
+                  }
+                  onAction={() => {
+                    onAction();
+                    if (activation === 'keyboard')
+                      flushSync(() => setOpen(false));
+                  }}
+                >
+                  Destination
+                </Menu.Item>
+              </Menu>
+            )}
+          </Root>
+        );
+      }
+      render(<App />);
+      const row = screen.getByRole('menuitem', { name: 'Destination' });
+      if (activation === 'keyboard') {
+        await act(() => row.focus());
+        await userEvent.keyboard('{Enter}');
+        expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+      } else {
+        await userEvent.click(screen.getByText('Destination').closest('a')!, {
+          noWaitAfter: true,
+        });
+      }
+      await waitFor(
+        async () => {
+          const requests = await nativeRequests();
+          const request = requests.find((request) => request.url === pathname);
+          expect(request).toBeDefined();
+          if (attribute === 'ping') {
+            expect(requests).toContainEqual(
+              expect.objectContaining({ url: audit, method: 'POST' }),
+            );
+          } else expect(request?.referrer).toBeUndefined();
+        },
+        { timeout: 1500 },
+      );
+      expect(onAction).toHaveBeenCalledTimes(1);
+      expect(menuAction).toHaveBeenCalledExactlyOnceWith('link');
+    },
+  );
+
+  it.each(
+    [false, true].flatMap((actions) =>
+      (['Meta', 'Shift', 'Alt', 'Control'] as const).map((modifier) => ({
+        actions,
+        modifier,
+      })),
+    ),
+  )(
+    'keeps the first modified pointer gesture native ($modifier, actions=$actions)',
+    async ({ actions, modifier }) => {
+      const pathname = `/__menu-link-test/first-${modifier}-${actions}`;
+      const navigate = vi.fn();
+      const onAction = vi.fn();
+      const onClick = vi.fn();
+      const events: MouseEvent[] = [];
+      const record = (event: MouseEvent) => events.push(event);
+      render(
+        <Root navigation={{ useHref: String, useNavigate: () => navigate }}>
+          <Menu aria-label="Destinations" onAction={onAction}>
+            <Menu.Item
+              key="link"
+              to={pathname}
+              onClick={onClick}
+              actions={
+                actions ? (
+                  <Menu.Item.Action>Delete</Menu.Item.Action>
+                ) : undefined
+              }
+            >
+              Destination
+            </Menu.Item>
+          </Menu>
+        </Root>,
+      );
+      document.addEventListener('click', record, true);
+      document.addEventListener('contextmenu', record, true);
+      try {
+        await userEvent.click(screen.getByText('Destination').closest('a')!, {
+          modifiers: [modifier],
+          noWaitAfter: true,
+        });
+        // Aria's fallback is delayed; this must stay native after it settles.
+        await new Promise((resolve) => setTimeout(resolve, 150));
+        expect(navigate).not.toHaveBeenCalled();
+        expect(events).toHaveLength(1);
+        expect(events[0].isTrusted).toBe(true);
+        expect(events[0].defaultPrevented).toBe(false);
+        const modifierKey = {
+          Meta: 'metaKey',
+          Shift: 'shiftKey',
+          Alt: 'altKey',
+          Control: 'ctrlKey',
+        } as const;
+        expect(events[0][modifierKey[modifier]]).toBe(true);
+        const contextMenu =
+          modifier === 'Control' && navigator.platform.startsWith('Mac');
+        if (contextMenu) {
+          expect(events[0].type).toBe('contextmenu');
+          expect(onClick).not.toHaveBeenCalled();
+          expect(onAction).not.toHaveBeenCalled();
+        } else {
+          expect(events[0].type).toBe('click');
+          expect(onClick).toHaveBeenCalledTimes(1);
+          expect(onAction).toHaveBeenCalledExactlyOnceWith('link');
+          if (
+            modifier === 'Meta' ||
+            modifier === 'Shift' ||
+            modifier === 'Control'
+          ) {
+            await waitFor(
+              async () => {
+                expect(await nativeRequests()).toContainEqual(
+                  expect.objectContaining({ url: pathname }),
+                );
+              },
+              { timeout: 1500 },
+            );
+          }
+        }
+      } finally {
+        document.removeEventListener('click', record, true);
+        document.removeEventListener('contextmenu', record, true);
+      }
+    },
+  );
+
+  it.each(
+    [false, true].flatMap((actions) =>
+      (['Meta', 'Shift', 'Alt'] as const).map((modifier) => ({
+        actions,
+        modifier,
+      })),
+    ),
+  )(
+    'activates once when a modifier is released before pointer-up ($modifier, actions=$actions)',
+    async ({ actions, modifier }) => {
+      const navigate = vi.fn();
+      const onClick = vi.fn();
+      const onAction = vi.fn();
+      const menuAction = vi.fn();
+      const onPointerDown = vi.fn();
+      const onPointerUp = vi.fn();
+      render(
+        <Root navigation={{ useHref: String, useNavigate: () => navigate }}>
+          <Menu
+            aria-label="Boundary"
+            styles={{ width: '30x' }}
+            onAction={menuAction}
+          >
+            <Menu.Item
+              key="link"
+              to={destination}
+              onClick={onClick}
+              onAction={onAction}
+              onPointerDown={onPointerDown}
+              onPointerUp={onPointerUp}
+              actions={
+                actions ? (
+                  <Menu.Item.Action>Delete</Menu.Item.Action>
+                ) : undefined
+              }
+            >
+              Destination
+            </Menu.Item>
+          </Menu>
+        </Root>,
+      );
+      const row = screen.getByRole('menuitem', { name: 'Destination' });
+      const anchor = getNativeLink(row);
+      await userEvent.hover(anchor);
+      const position = mousePosition(anchor);
+      const session = cdp();
+      const modifiers = { Meta: 4, Shift: 8, Alt: 1 };
+      await session.send('Input.dispatchMouseEvent', {
+        type: 'mousePressed',
+        ...position,
+        button: 'left',
+        buttons: 1,
+        clickCount: 1,
+        modifiers: modifiers[modifier],
+      });
+      await session.send('Input.dispatchMouseEvent', {
+        type: 'mouseReleased',
+        ...position,
+        button: 'left',
+        buttons: 0,
+        clickCount: 1,
+        modifiers: 0,
+      });
+      await new Promise((resolve) => setTimeout(resolve, 150));
+      expect(onPointerDown).toHaveBeenCalledTimes(1);
+      expect(onPointerUp).toHaveBeenCalledTimes(1);
+      expect(onPointerDown.mock.calls[0][0].nativeEvent.isTrusted).toBe(true);
+      expect(onPointerUp.mock.calls[0][0].nativeEvent.isTrusted).toBe(true);
+      const modifierKey = {
+        Meta: 'metaKey',
+        Shift: 'shiftKey',
+        Alt: 'altKey',
+      } as const;
+      expect(onPointerDown.mock.calls[0][0][modifierKey[modifier]]).toBe(true);
+      expect(onPointerUp.mock.calls[0][0][modifierKey[modifier]]).toBe(false);
+      expect(onClick).toHaveBeenCalledTimes(1);
+      expect(onClick.mock.calls[0][0].nativeEvent.isTrusted).toBe(true);
+      expect(onAction).toHaveBeenCalledTimes(1);
+      expect(menuAction).toHaveBeenCalledExactlyOnceWith('link');
+      expect(navigate).toHaveBeenCalledExactlyOnceWith(destination, undefined);
+      expect(getRowElement(row)).not.toHaveAttribute('data-pressed');
+    },
+  );
+
+  it.each(
+    [false, true].flatMap((actions) =>
+      (
+        [
+          'outside-ordinary',
+          'cancel-ordinary',
+          'drag-release',
+          'outside-drag-release',
+        ] as const
+      ).map((gesture) => ({ actions, gesture })),
+    ),
+  )(
+    'cleans up modified gestures before a later ordinary or drag activation ($gesture, actions=$actions)',
+    async ({ actions, gesture }) => {
+      const navigate = vi.fn();
+      const onClick = vi.fn();
+      const onAction = vi.fn();
+      const menuAction = vi.fn();
+      let pointerId = 0;
+      render(
+        <Root navigation={{ useHref: String, useNavigate: () => navigate }}>
+          <Menu
+            aria-label="Cleanup"
+            styles={{ width: '30x' }}
+            onAction={menuAction}
+          >
+            <Menu.Item
+              key="link"
+              to={destination}
+              onClick={onClick}
+              onAction={onAction}
+              onPointerDown={(event) => {
+                pointerId = event.pointerId;
+              }}
+              actions={
+                actions ? (
+                  <Menu.Item.Action>Delete</Menu.Item.Action>
+                ) : undefined
+              }
+            >
+              Destination
+            </Menu.Item>
+          </Menu>
+          <div data-qa="outside">Outside</div>
+        </Root>,
+      );
+      const row = screen.getByRole('menuitem', { name: 'Destination' });
+      const anchor = getNativeLink(row);
+      await userEvent.hover(anchor);
+      const inside = mousePosition(anchor);
+      const outside = mousePosition(screen.getByTestId('outside'));
+      const session = cdp();
+      if (gesture !== 'drag-release') {
+        await session.send('Input.dispatchMouseEvent', {
+          type: 'mousePressed',
+          ...inside,
+          button: 'left',
+          buttons: 1,
+          clickCount: 1,
+          modifiers: 4,
+        });
+        if (gesture === 'cancel-ordinary') {
+          // Mouse cancellation is injected explicitly; all down/up events remain trusted.
+          row.dispatchEvent(
+            new PointerEvent('pointercancel', {
+              bubbles: true,
+              pointerId,
+              pointerType: 'mouse',
+            }),
+          );
+        }
+        await session.send('Input.dispatchMouseEvent', {
+          type: 'mouseMoved',
+          ...outside,
+          buttons: 1,
+          modifiers: 0,
+        });
+        await session.send('Input.dispatchMouseEvent', {
+          type: 'mouseReleased',
+          ...outside,
+          button: 'left',
+          buttons: 0,
+          clickCount: 1,
+          modifiers: 0,
+        });
+        await new Promise((resolve) => setTimeout(resolve, 150));
+        expect(navigate).not.toHaveBeenCalled();
+        expect(onAction).not.toHaveBeenCalled();
+        expect(onClick).not.toHaveBeenCalled();
+      }
+      if (gesture.endsWith('ordinary')) {
+        await userEvent.click(anchor);
+      } else {
+        await session.send('Input.dispatchMouseEvent', {
+          type: 'mouseMoved',
+          ...outside,
+          buttons: 0,
+        });
+        await session.send('Input.dispatchMouseEvent', {
+          type: 'mousePressed',
+          ...outside,
+          button: 'left',
+          buttons: 1,
+          clickCount: 1,
+        });
+        await session.send('Input.dispatchMouseEvent', {
+          type: 'mouseMoved',
+          ...inside,
+          buttons: 1,
+        });
+        await session.send('Input.dispatchMouseEvent', {
+          type: 'mouseReleased',
+          ...inside,
+          button: 'left',
+          buttons: 0,
+          clickCount: 1,
+        });
+      }
+      await new Promise((resolve) => setTimeout(resolve, 150));
+      expect(onClick).toHaveBeenCalledTimes(1);
+      expect(onAction).toHaveBeenCalledTimes(1);
+      expect(menuAction).toHaveBeenCalledExactlyOnceWith('link');
+      expect(navigate).toHaveBeenCalledExactlyOnceWith(destination, undefined);
+      expect(getRowElement(row)).not.toHaveAttribute('data-pressed');
+    },
+  );
+
+  it.each(['all-links', 'mixed', 'section'] as const)(
+    'preserves structural and direct-parent style overrides in %s rows',
+    (topology) => {
+      const rows =
+        topology === 'mixed'
+          ? [
+              { name: 'Command start', link: false },
+              { name: 'Link middle', link: true },
+              { name: 'Action middle', link: true, actions: true },
+              { name: 'Link end', link: true },
+              { name: 'Command end', link: false },
+            ]
+          : [
+              { name: 'First', link: true },
+              { name: 'Middle', link: true },
+              { name: 'Last', link: true, actions: topology === 'section' },
+            ];
+      const items = rows.map(({ name, link, actions }) => (
+        <Menu.Item
+          key={name}
+          to={link ? destination : undefined}
+          actions={
+            actions ? <Menu.Item.Action>Delete</Menu.Item.Action> : undefined
+          }
+        >
+          {name}
+        </Menu.Item>
+      ));
+      render(
+        <Root>
+          <Menu
+            aria-label="Structure"
+            styles={{ width: '30x' }}
+            itemStyles={{
+              '@direct': '@parent(qa=MenuList, >)',
+              width: { '': '12.5x', '@direct': '22.5x' },
+              radius: {
+                '': 0,
+                ':first-child': '2r top',
+                ':last-child': '2r bottom',
+              },
+              marginLeft: { '': 0, ':nth-child(2)': '1x' },
+              opacity: { '': 0.6, ':has(+ [data-menuitem])': 1 },
+            }}
+          >
+            {topology === 'section' ? (
+              <Menu.Section title="Section">{items}</Menu.Section>
+            ) : (
+              items
+            )}
+          </Menu>
+        </Root>,
+      );
+      for (const [index, { name }] of rows.entries()) {
+        const row = screen.getByRole('menuitem', { name });
+        const style = getComputedStyle(getRowElement(row));
+        expect(getRowElement(row).getBoundingClientRect().width).toBe(180);
+        expect(style.marginLeft).toBe(index === 1 ? '8px' : '0px');
+        expect(style.borderTopLeftRadius).toBe(index === 0 ? '12px' : '0px');
+        expect(style.borderTopRightRadius).toBe(index === 0 ? '12px' : '0px');
+        expect(style.borderBottomLeftRadius).toBe(
+          index === rows.length - 1 ? '12px' : '0px',
+        );
+        expect(style.borderBottomRightRadius).toBe(
+          index === rows.length - 1 ? '12px' : '0px',
+        );
+        expect(style.opacity).toBe(index === rows.length - 1 ? '0.6' : '1');
+      }
+    },
+  );
+
+  it.each(
+    (['header', 'card'] as const).flatMap((type) =>
+      [false, true].flatMap((actions) =>
+        (
+          [
+            { variant: 'default', level: 3 },
+            {
+              variant: 'false',
+              level: 1,
+              styles: { Label: { preset: false } },
+            },
+            { variant: 'null', level: 3, styles: { Label: { preset: null } } },
+            { variant: 'empty', level: 6, styles: { Label: { preset: '' } } },
+            {
+              variant: 'inherited null',
+              level: 6,
+              itemStyles: { Label: { preset: null } },
+            },
+            {
+              variant: 'inherited false',
+              level: 1,
+              itemStyles: { Label: { preset: false } },
+            },
+          ] as const
+        ).map((variant) => ({ ...variant, type, actions })),
+      ),
+    ),
+  )(
+    'matches plain Item heading typography through preset resets ($type, $variant, actions=$actions)',
+    async (props) => {
+      const { type, level, actions } = props;
+      const styles = 'styles' in props ? props.styles : undefined;
+      const itemStyles = 'itemStyles' in props ? props.itemStyles : undefined;
+      render(
+        <Root>
+          <Menu aria-label="Typography" itemStyles={itemStyles}>
+            <Menu.Item
+              key="link"
+              to={destination}
+              qa="typography-menu"
+              type={type}
+              level={level}
+              styles={styles}
+              actions={
+                actions ? (
+                  <Menu.Item.Action>Delete link</Menu.Item.Action>
+                ) : undefined
+              }
+            >
+              Heading label
+            </Menu.Item>
+          </Menu>
+          <Item
+            qa="typography-control"
+            size="medium"
+            type={type}
+            level={level}
+            styles={styles ?? itemStyles}
+            actions={
+              actions ? (
+                <Menu.Item.Action>Delete control</Menu.Item.Action>
+              ) : undefined
+            }
+          >
+            Heading label
+          </Item>
+        </Root>,
+      );
+      const row = screen.getByTestId('typography-menu');
+      const control = screen.getByTestId('typography-control');
+      control.tabIndex = -1;
+      const label = getRowElement(row).querySelector<HTMLElement>(
+        '[data-element=Label]',
+      )!;
+      const controlLabel = control.querySelector<HTMLElement>(
+        '[data-element=Label]',
+      )!;
+      const typography = (element: HTMLElement) => {
+        const style = getComputedStyle(element);
+        return {
+          fontFamily: style.fontFamily,
+          fontSize: style.fontSize,
+          fontWeight: style.fontWeight,
+          lineHeight: style.lineHeight,
+          letterSpacing: style.letterSpacing,
+          height: element.getBoundingClientRect().height,
+        };
+      };
+      expect(typography(label)).toEqual(typography(controlLabel));
+      await act(() => getNativeLink(row).focus());
+      const focused = typography(label);
+      await act(() => control.focus());
+      expect(focused).toEqual(typography(controlLabel));
+    },
+  );
+
+  it('renders native text links and routes an ordinary row click once before closing', async () => {
+    const { navigate, onAction, onItemAction } = renderMenu();
+    const link = await openMenu();
+
+    expect(link.tagName).toBe('A');
+    expect(getRowElement(link).tagName).toBe('LI');
+    expect(getRowElement(link)).toHaveAttribute('role', 'none');
+    expect(getNativeLink(link).tagName).toBe('A');
+    expect(getNativeLink(link)).toHaveAttribute('href', destination);
+    expect(getRowElement(link).parentElement!.tagName).toBe('UL');
+    expect(getRowElement(link)).not.toHaveAttribute('href');
+    expect(
+      screen.getByRole('menuitem', { name: 'Create workbook' }).tagName,
+    ).toBe('LI');
+
+    await userEvent.click(getNativeLink(link));
+
+    expect(navigate).toHaveBeenCalledExactlyOnceWith(destination, undefined);
+    expect(onItemAction).toHaveBeenCalledTimes(1);
+    expect(onAction).toHaveBeenCalledExactlyOnceWith('workbook');
+    await waitFor(() =>
+      expect(screen.queryByRole('menu')).not.toBeInTheDocument(),
+    );
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Workbooks' })).toHaveFocus(),
+    );
+  });
+
+  it.each(['{Enter}', ' '])(
+    'activates a focused link once with %s',
+    async (key) => {
+      const { navigate, onAction, onItemAction } = renderMenu();
+      const link = await openMenu();
+      await userEvent.keyboard('{Home}');
+      await waitFor(() => expect(link).toHaveFocus());
+      await userEvent.keyboard(key);
+
+      expect(navigate).toHaveBeenCalledExactlyOnceWith(destination, undefined);
+      expect(onItemAction).toHaveBeenCalledTimes(1);
+      expect(onAction).toHaveBeenCalledTimes(1);
+      await waitFor(() =>
+        expect(screen.queryByRole('menu')).not.toBeInTheDocument(),
+      );
+    },
+  );
+
+  it('removes the destination from disabled links and leaves commands unchanged', async () => {
+    const { navigate, onAction } = renderMenu();
+    await openMenu();
+    const disabled = screen.getByRole('menuitem', { name: 'Unavailable' });
+    expect(disabled).toHaveAttribute('aria-disabled', 'true');
+    expect(disabled).not.toHaveAttribute('href');
+    expect(getNativeLink(disabled)).not.toHaveAttribute('href');
+    await userEvent.click(disabled, { force: true });
+    expect(navigate).not.toHaveBeenCalled();
+    expect(onAction).not.toHaveBeenCalled();
+    expect(screen.getByRole('menu')).toBeInTheDocument();
+
+    await userEvent.click(
+      screen.getByRole('menuitem', { name: 'Create workbook' }),
+    );
+    expect(onAction).toHaveBeenCalledExactlyOnceWith('create');
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
+  it.each(['{Enter}', ' '])(
+    'activates a persistent to link once with %s without changing selection',
+    async (key) => {
+      const navigate = vi.fn();
+      const onAction = vi.fn();
+      const onSelectionChange = vi.fn();
+      render(
+        <Root
+          navigation={{
+            useHref: (to) => String(to),
+            useNavigate: () => navigate,
+          }}
+        >
+          <Menu
+            aria-label="Workbooks"
+            selectionMode="multiple"
+            onSelectionChange={onSelectionChange}
+            onAction={onAction}
+          >
+            <Menu.Item key="workbook" to={destination}>
+              Workbook
+            </Menu.Item>
+          </Menu>
+        </Root>,
+      );
+      const link = screen.getByRole('menuitem', { name: 'Workbook' });
+      await act(() => link.focus());
+      await userEvent.keyboard(key);
+      expect(navigate).toHaveBeenCalledExactlyOnceWith(destination, undefined);
+      expect(onAction).toHaveBeenCalledTimes(1);
+      expect(onSelectionChange).not.toHaveBeenCalled();
+    },
+  );
+
+  it('resolves Path destinations and forwards navigation options without leaking them to the DOM', async () => {
+    const navigate = vi.fn();
+    const path = {
+      pathname: '/workbooks/42',
+      search: '?chatId=abc',
+      hash: '#results',
+    };
+    const options = {
+      replace: true,
+      state: { from: 'menu' },
+      relative: 'path' as const,
+      preventScrollReset: true,
+    };
+    const resolve = vi.fn(() => '/app/workbooks/42?chatId=abc#results');
+    render(
+      <Root navigation={{ useHref: resolve, useNavigate: () => navigate }}>
+        <Menu aria-label="Workbooks">
+          <Menu.Item
+            key="workbook"
+            to={path}
+            navigationOptions={options}
+            href="/ignored"
+          >
+            Workbook
+          </Menu.Item>
+        </Menu>
+      </Root>,
+    );
+    const link = screen.getByRole('menuitem', { name: 'Workbook' });
+    expect(getNativeLink(link)).toHaveAttribute(
+      'href',
+      '/app/workbooks/42?chatId=abc#results',
+    );
+    expect(link).not.toHaveAttribute('to');
+    expect(link).not.toHaveAttribute('navigationOptions');
+    expect(getRowElement(link)).not.toHaveAttribute('to');
+    expect(getRowElement(link)).not.toHaveAttribute('navigationOptions');
+    expect(resolve).toHaveBeenCalledWith(path, { relative: 'path' });
+    await userEvent.click(getNativeLink(link));
+    expect(navigate).toHaveBeenCalledExactlyOnceWith(path, options);
+  });
+
+  it.each(['Control', 'Meta', 'Shift', 'Alt'] as const)(
+    'leaves %s-click native without same-tab routing',
+    async (modifier) => {
+      const { navigate } = renderMenu();
+      const link = await openMenu();
+      const clicks: MouseEvent[] = [];
+      const record = (event: MouseEvent) => clicks.push(event);
+      document.addEventListener('click', record, true);
+      document.addEventListener('contextmenu', record, true);
+      try {
+        await act(async () => {
+          await userEvent.click(getNativeLink(link), { modifiers: [modifier] });
+        });
+        expect(navigate).not.toHaveBeenCalled();
+        expect(clicks).toHaveLength(1);
+        expect(clicks[0].isTrusted).toBe(true);
+        expect(clicks[0].defaultPrevented).toBe(false);
+      } finally {
+        document.removeEventListener('click', record, true);
+        document.removeEventListener('contextmenu', record, true);
+      }
+    },
+  );
+
+  it.each(['middle', 'right'] as const)(
+    'preserves native %s-click behavior without routing or activation',
+    async (button) => {
+      const { navigate, onAction } = renderMenu();
+      const link = await openMenu();
+      const events: MouseEvent[] = [];
+      const eventName = button === 'middle' ? 'auxclick' : 'contextmenu';
+      const record = (event: MouseEvent) => events.push(event);
+      document.addEventListener(eventName, record, true);
+      try {
+        await userEvent.click(getNativeLink(link), { button });
+        expect(navigate).not.toHaveBeenCalled();
+        expect(onAction).not.toHaveBeenCalled();
+        expect(events).toHaveLength(1);
+        expect(events[0].isTrusted).toBe(true);
+        expect(events[0].defaultPrevented).toBe(false);
+        expect(getNativeLink(link)).toHaveAttribute('href', destination);
+      } finally {
+        document.removeEventListener(eventName, record, true);
+      }
+    },
+  );
+
+  it('keeps Arrow/Home/End, typeahead, Escape and focus restoration across links and commands', async () => {
+    renderMenu();
+    const link = await openMenu();
+    await userEvent.keyboard('{Home}');
+    expect(link).toHaveFocus();
+    await userEvent.keyboard('{ArrowDown}');
+    expect(
+      screen.getByRole('menuitem', { name: 'Create workbook' }),
+    ).toHaveFocus();
+    await userEvent.keyboard('{ArrowUp}');
+    expect(link).toHaveFocus();
+    await userEvent.keyboard('{End}');
+    expect(
+      screen.getByRole('menuitem', { name: 'Create workbook' }),
+    ).toHaveFocus();
+    await userEvent.keyboard('w');
+    expect(link).toHaveFocus();
+    await userEvent.keyboard('{Escape}');
+    await waitFor(() =>
+      expect(screen.queryByRole('menu')).not.toBeInTheDocument(),
+    );
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Workbooks' })).toHaveFocus(),
+    );
+  });
+
+  it('activates commands and links with and without actions once through their hotkeys', async () => {
+    const navigate = vi.fn();
+    const commandAction = vi.fn();
+    const linkAction = vi.fn();
+    const inlineLinkAction = vi.fn();
+    const independentAction = vi.fn();
+    const menuAction = vi.fn();
+    render(
+      <Root navigation={{ useHref: String, useNavigate: () => navigate }}>
+        <Menu aria-label="Shortcuts" onAction={menuAction}>
+          <Menu.Item key="command" hotkeys="F8" onAction={commandAction}>
+            Command
+          </Menu.Item>
+          <Menu.Item
+            key="link"
+            to="/hotkey-link"
+            hotkeys="F9"
+            onAction={linkAction}
+          >
+            Link
+          </Menu.Item>
+          <Menu.Item
+            key="inline-link"
+            to="/hotkey-inline-link"
+            hotkeys="F10"
+            onAction={inlineLinkAction}
+            actions={
+              <Menu.Item.Action onPress={independentAction}>
+                Delete
+              </Menu.Item.Action>
+            }
+          >
+            Link with actions
+          </Menu.Item>
+        </Menu>
+      </Root>,
+    );
+    await act(() => screen.getByRole('menuitem', { name: 'Command' }).focus());
+    await userEvent.keyboard('{F8}');
+    expect(commandAction).toHaveBeenCalledTimes(1);
+    expect(navigate).not.toHaveBeenCalled();
+    await userEvent.keyboard('{F9}');
+    expect(linkAction).toHaveBeenCalledTimes(1);
+    expect(navigate).toHaveBeenCalledExactlyOnceWith('/hotkey-link', undefined);
+    await userEvent.keyboard('{F10}');
+    expect(inlineLinkAction).toHaveBeenCalledTimes(1);
+    expect(navigate).toHaveBeenCalledTimes(2);
+    expect(navigate).toHaveBeenLastCalledWith('/hotkey-inline-link', undefined);
+    expect(menuAction.mock.calls).toEqual([
+      ['command'],
+      ['link'],
+      ['inline-link'],
+    ]);
+    expect(commandAction).toHaveBeenCalledTimes(1);
+    expect(linkAction).toHaveBeenCalledTimes(1);
+    expect(independentAction).not.toHaveBeenCalled();
+  });
+
+  it('uses a real router for relative Path destinations', async () => {
+    function RoutedMenu() {
+      const location = useLocation();
+      return (
+        <>
+          <output aria-label="Location">
+            {location.pathname}
+            {location.search}
+            {location.hash}
+          </output>
+          <Menu aria-label="Workbooks">
+            <Menu.Item
+              key="next"
+              to={{ pathname: 'next', search: '?chatId=abc', hash: '#results' }}
+            >
+              Next workbook
+            </Menu.Item>
+          </Menu>
+        </>
+      );
+    }
+    render(
+      <MemoryRouter initialEntries={['/workbooks']}>
+        <Root navigation={{ useHref, useNavigate }}>
+          <Routes>
+            <Route path="workbooks/*" element={<RoutedMenu />} />
+          </Routes>
+        </Root>
+      </MemoryRouter>,
+    );
+    const link = screen.getByRole('menuitem', { name: 'Next workbook' });
+    expect(getNativeLink(link)).toHaveAttribute(
+      'href',
+      '/workbooks/next?chatId=abc#results',
+    );
+    await userEvent.click(getNativeLink(link));
+    expect(screen.getByRole('status', { name: 'Location' })).toHaveTextContent(
+      '/workbooks/next?chatId=abc#results',
+    );
+  });
+
+  it('preserves row focus and independent actions when action content changes', async () => {
+    const navigate = vi.fn();
+    const action = vi.fn();
+    const content = (showActions: boolean, actionLabel = 'Delete') => (
+      <Root
+        navigation={{
+          useHref: (to) => String(to),
+          useNavigate: () => navigate,
+        }}
+      >
+        <Menu aria-label="Workbooks">
+          <Menu.Item
+            key="workbook"
+            to={destination}
+            autoHideActions
+            actions={
+              showActions ? (
+                <ItemButton onPress={action}>{actionLabel}</ItemButton>
+              ) : null
+            }
+            styles={{ padding: '3x', color: '#purple' }}
+          >
+            Workbook
+          </Menu.Item>
+        </Menu>
+      </Root>
+    );
+    const { rerender } = render(content(false));
+    const initialRow = screen.getByRole('menuitem', { name: 'Workbook' });
+    await act(() => initialRow.focus());
+    await act(() => {
+      flushSync(() => rerender(content(true)));
+      expect(screen.getByRole('menuitem', { name: 'Workbook' })).toHaveFocus();
+    });
+    const row = screen.getByRole('menuitem', { name: 'Workbook' });
+    const deleteButton = await screen.findByRole('button', {
+      name: 'Delete',
+    });
+    const nativeLink = getNativeLink(row);
+    expect(nativeLink).toHaveAttribute('href', destination);
+    expect(nativeLink).not.toContainElement(deleteButton);
+    expect(row).toHaveFocus();
+    await waitFor(() => expect(deleteButton).toBeVisible());
+    expect(getComputedStyle(getRowElement(row)).paddingTop).toBe('24px');
+    await act(() => rerender(content(true, 'Remove')));
+    expect(screen.getByRole('menuitem', { name: 'Workbook' })).toBe(row);
+    expect(row).toHaveFocus();
+    const removeButton = await screen.findByRole('button', { name: 'Remove' });
+    expect(nativeLink).not.toContainElement(removeButton);
+    await userEvent.click(removeButton);
+    expect(action).toHaveBeenCalledTimes(1);
+    expect(navigate).not.toHaveBeenCalled();
+    await act(() => row.focus());
+    await act(() => {
+      flushSync(() => rerender(content(false)));
+      expect(screen.getByRole('menuitem', { name: 'Workbook' })).toHaveFocus();
+    });
+    const finalRow = screen.getByRole('menuitem', { name: 'Workbook' });
+    expect(getNativeLink(finalRow)).toHaveAttribute('href', destination);
+    expect(finalRow).toHaveFocus();
+    expect(getComputedStyle(getRowElement(finalRow)).paddingTop).toBe('24px');
+  });
+
+  it.each([
+    { to: '!/workbooks', target: '_blank', rel: 'noopener noreferrer' },
+    { to: '/workbooks', target: '_blank', rel: 'noreferrer' },
+    { href: '/export.csv', download: 'workbook.csv' },
+    {
+      to: '!https://cube.dev/docs',
+      target: '_blank',
+      rel: 'noopener noreferrer',
+    },
+  ])('keeps native target/download attributes: %j', async (props) => {
+    const navigate = vi.fn();
+    const onClick = vi.fn();
+    render(
+      <Root
+        navigation={{
+          useHref: (to) => String(to),
+          useNavigate: () => navigate,
+        }}
+      >
+        <Menu aria-label="Destinations">
+          <Menu.Item key="link" {...props} onClick={onClick}>
+            Destination
+          </Menu.Item>
+        </Menu>
+      </Root>,
+    );
+    const link = screen.getByRole('menuitem', { name: 'Destination' });
+    if ('target' in props)
+      expect(getNativeLink(link)).toHaveAttribute('target', props.target);
+    if ('download' in props)
+      expect(getNativeLink(link)).toHaveAttribute('download', props.download);
+    if ('rel' in props)
+      expect(getNativeLink(link)).toHaveAttribute('rel', props.rel);
+    expect(getNativeLink(link).getAttribute('href')).not.toMatch(/^[!@]/);
+    await userEvent.click(getNativeLink(link));
+    expect(navigate).not.toHaveBeenCalled();
+    expect(onClick).toHaveBeenCalled();
+    expect(onClick.mock.calls[0][0].defaultPrevented).toBe(false);
+  });
+
+  it('forces native navigation for the @ prefix', async () => {
+    const originalUrl = location.href;
+    const navigate = vi.fn();
+    render(
+      <Root
+        navigation={{
+          useHref: (to) => String(to),
+          useNavigate: () => navigate,
+        }}
+      >
+        <Menu aria-label="Destinations">
+          <Menu.Item key="link" to="@#native-destination">
+            Destination
+          </Menu.Item>
+        </Menu>
+      </Root>,
+    );
+    try {
+      await userEvent.click(
+        screen.getByRole('menuitem', { name: 'Destination' }),
+      );
+      expect(location.hash).toBe('#native-destination');
+      expect(navigate).not.toHaveBeenCalled();
+    } finally {
+      history.replaceState(null, '', originalUrl);
+    }
+  });
+
+  it.each(['href', 'to'])(
+    'keeps same-origin absolute %s destinations native',
+    async (prop) => {
+      const originalUrl = location.href;
+      const destination = new URL(originalUrl);
+      destination.hash = '#absolute-destination';
+      const navigate = vi.fn();
+      render(
+        <Root
+          navigation={{
+            useHref: (to) => String(to),
+            useNavigate: () => navigate,
+          }}
+        >
+          <Menu aria-label="Destinations">
+            <Menu.Item key="link" {...{ [prop]: destination.href }}>
+              Destination
+            </Menu.Item>
+          </Menu>
+        </Root>,
+      );
+      try {
+        await userEvent.click(
+          screen.getByRole('menuitem', { name: 'Destination' }),
+        );
+        expect(location.hash).toBe('#absolute-destination');
+        expect(navigate).not.toHaveBeenCalled();
+      } finally {
+        history.replaceState(null, '', originalUrl);
+      }
+    },
+  );
+
+  it.each([{ isDisabled: true }, { isLoading: true }])(
+    'keeps unavailable to links inert: %j',
+    async (props) => {
+      const navigate = vi.fn();
+      const onAction = vi.fn();
+      render(
+        <Root
+          navigation={{
+            useHref: (to) => String(to),
+            useNavigate: () => navigate,
+          }}
+        >
+          <Menu aria-label="Destinations" onAction={onAction}>
+            <Menu.Item key="link" to={destination} {...props}>
+              Destination
+            </Menu.Item>
+          </Menu>
+        </Root>,
+      );
+      const link = screen.getByRole('menuitem', { name: 'Destination' });
+      expect(link).toHaveAttribute('aria-disabled', 'true');
+      expect(getNativeLink(link)).not.toHaveAttribute('href');
+      await userEvent.click(link, { force: true });
+      await userEvent.click(getNativeLink(link), {
+        button: 'middle',
+        force: true,
+      });
+      await act(() => link.focus());
+      await userEvent.keyboard('{Enter} ');
+      expect(navigate).not.toHaveBeenCalled();
+      expect(onAction).not.toHaveBeenCalled();
+    },
+  );
+
+  it('keeps submenu parents as commands and activates submenu links once', async () => {
+    const navigate = vi.fn();
+    render(
+      <Root
+        navigation={{
+          useHref: (to) => String(to),
+          useNavigate: () => navigate,
+        }}
+      >
+        <MenuTrigger>
+          <Button>Destinations</Button>
+          <Menu>
+            <Menu.SubMenuTrigger>
+              <Menu.Item key="parent" to="/ignored">
+                Workbooks
+              </Menu.Item>
+              <Menu>
+                <Menu.Item key="link" to={destination}>
+                  Workbook
+                </Menu.Item>
+              </Menu>
+            </Menu.SubMenuTrigger>
+          </Menu>
+        </MenuTrigger>
+      </Root>,
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'Destinations' }));
+    const parent = await screen.findByRole('menuitem', { name: 'Workbooks' });
+    expect(parent.tagName).toBe('LI');
+    expect(parent).not.toHaveAttribute('href');
+    await userEvent.keyboard('{Home}{ArrowRight}');
+    const link = await screen.findByRole('menuitem', { name: 'Workbook' });
+    await waitFor(() => expect(link).toHaveFocus());
+    expect(navigate).not.toHaveBeenCalled();
+    await userEvent.keyboard('{Enter}');
+    expect(navigate).toHaveBeenCalledExactlyOnceWith(destination, undefined);
+  });
+
+  it('activates only once while Space is held and does not activate during composition', async () => {
+    const navigate = vi.fn();
+    render(
+      <Root
+        navigation={{
+          useHref: (to) => String(to),
+          useNavigate: () => navigate,
+        }}
+      >
+        <Menu aria-label="Destinations">
+          <Menu.Item key="link" to={destination}>
+            Destination
+          </Menu.Item>
+        </Menu>
+      </Root>,
+    );
+    const link = screen.getByRole('menuitem', { name: 'Destination' });
+    await act(() => link.focus());
+    await userEvent.keyboard('[Space>3/]');
+    expect(navigate).toHaveBeenCalledTimes(1);
+    navigate.mockClear();
+    // Browser keyboard drivers cannot create an IME composition event.
+    await act(() => {
+      link.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: ' ',
+          bubbles: true,
+          isComposing: true,
+        }),
+      );
+      link.dispatchEvent(
+        new KeyboardEvent('keyup', {
+          key: ' ',
+          bubbles: true,
+          isComposing: true,
+        }),
+      );
+    });
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
+  it.each(['/help', destination])(
+    'preserves the inherited Aria router for an independent action: %s',
+    async (href) => {
+      const rowNavigate = vi.fn();
+      const actionNavigate = vi.fn();
+      const actionOptions = { replace: true };
+      function InlineLink() {
+        const ref = useRef<HTMLAnchorElement>(null);
+        const { linkProps } = useLink(
+          { href, routerOptions: actionOptions as never },
+          ref,
+        );
+        return (
+          <a {...linkProps} ref={ref}>
+            Help
+          </a>
+        );
+      }
+      render(
+        <RouterProvider
+          navigate={actionNavigate}
+          useHref={(href) => `/app${href}`}
+        >
+          <Root
+            navigation={{
+              useHref: (to) => String(to),
+              useNavigate: () => rowNavigate,
+            }}
+          >
+            <Menu aria-label="Destinations">
+              <Menu.Item
+                key="link"
+                to={destination}
+                navigationOptions={{ state: 'row' }}
+                actions={<InlineLink />}
+              >
+                Destination
+              </Menu.Item>
+            </Menu>
+          </Root>
+        </RouterProvider>,
+      );
+      const action = screen.getByRole('link', { name: 'Help' });
+      expect(action).toHaveAttribute('href', `/app${href}`);
+      await userEvent.click(action);
+      expect(actionNavigate).toHaveBeenCalledExactlyOnceWith(
+        href,
+        actionOptions,
+      );
+      expect(rowNavigate).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each(['@folder', '!folder'])(
+    'preserves literal native href paths: %s',
+    async (href) => {
+      const navigate = vi.fn();
+      render(
+        <Root
+          navigation={{
+            useHref: (to) => String(to),
+            useNavigate: () => navigate,
+          }}
+        >
+          <Menu aria-label="Destinations">
+            <Menu.Item key="link" href={href}>
+              Destination
+            </Menu.Item>
+          </Menu>
+        </Root>,
+      );
+      const link = screen.getByRole('menuitem', { name: 'Destination' });
+      expect(getNativeLink(link)).toHaveAttribute('href', href);
+      expect(getNativeLink(link)).not.toHaveAttribute('target');
+      await userEvent.click(getNativeLink(link));
+      expect(navigate).toHaveBeenCalledExactlyOnceWith(href, undefined);
+    },
+  );
+
+  it('keeps an empty native href as a current-document link rather than a selected command', async () => {
+    const navigate = vi.fn();
+    const onSelectionChange = vi.fn();
+    render(
+      <Root
+        navigation={{
+          useHref: (to) => String(to),
+          useNavigate: () => navigate,
+        }}
+      >
+        <Menu
+          aria-label="Destinations"
+          selectionMode="multiple"
+          onSelectionChange={onSelectionChange}
+        >
+          <Menu.Item
+            key="link"
+            href=""
+            onClick={(event) => event.preventDefault()}
+          >
+            Current document
+          </Menu.Item>
+        </Menu>
+      </Root>,
+    );
+    const link = screen.getByRole('menuitem', {
+      name: 'Current document',
+    });
+    expect(link.tagName).toBe('A');
+    expect(getRowElement(link).tagName).toBe('LI');
+    expect(getNativeLink(link).tagName).toBe('A');
+    expect(getNativeLink(link)).toHaveAttribute('href', '');
+    expect(getNativeLink(link).href).toBe(location.href);
+    await userEvent.click(getNativeLink(link));
+    expect(navigate).not.toHaveBeenCalled();
+    expect(onSelectionChange).not.toHaveBeenCalled();
+  });
+
+  it.each(
+    [false, true].flatMap((actions) =>
+      (
+        ['blank-pointer', 'blank-Enter', 'Meta-Enter', 'Meta-Space'] as const
+      ).map((activation) => ({ actions, activation })),
+    ),
+  )(
+    'retains bare-@ native targets and modifiers ($activation, actions=$actions)',
+    async ({ actions, activation }) => {
+      const pathname = `/__menu-link-test/bare-${activation}-${actions}`;
+      const sourcePath = `${pathname}-source`;
+      const originalUrl = location.href;
+      const navigate = vi.fn();
+      const onAction = vi.fn();
+      render(
+        <Root navigation={{ useHref: String, useNavigate: () => navigate }}>
+          <Menu aria-label="Destinations" onAction={onAction}>
+            <Menu.Item
+              key="link"
+              to="@"
+              target={activation.startsWith('blank') ? '_blank' : undefined}
+              actions={
+                actions ? (
+                  <Menu.Item.Action>Delete</Menu.Item.Action>
+                ) : undefined
+              }
+            >
+              Current document
+            </Menu.Item>
+          </Menu>
+        </Root>,
+      );
+      const row = screen.getByRole('menuitem', { name: 'Current document' });
+      const anchor = getNativeLink(row);
+      expect(anchor).toHaveAttribute('href', '');
+      // Both destinations return 204: a faulty source reload cannot reload the test runner.
+      history.replaceState(null, '', sourcePath);
+      for (const cell of Array.from(
+        getRowElement(row).querySelectorAll<HTMLAnchorElement>(
+          'a[data-menu-native-link]',
+        ),
+      ))
+        cell.href = location.origin + pathname;
+      try {
+        if (activation === 'blank-pointer') {
+          await userEvent.click(
+            screen.getByText('Current document').closest('a')!,
+            {
+              noWaitAfter: true,
+            },
+          );
+        } else {
+          await act(() => row.focus());
+          await userEvent.keyboard(
+            activation.startsWith('Meta')
+              ? activation === 'Meta-Space'
+                ? '{Meta>} {/Meta}'
+                : '{Meta>}{Enter}{/Meta}'
+              : '{Enter}',
+          );
+        }
+        await waitFor(
+          async () => {
+            const requests = await nativeRequests();
+            expect(requests).toContainEqual(
+              expect.objectContaining({ url: pathname }),
+            );
+            expect(requests).not.toContainEqual(
+              expect.objectContaining({ url: sourcePath }),
+            );
+          },
+          { timeout: 1500 },
+        );
+        expect(navigate).not.toHaveBeenCalled();
+        expect(onAction).toHaveBeenCalledExactlyOnceWith('link');
+      } finally {
+        history.replaceState(null, '', originalUrl);
+      }
+    },
+  );
+
+  it.each([
+    { color: '#purple', styles: { color: '#danger-text' } },
+    {
+      color: { pressed: '#danger-text' },
+      styles: { color: '#purple-text' },
+    },
+  ])(
+    'preserves direct color style-prop merging on sibling controls: %o',
+    (props) => {
+      render(
+        <Root>
+          <Menu aria-label="Destinations">
+            <Menu.Item
+              key="link"
+              to={destination}
+              {...props}
+              actions={<Menu.Item.Action>Link action</Menu.Item.Action>}
+            >
+              Link
+            </Menu.Item>
+            <Menu.Item
+              key="command"
+              {...props}
+              actions={<Menu.Item.Action>Command action</Menu.Item.Action>}
+            >
+              Command
+            </Menu.Item>
+          </Menu>
+        </Root>,
+      );
+      const row = screen.getByRole('menuitem', { name: 'Link' });
+      const linkRun = screen.getByRole('menuitem', {
+        name: 'Link action',
+      }).parentElement!;
+      const commandRun = screen.getByRole('menuitem', {
+        name: 'Command action',
+      }).parentElement!;
+      expect(getComputedStyle(linkRun).color).toBe(
+        getComputedStyle(getRowElement(row)).color,
+      );
+      expect(getComputedStyle(linkRun).color).toBe(
+        getComputedStyle(commandRun).color,
+      );
+    },
+  );
+
+  it.each(
+    [false, true].flatMap((actions) =>
+      (
+        [
+          {
+            variant: 'false',
+            styles: { textDecoration: false },
+            resting: 'none',
+            focused: 'none',
+          },
+          {
+            variant: 'empty',
+            styles: { textDecoration: '' },
+            resting: 'none',
+            focused: 'none',
+          },
+          {
+            variant: 'default false',
+            styles: {
+              '@focus': '[data-focused]',
+              textDecoration: { '': false, '@focus': 'underline' },
+            },
+            resting: 'none',
+            focused: 'underline',
+          },
+          {
+            variant: 'default empty',
+            styles: {
+              '@focus': '[data-focused]',
+              textDecoration: { '': '', '@focus': 'underline' },
+            },
+            resting: 'none',
+            focused: 'underline',
+          },
+          {
+            variant: 'focused false',
+            styles: {
+              '@focus': '[data-focused]',
+              textDecoration: { '': 'underline', '@focus': false },
+            },
+            resting: 'underline',
+            focused: 'none',
+          },
+          {
+            variant: 'focused empty',
+            styles: {
+              '@focus': '[data-focused]',
+              textDecoration: { '': 'underline', '@focus': '' },
+            },
+            resting: 'underline',
+            focused: 'none',
+          },
+          {
+            variant: 'underline',
+            styles: { textDecoration: 'underline' },
+            resting: 'underline',
+            focused: 'underline',
+          },
+        ] as const
+      ).map((variant) => ({ ...variant, actions })),
+    ),
+  )(
+    'matches command root text-decoration resets and explicit values ($variant, actions=$actions)',
+    async ({ actions, styles, resting, focused }) => {
+      render(
+        <Root>
+          <Menu aria-label="Decorations">
+            <Menu.Item
+              key="link"
+              to={destination}
+              styles={styles}
+              description="Link description"
+              actions={
+                actions ? (
+                  <Menu.Item.Action>Delete link</Menu.Item.Action>
+                ) : undefined
+              }
+            >
+              Link
+            </Menu.Item>
+            <Menu.Item
+              key="command"
+              styles={styles}
+              description="Command description"
+              actions={
+                actions ? (
+                  <Menu.Item.Action>Delete command</Menu.Item.Action>
+                ) : undefined
+              }
+            >
+              Command
+            </Menu.Item>
+          </Menu>
+        </Root>,
+      );
+      const row = screen.getByRole('menuitem', { name: 'Link' });
+      const command = screen.getByRole('menuitem', { name: 'Command' });
+      expect(getComputedStyle(getRowElement(command)).textDecorationLine).toBe(
+        resting,
+      );
+      expect(getComputedStyle(getRowElement(row)).textDecorationLine).toBe(
+        resting,
+      );
+      await act(() => row.focus());
+      expect(getComputedStyle(getRowElement(row)).textDecorationLine).toBe(
+        focused,
+      );
+      await act(() => command.focus());
+      expect(getComputedStyle(getRowElement(command)).textDecorationLine).toBe(
+        focused,
+      );
+    },
+  );
+
+  it('preserves named style states for sibling color and Actions maps', () => {
+    const styles = {
+      '@highlight': '[data-accent]',
+      color: { '': '#dark', '@highlight': '#purple-text' },
+      Actions: { padding: { '': '0x', '@highlight': '2x' } },
+    };
+    render(
+      <Root>
+        <Menu aria-label="Destinations">
+          <Menu.Item
+            key="link"
+            to={destination}
+            mods={{ accent: true }}
+            styles={styles}
+            actions={<Menu.Item.Action>Link action</Menu.Item.Action>}
+          >
+            Link
+          </Menu.Item>
+          <Menu.Item
+            key="command"
+            mods={{ accent: true }}
+            styles={styles}
+            actions={<Menu.Item.Action>Command action</Menu.Item.Action>}
+          >
+            Command
+          </Menu.Item>
+        </Menu>
+      </Root>,
+    );
+    const row = screen.getByRole('menuitem', { name: 'Link' });
+    const run = screen.getByRole('menuitem', {
+      name: 'Link action',
+    }).parentElement!;
+    const commandRun = screen.getByRole('menuitem', {
+      name: 'Command action',
+    }).parentElement!;
+    expect(getComputedStyle(run).color).toBe(
+      getComputedStyle(getRowElement(row)).color,
+    );
+    expect(getComputedStyle(run).padding).toBe('16px');
+    expect(getComputedStyle(run).padding).toBe(
+      getComputedStyle(commandRun).padding,
+    );
+  });
+
+  it.each(
+    ['Label', 'Description'].flatMap((slot) =>
+      [false, null, { '': false }, { '': '' }].map((color) => ({
+        slot,
+        color,
+      })),
+    ),
+  )(
+    'inherits row color when the native $slot color is reset to $color',
+    ({ slot, color }) => {
+      const styles = {
+        color: '#purple-text',
+        Label: { color: slot === 'Label' ? color : undefined },
+        Description: { color: slot === 'Description' ? color : undefined },
+      };
+      render(
+        <Root>
+          <Menu aria-label="Slot colors">
+            <Menu.Item
+              key="link"
+              to={destination}
+              styles={styles}
+              description="Link details"
+              actions={<Menu.Item.Action>Delete link</Menu.Item.Action>}
+            >
+              Link
+            </Menu.Item>
+            <Menu.Item
+              key="command"
+              styles={styles}
+              description="Command details"
+            >
+              Command
+            </Menu.Item>
+          </Menu>
+        </Root>,
+      );
+      const row = screen.getByRole('menuitem', { name: 'Link' });
+      const command = screen.getByRole('menuitem', { name: 'Command' });
+      expect(
+        getComputedStyle(
+          getRowElement(row).querySelector(`[data-element="${slot}"]`)!,
+        ).color,
+      ).toBe(
+        getComputedStyle(
+          getRowElement(command).querySelector(`[data-element="${slot}"]`)!,
+        ).color,
+      );
+    },
+  );
+
+  it('evaluates local focus predicates on the row for independent controls', async () => {
+    const styles = {
+      '@focus': '[data-focused]',
+      color: { '': '#purple-text', '@focus': '#danger-text' },
+      Actions: { color: '#current', padding: { '': '0x', '@focus': '2x' } },
+    };
+    render(
+      <Root>
+        <Menu aria-label="Destinations">
+          <Menu.Item
+            key="link"
+            to={destination}
+            styles={styles}
+            actions={<Menu.Item.Action>Link action</Menu.Item.Action>}
+          >
+            Link
+          </Menu.Item>
+          <Menu.Item
+            key="command"
+            styles={styles}
+            actions={<Menu.Item.Action>Command action</Menu.Item.Action>}
+          >
+            Command
+          </Menu.Item>
+        </Menu>
+      </Root>,
+    );
+    const row = screen.getByRole('menuitem', { name: 'Link' });
+    const run = screen.getByRole('menuitem', {
+      name: 'Link action',
+    }).parentElement!;
+    const command = screen.getByRole('menuitem', { name: 'Command' });
+    const commandRun = screen.getByRole('menuitem', {
+      name: 'Command action',
+    }).parentElement!;
+    const restingColor = getComputedStyle(getRowElement(row)).color;
+    expect(getComputedStyle(run).padding).toBe('0px');
+    await act(() => row.focus());
+    await waitFor(() => {
+      expect(row).toHaveFocus();
+      expect(getComputedStyle(getRowElement(row)).color).not.toBe(restingColor);
+      expect(getComputedStyle(run).color).toBe(
+        getComputedStyle(getRowElement(row)).color,
+      );
+      expect(getComputedStyle(run).padding).toBe('16px');
+    });
+    await act(() => command.focus());
+    await waitFor(() => {
+      expect(getComputedStyle(run).padding).toBe('0px');
+      expect(getComputedStyle(run).color).toBe(
+        getComputedStyle(getRowElement(row)).color,
+      );
+      expect(getComputedStyle(commandRun).color).toBe(
+        getComputedStyle(getRowElement(command)).color,
+      );
+      expect(getComputedStyle(commandRun).padding).toBe('16px');
+    });
+  });
+
+  it.each([
+    { color: null },
+    { color: false },
+    { Actions: { padding: null } },
+    { Actions: null },
+    { color: '#purple-text', Actions: { color: null } },
+    { color: '#purple-text', Actions: { color: false } },
+  ])('preserves explicit style resets on sibling controls: %o', (styles) => {
+    render(
+      <Root>
+        <Menu aria-label="Destinations">
+          <Menu.Item
+            key="link"
+            to={destination}
+            theme="special"
+            styles={styles}
+            actions={<Menu.Item.Action>Link action</Menu.Item.Action>}
+          >
+            Link
+          </Menu.Item>
+          <Menu.Item
+            key="command"
+            theme="special"
+            styles={styles}
+            actions={<Menu.Item.Action>Command action</Menu.Item.Action>}
+          >
+            Command
+          </Menu.Item>
+        </Menu>
+      </Root>,
+    );
+    const row = screen.getByRole('menuitem', { name: 'Link' });
+    const command = screen.getByRole('menuitem', { name: 'Command' });
+    const run = screen.getByRole('menuitem', {
+      name: 'Link action',
+    }).parentElement!;
+    const commandRun = screen.getByRole('menuitem', {
+      name: 'Command action',
+    }).parentElement!;
+    expect(getComputedStyle(getRowElement(row)).color).toBe(
+      getComputedStyle(getRowElement(command)).color,
+    );
+    expect(getComputedStyle(run).color).toBe(
+      getComputedStyle(commandRun).color,
+    );
+    expect(getComputedStyle(run).padding).toBe(
+      getComputedStyle(commandRun).padding,
+    );
+  });
+
+  it.each(['currentcolor', 'inherit', 'unset', '#current', '#current.5'])(
+    'resolves Actions color %s against the row color',
+    (color) => {
+      const styles = {
+        color: '#purple-text',
+        Actions: { color },
+      };
+      render(
+        <Root>
+          <Menu aria-label="Destinations">
+            <Menu.Item
+              key="link"
+              to={destination}
+              theme="special"
+              styles={styles}
+              actions={<Menu.Item.Action>Link action</Menu.Item.Action>}
+            >
+              Link
+            </Menu.Item>
+            <Menu.Item
+              key="command"
+              theme="special"
+              styles={styles}
+              actions={<Menu.Item.Action>Command action</Menu.Item.Action>}
+            >
+              Command
+            </Menu.Item>
+          </Menu>
+        </Root>,
+      );
+      const run = screen.getByRole('menuitem', {
+        name: 'Link action',
+      }).parentElement!;
+      const commandRun = screen.getByRole('menuitem', {
+        name: 'Command action',
+      }).parentElement!;
+      expect(getComputedStyle(run).color).toBe(
+        getComputedStyle(commandRun).color,
+      );
+    },
+  );
+
+  it.each([{ '': 'relative', focused: '' }, { focused: '' }])(
+    'merges Actions defaults with a conditional style map: %o',
+    async (position) => {
+      render(
+        <Root>
+          <Menu aria-label="Destinations">
+            <Menu.Item
+              key="link"
+              to={destination}
+              styles={{ Actions: { position } }}
+              actions={<Menu.Item.Action>Delete</Menu.Item.Action>}
+            >
+              Destination
+            </Menu.Item>
+            <Menu.Item
+              key="command"
+              styles={{ Actions: { position } }}
+              actions={<Menu.Item.Action>Command action</Menu.Item.Action>}
+            >
+              Command
+            </Menu.Item>
+          </Menu>
+        </Root>,
+      );
+      const row = screen.getByRole('menuitem', { name: 'Destination' });
+      const run = screen.getByRole('menuitem', {
+        name: 'Delete',
+      }).parentElement!;
+      const command = screen.getByRole('menuitem', { name: 'Command' });
+      const commandRun = screen.getByRole('menuitem', {
+        name: 'Command action',
+      }).parentElement!;
+      expect(getComputedStyle(run).position).toBe(
+        getComputedStyle(commandRun).position,
+      );
+      await act(() => row.focus());
+      await waitFor(() =>
+        expect(getComputedStyle(run).position).toBe('static'),
+      );
+      await act(() => command.focus());
+      expect(getComputedStyle(commandRun).position).toBe('static');
+    },
+  );
+
+  it('shares style token declarations with sibling controls', () => {
+    render(
+      <Root>
+        <Menu aria-label="Destinations">
+          <Menu.Item
+            key="link"
+            to={destination}
+            styles={{
+              '#purple': '#danger-text',
+              '$menu-action-padding': '2x',
+              color: '#purple',
+              Actions: { padding: '$menu-action-padding' },
+            }}
+            actions={<Menu.Item.Action>Delete</Menu.Item.Action>}
+          >
+            Destination
+          </Menu.Item>
+        </Menu>
+      </Root>,
+    );
+    const row = screen.getByRole('menuitem', { name: 'Destination' });
+    const run = screen.getByRole('menuitem', { name: 'Delete' }).parentElement!;
+    expect(getComputedStyle(run).color).toBe(
+      getComputedStyle(getRowElement(row)).color,
+    );
+    expect(getComputedStyle(run).padding).toBe('16px');
+  });
+
+  it('preserves the Actions styling slot and the row color on sibling controls', () => {
+    render(
+      <Root>
+        <Menu aria-label="Destinations">
+          <Menu.Item
+            key="link"
+            to={destination}
+            styles={{
+              color: '#purple',
+              Actions: { padding: '2x', color: '#danger-text' },
+            }}
+            actions={<ItemButton>Delete link</ItemButton>}
+          >
+            Link
+          </Menu.Item>
+          <Menu.Item
+            key="command"
+            styles={{
+              color: '#purple',
+              Actions: { padding: '2x', color: '#danger-text' },
+            }}
+            actions={<ItemButton>Delete command</ItemButton>}
+          >
+            Command
+          </Menu.Item>
+          <Menu.Item
+            key="color"
+            to="/color"
+            styles={{ color: '#purple' }}
+            tokens={{ '#purple': '#danger-text' }}
+            actions={<ItemButton>Delete color</ItemButton>}
+          >
+            Color
+          </Menu.Item>
+        </Menu>
+      </Root>,
+    );
+    const linkRun = screen.getByRole('button', {
+      name: 'Delete link',
+    }).parentElement!;
+    const commandRun = screen.getByRole('button', {
+      name: 'Delete command',
+    }).parentElement!;
+    expect(getComputedStyle(linkRun).padding).toBe('16px');
+    expect(getComputedStyle(linkRun).color).toBe(
+      getComputedStyle(commandRun).color,
+    );
+    const colorRow = screen.getByRole('menuitem', { name: 'Color' });
+    const colorRun = screen.getByRole('button', {
+      name: 'Delete color',
+    }).parentElement!;
+    expect(getComputedStyle(colorRun).color).toBe(
+      getComputedStyle(getRowElement(colorRow)).color,
+    );
+  });
+
+  it.each([
+    { hide: true },
+    { styles: { display: 'none' } },
+    { style: { display: 'none' } },
+  ])('hides the link and its actions together: %o', (props) => {
+    render(
+      <Root>
+        <Menu aria-label="Destinations">
+          <Menu.Item
+            key="hidden"
+            to={destination}
+            qa="Hidden link"
+            {...props}
+            actions={
+              <Menu.Item.Action qa="Hidden action">Delete</Menu.Item.Action>
+            }
+          >
+            Destination
+          </Menu.Item>
+        </Menu>
+      </Root>,
+    );
+    for (const qa of ['Hidden link', 'Hidden action']) {
+      expect(screen.getByTestId(qa).getBoundingClientRect().width).toBe(0);
+      expect(screen.getByTestId(qa).getBoundingClientRect().height).toBe(0);
+    }
+  });
+
+  it.each([{ opacity: 0.25 }, { style: { opacity: 0.25 } }])(
+    'fades the link and its actions once: %o',
+    (props) => {
+      render(
+        <Root>
+          <Menu aria-label="Destinations">
+            <Menu.Item
+              key="link"
+              to={destination}
+              {...props}
+              actions={<Menu.Item.Action>Delete</Menu.Item.Action>}
+            >
+              Destination
+            </Menu.Item>
+          </Menu>
+        </Root>,
+      );
+      function effectiveOpacity(element: HTMLElement) {
+        let opacity = 1;
+        for (
+          let current: HTMLElement | null = element;
+          current;
+          current = current.parentElement
+        )
+          opacity *= Number(getComputedStyle(current).opacity);
+        return opacity;
+      }
+      expect(
+        effectiveOpacity(screen.getByRole('menuitem', { name: 'Destination' })),
+      ).toBe(0.25);
+      expect(
+        effectiveOpacity(screen.getByRole('menuitem', { name: 'Delete' })),
+      ).toBe(0.25);
+    },
+  );
+
+  it.each([{ margin: '2x top' }, { style: { marginTop: 16 } }])(
+    'keeps actions aligned when the row has a margin: %o',
+    (props) => {
+      render(
+        <Root>
+          <Menu aria-label="Destinations">
+            <Menu.Item
+              key="link"
+              to={destination}
+              {...props}
+              actions={<Menu.Item.Action>Delete</Menu.Item.Action>}
+            >
+              Destination
+            </Menu.Item>
+          </Menu>
+        </Root>,
+      );
+      const row = getRowElement(
+        screen.getByRole('menuitem', { name: 'Destination' }),
+      ).getBoundingClientRect();
+      const action = screen
+        .getByRole('menuitem', { name: 'Delete' })
+        .getBoundingClientRect();
+      expect(action.y + action.height / 2).toBeCloseTo(row.y + row.height / 2);
+    },
+  );
+
+  it.each(['small', 'medium'] as const)(
+    'preserves narrow, token and inline widths at %s size',
+    (size) => {
+      render(
+        <Root>
+          <Menu aria-label="Widths" size={size} styles={{ width: '30x' }}>
+            {[
+              { width: '16px' },
+              { width: '$size' },
+              { style: { width: '16px' } },
+            ].flatMap((props, index) => [
+              <Menu.Item
+                key={`link${index}`}
+                to={destination}
+                qa={`link${index}`}
+                {...props}
+              >
+                Row
+              </Menu.Item>,
+              <Menu.Item
+                key={`command${index}`}
+                qa={`command${index}`}
+                {...props}
+              >
+                Row
+              </Menu.Item>,
+            ])}
+          </Menu>
+        </Root>,
+      );
+      for (let index = 0; index < 3; index++) {
+        const row = screen.getByTestId(`link${index}`);
+        const expectedWidth = screen
+          .getByTestId(`command${index}`)
+          .getBoundingClientRect().width;
+        expect(getRowElement(row).getBoundingClientRect().width).toBe(
+          expectedWidth,
+        );
+      }
+    },
+  );
+
+  it.each(
+    [false, true].flatMap((actions) => [
+      { mode: 'direct', actions, props: { height: '50%' } },
+      { mode: 'styles', actions, props: { styles: { height: '50%' } } },
+      { mode: 'inline', actions, props: { style: { height: '50%' } } },
+    ]),
+  )(
+    'resolves percentage height against the menu once ($mode, actions=$actions)',
+    ({ actions, props }) => {
+      render(
+        <Root>
+          <Menu
+            aria-label="Heights"
+            styles={{ width: '30x' }}
+            menuStyles={{
+              // eslint-disable-next-line tasty/consistent-token-usage -- The percentage-height regression uses an exact 400px containing block.
+              height: '400px',
+            }}
+          >
+            <Menu.Item
+              key="link"
+              to={destination}
+              {...props}
+              actions={
+                actions ? (
+                  <Menu.Item.Action>Delete link</Menu.Item.Action>
+                ) : undefined
+              }
+            >
+              Link
+            </Menu.Item>
+            <Menu.Item
+              key="command"
+              {...props}
+              actions={
+                actions ? (
+                  <Menu.Item.Action>Delete command</Menu.Item.Action>
+                ) : undefined
+              }
+            >
+              Command
+            </Menu.Item>
+          </Menu>
+        </Root>,
+      );
+      const row = screen.getByRole('menuitem', { name: 'Link' });
+      const command = screen.getByRole('menuitem', { name: 'Command' });
+      expect(screen.getByRole('menu').getBoundingClientRect().height).toBe(400);
+      expect(getRowElement(command).getBoundingClientRect().height).toBe(196);
+      expect(getRowElement(row).getBoundingClientRect().height).toBe(196);
+    },
+  );
+
+  it.each(
+    [false, true].flatMap((actions) => [
+      {
+        mode: 'direct',
+        actions,
+        props: {
+          width: '100px',
+          padding: '10px',
+          border: '1px solid #dark',
+          styles: { boxSizing: 'content-box' as const },
+        },
+      },
+      {
+        mode: 'styles',
+        actions,
+        props: {
+          styles: {
+            width: '100px',
+            padding: '10px',
+            border: '1px solid #dark',
+            boxSizing: 'content-box' as const,
+          },
+        },
+      },
+      {
+        mode: 'inline',
+        actions,
+        props: {
+          style: {
+            width: '100px',
+            padding: '10px',
+            border: '1px solid transparent',
+            boxSizing: 'content-box' as const,
+          },
+        },
+      },
+    ]),
+  )(
+    'preserves the content-box padding and border footprint ($mode, actions=$actions)',
+    ({ actions, props }) => {
+      render(
+        <Root>
+          <Menu aria-label="Widths" styles={{ width: '30x' }}>
+            <Menu.Item
+              key="link"
+              to={destination}
+              {...props}
+              actions={
+                actions ? (
+                  <Menu.Item.Action>Delete link</Menu.Item.Action>
+                ) : undefined
+              }
+            >
+              Link
+            </Menu.Item>
+            <Menu.Item
+              key="command"
+              {...props}
+              actions={
+                actions ? (
+                  <Menu.Item.Action>Delete command</Menu.Item.Action>
+                ) : undefined
+              }
+            >
+              Command
+            </Menu.Item>
+          </Menu>
+        </Root>,
+      );
+      const row = screen.getByRole('menuitem', { name: 'Link' });
+      const command = screen.getByRole('menuitem', { name: 'Command' });
+      expect(getComputedStyle(getRowElement(command)).width).toBe('100px');
+      expect(getRowElement(command).getBoundingClientRect().width).toBe(122);
+      expect(getComputedStyle(getRowElement(row)).width).toBe('100px');
+      expect(getRowElement(row).getBoundingClientRect().width).toBe(122);
+    },
+  );
+
+  it.each([false, true])(
+    'inherits the command color after resetting root color (actions=%s)',
+    (actions) => {
+      render(
+        <Root>
+          <Menu aria-label="Colors">
+            <Menu.Item
+              key="link"
+              to={destination}
+              styles={{ color: false }}
+              actions={
+                actions ? (
+                  <Menu.Item.Action>Delete link</Menu.Item.Action>
+                ) : undefined
+              }
+            >
+              Link
+            </Menu.Item>
+            <Menu.Item
+              key="command"
+              styles={{ color: false }}
+              actions={
+                actions ? (
+                  <Menu.Item.Action>Delete command</Menu.Item.Action>
+                ) : undefined
+              }
+            >
+              Command
+            </Menu.Item>
+          </Menu>
+        </Root>,
+      );
+      const row = screen.getByRole('menuitem', { name: 'Link' });
+      const command = screen.getByRole('menuitem', { name: 'Command' });
+      const nativeLink = getNativeLink(row);
+      expect(getComputedStyle(getRowElement(row)).color).toBe(
+        getComputedStyle(getRowElement(command)).color,
+      );
+      expect(getComputedStyle(nativeLink).color).toBe(
+        getComputedStyle(getRowElement(command)).color,
+      );
+      if (actions) {
+        expect(
+          getComputedStyle(
+            screen.getByRole('menuitem', { name: 'Delete link' }),
+          ).color,
+        ).toBe(
+          getComputedStyle(
+            screen.getByRole('menuitem', { name: 'Delete command' }),
+          ).color,
+        );
+      }
+    },
+  );
+
+  it.each([
+    { styles: { maxWidth: '160px' } },
+    { styles: { transform: 'translateX(16px)' } },
+    { styles: { width: '50%' } },
+    { width: 'calc(50% - 1x)' },
+    { style: { width: '50%' } },
+    { style: { maxWidth: '50%' } },
+  ])(
+    'keeps the anchor and actions inside the complete styled row: %j',
+    (props) => {
+      render(
+        <Root>
+          <Menu aria-label="Widths" styles={{ width: '30x' }}>
+            <Menu.Item
+              key="link"
+              to={destination}
+              qa="link"
+              {...props}
+              actions={
+                <Menu.Item.Action qa="link-action">Delete</Menu.Item.Action>
+              }
+            >
+              Row
+            </Menu.Item>
+            <Menu.Item
+              key="command"
+              qa="command"
+              {...props}
+              actions={
+                <Menu.Item.Action qa="command-action">Delete</Menu.Item.Action>
+              }
+            >
+              Row
+            </Menu.Item>
+          </Menu>
+        </Root>,
+      );
+      const row = screen.getByTestId('link');
+      const command = screen.getByTestId('command').getBoundingClientRect();
+      const frame = getRowElement(row).getBoundingClientRect();
+      const owner = row.closest('li')!.getBoundingClientRect();
+      const anchor = getNativeLink(row).getBoundingClientRect();
+      expect(frame.width).toBe(command.width);
+      expect(owner.width).toBe(command.width);
+      expect(frame.left).toBe(command.left);
+      expect(owner.left).toBe(command.left);
+      expect(anchor.left).toBeGreaterThanOrEqual(owner.left);
+      expect(anchor.right).toBeLessThanOrEqual(owner.right);
+      const action = screen.getByTestId('link-action').getBoundingClientRect();
+      const commandAction = screen
+        .getByTestId('command-action')
+        .getBoundingClientRect();
+      expect(action.right).toBe(commandAction.right);
+      expect(action.right).toBeLessThanOrEqual(frame.right);
+    },
+  );
+
+  it('keeps the entire native row inert, including its independent actions', async () => {
+    const onPress = vi.fn();
+    const navigate = vi.fn();
+    render(
+      <Root navigation={{ useHref: String, useNavigate: () => navigate }}>
+        <Menu aria-label="Destinations">
+          <Menu.Item
+            key="link"
+            to={destination}
+            inert
+            actions={
+              <Menu.Item.Action onPress={onPress}>Delete</Menu.Item.Action>
+            }
+          >
+            Destination
+          </Menu.Item>
+        </Menu>
+      </Root>,
+    );
+    const row = screen.getByRole('menuitem', {
+      name: 'Destination',
+      hidden: true,
+    });
+    const action = screen.getByRole('menuitem', {
+      name: 'Delete',
+      hidden: true,
+    });
+    expect(row.closest('li')).toHaveAttribute('inert');
+    await userEvent.click(action, { force: true });
+    await act(() => action.focus());
+    expect(document.activeElement).not.toBe(action);
+    expect(onPress).not.toHaveBeenCalled();
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
+  it('hides the native row and its actions from accessibility together', () => {
+    render(
+      <Root>
+        <Menu aria-label="Destinations">
+          <Menu.Item
+            key="link"
+            to={destination}
+            aria-hidden
+            actions={<Menu.Item.Action>Delete</Menu.Item.Action>}
+          >
+            Destination
+          </Menu.Item>
+        </Menu>
+      </Root>,
+    );
+    expect(screen.queryByRole('menuitem')).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('menuitem', { name: 'Delete' }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('keeps row styling from growing CSS across repeated menu mounts', () => {
+    const ruleCount = () =>
+      [
+        ...Array.from(document.styleSheets),
+        ...document.adoptedStyleSheets,
+      ].flatMap((sheet) => Array.from(sheet.cssRules)).length;
+    const content = (
+      <Root>
+        <Menu aria-label="Destinations">
+          <Menu.Item key="link" to={destination} opacity=".5">
+            Destination
+          </Menu.Item>
+        </Menu>
+      </Root>
+    );
+    const warmup = render(content);
+    expect(
+      getComputedStyle(
+        getRowElement(screen.getByRole('menuitem', { name: 'Destination' })),
+      ).opacity,
+    ).toBe('0.5');
+    const mountedRules = ruleCount();
+    warmup.unmount();
+    const unmountedRules = ruleCount();
+    for (let index = 0; index < 3; index++) {
+      const { unmount } = render(content);
+      const row = screen.getByRole('menuitem', { name: 'Destination' });
+      expect(getComputedStyle(getRowElement(row)).opacity).toBe('0.5');
+      expect(ruleCount()).toBeLessThanOrEqual(mountedRules);
+      unmount();
+      expect(ruleCount()).toBe(unmountedRules);
+    }
+  });
+
+  it.each([
+    { overflow: 'hidden' },
+    { styles: { overflow: 'hidden' } },
+    { style: { overflow: 'hidden' } },
+  ])('clips independent actions to the complete native row: %j', (props) => {
+    render(
+      <Root>
+        <Menu aria-label="Destinations" styles={{ width: '30x' }}>
+          <Menu.Item key="before">Before destination</Menu.Item>
+          <Menu.Item
+            key="link"
+            to={destination}
+            height="2x"
+            {...props}
+            styles={{
+              overflow: 'styles' in props ? props.styles.overflow : undefined,
+              Actions: { translate: '0 -2x' },
+            }}
+            actions={<Menu.Item.Action>Delete</Menu.Item.Action>}
+          >
+            Destination
+          </Menu.Item>
+        </Menu>
+        <Menu aria-label="Visible actions" styles={{ width: '30x' }}>
+          <Menu.Item key="before">Before control</Menu.Item>
+          <Menu.Item
+            key="control"
+            height="2x"
+            overflow="visible"
+            styles={{ Actions: { translate: '0 -2x' } }}
+            actions={<Menu.Item.Action>Control action</Menu.Item.Action>}
+          >
+            Control
+          </Menu.Item>
+        </Menu>
+      </Root>,
+    );
+    const row = screen.getByRole('menuitem', { name: 'Destination' });
+    const action = screen.getByRole('menuitem', { name: 'Delete' });
+    const rect = getRowElement(row).getBoundingClientRect();
+    const button = action.getBoundingClientRect();
+    expect(button.top).toBeLessThan(rect.top);
+    const hit = document.elementFromPoint(
+      button.left + button.width / 2,
+      rect.top - 1,
+    );
+    expect(hit?.closest('[data-element="Actions"]')).toBeNull();
+    expect(getComputedStyle(getRowElement(row)).overflow).toBe('hidden');
+    const control = screen.getByRole('menuitem', { name: 'Control' });
+    const controlAction = screen.getByRole('menuitem', {
+      name: 'Control action',
+    });
+    const controlRect = getRowElement(control).getBoundingClientRect();
+    const controlButton = controlAction.getBoundingClientRect();
+    expect(controlButton.top).toBeLessThan(controlRect.top);
+    expect(
+      document
+        .elementFromPoint(
+          controlButton.left + controlButton.width / 2,
+          controlRect.top - 1,
+        )
+        ?.closest('button'),
+    ).toBe(controlAction);
+  });
+
+  it('orders the entire link row in the menu flex layout', () => {
+    render(
+      <Root>
+        <Menu aria-label="Destinations">
+          <Menu.Item key="command">First</Menu.Item>
+          <Menu.Item key="link" to={destination} order={-1}>
+            Destination
+          </Menu.Item>
+        </Menu>
+      </Root>,
+    );
+    expect(
+      getRowElement(
+        screen.getByRole('menuitem', { name: 'Destination' }),
+      ).getBoundingClientRect().top,
+    ).toBeLessThan(
+      getRowElement(
+        screen.getByRole('menuitem', { name: 'First' }),
+      ).getBoundingClientRect().top,
+    );
+  });
+
+  it('evaluates whole-row layout states on the focused row', async () => {
+    render(
+      <Root>
+        <Menu aria-label="Destinations">
+          <Menu.Item
+            key="link"
+            to={destination}
+            styles={{
+              '@focus': '[data-focused]',
+              '$row-opacity': '.25',
+              opacity: { '': '$row-opacity', '@focus': '.5' },
+              margin: { '': '0x', '@focus': '2x top' },
+            }}
+            actions={<Menu.Item.Action>Delete</Menu.Item.Action>}
+          >
+            Destination
+          </Menu.Item>
+        </Menu>
+      </Root>,
+    );
+    const row = screen.getByRole('menuitem', { name: 'Destination' });
+    const owner = row.closest('li')!;
+    expect(getComputedStyle(owner).opacity).toBe('0.25');
+    await act(() => row.focus());
+    await waitFor(() => {
+      expect(getComputedStyle(owner).opacity).toBe('0.5');
+      expect(getComputedStyle(owner).marginTop).toBe('16px');
+    });
+    const rowRect = getRowElement(row).getBoundingClientRect();
+    const action = screen
+      .getByRole('menuitem', { name: 'Delete' })
+      .getBoundingClientRect();
+    expect(action.y + action.height / 2).toBeCloseTo(
+      rowRect.y + rowRect.height / 2,
+    );
+  });
+
+  it('keeps sibling color and Actions maps in the row press state', async () => {
+    render(
+      <Root navigation={{ useHref: String, useNavigate: () => vi.fn() }}>
+        <Menu aria-label="Destinations">
+          <Menu.Item
+            key="link"
+            to={destination}
+            styles={{
+              color: { '': '#purple-text', pressed: '#danger-text' },
+              Actions: { padding: { '': '0x', pressed: '2x' } },
+            }}
+            actions={<Menu.Item.Action>Delete</Menu.Item.Action>}
+          >
+            Destination
+          </Menu.Item>
+        </Menu>
+      </Root>,
+    );
+    const row = screen.getByRole('menuitem', { name: 'Destination' });
+    const run = screen.getByRole('menuitem', { name: 'Delete' }).parentElement!;
+    const restingColor = getComputedStyle(getRowElement(row)).color;
+    const pointer = pointerUserEvent.setup();
+    await act(() => pointer.pointer({ keys: '[MouseLeft>]', target: row }));
+    try {
+      await waitFor(
+        () => {
+          expect(getRowElement(row)).toHaveAttribute('data-pressed');
+          expect(getComputedStyle(getRowElement(row)).color).not.toBe(
+            restingColor,
+          );
+          expect(getComputedStyle(run).color).toBe(
+            getComputedStyle(getRowElement(row)).color,
+          );
+          expect(getComputedStyle(run).padding).toBe('16px');
+        },
+        { timeout: 1000 },
+      );
+    } finally {
+      await act(() => pointer.pointer({ keys: '[/MouseLeft]', target: row }));
+    }
+    await waitFor(() => {
+      expect(getRowElement(row)).not.toHaveAttribute('data-pressed');
+      expect(getComputedStyle(run).padding).toBe('0px');
+    });
+  });
+});

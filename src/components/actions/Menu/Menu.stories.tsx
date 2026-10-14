@@ -23,6 +23,7 @@ import { Icon } from '../../../icons/Icon';
 import { MoreIcon } from '../../../icons/MoreIcon';
 import { PlusIcon } from '../../../icons/PlusIcon';
 import { TrashIcon } from '../../../icons/TrashIcon';
+import { NO_SNAPSHOT } from '../../../stories/chromatic';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Block } from '../../Block';
 import { Alert } from '../../content/Alert';
@@ -138,7 +139,7 @@ export default {
       description: 'Whether keyboard navigation should wrap around',
       table: {
         type: { summary: 'boolean' },
-        defaultValue: { summary: false },
+        defaultValue: { summary: true },
       },
     },
 
@@ -2313,3 +2314,128 @@ ActionOpensPanel.parameters = {
     },
   },
 };
+
+export const NavigationLinks = () => (
+  <Menu aria-label="Workbooks" styles={{ width: '36x' }}>
+    <Menu.Section title="Recent workbooks">
+      <Menu.Item
+        key="recent"
+        to={{ pathname: '/workbooks/42', search: '?chatId=abc' }}
+      >
+        Recent workbook
+      </Menu.Item>
+      <Menu.Item key="disabled" to="/workbooks/private" isDisabled>
+        Unavailable workbook
+      </Menu.Item>
+    </Menu.Section>
+    <Menu.Item key="browse" to="/workbooks">
+      Browse all
+    </Menu.Item>
+    <Menu.Item
+      key="saved"
+      to="/workbooks/saved"
+      description="Open the saved workbook"
+      actions={
+        <Menu.Item.Action
+          icon={<MoreIcon />}
+          aria-label="Actions for Saved workbook"
+        />
+      }
+    >
+      Saved workbook
+    </Menu.Item>
+    <Menu.Item key="docs" to="!https://cube.dev/docs">
+      Documentation
+    </Menu.Item>
+    <Menu.Item key="create" icon={<IconPlus />}>
+      Create workbook
+    </Menu.Item>
+  </Menu>
+);
+
+NavigationLinks.storyName = 'Mixed commands and links';
+// Link semantics preserve the existing Menu appearance, already photographed.
+NavigationLinks.parameters = NO_SNAPSHOT;
+NavigationLinks.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement);
+  const initialLocation = window.location.href;
+  await waitFor(() =>
+    expect(canvas.getByText('Recent workbook').closest('a')).toHaveAttribute(
+      'href',
+      '/workbooks/42?chatId=abc',
+    ),
+  );
+  await waitFor(() =>
+    expect(canvas.getByText('Saved workbook').closest('a')).toHaveAttribute(
+      'href',
+      '/workbooks/saved',
+    ),
+  );
+  const recent = canvas.getByRole('menuitem', { name: 'Recent workbook' });
+  expect(recent.tagName).toBe('A');
+  expect(recent).toHaveAttribute('href', '/workbooks/42?chatId=abc');
+  expect(recent).not.toHaveAttribute('aria-hidden');
+  expect(recent.closest('li')).toHaveAttribute('role', 'none');
+  expect(
+    canvas.getByText('Unavailable workbook').closest('a'),
+  ).not.toHaveAttribute('href');
+  const saved = canvas.getByRole('menuitem', {
+    name: 'Saved workbook',
+    exact: true,
+  });
+  const action = canvas.getByRole('menuitem', {
+    name: 'Actions for Saved workbook',
+  });
+  expect(saved).not.toContainElement(action);
+  expect(action.parentElement?.closest('[role^="menuitem"]')).toBeNull();
+  expect(saved).toHaveAccessibleDescription('Open the saved workbook');
+  const browse = canvas.getByRole('menuitem', { name: 'Browse all' });
+  const bounds = browse.closest('li')!.getBoundingClientRect();
+  expect(
+    document
+      .elementFromPoint(bounds.right - 8, bounds.top + bounds.height / 2)
+      ?.closest('a'),
+  ).toHaveAttribute('href', '/workbooks');
+
+  expect(
+    canvas.getByRole('menuitem', { name: 'Create workbook' }).tagName,
+  ).toBe('LI');
+
+  recent.focus();
+  for (const name of [
+    'Browse all',
+    'Saved workbook',
+    'Actions for Saved workbook',
+    'Documentation',
+    'Create workbook',
+  ]) {
+    await userEvent.keyboard('{ArrowDown}');
+    await waitFor(() =>
+      expect(canvas.getByRole('menuitem', { name, exact: true })).toHaveFocus(),
+    );
+  }
+  await userEvent.keyboard('{Home}');
+  expect(window.location.href).toBe(initialLocation);
+  await waitFor(() => expect(recent).toHaveFocus());
+};
+
+export const NavigationOnly = () => (
+  <Menu aria-label="Workbook navigation" styles={{ width: '36x' }}>
+    <Menu.Item key="all" to="/workbooks">
+      All workbooks
+    </Menu.Item>
+    <Menu.Item
+      key="recent"
+      to="/workbooks/recent"
+      description="Workbooks you opened recently"
+    >
+      Recent workbooks
+    </Menu.Item>
+    <Menu.Item key="docs" to="!https://cube.dev/docs">
+      Documentation
+    </Menu.Item>
+  </Menu>
+);
+
+// Native destinations use the same Item layout already covered by visual stories.
+NavigationOnly.parameters = NO_SNAPSHOT;

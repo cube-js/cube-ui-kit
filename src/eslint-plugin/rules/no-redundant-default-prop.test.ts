@@ -1,5 +1,6 @@
 import { Linter, RuleTester } from 'eslint';
 
+import { DEFAULTS } from '../defaults.generated';
 import { DefaultsRegistry } from '../types';
 
 import { createRule } from './no-redundant-default-prop';
@@ -58,6 +59,23 @@ const ruleTester = new RuleTester({
 });
 
 const IMPORT = "import { Button } from '@cube-dev/ui-kit';";
+
+ruleTester.run('menu focus wrapping defaults', createRule(DEFAULTS) as any, {
+  valid: [
+    {
+      name: 'keeps an explicit choice to stop at the first or last menu item',
+      code: "import { Menu } from '@cube-dev/ui-kit';<Menu shouldFocusWrap={false} />;",
+    },
+  ],
+  invalid: [
+    {
+      name: 'removes the actual default wrapping value',
+      code: "import { Menu } from '@cube-dev/ui-kit';<Menu shouldFocusWrap={true} />;",
+      output: "import { Menu } from '@cube-dev/ui-kit';<Menu />;",
+      errors: [{ messageId: 'redundant' }],
+    },
+  ],
+});
 
 ruleTester.run('no-redundant-default-prop', rule, {
   valid: [

@@ -189,6 +189,7 @@ export const ItemAction = forwardRef(function ItemAction(
   const {
     type: contextType,
     disableActionsFocus,
+    menuItemAction,
     isDisabled: contextIsDisabled,
   } = useItemActionContext();
 
@@ -344,6 +345,8 @@ export const ItemAction = forwardRef(function ItemAction(
         variant={`${theme}.${finalType}` as ItemActionVariant}
         data-theme={theme}
         data-type={finalType}
+        role={menuItemAction ? 'menuitem' : rest.role}
+        data-menu-inline-action={menuItemAction || undefined}
         tabIndex={finalTabIndex}
         styles={styles}
       >

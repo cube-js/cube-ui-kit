@@ -3,21 +3,20 @@ import { Styles } from '@tenphi/tasty';
 import { cloneElement } from 'react';
 import { useMenuSection } from 'react-aria';
 
+import { getMenuItemReactKey } from './MenuCollectionItem';
 import { MenuItem, MenuItemProps } from './MenuItem';
 import { StyledMenu, StyledSection, StyledSectionHeading } from './styled';
 
 export interface CubeMenuSectionProps<T> extends Omit<MenuItemProps<T>, 'id'> {
-  /** The id each item in the section gets, as `MenuItem`'s `id`. */
-  getItemId?: (key: Key) => string;
   itemStyles?: Styles;
   headingStyles?: Styles;
   size?: 'small' | 'medium' | (string & {});
+  itemId?: (key: Key) => string;
 }
 
 /** @private */
 export function MenuSection<T>(props: CubeMenuSectionProps<T>) {
-  const { item, state, styles, itemStyles, headingStyles, size, getItemId } =
-    props;
+  const { item, state, styles, itemStyles, headingStyles, size } = props;
   const heading = item.rendered;
   const { itemProps, headingProps, groupProps } = useMenuSection({
     heading,
@@ -38,14 +37,15 @@ export function MenuSection<T>(props: CubeMenuSectionProps<T>) {
         )}
         <StyledMenu {...groupProps} mods={{ section: true }}>
           {[...item.childNodes].map((node) => {
+            const reactKey = getMenuItemReactKey(node.key);
             let menuItem = (
               <MenuItem
-                key={node.key}
-                id={getItemId?.(node.key)}
+                key={reactKey}
                 item={node}
                 styles={itemStyles}
                 state={state}
                 size={size}
+                id={props.itemId?.(node.key)}
               />
             );
 
@@ -59,7 +59,7 @@ export function MenuSection<T>(props: CubeMenuSectionProps<T>) {
             }
 
             // The wrapper's element doesn't carry the item's key.
-            return cloneElement(menuItem, { key: node.key });
+            return cloneElement(menuItem, { key: reactKey });
           })}
         </StyledMenu>
       </StyledSection>

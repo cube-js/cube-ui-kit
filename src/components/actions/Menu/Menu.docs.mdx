@@ -23,6 +23,10 @@ Choose a different component when the interaction has another shape:
 - Use [FilterPicker](/docs/forms-filterpicker--docs) for persistent single or multiple field values with search.
 - Use [SearchComboBox](/docs/forms-searchcombobox--docs) for a focused search-and-act input that clears after each result.
 
+A menu can mix commands and navigation destinations. For example, an enterprise workbook menu can offer “Create workbook”, links to recent workbooks and a “Browse all” link in the same collection. Choose semantics per item: give navigation a `to` or `href`, and give a command an `onAction`. Consumers do not need to choose a navigation-only mode for the entire Menu.
+
+Use `Menu` when users expect a composite popup with arrow-key navigation and Tab leaving the menu. For a persistent sidebar or ordinary site navigation, prefer a navigation list with links and disclosure buttons; the [WAI-ARIA guidance for navigation disclosures](https://www.w3.org/WAI/ARIA/apg/patterns/disclosure/examples/disclosure-navigation/) explains that interaction. Native anchors with `role="menuitem"` are valid inside a menu, as illustrated by the [WAI-ARIA navigation menu example](https://www.w3.org/WAI/ARIA/apg/patterns/menu-button/examples/menu-button-links/).
+
 ## Component
 
 <Story of={MenuStories.Default} />
@@ -40,7 +44,7 @@ Choose a different component when the interaction has another shape:
 - **`defaultSelectedKeys`** `Iterable<Key>` — Initially selected keys (uncontrolled)
 - **`disabledKeys`** `Iterable<Key>` — Keys of items that should appear disabled
 - **`autoFocus`** `boolean | FocusStrategy` (default: `false`) — Whether to auto-focus the menu when it opens
-- **`shouldFocusWrap`** `boolean` (default: `false`) — Whether keyboard navigation should wrap around
+- **`shouldFocusWrap`** `boolean` (default: `true`) — Whether keyboard navigation should wrap around
 - **`size`** `'medium' | 'large'` (default: `medium`) — Size of the menu items
 - **`styles`** `Styles` — Custom styles for the menu container
 - **`menuStyles`** `Styles` — Custom styles for the inner menu list element
@@ -81,7 +85,7 @@ Customizes individual menu items.
 **Sub-elements:**
 
 - `Icon` - Icon element within menu items
-- `Text` - Main text content of menu items
+- `Label` - Main text content of menu items
 - `Description` - Secondary text content for items with descriptions
 
 #### sectionStyles
@@ -174,7 +178,112 @@ For detailed information about all available item properties, see [Item document
 
 - **`textValue`** `string` — Text for typeahead search
 - **`wrapper`** `(item: ReactElement) => ReactElement` — Function to wrap the item
-- **`onAction`** `() => void` — Callback fired when item is activated
+- **`onAction`** `() => void` — Callback fired when this item is activated, before the Menu's `onAction(key)`
+- **`to`** `string \| Path` — Application destination, resolved by Root's navigation adapter; takes precedence over `href`
+- **`navigationOptions`** `NavigateOptions` — Options forwarded during client navigation, such as `replace`, `state`, `relative`, and `preventScrollReset`
+- **`href`** `string` — Link destination when `to` is omitted
+- **`target`**, **`rel`**, **`download`**, **`ping`**, **`referrerPolicy`**, **`hrefLang`** — Native anchor attributes
+
+#### Navigation Items
+
+Navigation items render native anchors. An ordinary click or Enter/Space activation uses the navigation adapter passed to [Root](/docs/getting-started-root--docs) and closes the menu. Without a custom adapter, activation stays native and preserves the anchor's attributes. Modified clicks, middle clicks, downloads, other targets, and external destinations retain browser link behavior. Right-click offers the browser's link commands. Disabled links have no destination and cannot navigate.
+
+Loading items are disabled by default. Set `isDisabled={false}` to keep a loading item available; `disabledKeys` still applies.
+
+Links expose `menuitem` semantics even in a selectable menu. Only selectable commands expose `menuitemradio` or `menuitemcheckbox` and a checked state; opening a destination does not select it. Use `aria-current` when a link needs to identify the current page.
+
+```tsx
+<MenuTrigger>
+  <Button>Workbooks</Button>
+  <Menu>
+    <Menu.Section title="Recent workbooks">
+      <Menu.Item key="recent" to={{ pathname: '/workbooks/42', search: '?chatId=abc' }}>
+        Recent workbook
+      </Menu.Item>
+    </Menu.Section>
+    <Menu.Item key="browse" to="/workbooks">Browse all</Menu.Item>
+    <Menu.Item key="docs" to="!https://cube.dev/docs">Documentation</Menu.Item>
+    <Menu.Item key="create" onAction={createWorkbook}>Create workbook</Menu.Item>
+  </Menu>
+</MenuTrigger>
+```
+
+As with other UI Kit actions, a `!` prefix opens `to` in a new tab and an `@` prefix forces native navigation. Use `onAction` for commands, including history actions. Link `onAction` callbacks still run during activation; navigation itself belongs to `to` or `href`, so the callback should not navigate again. Submenu parents open their submenu and ignore destinations; links inside the submenu behave normally.
+
+An item's `onAction()` and the Menu's `onAction(key)` compose: when both are supplied, the item callback runs first and the Menu callback runs second, once each. Mouse activation, Enter, Space and the item's hotkey use the same callbacks. Disabled items invoke neither callback. A submenu parent only opens its submenu; its command callbacks do not run. An inline `Menu.Item.Action` handles its own activation independently and does not invoke either callback for the containing row.
+
+```tsx
+<Menu onAction={(key) => recordMenuActivation(key)}>
+  <Menu.Item key="create" onAction={createWorkbook}>Create workbook</Menu.Item>
+  <Menu.Item key="browse" to="/workbooks">Browse all</Menu.Item>
+</Menu>
+```
+
+Use the item callback for a command that belongs to that item, or handle commands centrally using the Menu callback and item keys. Supplying both is useful for additional observation, such as recording an activation; avoid executing the same command in both callbacks.
+
+The native link target covers the complete row, including padding, gaps and whitespace. Right-click anywhere on that target offers the browser's link commands. Independent controls in the prefix, suffix or actions slots retain their own targets. The primary native anchor owns menu-item semantics and keyboard focus, while Item's original list element owns layout and styling. Command content has no link destination.
+
+<Story of={MenuStories.NavigationOnly} />
+
+<Story of={MenuStories.NavigationLinks} />
+
+#### Inline Actions
+
+Use `Menu.Item.Action` in the `actions` slot for an independent action associated with a row. It is a sibling menu item in the keyboard order, outside the row's primary menu item and any navigation anchor. Activating it runs its own `onPress`; it does not run the row's `onAction`, the Menu's `onAction`, or the row's navigation.
+
+```tsx
+<Menu aria-label="Workbooks">
+  <Menu.Item key="create" onAction={createWorkbook}>Create workbook</Menu.Item>
+  <Menu.Item
+    key="saved"
+    to="/workbooks/saved"
+    description="Open the saved workbook"
+    actions={
+      <Menu.Item.Action
+        icon={<TrashIcon />}
+        aria-label="Delete saved workbook"
+        onPress={deleteSavedWorkbook}
+      />
+    }
+  >
+    Saved workbook
+  </Menu.Item>
+</Menu>
+```
+
+Up/Down and Home/End include inline actions in DOM order. Disabled actions are skipped. Tab and Shift+Tab leave the menu rather than visiting each action. Give every action an accessible name that identifies its context, such as “Delete saved workbook”; an icon or a repeated “Delete” label alone does not identify the affected row.
+
+Keep the label and description non-interactive: text, icons and decorative badges are suitable, but buttons, links and inputs belong outside those content slots. `Menu.Item.Action` supplies the menu-item contract automatically. A custom control in `actions` must provide the same contract, including an appropriate menu-item role, accessible name, `tabIndex={-1}`, disabled behavior and keyboard activation; a generic button is not sufficient. Inline actions support the default DOM-focus mode; combining them with virtual focus is unsupported.
+
+#### Focus and Selector Migration
+
+The original `li` retains Item's layout, style slots, modifiers and forwarded ref. A navigation row, or a command row with inline actions, places the primary menu-item role and DOM focus on a native anchor covering the row. A command without inline actions keeps its menu-item role and focus on the `li`. The command anchor has no `href`. Inline actions remain outside that primary focus target.
+
+Give every item a meaningful accessible name; use `aria-label` or `aria-labelledby` for icon-only rows. Hiding an individual content slot does not move the primary focus target. Explicit accessible names remain in effect. Heading items retain their heading element and level.
+
+Use the item's `focused` modifier for row focus styles. It marks the active collection row, including the row associated with a focused inline action. Existing style props and named sub-element overrides continue to style the same layout elements.
+
+```tsx
+<Menu
+  itemStyles={{
+    fill: { '': '#clear', focused: '#dark.09' },
+  }}
+>
+  <Menu.Item key="browse" to="/workbooks">Browse all</Menu.Item>
+</Menu>
+```
+
+Consumer CSS that literally targets `li:focus` or assumes the `li` has `role="menuitem"` needs to follow the split between layout and semantics:
+
+| Selector purpose | Use |
+| --- | --- |
+| Focus styling on the layout row | The `focused` style state, or `[data-menuitem][data-focused]` |
+| Row layout or adjacency | The layout marker `[data-menuitem]`, including `[data-menuitem] + [data-menuitem]` |
+| The actual focusable menu item | `[role="menuitem"]`, `[role="menuitemcheckbox"]` or `[role="menuitemradio"]` |
+
+Do not use the forwarded row ref or a role selector as a proxy for the primary focus target. A row's semantic role can move to its anchor when a destination or inline action is added. `:focus-within` tracks DOM focus anywhere inside the row; use the `focused` modifier for the collection's active-row state, including virtual focus.
+
+Use named style slots or their `data-element` markers for content styling. Selectors that depend on the Label, Description or Icon being a particular HTML tag need to allow their native anchor host. A private native target is also a child of the row; use slot markers instead of child-position selectors for content.
 
 #### Example with Rich Items
 
@@ -405,31 +514,31 @@ const items = [
 
 ### Keyboard Navigation
 
-- `Tab` - Moves focus to the menu
-- `Arrow Keys` - Navigate between items
-- `Right Arrow` - Open submenu when focused on submenu trigger
-- `Left Arrow` - Close submenu and return to parent
-- `Home/End` - Move to first/last item
-- `Enter/Space` - Activate the focused item or open submenu
-- `Escape` - Close the menu or submenu
-- `A-Z` - Typeahead search for items
+- Open the menu with its trigger to move focus into it. A standalone Menu can use `autoFocus` or be reached with Tab.
+- `ArrowUp`/`ArrowDown` - Navigate through enabled primary items and inline actions in DOM order. Navigation wraps by default; set `shouldFocusWrap={false}` to stop at the ends.
+- `Home`/`End` - Move to the first/last enabled menu item, including inline actions.
+- `Enter`/`Space` - Activate the focused command, destination or inline action, or open a submenu.
+- `ArrowRight` - Open a submenu from its trigger. On a row with inline actions, move from the primary item into its actions.
+- `ArrowLeft` - Return from inline actions to their primary item, or close a submenu and return to its trigger. Left/Right directions reverse in RTL layouts; submenu behavior takes priority over row shortcuts.
+- `Tab`/`Shift+Tab` - Leave the menu; inline actions do not add separate Tab stops.
+- `Escape` - Close the menu or submenu.
+- Typing, `PageUp` and `PageDown` - Use the primary collection items. From an inline action, focus first returns to its primary row before the collection handles the key.
 
 ### Screen Reader Support
 
-- Menu announces as "menu" with proper role
-- Items announce as "menuitem", "menuitemcheckbox", or "menuitemradio"
-- Submenu triggers announce with "has submenu" indication
-- Selection state is announced for selectable items
-- Keyboard shortcuts are announced when present
-- Section headings provide context for grouped items
-- Submenu opening and closing is announced to screen readers
+The collection has the `menu` role and an accessible name supplied by `aria-label` or `aria-labelledby`. Each focus target exposes `menuitem`, `menuitemcheckbox` or `menuitemradio` semantics. The item label supplies its name, and its description supplies additional accessible information. Submenu triggers expose their expanded state and submenu relationship; selectable items expose their checked state.
+
+A navigation item's focused menu item is the native anchor with the real destination. A screen reader may announce it as a menu item rather than an ordinary link because its menu-item role defines the composite interaction. Browser link commands remain available on the anchor. The layout row is presentational when its child owns the menu-item role, so inline actions are exposed as independent siblings rather than interactive descendants of a menu item.
+
+Screen-reader wording varies by reader and browser. Provide descriptive names for the menu and every inline action, and verify the chosen browser/reader combination in the consuming application, especially when adding custom controls or wrappers.
 
 ### ARIA Properties
 
 - `aria-label` - Provides accessible label for the menu
 - `aria-labelledby` - References element that labels the menu
-- `aria-activedescendant` - Indicates the currently focused item
 - `aria-orientation` - Indicates menu orientation (vertical by default)
+
+Default Menu navigation moves DOM focus directly to items. CommandMenu owns the search input's `aria-controls` and `aria-activedescendant` relationship. A custom consumer using Menu's virtual-focus mode must own that relationship on its focused controller; enabling virtual focus alone does not supply it.
 
 ## Best Practices
 

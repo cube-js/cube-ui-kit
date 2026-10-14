@@ -65,6 +65,8 @@ import {
 import {
   CollectionItem,
   filterCollectionItemProps,
+  filterSelectionItemProps,
+  getValueSelectionState,
 } from '../../CollectionItem';
 import { CubeItemProps, Item } from '../../content/Item';
 import { Text } from '../../content/Text';
@@ -374,7 +376,7 @@ function Select<T extends object>(
     ...otherProps
   } = props;
   const { t } = useI18n();
-  let state = useSelectState(props);
+  let state = getValueSelectionState(useSelectState(props));
 
   // Generate a unique ID for this select instance
   const selectId = useMemo(() => generateRandomId(), []);
@@ -902,7 +904,9 @@ function Option({ item, state, styles, shouldUseVirtualFocus, size }) {
   let { isFocused, focusProps } = useFocus();
 
   // Filter out service props - all remaining props can be passed to Item
-  const filteredItemProps = filterCollectionItemProps(item.props);
+  const filteredItemProps = filterSelectionItemProps(
+    filterCollectionItemProps(item.props),
+  );
 
   const keyboardProps = {
     onKeyDown(event: KeyboardEvent<HTMLLIElement>) {
@@ -912,8 +916,7 @@ function Option({ item, state, styles, shouldUseVirtualFocus, size }) {
       if (
         event.key === 'Enter' &&
         !event.ctrlKey &&
-        event.target === event.currentTarget &&
-        item.props?.href == null
+        event.target === event.currentTarget
       ) {
         event.preventDefault();
       }
@@ -922,7 +925,12 @@ function Option({ item, state, styles, shouldUseVirtualFocus, size }) {
 
   return (
     <OptionItem
-      {...mergeProps(optionProps, focusProps, filteredItemProps, keyboardProps)}
+      {...mergeProps(
+        filterSelectionItemProps(optionProps),
+        focusProps,
+        filteredItemProps,
+        keyboardProps,
+      )}
       ref={ref}
       mods={{
         listboxitem: true,

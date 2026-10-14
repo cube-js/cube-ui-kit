@@ -1,12 +1,12 @@
 import { useFocusableRef } from '@react-spectrum/utils';
 import { FocusableRef, PressEvent } from '@react-types/shared';
 import { AllBaseProps, filterBaseProps, TagName } from '@tenphi/tasty';
-import { useContext } from 'react';
 import { AriaButtonProps, useButton, useHover } from 'react-aria';
 
 import { useEvent, useWarn } from '../../_internal';
-import { UIKitContext } from '../../provider';
+import { isExternalUrl } from '../../providers/navigation-url';
 import { useTracking } from '../../providers/TrackingProvider';
+import { useNavigation } from '../../providers/use-navigation';
 import { mergeProps } from '../../utils/react';
 import { useFocus } from '../../utils/react/interactions';
 
@@ -68,17 +68,6 @@ export function openLink(href, target?) {
   link.click();
 
   document.body.removeChild(link);
-}
-
-const URL_SCHEME = /^[a-z][a-z\d+.-]*:/i;
-
-/**
- * Checks if a URL is external: it starts with a URL scheme (`https:`,
- * `mailto:`) or is protocol-relative (`//host`). A colon later in a path or
- * query (`/models/cube:orders`, `..?thread=a:b`) stays router navigation.
- */
-function isExternalUrl(url: string): boolean {
-  return URL_SCHEME.test(url) || url.startsWith('//');
 }
 
 export function parseTo(to: NavigateArg | undefined): {
@@ -309,7 +298,6 @@ export const useAction = function useAction(
   });
 
   const tracking = useTracking();
-  const navigation = useContext(UIKitContext).navigation;
   const isDisabled = props.isDisabled;
 
   const {
@@ -321,11 +309,10 @@ export const useAction = function useAction(
     isExternal,
   } = parseTo(to);
 
-  const navigate = navigation.useNavigate();
   // Resolve the path with its `!` / `@` prefix stripped, and only that. Also
   // resolving the raw `to` put `!https://…` through the router as a route,
   // which a HashRouter warned about on every render.
-  const resolvedHref = navigation.useHref(cleanTo || '.');
+  const { navigate, resolvedHref } = useNavigation(cleanTo || '.');
 
   // Determine element type: 'a' for navigation, 'button' for actions
   as = to && !isHistoryNavigation ? 'a' : as || 'button';
