@@ -1,12 +1,16 @@
 import { FocusableProvider } from '@react-aria/focus';
 import {
+  ContextType,
+  createContext,
   FocusEvent,
   HTMLAttributes,
   isValidElement,
   ReactElement,
   ReactNode,
   RefObject,
+  useContext,
   useRef,
+  useState,
 } from 'react';
 import {
   Placement,
@@ -21,10 +25,61 @@ import { isDevEnv } from '../../../utils/is-dev-env';
 import { isFocusRestoration } from '../../../utils/react/programmaticFocus';
 import { Block } from '../../Block';
 import { ActiveZone } from '../../content/ActiveZone/ActiveZone';
-import { DisplayTransition } from '../../helpers/DisplayTransition/DisplayTransition';
+import {
+  DisplayTransition,
+  DisplayTransitionProps,
+} from '../../helpers/DisplayTransition/DisplayTransition';
 import { Portal } from '../../portal';
 
 import { TooltipContext } from './context';
+
+type TooltipPositionOptions = Pick<
+  Parameters<typeof useOverlayPosition>[0],
+  'placement' | 'targetRef' | 'overlayRef' | 'offset' | 'crossOffset' | 'isOpen'
+>;
+
+// DisplayTransition preserves its last shown render prop during exit. Position
+// subscriptions must still see the current target, configuration and open state.
+const TooltipPositionContext = createContext<TooltipPositionOptions>(null!);
+
+function TooltipTransition(
+  props: Pick<DisplayTransitionProps, 'children' | 'isShown'>,
+) {
+  const [hasShown, setHasShown] = useState(props.isShown);
+
+  // Once opened, retain the transition owner through closing and reopening.
+  // A never-opened tooltip has no animation resources to maintain.
+  if (props.isShown && !hasShown) setHasShown(true);
+  if (!hasShown && !props.isShown) return null;
+
+  return <DisplayTransition {...props} />;
+}
+
+function PositionedTooltip({
+  tooltip,
+  contextValue,
+}: {
+  tooltip: ReactElement;
+  contextValue: ContextType<typeof TooltipContext>;
+}) {
+  const options = useContext(TooltipPositionContext);
+  const { overlayProps, arrowProps, placement, updatePosition } =
+    useOverlayPosition(options);
+
+  return (
+    <TooltipContext.Provider
+      value={{
+        ...contextValue,
+        placement: placement || options.placement || 'top',
+        overlayProps,
+        arrowProps,
+        updatePosition,
+      }}
+    >
+      {tooltip}
+    </TooltipContext.Provider>
+  );
+}
 
 const DEFAULT_OFFSET = 8; // Offset needed to reach 4px/5px (med/large) distance between tooltip and trigger button
 const DEFAULT_CROSS_OFFSET = 0;
@@ -186,50 +241,54 @@ export function TooltipTrigger(props: CubeTooltipTriggerProps) {
 
   const triggerProps = { ...rawTriggerProps, onFocus };
 
-  let { overlayProps, arrowProps, placement, updatePosition } =
-    useOverlayPosition({
-      placement: props.placement || 'top',
-      targetRef: tooltipTriggerRef,
-      overlayRef,
-      offset,
-      crossOffset,
-      isOpen: state.isOpen,
-    });
+  const positionOptions = {
+    placement: props.placement || 'top',
+    targetRef: tooltipTriggerRef,
+    overlayRef,
+    offset,
+    crossOffset,
+    isOpen: state.isOpen,
+  };
 
   const tooltipContextValue = {
     state,
-    placement: placement || props.placement || 'top',
     ref: overlayRef,
-    overlayProps,
-    arrowProps,
     minOffset: 'var(--gap)',
     minScale: '1',
     isMaterial,
     isLight,
-    updatePosition,
     ...tooltipProps,
   };
 
-  // Function trigger pattern (new)
-  if (isTriggerFunction(trigger)) {
-    return (
-      <>
-        {trigger(triggerProps, tooltipTriggerRef)}
-        <DisplayTransition isShown={state.isOpen && !isDisabled}>
-          {({ phase, isShown, ref: transitionRef }) => (
-            <TooltipContext.Provider
-              value={{
+  // Closed triggers retain their interaction state, but positioning resources
+  // belong to the overlay's visible/closing lifetime rather than every label.
+  const tooltipContent = (
+    <TooltipPositionContext.Provider value={positionOptions}>
+      <TooltipTransition isShown={state.isOpen && !isDisabled}>
+        {({ phase, isShown, ref: transitionRef }) => (
+          <Portal>
+            <PositionedTooltip
+              tooltip={tooltip}
+              contextValue={{
                 ...tooltipContextValue,
                 phase,
                 isShown,
                 ref: overlayRef,
                 transitionRef,
               }}
-            >
-              <Portal>{tooltip}</Portal>
-            </TooltipContext.Provider>
-          )}
-        </DisplayTransition>
+            />
+          </Portal>
+        )}
+      </TooltipTransition>
+    </TooltipPositionContext.Provider>
+  );
+
+  // Function trigger pattern (new)
+  if (isTriggerFunction(trigger)) {
+    return (
+      <>
+        {trigger(triggerProps, tooltipTriggerRef)}
+        {tooltipContent}
       </>
     );
   }
@@ -254,21 +313,7 @@ export function TooltipTrigger(props: CubeTooltipTriggerProps) {
       ) : (
         trigger
       )}
-      <DisplayTransition isShown={state.isOpen && !isDisabled}>
-        {({ phase, isShown, ref: transitionRef }) => (
-          <TooltipContext.Provider
-            value={{
-              ...tooltipContextValue,
-              phase,
-              isShown,
-              ref: overlayRef,
-              transitionRef,
-            }}
-          >
-            <Portal>{tooltip}</Portal>
-          </TooltipContext.Provider>
-        )}
-      </DisplayTransition>
+      {tooltipContent}
     </>
   );
 

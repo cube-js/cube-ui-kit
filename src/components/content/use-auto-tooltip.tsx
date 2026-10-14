@@ -460,5 +460,6 @@ export function useAutoTooltip({
     hasTooltip: !!tooltip,
     isTooltipActive,
     renderWithTooltip,
+    scheduleOverflowCheck,
   };
 }
