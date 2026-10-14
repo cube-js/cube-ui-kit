@@ -90,6 +90,9 @@ export function wrapWithField<T extends WrapWithFieldProps>(
         isHidden,
         labelSuffix,
         Component: component,
+        // Where the description and message ids come from; see
+        // `useFieldDescribedBy`, which points the control at them.
+        controlId: props.id,
         ref,
       }}
     />

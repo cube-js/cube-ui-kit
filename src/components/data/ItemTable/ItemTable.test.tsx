@@ -284,6 +284,12 @@ describe('<ItemTable />', () => {
     expect(grid).toHaveAttribute('aria-busy', 'true');
     // 1 header row + 4 skeleton rows.
     expect(within(grid).getAllByRole('row')).toHaveLength(5);
+    // The rows say they are loading; a landmark in every cell would bury
+    // the page's real ones.
+    expect(
+      screen.queryAllByRole('region', { name: 'Content is loading' }),
+    ).toHaveLength(0);
+    expect(grid.querySelector('[data-loading-placeholder]')).not.toBeNull();
   });
 
   it('keeps existing rows visible while loading more', () => {

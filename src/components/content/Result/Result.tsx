@@ -236,10 +236,11 @@ const ResultAction = forwardRef(function ResultAction(
 });
 
 const statusIconMap: StatusIconMap = {
-  success: () => <IconCircleCheckFilled />,
-  error: () => <IconCircleXFilled />,
-  info: () => <IconInfoCircleFilled />,
-  warning: () => <IconAlertTriangleFilled />,
+  // Decorative: the title says what happened.
+  success: () => <IconCircleCheckFilled aria-hidden="true" />,
+  error: () => <IconCircleXFilled aria-hidden="true" />,
+  info: () => <IconInfoCircleFilled aria-hidden="true" />,
+  warning: () => <IconAlertTriangleFilled aria-hidden="true" />,
   // TODO: Needs to be implemented in the future
   404: null,
   403: null,

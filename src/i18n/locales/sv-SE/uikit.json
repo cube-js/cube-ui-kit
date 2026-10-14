@@ -64,7 +64,9 @@
   },
   "commandMenu": {
     "searchPlaceholder": "Sök kommandon...",
-    "empty": "Inga kommandon hittades"
+    "empty": "Inga kommandon hittades",
+    "menu": "Kommandomeny",
+    "loading": "Läser in kommandon"
   },
   "listBoxPopover": {
     "options": "Alternativ"
@@ -73,6 +75,7 @@
     "time": "Tid",
     "startTime": "Starttid",
     "endTime": "Sluttid",
+    "showStartCalendar": "Visa kalender för startdatum",
     "showEndCalendar": "Visa kalender för slutdatum",
     "selectWeek": "Välj vecka",
     "selectMonth": "Välj månad",
@@ -102,7 +105,8 @@
   "textInputMapper": {
     "key": "Nyckel",
     "value": "Värde",
-    "removeMapping": "Ta bort mappning"
+    "removeMapping": "Ta bort mappning",
+    "mapping": "Mappning"
   },
   "copySnippet": {
     "title": "Kodexempel",
@@ -148,10 +152,17 @@
   },
   "layout": {
     "closePanel": "Stäng panel",
-    "goBack": "Tillbaka"
+    "goBack": "Tillbaka",
+    "resizePaneRight": "Ändra storlek på fönsterrutan (höger)",
+    "resizePaneBottom": "Ändra storlek på fönsterrutan (nederkant)",
+    "resizeLeftPanel": "Ändra storlek på vänster panel",
+    "resizeTopPanel": "Ändra storlek på övre panel",
+    "resizeRightPanel": "Ändra storlek på höger panel",
+    "resizeBottomPanel": "Ändra storlek på nedre panel"
   },
   "tree": {
-    "actions": "Åtgärder"
+    "actions": "Åtgärder",
+    "ariaLabel": "Träd"
   },
   "banner": {
     "hideBanner": "Dölj banner"
@@ -204,5 +215,27 @@
     "copiedCells_one": "{{count}} cell kopierad",
     "copiedCells_other": "{{count}} celler kopierade",
     "refreshing": "Uppdaterar"
+  },
+  "buttonSplit": {
+    "moreOptions": "Fler alternativ"
+  },
+  "colorInput": {
+    "openColorPicker": "Öppna färgväljaren"
+  },
+  "colorPicker": {
+    "colorPicker": "Färgväljare",
+    "colorValue": "Färgvärde",
+    "palette": "Palett",
+    "colorSpace": "Färgrymd"
+  },
+  "colorSwatchGroup": {
+    "colors": "Färger",
+    "customColor": "Anpassad färg"
+  },
+  "hotKeys": {
+    "ariaLabel": "Kortkommandon",
+    "combination": "Tangentkombination {{index}}",
+    "key": "Tangent {{key}}",
+    "or": "eller"
   }
 }

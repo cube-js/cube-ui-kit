@@ -7,7 +7,7 @@ import {
   Styles,
   tasty,
 } from '@tenphi/tasty';
-import { forwardRef } from 'react';
+import { createContext, forwardRef, useContext } from 'react';
 
 import { useI18n } from '../../../i18n';
 import { extractStyles, mergeStyleLayers } from '../../../utils/styles';
@@ -23,8 +23,6 @@ const placeholderAnimation = keyframes({
 });
 
 const StyledPlaceholder = tasty({
-  role: 'alert',
-  'aria-live': 'polite',
   styles: {
     display: 'block',
     height: '2x',
@@ -68,6 +66,15 @@ const StyledPlaceholder = tasty({
   },
 });
 
+/**
+ * Set by a component that says once that a whole group of placeholders is
+ * loading — `Skeleton` is one region around all of its bars, and a table's
+ * loading row is `aria-busy`. The placeholders inside are then decoration, and
+ * stay out of the accessibility tree rather than each being a landmark of its
+ * own.
+ */
+export const PlaceholderGroupContext = createContext(false);
+
 export interface CubePlaceholderProps extends BaseProps, ContainerStyleProps {
   size?: Styles['fontSize'];
   circle?: boolean;
@@ -81,13 +88,21 @@ export const Placeholder = forwardRef(function Placeholder(
   let { size = '2x', isStatic, circle, ...props } = allProps;
 
   const { t } = useI18n();
+  const isInGroup = useContext(PlaceholderGroupContext);
 
   let styles = extractStyles(props, CONTAINER_STYLES);
 
   return (
     <StyledPlaceholder
-      role="region"
-      aria-label={t('placeholder.contentIsLoading', 'Content is loading')}
+      {...(isInGroup
+        ? { 'aria-hidden': true }
+        : {
+            role: 'region',
+            'aria-label': t(
+              'placeholder.contentIsLoading',
+              'Content is loading',
+            ),
+          })}
       {...filterBaseProps(props, { eventProps: true })}
       // The documented way to detect a loading placeholder. Fixed, so a
       // caller's `qa` or a translated `aria-label` doesn't change it.

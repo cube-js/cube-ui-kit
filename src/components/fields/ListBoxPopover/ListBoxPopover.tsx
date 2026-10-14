@@ -14,7 +14,9 @@ import { useInteractOutside, useOverlay, useOverlayPosition } from 'react-aria';
 import { useEvent } from '../../../_internal/hooks/use-event';
 import { useI18n } from '../../../i18n';
 import { mergeProps } from '../../../utils/react';
+import { mergeRefs } from '../../../utils/react/useCombinedRefs';
 import { DisplayTransition } from '../../helpers';
+import { useModalLayerRef } from '../../overlays/Modal/modal-containment';
 import { Portal } from '../../portal';
 import { ListBox } from '../ListBox/ListBox';
 
@@ -214,6 +216,10 @@ export const ListBoxPopover = function ListBoxPopover(
 
   const mergedPopoverRef = popoverRef;
 
+  // Opened inside a modal, the list stays readable while the modal hides the
+  // page.
+  const layerRef = useModalLayerRef();
+
   // Ref to the inner scrollable element (the visible popover). react-aria
   // measures this for its flip/shrink math and writes maxHeight onto the
   // overlay (positioning wrapper); we forward that maxHeight to this element
@@ -337,7 +343,7 @@ export const ListBoxPopover = function ListBoxPopover(
               overlayBehaviorProps,
               compositeFocusProps,
             )}
-            ref={mergedPopoverRef}
+            ref={mergeRefs(mergedPopoverRef, layerRef)}
             style={positionStyle}
             // A press on the list while it fades out must not close the
             // overlay under it (CUB-5293) — see `Overlay`.

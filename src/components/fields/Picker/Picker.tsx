@@ -81,6 +81,8 @@ export interface CubePickerProps<T>
     > {
   /** Accessible name for the picker trigger when there is no visible label. */
   'aria-label'?: string;
+  /** Ids of elements that also describe the trigger, beside the field's own description and message. */
+  'aria-describedby'?: string;
   /** Placeholder text when no selection is made */
   placeholder?: string;
   /** Size of the picker component */
@@ -226,6 +228,9 @@ export const Picker = forwardRef(function Picker<T extends object>(
     qa,
     label,
     'aria-label': ariaLabel,
+    // The field's description and message describe the trigger, which is the
+    // control, not the wrapper the rest of these props land on.
+    'aria-describedby': ariaDescribedBy,
     extra,
     icon,
     rightIcon,
@@ -723,6 +728,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
       styles={triggerStyles}
       {...keyboardProps}
       aria-label={triggerAriaLabel}
+      aria-describedby={ariaDescribedBy}
     >
       {triggerContent}
     </ItemButton>

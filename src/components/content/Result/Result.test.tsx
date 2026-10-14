@@ -13,6 +13,19 @@ function precedes(a: Element, b: Element) {
 }
 
 describe('<Result />', () => {
+  it.each(['success', 'error', 'info', 'warning'] as const)(
+    'hides the %s icon from screen readers',
+    (status) => {
+      const { container } = render(<Result status={status} title="Done" />);
+      const icon = container.querySelector('svg');
+
+      // The title says what happened; an exposed `<svg>` is read out as an
+      // unnamed graphic.
+      expect(icon).not.toBeNull();
+      expect(icon!.closest('[aria-hidden="true"]')).not.toBeNull();
+    },
+  );
+
   it('renders the title and subtitle as headings', () => {
     render(<Result title="Payment complete" subtitle="Charged to Visa" />);
 

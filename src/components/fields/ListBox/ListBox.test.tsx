@@ -851,6 +851,12 @@ describe('<ListBox />', () => {
         '[data-element="Checkbox"]',
       );
       expect(checkboxElement).toBeInTheDocument();
+
+      // The mark is decoration: the option's `aria-selected` says the state,
+      // and an exposed `<svg>` is read out as an unnamed graphic.
+      for (const svg of Array.from(checkboxElement!.querySelectorAll('svg'))) {
+        expect(svg.closest('[aria-hidden="true"]')).not.toBeNull();
+      }
     });
   });
 

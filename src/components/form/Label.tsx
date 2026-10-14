@@ -129,12 +129,15 @@ export function NecessityIndicatorMark(props: CubeNecessityIndicatorProps) {
       return (
         <>
           {separator}
+          {/*
+            An image named "(required)" when it belongs in the name, hidden
+            otherwise — never a bare `<svg>`, which a screen reader announces
+            as an unnamed graphic.
+          */}
           <span
-            aria-label={
-              includeNecessityIndicatorInAccessibilityName
-                ? requiredLabel
-                : undefined
-            }
+            {...(includeNecessityIndicatorInAccessibilityName
+              ? { role: 'img', 'aria-label': requiredLabel }
+              : { 'aria-hidden': true })}
           >
             {REQUIRED_ICON}
           </span>

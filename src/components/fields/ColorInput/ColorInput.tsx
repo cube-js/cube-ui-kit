@@ -21,6 +21,7 @@ import {
 import { Placement, useTextField } from 'react-aria';
 
 import { useEvent } from '../../../_internal';
+import { useI18n } from '../../../i18n';
 import { PipetteIcon } from '../../../icons/PipetteIcon';
 import { FieldBaseProps } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
@@ -135,6 +136,7 @@ export const ColorInput = forwardRef(function ColorInput(
   allProps: CubeColorInputProps,
   ref: ForwardedRef<HTMLElement>,
 ) {
+  const { t } = useI18n();
   const props = useFieldProps(allProps, {
     defaultValidationTrigger: 'onBlur',
     valuePropsMapper: ({ value, onChange }) => ({
@@ -401,13 +403,16 @@ export const ColorInput = forwardRef(function ColorInput(
             <ItemActionProvider isDisabled={isDisabled}>
               <ColorInputTrigger
                 size={size}
-                aria-label="Open the color picker"
+                aria-label={t(
+                  'colorInput.openColorPicker',
+                  'Open the color picker',
+                )}
                 isDisabled={isReadOnly && !isDisabled ? true : undefined}
                 styles={triggerStyles}
               />
             </ItemActionProvider>
             <Dialog
-              aria-label="Color picker"
+              aria-label={t('colorPicker.colorPicker', 'Color picker')}
               width="max-content"
               styles={POPOVER_STYLES}
             >

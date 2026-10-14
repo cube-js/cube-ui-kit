@@ -1150,6 +1150,29 @@ describe('<Menu />', () => {
   });
 });
 
+describe('Menu id and name', () => {
+  it('names and identifies the menu list only, not its wrapper', async () => {
+    const { getByRole } = renderWithRoot(
+      <MenuTrigger>
+        <Button>Actions</Button>
+        <Menu>
+          <Menu.Item key="save">Save</Menu.Item>
+        </Menu>
+      </MenuTrigger>,
+    );
+
+    await userEvent.click(getByRole('button', { name: 'Actions' }));
+
+    const menu = getByRole('menu');
+
+    expect(menu).toHaveAccessibleName('Actions');
+    // A trigger's `aria-controls` must find the list, not a wrapper sharing
+    // its id.
+    expect(document.querySelectorAll(`[id="${menu.id}"]`)).toHaveLength(1);
+    expect(menu.parentElement).not.toHaveAttribute('aria-labelledby');
+  });
+});
+
 describe('Menu popover mod', () => {
   it('should apply popover mod when context provides it', () => {
     const { container } = render(

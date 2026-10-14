@@ -84,6 +84,8 @@ it('should open and close popover', async () => {
 });
 ```
 
+While a modal, fullscreen or tray `Dialog` is open, the page behind it is `aria-hidden`, so role queries do not find it. `{ hidden: true }` finds those elements, but an element hidden itself has no accessible name, so query the page behind an open modal by text or `qa`. Lists, popovers and tooltips opened from the dialog stay visible to role queries.
+
 ### Form Integration
 
 ```tsx
@@ -180,6 +182,24 @@ it.each([
   spy.mockRestore();
 });
 ```
+
+### Screen Reader
+
+When what the user _hears_ is the behavior under test — an announcement, a description, reading order, focus moving into a dialog — assert it with the virtual screen reader. Import from `src/test/screen-reader.ts` by path, and never start the package's `virtual` singleton yourself:
+
+```tsx
+import { startScreenReader } from '../../../test/screen-reader';
+
+const reader = await startScreenReader();
+
+await reader.press('Tab');
+await reader.press('Enter');
+await waitFor(async () =>
+  expect(await reader.lastSpokenPhrase()).toBe('dialog, Rename file'),
+);
+```
+
+`readWithScreenReader()` returns a top-to-bottom reading instead. Recipes and the simulator's blind spots: [screen-reader.md](screen-reader.md).
 
 ## Query Selectors Priority
 

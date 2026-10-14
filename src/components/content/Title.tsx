@@ -64,19 +64,22 @@ const TitleElement = tasty({
 });
 
 const Title = forwardRef(function CubeTitle(
-  { qa, as, nowrap, ellipsis, level, ...props }: CubeTitleProps,
+  { qa, as, nowrap, ellipsis, ...props }: CubeTitleProps,
   ref,
 ) {
-  const propsWithSlots = useSlotProps(props, 'title');
+  // `level` is read after the slot merge: `Dialog` makes its title an `h2`
+  // through the slot, and a level taken from the bare props never sees that.
+  const { level, ...propsWithSlots } = useSlotProps(props, 'title');
 
-  const tag: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' = `h${level || 1}`;
+  const headingLevel: NonNullable<CubeTitleProps['level']> = level || 1;
+  const tag = `h${headingLevel}` as const;
   const styles = extractStyles(propsWithSlots, STYLE_LIST, {}, TEXT_PROP_MAP);
 
   return (
     <TitleElement
       qa={qa || 'Title'}
       as={as || tag}
-      data-level={level || 1}
+      data-level={headingLevel}
       mods={{
         nowrap,
         ellipsis,

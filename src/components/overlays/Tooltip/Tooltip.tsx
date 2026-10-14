@@ -19,6 +19,7 @@ import { AriaTooltipProps, useTooltip } from 'react-aria';
 import { PlacementAxis } from '../../../shared';
 import { mergeProps, mergeRefs, useLayoutEffect } from '../../../utils/react';
 import { extractStyles } from '../../../utils/styles';
+import { useModalLayerRef } from '../Modal/modal-containment';
 
 import { TooltipContext } from './context';
 
@@ -186,7 +187,14 @@ function Tooltip(
   } = useContext(TooltipContext);
 
   const defaultRef = useRef<HTMLDivElement>(null);
-  const combinedRef = mergeRefs(transitionRef, overlayRef ?? defaultRef);
+  // Opened inside a modal, the tooltip stays readable while the modal hides
+  // the page.
+  const layerRef = useModalLayerRef();
+  const combinedRef = mergeRefs(
+    transitionRef,
+    overlayRef ?? defaultRef,
+    layerRef,
+  );
   const finalOverlayRef = overlayRef ?? defaultRef;
 
   props = mergeProps(props, tooltipProviderProps);

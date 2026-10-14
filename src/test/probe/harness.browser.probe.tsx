@@ -26,8 +26,10 @@ import { Root } from '../../components/Root';
 import { canonicalize, captureCss, diffRules, splitRules } from '../../probe';
 
 import { assertConfigApplied } from './config-guard';
+import { PlayError, runPlay } from './play';
 
 import type { ProbeInput } from './io';
+import type { Play, Spoken } from './play';
 
 declare const __PROBE_INPUT__: string;
 
@@ -190,14 +192,17 @@ it('probe:browser', async () => {
   const baseline = captureCss(view.baseElement);
 
   let Snippet: ComponentType;
+  let play: Play | undefined;
 
   try {
     // `snippetUrl`, not `snippetPath` — see the field's note in `io.ts`.
     const module = (await import(/* @vite-ignore */ input.snippetUrl!)) as {
       default: ComponentType;
+      play?: Play;
     };
 
     Snippet = module.default;
+    play = module.play;
   } catch (error) {
     const { message, needsServerLog } = await explainImportFailure(
       error,
@@ -248,6 +253,29 @@ it('probe:browser', async () => {
         ok: false,
         kind: 'render',
         message: error instanceof Error ? error.message : String(error),
+      }),
+    );
+
+    return;
+  }
+
+  // Same place as on the jsdom tier: after the mount, before any capture.
+  let spoken: Spoken;
+
+  try {
+    spoken = await runPlay(play, Boolean(input.screenReader));
+  } catch (error) {
+    if (!(error instanceof PlayError)) throw error;
+
+    await commands.writeFile(
+      input.outPath,
+      JSON.stringify({
+        runId: input.runId,
+        mode: 'render',
+        tier: 'browser',
+        ok: false,
+        kind: error.kind,
+        message: error.message,
       }),
     );
 
@@ -352,6 +380,7 @@ it('probe:browser', async () => {
           height: rect.height,
         },
         screenshotPath,
+        ...spoken,
         warnings: [...baseline.warnings, ...full.warnings],
       },
       null,

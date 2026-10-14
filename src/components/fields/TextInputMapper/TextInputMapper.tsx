@@ -26,6 +26,8 @@ import { PasswordInput } from '../PasswordInput/PasswordInput';
 import { TextArea } from '../TextArea/index';
 import { TextInput } from '../TextInput';
 
+import type { AriaLabelingProps } from '@react-types/shared';
+
 type Mapping = {
   key: string;
   value: string;
@@ -107,7 +109,16 @@ function TextInputMapper(
     ValueComponent,
     size = 'medium',
     form,
-  } = props;
+    'aria-label': ariaLabel,
+    'aria-labelledby': ariaLabelledBy,
+    'aria-describedby': ariaDescribedBy,
+  } = props as typeof props & AriaLabelingProps;
+
+  // The rows are one field, so they form a group that the label, or the
+  // caller's `aria-label`, names and the field's description and message
+  // describe. A `<label for>` cannot name a group, so the label gets an id,
+  // unless the caller gave it one.
+  const labelId = props.labelProps?.id ?? `${props.id}-label`;
 
   function extractLocalValues(
     value: Record<string, string>,
@@ -282,6 +293,10 @@ function TextInputMapper(
   const element = (
     <Flow
       ref={ref}
+      role="group"
+      aria-label={ariaLabel}
+      aria-labelledby={ariaLabelledBy ?? (props.label ? labelId : undefined)}
+      aria-describedby={ariaDescribedBy}
       gap="1x"
       data-qa={qa || 'TextInputMapper'}
       data-input-type="textinputmapper"
@@ -298,14 +313,19 @@ function TextInputMapper(
             icon={<PlusIcon />}
             onPress={addNewMapping}
           >
-            {actionLabel ? actionLabel : 'Mapping'}
+            {actionLabel
+              ? actionLabel
+              : t('textInputMapper.mapping', 'Mapping')}
           </Button>
         </Space>
       ) : null}
     </Flow>
   );
 
-  return wrapWithField(element, ref, props);
+  return wrapWithField(element, ref, {
+    ...props,
+    labelProps: mergeProps(props.labelProps, { id: labelId }),
+  });
 }
 
 export interface CubeTextInputMapperInputProps {

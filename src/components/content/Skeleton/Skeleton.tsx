@@ -1,10 +1,15 @@
 import { BaseProps, ContainerStyleProps } from '@tenphi/tasty';
 import { ReactNode } from 'react';
 
+import { useI18n } from '../../../i18n';
 import { Flow } from '../../layout/Flow';
 import { CubeGridProps, Grid } from '../../layout/Grid';
 import { Space } from '../../layout/Space';
-import { CubePlaceholderProps, Placeholder } from '../Placeholder/Placeholder';
+import {
+  CubePlaceholderProps,
+  Placeholder,
+  PlaceholderGroupContext,
+} from '../Placeholder/Placeholder';
 
 const LAYOUT_MAP = {
   page({
@@ -225,19 +230,30 @@ export function Skeleton({
   children,
   ...props
 }: CubeSkeletonProps) {
+  const { t } = useI18n();
+
   layout = layout || 'page';
 
+  // One "Content is loading" region for the whole layout, rather than one per
+  // bar: a page skeleton would otherwise list a dozen identical landmarks.
   return LAYOUT_MAP[layout] ? (
-    LAYOUT_MAP[layout]({
-      isStatic,
-      columns,
-      rows,
-      lines,
-      tabs,
-      cards,
-      children,
-      rootProps: { qa: 'Skeleton', ...props },
-    })
+    <PlaceholderGroupContext.Provider value>
+      {LAYOUT_MAP[layout]({
+        isStatic,
+        columns,
+        rows,
+        lines,
+        tabs,
+        cards,
+        children,
+        rootProps: {
+          qa: 'Skeleton',
+          role: 'region',
+          'aria-label': t('placeholder.contentIsLoading', 'Content is loading'),
+          ...props,
+        },
+      })}
+    </PlaceholderGroupContext.Provider>
   ) : (
     <Placeholder qa="Skeleton" isStatic={isStatic} {...props}>
       {children}

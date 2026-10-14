@@ -64,7 +64,9 @@
   },
   "commandMenu": {
     "searchPlaceholder": "Søk etter kommandoer...",
-    "empty": "Ingen kommandoer funnet"
+    "empty": "Ingen kommandoer funnet",
+    "menu": "Kommandomeny",
+    "loading": "Laster inn kommandoer"
   },
   "listBoxPopover": {
     "options": "Alternativer"
@@ -73,6 +75,7 @@
     "time": "Tid",
     "startTime": "Starttid",
     "endTime": "Sluttid",
+    "showStartCalendar": "Vis kalender for startdato",
     "showEndCalendar": "Vis kalender for sluttdato",
     "selectWeek": "Velg uke",
     "selectMonth": "Velg måned",
@@ -102,7 +105,8 @@
   "textInputMapper": {
     "key": "Nøkkel",
     "value": "Verdi",
-    "removeMapping": "Fjern tilordning"
+    "removeMapping": "Fjern tilordning",
+    "mapping": "Tilordning"
   },
   "copySnippet": {
     "title": "Kodeeksempel",
@@ -148,10 +152,17 @@
   },
   "layout": {
     "closePanel": "Lukk panel",
-    "goBack": "Tilbake"
+    "goBack": "Tilbake",
+    "resizePaneRight": "Endre størrelse på ruten (høyre)",
+    "resizePaneBottom": "Endre størrelse på ruten (nederst)",
+    "resizeLeftPanel": "Endre størrelse på venstre panel",
+    "resizeTopPanel": "Endre størrelse på øvre panel",
+    "resizeRightPanel": "Endre størrelse på høyre panel",
+    "resizeBottomPanel": "Endre størrelse på nedre panel"
   },
   "tree": {
-    "actions": "Handlinger"
+    "actions": "Handlinger",
+    "ariaLabel": "Tre"
   },
   "banner": {
     "hideBanner": "Skjul banner"
@@ -204,5 +215,27 @@
     "copiedCells_one": "{{count}} celle kopiert",
     "copiedCells_other": "{{count}} celler kopiert",
     "refreshing": "Oppdaterer"
+  },
+  "buttonSplit": {
+    "moreOptions": "Flere alternativer"
+  },
+  "colorInput": {
+    "openColorPicker": "Åpne fargevelgeren"
+  },
+  "colorPicker": {
+    "colorPicker": "Fargevelger",
+    "colorValue": "Fargeverdi",
+    "palette": "Palett",
+    "colorSpace": "Fargerom"
+  },
+  "colorSwatchGroup": {
+    "colors": "Farger",
+    "customColor": "Egendefinert farge"
+  },
+  "hotKeys": {
+    "ariaLabel": "Hurtigtaster",
+    "combination": "Tastekombinasjon {{index}}",
+    "key": "Tast {{key}}",
+    "or": "eller"
   }
 }

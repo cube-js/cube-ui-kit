@@ -33,6 +33,12 @@ export default defineConfig(
         readFileSync(process.env.PROBE_INPUT ?? '', 'utf-8'),
       ),
     },
+    // The harness imports the snippet at run time, so Vite's dependency scan
+    // never sees what the snippet reaches through `@cube-dev/ui-kit`. Without
+    // the library as an entry, a cold cache found those dependencies mid-run:
+    // Vite optimized them again and reloaded the page, and the first run
+    // failed, with a module that would not load or a second copy of React.
+    optimizeDeps: { entries: ['src/index.ts', 'src/probe/index.ts'] },
     resolve: {
       alias: {
         // `/probe` first — see the note in `vitest.probe.config.ts`.
@@ -42,6 +48,8 @@ export default defineConfig(
     },
     test: {
       include: ['src/test/probe/harness.browser.probe.tsx'],
+      // Room for a `play` that waits — see `vitest.probe.config.ts`.
+      testTimeout: 60_000,
       browser: {
         // `commands.writeFile` is gated on `allowWrite`, which silently flips to
         // false when `api.host` is set to anything but localhost. Left unset on

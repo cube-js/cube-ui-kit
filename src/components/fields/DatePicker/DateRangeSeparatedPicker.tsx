@@ -251,6 +251,12 @@ function DateRangeSeparatedPicker<T extends DateValue>(
                 startProps.buttonProps,
                 startFocusProps.focusProps,
               )}
+              // After React Aria's props, whose "Calendar" would replace it:
+              // the two buttons need different names.
+              aria-label={t(
+                'datePicker.showStartCalendar',
+                'Show calendar for the start date',
+              )}
               isDisabled={isDisabled}
             />
             <Dialog
@@ -309,12 +315,12 @@ function DateRangeSeparatedPicker<T extends DateValue>(
             onOpenChange={endState.setOpen}
           >
             <DatePickerButton
+              size={size}
+              {...mergeProps(endFocusProps.focusProps, endProps.buttonProps)}
               aria-label={t(
                 'datePicker.showEndCalendar',
                 'Show calendar for the end date',
               )}
-              size={size}
-              {...mergeProps(endFocusProps.focusProps, endProps.buttonProps)}
               isDisabled={isDisabled}
             />
             <Dialog

@@ -36,6 +36,9 @@ import { getPaletteTokens } from '../../tokens/palette';
 
 import { assertConfigApplied } from './config-guard';
 import { readInput, writeResult } from './io';
+import { PlayError, runPlay } from './play';
+
+import type { Play, Spoken } from './play';
 
 it('probe', async () => {
   assertConfigApplied();
@@ -111,6 +114,7 @@ it('probe', async () => {
   // `render` mode. Import the snippet only now, so a compile error in it
   // surfaces as a rejection we can shape rather than a module-load crash.
   let Snippet: ComponentType;
+  let play: Play | undefined;
 
   try {
     // Non-literal specifier on purpose. The snippet does not exist in a fresh
@@ -118,9 +122,11 @@ it('probe', async () => {
     // typecheck even though it resolves fine at runtime.
     const module = (await import(/* @vite-ignore */ input.snippetPath!)) as {
       default: ComponentType;
+      play?: Play;
     };
 
     Snippet = module.default;
+    play = module.play;
   } catch (error) {
     writeResult(input, {
       mode: 'render',
@@ -173,6 +179,26 @@ it('probe', async () => {
     return;
   }
 
+  // After the mount and before any capture, so the markup and CSS below are the
+  // state `play` left behind.
+  let spoken: Spoken;
+
+  try {
+    spoken = await runPlay(play, Boolean(input.screenReader));
+  } catch (error) {
+    if (!(error instanceof PlayError)) throw error;
+
+    writeResult(input, {
+      mode: 'render',
+      ok: false,
+      kind: error.kind,
+      message: error.message,
+      warnings,
+    });
+
+    return;
+  }
+
   const full = captureCss(view.baseElement);
 
   warnings.push(...full.warnings);
@@ -208,6 +234,7 @@ it('probe', async () => {
     ),
     css: input.canonical ? canonicalize(css) : css,
     ruleCount: splitRules(css).length,
+    ...spoken,
     warnings,
   });
 

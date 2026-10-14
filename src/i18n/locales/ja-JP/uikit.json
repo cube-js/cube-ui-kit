@@ -64,7 +64,9 @@
   },
   "commandMenu": {
     "searchPlaceholder": "コマンドを検索...",
-    "empty": "コマンドが見つかりません"
+    "empty": "コマンドが見つかりません",
+    "menu": "コマンドメニュー",
+    "loading": "コマンドを読み込んでいます"
   },
   "listBoxPopover": {
     "options": "オプション"
@@ -73,6 +75,7 @@
     "time": "時刻",
     "startTime": "開始時刻",
     "endTime": "終了時刻",
+    "showStartCalendar": "開始日のカレンダーを表示",
     "showEndCalendar": "終了日のカレンダーを表示",
     "selectWeek": "週を選択",
     "selectMonth": "月を選択",
@@ -102,7 +105,8 @@
   "textInputMapper": {
     "key": "キー",
     "value": "値",
-    "removeMapping": "マッピングを削除"
+    "removeMapping": "マッピングを削除",
+    "mapping": "マッピング"
   },
   "copySnippet": {
     "title": "コード例",
@@ -148,10 +152,17 @@
   },
   "layout": {
     "closePanel": "パネルを閉じる",
-    "goBack": "戻る"
+    "goBack": "戻る",
+    "resizePaneRight": "ペインのサイズを変更（右）",
+    "resizePaneBottom": "ペインのサイズを変更（下）",
+    "resizeLeftPanel": "左パネルのサイズを変更",
+    "resizeTopPanel": "上パネルのサイズを変更",
+    "resizeRightPanel": "右パネルのサイズを変更",
+    "resizeBottomPanel": "下パネルのサイズを変更"
   },
   "tree": {
-    "actions": "アクション"
+    "actions": "アクション",
+    "ariaLabel": "ツリー"
   },
   "banner": {
     "hideBanner": "バナーを非表示"
@@ -204,5 +215,27 @@
     "copiedCells_one": "{{count}} 個のセルをコピーしました",
     "copiedCells_other": "{{count}} 個のセルをコピーしました",
     "refreshing": "更新中"
+  },
+  "buttonSplit": {
+    "moreOptions": "その他のオプション"
+  },
+  "colorInput": {
+    "openColorPicker": "カラーピッカーを開く"
+  },
+  "colorPicker": {
+    "colorPicker": "カラーピッカー",
+    "colorValue": "カラー値",
+    "palette": "パレット",
+    "colorSpace": "色空間"
+  },
+  "colorSwatchGroup": {
+    "colors": "色",
+    "customColor": "カスタムカラー"
+  },
+  "hotKeys": {
+    "ariaLabel": "キーボードショートカット",
+    "combination": "キーの組み合わせ {{index}}",
+    "key": "キー {{key}}",
+    "or": "または"
   }
 }

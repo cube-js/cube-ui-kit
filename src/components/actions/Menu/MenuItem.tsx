@@ -16,6 +16,11 @@ export type MenuSelectionType = 'checkbox' | 'radio' | 'checkmark';
 
 export interface MenuItemProps<T> {
   item: Node<T>;
+  /**
+   * The item element's id. A menu whose focus stays elsewhere — `CommandMenu`
+   * keeps it in its search input — points `aria-activedescendant` at it.
+   */
+  id?: string;
   state: TreeState<T>;
   styles?: Styles;
   isVirtualized?: boolean;
@@ -26,7 +31,7 @@ export interface MenuItemProps<T> {
 
 /** @private */
 export function MenuItem<T>(props: MenuItemProps<T>) {
-  const { item, state, styles, isVirtualized, onAction, size } = props;
+  const { item, state, styles, isVirtualized, onAction, size, id } = props;
   const { onClose, closeOnSelect } = useMenuContext();
   const { rendered, key, props: itemProps } = item;
 
@@ -35,7 +40,10 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
 
   // Filter out service props (react-stately and parent-handled props)
   // All remaining props are safe to pass to Item component
-  const filteredItemProps = filterCollectionItemProps(itemProps);
+  // An `id` the menu assigns wins over the item's own: the menu points
+  // `aria-activedescendant` at it. Merged instead, the item's would replace it.
+  const { id: ownId, ...filteredItemProps } =
+    filterCollectionItemProps(itemProps);
 
   // Extract specific props that need special handling
   const { hotkeys, mods: itemMods, qa: itemQa } = filteredItemProps;
@@ -60,6 +68,7 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
     isDisabled,
   } = useMenuItem(
     {
+      id: id ?? ownId,
       isSelected: state.selectionManager.isSelected(key),
       isDisabled: isDisabledKey,
       'aria-label': item['aria-label'],

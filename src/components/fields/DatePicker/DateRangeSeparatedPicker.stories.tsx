@@ -1,5 +1,5 @@
 import { StoryFn } from '@storybook/react-vite';
-import { userEvent } from 'storybook/test';
+import { userEvent, within } from 'storybook/test';
 
 import { ICON_ARG, VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
 import { waitForOverlay } from '../../../stories/interactions';
@@ -54,11 +54,10 @@ WithDefaultValueOpen.args = WithDefaultValue.args;
 // `WithDefaultValue` — and the calendar it is named for goes untested.
 WithDefaultValueOpen.play = async ({ canvasElement }) => {
   // Two calendar triggers (start and end) plus the segment buttons, so the
-  // `getByRole('button')` the single-field pickers use is ambiguous here. Nor
-  // can the trigger be found by accessible name: it carries both `aria-label`
-  // and an `aria-labelledby`, and `aria-labelledby` wins, so its name is the
-  // field's label rather than "Calendar". Query the attribute directly.
-  const start = canvasElement.querySelector('button[aria-label="Calendar"]');
+  // `getByRole('button')` the single-field pickers use is ambiguous here.
+  const start = within(canvasElement).getByRole('button', {
+    name: /^Show calendar for the start date/,
+  });
 
   await userEvent.click(start);
 

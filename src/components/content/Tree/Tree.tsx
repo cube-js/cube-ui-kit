@@ -5,6 +5,7 @@ import { useTree } from 'react-aria';
 import { Item, useTreeState } from 'react-stately';
 
 import { useEvent } from '../../../_internal/hooks';
+import { useI18n } from '../../../i18n';
 import { SIZE_NAME_TO_KEY, SIZES } from '../../../tokens/sizes';
 import { mergeRefs } from '../../../utils/react';
 import { extractStyles } from '../../../utils/styles';
@@ -278,6 +279,8 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
   });
 
   const hasOnSelect = onSelect != null;
+  const { t } = useI18n();
+  const treeLabel = ariaLabel ?? t('tree.ariaLabel', 'Tree');
 
   const ariaProps = useMemo(
     () => ({
@@ -295,7 +298,7 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
       disabledBehavior: 'all' as const,
       items: treeData,
       children: renderItem as any,
-      'aria-label': ariaLabel ?? 'Tree',
+      'aria-label': treeLabel,
     }),
     [
       selectionMode,
@@ -308,7 +311,7 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
       handleExpandedChange,
       disabledKeys,
       treeData,
-      ariaLabel,
+      treeLabel,
     ],
   );
 

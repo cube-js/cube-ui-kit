@@ -14,11 +14,11 @@ import ptBR from './locales/pt-BR/uikit.json';
 import ptPT from './locales/pt-PT/uikit.json';
 import svSE from './locales/sv-SE/uikit.json';
 import viVN from './locales/vi-VN/uikit.json';
+import { UIKIT_I18N_NAMESPACE } from './namespace';
 
 import type { i18n as I18nInstance, InitOptions } from 'i18next';
 
-/** The dedicated namespace all UI Kit strings live under. */
-export const UIKIT_I18N_NAMESPACE = 'uikit';
+export { UIKIT_I18N_NAMESPACE };
 
 /** Shape of the UI Kit translation bundle (the `en-US` source of truth). */
 export type UIKitResources = typeof enUS;

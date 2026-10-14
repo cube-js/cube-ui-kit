@@ -4,8 +4,13 @@ import { ForwardedRef, forwardRef, ReactNode } from 'react';
 import { useModal, useOverlay, usePreventScroll } from 'react-aria';
 
 import { mergeProps } from '../../../utils/react';
+import { mergeRefs } from '../../../utils/react/useCombinedRefs';
 import { useOverlayEscapeGuard } from '../../../utils/react/useOverlayEscapeGuard';
 
+import {
+  ModalContainmentProvider,
+  useModalContainment,
+} from './modal-containment';
 import { Overlay } from './Overlay';
 import { ModalProps, TransitionState, WithCloseBehavior } from './types';
 import { Underlay } from './Underlay';
@@ -98,22 +103,30 @@ function Modal(props: CubeModalProps, ref: ForwardedRef<HTMLElement>) {
   // see `useOverlayEscapeGuard`.
   const overlayProps = useOverlayEscapeGuard(rawOverlayProps, props.isOpen);
 
+  // A panel leaves the page readable; every other type hides it while open.
+  const { containment, ref: containmentRef } = useModalContainment(
+    type !== 'panel',
+    !!props.isOpen,
+  );
+
   return (
-    <Overlay {...otherProps}>
-      {type !== 'fullscreenTakeover' && type !== 'panel' && (
-        <Underlay {...underlayProps} />
-      )}
-      <ModalWrapper
-        ref={domRef}
-        qa={qa}
-        type={type}
-        overlayProps={overlayProps}
-        styles={styles}
-        onClose={onClose}
-      >
-        {children}
-      </ModalWrapper>
-    </Overlay>
+    <ModalContainmentProvider value={containment}>
+      <Overlay {...otherProps}>
+        {type !== 'fullscreenTakeover' && type !== 'panel' && (
+          <Underlay {...underlayProps} />
+        )}
+        <ModalWrapper
+          ref={mergeRefs(domRef, containmentRef)}
+          qa={qa}
+          type={type}
+          overlayProps={overlayProps}
+          styles={styles}
+          onClose={onClose}
+        >
+          {children}
+        </ModalWrapper>
+      </Overlay>
+    </ModalContainmentProvider>
   );
 }
 

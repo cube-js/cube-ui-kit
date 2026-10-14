@@ -201,7 +201,7 @@ The body is the `Content` that is a direct child of the dialog or of a direct-ch
 
 - `aria-labelledby` - Links dialog to its title element automatically
 - `aria-describedby` - Links dialog to its description content
-- `aria-modal` - Set to true for modal dialogs to indicate exclusive interaction
+- `aria-modal` - Not set. While a modal, fullscreen or tray dialog is open, the page behind it is `aria-hidden` instead, so a screen reader's reading cursor stays in the dialog. Lists, menus and popovers opened from the dialog render outside it and stay readable, which `aria-modal` would prevent. Popover and panel dialogs leave the page readable
 - `role` - Set to "dialog" or "alertdialog" based on content type
 
 ## Best Practices

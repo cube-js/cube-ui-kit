@@ -46,6 +46,8 @@ export interface ProbeInput {
   tokenOptions?: { scheme?: 'light' | 'dark'; highContrast?: boolean };
   fullCss?: boolean;
   canonical?: boolean;
+  /** `--sr`: report what the virtual screen reader speaks. */
+  screenReader?: boolean;
 }
 
 export function readInput(): ProbeInput {

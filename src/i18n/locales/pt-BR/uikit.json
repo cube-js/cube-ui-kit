@@ -64,7 +64,9 @@
   },
   "commandMenu": {
     "searchPlaceholder": "Pesquisar comandos...",
-    "empty": "Nenhum comando encontrado"
+    "empty": "Nenhum comando encontrado",
+    "menu": "Menu de comandos",
+    "loading": "Carregando comandos"
   },
   "listBoxPopover": {
     "options": "Opções"
@@ -73,6 +75,7 @@
     "time": "Hora",
     "startTime": "Hora de início",
     "endTime": "Hora de término",
+    "showStartCalendar": "Mostrar o calendário da data de início",
     "showEndCalendar": "Mostrar o calendário da data de término",
     "selectWeek": "Selecionar semana",
     "selectMonth": "Selecionar mês",
@@ -102,7 +105,8 @@
   "textInputMapper": {
     "key": "Chave",
     "value": "Valor",
-    "removeMapping": "Remover mapeamento"
+    "removeMapping": "Remover mapeamento",
+    "mapping": "Mapeamento"
   },
   "copySnippet": {
     "title": "Exemplo de código",
@@ -148,10 +152,17 @@
   },
   "layout": {
     "closePanel": "Fechar painel",
-    "goBack": "Voltar"
+    "goBack": "Voltar",
+    "resizePaneRight": "Redimensionar a área (direita)",
+    "resizePaneBottom": "Redimensionar a área (inferior)",
+    "resizeLeftPanel": "Redimensionar o painel esquerdo",
+    "resizeTopPanel": "Redimensionar o painel superior",
+    "resizeRightPanel": "Redimensionar o painel direito",
+    "resizeBottomPanel": "Redimensionar o painel inferior"
   },
   "tree": {
-    "actions": "Ações"
+    "actions": "Ações",
+    "ariaLabel": "Árvore"
   },
   "banner": {
     "hideBanner": "Ocultar banner"
@@ -204,5 +215,27 @@
     "copiedCells_one": "{{count}} célula copiada",
     "copiedCells_other": "{{count}} células copiadas",
     "refreshing": "Atualizando"
+  },
+  "buttonSplit": {
+    "moreOptions": "Mais opções"
+  },
+  "colorInput": {
+    "openColorPicker": "Abrir o seletor de cor"
+  },
+  "colorPicker": {
+    "colorPicker": "Seletor de cor",
+    "colorValue": "Valor da cor",
+    "palette": "Paleta",
+    "colorSpace": "Espaço de cor"
+  },
+  "colorSwatchGroup": {
+    "colors": "Cores",
+    "customColor": "Cor personalizada"
+  },
+  "hotKeys": {
+    "ariaLabel": "Atalhos de teclado",
+    "combination": "Combinação de teclas {{index}}",
+    "key": "Tecla {{key}}",
+    "or": "ou"
   }
 }

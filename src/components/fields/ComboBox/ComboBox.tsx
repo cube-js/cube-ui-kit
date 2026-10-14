@@ -1,5 +1,6 @@
 import {
   KeyboardEvent as AriaKeyboardEvent,
+  AriaLabelingProps,
   CollectionChildren,
   FocusableRef,
   Key,
@@ -520,6 +521,12 @@ interface ComboBoxInputProps {
   comboBoxId: string;
   /** The id of the option under virtual focus, while the popover is open. */
   activeDescendant?: string;
+  /**
+   * The caller's naming and the field's description and message. The input is
+   * the control, so they belong on it rather than on the wrapper.
+   */
+  ariaProps: AriaLabelingProps;
+  isInvalid?: boolean;
 }
 
 const ComboBoxInput = forwardRef<HTMLInputElement, ComboBoxInputProps>(
@@ -546,6 +553,8 @@ const ComboBoxInput = forwardRef<HTMLInputElement, ComboBoxInputProps>(
       hasResults,
       comboBoxId,
       activeDescendant,
+      ariaProps,
+      isInvalid,
     },
     ref,
   ) {
@@ -586,6 +595,8 @@ const ComboBoxInput = forwardRef<HTMLInputElement, ComboBoxInputProps>(
             : undefined
         }
         aria-activedescendant={activeDescendant}
+        aria-invalid={isInvalid || undefined}
+        {...ariaProps}
       />
     );
   },
@@ -1412,6 +1423,12 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
         }
         onChange={handleInputChange}
         onFocus={handleInputFocus}
+        ariaProps={{
+          'aria-label': (props as AriaLabelingProps)['aria-label'],
+          'aria-labelledby': (props as AriaLabelingProps)['aria-labelledby'],
+          'aria-describedby': (props as AriaLabelingProps)['aria-describedby'],
+        }}
+        isInvalid={isInvalid}
       />
       <div data-element="Suffix">
         {suffixPosition === 'before' ? suffix : null}

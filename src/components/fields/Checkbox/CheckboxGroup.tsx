@@ -92,8 +92,12 @@ function CheckboxGroup(
     state,
   );
 
+  // The group semantics go on the group itself, as in `RadioGroup`, not on the
+  // field wrapper: that is only rendered with a label, and an `aria-label`-only
+  // group would lose its role, name and description with it.
   let radioGroup = (
     <CheckGroupElement
+      {...groupProps}
       id={id}
       styles={inputStyles}
       mods={{
@@ -116,7 +120,6 @@ function CheckboxGroup(
 
   return wrapWithField(radioGroup, domRef, {
     ...props,
-    fieldProps: groupProps,
     labelProps: mergeProps(baseLabelProps, labelProps),
   });
 }

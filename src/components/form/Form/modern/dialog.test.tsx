@@ -150,10 +150,10 @@ describe('modern DialogForm', () => {
       if (source === 'Escape') await userEvent.keyboard('{Escape}');
       if (source === 'close button')
         await userEvent.click(screen.getByTestId('ModalCloseButton'));
+      // Behind the open dialog, so hidden from screen readers and nameless to
+      // a role query.
       if (source === 'external')
-        await userEvent.click(
-          screen.getByRole('button', { name: 'Close externally' }),
-        );
+        await userEvent.click(screen.getByText('Close externally'));
       expect(await reopen()).toHaveValue('Initial');
     },
   );

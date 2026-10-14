@@ -19,6 +19,21 @@ vi.mock('../../form/legacy-tooltip', { spy: true });
 vi.mock('../../../_internal/hooks/use-warn');
 
 describe('<Checkbox />', () => {
+  it.each([
+    ['checked', { isSelected: true }],
+    ['indeterminate', { isIndeterminate: true }],
+  ])('hides the %s mark from screen readers', (_, props) => {
+    const { container } = render(<Checkbox label="Accept" {...props} />);
+    const marks = container.querySelectorAll('svg');
+
+    // The input's own state is what a screen reader says; an exposed `<svg>`
+    // is read out as an unnamed graphic.
+    expect(marks.length).toBeGreaterThan(0);
+    for (const svg of Array.from(marks)) {
+      expect(svg.closest('[aria-hidden="true"]')).not.toBeNull();
+    }
+  });
+
   it('should work without form', async () => {
     const { getByRole } = render(<Checkbox>Test</Checkbox>);
     const checkboxElement = getByRole('checkbox');

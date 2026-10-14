@@ -2,9 +2,13 @@ import { ClearPressResponder } from '@react-aria/interactions';
 import { useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 
-import { renderWithRoot, userEvent, waitFor } from '../../../test';
+import { renderWithRoot, screen, userEvent, waitFor } from '../../../test';
+import { startScreenReader } from '../../../test/screen-reader';
 import { Button } from '../../actions/Button';
 import { ItemButton } from '../../actions/ItemButton/ItemButton';
+import { Content } from '../../content/Content';
+import { Header } from '../../content/Header';
+import { Title } from '../../content/Title';
 
 import { Dialog } from './Dialog';
 import { DialogTrigger } from './DialogTrigger';
@@ -455,6 +459,39 @@ describe('<DialogTrigger type="popover" /> with an actions row as the trigger', 
 
     await waitFor(() =>
       expect(baseElement.querySelector('[data-qa="Dialog"]')).toBeNull(),
+    );
+  });
+});
+
+describe('<DialogTrigger /> with a screen reader', () => {
+  it('speaks the dialog by its title, and the trigger again once it closes', async () => {
+    renderWithRoot(
+      <DialogTrigger>
+        <Button>Rename</Button>
+        <Dialog>
+          <Header>
+            <Title>Rename file</Title>
+          </Header>
+          <Content>Pick a new name</Content>
+        </Dialog>
+      </DialogTrigger>,
+    );
+    const reader = await startScreenReader();
+
+    await reader.press('Tab');
+    await reader.press('Enter');
+    await waitFor(async () =>
+      expect(await reader.lastSpokenPhrase()).toBe('dialog, Rename file'),
+    );
+
+    // `Dialog` asks for an `h2` title through its slot.
+    expect(
+      screen.getByRole('heading', { level: 2, name: 'Rename file' }),
+    ).toBeInTheDocument();
+
+    await reader.press('Escape');
+    await waitFor(async () =>
+      expect(await reader.lastSpokenPhrase()).toBe('button, Rename'),
     );
   });
 });

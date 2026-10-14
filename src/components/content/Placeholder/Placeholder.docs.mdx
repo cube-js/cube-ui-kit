@@ -66,3 +66,5 @@ The attribute doesn't depend on the locale, and a `qa` or `aria-label` prop does
 ## Accessibility
 
 Placeholder renders a `region` landmark labelled with the localized "Content is loading" text, so screen-reader users can find content that is still loading. The region has no content, so don't rely on it to announce the loading state: add a status message where one is needed.
+
+Inside a `Skeleton` the placeholders are hidden from screen readers, and the Skeleton itself is the one "Content is loading" region, so a loading page lists one landmark rather than one per bar. The placeholder cells of a table's loading rows are hidden the same way, because the row is already `aria-busy`.

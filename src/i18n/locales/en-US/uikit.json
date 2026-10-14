@@ -64,7 +64,9 @@
   },
   "commandMenu": {
     "searchPlaceholder": "Search commands...",
-    "empty": "No commands found"
+    "empty": "No commands found",
+    "menu": "Command menu",
+    "loading": "Loading commands"
   },
   "listBoxPopover": {
     "options": "Options"
@@ -73,6 +75,7 @@
     "time": "Time",
     "startTime": "Start time",
     "endTime": "End time",
+    "showStartCalendar": "Show calendar for the start date",
     "showEndCalendar": "Show calendar for the end date",
     "selectWeek": "Select week",
     "selectMonth": "Select month",
@@ -102,7 +105,8 @@
   "textInputMapper": {
     "key": "Key",
     "value": "Value",
-    "removeMapping": "Remove mapping"
+    "removeMapping": "Remove mapping",
+    "mapping": "Mapping"
   },
   "copySnippet": {
     "title": "Code example",
@@ -148,10 +152,17 @@
   },
   "layout": {
     "closePanel": "Close panel",
-    "goBack": "Go back"
+    "goBack": "Go back",
+    "resizePaneRight": "Resize pane right",
+    "resizePaneBottom": "Resize pane bottom",
+    "resizeLeftPanel": "Resize left panel",
+    "resizeTopPanel": "Resize top panel",
+    "resizeRightPanel": "Resize right panel",
+    "resizeBottomPanel": "Resize bottom panel"
   },
   "tree": {
-    "actions": "Actions"
+    "actions": "Actions",
+    "ariaLabel": "Tree"
   },
   "banner": {
     "hideBanner": "Hide banner"
@@ -204,5 +215,27 @@
     "copiedCells_one": "{{count}} cell copied",
     "copiedCells_other": "{{count}} cells copied",
     "refreshing": "Refreshing"
+  },
+  "buttonSplit": {
+    "moreOptions": "More options"
+  },
+  "colorInput": {
+    "openColorPicker": "Open the color picker"
+  },
+  "colorPicker": {
+    "colorPicker": "Color picker",
+    "colorValue": "Color value",
+    "palette": "Palette",
+    "colorSpace": "Color space"
+  },
+  "colorSwatchGroup": {
+    "colors": "Colors",
+    "customColor": "Custom color"
+  },
+  "hotKeys": {
+    "ariaLabel": "Keyboard shortcuts",
+    "combination": "Key combination {{index}}",
+    "key": "Key {{key}}",
+    "or": "or"
   }
 }

@@ -49,6 +49,11 @@ export type CubeFieldWrapperProps = ValidationProps & {
   errorMessage?: string | ReactNode;
 
   Component?: ReactElement;
+  /**
+   * @internal The id of the control in `Component`, which its description and
+   * message ids derive from. Set by `wrapWithField`.
+   */
+  controlId?: string;
   /** Custom components that should go outside the field and should not be visible by default. For example: Dialogs */
   children?: ReactNode;
 };

@@ -64,7 +64,9 @@
   },
   "commandMenu": {
     "searchPlaceholder": "Befehle suchen...",
-    "empty": "Keine Befehle gefunden"
+    "empty": "Keine Befehle gefunden",
+    "menu": "Befehlsmenü",
+    "loading": "Befehle werden geladen"
   },
   "listBoxPopover": {
     "options": "Optionen"
@@ -73,6 +75,7 @@
     "time": "Uhrzeit",
     "startTime": "Startzeit",
     "endTime": "Endzeit",
+    "showStartCalendar": "Kalender für das Startdatum anzeigen",
     "showEndCalendar": "Kalender für das Enddatum anzeigen",
     "selectWeek": "Woche auswählen",
     "selectMonth": "Monat auswählen",
@@ -102,7 +105,8 @@
   "textInputMapper": {
     "key": "Schlüssel",
     "value": "Wert",
-    "removeMapping": "Zuordnung entfernen"
+    "removeMapping": "Zuordnung entfernen",
+    "mapping": "Zuordnung"
   },
   "copySnippet": {
     "title": "Codebeispiel",
@@ -148,10 +152,17 @@
   },
   "layout": {
     "closePanel": "Panel schließen",
-    "goBack": "Zurück"
+    "goBack": "Zurück",
+    "resizePaneRight": "Bereichsgröße ändern (rechts)",
+    "resizePaneBottom": "Bereichsgröße ändern (unten)",
+    "resizeLeftPanel": "Größe des linken Panels ändern",
+    "resizeTopPanel": "Größe des oberen Panels ändern",
+    "resizeRightPanel": "Größe des rechten Panels ändern",
+    "resizeBottomPanel": "Größe des unteren Panels ändern"
   },
   "tree": {
-    "actions": "Aktionen"
+    "actions": "Aktionen",
+    "ariaLabel": "Baum"
   },
   "banner": {
     "hideBanner": "Banner ausblenden"
@@ -204,5 +215,27 @@
     "copiedCells_one": "{{count}} Zelle kopiert",
     "copiedCells_other": "{{count}} Zellen kopiert",
     "refreshing": "Wird aktualisiert"
+  },
+  "buttonSplit": {
+    "moreOptions": "Weitere Optionen"
+  },
+  "colorInput": {
+    "openColorPicker": "Farbauswahl öffnen"
+  },
+  "colorPicker": {
+    "colorPicker": "Farbauswahl",
+    "colorValue": "Farbwert",
+    "palette": "Palette",
+    "colorSpace": "Farbraum"
+  },
+  "colorSwatchGroup": {
+    "colors": "Farben",
+    "customColor": "Benutzerdefinierte Farbe"
+  },
+  "hotKeys": {
+    "ariaLabel": "Tastenkürzel",
+    "combination": "Tastenkombination {{index}}",
+    "key": "Taste {{key}}",
+    "or": "oder"
   }
 }

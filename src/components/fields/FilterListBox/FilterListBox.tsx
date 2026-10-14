@@ -1047,6 +1047,12 @@ export const FilterListBox = forwardRef(function FilterListBox<
             ? getListBoxOptionId(listBoxId, activeOptionKey)
             : undefined
         }
+        // The search input is the control the label points at, so it also
+        // takes the caller's naming and the field's description and message.
+        aria-label={(props as any)['aria-label']}
+        aria-labelledby={(props as any)['aria-labelledby']}
+        aria-describedby={(props as any)['aria-describedby']}
+        aria-invalid={isInvalid || undefined}
         onChange={(e) => {
           handleSearchChange(e.target.value);
         }}

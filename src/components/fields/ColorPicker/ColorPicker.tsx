@@ -19,6 +19,7 @@ import {
 import { Placement } from 'react-aria';
 
 import { useEvent } from '../../../_internal';
+import { useI18n } from '../../../i18n';
 import { FieldBaseProps } from '../../../shared';
 import { extractStyles } from '../../../utils/styles';
 import { ItemButton } from '../../actions';
@@ -135,6 +136,8 @@ export interface CubeColorPickerProps
   /** Styles of the color swatch. */
   swatchStyles?: Styles;
   'aria-label'?: string;
+  /** Ids of elements that also describe the trigger, beside the field's own description and message. */
+  'aria-describedby'?: string;
 }
 
 /**
@@ -146,6 +149,7 @@ export const ColorPicker = forwardRef(function ColorPicker(
   allProps: CubeColorPickerProps,
   ref: ForwardedRef<HTMLElement>,
 ) {
+  const { t } = useI18n();
   const props = useFieldProps(allProps, {
     defaultValidationTrigger: 'onChange',
     valuePropsMapper: ({ value, onChange }) => ({
@@ -185,6 +189,7 @@ export const ColorPicker = forwardRef(function ColorPicker(
     isValid,
     autoFocus,
     'aria-label': ariaLabel,
+    'aria-describedby': ariaDescribedBy,
   } = props;
 
   const styles = extractStyles(props, [...OUTER_STYLES, ...BLOCK_STYLES]);
@@ -282,13 +287,16 @@ export const ColorPicker = forwardRef(function ColorPicker(
           isDisabled={isEditingDisabled || isReadOnly}
           autoFocus={autoFocus}
           aria-label={ariaLabel}
+          // The trigger is the control, so the field's description and
+          // message describe it.
+          aria-describedby={ariaDescribedBy}
           mods={{ placeholder: !color }}
           styles={triggerStyles}
         >
           {label}
         </ItemButton>
         <Dialog
-          aria-label="Color picker"
+          aria-label={t('colorPicker.colorPicker', 'Color picker')}
           width="max-content"
           styles={POPOVER_STYLES}
         >
@@ -302,7 +310,7 @@ export const ColorPicker = forwardRef(function ColorPicker(
               previewFormat={format}
               input={
                 <ColorInput
-                  aria-label="Color value"
+                  aria-label={t('colorPicker.colorValue', 'Color value')}
                   format={format}
                   value={colorText}
                   isDisabled={isEditingDisabled}
@@ -313,7 +321,7 @@ export const ColorPicker = forwardRef(function ColorPicker(
               swatches={
                 swatches?.length ? (
                   <ColorSwatchGroup
-                    aria-label="Palette"
+                    aria-label={t('colorPicker.palette', 'Palette')}
                     styles={PALETTE_STYLES}
                     colors={swatches}
                     columns={swatchColumns}

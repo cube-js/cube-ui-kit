@@ -9,6 +9,7 @@ import {
   renderWithRoot,
   userEvent,
 } from '../../../test/index';
+import { startScreenReader } from '../../../test/screen-reader';
 
 import { splitTagText, TagInput } from './TagInput';
 
@@ -953,6 +954,33 @@ describe('<TagInput />', () => {
 
       expect(container.querySelector('[role="status"]')).toHaveTextContent(
         'Enter an email address',
+      );
+    });
+
+    it('speaks the same rejection again when it repeats', async () => {
+      const { getByRole } = render(
+        <TagInput aria-label="Recipients" validateTag={validateEmail} />,
+      );
+      const input = getByRole('textbox');
+      const reader = await startScreenReader();
+
+      await userEvent.type(input, 'bad{Enter}');
+      await waitFor(async () =>
+        expect(await reader.spokenPhraseLog()).toContain(
+          'polite: Enter an email address',
+        ),
+      );
+
+      // Identical text in an unchanged node is not announced again. The status
+      // region has to replace its node for the second rejection to be heard.
+      await reader.clearSpokenPhraseLog();
+      await userEvent.clear(input);
+      await userEvent.type(input, 'worse{Enter}');
+
+      await waitFor(async () =>
+        expect(await reader.spokenPhraseLog()).toContain(
+          'polite: Enter an email address',
+        ),
       );
     });
 

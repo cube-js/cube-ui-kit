@@ -1,6 +1,7 @@
 import { CONTAINER_STYLES, filterBaseProps, tasty } from '@tenphi/tasty';
 import { forwardRef, ReactNode, useMemo, useState } from 'react';
 
+import { useI18n } from '../../../i18n';
 import { DirectionIcon } from '../../../icons/DirectionIcon';
 import { mergeProps } from '../../../utils/react';
 import { extractStyles, mergeStyleLayers } from '../../../utils/styles';
@@ -91,6 +92,7 @@ export const ButtonSplit = forwardRef<HTMLDivElement, CubeButtonSplitProps>(
       ...rest
     } = props;
 
+    const { t } = useI18n();
     const isControlled = controlledActionKey !== undefined;
     const [uncontrolledKey, setUncontrolledKey] = useState(
       () => defaultActionKey ?? actions?.[0]?.key,
@@ -174,7 +176,7 @@ export const ButtonSplit = forwardRef<HTMLDivElement, CubeButtonSplitProps>(
                   theme={theme}
                   size={size}
                   isDisabled={isDisabled}
-                  aria-label="More options"
+                  aria-label={t('buttonSplit.moreOptions', 'More options')}
                   icon={({ pressed }) => (
                     <DirectionIcon to={pressed ? 'up' : 'down'} />
                   )}
