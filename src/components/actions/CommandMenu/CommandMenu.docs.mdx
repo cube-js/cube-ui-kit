@@ -223,7 +223,7 @@ The CommandMenu component provides comprehensive keyboard support:
 
 The named search input has `searchbox` semantics and controls a `menu`, rather than a listbox of form options. Its `aria-activedescendant` points to the actual highlighted menu item, including items inside sections and native navigation anchors. Generated IDs are unique per palette. A plain command retains its consumer-provided DOM `id`; keep explicit IDs non-empty and unique within the page. Empty and loading states clear references to items that are no longer rendered.
 
-Give the palette an `aria-label` and provide a descriptive `searchPlaceholder`, which also names the search input. Screen-reader wording and virtual-focus behavior vary by reader and browser; verify the consuming application's browser/reader combination. The [WAI-ARIA active-descendant requirements](https://www.w3.org/TR/wai-aria-1.2/#aria-activedescendant) permit a searchbox to reference an item owned by its controlled menu.
+Give the palette an `aria-label` or `aria-labelledby` to name its search input, and use `aria-describedby` for search instructions. `searchPlaceholder` supplies the input name when no explicit name is provided. Screen-reader wording and virtual-focus behavior vary by reader and browser; verify the consuming application's browser/reader combination. The [WAI-ARIA active-descendant requirements](https://www.w3.org/TR/wai-aria-1.2/#aria-activedescendant) permit a searchbox to reference an item owned by its controlled menu.
 
 ### Focus Management
 

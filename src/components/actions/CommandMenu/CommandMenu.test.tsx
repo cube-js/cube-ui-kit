@@ -129,7 +129,11 @@ describe('CommandMenu', () => {
 
     // First item should be virtually focused (aria-activedescendant)
     expectActiveItem(searchInput, '1');
-    expect(document.getElementById(searchInput.getAttribute('aria-activedescendant')!)).toHaveAccessibleName('Create file');
+    expect(
+      document.getElementById(
+        searchInput.getAttribute('aria-activedescendant')!,
+      ),
+    ).toHaveAccessibleName('Create file');
 
     // Press arrow down again - should move to second item
     await user.keyboard('{ArrowDown}');
@@ -1151,7 +1155,7 @@ describe('CommandMenu', () => {
       </>,
     );
 
-    const [first, second] = screen.getAllByRole('combobox');
+    const [first, second] = screen.getAllByRole('searchbox');
 
     await user.click(first);
     await user.keyboard('{ArrowDown}');
@@ -1164,8 +1168,12 @@ describe('CommandMenu', () => {
     expect(firstId).not.toBe(secondId);
     // An id reference with a space in it names two ids, neither of them.
     expect(firstId).not.toMatch(/\s/);
-    expect(document.getElementById(firstId)).toHaveTextContent('Create file');
-    expect(document.getElementById(secondId)).toHaveTextContent('Create file');
+    expect(document.getElementById(firstId)).toHaveAccessibleName(
+      'Create file',
+    );
+    expect(document.getElementById(secondId)).toHaveAccessibleName(
+      'Create file',
+    );
   });
 
   it('names the search input, not the wrapper, with its aria-label', () => {
@@ -1177,7 +1185,7 @@ describe('CommandMenu', () => {
       </CommandMenu>,
     );
 
-    expect(screen.getByRole('combobox')).toHaveAccessibleName('Commands');
+    expect(screen.getByRole('searchbox')).toHaveAccessibleName('Commands');
     expect(screen.getByTestId('CommandMenu')).not.toHaveAttribute('aria-label');
   });
 

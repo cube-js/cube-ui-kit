@@ -194,7 +194,6 @@ function MenuItemContent<T>(
   // Filter out service props (react-stately and parent-handled props)
   // All remaining props are safe to pass to Item component
   const {
-    id: ownId,
     to: _to,
     navigationOptions: _navigationOptions,
     routerOptions: _routerOptions,
@@ -243,7 +242,7 @@ function MenuItemContent<T>(
     isDisabled,
   } = useMenuItem(
     {
-      id: id ?? ownId,
+      id: id ?? itemProps.id,
       isSelected: state.selectionManager.isSelected(key),
       isDisabled: isDisabledKey,
       'aria-label': item['aria-label'],

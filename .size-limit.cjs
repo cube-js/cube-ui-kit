@@ -353,7 +353,13 @@ module.exports = [
     // (`modal-containment.ts` and React Aria's `ariaHideOutside`), linked field
     // descriptions, and 23 accessible-name strings in each of the twelve
     // locales. Allow 611 kB, about 840 B headroom; confirm in CI.
-    limit: '611kB',
+    //
+    // Native Menu navigation (CUB-5529), rebased onto screen reader fixes:
+    // fresh builds measure 615,416 B against main's 610,161 B at 5acedc3e
+    // on the same dependencies (+5,255 B). Full-row native anchors retain
+    // Item layout, names, descriptions, inline actions and browser gestures.
+    // Allow 616 kB with 584 B headroom; confirm the exact figure in Linux CI.
+    limit: '616kB',
   },
   {
     name: 'Tree shaking (just a Button)',
@@ -460,6 +466,11 @@ module.exports = [
     // with them this entry measured 167.52 kB. The other 1.7 kB is modal
     // containment, which `Menu`'s tray and `Tooltip` reach, and the `Menu`
     // naming fixes. Allow 153 kB, about 360 B headroom; confirm in CI.
-    limit: '153kB',
+    //
+    // Native Menu navigation (CUB-5529) shares the Item/Tooltip and Menu
+    // paths reached by Button.Split. Fresh builds measure 159,494 B against
+    // main's 152,636 B at 5acedc3e with matching dependencies (+6,858 B).
+    // Allow 160 kB with 506 B headroom; confirm the exact figure in Linux CI.
+    limit: '160kB',
   },
 ];

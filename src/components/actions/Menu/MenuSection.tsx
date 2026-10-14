@@ -16,8 +16,7 @@ export interface CubeMenuSectionProps<T> extends Omit<MenuItemProps<T>, 'id'> {
 
 /** @private */
 export function MenuSection<T>(props: CubeMenuSectionProps<T>) {
-  const { item, state, styles, itemStyles, headingStyles, size } =
-    props;
+  const { item, state, styles, itemStyles, headingStyles, size } = props;
   const heading = item.rendered;
   const { itemProps, headingProps, groupProps } = useMenuSection({
     heading,

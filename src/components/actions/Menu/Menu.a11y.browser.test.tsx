@@ -3,6 +3,7 @@ import { flushSync } from 'react-dom';
 import { userEvent } from 'vitest/browser';
 
 import { act, render, screen, waitFor } from '../../../test';
+import { readWithScreenReader } from '../../../test/screen-reader';
 import { Root } from '../../Root';
 import { Button } from '../Button/Button';
 
@@ -741,3 +742,81 @@ describe('Mixed menu accessibility', () => {
     },
   );
 });
+
+it('reads the focused primary and inline menu items during keyboard activation', async () => {
+  const calls: string[] = [];
+  const itemAction = vi.fn(() => calls.push('item'));
+  const menuAction = vi.fn((key) => calls.push(`menu:${key}`));
+  const navigate = vi.fn(() => calls.push('navigate'));
+  const settings = vi.fn();
+  const remove = vi.fn();
+  const savedFocus = vi.fn();
+  render(
+    <Root navigation={{ useHref: String, useNavigate: () => navigate }}>
+      <Menu aria-label="Workbook actions" onAction={menuAction}>
+        <Menu.Item
+          key="create"
+          onAction={itemAction}
+          actions={
+            <Menu.Item.Action aria-label="Create settings" onPress={settings} />
+          }
+        >
+          Create workbook
+        </Menu.Item>
+        <Menu.Item key="unavailable" to="/unavailable" isDisabled>
+          Unavailable workbook
+        </Menu.Item>
+        <Menu.Item
+          key="saved"
+          to="/saved"
+          onAction={itemAction}
+          onFocus={savedFocus}
+          description="Open the saved workbook"
+          actions={
+            <Menu.Item.Action
+              aria-label="Delete saved workbook"
+              onPress={remove}
+            />
+          }
+        >
+          Saved workbook
+        </Menu.Item>
+        <Menu.Item key="last">Last command</Menu.Item>
+      </Menu>
+    </Root>,
+  );
+  await act(() =>
+    screen.getByRole('menuitem', { name: 'Create workbook' }).focus(),
+  );
+  for (const [name, key] of [
+    ['Create workbook', 'Enter'],
+    ['Create settings', 'Space'],
+    ['Saved workbook', 'Enter'],
+    ['Delete saved workbook', 'Space'],
+    ['Last command', undefined],
+  ] as const) {
+    const item = screen.getByRole('menuitem', { name });
+    await waitFor(() => expect(item).toHaveFocus());
+    // Inline actions stop focusin bubbling to the simulator's body listener.
+    // Read the actual focused control; native keys verify the focus movement.
+    const spoken = await readWithScreenReader(item);
+    expect(spoken[0]).toContain(`menuitem, ${name}`);
+    if (name === 'Saved workbook')
+      expect(spoken[0]).toContain('Open the saved workbook');
+    if (key)
+      await act(() => userEvent.keyboard(key === 'Space' ? ' ' : '{Enter}'));
+    if (name !== 'Last command')
+      await act(() => userEvent.keyboard('{ArrowDown}'));
+  }
+  expect(calls).toEqual([
+    'item',
+    'menu:create',
+    'item',
+    'menu:saved',
+    'navigate',
+  ]);
+  expect(itemAction).toHaveBeenCalledTimes(2);
+  expect(settings).toHaveBeenCalledTimes(1);
+  expect(remove).toHaveBeenCalledTimes(1);
+  expect(savedFocus).toHaveBeenCalledTimes(1);
+}, 20000);
