@@ -77,6 +77,40 @@ function Table({
 }
 
 describe('ItemTable body column window', () => {
+  it('retains cells through buffered horizontal movement and releases the refill at rest', async () => {
+    renderWithRoot(<Table />);
+    await vi.waitFor(() => {
+      expect(cell('c0')).toBeInTheDocument();
+      expect(scroller().parentElement).toHaveAttribute('data-scroll-x');
+    });
+    await new Promise((resolve) =>
+      requestAnimationFrame(() => requestAnimationFrame(resolve)),
+    );
+    await scrollTo(160);
+    await vi.waitFor(() => expect(cell('c8')).toBeInTheDocument());
+    const retained = Array.from(
+      bodyRow().querySelectorAll('[data-element="Cell"]'),
+    );
+    await scrollTo(240);
+    const moved = Array.from(
+      bodyRow().querySelectorAll('[data-element="Cell"]'),
+    );
+    expect(moved).toHaveLength(retained.length);
+    expect(moved.every((element, index) => element === retained[index])).toBe(
+      true,
+    );
+    for (const key of ['c2', 'c3', 'c4', 'c5', 'c6']) {
+      expect(cell(key)).toBeInTheDocument();
+      expect(cell(key)!.getBoundingClientRect().left).toBeCloseTo(
+        header(key).getBoundingClientRect().left,
+        0,
+      );
+    }
+    await vi.waitFor(() => expect(cell('c8')).not.toBeInTheDocument());
+    expect(bodyRow().getBoundingClientRect().height).toBe(41);
+    expect(scroller().scrollWidth).toBeGreaterThanOrEqual(15000);
+  });
+
   it('bounds wide body cells while preserving scroll extent, headers and logical indices', async () => {
     renderWithRoot(<Table data={rows(2000)} />);
     await vi.waitFor(() =>

@@ -19,6 +19,7 @@ export function useTableTooltipRefresh(
   scroller: HTMLDivElement | null,
   isScrolling: boolean,
   onAppearanceChange?: () => void,
+  onRest?: () => void,
 ) {
   // A commit can change inherited appearance without changing the box or
   // font-set size. Refresh at rest, including the commit that settles scroll.
@@ -26,6 +27,8 @@ export function useTableTooltipRefresh(
     const root = scroller?.parentElement;
     if (root && !isScrolling) {
       onAppearanceChange?.();
+      // Range buffers settle here, separately from mid-gesture appearance.
+      onRest?.();
       refreshAutoTooltipsWithin(root);
     }
   });

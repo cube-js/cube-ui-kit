@@ -2,6 +2,7 @@ import { act, renderHook } from '@testing-library/react';
 
 import {
   canWindowColumns,
+  getBufferedColumnWindowRange,
   getColumnWindowRange,
   getColumnWindowSegments,
   useColumnWindow,
@@ -34,6 +35,103 @@ function layout(cols = columns()): CubeTableColumnLayout {
 }
 
 describe('column window model', () => {
+  it('reuses the protected buffer and refills only the newly uncovered edge', () => {
+    const current = layout();
+    const initial = getBufferedColumnWindowRange(current, null, 0, 1000);
+    expect(initial).toEqual(getColumnWindowRange(current, 0, 1000));
+    let previous = initial;
+    let changes = 0;
+    for (let step = 1; step <= 60; step++) {
+      const offset = step * 160;
+      const next = getBufferedColumnWindowRange(
+        current,
+        previous,
+        offset,
+        1000,
+      );
+      const required = getColumnWindowRange(current, offset, 1000);
+      expect(next.first).toBeLessThanOrEqual(required.first);
+      expect(next.last).toBeGreaterThanOrEqual(required.last);
+      if (next !== previous) changes++;
+      previous = next;
+    }
+    expect(changes).toBeLessThan(40);
+    const backwards = getBufferedColumnWindowRange(
+      current,
+      previous,
+      160,
+      1000,
+    );
+    expect(backwards.first).toBe(0);
+    expect(backwards.last).toBe(getColumnWindowRange(current, 160, 1000).last);
+  });
+
+  it('keeps both protected edges with variable widths, pins, reversals and jumps', () => {
+    const current = layout();
+    current.columns.forEach((column, index) => {
+      column.width = index % 3 === 0 ? 20 : index % 3 === 1 ? 150 : 1000;
+    });
+    current.totalWidth = current.columns.reduce(
+      (sum, column) => sum + column.width!,
+      0,
+    );
+    current.pinnedStartWidth = 170;
+    current.pinnedEndWidth = 150;
+    let previous: ReturnType<typeof getColumnWindowRange> | null = null;
+    for (const offset of [0, 160, 320, 480, 160, 0, 20000, 40, 14000]) {
+      const next = getBufferedColumnWindowRange(current, previous, offset, 600);
+      const required = getColumnWindowRange(current, offset, 600);
+      expect(next.first).toBeLessThanOrEqual(required.first);
+      expect(next.last).toBeGreaterThanOrEqual(required.last);
+      expect(required.first - next.first).toBeLessThanOrEqual(1);
+      expect(next.last - required.last).toBeLessThanOrEqual(1);
+      previous = next;
+    }
+    const required = getColumnWindowRange(current, 14000, 3000);
+    const middle = Math.floor((required.first + required.last) / 2);
+    expect(
+      getBufferedColumnWindowRange(
+        current,
+        { first: middle, last: middle },
+        14000,
+        3000,
+      ),
+    ).toEqual(required);
+    expect(getBufferedColumnWindowRange(current, null, 14000, 3000)).toEqual(
+      required,
+    );
+    current.columns[99].width! += 0.5;
+    current.totalWidth! += 0.5;
+    const offset = Math.floor(current.totalWidth! - 600);
+    expect(
+      getBufferedColumnWindowRange(current, previous, offset, 600),
+    ).toEqual(getColumnWindowRange(current, offset, 600));
+  });
+
+  it('drops surplus narrow cells and collapses the buffer at scroll endpoints', () => {
+    const current = layout();
+    current.columns.forEach((column) => {
+      column.width = 20;
+    });
+    current.totalWidth = 2000;
+    let previous: ReturnType<typeof getColumnWindowRange> | null = null;
+    for (const offset of [160, 320, 480, 640, 800, 1000, 800, 640, 320, 0]) {
+      const next = getBufferedColumnWindowRange(
+        current,
+        previous,
+        offset,
+        1000,
+      );
+      const required = getColumnWindowRange(current, offset, 1000);
+      expect(next.first).toBeLessThanOrEqual(required.first);
+      expect(next.last).toBeGreaterThanOrEqual(required.last);
+      expect(required.first - next.first).toBeLessThanOrEqual(1);
+      expect(next.last - required.last).toBeLessThanOrEqual(1);
+      if (offset === 0 || offset === 1000) expect(next).toEqual(required);
+      previous = next;
+    }
+  });
+
   it('includes intersecting columns and an overscan band at both edges', () => {
     expect(getColumnWindowRange(layout(), 6000, 600)).toEqual({
       first: 38,
@@ -226,6 +324,10 @@ describe('column window lifecycle', () => {
     changed.columns[0].width = 1000;
     changed.totalWidth! += 850;
     rerender({ scroller: second, enabled: true, resolved: changed });
+    expect(
+      result.current.segments.some((segment) => segment.column?.key === 'c73'),
+    ).toBe(true);
+    act(() => result.current.resetRange());
     expect(
       result.current.segments.some((segment) => segment.column?.key === 'c73'),
     ).toBe(true);

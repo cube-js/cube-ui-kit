@@ -641,7 +641,11 @@ export function TableView<T = any>(props: TableViewProps<T>) {
   const textSlotProps = useSlotProps({}, 'text');
   // DataTable's default t4 preset has the same single-line cell layout.
   // Consumer typography overrides need the complete intrinsic body layout.
-  const { segments: bodyColumns, refreshAppearance } = useColumnWindow(
+  const {
+    segments: bodyColumns,
+    refreshAppearance,
+    resetRange,
+  } = useColumnWindow(
     layout,
     scrollerEl,
     isVirtualized !== false &&
@@ -1788,6 +1792,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
     scrollerEl,
     virtualizer.isScrolling,
     refreshAppearance,
+    resetRange,
   );
 
   const focusedTreeKey = tree?.state.selectionManager.focusedKey;

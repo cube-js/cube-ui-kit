@@ -566,6 +566,8 @@ Virtualization is skipped for the empty and error states, and turns off entirely
 
 Wide bounded tables also window default text cells horizontally, with a small overscan band. Headers and the complete column layout remain mounted, so header Tab order, menus, resizing, sticky columns and logical ARIA indices remain available. Offscreen body runs become hidden colspan spacers; scrolling mounts their text cells when they approach the viewport.
 
+Small horizontal moves reuse the mounted buffer rather than rebuilding rows at every column boundary. The moving edge refills while retaining the ahead coverage; extra cells are released when scrolling settles, so subsequent vertical scrolling keeps its ordinary body window.
+
 Pinned and structural columns, row headers, the tree column, wrapping columns, custom renderers and per-column cell styles remain mounted. This preserves row naming, controls, drafts and measured row heights. Arbitrary `cellProps`, custom body/row/cell styling, `SlotProvider` text overrides or text/descendant overrides supplied through `styles` keep the complete body layout. When the row-height floor is below the inherited text line box, the body also keeps all columns, since offscreen text can determine intrinsic height. Relative row-height tokens also keep the complete body. This check follows ancestor typography and size-token changes, including viewport media queries. Auto-height and explicitly disabled virtualization render all columns.
 
 ```jsx
