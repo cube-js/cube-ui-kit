@@ -1402,6 +1402,7 @@ export const NavigationLinks: StoryFn<CubeCommandMenuProps<object>> = () => (
   </CommandMenu>
 );
 
+NavigationLinks.storyName = 'Mixed commands and links';
 // Navigation semantics and virtual focus keep the existing palette appearance.
 NavigationLinks.parameters = NO_SNAPSHOT;
 NavigationLinks.play = async ({ canvasElement }) => {
@@ -1416,6 +1417,13 @@ NavigationLinks.play = async ({ canvasElement }) => {
   expect(destination).toHaveAttribute('href', '/workbooks/saved?view=table');
   expect(destination).not.toHaveAttribute('aria-hidden');
   expect(destination).toHaveAccessibleDescription('Open the saved workbook');
+  const bounds = destination.closest('li')!.getBoundingClientRect();
+  expect(
+    document
+      .elementFromPoint(bounds.right - 8, bounds.top + bounds.height / 2)
+      ?.closest('a'),
+  ).toHaveAttribute('href', '/workbooks/saved?view=table');
+
   expect(canvas.queryByRole('menuitem', { name: 'Browse all' })).toBeNull();
   await waitFor(() => {
     expect(search).toHaveFocus();
@@ -1426,3 +1434,24 @@ NavigationLinks.play = async ({ canvasElement }) => {
     );
   });
 };
+
+export const NavigationOnly: StoryFn<CubeCommandMenuProps<object>> = () => (
+  <CommandMenu aria-label="Workbook navigation" width="36x">
+    <CommandMenu.Item key="all" to="/workbooks">
+      All workbooks
+    </CommandMenu.Item>
+    <CommandMenu.Item
+      key="recent"
+      to="/workbooks/recent"
+      keywords={['history']}
+    >
+      Recent workbooks
+    </CommandMenu.Item>
+    <CommandMenu.Item key="docs" to="!https://cube.dev/docs">
+      Documentation
+    </CommandMenu.Item>
+  </CommandMenu>
+);
+
+// Navigation and search reuse the palette layout already covered by visual stories.
+NavigationOnly.parameters = NO_SNAPSHOT;

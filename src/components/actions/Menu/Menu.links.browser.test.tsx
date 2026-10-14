@@ -62,7 +62,15 @@ describe('Menu navigation links', () => {
       );
       expect(placeholder).toBeEmptyDOMElement();
       expect(placeholder.getBoundingClientRect().width).toBe(48);
-      await userEvent.click(placeholder);
+      const target = link ? row : placeholder;
+      const targetRect = target.getBoundingClientRect();
+      const placeholderRect = placeholder.getBoundingClientRect();
+      await userEvent.click(target, {
+        position: {
+          x: placeholderRect.left + placeholderRect.width / 2 - targetRect.left,
+          y: placeholderRect.top + placeholderRect.height / 2 - targetRect.top,
+        },
+      });
       expect(onAction).toHaveBeenCalledTimes(1);
       expect(navigate).toHaveBeenCalledTimes(link ? 1 : 0);
       if (link) expect(navigate).toHaveBeenCalledWith(destination, undefined);
@@ -80,8 +88,6 @@ describe('Menu navigation links', () => {
   }
 
   function getNativeLink(item: HTMLElement): HTMLAnchorElement {
-    if (item.matches('a[data-menu-native-link]'))
-      return item as HTMLAnchorElement;
     const label = getRowElement(item).querySelector('[data-element=Label]')!;
     return (
       label.closest<HTMLAnchorElement>('a') ??
@@ -828,7 +834,7 @@ describe('Menu navigation links', () => {
       screen.getByRole('menuitem', { name: 'Create workbook' }).tagName,
     ).toBe('LI');
 
-    await userEvent.click(link);
+    await userEvent.click(getNativeLink(link));
 
     expect(navigate).toHaveBeenCalledExactlyOnceWith(destination, undefined);
     expect(onItemAction).toHaveBeenCalledTimes(1);
@@ -950,7 +956,7 @@ describe('Menu navigation links', () => {
     expect(getRowElement(link)).not.toHaveAttribute('to');
     expect(getRowElement(link)).not.toHaveAttribute('navigationOptions');
     expect(resolve).toHaveBeenCalledWith(path, { relative: 'path' });
-    await userEvent.click(link);
+    await userEvent.click(getNativeLink(link));
     expect(navigate).toHaveBeenCalledExactlyOnceWith(path, options);
   });
 
@@ -1120,7 +1126,7 @@ describe('Menu navigation links', () => {
       'href',
       '/workbooks/next?chatId=abc#results',
     );
-    await userEvent.click(link);
+    await userEvent.click(getNativeLink(link));
     expect(screen.getByRole('status', { name: 'Location' })).toHaveTextContent(
       '/workbooks/next?chatId=abc#results',
     );
@@ -1477,7 +1483,7 @@ describe('Menu navigation links', () => {
       const link = screen.getByRole('menuitem', { name: 'Destination' });
       expect(getNativeLink(link)).toHaveAttribute('href', href);
       expect(getNativeLink(link)).not.toHaveAttribute('target');
-      await userEvent.click(link);
+      await userEvent.click(getNativeLink(link));
       expect(navigate).toHaveBeenCalledExactlyOnceWith(href, undefined);
     },
   );
@@ -1515,7 +1521,7 @@ describe('Menu navigation links', () => {
     expect(getNativeLink(link).tagName).toBe('A');
     expect(getNativeLink(link)).toHaveAttribute('href', '');
     expect(getNativeLink(link).href).toBe(location.href);
-    await userEvent.click(link);
+    await userEvent.click(getNativeLink(link));
     expect(navigate).not.toHaveBeenCalled();
     expect(onSelectionChange).not.toHaveBeenCalled();
   });
@@ -1557,7 +1563,12 @@ describe('Menu navigation links', () => {
       expect(anchor).toHaveAttribute('href', '');
       // Both destinations return 204: a faulty source reload cannot reload the test runner.
       history.replaceState(null, '', sourcePath);
-      anchor.href = location.origin + pathname;
+      for (const cell of Array.from(
+        getRowElement(row).querySelectorAll<HTMLAnchorElement>(
+          'a[data-menu-native-link]',
+        ),
+      ))
+        cell.href = location.origin + pathname;
       try {
         if (activation === 'blank-pointer') {
           await userEvent.click(

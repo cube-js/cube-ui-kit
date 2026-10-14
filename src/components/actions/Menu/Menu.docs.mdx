@@ -221,7 +221,9 @@ An item's `onAction()` and the Menu's `onAction(key)` compose: when both are sup
 
 Use the item callback for a command that belongs to that item, or handle commands centrally using the Menu callback and item keys. Supplying both is useful for additional observation, such as recording an activation; avoid executing the same command in both callbacks.
 
-The label, description and leading icon provide native anchors; use these content cells for browser link commands. The complete row retains ordinary click activation. The primary native anchor owns the menu-item semantics and keyboard focus, while Item's original list element owns layout and styling. Command content has no link destination.
+The native link target covers the complete row, including padding, gaps and whitespace. Right-click anywhere on that target offers the browser's link commands. Independent controls in the prefix, suffix or actions slots retain their own targets. The primary native anchor owns menu-item semantics and keyboard focus, while Item's original list element owns layout and styling. Command content has no link destination.
+
+<Story of={MenuStories.NavigationOnly} />
 
 <Story of={MenuStories.NavigationLinks} />
 
@@ -255,9 +257,9 @@ Keep the label and description non-interactive: text, icons and decorative badge
 
 #### Focus and Selector Migration
 
-The original `li` retains Item's layout, style slots, modifiers and forwarded ref. A navigation row, or a command row with inline actions, places the primary menu-item role and DOM focus on its first visible content anchor: Label, then Description, then the leading Icon. A command without inline actions keeps its menu-item role and focus on the `li`. The command anchor has no `href`. Inline actions remain outside that primary focus target.
+The original `li` retains Item's layout, style slots, modifiers and forwarded ref. A navigation row, or a command row with inline actions, places the primary menu-item role and DOM focus on a native anchor covering the row. A command without inline actions keeps its menu-item role and focus on the `li`. The command anchor has no `href`. Inline actions remain outside that primary focus target.
 
-Keep at least one of those content slots visible, and give icon-only items a meaningful `aria-label` or `aria-labelledby`. If styles hide the active Label while a Description or Icon remains visible, the primary semantics and focus move together to that slot. Explicit accessible names remain in effect. Heading items retain their heading element and level.
+Give every item a meaningful accessible name; use `aria-label` or `aria-labelledby` for icon-only rows. Hiding an individual content slot does not move the primary focus target. Explicit accessible names remain in effect. Heading items retain their heading element and level.
 
 Use the item's `focused` modifier for row focus styles. It marks the active collection row, including the row associated with a focused inline action. Existing style props and named sub-element overrides continue to style the same layout elements.
 
@@ -281,7 +283,7 @@ Consumer CSS that literally targets `li:focus` or assumes the `li` has `role="me
 
 Do not use the forwarded row ref or a role selector as a proxy for the primary focus target. A row's semantic role can move to its anchor when a destination or inline action is added. `:focus-within` tracks DOM focus anywhere inside the row; use the `focused` modifier for the collection's active-row state, including virtual focus.
 
-Use named style slots or their `data-element` markers for content styling. Selectors that depend on the Label, Description or Icon being a particular HTML tag need to allow their native anchor host.
+Use named style slots or their `data-element` markers for content styling. Selectors that depend on the Label, Description or Icon being a particular HTML tag need to allow their native anchor host. A private native target is also a child of the row; use slot markers instead of child-position selectors for content.
 
 #### Example with Rich Items
 

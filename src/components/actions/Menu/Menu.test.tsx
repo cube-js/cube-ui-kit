@@ -148,7 +148,7 @@ describe('<Menu />', () => {
       });
       const row = primary.closest('li')!;
       const anchors = row.querySelectorAll('a');
-      expect(anchors).toHaveLength(2);
+      expect(Array.from(anchors)).toContain(primary);
       for (const anchor of anchors)
         expect(anchor).toHaveAttribute('hreflang', 'fr');
       expect(row).not.toHaveAttribute('hreflang');
@@ -488,8 +488,11 @@ describe('<Menu />', () => {
       const anchor =
         heading.querySelector<HTMLAnchorElement>('a[data-menu-native-link]') ??
         heading.closest<HTMLAnchorElement>('a[data-menu-native-link]');
-      expect(primary).toBe(anchor);
+      expect(primary).not.toBe(anchor);
+      expect(primary).toHaveAttribute('href', '/heading');
+      expect(primary).toHaveAccessibleName('Destination');
       expect(anchor).toHaveAttribute('href', '/heading');
+      expect(anchor).toHaveAttribute('aria-hidden', 'true');
       expect(commandHeading.querySelector('a[href]')).toBeNull();
       if (actions)
         expect(anchor).not.toContainElement(

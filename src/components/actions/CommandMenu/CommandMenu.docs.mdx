@@ -165,7 +165,9 @@ Loading items are disabled by default. Set `isDisabled={false}` to keep a loadin
 
 Navigation items expose `menuitem` semantics without a checked state, including when other items are checkboxes or radio choices. Supply `aria-current` to identify a destination that represents the current page.
 
-The primary native anchor exposes the menu-item semantics and destination, while the original Item row retains its layout and style slots. The primary target follows the first visible Label, Description or leading Icon; keep one of these slots visible and give icon-only items a meaningful accessible name. Follow [Menu's focus and selector migration guidance](/docs/actions-menu--docs#focus-and-selector-migration) for custom selectors. CommandMenu uses virtual focus: the search input keeps DOM focus and identifies the active primary menu item with `aria-activedescendant`, including when styling moves the primary target to another content slot. Inline actions are unsupported in this virtual-focus mode; use a separate primary item for each command or a DOM-focus Menu when independent row actions are required.
+The primary native anchor covers the complete row and exposes the menu-item semantics and destination, while the original Item row retains its layout and style slots. Padding, gaps and whitespace support native browser link commands. Give icon-only items a meaningful accessible name. Follow [Menu's focus and selector migration guidance](/docs/actions-menu--docs#focus-and-selector-migration) for custom selectors. CommandMenu uses virtual focus: the search input keeps DOM focus and identifies the active primary menu item with `aria-activedescendant`, including when styles hide an individual content slot. Inline actions are unsupported in this virtual-focus mode; use a separate primary item for each command or a DOM-focus Menu when independent row actions are required.
+
+<Story of={CommandMenuStories.NavigationOnly} />
 
 <Story of={CommandMenuStories.NavigationLinks} />
 

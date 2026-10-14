@@ -10,7 +10,7 @@ import { CommandMenu } from '../CommandMenu/CommandMenu';
 import { MenuContext } from './context';
 import { Menu } from './Menu';
 
-describe('Visible native menu targets', () => {
+describe('Stable visible native menu targets', () => {
   afterEach(() => {
     document.documentElement.removeAttribute('data-menu-label');
   });
@@ -73,7 +73,9 @@ describe('Visible native menu targets', () => {
     expect(container.getBoundingClientRect().width).toBe(400);
     expect(label.getBoundingClientRect().width).toBe(160);
     expect(description.getBoundingClientRect().width).toBe(160);
-    expect(screen.getByRole('menuitem', { name: 'Workbook' })).toBe(label);
+    const primary = screen.getByRole('menuitem', { name: 'Workbook' });
+    expect(primary).toBeVisible();
+    expect(primary).toHaveAccessibleDescription('Visible description');
     await act(async () => {
       container.style.containerType = 'inline-size';
       await settleLayout();
@@ -84,15 +86,16 @@ describe('Visible native menu targets', () => {
       await settleLayout();
     });
     await waitFor(() =>
-      expect(screen.getByRole('menuitem', { name: 'Workbook' })).toBe(
-        description,
-      ),
+      expect(getComputedStyle(label).visibility).toBe('hidden'),
     );
     expect(getComputedStyle(label).visibility).toBe('hidden');
     expect(getComputedStyle(description).visibility).toBe('visible');
     expect(container.getBoundingClientRect().width).toBe(200);
     expect(label.getBoundingClientRect().width).toBe(160);
     expect(description.getBoundingClientRect().width).toBe(160);
+    expect(screen.getByRole('menuitem', { name: 'Workbook' })).toBe(primary);
+    expect(primary).toBeVisible();
+    expect(primary).toHaveAccessibleDescription('Visible description');
     expect(row.querySelector('[data-element="Label"]')).toBe(label);
     expect(screen.getByTestId('query-container')).toBe(container);
     expect(command).toHaveFocus();
@@ -125,20 +128,19 @@ describe('Visible native menu targets', () => {
       );
     }
     render(<App />);
-    await act(() => screen.getByRole('menuitem', { name: 'Workbook' }).focus());
+    const primary = screen.getByRole('menuitem', { name: 'Workbook' });
+    await act(() => primary.focus());
     await act(() => flushSync(() => hideLabel?.()));
-    await waitFor(() =>
-      expect(
-        screen.getByRole('menuitem', { name: 'Workbook' }),
-      ).toHaveAttribute('data-element', 'Description'),
-    );
+    expect(screen.getByRole('menuitem', { name: 'Workbook' })).toBe(primary);
+    expect(primary).toBeVisible();
+    expect(primary).toHaveAccessibleDescription('Visible description');
     expect(
       screen.getByRole('button', { name: 'After parent menu' }),
     ).toHaveFocus();
   });
 
   it.each(['content', 'label', 'external'] as const)(
-    'names a visible Description target from %s and routes once',
+    'names a visible row target from %s with a hidden Label and routes once',
     async (nameSource) => {
       const itemAction = vi.fn();
       const menuAction = vi.fn();
@@ -186,22 +188,29 @@ describe('Visible native menu targets', () => {
         ).toHaveFocus(),
       );
       await act(() => userEvent.keyboard('{ArrowDown}'));
-      const description = screen
-        .getByTestId('visible-target')
-        .querySelector<HTMLElement>('[data-element="Description"]')!;
-      await waitFor(() => expect(description).toHaveFocus(), { timeout: 1000 });
-      expect(description).toHaveAttribute('role', 'menuitem');
-      expect(description).not.toHaveAttribute('aria-hidden');
-      expect(description).toHaveAccessibleName(
+      const name =
         nameSource === 'external'
           ? 'External workbook'
           : nameSource === 'label'
             ? 'Open workbook'
-            : 'Target workbook',
-      );
-      expect(description).toHaveAccessibleDescription(
+            : 'Target workbook';
+      const primary = screen.getByRole('menuitem', { name });
+      await waitFor(() => expect(primary).toHaveFocus(), { timeout: 1000 });
+      expect(primary.tagName).toBe('A');
+      expect(primary).toBeVisible();
+      expect(primary).toHaveAttribute('href', '/workbooks/saved');
+      expect(primary).not.toHaveAttribute('aria-hidden');
+      expect(primary).toHaveAccessibleName(name);
+      expect(primary).toHaveAccessibleDescription(
         nameSource === 'external' ? 'External details' : 'Visible description',
       );
+      if (nameSource === 'external') {
+        expect(primary).toHaveAttribute('aria-labelledby', 'visible-menu-name');
+        expect(primary).toHaveAttribute(
+          'aria-describedby',
+          'visible-menu-description',
+        );
+      }
       await act(() => userEvent.keyboard('{Enter}'));
       expect(itemAction).toHaveBeenCalledExactlyOnceWith();
       expect(menuAction).toHaveBeenCalledExactlyOnceWith('target');
@@ -212,7 +221,7 @@ describe('Visible native menu targets', () => {
     },
   );
 
-  it('autofocuses the visible Description of the first row', async () => {
+  it('autofocuses a visible first-row target with a hidden Label', async () => {
     render(
       <Root>
         <Menu aria-label="Autofocus" autoFocus="first">
@@ -229,14 +238,13 @@ describe('Visible native menu targets', () => {
         </Menu>
       </Root>,
     );
-    const description = screen
-      .getByTestId('visible-target')
-      .querySelector<HTMLElement>('[data-element="Description"]')!;
-    await waitFor(() => expect(description).toHaveFocus(), { timeout: 1000 });
-    expect(description).toHaveAccessibleName('Target workbook');
+    const primary = screen.getByRole('menuitem', { name: 'Target workbook' });
+    await waitFor(() => expect(primary).toHaveFocus(), { timeout: 1000 });
+    expect(primary).toBeVisible();
+    expect(primary).toHaveAccessibleDescription('Visible description');
   });
 
-  it('focuses the visible Icon of a named row with a hidden Label', async () => {
+  it('focuses the visible target of a named icon-only row', async () => {
     render(
       <Root>
         <Menu aria-label="Icon targets" autoFocus="first">
@@ -253,25 +261,29 @@ describe('Visible native menu targets', () => {
         </Menu>
       </Root>,
     );
-    const icon = screen
-      .getByTestId('visible-target')
-      .querySelector<HTMLElement>('[data-element="Icon"]')!;
-    await waitFor(() => expect(icon).toHaveFocus(), { timeout: 1000 });
-    expect(icon.tagName).toBe('A');
-    expect(icon).toHaveAttribute('role', 'menuitem');
-    expect(icon).not.toHaveAttribute('aria-hidden');
-    expect(icon).toHaveAccessibleName('Open workbook');
+    const primary = screen.getByRole('menuitem', { name: 'Open workbook' });
+    await waitFor(() => expect(primary).toHaveFocus(), { timeout: 1000 });
+    expect(primary.tagName).toBe('A');
+    expect(primary).toBeVisible();
+    expect(primary).not.toHaveAttribute('aria-hidden');
+    expect(primary).toHaveAccessibleName('Open workbook');
+    expect(screen.getAllByRole('menuitem')).toEqual([primary]);
   });
 
   it.each(['props', 'focused', 'css'] as const)(
-    'commits semantic props before transferring focus when %s hides Label',
+    'retains semantic focus without extra focus events when %s hides Label',
     async (change) => {
-      const focuses: Array<{ role: string | null; hidden: string | null }> = [];
+      const focuses: Array<{
+        target: HTMLElement;
+        role: string | null;
+        hidden: string | null;
+      }> = [];
       const onFocus = vi.fn();
       const capture = (event: FocusEvent) => {
         const target = event.target as HTMLElement;
         if (target.closest('[data-qa="visible-target"]')) {
           focuses.push({
+            target,
             role: target.getAttribute('role'),
             hidden: target.getAttribute('aria-hidden'),
           });
@@ -314,43 +326,55 @@ describe('Visible native menu targets', () => {
           ).toHaveFocus(),
         );
         await act(() => userEvent.keyboard('{ArrowDown}'));
+        const primary = screen.getByRole('menuitem', {
+          name: 'Target workbook',
+        });
+        await waitFor(() => expect(primary).toHaveFocus(), { timeout: 1000 });
         if (change === 'props') rerender(content(true));
         if (change === 'css') {
           document.documentElement.setAttribute('data-menu-label', 'hidden');
         }
         const row = screen.getByTestId('visible-target');
-        const description = row.querySelector<HTMLElement>(
-          '[data-element="Description"]',
-        )!;
-        await waitFor(() => expect(description).toHaveFocus(), {
-          timeout: 1000,
-        });
-        expect(description).toHaveAccessibleName('Target workbook');
-        expect(description).toHaveAccessibleDescription('Visible description');
-        expect(focuses.length).toBeGreaterThan(0);
+        const label = row.querySelector<HTMLElement>('[data-element="Label"]')!;
+        await waitFor(() => expect(label).not.toBeVisible(), { timeout: 1000 });
+        expect(screen.getByRole('menuitem', { name: 'Target workbook' })).toBe(
+          primary,
+        );
+        expect(primary).toHaveFocus();
+        expect(primary).toBeVisible();
+        expect(primary).toHaveAccessibleName('Target workbook');
+        expect(primary).toHaveAccessibleDescription('Visible description');
+        expect(focuses).toHaveLength(1);
         expect(
           focuses.every(
-            ({ role, hidden }) => role === 'menuitem' && hidden !== 'true',
+            ({ target, role, hidden }) =>
+              target === primary && role === 'menuitem' && hidden !== 'true',
           ),
         ).toBe(true);
-        expect(onFocus).toHaveBeenCalled();
+        expect(onFocus).toHaveBeenCalledTimes(1);
         if (change !== 'focused') {
           if (change === 'props') rerender(content(false));
           else document.documentElement.removeAttribute('data-menu-label');
-          const label = row.querySelector<HTMLElement>(
-            '[data-element="Label"]',
-          )!;
-          await waitFor(() => expect(label).toHaveFocus(), { timeout: 1000 });
+          await waitFor(() => expect(label).toBeVisible(), { timeout: 1000 });
+          expect(
+            screen.getByRole('menuitem', { name: 'Target workbook' }),
+          ).toBe(primary);
+          expect(primary).toHaveFocus();
+          expect(focuses).toHaveLength(1);
           await act(() =>
             screen.getByRole('button', { name: 'After menu' }).focus(),
           );
           if (change === 'props') rerender(content(true));
           else
             document.documentElement.setAttribute('data-menu-label', 'hidden');
-          await waitFor(
-            () => expect(description).toHaveAttribute('role', 'menuitem'),
-            { timeout: 1000 },
-          );
+          await waitFor(() => expect(label).not.toBeVisible(), {
+            timeout: 1000,
+          });
+          expect(
+            screen.getByRole('menuitem', { name: 'Target workbook' }),
+          ).toBe(primary);
+          expect(primary).toBeVisible();
+          expect(focuses).toHaveLength(1);
           expect(
             screen.getByRole('button', { name: 'After menu' }),
           ).toHaveFocus();
@@ -405,7 +429,7 @@ describe('Visible native menu targets', () => {
   });
 
   it.each(['item', 'header', 'card'] as const)(
-    'preserves the %s label ref through tooltip ref replacement',
+    'preserves the %s label ref, rich accessible name and focus through tooltip ref replacement',
     async (type) => {
       const labelRef = createRef<HTMLElement>();
       const content = (tooltip: boolean) => (
@@ -416,33 +440,35 @@ describe('Visible native menu targets', () => {
               qa="visible-target"
               type={type}
               level={3}
+              textValue="Search alias"
               labelRef={labelRef}
               to="/destination"
               description="Visible description"
               styles={{ Label: { hide: true } }}
               tooltip={tooltip ? { title: 'Target help', delay: 0 } : false}
             >
-              Target workbook
+              <span>
+                Target <strong>workbook</strong>
+              </span>
             </Menu.Item>
           </Menu>
         </Root>
       );
       const { rerender } = render(content(false));
-      const row = screen.getByTestId('visible-target');
-      await waitFor(
-        () =>
-          expect(
-            row.querySelector('[data-element="Description"]'),
-          ).toHaveFocus(),
-        { timeout: 1000 },
-      );
+      const primary = screen.getByRole('menuitem', { name: 'Target workbook' });
+      await waitFor(() => expect(primary).toHaveFocus(), { timeout: 1000 });
+      expect(primary).toBeVisible();
+      expect(primary).toHaveAccessibleDescription('Visible description');
       expect(labelRef.current?.tagName).toBe(type === 'item' ? 'A' : 'H3');
       flushSync(() => rerender(content(true)));
-      expect(
-        screen
-          .getByTestId('visible-target')
-          .querySelector('[data-element="Description"]'),
-      ).toHaveFocus();
+      const currentPrimary = screen.getByRole('menuitem', {
+        name: 'Target workbook',
+      });
+      expect(currentPrimary).toHaveFocus();
+      expect(currentPrimary).toBeVisible();
+      expect(currentPrimary).toHaveAccessibleDescription(
+        'Visible description Target help',
+      );
       expect(labelRef.current).toBe(
         screen
           .getByTestId('visible-target')
@@ -510,13 +536,19 @@ describe('Visible native menu targets', () => {
         </Menu>
       </Root>,
     );
-    expect(
-      screen.getByRole('menuitem', { name: 'Disabled workbook' }),
-    ).toHaveAttribute('data-element', 'Label');
+    const disabled = screen.getByRole('menuitem', {
+      name: 'Disabled workbook',
+    });
+    expect(disabled).toBeVisible();
+    expect(disabled).toHaveAttribute('aria-disabled', 'true');
+    expect(disabled).not.toHaveAttribute('href');
     await act(() => userEvent.keyboard('{ArrowDown}'));
     expect(
       screen.getByRole('menuitem', { name: 'Last command' }),
     ).toHaveFocus();
+    expect(screen.getByRole('menuitem', { name: 'Disabled workbook' })).toBe(
+      disabled,
+    );
   });
 
   it.each(['content', 'label', 'external'] as const)(
@@ -557,34 +589,41 @@ describe('Visible native menu targets', () => {
       const search = screen.getByRole('searchbox');
       await act(() => search.focus());
       await act(() => userEvent.keyboard('{ArrowDown}'));
-      const primary = screen
-        .getByTestId('visible-target')
-        .querySelector<HTMLElement>('[data-menu-native-primary]')!;
+      const name =
+        nameSource === 'external'
+          ? 'External workbook'
+          : nameSource === 'label'
+            ? 'Open workbook'
+            : 'Target workbook';
+      const primary = screen.getByRole('menuitem', { name });
       const id = primary.id;
       await waitFor(() =>
         expect(search).toHaveAttribute('aria-activedescendant', id),
       );
       document.documentElement.setAttribute('data-menu-label', 'hidden');
-      const description = screen
+      const label = screen
         .getByTestId('visible-target')
-        .querySelector<HTMLElement>('[data-element="Description"]')!;
-      await waitFor(
-        () => expect(description).toHaveAttribute('data-menu-native-primary'),
-        { timeout: 1000 },
-      );
-      expect(description.id).toBe(id);
+        .querySelector<HTMLElement>('[data-element="Label"]')!;
+      await waitFor(() => expect(label).not.toBeVisible(), { timeout: 1000 });
+      expect(screen.getByRole('menuitem', { name })).toBe(primary);
+      expect(primary).toBeVisible();
+      expect(primary.id).toBe(id);
       expect(search).toHaveAttribute('aria-activedescendant', id);
       expect(search).toHaveFocus();
-      expect(description).toHaveAccessibleName(
-        nameSource === 'external'
-          ? 'External workbook'
-          : nameSource === 'label'
-            ? 'Open workbook'
-            : 'Target workbook',
-      );
-      expect(description).toHaveAccessibleDescription(
+      expect(primary).toHaveAccessibleName(name);
+      expect(primary).toHaveAccessibleDescription(
         nameSource === 'external' ? 'External details' : 'Visible description',
       );
+      if (nameSource === 'external') {
+        expect(primary).toHaveAttribute(
+          'aria-labelledby',
+          'command-target-name',
+        );
+        expect(primary).toHaveAttribute(
+          'aria-describedby',
+          'command-target-description',
+        );
+      }
       await act(() => userEvent.keyboard('{Enter}'));
       expect(navigate).toHaveBeenCalledExactlyOnceWith(
         '/destination',

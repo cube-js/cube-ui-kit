@@ -5,6 +5,7 @@ import {
   Mods,
   Styles,
   tasty,
+  useGlobalStyles,
 } from '@tenphi/tasty';
 import {
   AnchorHTMLAttributes,
@@ -45,6 +46,7 @@ import { ItemAction } from '../../actions/ItemAction';
 import { ItemActionProvider } from '../../actions/ItemActionContext';
 import { IconSwitch } from '../../helpers/IconSwitch/IconSwitch';
 import {
+  mergeTooltipFocusProps,
   splitTooltipTriggerProps,
   TooltipFocusProps,
 } from '../../overlays/Tooltip/split-trigger-props';
@@ -316,6 +318,7 @@ const ACTIONS_EVENT_HANDLERS = {
 const ItemElement = tasty({
   as: 'div',
   styles: {
+    '@native-row': 'menu-native-row',
     '@interacted':
       'active | :hover | :focus | :focus-within | :has([data-pressed])',
 
@@ -482,6 +485,7 @@ const ItemElement = tasty({
     Label: {
       $: '>',
       margin: 0,
+      zIndex: { '': undefined, '@native-row': 1 },
       gridArea: 'label',
       display: 'block',
       placeSelf: 'center start',
@@ -530,6 +534,8 @@ const ItemElement = tasty({
       placeItems: 'center',
       placeContent: 'stretch',
       gridArea: 'prefix',
+      zIndex: { '': undefined, '@native-row': 1 },
+      pointerEvents: { '': undefined, '@native-row': 'none' },
       // The trailing value is `$prefix-gap` (see the token above): the grid
       // supplies no gap and `Label` drops its own left padding for any start
       // content, so a bare prefix glyph would otherwise sit flush against the
@@ -548,6 +554,8 @@ const ItemElement = tasty({
       placeItems: 'center',
       placeContent: 'stretch',
       gridArea: 'suffix',
+      zIndex: { '': undefined, '@native-row': 1 },
+      pointerEvents: { '': undefined, '@native-row': 'none' },
       // Mirror of `Prefix`: the leading value is `$suffix-gap`.
       padding: {
         '': '0 $inline-padding 0 $suffix-gap',
@@ -562,6 +570,8 @@ const ItemElement = tasty({
     Actions: {
       $: '>',
       gridArea: 'actions',
+      zIndex: { '': undefined, '@native-row': 1 },
+      pointerEvents: { '': undefined, '@native-row': 'none' },
       display: 'flex',
       gap: '1bw',
       placeItems: 'center',
@@ -843,13 +853,8 @@ export interface ItemWithNativeLinksProps extends CubeItemProps {
     'data-key'?: string;
     'data-collection'?: string;
   };
-  nativePrimarySlot?: 'label' | 'description' | 'icon';
+  nativeRowRef?: (element: HTMLAnchorElement | null) => void;
   nativeLabelReferenceId?: string;
-  nativeSlotRefs?: {
-    label: (element: HTMLAnchorElement | null) => void;
-    description: (element: HTMLAnchorElement | null) => void;
-    icon: (element: HTMLAnchorElement | null) => void;
-  };
   onInlineFocus?: HTMLAttributes<HTMLDivElement>['onFocus'];
   onNativeLinkElement?: (element: HTMLAnchorElement | null) => void;
   onNativeElement?: (element: HTMLElement | null) => void;
@@ -863,8 +868,27 @@ const NativeItemLink = tasty({
     color: 'inherit',
     textDecoration: 'none',
     outline: 0,
+    zIndex: {
+      '': 'auto',
+      'row-native-cell': 1,
+    },
   },
 });
+
+const NATIVE_ROW_TARGET_STYLES: Styles = {
+  position: 'absolute',
+  inset: '($native-row-inset, 0)',
+  width: '($native-row-width, auto)',
+  height: '($native-row-height, auto)',
+  clipPath: '($native-row-clip, none)',
+  zIndex: 0,
+};
+
+// A zero-specificity default restores controls inside pointer-transparent
+// slots. Consumer styles win even when their class was injected earlier.
+const NATIVE_ROW_CONTROL_SELECTOR =
+  ':where([data-menu-native-row]) :where([data-element=Prefix],[data-element=Suffix],[data-element=Actions]) :where(a[href],button,input,select,textarea,[tabindex],[contenteditable=""],[contenteditable="true"],[contenteditable="plaintext-only"],[role="button"],[role="checkbox"],[role="switch"],[role="menuitem"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="radio"],[role="textbox"],[role="combobox"],[role="slider"],[role="spinbutton"],[role="link"])';
+const NATIVE_ROW_CONTROL_STYLES: Styles = { pointerEvents: 'auto' };
 
 const Item = <T extends HTMLElement = HTMLDivElement>(
   props: ItemWithNativeLinksProps,
@@ -917,15 +941,19 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     labelRef: labelRefProp,
     nativeLinkProps,
     nativeMenuItemProps,
-    nativePrimarySlot = 'label',
+    nativeRowRef,
     nativeLabelReferenceId,
-    nativeSlotRefs,
     onInlineFocus,
     onNativeLinkElement,
     onNativeElement,
     tokens,
     ...rest
   } = props;
+
+  useGlobalStyles(
+    NATIVE_ROW_CONTROL_SELECTOR,
+    nativeMenuItemProps ? NATIVE_ROW_CONTROL_STYLES : undefined,
+  );
 
   // Determine if Label will be rendered
   const hasLabel = !!(children || labelProps);
@@ -1036,6 +1064,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     'has-description': showDescription,
     'has-actions': !!actions,
     'has-actions-content': !!(actions && actions !== true),
+    'menu-native-row': !!nativeMenuItemProps,
     'auto-hide-actions': autoHideActions === true,
     'preserve-actions-space': preserveActionsSpace === true,
     'inside-wrapper': insideWrapper,
@@ -1044,6 +1073,9 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
       skipActionsWidthTransition && insideWrapper,
     checkmark: hasCheckmark,
     description: showDescription ? finalDescriptionPlacement : 'none',
+  };
+  const nativeCellMods = {
+    'row-native-cell': finalMods['menu-native-row'],
   };
 
   const {
@@ -1155,24 +1187,32 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
           : null)}
         style={style}
       >
+        {nativeMenuItemProps ? (
+          <NativeItemLink
+            {...mergeTooltipFocusProps(
+              mergeProps(nativeLinkProps, nativeMenuItemProps),
+              tooltipFocusProps,
+            )}
+            ref={nativeRowRef}
+            styles={NATIVE_ROW_TARGET_STYLES}
+            // Block gaps space visible slots, not this out-of-flow target.
+            style={{ margin: 0 }}
+            aria-hidden={nativeMenuItemProps['aria-hidden']}
+            data-menu-native-link=""
+            data-menu-native-hit-area=""
+          />
+        ) : null}
         {typeof hiddenContent === 'function'
           ? hiddenContent(tooltipFocusProps ?? {}, isTooltipActive)
           : hiddenContent}
         {iconSlot.hasSlot &&
           (nativeLinkProps ? (
             <NativeItemLink
+              mods={nativeCellMods}
               data-element="Icon"
               {...nativeLinkProps}
-              {...(nativeMenuItemProps && nativePrimarySlot === 'icon'
-                ? mergeProps(nativeMenuItemProps, tooltipFocusProps)
-                : null)}
-              aria-hidden={
-                nativeMenuItemProps && nativePrimarySlot === 'icon'
-                  ? undefined
-                  : true
-              }
+              aria-hidden={true}
               data-menu-native-link=""
-              ref={nativeSlotRefs?.icon}
             >
               <IconSwitch noWrapper contentKey={iconSlot.key}>
                 {iconSlot.content}
@@ -1199,21 +1239,28 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
                     data-element="Label"
                     {...finalLabelProps}
                     id={nativeLabelReferenceId ?? finalLabelProps.id}
+                    aria-labelledby={
+                      finalLabelProps['aria-labelledby'] ??
+                      (nativeMenuItemProps &&
+                      finalLabelProps['aria-label'] == null
+                        ? `${nativeLabelReferenceId}-content`
+                        : undefined)
+                    }
                     ref={(element: HTMLElement | null) => {
                       labelRef(element);
                     }}
                   >
                     <NativeItemLink
+                      mods={nativeCellMods}
                       {...nativeLinkProps}
-                      {...(nativePrimarySlot === 'label'
-                        ? mergeProps(nativeMenuItemProps, tooltipFocusProps)
-                        : null)}
-                      aria-hidden={undefined}
+                      id={
+                        nativeMenuItemProps
+                          ? `${nativeLabelReferenceId}-content`
+                          : undefined
+                      }
+                      aria-hidden={nativeMenuItemProps ? true : undefined}
                       display="inline"
                       data-menu-native-link=""
-                      ref={(element: HTMLAnchorElement | null) => {
-                        nativeSlotRefs?.label(element);
-                      }}
                     >
                       {processedChildren}
                     </NativeItemLink>
@@ -1223,17 +1270,14 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
               if (nativeLinkProps) {
                 return (
                   <NativeItemLink
+                    mods={nativeCellMods}
                     data-element="Label"
                     {...nativeLinkProps}
                     {...finalLabelProps}
                     id={nativeLabelReferenceId ?? finalLabelProps.id}
-                    {...(nativePrimarySlot === 'label'
-                      ? mergeProps(nativeMenuItemProps, tooltipFocusProps)
-                      : null)}
                     data-menu-native-link=""
                     ref={(element: HTMLAnchorElement | null) => {
                       labelRef(element);
-                      nativeSlotRefs?.label(element);
                     }}
                   >
                     {processedChildren}
@@ -1254,21 +1298,13 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
         {showDescription ? (
           nativeLinkProps ? (
             <NativeItemLink
+              mods={nativeCellMods}
               data-element="Description"
               {...nativeLinkProps}
               {...descriptionProps}
-              {...(nativePrimarySlot === 'description'
-                ? mergeProps(nativeMenuItemProps, tooltipFocusProps)
-                : null)}
-              aria-hidden={
-                nativePrimarySlot === 'description'
-                  ? undefined
-                  : nativeLinkProps['aria-hidden']
-              }
               data-menu-native-link=""
               ref={(element: HTMLAnchorElement | null) => {
                 descriptionRef(element);
-                nativeSlotRefs?.description(element);
               }}
             >
               {processedDescription}
@@ -1326,7 +1362,7 @@ const _Item = Object.assign(forwardRef<HTMLElement, CubeItemProps>(Item), {
   Badge: ItemBadge,
 });
 
-/** @private Keeps menu links in the existing label/description grid slots. */
+/** @private Preserves Item layout around native menu targets. */
 export const ItemWithNativeSlots = _Item as typeof _Item &
   ForwardRefExoticComponent<
     PropsWithoutRef<ItemWithNativeLinksProps> & RefAttributes<HTMLElement>

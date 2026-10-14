@@ -220,7 +220,11 @@ describe('CommandMenu navigation items', () => {
       </Root>,
     );
     await user.click(screen.getByPlaceholderText('Search commands...'));
-    const destination = screen.getByText('Saved workbook').closest('a')!;
+    const destination = screen.getByRole('menuitem', {
+      name: 'Saved workbook',
+    });
+    expect(destination.tagName).toBe('A');
+    expect(destination).toHaveAttribute('href', '/workbooks/saved');
     expect(destination).toHaveAttribute('role', 'menuitem');
     expect(destination).not.toHaveAttribute('aria-checked');
     await user.keyboard('{ArrowDown}{Enter}');

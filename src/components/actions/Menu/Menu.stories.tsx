@@ -2353,6 +2353,7 @@ export const NavigationLinks = () => (
   </Menu>
 );
 
+NavigationLinks.storyName = 'Mixed commands and links';
 // Link semantics preserve the existing Menu appearance, already photographed.
 NavigationLinks.parameters = NO_SNAPSHOT;
 NavigationLinks.play = async ({ canvasElement }) => {
@@ -2388,6 +2389,14 @@ NavigationLinks.play = async ({ canvasElement }) => {
   expect(saved).not.toContainElement(action);
   expect(action.parentElement?.closest('[role^="menuitem"]')).toBeNull();
   expect(saved).toHaveAccessibleDescription('Open the saved workbook');
+  const browse = canvas.getByRole('menuitem', { name: 'Browse all' });
+  const bounds = browse.closest('li')!.getBoundingClientRect();
+  expect(
+    document
+      .elementFromPoint(bounds.right - 8, bounds.top + bounds.height / 2)
+      ?.closest('a'),
+  ).toHaveAttribute('href', '/workbooks');
+
   expect(
     canvas.getByRole('menuitem', { name: 'Create workbook' }).tagName,
   ).toBe('LI');
@@ -2409,3 +2418,24 @@ NavigationLinks.play = async ({ canvasElement }) => {
   expect(window.location.href).toBe(initialLocation);
   await waitFor(() => expect(recent).toHaveFocus());
 };
+
+export const NavigationOnly = () => (
+  <Menu aria-label="Workbook navigation" styles={{ width: '36x' }}>
+    <Menu.Item key="all" to="/workbooks">
+      All workbooks
+    </Menu.Item>
+    <Menu.Item
+      key="recent"
+      to="/workbooks/recent"
+      description="Workbooks you opened recently"
+    >
+      Recent workbooks
+    </Menu.Item>
+    <Menu.Item key="docs" to="!https://cube.dev/docs">
+      Documentation
+    </Menu.Item>
+  </Menu>
+);
+
+// Native destinations use the same Item layout already covered by visual stories.
+NavigationOnly.parameters = NO_SNAPSHOT;

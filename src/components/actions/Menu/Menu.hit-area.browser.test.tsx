@@ -1,0 +1,434 @@
+import { Styles } from '@tenphi/tasty';
+import { useState } from 'react';
+import { cdp, userEvent } from 'vitest/browser';
+
+import { act, render, screen, waitFor } from '../../../test';
+import { Root } from '../../Root';
+import { CommandMenu } from '../CommandMenu/CommandMenu';
+
+import { Menu } from './Menu';
+
+function nativePosition(x: number, y: number) {
+  const frame = window.frameElement as HTMLElement | null;
+  const bounds = frame?.getBoundingClientRect();
+  const scaleX = bounds && frame ? bounds.width / frame.offsetWidth : 1;
+  const scaleY = bounds && frame ? bounds.height / frame.offsetHeight : 1;
+  return {
+    x: (bounds?.left ?? 0) + (x + (frame?.clientLeft ?? 0)) * scaleX,
+    y: (bounds?.top ?? 0) + (y + (frame?.clientTop ?? 0)) * scaleY,
+  };
+}
+
+async function pressAt(
+  x: number,
+  y: number,
+  button: 'left' | 'right' | 'middle' = 'left',
+  modifiers = 0,
+) {
+  const position = nativePosition(x, y);
+  await act(async () => {
+    await cdp().send('Input.dispatchMouseEvent', {
+      type: 'mousePressed',
+      button,
+      buttons: button === 'left' ? 1 : button === 'right' ? 2 : 4,
+      clickCount: 1,
+      modifiers,
+      ...position,
+    });
+    await cdp().send('Input.dispatchMouseEvent', {
+      type: 'mouseReleased',
+      button,
+      buttons: 0,
+      clickCount: 1,
+      modifiers,
+      ...position,
+    });
+  });
+}
+
+describe('Native menu row hit area', () => {
+  it.each(['Menu', 'CommandMenu'] as const)(
+    'exposes native link context commands in %s row whitespace',
+    async (owner) => {
+      const navigate = vi.fn();
+      const onAction = vi.fn();
+      const destination = '/__menu-link-test/row-whitespace';
+      render(
+        <Root navigation={{ useHref: String, useNavigate: () => navigate }}>
+          {owner === 'Menu' ? (
+            <Menu
+              aria-label="Workbooks"
+              styles={{ width: '36x' }}
+              onAction={onAction}
+            >
+              <Menu.Item key="browse" to={destination} tooltip={false}>
+                Browse all
+              </Menu.Item>
+            </Menu>
+          ) : (
+            <CommandMenu width="36x" onAction={onAction}>
+              <CommandMenu.Item key="browse" to={destination} tooltip={false}>
+                Browse all
+              </CommandMenu.Item>
+            </CommandMenu>
+          )}
+        </Root>,
+      );
+      const item = screen.getByRole('menuitem', { name: 'Browse all' });
+      const row = item.closest('li')!;
+      await userEvent.hover(row);
+      const bounds = row.getBoundingClientRect();
+      const text = document.createRange();
+      text.selectNodeContents(screen.getByText('Browse all'));
+      const textBounds = text.getBoundingClientRect();
+      const nativeBounds = item.getBoundingClientRect();
+      expect(nativeBounds.left).toBeCloseTo(bounds.left, 2);
+      expect(nativeBounds.right).toBeCloseTo(bounds.right, 2);
+      expect(nativeBounds.top).toBeCloseTo(bounds.top, 2);
+      expect(nativeBounds.bottom).toBeCloseTo(bounds.bottom, 2);
+      const x = bounds.right - 0.5;
+      const y = bounds.top + bounds.height / 2;
+      expect(x).toBeGreaterThan(textBounds.right + 8);
+      const events: MouseEvent[] = [];
+      const record = (event: MouseEvent) => events.push(event);
+      document.addEventListener('contextmenu', record, true);
+      try {
+        await pressAt(x, y, 'right');
+        expect(events).toHaveLength(1);
+        expect(events[0].isTrusted).toBe(true);
+        expect(events[0].defaultPrevented).toBe(false);
+        expect((events[0].target as Element).closest('a')).toHaveAttribute(
+          'href',
+          destination,
+        );
+        expect(Math.abs(events[0].clientX - x)).toBeLessThan(1);
+        expect(Math.abs(events[0].clientY - y)).toBeLessThan(1);
+        expect(navigate).not.toHaveBeenCalled();
+        expect(onAction).not.toHaveBeenCalled();
+      } finally {
+        document.removeEventListener('contextmenu', record, true);
+      }
+    },
+  );
+  it.each(['Menu', 'CommandMenu'] as const)(
+    'routes an ordinary whitespace click once in %s, after both action callbacks',
+    async (owner) => {
+      const calls: string[] = [];
+      const destination = '/__menu-link-test/ordinary-whitespace';
+      const common = { onAction: (key: unknown) => calls.push(`menu:${key}`) };
+      const item = {
+        key: 'browse',
+        to: destination,
+        tooltip: false,
+        onAction: () => calls.push('item'),
+      };
+      render(
+        <Root
+          navigation={{
+            useHref: String,
+            useNavigate: () => (to) => calls.push(`route:${to}`),
+          }}
+        >
+          {owner === 'Menu' ? (
+            <Menu aria-label="Workbooks" {...common} styles={{ width: '36x' }}>
+              <Menu.Item {...item}>Browse all</Menu.Item>
+            </Menu>
+          ) : (
+            <CommandMenu {...common} width="36x">
+              <CommandMenu.Item {...item}>Browse all</CommandMenu.Item>
+            </CommandMenu>
+          )}
+        </Root>,
+      );
+      const row = screen
+        .getByRole('menuitem', { name: 'Browse all' })
+        .closest('li')!;
+      await userEvent.hover(row);
+      const bounds = row.getBoundingClientRect();
+      await pressAt(bounds.right - 8, bounds.top + bounds.height / 2);
+      expect(calls).toEqual(['item', 'menu:browse', `route:${destination}`]);
+    },
+  );
+
+  it.each(['middle', 'modified'] as const)(
+    'preserves the native %s whitespace gesture and action behavior',
+    async (gesture) => {
+      const navigate = vi.fn();
+      const onAction = vi.fn();
+      const onItemAction = vi.fn();
+      const destination = '/__menu-link-test/native-whitespace-' + gesture;
+      render(
+        <Root navigation={{ useHref: String, useNavigate: () => navigate }}>
+          <Menu
+            aria-label="Workbooks"
+            styles={{ width: '36x' }}
+            onAction={onAction}
+          >
+            <Menu.Item
+              key="browse"
+              to={destination}
+              onAction={onItemAction}
+              tooltip={false}
+            >
+              Browse all
+            </Menu.Item>
+          </Menu>
+        </Root>,
+      );
+      const row = screen
+        .getByRole('menuitem', { name: 'Browse all' })
+        .closest('li')!;
+      await userEvent.hover(row);
+      const bounds = row.getBoundingClientRect();
+      const events: MouseEvent[] = [];
+      const type = gesture === 'middle' ? 'auxclick' : 'click';
+      const record = (event: MouseEvent) => events.push(event);
+      document.addEventListener(type, record, true);
+      try {
+        await pressAt(
+          bounds.right - 8,
+          bounds.top + bounds.height / 2,
+          gesture === 'middle' ? 'middle' : 'left',
+          gesture === 'modified' ? 4 : 0,
+        );
+        expect(events).toHaveLength(1);
+        expect(events[0].isTrusted).toBe(true);
+        expect(events[0].defaultPrevented).toBe(false);
+        expect((events[0].target as Element).closest('a')).toHaveAttribute(
+          'href',
+          destination,
+        );
+        expect(navigate).not.toHaveBeenCalled();
+        expect(onAction).toHaveBeenCalledTimes(gesture === 'modified' ? 1 : 0);
+        expect(onItemAction).toHaveBeenCalledTimes(
+          gesture === 'modified' ? 1 : 0,
+        );
+        if (gesture === 'modified') {
+          expect(events[0].metaKey).toBe(true);
+          expect(onAction).toHaveBeenCalledWith('browse');
+        }
+        await waitFor(async () => {
+          const requests: { url: string }[] = await (
+            await fetch('/__menu-link-test/requests')
+          ).json();
+          expect(requests.some((request) => request.url === destination)).toBe(
+            true,
+          );
+        });
+      } finally {
+        document.removeEventListener(type, record, true);
+      }
+    },
+  );
+
+  it.each([
+    ['padding and gaps', { padding: '2x', gap: '1x' }],
+    [
+      'positioned label with clipping',
+      { Label: { position: 'relative', overflow: 'hidden' } },
+    ],
+    ['static grid', { position: 'static' }],
+    ['static flex', { position: 'static', display: 'flex' }],
+    ['static block', { position: 'static', display: 'block' }],
+    [
+      'block with gaps and border',
+      { display: 'block', gap: '1x', border: '2bw solid #danger' },
+    ],
+  ] as const)(
+    'covers the row with %s while preserving an independent inline action',
+    async (_, styles) => {
+      const navigate = vi.fn();
+      const onAction = vi.fn();
+      const inline = vi.fn();
+      render(
+        <Root navigation={{ useHref: String, useNavigate: () => navigate }}>
+          <Menu
+            aria-label="Workbooks"
+            styles={{ width: '36x' }}
+            onAction={onAction}
+          >
+            <Menu.Item key="before" tooltip={false}>
+              Before
+            </Menu.Item>
+            <Menu.Item
+              key="browse"
+              to="/__menu-link-test/custom-whitespace"
+              tooltip={false}
+              styles={styles as Styles}
+              actions={
+                <Menu.Item.Action aria-label="Delete workbook" onPress={inline}>
+                  Delete
+                </Menu.Item.Action>
+              }
+            >
+              Browse all
+            </Menu.Item>
+          </Menu>
+        </Root>,
+      );
+      const row = screen
+        .getByRole('menuitem', { name: 'Browse all' })
+        .closest('li')!;
+      await userEvent.hover(row);
+      const bounds = row.getBoundingClientRect();
+      const nativeBounds = screen
+        .getByRole('menuitem', { name: 'Browse all' })
+        .getBoundingClientRect();
+      expect(nativeBounds.left).toBeCloseTo(bounds.left, 2);
+      expect(nativeBounds.right).toBeCloseTo(bounds.right, 2);
+      expect(nativeBounds.top).toBeCloseTo(bounds.top, 2);
+      expect(nativeBounds.bottom).toBeCloseTo(bounds.bottom, 2);
+      const action = screen.getByRole('menuitem', { name: 'Delete workbook' });
+      const actionBounds = action.getBoundingClientRect();
+      const x = bounds.left + bounds.width / 2;
+      const y = bounds.top + 2;
+      await waitFor(() =>
+        expect(document.elementFromPoint(x, y)?.closest('a')).toHaveAttribute(
+          'href',
+          '/__menu-link-test/custom-whitespace',
+        ),
+      );
+      const before = screen.getByRole('menuitem', { name: 'Before' });
+      const beforeBounds = before.getBoundingClientRect();
+      expect(
+        document
+          .elementFromPoint(
+            beforeBounds.left + beforeBounds.width / 2,
+            beforeBounds.top + beforeBounds.height / 2,
+          )
+          ?.closest('li'),
+      ).toBe(before);
+      await pressAt(
+        actionBounds.left + actionBounds.width / 2,
+        actionBounds.top + actionBounds.height / 2,
+      );
+      expect(inline).toHaveBeenCalledTimes(1);
+      expect(navigate).not.toHaveBeenCalled();
+      expect(onAction).not.toHaveBeenCalled();
+      await pressAt(x, y);
+      expect(onAction).toHaveBeenCalledExactlyOnceWith('browse');
+      expect(navigate).toHaveBeenCalledExactlyOnceWith(
+        '/__menu-link-test/custom-whitespace',
+        undefined,
+      );
+    },
+  );
+
+  it('follows a static row through scrolling and keeps its native target clipped to the menu', async () => {
+    render(
+      <Root>
+        <Menu
+          aria-label="Workbooks"
+          styles={{ width: '36x', height: '8x', overflow: 'auto' }}
+        >
+          <Menu.Item key="before" tooltip={false}>
+            Before
+          </Menu.Item>
+          <Menu.Item
+            key="browse"
+            to="/__menu-link-test/scrolled"
+            tooltip={false}
+            styles={{ position: 'static' }}
+          >
+            Browse all
+          </Menu.Item>
+          <Menu.Item key="after" tooltip={false}>
+            After
+          </Menu.Item>
+        </Menu>
+      </Root>,
+    );
+    const menu = screen.getByRole('menu');
+    const row = screen
+      .getByRole('menuitem', { name: 'Browse all' })
+      .closest('li')!;
+    await act(() => {
+      menu.scrollTop = 24;
+    });
+    await userEvent.hover(row);
+    const bounds = row.getBoundingClientRect();
+    await waitFor(() =>
+      expect(
+        document
+          .elementFromPoint(bounds.right - 8, bounds.top + bounds.height / 2)
+          ?.closest('a'),
+      ).toHaveAttribute('href', '/__menu-link-test/scrolled'),
+    );
+    const clip = menu.getBoundingClientRect();
+    expect(
+      document
+        .elementFromPoint(bounds.right - 8, clip.bottom + 8)
+        ?.closest('a'),
+    ).toBeNull();
+  });
+
+  it('keeps controls in prefix and suffix clickable and yields to an already mounted consumer pointer override', async () => {
+    const prefix = vi.fn();
+    const suffix = vi.fn();
+    const ignored = vi.fn();
+    const navigate = vi.fn();
+    let reveal: (() => void) | undefined;
+    function App() {
+      const [visible, setVisible] = useState(false);
+      reveal = () => setVisible(true);
+      return (
+        <Root navigation={{ useHref: String, useNavigate: () => navigate }}>
+          <Menu.Item.Action styles={{ pointerEvents: 'none' }}>
+            Warm ignored control
+          </Menu.Item.Action>
+          {visible && (
+            <Menu aria-label="Workbooks" styles={{ width: '60x' }}>
+              <Menu.Item
+                key="browse"
+                to="/__menu-link-test/controls"
+                tooltip={false}
+                prefix={<button onClick={prefix}>Prefix control</button>}
+                suffix={
+                  <input
+                    aria-label="Suffix control"
+                    type="checkbox"
+                    onChange={suffix}
+                  />
+                }
+                actions={
+                  <Menu.Item.Action
+                    aria-label="Ignored control"
+                    styles={{ pointerEvents: 'none' }}
+                    onPress={ignored}
+                  >
+                    Ignored
+                  </Menu.Item.Action>
+                }
+              >
+                Browse all
+              </Menu.Item>
+            </Menu>
+          )}
+        </Root>
+      );
+    }
+    render(<App />);
+    await act(() => reveal?.());
+    const prefixControl = screen.getByRole('button', {
+      name: 'Prefix control',
+    });
+    const prefixBounds = prefixControl.getBoundingClientRect();
+    await pressAt(
+      prefixBounds.left + prefixBounds.width / 2,
+      prefixBounds.top + prefixBounds.height / 2,
+    );
+    expect(prefix).toHaveBeenCalledTimes(1);
+    await userEvent.click(
+      screen.getByRole('checkbox', { name: 'Suffix control' }),
+    );
+    expect(suffix).toHaveBeenCalledTimes(1);
+    const inert = screen.getByRole('menuitem', { name: 'Ignored control' });
+    expect(getComputedStyle(inert).pointerEvents).toBe('none');
+    const bounds = inert.getBoundingClientRect();
+    await pressAt(
+      bounds.left + bounds.width / 2,
+      bounds.top + bounds.height / 2,
+    );
+    expect(ignored).not.toHaveBeenCalled();
+  });
+});

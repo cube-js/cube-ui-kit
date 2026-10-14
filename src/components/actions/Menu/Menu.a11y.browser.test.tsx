@@ -702,12 +702,12 @@ describe('Mixed menu accessibility', () => {
           <button>After consumer menu</button>
         </Root>,
       );
-      const control = screen
-        .getByText('Control contents')
-        .closest<HTMLElement>('[role^="menuitem"]')!;
-      const primary = screen
-        .getByText('Primary contents')
-        .closest<HTMLElement>('[role^="menuitem"]')!;
+      const control = screen.getByRole('menuitem', {
+        name: 'Consumer control name',
+      });
+      const primary = screen.getByRole('menuitem', {
+        name: 'Consumer primary name',
+      });
       const after = screen.getByRole('button', { name: 'After consumer menu' });
       expect(control.tagName).toBe('LI');
       expect(control).toHaveAccessibleName('Consumer control name');

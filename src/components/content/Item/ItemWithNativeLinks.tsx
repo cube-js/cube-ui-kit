@@ -1,13 +1,4 @@
-import {
-  Ref,
-  useEffect,
-  useEffectEvent,
-  useId,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from 'react';
-import { flushSync } from 'react-dom';
+import { Ref, useCallback, useId, useLayoutEffect, useRef } from 'react';
 
 import { subscribeScheme } from '../../../utils/react/useScheme';
 
@@ -23,175 +14,227 @@ interface NativeMenuItemProps extends ItemWithNativeLinksProps {
   };
 }
 
-type NativeSlot = 'label' | 'description' | 'icon';
+const NATIVE_ROW_TOKENS = [
+  '--native-row-inset',
+  '--native-row-width',
+  '--native-row-height',
+  '--native-row-clip',
+] as const;
 
-function isNativeSlotVisible(element: HTMLAnchorElement) {
-  if (element.closest('[data-react-aria-prevent-focus]')) return false;
-  if (typeof element.checkVisibility === 'function') {
-    return element.checkVisibility({ visibilityProperty: true });
+function writeNativeRowToken(
+  element: HTMLElement,
+  name: (typeof NATIVE_ROW_TOKENS)[number],
+  value: string | null,
+) {
+  if (element.style.getPropertyValue(name) === (value ?? '')) return;
+  if (value == null) element.style.removeProperty(name);
+  else element.style.setProperty(name, value);
+}
+
+function clearNativeRowPlacement(element: HTMLElement) {
+  for (const name of NATIVE_ROW_TOKENS)
+    writeNativeRowToken(element, name, null);
+}
+
+function borderBoxSize(styles: CSSStyleDeclaration, axis: 'width' | 'height') {
+  const size = parseFloat(styles[axis]);
+  if (styles.boxSizing === 'border-box') return size;
+  const sides = axis === 'width' ? ['Left', 'Right'] : ['Top', 'Bottom'];
+  return sides.reduce(
+    (total, side) =>
+      total +
+      parseFloat(
+        styles[`padding${side}` as keyof CSSStyleDeclaration] as string,
+      ) +
+      parseFloat(
+        styles[`border${side}Width` as keyof CSSStyleDeclaration] as string,
+      ),
+    size,
+  );
+}
+
+function nativeRowClip(
+  row: HTMLElement,
+  containingBlock: Element | null,
+  bounds: DOMRect,
+  scaleX: number,
+  scaleY: number,
+) {
+  let left = bounds.left;
+  let right = bounds.right;
+  let top = bounds.top;
+  let bottom = bounds.bottom;
+  const view = row.ownerDocument.defaultView!;
+  // Outside containing blocks bypass intervening overflow clips. Restore only
+  // those clips; the containing block and its ancestors still clip natively.
+  for (
+    let ancestor: HTMLElement | null = row;
+    ancestor && ancestor !== containingBlock;
+    ancestor = ancestor.parentElement
+  ) {
+    const styles = view.getComputedStyle(ancestor);
+    if (styles.overflowX === 'visible' && styles.overflowY === 'visible')
+      continue;
+    const rect = ancestor.getBoundingClientRect();
+    const x = rect.width / ancestor.offsetWidth || 1;
+    const y = rect.height / ancestor.offsetHeight || 1;
+    if (styles.overflowX !== 'visible') {
+      const edge = rect.left + ancestor.clientLeft * x;
+      left = Math.max(left, edge);
+      right = Math.min(right, edge + ancestor.clientWidth * x);
+    }
+    if (styles.overflowY !== 'visible') {
+      const edge = rect.top + ancestor.clientTop * y;
+      top = Math.max(top, edge);
+      bottom = Math.min(bottom, edge + ancestor.clientHeight * y);
+    }
+  }
+  const inset = [
+    Math.max(0, top - bounds.top) / scaleY,
+    Math.max(0, bounds.right - right) / scaleX,
+    Math.max(0, bounds.bottom - bottom) / scaleY,
+    Math.max(0, left - bounds.left) / scaleX,
+  ];
+  return inset.some((value) => value > 0)
+    ? `inset(${inset.map((value) => `${value}px`).join(' ')})`
+    : null;
+}
+
+function placeNativeRow(element: HTMLAnchorElement) {
+  const row = element.parentElement;
+  if (!row) return false;
+  const containingBlock = element.offsetParent;
+  if (!element.getClientRects().length) {
+    clearNativeRowPlacement(element);
+    return false;
   }
   const view = element.ownerDocument.defaultView;
   if (!view) return false;
-  const visibility = view.getComputedStyle(element).visibility;
-  if (visibility === 'hidden' || visibility === 'collapse') return false;
-  let child: Element = element;
-  for (let node: Element | null = element; node; node = node.parentElement) {
-    if (
-      node.hasAttribute('hidden') ||
-      view.getComputedStyle(node).display === 'none'
-    )
-      return false;
-    if (
-      node.localName === 'details' &&
-      child.localName !== 'summary' &&
-      !node.hasAttribute('open')
-    )
-      return false;
-    child = node;
+  const rowStyles = view.getComputedStyle(row);
+  if (containingBlock === row) {
+    // Absolute insets start inside the row's border. Include that border so
+    // the native target follows the same outer bounds as the painted row.
+    const inset = ['Top', 'Right', 'Bottom', 'Left'].map(
+      (side) =>
+        `${-parseFloat(rowStyles[`border${side}Width` as keyof CSSStyleDeclaration] as string)}px`,
+    );
+    writeNativeRowToken(element, '--native-row-inset', inset.join(' '));
+    for (const name of NATIVE_ROW_TOKENS.slice(1))
+      writeNativeRowToken(element, name, null);
+    return false;
   }
+  const helperStyles = view.getComputedStyle(element);
+  const bounds = row.getBoundingClientRect();
+  const current = element.getBoundingClientRect();
+  const scaleX = current.width / borderBoxSize(helperStyles, 'width') || 1;
+  const scaleY = current.height / borderBoxSize(helperStyles, 'height') || 1;
+  // Start at the helper's actual containing-block origin. The visual delta
+  // includes intervening scrolling and retains fractional layout coordinates.
+  const left =
+    (parseFloat(helperStyles.left) || 0) +
+    (bounds.left - current.left) / scaleX;
+  const top =
+    (parseFloat(helperStyles.top) || 0) + (bounds.top - current.top) / scaleY;
+  writeNativeRowToken(
+    element,
+    '--native-row-inset',
+    `${top}px auto auto ${left}px`,
+  );
+  writeNativeRowToken(
+    element,
+    '--native-row-width',
+    `${borderBoxSize(rowStyles, 'width')}px`,
+  );
+  writeNativeRowToken(
+    element,
+    '--native-row-height',
+    `${borderBoxSize(rowStyles, 'height')}px`,
+  );
+  writeNativeRowToken(
+    element,
+    '--native-row-clip',
+    nativeRowClip(row, containingBlock, bounds, scaleX, scaleY),
+  );
   return true;
 }
 
-function useNativeMenuItemTarget(
+function useNativeRow(
   enabled: boolean,
-  appearance: unknown,
   shouldFocus: boolean,
   onElement: NativeMenuItemProps['onNativeLinkElement'],
 ) {
-  const nodes = useRef<Record<NativeSlot, HTMLAnchorElement | null>>({
-    label: null,
-    description: null,
-    icon: null,
-  });
-  const active = useRef<HTMLAnchorElement>(null);
-  const restoreFocus = useRef(false);
-  const focusIntent = useRef(false);
+  const element = useRef<HTMLAnchorElement | null>(null);
+  const notify = useRef(onElement);
+  const wasEnabled = useRef(enabled);
   const repoint = useRef<(() => void) | null>(null);
-  const nameId = useId();
-  const [slot, setSlot] = useState<NativeSlot>('label');
+  // The host may remount inside Item's tooltip without rerendering this owner.
+  // Retain the physical ref callback so every such commit reaches the menu.
+  const nativeRowRef = useCallback((node: HTMLAnchorElement | null) => {
+    element.current = node;
+    if (node?.hasAttribute('data-menu-native-primary')) placeNativeRow(node);
+    repoint.current?.();
+    notify.current?.(node);
+  }, []);
 
-  const refresh = useEffectEvent((synchronous = false) => {
-    if (!enabled) return;
-    const previous = active.current;
-    const document =
-      previous?.ownerDocument ?? nodes.current.label?.ownerDocument;
-    const hadFocus =
-      previous === document?.activeElement ||
-      (focusIntent.current && document?.activeElement === document?.body);
-    const nextSlot =
-      (['label', 'description', 'icon'] as const).find((name) => {
-        const element = nodes.current[name];
-        return element && isNativeSlotVisible(element);
-      }) ?? slot;
-    if (slot === nextSlot) return;
-    if (hadFocus || shouldFocus) restoreFocus.current = true;
-    const apply = () => setSlot(nextSlot);
-    if (synchronous) flushSync(apply);
-    else apply();
+  useLayoutEffect(() => {
+    notify.current = onElement;
+    repoint.current?.();
+    onElement?.(element.current);
+    const node = element.current;
+    const row = node?.parentElement;
+    if (node && row && wasEnabled.current !== enabled && shouldFocus) {
+      const previous = enabled ? row : node;
+      const next = enabled ? node : row;
+      if (node.ownerDocument.activeElement === previous)
+        next.focus({ preventScroll: true });
+    }
+    wasEnabled.current = enabled;
   });
 
   useLayoutEffect(() => {
     if (!enabled) {
-      restoreFocus.current = false;
-      focusIntent.current = false;
+      if (element.current) clearNativeRowPlacement(element.current);
       return;
     }
-    refresh();
-  }, [enabled, appearance, slot, shouldFocus]);
-
-  useLayoutEffect(() => {
-    repoint.current?.();
-  });
-
-  useEffect(() => {
-    const element = active.current;
-    if (!enabled || !element || !restoreFocus.current) return;
-    const document = element.ownerDocument;
-    const menu = element.closest('[role="menu"]');
-    if (
-      document.activeElement !== document.body &&
-      !menu?.contains(document.activeElement)
-    ) {
-      restoreFocus.current = false;
-      return;
-    }
-    if (!isNativeSlotVisible(element)) return;
-    restoreFocus.current = false;
-    if (element !== document.activeElement)
-      element.focus({ preventScroll: true });
-  });
-
-  useEffect(() => {
-    if (!enabled) return;
-    const document =
-      nodes.current.label?.ownerDocument ??
-      nodes.current.description?.ownerDocument ??
-      nodes.current.icon?.ownerDocument;
+    const document = element.current?.ownerDocument;
     const view = document?.defaultView;
     if (!document || !view) return;
     let alive = true;
     let queued = false;
+    let scroll = false;
+    let row: HTMLElement | null = null;
     let watched: Element[] = [];
-    let resizeTargets: Element[] = [];
-    let row: Element | null = null;
-    let rescueArmed = false;
+    let resized: Element[] = [];
     const queue = () => {
       if (queued || !alive) return;
       queued = true;
       queueMicrotask(() => {
         queued = false;
-        if (!alive) return;
-        refresh(true);
-        observeNodes();
+        if (alive) sync();
       });
     };
-    const onOutsidePointerDown = (event: globalThis.PointerEvent) => {
-      if (!row?.contains(event.target as globalThis.Node)) {
-        focusIntent.current = false;
-        restoreFocus.current = false;
-        setRescue(false);
-      }
-    };
-    const onRescueKeyDown = (event: globalThis.KeyboardEvent) => {
-      if (event.key === 'Tab') {
-        focusIntent.current = false;
-        restoreFocus.current = false;
-        setRescue(false);
-      }
-    };
-    const setRescue = (armed: boolean) => {
-      if (armed === rescueArmed) return;
-      rescueArmed = armed;
-      if (armed) {
-        document.addEventListener('pointerdown', onOutsidePointerDown, true);
-        document.addEventListener('keydown', onRescueKeyDown, true);
-      } else {
-        document.removeEventListener('pointerdown', onOutsidePointerDown, true);
-        document.removeEventListener('keydown', onRescueKeyDown, true);
-      }
-    };
-    const onFocusIn = (event: Event) => {
-      focusIntent.current =
-        event.target === active.current &&
-        document.activeElement === active.current;
-      setRescue(focusIntent.current);
-      queue();
-    };
-    const onFocusOut = (event: Event) => {
+    const resize =
+      typeof view.ResizeObserver === 'function'
+        ? new view.ResizeObserver(queue)
+        : undefined;
+    const mutation = new view.MutationObserver((records) => {
       if (
-        event.target === active.current &&
-        (event as FocusEvent).relatedTarget
-      ) {
-        focusIntent.current = false;
-        restoreFocus.current = false;
-        setRescue(false);
-      }
-      queue();
+        records.some(
+          (record) =>
+            record.target !== element.current ||
+            record.attributeName !== 'style',
+        )
+      )
+        queue();
+    });
+    const setScroll = (outside: boolean) => {
+      if (outside === scroll) return;
+      scroll = outside;
+      if (outside) document.addEventListener('scroll', queue, true);
+      else document.removeEventListener('scroll', queue, true);
     };
-    const setRow = (next: Element | null) => {
+    const setRow = (next: HTMLElement | null) => {
       if (next === row) return;
-      row?.removeEventListener('focusin', onFocusIn, true);
-      row?.removeEventListener('focusout', onFocusOut, true);
       for (const event of [
         'pointerover',
         'pointerout',
@@ -200,8 +243,6 @@ function useNativeMenuItemTarget(
       ])
         row?.removeEventListener(event, queue, true);
       row = next;
-      row?.addEventListener('focusin', onFocusIn, true);
-      row?.addEventListener('focusout', onFocusOut, true);
       for (const event of [
         'pointerover',
         'pointerout',
@@ -210,52 +251,56 @@ function useNativeMenuItemTarget(
       ])
         row?.addEventListener(event, queue, true);
     };
-    const resize =
-      typeof view.ResizeObserver === 'function'
-        ? new view.ResizeObserver(queue)
-        : undefined;
-    const mutation = new view.MutationObserver(queue);
-    const observeNodes = () => {
-      const slots = Object.values(nodes.current).filter(
-        (node): node is HTMLAnchorElement => !!node,
-      );
-      const elements: Element[] = [...slots];
-      let ancestor = slots[0]?.parentElement;
-      while (ancestor) {
-        elements.push(ancestor);
-        ancestor = ancestor.parentElement;
+    const sync = () => {
+      const node = element.current;
+      const outside = !!node && placeNativeRow(node);
+      setScroll(outside);
+      setRow(node?.parentElement ?? null);
+      const ancestors: Element[] = [];
+      for (
+        let ancestor: Element | null = row;
+        ancestor;
+        ancestor = ancestor.parentElement
+      )
+        ancestors.push(ancestor);
+      const targets = outside ? [...ancestors] : row ? [row] : [];
+      if (outside) {
+        for (const ancestor of ancestors) {
+          if (ancestor === document.documentElement) break;
+          for (const sibling of Array.from(
+            ancestor.parentElement?.children ?? [],
+          ))
+            if (sibling !== ancestor && !targets.includes(sibling))
+              targets.push(sibling);
+        }
       }
-      const nextResizeTargets = elements.filter(
-        (node) =>
-          slots.includes(node as HTMLAnchorElement) ||
-          view.getComputedStyle(node).containerType !== 'normal',
-      );
-      setRow(slots[0]?.closest('[data-menuitem]') ?? null);
       if (
-        elements.length === watched.length &&
-        elements.every((node, index) => node === watched[index]) &&
-        nextResizeTargets.length === resizeTargets.length &&
-        nextResizeTargets.every((node, index) => node === resizeTargets[index])
+        ancestors.length === watched.length &&
+        ancestors.every((node, index) => node === watched[index]) &&
+        targets.length === resized.length &&
+        targets.every((node, index) => node === resized[index])
       )
         return;
-      watched = elements;
-      resizeTargets = nextResizeTargets;
+      watched = ancestors;
+      resized = targets;
       resize?.disconnect();
       mutation.disconnect();
-      for (const node of elements) {
-        if (resizeTargets.includes(node)) resize?.observe(node);
-        mutation.observe(node, { attributes: true, childList: node === row });
-      }
+      for (const target of targets) resize?.observe(target);
+      for (const ancestor of ancestors)
+        mutation.observe(ancestor, {
+          attributes: true,
+          childList: ancestor === row || outside,
+          subtree: outside && ancestor === row?.parentElement,
+        });
     };
-    observeNodes();
-    repoint.current = observeNodes;
+    repoint.current = sync;
     const stopScheme = subscribeScheme(queue);
     view.addEventListener('resize', queue);
-    queue();
+    sync();
     return () => {
       alive = false;
       repoint.current = null;
-      setRescue(false);
+      setScroll(false);
       setRow(null);
       stopScheme();
       resize?.disconnect();
@@ -264,75 +309,60 @@ function useNativeMenuItemTarget(
     };
   }, [enabled]);
 
-  const setNode = (name: NativeSlot, element: HTMLAnchorElement | null) => {
-    nodes.current[name] = element;
-    if (slot !== name) return;
-    if (
-      enabled &&
-      !element &&
-      active.current === active.current?.ownerDocument.activeElement
-    )
-      restoreFocus.current = true;
-    if (!enabled) restoreFocus.current = false;
-    active.current = element;
-    onElement?.(element);
-  };
-  return {
-    slot,
-    nameId,
-    refs: {
-      label: (element: HTMLAnchorElement | null) => setNode('label', element),
-      description: (element: HTMLAnchorElement | null) =>
-        setNode('description', element),
-      icon: (element: HTMLAnchorElement | null) => setNode('icon', element),
-    },
-  };
+  return nativeRowRef;
 }
 
 export function ItemWithNativeLinks(props: NativeMenuItemProps) {
   const { nativeMenuItemName, nativeMenuItemShouldFocus, ref, ...itemProps } =
     props;
-  const target = useNativeMenuItemTarget(
+  const nameId = useId();
+  const labelId = props.labelProps?.id ?? nameId;
+  const descriptionId = props.descriptionProps?.id ?? `${nameId}-description`;
+  const descriptionNamesRow =
+    !props.children &&
+    (!!props.description ||
+      Object.keys(props.descriptionProps ?? {}).some((key) => key !== 'id'));
+  const isHeading = props.type === 'header' || props.type === 'card';
+  const nameReferenceId = descriptionNamesRow
+    ? descriptionId
+    : isHeading
+      ? `${labelId}-content`
+      : labelId;
+  const nativeRowRef = useNativeRow(
     !!props.nativeMenuItemProps,
-    {
-      styles: props.styles,
-      mods: props.mods,
-      tokens: props.tokens,
-      tooltip: props.tooltip,
-      children: props.children,
-      description: props.description,
-    },
     !!nativeMenuItemShouldFocus,
     props.onNativeLinkElement,
   );
-  const isHeading = props.type === 'header' || props.type === 'card';
-  const labelId =
-    target.slot === 'label' && !isHeading
-      ? props.nativeMenuItemProps?.id ?? props.labelProps?.id ?? target.nameId
-      : props.labelProps?.id ?? target.nameId;
-  const semanticId = props.nativeMenuItemProps?.id;
   let primaryProps = props.nativeMenuItemProps;
-  if (primaryProps && target.slot !== 'label') {
+  if (
+    primaryProps &&
+    (nativeMenuItemName?.label != null ||
+      nativeMenuItemName?.labelledBy != null)
+  ) {
+    primaryProps = {
+      ...primaryProps,
+      'aria-label': nativeMenuItemName.label ?? primaryProps['aria-label'],
+      'aria-labelledby': nativeMenuItemName.labelledBy,
+    };
+  }
+  if (
+    primaryProps &&
+    nativeMenuItemName?.labelledBy == null &&
+    nativeMenuItemName?.label == null &&
+    primaryProps['aria-label'] == null
+  ) {
+    const semanticId = primaryProps.id;
     primaryProps = {
       ...primaryProps,
       'aria-labelledby':
-        nativeMenuItemName?.labelledBy != null
-          ? nativeMenuItemName.labelledBy
-          : nativeMenuItemName?.label != null
-            ? undefined
-            : labelId,
-      'aria-describedby':
-        target.slot === 'description' &&
-        nativeMenuItemName?.descriptionFromContent
-          ? primaryProps['aria-describedby']
-              ?.split(' ')
-              .map((id) =>
-                id === props.descriptionProps?.id && semanticId
-                  ? semanticId
-                  : id,
-              )
-              .join(' ')
-          : primaryProps['aria-describedby'],
+        primaryProps['aria-labelledby']
+          ?.split(' ')
+          .map((id) =>
+            id === semanticId || id === props.labelProps?.id
+              ? nameReferenceId
+              : id,
+          )
+          .join(' ') ?? nameReferenceId,
     };
   }
   return (
@@ -340,9 +370,9 @@ export function ItemWithNativeLinks(props: NativeMenuItemProps) {
       {...itemProps}
       ref={ref}
       nativeMenuItemProps={primaryProps}
-      nativePrimarySlot={target.slot}
       nativeLabelReferenceId={labelId}
-      nativeSlotRefs={target.refs}
+      descriptionProps={{ ...props.descriptionProps, id: descriptionId }}
+      nativeRowRef={nativeRowRef}
     />
   );
 }
