@@ -10,7 +10,6 @@ interface NativeMenuItemProps extends ItemWithNativeLinksProps {
   nativeMenuItemName?: {
     label?: string;
     labelledBy?: string;
-    descriptionFromContent: boolean;
   };
 }
 

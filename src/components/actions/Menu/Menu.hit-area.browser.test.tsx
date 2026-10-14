@@ -367,6 +367,8 @@ describe('Native menu row hit area', () => {
     const suffix = vi.fn();
     const ignored = vi.fn();
     const navigate = vi.fn();
+    const itemAction = vi.fn();
+    const menuAction = vi.fn();
     let reveal: (() => void) | undefined;
     function App() {
       const [visible, setVisible] = useState(false);
@@ -377,11 +379,16 @@ describe('Native menu row hit area', () => {
             Warm ignored control
           </Menu.Item.Action>
           {visible && (
-            <Menu aria-label="Workbooks" styles={{ width: '60x' }}>
+            <Menu
+              aria-label="Workbooks"
+              styles={{ width: '36x' }}
+              onAction={menuAction}
+            >
               <Menu.Item
                 key="browse"
                 to="/__menu-link-test/controls"
                 tooltip={false}
+                onAction={itemAction}
                 prefix={<button onClick={prefix}>Prefix control</button>}
                 suffix={
                   <input
@@ -418,10 +425,21 @@ describe('Native menu row hit area', () => {
       prefixBounds.top + prefixBounds.height / 2,
     );
     expect(prefix).toHaveBeenCalledTimes(1);
-    await userEvent.click(
-      screen.getByRole('checkbox', { name: 'Suffix control' }),
-    );
+    expect(itemAction).not.toHaveBeenCalled();
+    expect(menuAction).not.toHaveBeenCalled();
+    expect(navigate).not.toHaveBeenCalled();
+    await act(async () => {
+      await userEvent.click(
+        screen.getByRole('checkbox', { name: 'Suffix control' }),
+      );
+    });
     expect(suffix).toHaveBeenCalledTimes(1);
+    expect(
+      screen.getByRole('checkbox', { name: 'Suffix control' }),
+    ).toBeChecked();
+    expect(itemAction).not.toHaveBeenCalled();
+    expect(menuAction).not.toHaveBeenCalled();
+    expect(navigate).not.toHaveBeenCalled();
     const inert = screen.getByRole('menuitem', { name: 'Ignored control' });
     expect(getComputedStyle(inert).pointerEvents).toBe('none');
     const bounds = inert.getBoundingClientRect();
@@ -430,5 +448,70 @@ describe('Native menu row hit area', () => {
       bounds.top + bounds.height / 2,
     );
     expect(ignored).not.toHaveBeenCalled();
+    expect(itemAction).toHaveBeenCalledTimes(1);
+    expect(menuAction).toHaveBeenCalledTimes(1);
+    expect(navigate).toHaveBeenCalledTimes(1);
   });
+
+  it.each(['prefix', 'suffix', 'actions'] as const)(
+    'keeps a native checkbox label in %s independent from row activation',
+    async (slot) => {
+      const changed = vi.fn();
+      const itemAction = vi.fn();
+      const menuAction = vi.fn();
+      const navigate = vi.fn();
+      render(
+        <Root navigation={{ useHref: String, useNavigate: () => navigate }}>
+          <Menu
+            aria-label="Workbooks"
+            styles={{ width: '36x' }}
+            onAction={menuAction}
+          >
+            <Menu.Item
+              key="saved"
+              to="/__menu-link-test/label-control"
+              tooltip={false}
+              onAction={itemAction}
+              {...{
+                [slot]: (
+                  <label>
+                    <input
+                      type="checkbox"
+                      role="menuitemcheckbox"
+                      tabIndex={-1}
+                      onChange={changed}
+                    />
+                    <span>Select saved</span>
+                  </label>
+                ),
+              }}
+            >
+              Saved workbook
+            </Menu.Item>
+          </Menu>
+        </Root>,
+      );
+      const text = screen.getByText('Select saved');
+      const bounds = text.getBoundingClientRect();
+      await pressAt(
+        bounds.left + bounds.width / 2,
+        bounds.top + bounds.height / 2,
+      );
+      const checkbox = screen.getByRole('menuitemcheckbox', {
+        name: 'Select saved',
+      });
+      expect(checkbox).toBeChecked();
+      expect(changed).toHaveBeenCalledTimes(1);
+      await act(async () => userEvent.click(checkbox));
+      expect(checkbox).not.toBeChecked();
+      expect(changed).toHaveBeenCalledTimes(2);
+      await act(() => checkbox.focus());
+      await act(async () => userEvent.keyboard(' '));
+      expect(checkbox).toBeChecked();
+      expect(changed).toHaveBeenCalledTimes(3);
+      expect(itemAction).not.toHaveBeenCalled();
+      expect(menuAction).not.toHaveBeenCalled();
+      expect(navigate).not.toHaveBeenCalled();
+    },
+  );
 });

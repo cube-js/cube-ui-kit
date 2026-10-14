@@ -483,8 +483,6 @@ function MenuItemContent<T>(
         nativeMenuItemName={{
           label: consumerSemanticProps['aria-label'],
           labelledBy: consumerSemanticProps['aria-labelledby'],
-          descriptionFromContent:
-            consumerSemanticProps['aria-describedby'] == null,
         }}
         onNativeLinkElement={(element) => {
           if (primaryInCell) updateSemanticElement(element);
