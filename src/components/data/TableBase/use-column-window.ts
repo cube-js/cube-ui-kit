@@ -210,7 +210,8 @@ export function useColumnWindow<T>(
     const update = (reset = false) => {
       const width = scroller.clientWidth;
       const offset = Math.abs(scroller.scrollLeft);
-      // Vertical scroll and movement within the same column band add no render.
+      // Only changed bands add a render. New rows use the ordinary band,
+      // so diagonal scrolling does not multiply the extra refill cells.
       setRange((previous) => {
         const next =
           width > 0 && layout.totalWidth! > width
@@ -225,11 +226,15 @@ export function useColumnWindow<T>(
       });
     };
     let lastOffset = Math.abs(scroller.scrollLeft);
+    let lastVerticalOffset = scroller.scrollTop;
     const onScroll = () => {
       const offset = Math.abs(scroller.scrollLeft);
-      if (offset === lastOffset) return;
+      const verticalOffset = scroller.scrollTop;
+      const reset = verticalOffset !== lastVerticalOffset;
+      lastVerticalOffset = verticalOffset;
+      if (offset === lastOffset && !reset) return;
       lastOffset = offset;
-      update();
+      update(reset);
     };
     refreshAppearance();
     update(true);

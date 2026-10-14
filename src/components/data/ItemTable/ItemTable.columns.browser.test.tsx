@@ -111,6 +111,28 @@ describe('ItemTable body column window', () => {
     expect(scroller().scrollWidth).toBeGreaterThanOrEqual(15000);
   });
 
+  it('drops the refill when vertical movement starts during a horizontal gesture', async () => {
+    renderWithRoot(<Table data={rows(2000)} />);
+    await vi.waitFor(() =>
+      expect(scroller().parentElement).toHaveAttribute('data-scroll-x'),
+    );
+    await new Promise((resolve) =>
+      requestAnimationFrame(() => requestAnimationFrame(resolve)),
+    );
+    await scrollTo(160);
+    await vi.waitFor(() => expect(cell('c8')).toBeInTheDocument());
+    await scrollTo(160, 200);
+    expect(cell('c8')).not.toBeInTheDocument();
+    await scrollTo(320, 400);
+    expect(cell('c8')).toBeInTheDocument();
+    expect(cell('c9')).not.toBeInTheDocument();
+    expect(bodyRow().getBoundingClientRect().height).toBe(41);
+    expect(cell('c4')!.getBoundingClientRect().left).toBeCloseTo(
+      header('c4').getBoundingClientRect().left,
+      0,
+    );
+  });
+
   it('bounds wide body cells while preserving scroll extent, headers and logical indices', async () => {
     renderWithRoot(<Table data={rows(2000)} />);
     await vi.waitFor(() =>

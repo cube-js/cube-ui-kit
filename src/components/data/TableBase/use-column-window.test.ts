@@ -271,9 +271,19 @@ describe('column window lifecycle', () => {
     expect(
       result.current.segments.some((segment) => segment.column?.key === 'c0'),
     ).toBe(false);
-    const window = result.current;
+    expect(
+      result.current.segments.some((segment) => segment.column?.key === 'c46'),
+    ).toBe(true);
     act(() => {
       first.scrollTop = 2000;
+      first.dispatchEvent(new Event('scroll'));
+    });
+    expect(
+      result.current.segments.some((segment) => segment.column?.key === 'c46'),
+    ).toBe(false);
+    const window = result.current;
+    act(() => {
+      first.scrollTop = 4000;
       first.dispatchEvent(new Event('scroll'));
     });
     expect(result.current).toBe(window);

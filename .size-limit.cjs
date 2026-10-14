@@ -344,9 +344,9 @@ module.exports = [
     // measure 605,746 B against main's 604,370 B at 9dbf967a (+1,376 B).
     // Button stays exactly 133,148 B: the window and its compatibility checks
     // tree-shake with TableBase. Allow 606 kB and confirm the figure in CI.
-    // Horizontal buffer reuse: fresh 0.193.2 release builds measure 606,083 B
-    // against main's 605,741 B (+342 B), with Button unchanged at 133,148 B.
-    // Allow 607 kB (917 B headroom) and confirm the measurement in Linux CI.
+    // Horizontal buffer reuse: fresh 0.193.2 release builds measure 606,107 B
+    // against main's 605,741 B (+366 B), with Button unchanged at 133,148 B.
+    // Allow 607 kB (893 B headroom) and confirm the measurement in Linux CI.
     limit: '607kB',
   },
   {
