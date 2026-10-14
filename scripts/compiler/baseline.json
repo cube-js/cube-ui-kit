@@ -574,6 +574,11 @@
     "diagnostics": {},
     "optOuts": 0
   },
+  "src/components/data/TableBase/use-column-window.ts": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
   "src/components/data/TableBase/use-container-width.ts": {
     "compiled": 1,
     "diagnostics": {},

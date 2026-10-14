@@ -135,6 +135,9 @@ Per column, on `CubeDataTableColumn`: `isReorderable`, `color` and `colorScope` 
 
 - **`isVirtualized`** `boolean | 'auto'` (default: `'auto'`) — On when the grid is height-bounded and has more rows than the threshold. Ignored when `isAutoHeight` is enabled.
 - **`virtualizeThreshold`** `number`
+
+Wide bounded tables window default text body cells horizontally while retaining all headers and the complete grouped-column layout. Pinned/structural columns, row headers, tree disclosure, wrapping cells, custom renderers and per-column cell styles remain mounted. Custom body/row/cell styles, arbitrary `cellProps` and auto-height or `isVirtualized={false}` retain the complete body layout. Logical cell-range selection and copy include offscreen columns.
+
 - **`overscan`** `number`
 
 #### Other
