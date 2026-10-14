@@ -86,7 +86,7 @@ describe('ItemTable body column window', () => {
     await new Promise((resolve) =>
       requestAnimationFrame(() => requestAnimationFrame(resolve)),
     );
-    await scrollTo(160);
+    await scrollTo(200);
     await vi.waitFor(() => expect(cell('c8')).toBeInTheDocument());
     const retained = Array.from(
       bodyRow().querySelectorAll('[data-element="Cell"]'),
@@ -119,11 +119,11 @@ describe('ItemTable body column window', () => {
     await new Promise((resolve) =>
       requestAnimationFrame(() => requestAnimationFrame(resolve)),
     );
-    await scrollTo(160);
+    await scrollTo(200);
     await vi.waitFor(() => expect(cell('c8')).toBeInTheDocument());
-    await scrollTo(160, 200);
+    await scrollTo(200, 200);
     expect(cell('c8')).not.toBeInTheDocument();
-    await scrollTo(320, 400);
+    await scrollTo(360, 400);
     expect(cell('c8')).toBeInTheDocument();
     expect(cell('c9')).not.toBeInTheDocument();
     expect(bodyRow().getBoundingClientRect().height).toBe(41);
