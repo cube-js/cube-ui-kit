@@ -1,5 +1,6 @@
 import { act } from '@testing-library/react';
 import { useState } from 'react';
+import { userEvent as browserUserEvent } from 'vitest/browser';
 
 import {
   fireEvent,
@@ -206,8 +207,8 @@ describe('Radio-type tab with a title too long for it', () => {
     expect(label.scrollWidth).toBeGreaterThan(label.clientWidth);
 
     // React Aria ignores a hover until a pointer move sets the modality.
-    await userEvent.hover(document.body);
-    await userEvent.hover(tab);
+    await browserUserEvent.hover(document.body);
+    await browserUserEvent.hover(tab);
 
     await waitFor(() =>
       expect(screen.getByRole('tooltip')).toHaveTextContent(TITLE),
