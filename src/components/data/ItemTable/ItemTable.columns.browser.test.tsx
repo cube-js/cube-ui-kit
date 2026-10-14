@@ -1,7 +1,7 @@
 import { act } from 'react';
 import { page, userEvent as realInput } from 'vitest/browser';
 
-import { renderWithRoot, screen } from '../../../test';
+import { cleanup, renderWithRoot, screen } from '../../../test';
 import { SlotProvider } from '../../../utils/react/Slots';
 import { Menu } from '../../actions/Menu/Menu';
 import { Root } from '../../Root';
@@ -77,6 +77,13 @@ function Table({
 }
 
 describe('ItemTable body column window', () => {
+  // Gesture tests control timeouts; layout, observers and RAF stay real.
+  // Zero-interval polling leaves the clock for the explicit rest step.
+  afterEach(() => {
+    cleanup();
+    vi.useRealTimers();
+  });
+
   it('retains cells through buffered horizontal movement and releases the refill at rest', async () => {
     renderWithRoot(<Table />);
     await vi.waitFor(() => {
@@ -86,8 +93,11 @@ describe('ItemTable body column window', () => {
     await new Promise((resolve) =>
       requestAnimationFrame(() => requestAnimationFrame(resolve)),
     );
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
     await scrollTo(200);
-    await vi.waitFor(() => expect(cell('c8')).toBeInTheDocument());
+    await vi.waitFor(() => expect(cell('c8')).toBeInTheDocument(), {
+      interval: 0,
+    });
     const retained = Array.from(
       bodyRow().querySelectorAll('[data-element="Cell"]'),
     );
@@ -106,7 +116,12 @@ describe('ItemTable body column window', () => {
         0,
       );
     }
-    await vi.waitFor(() => expect(cell('c8')).not.toBeInTheDocument());
+    await act(async () => {
+      await vi.runOnlyPendingTimersAsync();
+    });
+    await vi.waitFor(() => expect(cell('c8')).not.toBeInTheDocument(), {
+      interval: 0,
+    });
     expect(bodyRow().getBoundingClientRect().height).toBe(41);
     expect(scroller().scrollWidth).toBeGreaterThanOrEqual(15000);
   });
@@ -119,8 +134,11 @@ describe('ItemTable body column window', () => {
     await new Promise((resolve) =>
       requestAnimationFrame(() => requestAnimationFrame(resolve)),
     );
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
     await scrollTo(200);
-    await vi.waitFor(() => expect(cell('c8')).toBeInTheDocument());
+    await vi.waitFor(() => expect(cell('c8')).toBeInTheDocument(), {
+      interval: 0,
+    });
     await scrollTo(200, 200);
     expect(cell('c8')).not.toBeInTheDocument();
     await scrollTo(360, 400);
