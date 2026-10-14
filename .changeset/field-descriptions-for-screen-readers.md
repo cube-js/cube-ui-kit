@@ -1,5 +1,0 @@
----
-"@cube-dev/ui-kit": patch
----
-
-Link every form input's `description` and error message to its control with `aria-describedby`, so a screen reader reads them with the field instead of announcing it invalid without saying why. `aria-label` alone now names the inputs of `ComboBox` and `FilterListBox`, and `FileInput`, `TextInputMapper` and `CheckboxGroup`; `CheckboxGroup`'s `group` role, name and description move from the field wrapper to the element around its checkboxes, so `fieldProps` reach the wrapper again; `ComboBox`, `FilterListBox`, `ListBox` and `ColorSwatchGroup` mark an invalid field `aria-invalid`, which a screen reader announces; and `Picker`, `FilterPicker` and `ColorPicker` accept `aria-describedby`. The required asterisk and the check marks of `Checkbox` and `ListBox` are hidden from screen readers rather than read as unnamed graphics; with `includeNecessityIndicatorInAccessibilityName`, the asterisk is read as "(required)". The two calendar buttons of `DateRangeSeparatedPicker` are named for the start and end date, where both were "Calendar".
