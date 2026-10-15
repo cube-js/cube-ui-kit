@@ -110,9 +110,13 @@ const PanelElement = tasty({
     },
     fill: '#surface',
 
-    // Transition styles - offscreen mod controls slide animation
+    // Transition styles - offscreen mod controls slide animation.
+    // `none` at rest, not a zero translate: any transform makes the panel the
+    // containing block of its fixed descendants (drag previews, popups), which
+    // then position against the panel and are clipped by its overflow. `none`
+    // still animates to and from the offscreen translate.
     transform: {
-      '': 'translateX(0) translateY(0)',
+      '': 'none',
       'offscreen & side=left': 'translateX(-100%)',
       'offscreen & side=right': 'translateX(100%)',
       'offscreen & side=top': 'translateY(-100%)',
