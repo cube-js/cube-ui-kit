@@ -46,15 +46,17 @@ const PaneElement = tasty({
     placeContent: 'stretch',
     placeItems: 'stretch',
     placeSelf: 'stretch',
-    flexShrink: 0,
+    // Gives way down to its minimum when a flex container runs short, so the
+    // content beside it keeps its room.
+    flexShrink: 1,
     flexGrow: 0,
     // Size is set via CSS custom property for performance during drag
     width: {
       '': 'auto',
-      'edge=right': '2x $pane-size $pane-size',
+      'edge=right': '($pane-min-size, 2x) $pane-size $pane-size',
     },
     height: {
-      '': '2x $pane-size $pane-size',
+      '': '($pane-min-size, 2x) $pane-size $pane-size',
       'edge=right': 'auto',
     },
     boxSizing: 'content-box',
@@ -445,8 +447,14 @@ function LayoutPane(
   const paneStyle = {
     ...scrollbarStyle,
     '--pane-size': `${size}px`,
-    '--min-size': typeof minSize === 'number' ? `${minSize}px` : minSize,
-    '--max-size': typeof maxSize === 'number' ? `${maxSize}px` : maxSize,
+    // Reset rather than left unset: a custom property inherits, and an
+    // enclosing pane's minimum is not this one's.
+    '--pane-min-size':
+      minSize == null
+        ? 'initial'
+        : typeof minSize === 'number'
+          ? `${minSize}px`
+          : minSize,
   };
 
   return (
