@@ -1,5 +1,17 @@
 # @cube-dev/ui-kit
 
+## 0.194.1
+
+### Patch Changes
+
+- [#1513](https://github.com/cube-js/cube-ui-kit/pull/1513) [`140ee7e8`](https://github.com/cube-js/cube-ui-kit/commit/140ee7e84cf3c1d0882711fbe57cb4d24c09764a) Thanks [@tenphi](https://github.com/tenphi)! - Reduce repeated header styling during ItemTable and DataTable scrolling by retaining unchanged default header content.
+
+- [#1514](https://github.com/cube-js/cube-ui-kit/pull/1514) [`7ecdf04e`](https://github.com/cube-js/cube-ui-kit/commit/7ecdf04e6aac71313f450a01d5857deab3430787) Thanks [@tenphi](https://github.com/tenphi)! - `Layout.Pane` now keeps its `minSize` on screen. With `flexShrink={1}`, a pane gives way only down to its `minSize` (`2x` when unset) instead of always down to `2x`, as `ResizablePanel` did, and a `minSize` given as a CSS length now takes effect. Resizing a pane that has given way starts from the size it is drawn at, so the first moves are no longer lost.
+
+- [#1511](https://github.com/cube-js/cube-ui-kit/pull/1511) [`3a4a7888`](https://github.com/cube-js/cube-ui-kit/commit/3a4a78889a313742513632d93260e73ba83bf48a) Thanks [@tenphi](https://github.com/tenphi)! - Reduce TextItem rendering and tooltip positioning overhead in scrolling tables while preserving automatic tooltip measurement, custom styling and tooltip interactions.
+
+- [#1514](https://github.com/cube-js/cube-ui-kit/pull/1514) [`7ecdf04e`](https://github.com/cube-js/cube-ui-kit/commit/7ecdf04e6aac71313f450a01d5857deab3430787) Thanks [@tenphi](https://github.com/tenphi)! - `Layout.Panel` no longer keeps a transform while it is open and not sliding. Fixed-position content inside a panel, such as a drag preview or a popup, now positions against the viewport instead of the panel, and the panel's overflow no longer clips it.
+
 ## 0.194.0
 
 ### Minor Changes
