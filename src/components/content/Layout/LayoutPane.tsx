@@ -35,13 +35,10 @@ import { clampSize } from './utils';
 const HANDLER_WIDTH = 9; // Interactive area
 const HANDLER_RESERVED = 5; // Space reserved in Inner padding
 
-/**
- * Mounted panes by element. Each takes a size it is drawn at as its own when
- * it resizes along that axis, and says whether it does.
- */
-const sizeAdopters = new WeakMap<
+/** Mounted panes by element: the axis each resizes along, and how it takes a size. */
+const mountedPanes = new WeakMap<
   Element,
-  (isHorizontal: boolean, drawn: number) => boolean
+  { isHorizontal: boolean; adoptSize: (drawn: number) => void }
 >();
 
 function setPaneSize(pane: HTMLElement, size: number) {
@@ -51,7 +48,8 @@ function setPaneSize(pane: HTMLElement, size: number) {
 function getDrawnSize(element: HTMLElement, isHorizontal: boolean) {
   const style = getComputedStyle(element);
 
-  return Math.round(parseFloat(isHorizontal ? style.width : style.height));
+  // Down, so that panes taking the sizes they are drawn at never need more room.
+  return Math.floor(parseFloat(isHorizontal ? style.width : style.height));
 }
 
 function givesWay(element: Element) {
@@ -80,6 +78,13 @@ function getYieldingContainer(pane: HTMLElement, isHorizontal: boolean) {
 /** How far a flex container's items run past its content box. */
 function getOverflow(container: HTMLElement, isHorizontal: boolean) {
   const style = getComputedStyle(container);
+  const rect = container.getBoundingClientRect();
+  // Items are measured as drawn, which a zoomed or scaled ancestor makes
+  // differ from the container's own layout size.
+  const scale =
+    (isHorizontal
+      ? rect.width / container.offsetWidth
+      : rect.height / container.offsetHeight) || 1;
   const available = isHorizontal
     ? container.clientWidth -
       parseFloat(style.paddingLeft) -
@@ -101,13 +106,13 @@ function getOverflow(container: HTMLElement, isHorizontal: boolean) {
       continue;
     }
 
-    const rect = item.getBoundingClientRect();
+    const itemRect = item.getBoundingClientRect();
 
     used += isHorizontal
-      ? rect.width +
+      ? itemRect.width / scale +
         parseFloat(itemStyle.marginLeft) +
         parseFloat(itemStyle.marginRight)
-      : rect.height +
+      : itemRect.height / scale +
         parseFloat(itemStyle.marginTop) +
         parseFloat(itemStyle.marginBottom);
     count += 1;
@@ -119,52 +124,56 @@ function getOverflow(container: HTMLElement, isHorizontal: boolean) {
 }
 
 /**
- * Has the panes that give way beside a moving pane take the sizes they are
- * drawn at: flex shares an overflow by size, so a pane still holding its old,
- * larger size would take part of the move back. Every size is read before any
- * is written, as each write reflows the rest. Returns the panes before the
- * grip.
+ * The other panes that give way in a container along the same axis. A hidden
+ * pane has no size and is left out.
  */
-function adoptSizesBeside(
+function getPanesBeside(
   pane: HTMLElement,
   container: HTMLElement,
   isHorizontal: boolean,
 ) {
-  const side = isHorizontal ? 'left' : 'top';
-  const paneStart = pane.getBoundingClientRect()[side];
-  const panes = Array.from(container.children as HTMLCollectionOf<HTMLElement>)
-    .filter((item) => item !== pane && sizeAdopters.has(item) && givesWay(item))
-    .map((item) => ({
-      item,
-      drawn: getDrawnSize(item, isHorizontal),
-      isBefore: item.getBoundingClientRect()[side] < paneStart,
-    }));
-  const before: HTMLElement[] = [];
+  return Array.from(container.children as HTMLCollectionOf<HTMLElement>).filter(
+    (item) =>
+      item !== pane &&
+      mountedPanes.get(item)?.isHorizontal === isHorizontal &&
+      givesWay(item) &&
+      Number.isFinite(getDrawnSize(item, isHorizontal)),
+  );
+}
 
-  for (const { item, drawn, isBefore } of panes) {
-    if (
-      Number.isFinite(drawn) &&
-      sizeAdopters.get(item)?.(isHorizontal, drawn) &&
-      isBefore
-    ) {
-      before.push(item);
-    }
-  }
-
-  return before;
+function release(held: HTMLElement[]) {
+  held.forEach((item) => item.style.removeProperty('flex-shrink'));
 }
 
 interface PaneMove {
-  /** Where the pointer or keys ask the pane to be, within min and max size. */
+  /** Where the pointer or keys ask the pane to be. */
   target: number;
   /** The size so far, ahead of the rendered one. */
   size: number;
-  /** The flex container the pane gives way in, or `null` when it holds. */
+  /** The size the pane is drawn at when the move begins. */
+  start: number;
+  /** The pane's own size before the move. */
+  ownSize: number;
+  /** What moves the pane: a pointer, or keys pressed during its drag. */
+  pointerType: string;
+  /** The flex container the pane gives way in beside other panes, or `null`. */
   container: HTMLElement | null;
+  /** The panes beside it, sized as drawn for the move. */
+  beside: HTMLElement[];
+  /** Their own sizes before the move. */
+  besideSizes: string[];
   /** The panes that hold their size until the move ends. */
   held: HTMLElement[];
   /** How far the container's items may run past it, as they did at the start. */
   maxOverflow: number;
+}
+
+/** Gives the panes beside a move back their own sizes and lets go of them. */
+function undoMove(move: PaneMove) {
+  move.beside.forEach((item, index) =>
+    item.style.setProperty('--pane-size', move.besideSizes[index]),
+  );
+  release(move.held);
 }
 
 const PaneElement = tasty({
@@ -366,7 +375,8 @@ export interface CubeLayoutPaneProps extends BaseProps, ContainerStyleProps {
   maxSize?: number | string;
   /**
    * Size change callback. With `flexShrink={1}`, also called when the pane
-   * gives way to a pane resized beside it and keeps the size it was left at.
+   * gives way to another such pane resized beside it and keeps the size it
+   * was left at.
    */
   onSizeChange?: (size: number) => void;
   /** Scrollbar style */
@@ -503,31 +513,53 @@ function LayoutPane(
 
   const moveRef = useRef<PaneMove | null>(null);
 
-  const beginMove = (pane: HTMLElement): PaneMove => {
+  const beginMove = (pane: HTMLElement, pointerType: string): PaneMove => {
     // Flex shrinking or a CSS minimum can draw the pane at another size than
     // `size`; resize from the one on screen, or the first moves do nothing.
     const drawn = getDrawnSize(pane, isHorizontal);
     const start =
       Number.isFinite(drawn) && Math.abs(drawn - size) >= 1 ? drawn : size;
     const container = getYieldingContainer(pane, isHorizontal);
+    const beside = container
+      ? getPanesBeside(pane, container, isHorizontal)
+      : [];
     const move: PaneMove = {
       target: start,
       size: start,
-      container,
+      start,
+      ownSize: size,
+      pointerType,
+      container: null,
+      beside,
+      besideSizes: [],
       held: [],
       maxOverflow: 0,
     };
 
-    // A pane that gives way would give back part of every move to the panes
-    // beside it, so it holds its size until the move ends, and so do the panes
-    // before its grip: the room comes from beyond the grip. Keyboard moves
-    // start and end within one event, so this goes to the DOM, not through a
-    // render. Every size is read before this pane writes its own, which would
-    // reflow the panes beside it.
-    if (container) {
+    // Beside other panes that give way, this one would hand them part of every
+    // move: flex shares the room by size, and theirs are larger than drawn. So
+    // they take the sizes they are drawn at, and this pane holds its size until
+    // the move ends, as do the panes before its grip: the room comes from
+    // beyond the grip. Keyboard moves start and end within one event, so this
+    // goes to the DOM, not through a render. Every size is read before one is
+    // written, as each write reflows the rest.
+    if (container && beside.length) {
+      const side = isHorizontal ? 'left' : 'top';
+      const paneStart = pane.getBoundingClientRect()[side];
+      const sizes = beside.map((item) => getDrawnSize(item, isHorizontal));
+
+      move.container = container;
       move.maxOverflow = Math.max(getOverflow(container, isHorizontal), 0);
-      move.held = [pane, ...adoptSizesBeside(pane, container, isHorizontal)];
-      setPaneSize(pane, start);
+      move.besideSizes = beside.map((item) =>
+        item.style.getPropertyValue('--pane-size'),
+      );
+      move.held = [
+        pane,
+        ...beside.filter(
+          (item) => item.getBoundingClientRect()[side] < paneStart,
+        ),
+      ];
+      beside.forEach((item, index) => setPaneSize(item, sizes[index]));
       move.held.forEach((item) => item.style.setProperty('flex-shrink', '0'));
     }
 
@@ -535,17 +567,37 @@ function LayoutPane(
   };
 
   const endMove = (move: PaneMove) => {
-    // Round to integer on release and notify parent
+    // Round to integer when the move ends and notify parent
     const finalSize = Math.round(clampValue(move.size));
+    // The pane has no element once it unmounts mid-move.
     const pane = combinedRef.current;
 
-    // The pane can unmount mid-move; the panes it held still let go.
-    if (pane && move.container) {
-      setPaneSize(pane, finalSize);
-      adoptSizesBeside(pane, move.container, isHorizontal);
-    }
+    if (move.container) {
+      // A move that ends where it began, as a key pressed at a stop does,
+      // leaves every pane as it found them.
+      if (finalSize === Math.round(move.start)) {
+        undoMove(move);
 
-    move.held.forEach((item) => item.style.removeProperty('flex-shrink'));
+        if (pane) setPaneSize(pane, move.ownSize);
+
+        setSize(move.ownSize);
+
+        return;
+      }
+
+      if (pane) setPaneSize(pane, finalSize);
+
+      // The panes beside it keep the sizes they are left at. Each is read
+      // while the panes still hold, before one is written.
+      const sizes = move.beside.map((item) => getDrawnSize(item, isHorizontal));
+
+      move.beside.forEach((item, index) => {
+        if (Number.isFinite(sizes[index])) {
+          mountedPanes.get(item)?.adoptSize(sizes[index]);
+        }
+      });
+      release(move.held);
+    }
 
     setSize(finalSize);
     onSizeChange?.(finalSize);
@@ -554,11 +606,6 @@ function LayoutPane(
   const { moveProps } = useMove({
     onMoveStart() {
       if (!isResizable) return;
-
-      // An arrow key during a pointer drag starts a move of its own.
-      if (moveRef.current) endMove(moveRef.current);
-
-      moveRef.current = null;
       setIsDragging(true);
     },
     onMove(e) {
@@ -579,15 +626,24 @@ function LayoutPane(
       // A move across the resize axis changes nothing.
       if (!delta) return;
 
+      // An arrow key during a pointer drag makes a move of its own.
+      if (moveRef.current && moveRef.current.pointerType !== e.pointerType) {
+        endMove(moveRef.current);
+        moveRef.current = null;
+      }
+
       const pane = combinedRef.current;
-      const move = moveRef.current ?? beginMove(pane);
+      const move = moveRef.current ?? beginMove(pane, e.pointerType);
 
       moveRef.current = move;
-      move.target = clampValue(move.target + delta);
+      move.target += delta;
 
-      let next = move.target;
+      let next = clampValue(move.target);
 
-      if (move.container) {
+      if (!move.container) {
+        // On its own, the pane keeps no travel past its limits.
+        move.target = next;
+      } else {
         setPaneSize(pane, next);
 
         // Holding its size, the pane would push the items beyond its grip out
@@ -608,8 +664,11 @@ function LayoutPane(
       move.size = next;
       setSize(next);
     },
-    onMoveEnd() {
+    onMoveEnd(e) {
       const move = moveRef.current;
+
+      // A key pressed during a drag ends no more than its own move.
+      if (move && move.pointerType !== e.pointerType) return;
 
       moveRef.current = null;
       setIsDragging(false);
@@ -618,35 +677,32 @@ function LayoutPane(
     },
   });
 
-  const adoptSize = useEffectEvent(
-    (axisIsHorizontal: boolean, drawn: number) => {
-      if (axisIsHorizontal !== isHorizontal) return false;
+  const adoptSize = useEffectEvent((drawn: number) => {
+    setPaneSize(combinedRef.current, drawn);
 
-      const pane = combinedRef.current;
-      // Ahead of `size` when this pane already took a size in the same event.
-      const current = parseFloat(pane.style.getPropertyValue('--pane-size'));
-
-      if (Math.abs(drawn - current) >= 1) {
-        setPaneSize(pane, drawn);
-        setSize(drawn);
-        onSizeChange?.(drawn);
-      }
-
-      return true;
-    },
-  );
+    if (drawn !== size) {
+      setSize(drawn);
+      onSizeChange?.(drawn);
+    }
+  });
 
   useEffect(() => {
     const pane = combinedRef.current;
 
-    sizeAdopters.set(pane, (axisIsHorizontal, drawn) =>
-      adoptSize(axisIsHorizontal, drawn),
-    );
+    mountedPanes.set(pane, {
+      isHorizontal,
+      adoptSize: (drawn) => adoptSize(drawn),
+    });
 
     return () => {
-      sizeAdopters.delete(pane);
+      mountedPanes.delete(pane);
+
+      // Unmounted mid-move, the pane gives the panes beside it back.
+      if (moveRef.current) undoMove(moveRef.current);
+
+      moveRef.current = null;
     };
-  }, [combinedRef]);
+  }, [combinedRef, isHorizontal]);
 
   // Sync provided size with internal state (only when providedSize actually changes)
   // This prevents resetting size when only isDragging changes (which would cause a flash)
