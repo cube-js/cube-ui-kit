@@ -363,9 +363,9 @@ module.exports = [
     // versus 615,870 B on main (+285 B). The private Compiler boundary avoids
     // repeated Item styling on scroll; Button stays 159,380 B. Confirm in CI.
     // Panes resized beside panes that give way: fresh builds on the same
-    // machine measure 616,952 B against main's 616,209 B at 14104ae3 (+743 B)
+    // machine measure 617,134 B against main's 616,209 B at 14104ae3 (+925 B)
     // for the hold, growth limit and size handoff in Layout.Pane. Button stays
-    // 159,379 B. Allow 617.5 kB, 548 B headroom; confirm in Linux CI.
+    // 159,379 B. Allow 617.5 kB, 366 B headroom; confirm in Linux CI.
     limit: '617.5kB',
   },
   {

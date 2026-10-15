@@ -96,7 +96,7 @@ describe('Layout.Pane in a short flex container', () => {
     await waitFor(() => expect(pane.offsetHeight).toBe(110));
   });
 
-  it('grows no further than the room left beside it', async () => {
+  it('follows the pointer back from past the room left beside it', async () => {
     renderWithRoot(
       <ShortColumn
         columnHeight={300}
@@ -106,62 +106,81 @@ describe('Layout.Pane in a short flex container', () => {
       />,
     );
     const pane = screen.getByTestId('short-pane');
-
-    await act(async () =>
-      screen.getByRole('separator', { name: 'Resize pane bottom' }).focus(),
+    const drag = await pressGrip(
+      screen.getByRole('separator', { name: 'Resize pane bottom' }),
     );
-    await userEvent.keyboard('{ArrowDown}');
-    await userEvent.keyboard('{ArrowUp}');
 
+    await drag.moveTo(50);
+    await drag.moveTo(20);
+    await waitFor(() => expect(pane.offsetHeight).toBe(120));
+
+    await drag.moveTo(-10);
     await waitFor(() => expect(pane.offsetHeight).toBe(110));
+
+    await drag.release(-10);
     expect(screen.getByTestId('beside').offsetHeight).toBe(190);
   });
 
   it('grows past a short container when it holds its size', async () => {
     renderWithRoot(<ShortColumn isResizable columnHeight={300} />);
     const pane = screen.getByTestId('short-pane');
+    const grip = screen.getByRole('separator', { name: 'Resize pane bottom' });
 
-    await act(async () =>
-      screen.getByRole('separator', { name: 'Resize pane bottom' }).focus(),
-    );
+    await act(async () => grip.focus());
     await userEvent.keyboard('{ArrowDown}');
-
     await waitFor(() => expect(pane.offsetHeight).toBe(260));
+
+    const drag = await pressGrip(grip);
+
+    await drag.moveTo(30);
+    await drag.release(30);
+    await waitFor(() => expect(pane.offsetHeight).toBe(290));
   });
 });
 
-// Two panes that both give way: 300px each above 200px of results in a
-// 600px column, so each is drawn at 200px.
+// Panes that all give way: 300px each above 200px of results, in a column
+// 200px per item tall, so each pane is drawn at 200px.
 function ShrunkPanes({
-  onBelowSizeChange,
+  count = 2,
+  onSizeChange,
 }: {
-  onBelowSizeChange?: (size: number) => void;
+  count?: number;
+  onSizeChange?: (qa: string, size: number) => void;
 }) {
   return (
-    <div style={{ height: 600, display: 'flex', flexDirection: 'column' }}>
-      {(['above', 'below'] as const).map((qa) => (
-        <Layout.Pane
-          key={qa}
-          isResizable
-          qa={qa}
-          resizeEdge="bottom"
-          defaultSize={300}
-          minSize={80}
-          flexShrink={1}
-          onSizeChange={qa === 'below' ? onBelowSizeChange : undefined}
-        >
-          {qa}
-        </Layout.Pane>
-      ))}
+    <div
+      style={{
+        height: 200 * (count + 1),
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
+      {Array.from({ length: count }, (_, index) => `pane-${index}`).map(
+        (qa) => (
+          <Layout.Pane
+            key={qa}
+            isResizable
+            qa={qa}
+            resizeEdge="bottom"
+            defaultSize={300}
+            minSize={80}
+            flexShrink={1}
+            onSizeChange={(size) => onSizeChange?.(qa, size)}
+          >
+            {qa}
+          </Layout.Pane>
+        ),
+      )}
       <div data-qa="results" style={{ flex: '1 1 0', minHeight: 200 }} />
     </div>
   );
 }
 
 function heights() {
-  return ['above', 'below', 'results'].map(
-    (qa) => screen.getByTestId(qa).offsetHeight,
-  );
+  return [
+    ...screen.getAllByTestId(/^pane-/),
+    screen.getByTestId('results'),
+  ].map((item) => item.offsetHeight);
 }
 
 // Short enough for a failure to report the heights instead of timing out.
@@ -169,17 +188,19 @@ function expectHeights(expected: number[]) {
   return waitFor(() => expect(heights()).toEqual(expected), { timeout: 2000 });
 }
 
-function aboveGrip() {
-  return screen.getAllByRole('separator', { name: 'Resize pane bottom' })[0];
+function grip(index: number) {
+  return screen.getAllByRole('separator', { name: 'Resize pane bottom' })[
+    index
+  ];
 }
 
-async function pressGrip(grip: HTMLElement) {
-  const rect = grip.getBoundingClientRect();
+async function pressGrip(target: HTMLElement) {
+  const rect = target.getBoundingClientRect();
   const x = rect.x + rect.width / 2;
   const y = rect.y + rect.height / 2;
   const pointer = pointerUserEvent.setup();
   const at = (dy: number) => ({
-    target: grip,
+    target,
     coords: { clientX: x, clientY: y + dy, pageX: x, pageY: y + dy },
   });
 
@@ -205,7 +226,7 @@ describe('Layout.Pane beside another pane that gives way', () => {
 
     expect(heights()).toEqual([200, 200, 200]);
 
-    await act(async () => aboveGrip().focus());
+    await act(async () => grip(0).focus());
     await userEvent.keyboard('{ArrowDown}');
     await expectHeights([210, 190, 200]);
     await userEvent.keyboard('{ArrowDown}');
@@ -216,42 +237,59 @@ describe('Layout.Pane beside another pane that gives way', () => {
     await expectHeights([210, 180, 210]);
   });
 
+  it('ignores a key across its grip', async () => {
+    const onSizeChange = vi.fn();
+
+    renderWithRoot(<ShrunkPanes onSizeChange={onSizeChange} />);
+
+    await act(async () => grip(0).focus());
+    await userEvent.keyboard('{ArrowRight}');
+
+    expect(onSizeChange).not.toHaveBeenCalled();
+    expect(heights()).toEqual([200, 200, 200]);
+  });
+
   it('follows the pointer and stays where it is dropped', async () => {
-    const onBelowSizeChange = vi.fn();
+    const onSizeChange = vi.fn();
 
-    renderWithRoot(<ShrunkPanes onBelowSizeChange={onBelowSizeChange} />);
+    renderWithRoot(<ShrunkPanes onSizeChange={onSizeChange} />);
 
-    const drag = await pressGrip(aboveGrip());
+    const drag = await pressGrip(grip(0));
 
     await drag.moveTo(20);
     await drag.moveTo(50);
     await expectHeights([250, 150, 200]);
 
     await drag.release(50);
-    await waitFor(() => expect(onBelowSizeChange).toHaveBeenCalledWith(150));
+    await waitFor(() =>
+      expect(onSizeChange).toHaveBeenCalledWith('pane-1', 150),
+    );
     expect(heights()).toEqual([250, 150, 200]);
   });
 
   it('stops growing once the pane beside it reaches its minimum', async () => {
     renderWithRoot(<ShrunkPanes />);
 
-    const drag = await pressGrip(aboveGrip());
+    const drag = await pressGrip(grip(0));
 
     await drag.moveTo(100);
     await drag.moveTo(200);
     await expectHeights([320, 80, 200]);
 
+    // The grip waits at the stop until the pointer comes back to it.
     await drag.moveTo(150);
-    await expectHeights([270, 130, 200]);
+    await expectHeights([320, 80, 200]);
+    await drag.moveTo(100);
+    await expectHeights([300, 100, 200]);
 
-    await drag.release(150);
-    expect(heights()).toEqual([270, 130, 200]);
+    await drag.release(100);
+    expect(heights()).toEqual([300, 100, 200]);
   });
 
   it('gives room back to the results, as with the keyboard', async () => {
     renderWithRoot(<ShrunkPanes />);
 
-    const drag = await pressGrip(aboveGrip());
+    const drag = await pressGrip(grip(0));
 
     await drag.moveTo(50);
     await expectHeights([250, 150, 200]);
@@ -262,5 +300,59 @@ describe('Layout.Pane beside another pane that gives way', () => {
 
     await drag.release(-10);
     expect(heights()).toEqual([190, 200, 210]);
+  });
+
+  it('takes no room from the pane above its grip', async () => {
+    renderWithRoot(<ShrunkPanes />);
+
+    await act(async () => grip(1).focus());
+    await userEvent.keyboard('{ArrowDown}');
+    await expectHeights([200, 200, 200]);
+    await userEvent.keyboard('{ArrowUp}');
+    await expectHeights([200, 190, 210]);
+
+    const drag = await pressGrip(grip(1));
+
+    await drag.moveTo(50);
+    await expectHeights([200, 200, 200]);
+    await drag.release(50);
+    expect(heights()).toEqual([200, 200, 200]);
+  });
+
+  it('moves between three panes that give way', async () => {
+    renderWithRoot(<ShrunkPanes count={3} />);
+
+    expect(heights()).toEqual([200, 200, 200, 200]);
+
+    await act(async () => grip(0).focus());
+    await userEvent.keyboard('{ArrowDown}');
+    await expectHeights([210, 195, 195, 200]);
+
+    const drag = await pressGrip(grip(1));
+
+    await drag.moveTo(30);
+    await expectHeights([210, 225, 165, 200]);
+    await drag.release(30);
+    expect(heights()).toEqual([210, 225, 165, 200]);
+  });
+
+  it('lets go of its size after an arrow key pressed mid-drag', async () => {
+    renderWithRoot(<ShrunkPanes />);
+
+    await act(async () => grip(0).focus());
+
+    const drag = await pressGrip(grip(0));
+
+    await drag.moveTo(20);
+    await expectHeights([220, 180, 200]);
+    await userEvent.keyboard('{ArrowDown}');
+    await expectHeights([230, 170, 200]);
+    await drag.moveTo(40);
+    await expectHeights([250, 150, 200]);
+    await drag.release(40);
+
+    expect(
+      screen.getAllByTestId(/^pane-/).map((pane) => pane.style.flexShrink),
+    ).toEqual(['', '']);
   });
 });
