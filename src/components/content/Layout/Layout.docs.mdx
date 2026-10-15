@@ -323,11 +323,13 @@ Resizable inline section within a layout. Unlike Layout.Panel (which is absolute
 - **`defaultSize`** `number | string` (default: `200`) — Default size for uncontrolled state
 - **`minSize`** `number | string` — Minimum size constraint, in pixels or a CSS length. With `flexShrink={1}`, the pane gives way down to it (`2x` when unset) when a flex container runs short
 - **`maxSize`** `number | string` — Maximum size constraint
-- **`onSizeChange`** `(size: number) => void` — Size change callback
+- **`onSizeChange`** `(size: number) => void` — Size change callback. A pane with `flexShrink={1}` also calls it when it gives way to a pane resized beside it and keeps that size
 - **`scrollbar`** `ScrollbarType` (default: `'thin'`) — Scrollbar style
 - **`children`** `ReactNode` — Content to display
 - **`innerRef`** `ForwardedRef<HTMLDivElement>` — Ref for the inner content element
 - **`innerProps`** `HTMLAttributes<HTMLDivElement>` — Props to spread on the Inner sub-element
+
+Several panes with `flexShrink={1}` can share one flex container. Resizing one of them moves its edge with the pointer, or by 10px per arrow key. The panes beside it give way down to their `minSize`, and the resize stops there. A pane that gave way keeps the size it was left at.
 
 **Sub-elements:**
 

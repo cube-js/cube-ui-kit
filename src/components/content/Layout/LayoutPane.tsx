@@ -15,6 +15,7 @@ import {
   ReactNode,
   useCallback,
   useEffect,
+  useEffectEvent,
   useRef,
   useState,
 } from 'react';
@@ -33,6 +34,112 @@ import { clampSize } from './utils';
 // Handler dimensions
 const HANDLER_WIDTH = 9; // Interactive area
 const HANDLER_RESERVED = 5; // Space reserved in Inner padding
+
+// Sent to the items beside a pane that gives way, as it starts and ends a
+// resize: a pane among them that gives way takes the size it is drawn at as
+// its own. `detail` is whether the resize is horizontal.
+const ADOPT_DRAWN_SIZE_EVENT = 'cube-layout-pane-adopt-drawn-size';
+
+function setPaneSize(pane: HTMLElement, size: number) {
+  pane.style.setProperty('--pane-size', `${size}px`);
+}
+
+function getDrawnSize(element: HTMLElement, isHorizontal: boolean) {
+  const style = getComputedStyle(element);
+
+  return Math.round(parseFloat(isHorizontal ? style.width : style.height));
+}
+
+function givesWay(element: Element) {
+  return parseFloat(getComputedStyle(element).flexShrink) > 0;
+}
+
+/**
+ * The flex container a pane gives way in along its resize axis, or `null`
+ * when it holds its size there.
+ */
+function getYieldingContainer(pane: HTMLElement, isHorizontal: boolean) {
+  const container = pane.parentElement;
+
+  if (!container || !givesWay(pane)) return null;
+
+  const style = getComputedStyle(container);
+  const isFlex = style.display === 'flex' || style.display === 'inline-flex';
+
+  return isFlex &&
+    style.flexDirection.startsWith('row') === isHorizontal &&
+    style.flexWrap === 'nowrap'
+    ? container
+    : null;
+}
+
+/** How far a flex container's items run past its content box. */
+function getOverflow(container: HTMLElement, isHorizontal: boolean) {
+  const style = getComputedStyle(container);
+  const available = isHorizontal
+    ? container.clientWidth -
+      parseFloat(style.paddingLeft) -
+      parseFloat(style.paddingRight)
+    : container.clientHeight -
+      parseFloat(style.paddingTop) -
+      parseFloat(style.paddingBottom);
+  let used = 0;
+  let count = 0;
+
+  for (const item of Array.from(container.children)) {
+    const itemStyle = getComputedStyle(item);
+
+    if (
+      itemStyle.display === 'none' ||
+      itemStyle.position === 'absolute' ||
+      itemStyle.position === 'fixed'
+    ) {
+      continue;
+    }
+
+    const rect = item.getBoundingClientRect();
+
+    used += isHorizontal
+      ? rect.width +
+        parseFloat(itemStyle.marginLeft) +
+        parseFloat(itemStyle.marginRight)
+      : rect.height +
+        parseFloat(itemStyle.marginTop) +
+        parseFloat(itemStyle.marginBottom);
+    count += 1;
+  }
+
+  const gap = parseFloat(isHorizontal ? style.columnGap : style.rowGap) || 0;
+
+  return used + gap * Math.max(count - 1, 0) - available;
+}
+
+/**
+ * Flex shares an overflow by size, so a pane that gave way would otherwise
+ * take part of every move back by its old, larger size.
+ */
+function adoptDrawnSizesBeside(
+  pane: HTMLElement,
+  container: HTMLElement,
+  isHorizontal: boolean,
+) {
+  for (const item of Array.from(container.children)) {
+    if (item !== pane) {
+      item.dispatchEvent(
+        new CustomEvent(ADOPT_DRAWN_SIZE_EVENT, { detail: isHorizontal }),
+      );
+    }
+  }
+}
+
+interface PaneMove {
+  /** The size so far, ahead of the rendered one. */
+  size: number;
+  /** The flex container the pane gives way in; it holds its size while moving. */
+  container: HTMLElement | null;
+  /** How far the container's items may run past it, as they did at the start. */
+  maxOverflow: number;
+}
 
 const PaneElement = tasty({
   as: 'div',
@@ -365,6 +472,8 @@ function LayoutPane(
     [minSize, maxSize],
   );
 
+  const moveRef = useRef<PaneMove | null>(null);
+
   const { moveProps } = useMove({
     onMoveStart() {
       if (!isResizable) return;
@@ -373,22 +482,34 @@ function LayoutPane(
       // Flex shrinking or a CSS minimum can draw the pane at another size than
       // `size`; resize from the one on screen, or the first moves do nothing.
       const pane = combinedRef.current;
+      const drawn = pane ? getDrawnSize(pane, isHorizontal) : NaN;
+      const start =
+        Number.isFinite(drawn) && Math.abs(drawn - size) >= 1 ? drawn : size;
+      const container = pane ? getYieldingContainer(pane, isHorizontal) : null;
 
-      if (!pane) return;
+      // A pane that gives way would also give back part of every move to the
+      // panes beside it, so it holds its size until the move ends. Keyboard
+      // moves start and end within one event, so this goes to the DOM, not
+      // through a render.
+      if (pane && container) {
+        setPaneSize(pane, start);
+        pane.style.flexShrink = '0';
+        adoptDrawnSizesBeside(pane, container, isHorizontal);
+      }
 
-      const style = getComputedStyle(pane);
-      const drawn = Math.round(
-        parseFloat(isHorizontal ? style.width : style.height),
-      );
-
-      setSize((current) =>
-        Number.isFinite(drawn) && Math.abs(drawn - current) >= 1
-          ? drawn
-          : current,
-      );
+      moveRef.current = {
+        size: start,
+        container,
+        maxOverflow: container
+          ? Math.max(getOverflow(container, isHorizontal), 0)
+          : 0,
+      };
+      setSize(start);
     },
     onMove(e) {
-      if (!isResizable) return;
+      const move = moveRef.current;
+
+      if (!isResizable || !move) return;
 
       let delta: number;
 
@@ -402,18 +523,83 @@ function LayoutPane(
         delta = isHorizontal ? e.deltaX : e.deltaY;
       }
 
-      setSize((currentSize) => clampValue(currentSize + delta));
+      let next = clampValue(move.size + delta);
+      const pane = combinedRef.current;
+
+      // Holding its size, the pane would push the content beside it out of
+      // the container once nothing there can give way. Grow only into the room
+      // it would have taken while giving way.
+      if (pane && move.container && next > move.size) {
+        setPaneSize(pane, next);
+
+        const excess =
+          getOverflow(move.container, isHorizontal) - move.maxOverflow;
+
+        if (excess > 0) {
+          next = Math.max(next - excess, move.size);
+          setPaneSize(pane, next);
+        }
+      }
+
+      move.size = next;
+      setSize(next);
     },
     onMoveEnd() {
+      const move = moveRef.current;
+
+      moveRef.current = null;
       setIsDragging(false);
+
+      if (!move) return;
+
       // Round to integer on release and notify parent
-      setSize((currentSize) => {
-        const finalSize = Math.round(clampValue(currentSize));
-        onSizeChange?.(finalSize);
-        return finalSize;
-      });
+      const finalSize = Math.round(clampValue(move.size));
+      const pane = combinedRef.current;
+
+      if (pane && move.container) {
+        setPaneSize(pane, finalSize);
+        adoptDrawnSizesBeside(pane, move.container, isHorizontal);
+        pane.style.removeProperty('flex-shrink');
+      }
+
+      setSize(finalSize);
+      onSizeChange?.(finalSize);
     },
   });
+
+  const onAdoptDrawnSize = useEffectEvent((event: Event) => {
+    const pane = combinedRef.current;
+
+    if (
+      !pane ||
+      (event as CustomEvent<boolean>).detail !== isHorizontal ||
+      !givesWay(pane)
+    ) {
+      return;
+    }
+
+    const drawn = getDrawnSize(pane, isHorizontal);
+    // Ahead of `size` when this pane already took a size in the same event.
+    const current = parseFloat(pane.style.getPropertyValue('--pane-size'));
+
+    if (!Number.isFinite(drawn) || Math.abs(drawn - current) < 1) return;
+
+    setPaneSize(pane, drawn);
+    setSize(drawn);
+    onSizeChange?.(drawn);
+  });
+
+  useEffect(() => {
+    const pane = combinedRef.current;
+
+    if (!pane) return;
+
+    pane.addEventListener(ADOPT_DRAWN_SIZE_EVENT, onAdoptDrawnSize);
+
+    return () => {
+      pane.removeEventListener(ADOPT_DRAWN_SIZE_EVENT, onAdoptDrawnSize);
+    };
+  }, [combinedRef]);
 
   // Sync provided size with internal state (only when providedSize actually changes)
   // This prevents resetting size when only isDragging changes (which would cause a flash)
