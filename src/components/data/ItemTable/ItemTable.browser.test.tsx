@@ -7,6 +7,7 @@ import { Button } from '../../actions/Button';
 
 import { ItemTable } from './ItemTable';
 
+import type { CSSProperties } from 'react';
 import type { CubeItemTableColumn } from './types';
 
 interface Row {
@@ -1228,3 +1229,87 @@ it.each(['scroll', 'commit'] as const)(
     }
   },
 );
+
+describe('default header appearance', () => {
+  it.each(['ancestor', 'header styles'] as const)(
+    'refreshes retained header overflow after %s typography changes',
+    async (scope) => {
+      const data = [{ id: 'a', name: 'Value', region: 'Other' }];
+      const labelStyles = {
+        display: 'block',
+        width: '80px',
+        height: '20px',
+        fontFamily: 'monospace',
+        fontSize: '$header-test-font',
+        lineHeight: '20px',
+      };
+      const columns = [
+        {
+          key: 'name',
+          title: 'WWWWWWWW',
+          width: 120,
+          header: { styles: { Label: labelStyles } },
+        },
+        { key: 'region', title: 'Elsewhere', width: 120 },
+      ];
+      const table = (fontSize: string) => (
+        <div style={{ '--header-test-font': fontSize } as CSSProperties}>
+          <ItemTable
+            data={data}
+            columns={
+              scope === 'ancestor'
+                ? columns
+                : [
+                    {
+                      ...columns[0],
+                      header: {
+                        styles: { Label: { ...labelStyles, fontSize } },
+                      },
+                    },
+                    columns[1],
+                  ]
+            }
+            paginationMode="off"
+            isRowMoveAnimated={false}
+            width="240px"
+            height="160px"
+          />
+        </div>
+      );
+      const { rerender } = renderWithRoot(table('6px'));
+      const label = () =>
+        headerCell('name').querySelector<HTMLElement>(
+          '[data-element="Label"]',
+        )!;
+      await vi.waitFor(() => expect(label().clientWidth).toBe(80));
+      const original = label();
+      const box = original.getBoundingClientRect();
+      expect(original.scrollWidth).toBe(original.clientWidth);
+
+      rerender(table('30px'));
+      await vi.waitFor(() =>
+        expect(label().scrollWidth).toBeGreaterThan(label().clientWidth),
+      );
+      expect(label().getBoundingClientRect().width).toBe(box.width);
+      expect(label().getBoundingClientRect().height).toBe(box.height);
+      await realInput.hover(bodyCell('region'));
+      await realInput.hover(label());
+      await vi.waitFor(
+        () => expect(screen.getByRole('tooltip')).toHaveTextContent('WWWWWWWW'),
+        { timeout: 3_000 },
+      );
+
+      await realInput.hover(bodyCell('region'));
+      rerender(table('6px'));
+      await vi.waitFor(() =>
+        expect(label().scrollWidth).toBe(label().clientWidth),
+      );
+      await vi.waitFor(() =>
+        expect(screen.queryByRole('tooltip')).not.toBeInTheDocument(),
+      );
+      await realInput.hover(label());
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
+    },
+  );
+});

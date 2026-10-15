@@ -66,22 +66,23 @@ export function resolveColumnSort<T>(
  * Unsorted shows the UP arrow, because that is what the first press gives:
  * the hint predicts the press rather than advertising that one is possible.
  */
-function renderSortIndicator(sort: ColumnSortState) {
-  if (!sort.isSortable) return null;
+function renderSortIndicator(
+  isSortable: boolean,
+  isSorted: boolean,
+  direction: CubeTableSort['direction'] | undefined,
+  rank: number | null,
+) {
+  if (!isSortable) return null;
 
   return (
     <div
       data-element="SortIndicator"
-      data-rank={sort.rank ?? undefined}
-      data-sorted={sort.isSorted ? '' : undefined}
-      data-dir={sort.activeSort?.direction}
+      data-rank={rank ?? undefined}
+      data-sorted={isSorted ? '' : undefined}
+      data-dir={direction}
       aria-hidden="true"
     >
-      {sort.activeSort?.direction === 'desc' ? (
-        <ArrowNarrowDownIcon />
-      ) : (
-        <ArrowNarrowUpIcon />
-      )}
+      {direction === 'desc' ? <ArrowNarrowDownIcon /> : <ArrowNarrowUpIcon />}
     </div>
   );
 }
@@ -115,7 +116,42 @@ export function renderColumnHeaderContent<T>(
 
   if (column.title == null && !header) return null;
 
-  const sortIndicator = renderSortIndicator(sort);
+  return (
+    <DefaultColumnHeaderContent
+      column={column}
+      isSortable={sort.isSortable}
+      isSorted={sort.isSorted}
+      direction={sort.activeSort?.direction}
+      rank={sort.rank}
+      menuTrigger={menuTrigger}
+    />
+  );
+}
+
+// Like TableCellContent, this boundary lets Compiler retain unchanged Item
+// trees while TableView updates the visible row/column window.
+function DefaultColumnHeaderContent<T>({
+  column,
+  isSortable,
+  isSorted,
+  direction,
+  rank,
+  menuTrigger,
+}: {
+  column: CubeResolvedColumn<T>;
+  isSortable: boolean;
+  isSorted: boolean;
+  direction: CubeTableSort['direction'] | undefined;
+  rank: number | null;
+  menuTrigger: ReactNode;
+}) {
+  const header = column.header;
+  const sortIndicator = renderSortIndicator(
+    isSortable,
+    isSorted,
+    direction,
+    rank,
+  );
 
   // The arrow belongs in the `rightIcon` slot: that slot is sized and aligned
   // for an icon, while `suffix` is a text slot and puts the glyph on the
