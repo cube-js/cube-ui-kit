@@ -359,7 +359,10 @@ module.exports = [
     // on the same dependencies (+5,255 B). Full-row native anchors retain
     // Item layout, names, descriptions, inline actions and browser gestures.
     // Allow 616 kB with 584 B headroom; confirm the exact figure in Linux CI.
-    limit: '616kB',
+    // Retained default table headers: fresh matched builds measure 616,155 B
+    // versus 615,870 B on main (+285 B). The private Compiler boundary avoids
+    // repeated Item styling on scroll; Button stays 159,380 B. Confirm in CI.
+    limit: '616.5kB',
   },
   {
     name: 'Tree shaking (just a Button)',
