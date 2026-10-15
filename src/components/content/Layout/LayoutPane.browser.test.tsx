@@ -17,16 +17,29 @@ function press(keys: string) {
   });
 }
 
+// The flex container of the panes under test.
+function setColumnHeight(height: number) {
+  return act(async () => {
+    (
+      screen.getByTestId(/^(beside|results)$/).parentElement as HTMLElement
+    ).style.height = `${height}px`;
+  });
+}
+
 function ShortColumn({
   columnHeight,
   minSize,
   flexShrink,
   isResizable,
+  withHiddenPane,
+  onSizeChange,
 }: {
   columnHeight: number;
   minSize?: number;
   flexShrink?: number;
   isResizable?: boolean;
+  withHiddenPane?: boolean;
+  onSizeChange?: (size: number) => void;
 }) {
   return (
     <div
@@ -39,9 +52,18 @@ function ShortColumn({
         minSize={minSize}
         flexShrink={flexShrink}
         isResizable={isResizable}
+        onSizeChange={onSizeChange}
       >
         Pane
       </Layout.Pane>
+      {withHiddenPane && (
+        <Layout.Pane
+          resizeEdge="bottom"
+          defaultSize={250}
+          flexShrink={1}
+          styles={{ hide: true }}
+        />
+      )}
       <div data-qa="beside" style={{ flex: '1 1 0', minHeight: 180 }} />
     </div>
   );
@@ -128,31 +150,60 @@ describe('Layout.Pane in a short flex container', () => {
     expect(screen.getByTestId('beside').offsetHeight).toBe(190);
   });
 
-  it('takes the size it is dragged to once it has the room', async () => {
+  it.each([
+    ['', false],
+    [', also beside a hidden pane', true],
+  ])(
+    'takes the size it is dragged to once it has the room%s',
+    async (_, withHiddenPane) => {
+      renderWithRoot(
+        <ShortColumn
+          columnHeight={300}
+          minSize={80}
+          flexShrink={1}
+          withHiddenPane={withHiddenPane}
+          isResizable
+        />,
+      );
+      const pane = screen.getByTestId('short-pane');
+      const drag = await pressGrip(
+        screen.getByRole('separator', { name: 'Resize pane bottom' }),
+      );
+
+      await drag.moveTo(50);
+      await drag.release(50);
+      expect(pane.offsetHeight).toBe(120);
+
+      await setColumnHeight(500);
+      await waitFor(() => expect(pane.offsetHeight).toBe(170), {
+        timeout: 2000,
+      });
+    },
+  );
+
+  it('adds an arrow key pressed mid-drag to the drag', async () => {
+    const onSizeChange = vi.fn();
+
     renderWithRoot(
       <ShortColumn
-        columnHeight={300}
-        minSize={80}
-        flexShrink={1}
         isResizable
+        columnHeight={600}
+        flexShrink={1}
+        onSizeChange={onSizeChange}
       />,
     );
-    const pane = screen.getByTestId('short-pane');
-    const drag = await pressGrip(
-      screen.getByRole('separator', { name: 'Resize pane bottom' }),
-    );
+    const grip = screen.getByRole('separator', { name: 'Resize pane bottom' });
 
-    await drag.moveTo(50);
-    await drag.release(50);
-    expect(pane.offsetHeight).toBe(120);
+    await act(async () => grip.focus());
 
-    await act(async () => {
-      (screen.getByTestId('beside').parentElement as HTMLElement).style.height =
-        '500px';
-    });
-    await waitFor(() => expect(pane.offsetHeight).toBe(170), {
-      timeout: 2000,
-    });
+    const drag = await pressGrip(grip);
+
+    await drag.moveTo(20);
+    await press('{ArrowDown}');
+    await drag.moveTo(40);
+    await drag.release(40);
+
+    expect(onSizeChange.mock.calls).toEqual([[280], [300]]);
   });
 
   it('grows past a short container when it holds its size', async () => {
@@ -176,21 +227,19 @@ describe('Layout.Pane in a short flex container', () => {
 // 200px per item tall, so each pane is drawn at 200px.
 function ShrunkPanes({
   count = 2,
+  height = 200 * (count + 1),
+  defaultSize = 300,
   maxSize,
   onSizeChange,
 }: {
   count?: number;
+  height?: number;
+  defaultSize?: number;
   maxSize?: number;
   onSizeChange?: (qa: string, size: number) => void;
 }) {
   return (
-    <div
-      style={{
-        height: 200 * (count + 1),
-        display: 'flex',
-        flexDirection: 'column',
-      }}
-    >
+    <div style={{ height, display: 'flex', flexDirection: 'column' }}>
       {Array.from({ length: count }, (_, index) => `pane-${index}`).map(
         (qa) => (
           <Layout.Pane
@@ -198,7 +247,7 @@ function ShrunkPanes({
             isResizable
             qa={qa}
             resizeEdge="bottom"
-            defaultSize={300}
+            defaultSize={defaultSize}
             minSize={80}
             maxSize={maxSize}
             flexShrink={1}
@@ -241,19 +290,14 @@ async function pressGrip(target: HTMLElement) {
     coords: { clientX: x, clientY: y + dy, pageX: x, pageY: y + dy },
   });
 
-  await act(async () => {
-    await pointer.pointer({ keys: '[MouseLeft>]', ...at(0) });
-  });
+  // Testing Library's user-event wraps each event in act itself; an outer act
+  // would see the updates in between outside an act environment.
+  await pointer.pointer({ keys: '[MouseLeft>]', ...at(0) });
 
   return {
-    moveTo: (dy: number) =>
-      act(async () => {
-        await pointer.pointer(at(dy));
-      }),
+    moveTo: (dy: number) => pointer.pointer(at(dy)),
     release: (dy: number) =>
-      act(async () => {
-        await pointer.pointer({ keys: '[/MouseLeft]', ...at(dy) });
-      }),
+      pointer.pointer({ keys: '[/MouseLeft]', ...at(dy) }),
   };
 }
 
@@ -357,8 +401,6 @@ describe('Layout.Pane beside another pane that gives way', () => {
     renderWithRoot(<ShrunkPanes />);
 
     await act(async () => grip(1).focus());
-    await press('{ArrowDown}');
-    await expectHeights([200, 200, 200]);
     await press('{ArrowUp}');
     await expectHeights([200, 190, 210]);
 
@@ -390,12 +432,59 @@ describe('Layout.Pane beside another pane that gives way', () => {
     expect(onSizeChange).not.toHaveBeenCalled();
 
     // The panes still have their own sizes once there is room.
-    await act(async () => {
-      (
-        screen.getByTestId('results').parentElement as HTMLElement
-      ).style.height = '1000px';
-    });
+    await setColumnHeight(1000);
     await expectHeights([300, 300, 400]);
+  });
+
+  it('changes nothing when a key at the stop meets half pixels', async () => {
+    const onSizeChange = vi.fn();
+
+    // Each pane is drawn at 200.5px.
+    renderWithRoot(<ShrunkPanes height={601} onSizeChange={onSizeChange} />);
+
+    await act(async () => grip(1).focus());
+    await press('{ArrowDown}');
+    expect(onSizeChange).not.toHaveBeenCalled();
+
+    await setColumnHeight(1000);
+    await expectHeights([300, 300, 400]);
+  });
+
+  it('keeps whole sizes under zoom', async () => {
+    const onSizeChange = vi.fn();
+
+    // Zoom draws whole sizes a fraction of a pixel short.
+    renderWithRoot(
+      <div style={{ zoom: 0.9 }}>
+        <ShrunkPanes
+          height={1000}
+          defaultSize={333}
+          onSizeChange={onSizeChange}
+        />
+      </div>,
+    );
+
+    await act(async () => grip(0).focus());
+    await press('{ArrowDown}');
+    await press('{ArrowDown}');
+    await press('{ArrowDown}');
+
+    expect(onSizeChange.mock.calls).toEqual([
+      ['pane-0', 343],
+      ['pane-0', 353],
+      ['pane-0', 363],
+    ]);
+  });
+
+  it('gives the panes beside it back when it unmounts mid-drag', async () => {
+    const { rerender } = renderWithRoot(<ShrunkPanes height={600} />);
+    const drag = await pressGrip(grip(1));
+
+    await drag.moveTo(-40);
+    await expectHeights([200, 160, 240]);
+
+    rerender(<ShrunkPanes height={600} count={1} />);
+    await expectHeights([300, 300]);
   });
 
   it('moves between three panes that give way', async () => {
@@ -431,11 +520,7 @@ describe('Layout.Pane beside another pane that gives way', () => {
     await drag.release(40);
 
     // Both give way again once the column runs shorter.
-    await act(async () => {
-      (
-        screen.getByTestId('results').parentElement as HTMLElement
-      ).style.height = '500px';
-    });
+    await setColumnHeight(500);
     await waitFor(
       () => {
         const [above, below] = heights();
