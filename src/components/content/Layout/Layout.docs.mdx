@@ -351,13 +351,13 @@ Several panes with `flexShrink={1}` can share one flex container, such as editor
   >
     <Text>Python</Text>
   </Layout.Pane>
-  <Layout.Content styles={{ minHeight: '200px' }}>
+  <Layout.Content flexBasis="0" styles={{ minHeight: '200px' }}>
     <Text>Results</Text>
   </Layout.Content>
 </Layout>
 ```
 
-Resizing one of them moves its edge with the pointer, or by 10px per arrow key (50px with Shift). The room comes from the panes after its edge, which give way down to their `minSize`; the resize stops there, and the panes before the edge keep their size. A pane that gave way keeps the size it was left at. Within one drag it grows back as far as the size it had when the drag started, but each arrow key press is a move of its own, so shrinking the resized pane by keyboard gives the room to the rest of the container, not back to that pane. A resize that ends where it began, such as an arrow key pressed at the stop, leaves every pane as it was and reports nothing. A hidden pane (`display: none`) takes no part in this.
+Give the other items a zero flex basis, as the results get here: an item that shrinks from a larger basis still takes part of each move. Resizing one of the panes moves its edge with the pointer, or by 10px per arrow key (50px with Shift). The room comes from the panes after its edge, which give way down to their `minSize`; the resize stops there, and the panes before the edge keep their size. A pane that gave way keeps the size it was left at. Within one drag it grows back as far as the size it had when the drag started, but each arrow key press is a move of its own, so shrinking the resized pane by keyboard gives the room to the rest of the container, not back to that pane. A resize that ends where it began, such as an arrow key pressed at the stop, leaves every pane as it was and reports nothing. A hidden pane (`display: none`) takes no part in this.
 
 **Sub-elements:**
 

@@ -135,10 +135,6 @@ function getPanesBeside(pane: HTMLElement, isHorizontal: boolean) {
   );
 }
 
-function release(held: HTMLElement[]) {
-  held.forEach((item) => item.style.removeProperty('flex-shrink'));
-}
-
 interface PaneMove {
   /** Where the pointer or keys ask the pane to be. */
   target: number;
@@ -148,7 +144,7 @@ interface PaneMove {
   start: number;
   /** The pane's own size before the move. */
   ownSize: string;
-  /** What moves the pane: a pointer or the keyboard. */
+  /** What began the move: a pointer or the keyboard. */
   pointerType: string;
   /** The flex container the pane gives way in beside other panes, or `null`. */
   container: HTMLElement | null;
@@ -170,7 +166,7 @@ function undoMove(move: PaneMove) {
   move.beside.forEach((item, index) =>
     item.style.setProperty('--pane-size', move.besideSizes[index]),
   );
-  release(move.held);
+  move.held.forEach((item) => item.style.removeProperty('flex-shrink'));
 }
 
 const PaneElement = tasty({
@@ -519,7 +515,7 @@ function LayoutPane(
     // Beside other panes the move begins exactly there, so nothing shifts.
     const start = beside.length
       ? drawn
-      : Number.isFinite(rounded) && Math.abs(rounded - size) >= 1
+      : Math.abs(rounded - size) >= 1
         ? rounded
         : size;
     const move: PaneMove = {
@@ -588,19 +584,15 @@ function LayoutPane(
         Math.round(getDrawnSize(item, isHorizontal)),
       );
 
+      undoMove(move);
       move.beside.forEach((item, index) => {
-        const ownSize = move.besideSizes[index];
-
         if (
           Number.isFinite(sizes[index]) &&
-          sizes[index] !== parseFloat(ownSize)
+          sizes[index] !== Math.round(parseFloat(move.besideSizes[index]))
         ) {
           mountedPanes.get(item)?.adoptSize(sizes[index]);
-        } else {
-          item.style.setProperty('--pane-size', ownSize);
         }
       });
-      release(move.held);
     }
 
     setSize(finalSize);
@@ -631,17 +623,10 @@ function LayoutPane(
       if (!delta) return;
 
       const pane = combinedRef.current;
-      let move = moveRef.current;
+      // An arrow key pressed during a drag joins it.
+      const move = moveRef.current ?? beginMove(pane, e.pointerType);
 
-      // Beside other panes, an arrow key during a pointer drag makes a move of
-      // its own. On its own, the pane adds the key to the drag.
-      if (!move || (move.container && move.pointerType !== e.pointerType)) {
-        if (move) endMove(move);
-
-        move = beginMove(pane, e.pointerType);
-        moveRef.current = move;
-      }
-
+      moveRef.current = move;
       move.target += delta;
 
       let next = clampValue(move.target);
@@ -673,8 +658,9 @@ function LayoutPane(
     onMoveEnd(e) {
       const move = moveRef.current;
 
-      // Beside other panes, a key pressed during a drag ends no more than its
-      // own move.
+      // Beside other panes, a key pressed during a drag leaves the move to the
+      // pointer. On its own, the pane reports at the key's end, and the drag
+      // goes on as a new move, as before.
       if (move?.container && move.pointerType !== e.pointerType) return;
 
       moveRef.current = null;
@@ -701,13 +687,13 @@ function LayoutPane(
     return () => {
       mountedPanes.delete(pane);
 
-      // Unmounted, turned to the other axis or made fixed mid-move, the pane
-      // sees no move end, so it gives the panes beside it back here.
+      // Unmounted or turned to the other axis mid-move, the pane gives the
+      // panes beside it back.
       if (moveRef.current) undoMove(moveRef.current);
 
       moveRef.current = null;
     };
-  }, [combinedRef, isHorizontal, isResizable]);
+  }, [combinedRef, isHorizontal]);
 
   // Sync provided size with internal state (only when providedSize actually changes)
   // This prevents resetting size when only isDragging changes (which would cause a flash)
