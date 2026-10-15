@@ -7,13 +7,36 @@ import {
   Root,
   Select,
   TextInput,
+  TextItem,
 } from '@cube-dev/ui-kit';
-import { useState } from 'react';
+import { Ref, useState } from 'react';
 
 import type { ModernFormProps } from '@cube-dev/ui-kit';
 
 type Values = { profile: { name: string | null }; enabled: boolean };
 type Submit = ModernFormProps<Values>['onSubmit'];
+
+export function TextItemConsumer({
+  styled,
+  onRef,
+}: {
+  styled: boolean;
+  onRef: Ref<HTMLElement>;
+}) {
+  return (
+    <Root>
+      <TextItem
+        as="button"
+        ref={onRef}
+        tooltip={{ title: 'Details', delay: 0 }}
+        preset={styled ? 'h3' : 't3'}
+        styles={styled ? { color: '#purple', display: null } : undefined}
+      >
+        Label
+      </TextItem>
+    </Root>
+  );
+}
 
 export function ModernConsumer({ onSubmit }: { onSubmit: Submit }) {
   const form = Form.useController<Values>({

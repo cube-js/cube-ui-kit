@@ -10,7 +10,60 @@ import {
   ImplicitConsumer,
   LegacyConsumer,
   ModernConsumer,
+  TextItemConsumer,
 } from './consumer';
+
+it('keeps TextItem focus and ref ownership across tooltip and styling updates', async () => {
+  const onRef = vi.fn();
+  const { rerender, unmount } = render(
+    <TextItemConsumer styled={false} onRef={onRef} />,
+  );
+  const trigger = screen.getByRole('button', { name: 'Label' });
+  await act(async () => trigger.focus());
+  await userEvent.tab({ shift: true });
+  await userEvent.tab();
+  await waitFor(() =>
+    expect(screen.getByRole('tooltip')).toHaveTextContent('Details'),
+  );
+  onRef.mockClear();
+
+  rerender(<TextItemConsumer styled onRef={onRef} />);
+  expect(screen.getByRole('button', { name: 'Label' })).toBe(trigger);
+  expect(trigger).toHaveFocus();
+  // The published Compiler build retains the composed ref even though the
+  // tooltip's trigger handlers and the label's styling have changed.
+  if (process.env.UIKIT_TEST_UNCOMPILED !== '1')
+    expect(onRef).not.toHaveBeenCalled();
+  unmount();
+  expect(onRef).toHaveBeenLastCalledWith(null);
+});
+
+it('hydrates TextItem and opens its published tooltip from keyboard focus', async () => {
+  const onRef = vi.fn();
+  const recover = vi.fn();
+  const ui = <TextItemConsumer styled={false} onRef={onRef} />;
+  const container = document.createElement('div');
+  container.innerHTML = renderToString(ui);
+  document.body.appendChild(container);
+  let root: ReturnType<typeof hydrateRoot> | undefined;
+
+  try {
+    await act(async () => {
+      root = hydrateRoot(container, ui, { onRecoverableError: recover });
+    });
+    await userEvent.tab();
+    const tooltip = await screen.findByRole('tooltip');
+    expect(tooltip).toHaveTextContent('Details');
+    expect(screen.getByRole('button', { name: 'Label' })).toHaveAttribute(
+      'aria-describedby',
+      tooltip.id,
+    );
+    expect(recover).not.toHaveBeenCalled();
+  } finally {
+    await act(async () => root?.unmount());
+    container.remove();
+  }
+});
 
 it('updates modern tuple fields and selectors, submits once, and resets nullable defaults', async () => {
   const firstSubmit = vi.fn();

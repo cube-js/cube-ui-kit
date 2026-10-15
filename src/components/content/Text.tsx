@@ -6,6 +6,7 @@ import {
   ColorStyleProps,
   filterBaseProps,
   StylePropValue,
+  Styles,
   TagName,
   tasty,
   TEXT_STYLES,
@@ -18,7 +19,7 @@ import {
   RefAttributes,
 } from 'react';
 
-import { useSlotProps } from '../../utils/react';
+import { useSlotProps } from '../../utils/react/Slots';
 import { extractStyles } from '../../utils/styles';
 
 const STYLE_LIST = [...BASE_STYLES, ...TEXT_STYLES, ...COLOR_STYLES] as const;
@@ -54,54 +55,54 @@ export interface CubeTextProps<T extends TagName = TagName>
   transform?: StylePropValue<CSSProperties['textTransform']>;
 }
 
+export const TEXT_DEFAULT_STYLES = {
+  display: {
+    '': 'inline',
+    ellipsis: 'block',
+  },
+  margin: 0,
+  padding: 0,
+  whiteSpace: {
+    '': 'inherit',
+    'nowrap | ellipsis': 'nowrap',
+  },
+  textOverflow: {
+    '': false,
+    ellipsis: 'ellipsis',
+  },
+  overflow: {
+    '': false,
+    ellipsis: 'hidden',
+  },
+  width: {
+    '': false,
+    ellipsis: 'max 100%',
+  },
+} satisfies Styles;
+
 const TextElement = tasty({
   qa: 'Text',
   as: 'span',
-  styles: {
-    display: {
-      '': 'inline',
-      ellipsis: 'block',
-    },
-    margin: 0,
-    padding: 0,
-    whiteSpace: {
-      '': 'inherit',
-      'nowrap | ellipsis': 'nowrap',
-    },
-    textOverflow: {
-      '': false,
-      ellipsis: 'ellipsis',
-    },
-    overflow: {
-      '': false,
-      ellipsis: 'hidden',
-    },
-    width: {
-      '': false,
-      ellipsis: 'max 100%',
-    },
-  },
+  styles: TEXT_DEFAULT_STYLES,
 });
 
-const Text = forwardRef(function CubeText(allProps: CubeTextProps, ref) {
+export function useTextProps(allProps: CubeTextProps) {
   allProps = useSlotProps(allProps, 'text');
 
   const { as, qa, ellipsis, nowrap, ...props } = allProps;
   const styles = extractStyles(props, STYLE_LIST, {}, TEXT_PROP_MAP);
 
-  return (
-    <TextElement
-      as={as || 'span'}
-      qa={qa || 'Text'}
-      mods={{
-        nowrap,
-        ellipsis: !!ellipsis,
-      }}
-      {...filterBaseProps(props, { eventProps: true })}
-      ref={ref}
-      styles={styles}
-    />
-  );
+  return {
+    as: as || 'span',
+    qa: qa || 'Text',
+    mods: { nowrap, ellipsis: !!ellipsis },
+    ...filterBaseProps(props, { eventProps: true }),
+    styles,
+  };
+}
+
+const Text = forwardRef(function CubeText(allProps: CubeTextProps, ref) {
+  return <TextElement {...useTextProps(allProps)} ref={ref} />;
 });
 
 const MinorText = tasty(Text, {
