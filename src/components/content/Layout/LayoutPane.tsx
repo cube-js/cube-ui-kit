@@ -46,15 +46,17 @@ const PaneElement = tasty({
     placeContent: 'stretch',
     placeItems: 'stretch',
     placeSelf: 'stretch',
+    // Holds its size. With `flexShrink={1}` it gives way down to its minimum
+    // when a flex container runs short.
     flexShrink: 0,
     flexGrow: 0,
     // Size is set via CSS custom property for performance during drag
     width: {
       '': 'auto',
-      'edge=right': '2x $pane-size $pane-size',
+      'edge=right': '($pane-min-size, 2x) $pane-size $pane-size',
     },
     height: {
-      '': '2x $pane-size $pane-size',
+      '': '($pane-min-size, 2x) $pane-size $pane-size',
       'edge=right': 'auto',
     },
     boxSizing: 'content-box',
@@ -367,6 +369,23 @@ function LayoutPane(
     onMoveStart() {
       if (!isResizable) return;
       setIsDragging(true);
+
+      // Flex shrinking or a CSS minimum can draw the pane at another size than
+      // `size`; resize from the one on screen, or the first moves do nothing.
+      const pane = combinedRef.current;
+
+      if (!pane) return;
+
+      const style = getComputedStyle(pane);
+      const drawn = Math.round(
+        parseFloat(isHorizontal ? style.width : style.height),
+      );
+
+      setSize((current) =>
+        Number.isFinite(drawn) && Math.abs(drawn - current) >= 1
+          ? drawn
+          : current,
+      );
     },
     onMove(e) {
       if (!isResizable) return;
@@ -445,8 +464,14 @@ function LayoutPane(
   const paneStyle = {
     ...scrollbarStyle,
     '--pane-size': `${size}px`,
-    '--min-size': typeof minSize === 'number' ? `${minSize}px` : minSize,
-    '--max-size': typeof maxSize === 'number' ? `${maxSize}px` : maxSize,
+    // Reset rather than left unset: a custom property inherits, and an
+    // enclosing pane's minimum is not this one's.
+    '--pane-min-size':
+      minSize == null
+        ? 'initial'
+        : typeof minSize === 'number'
+          ? `${minSize}px`
+          : minSize,
   };
 
   return (

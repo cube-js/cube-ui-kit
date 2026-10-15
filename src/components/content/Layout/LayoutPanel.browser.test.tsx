@@ -1327,3 +1327,94 @@ describe('Layout.Panel animation bounds', () => {
     ).toBe(false);
   });
 });
+
+// A transform makes an element the containing block of its fixed descendants,
+// which jsdom does not model.
+describe('Layout.Panel fixed descendants', () => {
+  function FixedChildLayout({
+    isOpen,
+    hasTransition,
+  }: {
+    isOpen: boolean;
+    hasTransition: boolean;
+  }) {
+    return (
+      <div style={{ width: 400, height: 240, margin: 80, display: 'grid' }}>
+        <Layout hasTransition={hasTransition} styles={{ $transition: '1s' }}>
+          <Layout.Panel
+            side="left"
+            qa="fixed-host"
+            isOpen={isOpen}
+            defaultSize={100}
+          >
+            <div
+              data-qa="fixed-child"
+              style={{
+                position: 'fixed',
+                left: 600,
+                top: 20,
+                width: 40,
+                height: 40,
+              }}
+            />
+          </Layout.Panel>
+        </Layout>
+      </div>
+    );
+  }
+
+  it.each([true, false])(
+    'positions a fixed descendant against the viewport once the panel rests (transition: %s)',
+    async (hasTransition) => {
+      await page.viewport(800, 600);
+      const view = renderWithRoot(
+        <FixedChildLayout isOpen={false} hasTransition={hasTransition} />,
+      );
+      view.rerender(<FixedChildLayout isOpen hasTransition={hasTransition} />);
+      const panel = await screen.findByTestId('fixed-host');
+      await act(async () =>
+        panel.getAnimations().forEach((animation) => animation.finish()),
+      );
+      const child = screen.getByTestId('fixed-child');
+      await waitFor(() =>
+        expect(child.getBoundingClientRect()).toMatchObject({ x: 600, y: 20 }),
+      );
+      expect(hit(child)).toBe(true);
+    },
+  );
+});
+
+describe('Layout.Panel stacking', () => {
+  it('keeps z-indexed content below its own resize handle', async () => {
+    await page.viewport(800, 600);
+    renderWithRoot(
+      <div style={{ width: 400, height: 240, margin: 80, display: 'grid' }}>
+        <Layout>
+          <Layout.Panel
+            side="left"
+            qa="stacked-panel"
+            defaultSize={100}
+            isResizable
+          >
+            <div style={{ position: 'absolute', inset: 0, zIndex: 1 }} />
+          </Layout.Panel>
+        </Layout>
+      </div>,
+    );
+    const panel = await screen.findByTestId('stacked-panel');
+    const rect = panel.getBoundingClientRect();
+
+    await waitFor(() =>
+      expect(
+        screen
+          .getByTestId('PanelResizeHandler')
+          .contains(
+            document.elementFromPoint(
+              rect.right - 2,
+              rect.top + rect.height / 2,
+            ),
+          ),
+      ).toBe(true),
+    );
+  });
+});

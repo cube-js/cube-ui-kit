@@ -321,7 +321,7 @@ Resizable inline section within a layout. Unlike Layout.Panel (which is absolute
 - **`isResizable`** `boolean` (default: `false`) — Enable resize functionality
 - **`size`** `number | string` — Controlled size (width for right edge, height for bottom edge)
 - **`defaultSize`** `number | string` (default: `200`) — Default size for uncontrolled state
-- **`minSize`** `number | string` — Minimum size constraint
+- **`minSize`** `number | string` — Minimum size constraint, in pixels or a CSS length. With `flexShrink={1}`, the pane gives way down to it (`2x` when unset) when a flex container runs short
 - **`maxSize`** `number | string` — Maximum size constraint
 - **`onSizeChange`** `(size: number) => void` — Size change callback
 - **`scrollbar`** `ScrollbarType` (default: `'thin'`) — Scrollbar style
