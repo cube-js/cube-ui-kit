@@ -109,6 +109,9 @@ const PanelElement = tasty({
       'side=bottom': 'top',
     },
     fill: '#surface',
+    // The stacking context the transform used to create: z-indexed content
+    // stays inside the panel, below its resize handle and an overlay backdrop.
+    isolation: 'isolate',
 
     // Transition styles - offscreen mod controls slide animation.
     // `none` at rest, not a zero translate: any transform makes the panel the

@@ -46,9 +46,9 @@ const PaneElement = tasty({
     placeContent: 'stretch',
     placeItems: 'stretch',
     placeSelf: 'stretch',
-    // Gives way down to its minimum when a flex container runs short, so the
-    // content beside it keeps its room.
-    flexShrink: 1,
+    // Holds its size. With `flexShrink={1}` it gives way down to its minimum
+    // when a flex container runs short.
+    flexShrink: 0,
     flexGrow: 0,
     // Size is set via CSS custom property for performance during drag
     width: {
@@ -369,6 +369,23 @@ function LayoutPane(
     onMoveStart() {
       if (!isResizable) return;
       setIsDragging(true);
+
+      // Flex shrinking or a CSS minimum can draw the pane at another size than
+      // `size`; resize from the one on screen, or the first moves do nothing.
+      const pane = combinedRef.current;
+
+      if (!pane) return;
+
+      const style = getComputedStyle(pane);
+      const drawn = Math.round(
+        parseFloat(isHorizontal ? style.width : style.height),
+      );
+
+      setSize((current) =>
+        Number.isFinite(drawn) && Math.abs(drawn - current) >= 1
+          ? drawn
+          : current,
+      );
     },
     onMove(e) {
       if (!isResizable) return;

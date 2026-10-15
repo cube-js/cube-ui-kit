@@ -1383,3 +1383,38 @@ describe('Layout.Panel fixed descendants', () => {
     },
   );
 });
+
+describe('Layout.Panel stacking', () => {
+  it('keeps z-indexed content below its own resize handle', async () => {
+    await page.viewport(800, 600);
+    renderWithRoot(
+      <div style={{ width: 400, height: 240, margin: 80, display: 'grid' }}>
+        <Layout>
+          <Layout.Panel
+            side="left"
+            qa="stacked-panel"
+            defaultSize={100}
+            isResizable
+          >
+            <div style={{ position: 'absolute', inset: 0, zIndex: 1 }} />
+          </Layout.Panel>
+        </Layout>
+      </div>,
+    );
+    const panel = await screen.findByTestId('stacked-panel');
+    const rect = panel.getBoundingClientRect();
+
+    await waitFor(() =>
+      expect(
+        screen
+          .getByTestId('PanelResizeHandler')
+          .contains(
+            document.elementFromPoint(
+              rect.right - 2,
+              rect.top + rect.height / 2,
+            ),
+          ),
+      ).toBe(true),
+    );
+  });
+});
