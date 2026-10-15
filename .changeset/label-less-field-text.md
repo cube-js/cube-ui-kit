@@ -1,0 +1,5 @@
+---
+"@cube-dev/ui-kit": patch
+---
+
+A field without a `label` now shows its `description`, `errorMessage` and `message` instead of dropping them, and links them to the input, so a screen reader says why it is invalid. `SearchInput` and `SearchComboBox` now show them too. Passing one of these props is enough, whatever it holds at the moment (`errorMessage={error}` with `error` still `undefined` or `null`), so the input keeps its place and its focus when the message comes and goes. The field is then laid out by its wrapper, as a labelled one is: layout props such as `flexGrow`, `width` or `gridArea` stay on the input, so move them to `fieldStyles`, or pass `forceField={false}` to keep the bare input. Without a label, a description now goes under the input even with a side or split `labelPosition`, rather than in the empty label column. A form field's own validation errors still need `forceField` when the field has no label and none of these props, as do the children of a legacy `Form.Item`.

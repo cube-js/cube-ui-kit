@@ -183,7 +183,12 @@ export interface FieldBaseProps<Value = unknown>
   fieldProps?: Props;
   fieldStyles?: Styles;
   messageStyles?: Styles;
-  /** If true, the input component will be wrapped in a field wrapper even if it doesn't have a label. */
+  /**
+   * If true, the input component will be wrapped in a field wrapper even if it
+   * doesn't have a label. Passing `description`, `errorMessage` or `message`
+   * to a field without a label sets it, whatever the prop holds; `false`
+   * keeps the bare input.
+   */
   forceField?: boolean;
 }
 

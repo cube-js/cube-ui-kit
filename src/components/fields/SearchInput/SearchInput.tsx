@@ -13,6 +13,7 @@ import {
 } from '../../../utils/react/nullableValue';
 import { ItemAction, ItemActionProvider } from '../../actions';
 import { useValidationProps } from '../../form';
+import { asksForFieldChrome } from '../../form/field-chrome';
 import {
   CubeBufferedValueProps,
   CubeTextInputBaseProps,
@@ -56,6 +57,8 @@ export const SearchInput = forwardRef(function SearchInput(
   // SearchInput is a standalone control, not a form field, so it does not use `useFieldProps`.
   props = useProviderProps(props);
   props = useValidationProps(props);
+  // Shows a description or message without a label, as a form field does.
+  if (asksForFieldChrome(props)) props = { ...props, forceField: true };
 
   let {
     isClearable,

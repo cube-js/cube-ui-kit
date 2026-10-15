@@ -150,7 +150,6 @@ function Checkbox(
     isIndeterminate = false,
     isDisabled = false,
     insideForm,
-    isRequired,
     children,
     label,
     isInvalid,
@@ -160,13 +159,7 @@ function Checkbox(
     labelPosition,
     inputStyles,
     isHidden,
-    form,
     tooltip,
-    // Pulled out so it stays off the `<label>` spread below. The Aria hooks read
-    // it from `props` directly; `filterBaseProps` already dropped it at runtime,
-    // but it typed as a DOM `FormEventHandler` there, which it is not.
-    onChange,
-    ...otherProps
   } = props;
 
   let styles: Styles = extractStyles(props, CONTAINER_STYLES);
@@ -192,12 +185,16 @@ function Checkbox(
   const toggleState = useToggleState(props);
 
   // React Aria writes `form` onto the input as the id of its `<form>`, so the
-  // form instance would render as `form="[object Object]"` and detach it.
+  // form instance would render as `form="[object Object]"` and detach it. It
+  // reads `children` only to warn about a checkbox with no visible label; a
+  // field `label` is one, named through its `<label for>`. Writing it into
+  // `aria-label` instead used to drop the inline text from the name and
+  // replace the caller's own `aria-label`.
+  let ariaProps = { ...props, form: undefined, children: children ?? label };
   let { inputProps } = groupState
     ? useCheckboxGroupItem(
         {
-          ...props,
-          form: undefined,
+          ...ariaProps,
           // Value is optional for standalone checkboxes, but required for CheckboxGroup items;
           // it's passed explicitly here to avoid typescript error (requires strictNullChecks disabled).
           value: props.value || '',
@@ -209,17 +206,7 @@ function Checkbox(
         groupState,
         inputRef,
       )
-    : useCheckbox(
-        {
-          ...props,
-          form: undefined,
-          ...(typeof label === 'string' && label.trim()
-            ? { 'aria-label': label }
-            : {}),
-        },
-        toggleState,
-        inputRef,
-      );
+    : useCheckbox(ariaProps, toggleState, inputRef);
 
   // Decorative: the input already announces checked, unchecked and mixed.
   let markIcon = isIndeterminate ? (
@@ -258,6 +245,19 @@ function Checkbox(
     'inside-form': insideForm,
   };
 
+  // The wrapper's props, the same in both branches. React Aria puts `id`,
+  // `aria-*` and `data-*` on the input, so they stay off the `<label>`: the
+  // grouped one used to copy them, and `#id`, `for` and `aria-labelledby`
+  // resolved to it. A caller's own `mods` stay, under the state ones.
+  const wrapperProps = {
+    className: props.className,
+    style: props.style,
+    qaVal: props.qaVal,
+    styles,
+    isHidden,
+    mods: { ...props.mods, ...mods },
+  };
+
   // The input, where keyboard focus lands, takes the tooltip's focus-side
   // trigger props; the wrapper keeps the hover side and positions the tooltip.
   const renderCheckbox = (tooltipFocusProps?: TooltipFocusProps) => (
@@ -289,10 +289,8 @@ function Checkbox(
           // this path, so `<Checkbox styles={{ … }}>` outside a group was a
           // silent no-op.
           <CheckboxWrapperElement
-            styles={styles}
-            isHidden={isHidden}
-            mods={mods}
-            {...pointerProps}
+            {...wrapperProps}
+            {...mergeProps(hoverProps, pointerProps)}
             ref={tooltipRef}
           >
             {renderCheckbox(tooltipFocusProps)}
@@ -320,9 +318,13 @@ function Checkbox(
 
     // `tooltip` is the checkbox's own here, not a legacy label badge.
     // `renderWithTooltip` is typed for any node; here it returns an element.
+    // The field label names the input through `for`, which `useFieldProps`
+    // leaves unset for a caller's own `id` and inside the legacy `<Field>`, as
+    // `Switch` does.
     return wrapWithField(checkboxField as ReactElement, domRef, {
       ...props,
       tooltip: undefined,
+      labelProps: { ...props.labelProps, for: props.id },
     });
   }
 
@@ -332,10 +334,8 @@ function Checkbox(
 
     return (
       <CheckboxWrapperElement
-        styles={styles}
-        isHidden={isHidden}
+        {...wrapperProps}
         {...mergeProps(hoverProps, pointerProps)}
-        {...filterBaseProps(otherProps)}
         ref={
           tooltipRef
             ? // Written only when React attaches the node, never during render.

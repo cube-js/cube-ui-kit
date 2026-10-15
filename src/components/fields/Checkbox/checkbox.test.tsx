@@ -72,6 +72,166 @@ describe('<Checkbox />', () => {
   });
 });
 
+describe('<Checkbox /> wrapper', () => {
+  function renderChecked(isGrouped: boolean) {
+    return renderWithRoot(
+      isGrouped ? (
+        <CheckboxGroup aria-label="Notifications" defaultValue={['email']}>
+          <Checkbox value="email">Email</Checkbox>
+        </CheckboxGroup>
+      ) : (
+        <Checkbox defaultSelected>Email</Checkbox>
+      ),
+    );
+  }
+
+  // `styles` and `inputStyles` keyed on a state only work where the state is.
+  it.each([
+    ['standalone', false],
+    ['grouped', true],
+  ])(
+    'carries the state mods of a %s checkbox, hover included',
+    async (_, isGrouped) => {
+      renderChecked(isGrouped);
+
+      const wrapper = screen.getByTestId('CheckboxWrapper');
+      const box = wrapper.querySelector('[data-element="Input"]');
+
+      expect(wrapper).toHaveAttribute('data-checked');
+      expect(wrapper).not.toHaveAttribute('data-hovered');
+
+      await hoverWithPointer(wrapper);
+
+      expect(wrapper).toHaveAttribute('data-hovered');
+      expect(box).toHaveAttribute('data-hovered');
+    },
+  );
+
+  it.each([
+    ['standalone', false],
+    ['grouped', true],
+  ])('takes the base props of a %s checkbox', (_, isGrouped) => {
+    const checkbox = (
+      <Checkbox
+        value="email"
+        className="channel"
+        style={{ marginTop: 7 }}
+        qaVal="email"
+        mods={{ pinned: true }}
+      >
+        Email
+      </Checkbox>
+    );
+
+    render(
+      isGrouped ? (
+        <CheckboxGroup aria-label="Notifications">{checkbox}</CheckboxGroup>
+      ) : (
+        checkbox
+      ),
+    );
+
+    const wrapper = screen.getByTestId('CheckboxWrapper');
+
+    expect(wrapper).toHaveClass('channel');
+    expect(wrapper).toHaveStyle({ marginTop: '7px' });
+    expect(wrapper).toHaveAttribute('data-qaval', 'email');
+    expect(wrapper).toHaveAttribute('data-pinned');
+  });
+
+  it('leaves the id and ARIA props of a grouped checkbox on its input', () => {
+    render(
+      <CheckboxGroup aria-label="Notifications">
+        <Checkbox
+          value="email"
+          id="email"
+          aria-label="Email updates"
+          aria-describedby="email-note"
+          data-kind="channel"
+        >
+          Email
+        </Checkbox>
+      </CheckboxGroup>,
+    );
+
+    const input = screen.getByRole('checkbox', { name: 'Email updates' });
+
+    const carriers = (selector: string) =>
+      Array.from(document.querySelectorAll(selector));
+
+    expect(document.getElementById('email')).toBe(input);
+    expect(carriers('[aria-label="Email updates"]')).toEqual([input]);
+    expect(carriers('[aria-describedby]')).toEqual([input]);
+    expect(carriers('[data-kind]')).toEqual([input]);
+  });
+});
+
+describe('<Checkbox /> name', () => {
+  it('joins a field label and the inline text', () => {
+    render(<Checkbox label="Notifications">Send me emails</Checkbox>);
+
+    expect(
+      screen.getByRole('checkbox', { name: 'Notifications Send me emails' }),
+    ).toBeInTheDocument();
+  });
+
+  it('keeps the caller’s aria-label over a field label', () => {
+    render(
+      <Checkbox label="Notifications" aria-label="Email notifications">
+        Send me emails
+      </Checkbox>,
+    );
+
+    expect(
+      screen.getByRole('checkbox', { name: 'Email notifications' }),
+    ).toBeInTheDocument();
+  });
+
+  // Without the inline text, the field `<label for>` is the only name, so it
+  // must point at the input whoever owns the id.
+  it.each([
+    ['its generated id', <Checkbox label="Accept terms" />],
+    ['the caller’s id', <Checkbox id="terms" label="Accept terms" />],
+  ])('is named by a field label through %s', (_, checkbox) => {
+    render(checkbox);
+
+    expect(
+      screen.getByRole('checkbox', { name: 'Accept terms' }),
+    ).toBeInTheDocument();
+  });
+
+  it('is named by a legacy Field label', () => {
+    renderWithForm(
+      <Field name="terms" label="Accept terms">
+        <Checkbox />
+      </Field>,
+    );
+
+    expect(
+      screen.getByRole('checkbox', { name: 'Accept terms' }),
+    ).toBeInTheDocument();
+  });
+
+  // A string label used to be copied into `aria-label`; a node one never was,
+  // so it made React Aria warn.
+  it('is named by a field label alone without warning about it', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    try {
+      render(<Checkbox label={<b>Wifi</b>} />);
+
+      expect(
+        screen.getByRole('checkbox', { name: 'Wifi' }),
+      ).toBeInTheDocument();
+      expect(warn).not.toHaveBeenCalledWith(
+        expect.stringContaining('must specify an aria-label'),
+      );
+    } finally {
+      warn.mockRestore();
+    }
+  });
+});
+
 describe('<Checkbox /> tooltip', () => {
   function wrapperOf(text: string) {
     return screen.getByText(text).closest('label') as HTMLElement;
