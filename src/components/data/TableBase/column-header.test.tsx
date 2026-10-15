@@ -2,6 +2,7 @@ import { renderWithRoot, screen, userEvent } from '../../../test';
 
 import { renderColumnHeaderContent } from './column-header';
 
+import type { ReactNode } from 'react';
 import type { ColumnSortState } from './column-header';
 import type { CubeResolvedColumn, CubeTableHeaderContext } from './types';
 
@@ -26,10 +27,18 @@ const UNSORTED: ColumnSortState = {
   rank: null,
 };
 
+function headerContent(
+  column: CubeResolvedColumn,
+  sort: ColumnSortState,
+  menuTrigger: ReactNode,
+) {
+  return <>{renderColumnHeaderContent(column, sort, menuTrigger)}</>;
+}
+
 describe('column header content', () => {
   it('updates the direction and multi-sort rank with fresh sort entries', () => {
     const { container, rerender } = renderWithRoot(
-      renderColumnHeaderContent(COLUMN, UNSORTED, null),
+      headerContent(COLUMN, UNSORTED, null),
     );
     const indicator = () =>
       container.querySelector('[data-element="SortIndicator"]')!;
@@ -40,7 +49,7 @@ describe('column header content', () => {
       ['desc', 1],
     ] as const) {
       rerender(
-        renderColumnHeaderContent(
+        headerContent(
           COLUMN,
           {
             isSortable: true,
@@ -56,16 +65,10 @@ describe('column header content', () => {
       expect(indicator()).toHaveAttribute('data-rank', String(rank));
     }
 
-    rerender(renderColumnHeaderContent(COLUMN, UNSORTED, null));
+    rerender(headerContent(COLUMN, UNSORTED, null));
     expect(indicator()).not.toHaveAttribute('data-dir');
     expect(indicator()).not.toHaveAttribute('data-rank');
-    rerender(
-      renderColumnHeaderContent(
-        COLUMN,
-        { ...UNSORTED, isSortable: false },
-        null,
-      ),
-    );
+    rerender(headerContent(COLUMN, { ...UNSORTED, isSortable: false }, null));
     expect(indicator()).toBeNull();
   });
 
@@ -73,7 +76,7 @@ describe('column header content', () => {
     const first = vi.fn();
     const next = vi.fn();
     const renderHeader = (updated: boolean) =>
-      renderColumnHeaderContent(
+      headerContent(
         {
           ...COLUMN,
           title: updated ? 'Updated name' : 'Name',
@@ -121,13 +124,11 @@ describe('column header content', () => {
       ({ width, sort }: CubeTableHeaderContext) => `${width}:${sort}`,
     );
     const column = { ...COLUMN, header: { render } };
-    const { rerender } = renderWithRoot(
-      renderColumnHeaderContent(column, UNSORTED, null),
-    );
+    const { rerender } = renderWithRoot(headerContent(column, UNSORTED, null));
     expect(screen.getByText('160:null')).toBeInTheDocument();
 
     rerender(
-      renderColumnHeaderContent(
+      headerContent(
         { ...column, index: 2, width: 240 },
         {
           ...UNSORTED,
