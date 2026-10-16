@@ -273,7 +273,7 @@ Collapsible side panel with resizing, transitions, and multiple rendering modes.
 - **`onSizeChange`** `(size: number) => void` — Size change callback
 - **`sizeStorageKey`** `string` — localStorage key for persisting size
 - **`hasTransition`** `boolean` (default: `false`) — Enable slide animation
-- **`isDismissable`** `boolean` (default: `true`) — Allow dismissing overlay/dialog by click or Escape
+- **`isDismissable`** `boolean` (default: `true`) — Allow dismissing overlay/dialog by click or Escape, and an overlay panel by focus moving into the main content
 - **`overlayStyles`** `Styles` — Styles for the overlay backdrop in overlay mode
 - **`isDialogOpen`** `boolean` — Controlled dialog state (mode="dialog")
 - **`defaultIsDialogOpen`** `boolean` (default: `false`) — Initial dialog state
@@ -654,7 +654,7 @@ In `overlay` mode, a semi-transparent backdrop appears behind the panel. The pan
 - Pressing Escape anywhere in the Layout
 - Moving focus to the main content area
 
-Focus closes the panel only when it enters the main content from outside it, for example with `Tab` or `Shift+Tab` out of the panel or a programmatic `focus()`; moving between controls of the main content does not. Focus moving inside the panel, into a popover, menu or dialog opened from it, or into another `Layout.Panel` of the same Layout keeps it open. Other panels of the same Layout can sit under the backdrop; a click on them then closes the overlay panel, but `Tab` still reaches their controls. Opening the panel does not move focus into it, so focus the first control yourself when keyboard users should land there.
+Focus closes the panel only when it enters the main content from outside it, for example with a programmatic `focus()`, `Tab` from a control before the Layout, or `Shift+Tab` out of the panel when no other panel comes before it; moving between controls of the main content does not. Panels come after the main content in tab order, so `Tab` from the panel's last control leaves the Layout and keeps the panel open. Focus moving inside the panel, into a popover, menu or dialog opened from it, or into another `Layout.Panel` of the same Layout keeps it open. Other panels of the same Layout can sit under the backdrop; a click on them then closes the overlay panel, but `Tab` still reaches their controls. Opening the panel does not move focus into it, and closing it does not return focus: focus the first control yourself when keyboard users should land there, and move focus back to the opener in `onOpenChange`. Move focus into the panel whenever a menu or dialog in the main content opens it, since that menu or dialog returns focus to its trigger as it closes, and that focus closes the panel again.
 
 <Story of={LayoutStories.OverlayPanel} />
 
@@ -819,7 +819,8 @@ function ApplicationShell() {
 
 - `Tab` - Navigate between interactive elements
 - An overlay panel closes on Escape or when focus enters the main content from outside it; focus moving inside it or into another panel of the same Layout keeps it open
-- Opening a panel does not move focus into it, except in `dialog` mode, where the dialog manages focus
+- Panels come after the main content in tab order, so `Tab` from a panel's last control leaves the Layout
+- Opening a panel does not move focus into it, and closing it does not return focus, except in `dialog` mode, where the dialog manages focus
 - Resize handlers can be focused and resized using arrow keys:
   - `Arrow keys` - Resize panel by 10px
   - `Shift + Arrow keys` - Resize panel by 50px

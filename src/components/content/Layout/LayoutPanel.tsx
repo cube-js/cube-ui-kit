@@ -390,7 +390,8 @@ export interface CubeLayoutPanelProps extends BaseProps, ContainerStyleProps {
   /** Enable slide transition on open/close */
   hasTransition?: boolean;
   /**
-   * Whether the panel can be dismissed by clicking the overlay (overlay mode) or pressing Escape.
+   * Whether the panel can be dismissed by clicking the overlay (overlay mode), pressing Escape,
+   * or, in overlay mode, moving focus into the main content.
    * Only applies to `overlay` and `dialog` modes. Default: true
    */
   isDismissable?: boolean;

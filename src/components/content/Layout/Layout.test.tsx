@@ -634,32 +634,35 @@ describe('Layout overlay panel focus', () => {
     expect(onOpenChange).not.toHaveBeenCalled();
   });
 
-  it('stays open when focus moves inside a popover opened from it', async () => {
-    const onOpenChange = vi.fn();
+  it.each(['popover', 'modal'] as const)(
+    'stays open when focus moves inside a %s opened from it',
+    async (type) => {
+      const onOpenChange = vi.fn();
 
-    // Opened on mount, so only the popover's own focus reaches the Layout,
-    // never the trigger's.
-    renderWithRoot(
-      <OverlayLayout onOpenChange={onOpenChange}>
-        <DialogTrigger defaultOpen type="popover">
-          <Button>Open popover</Button>
-          <Dialog aria-label="Popover">
-            <input aria-label="Popover field" />
-          </Dialog>
-        </DialogTrigger>
-      </OverlayLayout>,
-    );
+      // Opened on mount, so only the dialog's own focus reaches the Layout,
+      // never the trigger's.
+      renderWithRoot(
+        <OverlayLayout onOpenChange={onOpenChange}>
+          <DialogTrigger defaultOpen type={type}>
+            <Button>Open dialog</Button>
+            <Dialog aria-label="Details">
+              <input aria-label="Dialog field" />
+            </Dialog>
+          </DialogTrigger>
+        </OverlayLayout>,
+      );
 
-    // The popover focuses itself as it opens.
-    expect(onOpenChange).not.toHaveBeenCalled();
+      // The dialog focuses itself as it opens.
+      expect(onOpenChange).not.toHaveBeenCalled();
 
-    const popoverField = await screen.findByLabelText('Popover field');
-    await userEvent.click(popoverField);
+      const dialogField = await screen.findByLabelText('Dialog field');
+      await userEvent.click(dialogField);
 
-    expect(popoverField).toHaveFocus();
-    expect(screen.getByTestId('OverlayPanel')).toBeInTheDocument();
-    expect(onOpenChange).not.toHaveBeenCalled();
-  });
+      expect(dialogField).toHaveFocus();
+      expect(screen.getByTestId('OverlayPanel')).toBeInTheDocument();
+      expect(onOpenChange).not.toHaveBeenCalled();
+    },
+  );
 
   it('stays open when focus moves into another panel of the same Layout', async () => {
     const onOpenChange = vi.fn();
