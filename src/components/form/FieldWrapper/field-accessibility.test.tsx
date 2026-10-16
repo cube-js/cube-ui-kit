@@ -13,6 +13,9 @@ import {
   startScreenReader,
 } from '../../../test/screen-reader';
 import { FileInput } from '../../fields/FileInput/FileInput';
+import { FilterPicker } from '../../fields/FilterPicker/FilterPicker';
+import { ListBox } from '../../fields/ListBox/ListBox';
+import { Picker } from '../../fields/Picker/Picker';
 import { TagInput } from '../../fields/TagInput/TagInput';
 import { TextInput } from '../../fields/TextInput/TextInput';
 import { TextInputMapper } from '../../fields/TextInputMapper/TextInputMapper';
@@ -63,6 +66,53 @@ const labelledOnly = (element: (typeof FORM_ATTACHABLE_INPUTS)[number][1]) =>
   cloneElement(element, { label: undefined, 'aria-label': 'Billing name' });
 
 describe('every form-attachable input, read by a screen reader', () => {
+  describe.each([false, true])('custom label ids with isBare=%s', (isBare) => {
+    it.each([
+      ['Picker', Picker, 'button'],
+      ['FilterPicker', FilterPicker, 'button'],
+      ['ListBox', ListBox, 'listbox'],
+    ] as const)('%s keeps its custom label association', (_, Control, role) => {
+      renderWithRoot(
+        <Control
+          label="Region"
+          labelProps={{ id: 'region-label' }}
+          isBare={isBare}
+        >
+          <Control.Item key="eu">Europe</Control.Item>
+        </Control>,
+      );
+      const control = screen.getByRole(role, { name: 'Region' });
+
+      expect(document.getElementById('region-label')).toHaveTextContent(
+        'Region',
+      );
+      for (const id of control.getAttribute('aria-labelledby')?.split(/\s+/) ??
+        []) {
+        expect(document.getElementById(id)).not.toBeNull();
+      }
+    });
+  });
+
+  it.each([
+    ['Picker', Picker],
+    ['FilterPicker', FilterPicker],
+  ] as const)('%s follows a changed control id', (_, Control) => {
+    const { rerender } = renderWithRoot(
+      <Control id="first" label="Region" aria-label="Chosen region" />,
+    );
+    const trigger = screen.getByRole('button', { name: /Region/ });
+    expect(trigger).toHaveAttribute('id', 'first');
+
+    rerender(<Control id="second" label="Region" aria-label="Chosen region" />);
+
+    expect(trigger).toHaveAttribute('id', 'second');
+    expect(trigger).toHaveAccessibleName(/Chosen region/);
+    for (const id of trigger.getAttribute('aria-labelledby')?.split(/\s+/) ??
+      []) {
+      expect(document.getElementById(id)).not.toBeNull();
+    }
+  });
+
   it.each(FORM_ATTACHABLE_INPUTS)(
     '%s says its description, error and invalid state, and shows no bare graphic',
     async (name, element) => {

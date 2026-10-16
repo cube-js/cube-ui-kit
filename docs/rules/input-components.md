@@ -86,7 +86,7 @@ Form instances are branded (see `Form/backend.ts`). `Form.useController()` creat
 - `wrapWithField` destructures the wrapper props itself. Pass the full `props` object; do not hand-pick keys and do not blank out `form`.
 - Shorthands are merged by the wrapper: `fieldStyles` → `fieldProps.styles`, `labelStyles` → `labelProps.styles`. Do not merge them in the component.
 - The `id` belongs on the interactive control, never on the field wrapper.
-- Put a React Aria hook's group props (`radioGroupProps`, `groupProps`) on the control's own element, not in `fieldProps`: a field rendered bare has no wrapper, and the role, name, keyboard and focus handlers go with it. `RadioGroup`, `ColorSwatchGroup` and `SliderBase` do this; `CheckboxGroup` still passes its `groupProps` as `fieldProps`.
+- Put a React Aria hook's group props (`radioGroupProps`, `groupProps`) on the control's own element, not in `fieldProps`: a field rendered bare has no wrapper, and the role, name, keyboard and focus handlers go with it. `RadioGroup`, `CheckboxGroup`, `ColorSwatchGroup` and `SliderBase` do this.
 
 ## 4. Base components are presentational
 

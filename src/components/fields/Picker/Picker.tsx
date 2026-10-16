@@ -23,7 +23,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import { FocusScope, Key, Placement, useLabel } from 'react-aria';
+import { FocusScope, Key, mergeProps, Placement, useLabel } from 'react-aria';
 import { Section as BaseSection, ListState, useListState } from 'react-stately';
 
 import { useEvent } from '../../../_internal';
@@ -33,7 +33,6 @@ import { CloseIcon } from '../../../icons/CloseIcon';
 import { DirectionIcon } from '../../../icons/DirectionIcon';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
 import { isTextOnly } from '../../../utils/react/isTextOnly';
-import { mergeProps } from '../../../utils/react/mergeProps';
 import { allowOverlayKeysToPropagate } from '../../../utils/react/overlayKeyPropagation';
 import { processSelectionArray } from '../../../utils/selection';
 import { extractStyles, mergeStyleLayers } from '../../../utils/styles';
@@ -708,7 +707,6 @@ export const Picker = forwardRef(function Picker<T extends object>(
     <ItemButton
       ref={triggerRef as any}
       data-popover-trigger
-      id={id}
       qa={qa || 'PickerTrigger'}
       type={type}
       theme={paintedTheme}
@@ -731,7 +729,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
       descriptionPlacement={descriptionPlacement}
       styles={triggerStyles}
       {...keyboardProps}
-      {...triggerLabelProps}
+      {...mergeProps(triggerLabelProps, { id })}
       aria-describedby={ariaDescribedBy}
     >
       {triggerContent}

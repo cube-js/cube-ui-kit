@@ -92,9 +92,8 @@ function CheckboxGroup(
     state,
   );
 
-  // The group semantics go on the group itself, as in `RadioGroup`, not on the
-  // field wrapper: that is only rendered with a label, and an `aria-label`-only
-  // group would lose its role, name and description with it.
+  // The group owns its semantics in both presentations: `isBare` omits the
+  // field wrapper, so putting them there would lose its role and name.
   let radioGroup = (
     <CheckGroupElement
       {...groupProps}

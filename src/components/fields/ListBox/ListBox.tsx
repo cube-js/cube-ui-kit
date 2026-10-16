@@ -30,6 +30,7 @@ import {
 import {
   AriaListBoxProps,
   DropTarget,
+  mergeProps as mergeAriaProps,
   useDraggableItem,
   useDropIndicator,
   useKeyboard,
@@ -1301,7 +1302,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   return wrapWithField<Omit<CubeListBoxProps<T>, 'children'>>(
     listBoxField,
     ref,
-    { ...props, labelProps: mergeProps(labelProps, props.labelProps) },
+    { ...props, labelProps: mergeAriaProps(labelProps, props.labelProps) },
   );
 }) as unknown as (<T>(
   props: CubeListBoxProps<T> & { ref?: ForwardedRef<HTMLDivElement> },
