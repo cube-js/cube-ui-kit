@@ -1084,6 +1084,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
       )}
       {searchInput}
       <ListBox
+        isBare
         ref={listBoxRef}
         id={listBoxId}
         aria-label={innerAriaLabel}

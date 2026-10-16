@@ -409,6 +409,7 @@ export const SwapSelectWithRename: Story = {
           />
         ) : (
           <Select
+            isBare
             width="200px"
             aria-label="Status"
             selectedKey={selectedKey}

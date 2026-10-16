@@ -363,6 +363,7 @@ function TreeNodeInner(props: TreeNodeProps) {
       onKeyDown={allowOverlayKeysToPropagate}
     >
       <Checkbox
+        isBare
         isSelected={isChecked}
         isIndeterminate={isIndeterminate}
         isDisabled={isDisabled || data.isCheckboxDisabled}

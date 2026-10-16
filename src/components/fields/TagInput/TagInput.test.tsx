@@ -945,9 +945,9 @@ describe('<TagInput />', () => {
       expect(queryByText('"one" is already added')).not.toBeInTheDocument();
     });
 
-    it('announces a rejection when there is no label to show it', async () => {
+    it('announces a rejection when bare presentation omits its message', async () => {
       const { getByRole, container } = render(
-        <TagInput aria-label="Recipients" validateTag={validateEmail} />,
+        <TagInput isBare aria-label="Recipients" validateTag={validateEmail} />,
       );
 
       await userEvent.type(getByRole('textbox'), 'bad{Enter}');
@@ -959,7 +959,7 @@ describe('<TagInput />', () => {
 
     it('speaks the same rejection again when it repeats', async () => {
       const { getByRole } = render(
-        <TagInput aria-label="Recipients" validateTag={validateEmail} />,
+        <TagInput isBare aria-label="Recipients" validateTag={validateEmail} />,
       );
       const input = getByRole('textbox');
       const reader = await startScreenReader();

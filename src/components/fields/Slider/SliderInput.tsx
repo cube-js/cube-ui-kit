@@ -36,6 +36,7 @@ export function SliderInput(props: RangeInputProps) {
 
   return (
     <NumberInput
+      isBare
       insideForm={false}
       labelPosition="top"
       {...otherProps}

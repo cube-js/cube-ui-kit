@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 
 import { NO_SNAPSHOT } from '../../../stories/chromatic';
-import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
+import { IS_BARE_ARG, VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Button } from '../../actions/Button/Button';
 import { Paragraph } from '../../content/Paragraph';
@@ -44,6 +44,7 @@ const meta = {
   args: { width: '360px', label: 'Also send to' },
   parameters: { controls: { exclude: baseProps } },
   argTypes: {
+    ...IS_BARE_ARG,
     /* Content */
     children: {
       control: { type: null },
@@ -362,7 +363,11 @@ export const CustomValues: Story = {
 };
 
 export const RejectedEntry: Story = {
-  args: { placeholder: 'name@company.com' },
+  args: {
+    placeholder: 'name@company.com',
+    label: undefined,
+    'aria-label': 'Recipients',
+  },
   render: (args) => (
     <TagInput
       qa="Emails"
@@ -389,7 +394,7 @@ RejectedEntry.parameters = {
   docs: {
     description: {
       story:
-        'A pasted list is split into values. Accepted ones become chips; a rejected one stays in the input with the message from `validateTag`.',
+        'A field without a visible label still shows rejection text by default. Accepted pasted values become chips; a rejected value stays in the input with the message from `validateTag`.',
     },
   },
 };

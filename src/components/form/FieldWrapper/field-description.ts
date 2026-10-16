@@ -63,8 +63,8 @@ export function useFieldTextId(id: string | undefined) {
  *
  * Taken from what the wrapper registered rather than predicted from props,
  * as React Aria's `useSlotId` does, because whether `FieldWrapper` renders
- * either one depends on more than the control's props: a label or
- * `forceField`, a disabled field hiding its message, `TagInput` putting a
+ * either one depends on more than the control's props: `isBare`,
+ * a disabled field hiding its message, `TagInput` putting a
  * rejection in at wrap time. Without the reference, a screen reader announces
  * the field as invalid and never says why.
  */

@@ -1,5 +1,6 @@
 import { tasty } from '@tenphi/tasty';
 import { forwardRef } from 'react';
+import { VisuallyHidden } from 'react-aria';
 
 import { useI18n } from '../../../i18n';
 import { isDevEnv } from '../../../utils/is-dev-env';
@@ -18,6 +19,13 @@ import {
   useFieldTextId,
 } from './field-description';
 import { CubeFieldWrapperProps } from './types';
+
+import type { ReactNode } from 'react';
+
+/** Empty slot values suppress content; numeric zero is still text. */
+function hasFieldContent(content: ReactNode) {
+  return content != null && typeof content !== 'boolean' && content !== '';
+}
 
 const FieldElement = tasty({
   qa: 'Field',
@@ -122,6 +130,7 @@ export const FieldWrapper = forwardRef(function FieldWrapper(
     as,
     labelPosition = 'top',
     label,
+    isBare = false,
     extra,
     styles,
     isRequired,
@@ -164,7 +173,8 @@ export const FieldWrapper = forwardRef(function FieldWrapper(
     ? t('form.optional', '(optional)')
     : null;
 
-  const labelComponent = label ? (
+  const hasLabel = hasFieldContent(label);
+  const labelComponent = hasLabel ? (
     <Label
       as={as === 'label' ? 'div' : 'label'}
       styles={labelStyles}
@@ -216,24 +226,43 @@ export const FieldWrapper = forwardRef(function FieldWrapper(
     </Label>
   ) : null;
 
-  // Determine which message to display (errorMessage takes precedence, then message for backward compatibility)
-  const displayMessage = errorMessage || message;
-  const isErrorMessage = !!errorMessage;
-  const isMessageShown = !!displayMessage && !isDisabled;
+  const displayMessage = errorMessage !== undefined ? errorMessage : message;
+  const isErrorMessage = errorMessage !== undefined;
+  const isMessageShown =
+    !isBare && !isDisabled && hasFieldContent(displayMessage);
 
   // An id only on what is actually rendered, registered for the control's
   // `aria-describedby` — see `useFieldDescribedBy`.
   const descriptionId =
-    controlId && description ? getFieldDescriptionId(controlId) : undefined;
+    controlId && !isBare && hasFieldContent(description)
+      ? getFieldDescriptionId(controlId)
+      : undefined;
   const messageId =
     controlId && isMessageShown ? getFieldMessageId(controlId) : undefined;
 
   useFieldTextId(descriptionId);
   useFieldTextId(messageId);
 
+  if (isBare) {
+    return (
+      <>
+        {hasLabel ? (
+          <VisuallyHidden>
+            <Label {...labelProps}>
+              {label}
+              {optionalNote ? <> {optionalNote}</> : null}
+            </Label>
+          </VisuallyHidden>
+        ) : null}
+        {Component}
+        {children}
+      </>
+    );
+  }
+
   // Create description component with proper styling
   const createDescriptionComponent = () => {
-    if (!description) return null;
+    if (!hasFieldContent(description)) return null;
 
     return (
       <DescriptionElement id={descriptionId} data-element="Description">
@@ -248,7 +277,7 @@ export const FieldWrapper = forwardRef(function FieldWrapper(
   // label, that column is empty and the description would read as the label,
   // so it goes under the input.
   const isDescriptionBesideInput =
-    !!label && (labelPosition === 'side' || labelPosition === 'split');
+    hasLabel && (labelPosition === 'side' || labelPosition === 'split');
   const descriptionForLabel = isDescriptionBesideInput
     ? createDescriptionComponent()
     : null;
@@ -257,9 +286,9 @@ export const FieldWrapper = forwardRef(function FieldWrapper(
     : null;
 
   const mods = {
-    'has-sider': labelPosition === 'side',
-    'has-split': labelPosition === 'split',
-    'has-description': !!description,
+    'has-sider': hasLabel && labelPosition === 'side',
+    'has-split': hasLabel && labelPosition === 'split',
+    'has-description': hasFieldContent(description),
     ...getValidationMods({ isInvalid, isValid }),
   };
 

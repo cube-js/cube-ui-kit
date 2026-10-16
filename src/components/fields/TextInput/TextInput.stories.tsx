@@ -1,7 +1,7 @@
 import { StoryFn } from '@storybook/react-vite';
 import { IconCoin } from '@tabler/icons-react';
 
-import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
+import { IS_BARE_ARG, VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Title } from '../../content/Title';
 import { Space } from '../../layout/Space';
@@ -17,6 +17,7 @@ export default {
     },
   },
   argTypes: {
+    ...IS_BARE_ARG,
     /* Content */
     value: {
       control: { type: 'text' },

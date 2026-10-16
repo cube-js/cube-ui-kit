@@ -10,8 +10,6 @@ import { CubeLabelProps } from '../Label';
 
 import type { Props } from '../../../props';
 
-// ADDING NEW PROPS TO THIS INTERFACE REQUIRES ADDING THEM TO createFieldWrapperPropsKeys FUNCTION
-
 export type CubeFieldWrapperProps = ValidationProps & {
   as?: keyof HTMLElementTagNameMap;
   styles?: Styles;
@@ -23,6 +21,8 @@ export type CubeFieldWrapperProps = ValidationProps & {
   isDisabled?: boolean;
   fieldProps?: Props;
   isHidden?: boolean;
+  /** Omit field layout and text slots while preserving the accessible label. */
+  isBare?: boolean;
 
   label?: ReactNode;
   labelPosition?: LabelPosition;
@@ -39,13 +39,13 @@ export type CubeFieldWrapperProps = ValidationProps & {
 
   /**
    * @deprecated Use `errorMessage` for error messages and `description` for field descriptions instead.
-   * Custom message for the field. It will be placed below the label and the input
+   * Fallback text used only when errorMessage is undefined.
    */
   message?: string | ReactNode;
   /** Styles for the message */
   messageStyles?: Styles;
 
-  /** Error message for the field. Always displayed in danger state regardless of validation state */
+  /** Error text. Explicit empty content suppresses the message fallback. */
   errorMessage?: string | ReactNode;
 
   Component?: ReactElement;

@@ -219,6 +219,7 @@ function Pagination(
     if (selectEntries) {
       return (
         <Select
+          isBare
           qa="PaginationPageSelect"
           size={size}
           isDisabled={isDisabled}
@@ -302,6 +303,7 @@ function Pagination(
 
       {pageSizeOptions && onPageSizeChange ? (
         <Select
+          isBare
           qa="PaginationPageSizeSelect"
           size={size}
           isDisabled={isDisabled}

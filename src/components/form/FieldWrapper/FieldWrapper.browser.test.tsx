@@ -52,3 +52,60 @@ describe('FieldWrapper label row', () => {
     ).toBeGreaterThan(0);
   });
 });
+
+describe('FieldWrapper presentation', () => {
+  it.each(['side', 'split'] as const)(
+    'uses the full field width without a label in the %s position',
+    (labelPosition) => {
+      const { container } = renderWithRoot(
+        <TextInput
+          aria-label="Region"
+          labelPosition={labelPosition}
+          description="The nearest data center"
+          fieldStyles={{ width: '40x', '$label-width': '15x' }}
+        />,
+      );
+
+      const field = container.querySelector('[data-qa="Field"]')!;
+      const inputArea = field.querySelector('[data-element="InputArea"]')!;
+      const fieldRect = field.getBoundingClientRect();
+      const inputRect = inputArea.getBoundingClientRect();
+
+      expect(inputRect.left).toBeCloseTo(fieldRect.left, 1);
+      expect(inputRect.width).toBeCloseTo(fieldRect.width, 1);
+    },
+  );
+
+  it('keeps a bare supplied label out of layout while the control retains its name', () => {
+    const plain = renderWithRoot(
+      <div style={{ display: 'flex', width: 320 }}>
+        <TextInput isBare aria-label="Unlabeled region" width="100%" />
+      </div>,
+    );
+    const { container, getByRole } = renderWithRoot(
+      <div style={{ display: 'flex', width: 320 }}>
+        <TextInput
+          isBare
+          label="Region"
+          labelTooltip="Choose the nearest region"
+          labelSuffix={<Badge>3</Badge>}
+          width="100%"
+        />
+      </div>,
+    );
+
+    const row = container.firstElementChild!;
+    const input = getByRole('textbox', { name: 'Region' });
+    const plainInput = plain.getByRole('textbox', { name: 'Unlabeled region' });
+
+    expect(container.querySelector('[data-qa="Field"]')).toBeNull();
+    expect(input.getBoundingClientRect().width).toBeCloseTo(
+      plainInput.getBoundingClientRect().width,
+      1,
+    );
+    expect(row.getBoundingClientRect().height).toBeCloseTo(
+      plain.container.firstElementChild!.getBoundingClientRect().height,
+      1,
+    );
+  });
+});

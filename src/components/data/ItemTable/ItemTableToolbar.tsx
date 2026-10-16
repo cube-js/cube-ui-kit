@@ -94,6 +94,7 @@ export function ItemTableSearch(props: {
 
   return (
     <SearchElement
+      isBare
       qa={props.qa}
       size="small"
       isClearable

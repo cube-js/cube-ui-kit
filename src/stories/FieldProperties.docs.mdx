@@ -25,14 +25,29 @@ For modern forms, follow the [use-case guide](/docs/forms-modernform--docs). Bin
 
 - **`label`** `ReactNode` — Label text displayed above or beside the input.
 - **`labelPosition`** `'top' | 'side' | 'split'` (default: `top`) — Position of the label relative to the input.
-- **`description`** `ReactNode` — Description text placed below the label. A field without a label shows it too, unless it is `isBare`.
-- **`isBare`** `boolean` — For inline use: a field without a `label` renders the bare control. Without `isBare`, such a field renders the field wrapper when it is bound to a form, whose validation errors need a place, or is passed `description`, `errorMessage` or `message`. A text prop counts whatever it holds at the moment, so the input keeps its place and its focus when a message comes and goes. A wrapped field is laid out by its wrapper, as a labelled one is: layout props on the input such as `flexGrow`, `width` or `gridArea` stay on the input, so set them in `fieldStyles` to place the field, or pass `isBare`. With `isBare` the texts are not shown, and the control keeps its invalid state (`aria-invalid` and the invalid styles). The error text is not linked to anything, though, so a screen reader says the field is invalid without saying why: show the reason some other way, such as a tooltip or a message for the whole row, and point `aria-describedby` at it. No effect on a field with a `label`.
-- **`forceField`** `boolean` — **Deprecated.** A field without a `label` now renders the field wrapper by itself when it is bound to a form or is passed `description`, `errorMessage` or `message`; set `isBare` to keep the bare control instead. `forceField` still forces the wrapper and warns once in development.
+- **`description`** `ReactNode` — Help text. It appears below a top label or the control when there is no visible label, and beside the control with a side or split label. It remains independent of the error message.
+- **`isBare`** `boolean` (default: `false`) — Render the control without field layout, description or message text. A supplied `label` remains as a visually hidden accessible label; label tooltips, suffixes and extra content are omitted. Form binding, invalid state and control styles still apply. Use this explicitly for inline controls or when a parent already renders their field chrome. Provide `aria-describedby` when the error is explained elsewhere. With `isBare` omitted or `false`, field chrome always renders, including for standalone inputs without a label. Message values never choose whether the wrapper exists, so adding or removing messages keeps the control mounted and focused. Layout props on the control stay there; use `fieldStyles` to place the entire field.
+- **`forceField`** `boolean` — **Deprecated.** Fields render chrome by default, so remove this prop. It has no presentation effect; `isBare` is the explicit opt-out even if `forceField` is also supplied.
 - **`extra`** `ReactNode` — Additional content displayed next to the label.
 - **`labelTooltip`** `ReactNode` — Content of an info badge shown next to the label. Only rendered when the field has a label. (Formerly `tooltip`. On most fields `tooltip` is gone; on `Select` and `Checkbox` it is the control's own tooltip, as on `Item` and `Button`.)
 - **`labelSuffix`** `ReactNode` — Content displayed after the label text.
 - **`labelProps`** `object` — Additional HTML props passed to the label element.
 - **`labelStyles`** `Styles` — Tasty styles for the label element.
+
+## Field presentation
+
+```jsx
+// Default chrome gives generated errors a place, even without a visible label.
+<TagInput aria-label="Recipients" />
+
+// A row that owns the label and error opts its inner control out explicitly.
+<TextInput isBare aria-label="Amount" aria-describedby="row-error" />
+
+// Suppress only the error slot; keep the label and description.
+<TextInput name="name" label="Name" description="Shown on invoices" errorMessage={null} />
+```
+
+The field wrapper stays in place when a label, description or message appears or disappears. Changing `isBare` changes the presentation structure and may remount the control; keep that mode stable while editing. Individual checkbox and radio options keep their group's inline presentation.
 
 ## Necessity Indicators
 
@@ -83,8 +98,8 @@ For modern forms, follow the [use-case guide](/docs/forms-modernform--docs). Bin
 - **`rulesKey`** `string` — Manual modern function revision. Skips validator/transform source comparison; declarative constraints are always compared. Update it when a function or its captures change.
 - **`errorPolicy`** `'first' | 'all'` — Modern rule error collection policy, inherited from the controller by default.
 - **`showValid`** `boolean` — Whether to show the valid state icon after successful validation.
-- **`errorMessage`** `ReactNode` — Error message always displayed in danger state, regardless of validation state.
-- **`message`** `ReactNode` — _(deprecated)_ Use `errorMessage` for errors and `description` for help text.
+- **`errorMessage`** `ReactNode` — Error text displayed in danger state, regardless of validation state. `undefined` allows the form-generated error or the deprecated `message` fallback. An explicit `null`, `false` or empty string suppresses the error text and its fallback, while the control retains its invalid state. The description remains visible.
+- **`message`** `ReactNode` — _(deprecated)_ Fallback text used only when `errorMessage` is `undefined`. Use `errorMessage` for errors and `description` for help text. `message={null}` does not suppress a generated `errorMessage`.
 
 ## Styling
 

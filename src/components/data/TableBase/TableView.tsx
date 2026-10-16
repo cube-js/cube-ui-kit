@@ -1055,6 +1055,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
         {selection && selection.selectionMode === 'multiple' ? (
           <div data-element="SelectionBox">
             <Checkbox
+              isBare
               aria-label={
                 selection.selectAllState === 'all'
                   ? t('itemTable.deselectAll', 'Deselect all')
@@ -1086,6 +1087,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
 
     const checkbox = (
       <Checkbox
+        isBare
         aria-label={t('itemTable.selectRow', 'Select row')}
         isSelected={selection!.isSelected(rowKey)}
         isIndeterminate={selection!.isIndeterminate(rowKey)}

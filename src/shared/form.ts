@@ -89,12 +89,15 @@ export interface FieldCoreProps<Value = unknown> {
   isEqual?: (previous: unknown, next: unknown) => boolean;
   /**
    * @deprecated Use `errorMessage` for error messages and `description` for field descriptions instead.
-   * Message for the field. Some additional information or error notice
+   * Fallback text used only when errorMessage is undefined.
    */
   message?: ReactNode;
   /** Description for the field. Will be placed below the label */
   description?: ReactNode;
-  /** Error message for the field. Always displayed in danger state regardless of validation state */
+  /**
+   * Error text shown in danger state. Undefined allows the generated error or
+   * message fallback; null, false or an empty string explicitly suppresses it.
+   */
   errorMessage?: ReactNode;
   /**
    * Whether the field is required. Drives `aria-required`, adds a `required`
@@ -184,19 +187,15 @@ export interface FieldBaseProps<Value = unknown>
   fieldStyles?: Styles;
   messageStyles?: Styles;
   /**
-   * Renders a field without a `label` as the bare control, for inline use.
-   * Without it, such a field renders the field wrapper when it is bound to a
-   * form or is passed `description`, `errorMessage` or `message`. With it,
-   * those texts are not shown, while the control keeps its invalid state. No
-   * effect on a field with a `label`.
+   * Renders only the control, without field layout, description or messages.
+   * A supplied label stays accessible but visually hidden. Binding and invalid
+   * state are unaffected. Field chrome is the default, even without a label.
+   * @default false
    */
   isBare?: boolean;
   /**
-   * Renders the field wrapper even when the field has no `label`.
-   *
-   * @deprecated A field without a `label` renders the wrapper by itself when
-   * it is bound to a form or is passed `description`, `errorMessage` or
-   * `message`. Pass `isBare` to keep the bare control instead.
+   * @deprecated Fields render chrome by default. Remove this prop; use `isBare`
+   * to opt out. It has no presentation effect.
    */
   forceField?: boolean;
 }

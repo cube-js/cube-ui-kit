@@ -486,7 +486,12 @@ export const PopoverWithMenuAndSelect: StoryFn<
               </Menu>
             </MenuTrigger>
 
-            <Select size="small" placeholder="Choose option" width="150px">
+            <Select
+              isBare
+              size="small"
+              placeholder="Choose option"
+              width="150px"
+            >
               <Select.Item key="option1">Option 1</Select.Item>
               <Select.Item key="option2">Option 2</Select.Item>
               <Select.Item key="option3">Option 3</Select.Item>
