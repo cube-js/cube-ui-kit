@@ -219,7 +219,9 @@ describe('Menu navigation links', () => {
           </Menu>
         </Root>,
       );
-      await userEvent.click(screen.getByText('Destination'));
+      await userEvent.click(
+        screen.getByRole('menuitem', { name: 'Destination' }),
+      );
       expect(onClick).toHaveBeenCalledTimes(1);
       expect(navigate).not.toHaveBeenCalled();
     },
@@ -333,7 +335,7 @@ describe('Menu navigation links', () => {
         await userEvent.keyboard('{Enter}');
         expect(screen.queryByRole('menu')).not.toBeInTheDocument();
       } else {
-        await userEvent.click(screen.getByText('Destination').closest('a')!, {
+        await userEvent.click(row, {
           noWaitAfter: true,
         });
       }
@@ -392,10 +394,13 @@ describe('Menu navigation links', () => {
       document.addEventListener('click', record, true);
       document.addEventListener('contextmenu', record, true);
       try {
-        await userEvent.click(screen.getByText('Destination').closest('a')!, {
-          modifiers: [modifier],
-          noWaitAfter: true,
-        });
+        await userEvent.click(
+          screen.getByRole('menuitem', { name: 'Destination' }),
+          {
+            modifiers: [modifier],
+            noWaitAfter: true,
+          },
+        );
         // Aria's fallback is delayed; this must stay native after it settles.
         await new Promise((resolve) => setTimeout(resolve, 150));
         expect(navigate).not.toHaveBeenCalled();
@@ -484,7 +489,7 @@ describe('Menu navigation links', () => {
       );
       const row = screen.getByRole('menuitem', { name: 'Destination' });
       const anchor = getNativeLink(row);
-      await userEvent.hover(anchor);
+      await userEvent.hover(row);
       const position = mousePosition(anchor);
       const session = cdp();
       const modifiers = { Meta: 4, Shift: 8, Alt: 1 };
@@ -573,7 +578,7 @@ describe('Menu navigation links', () => {
       );
       const row = screen.getByRole('menuitem', { name: 'Destination' });
       const anchor = getNativeLink(row);
-      await userEvent.hover(anchor);
+      await userEvent.hover(row);
       const inside = mousePosition(anchor);
       const outside = mousePosition(screen.getByTestId('outside'));
       const session = cdp();
@@ -616,7 +621,7 @@ describe('Menu navigation links', () => {
         expect(onClick).not.toHaveBeenCalled();
       }
       if (gesture.endsWith('ordinary')) {
-        await userEvent.click(anchor);
+        await userEvent.click(row);
       } else {
         await session.send('Input.dispatchMouseEvent', {
           type: 'mouseMoved',
@@ -834,7 +839,7 @@ describe('Menu navigation links', () => {
       screen.getByRole('menuitem', { name: 'Create workbook' }).tagName,
     ).toBe('LI');
 
-    await userEvent.click(getNativeLink(link));
+    await userEvent.click(link);
 
     expect(navigate).toHaveBeenCalledExactlyOnceWith(destination, undefined);
     expect(onItemAction).toHaveBeenCalledTimes(1);
@@ -956,7 +961,7 @@ describe('Menu navigation links', () => {
     expect(getRowElement(link)).not.toHaveAttribute('to');
     expect(getRowElement(link)).not.toHaveAttribute('navigationOptions');
     expect(resolve).toHaveBeenCalledWith(path, { relative: 'path' });
-    await userEvent.click(getNativeLink(link));
+    await userEvent.click(link);
     expect(navigate).toHaveBeenCalledExactlyOnceWith(path, options);
   });
 
@@ -971,7 +976,7 @@ describe('Menu navigation links', () => {
       document.addEventListener('contextmenu', record, true);
       try {
         await act(async () => {
-          await userEvent.click(getNativeLink(link), { modifiers: [modifier] });
+          await userEvent.click(link, { modifiers: [modifier] });
         });
         expect(navigate).not.toHaveBeenCalled();
         expect(clicks).toHaveLength(1);
@@ -994,7 +999,7 @@ describe('Menu navigation links', () => {
       const record = (event: MouseEvent) => events.push(event);
       document.addEventListener(eventName, record, true);
       try {
-        await userEvent.click(getNativeLink(link), { button });
+        await userEvent.click(link, { button });
         expect(navigate).not.toHaveBeenCalled();
         expect(onAction).not.toHaveBeenCalled();
         expect(events).toHaveLength(1);
@@ -1126,7 +1131,7 @@ describe('Menu navigation links', () => {
       'href',
       '/workbooks/next?chatId=abc#results',
     );
-    await userEvent.click(getNativeLink(link));
+    await userEvent.click(link);
     expect(screen.getByRole('status', { name: 'Location' })).toHaveTextContent(
       '/workbooks/next?chatId=abc#results',
     );
@@ -1229,7 +1234,7 @@ describe('Menu navigation links', () => {
     if ('rel' in props)
       expect(getNativeLink(link)).toHaveAttribute('rel', props.rel);
     expect(getNativeLink(link).getAttribute('href')).not.toMatch(/^[!@]/);
-    await userEvent.click(getNativeLink(link));
+    await userEvent.click(link);
     expect(navigate).not.toHaveBeenCalled();
     expect(onClick).toHaveBeenCalled();
     expect(onClick.mock.calls[0][0].defaultPrevented).toBe(false);
@@ -1575,12 +1580,9 @@ describe('Menu navigation links', () => {
         cell.href = location.origin + pathname;
       try {
         if (activation === 'blank-pointer') {
-          await userEvent.click(
-            screen.getByText('Current document').closest('a')!,
-            {
-              noWaitAfter: true,
-            },
-          );
+          await userEvent.click(row, {
+            noWaitAfter: true,
+          });
         } else {
           await act(() => row.focus());
           await userEvent.keyboard(

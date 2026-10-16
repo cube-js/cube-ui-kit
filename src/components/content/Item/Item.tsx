@@ -476,8 +476,15 @@ const ItemElement = tasty({
         'max($block-padding, (($size - 4x) / 2) + $block-padding)',
     },
 
-    // eslint-disable-next-line tasty/no-style-spread -- icon base shared by Icon and RightIcon
-    Icon: { ...DEFAULT_ICON_STYLES, gridArea: 'icon' },
+    Icon: {
+      // eslint-disable-next-line tasty/no-style-spread -- icon base shared by Icon and RightIcon
+      ...DEFAULT_ICON_STYLES,
+      gridArea: 'icon',
+      // A native row's Icon, Label and Description are aria-hidden copies of
+      // the primary link that keep the slot layout. Presses pass through them
+      // to the primary anchor, so it is the hit target wherever the text runs.
+      pointerEvents: { '': undefined, '@native-row': 'none' },
+    },
 
     // eslint-disable-next-line tasty/no-style-spread -- icon base shared by Icon and RightIcon
     RightIcon: { ...DEFAULT_ICON_STYLES, gridArea: 'rightIcon' },
@@ -486,6 +493,7 @@ const ItemElement = tasty({
       $: '>',
       margin: 0,
       zIndex: { '': undefined, '@native-row': 1 },
+      pointerEvents: { '': undefined, '@native-row': 'none' },
       gridArea: 'label',
       display: 'block',
       placeSelf: 'center start',
@@ -504,6 +512,7 @@ const ItemElement = tasty({
     Description: {
       $: '>',
       gridArea: 'description',
+      pointerEvents: { '': undefined, '@native-row': 'none' },
       preset: {
         '': 't4',
         'type=card | type=header': 't3',
