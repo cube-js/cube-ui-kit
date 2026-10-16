@@ -428,4 +428,121 @@ describe('<NumberInput />', () => {
     expect(onChange).not.toHaveBeenCalled();
     expect(input).toHaveValue('1');
   });
+
+  describe('suffix order', () => {
+    // Reads the Suffix slot in DOM order: the unit, each stepper button, the
+    // validation/loading `State` and a trailing action.
+    function readSuffixSlot(container: HTMLElement) {
+      const slot = container.querySelector('[data-element="Suffix"]');
+
+      return Array.from(
+        slot?.querySelectorAll(
+          '[data-qa="unit"], [data-qa="action"], button, [data-element="State"]',
+        ) ?? [],
+      ).map((el) =>
+        el.matches('button')
+          ? 'stepper'
+          : el.getAttribute('data-qa') ?? el.getAttribute('data-element'),
+      );
+    }
+
+    it.each(['small', 'medium', 'large'] as const)(
+      'puts a unit suffix before the steppers by default (%s)',
+      (size) => {
+        const { container } = render(
+          <NumberInput
+            aria-label="Width"
+            size={size}
+            value={40}
+            suffix={<span data-qa="unit">px</span>}
+          />,
+        );
+
+        expect(readSuffixSlot(container)).toEqual([
+          'unit',
+          'stepper',
+          'stepper',
+        ]);
+      },
+    );
+
+    it('puts the suffix before the steppers with suffixPosition="before"', () => {
+      const { container } = render(
+        <NumberInput
+          aria-label="Width"
+          value={40}
+          suffix={<span data-qa="unit">px</span>}
+          suffixPosition="before"
+        />,
+      );
+
+      expect(readSuffixSlot(container)).toEqual(['unit', 'stepper', 'stepper']);
+    });
+
+    it('puts the suffix after the steppers with suffixPosition="after"', () => {
+      const { container } = render(
+        <NumberInput
+          aria-label="Width"
+          value={40}
+          suffix={<span data-qa="unit">px</span>}
+          suffixPosition="after"
+        />,
+      );
+
+      expect(readSuffixSlot(container)).toEqual(['stepper', 'stepper', 'unit']);
+    });
+
+    it.each([undefined, 'before', 'after'] as const)(
+      'renders only the suffix when the stepper is hidden (suffixPosition=%s)',
+      (suffixPosition) => {
+        const { container } = render(
+          <NumberInput
+            hideStepper
+            aria-label="Width"
+            value={40}
+            suffix={<span data-qa="unit">px</span>}
+            suffixPosition={suffixPosition}
+          />,
+        );
+
+        expect(readSuffixSlot(container)).toEqual(['unit']);
+      },
+    );
+
+    it.each([undefined, 'after'] as const)(
+      'keeps the loading state first and actions last (suffixPosition=%s)',
+      (suffixPosition) => {
+        const { container } = render(
+          <NumberInput
+            isLoading
+            aria-label="Width"
+            value={40}
+            suffix={<span data-qa="unit">px</span>}
+            suffixPosition={suffixPosition}
+            actions={<span data-qa="action">+</span>}
+          />,
+        );
+
+        const steppers = ['stepper', 'stepper'];
+
+        expect(readSuffixSlot(container)).toEqual([
+          'State',
+          ...(suffixPosition === 'after'
+            ? [...steppers, 'unit']
+            : ['unit', ...steppers]),
+          'action',
+        ]);
+      },
+    );
+
+    it('renders no Suffix slot without a suffix when the stepper is hidden', () => {
+      const { container } = render(
+        <NumberInput hideStepper aria-label="Width" value={40} />,
+      );
+
+      expect(
+        container.querySelector('[data-element="Suffix"]'),
+      ).not.toBeInTheDocument();
+    });
+  });
 });

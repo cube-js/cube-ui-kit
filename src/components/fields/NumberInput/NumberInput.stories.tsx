@@ -149,7 +149,8 @@ export default {
     suffixPosition: {
       options: ['before', 'after'],
       control: { type: 'radio' },
-      description: 'Position of suffix relative to validation/loading icons',
+      description:
+        'Position of suffix relative to the stepper buttons. The validation/loading icon always comes before both',
       table: {
         defaultValue: { summary: 'before' },
         type: { summary: "'before' | 'after'" },
