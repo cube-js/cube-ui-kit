@@ -299,7 +299,7 @@ Supports all [Field properties](/docs/getting-started-field-properties--docs)
 ## Common Patterns
 
 - Use `baseProps` exclusion for design system props
-- Define default `width` in meta `args` for form components
+- Define whole-field sizing with `fieldStyles` in meta `args`; keep intentional control-only sizing on the control
 - Create size/state matrix stories to show all variants
 - Use `Space` component for layout in template functions
 - Export type: `type Story = StoryObj<typeof meta>;`
