@@ -185,6 +185,7 @@ describe('<ButtonSplit /> overlay content', () => {
     rerender(<ShipSplit isDisabled />);
 
     expect(ship).toBeDisabled();
+    expect(cancel).toBeInTheDocument();
     expect(cancel).toBeEnabled();
   });
 

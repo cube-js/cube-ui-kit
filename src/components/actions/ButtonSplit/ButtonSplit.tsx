@@ -37,14 +37,15 @@ export interface CubeButtonSplitProps extends BaseProps, ContainerStyleProps {
   onActionChange?: (key: string) => void;
 
   /**
-   * Button type of every Button in the split: both buttons in strict mode, the
-   * child Buttons in custom mode. Buttons in a popover, dialog or menu opened
-   * from the split do not inherit it, nor `theme`, `size` or `isDisabled`.
+   * Default type for every Button in the split: both buttons in strict mode,
+   * the child Buttons in custom mode. A Button's own `type` wins. Buttons in a
+   * popover, dialog or menu opened from the split do not inherit it, nor
+   * `theme`, `size` or `isDisabled`.
    */
   type?: CubeButtonProps['type'];
-  /** Button theme of every Button in the split. */
+  /** Default theme for every Button in the split. A Button's own `theme` wins. */
   theme?: CubeButtonProps['theme'];
-  /** Button size of every Button in the split. */
+  /** Default size for every Button in the split. A Button's own `size` wins. */
   size?: CubeButtonProps['size'];
   /** Disables every Button in the split, even one passing `isDisabled={false}`. */
   isDisabled?: boolean;

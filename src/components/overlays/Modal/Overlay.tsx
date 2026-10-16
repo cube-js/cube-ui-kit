@@ -155,11 +155,9 @@ function Overlay(props: CubeOverlayProps, ref) {
   // reads the DOM. Note this is a *raw* `createPortal`, not `<Portal>`, so the
   // window `<Portal>` opens does not reach these overlays.
   //
-  // Being the one portal they share also makes this where an overlay leaves the
-  // `ButtonSplit` that opened it. A split styles its Buttons through context,
-  // which crosses the portal, so every Button in a popover, dialog or menu
-  // opened from a split took the split's type, theme, size and disabled state
-  // (CUB-5624). A split rendered inside the overlay still provides its own.
+  // Overlays also leave the `ButtonSplit` that opened them here: its context
+  // crosses the portal and would style every Button inside (CUB-5624). A split
+  // rendered inside the overlay still provides its own.
   return createPortal(
     <TastyBatchProvider>
       <ButtonSplitContext.Provider value={null}>
