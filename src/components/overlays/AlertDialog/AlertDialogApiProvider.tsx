@@ -1,17 +1,37 @@
-import { createContext, useContext, useMemo, useRef, useState } from 'react';
+import {
+  createContext,
+  useContext,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import invariant from 'tiny-invariant';
 
 import { AlertDialogZone } from './AlertDialogZone';
 import { AlertDialogResolveStatus, Dialog, DialogProps } from './types';
 
-const DialogApiContext = createContext<AlertDialogApi | null>(null);
+/**
+ * The provider's own `open`. A dialog closes, as a cancel, when any of its
+ * signals aborts: the caller's `cancelToken`, and the one that ends with the
+ * component that opened it.
+ */
+interface AlertDialogOpener {
+  open: (
+    dialogProps: DialogProps,
+    signals: AbortSignal[],
+  ) => Promise<AlertDialogResolveStatus>;
+}
+
+const DialogApiContext = createContext<AlertDialogOpener | null>(null);
 
 export interface AlertDialogApi {
   /**
    * Opens the dialog. Resolves with the action the user picked. Rejects with
-   * `undefined` when the dialog closes without one (Cancel, dismissal or an
-   * aborted `cancelToken`), and with an `Error` when it cannot open. A cancel
-   * is not reported as an unhandled rejection when the promise is ignored.
+   * `undefined` when the dialog closes without one (Cancel, dismissal, an
+   * aborted `cancelToken` or the unmount of the component that opened it),
+   * and with an `Error` when it cannot open. A cancel is not reported as an
+   * unhandled rejection when the promise is ignored.
    */
   open: (
     dialogProps: DialogProps,
@@ -20,7 +40,10 @@ export interface AlertDialogApi {
 }
 
 export interface AlertDialogApiParams {
-  /** Closes the dialog when aborted, which settles it as a cancel. */
+  /**
+   * Closes the dialog when aborted, which settles it as a cancel. A confirm or
+   * secondary action that is running finishes first.
+   */
   cancelToken?: AbortSignal;
 }
 
@@ -86,17 +109,16 @@ export function AlertDialogApiProvider(props) {
   );
   const id = useRef(0);
 
-  // A context value: callers put `open` in effect dependencies, so its
-  // identity has to stay the same.
-  const api = useMemo<AlertDialogApi>(
+  // A context value that never changes: each `useAlertDialogAPI` caller
+  // keeps the one it first saw.
+  const opener = useMemo<AlertDialogOpener>(
     () => ({
-      open: (dialogProps, params = {}) => {
+      open: (dialogProps, signals) => {
         const { onDismiss, onConfirm, onSecondary, onCancel, ...restProps } =
           dialogProps;
-        const { cancelToken } = params;
 
         // An aborted signal is a cancel: it settles before anything opens.
-        if (cancelToken?.aborted) {
+        if (signals.some((signal) => signal.aborted)) {
           onCancel?.();
 
           return ignoreUnhandled(Promise.reject(undefined));
@@ -121,14 +143,30 @@ export function AlertDialogApiProvider(props) {
           );
         };
 
+        // Set by an abort that came while an action ran.
+        let isAbortedWhilePending = false;
+
         // Aborting is a cancel, so it settles the promise the way Cancel does.
-        const onAbort = () => currentDialog.meta.reject(undefined);
+        // A running action finishes first, as it does on Escape: cut short, a
+        // delete that went through would be reported as cancelled.
+        const onAbort = () => {
+          if (pending) {
+            isAbortedWhilePending = true;
+
+            return;
+          }
+
+          currentDialog.meta.reject(undefined);
+        };
 
         const close = () => {
           if (currentDialog.meta.isClosed) return false;
 
           currentDialog.meta.isClosed = true;
-          cancelToken?.removeEventListener('abort', onAbort);
+
+          for (const signal of signals) {
+            signal.removeEventListener('abort', onAbort);
+          }
 
           setOpenedDialog((currentState) =>
             currentState?.meta.id !== currentId
@@ -163,7 +201,7 @@ export function AlertDialogApiProvider(props) {
         };
 
         // A rejection without a reason is a cancel: the Cancel button, a
-        // dismissal, an aborted `cancelToken` or `content` calling `reject()`.
+        // dismissal, an aborted signal or `content` calling `reject()`.
         // Anything else is a failure.
         currentDialog.meta.reject = (reason) => {
           if (!close()) return;
@@ -181,7 +219,7 @@ export function AlertDialogApiProvider(props) {
 
         // The confirm and secondary buttons: run the handlers, and settle
         // once they have finished. A handler that throws or rejects keeps the
-        // dialog open for another try.
+        // dialog open for another try, unless it was aborted meanwhile.
         currentDialog.meta.act = (status, onPress) => {
           const result = runActionHandlers([
             onPress,
@@ -209,11 +247,15 @@ export function AlertDialogApiProvider(props) {
             (error) => {
               setPending(null);
               reportActionError(error);
+
+              if (isAbortedWhilePending) currentDialog.meta.reject(undefined);
             },
           );
         };
 
-        cancelToken?.addEventListener('abort', onAbort, { once: true });
+        for (const signal of signals) {
+          signal.addEventListener('abort', onAbort, { once: true });
+        }
 
         currentDialog.props = {
           ...restProps,
@@ -251,7 +293,7 @@ export function AlertDialogApiProvider(props) {
   );
 
   return (
-    <DialogApiContext.Provider value={api}>
+    <DialogApiContext.Provider value={opener}>
       <AlertDialogZone
         openedDialog={openedDialog}
         pendingAction={pendingAction}
@@ -270,6 +312,13 @@ export function AlertDialogApiProvider(props) {
  * The returned promise resolves with the action the user picked and rejects
  * with `undefined` on a cancel. A caller that runs everything in the callbacks
  * can ignore it: an ignored cancel is not reported as an unhandled rejection.
+ *
+ * A dialog belongs to the component that calls this hook: when that component
+ * unmounts, its dialog closes as a cancel, so no callback runs against a
+ * component that is gone. Call the hook in a component that stays mounted
+ * while the dialog is open, such as the one that renders a menu, not in the
+ * menu item that closes it. A confirm or secondary action that is running
+ * finishes first.
  *
  * ***Important*** only one alert dialog can be open at a time: `open` rejects
  * with an `Error` while another one is open. A dialog that is already closing
@@ -307,12 +356,63 @@ export function AlertDialogApiProvider(props) {
  * controllerRef.current?.abort();
  */
 export function useAlertDialogAPI(): AlertDialogApi {
-  const api = useContext(DialogApiContext);
+  const opener = useContext(DialogApiContext);
 
   invariant(
-    api !== null,
+    opener !== null,
     "You can't use DialogApi outside of <Root /> component. Please, check if your component is descendant of <Root/> component",
   );
 
-  return api;
+  const [owner] = useState(() => createDialogOwner(opener));
+
+  // A layout effect, so it is in place before any passive effect calls `open`.
+  useLayoutEffect(() => owner.attach(), [owner]);
+
+  return owner.api;
+}
+
+/**
+ * One `useAlertDialogAPI` caller's `open`, whose dialogs close when the
+ * caller unmounts. Its identity is the caller's for good: callers put `open`
+ * in effect dependencies.
+ */
+function createDialogOwner(opener: AlertDialogOpener) {
+  // Aborted on unmount. Made on first use, so a StrictMode remount, which
+  // runs the cleanup once, gets a fresh one.
+  let lifetime: AbortController | null = null;
+  let isUnmounted = false;
+
+  const api: AlertDialogApi = {
+    open: (dialogProps, params = {}) => {
+      let owner: AbortSignal;
+
+      if (isUnmounted) {
+        // A late call, after an `await`, from a caller that is gone.
+        owner = AbortSignal.abort();
+      } else {
+        lifetime ??= new AbortController();
+        owner = lifetime.signal;
+      }
+
+      const { cancelToken } = params;
+
+      return opener.open(
+        dialogProps,
+        cancelToken ? [owner, cancelToken] : [owner],
+      );
+    },
+  };
+
+  /** The effect setup. Its cleanup closes the dialogs the caller opened. */
+  const attach = () => {
+    isUnmounted = false;
+
+    return () => {
+      isUnmounted = true;
+      lifetime?.abort();
+      lifetime = null;
+    };
+  };
+
+  return { api, attach };
 }
