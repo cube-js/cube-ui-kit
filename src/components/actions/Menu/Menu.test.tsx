@@ -155,6 +155,44 @@ describe('<Menu />', () => {
     },
   );
 
+  // The URL parser strips surrounding spaces and control characters, so a
+  // router must not take such a value for an app path.
+  it.each(['to', 'href'] as const)(
+    'opens a whitespace-wrapped external %s natively, not in the router',
+    async (destinationProp) => {
+      const navigate = vi.fn();
+      const useHref = vi.fn((to) => `/app/resolved/${String(to)}`);
+      const { container } = render(
+        <Root navigation={{ useHref, useNavigate: () => navigate }}>
+          <Menu aria-label="External destinations">
+            <Menu.Item
+              key="docs"
+              tooltip={false}
+              {...{ [destinationProp]: ' https://example.com\n' }}
+            >
+              Docs
+            </Menu.Item>
+          </Menu>
+        </Root>,
+      );
+      // Record the native open and stop jsdom loading another document. On
+      // React's root, this listener runs after the item's own handlers.
+      const opened: string[] = [];
+      container.addEventListener('click', (event) => {
+        const anchor = (event.target as Element).closest('a');
+        if (anchor && !event.defaultPrevented) opened.push(anchor.href);
+        event.preventDefault();
+      });
+      const item = screen.getByRole('menuitem', { name: 'Docs' });
+      expect(item).toHaveAttribute('href', 'https://example.com');
+      for (const [to] of useHref.mock.calls)
+        expect(String(to)).not.toContain('example.com');
+      await userEvent.click(item);
+      expect(navigate).not.toHaveBeenCalled();
+      expect(opened).toEqual(['https://example.com/']);
+    },
+  );
+
   it.each([false, true])(
     'ignores held Enter repetitions for a command (inline actions=%s)',
     async (inlineActions) => {

@@ -1483,48 +1483,52 @@ describe('Menu navigation links', () => {
       const link = screen.getByRole('menuitem', { name: 'Destination' });
       expect(getNativeLink(link)).toHaveAttribute('href', href);
       expect(getNativeLink(link)).not.toHaveAttribute('target');
-      await userEvent.click(getNativeLink(link));
+      await userEvent.click(link);
       expect(navigate).toHaveBeenCalledExactlyOnceWith(href, undefined);
     },
   );
 
-  it('keeps an empty native href as a current-document link rather than a selected command', async () => {
-    const navigate = vi.fn();
-    const onSelectionChange = vi.fn();
-    render(
-      <Root
-        navigation={{
-          useHref: (to) => String(to),
-          useNavigate: () => navigate,
-        }}
-      >
-        <Menu
-          aria-label="Destinations"
-          selectionMode="multiple"
-          onSelectionChange={onSelectionChange}
+  // A blank href is empty to the URL parser, so it gets the same treatment.
+  it.each(['', '  \n'])(
+    'keeps an empty native href (%j) as a current-document link rather than a selected command',
+    async (href) => {
+      const navigate = vi.fn();
+      const onSelectionChange = vi.fn();
+      render(
+        <Root
+          navigation={{
+            useHref: (to) => String(to),
+            useNavigate: () => navigate,
+          }}
         >
-          <Menu.Item
-            key="link"
-            href=""
-            onClick={(event) => event.preventDefault()}
+          <Menu
+            aria-label="Destinations"
+            selectionMode="multiple"
+            onSelectionChange={onSelectionChange}
           >
-            Current document
-          </Menu.Item>
-        </Menu>
-      </Root>,
-    );
-    const link = screen.getByRole('menuitem', {
-      name: 'Current document',
-    });
-    expect(link.tagName).toBe('A');
-    expect(getRowElement(link).tagName).toBe('LI');
-    expect(getNativeLink(link).tagName).toBe('A');
-    expect(getNativeLink(link)).toHaveAttribute('href', '');
-    expect(getNativeLink(link).href).toBe(location.href);
-    await userEvent.click(getNativeLink(link));
-    expect(navigate).not.toHaveBeenCalled();
-    expect(onSelectionChange).not.toHaveBeenCalled();
-  });
+            <Menu.Item
+              key="link"
+              href={href}
+              onClick={(event) => event.preventDefault()}
+            >
+              Current document
+            </Menu.Item>
+          </Menu>
+        </Root>,
+      );
+      const link = screen.getByRole('menuitem', {
+        name: 'Current document',
+      });
+      expect(link.tagName).toBe('A');
+      expect(getRowElement(link).tagName).toBe('LI');
+      expect(getNativeLink(link).tagName).toBe('A');
+      expect(getNativeLink(link)).toHaveAttribute('href', '');
+      expect(getNativeLink(link).href).toBe(location.href);
+      await userEvent.click(link);
+      expect(navigate).not.toHaveBeenCalled();
+      expect(onSelectionChange).not.toHaveBeenCalled();
+    },
+  );
 
   it.each(
     [false, true].flatMap((actions) =>

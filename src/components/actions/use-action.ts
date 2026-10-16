@@ -4,7 +4,10 @@ import { AllBaseProps, filterBaseProps, TagName } from '@tenphi/tasty';
 import { AriaButtonProps, useButton, useHover } from 'react-aria';
 
 import { useEvent, useWarn } from '../../_internal';
-import { isExternalUrl } from '../../providers/navigation-url';
+import {
+  isExternalUrl,
+  normalizeNavigationUrl,
+} from '../../providers/navigation-url';
 import { useTracking } from '../../providers/TrackingProvider';
 import { useNavigation } from '../../providers/use-navigation';
 import { mergeProps } from '../../utils/react';
@@ -104,8 +107,11 @@ export function parseTo(to: NavigateArg | undefined): {
     };
   }
 
-  // Handle string
-  if (!to || typeof to !== 'string') {
+  // Handle string. Clean it first, as the URL parser does, so ` !https://…`
+  // still opens a tab and a blank value counts as no destination.
+  const value = typeof to === 'string' ? normalizeNavigationUrl(to) : '';
+
+  if (!value) {
     return {
       newTab: false,
       nativeRoute: false,
@@ -116,11 +122,12 @@ export function parseTo(to: NavigateArg | undefined): {
     };
   }
 
-  const newTab = to.startsWith('!');
-  const nativeRoute = to.startsWith('@');
-  const isHashNavigation = to.startsWith('#');
-  const cleanTo = newTab || nativeRoute ? to.slice(1) : to;
-  const isExternal = typeof cleanTo === 'string' && isExternalUrl(cleanTo);
+  const newTab = value.startsWith('!');
+  const nativeRoute = value.startsWith('@');
+  const isHashNavigation = value.startsWith('#');
+  const cleanTo =
+    newTab || nativeRoute ? normalizeNavigationUrl(value.slice(1)) : value;
+  const isExternal = isExternalUrl(cleanTo);
 
   return {
     newTab,
@@ -206,13 +213,13 @@ export function performClickHandler(
   }
 
   // Handle hash navigation (smooth scroll)
-  if (isHashNavigation && typeof to === 'string') {
-    const id = to.slice(1);
+  if (isHashNavigation && typeof cleanTo === 'string') {
+    const id = cleanTo.slice(1);
     const targetElement = document.getElementById(id);
 
     tracking.event(
       LINK_PRESS_EVENT,
-      { qa, href: to, type: 'hash', target: id },
+      { qa, href: cleanTo, type: 'hash', target: id },
       element,
     );
 
@@ -315,7 +322,7 @@ export const useAction = function useAction(
   const { navigate, resolvedHref } = useNavigation(cleanTo || '.');
 
   // Determine element type: 'a' for navigation, 'button' for actions
-  as = to && !isHistoryNavigation ? 'a' : as || 'button';
+  as = cleanTo !== undefined ? 'a' : as || 'button';
 
   // Compute target (prefixes override explicit target prop per spec)
   const target = newTab ? '_blank' : props.target;
@@ -366,7 +373,7 @@ export const useAction = function useAction(
   let { focusProps, isFocused } = useFocus(true);
 
   const customProps =
-    to && !isHistoryNavigation
+    cleanTo !== undefined
       ? {
           onClick(evt) {
             evt.preventDefault();
