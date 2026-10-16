@@ -834,6 +834,107 @@ describe('<ComboBox />', () => {
     });
   });
 
+  describe('blur with disabled items', () => {
+    const people = [
+      { key: 'mark', label: 'Mark' },
+      { key: 'rita', label: 'Rita' },
+      { key: 'rita-added', label: 'Rita Added' },
+      { key: 'rita-smith', label: 'Rita Smith' },
+    ];
+
+    // Replaces the input with `text`, or leaves it as it is when `text` is
+    // null, then moves focus away. Resolves once the blur outcome has been
+    // reported: ComboBox calls `onSelectionChange` before `onBlur`.
+    const typeAndBlur = async (
+      text: string | null,
+      props: { clearOnBlur?: boolean; defaultSelectedKey?: string } = {},
+    ) => {
+      const onSelectionChange = vi.fn();
+      const onBlur = vi.fn();
+      const { getByRole } = renderWithRoot(
+        <ComboBox
+          label="Person"
+          defaultSelectedKey="mark"
+          disabledKeys={['rita', 'rita-added']}
+          onSelectionChange={onSelectionChange}
+          onBlur={onBlur}
+          {...props}
+        >
+          {people.map((person) => (
+            <ComboBox.Item key={person.key}>{person.label}</ComboBox.Item>
+          ))}
+        </ComboBox>,
+      );
+      const combobox = getByRole('combobox');
+
+      if (text == null) {
+        await userEvent.click(combobox);
+      } else {
+        await userEvent.clear(combobox);
+        await userEvent.type(combobox, text);
+      }
+      await act(async () => {
+        combobox.blur();
+      });
+      await waitFor(() => expect(onBlur).toHaveBeenCalled());
+
+      return { combobox, onSelectionChange };
+    };
+
+    const invalidCases = [
+      ['the label of a disabled item beside an enabled result', 'Rita'],
+      ['the label of a disabled item', 'Rita Added'],
+      ['text matching only a disabled item', 'Rita A'],
+      ['text matching several items, one of them enabled', 'Rit'],
+    ];
+
+    it.each(invalidCases)(
+      'restores the selected label after typing %s',
+      async (_, text) => {
+        const { combobox, onSelectionChange } = await typeAndBlur(text);
+
+        expect(onSelectionChange).not.toHaveBeenCalled();
+        await waitFor(() => expect(combobox).toHaveValue('Mark'));
+      },
+    );
+
+    it.each(invalidCases)(
+      'clears with clearOnBlur after typing %s',
+      async (_, text) => {
+        const { combobox, onSelectionChange } = await typeAndBlur(text, {
+          clearOnBlur: true,
+        });
+
+        expect(onSelectionChange.mock.calls).toEqual([[null]]);
+        await waitFor(() => expect(combobox).toHaveValue(''));
+      },
+    );
+
+    it.each([
+      ['an enabled exact match', 'Rita Smith'],
+      ['an enabled only result', 'Rita S'],
+    ])('still selects %s', async (_, text) => {
+      const { combobox, onSelectionChange } = await typeAndBlur(text);
+
+      expect(onSelectionChange.mock.calls).toEqual([['rita-smith']]);
+      await waitFor(() => expect(combobox).toHaveValue('Rita Smith'));
+    });
+
+    it.each([
+      ['without typing', null],
+      ['after retyping its label', 'Rita Added'],
+      ['after typing text matching only it', 'Rita A'],
+    ])('keeps a disabled selection with clearOnBlur %s', async (_, text) => {
+      const { combobox, onSelectionChange } = await typeAndBlur(text, {
+        clearOnBlur: true,
+        defaultSelectedKey: 'rita-added',
+      });
+
+      expect(onSelectionChange).not.toHaveBeenCalled();
+      await waitFor(() => expect(combobox).toHaveValue('Rita Added'));
+    });
+  });
+
   it('should reset to selected value on blur when clearOnBlur is false and input is invalid', async () => {
     const onSelectionChange = vi.fn();
 

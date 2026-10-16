@@ -850,6 +850,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   const localCollectionState = useListState({
     children: children as CollectionChildren<T>,
     items: sortedItems,
+    disabledKeys: props.disabledKeys,
     selectionMode: 'none', // Don't manage selection in this state
   });
 
@@ -885,33 +886,31 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     }
 
     const filteredCount = filteredItems.length;
+    const term = effectiveInputValue.trim().toLowerCase();
 
-    // Check for exact match
-    const exactMatch = filteredItems.find(
-      (item) =>
-        item.textValue.toLowerCase() ===
-        effectiveInputValue.trim().toLowerCase(),
-    );
+    // The exact match, otherwise the only filtered result. A disabled one
+    // makes the input invalid, as it cannot be selected any other way either,
+    // unless it is already the selection: that one is kept.
+    const match =
+      filteredItems.find((item) => item.textValue.toLowerCase() === term) ??
+      (filteredCount === 1 ? filteredItems[0] : null);
 
-    if (exactMatch) {
-      return {
-        isInputValid: true,
-        singleMatchKey: exactMatch.key,
-        filteredCount,
-      };
+    if (
+      !match ||
+      (match.key !== effectiveSelectedKey &&
+        localCollectionState.disabledKeys.has(match.key))
+    ) {
+      return { isInputValid: false, singleMatchKey: null, filteredCount };
     }
 
-    // If exactly one filtered result, consider it valid
-    if (filteredCount === 1) {
-      return {
-        isInputValid: true,
-        singleMatchKey: filteredItems[0].key,
-        filteredCount,
-      };
-    }
-
-    return { isInputValid: false, singleMatchKey: null, filteredCount };
-  }, [effectiveInputValue, filterFn, localCollectionState.collection]);
+    return { isInputValid: true, singleMatchKey: match.key, filteredCount };
+  }, [
+    effectiveInputValue,
+    effectiveSelectedKey,
+    filterFn,
+    localCollectionState.collection,
+    localCollectionState.disabledKeys,
+  ]);
 
   // ---- blur ---------------------------------------------------------------
   // Writes the selected key, unless it is controlled. Unlike `setInputText` it
@@ -958,8 +957,9 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   };
 
   // In non-custom-value mode: auto-select the exact match, or the only filtered
-  // result; clear invalid input (no exact match, not a single result) when
-  // clearOnBlur is set or the input is empty.
+  // result, unless it is disabled; keep a selected item even when it is
+  // disabled; clear invalid input (no selectable match) when clearOnBlur is set
+  // or the input is empty.
   const settleOptionOnBlur = () => {
     const { isInputValid, singleMatchKey } = checkInputValidity();
 
