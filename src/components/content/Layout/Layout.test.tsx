@@ -1,7 +1,11 @@
 import { tasty } from '@tenphi/tasty';
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { ReactNode, useState } from 'react';
 
+import { Button } from '../../actions/Button/Button';
+import { Dialog } from '../../overlays/Dialog/Dialog';
+import { DialogTrigger } from '../../overlays/Dialog/DialogTrigger';
 import { Root } from '../../Root';
 
 import { GridLayout, Layout } from './index';
@@ -565,6 +569,135 @@ describe('Layout nested isolation', () => {
 
     // Should still be rendered correctly after rerender
     expect(screen.getByText('Panel content')).toBeInTheDocument();
+  });
+});
+
+describe('Layout overlay panel focus', () => {
+  // An overlay panel is portalled out of Inner but stays a React child of it,
+  // so its focus events bubble to Inner's onFocus. Only focus entering the
+  // main content should dismiss it, not focus in another panel.
+  function OverlayLayout({
+    defaultOpen = true,
+    onOpenChange,
+    children,
+  }: {
+    defaultOpen?: boolean;
+    onOpenChange: (isOpen: boolean) => void;
+    children?: ReactNode;
+  }) {
+    const [isOpen, setIsOpen] = useState(defaultOpen);
+
+    return (
+      <Layout>
+        {/* Mounted before the overlay panel, so it sits under its backdrop and
+            comes before it in tab order. */}
+        <Layout.Panel qa="NavPanel" side="left" size={200}>
+          <Button>Nav action</Button>
+        </Layout.Panel>
+        <Layout.Panel
+          qa="OverlayPanel"
+          side="right"
+          size={240}
+          mode="overlay"
+          isOpen={isOpen}
+          onOpenChange={(open) => {
+            setIsOpen(open);
+            onOpenChange(open);
+          }}
+        >
+          <input aria-label="Panel field" />
+          <Button>Panel action</Button>
+          {children}
+        </Layout.Panel>
+        <Layout.Content>
+          <Button onPress={() => setIsOpen(true)}>Open panel</Button>
+          <Button>Main action</Button>
+        </Layout.Content>
+      </Layout>
+    );
+  }
+
+  it('stays open when focus moves to controls inside it', async () => {
+    const onOpenChange = vi.fn();
+
+    renderWithRoot(<OverlayLayout onOpenChange={onOpenChange} />);
+
+    await userEvent.click(screen.getByLabelText('Panel field'));
+    expect(onOpenChange).not.toHaveBeenCalled();
+    await userEvent.keyboard('abc');
+
+    const action = screen.getByRole('button', { name: 'Panel action' });
+    await userEvent.click(action);
+
+    expect(action).toHaveFocus();
+    expect(screen.getByLabelText('Panel field')).toHaveValue('abc');
+    expect(onOpenChange).not.toHaveBeenCalled();
+  });
+
+  it('stays open when focus moves inside a popover opened from it', async () => {
+    const onOpenChange = vi.fn();
+
+    // Opened on mount, so only the popover's own focus reaches the Layout,
+    // never the trigger's.
+    renderWithRoot(
+      <OverlayLayout onOpenChange={onOpenChange}>
+        <DialogTrigger defaultOpen type="popover">
+          <Button>Open popover</Button>
+          <Dialog aria-label="Popover">
+            <input aria-label="Popover field" />
+          </Dialog>
+        </DialogTrigger>
+      </OverlayLayout>,
+    );
+
+    // The popover focuses itself as it opens.
+    expect(onOpenChange).not.toHaveBeenCalled();
+
+    const popoverField = await screen.findByLabelText('Popover field');
+    await userEvent.click(popoverField);
+
+    expect(popoverField).toHaveFocus();
+    expect(screen.getByTestId('OverlayPanel')).toBeInTheDocument();
+    expect(onOpenChange).not.toHaveBeenCalled();
+  });
+
+  it('stays open when focus moves into another panel of the same Layout', async () => {
+    const onOpenChange = vi.fn();
+
+    renderWithRoot(
+      <OverlayLayout defaultOpen={false} onOpenChange={onOpenChange} />,
+    );
+
+    // Opened from the main content, the usual flow, so focus reaches the
+    // panel from there and only the Shift+Tab below leaves the panel.
+    await userEvent.click(screen.getByRole('button', { name: 'Open panel' }));
+    await userEvent.click(screen.getByLabelText('Panel field'));
+    expect(onOpenChange).not.toHaveBeenCalled();
+
+    // Shift+Tab leaves the overlay panel for the nav panel behind its backdrop.
+    await userEvent.tab({ shift: true });
+
+    expect(screen.getByRole('button', { name: 'Nav action' })).toHaveFocus();
+    expect(screen.getByTestId('OverlayPanel')).toBeInTheDocument();
+    expect(onOpenChange).not.toHaveBeenCalled();
+  });
+
+  it('dismisses when focus moves into the main content', async () => {
+    const onOpenChange = vi.fn();
+
+    renderWithRoot(<OverlayLayout onOpenChange={onOpenChange} />);
+
+    await act(async () =>
+      screen.getByRole('button', { name: 'Panel action' }).focus(),
+    );
+    await act(async () =>
+      screen.getByRole('button', { name: 'Main action' }).focus(),
+    );
+
+    expect(onOpenChange).toHaveBeenCalledExactlyOnceWith(false);
+    await waitFor(() =>
+      expect(screen.queryByTestId('OverlayPanel')).not.toBeInTheDocument(),
+    );
   });
 });
 

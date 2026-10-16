@@ -286,7 +286,7 @@ Collapsible side panel with resizing, transitions, and multiple rendering modes.
 
 - `default` — Standard panel that pushes content aside (propagates size, no overlay)
 - `sticky` — Panel floats over content without affecting layout (no size propagation, no overlay)
-- `overlay` — Panel with dismissable backdrop overlay (propagates size, with overlay)
+- `overlay` — Panel floats over content with a dismissable backdrop overlay (no size propagation, with overlay)
 - `dialog` — Panel renders as a modal dialog (no size propagation, overlay via Dialog)
 
 **Modifiers:**
@@ -654,6 +654,8 @@ In `overlay` mode, a semi-transparent backdrop appears behind the panel. The pan
 - Pressing Escape anywhere in the Layout
 - Moving focus to the main content area
 
+Focus closes the panel only when it enters the main content from outside it, for example with `Tab` or `Shift+Tab` out of the panel or a programmatic `focus()`; moving between controls of the main content does not. Focus moving inside the panel, into a popover, menu or dialog opened from it, or into another `Layout.Panel` of the same Layout keeps it open. Other panels of the same Layout can sit under the backdrop; a click on them then closes the overlay panel, but `Tab` still reaches their controls. Opening the panel does not move focus into it, so focus the first control yourself when keyboard users should land there.
+
 <Story of={LayoutStories.OverlayPanel} />
 
 ```jsx
@@ -691,7 +693,7 @@ You can customize the overlay styles using the `overlayStyles` prop:
 </Layout.Panel>
 ```
 
-To prevent dismissing the overlay by clicking or pressing Escape, set `isDismissable={false}`:
+To prevent dismissing the overlay by clicking, pressing Escape or moving focus to the main content, set `isDismissable={false}`:
 
 ```jsx
 <Layout.Panel mode="overlay" isDismissable={false}>
@@ -816,7 +818,8 @@ function ApplicationShell() {
 ### Keyboard Navigation
 
 - `Tab` - Navigate between interactive elements
-- Focus management is handled automatically when panels open/close
+- An overlay panel closes on Escape or when focus enters the main content from outside it; focus moving inside it or into another panel of the same Layout keeps it open
+- Opening a panel does not move focus into it, except in `dialog` mode, where the dialog manages focus
 - Resize handlers can be focused and resized using arrow keys:
   - `Arrow keys` - Resize panel by 10px
   - `Shift + Arrow keys` - Resize panel by 50px
