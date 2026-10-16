@@ -323,11 +323,41 @@ Resizable inline section within a layout. Unlike Layout.Panel (which is absolute
 - **`defaultSize`** `number | string` (default: `200`) — Default size for uncontrolled state
 - **`minSize`** `number | string` — Minimum size constraint, in pixels or a CSS length. With `flexShrink={1}`, the pane gives way down to it (`2x` when unset) when a flex container runs short
 - **`maxSize`** `number | string` — Maximum size constraint
-- **`onSizeChange`** `(size: number) => void` — Size change callback
+- **`onSizeChange`** `(size: number) => void` — Size change callback. With `flexShrink={1}`, also called when another such pane beside it is resized and this pane keeps the size it is drawn at
 - **`scrollbar`** `ScrollbarType` (default: `'thin'`) — Scrollbar style
 - **`children`** `ReactNode` — Content to display
 - **`innerRef`** `ForwardedRef<HTMLDivElement>` — Ref for the inner content element
 - **`innerProps`** `HTMLAttributes<HTMLDivElement>` — Props to spread on the Inner sub-element
+
+Several panes with `flexShrink={1}` can share one flex container, such as editors above the results they produce:
+
+```jsx
+<Layout height="100dvh">
+  <Layout.Pane
+    isResizable
+    resizeEdge="bottom"
+    defaultSize={300}
+    minSize={80}
+    flexShrink={1}
+  >
+    <Text>SQL</Text>
+  </Layout.Pane>
+  <Layout.Pane
+    isResizable
+    resizeEdge="bottom"
+    defaultSize={300}
+    minSize={80}
+    flexShrink={1}
+  >
+    <Text>Python</Text>
+  </Layout.Pane>
+  <Layout.Content flexBasis="0" styles={{ minHeight: '200px' }}>
+    <Text>Results</Text>
+  </Layout.Content>
+</Layout>
+```
+
+Give the other items a zero flex basis, as the results get here: an item that shrinks from a larger basis still takes part of each move. Resizing one of the panes moves its edge with the pointer, or by 10px per arrow key (50px with Shift). The room comes from the panes after its edge, which give way down to their `minSize`; the resize stops there, and the panes before the edge keep their size. A pane that gave way keeps the size it was left at. Within one drag it grows back as far as the size it had when the drag started, but each arrow key press is a move of its own, so shrinking the resized pane by keyboard gives the room to the rest of the container, not back to that pane. A resize that ends where it began, such as an arrow key pressed at the stop, leaves every pane as it was and reports nothing. A hidden pane (`display: none`) takes no part in this.
 
 **Sub-elements:**
 
