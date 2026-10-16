@@ -1,3 +1,4 @@
+import { getFocusableTreeWalker } from '@react-aria/focus';
 import {
   BaseProps,
   CONTAINER_STYLES,
@@ -31,6 +32,7 @@ import {
   useCombinedRefs,
   useLocalStorage,
 } from '../../../utils/react';
+import { focusProgrammatically } from '../../../utils/react/programmaticFocus';
 import { extractStyles } from '../../../utils/styles';
 import { DisplayTransition } from '../../helpers/DisplayTransition/DisplayTransition';
 import { Dialog } from '../../overlays/Dialog';
@@ -365,7 +367,8 @@ export interface CubeLayoutPanelProps extends BaseProps, ContainerStyleProps {
    * Panel rendering mode:
    * - `default`: Standard panel that pushes content aside
    * - `sticky`: Panel floats over content without pushing it
-   * - `overlay`: Panel with dismissable backdrop overlay
+   * - `overlay`: Panel with dismissable backdrop overlay; focus moves into it
+   *   when it opens and back to the opener when it closes
    * - `dialog`: Panel renders as a modal dialog
    */
   mode?: LayoutPanelMode;
@@ -784,6 +787,87 @@ function LayoutPanel(
     handleOpenChange,
   ]);
 
+  // Overlay focus: move into the panel on open, back to the opener on close.
+  // Declared after the registration effect on purpose: its cleanup then runs
+  // after the panel unregisters, so a restore into the main content dismisses
+  // nothing.
+  const openerRef = useRef<Element | null>(null);
+  const panelNodeRef = useRef<HTMLDivElement | null>(null);
+
+  // A panel open on the Layout's first render leaves page focus alone.
+  const recordOpener = useEffectEvent(() => {
+    const active = panelNodeRef.current?.ownerDocument.activeElement ?? null;
+
+    openerRef.current =
+      isOverlayMode && isReady && !panelNodeRef.current?.contains(active)
+        ? active
+        : null;
+  });
+
+  const moveFocusIn = useEffectEvent(() => {
+    const panel = panelNodeRef.current;
+    const opener = openerRef.current;
+
+    // Something else took focus as the panel opened, such as a field with
+    // `autoFocus` inside it: leave it there.
+    if (!panel || !opener || panel.ownerDocument.activeElement !== opener) {
+      return;
+    }
+
+    const target =
+      getFocusableTreeWalker(panel, { tabbable: true }).nextNode() ??
+      getFocusableTreeWalker(panel).nextNode();
+
+    // The panel enters translated offscreen, so focus must not scroll.
+    focusProgrammatically(target as HTMLElement | null, {
+      preventScroll: true,
+    });
+  });
+
+  // Return focus only if it is still in the panel or was lost with it; focus
+  // the user or the consumer moved elsewhere stays there.
+  const returnFocus = useEffectEvent(() => {
+    const opener = openerRef.current;
+    const panel = panelNodeRef.current;
+
+    openerRef.current = null;
+
+    if (
+      !isOverlayMode ||
+      !(opener instanceof HTMLElement) ||
+      !opener.isConnected ||
+      opener === opener.ownerDocument.body
+    ) {
+      return;
+    }
+
+    const active = opener.ownerDocument.activeElement;
+
+    if (
+      active != null &&
+      active !== opener.ownerDocument.body &&
+      !panel?.contains(active)
+    ) {
+      return;
+    }
+
+    focusProgrammatically(opener, { preventScroll: true });
+  });
+
+  useLayoutEffect(() => {
+    if (isOpen) recordOpener();
+  }, [isOpen]);
+
+  // Passive, so a menu item that refocuses itself while closing its menu has
+  // done so before focus moves in.
+  useEffect(() => {
+    if (!isOpen) return;
+
+    moveFocusIn();
+
+    return () => returnFocus();
+  }, [isOpen]);
+
   const handleDialogOpenChange = useCallback(
     (newIsOpen: boolean) => {
       setInternalIsDialogOpen(newIsOpen);
@@ -886,9 +970,10 @@ function LayoutPanel(
           />
         )}
         <PanelElement
-          ref={(node: HTMLDivElement | null) =>
-            panelRefCallback(node, transitionRef)
-          }
+          ref={(node: HTMLDivElement | null) => {
+            panelNodeRef.current = node;
+            panelRefCallback(node, transitionRef);
+          }}
           {...filterBaseProps(otherProps, { eventProps: true })}
           mods={{ ...panelMods, offscreen }}
           styles={finalStyles}
