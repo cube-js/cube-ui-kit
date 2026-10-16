@@ -1,0 +1,5 @@
+---
+"@cube-dev/ui-kit": patch
+---
+
+A `to` or `href` with leading or trailing spaces or control characters (such as `" https://example.com"` from data) is now read the way the browser reads a URL. Before, under a router navigation adapter, `Menu.Item`, `CommandMenu.Item`, `Link`, `Button`, `ItemButton` and `ItemAction` took such an external URL for an app path: they rendered a router-resolved href like `/ https:/example.com` and a plain click navigated in-app. Now those characters are dropped first, so the link renders and opens the external URL, `" /pricing"` goes to `/pricing`, and the `!`, `@` and `#` prefixes are recognised after leading whitespace. A `to` or `href` made only of such characters counts as empty: `Link` and `Button` render a button, and a `Menu.Item` with `href="  "` links to the current document like `href=""`. A no-break space is kept, as the browser keeps it. This is not URL sanitization: keep validating untrusted URLs before passing them, since a whitespace-wrapped `javascript:` URL is now treated as external like an unwrapped one.
