@@ -1,6 +1,7 @@
 import { act, render, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ReactElement, ReactNode, useState } from 'react';
+import { flushSync } from 'react-dom';
 
 import { Button } from '../../actions/Button/Button';
 import { Root } from '../../Root';
@@ -9,6 +10,7 @@ import { formatRelativeTime } from './format-relative-time';
 import { Notification } from './Notification';
 import { NotificationAction } from './NotificationAction';
 import { NotificationItem } from './NotificationItem';
+import { OverlayContainer } from './OverlayContainer';
 import { OverlayProvider } from './OverlayProvider';
 import { PersistentNotificationsList } from './PersistentNotificationsList';
 import { useNotifications } from './use-notifications';
@@ -17,6 +19,7 @@ import {
   usePersistentNotifications,
 } from './use-persistent-notifications';
 
+import type { InternalToast } from '../Toast/types';
 import type { InternalNotification } from './types';
 
 vi.mock('../../../_internal/hooks/use-warn');
@@ -1706,4 +1709,89 @@ describe('Timestamp refresh', () => {
       expect(getByText('2 min ago')).toBeInTheDocument();
     });
   });
+});
+
+// ─── OverlayContainer ────────────────────────────────────────────────
+
+describe('OverlayContainer', () => {
+  /**
+   * React 19 flushes a sync commit's passive effects before the commit
+   * returns. A `setState` from there, or from a layout effect, leaves that
+   * commit with work pending, which React counts as a nested update. The
+   * count only resets on a commit that leaves nothing behind, and the update
+   * past 50 throws "Maximum update depth exceeded" (React error 185).
+   *
+   * Removing an item used to commit three times: the measurement dropped its
+   * height from a layout effect, then the `heights` effect pruned its settled
+   * id from the passive flush, at Default priority. That update was still
+   * pending when the next sync commit started, so removals in one task never
+   * reset the count, and the 27th threw. The pruning now rides in the
+   * measuring render, and each removal leaves nothing behind.
+   */
+  it(
+    'lets many toasts leave one sync commit at a time',
+    { timeout: 30_000 },
+    async () => {
+      const COUNT = 30;
+      const noop = () => {};
+      let removeOldest = () => {};
+
+      function Stack() {
+        const [toasts, setToasts] = useState<InternalToast[]>(() =>
+          Array.from({ length: COUNT }, (_, i) => ({
+            internalId: `toast-${i}`,
+            dedupeKey: `toast-${i}`,
+            isProgress: false,
+            createdAt: i,
+            title: `Toast ${i}`,
+          })),
+        );
+
+        removeOldest = () => setToasts((prev) => prev.slice(1));
+
+        return (
+          <OverlayContainer
+            toasts={toasts}
+            notifications={[]}
+            onToastExitComplete={noop}
+            onNotificationExitComplete={noop}
+            onNotificationDismiss={noop}
+            onNotificationRestore={noop}
+            onPauseChange={noop}
+          />
+        );
+      }
+
+      const { queryByText } = render(
+        <Root>
+          <Stack />
+        </Root>,
+      );
+
+      // A removed toast only has a settled id to prune once a frame has
+      // passed since it was measured.
+      await waitFor(() => {
+        expect(document.querySelectorAll('[data-is-measured]')).toHaveLength(
+          COUNT,
+        );
+      });
+
+      // Outside `act`, which would otherwise take over React's scheduling:
+      // every removal commits, effects included, before the next one starts.
+      const env = globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean };
+      const wasActEnvironment = env.IS_REACT_ACT_ENVIRONMENT;
+
+      env.IS_REACT_ACT_ENVIRONMENT = false;
+
+      try {
+        for (let i = 0; i < COUNT; i++) {
+          flushSync(removeOldest);
+        }
+      } finally {
+        env.IS_REACT_ACT_ENVIRONMENT = wasActEnvironment;
+      }
+
+      expect(queryByText(/^Toast \d+$/)).not.toBeInTheDocument();
+    },
+  );
 });
