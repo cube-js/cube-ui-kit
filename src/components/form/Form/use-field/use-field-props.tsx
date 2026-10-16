@@ -202,7 +202,8 @@ export function useFieldProps<
   }
 
   // Without a `label`, `wrapWithField` renders a description or message only
-  // with `forceField`, so passing one sets it — see `asksForFieldChrome`.
+  // with `forceField`, so passing one sets it unless the caller asks for the
+  // bare control with `isBare` — see `asksForFieldChrome`.
   // Inside the legacy `<Field>`, the message props come and go with the error
   // and the props are the wrapper's, so they decide nothing.
   const asksForFieldText =

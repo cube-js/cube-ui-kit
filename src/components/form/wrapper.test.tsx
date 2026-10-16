@@ -1,6 +1,14 @@
-import { useState } from 'react';
+import { cloneElement, useState } from 'react';
 
-import { act, render, renderWithForm, screen, userEvent } from '../../test';
+import {
+  act,
+  render,
+  renderWithForm,
+  renderWithRoot,
+  screen,
+  userEvent,
+} from '../../test';
+import { FORM_ATTACHABLE_INPUTS } from '../../test/form-attachable-inputs';
 import { Checkbox } from '../fields/Checkbox/Checkbox';
 import { SearchInput } from '../fields/SearchInput/SearchInput';
 import { TextInput } from '../fields/TextInput/TextInput';
@@ -134,15 +142,64 @@ describe('field chrome without a label', () => {
     expect(screen.getByText('By title or author')).toBeInTheDocument();
   });
 
-  it('keeps the bare control with forceField={false}', () => {
+  // `forceField` only ever forces the wrapper; `false` is no opt-out.
+  it('treats forceField={false} as unset', () => {
     render(
       <Checkbox forceField={false} description="Sent weekly">
         Accept
       </Checkbox>,
     );
 
-    expect(screen.queryByTestId('Field')).not.toBeInTheDocument();
+    expect(screen.getByText('Sent weekly')).toBeInTheDocument();
   });
+
+  // An inline field has no room for the texts, but still says it is invalid.
+  it('keeps the bare control with isBare, invalid state included', () => {
+    render(
+      <TextInput
+        isBare
+        isInvalid
+        aria-label="Price"
+        description="In USD"
+        errorMessage="Too high"
+      />,
+    );
+
+    expect(screen.queryByTestId('Field')).not.toBeInTheDocument();
+    expect(screen.queryByText('In USD')).not.toBeInTheDocument();
+    expect(screen.queryByText('Too high')).not.toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: 'Price' })).toHaveAttribute(
+      'aria-invalid',
+      'true',
+    );
+  });
+
+  it.each(FORM_ATTACHABLE_INPUTS)(
+    '%s renders bare with isBare and keeps the prop off the DOM',
+    (_, element) => {
+      const error = vi.spyOn(console, 'error');
+
+      renderWithRoot(
+        cloneElement(element, {
+          label: undefined,
+          'aria-label': 'Billing',
+          isBare: true,
+          description: 'Used on invoices',
+          errorMessage: 'Too short',
+        }),
+      );
+
+      expect(screen.queryByTestId('Field')).not.toBeInTheDocument();
+      expect(screen.queryByText('Used on invoices')).not.toBeInTheDocument();
+      expect(screen.queryByText('Too short')).not.toBeInTheDocument();
+      expect(document.querySelector('[isbare]')).toBeNull();
+      expect(error.mock.calls.flat().map(String).join('\n')).not.toContain(
+        'isBare',
+      );
+
+      error.mockRestore();
+    },
+  );
 
   // Wrapping every bound field would change the layout of inline and grid
   // rows, so a bound field without these props stays bare.

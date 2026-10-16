@@ -16,7 +16,7 @@ interface WrapWithFieldProps
 
 /**
  * Wraps an input with the field chrome (label, description, message) when it has a `label` or `forceField`.
- * `useFieldProps` sets `forceField` for a field without a label that is passed a description or a message.
+ * `useFieldProps` sets `forceField` for a field without a label that is passed a description or a message, unless it is `isBare`.
  * Only the field wrapper props are forwarded, so callers can pass their whole props object as is.
  */
 export function wrapWithField<T extends WrapWithFieldProps>(

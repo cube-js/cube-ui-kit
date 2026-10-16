@@ -186,10 +186,17 @@ export interface FieldBaseProps<Value = unknown>
   /**
    * If true, the input component will be wrapped in a field wrapper even if it
    * doesn't have a label. Passing `description`, `errorMessage` or `message`
-   * to a field without a label sets it, whatever the prop holds; `false`
-   * keeps the bare input.
+   * to a field without a label sets it, whatever the prop holds, unless
+   * `isBare` is set.
    */
   forceField?: boolean;
+  /**
+   * Renders a field without a `label` as the bare control, for inline use:
+   * its `description`, `errorMessage` and `message` are not shown, while the
+   * control keeps its invalid state. No effect on a field with a `label` or
+   * `forceField`.
+   */
+  isBare?: boolean;
 }
 
 export interface FormBaseProps extends ValidationProps {
