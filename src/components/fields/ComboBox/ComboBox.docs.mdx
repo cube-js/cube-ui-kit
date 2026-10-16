@@ -35,7 +35,7 @@ A combobox component that combines a text input with a dropdown list, allowing u
 - **`defaultSelectedKey`** `string` — The key of the initially selected item (uncontrolled)
 - **`allowsCustomValue`** `boolean` (default: `false`) — Whether the combo box allows custom values to be entered
 - **`shouldCommitOnBlur`** `boolean` (default: `true`) — Whether to commit custom value on blur in allowsCustomValue mode
-- **`clearOnBlur`** `boolean` (default: `false`) — Whether to clear selection and input on blur (only applies to non-custom-value mode)
+- **`clearOnBlur`** `boolean` (default: `false`) — Whether to clear selection and input on blur when the text names no selectable item (only applies to non-custom-value mode)
 - **`isClearable`** `boolean` (default: `false`) — Whether the combo box is clearable using ESC keyboard button or clear button inside the input
 - **`sortSelectedToTop`** `boolean` (default: `true when items provided, false otherwise`) — Whether to sort selected item to the top when popover opens (only works with items prop)
 - **`popoverTrigger`** `'focus' | 'input' | 'manual'` (default: `input`) — How the popover is triggered
@@ -117,7 +117,11 @@ const [selectedKey, setSelectedKey] = useState(null);
 
 **shouldCommitOnBlur** - When `true` (default), custom values are committed when the input loses focus. When `false`, custom values only commit when Enter is pressed. Only applies when `allowsCustomValue` is enabled.
 
-**clearOnBlur** - When `true`, clears both the selection and input when the input loses focus. When `false` (default), the input reverts to showing the current selection. Only applies to non-custom-value mode. Useful for search-like scenarios where you want to reset after each interaction.
+**clearOnBlur** - When `true`, text that names no selectable item clears both the selection and the input when the input loses focus. When `false` (default), the input reverts to showing the current selection. Only applies to non-custom-value mode. Useful for search-like scenarios where you want to reset after each interaction.
+
+**Blur** - Without `allowsCustomValue`, leaving the input selects the item the text names exactly, or else the only item it still matches, unless that item is in `disabledKeys`. Among items sharing the label, the selected one wins, then the first enabled one. Other text reverts to the selection, or clears with `clearOnBlur`; a disabled item that is already selected stays selected.
+
+**Outside presses** - While the list is open, a press on an enabled control outside it, in the same dialog or on the page, reaches the control on the first click, after the typed text settles as it does on `Tab`. A press anywhere else, such as blank space or a dialog's backdrop, only closes the list and keeps the input focused with its text.
 
 **popoverTrigger** - Controls how the popover opens:
 

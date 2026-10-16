@@ -888,11 +888,19 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     const filteredCount = filteredItems.length;
     const term = effectiveInputValue.trim().toLowerCase();
 
-    // The exact match, otherwise the only filtered result. A disabled one
+    // The exact match, otherwise the only filtered result. Among items sharing
+    // the label, the selection wins, then an enabled one. A disabled match
     // makes the input invalid, as it cannot be selected any other way either,
     // unless it is already the selection: that one is kept.
+    const exactMatches = filteredItems.filter(
+      (item) => item.textValue.toLowerCase() === term,
+    );
     const match =
-      filteredItems.find((item) => item.textValue.toLowerCase() === term) ??
+      exactMatches.find((item) => item.key === effectiveSelectedKey) ??
+      exactMatches.find(
+        (item) => !localCollectionState.disabledKeys.has(item.key),
+      ) ??
+      exactMatches[0] ??
       (filteredCount === 1 ? filteredItems[0] : null);
 
     if (

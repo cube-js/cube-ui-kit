@@ -935,6 +935,63 @@ describe('<ComboBox />', () => {
     });
   });
 
+  describe('blur with repeated labels', () => {
+    // Three people named Alex, the first one disabled.
+    const blurAlex = async (
+      text: string | null,
+      defaultSelectedKey: string,
+    ) => {
+      const onSelectionChange = vi.fn();
+      const onBlur = vi.fn();
+      const { getByRole } = renderWithRoot(
+        <ComboBox
+          clearOnBlur
+          label="Person"
+          defaultSelectedKey={defaultSelectedKey}
+          disabledKeys={['alex-old']}
+          onSelectionChange={onSelectionChange}
+          onBlur={onBlur}
+        >
+          <ComboBox.Item key="alex-old">Alex</ComboBox.Item>
+          <ComboBox.Item key="alex">Alex</ComboBox.Item>
+          <ComboBox.Item key="alex-new">Alex</ComboBox.Item>
+          <ComboBox.Item key="mark">Mark</ComboBox.Item>
+        </ComboBox>,
+      );
+      const combobox = getByRole('combobox');
+
+      if (text == null) {
+        await userEvent.click(combobox);
+      } else {
+        await userEvent.clear(combobox);
+        await userEvent.type(combobox, text);
+      }
+      await act(async () => {
+        combobox.blur();
+      });
+      await waitFor(() => expect(onBlur).toHaveBeenCalled());
+
+      return { combobox, onSelectionChange };
+    };
+
+    it('selects the first enabled item with the typed label', async () => {
+      const { combobox, onSelectionChange } = await blurAlex('Alex', 'mark');
+
+      expect(onSelectionChange.mock.calls).toEqual([['alex']]);
+      await waitFor(() => expect(combobox).toHaveValue('Alex'));
+    });
+
+    it.each([
+      ['an enabled item after another with its label', 'alex-new'],
+      ['a disabled item', 'alex-old'],
+    ])('keeps %s selected', async (_, key) => {
+      const { combobox, onSelectionChange } = await blurAlex(null, key);
+
+      expect(onSelectionChange).not.toHaveBeenCalled();
+      await waitFor(() => expect(combobox).toHaveValue('Alex'));
+    });
+  });
+
   it('should reset to selected value on blur when clearOnBlur is false and input is invalid', async () => {
     const onSelectionChange = vi.fn();
 
