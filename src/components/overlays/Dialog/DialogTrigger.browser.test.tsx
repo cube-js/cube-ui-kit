@@ -579,10 +579,14 @@ describe('Escape and a closing popup inside a Dialog (CUB-4839)', () => {
  * which jsdom does not run.
  */
 describe('A press on a closing list inside a Dialog (CUB-5293)', () => {
-  // No delay between the close and the press, so nothing can finish the fade
-  // in between, and an option found after the close is still there when it is
-  // pressed: the 80 ms fade of a Select or ComboBox list is too short for a
-  // slower click to hit reliably.
+  // The close and the press run in one task, so no frame can run between them
+  // and the list's exit, which needs frames to advance, cannot finish first:
+  // its 80 ms fade is too short to hit reliably by timing. So the close is a
+  // plain synchronous event, never a `user` call. Each of those waits a
+  // macrotask after its events (Testing Library's `asyncWrapper`), and a
+  // ComboBox list closed with `user.keyboard` unmounted in that gap on CI. The
+  // press is the first `user` call after the close, and with no `delay` it
+  // dispatches its events before it waits.
   const user = userEvent.setup({ delay: null });
 
   function App({ children }: { children: React.ReactNode }) {
@@ -609,7 +613,7 @@ describe('A press on a closing list inside a Dialog (CUB-5293)', () => {
   async function pressOptionOfClosingList(
     app: React.ReactElement,
     triggerQa: string,
-    close: () => void | Promise<void> = scrollBody,
+    close: () => void = scrollBody,
   ) {
     renderWithRoot(app);
     await user.click(screen.getByTestId('Trigger'));
@@ -620,7 +624,7 @@ describe('A press on a closing list inside a Dialog (CUB-5293)', () => {
     await user.click(trigger);
     await screen.findByRole('listbox');
 
-    await close();
+    close();
     expect(trigger).toHaveAttribute('aria-expanded', 'false');
 
     await user.click(screen.getAllByRole('option')[1]);
@@ -666,8 +670,9 @@ describe('A press on a closing list inside a Dialog (CUB-5293)', () => {
         </ComboBox>
       </App>,
       'ComboBoxTrigger',
-      // A ComboBox does not close on scroll, so close it the other usual way.
-      () => user.keyboard('{Escape}'),
+      // A ComboBox does not close on scroll, so close it the other usual way:
+      // Escape in its input, which has focus.
+      () => fireEvent.keyDown(screen.getByRole('combobox'), { key: 'Escape' }),
     );
 
     expect(screen.getByTestId('Dialog')).toBeInTheDocument();
