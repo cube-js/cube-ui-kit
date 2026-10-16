@@ -244,9 +244,8 @@ export const FieldWrapper = forwardRef(function FieldWrapper(
     );
   };
 
-  // A side or split label carries the description in its column. Without a
-  // label, that column is empty and the description would read as the label,
-  // so it goes under the input.
+  // A side or split label carries the description in its column. A field
+  // without a label has no label area to hold it, so it goes under the input.
   const isDescriptionBesideInput =
     !!label && (labelPosition === 'side' || labelPosition === 'split');
   const descriptionForLabel = isDescriptionBesideInput
