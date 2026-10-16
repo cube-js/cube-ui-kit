@@ -57,5 +57,5 @@ export const Vertical = Template.bind({});
 Vertical.args = {
   label: 'Slider',
   orientation: 'vertical',
-  fieldStyles: { width: '0 max-content 100%', height: '200px' },
+  fieldStyles: { width: '0 max-content 100%' },
 };

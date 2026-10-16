@@ -251,5 +251,5 @@ WithCustomValue.args = {
 export const Vertical = Template.bind({});
 Vertical.args = {
   orientation: 'vertical',
-  fieldStyles: { width: '0 max-content 100%', height: '200px' },
+  fieldStyles: { width: '0 max-content 100%' },
 };
