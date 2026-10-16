@@ -68,7 +68,7 @@ Inheritance stops at the overlay. Buttons in a popover, dialog or menu opened fr
     <Dialog>
       <Content>Ship these changes?</Content>
       <Footer>
-        {/* neither primary, small nor disabled: they keep their own props */}
+        {/* not restyled or disabled by the split: each keeps its own props */}
         <Button type="primary" onPress={ship}>
           Ship now
         </Button>

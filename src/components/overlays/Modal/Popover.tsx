@@ -144,6 +144,7 @@ const PopoverWrapper = forwardRef(function PopoverWrapper(
   return (
     <PopoverElement
       qa={qa || 'Popover'}
+      data-overlay-layer=""
       {...mergeProps(otherProps, overlayProps, modalProps)}
       ref={ref}
       styles={styles}

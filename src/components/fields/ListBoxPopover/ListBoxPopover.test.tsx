@@ -24,7 +24,13 @@ const people = [
 ];
 
 /** The controls a press outside the open list should reach on its own. */
-function OutsideControls({ onSave }: { onSave?: () => void }) {
+function OutsideControls({
+  onSave,
+  onLink,
+}: {
+  onSave?: () => void;
+  onLink?: () => void;
+}) {
   return (
     <>
       <Checkbox>Inbox</Checkbox>
@@ -35,6 +41,15 @@ function OutsideControls({ onSave }: { onSave?: () => void }) {
       </RadioGroup>
       <TextInput label="Subject" />
       <Button onPress={onSave}>Save</Button>
+      <a
+        href="#docs"
+        onClick={(event) => {
+          event.preventDefault();
+          onLink?.();
+        }}
+      >
+        Docs
+      </a>
       <div data-qa="Blank">Blank space</div>
     </>
   );
@@ -61,6 +76,7 @@ describe('<ListBoxPopover /> outside presses', () => {
     async function renderWithOpenList(
       props: Partial<Parameters<typeof ComboBox>[0]> = {},
       onSave?: () => void,
+      onLink?: () => void,
     ) {
       const utils = renderWithRoot(
         <InDialog>
@@ -69,7 +85,7 @@ describe('<ListBoxPopover /> outside presses', () => {
               <ComboBox.Item key={person.key}>{person.label}</ComboBox.Item>
             ))}
           </ComboBox>
-          <OutsideControls onSave={onSave} />
+          <OutsideControls onSave={onSave} onLink={onLink} />
         </InDialog>,
       );
 
@@ -118,6 +134,16 @@ describe('<ListBoxPopover /> outside presses', () => {
       await userEvent.click(utils.getByRole('button', { name: 'Save' }));
 
       expect(onSave).toHaveBeenCalledTimes(1);
+      await waitFor(() => expect(utils.queryByRole('listbox')).toBeNull());
+    });
+
+    it('follows a link on the first click and closes the list', async () => {
+      const onLink = vi.fn();
+      const utils = await renderWithOpenList({}, undefined, onLink);
+
+      await userEvent.click(utils.getByRole('link', { name: 'Docs' }));
+
+      expect(onLink).toHaveBeenCalledTimes(1);
       await waitFor(() => expect(utils.queryByRole('listbox')).toBeNull());
     });
 
@@ -213,8 +239,8 @@ describe('<ListBoxPopover /> outside presses', () => {
       return input;
     }
 
-    // The popover isn't modal: a press outside it is the popover's to handle,
-    // not a press on a control in the field's layer.
+    // The popover isn't modal, but a control outside it is not in the field's
+    // layer: the list takes the press as blank space and the popover stays.
     it('only closes the list on a control outside the popover', async () => {
       const onSelectionChange = vi.fn();
       const utils = renderWithRoot(

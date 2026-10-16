@@ -86,7 +86,7 @@ const meta = {
     clearOnBlur: {
       control: { type: 'boolean' },
       description:
-        'Whether to clear selection and input on blur (only applies to non-custom-value mode)',
+        'Whether to clear selection and input on blur when the text names no selectable item (only applies to non-custom-value mode)',
       table: {
         defaultValue: { summary: false },
       },
@@ -520,8 +520,8 @@ export const ClearOnBlur = () => {
         </Text>
         <Paragraph preset="t4" color="#dark-03" margin="1x 0 0 0">
           With clearOnBlur, selection and input are cleared when the input loses
-          focus. This is useful for search-like scenarios where you want to
-          reset after each interaction.
+          focus with text that names no selectable item. This is useful for
+          search-like scenarios where you want to reset after each interaction.
         </Paragraph>
       </Space>
     </Flow>

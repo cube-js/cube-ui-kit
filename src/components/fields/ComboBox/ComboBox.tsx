@@ -133,7 +133,7 @@ export interface CubeComboBoxProps<T>
   allowsCustomValue?: boolean;
   /** Whether to commit custom value on blur in allowsCustomValue mode (default: true) */
   shouldCommitOnBlur?: boolean;
-  /** Whether to clear selection and input on blur (default: false, only applies to non-custom-value mode) */
+  /** Whether to clear selection and input on blur when the text names no selectable item (default: false, only applies to non-custom-value mode) */
   clearOnBlur?: boolean;
   /** Whether the combobox is clearable using ESC key or clear button */
   isClearable?: boolean;

@@ -108,12 +108,15 @@ const CONTROL_SELECTOR =
   'button, a[href], input, select, textarea, [tabindex], [contenteditable]:not([contenteditable="false"])';
 
 // The layer a field sits in: a dialog, popover or tray, otherwise the page.
-const LAYER_SELECTOR = '[role="dialog"], [role="alertdialog"]';
+const LAYER_SELECTOR =
+  '[role="dialog"], [role="alertdialog"], [data-overlay-layer]';
+
+const DISABLED_SELECTOR = ':disabled, [aria-disabled="true"]';
 
 // An enabled control apart from the field, in the field's own layer. A press
 // anywhere else counts as blank space and keeps the field's focus and draft:
 // on the field itself, on a dialog's surface, on a disabled control, or
-// outside the field's dialog, which then handles that press itself.
+// outside the field's layer, which stays open.
 function isOutsideControl(el: Element, trigger: HTMLElement | null) {
   const control = el.closest(CONTROL_SELECTOR);
 
@@ -122,7 +125,7 @@ function isOutsideControl(el: Element, trigger: HTMLElement | null) {
     trigger == null ||
     control.contains(trigger) ||
     trigger.contains(control) ||
-    control.matches(`${LAYER_SELECTOR}, :disabled, [aria-disabled="true"]`)
+    control.matches(`${LAYER_SELECTOR}, ${DISABLED_SELECTOR}`)
   ) {
     return false;
   }
@@ -290,9 +293,12 @@ export const ListBoxPopover = function ListBoxPopover(
     }
     // The press reaches an outside control, so a checkbox toggles, a text
     // field takes focus and a native Save button saves on the first click.
+    // A UI Kit Button passes from any layer, unless it is disabled.
+    const dismissEl = el.closest('[data-popover-dismiss]');
+
     if (
       isOutsideControl(el, triggerRef.current) ||
-      el.closest('[data-popover-dismiss]')
+      (dismissEl != null && !dismissEl.matches(DISABLED_SELECTOR))
     ) {
       return 'pass';
     }

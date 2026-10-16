@@ -2,6 +2,8 @@ import { userEvent } from 'vitest/browser';
 
 import { act, renderWithRoot, screen, waitFor } from '../../../test';
 import { Button } from '../../actions/Button/Button';
+import { Menu } from '../../actions/Menu/Menu';
+import { MenuTrigger } from '../../actions/Menu/MenuTrigger';
 import { Content } from '../../content/Content';
 import { Dialog } from '../../overlays/Dialog/Dialog';
 import { DialogTrigger } from '../../overlays/Dialog/DialogTrigger';
@@ -36,7 +38,7 @@ function People({
 
 // Opens the dialog, then types "r", which names only Rex, so a blur would
 // pick it.
-async function openList(dialogName: string, field = 'combobox') {
+async function openList(dialogName: string) {
   await act(() =>
     userEvent.click(screen.getByRole('button', { name: dialogName })),
   );
@@ -44,7 +46,7 @@ async function openList(dialogName: string, field = 'combobox') {
     expect(screen.getByRole('dialog', { name: dialogName })).toBeVisible(),
   );
 
-  const input = screen.getByRole(field);
+  const input = screen.getByRole('combobox');
 
   await act(() => userEvent.click(input));
   await act(() => userEvent.type(input, 'r'));
@@ -53,12 +55,14 @@ async function openList(dialogName: string, field = 'combobox') {
   return input;
 }
 
-// Real presses: in jsdom a disabled control gets no pointer events, and the
-// layering cases depend on how long the press is held.
+// Real presses: Chromium delivers a press on a disabled control the way a
+// user's click does, and the layering cases depend on how long it is held.
 describe('<ListBoxPopover /> outside presses in a browser', () => {
   it.each([
     ['a disabled text field', 'textbox', 'Archive'],
     ['a disabled native button', 'button', 'Locked'],
+    ['a disabled UI Kit Button', 'button', 'Publish'],
+    ['a UI Kit Button disabled with a tooltip', 'button', 'Share'],
   ])('ignores a press on %s', async (_, role, name) => {
     const onSelectionChange = vi.fn();
 
@@ -72,6 +76,10 @@ describe('<ListBoxPopover /> outside presses in a browser', () => {
             <button disabled type="button">
               Locked
             </button>
+            <Button isDisabled>Publish</Button>
+            <Button isDisabled tooltip="Nothing to share yet">
+              Share
+            </Button>
             <People onSelectionChange={onSelectionChange} />
           </Content>
         </Dialog>
@@ -87,16 +95,17 @@ describe('<ListBoxPopover /> outside presses in a browser', () => {
     // Long enough for a blur to settle the draft, had focus moved.
     await act(() => new Promise((resolve) => setTimeout(resolve, 300)));
 
-    // The control can't act, so the press changes nothing, as on main.
-    expect(screen.getByRole('listbox')).toBeVisible();
+    // The control can't act, so the field keeps focus and its text, as on
+    // blank space. A natively disabled control also leaves the list open; an
+    // aria-disabled one closes it.
     expect(input).toHaveFocus();
     expect(input).toHaveValue('r');
     expect(onSelectionChange).not.toHaveBeenCalled();
   });
 
-  // The popover isn't modal, so a press outside it is the popover's to
-  // handle. Neither a quick nor a held press reaches the page's checkbox, and
-  // the field keeps its text.
+  // The popover isn't modal, but the list takes a press outside it as blank
+  // space: neither a quick nor a held press reaches the page's checkbox, the
+  // popover stays open and the field keeps its text.
   it.each([0, 150])(
     'only closes the list on a control outside its popover (held %sms)',
     async (delay) => {
@@ -127,6 +136,52 @@ describe('<ListBoxPopover /> outside presses in a browser', () => {
 
       await waitFor(() => expect(screen.queryByRole('listbox')).toBeNull());
       expect(onPageChange).not.toHaveBeenCalled();
+      expect(input).toHaveValue('r');
+      expect(onSelectionChange).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each([0, 150])(
+    'only closes the list of a field in a menu footer on a page control (held %sms)',
+    async (delay) => {
+      const onSelectionChange = vi.fn();
+      const onPageChange = vi.fn();
+
+      renderWithRoot(
+        <>
+          <Checkbox onChange={onPageChange}>Inbox</Checkbox>
+          <MenuTrigger>
+            <Button>Actions</Button>
+            <Menu
+              aria-label="Actions"
+              footer={<People onSelectionChange={onSelectionChange} />}
+            >
+              <Menu.Item key="rename">Rename</Menu.Item>
+            </Menu>
+          </MenuTrigger>
+        </>,
+      );
+
+      await act(() =>
+        userEvent.click(screen.getByRole('button', { name: 'Actions' })),
+      );
+      await waitFor(() => expect(screen.getByRole('menu')).toBeVisible());
+
+      const input = screen.getByRole('combobox');
+
+      await act(() => userEvent.click(input));
+      await act(() => userEvent.type(input, 'r'));
+      await waitFor(() => expect(screen.getByRole('listbox')).toBeVisible());
+
+      await act(() =>
+        userEvent.click(screen.getByRole('checkbox', { name: 'Inbox' }), {
+          delay,
+        }),
+      );
+
+      await waitFor(() => expect(screen.queryByRole('listbox')).toBeNull());
+      expect(onPageChange).not.toHaveBeenCalled();
+      expect(input).toHaveFocus();
       expect(input).toHaveValue('r');
       expect(onSelectionChange).not.toHaveBeenCalled();
     },

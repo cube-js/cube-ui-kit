@@ -158,6 +158,7 @@ let TrayWrapper = forwardRef(function TrayWrapper(
     >
       <TrayElement
         qa={qa || 'Tray'}
+        data-overlay-layer=""
         styles={styles}
         mods={{
           open: isOpen,
