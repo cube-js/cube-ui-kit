@@ -176,9 +176,8 @@ function RadioGroup(rawProps: WithNullableValue<CubeRadioGroupProps>, ref) {
 
   let radioGroup = (
     <RadioGroupElement
-      // On the group, not on the field wrapper: without a visible label there
-      // is no wrapper, and the group would lose its role, its name, the arrow
-      // keys and its focus handling with it.
+      // Keep semantics and keyboard handling on the group: `isBare` omits
+      // the field wrapper.
       {...mergeProps(groupProps, groupFocusProps)}
       onKeyDown={onKeyDown}
       // `useRadioGroup` seeds its id once; the current one follows the form

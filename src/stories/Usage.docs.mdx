@@ -500,3 +500,5 @@ Inputs subscribe to their own values and errors. For other reactive UI, use `For
 ### Shared field integration
 
 Built-in inputs have field support; they do not need a `Field` wrapper. Modern `name` and `field` bindings, and legacy string `name` bindings, connect through `useFieldProps`. Custom controls use that hook and `wrapWithField`. [Field Properties](/docs/getting-started-field-properties--docs) documents shared labels, validation, state, and presentation props.
+
+Fields render stable chrome by default, including without a visible label. Use `isBare` for inline controls or when a parent owns the field layout and feedback; a supplied label remains accessible but visually hidden. Message content never chooses whether the wrapper exists. `errorMessage={null}` suppresses error text and its fallback while preserving the description and invalid state.

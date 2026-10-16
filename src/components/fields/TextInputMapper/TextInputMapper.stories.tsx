@@ -12,6 +12,7 @@ import { CubeTextInputMapperProps, TextInputMapper } from './TextInputMapper';
 export default {
   title: 'Forms/TextInputMapper',
   component: TextInputMapper,
+  args: { fieldStyles: { width: '0 480px 100%' } },
   parameters: {
     controls: {
       exclude: baseProps,
@@ -171,7 +172,11 @@ const FormTemplateSync: StoryFn<CubeTextInputMapperProps> = ({ ...props }) => {
         {...props}
         onChange={(value) => console.log('! onChange', value)}
       />
-      <TextInput name={['field', 'name']} label="TextInput" />
+      <TextInput
+        fieldStyles={{ width: '0 320px 100%' }}
+        name={['field', 'name']}
+        label="TextInput"
+      />
       <Form.Submit>Submit</Form.Submit>
     </Form>
   );

@@ -9,33 +9,18 @@ import { warnAboutForceField } from './field-chrome';
 import { FieldWrapper } from './FieldWrapper/index';
 import { warnAboutLegacyTooltip } from './legacy-tooltip';
 
-// `children` is intentionally omitted: the input is passed as `component`, never through props.
+// The input is passed as `component`, never through props.children.
 interface WrapWithFieldProps
   extends FieldBaseProps,
     Omit<BaseProps, 'children'>,
-    FormBaseProps {
-  /**
-   * Set by `useFieldProps` for a field without a `label` that still renders
-   * the field chrome — see `asksForFieldChrome`. Not a prop of any input.
-   */
-  hasFieldChrome?: boolean;
+    FormBaseProps {}
+
+/** Field chrome is the default; only an explicit bare mode opts out. */
+export function rendersFieldChrome(props: { isBare?: boolean }) {
+  return !props.isBare;
 }
 
-/**
- * Whether `wrapWithField` renders the field chrome for these props: a `label`,
- * the chrome `useFieldProps` asked for, or the deprecated `forceField`.
- */
-export function rendersFieldChrome(props: object) {
-  const { label, hasFieldChrome, forceField } = props as WrapWithFieldProps;
-
-  return !!label || !!hasFieldChrome || !!forceField;
-}
-
-/**
- * Wraps an input with the field chrome (label, description, message) when it has a `label`, or when `useFieldProps` asks
- * for it on a field without one (`hasFieldChrome`): one bound to a form, or passed a description or a message, and not `isBare`.
- * Only the field wrapper props are forwarded, so callers can pass their whole props object as is.
- */
+/** Wraps a control in its stable field presentation and forwards its chrome props. */
 export function wrapWithField<T extends WrapWithFieldProps>(
   component: ReactElement,
   ref: RefObject<unknown> | FocusableRef<HTMLElement> | DOMRef<HTMLElement>,
@@ -43,6 +28,7 @@ export function wrapWithField<T extends WrapWithFieldProps>(
 ) {
   let {
     label,
+    isBare = false,
     extra,
     labelPosition = 'top',
     labelStyles,
@@ -67,10 +53,6 @@ export function wrapWithField<T extends WrapWithFieldProps>(
 
   warnAboutForceField(props);
 
-  if (!rendersFieldChrome(props)) {
-    return component;
-  }
-
   warnAboutLegacyTooltip(props);
 
   // Merge fieldStyles as shorthand for fieldProps.styles (fieldStyles takes priority)
@@ -90,6 +72,7 @@ export function wrapWithField<T extends WrapWithFieldProps>(
     <FieldWrapper
       {...{
         label,
+        isBare,
         extra,
         labelPosition,
         isRequired,

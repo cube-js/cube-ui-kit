@@ -367,6 +367,7 @@ export const ListBoxPopover = function ListBoxPopover(
               }}
             >
               <ListBox
+                isBare
                 ref={listBoxRef}
                 disableSelectionToggle
                 id={listBoxId}

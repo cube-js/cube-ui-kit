@@ -9,6 +9,7 @@ import type { StoryFn } from '@storybook/react-vite';
 export default {
   title: 'Forms/CheckboxGroup',
   component: Checkbox.Group,
+  args: { fieldStyles: { width: '0 max-content 100%' } },
   parameters: {
     controls: {
       exclude: baseProps,
@@ -36,11 +37,20 @@ Default.args = {};
 
 export const Validation: StoryFn = () => (
   <Space gap="2x" flow="column" placeItems="start">
-    <Checkbox.Group label="Valid group" isValid defaultValue={['one']}>
+    <Checkbox.Group
+      fieldStyles={{ width: '0 max-content 100%' }}
+      label="Valid group"
+      isValid
+      defaultValue={['one']}
+    >
       <Checkbox value="one">One</Checkbox>
       <Checkbox value="two">Two</Checkbox>
     </Checkbox.Group>
-    <Checkbox.Group label="Invalid group" isInvalid>
+    <Checkbox.Group
+      fieldStyles={{ width: '0 max-content 100%' }}
+      label="Invalid group"
+      isInvalid
+    >
       <Checkbox value="one">One</Checkbox>
       <Checkbox value="two">Two</Checkbox>
     </Checkbox.Group>

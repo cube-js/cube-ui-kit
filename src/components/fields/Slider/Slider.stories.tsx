@@ -207,7 +207,7 @@ export default {
     maxValue: 20,
     step: 2,
     fieldStyles: {
-      width: '200px',
+      width: '0 200px 100%',
     },
   },
 } as Meta<CubeSliderProps>;
@@ -251,4 +251,5 @@ WithCustomValue.args = {
 export const Vertical = Template.bind({});
 Vertical.args = {
   orientation: 'vertical',
+  fieldStyles: { width: '0 max-content 100%' },
 };

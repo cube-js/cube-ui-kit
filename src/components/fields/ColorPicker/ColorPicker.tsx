@@ -310,6 +310,7 @@ export const ColorPicker = forwardRef(function ColorPicker(
               previewFormat={format}
               input={
                 <ColorInput
+                  isBare
                   aria-label={t('colorPicker.colorValue', 'Color value')}
                   format={format}
                   value={colorText}
@@ -321,6 +322,7 @@ export const ColorPicker = forwardRef(function ColorPicker(
               swatches={
                 swatches?.length ? (
                   <ColorSwatchGroup
+                    isBare
                     aria-label={t('colorPicker.palette', 'Palette')}
                     styles={PALETTE_STYLES}
                     colors={swatches}

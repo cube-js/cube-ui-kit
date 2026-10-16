@@ -16,6 +16,7 @@ import { YearPicker } from './YearPicker';
 export default {
   title: 'Forms/PeriodPicker',
   component: MonthPicker,
+  args: { fieldStyles: { width: '0 30x 100%' } },
   parameters: {
     controls: {
       exclude: baseProps,
@@ -39,7 +40,7 @@ export default {
 };
 
 const MonthTemplate: StoryFn<CubePeriodPickerProps> = (props) => (
-  <MonthPicker aria-label="Month" wrapperStyles={{ width: '30x' }} {...props} />
+  <MonthPicker aria-label="Month" {...props} />
 );
 
 export const Month = MonthTemplate.bind({});
@@ -49,38 +50,26 @@ export const MonthWithValue = MonthTemplate.bind({});
 MonthWithValue.args = { defaultValue: parseDate('2026-08-01') };
 
 export const Quarter: StoryFn<CubePeriodPickerProps> = (props) => (
-  <QuarterPicker
-    aria-label="Quarter"
-    wrapperStyles={{ width: '30x' }}
-    {...props}
-  />
+  <QuarterPicker aria-label="Quarter" {...props} />
 );
 Quarter.args = { defaultValue: parseDate('2026-04-01') };
 
 export const Year: StoryFn<CubePeriodPickerProps> = (props) => (
-  <YearPicker aria-label="Year" wrapperStyles={{ width: '30x' }} {...props} />
+  <YearPicker aria-label="Year" {...props} />
 );
 Year.args = { defaultValue: parseDate('2026-01-01') };
 
 export const Week: StoryFn<CubePeriodPickerProps> = (props) => (
-  <WeekPicker aria-label="Week" wrapperStyles={{ width: '30x' }} {...props} />
+  <WeekPicker aria-label="Week" {...props} />
 );
 Week.args = { defaultValue: parseDate('2026-08-10') };
 
 export const AllPickers: StoryFn<CubePeriodPickerProps> = (props) => (
   <Space gap="2x" flow="column" placeItems="start">
-    <WeekPicker aria-label="Week" wrapperStyles={{ width: '30x' }} {...props} />
-    <MonthPicker
-      aria-label="Month"
-      wrapperStyles={{ width: '30x' }}
-      {...props}
-    />
-    <QuarterPicker
-      aria-label="Quarter"
-      wrapperStyles={{ width: '30x' }}
-      {...props}
-    />
-    <YearPicker aria-label="Year" wrapperStyles={{ width: '30x' }} {...props} />
+    <WeekPicker aria-label="Week" {...props} />
+    <MonthPicker aria-label="Month" {...props} />
+    <QuarterPicker aria-label="Quarter" {...props} />
+    <YearPicker aria-label="Year" {...props} />
   </Space>
 );
 

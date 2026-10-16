@@ -66,6 +66,7 @@ export function TabPicker({
 
   return (
     <FilterPicker
+      isBare
       selectedKey={selectedKey}
       renderSummary={false}
       icon={<MoreIcon />}

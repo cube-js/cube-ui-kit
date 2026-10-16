@@ -18,7 +18,10 @@ const meta = {
   title: 'Forms/ComboBox',
   component: ComboBox,
   subcomponents: { Item: ComboBox.Item, Section: ComboBox.Section },
-  args: { width: '200px', label: 'Choose an option' },
+  args: {
+    fieldStyles: { width: '0 200px 100%' },
+    label: 'Choose an option',
+  },
   parameters: { controls: { exclude: baseProps }, layout: 'centered' },
   argTypes: {
     /* Content */
@@ -358,6 +361,7 @@ export const Default = (args) => (
 
 export const WithDefaultValue = () => (
   <ComboBox
+    fieldStyles={{ width: '0 200px 100%' }}
     label="Fruit"
     placeholder="Select a fruit..."
     defaultSelectedKey="banana"
@@ -371,6 +375,7 @@ export const WithDefaultValue = () => (
 
 export const WithDefaultInputValue = () => (
   <ComboBox
+    fieldStyles={{ width: '0 200px 100%' }}
     label="Search Query"
     placeholder="Start typing..."
     defaultInputValue="Pre-filled search text"
@@ -388,6 +393,7 @@ export const Controlled = () => {
   return (
     <Flow gap="2x">
       <ComboBox
+        fieldStyles={{ width: '0 200px 100%' }}
         label="Controlled Fruit"
         placeholder="Select a fruit..."
         selectedKey={selectedKey}
@@ -412,6 +418,7 @@ export const AllowsCustomValue = () => {
   return (
     <Flow gap="2x">
       <ComboBox
+        fieldStyles={{ width: '0 200px 100%' }}
         allowsCustomValue
         label="Tags"
         placeholder="Type or select..."
@@ -452,6 +459,7 @@ export const AllowsCustomValueNoItems: StoryObj<typeof ComboBox> = {
     return (
       <Flow gap="2x">
         <ComboBox
+          fieldStyles={{ width: '0 200px 100%' }}
           isLoading
           allowsCustomValue
           label="Custom Input"
@@ -475,6 +483,7 @@ export const AllowsCustomValueNoItems: StoryObj<typeof ComboBox> = {
 
 export const Clearable = () => (
   <ComboBox
+    fieldStyles={{ width: '0 200px 100%' }}
     isClearable
     label="Fruit"
     placeholder="Select a fruit..."
@@ -493,6 +502,7 @@ export const ClearOnBlur = () => {
   return (
     <Flow gap="2x">
       <ComboBox
+        fieldStyles={{ width: '0 200px 100%' }}
         clearOnBlur
         label="Fruit"
         placeholder="Select a fruit..."
@@ -519,7 +529,11 @@ export const ClearOnBlur = () => {
 };
 
 export const WithSections = () => (
-  <ComboBox label="Food" placeholder="Select food...">
+  <ComboBox
+    fieldStyles={{ width: '0 200px 100%' }}
+    label="Food"
+    placeholder="Select food..."
+  >
     <ComboBox.Section key="fruits" title="Fruits">
       <ComboBox.Item key="apple">Apple</ComboBox.Item>
       <ComboBox.Item key="banana">Banana</ComboBox.Item>
@@ -554,7 +568,12 @@ export const DynamicSections = () => {
   ];
 
   return (
-    <ComboBox label="Food" placeholder="Select food..." items={categories}>
+    <ComboBox
+      fieldStyles={{ width: '0 200px 100%' }}
+      label="Food"
+      placeholder="Select food..."
+      items={categories}
+    >
       {(category: any) => (
         <ComboBox.Section
           key={category.name}
@@ -574,6 +593,7 @@ DynamicSections.parameters = NO_SNAPSHOT;
 
 export const WithDisabledItems = () => (
   <ComboBox
+    fieldStyles={{ width: '0 200px 100%' }}
     label="Fruit"
     placeholder="Select a fruit..."
     disabledKeys={['banana', 'date']}
@@ -598,6 +618,7 @@ export const Loading = (args) => (
 
 export const Disabled = () => (
   <ComboBox
+    fieldStyles={{ width: '0 200px 100%' }}
     isDisabled
     label="Fruit"
     placeholder="Select a fruit..."
@@ -612,6 +633,7 @@ export const Disabled = () => (
 export const Validation = () => (
   <Flex flow="column" gap="2x">
     <ComboBox
+      fieldStyles={{ width: '0 200px 100%' }}
       label="Valid"
       isValid
       defaultSelectedKey="apple"
@@ -622,6 +644,7 @@ export const Validation = () => (
       <ComboBox.Item key="cherry">Cherry</ComboBox.Item>
     </ComboBox>
     <ComboBox
+      fieldStyles={{ width: '0 200px 100%' }}
       label="Invalid"
       isInvalid
       defaultSelectedKey="apple"
@@ -637,18 +660,30 @@ export const Validation = () => (
 // chromatic-overlay-reviewed: three closed fields is the comparison; which gesture opens each cannot be photographed
 export const PopoverTriggers = () => (
   <Flex flow="column" gap="2x">
-    {/* oxlint-disable-next-line cube-ui-kit/no-redundant-default-prop -- labelled "Trigger on Input (default)" - the trigger is what it demonstrates */}
-    <ComboBox label="Trigger on Input (default)" popoverTrigger="input">
+    <ComboBox
+      fieldStyles={{ width: '0 200px 100%' }}
+      label="Trigger on Input (default)"
+      // oxlint-disable-next-line cube-ui-kit/no-redundant-default-prop -- labelled "Trigger on Input (default)" - the trigger is what it demonstrates
+      popoverTrigger="input"
+    >
       <ComboBox.Item key="apple">Apple</ComboBox.Item>
       <ComboBox.Item key="banana">Banana</ComboBox.Item>
       <ComboBox.Item key="cherry">Cherry</ComboBox.Item>
     </ComboBox>
-    <ComboBox label="Trigger on Focus" popoverTrigger="focus">
+    <ComboBox
+      fieldStyles={{ width: '0 200px 100%' }}
+      label="Trigger on Focus"
+      popoverTrigger="focus"
+    >
       <ComboBox.Item key="apple">Apple</ComboBox.Item>
       <ComboBox.Item key="banana">Banana</ComboBox.Item>
       <ComboBox.Item key="cherry">Cherry</ComboBox.Item>
     </ComboBox>
-    <ComboBox label="Manual Trigger" popoverTrigger="manual">
+    <ComboBox
+      fieldStyles={{ width: '0 200px 100%' }}
+      label="Manual Trigger"
+      popoverTrigger="manual"
+    >
       <ComboBox.Item key="apple">Apple</ComboBox.Item>
       <ComboBox.Item key="banana">Banana</ComboBox.Item>
       <ComboBox.Item key="cherry">Cherry</ComboBox.Item>
@@ -658,18 +693,33 @@ export const PopoverTriggers = () => (
 
 export const Sizes = () => (
   <Flex flow="column" gap="2x">
-    <ComboBox label="Small" size="small" placeholder="Small size">
+    <ComboBox
+      fieldStyles={{ width: '0 200px 100%' }}
+      label="Small"
+      size="small"
+      placeholder="Small size"
+    >
       <ComboBox.Item key="apple">Apple</ComboBox.Item>
       <ComboBox.Item key="banana">Banana</ComboBox.Item>
       <ComboBox.Item key="cherry">Cherry</ComboBox.Item>
     </ComboBox>
-    {/* oxlint-disable-next-line cube-ui-kit/no-redundant-default-prop -- labelled "Medium (default)" - the size is what it demonstrates */}
-    <ComboBox label="Medium (default)" size="medium" placeholder="Medium size">
+    <ComboBox
+      fieldStyles={{ width: '0 200px 100%' }}
+      label="Medium (default)"
+      // oxlint-disable-next-line cube-ui-kit/no-redundant-default-prop -- labelled "Medium (default)" - the size is what it demonstrates
+      size="medium"
+      placeholder="Medium size"
+    >
       <ComboBox.Item key="apple">Apple</ComboBox.Item>
       <ComboBox.Item key="banana">Banana</ComboBox.Item>
       <ComboBox.Item key="cherry">Cherry</ComboBox.Item>
     </ComboBox>
-    <ComboBox label="Large" size="large" placeholder="Large size">
+    <ComboBox
+      fieldStyles={{ width: '0 200px 100%' }}
+      label="Large"
+      size="large"
+      placeholder="Large size"
+    >
       <ComboBox.Item key="apple">Apple</ComboBox.Item>
       <ComboBox.Item key="banana">Banana</ComboBox.Item>
       <ComboBox.Item key="cherry">Cherry</ComboBox.Item>
@@ -693,6 +743,7 @@ export const WithItemsArray = () => {
 
   return (
     <ComboBox<Fruit>
+      fieldStyles={{ width: '0 200px 100%' }}
       label="Fruit"
       placeholder="Select a fruit..."
       items={fruits}
@@ -723,6 +774,7 @@ export const SortSelectedToTop = () => {
   return (
     <Flex flow="column" gap="2x">
       <ComboBox<Fruit>
+        fieldStyles={{ width: '0 200px 100%' }}
         label="With sorting (default)"
         placeholder="Select a fruit..."
         defaultSelectedKey="grape"
@@ -731,6 +783,7 @@ export const SortSelectedToTop = () => {
         {(item) => <ComboBox.Item key={item.key}>{item.label}</ComboBox.Item>}
       </ComboBox>
       <ComboBox<Fruit>
+        fieldStyles={{ width: '0 200px 100%' }}
         label="Without sorting"
         placeholder="Select a fruit..."
         defaultSelectedKey="grape"
@@ -749,6 +802,7 @@ export const SortSelectedToTop = () => {
 
 export const WithCustomFilter = () => (
   <ComboBox
+    fieldStyles={{ width: '0 200px 100%' }}
     label="Fruit (starts with filter)"
     placeholder="Type to filter..."
     filter={(textValue: string, inputValue: string) => {
@@ -765,6 +819,7 @@ export const WithCustomFilter = () => (
 
 export const NoFilter = () => (
   <ComboBox
+    fieldStyles={{ width: '0 200px 100%' }}
     label="Fruit (no filtering)"
     placeholder="Type anything..."
     filter={false}
@@ -777,7 +832,11 @@ export const NoFilter = () => (
 );
 
 export const LongList = () => (
-  <ComboBox label="Countries" placeholder="Select a country...">
+  <ComboBox
+    fieldStyles={{ width: '0 200px 100%' }}
+    label="Countries"
+    placeholder="Select a country..."
+  >
     <ComboBox.Item key="us">United States</ComboBox.Item>
     <ComboBox.Item key="uk">United Kingdom</ComboBox.Item>
     <ComboBox.Item key="canada">Canada</ComboBox.Item>
@@ -803,6 +862,7 @@ export const LongList = () => (
 
 export const Required = () => (
   <ComboBox
+    fieldStyles={{ width: '0 200px 100%' }}
     isRequired
     label="Fruit"
     placeholder="Select a fruit..."
@@ -816,6 +876,7 @@ export const Required = () => (
 
 export const WithDescription = () => (
   <ComboBox
+    fieldStyles={{ width: '0 200px 100%' }}
     label="Fruit"
     placeholder="Select a fruit..."
     description="Choose your favorite fruit from the list"
@@ -829,6 +890,7 @@ export const WithDescription = () => (
 // chromatic-overlay-reviewed: the absent trigger button is the subject
 export const HiddenTrigger = () => (
   <ComboBox
+    fieldStyles={{ width: '0 200px 100%' }}
     hideTrigger
     label="Fruit (no trigger button)"
     placeholder="Type to search..."
@@ -846,6 +908,7 @@ export const IndependentControls = () => {
   return (
     <Flow gap="2x">
       <ComboBox
+        fieldStyles={{ width: '0 200px 100%' }}
         label="Fruit"
         placeholder="Type to filter..."
         inputValue={inputValue}
@@ -882,6 +945,7 @@ export const AllowsCustomValueNoCommitOnBlur = () => {
   return (
     <Flow gap="2x">
       <ComboBox
+        fieldStyles={{ width: '0 200px 100%' }}
         allowsCustomValue
         shouldCommitOnBlur={false}
         label="Tags (Enter only)"
@@ -920,6 +984,7 @@ export const ShowAllOnNoResults: StoryObj<typeof ComboBox> = {
   render: () => (
     <Flow gap="1x">
       <ComboBox
+        fieldStyles={{ width: '0 200px 100%' }}
         label="Search Fruits"
         placeholder="Type 'xyz' to see behavior..."
       >
@@ -973,6 +1038,7 @@ export const VirtualizedList = () => {
         test performance.
       </Paragraph>
       <ComboBox<Item>
+        fieldStyles={{ width: '0 200px 100%' }}
         label="Virtualized List"
         placeholder="Search from 1000 items..."
         items={items}

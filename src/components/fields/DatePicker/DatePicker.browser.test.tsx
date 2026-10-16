@@ -20,64 +20,88 @@ describe.each([
 ] as const)('<%s /> container styles', (name, Component) => {
   const Field = Component as any;
 
-  it('applies the width style prop', async () => {
-    renderWithRoot(
-      <div style={{ width: 400 }}>
-        <Field aria-label={name} qa="Field" width="100%" />
-      </div>,
-    );
+  it.each([false, true])(
+    'applies the width style prop with isBare=%s',
+    async (isBare) => {
+      renderWithRoot(
+        <div style={{ width: 400 }}>
+          <Field
+            isBare={isBare}
+            aria-label={name}
+            qa="DateControl"
+            width="100%"
+          />
+        </div>,
+      );
 
-    const root = await screen.findByTestId('Field');
+      const root = await screen.findByTestId('DateControl');
 
-    expect(root.getBoundingClientRect().width).toBeCloseTo(400, 0);
-  });
+      expect(root.getBoundingClientRect().width).toBeCloseTo(400, 0);
+    },
+  );
 
-  it('applies the styles prop', async () => {
-    renderWithRoot(
-      <div style={{ width: 400 }}>
-        <Field aria-label={name} qa="Field" styles={{ width: '100%' }} />
-      </div>,
-    );
+  it.each([false, true])(
+    'applies the styles prop with isBare=%s',
+    async (isBare) => {
+      renderWithRoot(
+        <div style={{ width: 400 }}>
+          <Field
+            isBare={isBare}
+            aria-label={name}
+            qa="DateControl"
+            styles={{ width: '100%' }}
+          />
+        </div>,
+      );
 
-    const root = await screen.findByTestId('Field');
+      const root = await screen.findByTestId('DateControl');
 
-    expect(root.getBoundingClientRect().width).toBeCloseTo(400, 0);
-  });
+      expect(root.getBoundingClientRect().width).toBeCloseTo(400, 0);
+    },
+  );
 
-  it('lets a style prop override the styles prop, as elsewhere in the kit', async () => {
-    // `extractStyles` folds `styles` in first and lets the individual style
-    // props override it. Re-applying `styles` on top of the extracted object
-    // inverts that and makes these three disagree with every other component.
-    renderWithRoot(
-      <div style={{ width: 400 }}>
-        <Field
-          aria-label={name}
-          qa="Field"
-          width="100%"
-          styles={{ width: '50%' }}
-        />
-      </div>,
-    );
+  it.each([false, true])(
+    'lets a style prop override the styles prop with isBare=%s',
+    async (isBare) => {
+      // `extractStyles` folds `styles` in first and lets the individual style
+      // props override it. Re-applying `styles` on top of the extracted object
+      // inverts that and makes these three disagree with every other component.
+      renderWithRoot(
+        <div style={{ width: 400 }}>
+          <Field
+            isBare={isBare}
+            aria-label={name}
+            qa="DateControl"
+            width="100%"
+            styles={{ width: '50%' }}
+          />
+        </div>,
+      );
 
-    const root = await screen.findByTestId('Field');
+      const root = await screen.findByTestId('DateControl');
 
-    expect(root.getBoundingClientRect().width).toBeCloseTo(400, 0);
-  });
+      expect(root.getBoundingClientRect().width).toBeCloseTo(400, 0);
+    },
+  );
 
-  it('keeps wrapperStyles winning over both', async () => {
-    renderWithRoot(
-      <div style={{ width: 400 }}>
-        <Field
-          aria-label={name}
-          qa="Field"
-          width="25%"
-          wrapperStyles={{ width: '50%' }}
-        />
-      </div>,
-    );
+  it.each([false, true])(
+    'keeps wrapperStyles winning over both with isBare=%s',
+    async (isBare) => {
+      renderWithRoot(
+        <div style={{ width: 400 }}>
+          <Field
+            isBare={isBare}
+            aria-label={name}
+            qa="DateControl"
+            width="25%"
+            wrapperStyles={{ width: '50%' }}
+          />
+        </div>,
+      );
 
-    const root = await screen.findByTestId('Field');
+      const root = await screen.findByTestId('DateControl');
 
-    expect(root.getBoundingClientRect().width).toBeCloseTo(200, 0);
-  });
+      expect(root.getBoundingClientRect().width).toBeCloseTo(200, 0);
+    },
+  );
 });

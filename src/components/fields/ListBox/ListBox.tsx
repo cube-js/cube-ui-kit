@@ -30,6 +30,7 @@ import {
 import {
   AriaListBoxProps,
   DropTarget,
+  mergeProps as mergeAriaProps,
   useDraggableItem,
   useDropIndicator,
   useKeyboard,
@@ -936,11 +937,10 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
 
   const shouldVirtualize = !hasSections && !isReorderable;
 
-  const { listBoxProps } = useListBox(
+  const { listBoxProps, labelProps } = useListBox(
     {
       ...props,
       id: id,
-      'aria-label': props['aria-label'] || label?.toString(),
       // Only disable isVirtualized for reorderable lists (DnD needs real DOM focus).
       // Section-based lists keep isVirtualized: true to preserve ARIA attributes.
       isVirtualized: !isReorderable,
@@ -1302,7 +1302,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   return wrapWithField<Omit<CubeListBoxProps<T>, 'children'>>(
     listBoxField,
     ref,
-    props,
+    { ...props, labelProps: mergeAriaProps(labelProps, props.labelProps) },
   );
 }) as unknown as (<T>(
   props: CubeListBoxProps<T> & { ref?: ForwardedRef<HTMLDivElement> },

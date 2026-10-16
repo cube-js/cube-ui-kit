@@ -15,7 +15,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 export default {
   title: 'Forms/Select',
   component: Select,
-  args: { width: '200px' },
+  args: { fieldStyles: { width: '0 200px 100%' } },
   parameters: {
     controls: { exclude: baseProps },
     layout: 'centered',
@@ -473,7 +473,11 @@ Outline2.args = {
 };
 
 export const Clear = Template.bind({});
-Clear.args = { type: 'clear', placeholder: 'clear', width: 'max-content' };
+Clear.args = {
+  type: 'clear',
+  placeholder: 'clear',
+  fieldStyles: { width: '0 max-content 100%' },
+};
 
 export const Validation: StoryObj<CubeSelectProps<any>>['render'] = (args) => (
   <Space gap="2x" flow="column" placeItems="start">
@@ -509,6 +513,7 @@ export const WithActions: StoryObj<CubeSelectProps<any>>['render'] = () => {
 
   return (
     <Select
+      fieldStyles={{ width: '0 200px 100%' }}
       isClearable
       label="Color"
       placeholder="Choose a color..."
@@ -601,7 +606,7 @@ export const ClearableThemes: StoryObj<CubeSelectProps<any>>['render'] = () => {
             theme={theme}
             defaultSelectedKey="blue"
             placeholder="Choose a color..."
-            width="200px"
+            fieldStyles={{ width: '0 200px 100%' }}
           >
             {options.map((option) => (
               <Select.Item key={option}>{option}</Select.Item>
@@ -615,7 +620,7 @@ export const ClearableThemes: StoryObj<CubeSelectProps<any>>['render'] = () => {
         defaultSelectedKey="blue"
         isInvalid
         placeholder="Choose a color..."
-        width="200px"
+        fieldStyles={{ width: '0 200px 100%' }}
       >
         {options.map((option) => (
           <Select.Item key={option}>{option}</Select.Item>
@@ -665,11 +670,14 @@ export const Wide: StoryObj<CubeSelectProps<any>>['render'] = (args) => (
     ))}
   </Select>
 );
-Wide.args = { width: 'max-content', defaultSelectedKey: options[0] };
+Wide.args = {
+  fieldStyles: { width: '0 max-content 100%' },
+  defaultSelectedKey: options[0],
+};
 
 export const WithEllipsis = Template.bind({});
 WithEllipsis.args = {
-  styles: { width: 'max 30x' },
+  fieldStyles: { width: '0 30x 100%' },
   defaultSelectedKey: 'very-long-option-value-with-suffix',
 };
 
@@ -742,7 +750,11 @@ WithIconsAndDescriptions.storyName = 'With icons and descriptions';
 export const SectionsStatic: StoryObj<CubeSelectProps<any>>['render'] = (
   args,
 ) => (
-  <Select {...args} placeholder="Pick something" width="260px">
+  <Select
+    {...args}
+    placeholder="Pick something"
+    fieldStyles={{ width: '0 260px 100%' }}
+  >
     <Select.Section title="Warm colors">
       <Select.Item key="red">Red</Select.Item>
       <Select.Item key="orange">Orange</Select.Item>
@@ -785,7 +797,12 @@ export const SectionsDynamic: StoryObj<CubeSelectProps<any>>['render'] = (
   ];
 
   return (
-    <Select {...args} items={groups} width="260px" placeholder="Choose an item">
+    <Select
+      {...args}
+      items={groups}
+      placeholder="Choose an item"
+      fieldStyles={{ width: '0 260px 100%' }}
+    >
       {(group: any) => (
         <Select.Section
           key={group.name}
@@ -826,7 +843,7 @@ export const DifferentSizes: StoryObj<CubeSelectProps<any>>['render'] = (
 );
 
 DifferentSizes.args = {
-  width: '200px',
+  fieldStyles: { width: '0 200px 100%' },
   defaultSelectedKey: 'red',
 };
 
@@ -842,7 +859,11 @@ DifferentSizes.parameters = {
 export const WithTooltips: StoryObj<CubeSelectProps<any>>['render'] = (
   args,
 ) => (
-  <Select {...args} placeholder="Choose a framework" width="260px">
+  <Select
+    {...args}
+    placeholder="Choose a framework"
+    fieldStyles={{ width: '0 260px 100%' }}
+  >
     <Select.Item
       key="react"
       tooltip="React - A JavaScript library for building user interfaces"

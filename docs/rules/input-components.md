@@ -80,12 +80,13 @@ Form instances are branded (see `Form/backend.ts`). `Form.useController()` creat
 
 ## 3. Field chrome
 
-- Wrap the control with `wrapWithField(control, domRef, props)` as the return value. It renders a `FieldWrapper` (label, description, message, necessity indicator) when the field has a `label` or `useFieldProps` asked for the chrome (`hasFieldChrome`), and returns the bare control otherwise. It still honours the deprecated `forceField`, with a one-time warning.
-- `useFieldProps` sets `hasFieldChrome` on a field without a `label` that is bound to a form, whose validation errors need a place, or whose caller passes `description`, `errorMessage` or `message`, unless it is `isBare` (`asksForFieldChrome` in `form/field-chrome.ts`; `SearchInput` and `SearchComboBox`, which skip `useFieldProps`, call it themselves). Neither depends on the text shown at the moment: a text prop counts whatever it holds, `undefined`, `null` and `''` too. Deciding from the text would move the control in and out of the wrapper as an error comes and goes, and React remounts a re-parented control, so it loses focus mid-keystroke. It reads the caller's own props, since a form binding adds message props of its own. A child of the legacy `<Field>` counts as bound when the `<Field>` gives it a `name`; its message props come and go with the error, so they decide nothing. `isBare` is the opt-out for inline fields: no wrapper, while the control keeps its invalid state. `hasFieldChrome` is internal, not a prop of any input; never expose it, and do not give `forceField` a new meaning.
+- Wrap the control with `wrapWithField(control, domRef, props)` as the return value. Field chrome is the default, regardless of label, form binding or text-prop presence. `isBare` explicitly opts out of field layout and text slots; preserve any supplied label as a visually hidden accessible label with the merged label id/for. Bare labels contain no interactive decorations. Deprecated `forceField` has no effect on this decision.
+- Never decide wrapper presence from label or message content. Null, undefined and absent text props only affect their own slots; transient text changes must keep the native control, focus and draft value intact. `hasFieldChrome` and prop-presence inference are removed. Parent-owned controls (nested lists, date/time segments, table checkboxes and compact selectors) pass `isBare` explicitly; existing grouped Checkbox/Radio rendering paths stay inline. A nameless legacy `Form.Item` already owns its child's chrome, so its child stays bare.
+- `errorMessage` takes precedence when it is defined, including explicit null/false/empty suppression; otherwise fall back to deprecated `message`. Keep `description` independent. Do not change the legacy or modern binding adapters to implement presentation precedence.
 - `wrapWithField` destructures the wrapper props itself. Pass the full `props` object; do not hand-pick keys and do not blank out `form`.
 - Shorthands are merged by the wrapper: `fieldStyles` → `fieldProps.styles`, `labelStyles` → `labelProps.styles`. Do not merge them in the component.
 - The `id` belongs on the interactive control, never on the field wrapper.
-- Put a React Aria hook's group props (`radioGroupProps`, `groupProps`) on the control's own element, not in `fieldProps`: a field rendered bare has no wrapper, and the role, name, keyboard and focus handlers go with it. `RadioGroup`, `ColorSwatchGroup` and `SliderBase` do this; `CheckboxGroup` still passes its `groupProps` as `fieldProps`.
+- Put a React Aria hook's group props (`radioGroupProps`, `groupProps`) on the control's own element, not in `fieldProps`: a field rendered bare has no wrapper, and the role, name, keyboard and focus handlers go with it. `RadioGroup`, `CheckboxGroup`, `ColorSwatchGroup` and `SliderBase` do this.
 
 ## 4. Base components are presentational
 
@@ -133,7 +134,7 @@ Every input component ships:
 
 - `ComponentName.tsx` — implementation following the rules above
 - `index.tsx` — re-export, wired into the category barrel and `src/index.ts`
-- `ComponentName.stories.tsx` — shared argTypes from `src/stories/FormFieldArgs.ts` (use `VALIDATION_ARGS` rather than re-declaring `isInvalid` / `isValid`); set a default `width` in meta args; export a single `Validation` story rendering the valid and invalid case together (see [storybook.md](storybook.md))
+- `ComponentName.stories.tsx` — shared argTypes from `src/stories/FormFieldArgs.ts` (use `VALIDATION_ARGS` rather than re-declaring `isInvalid` / `isValid`); set the whole-field width with `fieldStyles` in meta args (keep control-only sizing on `width` or `styles`); export a single `Validation` story rendering the valid and invalid case together (see [storybook.md](storybook.md))
 - `ComponentName.docs.mdx` — links `Supports all [Field properties](/docs/getting-started-field-properties--docs)` instead of duplicating field props (see [documentation.md](documentation.md))
 - `ComponentName.test.tsx` — uses `renderWithForm` for form integration and `renderWithRoot` otherwise (see [tests.md](tests.md))
 

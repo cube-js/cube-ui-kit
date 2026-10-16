@@ -390,6 +390,7 @@ function TextInputMapperInput(props: CubeTextInputMapperInputProps) {
   if (inputType === 'combobox') {
     return (
       <ComboBox
+        isBare
         qa="AddMapping"
         data-type={fieldType}
         width="auto"
@@ -414,6 +415,7 @@ function TextInputMapperInput(props: CubeTextInputMapperInputProps) {
 
   return (
     <Component
+      isBare
       qa="AddMapping"
       data-type={fieldType}
       width="auto"

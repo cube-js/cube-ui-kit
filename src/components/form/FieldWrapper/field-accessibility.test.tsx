@@ -1,12 +1,23 @@
 import { cloneElement } from 'react';
 
 import { FORM_ATTACHABLE_INPUTS } from '../../../test/form-attachable-inputs';
-import { act, renderWithRoot, screen, waitFor } from '../../../test/index';
+import {
+  act,
+  renderWithRoot,
+  screen,
+  userEvent,
+  waitFor,
+} from '../../../test/index';
 import {
   readWithScreenReader,
   startScreenReader,
 } from '../../../test/screen-reader';
 import { FileInput } from '../../fields/FileInput/FileInput';
+import { FilterPicker } from '../../fields/FilterPicker/FilterPicker';
+import { ListBox } from '../../fields/ListBox/ListBox';
+import { Picker } from '../../fields/Picker/Picker';
+import { TagInput } from '../../fields/TagInput/TagInput';
+import { TextInput } from '../../fields/TextInput/TextInput';
 import { TextInputMapper } from '../../fields/TextInputMapper/TextInputMapper';
 
 /**
@@ -55,6 +66,53 @@ const labelledOnly = (element: (typeof FORM_ATTACHABLE_INPUTS)[number][1]) =>
   cloneElement(element, { label: undefined, 'aria-label': 'Billing name' });
 
 describe('every form-attachable input, read by a screen reader', () => {
+  describe.each([false, true])('custom label ids with isBare=%s', (isBare) => {
+    it.each([
+      ['Picker', Picker, 'button'],
+      ['FilterPicker', FilterPicker, 'button'],
+      ['ListBox', ListBox, 'listbox'],
+    ] as const)('%s keeps its custom label association', (_, Control, role) => {
+      renderWithRoot(
+        <Control
+          label="Region"
+          labelProps={{ id: 'region-label' }}
+          isBare={isBare}
+        >
+          <Control.Item key="eu">Europe</Control.Item>
+        </Control>,
+      );
+      const control = screen.getByRole(role, { name: 'Region' });
+
+      expect(document.getElementById('region-label')).toHaveTextContent(
+        'Region',
+      );
+      for (const id of control.getAttribute('aria-labelledby')?.split(/\s+/) ??
+        []) {
+        expect(document.getElementById(id)).not.toBeNull();
+      }
+    });
+  });
+
+  it.each([
+    ['Picker', Picker],
+    ['FilterPicker', FilterPicker],
+  ] as const)('%s follows a changed control id', (_, Control) => {
+    const { rerender } = renderWithRoot(
+      <Control id="first" label="Region" aria-label="Chosen region" />,
+    );
+    const trigger = screen.getByRole('button', { name: /Region/ });
+    expect(trigger).toHaveAttribute('id', 'first');
+
+    rerender(<Control id="second" label="Region" aria-label="Chosen region" />);
+
+    expect(trigger).toHaveAttribute('id', 'second');
+    expect(trigger).toHaveAccessibleName(/Chosen region/);
+    for (const id of trigger.getAttribute('aria-labelledby')?.split(/\s+/) ??
+      []) {
+      expect(document.getElementById(id)).not.toBeNull();
+    }
+  });
+
   it.each(FORM_ATTACHABLE_INPUTS)(
     '%s says its description, error and invalid state, and shows no bare graphic',
     async (name, element) => {
@@ -112,6 +170,97 @@ describe('every form-attachable input, read by a screen reader', () => {
     },
   );
 
+  it.each(FORM_ATTACHABLE_INPUTS)(
+    '%s retains its supplied accessible label when rendered bare',
+    async (name, element) => {
+      const label = `${name.split(' ')[0]} billing`;
+      await mount(
+        cloneElement(element, {
+          isBare: true,
+          label: <strong>{label}</strong>,
+          description: 'Not rendered help',
+          errorMessage: 'Not rendered error',
+        }),
+      );
+
+      expect(screen.queryByTestId('Field')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('FieldDescription')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('FieldMessage')).not.toBeInTheDocument();
+      const phrases = await readWithScreenReader();
+
+      // A password input has no implicit role. Its DOM association and spoken
+      // name still matter even though the simulator cannot add a role prefix.
+      if (name === 'PasswordInput') {
+        expect(screen.getByLabelText(label)).toHaveAttribute(
+          'type',
+          'password',
+        );
+        expect(phrases).toContainEqual(expect.stringContaining(label));
+        return;
+      }
+
+      const controls = phrases.filter((phrase) =>
+        /^(textbox|combobox|button|group|radiogroup|listbox|slider|checkbox|switch), /.test(
+          phrase,
+        ),
+      );
+      expect(controls).toContainEqual(expect.stringContaining(label));
+    },
+  );
+
+  it.each([
+    ['plain text', 'Region'],
+    ['ReactNode', <strong key="region">Region</strong>],
+  ])(
+    'keeps the optional note in a bare %s label and leaves adornments out',
+    async (_, label) => {
+      await mount(
+        <TextInput
+          isBare
+          label={label}
+          isOptional
+          labelProps={{ id: 'bare-region-label' }}
+          labelTooltip="Choose the nearest region"
+          labelSuffix={<button>Manage regions</button>}
+          extra={<button>View guide</button>}
+        />,
+      );
+
+      expect(document.getElementById('bare-region-label')).toHaveTextContent(
+        'Region',
+      );
+      expect(
+        screen.getByRole('textbox', { name: /^Region .*\(optional\)$/ }),
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: 'Manage regions' }),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: 'View guide' }),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByText('Choose the nearest region'),
+      ).not.toBeInTheDocument();
+    },
+  );
+
+  it('announces a bare TagInput refusal without adding an invisible error description', async () => {
+    await mount(<TagInput isBare aria-label="Tags" defaultValue={['alpha']} />);
+    const input = screen.getByRole('textbox', { name: 'Tags' });
+    const reader = await startScreenReader();
+    await reader.clearSpokenPhraseLog();
+
+    await userEvent.type(input, 'alpha{Enter}');
+
+    await waitFor(async () =>
+      expect(await reader.spokenPhraseLog()).toContain(
+        'polite: "alpha" is already added',
+      ),
+    );
+    expect(screen.queryByTestId('FieldMessage')).not.toBeInTheDocument();
+    expect(input).not.toHaveAccessibleDescription(/already added/);
+  });
+
   it.each(FORM_ATTACHABLE_INPUTS.filter(([name]) => !GROUPS.has(name)))(
     '%s is named by aria-label alone where Tab lands',
     async (_, element) => {
@@ -147,6 +296,16 @@ describe('every form-attachable input, read by a screen reader', () => {
     [
       'TextInputMapper',
       <TextInputMapper label="Contract" labelProps={{ id: 'own' }} />,
+      'group',
+    ],
+    [
+      'bare FileInput',
+      <FileInput isBare label="Contract" labelProps={{ id: 'own' }} />,
+      'button',
+    ],
+    [
+      'bare TextInputMapper',
+      <TextInputMapper isBare label="Contract" labelProps={{ id: 'own' }} />,
       'group',
     ],
   ])(

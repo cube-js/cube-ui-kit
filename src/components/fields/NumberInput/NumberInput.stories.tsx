@@ -11,6 +11,7 @@ import { NumberInput } from './NumberInput';
 export default {
   title: 'Forms/NumberInput',
   component: NumberInput,
+  args: { fieldStyles: { width: '0 200px 100%' } },
   parameters: {
     controls: {
       exclude: baseProps,

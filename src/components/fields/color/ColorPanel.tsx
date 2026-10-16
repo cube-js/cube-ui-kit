@@ -149,6 +149,7 @@ function ChannelRow({ channel, color, isDisabled, onChange }: ChannelRowProps) {
         }}
       >
         <Slider
+          isBare
           aria-label={channel.title}
           value={Math.min(channel.value(color), max)}
           minValue={channel.min}
@@ -198,6 +199,7 @@ export function ColorPanel(props: ColorPanelProps) {
       {input}
       <PreviewElement>{formatColor(color, previewFormat)}</PreviewElement>
       <Radio.Tabs
+        isBare
         aria-label={t('colorPicker.colorSpace', 'Color space')}
         value={space}
         isDisabled={isDisabled}

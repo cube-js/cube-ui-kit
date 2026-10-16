@@ -15,6 +15,7 @@ import { parseAbsoluteDate } from './parseDate';
 export default {
   title: 'Forms/DateRangeSeparatedPicker',
   component: DateRangeSeparatedPicker,
+  args: { fieldStyles: { width: '0 max-content 100%' } },
   parameters: {
     controls: {
       exclude: baseProps,
@@ -30,7 +31,6 @@ const Template: StoryFn<CubeDateRangeSeparatedPickerProps> = ({ ...props }) => {
   return (
     <DateRangeSeparatedPicker
       aria-label="DateRangeSeparatedPicker"
-      wrapperStyles={{ width: 'max-content' }}
       {...props}
       onChange={(query) => console.log('change', query)}
     />

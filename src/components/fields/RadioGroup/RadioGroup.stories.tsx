@@ -16,6 +16,7 @@ import { CubeRadioGroupProps } from './RadioGroup';
 export default {
   title: 'Forms/RadioGroup',
   component: Radio.Group,
+  args: { fieldStyles: { width: '0 max-content 100%' } },
   parameters: {
     controls: {
       exclude: baseProps,
@@ -178,7 +179,11 @@ ButtonGroup.args = {
 };
 
 export const TabsGroup: StoryFn<CubeRadioGroupProps> = (args) => (
-  <Radio.Tabs defaultValue="yes" width="280px" {...args}>
+  <Radio.Tabs
+    defaultValue="yes"
+    {...args}
+    fieldStyles={{ width: '0 280px 100%' }}
+  >
     <Radio icon={<CheckIcon />} value="yes">
       Yes
     </Radio>
@@ -193,12 +198,22 @@ export const TabsGroup: StoryFn<CubeRadioGroupProps> = (args) => (
 
 export const Stretched: StoryFn<CubeRadioGroupProps> = (args) => (
   <Flow gap="2x">
-    <Radio.Tabs stretch defaultValue="yes" width="280px" {...args}>
+    <Radio.Tabs
+      stretch
+      defaultValue="yes"
+      {...args}
+      fieldStyles={{ width: '0 280px 100%' }}
+    >
       <Radio value="yes">Yes</Radio>
       <Radio value="no">No</Radio>
       <Radio value="maybe">Maybe</Radio>
     </Radio.Tabs>
-    <Radio.Tabs stretch defaultValue="yes" width="280px" {...args}>
+    <Radio.Tabs
+      stretch
+      defaultValue="yes"
+      {...args}
+      fieldStyles={{ width: '0 280px 100%' }}
+    >
       <Radio value="yes" icon={<CheckIcon />} suffix="!">
         Yes
       </Radio>
@@ -218,7 +233,11 @@ export const ButtonGroupRichContent: StoryFn<CubeRadioGroupProps> = () => (
   <Space flow="column" gap="2x" placeItems="start">
     <Space flow="column">
       <Title level={6}>Icons, prefix and suffix</Title>
-      <Radio.ButtonGroup defaultValue="yes" aria-label="Icons">
+      <Radio.ButtonGroup
+        fieldStyles={{ width: '0 max-content 100%' }}
+        defaultValue="yes"
+        aria-label="Icons"
+      >
         <Radio value="yes" icon={<CheckIcon />} suffix="9">
           Yes
         </Radio>
@@ -230,7 +249,12 @@ export const ButtonGroupRichContent: StoryFn<CubeRadioGroupProps> = () => (
     </Space>
     <Space flow="column">
       <Title level={6}>Descriptions</Title>
-      <Radio.ButtonGroup size="large" defaultValue="yes" aria-label="Inline">
+      <Radio.ButtonGroup
+        fieldStyles={{ width: '0 max-content 100%' }}
+        size="large"
+        defaultValue="yes"
+        aria-label="Inline"
+      >
         <Radio value="yes" description="Inline">
           Yes
         </Radio>
@@ -238,7 +262,12 @@ export const ButtonGroupRichContent: StoryFn<CubeRadioGroupProps> = () => (
           No
         </Radio>
       </Radio.ButtonGroup>
-      <Radio.ButtonGroup size="large" defaultValue="yes" aria-label="Block">
+      <Radio.ButtonGroup
+        fieldStyles={{ width: '0 max-content 100%' }}
+        size="large"
+        defaultValue="yes"
+        aria-label="Block"
+      >
         <Radio value="yes" description="Block" descriptionPlacement="block">
           Yes
         </Radio>
@@ -249,7 +278,11 @@ export const ButtonGroupRichContent: StoryFn<CubeRadioGroupProps> = () => (
     </Space>
     <Space flow="column">
       <Title level={6}>Hotkeys and loading</Title>
-      <Radio.ButtonGroup defaultValue="yes" aria-label="Misc">
+      <Radio.ButtonGroup
+        fieldStyles={{ width: '0 max-content 100%' }}
+        defaultValue="yes"
+        aria-label="Misc"
+      >
         <Radio value="yes" hotkeys="alt+1">
           Yes
         </Radio>
@@ -260,7 +293,11 @@ export const ButtonGroupRichContent: StoryFn<CubeRadioGroupProps> = () => (
     </Space>
     <Space flow="column">
       <Title level={6}>Container style props</Title>
-      <Radio.ButtonGroup defaultValue="yes" aria-label="Styled">
+      <Radio.ButtonGroup
+        fieldStyles={{ width: '0 max-content 100%' }}
+        defaultValue="yes"
+        aria-label="Styled"
+      >
         <Radio value="yes" padding="2x">
           Yes
         </Radio>
@@ -278,6 +315,7 @@ export const ButtonGroupSizes: StoryFn<CubeRadioGroupProps> = () => (
     <Space flow="column">
       <Title level={6}>XSmall</Title>
       <Radio.Group
+        fieldStyles={{ width: '0 max-content 100%' }}
         type="button"
         size="xsmall"
         defaultValue="yes"
@@ -291,6 +329,7 @@ export const ButtonGroupSizes: StoryFn<CubeRadioGroupProps> = () => (
     <Space flow="column">
       <Title level={6}>Small</Title>
       <Radio.Group
+        fieldStyles={{ width: '0 max-content 100%' }}
         type="button"
         size="small"
         defaultValue="yes"
@@ -304,6 +343,7 @@ export const ButtonGroupSizes: StoryFn<CubeRadioGroupProps> = () => (
     <Space flow="column">
       <Title level={6}>Medium</Title>
       <Radio.Group
+        fieldStyles={{ width: '0 max-content 100%' }}
         type="button"
         // oxlint-disable-next-line cube-ui-kit/no-redundant-default-prop -- Sizes story names every size, the default included
         size="medium"
@@ -318,6 +358,7 @@ export const ButtonGroupSizes: StoryFn<CubeRadioGroupProps> = () => (
     <Space flow="column">
       <Title level={6}>Large</Title>
       <Radio.Group
+        fieldStyles={{ width: '0 max-content 100%' }}
         type="button"
         size="large"
         defaultValue="yes"
@@ -331,6 +372,7 @@ export const ButtonGroupSizes: StoryFn<CubeRadioGroupProps> = () => (
     <Space flow="column">
       <Title level={6}>XLarge</Title>
       <Radio.Group
+        fieldStyles={{ width: '0 max-content 100%' }}
         type="button"
         size="xlarge"
         defaultValue="yes"
@@ -348,7 +390,12 @@ export const TabsGroupSizes: StoryFn<CubeRadioGroupProps> = () => (
   <Space flow="column">
     <Space flow="column">
       <Title level={6}>Large (default, 40px)</Title>
-      <Radio.Tabs size="large" defaultValue="yes" aria-label="Large">
+      <Radio.Tabs
+        fieldStyles={{ width: '0 max-content 100%' }}
+        size="large"
+        defaultValue="yes"
+        aria-label="Large"
+      >
         <Radio value="yes">Yes</Radio>
         <Radio value="no">No</Radio>
         <Radio value="maybe">Maybe</Radio>
@@ -356,7 +403,12 @@ export const TabsGroupSizes: StoryFn<CubeRadioGroupProps> = () => (
     </Space>
     <Space flow="column">
       <Title level={6}>Medium (32px)</Title>
-      <Radio.Tabs size="medium" defaultValue="yes" aria-label="Medium">
+      <Radio.Tabs
+        fieldStyles={{ width: '0 max-content 100%' }}
+        size="medium"
+        defaultValue="yes"
+        aria-label="Medium"
+      >
         <Radio value="yes">Yes</Radio>
         <Radio value="no">No</Radio>
         <Radio value="maybe">Maybe</Radio>
@@ -373,6 +425,7 @@ export const CustomButtonTypes: StoryFn<CubeRadioGroupProps> = () => (
         Primary (selected: primary, non-selected: outline)
       </Title>
       <Radio.Group
+        fieldStyles={{ width: '0 max-content 100%' }}
         type="button"
         buttonType="primary"
         defaultValue="yes"
@@ -386,6 +439,7 @@ export const CustomButtonTypes: StoryFn<CubeRadioGroupProps> = () => (
     <Space flow="column">
       <Title level={6}>Outline (default)</Title>
       <Radio.Group
+        fieldStyles={{ width: '0 max-content 100%' }}
         type="button"
         buttonType="outline"
         defaultValue="yes"
@@ -402,6 +456,7 @@ export const CustomButtonTypes: StoryFn<CubeRadioGroupProps> = () => (
       <Title level={6}>Outline 2 (on a #surface-2 container)</Title>
       <Block fill="#surface-2" padding="1.5x" radius="1cr">
         <Radio.Group
+          fieldStyles={{ width: '0 max-content 100%' }}
           type="button"
           buttonType="outline-2"
           defaultValue="yes"
@@ -416,6 +471,7 @@ export const CustomButtonTypes: StoryFn<CubeRadioGroupProps> = () => (
     <Space flow="column">
       <Title level={6}>Clear</Title>
       <Radio.Group
+        fieldStyles={{ width: '0 max-content 100%' }}
         type="button"
         buttonType="clear"
         defaultValue="yes"
@@ -435,6 +491,7 @@ export const DisabledState: StoryFn<CubeRadioGroupProps> = () => (
     <Space flow="column">
       <Title level={6}>Radio (Disabled)</Title>
       <Radio.Group
+        fieldStyles={{ width: '0 max-content 100%' }}
         // oxlint-disable-next-line cube-ui-kit/no-redundant-default-prop -- DisabledState story names every type alongside Button and Tabs
         type="radio"
         isDisabled={true}
@@ -449,6 +506,7 @@ export const DisabledState: StoryFn<CubeRadioGroupProps> = () => (
     <Space flow="column">
       <Title level={6}>Button (Disabled)</Title>
       <Radio.Group
+        fieldStyles={{ width: '0 max-content 100%' }}
         type="button"
         isDisabled={true}
         defaultValue="yes"
@@ -462,6 +520,7 @@ export const DisabledState: StoryFn<CubeRadioGroupProps> = () => (
     <Space flow="column">
       <Title level={6}>Tabs (Disabled)</Title>
       <Radio.Tabs
+        fieldStyles={{ width: '0 max-content 100%' }}
         isDisabled={true}
         defaultValue="yes"
         aria-label="Tabs (Disabled)"
@@ -476,6 +535,7 @@ export const DisabledState: StoryFn<CubeRadioGroupProps> = () => (
     <Space flow="column">
       <Title level={6}>Button Types (Disabled, "Yes" selected)</Title>
       <Radio.ButtonGroup
+        fieldStyles={{ width: '0 max-content 100%' }}
         buttonType="outline"
         isDisabled={true}
         defaultValue="yes"
@@ -487,6 +547,7 @@ export const DisabledState: StoryFn<CubeRadioGroupProps> = () => (
       </Radio.ButtonGroup>
       <Block fill="#surface-2" padding="1.5x" radius="1cr" width="max-content">
         <Radio.ButtonGroup
+          fieldStyles={{ width: '0 max-content 100%' }}
           buttonType="outline-2"
           isDisabled={true}
           defaultValue="yes"
@@ -498,6 +559,7 @@ export const DisabledState: StoryFn<CubeRadioGroupProps> = () => (
         </Radio.ButtonGroup>
       </Block>
       <Radio.ButtonGroup
+        fieldStyles={{ width: '0 max-content 100%' }}
         buttonType="clear"
         isDisabled={true}
         defaultValue="yes"
@@ -508,6 +570,7 @@ export const DisabledState: StoryFn<CubeRadioGroupProps> = () => (
         <Radio value="maybe">Maybe</Radio>
       </Radio.ButtonGroup>
       <Radio.ButtonGroup
+        fieldStyles={{ width: '0 max-content 100%' }}
         buttonType="primary"
         isDisabled={true}
         defaultValue="yes"
@@ -521,6 +584,7 @@ export const DisabledState: StoryFn<CubeRadioGroupProps> = () => (
     <Space flow="column">
       <Title level={6}>Validation Themes (Disabled, "Yes" selected)</Title>
       <Radio.ButtonGroup
+        fieldStyles={{ width: '0 max-content 100%' }}
         isValid
         isDisabled={true}
         defaultValue="yes"
@@ -530,6 +594,7 @@ export const DisabledState: StoryFn<CubeRadioGroupProps> = () => (
         <Radio value="no">No</Radio>
       </Radio.ButtonGroup>
       <Radio.ButtonGroup
+        fieldStyles={{ width: '0 max-content 100%' }}
         isInvalid
         isDisabled={true}
         defaultValue="yes"

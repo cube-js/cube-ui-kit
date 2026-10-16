@@ -11,6 +11,7 @@ import { parseAbsoluteDate } from './parseDate';
 export default {
   title: 'Forms/DateRangePicker',
   component: DateRangePicker,
+  args: { fieldStyles: { width: '0 max-content 100%' } },
   parameters: {
     controls: {
       exclude: baseProps,
@@ -26,7 +27,6 @@ const Template: StoryFn<CubeDateRangePickerProps> = ({ ...props }) => {
   return (
     <DateRangePicker
       aria-label="DateRangePicker"
-      wrapperStyles={{ width: 'max-content' }}
       {...props}
       onChange={(query) => console.log('change', query)}
     />

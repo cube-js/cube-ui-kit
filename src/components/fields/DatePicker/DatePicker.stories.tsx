@@ -12,6 +12,7 @@ import { parseAbsoluteDate } from './parseDate';
 export default {
   title: 'Forms/DatePicker',
   component: DatePicker,
+  args: { fieldStyles: { width: '0 max-content 100%' } },
   parameters: {
     controls: {
       exclude: baseProps,
@@ -296,13 +297,7 @@ const Template: StoryFn<CubeDatePickerProps> = ({ ...props }) => {
     props.value = undefined;
   }
 
-  return (
-    <DatePicker
-      aria-label="DatePicker"
-      wrapperStyles={{ width: 'max-content' }}
-      {...props}
-    />
-  );
+  return <DatePicker aria-label="DatePicker" {...props} />;
 };
 
 export const Default = Template.bind({});

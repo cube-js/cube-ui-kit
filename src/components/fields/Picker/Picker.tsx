@@ -23,7 +23,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import { FocusScope, Key, Placement } from 'react-aria';
+import { FocusScope, Key, mergeProps, Placement, useLabel } from 'react-aria';
 import { Section as BaseSection, ListState, useListState } from 'react-stately';
 
 import { useEvent } from '../../../_internal';
@@ -326,11 +326,14 @@ export const Picker = forwardRef(function Picker<T extends object>(
   // Popover state — used as controlled prop for DialogTrigger
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const triggerRef = useRef<FocusableRefValue<HTMLButtonElement>>(null);
-  const triggerAriaLabel =
-    ariaLabel ??
-    (isTextOnly(label)
-      ? String(label ?? '')
-      : t('picker.pickerAriaLabel', 'Picker'));
+  const { labelProps, fieldProps: triggerLabelProps } = useLabel({
+    id: props.id,
+    label,
+    labelElementType: 'span',
+    'aria-label':
+      ariaLabel ?? (!label ? t('picker.pickerAriaLabel', 'Picker') : undefined),
+    'aria-labelledby': props['aria-labelledby'],
+  });
   const pickerAriaLabel =
     `${ariaLabel ?? (isTextOnly(label) ? String(label ?? '') : '')} ${t('picker.pickerAriaLabel', 'Picker')}`.trim();
 
@@ -704,7 +707,6 @@ export const Picker = forwardRef(function Picker<T extends object>(
     <ItemButton
       ref={triggerRef as any}
       data-popover-trigger
-      id={id}
       qa={qa || 'PickerTrigger'}
       type={type}
       theme={paintedTheme}
@@ -727,7 +729,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
       descriptionPlacement={descriptionPlacement}
       styles={triggerStyles}
       {...keyboardProps}
-      aria-label={triggerAriaLabel}
+      {...mergeProps(triggerLabelProps, { id })}
       aria-describedby={ariaDescribedBy}
     >
       {triggerContent}
@@ -855,6 +857,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
           >
             <FocusScope restoreFocus>
               <ListBox
+                isBare
                 autoFocus
                 items={items ? (finalItems as typeof props.items) : undefined}
                 aria-label={pickerAriaLabel}
@@ -911,7 +914,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
   return wrapWithField<Omit<CubePickerProps<T>, 'children'>>(
     pickerField,
     ref as any,
-    props,
+    { ...props, labelProps: mergeProps(labelProps, props.labelProps) },
   );
 }) as unknown as (<T>(
   props: CubePickerProps<T> & { ref?: ForwardedRef<HTMLElement> },

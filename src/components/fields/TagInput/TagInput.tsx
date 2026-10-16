@@ -1767,6 +1767,7 @@ function TagInput<T extends object>(
       {...compositeFocusProps}
     >
       <TextInputBase
+        isBare
         qa={qa || 'TagInput'}
         inputRef={inputRef}
         wrapperRef={wrapperRef}

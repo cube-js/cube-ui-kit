@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 
 import { NO_SNAPSHOT } from '../../../stories/chromatic';
-import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
+import { IS_BARE_ARG, VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Button } from '../../actions/Button/Button';
 import { Paragraph } from '../../content/Paragraph';
@@ -41,9 +41,13 @@ const meta = {
   title: 'Forms/TagInput',
   component: TagInput,
   subcomponents: { Item: TagInput.Item, Section: TagInput.Section },
-  args: { width: '360px', label: 'Also send to' },
+  args: {
+    fieldStyles: { width: '0 360px 100%' },
+    label: 'Also send to',
+  },
   parameters: { controls: { exclude: baseProps } },
   argTypes: {
+    ...IS_BARE_ARG,
     /* Content */
     children: {
       control: { type: null },
@@ -362,7 +366,11 @@ export const CustomValues: Story = {
 };
 
 export const RejectedEntry: Story = {
-  args: { placeholder: 'name@company.com' },
+  args: {
+    placeholder: 'name@company.com',
+    label: undefined,
+    'aria-label': 'Recipients',
+  },
   render: (args) => (
     <TagInput
       qa="Emails"
@@ -389,13 +397,13 @@ RejectedEntry.parameters = {
   docs: {
     description: {
       story:
-        'A pasted list is split into values. Accepted ones become chips; a rejected one stays in the input with the message from `validateTag`.',
+        'A field without a visible label still shows rejection text by default. Accepted pasted values become chips; a rejected value stays in the input with the message from `validateTag`.',
     },
   },
 };
 
 export const Validation: StoryFn<CubeTagInputProps> = (args) => (
-  <Space gap="2x" flow="column" placeItems="stretch" width="360px">
+  <Space gap="2x" flow="column" placeItems="stretch" width="0 100% 360px">
     <TagInput {...args} label="Valid" defaultValue={['ana@acme.com']} isValid />
     <TagInput
       {...args}
@@ -413,10 +421,10 @@ export const Validation: StoryFn<CubeTagInputProps> = (args) => (
   </Space>
 );
 
-Validation.args = { width: undefined };
+Validation.args = { fieldStyles: { width: '100%' } };
 
 export const Sizes: StoryFn<CubeTagInputProps> = (args) => (
-  <Space gap="2x" flow="column" placeItems="stretch" width="360px">
+  <Space gap="2x" flow="column" placeItems="stretch" width="0 100% 360px">
     {(['small', 'medium', 'large'] as const).map((size) => (
       <TagInput
         key={size}
@@ -430,10 +438,10 @@ export const Sizes: StoryFn<CubeTagInputProps> = (args) => (
   </Space>
 );
 
-Sizes.args = { width: undefined };
+Sizes.args = { fieldStyles: { width: '100%' } };
 
 export const DisabledAndReadOnly: StoryFn<CubeTagInputProps> = (args) => (
-  <Space gap="2x" flow="column" placeItems="stretch" width="360px">
+  <Space gap="2x" flow="column" placeItems="stretch" width="0 100% 360px">
     <TagInput
       {...args}
       isDisabled
@@ -449,7 +457,7 @@ export const DisabledAndReadOnly: StoryFn<CubeTagInputProps> = (args) => (
   </Space>
 );
 
-DisabledAndReadOnly.args = { width: undefined };
+DisabledAndReadOnly.args = { fieldStyles: { width: '100%' } };
 
 export const SideLabel: StoryFn<CubeTagInputProps> = (args) => (
   <TagInput
@@ -461,7 +469,7 @@ export const SideLabel: StoryFn<CubeTagInputProps> = (args) => (
   />
 );
 
-SideLabel.args = { width: '480px' };
+SideLabel.args = { fieldStyles: { width: '0 480px 100%' } };
 
 export const ManyValues: StoryFn<CubeTagInputProps> = (args) => (
   <TagInput
@@ -473,7 +481,7 @@ export const ManyValues: StoryFn<CubeTagInputProps> = (args) => (
   />
 );
 
-ManyValues.args = { width: '240px' };
+ManyValues.args = { fieldStyles: { width: '0 240px 100%' } };
 
 export const ChipThemes: StoryFn<CubeTagInputProps> = (args) => {
   const members: Record<string, 'measure' | 'dimension'> = {

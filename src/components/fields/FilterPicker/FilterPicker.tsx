@@ -22,7 +22,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import { FocusScope, Key, Placement } from 'react-aria';
+import { FocusScope, Key, mergeProps, Placement, useLabel } from 'react-aria';
 import { Section as BaseSection, ListState, useListState } from 'react-stately';
 
 import { useEvent } from '../../../_internal';
@@ -362,11 +362,14 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const cachedItemsOrder = useRef<T[] | null>(null);
   const triggerRef = useRef<FocusableRefValue<HTMLButtonElement>>(null);
-  const triggerAriaLabel =
-    ariaLabel ??
-    (isTextOnly(label)
-      ? String(label ?? '')
-      : t('picker.pickerAriaLabel', 'Picker'));
+  const { labelProps, fieldProps: triggerLabelProps } = useLabel({
+    id: props.id,
+    label,
+    labelElementType: 'span',
+    'aria-label':
+      ariaLabel ?? (!label ? t('picker.pickerAriaLabel', 'Picker') : undefined),
+    'aria-labelledby': props['aria-labelledby'],
+  });
   const pickerAriaLabel =
     `${ariaLabel ?? (isTextOnly(label) ? String(label ?? '') : '')} ${t('picker.pickerAriaLabel', 'Picker')}`.trim();
 
@@ -762,7 +765,6 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
       ref={triggerRef as any}
       data-popover-trigger
       qa={qa || 'FilterPicker'}
-      id={id}
       type={type}
       theme={paintedTheme}
       size={size}
@@ -784,7 +786,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
       descriptionPlacement={descriptionPlacement}
       styles={triggerStyles}
       {...keyboardProps}
-      aria-label={triggerAriaLabel}
+      {...mergeProps(triggerLabelProps, { id })}
       aria-describedby={ariaDescribedBy}
     >
       {triggerContent}
@@ -920,6 +922,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
           >
             <FocusScope restoreFocus>
               <FilterListBox
+                isBare
                 autoFocus
                 items={items ? (finalItems as typeof props.items) : undefined}
                 aria-label={pickerAriaLabel}
@@ -994,7 +997,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
   return wrapWithField<Omit<CubeFilterPickerProps<T>, 'children'>>(
     filterPickerField,
     ref as any,
-    props,
+    { ...props, labelProps: mergeProps(labelProps, props.labelProps) },
   );
 }) as unknown as (<T>(
   props: CubeFilterPickerProps<T> & { ref?: ForwardedRef<HTMLElement> },

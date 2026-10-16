@@ -11,6 +11,7 @@ import { ColorPicker, CubeColorPickerProps } from './ColorPicker';
 export default {
   title: 'Forms/ColorPicker',
   component: ColorPicker,
+  args: { fieldStyles: { width: '0 max-content 100%' } },
   parameters: {
     controls: {
       exclude: baseProps,
@@ -225,6 +226,7 @@ export const Controlled: StoryFn<CubeColorPickerProps> = (args) => {
         onChange={setColor}
       />
       <ColorPicker
+        fieldStyles={{ width: '0 max-content 100%' }}
         aria-label="Mirror"
         value={color}
         onChange={setColor}

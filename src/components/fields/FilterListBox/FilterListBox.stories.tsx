@@ -32,6 +32,7 @@ import { CubeFilterListBoxProps, FilterListBox } from './FilterListBox';
 const meta: any = {
   title: 'Forms/FilterListBox',
   component: FilterListBox,
+  args: { fieldStyles: { width: '0 40x 100%' } },
   parameters: {
     controls: {
       exclude: baseProps,
@@ -942,6 +943,7 @@ DisabledState.args = {
 export const Validation: StoryFn<CubeFilterListBoxProps<any>> = () => (
   <Space gap="3x" flow="column">
     <FilterListBox
+      fieldStyles={{ width: '0 40x 100%' }}
       label="Valid state"
       isValid
       message="Good choice!"
@@ -953,6 +955,7 @@ export const Validation: StoryFn<CubeFilterListBoxProps<any>> = () => (
     </FilterListBox>
 
     <FilterListBox
+      fieldStyles={{ width: '0 40x 100%' }}
       label="Invalid state"
       isInvalid
       message="Please select a different option"
@@ -971,6 +974,7 @@ export const ControlledExample: StoryFn<CubeFilterListBoxProps<any>> = () => {
   return (
     <Space gap="2x" flow="column">
       <FilterListBox
+        fieldStyles={{ width: '0 40x 100%' }}
         label="Controlled FilterListBox"
         selectedKey={selectedKey}
         searchPlaceholder="Search fruits..."
@@ -1007,6 +1011,7 @@ export const MultipleControlledExample: StoryFn<
   return (
     <Space gap="2x" flow="column">
       <FilterListBox
+        fieldStyles={{ width: '0 40x 100%' }}
         label="Controlled Multiple Selection"
         selectedKeys={selectedKeys}
         selectionMode="multiple"
@@ -1165,6 +1170,7 @@ export const AsyncLoading: StoryFn = () => {
       </Button>
 
       <FilterListBox
+        fieldStyles={{ width: '0 40x 100%' }}
         label="Fruits"
         isLoading={isLoading}
         searchPlaceholder={isLoading ? 'Loading...' : 'Search fruits...'}
@@ -1229,6 +1235,7 @@ export const WithIcons: Story = {
 
 export const WithCustomStyles: StoryFn = () => (
   <FilterListBox
+    fieldStyles={{ width: '0 40x 100%' }}
     allowsCustomValue
     label="Custom Styled FilterListBox"
     searchPlaceholder="Search with custom styles..."
@@ -1286,6 +1293,7 @@ export const EscapeKeyHandling: StoryFn<CubeFilterListBoxProps<any>> = () => {
   return (
     <Space gap="2x" flow="column">
       <FilterListBox
+        fieldStyles={{ width: '0 40x 100%' }}
         label="Custom Escape Handling"
         selectedKey={selectedKey}
         searchPlaceholder="Search fruits..."

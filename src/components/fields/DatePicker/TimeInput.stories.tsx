@@ -15,6 +15,7 @@ import { CubeTimeInputProps, TimeInput } from './TimeInput';
 export default {
   title: 'Forms/TimeInput',
   component: TimeInput,
+  args: { fieldStyles: { width: '0 max-content 100%' } },
   parameters: {
     controls: {
       exclude: baseProps,
@@ -47,7 +48,6 @@ const Template: StoryFn<CubeTimeInputProps> = ({ ...props }) => {
   return (
     <TimeInput
       aria-label="TimeInput"
-      wrapperStyles={{ width: 'max-content' }}
       {...props}
       onChange={(query) => console.log('change', query)}
     />

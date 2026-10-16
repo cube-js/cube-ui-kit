@@ -1,7 +1,7 @@
 import { StoryFn } from '@storybook/react-vite';
 import { IconCoin } from '@tabler/icons-react';
 
-import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
+import { IS_BARE_ARG, VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Title } from '../../content/Title';
 import { Space } from '../../layout/Space';
@@ -11,12 +11,14 @@ import { CubeTextInputProps, TextInput } from './TextInput';
 export default {
   title: 'Forms/TextInput',
   component: TextInput,
+  args: { fieldStyles: { width: '0 320px 100%' } },
   parameters: {
     controls: {
       exclude: baseProps,
     },
   },
   argTypes: {
+    ...IS_BARE_ARG,
     /* Content */
     value: {
       control: { type: 'text' },
@@ -208,7 +210,7 @@ export const Validation: StoryFn<CubeTextInputProps> = (args) => (
 );
 
 Validation.args = {
-  width: '300px',
+  fieldStyles: { width: '0 300px 100%' },
 };
 
 Validation.parameters = {
@@ -237,7 +239,7 @@ export const DifferentSizes: StoryFn<CubeTextInputProps> = (args) => (
 );
 
 DifferentSizes.args = {
-  width: '300px',
+  fieldStyles: { width: '0 300px 100%' },
 };
 
 DifferentSizes.parameters = {

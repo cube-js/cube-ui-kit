@@ -31,6 +31,7 @@ import { CubeListBoxProps, ListBox } from './ListBox';
 const meta: any = {
   title: 'Forms/ListBox',
   component: ListBox,
+  args: { fieldStyles: { width: '0 320px 100%' } },
   parameters: {
     controls: {
       exclude: baseProps,
@@ -573,19 +574,34 @@ export const CheckableMultipleSelection: Story = {
 export const DifferentSizes: Story = {
   render: (args) => (
     <Space gap="2x" flow="column" placeItems="start">
-      <ListBox width="150px" {...args} size="small" label="Small ListBox">
+      <ListBox
+        {...args}
+        size="small"
+        label="Small ListBox"
+        fieldStyles={{ width: '0 150px 100%' }}
+      >
         {fruits.slice(0, 4).map((fruit) => (
           <ListBox.Item key={fruit.key}>{fruit.label}</ListBox.Item>
         ))}
       </ListBox>
 
-      <ListBox width="150px" {...args} size="medium" label="Medium ListBox">
+      <ListBox
+        {...args}
+        size="medium"
+        label="Medium ListBox"
+        fieldStyles={{ width: '0 150px 100%' }}
+      >
         {fruits.slice(0, 4).map((fruit) => (
           <ListBox.Item key={fruit.key}>{fruit.label}</ListBox.Item>
         ))}
       </ListBox>
 
-      <ListBox width="150px" {...args} size="large" label="Large ListBox">
+      <ListBox
+        {...args}
+        size="large"
+        label="Large ListBox"
+        fieldStyles={{ width: '0 150px 100%' }}
+      >
         {fruits.slice(0, 4).map((fruit) => (
           <ListBox.Item key={fruit.key}>{fruit.label}</ListBox.Item>
         ))}
@@ -720,6 +736,7 @@ DisabledState.args = {
 export const Validation: StoryObj<CubeListBoxProps<any>>['render'] = () => (
   <Space gap="3x" flow="column">
     <ListBox
+      fieldStyles={{ width: '0 320px 100%' }}
       label="Valid Selection"
       isValid
       defaultSelectedKey="option1"
@@ -730,6 +747,7 @@ export const Validation: StoryObj<CubeListBoxProps<any>>['render'] = () => (
     </ListBox>
 
     <ListBox
+      fieldStyles={{ width: '0 320px 100%' }}
       label="Invalid Selection"
       isInvalid
       defaultSelectedKey="option1"
@@ -749,6 +767,7 @@ export const ControlledExample: StoryObj<
   return (
     <Space gap="2x" flow="column">
       <ListBox
+        fieldStyles={{ width: '0 320px 100%' }}
         label="Controlled ListBox"
         selectedKey={selectedKey}
         onSelectionChange={(key) => setSelectedKey(key as string | null)}
@@ -785,6 +804,7 @@ export const MultipleControlledExample: StoryObj<
   return (
     <Space gap="2x" flow="column">
       <ListBox
+        fieldStyles={{ width: '0 320px 100%' }}
         label="Controlled Multiple Selection"
         selectedKeys={selectedKeys}
         selectionMode="multiple"
@@ -837,6 +857,7 @@ export const InForm: StoryObj<CubeListBoxProps<any>>['render'] = () => {
   return (
     <Form form={form} style={{ maxWidth: '400px' }} onSubmit={handleSubmit}>
       <ListBox
+        fieldStyles={{ width: '0 320px 100%' }}
         isRequired
         name="technology"
         label="Preferred Technology"
@@ -902,6 +923,8 @@ export const InPopover: StoryObj<CubeListBoxProps<any>>['render'] = () => {
         <Button>Choose Technology</Button>
         <Dialog>
           <ListBox
+            isBare
+            width="0 320px 100%"
             selectedKey={selectedKey}
             styles={{
               height: '300px',
@@ -1165,6 +1188,7 @@ export const EscapeKeyHandling: StoryObj<
   return (
     <Space gap="2x" flow="column">
       <ListBox
+        fieldStyles={{ width: '0 320px 100%' }}
         label="Custom Escape Handling"
         selectedKey={selectedKey}
         onSelectionChange={(key) => setSelectedKey(key as string | null)}
@@ -1433,7 +1457,7 @@ export const RichContentOptions: Story = {
 
 export const TooltipsWithActions: Story = {
   render: (args) => (
-    <ListBox width="300px" {...args}>
+    <ListBox {...args} fieldStyles={{ width: '0 300px 100%' }}>
       <ListBox.Section title="Database Operations">
         <ListBox.Item
           key="backup"
@@ -1541,6 +1565,7 @@ export const DifferentShapes: Story = {
   render: () => (
     <Space gap="4x" flow="column">
       <ListBox
+        fieldStyles={{ width: '0 320px 100%' }}
         // oxlint-disable-next-line cube-ui-kit/no-redundant-default-prop -- DifferentShapes story labels this one "Card Shape (default)"
         shape="card"
         label="Card Shape (default)"
@@ -1553,6 +1578,7 @@ export const DifferentShapes: Story = {
       </ListBox>
 
       <ListBox
+        fieldStyles={{ width: '0 320px 100%' }}
         shape="plain"
         label="Plain Shape"
         description="No border, no margin, no radius - suitable for embedded use"
@@ -1564,6 +1590,7 @@ export const DifferentShapes: Story = {
       </ListBox>
 
       <ListBox
+        fieldStyles={{ width: '0 320px 100%' }}
         shape="popover"
         label="Popover Shape"
         description="No border, but keeps margin and radius - suitable for overlay use"
@@ -1575,6 +1602,7 @@ export const DifferentShapes: Story = {
       </ListBox>
 
       <ListBox
+        fieldStyles={{ width: '0 320px 100%' }}
         shape="plain"
         label="Plain Shape with Sections"
         description="Section margins are preserved even with plain shape"
@@ -1616,15 +1644,25 @@ export const OptionGap: Story = {
 
     return (
       <Space gap="4x" flow="column">
-        <ListBox label="Default gap" defaultSelectedKey="read">
-          {cards}
-        </ListBox>
-
-        <ListBox label="listGap={4}" listGap={4} defaultSelectedKey="read">
+        <ListBox
+          fieldStyles={{ width: '0 320px 100%' }}
+          label="Default gap"
+          defaultSelectedKey="read"
+        >
           {cards}
         </ListBox>
 
         <ListBox
+          fieldStyles={{ width: '0 320px 100%' }}
+          label="listGap={4}"
+          listGap={4}
+          defaultSelectedKey="read"
+        >
+          {cards}
+        </ListBox>
+
+        <ListBox
+          fieldStyles={{ width: '0 320px 100%' }}
           label="listGap={4}, in sections"
           listGap={4}
           defaultSelectedKey="write"
@@ -1687,11 +1725,12 @@ export const Reorderable: StoryObj = {
     return (
       <Space gap="2x" flow="column" placeItems="start">
         <ListBox
+          fieldStyles={{ width: '0 300px 100%' }}
           isReorderable
           selectionMode="multiple"
           defaultSelectedKeys={['revenue', 'orders']}
           label="Metrics"
-          styles={{ width: '300px', maxHeight: '400px' }}
+          styles={{ maxHeight: '400px' }}
           onReorder={(newOrder) => setKeyOrder(newOrder)}
         >
           {orderedItems.map((item) => (

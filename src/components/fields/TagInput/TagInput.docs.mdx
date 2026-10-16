@@ -86,6 +86,13 @@ Supports [Base properties](/docs/getting-started-base-properties--docs)
 
 Supports all [Field properties](/docs/getting-started-field-properties--docs)
 
+A standalone TagInput renders field chrome by default, so refused values show their reason below the control and the input references that reason through `aria-describedby`, even without a visible `label`. No empty `message` prop is needed. A local rejection takes precedence over the ordinary field error until the draft is edited. With `isBare`, there is no visible message slot; rejection feedback is announced through the live region instead.
+
+```jsx
+<TagInput aria-label="Recipients" defaultValue={['ana@acme.com']} />
+<TagInput isBare aria-label="Inline recipients" defaultValue={['ana@acme.com']} />
+```
+
 ### Styling Properties
 
 #### styles

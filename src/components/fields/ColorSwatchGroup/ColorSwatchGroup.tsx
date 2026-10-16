@@ -398,6 +398,7 @@ export const ColorSwatchGroup = forwardRef(function ColorSwatchGroup(
       </RadiosElement>
       {showCustom ? (
         <ColorPicker
+          isBare
           aria-label={t('colorSwatchGroup.customColor', 'Custom color')}
           qa="ColorSwatchGroupCustom"
           format={format}

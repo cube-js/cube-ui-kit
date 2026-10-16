@@ -39,6 +39,18 @@ export const DESCRIPTION_ARG = {
   },
 };
 
+export const IS_BARE_ARG = {
+  isBare: {
+    control: { type: 'boolean' },
+    description:
+      'Render only the control. A supplied label stays accessible but visually hidden; description and message slots are omitted.',
+    table: {
+      type: { summary: 'boolean' },
+      defaultValue: { summary: false },
+    },
+  },
+};
+
 export const NECESSITY_INDICATOR_ARG = {
   necessityIndicator: {
     // defaultValue: 'icon',
