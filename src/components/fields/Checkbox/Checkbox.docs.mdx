@@ -149,12 +149,12 @@ A disabled checkbox still shows its tooltip, which makes it a good place to say 
 
 - `Tab` - Moves focus to the checkbox
 - `Space` - Toggles the checkbox state
-- `Enter` - Activates the checkbox (when inside a form)
+- `Enter` does not toggle the checkbox. Inside a form with a submit button, the browser submits the form instead.
 
 ### Screen Reader Support
 
 - Component announces as "checkbox" to screen readers
-- State changes are announced (e.g., "checked", "unchecked", "indeterminate")
+- State changes are announced (checked, not checked, or mixed for `isIndeterminate`)
 - Required state is communicated when `isRequired` is true
 - Validation errors are announced when present
 
@@ -163,9 +163,10 @@ A disabled checkbox still shows its tooltip, which makes it a good place to say 
 - `aria-label` - Provides accessible label when no visible label exists
 - `aria-labelledby` - References external label elements
 - `aria-describedby` - References additional descriptive text
-- `aria-checked` - Indicates checkbox state (true, false, or mixed for indeterminate)
 - `aria-required` - Indicates if selection is required
 - `aria-invalid` - Indicates validation state
+
+The control is a native `<input type="checkbox">`, so its state is the input's `checked` property, plus `indeterminate` for the mixed state. No `aria-checked` is written.
 
 ## Best Practices
 

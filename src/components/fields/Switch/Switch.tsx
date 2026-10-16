@@ -173,9 +173,11 @@ function Switch(rawProps: WithNullableSelected<CubeSwitchProps>, ref) {
   let domRef = useFocusableRef(ref, inputRef);
 
   // React Aria writes `form` onto the input as the id of its `<form>`, so the
-  // form instance would render as `form="[object Object]"` and detach it.
+  // form instance would render as `form="[object Object]"` and detach it. It
+  // reads `children` only to warn about a switch with no visible label; a
+  // field `label` is one, named through its `<label for>`.
   let { inputProps } = useSwitch(
-    { ...props, form: undefined },
+    { ...props, form: undefined, children: children ?? label },
     useToggleState(props),
     inputRef,
   );
@@ -213,7 +215,12 @@ function Switch(rawProps: WithNullableSelected<CubeSwitchProps>, ref) {
       >
         <div data-element="Thumb" aria-hidden="true" />
       </SwitchElement>
-      {children ? <Text nowrap>{children}</Text> : null}
+      {/*
+        Not `nowrap`: it inherits, so no label could wrap and a long one ran out
+        of its container. The label inherits the wrapper's font and color, so
+        a caller's `styles` reach it.
+      */}
+      {children ? <Text>{children}</Text> : null}
       {isLoading ? (
         <>
           {label ? <>&nbsp;</> : null}

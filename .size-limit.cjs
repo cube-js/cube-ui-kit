@@ -366,7 +366,14 @@ module.exports = [
     // machine measure 617,330 B against main's 616,209 B at 14104ae3 (+1,121 B)
     // for the hold, growth limit and size handoff in Layout.Pane. Button stays
     // 159,379 B. Allow 618 kB, 670 B headroom; confirm in Linux CI.
-    limit: '618kB',
+    // Field chrome, toggle and alert dialog fixes (#1523): fresh builds on the
+    // same machine measure 618,070 B against main's 617,330 B at 68d2508f
+    // (+740 B), and Linux CI measured the same 618,070 B. Label-less fields
+    // that are bound or passed texts get the wrapper (`isBare` opts out, and
+    // `forceField` warns as deprecated), Checkbox and Switch naming, and alert
+    // dialogs that close with their owner. Button stays 159,379 B. Allow
+    // 619 kB, 930 B headroom.
+    limit: '619kB',
   },
   {
     name: 'Tree shaking (just a Button)',

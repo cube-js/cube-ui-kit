@@ -244,13 +244,17 @@ export const FieldWrapper = forwardRef(function FieldWrapper(
     );
   };
 
-  // Description positioning based on label position
-  const descriptionForLabel =
-    labelPosition === 'side' || labelPosition === 'split'
-      ? createDescriptionComponent()
-      : null;
-  const descriptionForInput =
-    labelPosition === 'top' ? createDescriptionComponent() : null;
+  // A side or split label carries the description in its column. Without a
+  // label, that column is empty and the description would read as the label,
+  // so it goes under the input.
+  const isDescriptionBesideInput =
+    !!label && (labelPosition === 'side' || labelPosition === 'split');
+  const descriptionForLabel = isDescriptionBesideInput
+    ? createDescriptionComponent()
+    : null;
+  const descriptionForInput = !isDescriptionBesideInput
+    ? createDescriptionComponent()
+    : null;
 
   const mods = {
     'has-sider': labelPosition === 'side',
@@ -273,7 +277,7 @@ export const FieldWrapper = forwardRef(function FieldWrapper(
         isHidden={isHidden}
         {...mergedFieldProps}
       >
-        {labelComponent || descriptionForLabel ? (
+        {labelComponent ? (
           <div data-element="LabelArea">
             {labelComponent}
             {descriptionForLabel}

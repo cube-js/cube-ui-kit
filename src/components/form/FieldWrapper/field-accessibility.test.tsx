@@ -93,6 +93,25 @@ describe('every form-attachable input, read by a screen reader', () => {
     },
   );
 
+  // A field without a label used to render the bare control, so both texts
+  // were dropped while the control still said "invalid".
+  it.each(FORM_ATTACHABLE_INPUTS)(
+    '%s says its description and error without a label',
+    async (_, element) => {
+      await mount(
+        cloneElement(labelledOnly(element), {
+          description: 'Used on invoices',
+          errorMessage: 'Too short',
+          isInvalid: true,
+        }),
+      );
+
+      expect(await readWithScreenReader()).toContainEqual(
+        expect.stringMatching(/Billing name.*, Used on invoices Too short/),
+      );
+    },
+  );
+
   it.each(FORM_ATTACHABLE_INPUTS.filter(([name]) => !GROUPS.has(name)))(
     '%s is named by aria-label alone where Tab lands',
     async (_, element) => {

@@ -50,7 +50,8 @@ export interface DialogProps
   onSecondary?: () => unknown;
   /**
    * Runs when the dialog settles as a cancel: the Cancel button, Escape, a
-   * click outside, an aborted `cancelToken`, or `content` calling `reject()`.
+   * click outside, an aborted `cancelToken`, the unmount of the component
+   * that opened it, or `content` calling `reject()`.
    */
   onCancel?: () => void;
 }

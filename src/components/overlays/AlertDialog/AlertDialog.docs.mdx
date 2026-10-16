@@ -74,7 +74,7 @@ These properties allow direct style application without using the `styles` prop:
 
 ## Imperative API
 
-`useAlertDialogAPI()` opens an alert dialog from code, such as an event handler, with no `DialogTrigger` to render. It works anywhere under `<Root>`.
+`useAlertDialogAPI()` opens an alert dialog from code, such as an event handler, with no `DialogTrigger` to render. It works anywhere under `<Root>`. A dialog belongs to the component that calls the hook and closes when that component unmounts; see [The dialog's owner](#the-dialogs-owner).
 
 - **`open(props, params?)`** `Promise<'confirm' | 'secondary'>` — Opens the dialog. Resolves with the action the user picked, and rejects when the dialog closes without one or cannot open.
 
@@ -82,7 +82,7 @@ These properties allow direct style application without using the `styles` prop:
 
 - **`onConfirm`** `() => unknown` — Runs when the confirm button is pressed. If it returns a promise, the dialog stays open until it settles (see below)
 - **`onSecondary`** `() => unknown` — The same, for the secondary button
-- **`onCancel`** `() => void` — Runs when the dialog settles as a cancel: the Cancel button, Escape, a click outside, an aborted `cancelToken`, or `content` calling `reject()`
+- **`onCancel`** `() => void` — Runs when the dialog settles as a cancel: the Cancel button, Escape, a click outside, an aborted `cancelToken`, the unmount of the component that opened it, or `content` calling `reject()`
 - **`type`** — The dialog container type, as on `DialogContainer`
 - **`isDismissable`** `boolean` (default: `true`) — Whether Escape and a click outside close the dialog
 - **`onDismiss`** `(action?: string) => void` — Called when an action button, Escape or a click outside closes the dialog. An action button passes its name: `'confirm'`, `'secondary'` or `'cancel'`
@@ -90,7 +90,7 @@ These properties allow direct style application without using the `styles` prop:
 
 `params` takes:
 
-- **`cancelToken`** `AbortSignal` — Closes the dialog when aborted
+- **`cancelToken`** `AbortSignal` — Closes the dialog when aborted. A running confirm or secondary action finishes first
 
 The confirm button resolves `'confirm'` whether you configure `actions.confirm` or leave the default Ok button. Set it to `false` to hide it.
 
@@ -148,6 +148,7 @@ open({
 | Cancel action | rejects with `undefined` |
 | Escape or a click outside | rejects with `undefined` |
 | `cancelToken` aborted, before or while the dialog is open | rejects with `undefined` |
+| The component that opened it unmounts | rejects with `undefined` |
 | `content` calls `resolve(status)` | resolves `status` |
 | `content` calls `reject(reason)` | rejects with `reason` (`undefined` for `reject()`) |
 | Another alert dialog is open | rejects with an `Error` |
@@ -196,7 +197,40 @@ const onRequestApproval = () => {
 controllerRef.current?.abort();
 ```
 
-Aborting settles the dialog as a cancel. A signal that is already aborted settles it right away, without showing the dialog.
+Aborting settles the dialog as a cancel. A signal that is already aborted settles it right away, without showing the dialog. If the confirm or secondary action is running, it finishes first: the dialog closes with its result, or as a cancel if it fails.
+
+### The dialog's owner
+
+A dialog belongs to the component that called `useAlertDialogAPI()`. When that component unmounts, the dialog closes as a cancel, as if its own `cancelToken` were aborted. Its callbacks are that component's code, and a dialog left open would run them against a component that is gone. A call to `open` after the unmount, such as one after an `await`, settles as a cancel without opening. A running confirm or secondary action finishes first, so a list row whose delete removes it still resolves `'confirm'`.
+
+So call the hook in a component that stays mounted while the dialog is open. A menu closes when its item is pressed, so call the hook in the component that renders the menu and pass `open` down, rather than calling it in the item:
+
+```jsx
+function RowActions({ row }) {
+  // Stays mounted after the menu closes.
+  const { open } = useAlertDialogAPI();
+
+  return (
+    <MenuTrigger>
+      <Button>Actions</Button>
+      <Menu
+        onAction={(key) => {
+          if (key === 'delete') {
+            open({
+              title: `Delete ${row.name}?`,
+              danger: true,
+              actions: { confirm: { children: 'Delete' }, cancel: true },
+              onConfirm: () => deleteRow(row.id),
+            });
+          }
+        }}
+      >
+        <Menu.Item key="delete">Delete</Menu.Item>
+      </Menu>
+    </MenuTrigger>
+  );
+}
+```
 
 ### One dialog at a time
 

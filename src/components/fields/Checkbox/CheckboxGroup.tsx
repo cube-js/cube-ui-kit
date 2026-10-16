@@ -125,7 +125,7 @@ function CheckboxGroup(
 }
 
 /**
- * Checkbox groups allow users to select a single option from a list of mutually exclusive options.
+ * Checkbox groups allow users to select any number of options from a list.
  * All possible options are exposed up front for users to compare.
  */
 const _CheckboxGroup = forwardRef(CheckboxGroup);

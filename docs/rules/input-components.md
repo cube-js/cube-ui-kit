@@ -80,11 +80,12 @@ Form instances are branded (see `Form/backend.ts`). `Form.useController()` creat
 
 ## 3. Field chrome
 
-- Wrap the control with `wrapWithField(control, domRef, props)` as the return value. It renders a `FieldWrapper` (label, description, message, necessity indicator) when `label` or `forceField` is set, and returns the bare control otherwise.
+- Wrap the control with `wrapWithField(control, domRef, props)` as the return value. It renders a `FieldWrapper` (label, description, message, necessity indicator) when the field has a `label` or `useFieldProps` asked for the chrome (`hasFieldChrome`), and returns the bare control otherwise. It still honours the deprecated `forceField`, with a one-time warning.
+- `useFieldProps` sets `hasFieldChrome` on a field without a `label` that is bound to a form, whose validation errors need a place, or whose caller passes `description`, `errorMessage` or `message`, unless it is `isBare` (`asksForFieldChrome` in `form/field-chrome.ts`; `SearchInput` and `SearchComboBox`, which skip `useFieldProps`, call it themselves). Neither depends on the text shown at the moment: a text prop counts whatever it holds, `undefined`, `null` and `''` too. Deciding from the text would move the control in and out of the wrapper as an error comes and goes, and React remounts a re-parented control, so it loses focus mid-keystroke. It reads the caller's own props, since a form binding adds message props of its own. A child of the legacy `<Field>` counts as bound when the `<Field>` gives it a `name`; its message props come and go with the error, so they decide nothing. `isBare` is the opt-out for inline fields: no wrapper, while the control keeps its invalid state. `hasFieldChrome` is internal, not a prop of any input; never expose it, and do not give `forceField` a new meaning.
 - `wrapWithField` destructures the wrapper props itself. Pass the full `props` object; do not hand-pick keys and do not blank out `form`.
 - Shorthands are merged by the wrapper: `fieldStyles` → `fieldProps.styles`, `labelStyles` → `labelProps.styles`. Do not merge them in the component.
 - The `id` belongs on the interactive control, never on the field wrapper.
-- Put a React Aria hook's group props (`radioGroupProps`, `groupProps`) on the control's own element, not in `fieldProps`: without `label` or `forceField` there is no wrapper, and the role, name, keyboard and focus handlers go with it. `RadioGroup`, `ColorSwatchGroup` and `SliderBase` do this; `CheckboxGroup` still passes its `groupProps` as `fieldProps`.
+- Put a React Aria hook's group props (`radioGroupProps`, `groupProps`) on the control's own element, not in `fieldProps`: a field rendered bare has no wrapper, and the role, name, keyboard and focus handlers go with it. `RadioGroup`, `ColorSwatchGroup` and `SliderBase` do this; `CheckboxGroup` still passes its `groupProps` as `fieldProps`.
 
 ## 4. Base components are presentational
 

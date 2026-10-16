@@ -25,7 +25,9 @@ For modern forms, follow the [use-case guide](/docs/forms-modernform--docs). Bin
 
 - **`label`** `ReactNode` — Label text displayed above or beside the input.
 - **`labelPosition`** `'top' | 'side' | 'split'` (default: `top`) — Position of the label relative to the input.
-- **`description`** `ReactNode` — Description text placed below the label.
+- **`description`** `ReactNode` — Description text placed below the label. A field without a label shows it too, unless it is `isBare`.
+- **`isBare`** `boolean` — For inline use: a field without a `label` renders the bare control. Without `isBare`, such a field renders the field wrapper when it is bound to a form, whose validation errors need a place, or is passed `description`, `errorMessage` or `message`. A text prop counts whatever it holds at the moment, so the input keeps its place and its focus when a message comes and goes. A wrapped field is laid out by its wrapper, as a labelled one is: layout props on the input such as `flexGrow`, `width` or `gridArea` stay on the input, so set them in `fieldStyles` to place the field, or pass `isBare`. With `isBare` the texts are not shown, and the control keeps its invalid state (`aria-invalid` and the invalid styles). The error text is not linked to anything, though, so a screen reader says the field is invalid without saying why: show the reason some other way, such as a tooltip or a message for the whole row, and point `aria-describedby` at it. No effect on a field with a `label`.
+- **`forceField`** `boolean` — **Deprecated.** A field without a `label` now renders the field wrapper by itself when it is bound to a form or is passed `description`, `errorMessage` or `message`; set `isBare` to keep the bare control instead. `forceField` still forces the wrapper and warns once in development.
 - **`extra`** `ReactNode` — Additional content displayed next to the label.
 - **`labelTooltip`** `ReactNode` — Content of an info badge shown next to the label. Only rendered when the field has a label. (Formerly `tooltip`. On most fields `tooltip` is gone; on `Select` and `Checkbox` it is the control's own tooltip, as on `Item` and `Button`.)
 - **`labelSuffix`** `ReactNode` — Content displayed after the label text.
@@ -64,7 +66,7 @@ For modern forms, follow the [use-case guide](/docs/forms-modernform--docs). Bin
 
 - **`isDisabled`** `boolean` (default: `false`) — Whether the field is disabled and non-interactive. A field also takes it from an enclosing `<Provider isDisabled>` or `<Form isDisabled>`. Buttons don't, apart from `Form.Submit` and `Form.Reset`: see [Button](/docs/actions-button--docs).
 - **`isReadOnly`** `boolean` (default: `false`) — Whether the field can be focused but not changed.
-- **`isLoading`** `boolean` (default: `false`) — Whether to show a loading spinner and disable interactions.
+- **`isLoading`** `boolean` (default: `false`) — Whether the field shows its loading spinner. `Select`, `Picker`, `FilterPicker`, `ColorPicker` and a button-type `Radio` also disable while loading; other fields stay interactive, and fields without a spinner, such as `Checkbox`, `RadioGroup`, `ListBox` or `Slider`, ignore it.
 - **`isHidden`** `boolean` (default: `false`) — Whether the field is hidden.
 - **`isInvalid`** `boolean` (default: `false`) — Whether the field displays its invalid visual styling. Takes precedence over `isValid`.
 - **`isValid`** `boolean` (default: `false`) — Whether the field displays its valid visual styling.

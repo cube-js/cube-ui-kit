@@ -4,6 +4,7 @@ import { useEvent } from '../../../../_internal/index';
 import { useProviderProps } from '../../../../provider';
 import { mergeProps } from '../../../../utils/react/index';
 import { warn } from '../../../../utils/warnings';
+import { asksForFieldChrome } from '../../field-chrome';
 import { useFieldDescribedBy } from '../../FieldWrapper/field-description';
 import { useValidationProps } from '../../validation/index';
 import { isModernFormController } from '../backend';
@@ -171,13 +172,17 @@ export function useFieldProps<
       : {};
 
     // Exclude `form` (it must never reach a DOM node) and the field's own
-    // handlers: `valueProps` already routes the component's change event into
-    // `field.onChange` under the name the component listens to, and `onBlur` is
-    // added once below. `mergeProps` chains same-named handlers, so merging them
-    // here as well made every user change and every blur run the field handler
-    // twice — and onChange/onBlur-triggered validation validate twice.
+    // value and handlers: `valueProps` already maps the value and routes the
+    // component's change event into `field.onChange` under the names the
+    // component reads, and `onBlur` is added once below. `mergeProps` chains
+    // same-named handlers, so merging them here as well made every user change
+    // and every blur run the field handler twice — and onChange/onBlur-triggered
+    // validation validate twice. A raw `value` replaced the caller's own on
+    // controls that map it elsewhere: a `Checkbox` bound as `isSelected`
+    // rendered and submitted `value="true"` instead of its `value="yes"`.
     const {
       form: _form,
+      value: _fieldValue,
       onChange: _fieldOnChange,
       onBlur: _fieldOnBlur,
       ...fieldRest
@@ -196,7 +201,18 @@ export function useFieldProps<
       : result;
   }
 
-  const resolved = resolveResult();
+  // A field without a `label` still renders the field chrome when it is bound
+  // to a form or its caller passes a description or a message, unless it is
+  // `isBare` — see `asksForFieldChrome`. Inside the legacy `<Field>`, the
+  // message props come and go with the error and are the wrapper's, so they
+  // decide nothing; its child is bound through it, and the `<Field>` gives it
+  // the `name`.
+  const hasFieldChrome = isInsideLegacyField
+    ? hasName && asksForFieldChrome(inputProps, true)
+    : asksForFieldChrome(inputProps, isBound && !isOutsideOfForm);
+  const resolved = hasFieldChrome
+    ? { ...resolveResult(), hasFieldChrome: true }
+    : resolveResult();
   // React Aria forwards `form` to native inputs. A modern controller is a
   // binding source, never an HTML form id, including in standalone/group mode.
   const result = isModernFormController(resolved.form)

@@ -63,7 +63,8 @@ export default {
     },
     isLoading: {
       control: { type: 'boolean' },
-      description: 'Show loading spinner and disable interactions',
+      description:
+        'Show a loading spinner. The switch stays enabled; pass isDisabled to block changes',
       table: {
         defaultValue: { summary: false },
       },

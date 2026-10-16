@@ -140,23 +140,24 @@ const [isEnabled, setIsEnabled] = useState(false);
 
 - `Tab` - Moves focus to the switch
 - `Space` - Toggles the switch state
-- `Enter` - Toggles the switch state
+- `Enter` does not toggle the switch. Inside a form with a submit button, the browser submits the form instead.
 
 ### Screen Reader Support
 
 - Component announces as "switch" to screen readers
 - Current state is announced (e.g., "on", "off")
 - State changes are immediately announced
-- Loading state is communicated when present
+- `isLoading` only shows a spinner. The spinner is hidden from screen readers, and the switch stays enabled, so pass `isDisabled` as well if it should not change while loading.
 
 ### ARIA Properties
 
 - `aria-label` - Provides accessible label when no visible label exists
 - `aria-labelledby` - References external label elements
 - `aria-describedby` - References additional descriptive text
-- `aria-checked` - Indicates switch state (true/false)
 - `aria-required` - Indicates if toggling is required
 - `aria-invalid` - Indicates validation state
+
+The control is a native `<input type="checkbox" role="switch">`, so its state is the input's `checked` property. No `aria-checked` is written.
 
 ## Best Practices
 
