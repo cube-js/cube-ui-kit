@@ -121,7 +121,7 @@ const [selectedKey, setSelectedKey] = useState(null);
 
 **Blur** - Without `allowsCustomValue`, leaving the input selects the item the text names exactly, or else the only item it still matches, unless that item is in `disabledKeys`. Among items sharing the label, the selected one wins, then the first enabled one. Empty text clears the selection. Other text reverts to the selection, or clears with `clearOnBlur`; a disabled item that is already selected stays selected.
 
-**Outside presses** - While the list is open, a press on an enabled control outside it reaches the control on the first click, after the typed text settles as it does on `Tab`. The control has to be in the dialog, popover or menu the field sits in, or anywhere on the page when the field is in none; an enabled UI Kit `Button` is reached from anywhere. A press anywhere else, such as blank space, a dialog's backdrop, a disabled control or a control outside the field's dialog or popover, only closes the list and keeps the input focused with its text.
+**Outside presses** - While the list is open, a press on an enabled control outside it reaches the control on the first click, after the typed text settles as it does on `Tab`. The control has to be in the dialog, popover or menu the field sits in, or anywhere on the page when the field is in none; an enabled UI Kit `Button` or `ItemButton` is reached from anywhere. A press anywhere else, such as blank space, a dialog's backdrop or a control outside the field's dialog or popover, only closes the list and keeps the input focused with its text. A press on a disabled control keeps the focus and text too; the list stays open unless the control is only `aria-disabled`.
 
 **popoverTrigger** - Controls how the popover opens:
 

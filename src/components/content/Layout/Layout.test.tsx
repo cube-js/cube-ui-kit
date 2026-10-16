@@ -1,7 +1,7 @@
 import { tasty } from '@tenphi/tasty';
 import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { ReactNode, useEffect, useRef, useState } from 'react';
+import { ReactNode, StrictMode, useEffect, useRef, useState } from 'react';
 
 import { Button } from '../../actions/Button/Button';
 import { Dialog } from '../../overlays/Dialog/Dialog';
@@ -685,6 +685,28 @@ describe('Layout overlay panel focus', () => {
     expect(onOpenChange).not.toHaveBeenCalled();
   });
 
+  // The restore lands in the main content, which dismisses overlay panels, so
+  // the panel must have unregistered by then.
+  it('returns focus to an opener in the main content and closes once', async () => {
+    const onOpenChange = vi.fn();
+
+    renderWithRoot(
+      <OverlayLayout defaultOpen={false} onOpenChange={onOpenChange} />,
+    );
+    await act(() => new Promise((resolve) => requestAnimationFrame(resolve)));
+
+    await userEvent.click(screen.getByRole('button', { name: 'Open panel' }));
+    await waitFor(() =>
+      expect(screen.getByLabelText('Panel field')).toHaveFocus(),
+    );
+    await userEvent.keyboard('{Escape}');
+
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Open panel' })).toHaveFocus(),
+    );
+    expect(onOpenChange.mock.calls).toEqual([[false]]);
+  });
+
   it('dismisses when focus moves into the main content', async () => {
     const onOpenChange = vi.fn();
 
@@ -836,31 +858,18 @@ describe.each([false, true])(
       );
     });
 
-    it('returns focus when the panel unmounts while open', async () => {
-      function Conditional() {
-        const [isShown, setIsShown] = useState(false);
-
-        return (
-          <>
-            <Button onPress={() => setIsShown(true)}>Open panel</Button>
-            <Layout hasTransition={hasTransition}>
-              {isShown ? (
-                <Layout.Panel side="right" size={240} mode="overlay" isOpen>
-                  <Button onPress={() => setIsShown(false)}>Done</Button>
-                </Layout.Panel>
-              ) : null}
-              <Layout.Content>Main</Layout.Content>
-            </Layout>
-          </>
-        );
-      }
-
-      await renderReady(<Conditional />);
-      await open();
-      await waitFor(() =>
-        expect(screen.getByRole('button', { name: 'Done' })).toHaveFocus(),
+    it('returns focus after a native autoFocus field took it on open', async () => {
+      await renderReady(
+        <ToggleLayout>
+          {/* oxlint-disable-next-line jsx-a11y/no-autofocus -- the case under test */}
+          <input autoFocus aria-label="Search" />
+        </ToggleLayout>,
       );
-      await userEvent.click(screen.getByRole('button', { name: 'Done' }));
+      await open();
+
+      expect(screen.getByLabelText('Search')).toHaveFocus();
+
+      await userEvent.keyboard('{Escape}');
 
       await waitFor(() =>
         expect(
@@ -868,6 +877,98 @@ describe.each([false, true])(
         ).toHaveFocus(),
       );
     });
+
+    it('moves focus into the next panel when one press swaps panels', async () => {
+      function TwoPanels() {
+        const [open, setOpen] = useState<'nav' | 'details' | null>(null);
+
+        return (
+          <>
+            <Button onPress={() => setOpen('nav')}>Open panel</Button>
+            <Layout hasTransition={hasTransition}>
+              <Layout.Panel
+                side="left"
+                size={200}
+                mode="overlay"
+                isOpen={open === 'nav'}
+                onOpenChange={(isOpen) => !isOpen && setOpen(null)}
+              >
+                <Button onPress={() => setOpen('details')}>Show details</Button>
+              </Layout.Panel>
+              <Layout.Panel
+                side="right"
+                size={200}
+                mode="overlay"
+                isOpen={open === 'details'}
+                onOpenChange={(isOpen) => !isOpen && setOpen(null)}
+              >
+                <input aria-label="Details field" />
+              </Layout.Panel>
+              <Layout.Content>Main</Layout.Content>
+            </Layout>
+          </>
+        );
+      }
+
+      await renderReady(<TwoPanels />);
+      await open();
+      await waitFor(() =>
+        expect(
+          screen.getByRole('button', { name: 'Show details' }),
+        ).toHaveFocus(),
+      );
+      await userEvent.click(
+        screen.getByRole('button', { name: 'Show details' }),
+      );
+
+      await waitFor(() =>
+        expect(screen.getByLabelText('Details field')).toHaveFocus(),
+      );
+    });
+
+    it.each([false, true])(
+      'returns focus when the panel unmounts while open (StrictMode: %s)',
+      async (isStrict) => {
+        function Conditional() {
+          const [isShown, setIsShown] = useState(false);
+
+          return (
+            <>
+              <Button onPress={() => setIsShown(true)}>Open panel</Button>
+              <Layout hasTransition={hasTransition}>
+                {isShown ? (
+                  <Layout.Panel side="right" size={240} mode="overlay" isOpen>
+                    <Button onPress={() => setIsShown(false)}>Done</Button>
+                  </Layout.Panel>
+                ) : null}
+                <Layout.Content>Main</Layout.Content>
+              </Layout>
+            </>
+          );
+        }
+
+        await renderReady(
+          isStrict ? (
+            <StrictMode>
+              <Conditional />
+            </StrictMode>
+          ) : (
+            <Conditional />
+          ),
+        );
+        await open();
+        await waitFor(() =>
+          expect(screen.getByRole('button', { name: 'Done' })).toHaveFocus(),
+        );
+        await userEvent.click(screen.getByRole('button', { name: 'Done' }));
+
+        await waitFor(() =>
+          expect(
+            screen.getByRole('button', { name: 'Open panel' }),
+          ).toHaveFocus(),
+        );
+      },
+    );
 
     it('leaves page focus alone for a panel open on first render', async () => {
       await renderReady(
@@ -888,8 +989,11 @@ describe.each([false, true])(
     });
 
     it('keeps focus the consumer moves on close', async () => {
+      const onOpenChange = vi.fn();
+
       await renderReady(
         <ToggleLayout
+          onOpenChange={onOpenChange}
           onCloseFocus={() =>
             screen.getByRole('button', { name: 'Main action' }).focus()
           }
@@ -900,6 +1004,8 @@ describe.each([false, true])(
       await userEvent.keyboard('{Escape}');
 
       expect(screen.getByRole('button', { name: 'Main action' })).toHaveFocus();
+      // That focus enters the main content, but the panel closes only once.
+      expect(onOpenChange.mock.calls).toEqual([[false]]);
     });
   },
 );

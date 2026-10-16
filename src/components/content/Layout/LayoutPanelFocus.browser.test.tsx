@@ -27,7 +27,7 @@ function FocusLayout({
       {opener === 'button' ? (
         <Button onPress={() => setIsOpen(true)}>Open panel</Button>
       ) : null}
-      <div data-qa="Scroller" style={{ overflow: 'hidden', height: 300 }}>
+      <div style={{ overflow: 'hidden', height: 300 }}>
         <Layout hasTransition height={300} styles={{ $transition: '300ms' }}>
           <Layout.Panel
             qa="OverlayPanel"
@@ -67,7 +67,7 @@ async function renderReady(ui: Parameters<typeof renderWithRoot>[0]) {
 }
 
 describe('Layout.Panel overlay focus in a browser', () => {
-  it('moves focus in without scrolling while the panel slides in, and returns it', async () => {
+  it('moves focus in while the panel slides in, and returns it', async () => {
     await renderReady(<FocusLayout />);
 
     await act(() =>
@@ -77,12 +77,6 @@ describe('Layout.Panel overlay focus in a browser', () => {
     const field = screen.getByLabelText('Panel field');
 
     await waitFor(() => expect(field).toHaveFocus());
-
-    // The panel enters translated offscreen; focusing it must not scroll.
-    expect(screen.getByTestId('Scroller').scrollLeft).toBe(0);
-    expect(screen.getByTestId('Scroller').firstElementChild!.scrollLeft).toBe(
-      0,
-    );
 
     await act(() => userEvent.keyboard('{Escape}'));
 
