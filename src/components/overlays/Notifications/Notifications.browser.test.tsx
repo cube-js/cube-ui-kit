@@ -1,3 +1,5 @@
+import { useState } from 'react';
+import { flushSync } from 'react-dom';
 import { page, userEvent as realInput } from 'vitest/browser';
 
 import { act, renderWithRoot, screen, userEvent, waitFor } from '../../../test';
@@ -9,7 +11,10 @@ import { useProgressToast } from '../Toast/useProgressToast';
 import { useToast } from '../Toast/useToast';
 
 import { NotificationAction } from './NotificationAction';
+import { OverlayContainer } from './OverlayContainer';
 import { useNotifications } from './use-notifications';
+
+import type { InternalToast } from '../Toast/types';
 
 /**
  * A press on a toast or notification must not close the Dialog it shows over.
@@ -472,6 +477,76 @@ describe('Toast collapse on pointer movement', () => {
           name: kind === 'actionable toast' ? 'Undo' : 'Dismiss',
         }),
       ).toBeVisible();
+    },
+  );
+});
+
+/**
+ * CUB-5722 with real frames: removing an item used to leave its settled-id
+ * pruning pending after the removal's sync commit, which React 19 counts as a
+ * nested update, so the 27th removal in one task threw "Maximum update depth
+ * exceeded". The jsdom twin in Notifications.test.tsx explains the count.
+ */
+describe('Toast stack removals', () => {
+  it(
+    'lets many toasts leave one sync commit at a time',
+    { timeout: 30_000 },
+    async () => {
+      const COUNT = 30;
+      const noop = () => {};
+      let removeOldest = () => {};
+
+      function Stack() {
+        const [toasts, setToasts] = useState<InternalToast[]>(() =>
+          Array.from({ length: COUNT }, (_, i) => ({
+            internalId: `toast-${i}`,
+            dedupeKey: `toast-${i}`,
+            isProgress: false,
+            createdAt: i,
+            title: `Toast ${i}`,
+          })),
+        );
+
+        removeOldest = () => setToasts((prev) => prev.slice(1));
+
+        return (
+          <OverlayContainer
+            toasts={toasts}
+            notifications={[]}
+            onToastExitComplete={noop}
+            onNotificationExitComplete={noop}
+            onNotificationDismiss={noop}
+            onNotificationRestore={noop}
+            onPauseChange={noop}
+          />
+        );
+      }
+
+      renderWithRoot(<Stack />);
+
+      // Only a toast settled a frame after it was measured has an id to prune.
+      await waitFor(() => {
+        expect(document.querySelectorAll('[data-is-measured]')).toHaveLength(
+          COUNT,
+        );
+      });
+
+      // Outside `act`, so every removal commits, effects included, before the
+      // next one starts, as in an app.
+      const env = globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean };
+      const wasActEnvironment = env.IS_REACT_ACT_ENVIRONMENT;
+
+      env.IS_REACT_ACT_ENVIRONMENT = false;
+
+      try {
+        for (let i = 0; i < COUNT; i++) {
+          flushSync(removeOldest);
+        }
+      } finally {
+        env.IS_REACT_ACT_ENVIRONMENT = wasActEnvironment;
+      }
+
+      expect(screen.queryByText(/^Toast \d+$/)).not.toBeInTheDocument();
     },
   );
 });

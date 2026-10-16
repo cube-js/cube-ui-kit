@@ -2,4 +2,4 @@
 "@cube-dev/ui-kit": patch
 ---
 
-Removing a toast or notification no longer schedules an extra state update after the stack re-measures. Under React 19 that update stayed pending past each synchronous commit and counted as a nested update, so many toasts or notifications leaving in one task, or leaving alongside other synchronous updates, could end in React's "Maximum update depth exceeded" error. The stack now forgets a removed item in the same render that drops its height, so each removal settles without leaving work behind.
+Removing many toasts or notifications one synchronous update at a time, as when a stack is cleared, no longer ends in React's "Maximum update depth exceeded" error. Each removal used to leave a state update pending after its commit, which React 19 counts as a nested update; the stack now forgets a removed item in the same render that drops its height.

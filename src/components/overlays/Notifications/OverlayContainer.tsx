@@ -143,15 +143,16 @@ function useItemPositions(visibleItems: OverlayItem[]): ItemPositionsResult {
       setHeights(newHeights);
     }
 
-    // Drop a removed item's settled id in the same render as its height: a
-    // restored notification returns under its old id and must settle again.
-    // Pruning from the `heights` effect instead left an update pending after
-    // the removal's sync commit, which React 19 counts as nested, so a run of
-    // removals in one task ended in "Maximum update depth exceeded".
+    // Drop a removed item's settled id with its height, so a restored
+    // notification settles again under its old id. Pruning later, from the
+    // `heights` effect, left an update pending after each removal's sync
+    // commit, which React 19 counts as nested ("Maximum update depth").
     if (hasRemovals) {
-      setSettledIds(
-        (prev) => new Set([...prev].filter((id) => id in newHeights)),
-      );
+      setSettledIds((prev) => {
+        const next = new Set([...prev].filter((id) => id in newHeights));
+
+        return next.size === prev.size ? prev : next;
+      });
     }
   });
 
@@ -170,23 +171,10 @@ function useItemPositions(visibleItems: OverlayItem[]): ItemPositionsResult {
 
     if (newIds.length === 0) return;
 
+    // A removal changes `heights`, which cancels this frame, so the ids to
+    // add are still current when it runs.
     const frame = requestAnimationFrame(() => {
-      setSettledIds((prev) => {
-        const next = new Set<string>();
-
-        // Only keep IDs that still exist in heights (prune removed items)
-        for (const id of heightKeys) {
-          if (prev.has(id)) {
-            next.add(id);
-          }
-        }
-
-        for (const id of newIds) {
-          next.add(id);
-        }
-
-        return next;
-      });
+      setSettledIds((prev) => new Set([...prev, ...newIds]));
     });
 
     return () => cancelAnimationFrame(frame);
