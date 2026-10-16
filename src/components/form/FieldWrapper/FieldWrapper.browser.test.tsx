@@ -1,6 +1,7 @@
-import { renderWithRoot } from '../../../test';
+import { renderWithForm, renderWithRoot } from '../../../test';
 import { Badge } from '../../content/Badge/Badge';
 import { Tag } from '../../content/Tag/Tag';
+import { Switch } from '../../fields/Switch/Switch';
 import { TextInput } from '../../fields/TextInput/TextInput';
 
 /**
@@ -50,5 +51,46 @@ describe('FieldWrapper label row', () => {
     expect(
       count.getBoundingClientRect().left - lead.getBoundingClientRect().right,
     ).toBeGreaterThan(0);
+  });
+});
+
+/**
+ * A side label takes the first grid column and the control the second. A
+ * label-less field bound to a form gets the wrapper too, and used to keep that
+ * column: empty, yet a label's width, so its control sat shifted to the right.
+ */
+function controlOffset(container: HTMLElement) {
+  const field = container.querySelector('[data-qa="Field"]')!;
+  const input = field.querySelector('[data-element="InputArea"]')!;
+
+  return (
+    input.getBoundingClientRect().left - field.getBoundingClientRect().left
+  );
+}
+
+describe('FieldWrapper side label column', () => {
+  it.each([
+    [
+      'Switch',
+      <Switch key="switch" name="primary">
+        Primary key
+      </Switch>,
+    ],
+    ['TextInput', <TextInput key="input" name="title" aria-label="Title" />],
+  ])('is not reserved for a label-less %s', (_, element) => {
+    const { container } = renderWithForm(element, {
+      formProps: { labelPosition: 'side' },
+    });
+
+    expect(controlOffset(container)).toBe(0);
+  });
+
+  it('holds the label of a labelled field', () => {
+    const { container } = renderWithForm(
+      <TextInput name="title" label="Title" />,
+      { formProps: { labelPosition: 'side' } },
+    );
+
+    expect(controlOffset(container)).toBeGreaterThan(0);
   });
 });

@@ -11,6 +11,7 @@ import {
 import { FORM_ATTACHABLE_INPUTS } from '../../test/form-attachable-inputs';
 import { Checkbox } from '../fields/Checkbox/Checkbox';
 import { SearchInput } from '../fields/SearchInput/SearchInput';
+import { Switch } from '../fields/Switch/Switch';
 import { TextInput } from '../fields/TextInput/TextInput';
 
 import { Field } from './Form/Field';
@@ -137,6 +138,46 @@ describe('field chrome without a label', () => {
     expect(
       screen.getByText('Sent weekly').closest('[data-element="InputArea"]'),
     ).not.toBeNull();
+  });
+
+  // The side column is the label's. Without one it stayed empty and still
+  // pushed the control a label's width to the right.
+  it.each([
+    [
+      'Switch',
+      <Switch key="switch" name="primary" labelPosition="side">
+        Primary key
+      </Switch>,
+    ],
+    [
+      'TextInput',
+      <TextInput
+        key="input"
+        name="title"
+        aria-label="Title"
+        labelPosition="side"
+      />,
+    ],
+  ])('gives a bound %s no side label column', (_, element) => {
+    renderWithForm(element);
+
+    expect(screen.getByTestId('Field')).not.toHaveAttribute('data-has-sider');
+  });
+
+  it('gives no side label column from a side-label form', () => {
+    renderWithForm(<TextInput name="title" aria-label="Title" />, {
+      formProps: { labelPosition: 'side' },
+    });
+
+    expect(screen.getByTestId('Field')).not.toHaveAttribute('data-has-sider');
+  });
+
+  it('keeps the side label column of a labelled field', () => {
+    renderWithForm(<TextInput name="title" label="Title" />, {
+      formProps: { labelPosition: 'side' },
+    });
+
+    expect(screen.getByTestId('Field')).toHaveAttribute('data-has-sider');
   });
 
   it('shows a search input description', () => {

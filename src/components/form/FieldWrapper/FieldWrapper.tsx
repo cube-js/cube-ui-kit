@@ -257,7 +257,9 @@ export const FieldWrapper = forwardRef(function FieldWrapper(
     : null;
 
   const mods = {
-    'has-sider': labelPosition === 'side',
+    // The side column holds the label. Without one it would stay empty and
+    // still push the control a label's width to the right.
+    'has-sider': !!label && labelPosition === 'side',
     'has-split': labelPosition === 'split',
     'has-description': !!description,
     ...getValidationMods({ isInvalid, isValid }),
