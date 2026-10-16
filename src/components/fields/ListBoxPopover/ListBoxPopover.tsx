@@ -107,18 +107,29 @@ export interface ListBoxPopoverProps {
 const CONTROL_SELECTOR =
   'button, a[href], input, select, textarea, [tabindex], [contenteditable]:not([contenteditable="false"])';
 
-// A control apart from the field. One inside the field (its own input) or one
-// around it (the dialog the field sits in, which has `tabindex`) is not, so a
-// press there keeps the field's focus and draft.
+// The layer a field sits in: a dialog, popover or tray, otherwise the page.
+const LAYER_SELECTOR = '[role="dialog"], [role="alertdialog"]';
+
+// An enabled control apart from the field, in the field's own layer. A press
+// anywhere else counts as blank space and keeps the field's focus and draft:
+// on the field itself, on a dialog's surface, on a disabled control, or
+// outside the field's dialog, which then handles that press itself.
 function isOutsideControl(el: Element, trigger: HTMLElement | null) {
   const control = el.closest(CONTROL_SELECTOR);
 
-  return (
-    control != null &&
-    trigger != null &&
-    !control.contains(trigger) &&
-    !trigger.contains(control)
-  );
+  if (
+    control == null ||
+    trigger == null ||
+    control.contains(trigger) ||
+    trigger.contains(control) ||
+    control.matches(`${LAYER_SELECTOR}, :disabled, [aria-disabled="true"]`)
+  ) {
+    return false;
+  }
+
+  const layer = trigger.closest(LAYER_SELECTOR);
+
+  return layer == null || layer.contains(control);
 }
 
 const ListBoxPopoverWrapper = tasty({

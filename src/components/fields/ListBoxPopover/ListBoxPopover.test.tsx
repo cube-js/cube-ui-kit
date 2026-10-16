@@ -172,6 +172,90 @@ describe('<ListBoxPopover /> outside presses', () => {
     });
   });
 
+  describe('a ComboBox in a popover', () => {
+    function FiltersPopover({
+      onSelectionChange,
+    }: {
+      onSelectionChange: (key: unknown) => void;
+    }) {
+      return (
+        <DialogTrigger type="popover">
+          <Button>Filters</Button>
+          <Dialog aria-label="Filters">
+            <Content>
+              <ComboBox
+                label="People"
+                popoverTrigger="focus"
+                onSelectionChange={onSelectionChange}
+              >
+                {people.map((person) => (
+                  <ComboBox.Item key={person.key}>{person.label}</ComboBox.Item>
+                ))}
+              </ComboBox>
+            </Content>
+          </Dialog>
+        </DialogTrigger>
+      );
+    }
+
+    async function openList(utils: ReturnType<typeof renderWithRoot>) {
+      await userEvent.click(utils.getByRole('button', { name: 'Filters' }));
+      await waitFor(() =>
+        expect(utils.getByRole('dialog', { name: 'Filters' })).toBeVisible(),
+      );
+
+      const input = utils.getByRole('combobox');
+
+      // "r" names only Rex, so a blur would pick it.
+      await userEvent.type(input, 'r');
+      await waitFor(() => expect(utils.getByRole('listbox')).toBeVisible());
+
+      return input;
+    }
+
+    // The popover isn't modal: a press outside it is the popover's to handle,
+    // not a press on a control in the field's layer.
+    it('only closes the list on a control outside the popover', async () => {
+      const onSelectionChange = vi.fn();
+      const utils = renderWithRoot(
+        <>
+          <FiltersPopover onSelectionChange={onSelectionChange} />
+          <Checkbox>Inbox</Checkbox>
+        </>,
+      );
+      const input = await openList(utils);
+
+      await userEvent.click(utils.getByRole('checkbox', { name: 'Inbox' }));
+
+      await waitFor(() => expect(utils.queryByRole('listbox')).toBeNull());
+      expect(utils.getByRole('checkbox', { name: 'Inbox' })).not.toBeChecked();
+      expect(input).toHaveValue('r');
+      expect(onSelectionChange).not.toHaveBeenCalled();
+    });
+
+    // The dialog under the popover holds the field only through a portal, so
+    // its surface is blank space too.
+    it('only closes the list on blank space in the dialog it opened from', async () => {
+      const onSelectionChange = vi.fn();
+      const utils = renderWithRoot(
+        <InDialog>
+          <FiltersPopover onSelectionChange={onSelectionChange} />
+          <div data-qa="Blank">Blank space</div>
+        </InDialog>,
+      );
+
+      await openDialog(utils);
+
+      const input = await openList(utils);
+
+      await userEvent.click(utils.getByTestId('Blank'));
+
+      await waitFor(() => expect(utils.queryByRole('listbox')).toBeNull());
+      expect(input).toHaveValue('r');
+      expect(onSelectionChange).not.toHaveBeenCalled();
+    });
+  });
+
   describe('a TagInput in a dialog', () => {
     async function renderWithOpenList(onChange: (value: string[]) => void) {
       const utils = renderWithRoot(
