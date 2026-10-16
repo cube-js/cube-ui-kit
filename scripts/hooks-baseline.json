@@ -4,7 +4,7 @@
     "eslint-plugin-react-hooks": "7.1.1",
     "@typescript-eslint/parser": "8.69.0"
   },
-  "filesLinted": 664,
+  "filesLinted": 669,
   "files": {
     "src/_internal/hooks/use-deprecation-warning.ts": {
       "react-hooks/exhaustive-deps": 2
@@ -174,7 +174,7 @@
     },
     "src/components/overlays/Notifications/OverlayContainer.tsx": {
       "react-hooks/exhaustive-deps": 3,
-      "react-hooks/set-state-in-effect": 2
+      "react-hooks/set-state-in-effect": 1
     },
     "src/components/overlays/Notifications/OverlayProvider.tsx": {
       "react-hooks/exhaustive-deps": 3,
@@ -235,7 +235,7 @@
     "react-hooks/preserve-manual-memoization": 11,
     "react-hooks/refs": 102,
     "react-hooks/rules-of-hooks": 9,
-    "react-hooks/set-state-in-effect": 13,
+    "react-hooks/set-state-in-effect": 12,
     "react-hooks/use-memo": 2
   }
 }

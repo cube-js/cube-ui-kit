@@ -273,7 +273,7 @@ Collapsible side panel with resizing, transitions, and multiple rendering modes.
 - **`onSizeChange`** `(size: number) => void` — Size change callback
 - **`sizeStorageKey`** `string` — localStorage key for persisting size
 - **`hasTransition`** `boolean` (default: `false`) — Enable slide animation
-- **`isDismissable`** `boolean` (default: `true`) — Allow dismissing overlay/dialog by click or Escape
+- **`isDismissable`** `boolean` (default: `true`) — Allow dismissing overlay/dialog by click or Escape, and an overlay panel by focus moving into the main content
 - **`overlayStyles`** `Styles` — Styles for the overlay backdrop in overlay mode
 - **`isDialogOpen`** `boolean` — Controlled dialog state (mode="dialog")
 - **`defaultIsDialogOpen`** `boolean` (default: `false`) — Initial dialog state
@@ -286,7 +286,7 @@ Collapsible side panel with resizing, transitions, and multiple rendering modes.
 
 - `default` — Standard panel that pushes content aside (propagates size, no overlay)
 - `sticky` — Panel floats over content without affecting layout (no size propagation, no overlay)
-- `overlay` — Panel with dismissable backdrop overlay (propagates size, with overlay)
+- `overlay` — Panel floats over content with a dismissable backdrop overlay (no size propagation, with overlay)
 - `dialog` — Panel renders as a modal dialog (no size propagation, overlay via Dialog)
 
 **Modifiers:**
@@ -654,6 +654,8 @@ In `overlay` mode, a semi-transparent backdrop appears behind the panel. The pan
 - Pressing Escape anywhere in the Layout
 - Moving focus to the main content area
 
+Focus closes the panel only when it enters the main content from outside it, for example with a programmatic `focus()`, `Tab` from a control before the Layout, or `Shift+Tab` out of the panel when no other panel comes before it; moving between controls of the main content does not. Panels come after the main content in tab order, so `Tab` from the panel's last control leaves the Layout and keeps the panel open. Focus moving inside the panel, into a popover, menu or dialog opened from it, or into another `Layout.Panel` of the same Layout keeps it open. Other panels of the same Layout can sit under the backdrop; a click on them then closes the overlay panel, but `Tab` still reaches their controls. Opening the panel moves focus to its first control, unless focus already moved elsewhere as it opened (for example to a field with `autoFocus` inside it), so a menu or dialog that opened it can close without handing focus back to the main content. A panel already open when its Layout first renders leaves page focus alone. Closing the panel returns focus to the element that had it when the panel opened, if focus is still in the panel or was lost with it; focus moved elsewhere, by the user or in `onOpenChange`, stays there. If that element is gone by then, as a menu item is, move focus yourself in `onOpenChange`.
+
 <Story of={LayoutStories.OverlayPanel} />
 
 ```jsx
@@ -691,7 +693,7 @@ You can customize the overlay styles using the `overlayStyles` prop:
 </Layout.Panel>
 ```
 
-To prevent dismissing the overlay by clicking or pressing Escape, set `isDismissable={false}`:
+To prevent dismissing the overlay by clicking, pressing Escape or moving focus to the main content, set `isDismissable={false}`:
 
 ```jsx
 <Layout.Panel mode="overlay" isDismissable={false}>
@@ -816,7 +818,9 @@ function ApplicationShell() {
 ### Keyboard Navigation
 
 - `Tab` - Navigate between interactive elements
-- Focus management is handled automatically when panels open/close
+- An overlay panel closes on Escape or when focus enters the main content from outside it; focus moving inside it or into another panel of the same Layout keeps it open
+- Panels come after the main content in tab order, so `Tab` from a panel's last control leaves the Layout
+- An overlay panel moves focus to its first control when it opens and returns it to the opener when it closes; in `dialog` mode the dialog manages focus, and other modes leave focus alone
 - Resize handlers can be focused and resized using arrow keys:
   - `Arrow keys` - Resize panel by 10px
   - `Shift + Arrow keys` - Resize panel by 50px

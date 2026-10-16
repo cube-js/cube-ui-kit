@@ -36,13 +36,18 @@ export interface CubeButtonSplitProps extends BaseProps, ContainerStyleProps {
   /** Called when the selected action changes via the trigger menu. */
   onActionChange?: (key: string) => void;
 
-  /** Button type applied to both action and trigger buttons in strict mode. */
+  /**
+   * Default type for every Button in the split: both buttons in strict mode,
+   * the child Buttons in custom mode. A Button's own `type` wins. Buttons in a
+   * popover, dialog or menu opened from the split do not inherit it, nor
+   * `theme`, `size` or `isDisabled`.
+   */
   type?: CubeButtonProps['type'];
-  /** Button theme applied to both action and trigger buttons in strict mode. */
+  /** Default theme for every Button in the split. A Button's own `theme` wins. */
   theme?: CubeButtonProps['theme'];
-  /** Button size applied to both action and trigger buttons in strict mode. */
+  /** Default size for every Button in the split. A Button's own `size` wins. */
   size?: CubeButtonProps['size'];
-  /** Disables both buttons in strict mode. */
+  /** Disables every Button in the split, even one passing `isDisabled={false}`. */
   isDisabled?: boolean;
 
   /** Additional props for the action button in strict mode. */

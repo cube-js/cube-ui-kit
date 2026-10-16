@@ -1,3 +1,4 @@
+import { getFocusableTreeWalker } from '@react-aria/focus';
 import {
   BaseProps,
   CONTAINER_STYLES,
@@ -31,6 +32,7 @@ import {
   useCombinedRefs,
   useLocalStorage,
 } from '../../../utils/react';
+import { focusProgrammatically } from '../../../utils/react/programmaticFocus';
 import { extractStyles } from '../../../utils/styles';
 import { DisplayTransition } from '../../helpers/DisplayTransition/DisplayTransition';
 import { Dialog } from '../../overlays/Dialog';
@@ -365,7 +367,8 @@ export interface CubeLayoutPanelProps extends BaseProps, ContainerStyleProps {
    * Panel rendering mode:
    * - `default`: Standard panel that pushes content aside
    * - `sticky`: Panel floats over content without pushing it
-   * - `overlay`: Panel with dismissable backdrop overlay
+   * - `overlay`: Panel with dismissable backdrop overlay; focus moves into it
+   *   when it opens and back to the opener when it closes
    * - `dialog`: Panel renders as a modal dialog
    */
   mode?: LayoutPanelMode;
@@ -390,7 +393,8 @@ export interface CubeLayoutPanelProps extends BaseProps, ContainerStyleProps {
   /** Enable slide transition on open/close */
   hasTransition?: boolean;
   /**
-   * Whether the panel can be dismissed by clicking the overlay (overlay mode) or pressing Escape.
+   * Whether the panel can be dismissed by clicking the overlay (overlay mode), pressing Escape,
+   * or, in overlay mode, moving focus into the main content.
    * Only applies to `overlay` and `dialog` modes. Default: true
    */
   isDismissable?: boolean;
@@ -751,8 +755,22 @@ function LayoutPanel(
     }
   }, [side, effectiveInsetSize, updatePanelSize]);
 
+  // One close per task: a consumer that moves focus into the main content in
+  // `onOpenChange(false)` would otherwise dismiss the still-registered panel
+  // a second time.
+  const closeRequestedRef = useRef(false);
+
   const handleOpenChange = useCallback(
     (newIsOpen: boolean) => {
+      if (!newIsOpen) {
+        if (closeRequestedRef.current) return;
+
+        closeRequestedRef.current = true;
+        queueMicrotask(() => {
+          closeRequestedRef.current = false;
+        });
+      }
+
       setInternalIsOpen(newIsOpen);
       onOpenChange?.(newIsOpen);
     },
@@ -782,6 +800,106 @@ function LayoutPanel(
     registerOverlayPanel,
     handleOpenChange,
   ]);
+
+  // Overlay focus: move into the panel on open, back to the opener on close.
+  // Declared after the registration effect on purpose: its cleanup then runs
+  // after the panel unregisters, so a restore into the main content dismisses
+  // nothing.
+  const openerRef = useRef<Element | null>(null);
+  const panelNodeRef = useRef<HTMLDivElement | null>(null);
+  // Focus as the panel's contents mount, before a native `autoFocus` inside
+  // them moves it (see OpenerProbe).
+  const mountFocusRef = useRef<Element | null>(null);
+
+  // A panel open on the Layout's first render leaves page focus alone.
+  const recordOpener = useEffectEvent(() => {
+    const active =
+      mountFocusRef.current ??
+      panelNodeRef.current?.ownerDocument.activeElement ??
+      null;
+
+    mountFocusRef.current = null;
+
+    openerRef.current =
+      isOverlayMode && isReady && !panelNodeRef.current?.contains(active)
+        ? active
+        : null;
+  });
+
+  const moveFocusIn = useEffectEvent(() => {
+    const panel = panelNodeRef.current;
+    const opener = openerRef.current;
+
+    const active = panel?.ownerDocument.activeElement;
+
+    // Focus already moved elsewhere as the panel opened, such as to a field
+    // with `autoFocus` inside it: leave it there. Focus another overlay panel just
+    // returned, as it closed in the same commit, does not count.
+    if (
+      !panel ||
+      !opener ||
+      (active !== opener && active !== lastReturnedFocus)
+    ) {
+      return;
+    }
+
+    const target =
+      getFocusableTreeWalker(panel, { tabbable: true }).nextNode() ??
+      getFocusableTreeWalker(panel).nextNode();
+
+    // The panel enters translated offscreen, so focus must not scroll.
+    focusProgrammatically(target as HTMLElement | null, {
+      preventScroll: true,
+    });
+  });
+
+  // Return focus only if it is still in the panel or was lost with it; focus
+  // the user or the consumer moved elsewhere stays there.
+  const returnFocus = useEffectEvent(() => {
+    const opener = openerRef.current;
+    const panel = panelNodeRef.current;
+
+    openerRef.current = null;
+
+    if (
+      !isOverlayMode ||
+      !(opener instanceof HTMLElement) ||
+      !opener.isConnected ||
+      opener === opener.ownerDocument.body
+    ) {
+      return;
+    }
+
+    const active = opener.ownerDocument.activeElement;
+
+    if (
+      active != null &&
+      active !== opener.ownerDocument.body &&
+      !panel?.contains(active)
+    ) {
+      return;
+    }
+
+    focusProgrammatically(opener, { preventScroll: true });
+    lastReturnedFocus = opener;
+    queueMicrotask(() => {
+      lastReturnedFocus = null;
+    });
+  });
+
+  useLayoutEffect(() => {
+    if (isOpen) recordOpener();
+  }, [isOpen]);
+
+  // Passive, so a menu item that refocuses itself while closing its menu has
+  // done so before focus moves in.
+  useEffect(() => {
+    if (!isOpen) return;
+
+    moveFocusIn();
+
+    return () => returnFocus();
+  }, [isOpen]);
 
   const handleDialogOpenChange = useCallback(
     (newIsOpen: boolean) => {
@@ -875,6 +993,7 @@ function LayoutPanel(
 
     return (
       <>
+        {isOverlayMode && <OpenerProbe focusRef={mountFocusRef} />}
         {/* Overlay backdrop for overlay mode */}
         {isOverlayMode && (
           <OverlayBackdrop
@@ -885,9 +1004,12 @@ function LayoutPanel(
           />
         )}
         <PanelElement
-          ref={(node: HTMLDivElement | null) =>
-            panelRefCallback(node, transitionRef)
-          }
+          ref={(node: HTMLDivElement | null) => {
+            // Kept after detach: StrictMode detaches refs before it replays
+            // the effects that still need the panel.
+            if (node) panelNodeRef.current = node;
+            panelRefCallback(node, transitionRef);
+          }}
           {...filterBaseProps(otherProps, { eventProps: true })}
           mods={{ ...panelMods, offscreen }}
           styles={finalStyles}
@@ -963,6 +1085,19 @@ function LayoutPanel(
   if (!isOpen) return null;
 
   return createPortal(renderPanelContent(false), portalContainer);
+}
+
+// Focus another overlay panel returned in the current task.
+let lastReturnedFocus: Element | null = null;
+
+// Rendered before the panel's contents, so its layout effect reads focus
+// before React applies a native `autoFocus` inside them.
+function OpenerProbe({ focusRef }: { focusRef: { current: Element | null } }) {
+  useLayoutEffect(() => {
+    focusRef.current = document.activeElement;
+  }, [focusRef]);
+
+  return null;
 }
 
 const _LayoutPanel = forwardRef(LayoutPanel);

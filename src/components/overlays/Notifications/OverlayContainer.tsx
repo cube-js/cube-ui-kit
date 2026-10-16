@@ -116,13 +116,13 @@ function useItemPositions(visibleItems: OverlayItem[]): ItemPositionsResult {
   // Lags one frame behind `heights` so the browser paints the item at
   // its final `top` before the CSS `top` transition is enabled.
   const [settledIds, setSettledIds] = useState<Set<string>>(new Set());
-  const rafRef = useRef<number | null>(null);
 
   // Measure heights using layout effect to avoid visible layout shifts.
   // Runs every render but bails early if nothing changed.
   useLayoutEffect(() => {
     const newHeights: Record<string, number> = {};
     let hasChanges = false;
+    let hasRemovals = false;
 
     itemRefs.current.forEach((el, id) => {
       const height = el.offsetHeight || DEFAULT_ITEM_HEIGHT;
@@ -135,12 +135,24 @@ function useItemPositions(visibleItems: OverlayItem[]): ItemPositionsResult {
 
     for (const id of Object.keys(heights)) {
       if (!itemRefs.current.has(id)) {
-        hasChanges = true;
+        hasRemovals = true;
       }
     }
 
-    if (hasChanges) {
+    if (hasChanges || hasRemovals) {
       setHeights(newHeights);
+    }
+
+    // Drop a removed item's settled id with its height, so a restored
+    // notification settles again under its old id. Pruning later, from the
+    // `heights` effect, left an update pending after each removal's sync
+    // commit, which React 19 counts as nested ("Maximum update depth").
+    if (hasRemovals) {
+      setSettledIds((prev) => {
+        const next = new Set([...prev].filter((id) => id in newHeights));
+
+        return next.size === prev.size ? prev : next;
+      });
     }
   });
 
@@ -156,48 +168,16 @@ function useItemPositions(visibleItems: OverlayItem[]): ItemPositionsResult {
   useEffect(() => {
     const heightKeys = Object.keys(heights);
     const newIds = heightKeys.filter((id) => !settledIds.has(id));
-    const hasStaleIds =
-      settledIds.size > 0 && [...settledIds].some((id) => !(id in heights));
 
-    if (newIds.length === 0 && !hasStaleIds) return;
+    if (newIds.length === 0) return;
 
-    if (rafRef.current != null) {
-      cancelAnimationFrame(rafRef.current);
-    }
-
-    // For pruning-only updates (no new items), apply synchronously since
-    // there's no need to wait for a paint frame.
-    if (newIds.length === 0 && hasStaleIds) {
-      setSettledIds((prev) => new Set(heightKeys.filter((id) => prev.has(id))));
-      return;
-    }
-
-    rafRef.current = requestAnimationFrame(() => {
-      rafRef.current = null;
-      setSettledIds((prev) => {
-        const next = new Set<string>();
-
-        // Only keep IDs that still exist in heights (prune removed items)
-        for (const id of heightKeys) {
-          if (prev.has(id)) {
-            next.add(id);
-          }
-        }
-
-        for (const id of newIds) {
-          next.add(id);
-        }
-
-        return next;
-      });
+    // A removal changes `heights`, which cancels this frame, so the ids to
+    // add are still current when it runs.
+    const frame = requestAnimationFrame(() => {
+      setSettledIds((prev) => new Set([...prev, ...newIds]));
     });
 
-    return () => {
-      if (rafRef.current != null) {
-        cancelAnimationFrame(rafRef.current);
-        rafRef.current = null;
-      }
-    };
+    return () => cancelAnimationFrame(frame);
   }, [heights]);
 
   const createRefCallback =

@@ -354,8 +354,14 @@ function LayoutInner(
       // Only dismiss if there are overlay panels
       if (!hasOverlayPanels) return;
 
-      // Check if focus is coming from outside the Inner element
       const inner = e.currentTarget;
+
+      // Panels portal out of Inner but stay its React children, so focus inside
+      // a panel (or a popover opened from it) bubbles here too. Only focus that
+      // lands in Inner's own DOM, the main content, can dismiss.
+      if (!inner.contains(e.target as Node)) return;
+
+      // Check if focus is coming from outside the Inner element
       const relatedTarget = e.relatedTarget as Node | null;
 
       // If relatedTarget is null or not inside the Inner element,

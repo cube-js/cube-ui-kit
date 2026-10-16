@@ -61,15 +61,6 @@ export interface ListBoxPopoverProps {
    * still close. Defaults to `true`.
    */
   shouldCloseOnTriggerInteraction?: boolean;
-  /**
-   * Whether an outside press on a control (a button, a link, a form control,
-   * anything with `tabindex`, or something inside one) reaches it, as one on
-   * a `data-popover-dismiss` control does: the control can take focus, and
-   * the popover closes after it, so a native Save button saves on the first
-   * click. A press anywhere else, such as a dialog's backdrop, still only
-   * closes the popover. Defaults to `false`.
-   */
-  shouldPassControlPresses?: boolean;
   isDisabled?: boolean;
   disabledKeys?: Iterable<Key>;
   items?: Iterable<any>;
@@ -111,9 +102,38 @@ export interface ListBoxPopoverProps {
   positionApiRef?: RefObject<{ updatePosition: () => void } | null>;
 }
 
-// What `shouldPassControlPresses` lets an outside press reach.
+// The controls an outside press reaches: a button, a link, a form control,
+// anything with `tabindex`, or something inside one.
 const CONTROL_SELECTOR =
   'button, a[href], input, select, textarea, [tabindex], [contenteditable]:not([contenteditable="false"])';
+
+// The layer a field sits in: a dialog, popover or tray, otherwise the page.
+const LAYER_SELECTOR =
+  '[role="dialog"], [role="alertdialog"], [data-overlay-layer]';
+
+const DISABLED_SELECTOR = ':disabled, [aria-disabled="true"]';
+
+// An enabled control apart from the field, in the field's own layer. A press
+// anywhere else counts as blank space and keeps the field's focus and draft:
+// on the field itself, on a dialog's surface, on a disabled control, or
+// outside the field's layer, which stays open.
+function isOutsideControl(el: Element, trigger: HTMLElement | null) {
+  const control = el.closest(CONTROL_SELECTOR);
+
+  if (
+    control == null ||
+    trigger == null ||
+    control.contains(trigger) ||
+    trigger.contains(control) ||
+    control.matches(`${LAYER_SELECTOR}, ${DISABLED_SELECTOR}`)
+  ) {
+    return false;
+  }
+
+  const layer = trigger.closest(LAYER_SELECTOR);
+
+  return layer == null || layer.contains(control);
+}
 
 const ListBoxPopoverWrapper = tasty({
   qa: 'ComboBoxOverlayWrapper',
@@ -195,7 +215,6 @@ export const ListBoxPopover = function ListBoxPopover(
     selectedKeys,
     isCheckable,
     shouldCloseOnTriggerInteraction = true,
-    shouldPassControlPresses = false,
     isDisabled,
     disabledKeys,
     items,
@@ -272,9 +291,14 @@ export const ListBoxPopover = function ListBoxPopover(
     ) {
       return 'ignore';
     }
+    // The press reaches an outside control, so a checkbox toggles, a text
+    // field takes focus and a native Save button saves on the first click.
+    // A UI Kit Button passes from any layer, unless it is disabled.
+    const dismissEl = el.closest('[data-popover-dismiss]');
+
     if (
-      (shouldPassControlPresses && el.closest(CONTROL_SELECTOR)) ||
-      el.closest('[data-popover-dismiss]')
+      isOutsideControl(el, triggerRef.current) ||
+      (dismissEl != null && !dismissEl.matches(DISABLED_SELECTOR))
     ) {
       return 'pass';
     }
@@ -310,8 +334,10 @@ export const ListBoxPopover = function ListBoxPopover(
     }
   });
 
-  // Aria now permits outside presses to move focus. Consumed presses must
-  // only dismiss this list; a blur would also commit the field's draft.
+  // Aria now permits outside presses to move focus. A passed press moves it
+  // to its control, and the field settles its draft on blur, as on Tab. A
+  // consumed press, such as one on blank space or a dialog's backdrop, must
+  // only dismiss this list: the field keeps focus and its draft.
   useInteractOutside({
     ref: mergedPopoverRef,
     isDisabled: !isOpen,

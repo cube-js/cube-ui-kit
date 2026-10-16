@@ -133,7 +133,7 @@ export interface CubeComboBoxProps<T>
   allowsCustomValue?: boolean;
   /** Whether to commit custom value on blur in allowsCustomValue mode (default: true) */
   shouldCommitOnBlur?: boolean;
-  /** Whether to clear selection and input on blur (default: false, only applies to non-custom-value mode) */
+  /** Whether to clear selection and input on blur when the text names no selectable item (default: false, only applies to non-custom-value mode) */
   clearOnBlur?: boolean;
   /** Whether the combobox is clearable using ESC key or clear button */
   isClearable?: boolean;
@@ -850,6 +850,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   const localCollectionState = useListState({
     children: children as CollectionChildren<T>,
     items: sortedItems,
+    disabledKeys: props.disabledKeys,
     selectionMode: 'none', // Don't manage selection in this state
   });
 
@@ -885,33 +886,39 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     }
 
     const filteredCount = filteredItems.length;
+    const term = effectiveInputValue.trim().toLowerCase();
 
-    // Check for exact match
-    const exactMatch = filteredItems.find(
-      (item) =>
-        item.textValue.toLowerCase() ===
-        effectiveInputValue.trim().toLowerCase(),
+    // The exact match, otherwise the only filtered result. Among items sharing
+    // the label, the selection wins, then an enabled one. A disabled match
+    // makes the input invalid, as it cannot be selected any other way either,
+    // unless it is already the selection: that one is kept.
+    const exactMatches = filteredItems.filter(
+      (item) => item.textValue.toLowerCase() === term,
     );
+    const match =
+      exactMatches.find((item) => item.key === effectiveSelectedKey) ??
+      exactMatches.find(
+        (item) => !localCollectionState.disabledKeys.has(item.key),
+      ) ??
+      exactMatches[0] ??
+      (filteredCount === 1 ? filteredItems[0] : null);
 
-    if (exactMatch) {
-      return {
-        isInputValid: true,
-        singleMatchKey: exactMatch.key,
-        filteredCount,
-      };
+    if (
+      !match ||
+      (match.key !== effectiveSelectedKey &&
+        localCollectionState.disabledKeys.has(match.key))
+    ) {
+      return { isInputValid: false, singleMatchKey: null, filteredCount };
     }
 
-    // If exactly one filtered result, consider it valid
-    if (filteredCount === 1) {
-      return {
-        isInputValid: true,
-        singleMatchKey: filteredItems[0].key,
-        filteredCount,
-      };
-    }
-
-    return { isInputValid: false, singleMatchKey: null, filteredCount };
-  }, [effectiveInputValue, filterFn, localCollectionState.collection]);
+    return { isInputValid: true, singleMatchKey: match.key, filteredCount };
+  }, [
+    effectiveInputValue,
+    effectiveSelectedKey,
+    filterFn,
+    localCollectionState.collection,
+    localCollectionState.disabledKeys,
+  ]);
 
   // ---- blur ---------------------------------------------------------------
   // Writes the selected key, unless it is controlled. Unlike `setInputText` it
@@ -958,8 +965,9 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   };
 
   // In non-custom-value mode: auto-select the exact match, or the only filtered
-  // result; clear invalid input (no exact match, not a single result) when
-  // clearOnBlur is set or the input is empty.
+  // result, unless it is disabled; keep a selected item even when it is
+  // disabled; clear invalid input (no selectable match) when clearOnBlur is set
+  // or the input is empty.
   const settleOptionOnBlur = () => {
     const { isInputValid, singleMatchKey } = checkInputValidity();
 

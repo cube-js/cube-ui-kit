@@ -1206,8 +1206,8 @@ export const OverlayPanel: Story = {
             <Title level={5}>Background Content</Title>
             <Text>
               When the overlay panel is open, this content is dimmed. Click the
-              backdrop, press Escape, or Tab to focus this content to dismiss
-              the panel.
+              backdrop, press Escape, or Shift+Tab from the panel into this
+              content to dismiss the panel.
             </Text>
           </Card>
           <Card>
@@ -1279,8 +1279,9 @@ export const OverlayPanelCustomStyling: Story = {
 };
 
 /**
- * When `isDismissable` is set to `false`, clicking the overlay or pressing
- * Escape will not close the panel. The user must use explicit controls to close it.
+ * When `isDismissable` is set to `false`, clicking the overlay, pressing Escape
+ * or moving focus into the main content will not close the panel. The user must
+ * use explicit controls to close it.
  */
 // chromatic-overlay-reviewed: the panel starts open
 export const OverlayPanelNotDismissable: Story = {

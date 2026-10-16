@@ -1859,10 +1859,6 @@ function TagInput<T extends object>(
           isCheckable
           // Clicking back into the input keeps the list open for the next pick.
           shouldCloseOnTriggerInteraction={false}
-          // A press on an outside control reaches it, so a Save button saves
-          // on the first click: focus moves there, and the blur commits the
-          // text. A press elsewhere, as on a dialog's backdrop, only closes it.
-          shouldPassControlPresses
           isDisabled={isDisabled}
           disabledKeys={optionDisabledKeys}
           listStateRef={listStateRef}
