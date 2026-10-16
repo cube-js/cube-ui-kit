@@ -363,7 +363,9 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
   props = useProviderProps(props);
   props = useValidationProps(props);
   // Shows a description or message without a label, as a form field does.
-  if (asksForFieldChrome(props)) props = { ...props, forceField: true };
+  if (asksForFieldChrome(props)) {
+    props = { ...props, hasFieldChrome: true } as typeof props;
+  }
 
   const { t } = useI18n();
 

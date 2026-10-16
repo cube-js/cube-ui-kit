@@ -161,7 +161,7 @@ export interface FieldBaseProps<Value = unknown>
   labelSuffix?: ReactNode;
   /**
    * Tooltip content for an info badge rendered next to the field's label.
-   * Shown only when the field renders a label (`label` or `forceField`).
+   * Shown only when the field has a `label`.
    *
    * Formerly `tooltip`. That name now belongs to the control alone, as it does
    * on `Item` and `Button`: a component that is both a field and a trigger —
@@ -184,19 +184,21 @@ export interface FieldBaseProps<Value = unknown>
   fieldStyles?: Styles;
   messageStyles?: Styles;
   /**
-   * If true, the input component will be wrapped in a field wrapper even if it
-   * doesn't have a label. Passing `description`, `errorMessage` or `message`
-   * to a field without a label sets it, whatever the prop holds, unless
-   * `isBare` is set.
-   */
-  forceField?: boolean;
-  /**
-   * Renders a field without a `label` as the bare control, for inline use:
-   * its `description`, `errorMessage` and `message` are not shown, while the
-   * control keeps its invalid state. No effect on a field with a `label` or
-   * `forceField`.
+   * Renders a field without a `label` as the bare control, for inline use.
+   * Without it, such a field renders the field wrapper when it is bound to a
+   * form or is passed `description`, `errorMessage` or `message`. With it,
+   * those texts are not shown, while the control keeps its invalid state. No
+   * effect on a field with a `label`.
    */
   isBare?: boolean;
+  /**
+   * Renders the field wrapper even when the field has no `label`.
+   *
+   * @deprecated A field without a `label` renders the wrapper by itself when
+   * it is bound to a form or is passed `description`, `errorMessage` or
+   * `message`. Pass `isBare` to keep the bare control instead.
+   */
+  forceField?: boolean;
 }
 
 export interface FormBaseProps extends ValidationProps {

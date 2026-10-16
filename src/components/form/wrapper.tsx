@@ -5,6 +5,7 @@ import { ReactElement, RefObject } from 'react';
 import { FieldBaseProps, FormBaseProps } from '../../shared/index';
 import { mergeProps } from '../../utils/react/index';
 
+import { warnAboutForceField } from './field-chrome';
 import { FieldWrapper } from './FieldWrapper/index';
 import { warnAboutLegacyTooltip } from './legacy-tooltip';
 
@@ -12,11 +13,27 @@ import { warnAboutLegacyTooltip } from './legacy-tooltip';
 interface WrapWithFieldProps
   extends FieldBaseProps,
     Omit<BaseProps, 'children'>,
-    FormBaseProps {}
+    FormBaseProps {
+  /**
+   * Set by `useFieldProps` for a field without a `label` that still renders
+   * the field chrome — see `asksForFieldChrome`. Not a prop of any input.
+   */
+  hasFieldChrome?: boolean;
+}
 
 /**
- * Wraps an input with the field chrome (label, description, message) when it has a `label` or `forceField`.
- * `useFieldProps` sets `forceField` for a field without a label that is passed a description or a message, unless it is `isBare`.
+ * Whether `wrapWithField` renders the field chrome for these props: a `label`,
+ * the chrome `useFieldProps` asked for, or the deprecated `forceField`.
+ */
+export function rendersFieldChrome(props: object) {
+  const { label, hasFieldChrome, forceField } = props as WrapWithFieldProps;
+
+  return !!label || !!hasFieldChrome || !!forceField;
+}
+
+/**
+ * Wraps an input with the field chrome (label, description, message) when it has a `label`, or when `useFieldProps` asks
+ * for it on a field without one (`hasFieldChrome`): one bound to a form, or passed a description or a message, and not `isBare`.
  * Only the field wrapper props are forwarded, so callers can pass their whole props object as is.
  */
 export function wrapWithField<T extends WrapWithFieldProps>(
@@ -25,7 +42,6 @@ export function wrapWithField<T extends WrapWithFieldProps>(
   props: T,
 ) {
   let {
-    forceField,
     label,
     extra,
     labelPosition = 'top',
@@ -49,7 +65,9 @@ export function wrapWithField<T extends WrapWithFieldProps>(
     labelSuffix,
   } = props;
 
-  if (!label && !forceField) {
+  warnAboutForceField(props);
+
+  if (!rendersFieldChrome(props)) {
     return component;
   }
 

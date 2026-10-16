@@ -201,15 +201,17 @@ export function useFieldProps<
       : result;
   }
 
-  // Without a `label`, `wrapWithField` renders a description or message only
-  // with `forceField`, so passing one sets it unless the caller asks for the
-  // bare control with `isBare` — see `asksForFieldChrome`.
-  // Inside the legacy `<Field>`, the message props come and go with the error
-  // and the props are the wrapper's, so they decide nothing.
-  const asksForFieldText =
-    !isInsideLegacyField && asksForFieldChrome(inputProps);
-  const resolved = asksForFieldText
-    ? { ...resolveResult(), forceField: true }
+  // A field without a `label` still renders the field chrome when it is bound
+  // to a form or its caller passes a description or a message, unless it is
+  // `isBare` — see `asksForFieldChrome`. Inside the legacy `<Field>`, the
+  // message props come and go with the error and are the wrapper's, so they
+  // decide nothing; its child is bound through it, and the `<Field>` gives it
+  // the `name`.
+  const hasFieldChrome = isInsideLegacyField
+    ? hasName && asksForFieldChrome(inputProps, true)
+    : asksForFieldChrome(inputProps, isBound && !isOutsideOfForm);
+  const resolved = hasFieldChrome
+    ? { ...resolveResult(), hasFieldChrome: true }
     : resolveResult();
   // React Aria forwards `form` to native inputs. A modern controller is a
   // binding source, never an HTML form id, including in standalone/group mode.

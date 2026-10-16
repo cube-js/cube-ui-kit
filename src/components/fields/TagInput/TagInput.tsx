@@ -40,7 +40,7 @@ import { extractStyles } from '../../../utils/styles';
 import { ItemAction } from '../../actions/ItemAction/ItemAction';
 import { CollectionItem as Item } from '../../CollectionItem';
 import { useFieldProps } from '../../form/Form/use-field/use-field-props';
-import { wrapWithField } from '../../form/wrapper';
+import { rendersFieldChrome, wrapWithField } from '../../form/wrapper';
 import { getListBoxOptionId } from '../ListBox/optionId';
 import {
   collectVisibleKeys,
@@ -1135,9 +1135,9 @@ function TagInput<T extends object>(
   );
   const joiner = joinDelimiter ? `${joinDelimiter} ` : ' ';
 
-  // Without a label or `forceField` there is no field wrapper to show the
-  // message, so a rejection is announced instead.
-  const hasFieldMessage = !!label || !!props.forceField;
+  // Without the field chrome there is no field wrapper to show the message, so
+  // a rejection is announced instead.
+  const hasFieldMessage = rendersFieldChrome(props);
 
   /**
    * Turns typed parts into values. Accepted parts become chips. Refused ones

@@ -13,11 +13,14 @@ import { Checkbox } from '../fields/Checkbox/Checkbox';
 import { SearchInput } from '../fields/SearchInput/SearchInput';
 import { TextInput } from '../fields/TextInput/TextInput';
 
+import { Field } from './Form/Field';
+
 vi.mock('../../_internal/hooks/use-warn');
 
 /**
- * Without a `label`, a field renders the field chrome when the caller passes a
- * description or a message. That is decided from the props, not from the text
+ * Without a `label`, a field renders the field chrome when it is bound to a
+ * form or its caller passes a description or a message, unless it is
+ * `isBare`. That is decided from the binding and the props, not from the text
  * they hold — `null` included — because a control moved in or out of the
  * wrapper is remounted by React and loses its focus.
  */
@@ -142,17 +145,6 @@ describe('field chrome without a label', () => {
     expect(screen.getByText('By title or author')).toBeInTheDocument();
   });
 
-  // `forceField` only ever forces the wrapper; `false` is no opt-out.
-  it('treats forceField={false} as unset', () => {
-    render(
-      <Checkbox forceField={false} description="Sent weekly">
-        Accept
-      </Checkbox>,
-    );
-
-    expect(screen.getByText('Sent weekly')).toBeInTheDocument();
-  });
-
   // An inline field has no room for the texts, but still says it is invalid.
   it('keeps the bare control with isBare, invalid state included', () => {
     render(
@@ -201,30 +193,44 @@ describe('field chrome without a label', () => {
     },
   );
 
-  // Wrapping every bound field would change the layout of inline and grid
-  // rows, so a bound field without these props stays bare.
-  it('keeps a bound field without text props bare', async () => {
-    const { formInstance } = renderWithForm(
-      <Checkbox name="terms" rules={[{ required: true, message: 'Required' }]}>
-        Accept
-      </Checkbox>,
-    );
+  // Its rule errors come from the form, not from its props, and need a place.
+  it.each(FORM_ATTACHABLE_INPUTS)(
+    '%s bound to a form shows its rule error in one wrapper',
+    async (_, element) => {
+      const error = vi.spyOn(console, 'error');
+      const { formInstance } = renderWithForm(
+        cloneElement(element, {
+          label: undefined,
+          'aria-label': 'Billing',
+          name: 'billing',
+          rules: [
+            {
+              validator: async () => {
+                throw new Error('Billing is wrong');
+              },
+            },
+          ],
+        }),
+      );
 
-    await act(async () => {
-      await formInstance.validateFields().catch(() => {});
-    });
+      await act(async () => {
+        await formInstance.validateFields().catch(() => {});
+      });
 
-    expect(screen.getByRole('checkbox')).toHaveAttribute(
-      'aria-invalid',
-      'true',
-    );
-    expect(screen.queryByTestId('Field')).not.toBeInTheDocument();
-  });
+      expect(screen.getAllByTestId('Field')).toHaveLength(1);
+      expect(screen.getByText('Billing is wrong')).toBeInTheDocument();
+      expect(error.mock.calls.flat().map(String).join('\n')).not.toContain(
+        'hasFieldChrome',
+      );
 
-  it('shows a bound field’s rule error with forceField', async () => {
+      error.mockRestore();
+    },
+  );
+
+  it('keeps a bound field bare with isBare, invalid state included', async () => {
     const { formInstance } = renderWithForm(
       <Checkbox
-        forceField
+        isBare
         name="terms"
         rules={[{ required: true, message: 'You must accept' }]}
       >
@@ -236,8 +242,68 @@ describe('field chrome without a label', () => {
       await formInstance.validateFields().catch(() => {});
     });
 
+    expect(screen.queryByTestId('Field')).not.toBeInTheDocument();
+    expect(screen.queryByText('You must accept')).not.toBeInTheDocument();
+    expect(screen.getByRole('checkbox')).toHaveAttribute(
+      'aria-invalid',
+      'true',
+    );
+  });
+
+  // The legacy `<Field>` binds its child and hands it the error.
+  it('shows the rule error of a label-less legacy Form.Item child', async () => {
+    const { formInstance } = renderWithForm(
+      <Field
+        name="terms"
+        rules={[{ required: true, message: 'You must accept' }]}
+      >
+        <Checkbox>Accept</Checkbox>
+      </Field>,
+    );
+
+    await act(async () => {
+      await formInstance.validateFields().catch(() => {});
+    });
+
     expect(
       screen.getByRole('checkbox', { name: 'Accept' }),
     ).toHaveAccessibleDescription('You must accept');
+  });
+});
+
+/**
+ * `forceField` used to be the only way to show a label-less field's texts.
+ * Bound fields and text props do that now, so it is deprecated: it still
+ * forces the wrapper, and says so once.
+ */
+describe('the deprecated forceField', () => {
+  // First in the file to pass `forceField`: the warning is once per module.
+  it('still forces the wrapper, and warns once', () => {
+    const spy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    render(
+      <>
+        <TextInput forceField aria-label="Name" />
+        <TextInput forceField aria-label="Email" />
+      </>,
+    );
+
+    expect(screen.getAllByTestId('Field')).toHaveLength(2);
+    expect(
+      spy.mock.calls.filter((args) => String(args[1]).includes('forceField')),
+    ).toHaveLength(1);
+
+    spy.mockRestore();
+  });
+
+  // `forceField` only ever forced the wrapper; `false` is no opt-out.
+  it('treats forceField={false} as unset', () => {
+    render(
+      <Checkbox forceField={false} description="Sent weekly">
+        Accept
+      </Checkbox>,
+    );
+
+    expect(screen.getByText('Sent weekly')).toBeInTheDocument();
   });
 });
