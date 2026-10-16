@@ -221,7 +221,7 @@ An item's `onAction()` and the Menu's `onAction(key)` compose: when both are sup
 
 Use the item callback for a command that belongs to that item, or handle commands centrally using the Menu callback and item keys. Supplying both is useful for additional observation, such as recording an activation; avoid executing the same command in both callbacks.
 
-The native link target covers the complete row, including padding, gaps and whitespace. Right-click anywhere on that target offers the browser's link commands. Independent controls in the prefix, suffix or actions slots retain their own targets. The primary native anchor owns menu-item semantics and keyboard focus, while Item's original list element owns layout and styling. Command content has no link destination.
+The native link target covers the complete row, including padding, gaps and whitespace. The icon, label and description pass pointer presses through to it, so it receives every click, modified click, middle click and right-click on the row, however long the text. Right-click anywhere on that target offers the browser's link commands. Independent controls in the prefix, suffix or actions slots retain their own targets. The primary native anchor owns menu-item semantics and keyboard focus, while Item's original list element owns layout and styling. Command content has no link destination.
 
 <Story of={MenuStories.NavigationOnly} />
 
@@ -284,6 +284,8 @@ Consumer CSS that literally targets `li:focus` or assumes the `li` has `role="me
 Do not use the forwarded row ref or a role selector as a proxy for the primary focus target. A row's semantic role can move to its anchor when a destination or inline action is added. `:focus-within` tracks DOM focus anywhere inside the row; use the `focused` modifier for the collection's active-row state, including virtual focus.
 
 Use named style slots or their `data-element` markers for content styling. Selectors that depend on the Label, Description or Icon being a particular HTML tag need to allow their native anchor host. A private native target is also a child of the row; use slot markers instead of child-position selectors for content.
+
+In tests, click a navigation row, or a command row with inline actions, through its role, as `getByRole('menuitem', { name })`, rather than through its label, description or icon. Those slots let presses through to the primary anchor, so a click on them fails: a browser test reports that the anchor "intercepts pointer events", and jsdom's user-event rejects an element with `pointer-events: none`.
 
 #### Example with Rich Items
 
