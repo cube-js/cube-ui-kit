@@ -3,7 +3,11 @@ import {
   render,
   renderWithRoot,
   screen,
+  userEvent,
 } from '../../../test';
+import { Footer } from '../../content/Footer';
+import { Dialog } from '../../overlays/Dialog/Dialog';
+import { DialogTrigger } from '../../overlays/Dialog/DialogTrigger';
 import { Button } from '../Button/Button';
 
 import { ButtonSplit } from './ButtonSplit';
@@ -111,5 +115,101 @@ describe('<ButtonSplit /> action tooltip', () => {
     await hoverWithPointer(screen.getByRole('button', { name: 'Deploy' }));
 
     expect(await screen.findByRole('tooltip')).toHaveTextContent('Ship it');
+  });
+});
+
+/**
+ * The split hands its `type`, `theme`, `size` and `isDisabled` to its Buttons
+ * through context, and React context crosses portals. So every Button in a
+ * popover, dialog or menu that a split's Button opened used to inherit them: a
+ * confirm popover's Cancel turned primary and small, and was disabled whenever
+ * the split was.
+ */
+describe('<ButtonSplit /> overlay content', () => {
+  function ShipSplit(props: { isDisabled?: boolean }) {
+    return (
+      <ButtonSplit
+        type="primary"
+        theme="danger"
+        size="small"
+        isDisabled={props.isDisabled}
+      >
+        <DialogTrigger type="popover">
+          <Button>Ship</Button>
+          <Dialog aria-label="Ship changes">
+            <Footer>
+              <Button>Cancel</Button>
+              <ButtonSplit type="clear">
+                <Button>Copy</Button>
+              </ButtonSplit>
+            </Footer>
+          </Dialog>
+        </DialogTrigger>
+      </ButtonSplit>
+    );
+  }
+
+  it('does not style the Buttons in a dialog its Button opens', async () => {
+    renderWithRoot(<ShipSplit />);
+
+    const ship = screen.getByRole('button', { name: 'Ship' });
+
+    expect(ship).toHaveAttribute('data-type', 'primary');
+    expect(ship).toHaveAttribute('data-theme', 'danger');
+    expect(ship).toHaveAttribute('data-size', 'small');
+
+    await userEvent.click(ship);
+
+    const cancel = await screen.findByRole('button', { name: 'Cancel' });
+
+    expect(cancel).toHaveAttribute('data-type', 'outline');
+    expect(cancel).toHaveAttribute('data-theme', 'default');
+    expect(cancel).toHaveAttribute('data-size', 'medium');
+
+    // A split inside the dialog still styles its own Buttons.
+    expect(screen.getByRole('button', { name: 'Copy' })).toHaveAttribute(
+      'data-type',
+      'clear',
+    );
+  });
+
+  it('does not disable them when the split becomes disabled', async () => {
+    const { rerender } = renderWithRoot(<ShipSplit />);
+
+    const ship = screen.getByRole('button', { name: 'Ship' });
+
+    await userEvent.click(ship);
+
+    const cancel = await screen.findByRole('button', { name: 'Cancel' });
+
+    rerender(<ShipSplit isDisabled />);
+
+    expect(ship).toBeDisabled();
+    expect(cancel).toBeEnabled();
+  });
+
+  it('does not style the Buttons in the menu its trigger opens', async () => {
+    renderWithRoot(
+      <ButtonSplit
+        actions={[{ key: 'deploy', label: 'Deploy' }]}
+        type="primary"
+        size="small"
+        menuProps={{ footer: <Button>Manage targets</Button> }}
+      />,
+    );
+
+    const trigger = screen.getByRole('button', { name: 'More options' });
+
+    expect(trigger).toHaveAttribute('data-type', 'primary');
+    expect(trigger).toHaveAttribute('data-size', 'small');
+
+    await userEvent.click(trigger);
+
+    const manage = await screen.findByRole('button', {
+      name: 'Manage targets',
+    });
+
+    expect(manage).toHaveAttribute('data-type', 'outline');
+    expect(manage).toHaveAttribute('data-size', 'medium');
   });
 });

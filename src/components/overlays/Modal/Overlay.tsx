@@ -13,6 +13,7 @@ import { createPortal } from 'react-dom';
 
 import { Provider, useProviderProps } from '../../../provider';
 import { markFocusRestoreWindow } from '../../../utils/react/programmaticFocus';
+import { ButtonSplitContext } from '../../actions/ButtonSplit/context';
 import { DisplayTransition } from '../../helpers/DisplayTransition/DisplayTransition';
 
 import { OpenTransitionContext } from './OpenTransitionContext';
@@ -153,8 +154,18 @@ function Overlay(props: CubeOverlayProps, ref) {
   // here — it flushes in `useInsertionEffect`, before any positioning effect
   // reads the DOM. Note this is a *raw* `createPortal`, not `<Portal>`, so the
   // window `<Portal>` opens does not reach these overlays.
+  //
+  // Being the one portal they share also makes this where an overlay leaves the
+  // `ButtonSplit` that opened it. A split styles its Buttons through context,
+  // which crosses the portal, so every Button in a popover, dialog or menu
+  // opened from a split took the split's type, theme, size and disabled state
+  // (CUB-5624). A split rendered inside the overlay still provides its own.
   return createPortal(
-    <TastyBatchProvider>{contents}</TastyBatchProvider>,
+    <TastyBatchProvider>
+      <ButtonSplitContext.Provider value={null}>
+        {contents}
+      </ButtonSplitContext.Provider>
+    </TastyBatchProvider>,
     container || root || document.body,
   );
 }

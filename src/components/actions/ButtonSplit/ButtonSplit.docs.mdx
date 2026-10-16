@@ -57,7 +57,24 @@ These properties allow direct style application without using the `styles` prop:
 
 ### Context Inheritance
 
-`type`, `theme`, `size`, and `isDisabled` set on `Button.Split` are inherited by all child `Button` components via context. Explicitly passed props on individual buttons always take precedence.
+`type`, `theme`, `size`, and `isDisabled` set on `Button.Split` are inherited via context by every `Button` in the split, including a `Button` that a `DialogTrigger` or `Menu.Trigger` in the split uses as its trigger. A `type`, `theme` or `size` passed to an individual `Button` takes precedence. `isDisabled` does not: a disabled split disables every `Button` in it, whatever that `Button`'s own `isDisabled`.
+
+Inheritance stops at the overlay. Buttons in a popover, dialog or menu opened from the split keep their own defaults, so a confirm popover's Cancel button is neither restyled nor disabled by the split. A `Button.Split` rendered inside such an overlay styles its own Buttons as usual.
+
+```jsx
+<Button.Split type="primary" size="small" isDisabled={isShipping}>
+  <DialogTrigger type="popover">
+    <Button>Ship</Button>
+    <Dialog>
+      <Content>Ship these changes?</Content>
+      <Footer>
+        {/* not primary, small or disabled */}
+        <Button>Cancel</Button>
+      </Footer>
+    </Dialog>
+  </DialogTrigger>
+</Button.Split>
+```
 
 ## Modes
 
