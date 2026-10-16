@@ -9,6 +9,7 @@ import { CubeSearchInputProps, SearchInput } from './SearchInput';
 export default {
   title: 'Forms/SearchInput',
   component: SearchInput,
+  args: { fieldStyles: { width: '0 320px 100%' } },
   parameters: {
     controls: {
       exclude: baseProps,

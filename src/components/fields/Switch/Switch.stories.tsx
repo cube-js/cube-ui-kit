@@ -9,6 +9,7 @@ import { CubeSwitchProps, Switch } from './Switch';
 export default {
   title: 'Forms/Switch',
   component: Switch,
+  args: { fieldStyles: { width: '0 max-content 100%' } },
   parameters: {
     controls: {
       exclude: baseProps,

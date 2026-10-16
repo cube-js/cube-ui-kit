@@ -18,7 +18,10 @@ const meta = {
     Item: SearchComboBox.Item,
     Section: SearchComboBox.Section,
   },
-  args: { width: '260px', label: 'Search' },
+  args: {
+    fieldStyles: { width: '0 260px 100%' },
+    label: 'Search',
+  },
   parameters: { controls: { exclude: baseProps }, layout: 'centered' },
   argTypes: {
     /* Content */
@@ -197,6 +200,7 @@ export const ClearsOnSelect = () => {
   return (
     <Flow gap="2x">
       <SearchComboBox
+        fieldStyles={{ width: '0 260px 100%' }}
         label="Add a fruit"
         placeholder="Search a fruit..."
         onSelect={(key, textValue) =>
@@ -227,6 +231,7 @@ export const WithSubmit = () => {
   return (
     <Flow gap="2x">
       <SearchComboBox
+        fieldStyles={{ width: '0 260px 100%' }}
         label="Search or add a tag"
         placeholder="Type and press Enter..."
         onSubmit={(value) => setSubmitted((prev) => [...prev, value])}
@@ -254,6 +259,7 @@ export const WithSubmit = () => {
 export const CustomEmptyLabel: Story = {
   render: () => (
     <SearchComboBox
+      fieldStyles={{ width: '0 260px 100%' }}
       label="Search a fruit"
       placeholder="Try typing 'xyz'..."
       emptyLabel="No fruit matches your search"
@@ -271,6 +277,7 @@ export const CustomEmptyLabel: Story = {
 export const WithTrigger: Story = {
   render: () => (
     <SearchComboBox
+      fieldStyles={{ width: '0 260px 100%' }}
       hideTrigger={false}
       label="Search a fruit"
       placeholder="Search or browse..."
@@ -331,6 +338,7 @@ export const ServerSideFiltering = () => {
   return (
     <Flow gap="2x">
       <SearchComboBox
+        fieldStyles={{ width: '0 260px 100%' }}
         filter={false}
         label="Country"
         placeholder="Search countries..."
@@ -360,6 +368,7 @@ export const Sizes = () => (
   <Flow gap="2x">
     {(['small', 'medium', 'large'] as const).map((size) => (
       <SearchComboBox
+        fieldStyles={{ width: '0 260px 100%' }}
         key={size}
         size={size}
         label={size}
@@ -379,6 +388,7 @@ export const Validation: Story = {
   render: () => (
     <Flow gap="2x">
       <SearchComboBox
+        fieldStyles={{ width: '0 260px 100%' }}
         isValid
         label="Valid"
         defaultInputValue="Apple"
@@ -391,6 +401,7 @@ export const Validation: Story = {
         ))}
       </SearchComboBox>
       <SearchComboBox
+        fieldStyles={{ width: '0 260px 100%' }}
         isInvalid
         label="Invalid"
         placeholder="Search"
@@ -408,7 +419,12 @@ export const Validation: Story = {
 
 export const Disabled: Story = {
   render: () => (
-    <SearchComboBox isDisabled label="Search" placeholder="Disabled">
+    <SearchComboBox
+      fieldStyles={{ width: '0 260px 100%' }}
+      isDisabled
+      label="Search"
+      placeholder="Disabled"
+    >
       {fruits.map((fruit) => (
         <SearchComboBox.Item key={fruit.toLowerCase()}>
           {fruit}

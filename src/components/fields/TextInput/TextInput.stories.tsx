@@ -11,6 +11,7 @@ import { CubeTextInputProps, TextInput } from './TextInput';
 export default {
   title: 'Forms/TextInput',
   component: TextInput,
+  args: { fieldStyles: { width: '0 320px 100%' } },
   parameters: {
     controls: {
       exclude: baseProps,
@@ -209,7 +210,7 @@ export const Validation: StoryFn<CubeTextInputProps> = (args) => (
 );
 
 Validation.args = {
-  width: '300px',
+  fieldStyles: { width: '0 300px 100%' },
 };
 
 Validation.parameters = {
@@ -238,7 +239,7 @@ export const DifferentSizes: StoryFn<CubeTextInputProps> = (args) => (
 );
 
 DifferentSizes.args = {
-  width: '300px',
+  fieldStyles: { width: '0 300px 100%' },
 };
 
 DifferentSizes.parameters = {

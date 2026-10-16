@@ -12,6 +12,7 @@ import { Picker } from './Picker';
 const meta = {
   title: 'Forms/Picker',
   component: Picker,
+  args: { fieldStyles: { width: '0 320px 100%' } },
   parameters: {
     layout: 'centered',
   },
@@ -57,6 +58,7 @@ export const IsClearable: Story = {
   render: () => (
     <Flex flow="column" gap="2x">
       <Picker
+        fieldStyles={{ width: '0 320px 100%' }}
         placeholder="Select a fruit"
         label="Single Selection (Clearable)"
         isClearable={true}
@@ -67,6 +69,7 @@ export const IsClearable: Story = {
         ))}
       </Picker>
       <Picker
+        fieldStyles={{ width: '0 320px 100%' }}
         placeholder="Select fruits"
         label="Multiple Selection (Clearable)"
         selectionMode="multiple"
@@ -99,6 +102,7 @@ export const WithActions: Story = {
 
       return (
         <Picker
+          fieldStyles={{ width: '0 320px 100%' }}
           isClearable
           label="Favorite Fruit"
           placeholder="Select a fruit"
@@ -184,6 +188,7 @@ export const ClearableThemes: Story = {
       <Flex flow="column" gap="2x">
         {triggerVariants.map(({ type, theme, label }) => (
           <Picker
+            fieldStyles={{ width: '0 320px 100%' }}
             key={`${type}-${theme}`}
             isClearable
             placeholder="Select a fruit"
@@ -198,6 +203,7 @@ export const ClearableThemes: Story = {
           </Picker>
         ))}
         <Picker
+          fieldStyles={{ width: '0 320px 100%' }}
           isClearable
           placeholder="Select a fruit"
           label="outline / default + invalid"
@@ -349,6 +355,7 @@ export const Controlled = () => {
   return (
     <Flex flow="column" gap="2x">
       <Picker
+        fieldStyles={{ width: '0 320px 100%' }}
         placeholder="Select a fruit"
         label="Favorite Fruit"
         selectedKey={selectedKey}
@@ -369,6 +376,7 @@ export const ControlledMultiple = () => {
   return (
     <Flex flow="column" gap="2x">
       <Picker
+        fieldStyles={{ width: '0 320px 100%' }}
         placeholder="Select fruits"
         label="Favorite Fruits"
         selectionMode="multiple"
@@ -394,17 +402,31 @@ export const ControlledMultiple = () => {
 export const DifferentSizes: Story = {
   render: () => (
     <Flex flow="column" gap="2x">
-      <Picker placeholder="Select a fruit" label="Small Picker" size="small">
+      <Picker
+        fieldStyles={{ width: '0 320px 100%' }}
+        placeholder="Select a fruit"
+        label="Small Picker"
+        size="small"
+      >
         {fruits.map((fruit) => (
           <Picker.Item key={fruit.key}>{fruit.label}</Picker.Item>
         ))}
       </Picker>
-      <Picker placeholder="Select a fruit" label="Medium Picker">
+      <Picker
+        fieldStyles={{ width: '0 320px 100%' }}
+        placeholder="Select a fruit"
+        label="Medium Picker"
+      >
         {fruits.map((fruit) => (
           <Picker.Item key={fruit.key}>{fruit.label}</Picker.Item>
         ))}
       </Picker>
-      <Picker placeholder="Select a fruit" label="Large Picker" size="large">
+      <Picker
+        fieldStyles={{ width: '0 320px 100%' }}
+        placeholder="Select a fruit"
+        label="Large Picker"
+        size="large"
+      >
         {fruits.map((fruit) => (
           <Picker.Item key={fruit.key}>{fruit.label}</Picker.Item>
         ))}

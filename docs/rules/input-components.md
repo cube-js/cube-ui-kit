@@ -134,7 +134,7 @@ Every input component ships:
 
 - `ComponentName.tsx` — implementation following the rules above
 - `index.tsx` — re-export, wired into the category barrel and `src/index.ts`
-- `ComponentName.stories.tsx` — shared argTypes from `src/stories/FormFieldArgs.ts` (use `VALIDATION_ARGS` rather than re-declaring `isInvalid` / `isValid`); set a default `width` in meta args; export a single `Validation` story rendering the valid and invalid case together (see [storybook.md](storybook.md))
+- `ComponentName.stories.tsx` — shared argTypes from `src/stories/FormFieldArgs.ts` (use `VALIDATION_ARGS` rather than re-declaring `isInvalid` / `isValid`); set the whole-field width with `fieldStyles` in meta args (keep control-only sizing on `width` or `styles`); export a single `Validation` story rendering the valid and invalid case together (see [storybook.md](storybook.md))
 - `ComponentName.docs.mdx` — links `Supports all [Field properties](/docs/getting-started-field-properties--docs)` instead of duplicating field props (see [documentation.md](documentation.md))
 - `ComponentName.test.tsx` — uses `renderWithForm` for form integration and `renderWithRoot` otherwise (see [tests.md](tests.md))
 

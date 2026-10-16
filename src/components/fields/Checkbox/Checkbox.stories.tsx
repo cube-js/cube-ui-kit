@@ -9,6 +9,7 @@ import { Checkbox, CubeCheckboxProps } from './Checkbox';
 export default {
   title: 'Forms/Checkbox',
   component: Checkbox,
+  args: { fieldStyles: { width: '0 max-content 100%' } },
   parameters: {
     controls: {
       exclude: baseProps,

@@ -10,6 +10,7 @@ import { CubePasswordInputProps, PasswordInput } from './PasswordInput';
 export default {
   title: 'Forms/PasswordInput',
   component: PasswordInput,
+  args: { fieldStyles: { width: '0 320px 100%' } },
   parameters: {
     controls: {
       exclude: baseProps,

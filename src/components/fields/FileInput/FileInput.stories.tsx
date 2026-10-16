@@ -11,6 +11,7 @@ import { CubeFileInputProps, FileInput } from './FileInput';
 export default {
   title: 'Forms/FileInput',
   component: FileInput,
+  args: { fieldStyles: { width: '0 320px 100%' } },
   parameters: {
     controls: {
       exclude: baseProps,
@@ -144,6 +145,7 @@ export const Validation: StoryFn<CubeFileInputProps> = (props) => (
 
 export const LongFilePlaceholderOverflow = Template.bind({});
 LongFilePlaceholderOverflow.args = {
+  fieldStyles: { width: '0 280px 100%' },
   inputStyles: {
     width: '280px',
   },
@@ -152,6 +154,7 @@ LongFilePlaceholderOverflow.args = {
 
 export const LongFileNameOverflow = Template.bind({});
 LongFileNameOverflow.args = {
+  fieldStyles: { width: '0 300px 100%' },
   inputStyles: {
     width: '300px',
   },
@@ -174,6 +177,7 @@ LongFileNameOverflow.play = async ({ canvasElement }) => {
 
 export const ExtractText = Template.bind({});
 ExtractText.args = {
+  fieldStyles: { width: '0 300px 100%' },
   type: 'text',
   inputStyles: {
     width: '300px',

@@ -26,7 +26,10 @@ export default {
   title: 'Forms/ColorSwatchGroup',
   component: ColorSwatchGroup,
   parameters: { controls: { exclude: baseProps } },
-  args: { colors: PALETTE },
+  args: {
+    colors: PALETTE,
+    fieldStyles: { width: '0 max-content 100%' },
+  },
   argTypes: {
     /* Content */
     colors: {
@@ -121,7 +124,10 @@ export const Wrapping: StoryFn<CubeColorSwatchGroupProps> = (args) => (
     <ColorSwatchGroup aria-label="Palette" {...args} />
   </div>
 );
-Wrapping.args = { defaultValue: '#26fcb2' };
+Wrapping.args = {
+  defaultValue: '#26fcb2',
+  fieldStyles: { width: '100%' },
+};
 Wrapping.parameters = {
   docs: {
     description: {
@@ -191,6 +197,7 @@ export const InsideColorPicker: StoryFn<CubeColorSwatchGroupProps> = () => {
 
   return (
     <ColorPicker
+      fieldStyles={{ width: '0 max-content 100%' }}
       label="Brand color"
       value={color}
       swatches={PALETTE}

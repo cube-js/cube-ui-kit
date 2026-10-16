@@ -41,7 +41,10 @@ const meta = {
   title: 'Forms/TagInput',
   component: TagInput,
   subcomponents: { Item: TagInput.Item, Section: TagInput.Section },
-  args: { width: '360px', label: 'Also send to' },
+  args: {
+    fieldStyles: { width: '0 360px 100%' },
+    label: 'Also send to',
+  },
   parameters: { controls: { exclude: baseProps } },
   argTypes: {
     ...IS_BARE_ARG,
@@ -400,7 +403,7 @@ RejectedEntry.parameters = {
 };
 
 export const Validation: StoryFn<CubeTagInputProps> = (args) => (
-  <Space gap="2x" flow="column" placeItems="stretch" width="360px">
+  <Space gap="2x" flow="column" placeItems="stretch" width="0 100% 360px">
     <TagInput {...args} label="Valid" defaultValue={['ana@acme.com']} isValid />
     <TagInput
       {...args}
@@ -418,10 +421,10 @@ export const Validation: StoryFn<CubeTagInputProps> = (args) => (
   </Space>
 );
 
-Validation.args = { width: undefined };
+Validation.args = { fieldStyles: { width: '100%' } };
 
 export const Sizes: StoryFn<CubeTagInputProps> = (args) => (
-  <Space gap="2x" flow="column" placeItems="stretch" width="360px">
+  <Space gap="2x" flow="column" placeItems="stretch" width="0 100% 360px">
     {(['small', 'medium', 'large'] as const).map((size) => (
       <TagInput
         key={size}
@@ -435,10 +438,10 @@ export const Sizes: StoryFn<CubeTagInputProps> = (args) => (
   </Space>
 );
 
-Sizes.args = { width: undefined };
+Sizes.args = { fieldStyles: { width: '100%' } };
 
 export const DisabledAndReadOnly: StoryFn<CubeTagInputProps> = (args) => (
-  <Space gap="2x" flow="column" placeItems="stretch" width="360px">
+  <Space gap="2x" flow="column" placeItems="stretch" width="0 100% 360px">
     <TagInput
       {...args}
       isDisabled
@@ -454,7 +457,7 @@ export const DisabledAndReadOnly: StoryFn<CubeTagInputProps> = (args) => (
   </Space>
 );
 
-DisabledAndReadOnly.args = { width: undefined };
+DisabledAndReadOnly.args = { fieldStyles: { width: '100%' } };
 
 export const SideLabel: StoryFn<CubeTagInputProps> = (args) => (
   <TagInput
@@ -466,7 +469,7 @@ export const SideLabel: StoryFn<CubeTagInputProps> = (args) => (
   />
 );
 
-SideLabel.args = { width: '480px' };
+SideLabel.args = { fieldStyles: { width: '0 480px 100%' } };
 
 export const ManyValues: StoryFn<CubeTagInputProps> = (args) => (
   <TagInput
@@ -478,7 +481,7 @@ export const ManyValues: StoryFn<CubeTagInputProps> = (args) => (
   />
 );
 
-ManyValues.args = { width: '240px' };
+ManyValues.args = { fieldStyles: { width: '0 240px 100%' } };
 
 export const ChipThemes: StoryFn<CubeTagInputProps> = (args) => {
   const members: Record<string, 'measure' | 'dimension'> = {

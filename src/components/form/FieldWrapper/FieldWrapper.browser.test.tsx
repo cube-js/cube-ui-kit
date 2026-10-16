@@ -3,7 +3,7 @@ import { Badge } from '../../content/Badge/Badge';
 import { Tag } from '../../content/Tag/Tag';
 import { Switch } from '../../fields/Switch/Switch';
 import { TextInput } from '../../fields/TextInput/TextInput';
-import { Form } from '../Form/Form';
+import { Field } from '../Form/Field';
 
 /**
  * Row height is layout, which jsdom does not compute — hence the browser tier.
@@ -149,17 +149,18 @@ describe('FieldWrapper inherited side label layout', () => {
     const { container } = renderWithForm(
       <>
         <TextInput name="title" label="Title" />
-        <Form.Item>
+        <Field>
           <div>Unindented content</div>
-        </Form.Item>
-        <Form.Item styles={{ padding: '$full-label-width left' }}>
+        </Field>
+        <Field styles={{ padding: '$full-label-width left' }}>
           <div>Aligned content</div>
-        </Form.Item>
+        </Field>
       </>,
       { formProps: { labelPosition: 'side' } },
     );
-    const [labeled, unpadded, padded] =
-      container.querySelectorAll('[data-qa="Field"]');
+    const [labeled, unpadded, padded] = Array.from(
+      container.querySelectorAll('[data-qa="Field"]'),
+    );
     const labelOffset = controlOffset(labeled);
 
     expect(labelOffset).toBeGreaterThan(0);

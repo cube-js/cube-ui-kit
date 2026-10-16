@@ -22,7 +22,7 @@ export default {
     },
   },
   args: {
-    width: '30x',
+    fieldStyles: { width: '0 30x 100%' },
   },
   argTypes: {
     /* Content */
@@ -229,7 +229,10 @@ export const Spaces: StoryFn<CubeColorInputProps> = (args) => (
     <ColorInput {...args} label="RGB" defaultSpace="rgb" />
   </Space>
 );
-Spaces.args = { defaultValue: '#26fcb2', width: '20x' };
+Spaces.args = {
+  defaultValue: '#26fcb2',
+  fieldStyles: { width: '0 20x 100%' },
+};
 Spaces.parameters = {
   docs: {
     description: {

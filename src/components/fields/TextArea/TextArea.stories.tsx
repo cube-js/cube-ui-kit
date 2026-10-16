@@ -12,6 +12,7 @@ import { CubeTextAreaProps, TextArea } from './TextArea';
 export default {
   title: 'Forms/TextArea',
   component: TextArea,
+  args: { fieldStyles: { width: '0 320px 100%' } },
   parameters: {
     controls: {
       exclude: baseProps,
@@ -272,6 +273,7 @@ export const Controlled = () => {
 
   return (
     <TextArea
+      fieldStyles={{ width: '0 320px 100%' }}
       label="Controlled TextArea"
       value={value}
       description={`Character count: ${value.length}`}
@@ -286,6 +288,7 @@ export const ControlledAutoSize = () => {
   return (
     <Space flow="column" placeItems="start">
       <TextArea
+        fieldStyles={{ width: '0 320px 100%' }}
         autoSize
         label="Controlled AutoSize TextArea"
         rows={2}

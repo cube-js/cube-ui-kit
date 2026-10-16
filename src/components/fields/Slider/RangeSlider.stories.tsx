@@ -11,7 +11,7 @@ export default {
   component: RangeSlider,
   args: {
     id: 'name',
-    width: '100%',
+    fieldStyles: { width: '0 320px 100%' },
     defaultValue: [4, 12],
     minValue: 0,
     maxValue: 20,
@@ -57,4 +57,5 @@ export const Vertical = Template.bind({});
 Vertical.args = {
   label: 'Slider',
   orientation: 'vertical',
+  fieldStyles: { width: '0 max-content 100%', height: '200px' },
 };

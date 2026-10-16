@@ -15,6 +15,7 @@ import { parseAbsoluteDate } from './parseDate';
 export default {
   title: 'Forms/DateInput',
   component: DateInput,
+  args: { fieldStyles: { width: '0 max-content 100%' } },
   parameters: {
     controls: {
       exclude: baseProps,
@@ -47,7 +48,6 @@ const Template: StoryFn<CubeDateInputProps> = ({ ...props }) => {
   return (
     <DateInput
       aria-label="DateInput"
-      wrapperStyles={{ width: 'max-content' }}
       {...props}
       onChange={(query) => console.log('change', query)}
     />

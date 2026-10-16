@@ -30,6 +30,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 const meta: Meta<typeof FilterPicker> = {
   title: 'Forms/FilterPicker',
   component: FilterPicker,
+  args: { fieldStyles: { width: '0 30x 100%' } },
   parameters: {
     layout: 'centered',
     docs: {
@@ -486,7 +487,7 @@ export const Default: Story = {
     label: 'Select Options',
     placeholder: 'Choose items...',
     searchPlaceholder: 'Search options...',
-    width: 'max 30x',
+    fieldStyles: { width: '0 30x 100%' },
   },
   render: (args) => (
     <FilterPicker {...args}>
@@ -505,7 +506,7 @@ export const SingleSelection: Story = {
     placeholder: 'Select one fruit...',
     selectionMode: 'single',
     searchPlaceholder: 'Search fruits...',
-    width: 'max 30x',
+    fieldStyles: { width: '0 30x 100%' },
     defaultSelectedKey: 'banana',
   },
   play: async ({ canvasElement }) => {
@@ -530,7 +531,7 @@ export const Clearable: Story = {
     placeholder: 'Choose items...',
     selectionMode: 'single',
     searchPlaceholder: 'Search fruits...',
-    width: 'max 30x',
+    fieldStyles: { width: '0 30x 100%' },
     defaultSelectedKey: 'apple',
     isClearable: true,
   },
@@ -567,7 +568,7 @@ export const WithActions: Story = {
           isClearable
           label="Favorite Fruit"
           placeholder="Choose items..."
-          width="max 30x"
+          fieldStyles={{ width: '0 30x 100%' }}
           items={fruits}
           selectedKey={selectedKey}
           actions={
@@ -663,7 +664,7 @@ export const ClearableThemes: Story = {
             theme={theme}
             placeholder="Choose items..."
             searchPlaceholder="Search fruits..."
-            width="max 30x"
+            fieldStyles={{ width: '0 30x 100%' }}
             defaultSelectedKey="apple"
           >
             {(fruit) => (
@@ -679,7 +680,7 @@ export const ClearableThemes: Story = {
           label="outline / default + invalid"
           placeholder="Choose items..."
           searchPlaceholder="Search fruits..."
-          width="max 30x"
+          fieldStyles={{ width: '0 30x 100%' }}
           defaultSelectedKey="apple"
           isInvalid
           message="This selection is invalid"
@@ -701,7 +702,7 @@ export const MultipleSelection: Story = {
     placeholder: 'Choose items...',
     selectionMode: 'multiple',
     searchPlaceholder: 'Search options...',
-    width: 'max 30x',
+    fieldStyles: { width: '0 30x 100%' },
     defaultSelectedKeys: ['banana', 'cherry'],
   },
   play: async ({ canvasElement }) => {
@@ -736,7 +737,7 @@ export const WithCheckboxes: Story = {
     selectionMode: 'multiple',
     isCheckable: true,
     searchPlaceholder: 'Search options...',
-    width: 'max 30x',
+    fieldStyles: { width: '0 30x 100%' },
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -772,7 +773,7 @@ export const WithDescriptions: Story = {
     placeholder: 'Choose items...',
     selectionMode: 'single',
     searchPlaceholder: 'Search options...',
-    width: 'max 35x',
+    fieldStyles: { width: '0 35x 100%' },
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -808,7 +809,7 @@ export const WithSections: Story = {
     placeholder: 'Choose items...',
     selectionMode: 'multiple',
     searchPlaceholder: 'Search ingredients...',
-    width: 'max 30x',
+    fieldStyles: { width: '0 30x 100%' },
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -856,7 +857,7 @@ export const DynamicSections: Story = {
     placeholder: 'Choose items...',
     selectionMode: 'multiple',
     searchPlaceholder: 'Search ingredients...',
-    width: 'max 30x',
+    fieldStyles: { width: '0 30x 100%' },
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -925,7 +926,7 @@ export const CustomSummary: Story = {
     placeholder: 'Choose items...',
     selectionMode: 'multiple',
     searchPlaceholder: 'Search options...',
-    width: 'max 30x',
+    fieldStyles: { width: '0 30x 100%' },
     renderSummary: ({ selectedLabels, selectedKeys, selectionMode }) => {
       if (selectionMode === 'single') {
         return selectedLabels[0] ? `Selected: ${selectedLabels[0]}` : null;
@@ -992,7 +993,7 @@ export const RenderSummaryBehavior: Story = {
               icon={<FilterIcon />}
               rightIcon={null}
               aria-label="Filter without selection"
-              width="min 12x"
+              fieldStyles={{ width: '0 12x 100%' }}
             >
               {fruits.slice(0, 3).map((fruit) => (
                 <FilterPicker.Item key={fruit.key} textValue={fruit.label}>
@@ -1013,7 +1014,7 @@ export const RenderSummaryBehavior: Story = {
               rightIcon={null}
               defaultSelectedKeys={['apple', 'banana']}
               aria-label="Filter with selection"
-              width="min 12x"
+              fieldStyles={{ width: '0 12x 100%' }}
             >
               {fruits.slice(0, 3).map((fruit) => (
                 <FilterPicker.Item key={fruit.key} textValue={fruit.label}>
@@ -1039,7 +1040,7 @@ export const RenderSummaryBehavior: Story = {
               placeholder="Custom placeholder"
               selectionMode="multiple"
               renderSummary={() => null}
-              width="20x"
+              fieldStyles={{ width: '0 20x 100%' }}
             >
               {fruits.slice(0, 3).map((fruit) => (
                 <FilterPicker.Item key={fruit.key} textValue={fruit.label}>
@@ -1058,7 +1059,7 @@ export const RenderSummaryBehavior: Story = {
               selectionMode="multiple"
               renderSummary={() => null}
               defaultSelectedKeys={['apple']}
-              width="20x"
+              fieldStyles={{ width: '0 20x 100%' }}
             >
               {fruits.slice(0, 3).map((fruit) => (
                 <FilterPicker.Item key={fruit.key} textValue={fruit.label}>
@@ -1087,7 +1088,7 @@ export const RenderSummaryBehavior: Story = {
                   ? '🔍 No filters'
                   : `${selectedKeys?.length ?? 0} active`
               }
-              width="20x"
+              fieldStyles={{ width: '0 20x 100%' }}
             >
               {fruits.slice(0, 3).map((fruit) => (
                 <FilterPicker.Item key={fruit.key} textValue={fruit.label}>
@@ -1109,7 +1110,7 @@ export const RenderSummaryBehavior: Story = {
                   : `${selectedKeys?.length ?? 0} active`
               }
               defaultSelectedKeys={['apple', 'banana']}
-              width="20x"
+              fieldStyles={{ width: '0 20x 100%' }}
             >
               {fruits.slice(0, 3).map((fruit) => (
                 <FilterPicker.Item key={fruit.key} textValue={fruit.label}>
@@ -1144,7 +1145,7 @@ export const RenderSummaryBehavior: Story = {
                   </Space>
                 );
               }}
-              width="20x"
+              fieldStyles={{ width: '0 20x 100%' }}
             >
               {fruits.slice(0, 3).map((fruit) => (
                 <FilterPicker.Item key={fruit.key} textValue={fruit.label}>
@@ -1172,7 +1173,7 @@ export const RenderSummaryBehavior: Story = {
                 );
               }}
               defaultSelectedKeys={['apple', 'cherry']}
-              width="20x"
+              fieldStyles={{ width: '0 20x 100%' }}
             >
               {fruits.slice(0, 3).map((fruit) => (
                 <FilterPicker.Item key={fruit.key} textValue={fruit.label}>
@@ -1232,7 +1233,7 @@ export const WithHeaderAndFooter: Story = {
     placeholder: 'Select languages...',
     selectionMode: 'multiple',
     searchPlaceholder: 'Search languages...',
-    width: 'max 35x',
+    fieldStyles: { width: '0 35x 100%' },
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -1298,7 +1299,7 @@ export const LoadingState: Story = {
     isLoading: true,
     selectionMode: 'multiple',
     searchPlaceholder: 'Search options...',
-    width: '30x',
+    fieldStyles: { width: '0 30x 100%' },
   },
   render: (args) => (
     <FilterPicker {...args}>
@@ -1326,7 +1327,7 @@ export const LoadingItemsState: Story = {
     isLoadingItems: true,
     selectionMode: 'multiple',
     searchPlaceholder: 'Search options...',
-    width: '30x',
+    fieldStyles: { width: '0 30x 100%' },
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -1360,7 +1361,7 @@ export const LoadingItemsWithCustomValue: Story = {
     allowsCustomValue: true,
     selectionMode: 'multiple',
     searchPlaceholder: 'Search or type custom value...',
-    width: '30x',
+    fieldStyles: { width: '0 30x 100%' },
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -1393,7 +1394,7 @@ export const DisabledState: Story = {
     isDisabled: true,
     selectionMode: 'multiple',
     searchPlaceholder: 'Search options...',
-    width: 'max 25x',
+    fieldStyles: { width: '0 25x 100%' },
   },
   render: (args) => (
     <FilterPicker {...args}>
@@ -1421,7 +1422,7 @@ export const DisabledItems: Story = {
     selectionMode: 'single',
     disabledKeys: ['banana', 'cherry'],
     searchPlaceholder: 'Search options...',
-    width: 'max 25x',
+    fieldStyles: { width: '0 25x 100%' },
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -1455,7 +1456,7 @@ export const DisallowEmptySelection: Story = {
     disallowEmptySelection: true,
     defaultSelectedKey: 'apple',
     searchPlaceholder: 'Search options...',
-    width: 'max 25x',
+    fieldStyles: { width: '0 25x 100%' },
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -1485,7 +1486,7 @@ export const Validation: Story = {
   args: {
     selectionMode: 'multiple',
     searchPlaceholder: 'Search options...',
-    width: 'max 25x',
+    fieldStyles: { width: '0 25x 100%' },
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -1644,7 +1645,7 @@ export const WithIcons: Story = {
     placeholder: 'Filter by category...',
     selectionMode: 'multiple',
     searchPlaceholder: 'Search categories...',
-    width: 'max 30x',
+    fieldStyles: { width: '0 30x 100%' },
     icon: <FilterIcon />,
   },
   play: async ({ canvasElement }) => {
@@ -1701,7 +1702,7 @@ export const WithCustomValues: Story = {
     selectionMode: 'multiple',
     allowsCustomValue: true,
     searchPlaceholder: 'Search or add custom value...',
-    width: 'max 30x',
+    fieldStyles: { width: '0 30x 100%' },
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -1733,7 +1734,7 @@ export const WithTextValue: Story = {
     placeholder: 'Choose plan...',
     selectionMode: 'single',
     searchPlaceholder: 'Search plans...',
-    width: 'max 30x',
+    fieldStyles: { width: '0 30x 100%' },
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -1790,7 +1791,7 @@ export const ControlledExample = () => {
         label="Controlled Single Selection"
         selectedKey={selectedKey}
         searchPlaceholder="Search fruits..."
-        width="max 30x"
+        fieldStyles={{ width: '0 30x 100%' }}
         onSelectionChange={(key) => setSelectedKey(key as string | null)}
       >
         {fruits.slice(0, 5).map((fruit) => (
@@ -1827,7 +1828,7 @@ export const MultipleControlledExample = () => {
         selectionMode="multiple"
         isCheckable={true}
         searchPlaceholder="Filter permissions..."
-        width="max 30x"
+        fieldStyles={{ width: '0 30x 100%' }}
         onSelectionChange={(keys) => setSelectedKeys(keys as string[])}
       >
         {permissions.map((permission) => (
@@ -1913,7 +1914,7 @@ export const ComplexExample: Story = {
     selectionMode: 'multiple',
     isCheckable: true,
     searchPlaceholder: 'Search all filters...',
-    width: '30x',
+    fieldStyles: { width: '0 30x 100%' },
     renderSummary: ({ selectedKeys, selectedLabels }) => {
       if (selectedKeys.length === 0)
         return <Text.Placeholder>Apply filters...</Text.Placeholder>;
@@ -2145,7 +2146,7 @@ export const VirtualizedList: Story = {
     placeholder: 'Select from large list...',
     selectionMode: 'multiple',
     searchPlaceholder: 'Search through 100+ items...',
-    width: 'max 35x',
+    fieldStyles: { width: '0 35x 100%' },
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -2230,7 +2231,7 @@ export const WithSelectAll: Story = {
     showSelectAll: true,
     selectAllLabel: 'All Permissions',
     defaultSelectedKeys: ['read'],
-    width: '30x',
+    fieldStyles: { width: '0 30x 100%' },
   },
   parameters: {
     docs: {
@@ -2248,7 +2249,7 @@ export const WithHotkeys: Story = {
     placeholder: 'Press Ctrl+F to open...',
     selectionMode: 'multiple',
     searchPlaceholder: 'Search options...',
-    width: 'max 30x',
+    fieldStyles: { width: '0 30x 100%' },
     hotkeys: 'ctrl+f',
     triggerTooltip: 'Press Ctrl+F to open filter',
   },
@@ -2282,7 +2283,7 @@ export const WithPrefixSuffix: Story = {
     placeholder: 'Select options...',
     selectionMode: 'multiple',
     searchPlaceholder: 'Search options...',
-    width: 'max 35x',
+    fieldStyles: { width: '0 35x 100%' },
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -2326,7 +2327,7 @@ export const WithTooltipAndDescription: Story = {
     placeholder: 'Hover for tooltip...',
     selectionMode: 'single',
     searchPlaceholder: 'Search languages...',
-    width: 'max 30x',
+    fieldStyles: { width: '0 30x 100%' },
     triggerTooltip:
       'Select your preferred programming language. You can search and filter the options.',
     triggerDescription: 'Required for profile',
@@ -2361,7 +2362,7 @@ export const AdvancedTriggerFeatures: Story = {
     placeholder: 'Advanced trigger...',
     selectionMode: 'multiple',
     searchPlaceholder: 'Search all options...',
-    width: 'max 40x',
+    fieldStyles: { width: '0 40x 100%' },
     hotkeys: 'ctrl+shift+f',
     triggerTooltip: {
       title: 'Advanced Filter Picker',
@@ -2427,7 +2428,7 @@ export const MultipleControlled: Story = {
     selectionMode: 'multiple',
     isCheckable: true,
     searchPlaceholder: 'Filter permissions...',
-    width: 'max 30x',
+    fieldStyles: { width: '0 30x 100%' },
   },
   play: async ({ canvasElement }) => {},
   render: (args) => {
@@ -2580,7 +2581,7 @@ export const AsyncSearch: Story = {
           placeholder="Select items..."
           selectionMode="multiple"
           searchPlaceholder="Search 500 items (1s server delay)..."
-          width="100%"
+          fieldStyles={{ width: '100%' }}
           items={items}
           selectedKeys={selectedKeys}
           searchValue={searchValue}
@@ -2648,6 +2649,7 @@ export const Reorderable: StoryObj<typeof FilterPicker> = {
     return (
       <Space gap="2x" flow="column" placeItems="start">
         <FilterPicker
+          fieldStyles={{ width: '0 40x 100%' }}
           isReorderable
           selectionMode="multiple"
           defaultSelectedKeys={['revenue', 'orders', 'customers']}

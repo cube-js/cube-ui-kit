@@ -141,7 +141,7 @@ export default {
   args: {
     defaultValue: 180,
     fieldStyles: {
-      width: '200px',
+      width: '0 200px 100%',
     },
   },
 } as Meta<CubeHueSliderProps>;
@@ -201,6 +201,7 @@ export const Vertical = Template.bind({});
 Vertical.args = {
   orientation: 'vertical',
   fieldStyles: {
+    width: '0 max-content 100%',
     height: '200px',
   },
 };

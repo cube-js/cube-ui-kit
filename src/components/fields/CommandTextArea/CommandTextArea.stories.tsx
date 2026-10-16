@@ -11,6 +11,7 @@ import { CommandTextArea } from './CommandTextArea';
 export default {
   title: 'Forms/CommandTextArea',
   component: CommandTextArea,
+  args: { fieldStyles: { width: '0 40x 100%' } },
   parameters: {
     controls: {
       exclude: baseProps,
@@ -125,7 +126,6 @@ export const Default: StoryFn = (props) => (
   <CommandTextArea
     label="Message"
     placeholder="Type / to see commands…"
-    width="40x"
     {...props}
   >
     {commands.map((c) => (
@@ -142,13 +142,7 @@ export const Default: StoryFn = (props) => (
 
 export const Validation: StoryFn = (props) => (
   <Space gap="2x" flow="column" placeItems="start">
-    <CommandTextArea
-      label="Valid"
-      width="40x"
-      {...props}
-      isValid
-      defaultValue="/help"
-    >
+    <CommandTextArea label="Valid" {...props} isValid defaultValue="/help">
       {commands.map((c) => (
         <CommandTextArea.Item
           key={c.key}
@@ -161,7 +155,6 @@ export const Validation: StoryFn = (props) => (
     </CommandTextArea>
     <CommandTextArea
       label="Invalid"
-      width="40x"
       placeholder="Type / to see commands…"
       {...props}
       isInvalid
@@ -185,12 +178,12 @@ export const Controlled: StoryFn = () => {
     <CommandTextArea
       label="Message"
       placeholder="Type / to see commands…"
-      width="40x"
       value={value}
       onChange={setValue}
       onCommand={(key) => {
         console.log('picked command', key);
       }}
+      fieldStyles={{ width: '0 40x 100%' }}
     >
       {commands.map((c) => (
         <CommandTextArea.Item
@@ -211,7 +204,6 @@ export const MentionTrigger: StoryFn = (props) => (
   <CommandTextArea
     label="Message"
     placeholder="Type @ anywhere to mention…"
-    width="40x"
     triggers={[{ char: '@', atLineStart: false }]}
     {...props}
   >
@@ -237,7 +229,6 @@ export const WithSections: StoryFn = (props) => (
   <CommandTextArea
     label="Message"
     placeholder="Type / to see commands…"
-    width="40x"
     {...props}
   >
     <CommandTextArea.Section title="Actions">
@@ -282,7 +273,6 @@ export const AutoSize: StoryFn = (props) => (
     autoSize
     label="Message"
     placeholder="Type / to see commands…"
-    width="40x"
     // Auto-sizing is only visible once there is enough text to grow the field.
     // Empty, this story renders exactly like `Default` and shows nothing.
     defaultValue={
@@ -308,7 +298,6 @@ export const Multiline: StoryFn = (props) => (
   <CommandTextArea
     label="Message"
     placeholder="Type / on any line to see commands…"
-    width="40x"
     rows={6}
     defaultValue={'Hello, how are you?\n\nI wanted to ask about '}
     {...props}
@@ -338,7 +327,6 @@ export const TopPopoverPosition: StoryFn = (props) => (
     <CommandTextArea
       label="Message"
       placeholder="Type / to see commands…"
-      width="40x"
       {...props}
     >
       {commands.map((c) => (
