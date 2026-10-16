@@ -373,7 +373,7 @@ module.exports = [
     // `forceField` warns as deprecated), Checkbox and Switch naming, and alert
     // dialogs that close with their owner. Button stays 159,379 B. Allow
     // 619 kB, 930 B headroom.
-    limit: '619kB',
+    limit: '620kB',
   },
   {
     name: 'Tree shaking (just a Button)',

@@ -1,6 +1,7 @@
 import { ReactElement } from 'react';
 import { Item } from 'react-stately';
 
+import { normalizeNavigationUrl } from '../../../providers/navigation-url';
 import { NavigateOptions, To } from '../../../providers/navigation.types';
 import {
   COLLECTION_ITEM_CLICK,
@@ -41,9 +42,17 @@ const _MenuCollectionItem: typeof MenuCollectionItem &
     Badge: CollectionItem.Badge,
     getCollectionNode<T>(props: CubeMenuItemProps<T>, context: unknown) {
       const { newTab } = parseTo(props.to);
-      const isCurrentDocument = props.to == null && props.href === '';
-      const isLink =
-        props.to !== '' && (props.to != null || props.href != null);
+      // A blank destination counts as an empty one, as the URL parser reads it.
+      const to =
+        typeof props.to === 'string'
+          ? normalizeNavigationUrl(props.to)
+          : props.to;
+      const href =
+        typeof props.href === 'string'
+          ? normalizeNavigationUrl(props.href)
+          : props.href;
+      const isCurrentDocument = to == null && href === '';
+      const isLink = to !== '' && (to != null || href != null);
 
       // A private href marks links for Aria; the row resolves the actual `to`.
       return (Item as any).getCollectionNode(
@@ -51,13 +60,13 @@ const _MenuCollectionItem: typeof MenuCollectionItem &
           ...props,
           isDisabled: props.isDisabled ?? (props.isLoading ? true : undefined),
           href:
-            props.to === ''
+            to === ''
               ? undefined
-              : props.to != null
+              : to != null
                 ? '.'
                 : isCurrentDocument
                   ? '.'
-                  : props.href,
+                  : href,
           [CURRENT_DOCUMENT_LINK]: isCurrentDocument,
           // Selectable items also consume collection onClick; let Menu own it once.
           onClick: isLink ? undefined : props.onClick,

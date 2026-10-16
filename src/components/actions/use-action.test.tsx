@@ -157,6 +157,71 @@ describe('parseTo', () => {
       expect(parseTo(to).isExternal).toBe(false);
     },
   );
+
+  // Strip what the URL parser strips, so classification and the router
+  // target match the URL a browser would open.
+  it.each([
+    [' https://example.com', 'https://example.com'],
+    ['https://example.com\n', 'https://example.com'],
+    ['\u0001https://example.com\u0000 ', 'https://example.com'],
+    ['\t//example.com', '//example.com'],
+  ])('cleans the external URL %j', (to, cleanTo) => {
+    expect(parseTo(to)).toEqual({
+      newTab: false,
+      nativeRoute: false,
+      cleanTo,
+      isHistoryNavigation: false,
+      isHashNavigation: false,
+      isExternal: true,
+    });
+  });
+
+  it('cleans before reading the ! prefix', () => {
+    expect(parseTo(' !https://example.com ')).toEqual({
+      newTab: true,
+      nativeRoute: false,
+      cleanTo: 'https://example.com',
+      isHistoryNavigation: false,
+      isHashNavigation: false,
+      isExternal: true,
+    });
+    expect(parseTo('! https://example.com').cleanTo).toBe(
+      'https://example.com',
+    );
+  });
+
+  it('cleans before reading the @ and # prefixes', () => {
+    expect(parseTo('\n@/logout ')).toMatchObject({
+      nativeRoute: true,
+      cleanTo: '/logout',
+      isExternal: false,
+    });
+    expect(parseTo(' #section')).toMatchObject({
+      isHashNavigation: true,
+      cleanTo: '#section',
+    });
+  });
+
+  it('cleans an app path and keeps it in the router', () => {
+    expect(parseTo(' /path\t')).toMatchObject({
+      cleanTo: '/path',
+      isExternal: false,
+    });
+  });
+
+  it.each(['  ', '\n\t'])('treats the blank %j as no destination', (to) => {
+    expect(parseTo(to)).toMatchObject({
+      cleanTo: undefined,
+      isExternal: false,
+    });
+  });
+
+  it('keeps a no-break space, which the URL parser keeps', () => {
+    expect(parseTo('\u00a0https://example.com')).toMatchObject({
+      cleanTo: '\u00a0https://example.com',
+      isExternal: false,
+    });
+  });
 });
 
 describe('useAction', () => {
@@ -195,6 +260,19 @@ describe('useAction', () => {
         ),
       },
     );
+
+    expect(result.current.actionProps.as).toBe('button');
+    expect(result.current.actionProps.href).toBeUndefined();
+  });
+
+  it.each(['', '  '])('renders a button for the blank to %j', (to) => {
+    const { adapter } = createMockNavigationAdapter();
+
+    const { result } = renderHook(() => useAction({ to }, { current: null }), {
+      wrapper: ({ children }) => (
+        <TestWrapper navigation={adapter}>{children}</TestWrapper>
+      ),
+    });
 
     expect(result.current.actionProps.as).toBe('button');
     expect(result.current.actionProps.href).toBeUndefined();
@@ -282,6 +360,25 @@ describe('useAction', () => {
     }
 
     expect(result.current.actionProps.href).toBe(href);
+  });
+
+  it('hands the router the cleaned destination', () => {
+    const { adapter, mockUseHref } = createMockNavigationAdapter();
+
+    const { result } = renderHook(
+      () => useAction({ to: ' https://example.com ' }, { current: null }),
+      {
+        wrapper: ({ children }) => (
+          <TestWrapper navigation={adapter}>{children}</TestWrapper>
+        ),
+      },
+    );
+
+    for (const [arg] of mockUseHref.mock.calls) {
+      expect(arg).toBe('https://example.com');
+    }
+
+    expect(result.current.actionProps.href).toBe('https://example.com');
   });
 });
 
@@ -436,6 +533,47 @@ describe('performClickHandler', () => {
     expect(mockTracking.event).toHaveBeenCalledWith(
       'Link Press',
       { qa: 'TestQa', href: 'https://example.com', type: 'native' },
+      evt.target,
+    );
+  });
+
+  it('opens an external URL with surrounding whitespace natively', () => {
+    const evt = createMockEvent();
+
+    performClickHandler(evt, {
+      navigate: mockNavigate,
+      resolvedHref: 'https://example.com',
+      to: ' https://example.com\n',
+      onPress: mockOnPress,
+      tracking: mockTracking,
+      navigationOptions: {},
+    });
+
+    expect(mockNavigate).not.toHaveBeenCalled();
+    expect(window.location.assign).toHaveBeenCalledWith('https://example.com');
+  });
+
+  it('scrolls to the hash target of a whitespace-wrapped hash', () => {
+    const mockElement = { scrollIntoView: vi.fn() };
+    (
+      global.document.getElementById as ReturnType<typeof vi.fn>
+    ).mockReturnValue(mockElement);
+    const evt = createMockEvent();
+
+    performClickHandler(evt, {
+      navigate: mockNavigate,
+      resolvedHref: '#section',
+      to: ' #section ',
+      onPress: mockOnPress,
+      tracking: mockTracking,
+      navigationOptions: {},
+    });
+
+    expect(global.document.getElementById).toHaveBeenCalledWith('section');
+    expect(mockElement.scrollIntoView).toHaveBeenCalled();
+    expect(mockTracking.event).toHaveBeenCalledWith(
+      'Link Press',
+      { qa: 'TestQa', href: '#section', type: 'hash', target: 'section' },
       evt.target,
     );
   });

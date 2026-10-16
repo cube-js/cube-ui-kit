@@ -18,7 +18,10 @@ import { FocusRing, useMenuItem } from 'react-aria';
 import { TreeState } from 'react-stately';
 
 import { RightIcon } from '../../../icons/RightIcon';
-import { isExternalUrl } from '../../../providers/navigation-url';
+import {
+  isExternalUrl,
+  normalizeNavigationUrl,
+} from '../../../providers/navigation-url';
 import { useNavigation } from '../../../providers/use-navigation';
 import { mergeProps } from '../../../utils/react';
 import {
@@ -114,7 +117,14 @@ function MenuLinkItem<T>(props: MenuItemProps<T>) {
   const { to, href, navigationOptions } = props.item.props;
   const { cleanTo: parsedTo, nativeRoute } = parseTo(to);
   const isCurrentDocument = props.item.props[CURRENT_DOCUMENT_LINK];
-  const cleanTo = to != null ? parsedTo : isCurrentDocument ? '' : href;
+  const cleanTo =
+    to != null
+      ? parsedTo
+      : isCurrentDocument
+        ? ''
+        : typeof href === 'string'
+          ? normalizeNavigationUrl(href)
+          : href;
   const isExternal = typeof cleanTo === 'string' && isExternalUrl(cleanTo);
   const { navigate, resolvedHref, isDefault } = useNavigation(
     isExternal ? '.' : cleanTo || '.',
