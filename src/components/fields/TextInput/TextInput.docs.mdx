@@ -24,7 +24,7 @@ A text input component that allows users to input custom text entries with a key
 
 ### Properties
 
-- **`value`** `string` — The text value in controlled mode
+- **`value`** `string | null` — The text value in controlled mode. `null` clears the field and keeps it controlled
 - **`defaultValue`** `string` — The default text value in uncontrolled mode
 - **`isBuffered`** `boolean` (default: `true`) — Whether typed text is held locally until the controlled `value` catches up. This is what keeps the caret in place when the value round-trips through a store that re-renders a pass late; `onChange` still fires on every keystroke. Set to `false` for a caller that must see the field snap back to its own `value` the moment it declines a keystroke.
 - **`placeholder`** `string` — Placeholder text when input is empty
@@ -40,10 +40,11 @@ A text input component that allows users to input custom text entries with a key
 - **`autoComplete`** `string` — HTML [`autocomplete`](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/autocomplete) token that tells the browser what to autofill (`email`, `username`, `off`, …). The lowercase `autocomplete` alias is deprecated.
 - **`maxLength`** `number` — Maximum number of characters allowed
 - **`minLength`** `number` — Minimum number of characters required
-- **`inputProps`** `Props` — Direct HTML props passed to the inner input element, merged over the props React Aria generates: a key you set wins, and event handlers are chained rather than replaced
+- **`inputProps`** `Props` — Direct HTML props passed to the inner input element, merged over the props React Aria generates: a key you set wins, and event handlers are chained rather than replaced. The explicit `isDisabled`, `maxLength`, `minLength`, `autoFocus`, `rows` and `autoComplete` props win over the same attributes in `inputProps` when they are set; one left unset keeps the `inputProps` value
 - **`inputRef`** `RefObject<HTMLInputElement | HTMLTextAreaElement>` — Ref to the inner input element
 - **`wrapperRef`** `RefObject<HTMLDivElement>` — Ref to the input wrapper container
-- **`loadingIndicator`** `ReactNode` — Custom loading indicator element
+- **`loadingIndicator`** `ReactNode` — Rendered in place of the default loading icon while `isLoading` is set
+- **`validate`** `(value: string) => ValidationError | true | null | undefined` — Client-side validation. The returned errors set the invalid style, `aria-invalid` and the message together, as you type. An explicit `errorMessage` replaces the returned message, and an explicit `isInvalid` (or a form's validation) takes over from `validate` entirely
 - **`onChange`** `function` — Callback fired when the input value changes
 - **`onBlur`** `function` — Callback fired when the input loses focus
 - **`onFocus`** `function` — Callback fired when the input receives focus
@@ -118,10 +119,12 @@ These properties allow direct style application without using the `styles` prop:
 The `mods` prop accepts the following modifiers you can override:
 
 - **`focused`** `boolean` — Forces focus ring appearance.
+- **`hovered`** `boolean` — Forces hover appearance.
 - **`disabled`** `boolean` — Forces disabled appearance.
 - **`invalid`** `boolean` — Forces invalid state styling.
 - **`valid`** `boolean` — Forces valid state styling.
-- **`loading`** `boolean` — Displays loading spinner.
+- **`loadable`** `boolean` — Set when a `loadingIndicator` is given. The loading icon itself follows `isLoading`, which has no modifier.
+- **`multiline`** `boolean` — Set for a multiline input.
 - **`prefix`** `boolean` — Indicates presence of prefix content.
 - **`suffix`** `boolean` — Indicates presence of suffix content.
 
@@ -197,18 +200,22 @@ import { IconMail } from '@tabler/icons-react';
 - `Shift + Tab` – Moves focus away from the input
 - Standard text editing shortcuts (Ctrl+A, Ctrl+C, etc.)
 
+### Pointer
+
+A press anywhere inside the field's border focuses the input, including the prefix and suffix areas and their icons. Presses on interactive content there, such as a button in `suffix`, stay with that content.
+
 ### Screen Reader Support
 
 - Announces role "textbox" or "searchbox" for search inputs
 - Announces label, description, and validation messages
 - State changes like "invalid" or "required" are announced
-- Loading state is announced to screen readers
+- The loading indicator is visual only: `isLoading` is not announced, so announce a long-running check yourself if users need to hear it
 
 ### ARIA Properties
 
 - `aria-label`, `aria-labelledby` – Accessible name for the input
 - `aria-describedby` – Links to description and error messages
-- `aria-invalid` – Managed automatically based on `isInvalid`
+- `aria-invalid` – Managed automatically based on `isInvalid` and `validate`
 - `aria-required` – Set when `isRequired` is true
 - Additional ARIA attributes supported by React Aria's `useTextField`
 

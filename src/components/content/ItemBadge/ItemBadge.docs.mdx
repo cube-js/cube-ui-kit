@@ -23,6 +23,10 @@ A non-interactive badge indicator for list items. Similar to `ItemAction` but wi
 - **`isSelected`** `boolean` (default: `false`) — Selected state (for checkmark)
 - **`tooltip`** `string | object` — Tooltip content shown on hover for icon-only badges. A string shows tooltip text; an object supports `{ title, ...tooltipProps }` for advanced configuration.
 
+### Accessibility
+
+A badge is never focusable. An icon-only badge with a name — `aria-label`, or a plain-text `tooltip` — is exposed as `role="img"` with that name. When the name is not the tooltip text, the tooltip text also becomes the badge's description (`aria-description`), so screen reader users get it without hovering. Rich tooltip content has no plain text, so it is available on hover only. Pass `role` to use another role.
+
 ### Base Properties
 
 Supports [Base properties](/docs/getting-started-base-properties--docs).

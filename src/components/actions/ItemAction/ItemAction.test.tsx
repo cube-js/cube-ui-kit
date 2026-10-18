@@ -339,4 +339,71 @@ describe('<ItemAction />', () => {
       expect(onPress).toHaveBeenCalledTimes(1);
     });
   });
+
+  describe('tab order', () => {
+    it('should leave the tab order with excludeFromTabOrder', async () => {
+      render(
+        <>
+          <button>Before</button>
+          <ItemAction
+            excludeFromTabOrder
+            icon={<IconEdit />}
+            aria-label="Edit"
+          />
+          <button>After</button>
+        </>,
+      );
+
+      await userEvent.tab();
+      await userEvent.tab();
+
+      expect(screen.getByRole('button', { name: 'After' })).toHaveFocus();
+      expect(screen.getByRole('button', { name: 'Edit' })).toHaveAttribute(
+        'tabindex',
+        '-1',
+      );
+    });
+
+    it('should let an explicit tabIndex win over excludeFromTabOrder', () => {
+      render(
+        <ItemAction
+          excludeFromTabOrder
+          tabIndex={0}
+          icon={<IconEdit />}
+          aria-label="Edit"
+        />,
+      );
+
+      expect(screen.getByRole('button', { name: 'Edit' })).toHaveAttribute(
+        'tabindex',
+        '0',
+      );
+    });
+  });
+
+  describe('tooltip description', () => {
+    it('keeps its own aria-describedby while the tooltip is open', async () => {
+      renderWithRoot(
+        <>
+          <p id="hint">Opens the editor</p>
+          <ItemAction
+            aria-describedby="hint"
+            icon={<IconEdit />}
+            tooltip="Edit"
+          />
+        </>,
+      );
+
+      await userEvent.tab();
+
+      const tooltip = await screen.findByRole('tooltip');
+
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: 'Edit' })).toHaveAttribute(
+          'aria-describedby',
+          `hint ${tooltip.id}`,
+        );
+      });
+    });
+  });
 });

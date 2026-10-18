@@ -7,11 +7,12 @@ import {
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
 import { useFieldProps } from '../../form';
+import { getDisplayedValidation } from '../TextInput/displayed-validation';
 import {
   CubeBufferedValueProps,
   CubeTextInputBaseProps,
   TextInputBase,
-} from '../TextInput';
+} from '../TextInput/TextInputBase';
 import { useAutoSizeTextArea } from '../TextInput/useAutoSizeTextArea';
 
 import type { FieldBaseProps } from '../../../shared/form';
@@ -88,7 +89,7 @@ function TextArea(
     value: buffered.value,
   });
 
-  let { labelProps, inputProps } = useTextField(
+  let { labelProps, inputProps, ...validation } = useTextField(
     {
       ...otherProps,
       value: buffered.value,
@@ -109,6 +110,7 @@ function TextArea(
     <TextInputBase
       ref={ref}
       {...otherProps}
+      {...getDisplayedValidation(otherProps, validation)}
       multiLine
       inputRef={inputRef}
       labelProps={mergedLabelProps}

@@ -793,9 +793,9 @@ describe.each([
 
     const trigger = screen.getByTestId('Pick');
 
-    // The Dialog moves focus in on its own a tick after opening, and contains
-    // it only once its opening transition has ended: a Tab before that falls
-    // out of it.
+    // The Dialog moves focus in on its own a tick after opening; wait for that
+    // and for the opening transition, so neither moves focus after the test
+    // has placed it.
     await waitFor(() =>
       expect(screen.getByTestId('Dialog')).toContainElement(
         document.activeElement as HTMLElement,
@@ -944,4 +944,44 @@ it('filters and picks from the FilterPicker search field inside a Dialog (CUB-56
   );
   expect(screen.getByTestId('Pick')).toHaveTextContent('Red');
   expect(screen.getByTestId('Dialog')).toBeInTheDocument();
+});
+
+/**
+ * `offset` is the gap between the trigger and the popover, so `0` must put the
+ * popover flush against it rather than fall back to the default `8`. Needs real
+ * layout: jsdom has no geometry to measure the gap with.
+ */
+describe('DialogTrigger popover offset', () => {
+  it.each([
+    [0, 0],
+    [undefined, 8],
+  ])('offset=%s leaves a %ipx gap', async (offset, gap) => {
+    renderWithRoot(
+      <div style={{ padding: 100 }}>
+        <DialogTrigger type="popover" placement="bottom" offset={offset}>
+          <Button qa="Trigger">Open</Button>
+          <Dialog>
+            <Button qa="Inside">Inside</Button>
+          </Dialog>
+        </DialogTrigger>
+      </div>,
+    );
+
+    await userEvent.click(screen.getByTestId('Trigger'));
+
+    const popover = await screen.findByTestId('Popover');
+
+    await waitFor(() => expect(popover).toHaveAttribute('data-entered'));
+
+    const triggerBottom = screen
+      .getByTestId('Trigger')
+      .getBoundingClientRect().bottom;
+
+    await waitFor(() =>
+      expect(popover.getBoundingClientRect().top - triggerBottom).toBeCloseTo(
+        gap,
+        0,
+      ),
+    );
+  });
 });

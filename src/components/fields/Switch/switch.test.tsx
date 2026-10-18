@@ -30,3 +30,23 @@ describe('<Switch /> name', () => {
     }
   });
 });
+
+describe('<Switch /> null value', () => {
+  it('clears when a controlled isSelected is set to null', () => {
+    const { rerender } = render(
+      <Switch isSelected onChange={() => {}}>
+        Notify
+      </Switch>,
+    );
+
+    expect(screen.getByRole('switch')).toBeChecked();
+
+    rerender(
+      <Switch isSelected={null} onChange={() => {}}>
+        Notify
+      </Switch>,
+    );
+
+    expect(screen.getByRole('switch')).not.toBeChecked();
+  });
+});

@@ -188,11 +188,11 @@ function resolveTooltip({
   // If title is provided with auto=true, OR no title but auto behavior enabled
   if (!hasAutoContent) return null;
 
+  // A nullish `title` falls back to the auto title, so it goes after the spread.
   return {
-    title: tooltipProps.title ?? autoTitle,
-    isDisabled:
-      !isOverflowed && isDynamicLabel && tooltipProps.isDisabled !== true,
     ...tooltipProps,
+    title: tooltipProps.title ?? autoTitle,
+    isDisabled: tooltipProps.isDisabled ?? (!isOverflowed && isDynamicLabel),
   };
 }
 

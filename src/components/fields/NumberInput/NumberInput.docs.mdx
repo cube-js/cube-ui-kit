@@ -24,7 +24,7 @@ A number input component that allows users to enter numeric values and increment
 
 ### Properties
 
-- **`value`** `number` — The numeric value in controlled mode
+- **`value`** `number | null` — The numeric value in controlled mode. `null` clears the field and keeps it controlled
 - **`defaultValue`** `number` — The default numeric value in uncontrolled mode
 - **`placeholder`** `string` — Placeholder text when input is empty
 - **`icon`** `ReactElement` — Icon element rendered before the input
@@ -39,10 +39,11 @@ A number input component that allows users to enter numeric values and increment
 - **`size`** `'small' | 'medium' | 'large'` (default: `medium`) — Input size
 - **`autoComplete`** `string` (default: `off`) — HTML [`autocomplete`](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/autocomplete) token that tells the browser what to autofill (`cc-number`, `one-time-code`, …). A number field opts out of autofill by default.
 - **`isWheelDisabled`** `boolean` — Whether scrolling the mouse wheel changes the value
-- **`decrementAriaLabel`** `string` — Custom aria-label for the decrement button
-- **`incrementAriaLabel`** `string` — Custom aria-label for the increment button
+- **`decrementAriaLabel`** `string` — Custom aria-label for the decrement button, in place of the translated "Decrease {label}"
+- **`incrementAriaLabel`** `string` — Custom aria-label for the increment button, in place of the translated "Increase {label}"
 - **`inputProps`** `Props` — Direct props passed to the native input element, merged over the props React Aria generates: a key you set wins, and event handlers are chained rather than replaced
-- **`wrapperProps`** `Props` — Direct props passed to the input wrapper element
+- **`wrapperProps`** `Props` — Direct props passed to the input wrapper element, merged with the `group` props React Aria puts there: event handlers are chained
+- **`validate`** `(value: number) => ValidationError | true | null | undefined` — Client-side validation. The returned errors set the invalid style, `aria-invalid` and the message together. An explicit `errorMessage` replaces the returned message, and an explicit `isInvalid` (or a form's validation) takes over from `validate` entirely
 - **`onChange`** `function` — Callback fired when the input value changes
 - **`onBlur`** `function` — Callback fired when the input loses focus
 - **`onFocus`** `function` — Callback fired when the input receives focus
@@ -117,7 +118,7 @@ The `mods` prop accepts the following modifiers you can override:
 - **`disabled`** `boolean` — Forces disabled appearance.
 - **`invalid`** `boolean` — Forces invalid state styling.
 - **`valid`** `boolean` — Forces valid state styling.
-- **`loading`** `boolean` — Displays loading spinner.
+- **`hovered`** `boolean` — Forces hover appearance.
 - **`prefix`** `boolean` — Indicates presence of prefix content.
 - **`suffix`** `boolean` — Indicates presence of suffix content.
 
@@ -177,17 +178,16 @@ The `mods` prop accepts the following modifiers you can override:
 
 ### Screen Reader Support
 
-- Announces role "spinbutton"
-- Announces label, description, and validation messages
-- Announces min/max/step constraints
+- Announces a text field described as "Number field", with its label, description and validation messages
+- The stepper buttons are named after the field ("Increase Quantity", "Decrease Quantity"), translated with the UI Kit locale. They are not in the `Tab` order, and pressing one does not close a popover the field sits in
 - State changes like "invalid" or "required" are announced
-- Loading state is announced to screen readers
+- The loading indicator is visual only: `isLoading` is not announced
 
 ### ARIA Properties
 
 - `aria-label`, `aria-labelledby` – Accessible name for the input
 - `aria-describedby` – Links to description and error messages
-- `aria-invalid` – Managed automatically based on `isInvalid`
+- `aria-invalid` – Managed automatically based on `isInvalid` and `validate`
 - `aria-required` – Set when `isRequired` is true
 - Additional ARIA attributes supported by React Aria's `useNumberField`
 

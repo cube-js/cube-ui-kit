@@ -1178,8 +1178,10 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
         tokens={finalTokens}
         type={htmlType as any}
         {...mergeProps(
-          isInert ? omitActivationEventProps(rest) : rest,
-          elementTooltipProps || {},
+          mergeTooltipFocusProps(
+            isInert ? omitActivationEventProps(rest) : rest,
+            elementTooltipProps,
+          ),
           inertProps,
         )}
         {...(nativeMenuItemProps

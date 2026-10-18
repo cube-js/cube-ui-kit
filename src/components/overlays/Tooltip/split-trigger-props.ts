@@ -44,14 +44,15 @@ export function splitTooltipTriggerProps(
 }
 
 /**
- * Adds a tooltip's focus-side trigger props to a focusable element's own:
- * handlers are chained, and the tooltip joins any description the element
- * already has rather than replacing it. `tabIndex` is never touched — a radio
- * group's roving tab index owns it.
+ * Adds a tooltip's trigger props — all of them, or the focus-side part from
+ * `splitTooltipTriggerProps` — to an element's own: handlers are chained, and
+ * the tooltip joins any description the element already has rather than
+ * replacing it, the caller's id first. `mergeProps` alone lets the tooltip's id
+ * win. `tabIndex` is never touched — a radio group's roving tab index owns it.
  */
 export function mergeTooltipFocusProps<P extends object>(
   props: P,
-  tooltipProps?: TooltipFocusProps,
+  tooltipProps?: TooltipFocusProps | HTMLAttributes<HTMLElement>,
 ): P {
   if (!tooltipProps) return props;
 

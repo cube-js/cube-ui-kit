@@ -2604,3 +2604,17 @@ describe('<TagInput />', () => {
     });
   });
 });
+
+describe('<TagInput /> null value', () => {
+  it('clears when a controlled value is set to null', () => {
+    const { container, rerender } = render(
+      <TagInput label="Recipients" value={['a@x.com']} onChange={() => {}} />,
+    );
+
+    expect(chipLabels(container)).toEqual(['a@x.com']);
+
+    rerender(<TagInput label="Recipients" value={null} onChange={() => {}} />);
+
+    expect(chipLabels(container)).toEqual([]);
+  });
+});

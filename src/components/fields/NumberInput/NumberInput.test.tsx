@@ -1,10 +1,143 @@
-import { fireEvent, render, userEvent } from '../../../test';
+import { createUIKitI18n } from '../../../i18n';
+import {
+  act,
+  fireEvent,
+  render,
+  renderWithRoot,
+  screen,
+  userEvent,
+  waitFor,
+} from '../../../test';
+import { Button } from '../../actions/Button/Button';
+import { Content } from '../../content/Content';
+import { Dialog } from '../../overlays/Dialog/Dialog';
+import { DialogTrigger } from '../../overlays/Dialog/DialogTrigger';
+import { Root } from '../../Root';
 
 import { NumberInput } from './NumberInput';
 
 vi.mock('../../../_internal/hooks/use-warn');
 
 describe('<NumberInput />', () => {
+  it('shows the invalid state and message from validate', async () => {
+    const { getByRole, getByText } = render(
+      <NumberInput
+        label="Quantity"
+        validate={(value) => (value > 10 ? 'Too many' : null)}
+      />,
+    );
+
+    const input = getByRole('textbox');
+
+    await userEvent.type(input, '20');
+    await userEvent.tab();
+
+    expect(input).toHaveAttribute('aria-invalid', 'true');
+    expect(input.closest('[data-invalid]')).not.toBeNull();
+    expect(getByText('Too many')).toBeInTheDocument();
+  });
+
+  it('clears a controlled value set to null and stays controlled', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const { getByRole, rerender } = render(
+      <NumberInput label="Quantity" value={5} onChange={() => {}} />,
+    );
+
+    expect(getByRole('textbox')).toHaveValue('5');
+
+    rerender(<NumberInput label="Quantity" value={null} onChange={() => {}} />);
+
+    expect(getByRole('textbox')).toHaveValue('');
+    expect(warn).not.toHaveBeenCalledWith(
+      expect.stringMatching(/controlled to uncontrolled/),
+    );
+
+    warn.mockRestore();
+  });
+
+  it('merges wrapperProps with the group props', () => {
+    const { container } = render(
+      <NumberInput label="Quantity" wrapperProps={{ 'data-custom': 'qty' }} />,
+    );
+
+    const wrapper = container.querySelector('[data-custom="qty"]');
+
+    expect(wrapper).toHaveAttribute('role', 'group');
+    expect(wrapper).toContainElement(screen.getByRole('textbox'));
+  });
+
+  describe('steppers', () => {
+    it.each([
+      ['a text label', { label: 'Quantity' }],
+      ['a rich label', { label: <strong>Quantity</strong> }],
+      ['aria-label', { 'aria-label': 'Quantity' }],
+    ])('names the steppers after the field with %s', (_, props) => {
+      renderWithRoot(<NumberInput {...props} />);
+
+      expect(
+        screen.getByRole('button', { name: 'Increase Quantity' }),
+      ).toBeVisible();
+      expect(
+        screen.getByRole('button', { name: 'Decrease Quantity' }),
+      ).toBeVisible();
+    });
+
+    // React Aria ships no Vietnamese strings, so its own names stay English.
+    it('uses the UI Kit translation of the stepper names', () => {
+      render(
+        <Root i18n={createUIKitI18n('vi-VN')}>
+          <NumberInput label="Quantity" />
+        </Root>,
+      );
+
+      expect(
+        screen.getByRole('button', { name: 'Tăng Quantity' }),
+      ).toBeVisible();
+      expect(
+        screen.getByRole('button', { name: 'Giảm Quantity' }),
+      ).toBeVisible();
+    });
+
+    it('keeps incrementAriaLabel and decrementAriaLabel from the caller', () => {
+      renderWithRoot(
+        <NumberInput
+          label="Quantity"
+          incrementAriaLabel="Add one"
+          decrementAriaLabel="Remove one"
+        />,
+      );
+
+      expect(screen.getByRole('button', { name: 'Add one' })).toBeVisible();
+      expect(screen.getByRole('button', { name: 'Remove one' })).toBeVisible();
+    });
+
+    it('keeps a surrounding popover open when stepping', async () => {
+      renderWithRoot(
+        <DialogTrigger type="popover">
+          <Button>Settings</Button>
+          <Dialog>
+            <Content>
+              <NumberInput label="Quantity" defaultValue={1} />
+            </Content>
+          </Dialog>
+        </DialogTrigger>,
+      );
+
+      await userEvent.click(screen.getByRole('button', { name: 'Settings' }));
+      await waitFor(() => expect(screen.getByRole('dialog')).toBeVisible());
+
+      await userEvent.click(
+        screen.getByRole('button', { name: 'Increase Quantity' }),
+      );
+      // A Button's press dismisses its popover through the event bus, which
+      // delivers on a later task.
+      await act(() => new Promise((resolve) => setTimeout(resolve, 50)));
+
+      expect(screen.getByRole('textbox')).toHaveValue('2');
+      expect(screen.getByRole('dialog')).toBeVisible();
+    });
+  });
+
   it('calls onKeyDown and onKeyUp with the key', async () => {
     const onKeyDown = vi.fn((e) => e.key);
     const onKeyUp = vi.fn((e) => e.key);

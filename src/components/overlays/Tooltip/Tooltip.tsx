@@ -156,6 +156,9 @@ export interface CubeTooltipProps
     ContainerStyleProps,
     AriaTooltipProps {
   tipStyles?: Styles;
+  /**
+   * @deprecated Has no effect. No icon is ever rendered.
+   */
   showIcon?: boolean;
   placement?: PlacementAxis;
   isMaterial?: boolean;
@@ -163,6 +166,11 @@ export interface CubeTooltipProps
   isLight?: boolean;
   onOpenChange?: (isOpen: boolean) => void;
   defaultOpen?: boolean;
+  /**
+   * Whether the tooltip moves to the opposite side of its trigger when there
+   * is not enough room on the requested one.
+   * @default true
+   */
   shouldFlip?: boolean;
 }
 
@@ -176,8 +184,6 @@ function Tooltip(
     arrowProps,
     state,
     overlayProps,
-    minOffset,
-    minScale,
     isMaterial: isMaterialContext,
     isLight: isLightContext,
     phase,
@@ -203,7 +209,6 @@ function Tooltip(
     placement = 'top',
     isOpen,
     tipStyles,
-    showIcon,
     isMaterial = isMaterialContext,
     isLight = isLightContext,
     ...otherProps
@@ -215,14 +220,6 @@ function Tooltip(
 
   // Sync ref with overlayRef from context.
   useImperativeHandle(ref, () => createDOMRef(finalOverlayRef));
-
-  if (typeof minOffset === 'number') {
-    minOffset = `${minOffset}px`;
-  }
-
-  if (typeof minScale === 'number') {
-    minScale = String(minScale);
-  }
 
   // Extract primary placement direction for consistent styling
   const placementDirection = placement?.split(' ')[0] || placement || 'top';
@@ -248,8 +245,6 @@ function Tooltip(
       qa={otherProps.qa}
       styles={styles}
       mods={mods}
-      data-min-offset={minOffset}
-      data-min-scale={minScale}
       data-placement={placementDirection}
       data-phase={phase}
     >

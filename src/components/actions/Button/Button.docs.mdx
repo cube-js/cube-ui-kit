@@ -34,7 +34,7 @@ A versatile action component that triggers commands and navigates users.
 - **`tooltip`** `string | boolean | object` — Tooltip content. Use a string for simple text, `true` for auto tooltip on overflow, or an object with `{ title, auto, placement, ...tooltipProps }`
 - **`defaultTooltipPlacement`** `Placement` (default: `top`) — Default placement for the button's tooltip
 - **`isDisabled`** `boolean` (default: `false`) — Disables the button. Unlike fields, a button doesn't inherit this from `<Provider isDisabled>` or `<Form isDisabled>`, so actions such as Cancel stay live in a disabled form; pass it to each button you want disabled. Of the buttons, only `Form.Submit` and `Form.Reset` inherit it. `ItemButton` behaves like `Button`, and `ItemAction` inherits only its parent item's disabled state
-- **`isLoading`** `boolean` (default: `false`) — Show loading spinner and disable interactions
+- **`isLoading`** `boolean` (default: `false`) — Show loading spinner and disable interactions. A button that is only loading keeps the focus it has, so a keyboard press that starts the work does not drop focus to the page; it is marked `aria-disabled` and `aria-busy` and Tab skips it until loading ends. A button that is also `isDisabled` is natively disabled
 - **`isSelected`** `boolean` (default: `false`) — Marks the button as pressed / selected (toggle)
 - **`to`** `string` — Destination URL or route; prefix with `!` to open in new tab, `@` to bypass router
 - **`htmlType`** `'button' | 'submit' | 'reset'` — HTML button type attribute
@@ -207,6 +207,10 @@ import { IconPlus } from '@tabler/icons-react';
 
 A disabled button keeps showing its tooltip. Browsers stop dispatching mouse events on elements carrying the native `disabled` attribute, so a button that has a tooltip is marked with `aria-disabled` instead and kept inert: `onPress` never fires and clicks (including the ones Enter and Space produce) do nothing. Such a button also stays in the tab order, so keyboard users can focus it, see its focus ring and read the tooltip, and the keys that would open a `MenuTrigger` menu do nothing. Buttons rendered as links (`to`) are always marked this way, since `disabled` is not a valid attribute on an anchor.
 
+Only a tooltip you pass counts: a string, or an object with a `title` and no `auto: true`. The automatic tooltip that shows a truncated label depends on the layout, so a disabled button with only that one stays natively disabled, and whether it is a Tab stop does not change with the window width.
+
+Give a disabled button its own `tooltip` rather than wrapping it in a `TooltipProvider`: a natively disabled button receives neither hover nor focus, so a tooltip around it never opens.
+
 <Story of={ButtonStories.DisabledWithTooltip} />
 
 ### Custom Size
@@ -240,7 +244,9 @@ A disabled button keeps showing its tooltip. Browsers stop dispatching mouse eve
 
 - `aria-label`, `aria-labelledby` – Accessible name.
 - `aria-pressed` – Derived from `isSelected`. Not emitted when the button renders as a link (`to`) or when the call site sets its own `role` — a button acting as a tab or an option wants `aria-selected` / `aria-current` instead. An explicit `aria-pressed` always wins.
-- `aria-disabled` – Announces the disabled state whenever the native `disabled` attribute cannot be used: on links, and on buttons that carry a tooltip.
+- `aria-disabled` – Announces the disabled state whenever the native `disabled` attribute cannot be used: on links, on buttons that carry a tooltip you passed, and on buttons that are only loading.
+- `aria-busy` – Set while `isLoading`.
+- `aria-describedby` – An open tooltip is added to the button's own description, after it.
 - Additional ARIA attributes supported by React Aria's `useButton`.
 
 ## Behaviour Inside Popovers

@@ -22,13 +22,12 @@ import React, {
   ReactElement,
   ReactNode,
   RefObject,
-  useCallback,
   useEffect,
   useMemo,
   useRef,
   useState,
 } from 'react';
-import { useFilter, useKeyboard } from 'react-aria';
+import { useCollator, useFilter, useKeyboard } from 'react-aria';
 import { Section as BaseSection, useListState } from 'react-stately';
 
 import { useEvent } from '../../../_internal';
@@ -63,6 +62,15 @@ import {
   DEFAULT_INPUT_STYLES,
   INPUT_WRAPPER_STYLES,
 } from '../TextInput/TextInputBase';
+
+import {
+  collectOptions,
+  findTypedOption,
+  getItemLabel,
+  highlightOption,
+  resolveHighlightedKey,
+  sortSelectedFirst,
+} from './comboBoxOptions';
 
 type FilterFn = (textValue: string, inputValue: string) => boolean;
 
@@ -110,12 +118,18 @@ export interface CubeComboBoxProps<T>
   /**
    * Callback fired when a key is pressed on the input, before the built-in
    * key handling. Receives React Aria's keyboard event: `e.preventDefault()`
-   * skips the built-in handling for the key, and propagation stops at the
+   * skips the built-in handling for the key. `Escape` and `Tab` go on to
+   * ancestors, such as a surrounding dialog, unless ComboBox acts on them
+   * (`Escape` closing the list or clearing the value); other keys stop at the
    * input unless the handler calls `e.continuePropagation()`.
    */
   onKeyDown?: TextFieldKeyboardProps['onKeyDown'];
 
-  /** Popover trigger behavior: 'focus', 'input', or 'manual'. Defaults to 'input' */
+  /**
+   * When the list opens on its own: `'input'` on typing or a press in the
+   * input, `'focus'` on focus as well, `'manual'` only from the chevron and
+   * the arrow keys. Defaults to `'input'`.
+   */
   popoverTrigger?: PopoverTriggerAction;
 
   /** Items for the listbox (alternative to children) */
@@ -129,9 +143,17 @@ export interface CubeComboBoxProps<T>
    */
   filter?: FilterFn | false;
 
-  /** Whether to allow entering custom values that are not in the predefined options */
+  /**
+   * Whether to allow entering custom values that are not in the predefined
+   * options. The typed text is committed trimmed; empty text commits `null`.
+   */
   allowsCustomValue?: boolean;
-  /** Whether to commit custom value on blur in allowsCustomValue mode (default: true) */
+  /**
+   * Whether to commit custom value on blur in allowsCustomValue mode (default:
+   * true). When `false`, only Enter or a pick commits, and blur discards the
+   * uncommitted text: the input shows the selected option's label again, or
+   * nothing when no option is selected.
+   */
   shouldCommitOnBlur?: boolean;
   /** Whether to clear selection and input on blur when the text names no selectable item (default: false, only applies to non-custom-value mode) */
   clearOnBlur?: boolean;
@@ -193,7 +215,10 @@ export interface CubeComboBoxProps<T>
   overlayOffset?: number;
   /** Minimum padding in pixels between the popover and viewport edges */
   containerPadding?: number;
-  /** Whether the combobox is read-only */
+  /**
+   * Whether the combobox is read-only: the list doesn't open, and neither
+   * keys nor blur change the value or the text.
+   */
   isReadOnly?: boolean;
   /** Suffix position goes before or after the validation and loading statuses */
   suffixPosition?: 'before' | 'after';
@@ -204,7 +229,10 @@ export interface CubeComboBoxProps<T>
    * @default true when items are provided, false when using JSX children
    */
   sortSelectedToTop?: boolean;
-  /** Callback called when the popover open state changes */
+  /**
+   * Callback called when the list shows or hides. Not called on mount, nor
+   * while typed text that matches nothing keeps it hidden.
+   */
   onOpenChange?: (isOpen: boolean) => void;
 }
 
@@ -225,11 +253,16 @@ interface UseComboBoxStateProps {
 
 interface UseComboBoxStateReturn {
   effectiveSelectedKey: Key | null;
-  effectiveInputValue: string;
+  /**
+   * The uncontrolled input text. `null` until the user types, and again after
+   * the text settles on the selection: the input then shows the selected
+   * option's label, following the options as they load.
+   */
+  internalInputValue: string | null;
   isPopoverOpen: boolean;
   setIsPopoverOpen: (open: boolean) => void;
   setInternalSelectedKey: (key: Key | null) => void;
-  setInternalInputValue: (value: string) => void;
+  setInternalInputValue: (value: string | null) => void;
   isControlledKey: boolean;
   isControlledInput: boolean;
 }
@@ -247,8 +280,8 @@ function useComboBoxState({
   const [internalSelectedKey, setInternalSelectedKey] = useState<Key | null>(
     defaultSelectedKey ?? null,
   );
-  const [internalInputValue, setInternalInputValue] = useState(
-    defaultInputValue ?? '',
+  const [internalInputValue, setInternalInputValue] = useState<string | null>(
+    defaultInputValue ?? null,
   );
 
   const isControlledKey = selectedKey !== undefined;
@@ -257,9 +290,6 @@ function useComboBoxState({
   const effectiveSelectedKey = isControlledKey
     ? selectedKey
     : internalSelectedKey;
-  const effectiveInputValue = isControlledInput
-    ? inputValue
-    : internalInputValue;
 
   // Popover state
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
@@ -274,7 +304,7 @@ function useComboBoxState({
 
   return {
     effectiveSelectedKey,
-    effectiveInputValue,
+    internalInputValue,
     isPopoverOpen,
     setIsPopoverOpen,
     setInternalSelectedKey,
@@ -294,6 +324,8 @@ interface UseComboBoxFilteringProps {
 
 interface UseComboBoxFilteringReturn {
   filterFn: (nodes: Iterable<any>) => Iterable<any>;
+  /** Whether the typed text is an option's label, compared like the filter. */
+  isSameText: (textValue: string, text: string) => boolean;
   isFilterActive: boolean;
   setIsFilterActive: (active: boolean) => void;
 }
@@ -305,6 +337,12 @@ function useComboBoxFiltering({
   const [isFilterActive, setIsFilterActive] = useState(false);
 
   const { contains } = useFilter({ sensitivity: 'base' });
+  // The collator `useFilter` matches with, so the filter and the exact-match
+  // check agree on case, accents and locale rules.
+  const collator = useCollator({ usage: 'search', sensitivity: 'base' });
+
+  const isSameText = (textValue: string, text: string) =>
+    collator.compare(textValue.normalize('NFC'), text.normalize('NFC')) === 0;
 
   const textFilterFn: FilterFn =
     filter === false ? () => true : filter || contains;
@@ -323,6 +361,7 @@ function useComboBoxFiltering({
 
   return {
     filterFn,
+    isSameText,
     isFilterActive,
     setIsFilterActive,
   };
@@ -332,36 +371,52 @@ function useComboBoxFiltering({
 // Hook: useComboBoxKeyboard
 // ============================================================================
 interface UseComboBoxKeyboardProps {
-  isPopoverOpen: boolean;
+  /** Whether the list is shown: open, with options to show. */
+  isListShown: boolean;
+  isReadOnly?: boolean;
   listStateRef: RefObject<any>;
   hasResults: boolean;
   allowsCustomValue?: boolean;
   effectiveInputValue: string;
+  selectedKey: Key | null;
+  /** The text the input shows for the selection. */
+  selectedLabel: string;
   isClearable?: boolean;
   onSelectionChange: (selection: Key | Key[] | null) => void;
   onClearValue: () => void;
-  onOpenPopover: () => void;
-  onClosePopover: () => void;
+  onOpenList: () => void;
+  onCloseList: () => void;
   inputRef: RefObject<HTMLInputElement>;
-  setIsFilterActive: (active: boolean) => void;
   /** Called with the option the arrow keys moved virtual focus to. */
   onVirtualFocus: (key: Key) => void;
   onKeyDown?: TextFieldKeyboardProps['onKeyDown'];
 }
 
+// Keys that go on to a surrounding dialog unless the field acts on them:
+// Escape closes it, and its focus containment listens for Tab.
+const OVERLAY_KEYS = new Set(['Escape', 'Tab']);
+
+// An IME takes Enter, the arrow keys and Escape while it composes text: they
+// confirm, pick or cancel its candidate.
+function isComposing(e: AriaKeyboardEvent) {
+  return e.nativeEvent?.isComposing || e.keyCode === 229;
+}
+
 function useComboBoxKeyboard({
-  isPopoverOpen,
+  isListShown,
+  isReadOnly,
   listStateRef,
   hasResults,
   allowsCustomValue,
   effectiveInputValue,
+  selectedKey,
+  selectedLabel,
   isClearable,
   onSelectionChange,
   onClearValue,
-  onOpenPopover,
-  onClosePopover,
+  onOpenList,
+  onCloseList,
   inputRef,
-  setIsFilterActive,
   onVirtualFocus,
   onKeyDown,
 }: UseComboBoxKeyboardProps) {
@@ -377,11 +432,8 @@ function useComboBoxKeyboard({
   const handleArrowKey = (e: AriaKeyboardEvent) => {
     e.preventDefault();
 
-    // Open popover if closed
-    if (!isPopoverOpen) {
-      // If opening with no filtered results, disable filter to show all items
-      if (!hasResults) setIsFilterActive(false);
-      onOpenPopover();
+    if (!isListShown) {
+      onOpenList();
 
       return;
     }
@@ -396,60 +448,67 @@ function useComboBoxKeyboard({
     }
   };
 
-  // With no results, Enter commits the typed text as a custom value or clears
-  // the selection.
-  const commitWithoutResults = (e: AriaKeyboardEvent) => {
-    if (!allowsCustomValue) {
-      e.preventDefault();
-      onSelectionChange(null);
-
-      return;
-    }
-
+  // With `allowsCustomValue`, Enter commits the typed text, trimmed, and empty
+  // text clears the selection. The selection's own label is already
+  // committed.
+  const commitTypedText = (e: AriaKeyboardEvent) => {
     const value = effectiveInputValue.trim();
 
-    // Commit the custom value
-    onSelectionChange((value as unknown as Key) ?? (null as unknown as Key));
+    // A closed list lets Enter go on to submit the form with the value.
+    if (isListShown || !value) e.preventDefault();
 
-    // If popover is closed and we have a value, allow Enter to propagate for form submission
-    // If popover is open OR value is empty, prevent default to avoid premature submission
-    if (isPopoverOpen || !value) e.preventDefault();
+    if (value && selectedKey != null && value === selectedLabel) return;
+
+    onSelectionChange(value || null);
   };
 
   const handleEnterKey = (e: AriaKeyboardEvent) => {
-    const listState = isPopoverOpen ? listStateRef.current : null;
-    const focusedKey = listState?.selectionManager.focusedKey;
+    const listState = isListShown ? listStateRef.current : null;
+    // Read the highlight here rather than from the list: the list highlights
+    // the first match a couple of frames after the text changes, and a fast
+    // Enter comes first.
+    const key = listState
+      ? resolveHighlightedKey(listState, selectedKey)
+      : null;
 
-    if (focusedKey != null) {
-      // If popover is open, select the focused item first
+    if (key != null) {
       e.preventDefault();
-      listState.selectionManager.select(focusedKey, e);
-      // Ensure the popover closes even if selection stays the same
-      onClosePopover();
+      listState.selectionManager.select(key, e);
+      // Close even when the selection stays the same.
+      onCloseList();
       inputRef.current?.focus();
-    } else if (!hasResults) {
-      // If no results, handle empty input or custom values
-      commitWithoutResults(e);
-    } else if ((effectiveInputValue || '').trim() === '') {
-      // Clear selection if input is empty and popover is closed (or no focused item)
+    } else if (allowsCustomValue) {
+      commitTypedText(e);
+    } else if (!hasResults || !effectiveInputValue.trim()) {
+      // Text that names nothing, or none, clears the selection.
       e.preventDefault();
       onSelectionChange(null);
     }
   };
 
+  // Returns whether Escape did something; otherwise it goes on to close a
+  // surrounding dialog.
   const handleEscapeKey = (e: AriaKeyboardEvent) => {
-    if (isPopoverOpen) {
+    if (isListShown) {
       e.preventDefault();
-      onClosePopover();
+      onCloseList();
       inputRef.current?.focus();
-    } else if (effectiveInputValue && isClearable) {
+
+      return true;
+    }
+
+    if (effectiveInputValue && isClearable) {
       e.preventDefault();
       onClearValue();
+
+      return true;
     }
+
+    return false;
   };
 
   const handleEdgeKey = (e: AriaKeyboardEvent) => {
-    if (!isPopoverOpen) return;
+    if (!isListShown) return;
 
     e.preventDefault();
 
@@ -463,6 +522,31 @@ function useComboBoxKeyboard({
     }
   };
 
+  // Handles the key and returns whether it stays at the input.
+  const handleKey = (e: AriaKeyboardEvent) => {
+    switch (e.key) {
+      case 'ArrowDown':
+      case 'ArrowUp':
+        handleArrowKey(e);
+        return true;
+      case 'Enter':
+        handleEnterKey(e);
+        return true;
+      case 'Escape':
+        return handleEscapeKey(e);
+      case 'Home':
+      case 'End':
+        handleEdgeKey(e);
+        return true;
+      case 'Tab':
+        // Focus moves on, so the list closes; Tab itself is never held.
+        if (isListShown) onCloseList();
+        return false;
+      default:
+        return true;
+    }
+  };
+
   const { keyboardProps } = useKeyboard({
     onKeyDown: (e) => {
       // The user's handler runs first, and a key it prevents is theirs: skip
@@ -471,23 +555,12 @@ function useComboBoxKeyboard({
       // `defaultPrevented` field is fixed at the moment it was made.
       onKeyDown?.(e);
 
-      if (e.isDefaultPrevented()) return;
+      if (e.isDefaultPrevented() || isComposing(e)) return;
 
-      switch (e.key) {
-        case 'ArrowDown':
-        case 'ArrowUp':
-          handleArrowKey(e);
-          break;
-        case 'Enter':
-          handleEnterKey(e);
-          break;
-        case 'Escape':
-          handleEscapeKey(e);
-          break;
-        case 'Home':
-        case 'End':
-          handleEdgeKey(e);
-          break;
+      // A read-only field neither opens, picks nor clears. Escape and Tab go
+      // on to a surrounding dialog unless handled here, as for any field.
+      if ((isReadOnly || !handleKey(e)) && OVERLAY_KEYS.has(e.key)) {
+        e.continuePropagation();
       }
     },
   });
@@ -516,8 +589,9 @@ interface ComboBoxInputProps {
   focusProps: any;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onFocus: (e: React.FocusEvent<HTMLInputElement>) => void;
-  isPopoverOpen: boolean;
-  hasResults: boolean;
+  onClick: () => void;
+  /** Whether the list is shown: open, with options to show. */
+  isListShown: boolean;
   comboBoxId: string;
   /** The id of the option under virtual focus, while the popover is open. */
   activeDescendant?: string;
@@ -549,8 +623,8 @@ const ComboBoxInput = forwardRef<HTMLInputElement, ComboBoxInputProps>(
       focusProps,
       onChange,
       onFocus,
-      isPopoverOpen,
-      hasResults,
+      onClick,
+      isListShown,
       comboBoxId,
       activeDescendant,
       ariaProps,
@@ -575,6 +649,7 @@ const ComboBoxInput = forwardRef<HTMLInputElement, ComboBoxInputProps>(
         data-autofocus={autoFocus ? '' : undefined}
         onChange={onChange}
         onFocus={onFocus}
+        onClick={onClick}
         onBlur={focusProps.onBlur}
         {...keyboardProps}
         styles={inputStyles}
@@ -587,13 +662,13 @@ const ComboBoxInput = forwardRef<HTMLInputElement, ComboBoxInputProps>(
         // is mandatory — the label marker alone is not exposed to assistive
         // technology.
         aria-required={isRequired || undefined}
-        aria-expanded={isPopoverOpen && hasResults}
+        aria-expanded={isListShown}
         aria-haspopup="listbox"
         aria-controls={
-          isPopoverOpen && hasResults
-            ? `ComboBoxListBox-${comboBoxId}`
-            : undefined
+          isListShown ? `ComboBoxListBox-${comboBoxId}` : undefined
         }
+        // Typing filters the options.
+        aria-autocomplete="list"
         aria-activedescendant={activeDescendant}
         aria-invalid={isInvalid || undefined}
         {...ariaProps}
@@ -703,7 +778,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   // State management hook
   const {
     effectiveSelectedKey,
-    effectiveInputValue,
+    internalInputValue,
     isPopoverOpen,
     setIsPopoverOpen,
     setInternalSelectedKey,
@@ -720,14 +795,8 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     popoverRef: popoverRef as RefObject<HTMLElement | null>,
   });
 
-  // Track if sortSelectedToTop was explicitly provided
-  const sortSelectedToTopExplicit = sortSelectedToTopProp !== undefined;
   // Default to true if items are provided, false otherwise
   const sortSelectedToTop = sortSelectedToTopProp ?? (items ? true : false);
-
-  // Cache for sorted items array when using `items` prop
-  const cachedItemsOrder = useRef<T[] | null>(null);
-  const selectionWhenClosed = useRef<string | null>(null);
 
   styles = extractStyles(otherProps, PROP_STYLES, styles);
 
@@ -736,62 +805,18 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   triggerRef = useCombinedRefs(triggerRef);
   listBoxRef = useCombinedRefs(listBoxRef);
 
+  // The selection the options are sorted by. It follows the selection while
+  // the list is closed and holds still while it is open, so a pick doesn't
+  // reorder the list under the pointer.
+  const [sortKey, setSortKey] = useState(effectiveSelectedKey);
+
+  if (!isPopoverOpen && sortKey !== effectiveSelectedKey) {
+    setSortKey(effectiveSelectedKey);
+  }
+
   // Sort items with selected on top if enabled
-  const getSortedItems = useCallback((): typeof items => {
-    if (!items) return items;
-
-    if (!sortSelectedToTop) return items;
-
-    // Reuse cached order if available
-    if (cachedItemsOrder.current) {
-      return cachedItemsOrder.current;
-    }
-
-    // Warn if explicitly requested but not supported
-    if (sortSelectedToTopExplicit && !items) {
-      console.warn(
-        'ComboBox: sortSelectedToTop only works with the items prop. ' +
-          'Sorting will be skipped when using JSX children.',
-      );
-      return items;
-    }
-
-    const selectedKey = isPopoverOpen
-      ? effectiveSelectedKey
-      : selectionWhenClosed.current;
-
-    if (!selectedKey) return items;
-
-    const itemsArray = Array.isArray(items) ? items : Array.from(items);
-    const selectedItem = itemsArray.find((item) => {
-      const key = (item as any)?.key ?? (item as any)?.id;
-      return key != null && String(key) === String(selectedKey);
-    });
-
-    if (!selectedItem) return items;
-
-    const sorted = [
-      selectedItem,
-      ...itemsArray.filter((item) => {
-        const key = (item as any)?.key ?? (item as any)?.id;
-        return key == null || String(key) !== String(selectedKey);
-      }),
-    ] as T[];
-
-    if (isPopoverOpen) {
-      cachedItemsOrder.current = sorted;
-    }
-
-    return sorted;
-  }, [
-    items,
-    sortSelectedToTop,
-    sortSelectedToTopExplicit,
-    effectiveSelectedKey,
-    isPopoverOpen,
-  ]);
-
-  const sortedItems = getSortedItems();
+  const sortedItems =
+    items && sortSelectedToTop ? sortSelectedFirst(items, sortKey) : items;
 
   // Preserve the original `children` (may be a render function) before we
   // potentially overwrite it.
@@ -820,31 +845,6 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     }
   }
 
-  // Invalidate cached sorting whenever items change
-  useEffect(() => {
-    cachedItemsOrder.current = null;
-  }, [items]);
-
-  // Capture selection when popover closes
-  useEffect(() => {
-    if (!isPopoverOpen) {
-      selectionWhenClosed.current =
-        effectiveSelectedKey != null ? String(effectiveSelectedKey) : null;
-      cachedItemsOrder.current = null;
-    }
-  }, [isPopoverOpen, effectiveSelectedKey]);
-
-  // Call onOpenChange when popover state changes
-  useEffect(() => {
-    onOpenChange?.(isPopoverOpen);
-  }, [isPopoverOpen]);
-
-  // Filtering hook
-  const { filterFn, isFilterActive, setIsFilterActive } = useComboBoxFiltering({
-    effectiveInputValue,
-    filter,
-  });
-
   // Create local collection state for reading item data (labels, etc.)
   // This allows us to read item labels even before the popover opens
   const localCollectionState = useListState({
@@ -854,110 +854,84 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     selectionMode: 'none', // Don't manage selection in this state
   });
 
+  const selectedLabel =
+    effectiveSelectedKey != null
+      ? getItemLabel(localCollectionState.collection, effectiveSelectedKey)
+      : '';
+  const effectiveInputValue = isControlledInput
+    ? (inputValue as string)
+    : internalInputValue ?? selectedLabel;
+
+  // Filtering hook
+  const { filterFn, isSameText, isFilterActive, setIsFilterActive } =
+    useComboBoxFiltering({
+      effectiveInputValue,
+      filter,
+    });
+
+  // The options the typed text leaves in the list.
+  const filteredOptions = collectOptions(
+    filterFn(localCollectionState.collection),
+  );
+  const hasResults = filteredOptions.length > 0;
+  const shouldShowPopover = isPopoverOpen && hasResults;
+
+  // Report the list showing or hiding, as the user sees it: not on mount, and
+  // not for text that reopens an empty list keystroke after keystroke.
+  const reportedOpenRef = useRef(shouldShowPopover);
+
+  useEffect(() => {
+    if (reportedOpenRef.current === shouldShowPopover) return;
+
+    reportedOpenRef.current = shouldShowPopover;
+    onOpenChange?.(shouldShowPopover);
+  }, [shouldShowPopover, onOpenChange]);
+
   const { isFocused, focusProps } = useFocus();
 
-  // Helper to check if current input value is valid
-  const checkInputValidity = useCallback(() => {
-    if (!effectiveInputValue.trim()) {
-      return { isInputValid: false, singleMatchKey: null, filteredCount: 0 };
-    }
-
-    // Get filtered collection based on current input
-    const filteredNodes = filterFn(localCollectionState.collection);
-    const filteredItems: Array<{ key: Key; textValue: string }> = [];
-
-    // Flatten filtered nodes (handle sections)
-    for (const node of filteredNodes) {
-      if (node.type === 'section' && node.childNodes) {
-        for (const child of node.childNodes) {
-          if (child.type === 'item') {
-            filteredItems.push({
-              key: child.key,
-              textValue: child.textValue || '',
-            });
-          }
-        }
-      } else if (node.type === 'item') {
-        filteredItems.push({
-          key: node.key,
-          textValue: node.textValue || '',
-        });
-      }
-    }
-
-    const filteredCount = filteredItems.length;
-    const term = effectiveInputValue.trim().toLowerCase();
-
-    // The exact match, otherwise the only filtered result. Among items sharing
-    // the label, the selection wins, then an enabled one. A disabled match
-    // makes the input invalid, as it cannot be selected any other way either,
-    // unless it is already the selection: that one is kept.
-    const exactMatches = filteredItems.filter(
-      (item) => item.textValue.toLowerCase() === term,
-    );
-    const match =
-      exactMatches.find((item) => item.key === effectiveSelectedKey) ??
-      exactMatches.find(
-        (item) => !localCollectionState.disabledKeys.has(item.key),
-      ) ??
-      exactMatches[0] ??
-      (filteredCount === 1 ? filteredItems[0] : null);
-
-    if (
-      !match ||
-      (match.key !== effectiveSelectedKey &&
-        localCollectionState.disabledKeys.has(match.key))
-    ) {
-      return { isInputValid: false, singleMatchKey: null, filteredCount };
-    }
-
-    return { isInputValid: true, singleMatchKey: match.key, filteredCount };
-  }, [
-    effectiveInputValue,
-    effectiveSelectedKey,
-    filterFn,
-    localCollectionState.collection,
-    localCollectionState.disabledKeys,
-  ]);
-
-  // ---- blur ---------------------------------------------------------------
-  // Writes the selected key, unless it is controlled. Unlike `setInputText` it
-  // does not report: each blur outcome calls `onSelectionChange` itself, in
-  // the order it has always fired relative to `onInputChange`.
+  // ---- selection and text -------------------------------------------------
+  // Writes the selected key, unless it is controlled. It does not report:
+  // each outcome calls `onSelectionChange` itself, in the order it has always
+  // fired relative to `onInputChange`.
   const setSelectedKey = (key: Key | null) => {
     if (!isControlledKey) setInternalSelectedKey(key);
   };
 
-  // Writes the input text, unless it is controlled, and reports it.
-  const setInputText = (value: string) => {
-    if (!isControlledInput) setInternalInputValue(value);
-    onInputChange?.(value);
+  // Settles the uncontrolled text on the selection, so it shows the selected
+  // option's label — the controlled one when a parent declines a change — and
+  // reports `label`, the text for the selection being settled on, when it
+  // differs from the text shown now.
+  const showSelectionLabel = (label: string) => {
+    if (!isControlledInput) setInternalInputValue(null);
+    if (label !== effectiveInputValue) onInputChange?.(label);
   };
 
+  // ---- blur ---------------------------------------------------------------
+  // Blur reports only what it changes.
   const clearSelectionAndInput = () => {
-    externalOnSelectionChange?.(null);
-    setSelectedKey(null);
-    setInputText('');
+    if (effectiveSelectedKey != null) {
+      externalOnSelectionChange?.(null);
+      setSelectedKey(null);
+    }
+
+    showSelectionLabel('');
   };
 
   // Reset input to show current selection (or empty if none)
-  const restoreSelectedLabel = () => {
-    setInputText(
-      effectiveSelectedKey != null ? getItemLabel(effectiveSelectedKey) : '',
-    );
-  };
+  const restoreSelectedLabel = () => showSelectionLabel(selectedLabel);
 
-  // In allowsCustomValue mode: commit the input value if it's non-empty and
-  // nothing is selected, clear the selection if the input is empty.
+  // In allowsCustomValue mode: commit the trimmed text if it's non-empty and
+  // nothing is selected, clear the selection if the text is empty. Otherwise,
+  // including with `shouldCommitOnBlur={false}`, the input shows the selection
+  // again and the uncommitted text is dropped.
   const settleCustomValueOnBlur = () => {
-    if (
-      shouldCommitOnBlur &&
-      effectiveInputValue &&
-      effectiveSelectedKey == null
-    ) {
-      externalOnSelectionChange?.(effectiveInputValue as string);
-      setSelectedKey(effectiveInputValue as Key);
-    } else if (!String(effectiveInputValue).trim()) {
+    const value = effectiveInputValue.trim();
+
+    if (shouldCommitOnBlur && value && effectiveSelectedKey == null) {
+      externalOnSelectionChange?.(value);
+      setSelectedKey(value);
+      showSelectionLabel(value);
+    } else if (!value) {
       clearSelectionAndInput();
     } else {
       restoreSelectedLabel();
@@ -969,19 +943,24 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   // disabled; clear invalid input (no selectable match) when clearOnBlur is set
   // or the input is empty.
   const settleOptionOnBlur = () => {
-    const { isInputValid, singleMatchKey } = checkInputValidity();
+    const matchKey = findTypedOption(
+      filteredOptions,
+      effectiveInputValue,
+      effectiveSelectedKey,
+      localCollectionState.disabledKeys,
+      isSameText,
+    );
 
-    if (
-      isInputValid &&
-      singleMatchKey != null &&
-      singleMatchKey !== effectiveSelectedKey
+    if (matchKey != null && matchKey !== effectiveSelectedKey) {
+      setSelectedKey(matchKey);
+      showSelectionLabel(
+        getItemLabel(localCollectionState.collection, matchKey),
+      );
+      externalOnSelectionChange?.(matchKey as string);
+    } else if (
+      matchKey == null &&
+      (clearOnBlur || !effectiveInputValue.trim())
     ) {
-      const label = getItemLabel(singleMatchKey);
-
-      setSelectedKey(singleMatchKey);
-      setInputText(label);
-      externalOnSelectionChange?.(singleMatchKey as string | null);
-    } else if (!isInputValid && (clearOnBlur || !effectiveInputValue.trim())) {
       clearSelectionAndInput();
     } else {
       restoreSelectedLabel();
@@ -992,14 +971,17 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   const handleCompositeBlur = useEvent(() => {
     setIsPopoverOpen(false);
 
-    if (allowsCustomValue) {
+    // A read-only field keeps its value and text.
+    if (isReadOnly) {
+      // Nothing to settle.
+    } else if (allowsCustomValue) {
       settleCustomValueOnBlur();
     } else {
       settleOptionOnBlur();
     }
 
     onBlur?.();
-    // Only now: the validity check above needs the filter still active.
+    // Only now: the match above needs the filter still active.
     setIsFilterActive(false);
   });
 
@@ -1016,50 +998,21 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
 
   // Ref to access internal ListBox state
   const listStateRef = useRef<any>(null);
-  const focusInitAttemptsRef = useRef(0);
   // The option under virtual focus, mirrored in state for the input's
   // `aria-activedescendant`: the listbox's own state update does not re-render
   // this component.
   const [activeOptionKey, setActiveOptionKey] = useState<Key | null>(null);
-
-  // Helper to get label from local collection
-  const getItemLabel = useCallback(
-    (key: Key): string => {
-      const item = localCollectionState?.collection?.getItem(key);
-      return item?.textValue || String(key);
-    },
-    [localCollectionState?.collection],
-  );
 
   // Selection change handler
   const handleSelectionChange = useEvent((selection: Key | Key[] | null) => {
     // Extract single key from selection (we only support single selection)
     const key = Array.isArray(selection) ? selection[0] : selection;
 
-    // Update selected key
-    if (!isControlledKey) {
-      setInternalSelectedKey(key ?? null);
-    }
-
-    // Update input value to show selected item label
-    if (key != null) {
-      setIsFilterActive(false);
-
-      const label = getItemLabel(key);
-
-      if (!isControlledInput) {
-        setInternalInputValue(label);
-      }
-      onInputChange?.(label);
-    } else {
-      // Clear input when selection is cleared
-      if (!isControlledInput) {
-        setInternalInputValue('');
-      }
-      onInputChange?.('');
-      setIsFilterActive(false);
-    }
-
+    setSelectedKey(key ?? null);
+    setIsFilterActive(false);
+    showSelectionLabel(
+      key != null ? getItemLabel(localCollectionState.collection, key) : '',
+    );
     externalOnSelectionChange?.(key as string | null);
 
     // Close popover after selection
@@ -1105,37 +1058,8 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     },
   );
 
-  // Initialize input value from defaultInputValue or defaultSelectedKey (uncontrolled mode only, one-time)
-  const [hasInitialized, setHasInitialized] = useState(false);
-
-  useEffect(() => {
-    // Only initialize once, in uncontrolled input mode
-    if (hasInitialized || isControlledInput) return;
-
-    // Priority 1: defaultInputValue takes precedence
-    if (defaultInputValue !== undefined) {
-      setInternalInputValue(defaultInputValue);
-      setHasInitialized(true);
-      return;
-    }
-
-    // Priority 2: fall back to defaultSelectedKey's label
-    if (defaultSelectedKey) {
-      const label = getItemLabel(defaultSelectedKey);
-
-      setInternalInputValue(label);
-      setHasInitialized(true);
-    }
-  }, [
-    hasInitialized,
-    isControlledInput,
-    defaultInputValue,
-    defaultSelectedKey,
-    getItemLabel,
-    children,
-  ]);
-
-  // Sync input value with controlled selectedKey
+  // When a controlled selection changes, the uncontrolled text settles on it
+  // and shows its label, which follows the options as they load.
   useEffect(() => {
     const preserveTypedInput = selectionClearedByTyping.current;
     selectionClearedByTyping.current = false;
@@ -1156,34 +1080,14 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     // text that caused it. Later external clears still reset the input.
     if (preserveTypedInput && effectiveSelectedKey == null) return;
 
-    // Get the expected label for the current selection
-    const expectedLabel =
-      effectiveSelectedKey != null ? getItemLabel(effectiveSelectedKey) : '';
-
-    // Update the input value to match the selected key's label
-    setInternalInputValue(expectedLabel);
+    setInternalInputValue(null);
   }, [
     isControlledKey,
     isControlledInput,
     effectiveSelectedKey,
     effectiveInputValue,
-    getItemLabel,
+    setInternalInputValue,
   ]);
-
-  // Input focus handler
-  const handleInputFocus = useEvent((e: React.FocusEvent<HTMLInputElement>) => {
-    // Call focus props handler if it exists
-    focusProps.onFocus?.(e as any);
-
-    if (popoverTrigger === 'focus' && !isPopoverOpen) {
-      setIsPopoverOpen(true);
-    }
-  });
-
-  // Input blur handler - just handles internal focus props
-  const handleInputBlur = useEvent((e: React.FocusEvent<HTMLInputElement>) => {
-    focusProps.onBlur?.(e as any);
-  });
 
   // Clear button logic
   let hasValue = allowsCustomValue
@@ -1191,40 +1095,57 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     : effectiveSelectedKey != null;
   let showClearButton = isClearable && hasValue && !isDisabled && !isReadOnly;
 
-  // Check if there are any results after filtering
-  const hasResults = useMemo(() => {
-    if (!children) return false;
-    if (!Array.isArray(children) && children === null) return false;
+  // Opens the list, showing every option when the typed text matches none. A
+  // read-only field never opens it.
+  const openList = () => {
+    if (isReadOnly || isDisabled) return;
+    if (!hasResults) setIsFilterActive(false);
 
-    // If we have a collection, check if filtering will produce any results
-    if (localCollectionState?.collection) {
-      const filteredNodes = filterFn(localCollectionState.collection);
-      const resultArray = Array.from(filteredNodes).flatMap((node: any) => {
-        if (node.type === 'section' && node.childNodes) {
-          return [...node.childNodes];
-        }
+    setIsPopoverOpen(true);
+  };
 
-        return [node];
-      });
-      return resultArray.length > 0;
+  // The chevron toggles the list and leaves focus in the input.
+  const toggleList = () => {
+    if (shouldShowPopover) {
+      setIsPopoverOpen(false);
+    } else {
+      openList();
     }
 
-    // Fallback: check if children exists
-    return Array.isArray(children) ? children.length > 0 : true;
-  }, [children, localCollectionState?.collection, filterFn]);
+    inputRef.current?.focus();
+  };
+
+  // Input focus handler
+  const handleInputFocus = useEvent((e: React.FocusEvent<HTMLInputElement>) => {
+    // Call focus props handler if it exists
+    focusProps.onFocus?.(e as any);
+
+    if (popoverTrigger === 'focus' && !isPopoverOpen) {
+      openList();
+    }
+  });
+
+  // A press in the input opens a closed list, focused or not. One on an open
+  // list only moves the caret.
+  const handleInputClick = () => {
+    if (popoverTrigger !== 'manual' && !shouldShowPopover) openList();
+  };
+
+  // Input blur handler - just handles internal focus props
+  const handleInputBlur = useEvent((e: React.FocusEvent<HTMLInputElement>) => {
+    focusProps.onBlur?.(e as any);
+  });
 
   // Clear function
   let clearValue = useEvent(() => {
     // Clear input
     if (!isControlledInput) {
-      setInternalInputValue('');
+      setInternalInputValue(null);
     }
     onInputChange?.('');
 
     // Clear selection
-    if (!isControlledKey) {
-      setInternalSelectedKey(null);
-    }
+    setSelectedKey(null);
     externalOnSelectionChange?.(null);
 
     // Close popover
@@ -1240,18 +1161,20 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
 
   // Keyboard navigation hook
   const { keyboardProps } = useComboBoxKeyboard({
-    isPopoverOpen,
+    isListShown: shouldShowPopover,
+    isReadOnly,
     listStateRef,
     hasResults,
     allowsCustomValue,
     effectiveInputValue,
+    selectedKey: effectiveSelectedKey,
+    selectedLabel,
     isClearable,
     onSelectionChange: handleSelectionChange,
     onClearValue: clearValue,
-    onOpenPopover: () => setIsPopoverOpen(true),
-    onClosePopover: () => setIsPopoverOpen(false),
+    onOpenList: openList,
+    onCloseList: () => setIsPopoverOpen(false),
     inputRef,
-    setIsFilterActive,
     onVirtualFocus: setActiveOptionKey,
     onKeyDown,
   });
@@ -1293,102 +1216,56 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     ],
   );
 
-  const comboBoxWidth = wrapperRef?.current?.offsetWidth;
-
-  const shouldShowPopover = Boolean(isPopoverOpen && hasResults);
+  // The list is at least as wide as the field, measured as it shows.
+  const [comboBoxWidth, setComboBoxWidth] = useState<number>();
 
   // Close popover if no results
   useEffect(() => {
     if (isPopoverOpen && !hasResults) {
       setIsPopoverOpen(false);
     }
-  }, [isPopoverOpen, hasResults]);
+  }, [isPopoverOpen, hasResults, setIsPopoverOpen]);
 
-  const ensureInitialFocus = useCallback(() => {
-    if (!shouldShowPopover) return;
-
-    const listState = listStateRef.current;
-    if (!listState) return;
-
-    const { selectionManager, collection, disabledKeys, lastFocusSourceRef } =
-      listState;
-    if (!selectionManager || !collection) return;
-
-    const collectFirstKey = (): Key | null => {
-      for (const node of collection) {
-        if (node.type === 'item') {
-          if (!disabledKeys?.has(node.key)) return node.key;
-        } else if (node.childNodes) {
-          for (const child of node.childNodes) {
-            if (child.type === 'item' && !disabledKeys?.has(child.key)) {
-              return child.key;
-            }
-          }
-        }
-      }
-      return null;
-    };
-
-    if (lastFocusSourceRef) lastFocusSourceRef.current = 'keyboard';
-
-    // Check if we need to set or update focus
-    const currentFocusedKey = selectionManager.focusedKey;
-    let needsRefocus = false;
-
-    if (currentFocusedKey == null) {
-      // No focus at all - need to set initial focus
-      needsRefocus = true;
-    } else {
-      // Check if currently focused key still exists in the collection
-      const focusedItemExists = collection.getItem(currentFocusedKey) != null;
-      if (!focusedItemExists) {
-        // Focused item was filtered out - need to refocus
-        needsRefocus = true;
-      }
-    }
-
-    if (!needsRefocus) {
-      setActiveOptionKey(currentFocusedKey);
-    } else {
-      let keyToFocus: Key | null = null;
-
-      // First try to focus on the selected key if it exists in the collection
-      if (
-        effectiveSelectedKey != null &&
-        collection.getItem(effectiveSelectedKey) != null
-      ) {
-        keyToFocus = effectiveSelectedKey;
-      } else {
-        // Fall back to the first key in the collection
-        keyToFocus = collectFirstKey();
-      }
-
-      if (keyToFocus != null) {
-        selectionManager.setFocusedKey(keyToFocus);
-        setActiveOptionKey(keyToFocus);
-      }
-    }
-  }, [shouldShowPopover, effectiveSelectedKey, setActiveOptionKey]);
-
+  // Highlight an option once the list shows, and again whenever the typed
+  // text filters the list, so the input's active descendant follows it. The
+  // list mounts its collection over the next few frames.
   useLayoutEffect(() => {
     if (!shouldShowPopover) return;
-    focusInitAttemptsRef.current = 0;
+
+    setComboBoxWidth(wrapperRef.current?.offsetWidth);
+
+    let attempts = 0;
+    let frame = 0;
 
     const tick = () => {
-      if (!shouldShowPopover) return;
-      ensureInitialFocus();
-      focusInitAttemptsRef.current += 1;
-      // Try a few frames to wait for collection to mount
-      if (
-        focusInitAttemptsRef.current < 8 &&
-        listStateRef.current?.selectionManager?.focusedKey == null
-      ) {
-        requestAnimationFrame(tick);
-      }
+      const key = highlightOption(listStateRef.current, effectiveSelectedKey);
+
+      if (key != null) setActiveOptionKey(key);
+
+      attempts += 1;
+
+      if (key == null && attempts < 8) frame = requestAnimationFrame(tick);
     };
 
-    requestAnimationFrame(() => requestAnimationFrame(tick));
-  }, [shouldShowPopover, ensureInitialFocus]);
+    frame = requestAnimationFrame(() => {
+      frame = requestAnimationFrame(tick);
+    });
+
+    return () => cancelAnimationFrame(frame);
+  }, [
+    shouldShowPopover,
+    effectiveSelectedKey,
+    effectiveInputValue,
+    wrapperRef,
+  ]);
+
+  // Only an option the filter keeps is rendered.
+  const activeDescendant =
+    shouldShowPopover &&
+    activeOptionKey != null &&
+    filteredOptions.some((option) => option.key === activeOptionKey)
+      ? getListBoxOptionId(`ComboBoxListBox-${comboBoxId}`, activeOptionKey)
+      : undefined;
 
   const comboBoxField = (
     <ComboBoxWrapperElement
@@ -1418,19 +1295,12 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
         inputStyles={inputStyles}
         keyboardProps={keyboardProps}
         focusProps={{ ...focusProps, onBlur: handleInputBlur }}
-        isPopoverOpen={isPopoverOpen}
-        hasResults={hasResults}
+        isListShown={shouldShowPopover}
         comboBoxId={comboBoxId}
-        activeDescendant={
-          shouldShowPopover && activeOptionKey != null
-            ? getListBoxOptionId(
-                `ComboBoxListBox-${comboBoxId}`,
-                activeOptionKey,
-              )
-            : undefined
-        }
+        activeDescendant={activeDescendant}
         onChange={handleInputChange}
         onFocus={handleInputFocus}
+        onClick={handleInputClick}
         ariaProps={{
           'aria-label': (props as AriaLabelingProps)['aria-label'],
           'aria-labelledby': (props as AriaLabelingProps)['aria-labelledby'],
@@ -1444,6 +1314,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
         {suffixPosition === 'after' ? suffix : null}
         {showClearButton && (
           <Item.Action
+            excludeFromTabOrder
             icon={<CloseIcon />}
             size={size}
             // No `theme` — the default `current` type inherits the input's own
@@ -1458,35 +1329,26 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
           />
         )}
         {!hideTrigger ? (
+          // Pointer-only, as is the clear button: the input opens, closes
+          // and clears from the keyboard itself.
           <Item.Action
             ref={triggerRef}
+            excludeFromTabOrder
             data-popover-trigger
-            icon={<DirectionIcon to={isPopoverOpen ? 'up' : 'down'} />}
+            icon={<DirectionIcon to={shouldShowPopover ? 'up' : 'down'} />}
             qa="ComboBoxTrigger"
             mods={{
-              pressed: isPopoverOpen,
+              pressed: shouldShowPopover,
               disabled: isDisabled,
               loading: isLoading,
             }}
             data-size={size}
             isDisabled={isDisabled}
             styles={triggerStyles}
-            aria-expanded={isPopoverOpen}
+            aria-expanded={shouldShowPopover}
             aria-haspopup="listbox"
             aria-label={t('comboBox.showOptions', 'Show options')}
-            onPress={() => {
-              if (!isDisabled) {
-                const willOpen = !isPopoverOpen;
-                setIsPopoverOpen(willOpen);
-                if (willOpen) {
-                  inputRef.current?.focus();
-                  // If opening with no filtered results, disable filter to show all items
-                  if (!hasResults) {
-                    setIsFilterActive(false);
-                  }
-                }
-              }
-            }}
+            onPress={toggleList}
           />
         ) : null}
       </div>
@@ -1508,6 +1370,9 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
         headingStyles={headingStyles}
         listGap={listGap}
         selectedKey={effectiveSelectedKey}
+        // A press in the field, such as one that moves the caret, keeps the
+        // list open; the chevron toggles it on its own.
+        shouldCloseOnTriggerInteraction={false}
         isDisabled={isDisabled}
         disabledKeys={props.disabledKeys}
         items={sortedItems}

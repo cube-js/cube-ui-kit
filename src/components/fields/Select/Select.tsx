@@ -20,8 +20,11 @@ import React, {
   ReactNode,
   RefObject,
   useEffect,
+  useEffectEvent,
+  useLayoutEffect,
   useMemo,
   useRef,
+  useState,
 } from 'react';
 import {
   AriaSelectProps,
@@ -37,10 +40,13 @@ import {
   useOverlayPosition,
   useSelect,
 } from 'react-aria';
-import { Section as BaseSection, useSelectState } from 'react-stately';
+import {
+  Section as BaseSection,
+  SelectState,
+  useSelectState,
+} from 'react-stately';
 import { CubeTooltipProviderProps } from 'src/components/overlays/Tooltip/TooltipProvider';
 
-import { useEvent } from '../../../_internal';
 import { useI18n } from '../../../i18n';
 import { CloseIcon } from '../../../icons/CloseIcon';
 import { DirectionIcon } from '../../../icons/DirectionIcon';
@@ -54,8 +60,8 @@ import { mergeRefs } from '../../../utils/react/useCombinedRefs';
 import { useOverlayEscapeGuard } from '../../../utils/react/useOverlayEscapeGuard';
 import { usePopoverSync } from '../../../utils/react/usePopoverSync';
 import { extractStyles, mergeStyleLayers } from '../../../utils/styles';
-import { ItemAction } from '../../actions';
 import { isOwnActionsPress } from '../../actions/actions-run';
+import { ItemAction } from '../../actions/ItemAction/ItemAction';
 import { ItemActionsWrapper } from '../../actions/ItemActionsWrapper';
 import {
   StyledDivider as ListDivider,
@@ -79,6 +85,7 @@ import {
 import { DisplayTransition } from '../../helpers';
 import { useModalLayerRef } from '../../overlays/Modal/modal-containment';
 import { Portal } from '../../portal';
+import { useOptionOriginPress } from '../option-origin-press';
 import { TriggerActions, TriggerIcon } from '../TriggerActions';
 
 import type { Placement } from 'react-aria';
@@ -117,6 +124,12 @@ export const ListBoxElement = tasty({
     margin: '0',
     padding: '0',
     listStyle: 'none',
+    // The popup's list is the scroll container and the element its height
+    // limit lands on, so React Aria's page navigation measures what is
+    // actually visible. A section's list grows with its options.
+    overflow: { '': 'auto', section: false },
+    // Options measure their scroll offset against the list.
+    position: 'relative',
     scrollbar: 'styled',
     // The listbox is programmatically focused when the popover opens
     // (so keyboard nav works immediately) but it should never display a
@@ -142,6 +155,10 @@ const SelectOverlayWrapper = tasty({
   styles: {
     position: 'absolute',
     zIndex: 1000,
+    // React Aria writes the room left in the viewport as this element's
+    // `max-height`; a flex column lets the popup shrink to it.
+    display: 'flex',
+    flow: 'column',
   },
 });
 
@@ -227,9 +244,18 @@ export interface CubeSelectBaseProps<T>
     | boolean
     | (Omit<CubeTooltipProviderProps, 'children'> & { auto?: boolean });
   triggerRef?: RefObject<HTMLButtonElement>;
+  /**
+   * Shows a loading indicator in the trigger. The value can't change while
+   * loading: the list doesn't open and typeahead is ignored.
+   */
   isLoading?: boolean;
+  /** Replaces the default loading icon shown while `isLoading` is set. */
   loadingIndicator?: ReactNode;
   overlayOffset?: number;
+  /**
+   * @deprecated Has no effect: the whole Select is its trigger. To hide the
+   * dropdown caret, pass `rightIcon={null}`.
+   */
   hideTrigger?: boolean;
   /**
    *  @deprecated Use `triggerStyles` instead
@@ -265,6 +291,7 @@ export interface CubeSelectBaseProps<T>
   shouldFlip?: boolean;
   /** Minimum padding in pixels between the popover and viewport edges */
   containerPadding?: number;
+  /** Additional props for the trigger button element. */
   inputProps?: Props;
   type?: 'outline' | 'outline-2' | 'clear' | 'primary' | (string & {});
   /**
@@ -301,7 +328,8 @@ export interface CubeSelectBaseProps<T>
 }
 
 export interface CubeSelectProps<T> extends CubeSelectBaseProps<T> {
-  popoverRef?: RefObject<HTMLInputElement>;
+  /** The ref for the popover element. */
+  popoverRef?: RefObject<HTMLElement | null>;
   /** The ref for the list box. */
   listBoxRef?: RefObject<HTMLElement>;
   size?: 'small' | 'medium' | 'large' | (string & {});
@@ -309,6 +337,23 @@ export interface CubeSelectProps<T> extends CubeSelectBaseProps<T> {
 }
 
 const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
+
+const ignore = () => {};
+
+/**
+ * A state whose value can't change. React Aria's trigger opens the list,
+ * steps with `ArrowLeft`/`ArrowRight` and typeaheads through these methods,
+ * so ignoring them fixes the value while the trigger stays focusable.
+ */
+function lockSelectState<S extends SelectState<object>>(state: S): S {
+  return {
+    ...state,
+    open: ignore,
+    toggle: ignore,
+    setSelectedKey: ignore,
+    setValue: ignore,
+  };
+}
 
 function Select<T extends object>(
   rawProps: CubeSelectProps<T>,
@@ -337,7 +382,7 @@ function Select<T extends object>(
     isDisabled = props.isLoading || false,
     autoFocus,
     inputProps,
-    triggerRef,
+    triggerRef: triggerRefProp,
     popoverRef,
     listBoxRef,
     isLoading,
@@ -376,20 +421,30 @@ function Select<T extends object>(
     ...otherProps
   } = props;
   const { t } = useI18n();
+  // `useSelectState` reports `onOpenChange` itself, once per transition.
   let state = getValueSelectionState(useSelectState(props));
+  // Read-only and loading keep the trigger focusable, but its value is fixed.
+  const isLocked = !!props.isReadOnly || !!isLoading;
+
+  if (isLocked) state = lockSelectState(state);
 
   // Generate a unique ID for this select instance
   const selectId = useMemo(() => generateRandomId(), []);
 
-  // Call onOpenChange when open state changes
+  // A list that can no longer change the value closes rather than staying open
+  // behind a hidden popup, so `aria-expanded` follows and enabling the field
+  // again doesn't bring the list back.
+  const isInert = isLocked || isDisabled;
+  const closeList = useEffectEvent(() => state.close());
+
   useEffect(() => {
-    onOpenChange?.(state.isOpen);
-  }, [state.isOpen]);
+    if (isInert && state.isOpen) closeList();
+  }, [isInert, state.isOpen]);
 
   styles = extractStyles(otherProps, PROP_STYLES, styles);
 
   ref = useCombinedRefs(ref);
-  triggerRef = useCombinedRefs(triggerRef);
+  const triggerRef = useCombinedRefs(triggerRefProp);
   popoverRef = useCombinedRefs(popoverRef);
   listBoxRef = useCombinedRefs(listBoxRef);
 
@@ -456,30 +511,39 @@ function Select<T extends object>(
   let { hoverProps, isHovered } = useHover({ isDisabled });
 
   // Get props for the button based on the trigger props from useSelect
-  let { buttonProps } = useButton(triggerProps, triggerRef);
+  let { buttonProps } = useButton({ ...triggerProps, autoFocus }, triggerRef);
 
   let validationIcon = getValidationIcon({ isInvalid, isValid });
 
   // Clear button logic
   let hasSelection = state.selectedItem != null;
-  let showClearButton =
-    isClearable && hasSelection && !isDisabled && !props.isReadOnly;
+  let showClearButton = isClearable && hasSelection && !isInert;
 
-  // Clear function
-  let clearValue = useEvent(() => {
-    props.onSelectionChange?.(null);
+  function clearValue() {
+    // Reports the change through `onSelectionChange`.
     state.setSelectedKey(null);
-    // Close the popup if it's open
+
     if (state.isOpen) {
       state.close();
     }
-    // Return focus to the trigger for better UX
-    triggerRef.current?.focus?.();
+
+    // Back to the trigger, without its tooltip reading this as the user
+    // arriving there and then swallowing the next `Escape`.
+    focusProgrammatically(triggerRef.current);
 
     props.onClear?.();
-  });
+  }
 
-  let triggerWidth = triggerRef?.current?.offsetWidth;
+  // The popup is at least as wide as the trigger. Measured as the list opens,
+  // before the popup mounts and is positioned, rather than during render, so a
+  // trigger resized while the list was closed is read fresh.
+  const [triggerWidth, setTriggerWidth] = useState<number>();
+
+  useLayoutEffect(() => {
+    if (state.isOpen) setTriggerWidth(triggerRef.current?.offsetWidth);
+  }, [state.isOpen, triggerRef]);
+
+  const loadingIcon = loadingIndicator ?? <LoadingIcon />;
 
   const showPlaceholder = !!placeholder?.trim() && !state.selectedItem;
 
@@ -524,13 +588,11 @@ function Select<T extends object>(
   // it is also what a caller's `RightIcon` styles target. It replaces the
   // built-in control, exactly as before.
   const hasCustomRightIcon = rightIcon !== undefined;
-  const triggerRightIcon = hasCustomRightIcon ? (
-    isLoading ? (
-      <LoadingIcon />
-    ) : (
-      rightIcon
-    )
-  ) : undefined;
+  const triggerRightIcon = hasCustomRightIcon
+    ? isLoading
+      ? loadingIcon
+      : rightIcon
+    : undefined;
 
   // With a caller's own `rightIcon` the built-in control moves into that slot,
   // leaving the run with whatever the caller passed — possibly nothing. The run
@@ -567,9 +629,7 @@ function Select<T extends object>(
             onPress={clearValue}
           />
         ) : isLoading ? (
-          <TriggerIcon>
-            <LoadingIcon />
-          </TriggerIcon>
+          <TriggerIcon>{loadingIcon}</TriggerIcon>
         ) : (
           <TriggerIcon>
             <DirectionIcon to={state.isOpen ? 'up' : 'down'} />
@@ -621,7 +681,7 @@ function Select<T extends object>(
             as="button"
             qa={qa || 'Select'}
             data-input-type="select"
-            {...mergeProps(buttonProps, hoverProps, focusProps)}
+            {...mergeProps(buttonProps, hoverProps, focusProps, inputProps)}
             ref={triggerRef}
             data-popover-trigger
             showActions={showActions}
@@ -665,6 +725,7 @@ function Select<T extends object>(
         overlayStyles={overlayStyles}
         optionStyles={optionStyles}
         minWidth={triggerWidth}
+        size={size}
         triggerRef={triggerRef}
         isDisabled={isDisabled}
       />
@@ -702,23 +763,6 @@ export function ListBoxPopup({
   isDisabled,
   ...otherProps
 }) {
-  // For trigger+popover components, map 'small' size to 'medium' for list items
-  // while preserving 'medium' and 'large' sizes
-  const listItemSize = size === 'small' ? 'medium' : size;
-  const listGapTokens =
-    listGap == null ? undefined : { '$list-gap': `${listGap}px` };
-
-  // Get props for the listbox
-  let { listBoxProps } = useListBox(
-    {
-      autoFocus: state.focusStrategy || true,
-      shouldUseVirtualFocus,
-      ...otherProps,
-    },
-    state,
-    listBoxRef,
-  );
-
   // Handle events that should cause the popup to close,
   // e.g. blur, clicking outside, or pressing the escape key.
   let { overlayProps: rawOverlayProps } = useOverlay(
@@ -774,19 +818,11 @@ export function ListBoxPopup({
   // <DismissButton> components at the start and end of the list
   // to allow screen reader users to dismiss the popup easily.
   //
-  // `autoFocus` is required because `ListBoxPopup` is rendered
-  // unconditionally (not gated on `state.isOpen`), so by the time the
-  // popover actually opens, react-aria's `useSelectableCollection`
-  // autoFocus has already been consumed (its useRef captures the
-  // initial value on mount, when the listbox isn't in the DOM yet).
-  // Setting `autoFocus` on the FocusScope itself runs each time the
-  // FocusScope mounts (every time the popover opens, since the inner
-  // tree is unmounted between opens) and explicitly focuses the
-  // first tabbable element (the listbox). This also registers the
-  // FocusScope as the active scope, so an outer contained Dialog
-  // FocusScope (e.g. a popover Dialog wrapping the Select) correctly
-  // recognises focus moving into the Select popover and doesn't yank
-  // it back to the trigger.
+  // `SelectListBox` puts focus in the list as it mounts, which happens on
+  // every open. `autoFocus` on the scope then finds focus already inside and
+  // only registers the scope as the active one, so an outer contained Dialog
+  // FocusScope (e.g. a popover Dialog wrapping the Select) recognises focus
+  // moving into the Select popover and doesn't yank it back to the trigger.
   return (
     <Portal>
       <DisplayTransition isShown={state.isOpen && !isDisabled}>
@@ -814,62 +850,16 @@ export function ListBoxPopup({
             >
               <FocusScope autoFocus restoreFocus>
                 <DismissButton onDismiss={() => state.close()} />
-                {(() => {
-                  const renderedItems: React.ReactNode[] = [];
-                  let hasSections = false;
-
-                  for (const item of state.collection) {
-                    if (item.type === 'section') {
-                      if (hasSections) {
-                        renderedItems.push(
-                          <ListDivider
-                            key={`divider-${String(item.key)}`}
-                            as="li"
-                            role="separator"
-                            aria-orientation="horizontal"
-                          />,
-                        );
-                      }
-
-                      renderedItems.push(
-                        <SelectSection
-                          key={item.key}
-                          item={item}
-                          state={state}
-                          optionStyles={optionStyles}
-                          sectionStyles={undefined}
-                          shouldUseVirtualFocus={shouldUseVirtualFocus}
-                          size={listItemSize}
-                        />,
-                      );
-
-                      hasSections = true;
-                    } else {
-                      renderedItems.push(
-                        <Option
-                          key={item.key}
-                          item={item}
-                          state={state}
-                          styles={optionStyles}
-                          shouldUseVirtualFocus={shouldUseVirtualFocus}
-                          size={listItemSize}
-                        />,
-                      );
-                    }
-                  }
-
-                  return (
-                    <ListBoxElement
-                      styles={listBoxStyles}
-                      tokens={listGapTokens}
-                      mods={{ sections: hasSections }}
-                      {...listBoxProps}
-                      ref={listBoxRef}
-                    >
-                      {renderedItems}
-                    </ListBoxElement>
-                  );
-                })()}
+                <SelectListBox
+                  {...otherProps}
+                  state={state}
+                  listBoxRef={listBoxRef}
+                  listBoxStyles={listBoxStyles}
+                  listGap={listGap}
+                  optionStyles={optionStyles}
+                  shouldUseVirtualFocus={shouldUseVirtualFocus}
+                  size={size}
+                />
                 <DismissButton onDismiss={() => state.close()} />
               </FocusScope>
             </OverlayElement>
@@ -877,6 +867,195 @@ export function ListBoxPopup({
         )}
       </DisplayTransition>
     </Portal>
+  );
+}
+
+/** The first or last option that can take focus. */
+function getEdgeOptionKey(
+  state: SelectState<object>,
+  edge: 'first' | 'last',
+): Key | null {
+  const keys = [...state.collection.getKeys()];
+
+  if (edge === 'last') keys.reverse();
+
+  return (
+    keys.find(
+      (key) =>
+        state.collection.getItem(key)?.type === 'item' &&
+        state.selectionManager.canSelectItem(key),
+    ) ?? null
+  );
+}
+
+/**
+ * Where focus lands as the list opens. `ArrowUp` opens on the last option;
+ * `ArrowDown`, `Enter` and `Space` on the selected option, or else the first.
+ * A pointer opens on the selected option, or else on the list itself, as in
+ * React Aria, so a click highlights nothing the user didn't pick.
+ */
+function getOpeningFocusKey(state: SelectState<object>): Key | null {
+  const { focusStrategy, selectedKey, selectionManager } = state;
+
+  if (focusStrategy === 'last') return getEdgeOptionKey(state, 'last');
+
+  if (selectedKey != null && selectionManager.canSelectItem(selectedKey)) {
+    return selectedKey;
+  }
+
+  return focusStrategy === 'first' ? getEdgeOptionKey(state, 'first') : null;
+}
+
+/**
+ * Scrolls `list` so `option` is in view. Layout offsets rather than client
+ * rects: on its first frames the popup is scaled by its enter transition,
+ * which would skew a rect-based scroll. The list is positioned, so the offset
+ * chain ends at it.
+ */
+function scrollIntoList(list: HTMLElement, option: HTMLElement) {
+  let top = 0;
+
+  for (
+    let node: HTMLElement | null = option;
+    node && node !== list;
+    node = node.offsetParent as HTMLElement | null
+  ) {
+    top += node.offsetTop;
+  }
+
+  const bottom = top + option.offsetHeight;
+
+  if (top < list.scrollTop) {
+    list.scrollTop = top;
+  } else if (bottom > list.scrollTop + list.clientHeight) {
+    list.scrollTop = bottom - list.clientHeight;
+  }
+}
+
+function focusOpeningOption(
+  state: SelectState<object>,
+  list: HTMLElement | null,
+  shouldUseVirtualFocus: boolean,
+) {
+  const key = getOpeningFocusKey(state);
+  const manager = state.selectionManager;
+
+  manager.setFocused(true);
+  manager.setFocusedKey(key);
+
+  if (!list || shouldUseVirtualFocus) return;
+
+  const option =
+    key == null
+      ? undefined
+      : Array.from(list.querySelectorAll<HTMLElement>('[role="option"]')).find(
+          (element) => element.dataset.key === String(key),
+        );
+
+  if (!option) {
+    list.focus({ preventScroll: true });
+
+    return;
+  }
+
+  scrollIntoList(list, option);
+  // Focused here rather than left to the option, which would only follow on
+  // the next render: the scope's `autoFocus` runs first and would otherwise
+  // focus whichever option was tabbable from the last opening.
+  option.focus({ preventScroll: true });
+}
+
+/**
+ * The list inside the popup. The popup unmounts it when it closes, so it
+ * mounts once per opening and decides where focus lands for that opening
+ * rather than inheriting the last one.
+ */
+function SelectListBox({
+  state,
+  listBoxRef,
+  listBoxStyles,
+  listGap,
+  optionStyles,
+  shouldUseVirtualFocus,
+  size,
+  ...otherProps
+}) {
+  // For trigger+popover components, map 'small' size to 'medium' for list items
+  // while preserving 'medium' and 'large' sizes
+  const listItemSize = size === 'small' ? 'medium' : size;
+  const listGapTokens =
+    listGap == null ? undefined : { '$list-gap': `${listGap}px` };
+
+  let { listBoxProps } = useListBox(
+    // Opening focus is `focusOpeningOption`'s: React Aria's own `autoFocus`
+    // lets a selection win over the last option `ArrowUp` asks for.
+    { ...otherProps, shouldUseVirtualFocus, autoFocus: false },
+    state,
+    listBoxRef,
+  );
+
+  const focusOnOpen = useEffectEvent(() =>
+    focusOpeningOption(state, listBoxRef.current, shouldUseVirtualFocus),
+  );
+
+  useEffect(() => {
+    focusOnOpen();
+  }, []);
+
+  const renderedItems: React.ReactNode[] = [];
+  let hasSections = false;
+
+  for (const item of state.collection) {
+    if (item.type === 'section') {
+      if (hasSections) {
+        // A listbox may only own options and groups, so the divider between
+        // sections is presentation only.
+        renderedItems.push(
+          <ListDivider
+            key={`divider-${String(item.key)}`}
+            as="li"
+            role="presentation"
+          />,
+        );
+      }
+
+      renderedItems.push(
+        <SelectSection
+          key={item.key}
+          item={item}
+          state={state}
+          optionStyles={optionStyles}
+          sectionStyles={undefined}
+          shouldUseVirtualFocus={shouldUseVirtualFocus}
+          size={listItemSize}
+        />,
+      );
+
+      hasSections = true;
+    } else {
+      renderedItems.push(
+        <Option
+          key={item.key}
+          item={item}
+          state={state}
+          styles={optionStyles}
+          shouldUseVirtualFocus={shouldUseVirtualFocus}
+          size={listItemSize}
+        />,
+      );
+    }
+  }
+
+  return (
+    <ListBoxElement
+      styles={listBoxStyles}
+      tokens={listGapTokens}
+      mods={{ sections: hasSections }}
+      {...listBoxProps}
+      ref={listBoxRef}
+    >
+      {renderedItems}
+    </ListBoxElement>
   );
 }
 
@@ -898,6 +1077,17 @@ function Option({ item, state, styles, shouldUseVirtualFocus, size }) {
     state,
     ref,
   );
+
+  // A mouse press picks the option it started on, even if the list moved
+  // under the pointer before the release.
+  const originPress = useOptionOriginPress({
+    key: item.key,
+    ref,
+    manager: state.selectionManager,
+    isDisabled,
+  });
+  const { onPointerUp, ...ariaOptionProps } =
+    filterSelectionItemProps(optionProps);
 
   // Handle focus events, so we can apply highlighted
   // style to the focused option
@@ -926,7 +1116,11 @@ function Option({ item, state, styles, shouldUseVirtualFocus, size }) {
   return (
     <OptionItem
       {...mergeProps(
-        filterSelectionItemProps(optionProps),
+        ariaOptionProps,
+        {
+          onPointerDown: originPress.onPointerDown,
+          onPointerUp: originPress.wrapPointerUp(onPointerUp),
+        },
         focusProps,
         filteredItemProps,
         keyboardProps,

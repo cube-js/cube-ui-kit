@@ -269,7 +269,7 @@ describe('useAlertDialogApi() dialog lifecycle', () => {
       within(await screen.findByRole('alertdialog')).getByText('Second'),
     ).toBeInTheDocument();
 
-    // Past the first dialog's 300 ms cleanup, which must leave this one alone.
+    // Past the first dialog's cleanup, which must leave this one alone.
     await act(() => new Promise((resolve) => setTimeout(resolve, 400)));
     expect(
       within(screen.getByRole('alertdialog')).getByText('Second'),
@@ -277,6 +277,40 @@ describe('useAlertDialogApi() dialog lifecycle', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Ok' }));
     await expect(second).resolves.toBe('confirm');
+  });
+
+  // The overlay plays a 350 ms exit; the dialog has to stay mounted for all of
+  // it rather than vanish when the provider drops it.
+  it('keeps a closed dialog mounted until its exit animation has ended', async () => {
+    vi.useFakeTimers();
+
+    try {
+      renderWithRoot(<ApiGrabber />);
+
+      const controller = new AbortController();
+      let promise!: ReturnType<AlertDialogApi['open']>;
+
+      act(() => {
+        promise = api.open(
+          { title: 'Closing', content: 'Lorem' },
+          { cancelToken: controller.signal },
+        );
+      });
+
+      await act(() => vi.advanceTimersByTimeAsync(500));
+      expect(screen.getByText('Closing')).toBeInTheDocument();
+
+      act(() => controller.abort());
+      await expect(promise).rejects.toBeUndefined();
+
+      await act(() => vi.advanceTimersByTimeAsync(320));
+      expect(screen.getByText('Closing')).toBeInTheDocument();
+
+      await act(() => vi.advanceTimersByTimeAsync(200));
+      expect(screen.queryByText('Closing')).not.toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('shows a dialog opened from a mount effect under StrictMode', async () => {

@@ -226,7 +226,8 @@ describe('ListBox listGap', () => {
 
       const result = await vi.waitFor(() => {
         const options = rects('option');
-        const [divider] = rects('separator');
+        // Presentational inside a listbox, so found by its qa, not a role.
+        const divider = screen.getByTestId('Divider').getBoundingClientRect();
 
         const [list] = screen.getAllByRole('listbox');
 
@@ -641,5 +642,246 @@ describe('ListBox virtualized option heights', () => {
 
     expect(overlapping).toEqual([]);
     expect(gaps()).toEqual(Array(next(METRICS).length - 1).fill(1));
+  });
+});
+
+/**
+ * A flat list renders only the options near its scroll position, so focus can
+ * move to an option that is not in the document. The list has to scroll the
+ * virtualizer to it, which then renders it. In a browser because jsdom has no
+ * layout to scroll and its virtualizer is a mock.
+ */
+describe('ListBox focus outside the rendered window', () => {
+  const ITEMS = Array.from({ length: 1000 }, (_, index) => ({
+    key: `item-${index}`,
+    label: `Item ${index}`,
+  }));
+
+  type Props = Partial<ComponentProps<typeof ListBox>>;
+
+  function renderList(props: Props = {}) {
+    renderWithRoot(
+      <ListBox aria-label="Items" height="30x" items={ITEMS} {...props}>
+        {(item: (typeof ITEMS)[number]) => (
+          <ListBox.Item key={item.key}>{item.label}</ListBox.Item>
+        )}
+      </ListBox>,
+    );
+  }
+
+  /** Whether the option lies wholly inside its list's scroll viewport. */
+  function isInView(option: HTMLElement) {
+    const scroller = option.closest('[role="listbox"]')!.parentElement!;
+    const box = option.getBoundingClientRect();
+    const viewport = scroller.getBoundingClientRect();
+
+    return box.top >= viewport.top - 1 && box.bottom <= viewport.bottom + 1;
+  }
+
+  async function expectFocusedInView(name: string) {
+    await waitFor(
+      () => {
+        const option = screen.getByRole('option', { name });
+
+        expect(option).toHaveFocus();
+        expect(isInView(option)).toBe(true);
+      },
+      { timeout: 3000 },
+    );
+  }
+
+  it.each([
+    ['{End}', 'Item 999'],
+    ['{End}{Home}', 'Item 0'],
+  ])('scrolls to the option %s moves focus to', async (keys, name) => {
+    renderList();
+
+    await userEvent.click(screen.getByRole('option', { name: 'Item 0' }));
+
+    expect(screen.queryByRole('option', { name: 'Item 999' })).toBeNull();
+
+    await userEvent.keyboard(keys);
+
+    await expectFocusedInView(name);
+  });
+
+  it('keeps paging down past the rendered window', async () => {
+    renderList();
+
+    await userEvent.click(screen.getByRole('option', { name: 'Item 0' }));
+
+    for (let page = 0; page < 5; page++) {
+      await userEvent.keyboard('{PageDown}');
+    }
+
+    await waitFor(
+      () => {
+        const focused = document.activeElement as HTMLElement;
+
+        expect(focused).toHaveAttribute('role', 'option');
+        // Five pages of a list showing about seven options.
+        expect(Number(focused.dataset.index)).toBeGreaterThan(20);
+        expect(isInView(focused)).toBe(true);
+      },
+      { timeout: 3000 },
+    );
+  });
+
+  it('scrolls to the selected option it focuses when it mounts', async () => {
+    renderList({ autoFocus: true, defaultSelectedKey: 'item-500' });
+
+    await expectFocusedInView('Item 500');
+  });
+
+  it('scrolls to the selected option it focuses when tabbed into', async () => {
+    renderWithRoot(
+      <>
+        <button>Before</button>
+        <ListBox
+          aria-label="Items"
+          height="30x"
+          items={ITEMS}
+          defaultSelectedKey="item-700"
+        >
+          {(item: (typeof ITEMS)[number]) => (
+            <ListBox.Item key={item.key}>{item.label}</ListBox.Item>
+          )}
+        </ListBox>
+      </>,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'Before' }));
+    await userEvent.tab();
+
+    await expectFocusedInView('Item 700');
+  });
+});
+
+/**
+ * A mouse press picks the option it started on (CUB-5598).
+ *
+ * The list selects on press up, and React Aria then picks whatever option the
+ * pointer comes up over, or none. When the list moves between press and
+ * release, as it does while a popover is still animating in, that is a
+ * neighbour. In a browser because it depends on real option boxes.
+ */
+describe('ListBox press on a list that moves', () => {
+  function mouse(type: string, target: Element, x: number, y: number) {
+    target.dispatchEvent(
+      new PointerEvent(type, {
+        bubbles: true,
+        cancelable: true,
+        composed: true,
+        pointerId: 1,
+        pointerType: 'mouse',
+        isPrimary: true,
+        button: 0,
+        buttons: type === 'pointerdown' ? 1 : 0,
+        clientX: x,
+        clientY: y,
+      }),
+    );
+  }
+
+  function renderFruits(focusOnHover: boolean) {
+    const onSelectionChange = vi.fn();
+
+    renderWithRoot(
+      <ListBox
+        aria-label="Fruits"
+        selectionMode="single"
+        focusOnHover={focusOnHover}
+        onSelectionChange={onSelectionChange}
+      >
+        <ListBox.Item key="apple">Apple</ListBox.Item>
+        <ListBox.Item key="banana">Banana</ListBox.Item>
+        <ListBox.Item key="cherry">Cherry</ListBox.Item>
+      </ListBox>,
+    );
+
+    const apple = screen.getByRole('option', { name: 'Apple' });
+    const box = apple.getBoundingClientRect();
+    const x = box.left + box.width / 2;
+    const y = box.top + box.height / 2;
+
+    // Moves the list up by one option, so Banana sits where Apple was.
+    const shiftList = () => {
+      screen.getByRole('listbox').style.transform =
+        `translateY(-${box.height}px)`;
+    };
+
+    return { apple, box, x, y, shiftList, onSelectionChange };
+  }
+
+  describe.each([
+    ['with focusOnHover', true],
+    ['without focusOnHover', false],
+  ])('%s', (_name, focusOnHover) => {
+    it('selects the option the press started on when the list moved', async () => {
+      const { apple, x, y, shiftList, onSelectionChange } =
+        renderFruits(focusOnHover);
+
+      mouse('pointerdown', apple, x, y);
+      shiftList();
+
+      const under = document.elementFromPoint(x, y);
+
+      expect(under?.closest('[role="option"]')).toBe(
+        screen.getByRole('option', { name: 'Banana' }),
+      );
+
+      mouse('pointerup', under!, x, y);
+
+      await waitFor(() => {
+        expect(apple).toHaveAttribute('aria-selected', 'true');
+      });
+      expect(onSelectionChange).toHaveBeenCalledTimes(1);
+      expect(
+        screen.getByRole('option', { name: 'Banana' }),
+      ).not.toHaveAttribute('aria-selected', 'true');
+    });
+
+    it('selects nothing when released outside the pressed option', async () => {
+      const { apple, box, x, y, onSelectionChange } =
+        renderFruits(focusOnHover);
+      const cherry = screen.getByRole('option', { name: 'Cherry' });
+
+      mouse('pointerdown', apple, x, y);
+      mouse('pointerup', cherry, x, y + box.height * 2);
+
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      });
+      expect(onSelectionChange).not.toHaveBeenCalled();
+    });
+
+    it('selects nothing after Escape during the press', async () => {
+      const { apple, x, y, shiftList, onSelectionChange } =
+        renderFruits(focusOnHover);
+
+      mouse('pointerdown', apple, x, y);
+      shiftList();
+      window.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }),
+      );
+      mouse('pointerup', document.elementFromPoint(x, y)!, x, y);
+
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      });
+      expect(onSelectionChange).not.toHaveBeenCalled();
+    });
+
+    it('selects a still option once', async () => {
+      const { apple, x, y, onSelectionChange } = renderFruits(focusOnHover);
+
+      mouse('pointerdown', apple, x, y);
+      mouse('pointerup', apple, x, y);
+
+      await waitFor(() => {
+        expect(apple).toHaveAttribute('aria-selected', 'true');
+      });
+      expect(onSelectionChange).toHaveBeenCalledTimes(1);
+    });
   });
 });

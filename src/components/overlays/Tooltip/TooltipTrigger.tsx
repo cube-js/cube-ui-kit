@@ -1,5 +1,6 @@
 import { FocusableProvider } from '@react-aria/focus';
 import {
+  Children,
   ContextType,
   createContext,
   FocusEvent,
@@ -23,6 +24,7 @@ import { useTooltipTriggerState } from 'react-stately';
 import { useEvent } from '../../../_internal';
 import { isDevEnv } from '../../../utils/is-dev-env';
 import { isFocusRestoration } from '../../../utils/react/programmaticFocus';
+import { useLayoutEffect } from '../../../utils/react/useLayoutEffect';
 import { Block } from '../../Block';
 import { ActiveZone } from '../../content/ActiveZone/ActiveZone';
 import {
@@ -32,10 +34,18 @@ import {
 import { Portal } from '../../portal';
 
 import { TooltipContext } from './context';
+import { CubeTooltipProps, Tooltip } from './Tooltip';
 
 type TooltipPositionOptions = Pick<
   Parameters<typeof useOverlayPosition>[0],
-  'placement' | 'targetRef' | 'overlayRef' | 'offset' | 'crossOffset' | 'isOpen'
+  | 'placement'
+  | 'targetRef'
+  | 'overlayRef'
+  | 'offset'
+  | 'crossOffset'
+  | 'isOpen'
+  | 'shouldFlip'
+  | 'onClose'
 >;
 
 // DisplayTransition preserves its last shown render prop during exit. Position
@@ -63,8 +73,39 @@ function PositionedTooltip({
   contextValue: ContextType<typeof TooltipContext>;
 }) {
   const options = useContext(TooltipPositionContext);
+  const openPosition = useRef<{ top: number; left: number } | null>(null);
+
+  // Where the trigger was when the tooltip opened. Focusing a trigger below
+  // the fold scrolls it into view at once, but the browser reports that scroll
+  // a frame later, so a tooltip that mounts in between hears it. Only a scroll
+  // that moved the trigger since then closes the tooltip.
+  useLayoutEffect(() => {
+    const rect = options.isOpen
+      ? options.targetRef.current?.getBoundingClientRect()
+      : undefined;
+
+    openPosition.current = rect ? { top: rect.top, left: rect.left } : null;
+  }, [options.isOpen, options.targetRef]);
+
   const { overlayProps, arrowProps, placement, updatePosition } =
-    useOverlayPosition(options);
+    useOverlayPosition({
+      ...options,
+      onClose: () => {
+        const start = openPosition.current;
+        const rect = options.targetRef.current?.getBoundingClientRect();
+
+        if (
+          start &&
+          rect &&
+          Math.abs(rect.top - start.top) < 1 &&
+          Math.abs(rect.left - start.left) < 1
+        ) {
+          return;
+        }
+
+        options.onClose?.();
+      },
+    });
 
   return (
     <TooltipContext.Provider
@@ -89,8 +130,21 @@ function isTriggerFunction(value: unknown): value is TooltipTriggerFunction {
   return typeof value === 'function';
 }
 
-function isReactElement(value: unknown): value is ReactElement {
+function isReactElement<P = unknown>(value: unknown): value is ReactElement<P> {
   return isValidElement(value);
+}
+
+/**
+ * Whether a `Tooltip` has nothing to show. The docs turn a tooltip off with
+ * `title={null}`, and opening it anyway drew an empty bubble and described the
+ * trigger by it. Only a `Tooltip` is inspected: another component may render
+ * content of its own.
+ */
+function isEmptyTooltip(tooltip: ReactElement<CubeTooltipProps>): boolean {
+  return (
+    tooltip.type === Tooltip &&
+    Children.toArray(tooltip.props.children).every((child) => child === '')
+  );
 }
 
 export type TooltipTriggerFunction = (
@@ -124,7 +178,7 @@ export interface CubeTooltipTriggerProps extends TooltipTriggerProps {
   isDisabled?: boolean;
   /**
    * The delay time for the tooltip to show up.
-   * @default 1500
+   * @default 250
    */
   delay?: number;
   /**
@@ -160,6 +214,7 @@ export function TooltipTrigger(props: CubeTooltipTriggerProps) {
     offset = DEFAULT_OFFSET,
     trigger: triggerAction,
     delay = 250,
+    shouldCloseOnPress,
     isOpen,
     onOpenChange,
     defaultOpen,
@@ -175,7 +230,7 @@ export function TooltipTrigger(props: CubeTooltipTriggerProps) {
   const [trigger, tooltip] = rawChildrenArray;
 
   // Type guard the tooltip
-  if (!isReactElement(tooltip)) {
+  if (!isReactElement<CubeTooltipProps>(tooltip)) {
     throw new Error(
       'CubeUIKit: TooltipTrigger expects the second child to be a valid React element (Tooltip component).',
     );
@@ -205,17 +260,21 @@ export function TooltipTrigger(props: CubeTooltipTriggerProps) {
 
   let state = useTooltipTriggerState({ delay, ...props });
 
+  // A tooltip with nothing to show is a disabled one.
+  const isTooltipDisabled = isDisabled || isEmptyTooltip(tooltip);
+
   let { triggerProps: rawTriggerProps, tooltipProps } = useTooltipTrigger(
     {
       // Without it a disabled tooltip still opened — invisibly, since nothing
       // renders it — and while open React Aria's document-level listener eats
       // every `Escape`, so a Dialog under the pointer would not close.
-      isDisabled,
+      isDisabled: isTooltipDisabled,
       trigger: triggerAction,
       delay,
       isOpen,
       onOpenChange,
       defaultOpen,
+      shouldCloseOnPress,
     },
     state,
     tooltipTriggerRef,
@@ -239,22 +298,35 @@ export function TooltipTrigger(props: CubeTooltipTriggerProps) {
     rawTriggerProps.onFocus?.(event);
   });
 
-  const triggerProps = { ...rawTriggerProps, onFocus };
+  const triggerProps = {
+    ...rawTriggerProps,
+    onFocus,
+    // A controlled `isOpen` still opens a disabled tooltip's state, and nothing
+    // is rendered to describe the trigger by.
+    'aria-describedby': isTooltipDisabled
+      ? undefined
+      : rawTriggerProps['aria-describedby'],
+  };
 
-  const positionOptions = {
+  const positionOptions: TooltipPositionOptions = {
     placement: props.placement || 'top',
     targetRef: tooltipTriggerRef,
     overlayRef,
     offset,
     crossOffset,
     isOpen: state.isOpen,
+    // Documented on `Tooltip`, which renders inside the positioned layer, so
+    // it is read from the element here.
+    shouldFlip: tooltip.props.shouldFlip,
+    // React Aria closes the overlay when an ancestor of the trigger scrolls,
+    // as it does for popovers. Without it the bubble stayed where it was drawn
+    // while the trigger scrolled away under it.
+    onClose: () => state.close(true),
   };
 
   const tooltipContextValue = {
     state,
     ref: overlayRef,
-    minOffset: 'var(--gap)',
-    minScale: '1',
     isMaterial,
     isLight,
     ...tooltipProps,
@@ -264,7 +336,7 @@ export function TooltipTrigger(props: CubeTooltipTriggerProps) {
   // belong to the overlay's visible/closing lifetime rather than every label.
   const tooltipContent = (
     <TooltipPositionContext.Provider value={positionOptions}>
-      <TooltipTransition isShown={state.isOpen && !isDisabled}>
+      <TooltipTransition isShown={state.isOpen && !isTooltipDisabled}>
         {({ phase, isShown, ref: transitionRef }) => (
           <Portal>
             <PositionedTooltip

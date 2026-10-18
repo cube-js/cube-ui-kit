@@ -51,6 +51,7 @@ export interface CubePopoverProps
   container?: HTMLElement;
   placement?: PlacementAxis;
   arrowProps?: HTMLAttributes<HTMLElement>;
+  /** @deprecated Has no effect: the popover renders no arrow. */
   hideArrow?: boolean;
   isOpen?: boolean;
   onClose?: () => void;

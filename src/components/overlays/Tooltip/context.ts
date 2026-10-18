@@ -15,8 +15,6 @@ interface TooltipContextProps {
   placement?: Placement | PlacementAxis;
   arrowProps?: HTMLAttributes<HTMLElement>;
   overlayProps?: Props;
-  minScale?: string | number;
-  minOffset?: string | number;
   isMaterial?: boolean;
   isLight?: boolean;
   phase?: Phase;

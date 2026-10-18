@@ -39,6 +39,7 @@ import {
   mergeProps,
   omitActivationEventProps,
 } from '../../../utils/react';
+import { mergeTooltipFocusProps } from '../../overlays/Tooltip/split-trigger-props';
 import { TooltipProvider } from '../../overlays/Tooltip/TooltipProvider';
 import { useItemActionContext } from '../ItemActionContext';
 import { CubeUseActionProps, useAction } from '../use-action';
@@ -277,8 +278,12 @@ export const ItemAction = forwardRef(function ItemAction(
   );
 
   // Set tabIndex when in context. A loading action keeps focus it already has,
-  // but Tab skips it until loading ends, tooltip or not.
-  const finalTabIndex = disableActionsFocus || isLoading ? -1 : rest.tabIndex;
+  // but Tab skips it until loading ends, tooltip or not. Otherwise an explicit
+  // `tabIndex` wins over `excludeFromTabOrder`, which this prop would reset.
+  const finalTabIndex =
+    disableActionsFocus || isLoading
+      ? -1
+      : rest.tabIndex ?? (rest.excludeFromTabOrder ? -1 : undefined);
 
   // Extract tooltip content and props
   const tooltipContent =
@@ -319,24 +324,31 @@ export const ItemAction = forwardRef(function ItemAction(
   ) => {
     // Merge tooltip ref with actionProps if provided
     const mergedProps = tooltipRef
-      ? mergeProps(elementProps, tooltipTriggerProps || {}, inertProps, {
-          ref: (element: HTMLElement | null) => {
-            // Set the tooltip ref
-            if (tooltipRef) {
-              (tooltipRef as any).current = element;
-            }
-            // Set the action ref if it exists in actionProps
-            const actionRef = (actionProps as any).ref;
-            if (actionRef) {
-              if (typeof actionRef === 'function') {
-                actionRef(element);
-              } else {
-                actionRef.current = element;
+      ? mergeProps(
+          mergeTooltipFocusProps(elementProps, tooltipTriggerProps),
+          inertProps,
+          {
+            ref: (element: HTMLElement | null) => {
+              // Set the tooltip ref
+              if (tooltipRef) {
+                (tooltipRef as any).current = element;
               }
-            }
+              // Set the action ref if it exists in actionProps
+              const actionRef = (actionProps as any).ref;
+              if (actionRef) {
+                if (typeof actionRef === 'function') {
+                  actionRef(element);
+                } else {
+                  actionRef.current = element;
+                }
+              }
+            },
           },
-        })
-      : mergeProps(elementProps, tooltipTriggerProps || {}, inertProps);
+        )
+      : mergeProps(
+          mergeTooltipFocusProps(elementProps, tooltipTriggerProps),
+          inertProps,
+        );
 
     return (
       <ItemActionElement

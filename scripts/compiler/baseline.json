@@ -362,7 +362,7 @@
     "optOuts": 0
   },
   "src/components/content/Layout/LayoutPanel.tsx": {
-    "compiled": 1,
+    "compiled": 2,
     "diagnostics": {
       "Immutability": 1
     },
@@ -426,12 +426,12 @@
     "optOuts": 0
   },
   "src/components/content/Text.tsx": {
-    "compiled": 1,
+    "compiled": 2,
     "diagnostics": {},
     "optOuts": 0
   },
   "src/components/content/TextItem/TextItem.tsx": {
-    "compiled": 1,
+    "compiled": 2,
     "diagnostics": {},
     "optOuts": 0
   },
@@ -560,6 +560,11 @@
     "diagnostics": {},
     "optOuts": 0
   },
+  "src/components/data/TableBase/column-header.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
   "src/components/data/TableBase/use-cell-selection.ts": {
     "compiled": 0,
     "diagnostics": {
@@ -678,10 +683,8 @@
     "optOuts": 0
   },
   "src/components/fields/ComboBox/ComboBox.tsx": {
-    "compiled": 4,
-    "diagnostics": {
-      "Immutability": 1
-    },
+    "compiled": 5,
+    "diagnostics": {},
     "optOuts": 0
   },
   "src/components/fields/CommandTextArea/CommandTextArea.tsx": {
@@ -802,10 +805,10 @@
     "optOuts": 0
   },
   "src/components/fields/ListBox/ListBox.tsx": {
-    "compiled": 2,
+    "compiled": 3,
     "diagnostics": {
-      "Refs": 2,
-      "IncompatibleLibrary": 1
+      "IncompatibleLibrary": 1,
+      "Refs": 1
     },
     "optOuts": 0
   },
@@ -869,7 +872,7 @@
     "optOuts": 0
   },
   "src/components/fields/Select/Select.tsx": {
-    "compiled": 3,
+    "compiled": 4,
     "diagnostics": {
       "Todo": 1
     },
@@ -983,6 +986,11 @@
   },
   "src/components/form/FieldWrapper/FieldWrapper.tsx": {
     "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
+  "src/components/form/FieldWrapper/field-description.ts": {
+    "compiled": 2,
     "diagnostics": {},
     "optOuts": 0
   },
@@ -1343,6 +1351,11 @@
     "diagnostics": {},
     "optOuts": 0
   },
+  "src/components/overlays/Modal/modal-containment.ts": {
+    "compiled": 2,
+    "diagnostics": {},
+    "optOuts": 0
+  },
   "src/components/overlays/Notifications/Notification.tsx": {
     "compiled": 1,
     "diagnostics": {},
@@ -1458,7 +1471,7 @@
     "optOuts": 0
   },
   "src/components/overlays/Tooltip/TooltipTrigger.tsx": {
-    "compiled": 1,
+    "compiled": 3,
     "diagnostics": {},
     "optOuts": 0
   },

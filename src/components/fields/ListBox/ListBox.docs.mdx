@@ -39,7 +39,7 @@ A versatile list selection component that allows users to select one or more ite
 - **`shape`** `'card' | 'plain' | 'popover'` (default: `card`) — Visual shape of the ListBox
 - **`listGap`** `number` — Space between options, in pixels. Defaults to a hairline (`1bw`)
 - **`filter`** `(nodes: Iterable<Node>) => Iterable<Node>` — Filter function for the list items
-- **`emptyLabel`** `ReactNode` (default: `No items`) — Label shown when no items are available
+- **`emptyLabel`** `ReactNode` (default: `No items`) — Label shown when no items are available. The empty listbox stays in the document, described by this label
 - **`header`** `ReactNode` — Custom header content
 - **`footer`** `ReactNode` — Custom footer content
 - **`focusOnHover`** `boolean` (default: `true`) — Whether moving the pointer over an option will move DOM focus to that option
@@ -49,8 +49,8 @@ A versatile list selection component that allows users to select one or more ite
 - **`shouldFocusWrap`** `boolean` (default: `false`) — Whether keyboard navigation should wrap around
 - **`description`** `string` — Field description
 - **`message`** `string` — Help or error message
-- **`showSelectAll`** `boolean` (default: `false`) — Whether to show the "Select All" option in multiple selection mode
-- **`selectAllLabel`** `string` (default: `Select All`) — Label for the "Select All" option
+- **`showSelectAll`** `boolean` (default: `false`) — Whether to show the "Select All" checkbox in multiple selection mode
+- **`selectAllLabel`** `string` (default: `Select All`) — Label for the "Select All" checkbox
 - **`onSelectionChange`** `(keys: Key | Key[] | 'all' | null) => void` — Callback when selection changes
 - **`onEscape`** `() => void` — Callback when Escape key is pressed
 - **`onOptionClick`** `(key: Key) => void` — Callback when an option is clicked (non-checkbox area)
@@ -145,18 +145,19 @@ The `mods` property accepts the following modifiers you can override:
 
 **showSelectAll** (`boolean`, default: `false`)
 
-- When `true` in multiple selection mode, displays a "Select All" option in the header
-- The checkbox shows three states: unchecked (none selected), indeterminate (some selected), checked (all selected)
+- When `true` in multiple selection mode, displays a "Select All" checkbox above the list
+- The checkbox shows three states: unchecked (none selected), indeterminate (some selected), checked (every selectable item selected, however it got there). Disabled items don't count
+- It sits outside the listbox as its own Tab stop: `Tab` / `Shift+Tab` reach it and `Space` toggles it
 - Only works with `selectionMode="multiple"`
 
 **selectAllLabel** (`ReactNode`, default: `'Select All'`)
 
-- Custom label for the "Select All" option
+- Custom label for the "Select All" checkbox
 - Only used when `showSelectAll={true}`
 
 **allValueProps** (`Partial<CubeItemProps>`)
 
-- Props to customize the styling and behavior of the "Select All" option
+- Props to customize the styling and behavior of the "Select All" checkbox
 - Accepts any Item props like `styles`, `icon`, etc.
 
 **disallowEmptySelection** (`boolean`, default: `false`)
@@ -748,6 +749,7 @@ const [keyOrder, setKeyOrder] = useState([
 ### Keyboard Navigation
 
 - `Tab` - Moves focus to/from the ListBox. A disabled ListBox is not in the Tab order
+- `Tab` / `Shift+Tab` - Reach the "Select All" checkbox (with `showSelectAll`), which `Space` toggles
 - `Arrow Keys` - Navigate between options
 - `Space/Enter` - Select/deselect the focused option
 - `Home/End` - Move to first/last option
@@ -873,7 +875,7 @@ function Example() {
 
 <Story of={ListBoxStories.VirtualizedList} />
 
-For large datasets, use the `items` prop with a render function. This enables automatic virtualization — only visible items are rendered in the DOM, providing smooth scrolling even with thousands of items.
+For large datasets, use the `items` prop with a render function. This enables automatic virtualization — only visible items are rendered in the DOM, providing smooth scrolling even with thousands of items. Moving focus to an option that isn't rendered (`End`, `Home`, `Page Down`, typeahead, or the selected option when the list takes focus) scrolls the list to it.
 
 ```jsx
 const items = Array.from({ length: 1000 }, (_, i) => ({

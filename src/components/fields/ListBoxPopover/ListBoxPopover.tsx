@@ -348,6 +348,23 @@ export const ListBoxPopover = function ListBoxPopover(
   // Extract primary placement direction for consistent styling
   const placementDirection = placement?.split(' ')[0] || direction;
 
+  // In single mode the list reports re-picking the selected option as an
+  // empty selection, as `selectionMode` stays unset (see below). A pick never
+  // clears the field, so pass it on as the selected option picked again.
+  const handleSelectionChange = (selection: Key | Key[] | null) => {
+    if (
+      selectionMode === 'single' &&
+      selection == null &&
+      selectedKey != null
+    ) {
+      onSelectionChange(selectedKey);
+
+      return;
+    }
+
+    onSelectionChange(selection);
+  };
+
   // Hold the DisplayTransition ref so we can bind the same node to both the
   // transition listener and our scroll ref via a single stable callback.
   const transitionRefHolder = useRef<
@@ -408,7 +425,9 @@ export const ListBoxPopover = function ListBoxPopover(
                 aria-labelledby={ariaLabelledby}
                 // Left unset in single mode, as before this prop existed: an
                 // explicit `'single'` switches on ListBox's no-toggle branch,
-                // which changes what re-picking the selected option does.
+                // which only knows options picked in the list, not the
+                // field's `selectedKey`. `handleSelectionChange` handles a
+                // re-pick instead.
                 selectionMode={
                   selectionMode === 'multiple' ? 'multiple' : undefined
                 }
@@ -423,6 +442,8 @@ export const ListBoxPopover = function ListBoxPopover(
                 }
                 isDisabled={isDisabled}
                 disabledKeys={disabledKeys}
+                // Options as dense as the field they belong to.
+                size={size as 'small' | 'medium' | 'large'}
                 shouldUseVirtualFocus={true}
                 items={items as any}
                 filter={filter}
@@ -435,7 +456,7 @@ export const ListBoxPopover = function ListBoxPopover(
                 stateRef={listStateRef}
                 shape="popover"
                 emptyLabel={emptyLabel}
-                onSelectionChange={onSelectionChange}
+                onSelectionChange={handleSelectionChange}
               >
                 {children as any}
               </ListBox>

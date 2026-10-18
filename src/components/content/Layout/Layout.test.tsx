@@ -67,8 +67,51 @@ describe('Layout', () => {
       </Layout>,
     );
 
-    expect(screen.getByRole('contentinfo')).toBeInTheDocument();
-    expect(screen.getByText('Footer content')).toBeInTheDocument();
+    expect(screen.getByRole('contentinfo')).toHaveTextContent('Footer content');
+  });
+
+  it('gives a footer inside a panel no landmark role', () => {
+    renderWithRoot(
+      <Layout>
+        <Layout.Panel side="left" size={200}>
+          <Layout.Footer>Panel footer</Layout.Footer>
+        </Layout.Panel>
+        <Layout.Footer>Page footer</Layout.Footer>
+      </Layout>,
+    );
+
+    expect(screen.getByRole('contentinfo')).toHaveTextContent('Page footer');
+  });
+
+  it('gives a footer of a nested Layout no landmark role', () => {
+    renderWithRoot(
+      <Layout>
+        <Layout.Content>
+          <Layout>
+            <Layout.Footer>Nested footer</Layout.Footer>
+          </Layout>
+        </Layout.Content>
+        <Layout.Footer>Page footer</Layout.Footer>
+      </Layout>,
+    );
+
+    expect(screen.getByRole('contentinfo')).toHaveTextContent('Page footer');
+  });
+
+  it('lets an explicit role override the footer role', () => {
+    renderWithRoot(
+      <Layout>
+        <Layout.Panel side="left" size={200}>
+          <Layout.Footer role="group" aria-label="Panel actions">
+            Panel footer
+          </Layout.Footer>
+        </Layout.Panel>
+      </Layout>,
+    );
+
+    expect(
+      screen.getByRole('group', { name: 'Panel actions' }),
+    ).toHaveTextContent('Panel footer');
   });
 
   it('renders Layout with content', () => {

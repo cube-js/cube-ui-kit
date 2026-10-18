@@ -96,11 +96,11 @@
     "noFileSelected": "Keine Datei ausgewählt"
   },
   "passwordInput": {
-    "toggleMasking": "Maskierung umschalten"
+    "showPassword": "Passwort anzeigen"
   },
   "numberInput": {
-    "stepUp": "Erhöhen",
-    "stepDown": "Verringern"
+    "stepUp": "{{label}} erhöhen",
+    "stepDown": "{{label}} verringern"
   },
   "textInputMapper": {
     "key": "Schlüssel",

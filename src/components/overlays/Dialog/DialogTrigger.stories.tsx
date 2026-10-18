@@ -78,7 +78,8 @@ export default {
     },
     hideArrow: {
       control: { type: 'boolean' },
-      description: "Whether a popover type Dialog's arrow should be hidden",
+      description:
+        'Deprecated. Has no effect: popovers render no arrow, so there is nothing to hide',
       table: {
         defaultValue: { summary: false },
       },
@@ -94,7 +95,8 @@ export default {
     /* State */
     isDismissable: {
       control: { type: 'boolean' },
-      description: 'Whether a modal type Dialog should be dismissable',
+      description:
+        'Whether passive dismissal (Escape or an outside click) can close the dialog. A popover that is not dismissable lets outside presses through and stays open',
       table: {
         defaultValue: { summary: true },
       },

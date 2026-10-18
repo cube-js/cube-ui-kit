@@ -219,7 +219,6 @@ export const DEFAULTS: DefaultsRegistry = {
       props: {
         containerPadding: { kind: 'default', value: 12 },
         crossOffset: { kind: 'default', value: 0 },
-        hideArrow: { kind: 'default', value: false },
         isDismissable: { kind: 'default', value: true },
         isKeyboardDismissDisabled: { kind: 'default', value: false },
         mobileViewport: { kind: 'default', value: 700 },
@@ -631,7 +630,6 @@ export const DEFAULTS: DefaultsRegistry = {
       props: {
         containerPadding: { kind: 'default', value: 8 },
         direction: { kind: 'default', value: 'bottom' },
-        hideTrigger: { kind: 'default', value: false },
         isClearable: { kind: 'default', value: false },
         overlayOffset: { kind: 'default', value: 8 },
         shape: { kind: 'default', value: 'button' },
@@ -799,6 +797,7 @@ export const DEFAULTS: DefaultsRegistry = {
     Tooltip: {
       props: {
         placement: { kind: 'default', value: 'top' },
+        shouldFlip: { kind: 'default', value: true },
       },
     },
     TooltipProvider: {

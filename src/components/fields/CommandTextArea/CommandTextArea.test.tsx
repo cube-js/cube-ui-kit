@@ -531,3 +531,23 @@ describe('CommandTextArea consumer contracts', () => {
     );
   });
 });
+
+describe('<CommandTextArea /> null value', () => {
+  it('clears when a controlled value is set to null', () => {
+    const { getByRole, rerender } = renderWithRoot(
+      <CommandTextArea label="Message" value="Hello" onChange={() => {}}>
+        {commandItems}
+      </CommandTextArea>,
+    );
+
+    expect(getByRole('combobox')).toHaveValue('Hello');
+
+    rerender(
+      <CommandTextArea label="Message" value={null} onChange={() => {}}>
+        {commandItems}
+      </CommandTextArea>,
+    );
+
+    expect(getByRole('combobox')).toHaveValue('');
+  });
+});

@@ -15,6 +15,7 @@ import {
 import {
   FocusEventHandler,
   forwardRef,
+  MouseEvent,
   ReactElement,
   ReactNode,
   RefObject,
@@ -192,6 +193,38 @@ export const DEFAULT_INPUT_STYLES: Styles = {
 
 const InputElement = tasty({ qa: 'Input', styles: DEFAULT_INPUT_STYLES });
 
+const INTERACTIVE_ELEMENTS =
+  'a[href], button, input, select, textarea, [tabindex], [contenteditable]';
+
+/**
+ * A press inside the field box but outside the input — the prefix or suffix area, an icon, a
+ * textarea's margins — focuses the input, as a press anywhere in a native field does. Presses on
+ * the input itself and on interactive children, such as a clear button or the steppers, stay
+ * theirs.
+ */
+function focusInputOnBoxPress(
+  event: MouseEvent<HTMLElement>,
+  input: HTMLInputElement | HTMLTextAreaElement | null | undefined,
+) {
+  if (event.button !== 0 || event.defaultPrevented) return;
+  if (!input || input.disabled) return;
+
+  const box = event.currentTarget;
+  const target = event.target as Element;
+
+  // React bubbles presses from a portal (a popover opened from a field action)
+  // through the box; those belong to the portal.
+  if (!box.contains(target)) return;
+
+  const interactive = target.closest(INTERACTIVE_ELEMENTS);
+
+  if (interactive && box.contains(interactive)) return;
+
+  // The default action would move focus to the press target first, blurring the input.
+  event.preventDefault();
+  input.focus();
+}
+
 export interface CubeTextInputBaseProps
   extends BaseProps,
     OuterStyleProps,
@@ -232,7 +265,11 @@ export interface CubeTextInputBaseProps
   multiLine?: boolean;
   /** Whether the input should have autofocus */
   autoFocus?: boolean;
-  /** Direct input props */
+  /**
+   * Direct input props. The explicit props above (`isDisabled`, `maxLength`, `minLength`,
+   * `autoFocus`, `rows`, `autoComplete`) win over the same attributes here when they are set; an
+   * unset one leaves the value given here in place.
+   */
   inputProps?: Props;
   /** Direct input wrapper props */
   wrapperProps?: Props;
@@ -242,7 +279,7 @@ export interface CubeTextInputBaseProps
   wrapperRef?: RefObject<HTMLDivElement | null>;
   /** Whether the input has the loading status */
   isLoading?: boolean;
-  /** The loading status indicator */
+  /** Rendered in place of the default loading icon while `isLoading` is set */
   loadingIndicator?: ReactNode;
   /** Style map for the input */
   inputStyles?: Styles;
@@ -307,7 +344,7 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
     suffixPosition = 'before',
     actions,
     wrapperRef,
-    rows = 1,
+    rows,
     size = 'medium',
     autoComplete,
     autocomplete,
@@ -404,13 +441,13 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
     ],
   );
 
-  // `autoComplete` is the prop; `autocomplete` is the deprecated alias. Falling back to
-  // `inputProps` matters as much as the aliasing: this attribute is applied after the merge, so a
-  // bare `autoComplete={resolved}` would overwrite whatever the React Aria hook put there —
-  // `useNumberField`'s own `off`, or an `inputProps={{ autoComplete }}` passed by the caller — with
-  // `undefined` whenever neither prop is set.
+  // The explicit props win when they are set; an unset one falls back to the merged `inputProps`
+  // instead of overwriting it with `undefined`. For `autoComplete` that keeps both a caller's
+  // `inputProps={{ autoComplete }}` and `useNumberField`'s own `off`. `autocomplete` is the
+  // deprecated alias.
   const resolvedAutoComplete =
     autoComplete ?? autocomplete ?? inputProps.autoComplete;
+  const resolvedAutoFocus = autoFocus ?? inputProps.autoFocus;
 
   const hasTextSecurity = multiLine && type === 'password';
   const textSecurityStyles =
@@ -426,7 +463,10 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
       mods={modifiers}
       data-size={size}
       styles={styles}
-      {...wrapperProps}
+      {...mergeProps(wrapperProps, {
+        onMouseDown: (event: MouseEvent<HTMLElement>) =>
+          focusInputOnBoxPress(event, inputRef?.current),
+      })}
     >
       {prefix ? <div data-element="Prefix">{prefix}</div> : null}
       <InputElement
@@ -435,26 +475,30 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
         data-input-type="textinput"
         {...mergeProps(inputProps, focusProps, hoverProps)}
         ref={inputRef}
-        rows={multiLine ? rows : undefined}
+        rows={multiLine ? rows ?? inputProps.rows ?? 1 : inputProps.rows}
         mods={modifiers}
         style={textSecurityStyles}
-        data-autofocus={autoFocus ? '' : undefined}
-        autoFocus={autoFocus}
+        data-autofocus={resolvedAutoFocus ? '' : undefined}
+        autoFocus={resolvedAutoFocus}
         data-size={size}
         autoComplete={resolvedAutoComplete}
         styles={inputStyles}
-        disabled={!!isDisabled}
-        maxLength={maxLength}
-        minLength={minLength}
+        disabled={!!(isDisabled ?? inputProps.disabled)}
+        maxLength={maxLength ?? inputProps.maxLength}
+        minLength={minLength ?? inputProps.minLength}
       />
       {showValidationIndicator || suffix || actions ? (
         <div data-element="Suffix">
           {suffixPosition === 'before' ? suffix : null}
-          <ValidationIndicator
-            isInvalid={isInvalid}
-            isValid={isValid}
-            isLoading={isLoading}
-          />
+          {isLoading && loadingIndicator ? (
+            <div data-element="State">{loadingIndicator}</div>
+          ) : (
+            <ValidationIndicator
+              isInvalid={isInvalid}
+              isValid={isValid}
+              isLoading={isLoading}
+            />
+          )}
           {suffixPosition === 'after' ? suffix : null}
           {actions}
         </div>

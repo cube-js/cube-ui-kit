@@ -96,11 +96,11 @@
     "noFileSelected": "Ingen fil valgt"
   },
   "passwordInput": {
-    "toggleMasking": "Veksle maskering"
+    "showPassword": "Vis passord"
   },
   "numberInput": {
-    "stepUp": "Øk",
-    "stepDown": "Reduser"
+    "stepUp": "Øk {{label}}",
+    "stepDown": "Reduser {{label}}"
   },
   "textInputMapper": {
     "key": "Nøkkel",

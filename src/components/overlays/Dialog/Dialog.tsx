@@ -147,6 +147,22 @@ export interface CubeDialogProps
 }
 
 /**
+ * The control a dialog focuses when it opens: an input marked
+ * `data-autofocus`, or a submit or primary button. In an alert dialog never a
+ * destructive (`danger`) button, which a reflexive Enter would run.
+ */
+function findPriorityFocusElement(dialog: HTMLElement) {
+  const button =
+    dialog.getAttribute('role') === 'alertdialog'
+      ? 'button:not([data-theme="danger"])'
+      : 'button';
+
+  return dialog.querySelector<HTMLElement>(
+    `input[data-autofocus], ${button}[type="submit"], ${button}[data-type="primary"]`,
+  );
+}
+
+/**
  * Dialogs are windows containing contextual information, tasks, or workflows that appear over the user interface.
  * Depending on the kind of Dialog, further interactions may be blocked until the Dialog is acknowledged.
  */
@@ -154,16 +170,20 @@ export const Dialog = forwardRef(function Dialog(
   props: CubeDialogProps,
   ref: Ref<HTMLDivElement>,
 ) {
-  const transitionContext = useOpenTransitionContext();
+  const transitionState = useOpenTransitionContext()?.transitionState;
 
-  const isEntered = transitionContext?.transitionState === 'entered';
+  // From the first frame of the enter transition, not only once it has
+  // ended: a Tab pressed while the dialog animates in would otherwise land on
+  // the page behind it, and nothing would pull it back. Released as soon as
+  // the dialog closes, so focus can return to the trigger during the exit.
+  const isShown = transitionState === 'enter' || transitionState === 'entered';
 
   const context = useDialogContext();
 
   const content = <DialogContent key="content" {...props} ref={ref} />;
 
   const shouldContainFocus =
-    isEntered && !!context.isOpen && context.type !== 'panel';
+    isShown && !!context.isOpen && context.type !== 'panel';
 
   return (
     // This component traps the focus inside the dialog and restores it on
@@ -204,7 +224,10 @@ const DialogContent = forwardRef(function DialogContent(
   const { t } = useI18n();
 
   let domRef = useObjectRef(ref);
-  let { dialogProps, titleProps } = useDialog(
+  // `contentProps` carries an id only for `role="alertdialog"` without an
+  // explicit `aria-describedby`: an alert is described by its message, while a
+  // plain dialog links nothing, so opening a form does not read it aloud.
+  let { dialogProps, titleProps, contentProps } = useDialog(
     mergeProps(contextProps, props),
     domRef,
   );
@@ -237,9 +260,7 @@ const DialogContent = forwardRef(function DialogContent(
         const isFocusOnDialogShell = activeElement === domRef.current;
 
         // Priority 1: autofocus input or primary button
-        const priorityElement = domRef.current.querySelector(
-          'input[data-autofocus], button[type="submit"], button[data-type="primary"]',
-        ) as HTMLElement | null;
+        const priorityElement = findPriorityFocusElement(domRef.current);
 
         if (priorityElement && (isFocusOutsideDialog || isFocusOnDialogShell)) {
           priorityElement.focus();
@@ -270,6 +291,7 @@ const DialogContent = forwardRef(function DialogContent(
       ...titleProps,
     },
     content: {
+      ...contentProps,
       styles: {
         flexGrow: 1,
         padding: '$dialog-content-padding-v $dialog-padding-h',

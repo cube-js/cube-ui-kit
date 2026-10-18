@@ -164,7 +164,8 @@ export default {
     },
     isLoading: {
       control: { type: 'boolean' },
-      description: 'Show loading spinner and disable interactions',
+      description:
+        'Show a loading indicator; the value cannot change while loading',
       table: {
         type: { summary: 'boolean' },
         defaultValue: { summary: false },
@@ -215,7 +216,7 @@ export default {
       control: { type: null },
       description: 'Ref for the popover overlay element',
       table: {
-        type: { summary: 'RefObject<HTMLInputElement>' },
+        type: { summary: 'RefObject<HTMLElement | null>' },
       },
     },
     listBoxRef: {
@@ -227,17 +228,9 @@ export default {
     },
     loadingIndicator: {
       control: { type: null },
-      description: 'Custom loading indicator element',
+      description: 'Replaces the default loading icon shown while loading',
       table: {
         type: { summary: 'ReactNode' },
-      },
-    },
-    hideTrigger: {
-      control: { type: 'boolean' },
-      description: 'Whether to hide the trigger button',
-      table: {
-        type: { summary: 'boolean' },
-        defaultValue: { summary: false },
       },
     },
 
@@ -286,7 +279,7 @@ export default {
     },
     inputProps: {
       control: { type: 'object' },
-      description: 'Additional props for the input element',
+      description: 'Additional props for the trigger button element',
       table: {
         type: { summary: 'Props' },
       },

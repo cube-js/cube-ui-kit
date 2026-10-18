@@ -252,3 +252,286 @@ describe('Select native keyboard selection on macOS', () => {
     expect(onSubmit).toHaveBeenCalledTimes(1);
   });
 });
+
+// The browser viewport is phone-sized, so the fields stay narrower than it: a
+// popup as wide as the viewport overflows it, and React Aria's keyboard
+// scroll-into-view would then scroll the page, which closes the list.
+const FIELD_WIDTH = '300px';
+
+const hundred = Array.from({ length: 100 }, (_, index) => (
+  <Select.Item key={`item-${index + 1}`}>{`Item ${index + 1}`}</Select.Item>
+));
+
+function focusedIndex() {
+  const options = screen.getAllByRole('option');
+
+  return options.indexOf(document.activeElement as HTMLElement);
+}
+
+function isInsideList(option: HTMLElement) {
+  const list = screen.getByRole('listbox').getBoundingClientRect();
+  const rect = option.getBoundingClientRect();
+
+  return rect.top >= list.top - 1 && rect.bottom <= list.bottom + 1;
+}
+
+describe('Select popup scrolling and geometry', () => {
+  afterEach(() => cleanup());
+
+  it('scrolls the list itself, within the popup height', async () => {
+    renderWithRoot(
+      <Select label="Item" width={FIELD_WIDTH}>
+        {hundred}
+      </Select>,
+    );
+
+    await act(() =>
+      userEvent.click(screen.getByRole('button', { name: /Item/ })),
+    );
+
+    const listbox = await screen.findByRole('listbox');
+
+    await waitFor(() =>
+      expect(screen.getByRole('option', { name: 'Item 1' })).toBeVisible(),
+    );
+    await act(() => userEvent.keyboard('{End}'));
+    await waitFor(() =>
+      expect(screen.getByRole('option', { name: 'Item 100' })).toHaveFocus(),
+    );
+
+    const popover = screen.getByTestId('SelectOverlay');
+
+    // The list scrolls; the popup around it doesn't.
+    await waitFor(() => expect(listbox.scrollTop).toBeGreaterThan(0));
+    expect(popover.scrollTop).toBe(0);
+    expect(listbox.getBoundingClientRect().bottom).toBeLessThanOrEqual(
+      popover.getBoundingClientRect().bottom,
+    );
+  });
+
+  it('keeps the popup within the room React Aria leaves in the viewport', async () => {
+    renderWithRoot(
+      <div
+        style={{
+          height: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'flex-end',
+          paddingBottom: '120px',
+          boxSizing: 'border-box',
+        }}
+      >
+        <Select label="Item" width={FIELD_WIDTH} shouldFlip={false}>
+          {hundred}
+        </Select>
+      </div>,
+    );
+
+    await act(() =>
+      userEvent.click(screen.getByRole('button', { name: /Item/ })),
+    );
+
+    const listbox = await screen.findByRole('listbox');
+    const wrapper = screen.getByTestId('SelectOverlayWrapper');
+
+    await waitFor(() => expect(wrapper.style.maxHeight).not.toBe(''));
+
+    const popover = screen.getByTestId('SelectOverlay');
+    const room = parseFloat(wrapper.style.maxHeight);
+
+    expect(room).toBeLessThan(120);
+    expect(popover.getBoundingClientRect().height).toBeLessThanOrEqual(
+      room + 1,
+    );
+    expect(listbox.scrollHeight).toBeGreaterThan(listbox.clientHeight);
+  });
+
+  it('moves about one visible page with PageDown and PageUp', async () => {
+    renderWithRoot(
+      <Select label="Item" width={FIELD_WIDTH}>
+        {hundred}
+      </Select>,
+    );
+
+    await act(() => screen.getByRole('button', { name: /Item/ }).focus());
+    await act(() => userEvent.keyboard('{ArrowDown}'));
+    await waitFor(() =>
+      expect(screen.getByRole('option', { name: 'Item 1' })).toHaveFocus(),
+    );
+
+    const listbox = screen.getByRole('listbox');
+    const optionHeight = screen
+      .getByRole('option', { name: 'Item 1' })
+      .getBoundingClientRect().height;
+    const pageSize = Math.floor(listbox.clientHeight / optionHeight);
+
+    await act(() => userEvent.keyboard('{PageDown}'));
+
+    const afterPageDown = focusedIndex();
+
+    expect(afterPageDown).toBeGreaterThan(0);
+    expect(afterPageDown).toBeLessThan(99);
+    expect(Math.abs(afterPageDown - pageSize)).toBeLessThanOrEqual(2);
+    expect(isInsideList(document.activeElement as HTMLElement)).toBe(true);
+
+    await act(() => userEvent.keyboard('{PageDown}{PageUp}'));
+
+    expect(focusedIndex()).toBe(afterPageDown);
+  });
+
+  it.each([
+    ['a click', 'click'],
+    ['ArrowDown', 'keyboard'],
+  ])(
+    'scrolls the selected option into view on the first open with %s',
+    async (_, how) => {
+      renderWithRoot(
+        <Select label="Item" width={FIELD_WIDTH} defaultSelectedKey="item-80">
+          {hundred}
+        </Select>,
+      );
+
+      const trigger = screen.getByRole('button', { name: /Item/ });
+
+      if (how === 'click') {
+        await act(() => userEvent.click(trigger));
+      } else {
+        await act(() => trigger.focus());
+        await act(() => userEvent.keyboard('{ArrowDown}'));
+      }
+
+      const option = await screen.findByRole('option', { name: 'Item 80' });
+
+      await waitFor(() => expect(option).toHaveFocus());
+      // Let the enter transition settle before measuring.
+      await new Promise((resolve) => setTimeout(resolve, 400));
+
+      expect(isInsideList(option)).toBe(true);
+    },
+  );
+
+  it('sizes the popup to the trigger width it has when it opens', async () => {
+    function Resizable({ containerWidth }: { containerWidth: number }) {
+      return (
+        <div style={{ width: containerWidth }}>
+          <Select aria-label="Item" styles={{ width: '100%' }}>
+            {hundred}
+          </Select>
+        </div>
+      );
+    }
+
+    const { rerender } = renderWithRoot(<Resizable containerWidth={200} />);
+    const trigger = screen.getByTestId('Select');
+
+    await act(() => userEvent.click(trigger));
+    await screen.findByRole('listbox');
+    await act(() => userEvent.keyboard('{Escape}'));
+    await waitFor(() => expect(screen.queryByRole('listbox')).toBeNull());
+
+    rerender(<Resizable containerWidth={360} />);
+    await act(() => userEvent.click(trigger));
+    await screen.findByRole('listbox');
+
+    const popover = screen.getByTestId('SelectOverlay');
+
+    await waitFor(() =>
+      expect(popover.getBoundingClientRect().width).toBeGreaterThanOrEqual(
+        trigger.getBoundingClientRect().width - 1,
+      ),
+    );
+    expect(trigger.getBoundingClientRect().width).toBeGreaterThan(350);
+  });
+
+  it('closes the surrounding Dialog on one Escape after a keyboard clear', async () => {
+    renderWithRoot(
+      <DialogTrigger type="modal">
+        <Button qa="OpenDialog">Open</Button>
+        <Dialog>
+          <Select
+            isClearable
+            aria-label="Colour"
+            tooltip="Pick a colour"
+            defaultSelectedKey="blue"
+          >
+            <Select.Item key="blue">Blue</Select.Item>
+            <Select.Item key="red">Red</Select.Item>
+          </Select>
+        </Dialog>
+      </DialogTrigger>,
+    );
+
+    await act(() => userEvent.click(screen.getByTestId('OpenDialog')));
+    await screen.findByTestId('Dialog');
+
+    await act(() => screen.getByTestId('SelectClearButton').focus());
+    await act(() => userEvent.keyboard('{Enter}'));
+    await waitFor(() => expect(screen.getByTestId('Select')).toHaveFocus());
+    expect(screen.queryByRole('tooltip')).toBeNull();
+
+    await act(() => userEvent.keyboard('{Escape}'));
+
+    await waitFor(() => expect(screen.queryByTestId('Dialog')).toBeNull());
+  });
+});
+
+/**
+ * A mouse press picks the option it started on (CUB-5598). Select picks on
+ * press up, and React Aria then takes whatever option the pointer comes up
+ * over, so a list that moves between press and release (still animating in,
+ * or scrolling while it closes) used to pick a neighbour.
+ */
+describe('Select press on a list that moves', () => {
+  function mouse(type: string, target: Element, x: number, y: number) {
+    target.dispatchEvent(
+      new PointerEvent(type, {
+        bubbles: true,
+        cancelable: true,
+        composed: true,
+        pointerId: 1,
+        pointerType: 'mouse',
+        isPrimary: true,
+        button: 0,
+        buttons: type === 'pointerdown' ? 1 : 0,
+        clientX: x,
+        clientY: y,
+      }),
+    );
+  }
+
+  it('selects the option the press started on', async () => {
+    const onSelectionChange = vi.fn();
+
+    renderWithRoot(
+      <Select label="Fruit" width="200px" onSelectionChange={onSelectionChange}>
+        <Select.Item key="apple">Apple</Select.Item>
+        <Select.Item key="banana">Banana</Select.Item>
+        <Select.Item key="cherry">Cherry</Select.Item>
+      </Select>,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /Fruit/ }));
+
+    const apple = await screen.findByRole('option', { name: 'Apple' });
+    const box = apple.getBoundingClientRect();
+    const x = box.left + box.width / 2;
+    const y = box.top + box.height / 2;
+
+    mouse('pointerdown', apple, x, y);
+    screen.getByRole('listbox').style.transform =
+      `translateY(-${box.height}px)`;
+
+    const under = document.elementFromPoint(x, y);
+
+    expect(under?.closest('[role="option"]')).toBe(
+      screen.getByRole('option', { name: 'Banana' }),
+    );
+
+    mouse('pointerup', under!, x, y);
+
+    await waitFor(() => {
+      expect(onSelectionChange).toHaveBeenCalledWith('apple');
+    });
+    expect(onSelectionChange).toHaveBeenCalledTimes(1);
+  });
+});

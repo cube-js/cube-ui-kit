@@ -18,7 +18,7 @@ A modal dialog for important messages that require user acknowledgment. Extends 
 
 - **`title`** `string` — Dialog title
 - **`content`** `ReactNode` — Dialog body content
-- **`danger`** `boolean` — Applies danger styling for destructive actions
+- **`danger`** `boolean` — Marks the confirm action as destructive. It gets danger styling, and the dialog opens with focus on Cancel, or on the dialog itself when there is no Cancel, so a reflexive Enter does not run it. Without `danger`, the confirm button takes focus
 - **`noActions`** `boolean` — Hide the action buttons entirely
 - **`actions`** `object` — Customize buttons:
   - `confirm` — Confirm button props or `false` to hide (default: `{ children: 'Ok', type: 'primary' }`)
@@ -71,6 +71,12 @@ These properties allow direct style application without using the `styles` prop:
   content="A new version is available. Please refresh to update."
 />
 ```
+
+## Accessibility
+
+- The dialog has `role="alertdialog"`. Its title is its name, and its `content` is its description (`aria-describedby`), so a screen reader reads the message when the dialog opens
+- Focus starts on the confirm button, or on Cancel (the dialog itself without one) when `danger` is set
+- Focus stays inside the dialog until it closes, then returns to the element that opened it
 
 ## Imperative API
 

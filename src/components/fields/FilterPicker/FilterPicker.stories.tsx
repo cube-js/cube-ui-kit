@@ -199,14 +199,14 @@ const meta: Meta<typeof FilterPicker> = {
     showSelectAll: {
       control: { type: 'boolean' },
       description:
-        'Whether to show the "Select All" option in multiple selection mode',
+        'Whether to show the "Select All" checkbox in multiple selection mode',
       table: {
         defaultValue: { summary: false },
       },
     },
     selectAllLabel: {
       control: { type: 'text' },
-      description: 'Label for the "Select All" option',
+      description: 'Label for the "Select All" checkbox',
       table: {
         defaultValue: { summary: 'Select All' },
       },
@@ -2237,7 +2237,7 @@ export const WithSelectAll: Story = {
     docs: {
       description: {
         story:
-          'When `showSelectAll={true}` is used with multiple selection mode in FilterPicker, a "Select All" option appears in the dropdown above the search input. The checkbox shows indeterminate state when some items are selected, checked when all are selected, and unchecked when none are selected. The select all functionality works seamlessly with filtering and the trigger button shows the combined selection summary.',
+          'When `showSelectAll={true}` is used with multiple selection mode in FilterPicker, a "Select All" checkbox appears in the dropdown above the options. The checkbox shows indeterminate state when some items are selected, checked when all are selected, and unchecked when none are selected. The select all functionality works seamlessly with filtering and the trigger button shows the combined selection summary.',
       },
     },
   },

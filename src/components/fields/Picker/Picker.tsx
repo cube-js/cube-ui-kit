@@ -19,6 +19,7 @@ import {
   ReactNode,
   RefObject,
   useEffect,
+  useId,
   useMemo,
   useRef,
   useState,
@@ -81,7 +82,7 @@ export interface CubePickerProps<T>
     > {
   /** Accessible name for the picker trigger when there is no visible label. */
   'aria-label'?: string;
-  /** Ids of elements that also describe the trigger, beside the field's own description and message. */
+  /** Ids of elements that also describe the trigger, beside the displayed value and the field's own description and message. */
   'aria-describedby'?: string;
   /** Placeholder text when no selection is made */
   placeholder?: string;
@@ -326,6 +327,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
   // Popover state — used as controlled prop for DialogTrigger
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const triggerRef = useRef<FocusableRefValue<HTMLButtonElement>>(null);
+  const valueId = useId();
   const { labelProps, fieldProps: triggerLabelProps } = useLabel({
     id: props.id,
     label,
@@ -702,6 +704,12 @@ export const Picker = forwardRef(function Picker<T extends object>(
     />
   );
 
+  // The trigger keeps the field label as its name, so queries by name stay
+  // stable, and the value it shows (or the placeholder) is its description.
+  const triggerValueId = triggerContent ? valueId : undefined;
+  const triggerDescribedBy =
+    [triggerValueId, ariaDescribedBy].filter(Boolean).join(' ') || undefined;
+
   // Trigger element — plain JSX with no hooks.
   const triggerElement = (
     <ItemButton
@@ -730,7 +738,11 @@ export const Picker = forwardRef(function Picker<T extends object>(
       styles={triggerStyles}
       {...keyboardProps}
       {...mergeProps(triggerLabelProps, { id })}
-      aria-describedby={ariaDescribedBy}
+      labelProps={triggerValueId ? { id: triggerValueId } : undefined}
+      // `DialogTrigger` leaves `aria-haspopup` out for dialogs; the popup the
+      // trigger controls is the `Dialog` that holds the list.
+      aria-haspopup="dialog"
+      aria-describedby={triggerDescribedBy}
     >
       {triggerContent}
     </ItemButton>

@@ -82,7 +82,8 @@ function CheckboxGroup(
   } = props;
   let domRef = useObjectRef(ref);
 
-  let styles = extractStyles(otherProps, CONTAINER_STYLES);
+  // `inputStyles` styles the group too; `styles` and the style props go over it.
+  let styles = extractStyles(otherProps, CONTAINER_STYLES, inputStyles);
 
   let state = useCheckboxGroupState(props);
   // React Aria hands `form` to every item's input as the id of its `<form>`,
@@ -98,7 +99,7 @@ function CheckboxGroup(
     <CheckGroupElement
       {...groupProps}
       id={id}
-      styles={inputStyles}
+      styles={styles}
       mods={{
         horizontal: orientation === 'horizontal',
       }}

@@ -4,7 +4,7 @@
     "eslint-plugin-react-hooks": "7.1.1",
     "@typescript-eslint/parser": "8.69.0"
   },
-  "filesLinted": 669,
+  "filesLinted": 672,
   "files": {
     "src/_internal/hooks/use-deprecation-warning.ts": {
       "react-hooks/exhaustive-deps": 2
@@ -76,13 +76,6 @@
     "src/components/fields/ColorSwatchGroup/ColorSwatchGroup.tsx": {
       "react-hooks/refs": 1
     },
-    "src/components/fields/ComboBox/ComboBox.tsx": {
-      "react-hooks/exhaustive-deps": 4,
-      "react-hooks/immutability": 1,
-      "react-hooks/preserve-manual-memoization": 2,
-      "react-hooks/refs": 3,
-      "react-hooks/set-state-in-effect": 1
-    },
     "src/components/fields/CommandTextArea/CommandTextArea.tsx": {
       "react-hooks/exhaustive-deps": 3,
       "react-hooks/preserve-manual-memoization": 1,
@@ -104,9 +97,8 @@
       "react-hooks/rules-of-hooks": 1
     },
     "src/components/fields/ListBox/ListBox.tsx": {
-      "react-hooks/exhaustive-deps": 2,
       "react-hooks/incompatible-library": 1,
-      "react-hooks/refs": 2
+      "react-hooks/refs": 1
     },
     "src/components/fields/Picker/Picker.tsx": {
       "react-hooks/exhaustive-deps": 1
@@ -117,7 +109,6 @@
       "react-hooks/set-state-in-effect": 1
     },
     "src/components/fields/Select/Select.tsx": {
-      "react-hooks/exhaustive-deps": 1,
       "react-hooks/immutability": 1,
       "react-hooks/preserve-manual-memoization": 1
     },
@@ -229,13 +220,13 @@
     }
   },
   "totals": {
-    "react-hooks/exhaustive-deps": 70,
-    "react-hooks/immutability": 28,
+    "react-hooks/exhaustive-deps": 63,
+    "react-hooks/immutability": 27,
     "react-hooks/incompatible-library": 3,
-    "react-hooks/preserve-manual-memoization": 11,
-    "react-hooks/refs": 102,
+    "react-hooks/preserve-manual-memoization": 9,
+    "react-hooks/refs": 98,
     "react-hooks/rules-of-hooks": 9,
-    "react-hooks/set-state-in-effect": 12,
+    "react-hooks/set-state-in-effect": 11,
     "react-hooks/use-memo": 2
   }
 }

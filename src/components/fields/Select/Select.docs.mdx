@@ -42,7 +42,7 @@ Choose a different component when the interaction has another shape:
 - **`suffixPosition`** `string` (default: `before`) — Position of suffix relative to validation icons
 - **`type`** `string` (default: `outline`) — Visual style variant of the select
 - **`theme`** `string` (default: `default`) — Theme variant affecting overall styling
-- **`size`** `string` (default: `medium`) — Size of the select component
+- **`size`** `string` (default: `medium`) — Size of the trigger and of the options in its list (a `small` trigger opens `medium` options)
 - **`direction`** `string` (default: `bottom`) — Preferred direction for the dropdown menu
 - **`isClearable`** `boolean` (default: `false`) — Whether the select is clearable using a clear button in the rightIcon slot
 - **`clearLabel`** `string` — Accessible name for the built-in clear button. Defaults to a localized "Clear value".
@@ -55,10 +55,10 @@ Choose a different component when the interaction has another shape:
 - **`disabledKeys`** `Iterable<Key>` — Keys of items that are disabled
 - **`children`** `ReactNode | (item: T) => ReactElement` — Static child items or render function for dynamic items
 - **`triggerRef`** `RefObject<HTMLButtonElement>` — Ref for the trigger button element
-- **`popoverRef`** `RefObject<HTMLInputElement>` — Ref for the popover overlay element
+- **`popoverRef`** `RefObject<HTMLElement | null>` — Ref for the popover overlay element
 - **`listBoxRef`** `RefObject<HTMLElement>` — Ref for the list box element
-- **`loadingIndicator`** `ReactNode` — Custom loading indicator element
-- **`hideTrigger`** `boolean` (default: `false`) — Whether to hide the trigger button
+- **`isLoading`** `boolean` — Shows a loading indicator in the trigger and fixes the value until loading ends
+- **`loadingIndicator`** `ReactNode` — Replaces the default loading icon shown while `isLoading` is set
 - **`styles`** `Styles` — Styles for the root wrapper element
 - **`inputStyles`** `Styles` — Styles for the input trigger element
 - **`listBoxStyles`** `Styles` — Styles for the dropdown list container
@@ -66,7 +66,8 @@ Choose a different component when the interaction has another shape:
 - **`listGap`** `number` — Space between options, in pixels. Defaults to a hairline (`1bw`)
 - **`overlayStyles`** `Styles` — Styles for the dropdown overlay wrapper
 - **`triggerStyles`** `Styles` — Styles for the trigger button element
-- **`inputProps`** `Props` — Additional props for the input element
+- **`inputProps`** `Props` — Additional props for the trigger button element
+- **`autoFocus`** `boolean` — Focuses the trigger when it mounts
 - **`triggerDescription`** `ReactNode` — Description text displayed within the trigger button (different from field-level description)
 - **`descriptionPlacement`** `'inline' | 'block'` — Controls how the trigger description is positioned
 - **`hotkeys`** `string` — Keyboard shortcut that triggers the select when pressed
@@ -89,6 +90,8 @@ Choose a different component when the interaction has another shape:
 **isClearable** - Adds a clear button in the rightIcon slot that allows users to clear the selected value. The clear button only appears when a value is selected and the select is not disabled or read-only.
 
 **onClear** - Callback fired when the clear button is pressed, allowing you to perform custom actions when the selection is cleared.
+
+**isReadOnly** and **isLoading** - The trigger stays focusable and keeps its accessible name, but the value can't change: the list doesn't open, typeahead and the arrow keys don't pick another option, and the clear button is hidden. If either one, or `isDisabled`, turns on while the list is open, the list closes.
 
 **actions** - Your own controls inside the trigger, rendered to the left of the built-in clear button and dropdown caret. Pressing one runs its handler without opening or closing the popover — including while the popover is open — so an action can do something the clear button cannot, such as restoring a default selection instead of emptying it. Use `Select.Action` so they match the trigger's size and theme. Actions follow the trigger's disabled state but not `isReadOnly`; pass `isDisabled` yourself for an action that changes the value.
 
@@ -559,14 +562,17 @@ const groups = [
 ### Keyboard Navigation
 
 - `Tab` - Moves focus to the select
-- `Space/Enter` - Opens the dropdown
-- `Arrow Down` - Opens dropdown and moves to first/next option
-- `Arrow Up` - Moves to previous option (when open)
+- `Space/Enter` - Opens the dropdown on the selected option, or the first one
+- `Arrow Down` - Opens the dropdown on the selected option, or the first one; moves to the next option when open
+- `Arrow Up` - Opens the dropdown on the last option; moves to the previous option when open
+- `Page Down/Page Up` - Moves about one visible page of options
 - `Home` - Moves to first option
 - `End` - Moves to last option
 - `Escape` - Closes dropdown without selecting
 - `Enter` - Selects focused option and closes dropdown
 - Typing - Navigates to options starting with typed character
+
+Opened with a pointer, the list focuses the selected option, or the list itself when nothing is selected. The focused option is scrolled into view as the list opens.
 
 ### Screen Reader Support
 

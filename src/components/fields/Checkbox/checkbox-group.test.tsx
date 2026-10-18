@@ -1,9 +1,57 @@
 import { Checkbox, Field } from '../../../index';
-import { act, render, renderWithForm, userEvent } from '../../../test';
+import { act, render, renderWithForm, screen, userEvent } from '../../../test';
 
 vi.mock('../../../_internal/hooks/use-warn');
 
 describe('<CheckboxGroup />', () => {
+  it('applies style props and styles to the group', () => {
+    render(
+      <Checkbox.Group
+        label="test"
+        gap="3x"
+        width="40x"
+        styles={{ fill: '#purple' }}
+        inputStyles={{ fill: '#danger', flow: 'row' }}
+      >
+        <Checkbox value="one">One</Checkbox>
+      </Checkbox.Group>,
+    );
+
+    const style = getComputedStyle(screen.getByRole('group'));
+
+    expect(style.gap).toBe('calc(3 * var(--gap))');
+    expect(style.width).toBe('calc(40 * var(--gap))');
+    // `styles` goes over `inputStyles`, which still applies where it is alone.
+    expect(style.backgroundColor).toBe('var(--purple-color)');
+    expect(style.flexFlow).toBe('row');
+  });
+
+  it('clears a controlled value set to null and stays controlled', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const { getAllByRole, rerender } = render(
+      <Checkbox.Group label="test" value={['one']} onChange={() => {}}>
+        <Checkbox value="one">One</Checkbox>
+        <Checkbox value="two">Two</Checkbox>
+      </Checkbox.Group>,
+    );
+
+    expect(getAllByRole('checkbox')[0]).toBeChecked();
+
+    rerender(
+      <Checkbox.Group label="test" value={null} onChange={() => {}}>
+        <Checkbox value="one">One</Checkbox>
+        <Checkbox value="two">Two</Checkbox>
+      </Checkbox.Group>,
+    );
+
+    expect(getAllByRole('checkbox')[0]).not.toBeChecked();
+    expect(warn).not.toHaveBeenCalledWith(
+      expect.stringMatching(/controlled to uncontrolled/),
+    );
+
+    warn.mockRestore();
+  });
+
   it('should respect defaultValue prop', () => {
     const { getAllByRole } = render(
       <Checkbox.Group defaultValue={['one']} label="test">

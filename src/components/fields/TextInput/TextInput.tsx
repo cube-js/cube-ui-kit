@@ -8,6 +8,7 @@ import {
 } from '../../../utils/react/nullableValue';
 import { useFieldProps } from '../../form';
 
+import { getDisplayedValidation } from './displayed-validation';
 import {
   CubeBufferedValueProps,
   CubeTextInputBaseProps,
@@ -62,12 +63,13 @@ export const TextInput = forwardRef(function TextInput(
     isReadOnly: restProps.isReadOnly,
   });
 
-  let { labelProps, inputProps } = useTextField(
+  let { labelProps, inputProps, ...validation } = useTextField(
     {
       ...restProps,
       value: buffered.value,
       onChange: buffered.onChange,
       onBlur: chain(restProps.onBlur, buffered.reset),
+      inputElementType: restProps.multiLine ? 'textarea' : 'input',
     },
     inputRef as RefObject<HTMLInputElement | null>,
   );
@@ -78,6 +80,7 @@ export const TextInput = forwardRef(function TextInput(
   return (
     <TextInputBase
       {...restProps}
+      {...getDisplayedValidation(restProps, validation)}
       ref={ref}
       labelProps={mergedLabelProps}
       inputProps={mergeProps(inputProps, userInputProps)}

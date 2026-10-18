@@ -1,4 +1,10 @@
-import { render, renderWithRoot, screen, userEvent } from '../../../test';
+import {
+  render,
+  renderWithRoot,
+  screen,
+  userEvent,
+  waitFor,
+} from '../../../test';
 import { Disclosure } from '../../content/Disclosure/Disclosure';
 
 import { ItemButton } from './ItemButton';
@@ -178,5 +184,29 @@ describe('<ItemButton /> disabled', () => {
     await userEvent.keyboard('{Enter}');
 
     expect(onClick).not.toHaveBeenCalled();
+  });
+});
+
+describe('<ItemButton /> tooltip description', () => {
+  it('keeps its own aria-describedby while the tooltip is open', async () => {
+    renderWithRoot(
+      <>
+        <p id="hint">Opens the editor</p>
+        <ItemButton aria-describedby="hint" tooltip="Edit the row">
+          Edit
+        </ItemButton>
+      </>,
+    );
+
+    await userEvent.tab();
+
+    const tooltip = await screen.findByRole('tooltip');
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Edit' })).toHaveAttribute(
+        'aria-describedby',
+        `hint ${tooltip.id}`,
+      );
+    });
   });
 });

@@ -18,6 +18,30 @@ describe('<InfoBadge />', () => {
     expect(screen.queryByRole('link')).not.toBeInTheDocument();
   });
 
+  /**
+   * The name sat on a `div` with no role, which screen readers ignore, and the
+   * tooltip opened on hover only, so an `aria-label` that differed from the
+   * tooltip hid the tooltip text from keyboard and screen reader users.
+   */
+  it('exposes a non-interactive badge as a named image', () => {
+    renderWithRoot(<InfoBadge tooltip="Some details" />);
+
+    const badge = screen.getByRole('img', { name: 'Some details' });
+
+    expect(badge).toBe(screen.getByTestId('InfoBadge'));
+    expect(badge).not.toHaveAttribute('tabindex');
+  });
+
+  it('describes a non-interactive badge by its tooltip when named otherwise', () => {
+    renderWithRoot(
+      <InfoBadge aria-label="3 warnings" tooltip="Two checks failed" />,
+    );
+
+    expect(
+      screen.getByRole('img', { name: '3 warnings' }),
+    ).toHaveAccessibleDescription('Two checks failed');
+  });
+
   it('renders a link when `to` is provided', () => {
     renderWithRoot(<InfoBadge to="!https://docs.cube.dev" tooltip="Docs" />);
 

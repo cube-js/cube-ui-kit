@@ -1,10 +1,12 @@
-import { page } from 'vitest/browser';
+import { userEvent as browserUserEvent, page } from 'vitest/browser';
 
 import { renderWithRoot, screen, waitFor } from '../../../test';
+import { Button } from '../../actions/Button/Button';
 import { Content } from '../../content/Content';
 
 import { Dialog } from './Dialog';
 import { DialogContainer } from './DialogContainer';
+import { DialogTrigger } from './DialogTrigger';
 
 /**
  * `Dialog` sizes itself with a three-value tasty shorthand that compiles to
@@ -161,5 +163,76 @@ describe('Dialog padding tokens', () => {
     // …and the slot's own non-padding styles survive the merge.
     expect(styles.flexGrow).toBe('1');
     expect(styles.overflowY).toBe('auto');
+  });
+});
+
+/**
+ * A dialog contains focus from the frame it opens in, not only once its enter
+ * transition has ended. A Tab pressed while it is still entering used to move
+ * focus to the page behind the modal, and nothing pulled it back.
+ *
+ * In a browser for the real Tab: the escape is the browser's own default
+ * action, which only React Aria's containment listener prevents. Animation
+ * frames are held so the dialog stays in its enter phase (`DisplayTransition`
+ * moves on to `entered` on the second frame) for as long as the test needs.
+ */
+describe('Dialog focus containment while it enters', () => {
+  beforeEach(() => {
+    let id = 0;
+
+    vi.spyOn(window, 'requestAnimationFrame').mockImplementation(() => ++id);
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  async function openWithKeyboard() {
+    renderWithRoot(
+      <DialogTrigger>
+        <Button qa="Trigger">Open</Button>
+        <Dialog aria-label="Entering">
+          <Button qa="First">First</Button>
+          <Button qa="Last">Last</Button>
+        </Dialog>
+      </DialogTrigger>,
+    );
+
+    screen.getByTestId('Trigger').focus();
+    await browserUserEvent.keyboard('{Enter}');
+
+    const dialog = await screen.findByTestId('Dialog');
+
+    await waitFor(() =>
+      expect(dialog).toContainElement(document.activeElement as HTMLElement),
+    );
+    expect(screen.getByTestId('Modal')).toHaveAttribute('data-enter');
+
+    return dialog;
+  }
+
+  it('keeps Shift+Tab inside a modal that is still entering', async () => {
+    const dialog = await openWithKeyboard();
+
+    await browserUserEvent.tab({ shift: true });
+
+    expect(dialog).toContainElement(document.activeElement as HTMLElement);
+  });
+
+  it('keeps Tab inside it from the last control', async () => {
+    const dialog = await openWithKeyboard();
+
+    screen.getByTestId('Last').focus();
+    await browserUserEvent.tab();
+
+    expect(dialog).toContainElement(document.activeElement as HTMLElement);
+  });
+
+  it('still returns focus to the trigger when it closes while entering', async () => {
+    await openWithKeyboard();
+
+    await browserUserEvent.keyboard('{Escape}');
+
+    await waitFor(() => expect(screen.getByTestId('Trigger')).toHaveFocus());
   });
 });
