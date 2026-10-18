@@ -233,6 +233,55 @@ describe('<TextInput />', () => {
     expect(queryByText('Too short')).not.toBeInTheDocument();
   });
 
+  describe('validate before the field is touched', () => {
+    function renderShort() {
+      return render(
+        <TextInput
+          label="test"
+          message="At least three letters"
+          validate={(value) => (value.length < 3 ? 'Too short' : null)}
+        />,
+      );
+    }
+
+    it('shows nothing for the value the field mounts with', () => {
+      const { getByRole, getByText, queryByText } = renderShort();
+
+      expect(getByRole('textbox').closest('[data-invalid]')).toBeNull();
+      expect(queryByText('Too short')).not.toBeInTheDocument();
+      expect(getByText('At least three letters')).toBeInTheDocument();
+    });
+
+    it('shows the error once the user types', async () => {
+      const { getByRole, getByText } = renderShort();
+      const input = getByRole('textbox');
+
+      await userEvent.type(input, 'a');
+
+      expect(input.closest('[data-invalid]')).not.toBeNull();
+      expect(getByText('Too short')).toBeInTheDocument();
+    });
+
+    it('shows the error once the user leaves the field', async () => {
+      const { getByRole, getByText } = renderShort();
+      const input = getByRole('textbox');
+
+      await userEvent.click(input);
+      await userEvent.tab();
+
+      expect(input.closest('[data-invalid]')).not.toBeNull();
+      expect(getByText('Too short')).toBeInTheDocument();
+    });
+
+    it('shows an explicit isInvalid at once', () => {
+      const { getByRole } = render(
+        <TextInput isInvalid label="test" validate={() => null} />,
+      );
+
+      expect(getByRole('textbox').closest('[data-invalid]')).not.toBeNull();
+    });
+  });
+
   it('keeps an explicit errorMessage over the errors from validate', async () => {
     const { getByRole, getByText, queryByText } = render(
       <TextInput

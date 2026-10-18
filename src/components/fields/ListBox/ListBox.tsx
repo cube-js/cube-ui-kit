@@ -15,6 +15,7 @@ import {
 } from '@tenphi/tasty';
 import {
   CSSProperties,
+  DOMAttributes,
   ForwardedRef,
   forwardRef,
   MutableRefObject,
@@ -412,8 +413,10 @@ export interface CubeListBoxProps<T>
   size?: 'small' | 'medium' | 'large';
 
   /**
-   * When `true`, clicking an already-selected item keeps it selected instead of toggling it off.
-   * Useful when embedding ListBox inside components like ComboBox.
+   * When `true`, clicking an already-selected item keeps it selected instead of toggling it off,
+   * and `onSelectionChange` reports that item again. Applies in single selection mode, whether
+   * `selectionMode` is set or left to its default. Useful when embedding ListBox inside
+   * components like ComboBox.
    */
   disableSelectionToggle?: boolean;
 
@@ -453,8 +456,11 @@ export interface CubeListBoxProps<T>
 
   /**
    * Whether to show the "Select All" checkbox in multiple selection mode.
-   * It sits above the list as its own Tab stop and selects or clears every
-   * item; it shows checked once every selectable item is selected.
+   * It sits above the list as its own Tab stop and shows checked once every
+   * selectable item the list shows is selected. A press selects every item
+   * (`'all'`), or once checked takes the items shown out of the selection.
+   * Under a `filter` it acts only on the items shown, and selected items the
+   * filter hides stay selected.
    */
   showSelectAll?: boolean;
 
@@ -506,6 +512,9 @@ export interface CubeListBoxProps<T>
 
 const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
 
+/** A collection with no options, for a list state that isn't needed. */
+const NO_OPTIONS: ListProps<any> = { children: [], selectionMode: 'none' };
+
 /**
  * The "Select All" row: a tri-state checkbox above the list rather than an
  * option in it, since it acts on the options instead of being one. Being
@@ -521,6 +530,7 @@ const SelectAllOption = ({
   isCheckable,
   size = 'medium',
   onClick,
+  focusProps,
   allValueProps = {},
 }: {
   label?: ReactNode;
@@ -531,11 +541,13 @@ const SelectAllOption = ({
   size?: 'small' | 'medium' | 'large';
   /** `propagate` is false for a press on the checkbox mark, which only toggles */
   onClick: (propagate: boolean) => void;
+  /** Tells the list when the row has focus */
+  focusProps: DOMAttributes<HTMLElement>;
   allValueProps?: Partial<CubeCollectionItemProps<any>>;
 }) => {
   const { t } = useI18n();
   const { hoverProps, isHovered } = useHover({ isDisabled });
-  const { focusProps, isFocusVisible } = useFocusRing();
+  const { focusProps: focusRingProps, isFocusVisible } = useFocusRing();
   const resolvedLabel =
     label === '' || label === undefined || label === null
       ? t('listBox.selectAll', 'Select All')
@@ -605,7 +617,7 @@ const SelectAllOption = ({
           indeterminate: isIndeterminate,
           all: true, // Important: this preserves the 'all' modifier
         }}
-        {...mergeProps(hoverProps, focusProps, allValueProps, {
+        {...mergeProps(hoverProps, focusRingProps, focusProps, allValueProps, {
           tabIndex: isDisabled ? undefined : 0,
           onClick: handleClick,
           onKeyDown: handleKeyDown,
@@ -617,6 +629,56 @@ const SelectAllOption = ({
     </>
   );
 };
+
+/** The keys of the options a user can select in a collection: not disabled. */
+function getSelectableKeys(
+  collection: Collection<CollectionNode<unknown>>,
+  disabledKeys: Set<Key>,
+): Key[] {
+  const keys: Key[] = [];
+
+  for (const key of collection.getKeys()) {
+    const node = collection.getItem(key);
+
+    if (
+      node?.type === 'item' &&
+      !disabledKeys.has(key) &&
+      !node.props?.isDisabled
+    ) {
+      keys.push(key);
+    }
+  }
+
+  return keys;
+}
+
+/**
+ * The selection a "Select All" press leaves. While it isn't checked, the press
+ * selects all (`'all'`), or under a filter adds the options shown. Once it is,
+ * the press takes the options shown out of the selection: selected options
+ * the list doesn't show, hidden by a filter or not among its options, stay.
+ * `hiddenKeys` are the selectable options a filter hides.
+ */
+function getSelectAllSelection(
+  isAllSelected: boolean,
+  selection: 'all' | Set<Key>,
+  shownKeys: Key[],
+  hiddenKeys: Key[],
+): 'all' | Set<Key> {
+  if (!isAllSelected) {
+    return selection === 'all' || hiddenKeys.length === 0
+      ? 'all'
+      : new Set([...selection, ...shownKeys]);
+  }
+
+  if (selection === 'all') return new Set(hiddenKeys);
+
+  const next = new Set(selection);
+
+  for (const key of shownKeys) next.delete(key);
+
+  return next;
+}
 
 /**
  * Whether every option a user can select is selected, which checks "Select
@@ -765,8 +827,10 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
         externalSelectionHandler('all');
       } else if (keys instanceof Set) {
         if (keys.size === 0) {
-          if (disableSelectionToggle && props.selectionMode === 'single') {
-            const prevKey = lastSelectedKeyRef.current;
+          // Picking the selected option again keeps it, in single mode
+          // whether set or by default. The controlled key is the one picked.
+          if (disableSelectionToggle && props.selectionMode !== 'multiple') {
+            const prevKey = selectedKey ?? lastSelectedKeyRef.current;
             if (prevKey != null) {
               externalSelectionHandler(prevKey);
               return;
@@ -792,6 +856,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     isDisabled,
     props.selectionMode,
     disableSelectionToggle,
+    selectedKey,
   ]);
 
   // Prepare props for useListState with correct selection props
@@ -825,6 +890,17 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
 
   const listState = getValueSelectionState(useListState(listStateProps));
 
+  const hasSelectAll = !!showSelectAll && props.selectionMode === 'multiple';
+
+  // Under a filter, "Select All" acts on the options it shows and keeps the
+  // selected ones the filter hides, so it needs the whole list. Built only
+  // then; otherwise it is empty.
+  const { collection: fullCollection } = useListState<T>(
+    hasSelectAll && filter
+      ? { children: props.children, items: props.items, selectionMode: 'none' }
+      : NO_OPTIONS,
+  );
+
   useLayoutEffect(() => {
     const selected = listState.selectionManager.selectedKeys;
     if (selected && (selected as any).size > 0) {
@@ -832,8 +908,6 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       lastSelectedKeyRef.current = first ?? null;
     }
   }, [listState.selectionManager.selectedKeys]);
-
-  const hasSelectAll = !!showSelectAll && props.selectionMode === 'multiple';
 
   // Checked once every selectable option is selected, however it got there;
   // mixed while only some are.
@@ -848,14 +922,26 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   const handleSelectAllClick = (propagate: boolean) => {
     if (isDisabled || !hasSelectAll) return;
 
-    if (isAllSelected) {
-      listState.selectionManager.clearSelection();
-    } else {
-      listState.selectionManager.selectAll();
+    const { collection, disabledKeys, selectionManager } = listState;
+    const next = getSelectAllSelection(
+      isAllSelected,
+      selectionManager.rawSelection,
+      getSelectableKeys(collection, disabledKeys),
+      getSelectableKeys(fullCollection, disabledKeys).filter(
+        (key) => !collection.getItem(key),
+      ),
+    );
 
-      if (propagate) {
-        onOptionClick?.('__ALL__');
-      }
+    if (next === 'all') {
+      selectionManager.selectAll();
+    } else if (next.size === 0) {
+      selectionManager.clearSelection();
+    } else {
+      selectionManager.setSelectedKeys(next);
+    }
+
+    if (propagate && !isAllSelected) {
+      onOptionClick?.('__ALL__');
     }
   };
 
@@ -939,14 +1025,22 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   );
 
   const { isFocused, focusProps } = useFocus();
+  // An empty list is still a Tab stop, on its `ul` with no height, so the
+  // card shows that focus as it shows its own.
+  const { isFocused: isListElementFocused, focusProps: listElementFocusProps } =
+    useFocus();
+  const { isFocused: isSelectAllFocused, focusProps: selectAllFocusProps } =
+    useFocus();
 
   // The focused key outlives focus, so an option shows as focused only while
   // the list has it. A component whose input moves the key (FilterListBox)
   // says whether focus is within it, in any focus mode. Otherwise the list's
   // own focus decides, and with virtual focus the focused key alone marks it.
+  // Focus on "Select All" is on neither.
   const isListFocused =
-    isFocusWithin ??
-    (shouldUseVirtualFocus || listState.selectionManager.isFocused);
+    !isSelectAllFocused &&
+    (isFocusWithin ??
+      (shouldUseVirtualFocus || listState.selectionManager.isFocused));
 
   // Scroll container ref for virtualization
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -990,10 +1084,11 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   const lastFocusedKeyRef = useRef<Key | null>(null);
 
   // Keep the focused option visible. One the virtualizer hasn't rendered is
-  // scrolled to by index, which renders it, whenever focus moves to it (End,
-  // typeahead, the selected option on autofocus or Tab). One already rendered
-  // is scrolled to only for keyboard navigation, so a click never moves the
-  // list.
+  // scrolled to by index, which renders it, when focus moves to it (End,
+  // typeahead, the selected option on autofocus or Tab); new items alone
+  // leave a list the user scrolled away from where it is. One already
+  // rendered is scrolled to only for keyboard navigation, so a click never
+  // moves the list.
   useLayoutEffect(() => {
     const focusedKey = listState.selectionManager.focusedKey;
     const hasFocusMoved = focusedKey !== lastFocusedKeyRef.current;
@@ -1002,7 +1097,6 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
 
     if (focusedKey == null) return;
 
-    const isKeyboard = lastFocusSourceRef.current === 'keyboard';
     const scrollElement = scrollRef.current;
     if (!scrollElement) return;
 
@@ -1015,7 +1109,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
         ? itemsArray.findIndex((item) => item.key === focusedKey)
         : -1;
 
-      if (index !== -1 && (isKeyboard || hasFocusMoved)) {
+      if (index !== -1 && hasFocusMoved) {
         rowVirtualizer.scrollToIndex(index, { align: 'auto' });
       }
 
@@ -1023,7 +1117,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     }
 
     // Only scroll on keyboard navigation
-    if (!isKeyboard) return;
+    if (lastFocusSourceRef.current !== 'keyboard') return;
 
     const scrollTop = scrollElement.scrollTop;
     const viewportHeight = scrollElement.clientHeight;
@@ -1056,9 +1150,12 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   // preserved.
   // `useListBox` takes no validation state, so the list would look invalid
   // without a screen reader ever hearing it.
-  const mergedListBoxProps = mergeProps(listBoxProps, keyboardProps, {
-    'aria-invalid': isInvalid || undefined,
-  });
+  const mergedListBoxProps = mergeProps(
+    listBoxProps,
+    keyboardProps,
+    listElementFocusProps,
+    { 'aria-invalid': isInvalid || undefined },
+  );
 
   // React Aria keeps a disabled list a Tab stop while no option has focus.
   if (isDisabled) {
@@ -1091,11 +1188,13 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       .map((i) => String(i.key));
   }, [isReorderable, itemsArray]);
 
+  const isCardFocused = isFocused || (isEmpty && isListElementFocused);
+
   const mods = useMemo(
     () => ({
       ...getValidationMods({ isInvalid, isValid }),
       disabled: isDisabled,
-      focused: isFocused,
+      focused: isCardFocused,
       header: !!header || hasSelectAll,
       footer: !!footer,
       selectAll: hasSelectAll,
@@ -1105,7 +1204,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       isInvalid,
       isValid,
       isDisabled,
-      isFocused,
+      isCardFocused,
       header,
       footer,
       hasSelectAll,
@@ -1140,6 +1239,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
           isCheckable={isCheckable}
           size={size}
           allValueProps={allValueProps}
+          focusProps={selectAllFocusProps}
           onClick={handleSelectAllClick}
         />
       ) : (
@@ -1435,15 +1535,6 @@ function Option({
     localRef,
   );
 
-  // A mouse press picks the option it started on, even if the list moved
-  // under the pointer before the release.
-  const originPress = useOptionOriginPress({
-    key: item.key,
-    ref: localRef,
-    manager: state.selectionManager,
-    isDisabled,
-  });
-
   const isFocused =
     !isDisabled &&
     isListFocused &&
@@ -1499,7 +1590,7 @@ function Option({
   // must NOT call optionProps.onClick again — re-invoking it would trigger
   // usePress's virtual-click branch and double-fire onPress (and toggle
   // selection twice in multiple mode).
-  const handleOptionExtras = (e: MouseEvent) => {
+  const runOptionExtras = (target: EventTarget | null) => {
     if (lastFocusSourceRef) {
       lastFocusSourceRef.current = 'mouse';
     }
@@ -1514,7 +1605,7 @@ function Option({
     // inside the checkbox wrapper — that area is reserved for toggle-only
     // behaviour (React Aria still handles the toggle via the chained onClick).
     if (isCheckable && state.selectionManager.selectionMode === 'multiple') {
-      const clickTarget = e.target as HTMLElement;
+      const clickTarget = target as HTMLElement;
       const checkboxElement = localRef.current?.querySelector(
         '[data-element="CheckboxWrapper"]',
       );
@@ -1530,6 +1621,19 @@ function Option({
 
     onOptionClick(item.key);
   };
+
+  const handleOptionExtras = (e: MouseEvent) => runOptionExtras(e.target);
+
+  // A mouse press picks the option it started on, even if the list moved
+  // under the pointer before the release. The browser then sends the click to
+  // a common ancestor, so the press runs the click's side effects itself.
+  const originPress = useOptionOriginPress({
+    key: item.key,
+    ref: localRef,
+    manager: state.selectionManager,
+    isDisabled,
+    onSettle: runOptionExtras,
+  });
 
   // Filter out React Aria props that shouldn't reach the DOM
   const {

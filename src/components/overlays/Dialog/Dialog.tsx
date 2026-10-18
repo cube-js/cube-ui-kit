@@ -182,8 +182,17 @@ export const Dialog = forwardRef(function Dialog(
 
   const content = <DialogContent key="content" {...props} ref={ref} />;
 
+  // A popover that is not dismissable leaves the page usable, as a panel
+  // does: an outside press reaches its control, and focus has to follow it
+  // there, into a text field too.
+  const isNonModalPopover =
+    context.type === 'popover' && context.isDismissable === false;
+
   const shouldContainFocus =
-    isShown && !!context.isOpen && context.type !== 'panel';
+    isShown &&
+    !!context.isOpen &&
+    context.type !== 'panel' &&
+    !isNonModalPopover;
 
   return (
     // This component traps the focus inside the dialog and restores it on
@@ -209,7 +218,9 @@ const DialogContent = forwardRef(function DialogContent(
     qa,
     children,
     size = 'M',
-    isDismissable = contextProps.isDismissable,
+    // A popover shows a close button only when its `Dialog` asks for one: its
+    // trigger's `isDismissable` decides whether an outside press closes it.
+    isDismissable = type === 'popover' ? undefined : contextProps.isDismissable,
     onDismiss = contextProps.onClose,
     closeIcon,
     closeButtonStyles,
@@ -291,7 +302,10 @@ const DialogContent = forwardRef(function DialogContent(
       ...titleProps,
     },
     content: {
-      ...contentProps,
+      // `null` rather than `undefined` when there is none: slots reach nested
+      // slot providers, and `undefined` does not override, so a dialog opened
+      // inside an alert dialog would repeat the alert's message id.
+      id: contentProps.id ?? null,
       styles: {
         flexGrow: 1,
         padding: '$dialog-content-padding-v $dialog-padding-h',

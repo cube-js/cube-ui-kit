@@ -55,7 +55,7 @@ A versatile list selection component that allows users to select one or more ite
 - **`onEscape`** `() => void` — Callback when Escape key is pressed
 - **`onOptionClick`** `(key: Key) => void` — Callback when an option is clicked (non-checkbox area)
 - **`items`** `Iterable<T>` — Array of items for dynamic content with render function pattern
-- **`disableSelectionToggle`** `boolean` (default: `false`) — When true, clicking an already-selected item keeps it selected instead of toggling it off
+- **`disableSelectionToggle`** `boolean` (default: `false`) — When true, clicking an already-selected item keeps it selected instead of toggling it off (single selection mode)
 - **`isReorderable`** `boolean` (default: `false`) — Enable drag-and-drop item reordering. Disables virtualization when active
 - **`onReorder`** `(newOrder: string[]) => void` — Callback when items are reordered via drag-and-drop or keyboard (Alt+Arrow)
 
@@ -146,7 +146,9 @@ The `mods` property accepts the following modifiers you can override:
 **showSelectAll** (`boolean`, default: `false`)
 
 - When `true` in multiple selection mode, displays a "Select All" checkbox above the list
-- The checkbox shows three states: unchecked (none selected), indeterminate (some selected), checked (every selectable item selected, however it got there). Disabled items don't count
+- The checkbox shows three states: unchecked (none selected), indeterminate (some selected), checked (every selectable item the list shows is selected, however it got there). Disabled items don't count
+- A press while it is not checked selects every item, reported as `'all'`. A press while it is checked takes the items the list shows out of the selection, so selected keys that are not among its items stay selected
+- Under a `filter` that hides items, it acts on the items shown: a press adds them to the selection or, once all of them are selected, removes them. Selected items the filter hides stay selected
 - It sits outside the listbox as its own Tab stop: `Tab` / `Shift+Tab` reach it and `Space` toggles it
 - Only works with `selectionMode="multiple"`
 
@@ -172,7 +174,7 @@ The `mods` property accepts the following modifiers you can override:
 
 **disableSelectionToggle** (`boolean`, default: `false`)
 
-- When `true`, clicking an already-selected item keeps it selected instead of toggling it off
+- When `true`, clicking an already-selected item keeps it selected instead of toggling it off, and `onSelectionChange` reports that item again. Applies in single selection mode, set or by default
 - Useful when embedding ListBox inside components like ComboBox
 
 **disabledKeys** (`Key[]`)

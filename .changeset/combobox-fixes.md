@@ -2,7 +2,7 @@
 "@cube-dev/ui-kit": patch
 ---
 
-`ComboBox`: a press in the input opens a closed list, also when the input already has focus, for example after `Tab` or after `Escape` closed the list. With `popoverTrigger="manual"` the list still opens only from the chevron and the arrow keys.
+`ComboBox`: a press in the input opens a closed list, also when the input already has focus, for example after `Tab` or after `Escape` closed the list. The list shows the options the typed text leaves, and text that matches nothing keeps it hidden, so a press that moves the caret does not change what `Enter` commits. A click on the field label only focuses the input. With `popoverTrigger="manual"` the list still opens only from the chevron and the arrow keys.
 
 `ComboBox`: a press in the input while the list is open moves the caret and keeps the list open. It used to close the list. The chevron still toggles it.
 
@@ -38,4 +38,4 @@
 
 `ComboBox` with `items` shows items that arrive while its list is open at once. It used to keep showing the previous items until the next keystroke.
 
-`ComboBox`, `SearchComboBox` and `TagInput`: the options in the list use the field's `size`, so a small or large field opens a list of the same density.
+`ComboBox`, `SearchComboBox` and `TagInput` with `size="large"` open a list of large options, as `Select` does. A small field keeps medium options.

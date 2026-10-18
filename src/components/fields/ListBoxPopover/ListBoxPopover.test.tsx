@@ -380,3 +380,29 @@ describe('<ListBoxPopover /> outside presses', () => {
     await waitFor(() => expect(utils.queryByRole('listbox')).toBeNull());
   });
 });
+
+describe('<ListBoxPopover /> option size', () => {
+  // As in Select: a small field opens medium options, which stay easy to
+  // pick, and a large field opens large ones.
+  it.each([
+    ['small', 'medium'],
+    ['medium', 'medium'],
+    ['large', 'large'],
+  ] as const)('gives a %s field %s options', async (size, optionSize) => {
+    const utils = renderWithRoot(
+      <ComboBox label="People" size={size}>
+        {people.map((person) => (
+          <ComboBox.Item key={person.key}>{person.label}</ComboBox.Item>
+        ))}
+      </ComboBox>,
+    );
+
+    await userEvent.click(utils.getByTestId('ComboBoxTrigger'));
+    await waitFor(() => expect(utils.getByRole('listbox')).toBeVisible());
+
+    expect(utils.getAllByRole('option')[0]).toHaveAttribute(
+      'data-size',
+      optionSize,
+    );
+  });
+});

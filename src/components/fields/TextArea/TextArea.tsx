@@ -7,7 +7,7 @@ import {
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
 import { useFieldProps } from '../../form';
-import { getDisplayedValidation } from '../TextInput/displayed-validation';
+import { useDisplayedValidation } from '../TextInput/displayed-validation';
 import {
   CubeBufferedValueProps,
   CubeTextInputBaseProps,
@@ -89,8 +89,9 @@ function TextArea(
     value: buffered.value,
   });
 
+  let displayedValidation = useDisplayedValidation();
   let { labelProps, inputProps, ...validation } = useTextField(
-    {
+    displayedValidation.trackTouched({
       ...otherProps,
       value: buffered.value,
       isDisabled,
@@ -99,7 +100,7 @@ function TextArea(
       onChange: chain(buffered.onChange, adjustHeight),
       onBlur: chain(otherProps.onBlur, buffered.reset),
       inputElementType: 'textarea',
-    },
+    }),
     inputRef,
   );
 
@@ -110,7 +111,7 @@ function TextArea(
     <TextInputBase
       ref={ref}
       {...otherProps}
-      {...getDisplayedValidation(otherProps, validation)}
+      {...displayedValidation.getDisplayedValidation(otherProps, validation)}
       multiLine
       inputRef={inputRef}
       labelProps={mergedLabelProps}

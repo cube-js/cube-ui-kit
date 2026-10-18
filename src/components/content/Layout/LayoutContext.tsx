@@ -307,9 +307,9 @@ export function LayoutProvider({
 
 /**
  * Private: `true` inside a Layout region (Content, Pane, Panel and the other
- * parts that reset the context), so a Layout or footer rendered there is nested
- * rather than page-level. Not reset by `LayoutContextReset`, and not part of
- * the public Layout context API.
+ * parts that reset the context) and inside a Layout that is itself nested, so
+ * a footer rendered there is not page-level. Not reset by `LayoutContextReset`,
+ * and not part of the public Layout context API.
  */
 export const LayoutNestedContext = createContext(false);
 

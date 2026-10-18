@@ -1911,16 +1911,70 @@ describe('<ComboBox />', () => {
     });
 
     it('opens the list again on a click after Escape closed it', async () => {
-      const { getByRole, queryByRole } = renderWithRoot(
+      const { getByRole, queryByRole, queryAllByRole } = renderWithRoot(
         <ComboBox label="Color">{colorItems}</ComboBox>,
       );
       const combobox = getByRole('combobox');
 
       await userEvent.type(combobox, 'r');
       await waitFor(() => expect(getByRole('listbox')).toBeVisible());
+      const matches = queryAllByRole('option').length;
+
+      expect(matches).toBeLessThan(items.length);
       await userEvent.keyboard('{Escape}');
       await waitFor(() => expect(queryByRole('listbox')).toBeNull());
 
+      await userEvent.click(combobox);
+
+      await waitFor(() => expect(getByRole('listbox')).toBeVisible());
+      // Still the options the typed text leaves.
+      expect(queryAllByRole('option')).toHaveLength(matches);
+    });
+
+    it('keeps the list hidden on a click when the typed text matches nothing', async () => {
+      const onSelectionChange = vi.fn();
+      const { getByRole, queryByRole } = renderWithRoot(
+        <ComboBox
+          allowsCustomValue
+          label="Fruit"
+          onSelectionChange={onSelectionChange}
+        >
+          <ComboBox.Item key="apple">Apple</ComboBox.Item>
+          <ComboBox.Item key="banana">Banana</ComboBox.Item>
+        </ComboBox>,
+      );
+      const combobox = getByRole('combobox');
+
+      await act(async () => combobox.focus());
+      await userEvent.keyboard('xyz');
+      expect(queryByRole('listbox')).toBeNull();
+
+      // A click that moves the caret.
+      await userEvent.click(combobox);
+      await act(() => new Promise((resolve) => setTimeout(resolve, 50)));
+
+      expect(queryByRole('listbox')).toBeNull();
+      expect(combobox).toHaveAttribute('aria-expanded', 'false');
+
+      await userEvent.keyboard('{Enter}');
+
+      expect(onSelectionChange.mock.calls).toEqual([['xyz']]);
+      expect(combobox).toHaveValue('xyz');
+    });
+
+    it('focuses the input without opening the list on a click on the label', async () => {
+      const { getByRole, getByText, queryByRole } = renderWithRoot(
+        <ComboBox label="Color">{colorItems}</ComboBox>,
+      );
+      const combobox = getByRole('combobox');
+
+      await userEvent.click(getByText('Color'));
+      await act(() => new Promise((resolve) => setTimeout(resolve, 50)));
+
+      expect(combobox).toHaveFocus();
+      expect(queryByRole('listbox')).toBeNull();
+
+      // A click on the focused input still opens it.
       await userEvent.click(combobox);
 
       await waitFor(() => expect(getByRole('listbox')).toBeVisible());
@@ -2452,6 +2506,75 @@ describe('<ComboBox />', () => {
       await waitFor(() =>
         expect(getByRole('combobox')).toHaveValue('United States'),
       );
+    });
+
+    const users = [
+      { key: 'u-1', name: 'Alice' },
+      { key: 'u-2', name: 'Bob' },
+    ];
+
+    function renderUsers(
+      list: typeof users,
+      props: Record<string, unknown> = {},
+    ) {
+      return (
+        <ComboBox label="User" filter={false} items={list} {...props}>
+          {(item: (typeof users)[number]) => (
+            <ComboBox.Item key={item.key}>{item.name}</ComboBox.Item>
+          )}
+        </ComboBox>
+      );
+    }
+
+    it('keeps the picked label when the options drop the selected item', async () => {
+      const { getByRole, rerender } = renderWithRoot(renderUsers(users));
+      const combobox = getByRole('combobox');
+
+      await userEvent.click(getByRole('button', { name: 'Show options' }));
+      await userEvent.click(getByRole('option', { name: 'Alice' }));
+      await waitFor(() => expect(combobox).toHaveValue('Alice'));
+
+      // A refetch or a server-side search that leaves the item out.
+      rerender(renderUsers([]));
+
+      expect(combobox).toHaveValue('Alice');
+    });
+
+    it('keeps the picked label when the pick itself empties the options', async () => {
+      function Search() {
+        const [list, setList] = useState(users);
+
+        // A server-side search: the new query has no results yet.
+        return renderUsers(list, { onSelectionChange: () => setList([]) });
+      }
+
+      const { getByRole, queryByRole } = renderWithRoot(<Search />);
+      const combobox = getByRole('combobox');
+
+      await userEvent.click(getByRole('button', { name: 'Show options' }));
+      await userEvent.click(getByRole('option', { name: 'Alice' }));
+
+      await waitFor(() => expect(queryByRole('listbox')).toBeNull());
+      expect(combobox).toHaveValue('Alice');
+    });
+
+    it('keeps a controlled label shown once, and not for another key', () => {
+      const { getByRole, rerender } = renderWithRoot(
+        renderUsers(users, { selectedKey: 'u-1' }),
+      );
+      const combobox = getByRole('combobox');
+
+      expect(combobox).toHaveValue('Alice');
+
+      rerender(renderUsers([], { selectedKey: 'u-1' }));
+      expect(combobox).toHaveValue('Alice');
+
+      // A key whose label never loaded shows the key until it does.
+      rerender(renderUsers([], { selectedKey: 'u-2' }));
+      expect(combobox).toHaveValue('u-2');
+
+      rerender(renderUsers(users, { selectedKey: 'u-2' }));
+      expect(combobox).toHaveValue('Bob');
     });
 
     it('shows the label of defaultSelectedKey in the first commit', () => {

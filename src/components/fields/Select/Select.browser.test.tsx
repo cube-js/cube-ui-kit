@@ -7,6 +7,7 @@ import { act, renderWithRoot, screen, waitFor } from '../../../test';
 import { Button } from '../../actions/Button/Button';
 import { Dialog } from '../../overlays/Dialog/Dialog';
 import { DialogTrigger } from '../../overlays/Dialog/DialogTrigger';
+import { ListBox } from '../ListBox/ListBox';
 
 import { Select } from './Select';
 
@@ -410,6 +411,9 @@ describe('Select popup scrolling and geometry', () => {
     },
   );
 
+  // Guards the measurement moved out of render: the popup takes the width the
+  // trigger has when the list opens. That already held when it was read
+  // during render, since opening re-renders Select.
   it('sizes the popup to the trigger width it has when it opens', async () => {
     function Resizable({ containerWidth }: { containerWidth: number }) {
       return (
@@ -533,5 +537,81 @@ describe('Select press on a list that moves', () => {
       expect(onSelectionChange).toHaveBeenCalledWith('apple');
     });
     expect(onSelectionChange).toHaveBeenCalledTimes(1);
+  });
+
+  /**
+   * A press on an option that never ends in a `pointerup` at the window (a
+   * drag start sends `pointercancel`; a handler may stop the `pointerup`)
+   * must not leave a record behind that swallows the next press, here a
+   * press on the trigger released on an option.
+   */
+  describe.each([
+    [
+      'ended by pointercancel',
+      (option: HTMLElement) => mouse('pointercancel', option, 0, 0),
+    ],
+    [
+      'whose pointerup never reached the window',
+      (option: HTMLElement) => {
+        const stop = (event: Event) => event.stopPropagation();
+
+        option.parentElement!.addEventListener('pointerup', stop);
+        mouse('pointerup', option, 0, 0);
+        option.parentElement!.removeEventListener('pointerup', stop);
+      },
+    ],
+  ])('after a list press %s', (_name, endPress) => {
+    it('still picks an option with a press on the trigger', async () => {
+      const onSelectionChange = vi.fn();
+
+      renderWithRoot(
+        <>
+          <ListBox aria-label="Other list">
+            <ListBox.Item key="one">One</ListBox.Item>
+          </ListBox>
+          <Select
+            label="Fruit"
+            width="200px"
+            onSelectionChange={onSelectionChange}
+          >
+            <Select.Item key="apple">Apple</Select.Item>
+            <Select.Item key="banana">Banana</Select.Item>
+          </Select>
+        </>,
+      );
+
+      const one = screen.getByRole('option', { name: 'One' });
+
+      mouse('pointerdown', one, 0, 0);
+      endPress(one);
+
+      const trigger = screen.getByRole('button', { name: /Fruit/ });
+      const box = trigger.getBoundingClientRect();
+
+      await act(async () => {
+        mouse('pointerdown', trigger, box.left + 4, box.top + 4);
+      });
+
+      const banana = await screen.findByRole('option', { name: 'Banana' });
+
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 300));
+      });
+
+      const target = banana.getBoundingClientRect();
+
+      await act(async () => {
+        mouse(
+          'pointerup',
+          banana,
+          target.left + target.width / 2,
+          target.top + target.height / 2,
+        );
+      });
+
+      await waitFor(() => {
+        expect(onSelectionChange).toHaveBeenCalledWith('banana');
+      });
+    });
   });
 });

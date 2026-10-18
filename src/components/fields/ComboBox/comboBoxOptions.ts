@@ -12,7 +12,7 @@ export interface ComboBoxOption {
   textValue: string;
 }
 
-interface CollectionLike {
+export interface CollectionLike {
   getItem: (key: Key) => { textValue?: string } | null | undefined;
 }
 

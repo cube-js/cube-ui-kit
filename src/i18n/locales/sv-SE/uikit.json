@@ -100,7 +100,9 @@
   },
   "numberInput": {
     "stepUp": "Öka {{label}}",
-    "stepDown": "Minska {{label}}"
+    "stepDown": "Minska {{label}}",
+    "increase": "Öka",
+    "decrease": "Minska"
   },
   "textInputMapper": {
     "key": "Nyckel",

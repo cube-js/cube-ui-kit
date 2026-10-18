@@ -136,4 +136,24 @@ describe('<PasswordInput />', () => {
 
     warn.mockRestore();
   });
+
+  it('shows validate errors only after the field is touched', async () => {
+    const { getByTestId, getByText, queryByText } = renderWithRoot(
+      <PasswordInput
+        label="Password"
+        validate={(value) => (value.length < 8 ? 'Too short' : null)}
+      />,
+    );
+
+    const input = getByTestId('Input');
+
+    expect(input.closest('[data-invalid]')).toBeNull();
+    expect(queryByText('Too short')).not.toBeInTheDocument();
+
+    await userEvent.click(input);
+    await userEvent.tab();
+
+    expect(input.closest('[data-invalid]')).not.toBeNull();
+    expect(getByText('Too short')).toBeInTheDocument();
+  });
 });

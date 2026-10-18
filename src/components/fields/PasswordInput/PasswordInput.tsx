@@ -12,7 +12,7 @@ import {
 import { ItemAction } from '../../actions/ItemAction/ItemAction';
 import { ItemActionProvider } from '../../actions/ItemActionContext';
 import { useFieldProps } from '../../form';
-import { getDisplayedValidation } from '../TextInput/displayed-validation';
+import { useDisplayedValidation } from '../TextInput/displayed-validation';
 import {
   CubeBufferedValueProps,
   CubeTextInputBaseProps,
@@ -65,14 +65,15 @@ function PasswordInput(
     isReadOnly: rest.isReadOnly,
   });
 
+  let displayedValidation = useDisplayedValidation();
   let { labelProps, inputProps, ...validation } = useTextField(
-    {
+    displayedValidation.trackTouched({
       ...rest,
       value: buffered.value,
       onChange: buffered.onChange,
       onBlur: chain(rest.onBlur, buffered.reset),
       type,
-    },
+    }),
     inputRef as RefObject<HTMLInputElement | null>,
   );
 
@@ -126,7 +127,7 @@ function PasswordInput(
       suffix={wrappedSuffix}
       multiLine={multiLine}
       {...rest}
-      {...getDisplayedValidation(rest, validation)}
+      {...displayedValidation.getDisplayedValidation(rest, validation)}
     />
   );
 }

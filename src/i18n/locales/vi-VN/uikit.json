@@ -100,7 +100,9 @@
   },
   "numberInput": {
     "stepUp": "Tăng {{label}}",
-    "stepDown": "Giảm {{label}}"
+    "stepDown": "Giảm {{label}}",
+    "increase": "Tăng",
+    "decrease": "Giảm"
   },
   "textInputMapper": {
     "key": "Khóa",

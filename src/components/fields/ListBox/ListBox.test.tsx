@@ -1089,6 +1089,148 @@ describe('<ListBox />', () => {
 
       expect(onSelectionChange).not.toHaveBeenCalled();
     });
+
+    it('keeps selected keys the list does not show when it clears', async () => {
+      const onSelectionChange = vi.fn();
+
+      render(
+        <ListBox
+          aria-label="Fruits"
+          selectionMode="multiple"
+          showSelectAll
+          // `kiwi` is not an option here, as when the options come from a
+          // search on a server.
+          selectedKeys={['apple', 'banana', 'cherry', 'kiwi']}
+          onSelectionChange={onSelectionChange}
+        >
+          {selectAllItems}
+        </ListBox>,
+      );
+
+      await userEvent.click(screen.getByText('Select All'));
+
+      expect(onSelectionChange).toHaveBeenCalledTimes(1);
+      expect(onSelectionChange).toHaveBeenCalledWith(['kiwi']);
+    });
+
+    describe('under a filter', () => {
+      const fruits = [
+        <FilterListBox.Item key="apple">Apple</FilterListBox.Item>,
+        <FilterListBox.Item key="apricot">Apricot</FilterListBox.Item>,
+        <FilterListBox.Item key="banana">Banana</FilterListBox.Item>,
+        <FilterListBox.Item key="cherry">Cherry</FilterListBox.Item>,
+      ];
+
+      async function renderFiltered(
+        defaultSelectedKeys: 'all' | string[],
+        search = 'ap',
+      ) {
+        const onSelectionChange = vi.fn();
+
+        render(
+          <FilterListBox
+            label="Fruits"
+            searchPlaceholder="Search"
+            selectionMode="multiple"
+            showSelectAll
+            defaultSelectedKeys={defaultSelectedKeys}
+            onSelectionChange={onSelectionChange}
+          >
+            {fruits}
+          </FilterListBox>,
+        );
+
+        await userEvent.type(screen.getByPlaceholderText('Search'), search);
+        await waitFor(() => {
+          expect(screen.getAllByRole('option')).toHaveLength(2);
+        });
+
+        return onSelectionChange;
+      }
+
+      it('clears only the options it shows', async () => {
+        const onSelectionChange = await renderFiltered(['banana']);
+
+        await userEvent.click(screen.getByRole('option', { name: 'Apple' }));
+        await userEvent.click(screen.getByRole('option', { name: 'Apricot' }));
+
+        const selectAll = screen.getByRole('checkbox', { name: 'Select All' });
+
+        expect(selectAll).toHaveAttribute('aria-checked', 'true');
+
+        onSelectionChange.mockClear();
+        await userEvent.click(selectAll);
+
+        // Banana is hidden by the search, so the press leaves it selected.
+        expect(onSelectionChange).toHaveBeenCalledTimes(1);
+        expect(onSelectionChange).toHaveBeenCalledWith(['banana']);
+      });
+
+      it('selects only the options it shows', async () => {
+        const onSelectionChange = await renderFiltered(['banana']);
+
+        await userEvent.click(
+          screen.getByRole('checkbox', { name: 'Select All' }),
+        );
+
+        expect(onSelectionChange).toHaveBeenCalledTimes(1);
+        expect(onSelectionChange).toHaveBeenCalledWith([
+          'banana',
+          'apple',
+          'apricot',
+        ]);
+
+        await userEvent.clear(screen.getByPlaceholderText('Search'));
+
+        expect(screen.getByRole('option', { name: 'Cherry' })).toHaveAttribute(
+          'aria-selected',
+          'false',
+        );
+      });
+
+      it('keeps the hidden options of a full selection when it clears', async () => {
+        const onSelectionChange = await renderFiltered('all');
+
+        await userEvent.click(
+          screen.getByRole('checkbox', { name: 'Select All' }),
+        );
+
+        expect(onSelectionChange).toHaveBeenCalledTimes(1);
+        expect(onSelectionChange).toHaveBeenCalledWith(['banana', 'cherry']);
+      });
+
+      it('still selects all once the search is cleared', async () => {
+        const onSelectionChange = await renderFiltered(['banana']);
+
+        await userEvent.clear(screen.getByPlaceholderText('Search'));
+        await userEvent.click(
+          screen.getByRole('checkbox', { name: 'Select All' }),
+        );
+
+        expect(onSelectionChange).toHaveBeenCalledWith('all');
+      });
+
+      it('shows no option as focused while it has focus', async () => {
+        await renderFiltered([]);
+
+        await waitFor(() => {
+          expect(screen.getByRole('option', { name: 'Apple' })).toHaveAttribute(
+            'data-focused',
+          );
+        });
+
+        // From the search input, Tab reaches "Select All".
+        await userEvent.tab();
+
+        expect(
+          screen.getByRole('checkbox', { name: 'Select All' }),
+        ).toHaveFocus();
+
+        for (const option of screen.getAllByRole('option')) {
+          expect(option).not.toHaveAttribute('data-focused');
+        }
+      });
+    });
   });
 
   describe('empty list', () => {
@@ -1147,6 +1289,71 @@ describe('<ListBox />', () => {
       );
 
       expect(controlled).toHaveAttribute('role', 'listbox');
+    });
+
+    it('shows focus on the card while its Tab stop has it', async () => {
+      render(
+        <ListBox label="Fruits" items={[] as { key: string }[]}>
+          {(item) => <ListBox.Item key={item.key}>{item.key}</ListBox.Item>}
+        </ListBox>,
+      );
+
+      const wrapper = screen.getByTestId('ListBoxWrapper');
+
+      expect(wrapper).not.toHaveAttribute('data-focused');
+
+      await userEvent.tab();
+
+      expect(screen.getByRole('listbox')).toHaveFocus();
+      expect(wrapper).toHaveAttribute('data-focused');
+
+      await userEvent.tab();
+
+      expect(wrapper).not.toHaveAttribute('data-focused');
+    });
+  });
+
+  describe('disableSelectionToggle', () => {
+    it('keeps the option selected when it is picked again', async () => {
+      const onSelectionChange = vi.fn();
+
+      render(
+        <ListBox
+          disableSelectionToggle
+          aria-label="Fruits"
+          defaultSelectedKey="apple"
+          onSelectionChange={onSelectionChange}
+        >
+          {basicItems}
+        </ListBox>,
+      );
+
+      await userEvent.click(screen.getByRole('option', { name: 'Apple' }));
+
+      expect(onSelectionChange).toHaveBeenCalledWith('apple');
+      expect(onSelectionChange).not.toHaveBeenCalledWith(null);
+    });
+
+    it('reports the controlled option when a pick before was rejected', async () => {
+      const onSelectionChange = vi.fn();
+
+      // The parent never takes a pick, so Apple stays selected.
+      render(
+        <ListBox
+          disableSelectionToggle
+          aria-label="Fruits"
+          selectionMode="single"
+          selectedKey="apple"
+          onSelectionChange={onSelectionChange}
+        >
+          {basicItems}
+        </ListBox>,
+      );
+
+      await userEvent.click(screen.getByRole('option', { name: 'Banana' }));
+      await userEvent.click(screen.getByRole('option', { name: 'Apple' }));
+
+      expect(onSelectionChange).toHaveBeenLastCalledWith('apple');
     });
   });
 

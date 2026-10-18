@@ -966,9 +966,10 @@ function focusOpeningOption(
 }
 
 /**
- * The list inside the popup. The popup unmounts it when it closes, so it
- * mounts once per opening and decides where focus lands for that opening
- * rather than inheriting the last one.
+ * The list inside the popup. It decides where focus lands when it mounts,
+ * rather than inheriting the last opening. The popup unmounts it once it has
+ * closed, so that is every opening except a reopen during the exit
+ * transition, which keeps the list mounted.
  */
 function SelectListBox({
   state,

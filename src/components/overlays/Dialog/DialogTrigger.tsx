@@ -26,6 +26,7 @@ import { isOwnActionsPress } from '../../actions/actions-run';
 import { Modal, Popover, Tray, WithCloseBehavior } from '../Modal';
 
 import { DialogContext } from './context';
+import { useDialogOpenSync } from './use-dialog-open-sync';
 
 export type CubeDialogClose = (close: () => void) => ReactElement;
 
@@ -67,7 +68,7 @@ export interface CubeDialogTriggerProps
   targetRef?: RefObject<HTMLElement | null>;
   /**
    * Whether passive dismissal (Escape or an outside click) can close the dialog. Explicit dialog actions can still close it.
-   * A popover that is not dismissable lets an outside press through to the control it lands on, and stays open when another popover opens.
+   * A popover that is not dismissable lets an outside press through to the control it lands on, including a text field, which can take focus. It stays open when another popover opens, and closes when a modal, tray, fullscreen or panel dialog opens from another `DialogTrigger`.
    */
   isDismissable?: boolean;
   /** Whether pressing the escape key to close the dialog should be disabled. */
@@ -170,8 +171,11 @@ export function DialogTrigger(props: CubeDialogTriggerProps) {
   // yanked closed via the EventBus (which would bypass `isDismissable` and
   // call `state.close()` directly). Non-popover types DO still EMIT
   // `popover:open`, so opening a modal correctly dismisses peer popovers.
-  // A popover that is not dismissable stays open when a peer opens, as it
-  // does on any other outside press.
+  //
+  // A popover that is not dismissable does not listen to `popover:open`: a
+  // peer popover leaves it open, as any other outside press does. A modal,
+  // tray, fullscreen or panel Dialog opening still closes it, through
+  // `useDialogOpenSync` below.
   const isPopoverFlavored = type === 'popover';
   usePopoverSync({
     menuId: dialogSyncId,
@@ -181,6 +185,13 @@ export function DialogTrigger(props: CubeDialogTriggerProps) {
     containerRef: syncOverlayRef,
     dismissOnInnerButtonPress: isPopoverFlavored,
     closeOnPeerOpen: isPopoverFlavored && isDismissable,
+  });
+  useDialogOpenSync({
+    emits: !isPopoverFlavored,
+    closes: isPopoverFlavored && !isDismissable,
+    state,
+    triggerRef: syncTriggerRef,
+    overlayRef: syncOverlayRef,
   });
 
   useEffect(() => {
@@ -458,6 +469,7 @@ function PopoverTrigger(allProps) {
       trigger={trigger}
       overlay={overlay}
       overlayRef={overlayRef}
+      isDismissable={isDismissable}
       shouldRestoreFocus={shouldRestoreFocus}
       onClose={onClose}
     />

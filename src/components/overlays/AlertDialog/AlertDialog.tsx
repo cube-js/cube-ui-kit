@@ -27,7 +27,8 @@ export interface CubeAlertDialogProps
   /**
    * Whether the confirm action is destructive. It is styled as such, and the
    * dialog opens with focus on Cancel, or on the dialog itself when there is
-   * no Cancel, so a reflexive Enter does not run it.
+   * no Cancel, so a reflexive Enter does not run it. An explicit `autoFocus`
+   * on `actions.confirm` still puts focus there.
    */
   danger?: boolean;
   actions?: CubeAlertDialogActionsProps;
@@ -116,7 +117,8 @@ function AlertDialog(props: CubeAlertDialogProps, ref) {
             )}
             {cancelProps && (
               <Button
-                autoFocus={danger}
+                // Unless the confirm button asks for focus explicitly.
+                autoFocus={danger && !confirmProps?.autoFocus}
                 {...cancelProps}
                 onPress={(e) =>
                   chain(

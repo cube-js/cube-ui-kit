@@ -123,7 +123,7 @@ const [selectedKey, setSelectedKey] = useState(null);
 
 **Blur** - Without `allowsCustomValue`, leaving the input selects the item the text names exactly, or else the only item it still matches, unless that item is in `disabledKeys`. The exact match follows the filter's rules for case, accents and locale. Among items sharing the label, the selected one wins, then the first enabled one. Empty text clears the selection. Other text reverts to the selection, or clears with `clearOnBlur`; a disabled item that is already selected stays selected. Blur reports only what it changes: leaving a field without editing it calls neither `onSelectionChange` nor `onInputChange`.
 
-**Presses in the input** - A press in the input opens a closed list, whether the input already had focus or not, unless `popoverTrigger` is `manual`. A press in the input while the list is open only moves the caret; the chevron still toggles the list.
+**Presses in the input** - A press in the input opens a closed list, whether the input already had focus or not, unless `popoverTrigger` is `manual`. The list shows the options the typed text leaves, and text that matches nothing keeps it hidden, so a press that moves the caret does not change what `Enter` commits; the chevron and the arrow keys show every option instead. A press in the input while the list is open only moves the caret; the chevron still toggles the list. A click on the field label only focuses the input.
 
 **Outside presses** - While the list is open, a press on an enabled control outside it reaches the control on the first click, after the typed text settles as it does on `Tab`. The control has to be in the dialog, popover or menu the field sits in, or anywhere on the page when the field is in none; an enabled UI Kit `Button` or `ItemButton` is reached from anywhere. A press anywhere else, such as blank space, a dialog's backdrop or a control outside the field's dialog or popover, only closes the list and keeps the input focused with its text. A press on a disabled control keeps the focus and text too; the list stays open unless the control is only `aria-disabled`.
 
@@ -400,6 +400,8 @@ const categories = [
 ### Loading State
 
 <Story of={ComboBoxStories.Loading} />
+
+The input shows the selected option's label. A `selectedKey` whose option has not loaded yet shows the key until the option arrives. Once the input has shown a label for the selected key, it keeps that label while the options leave the item out, for example during a refetch or a server-side search.
 
 ```jsx
 <ComboBox isLoading label="Fruit" placeholder="Select a fruit...">

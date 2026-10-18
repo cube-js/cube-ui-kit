@@ -37,6 +37,60 @@ describe('<NumberInput />', () => {
     expect(getByText('Too many')).toBeInTheDocument();
   });
 
+  describe('validate before the field is touched', () => {
+    function renderAtLeastFive() {
+      return renderWithRoot(
+        <NumberInput
+          label="Quantity"
+          validate={(value) =>
+            Number.isNaN(value) || value < 5 ? 'At least 5' : null
+          }
+        />,
+      );
+    }
+
+    it('shows nothing for the empty value the field mounts with', () => {
+      renderAtLeastFive();
+
+      expect(screen.getByRole('textbox').closest('[data-invalid]')).toBeNull();
+      expect(screen.queryByText('At least 5')).not.toBeInTheDocument();
+    });
+
+    it('shows the error once the user leaves the field', async () => {
+      renderAtLeastFive();
+      const input = screen.getByRole('textbox');
+
+      await userEvent.click(input);
+      await userEvent.tab();
+
+      expect(input.closest('[data-invalid]')).not.toBeNull();
+      expect(screen.getByText('At least 5')).toBeInTheDocument();
+    });
+
+    it('shows the error once a stepper changes the value', async () => {
+      renderAtLeastFive();
+
+      await userEvent.click(
+        screen.getByRole('button', { name: 'Increase Quantity' }),
+      );
+
+      expect(
+        screen.getByRole('textbox').closest('[data-invalid]'),
+      ).not.toBeNull();
+      expect(screen.getByText('At least 5')).toBeInTheDocument();
+    });
+
+    it('waits for the typed number to commit', async () => {
+      renderAtLeastFive();
+      const input = screen.getByRole('textbox');
+
+      await userEvent.type(input, '7');
+
+      expect(input.closest('[data-invalid]')).toBeNull();
+      expect(screen.queryByText('At least 5')).not.toBeInTheDocument();
+    });
+  });
+
   it('clears a controlled value set to null and stays controlled', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const { getByRole, rerender } = render(
@@ -96,6 +150,19 @@ describe('<NumberInput />', () => {
       expect(
         screen.getByRole('button', { name: 'Giảm Quantity' }),
       ).toBeVisible();
+    });
+
+    // The label is composed in through `aria-labelledby`, so the translated
+    // name must read on its own, without a `{{label}}` slot left empty.
+    it('uses the translated name without a slot when the label is not text', () => {
+      render(
+        <Root i18n={createUIKitI18n('ja-JP')}>
+          <NumberInput label={<strong>数量</strong>} />
+        </Root>,
+      );
+
+      expect(screen.getByRole('button', { name: '増やす 数量' })).toBeVisible();
+      expect(screen.getByRole('button', { name: '減らす 数量' })).toBeVisible();
     });
 
     it('keeps incrementAriaLabel and decrementAriaLabel from the caller', () => {

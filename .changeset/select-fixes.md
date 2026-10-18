@@ -21,5 +21,3 @@
 `Select`: the list is now the element that scrolls and that the popup's height limit applies to, so `PageDown` and `PageUp` move about one visible page instead of jumping to the last or first option. The popup also stays within the space left in the viewport.
 
 `Select`: the clear button hands focus back to the trigger without opening the trigger's tooltip, so the next `Escape` closes a surrounding Dialog instead of that tooltip.
-
-`Select`: the popup's minimum width is measured from the trigger when the list opens, not read during render.

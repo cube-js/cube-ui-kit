@@ -556,6 +556,74 @@ describe('<DialogTrigger type="popover" isDismissable={false} />', () => {
     expect(baseElement.querySelector('[data-qa="Dialog"]')).toBeTruthy();
   });
 
+  // A modal or tray takes over the page: left open, the popover would sit
+  // over it, hidden from screen readers, and take its focus restore.
+  it.each(['modal', 'tray'] as const)(
+    'closes when a %s opens from a Button outside it',
+    async (type) => {
+      const { baseElement } = renderWithRoot(
+        <>
+          <DialogTrigger type="popover" isDismissable={false}>
+            <Button qa="Trigger">Open</Button>
+            <Dialog>
+              <Content>Persistent</Content>
+            </Dialog>
+          </DialogTrigger>
+          <DialogTrigger type={type}>
+            <Button qa="OverlayTrigger">Take over</Button>
+            <Dialog qa="Overlay" aria-label="Overlay">
+              <Content>Over the page</Content>
+            </Dialog>
+          </DialogTrigger>
+        </>,
+      );
+
+      await open(baseElement);
+      await user.click(
+        baseElement.querySelector('[data-qa="OverlayTrigger"]') as HTMLElement,
+      );
+
+      await waitFor(() =>
+        expect(baseElement.querySelector('[data-qa="Overlay"]')).toBeTruthy(),
+      );
+      await waitFor(() =>
+        expect(baseElement.querySelector('[data-qa="Dialog"]')).toBeNull(),
+      );
+    },
+  );
+
+  // Closing it would unmount the modal opened from inside it.
+  it('stays open when a modal opens from inside it', async () => {
+    const { baseElement } = renderWithRoot(
+      <DialogTrigger type="popover" isDismissable={false}>
+        <Button qa="Trigger">Open</Button>
+        <Dialog>
+          {/* Keeps the inner Button's press from closing the popover. */}
+          <Content data-popover-keep="">
+            <DialogTrigger>
+              <Button qa="OverlayTrigger">Details</Button>
+              <Dialog qa="Overlay" aria-label="Details">
+                <Content>Details</Content>
+              </Dialog>
+            </DialogTrigger>
+          </Content>
+        </Dialog>
+      </DialogTrigger>,
+    );
+
+    await open(baseElement);
+    await user.click(
+      baseElement.querySelector('[data-qa="OverlayTrigger"]') as HTMLElement,
+    );
+    await waitFor(() =>
+      expect(baseElement.querySelector('[data-qa="Overlay"]')).toBeTruthy(),
+    );
+    await settle();
+
+    expect(baseElement.querySelector('[data-qa="Dialog"]')).toBeTruthy();
+    expect(baseElement.querySelector('[data-qa="Overlay"]')).toBeTruthy();
+  });
+
   it('still closes from an explicit action inside it', async () => {
     const { baseElement } = renderWithRoot(
       <DialogTrigger type="popover" isDismissable={false}>

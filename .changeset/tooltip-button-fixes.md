@@ -6,9 +6,9 @@
 
 `TooltipTrigger`: `shouldCloseOnPress={false}` now keeps the tooltip open when the trigger is pressed, and `Tooltip`'s `shouldFlip={false}` now keeps the requested placement. The `delay` default is documented as 250ms, which is what it always was. `Tooltip`'s `showIcon` never did anything and is now marked deprecated.
 
-`Tooltip`: an open tooltip now closes when an ancestor of its trigger scrolls, as a popover does, instead of floating where it was drawn while the trigger scrolls away.
+`Tooltip`: when the page or an element containing the trigger scrolls, an open tooltip now follows its trigger while the trigger stays in view, and closes once it scrolls out of view. It used to stay where it was drawn while the trigger scrolled away.
 
-`Tooltip`: empty content (`title={null}`, `undefined` or `''`) no longer opens an empty bubble or adds `aria-describedby` to the trigger.
+`TooltipProvider` and `TooltipTrigger`: empty tooltip content (a `TooltipProvider` `title` of `null`, `undefined` or `''`, or a `Tooltip` with no content inside a `TooltipTrigger`) no longer opens an empty bubble or adds `aria-describedby` to the trigger.
 
 `ItemBadge` and `InfoBadge`: a non-interactive icon badge with a name is now exposed as `role="img"`, so screen readers announce its name. When `aria-label` differs from a plain-text tooltip, the tooltip text becomes the badge's description, so keyboard and screen reader users get it without hovering.
 

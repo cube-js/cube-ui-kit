@@ -256,7 +256,6 @@ export const DEFAULTS: DefaultsRegistry = {
         isCheckable: { kind: 'default', value: false },
         isLoading: { kind: 'default', value: false },
         isLoadingItems: { kind: 'default', value: false },
-        selectAllLabel: { kind: 'default', value: 'All' },
         selectionMode: { kind: 'default', value: 'single' },
         shouldFocusWrap: { kind: 'default', value: false },
         showSelectAll: { kind: 'default', value: false },

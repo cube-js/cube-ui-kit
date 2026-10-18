@@ -221,7 +221,8 @@ function Checkbox(
 
   if (groupState) {
     for (let key of ['isSelected', 'defaultSelected', 'isEmphasized']) {
-      if (originalProps[key] != null) {
+      // The raw props: `castNullableIsSelected` turns `null` into `false`.
+      if (allProps[key] != null) {
         console.warn(
           `CubeUIKit: ${key} is unsupported on individual <Checkbox> elements within a <CheckboxGroup>. Please apply these props to the group instead.`,
         );

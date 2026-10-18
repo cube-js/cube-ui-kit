@@ -64,6 +64,7 @@ import {
 } from '../TextInput/TextInputBase';
 
 import {
+  CollectionLike,
   collectOptions,
   findTypedOption,
   getItemLabel,
@@ -312,6 +313,59 @@ function useComboBoxState({
     isControlledKey,
     isControlledInput,
   };
+}
+
+// ============================================================================
+// Hook: useSelectedLabel
+// ============================================================================
+interface UseSelectedLabelReturn {
+  /**
+   * The text the input shows for the selection: its option's label, else the
+   * last label found for that key while the options leave it out (loading, a
+   * refetch, a server-side search), else the key itself — a custom value or an
+   * option that has not loaded yet.
+   */
+  selectedLabel: string;
+  /**
+   * The label of `key`'s option, remembered for the key so the input keeps it
+   * when the same update drops the option.
+   */
+  pickLabel: (key: Key) => string;
+}
+
+function useSelectedLabel(
+  collection: CollectionLike,
+  selectedKey: Key | null,
+): UseSelectedLabelReturn {
+  const [knownLabel, setKnownLabel] = useState<{
+    key: Key;
+    label: string;
+  } | null>(null);
+
+  const pickLabel = (key: Key) => {
+    const picked = getItemLabel(collection, key);
+
+    setKnownLabel({ key, label: picked });
+
+    return picked;
+  };
+
+  if (selectedKey == null) return { selectedLabel: '', pickLabel };
+
+  const label = collection.getItem(selectedKey)?.textValue;
+
+  if (
+    label &&
+    (knownLabel?.key !== selectedKey || knownLabel.label !== label)
+  ) {
+    setKnownLabel({ key: selectedKey, label });
+  }
+
+  const selectedLabel =
+    label ||
+    (knownLabel?.key === selectedKey ? knownLabel.label : String(selectedKey));
+
+  return { selectedLabel, pickLabel };
 }
 
 // ============================================================================
@@ -589,6 +643,7 @@ interface ComboBoxInputProps {
   focusProps: any;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onFocus: (e: React.FocusEvent<HTMLInputElement>) => void;
+  onPointerDown: () => void;
   onClick: () => void;
   /** Whether the list is shown: open, with options to show. */
   isListShown: boolean;
@@ -623,6 +678,7 @@ const ComboBoxInput = forwardRef<HTMLInputElement, ComboBoxInputProps>(
       focusProps,
       onChange,
       onFocus,
+      onPointerDown,
       onClick,
       isListShown,
       comboBoxId,
@@ -649,6 +705,7 @@ const ComboBoxInput = forwardRef<HTMLInputElement, ComboBoxInputProps>(
         data-autofocus={autoFocus ? '' : undefined}
         onChange={onChange}
         onFocus={onFocus}
+        onPointerDown={onPointerDown}
         onClick={onClick}
         onBlur={focusProps.onBlur}
         {...keyboardProps}
@@ -854,10 +911,10 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     selectionMode: 'none', // Don't manage selection in this state
   });
 
-  const selectedLabel =
-    effectiveSelectedKey != null
-      ? getItemLabel(localCollectionState.collection, effectiveSelectedKey)
-      : '';
+  const { selectedLabel, pickLabel } = useSelectedLabel(
+    localCollectionState.collection,
+    effectiveSelectedKey,
+  );
   const effectiveInputValue = isControlledInput
     ? (inputValue as string)
     : internalInputValue ?? selectedLabel;
@@ -953,9 +1010,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
 
     if (matchKey != null && matchKey !== effectiveSelectedKey) {
       setSelectedKey(matchKey);
-      showSelectionLabel(
-        getItemLabel(localCollectionState.collection, matchKey),
-      );
+      showSelectionLabel(pickLabel(matchKey));
       externalOnSelectionChange?.(matchKey as string);
     } else if (
       matchKey == null &&
@@ -1010,9 +1065,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
 
     setSelectedKey(key ?? null);
     setIsFilterActive(false);
-    showSelectionLabel(
-      key != null ? getItemLabel(localCollectionState.collection, key) : '',
-    );
+    showSelectionLabel(key != null ? pickLabel(key) : '');
     externalOnSelectionChange?.(key as string | null);
 
     // Close popover after selection
@@ -1125,10 +1178,22 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     }
   });
 
-  // A press in the input opens a closed list, focused or not. One on an open
+  // Whether the pointer went down on the input itself. The field's label
+  // forwards its own click to the input, and that click only focuses.
+  const pressStartedOnInputRef = useRef(false);
+
+  // A press in the input opens a closed list, focused or not, with the options
+  // the typed text leaves. Text that matches nothing keeps the list hidden, so
+  // a press that moves the caret doesn't change what Enter commits; the
+  // chevron and the arrow keys show every option instead. A press on an open
   // list only moves the caret.
   const handleInputClick = () => {
-    if (popoverTrigger !== 'manual' && !shouldShowPopover) openList();
+    const isInputPress = pressStartedOnInputRef.current;
+
+    pressStartedOnInputRef.current = false;
+
+    if (!isInputPress || popoverTrigger === 'manual') return;
+    if (!shouldShowPopover && hasResults) openList();
   };
 
   // Input blur handler - just handles internal focus props
@@ -1300,6 +1365,9 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
         activeDescendant={activeDescendant}
         onChange={handleInputChange}
         onFocus={handleInputFocus}
+        onPointerDown={() => {
+          pressStartedOnInputRef.current = true;
+        }}
         onClick={handleInputClick}
         ariaProps={{
           'aria-label': (props as AriaLabelingProps)['aria-label'],

@@ -26,7 +26,7 @@ DialogTrigger serves as a wrapper around a Dialog and its associated trigger, li
 - **`placement`** `'top' | 'bottom' | 'left' | 'right' | 'top start' | 'top end' | 'bottom start' | 'bottom end' | 'left top' | 'left bottom' | 'right top' | 'right bottom'` — The placement of the dialog relative to its trigger
 - **`hideArrow`** `boolean` — **Deprecated.** Has no effect: popovers render no arrow, so there is nothing to hide
 - **`mobileViewport`** `number` (default: `700`) — The screen breakpoint for the mobile type
-- **`isDismissable`** `boolean` (default: `true`) — Whether passive dismissal (Escape or an outside click) can close the dialog. Explicit dialog actions, such as Submit and Cancel, can still close it. A popover that is not dismissable leaves outside presses alone: the control pressed still receives the press, and the popover stays open, also when another popover opens.
+- **`isDismissable`** `boolean` (default: `true`) — Whether passive dismissal (Escape or an outside click) can close the dialog. Explicit dialog actions, such as Submit and Cancel, can still close it. A popover that is not dismissable leaves outside presses alone: the control pressed still receives the press, and a text field there can take focus, because such a popover does not hold focus. It stays open when another popover opens, and closes when a modal, tray, fullscreen or panel dialog opens from another `DialogTrigger`.
 - **`isKeyboardDismissDisabled`** `boolean` (default: `false`) — Whether pressing the escape key to close the dialog should be disabled
 - **`isOpen`** `boolean` — Whether the dialog is open (controlled)
 - **`defaultOpen`** `boolean` (default: `false`) — Whether the dialog is open by default (uncontrolled)
@@ -163,7 +163,7 @@ function ControlledDialog() {
 ### Screen Reader Support
 
 - Dialog announces as "dialog" to screen readers
-- Focus is contained within the dialog from the moment it opens, including while it animates in
+- Focus is contained within the dialog from the moment it opens, including while it animates in. A popover with `isDismissable={false}` does not contain focus, so focus can follow a press outside it
 - Focus returns to trigger element when dialog closes
 - The page behind a modal, fullscreen or tray dialog is hidden from screen readers while it is open; lists, menus and popovers opened from the dialog stay readable. Popover and panel dialogs leave the page readable
 - Proper ARIA attributes are applied automatically

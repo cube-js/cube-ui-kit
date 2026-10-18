@@ -755,6 +755,50 @@ describe('ListBox focus outside the rendered window', () => {
 
     await expectFocusedInView('Item 700');
   });
+
+  it('stays where the user scrolled when the items are replaced', async () => {
+    let replaceItems = () => {};
+
+    function Items() {
+      const [items, setItems] = useState(ITEMS);
+
+      replaceItems = () =>
+        setItems((current) => current.map((i) => ({ ...i })));
+
+      return (
+        <ListBox aria-label="Items" height="30x" items={items}>
+          {(item: (typeof ITEMS)[number]) => (
+            <ListBox.Item key={item.key}>{item.label}</ListBox.Item>
+          )}
+        </ListBox>
+      );
+    }
+
+    renderWithRoot(<Items />);
+
+    await userEvent.click(screen.getByRole('option', { name: 'Item 0' }));
+    await userEvent.keyboard('{End}');
+    await expectFocusedInView('Item 999');
+
+    const scroller = screen.getByRole('listbox').parentElement!;
+
+    // The user scrolls back to the top, which unrenders the focused option.
+    act(() => {
+      scroller.scrollTop = 0;
+      scroller.dispatchEvent(new Event('scroll'));
+    });
+    await waitFor(() => {
+      expect(screen.queryByRole('option', { name: 'Item 999' })).toBeNull();
+    });
+
+    // The same options as new objects, focus where it was.
+    act(() => replaceItems());
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+
+    expect(scroller.scrollTop).toBe(0);
+    expect(screen.getByRole('option', { name: 'Item 0' })).toBeInTheDocument();
+  });
 });
 
 /**
@@ -785,6 +829,7 @@ describe('ListBox press on a list that moves', () => {
 
   function renderFruits(focusOnHover: boolean) {
     const onSelectionChange = vi.fn();
+    const onOptionClick = vi.fn();
 
     renderWithRoot(
       <ListBox
@@ -792,6 +837,7 @@ describe('ListBox press on a list that moves', () => {
         selectionMode="single"
         focusOnHover={focusOnHover}
         onSelectionChange={onSelectionChange}
+        onOptionClick={onOptionClick}
       >
         <ListBox.Item key="apple">Apple</ListBox.Item>
         <ListBox.Item key="banana">Banana</ListBox.Item>
@@ -810,7 +856,7 @@ describe('ListBox press on a list that moves', () => {
         `translateY(-${box.height}px)`;
     };
 
-    return { apple, box, x, y, shiftList, onSelectionChange };
+    return { apple, box, x, y, shiftList, onSelectionChange, onOptionClick };
   }
 
   describe.each([
@@ -839,6 +885,23 @@ describe('ListBox press on a list that moves', () => {
       expect(
         screen.getByRole('option', { name: 'Banana' }),
       ).not.toHaveAttribute('aria-selected', 'true');
+    });
+
+    // The click that follows goes to a common ancestor of both options, so
+    // the option's own click handling never runs: pickers close from
+    // `onOptionClick`.
+    it('reports a click on the option the press started on when the list moved', async () => {
+      const { apple, x, y, shiftList, onOptionClick } =
+        renderFruits(focusOnHover);
+
+      mouse('pointerdown', apple, x, y);
+      shiftList();
+      mouse('pointerup', document.elementFromPoint(x, y)!, x, y);
+
+      await waitFor(() => {
+        expect(onOptionClick).toHaveBeenCalledTimes(1);
+      });
+      expect(onOptionClick).toHaveBeenCalledWith('apple');
     });
 
     it('selects nothing when released outside the pressed option', async () => {

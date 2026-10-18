@@ -373,7 +373,14 @@ module.exports = [
     // `forceField` warns as deprecated), Checkbox and Switch naming, and alert
     // dialogs that close with their owner. Button stays 159,379 B. Allow
     // 619 kB, 930 B headroom.
-    limit: '619kB',
+    // Linear backlog bug fixes (65 issues): a fresh build measures 624,789 B
+    // against main's 618.9 kB at be50525c, built fresh in a worktree on the
+    // same machine (+5.9 kB). Most of it is ComboBox and Select state
+    // handling, the select-all checkbox, the option press-origin helper,
+    // tooltip scroll following and the non-dismissable popover sync. Button
+    // is 159,665 B (+~250 B: tooltip describedby merging and loading focus).
+    // Allow 626 kB, 1,211 B headroom; confirm in Linux CI.
+    limit: '626kB',
   },
   {
     name: 'Tree shaking (just a Button)',
@@ -485,6 +492,8 @@ module.exports = [
     // paths reached by Button.Split. Fresh builds measure 159,494 B against
     // main's 152,636 B at 5acedc3e with matching dependencies (+6,858 B).
     // Allow 160 kB with 506 B headroom; confirm the exact figure in Linux CI.
+    // Linear backlog bug fixes: 159,665 B (+~250 B), 335 B headroom. Left at
+    // 160 kB; the next change here probably has to raise it.
     limit: '160kB',
   },
 ];

@@ -100,7 +100,9 @@
   },
   "numberInput": {
     "stepUp": "Increase {{label}}",
-    "stepDown": "Decrease {{label}}"
+    "stepDown": "Decrease {{label}}",
+    "increase": "Increase",
+    "decrease": "Decrease"
   },
   "textInputMapper": {
     "key": "Key",

@@ -8,11 +8,11 @@ import type { PointerEvent as ReactPointerEvent, RefObject } from 'react';
  */
 interface OriginPress {
   element: HTMLElement;
-  key: Key;
-  manager: SelectionManager;
   /** The option's box when the press started. */
   rect: DOMRect;
-  /** Escape, another key or a pointer cancel ended the press early. */
+  /** Selects the option, as releasing on it would. */
+  settle: (event: PointerEvent) => void;
+  /** Escape or another key ended the press early. */
   isCancelled: boolean;
 }
 
@@ -32,11 +32,15 @@ function cancelPress() {
   if (activePress) activePress.isCancelled = true;
 }
 
+// Also runs on `pointercancel`, after which no `pointerup` comes, and on the
+// next `pointerdown`, in case a handler stopped the last `pointerup` before it
+// reached the window. A stale record would swallow the next press.
 function forgetPress() {
   activePress = null;
+  window.removeEventListener('pointerdown', forgetPress, true);
   window.removeEventListener('pointerup', settleOnRelease, true);
   window.removeEventListener('pointerup', forgetPress);
-  window.removeEventListener('pointercancel', cancelPress, true);
+  window.removeEventListener('pointercancel', forgetPress, true);
   window.removeEventListener('keydown', cancelPress, true);
 }
 
@@ -56,9 +60,7 @@ function settleOnRelease(event: PointerEvent) {
   if ((target && press.element.contains(target)) || !press.element.isConnected)
     return;
 
-  if (isInside(press.rect, event) && press.manager.canSelectItem(press.key)) {
-    press.manager.select(press.key, event);
-  }
+  if (isInside(press.rect, event)) press.settle(event);
 }
 
 /**
@@ -70,23 +72,27 @@ function settleOnRelease(event: PointerEvent) {
  * list moves between press and release (it is still animating in, or scrolls
  * while closing), the release lands on a neighbour or on nothing. With this
  * hook a mouse press selects the option it started on when the pointer comes
- * up inside that option's original box. Released elsewhere, or after Escape,
- * any other key or a pointer cancel, it selects nothing.
+ * up inside that option's original box. A release over another option never
+ * selects that option, and a press that Escape or another key interrupted
+ * doesn't pick the moved option.
  *
  * Put `onPointerDown` on the option element and wrap the option's own
- * `onPointerUp` with `wrapPointerUp`, which ignores a release over an option
- * other than the one pressed.
+ * `onPointerUp` with `wrapPointerUp`. `onSettle` runs after a moved press
+ * selects the option, with the element the press started on, for the side
+ * effects a click on the option would have had.
  */
 export function useOptionOriginPress(options: {
   key: Key;
   ref: RefObject<HTMLElement | null>;
   manager: SelectionManager;
   isDisabled?: boolean;
+  onSettle?: (pressTarget: EventTarget | null) => void;
 }) {
-  const { key, ref, manager, isDisabled } = options;
+  const { key, ref, manager, isDisabled, onSettle } = options;
 
   const onPointerDown = (event: ReactPointerEvent<HTMLElement>) => {
     const element = ref.current;
+    const pressTarget = event.target;
 
     forgetPress();
 
@@ -101,16 +107,21 @@ export function useOptionOriginPress(options: {
 
     activePress = {
       element,
-      key,
-      manager,
       rect: element.getBoundingClientRect(),
+      settle(releaseEvent) {
+        if (!manager.canSelectItem(key)) return;
+
+        manager.select(key, releaseEvent);
+        onSettle?.(pressTarget);
+      },
       isCancelled: false,
     };
 
+    window.addEventListener('pointerdown', forgetPress, true);
     window.addEventListener('pointerup', settleOnRelease, true);
     // Bubble phase: after every option has seen the release.
     window.addEventListener('pointerup', forgetPress);
-    window.addEventListener('pointercancel', cancelPress, true);
+    window.addEventListener('pointercancel', forgetPress, true);
     window.addEventListener('keydown', cancelPress, true);
   };
 

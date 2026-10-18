@@ -148,6 +148,54 @@ describe('ComboBox presses and Tab in a browser', () => {
     expect(input).toHaveAttribute('aria-expanded', 'true');
   });
 
+  it('commits the custom text on Enter after a caret click into text that matches nothing', async () => {
+    const onSelectionChange = vi.fn();
+
+    renderWithRoot(
+      <ComboBox
+        allowsCustomValue
+        label="Fruit"
+        onSelectionChange={onSelectionChange}
+      >
+        <ComboBox.Item key="apple">Apple</ComboBox.Item>
+        <ComboBox.Item key="banana">Banana</ComboBox.Item>
+      </ComboBox>,
+    );
+
+    const input = screen.getByRole('combobox', {
+      name: 'Fruit',
+    }) as HTMLInputElement;
+
+    await act(() => input.focus());
+    await act(() => userEvent.keyboard('xyz'));
+    expect(screen.queryByRole('listbox')).toBeNull();
+
+    // At the very start of the text.
+    await act(() => userEvent.click(input, { position: { x: 2, y: 4 } }));
+    await act(() => new Promise((resolve) => setTimeout(resolve, 300)));
+
+    expect(input.selectionStart).toBe(0);
+    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(input).toHaveAttribute('aria-expanded', 'false');
+
+    await act(() => userEvent.keyboard('{Enter}'));
+
+    expect(onSelectionChange.mock.calls).toEqual([['xyz']]);
+    expect(input).toHaveValue('xyz');
+  });
+
+  it('focuses the input without opening the list on a click on the label', async () => {
+    renderWithRoot(<Fruit />);
+
+    const input = screen.getByRole('combobox', { name: 'Fruit' });
+
+    await act(() => userEvent.click(screen.getByText('Fruit')));
+    await act(() => new Promise((resolve) => setTimeout(resolve, 300)));
+
+    expect(input).toHaveFocus();
+    expect(screen.queryByRole('listbox')).toBeNull();
+  });
+
   it('closes the list and moves past the chevron and clear button on Tab', async () => {
     renderWithRoot(<Fruit isClearable />);
 

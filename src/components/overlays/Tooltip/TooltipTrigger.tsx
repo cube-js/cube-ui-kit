@@ -10,6 +10,7 @@ import {
   ReactNode,
   RefObject,
   useContext,
+  useEffectEvent,
   useRef,
   useState,
 } from 'react';
@@ -45,8 +46,9 @@ type TooltipPositionOptions = Pick<
   | 'crossOffset'
   | 'isOpen'
   | 'shouldFlip'
-  | 'onClose'
->;
+> & {
+  onClose: () => void;
+};
 
 // DisplayTransition preserves its last shown render prop during exit. Position
 // subscriptions must still see the current target, configuration and open state.
@@ -65,6 +67,34 @@ function TooltipTransition(
   return <DisplayTransition {...props} />;
 }
 
+type Box = Pick<DOMRect, 'top' | 'right' | 'bottom' | 'left'>;
+
+function overlaps(a: Box, b: Box) {
+  return (
+    a.bottom > b.top && a.top < b.bottom && a.right > b.left && a.left < b.right
+  );
+}
+
+/**
+ * Whether the trigger is still visible after `scrolled` scrolled: it overlaps
+ * the viewport and, when an element scrolled, that element's box.
+ */
+function isInView(trigger: Element, scrolled: EventTarget | null) {
+  const rect = trigger.getBoundingClientRect();
+  const viewport = {
+    top: 0,
+    left: 0,
+    bottom: window.innerHeight,
+    right: window.innerWidth,
+  };
+
+  return (
+    overlaps(rect, viewport) &&
+    (!(scrolled instanceof Element) ||
+      overlaps(rect, scrolled.getBoundingClientRect()))
+  );
+}
+
 function PositionedTooltip({
   tooltip,
   contextValue,
@@ -72,40 +102,48 @@ function PositionedTooltip({
   tooltip: ReactElement;
   contextValue: ContextType<typeof TooltipContext>;
 }) {
-  const options = useContext(TooltipPositionContext);
-  const openPosition = useRef<{ top: number; left: number } | null>(null);
-
-  // Where the trigger was when the tooltip opened. Focusing a trigger below
-  // the fold scrolls it into view at once, but the browser reports that scroll
-  // a frame later, so a tooltip that mounts in between hears it. Only a scroll
-  // that moved the trigger since then closes the tooltip.
-  useLayoutEffect(() => {
-    const rect = options.isOpen
-      ? options.targetRef.current?.getBoundingClientRect()
-      : undefined;
-
-    openPosition.current = rect ? { top: rect.top, left: rect.left } : null;
-  }, [options.isOpen, options.targetRef]);
-
+  const { onClose, ...options } = useContext(TooltipPositionContext);
   const { overlayProps, arrowProps, placement, updatePosition } =
-    useOverlayPosition({
-      ...options,
-      onClose: () => {
-        const start = openPosition.current;
-        const rect = options.targetRef.current?.getBoundingClientRect();
+    useOverlayPosition(options);
 
-        if (
-          start &&
-          rect &&
-          Math.abs(rect.top - start.top) < 1 &&
-          Math.abs(rect.left - start.left) < 1
-        ) {
-          return;
-        }
+  // A scroll of the page or of an element that contains the trigger moves the
+  // trigger. The tooltip follows it while it stays in view, and closes once it
+  // is scrolled out. Closing on any scroll, as a popover does, would close the
+  // tooltip a keyboard user just opened: focus scrolls a trigger into view —
+  // the browser at once, a list a frame later — and the scroll is reported
+  // after the tooltip opened.
+  const onScroll = useEffectEvent((event: Event) => {
+    const trigger = options.targetRef.current;
+    const { target } = event;
 
-        options.onClose?.();
-      },
-    });
+    if (
+      !trigger ||
+      (target instanceof Node && !target.contains(trigger)) ||
+      // A text field scrolls its own text to keep the caret in view.
+      target instanceof HTMLInputElement ||
+      target instanceof HTMLTextAreaElement
+    ) {
+      return;
+    }
+
+    if (isInView(trigger, target)) {
+      updatePosition();
+    } else {
+      onClose();
+    }
+  });
+
+  // Subscribed at commit, with the positioning, so a scroll reported on the
+  // next frame is never missed.
+  useLayoutEffect(() => {
+    if (!options.isOpen) return;
+
+    const listener = (event: Event) => onScroll(event);
+
+    window.addEventListener('scroll', listener, true);
+
+    return () => window.removeEventListener('scroll', listener, true);
+  }, [options.isOpen]);
 
   return (
     <TooltipContext.Provider
@@ -318,9 +356,7 @@ export function TooltipTrigger(props: CubeTooltipTriggerProps) {
     // Documented on `Tooltip`, which renders inside the positioned layer, so
     // it is read from the element here.
     shouldFlip: tooltip.props.shouldFlip,
-    // React Aria closes the overlay when an ancestor of the trigger scrolls,
-    // as it does for popovers. Without it the bubble stayed where it was drawn
-    // while the trigger scrolled away under it.
+    // Called once a scroll carries the trigger out of view.
     onClose: () => state.close(true),
   };
 

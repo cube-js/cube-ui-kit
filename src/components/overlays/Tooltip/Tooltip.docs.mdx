@@ -266,7 +266,7 @@ Show tooltip only on focus, not on hover:
 - `Escape` - Hides the tooltip
 - Tooltips automatically appear on focus for keyboard users
 - Pressing the trigger hides the tooltip, unless `shouldCloseOnPress` is `false`
-- Scrolling any ancestor of the trigger hides the tooltip, as it does a popover
+- When the page or an element containing the trigger scrolls, the tooltip follows the trigger while it stays in view, and hides once it is scrolled out of view
 
 ### Screen Reader Support
 
@@ -277,7 +277,7 @@ Show tooltip only on focus, not on hover:
 
 ### ARIA Properties
 
-- `aria-describedby` - Automatically set on the trigger to reference the tooltip while it is open. `Button` and `ItemBadge` add it after their own `aria-describedby` rather than replacing it
+- `aria-describedby` - Automatically set on the trigger to reference the tooltip while it is open. `Button`, `ItemBadge`, `ItemAction`, `Checkbox`, `Radio` and `Item` rows (`ItemButton`, list and menu items) add it after their own `aria-describedby` rather than replacing it
 - All standard ARIA labeling props are supported
 
 ### Best Practices

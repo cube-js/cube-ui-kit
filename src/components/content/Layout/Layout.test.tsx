@@ -98,6 +98,19 @@ describe('Layout', () => {
     expect(screen.getByRole('contentinfo')).toHaveTextContent('Page footer');
   });
 
+  it('gives a footer of a Layout placed straight inside another no landmark role', () => {
+    renderWithRoot(
+      <Layout>
+        <Layout>
+          <Layout.Footer>Inner footer</Layout.Footer>
+        </Layout>
+        <Layout.Footer>Page footer</Layout.Footer>
+      </Layout>,
+    );
+
+    expect(screen.getByRole('contentinfo')).toHaveTextContent('Page footer');
+  });
+
   it('lets an explicit role override the footer role', () => {
     renderWithRoot(
       <Layout>

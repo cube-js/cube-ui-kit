@@ -100,7 +100,9 @@
   },
   "numberInput": {
     "stepUp": "Øk {{label}}",
-    "stepDown": "Reduser {{label}}"
+    "stepDown": "Reduser {{label}}",
+    "increase": "Øk",
+    "decrease": "Reduser"
   },
   "textInputMapper": {
     "key": "Nøkkel",
