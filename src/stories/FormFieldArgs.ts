@@ -43,10 +43,9 @@ export const IS_BARE_ARG = {
   isBare: {
     control: { type: 'boolean' },
     description:
-      'Render only the control. A supplied label stays accessible but visually hidden; description and message slots are omitted.',
+      'Render only the control. A supplied label stays accessible but visually hidden; description and message slots are omitted. Unset, the field renders its chrome when it has something to show; `false` renders it anyway.',
     table: {
       type: { summary: 'boolean' },
-      defaultValue: { summary: false },
     },
   },
 };

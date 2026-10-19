@@ -403,7 +403,6 @@ export const TriggerWithActions: Story = {
         <Disclosure.Trigger
           actions={
             <Switch
-              isBare
               aria-label="Disable disclosure"
               size="small"
               isSelected={!isDisabled}

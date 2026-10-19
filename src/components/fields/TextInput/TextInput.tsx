@@ -7,6 +7,7 @@ import {
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
 import { useFieldProps } from '../../form';
+import { withFieldChrome } from '../../form/field-chrome';
 
 import { useDisplayedValidation } from './displayed-validation';
 import {
@@ -43,6 +44,9 @@ export const TextInput = forwardRef(function TextInput(
       value: value?.toString() ?? '',
     }),
   });
+  // It shows the errors of a `validate` under the control, so a `validate`
+  // asks for the field chrome even without a label.
+  if ('validate' in rawProps) props = withFieldChrome(props);
 
   let {
     labelProps: userLabelProps,

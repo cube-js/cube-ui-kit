@@ -7,6 +7,7 @@ import {
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
 import { useFieldProps } from '../../form';
+import { withFieldChrome } from '../../form/field-chrome';
 import { useDisplayedValidation } from '../TextInput/displayed-validation';
 import {
   CubeBufferedValueProps,
@@ -49,6 +50,9 @@ function TextArea(
       value: value?.toString() ?? '',
     }),
   });
+  // It shows the errors of a `validate` under the control, so a `validate`
+  // asks for the field chrome even without a label.
+  if ('validate' in rawProps) props = withFieldChrome(props);
   let {
     autoSize = false,
     isDisabled = false,

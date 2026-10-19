@@ -26,7 +26,7 @@ For modern forms, follow the [use-case guide](/docs/forms-modernform--docs). Bin
 - **`label`** `ReactNode` — Label text displayed above or beside the input.
 - **`labelPosition`** `'top' | 'side' | 'split'` (default: `top`) — Position of the label relative to the input. Side and split layouts reserve a label column only when a label is present.
 - **`description`** `ReactNode` — Help text. It appears below a top label or the control when there is no visible label, and beside the control with a side or split label. It remains independent of the error message.
-- **`isBare`** `boolean` — Render the control without field layout, description or message text. A supplied `label` remains as a visually hidden accessible label; label tooltips, suffixes and extra content are omitted. Form binding, invalid state and control styles still apply. Use this for an inline control that would otherwise show its chrome but has no room for it, or when a parent already renders that chrome. Provide `aria-describedby` when the error is explained elsewhere. Unset, a field renders its chrome when there is something to show: a `label`, a form binding, or a `description`, `errorMessage`, `message`, `fieldStyles`, `fieldProps` or `validate` prop, whatever it holds. Otherwise it renders only the control. `TagInput` always has something to show: its refusal messages. Pass `isBare={false}` to render the chrome anyway. Layout props on the control stay there; use `fieldStyles` to place the entire field.
+- **`isBare`** `boolean` — Render the control without field layout, description or message text. A supplied `label` remains as a visually hidden accessible label; label tooltips, suffixes and extra content are omitted. Form binding, invalid state and control styles still apply. Use this for an inline control that would otherwise show its chrome but has no room for it, or when a parent already renders that chrome. Provide `aria-describedby` when the error is explained elsewhere. Unset, a field renders its chrome when there is something to show: a non-empty `label`, a form binding, or a `description`, `errorMessage`, `message`, `fieldStyles`, `fieldProps` or `isHidden` prop, whatever it holds. On `TextInput`, `TextArea`, `PasswordInput` and `NumberInput`, which show the errors of a `validate`, that prop counts too. Otherwise it renders only the control. `TagInput` always has something to show: its refusal messages. Pass `isBare={false}` to render the chrome anyway. Layout props on the control stay there; use `fieldStyles` to place the entire field.
 - **`forceField`** `boolean` — **Deprecated.** Use `isBare={false}`. Renders the chrome even with nothing to show; an explicit `isBare` wins.
 - **`extra`** `ReactNode` — Additional content displayed next to the label.
 - **`labelTooltip`** `ReactNode` — Content of an info badge shown next to the label. Only rendered when the field has a label. (Formerly `tooltip`. On most fields `tooltip` is gone; on `Select` and `Checkbox` it is the control's own tooltip, as on `Item` and `Button`.)
@@ -50,7 +50,7 @@ For modern forms, follow the [use-case guide](/docs/forms-modernform--docs). Bin
 <TextInput name="name" label="Name" description="Shown on invoices" errorMessage={null} />
 ```
 
-The field wrapper stays in place when a description or message appears or disappears: a text prop counts whatever it holds, so pass `errorMessage={error}` rather than spreading the prop in only while there is an error. Adding or removing a `label`, or changing `isBare`, changes the presentation structure and may remount the control; keep them stable while editing, or pass `isBare={false}` to keep the wrapper. Individual checkbox and radio options keep their group's inline presentation.
+The field wrapper stays in place when a description or message appears or disappears: a text prop counts whatever it holds, so pass `errorMessage={error}` rather than spreading the prop in only while there is an error. Adding or removing a `label` (an empty one counts as none) or a form binding, or changing `isBare`, changes the presentation structure and may remount the control; keep them stable while editing, or pass `isBare={false}` to keep the wrapper. Individual checkbox and radio options keep their group's inline presentation.
 
 ### Field sizing and alignment
 
@@ -60,7 +60,7 @@ Set `fieldStyles` to size the entire field, including its label, description and
 <TextInput label="Name" fieldStyles={{ width: '40x' }} />
 ```
 
-Fields without labels no longer reserve an empty side or split label column. If a row should intentionally align with neighbouring side labels, add `fieldStyles={{ padding: '$full-label-width left' }}`. For a nameless legacy `Form.Item`, put that padding on the item's `styles` instead; it owns the wrapper. Replace deprecated `forceField` with `isBare={false}` when migrating these rows.
+Fields without labels no longer reserve an empty side or split label column. If a row should intentionally align with neighbouring side labels, add `fieldStyles={{ padding: '$full-label-width left' }}`. For a nameless legacy `Form.Item`, put that padding on the item's `styles` instead; it owns the wrapper. Remove deprecated `forceField` when migrating these rows.
 
 ## Necessity Indicators
 

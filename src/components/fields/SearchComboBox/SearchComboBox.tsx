@@ -51,7 +51,7 @@ import {
   useValidationProps,
   wrapWithField,
 } from '../../form';
-import { asksForFieldChrome } from '../../form/field-chrome';
+import { asksForFieldChrome, withFieldChrome } from '../../form/field-chrome';
 import { getListBoxOptionId } from '../ListBox/optionId';
 import {
   filterCollectionNodes,
@@ -360,12 +360,12 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
   T extends object,
 >(props: CubeSearchComboBoxProps<T>, ref: ForwardedRef<HTMLDivElement>) {
   // SearchComboBox is a standalone control, not a form field, so it does not use `useFieldProps`.
+  // Without a label, it still shows a description or message under the
+  // control. Read the caller's own props, before the provider's.
+  const asksForChrome = asksForFieldChrome(props);
   props = useProviderProps(props);
   props = useValidationProps(props);
-  // Shows a description or message without a label, as a form field does.
-  if (asksForFieldChrome(props)) {
-    props = { ...props, hasFieldChrome: true } as typeof props;
-  }
+  if (asksForChrome) props = withFieldChrome(props);
 
   const { t } = useI18n();
 

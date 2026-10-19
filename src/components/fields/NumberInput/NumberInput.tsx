@@ -22,6 +22,7 @@ import {
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
 import { useFieldProps } from '../../form';
+import { withFieldChrome } from '../../form/field-chrome';
 import { useDisplayedValidation } from '../TextInput/displayed-validation';
 import {
   CubeTextInputBaseProps,
@@ -90,6 +91,9 @@ function NumberInput(
   // `NaN` is the number field's own empty value.
   rawProps = castNullableNumberValue(rawProps);
   let props = useFieldProps(rawProps);
+  // It shows the errors of a `validate` under the control, so a `validate`
+  // asks for the field chrome even without a label.
+  if ('validate' in rawProps) props = withFieldChrome(props);
 
   let {
     hideStepper,

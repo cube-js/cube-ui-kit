@@ -13,28 +13,21 @@ import { warnAboutLegacyTooltip } from './legacy-tooltip';
 interface WrapWithFieldProps
   extends FieldBaseProps,
     Omit<BaseProps, 'children'>,
-    FormBaseProps {
-  /**
-   * Set by `useFieldProps`, or by a control that skips it, for a field without
-   * a `label` that still needs the field chrome — see `asksForFieldChrome`.
-   * Not a prop of any input.
-   */
-  hasFieldChrome?: boolean;
-}
+    FormBaseProps {}
 
 /**
  * Whether `wrapWithField` renders the field chrome for these props. An
- * explicit `isBare` decides. Otherwise a field renders it when there is
- * something to show: a `label`, or the chrome `useFieldProps` asked for
- * (`hasFieldChrome`), or the deprecated `forceField`.
+ * explicit `isBare` decides; `useFieldProps` sets `isBare={false}` on a field
+ * without a `label` that still needs the chrome (`withFieldChrome`).
+ * Otherwise a non-empty `label` renders it, as does the deprecated
+ * `forceField`.
  */
 export function rendersFieldChrome(props: object) {
-  const { isBare, label, hasFieldChrome, forceField } =
-    props as WrapWithFieldProps;
+  const { isBare, label, forceField } = props as WrapWithFieldProps;
 
   if (isBare != null) return !isBare;
 
-  return hasFieldContent(label) || !!hasFieldChrome || !!forceField;
+  return hasFieldContent(label) || !!forceField;
 }
 
 /** Wraps a control in its field chrome when it has one, and forwards its chrome props. */

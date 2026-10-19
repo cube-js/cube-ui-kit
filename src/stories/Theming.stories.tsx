@@ -744,7 +744,6 @@ function PaletteModeTabs() {
 
   return (
     <Radio.Tabs
-      isBare
       aria-label="Palette mode"
       value={mode}
       styles={MODE_TABS_STYLES}
@@ -2030,7 +2029,6 @@ function ThemePreview({
             </Section>
 
             <RadioGroup
-              isBare
               aria-label="Preview tabs"
               type="button"
               value={tab}
@@ -2063,14 +2061,10 @@ function ThemePreview({
             <Section styles={{ gap: '1x' }}>
               <GroupLabel>CONTROLS</GroupLabel>
               <Row styles={{ gap: '2x' }}>
-                <Switch isBare isSelected>
-                  Switch
-                </Switch>
-                <Checkbox isBare isSelected>
-                  Checkbox
-                </Checkbox>
+                <Switch isSelected>Switch</Switch>
+                <Checkbox isSelected>Checkbox</Checkbox>
               </Row>
-              <RadioGroup isBare aria-label="Radio sample" defaultValue="one">
+              <RadioGroup aria-label="Radio sample" defaultValue="one">
                 <Radio value="one">Radio</Radio>
                 <Radio value="two">Another</Radio>
               </RadioGroup>
@@ -2188,7 +2182,6 @@ function ThemeBuilderPage() {
         <PreviewColumn>
           <PreviewToolbar>
             <RadioGroup
-              isBare
               aria-label="Color scheme"
               type="button"
               value={scheme}
@@ -2198,7 +2191,6 @@ function ThemeBuilderPage() {
               <Radio value="dark">Dark</Radio>
             </RadioGroup>
             <RadioGroup
-              isBare
               aria-label="Contrast tier"
               type="button"
               // Off rather than live-and-warned once the tier is gone: there is

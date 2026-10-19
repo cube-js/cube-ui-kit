@@ -10,6 +10,7 @@ import {
 } from '../../test';
 import { FORM_ATTACHABLE_INPUTS } from '../../test/form-attachable-inputs';
 import { Checkbox } from '../fields/Checkbox/Checkbox';
+import { SearchComboBox } from '../fields/SearchComboBox/SearchComboBox';
 import { SearchInput } from '../fields/SearchInput/SearchInput';
 import { TagInput } from '../fields/TagInput/TagInput';
 import { TextInput } from '../fields/TextInput/TextInput';
@@ -66,13 +67,54 @@ describe('field chrome without a label', () => {
     ['an undefined error message', { errorMessage: undefined }],
     ['field styles', { fieldStyles: { width: '40x' } }],
     ['field props', { fieldProps: {} }],
-    ['a validate function', { validate: () => null }],
+    ['isHidden', { isHidden: true }],
+    ['isHidden={false}', { isHidden: false }],
   ] satisfies [string, object][])(
     'renders the chrome for %s, whatever it holds',
     (_, props) => {
       render(<TextInput aria-label="Name" {...props} />);
 
       expect(screen.getByTestId('Field')).toBeInTheDocument();
+    },
+  );
+
+  it.each(FORM_ATTACHABLE_INPUTS)(
+    '%s hides without a label with isHidden',
+    (_, element) => {
+      renderWithRoot(
+        cloneElement(element, {
+          label: undefined,
+          'aria-label': 'Billing',
+          isHidden: true,
+        }),
+      );
+
+      expect(screen.getByTestId('Field')).not.toBeVisible();
+    },
+  );
+
+  // Only the text inputs show the errors of a `validate` under the control.
+  const showsValidateErrors = new Set([
+    'NumberInput',
+    'PasswordInput',
+    'TextArea',
+    'TextInput',
+  ]);
+
+  it.each(quietInputs)(
+    '%s asks for the chrome for a validate only when it shows its errors',
+    (name, element) => {
+      renderWithRoot(
+        cloneElement(element, {
+          label: undefined,
+          'aria-label': 'Billing',
+          validate: () => null,
+        }),
+      );
+
+      expect(screen.queryAllByTestId('Field')).toHaveLength(
+        showsValidateErrors.has(name) ? 1 : 0,
+      );
     },
   );
 
@@ -260,9 +302,23 @@ describe('field chrome without a label', () => {
     ).not.toBeNull();
   });
 
-  it('shows a search input description', () => {
-    render(<SearchInput aria-label="Books" description="By title or author" />);
+  // They skip `useFieldProps`, so they ask for the chrome themselves.
+  it.each([
+    ['SearchInput', <SearchInput key="input" aria-label="Books" />],
+    [
+      'SearchComboBox',
+      <SearchComboBox key="combo" aria-label="Books">
+        <SearchComboBox.Item key="dune">Dune</SearchComboBox.Item>
+      </SearchComboBox>,
+    ],
+  ])('%s renders the chrome only for a description', (_, element) => {
+    const { rerender } = renderWithRoot(element);
 
+    expect(screen.queryByTestId('Field')).not.toBeInTheDocument();
+
+    rerender(cloneElement(element, { description: 'By title or author' }));
+
+    expect(screen.getByTestId('Field')).toBeInTheDocument();
     expect(screen.getByText('By title or author')).toBeInTheDocument();
   });
 
@@ -340,8 +396,9 @@ describe('field chrome without a label', () => {
 
       expect(screen.getAllByTestId('Field')).toHaveLength(1);
       expect(screen.getByText('Billing is wrong')).toBeInTheDocument();
+      // The `isBare={false}` the binding asks with never reaches the DOM.
       expect(error.mock.calls.flat().map(String).join('\n')).not.toContain(
-        'hasFieldChrome',
+        'does not recognize',
       );
 
       error.mockRestore();

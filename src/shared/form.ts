@@ -192,10 +192,10 @@ export interface FieldBaseProps<Value = unknown>
    * and invalid state are unaffected.
    *
    * Unset, a field renders its chrome when there is something to show: a
-   * `label`, a form binding, or a `description`, `errorMessage`, `message`,
-   * `fieldStyles`, `fieldProps` or `validate` prop, whatever it holds. Pass
-   * `isBare` for an inline field with no room for them, and `isBare={false}` to
-   * render the chrome anyway.
+   * non-empty `label`, a form binding, or a `description`, `errorMessage`,
+   * `message`, `fieldStyles`, `fieldProps` or `isHidden` prop, whatever it
+   * holds, and on a text input a `validate`. Pass `isBare` for an inline field
+   * with no room for them, and `isBare={false}` to render the chrome anyway.
    */
   isBare?: boolean;
   /**
