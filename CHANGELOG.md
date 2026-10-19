@@ -1,5 +1,179 @@
 # @cube-dev/ui-kit
 
+## 0.196.0
+
+### Minor Changes
+
+- [#1526](https://github.com/cube-js/cube-ui-kit/pull/1526) [`ef9cccec`](https://github.com/cube-js/cube-ui-kit/commit/ef9cccecc90817f62de2ca5157b61cf3f170a618) Thanks [@tenphi](https://github.com/tenphi)! - Fields now render stable field chrome by default, including standalone inputs without a label, so generated validation and TagInput refusal messages stay visible and describe the control without sentinel props. Use `isBare` explicitly for inline controls or controls whose parent owns their field layout; it suppresses chrome even with a label or deprecated `forceField`, while preserving a supplied label for accessibility. Move whole-field layout styles to `fieldStyles` when migrating previously bare controls. An explicit empty `errorMessage` now suppresses the deprecated `message` fallback, and label-less fields no longer reserve a side-label column. Internal composite controls retain their compact presentation.
+
+### Patch Changes
+
+- [#1529](https://github.com/cube-js/cube-ui-kit/pull/1529) [`be50525c`](https://github.com/cube-js/cube-ui-kit/commit/be50525c6d2ac2f381203f805acda294369f48da) Thanks [@tenphi](https://github.com/tenphi)! - `Button.Split` no longer styles the Buttons inside a popover, dialog or menu opened from it. Its `type`, `theme`, `size` and `isDisabled` used to reach every `Button` in that overlay, so a confirm popover's Cancel button on a primary, small split turned primary and small, and was disabled whenever the split was. The split's own Buttons still inherit them, and a `Button.Split` inside an overlay still styles its own Buttons. A workaround that wraps the overlay in `<ButtonSplitContext.Provider value={null}>` is no longer needed and can be removed.
+
+- [#1529](https://github.com/cube-js/cube-ui-kit/pull/1529) [`be50525c`](https://github.com/cube-js/cube-ui-kit/commit/be50525c6d2ac2f381203f805acda294369f48da) Thanks [@tenphi](https://github.com/tenphi)! - `ComboBox` without `allowsCustomValue` no longer selects a disabled item when focus leaves the input. Typing the label of an item in `disabledKeys`, or text that leaves a disabled item as the only match, used to select it on blur and report it through `onSelectionChange`, although it cannot be picked with the pointer or keyboard. Such text now counts as invalid input: the input shows the selected item's label again (or nothing when no item is selected), and with `clearOnBlur` both the selection and the input are cleared. A disabled item that is already selected stays selected when focus leaves. When several items share the typed label, blur now keeps the selected one, or else picks the first enabled one, instead of always taking the first.
+
+- [#1531](https://github.com/cube-js/cube-ui-kit/pull/1531) [`aa0de8ca`](https://github.com/cube-js/cube-ui-kit/commit/aa0de8cadc93e5a9b9512e831ba15f885d687971) Thanks [@tenphi](https://github.com/tenphi)! - `ComboBox`: a press in the input opens a closed list, also when the input already has focus, for example after `Tab` or after `Escape` closed the list. The list shows the options the typed text leaves, and text that matches nothing keeps it hidden, so a press that moves the caret does not change what `Enter` commits. A click on the field label only focuses the input. With `popoverTrigger="manual"` the list still opens only from the chevron and the arrow keys.
+
+  `ComboBox`: a press in the input while the list is open moves the caret and keeps the list open. It used to close the list. The chevron still toggles it.
+
+  `ComboBox` with `isReadOnly` no longer opens its list from the chevron, the arrow keys, a press in the input or `popoverTrigger="focus"`, and `Enter`, `Escape` and blur no longer change its value or text. Read-only used to only hide the clear button.
+
+  `ComboBox` with `allowsCustomValue` commits the typed text trimmed, on `Enter` and on blur, and empty or whitespace-only text clears the selection with `null` instead of committing `''`.
+
+  `ComboBox`: picking the option that is already selected, with a click or `Enter`, keeps it selected and closes the list. It used to clear the value.
+
+  `ComboBox`: the input has `aria-autocomplete="list"`, so screen readers announce that typing filters the options.
+
+  `ComboBox` lets `Escape` and `Tab` reach its ancestors unless it acts on them. `Escape` with the list closed and nothing to clear now closes a surrounding dialog, and `Tab` reaches a dialog's focus containment. `Escape` that closes the list or clears the value still stops at the input.
+
+  `ComboBox`: leaving the field without editing it no longer calls `onSelectionChange(null)` or `onInputChange`. Blur reports only what it changes.
+
+  `ComboBox`: `aria-activedescendant` no longer points at an option the typed text filtered out. It names a shown option or is absent.
+
+  `ComboBox` with `allowsCustomValue`: `Enter` with the list closed commits the typed text, even when it is part of an option's label, so "app" can be committed next to an "apple" option. With the list open, `Enter` still picks the highlighted option.
+
+  `ComboBox`: `onOpenChange` is no longer called on mount and reports only the list showing or hiding. Typing text that matches nothing no longer reports an open and a close on every keystroke. `aria-expanded` follows whether the list is shown.
+
+  `ComboBox` shows the selected option's label once the options load after `selectedKey`, instead of the raw key, and shows the label of `defaultSelectedKey` from the first paint instead of an empty input.
+
+  `ComboBox`: `Enter` pressed right after typing picks the first match. It used to find nothing highlighted yet, so it picked nothing and could submit an enclosing form instead.
+
+  `ComboBox`: the chevron and clear buttons are no longer `Tab` stops, `Tab` closes the list as focus moves on, and closing the list with the chevron returns focus to the input.
+
+  `ComboBox` recognises an exact match with the same locale-aware comparison the filter uses, so text the list shows for an option, such as "ete" for "Été", selects that option on blur.
+
+  `ComboBox` with a controlled `selectedKey` keeps showing the controlled option's label when the parent rejects a pick. The input used to show the rejected option.
+
+  `ComboBox` leaves keys pressed during IME composition to the input method, so the `Enter` that confirms a candidate no longer selects an option or commits half-composed text.
+
+  `ComboBox` with `items` shows items that arrive while its list is open at once. It used to keep showing the previous items until the next keystroke.
+
+  `ComboBox`, `SearchComboBox` and `TagInput` with `size="large"` open a list of large options, as `Select` does. A small field keeps medium options.
+
+- [#1531](https://github.com/cube-js/cube-ui-kit/pull/1531) [`aa0de8ca`](https://github.com/cube-js/cube-ui-kit/commit/aa0de8cadc93e5a9b9512e831ba15f885d687971) Thanks [@tenphi](https://github.com/tenphi)! - `AlertDialog` is now described by its message through `aria-describedby`, so a screen reader reads the message together with the title when it opens. A plain `Dialog` still links no description by default, so a form inside it is not read aloud on open; pass `aria-describedby` to link one.
+
+  `AlertDialog` with `danger` now opens with focus on Cancel, or on the dialog itself when there is no Cancel, instead of on the destructive confirm button, so an Enter pressed out of habit no longer runs it. An explicit `autoFocus` on the confirm action still puts focus there. Dialogs without `danger` still focus the confirm button.
+
+  `AlertDialog` opened through `useAlertDialogAPI` now stays mounted until its exit animation has finished, instead of being removed 50 ms early.
+
+  `Dialog` now contains focus from the moment it opens. A Tab pressed while it was still animating in could move focus to the page behind a modal, where it stayed.
+
+  `DialogTrigger` with `offset={0}` now places a popover flush against its trigger instead of 8px away.
+
+  `DialogTrigger` popovers with `isDismissable={false}` no longer swallow outside presses: the control pressed receives the press, and a text field outside can take focus and be typed into, because the popover no longer holds focus. They stay open when a `Button` outside them is pressed or another popover opens, and still close when a modal, tray, fullscreen or panel dialog opens from another `DialogTrigger`.
+
+  `DialogTrigger` popovers anchored with `targetRef` now close when the anchor scrolls, like popovers anchored to their trigger.
+
+  `DialogTrigger`'s `hideArrow` is deprecated. Popovers have never rendered an arrow, so it has no effect.
+
+- [#1531](https://github.com/cube-js/cube-ui-kit/pull/1531) [`aa0de8ca`](https://github.com/cube-js/cube-ui-kit/commit/aa0de8cadc93e5a9b9512e831ba15f885d687971) Thanks [@tenphi](https://github.com/tenphi)! - `ItemAction`: `excludeFromTabOrder` now takes the action out of the Tab order. The action used to reset it, so `SearchInput`'s clear button and other field actions that ask to stay pointer-only were Tab stops. An explicit `tabIndex` still wins.
+
+- [#1531](https://github.com/cube-js/cube-ui-kit/pull/1531) [`aa0de8ca`](https://github.com/cube-js/cube-ui-kit/commit/aa0de8cadc93e5a9b9512e831ba15f885d687971) Thanks [@tenphi](https://github.com/tenphi)! - `ItemAction`, `ItemButton` and other `Item`-based rows: an open tooltip now adds its id to the row's own `aria-describedby` instead of replacing it, so screen readers read both the caller's description and the tooltip.
+
+  `Item`, `ItemButton`, `TextItem` and other rows with an automatic tooltip: `tooltip={{ title: undefined }}` or `{{ title: null }}` now falls back to the automatic title, like `tooltip={{}}`, instead of opening an empty bubble.
+
+- [#1529](https://github.com/cube-js/cube-ui-kit/pull/1529) [`be50525c`](https://github.com/cube-js/cube-ui-kit/commit/be50525c6d2ac2f381203f805acda294369f48da) Thanks [@tenphi](https://github.com/tenphi)! - A `Layout.Panel` in `overlay` mode no longer closes when you focus a control inside it or a popover, menu or dialog opened from it, so its inputs and buttons can be used. Focus moving into the main content, a backdrop click and Escape still close it; focus moving into another `Layout.Panel` of the same Layout keeps it open. Opening an overlay panel now moves focus to its first control, unless focus already moved elsewhere as it opened, such as to a field with `autoFocus`, and closing it returns focus to the element that had it before, unless focus has moved elsewhere; a panel already open when its Layout first renders leaves page focus alone. A panel opened from a menu item now stays open, and a wrapper that focuses the panel's first control and stops its focus events is no longer needed.
+
+- [#1531](https://github.com/cube-js/cube-ui-kit/pull/1531) [`aa0de8ca`](https://github.com/cube-js/cube-ui-kit/commit/aa0de8cadc93e5a9b9512e831ba15f885d687971) Thanks [@tenphi](https://github.com/tenphi)! - `Select`, `ListBox` and the pickers built on it (`FilterListBox`, `FilterPicker`, `Picker`, `ComboBox`): a mouse press on an option now selects the option it started on when the pointer comes up inside that option's original box, even if the list moved in between, as it does while a popover is still animating in or scrolls while closing. The press used to pick the neighbouring option under the pointer, or nothing. A release over a different option no longer selects that option, and a press interrupted by `Escape` or another key doesn't pick the moved option.
+
+- [#1529](https://github.com/cube-js/cube-ui-kit/pull/1529) [`be50525c`](https://github.com/cube-js/cube-ui-kit/commit/be50525c6d2ac2f381203f805acda294369f48da) Thanks [@tenphi](https://github.com/tenphi)! - `ComboBox`, `SearchComboBox` and `CommandTextArea`: while the list is open, the first click on an enabled control outside it now acts on that control and closes the list, as a click on a UI Kit `Button` already did. A control is a checkbox, switch, radio, text field, native button, link or any other focusable element, in the dialog, popover or menu the field sits in, or anywhere on the page when the field is in none of them. Such a click used to only close the list, so a checkbox stayed unchanged and a text field took no focus until a second click. Focus moves to the control, so the field settles its typed text first, as it does on `Tab`. A click anywhere else still only closes the list and leaves the field focused with its text: on blank space, a dialog's surface or backdrop, or a control outside the dialog or popover the field sits in. A click on a disabled control, including a disabled UI Kit `Button`, which used to commit the typed text, keeps the field's focus and text as well. An enabled UI Kit `Button` or `ItemButton` is still reached from anywhere. `TagInput` now treats blank space in a dialog and controls outside the dialog or popover it sits in the same way; a click there used to move focus away and add the typed text as a tag.
+
+- [#1531](https://github.com/cube-js/cube-ui-kit/pull/1531) [`aa0de8ca`](https://github.com/cube-js/cube-ui-kit/commit/aa0de8cadc93e5a9b9512e831ba15f885d687971) Thanks [@tenphi](https://github.com/tenphi)! - `ListBox` scrolls a long (virtualized) list to the option that receives focus when that option isn't rendered yet: `End`, `Home`, `Page Down`, typeahead, and the selected option when the list takes focus on open or on `Tab`. The option is then focused, and an input pointing `aria-activedescendant` at it (ComboBox) names an element that exists.
+
+  `ListBox` keeps its `role="listbox"` element when it has no items, described by the empty label, so a label's `aria-labelledby` or a search input's `aria-controls` no longer points at nothing. The empty list is a Tab stop, and the list's card shows focus while it has it.
+
+  `ListBox` renders "Select All" as a tri-state `checkbox` (`aria-checked` true, false or mixed) above the list instead of an `option` outside it. It is its own Tab stop, reached with `Tab` or `Shift+Tab` and toggled with `Space`, and no list item is left outside a list. Queries for it by role change from `option` to `checkbox`; its name is unchanged.
+
+  `ListBox` shows "Select All" as checked once every selectable item it shows is selected, including when the items were selected one by one; disabled items don't count. The next press takes the items shown out of the selection, so selected keys that aren't among its items stay selected.
+
+  `ListBox`, `FilterListBox` and `FilterPicker`: under a search or `filter`, "Select All" selects or deselects only the options shown, and selected options the search hides stay selected. It used to select every option, hidden ones included, and its next press cleared them all.
+
+  `ListBox` with `disableSelectionToggle` keeps a re-picked option selected also when `selectionMode` is left to its default, single. It used to apply only with an explicit `selectionMode="single"`.
+
+  `ListBox` reports one `onSelectionChange` call per "Select All" press instead of two, and none when `disallowEmptySelection` keeps the selection.
+
+  `ListBox` section dividers are presentational, so a listbox holds only options and groups. `Menu`, `CommandMenu`, `ListBox` and `FilterListBox` headers no longer carry `role="heading"`, which read any controls inside as part of a title, and their footers drop the invalid `role="footer"`.
+
+- [#1530](https://github.com/cube-js/cube-ui-kit/pull/1530) [`c814fafd`](https://github.com/cube-js/cube-ui-kit/commit/c814fafd11eb9beae65457d04c92dca129e299b6) Thanks [@tenphi](https://github.com/tenphi)! - In `Menu` and `CommandMenu`, the icon, label and description of a navigation item (or of a command item with inline actions) no longer sit on top of the row's `role="menuitem"` anchor as pointer targets. Before, a long label covered the centre of that anchor, so a role-based browser-test click such as Playwright's `getByRole('menuitem', { name }).click()` failed with "intercepts pointer events". Now those slots let presses through to the menuitem anchor, which carries the same `href`, so plain, modified, middle and right clicks anywhere on the row behave as before for users, and inline actions and controls in the prefix, suffix and actions slots stay clickable. Tests that click such an item by its label, description or icon now fail instead: a browser test reports that the anchor "intercepts pointer events", and jsdom's user-event rejects an element with `pointer-events: none`. Click the item by its role instead, as `getByRole('menuitem', { name })`.
+
+- [#1531](https://github.com/cube-js/cube-ui-kit/pull/1531) [`aa0de8ca`](https://github.com/cube-js/cube-ui-kit/commit/aa0de8cadc93e5a9b9512e831ba15f885d687971) Thanks [@tenphi](https://github.com/tenphi)! - `RangeSlider`: `ref.current.focus()` now focuses the first thumb. It used to do nothing, because the ref targeted an input no thumb rendered.
+
+  `Layout.Footer`: only the footer of a top-level `Layout` is a `contentinfo` landmark now. A footer inside a `Layout.Panel`, a nested `Layout` or any other Layout region gets `role="none"`, so panel footers no longer add unnamed "content info" landmarks. An explicit `role` still wins.
+
+  `Picker`: the trigger now describes itself with the value it shows (the selection, the `renderSummary` output or the placeholder), so screen readers announce "Status, button, Open" instead of the label alone, and it sets `aria-haspopup="dialog"` for the popover it opens. Its accessible name is still the label.
+
+- [#1530](https://github.com/cube-js/cube-ui-kit/pull/1530) [`c814fafd`](https://github.com/cube-js/cube-ui-kit/commit/c814fafd11eb9beae65457d04c92dca129e299b6) Thanks [@tenphi](https://github.com/tenphi)! - `NumberInput`: a `suffix` now sits next to the number, before the stepper buttons, by default, so a unit reads `40 px ⌃⌄` instead of `40 ⌃⌄ px`. This matches the documented `suffixPosition` default of `before`, which previously behaved like `after`. `suffixPosition="after"` still places the suffix after the steppers; pass it (or move the control to `actions`, which always renders last) to keep the old order for a suffix that is a control rather than a unit. The docs now describe `suffixPosition` as the suffix's position relative to the steppers; the validation and loading icon always comes before both.
+
+- [#1529](https://github.com/cube-js/cube-ui-kit/pull/1529) [`be50525c`](https://github.com/cube-js/cube-ui-kit/commit/be50525c6d2ac2f381203f805acda294369f48da) Thanks [@tenphi](https://github.com/tenphi)! - Removing many toasts or notifications when each removal commits synchronously on its own (for example one `flushSync` per removal) no longer ends in React's "Maximum update depth exceeded" error. Each removal used to leave a state update pending after its commit, which React 19 counts as a nested update; the stack now forgets a removed item in the same render that drops its height.
+
+- [#1530](https://github.com/cube-js/cube-ui-kit/pull/1530) [`c814fafd`](https://github.com/cube-js/cube-ui-kit/commit/c814fafd11eb9beae65457d04c92dca129e299b6) Thanks [@tenphi](https://github.com/tenphi)! - `parseAbsoluteDate` now returns a UTC `ZonedDateTime` for a string with a zone or offset, such as `2024-01-05T00:00:00Z` or `2024-01-05T00:00:00+02:00`, instead of `undefined`. A `DateInput` given such a string as its value now shows it instead of an empty field. An ISO date-time without a zone, such as `2024-01-05T10:30` or `2024-01-05 10:30:15`, is now read as UTC wall time; it used to be read in the browser's time zone, which moved it by the browser's offset and could show the previous or next day. A malformed day `00` is still rejected. Date-only strings, `Date` objects and other date strings parse as before. A local workaround that parses these strings before passing them in is no longer needed.
+
+- [#1530](https://github.com/cube-js/cube-ui-kit/pull/1530) [`c814fafd`](https://github.com/cube-js/cube-ui-kit/commit/c814fafd11eb9beae65457d04c92dca129e299b6) Thanks [@tenphi](https://github.com/tenphi)! - `<Root palette>` no longer writes the palette store while it renders when the prop changes. Before, a new `palette` value notified `GlobalStyles` and every `usePaletteValue` / `usePaletteConfig` reader in the middle of Root's render, and React logged "Cannot update a component while rendering a different component", so hosts had to call `setPaletteConfig()` themselves before changing the prop. The first mount still applies the palette during render, so the first paint and SSR output stay branded; later changes now apply in a layout effect, which still lands before paint. Changing the prop alone is enough. A `<Root>` that mounts while another tree is already rendered with a different palette still applies it during its first render. Because Root's layout effect runs after its descendants', a `setPaletteConfig()` call from a descendant's layout effect in the same commit now loses to the prop; call it from a passive effect or an event handler.
+
+- [#1531](https://github.com/cube-js/cube-ui-kit/pull/1531) [`aa0de8ca`](https://github.com/cube-js/cube-ui-kit/commit/aa0de8cadc93e5a9b9512e831ba15f885d687971) Thanks [@tenphi](https://github.com/tenphi)! - `Select`: `isReadOnly` now fixes the value. The trigger stays focusable, but the list no longer opens and typeahead and the arrow keys no longer pick another option. Before, only the clear button was hidden.
+
+  `Select`: `onOpenChange` fires once per open or close, and no longer fires with `false` on mount.
+
+  `Select`: the options in the list follow the field's `size`, so a `large` Select opens `large` options. A `small` Select still opens `medium` options.
+
+  `Select`: the divider between sections no longer has `role="separator"`, which a listbox may not contain. It is presentation only and looks the same.
+
+  `Select`: `autoFocus` focuses the trigger, `inputProps` reach the trigger button and `loadingIndicator` replaces the default loading icon. All three were accepted and ignored. `popoverRef` is typed as `RefObject<HTMLElement | null>`, the popover element it receives; refs to an input element still type-check. `hideTrigger` never had an effect and is deprecated: pass `rightIcon={null}` to hide the caret.
+
+  `Select`: clearing calls `onSelectionChange(null)` once instead of twice.
+
+  `Select`: while `isLoading` is set the list no longer opens with nothing in it and typeahead no longer changes the value. Turning on `isDisabled`, `isLoading` or `isReadOnly` while the list is open closes it, so the trigger no longer reports `aria-expanded="true"` with no popup and the list does not reopen when the field is enabled again.
+
+  `Select`: opening from the keyboard focuses the right option. `ArrowUp` opens on the last option, `ArrowDown`, `Enter` and `Space` on the selected option or the first one, never on an option focused during an earlier opening or on the bare list. The focused option is scrolled into view as the list opens.
+
+  `Select`: the list is now the element that scrolls and that the popup's height limit applies to, so `PageDown` and `PageUp` move about one visible page instead of jumping to the last or first option. The popup also stays within the space left in the viewport.
+
+  `Select`: the clear button hands focus back to the trigger without opening the trigger's tooltip, so the next `Escape` closes a surrounding Dialog instead of that tooltip.
+
+- [#1531](https://github.com/cube-js/cube-ui-kit/pull/1531) [`aa0de8ca`](https://github.com/cube-js/cube-ui-kit/commit/aa0de8cadc93e5a9b9512e831ba15f885d687971) Thanks [@tenphi](https://github.com/tenphi)! - `TextInput`, `TextArea`, `PasswordInput`, `SearchInput`, `NumberInput`: `loadingIndicator` is now rendered in place of the default loading icon while `isLoading` is set. It was accepted and never shown.
+
+  `TextInput`, `TextArea`, `PasswordInput`, `SearchInput`, `NumberInput`: `inputProps` values for `disabled`, `maxLength`, `minLength` and `autoFocus`, and `rows` on a `multiLine` `TextInput`, are no longer overwritten by the matching explicit props when those are unset. An explicit prop that is set still wins.
+
+  `TextInput`, `TextArea`, `PasswordInput`, `NumberInput`: errors from `validate` now show the invalid style and the message after the user edits or leaves the field, so an empty field does not open in red. `aria-invalid` still follows `validate` from the start, an explicit `isInvalid` still shows at once, and an explicit `errorMessage` still replaces the returned message.
+
+  `TextInput`, `TextArea`, `PasswordInput`, `SearchInput`, `NumberInput` and the other fields that share their input box: a press inside the field box but outside the input, such as on the prefix, an icon or a textarea's margins, now focuses the input. Presses on buttons inside the field still go to those buttons.
+
+  `TextInput`: `multiLine` no longer puts input-only attributes such as `type="text"` on the textarea.
+
+  `SearchInput`: `onClear` is now called when `Escape` clears the text, not only from the clear button. `Escape` keeps clearing whether or not `isClearable` is set.
+
+  `SearchInput`: `isInvalid` now sets `aria-invalid` on the input.
+
+  `SearchInput`: a caller's `inputRef` no longer detaches the field's own ref, so the clear button returns focus to the input again.
+
+  `PasswordInput`: the show/hide toggle is now named "Show password" and reports whether the password is visible with `aria-pressed`. It was named "Toggle masking" in both states.
+
+  `TextInput`, `TextArea`, `PasswordInput`, `SearchInput`, `NumberInput`, `RadioGroup`, `CheckboxGroup`, `TagInput`, `CommandTextArea`: `value={null}` now clears a controlled field and keeps it controlled, and so does `isSelected={null}` on `Checkbox` and `Switch`. It used to switch the field to uncontrolled mode, which kept the last value on screen.
+
+  `NumberInput`: `wrapperProps` now reach the field wrapper, merged with the props React Aria puts there. They were dropped.
+
+  `NumberInput`: the stepper buttons now use the UI Kit translations. The English names stay "Increase {label}" and "Decrease {label}", or "Increase" and "Decrease" when the label is not text, and other locales now follow the UI Kit's own strings.
+
+  `NumberInput`: pressing a stepper no longer closes a popover the field sits in.
+
+  `CheckboxGroup`: style props and `styles` now apply to the group. They were accepted and ignored.
+
+- [#1531](https://github.com/cube-js/cube-ui-kit/pull/1531) [`aa0de8ca`](https://github.com/cube-js/cube-ui-kit/commit/aa0de8cadc93e5a9b9512e831ba15f885d687971) Thanks [@tenphi](https://github.com/tenphi)! - `Button`: an open tooltip now joins the button's own `aria-describedby` instead of replacing it, so a screen reader reads both the button's hint or error and the tooltip. `ItemBadge` does the same.
+
+  `TooltipTrigger`: `shouldCloseOnPress={false}` now keeps the tooltip open when the trigger is pressed, and `Tooltip`'s `shouldFlip={false}` now keeps the requested placement. The `delay` default is documented as 250ms, which is what it always was. `Tooltip`'s `showIcon` never did anything and is now marked deprecated.
+
+  `Tooltip`: when the page or an element containing the trigger scrolls, an open tooltip now follows its trigger while the trigger stays in view, and closes once it scrolls out of view. It used to stay where it was drawn while the trigger scrolled away.
+
+  `TooltipProvider` and `TooltipTrigger`: empty tooltip content (a `TooltipProvider` `title` of `null`, `undefined` or `''`, or a `Tooltip` with no content inside a `TooltipTrigger`) no longer opens an empty bubble or adds `aria-describedby` to the trigger.
+
+  `ItemBadge` and `InfoBadge`: a non-interactive icon badge with a name is now exposed as `role="img"`, so screen readers announce its name. When `aria-label` differs from a plain-text tooltip, the tooltip text becomes the badge's description, so keyboard and screen reader users get it without hovering.
+
+  `Button`: a disabled button stays natively disabled unless it has a tooltip you passed. The automatic tooltip for a truncated label used to keep it focusable, so whether a disabled button was a Tab stop changed with the window width.
+
+  `Button`: a button that is only loading (`isLoading` without `isDisabled`) keeps keyboard focus, so pressing Enter on it no longer drops focus to the page. It is marked `aria-disabled` and `aria-busy`, stays inert, and Tab skips it until loading ends. A button that is both loading and disabled, as `SubmitButton` is during a submission, is still natively disabled.
+
+- [#1530](https://github.com/cube-js/cube-ui-kit/pull/1530) [`c814fafd`](https://github.com/cube-js/cube-ui-kit/commit/c814fafd11eb9beae65457d04c92dca129e299b6) Thanks [@tenphi](https://github.com/tenphi)! - A `to` or `href` with leading or trailing spaces or control characters (such as `" https://example.com"` from data) is now read the way the browser reads a URL. Before, under a router navigation adapter, `Menu.Item`, `CommandMenu.Item`, `Link`, `Button`, `ItemButton` and `ItemAction` took such an external URL for an app path: they rendered a router-resolved href like `/ https:/example.com` and a plain click navigated in-app. Now those characters are dropped first, so the link renders and opens the external URL, `" /pricing"` goes to `/pricing`, and the `!`, `@` and `#` prefixes are recognised after leading whitespace. A `to` or `href` made only of such characters counts as empty: `Link` and `Button` render a button, and a `Menu.Item` with `href="  "` links to the current document like `href=""`. A no-break space is kept, as the browser keeps it. This is not URL sanitization: keep validating untrusted URLs before passing them, since a whitespace-wrapped `javascript:` URL is now treated as external like an unwrapped one.
+
 ## 0.195.0
 
 ### Minor Changes
