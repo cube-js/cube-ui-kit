@@ -12,7 +12,7 @@ import { LayoutFooter } from './LayoutFooter';
 import { LayoutPanel } from './LayoutPanel';
 import { LayoutToolbar } from './LayoutToolbar';
 
-function ExpandableTray({ hideOnClose = false }: { hideOnClose?: boolean }) {
+function ExpandableTray() {
   const [isOpen, setOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const dimensions = {
@@ -28,7 +28,7 @@ function ExpandableTray({ hideOnClose = false }: { hideOnClose?: boolean }) {
         mode="dialog"
         isDialogOpen={isOpen}
         onDialogOpenChange={setOpen}
-        dialogProps={{ type: 'tray', styles: dimensions, hideOnClose }}
+        dialogProps={{ type: 'tray', styles: dimensions }}
         dialogStyles={mergeStyles(dimensions, { padding: 0 })}
       >
         <Layout height="100%">
@@ -110,26 +110,4 @@ it('sizes and expands a panel tray without remounting its input or transcript', 
   await waitFor(() =>
     expect(screen.getByRole('button', { name: 'Open chat' })).toHaveFocus(),
   );
-});
-
-it('releases page scroll and modal state while a retained tray is closed', async () => {
-  const user = userEvent.setup();
-  renderWithRoot(<ExpandableTray hideOnClose />);
-  expect(document.documentElement.style.overflow).not.toBe('hidden');
-  await user.click(screen.getByRole('button', { name: 'Open chat' }));
-  const dialog = await screen.findByRole('dialog', { name: 'Chat' });
-  await waitFor(() =>
-    expect(document.documentElement.style.overflow).toBe('hidden'),
-  );
-  const input = screen.getByRole('textbox', { name: 'Message' });
-  await user.type(input, ' retained');
-  await user.click(screen.getByRole('button', { name: 'Close chat' }));
-  await waitFor(() => expect(dialog).not.toBeVisible());
-  await waitFor(() =>
-    expect(document.documentElement.style.overflow).not.toBe('hidden'),
-  );
-  const opener = screen.getByRole('button', { name: 'Open chat' });
-  await user.click(opener);
-  expect(screen.getByRole('textbox', { name: 'Message' })).toBe(input);
-  expect(input).toHaveValue('Draft retained');
 });

@@ -51,6 +51,21 @@ describe.each(['modal', 'tray'] as const)(
       expect(onDismiss).toHaveBeenCalledTimes(1);
     });
 
+    it('does not lock scrolling when a retained dialog starts closed', () => {
+      const { getByRole } = renderWithRoot(
+        <>
+          <button>Page action</button>
+          <DialogContainer type={type} hideOnClose isOpen={false}>
+            <Dialog aria-label="Chat">
+              <input aria-label="Message" />
+            </Dialog>
+          </DialogContainer>
+        </>,
+      );
+      expect(getByRole('button', { name: 'Page action' })).toBeVisible();
+      expect(document.documentElement.style.overflow).not.toBe('hidden');
+    });
+
     it('retains a conditional dialog and its input state with hideOnClose', async () => {
       const dialog = (
         <Dialog>
@@ -91,6 +106,7 @@ describe.each(['modal', 'tray'] as const)(
       });
       expect(input).toBeInTheDocument();
       expect(input).not.toBeVisible();
+      expect(document.documentElement.style.overflow).not.toBe('hidden');
 
       rerender(
         <DialogContainer type={type} hideOnClose>
