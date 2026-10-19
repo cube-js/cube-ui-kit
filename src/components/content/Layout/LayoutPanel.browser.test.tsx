@@ -1418,3 +1418,72 @@ describe('Layout.Panel stacking', () => {
     );
   });
 });
+
+describe('Layout.Panel hideOnClose', () => {
+  function HiddenOnCloseLayout({
+    isOpen,
+    hasTransition,
+  }: {
+    isOpen: boolean;
+    hasTransition: boolean;
+  }) {
+    return (
+      <div style={{ width: 400, height: 240, display: 'grid' }}>
+        <Layout
+          qa="hide-layout"
+          hasTransition={hasTransition}
+          minContentSize={100}
+          styles={{ $transition: '1s' }}
+        >
+          <button>Main</button>
+          <Layout.Panel
+            hideOnClose
+            isResizable
+            side="right"
+            qa="hide-panel"
+            isOpen={isOpen}
+            defaultSize={150}
+            minSize={50}
+          >
+            <input aria-label="Draft" />
+          </Layout.Panel>
+        </Layout>
+      </div>
+    );
+  }
+
+  it.each([true, false])(
+    'keeps closed content mounted out of the layout (transition: %s)',
+    async (hasTransition) => {
+      await page.viewport(800, 600);
+      const view = renderWithRoot(
+        <HiddenOnCloseLayout isOpen hasTransition={hasTransition} />,
+      );
+      const layout = screen.getByTestId('hide-layout');
+      const panel = await screen.findByTestId('hide-panel');
+      // Uncontrolled, so the typed value survives only if the input never remounts.
+      await userEvent.type(screen.getByLabelText('Draft'), 'Unsent');
+
+      view.rerender(
+        <HiddenOnCloseLayout isOpen={false} hasTransition={hasTransition} />,
+      );
+      await act(async () =>
+        panel.getAnimations().forEach((animation) => animation.finish()),
+      );
+      await waitFor(() => expect(getComputedStyle(panel).display).toBe('none'));
+      expect(screen.getByTestId('hide-panel')).toBe(panel);
+      expect(screen.queryByTestId('PanelResizeHandler')).toBeNull();
+      expect(layout.style.getPropertyValue('--inset-right')).toBe('0px');
+      await waitFor(() => expect(layout.style.overflow).toBe(''));
+
+      view.rerender(
+        <HiddenOnCloseLayout isOpen hasTransition={hasTransition} />,
+      );
+      await waitFor(() => expect(getComputedStyle(panel).display).toBe('flex'));
+      expect(screen.getByLabelText('Draft')).toHaveValue('Unsent');
+      await waitFor(() =>
+        expect(layout.style.getPropertyValue('--inset-right')).toBe('152px'),
+      );
+    },
+  );
+});

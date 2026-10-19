@@ -66,6 +66,11 @@ const PanelElement = tasty({
     container: 'panel / inline-size',
     position: 'absolute',
     display: 'flex',
+    // A closed `hideOnClose` panel keeps its content mounted out of the layout.
+    hide: {
+      '': false,
+      hidden: true,
+    },
     flow: 'column',
     overflow: 'hidden',
     boxSizing: 'border-box',
@@ -393,6 +398,13 @@ export interface CubeLayoutPanelProps extends BaseProps, ContainerStyleProps {
   /** Enable slide transition on open/close */
   hasTransition?: boolean;
   /**
+   * Hide the closed panel instead of unmounting its content, so the content
+   * keeps its state (an unsent draft, scroll position, a request in flight)
+   * until the panel reopens. A hidden panel takes no space and no focus.
+   * Default: false
+   */
+  hideOnClose?: boolean;
+  /**
    * Whether the panel can be dismissed by clicking the overlay (overlay mode), pressing Escape,
    * or, in overlay mode, moving focus into the main content.
    * Only applies to `overlay` and `dialog` modes. Default: true
@@ -465,6 +477,7 @@ function LayoutPanel(
     defaultIsOpen = true,
     onOpenChange,
     hasTransition: hasTransitionProp,
+    hideOnClose = false,
     isDismissable = true,
     overlayStyles,
     // Deprecated prop - use mode="dialog" instead
@@ -988,9 +1001,12 @@ function LayoutPanel(
     setStoredSize(clampedSize);
   }, [defaultSize, clampValue, onSizeChange, setStoredSize]);
 
+  // `isHidden` keeps the element tree of an open panel, so content never remounts.
+  // Without a transition, a rendered closed panel is a hidden one.
   const renderPanelContent = (
     offscreen = false,
     transitionRef?: RefCallback<HTMLElement>,
+    isHidden = !isOpen,
   ) => {
     const showOverlay = isOverlayMode && !offscreen;
 
@@ -998,7 +1014,7 @@ function LayoutPanel(
       <>
         {isOverlayMode && <OpenerProbe focusRef={mountFocusRef} />}
         {/* Overlay backdrop for overlay mode */}
-        {isOverlayMode && (
+        {isOverlayMode && !isHidden && (
           <OverlayBackdrop
             mods={{ visible: showOverlay }}
             styles={overlayStyles}
@@ -1014,7 +1030,7 @@ function LayoutPanel(
             panelRefCallback(node, transitionRef);
           }}
           {...filterBaseProps(otherProps, { eventProps: true })}
-          mods={{ ...panelMods, offscreen }}
+          mods={{ ...panelMods, offscreen, hidden: isHidden }}
           styles={finalStyles}
           style={panelStyle}
           data-side={side}
@@ -1023,7 +1039,7 @@ function LayoutPanel(
             <LayoutContextReset>{children}</LayoutContextReset>
           </LayoutPanelContext.Provider>
         </PanelElement>
-        {isResizable && (
+        {isResizable && !isHidden && (
           <ResizeHandler
             side={side}
             isDisabled={!isResizable}
@@ -1046,6 +1062,7 @@ function LayoutPanel(
     return (
       <DialogContainer
         isOpen={dialogOpen}
+        hideOnClose={hideOnClose}
         isDismissable={isDismissable}
         onDismiss={() => handleDialogOpenChange(false)}
         {...dialogProps}
@@ -1072,11 +1089,16 @@ function LayoutPanel(
       <DisplayTransition
         isShown={isOpen}
         animateOnMount={false}
+        exposeUnmounted={hideOnClose}
         onToggle={(isShown) => setVisualState({ isShown, isTransitionActive })}
       >
-        {({ isShown, isExiting, ref: transitionRef }) => (
-          <LayoutPanelTransition isShown={isShown} isExiting={isExiting}>
-            {renderPanelContent(!isShown, transitionRef)}
+        {({ phase, isShown, isExiting, ref: transitionRef }) => (
+          <LayoutPanelTransition
+            isShown={isShown}
+            isExiting={isExiting}
+            isHidden={phase === 'unmounted'}
+          >
+            {renderPanelContent(!isShown, transitionRef, phase === 'unmounted')}
           </LayoutPanelTransition>
         )}
       </DisplayTransition>,
@@ -1085,7 +1107,7 @@ function LayoutPanel(
   }
 
   // Simple panel (no transition) - portal to panel container
-  if (!isOpen) return null;
+  if (!isOpen && !hideOnClose) return null;
 
   return createPortal(renderPanelContent(false), portalContainer);
 }
