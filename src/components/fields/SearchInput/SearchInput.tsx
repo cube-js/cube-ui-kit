@@ -1,4 +1,4 @@
-import { forwardRef, useRef } from 'react';
+import { forwardRef, RefObject, useRef } from 'react';
 import { useSearchField } from 'react-aria';
 import { SearchFieldProps, useSearchFieldState } from 'react-stately';
 
@@ -11,13 +11,14 @@ import {
   castNullableStringValue,
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
-import { ItemAction, ItemActionProvider } from '../../actions';
+import { ItemAction } from '../../actions/ItemAction/ItemAction';
+import { ItemActionProvider } from '../../actions/ItemActionContext';
 import { useValidationProps } from '../../form';
 import {
   CubeBufferedValueProps,
   CubeTextInputBaseProps,
   TextInputBase,
-} from '../TextInput';
+} from '../TextInput/TextInputBase';
 
 export { useSearchFieldState, useSearchField };
 export type { SearchFieldProps };
@@ -42,9 +43,15 @@ export interface CubeSearchInputProps
       'onKeyDown' | 'onKeyUp' | 'errorMessage' | 'onFocus' | 'onBlur'
     >,
     CubeBufferedValueProps {
-  /** Whether the search input is clearable using ESC keyboard button or clear button inside the input */
+  /**
+   * Whether the input shows a clear button while it has text. `Escape` clears the input whatever
+   * this is set to, as in a native search field.
+   */
   isClearable?: boolean;
-  /** Callback called when the clear button is pressed */
+  /**
+   * Called after the text is cleared, by the clear button or by `Escape`. A clear with no text to
+   * remove doesn't call it.
+   */
   onClear?: () => void;
 }
 
@@ -59,16 +66,18 @@ export const SearchInput = forwardRef(function SearchInput(
 
   let {
     isClearable,
-    isInvalid,
-    isValid,
-    onClear,
     labelProps: userLabelProps,
     inputProps: userInputProps,
+    inputRef: propsInputRef,
     isBuffered,
     ...restProps
   } = props;
 
-  let inputRef = useRef<HTMLInputElement>(null);
+  let localInputRef = useRef<HTMLInputElement>(null);
+  // The hook and the caller have to see the same element: the clear button
+  // hands focus back to the input through this ref.
+  let inputRef = (propsInputRef ??
+    localInputRef) as RefObject<HTMLInputElement | null>;
 
   // Hold the typed text locally until the controlled value catches up — see `useBufferedValue`.
   // Applied before the state hook, so `state.value` (and the clear button) follow the draft.
@@ -109,8 +118,6 @@ export const SearchInput = forwardRef(function SearchInput(
       type="search"
       icon={<SearchIcon />}
       suffixPosition="after"
-      isInvalid={isInvalid}
-      isValid={isValid}
       {...restProps}
       suffix={
         restProps.suffix || showClearButton ? (
@@ -141,12 +148,6 @@ export const SearchInput = forwardRef(function SearchInput(
                           ? true
                           : undefined
                       }
-                      onPress={(e) => {
-                        // Call the original clear functionality
-                        clearButtonProps.onPress?.(e);
-                        // Call the onClear callback
-                        onClear?.();
-                      }}
                     />
                   </ItemActionProvider>
                 );

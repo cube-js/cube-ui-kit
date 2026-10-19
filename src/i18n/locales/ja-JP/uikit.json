@@ -96,11 +96,13 @@
     "noFileSelected": "ファイルが選択されていません"
   },
   "passwordInput": {
-    "toggleMasking": "マスク表示を切り替え"
+    "showPassword": "パスワードを表示"
   },
   "numberInput": {
-    "stepUp": "増やす",
-    "stepDown": "減らす"
+    "stepUp": "{{label}}を増やす",
+    "stepDown": "{{label}}を減らす",
+    "increase": "増やす",
+    "decrease": "減らす"
   },
   "textInputMapper": {
     "key": "キー",

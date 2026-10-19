@@ -661,9 +661,9 @@ The Picker component is built with React Aria hooks and provides comprehensive a
 
 ### Screen Reader Support
 
-- Trigger button announces as "button" with current selection state
-- When empty: announces placeholder text
-- When selected: announces selected item(s) or count
+- The trigger is a button named by the field `label` (or `aria-label`), so its name does not change with the selection
+- The value the trigger shows is its description, announced after the name: the selected item(s), the `renderSummary` output, or the placeholder while empty (for example "Status, button, Open")
+- With `renderSummary={false}` the trigger shows no value, so it has no value description
 - Popover opening/closing is announced to screen readers
 - Item selection changes are announced immediately
 - Loading state announces "loading" to users
@@ -676,9 +676,10 @@ The component automatically manages ARIA attributes:
 
 - **`aria-label`** — Labels the trigger when no visible label exists
 - **`aria-labelledby`** — Associates the label with the trigger
-- **`aria-describedby`** — Associates help text and error messages
+- **`aria-describedby`** — Associates the displayed value, then help text and error messages
+- **`aria-haspopup="dialog"`** — The trigger opens a popover dialog that holds the list
 
-The following ARIA attributes are automatically managed by React Aria and do not need to be set manually: `aria-expanded`, `aria-haspopup`, `aria-invalid`, `aria-required`, `aria-disabled`.
+The trigger also sets `aria-expanded`, and `aria-controls` while the popover is open; none of these need to be set manually. A disabled Picker disables the trigger button.
 
 ### Best Practices for Accessibility
 

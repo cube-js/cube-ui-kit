@@ -234,6 +234,7 @@ Footer area with support for inverted content order (primary actions on right).
 
 - **`invertOrder`** `boolean` (default: `false`) — Reverse child order (primary on right)
 - **`children`** `ReactNode` — Footer content
+- **`role`** `string` — Overrides the landmark role. The footer of a top-level Layout is `contentinfo`; a footer inside a panel or a nested Layout gets `role="none"`, so it adds no landmark. To name such a footer, pass `role="group"` with an `aria-label`.
 
 ---
 
@@ -830,7 +831,7 @@ function ApplicationShell() {
 
 - `Layout.Header` uses semantic heading elements (`h1`-`h6`) based on `level` prop
 - `Layout.Toolbar` has `role="toolbar"` for proper announcement
-- `Layout.Footer` has `role="contentinfo"` for landmark navigation
+- `Layout.Footer` of a top-level Layout has `role="contentinfo"` for landmark navigation; footers inside panels and nested Layouts add no landmark
 - Breadcrumbs use Link components with proper navigation semantics
 - Panel close buttons have accessible labels
 

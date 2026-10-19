@@ -1,5 +1,5 @@
-import { act, waitFor } from '@testing-library/react';
-import { useState } from 'react';
+import { act, fireEvent, waitFor } from '@testing-library/react';
+import { useLayoutEffect, useState } from 'react';
 
 import {
   getActiveDescendant,
@@ -7,6 +7,11 @@ import {
   renderWithRoot,
   userEvent,
 } from '../../../test/index';
+import { Button } from '../../actions/Button/Button';
+import { Content } from '../../content/Content';
+import { Dialog } from '../../overlays/Dialog/Dialog';
+import { DialogTrigger } from '../../overlays/Dialog/DialogTrigger';
+import { TextInput } from '../TextInput/TextInput';
 
 import { ComboBox } from './ComboBox';
 
@@ -455,8 +460,11 @@ describe('<ComboBox />', () => {
       const { combobox, queryByRole, onSelectionChange } = renderSelected();
 
       await userEvent.clear(combobox);
+      // `type` clicks the input first, which opens the list.
       await userEvent.type(combobox, 'zzz');
-      expect(queryByRole('listbox')).not.toBeInTheDocument();
+      await waitFor(() =>
+        expect(queryByRole('listbox')).not.toBeInTheDocument(),
+      );
       onSelectionChange.mockClear();
 
       await act(async () => {
@@ -1322,6 +1330,39 @@ describe('<ComboBox />', () => {
     });
   });
 
+  it('shows items that arrive while the list is open', async () => {
+    const renderFruit = (fruits: { key: string; label: string }[]) => (
+      <ComboBox label="Fruit" defaultSelectedKey="banana" items={fruits}>
+        {(item: { key: string; label: string }) => (
+          <ComboBox.Item key={item.key}>{item.label}</ComboBox.Item>
+        )}
+      </ComboBox>
+    );
+    const { getAllByRole, getByRole, getByTestId, rerender } = renderWithRoot(
+      renderFruit([
+        { key: 'apple', label: 'Apple' },
+        { key: 'banana', label: 'Banana' },
+      ]),
+    );
+
+    await userEvent.click(getByTestId('ComboBoxTrigger'));
+    await waitFor(() => expect(getByRole('listbox')).toBeVisible());
+
+    rerender(
+      renderFruit([
+        { key: 'apple', label: 'Apple' },
+        { key: 'banana', label: 'Banana' },
+        { key: 'cherry', label: 'Cherry' },
+      ]),
+    );
+
+    expect(getAllByRole('option').map((option) => option.textContent)).toEqual([
+      'Banana',
+      'Apple',
+      'Cherry',
+    ]);
+  });
+
   it('should respect sortSelectedToTop={false}', async () => {
     interface Item {
       key: string;
@@ -1846,5 +1887,875 @@ describe('<ComboBox />', () => {
       expect(getByTestId('selected')).toHaveTextContent('CustomValue');
       expect(combobox).toHaveValue('CustomValue');
     });
+  });
+
+  const colorItems = items.map((item) => (
+    <ComboBox.Item key={item.key}>{item.children}</ComboBox.Item>
+  ));
+
+  describe('pressing the input', () => {
+    it('opens the list on a click into an input that already has focus', async () => {
+      const { getByRole, queryByRole } = renderWithRoot(
+        <ComboBox label="Color">{colorItems}</ComboBox>,
+      );
+      const combobox = getByRole('combobox');
+
+      await userEvent.tab();
+      expect(combobox).toHaveFocus();
+      expect(queryByRole('listbox')).not.toBeInTheDocument();
+
+      await userEvent.click(combobox);
+
+      await waitFor(() => expect(getByRole('listbox')).toBeVisible());
+      expect(combobox).toHaveAttribute('aria-expanded', 'true');
+    });
+
+    it('opens the list again on a click after Escape closed it', async () => {
+      const { getByRole, queryByRole, queryAllByRole } = renderWithRoot(
+        <ComboBox label="Color">{colorItems}</ComboBox>,
+      );
+      const combobox = getByRole('combobox');
+
+      await userEvent.type(combobox, 'r');
+      await waitFor(() => expect(getByRole('listbox')).toBeVisible());
+      const matches = queryAllByRole('option').length;
+
+      expect(matches).toBeLessThan(items.length);
+      await userEvent.keyboard('{Escape}');
+      await waitFor(() => expect(queryByRole('listbox')).toBeNull());
+
+      await userEvent.click(combobox);
+
+      await waitFor(() => expect(getByRole('listbox')).toBeVisible());
+      // Still the options the typed text leaves.
+      expect(queryAllByRole('option')).toHaveLength(matches);
+    });
+
+    it('keeps the list hidden on a click when the typed text matches nothing', async () => {
+      const onSelectionChange = vi.fn();
+      const { getByRole, queryByRole } = renderWithRoot(
+        <ComboBox
+          allowsCustomValue
+          label="Fruit"
+          onSelectionChange={onSelectionChange}
+        >
+          <ComboBox.Item key="apple">Apple</ComboBox.Item>
+          <ComboBox.Item key="banana">Banana</ComboBox.Item>
+        </ComboBox>,
+      );
+      const combobox = getByRole('combobox');
+
+      await act(async () => combobox.focus());
+      await userEvent.keyboard('xyz');
+      expect(queryByRole('listbox')).toBeNull();
+
+      // A click that moves the caret.
+      await userEvent.click(combobox);
+      await act(() => new Promise((resolve) => setTimeout(resolve, 50)));
+
+      expect(queryByRole('listbox')).toBeNull();
+      expect(combobox).toHaveAttribute('aria-expanded', 'false');
+
+      await userEvent.keyboard('{Enter}');
+
+      expect(onSelectionChange.mock.calls).toEqual([['xyz']]);
+      expect(combobox).toHaveValue('xyz');
+    });
+
+    it('focuses the input without opening the list on a click on the label', async () => {
+      const { getByRole, getByText, queryByRole } = renderWithRoot(
+        <ComboBox label="Color">{colorItems}</ComboBox>,
+      );
+      const combobox = getByRole('combobox');
+
+      await userEvent.click(getByText('Color'));
+      await act(() => new Promise((resolve) => setTimeout(resolve, 50)));
+
+      expect(combobox).toHaveFocus();
+      expect(queryByRole('listbox')).toBeNull();
+
+      // A click on the focused input still opens it.
+      await userEvent.click(combobox);
+
+      await waitFor(() => expect(getByRole('listbox')).toBeVisible());
+    });
+
+    it('does not open the list on a click with popoverTrigger="manual"', async () => {
+      const { getByRole, queryByRole } = renderWithRoot(
+        <ComboBox label="Color" popoverTrigger="manual">
+          {colorItems}
+        </ComboBox>,
+      );
+
+      await userEvent.click(getByRole('combobox'));
+
+      expect(queryByRole('listbox')).not.toBeInTheDocument();
+    });
+
+    it('keeps the list open on a click inside the input while it is open', async () => {
+      const { getByRole, getByTestId, queryByRole } = renderWithRoot(
+        <ComboBox label="Color">{colorItems}</ComboBox>,
+      );
+      const combobox = getByRole('combobox');
+
+      await userEvent.type(combobox, 're');
+      await waitFor(() => expect(getByRole('listbox')).toBeVisible());
+
+      await userEvent.click(combobox);
+      await act(() => new Promise((resolve) => setTimeout(resolve, 50)));
+
+      expect(getByRole('listbox')).toBeVisible();
+      expect(combobox).toHaveFocus();
+      expect(combobox).toHaveValue('re');
+
+      // The chevron still toggles the list closed.
+      await userEvent.click(getByTestId('ComboBoxTrigger'));
+      await waitFor(() => expect(queryByRole('listbox')).toBeNull());
+    });
+  });
+
+  describe('isReadOnly', () => {
+    const renderReadOnly = (props: Record<string, unknown> = {}) => {
+      const onSelectionChange = vi.fn();
+      const onInputChange = vi.fn();
+      const onBlur = vi.fn();
+      const view = renderWithRoot(
+        <ComboBox
+          isReadOnly
+          isClearable
+          label="Color"
+          defaultSelectedKey="red"
+          onSelectionChange={onSelectionChange}
+          onInputChange={onInputChange}
+          onBlur={onBlur}
+          {...props}
+        >
+          {colorItems}
+        </ComboBox>,
+      );
+
+      return {
+        ...view,
+        combobox: view.getByRole('combobox'),
+        onSelectionChange,
+        onInputChange,
+        onBlur,
+      };
+    };
+
+    it('does not open the list from the chevron, the arrow keys or a click', async () => {
+      const { combobox, getByTestId, queryByRole } = renderReadOnly();
+
+      await userEvent.click(getByTestId('ComboBoxTrigger'));
+      await userEvent.click(combobox);
+      await userEvent.keyboard('{ArrowDown}');
+      await userEvent.keyboard('{ArrowUp}');
+      await act(() => new Promise((resolve) => setTimeout(resolve, 50)));
+
+      expect(queryByRole('listbox')).not.toBeInTheDocument();
+      expect(combobox).toHaveAttribute('aria-expanded', 'false');
+    });
+
+    it('does not open the list on focus with popoverTrigger="focus"', async () => {
+      const { queryByRole } = renderReadOnly({ popoverTrigger: 'focus' });
+
+      await userEvent.tab();
+      await act(() => new Promise((resolve) => setTimeout(resolve, 50)));
+
+      expect(queryByRole('listbox')).not.toBeInTheDocument();
+    });
+
+    it('keeps the value on Escape, Enter and blur', async () => {
+      const { combobox, onSelectionChange, onInputChange, onBlur } =
+        renderReadOnly({ clearOnBlur: true });
+
+      await userEvent.tab();
+      await userEvent.keyboard('{Escape}');
+      await userEvent.keyboard('{Enter}');
+      await act(async () => combobox.blur());
+      await waitFor(() => expect(onBlur).toHaveBeenCalled());
+
+      expect(combobox).toHaveValue('Red');
+      expect(onSelectionChange).not.toHaveBeenCalled();
+      expect(onInputChange).not.toHaveBeenCalled();
+    });
+
+    it('does not commit the text on blur with allowsCustomValue', async () => {
+      const { combobox, onSelectionChange, onBlur } = renderReadOnly({
+        allowsCustomValue: true,
+        defaultSelectedKey: undefined,
+        defaultInputValue: 'Draft',
+      });
+
+      await userEvent.tab();
+      await act(async () => combobox.blur());
+      await waitFor(() => expect(onBlur).toHaveBeenCalled());
+
+      expect(onSelectionChange).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('custom value commits', () => {
+    it('trims the text committed on blur', async () => {
+      const onSelectionChange = vi.fn();
+      const { getByRole } = renderWithRoot(
+        <ComboBox
+          allowsCustomValue
+          label="Tag"
+          onSelectionChange={onSelectionChange}
+        >
+          {colorItems}
+        </ComboBox>,
+      );
+      const combobox = getByRole('combobox');
+
+      await userEvent.type(combobox, '  Custom ');
+      await act(async () => combobox.blur());
+
+      await waitFor(() =>
+        expect(onSelectionChange.mock.calls).toEqual([['Custom']]),
+      );
+      expect(combobox).toHaveValue('Custom');
+    });
+
+    it.each([
+      ['empty', ''],
+      ['whitespace-only', '   '],
+    ])('commits null, never "", on Enter with %s text', async (_, text) => {
+      const onSelectionChange = vi.fn();
+      const { getByRole } = renderWithRoot(
+        <ComboBox
+          allowsCustomValue
+          label="Tag"
+          onSelectionChange={onSelectionChange}
+        >
+          {[]}
+        </ComboBox>,
+      );
+      const combobox = getByRole('combobox');
+
+      await act(async () => combobox.focus());
+      if (text) await userEvent.type(combobox, text);
+      await userEvent.keyboard('{Enter}');
+
+      expect(onSelectionChange).not.toHaveBeenCalledWith('');
+      expect(onSelectionChange).toHaveBeenLastCalledWith(null);
+    });
+
+    it('commits the typed text on Enter with the list closed, even when options match', async () => {
+      const onSelectionChange = vi.fn();
+      const { getByRole, queryByRole } = renderWithRoot(
+        <ComboBox
+          allowsCustomValue
+          label="Fruit"
+          onSelectionChange={onSelectionChange}
+        >
+          <ComboBox.Item key="apple">Apple</ComboBox.Item>
+          <ComboBox.Item key="banana">Banana</ComboBox.Item>
+        </ComboBox>,
+      );
+      const combobox = getByRole('combobox');
+
+      await userEvent.type(combobox, 'app');
+      await waitFor(() => expect(getByRole('listbox')).toBeVisible());
+      await userEvent.keyboard('{Escape}');
+      await waitFor(() => expect(queryByRole('listbox')).toBeNull());
+      onSelectionChange.mockClear();
+
+      await userEvent.keyboard('{Enter}');
+
+      expect(onSelectionChange.mock.calls).toEqual([['app']]);
+      expect(combobox).toHaveValue('app');
+    });
+
+    it('still picks the highlighted option on Enter with the list open', async () => {
+      const onSelectionChange = vi.fn();
+      const { getByRole } = renderWithRoot(
+        <ComboBox
+          allowsCustomValue
+          label="Fruit"
+          onSelectionChange={onSelectionChange}
+        >
+          <ComboBox.Item key="apple">Apple</ComboBox.Item>
+          <ComboBox.Item key="banana">Banana</ComboBox.Item>
+        </ComboBox>,
+      );
+      const combobox = getByRole('combobox');
+
+      await userEvent.type(combobox, 'app');
+      await waitFor(() =>
+        expect(getActiveDescendant(combobox)).toHaveAttribute(
+          'data-key',
+          'apple',
+        ),
+      );
+      await userEvent.keyboard('{Enter}');
+
+      expect(onSelectionChange).toHaveBeenLastCalledWith('apple');
+      expect(combobox).toHaveValue('Apple');
+    });
+
+    it('commits edited text on Enter when the parent declined to clear the selection', async () => {
+      const onSelectionChange = vi.fn();
+      const { getByRole } = renderWithRoot(
+        <ComboBox
+          allowsCustomValue
+          label="Tag"
+          selectedKey="known"
+          onSelectionChange={onSelectionChange}
+        >
+          <ComboBox.Item key="known">Known</ComboBox.Item>
+        </ComboBox>,
+      );
+      const combobox = getByRole('combobox');
+
+      await userEvent.type(combobox, '!');
+      expect(combobox).toHaveValue('Known!');
+      onSelectionChange.mockClear();
+
+      await userEvent.keyboard('{Enter}');
+
+      expect(onSelectionChange.mock.calls).toEqual([['Known!']]);
+    });
+
+    it('keeps the selection on Enter when the text is the selected label', async () => {
+      const onSelectionChange = vi.fn();
+      const { getByRole } = renderWithRoot(
+        <ComboBox
+          allowsCustomValue
+          label="Fruit"
+          defaultSelectedKey="apple"
+          onSelectionChange={onSelectionChange}
+        >
+          <ComboBox.Item key="apple">Apple</ComboBox.Item>
+          <ComboBox.Item key="banana">Banana</ComboBox.Item>
+        </ComboBox>,
+      );
+
+      await userEvent.tab();
+      await userEvent.keyboard('{Enter}');
+
+      expect(onSelectionChange).not.toHaveBeenCalled();
+      expect(getByRole('combobox')).toHaveValue('Apple');
+    });
+  });
+
+  describe('re-picking the selected option', () => {
+    it('keeps the value and closes the list on a click', async () => {
+      const onSelectionChange = vi.fn();
+      const { getByRole, getByTestId, queryByRole } = renderWithRoot(
+        <ComboBox
+          label="Color"
+          defaultSelectedKey="red"
+          onSelectionChange={onSelectionChange}
+        >
+          {colorItems}
+        </ComboBox>,
+      );
+      const combobox = getByRole('combobox');
+
+      await userEvent.click(getByTestId('ComboBoxTrigger'));
+      await waitFor(() => expect(getByRole('listbox')).toBeVisible());
+      await userEvent.click(getByRole('option', { name: 'Red' }));
+
+      await waitFor(() => expect(queryByRole('listbox')).toBeNull());
+      expect(onSelectionChange).not.toHaveBeenCalledWith(null);
+      expect(combobox).toHaveValue('Red');
+    });
+
+    it('keeps the value on Enter', async () => {
+      const onSelectionChange = vi.fn();
+      const { getByRole, queryByRole } = renderWithRoot(
+        <ComboBox
+          label="Color"
+          defaultSelectedKey="red"
+          onSelectionChange={onSelectionChange}
+        >
+          {colorItems}
+        </ComboBox>,
+      );
+      const combobox = getByRole('combobox');
+
+      await act(async () => combobox.focus());
+      await userEvent.keyboard('{ArrowDown}');
+      await waitFor(() =>
+        expect(getActiveDescendant(combobox)).toHaveAttribute(
+          'data-key',
+          'red',
+        ),
+      );
+      await userEvent.keyboard('{Enter}');
+
+      await waitFor(() => expect(queryByRole('listbox')).toBeNull());
+      expect(onSelectionChange).not.toHaveBeenCalledWith(null);
+      expect(combobox).toHaveValue('Red');
+    });
+  });
+
+  it('marks the input as filtering a list with aria-autocomplete', () => {
+    const { getByRole } = renderWithRoot(
+      <ComboBox label="Color">{colorItems}</ComboBox>,
+    );
+
+    expect(getByRole('combobox')).toHaveAttribute('aria-autocomplete', 'list');
+  });
+
+  describe('Escape and Tab propagation', () => {
+    function InModal(props: Record<string, unknown>) {
+      return (
+        <DialogTrigger isDismissable type="modal">
+          <Button>Open</Button>
+          <Dialog aria-label="Task">
+            <Content>
+              <ComboBox label="Color" {...props}>
+                {colorItems}
+              </ComboBox>
+            </Content>
+          </Dialog>
+        </DialogTrigger>
+      );
+    }
+
+    async function openModal(props: Record<string, unknown> = {}) {
+      const view = renderWithRoot(<InModal {...props} />);
+
+      await userEvent.click(view.getByRole('button', { name: 'Open' }));
+      await waitFor(() => expect(view.getByRole('dialog')).toBeVisible());
+
+      const combobox = view.getByRole('combobox');
+
+      await act(async () => combobox.focus());
+
+      return { ...view, combobox };
+    }
+
+    it('lets Escape close the dialog when the list is closed and nothing clears', async () => {
+      const { queryByRole } = await openModal({ defaultSelectedKey: 'red' });
+
+      await userEvent.keyboard('{Escape}');
+
+      await waitFor(() => expect(queryByRole('dialog')).toBeNull());
+    });
+
+    it('keeps the dialog open when Escape closes the list', async () => {
+      const { combobox, getByRole, queryByRole } = await openModal();
+
+      await userEvent.type(combobox, 'r');
+      await waitFor(() => expect(getByRole('listbox')).toBeVisible());
+      await userEvent.keyboard('{Escape}');
+
+      await waitFor(() => expect(queryByRole('listbox')).toBeNull());
+      expect(getByRole('dialog')).toBeVisible();
+    });
+
+    it('keeps the dialog open when Escape clears the value', async () => {
+      const { combobox, getByRole } = await openModal({
+        isClearable: true,
+        defaultSelectedKey: 'red',
+      });
+
+      await userEvent.keyboard('{Escape}');
+
+      expect(combobox).toHaveValue('');
+      expect(getByRole('dialog')).toBeVisible();
+    });
+
+    it('lets Tab reach the ancestors', async () => {
+      const onKeyDown = vi.fn();
+      const { getByRole } = renderWithRoot(
+        <div onKeyDown={(e) => onKeyDown(e.key)}>
+          <ComboBox label="Color">{colorItems}</ComboBox>
+        </div>,
+      );
+
+      await act(async () => getByRole('combobox').focus());
+      await userEvent.keyboard('{Tab}');
+
+      expect(onKeyDown).toHaveBeenCalledWith('Tab');
+    });
+  });
+
+  describe('blurring an untouched field', () => {
+    it.each([
+      ['empty', {}],
+      ['with a value', { defaultSelectedKey: 'red' }],
+      ['empty with allowsCustomValue', { allowsCustomValue: true }],
+      [
+        'with a value and allowsCustomValue',
+        { allowsCustomValue: true, defaultSelectedKey: 'red' },
+      ],
+    ])('reports nothing when %s', async (_, props) => {
+      const onSelectionChange = vi.fn();
+      const onInputChange = vi.fn();
+      const onBlur = vi.fn();
+
+      const { getByRole } = renderWithRoot(
+        <ComboBox
+          label="Color"
+          onSelectionChange={onSelectionChange}
+          onInputChange={onInputChange}
+          onBlur={onBlur}
+          {...props}
+        >
+          {colorItems}
+        </ComboBox>,
+      );
+
+      await userEvent.tab();
+      expect(getByRole('combobox')).toHaveFocus();
+      await act(async () => getByRole('combobox').blur());
+      await waitFor(() => expect(onBlur).toHaveBeenCalled());
+
+      expect(onSelectionChange).not.toHaveBeenCalled();
+      expect(onInputChange).not.toHaveBeenCalled();
+    });
+  });
+
+  it('never points aria-activedescendant at an option the filter removed', async () => {
+    const { getByRole } = renderWithRoot(
+      <ComboBox label="Fruit">
+        <ComboBox.Item key="apple">Apple</ComboBox.Item>
+        <ComboBox.Item key="banana">Banana</ComboBox.Item>
+        <ComboBox.Item key="cherry">Cherry</ComboBox.Item>
+      </ComboBox>,
+    );
+    const combobox = getByRole('combobox');
+
+    await act(async () => combobox.focus());
+    await userEvent.keyboard('{ArrowDown}');
+    await waitFor(() =>
+      expect(getActiveDescendant(combobox)).toHaveAttribute(
+        'data-key',
+        'apple',
+      ),
+    );
+    await userEvent.keyboard('{ArrowDown}');
+    await waitFor(() =>
+      expect(getActiveDescendant(combobox)).toHaveAttribute(
+        'data-key',
+        'banana',
+      ),
+    );
+
+    await userEvent.type(combobox, 'ch');
+
+    // Right after the keystroke, before any deferred refocus.
+    if (combobox.hasAttribute('aria-activedescendant')) {
+      expect(getActiveDescendant(combobox)).toHaveAttribute('role', 'option');
+    }
+    await waitFor(() =>
+      expect(getActiveDescendant(combobox)).toHaveAttribute(
+        'data-key',
+        'cherry',
+      ),
+    );
+  });
+
+  describe('onOpenChange and aria-expanded', () => {
+    it('does not report on mount', () => {
+      const onOpenChange = vi.fn();
+
+      renderWithRoot(
+        <ComboBox label="Color" onOpenChange={onOpenChange}>
+          {colorItems}
+        </ComboBox>,
+      );
+
+      expect(onOpenChange).not.toHaveBeenCalled();
+    });
+
+    it('reports one close while typing text that matches nothing', async () => {
+      const onOpenChange = vi.fn();
+      const { getByRole, getByTestId } = renderWithRoot(
+        <ComboBox label="Color" onOpenChange={onOpenChange}>
+          {colorItems}
+        </ComboBox>,
+      );
+      const combobox = getByRole('combobox');
+      const expanded: (string | null)[] = [];
+
+      await userEvent.click(getByTestId('ComboBoxTrigger'));
+      await waitFor(() => expect(getByRole('listbox')).toBeVisible());
+
+      for (const char of 'zzz') {
+        await userEvent.keyboard(char);
+        expanded.push(combobox.getAttribute('aria-expanded'));
+      }
+
+      expect(combobox).toHaveValue('zzz');
+
+      expect(onOpenChange.mock.calls).toEqual([[true], [false]]);
+      expect(expanded).toEqual(['false', 'false', 'false']);
+    });
+  });
+
+  describe('labels of the selected key', () => {
+    it('shows the label once items arrive after a controlled selectedKey', async () => {
+      const countries = [{ key: 'us', label: 'United States' }];
+      const renderCountry = (list: typeof countries) => (
+        <ComboBox label="Country" selectedKey="us" items={list}>
+          {(item: (typeof countries)[number]) => (
+            <ComboBox.Item key={item.key}>{item.label}</ComboBox.Item>
+          )}
+        </ComboBox>
+      );
+      const { getByRole, rerender } = renderWithRoot(renderCountry([]));
+
+      rerender(renderCountry(countries));
+
+      await waitFor(() =>
+        expect(getByRole('combobox')).toHaveValue('United States'),
+      );
+    });
+
+    const users = [
+      { key: 'u-1', name: 'Alice' },
+      { key: 'u-2', name: 'Bob' },
+    ];
+
+    function renderUsers(
+      list: typeof users,
+      props: Record<string, unknown> = {},
+    ) {
+      return (
+        <ComboBox label="User" filter={false} items={list} {...props}>
+          {(item: (typeof users)[number]) => (
+            <ComboBox.Item key={item.key}>{item.name}</ComboBox.Item>
+          )}
+        </ComboBox>
+      );
+    }
+
+    it('keeps the picked label when the options drop the selected item', async () => {
+      const { getByRole, rerender } = renderWithRoot(renderUsers(users));
+      const combobox = getByRole('combobox');
+
+      await userEvent.click(getByRole('button', { name: 'Show options' }));
+      await userEvent.click(getByRole('option', { name: 'Alice' }));
+      await waitFor(() => expect(combobox).toHaveValue('Alice'));
+
+      // A refetch or a server-side search that leaves the item out.
+      rerender(renderUsers([]));
+
+      expect(combobox).toHaveValue('Alice');
+    });
+
+    it('keeps the picked label when the pick itself empties the options', async () => {
+      function Search() {
+        const [list, setList] = useState(users);
+
+        // A server-side search: the new query has no results yet.
+        return renderUsers(list, { onSelectionChange: () => setList([]) });
+      }
+
+      const { getByRole, queryByRole } = renderWithRoot(<Search />);
+      const combobox = getByRole('combobox');
+
+      await userEvent.click(getByRole('button', { name: 'Show options' }));
+      await userEvent.click(getByRole('option', { name: 'Alice' }));
+
+      await waitFor(() => expect(queryByRole('listbox')).toBeNull());
+      expect(combobox).toHaveValue('Alice');
+    });
+
+    it('keeps a controlled label shown once, and not for another key', () => {
+      const { getByRole, rerender } = renderWithRoot(
+        renderUsers(users, { selectedKey: 'u-1' }),
+      );
+      const combobox = getByRole('combobox');
+
+      expect(combobox).toHaveValue('Alice');
+
+      rerender(renderUsers([], { selectedKey: 'u-1' }));
+      expect(combobox).toHaveValue('Alice');
+
+      // A key whose label never loaded shows the key until it does.
+      rerender(renderUsers([], { selectedKey: 'u-2' }));
+      expect(combobox).toHaveValue('u-2');
+
+      rerender(renderUsers(users, { selectedKey: 'u-2' }));
+      expect(combobox).toHaveValue('Bob');
+    });
+
+    it('shows the label of defaultSelectedKey in the first commit', () => {
+      const firstValue = vi.fn();
+
+      function ReadFirstCommit() {
+        useLayoutEffect(() => {
+          firstValue(
+            document.querySelector<HTMLInputElement>('[role="combobox"]')
+              ?.value,
+          );
+        }, []);
+
+        return null;
+      }
+
+      renderWithRoot(
+        <>
+          <ComboBox label="Color" defaultSelectedKey="blue">
+            {colorItems}
+          </ComboBox>
+          <ReadFirstCommit />
+        </>,
+      );
+
+      expect(firstValue).toHaveBeenCalledWith('Blue');
+    });
+  });
+
+  it('picks the first match on an Enter pressed right after typing, without submitting the form', async () => {
+    const onSubmit = vi.fn();
+    const { getByRole, formInstance } = renderWithForm(
+      <ComboBox name="fruit" label="Fruit">
+        <ComboBox.Item key="apple">Apple</ComboBox.Item>
+        <ComboBox.Item key="cherry">Cherry</ComboBox.Item>
+      </ComboBox>,
+      { formProps: { onSubmit } },
+    );
+    const combobox = getByRole('combobox');
+    const user = userEvent.setup({ delay: null });
+
+    await user.type(combobox, 'Cherry{Enter}');
+
+    await waitFor(() =>
+      expect(formInstance.getFieldValue('fruit')).toBe('cherry'),
+    );
+    expect(combobox).toHaveValue('Cherry');
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  describe('chevron and clear button', () => {
+    it('leaves them out of the Tab order and closes the list on Tab', async () => {
+      const { getByRole, queryByRole } = renderWithRoot(
+        <>
+          <ComboBox isClearable label="Color" defaultSelectedKey="red">
+            {colorItems}
+          </ComboBox>
+          <TextInput label="Next" />
+        </>,
+      );
+      const combobox = getByRole('combobox');
+
+      await act(async () => combobox.focus());
+      await userEvent.keyboard('{ArrowDown}');
+      await waitFor(() => expect(getByRole('listbox')).toBeVisible());
+
+      await userEvent.tab();
+
+      expect(getByRole('textbox', { name: 'Next' })).toHaveFocus();
+      await waitFor(() => expect(queryByRole('listbox')).toBeNull());
+    });
+
+    it('returns focus to the input when the chevron closes the list', async () => {
+      const { getByRole, getByTestId, queryByRole } = renderWithRoot(
+        <ComboBox label="Color">{colorItems}</ComboBox>,
+      );
+      const trigger = getByTestId('ComboBoxTrigger');
+
+      await userEvent.click(trigger);
+      await waitFor(() => expect(getByRole('listbox')).toBeVisible());
+      await userEvent.click(trigger);
+
+      await waitFor(() => expect(queryByRole('listbox')).toBeNull());
+      expect(getByRole('combobox')).toHaveFocus();
+    });
+  });
+
+  it('matches the typed text exactly with the same collator as the filter', async () => {
+    const onSelectionChange = vi.fn();
+    const onBlur = vi.fn();
+    const { getByRole } = renderWithRoot(
+      <ComboBox
+        label="Season"
+        onSelectionChange={onSelectionChange}
+        onBlur={onBlur}
+      >
+        <ComboBox.Item key="summer">Été</ComboBox.Item>
+        <ComboBox.Item key="indian-summer">Été indien</ComboBox.Item>
+      </ComboBox>,
+    );
+    const combobox = getByRole('combobox');
+
+    // The filter shows both items for "ete"; the first is an exact match.
+    await userEvent.type(combobox, 'ete');
+    await waitFor(() =>
+      expect(document.querySelectorAll('[role="option"]')).toHaveLength(2),
+    );
+    await act(async () => combobox.blur());
+    await waitFor(() => expect(onBlur).toHaveBeenCalled());
+
+    expect(onSelectionChange.mock.calls).toEqual([['summer']]);
+    expect(combobox).toHaveValue('Été');
+  });
+
+  it('keeps showing the controlled label when the parent rejects a pick', async () => {
+    const onSelectionChange = vi.fn();
+    const { getByRole, getByTestId, queryByRole } = renderWithRoot(
+      <ComboBox
+        label="Color"
+        selectedKey="red"
+        onSelectionChange={onSelectionChange}
+      >
+        {colorItems}
+      </ComboBox>,
+    );
+    const combobox = getByRole('combobox');
+
+    await userEvent.click(getByTestId('ComboBoxTrigger'));
+    await waitFor(() => expect(getByRole('listbox')).toBeVisible());
+    await userEvent.click(getByRole('option', { name: 'Blue' }));
+
+    await waitFor(() => expect(queryByRole('listbox')).toBeNull());
+    expect(onSelectionChange).toHaveBeenCalledWith('blue');
+    expect(combobox).toHaveValue('Red');
+  });
+
+  it.each([
+    ['isComposing', { isComposing: true }],
+    ['keyCode 229', { keyCode: 229 }],
+  ])(
+    'leaves an Enter during IME composition to the IME (%s)',
+    async (_, init) => {
+      const onSelectionChange = vi.fn();
+      const { getByRole } = renderWithRoot(
+        <ComboBox
+          allowsCustomValue
+          label="Word"
+          onSelectionChange={onSelectionChange}
+        >
+          {colorItems}
+        </ComboBox>,
+      );
+      const combobox = getByRole('combobox');
+
+      await userEvent.type(combobox, 'r');
+      await waitFor(() =>
+        expect(getActiveDescendant(combobox)).toHaveAttribute(
+          'data-key',
+          'red',
+        ),
+      );
+      onSelectionChange.mockClear();
+
+      fireEvent.keyDown(combobox, { key: 'Enter', ...init });
+
+      expect(onSelectionChange).not.toHaveBeenCalled();
+      expect(combobox).toHaveValue('r');
+      expect(getByRole('listbox')).toBeVisible();
+    },
+  );
+
+  it('gives the options the size of the field', async () => {
+    const { getByRole, getAllByRole, getByTestId } = renderWithRoot(
+      <ComboBox label="Color" size="large">
+        {colorItems}
+      </ComboBox>,
+    );
+
+    await userEvent.click(getByTestId('ComboBoxTrigger'));
+    await waitFor(() => expect(getByRole('listbox')).toBeVisible());
+
+    expect(getAllByRole('option')[0]).toHaveAttribute('data-size', 'large');
   });
 });

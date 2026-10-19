@@ -44,8 +44,8 @@ A searchable list selection component that combines a ListBox with an integrated
 - **`description`** `string` — Field description
 - **`header`** `ReactNode` — Custom header content
 - **`footer`** `ReactNode` — Custom footer content
-- **`showSelectAll`** `boolean` (default: `false`) — Whether to show "Select All" option in multiple mode
-- **`selectAllLabel`** `string` (default: `All`) — Label for the "Select All" option
+- **`showSelectAll`** `boolean` (default: `false`) — Whether to show "Select All" checkbox in multiple mode. Under a search it selects or deselects only the options shown, and selected options the search hides stay selected
+- **`selectAllLabel`** `string` (default: `Select All`) — Label for the "Select All" checkbox
 - **`searchValue`** `string` — Controlled search input value
 - **`onSearchChange`** `(value: string) => void` — Callback when search input changes
 - **`onSelectionChange`** `(keys: Key | Key[] | 'all' | null) => void` — Callback when selection changes

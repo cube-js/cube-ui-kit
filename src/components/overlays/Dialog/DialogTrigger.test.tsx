@@ -2,7 +2,13 @@ import { ClearPressResponder } from '@react-aria/interactions';
 import { useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 
-import { renderWithRoot, screen, userEvent, waitFor } from '../../../test';
+import {
+  fireEvent,
+  renderWithRoot,
+  screen,
+  userEvent,
+  waitFor,
+} from '../../../test';
 import { startScreenReader } from '../../../test/screen-reader';
 import { Button } from '../../actions/Button';
 import { ItemButton } from '../../actions/ItemButton/ItemButton';
@@ -460,6 +466,246 @@ describe('<DialogTrigger type="popover" /> with an actions row as the trigger', 
     await waitFor(() =>
       expect(baseElement.querySelector('[data-qa="Dialog"]')).toBeNull(),
     );
+  });
+});
+
+// `isDismissable={false}` means an outside press neither closes the popover
+// nor is consumed by it. Every path that used to close it anyway is covered:
+// the auto-dismiss on a `Button`, and a peer popover opening.
+describe('<DialogTrigger type="popover" isDismissable={false} />', () => {
+  const user = userEvent.setup({ delay: null });
+
+  const renderApp = (onCheckboxChange = vi.fn(), onButtonPress = vi.fn()) =>
+    renderWithRoot(
+      <>
+        <DialogTrigger type="popover" isDismissable={false}>
+          <Button qa="Trigger">Open</Button>
+          <Dialog>
+            <Content>Persistent</Content>
+          </Dialog>
+        </DialogTrigger>
+        <input
+          type="checkbox"
+          aria-label="Outside checkbox"
+          onChange={onCheckboxChange}
+        />
+        <Button qa="OutsideButton" onPress={onButtonPress}>
+          Outside
+        </Button>
+        <DialogTrigger type="popover">
+          <Button qa="PeerTrigger">Peer</Button>
+          <Dialog qa="PeerDialog">
+            <Content>Peer</Content>
+          </Dialog>
+        </DialogTrigger>
+      </>,
+    );
+
+  const open = async (baseElement: HTMLElement) => {
+    await user.click(
+      baseElement.querySelector('[data-qa="Trigger"]') as HTMLElement,
+    );
+
+    return waitFor(() =>
+      expect(baseElement.querySelector('[data-qa="Dialog"]')).toBeTruthy(),
+    );
+  };
+
+  // Past the auto-dismiss `setTimeout(0)`, the EventBus delivery and the exit
+  // animation, so a close that was merely scheduled has had time to land.
+  const settle = () => new Promise((resolve) => setTimeout(resolve, 500));
+
+  it('lets an outside press reach the control and stays open', async () => {
+    const onCheckboxChange = vi.fn();
+    const { baseElement } = renderApp(onCheckboxChange);
+
+    await open(baseElement);
+    await user.click(screen.getByLabelText('Outside checkbox'));
+    await settle();
+
+    expect(onCheckboxChange).toHaveBeenCalledTimes(1);
+    expect(baseElement.querySelector('[data-qa="Dialog"]')).toBeTruthy();
+  });
+
+  it('stays open when a Button outside it is pressed', async () => {
+    const onButtonPress = vi.fn();
+    const { baseElement } = renderApp(undefined, onButtonPress);
+
+    await open(baseElement);
+    await user.click(
+      baseElement.querySelector('[data-qa="OutsideButton"]') as HTMLElement,
+    );
+    await settle();
+
+    expect(onButtonPress).toHaveBeenCalledTimes(1);
+    expect(baseElement.querySelector('[data-qa="Dialog"]')).toBeTruthy();
+  });
+
+  it('stays open when another popover opens', async () => {
+    const { baseElement } = renderApp();
+
+    await open(baseElement);
+    await user.click(
+      baseElement.querySelector('[data-qa="PeerTrigger"]') as HTMLElement,
+    );
+    await waitFor(() =>
+      expect(baseElement.querySelector('[data-qa="PeerDialog"]')).toBeTruthy(),
+    );
+    await settle();
+
+    expect(baseElement.querySelector('[data-qa="Dialog"]')).toBeTruthy();
+  });
+
+  // A modal or tray takes over the page: left open, the popover would sit
+  // over it, hidden from screen readers, and take its focus restore.
+  it.each(['modal', 'tray'] as const)(
+    'closes when a %s opens from a Button outside it',
+    async (type) => {
+      const { baseElement } = renderWithRoot(
+        <>
+          <DialogTrigger type="popover" isDismissable={false}>
+            <Button qa="Trigger">Open</Button>
+            <Dialog>
+              <Content>Persistent</Content>
+            </Dialog>
+          </DialogTrigger>
+          <DialogTrigger type={type}>
+            <Button qa="OverlayTrigger">Take over</Button>
+            <Dialog qa="Overlay" aria-label="Overlay">
+              <Content>Over the page</Content>
+            </Dialog>
+          </DialogTrigger>
+        </>,
+      );
+
+      await open(baseElement);
+      await user.click(
+        baseElement.querySelector('[data-qa="OverlayTrigger"]') as HTMLElement,
+      );
+
+      await waitFor(() =>
+        expect(baseElement.querySelector('[data-qa="Overlay"]')).toBeTruthy(),
+      );
+      await waitFor(() =>
+        expect(baseElement.querySelector('[data-qa="Dialog"]')).toBeNull(),
+      );
+    },
+  );
+
+  // Closing it would unmount the modal opened from inside it.
+  it('stays open when a modal opens from inside it', async () => {
+    const { baseElement } = renderWithRoot(
+      <DialogTrigger type="popover" isDismissable={false}>
+        <Button qa="Trigger">Open</Button>
+        <Dialog>
+          {/* Keeps the inner Button's press from closing the popover. */}
+          <Content data-popover-keep="">
+            <DialogTrigger>
+              <Button qa="OverlayTrigger">Details</Button>
+              <Dialog qa="Overlay" aria-label="Details">
+                <Content>Details</Content>
+              </Dialog>
+            </DialogTrigger>
+          </Content>
+        </Dialog>
+      </DialogTrigger>,
+    );
+
+    await open(baseElement);
+    await user.click(
+      baseElement.querySelector('[data-qa="OverlayTrigger"]') as HTMLElement,
+    );
+    await waitFor(() =>
+      expect(baseElement.querySelector('[data-qa="Overlay"]')).toBeTruthy(),
+    );
+    await settle();
+
+    expect(baseElement.querySelector('[data-qa="Dialog"]')).toBeTruthy();
+    expect(baseElement.querySelector('[data-qa="Overlay"]')).toBeTruthy();
+  });
+
+  it('still closes from an explicit action inside it', async () => {
+    const { baseElement } = renderWithRoot(
+      <DialogTrigger type="popover" isDismissable={false}>
+        <Button qa="Trigger">Open</Button>
+        {(close) => (
+          <Dialog>
+            <Button qa="Close" onPress={close}>
+              Close
+            </Button>
+          </Dialog>
+        )}
+      </DialogTrigger>,
+    );
+
+    await open(baseElement);
+    await user.click(
+      baseElement.querySelector('[data-qa="Close"]') as HTMLElement,
+    );
+
+    await waitFor(() =>
+      expect(baseElement.querySelector('[data-qa="Dialog"]')).toBeNull(),
+    );
+  });
+});
+
+// A popover anchored elsewhere through `targetRef` closes when that anchor
+// scrolls away, the same as one anchored to its trigger.
+describe('<DialogTrigger type="popover" targetRef /> on scroll', () => {
+  const user = userEvent.setup({ delay: null });
+
+  // `keepOpenOnScroll` is read by the popover but is not one of the typed
+  // props, hence the spread.
+  function App(props: { keepOpenOnScroll?: boolean }) {
+    const anchorRef = useRef<HTMLDivElement>(null);
+
+    return (
+      <>
+        <div data-qa="Scroller" style={{ overflow: 'auto', height: 100 }}>
+          <div ref={anchorRef} style={{ height: 300 }}>
+            Anchor
+          </div>
+        </div>
+        <DialogTrigger type="popover" targetRef={anchorRef} {...props}>
+          <Button qa="Trigger">Open</Button>
+          <Dialog>
+            <Content>Anchored</Content>
+          </Dialog>
+        </DialogTrigger>
+      </>
+    );
+  }
+
+  const openAndScroll = async (baseElement: HTMLElement) => {
+    await user.click(
+      baseElement.querySelector('[data-qa="Trigger"]') as HTMLElement,
+    );
+    await waitFor(() =>
+      expect(baseElement.querySelector('[data-qa="Dialog"]')).toBeTruthy(),
+    );
+
+    fireEvent.scroll(
+      baseElement.querySelector('[data-qa="Scroller"]') as HTMLElement,
+    );
+  };
+
+  it('closes when the anchor scrolls', async () => {
+    const { baseElement } = renderWithRoot(<App />);
+
+    await openAndScroll(baseElement);
+
+    await waitFor(() =>
+      expect(baseElement.querySelector('[data-qa="Dialog"]')).toBeNull(),
+    );
+  });
+
+  it('stays open with keepOpenOnScroll', async () => {
+    const { baseElement } = renderWithRoot(<App keepOpenOnScroll />);
+
+    await openAndScroll(baseElement);
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    expect(baseElement.querySelector('[data-qa="Dialog"]')).toBeTruthy();
   });
 });
 

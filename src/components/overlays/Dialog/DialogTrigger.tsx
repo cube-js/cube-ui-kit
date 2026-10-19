@@ -26,6 +26,7 @@ import { isOwnActionsPress } from '../../actions/actions-run';
 import { Modal, Popover, Tray, WithCloseBehavior } from '../Modal';
 
 import { DialogContext } from './context';
+import { useDialogOpenSync } from './use-dialog-open-sync';
 
 export type CubeDialogClose = (close: () => void) => ReactElement;
 
@@ -59,12 +60,16 @@ export interface CubeDialogTriggerProps
     | 'popover';
   placement?: Placement;
   /**
-   * Whether a popover type Dialog's arrow should be hidden.
+   * Has no effect: popovers render no arrow.
+   * @deprecated Popovers never render an arrow, so there is nothing to hide.
    */
   hideArrow?: boolean;
-  /** The ref of the element the Dialog should visually attach itself to. Defaults to the trigger button if not defined. */
+  /** The ref of the element the Dialog should visually attach itself to. Defaults to the trigger button if not defined. A popover closes when this element scrolls, as one attached to its trigger does. */
   targetRef?: RefObject<HTMLElement | null>;
-  /** Whether passive dismissal (Escape or an outside click) can close the dialog. Explicit dialog actions can still close it. */
+  /**
+   * Whether passive dismissal (Escape or an outside click) can close the dialog. Explicit dialog actions can still close it.
+   * A popover that is not dismissable lets an outside press through to the control it lands on, including a text field, which can take focus. It stays open when another popover opens, and closes when a modal, tray, fullscreen or panel dialog opens from another `DialogTrigger`.
+   */
   isDismissable?: boolean;
   /** Whether pressing the escape key to close the dialog should be disabled. */
   isKeyboardDismissDisabled?: boolean;
@@ -166,6 +171,11 @@ export function DialogTrigger(props: CubeDialogTriggerProps) {
   // yanked closed via the EventBus (which would bypass `isDismissable` and
   // call `state.close()` directly). Non-popover types DO still EMIT
   // `popover:open`, so opening a modal correctly dismisses peer popovers.
+  //
+  // A popover that is not dismissable does not listen to `popover:open`: a
+  // peer popover leaves it open, as any other outside press does. A modal,
+  // tray, fullscreen or panel Dialog opening still closes it, through
+  // `useDialogOpenSync` below.
   const isPopoverFlavored = type === 'popover';
   usePopoverSync({
     menuId: dialogSyncId,
@@ -174,7 +184,14 @@ export function DialogTrigger(props: CubeDialogTriggerProps) {
     triggerRef: syncTriggerRef,
     containerRef: syncOverlayRef,
     dismissOnInnerButtonPress: isPopoverFlavored,
-    closeOnPeerOpen: isPopoverFlavored,
+    closeOnPeerOpen: isPopoverFlavored && isDismissable,
+  });
+  useDialogOpenSync({
+    emits: !isPopoverFlavored,
+    closes: isPopoverFlavored && !isDismissable,
+    state,
+    triggerRef: syncTriggerRef,
+    overlayRef: syncOverlayRef,
   });
 
   useEffect(() => {
@@ -208,6 +225,7 @@ export function DialogTrigger(props: CubeDialogTriggerProps) {
         targetRef={targetRef}
         trigger={trigger}
         content={content}
+        isDismissable={isDismissable}
         isKeyboardDismissDisabled={isKeyboardDismissDisabled}
         hideArrow={hideArrow}
         shouldCloseOnInteractOutside={shouldCloseOnInteractOutside}
@@ -284,6 +302,7 @@ function PopoverTrigger(allProps) {
     content,
     hideArrow,
     onClose,
+    isDismissable,
     isKeyboardDismissDisabled,
     hideOnClose,
     shouldCloseOnInteractOutside,
@@ -297,6 +316,8 @@ function PopoverTrigger(allProps) {
 
   let triggerRef = useRef<HTMLButtonElement>(null);
   let overlayRef = useRef<HTMLDivElement>(null);
+  // What the popover is positioned against, and closes on scroll with.
+  let anchorRef = targetRef || triggerRef;
 
   // Mirror the trigger/overlay DOM nodes into the parent-owned sync refs.
   //
@@ -327,11 +348,11 @@ function PopoverTrigger(allProps) {
     arrowProps,
     updatePosition,
   } = useOverlayPosition({
-    targetRef: targetRef || triggerRef,
+    targetRef: anchorRef,
     overlayRef: overlayRef,
     placement: props.placement,
     containerPadding: props.containerPadding,
-    offset: props.offset || 8,
+    offset: props.offset ?? 8,
     crossOffset: props.crossOffset,
     shouldFlip: props.shouldFlip,
     shouldUpdatePosition: props.shouldUpdatePosition,
@@ -344,10 +365,15 @@ function PopoverTrigger(allProps) {
     overlayTriggerState = { ...state, close: updatePosition };
   }
 
+  // Registers the close (or, with `keepOpenOnScroll`, the reposition) that
+  // `useOverlayPosition` runs when the anchor scrolls. It is looked up by the
+  // anchor element, so it has to be registered there: with `targetRef` the
+  // trigger ref is never attached, and the popover stayed open while its
+  // anchor scrolled away.
   let { triggerProps, overlayProps } = useOverlayTrigger(
     { type: 'dialog' },
     overlayTriggerState,
-    triggerRef,
+    anchorRef,
   );
 
   let triggerPropsWithRef = {
@@ -422,6 +448,9 @@ function PopoverTrigger(allProps) {
       style={popoverProps.style}
       placement={placement ?? undefined}
       arrowProps={arrowProps}
+      // Not dismissable: an outside press is left alone entirely, so it
+      // reaches the control it landed on and nothing below is asked.
+      isDismissable={isDismissable}
       isKeyboardDismissDisabled={isKeyboardDismissDisabled}
       hideArrow={hideArrow}
       shouldCloseOnInteractOutside={resolveShouldCloseOnInteractOutside}
@@ -440,6 +469,7 @@ function PopoverTrigger(allProps) {
       trigger={trigger}
       overlay={overlay}
       overlayRef={overlayRef}
+      isDismissable={isDismissable}
       shouldRestoreFocus={shouldRestoreFocus}
       onClose={onClose}
     />

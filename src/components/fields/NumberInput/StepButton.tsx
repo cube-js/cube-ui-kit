@@ -1,8 +1,5 @@
-import { Styles, tasty } from '@tenphi/tasty';
+import { tasty } from '@tenphi/tasty';
 
-import { useI18n } from '../../../i18n';
-import { CaretDownIcon } from '../../../icons/CaretDownIcon';
-import { CaretUpIcon } from '../../../icons/CaretUpIcon';
 import { DirectionIcon } from '../../../icons/DirectionIcon';
 import { Button } from '../../actions/Button/Button';
 
@@ -28,16 +25,10 @@ const StepButtonElement = tasty(Button, {
 });
 
 /**
- * Buttons for NumberField.
+ * Buttons for NumberField. Their names come from `useNumberField`, which
+ * `NumberInput` gives the translated labels.
  */
 export function StepButton(props) {
-  const { t } = useI18n();
-
-  const label =
-    props.direction === 'up'
-      ? t('numberInput.stepUp', 'Step up')
-      : t('numberInput.stepDown', 'Step down');
-
   return (
     <StepButtonElement
       type="clear"
@@ -45,7 +36,9 @@ export function StepButton(props) {
         up: props.direction === 'up',
         down: props.direction === 'down',
       }}
-      aria-label={label}
+      // Stepping is an edit, not a choice: a press must not close a popover
+      // the field sits in.
+      data-popover-keep-on-press
       {...props}
     >
       <DirectionIcon

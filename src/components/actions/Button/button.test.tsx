@@ -1,4 +1,5 @@
 import { IconCopy } from '@tabler/icons-react';
+import { useState } from 'react';
 
 import {
   hoverWithPointer,
@@ -257,6 +258,79 @@ describe('<Button />', () => {
       },
     );
 
+    it('should keep focus while loading', async () => {
+      function Save() {
+        const [isLoading, setIsLoading] = useState(false);
+
+        return (
+          <Button isLoading={isLoading} onPress={() => setIsLoading(true)}>
+            Save
+          </Button>
+        );
+      }
+
+      renderWithRoot(<Save />);
+
+      await userEvent.tab();
+      await userEvent.keyboard('{Enter}');
+
+      const button = screen.getByRole('button', { name: 'Save' });
+
+      // The native attribute would drop focus to the page, and the user would
+      // have to Tab back from the top.
+      await waitFor(() => expect(button).toHaveAttribute('data-loading'));
+      expect(button).toHaveFocus();
+      expect(button).not.toHaveAttribute('disabled');
+      expect(button).toHaveAttribute('aria-disabled', 'true');
+      expect(button).toHaveAttribute('aria-busy', 'true');
+    });
+
+    it('should stay inert while loading', async () => {
+      const onPress = vi.fn();
+      const onSubmit = vi.fn((event) => event.preventDefault());
+
+      renderWithRoot(
+        <form onSubmit={onSubmit}>
+          <input aria-label="Name" />
+          <Button isLoading htmlType="submit" onPress={onPress}>
+            Save
+          </Button>
+        </form>,
+      );
+
+      await userEvent.click(screen.getByRole('button', { name: 'Save' }));
+      // Implicit submission clicks the default button too.
+      await userEvent.type(screen.getByRole('textbox'), 'x{Enter}');
+
+      expect(onPress).not.toHaveBeenCalled();
+      expect(onSubmit).not.toHaveBeenCalled();
+    });
+
+    it('should stay natively disabled while loading and disabled', () => {
+      // `SubmitButton` sets both while a submission runs, and the frozen
+      // legacy Form contract pins it as `disabled`.
+      render(
+        <Button isLoading isDisabled>
+          Save
+        </Button>,
+      );
+
+      expect(screen.getByRole('button')).toBeDisabled();
+    });
+
+    it('should leave the tab order while loading, as a disabled button does', async () => {
+      renderWithRoot(
+        <>
+          <Button isLoading>Save</Button>
+          <Button>Next</Button>
+        </>,
+      );
+
+      await userEvent.tab();
+
+      expect(screen.getByRole('button', { name: 'Next' })).toHaveFocus();
+    });
+
     it('should mark a disabled link with aria-disabled', () => {
       render(
         <Button isDisabled to="/somewhere" qa="Link">
@@ -271,6 +345,36 @@ describe('<Button />', () => {
       expect(link).toHaveAttribute('aria-disabled', 'true');
       expect(link).not.toHaveAttribute('disabled');
     });
+  });
+});
+
+describe('<Button /> tooltip description', () => {
+  /**
+   * The tooltip's id used to replace the button's own `aria-describedby`
+   * while the tooltip was open, so a screen reader read the tooltip instead of
+   * the hint or error the button pointed at.
+   */
+  it('keeps its own description while the tooltip is open', async () => {
+    renderWithRoot(
+      <>
+        <p id="hint">Saves the draft</p>
+        <Button aria-describedby="hint" tooltip="Save changes">
+          Save
+        </Button>
+      </>,
+    );
+
+    await userEvent.tab();
+
+    const tooltip = await screen.findByRole('tooltip');
+
+    expect(screen.getByRole('button')).toHaveAttribute(
+      'aria-describedby',
+      `hint ${tooltip.id}`,
+    );
+    expect(screen.getByRole('button')).toHaveAccessibleDescription(
+      'Saves the draft Save changes',
+    );
   });
 });
 

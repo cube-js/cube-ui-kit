@@ -28,6 +28,8 @@ Lower-level component that wraps a trigger element and a `Tooltip`. Use when you
 - **`trigger`** `'focus'` — When set, opens the tooltip only on focus instead of both focus and hover
 - **`shouldCloseOnPress`** `boolean` (default: `true`) — Whether the tooltip closes when the trigger is pressed
 
+A `Tooltip` with empty content (`null`, `undefined` or `''`) never opens. When the page or an element containing the trigger scrolls, an open tooltip follows its trigger while the trigger stays in view, and closes once it is scrolled out of view. Set `shouldFlip` on the `Tooltip` itself.
+
 ### Base Properties
 
 Supports [Base properties](/docs/getting-started-base-properties--docs).

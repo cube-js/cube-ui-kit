@@ -34,19 +34,19 @@ A combobox component that combines a text input with a dropdown list, allowing u
 - **`selectedKey`** `string` — The currently selected key (controlled)
 - **`defaultSelectedKey`** `string` — The key of the initially selected item (uncontrolled)
 - **`allowsCustomValue`** `boolean` (default: `false`) — Whether the combo box allows custom values to be entered
-- **`shouldCommitOnBlur`** `boolean` (default: `true`) — Whether to commit custom value on blur in allowsCustomValue mode
+- **`shouldCommitOnBlur`** `boolean` (default: `true`) — Whether to commit custom value on blur in allowsCustomValue mode. When `false`, blur discards the uncommitted text
 - **`clearOnBlur`** `boolean` (default: `false`) — Whether to clear selection and input on blur when the text names no selectable item (only applies to non-custom-value mode)
 - **`isClearable`** `boolean` (default: `false`) — Whether the combo box is clearable using ESC keyboard button or clear button inside the input
 - **`sortSelectedToTop`** `boolean` (default: `true when items provided, false otherwise`) — Whether to sort selected item to the top when popover opens (only works with items prop)
-- **`popoverTrigger`** `'focus' | 'input' | 'manual'` (default: `input`) — How the popover is triggered
+- **`popoverTrigger`** `'focus' | 'input' | 'manual'` (default: `input`) — When the list opens on its own, see **popoverTrigger** below
 - **`filter`** `((textValue: string, inputValue: string) => boolean) | false` — Custom filter function or false to disable filtering. If not provided, uses default contains filter
 - **`hideTrigger`** `boolean` (default: `false`) — Whether to hide the trigger button
-- **`size`** `'small' | 'medium' | 'large'` (default: `medium`) — ComboBox size
+- **`size`** `'small' | 'medium' | 'large'` (default: `medium`) — ComboBox size, which the options in the list share
 - **`listGap`** `number` — Space between options, in pixels. Defaults to a hairline (`1bw`)
 - **`necessityIndicator`** `'label' | 'icon'` — How the required state should be indicated
 - **`onSelectionChange`** `(key: Key | null) => void` — Callback fired when the selected option changes
 - **`onInputChange`** `(value: string) => void` — Callback fired when the input text changes
-- **`onOpenChange`** `(isOpen: boolean) => void` — Callback fired when the popover opens or closes
+- **`onOpenChange`** `(isOpen: boolean) => void` — Callback fired when the list shows or hides. Not called on mount, nor while typed text that matches nothing keeps the list hidden
 - **`prefix`** `ReactNode` — Content rendered before the input
 - **`suffix`** `ReactNode` — Content rendered after the input
 - **`suffixPosition`** `'before' | 'after'` (default: `before`) — Position of suffix relative to validation/loading icons
@@ -63,7 +63,7 @@ A combobox component that combines a text input with a dropdown list, allowing u
 
 #### Notable Properties
 
-**onKeyDown** - Runs before ComboBox's own key handling, listed under [Keyboard Navigation](#keyboard-navigation). Calling `e.preventDefault()` takes the key over: ComboBox skips its handling for that event, so a prevented `ArrowDown` does not open the popover or move focus, and a prevented `Enter` does not select the focused option or commit a custom value. Without `preventDefault()` the built-in handling runs as usual after your handler. The event is React Aria's keyboard event (`KeyboardEvent` from `@react-types/shared`), whose propagation stops at the input unless you call `e.continuePropagation()`.
+**onKeyDown** - Runs before ComboBox's own key handling, listed under [Keyboard Navigation](#keyboard-navigation). Calling `e.preventDefault()` takes the key over: ComboBox skips its handling for that event, so a prevented `ArrowDown` does not open the popover or move focus, and a prevented `Enter` does not select the focused option or commit a custom value. Without `preventDefault()` the built-in handling runs as usual after your handler. The event is React Aria's keyboard event (`KeyboardEvent` from `@react-types/shared`). `Escape` and `Tab` go on to ancestors, so a surrounding `Dialog` still closes on `Escape` and keeps `Tab` inside, unless ComboBox acts on them: `Escape` that closes the list or clears the value stops at the input. Other keys stop at the input unless you call `e.continuePropagation()`.
 
 ```jsx
 <ComboBox
@@ -83,7 +83,7 @@ A combobox component that combines a text input with a dropdown list, allowing u
 </ComboBox>
 ```
 
-**Enter inside a form.** `preventDefault()` stops the browser's form submission and ComboBox's own handling together; it cannot stop just one. With `allowsCustomValue`, the popover closed and text that matches no option, the built-in `Enter` commits the typed value and lets the event through, so the surrounding form submits. A handler that prevents that `Enter` stops both: the form does not submit, and the value is not committed until the input loses focus (when `shouldCommitOnBlur` is on, the default). In earlier versions such a handler stopped only the submit, and the value was still committed on `Enter`. To keep that behavior, commit the value in your handler:
+**Enter inside a form.** `preventDefault()` stops the browser's form submission and ComboBox's own handling together; it cannot stop just one. With `allowsCustomValue` and the popover closed, the built-in `Enter` commits the typed value and lets the event through, so the surrounding form submits. A handler that prevents that `Enter` stops both: the form does not submit, and the value is not committed until the input loses focus (when `shouldCommitOnBlur` is on, the default). In earlier versions such a handler stopped only the submit, and the value was still committed on `Enter`. To keep that behavior, commit the value in your handler:
 
 ```jsx
 const [selectedKey, setSelectedKey] = useState(null);
@@ -113,21 +113,25 @@ const [selectedKey, setSelectedKey] = useState(null);
 
 **sortSelectedToTop** - When using the `items` prop (data-driven mode), the selected item will automatically appear at the top of the list when the popover opens. This is enabled by default when using `items`, but disabled when using JSX children. Set to `false` to maintain the original order.
 
-**allowsCustomValue** - Enables users to enter values that aren't in the predefined options list. Custom values can be committed by pressing Enter or on blur (controlled by `shouldCommitOnBlur`). **Important**: When enabled, typing in the input will clear the current selection. When disabled (default), typing only filters the options without clearing the selection.
+**allowsCustomValue** - Enables users to enter values that aren't in the predefined options list. Custom values can be committed by pressing Enter or on blur (controlled by `shouldCommitOnBlur`). With the list open, Enter picks the highlighted option; with it closed (press `Escape` first), Enter commits the typed text, even when it is part of an option's label. The text is committed trimmed, and empty or whitespace-only text clears the selection (`null`). **Important**: When enabled, typing in the input will clear the current selection. When disabled (default), typing only filters the options without clearing the selection.
 
-**shouldCommitOnBlur** - When `true` (default), custom values are committed when the input loses focus. When `false`, custom values only commit when Enter is pressed. Only applies when `allowsCustomValue` is enabled.
+**shouldCommitOnBlur** - When `true` (default), custom values are committed when the input loses focus. When `false`, only Enter or picking an option commits, and leaving the input discards the uncommitted text: the input shows the selected option's label again, so the text always agrees with the value. As typing clears the selection, that usually leaves the input empty. Only applies when `allowsCustomValue` is enabled.
+
+**isReadOnly** - The list doesn't open, from the chevron, the arrow keys, a press in the input or focus, and neither keys nor blur change the value or the text. The clear button is hidden.
 
 **clearOnBlur** - When `true`, text that names no selectable item clears both the selection and the input when the input loses focus. When `false` (default), the input reverts to showing the current selection, and empty text still clears it. Only applies to non-custom-value mode. Useful for search-like scenarios where you want to reset after each interaction.
 
-**Blur** - Without `allowsCustomValue`, leaving the input selects the item the text names exactly, or else the only item it still matches, unless that item is in `disabledKeys`. Among items sharing the label, the selected one wins, then the first enabled one. Empty text clears the selection. Other text reverts to the selection, or clears with `clearOnBlur`; a disabled item that is already selected stays selected.
+**Blur** - Without `allowsCustomValue`, leaving the input selects the item the text names exactly, or else the only item it still matches, unless that item is in `disabledKeys`. The exact match follows the filter's rules for case, accents and locale. Among items sharing the label, the selected one wins, then the first enabled one. Empty text clears the selection. Other text reverts to the selection, or clears with `clearOnBlur`; a disabled item that is already selected stays selected. Blur reports only what it changes: leaving a field without editing it calls neither `onSelectionChange` nor `onInputChange`.
+
+**Presses in the input** - A press in the input opens a closed list, whether the input already had focus or not, unless `popoverTrigger` is `manual`. The list shows the options the typed text leaves, and text that matches nothing keeps it hidden, so a press that moves the caret does not change what `Enter` commits; the chevron and the arrow keys show every option instead. A press in the input while the list is open only moves the caret; the chevron still toggles the list. A click on the field label only focuses the input.
 
 **Outside presses** - While the list is open, a press on an enabled control outside it reaches the control on the first click, after the typed text settles as it does on `Tab`. The control has to be in the dialog, popover or menu the field sits in, or anywhere on the page when the field is in none; an enabled UI Kit `Button` or `ItemButton` is reached from anywhere. A press anywhere else, such as blank space, a dialog's backdrop or a control outside the field's dialog or popover, only closes the list and keeps the input focused with its text. A press on a disabled control keeps the focus and text too; the list stays open unless the control is only `aria-disabled`.
 
 **popoverTrigger** - Controls how the popover opens:
 
 - `manual` - Only opens via trigger button or arrow keys
-- `input` (default) - Opens when user types + manual triggers
-- `focus` - Opens on input focus + typing + manual triggers
+- `input` (default) - Opens when the user types or presses the input + manual triggers
+- `focus` - Opens on input focus + typing + presses + manual triggers
 
 **filter** - Custom filter function or `false` to disable filtering. By default, uses a contains-based filter. Provide a custom function `(textValue, inputValue) => boolean` to customize filtering logic.
 
@@ -217,8 +221,8 @@ The `mods` property accepts the following modifiers you can override:
 ### Popover Trigger Modes
 
 - `manual` - Only opens via trigger button or arrow keys
-- `input` - Opens when user types + manual triggers (default)
-- `focus` - Opens on input focus + typing + manual triggers
+- `input` - Opens when the user types or presses the input + manual triggers (default)
+- `focus` - Opens on input focus + typing + presses + manual triggers
 
 <Story of={ComboBoxStories.PopoverTriggers} />
 
@@ -396,6 +400,8 @@ const categories = [
 ### Loading State
 
 <Story of={ComboBoxStories.Loading} />
+
+The input shows the selected option's label. A `selectedKey` whose option has not loaded yet shows the key until the option arrives. Once the input has shown a label for the selected key, it keeps that label while the options leave the item out, for example during a refetch or a server-side search.
 
 ```jsx
 <ComboBox isLoading label="Fruit" placeholder="Select a fruit...">
@@ -622,11 +628,11 @@ const [selectedKey, setSelectedKey] = useState(null);
 
 ### Keyboard Navigation
 
-- `Tab` - Moves focus to/from the combobox input
+- `Tab` - Moves focus to/from the combobox input and closes the popover. The chevron and clear buttons are not Tab stops
 - `ArrowDown` - Opens popover (if closed) or moves focus to next option
 - `ArrowUp` - Opens popover (if closed) or moves focus to previous option
-- `Enter` - Selects the focused option and closes popover
-- `Escape` - Closes popover (if open) or clears input (if clearable and popover closed)
+- `Enter` - Selects the focused option and closes popover. Pressed right after typing, it picks the first match. With `allowsCustomValue` and the popover closed, commits the typed text. Ignored while an input method (IME) is composing text
+- `Escape` - Closes popover (if open) or clears input (if clearable and popover closed); otherwise it goes on, so a surrounding dialog closes
 - `Home` - Moves focus to the first option (when popover is open)
 - `End` - Moves focus to the last option (when popover is open)
 - Typing - Filters options based on input value
@@ -645,10 +651,11 @@ An `onKeyDown` handler runs before all of these and can skip any of them for a k
 ### ARIA Properties
 
 - `role="combobox"` - Identifies the input as a combobox
-- `aria-expanded` - Indicates whether the popover is open or closed
+- `aria-expanded` - Indicates whether the list is shown
 - `aria-haspopup="listbox"` - Indicates the combobox has a listbox popup
+- `aria-autocomplete="list"` - Indicates that typing filters the options
 - `aria-controls` - References the listbox ID when popover is open
-- `aria-activedescendant` - References the currently focused option
+- `aria-activedescendant` - References the currently focused option, while it is shown
 - `aria-label` - Provides accessible label when no visible label exists
 - `aria-required` - Indicates required fields
 - `aria-invalid` - Indicates validation errors

@@ -1,3 +1,4 @@
+import { useVirtualizer } from '@tanstack/react-virtual';
 import { getCSSTextForNode } from '@tenphi/tasty';
 import { createRef } from 'react';
 
@@ -12,8 +13,11 @@ import {
   userEvent,
   waitFor,
 } from '../../../test';
+import { FilterListBox } from '../FilterListBox/FilterListBox';
 
 import { getListBoxOptionId } from './optionId';
+
+import type { CubeListBoxProps } from './ListBox';
 
 vi.mock('../../../_internal/hooks/use-warn');
 
@@ -843,7 +847,7 @@ describe('<ListBox />', () => {
       expect(selectAllOption).toBeInTheDocument();
 
       // Check for indeterminate state in the checkbox (should have specific styles)
-      const selectAllElement = selectAllOption.closest('[role="option"]');
+      const selectAllElement = selectAllOption.closest('[role="checkbox"]');
       expect(selectAllElement).toBeInTheDocument();
 
       // Check if the element has indeterminate styling
@@ -851,12 +855,603 @@ describe('<ListBox />', () => {
         '[data-element="Checkbox"]',
       );
       expect(checkboxElement).toBeInTheDocument();
+      expect(checkboxElement).toHaveAttribute('data-indeterminate');
 
-      // The mark is decoration: the option's `aria-selected` says the state,
+      // The mark is decoration: the row's `aria-checked` says the state,
       // and an exposed `<svg>` is read out as an unnamed graphic.
       for (const svg of Array.from(checkboxElement!.querySelectorAll('svg'))) {
         expect(svg.closest('[aria-hidden="true"]')).not.toBeNull();
       }
+    });
+
+    it('is a checkbox outside the listbox, in valid markup', () => {
+      const { container } = render(
+        <ListBox aria-label="Fruits" selectionMode="multiple" showSelectAll>
+          {selectAllItems}
+        </ListBox>,
+      );
+
+      const selectAll = screen.getByRole('checkbox', { name: 'Select All' });
+
+      // An option outside a listbox is an orphan assistive technology may
+      // drop. Every option belongs to the list.
+      expect(selectAll.closest('[role="listbox"]')).toBeNull();
+      for (const option of screen.getAllByRole('option')) {
+        expect(option.closest('[role="listbox"]')).not.toBeNull();
+      }
+
+      // And no list item is left without a list.
+      for (const item of Array.from(container.querySelectorAll('li'))) {
+        expect(item.parentElement?.tagName).toBe('UL');
+      }
+    });
+
+    it('is reached with Tab and toggled with Space', async () => {
+      const onSelectionChange = vi.fn();
+
+      render(
+        <ListBox
+          aria-label="Fruits"
+          selectionMode="multiple"
+          showSelectAll
+          onSelectionChange={onSelectionChange}
+        >
+          {selectAllItems}
+        </ListBox>,
+      );
+
+      const selectAll = screen.getByRole('checkbox', { name: 'Select All' });
+
+      expect(selectAll).toHaveAttribute('aria-checked', 'false');
+
+      await userEvent.tab();
+
+      expect(selectAll).toHaveFocus();
+
+      await userEvent.keyboard(' ');
+
+      expect(onSelectionChange).toHaveBeenLastCalledWith('all');
+      expect(selectAll).toHaveAttribute('aria-checked', 'true');
+
+      await userEvent.keyboard(' ');
+
+      expect(onSelectionChange).toHaveBeenLastCalledWith([]);
+      expect(selectAll).toHaveAttribute('aria-checked', 'false');
+    });
+
+    it('is reached with Shift+Tab from the list', async () => {
+      render(
+        <ListBox aria-label="Fruits" selectionMode="multiple" showSelectAll>
+          {selectAllItems}
+        </ListBox>,
+      );
+
+      await userEvent.click(screen.getByRole('option', { name: 'Apple' }));
+      await userEvent.tab({ shift: true });
+
+      expect(
+        screen.getByRole('checkbox', { name: 'Select All' }),
+      ).toHaveFocus();
+    });
+
+    it('reads as mixed while some items are selected', () => {
+      render(
+        <ListBox
+          aria-label="Fruits"
+          selectionMode="multiple"
+          showSelectAll
+          selectedKeys={['apple']}
+        >
+          {selectAllItems}
+        </ListBox>,
+      );
+
+      expect(
+        screen.getByRole('checkbox', { name: 'Select All' }),
+      ).toHaveAttribute('aria-checked', 'mixed');
+    });
+
+    it('is not a Tab stop while the list is disabled', async () => {
+      render(
+        <>
+          <button>Before</button>
+          <ListBox
+            isDisabled
+            aria-label="Fruits"
+            selectionMode="multiple"
+            showSelectAll
+          >
+            {selectAllItems}
+          </ListBox>
+        </>,
+      );
+
+      const selectAll = screen.getByRole('checkbox', { name: 'Select All' });
+
+      expect(selectAll).toHaveAttribute('aria-disabled', 'true');
+
+      await userEvent.click(screen.getByRole('button', { name: 'Before' }));
+      await userEvent.tab();
+
+      expect(selectAll).not.toHaveFocus();
+    });
+
+    it('shows checked once every item is selected one by one', async () => {
+      const onSelectionChange = vi.fn();
+
+      render(
+        <ListBox
+          aria-label="Fruits"
+          selectionMode="multiple"
+          isCheckable
+          showSelectAll
+          onSelectionChange={onSelectionChange}
+        >
+          {selectAllItems}
+        </ListBox>,
+      );
+
+      for (const name of ['Apple', 'Banana', 'Cherry']) {
+        await userEvent.click(screen.getByRole('option', { name }));
+      }
+
+      const selectAll = screen.getByRole('checkbox', { name: 'Select All' });
+
+      expect(selectAll).toHaveAttribute('aria-checked', 'true');
+      expect(
+        selectAll.querySelector('[data-element="Checkbox"]'),
+      ).toHaveAttribute('data-selected');
+
+      // Checked, so the next press clears rather than selecting all again.
+      onSelectionChange.mockClear();
+      await userEvent.click(selectAll);
+
+      expect(onSelectionChange).toHaveBeenCalledWith([]);
+    });
+
+    it('shows checked when every item but the disabled ones is selected', () => {
+      render(
+        <ListBox
+          aria-label="Fruits"
+          selectionMode="multiple"
+          showSelectAll
+          disabledKeys={['cherry']}
+          selectedKeys={['apple', 'banana']}
+        >
+          {selectAllItems}
+        </ListBox>,
+      );
+
+      expect(
+        screen.getByRole('checkbox', { name: 'Select All' }),
+      ).toHaveAttribute('aria-checked', 'true');
+    });
+
+    it('stays mixed when a filter leaves no item to select', () => {
+      render(
+        <ListBox
+          aria-label="Fruits"
+          selectionMode="multiple"
+          showSelectAll
+          selectedKeys={['apple']}
+          filter={() => []}
+        >
+          {selectAllItems}
+        </ListBox>,
+      );
+
+      expect(
+        screen.getByRole('checkbox', { name: 'Select All' }),
+      ).toHaveAttribute('aria-checked', 'mixed');
+    });
+
+    it.each([
+      ['selecting', undefined, 'all'],
+      ['clearing', 'all' as const, []],
+    ])('reports %s all once per click', async (_, selectedKeys, expected) => {
+      const onSelectionChange = vi.fn();
+
+      render(
+        <ListBox
+          aria-label="Fruits"
+          selectionMode="multiple"
+          showSelectAll
+          selectedKeys={selectedKeys}
+          onSelectionChange={onSelectionChange}
+        >
+          {selectAllItems}
+        </ListBox>,
+      );
+
+      await userEvent.click(screen.getByText('Select All'));
+
+      expect(onSelectionChange).toHaveBeenCalledTimes(1);
+      expect(onSelectionChange).toHaveBeenCalledWith(expected);
+    });
+
+    it('keeps the last item selected under disallowEmptySelection', async () => {
+      const onSelectionChange = vi.fn();
+
+      render(
+        <ListBox
+          disallowEmptySelection
+          aria-label="Fruits"
+          selectionMode="multiple"
+          showSelectAll
+          selectedKeys="all"
+          onSelectionChange={onSelectionChange}
+        >
+          {selectAllItems}
+        </ListBox>,
+      );
+
+      await userEvent.click(screen.getByText('Select All'));
+
+      expect(onSelectionChange).not.toHaveBeenCalled();
+    });
+
+    it('keeps selected keys the list does not show when it clears', async () => {
+      const onSelectionChange = vi.fn();
+
+      render(
+        <ListBox
+          aria-label="Fruits"
+          selectionMode="multiple"
+          showSelectAll
+          // `kiwi` is not an option here, as when the options come from a
+          // search on a server.
+          selectedKeys={['apple', 'banana', 'cherry', 'kiwi']}
+          onSelectionChange={onSelectionChange}
+        >
+          {selectAllItems}
+        </ListBox>,
+      );
+
+      await userEvent.click(screen.getByText('Select All'));
+
+      expect(onSelectionChange).toHaveBeenCalledTimes(1);
+      expect(onSelectionChange).toHaveBeenCalledWith(['kiwi']);
+    });
+
+    describe('under a filter', () => {
+      const fruits = [
+        <FilterListBox.Item key="apple">Apple</FilterListBox.Item>,
+        <FilterListBox.Item key="apricot">Apricot</FilterListBox.Item>,
+        <FilterListBox.Item key="banana">Banana</FilterListBox.Item>,
+        <FilterListBox.Item key="cherry">Cherry</FilterListBox.Item>,
+      ];
+
+      async function renderFiltered(
+        defaultSelectedKeys: 'all' | string[],
+        search = 'ap',
+      ) {
+        const onSelectionChange = vi.fn();
+
+        render(
+          <FilterListBox
+            label="Fruits"
+            searchPlaceholder="Search"
+            selectionMode="multiple"
+            showSelectAll
+            defaultSelectedKeys={defaultSelectedKeys}
+            onSelectionChange={onSelectionChange}
+          >
+            {fruits}
+          </FilterListBox>,
+        );
+
+        await userEvent.type(screen.getByPlaceholderText('Search'), search);
+        await waitFor(() => {
+          expect(screen.getAllByRole('option')).toHaveLength(2);
+        });
+
+        return onSelectionChange;
+      }
+
+      it('clears only the options it shows', async () => {
+        const onSelectionChange = await renderFiltered(['banana']);
+
+        await userEvent.click(screen.getByRole('option', { name: 'Apple' }));
+        await userEvent.click(screen.getByRole('option', { name: 'Apricot' }));
+
+        const selectAll = screen.getByRole('checkbox', { name: 'Select All' });
+
+        expect(selectAll).toHaveAttribute('aria-checked', 'true');
+
+        onSelectionChange.mockClear();
+        await userEvent.click(selectAll);
+
+        // Banana is hidden by the search, so the press leaves it selected.
+        expect(onSelectionChange).toHaveBeenCalledTimes(1);
+        expect(onSelectionChange).toHaveBeenCalledWith(['banana']);
+      });
+
+      it('selects only the options it shows', async () => {
+        const onSelectionChange = await renderFiltered(['banana']);
+
+        await userEvent.click(
+          screen.getByRole('checkbox', { name: 'Select All' }),
+        );
+
+        expect(onSelectionChange).toHaveBeenCalledTimes(1);
+        expect(onSelectionChange).toHaveBeenCalledWith([
+          'banana',
+          'apple',
+          'apricot',
+        ]);
+
+        await userEvent.clear(screen.getByPlaceholderText('Search'));
+
+        expect(screen.getByRole('option', { name: 'Cherry' })).toHaveAttribute(
+          'aria-selected',
+          'false',
+        );
+      });
+
+      it('keeps the hidden options of a full selection when it clears', async () => {
+        const onSelectionChange = await renderFiltered('all');
+
+        await userEvent.click(
+          screen.getByRole('checkbox', { name: 'Select All' }),
+        );
+
+        expect(onSelectionChange).toHaveBeenCalledTimes(1);
+        expect(onSelectionChange).toHaveBeenCalledWith(['banana', 'cherry']);
+      });
+
+      it('still selects all once the search is cleared', async () => {
+        const onSelectionChange = await renderFiltered(['banana']);
+
+        await userEvent.clear(screen.getByPlaceholderText('Search'));
+        await userEvent.click(
+          screen.getByRole('checkbox', { name: 'Select All' }),
+        );
+
+        expect(onSelectionChange).toHaveBeenCalledWith('all');
+      });
+
+      it('shows no option as focused while it has focus', async () => {
+        await renderFiltered([]);
+
+        await waitFor(() => {
+          expect(screen.getByRole('option', { name: 'Apple' })).toHaveAttribute(
+            'data-focused',
+          );
+        });
+
+        // From the search input, Tab reaches "Select All".
+        await userEvent.tab();
+
+        expect(
+          screen.getByRole('checkbox', { name: 'Select All' }),
+        ).toHaveFocus();
+
+        for (const option of screen.getAllByRole('option')) {
+          expect(option).not.toHaveAttribute('data-focused');
+        }
+      });
+    });
+  });
+
+  describe('empty list', () => {
+    it('keeps the listbox, described by the empty label', () => {
+      render(
+        <ListBox label="Fruits" items={[] as { key: string }[]}>
+          {(item) => <ListBox.Item key={item.key}>{item.key}</ListBox.Item>}
+        </ListBox>,
+      );
+
+      const listbox = screen.getByRole('listbox', { name: 'Fruits' });
+
+      expect(listbox).toHaveAccessibleDescription('No items');
+      expect(screen.queryAllByRole('option')).toHaveLength(0);
+    });
+
+    it('keeps its own description alongside the empty label', () => {
+      render(
+        <ListBox
+          aria-label="Fruits"
+          aria-describedby="hint"
+          emptyLabel="Nothing here"
+          items={[] as { key: string }[]}
+        >
+          {(item) => <ListBox.Item key={item.key}>{item.key}</ListBox.Item>}
+        </ListBox>,
+      );
+
+      expect(screen.getByRole('listbox')).toHaveAttribute(
+        'aria-describedby',
+        expect.stringContaining('hint'),
+      );
+      expect(screen.getByRole('listbox')).toHaveAccessibleDescription(
+        expect.stringContaining('Nothing here'),
+      );
+    });
+
+    it('keeps the listbox a search input controls when nothing matches', async () => {
+      render(
+        <FilterListBox label="Fruits" searchPlaceholder="Search">
+          <FilterListBox.Item key="apple">Apple</FilterListBox.Item>
+          <FilterListBox.Item key="banana">Banana</FilterListBox.Item>
+        </FilterListBox>,
+      );
+
+      const input = screen.getByPlaceholderText('Search');
+
+      await userEvent.type(input, 'zzz');
+
+      await waitFor(() => {
+        expect(screen.queryAllByRole('option')).toHaveLength(0);
+      });
+
+      const controlled = document.getElementById(
+        input.getAttribute('aria-controls')!,
+      );
+
+      expect(controlled).toHaveAttribute('role', 'listbox');
+    });
+
+    it('shows focus on the card while its Tab stop has it', async () => {
+      render(
+        <ListBox label="Fruits" items={[] as { key: string }[]}>
+          {(item) => <ListBox.Item key={item.key}>{item.key}</ListBox.Item>}
+        </ListBox>,
+      );
+
+      const wrapper = screen.getByTestId('ListBoxWrapper');
+
+      expect(wrapper).not.toHaveAttribute('data-focused');
+
+      await userEvent.tab();
+
+      expect(screen.getByRole('listbox')).toHaveFocus();
+      expect(wrapper).toHaveAttribute('data-focused');
+
+      await userEvent.tab();
+
+      expect(wrapper).not.toHaveAttribute('data-focused');
+    });
+  });
+
+  describe('disableSelectionToggle', () => {
+    it('keeps the option selected when it is picked again', async () => {
+      const onSelectionChange = vi.fn();
+
+      render(
+        <ListBox
+          disableSelectionToggle
+          aria-label="Fruits"
+          defaultSelectedKey="apple"
+          onSelectionChange={onSelectionChange}
+        >
+          {basicItems}
+        </ListBox>,
+      );
+
+      await userEvent.click(screen.getByRole('option', { name: 'Apple' }));
+
+      expect(onSelectionChange).toHaveBeenCalledWith('apple');
+      expect(onSelectionChange).not.toHaveBeenCalledWith(null);
+    });
+
+    it('reports the controlled option when a pick before was rejected', async () => {
+      const onSelectionChange = vi.fn();
+
+      // The parent never takes a pick, so Apple stays selected.
+      render(
+        <ListBox
+          disableSelectionToggle
+          aria-label="Fruits"
+          selectionMode="single"
+          selectedKey="apple"
+          onSelectionChange={onSelectionChange}
+        >
+          {basicItems}
+        </ListBox>,
+      );
+
+      await userEvent.click(screen.getByRole('option', { name: 'Banana' }));
+      await userEvent.click(screen.getByRole('option', { name: 'Apple' }));
+
+      expect(onSelectionChange).toHaveBeenLastCalledWith('apple');
+    });
+  });
+
+  describe('virtualized focus', () => {
+    const items = Array.from({ length: 100 }, (_, index) => ({
+      key: `item-${index}`,
+      label: `Item ${index}`,
+    }));
+
+    const defaultVirtualizer = vi
+      .mocked(useVirtualizer)
+      .getMockImplementation();
+
+    let scrollToIndex: ReturnType<typeof vi.fn>;
+
+    // A window of the first ten options, as a real virtualizer renders at
+    // the top of a long list.
+    beforeEach(() => {
+      scrollToIndex = vi.fn();
+
+      vi.mocked(useVirtualizer).mockImplementation(
+        ({ count = 0, getItemKey }: any) =>
+          ({
+            getVirtualItems: () =>
+              Array.from({ length: Math.min(count, 10) }, (_, index) => ({
+                index,
+                key: getItemKey(index),
+                start: index * 40,
+                size: 40,
+              })),
+            getTotalSize: () => count * 40,
+            scrollToIndex,
+            measure: vi.fn(),
+            measureElement: vi.fn(),
+          }) as any,
+      );
+    });
+
+    afterEach(() => {
+      vi.mocked(useVirtualizer).mockImplementation(defaultVirtualizer!);
+    });
+
+    function renderList(props: Partial<CubeListBoxProps<object>> = {}) {
+      return render(
+        <ListBox aria-label="Items" items={items} {...props}>
+          {(item: (typeof items)[number]) => (
+            <ListBox.Item key={item.key}>{item.label}</ListBox.Item>
+          )}
+        </ListBox>,
+      );
+    }
+
+    it('scrolls to an option End moves focus to outside the window', async () => {
+      renderList();
+
+      await userEvent.click(screen.getByRole('option', { name: 'Item 0' }));
+      await userEvent.keyboard('{End}');
+
+      expect(scrollToIndex).toHaveBeenCalledWith(99, { align: 'auto' });
+    });
+
+    it('scrolls to the selected option the list focuses on mount', () => {
+      renderList({ autoFocus: true, defaultSelectedKey: 'item-80' });
+
+      expect(scrollToIndex).toHaveBeenCalledWith(80, { align: 'auto' });
+    });
+
+    it('leaves the scroll alone for an option already rendered', async () => {
+      renderList();
+
+      await userEvent.click(screen.getByRole('option', { name: 'Item 0' }));
+      await userEvent.keyboard('{ArrowDown}');
+
+      expect(scrollToIndex).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('section dividers', () => {
+    it('keep the separator role out of the listbox', () => {
+      render(
+        <ListBox label="Select an item">
+          <ListBox.Section title="Fruits">
+            <ListBox.Item key="apple">Apple</ListBox.Item>
+          </ListBox.Section>
+          <ListBox.Section title="Vegetables">
+            <ListBox.Item key="carrot">Carrot</ListBox.Item>
+          </ListBox.Section>
+        </ListBox>,
+      );
+
+      const listbox = screen.getByRole('listbox');
+
+      // A listbox owns options and groups only.
+      expect(listbox.querySelector('[role="separator"]')).toBeNull();
+      expect(screen.getByTestId('Divider')).toHaveAttribute(
+        'role',
+        'presentation',
+      );
     });
   });
 

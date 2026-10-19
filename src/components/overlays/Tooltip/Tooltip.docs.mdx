@@ -46,14 +46,14 @@ Display container for tooltip content. Has a directional arrow dependent on its 
 ### Properties
 
 - **`tipStyles`** `Styles` — Custom styles for the tooltip arrow (tip) element
-- **`showIcon`** `boolean` — Controls whether an icon should be displayed in the tooltip
+- **`showIcon`** `boolean` — Deprecated. Has no effect
 - **`placement`** `PlacementAxis` (default: `'top'`) — Position of the tooltip relative to its trigger. Options: `top`, `bottom`, `left`, `right`
 - **`isMaterial`** `boolean` — Enables material-style tooltip with auto pointer events
 - **`isLight`** `boolean` — Uses light color scheme for the tooltip
 - **`isOpen`** `boolean` — Controlled open state of the tooltip
 - **`defaultOpen`** `boolean` — Whether the tooltip is open by default (uncontrolled)
 - **`onOpenChange`** `(isOpen: boolean) => void` — Callback when the tooltip open state changes
-- **`shouldFlip`** `boolean` — Whether the tooltip should flip position when there is insufficient space
+- **`shouldFlip`** `boolean` (default: `true`) — Whether the tooltip moves to the opposite side of its trigger when there is not enough room on the requested one
 
 ### Base Properties
 
@@ -231,12 +231,20 @@ function ControlledExample() {
 
 ### Conditional Tooltip
 
-Show a tooltip only when certain conditions are met:
+Show a tooltip only when certain conditions are met. Empty content (`null`, `undefined` or `''`) turns the tooltip off: nothing opens and the trigger gets no `aria-describedby`.
 
 ```jsx
-<TooltipProvider title={hasError ? "Fix errors first" : null}>
-  <Button isDisabled={hasError}>Submit</Button>
+<TooltipProvider title={isShared ? 'Visible to your whole team' : null}>
+  <Button>Share</Button>
 </TooltipProvider>
+```
+
+A disabled `Button` receives neither hover nor focus, so a `TooltipProvider` around it never opens. Give the button its own `tooltip` instead; it then stays hoverable and focusable while disabled:
+
+```jsx
+<Button isDisabled={hasError} tooltip={hasError ? 'Fix errors first' : undefined}>
+  Submit
+</Button>
 ```
 
 ### Focus-Only Trigger
@@ -255,7 +263,10 @@ Show tooltip only on focus, not on hover:
 
 - `Tab` - Moves focus to the trigger element, showing the tooltip after the delay
 - `Shift + Tab` - Moves focus away from the trigger, hiding the tooltip
+- `Escape` - Hides the tooltip
 - Tooltips automatically appear on focus for keyboard users
+- Pressing the trigger hides the tooltip, unless `shouldCloseOnPress` is `false`
+- When the page or an element containing the trigger scrolls, the tooltip follows the trigger while it stays in view, and hides once it is scrolled out of view
 
 ### Screen Reader Support
 
@@ -266,7 +277,7 @@ Show tooltip only on focus, not on hover:
 
 ### ARIA Properties
 
-- `aria-describedby` - Automatically set on the trigger to reference the tooltip
+- `aria-describedby` - Automatically set on the trigger to reference the tooltip while it is open. `Button`, `ItemBadge`, `ItemAction`, `Checkbox`, `Radio` and `Item` rows (`ItemButton`, list and menu items) add it after their own `aria-describedby` rather than replacing it
 - All standard ARIA labeling props are supported
 
 ### Best Practices

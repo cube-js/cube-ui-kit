@@ -406,12 +406,7 @@ export const ListBoxPopover = function ListBoxPopover(
                       : t('listBoxPopover.options', 'Options'))
                 }
                 aria-labelledby={ariaLabelledby}
-                // Left unset in single mode, as before this prop existed: an
-                // explicit `'single'` switches on ListBox's no-toggle branch,
-                // which changes what re-picking the selected option does.
-                selectionMode={
-                  selectionMode === 'multiple' ? 'multiple' : undefined
-                }
+                selectionMode={selectionMode}
                 selectedKey={
                   selectionMode === 'single' ? selectedKey : undefined
                 }
@@ -423,6 +418,9 @@ export const ListBoxPopover = function ListBoxPopover(
                 }
                 isDisabled={isDisabled}
                 disabledKeys={disabledKeys}
+                // As in Select: a large field opens large options, a small
+                // one medium options, which stay easy to pick.
+                size={size === 'large' ? 'large' : 'medium'}
                 shouldUseVirtualFocus={true}
                 items={items as any}
                 filter={filter}

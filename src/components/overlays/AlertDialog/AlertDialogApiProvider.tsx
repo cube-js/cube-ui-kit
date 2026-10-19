@@ -8,6 +8,8 @@ import {
 } from 'react';
 import invariant from 'tiny-invariant';
 
+import { EXIT_DURATION } from '../Modal/Overlay';
+
 import { AlertDialogZone } from './AlertDialogZone';
 import { AlertDialogResolveStatus, Dialog, DialogProps } from './types';
 
@@ -177,12 +179,14 @@ export function AlertDialogApiProvider(props) {
                 },
           );
 
+          // Dropped once the overlay has played its exit, not before: removing
+          // it sooner unmounts the dialog mid-animation.
           setTimeout(
             () =>
               setOpenedDialog((currentState) =>
                 currentState?.meta.id !== currentId ? currentState : null,
               ),
-            300,
+            EXIT_DURATION,
           );
 
           return true;

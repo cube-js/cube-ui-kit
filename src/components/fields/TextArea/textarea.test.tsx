@@ -57,4 +57,57 @@ describe('<TextArea />', () => {
     // Nothing built in claims Enter: the newline still goes in.
     expect(getByRole('textbox')).toHaveValue('a\n');
   });
+
+  it('shows the invalid state and message from validate', async () => {
+    const { getByRole, getByText } = render(
+      <TextArea
+        label="test"
+        validate={(value) => (value.length < 3 ? 'Too short' : null)}
+        defaultValue="abc"
+      />,
+    );
+
+    const input = getByRole('textbox');
+
+    await userEvent.type(input, '{Backspace}');
+
+    expect(input).toHaveAttribute('aria-invalid', 'true');
+    expect(input.closest('[data-invalid]')).not.toBeNull();
+    expect(getByText('Too short')).toBeInTheDocument();
+  });
+
+  it('shows validate errors only after the field is touched', async () => {
+    const { getByRole, getByText, queryByText } = render(
+      <TextArea
+        label="test"
+        validate={(value) => (value.length < 3 ? 'Too short' : null)}
+      />,
+    );
+
+    const input = getByRole('textbox');
+
+    expect(input.closest('[data-invalid]')).toBeNull();
+    expect(queryByText('Too short')).not.toBeInTheDocument();
+
+    await userEvent.type(input, 'a');
+
+    expect(input.closest('[data-invalid]')).not.toBeNull();
+    expect(getByText('Too short')).toBeInTheDocument();
+  });
+
+  it('clears a controlled value set to null and stays controlled', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const { getByRole, rerender } = render(
+      <TextArea label="test" value="abc" onChange={() => {}} />,
+    );
+
+    rerender(<TextArea label="test" value={null} onChange={() => {}} />);
+
+    expect(getByRole('textbox')).toHaveValue('');
+    expect(warn).not.toHaveBeenCalledWith(
+      expect.stringMatching(/controlled to uncontrolled/),
+    );
+
+    warn.mockRestore();
+  });
 });

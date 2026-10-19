@@ -1,12 +1,12 @@
 import { tasty } from '@tenphi/tasty';
-import { ForwardedRef, forwardRef } from 'react';
+import { ForwardedRef, forwardRef, useContext } from 'react';
 
 import { CubeLayoutContentProps, LayoutContent } from './LayoutContent';
+import { LayoutNestedContext } from './LayoutContext';
 
 const FooterElement = tasty(LayoutContent, {
   as: 'footer',
   qa: 'LayoutFooter',
-  role: 'contentinfo',
   styles: {
     container: 'none',
     // Footer inherits auto-border from LayoutContent
@@ -55,8 +55,14 @@ function LayoutFooter(
     ...mods,
   };
 
+  // `contentinfo` is a page-level landmark: only the footer of a top-level
+  // Layout gets it. Inside a panel or a nested Layout, `none` also cancels the
+  // implicit `contentinfo` of the `<footer>` element. An explicit `role` wins.
+  const isNested = useContext(LayoutNestedContext);
+
   return (
     <FooterElement
+      role={isNested ? 'none' : 'contentinfo'}
       {...otherProps}
       ref={ref}
       mods={finalMods}

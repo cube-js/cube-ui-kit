@@ -103,7 +103,8 @@ export default {
     },
     onClear: {
       action: 'clear',
-      description: 'Callback fired when search is cleared',
+      description:
+        'Callback fired after the text is cleared, by the clear button or by Escape',
       control: { type: null },
     },
     onBlur: {

@@ -1,5 +1,6 @@
 import { FocusableProvider } from '@react-aria/focus';
 import {
+  Children,
   ContextType,
   createContext,
   FocusEvent,
@@ -9,6 +10,7 @@ import {
   ReactNode,
   RefObject,
   useContext,
+  useEffectEvent,
   useRef,
   useState,
 } from 'react';
@@ -23,6 +25,7 @@ import { useTooltipTriggerState } from 'react-stately';
 import { useEvent } from '../../../_internal';
 import { isDevEnv } from '../../../utils/is-dev-env';
 import { isFocusRestoration } from '../../../utils/react/programmaticFocus';
+import { useLayoutEffect } from '../../../utils/react/useLayoutEffect';
 import { Block } from '../../Block';
 import { ActiveZone } from '../../content/ActiveZone/ActiveZone';
 import {
@@ -32,11 +35,20 @@ import {
 import { Portal } from '../../portal';
 
 import { TooltipContext } from './context';
+import { CubeTooltipProps, Tooltip } from './Tooltip';
 
 type TooltipPositionOptions = Pick<
   Parameters<typeof useOverlayPosition>[0],
-  'placement' | 'targetRef' | 'overlayRef' | 'offset' | 'crossOffset' | 'isOpen'
->;
+  | 'placement'
+  | 'targetRef'
+  | 'overlayRef'
+  | 'offset'
+  | 'crossOffset'
+  | 'isOpen'
+  | 'shouldFlip'
+> & {
+  onClose: () => void;
+};
 
 // DisplayTransition preserves its last shown render prop during exit. Position
 // subscriptions must still see the current target, configuration and open state.
@@ -55,6 +67,34 @@ function TooltipTransition(
   return <DisplayTransition {...props} />;
 }
 
+type Box = Pick<DOMRect, 'top' | 'right' | 'bottom' | 'left'>;
+
+function overlaps(a: Box, b: Box) {
+  return (
+    a.bottom > b.top && a.top < b.bottom && a.right > b.left && a.left < b.right
+  );
+}
+
+/**
+ * Whether the trigger is still visible after `scrolled` scrolled: it overlaps
+ * the viewport and, when an element scrolled, that element's box.
+ */
+function isInView(trigger: Element, scrolled: EventTarget | null) {
+  const rect = trigger.getBoundingClientRect();
+  const viewport = {
+    top: 0,
+    left: 0,
+    bottom: window.innerHeight,
+    right: window.innerWidth,
+  };
+
+  return (
+    overlaps(rect, viewport) &&
+    (!(scrolled instanceof Element) ||
+      overlaps(rect, scrolled.getBoundingClientRect()))
+  );
+}
+
 function PositionedTooltip({
   tooltip,
   contextValue,
@@ -62,9 +102,48 @@ function PositionedTooltip({
   tooltip: ReactElement;
   contextValue: ContextType<typeof TooltipContext>;
 }) {
-  const options = useContext(TooltipPositionContext);
+  const { onClose, ...options } = useContext(TooltipPositionContext);
   const { overlayProps, arrowProps, placement, updatePosition } =
     useOverlayPosition(options);
+
+  // A scroll of the page or of an element that contains the trigger moves the
+  // trigger. The tooltip follows it while it stays in view, and closes once it
+  // is scrolled out. Closing on any scroll, as a popover does, would close the
+  // tooltip a keyboard user just opened: focus scrolls a trigger into view —
+  // the browser at once, a list a frame later — and the scroll is reported
+  // after the tooltip opened.
+  const onScroll = useEffectEvent((event: Event) => {
+    const trigger = options.targetRef.current;
+    const { target } = event;
+
+    if (
+      !trigger ||
+      (target instanceof Node && !target.contains(trigger)) ||
+      // A text field scrolls its own text to keep the caret in view.
+      target instanceof HTMLInputElement ||
+      target instanceof HTMLTextAreaElement
+    ) {
+      return;
+    }
+
+    if (isInView(trigger, target)) {
+      updatePosition();
+    } else {
+      onClose();
+    }
+  });
+
+  // Subscribed at commit, with the positioning, so a scroll reported on the
+  // next frame is never missed.
+  useLayoutEffect(() => {
+    if (!options.isOpen) return;
+
+    const listener = (event: Event) => onScroll(event);
+
+    window.addEventListener('scroll', listener, true);
+
+    return () => window.removeEventListener('scroll', listener, true);
+  }, [options.isOpen]);
 
   return (
     <TooltipContext.Provider
@@ -89,8 +168,21 @@ function isTriggerFunction(value: unknown): value is TooltipTriggerFunction {
   return typeof value === 'function';
 }
 
-function isReactElement(value: unknown): value is ReactElement {
+function isReactElement<P = unknown>(value: unknown): value is ReactElement<P> {
   return isValidElement(value);
+}
+
+/**
+ * Whether a `Tooltip` has nothing to show. The docs turn a tooltip off with
+ * `title={null}`, and opening it anyway drew an empty bubble and described the
+ * trigger by it. Only a `Tooltip` is inspected: another component may render
+ * content of its own.
+ */
+function isEmptyTooltip(tooltip: ReactElement<CubeTooltipProps>): boolean {
+  return (
+    tooltip.type === Tooltip &&
+    Children.toArray(tooltip.props.children).every((child) => child === '')
+  );
 }
 
 export type TooltipTriggerFunction = (
@@ -124,7 +216,7 @@ export interface CubeTooltipTriggerProps extends TooltipTriggerProps {
   isDisabled?: boolean;
   /**
    * The delay time for the tooltip to show up.
-   * @default 1500
+   * @default 250
    */
   delay?: number;
   /**
@@ -160,6 +252,7 @@ export function TooltipTrigger(props: CubeTooltipTriggerProps) {
     offset = DEFAULT_OFFSET,
     trigger: triggerAction,
     delay = 250,
+    shouldCloseOnPress,
     isOpen,
     onOpenChange,
     defaultOpen,
@@ -175,7 +268,7 @@ export function TooltipTrigger(props: CubeTooltipTriggerProps) {
   const [trigger, tooltip] = rawChildrenArray;
 
   // Type guard the tooltip
-  if (!isReactElement(tooltip)) {
+  if (!isReactElement<CubeTooltipProps>(tooltip)) {
     throw new Error(
       'CubeUIKit: TooltipTrigger expects the second child to be a valid React element (Tooltip component).',
     );
@@ -205,17 +298,21 @@ export function TooltipTrigger(props: CubeTooltipTriggerProps) {
 
   let state = useTooltipTriggerState({ delay, ...props });
 
+  // A tooltip with nothing to show is a disabled one.
+  const isTooltipDisabled = isDisabled || isEmptyTooltip(tooltip);
+
   let { triggerProps: rawTriggerProps, tooltipProps } = useTooltipTrigger(
     {
       // Without it a disabled tooltip still opened — invisibly, since nothing
       // renders it — and while open React Aria's document-level listener eats
       // every `Escape`, so a Dialog under the pointer would not close.
-      isDisabled,
+      isDisabled: isTooltipDisabled,
       trigger: triggerAction,
       delay,
       isOpen,
       onOpenChange,
       defaultOpen,
+      shouldCloseOnPress,
     },
     state,
     tooltipTriggerRef,
@@ -239,22 +336,33 @@ export function TooltipTrigger(props: CubeTooltipTriggerProps) {
     rawTriggerProps.onFocus?.(event);
   });
 
-  const triggerProps = { ...rawTriggerProps, onFocus };
+  const triggerProps = {
+    ...rawTriggerProps,
+    onFocus,
+    // A controlled `isOpen` still opens a disabled tooltip's state, and nothing
+    // is rendered to describe the trigger by.
+    'aria-describedby': isTooltipDisabled
+      ? undefined
+      : rawTriggerProps['aria-describedby'],
+  };
 
-  const positionOptions = {
+  const positionOptions: TooltipPositionOptions = {
     placement: props.placement || 'top',
     targetRef: tooltipTriggerRef,
     overlayRef,
     offset,
     crossOffset,
     isOpen: state.isOpen,
+    // Documented on `Tooltip`, which renders inside the positioned layer, so
+    // it is read from the element here.
+    shouldFlip: tooltip.props.shouldFlip,
+    // Called once a scroll carries the trigger out of view.
+    onClose: () => state.close(true),
   };
 
   const tooltipContextValue = {
     state,
     ref: overlayRef,
-    minOffset: 'var(--gap)',
-    minScale: '1',
     isMaterial,
     isLight,
     ...tooltipProps,
@@ -264,7 +372,7 @@ export function TooltipTrigger(props: CubeTooltipTriggerProps) {
   // belong to the overlay's visible/closing lifetime rather than every label.
   const tooltipContent = (
     <TooltipPositionContext.Provider value={positionOptions}>
-      <TooltipTransition isShown={state.isOpen && !isDisabled}>
+      <TooltipTransition isShown={state.isOpen && !isTooltipDisabled}>
         {({ phase, isShown, ref: transitionRef }) => (
           <Portal>
             <PositionedTooltip

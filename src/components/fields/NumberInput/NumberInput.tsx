@@ -15,13 +15,18 @@ import {
 } from 'react-aria';
 import { useNumberFieldState } from 'react-stately';
 
+import { useI18n } from '../../../i18n';
 import { mergeProps } from '../../../utils/react';
 import {
   castNullableNumberValue,
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
 import { useFieldProps } from '../../form';
-import { CubeTextInputBaseProps, TextInputBase } from '../TextInput';
+import { useDisplayedValidation } from '../TextInput/displayed-validation';
+import {
+  CubeTextInputBaseProps,
+  TextInputBase,
+} from '../TextInput/TextInputBase';
 
 import { StepButton } from './StepButton';
 
@@ -74,6 +79,9 @@ function NumberInput(
   rawProps: WithNullableValue<CubeNumberInputProps>,
   ref: ForwardedRef<HTMLElement>,
 ) {
+  const { t } = useI18n();
+
+  // `NaN` is the number field's own empty value.
   rawProps = castNullableNumberValue(rawProps);
   let props = useFieldProps(rawProps);
 
@@ -86,26 +94,52 @@ function NumberInput(
     inputRef,
     labelProps: userLabelProps,
     inputProps: userInputProps,
+    wrapperProps,
     ...otherProps
   } = props;
   let showStepper = !hideStepper;
   let { locale } = useLocale();
-  let state = useNumberFieldState({ ...props, locale });
+  // The state commits typed text on blur and Enter, so its `onChange` is the
+  // change `validate` sees.
+  let displayedValidation = useDisplayedValidation();
+  let ariaProps = displayedValidation.trackTouched(props);
+  let state = useNumberFieldState({ ...ariaProps, locale });
   let localInputRef = useRef<HTMLInputElement>(null);
 
   inputRef = inputRef ?? localInputRef;
 
   let {
-    groupProps,
+    groupProps: ariaGroupProps,
     labelProps,
     inputProps,
     incrementButtonProps,
     decrementButtonProps,
+    ...validation
   } = useNumberField(
-    { ...props, onKeyDown: undefined, onKeyUp: undefined },
+    { ...ariaProps, onKeyDown: undefined, onKeyUp: undefined },
     state,
     inputRef as RefObject<HTMLInputElement>,
   );
+  let groupProps = mergeProps(ariaGroupProps, wrapperProps);
+
+  // React Aria names each stepper after the field: a text label goes into the
+  // name, any other label is composed in through the `aria-labelledby` it sets.
+  // The UI Kit strings take the label the same way, so they replace React
+  // Aria's own without losing the field name. Without a text label the name
+  // has to read on its own, so it has strings of its own rather than an
+  // empty `{{label}}` slot.
+  let fieldLabel =
+    props['aria-label'] || (typeof props.label === 'string' ? props.label : '');
+  let stepUpLabel =
+    props.incrementAriaLabel ??
+    (fieldLabel
+      ? t('numberInput.stepUp', 'Increase {{label}}', { label: fieldLabel })
+      : t('numberInput.increase', 'Increase'));
+  let stepDownLabel =
+    props.decrementAriaLabel ??
+    (fieldLabel
+      ? t('numberInput.stepDown', 'Decrease {{label}}', { label: fieldLabel })
+      : t('numberInput.decrease', 'Decrease'));
   // Keep native commits and user callbacks inside one Aria event wrapper so
   // continuePropagation can still undo the native shortcut's propagation stop.
   let { keyboardProps } = useKeyboard({
@@ -129,12 +163,14 @@ function NumberInput(
         isDisabled={props.isDisabled}
         direction="up"
         {...incrementButtonProps}
+        aria-label={stepUpLabel}
         size={otherProps.size}
       />
       <StepButton
         isDisabled={props.isDisabled}
         direction="down"
         {...decrementButtonProps}
+        aria-label={stepDownLabel}
         size={otherProps.size}
       />
     </StepperContainer>
@@ -143,6 +179,7 @@ function NumberInput(
   return (
     <StyledTextInputBase
       {...otherProps}
+      {...displayedValidation.getDisplayedValidation(otherProps, validation)}
       ref={ref}
       labelProps={mergedLabelProps}
       inputProps={mergeProps(

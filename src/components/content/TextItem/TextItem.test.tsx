@@ -45,14 +45,16 @@ describe('<TextItem /> tooltip contracts', () => {
       tooltip: { title: 'Fixed', isDisabled: true },
       title: null,
     },
+    // A nullish title falls back to the auto title, like `{}`.
     {
       name: 'explicit undefined title',
       tooltip: { title: undefined },
-      title: '',
+      title: 'Label',
     },
-    { name: 'explicit null title', tooltip: { title: null }, title: '' },
-    { name: 'explicit empty title', tooltip: { title: '' }, title: '' },
-    { name: 'explicit false title', tooltip: { title: false }, title: '' },
+    { name: 'explicit null title', tooltip: { title: null }, title: 'Label' },
+    // Empty content opens no bubble at all.
+    { name: 'explicit empty title', tooltip: { title: '' }, title: null },
+    { name: 'explicit false title', tooltip: { title: false }, title: null },
     { name: 'explicit zero title', tooltip: { title: 0 }, title: '0' },
   ])('preserves $name resolution', async ({ tooltip, title }) => {
     await act(async () => {

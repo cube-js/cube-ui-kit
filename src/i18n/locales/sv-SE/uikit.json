@@ -96,11 +96,13 @@
     "noFileSelected": "Ingen fil vald"
   },
   "passwordInput": {
-    "toggleMasking": "Växla maskering"
+    "showPassword": "Visa lösenord"
   },
   "numberInput": {
-    "stepUp": "Öka",
-    "stepDown": "Minska"
+    "stepUp": "Öka {{label}}",
+    "stepDown": "Minska {{label}}",
+    "increase": "Öka",
+    "decrease": "Minska"
   },
   "textInputMapper": {
     "key": "Nyckel",

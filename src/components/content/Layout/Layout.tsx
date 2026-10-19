@@ -34,6 +34,7 @@ import { extractStyles } from '../../../utils/styles';
 import { Alert } from '../Alert';
 
 import {
+  LayoutNestedContext,
   LayoutPanelTransitionContext,
   LayoutProvider,
   useLayoutActionsContext,
@@ -427,14 +428,20 @@ function LayoutInner(
  */
 function Layout(props: CubeLayoutProps, ref: ForwardedRef<HTMLDivElement>) {
   const { hasTransition, minContentSize } = props;
+  // Nested inside one of another Layout's regions, or placed straight inside
+  // another Layout: either way its footer is not the page's.
+  const isInRegion = useContext(LayoutNestedContext);
+  const isInLayout = useLayoutStateContext() != null;
 
   return (
-    <LayoutProvider
-      hasTransition={hasTransition}
-      minContentSize={minContentSize}
-    >
-      <LayoutInner {...props} forwardedRef={ref} />
-    </LayoutProvider>
+    <LayoutNestedContext.Provider value={isInRegion || isInLayout}>
+      <LayoutProvider
+        hasTransition={hasTransition}
+        minContentSize={minContentSize}
+      >
+        <LayoutInner {...props} forwardedRef={ref} />
+      </LayoutProvider>
+    </LayoutNestedContext.Provider>
   );
 }
 

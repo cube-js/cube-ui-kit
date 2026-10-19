@@ -9,13 +9,15 @@ import {
   castNullableStringValue,
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
-import { ItemAction, ItemActionProvider } from '../../actions';
+import { ItemAction } from '../../actions/ItemAction/ItemAction';
+import { ItemActionProvider } from '../../actions/ItemActionContext';
 import { useFieldProps } from '../../form';
+import { useDisplayedValidation } from '../TextInput/displayed-validation';
 import {
   CubeBufferedValueProps,
   CubeTextInputBaseProps,
   TextInputBase,
-} from '../TextInput';
+} from '../TextInput/TextInputBase';
 
 import type { TextFieldKeyboardProps } from '../../../shared/form';
 
@@ -63,14 +65,15 @@ function PasswordInput(
     isReadOnly: rest.isReadOnly,
   });
 
-  let { labelProps, inputProps } = useTextField(
-    {
+  let displayedValidation = useDisplayedValidation();
+  let { labelProps, inputProps, ...validation } = useTextField(
+    displayedValidation.trackTouched({
       ...rest,
       value: buffered.value,
       onChange: buffered.onChange,
       onBlur: chain(rest.onBlur, buffered.reset),
       type,
-    },
+    }),
     inputRef as RefObject<HTMLInputElement | null>,
   );
 
@@ -97,7 +100,10 @@ function PasswordInput(
           // No `type` — the default `current` type inherits the input's own text
           // color, so the toggle follows the field's theme, validation state and
           // disabled state rather than staying opaque against faded text.
-          tooltip={t('passwordInput.toggleMasking', 'Toggle masking')}
+          // A toggle button keeps one name and reports its state with
+          // `aria-pressed`: pressed means the password is shown.
+          tooltip={t('passwordInput.showPassword', 'Show password')}
+          aria-pressed={type === 'text'}
           icon={type === 'password' ? <EyeInvisibleIcon /> : <EyeIcon />}
           onPress={toggleType}
         />
@@ -121,6 +127,7 @@ function PasswordInput(
       suffix={wrappedSuffix}
       multiLine={multiLine}
       {...rest}
+      {...displayedValidation.getDisplayedValidation(rest, validation)}
     />
   );
 }

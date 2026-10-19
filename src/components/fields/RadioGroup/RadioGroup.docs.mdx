@@ -37,7 +37,7 @@ If the control is not a field — a toolbar that swaps which view is on screen, 
 ### Properties
 
 - **`children`** — Radio elements that define the available options
-- **`value`** `string` — The currently selected value (controlled)
+- **`value`** `string | null` — The currently selected value (controlled). `null` selects nothing and keeps the group controlled
 - **`defaultValue`** `string` — The default selected value (uncontrolled)
 - **`type`** `'radio' | 'button' | 'tabs'` (default: `radio`) — Visual type for all radios in the group (button/tabs default to horizontal)
 - **`orientation`** `undefined | 'vertical' | 'horizontal'` (default: `undefined`) — Orientation of the radio group. When unset it is derived from `type`: `horizontal` for `button` and `tabs`, `vertical` otherwise

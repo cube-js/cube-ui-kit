@@ -90,3 +90,127 @@ describe('ComboBox composite blur', () => {
     expect(onBlur).toHaveBeenCalledTimes(1);
   });
 });
+
+describe('ComboBox presses and Tab in a browser', () => {
+  function Fruit(props: { isClearable?: boolean }) {
+    return (
+      <>
+        <button>Before</button>
+        <ComboBox label="Fruit" defaultSelectedKey="pear" {...props}>
+          <ComboBox.Item key="pear">Pear</ComboBox.Item>
+          <ComboBox.Item key="peach">Peach</ComboBox.Item>
+        </ComboBox>
+        <button>After</button>
+      </>
+    );
+  }
+
+  it('opens the list on a click into the input it already focuses', async () => {
+    renderWithRoot(<Fruit />);
+
+    const input = screen.getByRole('combobox', { name: 'Fruit' });
+
+    await act(() => screen.getByRole('button', { name: 'Before' }).focus());
+    await act(() => userEvent.keyboard('{Tab}'));
+    expect(input).toHaveFocus();
+    expect(screen.queryByRole('listbox')).toBeNull();
+
+    await act(() => userEvent.click(input));
+
+    await waitFor(() => expect(screen.getByRole('listbox')).toBeVisible());
+    expect(input).toHaveAttribute('aria-expanded', 'true');
+  });
+
+  it('moves the caret and keeps the list open on a click in the open input', async () => {
+    renderWithRoot(
+      <ComboBox label="Fruit">
+        <ComboBox.Item key="pear">Pear</ComboBox.Item>
+        <ComboBox.Item key="peach">Peach</ComboBox.Item>
+      </ComboBox>,
+    );
+
+    const input = screen.getByRole('combobox', {
+      name: 'Fruit',
+    }) as HTMLInputElement;
+
+    await act(() => input.focus());
+    await act(() => userEvent.keyboard('pe'));
+    await waitFor(() => expect(screen.getByRole('listbox')).toBeVisible());
+    expect(input.selectionStart).toBe(2);
+
+    // At the very start of the text.
+    await act(() => userEvent.click(input, { position: { x: 2, y: 4 } }));
+    await act(() => new Promise((resolve) => setTimeout(resolve, 300)));
+
+    expect(input.selectionStart).toBe(0);
+    expect(input).toHaveFocus();
+    expect(screen.getByRole('listbox')).toBeVisible();
+    expect(input).toHaveAttribute('aria-expanded', 'true');
+  });
+
+  it('commits the custom text on Enter after a caret click into text that matches nothing', async () => {
+    const onSelectionChange = vi.fn();
+
+    renderWithRoot(
+      <ComboBox
+        allowsCustomValue
+        label="Fruit"
+        onSelectionChange={onSelectionChange}
+      >
+        <ComboBox.Item key="apple">Apple</ComboBox.Item>
+        <ComboBox.Item key="banana">Banana</ComboBox.Item>
+      </ComboBox>,
+    );
+
+    const input = screen.getByRole('combobox', {
+      name: 'Fruit',
+    }) as HTMLInputElement;
+
+    await act(() => input.focus());
+    await act(() => userEvent.keyboard('xyz'));
+    expect(screen.queryByRole('listbox')).toBeNull();
+
+    // At the very start of the text.
+    await act(() => userEvent.click(input, { position: { x: 2, y: 4 } }));
+    await act(() => new Promise((resolve) => setTimeout(resolve, 300)));
+
+    expect(input.selectionStart).toBe(0);
+    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(input).toHaveAttribute('aria-expanded', 'false');
+
+    await act(() => userEvent.keyboard('{Enter}'));
+
+    expect(onSelectionChange.mock.calls).toEqual([['xyz']]);
+    expect(input).toHaveValue('xyz');
+  });
+
+  it('focuses the input without opening the list on a click on the label', async () => {
+    renderWithRoot(<Fruit />);
+
+    const input = screen.getByRole('combobox', { name: 'Fruit' });
+
+    await act(() => userEvent.click(screen.getByText('Fruit')));
+    await act(() => new Promise((resolve) => setTimeout(resolve, 300)));
+
+    expect(input).toHaveFocus();
+    expect(screen.queryByRole('listbox')).toBeNull();
+  });
+
+  it('closes the list and moves past the chevron and clear button on Tab', async () => {
+    renderWithRoot(<Fruit isClearable />);
+
+    const input = screen.getByRole('combobox', { name: 'Fruit' });
+
+    await act(() => userEvent.click(input));
+    await waitFor(() => expect(screen.getByRole('listbox')).toBeVisible());
+
+    await act(() => userEvent.keyboard('{Tab}'));
+
+    expect(screen.getByRole('button', { name: 'After' })).toHaveFocus();
+    await waitFor(() => expect(screen.queryByRole('listbox')).toBeNull());
+
+    await act(() => userEvent.keyboard('{Shift>}{Tab}{/Shift}'));
+
+    expect(input).toHaveFocus();
+  });
+});

@@ -71,6 +71,7 @@ import { extractStyles } from '../../../utils/styles';
 import { useAutoTooltip } from '../../content/use-auto-tooltip';
 import { DisplayTransition } from '../../helpers/DisplayTransition';
 import { IconSwitch } from '../../helpers/IconSwitch/IconSwitch';
+import { mergeTooltipFocusProps } from '../../overlays/Tooltip/split-trigger-props';
 import { CubeTooltipProviderProps } from '../../overlays/Tooltip/TooltipProvider';
 import { CubeActionProps } from '../Action/Action';
 import { useButtonSplitContext } from '../ButtonSplit/context';
@@ -416,8 +417,8 @@ export const Button = forwardRef(function Button(
   const size =
     sizeProp ?? splitContext?.size ?? (type === 'link' ? 'inline' : 'medium');
 
-  const isDisabled =
-    splitContext?.isDisabled || props.isDisabled || props.isLoading;
+  const isExplicitlyDisabled = splitContext?.isDisabled || props.isDisabled;
+  const isDisabled = isExplicitlyDisabled || props.isLoading;
   const isLoading = props.isLoading;
   const isSelected = props.isSelected;
 
@@ -580,21 +581,39 @@ export const Button = forwardRef(function Button(
     labelRef,
     renderWithTooltip,
     isTooltipActive,
+    isAutoTooltipEnabled,
   } = useAutoTooltip({
     tooltip,
     children,
     labelProps: undefined,
   });
 
+  // A tooltip the caller wrote, as opposed to the automatic one that shows a
+  // label cut off by the layout.
+  const hasOwnTooltip = isTooltipActive && !isAutoTooltipEnabled;
+  // Loading without being disabled: busy, but not unavailable.
+  const isOnlyLoading = !!isLoading && !isExplicitlyDisabled;
+
   // A disabled button still has to be able to show its tooltip — that is
   // usually where the reason for being unavailable is written. The native
   // `disabled` attribute would make the browser drop the hover that opens it,
   // so when a tooltip is present the button is marked `aria-disabled` and kept
-  // inert instead. The attribute is skipped for links too, where it is not
-  // valid markup and `aria-disabled` is the only thing announcing the state.
+  // inert instead. Only the caller's tooltip counts: the automatic one turns
+  // on with the layout, and would make the button a Tab stop only while its
+  // label is cut off.
+  //
+  // A button that is only loading keeps the focus it has, so a keyboard press
+  // that starts the work does not drop it to the page, but Tab skips it, as it
+  // would a disabled one, unless the caller's tooltip is there to be read. One
+  // that is also `isDisabled` stays natively disabled: `SubmitButton` sets both
+  // while a submission runs, and the frozen legacy Form contract pins that
+  // button as `disabled`.
+  //
+  // The attribute is skipped for links too, where it is not valid markup and
+  // `aria-disabled` is the only thing announcing the state.
   const { isNativelyDisabled, isInert, inertProps } = getDisabledElementProps({
     isDisabled: isDisabledElement,
-    keepEvents: isTooltipActive,
+    keepEvents: hasOwnTooltip || isOnlyLoading,
     as: typeof actionProps.as === 'string' ? actionProps.as : undefined,
   });
 
@@ -662,7 +681,14 @@ export const Button = forwardRef(function Button(
     return (
       <ButtonElement
         download={download}
-        {...mergeProps(elementProps, tooltipTriggerProps || {}, inertProps)}
+        aria-busy={isLoading || undefined}
+        // The tooltip joins the button's own description rather than
+        // replacing it while open.
+        {...mergeProps(
+          mergeTooltipFocusProps(elementProps, tooltipTriggerProps),
+          inertProps,
+        )}
+        {...(isOnlyLoading && !hasOwnTooltip ? { tabIndex: -1 } : null)}
         aria-pressed={ariaPressed}
         ref={handleRef}
         mods={{ ...actionProps.mods, ...modifiers }}

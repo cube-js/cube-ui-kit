@@ -674,6 +674,37 @@ describe('<Radio /> and <RadioGroup />', () => {
     });
   });
 
+  it('clears a controlled value set to null and stays controlled', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const { rerender } = renderWithRoot(
+      <Radio.Group aria-label="Group" value="b" onChange={() => {}}>
+        <Options />
+      </Radio.Group>,
+    );
+
+    expect(screen.getByRole('radio', { name: 'Beta' })).toBeChecked();
+
+    rerender(
+      <Radio.Group aria-label="Group" value={null} onChange={() => {}}>
+        <Options />
+      </Radio.Group>,
+    );
+
+    for (const radio of screen.getAllByRole('radio')) {
+      expect(radio).not.toBeChecked();
+    }
+
+    // Still controlled: a click reports the choice but the value stays empty.
+    await userEvent.click(screen.getByRole('radio', { name: 'Alpha' }));
+
+    expect(screen.getByRole('radio', { name: 'Alpha' })).not.toBeChecked();
+    expect(warn).not.toHaveBeenCalledWith(
+      expect.stringMatching(/controlled to uncontrolled/),
+    );
+
+    warn.mockRestore();
+  });
+
   it("Radio shouldn't work without <RadioGroup />", () => {
     const inst = vi.spyOn(console, 'error').mockImplementation(() => {});
 

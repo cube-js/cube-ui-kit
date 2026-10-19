@@ -25,8 +25,8 @@ function RangeSlider(
 ) {
   let { isDisabled, styles, gradation, ...otherProps } = props;
 
-  // Create separate refs for each thumb to enable proper focus management
-  const minThumbInputRef = useRef<HTMLInputElement>(null);
+  // The first thumb takes `SliderBase`'s `inputRef`, which the component ref's
+  // `focus()` targets; the second thumb keeps its own.
   const maxThumbInputRef = useRef<HTMLInputElement>(null);
 
   return (
@@ -52,7 +52,7 @@ function RangeSlider(
               index={0}
               aria-label={INTL_MESSAGES['minimum']}
               state={state}
-              inputRef={minThumbInputRef}
+              inputRef={inputRef}
               trackRef={trackRef}
               isDisabled={isDisabled}
               isInvalid={isInvalid}

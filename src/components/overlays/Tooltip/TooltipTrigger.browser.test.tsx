@@ -1,7 +1,8 @@
 import { createRef, StrictMode, useLayoutEffect } from 'react';
-import { page } from 'vitest/browser';
+import { page, userEvent } from 'vitest/browser';
 
 import { act, renderWithRoot, screen, waitFor } from '../../../test';
+import { ListBox } from '../../fields/ListBox/ListBox';
 
 import { Tooltip } from './Tooltip';
 import { TooltipTrigger } from './TooltipTrigger';
@@ -230,5 +231,307 @@ describe('tooltip positioning', () => {
       expect(screen.queryByRole('tooltip')).not.toBeInTheDocument(),
     );
     unmount();
+  });
+});
+
+describe('tooltip flipping', () => {
+  afterEach(async () => page.viewport(1000, 800));
+
+  const content = (shouldFlip?: boolean) => (
+    <div style={{ paddingTop: 4, paddingLeft: 200 }}>
+      <TooltipTrigger defaultOpen placement="top">
+        {(props, ref) => (
+          <button {...props} ref={ref as never} type="button">
+            Target
+          </button>
+        )}
+        <Tooltip shouldFlip={shouldFlip}>Details</Tooltip>
+      </TooltipTrigger>
+    </div>
+  );
+
+  it('flips a tooltip with no room above to below its trigger', async () => {
+    renderWithRoot(content());
+
+    await waitFor(() =>
+      expect(screen.getByRole('tooltip')).toHaveAttribute(
+        'data-placement',
+        'bottom',
+      ),
+    );
+  });
+
+  /**
+   * `shouldFlip` was destructured by `Tooltip` and never reached the
+   * positioning, so `false` still flipped.
+   */
+  it('keeps the placement with `shouldFlip={false}`', async () => {
+    renderWithRoot(content(false));
+
+    const tooltip = await screen.findByRole('tooltip');
+
+    await waitFor(() =>
+      expect(tooltip).toHaveAttribute('data-phase', 'entered'),
+    );
+    expect(tooltip).toHaveAttribute('data-placement', 'top');
+  });
+});
+
+describe('tooltip scrolling', () => {
+  // The enter animation moves the tooltip after `entered`; offsets are
+  // compared exactly.
+  const NO_MOTION = { transition: false, translate: false, scale: false };
+
+  afterEach(async () => {
+    window.scrollTo(0, 0);
+    await page.viewport(1000, 800);
+  });
+
+  const content = (offset = 80) => (
+    <>
+      <div data-qa="Other" style={{ height: 60, overflow: 'auto' }}>
+        <div style={{ height: 300 }}>Unrelated</div>
+      </div>
+      <div
+        data-qa="Scroller"
+        style={{ height: 200, overflow: 'auto', marginTop: 120 }}
+      >
+        <div style={{ height: 800, paddingTop: offset, paddingLeft: 200 }}>
+          <button type="button">Before</button>
+          <TooltipTrigger>
+            {(props, ref) => (
+              <button {...props} ref={ref as never} type="button">
+                Target
+              </button>
+            )}
+            <Tooltip styles={NO_MOTION}>Details</Tooltip>
+          </TooltipTrigger>
+        </div>
+      </div>
+    </>
+  );
+
+  async function frames(count: number) {
+    await act(async () => {
+      for (let i = 0; i < count; i++) {
+        await new Promise(requestAnimationFrame);
+      }
+    });
+  }
+
+  // A scroll is reported on the next frame, and whatever it changes renders
+  // after it. Start listening before the scroll.
+  function scrollOf(target: EventTarget) {
+    const scrolled = new Promise((resolve) =>
+      target.addEventListener('scroll', resolve, { once: true }),
+    );
+
+    return async () => {
+      await act(async () => {
+        await scrolled;
+      });
+      await frames(2);
+    };
+  }
+
+  async function openByKeyboard() {
+    screen.getByRole('button', { name: 'Before' }).focus();
+    await userEvent.keyboard('{Tab}');
+    await waitFor(() =>
+      expect(screen.getByRole('tooltip')).toHaveAttribute(
+        'data-phase',
+        'entered',
+      ),
+    );
+  }
+
+  /** The tooltip's offset from its trigger, which a tooltip that follows keeps. */
+  function offsetFrom(trigger: Element) {
+    const tooltip = screen.getByRole('tooltip').getBoundingClientRect();
+    const target = trigger.getBoundingClientRect();
+
+    return {
+      top: Math.round(tooltip.top - target.top),
+      left: Math.round(tooltip.left - target.left),
+    };
+  }
+
+  it('closes once its trigger is scrolled out of the scroller’s view', async () => {
+    renderWithRoot(content());
+    await openByKeyboard();
+
+    const scroller = screen.getByTestId('Scroller');
+    const scrolled = scrollOf(scroller);
+
+    scroller.scrollTop = 200;
+    await scrolled();
+
+    await waitFor(() =>
+      expect(screen.queryByRole('tooltip')).not.toBeInTheDocument(),
+    );
+  });
+
+  /**
+   * Closing on every scroll of an ancestor, as a popover does, also closed it
+   * for a scroll that leaves the trigger in view.
+   */
+  it('follows its trigger on a scroll that keeps the trigger in view', async () => {
+    renderWithRoot(content());
+    await openByKeyboard();
+
+    const scroller = screen.getByTestId('Scroller');
+    const trigger = screen.getByRole('button', { name: 'Target' });
+    const offset = offsetFrom(trigger);
+    const triggerTop = trigger.getBoundingClientRect().top;
+    const scrolled = scrollOf(scroller);
+
+    scroller.scrollTop = 40;
+    await scrolled();
+
+    expect(trigger.getBoundingClientRect().top).toBeCloseTo(triggerTop - 40);
+    expect(screen.getByRole('tooltip')).toHaveAttribute(
+      'data-phase',
+      'entered',
+    );
+    expect(offsetFrom(trigger)).toEqual(offset);
+  });
+
+  it('stays open when an unrelated region scrolls', async () => {
+    renderWithRoot(content());
+    await openByKeyboard();
+
+    const other = screen.getByTestId('Other');
+    const trigger = screen.getByRole('button', { name: 'Target' });
+    const offset = offsetFrom(trigger);
+    const scrolled = scrollOf(other);
+
+    other.scrollTop = 40;
+    await scrolled();
+
+    expect(screen.getByRole('tooltip')).toHaveAttribute(
+      'data-phase',
+      'entered',
+    );
+    expect(offsetFrom(trigger)).toEqual(offset);
+  });
+
+  /**
+   * Tabbing to a trigger below the fold scrolls it into view, and the browser
+   * reports that scroll a frame after the tooltip opened. It must not close
+   * the tooltip the keyboard just opened.
+   */
+  it('stays open when focusing the trigger scrolls it into view', async () => {
+    renderWithRoot(content(400));
+
+    const scroller = screen.getByTestId('Scroller');
+
+    screen.getByRole('button', { name: 'Before' }).focus();
+    expect(scroller.scrollTop).toBeGreaterThan(0);
+    scroller.scrollTop = 0;
+    await frames(2);
+
+    const scrolled = scrollOf(scroller);
+
+    await userEvent.keyboard('{Tab}');
+    await scrolled();
+
+    expect(screen.getByRole('button', { name: 'Target' })).toHaveFocus();
+    expect(scroller.scrollTop).toBeGreaterThan(0);
+    await waitFor(() =>
+      expect(screen.getByRole('tooltip')).toHaveAttribute(
+        'data-phase',
+        'entered',
+      ),
+    );
+  });
+
+  /**
+   * A list focuses an option without scrolling and scrolls it into view a
+   * frame later, after the option's tooltip opened. The tooltip closed on
+   * every option that needed the scroll.
+   */
+  it('keeps the tooltip of each option the keyboard scrolls into view', async () => {
+    const names = Array.from({ length: 20 }, (_, i) => `Option ${i}`);
+
+    renderWithRoot(
+      <div data-qa="Wrap" style={{ height: 120, overflow: 'auto' }}>
+        <ListBox aria-label="Options">
+          {names.map((name) => (
+            <ListBox.Item key={name} tooltip={`Tip for ${name}`}>
+              {name}
+            </ListBox.Item>
+          ))}
+        </ListBox>
+      </div>,
+    );
+
+    await userEvent.keyboard('{Tab}');
+
+    for (let i = 1; i <= 6; i++) {
+      await userEvent.keyboard('{ArrowDown}');
+      // The list scrolls on the next frame, and reports it on the one after.
+      await frames(3);
+
+      const option = screen.getByRole('option', { name: `Option ${i}` });
+
+      expect(option).toHaveFocus();
+      // A closed tooltip is gone well within the timeout, which is shorter
+      // than the test's so the failure names this assertion.
+      await waitFor(
+        () => {
+          const tooltip = screen
+            .getByText(`Tip for Option ${i}`)
+            .closest('[role="tooltip"]')!;
+          const box = tooltip.getBoundingClientRect();
+          const target = option.getBoundingClientRect();
+
+          expect(tooltip).toHaveAttribute('data-phase', 'entered');
+          // Drawn next to the option, wherever the scroll moved it.
+          expect(
+            Math.max(box.top - target.bottom, target.top - box.bottom),
+          ).toBeLessThan(16);
+        },
+        { timeout: 2000 },
+      );
+    }
+
+    expect(screen.getByTestId('Wrap').scrollTop).toBeGreaterThan(0);
+  });
+
+  /**
+   * A fixed trigger stays put when the page scrolls, and the tooltip, which
+   * is positioned in the page, scrolled away from it.
+   */
+  it('keeps a fixed trigger’s tooltip next to it when the page scrolls', async () => {
+    renderWithRoot(
+      <div style={{ height: 3000 }}>
+        <button type="button">Before</button>
+        <div style={{ position: 'fixed', top: 200, left: 200 }}>
+          <TooltipTrigger>
+            {(props, ref) => (
+              <button {...props} ref={ref as never} type="button">
+                Target
+              </button>
+            )}
+            <Tooltip styles={NO_MOTION}>Details</Tooltip>
+          </TooltipTrigger>
+        </div>
+      </div>,
+    );
+    await openByKeyboard();
+
+    const trigger = screen.getByRole('button', { name: 'Target' });
+    const offset = offsetFrom(trigger);
+    const scrolled = scrollOf(document);
+
+    window.scrollTo(0, 300);
+    await scrolled();
+
+    expect(window.scrollY).toBe(300);
+    expect(screen.getByRole('tooltip')).toHaveAttribute(
+      'data-phase',
+      'entered',
+    );
+    expect(offsetFrom(trigger)).toEqual(offset);
   });
 });

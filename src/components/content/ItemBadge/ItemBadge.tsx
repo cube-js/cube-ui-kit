@@ -27,8 +27,8 @@ import {
 } from '../../../data/item-themes';
 import { CheckIcon } from '../../../icons/CheckIcon';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
-import { mergeProps } from '../../../utils/react';
 import { useItemActionContext } from '../../actions/ItemActionContext';
+import { mergeTooltipFocusProps } from '../../overlays/Tooltip/split-trigger-props';
 import { TooltipProvider } from '../../overlays/Tooltip/TooltipProvider';
 
 export interface CubeItemBadgeProps extends BaseProps {
@@ -178,6 +178,23 @@ export const ItemBadge = forwardRef<HTMLDivElement, CubeItemBadgeProps>(
     const { title: _title, ...tooltipProps } =
       typeof tooltip === 'object' ? tooltip : {};
 
+    // A badge is never interactive, and screen readers ignore a name on an
+    // element without a role. An icon-only badge with a name is exposed as an
+    // image; a badge with a visible label reads as that label.
+    const role = rest.role ?? (ariaLabel && !children ? 'img' : undefined);
+
+    // The badge cannot take focus, so its tooltip opens on hover only. When
+    // the tooltip text is not already the name, it describes the badge instead,
+    // so keyboard and screen reader users get it without a Tab stop on every
+    // badge. Rich tooltip content has no plain text to put here.
+    const ariaDescription =
+      rest['aria-description'] ??
+      (showTooltip &&
+      typeof tooltipContent === 'string' &&
+      tooltipContent !== ariaLabel
+        ? tooltipContent
+        : undefined);
+
     const finalType = type;
 
     // Render function that accepts tooltip trigger props and ref
@@ -206,8 +223,12 @@ export const ItemBadge = forwardRef<HTMLDivElement, CubeItemBadgeProps>(
           data-theme={theme}
           data-type={finalType}
           aria-label={ariaLabel}
+          role={role}
+          aria-description={ariaDescription}
           mods={finalMods}
-          {...mergeProps(rest, tooltipTriggerProps || {})}
+          // The tooltip joins the badge's own description rather than
+          // replacing it while open.
+          {...mergeTooltipFocusProps(rest, tooltipTriggerProps)}
         >
           {finalIcon && <div data-element="Icon">{finalIcon}</div>}
           {children}

@@ -950,6 +950,87 @@ describe('<Picker />', () => {
     });
   });
 
+  describe('Trigger accessibility', () => {
+    it('keeps the label as the name and describes the trigger with the value', () => {
+      const { getByRole } = renderWithRoot(
+        <Picker label="Status" selectedKey="banana" description="Pick one">
+          {basicItems}
+        </Picker>,
+      );
+
+      const trigger = getByRole('button', { name: 'Status' });
+
+      expect(trigger).toHaveAccessibleDescription('Banana Pick one');
+    });
+
+    it('describes the trigger with the placeholder while empty', () => {
+      const { getByRole } = renderWithRoot(
+        <Picker label="Status" placeholder="Choose a fruit">
+          {basicItems}
+        </Picker>,
+      );
+
+      expect(
+        getByRole('button', { name: 'Status' }),
+      ).toHaveAccessibleDescription('Choose a fruit');
+    });
+
+    it('describes the trigger with a multiple selection summary', () => {
+      const { getByRole } = renderWithRoot(
+        <Picker
+          aria-label="Fruits"
+          selectionMode="multiple"
+          selectedKeys={['apple', 'cherry']}
+        >
+          {basicItems}
+        </Picker>,
+      );
+
+      expect(
+        getByRole('button', { name: 'Fruits' }),
+      ).toHaveAccessibleDescription('Apple, Cherry');
+    });
+
+    it('adds no value description when the summary is hidden', () => {
+      const { getByRole } = renderWithRoot(
+        <Picker
+          label="Fruits"
+          selectionMode="multiple"
+          renderSummary={false}
+          selectedKeys={['apple']}
+        >
+          {basicItems}
+        </Picker>,
+      );
+
+      expect(getByRole('button', { name: 'Fruits' })).not.toHaveAttribute(
+        'aria-describedby',
+      );
+    });
+
+    it('marks the trigger as opening the dialog it controls', async () => {
+      const { getByRole } = renderWithRoot(
+        <Picker label="Status">{basicItems}</Picker>,
+      );
+
+      const trigger = getByRole('button', { name: 'Status' });
+
+      expect(trigger).toHaveAttribute('aria-haspopup', 'dialog');
+
+      await userEvent.click(trigger);
+
+      const popup = await waitFor(() => {
+        const id = trigger.getAttribute('aria-controls');
+
+        expect(id).toBeTruthy();
+
+        return document.getElementById(id!);
+      });
+
+      expect(popup).toHaveAttribute('role', 'dialog');
+    });
+  });
+
   describe('Refs', () => {
     it('should forward ref to wrapper element', async () => {
       const ref = createRef<HTMLElement>();

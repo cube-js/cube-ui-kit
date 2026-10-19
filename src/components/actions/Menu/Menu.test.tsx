@@ -1215,7 +1215,7 @@ describe('<Menu />', () => {
 
   // Header and footer tests
   it('should render header when provided', () => {
-    const { getByText, getByRole } = render(
+    const { getByText } = render(
       <Menu id="test-menu" aria-label="Test menu" header="Menu Header">
         {basicItems}
       </Menu>,
@@ -1224,26 +1224,44 @@ describe('<Menu />', () => {
     // Header content should be visible
     expect(getByText('Menu Header')).toBeInTheDocument();
 
-    // Header element should have the correct role and qa attribute
-    const header = getByRole('heading', { level: 3 });
-    expect(header).toBeInTheDocument();
-    expect(header).toHaveAttribute('data-qa', 'Header');
+    expect(getByText('Menu Header')).toHaveAttribute('data-qa', 'Header');
+  });
+
+  it('does not make a header that holds controls a heading', () => {
+    const { getByRole, queryByRole } = render(
+      <Menu
+        id="test-menu"
+        aria-label="Test menu"
+        header={
+          <>
+            Actions
+            <Button aria-label="Close">x</Button>
+          </>
+        }
+      >
+        {basicItems}
+      </Menu>,
+    );
+
+    // A header can hold controls, and a heading takes its whole content as
+    // its name, so the control would be read as part of a title.
+    expect(queryByRole('heading')).not.toBeInTheDocument();
+    expect(getByRole('button', { name: 'Close' })).toBeInTheDocument();
   });
 
   it('should render footer when provided', () => {
-    const { getByText, getByRole } = render(
+    const { getByText } = render(
       <Menu id="test-menu" aria-label="Test menu" footer="Menu Footer">
         {basicItems}
       </Menu>,
     );
 
     // Footer content should be visible
-    expect(getByText('Menu Footer')).toBeInTheDocument();
+    const footer = getByText('Menu Footer');
 
-    // Footer element should have the correct role and qa attribute
-    const footer = getByRole('footer');
-    expect(footer).toBeInTheDocument();
     expect(footer).toHaveAttribute('data-qa', 'Footer');
+    // `footer` is not an ARIA role.
+    expect(footer).not.toHaveAttribute('role');
   });
 
   it('should handle onClose callback', () => {

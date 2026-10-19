@@ -78,7 +78,7 @@ const meta = {
     shouldCommitOnBlur: {
       control: { type: 'boolean' },
       description:
-        'Whether to commit custom value on blur in allowsCustomValue mode',
+        'Whether to commit custom value on blur in allowsCustomValue mode. When false, blur discards the uncommitted text and the input shows the selected label again',
       table: {
         defaultValue: { summary: true },
       },
@@ -112,7 +112,8 @@ const meta = {
     popoverTrigger: {
       options: ['focus', 'input', 'manual'],
       control: { type: 'radio' },
-      description: 'How the popover is triggered',
+      description:
+        'When the list opens on its own: on typing or a press in the input (input), on focus as well (focus), or only from the chevron and arrow keys (manual)',
       table: {
         defaultValue: { summary: 'input' },
       },
@@ -165,7 +166,8 @@ const meta = {
     },
     isReadOnly: {
       control: { type: 'boolean' },
-      description: 'Whether the input can be selected but not changed',
+      description:
+        'Whether the input can be selected but not changed: the list does not open',
       table: {
         defaultValue: { summary: false },
       },
@@ -204,7 +206,8 @@ const meta = {
     },
     onOpenChange: {
       action: 'open-change',
-      description: 'Callback fired when the popover opens or closes',
+      description:
+        'Callback fired when the list shows or hides. Not called on mount',
       control: { type: null },
     },
     onFocus: {
@@ -972,8 +975,8 @@ export const AllowsCustomValueNoCommitOnBlur = () => {
           <Text.Strong>{selectedKey || 'none'}</Text.Strong>
         </Text>
         <Paragraph preset="t4" color="#dark-03" margin="1x 0 0 0">
-          With shouldCommitOnBlur=false, custom values only commit on Enter key,
-          not on blur.
+          With shouldCommitOnBlur=false, custom values only commit on Enter key.
+          Leaving the input discards the uncommitted text.
         </Paragraph>
       </Space>
     </Flow>

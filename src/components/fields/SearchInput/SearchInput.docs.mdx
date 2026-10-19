@@ -24,7 +24,7 @@ A search input provides a specialized text field for search functionality, featu
 
 ### Properties
 
-- **`value`** `string` — The search value in controlled mode
+- **`value`** `string | null` — The search value in controlled mode. `null` clears the field and keeps it controlled
 - **`defaultValue`** `string` — The default search value in uncontrolled mode
 - **`isBuffered`** `boolean` (default: `true`) — Whether typed text is held locally until the controlled `value` catches up. This is what keeps the caret in place when the value round-trips through a store that re-renders a pass late; `onChange` still fires on every keystroke. Set to `false` for a caller that must see the field snap back to its own `value` the moment it declines a keystroke.
 - **`placeholder`** `string` — Placeholder text when input is empty
@@ -32,14 +32,15 @@ A search input provides a specialized text field for search functionality, featu
 - **`prefix`** `ReactNode` — Content rendered before the input
 - **`suffix`** — Input decoration after the main input (before clear button)
 - **`suffixPosition`** `'before' | 'after'` (default: `after`) — Position of suffix relative to validation/loading state icons
-- **`isClearable`** `boolean` (default: `false`) — Whether the search input shows a clear button
+- **`isClearable`** `boolean` (default: `false`) — Whether the search input shows a clear button while it has text. `Escape` clears the input either way
 - **`size`** `'small' | 'medium' | 'large'` (default: `medium`) — Input size
 - **`autoComplete`** `string` — HTML [`autocomplete`](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/autocomplete) token that tells the browser what to autofill (`off` to suppress autofill on a filter field). The lowercase `autocomplete` alias is deprecated.
 - **`inputProps`** `Props` — Direct props passed to the native input element, merged over the props React Aria generates: a key you set wins, and event handlers are chained rather than replaced
 - **`wrapperProps`** `Props` — Direct props passed to the input wrapper element
+- **`inputRef`** `RefObject<HTMLInputElement>` — Ref to the native input element. It is the same element the clear button returns focus to
 - **`onChange`** `function` — Callback fired when the search value changes
 - **`onSubmit`** `function` — Callback fired when search is submitted
-- **`onClear`** `function` — Callback fired when search is cleared
+- **`onClear`** `function` — Callback fired after the text is cleared, by the clear button or by `Escape`. Not called when there was no text to clear
 - **`onBlur`** `function` — Callback fired when the input loses focus
 - **`onFocus`** `function` — Callback fired when the input receives focus
 
@@ -187,8 +188,8 @@ const [searchValue, setSearchValue] = useState('');
 
 ### Keyboard Navigation
 
-- `Tab` - Moves focus to the search input
-- `Escape` - Clears the search input (when `isClearable` is true)
+- `Tab` - Moves focus to the search input. The clear button is skipped: it is not in the `Tab` order
+- `Escape` - Clears the search input and calls `onClear`, whether or not `isClearable` is set, as in a native search field. With the input already empty, `Escape` is left to the surrounding UI, so a `Dialog` closes on the next press
 - `Enter` - Submits search or triggers onSubmit callback
 - All standard text input keyboard shortcuts work for text entry
 
@@ -197,7 +198,7 @@ const [searchValue, setSearchValue] = useState('');
 - Component announces as "search" input type to screen readers
 - Search icon and clear button have appropriate labels
 - Current search value and results count are announced when available
-- Loading states and validation errors are communicated
+- `isInvalid` sets `aria-invalid` on the input. The loading indicator is visual only: `isLoading` is not announced
 
 ### ARIA Properties
 

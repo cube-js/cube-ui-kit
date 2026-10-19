@@ -793,9 +793,9 @@ describe.each([
 
     const trigger = screen.getByTestId('Pick');
 
-    // The Dialog moves focus in on its own a tick after opening, and contains
-    // it only once its opening transition has ended: a Tab before that falls
-    // out of it.
+    // The Dialog moves focus in on its own a tick after opening; wait for that
+    // and for the opening transition, so neither moves focus after the test
+    // has placed it.
     await waitFor(() =>
       expect(screen.getByTestId('Dialog')).toContainElement(
         document.activeElement as HTMLElement,
@@ -944,4 +944,133 @@ it('filters and picks from the FilterPicker search field inside a Dialog (CUB-56
   );
   expect(screen.getByTestId('Pick')).toHaveTextContent('Red');
   expect(screen.getByTestId('Dialog')).toBeInTheDocument();
+});
+
+/**
+ * `offset` is the gap between the trigger and the popover, so `0` must put the
+ * popover flush against it rather than fall back to the default `8`. Needs real
+ * layout: jsdom has no geometry to measure the gap with.
+ */
+describe('DialogTrigger popover offset', () => {
+  it.each([
+    [0, 0],
+    [undefined, 8],
+  ])('offset=%s leaves a %ipx gap', async (offset, gap) => {
+    renderWithRoot(
+      <div style={{ padding: 100 }}>
+        <DialogTrigger type="popover" placement="bottom" offset={offset}>
+          <Button qa="Trigger">Open</Button>
+          <Dialog>
+            <Button qa="Inside">Inside</Button>
+          </Dialog>
+        </DialogTrigger>
+      </div>,
+    );
+
+    await userEvent.click(screen.getByTestId('Trigger'));
+
+    const popover = await screen.findByTestId('Popover');
+
+    await waitFor(() => expect(popover).toHaveAttribute('data-entered'));
+
+    const triggerBottom = screen
+      .getByTestId('Trigger')
+      .getBoundingClientRect().bottom;
+
+    await waitFor(() =>
+      expect(popover.getBoundingClientRect().top - triggerBottom).toBeCloseTo(
+        gap,
+        0,
+      ),
+    );
+  });
+});
+
+/**
+ * A popover with `isDismissable={false}` leaves the page usable: an outside
+ * press reaches the control it lands on. Focus has to be free to follow it, so
+ * the popover does not contain focus, and a peer popover or a modal restores
+ * focus to its own trigger rather than into this popover. Real focus moves, so
+ * a real browser.
+ */
+describe('DialogTrigger popover with isDismissable={false}', () => {
+  function App() {
+    return (
+      <div style={{ display: 'flex', gap: 8 }}>
+        <DialogTrigger type="popover" isDismissable={false}>
+          <Button qa="Trigger">Open</Button>
+          <Dialog aria-label="Persistent">
+            <input aria-label="Inside" />
+          </Dialog>
+        </DialogTrigger>
+        <input data-qa="Outside" aria-label="Outside" />
+        <DialogTrigger type="popover">
+          <Button qa="PeerTrigger">Peer</Button>
+          <Dialog qa="PeerDialog" aria-label="Peer">
+            <input aria-label="Peer input" />
+          </Dialog>
+        </DialogTrigger>
+        <DialogTrigger>
+          <Button qa="ModalTrigger">Modal</Button>
+          <Dialog qa="ModalDialog" aria-label="Modal">
+            <input aria-label="Modal input" />
+          </Dialog>
+        </DialogTrigger>
+      </div>
+    );
+  }
+
+  // Past the enter transition and the Dialog's own focus pass, or past the
+  // exit transition and the focus restore that follows it.
+  const settle = () => new Promise((resolve) => setTimeout(resolve, 600));
+
+  const openPopover = async () => {
+    await browserUserEvent.click(screen.getByTestId('Trigger'));
+    await screen.findByTestId('Dialog');
+    await settle();
+  };
+
+  it('lets an outside text field take focus and typing', async () => {
+    renderWithRoot(<App />);
+    await openPopover();
+
+    const outside = screen.getByTestId('Outside');
+
+    await browserUserEvent.click(outside);
+    await browserUserEvent.keyboard('abc');
+
+    expect(outside).toHaveFocus();
+    expect(outside).toHaveValue('abc');
+    expect(screen.getByTestId('Dialog')).toBeInTheDocument();
+  });
+
+  it('lets a peer popover restore focus to its own trigger', async () => {
+    renderWithRoot(<App />);
+    await openPopover();
+
+    await browserUserEvent.click(screen.getByTestId('PeerTrigger'));
+    await screen.findByTestId('PeerDialog');
+    await settle();
+    await browserUserEvent.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByTestId('PeerDialog')).toBeNull());
+    await settle();
+
+    expect(screen.getByTestId('PeerTrigger')).toHaveFocus();
+    expect(screen.getByTestId('Dialog')).toBeInTheDocument();
+  });
+
+  it('closes when a modal opens, which restores focus to its own trigger', async () => {
+    renderWithRoot(<App />);
+    await openPopover();
+
+    await browserUserEvent.click(screen.getByTestId('ModalTrigger'));
+    await screen.findByTestId('ModalDialog');
+    await waitFor(() => expect(screen.queryByTestId('Dialog')).toBeNull());
+    await settle();
+    await browserUserEvent.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByTestId('ModalDialog')).toBeNull());
+    await settle();
+
+    expect(screen.getByTestId('ModalTrigger')).toHaveFocus();
+  });
 });

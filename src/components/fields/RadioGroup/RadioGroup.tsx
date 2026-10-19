@@ -105,7 +105,8 @@ function isFocusedDisabledRadio(value: string | null) {
 function RadioGroup(rawProps: WithNullableValue<CubeRadioGroupProps>, ref) {
   let orientation = rawProps.orientation;
 
-  rawProps = castNullableStringValue(rawProps);
+  // `null` is the radio group's own "nothing selected".
+  rawProps = castNullableStringValue(rawProps, null);
   let props = useFieldProps(rawProps, { defaultValidationTrigger: 'onChange' });
 
   let {

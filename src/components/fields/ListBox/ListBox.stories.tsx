@@ -197,7 +197,7 @@ const meta: any = {
     showSelectAll: {
       control: { type: 'boolean' },
       description:
-        'Whether to show the "Select All" option in multiple selection mode',
+        'Whether to show the "Select All" checkbox in multiple selection mode',
       table: {
         defaultValue: { summary: false },
       },
@@ -1271,7 +1271,7 @@ export const WithSelectAll: Story = {
     docs: {
       description: {
         story:
-          'When `showSelectAll={true}` is used with multiple selection mode, a "Select All" option appears in the header. The checkbox shows indeterminate state when some items are selected, checked when all are selected, and unchecked when none are selected.',
+          'When `showSelectAll={true}` is used with multiple selection mode, a "Select All" checkbox appears above the list. It shows indeterminate state when some items are selected, checked when every selectable item is selected, and unchecked when none are selected. It is a Tab stop of its own, toggled with Space.',
       },
     },
   },

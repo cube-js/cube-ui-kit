@@ -84,4 +84,76 @@ describe('<PasswordInput />', () => {
     expect(onKeyDown.mock.results.map((r) => r.value)).toEqual(['a', 'Enter']);
     expect(onKeyUp.mock.results.map((r) => r.value)).toEqual(['a', 'Enter']);
   });
+
+  it('exposes whether the password is shown on the toggle', async () => {
+    const { getByRole, getByTestId } = renderWithRoot(
+      <PasswordInput label="Password" defaultValue="secret" />,
+    );
+
+    const input = getByTestId('Input');
+    const toggle = getByRole('button', { name: 'Show password' });
+
+    expect(input).toHaveAttribute('type', 'password');
+    expect(toggle).toHaveAttribute('aria-pressed', 'false');
+
+    await userEvent.click(toggle);
+
+    expect(input).toHaveAttribute('type', 'text');
+    expect(toggle).toHaveAttribute('aria-pressed', 'true');
+    expect(toggle).toHaveAccessibleName('Show password');
+
+    await userEvent.click(toggle);
+
+    expect(input).toHaveAttribute('type', 'password');
+    expect(toggle).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('places the toggle after the input in the Tab order', async () => {
+    const { getByRole, getByTestId } = renderWithRoot(
+      <PasswordInput label="Password" />,
+    );
+
+    await userEvent.click(getByTestId('Input'));
+    await userEvent.tab();
+
+    expect(getByRole('button', { name: 'Show password' })).toHaveFocus();
+  });
+
+  it('clears a controlled value set to null and stays controlled', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const { getByTestId, rerender } = renderWithRoot(
+      <PasswordInput label="Password" value="secret" onChange={() => {}} />,
+    );
+
+    rerender(
+      <PasswordInput label="Password" value={null} onChange={() => {}} />,
+    );
+
+    expect(getByTestId('Input')).toHaveValue('');
+    expect(warn).not.toHaveBeenCalledWith(
+      expect.stringMatching(/controlled to uncontrolled/),
+    );
+
+    warn.mockRestore();
+  });
+
+  it('shows validate errors only after the field is touched', async () => {
+    const { getByTestId, getByText, queryByText } = renderWithRoot(
+      <PasswordInput
+        label="Password"
+        validate={(value) => (value.length < 8 ? 'Too short' : null)}
+      />,
+    );
+
+    const input = getByTestId('Input');
+
+    expect(input.closest('[data-invalid]')).toBeNull();
+    expect(queryByText('Too short')).not.toBeInTheDocument();
+
+    await userEvent.click(input);
+    await userEvent.tab();
+
+    expect(input.closest('[data-invalid]')).not.toBeNull();
+    expect(getByText('Too short')).toBeInTheDocument();
+  });
 });

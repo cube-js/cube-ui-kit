@@ -324,3 +324,43 @@ describe('<Checkbox /> tooltip', () => {
     expect(await screen.findByRole('tooltip')).toHaveTextContent('Sent weekly');
   });
 });
+
+describe('<Checkbox /> null value', () => {
+  it('clears when a controlled isSelected is set to null', () => {
+    const { rerender } = render(
+      <Checkbox isSelected onChange={() => {}}>
+        Accept
+      </Checkbox>,
+    );
+
+    expect(screen.getByRole('checkbox')).toBeChecked();
+
+    rerender(
+      <Checkbox isSelected={null} onChange={() => {}}>
+        Accept
+      </Checkbox>,
+    );
+
+    expect(screen.getByRole('checkbox')).not.toBeChecked();
+  });
+});
+
+describe('<Checkbox /> in a group', () => {
+  it('does not warn about isSelected={null} on a grouped checkbox', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    render(
+      <CheckboxGroup label="Options">
+        <Checkbox value="one" isSelected={null}>
+          One
+        </Checkbox>
+      </CheckboxGroup>,
+    );
+
+    expect(warn).not.toHaveBeenCalledWith(
+      expect.stringMatching(/isSelected is unsupported/),
+    );
+
+    warn.mockRestore();
+  });
+});

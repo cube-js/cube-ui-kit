@@ -306,20 +306,30 @@ export function LayoutProvider({
 }
 
 /**
+ * Private: `true` inside a Layout region (Content, Pane, Panel and the other
+ * parts that reset the context) and inside a Layout that is itself nested, so
+ * a footer rendered there is not page-level. Not reset by `LayoutContextReset`,
+ * and not part of the public Layout context API.
+ */
+export const LayoutNestedContext = createContext(false);
+
+/**
  * Provider that resets the layout context for sub-components.
  * Used to prevent panels in nested Layouts from affecting parent layouts.
  */
 export function LayoutContextReset({ children }: { children: ReactNode }) {
   return (
-    <LayoutRefsContext.Provider value={null}>
-      <LayoutActionsContext.Provider value={null}>
-        <LayoutStateContext.Provider value={null}>
-          <LayoutPanelTransitionContext.Provider value={null}>
-            {children}
-          </LayoutPanelTransitionContext.Provider>
-        </LayoutStateContext.Provider>
-      </LayoutActionsContext.Provider>
-    </LayoutRefsContext.Provider>
+    <LayoutNestedContext.Provider value>
+      <LayoutRefsContext.Provider value={null}>
+        <LayoutActionsContext.Provider value={null}>
+          <LayoutStateContext.Provider value={null}>
+            <LayoutPanelTransitionContext.Provider value={null}>
+              {children}
+            </LayoutPanelTransitionContext.Provider>
+          </LayoutStateContext.Provider>
+        </LayoutActionsContext.Provider>
+      </LayoutRefsContext.Provider>
+    </LayoutNestedContext.Provider>
   );
 }
 

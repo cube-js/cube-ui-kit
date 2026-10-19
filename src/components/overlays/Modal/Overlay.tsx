@@ -34,7 +34,8 @@ export interface CubeOverlayProps extends WithCloseBehavior {
   onExited?: () => void;
 }
 
-const EXIT_DURATION = 350;
+/** How long a closed overlay stays mounted while it plays its exit. */
+export const EXIT_DURATION = 350;
 
 function Overlay(props: CubeOverlayProps, ref) {
   let {

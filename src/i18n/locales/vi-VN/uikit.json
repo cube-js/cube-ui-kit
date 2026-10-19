@@ -96,11 +96,13 @@
     "noFileSelected": "Chưa chọn tệp nào"
   },
   "passwordInput": {
-    "toggleMasking": "Bật/tắt che giấu"
+    "showPassword": "Hiện mật khẩu"
   },
   "numberInput": {
-    "stepUp": "Tăng",
-    "stepDown": "Giảm"
+    "stepUp": "Tăng {{label}}",
+    "stepDown": "Giảm {{label}}",
+    "increase": "Tăng",
+    "decrease": "Giảm"
   },
   "textInputMapper": {
     "key": "Khóa",

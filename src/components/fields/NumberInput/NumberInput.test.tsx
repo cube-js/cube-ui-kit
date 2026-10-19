@@ -1,10 +1,210 @@
-import { fireEvent, render, userEvent } from '../../../test';
+import { createUIKitI18n } from '../../../i18n';
+import {
+  act,
+  fireEvent,
+  render,
+  renderWithRoot,
+  screen,
+  userEvent,
+  waitFor,
+} from '../../../test';
+import { Button } from '../../actions/Button/Button';
+import { Content } from '../../content/Content';
+import { Dialog } from '../../overlays/Dialog/Dialog';
+import { DialogTrigger } from '../../overlays/Dialog/DialogTrigger';
+import { Root } from '../../Root';
 
 import { NumberInput } from './NumberInput';
 
 vi.mock('../../../_internal/hooks/use-warn');
 
 describe('<NumberInput />', () => {
+  it('shows the invalid state and message from validate', async () => {
+    const { getByRole, getByText } = render(
+      <NumberInput
+        label="Quantity"
+        validate={(value) => (value > 10 ? 'Too many' : null)}
+      />,
+    );
+
+    const input = getByRole('textbox');
+
+    await userEvent.type(input, '20');
+    await userEvent.tab();
+
+    expect(input).toHaveAttribute('aria-invalid', 'true');
+    expect(input.closest('[data-invalid]')).not.toBeNull();
+    expect(getByText('Too many')).toBeInTheDocument();
+  });
+
+  describe('validate before the field is touched', () => {
+    function renderAtLeastFive() {
+      return renderWithRoot(
+        <NumberInput
+          label="Quantity"
+          validate={(value) =>
+            Number.isNaN(value) || value < 5 ? 'At least 5' : null
+          }
+        />,
+      );
+    }
+
+    it('shows nothing for the empty value the field mounts with', () => {
+      renderAtLeastFive();
+
+      expect(screen.getByRole('textbox').closest('[data-invalid]')).toBeNull();
+      expect(screen.queryByText('At least 5')).not.toBeInTheDocument();
+    });
+
+    it('shows the error once the user leaves the field', async () => {
+      renderAtLeastFive();
+      const input = screen.getByRole('textbox');
+
+      await userEvent.click(input);
+      await userEvent.tab();
+
+      expect(input.closest('[data-invalid]')).not.toBeNull();
+      expect(screen.getByText('At least 5')).toBeInTheDocument();
+    });
+
+    it('shows the error once a stepper changes the value', async () => {
+      renderAtLeastFive();
+
+      await userEvent.click(
+        screen.getByRole('button', { name: 'Increase Quantity' }),
+      );
+
+      expect(
+        screen.getByRole('textbox').closest('[data-invalid]'),
+      ).not.toBeNull();
+      expect(screen.getByText('At least 5')).toBeInTheDocument();
+    });
+
+    it('waits for the typed number to commit', async () => {
+      renderAtLeastFive();
+      const input = screen.getByRole('textbox');
+
+      await userEvent.type(input, '7');
+
+      expect(input.closest('[data-invalid]')).toBeNull();
+      expect(screen.queryByText('At least 5')).not.toBeInTheDocument();
+    });
+  });
+
+  it('clears a controlled value set to null and stays controlled', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const { getByRole, rerender } = render(
+      <NumberInput label="Quantity" value={5} onChange={() => {}} />,
+    );
+
+    expect(getByRole('textbox')).toHaveValue('5');
+
+    rerender(<NumberInput label="Quantity" value={null} onChange={() => {}} />);
+
+    expect(getByRole('textbox')).toHaveValue('');
+    expect(warn).not.toHaveBeenCalledWith(
+      expect.stringMatching(/controlled to uncontrolled/),
+    );
+
+    warn.mockRestore();
+  });
+
+  it('merges wrapperProps with the group props', () => {
+    const { container } = render(
+      <NumberInput label="Quantity" wrapperProps={{ 'data-custom': 'qty' }} />,
+    );
+
+    const wrapper = container.querySelector('[data-custom="qty"]');
+
+    expect(wrapper).toHaveAttribute('role', 'group');
+    expect(wrapper).toContainElement(screen.getByRole('textbox'));
+  });
+
+  describe('steppers', () => {
+    it.each([
+      ['a text label', { label: 'Quantity' }],
+      ['a rich label', { label: <strong>Quantity</strong> }],
+      ['aria-label', { 'aria-label': 'Quantity' }],
+    ])('names the steppers after the field with %s', (_, props) => {
+      renderWithRoot(<NumberInput {...props} />);
+
+      expect(
+        screen.getByRole('button', { name: 'Increase Quantity' }),
+      ).toBeVisible();
+      expect(
+        screen.getByRole('button', { name: 'Decrease Quantity' }),
+      ).toBeVisible();
+    });
+
+    // React Aria ships no Vietnamese strings, so its own names stay English.
+    it('uses the UI Kit translation of the stepper names', () => {
+      render(
+        <Root i18n={createUIKitI18n('vi-VN')}>
+          <NumberInput label="Quantity" />
+        </Root>,
+      );
+
+      expect(
+        screen.getByRole('button', { name: 'Tăng Quantity' }),
+      ).toBeVisible();
+      expect(
+        screen.getByRole('button', { name: 'Giảm Quantity' }),
+      ).toBeVisible();
+    });
+
+    // The label is composed in through `aria-labelledby`, so the translated
+    // name must read on its own, without a `{{label}}` slot left empty.
+    it('uses the translated name without a slot when the label is not text', () => {
+      render(
+        <Root i18n={createUIKitI18n('ja-JP')}>
+          <NumberInput label={<strong>数量</strong>} />
+        </Root>,
+      );
+
+      expect(screen.getByRole('button', { name: '増やす 数量' })).toBeVisible();
+      expect(screen.getByRole('button', { name: '減らす 数量' })).toBeVisible();
+    });
+
+    it('keeps incrementAriaLabel and decrementAriaLabel from the caller', () => {
+      renderWithRoot(
+        <NumberInput
+          label="Quantity"
+          incrementAriaLabel="Add one"
+          decrementAriaLabel="Remove one"
+        />,
+      );
+
+      expect(screen.getByRole('button', { name: 'Add one' })).toBeVisible();
+      expect(screen.getByRole('button', { name: 'Remove one' })).toBeVisible();
+    });
+
+    it('keeps a surrounding popover open when stepping', async () => {
+      renderWithRoot(
+        <DialogTrigger type="popover">
+          <Button>Settings</Button>
+          <Dialog>
+            <Content>
+              <NumberInput label="Quantity" defaultValue={1} />
+            </Content>
+          </Dialog>
+        </DialogTrigger>,
+      );
+
+      await userEvent.click(screen.getByRole('button', { name: 'Settings' }));
+      await waitFor(() => expect(screen.getByRole('dialog')).toBeVisible());
+
+      await userEvent.click(
+        screen.getByRole('button', { name: 'Increase Quantity' }),
+      );
+      // A Button's press dismisses its popover through the event bus, which
+      // delivers on a later task.
+      await act(() => new Promise((resolve) => setTimeout(resolve, 50)));
+
+      expect(screen.getByRole('textbox')).toHaveValue('2');
+      expect(screen.getByRole('dialog')).toBeVisible();
+    });
+  });
+
   it('calls onKeyDown and onKeyUp with the key', async () => {
     const onKeyDown = vi.fn((e) => e.key);
     const onKeyUp = vi.fn((e) => e.key);
