@@ -56,6 +56,12 @@ export interface CubeNumberInputProps
   field?: FieldBaseProps<number | null | undefined>['field'];
   /** Whether or to hide stepper */
   hideStepper?: boolean;
+  /**
+   * Whether the suffix goes before or after the stepper buttons. Defaults to
+   * `before`, so a unit sits next to the number. The validation and loading
+   * icons always come before both.
+   */
+  suffixPosition?: 'before' | 'after';
 }
 
 const StyledTextInputBase = tasty(TextInputBase, {
@@ -193,18 +199,20 @@ function NumberInput(
       )}
       inputRef={inputRef}
       wrapperProps={groupProps}
+      // The validation/loading icon always comes first; `suffixPosition`
+      // places the suffix against the steppers instead.
       suffixPosition="after"
       suffix={
         showStepper ? (
-          props.suffixPosition === 'before' ? (
+          props.suffixPosition === 'after' ? (
             <>
-              {suffix}
               {steppers}
+              {suffix}
             </>
           ) : (
             <>
-              {steppers}
               {suffix}
+              {steppers}
             </>
           )
         ) : (

@@ -2,6 +2,7 @@ import { Styles } from '@tenphi/tasty';
 import { useState } from 'react';
 import { cdp, userEvent } from 'vitest/browser';
 
+import { FolderIcon } from '../../../icons/FolderIcon';
 import { act, render, screen, waitFor } from '../../../test';
 import { Root } from '../../Root';
 import { CommandMenu } from '../CommandMenu/CommandMenu';
@@ -46,7 +47,257 @@ async function pressAt(
   });
 }
 
+function centreOf(element: Element) {
+  const bounds = element.getBoundingClientRect();
+  return {
+    x: bounds.left + bounds.width / 2,
+    y: bounds.top + bounds.height / 2,
+  };
+}
+
+const LONG_LABEL =
+  'Quarterly revenue by region and product line for the whole fiscal year';
+
+const POINTER_TARGET_ROWS = [
+  {
+    row: 'link with an icon, a long label and a description',
+    label: LONG_LABEL,
+    link: true,
+    icon: true,
+    description:
+      'Shared with the finance team and refreshed every morning before nine',
+  },
+  {
+    row: 'heading link with an icon',
+    label: LONG_LABEL,
+    link: true,
+    icon: true,
+    type: 'header',
+  },
+  { row: 'link with a short label', label: 'Browse', link: true },
+  { row: 'command with an inline action', label: LONG_LABEL, inline: true },
+] as const;
+
 describe('Native menu row hit area', () => {
+  it.each(
+    (['Menu', 'CommandMenu'] as const).flatMap((owner) =>
+      POINTER_TARGET_ROWS
+        // Inline actions are unsupported with CommandMenu's virtual focus.
+        .filter((row) => owner === 'Menu' || !('inline' in row))
+        .map((row) => ({ owner, ...row })),
+    ),
+  )(
+    'makes the primary menuitem the pointer target of a $owner $row',
+    async (row) => {
+      const navigate = vi.fn();
+      const itemAction = vi.fn();
+      const menuAction = vi.fn();
+      const inline = vi.fn();
+      const destination = '/__menu-link-test/primary-pointer-target';
+      const item = {
+        to: 'link' in row ? destination : undefined,
+        tooltip: false,
+        icon: 'icon' in row ? <FolderIcon /> : undefined,
+        description: 'description' in row ? row.description : undefined,
+        type: 'type' in row ? row.type : undefined,
+        onAction: itemAction,
+        actions:
+          'inline' in row ? (
+            <Menu.Item.Action aria-label="Delete workbook" onPress={inline}>
+              Delete
+            </Menu.Item.Action>
+          ) : undefined,
+      };
+      render(
+        <Root navigation={{ useHref: String, useNavigate: () => navigate }}>
+          {row.owner === 'Menu' ? (
+            <Menu
+              aria-label="Workbooks"
+              styles={{ width: '36x' }}
+              onAction={menuAction}
+            >
+              <Menu.Item key="target" {...item}>
+                {row.label}
+              </Menu.Item>
+            </Menu>
+          ) : (
+            <CommandMenu width="36x" onAction={menuAction}>
+              <CommandMenu.Item key="target" {...item}>
+                {row.label}
+              </CommandMenu.Item>
+            </CommandMenu>
+          )}
+        </Root>,
+      );
+      const primary = screen.getByRole('menuitem', { name: row.label });
+      const listItem = primary.closest('li')!;
+      await userEvent.hover(listItem);
+      await waitFor(
+        () => {
+          const { x, y } = centreOf(primary);
+          expect(primary.contains(document.elementFromPoint(x, y))).toBe(true);
+        },
+        { timeout: 1000 },
+      );
+      // Every visible content cell yields to the primary anchor, whatever its
+      // length, so a press on the text lands where a role locator aims.
+      const cells = listItem.querySelectorAll(
+        ':scope > :is([data-element=Icon], [data-element=Label], [data-element=Description])',
+      );
+      expect(cells).toHaveLength(
+        1 + ('icon' in row ? 1 : 0) + ('description' in row ? 1 : 0),
+      );
+      for (const cell of Array.from(cells)) {
+        const { x, y } = centreOf(cell);
+        expect(
+          primary.contains(document.elementFromPoint(x, y)),
+          `${cell.getAttribute('data-element')} centre`,
+        ).toBe(true);
+      }
+      // A role-based click passes Playwright's hit-target check.
+      await userEvent.click(primary, { timeout: 2000 });
+      expect(itemAction).toHaveBeenCalledTimes(1);
+      expect(menuAction).toHaveBeenCalledExactlyOnceWith('target');
+      if ('link' in row) {
+        expect(navigate).toHaveBeenCalledExactlyOnceWith(
+          destination,
+          undefined,
+        );
+      } else {
+        expect(navigate).not.toHaveBeenCalled();
+      }
+      if ('inline' in row) {
+        await userEvent.click(
+          screen.getByRole('menuitem', { name: 'Delete workbook' }),
+        );
+        expect(inline).toHaveBeenCalledTimes(1);
+        expect(itemAction).toHaveBeenCalledTimes(1);
+        expect(menuAction).toHaveBeenCalledTimes(1);
+      }
+    },
+  );
+
+  it.each(['Menu', 'CommandMenu'] as const)(
+    'opens the auto tooltip of a truncated %s link over its label',
+    async (owner) => {
+      render(
+        <Root>
+          {owner === 'Menu' ? (
+            <Menu aria-label="Workbooks" styles={{ width: '36x' }}>
+              <Menu.Item key="browse" to="/__menu-link-test/auto-tooltip">
+                {LONG_LABEL}
+              </Menu.Item>
+            </Menu>
+          ) : (
+            <CommandMenu width="36x">
+              <CommandMenu.Item
+                key="browse"
+                to="/__menu-link-test/auto-tooltip"
+              >
+                {LONG_LABEL}
+              </CommandMenu.Item>
+            </CommandMenu>
+          )}
+        </Root>,
+      );
+      const primary = screen.getByRole('menuitem', { name: LONG_LABEL });
+      const label = primary
+        .closest('li')!
+        .querySelector(':scope > [data-element=Label]')!;
+      // Raw pointer moves land on the label's centre, whatever is on top.
+      for (const point of [{ x: 1, y: 1 }, centreOf(label)]) {
+        await act(async () => {
+          await cdp().send('Input.dispatchMouseEvent', {
+            type: 'mouseMoved',
+            ...nativePosition(point.x, point.y),
+          });
+        });
+      }
+      await waitFor(
+        () =>
+          expect(
+            Array.from(document.querySelectorAll('[role="tooltip"]')).some(
+              (tip) => tip.textContent === LONG_LABEL,
+            ),
+          ).toBe(true),
+        { timeout: 2000 },
+      );
+    },
+  );
+
+  it.each(['modified', 'middle', 'context'] as const)(
+    'hands a native %s press on the label to the primary link',
+    async (gesture) => {
+      const navigate = vi.fn();
+      const onAction = vi.fn();
+      const destination = '/__menu-link-test/label-native-' + gesture;
+      render(
+        <Root navigation={{ useHref: String, useNavigate: () => navigate }}>
+          <Menu
+            aria-label="Workbooks"
+            styles={{ width: '36x' }}
+            onAction={onAction}
+          >
+            <Menu.Item
+              key="browse"
+              to={destination}
+              icon={<FolderIcon />}
+              tooltip={false}
+            >
+              {LONG_LABEL}
+            </Menu.Item>
+          </Menu>
+        </Root>,
+      );
+      const primary = screen.getByRole('menuitem', { name: LONG_LABEL });
+      const listItem = primary.closest('li')!;
+      await userEvent.hover(listItem);
+      const { x, y } = centreOf(
+        listItem.querySelector(':scope > [data-element=Label]')!,
+      );
+      const type =
+        gesture === 'middle'
+          ? 'auxclick'
+          : gesture === 'context'
+            ? 'contextmenu'
+            : 'click';
+      const events: MouseEvent[] = [];
+      const record = (event: MouseEvent) => events.push(event);
+      document.addEventListener(type, record, true);
+      try {
+        await pressAt(
+          x,
+          y,
+          gesture === 'middle'
+            ? 'middle'
+            : gesture === 'context'
+              ? 'right'
+              : 'left',
+          gesture === 'modified' ? 4 : 0,
+        );
+        expect(events).toHaveLength(1);
+        expect(events[0].isTrusted).toBe(true);
+        expect(events[0].defaultPrevented).toBe(false);
+        expect(events[0].target).toBe(primary);
+        expect(primary).toHaveAttribute('href', destination);
+        expect(navigate).not.toHaveBeenCalled();
+        expect(onAction).toHaveBeenCalledTimes(gesture === 'modified' ? 1 : 0);
+        if (gesture !== 'context') {
+          await waitFor(async () => {
+            const requests: { url: string }[] = await (
+              await fetch('/__menu-link-test/requests')
+            ).json();
+            expect(
+              requests.some((request) => request.url === destination),
+            ).toBe(true);
+          });
+        }
+      } finally {
+        document.removeEventListener(type, record, true);
+      }
+    },
+  );
+
   it.each(['Menu', 'CommandMenu'] as const)(
     'exposes native link context commands in %s row whitespace',
     async (owner) => {

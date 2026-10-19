@@ -428,7 +428,7 @@ Note the distinction from `contrastLevel`: the level is a config seed the app su
 
 ## `<Root palette>`
 
-`<Root>` accepts the same config as a prop, applied during render so the first paint is already correct:
+`<Root>` accepts the same config as a prop. The first mount applies it during render, so the first paint (and SSR output) is already correct. A later change applies in a layout effect, which still lands before paint and does not update other components while `<Root>` renders, so the prop alone is enough — there is no need to call `setPaletteConfig()` before changing it:
 
 ```tsx
 <Root palette={{ accent: userBrandColor }}>
@@ -443,6 +443,7 @@ Removing the prop entirely is the one thing that does _not_ reset the palette �
 This is a convenience wrapper over `setPaletteConfig()`, not a separate scope. **The palette is process-global** — Glaze's own config is, and so is the single `body` rule the tokens are injected into. One palette per process, not per tree and not per request:
 
 - Two `<Root>`s with different `palette` props will fight over the same tokens.
+- `<Root>`'s layout effect runs after its descendants' layout effects in the same commit, so a `setPaletteConfig()` call from a descendant's layout effect in a commit that also mounts `<Root>` or changes its `palette` loses to the prop. Call it from a passive effect or an event handler instead. A `<Root>` that mounts while another tree is already rendered also applies its palette during its first render, which updates that tree mid-render and makes React warn.
 - Under SSR, apply the palette in code that runs on **both** server and client. A client-only `setPaletteConfig` disposes and replaces the server-rendered token block on the first render, which is visible as a flash. Per-request palettes are not supported.
 
 ## Caveats

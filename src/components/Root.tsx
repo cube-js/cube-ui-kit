@@ -8,7 +8,7 @@ import {
   tasty,
   TastyBatchProvider,
 } from '@tenphi/tasty';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { ModalProvider } from 'react-aria';
 
 import { I18nProvider } from '../i18n';
@@ -142,8 +142,14 @@ export interface CubeRootProps extends BaseProps {
    * palette, so `<Root>` with no `palette` cannot clobber a host's imperative
    * `setPaletteConfig()` call. Pass `{}` to ask for the default.
    *
+   * The first mount applies it during render, so the first paint is already
+   * tuned; a later change applies in a layout effect, before paint.
+   *
    * The palette is global process state, so this is a declarative wrapper over
    * `setPaletteConfig()`; both drive the same store, and the last write wins.
+   * Root's layout effect runs after its descendants' in the same commit, so a
+   * descendant's `setPaletteConfig()` from a layout effect in that commit loses
+   * to the prop; write from a passive effect or an event handler instead.
    * See `Getting Started/Theming` in Storybook.
    */
   palette?: PaletteConfig;
@@ -189,12 +195,23 @@ export function Root(allProps: CubeRootProps) {
     ...props
   } = allProps;
 
-  // Applied during render, not in an effect, so the first paint already uses the
-  // tuned palette instead of flashing the default. `setPaletteConfig` is a no-op
-  // when the resolved config is unchanged, so an inline object literal and
-  // StrictMode's double render both cost nothing. `GlobalStyles` is rendered
-  // below in the same pass and reads the new version directly.
-  useMemo(() => {
+  // The first mount applies the palette during render, so the first paint and
+  // SSR output already use it and `GlobalStyles` below reads it directly. A lazy
+  // initializer runs once per mount, which React Compiler preserves; a `useMemo`
+  // compiles to a call on every render. A later change waits for the layout
+  // effect: a write notifies every palette subscriber, and React rejects
+  // updating another component while this one renders. Updates from a layout
+  // effect still land before paint. `setPaletteConfig` is a no-op when the
+  // resolved config is unchanged, so the effect's mount pass, an inline object
+  // literal and StrictMode's double calls cost nothing.
+  //
+  // A `<Root>` that mounts while another tree already subscribes, with a
+  // different palette, still notifies that tree during its first render.
+  useState(() => {
+    if (palette) setPaletteConfig(palette);
+  });
+
+  useLayoutEffect(() => {
     if (palette) setPaletteConfig(palette);
   }, [palette]);
 
