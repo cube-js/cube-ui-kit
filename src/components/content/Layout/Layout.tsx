@@ -265,14 +265,19 @@ function LayoutInner(
   }, [markReady]);
 
   // A Layout under a `display: none` ancestor, such as a closed `hideOnClose`
-  // panel, has no height to judge yet. Both checks run again once it has a box.
+  // panel, has no height to judge yet. Both checks run again once it gains a
+  // box, never as it loses one.
   const hasBox =
     (layoutState?.containerWidth ?? 0) > 0 ||
     (layoutState?.containerHeight ?? 0) > 0;
+  const hadBoxRef = useRef(false);
 
   // Auto-height detection: if layout collapses to 0 height after initialization,
   // automatically set height to 100% to prevent invisible layout
   useEffect(() => {
+    if (hasBox) hadBoxRef.current = true;
+    else if (hadBoxRef.current) return;
+
     if (isReady && localRef.current && isZeroHeight(localRef.current)) {
       setIsAutoHeight(true);
     }
@@ -281,6 +286,8 @@ function LayoutInner(
   // Second check: if still 0 height after auto-height was applied,
   // show collapsed state with warning
   useEffect(() => {
+    if (!hasBox && hadBoxRef.current) return;
+
     if (isAutoHeight && localRef.current) {
       // Use requestAnimationFrame to check after styles have been applied
       const frameId = requestAnimationFrame(() => {

@@ -1513,4 +1513,34 @@ describe('Layout.Panel hideOnClose', () => {
     await waitFor(() => expect(nested.offsetHeight).toBe(240));
     expect(nested).not.toHaveAttribute('data-collapsed');
   });
+
+  // Losing its box must not re-judge a Layout that already sized itself.
+  it('keeps a sized Layout uncollapsed when its container briefly measures 0×0', async () => {
+    function SizedLayout({ size }: { size: CSSProperties }) {
+      return (
+        <div style={{ ...size, overflow: 'hidden' }}>
+          <Layout qa="sized-layout">
+            <Layout.Content>Body</Layout.Content>
+          </Layout>
+        </div>
+      );
+    }
+
+    const view = renderWithRoot(
+      <SizedLayout size={{ width: 400, height: 200 }} />,
+    );
+    const layout = screen.getByTestId('sized-layout');
+    await waitFor(() => expect(layout.offsetHeight).toBe(200));
+    // Let the second height check, a frame after auto-height, settle first.
+    await act(() => new Promise((resolve) => setTimeout(resolve, 100)));
+
+    view.rerender(<SizedLayout size={{ width: 0, height: 0 }} />);
+    // One wait for the resize to commit, one for the height check it schedules.
+    await act(() => new Promise((resolve) => setTimeout(resolve, 100)));
+    await act(() => new Promise((resolve) => setTimeout(resolve, 100)));
+    view.rerender(<SizedLayout size={{ width: 400, height: 200 }} />);
+
+    await waitFor(() => expect(layout.offsetHeight).toBe(200));
+    expect(layout).not.toHaveAttribute('data-collapsed');
+  });
 });
