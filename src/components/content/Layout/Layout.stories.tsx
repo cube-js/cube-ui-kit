@@ -319,7 +319,8 @@ export const PanelWithTransition: Story = {
   },
 };
 
-// At rest it looks like PanelWithTransition; the kept draft shows only on reopen.
+// hideOnClose paints nothing at rest: the panel starts closed, and the kept
+// draft shows only after a close and reopen.
 export const PanelHideOnClose: Story = {
   parameters: NO_SNAPSHOT,
   render: function PanelHideOnCloseStory() {
