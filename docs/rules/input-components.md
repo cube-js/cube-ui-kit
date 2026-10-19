@@ -49,6 +49,7 @@ Rules:
 - **`defaultValidationTrigger`** — `'onChange'` for toggles and selection controls (`Checkbox`, `Switch`, `Radio`, `Select`, `ListBox`, `FileInput`), `'onBlur'` for free-text controls (`TextInput`, `TextArea`, `NumberInput`, `DateInput`).
 - **`valuePropsMapper`** — maps the form value onto the component's own value API. Required whenever the component does not use `value`/`onChange` verbatim (`selectedKey`/`onSelectionChange`, `isSelected`/`onChange`, `selectedKeys`, …).
 - **`unsafe__isDisabled`** — opts out of field wiring for the lifetime of the mount. Only for components that can be nested inside a group that owns the form connection (`Checkbox` inside `CheckboxGroup`). The value must be stable across renders.
+- **`showsValidateErrors`** — the control shows the errors of its `validate` under itself (`TextInput`, `TextArea`, `PasswordInput`, `NumberInput`), so a `validate` asks for the field chrome without a label.
 
 ### Modes
 

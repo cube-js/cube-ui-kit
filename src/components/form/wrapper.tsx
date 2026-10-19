@@ -18,7 +18,8 @@ interface WrapWithFieldProps
 /**
  * Whether `wrapWithField` renders the field chrome for these props. An
  * explicit `isBare` decides; `useFieldProps` sets `isBare={false}` on a bound
- * field or one passed a chrome prop (`withFieldChrome`).
+ * field, one passed a chrome prop, or one with a `validate` whose errors the
+ * control shows (`withFieldChrome`).
  * Otherwise a non-empty `label` renders it, as does the deprecated
  * `forceField`.
  */

@@ -33,6 +33,7 @@ export type UseFieldPropsParams = {
   /**
    * The control shows the errors of its `validate` under itself, so a
    * `validate` asks for the field chrome even without a label.
+   * @default false
    */
   showsValidateErrors?: boolean;
 };
@@ -208,8 +209,9 @@ export function useFieldProps<
   }
 
   // A field without a `label` still renders the field chrome when it is bound
-  // to a form or its caller gives the chrome something to show — see
-  // `asksForFieldChrome`. A nameless legacy Field already owns its child's
+  // to a form, its caller gives the chrome something to show (see
+  // `asksForFieldChrome`), or it shows the errors of a `validate`
+  // (`showsValidateErrors`). A nameless legacy Field already owns its child's
   // chrome. A named one binds its child and delegates presentation to it; its
   // message props come and go with the error, so they decide nothing.
   const resolved = isInsideLegacyField

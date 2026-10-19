@@ -34,7 +34,7 @@ describe('field chrome without a label', () => {
     ([name]) => name !== 'TagInput',
   );
 
-  // Only the text inputs show the errors of a `validate` under the control.
+  // Only these show the errors of a `validate` under the control.
   const showsValidateErrors = new Set([
     'NumberInput',
     'PasswordInput',
