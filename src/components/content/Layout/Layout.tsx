@@ -265,20 +265,25 @@ function LayoutInner(
   }, [markReady]);
 
   // A Layout under a `display: none` ancestor, such as a closed `hideOnClose`
-  // panel, has no height to judge yet. Both checks run again once it gains a
-  // box, never as it loses one.
+  // panel, has no height to judge yet. Each check waits until the Layout is
+  // shown, then runs once, as for a Layout that mounts shown.
   const hasBox =
     (layoutState?.containerWidth ?? 0) > 0 ||
     (layoutState?.containerHeight ?? 0) > 0;
-  const hadBoxRef = useRef(false);
+  const isHeightCheckedRef = useRef(false);
+  const isCollapseCheckedRef = useRef(false);
 
   // Auto-height detection: if layout collapses to 0 height after initialization,
   // automatically set height to 100% to prevent invisible layout
   useEffect(() => {
-    if (hasBox) hadBoxRef.current = true;
-    else if (hadBoxRef.current) return;
+    const element = localRef.current;
 
-    if (isReady && localRef.current && isZeroHeight(localRef.current)) {
+    if (!isReady || !element || isHeightCheckedRef.current) return;
+    if (!isShown(element)) return;
+
+    isHeightCheckedRef.current = true;
+
+    if (element.offsetHeight === 0) {
       setIsAutoHeight(true);
     }
   }, [isReady, hasBox]);
@@ -286,18 +291,22 @@ function LayoutInner(
   // Second check: if still 0 height after auto-height was applied,
   // show collapsed state with warning
   useEffect(() => {
-    if (!hasBox && hadBoxRef.current) return;
+    if (!isAutoHeight || isCollapseCheckedRef.current) return;
 
-    if (isAutoHeight && localRef.current) {
-      // Use requestAnimationFrame to check after styles have been applied
-      const frameId = requestAnimationFrame(() => {
-        if (localRef.current && isZeroHeight(localRef.current)) {
-          setIsCollapsed(true);
-        }
-      });
+    // Use requestAnimationFrame to check after styles have been applied
+    const frameId = requestAnimationFrame(() => {
+      const element = localRef.current;
 
-      return () => cancelAnimationFrame(frameId);
-    }
+      if (!element || !isShown(element)) return;
+
+      isCollapseCheckedRef.current = true;
+
+      if (element.offsetHeight === 0) {
+        setIsCollapsed(true);
+      }
+    });
+
+    return () => cancelAnimationFrame(frameId);
   }, [isAutoHeight, hasBox]);
 
   const insetStyle = useMemo(() => {
@@ -435,10 +444,10 @@ function LayoutInner(
   );
 }
 
-// Zero height that is the Layout's own, not a hidden ancestor's. jsdom has no
-// `checkVisibility`, so there every Layout counts as shown.
-function isZeroHeight(element: HTMLElement) {
-  return element.offsetHeight === 0 && (element.checkVisibility?.() ?? true);
+// False under a `display: none` ancestor. jsdom has no `checkVisibility`, so
+// there every Layout counts as shown.
+function isShown(element: HTMLElement) {
+  return element.checkVisibility?.() ?? true;
 }
 
 /**

@@ -1543,4 +1543,50 @@ describe('Layout.Panel hideOnClose', () => {
     await waitFor(() => expect(layout.offsetHeight).toBe(200));
     expect(layout).not.toHaveAttribute('data-collapsed');
   });
+
+  // A kept-mounted section that animates open re-shows at height 0. The Layout
+  // was judged on its first show, so the re-show must not judge it again.
+  it('keeps a sized Layout uncollapsed when it re-shows from height 0', async () => {
+    function Section({
+      isShown,
+      height,
+    }: {
+      isShown: boolean;
+      height: number;
+    }) {
+      return (
+        <div
+          style={{
+            width: 400,
+            height,
+            overflow: 'hidden',
+            transition: 'height 200ms',
+            display: isShown ? 'block' : 'none',
+          }}
+        >
+          <Layout qa="section-layout">
+            <Layout.Content>Body</Layout.Content>
+          </Layout>
+        </div>
+      );
+    }
+    const wait = (ms: number) =>
+      act(() => new Promise((resolve) => setTimeout(resolve, ms)));
+
+    const view = renderWithRoot(<Section isShown height={200} />);
+    const layout = screen.getByTestId('section-layout');
+    await waitFor(() => expect(layout.offsetHeight).toBe(200));
+    await wait(100);
+
+    view.rerender(<Section isShown={false} height={0} />);
+    await wait(100);
+    view.rerender(<Section isShown height={0} />);
+    await wait(20);
+    view.rerender(<Section isShown height={200} />);
+    // Past the height transition, and the frame-late second check.
+    await wait(400);
+
+    expect(layout).not.toHaveAttribute('data-collapsed');
+    expect(layout.offsetHeight).toBe(200);
+  });
 });
