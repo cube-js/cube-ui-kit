@@ -1649,6 +1649,7 @@ export const PanelAsTray: StoryObj<typeof Layout.Panel> = {
                 <TextArea
                   aria-label="Message"
                   autoFocus
+                  fieldStyles={{ width: '100%' }}
                   width="100%"
                   placeholder="Ask about this workbook"
                 />
