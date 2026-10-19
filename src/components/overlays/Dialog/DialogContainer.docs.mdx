@@ -24,7 +24,8 @@ A DialogContainer accepts a single Dialog as a child, and manages to show and hi
 ### Properties
 
 - **`children`** — The Dialog to display, if any
-- **`type`** `'modal' | 'fullscreen' | 'fullscreenTakeover' | 'panel'` (default: `modal`) — The type of Dialog that should be rendered
+- **`type`** `'modal' | 'tray' | 'fullscreen' | 'fullscreenTakeover' | 'panel'` (default: `modal`) — The type of Dialog that should be rendered
+- **`styles`** `Styles` — Styles for the overlay content shell
 - **`isDismissable`** `boolean` (default: `true`) — Whether the Dialog is dismissible
 - **`isKeyboardDismissDisabled`** `boolean` (default: `false`) — Whether pressing the escape key to close the dialog should be disabled
 - **`isOpen`** `boolean` — Whether the modal is open or not
@@ -33,15 +34,15 @@ A DialogContainer accepts a single Dialog as a child, and manages to show and hi
 
 ### Base Properties
 
-Supports [Base properties](/docs/getting-started-base-properties--docs)
+DialogContainer has no DOM root. Apply [Base properties](/docs/getting-started-base-properties--docs) to its child Dialog.
 
 ### Styling Properties
 
-DialogContainer has no styling capabilities.
+`styles` customizes the overlay content shell, matching DialogTrigger. Set the child Dialog's `styles` separately: the shell and Dialog have independent size limits. For an expandable tray, keep `type="tray"` and change both style maps; switching between tray and modal/fullscreen types replaces the overlay subtree.
 
 ### Style Properties
 
-These properties allow direct style application without using the `styles` prop:
+Set these direct style properties on the child Dialog. DialogContainer itself exposes only the `styles` map for its overlay shell:
 
 - **Base:** `display`, `font`, `preset`, `hide`, `whiteSpace`, `opacity`, `transition`
 - **Dimension:** `width`, `height`, `blockSize`, `inlineSize`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`
@@ -53,6 +54,7 @@ These properties allow direct style application without using the `styles` prop:
 ### Types
 
 - `modal` - Standard modal dialog with backdrop (default)
+- `tray` - Bottom-aligned modal tray with backdrop
 - `fullscreen` - Takes up entire screen with padding
 - `fullscreenTakeover` - Fullscreen without padding
 - `panel` - Side panel overlay
@@ -134,6 +136,26 @@ function ConditionalDialog() {
 }
 ```
 
+### Custom-size Tray
+
+```jsx
+const dimensions = { width: '(100dvw - 2x)', height: '60dvh' };
+
+<DialogContainer
+  type="tray"
+  styles={dimensions}
+  isOpen={isOpen}
+  onDismiss={() => setIsOpen(false)}
+>
+  <Dialog isDismissable={false} styles={dimensions} aria-label="Chat">
+    <Button onPress={() => setIsOpen(false)}>Close chat</Button>
+    {/* Conversation and composer */}
+  </Dialog>
+</DialogContainer>
+```
+
+The Dialog's `isDismissable={false}` hides its built-in visible Close button. The container remains dismissable with Escape or an outside press. A tray is modal: its backdrop keeps the page visible but prevents interaction with it. To expand without remounting its content, keep the tray type and update both dimensions to `100dvw` / `100dvh`. Test the content with the supported mobile keyboards and short viewports; `dvh` follows the dynamic viewport, not every virtual-keyboard overlay.
+
 ### Non-dismissable Dialog
 
 ```jsx
@@ -204,12 +226,6 @@ function ConditionalDialog() {
 3. **State Management**: Always control the `isOpen` state externally
 4. **Single Child**: Only pass one Dialog as a child to DialogContainer
 5. **Cleanup**: Ensure proper cleanup of dialog state when component unmounts
-
-## Suggested Improvements
-
-- Enhancement 1: Add support for dialog stacking and z-index management
-- Enhancement 2: Implement automatic focus restoration after dialog closes
-- Enhancement 3: Add support for custom backdrop click behavior
 
 ## Related Components
 

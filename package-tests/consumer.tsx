@@ -1,9 +1,12 @@
 import {
   Button,
   Checkbox,
+  Dialog,
+  DialogContainer,
   DialogForm,
   DialogTrigger,
   Form,
+  Layout,
   Root,
   Select,
   TextInput,
@@ -134,6 +137,33 @@ export function ControlledConsumer({ prefix }: { prefix: string }) {
       <output>
         {prefix}: {value}
       </output>
+    </Root>
+  );
+}
+
+export function PanelTrayConsumer({ expanded }: { expanded: boolean }) {
+  const [isOpen, setOpen] = useState(true);
+  const dimensions = {
+    width: expanded ? '100dvw' : '(100dvw - 2x)',
+    height: expanded ? '100dvh' : '60dvh',
+  };
+  return (
+    <Root>
+      <Layout height="100dvh">
+        <Layout.Panel
+          side="right"
+          mode="dialog"
+          isDialogOpen={isOpen}
+          onDialogOpenChange={setOpen}
+          dialogProps={{ type: 'tray', styles: dimensions }}
+          dialogStyles={dimensions}
+        >
+          <input aria-label="Panel draft" defaultValue="Draft" />
+        </Layout.Panel>
+      </Layout>
+      <DialogContainer type="tray" styles={dimensions} isOpen={false}>
+        <Dialog aria-label="Closed standalone tray">Details</Dialog>
+      </DialogContainer>
     </Root>
   );
 }

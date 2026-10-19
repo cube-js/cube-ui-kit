@@ -410,11 +410,13 @@ export interface CubeLayoutPanelProps extends BaseProps, ContainerStyleProps {
   defaultIsDialogOpen?: boolean;
   /** Dialog open state change callback */
   onDialogOpenChange?: (isOpen: boolean) => void;
-  /** Props passed to Dialog component when in dialog mode */
+  /** Props passed to DialogContainer when in dialog mode */
   dialogProps?: Omit<
     CubeDialogContainerProps,
     'isDismissable' | 'onDismiss' | 'isOpen'
   >;
+  /** Styles for the Dialog root in dialog mode, separate from inline panel styles. */
+  dialogStyles?: Styles;
   /** Padding for content areas inside the panel. Default: '1x' */
   contentPadding?: Styles['padding'];
   /** localStorage key for persisting panel size. When provided, size is stored and restored across instances. */
@@ -471,6 +473,7 @@ function LayoutPanel(
     defaultIsDialogOpen = false,
     onDialogOpenChange,
     dialogProps,
+    dialogStyles,
     contentPadding,
     sizeStorageKey,
     children,
@@ -1047,7 +1050,7 @@ function LayoutPanel(
         onDismiss={() => handleDialogOpenChange(false)}
         {...dialogProps}
       >
-        <Dialog isDismissable={false}>
+        <Dialog isDismissable={false} styles={dialogStyles}>
           <LayoutPanelContext.Provider value={dialogPanelContextValue}>
             <LayoutContextReset>{children}</LayoutContextReset>
           </LayoutPanelContext.Provider>

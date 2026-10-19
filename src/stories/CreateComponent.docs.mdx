@@ -23,6 +23,10 @@ Form-aware inputs use `useFieldProps` for both legacy instances and modern contr
 
 The [compiled custom-control example](https://github.com/cube-js/cube-ui-kit/blob/main/typecheck/consumer/modern-form-examples.tsx) shows explicit DOM forwarding, async validation, and default adoption. Shared input rule props accept existing legacy validators; use `ModernValidationRule` for strict modern success/error return types, and adapt legacy validators that resolve data before migrating them.
 
+## Style forwarding through overlays
+
+Forward consumer styles to the element that owns them. DialogContainer's `styles` targets the overlay content shell, while Dialog owns its own root styles. Layout.Panel keeps these channels explicit: `dialogProps.styles` for the shell and `dialogStyles` for its implicit Dialog, separate from inline panel `styles`. Avoid selectors that reach through the overlay to override its child.
+
 ## Core Concepts
 
 ### 1. Base Properties with `filterBaseProps`
