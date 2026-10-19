@@ -4,6 +4,7 @@ import { useEvent } from '../../../../_internal/index';
 import { useProviderProps } from '../../../../provider';
 import { mergeProps } from '../../../../utils/react/index';
 import { warn } from '../../../../utils/warnings';
+import { asksForFieldChrome } from '../../field-chrome';
 import { useFieldDescribedBy } from '../../FieldWrapper/field-description';
 import { useValidationProps } from '../../validation/index';
 import { isModernFormController } from '../backend';
@@ -200,11 +201,18 @@ export function useFieldProps<
       : result;
   }
 
-  // A nameless legacy Field already owns its child's chrome. Named Fields
-  // delegate presentation to the control along with their binding props.
-  const resolved =
-    isInsideLegacyField && !hasName
-      ? { ...resolveResult(), isBare: true }
+  // A field without a `label` still renders the field chrome when it is bound
+  // to a form or its caller gives the chrome something to show — see
+  // `asksForFieldChrome`. A nameless legacy Field already owns its child's
+  // chrome. A named one binds its child and delegates presentation to it; its
+  // message props come and go with the error, so they decide nothing.
+  const resolved = isInsideLegacyField
+    ? {
+        ...resolveResult(),
+        ...(hasName ? { hasFieldChrome: true } : { isBare: true }),
+      }
+    : asksForFieldChrome(inputProps, isBound && !isOutsideOfForm)
+      ? { ...resolveResult(), hasFieldChrome: true }
       : resolveResult();
   // React Aria forwards `form` to native inputs. A modern controller is a
   // binding source, never an HTML form id, including in standalone/group mode.

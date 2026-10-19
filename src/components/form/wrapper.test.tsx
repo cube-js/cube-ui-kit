@@ -23,37 +23,68 @@ import type { FieldBaseProps } from '../../shared/form';
 vi.mock('../../_internal/hooks/use-warn');
 
 /**
- * Field chrome is the default presentation. Message content and form binding
- * never decide whether a control is wrapped, so adding or omitting a slot
- * cannot remount a focused control.
+ * A field renders its chrome when there is something to show, and only the
+ * control otherwise. Which props are passed decides, never what they hold, so
+ * a message that comes and goes cannot remount a focused control.
  */
 describe('field chrome without a label', () => {
-  it.each(FORM_ATTACHABLE_INPUTS)(
-    '%s renders one field wrapper without a label, binding or text props',
+  // `TagInput` has refusal messages of its own; see below.
+  const quietInputs = FORM_ATTACHABLE_INPUTS.filter(
+    ([name]) => name !== 'TagInput',
+  );
+
+  it.each(quietInputs)(
+    '%s renders only the control without a label, binding or text props',
     (_, element) => {
       renderWithRoot(
         cloneElement(element, { label: undefined, 'aria-label': 'Billing' }),
+      );
+
+      expect(screen.queryByTestId('Field')).not.toBeInTheDocument();
+    },
+  );
+
+  it.each(FORM_ATTACHABLE_INPUTS)(
+    '%s renders one field wrapper with isBare={false}',
+    (_, element) => {
+      renderWithRoot(
+        cloneElement(element, {
+          label: undefined,
+          'aria-label': 'Billing',
+          isBare: false,
+        }),
       );
 
       expect(screen.getAllByTestId('Field')).toHaveLength(1);
     },
   );
 
-  it.each([{}, { isBare: false }, { message: null }, { message: undefined }])(
-    'renders default chrome independently of text slots: %j',
-    (props) => {
+  it.each([
+    ['a null message', { message: null }],
+    ['an undefined message', { message: undefined }],
+    ['an undefined description', { description: undefined }],
+    ['an undefined error message', { errorMessage: undefined }],
+    ['field styles', { fieldStyles: { width: '40x' } }],
+    ['field props', { fieldProps: {} }],
+    ['a validate function', { validate: () => null }],
+  ] satisfies [string, object][])(
+    'renders the chrome for %s, whatever it holds',
+    (_, props) => {
       render(<TextInput aria-label="Name" {...props} />);
 
       expect(screen.getByTestId('Field')).toBeInTheDocument();
     },
   );
 
-  it('preserves the input, focus and draft when a message prop is added and omitted', async () => {
+  // A prop spread in only while there is an error would move the control into
+  // the wrapper; `isBare={false}` keeps the wrapper from the start.
+  it('preserves the input, focus and draft with isBare={false} when a message prop is added and omitted', async () => {
     function Name() {
       const [hasError, setHasError] = useState(false);
 
       return (
         <TextInput
+          isBare={false}
           aria-label="Name"
           {...(hasError ? { errorMessage: 'Too short' } : {})}
           onChange={(value) => setHasError(value.length === 1)}
@@ -91,6 +122,28 @@ describe('field chrome without a label', () => {
     expect(input).toHaveAccessibleDescription(/"alpha" is already added/);
     expect(input).toHaveValue('');
     expect(input).toHaveFocus();
+  });
+
+  // Its own validation errors need a place, as a form's do.
+  it('shows the error of a label-less validate and keeps the control focused', async () => {
+    render(
+      <TextInput
+        aria-label="Code"
+        validate={(value) => (value.length < 3 ? 'Too short' : null)}
+      />,
+    );
+    const input = screen.getByRole('textbox', { name: 'Code' });
+
+    await userEvent.type(input, 'a');
+
+    expect(screen.getByRole('textbox', { name: 'Code' })).toBe(input);
+    expect(input).toHaveFocus();
+    expect(input).toHaveAccessibleDescription('Too short');
+
+    await userEvent.type(input, 'bc');
+
+    expect(input).toHaveValue('abc');
+    expect(screen.queryByText('Too short')).not.toBeInTheDocument();
   });
 
   it('keeps a control mounted and focused while its error clears', async () => {
@@ -462,12 +515,12 @@ describe('field message slot precedence', () => {
 });
 
 /**
- * `forceField` is redundant with default chrome and warns once. It cannot
- * override an explicit request for a bare control.
+ * `forceField` renders the chrome as `isBare={false}` does, and warns once. It
+ * cannot override an explicit request for a bare control.
  */
 describe('the deprecated forceField', () => {
   // First in the file to pass `forceField`: the warning is once per module.
-  it('retains default chrome, and warns once', () => {
+  it('renders the chrome without a label, and warns once', () => {
     const spy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
     render(

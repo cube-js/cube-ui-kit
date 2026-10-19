@@ -727,6 +727,9 @@ function TagInput<T extends object>(
       onChange,
     }),
   });
+  // Its refusals are messages of its own, with or without a label or a form,
+  // so it asks for the field chrome that shows them. `isBare` still opts out.
+  props = { ...props, hasFieldChrome: true } as typeof props;
 
   const { t } = useI18n();
   const { formatList } = useFormatter();

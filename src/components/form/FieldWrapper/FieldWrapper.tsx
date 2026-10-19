@@ -9,6 +9,7 @@ import { InfoBadge } from '../../content/InfoBadge';
 import { Text } from '../../content/Text';
 import { Flex } from '../../layout/Flex';
 import { Space } from '../../layout/Space';
+import { hasFieldContent } from '../field-chrome';
 import { Label, NecessityIndicatorMark } from '../Label';
 import { warnAboutLegacyTooltip } from '../legacy-tooltip';
 import { getValidationMods } from '../validation/index';
@@ -19,13 +20,6 @@ import {
   useFieldTextId,
 } from './field-description';
 import { CubeFieldWrapperProps } from './types';
-
-import type { ReactNode } from 'react';
-
-/** Empty slot values suppress content; numeric zero is still text. */
-function hasFieldContent(content: ReactNode) {
-  return content != null && typeof content !== 'boolean' && content !== '';
-}
 
 const FieldElement = tasty({
   qa: 'Field',

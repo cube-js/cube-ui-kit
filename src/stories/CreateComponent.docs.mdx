@@ -433,7 +433,7 @@ export function Action(
 
 ## Form Integration
 
-Call `wrapWithField` consistently: it renders stable field chrome by default and handles `isBare` as the explicit opt-out. Do not infer presentation from a label, form binding or message content. Pass React Aria's label props to the wrapper so a supplied label remains associated with the control in both modes. Inner controls whose parent owns the field chrome should receive `isBare` to avoid nested fields.
+Call `wrapWithField` consistently: it renders the field chrome when the field has something to show, and `isBare` decides when set. `useFieldProps` works out whether a field without a label needs the chrome; a control that makes messages of its own sets `hasFieldChrome` after it, as `TagInput` does. Never infer presentation from message content. Pass React Aria's label props to the wrapper so a supplied label remains associated with the control in both modes. Inner controls whose parent owns the field chrome should receive `isBare` to avoid nested fields.
 
 For input components that need to integrate with forms, see the [Field documentation](/docs/forms-field--docs) for comprehensive guidance on:
 

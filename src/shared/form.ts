@@ -187,15 +187,20 @@ export interface FieldBaseProps<Value = unknown>
   fieldStyles?: Styles;
   messageStyles?: Styles;
   /**
-   * Renders only the control, without field layout, description or messages.
-   * A supplied label stays accessible but visually hidden. Binding and invalid
-   * state are unaffected. Field chrome is the default, even without a label.
-   * @default false
+   * Whether to render only the control, without field layout, description or
+   * messages. A supplied label stays accessible but visually hidden; binding
+   * and invalid state are unaffected.
+   *
+   * Unset, a field renders its chrome when there is something to show: a
+   * `label`, a form binding, or a `description`, `errorMessage`, `message`,
+   * `fieldStyles`, `fieldProps` or `validate` prop, whatever it holds. Pass
+   * `isBare` for an inline field with no room for them, and `isBare={false}` to
+   * render the chrome anyway.
    */
   isBare?: boolean;
   /**
-   * @deprecated Fields render chrome by default. Remove this prop; use `isBare`
-   * to opt out. It has no presentation effect.
+   * @deprecated Pass `isBare={false}` instead. Renders the field chrome even
+   * with nothing to show; an explicit `isBare` wins.
    */
   forceField?: boolean;
 }

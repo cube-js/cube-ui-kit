@@ -5,7 +5,7 @@ import { ReactElement, RefObject } from 'react';
 import { FieldBaseProps, FormBaseProps } from '../../shared/index';
 import { mergeProps } from '../../utils/react/index';
 
-import { warnAboutForceField } from './field-chrome';
+import { hasFieldContent, warnAboutForceField } from './field-chrome';
 import { FieldWrapper } from './FieldWrapper/index';
 import { warnAboutLegacyTooltip } from './legacy-tooltip';
 
@@ -13,22 +13,39 @@ import { warnAboutLegacyTooltip } from './legacy-tooltip';
 interface WrapWithFieldProps
   extends FieldBaseProps,
     Omit<BaseProps, 'children'>,
-    FormBaseProps {}
-
-/** Field chrome is the default; only an explicit bare mode opts out. */
-export function rendersFieldChrome(props: { isBare?: boolean }) {
-  return !props.isBare;
+    FormBaseProps {
+  /**
+   * Set by `useFieldProps`, or by a control that skips it, for a field without
+   * a `label` that still needs the field chrome — see `asksForFieldChrome`.
+   * Not a prop of any input.
+   */
+  hasFieldChrome?: boolean;
 }
 
-/** Wraps a control in its stable field presentation and forwards its chrome props. */
+/**
+ * Whether `wrapWithField` renders the field chrome for these props. An
+ * explicit `isBare` decides. Otherwise a field renders it when there is
+ * something to show: a `label`, or the chrome `useFieldProps` asked for
+ * (`hasFieldChrome`), or the deprecated `forceField`.
+ */
+export function rendersFieldChrome(props: object) {
+  const { isBare, label, hasFieldChrome, forceField } =
+    props as WrapWithFieldProps;
+
+  if (isBare != null) return !isBare;
+
+  return hasFieldContent(label) || !!hasFieldChrome || !!forceField;
+}
+
+/** Wraps a control in its field chrome when it has one, and forwards its chrome props. */
 export function wrapWithField<T extends WrapWithFieldProps>(
   component: ReactElement,
   ref: RefObject<unknown> | FocusableRef<HTMLElement> | DOMRef<HTMLElement>,
   props: T,
 ) {
+  const isBare = !rendersFieldChrome(props);
   let {
     label,
-    isBare = false,
     extra,
     labelPosition = 'top',
     labelStyles,
