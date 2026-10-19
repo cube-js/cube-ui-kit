@@ -264,13 +264,19 @@ function LayoutInner(
     return () => cancelAnimationFrame(frameId);
   }, [markReady]);
 
+  // A Layout under a `display: none` ancestor, such as a closed `hideOnClose`
+  // panel, has no height to judge yet. Both checks run again once it has a box.
+  const hasBox =
+    (layoutState?.containerWidth ?? 0) > 0 ||
+    (layoutState?.containerHeight ?? 0) > 0;
+
   // Auto-height detection: if layout collapses to 0 height after initialization,
   // automatically set height to 100% to prevent invisible layout
   useEffect(() => {
-    if (isReady && localRef.current && localRef.current.offsetHeight === 0) {
+    if (isReady && localRef.current && isZeroHeight(localRef.current)) {
       setIsAutoHeight(true);
     }
-  }, [isReady]);
+  }, [isReady, hasBox]);
 
   // Second check: if still 0 height after auto-height was applied,
   // show collapsed state with warning
@@ -278,14 +284,14 @@ function LayoutInner(
     if (isAutoHeight && localRef.current) {
       // Use requestAnimationFrame to check after styles have been applied
       const frameId = requestAnimationFrame(() => {
-        if (localRef.current && localRef.current.offsetHeight === 0) {
+        if (localRef.current && isZeroHeight(localRef.current)) {
           setIsCollapsed(true);
         }
       });
 
       return () => cancelAnimationFrame(frameId);
     }
-  }, [isAutoHeight]);
+  }, [isAutoHeight, hasBox]);
 
   const insetStyle = useMemo(() => {
     const baseStyle: Record<string, string> = {
@@ -420,6 +426,12 @@ function LayoutInner(
       ) : null}
     </LayoutElement>
   );
+}
+
+// Zero height that is the Layout's own, not a hidden ancestor's. jsdom has no
+// `checkVisibility`, so there every Layout counts as shown.
+function isZeroHeight(element: HTMLElement) {
+  return element.offsetHeight === 0 && (element.checkVisibility?.() ?? true);
 }
 
 /**

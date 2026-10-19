@@ -1433,7 +1433,7 @@ describe('Layout.Panel hideOnClose', () => {
           qa="hide-layout"
           hasTransition={hasTransition}
           minContentSize={100}
-          styles={{ $transition: '1s' }}
+          styles={{ $transition: '200ms' }}
         >
           <button>Main</button>
           <Layout.Panel
@@ -1467,9 +1467,6 @@ describe('Layout.Panel hideOnClose', () => {
       view.rerender(
         <HiddenOnCloseLayout isOpen={false} hasTransition={hasTransition} />,
       );
-      await act(async () =>
-        panel.getAnimations().forEach((animation) => animation.finish()),
-      );
       await waitFor(() => expect(getComputedStyle(panel).display).toBe('none'));
       expect(screen.getByTestId('hide-panel')).toBe(panel);
       expect(screen.queryByTestId('PanelResizeHandler')).toBeNull();
@@ -1484,6 +1481,36 @@ describe('Layout.Panel hideOnClose', () => {
       await waitFor(() =>
         expect(layout.style.getPropertyValue('--inset-right')).toBe('152px'),
       );
+      await waitFor(() => expect(layout.style.overflow).toBe(''));
     },
   );
+
+  // Content of a panel that starts closed mounts hidden, where it measures zero.
+  it('lets a Layout mounted in a closed panel size itself once shown', async () => {
+    function NestedLayout({ isOpen }: { isOpen: boolean }) {
+      return (
+        <div style={{ width: 400, height: 240, display: 'grid' }}>
+          <Layout hasTransition styles={{ $transition: '200ms' }}>
+            <button>Main</button>
+            <Layout.Panel hideOnClose side="right" isOpen={isOpen} size={150}>
+              <div style={{ height: '100%' }}>
+                <Layout qa="nested-layout">
+                  <Layout.Content>Chat</Layout.Content>
+                </Layout>
+              </div>
+            </Layout.Panel>
+          </Layout>
+        </div>
+      );
+    }
+
+    const view = renderWithRoot(<NestedLayout isOpen={false} />);
+    const nested = screen.getByTestId('nested-layout');
+    // Long enough for both height checks to have run on the hidden Layout.
+    await act(() => new Promise((resolve) => setTimeout(resolve, 100)));
+
+    view.rerender(<NestedLayout isOpen />);
+    await waitFor(() => expect(nested.offsetHeight).toBe(240));
+    expect(nested).not.toHaveAttribute('data-collapsed');
+  });
 });

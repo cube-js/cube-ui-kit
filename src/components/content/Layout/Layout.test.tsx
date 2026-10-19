@@ -258,6 +258,36 @@ describe('Layout', () => {
 
     expect(screen.queryByText('Panel content')).not.toBeInTheDocument();
   });
+
+  it('keeps a hideOnClose dialog panel mounted across close and reopen', async () => {
+    const panel = (isOpen: boolean) => (
+      <Root>
+        <Layout>
+          <Layout.Panel
+            side="right"
+            mode="dialog"
+            hideOnClose
+            isDialogOpen={isOpen}
+          >
+            <input aria-label="Draft" />
+          </Layout.Panel>
+        </Layout>
+      </Root>
+    );
+    const view = render(panel(true));
+    const draft = await screen.findByRole('textbox', { name: 'Draft' });
+    await userEvent.type(draft, 'Unsent');
+
+    view.rerender(panel(false));
+    await waitFor(() =>
+      expect(screen.getByTestId('Modal')).toHaveAttribute('data-unmounted'),
+    );
+    expect(draft).not.toBeVisible();
+
+    view.rerender(panel(true));
+    expect(screen.getByRole('textbox', { name: 'Draft' })).toBe(draft);
+    expect(draft).toHaveValue('Unsent');
+  });
 });
 
 describe('GridLayout', () => {

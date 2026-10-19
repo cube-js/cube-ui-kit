@@ -401,6 +401,8 @@ export interface CubeLayoutPanelProps extends BaseProps, ContainerStyleProps {
    * Hide the closed panel instead of unmounting its content, so the content
    * keeps its state (an unsent draft, scroll position, a request in flight)
    * until the panel reopens. A hidden panel takes no space and no focus.
+   * The content mounts once, even while the panel starts closed, so mount
+   * effects and a native `autoFocus` do not run again on reopen.
    * Default: false
    */
   hideOnClose?: boolean;
@@ -1012,7 +1014,8 @@ function LayoutPanel(
 
     return (
       <>
-        {isOverlayMode && <OpenerProbe focusRef={mountFocusRef} />}
+        {/* Mounted only while shown, so an open from hidden reads live focus. */}
+        {isOverlayMode && !isHidden && <OpenerProbe focusRef={mountFocusRef} />}
         {/* Overlay backdrop for overlay mode */}
         {isOverlayMode && !isHidden && (
           <OverlayBackdrop
@@ -1092,15 +1095,19 @@ function LayoutPanel(
         exposeUnmounted={hideOnClose}
         onToggle={(isShown) => setVisualState({ isShown, isTransitionActive })}
       >
-        {({ phase, isShown, isExiting, ref: transitionRef }) => (
-          <LayoutPanelTransition
-            isShown={isShown}
-            isExiting={isExiting}
-            isHidden={phase === 'unmounted'}
-          >
-            {renderPanelContent(!isShown, transitionRef, phase === 'unmounted')}
-          </LayoutPanelTransition>
-        )}
+        {({ phase, isShown, isExiting, ref: transitionRef }) => {
+          const isHidden = phase === 'unmounted';
+
+          return (
+            <LayoutPanelTransition
+              isShown={isShown}
+              isExiting={isExiting}
+              isHidden={isHidden}
+            >
+              {renderPanelContent(!isShown, transitionRef, isHidden)}
+            </LayoutPanelTransition>
+          );
+        }}
       </DisplayTransition>,
       portalContainer,
     );
