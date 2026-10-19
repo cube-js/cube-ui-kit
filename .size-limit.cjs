@@ -494,6 +494,9 @@ module.exports = [
     // Allow 160 kB with 506 B headroom; confirm the exact figure in Linux CI.
     // Linear backlog bug fixes: 159,665 B (+~250 B), 335 B headroom. Left at
     // 160 kB; the next change here probably has to raise it.
-    limit: '160kB',
+    // Tasty 3.10.0 (selector-mode keyframes and states): 160,225 B against
+    // main's 159,772 B, which this machine and CI both measured. The field
+    // chrome change leaves this entry unchanged. Allow 161 kB, 775 B headroom.
+    limit: '161kB',
   },
 ];

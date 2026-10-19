@@ -30,6 +30,11 @@ export type UseFieldPropsParams = {
    * If you want to change this prop after mount, remount the component with a new value.
    */
   unsafe__isDisabled?: boolean;
+  /**
+   * The control shows the errors of its `validate` under itself, so a
+   * `validate` asks for the field chrome even without a label.
+   */
+  showsValidateErrors?: boolean;
 };
 
 const defaultValuePropsMapper = ({ value, onChange }) => ({
@@ -104,6 +109,7 @@ export function useFieldProps<
   const {
     valuePropsMapper = defaultValuePropsMapper,
     defaultValidationTrigger = 'onBlur',
+    showsValidateErrors = false,
   } = params;
 
   const isInsideLegacyField = useInsideLegacyField();
@@ -210,7 +216,9 @@ export function useFieldProps<
     ? hasName
       ? withFieldChrome(resolveResult())
       : { ...resolveResult(), isBare: true }
-    : (isBound && !isOutsideOfForm) || asksForFieldChrome(inputProps)
+    : (isBound && !isOutsideOfForm) ||
+        asksForFieldChrome(inputProps) ||
+        (showsValidateErrors && 'validate' in inputProps)
       ? withFieldChrome(resolveResult())
       : resolveResult();
   // React Aria forwards `form` to native inputs. A modern controller is a

@@ -12,7 +12,6 @@ import {
 import { ItemAction } from '../../actions/ItemAction/ItemAction';
 import { ItemActionProvider } from '../../actions/ItemActionContext';
 import { useFieldProps } from '../../form';
-import { withFieldChrome } from '../../form/field-chrome';
 import { useDisplayedValidation } from '../TextInput/displayed-validation';
 import {
   CubeBufferedValueProps,
@@ -38,14 +37,12 @@ function PasswordInput(
   rawProps = castNullableStringValue(rawProps);
   let props = useFieldProps(rawProps, {
     defaultValidationTrigger: 'onBlur',
+    showsValidateErrors: true,
     valuePropsMapper: ({ value, onChange }) => ({
       value: value?.toString() ?? '',
       onChange,
     }),
   });
-  // It shows the errors of a `validate` under the control, so a `validate`
-  // asks for the field chrome even without a label.
-  if ('validate' in rawProps) props = withFieldChrome(props);
 
   let [type, setType] = useState('password');
   let {

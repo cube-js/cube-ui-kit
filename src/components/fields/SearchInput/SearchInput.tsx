@@ -62,12 +62,10 @@ export const SearchInput = forwardRef(function SearchInput(
 ) {
   props = castNullableStringValue(props);
   // SearchInput is a standalone control, not a form field, so it does not use `useFieldProps`.
-  // Without a label, it still shows a description or message under the
-  // control. Read the caller's own props, before the provider's.
-  const asksForChrome = asksForFieldChrome(props);
+  // Without a label, it still shows a description or message under the control.
+  if (asksForFieldChrome(props)) props = withFieldChrome(props);
   props = useProviderProps(props);
   props = useValidationProps(props);
-  if (asksForChrome) props = withFieldChrome(props);
 
   let {
     isClearable,

@@ -34,6 +34,14 @@ describe('field chrome without a label', () => {
     ([name]) => name !== 'TagInput',
   );
 
+  // Only the text inputs show the errors of a `validate` under the control.
+  const showsValidateErrors = new Set([
+    'NumberInput',
+    'PasswordInput',
+    'TextArea',
+    'TextInput',
+  ]);
+
   it.each(quietInputs)(
     '%s renders only the control without a label, binding or text props',
     (_, element) => {
@@ -67,7 +75,6 @@ describe('field chrome without a label', () => {
     ['an undefined error message', { errorMessage: undefined }],
     ['field styles', { fieldStyles: { width: '40x' } }],
     ['field props', { fieldProps: {} }],
-    ['isHidden', { isHidden: true }],
     ['isHidden={false}', { isHidden: false }],
   ] satisfies [string, object][])(
     'renders the chrome for %s, whatever it holds',
@@ -92,14 +99,6 @@ describe('field chrome without a label', () => {
       expect(screen.getByTestId('Field')).not.toBeVisible();
     },
   );
-
-  // Only the text inputs show the errors of a `validate` under the control.
-  const showsValidateErrors = new Set([
-    'NumberInput',
-    'PasswordInput',
-    'TextArea',
-    'TextInput',
-  ]);
 
   it.each(quietInputs)(
     '%s asks for the chrome for a validate only when it shows its errors',

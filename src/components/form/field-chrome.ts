@@ -41,9 +41,7 @@ export function asksForFieldChrome(props: object) {
 
 /** Asks `wrapWithField` for the field chrome, unless the caller set `isBare`. */
 export function withFieldChrome<P extends object>(props: P): P {
-  return (props as { isBare?: boolean }).isBare == null
-    ? { ...props, isBare: false }
-    : props;
+  return { ...props, isBare: (props as { isBare?: boolean }).isBare ?? false };
 }
 
 let hasWarnedAboutForceField = false;
