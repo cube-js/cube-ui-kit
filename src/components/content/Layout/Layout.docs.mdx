@@ -279,7 +279,8 @@ Collapsible side panel with resizing, transitions, and multiple rendering modes.
 - **`isDialogOpen`** `boolean` — Controlled dialog state (mode="dialog")
 - **`defaultIsDialogOpen`** `boolean` (default: `false`) — Initial dialog state
 - **`onDialogOpenChange`** `(isOpen: boolean) => void` — Dialog state callback
-- **`dialogProps`** `CubeDialogContainerProps` — Props for dialog mode
+- **`dialogProps`** `CubeDialogContainerProps` — Props for DialogContainer in dialog mode, including `type="tray"` and overlay-shell `styles`
+- **`dialogStyles`** `Styles` — Styles for the inner Dialog root in dialog mode; inline panel `styles` remain independent
 - **`innerRef`** `ForwardedRef<HTMLDivElement>` — Ref for the inner content element
 - **`innerProps`** `HTMLAttributes<HTMLDivElement>` — Props to spread on the Inner sub-element
 
@@ -510,6 +511,37 @@ function ResizablePanelExample() {
   );
 }
 ```
+
+### Expandable Panel Tray
+
+<Story of={LayoutStories.PanelAsTray} />
+
+```jsx
+const dimensions = {
+  width: expanded ? '100dvw' : '(100dvw - 2x)',
+  height: expanded ? '100dvh' : '60dvh',
+};
+
+<Layout height="100dvh">
+  <Layout.Panel
+    side="right"
+    mode="dialog"
+    isDialogOpen={isOpen}
+    onDialogOpenChange={setIsOpen}
+    dialogProps={{ type: 'tray', styles: dimensions }}
+    dialogStyles={dimensions}
+  >
+    <Button onPress={() => setExpanded(!expanded)}>
+      {expanded ? 'Collapse' : 'Expand'}
+    </Button>
+    <Button onPress={() => setIsOpen(false)}>Close chat</Button>
+    {/* Conversation and composer */}
+  </Layout.Panel>
+  <Layout.Content>{/* Page content */}</Layout.Content>
+</Layout>
+```
+
+`dialogProps.styles` sizes the overlay shell; `dialogStyles` sizes its Dialog root. Both have independent default bounds. Keep the native tray type while expanding its dimensions to preserve mounted content, input selection and local state. Switching tray to a modal/fullscreen type remounts the overlay subtree. The tray retains native modal focus, backdrop and dismissal behavior in either size. Layout.Panel suppresses the built-in visible Close button; provide your own Close action. Its inline size and `sizeStorageKey` are independent of these dialog styles.
 
 ### Persistent Panel Size
 

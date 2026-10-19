@@ -1,6 +1,9 @@
+import { Styles } from '@tenphi/tasty';
 import { Children, isValidElement, ReactNode, useState } from 'react';
 
-import { Modal, WithCloseBehavior } from '../Modal';
+import { Modal } from '../Modal/Modal';
+import { Tray } from '../Modal/Tray';
+import { WithCloseBehavior } from '../Modal/types';
 
 import { DialogContext } from './context';
 
@@ -13,7 +16,9 @@ export interface CubeDialogContainerProps extends WithCloseBehavior {
    * The type of Dialog that should be rendered. See the visual options below for examples of each.
    * @default 'modal'
    */
-  type?: 'modal' | 'fullscreen' | 'fullscreenTakeover' | 'panel';
+  type?: 'modal' | 'tray' | 'fullscreen' | 'fullscreenTakeover' | 'panel';
+  /** Styles for the overlay content shell. Style the child Dialog separately. */
+  styles?: Styles;
   /** Whether the Dialog is dismissible. See the [Dialog docs](Dialog.html#dismissable-dialogs) for more details. */
   isDismissable?: boolean;
   /**
@@ -39,6 +44,7 @@ export function DialogContainer(props: CubeDialogContainerProps) {
     isKeyboardDismissDisabled,
     isOpen,
     hideOnClose,
+    styles,
   } = props;
 
   const childArray = Children.toArray(children);
@@ -62,14 +68,16 @@ export function DialogContainer(props: CubeDialogContainerProps) {
     isDismissable,
     isOpen: isActuallyOpened,
   };
+  const OverlayComponent = type === 'tray' ? Tray : Modal;
 
   return (
     // The exit animation preserves its children. Keep live open state outside
     // that snapshot so forms cancel immediately when the container closes.
     <DialogContext.Provider value={context}>
-      <Modal
+      <OverlayComponent
         isOpen={isActuallyOpened}
-        type={type}
+        type={type === 'tray' ? undefined : type}
+        styles={styles}
         hideOnClose={hideOnClose}
         isDismissable={isDismissable}
         isKeyboardDismissDisabled={isKeyboardDismissDisabled}
@@ -79,7 +87,7 @@ export function DialogContainer(props: CubeDialogContainerProps) {
           {child ??
             (hideOnClose && !isActuallyOpened ? lastDialog.child : null)}
         </>
-      </Modal>
+      </OverlayComponent>
     </DialogContext.Provider>
   );
 }

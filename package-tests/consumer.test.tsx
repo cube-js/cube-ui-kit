@@ -10,6 +10,7 @@ import {
   ImplicitConsumer,
   LegacyConsumer,
   ModernConsumer,
+  PanelTrayConsumer,
   TextItemConsumer,
 } from './consumer';
 
@@ -179,4 +180,16 @@ it('hydrates server-rendered modern forms from the published output', async () =
     await act(async () => root?.unmount());
     container.remove();
   }
+});
+
+it('publishes native panel tray styles without remounting the consumer input', async () => {
+  const { rerender } = render(<PanelTrayConsumer expanded={false} />);
+  const input = screen.getByRole('textbox', { name: 'Panel draft' });
+  expect(screen.getByTestId('Tray')).toBeInTheDocument();
+  await userEvent.type(input, ' retained');
+  rerender(<PanelTrayConsumer expanded />);
+  expect(screen.getByRole('textbox', { name: 'Panel draft' })).toBe(input);
+  expect(input).toHaveValue('Draft retained');
+  await userEvent.keyboard('{Escape}');
+  await waitFor(() => expect(input).not.toBeInTheDocument());
 });

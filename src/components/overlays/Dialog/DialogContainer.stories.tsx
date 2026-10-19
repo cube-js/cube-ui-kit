@@ -20,7 +20,7 @@ export default {
   component: DialogContainer,
   parameters: {
     controls: {
-      exclude: baseProps,
+      exclude: baseProps.filter((prop) => prop !== 'styles'),
     },
   },
   argTypes: {
@@ -32,7 +32,7 @@ export default {
 
     /* Presentation */
     type: {
-      options: ['modal', 'fullscreen', 'fullscreenTakeover', 'panel'],
+      options: ['modal', 'tray', 'fullscreen', 'fullscreenTakeover', 'panel'],
       control: { type: 'radio' },
       description: 'The type of Dialog that should be rendered',
       table: {
@@ -40,12 +40,19 @@ export default {
       },
     },
 
+    styles: {
+      control: { type: 'object' },
+      description:
+        'Styles for the overlay content shell; style the child Dialog separately',
+      table: { type: { summary: 'Styles' } },
+    },
+
     /* State */
     isDismissable: {
       control: { type: 'boolean' },
       description: 'Whether the Dialog is dismissible',
       table: {
-        defaultValue: { summary: false },
+        defaultValue: { summary: true },
       },
     },
     isKeyboardDismissDisabled: {

@@ -34,6 +34,7 @@ export default defineConfig({
                     'DialogConsumer',
                     'ControlledConsumer',
                     'TextItemConsumer',
+                    'PanelTrayConsumer',
                   ].every((name) => report.compiled.includes(name)) ||
                   !moduleSpecifiers(result.code).includes(
                     'react/compiler-runtime',

@@ -143,9 +143,9 @@ let TrayWrapper = forwardRef(function TrayWrapper(
     transitionState,
     ...otherProps
   } = props;
-  usePreventScroll();
+  usePreventScroll({ isDisabled: transitionState === 'unmounted' });
   let { modalProps } = useModal({
-    isDisabled: isNonModal,
+    isDisabled: isNonModal || transitionState === 'unmounted',
   });
 
   let domProps = mergeProps(otherProps, overlayProps);

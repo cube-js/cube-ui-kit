@@ -1,11 +1,15 @@
 import { IconFilter, IconFilterFilled } from '@tabler/icons-react';
+import { mergeStyles } from '@tenphi/tasty';
 import { useState } from 'react';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 
 import { baseProps } from '../../../stories/lists/baseProps';
-import { Button } from '../../actions';
+import { ClearSlots } from '../../../utils/react/Slots';
+import { Button } from '../../actions/Button/Button';
+import { ButtonGroup } from '../../actions/ButtonGroup/ButtonGroup';
 import { ItemButton } from '../../actions/ItemButton/ItemButton';
 import { Block } from '../../Block';
+import { TextArea } from '../../fields/TextArea/TextArea';
 import { Space } from '../../layout/Space';
 import { Card } from '../Card/Card';
 import { Text } from '../Text';
@@ -14,6 +18,7 @@ import { Title } from '../Title';
 import { GridLayout, Layout } from './index';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import type { CubeLayoutPanelProps } from './LayoutPanel';
 
 const meta: Meta<typeof Layout> = {
   title: 'Content/Layout',
@@ -357,10 +362,10 @@ export const FooterWithInvertedOrder: Story = {
         <Text>Content area</Text>
       </Layout.Content>
       <Layout.Footer invertOrder>
-        <Button.Group flow="row-reverse">
+        <ButtonGroup flow="row-reverse">
           <Button type="primary">Save</Button>
           <Button>Cancel</Button>
-        </Button.Group>
+        </ButtonGroup>
         <Text color="#dark-03">Draft saved automatically</Text>
       </Layout.Footer>
     </Layout>
@@ -1560,5 +1565,114 @@ export const NaturalBoundaries: Story = {
         </Layout.Content>
       </Layout>
     );
+  },
+};
+
+export const PanelAsTray: StoryObj<typeof Layout.Panel> = {
+  args: {
+    side: 'right',
+    dialogProps: { type: 'tray' },
+    dialogStyles: { padding: 0 },
+  },
+  argTypes: {
+    dialogProps: {
+      control: { type: 'object' },
+      description:
+        'DialogContainer props, including tray type and overlay-shell styles',
+      table: { type: { summary: 'CubeDialogContainerProps' } },
+    },
+    dialogStyles: {
+      control: { type: 'object' },
+      description:
+        'Styles for the inner Dialog root, separate from inline panel styles',
+      table: { type: { summary: 'Styles' } },
+    },
+  },
+  render: function PanelAsTrayStory({
+    dialogProps,
+    dialogStyles,
+    side = 'right',
+    ...args
+  }: CubeLayoutPanelProps) {
+    const [isOpen, setOpen] = useState(false);
+    const [expanded, setExpanded] = useState(false);
+    const dimensions = {
+      width: expanded ? '100dvw' : '(100dvw - 2x)',
+      height: expanded ? '100dvh' : '60dvh',
+    };
+
+    return (
+      <Layout height="100dvh">
+        <Layout.Content>
+          <Title level={3}>Workbook</Title>
+          <Text>The page stays visible behind the modal tray.</Text>
+          <Button onPress={() => setOpen(true)}>Open chat tray</Button>
+        </Layout.Content>
+        <Layout.Panel
+          {...args}
+          side={side}
+          mode="dialog"
+          isDialogOpen={isOpen}
+          onDialogOpenChange={setOpen}
+          dialogProps={{
+            ...dialogProps,
+            styles: mergeStyles(dimensions, dialogProps?.styles),
+          }}
+          dialogStyles={mergeStyles(
+            dimensions,
+            { radius: expanded ? 0 : '1cr top' },
+            dialogStyles,
+          )}
+        >
+          <Layout height="100%">
+            <Layout.Toolbar>
+              <Title>Chat</Title>
+              <Space>
+                <Button type="clear" onPress={() => setExpanded(!expanded)}>
+                  {expanded ? 'Collapse' : 'Expand'}
+                </Button>
+                <Button type="clear" onPress={() => setOpen(false)}>
+                  Close chat
+                </Button>
+              </Space>
+            </Layout.Toolbar>
+            <ClearSlots>
+              <Layout.Content>
+                {Array.from({ length: 20 }, (_, index) => (
+                  <Text key={index}>
+                    Reply {index + 1}: explore the workbook without losing your
+                    draft.
+                  </Text>
+                ))}
+              </Layout.Content>
+              <Layout.Footer>
+                <TextArea
+                  aria-label="Message"
+                  autoFocus
+                  width="100%"
+                  placeholder="Ask about this workbook"
+                />
+              </Layout.Footer>
+            </ClearSlots>
+          </Layout>
+        </Layout.Panel>
+      </Layout>
+    );
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(
+      await canvas.findByRole('button', { name: 'Open chat tray' }),
+    );
+    const dialog = await within(document.body).findByRole('dialog', {
+      name: 'Chat',
+    });
+    await waitFor(() => {
+      expect(dialog).toBeVisible();
+      expect(dialog.getBoundingClientRect().height).toBeCloseTo(
+        window.innerHeight * 0.6,
+        0,
+      );
+    });
   },
 };
