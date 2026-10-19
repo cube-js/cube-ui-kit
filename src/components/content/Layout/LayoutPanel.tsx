@@ -402,7 +402,9 @@ export interface CubeLayoutPanelProps extends BaseProps, ContainerStyleProps {
    * keeps its state (an unsent draft, scroll position, a request in flight)
    * until the panel reopens. A hidden panel takes no space and no focus.
    * The content mounts once, even while the panel starts closed, so mount
-   * effects and a native `autoFocus` do not run again on reopen.
+   * effects and a native `autoFocus` do not run again on reopen. Content that
+   * mounts while closed is hidden: `autoFocus` does nothing and measurements
+   * read zero until the panel opens. Not used in dialog mode.
    * Default: false
    */
   hideOnClose?: boolean;
@@ -825,8 +827,8 @@ function LayoutPanel(
   // nothing.
   const openerRef = useRef<Element | null>(null);
   const panelNodeRef = useRef<HTMLDivElement | null>(null);
-  // Focus as the panel's contents mount, before a native `autoFocus` inside
-  // them moves it (see OpenerProbe).
+  // Focus as the panel shows (its contents may mount now), before a native
+  // `autoFocus` inside them moves it (see OpenerProbe).
   const mountFocusRef = useRef<Element | null>(null);
 
   // A panel open on the Layout's first render leaves page focus alone.
@@ -1065,7 +1067,6 @@ function LayoutPanel(
     return (
       <DialogContainer
         isOpen={dialogOpen}
-        hideOnClose={hideOnClose}
         isDismissable={isDismissable}
         onDismiss={() => handleDialogOpenChange(false)}
         {...dialogProps}

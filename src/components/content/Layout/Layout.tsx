@@ -413,8 +413,8 @@ function LayoutInner(
       {/* Container for panels to portal into - rendered after Inner so panels paint on top via DOM order */}
       <div ref={layoutRefs?.setPanelContainer} data-element="PanelContainer" />
       {/* Overlaid, never substituted for `children`. A zero-height measurement is
-          not proof of a mistake - a hidden tab, a collapsed accordion and a
-          container mid-animation all measure zero - so unmounting the subtree
+          not proof of a mistake - a collapsed accordion and a container
+          mid-animation both measure zero - so unmounting the subtree
           would turn a wrong guess into an outage, and remounting it on the way
           back would drop whatever state it held. */}
       {showDevWarning ? (

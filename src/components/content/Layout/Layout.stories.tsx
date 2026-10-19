@@ -1,8 +1,9 @@
 import { IconFilter, IconFilterFilled } from '@tabler/icons-react';
 import { mergeStyles } from '@tenphi/tasty';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 
+import { NO_SNAPSHOT } from '../../../stories/chromatic';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { ClearSlots } from '../../../utils/react/Slots';
 import { Button } from '../../actions/Button/Button';
@@ -312,6 +313,48 @@ export const PanelWithTransition: Story = {
         </Layout.Toolbar>
         <Layout.Content>
           <Text>Main content area</Text>
+        </Layout.Content>
+      </Layout>
+    );
+  },
+};
+
+// At rest it looks like PanelWithTransition; the kept draft shows only on reopen.
+export const PanelHideOnClose: Story = {
+  parameters: NO_SNAPSHOT,
+  render: function PanelHideOnCloseStory() {
+    const [isOpen, setIsOpen] = useState(false);
+    const messageRef = useRef<HTMLTextAreaElement>(null);
+
+    useEffect(() => {
+      if (isOpen) messageRef.current?.focus({ preventScroll: true });
+    }, [isOpen]);
+
+    return (
+      <Layout hasTransition height="100dvh">
+        <Layout.Panel
+          hideOnClose
+          side="right"
+          size={320}
+          isOpen={isOpen}
+          onOpenChange={setIsOpen}
+        >
+          <Layout.PanelHeader
+            isClosable
+            title="Chat"
+            onClose={() => setIsOpen(false)}
+          />
+          <Layout.Content>
+            <TextArea label="Message" inputRef={messageRef} />
+          </Layout.Content>
+        </Layout.Panel>
+        <Layout.Toolbar>
+          <Button onPress={() => setIsOpen(!isOpen)}>
+            {isOpen ? 'Close' : 'Open'} Chat
+          </Button>
+        </Layout.Toolbar>
+        <Layout.Content>
+          <Text>Type a message, close the chat and open it again.</Text>
         </Layout.Content>
       </Layout>
     );
