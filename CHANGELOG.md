@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.197.0
+
+### Minor Changes
+
+- [#1532](https://github.com/cube-js/cube-ui-kit/pull/1532) [`31bf64e6`](https://github.com/cube-js/cube-ui-kit/commit/31bf64e64b1414ad01688e2ddd065e3342ec66e9) Thanks [@tenphi](https://github.com/tenphi)! - Support native trays and overlay styles in DialogContainer, and expose Layout.Panel dialogStyles for custom dialog sizing. Consumers can expand a tray through styles without remounting its content. Retained closed trays release page scrolling and modal state.
+
 ## 0.196.0
 
 ### Minor Changes
