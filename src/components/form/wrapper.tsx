@@ -1,9 +1,9 @@
 import { DOMRef, FocusableRef } from '@react-types/shared';
 import { BaseProps } from '@tenphi/tasty';
-import { ReactElement, RefObject } from 'react';
+import { cloneElement, ReactElement, Ref, RefObject } from 'react';
 
 import { FieldBaseProps, FormBaseProps } from '../../shared/index';
-import { mergeProps } from '../../utils/react/index';
+import { mergeProps, mergeRefs } from '../../utils/react/index';
 
 import { hasFieldContent, warnAboutForceField } from './field-chrome';
 import { FieldWrapper } from './FieldWrapper/index';
@@ -31,12 +31,46 @@ export function rendersFieldChrome(props: object) {
   return hasFieldContent(label) || !!forceField;
 }
 
-/** Wraps a control in its field chrome when it has one, and forwards its chrome props. */
+type LegacyFieldRef =
+  | RefObject<unknown>
+  | FocusableRef<HTMLElement>
+  | DOMRef<HTMLElement>
+  | null
+  | undefined;
+
+/**
+ * Wraps a control in its field chrome when it has one, and forwards its chrome
+ * props. The chrome takes no ref: the control attaches the field's `ref` to
+ * its own root, so the ref is the same element with or without the chrome, and
+ * `labelRef` reaches the label.
+ */
 export function wrapWithField<T extends WrapWithFieldProps>(
   component: ReactElement,
-  ref: RefObject<unknown> | FocusableRef<HTMLElement> | DOMRef<HTMLElement>,
   props: T,
+): ReactElement;
+/**
+ * @deprecated Attach the field's ref to the control's root and call
+ * `wrapWithField(component, props)`. A `ref` passed here is attached to
+ * `component`, never to the field chrome.
+ */
+export function wrapWithField<T extends WrapWithFieldProps>(
+  component: ReactElement,
+  ref: LegacyFieldRef,
+  props: T,
+): ReactElement;
+export function wrapWithField<T extends WrapWithFieldProps>(
+  component: ReactElement,
+  ...args: [props: T] | [ref: LegacyFieldRef, props: T]
 ) {
+  const [legacyRef, props] = args.length === 2 ? args : [undefined, args[0]];
+  const control = legacyRef
+    ? cloneElement(component as ReactElement<{ ref?: Ref<unknown> }>, {
+        ref: mergeRefs(
+          (component.props as { ref?: Ref<unknown> }).ref,
+          legacyRef as Ref<unknown>,
+        ),
+      })
+    : component;
   const isBare = !rendersFieldChrome(props);
   let {
     label,
@@ -54,6 +88,7 @@ export function wrapWithField<T extends WrapWithFieldProps>(
     isInvalid,
     isValid,
     labelProps,
+    labelRef,
     fieldProps,
     fieldStyles,
     requiredMark = true,
@@ -91,6 +126,7 @@ export function wrapWithField<T extends WrapWithFieldProps>(
         isDisabled,
         necessityIndicator,
         labelProps: mergedLabelProps,
+        labelRef,
         fieldProps: fieldPropsWithoutId,
         message,
         messageStyles,
@@ -102,11 +138,10 @@ export function wrapWithField<T extends WrapWithFieldProps>(
         labelTooltip,
         isHidden,
         labelSuffix,
-        Component: component,
+        Component: control,
         // Where the description and message ids come from; see
         // `useFieldDescribedBy`, which points the control at them.
         controlId: props.id,
-        ref,
       }}
     />
   );

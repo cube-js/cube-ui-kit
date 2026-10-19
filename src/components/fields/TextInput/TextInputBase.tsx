@@ -1,3 +1,4 @@
+import { useObjectRef } from '@react-aria/utils';
 import { createFocusableRef } from '@react-spectrum/utils';
 import {
   BASE_STYLES,
@@ -21,7 +22,6 @@ import {
   RefObject,
   useImperativeHandle,
   useMemo,
-  useRef,
 } from 'react';
 import { AriaNumberFieldProps, AriaTextFieldProps, useHover } from 'react-aria';
 
@@ -366,7 +366,9 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
   let ElementType: 'textarea' | 'input' = multiLine ? 'textarea' : 'input';
   let { isFocused, focusProps } = useFocus();
   let { hoverProps, isHovered } = useHover({ isDisabled });
-  let domRef = useRef(null);
+  // The input box, with or without the field chrome, so the field's ref never
+  // resolves to `null`; `wrapperRef` reaches the same element.
+  let domRef = useObjectRef(wrapperRef);
 
   inputRef = useCombinedRefs(inputRef);
 
@@ -459,7 +461,7 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
 
   const textField = (
     <InputWrapperElement
-      ref={wrapperRef}
+      ref={domRef}
       mods={modifiers}
       data-size={size}
       styles={styles}
@@ -506,7 +508,7 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
     </InputWrapperElement>
   );
 
-  return wrapWithField(textField, domRef, props);
+  return wrapWithField(textField, props);
 }
 
 const TextInputBase = forwardRef(_TextInputBase);

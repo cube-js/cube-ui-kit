@@ -133,7 +133,9 @@ function DateRangePicker<T extends DateValue>(
       autoFocus,
     });
 
-  let domRef = useFocusManagerRef(ref);
+  let domRef = useRef<HTMLDivElement>(null);
+
+  useFocusManagerRef(ref, domRef);
 
   let {
     groupProps,
@@ -164,6 +166,7 @@ function DateRangePicker<T extends DateValue>(
   const component = (
     <DateInputBase
       ref={targetRef}
+      wrapperRef={domRef}
       qa={qa || 'DateRangePicker'}
       inputType="daterangepicker"
       styles={styles}
@@ -232,7 +235,7 @@ function DateRangePicker<T extends DateValue>(
     </DateInputBase>
   );
 
-  return wrapWithField(component, domRef, {
+  return wrapWithField(component, {
     ...props,
     labelProps: mergeProps(props.labelProps, labelProps),
   });

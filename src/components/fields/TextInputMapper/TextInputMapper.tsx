@@ -322,7 +322,7 @@ function TextInputMapper(
     </Flow>
   );
 
-  return wrapWithField(element, ref, {
+  return wrapWithField(element, {
     ...props,
     labelProps: mergeProps(props.labelProps, { id: labelId }),
   });

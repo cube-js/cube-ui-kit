@@ -97,6 +97,7 @@ function CheckboxGroup(
   // field wrapper, so putting them there would lose its role and name.
   let radioGroup = (
     <CheckGroupElement
+      ref={domRef}
       {...groupProps}
       id={id}
       styles={styles}
@@ -118,7 +119,7 @@ function CheckboxGroup(
     </CheckGroupElement>
   );
 
-  return wrapWithField(radioGroup, domRef, {
+  return wrapWithField(radioGroup, {
     ...props,
     labelProps: mergeProps(baseLabelProps, labelProps),
   });

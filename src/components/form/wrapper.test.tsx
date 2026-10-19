@@ -1,4 +1,4 @@
-import { cloneElement, useState } from 'react';
+import { cloneElement, createRef, ReactElement, useState } from 'react';
 
 import {
   act,
@@ -10,6 +10,7 @@ import {
 } from '../../test';
 import { FORM_ATTACHABLE_INPUTS } from '../../test/form-attachable-inputs';
 import { Checkbox } from '../fields/Checkbox/Checkbox';
+import { DatePicker } from '../fields/DatePicker/DatePicker';
 import { SearchComboBox } from '../fields/SearchComboBox/SearchComboBox';
 import { SearchInput } from '../fields/SearchInput/SearchInput';
 import { TagInput } from '../fields/TagInput/TagInput';
@@ -18,7 +19,9 @@ import { TextInput } from '../fields/TextInput/TextInput';
 import { Field } from './Form/Field';
 import { Form } from './Form/Form';
 import { createFormController } from './Form/modern/controller';
+import { wrapWithField } from './wrapper';
 
+import type { DOMRefValue, FocusableRefValue } from '@react-types/shared';
 import type { FieldBaseProps } from '../../shared/form';
 
 vi.mock('../../_internal/hooks/use-warn');
@@ -461,6 +464,134 @@ describe('field chrome without a label', () => {
         screen.getByRole('textbox', { name: 'Region' }),
       ).toBeInTheDocument();
       expect(formInstance.getFieldNames()).toEqual(name ? [name] : []);
+    },
+  );
+});
+
+/**
+ * A field's `ref` is its control's, so whether the field chrome renders never
+ * changes what it points at, and a bare field's is never `null`. The label has
+ * a `labelRef` of its own.
+ */
+describe('field refs', () => {
+  const inputs: [string, ReactElement<any>][] = [
+    ...FORM_ATTACHABLE_INPUTS,
+    ['SearchInput', <SearchInput label="SearchInput" />],
+    [
+      'SearchComboBox',
+      <SearchComboBox label="SearchComboBox">
+        <SearchComboBox.Item key="one">One</SearchComboBox.Item>
+      </SearchComboBox>,
+    ],
+  ];
+
+  // A DOM ref holds the element; a focusable or DOM handle unwraps to it.
+  function elementOf(value: unknown) {
+    if (value instanceof HTMLElement) return value;
+
+    return (value as DOMRefValue | null)?.UNSAFE_getDOMNode() ?? null;
+  }
+
+  it.each(inputs)(
+    '%s points its ref at the control with and without the chrome',
+    (_, element) => {
+      const ref = createRef<unknown>();
+      const labelRef = createRef<HTMLElement>();
+      const { unmount } = renderWithRoot(
+        cloneElement(element, { ref, labelRef }),
+      );
+
+      const control = elementOf(ref.current);
+      const field = screen.getByTestId('Field');
+
+      expect(control).toBeInstanceOf(HTMLElement);
+      expect(field).toContainElement(control);
+      expect(control).not.toBe(field);
+      expect(labelRef.current).toHaveTextContent(element.props.label);
+      expect(control).not.toContainElement(labelRef.current);
+
+      const tagName = control?.tagName;
+      const qa = control?.getAttribute('data-qa');
+
+      unmount();
+
+      // `isBare` too: `TagInput` asks for its chrome without a label.
+      renderWithRoot(
+        cloneElement(element, {
+          ref,
+          labelRef,
+          label: undefined,
+          'aria-label': 'Billing',
+          isBare: true,
+        }),
+      );
+
+      const bareControl = elementOf(ref.current);
+
+      expect(screen.queryByTestId('Field')).not.toBeInTheDocument();
+      expect(bareControl).toBeInstanceOf(HTMLElement);
+      expect(bareControl?.tagName).toBe(tagName);
+      expect(bareControl?.getAttribute('data-qa')).toBe(qa);
+      expect(labelRef.current).toBeNull();
+    },
+  );
+
+  it.each(inputs)(
+    '%s points labelRef at the visually hidden label with isBare',
+    (_, element) => {
+      const error = vi.spyOn(console, 'error');
+      const labelRef = createRef<HTMLElement>();
+
+      renderWithRoot(cloneElement(element, { labelRef, isBare: true }));
+
+      expect(labelRef.current).toHaveTextContent(element.props.label);
+      expect(document.querySelector('[labelref]')).toBeNull();
+      expect(error.mock.calls.flat().map(String).join('\n')).not.toContain(
+        'labelRef',
+      );
+
+      error.mockRestore();
+    },
+  );
+
+  it('reaches the field wrapper through fieldProps', () => {
+    const fieldRef = createRef<HTMLDivElement>();
+
+    render(<TextInput label="Name" fieldProps={{ ref: fieldRef }} />);
+
+    expect(fieldRef.current).toBe(screen.getByTestId('Field'));
+  });
+
+  // `focus()` searches the picker's element for its first segment, which a
+  // bare picker used to leave unset.
+  it('focuses the first segment of a bare DatePicker through its ref', () => {
+    const ref = createRef<FocusableRefValue<HTMLElement>>();
+
+    renderWithRoot(<DatePicker ref={ref} aria-label="Due" />);
+
+    act(() => ref.current?.focus());
+
+    expect(ref.current?.UNSAFE_getDOMNode()).toContainElement(
+      document.activeElement as HTMLElement,
+    );
+    expect(document.activeElement).toHaveAttribute('role', 'spinbutton');
+  });
+
+  it.each([
+    ['with the chrome', { label: 'Custom' }],
+    ['bare', { 'aria-label': 'Custom' }],
+  ])(
+    'attaches the ref of the deprecated three-argument call to the control %s',
+    (_, props) => {
+      const ref = createRef<HTMLInputElement>();
+
+      function Custom() {
+        return wrapWithField(<input data-qa="custom" />, ref, props);
+      }
+
+      render(<Custom />);
+
+      expect(ref.current).toBe(screen.getByTestId('custom'));
     },
   );
 });

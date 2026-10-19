@@ -259,7 +259,7 @@ export const ColorPicker = forwardRef(function ColorPicker(
     );
 
   const pickerField = (
-    <ColorPickerWrapper styles={styles}>
+    <ColorPickerWrapper ref={ref} styles={styles}>
       <DialogTrigger
         hideArrow
         type="popover"
@@ -343,7 +343,7 @@ export const ColorPicker = forwardRef(function ColorPicker(
     </ColorPickerWrapper>
   );
 
-  return wrapWithField(pickerField, ref as any, props);
+  return wrapWithField(pickerField, props);
 });
 
 /**

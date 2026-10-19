@@ -884,6 +884,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
 
   const filterPickerField = (
     <FilterPickerWrapper
+      ref={ref}
       qa="FilterPickerWrapper"
       styles={styles}
       {...filterBaseProps(otherProps, { eventProps: true })}
@@ -996,7 +997,6 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
 
   return wrapWithField<Omit<CubeFilterPickerProps<T>, 'children'>>(
     filterPickerField,
-    ref as any,
     { ...props, labelProps: mergeProps(labelProps, props.labelProps) },
   );
 }) as unknown as (<T>(

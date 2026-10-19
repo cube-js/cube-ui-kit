@@ -105,7 +105,9 @@ function DatePicker<T extends DateValue>(
   });
   let { isOpen, setOpen } = state;
 
-  let domRef = useFocusManagerRef(ref);
+  let domRef = useRef<HTMLDivElement>(null);
+
+  useFocusManagerRef(ref, domRef);
 
   let { isFocused, focusProps } = useFocusRing({
     within: true,
@@ -148,6 +150,7 @@ function DatePicker<T extends DateValue>(
   const component = (
     <DateInputBase
       ref={targetRef}
+      wrapperRef={domRef}
       qa={qa || 'DatePicker'}
       inputType="datepicker"
       styles={styles}
@@ -197,7 +200,7 @@ function DatePicker<T extends DateValue>(
     </DateInputBase>
   );
 
-  return wrapWithField(component, domRef, {
+  return wrapWithField(component, {
     ...props,
     labelProps: mergeProps(props.labelProps, labelProps),
   });

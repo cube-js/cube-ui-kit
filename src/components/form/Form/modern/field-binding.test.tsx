@@ -1,6 +1,6 @@
 import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { StrictMode, Suspense, useRef } from 'react';
+import { StrictMode, Suspense } from 'react';
 import { hydrateRoot } from 'react-dom/client';
 import { renderToString } from 'react-dom/server';
 
@@ -41,10 +41,8 @@ function Control(
     }),
   });
   props.onRender?.();
-  const ref = useRef<HTMLInputElement>(null);
   return wrapWithField(
     <input
-      ref={ref}
       id={props.id}
       aria-label={String(props.label ?? 'custom')}
       value={props.value ?? ''}
@@ -52,7 +50,6 @@ function Control(
       onBlur={props.onBlur}
       aria-invalid={props.isInvalid}
     />,
-    ref,
     props,
   );
 }

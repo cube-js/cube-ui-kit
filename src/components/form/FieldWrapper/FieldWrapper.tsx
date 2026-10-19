@@ -133,6 +133,7 @@ export const FieldWrapper = forwardRef(function FieldWrapper(
     labelStyles,
     necessityIndicator,
     labelProps,
+    labelRef,
     fieldProps,
     message,
     messageStyles,
@@ -186,6 +187,8 @@ export const FieldWrapper = forwardRef(function FieldWrapper(
             : label
           : undefined
       }
+      // Before `labelProps`, so a `ref` passed there still wins.
+      ref={labelRef}
       {...labelProps}
     >
       <Flex placeContent="baseline space-between" width="100%">
@@ -242,7 +245,7 @@ export const FieldWrapper = forwardRef(function FieldWrapper(
       <>
         {hasLabel ? (
           <VisuallyHidden>
-            <Label {...labelProps}>
+            <Label ref={labelRef} {...labelProps}>
               {label}
               {optionalNote ? <> {optionalNote}</> : null}
             </Label>

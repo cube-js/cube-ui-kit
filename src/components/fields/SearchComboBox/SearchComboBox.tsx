@@ -434,7 +434,8 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
   const searchComboBoxId = useMemo(() => generateRandomId(), []);
 
   // Normalize the wrapper/popover refs above popover-sync so it sees stable refs.
-  wrapperRef = useCombinedRefs(wrapperRef);
+  // The field's ref is the wrapper's, with or without the field chrome.
+  wrapperRef = useCombinedRefs(wrapperRef, ref);
   popoverRef = useCombinedRefs(popoverRef);
 
   // Input value state (controlled/uncontrolled)
@@ -452,7 +453,6 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
 
   styles = extractStyles(otherProps, PROP_STYLES, styles);
 
-  ref = useCombinedRefs(ref);
   inputRef = useCombinedRefs(inputRef);
   triggerRef = useCombinedRefs(triggerRef);
   listBoxRef = useCombinedRefs(listBoxRef);
@@ -1071,7 +1071,6 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
 
   return wrapWithField<Omit<CubeSearchComboBoxProps<T>, 'children'>>(
     searchComboBoxField,
-    ref,
     propsWithoutChildren,
   );
 }) as unknown as (<T>(

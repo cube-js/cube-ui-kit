@@ -1435,11 +1435,10 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     </ListBoxWrapperElement>
   );
 
-  return wrapWithField<Omit<CubeListBoxProps<T>, 'children'>>(
-    listBoxField,
-    ref,
-    { ...props, labelProps: mergeAriaProps(labelProps, props.labelProps) },
-  );
+  return wrapWithField<Omit<CubeListBoxProps<T>, 'children'>>(listBoxField, {
+    ...props,
+    labelProps: mergeAriaProps(labelProps, props.labelProps),
+  });
 }) as unknown as (<T>(
   props: CubeListBoxProps<T> & { ref?: ForwardedRef<HTMLDivElement> },
 ) => ReactElement) & {

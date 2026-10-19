@@ -194,6 +194,7 @@ function Switch(rawProps: WithNullableSelected<CubeSwitchProps>, ref) {
 
   const switchField = (
     <SwitchWrapperElement
+      ref={domRef}
       qa="SwitchWrapper"
       mods={mods}
       data-size={size}
@@ -230,7 +231,7 @@ function Switch(rawProps: WithNullableSelected<CubeSwitchProps>, ref) {
     </SwitchWrapperElement>
   );
 
-  return wrapWithField(switchField, domRef, {
+  return wrapWithField(switchField, {
     ...props,
     id,
     labelProps: {

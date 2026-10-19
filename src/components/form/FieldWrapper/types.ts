@@ -1,5 +1,5 @@
 import { Styles } from '@tenphi/tasty';
-import { ReactElement, ReactNode } from 'react';
+import { ReactElement, ReactNode, Ref } from 'react';
 
 import {
   LabelPosition,
@@ -29,6 +29,8 @@ export type CubeFieldWrapperProps = ValidationProps & {
   labelSuffix?: ReactNode;
   labelStyles?: Styles;
   labelProps?: CubeLabelProps;
+  /** The label's element, visible or visually hidden. */
+  labelRef?: Ref<HTMLElement>;
   /** The description for the field. It will be placed below the label */
   description?: ReactNode;
 

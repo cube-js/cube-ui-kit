@@ -1,5 +1,5 @@
 import { Styles } from '@tenphi/tasty';
-import { ReactNode } from 'react';
+import { ReactNode, Ref } from 'react';
 
 import type { KeyboardEvent as AriaKeyboardEvent } from '@react-types/shared';
 import type { FormField } from '../components/form/Form/modern/field';
@@ -181,6 +181,12 @@ export interface FieldBaseProps<Value = unknown>
   isLoading?: boolean;
   labelPosition?: LabelPosition;
   labelStyles?: Styles;
+  /**
+   * The field label's element: the visible one, or the visually hidden one of
+   * a bare field. `null` when the field has no `label`. The field's own `ref`
+   * is its control's, with or without the field chrome.
+   */
+  labelRef?: Ref<HTMLElement>;
   /** Whether the field is inside the form. Private field. */
   insideForm?: boolean;
   fieldProps?: Props;
