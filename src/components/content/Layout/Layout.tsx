@@ -266,7 +266,8 @@ function LayoutInner(
 
   // A Layout under a `display: none` ancestor, such as a closed `hideOnClose`
   // panel, has no height to judge yet. Each check waits until the Layout is
-  // shown, then runs once, as for a Layout that mounts shown.
+  // shown, then runs once. Gaining a box re-runs a pending check, so one first
+  // shown at 0×0 is never judged.
   const hasBox =
     (layoutState?.containerWidth ?? 0) > 0 ||
     (layoutState?.containerHeight ?? 0) > 0;
