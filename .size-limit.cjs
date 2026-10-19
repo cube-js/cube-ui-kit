@@ -380,7 +380,14 @@ module.exports = [
     // tooltip scroll following and the non-dismissable popover sync. Button
     // is 159,665 B (+~250 B: tooltip describedby merging and loading focus).
     // Allow 626 kB, 1,211 B headroom; confirm in Linux CI.
-    limit: '626kB',
+    // Field refs on the control: 626,129 B locally, against 622,925 B for the
+    // field-chrome change before it and main's 625,292 B in CI (27a92974, run
+    // 39274158959). With the compiler off, the ref change measured +120 B; the
+    // rest is compiler output for ColorPicker, ColorSwatchGroup, ComboBox,
+    // FileInput and SliderBase, which a ref passed to `wrapWithField` during
+    // render kept from compiling. Allow 627 kB, 871 B headroom; confirm in
+    // Linux CI.
+    limit: '627kB',
   },
   {
     name: 'Tree shaking (just a Button)',

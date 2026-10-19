@@ -5,7 +5,7 @@ import {
   useFieldProps,
   wrapWithField,
 } from '@cube-dev/ui-kit';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import type { FieldBaseProps, FormValues } from '@cube-dev/ui-kit';
 
@@ -108,10 +108,8 @@ export function CustomControl(
       onChange,
     }),
   });
-  const ref = useRef<HTMLInputElement>(null);
   return wrapWithField(
     <input
-      ref={ref}
       id={props.id}
       value={props.value ?? ''}
       onChange={(event) => props.onChange?.(event.target.value)}
@@ -120,7 +118,6 @@ export function CustomControl(
       disabled={props.isDisabled}
       readOnly={props.isReadOnly}
     />,
-    ref,
     props,
   );
 }

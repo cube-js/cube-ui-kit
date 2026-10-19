@@ -1,3 +1,4 @@
+import { createFocusableRef, unwrapDOMRef } from '@react-spectrum/utils';
 import { useControlledState } from '@react-stately/utils';
 import {
   BaseProps,
@@ -171,7 +172,7 @@ function FileInput(allProps: CubeFileInputProps, ref) {
     value,
     onChange,
     placeholder,
-    inputRef,
+    inputRef: inputRefProp,
     isDisabled,
     isInvalid,
     isValid,
@@ -204,7 +205,7 @@ function FileInput(allProps: CubeFileInputProps, ref) {
   // `Action` hands its ref a focusable handle, not the element.
   const actionRef = useRef<FocusableRefValue<HTMLElement>>(null);
 
-  inputRef = useCombinedRefs(inputRef);
+  const inputRef = useCombinedRefs(inputRefProp);
 
   useEffect(() => {
     // Browsers only allow clearing a file input programmatically. A reset or
@@ -256,12 +257,7 @@ function FileInput(allProps: CubeFileInputProps, ref) {
 
   // Expose imperative interface for ref
   useImperativeHandle(ref, () => ({
-    UNSAFE_getDOMNode() {
-      return actionRef.current?.UNSAFE_getDOMNode() ?? null;
-    },
-    focus() {
-      inputRef?.current?.focus();
-    },
+    ...createFocusableRef(unwrapDOMRef(actionRef), inputRef),
     select() {
       if (inputRef?.current) {
         inputRef.current.select();

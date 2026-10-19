@@ -27,7 +27,7 @@ import { useToggleState } from 'react-stately';
 
 import { Icon } from '../../../icons/Icon';
 import { FieldBaseProps, ToggleSelectionProps } from '../../../shared';
-import { mergeProps } from '../../../utils/react';
+import { mergeProps, mergeRefs } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
 import {
   castNullableIsSelected,
@@ -162,6 +162,7 @@ function Checkbox(
     isInvalid,
     isValid,
     labelProps,
+    labelRef,
     labelStyles,
     labelPosition,
     inputStyles,
@@ -269,13 +270,7 @@ function Checkbox(
   // The wrapper is the checkbox's element in both branches, so the field's ref
   // reaches it with or without the field chrome; a tooltip's ref shares it.
   const wrapperRefWith = (tooltipRef?: RefObject<HTMLElement>) =>
-    tooltipRef
-      ? // Written only when React attaches the node, never during render.
-        (element: HTMLLabelElement | null) => {
-          (domRef as { current: HTMLElement | null }).current = element;
-          (tooltipRef as { current: HTMLElement | null }).current = element;
-        }
-      : domRef;
+    tooltipRef ? mergeRefs(domRef, tooltipRef) : domRef;
 
   // The input, where keyboard focus lands, takes the tooltip's focus-side
   // trigger props; the wrapper keeps the hover side and positions the tooltip.
@@ -360,6 +355,8 @@ function Checkbox(
         {renderCheckbox(tooltipFocusProps)}
         {label ?? children ? (
           <Element
+            // Before `labelProps`, so a `ref` passed there still wins.
+            ref={labelRef}
             styles={labelStyles}
             mods={{
               ...getValidationMods({ isInvalid, isValid }),

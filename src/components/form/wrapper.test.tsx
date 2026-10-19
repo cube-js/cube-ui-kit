@@ -562,6 +562,19 @@ describe('field refs', () => {
     expect(fieldRef.current).toBe(screen.getByTestId('Field'));
   });
 
+  it("points a grouped Checkbox's labelRef at its label", () => {
+    const labelRef = createRef<HTMLElement>();
+
+    render(
+      <Checkbox.Group label="Group">
+        <Checkbox value="a" label="Alpha" labelRef={labelRef} />
+      </Checkbox.Group>,
+    );
+
+    expect(labelRef.current).toHaveTextContent('Alpha');
+    expect(labelRef.current).not.toHaveTextContent('Group');
+  });
+
   // `focus()` searches the picker's element for its first segment, which a
   // bare picker used to leave unset.
   it('focuses the first segment of a bare DatePicker through its ref', () => {
@@ -580,20 +593,18 @@ describe('field refs', () => {
   it.each([
     ['with the chrome', { label: 'Custom' }],
     ['bare', { 'aria-label': 'Custom' }],
-  ])(
-    'attaches the ref of the deprecated three-argument call to the control %s',
-    (_, props) => {
-      const ref = createRef<HTMLInputElement>();
+  ])('ignores the ref of the deprecated three-argument call %s', (_, props) => {
+    const ref = createRef<HTMLDivElement>();
 
-      function Custom() {
-        return wrapWithField(<input data-qa="custom" />, ref, props);
-      }
+    function Custom() {
+      return wrapWithField(<input data-qa="custom" />, ref, props);
+    }
 
-      render(<Custom />);
+    render(<Custom />);
 
-      expect(ref.current).toBe(screen.getByTestId('custom'));
-    },
-  );
+    expect(screen.getByTestId('custom')).toBeInTheDocument();
+    expect(ref.current).toBeNull();
+  });
 });
 
 describe('field message slot precedence', () => {

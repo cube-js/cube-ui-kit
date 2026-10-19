@@ -1884,8 +1884,6 @@ function TagInput<T extends object>(
 
   const { children: _children, ...fieldProps } = props;
 
-  // The forwarded ref sits on the component's root, labelled or not, so the
-  // field wrapper gets a ref of its own that nothing reads.
   return wrapWithField(tagInputField, {
     ...(fieldProps as Omit<CubeTagInputProps<T>, 'children'>),
     labelProps: mergeProps(labelProps, userLabelProps),

@@ -993,7 +993,6 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
 
   styles = extractStyles(otherProps, PROP_STYLES, styles);
 
-  ref = useCombinedRefs(ref);
   listRef = useCombinedRefs(listRef);
 
   // ----- Collection and virtualization decision (must precede useListBox) -----

@@ -673,7 +673,6 @@ export const FilterListBox = forwardRef(function FilterListBox<
 
   styles = extractStyles(otherProps, PROP_STYLES, styles);
 
-  ref = useCombinedRefs(ref);
   searchInputRef = useCombinedRefs(searchInputRef);
   listRef = useCombinedRefs(listRef);
 

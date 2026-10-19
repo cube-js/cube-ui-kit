@@ -664,10 +664,8 @@
     "optOuts": 0
   },
   "src/components/fields/ColorPicker/ColorPicker.tsx": {
-    "compiled": 0,
-    "diagnostics": {
-      "Refs": 1
-    },
+    "compiled": 1,
+    "diagnostics": {},
     "optOuts": 0
   },
   "src/components/fields/ColorSwatch/ColorSwatch.tsx": {
@@ -676,14 +674,12 @@
     "optOuts": 0
   },
   "src/components/fields/ColorSwatchGroup/ColorSwatchGroup.tsx": {
-    "compiled": 1,
-    "diagnostics": {
-      "Refs": 1
-    },
+    "compiled": 2,
+    "diagnostics": {},
     "optOuts": 0
   },
   "src/components/fields/ComboBox/ComboBox.tsx": {
-    "compiled": 5,
+    "compiled": 6,
     "diagnostics": {},
     "optOuts": 0
   },
@@ -779,10 +775,8 @@
     "optOuts": 0
   },
   "src/components/fields/FileInput/FileInput.tsx": {
-    "compiled": 0,
-    "diagnostics": {
-      "Refs": 1
-    },
+    "compiled": 1,
+    "diagnostics": {},
     "optOuts": 0
   },
   "src/components/fields/FilterListBox/FilterListBox.tsx": {
@@ -795,7 +789,7 @@
   "src/components/fields/FilterPicker/FilterPicker.tsx": {
     "compiled": 0,
     "diagnostics": {
-      "Refs": 8
+      "Refs": 7
     },
     "optOuts": 0
   },
@@ -899,10 +893,8 @@
     "optOuts": 0
   },
   "src/components/fields/Slider/SliderBase.tsx": {
-    "compiled": 0,
-    "diagnostics": {
-      "Refs": 1
-    },
+    "compiled": 1,
+    "diagnostics": {},
     "optOuts": 0
   },
   "src/components/fields/Slider/SliderInput.tsx": {
