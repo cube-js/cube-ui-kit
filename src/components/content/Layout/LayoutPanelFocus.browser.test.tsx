@@ -16,9 +16,11 @@ function wait(ms: number) {
 function FocusLayout({
   onOpenChange = () => {},
   opener = 'button',
+  hideOnClose = false,
 }: {
   onOpenChange?: (isOpen: boolean) => void;
   opener?: 'button' | 'menu';
+  hideOnClose?: boolean;
 }) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -34,6 +36,7 @@ function FocusLayout({
             side="right"
             size={240}
             mode="overlay"
+            hideOnClose={hideOnClose}
             isOpen={isOpen}
             onOpenChange={(open) => {
               setIsOpen(open);
@@ -83,6 +86,27 @@ describe('Layout.Panel overlay focus in a browser', () => {
     await waitFor(() =>
       expect(screen.getByRole('button', { name: 'Open panel' })).toHaveFocus(),
     );
+  });
+
+  // A hidden panel stays mounted, so each open must read focus afresh.
+  it('moves focus in on every open of a hideOnClose panel, and returns it', async () => {
+    await renderReady(<FocusLayout hideOnClose />);
+
+    const opener = screen.getByRole('button', { name: 'Open panel' });
+    const field = screen.getByLabelText('Panel field');
+
+    for (let cycle = 0; cycle < 2; cycle++) {
+      await act(() => userEvent.click(opener));
+      await waitFor(() => expect(field).toHaveFocus());
+
+      await act(() => userEvent.keyboard('{Escape}'));
+      await waitFor(() => expect(opener).toHaveFocus());
+      await waitFor(() =>
+        expect(
+          getComputedStyle(screen.getByTestId('OverlayPanel')).display,
+        ).toBe('none'),
+      );
+    }
   });
 
   it.each(['click', 'Enter'] as const)(

@@ -9,10 +9,13 @@ import {
 export function LayoutPanelTransition({
   isShown,
   isExiting,
+  isHidden = false,
   children,
 }: {
   isShown: boolean;
   isExiting: boolean;
+  /** A closed `hideOnClose` panel: at rest, so it holds no clip. */
+  isHidden?: boolean;
   children: ReactNode;
 }) {
   const registerPanelTransition = useContext(
@@ -22,12 +25,17 @@ export function LayoutPanelTransition({
   const [state, setState] = useState({
     isShown,
     isExiting,
-    isClipping: !isShown || isExiting,
+    isHidden,
+    isClipping: !isHidden && (!isShown || isExiting),
   });
 
   // Contain the first offscreen frame, including exit preparation and reversal.
-  if (state.isShown !== isShown || state.isExiting !== isExiting) {
-    setState({ isShown, isExiting, isClipping: true });
+  if (
+    state.isShown !== isShown ||
+    state.isExiting !== isExiting ||
+    state.isHidden !== isHidden
+  ) {
+    setState({ isShown, isExiting, isHidden, isClipping: !isHidden });
   }
 
   useLayoutEffect(() => {
