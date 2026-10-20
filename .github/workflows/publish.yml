@@ -18,6 +18,15 @@ permissions:
   pull-requests: write
   id-token: write # Required for trusted publishing (OIDC)
 
+# `pnpm install` runs `husky install`, so every git command below would fire the
+# repository's hooks. `changesets/action` pushes `changeset-release/main` and
+# the release tag, and each push ran the pre-push hook — the full jsdom suite,
+# ~4 minutes — delaying the Version Packages PR after every merge, and running
+# after `npm publish`, where a flaky test failed a release that had already
+# shipped and kept its tag off GitHub. Testing is the Pull Request workflow's job.
+env:
+  HUSKY: '0'
+
 jobs:
   publish-canary:
     name: 'Build & canary release'
