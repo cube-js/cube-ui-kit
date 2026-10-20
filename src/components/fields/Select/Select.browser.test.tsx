@@ -263,10 +263,29 @@ const hundred = Array.from({ length: 100 }, (_, index) => (
   <Select.Item key={`item-${index + 1}`}>{`Item ${index + 1}`}</Select.Item>
 ));
 
+// The list is virtualized, so an option's place among the rendered options is
+// not its place in the list once it has scrolled. Read the item's own number.
 function focusedIndex() {
-  const options = screen.getAllByRole('option');
+  const label = (document.activeElement as HTMLElement).textContent ?? '';
 
-  return options.indexOf(document.activeElement as HTMLElement);
+  return Number(/Item (\d+)/.exec(label)?.[1] ?? 0) - 1;
+}
+
+// React Aria measures a page from the options that are rendered, and the
+// virtualizer renders the window a key scrolled to a frame later. A second key
+// sent before then measures a stale window and can land one option off, so
+// wait for focus to move and for the list to repaint between keys.
+async function pressAndSettle(key: string) {
+  const before = document.activeElement;
+
+  await act(() => userEvent.keyboard(key));
+  await waitFor(() => expect(document.activeElement).not.toBe(before));
+  await act(
+    () =>
+      new Promise<void>((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+      ),
+  );
 }
 
 function isInsideList(option: HTMLElement) {
@@ -366,7 +385,7 @@ describe('Select popup scrolling and geometry', () => {
       .getBoundingClientRect().height;
     const pageSize = Math.floor(listbox.clientHeight / optionHeight);
 
-    await act(() => userEvent.keyboard('{PageDown}'));
+    await pressAndSettle('{PageDown}');
 
     const afterPageDown = focusedIndex();
 
@@ -375,7 +394,8 @@ describe('Select popup scrolling and geometry', () => {
     expect(Math.abs(afterPageDown - pageSize)).toBeLessThanOrEqual(2);
     expect(isInsideList(document.activeElement as HTMLElement)).toBe(true);
 
-    await act(() => userEvent.keyboard('{PageDown}{PageUp}'));
+    await pressAndSettle('{PageDown}');
+    await pressAndSettle('{PageUp}');
 
     expect(focusedIndex()).toBe(afterPageDown);
   });
