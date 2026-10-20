@@ -14,6 +14,7 @@ import {
 import { ItemAction } from '../../actions/ItemAction/ItemAction';
 import { ItemActionProvider } from '../../actions/ItemActionContext';
 import { useValidationProps } from '../../form';
+import { asksForFieldChrome, withFieldChrome } from '../../form/field-chrome';
 import {
   CubeBufferedValueProps,
   CubeTextInputBaseProps,
@@ -61,6 +62,8 @@ export const SearchInput = forwardRef(function SearchInput(
 ) {
   props = castNullableStringValue(props);
   // SearchInput is a standalone control, not a form field, so it does not use `useFieldProps`.
+  // Without a label, it still shows a description or message under the control.
+  if (asksForFieldChrome(props)) props = withFieldChrome(props);
   props = useProviderProps(props);
   props = useValidationProps(props);
 

@@ -14,7 +14,7 @@ import { useI18n } from '../../../i18n';
 import { CloseIcon } from '../../../icons/CloseIcon';
 import { PlusIcon } from '../../../icons/PlusIcon';
 import { FieldBaseProps } from '../../../shared';
-import { mergeProps, useCombinedRefs } from '../../../utils/react';
+import { mergeProps } from '../../../utils/react';
 import { Button } from '../../actions';
 import { Block } from '../../Block';
 import { useFieldProps, wrapWithField } from '../../form';
@@ -82,8 +82,6 @@ function TextInputMapper(
   ref: ForwardedRef<HTMLDivElement>,
 ) {
   const { t } = useI18n();
-
-  ref = useCombinedRefs(ref);
 
   props = useFieldProps(props, {
     defaultValidationTrigger: 'onChange',
@@ -322,7 +320,7 @@ function TextInputMapper(
     </Flow>
   );
 
-  return wrapWithField(element, ref, {
+  return wrapWithField(element, {
     ...props,
     labelProps: mergeProps(props.labelProps, { id: labelId }),
   });

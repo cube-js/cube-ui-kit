@@ -37,6 +37,7 @@ function PasswordInput(
   rawProps = castNullableStringValue(rawProps);
   let props = useFieldProps(rawProps, {
     defaultValidationTrigger: 'onBlur',
+    showsValidateErrors: true,
     valuePropsMapper: ({ value, onChange }) => ({
       value: value?.toString() ?? '',
       onChange,

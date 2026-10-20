@@ -673,7 +673,6 @@ export const FilterListBox = forwardRef(function FilterListBox<
 
   styles = extractStyles(otherProps, PROP_STYLES, styles);
 
-  ref = useCombinedRefs(ref);
   searchInputRef = useCombinedRefs(searchInputRef);
   listRef = useCombinedRefs(listRef);
 
@@ -1140,7 +1139,6 @@ export const FilterListBox = forwardRef(function FilterListBox<
 
   return wrapWithField<Omit<CubeFilterListBoxProps<T>, 'children'>>(
     filterListBoxField,
-    ref,
     props,
   );
 }) as unknown as (<T>(

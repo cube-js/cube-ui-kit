@@ -89,7 +89,7 @@ function NumberInput(
 
   // `NaN` is the number field's own empty value.
   rawProps = castNullableNumberValue(rawProps);
-  let props = useFieldProps(rawProps);
+  let props = useFieldProps(rawProps, { showsValidateErrors: true });
 
   let {
     hideStepper,

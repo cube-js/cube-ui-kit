@@ -830,6 +830,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
 
   const pickerField = (
     <PickerWrapper
+      ref={ref}
       styles={styles}
       {...(filterBaseProps(otherProps, { eventProps: true }) as Record<
         string,
@@ -923,11 +924,10 @@ export const Picker = forwardRef(function Picker<T extends object>(
     </PickerWrapper>
   );
 
-  return wrapWithField<Omit<CubePickerProps<T>, 'children'>>(
-    pickerField,
-    ref as any,
-    { ...props, labelProps: mergeProps(labelProps, props.labelProps) },
-  );
+  return wrapWithField<Omit<CubePickerProps<T>, 'children'>>(pickerField, {
+    ...props,
+    labelProps: mergeProps(labelProps, props.labelProps),
+  });
 }) as unknown as (<T>(
   props: CubePickerProps<T> & { ref?: ForwardedRef<HTMLElement> },
 ) => ReactElement) & {

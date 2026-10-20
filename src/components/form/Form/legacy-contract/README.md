@@ -124,7 +124,7 @@ Baseline on `b204a4d7`: 114 diagnostics. After the dual-backend shell (plan Phas
 
 The legacy-engine findings are the ones the plan already names in §4.1: originally the five conditional hooks in `use-field-props.tsx` (`useId`, `useField`, `useChainedCallback`, `useEvent`, `useDebugValue`; removed by the Phase 3 shell, which calls every hook in every mode), render-phase ref reads and default/reset writes in `Form.tsx`, render-phase ref reads and callback writes in `useForm`, and the render-phase field mutation, the `[field]` effect's deliberately missing `form` dependency (it must not depend on the form's identity) and the id-state write in the registration layout effect in `use-field.ts`. They are the compiler-containment list for the legacy modules (plan §8.1); zero is not required until a module is either made compiler-clean or given a reviewed opt-out.
 
-The `refs` findings in the input components are dominated by `wrapWithField(component, domRef, props)` passing a ref during render, which the rule reads as a possible render-time ref access. That is a shared-surface question for the Phase 2 spike, not a legacy one.
+Input components no longer pass a ref to `wrapWithField`, which the rule read as a possible render-time ref access; each attaches its ref to its own root instead.
 
 ## Not in this folder
 

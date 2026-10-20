@@ -126,7 +126,9 @@ function PeriodPickerImpl<T extends DateValue>(
   });
   let { isOpen, setOpen } = state;
 
-  let domRef = useFocusManagerRef(ref);
+  let domRef = useRef<HTMLDivElement>(null);
+
+  useFocusManagerRef(ref, domRef);
 
   let { isFocused: isFocusedButton, focusProps: focusPropsButton } =
     useFocusRing({
@@ -176,6 +178,7 @@ function PeriodPickerImpl<T extends DateValue>(
   const component = (
     <DateInputBase
       ref={targetRef}
+      wrapperRef={domRef}
       qa={qa || 'PeriodPicker'}
       inputType="datepicker"
       styles={mergeStyleLayers(
@@ -229,7 +232,7 @@ function PeriodPickerImpl<T extends DateValue>(
     </DateInputBase>
   );
 
-  return wrapWithField(component, domRef, {
+  return wrapWithField(component, {
     ...props,
     labelProps: mergeProps(props.labelProps, labelProps),
   });

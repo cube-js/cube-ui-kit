@@ -1,7 +1,7 @@
 import { createFocusManager } from '@react-aria/focus';
 import { createDOMRef } from '@react-spectrum/utils';
 import { FocusableRef } from '@react-types/shared';
-import { useImperativeHandle, useRef } from 'react';
+import { RefObject, useImperativeHandle } from 'react';
 import { DateSegment } from 'react-stately';
 
 // export function useFormatHelpText(
@@ -58,17 +58,21 @@ import { DateSegment } from 'react-stately';
 //   );
 // }
 
-export function useFocusManagerRef(ref: FocusableRef<HTMLElement>) {
-  let domRef = useRef(null);
+/**
+ * Points a picker's `ref` at `domRef`, its control's own element, so the
+ * handle reaches it with or without the field chrome; `focus()` focuses its
+ * first segment.
+ */
+export function useFocusManagerRef(
+  ref: FocusableRef<HTMLElement>,
+  domRef: RefObject<HTMLElement | null>,
+) {
   useImperativeHandle(ref, () => ({
-    // @ts-ignore
     ...createDOMRef(domRef),
     focus() {
-      // @ts-ignore
       createFocusManager(domRef).focusFirst({ tabbable: true });
     },
   }));
-  return domRef;
 }
 
 export function formatSegments(segments: DateSegment[]) {

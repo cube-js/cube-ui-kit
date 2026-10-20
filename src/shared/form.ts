@@ -1,5 +1,5 @@
 import { Styles } from '@tenphi/tasty';
-import { ReactNode } from 'react';
+import { ReactNode, Ref } from 'react';
 
 import type { KeyboardEvent as AriaKeyboardEvent } from '@react-types/shared';
 import type { FormField } from '../components/form/Form/modern/field';
@@ -181,21 +181,33 @@ export interface FieldBaseProps<Value = unknown>
   isLoading?: boolean;
   labelPosition?: LabelPosition;
   labelStyles?: Styles;
+  /**
+   * The field label's element: the visible one, or the visually hidden one of
+   * a bare field. `null` when the field has no `label`. The field's own `ref`
+   * is its control's, with or without the field chrome.
+   */
+  labelRef?: Ref<HTMLElement>;
   /** Whether the field is inside the form. Private field. */
   insideForm?: boolean;
   fieldProps?: Props;
   fieldStyles?: Styles;
   messageStyles?: Styles;
   /**
-   * Renders only the control, without field layout, description or messages.
-   * A supplied label stays accessible but visually hidden. Binding and invalid
-   * state are unaffected. Field chrome is the default, even without a label.
-   * @default false
+   * Whether to render only the control, without field layout, description or
+   * messages. A supplied label stays accessible but visually hidden; binding
+   * and invalid state are unaffected.
+   *
+   * Unset, a field renders its chrome when there is something to show: a
+   * non-empty `label`, a form binding, or a `description`, `errorMessage`,
+   * `message`, `fieldStyles`, `fieldProps` or `isHidden` prop, whatever it
+   * holds, and on `TextInput`, `TextArea`, `PasswordInput` and `NumberInput` a
+   * `validate`. Pass `isBare` for an inline field with no room for them, and
+   * `isBare={false}` to render the chrome anyway.
    */
   isBare?: boolean;
   /**
-   * @deprecated Fields render chrome by default. Remove this prop; use `isBare`
-   * to opt out. It has no presentation effect.
+   * @deprecated Pass `isBare={false}` instead. Renders the field chrome even
+   * with nothing to show; an explicit `isBare` wins.
    */
   forceField?: boolean;
 }

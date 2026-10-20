@@ -39,6 +39,7 @@ import {
 import { extractStyles } from '../../../utils/styles';
 import { ItemAction } from '../../actions/ItemAction/ItemAction';
 import { CollectionItem as Item } from '../../CollectionItem';
+import { withFieldChrome } from '../../form/field-chrome';
 import { useFieldProps } from '../../form/Form/use-field/use-field-props';
 import { rendersFieldChrome, wrapWithField } from '../../form/wrapper';
 import { getListBoxOptionId } from '../ListBox/optionId';
@@ -727,6 +728,9 @@ function TagInput<T extends object>(
       onChange,
     }),
   });
+  // Its refusals are messages of its own, with or without a label or a form,
+  // so it asks for the field chrome that shows them. `isBare` still opts out.
+  props = withFieldChrome(props);
 
   const { t } = useI18n();
   const { formatList } = useFormatter();
@@ -1880,11 +1884,7 @@ function TagInput<T extends object>(
 
   const { children: _children, ...fieldProps } = props;
 
-  // The forwarded ref sits on the component's root, labelled or not, so the
-  // field wrapper gets a ref of its own that nothing reads.
-  const fieldRef = useCombinedRefs<HTMLDivElement>();
-
-  return wrapWithField(tagInputField, fieldRef, {
+  return wrapWithField(tagInputField, {
     ...(fieldProps as Omit<CubeTagInputProps<T>, 'children'>),
     labelProps: mergeProps(labelProps, userLabelProps),
     isInvalid: effectiveIsInvalid,

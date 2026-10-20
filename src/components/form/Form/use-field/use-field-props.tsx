@@ -4,6 +4,7 @@ import { useEvent } from '../../../../_internal/index';
 import { useProviderProps } from '../../../../provider';
 import { mergeProps } from '../../../../utils/react/index';
 import { warn } from '../../../../utils/warnings';
+import { asksForFieldChrome, withFieldChrome } from '../../field-chrome';
 import { useFieldDescribedBy } from '../../FieldWrapper/field-description';
 import { useValidationProps } from '../../validation/index';
 import { isModernFormController } from '../backend';
@@ -29,6 +30,12 @@ export type UseFieldPropsParams = {
    * If you want to change this prop after mount, remount the component with a new value.
    */
   unsafe__isDisabled?: boolean;
+  /**
+   * The control shows the errors of its `validate` under itself, so a
+   * `validate` asks for the field chrome even without a label.
+   * @default false
+   */
+  showsValidateErrors?: boolean;
 };
 
 const defaultValuePropsMapper = ({ value, onChange }) => ({
@@ -103,6 +110,7 @@ export function useFieldProps<
   const {
     valuePropsMapper = defaultValuePropsMapper,
     defaultValidationTrigger = 'onBlur',
+    showsValidateErrors = false,
   } = params;
 
   const isInsideLegacyField = useInsideLegacyField();
@@ -200,11 +208,20 @@ export function useFieldProps<
       : result;
   }
 
-  // A nameless legacy Field already owns its child's chrome. Named Fields
-  // delegate presentation to the control along with their binding props.
-  const resolved =
-    isInsideLegacyField && !hasName
-      ? { ...resolveResult(), isBare: true }
+  // A field without a `label` still renders the field chrome when it is bound
+  // to a form, its caller gives the chrome something to show (see
+  // `asksForFieldChrome`), or it shows the errors of a `validate`
+  // (`showsValidateErrors`). A nameless legacy Field already owns its child's
+  // chrome. A named one binds its child and delegates presentation to it; its
+  // message props come and go with the error, so they decide nothing.
+  const resolved = isInsideLegacyField
+    ? hasName
+      ? withFieldChrome(resolveResult())
+      : { ...resolveResult(), isBare: true }
+    : (isBound && !isOutsideOfForm) ||
+        asksForFieldChrome(inputProps) ||
+        (showsValidateErrors && 'validate' in inputProps)
+      ? withFieldChrome(resolveResult())
       : resolveResult();
   // React Aria forwards `form` to native inputs. A modern controller is a
   // binding source, never an HTML form id, including in standalone/group mode.

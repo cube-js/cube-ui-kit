@@ -2021,12 +2021,7 @@ export const ComprehensivePopoverSynchronization = () => {
         </Block>
 
         {/* Select */}
-        <Select
-          isBare
-          placeholder="Select"
-          defaultSelectedKey="option1"
-          size="small"
-        >
+        <Select placeholder="Select" defaultSelectedKey="option1" size="small">
           {selectOptions.map((option) => (
             <Select.Item key={option.value}>{option.label}</Select.Item>
           ))}
@@ -2036,19 +2031,13 @@ export const ComprehensivePopoverSynchronization = () => {
         <Button size="small">Simple Button</Button>
 
         {/* ComboBox */}
-        <ComboBox
-          isBare
-          placeholder="ComboBox"
-          items={comboBoxItems}
-          size="small"
-        >
+        <ComboBox placeholder="ComboBox" items={comboBoxItems} size="small">
           {(item) => <ComboBox.Item key={item.id}>{item.name}</ComboBox.Item>}
         </ComboBox>
 
         {/* FilterPicker - demonstrates the three canonical footer button cases */}
         {footerModalRendered}
         <FilterPicker
-          isBare
           placeholder="FilterPicker"
           items={filterPickerOptions}
           size="small"

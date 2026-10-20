@@ -923,7 +923,6 @@ export const InPopover: StoryObj<CubeListBoxProps<any>>['render'] = () => {
         <Button>Choose Technology</Button>
         <Dialog>
           <ListBox
-            isBare
             width="0 320px 100%"
             selectedKey={selectedKey}
             styles={{

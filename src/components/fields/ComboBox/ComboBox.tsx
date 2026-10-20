@@ -829,7 +829,8 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   // Hoist the wrapper/popover ref normalization above `useComboBoxState` so
   // the popover-sync inside it sees stable, attached refs. Other ref combines
   // happen below alongside the legacy ordering.
-  wrapperRef = useCombinedRefs(wrapperRef);
+  // The field's ref is the wrapper's, with or without the field chrome.
+  wrapperRef = useCombinedRefs(wrapperRef, ref);
   popoverRef = useCombinedRefs(popoverRef);
 
   // State management hook
@@ -857,7 +858,6 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
 
   styles = extractStyles(otherProps, PROP_STYLES, styles);
 
-  ref = useCombinedRefs(ref);
   inputRef = useCombinedRefs(inputRef);
   triggerRef = useCombinedRefs(triggerRef);
   listBoxRef = useCombinedRefs(listBoxRef);
@@ -1462,7 +1462,6 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
 
   return wrapWithField<Omit<CubeComboBoxProps<T>, 'children'>>(
     comboBoxField,
-    ref,
     propsWithoutChildren,
   );
 }) as unknown as (<T>(

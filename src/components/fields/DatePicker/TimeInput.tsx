@@ -83,7 +83,9 @@ function TimeInput<T extends TimeValue>(
     labelProps: userLabelProps,
   } = props;
 
-  let domRef = useFocusManagerRef(ref);
+  let domRef = useRef<HTMLDivElement>(null);
+
+  useFocusManagerRef(ref, domRef);
   let timeProps = {
     ...props,
     granularity: props.granularity === 'day' ? undefined : props.granularity,
@@ -99,6 +101,7 @@ function TimeInput<T extends TimeValue>(
   const timeInput = (
     <DateInputBase
       ref={fieldRef}
+      wrapperRef={domRef}
       qa={qa || 'TimeInput'}
       inputType="timeinput"
       size={size}
@@ -123,7 +126,7 @@ function TimeInput<T extends TimeValue>(
     </DateInputBase>
   );
 
-  return wrapWithField(timeInput, domRef, {
+  return wrapWithField(timeInput, {
     ...props,
     labelProps: mergeProps(labelProps, userLabelProps),
   });

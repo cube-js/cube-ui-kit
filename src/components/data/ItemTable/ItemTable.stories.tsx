@@ -516,7 +516,6 @@ export const Search: Story = {
         noResultsLabel="No deployments match"
         filters={
           <FilterPicker
-            isBare
             aria-label="Filter by region"
             size="small"
             selectionMode="multiple"
@@ -631,7 +630,6 @@ export const CustomSearchPlacement: Story = {
               isSearchable
               filters={
                 <FilterPicker
-                  isBare
                   isClearable
                   aria-label="Filter by status"
                   type="clear"

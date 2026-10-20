@@ -641,6 +641,7 @@ function Select<T extends object>(
 
   let selectField = (
     <SelectWrapperElement
+      ref={ref}
       mods={modifiers}
       styles={styles}
       data-size={size}
@@ -734,7 +735,6 @@ function Select<T extends object>(
 
   return wrapWithField<Omit<CubeSelectProps<T>, 'children' | 'tooltip'>>(
     selectField,
-    ref,
     mergeProps(
       {
         ...props,

@@ -38,6 +38,7 @@ export const TextInput = forwardRef(function TextInput(
   rawProps = castNullableStringValue(rawProps);
   let props = useFieldProps(rawProps, {
     defaultValidationTrigger: 'onBlur',
+    showsValidateErrors: true,
     valuePropsMapper: ({ value, onChange }) => ({
       onChange,
       value: value?.toString() ?? '',

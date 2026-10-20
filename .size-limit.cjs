@@ -380,7 +380,14 @@ module.exports = [
     // tooltip scroll following and the non-dismissable popover sync. Button
     // is 159,665 B (+~250 B: tooltip describedby merging and loading focus).
     // Allow 626 kB, 1,211 B headroom; confirm in Linux CI.
-    limit: '626kB',
+    // Field refs on the control: 626,129 B locally, against 622,925 B for the
+    // field-chrome change before it and main's 625,292 B in CI (27a92974, run
+    // 39274158959). With the compiler off, the ref change measured +120 B; the
+    // rest is compiler output for ColorPicker, ColorSwatchGroup, ComboBox,
+    // FileInput and SliderBase, which a ref passed to `wrapWithField` during
+    // render kept from compiling. Allow 627 kB, 871 B headroom; confirm in
+    // Linux CI.
+    limit: '627kB',
   },
   {
     name: 'Tree shaking (just a Button)',
@@ -494,6 +501,10 @@ module.exports = [
     // Allow 160 kB with 506 B headroom; confirm the exact figure in Linux CI.
     // Linear backlog bug fixes: 159,665 B (+~250 B), 335 B headroom. Left at
     // 160 kB; the next change here probably has to raise it.
-    limit: '160kB',
+    // Tasty 3.9.9 → 3.10.0: 160,225 B against main's 159,772 B (27a92974, CI
+    // run 39274158959, matched here to the byte); the growth is in Tasty's
+    // always-loaded style engine. The field chrome change leaves this entry
+    // unchanged. Allow 161 kB, 775 B headroom.
+    limit: '161kB',
   },
 ];

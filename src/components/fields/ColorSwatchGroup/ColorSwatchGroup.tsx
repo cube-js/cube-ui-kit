@@ -419,7 +419,7 @@ export const ColorSwatchGroup = forwardRef(function ColorSwatchGroup(
     </GroupElement>
   );
 
-  return wrapWithField(group, domRef, {
+  return wrapWithField(group, {
     ...props,
     labelProps: mergeProps(props.labelProps, labelProps),
   });

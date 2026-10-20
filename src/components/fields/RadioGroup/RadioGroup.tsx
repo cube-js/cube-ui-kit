@@ -177,6 +177,7 @@ function RadioGroup(rawProps: WithNullableValue<CubeRadioGroupProps>, ref) {
 
   let radioGroup = (
     <RadioGroupElement
+      ref={domRef}
       // Keep semantics and keyboard handling on the group: `isBare` omits
       // the field wrapper.
       {...mergeProps(groupProps, groupFocusProps)}
@@ -221,7 +222,7 @@ function RadioGroup(rawProps: WithNullableValue<CubeRadioGroupProps>, ref) {
     </RadioGroupElement>
   );
 
-  return wrapWithField(radioGroup, domRef, {
+  return wrapWithField(radioGroup, {
     ...props,
     labelProps: mergeProps(baseLabelProps, labelProps),
   });

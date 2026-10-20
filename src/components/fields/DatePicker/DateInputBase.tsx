@@ -64,6 +64,8 @@ interface CubeDateAtomInputProps extends ContainerStyleProps {
   isValid?: boolean;
   isLoading?: boolean;
   suffix?: React.ReactNode;
+  /** The input box, the picker's own element. */
+  wrapperRef?: React.Ref<HTMLDivElement>;
 }
 
 function DateInputBase(props: CubeDateAtomInputProps, ref) {
@@ -83,6 +85,7 @@ function DateInputBase(props: CubeDateAtomInputProps, ref) {
     isLoading,
     size = 'medium',
     suffix,
+    wrapperRef,
   } = props;
 
   let styles = extractStyles(props, CONTAINER_STYLES);
@@ -101,6 +104,7 @@ function DateInputBase(props: CubeDateAtomInputProps, ref) {
 
   return (
     <DateInputWrapperElement
+      ref={wrapperRef}
       qa={qa || 'DateTimeInput'}
       styles={styles}
       data-size={size}

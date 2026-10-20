@@ -1,4 +1,4 @@
-import { cloneElement, useState } from 'react';
+import { cloneElement, createRef, ReactElement, useState } from 'react';
 
 import {
   act,
@@ -10,6 +10,8 @@ import {
 } from '../../test';
 import { FORM_ATTACHABLE_INPUTS } from '../../test/form-attachable-inputs';
 import { Checkbox } from '../fields/Checkbox/Checkbox';
+import { DatePicker } from '../fields/DatePicker/DatePicker';
+import { SearchComboBox } from '../fields/SearchComboBox/SearchComboBox';
 import { SearchInput } from '../fields/SearchInput/SearchInput';
 import { TagInput } from '../fields/TagInput/TagInput';
 import { TextInput } from '../fields/TextInput/TextInput';
@@ -17,43 +19,116 @@ import { TextInput } from '../fields/TextInput/TextInput';
 import { Field } from './Form/Field';
 import { Form } from './Form/Form';
 import { createFormController } from './Form/modern/controller';
+import { wrapWithField } from './wrapper';
 
+import type { DOMRefValue, FocusableRefValue } from '@react-types/shared';
 import type { FieldBaseProps } from '../../shared/form';
 
 vi.mock('../../_internal/hooks/use-warn');
 
 /**
- * Field chrome is the default presentation. Message content and form binding
- * never decide whether a control is wrapped, so adding or omitting a slot
- * cannot remount a focused control.
+ * A field renders its chrome when there is something to show, and only the
+ * control otherwise. Which props are passed decides, never what they hold, so
+ * a message that comes and goes cannot remount a focused control.
  */
 describe('field chrome without a label', () => {
-  it.each(FORM_ATTACHABLE_INPUTS)(
-    '%s renders one field wrapper without a label, binding or text props',
+  // `TagInput` has refusal messages of its own; see below.
+  const quietInputs = FORM_ATTACHABLE_INPUTS.filter(
+    ([name]) => name !== 'TagInput',
+  );
+
+  // Only these show the errors of a `validate` under the control.
+  const showsValidateErrors = new Set([
+    'NumberInput',
+    'PasswordInput',
+    'TextArea',
+    'TextInput',
+  ]);
+
+  it.each(quietInputs)(
+    '%s renders only the control without a label, binding or text props',
     (_, element) => {
       renderWithRoot(
         cloneElement(element, { label: undefined, 'aria-label': 'Billing' }),
+      );
+
+      expect(screen.queryByTestId('Field')).not.toBeInTheDocument();
+    },
+  );
+
+  it.each(FORM_ATTACHABLE_INPUTS)(
+    '%s renders one field wrapper with isBare={false}',
+    (_, element) => {
+      renderWithRoot(
+        cloneElement(element, {
+          label: undefined,
+          'aria-label': 'Billing',
+          isBare: false,
+        }),
       );
 
       expect(screen.getAllByTestId('Field')).toHaveLength(1);
     },
   );
 
-  it.each([{}, { isBare: false }, { message: null }, { message: undefined }])(
-    'renders default chrome independently of text slots: %j',
-    (props) => {
+  it.each([
+    ['a null message', { message: null }],
+    ['an undefined message', { message: undefined }],
+    ['an undefined description', { description: undefined }],
+    ['an undefined error message', { errorMessage: undefined }],
+    ['field styles', { fieldStyles: { width: '40x' } }],
+    ['field props', { fieldProps: {} }],
+    ['isHidden={false}', { isHidden: false }],
+  ] satisfies [string, object][])(
+    'renders the chrome for %s, whatever it holds',
+    (_, props) => {
       render(<TextInput aria-label="Name" {...props} />);
 
       expect(screen.getByTestId('Field')).toBeInTheDocument();
     },
   );
 
-  it('preserves the input, focus and draft when a message prop is added and omitted', async () => {
+  it.each(FORM_ATTACHABLE_INPUTS)(
+    '%s hides without a label with isHidden',
+    (_, element) => {
+      renderWithRoot(
+        cloneElement(element, {
+          label: undefined,
+          'aria-label': 'Billing',
+          isHidden: true,
+        }),
+      );
+
+      expect(screen.getByTestId('Field')).not.toBeVisible();
+    },
+  );
+
+  it.each(quietInputs)(
+    '%s asks for the chrome for a validate only when it shows its errors',
+    (name, element) => {
+      renderWithRoot(
+        cloneElement(element, {
+          label: undefined,
+          'aria-label': 'Billing',
+          validate: () => null,
+        }),
+      );
+
+      expect(screen.queryAllByTestId('Field')).toHaveLength(
+        showsValidateErrors.has(name) ? 1 : 0,
+      );
+    },
+  );
+
+  // A prop spread in only while there is an error would move the control into
+  // the wrapper; `isBare={false}` keeps the wrapper from the start.
+  it('preserves the input, focus and draft with isBare={false} when a message prop is added and omitted', async () => {
     function Name() {
       const [hasError, setHasError] = useState(false);
 
       return (
         <TextInput
+          isBare={false}
           aria-label="Name"
           {...(hasError ? { errorMessage: 'Too short' } : {})}
           onChange={(value) => setHasError(value.length === 1)}
@@ -91,6 +166,28 @@ describe('field chrome without a label', () => {
     expect(input).toHaveAccessibleDescription(/"alpha" is already added/);
     expect(input).toHaveValue('');
     expect(input).toHaveFocus();
+  });
+
+  // Its own validation errors need a place, as a form's do.
+  it('shows the error of a label-less validate and keeps the control focused', async () => {
+    render(
+      <TextInput
+        aria-label="Code"
+        validate={(value) => (value.length < 3 ? 'Too short' : null)}
+      />,
+    );
+    const input = screen.getByRole('textbox', { name: 'Code' });
+
+    await userEvent.type(input, 'a');
+
+    expect(screen.getByRole('textbox', { name: 'Code' })).toBe(input);
+    expect(input).toHaveFocus();
+    expect(input).toHaveAccessibleDescription('Too short');
+
+    await userEvent.type(input, 'bc');
+
+    expect(input).toHaveValue('abc');
+    expect(screen.queryByText('Too short')).not.toBeInTheDocument();
   });
 
   it('keeps a control mounted and focused while its error clears', async () => {
@@ -207,9 +304,23 @@ describe('field chrome without a label', () => {
     ).not.toBeNull();
   });
 
-  it('shows a search input description', () => {
-    render(<SearchInput aria-label="Books" description="By title or author" />);
+  // They skip `useFieldProps`, so they ask for the chrome themselves.
+  it.each([
+    ['SearchInput', <SearchInput key="input" aria-label="Books" />],
+    [
+      'SearchComboBox',
+      <SearchComboBox key="combo" aria-label="Books">
+        <SearchComboBox.Item key="dune">Dune</SearchComboBox.Item>
+      </SearchComboBox>,
+    ],
+  ])('%s renders the chrome only for a description', (_, element) => {
+    const { rerender } = renderWithRoot(element);
 
+    expect(screen.queryByTestId('Field')).not.toBeInTheDocument();
+
+    rerender(cloneElement(element, { description: 'By title or author' }));
+
+    expect(screen.getByTestId('Field')).toBeInTheDocument();
     expect(screen.getByText('By title or author')).toBeInTheDocument();
   });
 
@@ -287,8 +398,9 @@ describe('field chrome without a label', () => {
 
       expect(screen.getAllByTestId('Field')).toHaveLength(1);
       expect(screen.getByText('Billing is wrong')).toBeInTheDocument();
+      // The `isBare={false}` the binding asks with never reaches the DOM.
       expect(error.mock.calls.flat().map(String).join('\n')).not.toContain(
-        'hasFieldChrome',
+        'does not recognize',
       );
 
       error.mockRestore();
@@ -354,6 +466,145 @@ describe('field chrome without a label', () => {
       expect(formInstance.getFieldNames()).toEqual(name ? [name] : []);
     },
   );
+});
+
+/**
+ * A field's `ref` is its control's, so whether the field chrome renders never
+ * changes what it points at, and a bare field's is never `null`. The label has
+ * a `labelRef` of its own.
+ */
+describe('field refs', () => {
+  const inputs: [string, ReactElement<any>][] = [
+    ...FORM_ATTACHABLE_INPUTS,
+    ['SearchInput', <SearchInput label="SearchInput" />],
+    [
+      'SearchComboBox',
+      <SearchComboBox label="SearchComboBox">
+        <SearchComboBox.Item key="one">One</SearchComboBox.Item>
+      </SearchComboBox>,
+    ],
+  ];
+
+  // A DOM ref holds the element; a focusable or DOM handle unwraps to it.
+  function elementOf(value: unknown) {
+    if (value instanceof HTMLElement) return value;
+
+    return (value as DOMRefValue | null)?.UNSAFE_getDOMNode() ?? null;
+  }
+
+  it.each(inputs)(
+    '%s points its ref at the control with and without the chrome',
+    (_, element) => {
+      const ref = createRef<unknown>();
+      const labelRef = createRef<HTMLElement>();
+      const { unmount } = renderWithRoot(
+        cloneElement(element, { ref, labelRef }),
+      );
+
+      const control = elementOf(ref.current);
+      const field = screen.getByTestId('Field');
+
+      expect(control).toBeInstanceOf(HTMLElement);
+      expect(field).toContainElement(control);
+      expect(control).not.toBe(field);
+      expect(labelRef.current).toHaveTextContent(element.props.label);
+      expect(control).not.toContainElement(labelRef.current);
+
+      const tagName = control?.tagName;
+      const qa = control?.getAttribute('data-qa');
+
+      unmount();
+
+      // `isBare` too: `TagInput` asks for its chrome without a label.
+      renderWithRoot(
+        cloneElement(element, {
+          ref,
+          labelRef,
+          label: undefined,
+          'aria-label': 'Billing',
+          isBare: true,
+        }),
+      );
+
+      const bareControl = elementOf(ref.current);
+
+      expect(screen.queryByTestId('Field')).not.toBeInTheDocument();
+      expect(bareControl).toBeInstanceOf(HTMLElement);
+      expect(bareControl?.tagName).toBe(tagName);
+      expect(bareControl?.getAttribute('data-qa')).toBe(qa);
+      expect(labelRef.current).toBeNull();
+    },
+  );
+
+  it.each(inputs)(
+    '%s points labelRef at the visually hidden label with isBare',
+    (_, element) => {
+      const error = vi.spyOn(console, 'error');
+      const labelRef = createRef<HTMLElement>();
+
+      renderWithRoot(cloneElement(element, { labelRef, isBare: true }));
+
+      expect(labelRef.current).toHaveTextContent(element.props.label);
+      expect(document.querySelector('[labelref]')).toBeNull();
+      expect(error.mock.calls.flat().map(String).join('\n')).not.toContain(
+        'labelRef',
+      );
+
+      error.mockRestore();
+    },
+  );
+
+  it('reaches the field wrapper through fieldProps', () => {
+    const fieldRef = createRef<HTMLDivElement>();
+
+    render(<TextInput label="Name" fieldProps={{ ref: fieldRef }} />);
+
+    expect(fieldRef.current).toBe(screen.getByTestId('Field'));
+  });
+
+  it("points a grouped Checkbox's labelRef at its label", () => {
+    const labelRef = createRef<HTMLElement>();
+
+    render(
+      <Checkbox.Group label="Group">
+        <Checkbox value="a" label="Alpha" labelRef={labelRef} />
+      </Checkbox.Group>,
+    );
+
+    expect(labelRef.current).toHaveTextContent('Alpha');
+    expect(labelRef.current).not.toHaveTextContent('Group');
+  });
+
+  // `focus()` searches the picker's element for its first segment, which a
+  // bare picker used to leave unset.
+  it('focuses the first segment of a bare DatePicker through its ref', () => {
+    const ref = createRef<FocusableRefValue<HTMLElement>>();
+
+    renderWithRoot(<DatePicker ref={ref} aria-label="Due" />);
+
+    act(() => ref.current?.focus());
+
+    expect(ref.current?.UNSAFE_getDOMNode()).toContainElement(
+      document.activeElement as HTMLElement,
+    );
+    expect(document.activeElement).toHaveAttribute('role', 'spinbutton');
+  });
+
+  it.each([
+    ['with the chrome', { label: 'Custom' }],
+    ['bare', { 'aria-label': 'Custom' }],
+  ])('ignores the ref of the deprecated three-argument call %s', (_, props) => {
+    const ref = createRef<HTMLDivElement>();
+
+    function Custom() {
+      return wrapWithField(<input data-qa="custom" />, ref, props);
+    }
+
+    render(<Custom />);
+
+    expect(screen.getByTestId('custom')).toBeInTheDocument();
+    expect(ref.current).toBeNull();
+  });
 });
 
 describe('field message slot precedence', () => {
@@ -462,12 +713,12 @@ describe('field message slot precedence', () => {
 });
 
 /**
- * `forceField` is redundant with default chrome and warns once. It cannot
- * override an explicit request for a bare control.
+ * `forceField` renders the chrome as `isBare={false}` does, and warns once. It
+ * cannot override an explicit request for a bare control.
  */
 describe('the deprecated forceField', () => {
   // First in the file to pass `forceField`: the warning is once per module.
-  it('retains default chrome, and warns once', () => {
+  it('renders the chrome without a label, and warns once', () => {
     const spy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
     render(

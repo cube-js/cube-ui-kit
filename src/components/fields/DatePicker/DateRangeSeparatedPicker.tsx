@@ -155,7 +155,7 @@ function DateRangeSeparatedPicker<T extends DateValue>(
     autoFocus,
   });
 
-  let domRef = useFocusManagerRef(ref);
+  useFocusManagerRef(ref, targetRef);
 
   let { groupProps, labelProps, startFieldProps, endFieldProps } =
     useDateRangePicker(props, state, targetRef);
@@ -365,7 +365,7 @@ function DateRangeSeparatedPicker<T extends DateValue>(
     </DatePickerElement>
   );
 
-  return wrapWithField(component, domRef, {
+  return wrapWithField(component, {
     ...props,
     labelProps: mergeProps(props.labelProps, labelProps),
   });

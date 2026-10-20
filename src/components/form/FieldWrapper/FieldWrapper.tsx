@@ -9,6 +9,7 @@ import { InfoBadge } from '../../content/InfoBadge';
 import { Text } from '../../content/Text';
 import { Flex } from '../../layout/Flex';
 import { Space } from '../../layout/Space';
+import { hasFieldContent } from '../field-chrome';
 import { Label, NecessityIndicatorMark } from '../Label';
 import { warnAboutLegacyTooltip } from '../legacy-tooltip';
 import { getValidationMods } from '../validation/index';
@@ -19,13 +20,6 @@ import {
   useFieldTextId,
 } from './field-description';
 import { CubeFieldWrapperProps } from './types';
-
-import type { ReactNode } from 'react';
-
-/** Empty slot values suppress content; numeric zero is still text. */
-function hasFieldContent(content: ReactNode) {
-  return content != null && typeof content !== 'boolean' && content !== '';
-}
 
 const FieldElement = tasty({
   qa: 'Field',
@@ -139,6 +133,7 @@ export const FieldWrapper = forwardRef(function FieldWrapper(
     labelStyles,
     necessityIndicator,
     labelProps,
+    labelRef,
     fieldProps,
     message,
     messageStyles,
@@ -192,6 +187,8 @@ export const FieldWrapper = forwardRef(function FieldWrapper(
             : label
           : undefined
       }
+      // Before `labelProps`, so a `ref` passed there still wins.
+      ref={labelRef}
       {...labelProps}
     >
       <Flex placeContent="baseline space-between" width="100%">
@@ -248,7 +245,7 @@ export const FieldWrapper = forwardRef(function FieldWrapper(
       <>
         {hasLabel ? (
           <VisuallyHidden>
-            <Label {...labelProps}>
+            <Label ref={labelRef} {...labelProps}>
               {label}
               {optionalNote ? <> {optionalNote}</> : null}
             </Label>

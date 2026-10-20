@@ -1,4 +1,4 @@
-import { createFocusableRef } from '@react-spectrum/utils';
+import { createFocusableRef, unwrapDOMRef } from '@react-spectrum/utils';
 import { useControlledState } from '@react-stately/utils';
 import {
   BaseProps,
@@ -31,7 +31,7 @@ import {
   wrapWithField,
 } from '../../form';
 
-import type { AriaLabelingProps } from '@react-types/shared';
+import type { AriaLabelingProps, FocusableRefValue } from '@react-types/shared';
 import type { ChangeEvent } from 'react';
 import type { AriaTextFieldProps } from 'react-aria';
 import type { Props } from '../../../props';
@@ -172,7 +172,7 @@ function FileInput(allProps: CubeFileInputProps, ref) {
     value,
     onChange,
     placeholder,
-    inputRef,
+    inputRef: inputRefProp,
     isDisabled,
     isInvalid,
     isValid,
@@ -202,9 +202,10 @@ function FileInput(allProps: CubeFileInputProps, ref) {
         : undefined;
   const reader = useRef<FileReader | null>(null);
 
-  let domRef = useRef(null);
+  // `Action` hands its ref a focusable handle, not the element.
+  const actionRef = useRef<FocusableRefValue<HTMLElement>>(null);
 
-  inputRef = useCombinedRefs(inputRef);
+  const inputRef = useCombinedRefs(inputRefProp);
 
   useEffect(() => {
     // Browsers only allow clearing a file input programmatically. A reset or
@@ -256,7 +257,7 @@ function FileInput(allProps: CubeFileInputProps, ref) {
 
   // Expose imperative interface for ref
   useImperativeHandle(ref, () => ({
-    ...createFocusableRef(domRef, inputRef),
+    ...createFocusableRef(unwrapDOMRef(actionRef), inputRef),
     select() {
       if (inputRef?.current) {
         inputRef.current.select();
@@ -269,7 +270,7 @@ function FileInput(allProps: CubeFileInputProps, ref) {
 
   const fileInput = (
     <FileInputElement
-      ref={domRef}
+      ref={actionRef}
       id={triggerId}
       aria-label={ariaLabel}
       aria-labelledby={[nameSource, chooseFileId, fileNameId]
@@ -325,7 +326,7 @@ function FileInput(allProps: CubeFileInputProps, ref) {
     </FileInputElement>
   );
 
-  return wrapWithField(fileInput, domRef, {
+  return wrapWithField(fileInput, {
     ...props,
     labelProps: mergeProps(props.labelProps, { id: labelId }),
   });

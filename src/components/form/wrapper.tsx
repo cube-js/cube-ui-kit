@@ -5,7 +5,7 @@ import { ReactElement, RefObject } from 'react';
 import { FieldBaseProps, FormBaseProps } from '../../shared/index';
 import { mergeProps } from '../../utils/react/index';
 
-import { warnAboutForceField } from './field-chrome';
+import { hasFieldContent, warnAboutForceField } from './field-chrome';
 import { FieldWrapper } from './FieldWrapper/index';
 import { warnAboutLegacyTooltip } from './legacy-tooltip';
 
@@ -15,20 +15,56 @@ interface WrapWithFieldProps
     Omit<BaseProps, 'children'>,
     FormBaseProps {}
 
-/** Field chrome is the default; only an explicit bare mode opts out. */
-export function rendersFieldChrome(props: { isBare?: boolean }) {
-  return !props.isBare;
+/**
+ * Whether `wrapWithField` renders the field chrome for these props. An
+ * explicit `isBare` decides; `useFieldProps` sets `isBare={false}` on a bound
+ * field, one passed a chrome prop, or one with a `validate` whose errors the
+ * control shows (`withFieldChrome`).
+ * Otherwise a non-empty `label` renders it, as does the deprecated
+ * `forceField`.
+ */
+export function rendersFieldChrome(props: object) {
+  const { isBare, label, forceField } = props as WrapWithFieldProps;
+
+  if (isBare != null) return !isBare;
+
+  return hasFieldContent(label) || !!forceField;
 }
 
-/** Wraps a control in its stable field presentation and forwards its chrome props. */
+type LegacyFieldRef =
+  | RefObject<unknown>
+  | FocusableRef<HTMLElement>
+  | DOMRef<HTMLElement>
+  | null
+  | undefined;
+
+/**
+ * Wraps a control in its field chrome when it has one, and forwards its chrome
+ * props. The chrome takes no ref: the control attaches the field's `ref` to
+ * its own root, so the ref is the same element with or without the chrome, and
+ * `labelRef` reaches the label.
+ */
 export function wrapWithField<T extends WrapWithFieldProps>(
   component: ReactElement,
-  ref: RefObject<unknown> | FocusableRef<HTMLElement> | DOMRef<HTMLElement>,
   props: T,
+): ReactElement;
+/**
+ * @deprecated Attach the field's ref to the control's root and call
+ * `wrapWithField(component, props)`. The `ref` passed here is ignored.
+ */
+export function wrapWithField<T extends WrapWithFieldProps>(
+  component: ReactElement,
+  ref: LegacyFieldRef,
+  props: T,
+): ReactElement;
+export function wrapWithField<T extends WrapWithFieldProps>(
+  component: ReactElement,
+  ...args: [props: T] | [ref: LegacyFieldRef, props: T]
 ) {
+  const props = args[args.length - 1] as T;
+  const isBare = !rendersFieldChrome(props);
   let {
     label,
-    isBare = false,
     extra,
     labelPosition = 'top',
     labelStyles,
@@ -43,6 +79,7 @@ export function wrapWithField<T extends WrapWithFieldProps>(
     isInvalid,
     isValid,
     labelProps,
+    labelRef,
     fieldProps,
     fieldStyles,
     requiredMark = true,
@@ -80,6 +117,7 @@ export function wrapWithField<T extends WrapWithFieldProps>(
         isDisabled,
         necessityIndicator,
         labelProps: mergedLabelProps,
+        labelRef,
         fieldProps: fieldPropsWithoutId,
         message,
         messageStyles,
@@ -95,7 +133,6 @@ export function wrapWithField<T extends WrapWithFieldProps>(
         // Where the description and message ids come from; see
         // `useFieldDescribedBy`, which points the control at them.
         controlId: props.id,
-        ref,
       }}
     />
   );

@@ -73,9 +73,6 @@
       "react-hooks/preserve-manual-memoization": 1,
       "react-hooks/rules-of-hooks": 2
     },
-    "src/components/fields/ColorSwatchGroup/ColorSwatchGroup.tsx": {
-      "react-hooks/refs": 1
-    },
     "src/components/fields/CommandTextArea/CommandTextArea.tsx": {
       "react-hooks/exhaustive-deps": 3,
       "react-hooks/preserve-manual-memoization": 1,
@@ -87,10 +84,6 @@
     },
     "src/components/fields/DatePicker/DatePickerInput.tsx": {
       "react-hooks/immutability": 1
-    },
-    "src/components/fields/FileInput/FileInput.tsx": {
-      "react-hooks/immutability": 1,
-      "react-hooks/refs": 1
     },
     "src/components/fields/FilterListBox/FilterListBox.tsx": {
       "react-hooks/exhaustive-deps": 1,
@@ -112,7 +105,6 @@
       "react-hooks/immutability": 1,
       "react-hooks/preserve-manual-memoization": 1
     },
-    "src/components/fields/Slider/SliderBase.tsx": { "react-hooks/refs": 1 },
     "src/components/fields/TextInput/TextInputBase.tsx": {
       "react-hooks/rules-of-hooks": 6
     },
@@ -121,7 +113,7 @@
     },
     "src/components/fields/TextInputMapper/TextInputMapper.tsx": {
       "react-hooks/exhaustive-deps": 4,
-      "react-hooks/refs": 2,
+      "react-hooks/refs": 1,
       "react-hooks/set-state-in-effect": 1,
       "react-hooks/use-memo": 1
     },
@@ -221,10 +213,10 @@
   },
   "totals": {
     "react-hooks/exhaustive-deps": 63,
-    "react-hooks/immutability": 27,
+    "react-hooks/immutability": 26,
     "react-hooks/incompatible-library": 3,
     "react-hooks/preserve-manual-memoization": 9,
-    "react-hooks/refs": 98,
+    "react-hooks/refs": 94,
     "react-hooks/rules-of-hooks": 9,
     "react-hooks/set-state-in-effect": 11,
     "react-hooks/use-memo": 2

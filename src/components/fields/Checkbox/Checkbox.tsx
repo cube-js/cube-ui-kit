@@ -9,7 +9,14 @@ import {
   Styles,
   tasty,
 } from '@tenphi/tasty';
-import { forwardRef, ReactElement, useContext, useMemo, useRef } from 'react';
+import {
+  forwardRef,
+  ReactElement,
+  RefObject,
+  useContext,
+  useMemo,
+  useRef,
+} from 'react';
 import {
   AriaCheckboxProps,
   useCheckbox,
@@ -20,7 +27,7 @@ import { useToggleState } from 'react-stately';
 
 import { Icon } from '../../../icons/Icon';
 import { FieldBaseProps, ToggleSelectionProps } from '../../../shared';
-import { mergeProps } from '../../../utils/react';
+import { mergeProps, mergeRefs } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
 import {
   castNullableIsSelected,
@@ -155,6 +162,7 @@ function Checkbox(
     isInvalid,
     isValid,
     labelProps,
+    labelRef,
     labelStyles,
     labelPosition,
     inputStyles,
@@ -259,6 +267,11 @@ function Checkbox(
     mods: { ...props.mods, ...mods },
   };
 
+  // The wrapper is the checkbox's element in both branches, so the field's ref
+  // reaches it with or without the field chrome; a tooltip's ref shares it.
+  const wrapperRefWith = (tooltipRef?: RefObject<HTMLElement>) =>
+    tooltipRef ? mergeRefs(domRef, tooltipRef) : domRef;
+
   // The input, where keyboard focus lands, takes the tooltip's focus-side
   // trigger props; the wrapper keeps the hover side and positions the tooltip.
   const renderCheckbox = (tooltipFocusProps?: TooltipFocusProps) => (
@@ -292,7 +305,7 @@ function Checkbox(
           <CheckboxWrapperElement
             {...wrapperProps}
             {...mergeProps(hoverProps, pointerProps)}
-            ref={tooltipRef}
+            ref={wrapperRefWith(tooltipRef)}
           >
             {renderCheckbox(tooltipFocusProps)}
             {children ? (
@@ -322,7 +335,7 @@ function Checkbox(
     // The field label names the input through `for`, which `useFieldProps`
     // leaves unset for a caller's own `id` and inside the legacy `<Field>`, as
     // `Switch` does.
-    return wrapWithField(checkboxField as ReactElement, domRef, {
+    return wrapWithField(checkboxField as ReactElement, {
       ...props,
       tooltip: undefined,
       labelProps: { ...props.labelProps, for: props.id },
@@ -337,20 +350,13 @@ function Checkbox(
       <CheckboxWrapperElement
         {...wrapperProps}
         {...mergeProps(hoverProps, pointerProps)}
-        ref={
-          tooltipRef
-            ? // Written only when React attaches the node, never during render.
-              (element: HTMLLabelElement | null) => {
-                (domRef as { current: HTMLElement | null }).current = element;
-                (tooltipRef as { current: HTMLElement | null }).current =
-                  element;
-              }
-            : domRef
-        }
+        ref={wrapperRefWith(tooltipRef)}
       >
         {renderCheckbox(tooltipFocusProps)}
         {label ?? children ? (
           <Element
+            // Before `labelProps`, so a `ref` passed there still wins.
+            ref={labelRef}
             styles={labelStyles}
             mods={{
               ...getValidationMods({ isInvalid, isValid }),

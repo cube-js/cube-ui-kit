@@ -68,7 +68,9 @@ function DateInput<T extends DateValue>(
 
   let styles = extractStyles(props, CONTAINER_STYLES, wrapperStyles);
 
-  let domRef = useFocusManagerRef(ref);
+  let domRef = useRef<HTMLDivElement>(null);
+
+  useFocusManagerRef(ref, domRef);
   let { locale } = useLocale();
   let state = useDateFieldState({
     ...props,
@@ -86,6 +88,7 @@ function DateInput<T extends DateValue>(
   const component = (
     <DateInputBase
       ref={fieldRef}
+      wrapperRef={domRef}
       qa={qa || 'DateInput'}
       inputType="dateinput"
       size={size}
@@ -110,7 +113,7 @@ function DateInput<T extends DateValue>(
     </DateInputBase>
   );
 
-  return wrapWithField(component, domRef, {
+  return wrapWithField(component, {
     ...props,
     labelProps: mergeProps(props.labelProps, labelProps),
   });
