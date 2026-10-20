@@ -39,11 +39,9 @@ export default defineConfig({
       '**/*.browser.test.{ts,tsx}',
     ],
     setupFiles: ['./src/test/setup.ts'],
-    // threads + isolate:false: worker_threads are lighter than child_process
-    // forks, and reusing the jsdom env + module graph across files in the same
-    // worker eliminates per-file setup/import overhead (~10s saved on 63 files).
-    // vi.mock() registry is still reset between files by Vitest; RTL cleanup()
-    // runs after each test, so test isolation is preserved.
+    // worker_threads are lighter than child_process forks. Files stay isolated
+    // (Vitest's default): sharing the jsdom env and module graph across files
+    // (`--no-isolate`) fails dozens of specs and runs slower, not faster.
     pool: 'threads',
     coverage: {
       provider: 'v8',

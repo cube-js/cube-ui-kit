@@ -26,10 +26,19 @@ permissions:
 # `Build & canary release` (publish.yml) still builds the tree about to ship.
 
 jobs:
+  # The suites are split into shards because each one alone used to set the
+  # length of the whole run: the jsdom suite took ~6.5 minutes and every
+  # other check queued behind it in one job. Shards also make a flaky rerun
+  # cost one shard rather than the full suite. `--shard` splits by test file,
+  # so the shards are only roughly even.
   tests:
-    name: 'Source tests & lint'
+    name: 'Source tests (${{ matrix.shard }}/3)'
     if: github.head_ref != 'changeset-release/main'
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
     steps:
       - uses: actions/checkout@v7
 
@@ -46,26 +55,32 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Run the tests
+        run: pnpm test --shard=${{ matrix.shard }}/3
+
+  static-checks:
+    name: 'Lint, types & diagnostics'
+    if: github.head_ref != 'changeset-release/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
       - name: Run the lint
         run: pnpm lint
-
-      - name: Run the tests
-        run: pnpm test
 
       - name: Verify the modern Form store without React or DOM setup
         run: pnpm test:form-store
 
       - name: Type check the Form type fixtures (and their import graph)
         run: pnpm test:types
-
-      - name: Build the package
-        run: pnpm build
-
-      - name: Verify React peers and native compiler package output
-        run: pnpm check:react-package
-
-      - name: Type check the consumer fixtures against the built declarations
-        run: pnpm test:types:consumer
 
       - name: Check whole-library Hooks diagnostics and strict Effect Events
         run: pnpm diagnostics:hooks --check
@@ -93,8 +108,14 @@ jobs:
         run: pnpm test:form-react
       - name: Verify the same modern Form contract with React Compiler
         run: pnpm test:form-compiled
-      - name: Build and pack the compiled library
-        run: pnpm build && pnpm pack:test
+      - name: Build the package
+        run: pnpm build
+      - name: Verify React peers and native compiler package output
+        run: pnpm check:react-package
+      - name: Type check the consumer fixtures against the built declarations
+        run: pnpm test:types:consumer
+      - name: Pack the compiled library
+        run: pnpm pack:test
       - name: Verify packed output with compiled and uncompiled consumers
         run: pnpm test:package
       - name: Verify the uncompiled build as a behavior baseline
@@ -106,13 +127,16 @@ jobs:
           name: react-compiler-package
           path: dist/react-compiler-report.json
 
-  # The full jsdom suite through the release compiler transform.
-  # At ~5.5 minutes it is most of the compiler checks' time, so
-  # it runs beside the Form and package checks above rather than among them.
+  # The full jsdom suite through the release compiler transform, sharded like
+  # `tests` above (~8 minutes in one job).
   compiled-tests:
-    name: 'React Compiler / All components'
+    name: 'React Compiler / All components (${{ matrix.shard }}/3)'
     if: github.head_ref != 'changeset-release/main'
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6
@@ -123,19 +147,19 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Verify all components with the release compiler transform
-        run: pnpm test:compiled --maxWorkers=2
+        run: pnpm test:compiled --maxWorkers=2 --shard=${{ matrix.shard }}/3
 
   browser-tests:
-    name: 'Browser tests / Compiler ${{ matrix.compiler }}'
+    name: 'Browser tests / Compiler ${{ matrix.compiler }} (${{ matrix.shard }}/2)'
     if: github.head_ref != 'changeset-release/main'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        # Uncompiled source and the release compiler transform. Each is a
-        # full ~4.5-minute run of the suite, so they run as parallel jobs
-        # rather than as two steps of one.
+        # Uncompiled source and the release compiler transform, each split in
+        # two: a whole run of the suite takes ~7.5 minutes.
         compiler: ['off', 'on']
+        shard: [1, 2]
     steps:
       - uses: actions/checkout@v7
 
@@ -171,13 +195,13 @@ jobs:
         run: pnpm exec playwright install --with-deps chromium
 
       - name: Run the browser tests (compiler ${{ matrix.compiler }})
-        run: pnpm test:browser
+        run: pnpm test:browser --shard=${{ matrix.shard }}/2
         env:
           UIKIT_REACT_COMPILER: ${{ matrix.compiler }}
 
   required-tests:
     name: 'Tests & lint'
-    needs: [tests, form-react, compiled-tests, browser-tests]
+    needs: [tests, static-checks, form-react, compiled-tests, browser-tests]
     if: always()
     runs-on: ubuntu-latest
     steps:

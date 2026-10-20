@@ -4,7 +4,13 @@ import { createRequire } from 'node:module';
 const { checkRequiredJobs } = createRequire(import.meta.url)(
   './check-required-jobs.cjs',
 );
-const jobs = ['tests', 'form-react', 'compiled-tests', 'browser-tests'];
+const jobs = [
+  'tests',
+  'static-checks',
+  'form-react',
+  'compiled-tests',
+  'browser-tests',
+];
 const results = (result) =>
   Object.fromEntries(jobs.map((job) => [job, { result }]));
 
