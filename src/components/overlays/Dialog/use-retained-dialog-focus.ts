@@ -4,6 +4,8 @@ import { RefObject, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { focusProgrammatically } from '../../../utils/react/programmaticFocus';
 import { useOpenTransitionContext } from '../Modal/OpenTransitionContext';
 
+import { trapsFocus, useDialogContext } from './context';
+
 /**
  * The event `FocusScope` dispatches on the element it is about to restore
  * focus to. Cancelling it takes the restore over.
@@ -27,11 +29,11 @@ interface Opener {
 function findPopupTrigger(element: Element) {
   const doc = element.ownerDocument;
 
-  const triggers = doc.querySelectorAll('[aria-haspopup][aria-controls]');
+  const triggers = doc.querySelectorAll(
+    '[aria-haspopup]:not([aria-haspopup="false"])[aria-controls]',
+  );
 
   for (const trigger of Array.from(triggers)) {
-    if (trigger.getAttribute('aria-haspopup') === 'false') continue;
-
     for (const id of trigger.getAttribute('aria-controls')!.split(/\s+/)) {
       if (id && doc.getElementById(id)?.contains(element)) return trigger;
     }
@@ -53,7 +55,7 @@ function readOpener(): Opener | null {
 /**
  * Where focus goes back to: the opener, or, once it is gone, the control of
  * the popup it sat in. `FocusScope` hands a restore on the same way when a
- * menu item's menu closes. Only a connected element that takes focus.
+ * menu item's menu closes. Only a connected element.
  */
 function resolveOpener(opener: Opener | null): FocusTarget | null {
   if (!opener) return null;
@@ -62,10 +64,9 @@ function resolveOpener(opener: Opener | null): FocusTarget | null {
     ? opener.element
     : opener.popupTrigger;
 
-  if (!node?.isConnected || node === node.ownerDocument.body) return null;
-
   // `FocusScope` restores to an SVG opener too, such as a chart mark.
-  return node instanceof HTMLElement || node instanceof SVGElement
+  return node?.isConnected &&
+    (node instanceof HTMLElement || node instanceof SVGElement)
     ? node
     : null;
 }
@@ -96,8 +97,9 @@ function restoreFocusTo(node: FocusTarget) {
  *   left in another overlay that is closing.
  * - When that element is gone by the close, as a menu item goes with its
  *   menu, focus goes to the control of the popup it sat in instead.
- * - Tab past either end of a dialog that does not trap focus (a panel, a
- *   popover that is not dismissable) moves to the page next to that element.
+ * - Tab past either end moves to the page next to that element, while the
+ *   dialog does not trap focus: a panel or a popover that is not dismissable
+ *   while open, any dialog during its exit.
  * - A dialog opened from this one takes over its return target: when that
  *   one closes onto this dialog after it has closed, focus goes back where
  *   this one would have sent it.
@@ -107,17 +109,10 @@ function restoreFocusTo(node: FocusTarget) {
  */
 export function useRetainedDialogFocus(
   dialogRef: RefObject<HTMLElement | null>,
-  {
-    isOpen,
-    shouldRestoreFocus,
-    containsFocus,
-  }: {
-    isOpen: boolean;
-    shouldRestoreFocus: boolean;
-    /** Whether the dialog keeps Tab inside it while open. */
-    containsFocus: boolean;
-  },
 ) {
+  const context = useDialogContext();
+  const isOpen = !!context.isOpen;
+  const shouldRestoreFocus = context.shouldRestoreFocus ?? true;
   const transitionState = useOpenTransitionContext()?.transitionState;
   const [isRetained, setIsRetained] = useState(false);
   const [wasOpen, setWasOpen] = useState(false);
@@ -137,6 +132,15 @@ export function useRetainedDialogFocus(
     setWasOpen(isOpen);
     setOpenedFrom(isOpen ? readOpener() : null);
   }
+
+  // `FocusScope` takes Tab over whenever it does not trap focus, by the
+  // element focused when it mounted: around a dialog that does not trap
+  // focus, and around any dialog during its exit.
+  const handlesTab =
+    isRetained &&
+    shouldRestoreFocus &&
+    transitionState !== 'unmounted' &&
+    !(isOpen && trapsFocus(context));
 
   useLayoutEffect(() => {
     if (!isOpen) return;
@@ -185,15 +189,24 @@ export function useRetainedDialogFocus(
 
     if (!isRetained || isOpen || !dialog) return;
 
+    let isRedirecting = false;
+
     // Capture, ahead of the `FocusScope`s inside, which stop it bubbling.
     const onRestore = (event: Event) => {
       const node = handOffRef.current;
 
-      if (!node?.isConnected) return;
+      // A hand-off back into this dialog, or round to it again through
+      // another one, would never end.
+      if (isRedirecting || !node?.isConnected || dialog.contains(node)) {
+        return;
+      }
 
       event.preventDefault();
       event.stopPropagation();
+
+      isRedirecting = true;
       restoreFocusTo(node);
+      isRedirecting = false;
     };
 
     dialog.addEventListener(RESTORE_FOCUS_EVENT, onRestore, true);
@@ -204,10 +217,9 @@ export function useRetainedDialogFocus(
   }, [isRetained, isOpen, dialogRef]);
 
   useEffect(() => {
-    if (!isRetained || !isOpen || containsFocus) return;
+    if (!handlesTab) return;
 
-    // `FocusScope`'s own handler reads the element focused when it mounted,
-    // closed. Runs on the window, ahead of that document-level one.
+    // Runs on the window, ahead of `FocusScope`'s handler on the document.
     const onKeyDown = (event: KeyboardEvent) => {
       if (
         event.key !== 'Tab' ||
@@ -221,9 +233,8 @@ export function useRetainedDialogFocus(
 
       const dialog = dialogRef.current;
       const focused = document.activeElement;
-      const opener = resolveOpener(openerRef.current);
 
-      if (!dialog || !opener || !focused || !dialog.contains(focused)) return;
+      if (!dialog || !focused || !dialog.contains(focused)) return;
 
       const walker = getFocusableTreeWalker(document.body, { tabbable: true });
 
@@ -233,19 +244,31 @@ export function useRetainedDialogFocus(
 
       if (next && dialog.contains(next)) return;
 
-      // Past the dialog's edge: on from its opener, skipping the dialog in
-      // case it follows the opener.
+      // Past the dialog's edge, where `FocusScope` would go on from the
+      // element focused when it mounted, closed.
+      event.stopPropagation();
+
+      const opener = resolveOpener(openerRef.current);
+
+      // Without one, Tab moves natively, as `FocusScope` lets it once the
+      // element it would go on from is gone.
+      if (!opener) return;
+
+      event.preventDefault();
+
+      // On from the opener, skipping the dialog in case it follows it.
       walker.currentNode = opener;
 
       do {
         next = event.shiftKey ? walker.previousNode() : walker.nextNode();
       } while (next && dialog.contains(next));
 
-      event.preventDefault();
-      event.stopPropagation();
-
       if (next) {
         (next as FocusTarget).focus();
+      } else if (opener.closest('[role="dialog"], [role="alertdialog"]')) {
+        // Nothing after it: back to the opener when it sits in another
+        // dialog, as `FocusScope` does when it sits in another scope.
+        opener.focus();
       } else {
         (focused as FocusTarget).blur();
       }
@@ -254,7 +277,7 @@ export function useRetainedDialogFocus(
     window.addEventListener('keydown', onKeyDown, true);
 
     return () => window.removeEventListener('keydown', onKeyDown, true);
-  }, [isRetained, isOpen, containsFocus, dialogRef]);
+  }, [handlesTab, dialogRef]);
 
   return isRetained;
 }

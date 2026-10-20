@@ -1,4 +1,5 @@
 import { createFocusManager, getFocusableTreeWalker } from '@react-aria/focus';
+import { focusSafely } from '@react-aria/interactions';
 import { isFocusable, useObjectRef } from '@react-aria/utils';
 import {
   BASE_STYLES,
@@ -34,9 +35,9 @@ import { extractStyles } from '../../../utils/styles';
 import { ItemButton } from '../../actions/ItemButton/ItemButton';
 import { useOpenTransitionContext } from '../Modal/OpenTransitionContext';
 
-import { DialogContextValue, useDialogContext } from './context';
-import { useRetainedDialogFocus } from './retained-focus';
+import { trapsFocus, useDialogContext } from './context';
 import { useContentOverflow } from './use-content-overflow';
+import { useRetainedDialogFocus } from './use-retained-dialog-focus';
 
 const STYLES_LIST = [
   ...BASE_STYLES,
@@ -158,21 +159,21 @@ export interface CubeDialogProps
 }
 
 /**
- * The control a dialog focuses when it opens: one marked `data-autofocus`,
- * as the kit's fields and buttons mark themselves for `autoFocus`, or the
- * first control of a marked field (a date field's first segment). Otherwise a
- * submit or primary button, which in an alert dialog is never a destructive
- * (`danger`) one: a reflexive Enter would run it.
+ * The control a dialog focuses when it opens: the first one marked
+ * `data-autofocus` that can take focus, as kit controls mark themselves for
+ * `autoFocus`, or the first control of a marked field (a date field's first
+ * segment). Otherwise a submit or primary button, which in an alert dialog is
+ * never a destructive (`danger`) one: a reflexive Enter would run it.
  */
 function findPriorityFocusElement(dialog: HTMLElement) {
-  const marked = dialog.querySelector<HTMLElement>('[data-autofocus]');
+  const marked = dialog.querySelectorAll<HTMLElement>('[data-autofocus]');
 
-  if (marked) {
-    return isFocusable(marked)
-      ? marked
-      : (getFocusableTreeWalker(marked, {
-          tabbable: true,
-        }).nextNode() as HTMLElement | null);
+  for (const element of Array.from(marked)) {
+    const target = isFocusable(element)
+      ? element
+      : getFocusableTreeWalker(element, { tabbable: true }).nextNode();
+
+    if (target) return target as HTMLElement;
   }
 
   const button =
@@ -183,16 +184,6 @@ function findPriorityFocusElement(dialog: HTMLElement) {
   return dialog.querySelector<HTMLElement>(
     `${button}[type="submit"], ${button}[data-type="primary"]`,
   );
-}
-
-/**
- * Whether the dialog keeps Tab inside it while open. A panel leaves the page
- * usable, and so does a popover that is not dismissable: an outside press
- * reaches its control, and focus has to follow it there, into a text field
- * too.
- */
-function trapsFocus({ type, isDismissable }: DialogContextValue) {
-  return type !== 'panel' && !(type === 'popover' && isDismissable === false);
 }
 
 /**
@@ -260,15 +251,18 @@ const DialogContent = forwardRef(function DialogContent(
 
   let domRef = useObjectRef(ref);
 
-  const isRetained = useRetainedDialogFocus(domRef, {
-    isOpen: !!contextProps.isOpen,
-    shouldRestoreFocus: contextProps.shouldRestoreFocus ?? true,
-    containsFocus: trapsFocus({ type, ...contextProps }),
-  });
+  const isRetained = useRetainedDialogFocus(domRef);
 
   // Set while the dialog refocuses itself, so the blur in between does not
   // reach overlays that close when focus leaves them.
   const isRefocusingRef = useRef(false);
+
+  // When the dialog mounted: `useDialog` refocuses it half a second later.
+  const mountedAtRef = useRef(0);
+
+  useEffect(() => {
+    mountedAtRef.current = Date.now();
+  }, []);
 
   // `contentProps` carries an id only for `role="alertdialog"` without an
   // explicit `aria-describedby`: an alert is described by its message, while a
@@ -297,10 +291,11 @@ const DialogContent = forwardRef(function DialogContent(
   // dialog <section>; without re-promoting it here, the priority element
   // (e.g. the search input) is never focused.
   useEffect(() => {
-    let refocusTimer: ReturnType<typeof setTimeout> | undefined;
+    // The pending timer: this one, then the refocus it may start.
+    let timer: ReturnType<typeof setTimeout> | undefined;
 
     if (contextProps.isOpen) {
-      setTimeout(() => {
+      timer = setTimeout(() => {
         if (!domRef.current) return;
 
         // `useDialog` focuses the dialog itself when it mounts, without
@@ -308,27 +303,30 @@ const DialogContent = forwardRef(function DialogContent(
         // without remounting, so do the same here: the rules below then run as
         // for a fresh dialog, and kept content keeps its scroll.
         if (isRetained && !domRef.current.contains(document.activeElement)) {
-          domRef.current.focus({ preventScroll: true });
+          focusSafely(domRef.current);
 
           // As `useDialog` does next: VoiceOver on iOS announces a dialog only
           // once it has rendered, so blur and refocus it half a second later
-          // if focus is still on it or lost to `<body>`.
-          refocusTimer = setTimeout(() => {
-            const dialog = domRef.current;
-            const activeElement = document.activeElement;
+          // if focus is still on it or lost to `<body>`. Unless the refocus
+          // `useDialog` set up when the dialog mounted is still to come.
+          if (Date.now() - mountedAtRef.current >= 500) {
+            timer = setTimeout(() => {
+              const dialog = domRef.current;
+              const activeElement = document.activeElement;
 
-            if (
-              !dialog ||
-              (activeElement !== dialog && activeElement !== document.body)
-            ) {
-              return;
-            }
+              if (
+                !dialog ||
+                (activeElement !== dialog && activeElement !== document.body)
+              ) {
+                return;
+              }
 
-            isRefocusingRef.current = true;
-            dialog.blur();
-            dialog.focus({ preventScroll: true });
-            isRefocusingRef.current = false;
-          }, 500);
+              isRefocusingRef.current = true;
+              dialog.blur();
+              focusSafely(dialog);
+              isRefocusingRef.current = false;
+            }, 500);
+          }
         }
 
         const activeElement = document.activeElement;
@@ -354,7 +352,7 @@ const DialogContent = forwardRef(function DialogContent(
       });
     }
 
-    return () => clearTimeout(refocusTimer);
+    return () => clearTimeout(timer);
   }, [contextProps.isOpen, isRetained]);
 
   // let hasHeader = useHasChild('[data-id="Header"]', domRef);

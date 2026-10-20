@@ -36,7 +36,7 @@ export interface CubeOverlayProps extends WithCloseBehavior {
 }
 
 /** `Element.moveBefore`, which moves a node and keeps its state. */
-type MovableParent = ParentNode & {
+type MovableParent = HTMLElement & {
   moveBefore?: (node: Node, child: Node | null) => void;
 };
 
@@ -94,7 +94,7 @@ function Overlay(props: CubeOverlayProps, ref) {
   useLayoutEffect(() => {
     const start = startRef.current;
     const end = endRef.current;
-    const parent = start?.parentNode as MovableParent | null | undefined;
+    const parent = start?.parentElement as MovableParent | null | undefined;
 
     if (!isOpen || !start || !end || !parent?.moveBefore) return;
     if (parent.lastChild === end) return;
@@ -102,7 +102,7 @@ function Overlay(props: CubeOverlayProps, ref) {
     // Laid out first: content back from `display: none` gets its scroll
     // position back once it has a box again, and a move keeps what the box
     // holds. One forced reflow, once per open that moves.
-    void end.parentElement?.offsetHeight;
+    void parent.offsetHeight;
 
     for (let node: ChildNode | null = start; node; ) {
       const next: ChildNode | null = node.nextSibling;

@@ -80,7 +80,7 @@ export default {
     hideOnClose: {
       control: { type: 'boolean' },
       description:
-        'Whether the dialog should be hidden when closed. On close, focus returns to the element that opened it, unless that element is gone by then (a menu item, for example)',
+        "Whether the dialog should be hidden when closed. Focus moves as for a dialog that mounts on open: in on every open, and on close back to the element that opened it, or to the menu's trigger when a menu item opened it. The docs list what still differs",
       table: {
         defaultValue: { summary: false },
       },

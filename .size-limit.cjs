@@ -394,7 +394,12 @@ module.exports = [
     // Tasty 3.11.1 → 3.11.2: 629,130 B locally against main's 628,234 B in CI
     // (48561f64, run 39467277556), +896 B for the pseudo-element state
     // handling. Allow 630 kB, 870 B headroom; confirm in Linux CI.
-    limit: '630kB',
+    // Retained dialog focus parity: +1,210 B against its base when added
+    // (629,863 B vs 628,653 B, both fresh local builds), for the retained
+    // dialog's focus hook (opener, menu trigger, Tab, hand-off), the
+    //  reorder in  and the  marks. Button
+    // +129 B, the mark in . Re-measured after rebasing below.
+    limit: '632kB',
   },
   {
     name: 'Tree shaking (just a Button)',

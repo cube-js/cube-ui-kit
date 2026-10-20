@@ -30,7 +30,7 @@ A DialogContainer accepts a single Dialog as a child, and manages to show and hi
 - **`isKeyboardDismissDisabled`** `boolean` (default: `false`) — Whether pressing the escape key to close the dialog should be disabled
 - **`isOpen`** `boolean` — Whether the modal is open or not
 - **`onDismiss`** `function` — Handler called when the x button of a dismissible Dialog is clicked
-- **`hideOnClose`** `boolean` (default: `false`) — Whether the dialog should be hidden when closed. Focus moves as for a dialog that mounts on open: in on every open, and on close back to the element that opened it, or to the menu's trigger when a menu item opened it
+- **`hideOnClose`** `boolean` (default: `false`) — Whether the dialog should be hidden when closed. Focus moves as for a dialog that mounts on open: in on every open, and on close back to the element that opened it, or to the menu's trigger when a menu item opened it. [Focus with `hideOnClose`](#focus-with-hideonclose) lists what still differs
 
 ### Base Properties
 
@@ -189,6 +189,15 @@ The Dialog's `isDismissable={false}` hides its built-in visible Close button. Th
 - Dialog announces as "dialog" to screen readers
 - Focus is trapped within the dialog when open
 - Focus management is handled automatically
+
+### Focus with `hideOnClose`
+
+A dialog kept mounted while closed moves focus as one that mounts on open does, except:
+
+- `autoFocus` on a `Menu`, `ListBox`, `Calendar`, `RangeCalendar` or `PeriodCalendar`, and a native `autoFocus` on an element of your own, act only when the dialog mounts, hidden. The kit's inputs, buttons, `Select` and `CommandMenu` mark themselves `data-autofocus` instead, which the dialog focuses on every open; mark an element of your own the same way
+- Closing a dialog opened from a context menu's item (`useContextMenu`, `useAnchoredMenu`), or reopened from a dialog it opened (a wizard's Back step), leaves focus on the page
+- Opened from inside another open modal, it takes focus only when it is rendered inside that modal's dialog; rendered elsewhere, the modal keeps focus
+- Nested in another overlay, it opens above that overlay only where the browser supports `Element.moveBefore`
 
 ### ARIA Properties
 

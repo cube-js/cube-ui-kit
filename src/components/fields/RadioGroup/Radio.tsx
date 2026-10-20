@@ -578,6 +578,8 @@ function Radio(props: CubeRadioProps, ref) {
             qa={qa || 'Radio'}
             data-input-type="radio"
             aria-label={ariaLabel}
+            // For a dialog kept mounted while closed, as on `Button`.
+            data-autofocus={autoFocus ? '' : undefined}
             {...mergeTooltipFocusProps(
               getInputProps(isItemTooltipActive),
               tooltipFocusProps,
@@ -619,6 +621,8 @@ function Radio(props: CubeRadioProps, ref) {
           qa={qa || 'Radio'}
           data-input-type="radio"
           aria-label={ariaLabel}
+          // For a dialog kept mounted while closed, as on `Button`.
+          data-autofocus={autoFocus ? '' : undefined}
           {...mergeTooltipFocusProps(
             mergeProps(getInputProps(isTooltipActive), focusProps),
             tooltipFocusProps,

@@ -23,6 +23,16 @@ export interface DialogContextValue extends HTMLAttributes<HTMLElement> {
   shouldRestoreFocus?: boolean;
 }
 
+/**
+ * Whether the dialog keeps Tab inside it while open. A panel leaves the page
+ * usable, and so does a popover that is not dismissable: an outside press
+ * reaches its control, and focus has to follow it there, into a text field
+ * too.
+ */
+export function trapsFocus({ type, isDismissable }: DialogContextValue) {
+  return type !== 'panel' && !(type === 'popover' && isDismissable === false);
+}
+
 export const DialogContext = createContext<DialogContextValue | null>({});
 
 export function useDialogContext() {

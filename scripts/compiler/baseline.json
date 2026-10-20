@@ -1299,11 +1299,6 @@
     "diagnostics": {},
     "optOuts": 0
   },
-  "src/components/overlays/Dialog/retained-focus.ts": {
-    "compiled": 1,
-    "diagnostics": {},
-    "optOuts": 0
-  },
   "src/components/overlays/Dialog/use-content-overflow.ts": {
     "compiled": 1,
     "diagnostics": {},
@@ -1314,6 +1309,11 @@
     "diagnostics": {
       "Todo": 1
     },
+    "optOuts": 0
+  },
+  "src/components/overlays/Dialog/use-retained-dialog-focus.ts": {
+    "compiled": 1,
+    "diagnostics": {},
     "optOuts": 0
   },
   "src/components/overlays/Modal/Modal.tsx": {

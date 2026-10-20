@@ -255,6 +255,141 @@ describe('DialogTrigger popover hideOnClose focus restore', () => {
   });
 });
 
+// A popover that is not dismissable does not trap focus, and a retained one
+// moves it as one that mounts on every open does. Both ways must match.
+describe.each([true, false])(
+  'DialogTrigger popover hideOnClose=%s focus parity',
+  (hideOnClose) => {
+    function Notes({ shouldRestoreFocus }: { shouldRestoreFocus?: boolean }) {
+      const [isOpen, setOpen] = useState(false);
+
+      return (
+        <>
+          <Button qa="Before">Before</Button>
+          <DialogTrigger
+            type="popover"
+            isDismissable={false}
+            hideOnClose={hideOnClose}
+            shouldRestoreFocus={shouldRestoreFocus}
+            isOpen={isOpen}
+            onOpenChange={setOpen}
+          >
+            <Button qa="Opener">Open</Button>
+            <Dialog aria-label="Notes" isDismissable={false}>
+              <Button qa="First">First</Button>
+              <Button qa="Done" onPress={() => setOpen(false)}>
+                Done
+              </Button>
+            </Dialog>
+          </DialogTrigger>
+          <Button qa="After">After</Button>
+        </>
+      );
+    }
+
+    async function openNotes(user: ReturnType<typeof userEvent.setup>) {
+      screen.getByTestId('Opener').focus();
+      await user.keyboard('{Enter}');
+      const dialog = await screen.findByRole('dialog', { name: 'Notes' });
+
+      await waitFor(() =>
+        expect(dialog).toContainElement(document.activeElement as HTMLElement),
+      );
+    }
+
+    // Beside its opener, not the end of the document, where its portal sits.
+    it('tabs out to the controls around its opener', async () => {
+      const user = userEvent.setup();
+      renderWithRoot(<Notes />);
+      const opener = screen.getByTestId('Opener');
+
+      for (let cycle = 0; cycle < 2; cycle++) {
+        await openNotes(user);
+
+        screen.getByTestId('Done').focus();
+        await user.tab();
+        expect(screen.getByTestId('After')).toHaveFocus();
+
+        screen.getByTestId('First').focus();
+        await user.tab({ shift: true });
+        expect(screen.getByTestId('Before')).toHaveFocus();
+
+        screen.getByTestId('Done').focus();
+        await user.keyboard('{Enter}');
+        await waitFor(() => expect(opener).toHaveFocus());
+      }
+    });
+
+    // `FocusScope` takes Tab over only when it restores focus.
+    it('leaves Tab to the page with shouldRestoreFocus={false}', async () => {
+      const user = userEvent.setup();
+      renderWithRoot(<Notes shouldRestoreFocus={false} />);
+
+      await openNotes(user);
+      screen.getByTestId('Done').focus();
+      await user.tab();
+
+      expect(screen.getByTestId('After')).not.toHaveFocus();
+      expect(screen.getByRole('dialog')).not.toContainElement(
+        document.activeElement as HTMLElement,
+      );
+    });
+
+    // Nothing follows its opener, the modal's last control: `FocusScope`
+    // then goes back to the opener, which sits in another scope.
+    it('tabs back to its opener when nothing in the modal follows it', async () => {
+      const user = userEvent.setup();
+
+      function Notebook() {
+        const [isOpen, setOpen] = useState(false);
+
+        return (
+          <DialogTrigger
+            type="popover"
+            isDismissable={false}
+            hideOnClose={hideOnClose}
+            isOpen={isOpen}
+            onOpenChange={setOpen}
+          >
+            <Button qa="Opener">Open</Button>
+            <Dialog aria-label="Notes" isDismissable={false}>
+              <Button qa="Done" onPress={() => setOpen(false)}>
+                Done
+              </Button>
+            </Dialog>
+          </DialogTrigger>
+        );
+      }
+
+      renderWithRoot(
+        <DialogTrigger type="modal" isDismissable={false}>
+          <Button qa="Settings">Settings</Button>
+          <Dialog aria-label="Settings">
+            <Button qa="Inside">Inside</Button>
+            <Notebook />
+          </Dialog>
+        </DialogTrigger>,
+      );
+
+      await user.click(screen.getByTestId('Settings'));
+      await screen.findByRole('dialog', { name: 'Settings' });
+      const opener = screen.getByTestId('Opener');
+
+      for (let cycle = 0; cycle < 2; cycle++) {
+        await openNotes(user);
+
+        screen.getByTestId('Done').focus();
+        await user.tab();
+        expect(opener).toHaveFocus();
+
+        screen.getByTestId('Done').focus();
+        await user.keyboard('{Enter}');
+        await waitFor(() => expect(opener).toHaveFocus());
+      }
+    });
+  },
+);
+
 // CUB-4113: `shouldCloseOnInteractOutside` used to be shadowed by the
 // automatic `data-popover-dismiss` handling — every Button/ItemButton outside
 // the popover took the auto-dismiss branch, so the caller's predicate was

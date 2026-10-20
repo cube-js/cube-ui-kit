@@ -405,8 +405,10 @@ export interface CubeLayoutPanelProps extends BaseProps, ContainerStyleProps {
    * effects and a native `autoFocus` do not run again on reopen. Content that
    * mounts while closed is hidden: `autoFocus` does nothing and measurements
    * read zero until the panel opens. In dialog mode the dialog is kept the
-   * same way, and moves focus in and back to its opener itself, unless the
-   * opener is gone by then (a menu item, for example);
+   * same way, and moves focus itself as a dialog that mounts on open does: to
+   * an autofocused kit control on every open, and on close back to its
+   * opener, or to the menu's trigger when a menu item opened it
+   * (DialogContainer's docs list what still differs);
    * `dialogProps.hideOnClose` takes precedence. Default: false
    */
   hideOnClose?: boolean;
