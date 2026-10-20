@@ -42,7 +42,7 @@ A versatile list selection component that allows users to select one or more ite
 - **`emptyLabel`** `ReactNode` (default: `No items`) — Label shown when no items are available. The empty listbox stays in the document, described by this label
 - **`header`** `ReactNode` — Custom header content
 - **`footer`** `ReactNode` — Custom footer content
-- **`focusOnHover`** `boolean` (default: `true`) — Whether moving the pointer over an option will move DOM focus to that option
+- **`focusOnHover`** `boolean` (default: `false`) — Whether moving the pointer over an option will move DOM focus to that option
 - **`shouldUseVirtualFocus`** `boolean` (default: `false`) — Whether to use virtual focus instead of DOM focus
 - **`isFocusWithin`** `boolean` — For a list whose focused option is moved from an input outside it: whether focus is within that input's component
 - **`isCheckable`** `boolean` (default: `false`) — Whether to show checkboxes for multiple selection mode
@@ -202,10 +202,10 @@ The `mods` property accepts the following modifiers you can override:
 
 ### Focus and Interaction
 
-**focusOnHover** (`boolean`, default: `true`)
+**focusOnHover** (`boolean`, default: `false`)
 
 - When `true`, moving the pointer over an option will move DOM focus to that option
-- Set to `false` for components that keep DOM focus outside (e.g., searchable FilterListBox)
+- Leave it `false` for components that keep DOM focus outside (e.g., searchable FilterListBox)
 
 **shouldUseVirtualFocus** (`boolean`, default: `false`)
 
@@ -773,7 +773,8 @@ const [keyOrder, setKeyOrder] = useState([
 - `aria-labelledby` - Associates with external label element
 - `aria-describedby` - Associates with description text
 - `aria-multiselectable` - Indicates multiple selection capability
-- `aria-activedescendant` - Tracks focused item for screen readers
+
+Options take DOM focus, so the list sets no `aria-activedescendant`. With `shouldUseVirtualFocus`, DOM focus stays on a control outside the list, and that control sets `aria-activedescendant` itself, as FilterListBox's search input does.
 
 ## Best Practices
 
@@ -877,7 +878,7 @@ function Example() {
 
 <Story of={ListBoxStories.VirtualizedList} />
 
-For large datasets, use the `items` prop with a render function. This enables automatic virtualization — only visible items are rendered in the DOM, providing smooth scrolling even with thousands of items. Moving focus to an option that isn't rendered (`End`, `Home`, `Page Down`, typeahead, or the selected option when the list takes focus) scrolls the list to it.
+A flat list is virtualized automatically, whether its options come from the `items` prop or from static children: only visible items are rendered in the DOM, providing smooth scrolling even with thousands of items. Moving focus to an option that isn't rendered (`End`, `Home`, `Page Down`, typeahead, or the selected option when the list takes focus) scrolls the list to it.
 
 ```jsx
 const items = Array.from({ length: 1000 }, (_, i) => ({
@@ -890,7 +891,7 @@ const items = Array.from({ length: 1000 }, (_, i) => ({
 </ListBox>
 ```
 
-**Note**: Virtualization is disabled when sections are present. For very large datasets, prefer a flat list structure.
+**Note**: Virtualization is disabled when sections are present or `isReorderable` is set. For very large datasets, prefer a flat list structure. For dynamic data, the `items` prop with a render function, as above, saves building the option elements yourself.
 
 ### Optimization Tips
 

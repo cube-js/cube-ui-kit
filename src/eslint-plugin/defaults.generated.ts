@@ -192,11 +192,6 @@ export const DEFAULTS: DefaultsRegistry = {
     },
     Dialog: {
       props: {
-        isDismissable: {
-          kind: 'skip',
-          reason: 'context',
-          note: 'Redundant in a bare tree but load-bearing under "inside <DialogContext isDismissable>", so removing it would change behaviour there.',
-        },
         role: { kind: 'default', value: 'dialog' },
         size: { kind: 'default', value: 'M', aliases: ['medium'] },
       },
@@ -475,7 +470,7 @@ export const DEFAULTS: DefaultsRegistry = {
       props: {
         disableSelectionToggle: { kind: 'default', value: false },
         disallowEmptySelection: { kind: 'default', value: false },
-        focusOnHover: { kind: 'default', value: true },
+        focusOnHover: { kind: 'default', value: false },
         isCheckable: { kind: 'default', value: false },
         isReorderable: { kind: 'default', value: false },
         selectionMode: { kind: 'default', value: 'single' },

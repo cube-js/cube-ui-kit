@@ -395,8 +395,8 @@ export interface CubeListBoxProps<T>
 
   /**
    * Whether moving the pointer over an option will move DOM focus to that option.
-   * Set to false for components that keep DOM focus outside (e.g. searchable FilterListBox).
-   * Defaults to true.
+   * Leave it off for components that keep DOM focus outside (e.g. searchable FilterListBox).
+   * Defaults to false.
    */
   focusOnHover?: boolean;
   /** Custom header content displayed above the list */

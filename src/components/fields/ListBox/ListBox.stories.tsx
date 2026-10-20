@@ -117,7 +117,7 @@ const meta: any = {
       description:
         'Whether moving the pointer over an option will move DOM focus to that option',
       table: {
-        defaultValue: { summary: true },
+        defaultValue: { summary: false },
       },
     },
     shouldUseVirtualFocus: {
@@ -1134,13 +1134,13 @@ export const FocusBehavior: Story = {
     <Space gap="3x" flow="column">
       <Space flow="column">
         <Text preset="t3" weight="600">
-          Standard Focus (focusOnHover=true)
+          Focus on Hover (focusOnHover=true)
         </Text>
         <Text preset="t4" color="#dark.60">
           Moving pointer over options will focus them
         </Text>
         <Space height="1x" />
-        <ListBox {...args} focusOnHover={true} label="Standard Focus Behavior">
+        <ListBox {...args} focusOnHover={true} label="Focus on Hover">
           {fruits.slice(0, 4).map((fruit) => (
             <ListBox.Item key={fruit.key}>{fruit.label}</ListBox.Item>
           ))}
@@ -1149,7 +1149,7 @@ export const FocusBehavior: Story = {
 
       <Space flow="column">
         <Text preset="t3" weight="600">
-          No Focus on Hover (focusOnHover=false)
+          Default, No Focus on Hover (focusOnHover=false)
         </Text>
         <Text preset="t4" color="#dark.60">
           Use keyboard or click to focus options
@@ -1172,7 +1172,7 @@ export const FocusBehavior: Story = {
     docs: {
       description: {
         story:
-          'The `focusOnHover` prop controls whether moving the pointer over an option automatically focuses it. Set to `false` for components where focus should remain elsewhere (like searchable lists).',
+          'The `focusOnHover` prop controls whether moving the pointer over an option automatically focuses it. It is off by default; leave it off for components where focus should remain elsewhere (like searchable lists).',
       },
     },
   },

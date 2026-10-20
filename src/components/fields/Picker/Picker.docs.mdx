@@ -272,7 +272,7 @@ Groups related items together under an optional section heading. Sections provid
 </Picker>
 ```
 
-**Note:** Sections disable virtualization. For large datasets (50+ items), use a flat structure with the `items` prop instead.
+**Note:** Sections disable virtualization. For large datasets (50+ items), use a flat structure instead.
 
 ## Content Patterns
 
@@ -292,7 +292,7 @@ The most common pattern for Picker is to provide static children using `Picker.I
 
 ### Dynamic Content Pattern
 
-For large datasets or dynamic content, use the `items` prop with a render function. This pattern enables automatic virtualization for performance:
+For dynamic content, use the `items` prop with a render function. Virtualization does not depend on it: any flat list without sections is virtualized, with static children too.
 
 ```jsx
 <Picker
@@ -309,17 +309,14 @@ For large datasets or dynamic content, use the `items` prop with a render functi
 
 **Key Benefits:**
 
-- **Virtualization**: Automatically enabled for large lists without sections
-- **Performance**: Only renders visible items in the DOM
 - **Dynamic Content**: Perfect for data fetched from APIs or changing datasets
-- **Memory Efficient**: Handles thousands of items smoothly
+- **Sorting**: Selected items move to the top when the popover opens (`sortSelectedToTop`, on by default with `items` and unavailable without it)
 
 **When to Use:**
 
-- Lists with 50+ items
 - Dynamic data from APIs
 - Content that changes frequently
-- When virtualization performance is needed
+- With `sortSelectedToTop`
 
 ## Variants
 
@@ -762,7 +759,7 @@ The trigger also sets `aria-expanded`, and `aria-controls` while the popover is 
    </Picker>
    ```
 
-4. **Do**: Use the `items` prop for large datasets to enable virtualization
+4. **Do**: Use the `items` prop for large, dynamic datasets
 
    ```jsx
    <Picker items={largeDataset} label="Select Item">
@@ -1011,9 +1008,8 @@ const fruits = [
 
 1. **Use Dynamic Content Pattern for Large Lists**
 
-   - For lists with 50+ items, use the `items` prop with a render function
-   - This enables automatic virtualization for better performance
-   - Only visible items are rendered in the DOM
+   - For large, dynamic lists, use the `items` prop with a render function
+   - A flat list is virtualized either way: only visible items are rendered in the DOM
 
 2. **Avoid Sections with Large Datasets**
 
@@ -1031,7 +1027,7 @@ const fruits = [
 
 ### Virtualization
 
-Virtualization is automatically enabled when using the `items` prop without sections:
+Virtualization is automatically enabled for any flat list without sections, whether it uses the `items` prop or static children:
 
 ```jsx
 // ✅ Virtualized - excellent performance with thousands of items
