@@ -79,7 +79,8 @@ export default {
     /* Other */
     hideOnClose: {
       control: { type: 'boolean' },
-      description: 'Whether the dialog should be hidden when closed',
+      description:
+        'Whether the dialog should be hidden when closed. On close, focus returns to the element that opened it, unless that element is gone by then (a menu item, for example)',
       table: {
         defaultValue: { summary: false },
       },

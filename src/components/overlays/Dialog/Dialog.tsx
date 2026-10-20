@@ -1,4 +1,4 @@
-import { createFocusManager } from '@react-aria/focus';
+import { getFocusableTreeWalker } from '@react-aria/focus';
 import { useObjectRef } from '@react-aria/utils';
 import {
   BASE_STYLES,
@@ -179,12 +179,16 @@ function findPriorityFocusElement(dialog: HTMLElement) {
  * Returns focus when a retained dialog (`hideOnClose`) closes. `FocusScope`
  * restores only on unmount, which a retained dialog never reaches: it ends its
  * exit in the `unmounted` phase, still mounted. This restores at that moment,
- * by the same rule: only while focus is still in the dialog or lost to `<body>`.
+ * by the same rule: only while focus is still in the dialog, lost to `<body>`,
+ * or left in another overlay that is closing.
  *
  * Only to the element focused when the dialog opened. When that element is
  * gone by the close, as a menu item goes with its menu, `FocusScope` hands the
  * restore to the menu's own target through its private scope tree; here focus
  * stays where it is.
+ *
+ * Returns whether the dialog is retained: only a retained dialog renders in
+ * the `unmounted` phase.
  */
 function useRetainedDialogFocusRestore(
   dialogRef: RefObject<HTMLElement | null>,
@@ -192,27 +196,30 @@ function useRetainedDialogFocusRestore(
   shouldRestoreFocus: boolean,
 ) {
   const transitionState = useOpenTransitionContext()?.transitionState;
-  // Read before a native `autoFocus` inside a dialog that mounts open moves
-  // focus in, as `FocusScope` reads it.
-  const [focusedAtMount] = useState(() =>
-    typeof document === 'undefined' ? null : document.activeElement,
-  );
+  const [isRetained, setIsRetained] = useState(false);
+  const [wasOpen, setWasOpen] = useState(false);
+  const [openedFrom, setOpenedFrom] = useState<Element | null>(null);
   const nodeToRestoreRef = useRef<Element | null>(null);
 
-  useLayoutEffect(() => {
-    if (!isOpen) return;
+  if (transitionState === 'unmounted' && !isRetained) setIsRetained(true);
 
-    const activeElement = document.activeElement;
+  // Read in the render that opens it, as `FocusScope` reads it: the commit can
+  // move focus before any effect runs, into the dialog (a native `autoFocus`,
+  // a child's layout effect) or to `<body>` (an opener it disables).
+  if (isOpen !== wasOpen) {
+    setWasOpen(isOpen);
 
-    if (!dialogRef.current?.contains(activeElement)) {
-      nodeToRestoreRef.current = activeElement;
-    } else if (!nodeToRestoreRef.current) {
-      // Focus is already inside: moved there by a native `autoFocus` on
-      // mount. A reopen during the exit, also with focus inside, keeps the
-      // opener it has.
-      nodeToRestoreRef.current = focusedAtMount;
+    if (isOpen && typeof document !== 'undefined') {
+      setOpenedFrom(document.activeElement);
     }
-  }, [isOpen, dialogRef, focusedAtMount]);
+  }
+
+  useLayoutEffect(() => {
+    // A reopen during the exit, with focus still inside, keeps its opener.
+    if (isOpen && !dialogRef.current?.contains(openedFrom)) {
+      nodeToRestoreRef.current = openedFrom;
+    }
+  }, [isOpen, dialogRef, openedFrom]);
 
   useEffect(() => {
     if (transitionState !== 'unmounted') return;
@@ -221,13 +228,19 @@ function useRetainedDialogFocusRestore(
 
     nodeToRestoreRef.current = null;
 
-    if (!shouldRestoreFocus || !(node instanceof HTMLElement)) return;
+    // `FocusScope` restores to an SVG opener too, such as a chart mark.
+    const isFocusable =
+      node instanceof HTMLElement || node instanceof SVGElement;
+
+    if (!shouldRestoreFocus || !isFocusable) return;
     if (node === document.body || !node.isConnected) return;
 
     const activeElement = document.activeElement;
     // Also lost when left in another overlay that closes with this one: a
-    // nested dialog's own restore target is about to be hidden. `Overlay`
-    // marks a closing overlay `="true"` (the toast layer carries it empty).
+    // nested dialog's own restore target is about to be hidden. `Overlay`,
+    // `Select` and `ListBoxPopover` mark a closing overlay `="true"`; the
+    // notifications layer carries it empty. React Aria's toast region also
+    // carries `"true"`, but nothing in the kit renders one.
     const isFocusLost =
       !activeElement ||
       activeElement === document.body ||
@@ -236,6 +249,8 @@ function useRetainedDialogFocusRestore(
 
     if (isFocusLost) focusProgrammatically(node, { preventScroll: true });
   }, [transitionState, shouldRestoreFocus, dialogRef]);
+
+  return isRetained;
 }
 
 /**
@@ -313,7 +328,7 @@ const DialogContent = forwardRef(function DialogContent(
 
   let domRef = useObjectRef(ref);
 
-  useRetainedDialogFocusRestore(
+  const isRetained = useRetainedDialogFocusRestore(
     domRef,
     !!contextProps.isOpen,
     contextProps.shouldRestoreFocus ?? true,
@@ -354,25 +369,29 @@ const DialogContent = forwardRef(function DialogContent(
         const isFocusOutsideDialog = !domRef.current.contains(activeElement);
         const isFocusOnDialogShell = activeElement === domRef.current;
 
+        // A retained dialog reopens with its content kept, so focusing in must
+        // not scroll it away from where the user left it.
+        const focusOptions = isRetained ? { preventScroll: true } : undefined;
+
         // Priority 1: autofocus input or primary button
         const priorityElement = findPriorityFocusElement(domRef.current);
 
         if (priorityElement && (isFocusOutsideDialog || isFocusOnDialogShell)) {
-          priorityElement.focus();
+          priorityElement.focus(focusOptions);
           return;
         }
 
         if (isFocusOutsideDialog) {
           // Fallback: focus first tabbable element, or dialog itself
-          const focusManager = createFocusManager(domRef);
+          const firstTabbable = getFocusableTreeWalker(domRef.current, {
+            tabbable: true,
+          }).nextNode() as HTMLElement | null;
 
-          if (!focusManager.focusFirst({ tabbable: true })) {
-            domRef.current.focus();
-          }
+          (firstTabbable ?? domRef.current).focus(focusOptions);
         }
       });
     }
-  }, [contextProps.isOpen]);
+  }, [contextProps.isOpen, isRetained]);
 
   // let hasHeader = useHasChild('[data-id="Header"]', domRef);
   // let hasFooter = useHasChild('[data-id="Footer"]', domRef);

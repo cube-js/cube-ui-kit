@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 
 import { act, renderWithRoot, screen, userEvent, waitFor } from '../../../test';
@@ -305,6 +305,67 @@ describe('DialogContainer hideOnClose focus restore', () => {
     },
   );
 
+  // The dialog stays mounted, and its content moves focus in on every open, in
+  // the same commit that opens it.
+  it.each(['an autofocused field', 'a layout effect'])(
+    'returns focus to each opener when %s moves focus in on open',
+    async (mover) => {
+      function Draft({ isOpen }: { isOpen: boolean }) {
+        const ref = useRef<HTMLInputElement>(null);
+
+        useLayoutEffect(() => {
+          if (mover === 'a layout effect' && isOpen) ref.current?.focus();
+        }, [isOpen]);
+
+        if (mover === 'a layout effect') {
+          return <input ref={ref} aria-label="Draft" />;
+        }
+
+        return isOpen ? (
+          // oxlint-disable-next-line jsx-a11y/no-autofocus -- the case under test
+          <input autoFocus aria-label="Draft" />
+        ) : null;
+      }
+
+      function App() {
+        const [isOpen, setOpen] = useState(false);
+
+        return (
+          <>
+            <Button qa="First" onPress={() => setOpen(true)}>
+              First
+            </Button>
+            <Button qa="Second" onPress={() => setOpen(true)}>
+              Second
+            </Button>
+            <DialogContainer
+              hideOnClose
+              isOpen={isOpen}
+              onDismiss={() => setOpen(false)}
+            >
+              <Dialog aria-label="Retained">
+                <Draft isOpen={isOpen} />
+              </Dialog>
+            </DialogContainer>
+          </>
+        );
+      }
+
+      const user = userEvent.setup();
+      renderWithRoot(<App />);
+
+      for (const qa of ['First', 'Second']) {
+        const opener = screen.getByTestId(qa);
+
+        await user.click(opener);
+        await waitFor(() => expect(screen.getByRole('textbox')).toHaveFocus());
+
+        await user.keyboard('{Escape}');
+        await waitFor(() => expect(opener).toHaveFocus());
+      }
+    },
+  );
+
   describe.each([true, false])('hideOnClose=%s', (hideOnClose) => {
     it('returns focus to the opener after a reopen during the exit', async () => {
       function App() {
@@ -359,6 +420,53 @@ describe('DialogContainer hideOnClose focus restore', () => {
       await user.keyboard('{Escape}');
       await waitFor(() => expect(opener).toHaveFocus());
     });
+  });
+
+  it('returns focus to an SVG opener', async () => {
+    function App() {
+      const [isOpen, setOpen] = useState(false);
+
+      return (
+        <>
+          <svg width={100} height={100}>
+            <g
+              data-qa="Bar"
+              tabIndex={0}
+              role="button"
+              aria-label="Bar"
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') setOpen(true);
+              }}
+            >
+              <rect width={20} height={80} />
+            </g>
+          </svg>
+          <DialogContainer
+            hideOnClose
+            isOpen={isOpen}
+            onDismiss={() => setOpen(false)}
+          >
+            <Dialog aria-label="Details">
+              <input aria-label="Draft" />
+            </Dialog>
+          </DialogContainer>
+        </>
+      );
+    }
+
+    const user = userEvent.setup();
+    renderWithRoot(<App />);
+    const bar = screen.getByTestId('Bar');
+
+    act(() => bar.focus());
+    await user.keyboard('{Enter}');
+    const dialog = await screen.findByRole('dialog');
+    await waitFor(() =>
+      expect(dialog).toContainElement(document.activeElement as HTMLElement),
+    );
+
+    await user.keyboard('{Escape}');
+    await waitFor(() => expect(bar).toHaveFocus());
   });
 
   // Focus is left in the nested dialog, which closes too.

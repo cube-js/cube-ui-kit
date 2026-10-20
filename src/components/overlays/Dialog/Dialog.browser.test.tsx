@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { userEvent as browserUserEvent, page } from 'vitest/browser';
 
 import { renderWithRoot, screen, waitFor } from '../../../test';
@@ -234,5 +235,116 @@ describe('Dialog focus containment while it enters', () => {
     await browserUserEvent.keyboard('{Escape}');
 
     await waitFor(() => expect(screen.getByTestId('Trigger')).toHaveFocus());
+  });
+});
+
+/**
+ * A retained dialog (`hideOnClose`) restores focus and moves it in itself, as
+ * its `FocusScope` never unmounts. Two parts of that only a browser shows:
+ * Chromium blurs a focused button the moment it is disabled, which jsdom does
+ * not, and only a browser scrolls an element into view when it is focused.
+ */
+describe('DialogContainer hideOnClose focus in a browser', () => {
+  it('returns focus to an opener disabled while the dialog is open', async () => {
+    function App() {
+      const [isOpen, setOpen] = useState(false);
+
+      return (
+        <>
+          <Button qa="Opener" isDisabled={isOpen} onPress={() => setOpen(true)}>
+            Open
+          </Button>
+          <DialogContainer
+            hideOnClose
+            isOpen={isOpen}
+            onDismiss={() => setOpen(false)}
+          >
+            <Dialog aria-label="Busy">
+              <input aria-label="Draft" />
+            </Dialog>
+          </DialogContainer>
+        </>
+      );
+    }
+
+    renderWithRoot(<App />);
+    const opener = screen.getByTestId('Opener');
+
+    for (let cycle = 0; cycle < 2; cycle++) {
+      opener.focus();
+      await browserUserEvent.keyboard('{Enter}');
+
+      const dialog = await screen.findByTestId('Dialog');
+
+      await waitFor(() =>
+        expect(dialog).toContainElement(document.activeElement as HTMLElement),
+      );
+
+      await browserUserEvent.keyboard('{Escape}');
+      await waitFor(() => expect(opener).toHaveFocus());
+    }
+  });
+
+  // No dismiss button takes first focus here, as in `Layout.Panel`'s dialog
+  // mode, so the first message's button does.
+  it('keeps its scroll position when it reopens', async () => {
+    function App() {
+      const [isOpen, setOpen] = useState(false);
+
+      return (
+        <>
+          <Button qa="Opener" onPress={() => setOpen(true)}>
+            Open
+          </Button>
+          <DialogContainer
+            hideOnClose
+            isOpen={isOpen}
+            onDismiss={() => setOpen(false)}
+          >
+            <Dialog aria-label="Chat" isDismissable={false}>
+              <div data-qa="Messages" style={{ height: 160, overflow: 'auto' }}>
+                {Array.from({ length: 40 }, (_, index) => (
+                  <div key={index} style={{ height: 40 }}>
+                    <button type="button">Copy {index}</button>
+                  </div>
+                ))}
+              </div>
+              <input aria-label="Composer" />
+            </Dialog>
+          </DialogContainer>
+        </>
+      );
+    }
+
+    renderWithRoot(<App />);
+    const opener = screen.getByTestId('Opener');
+
+    opener.focus();
+    await browserUserEvent.keyboard('{Enter}');
+
+    const messages = await screen.findByTestId('Messages');
+    const composer = screen.getByLabelText('Composer');
+
+    await waitFor(() =>
+      expect(screen.getByTestId('Dialog')).toContainElement(
+        document.activeElement as HTMLElement,
+      ),
+    );
+    messages.scrollTop = messages.scrollHeight;
+    composer.focus();
+
+    const scrollTop = messages.scrollTop;
+
+    expect(scrollTop).toBeGreaterThan(0);
+
+    await browserUserEvent.keyboard('{Escape}');
+    await waitFor(() => expect(opener).toHaveFocus());
+
+    await browserUserEvent.keyboard('{Enter}');
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Copy 0' })).toHaveFocus(),
+    );
+
+    expect(messages.scrollTop).toBe(scrollTop);
   });
 });
