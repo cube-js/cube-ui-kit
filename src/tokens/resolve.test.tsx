@@ -13,7 +13,7 @@ import {
  * jsdom implements neither `@property` nor its defaults, so the fixture declares
  * them by hand on `<html>` — the shape a browser produces, including the part
  * that makes value inspection useless: tasty's defaults are not all obvious
- * duds. `--gap` reads a perfectly plausible `4px` off the token block, and
+ * duds. `--gap` reads the kit's own `8px` off the token block, and
  * `--h2-letter-spacing` reads the same `0px` on both sides.
  *
  * `--tokens-applied` is what separates them, and it is on `<body>` only.
@@ -25,7 +25,7 @@ const FIXTURE = `
     --scrollbar-outline-color: rgba(0, 0, 0, 0);
     --clear-color: transparent;
     --h2-letter-spacing: 0px;
-    --gap: 4px;
+    --gap: 8px;
     --space-md: 0px;
     --font-sans: system-ui;
   }
@@ -89,14 +89,14 @@ describe('resolveTokenValue', () => {
   it('should refuse a plausible-looking @property default, not just a dud', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
-    // The trap: tasty registers `--gap` with `initial-value: 4px`, so off the
-    // token block it reads as a real length that is simply the wrong one. No
+    // The trap: tasty registers `--gap` with `initial-value: 8px`, so off the
+    // token block it reads as a real length, the same as the kit's. No
     // inspection of the value could catch this.
     expect(
       getComputedStyle(document.documentElement)
         .getPropertyValue('--gap')
         .trim(),
-    ).toBe('4px');
+    ).toBe('8px');
 
     expect(
       resolveTokenValue('$gap', { element: document.documentElement }),
