@@ -175,7 +175,7 @@ function ControlledDialog() {
 - `aria-labelledby` - Links dialog to its title
 - `aria-describedby` - Set for an alert dialog, linking its message; see [Dialog](/docs/overlays-dialog--docs#aria-properties)
 
-Triggers of modal, tray, fullscreen and panel dialogs get neither `aria-expanded` nor `aria-controls`, and no trigger gets `aria-haspopup`.
+Triggers of every other type get neither `aria-expanded` nor `aria-controls`, and DialogTrigger adds `aria-haspopup` to no trigger.
 
 ## Best Practices
 

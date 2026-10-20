@@ -778,7 +778,7 @@ useEffect(() => {
 
 <Story of={FilterListBoxStories.VirtualizedList} />
 
-When FilterListBox contains many items without sections, virtualization is automatically enabled to improve performance. Only visible items are rendered in the DOM, providing smooth scrolling even with large datasets.
+When FilterListBox has no sections, virtualization is automatically enabled to improve performance. Only visible items are rendered in the DOM, providing smooth scrolling even with large datasets.
 
 ```jsx
 const items = Array.from({ length: 1000 }, (_, i) => ({
@@ -799,14 +799,14 @@ const items = Array.from({ length: 1000 }, (_, i) => ({
 
 **Key features:**
 
-- Automatically enabled for large lists without sections
+- Automatically enabled for lists without sections
 - Handles items with varying heights
 - Works seamlessly with filtering
 - Maintains performance with thousands of items
 
 **Limitations:**
 
-- Virtualization is disabled when sections are present
+- Virtualization is disabled when sections are present, and while `isReorderable` is set and the search is empty
 - For sectioned large lists, consider flattening or alternative approaches
 
 ## Performance

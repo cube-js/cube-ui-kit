@@ -2204,7 +2204,7 @@ export const VirtualizedList: Story = {
     docs: {
       description: {
         story:
-          'When a FilterPicker contains many items and has no sections, virtualization is automatically enabled to improve performance. Only visible items are rendered in the DOM, providing smooth scrolling even with large datasets.',
+          'When a FilterPicker has no sections, virtualization is automatically enabled to improve performance. Only visible items are rendered in the DOM, providing smooth scrolling even with large datasets.',
       },
     },
   },

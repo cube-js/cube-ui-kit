@@ -259,7 +259,7 @@ The most common pattern for FilterPicker is to provide static children using `Fi
 
 ### Dynamic Content Pattern
 
-For dynamic content, use the `items` prop with a render function. Virtualization does not depend on it: any flat list without sections is virtualized, with static children too.
+For dynamic content, use the `items` prop with a render function. Virtualization does not depend on it: any flat list without sections is virtualized, with static children too, unless `isReorderable` is set and the search is empty.
 
 ```jsx
 <FilterPicker
@@ -652,7 +652,7 @@ const [keyOrder, setKeyOrder] = useState([
 
 - `aria-label` - Provides accessible label for the trigger button
 - `aria-expanded` - Indicates whether the popover is open
-- `aria-haspopup` - Indicates the button controls a listbox
+- `aria-controls` - References the popover while it is open
 - `aria-describedby` - Associates help text and descriptions
 
 ## Best Practices
@@ -682,10 +682,9 @@ const [keyOrder, setKeyOrder] = useState([
    </FilterPicker.Section>
    ```
 
-4. **Do**: Use dynamic content pattern for large datasets
+4. **Do**: Use the `items` prop for large, dynamic datasets
 
    ```jsx
-   // ✅ For large lists (50+ items)
    <FilterPicker items={largeDataset}>
      {(item) => <FilterPicker.Item key={item.id}>{item.name}</FilterPicker.Item>}
    </FilterPicker>
@@ -935,7 +934,7 @@ const handleSearchChange = useCallback((value) => {
 
 ### Optimization Tips
 
-- **Use Dynamic Content Pattern**: For large, dynamic datasets, use the `items` prop with a render function. A flat list is virtualized either way
+- **Use Dynamic Content Pattern**: For large, dynamic datasets, use the `items` prop with a render function. A flat list is virtualized either way, unless `isReorderable` is set and the search is empty
 - **Avoid Sections for Large Lists**: Virtualization is disabled when sections are present, so avoid sections for very large datasets
 - **Use `textValue` prop**: For complex option content, provide searchable text that includes more context than just the visible label
 - **Implement custom filter functions**: For specific search needs or performance-critical filtering
@@ -944,7 +943,7 @@ const handleSearchChange = useCallback((value) => {
 
 ### Virtualization
 
-FilterPicker automatically virtualizes any flat list without sections, whether it uses the `items` prop or static children:
+FilterPicker automatically virtualizes any flat list without sections, whether it uses the `items` prop or static children, unless `isReorderable` is set and the search is empty:
 
 ```jsx
 // ✅ Virtualization enabled - excellent performance with large datasets
