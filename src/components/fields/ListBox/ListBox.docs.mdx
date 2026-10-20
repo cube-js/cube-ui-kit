@@ -15,7 +15,7 @@ A versatile list selection component that allows users to select one or more ite
 - Display structured data with sections and descriptions
 - Create custom selection interfaces that need to remain visible
 - Build form controls that require persistent option visibility
-- Handle lists of any size (virtualization is automatic for flat lists)
+- Handle lists of any size (virtualization is automatic for flat lists that are not reorderable)
 - When you need rich option content (icons, descriptions, badges, hotkeys)
 - For multiple selection with clear visual feedback (checkboxes)
 - When options should always be visible (for searchable lists, consider FilterListBox)
@@ -196,7 +196,7 @@ The `mods` property accepts the following modifiers you can override:
 **listGap** (`number`, default: a hairline, `1bw`)
 
 - The space between options, in pixels
-- Use it rather than a margin in `optionStyles`: a flat list is virtualized and positions its options itself, so it ignores their margins
+- Use it rather than a margin in `optionStyles`: a virtualized list positions its options itself, so it ignores their margins
 - Card-like options (`type="outline"`, `shape="card"`) usually want `4` or more, so each one reads as its own choice
 - FilterListBox, Picker, FilterPicker, ComboBox, SearchComboBox, TagInput and CommandTextArea pass it to their ListBox. Select takes it too
 
@@ -789,7 +789,7 @@ Options take DOM focus, so the list sets no `aria-activedescendant`. With `shoul
 2. **Don't**: Use ListBox for very large datasets without considering virtualization
 
    ```jsx
-   // ✅ Virtualization is automatic for lists without sections
+   // ✅ Virtualization is automatic for lists without sections that are not reorderable
    <ListBox height="300px">
      {hugeArray.map(item => <ListBox.Item key={item.id}>{item.name}</ListBox.Item>)}
    </ListBox>
@@ -845,7 +845,7 @@ Options take DOM focus, so the list sets no `aria-activedescendant`. With `shoul
    ```
 
 8. **Accessibility**: Always provide meaningful labels and descriptions
-9. **Performance**: Virtualization is automatic when there are no sections
+9. **Performance**: Virtualization is automatic when there are no sections and `isReorderable` is not set
 10. **UX**: Consider FilterListBox for searchable lists with many options
 
 ## Integration with Forms

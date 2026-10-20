@@ -2156,7 +2156,7 @@ export const VirtualizedList: Story = {
   render: (args) => {
     const [selectedKeys, setSelectedKeys] = useState<string[]>(['item-2']);
 
-    // Generate a large list of items with varying content to trigger virtualization
+    // Generate a large list of items with varying content to test virtualization
     // Mix items with and without descriptions to test dynamic sizing
     const items = Array.from({ length: 100 }, (_, i) => ({
       id: `item-${i + 1}`,
@@ -2204,7 +2204,7 @@ export const VirtualizedList: Story = {
     docs: {
       description: {
         story:
-          'When a FilterPicker has no sections, virtualization is automatically enabled to improve performance. Only visible items are rendered in the DOM, providing smooth scrolling even with large datasets.',
+          'When a FilterPicker has no sections, virtualization is automatically enabled to improve performance, except for a reorderable list while the search is empty. Only visible items are rendered in the DOM, providing smooth scrolling even with large datasets.',
       },
     },
   },

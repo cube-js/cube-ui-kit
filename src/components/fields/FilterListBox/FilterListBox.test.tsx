@@ -1708,7 +1708,7 @@ describe('<FilterListBox />', () => {
       vi.restoreAllMocks();
     });
 
-    // Create 60 items to trigger virtualization (threshold is 30)
+    // Create 60 items for the virtualization tests
     const createManyItems = () => {
       const items: JSX.Element[] = [];
 

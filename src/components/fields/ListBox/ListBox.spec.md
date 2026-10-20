@@ -162,7 +162,7 @@ valuePropsMapper: ({ value, onChange }) => {
 ## Performance Considerations
 
 ### Virtualization
-- Automatically enabled for non-sectioned lists
+- Automatically enabled for non-sectioned lists that are not reorderable
 - Reduces DOM nodes for large datasets
 - Dynamic height measurement for variable content
 
