@@ -542,6 +542,55 @@ describe.each([true, false])('hideOnClose=%s focus parity', (hideOnClose) => {
     }
   });
 
+  // The closing popover restores focus to its trigger a frame after it goes.
+  it.each(['modal', 'panel'] as const)(
+    'keeps focus in a %s opened from a button in a popover',
+    async (type) => {
+      function Toolbar() {
+        const [isOpen, setOpen] = useState(false);
+
+        return (
+          <>
+            <DialogTrigger type="popover">
+              <Button qa="More">More</Button>
+              <Dialog aria-label="Actions">
+                <Button qa="Rename" onPress={() => setOpen(true)}>
+                  Rename
+                </Button>
+              </Dialog>
+            </DialogTrigger>
+            <DialogContainer
+              type={type}
+              hideOnClose={hideOnClose}
+              isOpen={isOpen}
+              onDismiss={() => setOpen(false)}
+            >
+              <Dialog aria-label="Rename">
+                <input aria-label="Name" />
+              </Dialog>
+            </DialogContainer>
+          </>
+        );
+      }
+
+      renderWithRoot(<Toolbar />);
+      const more = screen.getByTestId('More');
+
+      for (let cycle = 0; cycle < 2; cycle++) {
+        await openWithKeyboard(more);
+        await openWithKeyboard(await screen.findByTestId('Rename'));
+        const dialog = await waitForFocusIn('Rename');
+
+        await wait(400);
+        expect(dialog).toContainElement(document.activeElement as HTMLElement);
+
+        await browserUserEvent.keyboard('{Escape}');
+        await waitFor(() => expect(dialog).not.toBeVisible());
+        await wait(400);
+      }
+    },
+  );
+
   it('opens a dialog nested in another one above it', async () => {
     function App() {
       const [isOpen, setOpen] = useState(false);

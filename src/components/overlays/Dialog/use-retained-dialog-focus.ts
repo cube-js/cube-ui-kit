@@ -1,4 +1,5 @@
 import { getFocusableTreeWalker } from '@react-aria/focus';
+import { focusSafely } from '@react-aria/interactions';
 import { RefObject, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import { focusProgrammatically } from '../../../utils/react/programmaticFocus';
@@ -24,9 +25,10 @@ interface Opener {
 }
 
 /**
- * The control that opened the popup `element` sits in, while that popup is
- * open: a menu's trigger for one of its items, a popover's for a button in
- * it. React Aria points such a control at its popup with `aria-controls`.
+ * The popup `element` sits in, while that popup is open, and the control that
+ * opened it: a menu and its trigger for one of its items, a popover and its
+ * trigger for a button in it. React Aria points such a control at its popup
+ * with `aria-controls`.
  */
 function findPopup(element: Element) {
   const doc = element.ownerDocument;
@@ -107,6 +109,9 @@ function restoreFocusTo(node: FocusTarget) {
  *   left in another overlay that is closing.
  * - When that element is gone by the close, as a menu item goes with its
  *   menu, focus goes to the control of the popup it sat in instead.
+ * - Opened from a popup that closes as it opens, the dialog keeps focus,
+ *   which that popup would restore to its trigger: a dialog that mounts on
+ *   open takes that restore over.
  * - Unmounted while open or closing, it restores focus the same way.
  * - Tab past either end moves to the page next to that element, while the
  *   dialog does not trap focus: a panel or a popover that is not dismissable
@@ -208,6 +213,53 @@ export function useRetainedDialogFocus(
       handOffRef.current = node;
     }
   }, [transitionState, shouldRestoreFocus, dialogRef]);
+
+  // Opened from a popup that closes as it opens, as from a popover's button:
+  // that popup's `FocusScope` restores to its trigger a frame after it goes,
+  // once focus is lost with it. A dialog that mounts on open joins that scope
+  // and takes the restore over; this one mounted earlier, so it cancels the
+  // restore and keeps focus itself, until a frame after the popup is gone.
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    const { popup, popupTrigger } = openerRef.current ?? {};
+
+    if (!isRetained || !isOpen || !dialog || !popup || !popupTrigger) return;
+
+    const onRestore = (event: Event) => {
+      if (event.target !== popupTrigger) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      if (!dialog.contains(document.activeElement)) focusSafely(dialog);
+    };
+
+    const stop = () => {
+      document.removeEventListener(RESTORE_FOCUS_EVENT, onRestore, true);
+    };
+
+    // A popup that stays open never restores; stop waiting after its exit.
+    const until = Date.now() + 1000;
+    let frame = 0;
+
+    const wait = () => {
+      frame = requestAnimationFrame(
+        popup.isConnected && Date.now() < until
+          ? wait
+          : () => {
+              frame = requestAnimationFrame(stop);
+            },
+      );
+    };
+
+    document.addEventListener(RESTORE_FOCUS_EVENT, onRestore, true);
+    wait();
+
+    return () => {
+      cancelAnimationFrame(frame);
+      stop();
+    };
+  }, [isRetained, isOpen, dialogRef]);
 
   // Whether a restore on unmount is this hook's: `FocusScope` would send focus
   // to the element focused when it mounted, closed.
