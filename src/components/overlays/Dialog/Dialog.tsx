@@ -12,7 +12,16 @@ import {
   Styles,
   tasty,
 } from '@tenphi/tasty';
-import { forwardRef, ReactElement, Ref, useEffect } from 'react';
+import {
+  forwardRef,
+  ReactElement,
+  Ref,
+  RefObject,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
 import {
   AriaDialogProps,
   DismissButton,
@@ -23,6 +32,7 @@ import {
 import { useI18n } from '../../../i18n';
 import { CloseIcon } from '../../../icons/CloseIcon';
 import { mergeProps, SlotProvider } from '../../../utils/react';
+import { focusProgrammatically } from '../../../utils/react/programmaticFocus';
 import { extractStyles } from '../../../utils/styles';
 import { ItemButton } from '../../actions/ItemButton/ItemButton';
 import { useOpenTransitionContext } from '../Modal/OpenTransitionContext';
@@ -166,6 +176,56 @@ function findPriorityFocusElement(dialog: HTMLElement) {
 }
 
 /**
+ * Returns focus when a retained dialog (`hideOnClose`) closes. `FocusScope`
+ * restores only on unmount, which a retained dialog never reaches: it ends its
+ * exit in the `unmounted` phase, still mounted. This restores at that moment,
+ * by the same rule: only while focus is still in the dialog or lost to `<body>`.
+ */
+function useRetainedDialogFocusRestore(
+  dialogRef: RefObject<HTMLElement | null>,
+  isOpen: boolean,
+  shouldRestoreFocus: boolean,
+) {
+  const transitionState = useOpenTransitionContext()?.transitionState;
+  // Read before a native `autoFocus` inside a dialog that mounts open moves
+  // focus in, as `FocusScope` reads it.
+  const [focusedAtMount] = useState(() =>
+    typeof document === 'undefined' ? null : document.activeElement,
+  );
+  const nodeToRestoreRef = useRef<Element | null>(null);
+
+  useLayoutEffect(() => {
+    if (!isOpen) return;
+
+    const activeElement = document.activeElement;
+
+    nodeToRestoreRef.current = dialogRef.current?.contains(activeElement)
+      ? focusedAtMount
+      : activeElement;
+  }, [isOpen, dialogRef, focusedAtMount]);
+
+  useEffect(() => {
+    if (transitionState !== 'unmounted') return;
+
+    const node = nodeToRestoreRef.current;
+
+    nodeToRestoreRef.current = null;
+
+    if (!shouldRestoreFocus || !(node instanceof HTMLElement)) return;
+    if (node === document.body || !node.isConnected) return;
+
+    const activeElement = document.activeElement;
+    const isFocusLost =
+      !activeElement ||
+      activeElement === document.body ||
+      !activeElement.isConnected ||
+      !!dialogRef.current?.contains(activeElement);
+
+    if (isFocusLost) focusProgrammatically(node, { preventScroll: true });
+  }, [transitionState, shouldRestoreFocus, dialogRef]);
+}
+
+/**
  * Dialogs are windows containing contextual information, tasks, or workflows that appear over the user interface.
  * Depending on the kind of Dialog, further interactions may be blocked until the Dialog is acknowledged.
  */
@@ -238,6 +298,13 @@ const DialogContent = forwardRef(function DialogContent(
   const { t } = useI18n();
 
   let domRef = useObjectRef(ref);
+
+  useRetainedDialogFocusRestore(
+    domRef,
+    !!contextProps.isOpen,
+    contextProps.shouldRestoreFocus ?? true,
+  );
+
   // `contentProps` carries an id only for `role="alertdialog"` without an
   // explicit `aria-describedby`: an alert is described by its message, while a
   // plain dialog links nothing, so opening a form does not read it aloud.
