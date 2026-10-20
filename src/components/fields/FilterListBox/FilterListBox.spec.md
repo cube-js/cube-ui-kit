@@ -141,8 +141,8 @@ const mergedChildren = useMemo(() => {
 
 ### Grid Layout
 ```css
-gridRows: 'max-content max-content max-content 1sf'
-/* Header (optional) | Search Input (optional) | Loading Disclaimer (optional) | ListBox (flexible) */
+gridRows: 'max-content max-content 1sf'
+/* Header (optional) | Search Input | ListBox (flexible) */
 ```
 
 ### Modifier States

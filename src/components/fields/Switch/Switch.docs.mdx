@@ -111,7 +111,7 @@ const [isEnabled, setIsEnabled] = useState(false);
 </Switch>
 ```
 
-Keep the label the same in both states. The switch announces its own state, so a label that changes with it is read twice: "switch, Feature enabled: On, checked".
+Keep the label the same in both states. The switch announces its own on/off state, so a label that also states it makes screen readers announce the state twice.
 
 ### All Sizes
 
@@ -173,7 +173,7 @@ The control is a native `<input type="checkbox" role="switch">`, so its state is
    ```
 
 3. **Immediate Effect**: Use switches for settings that take effect immediately
-4. **State Clarity**: Make it clear what "on" and "off" states mean, with a label that names the setting rather than its current state
+4. **State Clarity**: Make it clear what "on" and "off" states mean
 5. **Grouping**: Group related switches together in settings panels
 6. **Labels**: Always provide meaningful labels for screen readers
 

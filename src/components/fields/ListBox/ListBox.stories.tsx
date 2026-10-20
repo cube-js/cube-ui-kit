@@ -1149,7 +1149,7 @@ export const FocusBehavior: Story = {
 
       <Space flow="column">
         <Text preset="t3" weight="600">
-          Default, No Focus on Hover (focusOnHover=false)
+          No Focus on Hover (default, focusOnHover=false)
         </Text>
         <Text preset="t4" color="#dark.60">
           Use keyboard or click to focus options

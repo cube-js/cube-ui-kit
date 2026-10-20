@@ -60,7 +60,7 @@ Choose a different component when the interaction has another shape:
 - **`clearLabel`** `string` — Accessible name for the built-in clear button. Defaults to a localized "Clear value".
 - **`onClear`** `() => void` — Callback called when the clear button is pressed
 - **`actions`** `ReactNode` — Custom actions rendered inside the trigger, to the left of the built-in clear button and dropdown caret
-- **`sortSelectedToTop`** `boolean` — Sort selected items to the top when the popover opens (only works with `items` prop)
+- **`sortSelectedToTop`** `boolean` — Sort selected items to the top when the popover opens. Only works with the `items` prop, where it is on by default
 - **`renderSummary`** `((args: { selectedLabels, selectedKeys, selectionMode }) => ReactNode) | false` — Custom renderer for the summary shown inside the trigger
 - **`header`** `ReactNode` — Custom header content in the popover
 - **`footer`** `ReactNode` — Custom footer content in the popover
@@ -316,7 +316,7 @@ For dynamic content, use the `items` prop with a render function. Virtualization
 
 - Dynamic data from APIs
 - Content that changes frequently
-- With `sortSelectedToTop`
+- When selected items should sort to the top
 
 ## Variants
 
@@ -1006,9 +1006,9 @@ const fruits = [
 
 ### Optimization Tips
 
-1. **Use Dynamic Content Pattern for Large Lists**
+1. **Use the Dynamic Content Pattern for Dynamic Data**
 
-   - For large, dynamic lists, use the `items` prop with a render function
+   - For dynamic lists, use the `items` prop with a render function
    - A flat list is virtualized either way: only visible items are rendered in the DOM
 
 2. **Avoid Sections with Large Datasets**

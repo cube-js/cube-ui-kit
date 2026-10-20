@@ -528,7 +528,7 @@ const fruits = [
 
 <Story of={ComboBoxStories.VirtualizedList} />
 
-For large datasets, use the `items` prop with a render function. This enables automatic virtualization — only visible items are rendered in the DOM, providing smooth scrolling even with thousands of items. Virtualization is disabled when sections are present.
+A flat list is virtualized automatically, whether its options come from the `items` prop or from static children: only visible items are rendered in the DOM, providing smooth scrolling even with thousands of items. Virtualization is disabled when sections are present.
 
 ```jsx
 const items = Array.from({ length: 1000 }, (_, i) => ({

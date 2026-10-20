@@ -30,8 +30,8 @@ import { AutoTooltipValue, useAutoTooltip } from '../use-auto-tooltip';
 const STYLE_LIST = [...BASE_STYLES, ...TEXT_STYLES, ...COLOR_STYLES] as const;
 
 /**
- * TextItem always truncates to one line with an ellipsis, so Text's `ellipsis`
- * and `nowrap` have nothing to switch.
+ * TextItem truncates to one line with an ellipsis, so Text's `ellipsis` and
+ * `nowrap` have nothing to switch.
  */
 export interface CubeTextItemProps
   extends Omit<CubeTextProps, 'ellipsis' | 'nowrap'> {

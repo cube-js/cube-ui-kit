@@ -115,8 +115,10 @@ export default {
     /* Events */
     onChange: {
       action: 'change',
-      description: 'Callback fired when the input value changes',
+      description:
+        'Callback fired when a new value is committed (blur, Enter or a step), not on each keystroke. An empty field commits NaN',
       control: { type: null },
+      table: { type: { summary: '(value: number) => void' } },
     },
     onBlur: {
       action: 'blur',

@@ -259,7 +259,7 @@ The most common pattern for FilterPicker is to provide static children using `Fi
 
 ### Dynamic Content Pattern
 
-For large datasets or dynamic content, use the `items` prop with a render function. This pattern enables automatic virtualization for performance:
+For dynamic content, use the `items` prop with a render function. Virtualization does not depend on it: any flat list without sections is virtualized, with static children too.
 
 ```jsx
 <FilterPicker
@@ -310,18 +310,14 @@ const categories = [
 
 **Key Benefits:**
 
-- **Virtualization**: Automatically enabled for large lists without sections
-- **Performance**: Only renders visible items in the DOM
 - **Dynamic Content**: Perfect for data fetched from APIs or changing datasets
-- **Memory Efficient**: Handles thousands of items smoothly
 - **Selected Items Sorting**: When using the `items` prop, selected items are automatically sorted to the top when the popover reopens (can be controlled with `sortSelectedToTop`)
 
 **When to Use:**
 
-- Lists with 50+ items
 - Dynamic data from APIs
 - Content that changes frequently
-- When virtualization performance is needed
+- When selected items should sort to the top
 
 ## Variants
 
@@ -939,7 +935,7 @@ const handleSearchChange = useCallback((value) => {
 
 ### Optimization Tips
 
-- **Use Dynamic Content Pattern**: For large datasets (50+ items), use the `items` prop with render function to enable automatic virtualization
+- **Use Dynamic Content Pattern**: For large, dynamic datasets, use the `items` prop with a render function. A flat list is virtualized either way
 - **Avoid Sections for Large Lists**: Virtualization is disabled when sections are present, so avoid sections for very large datasets
 - **Use `textValue` prop**: For complex option content, provide searchable text that includes more context than just the visible label
 - **Implement custom filter functions**: For specific search needs or performance-critical filtering
@@ -948,7 +944,7 @@ const handleSearchChange = useCallback((value) => {
 
 ### Virtualization
 
-When using the dynamic content pattern (`items` prop) without sections, FilterPicker automatically enables virtualization:
+FilterPicker automatically virtualizes any flat list without sections, whether it uses the `items` prop or static children:
 
 ```jsx
 // ✅ Virtualization enabled - excellent performance with large datasets

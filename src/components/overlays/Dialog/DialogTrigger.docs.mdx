@@ -171,9 +171,11 @@ function ControlledDialog() {
 ### ARIA Properties
 
 - `aria-expanded` - Set on the trigger of a popover dialog: whether the popover is open
-- `aria-controls` - Set on the trigger of an open popover dialog, referencing the dialog. Triggers of other dialog types get neither attribute, and no trigger gets `aria-haspopup`
+- `aria-controls` - Set on the trigger of an open popover dialog, referencing the dialog
 - `aria-labelledby` - Links dialog to its title
 - `aria-describedby` - Set for an alert dialog, linking its message; see [Dialog](/docs/overlays-dialog--docs#aria-properties)
+
+Triggers of modal, tray, fullscreen and panel dialogs get neither `aria-expanded` nor `aria-controls`, and no trigger gets `aria-haspopup`.
 
 ## Best Practices
 

@@ -57,10 +57,9 @@ export default {
     /* State */
     isDismissable: {
       control: { type: 'boolean' },
-      description:
-        'Whether the dialog is dismissable (shows close button, allows Escape key)',
+      description: 'Whether the dialog shows its close button',
       table: {
-        defaultValue: { summary: false },
+        defaultValue: { summary: 'from DialogTrigger / DialogContainer' },
       },
     },
     onDismiss: {
