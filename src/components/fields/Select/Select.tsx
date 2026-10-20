@@ -45,7 +45,6 @@ import {
   SelectState,
   useSelectState,
 } from 'react-stately';
-import { CubeTooltipProviderProps } from 'src/components/overlays/Tooltip/TooltipProvider';
 
 import { useI18n } from '../../../i18n';
 import { CloseIcon } from '../../../icons/CloseIcon';
@@ -84,6 +83,7 @@ import {
 } from '../../form';
 import { DisplayTransition } from '../../helpers';
 import { useModalLayerRef } from '../../overlays/Modal/modal-containment';
+import { CubeTooltipProviderProps } from '../../overlays/Tooltip/TooltipProvider';
 import { Portal } from '../../portal';
 import { useOptionOriginPress } from '../option-origin-press';
 import { TriggerActions, TriggerIcon } from '../TriggerActions';

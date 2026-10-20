@@ -1,7 +1,7 @@
 import { Styles, tasty } from '@tenphi/tasty';
 import { forwardRef } from 'react';
-import { ItemVariant } from 'src/data/item-themes';
 
+import { ItemVariant } from '../../../data/item-themes';
 import { useI18n } from '../../../i18n';
 import { CloseIcon } from '../../../icons/CloseIcon';
 import { mergeStyleLayers } from '../../../utils/styles';
