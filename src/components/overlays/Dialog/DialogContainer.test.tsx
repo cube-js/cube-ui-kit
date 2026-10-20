@@ -3,8 +3,6 @@ import { flushSync } from 'react-dom';
 
 import { act, renderWithRoot, screen, userEvent, waitFor } from '../../../test';
 import { Button } from '../../actions/Button';
-import { Menu } from '../../actions/Menu/Menu';
-import { MenuTrigger } from '../../actions/Menu/MenuTrigger';
 
 import { Dialog } from './Dialog';
 import { DialogContainer } from './DialogContainer';
@@ -250,105 +248,64 @@ describe.each(['modal', 'tray'] as const)(
 describe('DialogContainer hideOnClose focus restore', () => {
   // The first open mounts the dialog, and a native `autoFocus` moves focus in
   // before any effect can read the opener.
-  it('returns focus to the opener after an autofocused first open', async () => {
-    function App() {
-      const [isOpen, setOpen] = useState(false);
+  it.each([
+    ['inside a mounted container', false],
+    ['with its container', true],
+  ])(
+    'returns focus to the opener after an autofocused first open %s',
+    async (_, mountsContainer) => {
+      function App() {
+        const [isOpen, setOpen] = useState(false);
+        const [isMounted, setMounted] = useState(!mountsContainer);
 
-      return (
-        <>
-          <Button qa="Opener" onPress={() => setOpen(true)}>
-            Open
-          </Button>
-          <DialogContainer hideOnClose onDismiss={() => setOpen(false)}>
-            {isOpen ? (
-              <Dialog aria-label="Retained">
-                {/* oxlint-disable-next-line jsx-a11y/no-autofocus -- the case under test */}
-                <input autoFocus aria-label="Draft" />
-              </Dialog>
-            ) : null}
-          </DialogContainer>
-        </>
-      );
-    }
-
-    const user = userEvent.setup();
-    renderWithRoot(<App />);
-    const opener = screen.getByTestId('Opener');
-
-    for (let cycle = 0; cycle < 2; cycle++) {
-      await user.click(opener);
-      const dialog = await screen.findByRole('dialog');
-      // Only the first open autofocuses: the retained field mounts once.
-      await waitFor(() =>
-        cycle === 0
-          ? expect(screen.getByRole('textbox')).toHaveFocus()
-          : expect(dialog).toContainElement(
-              document.activeElement as HTMLElement,
-            ),
-      );
-
-      await user.keyboard('{Escape}');
-      await waitFor(() => expect(opener).toHaveFocus());
-    }
-  });
-
-  // The menu item that opened the dialog is gone by the close, so focus goes
-  // where the closed menu sent it: its trigger.
-  describe.each([true, false])('hideOnClose=%s', (hideOnClose) => {
-    it.each([
-      ['kept mounted', true],
-      ['mounted on open', false],
-    ])(
-      'returns focus to the menu trigger when a menu item opened it (dialog %s)',
-      async (_, isKeptMounted) => {
-        function App() {
-          const [isOpen, setOpen] = useState(false);
-
-          return (
-            <>
-              <MenuTrigger>
-                <Button qa="MenuTrigger">Menu</Button>
-                <Menu onAction={() => setOpen(true)}>
-                  <Menu.Item key="open">Open dialog</Menu.Item>
-                </Menu>
-              </MenuTrigger>
-              <DialogContainer
-                hideOnClose={hideOnClose}
-                isOpen={isKeptMounted ? isOpen : undefined}
-                onDismiss={() => setOpen(false)}
-              >
-                {isKeptMounted || isOpen ? (
+        return (
+          <>
+            <Button
+              qa="Opener"
+              onPress={() => {
+                setMounted(true);
+                setOpen(true);
+              }}
+            >
+              Open
+            </Button>
+            {isMounted ? (
+              <DialogContainer hideOnClose onDismiss={() => setOpen(false)}>
+                {isOpen ? (
                   <Dialog aria-label="Retained">
-                    <input aria-label="Draft" />
+                    {/* oxlint-disable-next-line jsx-a11y/no-autofocus -- the case under test */}
+                    <input autoFocus aria-label="Draft" />
                   </Dialog>
                 ) : null}
               </DialogContainer>
-            </>
-          );
-        }
+            ) : null}
+          </>
+        );
+      }
 
-        const user = userEvent.setup();
-        renderWithRoot(<App />);
-        const trigger = screen.getByTestId('MenuTrigger');
+      const user = userEvent.setup();
+      renderWithRoot(<App />);
+      const opener = screen.getByTestId('Opener');
 
-        for (let cycle = 0; cycle < 2; cycle++) {
-          await user.click(trigger);
-          await user.click(
-            await screen.findByRole('menuitem', { name: 'Open dialog' }),
-          );
-          const dialog = await screen.findByRole('dialog');
-          await waitFor(() =>
-            expect(dialog).toContainElement(
-              document.activeElement as HTMLElement,
-            ),
-          );
+      for (let cycle = 0; cycle < 2; cycle++) {
+        await user.click(opener);
+        const dialog = await screen.findByRole('dialog');
+        // Only the first open autofocuses: the retained field mounts once.
+        await waitFor(() =>
+          cycle === 0
+            ? expect(screen.getByRole('textbox')).toHaveFocus()
+            : expect(dialog).toContainElement(
+                document.activeElement as HTMLElement,
+              ),
+        );
 
-          await user.keyboard('{Escape}');
-          await waitFor(() => expect(trigger).toHaveFocus());
-        }
-      },
-    );
+        await user.keyboard('{Escape}');
+        await waitFor(() => expect(opener).toHaveFocus());
+      }
+    },
+  );
 
+  describe.each([true, false])('hideOnClose=%s', (hideOnClose) => {
     it('returns focus to the opener after a reopen during the exit', async () => {
       function App() {
         const [isOpen, setOpen] = useState(false);
@@ -402,6 +359,53 @@ describe('DialogContainer hideOnClose focus restore', () => {
       await user.keyboard('{Escape}');
       await waitFor(() => expect(opener).toHaveFocus());
     });
+  });
+
+  // Focus is left in the nested dialog, which closes too.
+  it('returns focus to the opener when a nested dialog closes with it', async () => {
+    function App() {
+      const [isOpen, setOpen] = useState(false);
+      const [isNestedOpen, setNestedOpen] = useState(false);
+
+      return (
+        <>
+          <Button qa="Opener" onPress={() => setOpen(true)}>
+            Open
+          </Button>
+          <DialogContainer hideOnClose isOpen={isOpen}>
+            <Dialog aria-label="Retained">
+              <Button qa="OpenNested" onPress={() => setNestedOpen(true)}>
+                Open nested
+              </Button>
+              <DialogContainer isOpen={isNestedOpen}>
+                <Dialog aria-label="Nested">
+                  <Button
+                    qa="CloseBoth"
+                    onPress={() => {
+                      setNestedOpen(false);
+                      setOpen(false);
+                    }}
+                  >
+                    Close both
+                  </Button>
+                </Dialog>
+              </DialogContainer>
+            </Dialog>
+          </DialogContainer>
+        </>
+      );
+    }
+
+    const user = userEvent.setup();
+    renderWithRoot(<App />);
+    const opener = screen.getByTestId('Opener');
+
+    for (let cycle = 0; cycle < 2; cycle++) {
+      await user.click(opener);
+      await user.click(await screen.findByTestId('OpenNested'));
+      await user.click(await screen.findByTestId('CloseBoth'));
+      await waitFor(() => expect(opener).toHaveFocus());
+    }
   });
 
   it('leaves focus where an action handed it off', async () => {

@@ -20,6 +20,7 @@ import {
   useEffect,
   useLayoutEffect,
   useRef,
+  useState,
 } from 'react';
 import {
   AriaDialogProps,
@@ -31,7 +32,6 @@ import {
 import { useI18n } from '../../../i18n';
 import { CloseIcon } from '../../../icons/CloseIcon';
 import { mergeProps, SlotProvider } from '../../../utils/react';
-import { getFocusTrail } from '../../../utils/react/focusTrail';
 import { focusProgrammatically } from '../../../utils/react/programmaticFocus';
 import { extractStyles } from '../../../utils/styles';
 import { ItemButton } from '../../actions/ItemButton/ItemButton';
@@ -181,9 +181,10 @@ function findPriorityFocusElement(dialog: HTMLElement) {
  * exit in the `unmounted` phase, still mounted. This restores at that moment,
  * by the same rule: only while focus is still in the dialog or lost to `<body>`.
  *
- * The target is the element focused when the dialog opened. When that element
- * is gone by the close, as a menu item goes with its menu, `FocusScope` falls
- * back to what was focused before it; so does this, from the focus trail.
+ * Only to the element focused when the dialog opened. When that element is
+ * gone by the close, as a menu item goes with its menu, `FocusScope` hands the
+ * restore to the menu's own target through its private scope tree; here focus
+ * stays where it is.
  */
 function useRetainedDialogFocusRestore(
   dialogRef: RefObject<HTMLElement | null>,
@@ -191,55 +192,49 @@ function useRetainedDialogFocusRestore(
   shouldRestoreFocus: boolean,
 ) {
   const transitionState = useOpenTransitionContext()?.transitionState;
-  // Where focus goes back to, best first. Recorded at open, spent at the end
-  // of the exit.
-  const targetsRef = useRef<HTMLElement[]>([]);
+  // Read before a native `autoFocus` inside a dialog that mounts open moves
+  // focus in, as `FocusScope` reads it.
+  const [focusedAtMount] = useState(() =>
+    typeof document === 'undefined' ? null : document.activeElement,
+  );
+  const nodeToRestoreRef = useRef<Element | null>(null);
 
   useLayoutEffect(() => {
     if (!isOpen) return;
 
-    const dialog = dialogRef.current;
+    const activeElement = document.activeElement;
 
-    // Reopened during its exit, with focus still inside: same opener.
-    if (targetsRef.current.length && dialog?.contains(document.activeElement)) {
-      return;
+    if (!dialogRef.current?.contains(activeElement)) {
+      nodeToRestoreRef.current = activeElement;
+    } else if (!nodeToRestoreRef.current) {
+      // Focus is already inside: moved there by a native `autoFocus` on
+      // mount. A reopen during the exit, also with focus inside, keeps the
+      // opener it has.
+      nodeToRestoreRef.current = focusedAtMount;
     }
-
-    // Focus may already be inside, moved by a native `autoFocus` on mount, so
-    // the trail is read past anything in the dialog.
-    targetsRef.current = [document.activeElement, ...getFocusTrail()].filter(
-      (node): node is HTMLElement =>
-        node instanceof HTMLElement &&
-        node !== document.body &&
-        !dialog?.contains(node),
-    );
-  }, [isOpen, dialogRef]);
+  }, [isOpen, dialogRef, focusedAtMount]);
 
   useEffect(() => {
     if (transitionState !== 'unmounted') return;
 
-    const targets = targetsRef.current;
+    const node = nodeToRestoreRef.current;
 
-    targetsRef.current = [];
+    nodeToRestoreRef.current = null;
 
-    if (!shouldRestoreFocus) return;
+    if (!shouldRestoreFocus || !(node instanceof HTMLElement)) return;
+    if (node === document.body || !node.isConnected) return;
 
     const activeElement = document.activeElement;
+    // Also lost when left in another overlay that closes with this one: a
+    // nested dialog's own restore target is about to be hidden. `Overlay`
+    // marks a closing overlay `="true"` (the toast layer carries it empty).
     const isFocusLost =
       !activeElement ||
       activeElement === document.body ||
-      !activeElement.isConnected ||
-      !!dialogRef.current?.contains(activeElement);
+      !!dialogRef.current?.contains(activeElement) ||
+      !!activeElement.closest('[data-react-aria-top-layer="true"]');
 
-    if (!isFocusLost) return;
-
-    for (const node of targets) {
-      if (!node.isConnected) continue;
-
-      focusProgrammatically(node, { preventScroll: true });
-
-      if (document.activeElement === node) return;
-    }
+    if (isFocusLost) focusProgrammatically(node, { preventScroll: true });
   }, [transitionState, shouldRestoreFocus, dialogRef]);
 }
 

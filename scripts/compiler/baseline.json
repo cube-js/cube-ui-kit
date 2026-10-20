@@ -1265,7 +1265,7 @@
     "optOuts": 0
   },
   "src/components/overlays/Dialog/Dialog.tsx": {
-    "compiled": 1,
+    "compiled": 2,
     "diagnostics": {
       "Todo": 2
     },
