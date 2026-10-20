@@ -160,8 +160,8 @@ export interface CubeDialogProps
 }
 
 /**
- * The control a dialog focuses when it opens: an input marked
- * `data-autofocus`, or a submit or primary button. In an alert dialog never a
+ * The control a dialog focuses when it opens: a text field marked
+ * `data-autofocus` (an input or a textarea), or a submit or primary button. In an alert dialog never a
  * destructive (`danger`) button, which a reflexive Enter would run.
  */
 function findPriorityFocusElement(dialog: HTMLElement) {
@@ -171,7 +171,7 @@ function findPriorityFocusElement(dialog: HTMLElement) {
       : 'button';
 
   return dialog.querySelector<HTMLElement>(
-    `input[data-autofocus], ${button}[type="submit"], ${button}[data-type="primary"]`,
+    `input[data-autofocus], textarea[data-autofocus], ${button}[type="submit"], ${button}[data-type="primary"]`,
   );
 }
 

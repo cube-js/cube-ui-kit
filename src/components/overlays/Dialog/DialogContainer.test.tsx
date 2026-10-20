@@ -3,6 +3,7 @@ import { flushSync } from 'react-dom';
 
 import { act, renderWithRoot, screen, userEvent, waitFor } from '../../../test';
 import { Button } from '../../actions/Button';
+import { TextArea } from '../../fields/TextArea';
 
 import { Dialog } from './Dialog';
 import { DialogContainer } from './DialogContainer';
@@ -443,6 +444,50 @@ describe('DialogContainer hideOnClose focus restore', () => {
       }
     });
 
+    it('focuses an autofocused TextArea on every open', async () => {
+      const user = userEvent.setup();
+
+      function Composer() {
+        const [isOpen, setOpen] = useState(false);
+
+        return (
+          <>
+            <Button qa="Opener" onPress={() => setOpen(true)}>
+              Open
+            </Button>
+            <DialogContainer
+              hideOnClose={hideOnClose}
+              isOpen={isOpen}
+              onDismiss={() => setOpen(false)}
+            >
+              <Dialog aria-label="Chat">
+                <Button qa="Copy">Copy</Button>
+                {/* oxlint-disable-next-line jsx-a11y/no-autofocus -- the case under test */}
+                <TextArea autoFocus aria-label="Composer" />
+              </Dialog>
+            </DialogContainer>
+          </>
+        );
+      }
+
+      renderWithRoot(<Composer />);
+      const opener = screen.getByTestId('Opener');
+
+      for (let cycle = 0; cycle < 2; cycle++) {
+        await user.click(opener);
+        const composer = await screen.findByRole('textbox', {
+          name: 'Composer',
+        });
+
+        await waitFor(() => expect(composer).toHaveFocus());
+        await act(() => new Promise((resolve) => setTimeout(resolve, 50)));
+        expect(composer).toHaveFocus();
+
+        await user.keyboard('{Escape}');
+        await waitFor(() => expect(opener).toHaveFocus());
+      }
+    });
+
     it('returns focus to the opener after a reopen during the exit', async () => {
       const { user, opener, dialog } = await openFromOpener();
 
@@ -460,6 +505,9 @@ describe('DialogContainer hideOnClose focus restore', () => {
     it('returns focus to the opener after a reopen during the exit from the page', async () => {
       const { user, opener } = await openFromOpener();
 
+      // `useDialog` re-focuses a dialog left on `<body>` 500 ms after it
+      // mounts (an iOS VoiceOver workaround); let that pass first.
+      await act(() => new Promise((resolve) => setTimeout(resolve, 600)));
       await user.click(screen.getByTestId('Done'));
       await act(() => new Promise((resolve) => setTimeout(resolve, 50)));
       expect(document.body).toHaveFocus();

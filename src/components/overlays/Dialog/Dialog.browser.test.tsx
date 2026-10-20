@@ -396,6 +396,8 @@ describe('DialogContainer hideOnClose focus in a browser', () => {
       expect(rect.top).toBeGreaterThanOrEqual(box.top - 1);
       expect(rect.bottom).toBeLessThanOrEqual(box.bottom + 1);
 
+      // Back to the top, so the next open has to scroll the field in again.
+      messages.scrollTop = 0;
       await browserUserEvent.keyboard('{Escape}');
       await waitFor(() => expect(opener).toHaveFocus());
     }
