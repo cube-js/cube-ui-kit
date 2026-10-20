@@ -76,20 +76,6 @@ const meta = {
         type: { summary: 'boolean' },
       },
     },
-    ellipsis: {
-      control: 'boolean',
-      description: 'Truncate overflow with ellipsis',
-      table: {
-        type: { summary: 'boolean' },
-      },
-    },
-    nowrap: {
-      control: 'boolean',
-      description: 'Prevent text wrapping',
-      table: {
-        type: { summary: 'boolean' },
-      },
-    },
     italic: {
       control: { type: 'text' },
       description: "Font style (e.g. `'italic'`)",
