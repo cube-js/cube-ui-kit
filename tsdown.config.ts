@@ -53,7 +53,7 @@ export default defineConfig({
   target: 'es2022',
   sourcemap: true,
   clean: true,
-  inlineOnly: false,
+  deps: { onlyBundle: false },
   banner,
   define,
   copy: ['README.md', 'CHANGELOG.md'],
