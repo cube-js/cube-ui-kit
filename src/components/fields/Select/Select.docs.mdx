@@ -76,7 +76,7 @@ Choose a different component when the interaction has another shape:
 - **`isOpen`** `boolean` — Whether the dropdown is open (controlled)
 - **`defaultOpen`** `boolean` — Whether the dropdown is open by default (uncontrolled)
 - **`selectionMode`** `'single'` — Selection mode for the select
-- **`onSelectionChange`** `(key: Key) => void` — Callback fired when the selected option changes
+- **`onSelectionChange`** `(key: Key | null) => void` — Callback fired when the selected option changes. Clearing the selection passes `null`
 - **`onOpenChange`** `(isOpen: boolean) => void` — Callback fired when the dropdown opens or closes
 - **`onFocus`** `(e: FocusEvent) => void` — Callback fired when the select receives focus
 - **`onBlur`** `(e: FocusEvent) => void` — Callback fired when the select loses focus
@@ -576,20 +576,23 @@ Opened with a pointer, the list focuses the selected option, or the list itself 
 
 ### Screen Reader Support
 
-- Component announces as "combobox" or "listbox" to screen readers
+- The trigger announces as a button with a listbox popup, named by the value it shows and its label, and described by its description and error message
 - Current selection is announced when changed
 - Available options are announced during navigation
 - Dropdown state (open/closed) is communicated
 
 ### ARIA Properties
 
+The trigger button carries:
+
 - `aria-label` - Provides accessible label when no visible label exists
-- `aria-labelledby` - References external label elements
-- `aria-describedby` - References additional descriptive text
+- `aria-labelledby` - References the selected value and the label, or your own label elements
+- `aria-describedby` - References the description and the error message, and your own descriptive text
+- `aria-haspopup="listbox"` - Indicates that the trigger opens a list
 - `aria-expanded` - Indicates if dropdown is open
-- `aria-activedescendant` - References the currently focused option
-- `aria-required` - Indicates if selection is required
-- `aria-invalid` - Indicates validation state
+- `aria-controls` - References the list while it is open
+
+The open list is a `listbox`. Options take DOM focus as you move through them, so the trigger has no `aria-activedescendant`.
 
 ## Best Practices
 
@@ -698,7 +701,6 @@ function Example() {
 - Add support for multi-selection mode with visual badges
 - Implement virtual scrolling for very large option lists (1000+ items)
 - Built-in async loading support with loading states per scroll position
-- Enhanced keyboard shortcuts for power users (e.g., type to jump to option)
 - Custom empty state component when no options are available
 - Support for option groups with visual separators beyond sections
 
@@ -708,7 +710,7 @@ function Example() {
 - [FilterPicker](/docs/forms-filterpicker--docs) - For button-triggered selection with a visible search field
 - [ComboBox](/docs/forms-combobox--docs) - For an input-based searchable field that keeps one selected value
 - [SearchComboBox](/docs/forms-searchcombobox--docs) - For search-and-act flows that clear after each result
-- [ListBox](/docs/forms-listbox--docs) - The underlying list component used in Select
+- [ListBox](/docs/forms-listbox--docs) - A standalone, always-visible list. Select renders its own list, not ListBox
 - [RadioGroup](/docs/forms-radiogroup--docs) - For visible selection options with fewer choices
 - [Menu](/docs/actions-menu--docs) - For action-oriented or navigation dropdowns
 - [Item](/docs/content-item--docs) - The base component used for rendering items

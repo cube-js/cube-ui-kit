@@ -28,7 +28,7 @@ Dialogs are windows containing contextual information, tasks, or workflows that 
 - **`size`** `'small' | 'medium' | 'large' | 'S' | 'M' | 'L'` (default: `M`) — Dialog size (`S`/`M`/`L` are aliases for `small`/`medium`/`large`)
 - **`styles`** — Custom styles for the dialog root
 - **`closeButtonStyles`** — Custom styles for the close button
-- **`isDismissable`** `boolean` (default: `false`) — Whether the dialog is dismissable (shows close button, allows Escape key)
+- **`isDismissable`** `boolean` (default: from its `DialogTrigger` or `DialogContainer`) — Whether the dialog shows its close button. A dialog opened by a `DialogTrigger` or `DialogContainer` takes their `isDismissable`, which defaults to `true`; a popover shows no close button unless you set it, and nor does a dialog rendered on its own. Whether `Escape` or an outside press closes the dialog is the `DialogTrigger`'s or `DialogContainer`'s own `isDismissable`, not this one
 - **`onDismiss`** `function` — Callback fired when the dialog is dismissed
 - **`closeIcon`** — Custom close icon element
 - **`role`** `'dialog' | 'alertdialog'` (default: `dialog`) — ARIA role for the dialog
@@ -186,7 +186,7 @@ The body is the `Content` that is a direct child of the dialog or of a direct-ch
 
 - `Tab` - Moves focus between interactive elements within the dialog
 - `Shift + Tab` - Moves focus backward between interactive elements
-- `Escape` - Dismisses the dialog if `isDismissable` is true
+- `Escape` - Closes the dialog when its `DialogTrigger` or `DialogContainer` is dismissable (`isDismissable`, on by default) and `isKeyboardDismissDisabled` is not set
 - `Enter/Space` - Activates focused buttons or interactive elements
 
 ### Screen Reader Support
