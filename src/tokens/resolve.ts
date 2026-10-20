@@ -18,8 +18,8 @@ import { getPaletteVersion, usePaletteVersion } from './palette-config';
  * plus one for every custom property whose type it can infer — and an undeclared
  * token reads back as that rule's `initial-value`. Some of those are obvious
  * duds (`rgba(0, 0, 0, 0)` for a `<color>`, `0px` for a `<length>`), but many are
- * ordinary-looking values: off the token block `--gap` reads `4px` rather than
- * the kit's `8px`, `--transition` reads `80ms`, `--radius` reads `6px`. So
+ * ordinary-looking values: off the token block `--gap` reads `8px`,
+ * `--transition` reads `80ms`, `--radius` reads `6px`. So
  * inspecting the value cannot tell a real token from a miss, in either
  * direction — `#clear` really is `transparent` and `$h2-letter-spacing` really
  * is `0px`.

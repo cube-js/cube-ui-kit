@@ -8,7 +8,7 @@ import { resolvePresetValues, resolveTokenValue } from './resolve';
  *
  * `resolve.ts` decides whether a read is trustworthy from `--tokens-applied`,
  * not from the value, because tasty's `@property` defaults are not all obvious
- * duds — off the token block `--gap` reads `4px`, not `0px`. Those defaults live
+ * duds — off the token block `--gap` reads `8px`, not `0px`. Those defaults live
  * in another package, and every assertion below is really about them: that they
  * exist, that they are plausible enough to fool value inspection, and that the
  * marker separates them from real values regardless.
@@ -37,9 +37,9 @@ describe('token resolution against a real engine', () => {
     // Some defaults are obvious duds...
     expect(read('--purple-color')).toBe('rgba(0, 0, 0, 0)');
     expect(read('--t3-font-size')).toBe('0px');
-    // ...and some are entirely plausible values that happen to be wrong. This is
-    // the case no value-shape check could ever catch: the kit's gap is 8px.
-    expect(read('--gap')).toBe('4px');
+    // ...and some are entirely plausible. This is the case no value-shape check
+    // could ever catch: tasty's gap default is the kit's own 8px.
+    expect(read('--gap')).toBe('8px');
     expect(read('--radius')).toBe('6px');
     expect(read('--transition')).toBe('0.08s');
 

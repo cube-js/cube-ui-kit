@@ -387,7 +387,11 @@ module.exports = [
     // FileInput and SliderBase, which a ref passed to `wrapWithField` during
     // render kept from compiling. Allow 627 kB, 871 B headroom; confirm in
     // Linux CI.
-    limit: '627kB',
+    // Tasty 3.10.0 → 3.11.1: 628,234 B locally against main's 626,337 B in CI
+    // (0e3733f7, run 39400605023), +1,897 B, all of it inside @tenphi/tasty:
+    // ui-kit's own source is unchanged. Allow 629 kB, 766 B headroom; confirm
+    // in Linux CI.
+    limit: '629kB',
   },
   {
     name: 'Tree shaking (just a Button)',
@@ -505,6 +509,10 @@ module.exports = [
     // run 39274158959, matched here to the byte); the growth is in Tasty's
     // always-loaded style engine. The field chrome change leaves this entry
     // unchanged. Allow 161 kB, 775 B headroom.
-    limit: '161kB',
+    // Tasty 3.10.0 → 3.11.1: 161,814 B against main's 160,225 B (0e3733f7, CI
+    // run 39400605023, matched here to the byte on the previous bump), +1,589
+    // B in Tasty's always-loaded style engine. Allow 162 kB, 186 B headroom;
+    // confirm in Linux CI.
+    limit: '162kB',
   },
 ];

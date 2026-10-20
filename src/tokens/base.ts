@@ -69,9 +69,9 @@ export const BASE_TOKENS: Styles = {
    *
    * `resolveTokenValue()` reads it to answer the one question a computed value
    * cannot: "are the kit's tokens in effect here?" Tasty registers `@property`
-   * defaults with real initial values — `--gap` is `4px` off the block, not
-   * `0px` — so a token read from outside `<Root>` comes back plausible and
-   * wrong, and no amount of inspecting the value would reveal it. This is
+   * defaults with real initial values — `--gap` is `8px` off the block, not
+   * `0px` — so a token read from outside `<Root>` comes back plausible, and no
+   * amount of inspecting the value would tell it from the kit's. This is
    * declared alongside the tokens, so it is present exactly where they are.
    */
   '$tokens-applied': '1',
