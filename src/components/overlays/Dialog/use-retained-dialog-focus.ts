@@ -23,14 +23,14 @@ interface Opener {
 
 /**
  * The control that opened the popup `element` sits in, while that popup is
- * open: a menu's trigger for one of its items. React Aria points such a
- * control at its popup with `aria-controls`.
+ * open: a menu's trigger for one of its items, a popover's for a button in
+ * it. React Aria points such a control at its popup with `aria-controls`.
  */
 function findPopupTrigger(element: Element) {
   const doc = element.ownerDocument;
 
   const triggers = doc.querySelectorAll(
-    '[aria-haspopup]:not([aria-haspopup="false"])[aria-controls]',
+    '[aria-haspopup]:not([aria-haspopup="false"])[aria-controls], [aria-expanded="true"][aria-controls]',
   );
 
   for (const trigger of Array.from(triggers)) {
@@ -97,6 +97,7 @@ function restoreFocusTo(node: FocusTarget) {
  *   left in another overlay that is closing.
  * - When that element is gone by the close, as a menu item goes with its
  *   menu, focus goes to the control of the popup it sat in instead.
+ * - Unmounted while open or closing, it restores focus the same way.
  * - Tab past either end moves to the page next to that element, while the
  *   dialog does not trap focus: a panel or a popover that is not dismissable
  *   while open, any dialog during its exit.
@@ -117,6 +118,11 @@ export function useRetainedDialogFocus(
   const [isRetained, setIsRetained] = useState(false);
   const [wasOpen, setWasOpen] = useState(false);
   const [openedFrom, setOpenedFrom] = useState<Opener | null>(null);
+  // What `FocusScope` holds as its own restore target: the element focused
+  // when it mounted.
+  const [mountedFrom] = useState(() =>
+    typeof document === 'undefined' ? null : document.activeElement,
+  );
   const openerRef = useRef<Opener | null>(null);
   // Where a restore aimed into the closed dialog goes instead.
   const handOffRef = useRef<FocusTarget | null>(null);
@@ -184,6 +190,35 @@ export function useRetainedDialogFocus(
     }
   }, [transitionState, shouldRestoreFocus, dialogRef]);
 
+  // Whether a restore on unmount is this hook's: `FocusScope` would send focus
+  // to the element focused when it mounted, closed.
+  const restoresOnUnmountRef = useRef(false);
+
+  useLayoutEffect(() => {
+    restoresOnUnmountRef.current = isRetained && shouldRestoreFocus;
+  });
+
+  useLayoutEffect(() => {
+    const dialog = dialogRef.current;
+
+    // Unmounted while open or closing, as when what renders it goes. Runs
+    // before its nodes leave the page; `FocusScope` then finds focus outside.
+    return () => {
+      const node = resolveOpener(openerRef.current);
+      const activeElement = document.activeElement;
+
+      if (
+        restoresOnUnmountRef.current &&
+        node &&
+        (!activeElement ||
+          activeElement === document.body ||
+          !!dialog?.contains(activeElement))
+      ) {
+        restoreFocusTo(node);
+      }
+    };
+  }, [dialogRef]);
+
   useEffect(() => {
     const dialog = dialogRef.current;
 
@@ -244,17 +279,22 @@ export function useRetainedDialogFocus(
 
       if (next && dialog.contains(next)) return;
 
-      // Past the dialog's edge, where `FocusScope` would go on from the
-      // element focused when it mounted, closed.
-      event.stopPropagation();
-
       const opener = resolveOpener(openerRef.current);
 
       // Without one, Tab moves natively, as `FocusScope` lets it once the
-      // element it would go on from is gone.
-      if (!opener) return;
+      // element it would go on from is gone. Its handler would still act on
+      // that element while it is there, past the dialog's edge.
+      if (!opener) {
+        if (mountedFrom?.isConnected && mountedFrom !== document.body) {
+          event.stopPropagation();
+        }
 
+        return;
+      }
+
+      // `FocusScope`'s handler would go on from that element instead.
       event.preventDefault();
+      event.stopPropagation();
 
       // On from the opener, skipping the dialog in case it follows it.
       walker.currentNode = opener;
@@ -277,7 +317,7 @@ export function useRetainedDialogFocus(
     window.addEventListener('keydown', onKeyDown, true);
 
     return () => window.removeEventListener('keydown', onKeyDown, true);
-  }, [handlesTab, dialogRef]);
+  }, [handlesTab, dialogRef, mountedFrom]);
 
   return isRetained;
 }

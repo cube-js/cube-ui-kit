@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { setInteractionModality } from '@react-aria/interactions';
+import { useState } from 'react';
 import { userEvent as browserUserEvent, page } from 'vitest/browser';
 
 import { renderWithRoot, screen, waitFor } from '../../../test';
@@ -406,8 +407,8 @@ describe('DialogContainer hideOnClose focus in a browser', () => {
 
 /**
  * A retained dialog moves focus as one that mounts on every open does. Each
- * case runs both ways, and both must match. Hit testing and Tab off the end
- * of the document need a browser.
+ * case runs both ways, and both must match. Hit testing and transition timing
+ * need a browser.
  */
 describe.each([true, false])('hideOnClose=%s focus parity', (hideOnClose) => {
   async function openWithKeyboard(opener: HTMLElement) {
@@ -425,64 +426,50 @@ describe.each([true, false])('hideOnClose=%s focus parity', (hideOnClose) => {
     return dialog;
   }
 
-  // Nothing to go on from: Tab moves natively, so off the panel's portal at
-  // the end of the document. A retained panel's `FocusScope` would go on
-  // from the element focused when it mounted.
-  it('tabs natively out of a panel opened with focus on the page', async () => {
+  // A screen reader's virtual cursor: `focusSafely` focuses the dialog itself
+  // once the open transition ends. A retained dialog plays one on every open,
+  // and nothing takes focus meanwhile.
+  it('focuses the dialog itself when a screen reader opens it', async () => {
+    let setOpen = (isOpen: boolean) => void isOpen;
+
     function App() {
-      const [isMounted, setMounted] = useState(false);
-      const [isOpen, setOpen] = useState(false);
+      const [isOpen, setIsOpen] = useState(false);
 
-      // Shortcuts, so focus stays where it is.
-      useEffect(() => {
-        const onKeyDown = (event: KeyboardEvent) => {
-          if (event.key === 'F3') setMounted(true);
-          if (event.key === 'F2') setOpen(true);
-        };
-
-        document.addEventListener('keydown', onKeyDown);
-
-        return () => document.removeEventListener('keydown', onKeyDown);
-      }, []);
+      setOpen = setIsOpen;
 
       return (
         <>
-          <Button qa="Link">Link</Button>
-          <Button qa="NextToLink">Next to link</Button>
-          {isMounted ? (
-            <DialogContainer
-              type="panel"
-              hideOnClose={hideOnClose}
-              isOpen={isOpen}
-              onDismiss={() => setOpen(false)}
-            >
-              <Dialog aria-label="Notes" isDismissable={false}>
-                <Button qa="First">First</Button>
-                <Button qa="Done" onPress={() => setOpen(false)}>
-                  Done
-                </Button>
-              </Dialog>
-            </DialogContainer>
-          ) : null}
-          <Button qa="Last">Last</Button>
+          <Button qa="Opener">Open</Button>
+          <DialogContainer
+            hideOnClose={hideOnClose}
+            isOpen={isOpen}
+            onDismiss={() => setIsOpen(false)}
+          >
+            <Dialog aria-label="Settings">
+              <input aria-label="Name" />
+            </Dialog>
+          </DialogContainer>
         </>
       );
     }
 
     renderWithRoot(<App />);
-    screen.getByTestId('Link').focus();
-    await browserUserEvent.keyboard('{F3}');
-    (document.activeElement as HTMLElement).blur();
-    await browserUserEvent.keyboard('{F2}');
-    await screen.findByRole('dialog', { name: 'Notes' });
+    const opener = screen.getByTestId('Opener');
 
-    screen.getByTestId('Done').focus();
-    await browserUserEvent.tab();
-    expect(document.body).toHaveFocus();
+    for (let cycle = 0; cycle < 2; cycle++) {
+      opener.focus();
+      setInteractionModality('virtual');
+      setOpen(true);
+      const dialog = await screen.findByRole('dialog', { name: 'Settings' });
 
-    screen.getByTestId('First').focus();
-    await browserUserEvent.tab({ shift: true });
-    expect(screen.getByTestId('Last')).toHaveFocus();
+      await waitFor(() => expect(dialog).toHaveFocus());
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      expect(dialog).toHaveFocus();
+
+      setOpen(false);
+      await waitFor(() => expect(opener).toHaveFocus());
+      await new Promise((resolve) => setTimeout(resolve, 400));
+    }
   });
 
   it('opens a dialog nested in another one above it', async () => {

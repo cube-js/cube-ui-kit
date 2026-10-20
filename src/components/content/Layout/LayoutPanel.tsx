@@ -407,7 +407,8 @@ export interface CubeLayoutPanelProps extends BaseProps, ContainerStyleProps {
    * read zero until the panel opens. In dialog mode the dialog is kept the
    * same way, and moves focus itself as a dialog that mounts on open does: to
    * an autofocused kit control on every open, and on close back to its
-   * opener, or to the menu's trigger when a menu item opened it
+   * opener, or to the trigger of the menu or popover it sat in once that has
+   * closed
    * (DialogContainer's docs list what still differs);
    * `dialogProps.hideOnClose` takes precedence. Default: false
    */

@@ -17,6 +17,7 @@ import { Header } from '../../content/Header';
 import { Title } from '../../content/Title';
 
 import { Dialog } from './Dialog';
+import { DialogContainer } from './DialogContainer';
 import { DialogTrigger } from './DialogTrigger';
 
 vi.mock('../../../_internal/hooks/use-warn');
@@ -317,6 +318,67 @@ describe.each([true, false])(
         screen.getByTestId('Done').focus();
         await user.keyboard('{Enter}');
         await waitFor(() => expect(opener).toHaveFocus());
+      }
+    });
+
+    // The button that opened it goes with the popover it sat in, so focus
+    // goes back to that popover's trigger instead.
+    it('returns focus to the popover trigger when a button in it opened it', async () => {
+      const user = userEvent.setup();
+
+      function Toolbar() {
+        const [isPopoverOpen, setPopoverOpen] = useState(false);
+        const [isOpen, setOpen] = useState(false);
+
+        return (
+          <>
+            <DialogTrigger
+              type="popover"
+              isOpen={isPopoverOpen}
+              onOpenChange={setPopoverOpen}
+            >
+              <Button qa="More">More</Button>
+              <Dialog aria-label="Actions">
+                <Button
+                  qa="Edit"
+                  onPress={() => {
+                    setPopoverOpen(false);
+                    setOpen(true);
+                  }}
+                >
+                  Edit
+                </Button>
+              </Dialog>
+            </DialogTrigger>
+            <DialogContainer
+              hideOnClose={hideOnClose}
+              isOpen={isOpen}
+              onDismiss={() => setOpen(false)}
+            >
+              <Dialog aria-label="Editor">
+                <input aria-label="Name" />
+              </Dialog>
+            </DialogContainer>
+          </>
+        );
+      }
+
+      renderWithRoot(<Toolbar />);
+      const more = screen.getByTestId('More');
+
+      for (let cycle = 0; cycle < 2; cycle++) {
+        await user.click(more);
+        await user.click(await screen.findByTestId('Edit'));
+        const editor = await screen.findByRole('dialog', { name: 'Editor' });
+
+        await waitFor(() =>
+          expect(editor).toContainElement(
+            document.activeElement as HTMLElement,
+          ),
+        );
+
+        await user.keyboard('{Escape}');
+        await waitFor(() => expect(more).toHaveFocus());
       }
     });
 

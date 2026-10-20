@@ -1,5 +1,5 @@
 import { createFocusManager, getFocusableTreeWalker } from '@react-aria/focus';
-import { focusSafely } from '@react-aria/interactions';
+import { focusSafely, getInteractionModality } from '@react-aria/interactions';
 import { isFocusable, useObjectRef } from '@react-aria/utils';
 import {
   BASE_STYLES,
@@ -159,16 +159,17 @@ export interface CubeDialogProps
 }
 
 /**
- * The control a dialog focuses when it opens: the first one marked
+ * The control a dialog focuses when it opens: the last one marked
  * `data-autofocus` that can take focus, as kit controls mark themselves for
- * `autoFocus`, or the first control of a marked field (a date field's first
- * segment). Otherwise a submit or primary button, which in an alert dialog is
- * never a destructive (`danger`) one: a reflexive Enter would run it.
+ * `autoFocus` (the last of several takes focus as they mount), or the first
+ * control of a marked field (a date field's first segment). Otherwise a
+ * submit or primary button, which in an alert dialog is never a destructive
+ * (`danger`) one: a reflexive Enter would run it.
  */
 function findPriorityFocusElement(dialog: HTMLElement) {
   const marked = dialog.querySelectorAll<HTMLElement>('[data-autofocus]');
 
-  for (const element of Array.from(marked)) {
+  for (const element of Array.from(marked).reverse()) {
     const target = isFocusable(element)
       ? element
       : getFocusableTreeWalker(element, { tabbable: true }).nextNode();
@@ -302,8 +303,12 @@ const DialogContent = forwardRef(function DialogContent(
         // scrolling, unless focus is already inside. A retained dialog opens
         // without remounting, so do the same here: the rules below then run as
         // for a fresh dialog, and kept content keeps its scroll.
+        let isShellFocusPending = false;
+
         if (isRetained && !domRef.current.contains(document.activeElement)) {
           focusSafely(domRef.current);
+          // A screen reader's cursor gets it once the open transition ends.
+          isShellFocusPending = getInteractionModality() === 'virtual';
 
           // As `useDialog` does next: VoiceOver on iOS announces a dialog only
           // once it has rendered, so blur and refocus it half a second later
@@ -341,7 +346,7 @@ const DialogContent = forwardRef(function DialogContent(
           return;
         }
 
-        if (isFocusOutsideDialog) {
+        if (isFocusOutsideDialog && !isShellFocusPending) {
           // Fallback: focus first tabbable element, or dialog itself
           const focusManager = createFocusManager(domRef);
 

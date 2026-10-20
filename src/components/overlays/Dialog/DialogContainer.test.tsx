@@ -7,17 +7,24 @@ import {
   renderWithRoot,
   screen,
   userEvent,
+  wait,
   waitFor,
 } from '../../../test';
 import { Button } from '../../actions/Button';
 import { CommandMenu } from '../../actions/CommandMenu';
 import { Menu, MenuTrigger } from '../../actions/Menu';
 import { Checkbox } from '../../fields/Checkbox';
-import { DateInput, DatePicker } from '../../fields/DatePicker';
+import {
+  DateInput,
+  DatePicker,
+  DateRangePicker,
+  DateRangeSeparatedPicker,
+} from '../../fields/DatePicker';
 import { Radio, RadioGroup } from '../../fields/RadioGroup';
 import { Select } from '../../fields/Select';
 import { Switch } from '../../fields/Switch';
 import { TextArea } from '../../fields/TextArea';
+import { AlertDialog } from '../AlertDialog';
 
 import { Dialog } from './Dialog';
 import { DialogContainer } from './DialogContainer';
@@ -506,6 +513,7 @@ describe('DialogContainer hideOnClose focus restore', () => {
     // hidden, before its first open.
     it.each([
       'Button',
+      'marked Button',
       'Select',
       'Checkbox',
       'Switch',
@@ -513,6 +521,8 @@ describe('DialogContainer hideOnClose focus restore', () => {
       'CommandMenu',
       'DateInput',
       'DatePicker',
+      'DateRangePicker',
+      'DateRangeSeparatedPicker',
     ])('focuses an autofocused %s on every open', async (control) => {
       const user = userEvent.setup();
 
@@ -520,6 +530,12 @@ describe('DialogContainer hideOnClose focus restore', () => {
       const controls = {
         Button: (
           <Button autoFocus qa="Autofocused">
+            Continue
+          </Button>
+        ),
+        // A consumer's own mark, kept by the control.
+        'marked Button': (
+          <Button data-autofocus="" qa="Autofocused">
             Continue
           </Button>
         ),
@@ -553,6 +569,10 @@ describe('DialogContainer hideOnClose focus restore', () => {
         ),
         DateInput: <DateInput autoFocus aria-label="Due" />,
         DatePicker: <DatePicker autoFocus aria-label="Due" />,
+        DateRangePicker: <DateRangePicker autoFocus aria-label="Stay" />,
+        DateRangeSeparatedPicker: (
+          <DateRangeSeparatedPicker autoFocus aria-label="Stay" />
+        ),
       };
       // oxlint-enable jsx-a11y/no-autofocus
 
@@ -592,7 +612,7 @@ describe('DialogContainer hideOnClose focus restore', () => {
             : await screen.findByTestId('Autofocused');
 
         await waitFor(() => expect(autofocused).toHaveFocus());
-        await act(() => new Promise((resolve) => setTimeout(resolve, 50)));
+        await act(() => wait(50));
         expect(autofocused).toHaveFocus();
 
         await user.keyboard('{Escape}');
@@ -652,7 +672,7 @@ describe('DialogContainer hideOnClose focus restore', () => {
 
       // Past the first open's refocus, and the one a retained dialog's mount
       // schedules.
-      await act(() => new Promise((resolve) => setTimeout(resolve, 600)));
+      await act(() => wait(600));
       await user.keyboard('{Escape}');
       await waitFor(() => expect(opener).toHaveFocus());
 
@@ -667,7 +687,7 @@ describe('DialogContainer hideOnClose focus restore', () => {
 
       try {
         await user.click(opener);
-        await act(() => new Promise((resolve) => setTimeout(resolve, 700)));
+        await act(() => wait(700));
       } finally {
         document.removeEventListener('focusin', onFocusIn);
       }
@@ -693,7 +713,7 @@ describe('DialogContainer hideOnClose focus restore', () => {
 
       try {
         await user.click(screen.getByTestId('Opener'));
-        await act(() => new Promise((resolve) => setTimeout(resolve, 1100)));
+        await act(() => wait(1100));
       } finally {
         document.removeEventListener('focusin', onFocusIn);
       }
@@ -702,28 +722,127 @@ describe('DialogContainer hideOnClose focus restore', () => {
       expect(focused).toHaveLength(2);
     });
 
-    // A screen reader's virtual cursor: `useDialog` focuses the dialog itself
-    // only after transitions, so its first control takes focus first.
-    it('focuses the first control when a screen reader opens it', async () => {
+    // Several autofocused controls: the last takes focus, as each focuses
+    // itself when it mounts.
+    it('focuses the last autofocused control on every open', async () => {
       const user = userEvent.setup();
-      renderWithRoot(<App />);
+
+      function Marked() {
+        const [isOpen, setOpen] = useState(false);
+
+        return (
+          <>
+            <Button qa="Opener" onPress={() => setOpen(true)}>
+              Open
+            </Button>
+            <DialogContainer
+              hideOnClose={hideOnClose}
+              isOpen={isOpen}
+              onDismiss={() => setOpen(false)}
+            >
+              <Dialog aria-label="Marked">
+                {/* oxlint-disable-next-line jsx-a11y/no-autofocus -- the case under test */}
+                <Button autoFocus qa="First">
+                  First
+                </Button>
+                {/* oxlint-disable-next-line jsx-a11y/no-autofocus -- the case under test */}
+                <Button autoFocus qa="Second">
+                  Second
+                </Button>
+                <Button type="primary" qa="Save">
+                  Save
+                </Button>
+              </Dialog>
+            </DialogContainer>
+          </>
+        );
+      }
+
+      renderWithRoot(<Marked />);
       const opener = screen.getByTestId('Opener');
 
       for (let cycle = 0; cycle < 2; cycle++) {
-        // A virtual cursor moves focus to the button, then clicks it with no
-        // pointer behind the click.
-        act(() => opener.focus());
-        fireEvent.click(opener);
-        const close = await screen.findByTestId('ModalCloseButton');
+        await user.click(opener);
+        const second = await screen.findByTestId('Second');
 
-        await waitFor(() => expect(close).toHaveFocus());
-        await act(() => new Promise((resolve) => setTimeout(resolve, 50)));
-        expect(close).toHaveFocus();
+        await waitFor(() => expect(second).toHaveFocus());
+        await act(() => wait(50));
+        expect(second).toHaveFocus();
 
         await user.keyboard('{Escape}');
         await waitFor(() => expect(opener).toHaveFocus());
       }
     });
+
+    // A screen reader's virtual cursor: `focusSafely` holds a control's
+    // `autoFocus` until transitions end, and the dialog focuses it meanwhile,
+    // never a primary or destructive button instead.
+    it.each(['Button', 'AlertDialog'])(
+      'focuses an autofocused control when a screen reader opens it (%s)',
+      async (kind) => {
+        function Confirm() {
+          const [isOpen, setOpen] = useState(false);
+
+          return (
+            <>
+              <Button qa="Opener" onPress={() => setOpen(true)}>
+                Open
+              </Button>
+              <DialogContainer
+                hideOnClose={hideOnClose}
+                isOpen={isOpen}
+                onDismiss={() => setOpen(false)}
+              >
+                {kind === 'Button' ? (
+                  <Dialog aria-label="Confirm">
+                    {/* oxlint-disable-next-line jsx-a11y/no-autofocus -- the case under test */}
+                    <Button
+                      autoFocus
+                      qa="Cancel"
+                      onPress={() => setOpen(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button type="primary" qa="Save">
+                      Save
+                    </Button>
+                  </Dialog>
+                ) : (
+                  <AlertDialog
+                    danger
+                    title="Delete"
+                    content="Delete the report?"
+                    actions={{
+                      confirm: { label: 'Delete' },
+                      cancel: { qa: 'Cancel' },
+                    }}
+                  />
+                )}
+              </DialogContainer>
+            </>
+          );
+        }
+
+        renderWithRoot(<Confirm />);
+        const opener = screen.getByTestId('Opener');
+
+        for (let cycle = 0; cycle < 2; cycle++) {
+          // A virtual cursor moves focus to the button, then clicks it with
+          // no pointer behind the click.
+          act(() => opener.focus());
+          fireEvent.click(opener);
+          const cancel = await screen.findByTestId('Cancel');
+
+          await waitFor(() => expect(cancel).toHaveFocus());
+          await act(() => wait(300));
+          expect(cancel).toHaveFocus();
+
+          fireEvent.click(cancel);
+          await waitFor(() => expect(opener).toHaveFocus());
+          await act(() => wait(400));
+        }
+      },
+    );
 
     // Containment ends as a dialog closes, so Tab leaves it for the page
     // beside its opener rather than the end of the document.
@@ -779,7 +898,7 @@ describe('DialogContainer hideOnClose focus restore', () => {
           expect(after).toHaveFocus();
 
           // The end of the exit leaves it there.
-          await act(() => new Promise((resolve) => setTimeout(resolve, 600)));
+          await act(() => wait(600));
           expect(after).toHaveFocus();
         }
       },
@@ -843,6 +962,170 @@ describe('DialogContainer hideOnClose focus restore', () => {
         await user.keyboard('{Enter}');
         await waitFor(() => expect(opener).toHaveFocus());
       }
+    });
+
+    // Nothing to go on from: Tab moves natively, so off the panel's portal at
+    // the end of the document. A retained panel's `FocusScope` would go on
+    // from the element focused when it mounted.
+    it('tabs natively out of a panel opened with focus on the page', async () => {
+      const user = userEvent.setup();
+
+      function App() {
+        const [isMounted, setMounted] = useState(false);
+        const [isOpen, setOpen] = useState(false);
+
+        // Shortcuts, so focus stays where it is.
+        useEffect(() => {
+          const onKeyDown = (event: KeyboardEvent) => {
+            if (event.key === 'F3') setMounted(true);
+            if (event.key === 'F2') setOpen(true);
+          };
+
+          document.addEventListener('keydown', onKeyDown);
+
+          return () => document.removeEventListener('keydown', onKeyDown);
+        }, []);
+
+        return (
+          <>
+            <Button qa="Link">Link</Button>
+            <Button qa="NextToLink">Next to link</Button>
+            {isMounted ? (
+              <DialogContainer
+                type="panel"
+                hideOnClose={hideOnClose}
+                isOpen={isOpen}
+                onDismiss={() => setOpen(false)}
+              >
+                <Dialog aria-label="Notes" isDismissable={false}>
+                  <Button qa="First">First</Button>
+                  <Button qa="Done" onPress={() => setOpen(false)}>
+                    Done
+                  </Button>
+                </Dialog>
+              </DialogContainer>
+            ) : null}
+            <Button qa="Last">Last</Button>
+          </>
+        );
+      }
+
+      renderWithRoot(<App />);
+      act(() => screen.getByTestId('Link').focus());
+      await user.keyboard('{F3}');
+      act(() => (document.activeElement as HTMLElement).blur());
+      await user.keyboard('{F2}');
+      await screen.findByRole('dialog', { name: 'Notes' });
+
+      act(() => screen.getByTestId('Done').focus());
+      await user.tab();
+      expect(document.body).toHaveFocus();
+
+      act(() => screen.getByTestId('First').focus());
+      await user.tab({ shift: true });
+      expect(screen.getByTestId('Last')).toHaveFocus();
+    });
+
+    // Mounted and opened with nothing focused, so no `FocusScope` takes the
+    // key: the control still sees it, as one that completes on Tab needs.
+    it('leaves Tab to its last control when nothing was focused', async () => {
+      const user = userEvent.setup();
+      const seen: string[] = [];
+
+      function App() {
+        const [isOpen, setOpen] = useState(false);
+
+        useEffect(() => {
+          const onKeyDown = (event: KeyboardEvent) => {
+            if (event.key === 'F2') setOpen(true);
+          };
+
+          document.addEventListener('keydown', onKeyDown);
+
+          return () => document.removeEventListener('keydown', onKeyDown);
+        }, []);
+
+        return (
+          <DialogContainer
+            type="panel"
+            hideOnClose={hideOnClose}
+            isOpen={isOpen}
+            onDismiss={() => setOpen(false)}
+          >
+            <Dialog aria-label="Notes" isDismissable={false}>
+              <input
+                aria-label="Code"
+                data-qa="Code"
+                onKeyDown={(event) => {
+                  if (event.key === 'Tab') seen.push(event.key);
+                }}
+              />
+            </Dialog>
+          </DialogContainer>
+        );
+      }
+
+      renderWithRoot(<App />);
+      await user.keyboard('{F2}');
+      const code = await screen.findByTestId('Code');
+
+      act(() => code.focus());
+      await user.tab();
+      expect(seen).toEqual(['Tab']);
+    });
+
+    // What renders it goes while it is open, as a tab switch removes it.
+    it('returns focus to the opener when it unmounts while open', async () => {
+      const user = userEvent.setup();
+      let hide = () => {};
+
+      function Notes({ isOpen, onDismiss }) {
+        return (
+          <DialogContainer
+            hideOnClose={hideOnClose}
+            isOpen={isOpen}
+            onDismiss={onDismiss}
+          >
+            <Dialog aria-label="Notes">
+              <input aria-label="Name" data-qa="Name" />
+            </Dialog>
+          </DialogContainer>
+        );
+      }
+
+      function App() {
+        const [isShown, setShown] = useState(false);
+        const [isOpen, setOpen] = useState(false);
+
+        hide = () => setShown(false);
+
+        return (
+          <>
+            <Button qa="Add" onPress={() => setShown(true)}>
+              Add
+            </Button>
+            <Button qa="Opener" onPress={() => setOpen(true)}>
+              Open
+            </Button>
+            {isShown ? (
+              <Notes isOpen={isOpen} onDismiss={() => setOpen(false)} />
+            ) : null}
+          </>
+        );
+      }
+
+      renderWithRoot(<App />);
+      // Mounted while Add has focus, as after adding a row.
+      await user.click(screen.getByTestId('Add'));
+      await act(() => wait(600));
+
+      await user.click(screen.getByTestId('Opener'));
+      const name = await screen.findByTestId('Name');
+
+      await user.click(name);
+      act(() => hide());
+      await act(() => wait(100));
+      expect(screen.getByTestId('Opener')).toHaveFocus();
     });
 
     it('returns focus to the menu trigger when a menu item opened it', async () => {
@@ -950,7 +1233,7 @@ describe('DialogContainer hideOnClose focus restore', () => {
           ),
         );
         // Past step 1's exit, so its content is hidden.
-        await act(() => new Promise((resolve) => setTimeout(resolve, 500)));
+        await act(() => wait(500));
 
         await user.keyboard('{Escape}');
         await waitFor(() => expect(opener).toHaveFocus());
