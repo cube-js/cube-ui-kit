@@ -1,4 +1,10 @@
-const required = ['tests', 'form-react', 'compiled-tests', 'browser-tests'];
+const required = [
+  'tests',
+  'static-checks',
+  'form-react',
+  'compiled-tests',
+  'browser-tests',
+];
 
 function checkRequiredJobs(results, branch) {
   const expected = branch === 'changeset-release/main' ? 'skipped' : 'success';
