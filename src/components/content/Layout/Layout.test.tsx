@@ -286,6 +286,30 @@ describe('Layout', () => {
     expect(await screen.findByRole('textbox', { name: 'Draft' })).toBe(draft);
   });
 
+  it('lets dialogProps.hideOnClose override hideOnClose in dialog mode', async () => {
+    const panel = (isOpen: boolean) => (
+      <Root>
+        <Layout>
+          <Layout.Panel
+            side="right"
+            mode="dialog"
+            hideOnClose
+            dialogProps={{ hideOnClose: false }}
+            isDialogOpen={isOpen}
+          >
+            <input aria-label="Draft" />
+          </Layout.Panel>
+        </Layout>
+      </Root>
+    );
+    const view = render(panel(true));
+    const draft = await screen.findByRole('textbox', { name: 'Draft' });
+
+    view.rerender(panel(false));
+
+    await waitFor(() => expect(draft).not.toBeInTheDocument());
+  });
+
   it('returns focus on every close of a hideOnClose dialog panel', async () => {
     function DialogLayout() {
       const [isOpen, setIsOpen] = useState(false);
