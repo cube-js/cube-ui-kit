@@ -1,4 +1,4 @@
-import { getFocusableTreeWalker } from '@react-aria/focus';
+import { createFocusManager } from '@react-aria/focus';
 import { useObjectRef } from '@react-aria/utils';
 import {
   BASE_STYLES,
@@ -206,17 +206,23 @@ function useRetainedDialogFocusRestore(
   // Read in the render that opens it, as `FocusScope` reads it: the commit can
   // move focus before any effect runs, into the dialog (a native `autoFocus`,
   // a child's layout effect) or to `<body>` (an opener it disables).
+  // Cleared on close, so a closed dialog holds no removed opener.
   if (isOpen !== wasOpen) {
     setWasOpen(isOpen);
-
-    if (isOpen && typeof document !== 'undefined') {
-      setOpenedFrom(document.activeElement);
-    }
+    setOpenedFrom(
+      isOpen && typeof document !== 'undefined' ? document.activeElement : null,
+    );
   }
 
   useLayoutEffect(() => {
-    // A reopen during the exit, with focus still inside, keeps its opener.
-    if (isOpen && !dialogRef.current?.contains(openedFrom)) {
+    // A reopen during the exit keeps its opener while focus is still inside
+    // or already lost to `<body>`, as `FocusScope` keeps its own.
+    if (
+      isOpen &&
+      openedFrom &&
+      openedFrom !== document.body &&
+      !dialogRef.current?.contains(openedFrom)
+    ) {
       nodeToRestoreRef.current = openedFrom;
     }
   }, [isOpen, dialogRef, openedFrom]);
@@ -365,29 +371,33 @@ const DialogContent = forwardRef(function DialogContent(
       setTimeout(() => {
         if (!domRef.current) return;
 
+        // `useDialog` focuses the dialog itself when it mounts, without
+        // scrolling, unless focus is already inside. A retained dialog opens
+        // without remounting, so do the same here: the rules below then run as
+        // for a fresh dialog, and kept content keeps its scroll.
+        if (isRetained && !domRef.current.contains(document.activeElement)) {
+          domRef.current.focus({ preventScroll: true });
+        }
+
         const activeElement = document.activeElement;
         const isFocusOutsideDialog = !domRef.current.contains(activeElement);
         const isFocusOnDialogShell = activeElement === domRef.current;
-
-        // A retained dialog reopens with its content kept, so focusing in must
-        // not scroll it away from where the user left it.
-        const focusOptions = isRetained ? { preventScroll: true } : undefined;
 
         // Priority 1: autofocus input or primary button
         const priorityElement = findPriorityFocusElement(domRef.current);
 
         if (priorityElement && (isFocusOutsideDialog || isFocusOnDialogShell)) {
-          priorityElement.focus(focusOptions);
+          priorityElement.focus();
           return;
         }
 
         if (isFocusOutsideDialog) {
           // Fallback: focus first tabbable element, or dialog itself
-          const firstTabbable = getFocusableTreeWalker(domRef.current, {
-            tabbable: true,
-          }).nextNode() as HTMLElement | null;
+          const focusManager = createFocusManager(domRef);
 
-          (firstTabbable ?? domRef.current).focus(focusOptions);
+          if (!focusManager.focusFirst({ tabbable: true })) {
+            domRef.current.focus();
+          }
         }
       });
     }

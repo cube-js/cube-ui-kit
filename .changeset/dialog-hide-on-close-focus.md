@@ -2,4 +2,4 @@
 "@cube-dev/ui-kit": patch
 ---
 
-Fix focus dropping to the page when a `hideOnClose` dialog closes: `DialogContainer` and a popover `DialogTrigger` now return focus to the element that opened them, as they do without `hideOnClose`. One opened from a menu item still leaves focus on the page when it closes, where a dialog without `hideOnClose` returns it to the menu's trigger. A reopened `hideOnClose` dialog also keeps its scroll position instead of scrolling back to its first control.
+Fix focus dropping to the page when a `hideOnClose` dialog closes: `DialogContainer` and a popover `DialogTrigger` now return focus to the element that opened them, as they do without `hideOnClose`. One opened from a menu item still leaves focus on the page when it closes, where a dialog without `hideOnClose` returns it to the menu's trigger. Every open of a `hideOnClose` dialog now also moves focus in the way a newly mounted dialog does: to the dialog itself, unless a field or button asks for focus. A reopen therefore keeps its scroll position instead of scrolling back to its first control.

@@ -340,7 +340,10 @@ describe('Layout', () => {
     for (let cycle = 0; cycle < 2; cycle++) {
       await user.click(opener);
       const draft = await screen.findByRole('textbox', { name: 'Draft' });
-      await waitFor(() => expect(draft).toHaveFocus());
+      const dialog = screen.getByRole('dialog');
+      await waitFor(() =>
+        expect(dialog).toContainElement(document.activeElement as HTMLElement),
+      );
       if (cycle === 0) await user.type(draft, 'Unsent');
 
       await user.keyboard('{Escape}');

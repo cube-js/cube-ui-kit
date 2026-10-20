@@ -4,6 +4,7 @@ import { userEvent as browserUserEvent, page } from 'vitest/browser';
 import { renderWithRoot, screen, waitFor } from '../../../test';
 import { Button } from '../../actions/Button/Button';
 import { Content } from '../../content/Content';
+import { TextInput } from '../../fields/TextInput';
 
 import { Dialog } from './Dialog';
 import { DialogContainer } from './DialogContainer';
@@ -285,8 +286,7 @@ describe('DialogContainer hideOnClose focus in a browser', () => {
     }
   });
 
-  // No dismiss button takes first focus here, as in `Layout.Panel`'s dialog
-  // mode, so the first message's button does.
+  // Non-dismissable, as `Layout.Panel`'s dialog mode renders it.
   it('keeps its scroll position when it reopens', async () => {
     function App() {
       const [isOpen, setOpen] = useState(false);
@@ -341,10 +341,63 @@ describe('DialogContainer hideOnClose focus in a browser', () => {
     await waitFor(() => expect(opener).toHaveFocus());
 
     await browserUserEvent.keyboard('{Enter}');
-    await waitFor(() =>
-      expect(screen.getByRole('button', { name: 'Copy 0' })).toHaveFocus(),
-    );
+    // As on its first open, the dialog focuses itself, which scrolls nothing.
+    await waitFor(() => expect(screen.getByTestId('Dialog')).toHaveFocus());
 
     expect(messages.scrollTop).toBe(scrollTop);
+  });
+
+  it('scrolls an autofocused field below the fold into view on every open', async () => {
+    function App() {
+      const [isOpen, setOpen] = useState(false);
+
+      return (
+        <>
+          <Button qa="Opener" onPress={() => setOpen(true)}>
+            Open
+          </Button>
+          <DialogContainer
+            hideOnClose
+            isOpen={isOpen}
+            onDismiss={() => setOpen(false)}
+          >
+            <Dialog aria-label="Chat">
+              <Content qa="Messages">
+                {Array.from({ length: 40 }, (_, index) => (
+                  <div key={index} style={{ height: 40 }}>
+                    Message {index}
+                  </div>
+                ))}
+                {/* oxlint-disable-next-line jsx-a11y/no-autofocus -- the case under test */}
+                <TextInput autoFocus aria-label="Composer" />
+              </Content>
+            </Dialog>
+          </DialogContainer>
+        </>
+      );
+    }
+
+    renderWithRoot(<App />);
+    const opener = screen.getByTestId('Opener');
+
+    for (let cycle = 0; cycle < 2; cycle++) {
+      opener.focus();
+      await browserUserEvent.keyboard('{Enter}');
+
+      const composer = await screen.findByRole('textbox', { name: 'Composer' });
+
+      await waitFor(() => expect(composer).toHaveFocus());
+
+      const messages = screen.getByTestId('Messages');
+      const box = messages.getBoundingClientRect();
+      const rect = composer.getBoundingClientRect();
+
+      expect(messages.scrollTop).toBeGreaterThan(0);
+      expect(rect.top).toBeGreaterThanOrEqual(box.top - 1);
+      expect(rect.bottom).toBeLessThanOrEqual(box.bottom + 1);
+
+      await browserUserEvent.keyboard('{Escape}');
+      await waitFor(() => expect(opener).toHaveFocus());
+    }
   });
 });

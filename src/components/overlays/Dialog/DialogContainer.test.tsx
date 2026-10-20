@@ -367,39 +367,50 @@ describe('DialogContainer hideOnClose focus restore', () => {
   );
 
   describe.each([true, false])('hideOnClose=%s', (hideOnClose) => {
-    it('returns focus to the opener after a reopen during the exit', async () => {
-      function App() {
-        const [isOpen, setOpen] = useState(false);
+    function App() {
+      const [isOpen, setOpen] = useState(false);
 
-        // A shortcut reopens it without moving focus.
-        useEffect(() => {
-          const onKeyDown = (event: KeyboardEvent) => {
-            if (event.key === 'F2') setOpen(true);
-          };
+      // A shortcut reopens it without moving focus.
+      useEffect(() => {
+        const onKeyDown = (event: KeyboardEvent) => {
+          if (event.key === 'F2') setOpen(true);
+        };
 
-          document.addEventListener('keydown', onKeyDown);
+        document.addEventListener('keydown', onKeyDown);
 
-          return () => document.removeEventListener('keydown', onKeyDown);
-        }, []);
+        return () => document.removeEventListener('keydown', onKeyDown);
+      }, []);
 
-        return (
-          <>
-            <Button qa="Opener" onPress={() => setOpen(true)}>
-              Open
-            </Button>
-            <DialogContainer
-              hideOnClose={hideOnClose}
-              isOpen={isOpen}
-              onDismiss={() => setOpen(false)}
-            >
-              <Dialog aria-label="Retained">
-                <input aria-label="Draft" />
-              </Dialog>
-            </DialogContainer>
-          </>
-        );
-      }
+      return (
+        <>
+          <Button qa="Opener" onPress={() => setOpen(true)}>
+            Open
+          </Button>
+          <DialogContainer
+            hideOnClose={hideOnClose}
+            isOpen={isOpen}
+            onDismiss={() => setOpen(false)}
+          >
+            <Dialog aria-label="Retained">
+              <input aria-label="Draft" />
+              {/* Closes and drops focus to the page, as a control that is
+                  disabled or removed on close does. */}
+              <Button
+                qa="Done"
+                onPress={() => {
+                  setOpen(false);
+                  (document.activeElement as HTMLElement).blur();
+                }}
+              >
+                Done
+              </Button>
+            </Dialog>
+          </DialogContainer>
+        </>
+      );
+    }
 
+    async function openFromOpener() {
       const user = userEvent.setup();
       renderWithRoot(<App />);
       const opener = screen.getByTestId('Opener');
@@ -410,12 +421,53 @@ describe('DialogContainer hideOnClose focus restore', () => {
         expect(dialog).toContainElement(document.activeElement as HTMLElement),
       );
 
+      return { user, opener, dialog };
+    }
+
+    it('focuses the dialog itself on every open, as on mount', async () => {
+      const { user, opener } = await openFromOpener();
+
+      for (let cycle = 0; cycle < 2; cycle++) {
+        if (cycle > 0) {
+          await user.click(opener);
+        }
+
+        const dialog = await screen.findByRole('dialog');
+
+        await waitFor(() => expect(dialog).toHaveFocus());
+        await act(() => new Promise((resolve) => setTimeout(resolve, 50)));
+        expect(dialog).toHaveFocus();
+
+        await user.keyboard('{Escape}');
+        await waitFor(() => expect(opener).toHaveFocus());
+      }
+    });
+
+    it('returns focus to the opener after a reopen during the exit', async () => {
+      const { user, opener, dialog } = await openFromOpener();
+
       await user.keyboard('{Escape}');
       await act(() => new Promise((resolve) => setTimeout(resolve, 50)));
       // Still exiting, with focus still inside.
       expect(dialog).toContainElement(document.activeElement as HTMLElement);
       await user.keyboard('{F2}');
       await screen.findByRole('dialog');
+
+      await user.keyboard('{Escape}');
+      await waitFor(() => expect(opener).toHaveFocus());
+    });
+
+    it('returns focus to the opener after a reopen during the exit from the page', async () => {
+      const { user, opener } = await openFromOpener();
+
+      await user.click(screen.getByTestId('Done'));
+      await act(() => new Promise((resolve) => setTimeout(resolve, 50)));
+      expect(document.body).toHaveFocus();
+      await user.keyboard('{F2}');
+      const dialog = await screen.findByRole('dialog');
+      await waitFor(() =>
+        expect(dialog).toContainElement(document.activeElement as HTMLElement),
+      );
 
       await user.keyboard('{Escape}');
       await waitFor(() => expect(opener).toHaveFocus());
