@@ -169,6 +169,11 @@ describe('the published build', () => {
     try {
       await build({
         ...(config as Record<string, unknown>),
+        // The real config is spread above. Without `config: false`, tsdown
+        // also loads `tsdown.config.ts` and merges this object into it, so
+        // the entry below joins the library's entries instead of replacing
+        // them and the whole package is built.
+        config: false,
         entry: { 'is-dev-env': 'src/utils/is-dev-env.ts' },
         outDir,
         // Types are irrelevant to the question and dominate the build time.
