@@ -1418,3 +1418,175 @@ describe('Layout.Panel stacking', () => {
     );
   });
 });
+
+describe('Layout.Panel hideOnClose', () => {
+  function HiddenOnCloseLayout({
+    isOpen,
+    hasTransition,
+  }: {
+    isOpen: boolean;
+    hasTransition: boolean;
+  }) {
+    return (
+      <div style={{ width: 400, height: 240, display: 'grid' }}>
+        <Layout
+          qa="hide-layout"
+          hasTransition={hasTransition}
+          minContentSize={100}
+          styles={{ $transition: '200ms' }}
+        >
+          <button>Main</button>
+          <Layout.Panel
+            hideOnClose
+            isResizable
+            side="right"
+            qa="hide-panel"
+            isOpen={isOpen}
+            defaultSize={150}
+            minSize={50}
+          >
+            <input aria-label="Draft" />
+          </Layout.Panel>
+        </Layout>
+      </div>
+    );
+  }
+
+  it.each([true, false])(
+    'keeps closed content mounted out of the layout (transition: %s)',
+    async (hasTransition) => {
+      await page.viewport(800, 600);
+      const view = renderWithRoot(
+        <HiddenOnCloseLayout isOpen hasTransition={hasTransition} />,
+      );
+      const layout = screen.getByTestId('hide-layout');
+      const panel = await screen.findByTestId('hide-panel');
+      // Uncontrolled, so the typed value survives only if the input never remounts.
+      await userEvent.type(screen.getByLabelText('Draft'), 'Unsent');
+
+      view.rerender(
+        <HiddenOnCloseLayout isOpen={false} hasTransition={hasTransition} />,
+      );
+      await waitFor(() => expect(getComputedStyle(panel).display).toBe('none'));
+      expect(screen.getByTestId('hide-panel')).toBe(panel);
+      expect(screen.queryByTestId('PanelResizeHandler')).toBeNull();
+      expect(layout.style.getPropertyValue('--inset-right')).toBe('0px');
+      await waitFor(() => expect(layout.style.overflow).toBe(''));
+
+      view.rerender(
+        <HiddenOnCloseLayout isOpen hasTransition={hasTransition} />,
+      );
+      await waitFor(() => expect(getComputedStyle(panel).display).toBe('flex'));
+      expect(screen.getByLabelText('Draft')).toHaveValue('Unsent');
+      await waitFor(() =>
+        expect(layout.style.getPropertyValue('--inset-right')).toBe('152px'),
+      );
+      await waitFor(() => expect(layout.style.overflow).toBe(''));
+    },
+  );
+
+  // Content of a panel that starts closed mounts hidden, where it measures zero.
+  it('lets a Layout mounted in a closed panel size itself once shown', async () => {
+    function NestedLayout({ isOpen }: { isOpen: boolean }) {
+      return (
+        <div style={{ width: 400, height: 240, display: 'grid' }}>
+          <Layout hasTransition styles={{ $transition: '200ms' }}>
+            <button>Main</button>
+            <Layout.Panel hideOnClose side="right" isOpen={isOpen} size={150}>
+              <div style={{ height: '100%' }}>
+                <Layout qa="nested-layout">
+                  <Layout.Content>Chat</Layout.Content>
+                </Layout>
+              </div>
+            </Layout.Panel>
+          </Layout>
+        </div>
+      );
+    }
+
+    const view = renderWithRoot(<NestedLayout isOpen={false} />);
+    const nested = screen.getByTestId('nested-layout');
+    // Long enough for a height check on the hidden Layout to have latched.
+    await act(() => new Promise((resolve) => setTimeout(resolve, 100)));
+
+    view.rerender(<NestedLayout isOpen />);
+    await waitFor(() => expect(nested.offsetHeight).toBe(240));
+    expect(nested).not.toHaveAttribute('data-collapsed');
+  });
+
+  // Losing its box must not re-judge a Layout that already sized itself.
+  it('keeps a sized Layout uncollapsed when its container briefly measures 0×0', async () => {
+    function SizedLayout({ size }: { size: CSSProperties }) {
+      return (
+        <div style={{ ...size, overflow: 'hidden' }}>
+          <Layout qa="sized-layout">
+            <Layout.Content>Body</Layout.Content>
+          </Layout>
+        </div>
+      );
+    }
+
+    const view = renderWithRoot(
+      <SizedLayout size={{ width: 400, height: 200 }} />,
+    );
+    const layout = screen.getByTestId('sized-layout');
+    await waitFor(() => expect(layout.offsetHeight).toBe(200));
+    // Let the second height check, a frame after auto-height, settle first.
+    await act(() => new Promise((resolve) => setTimeout(resolve, 100)));
+
+    view.rerender(<SizedLayout size={{ width: 0, height: 0 }} />);
+    // One wait for the resize to commit, one for a height check it could schedule.
+    await act(() => new Promise((resolve) => setTimeout(resolve, 100)));
+    await act(() => new Promise((resolve) => setTimeout(resolve, 100)));
+    view.rerender(<SizedLayout size={{ width: 400, height: 200 }} />);
+
+    await waitFor(() => expect(layout.offsetHeight).toBe(200));
+    expect(layout).not.toHaveAttribute('data-collapsed');
+  });
+
+  // A kept-mounted section that animates open re-shows at height 0. The Layout
+  // was judged on its first show, so the re-show must not judge it again.
+  it('keeps a sized Layout uncollapsed when it re-shows from height 0', async () => {
+    function Section({
+      isShown,
+      sectionHeight,
+    }: {
+      isShown: boolean;
+      sectionHeight: number;
+    }) {
+      return (
+        <div
+          style={{
+            width: 400,
+            height: sectionHeight,
+            overflow: 'hidden',
+            transition: 'height 200ms',
+            display: isShown ? 'block' : 'none',
+          }}
+        >
+          <Layout qa="section-layout">
+            <Layout.Content>Body</Layout.Content>
+          </Layout>
+        </div>
+      );
+    }
+    const wait = (ms: number) =>
+      act(() => new Promise((resolve) => setTimeout(resolve, ms)));
+
+    const view = renderWithRoot(<Section isShown sectionHeight={200} />);
+    const layout = screen.getByTestId('section-layout');
+    await waitFor(() => expect(layout.offsetHeight).toBe(200));
+    await wait(100);
+
+    view.rerender(<Section isShown={false} sectionHeight={0} />);
+    await wait(100);
+    view.rerender(<Section isShown sectionHeight={0} />);
+    await wait(20);
+    view.rerender(<Section isShown sectionHeight={200} />);
+    // Past the height transition, and a frame-late check it could schedule.
+    await wait(400);
+
+    expect(layout).not.toHaveAttribute('data-collapsed');
+    expect(layout.offsetHeight).toBe(200);
+  });
+});

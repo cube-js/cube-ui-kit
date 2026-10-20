@@ -66,6 +66,11 @@ const PanelElement = tasty({
     container: 'panel / inline-size',
     position: 'absolute',
     display: 'flex',
+    // A closed `hideOnClose` panel keeps its content mounted out of the layout.
+    hide: {
+      '': false,
+      hidden: true,
+    },
     flow: 'column',
     overflow: 'hidden',
     boxSizing: 'border-box',
@@ -393,6 +398,17 @@ export interface CubeLayoutPanelProps extends BaseProps, ContainerStyleProps {
   /** Enable slide transition on open/close */
   hasTransition?: boolean;
   /**
+   * Hide the closed panel instead of unmounting its content, so the content
+   * keeps its state (an unsent draft, scroll position, a request in flight)
+   * until the panel reopens. A hidden panel takes no space and no focus.
+   * The content mounts once, even while the panel starts closed, so mount
+   * effects and a native `autoFocus` do not run again on reopen. Content that
+   * mounts while closed is hidden: `autoFocus` does nothing and measurements
+   * read zero until the panel opens. Not used in dialog mode.
+   * Default: false
+   */
+  hideOnClose?: boolean;
+  /**
    * Whether the panel can be dismissed by clicking the overlay (overlay mode), pressing Escape,
    * or, in overlay mode, moving focus into the main content.
    * Only applies to `overlay` and `dialog` modes. Default: true
@@ -465,6 +481,7 @@ function LayoutPanel(
     defaultIsOpen = true,
     onOpenChange,
     hasTransition: hasTransitionProp,
+    hideOnClose = false,
     isDismissable = true,
     overlayStyles,
     // Deprecated prop - use mode="dialog" instead
@@ -810,8 +827,8 @@ function LayoutPanel(
   // nothing.
   const openerRef = useRef<Element | null>(null);
   const panelNodeRef = useRef<HTMLDivElement | null>(null);
-  // Focus as the panel's contents mount, before a native `autoFocus` inside
-  // them moves it (see OpenerProbe).
+  // Focus as the panel shows (its contents may mount now), before a native
+  // `autoFocus` inside them moves it (see OpenerProbe).
   const mountFocusRef = useRef<Element | null>(null);
 
   // A panel open on the Layout's first render leaves page focus alone.
@@ -988,17 +1005,21 @@ function LayoutPanel(
     setStoredSize(clampedSize);
   }, [defaultSize, clampValue, onSizeChange, setStoredSize]);
 
+  // `isHidden` keeps the element tree of an open panel, so content never remounts.
+  // Without a transition, a rendered closed panel is a hidden one.
   const renderPanelContent = (
     offscreen = false,
     transitionRef?: RefCallback<HTMLElement>,
+    isHidden = !isOpen,
   ) => {
     const showOverlay = isOverlayMode && !offscreen;
 
     return (
       <>
-        {isOverlayMode && <OpenerProbe focusRef={mountFocusRef} />}
+        {/* Mounted only while shown, so an open from hidden reads live focus. */}
+        {isOverlayMode && !isHidden && <OpenerProbe focusRef={mountFocusRef} />}
         {/* Overlay backdrop for overlay mode */}
-        {isOverlayMode && (
+        {isOverlayMode && !isHidden && (
           <OverlayBackdrop
             mods={{ visible: showOverlay }}
             styles={overlayStyles}
@@ -1014,7 +1035,7 @@ function LayoutPanel(
             panelRefCallback(node, transitionRef);
           }}
           {...filterBaseProps(otherProps, { eventProps: true })}
-          mods={{ ...panelMods, offscreen }}
+          mods={{ ...panelMods, offscreen, hidden: isHidden }}
           styles={finalStyles}
           style={panelStyle}
           data-side={side}
@@ -1023,7 +1044,7 @@ function LayoutPanel(
             <LayoutContextReset>{children}</LayoutContextReset>
           </LayoutPanelContext.Provider>
         </PanelElement>
-        {isResizable && (
+        {isResizable && !isHidden && (
           <ResizeHandler
             side={side}
             isDisabled={!isResizable}
@@ -1072,20 +1093,29 @@ function LayoutPanel(
       <DisplayTransition
         isShown={isOpen}
         animateOnMount={false}
+        exposeUnmounted={hideOnClose}
         onToggle={(isShown) => setVisualState({ isShown, isTransitionActive })}
       >
-        {({ isShown, isExiting, ref: transitionRef }) => (
-          <LayoutPanelTransition isShown={isShown} isExiting={isExiting}>
-            {renderPanelContent(!isShown, transitionRef)}
-          </LayoutPanelTransition>
-        )}
+        {({ phase, isShown, isExiting, ref: transitionRef }) => {
+          const isHidden = phase === 'unmounted';
+
+          return (
+            <LayoutPanelTransition
+              isShown={isShown}
+              isExiting={isExiting}
+              isHidden={isHidden}
+            >
+              {renderPanelContent(!isShown, transitionRef, isHidden)}
+            </LayoutPanelTransition>
+          );
+        }}
       </DisplayTransition>,
       portalContainer,
     );
   }
 
   // Simple panel (no transition) - portal to panel container
-  if (!isOpen) return null;
+  if (!isOpen && !hideOnClose) return null;
 
   return createPortal(renderPanelContent(false), portalContainer);
 }
