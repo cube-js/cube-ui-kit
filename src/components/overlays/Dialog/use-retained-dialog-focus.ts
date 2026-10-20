@@ -19,6 +19,8 @@ interface Opener {
   element: Element;
   /** The control of the popup `element` sat in, such as a menu's trigger. */
   popupTrigger: Element | null;
+  /** That popup. */
+  popup: Element | null;
 }
 
 /**
@@ -26,7 +28,7 @@ interface Opener {
  * open: a menu's trigger for one of its items, a popover's for a button in
  * it. React Aria points such a control at its popup with `aria-controls`.
  */
-function findPopupTrigger(element: Element) {
+function findPopup(element: Element) {
   const doc = element.ownerDocument;
 
   const triggers = doc.querySelectorAll(
@@ -35,11 +37,13 @@ function findPopupTrigger(element: Element) {
 
   for (const trigger of Array.from(triggers)) {
     for (const id of trigger.getAttribute('aria-controls')!.split(/\s+/)) {
-      if (id && doc.getElementById(id)?.contains(element)) return trigger;
+      const popup = id ? doc.getElementById(id) : null;
+
+      if (popup?.contains(element)) return { popupTrigger: trigger, popup };
     }
   }
 
-  return null;
+  return { popupTrigger: null, popup: null };
 }
 
 function readOpener(): Opener | null {
@@ -49,20 +53,26 @@ function readOpener(): Opener | null {
 
   if (!element || element === document.body) return null;
 
-  return { element, popupTrigger: findPopupTrigger(element) };
+  return { element, ...findPopup(element) };
 }
 
 /**
  * Where focus goes back to: the opener, or, once it is gone, the control of
- * the popup it sat in. `FocusScope` hands a restore on the same way when a
- * menu item's menu closes. Only a connected element.
+ * the popup it sat in, once that popup has closed too. `FocusScope` hands a
+ * restore on the same way when a menu item's menu closes; a disclosure that
+ * stays open around a removed control is not one. Only a connected element.
  */
 function resolveOpener(opener: Opener | null): FocusTarget | null {
   if (!opener) return null;
 
-  const node = opener.element.isConnected
-    ? opener.element
-    : opener.popupTrigger;
+  const { element, popupTrigger, popup } = opener;
+  const node = element.isConnected
+    ? element
+    : popupTrigger &&
+        (!popup?.isConnected ||
+          popupTrigger.getAttribute('aria-expanded') !== 'true')
+      ? popupTrigger
+      : null;
 
   // `FocusScope` restores to an SVG opener too, such as a chart mark.
   return node?.isConnected &&
@@ -167,9 +177,18 @@ export function useRetainedDialogFocus(
 
     openerRef.current = null;
 
-    if (!shouldRestoreFocus || !node) return;
-
     const activeElement = document.activeElement;
+
+    if (!shouldRestoreFocus || !node) {
+      // Nowhere to go: focus left in the hidden dialog is lost, as it is when
+      // a dialog unmounts.
+      if (activeElement && dialogRef.current?.contains(activeElement)) {
+        (activeElement as FocusTarget).blur();
+      }
+
+      return;
+    }
+
     // Also lost when left in another overlay that closes with this one: a
     // nested dialog's own restore target is about to be hidden. `Overlay`,
     // `Select` and `ListBoxPopover` mark a closing overlay `="true"`; the
@@ -198,26 +217,37 @@ export function useRetainedDialogFocus(
     restoresOnUnmountRef.current = isRetained && shouldRestoreFocus;
   });
 
-  useLayoutEffect(() => {
-    const dialog = dialogRef.current;
+  // Unmounted while open or closing, as when what renders it goes:
+  // `FocusScope` restores a frame later, by its own rule, to the element
+  // focused when it mounted. That restore goes to the opener instead, or
+  // nowhere once the opener is gone too.
+  useLayoutEffect(
+    () => () => {
+      const opener = openerRef.current;
 
-    // Unmounted while open or closing, as when what renders it goes. Runs
-    // before its nodes leave the page; `FocusScope` then finds focus outside.
-    return () => {
-      const node = resolveOpener(openerRef.current);
-      const activeElement = document.activeElement;
+      if (!restoresOnUnmountRef.current || !opener || !mountedFrom) return;
 
-      if (
-        restoresOnUnmountRef.current &&
-        node &&
-        (!activeElement ||
-          activeElement === document.body ||
-          !!dialog?.contains(activeElement))
-      ) {
-        restoreFocusTo(node);
-      }
-    };
-  }, [dialogRef]);
+      const onRestore = (event: Event) => {
+        const node = resolveOpener(opener);
+
+        if (event.target !== mountedFrom || node === mountedFrom) return;
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        if (node) restoreFocusTo(node);
+      };
+
+      document.addEventListener(RESTORE_FOCUS_EVENT, onRestore, true);
+      // Past `FocusScope`'s frame, whichever cleanup scheduled first.
+      requestAnimationFrame(() =>
+        requestAnimationFrame(() => {
+          document.removeEventListener(RESTORE_FOCUS_EVENT, onRestore, true);
+        }),
+      );
+    },
+    [mountedFrom],
+  );
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -281,9 +311,8 @@ export function useRetainedDialogFocus(
 
       const opener = resolveOpener(openerRef.current);
 
-      // Without one, Tab moves natively, as `FocusScope` lets it once the
-      // element it would go on from is gone. Its handler would still act on
-      // that element while it is there, past the dialog's edge.
+      // Without one, Tab moves natively. `FocusScope`'s handler would still
+      // go on from the element focused when it mounted, while it is there.
       if (!opener) {
         if (mountedFrom?.isConnected && mountedFrom !== document.body) {
           event.stopPropagation();

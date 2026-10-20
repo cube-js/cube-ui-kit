@@ -280,7 +280,7 @@ function Checkbox(
         qa={qa || 'Checkbox'}
         data-input-type="checkbox"
         // For a dialog kept mounted while closed, as on `Button`.
-        data-autofocus={props.autoFocus ? '' : undefined}
+        {...(props.autoFocus ? { 'data-autofocus': '' } : undefined)}
         {...mergeTooltipFocusProps(
           mergeProps(inputProps, focusProps),
           tooltipFocusProps,

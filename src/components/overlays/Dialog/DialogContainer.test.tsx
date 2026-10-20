@@ -13,6 +13,7 @@ import {
 import { Button } from '../../actions/Button';
 import { CommandMenu } from '../../actions/CommandMenu';
 import { Menu, MenuTrigger } from '../../actions/Menu';
+import { Disclosure } from '../../content/Disclosure';
 import { Checkbox } from '../../fields/Checkbox';
 import {
   DateInput,
@@ -515,12 +516,14 @@ describe('DialogContainer hideOnClose focus restore', () => {
       'Button',
       'marked Button',
       'Select',
+      'marked Select',
       'Checkbox',
       'Switch',
       'Radio',
       'CommandMenu',
       'DateInput',
       'DatePicker',
+      'marked DatePicker',
       'DateRangePicker',
       'DateRangeSeparatedPicker',
     ])('focuses an autofocused %s on every open', async (control) => {
@@ -538,6 +541,15 @@ describe('DialogContainer hideOnClose focus restore', () => {
           <Button data-autofocus="" qa="Autofocused">
             Continue
           </Button>
+        ),
+        'marked Select': (
+          <Select
+            aria-label="Region"
+            inputProps={{ 'data-autofocus': '' }}
+            qa="Autofocused"
+          >
+            <Select.Item key="eu">EU</Select.Item>
+          </Select>
         ),
         Select: (
           <Select autoFocus aria-label="Region" qa="Autofocused">
@@ -569,6 +581,7 @@ describe('DialogContainer hideOnClose focus restore', () => {
         ),
         DateInput: <DateInput autoFocus aria-label="Due" />,
         DatePicker: <DatePicker autoFocus aria-label="Due" />,
+        'marked DatePicker': <DatePicker data-autofocus="" aria-label="Due" />,
         DateRangePicker: <DateRangePicker autoFocus aria-label="Stay" />,
         DateRangeSeparatedPicker: (
           <DateRangeSeparatedPicker autoFocus aria-label="Stay" />
@@ -605,7 +618,7 @@ describe('DialogContainer hideOnClose focus restore', () => {
         await user.click(opener);
         // A date field focuses its first segment, and a command menu its
         // search field (on by default).
-        const autofocused = control.startsWith('Date')
+        const autofocused = /Date/.test(control)
           ? (await screen.findAllByRole('spinbutton'))[0]
           : control === 'CommandMenu'
             ? await screen.findByRole('searchbox')
@@ -1075,57 +1088,283 @@ describe('DialogContainer hideOnClose focus restore', () => {
     });
 
     // What renders it goes while it is open, as a tab switch removes it.
-    it('returns focus to the opener when it unmounts while open', async () => {
+    it.each(['a field in it', 'a list opened from it'])(
+      'returns focus to the opener when it unmounts while %s has focus',
+      async (where) => {
+        const user = userEvent.setup();
+        let hide = () => {};
+
+        function Notes({ isOpen, onDismiss }) {
+          return (
+            <DialogContainer
+              hideOnClose={hideOnClose}
+              isOpen={isOpen}
+              onDismiss={onDismiss}
+            >
+              <Dialog aria-label="Notes">
+                <input aria-label="Name" data-qa="Name" />
+                <Select aria-label="Region" qa="Region">
+                  <Select.Item key="eu">EU</Select.Item>
+                </Select>
+              </Dialog>
+            </DialogContainer>
+          );
+        }
+
+        function App() {
+          const [isShown, setShown] = useState(false);
+          const [isOpen, setOpen] = useState(false);
+
+          hide = () => setShown(false);
+
+          return (
+            <>
+              <Button qa="Add" onPress={() => setShown(true)}>
+                Add
+              </Button>
+              <Button qa="Opener" onPress={() => setOpen(true)}>
+                Open
+              </Button>
+              {isShown ? (
+                <Notes isOpen={isOpen} onDismiss={() => setOpen(false)} />
+              ) : null}
+            </>
+          );
+        }
+
+        renderWithRoot(<App />);
+        // Mounted while Add has focus, as after adding a row.
+        await user.click(screen.getByTestId('Add'));
+        await act(() => wait(600));
+
+        await user.click(screen.getByTestId('Opener'));
+
+        if (where === 'a field in it') {
+          await user.click(await screen.findByTestId('Name'));
+        } else {
+          await user.click(await screen.findByTestId('Region'));
+          const listbox = await screen.findByRole('listbox');
+
+          await waitFor(() =>
+            expect(listbox).toContainElement(
+              document.activeElement as HTMLElement,
+            ),
+          );
+        }
+
+        act(() => hide());
+        await act(() => wait(100));
+        expect(screen.getByTestId('Opener')).toHaveFocus();
+      },
+    );
+
+    // The opener goes in the same commit: nothing to return to.
+    it('leaves focus on the page when it unmounts with its opener', async () => {
       const user = userEvent.setup();
       let hide = () => {};
 
-      function Notes({ isOpen, onDismiss }) {
+      function Section() {
+        const [isOpen, setOpen] = useState(false);
+
         return (
-          <DialogContainer
-            hideOnClose={hideOnClose}
-            isOpen={isOpen}
-            onDismiss={onDismiss}
-          >
-            <Dialog aria-label="Notes">
-              <input aria-label="Name" data-qa="Name" />
-            </Dialog>
-          </DialogContainer>
+          <>
+            <Button qa="Opener" onPress={() => setOpen(true)}>
+              Edit
+            </Button>
+            <DialogContainer
+              hideOnClose={hideOnClose}
+              isOpen={isOpen}
+              onDismiss={() => setOpen(false)}
+            >
+              <Dialog aria-label="Notes">
+                <input aria-label="Name" data-qa="Name" />
+              </Dialog>
+            </DialogContainer>
+          </>
         );
       }
 
       function App() {
         const [isShown, setShown] = useState(false);
-        const [isOpen, setOpen] = useState(false);
 
         hide = () => setShown(false);
 
         return (
           <>
-            <Button qa="Add" onPress={() => setShown(true)}>
-              Add
+            <Button qa="Settings" onPress={() => setShown(true)}>
+              Settings
             </Button>
-            <Button qa="Opener" onPress={() => setOpen(true)}>
-              Open
-            </Button>
-            {isShown ? (
-              <Notes isOpen={isOpen} onDismiss={() => setOpen(false)} />
-            ) : null}
+            {isShown ? <Section /> : null}
           </>
         );
       }
 
       renderWithRoot(<App />);
-      // Mounted while Add has focus, as after adding a row.
-      await user.click(screen.getByTestId('Add'));
+      // Mounted while Settings has focus.
+      await user.click(screen.getByTestId('Settings'));
       await act(() => wait(600));
-
       await user.click(screen.getByTestId('Opener'));
-      const name = await screen.findByTestId('Name');
+      await user.click(await screen.findByTestId('Name'));
 
-      await user.click(name);
       act(() => hide());
       await act(() => wait(100));
-      expect(screen.getByTestId('Opener')).toHaveFocus();
+      expect(document.body).toHaveFocus();
+    });
+
+    // A step replaced inside the open container: focus moves to the next
+    // step without passing through the opener.
+    it('leaves its opener alone when a step replaces its content', async () => {
+      const user = userEvent.setup();
+      const openerEvents: string[] = [];
+
+      function App() {
+        const [isOpen, setOpen] = useState(false);
+        const [step, setStep] = useState(1);
+
+        return (
+          <>
+            <Button
+              qa="Opener"
+              onFocus={() => openerEvents.push('focus')}
+              onBlur={() => openerEvents.push('blur')}
+              onPress={() => setOpen(true)}
+            >
+              Open
+            </Button>
+            <DialogContainer
+              hideOnClose={hideOnClose}
+              isOpen={isOpen}
+              onDismiss={() => setOpen(false)}
+            >
+              {step === 1 ? (
+                <Dialog key="details" aria-label="Details">
+                  <Button qa="Next" onPress={() => setStep(2)}>
+                    Next
+                  </Button>
+                </Dialog>
+              ) : (
+                <Dialog key="review" aria-label="Review">
+                  <input aria-label="Notes" />
+                </Dialog>
+              )}
+            </DialogContainer>
+          </>
+        );
+      }
+
+      renderWithRoot(<App />);
+      await act(() => wait(600));
+      await user.click(screen.getByTestId('Opener'));
+      await screen.findByRole('dialog', { name: 'Details' });
+      await act(() => wait(100));
+      openerEvents.length = 0;
+
+      await user.click(screen.getByTestId('Next'));
+      const review = await screen.findByRole('dialog', { name: 'Review' });
+
+      await act(() => wait(100));
+      expect(review).toContainElement(document.activeElement as HTMLElement);
+      expect(openerEvents).toEqual([]);
+    });
+
+    // A callback ref is a new ref on every render.
+    it('keeps focus in a field while it rerenders with a callback ref', async () => {
+      const user = userEvent.setup();
+      const openerEvents: string[] = [];
+
+      function App() {
+        const [isOpen, setOpen] = useState(false);
+        const [name, setName] = useState('');
+
+        return (
+          <>
+            <Button
+              qa="Opener"
+              onFocus={() => openerEvents.push('focus')}
+              onPress={() => setOpen(true)}
+            >
+              Open
+            </Button>
+            <DialogContainer
+              hideOnClose={hideOnClose}
+              isOpen={isOpen}
+              onDismiss={() => setOpen(false)}
+            >
+              <Dialog ref={(element) => void element} aria-label="Rename">
+                <input
+                  aria-label="Name"
+                  data-qa="Name"
+                  value={name}
+                  onChange={(event) => setName(event.target.value)}
+                />
+              </Dialog>
+            </DialogContainer>
+          </>
+        );
+      }
+
+      renderWithRoot(<App />);
+      await user.click(screen.getByTestId('Opener'));
+      const field = await screen.findByTestId('Name');
+
+      await user.click(field);
+      openerEvents.length = 0;
+      await user.keyboard('ab');
+      await act(() => wait(100));
+
+      expect(field).toHaveFocus();
+      expect(openerEvents).toEqual([]);
+    });
+
+    // A disclosure stays open around the removed opener: not a popup that
+    // closed, so there is nothing to return to.
+    it('leaves focus on the page when its opener goes from an open disclosure', async () => {
+      const user = userEvent.setup();
+
+      function Rows() {
+        const [isOpen, setOpen] = useState(false);
+        const [hasRow, setHasRow] = useState(true);
+
+        return (
+          <>
+            <Disclosure defaultExpanded>
+              <Disclosure.Trigger qa="Rows">Rows</Disclosure.Trigger>
+              <Disclosure.Content>
+                {hasRow ? (
+                  <Button qa="Opener" onPress={() => setOpen(true)}>
+                    Delete row
+                  </Button>
+                ) : null}
+              </Disclosure.Content>
+            </Disclosure>
+            <DialogContainer
+              hideOnClose={hideOnClose}
+              isOpen={isOpen}
+              onDismiss={() => setOpen(false)}
+            >
+              <Dialog aria-label="Confirm">
+                <Button
+                  qa="Delete"
+                  onPress={() => {
+                    setHasRow(false);
+                    setOpen(false);
+                  }}
+                >
+                  Delete
+                </Button>
+              </Dialog>
+            </DialogContainer>
+          </>
+        );
+      }
+
+      renderWithRoot(<Rows />);
+      await act(() => wait(600));
+      await user.click(screen.getByTestId('Opener'));
+      await user.click(await screen.findByTestId('Delete'));
+      await act(() => wait(800));
+
+      expect(document.body).toHaveFocus();
     });
 
     it('returns focus to the menu trigger when a menu item opened it', async () => {

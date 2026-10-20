@@ -1,6 +1,11 @@
 import { createFocusManager, getFocusableTreeWalker } from '@react-aria/focus';
 import { focusSafely, getInteractionModality } from '@react-aria/interactions';
-import { isFocusable, useObjectRef } from '@react-aria/utils';
+import {
+  focusWithoutScrolling,
+  isFocusable,
+  runAfterTransition,
+  useObjectRef,
+} from '@react-aria/utils';
 import {
   BASE_STYLES,
   BaseProps,
@@ -253,6 +258,7 @@ const DialogContent = forwardRef(function DialogContent(
   let domRef = useObjectRef(ref);
 
   const isRetained = useRetainedDialogFocus(domRef);
+  const isTrapping = trapsFocus({ ...contextProps, type });
 
   // Set while the dialog refocuses itself, so the blur in between does not
   // reach overlays that close when focus leaves them.
@@ -294,6 +300,7 @@ const DialogContent = forwardRef(function DialogContent(
   useEffect(() => {
     // The pending timer: this one, then the refocus it may start.
     let timer: ReturnType<typeof setTimeout> | undefined;
+    let isClosed = false;
 
     if (contextProps.isOpen) {
       timer = setTimeout(() => {
@@ -303,12 +310,8 @@ const DialogContent = forwardRef(function DialogContent(
         // scrolling, unless focus is already inside. A retained dialog opens
         // without remounting, so do the same here: the rules below then run as
         // for a fresh dialog, and kept content keeps its scroll.
-        let isShellFocusPending = false;
-
         if (isRetained && !domRef.current.contains(document.activeElement)) {
           focusSafely(domRef.current);
-          // A screen reader's cursor gets it once the open transition ends.
-          isShellFocusPending = getInteractionModality() === 'virtual';
 
           // As `useDialog` does next: VoiceOver on iOS announces a dialog only
           // once it has rendered, so blur and refocus it half a second later
@@ -346,7 +349,30 @@ const DialogContent = forwardRef(function DialogContent(
           return;
         }
 
-        if (isFocusOutsideDialog && !isShellFocusPending) {
+        if (isFocusOutsideDialog && getInteractionModality() === 'virtual') {
+          // A screen reader's cursor: the dialog itself takes focus once the
+          // open transition ends, as `focusSafely` does it. Then also when
+          // something moved focus meanwhile, as a closing menu returns it to
+          // its trigger, unless a dialog that leaves the page usable lost it
+          // to a control there.
+          runAfterTransition(() => {
+            const dialog = domRef.current;
+            const focused = document.activeElement;
+
+            if (
+              isClosed ||
+              !dialog ||
+              dialog.contains(focused) ||
+              (!isTrapping &&
+                focused !== document.body &&
+                focused !== activeElement)
+            ) {
+              return;
+            }
+
+            focusWithoutScrolling(dialog);
+          });
+        } else if (isFocusOutsideDialog) {
           // Fallback: focus first tabbable element, or dialog itself
           const focusManager = createFocusManager(domRef);
 
@@ -357,8 +383,11 @@ const DialogContent = forwardRef(function DialogContent(
       });
     }
 
-    return () => clearTimeout(timer);
-  }, [contextProps.isOpen, isRetained]);
+    return () => {
+      isClosed = true;
+      clearTimeout(timer);
+    };
+  }, [contextProps.isOpen, isRetained, isTrapping]);
 
   // let hasHeader = useHasChild('[data-id="Header"]', domRef);
   // let hasFooter = useHasChild('[data-id="Footer"]', domRef);

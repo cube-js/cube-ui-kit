@@ -205,7 +205,7 @@ function Switch(rawProps: WithNullableSelected<CubeSwitchProps>, ref) {
         qa={qa || 'Switch'}
         data-input-type="switch"
         // For a dialog kept mounted while closed, as on `Button`.
-        data-autofocus={props.autoFocus ? '' : undefined}
+        {...(props.autoFocus ? { 'data-autofocus': '' } : undefined)}
         {...mergeProps(inputProps, focusProps)}
         ref={inputRef}
         id={id}

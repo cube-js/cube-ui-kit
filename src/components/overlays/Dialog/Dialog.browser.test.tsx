@@ -2,10 +2,12 @@ import { setInteractionModality } from '@react-aria/interactions';
 import { useState } from 'react';
 import { userEvent as browserUserEvent, page } from 'vitest/browser';
 
-import { renderWithRoot, screen, waitFor } from '../../../test';
+import { renderWithRoot, screen, wait, waitFor } from '../../../test';
 import { Button } from '../../actions/Button/Button';
+import { Menu, MenuTrigger } from '../../actions/Menu';
 import { Content } from '../../content/Content';
 import { TextInput } from '../../fields/TextInput';
+import { AlertDialog } from '../AlertDialog';
 
 import { Dialog } from './Dialog';
 import { DialogContainer } from './DialogContainer';
@@ -428,24 +430,86 @@ describe.each([true, false])('hideOnClose=%s focus parity', (hideOnClose) => {
 
   // A screen reader's virtual cursor: `focusSafely` focuses the dialog itself
   // once the open transition ends. A retained dialog plays one on every open,
-  // and nothing takes focus meanwhile.
-  it('focuses the dialog itself when a screen reader opens it', async () => {
-    let setOpen = (isOpen: boolean) => void isOpen;
+  // and nothing takes focus meanwhile, not even a destructive button when
+  // nothing else can take it first.
+  it.each(['dialog', 'alertdialog'] as const)(
+    'focuses the %s itself when a screen reader opens it',
+    async (role) => {
+      let setOpen = (isOpen: boolean) => void isOpen;
 
-    function App() {
-      const [isOpen, setIsOpen] = useState(false);
+      function App() {
+        const [isOpen, setIsOpen] = useState(false);
 
-      setOpen = setIsOpen;
+        setOpen = setIsOpen;
+
+        return (
+          <>
+            <Button qa="Opener">Open</Button>
+            <DialogContainer
+              hideOnClose={hideOnClose}
+              isOpen={isOpen}
+              onDismiss={() => setIsOpen(false)}
+            >
+              {role === 'dialog' ? (
+                <Dialog aria-label="Settings">
+                  <input aria-label="Name" />
+                </Dialog>
+              ) : (
+                <AlertDialog
+                  danger
+                  title="Settings"
+                  content="Delete the report?"
+                  actions={{ confirm: { label: 'Delete' }, cancel: false }}
+                />
+              )}
+            </DialogContainer>
+          </>
+        );
+      }
+
+      renderWithRoot(<App />);
+      const opener = screen.getByTestId('Opener');
+
+      for (let cycle = 0; cycle < 2; cycle++) {
+        opener.focus();
+        setInteractionModality('virtual');
+        setOpen(true);
+        const dialog = await screen.findByRole(role);
+
+        await waitFor(() => expect(dialog).toHaveFocus());
+        await wait(300);
+        expect(dialog).toHaveFocus();
+
+        setOpen(false);
+        await waitFor(() => expect(opener).toHaveFocus());
+        await wait(400);
+      }
+    },
+  );
+
+  // The closing menu returns focus to its trigger meanwhile.
+  it('focuses the dialog itself when a screen reader opens it from a menu', async () => {
+    let close = () => {};
+
+    function Actions() {
+      const [isOpen, setOpen] = useState(false);
+
+      close = () => setOpen(false);
 
       return (
         <>
-          <Button qa="Opener">Open</Button>
+          <MenuTrigger>
+            <Button qa="Actions">Actions</Button>
+            <Menu aria-label="Actions" onAction={() => setOpen(true)}>
+              <Menu.Item key="rename">Rename</Menu.Item>
+            </Menu>
+          </MenuTrigger>
           <DialogContainer
             hideOnClose={hideOnClose}
             isOpen={isOpen}
-            onDismiss={() => setIsOpen(false)}
+            onDismiss={() => setOpen(false)}
           >
-            <Dialog aria-label="Settings">
+            <Dialog aria-label="Rename" isDismissable={false}>
               <input aria-label="Name" />
             </Dialog>
           </DialogContainer>
@@ -453,22 +517,28 @@ describe.each([true, false])('hideOnClose=%s focus parity', (hideOnClose) => {
       );
     }
 
-    renderWithRoot(<App />);
-    const opener = screen.getByTestId('Opener');
+    renderWithRoot(<Actions />);
+    const trigger = screen.getByTestId('Actions');
 
     for (let cycle = 0; cycle < 2; cycle++) {
-      opener.focus();
+      // A virtual cursor clicks with no pointer behind the click.
+      trigger.focus();
       setInteractionModality('virtual');
-      setOpen(true);
-      const dialog = await screen.findByRole('dialog', { name: 'Settings' });
+      trigger.click();
+      const item = await screen.findByRole('menuitem', { name: 'Rename' });
+
+      await wait(400);
+      setInteractionModality('virtual');
+      item.click();
+      const dialog = await screen.findByRole('dialog', { name: 'Rename' });
 
       await waitFor(() => expect(dialog).toHaveFocus());
-      await new Promise((resolve) => setTimeout(resolve, 300));
+      await wait(300);
       expect(dialog).toHaveFocus();
 
-      setOpen(false);
-      await waitFor(() => expect(opener).toHaveFocus());
-      await new Promise((resolve) => setTimeout(resolve, 400));
+      close();
+      await waitFor(() => expect(trigger).toHaveFocus());
+      await wait(400);
     }
   });
 

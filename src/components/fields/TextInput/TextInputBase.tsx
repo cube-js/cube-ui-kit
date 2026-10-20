@@ -480,7 +480,7 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
         rows={multiLine ? rows ?? inputProps.rows ?? 1 : inputProps.rows}
         mods={modifiers}
         style={textSecurityStyles}
-        data-autofocus={resolvedAutoFocus ? '' : undefined}
+        {...(resolvedAutoFocus ? { 'data-autofocus': '' } : undefined)}
         autoFocus={resolvedAutoFocus}
         data-size={size}
         autoComplete={resolvedAutoComplete}
