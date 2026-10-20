@@ -51,8 +51,8 @@ importers:
         specifier: 2.0.0
         version: 2.0.0
       '@tenphi/tasty':
-        specifier: 3.11.1
-        version: 3.11.1(@babel/core@7.28.5)(@babel/helper-plugin-utils@7.25.7)(@babel/types@7.29.0)(jiti@2.6.1)(react@19.3.0)
+        specifier: 3.11.2
+        version: 3.11.2(@babel/core@7.28.5)(@babel/helper-plugin-utils@7.25.7)(@babel/types@7.29.0)(jiti@2.6.1)(react@19.3.0)
       clipboard-copy:
         specifier: ^4.0.1
         version: 4.0.1
@@ -160,8 +160,8 @@ importers:
         specifier: ^10.3.6
         version: 10.3.6(esbuild@0.27.3)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(storybook@10.3.6(@testing-library/dom@10.4.1)(prettier@3.2.5)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(typescript@5.6.3)(vite@8.0.0(@types/node@24.13.3)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.31.1)(yaml@2.9.1))(webpack@5.76.1(esbuild@0.27.3))
       '@tenphi/eslint-plugin-tasty':
-        specifier: ^1.7.2
-        version: 1.7.2(@tenphi/tasty@3.11.1(@babel/core@7.28.5)(@babel/helper-plugin-utils@7.25.7)(@babel/types@7.29.0)(jiti@2.6.1)(react@19.3.0))(eslint@10.8.0(jiti@2.6.1))(typescript@5.6.3)
+        specifier: ^1.8.0
+        version: 1.8.0(@tenphi/tasty@3.11.2(@babel/core@7.28.5)(@babel/helper-plugin-utils@7.25.7)(@babel/types@7.29.0)(jiti@2.6.1)(react@19.3.0))(eslint@10.8.0(jiti@2.6.1))(typescript@5.6.3)
       '@testing-library/dom':
         specifier: ^10.4.1
         version: 10.4.1
@@ -1736,13 +1736,13 @@ packages:
   '@tanstack/virtual-core@3.13.12':
     resolution: {integrity: sha512-1YBOJfRHV4sXUmWsFSf5rQor4Ss82G8dQWLRbnk3GA4jeP8hQt1hxXh0tmflpC0dz3VgEv/1+qwPyLeWkQuPFA==}
 
-  '@tenphi/eslint-plugin-tasty@1.7.2':
-    resolution: {integrity: sha512-RuLZOO9GKhFaBczE+Wsed9hxRG+NlxRI+vX0qgT7rhcKa+X3bORz0GYnDriFs7H9VqgAeMmX8YGn5GvusWWvlw==}
+  '@tenphi/eslint-plugin-tasty@1.8.0':
+    resolution: {integrity: sha512-0PPqegUQ20UfTuWzEZmiCDLVxDD6bpOQ72OC/RXrtmTE2elj+mcRVFmAzw0zUTYvtzNkne1UV5OIq1F+FQ9aoA==}
     engines: {node: '>=20'}
     peerDependencies:
       '@tenphi/tasty': '>=3.8.0'
       eslint: '>=8.0.0'
-      typescript: '>=5.6.3 <6'
+      typescript: '>=5.6.3 <7'
     peerDependenciesMeta:
       '@tenphi/tasty':
         optional: true
@@ -1753,8 +1753,8 @@ packages:
     resolution: {integrity: sha512-entP+7nsScY87maev/rA6HS/qQy3YwHeywAsWTT9LGhovMp3/cj/Zb1jctlc37FWLim+mkYMwTGOk7ZfJBLLWg==}
     engines: {node: '>=20'}
 
-  '@tenphi/tasty@3.11.1':
-    resolution: {integrity: sha512-vw29XvAlUh0cuhEp5ukDZ6q4FbdzCAToOsdRyESq6q5LcoxNETi0liKGCq/s3oFsCRdCEDu4t2U1u2t4Xo4u8w==}
+  '@tenphi/tasty@3.11.2':
+    resolution: {integrity: sha512-nN/JeeBxFnFr1jB+D0Ju6j/kp55pwubet4ecNJ3HO8XvF/YQ++zl4VhZBoGzfASEHM6Y/5NqS2vQ8c8SCK3PnQ==}
     engines: {node: '>=20'}
     peerDependencies:
       '@babel/core': ^7.24.0
@@ -7260,21 +7260,21 @@ snapshots:
 
   '@tanstack/virtual-core@3.13.12': {}
 
-  '@tenphi/eslint-plugin-tasty@1.7.2(@tenphi/tasty@3.11.1(@babel/core@7.28.5)(@babel/helper-plugin-utils@7.25.7)(@babel/types@7.29.0)(jiti@2.6.1)(react@19.3.0))(eslint@10.8.0(jiti@2.6.1))(typescript@5.6.3)':
+  '@tenphi/eslint-plugin-tasty@1.8.0(@tenphi/tasty@3.11.2(@babel/core@7.28.5)(@babel/helper-plugin-utils@7.25.7)(@babel/types@7.29.0)(jiti@2.6.1)(react@19.3.0))(eslint@10.8.0(jiti@2.6.1))(typescript@5.6.3)':
     dependencies:
       '@typescript-eslint/utils': 8.56.1(eslint@10.8.0(jiti@2.6.1))(typescript@5.6.3)
       eslint: 10.8.0(jiti@2.6.1)
       jiti: 2.6.1
       postcss-selector-parser: 7.1.6
     optionalDependencies:
-      '@tenphi/tasty': 3.11.1(@babel/core@7.28.5)(@babel/helper-plugin-utils@7.25.7)(@babel/types@7.29.0)(jiti@2.6.1)(react@19.3.0)
+      '@tenphi/tasty': 3.11.2(@babel/core@7.28.5)(@babel/helper-plugin-utils@7.25.7)(@babel/types@7.29.0)(jiti@2.6.1)(react@19.3.0)
       typescript: 5.6.3
     transitivePeerDependencies:
       - supports-color
 
   '@tenphi/glaze@2.0.0': {}
 
-  '@tenphi/tasty@3.11.1(@babel/core@7.28.5)(@babel/helper-plugin-utils@7.25.7)(@babel/types@7.29.0)(jiti@2.6.1)(react@19.3.0)':
+  '@tenphi/tasty@3.11.2(@babel/core@7.28.5)(@babel/helper-plugin-utils@7.25.7)(@babel/types@7.29.0)(jiti@2.6.1)(react@19.3.0)':
     dependencies:
       csstype: 3.2.3
     optionalDependencies:

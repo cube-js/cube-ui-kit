@@ -89,6 +89,7 @@
     "tasty/valid-custom-unit": "error",
     "tasty/valid-boolean-property": "error",
     "tasty/valid-state-key": "error",
+    "tasty/no-ignored-pseudo-element-state": "error",
     "tasty/valid-styles-structure": "error",
     "tasty/no-nested-state-map": "error",
     "tasty/no-important": "error",
