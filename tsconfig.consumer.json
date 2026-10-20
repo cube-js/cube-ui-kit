@@ -13,7 +13,6 @@
     "skipLibCheck": true,
     "noEmit": true,
     "types": [],
-    "baseUrl": ".",
     "paths": {
       "@cube-dev/ui-kit": ["./dist/index.d.ts"]
     }

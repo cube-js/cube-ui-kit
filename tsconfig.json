@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "baseUrl": ".",
     "module": "es2022",
     "lib": ["dom", "es2023"],
     "declaration": true,
