@@ -44,7 +44,8 @@ configure({
   // instead of one per component. Only takes effect inside a
   // `<TastyBatchProvider>` window, and windows have to be opened per portal
   // boundary because a commit that mounts a portal does not re-render `<Root>`.
-  // The kit opens three: here, in `<Portal>` (tooltips) and in `<Overlay>`
+  // The kit opens three: here, in `<Portal>` (tooltips, Select and
+  // ListBoxPopover lists, notifications, AlertDialogZone) and in `<Overlay>`
   // (popovers, modals, trays — i.e. Dialog and Menu). Writes in any commit
   // without a window go straight through exactly as before, so a
   // `useLayoutEffect` can never measure an element whose rules have not landed.

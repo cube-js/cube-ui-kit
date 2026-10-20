@@ -230,7 +230,7 @@ const meta: Meta<typeof FilterPicker> = {
     isLoadingItems: {
       control: 'boolean',
       description:
-        'Whether items are loading. Does NOT disable the trigger; shows a loading disclaimer inside the popover. With allowsCustomValue=true the search input stays visible; with allowsCustomValue=false the search input is hidden.',
+        'Whether items are loading. Does NOT disable the trigger; shows a loading icon in the search input suffix inside the popover.',
       table: {
         defaultValue: { summary: false },
       },
@@ -1347,7 +1347,7 @@ export const LoadingItemsState: Story = {
     docs: {
       description: {
         story:
-          'With `isLoadingItems={true}`, the trigger stays enabled and the popover can be opened. Since `allowsCustomValue` is `false`, the search input is hidden and a loading disclaimer is shown. Already-loaded items remain clickable.',
+          'With `isLoadingItems={true}`, the trigger stays enabled and the popover can be opened. A loading icon shows in the search input suffix. Already-loaded items remain clickable.',
       },
     },
   },
@@ -1381,7 +1381,7 @@ export const LoadingItemsWithCustomValue: Story = {
     docs: {
       description: {
         story:
-          'With `isLoadingItems={true}` and `allowsCustomValue={true}`, the search input remains visible so users can still type a custom value while items are loading. The loading disclaimer appears below the search input.',
+          'With `isLoadingItems={true}` and `allowsCustomValue={true}`, users can still type a custom value while items are loading. A loading icon shows in the search input suffix.',
       },
     },
   },
@@ -2156,7 +2156,7 @@ export const VirtualizedList: Story = {
   render: (args) => {
     const [selectedKeys, setSelectedKeys] = useState<string[]>(['item-2']);
 
-    // Generate a large list of items with varying content to trigger virtualization
+    // Generate a large list of items with varying content to test virtualization
     // Mix items with and without descriptions to test dynamic sizing
     const items = Array.from({ length: 100 }, (_, i) => ({
       id: `item-${i + 1}`,
@@ -2204,7 +2204,7 @@ export const VirtualizedList: Story = {
     docs: {
       description: {
         story:
-          'When a FilterPicker contains many items and has no sections, virtualization is automatically enabled to improve performance. Only visible items are rendered in the DOM, providing smooth scrolling even with large datasets.',
+          'When a FilterPicker has no sections, virtualization is automatically enabled to improve performance, except for a reorderable list while the search is empty. Only visible items are rendered in the DOM, providing smooth scrolling even with large datasets.',
       },
     },
   },

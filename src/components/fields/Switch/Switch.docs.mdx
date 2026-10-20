@@ -106,13 +106,12 @@ The `mods` property accepts the following modifiers you can override:
 ```jsx
 const [isEnabled, setIsEnabled] = useState(false);
 
-<Switch
-  isSelected={isEnabled}
-  onChange={setIsEnabled}
->
-  Feature enabled: {isEnabled ? 'On' : 'Off'}
+<Switch isSelected={isEnabled} onChange={setIsEnabled}>
+  Feature enabled
 </Switch>
 ```
+
+Keep the label the same in both states. The switch announces its own on/off state, so a label that also states it makes screen readers announce the state twice.
 
 ### All Sizes
 

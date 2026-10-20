@@ -300,7 +300,7 @@ export default {
       description: 'Callback fired when the selected option changes',
       control: { type: null },
       table: {
-        type: { summary: '(key: Key) => void' },
+        type: { summary: '(key: Key | null) => void' },
       },
     },
     onOpenChange: {

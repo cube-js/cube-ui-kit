@@ -41,7 +41,7 @@ ListBox (forwardRef)
   - Optional checkbox indicators with `isCheckable` prop
 
 ### 2. Virtualization
-- Automatic virtualization for large lists without sections
+- Automatic virtualization for every flat list: no sections and not `isReorderable`, whether options come from `items` or static children
 - Uses `@tanstack/react-virtual` for performance optimization
 - Dynamic height estimation based on content (descriptions, size)
 - Overscan of 10 items for smooth scrolling
@@ -95,7 +95,7 @@ interface StylingProps {
 ```typescript
 interface BehaviorProps {
   isDisabled?: boolean;
-  focusOnHover?: boolean;           // DOM focus follows pointer (default: true)
+  focusOnHover?: boolean;           // DOM focus follows pointer (default: false)
   shouldUseVirtualFocus?: boolean;  // Keep DOM focus external (default: false)
   isFocusWithin?: boolean;          // An outside input's component has focus (FilterListBox)
   isCheckable?: boolean;            // Show checkboxes in multiple mode
@@ -114,7 +114,7 @@ interface BehaviorProps {
 ### Virtualization Logic
 ```typescript
 // Virtualization is enabled when:
-const shouldVirtualize = !hasSections;
+const shouldVirtualize = !hasSections && !isReorderable;
 
 // Height estimation based on content:
 estimateSize: (index) => {
@@ -162,7 +162,7 @@ valuePropsMapper: ({ value, onChange }) => {
 ## Performance Considerations
 
 ### Virtualization
-- Automatically enabled for non-sectioned lists
+- Automatically enabled for non-sectioned lists that are not reorderable
 - Reduces DOM nodes for large datasets
 - Dynamic height measurement for variable content
 

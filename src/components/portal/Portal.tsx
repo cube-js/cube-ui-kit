@@ -34,9 +34,9 @@ export function Portal(props: PortalProps) {
   // so its window cannot cover this one — open one here, flushing in
   // `useInsertionEffect` before any positioning effect reads the DOM.
   //
-  // In the kit this path is tooltips: `TooltipTrigger` is the only component
-  // that renders `<Portal>`. Popovers, modals and trays portal through
-  // `<Overlay>`'s own `createPortal`, which opens its own window.
+  // In the kit this path is tooltips, Select's and ListBoxPopover's lists,
+  // the notifications layer and AlertDialogZone. Popovers, modals and trays
+  // portal through `<Overlay>`'s own `createPortal`, which opens its own window.
   const content = <TastyBatchProvider>{children}</TastyBatchProvider>;
 
   if (isDisabled) return content;

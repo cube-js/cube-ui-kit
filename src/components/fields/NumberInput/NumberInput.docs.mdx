@@ -45,7 +45,7 @@ A number input component that allows users to enter numeric values and increment
 - **`inputProps`** `Props` — Direct props passed to the native input element, merged over the props React Aria generates: a key you set wins, and event handlers are chained rather than replaced
 - **`wrapperProps`** `Props` — Direct props passed to the input wrapper element, merged with the `group` props React Aria puts there: event handlers are chained
 - **`validate`** `(value: number) => ValidationError | true | null | undefined` — Client-side validation. React Aria sets `aria-invalid` from the returned errors at once; the invalid style and the message follow after the user edits or leaves the field, so an empty field does not open in red. A typed number is checked once it commits, on blur or `Enter`. An explicit `errorMessage` replaces the returned message, and an explicit `isInvalid` (or a form's validation) takes over from `validate` entirely
-- **`onChange`** `function` — Callback fired when the input value changes
+- **`onChange`** `(value: number) => void` — Callback fired when a new value is committed, not on each keystroke: when the field loses focus or `Enter` is pressed after typing, and at once when a stepper button, the mouse wheel or one of the keys in [Keyboard Events](#keyboard-events) changes it. Committing an empty field passes `NaN`
 - **`onBlur`** `function` — Callback fired when the input loses focus
 - **`onFocus`** `function` — Callback fired when the input receives focus
 - **`onKeyDown`** `(e: KeyboardEvent) => void` — Callback fired when a key is pressed in the input. See [Keyboard Events](#keyboard-events)
@@ -227,7 +227,6 @@ This component supports all [Field properties](/docs/getting-started-field-prope
 
 - Provide `maxValue`/`minValue` indicator with value range
 - Support for input masks and formatting
-- Built-in debouncing for onChange events
 
 ## Related Components
 

@@ -136,7 +136,10 @@ export interface CubeDialogProps
     DimensionStyleProps {
   /** The size of the dialog */
   size?: 'S' | 'M' | 'L' | 'small' | 'medium' | 'large';
-  /** Whether the dialog is dismissable */
+  /**
+   * Whether the dialog shows its close button. Defaults to its DialogTrigger's
+   * or DialogContainer's `isDismissable`, except in a popover.
+   */
   isDismissable?: boolean;
   /** Trigger when the dialog is dismissed */
   onDismiss?: (arg?: any) => void;

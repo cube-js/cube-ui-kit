@@ -90,7 +90,7 @@ export interface CubeDialogProps
     | 'tray';
   /** The size of the dialog */
   size?: 'S' | 'M' | 'L';
-  /** Whether the dialog is dismissable */
+  /** Whether the dialog shows its close button */
   isDismissable?: boolean;
   /** Trigger when the dialog is dismissed */
   onDismiss?: (arg?: any) => void;

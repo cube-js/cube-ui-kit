@@ -8,6 +8,8 @@ import * as TextItemStories from './TextItem.stories';
 
 A text component with built-in overflow handling and auto-tooltips. When text is truncated, a tooltip automatically appears on hover showing the full content. Also supports text highlighting for search results.
 
+TextItem renders one line truncated with an ellipsis, so Text's `ellipsis` and `nowrap` props don't apply.
+
 ## When to Use
 
 - Display text that may overflow its container with automatic tooltip fallback
@@ -29,8 +31,6 @@ A text component with built-in overflow handling and auto-tooltips. When text is
 - **`tooltip`** `string | boolean | TooltipProviderProps` (default: `true`) — Tooltip configuration. `true` enables auto tooltip on overflow, a string shows fixed tooltip text, an object supports advanced configuration.
 - **`tooltipPlacement`** `Placement` (default: `top`) — Default tooltip placement
 - **`monospace`** `boolean` — Use monospace font
-- **`ellipsis`** `boolean` — Truncate overflow with ellipsis
-- **`nowrap`** `boolean` — Prevent text wrapping
 - **`italic`** `string` — Font style (e.g. `'italic'`)
 - **`weight`** `string | number` — Font weight
 - **`transform`** `string` — Text transform (e.g. `'uppercase'`, `'capitalize'`)
