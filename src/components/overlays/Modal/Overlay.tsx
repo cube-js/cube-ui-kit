@@ -12,6 +12,7 @@ import {
 import { createPortal } from 'react-dom';
 
 import { Provider, useProviderProps } from '../../../provider';
+import { useFocusTrail } from '../../../utils/react/focusTrail';
 import { markFocusRestoreWindow } from '../../../utils/react/programmaticFocus';
 import { ButtonSplitContext } from '../../actions/ButtonSplit/context';
 import { DisplayTransition } from '../../helpers/DisplayTransition/DisplayTransition';
@@ -73,6 +74,11 @@ function Overlay(props: CubeOverlayProps, ref) {
 
     if (!isOpen) markFocusRestoreWindow(EXIT_DURATION + 200);
   }
+
+  // A retained dialog restores focus itself, and when the element that opened
+  // it is gone by the close (a menu item), it looks further back. Recorded
+  // from mount, so a dialog that mounts on its first open has it too.
+  useFocusTrail(hideOnClose);
 
   let { root } = useProviderProps({} as Props);
 

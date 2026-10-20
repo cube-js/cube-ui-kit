@@ -20,7 +20,6 @@ import {
   useEffect,
   useLayoutEffect,
   useRef,
-  useState,
 } from 'react';
 import {
   AriaDialogProps,
@@ -32,6 +31,7 @@ import {
 import { useI18n } from '../../../i18n';
 import { CloseIcon } from '../../../icons/CloseIcon';
 import { mergeProps, SlotProvider } from '../../../utils/react';
+import { getFocusTrail } from '../../../utils/react/focusTrail';
 import { focusProgrammatically } from '../../../utils/react/programmaticFocus';
 import { extractStyles } from '../../../utils/styles';
 import { ItemButton } from '../../actions/ItemButton/ItemButton';
@@ -180,6 +180,10 @@ function findPriorityFocusElement(dialog: HTMLElement) {
  * restores only on unmount, which a retained dialog never reaches: it ends its
  * exit in the `unmounted` phase, still mounted. This restores at that moment,
  * by the same rule: only while focus is still in the dialog or lost to `<body>`.
+ *
+ * The target is the element focused when the dialog opened. When that element
+ * is gone by the close, as a menu item goes with its menu, `FocusScope` falls
+ * back to what was focused before it; so does this, from the focus trail.
  */
 function useRetainedDialogFocusRestore(
   dialogRef: RefObject<HTMLElement | null>,
@@ -187,32 +191,38 @@ function useRetainedDialogFocusRestore(
   shouldRestoreFocus: boolean,
 ) {
   const transitionState = useOpenTransitionContext()?.transitionState;
-  // Read before a native `autoFocus` inside a dialog that mounts open moves
-  // focus in, as `FocusScope` reads it.
-  const [focusedAtMount] = useState(() =>
-    typeof document === 'undefined' ? null : document.activeElement,
-  );
-  const nodeToRestoreRef = useRef<Element | null>(null);
+  // Where focus goes back to, best first. Recorded at open, spent at the end
+  // of the exit.
+  const targetsRef = useRef<HTMLElement[]>([]);
 
   useLayoutEffect(() => {
     if (!isOpen) return;
 
-    const activeElement = document.activeElement;
+    const dialog = dialogRef.current;
 
-    nodeToRestoreRef.current = dialogRef.current?.contains(activeElement)
-      ? focusedAtMount
-      : activeElement;
-  }, [isOpen, dialogRef, focusedAtMount]);
+    // Reopened during its exit, with focus still inside: same opener.
+    if (targetsRef.current.length && dialog?.contains(document.activeElement)) {
+      return;
+    }
+
+    // Focus may already be inside, moved by a native `autoFocus` on mount, so
+    // the trail is read past anything in the dialog.
+    targetsRef.current = [document.activeElement, ...getFocusTrail()].filter(
+      (node): node is HTMLElement =>
+        node instanceof HTMLElement &&
+        node !== document.body &&
+        !dialog?.contains(node),
+    );
+  }, [isOpen, dialogRef]);
 
   useEffect(() => {
     if (transitionState !== 'unmounted') return;
 
-    const node = nodeToRestoreRef.current;
+    const targets = targetsRef.current;
 
-    nodeToRestoreRef.current = null;
+    targetsRef.current = [];
 
-    if (!shouldRestoreFocus || !(node instanceof HTMLElement)) return;
-    if (node === document.body || !node.isConnected) return;
+    if (!shouldRestoreFocus) return;
 
     const activeElement = document.activeElement;
     const isFocusLost =
@@ -221,7 +231,15 @@ function useRetainedDialogFocusRestore(
       !activeElement.isConnected ||
       !!dialogRef.current?.contains(activeElement);
 
-    if (isFocusLost) focusProgrammatically(node, { preventScroll: true });
+    if (!isFocusLost) return;
+
+    for (const node of targets) {
+      if (!node.isConnected) continue;
+
+      focusProgrammatically(node, { preventScroll: true });
+
+      if (document.activeElement === node) return;
+    }
   }, [transitionState, shouldRestoreFocus, dialogRef]);
 }
 
@@ -258,10 +276,11 @@ export const Dialog = forwardRef(function Dialog(
     !isNonModalPopover;
 
   return (
-    // This component traps the focus inside the dialog and restores it on
-    // close. The restore is the one that matters for popover-type dialogs —
-    // `DialogTrigger`'s own restore is a no-op there — so `shouldRestoreFocus`
-    // has to reach it. Containment is unaffected either way.
+    // This component traps the focus inside the dialog and restores it when
+    // it unmounts (a retained dialog never does, so `DialogContent` restores
+    // that one). The restore is the one that matters for popover-type dialogs
+    // — `DialogTrigger`'s own restore is a no-op there — so
+    // `shouldRestoreFocus` has to reach it. Containment is unaffected either way.
     <FocusScope
       restoreFocus={context.shouldRestoreFocus ?? true}
       contain={shouldContainFocus}

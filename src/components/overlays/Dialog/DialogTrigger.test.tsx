@@ -204,6 +204,57 @@ describe.each(['popover', 'modal'] as const)(
   },
 );
 
+// A retained popover never unmounts its `FocusScope`, the popover's only
+// restore, so `Dialog` restores when it reaches the end of its exit.
+describe('DialogTrigger popover hideOnClose focus restore', () => {
+  it('returns focus to the trigger on every Escape', async () => {
+    const user = userEvent.setup();
+    renderWithRoot(
+      <DialogTrigger hideOnClose type="popover">
+        <Button qa="Trigger">Open</Button>
+        <Dialog aria-label="Retained popover">
+          <input aria-label="Draft" />
+        </Dialog>
+      </DialogTrigger>,
+    );
+    const trigger = screen.getByTestId('Trigger');
+
+    for (let cycle = 0; cycle < 2; cycle++) {
+      await user.click(trigger);
+      const dialog = await screen.findByRole('dialog');
+      await waitFor(() =>
+        expect(dialog).toContainElement(document.activeElement as HTMLElement),
+      );
+
+      await user.keyboard('{Escape}');
+      await waitFor(() => expect(trigger).toHaveFocus());
+    }
+  });
+
+  it('never restores focus with shouldRestoreFocus={false}', async () => {
+    const user = userEvent.setup();
+    renderWithRoot(
+      <DialogTrigger hideOnClose type="popover" shouldRestoreFocus={false}>
+        <Button qa="Trigger">Open</Button>
+        <Dialog aria-label="Retained popover">
+          <input aria-label="Draft" />
+        </Dialog>
+      </DialogTrigger>,
+    );
+
+    await user.click(screen.getByTestId('Trigger'));
+    const dialog = await screen.findByRole('dialog');
+    await waitFor(() =>
+      expect(dialog).toContainElement(document.activeElement as HTMLElement),
+    );
+    await user.keyboard('{Escape}');
+    // Past the exit, where a retained popover would restore.
+    await new Promise((resolve) => setTimeout(resolve, 600));
+
+    expect(screen.getByTestId('Trigger')).not.toHaveFocus();
+  });
+});
+
 // CUB-4113: `shouldCloseOnInteractOutside` used to be shadowed by the
 // automatic `data-popover-dismiss` handling — every Button/ItemButton outside
 // the popover took the auto-dismiss branch, so the caller's predicate was
