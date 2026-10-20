@@ -3,6 +3,8 @@ import { flushSync } from 'react-dom';
 
 import { act, renderWithRoot, screen, userEvent, waitFor } from '../../../test';
 import { Button } from '../../actions/Button';
+import { DateInput, DatePicker } from '../../fields/DatePicker';
+import { Select } from '../../fields/Select';
 import { TextArea } from '../../fields/TextArea';
 
 import { Dialog } from './Dialog';
@@ -486,6 +488,102 @@ describe('DialogContainer hideOnClose focus restore', () => {
         await user.keyboard('{Escape}');
         await waitFor(() => expect(opener).toHaveFocus());
       }
+    });
+
+    // `autoFocus` acts when a control mounts, and a retained dialog mounts it
+    // hidden, before its first open.
+    it.each(['Button', 'Select', 'DateInput', 'DatePicker'])(
+      'focuses an autofocused %s on every open',
+      async (control) => {
+        const user = userEvent.setup();
+
+        function Confirm() {
+          const [isOpen, setOpen] = useState(false);
+
+          return (
+            <>
+              <Button qa="Opener" onPress={() => setOpen(true)}>
+                Open
+              </Button>
+              <DialogContainer
+                hideOnClose={hideOnClose}
+                isOpen={isOpen}
+                onDismiss={() => setOpen(false)}
+              >
+                <Dialog aria-label="Confirm">
+                  <Button qa="Copy">Copy</Button>
+                  {control === 'Button' ? (
+                    // oxlint-disable-next-line jsx-a11y/no-autofocus -- the case under test
+                    <Button autoFocus qa="Autofocused">
+                      Continue
+                    </Button>
+                  ) : control === 'Select' ? (
+                    // oxlint-disable-next-line jsx-a11y/no-autofocus -- the case under test
+                    <Select autoFocus aria-label="Region" qa="Autofocused">
+                      <Select.Item key="eu">EU</Select.Item>
+                    </Select>
+                  ) : control === 'DateInput' ? (
+                    // oxlint-disable-next-line jsx-a11y/no-autofocus -- the case under test
+                    <DateInput autoFocus aria-label="Due" />
+                  ) : (
+                    // oxlint-disable-next-line jsx-a11y/no-autofocus -- the case under test
+                    <DatePicker autoFocus aria-label="Due" />
+                  )}
+                </Dialog>
+              </DialogContainer>
+            </>
+          );
+        }
+
+        renderWithRoot(<Confirm />);
+        const opener = screen.getByTestId('Opener');
+
+        for (let cycle = 0; cycle < 2; cycle++) {
+          await user.click(opener);
+          // A date field focuses its first segment.
+          const autofocused = control.startsWith('Date')
+            ? (await screen.findAllByRole('spinbutton'))[0]
+            : await screen.findByTestId('Autofocused');
+
+          await waitFor(() => expect(autofocused).toHaveFocus());
+          await act(() => new Promise((resolve) => setTimeout(resolve, 50)));
+          expect(autofocused).toHaveFocus();
+
+          await user.keyboard('{Escape}');
+          await waitFor(() => expect(opener).toHaveFocus());
+        }
+      },
+    );
+
+    // `useDialog` blurs and refocuses a dialog 500 ms after it mounts, so
+    // VoiceOver on iOS announces it.
+    it('refocuses the dialog half a second after it reopens', async () => {
+      const { user, opener } = await openFromOpener();
+
+      // Past the first open's refocus, and the one a retained dialog's mount
+      // schedules.
+      await act(() => new Promise((resolve) => setTimeout(resolve, 600)));
+      await user.keyboard('{Escape}');
+      await waitFor(() => expect(opener).toHaveFocus());
+
+      const focused: Element[] = [];
+      const onFocusIn = (event: FocusEvent) => {
+        const target = event.target as Element;
+
+        if (target.getAttribute('role') === 'dialog') focused.push(target);
+      };
+
+      document.addEventListener('focusin', onFocusIn);
+
+      try {
+        await user.click(opener);
+        await act(() => new Promise((resolve) => setTimeout(resolve, 700)));
+      } finally {
+        document.removeEventListener('focusin', onFocusIn);
+      }
+
+      expect(screen.getByRole('dialog')).toHaveFocus();
+      expect(focused).toHaveLength(2);
     });
 
     it('returns focus to the opener after a reopen during the exit', async () => {
