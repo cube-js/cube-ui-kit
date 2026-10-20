@@ -274,7 +274,7 @@ Collapsible side panel with resizing, transitions, and multiple rendering modes.
 - **`onSizeChange`** `(size: number) => void` — Size change callback
 - **`sizeStorageKey`** `string` — localStorage key for persisting size
 - **`hasTransition`** `boolean` (default: `false`) — Enable slide animation
-- **`hideOnClose`** `boolean` (default: `false`) — Hide the closed panel instead of unmounting its content, so the content keeps its state (an unsent draft, scroll position, a request in flight) until the panel reopens. The hidden panel takes no space, no focus and no resize handle. The content mounts once, even when the panel starts closed, so mount effects and a native `autoFocus` do not run again on reopen. Content that mounts while closed is hidden: `autoFocus` does nothing and measurements read zero until the panel opens. In dialog mode the dialog is kept the same way
+- **`hideOnClose`** `boolean` (default: `false`) — Hide the closed panel instead of unmounting its content, so the content keeps its state (an unsent draft, scroll position, a request in flight) until the panel reopens. The hidden panel takes no space, no focus and no resize handle. The content mounts once, even when the panel starts closed, so mount effects and a native `autoFocus` do not run again on reopen. Content that mounts while closed is hidden: `autoFocus` does nothing and measurements read zero until the panel opens. In dialog mode the dialog is kept the same way, and moves focus in and back out itself; `dialogProps.hideOnClose` takes precedence
 - **`isDismissable`** `boolean` (default: `true`) — Allow dismissing overlay/dialog by click or Escape, and an overlay panel by focus moving into the main content
 - **`overlayStyles`** `Styles` — Styles for the overlay backdrop in overlay mode
 - **`isDialogOpen`** `boolean` — Controlled dialog state (mode="dialog")
@@ -613,7 +613,7 @@ function PanelWithTransitionExample() {
 
 ### Keep Panel Content Mounted
 
-With `hideOnClose`, a closed panel is hidden instead of unmounted, so an unsent message or a running request survives closing it. The content does not remount on reopen, so move focus yourself when the panel opens, without scrolling: the panel enters from offscreen. Menus and popovers opened from the panel stay open when code closes it, so close them first.
+With `hideOnClose`, a closed panel is hidden instead of unmounted, so an unsent message or a running request survives closing it. The content does not remount on reopen, so move focus yourself when the panel opens, without scrolling: the panel enters from offscreen. In dialog mode the dialog moves focus in itself. Menus and popovers opened from the panel stay open when code closes it, so close them first.
 
 <Story of={LayoutStories.PanelHideOnClose} />
 

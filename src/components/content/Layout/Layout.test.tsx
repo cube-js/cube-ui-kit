@@ -285,6 +285,45 @@ describe('Layout', () => {
     view.rerender(panel(true));
     expect(await screen.findByRole('textbox', { name: 'Draft' })).toBe(draft);
   });
+
+  it('returns focus on every close of a hideOnClose dialog panel', async () => {
+    function DialogLayout() {
+      const [isOpen, setIsOpen] = useState(false);
+
+      return (
+        <>
+          <Button onPress={() => setIsOpen(true)}>Open panel</Button>
+          <Layout>
+            <Layout.Panel
+              hideOnClose
+              side="right"
+              mode="dialog"
+              isDialogOpen={isOpen}
+              onDialogOpenChange={setIsOpen}
+            >
+              <input aria-label="Draft" />
+            </Layout.Panel>
+            <Layout.Content>Main</Layout.Content>
+          </Layout>
+        </>
+      );
+    }
+
+    const user = userEvent.setup();
+    renderWithRoot(<DialogLayout />);
+    const opener = screen.getByRole('button', { name: 'Open panel' });
+
+    for (let cycle = 0; cycle < 2; cycle++) {
+      await user.click(opener);
+      const draft = await screen.findByRole('textbox', { name: 'Draft' });
+      await waitFor(() => expect(draft).toHaveFocus());
+      if (cycle === 0) await user.type(draft, 'Unsent');
+
+      await user.keyboard('{Escape}');
+      await waitFor(() => expect(opener).toHaveFocus());
+      expect(draft).toHaveValue('Unsent');
+    }
+  });
 });
 
 describe('GridLayout', () => {
