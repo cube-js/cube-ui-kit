@@ -404,8 +404,8 @@ export interface CubeLayoutPanelProps extends BaseProps, ContainerStyleProps {
    * The content mounts once, even while the panel starts closed, so mount
    * effects and a native `autoFocus` do not run again on reopen. Content that
    * mounts while closed is hidden: `autoFocus` does nothing and measurements
-   * read zero until the panel opens. Not used in dialog mode.
-   * Default: false
+   * read zero until the panel opens. In dialog mode the dialog is kept the
+   * same way. Default: false
    */
   hideOnClose?: boolean;
   /**
@@ -1068,6 +1068,7 @@ function LayoutPanel(
       <DialogContainer
         isOpen={dialogOpen}
         isDismissable={isDismissable}
+        hideOnClose={hideOnClose}
         onDismiss={() => handleDialogOpenChange(false)}
         {...dialogProps}
       >

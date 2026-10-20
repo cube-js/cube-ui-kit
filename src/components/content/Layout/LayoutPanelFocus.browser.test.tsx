@@ -180,3 +180,49 @@ describe('Layout.Panel overlay focus in a browser', () => {
     expect(onOpenChange).not.toHaveBeenCalled();
   });
 });
+
+describe('Layout.Panel dialog mode with hideOnClose in a browser', () => {
+  it('keeps the dialog content and returns focus on every close', async () => {
+    function DialogLayout() {
+      const [isOpen, setIsOpen] = useState(false);
+
+      return (
+        <>
+          <Button onPress={() => setIsOpen(true)}>Open panel</Button>
+          <Layout>
+            <Layout.Panel
+              hideOnClose
+              side="right"
+              mode="dialog"
+              isDialogOpen={isOpen}
+              onDialogOpenChange={setIsOpen}
+            >
+              <input aria-label="Panel field" />
+            </Layout.Panel>
+            <Layout.Content>Main</Layout.Content>
+          </Layout>
+        </>
+      );
+    }
+
+    await renderReady(<DialogLayout />);
+    const opener = screen.getByRole('button', { name: 'Open panel' });
+
+    await act(() => userEvent.click(opener));
+    const field = await screen.findByLabelText('Panel field');
+    await waitFor(() => expect(field).toHaveFocus());
+    await act(() => userEvent.fill(field, 'Unsent'));
+
+    for (let cycle = 0; cycle < 2; cycle++) {
+      if (cycle > 0) {
+        await act(() => userEvent.click(opener));
+        await waitFor(() => expect(field).toHaveFocus());
+      }
+
+      await act(() => userEvent.keyboard('{Escape}'));
+      await waitFor(() => expect(opener).toHaveFocus());
+    }
+
+    expect(field).toHaveValue('Unsent');
+  });
+});

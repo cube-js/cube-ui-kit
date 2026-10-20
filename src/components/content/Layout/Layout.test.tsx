@@ -259,9 +259,7 @@ describe('Layout', () => {
     expect(screen.queryByText('Panel content')).not.toBeInTheDocument();
   });
 
-  // A retained DialogContainer would never restore focus, so dialog mode
-  // ignores hideOnClose and unmounts as before.
-  it('unmounts a closed dialog panel even with hideOnClose', async () => {
+  it('keeps a closed dialog panel mounted with hideOnClose', async () => {
     const panel = (isOpen: boolean) => (
       <Root>
         <Layout>
@@ -277,14 +275,15 @@ describe('Layout', () => {
       </Root>
     );
     const view = render(panel(true));
-    await screen.findByRole('textbox', { name: 'Draft' });
+    const draft = await screen.findByRole('textbox', { name: 'Draft' });
 
     view.rerender(panel(false));
-    await waitFor(() =>
-      expect(
-        screen.queryByRole('textbox', { name: 'Draft', hidden: true }),
-      ).toBeNull(),
-    );
+    // Past the exit, where a dialog without hideOnClose unmounts.
+    await act(() => new Promise((resolve) => setTimeout(resolve, 500)));
+    expect(draft).toBeInTheDocument();
+
+    view.rerender(panel(true));
+    expect(await screen.findByRole('textbox', { name: 'Draft' })).toBe(draft);
   });
 });
 
