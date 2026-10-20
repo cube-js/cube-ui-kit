@@ -391,7 +391,10 @@ module.exports = [
     // (0e3733f7, run 39400605023), +1,897 B, all of it inside @tenphi/tasty:
     // ui-kit's own source is unchanged. Allow 629 kB, 766 B headroom; confirm
     // in Linux CI.
-    limit: '629kB',
+    // Tasty 3.11.1 → 3.11.2: 629,130 B locally against main's 628,234 B in CI
+    // (48561f64, run 39467277556), +896 B for the pseudo-element state
+    // handling. Allow 630 kB, 870 B headroom; confirm in Linux CI.
+    limit: '630kB',
   },
   {
     name: 'Tree shaking (just a Button)',
@@ -513,6 +516,9 @@ module.exports = [
     // run 39400605023, matched here to the byte on the previous bump), +1,589
     // B in Tasty's always-loaded style engine. Allow 162 kB, 186 B headroom;
     // confirm in Linux CI.
-    limit: '162kB',
+    // Tasty 3.11.1 → 3.11.2: 162,599 B against main's 161,814 B (48561f64, CI
+    // run 39467277556), +785 B in the same engine. Allow 163 kB, 401 B
+    // headroom; confirm in Linux CI.
+    limit: '163kB',
   },
 ];
