@@ -1,5 +1,53 @@
 # @cube-dev/ui-kit
 
+## 0.198.0
+
+### Minor Changes
+
+- [#1534](https://github.com/cube-js/cube-ui-kit/pull/1534) [`0e3733f7`](https://github.com/cube-js/cube-ui-kit/commit/0e3733f78a9692bd113b4f7df9bf2f3661959081) Thanks [@tenphi](https://github.com/tenphi)! - Fields render their chrome only when there is something to show again: a non-empty `label`, a form binding, a `description`, `errorMessage`, `message`, `fieldStyles`, `fieldProps` or `isHidden` prop, whatever it holds, or a `validate` on `TextInput`, `TextArea`, `PasswordInput` and `NumberInput`, which show its errors. A field with none of them renders only the control, as before 0.196.0, so a standalone control without a label no longer needs `isBare` to stay out of a field wrapper. `TagInput` keeps its chrome for its refusal messages, and a custom control that shows the errors of its `validate` can pass `showsValidateErrors: true` to `useFieldProps`. `isBare` still overrides a label and keeps it visually hidden, and `isBare={false}` now renders the chrome anyway, replacing the deprecated `forceField`, which renders it again too.
+
+- [#1534](https://github.com/cube-js/cube-ui-kit/pull/1534) [`0e3733f7`](https://github.com/cube-js/cube-ui-kit/commit/0e3733f78a9692bd113b4f7df9bf2f3661959081) Thanks [@tenphi](https://github.com/tenphi)! - A field's `ref` now points at its control with or without the field chrome, so a bare field's is never `null`, and the new `labelRef` reaches its label; reach the wrapper with `fieldProps={{ ref }}`. `wrapWithField(control, props)` takes no ref, and its three-argument form is deprecated: the `ref` it takes is now ignored, where it used to reach the field wrapper. A bare date picker's `ref.focus()` now focuses its first segment, and `FileInput`'s ref resolves to its element instead of the inner button's handle.
+
+- [#1538](https://github.com/cube-js/cube-ui-kit/pull/1538) [`fc6b517f`](https://github.com/cube-js/cube-ui-kit/commit/fc6b517f651bb41622119231e4a2593aab13f684) Thanks [@tenphi](https://github.com/tenphi)! - `Layout.Panel` in dialog mode now honours `hideOnClose`: the closed dialog is hidden instead of unmounting the panel content, as in the other modes.
+
+- [#1535](https://github.com/cube-js/cube-ui-kit/pull/1535) [`95105399`](https://github.com/cube-js/cube-ui-kit/commit/9510539946d98eda657658618bceffd7645f3330) Thanks [@tenphi](https://github.com/tenphi)! - Add `hideOnClose` to `Layout.Panel` (outside dialog mode): a closed panel is hidden instead of unmounting its content, so the content keeps its state, such as an unsent draft or a request in flight, until the panel reopens. The hidden panel takes no space, no focus and no resize handle.
+
+- [#1542](https://github.com/cube-js/cube-ui-kit/pull/1542) [`48561f64`](https://github.com/cube-js/cube-ui-kit/commit/48561f64a269426368afe1a3dd81e418fa77491f) Thanks [@tenphi](https://github.com/tenphi)! - `TextItem` no longer accepts the `ellipsis` and `nowrap` props it inherited from `Text`. It renders one line truncated with an ellipsis, so both props had no effect, and `ellipsis={false}` could not turn truncation off. Remove them from `TextItem` call sites; for text that wraps, use `Text`.
+
+### Patch Changes
+
+- [#1549](https://github.com/cube-js/cube-ui-kit/pull/1549) [`deeabdce`](https://github.com/cube-js/cube-ui-kit/commit/deeabdce510820ca4177d958a598da3677cb2f23) Thanks [@tenphi](https://github.com/tenphi)! - Make `Alert` themes recognisable at a glance: `note`, `success`, `danger` and `warning` now use their own, more tinted fill and border, through new `#<theme>-alert-surface` and `#<theme>-alert-border` tokens on those four themes. The shared `#<theme>-surface` / `#<theme>-border` tokens, the default and primary themes, Badge and the Item family are unchanged. Also fix `theme="special"` rendering dark text on its purple fill: the label is now white.
+
+- [#1538](https://github.com/cube-js/cube-ui-kit/pull/1538) [`fc6b517f`](https://github.com/cube-js/cube-ui-kit/commit/fc6b517f651bb41622119231e4a2593aab13f684) Thanks [@tenphi](https://github.com/tenphi)! - Fix focus dropping to the page when a `hideOnClose` dialog closes: `DialogContainer` and a popover `DialogTrigger` now return focus to the element that opened them, as they do without `hideOnClose`. Every open of a `hideOnClose` dialog now also moves focus in the way a newly mounted dialog does: to an autofocused text field (a `TextArea` included), or to a submit or primary button, otherwise to the dialog itself, so a reopen keeps its scroll position instead of scrolling back to its first control.
+
+- [#1535](https://github.com/cube-js/cube-ui-kit/pull/1535) [`95105399`](https://github.com/cube-js/cube-ui-kit/commit/9510539946d98eda657658618bceffd7645f3330) Thanks [@tenphi](https://github.com/tenphi)! - Fix a `Layout` that mounts inside a hidden container, such as a closed `hideOnClose` panel or a hidden tab, staying collapsed after it is shown: it now checks its height once it is visible.
+
+- [#1542](https://github.com/cube-js/cube-ui-kit/pull/1542) [`48561f64`](https://github.com/cube-js/cube-ui-kit/commit/48561f64a269426368afe1a3dd81e418fa77491f) Thanks [@tenphi](https://github.com/tenphi)! - The `no-redundant-default-prop` lint rule no longer reports `focusOnHover={true}` on `ListBox` as a restated default, and reports `focusOnHover={false}` instead. The docs had given its default as `true`, but it is `false`: removing `focusOnHover={true}` as the rule suggested stopped options from taking focus on hover.
+
+- [#1538](https://github.com/cube-js/cube-ui-kit/pull/1538) [`fc6b517f`](https://github.com/cube-js/cube-ui-kit/commit/fc6b517f651bb41622119231e4a2593aab13f684) Thanks [@tenphi](https://github.com/tenphi)! - A `hideOnClose` dialog now moves focus as a dialog without it does in more cases. Autofocused buttons, selects, checkboxes, switches, radios, `CommandMenu` and date fields take focus on every open, as autofocused text fields already did, and the last of several autofocused controls wins. Closing a dialog opened from a menu item or from a button in a popover returns focus to that menu's or popover's trigger, and so does unmounting the dialog while it is open. A retained dialog opened from a button in a popover keeps focus instead of losing it to the popover's trigger. `Tab` out of a retained panel, out of a popover that is not dismissable, or from any retained dialog while it closes moves to the controls beside its opener. A dialog opened from a retained one returns focus to that one's opener once that one has closed. A retained dialog nested in another overlay opens above it where the browser supports `moveBefore`, and it focuses itself on open and again half a second later, as `useDialog` does. Any dialog that a screen reader opens now focuses its autofocused control, its submit or primary button, or else the dialog itself, rather than its first control or a destructive button. A kit control's `data-autofocus` set by the consumer is no longer dropped. The DialogContainer docs list what still differs.
+
+- [#1534](https://github.com/cube-js/cube-ui-kit/pull/1534) [`0e3733f7`](https://github.com/cube-js/cube-ui-kit/commit/0e3733f78a9692bd113b4f7df9bf2f3661959081) Thanks [@tenphi](https://github.com/tenphi)! - Update Tasty to 3.10.0 (from 3.9.9). Production builds no longer turn on Tasty's development diagnostics and debug instrumentation by default. An `animation` keeps the case of a camelCase keyframe name and finds a name written after `steps(n, end)`. Global styles set with `useGlobalStyles` apply `@starting` values inside `@starting-style`, emit the local `@keyframes` they use, give every selector in a list its states and sub-elements, and attach `@root()` states on `:root` or `html`, including tokens set with `configure({ tokens })`, to the root itself.
+
+- [#1537](https://github.com/cube-js/cube-ui-kit/pull/1537) [`cab46c5b`](https://github.com/cube-js/cube-ui-kit/commit/cab46c5b8ff8f2f2ee6eea8f90654ebb6daf6fba) Thanks [@tenphi](https://github.com/tenphi)! - Update Tasty to 3.11.1 (from 3.10.0). The kit needed no changes. For apps built on it:
+
+  - `tasty(Base, options)` now applies the options it type-checks: `styleProps`, `modProps` and `tokenProps` become styles, mods and tokens instead of reaching `Base` as unknown props, `variants` apply over the extension's `styles`, and `elements` adds sub-elements. The `variant` option sets the default variant, in `tasty({ variants, variant })` too, where it used to reach the DOM as an attribute.
+  - `#clear` is always `transparent` and no longer reads `--clear-color`, so overriding that property has no effect.
+  - A `border` or `outline` with no color is drawn in the text color unless `#border` or `#outline` is defined. The kit defines `#border`, not `#outline`.
+  - `@media` and `@container` conditions resolve units to literal lengths. The kit's `x`, `r`, `cr`, `bw` and `ow` units are custom properties, which still cannot work in a query condition, and Tasty now reports one there in development.
+  - `width: 'stretch'` and the other size styles emit each engine's fallback, `transition: 'zIndex'` transitions `z-index`, container queries over `aspect-ratio` and `orientation` apply, and media query bounds in different units are compared correctly.
+  - CSS built with `extractStylesWithChunks()` or `extractStylesForSelector()` also needs `extractConfigProperties()` from `@tenphi/tasty/zero`, once per stylesheet.
+
+- [#1544](https://github.com/cube-js/cube-ui-kit/pull/1544) [`98155248`](https://github.com/cube-js/cube-ui-kit/commit/98155248ddc7600ab38e175331caa59fee874b67) Thanks [@tenphi](https://github.com/tenphi)! - Update Tasty to 3.11.2 (from 3.11.1). The kit needed no changes. A sub-element whose `# @cube-dev/ui-kit ends in a pseudo-element, such as `$: '&::before'`, now applies `@own(...)`to the pseudo-element itself. States a pseudo-element cannot have are dropped with a`PSEUDO_ELEMENT_STATE_IGNORED`warning: modifiers, attributes, classes and tree positions. Before, they produced a selector that never matched, and their default branch never applied either. Put such a condition on the element in`# @cube-dev/ui-kit instead, as in `$: 'a[rel="next"]::before'`. The same holds for a `useGlobalStyles()` selector ending in a pseudo-element, whose `@parent(...)` states now go before the pseudo-element, where they match.
+
+- [#1546](https://github.com/cube-js/cube-ui-kit/pull/1546) [`b7ab8461`](https://github.com/cube-js/cube-ui-kit/commit/b7ab8461536bc929732d4e8ceaafb3fe73c79cf8) Thanks [@tenphi](https://github.com/tenphi)! - Update Tasty to 3.12.0 (from 3.11.2). A faded color such as `#dark.15` now compiles to `color-mix(in oklab, var(--dark-color) 15%, transparent)` instead of relative color syntax, and the selection color of code blocks follows. `color-mix()` is widely available, while relative color syntax needs Chrome 125, Firefox 128 or Safari 18. An opaque token fades to the same color as before. For apps built on the kit:
+
+  - Alpha composes, so a token that is already translucent is faded further. A `$prop` alpha must hold a number: `$fade: '.5'` works, `'50%'` no longer does.
+  - `false` writes nothing in `padding`, `margin`, `inset`, `scrollMargin`, `scrollPadding`, the size styles and `outlineOffset`, set directly or under a state. Before, `width: { '': false, ellipsis: 'max 100%' }` wrote `width: auto; min-width: initial; max-width: initial` outside `ellipsis`.
+  - Named and system colors, such as `red` or `Highlight`, are colors in `border`, `outline`, `shadow`, `scrollbar`, `fade` and color tokens. They are emitted lowercase.
+  - `transition: 'none'` turns transitions off, alone or under a state. Before, it emitted a declaration the browser dropped.
+  - A custom property written as CSS keeps its case: `var(--myGap)` no longer becomes `var(--mygap)`.
+  - `mergeStyles()` and the `Styles` type are exported from `@tenphi/tasty/zero`, and Tasty's Babel plugin supports Babel 8.
+
 ## 0.197.0
 
 ### Minor Changes
@@ -1122,7 +1170,6 @@
   - `ItemButton`'s `ActionsWrapper` reproduces the label rather than the chip, for the same reason on the sibling path.
 
   ### Also
-
   - `current` is registered in `TastyThemeNames`, so `theme="current"` autocompletes on every tasty component.
   - New `CurrentStates` stories on `Button` and `Item` sweep every type and state on the theme, inside containers that paint their own text color; the context sweeps are renamed `CurrentTheme`.
 
@@ -2543,7 +2590,6 @@
   flicker: the modal mounts first, then the popover closes.
 
   ### Opt-outs
-
   - **Automatic** — Buttons that act as popover triggers (`MenuTrigger`
     children, `DialogTrigger type="popover"` children, picker trigger
     ItemButtons) already carry `data-popover-trigger` and skip the dismiss.
@@ -2573,7 +2619,6 @@
   `Select` need no change — they're auto-skipped.
 
   ### Internals
-
   - `usePopoverSync` gained a `dismissOnInnerButtonPress` option (default
     `true`). `DialogTrigger` passes `false` for modal/tray/fullscreen types
     so buttons inside those dialogs don't subscribe to the new dismiss
@@ -3590,7 +3635,6 @@
 - [#966](https://github.com/cube-js/cube-ui-kit/pull/966) [`3244c5d9`](https://github.com/cube-js/cube-ui-kit/commit/3244c5d958e4f1cbcb5637a205ca5cf64d3a9fa9) Thanks [@tenphi](https://github.com/tenphi)! - Refactor color system to use OKHSL format with unified constants
 
   ### What's changed:
-
   - Converted all color tokens from RGB to OKHSL format for perceptually uniform color manipulation
   - Added color constants (`PURPLE_HUE`, `DANGER_HUE`, `MAIN_SATURATION`, etc.) for consistent color values across themes
   - Moved color conversion utilities (`hslToRgb`, `okhslToRgb`) to separate files (`hsl-to-rgb.ts`, `okhsl-to-rgb.ts`)
@@ -3603,7 +3647,6 @@
   OKHSL provides perceptually uniform color space, making it easier to create consistent color variations. Using constants ensures all theme colors maintain consistent saturation and lightness values.
 
   ### Technical details:
-
   - All color tokens now use `okhsl()` format
   - Color conversion utilities properly handle OKHSL → RGB conversion for CSS variable generation
   - Internal file organization improved with consistent naming conventions
@@ -3611,7 +3654,6 @@
 - [#966](https://github.com/cube-js/cube-ui-kit/pull/966) [`3244c5d9`](https://github.com/cube-js/cube-ui-kit/commit/3244c5d958e4f1cbcb5637a205ca5cf64d3a9fa9) Thanks [@tenphi](https://github.com/tenphi)! - Add warning theme and rename note theme across components
 
   ### What's changed:
-
   - Added `warning` theme support to `Badge`, `Tag`, and `Item` components
   - Renamed previous `note` theme to `warning` (yellow/amber) across the codebase
   - Added new `note` theme (violet) for informational content, available for `card` type items
@@ -3619,14 +3661,12 @@
   - Updated notification icons to use `warning` theme instead of `note`
 
   ### Components affected:
-
   - `Badge`: Added `warning` theme option
   - `Tag`: Added `warning` theme option
   - `Item`: Added `warning.card` and `note.card` theme variants
   - `NotificationIcon`: Changed default/attention from `note` to `warning` colors
 
   ### Migration:
-
   - If you were using `theme="note"` on `Badge` or `Tag` components, change to `theme="warning"` for the same yellow/amber appearance
   - For violet informational cards, use `type="card" theme="note"` on `Item` component
   - Notification icons now use warning colors by default (previously note colors)
@@ -3779,7 +3819,6 @@
   - Recursive unit resolution: Units can reference other custom units with automatic resolution (e.g., `{ x: '8px', y: '2x' }` → `1y` = `16px`).
 
   ### Removed
-
   - Units `rp`, `gp`, and `sp` have been removed from default units.
 
 - [#960](https://github.com/cube-js/cube-ui-kit/pull/960) [`d89a036e`](https://github.com/cube-js/cube-ui-kit/commit/d89a036e578591fe20f22a21a0c37c41f9c9daf5) Thanks [@tenphi](https://github.com/tenphi)! - Fixed variant switching causing DOM element recreation. Components with `variants` now preserve their DOM element and state when the `variant` prop changes.
