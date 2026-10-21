@@ -1396,7 +1396,9 @@ describe('<ListBox />', () => {
       vi.mocked(useVirtualizer).mockImplementation(defaultVirtualizer!);
     });
 
-    function renderList(props: Partial<CubeListBoxProps<object>> = {}) {
+    function renderList(
+      props: Partial<CubeListBoxProps<(typeof items)[number]>> = {},
+    ) {
       return render(
         <ListBox aria-label="Items" items={items} {...props}>
           {(item: (typeof items)[number]) => (

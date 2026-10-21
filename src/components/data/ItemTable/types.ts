@@ -21,7 +21,8 @@ import type { CubeTablePersistKey } from '../TableBase/use-table-storage';
 export type CubeItemTableColumn<T = any> = CubeTableColumn<T>;
 
 export interface CubeItemTableProps<T = any>
-  extends BaseProps,
+  extends
+    BaseProps,
     ContainerStyleProps,
     CubeTableLayoutProps,
     CubeTableTreeProps<T> {
@@ -239,8 +240,7 @@ export interface CubeItemTableProps<T = any>
   /* ── row menu (mirrors Tree) ──────────────────────────────────────── */
   /** `Menu.Item` children. Return `null` to give a row no menu. */
   rowMenu?:
-    | ReactNode
-    | ((row: T, ctx: CubeTableRowContext<T>) => ReactNode | null);
+    ReactNode | ((row: T, ctx: CubeTableRowContext<T>) => ReactNode | null);
   /**
    * Where the menu is exposed, matching `Tree#contextMenu`:
    * - `false` — no menu, even when `rowMenu` is set.

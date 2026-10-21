@@ -122,7 +122,8 @@ const FileInputElement = tasty(Action, {
 });
 
 export interface CubeFileInputProps
-  extends BaseProps,
+  extends
+    BaseProps,
     PositionStyleProps,
     ContainerStyleProps,
     BlockStyleProps,

@@ -25,7 +25,8 @@ interface SelectionScopeOptions<T> {
 }
 
 export interface UseItemTableSelectionOptions<T>
-  extends SelectionScopeOptions<T>,
+  extends
+    SelectionScopeOptions<T>,
     Pick<
       UseTableSelectionOptions<T>,
       | 'rowKeys'

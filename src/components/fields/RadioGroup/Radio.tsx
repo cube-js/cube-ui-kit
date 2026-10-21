@@ -317,7 +317,8 @@ const ITEM_PROPS = [
 type RadioItemProps = Pick<CubeItemProps, (typeof ITEM_PROPS)[number]>;
 
 export interface CubeRadioProps
-  extends BaseProps,
+  extends
+    BaseProps,
     Omit<AriaRadioProps, 'value'>,
     // `labelTooltip` belongs to the group's label: a single radio has none.
     Omit<FieldBaseProps, 'labelTooltip'>,

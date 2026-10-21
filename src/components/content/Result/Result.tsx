@@ -73,13 +73,7 @@ export type CubeResultSize = 'medium' | 'large';
 export type CubeResultLayout = 'default' | 'stacked';
 
 export type CubeResultStatus =
-  | 'success'
-  | 'error'
-  | 'info'
-  | 'warning'
-  | 404
-  | 403
-  | 500;
+  'success' | 'error' | 'info' | 'warning' | 404 | 403 | 500;
 
 // `null` for a status without an icon, so no empty slot is rendered
 type StatusIconMap = Record<CubeResultStatus, ComponentType | null>;

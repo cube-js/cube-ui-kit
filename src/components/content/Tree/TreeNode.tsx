@@ -166,7 +166,7 @@ function TreeNodeInner(props: TreeNodeProps) {
         ? data.menu
         : typeof treeMenu === 'function'
           ? treeMenu(data, nodeState)
-          : treeMenu ?? null;
+          : (treeMenu ?? null);
   const hasMenu = !isMenuEmpty(effectiveMenuChildren);
 
   const effectiveContextMenu: TreeContextMenu =

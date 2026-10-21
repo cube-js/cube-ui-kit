@@ -124,11 +124,7 @@ export type SurfaceMode = 'neutral' | 'tinted';
 
 /** Names of the themes whose seeds can be overridden individually. */
 export type PaletteThemeName =
-  | 'success'
-  | 'danger'
-  | 'warning'
-  | 'note'
-  | 'code';
+  'success' | 'danger' | 'warning' | 'note' | 'code';
 
 /**
  * Palette tuning. Every field is optional; omitted fields keep their default, and
@@ -546,7 +542,7 @@ function resolveConfig(input: PaletteConfig): ResolvedPaletteConfig {
   // {@link ResolvedThemeSeed.saturation}.
   const saturation = pastel
     ? DEFAULT_SATURATION
-    : accentSaturationPin ?? DEFAULT_SATURATION;
+    : (accentSaturationPin ?? DEFAULT_SATURATION);
 
   return {
     hue,

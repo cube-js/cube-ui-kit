@@ -36,7 +36,9 @@ export type {
 
 export interface CubeUseActionProps<
   T extends TagName = 'a' | 'button' | 'span' | 'div',
-> extends AllBaseProps<T>,
+>
+  extends
+    AllBaseProps<T>,
     Omit<AriaButtonProps, keyof AllBaseProps<T> | 'type'> {
   to?: NavigateArg;
   /**

@@ -69,7 +69,8 @@ const SwatchElement = tasty({
 });
 
 export interface CubeColorSwatchProps
-  extends BaseProps,
+  extends
+    BaseProps,
     BaseStyleProps,
     OuterStyleProps,
     BlockStyleProps,
@@ -100,7 +101,7 @@ export const ColorSwatch = forwardRef(function ColorSwatch(
   const styles = extractStyles(props, STYLE_PROPS);
 
   const resolved =
-    typeof color === 'string' ? parseColor(color) : color ?? null;
+    typeof color === 'string' ? parseColor(color) : (color ?? null);
 
   return (
     <SwatchElement

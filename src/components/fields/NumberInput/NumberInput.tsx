@@ -37,7 +37,8 @@ import type {
 } from '../../../shared/form';
 
 export interface CubeNumberInputProps
-  extends Omit<
+  extends
+    Omit<
       CubeTextInputBaseProps,
       | 'defaultValue'
       | 'value'

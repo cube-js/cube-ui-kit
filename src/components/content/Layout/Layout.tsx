@@ -101,7 +101,8 @@ const DEV_WARNING_STYLES: Styles = {
 };
 
 export interface CubeLayoutProps
-  extends BaseProps,
+  extends
+    BaseProps,
     OuterStyleProps,
     BlockStyleProps,
     ColorStyleProps,

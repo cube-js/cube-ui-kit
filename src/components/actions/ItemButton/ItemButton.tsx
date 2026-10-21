@@ -15,7 +15,8 @@ import { ItemActionsWrapper } from '../ItemActionsWrapper';
 import { CubeUseActionProps, useAction } from '../use-action';
 
 export interface CubeItemButtonProps
-  extends Omit<CubeItemProps, 'size'>,
+  extends
+    Omit<CubeItemProps, 'size'>,
     Omit<CubeUseActionProps, keyof CubeItemProps | 'as'> {
   /**
    * The row's trailing controls, rendered beside the button rather than inside

@@ -201,7 +201,8 @@ const OverlayElement = tasty({
 });
 
 export interface CubeSelectBaseProps<T>
-  extends BasePropsWithoutChildren,
+  extends
+    BasePropsWithoutChildren,
     AriaLabelingProps,
     BaseStyleProps,
     OuterStyleProps,

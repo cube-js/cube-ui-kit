@@ -543,7 +543,11 @@ describe('<CommandTextArea /> null value', () => {
     expect(getByRole('combobox')).toHaveValue('Hello');
 
     rerender(
-      <CommandTextArea label="Message" value={null} onChange={() => {}}>
+      <CommandTextArea
+        label="Message"
+        value={null as unknown as string}
+        onChange={() => {}}
+      >
         {commandItems}
       </CommandTextArea>,
     );

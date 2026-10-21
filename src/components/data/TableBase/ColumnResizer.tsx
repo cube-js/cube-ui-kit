@@ -82,7 +82,7 @@ export function ColumnResizer<T>(props: ColumnResizerProps<T>) {
       event.stopPropagation();
       onResize(
         column.key,
-        event.key === 'Home' ? column.minWidth : column.maxWidth ?? 1000,
+        event.key === 'Home' ? column.minWidth : (column.maxWidth ?? 1000),
       );
       onResizeEnd(column.key);
     },

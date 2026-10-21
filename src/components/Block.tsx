@@ -16,7 +16,8 @@ const BlockElement = tasty({
 });
 
 export interface CubeBlockProps
-  extends Omit<AllBaseProps, keyof ContainerStyleProps | 'as'>,
+  extends
+    Omit<AllBaseProps, keyof ContainerStyleProps | 'as'>,
     ContainerStyleProps {}
 
 export const Block = forwardRef(function Block(props: CubeBlockProps, ref) {

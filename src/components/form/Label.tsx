@@ -208,9 +208,7 @@ const LabelElement = tasty({
 });
 
 export interface CubeLabelProps
-  extends BaseProps,
-    ContainerStyleProps,
-    ValidationProps {
+  extends BaseProps, ContainerStyleProps, ValidationProps {
   labelPosition?: LabelPosition;
   necessityIndicator?: NecessityIndicator | null;
   isRequired?: boolean;

@@ -13,20 +13,19 @@ import type { useTableStorage } from '../TableBase/use-table-storage';
 import type { ItemTableFooterProps } from './ItemTableFooter';
 import type { CubeItemTableProps } from './types';
 
-export interface UseItemTablePaginationOptions<T>
-  extends Pick<
-    CubeItemTableProps<T>,
-    | 'pageSize'
-    | 'onPageSizeChange'
-    | 'pageSizeOptions'
-    | 'page'
-    | 'defaultPage'
-    | 'onPageChange'
-    | 'total'
-    | 'totalPages'
-    | 'hasNextPage'
-    | 'summary'
-  > {
+export interface UseItemTablePaginationOptions<T> extends Pick<
+  CubeItemTableProps<T>,
+  | 'pageSize'
+  | 'onPageSizeChange'
+  | 'pageSizeOptions'
+  | 'page'
+  | 'defaultPage'
+  | 'onPageChange'
+  | 'total'
+  | 'totalPages'
+  | 'hasNextPage'
+  | 'summary'
+> {
   mode: NonNullable<CubeItemTableProps<T>['paginationMode']>;
   defaultPageSize: number;
   /** See `autoHidePagination`. */
@@ -69,7 +68,7 @@ export function useItemTablePagination<T>({
   const [pageSize, setPageSizeState] = useControlledState<number>(
     pageSizeProp as number,
     pageSizeProp === undefined && storage.has('pageSize')
-      ? storage.initial.pageSize ?? defaultPageSize
+      ? (storage.initial.pageSize ?? defaultPageSize)
       : defaultPageSize,
     onPageSizeChange as (value: number) => void,
   );
@@ -84,7 +83,7 @@ export function useItemTablePagination<T>({
   const isPaginated = mode !== 'off' && !isInfinite;
   const isServerPaginated = mode === 'server';
   const total = isServerPaginated
-    ? totalProp ?? 0
+    ? (totalProp ?? 0)
     : isTree
       ? treeRoots.length
       : rows.length;

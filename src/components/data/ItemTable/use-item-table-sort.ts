@@ -53,7 +53,7 @@ export function useItemTableSort<T>({
     // and overriding it here would fight the page's own source of truth.
     defaultSort:
       sortProp === undefined && storage.has('sort')
-        ? storage.initial.sort ?? defaultSort
+        ? (storage.initial.sort ?? defaultSort)
         : defaultSort,
     onSortChange: useEvent((next: CubeTableSort | null) => {
       if (sortProp === undefined) storage.write({ sort: next });
@@ -63,7 +63,7 @@ export function useItemTableSort<T>({
 
   const collator = useCollator({ numeric: true, sensitivity: 'base' });
   const treeSortMode = tree
-    ? mode ?? (columns.some((column) => column.isSortable) ? 'client' : 'off')
+    ? (mode ?? (columns.some((column) => column.isSortable) ? 'client' : 'off'))
     : resolvedSortMode;
   const sortedTreeRoots = useMemo(() => {
     const roots = tree?.roots ?? [];

@@ -18,7 +18,8 @@ import { useAutoSizeTextArea } from '../TextInput/useAutoSizeTextArea';
 import type { FieldBaseProps } from '../../../shared/form';
 
 export interface CubeTextAreaProps
-  extends Omit<
+  extends
+    Omit<
       CubeTextInputBaseProps,
       'validate' | 'inputRef' | 'onFocus' | 'onBlur'
     >,

@@ -57,7 +57,8 @@ import type { FocusableRef } from '@react-types/shared';
 import type { CubeTooltipProviderProps } from '../../overlays/Tooltip/TooltipProvider';
 
 export interface CubeCheckboxProps
-  extends BaseProps,
+  extends
+    BaseProps,
     ContainerStyleProps,
     Omit<AriaCheckboxProps, 'form' | 'name'>,
     ToggleSelectionProps,
@@ -355,7 +356,7 @@ function Checkbox(
         ref={wrapperRefWith(tooltipRef)}
       >
         {renderCheckbox(tooltipFocusProps)}
-        {label ?? children ? (
+        {(label ?? children) ? (
           <Element
             // Before `labelProps`, so a `ref` passed there still wins.
             ref={labelRef}

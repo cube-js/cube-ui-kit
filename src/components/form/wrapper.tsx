@@ -11,9 +11,7 @@ import { warnAboutLegacyTooltip } from './legacy-tooltip';
 
 // The input is passed as `component`, never through props.children.
 interface WrapWithFieldProps
-  extends FieldBaseProps,
-    Omit<BaseProps, 'children'>,
-    FormBaseProps {}
+  extends FieldBaseProps, Omit<BaseProps, 'children'>, FormBaseProps {}
 
 /**
  * Whether `wrapWithField` renders the field chrome for these props. An

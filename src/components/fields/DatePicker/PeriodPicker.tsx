@@ -49,7 +49,8 @@ const PeriodValueElement = tasty({
 });
 
 export interface CubePeriodPickerProps<T extends DateValue = DateValue>
-  extends Omit<
+  extends
+    Omit<
       AriaDatePickerProps<T>,
       'errorMessage' | 'granularity' | 'form' | 'name'
     >,
@@ -147,7 +148,7 @@ function PeriodPickerImpl<T extends DateValue>(
 
   let displayText = state.value
     ? (formatValue ?? formatPeriod)(state.value, picker, locale)
-    : placeholder ?? defaultPlaceholder[picker];
+    : (placeholder ?? defaultPlaceholder[picker]);
 
   // The value is rendered as text rather than editable segments, so the trigger
   // has to point at it to announce the current selection.

@@ -36,7 +36,9 @@ export function resolveValidationProps(
 
   return {
     isInvalid: resolvedIsInvalid,
-    isValid: resolvedIsInvalid ? false : isValid ?? validationState === 'valid',
+    isValid: resolvedIsInvalid
+      ? false
+      : (isValid ?? validationState === 'valid'),
   };
 }
 

@@ -174,7 +174,8 @@ export const formPropNames = new Set([
 ] as const);
 
 export interface CubeFormProps<T extends FieldTypes = FieldTypes>
-  extends FormBaseProps,
+  extends
+    FormBaseProps,
     BaseProps,
     ContainerStyleProps,
     Pick<

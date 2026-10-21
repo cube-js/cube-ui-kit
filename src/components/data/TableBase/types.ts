@@ -222,12 +222,7 @@ export interface CubeTableColumnHeader {
  * no tinted-surface ramp to borrow.
  */
 export type CubeTableColumnTheme =
-  | 'primary'
-  | 'purple'
-  | 'success'
-  | 'danger'
-  | 'warning'
-  | 'note';
+  'primary' | 'purple' | 'success' | 'danger' | 'warning' | 'note';
 
 /**
  * How a column is tinted.

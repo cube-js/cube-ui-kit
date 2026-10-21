@@ -47,10 +47,7 @@ import type {
 export type CubeInlineInputEditTrigger = 'dblclick' | 'click' | 'none';
 
 export interface CubeInlineInputProps
-  extends BaseProps,
-    BlockStyleProps,
-    OuterStyleProps,
-    ColorStyleProps {
+  extends BaseProps, BlockStyleProps, OuterStyleProps, ColorStyleProps {
   /** Controlled value. When provided, the component is controlled. */
   value?: string;
   /** Initial value for uncontrolled usage. */

@@ -26,7 +26,8 @@ export type CubeInfoBadgeTooltipConfig = Omit<
 >;
 
 export interface CubeInfoBadgeProps
-  extends Omit<BaseProps, 'children'>,
+  extends
+    Omit<BaseProps, 'children'>,
     Partial<
       Pick<
         CubeUseActionProps,

@@ -46,8 +46,10 @@ export interface ValidationProps {
 export type ValidateTrigger = 'onBlur' | 'onChange' | 'onSubmit';
 
 /** Shared inputs also accept legacy validators with arbitrary success values. */
-export interface FieldValidationRule
-  extends Omit<ModernValidationRule<any>, 'validator'> {
+export interface FieldValidationRule extends Omit<
+  ModernValidationRule<any>,
+  'validator'
+> {
   [key: string]: any;
   validator?: (
     rule: any,
@@ -154,8 +156,7 @@ export interface TextFieldKeyboardProps {
 }
 
 export interface FieldBaseProps<Value = unknown>
-  extends FormBaseProps,
-    FieldCoreProps<Value> {
+  extends FormBaseProps, FieldCoreProps<Value> {
   /** The label of the field */
   label?: ReactNode;
   /** An additional content next to the label */

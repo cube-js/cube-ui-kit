@@ -190,14 +190,14 @@ const LAYOUT_MAP = {
 } as const;
 
 export interface CubeSkeletonProps
-  extends CubeSkeletonRootProps,
-    Omit<CubeSkeletonLayoutProps, 'rootProps'> {
+  extends CubeSkeletonRootProps, Omit<CubeSkeletonLayoutProps, 'rootProps'> {
   /** The type of the layout */
   layout?: keyof typeof LAYOUT_MAP;
 }
 
 export interface CubeSkeletonRootProps
-  extends Omit<CubeGridProps, 'columns' | 'rows'>,
+  extends
+    Omit<CubeGridProps, 'columns' | 'rows'>,
     CubePlaceholderProps,
     BaseProps,
     ContainerStyleProps {}

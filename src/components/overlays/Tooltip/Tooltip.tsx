@@ -152,9 +152,7 @@ const TooltipTipElement = tasty({
 });
 
 export interface CubeTooltipProps
-  extends BaseProps,
-    ContainerStyleProps,
-    AriaTooltipProps {
+  extends BaseProps, ContainerStyleProps, AriaTooltipProps {
   tipStyles?: Styles;
   /**
    * @deprecated Has no effect. No icon is ever rendered.

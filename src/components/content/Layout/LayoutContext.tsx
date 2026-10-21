@@ -96,7 +96,8 @@ export function useLayoutStateContext(): LayoutStateContextValue | null {
 
 /** Combined layout context value for convenience */
 export interface LayoutContextValue
-  extends LayoutActionsContextValue,
+  extends
+    LayoutActionsContextValue,
     LayoutStateContextValue,
     LayoutRefsContextValue {}
 

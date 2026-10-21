@@ -21,8 +21,10 @@ export interface CubeAlertDialogActionsProps {
   cancel?: CubeButtonProps | boolean;
 }
 
-export interface CubeAlertDialogProps
-  extends Omit<CubeDialogProps, 'children'> {
+export interface CubeAlertDialogProps extends Omit<
+  CubeDialogProps,
+  'children'
+> {
   content?: ReactNode;
   /**
    * Whether the confirm action is destructive. It is styled as such, and the

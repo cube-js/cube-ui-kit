@@ -78,7 +78,8 @@ const ColorPickerWrapper = tasty({
 });
 
 export interface CubeColorPickerProps
-  extends BaseProps,
+  extends
+    BaseProps,
     OuterStyleProps,
     BlockStyleProps,
     FieldBaseProps<string | null | undefined> {

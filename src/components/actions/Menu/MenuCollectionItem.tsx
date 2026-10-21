@@ -13,8 +13,7 @@ import { parseTo } from '../use-action';
 import type { Key, LinkDOMProps } from '@react-types/shared';
 
 export interface CubeMenuItemProps<T>
-  extends CubeCollectionItemBaseProps<T>,
-    LinkDOMProps {
+  extends CubeCollectionItemBaseProps<T>, LinkDOMProps {
   /** Application destination. Takes precedence over href. */
   to?: To;
   navigationOptions?: NavigateOptions;
@@ -72,7 +71,7 @@ const _MenuCollectionItem: typeof MenuCollectionItem &
           onClick: isLink ? undefined : props.onClick,
           [COLLECTION_ITEM_CLICK]: isLink ? props.onClick : undefined,
           target: newTab ? '_blank' : props.target,
-          rel: newTab ? props.rel ?? 'noopener noreferrer' : props.rel,
+          rel: newTab ? (props.rel ?? 'noopener noreferrer') : props.rel,
         },
         context,
       );

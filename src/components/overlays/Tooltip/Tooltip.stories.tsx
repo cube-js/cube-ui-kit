@@ -141,10 +141,9 @@ const FunctionPatternTemplate: Story<CubeTooltipProviderProps> = (args) => (
           padding="1x 2x"
           border="2bw solid #purple"
           radius="0.5r"
-          cursor="pointer"
           fill="#purple.10"
           color="#dark"
-          styles={{ fontWeight: 'bold' }}
+          styles={{ fontWeight: 'bold', cursor: 'pointer' }}
         >
           Hover over this non-focusable element
         </Block>
@@ -181,11 +180,13 @@ const DirectFunctionPatternTemplate: Story<CubeTooltipTriggerProps> = (
           ref={ref as any}
           {...triggerProps}
           display="inline-block"
-          padding="0.5x 1x"
-          border="1bw solid #danger"
-          radius="0.5r"
-          cursor="pointer"
           fill="#danger.10"
+          styles={{
+            padding: '0.5x 1x',
+            border: '1bw solid #danger',
+            radius: '0.5r',
+            cursor: 'pointer',
+          }}
         >
           Direct function trigger
         </Text>

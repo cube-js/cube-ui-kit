@@ -69,7 +69,8 @@ const PanelInnerElement = tasty({
 });
 
 export interface CubePanelProps
-  extends OuterStyleProps,
+  extends
+    OuterStyleProps,
     BlockStyleProps,
     BaseStyleProps,
     ColorStyleProps,
@@ -157,7 +158,10 @@ function Panel(props: CubePanelProps, ref: ForwardedRef<HTMLDivElement>) {
       mods={appliedMods}
       styles={styles}
       style={style}
-      {...otherProps}
+      // The loops above moved the style props into `styles` and
+      // `innerStyles`, but the type still lists them, and the `color` style
+      // prop collides with the HTML attribute of the same name.
+      {...(otherProps as BaseProps)}
     >
       <PanelInnerElement mods={appliedMods} styles={innerStyles}>
         {children}

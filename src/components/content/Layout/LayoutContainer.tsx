@@ -48,8 +48,7 @@ const ContainerElement = tasty({
 });
 
 export interface CubeLayoutContainerProps
-  extends BaseProps,
-    ContainerStyleProps {
+  extends BaseProps, ContainerStyleProps {
   children?: ReactNode;
   /** Custom styles for container and inner elements */
   styles?: Styles;

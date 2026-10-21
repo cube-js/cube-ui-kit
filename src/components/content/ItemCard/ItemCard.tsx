@@ -3,8 +3,10 @@ import { ForwardedRef, forwardRef, ReactNode } from 'react';
 import { ItemAction } from '../../actions/ItemAction/ItemAction';
 import { CubeItemProps, Item } from '../Item/Item';
 
-export interface CubeItemCardProps
-  extends Omit<CubeItemProps, 'type' | 'children' | 'description'> {
+export interface CubeItemCardProps extends Omit<
+  CubeItemProps,
+  'type' | 'children' | 'description'
+> {
   /** Card heading, mapped to Item's `children`. */
   title?: ReactNode;
   /** Card body content, mapped to Item's `description`. */

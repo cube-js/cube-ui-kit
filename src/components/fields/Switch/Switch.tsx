@@ -125,7 +125,8 @@ const SwitchElement = tasty({
 const PROP_STYLES = [...OUTER_STYLES, ...BLOCK_STYLES];
 
 export interface CubeSwitchProps
-  extends BaseProps,
+  extends
+    BaseProps,
     OuterStyleProps,
     BlockStyleProps,
     FieldBaseProps<boolean | null | undefined>,
