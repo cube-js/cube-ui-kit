@@ -104,7 +104,7 @@ function Overlay(props: CubeOverlayProps, ref) {
     // holds. One forced reflow, once per open that moves.
     void parent.offsetHeight;
 
-    for (let node: ChildNode | null = start; node; ) {
+    for (let node: ChildNode | null = start; node;) {
       const next: ChildNode | null = node.nextSibling;
 
       parent.moveBefore(node, null);

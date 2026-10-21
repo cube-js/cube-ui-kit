@@ -18,7 +18,8 @@ import { useFocus } from '../../../utils/react/interactions';
 import { extractStyles } from '../../../utils/styles';
 
 export interface CubeActiveZoneProps
-  extends BaseProps,
+  extends
+    BaseProps,
     BaseStyleProps,
     ContainerStyleProps,
     TextStyleProps,

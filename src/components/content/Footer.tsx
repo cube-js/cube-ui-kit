@@ -25,9 +25,7 @@ const FooterElement = tasty({
 });
 
 export interface CubeFooterProps
-  extends BaseProps,
-    ContainerStyleProps,
-    TextStyleProps {}
+  extends BaseProps, ContainerStyleProps, TextStyleProps {}
 
 export const Footer = forwardRef(function Footer(props: CubeFooterProps, ref) {
   props = useSlotProps(props, 'footer');

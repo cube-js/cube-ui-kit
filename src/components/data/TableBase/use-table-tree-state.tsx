@@ -122,17 +122,15 @@ export function useTableTreeState<T>(
     });
   });
 
-  const renderItem = useEvent(
-    (node: TableTreeNode<T>): ReactElement => (
-      <Item
-        key={node.key}
-        textValue={getTextValue(node)}
-        childItems={node.children}
-      >
-        {getTextValue(node)}
-      </Item>
-    ),
-  );
+  const renderItem = useEvent((node: TableTreeNode<T>): ReactElement => (
+    <Item
+      key={node.key}
+      textValue={getTextValue(node)}
+      childItems={node.children}
+    >
+      {getTextValue(node)}
+    </Item>
+  ));
 
   const ariaProps = {
     items: roots,

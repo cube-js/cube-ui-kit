@@ -365,7 +365,7 @@ export function TabButton({
   const effectiveIsEditable =
     (tabData.isEditable ?? parentIsEditable ?? false) && tabData.title != null;
   const effectiveMenu =
-    tabData.menu === null ? null : tabData.menu ?? parentMenu;
+    tabData.menu === null ? null : (tabData.menu ?? parentMenu);
   const effectiveMenuTriggerProps: Partial<CubeItemActionProps> = {
     ...parentMenuTriggerProps,
     ...tabData.menuTriggerProps,

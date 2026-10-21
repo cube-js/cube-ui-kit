@@ -24,11 +24,12 @@ import type { FormController } from './modern/controller';
 import type { CallbackBinding, FormCallbacks } from './modern/types';
 
 /** Modern root owns callback bindings; subscriptions stay in descendants. */
-export interface ModernFormProps<T extends object = Record<string, unknown>>
-  extends Omit<
-    CubeFormProps<T>,
-    'form' | 'defaultValues' | 'onSubmit' | 'onSubmitFailed' | 'onValuesChange'
-  > {
+export interface ModernFormProps<
+  T extends object = Record<string, unknown>,
+> extends Omit<
+  CubeFormProps<T>,
+  'form' | 'defaultValues' | 'onSubmit' | 'onSubmitFailed' | 'onValuesChange'
+> {
   form: FormController<T>;
   defaultValues?: never;
   /** Runs before a controller reset; preventDefault cancels the reset, including nested controls. */

@@ -18,9 +18,7 @@ const GridElement = tasty({
 });
 
 export interface CubeGridProps
-  extends Omit<AllBaseProps, 'rows'>,
-    ContainerStyleProps,
-    ShortGridStyles {}
+  extends Omit<AllBaseProps, 'rows'>, ContainerStyleProps, ShortGridStyles {}
 
 const PROP_MAP = {
   template: 'gridTemplate',

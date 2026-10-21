@@ -19,8 +19,7 @@ const DEFAULT_STYLES: Styles = {
 const STYLE_PROPS = [...CONTAINER_STYLES, ...TEXT_STYLES];
 
 export interface CubeParagraphProps
-  extends CubeTextProps,
-    ContainerStyleProps {}
+  extends CubeTextProps, ContainerStyleProps {}
 
 export const Paragraph = forwardRef<HTMLElement, CubeParagraphProps>(
   function Paragraph(props, ref) {

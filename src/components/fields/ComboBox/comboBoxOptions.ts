@@ -58,7 +58,7 @@ export function collectOptions(nodes: Iterable<any>): ComboBoxOption[] {
   const options: ComboBoxOption[] = [];
 
   for (const node of nodes) {
-    const children = node.type === 'section' ? node.childNodes ?? [] : [node];
+    const children = node.type === 'section' ? (node.childNodes ?? []) : [node];
 
     for (const child of children) {
       if (child.type === 'item') {

@@ -151,7 +151,7 @@ function TagRow({
         size={size}
         {...otherTagProps}
         // An invalid value shows as one whatever theme the chip asks for.
-        theme={entry.invalidMessage ? 'danger' : tagTheme ?? 'default'}
+        theme={entry.invalidMessage ? 'danger' : (tagTheme ?? 'default')}
         styles={ownTagStyles ? mergeStyles(tagStyles, ownTagStyles) : tagStyles}
         isDisabled={isTagDisabled}
         // The row takes the one Tab stop and removes on Delete/Backspace, so the

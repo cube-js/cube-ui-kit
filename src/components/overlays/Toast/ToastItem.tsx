@@ -7,8 +7,9 @@ import { getThemeIcon } from './useToast';
 
 import type { ToastType } from './types';
 
-export interface ToastItemProps
-  extends Partial<Omit<CubeItemProps, 'type' | 'icon'>> {
+export interface ToastItemProps extends Partial<
+  Omit<CubeItemProps, 'type' | 'icon'>
+> {
   /** Primary content (→ Item children). Also supports description-only for migration. */
   title?: ReactNode;
   /** Secondary content (or primary if no title/children) */

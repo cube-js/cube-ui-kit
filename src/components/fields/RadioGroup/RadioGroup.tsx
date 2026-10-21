@@ -25,7 +25,8 @@ import { RadioContext } from './context';
 import type { KeyboardEvent } from 'react';
 
 export interface CubeRadioGroupProps
-  extends BaseProps,
+  extends
+    BaseProps,
     Omit<AriaRadioGroupProps, 'errorMessage' | 'form' | 'name'>,
     ContainerStyleProps,
     FieldBaseProps<string | null | undefined> {

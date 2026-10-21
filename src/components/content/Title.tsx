@@ -17,10 +17,7 @@ import { CubeTextProps, TEXT_PROP_MAP } from './Text';
 const STYLE_LIST = [...TEXT_STYLES, ...CONTAINER_STYLES];
 
 export interface CubeTitleProps
-  extends BaseProps,
-    CubeTextProps,
-    ContainerStyleProps,
-    PositionStyleProps {
+  extends BaseProps, CubeTextProps, ContainerStyleProps, PositionStyleProps {
   /** The level of the heading **/
   level?: 1 | 2 | 3 | 4 | 5 | 6;
   /** The slot to read provided props from. Defaults to `title` */

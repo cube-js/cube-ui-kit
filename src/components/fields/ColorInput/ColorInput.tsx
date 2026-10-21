@@ -69,7 +69,8 @@ const ColorInputTrigger = tasty(ItemAction, {
 });
 
 export interface CubeColorInputProps
-  extends BaseProps,
+  extends
+    BaseProps,
     BaseStyleProps,
     OuterStyleProps,
     BlockStyleProps,
@@ -211,7 +212,7 @@ export const ColorInput = forwardRef(function ColorInput(
 
   /** The notation a value should be written in, given the current text. */
   const outputFormat = (source: string): ColorFormat =>
-    formatMode === 'forced' ? format : detectFormat(source) ?? format;
+    formatMode === 'forced' ? format : (detectFormat(source) ?? format);
 
   // Adopt values that did not come from here — a form reset, or a parent that
   // overrides what the user picked.

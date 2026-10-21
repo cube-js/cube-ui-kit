@@ -7,8 +7,10 @@ import type { Key } from '@react-types/shared';
 import type { CubeTableTreeProps } from '../TableBase/types';
 import type { CubeItemTableColumn } from './types';
 
-export interface UseItemTableTreeModelOptions<T>
-  extends Pick<CubeTableTreeProps<T>, 'getRowChildren' | 'treeColumnKey'> {
+export interface UseItemTableTreeModelOptions<T> extends Pick<
+  CubeTableTreeProps<T>,
+  'getRowChildren' | 'treeColumnKey'
+> {
   data: readonly T[];
   columns: CubeItemTableColumn<T>[];
   getRowKey: (row: T, index: number) => Key;

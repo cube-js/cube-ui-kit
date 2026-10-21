@@ -3,11 +3,7 @@ import type { Key, ReactNode } from 'react';
 // ─── Notification Types ──────────────────────────────────────────────
 
 export type NotificationType =
-  | 'default'
-  | 'success'
-  | 'danger'
-  | 'warning'
-  | 'note';
+  'default' | 'success' | 'danger' | 'warning' | 'note';
 
 // ─── Notification Options ────────────────────────────────────────────
 
@@ -78,8 +74,7 @@ export interface StoredNotificationOptions extends NotificationBaseOptions {
 }
 
 export type NotificationOptions =
-  | OverlayNotificationOptions
-  | StoredNotificationOptions;
+  OverlayNotificationOptions | StoredNotificationOptions;
 
 export type DismissReason = 'close' | 'timeout' | 'action' | 'api';
 

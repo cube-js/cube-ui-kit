@@ -23,7 +23,8 @@ import type { CubeSubmitButtonProps } from '../../form/Form/SubmitButton/SubmitB
 import type { FieldTypes } from '../../form/Form/types';
 
 export interface CubeDialogFormProps<T extends FieldTypes = FieldTypes>
-  extends Omit<CubeDialogProps, 'children'>,
+  extends
+    Omit<CubeDialogProps, 'children'>,
     Omit<CubeFormProps<T>, 'role' | 'children'> {
   /** Whether the submit button has a `danger` theme */
   danger?: boolean;
@@ -52,7 +53,8 @@ export interface CubeDialogFormRef {
  * DialogForms are a specific type of Dialog. They contain forms to fill.
  */
 export interface ModernDialogFormProps<T extends FieldTypes = FieldTypes>
-  extends Omit<CubeDialogFormProps<T>, keyof CubeFormProps<T> | 'submitProps'>,
+  extends
+    Omit<CubeDialogFormProps<T>, keyof CubeFormProps<T> | 'submitProps'>,
     Omit<ModernFormProps<T>, 'role' | 'children'> {
   children?: CubeDialogFormProps<T>['children'];
   submitProps?: Omit<CubeSubmitButtonProps<T>, 'form'>;

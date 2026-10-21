@@ -9,7 +9,8 @@ import { AriaSliderProps } from 'react-aria';
 import { FieldBaseProps } from '../../../shared';
 
 export interface CubeSliderBaseProps<T>
-  extends Omit<AriaSliderProps<T>, 'label' | 'form' | 'name'>,
+  extends
+    Omit<AriaSliderProps<T>, 'label' | 'form' | 'name'>,
     BasePropsWithoutChildren,
     OuterStyleProps,
     FieldBaseProps<T | null | undefined>,

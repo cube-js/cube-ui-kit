@@ -47,7 +47,9 @@ const DateRangeDash = tasty({
 
 export interface CubeDateRangeSeparatedPickerProps<
   T extends DateValue = DateValue,
-> extends Omit<
+>
+  extends
+    Omit<
       AriaDateRangePickerProps<T>,
       'errorMessage' | 'form' | 'name' | keyof DateFieldBase<T>
     >,

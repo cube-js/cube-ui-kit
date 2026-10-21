@@ -9,11 +9,10 @@ import type { Key } from '@react-types/shared';
 import type { TableTreeModel } from '../TableBase/table-tree';
 import type { CubeItemTableProps } from './types';
 
-export interface UseItemTableDragDropOptions<T>
-  extends Pick<
-    CubeItemTableProps<T>,
-    'onReorder' | 'dropOnRow' | 'getItemDragInfo'
-  > {
+export interface UseItemTableDragDropOptions<T> extends Pick<
+  CubeItemTableProps<T>,
+  'onReorder' | 'dropOnRow' | 'getItemDragInfo'
+> {
   /** The rows on screen, in order. */
   rows: readonly T[];
   /** Keys parallel to `rows` in tree mode; flat rows use `getRowKey`. */

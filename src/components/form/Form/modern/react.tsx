@@ -59,8 +59,7 @@ export function useFormFieldState<
 ): ModernFieldState<FormValueAtPath<T, Path>> | undefined {
   const key = getFieldKey(path);
   return useFormSelector(form, (state) => state.fields[key]) as
-    | ModernFieldState<FormValueAtPath<T, Path>>
-    | undefined;
+    ModernFieldState<FormValueAtPath<T, Path>> | undefined;
 }
 
 export interface FormSelectorOptions<Selected> {
@@ -85,8 +84,10 @@ export function useFormSelector<T extends object, Selected>(
   );
 }
 
-export interface FormSubscribeProps<T extends object, Selected>
-  extends FormSelectorOptions<Selected> {
+export interface FormSubscribeProps<
+  T extends object,
+  Selected,
+> extends FormSelectorOptions<Selected> {
   /** Omit to use modern context. An explicit undefined detaches from context. */
   form?: FormController<T>;
   selector: (state: ModernFormState<T>) => Selected;

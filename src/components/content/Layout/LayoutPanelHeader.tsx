@@ -28,9 +28,7 @@ const PanelHeaderElement = tasty(Item, {
 });
 
 export interface CubeLayoutPanelHeaderProps
-  extends Omit<BaseProps, 'theme'>,
-    ContainerStyleProps,
-    CubeItemProps {
+  extends Omit<BaseProps, 'theme'>, ContainerStyleProps, CubeItemProps {
   /** Panel title */
   title?: ReactNode;
   /** Title heading level (affects semantics, not visual) */

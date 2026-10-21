@@ -10,10 +10,7 @@ import type { CubeTableSort } from './types';
 const PREFIX = 'cube-ui-kit:table:';
 
 export type CubeTablePersistKey =
-  | 'pageSize'
-  | 'columnWidths'
-  | 'columnOrder'
-  | 'sort';
+  'pageSize' | 'columnWidths' | 'columnOrder' | 'sort';
 
 export interface CubeTableStoredState {
   pageSize?: number;

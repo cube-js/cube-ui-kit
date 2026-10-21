@@ -34,7 +34,8 @@ import {
 import { SubMenuTrigger } from './SubMenuTrigger';
 
 export interface CubeMenuProps<T>
-  extends BasePropsWithoutChildren,
+  extends
+    BasePropsWithoutChildren,
     ContainerStyleProps,
     Omit<
       AriaMenuProps<T>,

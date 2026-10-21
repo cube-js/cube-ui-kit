@@ -31,9 +31,7 @@ import { useDialogOpenSync } from './use-dialog-open-sync';
 export type CubeDialogClose = (close: () => void) => ReactElement;
 
 export interface CubeDialogTriggerProps
-  extends Omit<OverlayTriggerProps, 'type'>,
-    PositionProps,
-    WithCloseBehavior {
+  extends Omit<OverlayTriggerProps, 'type'>, PositionProps, WithCloseBehavior {
   /** The Dialog and its trigger element. See the DialogTrigger [Content section](#content) for more information on what to provide as children. */
   children: [
     ReactElement | ((state: OverlayTriggerState) => ReactElement),

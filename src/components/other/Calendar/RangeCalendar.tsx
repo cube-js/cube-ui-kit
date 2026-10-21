@@ -16,7 +16,8 @@ import { CalendarPanel } from './CalendarPanel';
 import { CalendarCoreProps, RangeCalendarValueProps } from './types';
 
 export interface CubeRangeCalendarProps<T extends DateValue = DateValue>
-  extends Omit<
+  extends
+    Omit<
       AriaRangeCalendarProps<T>,
       keyof CalendarCoreProps | keyof RangeCalendarValueProps
     >,

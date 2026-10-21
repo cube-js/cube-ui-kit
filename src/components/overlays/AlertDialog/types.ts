@@ -19,8 +19,10 @@ export interface Dialog {
 }
 
 /** A confirm or secondary button opened through `useAlertDialogAPI`. */
-export interface AlertDialogApiActionProps
-  extends Omit<CubeButtonProps, 'onPress'> {
+export interface AlertDialogApiActionProps extends Omit<
+  CubeButtonProps,
+  'onPress'
+> {
   /**
    * @deprecated Use `onConfirm` or `onSecondary` on the dialog instead. It
    * behaves the same way.
@@ -35,7 +37,8 @@ export interface AlertDialogApiActions {
 }
 
 export interface DialogProps
-  extends Omit<CubeDialogContainerProps, 'onDismiss' | 'children'>,
+  extends
+    Omit<CubeDialogContainerProps, 'onDismiss' | 'children'>,
     Omit<CubeAlertDialogProps, 'type' | 'id' | 'content' | 'actions'> {
   content: ReactNode | (({ resolve, reject }) => ReactNode);
   actions?: AlertDialogApiActions;
@@ -75,7 +78,8 @@ interface AlertDialogMeta {
 }
 
 export interface CubeDialogProps
-  extends Omit<BaseProps, 'role'>,
+  extends
+    Omit<BaseProps, 'role'>,
     AriaDialogProps,
     BaseStyleProps,
     BlockStyleProps,

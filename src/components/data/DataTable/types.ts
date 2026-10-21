@@ -47,11 +47,11 @@ export interface CubeDataTableColumnGroup<T = any> {
 
 /** A leaf column or a nested header group. */
 export type CubeDataTableColumnDefinition<T = any> =
-  | CubeDataTableColumn<T>
-  | CubeDataTableColumnGroup<T>;
+  CubeDataTableColumn<T> | CubeDataTableColumnGroup<T>;
 
 export interface CubeDataTableProps<T = any>
-  extends BaseProps,
+  extends
+    BaseProps,
     ContainerStyleProps,
     CubeTableLayoutProps,
     CubeTableTreeProps<T> {

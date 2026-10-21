@@ -541,8 +541,7 @@ export function useTableSelection<T>(options: UseTableSelectionOptions<T>) {
     selectedRows,
     selectedCount: isAll ? rowByKey.size : derivedSelection.checked.size,
     selectedKeys: (isAll ? 'all' : [...derivedSelection.checked]) as
-      | Key[]
-      | 'all',
+      Key[] | 'all',
   };
 }
 

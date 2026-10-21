@@ -81,11 +81,10 @@ export interface ActiveToken {
 
 export type CommandTextAreaFilterFn = TextFilterFn;
 
-export interface CubeCommandTextAreaProps<T>
-  extends Omit<
-    CubeTextInputBaseProps,
-    'children' | 'multiLine' | 'onFocus' | 'onBlur' | 'validate'
-  > {
+export interface CubeCommandTextAreaProps<T> extends Omit<
+  CubeTextInputBaseProps,
+  'children' | 'multiLine' | 'onFocus' | 'onBlur' | 'validate'
+> {
   onFocus?: () => void;
   onBlur?: Parameters<typeof useCompositeFocus>[0]['onBlur'];
   validate?: AriaTextFieldProps<HTMLTextAreaElement>['validate'];

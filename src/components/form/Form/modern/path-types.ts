@@ -36,8 +36,7 @@ export type CheckedFormPath<T extends object, Path extends FormPath> = Path &
 
 /** Resolve only the supplied path; never enumerate a model's possible paths. */
 type SegmentValue<Value, Key extends string | number> = Value extends
-  | null
-  | undefined
+  null | undefined
   ? undefined
   : Key extends keyof Value
     ? Value[Key]

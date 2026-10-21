@@ -38,12 +38,7 @@ export interface CubeItemBadgeProps extends BaseProps {
   isSelected?: boolean;
   type?: 'primary' | 'outline' | 'clear' | (string & {});
   theme?:
-    | 'current'
-    | 'default'
-    | 'danger'
-    | 'success'
-    | 'special'
-    | (string & {});
+    'current' | 'default' | 'danger' | 'success' | 'special' | (string & {});
   tooltip?:
     | string
     | (Omit<ComponentProps<typeof TooltipProvider>, 'children'> & {

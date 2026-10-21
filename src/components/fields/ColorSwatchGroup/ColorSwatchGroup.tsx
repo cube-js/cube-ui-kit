@@ -164,7 +164,8 @@ const SwatchElement = tasty({
 });
 
 export interface CubeColorSwatchGroupProps
-  extends BaseProps,
+  extends
+    BaseProps,
     OuterStyleProps,
     BlockStyleProps,
     FieldBaseProps<string | null | undefined> {
@@ -364,7 +365,7 @@ export const ColorSwatchGroup = forwardRef(function ColorSwatchGroup(
       // unconditionally would outrank the visible label React Aria wires up.
       'aria-label': props.label
         ? undefined
-        : ariaLabel ?? t('colorSwatchGroup.colors', 'Colors'),
+        : (ariaLabel ?? t('colorSwatchGroup.colors', 'Colors')),
       orientation: 'horizontal',
     },
     state,
@@ -404,7 +405,7 @@ export const ColorSwatchGroup = forwardRef(function ColorSwatchGroup(
           format={format}
           type="clear"
           size={SWATCH_PX[size] ?? SWATCH_PX.medium}
-          value={isCustom ? currentValue ?? null : null}
+          value={isCustom ? (currentValue ?? null) : null}
           isDisabled={isDisabled}
           isReadOnly={props.isReadOnly}
           triggerStyles={CUSTOM_TRIGGER_STYLES}

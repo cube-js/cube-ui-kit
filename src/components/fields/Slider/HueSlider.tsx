@@ -39,8 +39,10 @@ const verticalTrackStyles: Styles = {
   Fill: false,
 };
 
-export interface CubeHueSliderProps
-  extends Omit<CubeSliderProps, 'minValue' | 'maxValue' | 'step'> {
+export interface CubeHueSliderProps extends Omit<
+  CubeSliderProps,
+  'minValue' | 'maxValue' | 'step'
+> {
   /** The current hue value (0-359) */
   value?: number;
   /** The default hue value (0-359) */

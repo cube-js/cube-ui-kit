@@ -29,7 +29,8 @@ import { formatSegments, useFocusManagerRef } from './utils';
 import type { ReactElement, Ref } from 'react';
 
 export interface CubeDateInputProps<T extends DateValue = DateValue>
-  extends Omit<AriaDateFieldProps<T>, 'errorMessage' | 'form' | 'name'>,
+  extends
+    Omit<AriaDateFieldProps<T>, 'errorMessage' | 'form' | 'name'>,
     BaseProps,
     ContainerStyleProps,
     FieldBaseProps<T | null | undefined> {

@@ -330,7 +330,8 @@ function renderCheckboxIcon({
 }
 
 export interface CubeListBoxProps<T>
-  extends Omit<
+  extends
+    Omit<
       AriaListBoxProps<T>,
       'autoFocus' | 'selectedKeys' | 'defaultSelectedKeys' | 'onSelectionChange'
     >,

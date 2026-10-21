@@ -81,7 +81,8 @@ export type TagInputPopoverTrigger = 'focus' | 'input' | 'manual';
 export type TagValidationResult = boolean | string | null | undefined;
 
 export interface CubeTagInputProps<T = object>
-  extends BasePropsWithoutChildren,
+  extends
+    BasePropsWithoutChildren,
     ContainerStyleProps,
     FieldBaseProps<readonly string[] | null | undefined> {
   /** The values in controlled mode. */
@@ -117,13 +118,7 @@ export interface CubeTagInputProps<T = object>
     | 'search';
   /** The label of the virtual keyboard's Enter key. */
   enterKeyHint?:
-    | 'enter'
-    | 'done'
-    | 'go'
-    | 'next'
-    | 'previous'
-    | 'search'
-    | 'send';
+    'enter' | 'done' | 'go' | 'next' | 'previous' | 'search' | 'send';
   /** Called when focus enters the component (input, chips or popover). Receives no event. */
   onFocus?: () => void;
   /**
@@ -548,11 +543,7 @@ function isComposingKey(e: KeyboardEvent<HTMLInputElement>) {
 }
 
 type RejectionReason =
-  | 'invalid'
-  | 'duplicate'
-  | 'unknown'
-  | 'unavailable'
-  | 'limit';
+  'invalid' | 'duplicate' | 'unknown' | 'unavailable' | 'limit';
 
 interface Rejection {
   text: string;

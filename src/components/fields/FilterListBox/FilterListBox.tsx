@@ -121,7 +121,8 @@ const StyledHeaderWithoutBorder = tasty(StyledHeader, {
 
 export interface CubeFilterListBoxProps<T>
   // It sets `isFocusWithin` on its list itself.
-  extends Omit<CubeListBoxProps<T>, 'filter' | 'isFocusWithin'>,
+  extends
+    Omit<CubeListBoxProps<T>, 'filter' | 'isFocusWithin'>,
     FieldBaseProps<
       string | number | readonly (string | number)[] | null | undefined
     > {

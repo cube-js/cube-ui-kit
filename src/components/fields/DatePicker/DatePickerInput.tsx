@@ -26,7 +26,8 @@ const DateInputElement = tasty({
 });
 
 interface CubeDatePickerInputProps<T extends DateValue>
-  extends Omit<
+  extends
+    Omit<
       AriaDatePickerProps<T>,
       'errorMessage' | 'form' | keyof DateFieldBase<T>
     >,

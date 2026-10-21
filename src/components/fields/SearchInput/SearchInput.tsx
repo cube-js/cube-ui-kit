@@ -25,7 +25,8 @@ export { useSearchFieldState, useSearchField };
 export type { SearchFieldProps };
 
 export interface CubeSearchInputProps
-  extends Omit<
+  extends
+    Omit<
       CubeTextInputBaseProps,
       // SearchInput is not form-connected: it holds no persistent value, so
       // form-binding and form-validation props are excluded from the public API.

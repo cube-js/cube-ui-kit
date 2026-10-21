@@ -33,9 +33,7 @@ const ContentElement = tasty({
 });
 
 export interface CubeContentProps
-  extends BaseProps,
-    ContainerStyleProps,
-    TextStyleProps {}
+  extends BaseProps, ContainerStyleProps, TextStyleProps {}
 
 export const Content = forwardRef(function Content(
   props: CubeContentProps,

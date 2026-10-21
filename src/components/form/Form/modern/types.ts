@@ -127,8 +127,10 @@ export type ModernSubmitResult<ErrorValue = unknown> =
   | { status: 'stale' }
   | { status: 'submitted' };
 
-export interface FormStoreOptions<T extends object, ErrorValue = unknown>
-  extends FormCallbacks<T, ErrorValue> {
+export interface FormStoreOptions<
+  T extends object,
+  ErrorValue = unknown,
+> extends FormCallbacks<T, ErrorValue> {
   /** Initial default policy; later hook renders do not change it. Fields can override it. */
   readonly errorPolicy?: 'first' | 'all';
   /** Initial values only. Use setDefaultValues/adoptDefaultValues/reset to change them. */

@@ -51,10 +51,9 @@ export type {
 } from './LayoutContext';
 
 // Create Layout compound component
-interface LayoutComponent
-  extends ForwardRefExoticComponent<
-    CubeLayoutProps & RefAttributes<HTMLDivElement>
-  > {
+interface LayoutComponent extends ForwardRefExoticComponent<
+  CubeLayoutProps & RefAttributes<HTMLDivElement>
+> {
   Toolbar: typeof LayoutToolbar;
   Header: typeof LayoutHeader;
   Footer: typeof LayoutFooter;

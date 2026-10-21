@@ -15,8 +15,10 @@ import type { TabSize } from './types';
 // Types
 // =============================================================================
 
-export interface CubeTabsActionProps
-  extends Omit<CubeItemButtonProps, 'size' | 'shape'> {
+export interface CubeTabsActionProps extends Omit<
+  CubeItemButtonProps,
+  'size' | 'shape'
+> {
   /**
    * Size of the action button.
    * When used inside Tabs prefix/suffix, inherits from Tabs size by default.

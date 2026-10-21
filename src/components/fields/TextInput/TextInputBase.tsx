@@ -226,7 +226,8 @@ function focusInputOnBoxPress(
 }
 
 export interface CubeTextInputBaseProps
-  extends BaseProps,
+  extends
+    BaseProps,
     OuterStyleProps,
     BlockStyleProps,
     BaseStyleProps,
@@ -477,7 +478,7 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
         data-input-type="textinput"
         {...mergeProps(inputProps, focusProps, hoverProps)}
         ref={inputRef}
-        rows={multiLine ? rows ?? inputProps.rows ?? 1 : inputProps.rows}
+        rows={multiLine ? (rows ?? inputProps.rows ?? 1) : inputProps.rows}
         mods={modifiers}
         style={textSecurityStyles}
         {...(resolvedAutoFocus ? { 'data-autofocus': '' } : undefined)}

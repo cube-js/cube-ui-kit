@@ -25,8 +25,10 @@ export interface FormFieldContext<T extends object> {
   getValues(): FormValues<T>;
 }
 
-export interface FormFieldOptions<T extends object, Value>
-  extends Omit<RegistrationOptions<ReactNode>, 'defaultValue' | 'isEqual'> {
+export interface FormFieldOptions<T extends object, Value> extends Omit<
+  RegistrationOptions<ReactNode>,
+  'defaultValue' | 'isEqual'
+> {
   readonly validate?: (
     value: FormReadValue<Value> | undefined,
     context: FormFieldContext<T>,

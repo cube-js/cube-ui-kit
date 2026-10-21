@@ -38,10 +38,7 @@ export interface ProgressToastOptions extends Omit<ToastData, 'duration'> {
  * When passed to useProgressToast, any existing toast is immediately removed.
  */
 export type ProgressToastEmpty =
-  | null
-  | undefined
-  | false
-  | Record<string, never>;
+  null | undefined | false | Record<string, never>;
 
 export interface ToastApi {
   /** Show a toast with default theme */

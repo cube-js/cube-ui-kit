@@ -83,7 +83,8 @@ const InputElement = tasty({
 });
 
 export interface CubeSearchComboBoxProps<T>
-  extends BasePropsWithoutChildren,
+  extends
+    BasePropsWithoutChildren,
     BaseStyleProps,
     OuterStyleProps,
     ColorStyleProps,
@@ -564,7 +565,7 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
   // an invisible overlay (incl. stale keys left in `listStateRef`).
   const shouldShowPopover = Boolean(
     isPopoverOpen &&
-      (hasResults || showLoading || (trimmedInput.length > 0 && !isLoading)),
+    (hasResults || showLoading || (trimmedInput.length > 0 && !isLoading)),
   );
 
   usePopoverSync({
@@ -756,7 +757,7 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
 
     return focusedKey != null && visibleKeys.includes(focusedKey)
       ? focusedKey
-      : visibleKeys[0] ?? null;
+      : (visibleKeys[0] ?? null);
   };
 
   // Enter commits an option, else submits the raw text, else does nothing

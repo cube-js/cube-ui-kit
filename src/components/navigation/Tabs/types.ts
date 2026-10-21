@@ -113,9 +113,7 @@ export interface TabStyleProps extends Omit<CubeItemProps, OmittedItemProps> {
 export type CacheKeyValue = string | number | boolean | null | undefined;
 
 export interface CubeTabsProps
-  extends BaseProps,
-    OuterStyleProps,
-    PanelBehaviorProps {
+  extends BaseProps, OuterStyleProps, PanelBehaviorProps {
   /** Controlled active tab key. When provided, component is controlled. */
   activeKey?: string;
   /** Initial active tab key for uncontrolled mode. */
@@ -367,8 +365,10 @@ export interface ParsedTab extends Omit<CubeTabProps, 'id' | 'children'> {
 /**
  * Internal representation of a parsed TabPanel.
  */
-export interface ParsedPanel
-  extends Omit<CubeTabPanelProps, 'id' | 'children'> {
+export interface ParsedPanel extends Omit<
+  CubeTabPanelProps,
+  'id' | 'children'
+> {
   /** Panel key (always a string internally for React Aria compatibility) */
   key: string;
   /** Panel content extracted from TabPanel's children prop */

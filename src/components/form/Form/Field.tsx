@@ -65,8 +65,8 @@ function getValueProps(
     };
   } else if (type === 'ComboBox') {
     return {
-      selectedKey: !allowsCustomValue ? value ?? null : undefined,
-      inputValue: allowsCustomValue ? value ?? '' : undefined,
+      selectedKey: !allowsCustomValue ? (value ?? null) : undefined,
+      inputValue: allowsCustomValue ? (value ?? '') : undefined,
       onInputChange(val) {
         if (!allowsCustomValue) {
           return;
@@ -110,8 +110,9 @@ interface CubeFullFieldProps<T extends FieldTypes> extends CubeFieldProps<T> {
   form: CubeFormInstance<T>;
 }
 
-interface CubeReplaceFieldProps<T extends FieldTypes>
-  extends CubeFieldProps<T> {
+interface CubeReplaceFieldProps<
+  T extends FieldTypes,
+> extends CubeFieldProps<T> {
   isRequired?: boolean;
   isOptional?: boolean;
   onChange?: (any) => void;

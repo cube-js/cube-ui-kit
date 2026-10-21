@@ -442,7 +442,7 @@ describe('<NumberInput />', () => {
       ).map((el) =>
         el.matches('button')
           ? 'stepper'
-          : el.getAttribute('data-qa') ?? el.getAttribute('data-element'),
+          : (el.getAttribute('data-qa') ?? el.getAttribute('data-element')),
       );
     }
 

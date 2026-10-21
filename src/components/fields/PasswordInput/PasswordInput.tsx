@@ -22,7 +22,8 @@ import {
 import type { TextFieldKeyboardProps } from '../../../shared/form';
 
 export interface CubePasswordInputProps
-  extends WithNullableValue<Omit<CubeTextInputBaseProps, 'validate'>>,
+  extends
+    WithNullableValue<Omit<CubeTextInputBaseProps, 'validate'>>,
     CubeBufferedValueProps,
     TextFieldKeyboardProps {
   validate?: AriaTextFieldProps['validate'];

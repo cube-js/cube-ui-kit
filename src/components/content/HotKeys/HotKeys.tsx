@@ -57,8 +57,7 @@ const KeyElement = tasty({
 });
 
 export interface CubeHotKeysProps
-  extends BasePropsWithoutChildren,
-    ContainerStyleProps {
+  extends BasePropsWithoutChildren, ContainerStyleProps {
   /**
    * Key combinations, such as `"mod+k, ctrl+k"`. An array of text, which
    * `<Trans>` passes to a component slot, is joined into one string first.
