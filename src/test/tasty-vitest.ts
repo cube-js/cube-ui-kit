@@ -1,11 +1,7 @@
 import { getCSSTextForNode } from '@tenphi/tasty';
 import { expect } from 'vitest';
 
-declare module 'vitest' {
-  interface Assertion {
-    toMatchTastySnapshot(): void;
-  }
-}
+// `toMatchTastySnapshot` is typed in `vitest-matchers.d.ts`.
 
 /**
  * Vitest matcher for tasty CSS snapshots
@@ -50,9 +46,9 @@ export const tastySerializer = {
     );
   },
 
-  print(val: ParentNode, serialize: (v: unknown) => string): string {
+  print(val: unknown, serialize: (v: unknown) => string): string {
     const markup = serialize(val);
-    const css = getCSSTextForNode(val);
+    const css = getCSSTextForNode(val as ParentNode);
 
     if (!css.trim()) {
       return markup;

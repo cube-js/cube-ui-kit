@@ -24,7 +24,7 @@ describe('validation dependency lifecycle', () => {
     async (rulesKey) => {
       const store = createFormStore({ defaultValues: { a: 'value' } });
       const validate = () => 'Strict error';
-      const source = vi.spyOn(validate, 'toString');
+      const source = vi.spyOn(validate as { toString(): string }, 'toString');
       const registration = store.register('a', {
         rulesKey,
         rules: [{ validator: validate }],

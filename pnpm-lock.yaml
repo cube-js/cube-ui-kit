@@ -180,6 +180,9 @@ importers:
       '@types/babel__helper-plugin-utils':
         specifier: ^7.10.3
         version: 7.10.3
+      '@types/chai':
+        specifier: ^5.2.3
+        version: 5.2.3
       '@types/node':
         specifier: ^24.0.0
         version: 24.13.3

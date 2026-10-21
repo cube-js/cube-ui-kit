@@ -21,6 +21,8 @@ import { ItemButton } from '../ItemButton/ItemButton';
 import { Menu } from './Menu';
 import { MenuTrigger } from './MenuTrigger';
 
+import type { Styles } from '@tenphi/tasty';
+
 describe('Menu navigation links', () => {
   const destination = '/__menu-link-test/workbooks/42?chatId=abc';
 
@@ -2020,9 +2022,14 @@ describe('Menu navigation links', () => {
     },
   );
 
-  it.each([{ '': 'relative', focused: '' }, { focused: '' }])(
+  // An empty state value is deliberate here, and tasty's types reject it.
+  it.each<Record<string, string>>([
+    { '': 'relative', focused: '' },
+    { focused: '' },
+  ])(
     'merges Actions defaults with a conditional style map: %o',
-    async (position) => {
+    async (map) => {
+      const position = map as Styles['position'];
       render(
         <Root>
           <Menu aria-label="Destinations">
@@ -2618,66 +2625,70 @@ describe('Menu navigation links', () => {
     { overflow: 'hidden' },
     { styles: { overflow: 'hidden' } },
     { style: { overflow: 'hidden' } },
-  ])('clips independent actions to the complete native row: %j', (props) => {
-    render(
-      <Root>
-        <Menu aria-label="Destinations" styles={{ width: '30x' }}>
-          <Menu.Item key="before">Before destination</Menu.Item>
-          <Menu.Item
-            key="link"
-            to={destination}
-            height="2x"
-            {...props}
-            styles={{
-              overflow: 'styles' in props ? props.styles.overflow : undefined,
-              Actions: { translate: '0 -2x' },
-            }}
-            actions={<Menu.Item.Action>Delete</Menu.Item.Action>}
-          >
-            Destination
-          </Menu.Item>
-        </Menu>
-        <Menu aria-label="Visible actions" styles={{ width: '30x' }}>
-          <Menu.Item key="before">Before control</Menu.Item>
-          <Menu.Item
-            key="control"
-            height="2x"
-            overflow="visible"
-            styles={{ Actions: { translate: '0 -2x' } }}
-            actions={<Menu.Item.Action>Control action</Menu.Item.Action>}
-          >
-            Control
-          </Menu.Item>
-        </Menu>
-      </Root>,
-    );
-    const row = screen.getByRole('menuitem', { name: 'Destination' });
-    const action = screen.getByRole('menuitem', { name: 'Delete' });
-    const rect = getRowElement(row).getBoundingClientRect();
-    const button = action.getBoundingClientRect();
-    expect(button.top).toBeLessThan(rect.top);
-    const hit = document.elementFromPoint(
-      button.left + button.width / 2,
-      rect.top - 1,
-    );
-    expect(hit?.closest('[data-element="Actions"]')).toBeNull();
-    expect(getComputedStyle(getRowElement(row)).overflow).toBe('hidden');
-    const control = screen.getByRole('menuitem', { name: 'Control' });
-    const controlAction = screen.getByRole('menuitem', {
-      name: 'Control action',
-    });
-    const controlRect = getRowElement(control).getBoundingClientRect();
-    const controlButton = controlAction.getBoundingClientRect();
-    expect(controlButton.top).toBeLessThan(controlRect.top);
-    expect(
-      document
-        .elementFromPoint(
-          controlButton.left + controlButton.width / 2,
-          controlRect.top - 1,
-        )
-        ?.closest('button'),
-    ).toBe(controlAction);
-  });
+  ] as const)(
+    'clips independent actions to the complete native row: %j',
+    (props) => {
+      render(
+        <Root>
+          <Menu aria-label="Destinations" styles={{ width: '30x' }}>
+            <Menu.Item key="before">Before destination</Menu.Item>
+            <Menu.Item
+              key="link"
+              to={destination}
+              height="2x"
+              {...props}
+              styles={{
+                overflow:
+                  'styles' in props ? props.styles?.overflow : undefined,
+                Actions: { translate: '0 -2x' },
+              }}
+              actions={<Menu.Item.Action>Delete</Menu.Item.Action>}
+            >
+              Destination
+            </Menu.Item>
+          </Menu>
+          <Menu aria-label="Visible actions" styles={{ width: '30x' }}>
+            <Menu.Item key="before">Before control</Menu.Item>
+            <Menu.Item
+              key="control"
+              height="2x"
+              overflow="visible"
+              styles={{ Actions: { translate: '0 -2x' } }}
+              actions={<Menu.Item.Action>Control action</Menu.Item.Action>}
+            >
+              Control
+            </Menu.Item>
+          </Menu>
+        </Root>,
+      );
+      const row = screen.getByRole('menuitem', { name: 'Destination' });
+      const action = screen.getByRole('menuitem', { name: 'Delete' });
+      const rect = getRowElement(row).getBoundingClientRect();
+      const button = action.getBoundingClientRect();
+      expect(button.top).toBeLessThan(rect.top);
+      const hit = document.elementFromPoint(
+        button.left + button.width / 2,
+        rect.top - 1,
+      );
+      expect(hit?.closest('[data-element="Actions"]')).toBeNull();
+      expect(getComputedStyle(getRowElement(row)).overflow).toBe('hidden');
+      const control = screen.getByRole('menuitem', { name: 'Control' });
+      const controlAction = screen.getByRole('menuitem', {
+        name: 'Control action',
+      });
+      const controlRect = getRowElement(control).getBoundingClientRect();
+      const controlButton = controlAction.getBoundingClientRect();
+      expect(controlButton.top).toBeLessThan(controlRect.top);
+      expect(
+        document
+          .elementFromPoint(
+            controlButton.left + controlButton.width / 2,
+            controlRect.top - 1,
+          )
+          ?.closest('button'),
+      ).toBe(controlAction);
+    },
+  );
 
   it('orders the entire link row in the menu flex layout', () => {
     render(

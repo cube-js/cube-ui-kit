@@ -590,7 +590,7 @@ describe('field refs', () => {
     expect(document.activeElement).toHaveAttribute('role', 'spinbutton');
   });
 
-  it.each([
+  it.each<[string, { label?: string; 'aria-label'?: string }]>([
     ['with the chrome', { label: 'Custom' }],
     ['bare', { 'aria-label': 'Custom' }],
   ])('ignores the ref of the deprecated three-argument call %s', (_, props) => {

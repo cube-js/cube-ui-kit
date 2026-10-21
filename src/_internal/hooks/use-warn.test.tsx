@@ -7,7 +7,9 @@ vi.unmock('./use-warn');
 describe('useWarn()', () => {
   let spy: ReturnType<typeof vi.spyOn>;
 
-  beforeEach(() => (spy = vi.spyOn(console, 'warn').mockImplementation()));
+  beforeEach(
+    () => (spy = vi.spyOn(console, 'warn').mockImplementation(() => {})),
+  );
   afterEach(() => spy.mockRestore());
 
   it('should warn', () => {
