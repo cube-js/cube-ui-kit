@@ -76,7 +76,7 @@ describe('<Item />', () => {
       const onClick = vi.fn();
 
       renderWithRoot(
-        <Item isDisabled qa="Item" onClick={onClick}>
+        <Item isDisabled qa="Item" {...{ onClick }}>
           Label
         </Item>,
       );

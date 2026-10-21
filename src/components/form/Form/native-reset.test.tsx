@@ -145,132 +145,137 @@ function renderModern(nativeProps: NativeProps) {
 describe.each([
   ['legacy', renderLegacy],
   ['modern', renderModern],
-])('native reset of a %s form', (_, renderForm) => {
-  const errors: unknown[] = [];
-  const onError = (event: ErrorEvent) => errors.push(event.error);
+])(
+  'native reset of a %s form',
+  (_, renderForm: typeof renderLegacy | typeof renderModern) => {
+    const errors: unknown[] = [];
+    const onError = (event: ErrorEvent) => errors.push(event.error);
 
-  beforeEach(() => {
-    errors.length = 0;
-    window.addEventListener('error', onError);
-  });
-
-  afterEach(() => {
-    window.removeEventListener('error', onError);
-  });
-
-  async function renderChanged(nativeProps: NativeProps) {
-    const view = renderForm(nativeProps);
-    const { getByRole, container } = view;
-    const swatches = within(getByRole('radiogroup', { name: 'Swatch' }));
-
-    await act(async () => {
-      await userEvent.click(getByRole('checkbox', { name: 'Checkbox' }));
-      await userEvent.click(swatches.getAllByRole('radio')[0]);
-      await userEvent.type(getByRole('textbox', { name: 'Token' }), '!');
-      await userEvent.click(getByRole('checkbox', { name: 'Agree' }));
-      await userEvent.selectOptions(
-        getByRole('combobox', { name: 'Plan' }),
-        'free',
-      );
-      view.setValues(CHANGED);
+    beforeEach(() => {
+      errors.length = 0;
+      window.addEventListener('error', onError);
     });
 
-    expect(view.getValues()).not.toEqual(DEFAULTS);
+    afterEach(() => {
+      window.removeEventListener('error', onError);
+    });
 
-    // Every control belongs to the form, so the reset event reaches them all.
-    const formElement = container.querySelector('form')!;
-    const controls = container.querySelectorAll<HTMLInputElement>(
-      'input, textarea, select',
-    );
-
-    expect(controls.length).toBeGreaterThan(10);
-    expect(
-      Array.from(controls, (control) => control.form === formElement),
-    ).not.toContain(false);
-
-    view.onValuesChange.mockClear();
-
-    return { ...view, formElement };
-  }
-
-  function expectDefaults({
-    getValues,
-    getByRole,
-    container,
-    onValuesChange,
-  }: Awaited<ReturnType<typeof renderChanged>>) {
-    expect(errors).toEqual([]);
-    expect(getValues()).toEqual(DEFAULTS);
-    // One report of the reset, and none of React Aria's per-input writes.
-    expect(onValuesChange).toHaveBeenCalledTimes(1);
-    expect(onValuesChange.mock.lastCall?.[0]).toEqual(
-      expect.objectContaining(DEFAULTS),
-    );
-    expect(getByRole('checkbox', { name: 'Checkbox' })).toBeChecked();
-    expect(getByRole('switch', { name: 'Switch' })).toBeChecked();
-    expect(getByRole('checkbox', { name: 'One' })).toBeChecked();
-    expect(getByRole('checkbox', { name: 'Two' })).not.toBeChecked();
-    expect(getByRole('radio', { name: 'One' })).toBeChecked();
-    expect(container.querySelector('select[name="select"]')).toHaveValue('one');
-    // The browser's own reset, for the controls the form does not own.
-    expect(getByRole('textbox', { name: 'Token' })).toHaveValue('initial');
-    expect(getByRole('checkbox', { name: 'Agree' })).toBeChecked();
-    expect(getByRole('combobox', { name: 'Plan' })).toHaveValue('pro');
-  }
-
-  describe.each<[string, NativeProps]>([
-    ['without action', {}],
-    ['with action', { action: '/save', method: 'post' }],
-  ])('%s', (__, nativeProps) => {
-    // Drives eleven inputs through user-event, which can outrun the 5s default
-    // on a busy runner.
-    it('should reset every field to its form default through ResetButton', async () => {
-      const view = await renderChanged(nativeProps);
-
-      await act(async () => {
-        await userEvent.click(view.getByRole('button', { name: 'Reset' }));
-        // The legacy `ResetButton` resets once more on the next tick.
-        await new Promise((resolve) => setTimeout(resolve));
-      });
-
-      expectDefaults(view);
-    }, 10_000);
-
-    it('should reset every field to its form default through form.reset()', async () => {
-      const view = await renderChanged(nativeProps);
-
-      await act(async () => {
-        view.formElement.reset();
-      });
-
-      expectDefaults(view);
-    }, 10_000);
-
-    // The browser would put a checkbox back to what it rendered on mount, which
-    // is why the root cancels the native reset for the inputs it owns.
-    it('should keep bound inputs at defaults that arrived after mount', async () => {
+    async function renderChanged(nativeProps: NativeProps) {
       const view = renderForm(nativeProps);
-      const adopted = { ...DEFAULTS, checkbox: false, switch: false };
-      const checkbox = view.getByRole('checkbox', { name: 'Checkbox' });
-      const toggle = view.getByRole('switch', { name: 'Switch' });
+      const { getByRole, container } = view;
+      const swatches = within(getByRole('radiogroup', { name: 'Swatch' }));
 
       await act(async () => {
-        view.adoptDefaults(adopted);
+        await userEvent.click(getByRole('checkbox', { name: 'Checkbox' }));
+        await userEvent.click(swatches.getAllByRole('radio')[0]);
+        await userEvent.type(getByRole('textbox', { name: 'Token' }), '!');
+        await userEvent.click(getByRole('checkbox', { name: 'Agree' }));
+        await userEvent.selectOptions(
+          getByRole('combobox', { name: 'Plan' }),
+          'free',
+        );
+        view.setValues(CHANGED);
       });
 
-      await act(async () => {
-        view.container.querySelector('form')!.reset();
-        // Before React renders again, so a re-render cannot hide a native write.
+      expect(view.getValues()).not.toEqual(DEFAULTS);
+
+      // Every control belongs to the form, so the reset event reaches them all.
+      const formElement = container.querySelector('form')!;
+      const controls = container.querySelectorAll<HTMLInputElement>(
+        'input, textarea, select',
+      );
+
+      expect(controls.length).toBeGreaterThan(10);
+      expect(
+        Array.from(controls, (control) => control.form === formElement),
+      ).not.toContain(false);
+
+      view.onValuesChange.mockClear();
+
+      return { ...view, formElement };
+    }
+
+    function expectDefaults({
+      getValues,
+      getByRole,
+      container,
+      onValuesChange,
+    }: Awaited<ReturnType<typeof renderChanged>>) {
+      expect(errors).toEqual([]);
+      expect(getValues()).toEqual(DEFAULTS);
+      // One report of the reset, and none of React Aria's per-input writes.
+      expect(onValuesChange).toHaveBeenCalledTimes(1);
+      expect(onValuesChange.mock.lastCall?.[0]).toEqual(
+        expect.objectContaining(DEFAULTS),
+      );
+      expect(getByRole('checkbox', { name: 'Checkbox' })).toBeChecked();
+      expect(getByRole('switch', { name: 'Switch' })).toBeChecked();
+      expect(getByRole('checkbox', { name: 'One' })).toBeChecked();
+      expect(getByRole('checkbox', { name: 'Two' })).not.toBeChecked();
+      expect(getByRole('radio', { name: 'One' })).toBeChecked();
+      expect(container.querySelector('select[name="select"]')).toHaveValue(
+        'one',
+      );
+      // The browser's own reset, for the controls the form does not own.
+      expect(getByRole('textbox', { name: 'Token' })).toHaveValue('initial');
+      expect(getByRole('checkbox', { name: 'Agree' })).toBeChecked();
+      expect(getByRole('combobox', { name: 'Plan' })).toHaveValue('pro');
+    }
+
+    describe.each<[string, NativeProps]>([
+      ['without action', {}],
+      ['with action', { action: '/save', method: 'post' }],
+    ])('%s', (__, nativeProps) => {
+      // Drives eleven inputs through user-event, which can outrun the 5s default
+      // on a busy runner.
+      it('should reset every field to its form default through ResetButton', async () => {
+        const view = await renderChanged(nativeProps);
+
+        await act(async () => {
+          await userEvent.click(view.getByRole('button', { name: 'Reset' }));
+          // The legacy `ResetButton` resets once more on the next tick.
+          await new Promise((resolve) => setTimeout(resolve));
+        });
+
+        expectDefaults(view);
+      }, 10_000);
+
+      it('should reset every field to its form default through form.reset()', async () => {
+        const view = await renderChanged(nativeProps);
+
+        await act(async () => {
+          view.formElement.reset();
+        });
+
+        expectDefaults(view);
+      }, 10_000);
+
+      // The browser would put a checkbox back to what it rendered on mount, which
+      // is why the root cancels the native reset for the inputs it owns.
+      it('should keep bound inputs at defaults that arrived after mount', async () => {
+        const view = renderForm(nativeProps);
+        const adopted = { ...DEFAULTS, checkbox: false, switch: false };
+        const checkbox = view.getByRole('checkbox', { name: 'Checkbox' });
+        const toggle = view.getByRole('switch', { name: 'Switch' });
+
+        await act(async () => {
+          view.adoptDefaults(adopted);
+        });
+
+        await act(async () => {
+          view.container.querySelector('form')!.reset();
+          // Before React renders again, so a re-render cannot hide a native write.
+          expect(checkbox).not.toBeChecked();
+          expect(toggle).not.toBeChecked();
+        });
+
+        expect(view.getValues()).toEqual(adopted);
         expect(checkbox).not.toBeChecked();
         expect(toggle).not.toBeChecked();
       });
-
-      expect(view.getValues()).toEqual(adopted);
-      expect(checkbox).not.toBeChecked();
-      expect(toggle).not.toBeChecked();
     });
-  });
-});
+  },
+);
 
 describe('native reset of a modern action form', () => {
   it('should run onReset first and let it cancel the reset', async () => {

@@ -32,7 +32,11 @@ describe('useAlertDialogAPI() in a browser', () => {
     let first!: Promise<unknown>;
 
     act(() => {
-      first = api.open({ title: 'First', actions: { cancel: true } });
+      first = api.open({
+        title: 'First',
+        content: 'Body',
+        actions: { cancel: true },
+      });
     });
 
     const firstRejection = expect(first).rejects.toEqual(undefined);
@@ -45,7 +49,11 @@ describe('useAlertDialogAPI() in a browser', () => {
     let second!: Promise<unknown>;
 
     act(() => {
-      second = api.open({ title: 'Second', actions: { confirm: true } });
+      second = api.open({
+        title: 'Second',
+        content: 'Body',
+        actions: { confirm: true },
+      });
     });
 
     await waitFor(() => {
@@ -82,7 +90,11 @@ describe('useAlertDialogAPI() in a browser', () => {
     let idle!: Promise<unknown>;
 
     act(() => {
-      idle = api.open({ title: 'Idle', actions: { confirm: true } });
+      idle = api.open({
+        title: 'Idle',
+        content: 'Body',
+        actions: { confirm: true },
+      });
     });
 
     const idleRejection = expect(idle).rejects.toEqual(undefined);
@@ -100,6 +112,7 @@ describe('useAlertDialogAPI() in a browser', () => {
     act(() => {
       busy = api.open({
         title: 'Busy',
+        content: 'Body',
         actions: { confirm: { children: 'Delete' }, cancel: true },
         onConfirm: () => new Promise<void>((resolve) => (finish = resolve)),
       });

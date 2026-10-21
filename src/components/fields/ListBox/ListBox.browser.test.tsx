@@ -5,6 +5,8 @@ import { Select } from '../Select/Select';
 
 import { ListBox } from './ListBox';
 
+import type { CubeListBoxProps } from './ListBox';
+
 /**
  * What the list lets out, and what it keeps (CUB-4839).
  *
@@ -37,7 +39,7 @@ describe('ListBox key propagation', () => {
 
     const host = screen.getByTestId('LB');
 
-    (host.querySelector('[role="listbox"]') ?? host).focus();
+    (host.querySelector<HTMLElement>('[role="listbox"]') ?? host).focus();
 
     return seen;
   }
@@ -657,7 +659,7 @@ describe('ListBox focus outside the rendered window', () => {
     label: `Item ${index}`,
   }));
 
-  type Props = Partial<ComponentProps<typeof ListBox>>;
+  type Props = Partial<CubeListBoxProps<(typeof ITEMS)[number]>>;
 
   function renderList(props: Props = {}) {
     renderWithRoot(
