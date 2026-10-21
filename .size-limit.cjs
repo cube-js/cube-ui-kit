@@ -400,6 +400,10 @@ module.exports = [
     // hand-off, unmount takeover), the `moveBefore` reorder in `Overlay` and
     // the `data-autofocus` marks. Allow 633 kB, 1,251 B headroom; confirm in
     // Linux CI.
+    // Tasty 3.11.2 → 3.12.0: 632,001 B locally against main's 631,749 B in CI
+    // (fc6b517f, run 39582996891), +252 B, nearly all of it in Tasty's style
+    // engine (the kit's own change is two selection colors in
+    // `GlobalStyles`). Fits in 633 kB, 999 B headroom; confirm in Linux CI.
     limit: '633kB',
   },
   {
@@ -528,6 +532,9 @@ module.exports = [
     // Retained dialog focus: 162,785 B against main's 162,599 B (b45acbd5),
     // +186 B, the `data-autofocus` mark in `useAction`. Fits in 163 kB with
     // 215 B headroom; confirm in Linux CI.
+    // Tasty 3.11.2 → 3.12.0: 162,982 B against main's 162,785 B (fc6b517f, CI
+    // run 39582996891), +197 B in the same engine. Left at 163 kB with 18 B
+    // headroom; the next change here has to raise it.
     limit: '163kB',
   },
 ];
