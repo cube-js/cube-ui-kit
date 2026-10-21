@@ -24,7 +24,9 @@ module.exports = {
   overrides: [
     {
       // Code fences in docs are illustrative snippets, not source files.
-      files: ['*.md', '*.mdx'],
+      // `**/` because `--experimental-cli` matches a bare `*.md` against the
+      // whole path, so it skipped the override for files in subfolders.
+      files: ['**/*.md', '**/*.mdx'],
       options: { embeddedLanguageFormatting: 'off' },
     },
   ],
