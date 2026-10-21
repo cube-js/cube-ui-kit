@@ -435,7 +435,7 @@ describe.each([true, false])('hideOnClose=%s focus parity', (hideOnClose) => {
   it.each(['dialog', 'alertdialog'] as const)(
     'focuses the %s itself when a screen reader opens it',
     async (role) => {
-      let setOpen = (isOpen: boolean) => void isOpen;
+      let setOpen: (isOpen: boolean) => void = () => {};
 
       function App() {
         const [isOpen, setIsOpen] = useState(false);
