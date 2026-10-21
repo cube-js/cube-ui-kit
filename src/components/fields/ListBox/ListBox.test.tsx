@@ -1483,6 +1483,39 @@ describe('<ListBox />', () => {
   });
 });
 
+describe('ListBox id and description', () => {
+  it.each([
+    ['a static', {}],
+    ['a reorderable', { isReorderable: true, onReorder: () => {} }],
+  ])('stays the id the caller passes on %s list', (_, props) => {
+    const { getByRole } = renderWithRoot(
+      <ListBox id="fruits" aria-label="Fruits" {...props}>
+        <ListBox.Item key="apple">Apple</ListBox.Item>
+        <ListBox.Item key="banana">Banana</ListBox.Item>
+      </ListBox>,
+    );
+
+    expect(getByRole('listbox')).toHaveAttribute('id', 'fruits');
+  });
+
+  it.each([
+    ['a static', {}],
+    ['a reorderable', { isReorderable: true, onReorder: () => {} }],
+  ])('keeps its description on %s list', (_, props) => {
+    const { getByRole } = renderWithRoot(
+      <>
+        <p id="hint">Pick one</p>
+        <ListBox aria-label="Fruits" aria-describedby="hint" {...props}>
+          <ListBox.Item key="apple">Apple</ListBox.Item>
+          <ListBox.Item key="banana">Banana</ListBox.Item>
+        </ListBox>
+      </>,
+    );
+
+    expect(getByRole('listbox')).toHaveAccessibleDescription('Pick one');
+  });
+});
+
 /**
  * A `:has()` that starts with `~` must stay out of ListBox's styles. jsdom
  * before 27 (nwsapi) throws on it for any element without a parent, and its

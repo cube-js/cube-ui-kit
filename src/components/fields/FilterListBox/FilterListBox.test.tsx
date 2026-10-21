@@ -64,6 +64,21 @@ describe('<FilterListBox />', () => {
       );
     });
 
+    it('points aria-controls at the list while it is reorderable', () => {
+      const { getByRole } = render(
+        <FilterListBox label="Fruit" isReorderable onReorder={() => {}}>
+          {basicItems}
+        </FilterListBox>,
+      );
+
+      // With an empty search the list takes drag-and-drop, whose collection
+      // comes with an id of its own.
+      expect(getByRole('combobox')).toHaveAttribute(
+        'aria-controls',
+        getByRole('listbox').id,
+      );
+    });
+
     it('should render with search input and options', () => {
       const { getByRole, getByPlaceholderText } = render(
         <FilterListBox
