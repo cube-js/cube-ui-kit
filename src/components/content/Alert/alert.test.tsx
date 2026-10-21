@@ -84,11 +84,12 @@ describe('<Alert /> component', () => {
   it('labels the special theme with its white text, not #dark-02', () => {
     const { container } = render(<Alert theme="special">Text</Alert>);
 
-    expect(ruleFor(getCSSTextForNode(container), 'special')).toContain(
-      'color: var(--primary-accent-surface-text-color)',
+    expect(ruleFor(getCSSTextForNode(container), 'special')).toMatch(
+      /(^|[;{\s])color: var\(--primary-accent-surface-text-color\)/,
     );
   });
 
+  // Guards the THEMES → Alert wiring, which no palette test sees.
   it('paints the status themes with their alert fill', () => {
     const { container } = render(<Alert theme="danger">Text</Alert>);
 

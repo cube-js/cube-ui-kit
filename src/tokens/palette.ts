@@ -689,12 +689,16 @@ const TINTED_SURFACE_RAMP: ColorMap = {
  *
  *   - `alert-surface` — one `-2` step off the theme's own `surface`, away from
  *     the page, at triple its saturation. Dark takes a lower factor: the same
- *     factor there reads about twice as strong, and up to five times with pastel
- *     off. Still close enough to the page that the neutral `#dark-02` text keeps
- *     its floor on it in every scheme.
+ *     factor there reads about two and a half times as strong, and up to five
+ *     times for some hues with pastel off. Still close enough to the page that
+ *     the neutral `#dark-02` text keeps its floor on it in every scheme.
  *   - `alert-border` — anchored to `alert-surface` with a slightly wider
  *     normal-contrast step than `border` (`-12` vs `-10`), so the edge holds
- *     against the darker fill.
+ *     against the deeper fill.
+ *
+ * Both state their dark factor, so a host's global `darkDesaturation` (which an
+ * explicit one bypasses) leaves the pair in proportion rather than thinning only
+ * the border.
  */
 const ALERT_COLORS: ColorMap = {
   'alert-surface': {
@@ -707,6 +711,7 @@ const ALERT_COLORS: ColorMap = {
     base: 'alert-surface',
     tone: ['-12', '-30'],
     saturation: 0.6,
+    darkSaturation: 0.6,
   },
 };
 
