@@ -323,7 +323,7 @@ describe('useAlertDialogApi() dialog lifecycle', () => {
         const controller = new AbortController();
 
         open(
-          { title: 'From effect', actions: { confirm: true } },
+          { title: 'From effect', content: 'Body', actions: { confirm: true } },
           { cancelToken: controller.signal },
         ).then(
           (status) => results.push(status),

@@ -905,10 +905,10 @@ export const HotkeyTesting: StoryFn<CubeCommandMenuProps<any>> = (args) => {
       <Block margin="0 0 2x 0" padding="1x" fill="#surface-2" radius="0.5x">
         <Text.Strong>Hotkey Test Instructions:</Text.Strong>
         <Flow as="ul" gap="0.5x" margin="1x 0" padding="0 0 0 2.5x">
-          <Block as="li">Try pressing Ctrl+C (Copy)</Block>
-          <Block as="li">Try pressing Ctrl+V (Paste)</Block>
-          <Block as="li">Try pressing Ctrl+X (Cut)</Block>
-          <Block as="li">Try pressing Ctrl+Z (Undo)</Block>
+          <li>Try pressing Ctrl+C (Copy)</li>
+          <li>Try pressing Ctrl+V (Paste)</li>
+          <li>Try pressing Ctrl+X (Cut)</li>
+          <li>Try pressing Ctrl+Z (Undo)</li>
         </Flow>
         {lastAction && (
           <Block

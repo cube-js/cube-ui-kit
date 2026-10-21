@@ -27,7 +27,7 @@ const ANCHOR_INDENT = 120;
 function Row({
   children,
 }: {
-  children: (ref: RefObject<HTMLDivElement>) => ReactElement;
+  children: (ref: RefObject<HTMLDivElement | null>) => ReactElement;
 }) {
   const anchorRef = useRef<HTMLDivElement>(null);
 

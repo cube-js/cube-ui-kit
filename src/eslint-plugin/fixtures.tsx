@@ -237,7 +237,10 @@ export const FIXTURES: Fixture[] = [
     render: (props) => <Banner {...props}>Message</Banner>,
     curatedSkips: { isSelected: ARIA_SELECTED_SKIP },
   },
-  { name: 'InfoBadge', render: (props) => <InfoBadge {...props}>1</InfoBadge> },
+  {
+    name: 'InfoBadge',
+    render: (props) => <InfoBadge tooltip="Info" {...props} />,
+  },
   {
     name: 'ItemBadge',
     /**
