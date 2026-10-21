@@ -845,6 +845,7 @@ function TabsRoot(props: CubeTabsProps, ref: ForwardedRef<HTMLDivElement>) {
 // =============================================================================
 
 const _Tabs = forwardRef(TabsRoot);
+_Tabs.displayName = 'CubeTabs';
 
 export interface TabsComponent extends ForwardRefExoticComponent<
   CubeTabsProps & RefAttributes<HTMLDivElement>

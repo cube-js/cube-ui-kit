@@ -28,9 +28,9 @@ if (existsSync(resolve(packed, 'dist/node_modules'))) {
   process.exit(1);
 }
 
-// Under node_modules, TypeScript names the package's types only through its
-// `exports`, as in an app. Outside it, a relative path to any dist file would
-// do, and so would our own package scope, where the name resolves to this repo.
+// Installed under node_modules, as in an app, so TypeScript can name our types
+// only through `exports`. The consumer's own package.json keeps our package
+// scope from resolving `@cube-dev/ui-kit` to this repo.
 rmSync(root, { recursive: true, force: true });
 cpSync(packed, installed, { recursive: true });
 writeFileSync(
@@ -73,16 +73,19 @@ index.forEachChild((node) => {
     const local = (element.propertyName ?? element.name).text;
     if (
       !element.isTypeOnly &&
-      /^[A-Z][a-z]/.test(element.name.text) &&
+      /^[A-Z][a-z\d]/.test(element.name.text) &&
       !dependencyBindings.has(local)
     ) {
       names.push(element.name.text);
     }
   }
 });
+if (!names.length) {
+  throw new Error('Found no components in dist/index.d.ts.');
+}
 
 const header = [
-  // Resolving csstype through the link is what lets TypeScript name it.
+  // With `types: []`, only a reference resolves csstype through the link.
   '/// <reference types="csstype" />',
   "import { tasty } from '@tenphi/tasty';",
   `import { ${names.join(', ')} } from '@cube-dev/ui-kit';`,
@@ -97,7 +100,8 @@ writeFileSync(
   ].join('\n'),
 );
 
-// Returns each diagnostic in the fixture with the name its line extends.
+// Returns each diagnostic with the name its line extends. One on the header
+// (an import that does not resolve) or outside the fixture fails the check.
 function compile(declaration) {
   writeFileSync(
     resolve(root, 'tsconfig.json'),
@@ -125,24 +129,54 @@ function compile(declaration) {
     [tsc, '-p', '.', '--pretty', 'false'],
     { cwd: root, encoding: 'utf8' },
   );
-  if (status !== 0 && !stdout.includes('extensions.tsx(')) {
-    throw new Error(`tsc failed outside the fixture:\n${stdout}${stderr}`);
-  }
-  return stdout
+  const diagnostics = stdout
     .split(/\n(?=\S)/)
-    .filter((text) => text.startsWith('extensions.tsx('))
-    .map((text) => ({
-      text: text.trimEnd(),
-      name: names[
-        Number(/^extensions\.tsx\((\d+),/.exec(text)[1]) - 1 - header.length
-      ],
-    }));
+    .filter((text) => text.trim())
+    .map((text) => {
+      const line = /^extensions\.tsx\((\d+),/.exec(text)?.[1];
+      return { text: text.trimEnd(), name: names[line - 1 - header.length] };
+    });
+  const unexpected = diagnostics.filter(({ name }) => name === undefined);
+  if (unexpected.length || (status !== 0 && !diagnostics.length)) {
+    throw new Error(
+      `tsc failed outside the extensions:\n${unexpected.map(({ text }) => text).join('\n') || stdout + stderr}`,
+    );
+  }
+  return diagnostics;
 }
 
-// A name `tasty()` rejects as a base (a context, a provider with required
-// children, a hook) is not a component this check is about.
-const notBases = new Set(compile(false).map(({ name }) => name));
-const failures = compile(true).filter(({ name }) => !notBases.has(name));
+// The bundle re-exports some types without a `type` marker (TS2693 when used as
+// a value). Any other name `tasty()` rejects must be listed here, so that a
+// component which stops working as a base fails instead of dropping out.
+const knownNotBases = new Set(['ResizeSensor']);
+const compoundComponents = [
+  'Layout',
+  'GridLayout',
+  'Text',
+  'Form',
+  'Tabs',
+  'ItemTable',
+  'Notification',
+];
+const notBases = new Set();
+const rejected = [];
+for (const diagnostic of compile(false)) {
+  if (/ error TS2693:/.test(diagnostic.text)) {
+    notBases.add(diagnostic.name);
+  } else if (knownNotBases.has(diagnostic.name)) {
+    notBases.add(diagnostic.name);
+  } else {
+    rejected.push(diagnostic);
+  }
+}
+const unchecked = compoundComponents.filter(
+  (name) => !names.includes(name) || notBases.has(name),
+);
+const failures = [
+  ...rejected,
+  ...compile(true).filter(({ name }) => !notBases.has(name)),
+  ...unchecked.map((name) => ({ text: `${name} is not checked.` })),
+];
 
 if (failures.length) {
   console.error(failures.map(({ text }) => text).join('\n'));

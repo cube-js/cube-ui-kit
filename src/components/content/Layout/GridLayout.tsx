@@ -76,7 +76,7 @@ export interface GridLayoutComponent extends ForwardRefExoticComponent<
   PanelHeader: typeof LayoutPanelHeader;
 }
 
-const GridLayout = Object.assign(_GridLayout, {
+const GridLayout: GridLayoutComponent = Object.assign(_GridLayout, {
   Toolbar: LayoutToolbar,
   Header: LayoutHeader,
   Footer: LayoutFooter,
@@ -87,6 +87,6 @@ const GridLayout = Object.assign(_GridLayout, {
   Pane: LayoutPane,
   Panel: LayoutPanel,
   PanelHeader: LayoutPanelHeader,
-}) as GridLayoutComponent;
+});
 
 export { GridLayout };

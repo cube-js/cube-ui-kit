@@ -68,7 +68,7 @@ export interface LayoutComponent extends ForwardRefExoticComponent<
   PanelHeader: typeof LayoutPanelHeader;
 }
 
-const Layout = Object.assign(LayoutBase, {
+const Layout: LayoutComponent = Object.assign(LayoutBase, {
   Toolbar: LayoutToolbar,
   Header: LayoutHeader,
   Footer: LayoutFooter,
@@ -81,6 +81,6 @@ const Layout = Object.assign(LayoutBase, {
   Pane: LayoutPane,
   Panel: LayoutPanel,
   PanelHeader: LayoutPanelHeader,
-}) as LayoutComponent;
+});
 
 export { Layout };
