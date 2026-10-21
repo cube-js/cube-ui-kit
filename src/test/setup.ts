@@ -9,7 +9,7 @@ import { getI18n } from '../i18n';
 // (all locale bundles are bundled), so components resolve translated defaults
 // without an `<I18nextProvider>`. Reset the active language to `en-US` before
 // each test so a spec that exercises `changeLanguage` can't leak its locale
-// into unrelated specs sharing the worker's module graph (isolate: false).
+// into the tests after it, which share the file's module graph.
 beforeEach(() => {
   const i18n = getI18n();
   if (i18n.language !== 'en-US') {

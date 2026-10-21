@@ -161,25 +161,36 @@ describe('the published build', () => {
   // Layout subtrees with a developer warning. Run the real config over the real
   // source and assert the read is still there.
   it('does not inline the NODE_ENV read', async () => {
-    const { build } = await import('tsdown');
-    const { default: config } = await import('../../tsdown.config');
-
     const outDir = mkdtempSync(join(tmpdir(), 'uikit-nodeenv-'));
 
     try {
-      await build({
-        ...(config as Record<string, unknown>),
-        // The real config is spread above. Without `config: false`, tsdown
-        // also loads `tsdown.config.ts` and merges this object into it, so
-        // the entry below joins the library's entries instead of replacing
-        // them and the whole package is built.
-        config: false,
-        entry: { 'is-dev-env': 'src/utils/is-dev-env.ts' },
-        outDir,
-        // Types are irrelevant to the question and dominate the build time.
-        dts: false,
-        sourcemap: false,
-        copy: [],
+      // Built in a child process: rolldown's native bindings reject plugin
+      // objects created in another realm, and the `vmThreads` pool runs this
+      // file in a `vm` context. Node loads `tsdown.config.ts` itself.
+      const script = `
+        import { build } from 'tsdown';
+        import config from './tsdown.config.ts';
+
+        await build({
+          ...config,
+          // The real config is spread above. Without \`config: false\`,
+          // tsdown also loads \`tsdown.config.ts\` and merges this object
+          // into it, so the entry joins the library's entries instead of
+          // replacing them and the whole package is built.
+          config: false,
+          entry: { 'is-dev-env': 'src/utils/is-dev-env.ts' },
+          outDir: ${JSON.stringify(outDir)},
+          // Types are irrelevant to the question and dominate the build time.
+          dts: false,
+          sourcemap: false,
+          copy: [],
+          logLevel: 'error',
+        });
+      `;
+
+      execFileSync(process.execPath, ['--input-type=module', '-e', script], {
+        cwd: process.cwd(),
+        encoding: 'utf-8',
       });
 
       const code = readFileSync(join(outDir, 'is-dev-env.js'), 'utf-8')

@@ -39,10 +39,28 @@ export default defineConfig({
       '**/*.browser.test.{ts,tsx}',
     ],
     setupFiles: ['./src/test/setup.ts'],
-    // worker_threads are lighter than child_process forks. Files stay isolated
-    // (Vitest's default): sharing the jsdom env and module graph across files
-    // (`--no-isolate`) fails dozens of specs and runs slower, not faster.
-    pool: 'threads',
+    // Each file still gets its own context, but a `vm` context inside a
+    // long-lived worker reuses the compiled module graph instead of re-importing
+    // it per file: the suite runs ~35% faster than on `threads`, for roughly
+    // 2.5× the peak memory. `vmMemoryLimit` (default: system memory ÷ CPUs)
+    // recycles a worker that outgrows it. Sharing one context across files
+    // (`isolate: false`) is not the same thing: it fails dozens of specs.
+    pool: 'vmThreads',
+    server: {
+      deps: {
+        // A `vm` context loads externalized packages as Node does, and the
+        // React Aria family ships ES module files inside CommonJS packages,
+        // which Node rejects. Inlining sends them through Vite's transform.
+        inline: [
+          /@react-aria\//,
+          /@react-stately\//,
+          /@react-types\//,
+          /\/react-aria\//,
+          /\/react-stately\//,
+          /@internationalized\//,
+        ],
+      },
+    },
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov'],
