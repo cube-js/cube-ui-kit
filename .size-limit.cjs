@@ -394,12 +394,13 @@ module.exports = [
     // Tasty 3.11.1 → 3.11.2: 629,130 B locally against main's 628,234 B in CI
     // (48561f64, run 39467277556), +896 B for the pseudo-element state
     // handling. Allow 630 kB, 870 B headroom; confirm in Linux CI.
-    // Retained dialog focus parity: +1,210 B against its base when added
-    // (629,863 B vs 628,653 B, both fresh local builds), for the retained
-    // dialog's focus hook (opener, menu trigger, Tab, hand-off), the
-    //  reorder in  and the  marks. Button
-    // +129 B, the mark in . Re-measured after rebasing below.
-    limit: '632kB',
+    // Retained dialog focus (hideOnClose restore and parity): 631,749 B on a
+    // fresh local build against main's 629,130 B (b45acbd5): +2,619 B for the
+    // retained dialog's focus hook (opener, menu and popover triggers, Tab,
+    // hand-off, unmount takeover), the `moveBefore` reorder in `Overlay` and
+    // the `data-autofocus` marks. Allow 633 kB, 1,251 B headroom; confirm in
+    // Linux CI.
+    limit: '633kB',
   },
   {
     name: 'Tree shaking (just a Button)',
@@ -524,6 +525,9 @@ module.exports = [
     // Tasty 3.11.1 → 3.11.2: 162,599 B against main's 161,814 B (48561f64, CI
     // run 39467277556), +785 B in the same engine. Allow 163 kB, 401 B
     // headroom; confirm in Linux CI.
+    // Retained dialog focus: 162,785 B against main's 162,599 B (b45acbd5),
+    // +186 B, the `data-autofocus` mark in `useAction`. Fits in 163 kB with
+    // 215 B headroom; confirm in Linux CI.
     limit: '163kB',
   },
 ];
