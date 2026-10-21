@@ -1,4 +1,4 @@
-import { userEvent as realInput } from '@vitest/browser/context';
+import { userEvent as realInput } from 'vitest/browser';
 
 import { renderWithRoot, screen, userEvent } from '../../../test';
 import { Menu } from '../../actions/Menu';

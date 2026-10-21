@@ -9,7 +9,7 @@
  *
  * `node:fs` is correct for the jsdom tier and wrong for the browser tier, where
  * the harness runs inside Chromium and has no filesystem. That tier writes
- * through `commands.writeFile` from `@vitest/browser/context` instead, which is
+ * through `commands.writeFile` from `vitest/browser` instead, which is
  * why every filesystem call is confined to this module rather than inlined into
  * the harnesses.
  */

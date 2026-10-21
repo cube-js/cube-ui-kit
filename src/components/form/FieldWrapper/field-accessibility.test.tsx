@@ -20,6 +20,8 @@ import { TagInput } from '../../fields/TagInput/TagInput';
 import { TextInput } from '../../fields/TextInput/TextInput';
 import { TextInputMapper } from '../../fields/TextInputMapper/TextInputMapper';
 
+import type { ComponentType } from 'react';
+
 /**
  * Inputs whose control ARIA gives no invalid state — a button, or a group
  * around one — so their error message is the only thing that says it.
@@ -93,10 +95,14 @@ describe('every form-attachable input, read by a screen reader', () => {
     });
   });
 
+  // Both pickers type `children` as required; this spec renders them empty.
   it.each([
     ['Picker', Picker],
     ['FilterPicker', FilterPicker],
-  ] as const)('%s follows a changed control id', (_, Control) => {
+  ] as unknown as [
+    string,
+    ComponentType<{ id: string; label: string; 'aria-label': string }>,
+  ][])('%s follows a changed control id', (_, Control) => {
     const { rerender } = renderWithRoot(
       <Control id="first" label="Region" aria-label="Chosen region" />,
     );

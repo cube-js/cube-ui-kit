@@ -28,6 +28,7 @@ scratch
 
 
 # Browser-test failure artifacts
+.vitest
 .vitest-attachments
 __screenshots__
 

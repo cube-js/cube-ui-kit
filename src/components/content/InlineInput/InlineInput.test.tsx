@@ -301,7 +301,7 @@ describe('<InlineInput />', () => {
       const user = userEvent.setup();
       let resolveSave: ((v: string) => void) | undefined;
       const handleSubmit = vi.fn(
-        () =>
+        (_next: string) =>
           new Promise<void>((resolve) => {
             resolveSave = () => resolve();
           }),

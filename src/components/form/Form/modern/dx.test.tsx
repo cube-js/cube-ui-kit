@@ -43,7 +43,7 @@ describe('modern Form consumer workflows', () => {
     (rulesKey) => {
       const form = createFormController({ defaultValues: { name: 'Ada' } });
       const validate = () => undefined;
-      const source = vi.spyOn(validate, 'toString');
+      const source = vi.spyOn(validate as { toString(): string }, 'toString');
       const deps = ['org-1'];
       const field = form.field('name', { validate, deps, rulesKey });
       expect(field.options.deps).toBe(deps);
