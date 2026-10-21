@@ -726,6 +726,21 @@ function toStatelySelection(
   return value == null ? new Set() : new Set([value as Key]);
 }
 
+/**
+ * A droppable collection's props without the `id` React Aria gives the
+ * collection. `mergeProps` would keep that id over the listbox's own, so a
+ * reorderable list would drop the `id` its caller passed and leave a search
+ * input's `aria-controls` pointing at nothing. React Aria reads the collection
+ * id only to label a drop on the whole list, and ListBox renders no such drop
+ * target.
+ */
+function withoutCollectionId({
+  id: _id,
+  ...collectionProps
+}: Record<string, unknown>) {
+  return collectionProps;
+}
+
 export const ListBox = forwardRef(function ListBox<T extends object>(
   props: CubeListBoxProps<T>,
   ref: ForwardedRef<HTMLDivElement>,
@@ -1273,7 +1288,10 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
             {(dragState, dropState, collectionProps) => (
               <ListElement
                 qa={qa || 'ListBox'}
-                {...mergeProps(mergedListBoxProps, collectionProps)}
+                {...mergeProps(
+                  mergedListBoxProps,
+                  withoutCollectionId(collectionProps),
+                )}
                 ref={listRef}
                 styles={listStyles}
                 tokens={listGapTokens}

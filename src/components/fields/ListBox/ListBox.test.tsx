@@ -1483,6 +1483,22 @@ describe('<ListBox />', () => {
   });
 });
 
+describe('ListBox id', () => {
+  it.each([
+    ['a static', {}],
+    ['a reorderable', { isReorderable: true, onReorder: () => {} }],
+  ])('stays the id the caller passes on %s list', (_, props) => {
+    const { getByRole } = renderWithRoot(
+      <ListBox id="fruits" aria-label="Fruits" {...props}>
+        <ListBox.Item key="apple">Apple</ListBox.Item>
+        <ListBox.Item key="banana">Banana</ListBox.Item>
+      </ListBox>,
+    );
+
+    expect(getByRole('listbox')).toHaveAttribute('id', 'fruits');
+  });
+});
+
 /**
  * A `:has()` that starts with `~` must stay out of ListBox's styles. jsdom
  * before 27 (nwsapi) throws on it for any element without a parent, and its
