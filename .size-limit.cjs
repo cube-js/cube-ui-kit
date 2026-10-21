@@ -535,6 +535,9 @@ module.exports = [
     // Tasty 3.11.2 → 3.12.0: 162,982 B against main's 162,785 B (fc6b517f, CI
     // run 39582996891), +197 B in the same engine. Left at 163 kB with 18 B
     // headroom; the next change here has to raise it.
-    limit: '163kB',
+    // DisplayTransition waits out a replacing transition: 163,044 B against
+    // main's 162,982 B (1865f0c3, CI run 39631473276), +62 B. Allow 164 kB,
+    // 956 B headroom.
+    limit: '164kB',
   },
 ];
