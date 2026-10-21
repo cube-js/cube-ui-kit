@@ -270,6 +270,49 @@ describe('DisplayTransition timing with real transitions', () => {
     expect(onRest).toHaveBeenCalledTimes(1);
   });
 
+  it('plays the whole exit when it interrupts the enter', async () => {
+    // The collapse replaces the running expand, and the browser cancels the
+    // expand with `transitioncancel` on the element. That cancel must not end
+    // the exit, which has only just started.
+    const heightsAtRest: number[] = [];
+    const onRest = vi.fn(() => heightsAtRest.push(heightOf()));
+    const { rerender } = renderWithRoot(
+      <Probe isShown={false} onRest={onRest} />,
+    );
+
+    rerender(<Probe isShown={true} onRest={onRest} />);
+    await waitFor(() => expect(phaseOf()).toBe('entered'));
+    await settle(50);
+    rerender(<Probe isShown={false} onRest={onRest} />);
+
+    await waitFor(() => expect(phaseOf()).toBe('unmounted'), { timeout: 1000 });
+    expect(onRest).toHaveBeenCalledTimes(1);
+    expect(onRest).toHaveBeenCalledWith('exit');
+    expect(heightsAtRest[0]).toBeCloseTo(0, 0);
+  });
+
+  it('settles the enter only after the expand that interrupts the exit', async () => {
+    const heightsAtRest: number[] = [];
+    const onRest = vi.fn(() => heightsAtRest.push(heightOf()));
+    const { rerender } = renderWithRoot(
+      <Probe isShown={true} onRest={onRest} />,
+    );
+    const started = new Promise((resolve) =>
+      probe().addEventListener('transitionstart', resolve, { once: true }),
+    );
+
+    rerender(<Probe isShown={false} onRest={onRest} />);
+    await started;
+    await settle(50);
+    rerender(<Probe isShown={true} onRest={onRest} />);
+
+    await waitFor(() => expect(onRest).toHaveBeenCalledWith('enter'), {
+      timeout: 1000,
+    });
+    expect(onRest).toHaveBeenCalledTimes(1);
+    expect(heightsAtRest[0]).toBeCloseTo(80, 0);
+  });
+
   it('keeps the element shown when re-shown mid-collapse', async () => {
     const onRest = vi.fn();
 

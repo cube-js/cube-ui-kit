@@ -9,6 +9,24 @@ import {
 
 const AUTO_FALLBACK_DURATION = 500;
 
+/**
+ * Whether a CSS transition still runs on the element itself. A transition that
+ * replaces a running one, as a collapse that interrupts the expand does, starts
+ * in the frame the browser cancels the old one, so that cancel does not mean
+ * the element has settled.
+ */
+function hasRunningTransition(element: HTMLElement): boolean {
+  // jsdom has no Web Animations API.
+  if (typeof element.getAnimations !== 'function') return false;
+
+  return element
+    .getAnimations()
+    .some(
+      (animation) =>
+        'transitionProperty' in animation && animation.playState === 'running',
+    );
+}
+
 type Phase = 'enter' | 'entered' | 'exit-pending' | 'exit' | 'unmounted';
 export type ReportedPhase = 'enter' | 'entered' | 'exit' | 'unmounted';
 
@@ -201,13 +219,17 @@ export function DisplayTransition({
         // Ignore bubbled events from children - only react to our own element's transitions
         if (e.target !== element) return;
         if (flowRef.current !== flow) return;
+        if (hasRunningTransition(element)) return;
         complete();
       };
 
+      // Also the end of the transition this flow replaced: it is cancelled as
+      // this flow's own transition starts, so wait for that one instead.
       const onTransitionCancel = (e: TransitionEvent) => {
         // Ignore bubbled events from children - only react to our own element's transitions
         if (e.target !== element) return;
         if (flowRef.current !== flow) return;
+        if (hasRunningTransition(element)) return;
         complete();
       };
 
