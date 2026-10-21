@@ -1211,6 +1211,119 @@ describe('DialogContainer hideOnClose focus restore', () => {
       expect(document.body).toHaveFocus();
     });
 
+    // `FocusScope` restores nothing once the element focused when it mounted
+    // is gone, as a button that replaces itself with the section.
+    it('returns focus to the opener when it unmounts after what it mounted from went', async () => {
+      const user = userEvent.setup();
+      let hide = () => {};
+
+      function App() {
+        const [isShown, setShown] = useState(false);
+        const [isOpen, setOpen] = useState(false);
+
+        hide = () => setShown(false);
+
+        return (
+          <>
+            {isShown ? null : (
+              <Button qa="Show" onPress={() => setShown(true)}>
+                Show
+              </Button>
+            )}
+            <Button qa="Opener" onPress={() => setOpen(true)}>
+              Edit
+            </Button>
+            {isShown ? (
+              <DialogContainer
+                hideOnClose={hideOnClose}
+                isOpen={isOpen}
+                onDismiss={() => setOpen(false)}
+              >
+                <Dialog aria-label="Notes">
+                  <input aria-label="Name" data-qa="Name" />
+                </Dialog>
+              </DialogContainer>
+            ) : null}
+          </>
+        );
+      }
+
+      renderWithRoot(<App />);
+      await user.click(screen.getByTestId('Show'));
+      await act(() => wait(600));
+      await user.click(screen.getByTestId('Opener'));
+      await user.click(await screen.findByTestId('Name'));
+
+      act(() => hide());
+      await act(() => wait(100));
+      expect(screen.getByTestId('Opener')).toHaveFocus();
+    });
+
+    // Mounted from inside a modal that closed since: `FocusScope`'s tree has
+    // put that modal's trigger in place of what it mounted from.
+    it('returns focus to the opener when it unmounts after the modal it mounted in closed', async () => {
+      const user = userEvent.setup();
+      let hide = () => {};
+
+      function App() {
+        const [isModalOpen, setModalOpen] = useState(false);
+        const [isShown, setShown] = useState(false);
+        const [isOpen, setOpen] = useState(false);
+
+        hide = () => setShown(false);
+
+        return (
+          <>
+            <Button qa="ModalTrigger" onPress={() => setModalOpen(true)}>
+              New
+            </Button>
+            <DialogContainer
+              isOpen={isModalOpen}
+              onDismiss={() => setModalOpen(false)}
+            >
+              <Dialog aria-label="New">
+                <Button qa="Create" onPress={() => setShown(true)}>
+                  Create
+                </Button>
+                <Button qa="Done" onPress={() => setModalOpen(false)}>
+                  Done
+                </Button>
+              </Dialog>
+            </DialogContainer>
+            <Button qa="Opener" onPress={() => setOpen(true)}>
+              Edit
+            </Button>
+            {isShown ? (
+              <DialogContainer
+                hideOnClose={hideOnClose}
+                isOpen={isOpen}
+                onDismiss={() => setOpen(false)}
+              >
+                <Dialog aria-label="Notes">
+                  <input aria-label="Name" data-qa="Name" />
+                </Dialog>
+              </DialogContainer>
+            ) : null}
+          </>
+        );
+      }
+
+      renderWithRoot(<App />);
+      await user.click(screen.getByTestId('ModalTrigger'));
+      await screen.findByRole('dialog', { name: 'New' });
+      await act(() => wait(100));
+      await user.click(screen.getByTestId('Create'));
+      await act(() => wait(100));
+      await user.click(screen.getByTestId('Done'));
+      await act(() => wait(600));
+      await user.click(screen.getByTestId('Opener'));
+      await user.click(await screen.findByTestId('Name'));
+
+      act(() => hide());
+      await act(() => wait(100));
+      expect(screen.getByTestId('Opener')).toHaveFocus();
+    });
+
     // A step replaced inside the open container: focus moves to the next
     // step without passing through the opener.
     it('leaves its opener alone when a step replaces its content', async () => {

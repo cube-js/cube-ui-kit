@@ -13,6 +13,11 @@ import { trapsFocus, useDialogContext } from './context';
  */
 const RESTORE_FOCUS_EVENT = 'react-aria-focus-scope-restore';
 
+/** Restores one dialog's unmount has taken over, so no other takes it too. */
+const takenOverRestores = new WeakSet<Event>();
+/** Set while an unmount redirects a restore, which no other takes over. */
+let isRedirectingUnmount = false;
+
 type FocusTarget = HTMLElement | SVGElement;
 
 interface Opener {
@@ -241,15 +246,28 @@ export function useRetainedDialogFocus(
     // A popup that stays open never restores; stop waiting after its exit.
     const until = Date.now() + 1000;
     let frame = 0;
+    let hasCollapsed = false;
 
     const wait = () => {
-      frame = requestAnimationFrame(
-        popup.isConnected && Date.now() < until
-          ? wait
-          : () => {
-              frame = requestAnimationFrame(stop);
-            },
-      );
+      frame = requestAnimationFrame(() => {
+        const isExpanded =
+          popupTrigger.getAttribute('aria-expanded') === 'true';
+
+        // Reopened: what it restores from now on is its own.
+        if (hasCollapsed && isExpanded) {
+          stop();
+
+          return;
+        }
+
+        if (!isExpanded) hasCollapsed = true;
+
+        if (popup.isConnected && Date.now() < until) {
+          wait();
+        } else {
+          frame = requestAnimationFrame(stop);
+        }
+      });
     };
 
     document.addEventListener(RESTORE_FOCUS_EVENT, onRestore, true);
@@ -261,44 +279,80 @@ export function useRetainedDialogFocus(
     };
   }, [isRetained, isOpen, dialogRef]);
 
-  // Whether a restore on unmount is this hook's: `FocusScope` would send focus
-  // to the element focused when it mounted, closed.
-  const restoresOnUnmountRef = useRef(false);
+  // Read on unmount: whether a restore then is this hook's, and the dialog.
+  const unmountRef = useRef<{
+    restores: boolean;
+    dialog: HTMLElement | null;
+  }>({ restores: false, dialog: null });
 
   useLayoutEffect(() => {
-    restoresOnUnmountRef.current = isRetained && shouldRestoreFocus;
+    unmountRef.current = {
+      restores: isRetained && shouldRestoreFocus,
+      dialog: dialogRef.current,
+    };
   });
 
   // Unmounted while open or closing, as when what renders it goes:
-  // `FocusScope` restores a frame later, by its own rule, to the element
-  // focused when it mounted. That restore goes to the opener instead, or
-  // nowhere once the opener is gone too.
+  // `FocusScope` restores a frame later to the element focused when it
+  // mounted, or to what its tree has put in that one's place, or nowhere once
+  // that is gone. Focus goes to the opener instead, by `FocusScope`'s own rule:
+  // only while focus is in this dialog or lost to `<body>`.
   useLayoutEffect(
     () => () => {
       const opener = openerRef.current;
+      const { restores, dialog } = unmountRef.current;
 
-      if (!restoresOnUnmountRef.current || !opener || !mountedFrom) return;
+      if (!restores || !opener) return;
+
+      // Focus in another dialog is that dialog's to restore.
+      const focusedDialog = document.activeElement?.closest(
+        '[role="dialog"], [role="alertdialog"]',
+      );
+
+      if (focusedDialog && dialog && !dialog.contains(focusedDialog)) return;
+
+      let isHandled = false;
 
       const onRestore = (event: Event) => {
+        if (
+          isHandled ||
+          isRedirectingUnmount ||
+          takenOverRestores.has(event) ||
+          document.activeElement !== document.body
+        ) {
+          return;
+        }
+
         const node = resolveOpener(opener);
 
-        if (event.target !== mountedFrom || node === mountedFrom) return;
+        if (node === event.target) return;
 
+        isHandled = true;
+        takenOverRestores.add(event);
         event.preventDefault();
         event.stopPropagation();
 
+        isRedirectingUnmount = true;
         if (node) restoreFocusTo(node);
+        isRedirectingUnmount = false;
       };
 
       document.addEventListener(RESTORE_FOCUS_EVENT, onRestore, true);
-      // Past `FocusScope`'s frame, whichever cleanup scheduled first.
+      // Past `FocusScope`'s frame, whichever cleanup scheduled first. With no
+      // restore by then and focus still lost, restore it here.
       requestAnimationFrame(() =>
         requestAnimationFrame(() => {
           document.removeEventListener(RESTORE_FOCUS_EVENT, onRestore, true);
+
+          if (isHandled || document.activeElement !== document.body) return;
+
+          const node = resolveOpener(opener);
+
+          if (node) restoreFocusTo(node);
         }),
       );
     },
-    [mountedFrom],
+    [],
   );
 
   useEffect(() => {

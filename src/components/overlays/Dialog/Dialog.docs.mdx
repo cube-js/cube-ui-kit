@@ -193,7 +193,7 @@ The body is the `Content` that is a direct child of the dialog or of a direct-ch
 
 - Dialog announces as "dialog" or "alertdialog" based on role, with its title as its name
 - An alert dialog also reads its `Content`, the message, as its description. A plain dialog reads only its title on open, so a form inside it is not read field by field; link a short description with `aria-describedby` when the title alone is not enough
-- Focus moves into the dialog when it opens: to the last control marked `data-autofocus` that can take focus (the kit's inputs, buttons, `Select` and `CommandMenu` mark themselves with `autoFocus`), otherwise to a submit or primary button, otherwise to the dialog itself. In an alert dialog that button is never a destructive (`danger`) one
+- Focus moves into the dialog when it opens: to the last control marked `data-autofocus` that can take focus (the kit's inputs, buttons, `Select` and `CommandMenu` mark themselves with `autoFocus`; a `CommandMenu` focuses its search after the others, so it wins), otherwise to a submit or primary button, otherwise to the dialog itself. In an alert dialog that button is never a destructive (`danger`) one
 - Focus is contained within the dialog from the moment it opens, including while it animates in. A `panel` dialog does not contain focus, nor does a popover opened by a `DialogTrigger` with `isDismissable={false}`
 - Focus returns to the trigger element when dialog closes
 

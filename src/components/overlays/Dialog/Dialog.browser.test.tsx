@@ -591,6 +591,107 @@ describe.each([true, false])('hideOnClose=%s focus parity', (hideOnClose) => {
     },
   );
 
+  // Reopened while it still slides out: closing it again restores to its own
+  // trigger, as for any popover.
+  it('returns focus to a popover trigger when it reopens over a panel opened from it', async () => {
+    function Toolbar() {
+      const [isOpen, setOpen] = useState(false);
+
+      return (
+        <>
+          <DialogTrigger type="popover">
+            <Button qa="More">More</Button>
+            <Dialog aria-label="Actions">
+              <Button qa="Rename" onPress={() => setOpen(true)}>
+                Rename
+              </Button>
+            </Dialog>
+          </DialogTrigger>
+          <DialogContainer
+            type="panel"
+            hideOnClose={hideOnClose}
+            isOpen={isOpen}
+            onDismiss={() => setOpen(false)}
+          >
+            <Dialog aria-label="Rename">
+              <input aria-label="Name" />
+            </Dialog>
+          </DialogContainer>
+        </>
+      );
+    }
+
+    renderWithRoot(<Toolbar />);
+    const more = screen.getByTestId('More');
+
+    await openWithKeyboard(more);
+    await openWithKeyboard(await screen.findByTestId('Rename'));
+    await wait(150);
+    await openWithKeyboard(more);
+    await wait(150);
+    await browserUserEvent.keyboard('{Escape}');
+    await waitFor(() => expect(more).toHaveFocus());
+    await wait(800);
+    expect(more).toHaveFocus();
+  });
+
+  // Both mounted with the page, so `FocusScope` restores both to `<body>`:
+  // only the one focus was in takes that restore.
+  it('returns focus to the opener of the panel focus was in when two unmount', async () => {
+    let hide = () => {};
+
+    function App() {
+      const [isAOpen, setAOpen] = useState(false);
+      const [isBOpen, setBOpen] = useState(false);
+      const [isShown, setShown] = useState(true);
+
+      hide = () => setShown(false);
+
+      return (
+        <>
+          <Button qa="OpenA" onPress={() => setAOpen(true)}>
+            A
+          </Button>
+          <Button qa="OpenB" onPress={() => setBOpen(true)}>
+            B
+          </Button>
+          {isShown
+            ? (['A', 'B'] as const).map((name) => (
+                <DialogContainer
+                  key={name}
+                  type="panel"
+                  hideOnClose={hideOnClose}
+                  isOpen={name === 'A' ? isAOpen : isBOpen}
+                  onDismiss={() =>
+                    name === 'A' ? setAOpen(false) : setBOpen(false)
+                  }
+                >
+                  <Dialog aria-label={name} isDismissable={false}>
+                    <input aria-label={`Field ${name}`} data-qa={name} />
+                  </Dialog>
+                </DialogContainer>
+              ))
+            : null}
+        </>
+      );
+    }
+
+    renderWithRoot(<App />);
+    await wait(600);
+
+    for (const name of ['A', 'B']) {
+      const opener = screen.getByTestId(`Open${name}`);
+
+      await openWithKeyboard(opener);
+      await wait(400);
+    }
+
+    screen.getByTestId('A').focus();
+    hide();
+    await wait(200);
+    expect(screen.getByTestId('OpenA')).toHaveFocus();
+  });
+
   it('opens a dialog nested in another one above it', async () => {
     function App() {
       const [isOpen, setOpen] = useState(false);
