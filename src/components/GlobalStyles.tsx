@@ -129,13 +129,13 @@ const STATIC_CSS = `
   pre[class*="language-"]::-moz-selection, pre[class*="language-"] ::-moz-selection,
   code[class*="language-"]::-moz-selection, code[class*="language-"] ::-moz-selection {
     text-shadow: none;
-    background: oklch(from var(--primary-color) l c h / .2);
+    background: color-mix(in oklab, var(--primary-color) 20%, transparent);
   }
 
   pre[class*="language-"]::selection, pre[class*="language-"] ::selection,
   code[class*="language-"]::selection, code[class*="language-"] ::selection {
     text-shadow: none;
-    background: oklch(from var(--primary-color) l c h / .2);
+    background: color-mix(in oklab, var(--primary-color) 20%, transparent);
   }
 
   @media print {
