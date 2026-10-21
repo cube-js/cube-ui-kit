@@ -18,34 +18,35 @@ import { SubmitButton } from './SubmitButton';
 import { SubmitError } from './SubmitError';
 import { useForm } from './use-form';
 
-const Form = Object.assign(
-  _Form as typeof _Form & {
-    Item: typeof Field;
-    SubmitError: typeof SubmitError;
-    Submit: typeof SubmitButton;
-    Reset: typeof ResetButton;
-    useForm: typeof useForm;
-    useController: typeof useFormController;
-    useSelector: typeof useFormSelector;
-    useValue: typeof useFormValue;
-    useFieldState: typeof useFormFieldState;
-    Subscribe: typeof FormSubscribe;
-    useControllerContext: typeof useFormControllerContext;
-  },
-  {
-    Item: Field,
-    useForm,
-    useController: useFormController,
-    useSelector: useFormSelector,
-    useValue: useFormValue,
-    useFieldState: useFormFieldState,
-    Subscribe: FormSubscribe,
-    useControllerContext: useFormControllerContext,
-    Submit: SubmitButton,
-    Reset: ResetButton,
-    SubmitError,
-  },
-);
+import type { FormRootComponent } from './Form';
+
+export interface FormComponent extends FormRootComponent {
+  Item: typeof Field;
+  SubmitError: typeof SubmitError;
+  Submit: typeof SubmitButton;
+  Reset: typeof ResetButton;
+  useForm: typeof useForm;
+  useController: typeof useFormController;
+  useSelector: typeof useFormSelector;
+  useValue: typeof useFormValue;
+  useFieldState: typeof useFormFieldState;
+  Subscribe: typeof FormSubscribe;
+  useControllerContext: typeof useFormControllerContext;
+}
+
+const Form: FormComponent = Object.assign(_Form, {
+  Item: Field,
+  useForm,
+  useController: useFormController,
+  useSelector: useFormSelector,
+  useValue: useFormValue,
+  useFieldState: useFormFieldState,
+  Subscribe: FormSubscribe,
+  useControllerContext: useFormControllerContext,
+  Submit: SubmitButton,
+  Reset: ResetButton,
+  SubmitError,
+});
 
 export * from './SubmitError';
 export * from './SubmitButton';
@@ -53,6 +54,7 @@ export * from './ResetButton';
 export * from './use-field';
 export { useFormProps, Form, Field, useForm, FormContext, FormScopeMask };
 export type { CubeFormProps } from './Form';
+export type { CubeFieldProps } from './Field';
 export type { ModernFormProps } from './ModernFormRoot';
 export type {
   FormController,

@@ -86,7 +86,8 @@
     "update-glaze": "pnpm add @tenphi/glaze@${npm_config_version:-latest} --save-exact",
     "test:form-compiled": "vitest run --config vitest.form-compiled.config.ts",
     "diagnostics:hooks": "node scripts/hooks-diagnostics.mjs",
-    "check:react-package": "node scripts/compiler/check-package.mjs"
+    "check:react-package": "node scripts/compiler/check-package.mjs",
+    "check:consumer-declarations": "node scripts/check-consumer-declarations.mjs"
   },
   "keywords": [
     "uikit"
@@ -111,7 +112,7 @@
     "@tabler/icons-react": "^3.31.0",
     "@tanstack/react-virtual": "^3.13.12",
     "@tenphi/glaze": "2.0.0",
-    "@tenphi/tasty": "3.12.0",
+    "@tenphi/tasty": "3.13.0",
     "clipboard-copy": "^4.0.1",
     "clsx": "^1.1.1",
     "diff": "^8.0.3",

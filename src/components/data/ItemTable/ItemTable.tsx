@@ -613,16 +613,28 @@ function ItemTable<T = any>(
   );
 }
 
-const _ItemTable = Object.assign(
-  forwardRef(ItemTable) as unknown as (<T = any>(
+/** `forwardRef` loses the row type, so the table is cast back to a generic. */
+interface ItemTableRoot {
+  <T = any>(
     props: CubeItemTableProps<T> & { ref?: ForwardedRef<HTMLDivElement> },
-  ) => ReactElement) & { displayName?: string },
+  ): ReactElement;
+  displayName?: string;
+}
+
+export interface ItemTableComponent extends ItemTableRoot {
+  /** The table's search input, bound to the table's own state. */
+  Search: typeof ItemTableSearch;
+  /** The default toolbar row, for rebuilding it around extra content. */
+  Toolbar: typeof ItemTableToolbar;
+  /** The selection action bar, for placing it outside the default chrome. */
+  BulkBar: typeof ItemTableBulkBar;
+}
+
+const _ItemTable: ItemTableComponent = Object.assign(
+  forwardRef(ItemTable) as unknown as ItemTableRoot,
   {
-    /** The table's search input, bound to the table's own state. */
     Search: ItemTableSearch,
-    /** The default toolbar row, for rebuilding it around extra content. */
     Toolbar: ItemTableToolbar,
-    /** The selection action bar, for placing it outside the default chrome. */
     BulkBar: ItemTableBulkBar,
   },
 );

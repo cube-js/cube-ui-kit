@@ -6,7 +6,11 @@ export type {
   CubeDataTableColumnDefinition,
 } from './DataTable';
 export { ItemTable } from './ItemTable';
-export type { CubeItemTableProps, CubeItemTableColumn } from './ItemTable';
+export type {
+  CubeItemTableProps,
+  CubeItemTableColumn,
+  ItemTableComponent,
+} from './ItemTable';
 
 // The reserved column-menu sort items. A helper rather than magic strings,
 // because `Menu.Item` requires `children` and the table owns the translated

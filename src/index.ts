@@ -12,6 +12,7 @@ export * from '@internationalized/date';
 
 // generic components
 export { CollectionItem } from './components/CollectionItem';
+export type { CubeCollectionItemProps } from './components/CollectionItem';
 export { Block } from './components/Block';
 export type { CubeBlockProps } from './components/Block';
 export { Item } from './components/content/Item/Item';
@@ -120,12 +121,19 @@ export type {
 } from './components/content/Result/Result';
 export { Layout, GridLayout } from './components/content/Layout';
 export type {
+  LayoutComponent,
+  GridLayoutComponent,
   CubeLayoutProps,
   CubeGridLayoutProps,
   CubeLayoutToolbarProps,
   CubeLayoutHeaderProps,
   CubeLayoutFooterProps,
   CubeLayoutContentProps,
+  CubeLayoutContainerProps,
+  CubeLayoutCenterProps,
+  CubeLayoutBlockProps,
+  CubeLayoutFlexProps,
+  CubeLayoutGridProps,
   CubeLayoutPaneProps,
   CubeLayoutPanelProps,
   CubeLayoutPanelHeaderProps,
@@ -230,6 +238,7 @@ export type {
   CubeTitleProps,
   CubeParagraphProps,
 };
+export type { TextComponent } from './components/content/Text';
 
 export { Provider, useProviderProps } from './provider';
 export type { ProviderProps } from './provider';

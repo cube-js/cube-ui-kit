@@ -3,6 +3,8 @@
 import { Notification as NotificationBase } from './Notification';
 import { NotificationAction } from './NotificationAction';
 
+import type { NotificationProps } from './types';
+
 export { NotificationAction } from './NotificationAction';
 export { NotificationCard } from './NotificationCard';
 export type { NotificationCardProps } from './NotificationCard';
@@ -71,8 +73,12 @@ export type {
  * />
  * ```
  */
-export const Notification = Object.assign(NotificationBase, {
-  Action: NotificationAction,
-});
+export const Notification: NotificationComponent = Object.assign(
+  NotificationBase,
+  { Action: NotificationAction },
+);
 
-export type NotificationComponent = typeof Notification;
+export interface NotificationComponent {
+  (props: NotificationProps): null;
+  Action: typeof NotificationAction;
+}
