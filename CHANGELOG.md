@@ -1,5 +1,17 @@
 # @cube-dev/ui-kit
 
+## 0.198.1
+
+### Patch Changes
+
+- [#1553](https://github.com/cube-js/cube-ui-kit/pull/1553) [`e48f3ba9`](https://github.com/cube-js/cube-ui-kit/commit/e48f3ba93d6a7a68dc0f27db18803b211af3006d) Thanks [@tenphi](https://github.com/tenphi)! - Export the types of the compound components: `LayoutComponent`, `GridLayoutComponent`, `TextComponent`, `FormComponent`, `TabsComponent` and `ItemTableComponent`. `NotificationComponent` becomes a named interface. The props types their parts use are exported too (`CubeLayoutFlexProps` and the other `Layout` part props, `CubeCollectionItemProps`, `CubeFieldProps` and `EventBusProviderProps`). An app that exports `tasty(Layout, …)` or another extension of a kit component without a type annotation can now emit its declarations: they name these types, so they no longer fail with TS2883 or TS4023.
+
+- [#1550](https://github.com/cube-js/cube-ui-kit/pull/1550) [`1be7bb5c`](https://github.com/cube-js/cube-ui-kit/commit/1be7bb5c77a9df4f8969f2f96010c6e51fc9d170) Thanks [@tenphi](https://github.com/tenphi)! - A reorderable `ListBox` keeps the `id` and `aria-describedby` you pass it, along with its description and error message. Drag-and-drop had replaced the list's id with one of its own and cleared its description. The search input of a reorderable `FilterListBox` or `FilterPicker` now points `aria-controls` at its list, which it missed while the search was empty.
+
+- [#1554](https://github.com/cube-js/cube-ui-kit/pull/1554) [`7c397a8c`](https://github.com/cube-js/cube-ui-kit/commit/7c397a8c131c0abb0057ea317c975af7a82d7f03) Thanks [@tenphi](https://github.com/tenphi)! - `Select`, `ListBox` and the pickers built on it: a mouse press on an option of a list that closes under it, as a scroll of the page around it closes it, now selects that option even when the list has finished its exit and unmounted before the release. As before, the pointer has to come up inside the box the option had when the press started, and a release elsewhere selects nothing. A `Select` list fades out quickly enough that such a press used to pick nothing.
+
+- [#1553](https://github.com/cube-js/cube-ui-kit/pull/1553) [`e48f3ba9`](https://github.com/cube-js/cube-ui-kit/commit/e48f3ba93d6a7a68dc0f27db18803b211af3006d) Thanks [@tenphi](https://github.com/tenphi)! - Update Tasty to 3.13.0 (from 3.12.0). The kit's declarations now name a component's props type instead of listing each prop, so they shrink from about 2.5 MB to 0.7 MB (`Text.d.ts` from 1.6 MB to 3 KB) and no longer bundle a copy of csstype under `dist/node_modules`. Tasty also exports `TastyExtensionProps` and `ComponentStatics`, and an extension of a component whose props are a union now accepts each member's props, not only the keys they share.
+
 ## 0.198.0
 
 ### Minor Changes
