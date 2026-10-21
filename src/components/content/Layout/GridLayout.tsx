@@ -61,7 +61,7 @@ const _GridLayout = forwardRef(GridLayoutBase);
 _GridLayout.displayName = 'GridLayout';
 
 // Create the GridLayout with all sub-components aliased
-interface GridLayoutComponent extends ForwardRefExoticComponent<
+export interface GridLayoutComponent extends ForwardRefExoticComponent<
   CubeGridLayoutProps & RefAttributes<HTMLDivElement>
 > {
   Toolbar: typeof LayoutToolbar;

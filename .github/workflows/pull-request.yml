@@ -116,6 +116,8 @@ jobs:
         run: pnpm test:types:consumer
       - name: Pack the compiled library
         run: pnpm pack:test
+      - name: Verify a consumer can emit declarations for tasty() extensions
+        run: pnpm check:consumer-declarations
       - name: Verify packed output with compiled and uncompiled consumers
         run: pnpm test:package
       - name: Verify the uncompiled build as a behavior baseline

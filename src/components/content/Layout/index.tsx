@@ -15,7 +15,7 @@ import { LayoutPanelHeader } from './LayoutPanelHeader';
 import { LayoutToolbar } from './LayoutToolbar';
 
 export { GridLayout } from './GridLayout';
-export type { CubeGridLayoutProps } from './GridLayout';
+export type { CubeGridLayoutProps, GridLayoutComponent } from './GridLayout';
 export type { CubeLayoutProps } from './Layout';
 export type { CubeLayoutBlockProps } from './LayoutBlock';
 export type { CubeLayoutCenterProps } from './LayoutCenter';
@@ -51,7 +51,7 @@ export type {
 } from './LayoutContext';
 
 // Create Layout compound component
-interface LayoutComponent extends ForwardRefExoticComponent<
+export interface LayoutComponent extends ForwardRefExoticComponent<
   CubeLayoutProps & RefAttributes<HTMLDivElement>
 > {
   Toolbar: typeof LayoutToolbar;

@@ -86,7 +86,8 @@
     "update-glaze": "pnpm add @tenphi/glaze@${npm_config_version:-latest} --save-exact",
     "test:form-compiled": "vitest run --config vitest.form-compiled.config.ts",
     "diagnostics:hooks": "node scripts/hooks-diagnostics.mjs",
-    "check:react-package": "node scripts/compiler/check-package.mjs"
+    "check:react-package": "node scripts/compiler/check-package.mjs",
+    "check:consumer-declarations": "node scripts/check-consumer-declarations.mjs"
   },
   "keywords": [
     "uikit"

@@ -3,9 +3,11 @@ import {
   Children,
   ForwardedRef,
   forwardRef,
+  ForwardRefExoticComponent,
   isValidElement,
   ReactElement,
   ReactNode,
+  RefAttributes,
   useEffect,
   useMemo,
   useRef,
@@ -148,10 +150,7 @@ TabList.displayName = 'CubeTabList';
 // Main Tabs Component
 // =============================================================================
 
-function TabsComponent(
-  props: CubeTabsProps,
-  ref: ForwardedRef<HTMLDivElement>,
-) {
+function TabsRoot(props: CubeTabsProps, ref: ForwardedRef<HTMLDivElement>) {
   const {
     label = 'Tabs',
     defaultActiveKey,
@@ -845,7 +844,16 @@ function TabsComponent(
 // Exports
 // =============================================================================
 
-const _Tabs = forwardRef(TabsComponent);
+const _Tabs = forwardRef(TabsRoot);
+
+export interface TabsComponent extends ForwardRefExoticComponent<
+  CubeTabsProps & RefAttributes<HTMLDivElement>
+> {
+  Tab: typeof Tab;
+  List: typeof TabList;
+  Panel: typeof TabPanel;
+  Action: typeof TabsAction;
+}
 
 /**
  * Tabs component for organizing content into multiple panels.
@@ -878,7 +886,7 @@ const _Tabs = forwardRef(TabsComponent);
  *   <Tabs.Panel key="tab2">Content 2</Tabs.Panel>
  * </Tabs>
  */
-export const Tabs = Object.assign(_Tabs, {
+export const Tabs: TabsComponent = Object.assign(_Tabs, {
   Tab,
   List: TabList,
   Panel: TabPanel,
