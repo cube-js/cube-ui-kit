@@ -1,5 +1,7 @@
-import { renderHook } from '@testing-library/react';
+import { getCSSTextForNode } from '@tenphi/tasty';
+import { render, renderHook } from '@testing-library/react';
 
+import { Alert } from './Alert';
 import { useAlert } from './use-alert';
 
 describe('<Alert /> component', () => {
@@ -68,5 +70,30 @@ describe('<Alert /> component', () => {
     );
 
     expect(result.current.mods.shape).toBe('card');
+  });
+
+  // The rule body tasty emits for one `type=<theme>` state.
+  function ruleFor(css: string, theme: string): string {
+    return (
+      css.match(
+        new RegExp(`\\[data-type="${theme}"\\]\\)\\s*\\{([^}]*)\\}`),
+      )?.[1] ?? ''
+    );
+  }
+
+  it('labels the special theme with its white text, not #dark-02', () => {
+    const { container } = render(<Alert theme="special">Text</Alert>);
+
+    expect(ruleFor(getCSSTextForNode(container), 'special')).toContain(
+      'color: var(--primary-accent-surface-text-color)',
+    );
+  });
+
+  it('paints the status themes with their alert fill', () => {
+    const { container } = render(<Alert theme="danger">Text</Alert>);
+
+    expect(ruleFor(getCSSTextForNode(container), 'danger')).toContain(
+      'background-color: var(--danger-alert-surface-color)',
+    );
   });
 });

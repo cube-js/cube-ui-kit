@@ -687,17 +687,21 @@ const TINTED_SURFACE_RAMP: ColorMap = {
  * than re-tuning the shared one, which would repaint every one of those consumers.
  * Neither color exists on `default`, `primary` or `special`.
  *
- *   - `alert-surface` — a step below the theme's own `surface`, at triple its
- *     saturation. Still light enough that the neutral `#dark-02` text keeps its
- *     floor on it in every scheme.
- *   - `alert-border` — anchored to `alert-surface` with the `border` tone window,
- *     so the edge keeps the same separation from the fill it sits on.
+ *   - `alert-surface` — one `-2` step off the theme's own `surface`, away from
+ *     the page, at triple its saturation. Dark takes a lower factor: the same
+ *     factor there reads about twice as strong, and up to five times with pastel
+ *     off. Still close enough to the page that the neutral `#dark-02` text keeps
+ *     its floor on it in every scheme.
+ *   - `alert-border` — anchored to `alert-surface` with a slightly wider
+ *     normal-contrast step than `border` (`-12` vs `-10`), so the edge holds
+ *     against the darker fill.
  */
 const ALERT_COLORS: ColorMap = {
   'alert-surface': {
     base: 'surface',
-    tone: ['-2', '-2'],
+    tone: '-2',
     saturation: 0.6,
+    darkSaturation: 0.4,
   },
   'alert-border': {
     base: 'alert-surface',
@@ -708,7 +712,8 @@ const ALERT_COLORS: ColorMap = {
 
 /**
  * Per-colored-theme overrides on top of the default theme: a `surface` bumped in
- * saturation so the banner background is visibly tinted, plus
+ * saturation to a quiet tint for Item, Tag and the table columns (Alert uses the
+ * stronger {@link ALERT_COLORS}), plus
  * {@link TINTED_SURFACE_RAMP}.
  *
  * A function of the config because the surface's tone is — see

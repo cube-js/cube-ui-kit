@@ -40,7 +40,7 @@ Themes.parameters = {
   docs: {
     description: {
       story:
-        'Every theme in one image. `note` is the default, which is why `Default` above looks like the first row. Sweeping them together is what makes an inconsistency between two themes visible — one theme drifting off the shared surface/border pairing shows up here and nowhere else.',
+        'Every theme in one image. `note` is the default, which is why `Default` above looks like the first row. Sweeping them together is what makes an inconsistency between two themes visible — one theme drifting off the alert surface/border pairing shows up here and nowhere else.',
     },
   },
 };
@@ -75,4 +75,5 @@ CustomStyling.args = {
   padding: '4x',
   textAlign: 'center',
   fill: '#danger-bg',
+  border: '#danger-border',
 };
