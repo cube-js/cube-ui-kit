@@ -1497,6 +1497,23 @@ describe('ListBox id', () => {
 
     expect(getByRole('listbox')).toHaveAttribute('id', 'fruits');
   });
+
+  it.each([
+    ['a static', {}],
+    ['a reorderable', { isReorderable: true, onReorder: () => {} }],
+  ])('keeps its description on %s list', (_, props) => {
+    const { getByRole } = renderWithRoot(
+      <>
+        <p id="hint">Pick one</p>
+        <ListBox aria-label="Fruits" aria-describedby="hint" {...props}>
+          <ListBox.Item key="apple">Apple</ListBox.Item>
+          <ListBox.Item key="banana">Banana</ListBox.Item>
+        </ListBox>
+      </>,
+    );
+
+    expect(getByRole('listbox')).toHaveAccessibleDescription('Pick one');
+  });
 });
 
 /**
