@@ -8,8 +8,10 @@ import {
   Text,
 } from '../../index';
 
-interface ConfirmDeletionDialogFormProps<T extends FieldTypes>
-  extends Pick<CubeDialogFormProps<T>, 'onSubmit' | 'onDismiss' | 'form'> {
+interface ConfirmDeletionDialogFormProps<T extends FieldTypes> extends Pick<
+  CubeDialogFormProps<T>,
+  'onSubmit' | 'onDismiss' | 'form'
+> {
   name?: string;
 }
 

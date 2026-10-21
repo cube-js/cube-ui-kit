@@ -64,8 +64,7 @@ interface DisclosureGroupContextValue {
 }
 
 export interface CubeDisclosureProps
-  extends Omit<AllBaseProps, 'children'>,
-    OuterStyleProps {
+  extends Omit<AllBaseProps, 'children'>, OuterStyleProps {
   /** Controls expanded state in controlled mode */
   isExpanded?: boolean;
   /** Initial expanded state in uncontrolled mode */
@@ -82,8 +81,10 @@ export interface CubeDisclosureProps
   transitionDuration?: number;
 }
 
-export interface CubeDisclosureTriggerProps
-  extends Omit<CubeItemButtonProps, 'onPress' | 'isDisabled'> {
+export interface CubeDisclosureTriggerProps extends Omit<
+  CubeItemButtonProps,
+  'onPress' | 'isDisabled'
+> {
   /** Children content for the trigger */
   children?: ReactNode;
 }
@@ -94,8 +95,7 @@ export interface CubeDisclosureContentProps extends BaseProps {
 }
 
 export interface CubeDisclosureGroupProps
-  extends AllBaseProps,
-    OuterStyleProps {
+  extends AllBaseProps, OuterStyleProps {
   /** Allow more than one disclosure to be open */
   allowsMultipleExpanded?: boolean;
   /** Controlled expanded keys */
@@ -114,8 +114,7 @@ export interface CubeDisclosureGroupProps
 }
 
 export interface CubeDisclosureItemProps
-  extends Omit<AllBaseProps, 'id' | 'children'>,
-    OuterStyleProps {
+  extends Omit<AllBaseProps, 'id' | 'children'>, OuterStyleProps {
   /** Unique identifier for the disclosure item in a group. It is the group key, not the DOM `id`. */
   id?: Key;
   /** Children content */
@@ -561,7 +560,7 @@ const DisclosureItem = forwardRef<HTMLDivElement, CubeDisclosureItemProps>(
     // When disabled, force expanded to false
     const effectiveIsExpanded = isDisabled
       ? false
-      : groupIsExpanded ?? controlledIsExpanded;
+      : (groupIsExpanded ?? controlledIsExpanded);
 
     const state = useDisclosureState({
       isExpanded: effectiveIsExpanded,

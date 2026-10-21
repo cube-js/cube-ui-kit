@@ -37,8 +37,10 @@ import type {
 } from './types';
 import type { FormPath } from './values';
 
-interface PreparedRegistration<ErrorValue>
-  extends Omit<RegistrationOptions<ErrorValue>, 'dependsOn'> {
+interface PreparedRegistration<ErrorValue> extends Omit<
+  RegistrationOptions<ErrorValue>,
+  'dependsOn'
+> {
   readonly dependsOn?: readonly (readonly string[])[];
 }
 
@@ -961,7 +963,7 @@ export function createFormStore<
           );
         }
       };
-      const delay = immediate ? 0 : config?.validationDelay ?? 0;
+      const delay = immediate ? 0 : (config?.validationDelay ?? 0);
       if (delay > 0) timer = setTimeout(() => void run(), delay);
       else void run();
     });

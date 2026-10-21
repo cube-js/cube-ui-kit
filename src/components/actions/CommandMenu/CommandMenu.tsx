@@ -96,7 +96,8 @@ export interface CommandMenuItem {
 }
 
 export interface CubeCommandMenuProps<T>
-  extends BasePropsWithoutChildren,
+  extends
+    BasePropsWithoutChildren,
     ContainerStyleProps,
     Omit<
       CubeMenuProps<T>,

@@ -9,8 +9,10 @@ import {
   TooltipTriggerFunction,
 } from './TooltipTrigger';
 
-export interface CubeTooltipProviderProps
-  extends Omit<CubeTooltipTriggerProps, 'children'> {
+export interface CubeTooltipProviderProps extends Omit<
+  CubeTooltipTriggerProps,
+  'children'
+> {
   children: ReactNode | TooltipTriggerFunction;
   title?: ReactNode;
   tooltipStyles?: Styles;

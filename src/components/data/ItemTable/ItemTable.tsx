@@ -289,7 +289,8 @@ function ItemTable<T = any>(
         (entry) => entry.key === resolvedTreeColumnKey,
       );
       return column
-        ? getColumnText(column, node.row, node.sourceIndex) ?? String(node.key)
+        ? (getColumnText(column, node.row, node.sourceIndex) ??
+            String(node.key))
         : String(node.key);
     },
     onExpand,
@@ -405,7 +406,7 @@ function ItemTable<T = any>(
     isBulkBarInToolbar;
 
   const toolbarNode = hasToolbar
-    ? toolbar ?? (
+    ? (toolbar ?? (
         <ItemTableToolbar
           isSearchable={isSearchable}
           filters={filters}
@@ -418,7 +419,7 @@ function ItemTable<T = any>(
           searchStyles={searchStyles}
           onRefresh={onRefresh}
         />
-      )
+      ))
     : null;
 
   const hasFooter =
@@ -429,7 +430,7 @@ function ItemTable<T = any>(
     footerEnd != null;
 
   const footerNode = hasFooter
-    ? footer ?? (
+    ? (footer ?? (
         <ItemTableFooter
           start={footerStart}
           center={footerCenter}
@@ -437,7 +438,7 @@ function ItemTable<T = any>(
           styles={footerStyles}
           pagination={pagination.control}
         />
-      )
+      ))
     : null;
 
   const bodyRef = useRef<HTMLTableSectionElement>(null);

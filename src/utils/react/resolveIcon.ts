@@ -10,9 +10,7 @@ export type IconRenderFn<T extends Mods = Mods> = (mods: T) => ReactNode | true;
 
 /** Dynamic icon prop: ReactNode, true for empty slot, or render function */
 export type DynamicIcon<T extends Mods = Mods> =
-  | ReactNode
-  | true
-  | IconRenderFn<T>;
+  ReactNode | true | IconRenderFn<T>;
 
 export interface ResolvedIcon {
   /** The icon content to render (null for empty slot) */

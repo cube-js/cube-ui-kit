@@ -69,7 +69,8 @@ const PanelInnerElement = tasty({
 });
 
 export interface CubePanelProps
-  extends OuterStyleProps,
+  extends
+    OuterStyleProps,
     BlockStyleProps,
     BaseStyleProps,
     ColorStyleProps,

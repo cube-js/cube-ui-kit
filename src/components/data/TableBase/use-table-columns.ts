@@ -159,7 +159,7 @@ function toColumnSpec<T>(
     fixed: explicit ?? null,
     minWidth,
     maxWidth: column.maxWidth ?? null,
-    flex: explicit != null ? null : column.flex ?? 1,
+    flex: explicit != null ? null : (column.flex ?? 1),
   };
 }
 

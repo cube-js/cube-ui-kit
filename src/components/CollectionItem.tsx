@@ -13,15 +13,17 @@ import type { ListState } from 'react-stately';
 export const COLLECTION_ITEM_CLICK = Symbol('CollectionItem deferred click');
 
 export interface CubeCollectionItemBaseProps<T>
-  extends Omit<ItemProps<T>, keyof LinkDOMProps>,
+  extends
+    Omit<ItemProps<T>, keyof LinkDOMProps>,
     Omit<CubeItemProps, 'children' | keyof LinkDOMProps> {
   onAction?: () => void;
   wrapper?: (item: ReactElement) => ReactElement;
 }
 
 /** Value-selection options cannot navigate. Menu owns navigation items. */
-export interface CubeCollectionItemProps<T>
-  extends CubeCollectionItemBaseProps<T> {
+export interface CubeCollectionItemProps<
+  T,
+> extends CubeCollectionItemBaseProps<T> {
   href?: never;
   to?: never;
   navigationOptions?: never;

@@ -20,9 +20,7 @@ import { CalendarPanel } from './CalendarPanel';
 import { CalendarCoreProps, CalendarValueProps } from './types';
 
 export interface CubeCalendarProps
-  extends AriaCalendarProps<DateValue>,
-    CalendarCoreProps,
-    CalendarValueProps {
+  extends AriaCalendarProps<DateValue>, CalendarCoreProps, CalendarValueProps {
   /** Highlights a range that lives outside the calendar's own state. */
   selectedRange?: {
     start: DateValue;

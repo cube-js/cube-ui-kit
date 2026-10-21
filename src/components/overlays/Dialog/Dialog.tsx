@@ -143,7 +143,8 @@ const sizePxMap = {
 };
 
 export interface CubeDialogProps
-  extends Omit<BaseProps, 'role'>,
+  extends
+    Omit<BaseProps, 'role'>,
     AriaDialogProps,
     BaseStyleProps,
     BlockStyleProps,

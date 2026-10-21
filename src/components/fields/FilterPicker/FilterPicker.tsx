@@ -65,7 +65,8 @@ interface ItemWithKey {
 }
 
 export interface CubeFilterPickerProps<T>
-  extends Omit<CubeFilterListBoxProps<T>, 'size' | 'shape'>,
+  extends
+    Omit<CubeFilterListBoxProps<T>, 'size' | 'shape'>,
     // `tooltip` is the trigger's, and on a picker the trigger's is spelled
     // `triggerTooltip`; the label's info badge is `labelTooltip`.
     Omit<CubeItemProps, 'children' | 'size' | 'tooltip'>,

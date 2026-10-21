@@ -14,7 +14,8 @@ import type { CubeItemTableProps } from './types';
 const EMPTY_WIDTHS: Record<string, number> = {};
 
 export interface UseItemTableColumnWidthsOptions<T>
-  extends Omit<UseTableColumnsOptions<T>, 'columnWidths'>,
+  extends
+    Omit<UseTableColumnsOptions<T>, 'columnWidths'>,
     Pick<
       CubeItemTableProps<T>,
       'columnWidths' | 'defaultColumnWidths' | 'onColumnResize'
@@ -49,7 +50,7 @@ export function useItemTableColumnWidths<T>({
   >(
     () =>
       (columnWidthsProp === undefined && storage.has('columnWidths')
-        ? storage.initial.columnWidths ?? defaultColumnWidths
+        ? (storage.initial.columnWidths ?? defaultColumnWidths)
         : defaultColumnWidths) ?? EMPTY_WIDTHS,
   );
   const [draftColumnWidths, setDraftColumnWidths] = useState<Record<

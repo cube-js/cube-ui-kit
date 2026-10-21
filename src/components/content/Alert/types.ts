@@ -3,9 +3,7 @@ import { BaseProps, ContainerStyleProps, TextStyleProps } from '@tenphi/tasty';
 import THEMES from '../../../data/themes';
 
 export interface CubeAlertProps
-  extends Omit<BaseProps, 'theme'>,
-    ContainerStyleProps,
-    TextStyleProps {
+  extends Omit<BaseProps, 'theme'>, ContainerStyleProps, TextStyleProps {
   /**
    * ***Deprecated***
    *

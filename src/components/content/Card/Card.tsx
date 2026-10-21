@@ -24,7 +24,8 @@ const CardElement = tasty({
 });
 
 export interface CubeCardProps
-  extends Omit<AllBaseProps, 'title' | 'value' | 'placeholder' | 'text'>,
+  extends
+    Omit<AllBaseProps, 'title' | 'value' | 'placeholder' | 'text'>,
     ContainerStyleProps {}
 
 export const Card = forwardRef(function Card(props: CubeCardProps, ref) {

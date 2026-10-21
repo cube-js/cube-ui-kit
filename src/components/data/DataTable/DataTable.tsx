@@ -358,8 +358,8 @@ function DataTable<T = any>(
 
   const collator = useCollator({ numeric: true, sensitivity: 'base' });
   const treeSortMode = treeModel
-    ? sortMode ??
-      (orderedColumns.some((column) => column.isSortable) ? 'client' : 'off')
+    ? (sortMode ??
+      (orderedColumns.some((column) => column.isSortable) ? 'client' : 'off'))
     : resolvedSortMode;
   const processedTreeRoots = useMemo(() => {
     const roots = treeModel?.roots ?? [];
@@ -393,7 +393,7 @@ function DataTable<T = any>(
   const [pageSize, setPageSizeState] = useControlledState<number>(
     pageSizeProp as number,
     (pageSizeProp === undefined && storage.has('pageSize')
-      ? storage.initial.pageSize ?? defaultPageSize
+      ? (storage.initial.pageSize ?? defaultPageSize)
       : defaultPageSize) as number,
     onPageSizeChange as (value: number) => void,
   );
@@ -406,7 +406,7 @@ function DataTable<T = any>(
   const isPaginated = paginationMode !== 'off';
   const isServerPaginated = paginationMode === 'server';
   const total = isServerPaginated
-    ? totalProp ?? 0
+    ? (totalProp ?? 0)
     : treeModel
       ? processedTreeRoots.length
       : sortedRows.length;
@@ -459,7 +459,8 @@ function DataTable<T = any>(
         (entry) => entry.key === resolvedTreeColumnKey,
       );
       return column
-        ? getColumnText(column, node.row, node.sourceIndex) ?? String(node.key)
+        ? (getColumnText(column, node.row, node.sourceIndex) ??
+            String(node.key))
         : String(node.key);
     },
     onExpand,
@@ -479,7 +480,7 @@ function DataTable<T = any>(
   >(
     () =>
       (columnWidthsProp === undefined && storage.has('columnWidths')
-        ? storage.initial.columnWidths ?? defaultColumnWidths
+        ? (storage.initial.columnWidths ?? defaultColumnWidths)
         : defaultColumnWidths) ?? EMPTY_WIDTHS,
   );
   const [draftColumnWidths, setDraftColumnWidths] = useState<Record<

@@ -39,10 +39,7 @@ const IconElement = tasty({
 });
 
 export interface CubeIconProps
-  extends BaseProps,
-    OuterStyleProps,
-    ColorStyleProps,
-    BaseStyleProps {
+  extends BaseProps, OuterStyleProps, ColorStyleProps, BaseStyleProps {
   size?: Styles['fontSize'];
   stroke?: number;
   children?: ReactElement;

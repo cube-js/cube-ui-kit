@@ -15,11 +15,10 @@ import type { CubeCollectionItemProps } from '../../CollectionItem';
 import type { CubeButtonProps } from '../Button/Button';
 import type { CubeMenuProps } from '../Menu/Menu';
 
-export interface ButtonSplitAction
-  extends Omit<
-    CubeCollectionItemProps<object>,
-    'children' | 'onAction' | 'wrapper'
-  > {
+export interface ButtonSplitAction extends Omit<
+  CubeCollectionItemProps<object>,
+  'children' | 'onAction' | 'wrapper'
+> {
   key: string;
   label: ReactNode;
 }

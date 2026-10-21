@@ -401,9 +401,10 @@ export function OverlayContainer({
   const allItems: OverlayItem[] = useMemo(() => {
     const items: OverlayItem[] = [
       ...toasts.map((t): OverlayItem => ({ kind: 'toast', data: t })),
-      ...notifications.map(
-        (n): OverlayItem => ({ kind: 'notification', data: n }),
-      ),
+      ...notifications.map((n): OverlayItem => ({
+        kind: 'notification',
+        data: n,
+      })),
     ];
 
     // Sort by createdAt ascending (oldest first = bottom of stack, newest last = top)

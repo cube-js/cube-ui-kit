@@ -88,7 +88,8 @@ const InputElement = tasty({
 });
 
 export interface CubeComboBoxProps<T>
-  extends BasePropsWithoutChildren,
+  extends
+    BasePropsWithoutChildren,
     BaseStyleProps,
     OuterStyleProps,
     ColorStyleProps,
@@ -917,7 +918,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   );
   const effectiveInputValue = isControlledInput
     ? (inputValue as string)
-    : internalInputValue ?? selectedLabel;
+    : (internalInputValue ?? selectedLabel);
 
   // Filtering hook
   const { filterFn, isSameText, isFilterActive, setIsFilterActive } =

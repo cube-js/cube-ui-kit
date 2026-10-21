@@ -4,8 +4,9 @@ import { DateValue } from 'react-aria';
 
 import { CubePeriodPickerProps, PeriodPicker } from './PeriodPicker';
 
-export interface CubeYearPickerProps<T extends DateValue = DateValue>
-  extends Omit<CubePeriodPickerProps<T>, 'picker'> {}
+export interface CubeYearPickerProps<
+  T extends DateValue = DateValue,
+> extends Omit<CubePeriodPickerProps<T>, 'picker'> {}
 
 function YearPicker<T extends DateValue>(
   props: CubeYearPickerProps<T>,

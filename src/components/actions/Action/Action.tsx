@@ -17,7 +17,9 @@ import { NavigateArg, useAction } from '../use-action';
 
 export interface CubeActionProps<
   T extends TagName = 'a' | 'button' | 'span' | 'div',
-> extends Omit<AllBaseProps<T>, 'htmlType'>,
+>
+  extends
+    Omit<AllBaseProps<T>, 'htmlType'>,
     BaseStyleProps,
     ContainerStyleProps,
     TextStyleProps,

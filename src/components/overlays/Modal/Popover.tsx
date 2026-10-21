@@ -44,10 +44,7 @@ const PopoverElement = tasty({
 });
 
 export interface CubePopoverProps
-  extends BaseProps,
-    AriaOverlayProps,
-    CubeOverlayProps,
-    TransitionState {
+  extends BaseProps, AriaOverlayProps, CubeOverlayProps, TransitionState {
   container?: HTMLElement;
   placement?: PlacementAxis;
   arrowProps?: HTMLAttributes<HTMLElement>;
@@ -114,8 +111,7 @@ function Popover(props: CubePopoverProps, ref: ForwardedRef<HTMLElement>) {
 }
 
 interface PopoverWrapperProps
-  extends Omit<CubePopoverProps, 'isDismissable'>,
-    TransitionState {
+  extends Omit<CubePopoverProps, 'isDismissable'>, TransitionState {
   overlayProps?: Props;
 }
 

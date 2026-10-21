@@ -13,8 +13,7 @@ import { CubeFormInstance } from '../use-form';
 import type { FormController } from '../modern/controller';
 
 export interface UseFieldProps<T extends FieldTypes>
-  extends FieldCoreProps,
-    ValidationProps {
+  extends FieldCoreProps, ValidationProps {
   /** The initial value of the input. */
   defaultValue?: any;
   /** The form instance */

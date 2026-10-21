@@ -45,8 +45,7 @@ import { useItemActionContext } from '../ItemActionContext';
 import { CubeUseActionProps, useAction } from '../use-action';
 
 export interface CubeItemActionProps
-  extends Omit<CubeUseActionProps, 'as' | 'htmlType'>,
-    Omit<BaseProps, 'as'> {
+  extends Omit<CubeUseActionProps, 'as' | 'htmlType'>, Omit<BaseProps, 'as'> {
   size?:
     | 'xsmall'
     | 'small'
@@ -283,7 +282,7 @@ export const ItemAction = forwardRef(function ItemAction(
   const finalTabIndex =
     disableActionsFocus || isLoading
       ? -1
-      : rest.tabIndex ?? (rest.excludeFromTabOrder ? -1 : undefined);
+      : (rest.tabIndex ?? (rest.excludeFromTabOrder ? -1 : undefined));
 
   // Extract tooltip content and props
   const tooltipContent =

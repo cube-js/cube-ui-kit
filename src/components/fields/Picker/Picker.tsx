@@ -55,7 +55,8 @@ import type { KeyboardEvent as RAKeyboardEvent } from '@react-types/shared';
 import type { FieldBaseProps } from '../../../shared';
 
 export interface CubePickerProps<T>
-  extends Omit<
+  extends
+    Omit<
       CubeListBoxProps<T>,
       'size' | 'shape' | 'emptyLabel' | 'isFocusWithin'
     >,

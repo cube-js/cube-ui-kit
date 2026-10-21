@@ -1046,7 +1046,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
     loadingTarget === 'suffix' ? (
       <LoadingIcon />
     ) : (
-      suffix ??
+      (suffix ??
       (hotkeys ? (
         <HotKeys
           {...(keyboardShortcutProps as any)}
@@ -1055,7 +1055,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
         >
           {hotkeys}
         </HotKeys>
-      ) : undefined)
+      ) : undefined))
     );
 
   // Register global hotkey if provided

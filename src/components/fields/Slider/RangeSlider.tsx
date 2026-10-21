@@ -9,8 +9,9 @@ import type { FocusableRef } from '@react-types/shared';
 import type { RangeValue } from '../../../shared';
 import type { CubeSliderBaseProps } from './types';
 
-export interface CubeRangeSliderProps
-  extends CubeSliderBaseProps<RangeValue<number>> {
+export interface CubeRangeSliderProps extends CubeSliderBaseProps<
+  RangeValue<number>
+> {
   gradation?: string[];
 }
 

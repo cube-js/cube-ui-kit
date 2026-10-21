@@ -58,9 +58,9 @@ type ResolvedFieldForm<Form> = Form extends ModernFormBrand ? undefined : Form;
  * name, no binding inputs, and no modern controller in `form`.
  */
 type ResolvedFieldProps<Props> = {
-  [Key in keyof Props as Key extends StrippedFieldKey
-    ? never
-    : Key]: Key extends 'name'
+  [
+    Key in keyof Props as Key extends StrippedFieldKey ? never : Key
+  ]: Key extends 'name'
     ? string | undefined
     : Key extends 'form'
       ? ResolvedFieldForm<Props[Key]>

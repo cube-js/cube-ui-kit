@@ -31,10 +31,7 @@ export const TEXT_PROP_MAP = {
 } as const;
 
 export interface CubeTextProps<T extends TagName = TagName>
-  extends AllBaseProps<T>,
-    TextStyleProps,
-    BaseStyleProps,
-    ColorStyleProps {
+  extends AllBaseProps<T>, TextStyleProps, BaseStyleProps, ColorStyleProps {
   /**
    * Whether the text uses the monospace font.
    */
@@ -148,10 +145,9 @@ const HighlightText = tasty(Text, {
   },
 });
 
-export interface TextComponent
-  extends ForwardRefExoticComponent<
-    CubeTextProps & RefAttributes<HTMLElement>
-  > {
+export interface TextComponent extends ForwardRefExoticComponent<
+  CubeTextProps & RefAttributes<HTMLElement>
+> {
   Minor: typeof MinorText;
   Danger: typeof DangerText;
   Success: typeof SuccessText;

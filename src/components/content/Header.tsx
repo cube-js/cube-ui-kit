@@ -26,9 +26,7 @@ const HeaderElement = tasty({
 });
 
 export interface CubeHeaderProps
-  extends BaseProps,
-    ContainerStyleProps,
-    TextStyleProps {}
+  extends BaseProps, ContainerStyleProps, TextStyleProps {}
 
 export const Header = forwardRef(function Header(props: CubeHeaderProps, ref) {
   props = useSlotProps(props, 'header');

@@ -38,8 +38,7 @@ function isEqual(v1, v2) {
 export class CubeFormInstance<
   T extends FieldTypes,
   TFormData extends CubeFormData<T> = CubeFormData<T>,
-> implements LegacyFormBrand
-{
+> implements LegacyFormBrand {
   /** Backend brand: the `<Form>` facade and the field hook dispatch on it. */
   public readonly [FORM_BACKEND] = 'legacy' as const;
   public forceReRender: () => void = () => {};

@@ -486,8 +486,7 @@ function renderTreeCellContent<T>(
   entry: TableTreeNode<T>,
   isExpanded: boolean,
   expandButtonProps:
-    | ReturnType<typeof useTreeItem>['expandButtonProps']
-    | undefined,
+    ReturnType<typeof useTreeItem>['expandButtonProps'] | undefined,
   content: ReactNode,
 ) {
   return (
@@ -631,7 +630,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
   // Only the trailing draggable column carries an `after` indicator; every other
   // gap is covered by the next column's `before` one.
   const lastDraggableKey = isColumnReorderable
-    ? getDraggableColumnKeys(columns, true).at(-1) ?? null
+    ? (getDraggableColumnKeys(columns, true).at(-1) ?? null)
     : null;
 
   // The element is held here as well as reported upwards: the virtualizer needs
@@ -2147,7 +2146,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
   function renderHeaderRowCells(depth: number) {
     const cells: ReactNode[] = [];
 
-    for (let columnIndex = 0; columnIndex < columns.length; ) {
+    for (let columnIndex = 0; columnIndex < columns.length;) {
       const column = columns[columnIndex];
       const path = columnHeaderPaths?.get(column.key) ?? [];
 
@@ -2433,7 +2432,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
             (column, row, rowIndex) =>
               column.isStructural
                 ? ''
-                : getColumnText(column, row, rowIndex) ?? '',
+                : (getColumnText(column, row, rowIndex) ?? ''),
           );
 
           if (!matrix.length) return;
