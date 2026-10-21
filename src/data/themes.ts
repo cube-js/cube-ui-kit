@@ -5,8 +5,9 @@
 //
 //   - `fill`   — Alert background. For `special` it is also reused by Badge
 //                as the badge fill (saturated brand). For the four colored
-//                themes it is a light tinted banner surface
-//                (`#<theme>-surface`), and Badge falls back to `color` for
+//                themes it is Alert's own tinted banner fill
+//                (`#<theme>-alert-surface`, see `ALERT_COLORS` in
+//                `src/tokens/palette.ts`), and Badge falls back to `color` for
 //                the saturated chip.
 //   - `color`  — For non-`special`, non-`disabled` themes, this is the
 //                **saturated brand fill** Badge renders with white text on
@@ -23,7 +24,10 @@
 //                badge render near-black; this restores the proper pairing.)
 //                For `disabled`, this is the soft text color used by Alert
 //                as the disabled label and by Badge as the disabled chip.
-//   - `border` — Subtle brand-tinted border for both Alert and Badge.
+//   - `border` — Alert border; Badge does not read it. For the four colored
+//                themes it is Alert's own `#<theme>-alert-border`, paired with
+//                its fill. The shared `#<theme>-surface` / `#<theme>-border`
+//                stay with the Item family, which needs them quieter.
 export default {
   special: {
     fill: '#primary-accent-surface',
@@ -31,24 +35,24 @@ export default {
     border: '#primary-border',
   },
   success: {
-    fill: '#success-surface',
+    fill: '#success-alert-surface',
     color: '#success-accent-surface',
-    border: '#success-border',
+    border: '#success-alert-border',
   },
   danger: {
-    fill: '#danger-surface',
+    fill: '#danger-alert-surface',
     color: '#danger-accent-surface',
-    border: '#danger-border',
+    border: '#danger-alert-border',
   },
   warning: {
-    fill: '#warning-surface',
+    fill: '#warning-alert-surface',
     color: '#warning-accent-surface',
-    border: '#warning-border',
+    border: '#warning-alert-border',
   },
   note: {
-    fill: '#note-surface',
+    fill: '#note-alert-surface',
     color: '#note-accent-surface',
-    border: '#note-border',
+    border: '#note-alert-border',
   },
   disabled: {
     fill: '#surface-2',
