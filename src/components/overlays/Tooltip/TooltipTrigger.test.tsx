@@ -133,10 +133,12 @@ describe('tooltip positioning lifetime', () => {
       });
 
       rerender(content(false));
-      await waitFor(() =>
-        expect(screen.queryByRole('tooltip')).not.toBeInTheDocument(),
-      );
-      expect(isObserved(trigger)).toBe(false);
+      // React Aria releases the trigger in an effect cleanup, which runs a task
+      // after the tooltip leaves the DOM, so both are awaited together.
+      await waitFor(() => {
+        expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
+        expect(isObserved(trigger)).toBe(false);
+      });
 
       rerender(content(true));
       await waitFor(() => expect(isObserved(trigger)).toBe(true));
