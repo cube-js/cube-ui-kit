@@ -21,6 +21,9 @@ const AlertElement = tasty({
     preset: 't3',
     color: {
       '': '#dark-02',
+      // `color` in THEMES is Badge's fill for the status themes, so only these
+      // two read it as a label.
+      'type=special': THEMES.special.color,
       'type=disabled': THEMES.disabled.color,
     },
     fill: {

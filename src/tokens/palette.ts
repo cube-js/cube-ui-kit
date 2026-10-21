@@ -679,8 +679,46 @@ const TINTED_SURFACE_RAMP: ColorMap = {
 };
 
 /**
+ * Alert's own fill and border, emitted on the four status themes only.
+ *
+ * The shared tinted `surface` and `border` are tuned to sit quietly under Item,
+ * Tag and the table tints, which leaves a banner built from them reading as grey.
+ * Alert needs a theme you can name at a glance, so it gets a stronger pair rather
+ * than re-tuning the shared one, which would repaint every one of those consumers.
+ * Neither color exists on `default`, `primary` or `special`.
+ *
+ *   - `alert-surface` — one `-2` step off the theme's own `surface`, away from
+ *     the page, at triple its saturation. Dark takes a lower factor: the same
+ *     factor there reads about two and a half times as strong, and up to five
+ *     times for some hues with pastel off. Still close enough to the page that
+ *     the neutral `#dark-02` text keeps its floor on it in every scheme.
+ *   - `alert-border` — anchored to `alert-surface` with a slightly wider
+ *     normal-contrast step than `border` (`-12` vs `-10`), so the edge holds
+ *     against the deeper fill.
+ *
+ * Both state their dark factor, so a host's global `darkDesaturation` (which an
+ * explicit one bypasses) leaves the pair in proportion rather than thinning only
+ * the border.
+ */
+const ALERT_COLORS: ColorMap = {
+  'alert-surface': {
+    base: 'surface',
+    tone: '-2',
+    saturation: 0.6,
+    darkSaturation: 0.4,
+  },
+  'alert-border': {
+    base: 'alert-surface',
+    tone: ['-12', '-30'],
+    saturation: 0.6,
+    darkSaturation: 0.6,
+  },
+};
+
+/**
  * Per-colored-theme overrides on top of the default theme: a `surface` bumped in
- * saturation so the banner background is visibly tinted, plus
+ * saturation to a quiet tint for Item, Tag and the table columns (Alert uses the
+ * stronger {@link ALERT_COLORS}), plus
  * {@link TINTED_SURFACE_RAMP}.
  *
  * A function of the config because the surface's tone is — see
@@ -1357,6 +1395,8 @@ function buildPalette(
   const primaryTheme = defaultTheme.extend({
     colors: tintedSurface,
   });
+  // The status themes alone also carry Alert's pair — see `ALERT_COLORS`.
+  const statusSurface = { ...tintedSurface, ...ALERT_COLORS };
 
   /**
    * One status theme's overrides, on whichever path its own seed is on.
@@ -1377,13 +1417,13 @@ function buildPalette(
    * redefines each listed color from scratch, so restating the null arrangement is enough
    * to undo it.
    *
-   * **Neither** — the tinted-surface override itself, so the shipped palette is provably
+   * **Neither** — the status surface itself, so every shipped color is provably
    * untouched.
    */
   const statusColors = (theme: ResolvedThemeSeed): ColorMap => {
     if (theme.color !== null && theme.colorTone !== null) {
       return {
-        ...tintedSurface,
+        ...statusSurface,
         ...accentColors(
           cappedAccent(theme.hue, theme.saturation, theme.colorTone),
         ),
@@ -1391,8 +1431,8 @@ function buildPalette(
     }
 
     return accent == null
-      ? tintedSurface
-      : { ...tintedSurface, ...accentColors(null) };
+      ? statusSurface
+      : { ...statusSurface, ...accentColors(null) };
   };
 
   const successTheme = defaultTheme.extend({

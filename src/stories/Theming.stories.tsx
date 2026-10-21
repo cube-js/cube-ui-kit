@@ -1875,8 +1875,8 @@ const MainColumn = tasty({
 });
 
 /**
- * Every alert theme in one column. Alerts pair a tinted `<theme>-surface` with
- * `<theme>-surface-text` and a themed border, so they are the quickest read on
+ * Every alert theme in one column. Alerts pair `<theme>-alert-surface` with
+ * `<theme>-alert-border` and `#dark-02` text, so they are the quickest read on
  * whether the status hues still work at a given saturation.
  */
 const AlertColumn = tasty({

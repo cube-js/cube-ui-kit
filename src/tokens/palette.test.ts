@@ -309,6 +309,64 @@ describe('palette tokens', () => {
       ).toBeLessThanOrEqual(ceiling);
     }
   });
+
+  /**
+   * Alert's pair exists so its themes can be told apart without repainting the
+   * shared tinted `surface` / `border` under Item, Tag and the tables. The
+   * snapshot pins the values; this pins where they live and the two promises
+   * that made them those values.
+   */
+  describe('alert colors', () => {
+    const STATUS = ['note', 'success', 'danger', 'warning'];
+
+    it('emits them on the status themes only', () => {
+      const tokens = getPaletteTokens();
+
+      for (const theme of STATUS) {
+        expect(tokens[`#${theme}-alert-surface`], theme).toBeDefined();
+        expect(tokens[`#${theme}-alert-border`], theme).toBeDefined();
+      }
+
+      for (const prefix of ['', 'primary-', 'purple-', 'special-']) {
+        expect(tokens[`#${prefix}alert-surface`], prefix).toBeUndefined();
+        expect(tokens[`#${prefix}alert-border`], prefix).toBeUndefined();
+      }
+    });
+
+    it('tints the fill well past the shared status surface', () => {
+      const colors = variant(getPaletteTokens(), '');
+
+      for (const theme of STATUS) {
+        expect(
+          chromaOf(colors[`#${theme}-alert-surface`]),
+          theme,
+        ).toBeGreaterThan(chromaOf(colors[`#${theme}-surface`]) * 3);
+      }
+    });
+
+    it("keeps Alert's neutral label readable on the fill in every scheme", () => {
+      const tokens = getPaletteTokens();
+
+      for (const [state, floor] of [
+        ['', 4.5],
+        ['@dark', 4.5],
+        ['@hc', 7],
+        ['@dark & @hc', 7],
+      ] as const) {
+        const colors = variant(tokens, state);
+
+        for (const theme of STATUS) {
+          expect(
+            contrastOf(
+              colors['#surface-text-soft'],
+              colors[`#${theme}-alert-surface`],
+            ),
+            `${theme} @ '${state || 'light'}'`,
+          ).toBeGreaterThanOrEqual(floor);
+        }
+      }
+    });
+  });
 });
 
 describe('setPaletteConfig', () => {
