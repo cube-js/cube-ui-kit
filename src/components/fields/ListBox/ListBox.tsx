@@ -734,7 +734,7 @@ function toStatelySelection(
  * and lose its description and error message. React Aria sets both for a drop
  * on the whole list, and ListBox renders no such drop target.
  */
-function withoutCollectionLabelling({
+function withoutWholeListDropProps({
   id: _id,
   'aria-describedby': _describedBy,
   ...collectionProps
@@ -1291,7 +1291,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
                 qa={qa || 'ListBox'}
                 {...mergeProps(
                   mergedListBoxProps,
-                  withoutCollectionLabelling(collectionProps),
+                  withoutWholeListDropProps(collectionProps),
                 )}
                 ref={listRef}
                 styles={listStyles}

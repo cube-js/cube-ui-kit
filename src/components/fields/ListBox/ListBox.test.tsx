@@ -1483,7 +1483,7 @@ describe('<ListBox />', () => {
   });
 });
 
-describe('ListBox id', () => {
+describe('ListBox id and description', () => {
   it.each([
     ['a static', {}],
     ['a reorderable', { isReorderable: true, onReorder: () => {} }],
