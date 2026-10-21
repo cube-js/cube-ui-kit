@@ -116,6 +116,9 @@ function DateInputBase(props: CubeDateAtomInputProps, ref) {
         suffix: showValidationIndicator || !!suffix,
       }}
       {...mergeProps(fieldProps ?? {}, focusProps)}
+      // For a dialog kept mounted while closed, which focuses the field's
+      // first segment on every open, as `Button` marks itself.
+      {...(autoFocus ? { 'data-autofocus': '' } : undefined)}
       style={style}
     >
       <div data-element="Contents" role="presentation">

@@ -627,6 +627,8 @@ function CommandMenu<T extends object>(
         aria-controls={!isLoading && !showEmptyState ? menuId : undefined}
         role="searchbox"
         aria-activedescendant={activeDescendant}
+        // For a dialog kept mounted while closed, as on `Button`.
+        {...(autoFocus ? { 'data-autofocus': '' } : undefined)}
         onChange={(e) => handleSearchChange(e.target.value)}
         onKeyDown={handleSearchKeyDown}
       />

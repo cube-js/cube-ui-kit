@@ -35,7 +35,7 @@ DialogTrigger serves as a wrapper around a Dialog and its associated trigger, li
 - **`containerPadding`** `number` (default: `12`) — The padding between the edge of the overlay and the boundary
 - **`shouldFlip`** `boolean` (default: `true`) — Whether the overlay should flip positions when insufficient space
 - **`shouldUpdatePosition`** `boolean` — Whether the overlay position should update on scroll or resize
-- **`hideOnClose`** `boolean` — Whether to hide the overlay instead of unmounting on close
+- **`hideOnClose`** `boolean` — Whether to hide the overlay instead of unmounting on close. Focus moves as for a dialog that mounts on open ([what still differs](/docs/overlays-dialogcontainer--docs#focus-with-hideonclose))
 - **`onOpenChange`** `function` — Callback fired when the dialog open state changes
 - **`onDismiss`** `function` — Callback fired when the dialog is dismissed
 - **`targetRef`** — The ref of the element the Dialog should visually attach itself to. A popover closes when this element scrolls, as one attached to its trigger does

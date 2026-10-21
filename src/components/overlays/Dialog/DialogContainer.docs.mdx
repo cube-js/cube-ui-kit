@@ -30,7 +30,7 @@ A DialogContainer accepts a single Dialog as a child, and manages to show and hi
 - **`isKeyboardDismissDisabled`** `boolean` (default: `false`) — Whether pressing the escape key to close the dialog should be disabled
 - **`isOpen`** `boolean` — Whether the modal is open or not
 - **`onDismiss`** `function` — Handler called when the x button of a dismissible Dialog is clicked
-- **`hideOnClose`** `boolean` (default: `false`) — Whether the dialog should be hidden when closed
+- **`hideOnClose`** `boolean` (default: `false`) — Whether the dialog should be hidden when closed. Focus moves as for a dialog that mounts on open: in on every open, and on close back to the element that opened it, or to the trigger of the menu or popover it sat in once that has closed. [Focus with `hideOnClose`](#focus-with-hideonclose) lists what still differs
 
 ### Base Properties
 
@@ -189,6 +189,25 @@ The Dialog's `isDismissable={false}` hides its built-in visible Close button. Th
 - Dialog announces as "dialog" to screen readers
 - Focus is trapped within the dialog when open
 - Focus management is handled automatically
+
+### Focus with `hideOnClose`
+
+A dialog kept mounted while closed moves focus as one that mounts on open does, with these exceptions:
+
+- **Unmarked `autoFocus`.** `autoFocus` on a `Menu`, `ListBox`, `Calendar`, `RangeCalendar` or `PeriodCalendar`, and a native `autoFocus` on an element of your own, act once, when the dialog first mounts while hidden, and never on an open. The kit's inputs, buttons, `Select` and `CommandMenu` mark the element they focus with `data-autofocus`, and the dialog focuses the last marked element on every open. Without `hideOnClose`, a `CommandMenu` takes focus over any other autofocused control, wherever it sits, because it focuses its search field after them. Mark an element of your own the same way. On a wrapper, the dialog focuses the wrapper's first tabbable element:
+
+  ```jsx
+  <Dialog>
+    <input data-autofocus aria-label="Name" />
+  </Dialog>
+  ```
+
+- **Focus left on `<body>` on close.** This happens for a dialog opened from a context menu's item (`useContextMenu`, `useAnchoredMenu`) and for one reopened from a dialog it opened (a wizard's Back step). It also happens for one that replaces the dialog that opened it (a wizard's Next step), unless both use `hideOnClose` and neither is rendered inside the other. Move focus yourself after closing it in those cases.
+- **Reopened from a menu item,** a modal dialog focuses the control that was focused when it last closed. Leave `hideOnClose` off such a dialog when it must open on its first control, or move focus yourself after opening it.
+- **Opened from a button in a popover,** it holds focus only once the popover has finished closing, about a third of a second later. Until then focus goes back to that button, so a screen reader announces it again. Escape pressed in that moment does nothing, and Tab moves out of a panel to the page; in a modal it is lost. Leave `hideOnClose` off a dialog opened this way where that matters.
+- **Opened from inside another open modal,** it must be rendered inside that modal's dialog. Rendered elsewhere, focus stays in the modal behind it, so a keyboard user can neither reach nor close the dialog on top. A dialog that replaces the modal is the exception above.
+- **Tab from the last control, opened with nothing to return to.** A panel, or a popover that is not dismissable, opened while focus is on `<body>` or from a control that hides itself, lets Tab past its last control move natively, but that control's own key handling never sees the key, so a `CommandTextArea` does not accept its suggestion on Tab. This happens only when another element had focus when the dialog first mounted. Open it from a control that stays on the page, or leave `hideOnClose` off.
+- **Nested in another overlay,** it opens above that overlay only in browsers that support `Element.moveBefore`. In other browsers it opens behind it, so leave `hideOnClose` off a nested dialog where those browsers matter.
 
 ### ARIA Properties
 

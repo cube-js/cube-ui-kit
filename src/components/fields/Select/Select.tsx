@@ -683,6 +683,8 @@ function Select<T extends object>(
             qa={qa || 'Select'}
             data-input-type="select"
             {...mergeProps(buttonProps, hoverProps, focusProps, inputProps)}
+            // For a dialog kept mounted while closed, as on `Button`.
+            {...(autoFocus ? { 'data-autofocus': '' } : undefined)}
             ref={triggerRef}
             data-popover-trigger
             showActions={showActions}

@@ -326,7 +326,7 @@ const SearchComboBoxInput = forwardRef<
       readOnly={isReadOnly}
       autoFocus={autoFocus}
       autoComplete={autoComplete}
-      data-autofocus={autoFocus ? '' : undefined}
+      {...(autoFocus ? { 'data-autofocus': '' } : undefined)}
       onChange={onChange}
       onFocus={onFocus}
       onBlur={focusProps.onBlur}

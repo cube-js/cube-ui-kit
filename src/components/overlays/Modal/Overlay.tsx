@@ -6,6 +6,7 @@ import {
   ReactElement,
   ReactNode,
   useCallback,
+  useLayoutEffect,
   useRef,
   useState,
 } from 'react';
@@ -33,6 +34,11 @@ export interface CubeOverlayProps extends WithCloseBehavior {
   onExiting?: () => void;
   onExited?: () => void;
 }
+
+/** `Element.moveBefore`, which moves a node and keeps its state. */
+type MovableParent = HTMLElement & {
+  moveBefore?: (node: Node, child: Node | null) => void;
+};
 
 /** How long a closed overlay stays mounted while it plays its exit. */
 export const EXIT_DURATION = 350;
@@ -75,6 +81,39 @@ function Overlay(props: CubeOverlayProps, ref) {
   }
 
   let { root } = useProviderProps({} as Props);
+
+  // A kept overlay mounts along with whatever renders it, and its nodes stay
+  // where they were first inserted. One inside another overlay mounts in the
+  // same commit and lands before it, so it would open behind it. Each open
+  // moves its nodes last in the container, where a fresh mount lands. Only
+  // where the browser can move nodes without resetting them: an append would
+  // scroll kept content back to the top and reload its frames.
+  const startRef = useRef<HTMLSpanElement>(null);
+  const endRef = useRef<HTMLSpanElement>(null);
+
+  useLayoutEffect(() => {
+    const start = startRef.current;
+    const end = endRef.current;
+    const parent = start?.parentElement as MovableParent | null | undefined;
+
+    if (!isOpen || !start || !end || !parent?.moveBefore) return;
+    if (parent.lastChild === end) return;
+
+    // Laid out first: content back from `display: none` gets its scroll
+    // position back once it has a box again, and a move keeps what the box
+    // holds. One forced reflow, once per open that moves.
+    void parent.offsetHeight;
+
+    for (let node: ChildNode | null = start; node; ) {
+      const next: ChildNode | null = node.nextSibling;
+
+      parent.moveBefore(node, null);
+
+      if (node === end) break;
+
+      node = next;
+    }
+  }, [isOpen]);
 
   let handlePhaseChange = useCallback(
     (phase: ReportedPhase) => {
@@ -162,7 +201,9 @@ function Overlay(props: CubeOverlayProps, ref) {
   return createPortal(
     <TastyBatchProvider>
       <ButtonSplitContext.Provider value={null}>
+        {hideOnClose && <span ref={startRef} hidden />}
         {contents}
+        {hideOnClose && <span ref={endRef} hidden />}
       </ButtonSplitContext.Provider>
     </TastyBatchProvider>,
     container || root || document.body,

@@ -199,7 +199,8 @@ export default {
     },
     hideOnClose: {
       control: 'boolean',
-      description: 'Whether to hide the overlay instead of unmounting on close',
+      description:
+        'Whether to hide the overlay instead of unmounting on close. Focus moves as for a dialog that mounts on open. The DialogContainer docs list what still differs',
       table: {
         type: { summary: 'boolean' },
       },

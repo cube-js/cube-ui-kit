@@ -169,6 +169,7 @@ function DateRangePicker<T extends DateValue>(
       wrapperRef={domRef}
       qa={qa || 'DateRangePicker'}
       inputType="daterangepicker"
+      autoFocus={autoFocus}
       styles={styles}
       disableFocusRing={isFocusedButton}
       isDisabled={isDisabled}

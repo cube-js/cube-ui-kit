@@ -29,7 +29,7 @@ let restoreWindowEndsAt = 0;
  * Focus `element` without the UI reading it as the user arriving there.
  */
 export function focusProgrammatically(
-  element: HTMLElement | null | undefined,
+  element: HTMLElement | SVGElement | null | undefined,
   options?: FocusOptions,
 ) {
   if (!element) return;

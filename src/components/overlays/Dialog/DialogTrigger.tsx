@@ -511,7 +511,8 @@ function DialogTriggerBase(props: any) {
     isDismissable,
     isOpen: state.isOpen,
     // Reaches `Dialog`'s `FocusScope`, which owns the restore for
-    // popover-type dialogs. `useDialog` filters it out of the DOM props.
+    // popover-type dialogs (`Dialog` itself, for a retained one). `useDialog`
+    // filters it out of the DOM props.
     shouldRestoreFocus,
     ...dialogProps,
   };
@@ -544,7 +545,8 @@ function DialogTriggerBase(props: any) {
   // `triggerProps` carries its own `ref`, which overrides the `ref={ref}` on
   // `PressResponder` below, so `ref.current` stays null and this is a no-op.
   // Popovers get their restore from `Dialog`'s own `<FocusScope restoreFocus>`
-  // instead, which already declines to restore when focus moved elsewhere.
+  // instead, or from `Dialog` at the end of the exit when `hideOnClose` keeps
+  // that scope mounted; both decline to restore when focus moved elsewhere.
   useEffect(() => {
     if (!state.isOpen && wasOpenRef.current) {
       wasOpenRef.current = false;

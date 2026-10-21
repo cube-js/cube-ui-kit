@@ -702,7 +702,7 @@ const ComboBoxInput = forwardRef<HTMLInputElement, ComboBoxInputProps>(
         readOnly={isReadOnly}
         autoFocus={autoFocus}
         autoComplete={autoComplete}
-        data-autofocus={autoFocus ? '' : undefined}
+        {...(autoFocus ? { 'data-autofocus': '' } : undefined)}
         onChange={onChange}
         onFocus={onFocus}
         onPointerDown={onPointerDown}

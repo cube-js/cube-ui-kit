@@ -402,6 +402,10 @@ export const useAction = function useAction(
       ) as object),
       ref: domRef,
       type: htmlType || 'button',
+      // `autoFocus` acts when the action mounts, and a dialog kept mounted
+      // while closed (`hideOnClose`) mounts hidden: it focuses the marked
+      // control on every open instead.
+      ...(props.autoFocus ? { 'data-autofocus': '' } : undefined),
       rel: as === 'a' && newTab ? 'noopener noreferrer' : undefined,
       as,
       isDisabled,

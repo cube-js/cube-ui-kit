@@ -1033,7 +1033,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
         value={searchValue}
         disabled={isDisabled}
         autoFocus={autoFocus}
-        data-autofocus={autoFocus ? '' : undefined}
+        {...(autoFocus ? { 'data-autofocus': '' } : undefined)}
         styles={searchInputStyles}
         data-size={size}
         data-input-type="filterlistbox"
