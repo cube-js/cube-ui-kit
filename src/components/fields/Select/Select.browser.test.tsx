@@ -1,4 +1,5 @@
 import { cleanup } from '@testing-library/react';
+import { useState } from 'react';
 import { useContextMenu } from 'react-aria';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { userEvent } from 'vitest/browser';
@@ -557,6 +558,92 @@ describe('Select press on a list that moves', () => {
       expect(onSelectionChange).toHaveBeenCalledWith('apple');
     });
     expect(onSelectionChange).toHaveBeenCalledTimes(1);
+  });
+
+  /**
+   * A list that closes under a held press, as a scroll of the page around it
+   * closes it, can finish its exit and unmount before the release. The press
+   * still picks its option when the pointer comes up inside the option's box,
+   * and nothing when it comes up elsewhere.
+   */
+  describe('when the list unmounts during the press', () => {
+    async function pressThenUnmount() {
+      const onSelectionChange = vi.fn();
+      let setOpen: (isOpen: boolean) => void = () => {};
+
+      function Fruit() {
+        const [isOpen, setIsOpen] = useState(false);
+
+        setOpen = setIsOpen;
+
+        return (
+          <Select
+            label="Fruit"
+            width="200px"
+            isOpen={isOpen}
+            onOpenChange={setIsOpen}
+            onSelectionChange={onSelectionChange}
+          >
+            <Select.Item key="apple">Apple</Select.Item>
+            <Select.Item key="banana">Banana</Select.Item>
+          </Select>
+        );
+      }
+
+      renderWithRoot(<Fruit />);
+
+      await act(async () => setOpen(true));
+
+      const apple = await screen.findByRole('option', { name: 'Apple' });
+      const box = apple.getBoundingClientRect();
+
+      mouse(
+        'pointerdown',
+        apple,
+        box.left + box.width / 2,
+        box.top + box.height / 2,
+      );
+      await act(async () => setOpen(false));
+      await waitFor(() => expect(apple.isConnected).toBe(false));
+
+      return { onSelectionChange, box };
+    }
+
+    it('selects the option on a release inside its box', async () => {
+      const { onSelectionChange, box } = await pressThenUnmount();
+      const x = box.left + box.width / 2;
+      const y = box.top + box.height / 2;
+
+      mouse(
+        'pointerup',
+        document.elementFromPoint(x, y) ?? document.body,
+        x,
+        y,
+      );
+
+      await waitFor(() => {
+        expect(onSelectionChange).toHaveBeenCalledWith('apple');
+      });
+      expect(onSelectionChange).toHaveBeenCalledTimes(1);
+    });
+
+    it('selects nothing on a release outside its box', async () => {
+      const { onSelectionChange, box } = await pressThenUnmount();
+      const x = box.right + 40;
+      const y = box.bottom + 40;
+
+      mouse(
+        'pointerup',
+        document.elementFromPoint(x, y) ?? document.body,
+        x,
+        y,
+      );
+
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      });
+      expect(onSelectionChange).not.toHaveBeenCalled();
+    });
   });
 
   /**

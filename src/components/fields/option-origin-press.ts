@@ -46,9 +46,9 @@ function forgetPress() {
 
 // Capture phase, before React and the options' own press handling. When the
 // list moved under the pointer (it was still opening, or scrolled while
-// closing), the option the press started on may no longer be under it. Select
-// that option here if the pointer comes up inside the box it had when the
-// press started.
+// closing), the option the press started on may no longer be under it, or no
+// longer exist. Select that option here if the pointer comes up inside the box
+// it had when the press started.
 function settleOnRelease(event: PointerEvent) {
   const press = activePress;
 
@@ -56,9 +56,10 @@ function settleOnRelease(event: PointerEvent) {
 
   const target = event.target instanceof Node ? event.target : null;
 
-  // Released on the option itself: React Aria selects it as usual.
-  if ((target && press.element.contains(target)) || !press.element.isConnected)
-    return;
+  // Released on the option itself: React Aria selects it as usual. An option
+  // that left the DOM during the press (its list closed and finished its
+  // exit) gets no release of its own, so its box decides alone.
+  if (target && press.element.contains(target)) return;
 
   if (isInside(press.rect, event)) press.settle(event);
 }
