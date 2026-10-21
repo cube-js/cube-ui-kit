@@ -1324,6 +1324,61 @@ describe('DialogContainer hideOnClose focus restore', () => {
       expect(screen.getByTestId('Opener')).toHaveFocus();
     });
 
+    // Focus is in a dialog opened from it, portaled outside its DOM, as a
+    // confirm whose action removes both.
+    it('returns focus to the opener when a dialog opened from it removes it', async () => {
+      const user = userEvent.setup();
+
+      function App() {
+        const [isShown, setShown] = useState(false);
+        const [isOpen, setOpen] = useState(false);
+        const [isConfirmOpen, setConfirmOpen] = useState(false);
+
+        return (
+          <>
+            <Button qa="Show" onPress={() => setShown(true)}>
+              Show
+            </Button>
+            <Button qa="Opener" onPress={() => setOpen(true)}>
+              Edit
+            </Button>
+            {isShown ? (
+              <DialogContainer
+                hideOnClose={hideOnClose}
+                isOpen={isOpen}
+                onDismiss={() => setOpen(false)}
+              >
+                <Dialog aria-label="Edit">
+                  <Button qa="Delete" onPress={() => setConfirmOpen(true)}>
+                    Delete
+                  </Button>
+                  <DialogContainer
+                    isOpen={isConfirmOpen}
+                    onDismiss={() => setConfirmOpen(false)}
+                  >
+                    <Dialog aria-label="Confirm">
+                      <Button qa="Yes" onPress={() => setShown(false)}>
+                        Yes
+                      </Button>
+                    </Dialog>
+                  </DialogContainer>
+                </Dialog>
+              </DialogContainer>
+            ) : null}
+          </>
+        );
+      }
+
+      renderWithRoot(<App />);
+      await user.click(screen.getByTestId('Show'));
+      await act(() => wait(600));
+      await user.click(screen.getByTestId('Opener'));
+      await user.click(await screen.findByTestId('Delete'));
+      await user.click(await screen.findByTestId('Yes'));
+      await act(() => wait(100));
+      expect(screen.getByTestId('Opener')).toHaveFocus();
+    });
+
     // A step replaced inside the open container: focus moves to the next
     // step without passing through the opener.
     it('leaves its opener alone when a step replaces its content', async () => {

@@ -130,6 +130,7 @@ function restoreFocusTo(node: FocusTarget) {
  */
 export function useRetainedDialogFocus(
   dialogRef: RefObject<HTMLElement | null>,
+  isFocusInTreeRef: RefObject<boolean>,
 ) {
   const context = useDialogContext();
   const isOpen = !!context.isOpen;
@@ -296,7 +297,8 @@ export function useRetainedDialogFocus(
   // `FocusScope` restores a frame later to the element focused when it
   // mounted, or to what its tree has put in that one's place, or nowhere once
   // that is gone. Focus goes to the opener instead, by `FocusScope`'s own rule:
-  // only while focus is in this dialog or lost to `<body>`.
+  // only while focus is in this dialog or in what was opened from it, or
+  // lost to `<body>`.
   useLayoutEffect(
     () => () => {
       const opener = openerRef.current;
@@ -304,12 +306,16 @@ export function useRetainedDialogFocus(
 
       if (!restores || !opener) return;
 
-      // Focus in another dialog is that dialog's to restore.
-      const focusedDialog = document.activeElement?.closest(
-        '[role="dialog"], [role="alertdialog"]',
-      );
+      const activeElement = document.activeElement;
 
-      if (focusedDialog && dialog && !dialog.contains(focusedDialog)) return;
+      // Focus elsewhere on the page stays there.
+      if (
+        activeElement !== document.body &&
+        !isFocusInTreeRef.current &&
+        !dialog?.contains(activeElement)
+      ) {
+        return;
+      }
 
       let isHandled = false;
 
@@ -348,11 +354,14 @@ export function useRetainedDialogFocus(
 
           const node = resolveOpener(opener);
 
+          // Another dialog unmounting with this one leaves it alone.
+          isRedirectingUnmount = true;
           if (node) restoreFocusTo(node);
+          isRedirectingUnmount = false;
         }),
       );
     },
-    [],
+    [isFocusInTreeRef],
   );
 
   useEffect(() => {

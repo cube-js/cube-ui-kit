@@ -692,6 +692,47 @@ describe.each([true, false])('hideOnClose=%s focus parity', (hideOnClose) => {
     expect(screen.getByTestId('OpenA')).toHaveFocus();
   });
 
+  // Focus on the page goes with what removes the panel: nothing restores it.
+  it('leaves focus lost when a page control removes itself and an open panel', async () => {
+    function App() {
+      const [isShown, setShown] = useState(true);
+      const [isOpen, setOpen] = useState(false);
+
+      return (
+        <>
+          <Button qa="Opener" onPress={() => setOpen(true)}>
+            Notes
+          </Button>
+          {isShown ? (
+            <>
+              <DialogContainer
+                type="panel"
+                hideOnClose={hideOnClose}
+                isOpen={isOpen}
+                onDismiss={() => setOpen(false)}
+              >
+                <Dialog aria-label="Notes" isDismissable={false}>
+                  <input aria-label="Name" />
+                </Dialog>
+              </DialogContainer>
+              <Button qa="Simple" onPress={() => setShown(false)}>
+                Simple view
+              </Button>
+            </>
+          ) : null}
+        </>
+      );
+    }
+
+    renderWithRoot(<App />);
+    await wait(600);
+    await openWithKeyboard(screen.getByTestId('Opener'));
+    await wait(300);
+    await openWithKeyboard(screen.getByTestId('Simple'));
+    await wait(200);
+    expect(document.body).toHaveFocus();
+  });
+
   it('opens a dialog nested in another one above it', async () => {
     function App() {
       const [isOpen, setOpen] = useState(false);

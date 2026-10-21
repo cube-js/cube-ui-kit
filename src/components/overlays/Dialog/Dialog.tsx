@@ -257,7 +257,10 @@ const DialogContent = forwardRef(function DialogContent(
 
   let domRef = useObjectRef(ref);
 
-  const isRetained = useRetainedDialogFocus(domRef);
+  // Whether focus is in the dialog or in anything opened from it, portals
+  // included: React focus events bubble through the component tree.
+  const isFocusInTreeRef = useRef(false);
+  const isRetained = useRetainedDialogFocus(domRef, isFocusInTreeRef);
   const isTrapping = trapsFocus({ ...contextProps, type });
 
   // Set while the dialog refocuses itself, so the blur in between does not
@@ -463,7 +466,12 @@ const DialogContent = forwardRef(function DialogContent(
       styles={styles}
       as="section"
       {...mergeProps(dialogProps, {
+        onFocus() {
+          isFocusInTreeRef.current = true;
+        },
         onBlur(event: FocusEvent) {
+          isFocusInTreeRef.current = false;
+
           if (isRefocusingRef.current) event.stopPropagation();
         },
       })}
