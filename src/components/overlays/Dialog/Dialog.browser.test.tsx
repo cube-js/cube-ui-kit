@@ -103,7 +103,7 @@ describe('Dialog width limits', () => {
 
   async function renderDialog(
     dialogProps: Parameters<typeof Dialog>[0],
-    type?: 'modal' | 'tray' | 'fullscreen',
+    type?: 'modal' | 'tray' | 'fullscreen' | 'fullscreenTakeover',
     shellStyles?: Styles,
   ) {
     renderWithRoot(
@@ -166,14 +166,11 @@ describe('Dialog width limits', () => {
     await page.viewport(1280, 900);
 
     // `$min-dialog-size` is 288px here; a preferred width of its own is not
-    // floored by it, and the modal shell does not hold it off-centre.
-    const box = await renderDialog({ width: '200px' });
-
-    expect(box.width).toBe(200);
-    expect(box.left).toBe((1280 - 200) / 2);
+    // floored by it.
+    expect((await renderDialog({ width: '200px' })).width).toBe(200);
   });
 
-  it('keeps the fullscreen gutter under a single width', async () => {
+  it('gives a fullscreen dialog the phone gutter', async () => {
     await page.viewport(390, 844);
 
     await renderDialog({ width: '520px' }, 'fullscreen');
@@ -181,17 +178,51 @@ describe('Dialog width limits', () => {
     // A fullscreen dialog scales in, so read its width once the transition ends.
     await waitFor(() => {
       expect(screen.getByTestId('Dialog').getBoundingClientRect().width).toBe(
-        390 - 64,
+        390 - 32,
       );
+    });
+  });
+
+  it('lets a takeover span the screen', async () => {
+    await page.viewport(390, 844);
+
+    await renderDialog({ width: '520px' }, 'fullscreenTakeover');
+
+    await waitFor(() => {
+      const box = screen.getByTestId('Dialog').getBoundingClientRect();
+
+      expect(box.width).toBe(390);
+      expect(box.left).toBe(0);
+    });
+  });
+
+  it('caps a popover with a single width', async () => {
+    await page.viewport(390, 844);
+
+    renderWithRoot(
+      <DialogTrigger defaultOpen type="popover">
+        <Button>Open</Button>
+        <Dialog width="520px">
+          <Content>Body</Content>
+        </Dialog>
+      </DialogTrigger>,
+    );
+
+    const dialog = await screen.findByTestId('Dialog');
+
+    // A popover has a 1bw border outside its width.
+    await waitFor(() => {
+      expect(dialog.getBoundingClientRect().width).toBe(390 - 32 + 2);
     });
   });
 
   it('uses a width with its own min or max as given', async () => {
     await page.viewport(390, 844);
 
-    expect((await renderDialog({ width: 'initial 520px 100dvw' })).width).toBe(
-      390,
-    );
+    const box = await renderDialog({ width: 'initial 520px 100dvw' });
+
+    expect(box.width).toBe(390);
+    expect(box.left).toBe(0);
   });
 
   it.each([

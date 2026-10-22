@@ -70,12 +70,11 @@ const DialogElement = tasty({
     '$dialog-width-limit': {
       '': '$dialog-max-size',
       'type=tray': '100%',
-      'type=fullscreen': '(100dvw - 8x)',
       'type=fullscreenTakeover | type=panel': '100dvw',
     },
     width: {
       '': '$min-dialog-size $dialog-size $dialog-width-limit',
-      'type=fullscreen': '(100dvw - 8x) (100dvw - 8x)',
+      'type=fullscreen': '$dialog-max-size $dialog-max-size',
       'type=fullscreenTakeover': '100dvw 100dvw',
       'type=panel': 'auto',
     },
