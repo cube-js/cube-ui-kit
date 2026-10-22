@@ -47,7 +47,7 @@ const TrayElement = tasty({
     width: '$min-dialog-size 90vw',
     pointerEvents: 'auto',
     transition:
-      'transform .25s ease-in-out, opacity .25s linear, visibility 0ms linear',
+      'transform $overlay-transition ease-in-out, opacity $overlay-transition linear, visibility 0ms linear',
     opacity: {
       '': 0,
       open: '.9999',

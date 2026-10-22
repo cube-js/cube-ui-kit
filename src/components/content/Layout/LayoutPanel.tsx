@@ -302,6 +302,7 @@ const OverlayBackdrop = tasty({
       '': 'none',
       visible: 'auto',
     },
+    // oxlint-disable-next-line tasty/no-raw-transition-duration -- the overlay panel's backdrop has its own quick fade; no token carries 150ms ease-out for a backdrop
     transition: 'opacity .15s ease-out',
   },
 });

@@ -206,6 +206,7 @@ export const COLOR_TOKENS: Styles = lazyStyles(getColorTokens);
  * new colour-referencing token, add it here too.
  */
 const COLOR_DEPENDENT_TOKENS: Styles = {
+  // oxlint-disable-next-line tasty/no-style-spread -- a token map re-declared verbatim, not style composition
   ...SHADOW_TOKENS,
   '#scrollbar-thumb': BASE_TOKENS['#scrollbar-thumb'],
   '#scrollbar-outline': BASE_TOKENS['#scrollbar-outline'],

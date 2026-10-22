@@ -1,3 +1,4 @@
+/* oxlint-disable tasty/no-style-spread -- the themes compose shared ramps shallowly on purpose: each override replaces the whole state map, which mergeStyles would extend instead, and no spread base carries a sub-element */
 import type { Styles } from '@tenphi/tasty';
 
 export const VALIDATION_STYLES: Styles = {

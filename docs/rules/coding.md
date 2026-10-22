@@ -62,6 +62,16 @@ Every disable directive needs a ` -- reason`, not only these ones. The repo-loca
 
 `tasty/no-style-prop` stays off. Since 1.8.2 it also recognizes Tasty components imported from relative modules, but it still covers only Tasty components, while the React rules cover every element, native and third-party ones included. Enabling both would need two directives on every exception.
 
+# Tasty lint rules
+
+`pnpm lint` runs Oxlint without `--deny-warnings`, so a rule at `warn` never fails CI: it is advisory. Every `@tenphi/eslint-plugin-tasty` rule UI Kit enforces is an `error` in `.oxlintrc.json`. `consistent-token-usage` is the one rule still at `warn`, until its runtime hits are cleared. Add a new rule as `error` once it has no hits, or leave it off.
+
+An exception takes the same form as for inline style: `// oxlint-disable-next-line tasty/<rule> -- <reason>` on the line before. A file-wide `/* oxlint-disable tasty/<rule> -- <reason> */` is for a file whose whole design the rule argues with, such as `src/data/item-themes.ts`, which composes its themes by shallow spread on purpose.
+
+Transitions and animations take their duration from a token: `$transition`, `$disclosure-transition`, `$tab-transition`, `$fade-transition`, `$overlay-transition` or `$scrollbar-transition`. A keyframe loop's length, or a timing derived from another one, is an exception with its reason.
+
+Off on purpose: `no-style-prop` (see [Inline style](#inline-style)), `no-styles-prop` (UI Kit's own components pass `styles` down, and it is public API) and `prefer-shorthand-property` (single-side overrides are deliberate). `valid-custom-property` and `no-runtime-styles-mutation` stay off until their existing hits are cleared.
+
 # Markdown rules
 
 - **Never hard-wrap prose.** One paragraph is one line, in every `.md` and `.mdx` file — documentation, `AGENTS.md`, specs and changesets alike. No wrapping at 80 or 100 columns, no manual line breaks inside a sentence.

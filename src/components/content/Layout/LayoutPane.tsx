@@ -239,7 +239,7 @@ const PaneElement = tasty({
         '': 0,
         '(focused | scrolling) & scrollbar=tiny': 1,
       },
-      transition: 'opacity 0.15s',
+      transition: 'opacity $scrollbar-transition',
       pointerEvents: 'none',
     },
 
@@ -259,7 +259,7 @@ const PaneElement = tasty({
         '': 0,
         '(focused | scrolling) & scrollbar=tiny': 1,
       },
-      transition: 'opacity 0.15s',
+      transition: 'opacity $scrollbar-transition',
       pointerEvents: 'none',
     },
 

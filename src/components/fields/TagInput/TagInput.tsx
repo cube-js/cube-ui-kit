@@ -1755,6 +1755,7 @@ function TagInput<T extends object>(
   const tagInputField = (
     <TagInputElement
       ref={rootRef}
+      // oxlint-disable-next-line tasty/no-classname-prop -- forwards the consumer's public `className` prop
       className={className}
       // oxlint-disable-next-line react/forbid-component-props -- forwards the consumer's public `style` prop
       style={style}
