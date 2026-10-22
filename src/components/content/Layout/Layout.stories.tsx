@@ -1201,7 +1201,8 @@ export const StickyPanel: Story = {
  * In `overlay` mode, a semi-transparent backdrop appears behind the panel.
  * The panel closes (when `isDismissable` is true) when:
  * - Clicking the backdrop overlay
- * - Pressing Escape anywhere in the Layout
+ * - Pressing Escape anywhere in the Layout, unless a control inside already
+ *   handled it (prevented its default)
  * - Moving focus to the main content area
  *
  * This mode is ideal for panels that require user attention and should

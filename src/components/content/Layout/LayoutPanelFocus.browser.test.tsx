@@ -215,14 +215,19 @@ describe('Layout.Panel overlay focus in a browser', () => {
     expect(screen.getByTestId('OverlayPanel')).toBeInTheDocument();
     expect(onOpenChange).not.toHaveBeenCalled();
   });
+
   it('stays open when a control inside claims Escape', async () => {
     const onOpenChange = vi.fn();
+    // Stands in for an enclosing dialog, which must not close either.
+    const onOuterKeyDown = vi.fn();
 
     await renderReady(
-      <FocusLayout
-        panelContent={<ClaimingField />}
-        onOpenChange={onOpenChange}
-      />,
+      <div onKeyDown={onOuterKeyDown}>
+        <FocusLayout
+          panelContent={<ClaimingField />}
+          onOpenChange={onOpenChange}
+        />
+      </div>,
     );
     await openAndSettle();
 
@@ -232,6 +237,7 @@ describe('Layout.Panel overlay focus in a browser', () => {
 
     expect(screen.getByTestId('OverlayPanel')).toBeInTheDocument();
     expect(onOpenChange).not.toHaveBeenCalled();
+    expect(onOuterKeyDown).not.toHaveBeenCalled();
 
     // An Escape nothing claimed still closes it.
     await act(() => userEvent.click(screen.getByLabelText('Panel field')));

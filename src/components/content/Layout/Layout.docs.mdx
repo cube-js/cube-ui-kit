@@ -900,7 +900,7 @@ function ApplicationShell() {
 ### Keyboard Navigation
 
 - `Tab` - Navigate between interactive elements
-- An overlay panel closes on Escape, unless a control inside already handled the key, or when focus enters the main content from outside it; focus moving inside it or into another panel of the same Layout keeps it open
+- An overlay panel closes on an Escape no control inside has handled (prevented its default), or when focus enters the main content from outside it; focus moving inside it or into another panel of the same Layout keeps it open. A handled Escape stops at the Layout, so an enclosing dialog stays open too
 - Panels come after the main content in tab order, so `Tab` from a panel's last control leaves the Layout
 - An overlay panel moves focus to its first control when it opens and returns it to the opener when it closes; in `dialog` mode the dialog manages focus, and other modes leave focus alone
 - Resize handlers can be focused and resized using arrow keys:
