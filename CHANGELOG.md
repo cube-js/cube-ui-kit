@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.199.1
+
+### Patch Changes
+
+- [#1560](https://github.com/cube-js/cube-ui-kit/pull/1560) [`0e634be0`](https://github.com/cube-js/cube-ui-kit/commit/0e634be076dddc9e2e2f98ad92b97ac86ef2f753) Thanks [@tenphi](https://github.com/tenphi)! - `Layout.Panel` in `overlay` mode stays open when a control inside it handles Escape itself and prevents the default, such as a code editor closing its autocomplete; an unhandled Escape still closes it.
+
 ## 0.199.0
 
 ### Minor Changes
