@@ -1127,7 +1127,6 @@ export const CURRENT_ITEM_STYLES: Styles = {
 export const CURRENT_CLEAR_STYLES: Styles = {
   ...CURRENT_ITEM_STYLES,
   ...CURRENT_FOCUS_RING,
-  // oxlint-disable-next-line tasty/require-default-state -- the spread item ramp carries the default; drop once tenphi/eslint-plugin-tasty#94 ships
   fill: {
     ...(CURRENT_ITEM_STYLES.fill as Record<string, string>),
     // The one entry `clear` adds to the item ramp, and the same split the
