@@ -474,7 +474,7 @@ export function OverlayContainer({
     }
   });
 
-  // useCallback (not useEvent) because this is called during render.
+  // A plain function (not useEvent) because this is called during render.
   // useEvent defers the ref update to useLayoutEffect, so during render
   // it would still read the previous closure's positions/heights.
   const getItemLayout = (item: OverlayItem, index: number, total: number) => {

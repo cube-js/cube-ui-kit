@@ -56,7 +56,7 @@ export default {
     '#surface-2-text-soft',
     '#surface-3-text',
     '#surface-3-text-soft',
-    // Fixed-mode surface emitted by the special palette theme.
+    // Fixed-mode tokens emitted by the special palette theme.
     '#special-surface',
     '#special-accent-disabled-surface',
     '#special-accent-disabled-surface-text',
@@ -270,8 +270,6 @@ export default {
     '#shadow-lg',
     '#overlay',
     '#focus',
-    '#fixed-dark',
-    '#fixed-primary-text',
     '#placeholder',
 
     // ---- Legacy aliases (mapped in src/tokens/colors.ts) ----
@@ -297,6 +295,10 @@ export default {
     '#disabled-surface-text',
     '#disabled-surface',
     '#disabled-opacity',
+    '#fixed-dark',
+    '#fixed-primary-text',
+
+    // ---- Context hooks (src/tokens/colors.ts) ----
     '#current-fill',
 
     // ---- Component-local custom tokens ----
