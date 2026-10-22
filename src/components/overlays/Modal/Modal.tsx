@@ -60,7 +60,9 @@ const ModalElement = tasty({
       'type=panel': 'auto',
     },
     width: {
-      '': '$min-dialog-size $dialog-max-size',
+      // No floor of its own: the dialog sets one, and a shell wider than a
+      // narrow dialog would hold it off-centre.
+      '': 'initial $dialog-max-size',
       'type=panel': 'auto',
     },
     pointerEvents: 'none',

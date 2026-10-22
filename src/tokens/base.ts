@@ -43,8 +43,9 @@ export const BASE_TOKENS: Styles = {
   // Misc dimensions
   /**
    * Maximum dialog width (responsive): the viewport less a 4x gutter on each
-   * side, or a 2x one on a phone-width screen (the `DialogTrigger` mobile
-   * breakpoint), where a wider gutter would only waste space.
+   * side, or a 2x one on a phone-width screen (up to 700px, the default
+   * `mobileViewport` of `DialogTrigger`), where a wider gutter would only
+   * waste space.
    */
   '$dialog-max-size': {
     '': 'calc(100dvw - (8 * var(--gap)))',
