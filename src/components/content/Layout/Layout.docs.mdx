@@ -407,9 +407,9 @@ A variant of Layout that enables CSS Grid for the content area.
   padding="2x"
 >
   <Layout.Header title="Grid Dashboard" />
-  <div style={{ gridColumn: '1 / -1' }}>Full-width card</div>
-  <div>Left card</div>
-  <div>Right card</div>
+  <Card gridColumn="1 / 3">Full-width card</Card>
+  <Card>Left card</Card>
+  <Card>Right card</Card>
 </GridLayout>
 ```
 
@@ -792,9 +792,9 @@ To prevent dismissing the overlay by clicking, pressing Escape or moving focus t
   <Layout.Header title="Tiny Scrollbar" />
   <Layout.Content scrollbar="tiny">
     {Array.from({ length: 20 }, (_, i) => (
-      <div key={i} style={{ padding: '8px' }}>
+      <Block key={i} padding="1x">
         <Text>Line {i + 1}: Hover to reveal scrollbar indicator.</Text>
-      </div>
+      </Block>
     ))}
   </Layout.Content>
 </Layout>
