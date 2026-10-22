@@ -1,0 +1,5 @@
+---
+'@cube-dev/ui-kit': minor
+---
+
+`Dialog`: `width` now takes one value, such as `width="520px"` or `width={600}`, and sets the dialog's preferred width (the `$dialog-size` token) while keeping its type's maximum, so a fixed-width dialog no longer overflows a phone screen. Modals, popovers and fullscreen dialogs stay inside the new `$dialog-max-size` token, trays inside their shell, and takeovers and panels inside the viewport. **Breaking:** a `width` with its own minimum or maximum (`width="64x 120x 90vw"`), a state map or a responsive array no longer works; set it as `styles.width`, which is applied as given. Up to 700px of screen width, modals, popovers and fullscreen dialogs now keep a `2x` gutter on each side instead of `4x`, so they use more of a phone screen. On a narrow screen a default-size tray uses its whole 90vw shell. The `Modal` shell no longer adds a gutter of its own, so content other than a `Dialog` sets its own width. `Dialog` now applies its `tokens` prop, which it used to drop.

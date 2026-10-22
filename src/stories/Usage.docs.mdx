@@ -59,7 +59,8 @@ These CSS custom properties are defined in `src/tokens/base.ts` and applied glob
 | `$fade-transition` | `200ms` | Fade animation duration |
 | `$large-radius` | `(1r + .5x)` | Larger radius for cards/dialogs |
 | `$card-radius` | `(1r + .5x)` | Card border radius |
-| `$min-dialog-size` | `min(288px, calc(100vw - 2*var(--gap)))` | Minimum dialog width |
+| `$dialog-max-size` | `calc(100dvw - 8x)`, `calc(100dvw - 4x)` up to 700px | Maximum dialog width |
+| `$min-dialog-size` | `min(288px, $dialog-max-size)` | Minimum dialog width |
 
 ## Spacing Tokens
 

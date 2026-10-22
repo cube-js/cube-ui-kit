@@ -63,11 +63,22 @@ const DialogElement = tasty({
       '': 'relative',
       'type=panel': 'absolute',
     },
+    // The widest the dialog gets, also under a `width`. A tray is held by its
+    // shell, whose own `styles` widen it; a takeover and a panel may span the
+    // viewport.
+    '$dialog-width-limit': {
+      '': '$dialog-max-size',
+      'type=tray': '100%',
+      'type=fullscreenTakeover | type=panel': '100dvw',
+    },
     width: {
-      '': '$min-dialog-size $dialog-size (100dvw - 8x)',
-      'type=fullscreen': '(100dvw - 8x) (100dvw - 8x)',
+      '': '$min-dialog-size $dialog-size $dialog-width-limit',
+      'type=fullscreen': '$dialog-max-size $dialog-max-size',
       'type=fullscreenTakeover': '100dvw 100dvw',
       'type=panel': 'auto',
+      // A `width` is the preferred width in `$dialog-size`: it keeps the
+      // limit, and replaces the floor.
+      'custom-width': 'initial $dialog-size $dialog-width-limit',
     },
     height: {
       '': 'auto (100dvh - 8x)',
@@ -148,7 +159,13 @@ export interface CubeDialogProps
     AriaDialogProps,
     BaseStyleProps,
     BlockStyleProps,
-    DimensionStyleProps {
+    Omit<DimensionStyleProps, 'width'> {
+  /**
+   * The dialog's preferred width, one value (`520px`, `65x`, `600`). It keeps
+   * the type's maximum, so the dialog still fits a phone, and replaces
+   * `$min-dialog-size`. To clamp the width yourself, set `styles.width`.
+   */
+  width?: string | number;
   /** The size of the dialog */
   size?: 'S' | 'M' | 'L' | 'small' | 'medium' | 'large';
   /**
@@ -246,6 +263,8 @@ const DialogContent = forwardRef(function DialogContent(
     onDismiss = contextProps.onClose,
     closeIcon,
     closeButtonStyles,
+    width,
+    tokens,
     style,
     ...otherProps
   } = props;
@@ -476,11 +495,17 @@ const DialogContent = forwardRef(function DialogContent(
           if (isRefocusingRef.current) event.stopPropagation();
         },
       })}
-      mods={{ dismissable: isDismissable }}
-      style={{
-        '--dialog-size': `${sizePxMap[size] || sizePxMap.small}px`,
-        ...style,
+      mods={{ dismissable: isDismissable, 'custom-width': width != null }}
+      tokens={{
+        '$dialog-size':
+          width == null
+            ? `${sizePxMap[size] || sizePxMap.small}px`
+            : typeof width === 'number'
+              ? `${width}px`
+              : width,
+        ...tokens,
       }}
+      style={style}
       data-type={type}
       data-size={size}
     >

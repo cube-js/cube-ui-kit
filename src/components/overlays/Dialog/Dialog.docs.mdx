@@ -119,6 +119,22 @@ The body is the `Content` that is a direct child of the dialog or of a direct-ch
 - `medium` / `M` - Standard dialog for moderate content (479px width)
 - `large` / `L` - Large dialog for complex content (798px width)
 
+### Width
+
+Every size stays inside the screen: a dialog is at most `$dialog-max-size` wide, the viewport less a `4x` gutter on each side, or a `2x` one on screens up to 700px wide.
+
+`width` takes one value (`width="520px"`, `width="65x"`, `width={600}`, `width="max-content"`). It sets the dialog's preferred width, the `$dialog-size` token that `size` sets otherwise, and keeps that limit, so a fixed-width dialog still fits a phone. The limit follows the dialog's type: a modal, popover or fullscreen dialog keeps the `$dialog-max-size` gutter; a tray stays inside its shell (widen it with the container's `styles`), while a takeover or panel may span the viewport. A `width` also replaces the `$min-dialog-size` floor.
+
+To clamp the width yourself, set `styles.width` (`styles={{ width: 'initial 520px 100dvw' }}`). It replaces the whole width, limit included.
+
+```jsx
+{/* 520px on a wide screen, the screen less its gutter on a phone */}
+<Dialog width="520px">…</Dialog>
+
+{/* Exactly as written: min `initial`, width 520px, max the whole viewport */}
+<Dialog styles={{ width: 'initial 520px 100dvw' }}>…</Dialog>
+```
+
 ## Examples
 
 ### Basic Dialog

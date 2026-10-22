@@ -25,7 +25,7 @@ import type { FieldTypes } from '../../form/Form/types';
 export interface CubeDialogFormProps<T extends FieldTypes = FieldTypes>
   extends
     Omit<CubeDialogProps, 'children'>,
-    Omit<CubeFormProps<T>, 'role' | 'children'> {
+    Omit<CubeFormProps<T>, 'role' | 'children' | 'width'> {
   /** Whether the submit button has a `danger` theme */
   danger?: boolean;
   /** Properties for submit button. Use `children` to change text. */
@@ -55,7 +55,8 @@ export interface CubeDialogFormRef {
 export interface ModernDialogFormProps<T extends FieldTypes = FieldTypes>
   extends
     Omit<CubeDialogFormProps<T>, keyof CubeFormProps<T> | 'submitProps'>,
-    Omit<ModernFormProps<T>, 'role' | 'children'> {
+    Omit<ModernFormProps<T>, 'role' | 'children' | 'width'> {
+  width?: CubeDialogProps['width'];
   children?: CubeDialogFormProps<T>['children'];
   submitProps?: Omit<CubeSubmitButtonProps<T>, 'form'>;
 }

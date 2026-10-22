@@ -1,4 +1,5 @@
 import { setInteractionModality } from '@react-aria/interactions';
+import { Styles } from '@tenphi/tasty';
 import { useState } from 'react';
 import { userEvent as browserUserEvent, page } from 'vitest/browser';
 
@@ -20,7 +21,7 @@ import { DialogTrigger } from './DialogTrigger';
  * the viewport it was supposed to fit inside.
  *
  * That is exactly what `$min-dialog-size` used to do: it was computed from
- * `100vw - 2x` while every consumer's max-width uses `100dvw - 8x`, so below
+ * `100vw - 2x` while every consumer's max-width used `100dvw - 8x`, so below
  * ~352px the two crossed over and no dialog in the library fit. The Excel /
  * Sheets task pane is 300-350px wide, which is the whole of its viewport.
  *
@@ -83,9 +84,177 @@ describe('Dialog width at a narrow viewport', () => {
       expect(dialog.getBoundingClientRect().width).toBeGreaterThan(0);
     });
 
-    // `min(288px, 100dvw - 8x)` still resolves to the 288px branch here, so the
+    // `min(288px, $dialog-max-size)` still resolves to the 288px branch here, so the
     // floor is the same one the token has always applied away from the crossover.
     expect(parseFloat(getComputedStyle(dialog).minWidth)).toBe(288);
+  });
+});
+
+/**
+ * A `width` used to replace the dialog's whole min/base/max clamp, so a fixed
+ * `width="520px"` lost the viewport cap and ran off a phone screen. It is now
+ * the preferred width, and the dialog keeps its type's limit:
+ * the viewport less a 2x gutter per side up to 700px, a 4x one above.
+ */
+describe('Dialog width limits', () => {
+  afterEach(async () => {
+    await page.viewport(414, 896);
+  });
+
+  async function renderDialog(
+    dialogProps: Parameters<typeof Dialog>[0],
+    type?: 'modal' | 'tray' | 'fullscreen' | 'fullscreenTakeover',
+    shellStyles?: Styles,
+  ) {
+    renderWithRoot(
+      <DialogContainer
+        isOpen
+        type={type}
+        styles={shellStyles}
+        onDismiss={() => {}}
+      >
+        <Dialog {...dialogProps}>
+          <Content>Body</Content>
+        </Dialog>
+      </DialogContainer>,
+    );
+
+    const dialog = await screen.findByTestId('Dialog');
+
+    await waitFor(() => {
+      expect(dialog.getBoundingClientRect().width).toBeGreaterThan(0);
+    });
+
+    return dialog.getBoundingClientRect();
+  }
+
+  it('caps a single fixed width to the phone gutter', async () => {
+    await page.viewport(390, 844);
+
+    const box = await renderDialog({ width: '520px' });
+
+    expect(box.width).toBe(390 - 32);
+    expect(box.left).toBe(16);
+    expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(390);
+  });
+
+  it('caps a numeric width the same way', async () => {
+    await page.viewport(390, 844);
+
+    expect((await renderDialog({ width: 600 })).width).toBe(390 - 32);
+  });
+
+  it('keeps a single fixed width on a wide screen', async () => {
+    await page.viewport(1280, 900);
+
+    expect((await renderDialog({ width: '520px' })).width).toBe(520);
+  });
+
+  it('resolves tasty units in a width', async () => {
+    await page.viewport(1280, 900);
+
+    expect((await renderDialog({ width: '65x' })).width).toBe(520);
+  });
+
+  it('keeps the wider gutter above the phone breakpoint', async () => {
+    await page.viewport(800, 900);
+
+    expect((await renderDialog({ size: 'L' })).width).toBe(800 - 64);
+  });
+
+  it('gives a default-size dialog the phone gutter too', async () => {
+    await page.viewport(390, 844);
+
+    expect((await renderDialog({})).width).toBe(390 - 32);
+  });
+
+  it('drops the floor under a single width', async () => {
+    await page.viewport(1280, 900);
+
+    // `$min-dialog-size` is 288px here; a preferred width of its own is not
+    // floored by it.
+    expect((await renderDialog({ width: '200px' })).width).toBe(200);
+  });
+
+  it('gives a fullscreen dialog the phone gutter', async () => {
+    await page.viewport(390, 844);
+
+    await renderDialog({ width: '520px' }, 'fullscreen');
+
+    // A fullscreen dialog scales in, so read its width once the transition ends.
+    await waitFor(() => {
+      expect(screen.getByTestId('Dialog').getBoundingClientRect().width).toBe(
+        390 - 32,
+      );
+    });
+  });
+
+  it('lets a takeover span the screen', async () => {
+    await page.viewport(390, 844);
+
+    await renderDialog({ width: '520px' }, 'fullscreenTakeover');
+
+    await waitFor(() => {
+      const box = screen.getByTestId('Dialog').getBoundingClientRect();
+
+      expect(box.width).toBe(390);
+      expect(box.left).toBe(0);
+    });
+  });
+
+  it('caps a popover with a single width', async () => {
+    await page.viewport(390, 844);
+
+    renderWithRoot(
+      <DialogTrigger defaultOpen type="popover">
+        <Button>Open</Button>
+        <Dialog width="520px">
+          <Content>Body</Content>
+        </Dialog>
+      </DialogTrigger>,
+    );
+
+    const dialog = await screen.findByTestId('Dialog');
+
+    // A popover has a 1bw border outside its width.
+    await waitFor(() => {
+      expect(dialog.getBoundingClientRect().width).toBe(390 - 32 + 2);
+    });
+  });
+
+  it('applies `styles.width` as given', async () => {
+    await page.viewport(390, 844);
+
+    const box = await renderDialog({
+      styles: { width: 'initial 520px 100dvw' },
+    });
+
+    expect(box.width).toBe(390);
+    expect(box.left).toBe(0);
+  });
+
+  it.each([
+    ['a default', undefined],
+    ['a fixed', '520px'],
+  ])('keeps %s-width tray inside its shell', async (_, width) => {
+    await page.viewport(390, 844);
+
+    // The shell is `90vw`, centred: a wider dialog would run off one side.
+    const box = await renderDialog({ width }, 'tray');
+
+    expect(box.width).toBe(351);
+    expect(box.left).toBe(19.5);
+  });
+
+  it('lets a tray span the screen once its shell does', async () => {
+    await page.viewport(390, 844);
+
+    const box = await renderDialog({ width: '100dvw' }, 'tray', {
+      width: '100dvw',
+    });
+
+    expect(box.width).toBe(390);
+    expect(box.left).toBe(0);
   });
 });
 
