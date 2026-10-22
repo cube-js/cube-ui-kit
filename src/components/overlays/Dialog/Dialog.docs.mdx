@@ -119,6 +119,14 @@ The body is the `Content` that is a direct child of the dialog or of a direct-ch
 - `medium` / `M` - Standard dialog for moderate content (479px width)
 - `large` / `L` - Large dialog for complex content (798px width)
 
+### Width
+
+Every size stays inside the screen: a dialog is at most `$dialog-max-size` wide, the viewport less a `4x` gutter on each side, or a `2x` one on screens up to 700px wide.
+
+A `width` with a single value (`width="520px"`, `width="65x"`, `width={600}`) sets the dialog's preferred width and keeps that limit, so a fixed-width dialog still fits a phone. The limit follows the dialog's type: a modal, popover or fullscreen dialog keeps the gutter, while a tray, takeover or panel may span the viewport. A single width also replaces the `$min-dialog-size` floor.
+
+A width that sets its own minimum or maximum (`width="initial 520px 100dvw"`), or a state map, is applied as given, with no limit added.
+
 ## Examples
 
 ### Basic Dialog

@@ -15,6 +15,7 @@ import {
   DIMENSION_STYLES,
   DimensionStyleProps,
   FLOW_STYLES,
+  parseStyle,
   Styles,
   tasty,
 } from '@tenphi/tasty';
@@ -40,7 +41,7 @@ import { extractStyles } from '../../../utils/styles';
 import { ItemButton } from '../../actions/ItemButton/ItemButton';
 import { useOpenTransitionContext } from '../Modal/OpenTransitionContext';
 
-import { trapsFocus, useDialogContext } from './context';
+import { DialogContextValue, trapsFocus, useDialogContext } from './context';
 import { useContentOverflow } from './use-content-overflow';
 import { useRetainedDialogFocus } from './use-retained-dialog-focus';
 
@@ -64,7 +65,7 @@ const DialogElement = tasty({
       'type=panel': 'absolute',
     },
     width: {
-      '': '$min-dialog-size $dialog-size (100dvw - 8x)',
+      '': '$min-dialog-size $dialog-size $dialog-max-size',
       'type=fullscreen': '(100dvw - 8x) (100dvw - 8x)',
       'type=fullscreenTakeover': '100dvw 100dvw',
       'type=panel': 'auto',
@@ -141,6 +142,45 @@ const sizePxMap = {
   medium: 479,
   large: 798,
 };
+
+/**
+ * The widest a dialog of each type gets when its `width` names one value. A
+ * tray, a takeover and a panel span the screen, so the viewport limits them;
+ * the rest keep the screen gutter of `$dialog-max-size`.
+ */
+const WIDTH_LIMITS: Record<NonNullable<DialogContextValue['type']>, string> = {
+  modal: '$dialog-max-size',
+  popover: '$dialog-max-size',
+  fullscreen: '$dialog-max-size',
+  tray: '100dvw',
+  fullscreenTakeover: '100dvw',
+  panel: '100dvw',
+};
+
+/**
+ * A `width` with one value (`520px`, `65x`, `600`) is the dialog's preferred
+ * width, not a clamp of its own: it keeps its type's limit, so a fixed-width
+ * dialog still shrinks to fit a phone. A width that sets its own min or max,
+ * or a state map, is used as given.
+ */
+function limitWidth(
+  width: Styles['width'],
+  type: NonNullable<DialogContextValue['type']>,
+): Styles['width'] {
+  if (typeof width === 'number') {
+    return `initial ${width}px ${WIDTH_LIMITS[type]}`;
+  }
+
+  if (typeof width !== 'string') return width;
+
+  const { groups } = parseStyle(width);
+  const isSingleValue =
+    groups.length === 1 &&
+    groups[0].all.length === 1 &&
+    groups[0].values.length === 1;
+
+  return isSingleValue ? `initial ${width} ${WIDTH_LIMITS[type]}` : width;
+}
 
 export interface CubeDialogProps
   extends
@@ -253,6 +293,8 @@ const DialogContent = forwardRef(function DialogContent(
   size = sizeMap[size.toUpperCase()] || size;
 
   const styles: Styles = extractStyles(otherProps, STYLES_LIST);
+
+  if (styles.width != null) styles.width = limitWidth(styles.width, type);
 
   const { t } = useI18n();
 

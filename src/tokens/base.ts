@@ -42,16 +42,24 @@ export const BASE_TOKENS: Styles = {
 
   // Misc dimensions
   /**
+   * Maximum dialog width (responsive): the viewport less a 4x gutter on each
+   * side, or a 2x one on a phone-width screen (the `DialogTrigger` mobile
+   * breakpoint), where a wider gutter would only waste space.
+   */
+  '$dialog-max-size': {
+    '': 'calc(100dvw - (8 * var(--gap)))',
+    '@media(w <= 700px)': 'calc(100dvw - (4 * var(--gap)))',
+  },
+  /**
    * Minimum dialog width (responsive).
    *
-   * The viewport term must match the `100dvw - 8x` max-width that `Dialog`,
-   * `Modal` and `Tray` set, because CSS resolves `min-width` *after*
-   * `max-width`: if this floor can exceed that ceiling, the floor wins and the
-   * dialog overflows its own viewport. It did, below ~352px — an Excel/Sheets
-   * task pane is 300-350px, so every dialog there rendered 288px wide inside a
-   * 236px box.
+   * Never wider than `$dialog-max-size`, because CSS resolves `min-width`
+   * *after* `max-width`: if this floor can exceed that ceiling, the floor wins
+   * and the dialog overflows its own viewport. It did, below ~352px — an
+   * Excel/Sheets task pane is 300-350px, so every dialog there rendered 288px
+   * wide inside a 236px box.
    */
-  '$min-dialog-size': 'min(288px, calc(100dvw - (8 * var(--gap))))',
+  '$min-dialog-size': 'min(288px, var(--dialog-max-size))',
 
   // Transitions
   /** Default transition duration */

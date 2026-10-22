@@ -90,6 +90,95 @@ describe('Dialog width at a narrow viewport', () => {
 });
 
 /**
+ * A `width` used to replace the dialog's whole min/base/max clamp, so a fixed
+ * `width="520px"` lost the viewport cap and ran off a phone screen. A single
+ * value is now the preferred width, and the dialog keeps its type's limit:
+ * the viewport less a 2x gutter per side up to 700px, a 4x one above.
+ */
+describe('Dialog width limits', () => {
+  afterEach(async () => {
+    await page.viewport(414, 896);
+  });
+
+  async function renderDialog(
+    dialogProps: Parameters<typeof Dialog>[0],
+    type?: 'modal' | 'tray',
+  ) {
+    renderWithRoot(
+      <DialogContainer isOpen type={type} onDismiss={() => {}}>
+        <Dialog {...dialogProps}>
+          <Content>Body</Content>
+        </Dialog>
+      </DialogContainer>,
+    );
+
+    const dialog = await screen.findByTestId('Dialog');
+
+    await waitFor(() => {
+      expect(dialog.getBoundingClientRect().width).toBeGreaterThan(0);
+    });
+
+    return dialog.getBoundingClientRect();
+  }
+
+  it('caps a single fixed width to the phone gutter', async () => {
+    await page.viewport(390, 844);
+
+    const box = await renderDialog({ width: '520px' });
+
+    expect(box.width).toBe(390 - 32);
+    expect(box.left).toBe(16);
+    expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(390);
+  });
+
+  it('caps a numeric width the same way', async () => {
+    await page.viewport(390, 844);
+
+    expect((await renderDialog({ width: 600 })).width).toBe(390 - 32);
+  });
+
+  it('keeps a single fixed width on a wide screen', async () => {
+    await page.viewport(1280, 900);
+
+    expect((await renderDialog({ width: '520px' })).width).toBe(520);
+  });
+
+  it('keeps the wider gutter above the phone breakpoint', async () => {
+    await page.viewport(800, 900);
+
+    expect((await renderDialog({ size: 'L' })).width).toBe(800 - 64);
+  });
+
+  it('gives a default-size dialog the phone gutter too', async () => {
+    await page.viewport(390, 844);
+
+    expect((await renderDialog({})).width).toBe(390 - 32);
+  });
+
+  it('drops the floor under a single width', async () => {
+    await page.viewport(1280, 900);
+
+    // `$min-dialog-size` is 288px here; a preferred width of its own is not
+    // floored by it.
+    expect((await renderDialog({ width: '200px' })).width).toBe(200);
+  });
+
+  it('uses a width with its own min or max as given', async () => {
+    await page.viewport(390, 844);
+
+    expect((await renderDialog({ width: 'initial 520px 100dvw' })).width).toBe(
+      390,
+    );
+  });
+
+  it('lets a tray span the whole screen', async () => {
+    await page.viewport(390, 844);
+
+    expect((await renderDialog({ width: '100dvw' }, 'tray')).width).toBe(390);
+  });
+});
+
+/**
  * `Dialog`'s gutters are declared as custom properties on the dialog root, and
  * consumers are documented to read them so one child can span the full dialog
  * width while its siblings keep the gutter (see Dialog.docs.mdx, "Padding
