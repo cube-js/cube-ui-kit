@@ -237,7 +237,7 @@ function Swatch({
         ...mods,
       }}
       styles={styles}
-      style={{ '--color-swatch-color': colorKey }}
+      tokens={{ '#color-swatch': colorKey }}
     >
       <HiddenInput
         {...mergeProps(inputProps, focusProps)}
@@ -382,7 +382,7 @@ export const ColorSwatchGroup = forwardRef(function ColorSwatchGroup(
         ...getValidationMods({ isInvalid, isValid }),
         columns: !!columns,
       }}
-      style={columns ? { '--columns': String(columns) } : undefined}
+      tokens={columns ? { $columns: String(columns) } : undefined}
     >
       <RadiosElement {...radioGroupProps}>
         {swatches.map((swatch) => (

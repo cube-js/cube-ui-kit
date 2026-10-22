@@ -1220,11 +1220,11 @@ export const WithContextMenuPlacements = () => {
         Notice how the menu appears relative to your click position.
       </Paragraph>
 
-      <div
-        style={{
+      <Block
+        styles={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(4, 1fr)',
-          gap: '16px',
+          gridColumns: 'repeat(4, 1fr)',
+          gap: '2x',
           width: '100%',
         }}
       >
@@ -1235,7 +1235,7 @@ export const WithContextMenuPlacements = () => {
             title={placement}
           />
         ))}
-      </div>
+      </Block>
     </Flow>
   );
 };

@@ -3,7 +3,6 @@ import {
   CONTAINER_STYLES,
   ContainerStyleProps,
   filterBaseProps,
-  parseStyle,
   tasty,
 } from '@tenphi/tasty';
 import { CSSProperties, forwardRef } from 'react';
@@ -51,10 +50,7 @@ export const Prefix = forwardRef<HTMLDivElement, CubePrefixProps>(
         {...filterBaseProps(props, { eventProps: true })}
         ref={ref}
         styles={styles}
-        style={{
-          // @ts-ignore
-          '--prefix-gap': parseStyle(outerGap).output,
-        }}
+        tokens={{ '$prefix-gap': outerGap }}
       >
         {children}
       </PrefixElement>

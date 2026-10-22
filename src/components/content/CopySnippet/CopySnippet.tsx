@@ -1,4 +1,4 @@
-import { tasty } from '@tenphi/tasty';
+import { Styles, tasty } from '@tenphi/tasty';
 import copy from 'clipboard-copy';
 import { ReactNode, useState } from 'react';
 
@@ -15,6 +15,9 @@ import { useToast } from '../../overlays/Toast';
 import { Tooltip } from '../../overlays/Tooltip/Tooltip';
 import { TooltipTrigger } from '../../overlays/Tooltip/TooltipTrigger';
 import { Card, CubeCardProps } from '../Card/Card';
+
+// The snippet's grid scrolls the code, so the code block itself must not clip.
+const COPY_SNIPPET_CODE_STYLES: Styles = { margin: 0, overflow: 'visible' };
 
 const ActionElement = tasty(Action, {
   styles: {
@@ -266,7 +269,7 @@ function CopySnippet(allProps: CubeCopySnippetProps) {
       <div data-element="Grid">
         <StyledBlock mods={mods}>
           <PrismCode
-            style={{ margin: 0, overflow: 'visible' }}
+            styles={COPY_SNIPPET_CODE_STYLES}
             code={formattedCode}
             language={language || 'javascript'}
             isWrapped={shouldWrap}

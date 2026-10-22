@@ -525,6 +525,7 @@ export function OverlayContainer({
                 <OverlayItemWrapper
                   ref={createRefCallback(itemId, ref)}
                   mods={{ isShown, isMeasured: settledIds.has(itemId) }}
+                  // oxlint-disable-next-line react/forbid-component-props -- each toast's measured offset and its place in the collapsed stack are computed per item
                   style={getItemStyle(item, visibleIndex, visibleItems.length)}
                   onMouseEnter={handleMouseEnter}
                   onMouseMove={handleMouseMove}

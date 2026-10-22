@@ -149,7 +149,7 @@ export const SlowTransition: Story = {
                 exit: phase === 'exit',
               }}
               width="300px"
-              style={{ '--transition': '.5s' }}
+              tokens={{ $transition: '.5s' }}
             >
               <Text.Strong>Animated Card (Slow)</Text.Strong>
               <br />

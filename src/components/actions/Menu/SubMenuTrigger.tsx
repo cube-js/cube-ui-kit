@@ -1,4 +1,5 @@
 import { useSyncRef } from '@react-aria/utils';
+import { tasty } from '@tenphi/tasty';
 import React, {
   Key,
   ReactElement,
@@ -29,6 +30,10 @@ import { SubmenuTriggerContext } from './SubmenuTriggerContext';
 const DEFAULT_PLACEMENT: Placement = 'right top';
 const DEFAULT_OFFSET = 4;
 const DEFAULT_CROSS_OFFSET = -5;
+
+// Takes no box of its own: it only listens for the pointer entering and
+// leaving the sub-menu.
+const PointerAreaElement = tasty({ styles: { display: 'contents' } });
 
 export interface CubeSubMenuTriggerProps extends AriaMenuTriggerProps {
   /** The preferred placement of the sub-menu relative to the trigger */
@@ -392,6 +397,7 @@ function InternalSubMenuTrigger(props: InternalSubMenuTriggerProps) {
           hideArrow
           isNonModal
           isOpen={!parentContext.isClosing}
+          // oxlint-disable-next-line react/forbid-component-props -- React Aria's overlay positioning computes these coordinates
           style={positionProps.style}
           placement={resolvedPlacement ?? undefined}
           shouldCloseOnInteractOutside={shouldCloseOnInteractOutside}
@@ -400,8 +406,7 @@ function InternalSubMenuTrigger(props: InternalSubMenuTriggerProps) {
           {...overlayProps}
         >
           {/* Wrap content in a div to capture mouse events */}
-          <div
-            style={{ display: 'contents' }}
+          <PointerAreaElement
             onMouseEnter={handlePopoverMouseEnter}
             onMouseLeave={handlePopoverMouseLeave}
           >
@@ -439,7 +444,7 @@ function InternalSubMenuTrigger(props: InternalSubMenuTriggerProps) {
               })}
             </MenuContext.Provider>
             <DismissButton onDismiss={state.close} />
-          </div>
+          </PointerAreaElement>
         </Popover>
       )}
     </>

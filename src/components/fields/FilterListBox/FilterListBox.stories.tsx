@@ -1059,7 +1059,7 @@ export const InForm: StoryFn = () => {
   return (
     <Form
       form={form}
-      style={{ width: '400px' }}
+      width="50x"
       onSubmit={(data) => {
         alert(`Form submitted with: ${JSON.stringify(data, null, 2)}`);
       }}
@@ -1345,7 +1345,7 @@ export const VirtualizedList: StoryFn<CubeFilterListBoxProps<any>> = (args) => {
   }));
 
   return (
-    <Space gap="2x" flow="column" style={{ height: '450px', width: '400px' }}>
+    <Space gap="2x" flow="column" height="450px" width="50x">
       <Text>
         Large list with {items.length} items with varying heights.
         Virtualization is automatically enabled when there are no sections.

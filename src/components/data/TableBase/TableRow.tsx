@@ -52,6 +52,7 @@ function Row(
       {...extra}
       ref={mergeRefs(measureRef, rowRef)}
       data-index={index}
+      // oxlint-disable-next-line react/forbid-dom-props -- the row's measured height, owned by the virtualizer
       style={height != null ? { height } : undefined}
     >
       {typeof children === 'function' ? children(undefined) : children}

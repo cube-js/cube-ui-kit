@@ -416,6 +416,7 @@ function LayoutInner(
       {...filterBaseProps(otherProps, { eventProps: true })}
       mods={mods}
       styles={finalStyles}
+      // oxlint-disable-next-line react/forbid-component-props -- merges the consumer's public `style` with the measured panel insets, and clipping must override its overflow longhands
       style={transitionStyle}
       onKeyDown={hasOverlayPanels ? handleKeyDown : undefined}
     >

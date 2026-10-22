@@ -363,19 +363,14 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
     paddingEnd: containerPadding,
   });
 
-  const treeStyle = useMemo<CSSProperties | undefined>(() => {
-    if (height == null) return undefined;
-    return { ['--tree-height' as keyof CSSProperties]: `${height}px` };
-  }, [height]);
+  const treeTokens =
+    height == null ? undefined : { '$tree-height': `${height}px` };
 
-  const sizerStyle = useMemo<CSSProperties>(
-    () => ({
-      position: 'relative',
-      width: '100%',
-      height: `${rowVirtualizer.getTotalSize()}px`,
-    }),
-    [rowVirtualizer.getTotalSize()],
-  );
+  const sizerStyle: CSSProperties = {
+    position: 'relative',
+    width: '100%',
+    height: `${rowVirtualizer.getTotalSize()}px`,
+  };
 
   /**
    * Each scroll effect tracks its own "last scrolled" target instead
@@ -465,9 +460,10 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
       qa={qa ?? 'Tree'}
       mods={mods}
       styles={baseStyles}
-      style={treeStyle}
+      tokens={treeTokens}
     >
       <TreeScrollContainer ref={mergedScrollRef}>
+        {/* oxlint-disable-next-line react/forbid-dom-props -- the virtualizer measures the scroll height and row offsets */}
         <div role="presentation" style={sizerStyle}>
           {rowVirtualizer.getVirtualItems().map((virtualItem) => {
             const node = visibleNodes[virtualItem.index];

@@ -492,6 +492,7 @@ function renderTreeCellContent<T>(
   return (
     <div
       data-element="TreeContent"
+      // oxlint-disable-next-line react/forbid-dom-props -- a native table part styled by `TableElement`; carries the row's tree depth
       style={
         {
           '--tree-level': String(entry.level),
@@ -999,6 +1000,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
         data-align={column.align}
         role="gridcell"
         aria-colindex={column.ariaColIndex}
+        // oxlint-disable-next-line react/forbid-dom-props -- a native cell styled by `TableElement`; carries its column's measured pin offset
         style={pinStyle(column)}
       >
         {/* The row is `aria-busy`, which already says it is loading. */}
@@ -1049,6 +1051,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
         rowSpan={rowSpan > 1 ? rowSpan : undefined}
         tabIndex={-1}
         aria-colindex={column.ariaColIndex}
+        // oxlint-disable-next-line react/forbid-dom-props -- a native cell styled by `TableElement`; carries its column's measured pin offset
         style={pinStyle(column)}
       >
         {selection && selection.selectionMode === 'multiple' ? (
@@ -1110,6 +1113,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
         data-corner={bottomCornerFlag(column, rowIndex, isLastRow, pinnedEdge)}
         role="gridcell"
         aria-colindex={column.ariaColIndex}
+        // oxlint-disable-next-line react/forbid-dom-props -- a native cell styled by `TableElement`; carries its column's measured pin offset
         style={pinStyle(column)}
         // `Checkbox` reports only the next value, so the modifier that decides
         // toggle-vs-extend is read off the event that produced it.
@@ -1157,6 +1161,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
         data-corner={bottomCornerFlag(column, rowIndex, isLastRow, pinnedEdge)}
         role="gridcell"
         aria-colindex={column.ariaColIndex}
+        // oxlint-disable-next-line react/forbid-dom-props -- a native cell styled by `TableElement`; carries its column's measured pin offset
         style={pinStyle(column)}
       >
         {isMenuEmpty(items) ? null : (
@@ -1200,6 +1205,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
           rowSpan={rowSpan > 1 ? rowSpan : undefined}
           tabIndex={-1}
           aria-colindex={column.ariaColIndex}
+          // oxlint-disable-next-line react/forbid-dom-props -- a native cell styled by `TableElement`; carries its column's measured pin offset
           style={pinStyle(column)}
         />
       );
@@ -1222,6 +1228,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
           rowSpan={rowSpan > 1 ? rowSpan : undefined}
           tabIndex={-1}
           aria-colindex={column.ariaColIndex}
+          // oxlint-disable-next-line react/forbid-dom-props -- a native cell styled by `TableElement`; carries its column's measured pin offset
           style={pinStyle(column)}
         />
       );
@@ -1403,6 +1410,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
           )}
           role="gridcell"
           aria-colindex={column.ariaColIndex}
+          // oxlint-disable-next-line react/forbid-dom-props -- a native cell styled by `TableElement`; carries its column's measured pin offset
           style={pinStyle(column)}
         >
           {/*
@@ -1501,6 +1509,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
         aria-colindex={column.ariaColIndex}
         // The anchor the column class's rule is built on (`column-styles.ts`).
         data-column-styles={columnClassName ? '' : undefined}
+        // oxlint-disable-next-line react/forbid-component-props -- a native cell styled by `TableElement`; carries its column's measured pin offset
         style={pinStyle(column)}
         {...extraCellProps}
         // Joined rather than replaced, so a `className` from `cellProps` does
@@ -1694,6 +1703,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
 
     return (
       <tr aria-hidden="true" data-spacer={position}>
+        {/* oxlint-disable-next-line react/forbid-dom-props -- the virtualizer's spacer stands in for the rows outside the window */}
         <td colSpan={Math.max(columnCount, 1)} style={{ height }} />
       </tr>
     );
@@ -1867,7 +1877,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
     rowCountBeforeFetchRef.current = null;
     // Deliberately keyed on the flag alone: the row count wanted is the one at
     // each edge of the fetch, not every value it passes through.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed on the loading flag alone, see above
   }, [isLoadingMore]);
 
   const loadMoreSkeletonCount = Math.min(
@@ -2085,6 +2095,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
       {columns.map((column) => (
         <col
           key={column.key}
+          // oxlint-disable-next-line react/forbid-dom-props -- a column's resolved width sizes its native `<col>`
           style={column.width != null ? { width: column.width } : undefined}
         />
       ))}
@@ -2132,6 +2143,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
         tabIndex={-1}
         aria-colindex={first.ariaColIndex}
         colSpan={segment.length}
+        // oxlint-disable-next-line react/forbid-dom-props -- a native cell styled by `TableElement`; carries its columns' measured pin offset
         style={
           pinOffset == null
             ? undefined
@@ -2290,8 +2302,10 @@ export function TableView<T = any>(props: TableViewProps<T>) {
           <tr data-sentinel="" aria-hidden="true">
             <td
               colSpan={Math.max(columnCount, 1)}
+              // oxlint-disable-next-line react/forbid-dom-props -- a 1px load-more intersection target, outside the design scale
               style={{ height: 1, padding: 0, border: 0 }}
             >
+              {/* oxlint-disable-next-line react/forbid-dom-props -- a 1px load-more intersection target, outside the design scale */}
               <div ref={sentinelRef} style={{ height: 1 }} />
             </td>
           </tr>
@@ -2457,11 +2471,20 @@ export function TableView<T = any>(props: TableViewProps<T>) {
         }}
       >
         {tree ? (
-          <TreeGridTable tree={tree} tableProps={tableProps} style={tableStyle}>
+          <TreeGridTable
+            tree={tree}
+            tableProps={tableProps}
+            // oxlint-disable-next-line react/forbid-component-props -- the columns' resolved total width sizes the native table
+            style={tableStyle}
+          >
             {tableContent}
           </TreeGridTable>
         ) : (
-          <table {...tableProps} style={tableStyle}>
+          <table
+            {...tableProps}
+            // oxlint-disable-next-line react/forbid-dom-props -- the columns' resolved total width sizes the native table
+            style={tableStyle}
+          >
             {tableContent}
           </table>
         )}

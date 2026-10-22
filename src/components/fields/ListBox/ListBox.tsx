@@ -1337,6 +1337,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
             mods={{ sections: hasSections, empty: isEmpty }}
             data-shape={shape}
             data-input-type="listbox"
+            // oxlint-disable-next-line react/forbid-component-props -- the virtualizer measures the list's total height
             style={
               shouldVirtualize
                 ? {
@@ -1693,6 +1694,7 @@ function Option({
         effectiveDragProps,
       )}
       theme={theme}
+      // oxlint-disable-next-line react/forbid-component-props -- the virtualizer positions the option
       style={virtualStyle}
       data-size={size}
       data-index={virtualIndex}

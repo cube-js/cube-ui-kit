@@ -2100,7 +2100,7 @@ export const WithAutoTooltip: StoryFn<CubeItemProps> = () => (
   <Item
     qa="AutoTooltipItem"
     icon={<IconUser />}
-    style={{ width: '200px' }}
+    width="25x"
     tooltip={{ delay: 0 }}
   >
     This is a very long label that will overflow and trigger the auto tooltip
@@ -2143,7 +2143,7 @@ export const DynamicAutoTooltip: StoryFn<CubeItemProps> = () => {
       <Item
         qa="DynamicTooltipItem"
         icon={<IconUser />}
-        style={{ width }}
+        width={width}
         tooltip={{ delay: 0 }}
       >
         This is a very long label that will eventually overflow

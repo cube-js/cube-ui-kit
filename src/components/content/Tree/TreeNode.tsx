@@ -309,14 +309,6 @@ function TreeNodeInner(props: TreeNodeProps) {
     [sharedMods, isFocused, isHovered, isPressed],
   );
 
-  const rowStyle = useMemo<CSSProperties>(
-    () => ({
-      ['--tree-level' as keyof CSSProperties]: String(node.level ?? 0),
-      ...virtualStyle,
-    }),
-    [node.level, virtualStyle],
-  );
-
   // Only emit `aria-checked` when the tree is in checkable mode.
   const ariaChecked: 'mixed' | 'true' | 'false' | undefined = isRowCheckable
     ? isIndeterminate
@@ -435,7 +427,9 @@ function TreeNodeInner(props: TreeNodeProps) {
       {...finalRowProps}
       ref={refs}
       mods={rowMods}
-      style={rowStyle}
+      tokens={{ '$tree-level': String(node.level ?? 0) }}
+      // oxlint-disable-next-line react/forbid-component-props -- the virtualizer positions the row
+      style={virtualStyle}
       data-element="Row"
       data-qa-key={String(node.key)}
       data-index={virtualIndex}

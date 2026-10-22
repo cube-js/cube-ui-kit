@@ -241,11 +241,12 @@ export function Root(allProps: CubeRootProps) {
               data-font-display={fontDisplay}
               {...filterBaseProps(props, { eventProps: true })}
               styles={styles}
-              style={{
-                '--pointer': cursorStrategy === 'web' ? 'pointer' : 'default',
-                ...style,
+              tokens={{
+                $pointer: cursorStrategy === 'web' ? 'pointer' : 'default',
+                ...tokens,
               }}
-              tokens={tokens}
+              // oxlint-disable-next-line react/forbid-component-props -- forwards the consumer's public `style` prop
+              style={style}
             >
               <GlobalStyles
                 bodyStyles={bodyStyles}

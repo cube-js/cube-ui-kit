@@ -313,6 +313,7 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: Ref<HTMLElement>) {
         hideArrow
         isNonModal
         isOpen={state.isOpen}
+        // oxlint-disable-next-line react/forbid-component-props -- React Aria's overlay positioning computes these coordinates
         style={positionProps.style}
         placement={placement ?? undefined}
         shouldCloseOnInteractOutside={shouldCloseOnInteractOutside}

@@ -97,7 +97,7 @@ const DIALOG_CHILDREN = (
   <>
     <Paragraph>
       Are you sure you want to permanently delete&nbsp;
-      <Text.Strong style={{ whiteSpace: 'pre' }}>deployment</Text.Strong>?
+      <Text.Strong styles={{ whiteSpace: 'pre' }}>deployment</Text.Strong>?
     </Paragraph>
     <Input.Text
       aria-label="Deployment name"

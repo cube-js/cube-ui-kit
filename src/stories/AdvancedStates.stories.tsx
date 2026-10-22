@@ -849,7 +849,7 @@ export const ContainerStyleQueries: StoryObj = {
         </Flex>
 
         <StyleQueryContainer
-          style={variant ? { '--variant': variant } : undefined}
+          tokens={variant ? { $variant: variant } : undefined}
         >
           <StyleQueryBox>
             <Text>

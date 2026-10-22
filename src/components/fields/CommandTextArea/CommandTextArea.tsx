@@ -472,7 +472,7 @@ function CommandTextArea<T extends object>(
     // `activeToken` is intentionally not a dependency: the signature above is
     // its value-identity, and depending on the object would re-run this on every
     // keystroke that leaves the token unchanged.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- depends on the token signature, not the object, see above
   }, [activeTokenSignature, onActiveTokenChange]);
 
   // ---- caret-anchored popover ------------------------------------------

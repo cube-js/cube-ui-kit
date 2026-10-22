@@ -861,11 +861,9 @@ export const Picker = forwardRef(function Picker<T extends object>(
               },
               popoverStyles,
             )}
-            style={
+            tokens={
               triggerWidthRef.current
-                ? ({
-                    '--overlay-min-width': `${triggerWidthRef.current}px`,
-                  } as any)
+                ? { '$overlay-min-width': `${triggerWidthRef.current}px` }
                 : undefined
             }
           >

@@ -3,7 +3,6 @@ import {
   CONTAINER_STYLES,
   ContainerStyleProps,
   filterBaseProps,
-  parseStyle,
   tasty,
 } from '@tenphi/tasty';
 import { CSSProperties, forwardRef, useEffect } from 'react';
@@ -50,9 +49,7 @@ export const Suffix = forwardRef<HTMLDivElement, CubeSuffixProps>(
         {...filterBaseProps(props, { eventProps: true })}
         ref={ref}
         styles={styles}
-        style={{
-          '--suffix-gap': parseStyle(outerGap).output,
-        }}
+        tokens={{ '$suffix-gap': outerGap }}
       >
         {children}
       </SuffixElement>

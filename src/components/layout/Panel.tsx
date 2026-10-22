@@ -157,6 +157,7 @@ function Panel(props: CubePanelProps, ref: ForwardedRef<HTMLDivElement>) {
       qa={qa}
       mods={appliedMods}
       styles={styles}
+      // oxlint-disable-next-line react/forbid-component-props -- forwards the consumer's public `style` prop
       style={style}
       // The loops above moved the style props into `styles` and
       // `innerStyles`, but the type still lists them, and the `color` style

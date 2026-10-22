@@ -304,6 +304,7 @@ export function useContextMenu<
         */}
         {createPortal(
           <div
+            // oxlint-disable-next-line react/forbid-dom-props -- a zero-size fixed host portaled to `body`, outside any Tasty root
             style={{
               position: 'fixed',
               left: 0,
@@ -314,6 +315,7 @@ export function useContextMenu<
           >
             <span
               ref={invisibleAnchorRef}
+              // oxlint-disable-next-line react/forbid-dom-props -- an invisible anchor placed at the pointer's coordinates
               style={{
                 position: 'absolute',
                 left: `${anchorPosition.x}px`,
