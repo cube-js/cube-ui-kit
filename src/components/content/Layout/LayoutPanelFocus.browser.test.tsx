@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { ReactNode, useState } from 'react';
 import { userEvent } from 'vitest/browser';
 
 import { act, renderWithRoot, screen, waitFor } from '../../../test';
@@ -17,10 +17,12 @@ function FocusLayout({
   onOpenChange = () => {},
   opener = 'button',
   hideOnClose = false,
+  panelContent,
 }: {
   onOpenChange?: (isOpen: boolean) => void;
   opener?: 'button' | 'menu';
   hideOnClose?: boolean;
+  panelContent?: ReactNode;
 }) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -45,6 +47,7 @@ function FocusLayout({
           >
             <input aria-label="Panel field" />
             <Button>Panel action</Button>
+            {panelContent}
           </Layout.Panel>
           <Layout.Content>
             {opener === 'menu' ? (
@@ -64,9 +67,42 @@ function FocusLayout({
   );
 }
 
+// Handles Escape itself, as CodeMirror closes its autocomplete: a native
+// listener prevents the default and lets the event bubble on.
+function ClaimingField() {
+  return (
+    <input
+      aria-label="Claiming field"
+      ref={(input) => {
+        if (!input) return;
+
+        const claim = (event: KeyboardEvent) => {
+          if (event.key === 'Escape') event.preventDefault();
+        };
+
+        input.addEventListener('keydown', claim);
+
+        return () => input.removeEventListener('keydown', claim);
+      }}
+    />
+  );
+}
+
 async function renderReady(ui: Parameters<typeof renderWithRoot>[0]) {
   renderWithRoot(ui);
   await wait(50);
+}
+
+// Opens the panel and waits out its 300ms slide: a pointer aimed inside it
+// mid-slide lands on a control still translated off the page.
+async function openAndSettle() {
+  await act(() =>
+    userEvent.click(screen.getByRole('button', { name: 'Open panel' })),
+  );
+  await waitFor(() =>
+    expect(screen.getByLabelText('Panel field')).toHaveFocus(),
+  );
+  await wait(400);
 }
 
 describe('Layout.Panel overlay focus in a browser', () => {
@@ -178,5 +214,68 @@ describe('Layout.Panel overlay focus in a browser', () => {
     expect(screen.getByRole('button', { name: 'After layout' })).toHaveFocus();
     expect(screen.getByTestId('OverlayPanel')).toBeInTheDocument();
     expect(onOpenChange).not.toHaveBeenCalled();
+  });
+  it('stays open when a control inside claims Escape', async () => {
+    const onOpenChange = vi.fn();
+
+    await renderReady(
+      <FocusLayout
+        panelContent={<ClaimingField />}
+        onOpenChange={onOpenChange}
+      />,
+    );
+    await openAndSettle();
+
+    await act(() => userEvent.click(screen.getByLabelText('Claiming field')));
+    await act(() => userEvent.keyboard('{Escape}'));
+    await wait(400);
+
+    expect(screen.getByTestId('OverlayPanel')).toBeInTheDocument();
+    expect(onOpenChange).not.toHaveBeenCalled();
+
+    // An Escape nothing claimed still closes it.
+    await act(() => userEvent.click(screen.getByLabelText('Panel field')));
+    await act(() => userEvent.keyboard('{Escape}'));
+
+    await waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(false));
+  });
+
+  it('closes only a menu open inside it on one backdrop press', async () => {
+    const onOpenChange = vi.fn();
+
+    await renderReady(
+      <FocusLayout
+        panelContent={
+          <MenuTrigger>
+            <Button>Panel menu</Button>
+            <Menu aria-label="Panel menu">
+              <Menu.Item key="rename">Rename</Menu.Item>
+            </Menu>
+          </MenuTrigger>
+        }
+        onOpenChange={onOpenChange}
+      />,
+    );
+    await openAndSettle();
+
+    await act(() =>
+      userEvent.click(screen.getByRole('button', { name: 'Panel menu' })),
+    );
+    await screen.findByRole('menu', { name: 'Panel menu' });
+
+    await act(() => userEvent.click(screen.getByTestId('PanelOverlay')));
+
+    await waitFor(() =>
+      expect(screen.queryByRole('menu', { name: 'Panel menu' })).toBeNull(),
+    );
+    await wait(400);
+
+    expect(screen.getByTestId('OverlayPanel')).toBeInTheDocument();
+    expect(onOpenChange).not.toHaveBeenCalled();
+
+    // With nothing open inside, the next press closes the panel.
+    await act(() => userEvent.click(screen.getByTestId('PanelOverlay')));
+
+    await waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(false));
   });
 });
