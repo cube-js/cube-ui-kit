@@ -58,7 +58,7 @@ The accepted reasons are:
 
 Every disable directive needs a ` -- reason`, not only these ones. The repo-local `repo/require-disable-reason` rule (`scripts/oxlint-repo-rules.mjs`) fails a directive without one.
 
-`tasty/no-style-prop` is not enabled yet. It recognizes only Tasty components declared in the same file or imported from `importSources` ([tenphi/eslint-plugin-tasty#90](https://github.com/tenphi/eslint-plugin-tasty/issues/90)), so it would miss most elements here. Switch to it once that is fixed.
+`tasty/no-style-prop` stays off. Since 1.8.2 it also recognizes Tasty components imported from relative modules, but it still covers only Tasty components, while the React rules cover every element, native and third-party ones included. Enabling both would need two directives on every exception.
 
 # Markdown rules
 

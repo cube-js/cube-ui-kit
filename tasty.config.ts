@@ -58,6 +58,15 @@ export default {
     '#surface-3-text-soft',
     // Fixed-mode surface emitted by the special palette theme.
     '#special-surface',
+    '#special-accent-disabled-surface',
+    '#special-accent-disabled-surface-text',
+    '#special-accent-surface',
+    '#special-accent-surface-2',
+    '#special-accent-surface-3',
+    '#special-accent-surface-border',
+    '#special-accent-surface-hover',
+    '#special-accent-surface-text',
+    '#special-accent-text',
 
     // ---- Glaze: accent system (default theme) ----
     '#accent-surface',
@@ -65,11 +74,13 @@ export default {
     '#accent-surface-3',
     '#accent-surface-hover',
     '#accent-surface-text',
+    '#accent-selected-fill',
     '#accent-text',
     '#accent-text-soft',
     '#accent-icon',
     '#accent-disabled-surface',
     '#accent-disabled-surface-text',
+    '#accent-disabled-text',
 
     // ---- Glaze: per-theme primary / purple (purple is alias of primary) ----
     '#primary',
@@ -82,18 +93,24 @@ export default {
     '#primary-desaturated',
     '#primary-surface',
     '#primary-surface-text',
+    '#primary-surface-text-soft',
+    '#primary-surface-text-soft-2',
     '#primary-accent-surface',
     '#primary-accent-surface-2',
     '#primary-accent-surface-3',
     '#primary-accent-surface-hover',
     '#primary-accent-surface-text',
+    '#primary-accent-selected-fill',
+    '#primary-accent-surface-border',
     '#primary-accent-text',
     '#primary-accent-text-soft',
     '#primary-accent-icon',
     '#primary-accent-disabled-surface',
     '#primary-accent-disabled-surface-text',
+    '#primary-accent-disabled-text',
     '#purple',
     '#purple-bg',
+    '#purple-border',
     '#purple-text',
     '#purple-text-soft',
     '#purple-icon',
@@ -101,16 +118,21 @@ export default {
     '#purple-disabled',
     '#purple-surface',
     '#purple-surface-text',
+    '#purple-surface-text-soft',
+    '#purple-surface-text-soft-2',
     '#purple-accent-surface',
     '#purple-accent-surface-2',
     '#purple-accent-surface-3',
     '#purple-accent-surface-hover',
     '#purple-accent-surface-text',
+    '#purple-accent-selected-fill',
+    '#purple-accent-surface-border',
     '#purple-accent-text',
     '#purple-accent-text-soft',
     '#purple-accent-icon',
     '#purple-accent-disabled-surface',
     '#purple-accent-disabled-surface-text',
+    '#purple-accent-disabled-text',
 
     // ---- Glaze: per-theme danger ----
     '#danger',
@@ -123,6 +145,8 @@ export default {
     '#danger-desaturated',
     '#danger-surface',
     '#danger-surface-text',
+    '#danger-surface-text-soft',
+    '#danger-surface-text-soft-2',
     '#danger-alert-surface',
     '#danger-alert-border',
     '#danger-accent-surface',
@@ -130,11 +154,14 @@ export default {
     '#danger-accent-surface-3',
     '#danger-accent-surface-hover',
     '#danger-accent-surface-text',
+    '#danger-accent-selected-fill',
+    '#danger-accent-surface-border',
     '#danger-accent-text',
     '#danger-accent-text-soft',
     '#danger-accent-icon',
     '#danger-accent-disabled-surface',
     '#danger-accent-disabled-surface-text',
+    '#danger-accent-disabled-text',
 
     // ---- Glaze: per-theme success ----
     '#success',
@@ -147,6 +174,8 @@ export default {
     '#success-desaturated',
     '#success-surface',
     '#success-surface-text',
+    '#success-surface-text-soft',
+    '#success-surface-text-soft-2',
     '#success-alert-surface',
     '#success-alert-border',
     '#success-accent-surface',
@@ -154,11 +183,14 @@ export default {
     '#success-accent-surface-3',
     '#success-accent-surface-hover',
     '#success-accent-surface-text',
+    '#success-accent-selected-fill',
+    '#success-accent-surface-border',
     '#success-accent-text',
     '#success-accent-text-soft',
     '#success-accent-icon',
     '#success-accent-disabled-surface',
     '#success-accent-disabled-surface-text',
+    '#success-accent-disabled-text',
 
     // ---- Glaze: per-theme warning ----
     '#warning',
@@ -171,6 +203,8 @@ export default {
     '#warning-desaturated',
     '#warning-surface',
     '#warning-surface-text',
+    '#warning-surface-text-soft',
+    '#warning-surface-text-soft-2',
     '#warning-alert-surface',
     '#warning-alert-border',
     '#warning-accent-surface',
@@ -178,11 +212,14 @@ export default {
     '#warning-accent-surface-3',
     '#warning-accent-surface-hover',
     '#warning-accent-surface-text',
+    '#warning-accent-selected-fill',
+    '#warning-accent-surface-border',
     '#warning-accent-text',
     '#warning-accent-text-soft',
     '#warning-accent-icon',
     '#warning-accent-disabled-surface',
     '#warning-accent-disabled-surface-text',
+    '#warning-accent-disabled-text',
 
     // ---- Glaze: per-theme note ----
     '#note',
@@ -195,6 +232,8 @@ export default {
     '#note-desaturated',
     '#note-surface',
     '#note-surface-text',
+    '#note-surface-text-soft',
+    '#note-surface-text-soft-2',
     '#note-alert-surface',
     '#note-alert-border',
     '#note-accent-surface',
@@ -202,11 +241,14 @@ export default {
     '#note-accent-surface-3',
     '#note-accent-surface-hover',
     '#note-accent-surface-text',
+    '#note-accent-selected-fill',
+    '#note-accent-surface-border',
     '#note-accent-text',
     '#note-accent-text-soft',
     '#note-accent-icon',
     '#note-accent-disabled-surface',
     '#note-accent-disabled-surface-text',
+    '#note-accent-disabled-text',
 
     // ---- Glaze: PrismCode syntax palette ----
     '#code-comment',
@@ -228,6 +270,8 @@ export default {
     '#shadow-lg',
     '#overlay',
     '#focus',
+    '#fixed-dark',
+    '#fixed-primary-text',
     '#placeholder',
 
     // ---- Legacy aliases (mapped in src/tokens/colors.ts) ----
@@ -253,6 +297,7 @@ export default {
     '#disabled-surface-text',
     '#disabled-surface',
     '#disabled-opacity',
+    '#current-fill',
 
     // ---- Component-local custom tokens ----
     '#scrollbar-thumb',
@@ -264,10 +309,10 @@ export default {
     '#slider-thumb',
     '#slider-thumb-hovered',
     // ColorPicker: the color being edited, and the black/white that reads on
-    // top of it. Both are set as inline custom properties per render.
+    // top of it. Both are passed through the `tokens` prop per render.
     '#color-picker',
     '#color-picker-contrast',
-    // ColorSwatchGroup: the color of an individual swatch, set inline per option.
+    // ColorSwatchGroup: the color of an individual swatch, a `tokens` value per option.
     '#color-swatch',
 
     // Custom Property Tokens (from src/tokens/base.ts)
@@ -340,7 +385,7 @@ export default {
    * State alias names for autocomplete.
    * These are predefined responsive and theme states.
    */
-  states: ['@mobile', '@compact'],
+  states: ['@mobile', '@compact', '@dark', '@hc'],
 
   /**
    * Valid preset names for the `preset` style property.
