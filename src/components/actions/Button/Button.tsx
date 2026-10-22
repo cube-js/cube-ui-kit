@@ -286,7 +286,7 @@ export const DEFAULT_BUTTON_STYLES: Styles = {
 
   // Icon sub-element (recommended format)
   Icon: {
-    // oxlint-disable-next-line tasty/no-style-spread -- Icon and RightIcon share one slot base; the keys below replace it whole
+    // oxlint-disable-next-line tasty/no-style-spread -- icon base shared by Icon and RightIcon; a spread keeps the state maps below linted, which a mergeStyles argument is not (tenphi/eslint-plugin-tasty#99)
     ...DEFAULT_ICON_STYLES,
     width: {
       '': 'fixed 0px',
@@ -304,7 +304,7 @@ export const DEFAULT_BUTTON_STYLES: Styles = {
 
   // RightIcon sub-element (recommended format)
   RightIcon: {
-    // oxlint-disable-next-line tasty/no-style-spread -- Icon and RightIcon share one slot base; the keys below replace it whole
+    // oxlint-disable-next-line tasty/no-style-spread -- icon base shared by Icon and RightIcon; a spread keeps the state maps below linted, which a mergeStyles argument is not (tenphi/eslint-plugin-tasty#99)
     ...DEFAULT_ICON_STYLES,
     width: {
       '': 'fixed 0px',

@@ -31,7 +31,7 @@ pnpm list @tenphi/tasty @tenphi/glaze
 Project-specific working rules for AI agents. Not published with the package.
 
 - [react-compiler.md](docs/rules/react-compiler.md) — React 19, callbacks, Effect Events, memoization and lifecycle ownership
-- [coding.md](docs/rules/coding.md) — development flow, code style, **import rules**, Markdown formatting, knowledge maintenance
+- [coding.md](docs/rules/coding.md) — development flow, code style, **import rules**, inline `style` and Tasty lint rules, Markdown formatting, knowledge maintenance
 - [entropy.md](docs/rules/entropy.md) — proportional complexity in code, public APIs, consumer usage and UX; Entropy review and developer exceptions
 - [input-components.md](docs/rules/input-components.md) — form-attachable input components (`useFieldProps`, validation props, `wrapWithField`)
 - [storybook.md](docs/rules/storybook.md) — `.stories.tsx` and `.docs.mdx` authoring, including the `play`-function rule below
