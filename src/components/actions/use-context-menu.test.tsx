@@ -364,9 +364,7 @@ describe('useContextMenu', () => {
 
     // Outside the container, so it cannot be resolving against the container's
     // containing block.
-    expect(container.querySelector('span[style*="position: absolute"]')).toBe(
-      null,
-    );
+    expect(container.querySelector('[data-qa="ContextMenuAnchor"]')).toBe(null);
   });
 
   it('should anchor at the pointer even outside the container bounds', async () => {

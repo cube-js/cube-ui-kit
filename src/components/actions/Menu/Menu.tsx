@@ -235,7 +235,6 @@ function Menu<T extends object>(
 
   const wrapperMods = {
     popover: completeProps.mods?.popover,
-    tray: completeProps.mods?.tray,
     footer: !!footer,
     header: !!header,
   };
