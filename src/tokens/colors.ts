@@ -1,3 +1,5 @@
+import { mergeStyles } from '@tenphi/tasty';
+
 import { BASE_TOKENS } from './base';
 import { lazyStyles } from './lazy-styles';
 import { getPaletteTokens, renderPaletteTokens } from './palette';
@@ -205,14 +207,12 @@ export const COLOR_TOKENS: Styles = lazyStyles(getColorTokens);
  * Sourced from `./shadows` and the scrollbar block of `./base`; if either grows a
  * new colour-referencing token, add it here too.
  */
-const COLOR_DEPENDENT_TOKENS: Styles = {
-  // oxlint-disable-next-line tasty/no-style-spread -- a token map re-declared verbatim, not style composition
-  ...SHADOW_TOKENS,
+const COLOR_DEPENDENT_TOKENS: Styles = mergeStyles(SHADOW_TOKENS, {
   '#scrollbar-thumb': BASE_TOKENS['#scrollbar-thumb'],
   '#scrollbar-outline': BASE_TOKENS['#scrollbar-outline'],
   '#scrollbar-bg': BASE_TOKENS['#scrollbar-bg'],
   '#scrollbar-corner': BASE_TOKENS['#scrollbar-corner'],
-};
+});
 
 /**
  * Render every UI Kit color for one config and one scheme, as flat literal

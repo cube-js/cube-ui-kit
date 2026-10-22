@@ -302,7 +302,7 @@ const OverlayBackdrop = tasty({
       '': 'none',
       visible: 'auto',
     },
-    // oxlint-disable-next-line tasty/no-raw-transition-duration -- a one-off 150ms backdrop fade: $overlay-transition would slow it to 250ms, and no token names this role
+    // oxlint-disable-next-line tasty/no-raw-transition-duration -- a one-off 150ms backdrop fade: $scrollbar-transition has the value but times scrollbar fades, and $overlay-transition would slow it to 250ms
     transition: 'opacity .15s ease-out',
   },
 });

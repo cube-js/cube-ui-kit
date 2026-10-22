@@ -73,7 +73,7 @@ export const BASE_TOKENS: Styles = {
   '$fade-transition': '200ms',
   /** Transition for a modal, tray or underlay entering and leaving */
   '$overlay-transition': '250ms',
-  /** Transition for an overlay scrollbar fading in and out */
+  /** Transition for an auto-hiding (tiny) scrollbar fading in and out */
   '$scrollbar-transition': '150ms',
 
   /**

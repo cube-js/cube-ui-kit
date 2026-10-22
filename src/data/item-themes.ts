@@ -118,7 +118,7 @@ export const DEFAULT_OUTLINE_STYLES: Styles = {
     '': true,
     selected: '#primary-border',
     disabled: '#border',
-    // oxlint-disable-next-line tasty/no-style-spread -- splices the shared validation states into this map; mergeStyles merges whole maps, not entries
+    // oxlint-disable-next-line tasty/no-style-spread -- appends the shared validation states; mergeStyles(…, VALIDATION_STYLES) would extend this map the same way but leave the theme unlinted (tenphi/eslint-plugin-tasty#99)
     ...(VALIDATION_STYLES.border as Record<string, string>),
   },
   // Every state uses a two-layer fill: `#surface-2` (opaque base) + a tint
@@ -167,7 +167,7 @@ export const DEFAULT_OUTLINE_STYLES: Styles = {
 // Identical to DEFAULT_OUTLINE_STYLES but uses `#surface-3` as the fill base,
 // designed to sit on `#surface-2` containers without blending in.
 export const DEFAULT_OUTLINE_2_STYLES: Styles = {
-  // oxlint-disable-next-line tasty/no-style-spread -- tasty lints no mergeStyles argument (tenphi/eslint-plugin-tasty#99), so a spread keeps the overrides below linted; the base has no sub-elements, so it builds the same object
+  // oxlint-disable-next-line tasty/no-style-spread -- composes the shared base; mergeStyles would build the same object but leave the overrides below unlinted (tenphi/eslint-plugin-tasty#99)
   ...DEFAULT_OUTLINE_STYLES,
   fill: {
     '': '#surface-3 #surface-text.0',
@@ -190,7 +190,7 @@ export const DEFAULT_CLEAR_STYLES: Styles = {
   },
   border: {
     '': '#clear',
-    // oxlint-disable-next-line tasty/no-style-spread -- splices the shared validation states into this map; mergeStyles merges whole maps, not entries
+    // oxlint-disable-next-line tasty/no-style-spread -- appends the shared validation states; mergeStyles(…, VALIDATION_STYLES) would extend this map the same way but leave the theme unlinted (tenphi/eslint-plugin-tasty#99)
     ...(VALIDATION_STYLES.border as Record<string, string>),
   },
   fill: {
@@ -313,7 +313,7 @@ export const DANGER_OUTLINE_STYLES: Styles = {
 } as const;
 
 export const DANGER_OUTLINE_2_STYLES: Styles = {
-  // oxlint-disable-next-line tasty/no-style-spread -- tasty lints no mergeStyles argument (tenphi/eslint-plugin-tasty#99), so a spread keeps the overrides below linted; the base has no sub-elements, so it builds the same object
+  // oxlint-disable-next-line tasty/no-style-spread -- composes the shared base; mergeStyles would build the same object but leave the overrides below unlinted (tenphi/eslint-plugin-tasty#99)
   ...DANGER_OUTLINE_STYLES,
   fill: {
     '': '#surface-3 #danger-accent-surface.0',
@@ -445,7 +445,7 @@ export const SUCCESS_OUTLINE_STYLES: Styles = {
 } as const;
 
 export const SUCCESS_OUTLINE_2_STYLES: Styles = {
-  // oxlint-disable-next-line tasty/no-style-spread -- tasty lints no mergeStyles argument (tenphi/eslint-plugin-tasty#99), so a spread keeps the overrides below linted; the base has no sub-elements, so it builds the same object
+  // oxlint-disable-next-line tasty/no-style-spread -- composes the shared base; mergeStyles would build the same object but leave the overrides below unlinted (tenphi/eslint-plugin-tasty#99)
   ...SUCCESS_OUTLINE_STYLES,
   fill: {
     '': '#surface-3 #success-accent-surface.0',
@@ -575,7 +575,7 @@ export const WARNING_OUTLINE_STYLES: Styles = {
 } as const;
 
 export const WARNING_OUTLINE_2_STYLES: Styles = {
-  // oxlint-disable-next-line tasty/no-style-spread -- tasty lints no mergeStyles argument (tenphi/eslint-plugin-tasty#99), so a spread keeps the overrides below linted; the base has no sub-elements, so it builds the same object
+  // oxlint-disable-next-line tasty/no-style-spread -- composes the shared base; mergeStyles would build the same object but leave the overrides below unlinted (tenphi/eslint-plugin-tasty#99)
   ...WARNING_OUTLINE_STYLES,
   fill: {
     '': '#surface-3 #warning-accent-surface.0',
@@ -705,7 +705,7 @@ export const NOTE_OUTLINE_STYLES: Styles = {
 } as const;
 
 export const NOTE_OUTLINE_2_STYLES: Styles = {
-  // oxlint-disable-next-line tasty/no-style-spread -- tasty lints no mergeStyles argument (tenphi/eslint-plugin-tasty#99), so a spread keeps the overrides below linted; the base has no sub-elements, so it builds the same object
+  // oxlint-disable-next-line tasty/no-style-spread -- composes the shared base; mergeStyles would build the same object but leave the overrides below unlinted (tenphi/eslint-plugin-tasty#99)
   ...NOTE_OUTLINE_STYLES,
   fill: {
     '': '#surface-3 #note-accent-surface.0',
@@ -837,7 +837,7 @@ export const SPECIAL_OUTLINE_STYLES: Styles = {
   border: {
     '': '#white.15',
     selected: '#white.2',
-    // oxlint-disable-next-line tasty/no-style-spread -- splices the shared validation states into this map; mergeStyles merges whole maps, not entries
+    // oxlint-disable-next-line tasty/no-style-spread -- appends the shared validation states; mergeStyles(…, VALIDATION_STYLES) would extend this map the same way but leave the theme unlinted (tenphi/eslint-plugin-tasty#99)
     ...(VALIDATION_STYLES.border as Record<string, string>),
   },
   fill: {
@@ -899,7 +899,7 @@ export const SPECIAL_CLEAR_STYLES: Styles = {
   },
   border: {
     '': '#clear',
-    // oxlint-disable-next-line tasty/no-style-spread -- splices the shared validation states into this map; mergeStyles merges whole maps, not entries
+    // oxlint-disable-next-line tasty/no-style-spread -- appends the shared validation states; mergeStyles(…, VALIDATION_STYLES) would extend this map the same way but leave the theme unlinted (tenphi/eslint-plugin-tasty#99)
     ...(VALIDATION_STYLES.border as Record<string, string>),
   },
   fill: {
@@ -1088,7 +1088,7 @@ const CURRENT_FOCUS_RING: Styles = {
 // styles (the collection that owns the row indicates focus), and only steps the
 // fill.
 export const CURRENT_ITEM_STYLES: Styles = {
-  // oxlint-disable-next-line tasty/no-style-spread -- tasty lints no mergeStyles argument (tenphi/eslint-plugin-tasty#99), so a spread keeps the overrides below linted; the base has no sub-elements, so it builds the same object
+  // oxlint-disable-next-line tasty/no-style-spread -- composes the shared base; mergeStyles would build the same object but leave the overrides below unlinted (tenphi/eslint-plugin-tasty#99)
   ...CURRENT_ITEM_RAMP,
   border: '#clear',
   fill: {
@@ -1135,11 +1135,11 @@ export const CURRENT_ITEM_STYLES: Styles = {
 // borderless shape, same interaction fill, plus the ring a standalone control
 // needs. It is the default flavour for `ItemAction` and `ItemBadge`.
 export const CURRENT_CLEAR_STYLES: Styles = {
-  // oxlint-disable-next-line tasty/no-style-spread -- tasty lints no mergeStyles argument (tenphi/eslint-plugin-tasty#99), so a spread keeps the overrides below linted; the base has no sub-elements, so it builds the same object
+  // oxlint-disable-next-line tasty/no-style-spread -- composes both shared bases (the rule reports only the first of several spreads); mergeStyles would build the same object but leave the overrides below unlinted (tenphi/eslint-plugin-tasty#99)
   ...CURRENT_ITEM_STYLES,
   ...CURRENT_FOCUS_RING,
   fill: {
-    // oxlint-disable-next-line tasty/no-style-spread -- extends the item ramp entry by entry; see the comment below
+    // oxlint-disable-next-line tasty/no-style-spread -- extends the item ramp with the entry below; mergeStyles would do the same but leave it unlinted (tenphi/eslint-plugin-tasty#99)
     ...(CURRENT_ITEM_STYLES.fill as Record<string, string>),
     // The one entry `clear` adds to the item ramp, and the same split the
     // colored themes make: `*_ITEM_STYLES` let a disabled row fall back to a
@@ -1164,7 +1164,7 @@ export const CURRENT_CLEAR_STYLES: Styles = {
 // `.024`/`.048`) so the chip stays a muted version of itself instead of
 // vanishing.
 export const CURRENT_OUTLINE_STYLES: Styles = {
-  // oxlint-disable-next-line tasty/no-style-spread -- tasty lints no mergeStyles argument (tenphi/eslint-plugin-tasty#99), so a spread keeps the overrides below linted; the base has no sub-elements, so it builds the same object
+  // oxlint-disable-next-line tasty/no-style-spread -- composes the shared base; mergeStyles would build the same object but leave the overrides below unlinted (tenphi/eslint-plugin-tasty#99)
   ...CURRENT_FOCUS_RING,
   border: {
     '': '#current.08',
@@ -1204,7 +1204,7 @@ export const CURRENT_OUTLINE_STYLES: Styles = {
 // by a heavier tint at every step: roughly double `outline`'s resting chip, so
 // the control still separates from a tinted or busy container.
 export const CURRENT_OUTLINE_2_STYLES: Styles = {
-  // oxlint-disable-next-line tasty/no-style-spread -- tasty lints no mergeStyles argument (tenphi/eslint-plugin-tasty#99), so a spread keeps the overrides below linted; the base has no sub-elements, so it builds the same object
+  // oxlint-disable-next-line tasty/no-style-spread -- composes the shared base; mergeStyles would build the same object but leave the overrides below unlinted (tenphi/eslint-plugin-tasty#99)
   ...CURRENT_FOCUS_RING,
   border: {
     '': '#current.14',
@@ -1269,7 +1269,7 @@ export const CURRENT_OUTLINE_2_STYLES: Styles = {
 // Icons are SVG painted with `fill="currentColor"`, which that property does not
 // reach, so they take the label color through the `Icon` sub-element.
 export const CURRENT_PRIMARY_STYLES: Styles = {
-  // oxlint-disable-next-line tasty/no-style-spread -- tasty lints no mergeStyles argument (tenphi/eslint-plugin-tasty#99), so a spread keeps the overrides below linted; the base has no sub-elements, so it builds the same object
+  // oxlint-disable-next-line tasty/no-style-spread -- composes the focus ring; mergeStyles would build the same object but leave the overrides below unlinted (tenphi/eslint-plugin-tasty#99). Also covers the generated slot spread at the end (the rule reports only the first spread)
   ...CURRENT_FOCUS_RING,
   // Every other `primary` rims its fill with a lighter sibling
   // (`accent-surface-border` over `accent-surface`, cr 1.48 against it in both
@@ -1360,7 +1360,7 @@ export const CURRENT_PRIMARY_STYLES: Styles = {
 // `accent-text-soft` at rest to `accent-text` on hover; with one color to work
 // with, "soft" is that color at `.8` and "strong" is it at full opacity.
 export const CURRENT_LINK_STYLES: Styles = {
-  // oxlint-disable-next-line tasty/no-style-spread -- tasty lints no mergeStyles argument (tenphi/eslint-plugin-tasty#99), so a spread keeps the overrides below linted; the base has no sub-elements, so it builds the same object
+  // oxlint-disable-next-line tasty/no-style-spread -- composes the shared base; mergeStyles would build the same object but leave the overrides below unlinted (tenphi/eslint-plugin-tasty#99)
   ...CURRENT_FOCUS_RING,
   border: 0,
   fill: {
