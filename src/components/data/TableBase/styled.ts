@@ -28,7 +28,6 @@ const refreshSweep = keyframes({
  * sub-element key, so they share a const — the same technique `Item.tsx` uses
  * for `DEFAULT_ICON_STYLES`.
  */
-/* oxlint-disable tasty/no-own-at-root -- spread into the cell sub-elements, where `@own` targets the cell; the rule's fix would retarget the root (tenphi/eslint-plugin-tasty#95) */
 const CELL_STYLES: Styles = {
   boxSizing: 'border-box',
   // Row height lives on the CELLS, not the `<tr>`: table layout ignores
@@ -146,7 +145,6 @@ const CELL_STYLES: Styles = {
   '$column-divider': { '': '$column-rule', '@own(last-column)': '0px' },
   transition: 'fill',
 };
-/* oxlint-enable tasty/no-own-at-root */
 
 export const TableElement = tasty({
   qa: 'Table',

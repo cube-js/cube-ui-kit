@@ -104,7 +104,11 @@
     "tasty/valid-recipe": "error",
     "tasty/valid-transition": "warn",
     "tasty/require-default-state": "error",
-    "tasty/no-own-at-root": "warn",
+    // Off: its autofix, which the pre-commit `oxlint --fix` applies silently,
+    // corrupts keys with several `@own()` terms and retargets consts spread
+    // into sub-elements at the root. Restore it once
+    // tenphi/eslint-plugin-tasty#95 ships.
+    "tasty/no-own-at-root": "off",
     "tasty/valid-default-state-order": "warn",
     "tasty/consistent-token-usage": "warn",
     "tasty/prefer-auto-calc": "warn",
