@@ -733,7 +733,7 @@ function StickyPanelExample() {
 In `overlay` mode, a semi-transparent backdrop appears behind the panel. The panel is dismissed (when `isDismissable` is true, which is the default) when:
 
 - Clicking the backdrop overlay
-- Pressing Escape anywhere in the Layout
+- Pressing Escape anywhere in the Layout, unless a control inside already handled it (prevented its default), as a code editor does when it closes its autocomplete
 - Moving focus to the main content area
 
 Focus closes the panel only when it enters the main content from outside it, for example with a programmatic `focus()`, `Tab` from a control before the Layout, or `Shift+Tab` out of the panel when no other panel comes before it; moving between controls of the main content does not. Panels come after the main content in tab order, so `Tab` from the panel's last control leaves the Layout and keeps the panel open. Focus moving inside the panel, into a popover, menu or dialog opened from it, or into another `Layout.Panel` of the same Layout keeps it open. Other panels of the same Layout can sit under the backdrop; a click on them then closes the overlay panel, but `Tab` still reaches their controls. Opening the panel moves focus to its first control, unless focus already moved elsewhere as it opened (for example to a field with `autoFocus` inside it), so a menu or dialog that opened it can close without handing focus back to the main content. A panel already open when its Layout first renders leaves page focus alone. Closing the panel returns focus to the element that had it when the panel opened, if focus is still in the panel or was lost with it; focus moved elsewhere, by the user or in `onOpenChange`, stays there. If that element is gone by then, as a menu item is, move focus yourself in `onOpenChange`.
@@ -900,7 +900,7 @@ function ApplicationShell() {
 ### Keyboard Navigation
 
 - `Tab` - Navigate between interactive elements
-- An overlay panel closes on Escape or when focus enters the main content from outside it; focus moving inside it or into another panel of the same Layout keeps it open
+- An overlay panel closes on an Escape no control inside has handled (prevented its default), or when focus enters the main content from outside it; focus moving inside it or into another panel of the same Layout keeps it open. A handled Escape stops at the Layout, so an enclosing dialog stays open too
 - Panels come after the main content in tab order, so `Tab` from a panel's last control leaves the Layout
 - An overlay panel moves focus to its first control when it opens and returns it to the opener when it closes; in `dialog` mode the dialog manages focus, and other modes leave focus alone
 - Resize handlers can be focused and resized using arrow keys:

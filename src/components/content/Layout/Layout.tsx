@@ -398,14 +398,20 @@ function LayoutInner(
     [hasOverlayPanels, dismissOverlayPanels],
   );
 
-  // Handle Escape key anywhere in the Layout - dismiss overlay panels
+  // Handle Escape key anywhere in the Layout - dismiss overlay panels.
+  // An Escape a control inside already handled is its own: a code editor
+  // closing its autocomplete prevents the default and lets the key bubble.
+  // Either way it stops here, so an enclosing dialog doesn't close on it.
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      if (hasOverlayPanels && e.key === 'Escape') {
-        e.preventDefault();
-        e.stopPropagation();
-        dismissOverlayPanels?.();
-      }
+      if (!hasOverlayPanels || e.key !== 'Escape') return;
+
+      e.stopPropagation();
+
+      if (e.isDefaultPrevented()) return;
+
+      e.preventDefault();
+      dismissOverlayPanels?.();
     },
     [hasOverlayPanels, dismissOverlayPanels],
   );
