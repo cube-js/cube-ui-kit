@@ -249,6 +249,7 @@ export const DEFAULT_BUTTON_STYLES: Styles = {
     '@parent(button-split, >) & !:first-child & (type=outline | type=outline-2 | type=primary)':
       '-1bw left',
   },
+  // oxlint-disable-next-line tasty/require-default-state -- outside a ButtonSplit the button sets no z-index, so the consumer's stacking applies
   zIndex: {
     '@parent(button-split, >) & :hover': 1,
     '@parent(button-split, >) & :focus-visible': 2,

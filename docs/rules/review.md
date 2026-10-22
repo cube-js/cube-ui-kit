@@ -69,7 +69,7 @@ Flag recreated style objects or conditional spreads that compile fresh rules for
 
 ### Use tokens for continuously changing values
 
-Flag changing dimensions or animation values compiled into new style rules. Use `tokens` or `tokenProps` for runtime values. Plain `style` remains valid at an external-library boundary; see [Tasty methodology](../tasty/methodology.md).
+Flag changing dimensions or animation values compiled into new style rules. Use `tokens` or `tokenProps` for runtime values. Plain `style` remains valid only behind a reasoned lint exception, such as an external-library boundary; flag an exception whose reason does not hold. See [Inline style](coding.md#inline-style) and [Tasty methodology](../tasty/methodology.md).
 
 ### Use design-system styling where it fits
 

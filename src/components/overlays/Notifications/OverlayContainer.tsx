@@ -47,8 +47,12 @@ const OverlayContainerElement = tasty({
 const OverlayItemWrapper = tasty({
   styles: {
     position: 'absolute',
-    top: '0',
+    top: '$item-top',
     left: '50%',
+    zIndex: {
+      '': 'auto',
+      isCollapsed: '$item-index',
+    },
     transform: {
       '': 'translateX(-50%) translateY(-50%)',
       'isMeasured & isShown': 'translateX(-50%) translateY(0)',
@@ -57,15 +61,22 @@ const OverlayItemWrapper = tasty({
     // never floored, so a long toast wraps inside the viewport. The cap
     // matches NotificationCard's own width.
     width: 'initial max-content min((100vw - 4x), 50x)',
-    pointerEvents: 'auto',
+    pointerEvents: {
+      '': 'auto',
+      isCollapsed: 'none',
+    },
     transition: {
       '': 'opacity $transition ease-in, transform $transition ease-in',
       isMeasured:
         'top $transition ease-in, opacity $transition ease-in, transform $transition ease-in',
     },
+    // A collapsed stack shows only its newest item, whether or not it is
+    // still shown, so the collapsed states outrank `isShown`.
     opacity: {
       '': 0,
       isShown: 1,
+      isCollapsed: 0,
+      'isCollapsed & isNewest': 1,
     },
   },
 });
@@ -463,26 +474,24 @@ export function OverlayContainer({
     }
   });
 
-  // useCallback (not useEvent) because this is called during render.
+  // A plain function (not useEvent) because this is called during render.
   // useEvent defers the ref update to useLayoutEffect, so during render
   // it would still read the previous closure's positions/heights.
-  const getItemStyle = (item: OverlayItem, index: number, total: number) => {
+  const getItemLayout = (item: OverlayItem, index: number, total: number) => {
     const id = getItemId(item);
     const baseTop = positions.get(id) ?? lastPositionsRef.current?.get(id) ?? 0;
     const height = heights[id] ?? DEFAULT_ITEM_HEIGHT;
 
     if (!isCollapsed || !canCollapse) {
-      return { top: `${baseTop}px` };
+      return { tokens: { '$item-top': `${baseTop}px` }, isCollapsed: false };
     }
 
-    const isNewest = index === total - 1;
     const collapsedTop = COLLAPSE_VISIBLE_HEIGHT - CONTAINER_OFFSET - height;
 
     return {
-      top: `${collapsedTop}px`,
-      zIndex: index,
-      opacity: isNewest ? 1 : 0,
-      pointerEvents: 'none' as const,
+      tokens: { '$item-top': `${collapsedTop}px`, '$item-index': index },
+      isCollapsed: true,
+      isNewest: index === total - 1,
     };
   };
 
@@ -521,34 +530,46 @@ export function OverlayContainer({
                 }
               }}
             >
-              {({ isShown, ref }) => (
-                <OverlayItemWrapper
-                  ref={createRefCallback(itemId, ref)}
-                  mods={{ isShown, isMeasured: settledIds.has(itemId) }}
-                  style={getItemStyle(item, visibleIndex, visibleItems.length)}
-                  onMouseEnter={handleMouseEnter}
-                  onMouseMove={handleMouseMove}
-                  onMouseLeave={handleMouseLeave}
-                >
-                  {item.kind === 'toast' ? (
-                    <ToastItem
-                      {...item.data.itemProps}
-                      title={item.data.title}
-                      description={item.data.description}
-                      theme={item.data.theme}
-                      icon={item.data.icon}
-                      isLoading={item.data.isLoading}
-                      actions={item.data.actions}
-                    />
-                  ) : (
-                    <NotificationItem
-                      notification={item.data}
-                      onDismiss={handleNotificationDismiss}
-                      onRestore={onNotificationRestore}
-                    />
-                  )}
-                </OverlayItemWrapper>
-              )}
+              {({ isShown, ref }) => {
+                const { tokens, ...layoutMods } = getItemLayout(
+                  item,
+                  visibleIndex,
+                  visibleItems.length,
+                );
+
+                return (
+                  <OverlayItemWrapper
+                    ref={createRefCallback(itemId, ref)}
+                    mods={{
+                      isShown,
+                      isMeasured: settledIds.has(itemId),
+                      ...layoutMods,
+                    }}
+                    tokens={tokens}
+                    onMouseEnter={handleMouseEnter}
+                    onMouseMove={handleMouseMove}
+                    onMouseLeave={handleMouseLeave}
+                  >
+                    {item.kind === 'toast' ? (
+                      <ToastItem
+                        {...item.data.itemProps}
+                        title={item.data.title}
+                        description={item.data.description}
+                        theme={item.data.theme}
+                        icon={item.data.icon}
+                        isLoading={item.data.isLoading}
+                        actions={item.data.actions}
+                      />
+                    ) : (
+                      <NotificationItem
+                        notification={item.data}
+                        onDismiss={handleNotificationDismiss}
+                        onRestore={onNotificationRestore}
+                      />
+                    )}
+                  </OverlayItemWrapper>
+                );
+              }}
             </DisplayTransition>
           );
         })}

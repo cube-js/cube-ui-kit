@@ -1756,6 +1756,7 @@ function TagInput<T extends object>(
     <TagInputElement
       ref={rootRef}
       className={className}
+      // oxlint-disable-next-line react/forbid-component-props -- forwards the consumer's public `style` prop
       style={style}
       qaVal={qaVal}
       styles={styles}

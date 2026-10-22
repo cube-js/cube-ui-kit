@@ -206,12 +206,6 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: Ref<HTMLElement>) {
     onClose: state.close,
     closeOnSelect,
     autoFocus: (state.focusStrategy as any) ?? 'first',
-    style: isTray
-      ? {
-          width: '100%',
-          maxHeight: 'inherit',
-        }
-      : undefined,
     mods: {
       popover: !isTray,
       tray: isTray,
@@ -313,6 +307,7 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: Ref<HTMLElement>) {
         hideArrow
         isNonModal
         isOpen={state.isOpen}
+        // oxlint-disable-next-line react/forbid-component-props -- React Aria's overlay positioning computes these coordinates
         style={positionProps.style}
         placement={placement ?? undefined}
         shouldCloseOnInteractOutside={shouldCloseOnInteractOutside}

@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 
 import { Button } from '../../actions/Button/Button';
+import { Block } from '../../Block';
 import { Select } from '../../fields/Select/Select';
 import { Flex } from '../../layout/Flex';
 import { Title } from '../Title';
@@ -246,10 +247,10 @@ export const ManualTrigger: Story = {
     const ref = useRef<CubeInlineInputRef>(null);
 
     return (
-      <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+      <Flex gap="1.5x" alignItems="center">
         <InlineInput ref={ref} {...args} />
         <Button onPress={() => ref.current?.startEditing()}>Rename</Button>
-      </div>
+      </Flex>
     );
   },
 };
@@ -270,7 +271,7 @@ export const ControlledEditing: Story = {
     const [editing, setEditing] = useState(false);
 
     return (
-      <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+      <Flex gap="1.5x" alignItems="center">
         <InlineInput
           {...args}
           isEditing={editing}
@@ -280,7 +281,7 @@ export const ControlledEditing: Story = {
         <Button onPress={() => setEditing((p) => !p)}>
           {editing ? 'Stop editing' : 'Start editing'}
         </Button>
-      </div>
+      </Flex>
     );
   },
 };
@@ -435,14 +436,8 @@ export const Overflow: Story = {
       'A very long inline value that does not fit in the container and gets truncated with an ellipsis',
   },
   render: (args) => (
-    <div
-      style={{
-        width: 200,
-        padding: 8,
-        border: '1px dashed #ccc',
-      }}
-    >
+    <Block width="25x" padding="1x" border="1bw dashed #border">
       <InlineInput {...args} />
-    </div>
+    </Block>
   ),
 };

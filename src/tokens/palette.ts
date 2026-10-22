@@ -585,7 +585,7 @@ function buildCodeTheme(
     // drag over a misconfigured pair is noisy — but the flag would also have to
     // survive `resetPaletteConfig`, which is what a caller does to get back to a
     // config that warns again legitimately. The narrow noise is the better trade.
-    // eslint-disable-next-line no-console
+    // eslint-disable-next-line no-console -- a one-time configuration warning, see above
     console.warn(
       `[cube-ui-kit] themes.code.saturation (${codeSaturation}) is too low for ` +
         `baseSaturation ${config.baseSaturation}: the mirrored code surface would ` +

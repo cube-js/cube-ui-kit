@@ -160,8 +160,8 @@ importers:
         specifier: ^10.3.6
         version: 10.3.6(esbuild@0.27.3)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(storybook@10.3.6(@testing-library/dom@10.4.1)(prettier@3.9.10)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(typescript@5.6.3)(vite@8.3.4(@types/node@24.13.3)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.31.1)(yaml@2.9.1))(webpack@5.76.1(esbuild@0.27.3))
       '@tenphi/eslint-plugin-tasty':
-        specifier: ^1.8.0
-        version: 1.8.0(@tenphi/tasty@3.13.0(@babel/core@7.28.5)(@babel/helper-plugin-utils@7.25.7)(@babel/types@7.29.8)(jiti@2.6.1)(react@19.3.0))(eslint@10.8.0(jiti@2.6.1))(typescript@5.6.3)
+        specifier: ^1.8.3
+        version: 1.8.3(@tenphi/tasty@3.13.0(@babel/core@7.28.5)(@babel/helper-plugin-utils@7.25.7)(@babel/types@7.29.8)(jiti@2.6.1)(react@19.3.0))(eslint@10.8.0(jiti@2.6.1))(typescript@5.6.3)
       '@testing-library/dom':
         specifier: ^10.4.1
         version: 10.4.1
@@ -1609,8 +1609,8 @@ packages:
   '@tanstack/virtual-core@3.13.12':
     resolution: {integrity: sha512-1YBOJfRHV4sXUmWsFSf5rQor4Ss82G8dQWLRbnk3GA4jeP8hQt1hxXh0tmflpC0dz3VgEv/1+qwPyLeWkQuPFA==}
 
-  '@tenphi/eslint-plugin-tasty@1.8.0':
-    resolution: {integrity: sha512-0PPqegUQ20UfTuWzEZmiCDLVxDD6bpOQ72OC/RXrtmTE2elj+mcRVFmAzw0zUTYvtzNkne1UV5OIq1F+FQ9aoA==}
+  '@tenphi/eslint-plugin-tasty@1.8.3':
+    resolution: {integrity: sha512-OWTJ7wsZICBG/CKmKXP5aJA0ZM0A9xYW95ThoFd2gpEWINo/SYQuoruQ3GN0Ok56hh6mZjv9d49bvdL7oaHfqA==}
     engines: {node: '>=20'}
     peerDependencies:
       '@tenphi/tasty': '>=3.8.0'
@@ -7095,7 +7095,7 @@ snapshots:
 
   '@tanstack/virtual-core@3.13.12': {}
 
-  '@tenphi/eslint-plugin-tasty@1.8.0(@tenphi/tasty@3.13.0(@babel/core@7.28.5)(@babel/helper-plugin-utils@7.25.7)(@babel/types@7.29.8)(jiti@2.6.1)(react@19.3.0))(eslint@10.8.0(jiti@2.6.1))(typescript@5.6.3)':
+  '@tenphi/eslint-plugin-tasty@1.8.3(@tenphi/tasty@3.13.0(@babel/core@7.28.5)(@babel/helper-plugin-utils@7.25.7)(@babel/types@7.29.8)(jiti@2.6.1)(react@19.3.0))(eslint@10.8.0(jiti@2.6.1))(typescript@5.6.3)':
     dependencies:
       '@typescript-eslint/utils': 8.56.1(eslint@10.8.0(jiti@2.6.1))(typescript@5.6.3)
       eslint: 10.8.0(jiti@2.6.1)
@@ -7341,7 +7341,7 @@ snapshots:
       debug: 4.4.3
       minimatch: 10.2.6
       semver: 7.8.5
-      tinyglobby: 0.2.15
+      tinyglobby: 0.2.17
       ts-api-utils: 2.5.0(typescript@5.6.3)
       typescript: 5.6.3
     transitivePeerDependencies:

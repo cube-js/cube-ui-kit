@@ -136,6 +136,7 @@ function PrismCode(props: CubePrismCodeProps, ref) {
             <code
               data-element="Code"
               className={`${className}${isDiff ? ' diff-highlight' : ''}`}
+              // oxlint-disable-next-line react/forbid-dom-props -- prism-react-renderer supplies its theme styles; we only clear its colors
               style={{
                 ...style,
                 color: undefined,
@@ -152,6 +153,7 @@ function PrismCode(props: CubePrismCodeProps, ref) {
                   <span
                     key={i}
                     {...lineProps}
+                    // oxlint-disable-next-line react/forbid-dom-props -- prism-react-renderer supplies its theme styles; we only clear its colors
                     style={{
                       ...lineProps.style,
                       color: undefined,
@@ -167,6 +169,7 @@ function PrismCode(props: CubePrismCodeProps, ref) {
                         <span
                           key={key}
                           {...tokenProps}
+                          // oxlint-disable-next-line react/forbid-dom-props -- prism-react-renderer supplies its theme styles; we only clear its colors
                           style={{
                             ...tokenProps.style,
                             color: undefined,

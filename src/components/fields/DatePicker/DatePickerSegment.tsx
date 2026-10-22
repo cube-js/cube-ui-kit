@@ -85,6 +85,7 @@ function EditableSegment({ segment, state }: DatePickerSegmentProps) {
         placeholder: segment.isPlaceholder,
         'read-only': !segment.isEditable,
       }}
+      // oxlint-disable-next-line react/forbid-component-props -- React Aria's `useDateSegment` supplies the segment's style; the width tracks its longest value
       style={{
         ...segmentProps.style,
         minWidth:

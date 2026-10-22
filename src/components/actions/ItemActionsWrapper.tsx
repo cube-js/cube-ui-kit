@@ -1,7 +1,6 @@
 import { ClearPressResponder } from '@react-aria/interactions';
 import { Mods, Styles, tasty } from '@tenphi/tasty';
 import {
-  CSSProperties,
   HTMLAttributes,
   ReactNode,
   useLayoutEffect,
@@ -348,15 +347,13 @@ export function ItemActionsWrapper(props: ItemActionsWrapperProps) {
       data-theme={theme}
       mods={finalMods}
       styles={styles}
-      style={
-        {
-          '--actions-width':
-            areActionsVisible || !autoHideActions || preserveActionsSpace
-              ? `${actionsWidth}px`
-              : '0px',
-          ...(typeof size === 'number' && { '--size': `${size}px` }),
-        } as CSSProperties
-      }
+      tokens={{
+        '$actions-width':
+          areActionsVisible || !autoHideActions || preserveActionsSpace
+            ? `${actionsWidth}px`
+            : '0px',
+        ...(typeof size === 'number' && { $size: `${size}px` }),
+      }}
     >
       {children({
         showActions: shouldShowActions,

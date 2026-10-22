@@ -1,11 +1,6 @@
-import {
-  CSSProperties,
-  RefObject,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import { RefObject, useCallback, useEffect, useRef, useState } from 'react';
+
+import type { Tokens } from '@tenphi/tasty';
 
 export interface TinyScrollbarState {
   hasOverflowY: boolean;
@@ -19,8 +14,8 @@ export interface TinyScrollbarState {
 }
 
 export interface TinyScrollbarResult {
-  handleVStyle: CSSProperties;
-  handleHStyle: CSSProperties;
+  handleVTokens: Tokens;
+  handleHTokens: Tokens;
   hasOverflowY: boolean;
   hasOverflowX: boolean;
   isScrolling: boolean;
@@ -243,14 +238,14 @@ export function useTinyScrollbar(
   const isAtEndX = !hasOverflowX || scrollLeft >= scrollWidth - clientWidth - 1;
 
   return {
-    handleVStyle: {
-      '--scrollbar-v-top': `${vHandle.top}px`,
-      '--scrollbar-v-height': `${vHandle.height}px`,
-    } as CSSProperties,
-    handleHStyle: {
-      '--scrollbar-h-left': `${hHandle.left}px`,
-      '--scrollbar-h-width': `${hHandle.width}px`,
-    } as CSSProperties,
+    handleVTokens: {
+      '$scrollbar-v-top': `${vHandle.top}px`,
+      '$scrollbar-v-height': `${vHandle.height}px`,
+    },
+    handleHTokens: {
+      '$scrollbar-h-left': `${hHandle.left}px`,
+      '$scrollbar-h-width': `${hHandle.width}px`,
+    },
     hasOverflowY: scrollState.hasOverflowY,
     hasOverflowX: scrollState.hasOverflowX,
     isScrolling,

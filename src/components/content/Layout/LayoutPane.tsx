@@ -491,8 +491,8 @@ function LayoutPane(
   const { hoverProps, isHovered } = useHover({});
 
   const {
-    handleVStyle,
-    handleHStyle,
+    handleVTokens,
+    handleHTokens,
     hasOverflowY,
     hasOverflowX,
     isScrolling,
@@ -715,9 +715,9 @@ function LayoutPane(
     onSizeChange?.(clampedSize);
   };
 
-  const scrollbarStyle = isTinyScrollbar
-    ? { ...handleVStyle, ...handleHStyle }
-    : {};
+  const scrollbarTokens = isTinyScrollbar
+    ? { ...handleVTokens, ...handleHTokens }
+    : undefined;
 
   const paneMods = {
     scrollbar,
@@ -732,7 +732,7 @@ function LayoutPane(
   };
 
   // Merge styles: outer styles to root, inner styles to Inner element
-  // Size is NOT included here - it's set via CSS custom property in paneStyle for performance
+  // Size is NOT included here - it's set via the `$pane-size` token in paneTokens for performance
   const finalStyles = mergeStyles(
     styles,
     outerStyles,
@@ -741,12 +741,12 @@ function LayoutPane(
 
   // Size is set via CSS custom property for performance during drag
   // This avoids expensive style recalculation on every mouse move
-  const paneStyle = {
-    ...scrollbarStyle,
-    '--pane-size': `${size}px`,
+  const paneTokens = {
+    ...scrollbarTokens,
+    '$pane-size': `${size}px`,
     // Reset rather than left unset: a custom property inherits, and an
     // enclosing pane's minimum is not this one's.
-    '--pane-min-size':
+    '$pane-min-size':
       minSize == null
         ? 'initial'
         : typeof minSize === 'number'
@@ -761,7 +761,7 @@ function LayoutPane(
       {...hoverProps}
       mods={paneMods}
       styles={finalStyles}
-      style={paneStyle}
+      tokens={paneTokens}
     >
       <div ref={combinedInnerRef} data-element="Inner" {...innerProps}>
         <LayoutContextReset>{children}</LayoutContextReset>

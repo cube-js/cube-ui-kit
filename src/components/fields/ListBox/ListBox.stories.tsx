@@ -855,7 +855,7 @@ export const InForm: StoryObj<CubeListBoxProps<any>>['render'] = () => {
   };
 
   return (
-    <Form form={form} style={{ maxWidth: '400px' }} onSubmit={handleSubmit}>
+    <Form form={form} styles={{ maxWidth: '50x' }} onSubmit={handleSubmit}>
       <ListBox
         fieldStyles={{ width: '0 320px 100%' }}
         isRequired
@@ -1055,7 +1055,7 @@ export const VirtualizedList: StoryObj<CubeListBoxProps<any>>['render'] = (
   }));
 
   return (
-    <Space gap="2x" flow="column" style={{ height: '450px', width: '400px' }}>
+    <Space gap="2x" flow="column" height="450px" width="50x">
       <Text>
         Large list with {items.length} items with varying heights.
         Virtualization is automatically enabled when there are no sections.

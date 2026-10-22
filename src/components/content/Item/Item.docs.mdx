@@ -419,17 +419,17 @@ By default, Item shows an auto tooltip when content overflows. The label and a s
 
 ```jsx
 {/* Auto tooltip on overflow (default) */}
-<Item style={{ width: '200px' }}>
+<Item width="25x">
   This is a very long text that will show a tooltip when overflowed
 </Item>
 
 {/* A truncated description shows in the tooltip too */}
-<Item description="participant.with.a.long.address@example-company.com" style={{ width: '200px' }}>
+<Item description="participant.with.a.long.address@example-company.com" width="25x">
   Jane Doe
 </Item>
 
 {/* Disable tooltip */}
-<Item tooltip={false} style={{ width: '200px' }}>
+<Item tooltip={false} width="25x">
   This text will be truncated without a tooltip
 </Item>
 
@@ -439,14 +439,14 @@ By default, Item shows an auto tooltip when content overflows. The label and a s
 </Item>
 
 {/* Auto tooltip with custom placement */}
-<Item tooltip={{ placement: 'right' }} style={{ width: '200px' }}>
+<Item tooltip={{ placement: 'right' }} width="25x">
   Long text with tooltip on the right when overflowed
 </Item>
 
 {/* Custom tooltip only on overflow */}
 <Item
   tooltip={{ title: 'Custom overflow tooltip', auto: true }}
-  style={{ width: '200px' }}
+  width="25x"
 >
   This shows custom tooltip only when text overflows
 </Item>

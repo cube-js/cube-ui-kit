@@ -39,14 +39,14 @@ export function SliderTrack(props: SliderTrackProps) {
     <SliderTrackContainerElement
       mods={mods}
       styles={styles}
-      style={
+      tokens={
         showRangeTrack
           ? {
-              '--slider-range-start': `${selectedTrack[0] * 100}%`,
-              '--slider-range-end': `${selectedTrack[1] * 100}%`,
+              '$slider-range-start': `${selectedTrack[0] * 100}%`,
+              '$slider-range-end': `${selectedTrack[1] * 100}%`,
             }
           : {
-              '--slider-value': `${selectedTrack[0] * 100}%`,
+              '$slider-value': `${selectedTrack[0] * 100}%`,
             }
       }
     />

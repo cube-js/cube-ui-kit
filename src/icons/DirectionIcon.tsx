@@ -7,6 +7,8 @@ import { UpIcon } from './UpIcon';
 const StyledUpIcon = tasty(UpIcon, {
   styles: {
     transformOrigin: 'center',
+    rotate: '$direction-rotate',
+    transform: 'scaleY($direction-flip)',
     transition: 'rotate linear $transition, transform linear $transition',
   },
 });
@@ -71,9 +73,10 @@ export const DirectionIcon = memo(function DirectionIcon(
     <StyledUpIcon
       data-direction={direction}
       {...iconProps}
-      style={{
-        rotate: `${rotate}deg`,
-        transform: `scaleY(${flipScale})`,
+      tokens={{
+        ...iconProps.tokens,
+        '$direction-rotate': `${rotate}deg`,
+        '$direction-flip': flipScale,
       }}
     />
   );

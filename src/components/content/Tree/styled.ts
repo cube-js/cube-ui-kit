@@ -13,7 +13,7 @@ import { Item } from '../Item';
  * placed inside a normal block formatting context.
  *
  * Tree-wide modifiers (set on `TreeElement` itself):
- * - `has-height` — paired with `--tree-height` on inline `style`
+ * - `has-height` — paired with the `$tree-height` token
  *   when the consumer passes a numeric `height` prop.
  */
 export const TreeElement = tasty({

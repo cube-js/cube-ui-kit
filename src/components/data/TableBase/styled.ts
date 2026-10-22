@@ -571,6 +571,21 @@ export const TableElement = tasty({
       height: 0,
     },
 
+    // The load-more intersection target: a 1px row, bare of UA cell padding.
+    SentinelCell: {
+      $: '> Scroller > Table > Body > SentinelRow >',
+      padding: 0,
+      border: 0,
+      // oxlint-disable-next-line tasty/consistent-token-usage -- a 1px intersection target, outside the design scale
+      height: '1px',
+    },
+
+    Sentinel: {
+      $: '> Scroller > Table > Body > SentinelRow > SentinelCell >',
+      // oxlint-disable-next-line tasty/consistent-token-usage -- a 1px intersection target, outside the design scale
+      height: '1px',
+    },
+
     DropIndicatorCell: {
       $: '> Scroller > Table > Body > DropIndicatorRow >',
       // Every one of these matters: a `<td>` carries UA padding, and any of

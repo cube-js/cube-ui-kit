@@ -3,6 +3,7 @@ import { useState } from 'react';
 
 import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
+import { Block } from '../../Block';
 import { Flow } from '../../layout/Flow';
 import { ColorPicker } from '../ColorPicker';
 
@@ -120,9 +121,9 @@ Columns.parameters = {
 };
 
 export const Wrapping: StoryFn<CubeColorSwatchGroupProps> = (args) => (
-  <div style={{ width: 132 }}>
+  <Block width="16.5x">
     <ColorSwatchGroup aria-label="Palette" {...args} />
-  </div>
+  </Block>
 );
 Wrapping.args = {
   defaultValue: '#26fcb2',

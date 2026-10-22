@@ -17,8 +17,8 @@ export const ITEM_ACTION_BASE_STYLES: Styles = {
   position: 'relative',
   margin: {
     '': '0 1bw 0 1bw',
-    ':last-child & !:first-child': '0 $side-padding 0 0',
-    '!:last-child & :first-child': '0 0 0 $side-padding',
+    ':last-child & !:first-child': '$side-padding right',
+    '!:last-child & :first-child': '$side-padding left',
     ':last-child & :first-child': '0 $side-padding',
     context: '0',
   },
@@ -68,7 +68,7 @@ export const DEFAULT_PRIMARY_STYLES: Styles = {
   border: {
     '': '#primary-accent-surface-border',
     pressed: '#primary-accent-surface-border',
-    disabled: 'transparent',
+    disabled: '#clear',
   },
   // All states share the same `#surface` base layer (opaque). Only the
   // *overlay* varies between brand color, hover shade, and disabled chip.
@@ -187,7 +187,7 @@ export const DEFAULT_CLEAR_STYLES: Styles = {
     focused: '1bw #primary-accent-text',
   },
   border: {
-    '': 'transparent',
+    '': '#clear',
     ...(VALIDATION_STYLES.border as Record<string, string>),
   },
   fill: {
@@ -197,7 +197,7 @@ export const DEFAULT_CLEAR_STYLES: Styles = {
     selected: '#primary-accent-surface.09',
     'selected & (hovered | focused)': '#primary-accent-surface.12',
     'selected & pressed': '#primary-accent-surface.18',
-    disabled: 'transparent',
+    disabled: '#clear',
     'selected & disabled': '#primary-accent-surface.09',
   },
   // Selected label mirrors LINK: soft at rest, `#primary-accent-text` on
@@ -214,7 +214,7 @@ export const DEFAULT_CLEAR_STYLES: Styles = {
 } as const;
 
 export const DEFAULT_ITEM_STYLES: Styles = {
-  border: 'transparent',
+  border: '#clear',
   fill: {
     '': '#surface-text.0',
     'hovered | focused': '#surface-text.04',
@@ -222,7 +222,7 @@ export const DEFAULT_ITEM_STYLES: Styles = {
     selected: '#surface-text.09',
     'selected & (hovered | focused)': '#surface-text.12',
     'selected & pressed': '#surface-text.15',
-    disabled: 'transparent',
+    disabled: '#clear',
   },
   color: {
     '': '#surface-text-soft',
@@ -243,7 +243,7 @@ export const DEFAULT_LINK_STYLES: Styles = {
   },
   border: '0',
   fill: {
-    '': 'transparent',
+    '': '#clear',
   },
   color: {
     '': '#primary-accent-text-soft',
@@ -261,7 +261,7 @@ export const DANGER_PRIMARY_STYLES: Styles = {
   border: {
     '': '#white.2',
     pressed: '#danger-accent-text',
-    disabled: 'transparent',
+    disabled: '#clear',
   },
   // See `DEFAULT_PRIMARY_STYLES.fill` for the layer-shape + ramp rationale.
   fill: {
@@ -332,7 +332,7 @@ export const DANGER_CLEAR_STYLES: Styles = {
     focused: '1bw #primary-accent-text',
   },
   border: {
-    '': 'transparent',
+    '': '#clear',
   },
   fill: {
     '': '#surface-text.0',
@@ -341,7 +341,7 @@ export const DANGER_CLEAR_STYLES: Styles = {
     selected: '#danger-accent-text.09',
     'selected & (hovered | focused)': '#danger-accent-text.12',
     'selected & pressed': '#danger-accent-text.18',
-    disabled: 'transparent',
+    disabled: '#clear',
     'selected & disabled': '#danger-accent-text.09',
   },
   color: {
@@ -360,7 +360,7 @@ export const DANGER_LINK_STYLES: Styles = {
   },
   border: 0,
   fill: {
-    '': 'transparent',
+    '': '#clear',
   },
   color: {
     '': '#danger-accent-text-soft',
@@ -370,14 +370,14 @@ export const DANGER_LINK_STYLES: Styles = {
 } as const;
 
 export const DANGER_ITEM_STYLES: Styles = {
-  border: 'transparent',
+  border: '#clear',
   fill: {
     '': '#danger-accent-text.0',
     'hovered | focused': '#danger-accent-text.03',
     selected: '#danger-accent-text.09',
     'selected & (hovered | focused)': '#danger-accent-text.12',
     pressed: '#danger-accent-text.09',
-    disabled: 'transparent',
+    disabled: '#clear',
   },
   color: {
     '': '#danger-accent-text',
@@ -396,7 +396,7 @@ export const SUCCESS_PRIMARY_STYLES: Styles = {
   border: {
     '': '#white.2',
     pressed: '#success-accent-text',
-    disabled: 'transparent',
+    disabled: '#clear',
   },
   // See `DEFAULT_PRIMARY_STYLES.fill` for the layer-shape + ramp rationale.
   fill: {
@@ -461,7 +461,7 @@ export const SUCCESS_CLEAR_STYLES: Styles = {
     focused: '1bw #primary-accent-text',
   },
   border: {
-    '': 'transparent',
+    '': '#clear',
   },
   fill: {
     '': '#surface-text.0',
@@ -470,7 +470,7 @@ export const SUCCESS_CLEAR_STYLES: Styles = {
     selected: '#success-accent-text.09',
     'selected & (hovered | focused)': '#success-accent-text.12',
     'selected & pressed': '#success-accent-text.18',
-    disabled: 'transparent',
+    disabled: '#clear',
     'selected & disabled': '#success-accent-text.09',
   },
   color: {
@@ -489,7 +489,7 @@ export const SUCCESS_LINK_STYLES: Styles = {
   },
   border: 0,
   fill: {
-    '': 'transparent',
+    '': '#clear',
   },
   color: {
     '': '#success-accent-text-soft',
@@ -499,14 +499,14 @@ export const SUCCESS_LINK_STYLES: Styles = {
 } as const;
 
 export const SUCCESS_ITEM_STYLES: Styles = {
-  border: 'transparent',
+  border: '#clear',
   fill: {
     '': '#success-accent-text.0',
     'hovered | focused': '#success-accent-text.03',
     selected: '#success-accent-text.09',
     'selected & (hovered | focused)': '#success-accent-text.12',
     pressed: '#success-accent-text.09',
-    disabled: 'transparent',
+    disabled: '#clear',
   },
   color: {
     '': '#success-accent-text',
@@ -525,7 +525,7 @@ export const WARNING_PRIMARY_STYLES: Styles = {
   border: {
     '': '#white.2',
     pressed: '#warning-accent-text',
-    disabled: 'transparent',
+    disabled: '#clear',
   },
   // See `DEFAULT_PRIMARY_STYLES.fill` for the layer-shape + ramp rationale.
   fill: {
@@ -590,7 +590,7 @@ export const WARNING_CLEAR_STYLES: Styles = {
     focused: '1bw #primary-accent-text',
   },
   border: {
-    '': 'transparent',
+    '': '#clear',
   },
   fill: {
     '': '#surface-text.0',
@@ -599,7 +599,7 @@ export const WARNING_CLEAR_STYLES: Styles = {
     selected: '#warning-accent-text.09',
     'selected & (hovered | focused)': '#warning-accent-text.12',
     'selected & pressed': '#warning-accent-text.18',
-    disabled: 'transparent',
+    disabled: '#clear',
     'selected & disabled': '#warning-accent-text.09',
   },
   color: {
@@ -618,7 +618,7 @@ export const WARNING_LINK_STYLES: Styles = {
   },
   border: 0,
   fill: {
-    '': 'transparent',
+    '': '#clear',
   },
   color: {
     '': '#warning-accent-text-soft',
@@ -628,14 +628,14 @@ export const WARNING_LINK_STYLES: Styles = {
 } as const;
 
 export const WARNING_ITEM_STYLES: Styles = {
-  border: 'transparent',
+  border: '#clear',
   fill: {
     '': '#warning-accent-text.0',
     'hovered | focused': '#warning-accent-text.03',
     selected: '#warning-accent-text.09',
     'selected & (hovered | focused)': '#warning-accent-text.12',
     pressed: '#warning-accent-text.09',
-    disabled: 'transparent',
+    disabled: '#clear',
   },
   color: {
     '': '#warning-accent-text',
@@ -654,7 +654,7 @@ export const NOTE_PRIMARY_STYLES: Styles = {
   border: {
     '': '#white.2',
     pressed: '#note-accent-text',
-    disabled: 'transparent',
+    disabled: '#clear',
   },
   // See `DEFAULT_PRIMARY_STYLES.fill` for the layer-shape + ramp rationale.
   fill: {
@@ -719,7 +719,7 @@ export const NOTE_CLEAR_STYLES: Styles = {
     focused: '1bw #primary-accent-text',
   },
   border: {
-    '': 'transparent',
+    '': '#clear',
   },
   fill: {
     '': '#surface-text.0',
@@ -728,7 +728,7 @@ export const NOTE_CLEAR_STYLES: Styles = {
     selected: '#note-accent-text.09',
     'selected & (hovered | focused)': '#note-accent-text.12',
     'selected & pressed': '#note-accent-text.18',
-    disabled: 'transparent',
+    disabled: '#clear',
     'selected & disabled': '#note-accent-text.09',
   },
   color: {
@@ -747,7 +747,7 @@ export const NOTE_LINK_STYLES: Styles = {
   },
   border: 0,
   fill: {
-    '': 'transparent',
+    '': '#clear',
   },
   color: {
     '': '#note-accent-text-soft',
@@ -757,14 +757,14 @@ export const NOTE_LINK_STYLES: Styles = {
 } as const;
 
 export const NOTE_ITEM_STYLES: Styles = {
-  border: 'transparent',
+  border: '#clear',
   fill: {
     '': '#note-accent-text.0',
     'hovered | focused': '#note-accent-text.03',
     selected: '#note-accent-text.09',
     'selected & (hovered | focused)': '#note-accent-text.12',
     pressed: '#note-accent-text.09',
-    disabled: 'transparent',
+    disabled: '#clear',
   },
   color: {
     '': '#note-accent-text',
@@ -794,7 +794,7 @@ export const SPECIAL_PRIMARY_STYLES: Styles = {
   border: {
     '': '#special-accent-surface-border',
     pressed: '#special-accent-surface-border',
-    disabled: 'transparent',
+    disabled: '#clear',
   },
   // See `DEFAULT_PRIMARY_STYLES.fill` for the layer-shape + ramp rationale.
   // The base layer is `#white` (matching the rest of the special theme's
@@ -890,7 +890,7 @@ export const SPECIAL_CLEAR_STYLES: Styles = {
     focused: '1bw #special-accent-text',
   },
   border: {
-    '': 'transparent',
+    '': '#clear',
     ...(VALIDATION_STYLES.border as Record<string, string>),
   },
   fill: {
@@ -926,7 +926,7 @@ export const SPECIAL_LINK_STYLES: Styles = {
   },
   border: '0',
   fill: {
-    '': 'transparent',
+    '': '#clear',
   },
   color: {
     '': '#white',
@@ -936,7 +936,7 @@ export const SPECIAL_LINK_STYLES: Styles = {
 } as const;
 
 export const SPECIAL_ITEM_STYLES: Styles = {
-  border: 'transparent',
+  border: '#clear',
   fill: {
     '': '#white.0',
     hovered: '#white.12',
@@ -1080,15 +1080,15 @@ const CURRENT_FOCUS_RING: Styles = {
 // fill.
 export const CURRENT_ITEM_STYLES: Styles = {
   ...CURRENT_ITEM_RAMP,
-  border: 'transparent',
+  border: '#clear',
   fill: {
     '': '#current.0',
-    'hovered | focused': 'var(--current-hover)',
-    pressed: 'var(--current-press)',
-    selected: 'var(--current-selected)',
-    'selected & (hovered | focused)': 'var(--current-selected-hover)',
-    'selected & pressed': 'var(--current-selected-press)',
-    disabled: 'transparent',
+    'hovered | focused': '$current-hover',
+    pressed: '$current-press',
+    selected: '$current-selected',
+    'selected & (hovered | focused)': '$current-selected-hover',
+    'selected & pressed': '$current-selected-press',
+    disabled: '#clear',
   },
   color: {
     '': '#current',
@@ -1348,7 +1348,7 @@ export const CURRENT_LINK_STYLES: Styles = {
   ...CURRENT_FOCUS_RING,
   border: 0,
   fill: {
-    '': 'transparent',
+    '': '#clear',
   },
   color: {
     '': '#current.8',

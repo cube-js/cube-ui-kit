@@ -47,7 +47,7 @@ describe('<ColorPicker />', () => {
 
     expect(getByRole('button')).toHaveTextContent('#26fcb2');
     expect(getByTestId('ColorSwatch')).toHaveStyle({
-      '--color-picker-color': '#26fcb2',
+      '--color-picker-color': 'var(--26fcb2-color, #26fcb2)',
     });
   });
 
