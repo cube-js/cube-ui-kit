@@ -799,6 +799,33 @@ describe('<Tabs />', () => {
       );
     });
 
+    it('should give each prerendered panel its own id', () => {
+      const { getByRole, getAllByRole } = renderWithRoot(
+        <Tabs prerender defaultActiveKey="tab2">
+          <Tab key="tab1" title="Tab 1">
+            Content 1
+          </Tab>
+          <Tab key="tab2" title="Tab 2">
+            Content 2
+          </Tab>
+          <Tab key="tab3" title="Tab 3">
+            Content 3
+          </Tab>
+        </Tabs>,
+      );
+
+      const panels = getAllByRole('tabpanel', { hidden: true });
+      const controlledId = getByRole('tab', { name: 'Tab 2' }).getAttribute(
+        'aria-controls',
+      );
+
+      expect(panels).toHaveLength(3);
+      expect(new Set(panels.map((panel) => panel.id)).size).toBe(3);
+      expect(document.getElementById(controlledId!)).toHaveTextContent(
+        'Content 2',
+      );
+    });
+
     it('should not point aria-controls at a panel when there are no panels', () => {
       const { getByRole, queryByRole } = renderWithRoot(
         <Tabs defaultActiveKey="tab1">
@@ -842,6 +869,37 @@ describe('<Tabs />', () => {
       expect(getByRole('tab', { name: 'Tab 2' })).not.toHaveAttribute(
         'aria-controls',
       );
+    });
+  });
+
+  describe('Inside a Form', () => {
+    it('should switch tabs without submitting the form', async () => {
+      const onSubmit = vi.fn((event: Event) => event.preventDefault());
+      const { getByRole } = renderWithRoot(
+        <form onSubmit={(event) => onSubmit(event.nativeEvent)}>
+          <Tabs prerender defaultActiveKey="tab1">
+            <Tab key="tab1" title="Tab 1">
+              <input aria-label="Name" />
+            </Tab>
+            <Tab key="tab2" title="Tab 2">
+              Content 2
+            </Tab>
+          </Tabs>
+        </form>,
+      );
+
+      await userEvent.click(getByRole('tab', { name: 'Tab 2' }));
+      await userEvent.keyboard('{Enter}');
+
+      expect(getByRole('tab', { name: 'Tab 2' })).toHaveAttribute(
+        'type',
+        'button',
+      );
+      expect(getByRole('tab', { name: 'Tab 2' })).toHaveAttribute(
+        'aria-selected',
+        'true',
+      );
+      expect(onSubmit).not.toHaveBeenCalled();
     });
   });
 
