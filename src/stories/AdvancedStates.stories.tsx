@@ -884,10 +884,12 @@ const Box = tasty({
   },
 });
 
-// Usage - set the custom property on container
-<div style={{ '--variant': 'danger' }}>
+// Usage - set the custom property on a container
+const Container = tasty({ styles: { display: 'block' } });
+
+<Container tokens={{ $variant: 'danger' }}>
   <Box>...</Box>
-</div>
+</Container>
 \`\`\`
 
 Note: Requires browser support for CSS Container Style Queries.

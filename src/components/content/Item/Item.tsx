@@ -1208,7 +1208,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
             ref={nativeRowRef}
             styles={NATIVE_ROW_TARGET_STYLES}
             // Block gaps space visible slots, not this out-of-flow target.
-            // oxlint-disable-next-line react/forbid-component-props -- a block parent's `gap` margin (`> *:not(:last-child)`) outranks this element's own class
+            // oxlint-disable-next-line react/forbid-component-props -- the block parent's `gap` margin (`> *:not(:last-child)`) outranks any style of this element's own
             style={{ margin: 0 }}
             aria-hidden={nativeMenuItemProps['aria-hidden']}
             data-menu-native-link=""

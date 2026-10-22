@@ -10,8 +10,9 @@
 const DIRECTIVE =
   /^\s*(?:eslint|oxlint)-disable(?:-next-line|-line)?(?=\s|$)(?<rest>[\s\S]*)$/;
 
-// ` -- ` followed by text, the description syntax ESLint and Oxlint both read.
-const REASON = /\s--\s+\S/;
+// Two or more dashes between spaces, then text: the description syntax ESLint
+// and Oxlint both read.
+const REASON = /\s-{2,}\s+\S/;
 
 const requireDisableReason = {
   meta: {

@@ -1299,6 +1299,8 @@ export function TableView<T = any>(props: TableViewProps<T>) {
           'aria-colindex': column.ariaColIndex,
           'aria-sort': activeSort ? ARIA_SORT[activeSort.direction] : undefined,
           'aria-haspopup': hasMenu ? 'menu' : undefined,
+          // A native header cell: TableElement styles it through sub-element
+          // selectors, so its measured pin offset has no Tasty element to carry it.
           style: pinStyle(column),
           ...columnHeaderHandlers(column, sortState, hasMenu, isDraggable),
         }}
@@ -2299,14 +2301,9 @@ export function TableView<T = any>(props: TableViewProps<T>) {
           ? renderSkeletonRows(loadMoreSkeletonCount, 'load-more')
           : null}
         {onLoadMore && hasRows ? (
-          <tr data-sentinel="" aria-hidden="true">
-            <td
-              colSpan={Math.max(columnCount, 1)}
-              // oxlint-disable-next-line react/forbid-dom-props -- a 1px load-more intersection target, outside the design scale
-              style={{ height: 1, padding: 0, border: 0 }}
-            >
-              {/* oxlint-disable-next-line react/forbid-dom-props -- a 1px load-more intersection target, outside the design scale */}
-              <div ref={sentinelRef} style={{ height: 1 }} />
+          <tr data-element="SentinelRow" data-sentinel="" aria-hidden="true">
+            <td data-element="SentinelCell" colSpan={Math.max(columnCount, 1)}>
+              <div ref={sentinelRef} data-element="Sentinel" />
             </td>
           </tr>
         ) : null}

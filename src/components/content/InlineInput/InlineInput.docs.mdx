@@ -242,9 +242,9 @@ When the value is wider than its container, the display text is truncated with a
 <Story of={InlineInputStories.Overflow} />
 
 ```jsx
-<div style={{ width: 200 }}>
+<Block width="25x">
   <InlineInput defaultValue="A very long inline value that gets truncated…" />
-</div>
+</Block>
 ```
 
 To always show a custom tooltip (regardless of overflow), pass a string. To disable the tooltip entirely, pass `false`:

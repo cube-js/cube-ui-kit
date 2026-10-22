@@ -1,9 +1,14 @@
 import { IconPlaystationTriangle } from '@tabler/icons-react';
+import { tasty } from '@tenphi/tasty';
 
 import { wrapIcon } from './wrap-icon';
 
+const RotatedTriangleIcon = tasty({
+  as: IconPlaystationTriangle,
+  styles: { rotate: '90deg' },
+});
+
 export const PlayCircleIcon = wrapIcon(
   'PlayCircleIcon',
-  // oxlint-disable-next-line react/forbid-component-props -- a third-party Tabler icon; Tasty does not style its `<svg>`
-  <IconPlaystationTriangle style={{ rotate: '90deg' }} />,
+  <RotatedTriangleIcon />,
 );

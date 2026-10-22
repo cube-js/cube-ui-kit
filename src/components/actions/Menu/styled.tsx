@@ -17,6 +17,7 @@ export const StyledMenuWrapper = tasty({
     width: {
       '': 'auto',
       popover: 'max-content',
+      tray: '100%',
     },
     shadow: {
       '': '',
@@ -26,12 +27,14 @@ export const StyledMenuWrapper = tasty({
       // `0px 5px 15px #dark.05` baked in `#dark` (now aliased to the
       // adaptive `#surface-text`) which inverts to a *light* shadow on
       // dark surfaces.
-      'popover | tray': '$shadow',
+      // A tray draws its own shadow.
+      popover: '$shadow',
     },
     height: {
       '': 'initial',
       popover: 'initial max-content (50vh - 4x)',
-      tray: 'initial max-content (100vh - 4x)',
+      // The tray caps the height, and the menu scrolls inside it.
+      tray: 'initial initial inherit',
     },
     boxSizing: 'border-box',
   },

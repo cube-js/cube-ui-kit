@@ -363,14 +363,20 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
     paddingEnd: containerPadding,
   });
 
-  const treeTokens =
-    height == null ? undefined : { '$tree-height': `${height}px` };
+  const treeTokens = useMemo(
+    () => (height == null ? undefined : { '$tree-height': `${height}px` }),
+    [height],
+  );
 
-  const sizerStyle: CSSProperties = {
-    position: 'relative',
-    width: '100%',
-    height: `${rowVirtualizer.getTotalSize()}px`,
-  };
+  const totalSize = rowVirtualizer.getTotalSize();
+  const sizerStyle = useMemo<CSSProperties>(
+    () => ({
+      position: 'relative',
+      width: '100%',
+      height: `${totalSize}px`,
+    }),
+    [totalSize],
+  );
 
   /**
    * Each scroll effect tracks its own "last scrolled" target instead

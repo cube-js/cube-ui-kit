@@ -38,7 +38,7 @@ React's `style` prop bypasses Tasty: no tokens, units or states, and nothing a c
 
 Use the Tasty channel that fits the value:
 
-- **A value that changes at runtime** (a measured width, a drag position, a picked color): declare `$name` or `#name` in the element's styles and pass the value through `tokens`, for example `tokens={{ '$panel-size': `${size}px` }}`. It renders as the same inline custom property, without a new style rule per value. A bare number renders unitless (`'$x': 12` gives `--x: 12`), so add the unit yourself.
+- **A value that changes at runtime** (a measured width, a drag position, a picked color): declare `$name` or `#name` in the element's styles and pass the value through `tokens`, for example ``tokens={{ '$panel-size': `${size}px` }}``. It renders as the same inline custom property, without a new style rule per value. A bare number renders unitless (`'$x': 12` gives `--x: 12`), so add the unit yourself.
 - **A fixed value**: put it in the element's `styles`, or in a style prop such as `width="25x"`.
 - **A value that depends on state**: a mod and a state map, not a conditional style object.
 
@@ -54,9 +54,11 @@ The accepted reasons are:
 - a library computes the value: React Aria positioning, a virtualizer, prism-react-renderer;
 - the component forwards its own public `style` prop;
 - the value sits on a native element with no Tasty element to carry a token, such as a table cell that `TableElement` styles through sub-element selectors;
-- a known Tasty limitation, named with its issue and the condition for removing the exception.
+- our styles cannot express the value or cannot win the cascade for it, such as a `preset` that owns `font-family`; name the cause, and for a Tasty limitation its issue and the condition for removing the exception.
 
-Every disable directive needs a ` -- reason`, not only these ones. The repo-local `repo/require-disable-reason` rule (`scripts/oxlint-repo-rules.mjs`) fails a directive without one.
+The lint sees only a `style` JSX attribute. A `style` key in an object that reaches an element (`mergeProps(props, { style })`, a context value, a props object) gets past it, so hold those to the same rule in review, with the reason in a comment.
+
+Every disable directive needs a ` -- reason`, not only these ones. The repo-local `repo/require-disable-reason` rule (`scripts/oxlint-repo-rules.mjs`) fails a directive without one. A directive that names no rule, such as a file-wide `/* eslint-disable */`, switches that rule off too, so review has to check its reason.
 
 `tasty/no-style-prop` stays off. Since 1.8.2 it also recognizes Tasty components imported from relative modules, but it still covers only Tasty components, while the React rules cover every element, native and third-party ones included. Enabling both would need two directives on every exception.
 

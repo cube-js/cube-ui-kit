@@ -382,7 +382,7 @@ export const ColorSwatchGroup = forwardRef(function ColorSwatchGroup(
         ...getValidationMods({ isInvalid, isValid }),
         columns: !!columns,
       }}
-      tokens={columns ? { $columns: String(columns) } : undefined}
+      tokens={columns ? { $columns: columns } : undefined}
     >
       <RadiosElement {...radioGroupProps}>
         {swatches.map((swatch) => (

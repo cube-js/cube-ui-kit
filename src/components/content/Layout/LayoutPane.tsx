@@ -732,7 +732,7 @@ function LayoutPane(
   };
 
   // Merge styles: outer styles to root, inner styles to Inner element
-  // Size is NOT included here - it's set via CSS custom property in paneStyle for performance
+  // Size is NOT included here - it's set via the `$pane-size` token in paneTokens for performance
   const finalStyles = mergeStyles(
     styles,
     outerStyles,

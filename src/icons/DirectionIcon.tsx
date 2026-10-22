@@ -76,7 +76,7 @@ export const DirectionIcon = memo(function DirectionIcon(
       tokens={{
         ...iconProps.tokens,
         '$direction-rotate': `${rotate}deg`,
-        '$direction-flip': String(flipScale),
+        '$direction-flip': flipScale,
       }}
     />
   );

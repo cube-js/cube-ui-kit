@@ -143,7 +143,7 @@ function Cube({ index, base }: CubeProps) {
   return (
     <CubeElement
       ref={ref}
-      mods={index != null ? { index } : base ? { base } : undefined}
+      mods={{ index, base }}
       viewBox="0 0 36 41"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"

@@ -30,7 +30,7 @@ const HookWrapper = ({ children }: { children: React.ReactNode }) => (
  */
 function findAnchor() {
   return document.body.querySelector<HTMLElement>(
-    'div[style*="position: fixed"] > span[style*="position: absolute"]',
+    ':scope > [data-qa="ContextMenuHost"] > [data-qa="ContextMenuAnchor"]',
   );
 }
 
@@ -358,8 +358,8 @@ describe('useContextMenu', () => {
       const anchor = findAnchor();
 
       expect(anchor).not.toBeNull();
-      expect(anchor!.style.left).toBe('110px');
-      expect(anchor!.style.top).toBe('70px');
+      expect(anchor!.style.getPropertyValue('--anchor-x')).toBe('110px');
+      expect(anchor!.style.getPropertyValue('--anchor-y')).toBe('70px');
     });
 
     // Outside the container, so it cannot be resolving against the container's
@@ -410,8 +410,8 @@ describe('useContextMenu', () => {
       const anchor = findAnchor();
 
       expect(anchor).not.toBeNull();
-      expect(anchor!.style.left).toBe('300px');
-      expect(anchor!.style.top).toBe('200px');
+      expect(anchor!.style.getPropertyValue('--anchor-x')).toBe('300px');
+      expect(anchor!.style.getPropertyValue('--anchor-y')).toBe('200px');
     });
   });
 

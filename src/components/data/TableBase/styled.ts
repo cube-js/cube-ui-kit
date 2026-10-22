@@ -42,20 +42,20 @@ const CELL_STYLES: Styles = {
   padding: '$cell-padding-y $cell-padding-x',
   textAlign: {
     '': 'start',
-    '@own(align=center)': 'center',
-    '@own(align=end)': 'end',
+    'align=center': 'center',
+    'align=end': 'end',
   },
   verticalAlign: 'middle',
   overflow: 'hidden',
   // An `autoHeight` column wraps and lets its row grow. `height` on a cell is a
   // minimum in table layout, so the declared row height stays the floor.
-  whiteSpace: { '': 'nowrap', '@own(wrap)': 'normal' },
-  paddingBlock: { '': '$cell-padding-y', '@own(wrap)': '1x' },
+  whiteSpace: { '': 'nowrap', wrap: 'normal' },
+  paddingBlock: { '': '$cell-padding-y', wrap: '1x' },
   // The checkbox column is a square affordance, not content: it centres its
   // control and contributes no inline padding of its own.
   paddingInline: {
     '': '$cell-padding-x',
-    '@own(kind=selection) | @own(kind=actions)': 0,
+    'kind=selection) | @own(kind=actions': 0,
   },
   // Pinned cells overlay the scrolling ones, so they must be opaque. Reading
   // the row's inherited paint tokens means every row state is matched for free
@@ -84,14 +84,14 @@ const CELL_STYLES: Styles = {
   '#cell-text': '#row-text',
   fill: {
     '': '#cell-base #row-overlay',
-    '@own(cell-selected)': '#cell-base #purple.10',
+    'cell-selected': '#cell-base #purple.10',
   },
   color: '#cell-text',
   opacity: '$dim',
-  position: { '': 'static', '@own(pin=start | pin=end)': 'sticky' },
-  insetInlineStart: { '': 'auto', '@own(pin=start)': '$pin-offset' },
-  insetInlineEnd: { '': 'auto', '@own(pin=end)': '$pin-offset' },
-  zIndex: { '': 'auto', '@own(pin=start | pin=end)': 1 },
+  position: { '': 'static', 'pin=start | pin=end': 'sticky' },
+  insetInlineStart: { '': 'auto', 'pin=start': '$pin-offset' },
+  insetInlineEnd: { '': 'auto', 'pin=end': '$pin-offset' },
+  zIndex: { '': 'auto', 'pin=start | pin=end': 1 },
   // The innermost pinned column needs an edge, or content scrolling underneath
   // reads as part of the pinned group. An inset box-shadow rather than a border
   // so it costs no column width, and `#border` rather than `#shadow` so it
@@ -108,12 +108,12 @@ const CELL_STYLES: Styles = {
   // inset shadow lands exactly on the cell's own edges and costs no layout.
   shadow: {
     '': false,
-    '@own(pin-edge) & @own(pin=start)': 'inset -1bw 0 0 0 #border',
-    '@own(pin-edge) & @own(pin=end)': 'inset 1bw 0 0 0 #border',
-    '@own(cell-selected)': 'inset 0 0 0 1bw #purple',
-    '@own(cell-selected) & @own(pin-edge) & @own(pin=start)':
+    'pin-edge) & @own(pin=start': 'inset -1bw 0 0 0 #border',
+    'pin-edge) & @own(pin=end': 'inset 1bw 0 0 0 #border',
+    'cell-selected': 'inset 0 0 0 1bw #purple',
+    'cell-selected) & @own(pin-edge) & @own(pin=start':
       'inset 0 0 0 1bw #purple, inset -1bw 0 0 0 #border',
-    '@own(cell-selected) & @own(pin-edge) & @own(pin=end)':
+    'cell-selected) & @own(pin-edge) & @own(pin=end':
       'inset 0 0 0 1bw #purple, inset 1bw 0 0 0 #border',
   },
   // The frame's rounded corner, mirrored onto the cell that meets it. Without
@@ -128,8 +128,8 @@ const CELL_STYLES: Styles = {
     // Button, Input and Tag rendered inside a cell the card's 10px instead of
     // the 6px they inherit everywhere else, and took every `1r`/`2r` unit in
     // the subtree with it.
-    '@own(corner=start)': '(1cr - 1bw) bottom-left',
-    '@own(corner=end)': '(1cr - 1bw) bottom-right',
+    'corner=start': '(1cr - 1bw) bottom-left',
+    'corner=end': '(1cr - 1bw) bottom-right',
   },
   // The vertical rule, resolved in two steps so the border maps below stay
   // small. `$column-rule` is the TABLE's answer (root-level `column-dividers`);
@@ -142,7 +142,7 @@ const CELL_STYLES: Styles = {
   // The trailing column is exempt: its rule lands flush against the frame in
   // `card` shape and reads as a doubled edge, and in `plain` shape it is a line
   // hanging off the end of the table with nothing after it.
-  '$column-divider': { '': '$column-rule', '@own(last-column)': '0px' },
+  '$column-divider': { '': '$column-rule', 'last-column': '0px' },
   transition: 'fill',
 };
 
@@ -569,6 +569,19 @@ export const TableElement = tasty({
     DropIndicatorRow: {
       $: '> Scroller > Table > Body >',
       height: 0,
+    },
+
+    // The load-more intersection target: a 1px row, bare of UA cell padding.
+    SentinelCell: {
+      $: '> Scroller > Table > Body > SentinelRow >',
+      padding: 0,
+      border: 0,
+      height: '1px',
+    },
+
+    Sentinel: {
+      $: '> Scroller > Table > Body > SentinelRow > SentinelCell >',
+      height: '1px',
     },
 
     DropIndicatorCell: {

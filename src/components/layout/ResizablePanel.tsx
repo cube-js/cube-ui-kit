@@ -381,13 +381,14 @@ function ResizablePanel(
         />
       }
       {...mergeProps(restProps, {
-        style: {
+        tokens: {
+          ...restProps.tokens,
           // We set the current size further via width/min-width/max-width styles to respect size boundaries
-          '--size': `${size}px`,
+          $size: `${size}px`,
           // We use a separate visual size to paint the handler for a smoother experience
-          '--visual-size': `${visualSize}px`,
-          '--min-size': typeof minSize === 'number' ? `${minSize}px` : minSize,
-          '--max-size': typeof maxSize === 'number' ? `${maxSize}px` : maxSize,
+          '$visual-size': `${visualSize}px`,
+          '$min-size': typeof minSize === 'number' ? `${minSize}px` : minSize,
+          '$max-size': typeof maxSize === 'number' ? `${maxSize}px` : maxSize,
         },
         innerStyles: {
           // The panel inner space compensation for the handler

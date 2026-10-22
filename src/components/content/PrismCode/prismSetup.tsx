@@ -1,5 +1,5 @@
 // @ts-nocheck
-/* eslint-disable */
+/* eslint-disable -- mostly vanilla Prism code, kept as upstream wrote it */
 // This file patches Prism with extra languages & plugins for prism-react-renderer
 // Its content is mostly vanilla JS copied from Prism, so type-checking is disabled above.
 import { Prism as RendererPrism } from 'prism-react-renderer';
