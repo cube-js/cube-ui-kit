@@ -35,7 +35,6 @@ export const OVERLAY_WRAPPER_STYLES: Styles = {
   transition: {
     // steps(2, start) over twice the exit fade flips visibility to hidden
     // exactly when the $overlay-transition fade ends.
-    // oxlint-disable-next-line tasty/valid-transition -- misreads the comma in steps(); drop once tenphi/eslint-plugin-tasty#98 ships
     '': 'visibility (2 * $overlay-transition) steps(2, start)',
     open: 'visibility 0s linear',
   },
