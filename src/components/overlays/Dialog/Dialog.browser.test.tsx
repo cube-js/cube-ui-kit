@@ -92,8 +92,8 @@ describe('Dialog width at a narrow viewport', () => {
 
 /**
  * A `width` used to replace the dialog's whole min/base/max clamp, so a fixed
- * `width="520px"` lost the viewport cap and ran off a phone screen. A single
- * value is now the preferred width, and the dialog keeps its type's limit:
+ * `width="520px"` lost the viewport cap and ran off a phone screen. It is now
+ * the preferred width, and the dialog keeps its type's limit:
  * the viewport less a 2x gutter per side up to 700px, a 4x one above.
  */
 describe('Dialog width limits', () => {
@@ -216,10 +216,12 @@ describe('Dialog width limits', () => {
     });
   });
 
-  it('uses a width with its own min or max as given', async () => {
+  it('applies `styles.width` as given', async () => {
     await page.viewport(390, 844);
 
-    const box = await renderDialog({ width: 'initial 520px 100dvw' });
+    const box = await renderDialog({
+      styles: { width: 'initial 520px 100dvw' },
+    });
 
     expect(box.width).toBe(390);
     expect(box.left).toBe(0);

@@ -15,7 +15,6 @@ import {
   DIMENSION_STYLES,
   DimensionStyleProps,
   FLOW_STYLES,
-  parseStyle,
   Styles,
   tasty,
 } from '@tenphi/tasty';
@@ -64,9 +63,9 @@ const DialogElement = tasty({
       '': 'relative',
       'type=panel': 'absolute',
     },
-    // The widest the dialog gets, here and under a single-value `width`. A
-    // tray is held by its shell, whose own `styles` widen it; a takeover and a
-    // panel may span the viewport.
+    // The widest the dialog gets, also under a `width`. A tray is held by its
+    // shell, whose own `styles` widen it; a takeover and a panel may span the
+    // viewport.
     '$dialog-width-limit': {
       '': '$dialog-max-size',
       'type=tray': '100%',
@@ -77,6 +76,9 @@ const DialogElement = tasty({
       'type=fullscreen': '$dialog-max-size $dialog-max-size',
       'type=fullscreenTakeover': '100dvw 100dvw',
       'type=panel': 'auto',
+      // A `width` is the preferred width in `$dialog-size`: it keeps the
+      // limit, and replaces the floor.
+      'custom-width': 'initial $dialog-size $dialog-width-limit',
     },
     height: {
       '': 'auto (100dvh - 8x)',
@@ -151,35 +153,19 @@ const sizePxMap = {
   large: 798,
 };
 
-/**
- * A `width` with one value (`520px`, `65x`, `600`) is the dialog's preferred
- * width, not a clamp of its own: it keeps its type's limit, so a fixed-width
- * dialog still shrinks to fit a phone. A width that sets its own min or max,
- * or a state map, is used as given.
- */
-function limitWidth(width: Styles['width']): Styles['width'] {
-  if (typeof width === 'number') {
-    return `initial ${width}px $dialog-width-limit`;
-  }
-
-  if (typeof width !== 'string') return width;
-
-  const { groups } = parseStyle(width);
-  const isSingleValue =
-    groups.length === 1 &&
-    groups[0].all.length === 1 &&
-    groups[0].values.length === 1;
-
-  return isSingleValue ? `initial ${width} $dialog-width-limit` : width;
-}
-
 export interface CubeDialogProps
   extends
     Omit<BaseProps, 'role'>,
     AriaDialogProps,
     BaseStyleProps,
     BlockStyleProps,
-    DimensionStyleProps {
+    Omit<DimensionStyleProps, 'width'> {
+  /**
+   * The dialog's preferred width, one value (`520px`, `65x`, `600`). It keeps
+   * the type's maximum, so the dialog still fits a phone, and replaces
+   * `$min-dialog-size`. To clamp the width yourself, set `styles.width`.
+   */
+  width?: string | number;
   /** The size of the dialog */
   size?: 'S' | 'M' | 'L' | 'small' | 'medium' | 'large';
   /**
@@ -277,6 +263,7 @@ const DialogContent = forwardRef(function DialogContent(
     onDismiss = contextProps.onClose,
     closeIcon,
     closeButtonStyles,
+    width,
     style,
     ...otherProps
   } = props;
@@ -285,7 +272,12 @@ const DialogContent = forwardRef(function DialogContent(
 
   const styles: Styles = extractStyles(otherProps, STYLES_LIST);
 
-  if (styles.width != null) styles.width = limitWidth(styles.width);
+  styles['$dialog-size'] =
+    width == null
+      ? `${sizePxMap[size] || sizePxMap.small}px`
+      : typeof width === 'number'
+        ? `${width}px`
+        : width;
 
   const { t } = useI18n();
 
@@ -509,11 +501,8 @@ const DialogContent = forwardRef(function DialogContent(
           if (isRefocusingRef.current) event.stopPropagation();
         },
       })}
-      mods={{ dismissable: isDismissable }}
-      style={{
-        '--dialog-size': `${sizePxMap[size] || sizePxMap.small}px`,
-        ...style,
-      }}
+      mods={{ dismissable: isDismissable, 'custom-width': width != null }}
+      style={style}
       data-type={type}
       data-size={size}
     >
