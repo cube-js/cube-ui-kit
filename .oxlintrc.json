@@ -12,7 +12,8 @@
       "name": "cube-ui-kit",
       "specifier": "./scripts/oxlint-cube-ui-kit-plugin.mjs"
     },
-    { "name": "sonarjs", "specifier": "eslint-plugin-sonarjs" }
+    { "name": "sonarjs", "specifier": "eslint-plugin-sonarjs" },
+    { "name": "repo", "specifier": "./scripts/oxlint-repo-rules.mjs" }
   ],
   "categories": {
     "correctness": "off"
@@ -139,7 +140,10 @@
     // A ceiling on any one function's cognitive complexity, which only goes
     // down: when the worst function improves, lower it to the new worst.
     // `pnpm diagnostics:complexity` ranks the functions and says when.
-    "sonarjs/cognitive-complexity": ["error", 39]
+    "sonarjs/cognitive-complexity": ["error", 39],
+    // An exception has to say why it exists: ` -- <reason>` on every disable
+    // directive. See docs/rules/coding.md#inline-style.
+    "repo/require-disable-reason": "error"
   },
   "overrides": [
     {
@@ -1388,6 +1392,59 @@
       "rules": {
         "no-restricted-imports": "off"
       }
+    },
+    {
+      // Inline `style` bypasses Tasty: no tokens, units or states, and nothing
+      // a consumer's `styles` can override. It stays only where something
+      // outside our styles owns the value, behind a reasoned directive. See
+      // docs/rules/coding.md#inline-style.
+      "files": [
+        "**/*.{jsx,tsx}"
+      ],
+      "rules": {
+        "react/forbid-component-props": [
+          "error",
+          {
+            "forbid": [
+              {
+                "propName": "style",
+                "message": "Inline `style` bypasses Tasty. Pass runtime values through `tokens`, static ones through `styles` or style props, and states through `mods`. When a library or the component's public `style` prop owns the value, add `// oxlint-disable-next-line react/forbid-component-props -- <reason>`. See docs/rules/coding.md#inline-style."
+              }
+            ]
+          }
+        ],
+        "react/forbid-dom-props": [
+          "error",
+          {
+            "forbid": [
+              {
+                "propName": "style",
+                "message": "Inline `style` bypasses Tasty. Render a Tasty element and pass runtime values through `tokens`, static ones through `styles`, and states through `mods`. When a library owns the value, add `// oxlint-disable-next-line react/forbid-dom-props -- <reason>`. See docs/rules/coding.md#inline-style."
+              }
+            ]
+          }
+        ]
+      },
+      "plugins": [
+        "react"
+      ]
+    },
+    {
+      // Specs set inline styles to stage layouts and to assert that a
+      // consumer's `style` reaches the DOM; they are fixtures, not styling.
+      "files": [
+        "**/*.test.ts",
+        "**/*.test.tsx",
+        "**/*.test.jsx",
+        "src/test/**"
+      ],
+      "rules": {
+        "react/forbid-component-props": "off",
+        "react/forbid-dom-props": "off"
+      },
+      "plugins": [
+        "react"
+      ]
     }
   ]
 }
