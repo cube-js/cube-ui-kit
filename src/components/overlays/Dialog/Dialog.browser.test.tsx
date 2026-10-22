@@ -150,6 +150,12 @@ describe('Dialog width limits', () => {
     expect((await renderDialog({ width: '520px' })).width).toBe(520);
   });
 
+  it('resolves tasty units in a width', async () => {
+    await page.viewport(1280, 900);
+
+    expect((await renderDialog({ width: '65x' })).width).toBe(520);
+  });
+
   it('keeps the wider gutter above the phone breakpoint', async () => {
     await page.viewport(800, 900);
 

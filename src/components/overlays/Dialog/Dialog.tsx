@@ -264,6 +264,7 @@ const DialogContent = forwardRef(function DialogContent(
     closeIcon,
     closeButtonStyles,
     width,
+    tokens,
     style,
     ...otherProps
   } = props;
@@ -271,13 +272,6 @@ const DialogContent = forwardRef(function DialogContent(
   size = sizeMap[size.toUpperCase()] || size;
 
   const styles: Styles = extractStyles(otherProps, STYLES_LIST);
-
-  styles['$dialog-size'] =
-    width == null
-      ? `${sizePxMap[size] || sizePxMap.small}px`
-      : typeof width === 'number'
-        ? `${width}px`
-        : width;
 
   const { t } = useI18n();
 
@@ -502,6 +496,15 @@ const DialogContent = forwardRef(function DialogContent(
         },
       })}
       mods={{ dismissable: isDismissable, 'custom-width': width != null }}
+      tokens={{
+        '$dialog-size':
+          width == null
+            ? `${sizePxMap[size] || sizePxMap.small}px`
+            : typeof width === 'number'
+              ? `${width}px`
+              : width,
+        ...tokens,
+      }}
       style={style}
       data-type={type}
       data-size={size}
