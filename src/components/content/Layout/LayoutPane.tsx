@@ -173,8 +173,6 @@ const PaneElement = tasty({
   as: 'div',
   qa: 'LayoutPane',
   styles: {
-    // The tiny scrollbars sit a device pixel in from the edge.
-    '$scrollbar-inset': '1px',
     container: 'pane / inline-size',
     position: 'relative',
     display: 'grid',
@@ -227,6 +225,8 @@ const PaneElement = tasty({
 
     // Custom scrollbar handles (when scrollbar="tiny")
     ScrollbarV: {
+      // It sits a device pixel in from the edge.
+      '$scrollbar-inset': '1px',
       position: 'absolute',
       right: {
         '': '$scrollbar-inset',
@@ -247,6 +247,8 @@ const PaneElement = tasty({
 
     ScrollbarH: {
       $: '>',
+      // It sits a device pixel in from the edge.
+      '$scrollbar-inset': '1px',
       position: 'absolute',
       bottom: {
         '': '$scrollbar-inset',

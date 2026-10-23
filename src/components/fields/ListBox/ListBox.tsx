@@ -179,7 +179,7 @@ const ListBoxItem = tasty(Item, {
     },
     // Inside the option: options sit a hairline apart, so a ring outside one
     // would cover its neighbour, and the scroll box would clip it at the edges.
-    outlineOffset: '-1bw',
+    outlineOffset: '(-1 * $outline-offset)',
     Icon: {
       cursor: {
         draggable: 'grab',
