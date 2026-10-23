@@ -475,7 +475,7 @@ function useResolvedTokens<T extends string>(
     });
     // `tokens` is a fresh array on all but the first render, so `key` — its
     // joined identity — is what belongs in the dependency list.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `key` stands in for the `tokens` array, see above
   }, [key, element, fallback, paletteVersion, appearance]);
 
   return values;

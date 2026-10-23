@@ -27,7 +27,7 @@ interface GlobalStylesProps {
 const BODY_STYLES: Styles = {
   overscrollBehaviorY: 'none',
   fill: '#surface',
-  fontFamily: 'var(--font-sans)',
+  fontFamily: '$font-sans',
   '-webkit-font-smoothing': 'antialiased',
   '-moz-osx-font-smoothing': 'grayscale',
   margin: 0,

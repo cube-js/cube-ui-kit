@@ -17,6 +17,7 @@ export const StyledMenuWrapper = tasty({
     width: {
       '': 'auto',
       popover: 'max-content',
+      tray: '100%',
     },
     shadow: {
       '': '',
@@ -31,7 +32,8 @@ export const StyledMenuWrapper = tasty({
     height: {
       '': 'initial',
       popover: 'initial max-content (50vh - 4x)',
-      tray: 'initial max-content (100vh - 4x)',
+      // The tray caps the height, and the menu scrolls inside it.
+      tray: 'initial max-content inherit',
     },
     boxSizing: 'border-box',
   },

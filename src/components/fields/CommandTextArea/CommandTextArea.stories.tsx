@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { NO_SNAPSHOT } from '../../../stories/chromatic';
 import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
+import { Flex } from '../../layout/Flex';
 import { Space } from '../../layout/Space';
 
 import { CommandTextArea } from './CommandTextArea';
@@ -315,14 +316,11 @@ export const Multiline: StoryFn = (props) => (
 );
 
 export const TopPopoverPosition: StoryFn = (props) => (
-  <div
-    style={{
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'flex-end',
-      minHeight: '80vh',
-      width: '100%',
-    }}
+  <Flex
+    flow="column"
+    justifyContent="flex-end"
+    width="100%"
+    styles={{ minHeight: '80vh' }}
   >
     <CommandTextArea
       label="Message"
@@ -339,7 +337,7 @@ export const TopPopoverPosition: StoryFn = (props) => (
         </CommandTextArea.Item>
       ))}
     </CommandTextArea>
-  </div>
+  </Flex>
 );
 TopPopoverPosition.parameters = {
   // The popover never opens, so the placement it demonstrates is not captured.

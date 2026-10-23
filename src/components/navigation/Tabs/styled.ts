@@ -292,7 +292,7 @@ export const TabsElement = tasty({
 
     // Custom tiny scrollbar — positioned relative to ScrollWrapper. Switches
     // edges and dimensions based on placement; the driving CSS custom
-    // properties come from `useTinyScrollbar.handleHStyle` / `handleVStyle`.
+    // properties come from `useTinyScrollbar.handleHTokens` / `handleVTokens`.
     Scrollbar: {
       $: '> Bar > ScrollWrapper >',
       position: 'absolute',
@@ -326,7 +326,7 @@ export const TabsElement = tasty({
         '': 0,
         'focused | scrolling': 1,
       },
-      transition: 'opacity 0.15s',
+      transition: 'opacity $scrollbar-transition',
       pointerEvents: 'none',
     },
   },
@@ -514,9 +514,10 @@ export const DropIndicatorElement = tasty({
 
 // =============================================================================
 // Tab Selection Indicator (for default/narrow type)
-// Position flips with placement; the dynamic axis dimensions (left/width for
-// horizontal, top/height for vertical) are populated via inline `style` from
-// `useTabIndicator` in `Tabs.tsx`.
+// Position flips with placement; the measured offset and length along the tab
+// axis arrive as `$indicator-start` / `$indicator-size` tokens from
+// `useTabIndicator` in `Tabs.tsx` (left/width for horizontal, top/height for
+// vertical).
 // =============================================================================
 
 export const TabIndicatorElement = tasty({
@@ -529,9 +530,11 @@ export const TabIndicatorElement = tasty({
     top: {
       '': 'auto',
       'placement=bottom': '0',
+      'placement=left | placement=right': '$indicator-start',
     },
     left: {
-      '': 'auto',
+      '': '$indicator-start',
+      'placement=left': 'auto',
       'placement=right': '0',
     },
     right: {
@@ -540,10 +543,10 @@ export const TabIndicatorElement = tasty({
     },
     height: {
       '': '$tab-indicator-size',
-      'placement=left | placement=right': 'auto',
+      'placement=left | placement=right': '$indicator-size',
     },
     width: {
-      '': 'auto',
+      '': '$indicator-size',
       'placement=left | placement=right': '$tab-indicator-size',
     },
     fill: '#primary',

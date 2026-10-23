@@ -7,6 +7,7 @@ import {
   mergeStyles,
   Styles,
   tasty,
+  Tokens,
 } from '@tenphi/tasty';
 import {
   ForwardedRef,
@@ -301,6 +302,7 @@ const OverlayBackdrop = tasty({
       '': 'none',
       visible: 'auto',
     },
+    // oxlint-disable-next-line tasty/no-raw-transition-duration -- a one-off 150ms backdrop fade: $scrollbar-transition has the value but times scrollbar fades, and $overlay-transition would slow it to 250ms
     transition: 'opacity .15s ease-out',
   },
 });
@@ -310,12 +312,12 @@ interface ResizeHandlerProps {
   isDisabled?: boolean;
   mods?: Record<string, boolean>;
   moveProps: ReturnType<typeof useMove>['moveProps'];
-  style?: Record<string, string | number | null | undefined>;
+  tokens?: Tokens;
   onDoubleClick?: () => void;
 }
 
 function ResizeHandler(props: ResizeHandlerProps) {
-  const { side, isDisabled, mods, moveProps, style, onDoubleClick } = props;
+  const { side, isDisabled, mods, moveProps, tokens, onDoubleClick } = props;
   const { t } = useI18n();
   // One key per side: a translated sentence can't take the side as a word.
   const label = {
@@ -340,7 +342,7 @@ function ResizeHandler(props: ResizeHandlerProps) {
           side,
           ...mods,
         },
-        style,
+        tokens,
         tabIndex: isDisabled ? undefined : 0,
         role: 'separator',
         'aria-orientation': isHorizontal ? 'vertical' : 'horizontal',
@@ -980,11 +982,11 @@ function LayoutPanel(
     return parts.length === 1 ? parts[0] : `min(${parts.join(', ')})`;
   }, [maxSize, naturalMax, containerDimension]);
 
-  const panelStyle = useMemo(
+  const panelTokens = useMemo(
     () => ({
-      '--panel-size': `${size}px`,
-      '--min-size': typeof minSize === 'number' ? `${minSize}px` : minSize,
-      '--max-size': maxSizeCss,
+      '$panel-size': `${size}px`,
+      '$min-size': typeof minSize === 'number' ? `${minSize}px` : minSize,
+      '$max-size': maxSizeCss,
     }),
     [size, minSize, maxSizeCss],
   );
@@ -1042,7 +1044,7 @@ function LayoutPanel(
           {...filterBaseProps(otherProps, { eventProps: true })}
           mods={{ ...panelMods, offscreen, hidden: isHidden }}
           styles={finalStyles}
-          style={panelStyle}
+          tokens={panelTokens}
           data-side={side}
         >
           <LayoutPanelContext.Provider value={panelContextValue}>
@@ -1059,7 +1061,7 @@ function LayoutPanel(
               'has-transition': hasTransition && isReady,
             }}
             moveProps={moveProps}
-            style={panelStyle}
+            tokens={panelTokens}
             onDoubleClick={handleResetSize}
           />
         )}

@@ -470,8 +470,8 @@ function TabsRoot(props: CubeTabsProps, ref: ForwardedRef<HTMLDivElement>) {
   // =========================================================================
   const isTinyScrollbar = effectiveType !== 'radio';
   const {
-    handleHStyle,
-    handleVStyle,
+    handleHTokens,
+    handleVTokens,
     hasOverflowX,
     hasOverflowY,
     isScrolling,
@@ -637,17 +637,10 @@ function TabsRoot(props: CubeTabsProps, ref: ForwardedRef<HTMLDivElement>) {
       {indicatorStyle && (
         <TabIndicatorElement
           mods={{ placement }}
-          style={
-            orientation === 'vertical'
-              ? {
-                  top: indicatorStyle.start,
-                  height: indicatorStyle.size,
-                }
-              : {
-                  left: indicatorStyle.start,
-                  width: indicatorStyle.size,
-                }
-          }
+          tokens={{
+            '$indicator-start': `${indicatorStyle.start}px`,
+            '$indicator-size': `${indicatorStyle.size}px`,
+          }}
         />
       )}
     </div>
@@ -735,10 +728,10 @@ function TabsRoot(props: CubeTabsProps, ref: ForwardedRef<HTMLDivElement>) {
 
   // Apply the active-axis scrollbar handle vars to the outer wrapper so the
   // `Scrollbar` sub-element can read them via CSS variables.
-  const handleStyle = showTinyScrollbar
+  const handleTokens = showTinyScrollbar
     ? orientation === 'vertical'
-      ? handleVStyle
-      : handleHStyle
+      ? handleVTokens
+      : handleHTokens
     : undefined;
 
   // Wrap with TabsProvider so prefix/suffix can access context (size, type, placement).
@@ -750,7 +743,7 @@ function TabsRoot(props: CubeTabsProps, ref: ForwardedRef<HTMLDivElement>) {
         qa={qa}
         mods={mods}
         styles={combinedStyles}
-        style={handleStyle}
+        tokens={handleTokens}
         data-size={size}
       >
         <div data-element="Bar">

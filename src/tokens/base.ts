@@ -71,6 +71,10 @@ export const BASE_TOKENS: Styles = {
   '$tab-transition': '120ms',
   /** Transition for fade animations */
   '$fade-transition': '200ms',
+  /** Transition for a modal, tray or underlay entering and leaving */
+  '$overlay-transition': '250ms',
+  /** Transition for an auto-hiding (tiny) scrollbar fading in and out */
+  '$scrollbar-transition': '150ms',
 
   /**
    * Marks an element as carrying the token block. Not a design value — nothing

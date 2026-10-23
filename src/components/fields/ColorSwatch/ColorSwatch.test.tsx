@@ -10,7 +10,8 @@ describe('<ColorSwatch />', () => {
     );
 
     expect(getByTestId('Swatch')).toHaveStyle({
-      '--color-picker-color': '#ff0000',
+      // Tasty reads a hex-like name as a token with the literal as fallback.
+      '--color-picker-color': 'var(--ff0000-color, #ff0000)',
     });
   });
 
@@ -21,7 +22,6 @@ describe('<ColorSwatch />', () => {
   });
 
   it('marks an unparsable color empty rather than guessing', () => {
-    // oxlint-disable-next-line tasty/valid-value -- Intentionally invalid color exercises the empty fallback.
     const { getByTestId } = render(<ColorSwatch qa="Swatch" color="nope" />);
 
     expect(getByTestId('Swatch')).toHaveAttribute('data-empty');

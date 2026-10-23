@@ -834,6 +834,7 @@ export function ListBoxPopup({
             {...overlayProps}
             {...parentOverlayProps}
             ref={mergeRefs(popoverRef, layerRef)}
+            // oxlint-disable-next-line react/forbid-component-props -- React Aria's overlay positioning computes these coordinates
             style={parentOverlayProps?.style}
             // A press on the list while it fades out must not close the
             // overlay under it (CUB-5293) — see `Overlay`.
@@ -847,8 +848,8 @@ export function ListBoxPopup({
                 open: isShown,
               }}
               styles={overlayStyles}
-              style={{
-                '--overlay-min-width': minWidth ? `${minWidth}px` : 'initial',
+              tokens={{
+                '$overlay-min-width': minWidth ? `${minWidth}px` : 'initial',
               }}
             >
               <FocusScope autoFocus restoreFocus>

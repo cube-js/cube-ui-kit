@@ -505,6 +505,7 @@ const DialogContent = forwardRef(function DialogContent(
               : width,
         ...tokens,
       }}
+      // oxlint-disable-next-line react/forbid-component-props -- forwards the consumer's public `style` prop
       style={style}
       data-type={type}
       data-size={size}

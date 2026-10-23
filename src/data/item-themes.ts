@@ -1,10 +1,11 @@
-import type { Styles } from '@tenphi/tasty';
+import { mergeStyles, Styles } from '@tenphi/tasty';
 
 export const VALIDATION_STYLES: Styles = {
+  // oxlint-disable-next-line tasty/require-default-state -- an override layer for mergeStyles(theme, VALIDATION_STYLES): it adds states to the theme's border map, which carries the default
   border: {
     invalid: '#danger-accent-text',
     valid: '#success-accent-text',
-  } as Record<string, string>,
+  },
 } as const;
 
 // Base styles shared between ItemAction and ItemBadge
@@ -17,8 +18,8 @@ export const ITEM_ACTION_BASE_STYLES: Styles = {
   position: 'relative',
   margin: {
     '': '0 1bw 0 1bw',
-    ':last-child & !:first-child': '0 $side-padding 0 0',
-    '!:last-child & :first-child': '0 0 0 $side-padding',
+    ':last-child & !:first-child': '$side-padding right',
+    '!:last-child & :first-child': '$side-padding left',
     ':last-child & :first-child': '0 $side-padding',
     context: '0',
   },
@@ -68,7 +69,7 @@ export const DEFAULT_PRIMARY_STYLES: Styles = {
   border: {
     '': '#primary-accent-surface-border',
     pressed: '#primary-accent-surface-border',
-    disabled: 'transparent',
+    disabled: '#clear',
   },
   // All states share the same `#surface` base layer (opaque). Only the
   // *overlay* varies between brand color, hover shade, and disabled chip.
@@ -96,125 +97,131 @@ export const DEFAULT_PRIMARY_STYLES: Styles = {
   },
 } as const;
 
-export const DEFAULT_OUTLINE_STYLES: Styles = {
-  // Non-selected = old OUTLINE: neutral border + surface fill.
-  // Selected (= old SECONDARY): brand-tinted fill + brand border.
-  // Selected BORDER uses the OPAQUE `#primary-border` token (the neutral
-  // `border` ramp re-resolved at `saturation: 0.5` per primary-theme — see
-  // `TINTED_SURFACE_OVERRIDE` in `palette.ts`). It replaces an alpha-blended
-  // brand-text border so adjacent borders in grouped layouts (e.g.
-  // `RadioGroup type="button"`) don't double up at their overlap into a
-  // darker stripe. Selected FILL anchors to the *fixed* `#primary-accent-surface`
-  // brand: anchoring to the adaptive `#primary-accent-text` would drift the
-  // bg toward the text lightness in dark mode and collapse label↔bg contrast
-  // below AA. Selected label mirrors LINK: soft `#primary-accent-text-soft` at
-  // rest, intensifying to `#primary-accent-text` on hover. Both are solved in
-  // `palette.ts` for AA against the BASE selected fill (`accent-selected-fill`).
-  outline: {
-    '': '0 #primary-accent-text.0',
-    focused: '1bw #primary-accent-text',
+export const DEFAULT_OUTLINE_STYLES: Styles = mergeStyles(
+  {
+    // Non-selected = old OUTLINE: neutral border + surface fill.
+    // Selected (= old SECONDARY): brand-tinted fill + brand border.
+    // Selected BORDER uses the OPAQUE `#primary-border` token (the neutral
+    // `border` ramp re-resolved at `saturation: 0.5` per primary-theme — see
+    // `TINTED_SURFACE_OVERRIDE` in `palette.ts`). It replaces an alpha-blended
+    // brand-text border so adjacent borders in grouped layouts (e.g.
+    // `RadioGroup type="button"`) don't double up at their overlap into a
+    // darker stripe. Selected FILL anchors to the *fixed* `#primary-accent-surface`
+    // brand: anchoring to the adaptive `#primary-accent-text` would drift the
+    // bg toward the text lightness in dark mode and collapse label↔bg contrast
+    // below AA. Selected label mirrors LINK: soft `#primary-accent-text-soft` at
+    // rest, intensifying to `#primary-accent-text` on hover. Both are solved in
+    // `palette.ts` for AA against the BASE selected fill (`accent-selected-fill`).
+    outline: {
+      '': '0 #primary-accent-text.0',
+      focused: '1bw #primary-accent-text',
+    },
+    border: {
+      '': true,
+      selected: '#primary-border',
+      disabled: '#border',
+    },
+    // Every state uses a two-layer fill: `#surface-2` (opaque base) + a tint
+    // overlay. Keeping the layer shape identical across non-selected, selected
+    // and disabled states lets the tint, base color, and gradient slot all
+    // interpolate smoothly during the CSS transition. Selected states paint the
+    // brand tint on top of `#surface-2` (slightly darker base than a
+    // body-composited single-layer `#primary-accent-surface.X` would be, but
+    // visually almost identical and free of the overlay-snap flash on click).
+    // Disabled paints the neutral `#disabled-surface` chip on top of the same
+    // base. When SELECTED it keeps the enabled selected chip instead and fades
+    // only the LABEL, to `#accent-disabled-text` — so a disabled segmented
+    // control still shows which option is active (CUB-3912) without the chip
+    // changing weight at all. Every `selected & disabled` entry in this file
+    // exists for that reason.
+    //
+    // Fading the label alone is what keeps the state honest. The chip is the
+    // thing that says "this one is on", and a disabled control has no business
+    // saying that more loudly than a live one — which is exactly what happened
+    // while the state borrowed `accent-disabled-surface`: the mid-tone pill a
+    // PRIMARY button steps DOWN to is a step UP from a 9% tint, and its
+    // `tone: 'max'` label resolved to literal white in light mode. Building the
+    // chip from the neutral disabled tone at brand chroma fixed the weight but
+    // read over-saturated next to the enabled selected chips it sits beside.
+    fill: {
+      '': '#surface-2 #surface-text.0',
+      hovered: '#surface-2 #surface-text.03',
+      pressed: '#surface-2 #surface-text.09',
+      selected: '#surface-2 #primary-accent-surface.09',
+      'selected & (hovered | focused)': '#surface-2 #primary-accent-surface.12',
+      'selected & pressed': '#surface-2 #primary-accent-surface.18',
+      disabled: '#surface-2 #disabled-surface',
+      'selected & disabled': '#surface-2 #primary-accent-surface.09',
+    },
+    color: {
+      '': '#surface-text-soft',
+      hovered: '#surface-text-soft',
+      pressed: '#surface-text',
+      selected: '#primary-accent-text-soft',
+      'selected & hovered': '#primary-accent-text',
+      disabled: '#disabled-surface-text',
+      'selected & disabled': '#primary-accent-disabled-text',
+    },
   },
-  border: {
-    '': true,
-    selected: '#primary-border',
-    disabled: '#border',
-    ...(VALIDATION_STYLES.border as Record<string, string>),
-  },
-  // Every state uses a two-layer fill: `#surface-2` (opaque base) + a tint
-  // overlay. Keeping the layer shape identical across non-selected, selected
-  // and disabled states lets the tint, base color, and gradient slot all
-  // interpolate smoothly during the CSS transition. Selected states paint the
-  // brand tint on top of `#surface-2` (slightly darker base than a
-  // body-composited single-layer `#primary-accent-surface.X` would be, but
-  // visually almost identical and free of the overlay-snap flash on click).
-  // Disabled paints the neutral `#disabled-surface` chip on top of the same
-  // base. When SELECTED it keeps the enabled selected chip instead and fades
-  // only the LABEL, to `#accent-disabled-text` — so a disabled segmented
-  // control still shows which option is active (CUB-3912) without the chip
-  // changing weight at all. Every `selected & disabled` entry in this file
-  // exists for that reason.
-  //
-  // Fading the label alone is what keeps the state honest. The chip is the
-  // thing that says "this one is on", and a disabled control has no business
-  // saying that more loudly than a live one — which is exactly what happened
-  // while the state borrowed `accent-disabled-surface`: the mid-tone pill a
-  // PRIMARY button steps DOWN to is a step UP from a 9% tint, and its
-  // `tone: 'max'` label resolved to literal white in light mode. Building the
-  // chip from the neutral disabled tone at brand chroma fixed the weight but
-  // read over-saturated next to the enabled selected chips it sits beside.
-  fill: {
-    '': '#surface-2 #surface-text.0',
-    hovered: '#surface-2 #surface-text.03',
-    pressed: '#surface-2 #surface-text.09',
-    selected: '#surface-2 #primary-accent-surface.09',
-    'selected & (hovered | focused)': '#surface-2 #primary-accent-surface.12',
-    'selected & pressed': '#surface-2 #primary-accent-surface.18',
-    disabled: '#surface-2 #disabled-surface',
-    'selected & disabled': '#surface-2 #primary-accent-surface.09',
-  },
-  color: {
-    '': '#surface-text-soft',
-    hovered: '#surface-text-soft',
-    pressed: '#surface-text',
-    selected: '#primary-accent-text-soft',
-    'selected & hovered': '#primary-accent-text',
-    disabled: '#disabled-surface-text',
-    'selected & disabled': '#primary-accent-disabled-text',
-  },
-} as const;
+  VALIDATION_STYLES,
+);
 
 // Identical to DEFAULT_OUTLINE_STYLES but uses `#surface-3` as the fill base,
 // designed to sit on `#surface-2` containers without blending in.
-export const DEFAULT_OUTLINE_2_STYLES: Styles = {
-  ...DEFAULT_OUTLINE_STYLES,
-  fill: {
-    '': '#surface-3 #surface-text.0',
-    hovered: '#surface-3 #surface-text.03',
-    pressed: '#surface-3 #surface-text.09',
-    selected: '#surface-3 #primary-accent-surface.09',
-    'selected & (hovered | focused)': '#surface-3 #primary-accent-surface.12',
-    'selected & pressed': '#surface-3 #primary-accent-surface.15',
-    disabled: '#surface-3 #disabled-surface',
-    'selected & disabled': '#surface-3 #primary-accent-surface.09',
+export const DEFAULT_OUTLINE_2_STYLES: Styles = mergeStyles(
+  DEFAULT_OUTLINE_STYLES,
+  {
+    fill: {
+      '': '#surface-3 #surface-text.0',
+      hovered: '#surface-3 #surface-text.03',
+      pressed: '#surface-3 #surface-text.09',
+      selected: '#surface-3 #primary-accent-surface.09',
+      'selected & (hovered | focused)': '#surface-3 #primary-accent-surface.12',
+      'selected & pressed': '#surface-3 #primary-accent-surface.15',
+      disabled: '#surface-3 #disabled-surface',
+      'selected & disabled': '#surface-3 #primary-accent-surface.09',
+    },
   },
-} as const;
+);
 
-export const DEFAULT_CLEAR_STYLES: Styles = {
-  // Non-selected = old NEUTRAL: transparent / dark-tinted neutral look.
-  // Selected = old CLEAR: brand-tinted overlay over the surface.
-  outline: {
-    '': '0 #primary-accent-text.0',
-    focused: '1bw #primary-accent-text',
+export const DEFAULT_CLEAR_STYLES: Styles = mergeStyles(
+  {
+    // Non-selected = old NEUTRAL: transparent / dark-tinted neutral look.
+    // Selected = old CLEAR: brand-tinted overlay over the surface.
+    outline: {
+      '': '0 #primary-accent-text.0',
+      focused: '1bw #primary-accent-text',
+    },
+    border: {
+      '': '#clear',
+    },
+    fill: {
+      '': '#surface-text.0',
+      'hovered | focused': '#surface-text.04',
+      pressed: '#surface-text.06',
+      selected: '#primary-accent-surface.09',
+      'selected & (hovered | focused)': '#primary-accent-surface.12',
+      'selected & pressed': '#primary-accent-surface.18',
+      disabled: '#clear',
+      'selected & disabled': '#primary-accent-surface.09',
+    },
+    // Selected label mirrors LINK: soft at rest, `#primary-accent-text` on
+    // hover. See DEFAULT_OUTLINE_STYLES.
+    color: {
+      '': '#surface-text-soft',
+      hovered: '#surface-text-soft',
+      'pressed & !selected': '#surface-text',
+      selected: '#primary-accent-text-soft',
+      'selected & hovered': '#primary-accent-text',
+      disabled: '#disabled-surface-text',
+      'selected & disabled': '#primary-accent-disabled-text',
+    },
   },
-  border: {
-    '': 'transparent',
-    ...(VALIDATION_STYLES.border as Record<string, string>),
-  },
-  fill: {
-    '': '#surface-text.0',
-    'hovered | focused': '#surface-text.04',
-    pressed: '#surface-text.06',
-    selected: '#primary-accent-surface.09',
-    'selected & (hovered | focused)': '#primary-accent-surface.12',
-    'selected & pressed': '#primary-accent-surface.18',
-    disabled: 'transparent',
-    'selected & disabled': '#primary-accent-surface.09',
-  },
-  // Selected label mirrors LINK: soft at rest, `#primary-accent-text` on
-  // hover. See DEFAULT_OUTLINE_STYLES.
-  color: {
-    '': '#surface-text-soft',
-    hovered: '#surface-text-soft',
-    'pressed & !selected': '#surface-text',
-    selected: '#primary-accent-text-soft',
-    'selected & hovered': '#primary-accent-text',
-    disabled: '#disabled-surface-text',
-    'selected & disabled': '#primary-accent-disabled-text',
-  },
-} as const;
+  VALIDATION_STYLES,
+);
 
 export const DEFAULT_ITEM_STYLES: Styles = {
-  border: 'transparent',
+  border: '#clear',
   fill: {
     '': '#surface-text.0',
     'hovered | focused': '#surface-text.04',
@@ -222,7 +229,7 @@ export const DEFAULT_ITEM_STYLES: Styles = {
     selected: '#surface-text.09',
     'selected & (hovered | focused)': '#surface-text.12',
     'selected & pressed': '#surface-text.15',
-    disabled: 'transparent',
+    disabled: '#clear',
   },
   color: {
     '': '#surface-text-soft',
@@ -243,7 +250,7 @@ export const DEFAULT_LINK_STYLES: Styles = {
   },
   border: '0',
   fill: {
-    '': 'transparent',
+    '': '#clear',
   },
   color: {
     '': '#primary-accent-text-soft',
@@ -261,7 +268,7 @@ export const DANGER_PRIMARY_STYLES: Styles = {
   border: {
     '': '#white.2',
     pressed: '#danger-accent-text',
-    disabled: 'transparent',
+    disabled: '#clear',
   },
   // See `DEFAULT_PRIMARY_STYLES.fill` for the layer-shape + ramp rationale.
   fill: {
@@ -309,19 +316,21 @@ export const DANGER_OUTLINE_STYLES: Styles = {
   },
 } as const;
 
-export const DANGER_OUTLINE_2_STYLES: Styles = {
-  ...DANGER_OUTLINE_STYLES,
-  fill: {
-    '': '#surface-3 #danger-accent-surface.0',
-    hovered: '#surface-3 #danger-accent-surface.03',
-    pressed: '#surface-3 #danger-accent-surface.09',
-    selected: '#surface-3 #danger-accent-surface.09',
-    'selected & (hovered | focused)': '#surface-3 #danger-accent-surface.12',
-    'selected & pressed': '#surface-3 #danger-accent-surface.18',
-    disabled: '#surface-3 #disabled-surface',
-    'selected & disabled': '#surface-3 #danger-accent-surface.09',
+export const DANGER_OUTLINE_2_STYLES: Styles = mergeStyles(
+  DANGER_OUTLINE_STYLES,
+  {
+    fill: {
+      '': '#surface-3 #danger-accent-surface.0',
+      hovered: '#surface-3 #danger-accent-surface.03',
+      pressed: '#surface-3 #danger-accent-surface.09',
+      selected: '#surface-3 #danger-accent-surface.09',
+      'selected & (hovered | focused)': '#surface-3 #danger-accent-surface.12',
+      'selected & pressed': '#surface-3 #danger-accent-surface.18',
+      disabled: '#surface-3 #disabled-surface',
+      'selected & disabled': '#surface-3 #danger-accent-surface.09',
+    },
   },
-} as const;
+);
 
 export const DANGER_CLEAR_STYLES: Styles = {
   // Non-selected = old DANGER NEUTRAL: dark-tinted overlay; pressed switches
@@ -332,7 +341,7 @@ export const DANGER_CLEAR_STYLES: Styles = {
     focused: '1bw #primary-accent-text',
   },
   border: {
-    '': 'transparent',
+    '': '#clear',
   },
   fill: {
     '': '#surface-text.0',
@@ -341,7 +350,7 @@ export const DANGER_CLEAR_STYLES: Styles = {
     selected: '#danger-accent-text.09',
     'selected & (hovered | focused)': '#danger-accent-text.12',
     'selected & pressed': '#danger-accent-text.18',
-    disabled: 'transparent',
+    disabled: '#clear',
     'selected & disabled': '#danger-accent-text.09',
   },
   color: {
@@ -360,7 +369,7 @@ export const DANGER_LINK_STYLES: Styles = {
   },
   border: 0,
   fill: {
-    '': 'transparent',
+    '': '#clear',
   },
   color: {
     '': '#danger-accent-text-soft',
@@ -370,14 +379,14 @@ export const DANGER_LINK_STYLES: Styles = {
 } as const;
 
 export const DANGER_ITEM_STYLES: Styles = {
-  border: 'transparent',
+  border: '#clear',
   fill: {
     '': '#danger-accent-text.0',
     'hovered | focused': '#danger-accent-text.03',
     selected: '#danger-accent-text.09',
     'selected & (hovered | focused)': '#danger-accent-text.12',
     pressed: '#danger-accent-text.09',
-    disabled: 'transparent',
+    disabled: '#clear',
   },
   color: {
     '': '#danger-accent-text',
@@ -396,7 +405,7 @@ export const SUCCESS_PRIMARY_STYLES: Styles = {
   border: {
     '': '#white.2',
     pressed: '#success-accent-text',
-    disabled: 'transparent',
+    disabled: '#clear',
   },
   // See `DEFAULT_PRIMARY_STYLES.fill` for the layer-shape + ramp rationale.
   fill: {
@@ -440,19 +449,21 @@ export const SUCCESS_OUTLINE_STYLES: Styles = {
   },
 } as const;
 
-export const SUCCESS_OUTLINE_2_STYLES: Styles = {
-  ...SUCCESS_OUTLINE_STYLES,
-  fill: {
-    '': '#surface-3 #success-accent-surface.0',
-    hovered: '#surface-3 #success-accent-surface.03',
-    pressed: '#surface-3 #success-accent-surface.09',
-    selected: '#surface-3 #success-accent-surface.09',
-    'selected & (hovered | focused)': '#surface-3 #success-accent-surface.12',
-    'selected & pressed': '#surface-3 #success-accent-surface.18',
-    disabled: '#surface-3 #disabled-surface',
-    'selected & disabled': '#surface-3 #success-accent-surface.09',
+export const SUCCESS_OUTLINE_2_STYLES: Styles = mergeStyles(
+  SUCCESS_OUTLINE_STYLES,
+  {
+    fill: {
+      '': '#surface-3 #success-accent-surface.0',
+      hovered: '#surface-3 #success-accent-surface.03',
+      pressed: '#surface-3 #success-accent-surface.09',
+      selected: '#surface-3 #success-accent-surface.09',
+      'selected & (hovered | focused)': '#surface-3 #success-accent-surface.12',
+      'selected & pressed': '#surface-3 #success-accent-surface.18',
+      disabled: '#surface-3 #disabled-surface',
+      'selected & disabled': '#surface-3 #success-accent-surface.09',
+    },
   },
-} as const;
+);
 
 export const SUCCESS_CLEAR_STYLES: Styles = {
   // Non-selected = old SUCCESS NEUTRAL; selected = old SUCCESS CLEAR.
@@ -461,7 +472,7 @@ export const SUCCESS_CLEAR_STYLES: Styles = {
     focused: '1bw #primary-accent-text',
   },
   border: {
-    '': 'transparent',
+    '': '#clear',
   },
   fill: {
     '': '#surface-text.0',
@@ -470,7 +481,7 @@ export const SUCCESS_CLEAR_STYLES: Styles = {
     selected: '#success-accent-text.09',
     'selected & (hovered | focused)': '#success-accent-text.12',
     'selected & pressed': '#success-accent-text.18',
-    disabled: 'transparent',
+    disabled: '#clear',
     'selected & disabled': '#success-accent-text.09',
   },
   color: {
@@ -489,7 +500,7 @@ export const SUCCESS_LINK_STYLES: Styles = {
   },
   border: 0,
   fill: {
-    '': 'transparent',
+    '': '#clear',
   },
   color: {
     '': '#success-accent-text-soft',
@@ -499,14 +510,14 @@ export const SUCCESS_LINK_STYLES: Styles = {
 } as const;
 
 export const SUCCESS_ITEM_STYLES: Styles = {
-  border: 'transparent',
+  border: '#clear',
   fill: {
     '': '#success-accent-text.0',
     'hovered | focused': '#success-accent-text.03',
     selected: '#success-accent-text.09',
     'selected & (hovered | focused)': '#success-accent-text.12',
     pressed: '#success-accent-text.09',
-    disabled: 'transparent',
+    disabled: '#clear',
   },
   color: {
     '': '#success-accent-text',
@@ -525,7 +536,7 @@ export const WARNING_PRIMARY_STYLES: Styles = {
   border: {
     '': '#white.2',
     pressed: '#warning-accent-text',
-    disabled: 'transparent',
+    disabled: '#clear',
   },
   // See `DEFAULT_PRIMARY_STYLES.fill` for the layer-shape + ramp rationale.
   fill: {
@@ -569,19 +580,21 @@ export const WARNING_OUTLINE_STYLES: Styles = {
   },
 } as const;
 
-export const WARNING_OUTLINE_2_STYLES: Styles = {
-  ...WARNING_OUTLINE_STYLES,
-  fill: {
-    '': '#surface-3 #warning-accent-surface.0',
-    hovered: '#surface-3 #warning-accent-surface.03',
-    pressed: '#surface-3 #warning-accent-surface.09',
-    selected: '#surface-3 #warning-accent-surface.09',
-    'selected & (hovered | focused)': '#surface-3 #warning-accent-surface.12',
-    'selected & pressed': '#surface-3 #warning-accent-surface.18',
-    disabled: '#surface-3 #disabled-surface',
-    'selected & disabled': '#surface-3 #warning-accent-surface.09',
+export const WARNING_OUTLINE_2_STYLES: Styles = mergeStyles(
+  WARNING_OUTLINE_STYLES,
+  {
+    fill: {
+      '': '#surface-3 #warning-accent-surface.0',
+      hovered: '#surface-3 #warning-accent-surface.03',
+      pressed: '#surface-3 #warning-accent-surface.09',
+      selected: '#surface-3 #warning-accent-surface.09',
+      'selected & (hovered | focused)': '#surface-3 #warning-accent-surface.12',
+      'selected & pressed': '#surface-3 #warning-accent-surface.18',
+      disabled: '#surface-3 #disabled-surface',
+      'selected & disabled': '#surface-3 #warning-accent-surface.09',
+    },
   },
-} as const;
+);
 
 export const WARNING_CLEAR_STYLES: Styles = {
   // Non-selected = old WARNING NEUTRAL; selected = old WARNING CLEAR.
@@ -590,7 +603,7 @@ export const WARNING_CLEAR_STYLES: Styles = {
     focused: '1bw #primary-accent-text',
   },
   border: {
-    '': 'transparent',
+    '': '#clear',
   },
   fill: {
     '': '#surface-text.0',
@@ -599,7 +612,7 @@ export const WARNING_CLEAR_STYLES: Styles = {
     selected: '#warning-accent-text.09',
     'selected & (hovered | focused)': '#warning-accent-text.12',
     'selected & pressed': '#warning-accent-text.18',
-    disabled: 'transparent',
+    disabled: '#clear',
     'selected & disabled': '#warning-accent-text.09',
   },
   color: {
@@ -618,7 +631,7 @@ export const WARNING_LINK_STYLES: Styles = {
   },
   border: 0,
   fill: {
-    '': 'transparent',
+    '': '#clear',
   },
   color: {
     '': '#warning-accent-text-soft',
@@ -628,14 +641,14 @@ export const WARNING_LINK_STYLES: Styles = {
 } as const;
 
 export const WARNING_ITEM_STYLES: Styles = {
-  border: 'transparent',
+  border: '#clear',
   fill: {
     '': '#warning-accent-text.0',
     'hovered | focused': '#warning-accent-text.03',
     selected: '#warning-accent-text.09',
     'selected & (hovered | focused)': '#warning-accent-text.12',
     pressed: '#warning-accent-text.09',
-    disabled: 'transparent',
+    disabled: '#clear',
   },
   color: {
     '': '#warning-accent-text',
@@ -654,7 +667,7 @@ export const NOTE_PRIMARY_STYLES: Styles = {
   border: {
     '': '#white.2',
     pressed: '#note-accent-text',
-    disabled: 'transparent',
+    disabled: '#clear',
   },
   // See `DEFAULT_PRIMARY_STYLES.fill` for the layer-shape + ramp rationale.
   fill: {
@@ -698,8 +711,7 @@ export const NOTE_OUTLINE_STYLES: Styles = {
   },
 } as const;
 
-export const NOTE_OUTLINE_2_STYLES: Styles = {
-  ...NOTE_OUTLINE_STYLES,
+export const NOTE_OUTLINE_2_STYLES: Styles = mergeStyles(NOTE_OUTLINE_STYLES, {
   fill: {
     '': '#surface-3 #note-accent-surface.0',
     hovered: '#surface-3 #note-accent-surface.03',
@@ -710,7 +722,7 @@ export const NOTE_OUTLINE_2_STYLES: Styles = {
     disabled: '#surface-3 #disabled-surface',
     'selected & disabled': '#surface-3 #note-accent-surface.09',
   },
-} as const;
+});
 
 export const NOTE_CLEAR_STYLES: Styles = {
   // Non-selected = old NOTE NEUTRAL; selected = old NOTE CLEAR.
@@ -719,7 +731,7 @@ export const NOTE_CLEAR_STYLES: Styles = {
     focused: '1bw #primary-accent-text',
   },
   border: {
-    '': 'transparent',
+    '': '#clear',
   },
   fill: {
     '': '#surface-text.0',
@@ -728,7 +740,7 @@ export const NOTE_CLEAR_STYLES: Styles = {
     selected: '#note-accent-text.09',
     'selected & (hovered | focused)': '#note-accent-text.12',
     'selected & pressed': '#note-accent-text.18',
-    disabled: 'transparent',
+    disabled: '#clear',
     'selected & disabled': '#note-accent-text.09',
   },
   color: {
@@ -747,7 +759,7 @@ export const NOTE_LINK_STYLES: Styles = {
   },
   border: 0,
   fill: {
-    '': 'transparent',
+    '': '#clear',
   },
   color: {
     '': '#note-accent-text-soft',
@@ -757,14 +769,14 @@ export const NOTE_LINK_STYLES: Styles = {
 } as const;
 
 export const NOTE_ITEM_STYLES: Styles = {
-  border: 'transparent',
+  border: '#clear',
   fill: {
     '': '#note-accent-text.0',
     'hovered | focused': '#note-accent-text.03',
     selected: '#note-accent-text.09',
     'selected & (hovered | focused)': '#note-accent-text.12',
     pressed: '#note-accent-text.09',
-    disabled: 'transparent',
+    disabled: '#clear',
   },
   color: {
     '': '#note-accent-text',
@@ -794,7 +806,7 @@ export const SPECIAL_PRIMARY_STYLES: Styles = {
   border: {
     '': '#special-accent-surface-border',
     pressed: '#special-accent-surface-border',
-    disabled: 'transparent',
+    disabled: '#clear',
   },
   // See `DEFAULT_PRIMARY_STYLES.fill` for the layer-shape + ramp rationale.
   // The base layer is `#white` (matching the rest of the special theme's
@@ -812,110 +824,114 @@ export const SPECIAL_PRIMARY_STYLES: Styles = {
   },
 } as const;
 
-export const SPECIAL_OUTLINE_STYLES: Styles = {
-  // Non-selected = old SPECIAL OUTLINE; selected = old SPECIAL SECONDARY.
-  // Special is anchored on `#special-surface` (a fixed dark-purple base), so
-  // contrast is added by *whitening* the overlay rather than darkening it.
-  // The same default → hover → pressed monotonic-contrast pattern as the
-  // light themes is preserved, just with white-alpha steps that are tuned
-  // to read against the dark base.
-  //
-  // Focus ring uses the fixed-mode `#special-accent-text` so the indicator
-  // stays scheme-invariant alongside the rest of the special theme — see
-  // `SPECIAL_PRIMARY_STYLES.outline` for the full rationale.
-  outline: {
-    '': '0 #special-accent-text.0',
-    focused: '1bw #special-accent-text',
+export const SPECIAL_OUTLINE_STYLES: Styles = mergeStyles(
+  {
+    // Non-selected = old SPECIAL OUTLINE; selected = old SPECIAL SECONDARY.
+    // Special is anchored on `#special-surface` (a fixed dark-purple base), so
+    // contrast is added by *whitening* the overlay rather than darkening it.
+    // The same default → hover → pressed monotonic-contrast pattern as the
+    // light themes is preserved, just with white-alpha steps that are tuned
+    // to read against the dark base.
+    //
+    // Focus ring uses the fixed-mode `#special-accent-text` so the indicator
+    // stays scheme-invariant alongside the rest of the special theme — see
+    // `SPECIAL_PRIMARY_STYLES.outline` for the full rationale.
+    outline: {
+      '': '0 #special-accent-text.0',
+      focused: '1bw #special-accent-text',
+    },
+    border: {
+      '': '#white.15',
+      selected: '#white.2',
+    },
+    fill: {
+      '': '#special-surface #white.0',
+      hovered: '#special-surface #white.06',
+      pressed: '#special-surface #white.12',
+      selected: '#special-surface #white.18',
+      'selected & (hovered | focused)': '#special-surface #white.24',
+      'selected & pressed': '#special-surface #white.3',
+      disabled: '#special-surface #white.04',
+      // Stays in the white-alpha register: the base here is a fixed dark tone.
+      // Like the colored themes, a disabled SELECTED control keeps the chip it
+      // has when enabled and fades only the label.
+      'selected & disabled': '#special-surface #white.18',
+    },
+    // Mirrors the colored-theme soft→opaque pattern (`*-accent-text-soft` →
+    // `*-accent-text`) using white-alpha steps: default is slightly muted so
+    // that selected reads as the more prominent state.
+    //
+    // Both disabled labels are solved for cr ≈ 2.0 against the chip they sit on
+    // — the house figure for a disabled label, which `disabled-surface-text`
+    // hits against `surface` and which this theme's own `primary` disabled pair
+    // hits at 1.73. They used to measure 3.24 and 4.21: not only too legible for
+    // a dead control, but the wrong way round, since the selected one out-read
+    // the plain one. The two alphas differ because they resolve against different chips
+    // (`.04` and `.18`), which lands them on the same contrast rather than the
+    // same opacity.
+    color: {
+      '': '#white.8',
+      selected: '#white',
+      disabled: '#white.23',
+      'selected & disabled': '#white.28',
+    },
   },
-  border: {
-    '': '#white.15',
-    selected: '#white.2',
-    ...(VALIDATION_STYLES.border as Record<string, string>),
-  },
-  fill: {
-    '': '#special-surface #white.0',
-    hovered: '#special-surface #white.06',
-    pressed: '#special-surface #white.12',
-    selected: '#special-surface #white.18',
-    'selected & (hovered | focused)': '#special-surface #white.24',
-    'selected & pressed': '#special-surface #white.3',
-    disabled: '#special-surface #white.04',
-    // Stays in the white-alpha register: the base here is a fixed dark tone.
-    // Like the colored themes, a disabled SELECTED control keeps the chip it
-    // has when enabled and fades only the label.
-    'selected & disabled': '#special-surface #white.18',
-  },
-  // Mirrors the colored-theme soft→opaque pattern (`*-accent-text-soft` →
-  // `*-accent-text`) using white-alpha steps: default is slightly muted so
-  // that selected reads as the more prominent state.
-  //
-  // Both disabled labels are solved for cr ≈ 2.0 against the chip they sit on
-  // — the house figure for a disabled label, which `disabled-surface-text`
-  // hits against `surface` and which this theme's own `primary` disabled pair
-  // hits at 1.73. They used to measure 3.24 and 4.21: not only too legible for
-  // a dead control, but the wrong way round, since the selected one out-read
-  // the plain one. The two alphas differ because they resolve against different chips
-  // (`.04` and `.18`), which lands them on the same contrast rather than the
-  // same opacity.
-  color: {
-    '': '#white.8',
-    selected: '#white',
-    disabled: '#white.23',
-    'selected & disabled': '#white.28',
-  },
-} as const;
+  VALIDATION_STYLES,
+);
 
-export const SPECIAL_CLEAR_STYLES: Styles = {
-  // Non-selected = old SPECIAL NEUTRAL: transparent / white-tinted overlay
-  // on the dark base.
-  // Selected INVERTS the surface — the fill flips to a solid white pill with
-  // dark accent-text on top. To express "increasing contrast on press" in
-  // this inverted layout we go the *other* direction: pure white at rest →
-  // slightly tinted on hover → more tinted on press, i.e. progressively
-  // letting the dark base bleed through. This keeps the monotonic-contrast
-  // pattern semantically (hover < pressed) while preserving the inversion.
-  //
-  // Disabling a SELECTED control keeps the white pill and fades only the
-  // label, the same rule the rest of this file follows — the chip is what says
-  // "this one is on". Here that means fading the DARK label toward the pill
-  // rather than a white one toward the base, so the disabled label is
-  // `#special-accent-text` at `.45`: cr 1.95 against the pill, the same figure
-  // the white-alpha variants are solved for.
-  //
-  // Focus ring uses the fixed-mode `#special-accent-text` so the indicator
-  // stays scheme-invariant alongside the rest of the special theme — see
-  // `SPECIAL_PRIMARY_STYLES.outline` for the full rationale.
-  outline: {
-    '': '0 #special-accent-text.0',
-    focused: '1bw #special-accent-text',
+export const SPECIAL_CLEAR_STYLES: Styles = mergeStyles(
+  {
+    // Non-selected = old SPECIAL NEUTRAL: transparent / white-tinted overlay
+    // on the dark base.
+    // Selected INVERTS the surface — the fill flips to a solid white pill with
+    // dark accent-text on top. To express "increasing contrast on press" in
+    // this inverted layout we go the *other* direction: pure white at rest →
+    // slightly tinted on hover → more tinted on press, i.e. progressively
+    // letting the dark base bleed through. This keeps the monotonic-contrast
+    // pattern semantically (hover < pressed) while preserving the inversion.
+    //
+    // Disabling a SELECTED control keeps the white pill and fades only the
+    // label, the same rule the rest of this file follows — the chip is what says
+    // "this one is on". Here that means fading the DARK label toward the pill
+    // rather than a white one toward the base, so the disabled label is
+    // `#special-accent-text` at `.45`: cr 1.95 against the pill, the same figure
+    // the white-alpha variants are solved for.
+    //
+    // Focus ring uses the fixed-mode `#special-accent-text` so the indicator
+    // stays scheme-invariant alongside the rest of the special theme — see
+    // `SPECIAL_PRIMARY_STYLES.outline` for the full rationale.
+    outline: {
+      '': '0 #special-accent-text.0',
+      focused: '1bw #special-accent-text',
+    },
+    border: {
+      '': '#clear',
+    },
+    fill: {
+      '': '#white.0',
+      'hovered | focused': '#white.12',
+      pressed: '#white.18',
+      selected: '#white',
+      'selected & (hovered | focused)': '#white.94',
+      'selected & pressed': '#white.88',
+      disabled: '#white.0',
+      'selected & disabled': '#white',
+    },
+    // Non-selected mirrors the colored-theme soft→opaque pattern with
+    // white-alpha steps. Selected keeps its inverted look — dark accent-text
+    // on a white pill — so the soft/opaque transition only applies to the
+    // non-selected variant.
+    color: {
+      '': '#white.8',
+      selected: '#special-accent-text',
+      // Solved for cr ≈ 2.0 against what each one sits on — the bare surface, and
+      // the selected white pill. See `SPECIAL_OUTLINE_STYLES.color`.
+      disabled: '#white.23',
+      'selected & disabled': '#special-accent-text.45',
+    },
   },
-  border: {
-    '': 'transparent',
-    ...(VALIDATION_STYLES.border as Record<string, string>),
-  },
-  fill: {
-    '': '#white.0',
-    'hovered | focused': '#white.12',
-    pressed: '#white.18',
-    selected: '#white',
-    'selected & (hovered | focused)': '#white.94',
-    'selected & pressed': '#white.88',
-    disabled: '#white.0',
-    'selected & disabled': '#white',
-  },
-  // Non-selected mirrors the colored-theme soft→opaque pattern with
-  // white-alpha steps. Selected keeps its inverted look — dark accent-text
-  // on a white pill — so the soft/opaque transition only applies to the
-  // non-selected variant.
-  color: {
-    '': '#white.8',
-    selected: '#special-accent-text',
-    // Solved for cr ≈ 2.0 against what each one sits on — the bare surface, and
-    // the selected white pill. See `SPECIAL_OUTLINE_STYLES.color`.
-    disabled: '#white.23',
-    'selected & disabled': '#special-accent-text.45',
-  },
-} as const;
+  VALIDATION_STYLES,
+);
 
 export const SPECIAL_LINK_STYLES: Styles = {
   // See `SPECIAL_PRIMARY_STYLES.outline` for why we use the fixed-mode
@@ -926,7 +942,7 @@ export const SPECIAL_LINK_STYLES: Styles = {
   },
   border: '0',
   fill: {
-    '': 'transparent',
+    '': '#clear',
   },
   color: {
     '': '#white',
@@ -936,7 +952,7 @@ export const SPECIAL_LINK_STYLES: Styles = {
 } as const;
 
 export const SPECIAL_ITEM_STYLES: Styles = {
-  border: 'transparent',
+  border: '#clear',
   fill: {
     '': '#white.0',
     hovered: '#white.12',
@@ -1078,17 +1094,16 @@ const CURRENT_FOCUS_RING: Styles = {
 // as noise. Like the other `*_ITEM_STYLES` it leaves the focus ring to the base
 // styles (the collection that owns the row indicates focus), and only steps the
 // fill.
-export const CURRENT_ITEM_STYLES: Styles = {
-  ...CURRENT_ITEM_RAMP,
-  border: 'transparent',
+export const CURRENT_ITEM_STYLES: Styles = mergeStyles(CURRENT_ITEM_RAMP, {
+  border: '#clear',
   fill: {
     '': '#current.0',
-    'hovered | focused': 'var(--current-hover)',
-    pressed: 'var(--current-press)',
-    selected: 'var(--current-selected)',
-    'selected & (hovered | focused)': 'var(--current-selected-hover)',
-    'selected & pressed': 'var(--current-selected-press)',
-    disabled: 'transparent',
+    'hovered | focused': '$current-hover',
+    pressed: '$current-press',
+    selected: '$current-selected',
+    'selected & (hovered | focused)': '$current-selected-hover',
+    'selected & pressed': '$current-selected-press',
+    disabled: '#clear',
   },
   color: {
     '': '#current',
@@ -1118,31 +1133,32 @@ export const CURRENT_ITEM_STYLES: Styles = {
     // second time in both of those nestings.
     'disabled & !inherit-disabled & !inside-wrapper': '#current.4',
   },
-} as const;
+});
 
 // Clear flavour — the item ramp on a focusable control. `*_CLEAR_STYLES` and
 // `*_ITEM_STYLES` differ by exactly this in every other theme too: same
 // borderless shape, same interaction fill, plus the ring a standalone control
 // needs. It is the default flavour for `ItemAction` and `ItemBadge`.
-export const CURRENT_CLEAR_STYLES: Styles = {
-  ...CURRENT_ITEM_STYLES,
-  ...CURRENT_FOCUS_RING,
-  fill: {
-    ...(CURRENT_ITEM_STYLES.fill as Record<string, string>),
-    // The one entry `clear` adds to the item ramp, and the same split the
-    // colored themes make: `*_ITEM_STYLES` let a disabled row fall back to a
-    // bare `transparent`, while `*_CLEAR_STYLES` keep a chip so a disabled
-    // segmented control still shows which option is active. Without it a
-    // disabled selected `clear` rendered nothing at all — the state was
-    // indistinguishable from an unselected one.
-    //
-    // `.18` is `CURRENT_OUTLINE_STYLES`' own disabled selected chip, so the two
-    // differ by exactly the border, and it is authored high for the same reason
-    // documented there: the disabled label dims `currentcolor` to `.4`, and
-    // this alpha resolves against it, rendering as ~`.07`.
-    'selected & disabled': '#current.18',
+export const CURRENT_CLEAR_STYLES: Styles = mergeStyles(
+  CURRENT_ITEM_STYLES,
+  CURRENT_FOCUS_RING,
+  {
+    fill: {
+      // The one entry `clear` adds to the item ramp, and the same split the
+      // colored themes make: `*_ITEM_STYLES` let a disabled row fall back to a
+      // bare `transparent`, while `*_CLEAR_STYLES` keep a chip so a disabled
+      // segmented control still shows which option is active. Without it a
+      // disabled selected `clear` rendered nothing at all — the state was
+      // indistinguishable from an unselected one.
+      //
+      // `.18` is `CURRENT_OUTLINE_STYLES`' own disabled selected chip, so the two
+      // differ by exactly the border, and it is authored high for the same reason
+      // documented there: the disabled label dims `currentcolor` to `.4`, and
+      // this alpha resolves against it, rendering as ~`.07`.
+      'selected & disabled': '#current.18',
+    },
   },
-} as const;
+);
 
 // Outline flavour — a standalone control, so it carries its own weight: a
 // resting `#current.03` chip inside a `#current.08` border. `.03` is enough to
@@ -1151,8 +1167,7 @@ export const CURRENT_CLEAR_STYLES: Styles = {
 // Disabled `fill`/`border` are pre-multiplied (`.06`/`.12` → an effective
 // `.024`/`.048`) so the chip stays a muted version of itself instead of
 // vanishing.
-export const CURRENT_OUTLINE_STYLES: Styles = {
-  ...CURRENT_FOCUS_RING,
+export const CURRENT_OUTLINE_STYLES: Styles = mergeStyles(CURRENT_FOCUS_RING, {
   border: {
     '': '#current.08',
     'hovered | focused': '#current.15',
@@ -1181,7 +1196,7 @@ export const CURRENT_OUTLINE_STYLES: Styles = {
     // `disabled`: both mods mark a color that something above already faded.
     'disabled & !inherit-disabled & !inside-wrapper': '#current.4',
   },
-} as const;
+});
 
 // Outline-2 flavour — `outline` for a container that is already painting
 // something. In the brand themes the difference is the opaque base (`#surface-3`
@@ -1190,37 +1205,39 @@ export const CURRENT_OUTLINE_STYLES: Styles = {
 // "stay legible one rung further up the surface ladder" — is therefore carried
 // by a heavier tint at every step: roughly double `outline`'s resting chip, so
 // the control still separates from a tinted or busy container.
-export const CURRENT_OUTLINE_2_STYLES: Styles = {
-  ...CURRENT_FOCUS_RING,
-  border: {
-    '': '#current.14',
-    'hovered | focused': '#current.22',
-    pressed: '#current.3',
-    selected: '#current.36',
-    'selected & pressed': '#current.45',
-    disabled: '#current.2',
-    'selected & disabled': '#current.5',
+export const CURRENT_OUTLINE_2_STYLES: Styles = mergeStyles(
+  CURRENT_FOCUS_RING,
+  {
+    border: {
+      '': '#current.14',
+      'hovered | focused': '#current.22',
+      pressed: '#current.3',
+      selected: '#current.36',
+      'selected & pressed': '#current.45',
+      disabled: '#current.2',
+      'selected & disabled': '#current.5',
+    },
+    fill: {
+      '': '#current.06',
+      'hovered | focused': '#current.11',
+      pressed: '#current.15',
+      selected: '#current.17',
+      'selected & (hovered | focused)': '#current.21',
+      // `.24` is the measured AA ceiling for a full-strength label on a dark
+      // surface (see the ramp comment above) — the top step stops there rather
+      // than continuing the interval.
+      'selected & pressed': '#current.24',
+      disabled: '#current.1',
+      'selected & disabled': '#current.26',
+    },
+    color: {
+      '': '#current',
+      // See `CURRENT_ITEM_STYLES.color` for why this is gated rather than a bare
+      // `disabled`: both mods mark a color that something above already faded.
+      'disabled & !inherit-disabled & !inside-wrapper': '#current.4',
+    },
   },
-  fill: {
-    '': '#current.06',
-    'hovered | focused': '#current.11',
-    pressed: '#current.15',
-    selected: '#current.17',
-    'selected & (hovered | focused)': '#current.21',
-    // `.24` is the measured AA ceiling for a full-strength label on a dark
-    // surface (see the ramp comment above) — the top step stops there rather
-    // than continuing the interval.
-    'selected & pressed': '#current.24',
-    disabled: '#current.1',
-    'selected & disabled': '#current.26',
-  },
-  color: {
-    '': '#current',
-    // See `CURRENT_ITEM_STYLES.color` for why this is gated rather than a bare
-    // `disabled`: both mods mark a color that something above already faded.
-    'disabled & !inherit-disabled & !inside-wrapper': '#current.4',
-  },
-} as const;
+);
 
 // Primary flavour — the high-emphasis control, and the only `current` flavour
 // that fills opaquely: the fill is the inherited color at full opacity and the
@@ -1254,65 +1271,67 @@ export const CURRENT_OUTLINE_2_STYLES: Styles = {
 // `currentcolor` keeps meaning the INHERITED color for `fill` and `border`.
 // Icons are SVG painted with `fill="currentColor"`, which that property does not
 // reach, so they take the label color through the `Icon` sub-element.
-export const CURRENT_PRIMARY_STYLES: Styles = {
-  ...CURRENT_FOCUS_RING,
-  // Every other `primary` rims its fill with a lighter sibling
-  // (`accent-surface-border` over `accent-surface`, cr 1.48 against it in both
-  // schemes). An arbitrary inherited color has no such sibling, so the rim comes
-  // from the same token the label does — the one color guaranteed to sit on the
-  // opposite side of the fill in either scheme, and the one a container can
-  // redirect, so the rim cannot come apart from the label it edges. `.25`
-  // measures cr 1.82 in light and 1.55 in dark against the fill: the brand rim's
-  // presence, a shade more so in light, where `current` has no other edge cue.
-  //
-  // Disabled swaps to the neutral text color, and has to. The chip there is a
-  // `.4` tint sitting close to the page, so a `#surface` rim washes into the
-  // page rather than defining the chip; `#surface-text` goes the other way and
-  // holds cr ~1.5 against the chip AND 2.8–3.7 against the page. It is also
-  // immune to the `.4` fade below, which `#current` is not — a `#current` rim on
-  // a disabled chip resolves to the fill's own color and disappears.
-  border: {
-    '': '#current-fill.25',
-    disabled: '#surface-text.2',
-  },
-  // The resting entry carries a transparent second layer so every state has the
-  // same two-layer shape and the overlay interpolates instead of snapping in —
-  // the same pin `DEFAULT_PRIMARY_STYLES.fill` documents. Without it the resting
-  // rule emits no `background-image` at all, so hover has nothing to animate
-  // from.
-  // A disabled chip can still hold focus (a tooltip Tab stop), and the overlay
-  // there would read as live, so it stays on the resting layer.
-  fill: {
-    '': '#current #black.0',
-    '(hovered | focused) & !disabled': '#current #black.08',
-    pressed: '#current #black.16',
-  },
-  // Disabled is expressed HERE and nowhere else, and that is the whole trick.
-  // `fill` resolves `currentcolor` against this element's own `color`, so fading
-  // it once fades the chip with it: the default entry still reads `#current`,
-  // which under `disabled` is already the `.4` color, and the chip lands at
-  // exactly `.4`. Writing `.4` in both would apply the fade twice and land it at
-  // `.16` — the pre-multiply trap the other `current` ramps document at length.
-  //
-  // It has to fade rather than stay put, because descendants read it too: an
-  // action inside a disabled row suppresses its OWN fade on the grounds that
-  // the host already muted the color it paints from (see
-  // `CURRENT_ITEM_STYLES.color`), so a host that stayed at full strength would
-  // hand it a live color next to a dead chip.
-  color: {
-    '': '#current',
-    // See `CURRENT_ITEM_STYLES.color` for why this is gated rather than a bare
-    // `disabled`: both mods mark a color that something above already faded.
-    'disabled & !inherit-disabled & !inside-wrapper': '#current.4',
-  },
-  // The label. Faded on a bare `disabled`, unlike the `#current`-derived values
-  // around it: the gate those carry protects an INHERITED value, since `#current`
-  // is already muted by a disabled host and fading it again would multiply.
-  // `#current-fill` is not inherited from that faded color — a container offers
-  // the live value only — so this has to do the fading itself.
-  '-webkit-text-fill-color': {
-    '': '#current-fill',
-    disabled: '#current-fill.5',
+export const CURRENT_PRIMARY_STYLES: Styles = mergeStyles(
+  CURRENT_FOCUS_RING,
+  {
+    // Every other `primary` rims its fill with a lighter sibling
+    // (`accent-surface-border` over `accent-surface`, cr 1.48 against it in both
+    // schemes). An arbitrary inherited color has no such sibling, so the rim comes
+    // from the same token the label does — the one color guaranteed to sit on the
+    // opposite side of the fill in either scheme, and the one a container can
+    // redirect, so the rim cannot come apart from the label it edges. `.25`
+    // measures cr 1.82 in light and 1.55 in dark against the fill: the brand rim's
+    // presence, a shade more so in light, where `current` has no other edge cue.
+    //
+    // Disabled swaps to the neutral text color, and has to. The chip there is a
+    // `.4` tint sitting close to the page, so a `#surface` rim washes into the
+    // page rather than defining the chip; `#surface-text` goes the other way and
+    // holds cr ~1.5 against the chip AND 2.8–3.7 against the page. It is also
+    // immune to the `.4` fade below, which `#current` is not — a `#current` rim on
+    // a disabled chip resolves to the fill's own color and disappears.
+    border: {
+      '': '#current-fill.25',
+      disabled: '#surface-text.2',
+    },
+    // The resting entry carries a transparent second layer so every state has the
+    // same two-layer shape and the overlay interpolates instead of snapping in —
+    // the same pin `DEFAULT_PRIMARY_STYLES.fill` documents. Without it the resting
+    // rule emits no `background-image` at all, so hover has nothing to animate
+    // from.
+    // A disabled chip can still hold focus (a tooltip Tab stop), and the overlay
+    // there would read as live, so it stays on the resting layer.
+    fill: {
+      '': '#current #black.0',
+      '(hovered | focused) & !disabled': '#current #black.08',
+      pressed: '#current #black.16',
+    },
+    // Disabled is expressed HERE and nowhere else, and that is the whole trick.
+    // `fill` resolves `currentcolor` against this element's own `color`, so fading
+    // it once fades the chip with it: the default entry still reads `#current`,
+    // which under `disabled` is already the `.4` color, and the chip lands at
+    // exactly `.4`. Writing `.4` in both would apply the fade twice and land it at
+    // `.16` — the pre-multiply trap the other `current` ramps document at length.
+    //
+    // It has to fade rather than stay put, because descendants read it too: an
+    // action inside a disabled row suppresses its OWN fade on the grounds that
+    // the host already muted the color it paints from (see
+    // `CURRENT_ITEM_STYLES.color`), so a host that stayed at full strength would
+    // hand it a live color next to a dead chip.
+    color: {
+      '': '#current',
+      // See `CURRENT_ITEM_STYLES.color` for why this is gated rather than a bare
+      // `disabled`: both mods mark a color that something above already faded.
+      'disabled & !inherit-disabled & !inside-wrapper': '#current.4',
+    },
+    // The label. Faded on a bare `disabled`, unlike the `#current`-derived values
+    // around it: the gate those carry protects an INHERITED value, since `#current`
+    // is already muted by a disabled host and fading it again would multiply.
+    // `#current-fill` is not inherited from that faded color — a container offers
+    // the live value only — so this has to do the fading itself.
+    '-webkit-text-fill-color': {
+      '': '#current-fill',
+      disabled: '#current-fill.5',
+    },
   },
   // Every slot that paints from `currentColor` rather than from the glyph fill.
   // `-webkit-text-fill-color` inherits into the text slots for free, but two
@@ -1325,7 +1344,7 @@ export const CURRENT_PRIMARY_STYLES: Styles = {
   //
   // This is the one variant where `color` is not the label, so it is the one
   // variant that has to hand the label down by hand.
-  ...Object.fromEntries(
+  Object.fromEntries(
     ['Icon', 'RightIcon', 'Prefix', 'Suffix', 'Actions'].map((slot) => [
       slot,
       {
@@ -1339,16 +1358,15 @@ export const CURRENT_PRIMARY_STYLES: Styles = {
       },
     ]),
   ),
-} as const;
+);
 
 // Link flavour — no chip at all, only the label. The brand themes intensify from
 // `accent-text-soft` at rest to `accent-text` on hover; with one color to work
 // with, "soft" is that color at `.8` and "strong" is it at full opacity.
-export const CURRENT_LINK_STYLES: Styles = {
-  ...CURRENT_FOCUS_RING,
+export const CURRENT_LINK_STYLES: Styles = mergeStyles(CURRENT_FOCUS_RING, {
   border: 0,
   fill: {
-    '': 'transparent',
+    '': '#clear',
   },
   color: {
     '': '#current.8',
@@ -1356,7 +1374,7 @@ export const CURRENT_LINK_STYLES: Styles = {
     // See `CURRENT_ITEM_STYLES.color`.
     'disabled & !inherit-disabled & !inside-wrapper': '#current.4',
   },
-} as const;
+});
 
 // Card flavour — the `current` counterpart of `*_CARD_STYLES`: a static,
 // non-interactive panel. The label stays at full opacity so the tint and border

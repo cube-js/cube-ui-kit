@@ -61,9 +61,9 @@ function round(value: number, precision = 2): number {
 /**
  * `count` evenly spaced gradient stops, always as hex. Perceptual channels are
  * not linear in sRGB, so a two-stop gradient would misrepresent them —
- * sampling the real conversion keeps the track honest. Hex (rather than an
- * `okhsl()` string) because the gradient reaches the DOM as a raw custom
- * property, without passing through Tasty's color functions.
+ * sampling the real conversion keeps the track honest. Hex works in any
+ * browser, and Tasty's token parser keeps each stop's literal as the fallback
+ * of a `var(--<hex>-color, #<hex>)` reference.
  */
 function ramp(count: number, at: (position: number) => ColorValue): string {
   return Array.from({ length: count }, (_, index) =>

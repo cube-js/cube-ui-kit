@@ -32,6 +32,48 @@ Concretely:
 
 When you do need to widen something inside `Root`'s tree, `node scripts/chromatic-report.mjs --trace <file>` shows what it costs before you commit to it.
 
+# Inline style
+
+React's `style` prop bypasses Tasty: no tokens, units or states, and nothing a consumer's `styles` can override. `.oxlintrc.json` makes it an error on every element, through `react/forbid-component-props` and `react/forbid-dom-props`, in runtime code and stories alike. Specs are exempt, because they set inline styles to stage layouts and to check that a consumer's `style` reaches the DOM.
+
+Use the Tasty channel that fits the value:
+
+- **A value that changes at runtime** (a measured width, a drag position, a picked color): declare `$name` or `#name` in the element's styles and pass the value through `tokens`, for example ``tokens={{ '$panel-size': `${size}px` }}``. It renders as the same inline custom property, without a new style rule per value. A bare number renders unitless (`'$x': 12` gives `--x: 12`), so add the unit yourself.
+- **A fixed value**: put it in the element's `styles`, or in a style prop such as `width="25x"`.
+- **A value that depends on state**: a mod and a state map, not a conditional style object.
+
+Keep `style` only when something outside our styles owns the value, and say so on the line before it:
+
+```tsx
+// oxlint-disable-next-line react/forbid-component-props -- React Aria's overlay positioning computes these coordinates
+style={positionProps.style}
+```
+
+The accepted reasons are:
+
+- a library computes the value: React Aria positioning, a virtualizer, prism-react-renderer;
+- the component forwards its own public `style` prop;
+- the value sits on a native element with no Tasty element to carry a token, such as a table cell that `TableElement` styles through sub-element selectors;
+- our styles cannot express the value or cannot win the cascade for it, such as a `preset` that owns `font-family`; name the cause, and for a Tasty limitation its issue and the condition for removing the exception.
+
+The lint sees only a `style` JSX attribute. A `style` key in an object that reaches an element (`mergeProps(props, { style })`, a context value, a props object) gets past it, so hold those to the same rule in review, with the reason in a comment.
+
+Every disable directive needs a ` -- reason`, not only these ones. The repo-local `repo/require-disable-reason` rule (`scripts/oxlint-repo-rules.mjs`) fails a directive without one. A directive that names no rule, such as a file-wide `/* eslint-disable */`, switches that rule off too, so review has to check its reason.
+
+`tasty/no-style-prop` stays off. Since 1.8.2 it also recognizes Tasty components imported from relative modules, but it still covers only Tasty components, while the React rules cover every element, native and third-party ones included. Enabling both would need two directives on every exception.
+
+# Tasty lint rules
+
+`pnpm lint` runs Oxlint without `--deny-warnings`, so a rule at `warn` never fails CI: it is advisory. Every `@tenphi/eslint-plugin-tasty` rule UI Kit enforces is an `error` in `.oxlintrc.json`. `consistent-token-usage` is the one rule still at `warn`, until its hits are cleared (most of them are demo dimensions in stories). Add a new rule as `error` once it has no hits, or leave it off.
+
+An exception takes the same form as for inline style: `// oxlint-disable-next-line tasty/<rule> -- <reason>` on the line before (the older `eslint-disable-next-line` spelling works the same). The reasons accepted there, such as a library owning the value or a component forwarding its public prop, hold here too. Keep it to the line: a file-wide disable also waves through every later violation in that file.
+
+`no-style-spread` reports an object spread. Compose shared style objects with `mergeStyles(base, ...overrides)` instead: the plugin lints each of its object arguments, the first as a full base and later ones as partial overrides. `mergeStyles` merges sub-elements too, and an override state map that restates `''` replaces the base's map, while one without `''` extends it: a state it shares with the base replaces that entry in place, and a new state is added at the end. That covers splicing shared states into a map: `mergeStyles(theme, VALIDATION_STYLES)` appends the validation states to `theme`'s `border`. A spread that stays (the rule reports only the first of several at an object's top level, and each one in a nested map) is an exception whose reason names what it shares and why `mergeStyles` doesn't fit.
+
+Transitions and animations take their duration from a token. Leave the duration out to get the transition's own default (`$<name>-transition`, falling back to `$transition`), or name a duration token from `src/tokens/base.ts` (listed in the Usage docs). Derive a dependent timing from its token, such as `(2 * $overlay-transition)`, rather than hardcoding the result. A keyframe loop's length, or a one-off timing that no token's role covers, is an exception with its reason.
+
+Off on purpose: `no-style-prop` (see [Inline style](#inline-style)), `no-styles-prop` (UI Kit's own components pass `styles` down, and it is public API) and `prefer-shorthand-property` (single-side overrides are deliberate). `valid-custom-property` and `no-runtime-styles-mutation` stay off until their existing hits are cleared.
+
 # Markdown rules
 
 - **Never hard-wrap prose.** One paragraph is one line, in every `.md` and `.mdx` file — documentation, `AGENTS.md`, specs and changesets alike. No wrapping at 80 or 100 columns, no manual line breaks inside a sentence.

@@ -1338,9 +1338,6 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
       ref={wrapperRef}
       mods={mods}
       styles={styles}
-      style={{
-        zIndex: isFocused ? 1 : 'initial',
-      }}
       data-size={size}
       {...compositeFocusProps}
     >

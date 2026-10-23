@@ -10,6 +10,7 @@ import { Tag } from '../../content/Tag/Tag';
 import { Text } from '../../content/Text';
 import { FilterPicker } from '../../fields/FilterPicker';
 import { SearchInput } from '../../fields/SearchInput';
+import { Flex } from '../../layout/Flex';
 import { Flow } from '../../layout/Flow';
 import { Space } from '../../layout/Space';
 
@@ -394,7 +395,7 @@ function useServerQuery<T>(compute: () => T, deps: unknown[]) {
     // A newer request supersedes the one in flight, so the table never shows
     // the answer to a question the user has already moved on from.
     return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- the caller passes the dependency list
   }, deps);
 
   return { data, isLoading };
@@ -871,7 +872,7 @@ export const BulkActions: Story = {
         onAction: async (rows, { setLoading }) => {
           setLoading(true);
           await new Promise((resolve) => setTimeout(resolve, 900));
-          // eslint-disable-next-line no-console
+          // eslint-disable-next-line no-console -- the story logs the restart for the reader
           console.log(
             'restarted',
             rows.map((row) => row.name),
@@ -1282,9 +1283,9 @@ export const Virtualized: Story = {
 /** A compact result can end at its final row inside a taller flex pane. */
 export const AutoHeight: Story = {
   render: (args) => (
-    <div style={{ display: 'flex', flexDirection: 'column', height: 360 }}>
+    <Flex flow="column" height="45x">
       <ItemTable {...args} />
-    </div>
+    </Flex>
   ),
   args: {
     data: DEPLOYMENTS.slice(0, 4),

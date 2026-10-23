@@ -1874,7 +1874,7 @@ export const InForm = () => {
   };
 
   return (
-    <Form form={form} style={{ width: '30x' }} onSubmit={handleSubmit}>
+    <Form form={form} onSubmit={handleSubmit}>
       <FilterPicker
         isRequired
         name="technology"

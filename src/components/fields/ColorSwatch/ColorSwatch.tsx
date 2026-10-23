@@ -90,7 +90,7 @@ export interface CubeColorSwatchProps
  * A square of color. Decorative on its own — pair it with the value as text, or
  * with a control that names it.
  *
- * The color travels as an inline custom property rather than through `styles`,
+ * The color travels through `tokens` (an inline custom property), not `styles`,
  * so the swatch keeps a single cached style rule however often it changes.
  */
 export const ColorSwatch = forwardRef(function ColorSwatch(
@@ -110,7 +110,7 @@ export const ColorSwatch = forwardRef(function ColorSwatch(
       data-size={size}
       mods={{ empty: !resolved, ...mods }}
       styles={styles}
-      style={resolved ? { '--color-picker-color': toHex(resolved) } : undefined}
+      tokens={resolved ? { '#color-picker': toHex(resolved) } : undefined}
     />
   );
 });

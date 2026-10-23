@@ -28,6 +28,7 @@ const CubeElement = tasty({
       'position=right': 'cube-spin-right',
       'position=bottom': 'cube-spin-bottom',
     },
+    // oxlint-disable-next-line tasty/no-raw-motion-duration -- the length of one spin loop, tuned with its keyframes; not a UI transition
     animationDuration: '2.2s',
     animationIterationCount: 'infinite',
     animationTimingFunction: 'cubic-bezier(0.5, 0.05, 0.3, 0.95)',

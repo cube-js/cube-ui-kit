@@ -78,7 +78,7 @@ const ContentElement = tasty({
         '': 0,
         '(focused | scrolling) & scrollbar=tiny': 1,
       },
-      transition: 'opacity 0.15s',
+      transition: 'opacity $scrollbar-transition',
       pointerEvents: 'none',
     },
 
@@ -95,7 +95,7 @@ const ContentElement = tasty({
         '': 0,
         '(focused | scrolling) & scrollbar=tiny': 1,
       },
-      transition: 'opacity 0.15s',
+      transition: 'opacity $scrollbar-transition',
       pointerEvents: 'none',
     },
   },
@@ -137,16 +137,16 @@ function LayoutContent(
   const { hoverProps, isHovered } = useHover({});
 
   const {
-    handleVStyle,
-    handleHStyle,
+    handleVTokens,
+    handleHTokens,
     hasOverflowY,
     hasOverflowX,
     isScrolling,
   } = useTinyScrollbar(internalInnerRef, isTinyScrollbar);
 
-  const scrollbarStyle = isTinyScrollbar
-    ? { ...handleVStyle, ...handleHStyle }
-    : {};
+  const scrollbarTokens = isTinyScrollbar
+    ? { ...handleVTokens, ...handleHTokens }
+    : undefined;
 
   const mods = {
     ...externalMods,
@@ -169,7 +169,7 @@ function LayoutContent(
       {...hoverProps}
       mods={mods}
       styles={finalStyles}
-      style={scrollbarStyle}
+      tokens={scrollbarTokens}
     >
       <div ref={combinedInnerRef} data-element="Inner" {...innerProps}>
         <LayoutContextReset>{children}</LayoutContextReset>

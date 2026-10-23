@@ -142,8 +142,8 @@ function ChannelRow({ channel, color, isDisabled, onChange }: ChannelRowProps) {
         {channel.label}
       </ChannelLabelElement>
       <ChannelTrackElement
-        style={{
-          '--channel-gradient': `linear-gradient(to right, ${channel.stops(
+        tokens={{
+          '$channel-gradient': `linear-gradient(to right, ${channel.stops(
             color,
           )})`,
         }}
@@ -186,8 +186,8 @@ export function ColorPanel(props: ColorPanelProps) {
   const { t } = useI18n();
 
   const colorTokens = {
-    '--color-picker-color': toHex(color),
-    '--color-picker-contrast-color': getContrastingColor(color),
+    '#color-picker': toHex(color),
+    '#color-picker-contrast': getContrastingColor(color),
   };
 
   const handleSpaceChange = useEvent((value: string) => {
@@ -195,7 +195,7 @@ export function ColorPanel(props: ColorPanelProps) {
   });
 
   return (
-    <PanelElement style={colorTokens}>
+    <PanelElement tokens={colorTokens}>
       {input}
       <PreviewElement>{formatColor(color, previewFormat)}</PreviewElement>
       <Radio.Tabs

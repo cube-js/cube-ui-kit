@@ -1,5 +1,5 @@
 import { tasty } from '@tenphi/tasty';
-import { CSSProperties, RefObject, useRef } from 'react';
+import { RefObject, useRef } from 'react';
 
 import { useI18n } from '../../../i18n';
 import { useLayoutEffect } from '../../../utils/react/useLayoutEffect';
@@ -38,6 +38,7 @@ const CubeElement = tasty({
     },
     animationDuration: {
       '': '0s',
+      // oxlint-disable-next-line tasty/no-raw-motion-duration -- the length of one dice loop, tuned with its keyframes; not a UI transition
       'index=0 | index=1 | index=2': '2s',
     },
     animationIterationCount: {
@@ -51,6 +52,14 @@ const CubeElement = tasty({
     zIndex: {
       '': 0,
       'index=0 | index=1 | index=2': 0,
+    },
+    // The three cubes of the base row stand still; the animated ones move
+    // through the keyframes below.
+    transform: {
+      '': 'none',
+      'base=left': 'translate(0%, 72.5%)',
+      'base=right': 'translate(98%, 72.5%)',
+      'base=bottom': 'translate(49%, 96.5%)',
     },
 
     '@keyframes': {
@@ -124,10 +133,10 @@ function useTimelineSyncedAnimation(
 
 interface CubeProps {
   index?: 0 | 1 | 2;
-  style?: CSSProperties;
+  base?: 'left' | 'right' | 'bottom';
 }
 
-function Cube({ index, style }: CubeProps) {
+function Cube({ index, base }: CubeProps) {
   const ref = useRef<SVGSVGElement>(null);
 
   useTimelineSyncedAnimation(ref, index != null);
@@ -135,8 +144,7 @@ function Cube({ index, style }: CubeProps) {
   return (
     <CubeElement
       ref={ref}
-      mods={index != null ? { index } : undefined}
-      style={style}
+      mods={{ index, base }}
       viewBox="0 0 36 41"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
@@ -182,12 +190,12 @@ export function LoadingAnimation({
       aria-label={t('loadingAnimation.ariaLabel', 'Loading animation')}
       width={numSize}
       height={numSize * 1.1388888889}
-      style={{ position: 'relative' }}
+      position="relative"
       {...props}
     >
-      <Cube style={{ transform: 'translate(0%, 72.5%)' }} />
-      <Cube style={{ transform: 'translate(98%, 72.5%)' }} />
-      <Cube style={{ transform: 'translate(49%, 96.5%)' }} />
+      <Cube base="left" />
+      <Cube base="right" />
+      <Cube base="bottom" />
       <Cube index={0} />
       <Cube index={1} />
       <Cube index={2} />

@@ -1,6 +1,7 @@
 import { FocusableRef, PressEvent } from '@react-types/shared';
 import {
   CONTAINER_STYLES,
+  mergeStyles,
   Mods,
   Styles,
   tasty,
@@ -249,6 +250,7 @@ export const DEFAULT_BUTTON_STYLES: Styles = {
     '@parent(button-split, >) & !:first-child & (type=outline | type=outline-2 | type=primary)':
       '-1bw left',
   },
+  // oxlint-disable-next-line tasty/require-default-state -- outside a ButtonSplit the button sets no z-index, so the consumer's stacking applies
   zIndex: {
     '@parent(button-split, >) & :hover': 1,
     '@parent(button-split, >) & :focus-visible': 2,
@@ -284,8 +286,7 @@ export const DEFAULT_BUTTON_STYLES: Styles = {
   },
 
   // Icon sub-element (recommended format)
-  Icon: {
-    ...DEFAULT_ICON_STYLES,
+  Icon: mergeStyles(DEFAULT_ICON_STYLES, {
     width: {
       '': 'fixed 0px',
       'is-icon-shown': 'fixed ($size - 2bw)',
@@ -298,11 +299,10 @@ export const DEFAULT_BUTTON_STYLES: Styles = {
       '': '($size * 1 / 4) 0',
       'is-icon-shown': '0 0',
     },
-  },
+  }),
 
   // RightIcon sub-element (recommended format)
-  RightIcon: {
-    ...DEFAULT_ICON_STYLES,
+  RightIcon: mergeStyles(DEFAULT_ICON_STYLES, {
     width: {
       '': 'fixed 0px',
       'is-right-icon-shown': 'fixed ($size - 2bw)',
@@ -315,7 +315,7 @@ export const DEFAULT_BUTTON_STYLES: Styles = {
       '': '($size * -1 / 4) 0',
       'is-right-icon-shown': '0 0',
     },
-  },
+  }),
 
   // Label sub-element (recommended format)
   Label: {

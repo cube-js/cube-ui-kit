@@ -951,9 +951,6 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
       ref={wrapperRef}
       mods={mods}
       styles={styles}
-      style={{
-        zIndex: isFocused ? 1 : 'initial',
-      }}
       data-size={size}
       {...compositeFocusProps}
     >

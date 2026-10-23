@@ -443,6 +443,7 @@ function PopoverTrigger(allProps) {
       styles={styles}
       hideOnClose={hideOnClose}
       isOpen={state.isOpen}
+      // oxlint-disable-next-line react/forbid-component-props -- React Aria's overlay positioning computes these coordinates
       style={popoverProps.style}
       placement={placement ?? undefined}
       arrowProps={arrowProps}

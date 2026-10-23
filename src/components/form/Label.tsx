@@ -20,20 +20,23 @@ import { extractStyles } from '../../utils/styles';
 
 import { getValidationMods } from './validation/index';
 
+const RequiredIconElement = tasty({
+  as: 'svg',
+  element: 'RequiredIcon',
+  styles: {
+    width: '.8em',
+    height: '.8em',
+    transform: 'rotate(-5deg)',
+  },
+});
+
 const REQUIRED_ICON = (
-  <svg
+  <RequiredIconElement
     xmlns="http://www.w3.org/2000/svg"
     version="1.1"
     x="0px"
     y="0px"
     viewBox="0 0 100 125"
-    style={{
-      // @ts-ignore
-      enableBackground: 'new 0 0 100 100',
-      width: '.8em',
-      height: '.8em',
-      transform: 'rotate(-5deg)',
-    }}
   >
     <switch>
       <g>
@@ -43,7 +46,7 @@ const REQUIRED_ICON = (
         />
       </g>
     </switch>
-  </svg>
+  </RequiredIconElement>
 );
 
 /**

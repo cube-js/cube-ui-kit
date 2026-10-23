@@ -3,6 +3,7 @@ import {
   BaseProps,
   BLOCK_STYLES,
   BlockStyleProps,
+  mergeStyles,
   OUTER_STYLES,
   OuterStyleProps,
   Styles,
@@ -77,10 +78,9 @@ const CUSTOM_SWATCH_STYLES: Styles = {
  * The ring goes on the swatch, not on the button around it: an inset shadow
  * paints under child content, and the swatch covers the button edge to edge.
  */
-const CUSTOM_SWATCH_SELECTED_STYLES: Styles = {
-  ...CUSTOM_SWATCH_STYLES,
+const CUSTOM_SWATCH_SELECTED_STYLES = mergeStyles(CUSTOM_SWATCH_STYLES, {
   shadow: SELECTED_RING,
-};
+});
 
 const GroupElement = tasty({
   qa: 'ColorSwatchGroup',
@@ -237,7 +237,7 @@ function Swatch({
         ...mods,
       }}
       styles={styles}
-      style={{ '--color-swatch-color': colorKey }}
+      tokens={{ '#color-swatch': colorKey }}
     >
       <HiddenInput
         {...mergeProps(inputProps, focusProps)}
@@ -382,7 +382,7 @@ export const ColorSwatchGroup = forwardRef(function ColorSwatchGroup(
         ...getValidationMods({ isInvalid, isValid }),
         columns: !!columns,
       }}
-      style={columns ? { '--columns': String(columns) } : undefined}
+      tokens={columns ? { $columns: columns } : undefined}
     >
       <RadiosElement {...radioGroupProps}>
         {swatches.map((swatch) => (

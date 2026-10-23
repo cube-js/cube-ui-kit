@@ -311,25 +311,21 @@ function LayoutInner(
     return () => cancelAnimationFrame(frameId);
   }, [isAutoHeight, hasBox]);
 
-  const insetStyle = useMemo(() => {
-    const baseStyle: Record<string, string> = {
-      '--inset-top': `${panelSizes.top}px`,
-      '--inset-right': `${panelSizes.right}px`,
-      '--inset-bottom': `${panelSizes.bottom}px`,
-      '--inset-left': `${panelSizes.left}px`,
-    };
-
-    if (style) {
-      return { ...baseStyle, ...style } as CSSProperties;
-    }
-
-    return baseStyle as CSSProperties;
-  }, [panelSizes, style]);
+  const insetTokens = useMemo(
+    () => ({
+      '$inset-top': `${panelSizes.top}px`,
+      '$inset-right': `${panelSizes.right}px`,
+      '$inset-bottom': `${panelSizes.bottom}px`,
+      '$inset-left': `${panelSizes.left}px`,
+    }),
+    [panelSizes],
+  );
 
   // Remove consumer longhands while clipping so they cannot override the shorthand.
   // Restoring the original style object also restores the latest consumer values.
-  const transitionStyle = { ...insetStyle };
+  let transitionStyle: CSSProperties | undefined = style;
   if (isClippingPanels) {
+    transitionStyle = { ...style };
     delete transitionStyle.overflowX;
     delete transitionStyle.overflowY;
     delete transitionStyle.overflowInline;
@@ -422,6 +418,8 @@ function LayoutInner(
       {...filterBaseProps(otherProps, { eventProps: true })}
       mods={mods}
       styles={finalStyles}
+      tokens={insetTokens}
+      // oxlint-disable-next-line react/forbid-component-props -- forwards the consumer's public `style`; while clipping, the overflow shorthand must also beat its inline longhands
       style={transitionStyle}
       onKeyDown={hasOverlayPanels ? handleKeyDown : undefined}
     >

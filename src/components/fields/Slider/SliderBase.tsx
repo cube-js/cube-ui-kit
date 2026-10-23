@@ -192,6 +192,7 @@ function SliderBase(
     ) : (
       <LabelValueElement
         {...outputProps}
+        // oxlint-disable-next-line react/forbid-component-props -- `Text` drops `tokens` until tenphi/tasty#432 lands; move this width to a token then
         style={
           maxLabelLength
             ? {

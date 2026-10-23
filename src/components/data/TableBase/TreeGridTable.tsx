@@ -167,6 +167,7 @@ export function TreeGridTable<T>(props: {
       {...mergeProps(gridProps, tableProps)}
       ref={ref}
       role="treegrid"
+      // oxlint-disable-next-line react/forbid-dom-props -- the columns' resolved total width sizes the native table
       style={style}
       onBlurCapture={handleBlurCapture}
       onKeyDownCapture={handleKeyDownCapture}

@@ -1,4 +1,5 @@
 import { Pressable } from '@react-aria/interactions';
+import { tasty } from '@tenphi/tasty';
 import {
   ComponentProps,
   ComponentType,
@@ -22,6 +23,33 @@ import { mergeProps } from '../../utils/react';
 import { usePopoverSync } from '../../utils/react/usePopoverSync';
 
 import { MenuTrigger } from './Menu';
+
+// A zero-size `fixed` host, so the anchor's coordinates are viewport ones.
+const ContextMenuHostElement = tasty({
+  qa: 'ContextMenuHost',
+  styles: {
+    position: 'fixed',
+    inset: '0 auto auto 0',
+    width: 0,
+    height: 0,
+  },
+});
+
+// Invisible anchor at the pointer's coordinates.
+const ContextMenuAnchorElement = tasty({
+  as: 'span',
+  qa: 'ContextMenuAnchor',
+  styles: {
+    position: 'absolute',
+    left: '$anchor-x',
+    top: '$anchor-y',
+    width: 0,
+    height: 0,
+    lineHeight: 0,
+    pointerEvents: 'none',
+    visibility: 'hidden',
+  },
+});
 
 type NativeMouseEvent = globalThis.MouseEvent;
 type NativePointerEvent = globalThis.PointerEvent;
@@ -303,29 +331,15 @@ export function useContextMenu<
              would still be anchored to the row.
         */}
         {createPortal(
-          <div
-            style={{
-              position: 'fixed',
-              left: 0,
-              top: 0,
-              width: 0,
-              height: 0,
-            }}
-          >
-            <span
+          <ContextMenuHostElement>
+            <ContextMenuAnchorElement
               ref={invisibleAnchorRef}
-              style={{
-                position: 'absolute',
-                left: `${anchorPosition.x}px`,
-                top: `${anchorPosition.y}px`,
-                width: '0px',
-                height: '0px',
-                lineHeight: '0',
-                pointerEvents: 'none',
-                visibility: 'hidden',
+              tokens={{
+                '$anchor-x': `${anchorPosition.x}px`,
+                '$anchor-y': `${anchorPosition.y}px`,
               }}
             />
-          </div>,
+          </ContextMenuHostElement>,
           document.body,
         )}
         <MenuTrigger
