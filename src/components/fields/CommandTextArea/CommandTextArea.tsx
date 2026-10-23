@@ -172,7 +172,7 @@ export interface CubeCommandTextAreaProps<T> extends Omit<
   optionStyles?: any;
   sectionStyles?: any;
   headingStyles?: any;
-  /** Space between options, in pixels. Defaults to a hairline (`1bw`). */
+  /** Space between options, in pixels. Defaults to a hairline (`$item-gap`, `1px`). */
   listGap?: number;
 }
 

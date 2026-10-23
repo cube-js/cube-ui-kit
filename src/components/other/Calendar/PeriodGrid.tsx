@@ -9,6 +9,8 @@ const PeriodGridElement = tasty({
   styles: {
     borderCollapse: 'collapse',
     borderSpacing: 0,
+    // Cells sit two device pixels apart. The owner's width counts it too.
+    '$cell-gap': '2px',
     // Columns share the width evenly. The owner passes that width explicitly —
     // a percentage here would resolve against the popover's `max-content` box.
     tableLayout: 'fixed',
@@ -20,7 +22,7 @@ const PeriodGridCellElement = tasty({
   role: 'gridcell',
   styles: {
     margin: 0,
-    padding: '2bw right bottom',
+    padding: '$cell-gap right bottom',
   },
 });
 

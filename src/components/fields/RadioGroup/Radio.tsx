@@ -178,8 +178,8 @@ const RadioNormalElement = tasty({
     width: '2x',
     height: '2x',
     outline: {
-      '': '#primary-text.0 / 1bw',
-      focused: '1bw #primary-text / 1bw',
+      '': '#primary-text.0 / $outline-offset',
+      focused: '$ring-width #primary-text / $outline-offset',
     },
     transition: 'theme',
     whiteSpace: 'nowrap',

@@ -24,7 +24,9 @@ const LiteralSegmentElement = tasty({
 const EditableSegmentElement = tasty({
   qa: 'EditableSegment',
   styles: {
-    padding: '0 1bw',
+    // Keeps neighbouring segments a device pixel apart.
+    '$segment-inset': '1px',
+    padding: '0 $segment-inset',
     fontVariantNumeric: 'tabular-nums lining-nums',
     textAlign: 'right',
     font: 'monospace',

@@ -440,7 +440,7 @@ const borderSamples = [
 ] as const;
 
 const shadowSamples = [
-  ['$item-shadow', '0 1bw .375x #shadow-sm'],
+  ['$item-shadow', '0 1px .375x #shadow-sm'],
   ['$card-shadow', '0 .5x 2x #shadow-md'],
   ['$dialog-shadow', '0 1x 4x #shadow-lg'],
 ] as const;

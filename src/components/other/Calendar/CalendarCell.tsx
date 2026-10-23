@@ -10,7 +10,9 @@ const CalendarCellElement = tasty({
   as: 'td',
   styles: {
     margin: 0,
-    padding: '2bw right bottom',
+    // Days sit two device pixels apart.
+    '$cell-gap': '2px',
+    padding: '$cell-gap right bottom',
   },
 });
 

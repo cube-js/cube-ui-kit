@@ -81,8 +81,9 @@ const RadioGroupElement = tasty({
     // single chrome (tabs) — the classic vertical radio list already shows
     // a per-item focus ring on the radio circle.
     outline: {
-      '': '1bw #primary-text.0 / 1bw',
-      'focused & (button | tabs)': '1bw #primary-text / 1bw',
+      '': '$ring-width #primary-text.0 / $outline-offset',
+      'focused & (button | tabs)':
+        '$ring-width #primary-text / $outline-offset',
     },
   },
 });

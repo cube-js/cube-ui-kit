@@ -37,7 +37,7 @@ A versatile list selection component that allows users to select one or more ite
 - **`disabledKeys`** `Key[]` — Array of keys for disabled items
 - **`size`** `'small' | 'medium' | 'large'` (default: `medium`) — ListBox size
 - **`shape`** `'card' | 'plain' | 'popover'` (default: `card`) — Visual shape of the ListBox
-- **`listGap`** `number` — Space between options, in pixels. Defaults to a hairline (`1bw`)
+- **`listGap`** `number` — Space between options, in pixels. Defaults to a hairline (`$item-gap`, `1px`)
 - **`filter`** `(nodes: Iterable<Node>) => Iterable<Node>` — Filter function for the list items
 - **`emptyLabel`** `ReactNode` (default: `No items`) — Label shown when no items are available. The empty listbox stays in the document, described by this label
 - **`header`** `ReactNode` — Custom header content
@@ -193,7 +193,7 @@ The `mods` property accepts the following modifiers you can override:
 - Use `plain` when embedding ListBox directly into another component
 - Use `popover` when using ListBox inside overlays (Dialog, ComboBox, Picker)
 
-**listGap** (`number`, default: a hairline, `1bw`)
+**listGap** (`number`, default: a hairline, `$item-gap`)
 
 - The space between options, in pixels
 - Use it rather than a margin in `optionStyles`: a virtualized list positions its options itself, so it ignores their margins

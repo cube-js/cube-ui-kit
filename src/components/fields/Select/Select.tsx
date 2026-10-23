@@ -116,10 +116,10 @@ export const ListBoxElement = tasty({
   as: 'ul',
   styles: {
     // Set from `listGap`. A section's list inherits it from the popup's.
-    '$list-gap': { '': '1bw', section: false },
+    '$list-gap': { '': '$item-gap', section: false },
     display: 'flex',
     // It spaces options: sections and dividers keep a hairline.
-    gap: { '': '$list-gap', sections: '1bw' },
+    gap: { '': '$list-gap', sections: '$item-gap' },
     flow: 'column',
     margin: '0',
     padding: '0',
@@ -265,7 +265,7 @@ export interface CubeSelectBaseProps<T>
   optionStyles?: Styles;
   triggerStyles?: Styles;
   listBoxStyles?: Styles;
-  /** Space between options, in pixels. Defaults to a hairline (`1bw`). */
+  /** Space between options, in pixels. Defaults to a hairline (`$item-gap`, `1px`). */
   listGap?: number;
   overlayStyles?: Styles;
   direction?: 'top' | 'bottom';

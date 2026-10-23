@@ -850,7 +850,7 @@ function ApplicationShell() {
           title="Navigation"
           onClose={() => setSidebarOpen(false)}
         />
-        <Layout.Content padding=".5x" scrollbar="tiny" gap="1bw">
+        <Layout.Content padding=".5x" scrollbar="tiny" gap="$item-gap">
           {['Dashboard', 'Analytics', 'Reports'].map((item) => (
             <ItemButton key={item} type="clear" width="100%">
               {item}

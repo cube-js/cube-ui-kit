@@ -254,7 +254,7 @@ export interface CubeTagInputProps<T = object>
   sectionStyles?: Styles;
   /** Styles for option section headings. */
   headingStyles?: Styles;
-  /** Space between options, in pixels. Defaults to a hairline (`1bw`). */
+  /** Space between options, in pixels. Defaults to a hairline (`$item-gap`, `1px`). */
   listGap?: number;
 }
 

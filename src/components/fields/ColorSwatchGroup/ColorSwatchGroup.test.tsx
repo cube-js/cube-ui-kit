@@ -14,7 +14,7 @@ vi.mock('../../../_internal/hooks/use-warn');
 const PALETTE = ['#7a4dbf', '#26fcb2', '#ff0000'];
 
 /** The inner ring of the selection mark, which nothing else draws. */
-const INNER_RING = 'calc(4 * var(--border-width))';
+const INNER_RING = 'calc(4 * var(--ring-width))';
 
 describe('<ColorSwatchGroup />', () => {
   it('renders one swatch per color', () => {

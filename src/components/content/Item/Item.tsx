@@ -580,7 +580,7 @@ const ItemElement = tasty({
       zIndex: { '': undefined, '@native-row': 1 },
       pointerEvents: { '': undefined, '@native-row': 'none' },
       display: 'flex',
-      gap: '1bw',
+      gap: '$item-gap',
       placeItems: 'center',
       placeContent: 'end',
       placeSelf: 'stretch',

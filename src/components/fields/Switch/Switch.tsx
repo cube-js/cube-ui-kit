@@ -79,7 +79,7 @@ const SwitchElement = tasty({
     },
     outline: {
       '': '#primary-text.0',
-      focused: '1bw #primary-text',
+      focused: '$ring-width #primary-text',
     },
     outlineOffset: '$outline-offset',
     transition: 'theme',
