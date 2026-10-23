@@ -228,7 +228,7 @@ const PaneElement = tasty({
       position: 'absolute',
       right: {
         '': '1bw',
-        'edge=right': `${HANDLER_RESERVED + 1}px`,
+        'edge=right': `(${HANDLER_RESERVED}px + 1bw)`,
       },
       top: '$scrollbar-v-top',
       width: '1ow',
@@ -248,7 +248,7 @@ const PaneElement = tasty({
       position: 'absolute',
       bottom: {
         '': '1bw',
-        'edge=bottom': `${HANDLER_RESERVED + 1}px`,
+        'edge=bottom': `(${HANDLER_RESERVED}px + 1bw)`,
       },
       left: '$scrollbar-h-left',
       height: '1ow',

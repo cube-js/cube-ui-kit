@@ -1462,7 +1462,11 @@
         "**/*.test.ts",
         "**/*.test.tsx",
         "**/*.test.jsx",
-        "src/test/**"
+        "**/*.test-d.tsx",
+        "**/*.fixture.tsx",
+        "**/storybook/**",
+        "src/test/**",
+        "src/eslint-plugin/fixtures.tsx"
       ],
       "rules": {
         "tasty/consistent-token-usage": "warn"

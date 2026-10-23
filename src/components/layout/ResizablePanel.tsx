@@ -40,7 +40,8 @@ const HandlerElement = tasty({
   qa: 'ResizeHandler',
   styles: {
     // The handle's geometry is in device pixels so the grip stays crisp at any
-    // gap; every other offset below derives from these two.
+    // gap: `$grip-size` is the track's thickness and each dot's length. The
+    // track and dot offsets below derive from these two.
     '$handle-size': '9px',
     '$grip-size': '3px',
 
