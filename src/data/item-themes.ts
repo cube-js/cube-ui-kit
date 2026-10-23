@@ -1,10 +1,11 @@
 import { mergeStyles, Styles } from '@tenphi/tasty';
 
 export const VALIDATION_STYLES: Styles = {
+  // oxlint-disable-next-line tasty/require-default-state -- an override layer for mergeStyles(theme, VALIDATION_STYLES): it adds states to the theme's border map, which carries the default
   border: {
     invalid: '#danger-accent-text',
     valid: '#success-accent-text',
-  } as Record<string, string>,
+  },
 } as const;
 
 // Base styles shared between ItemAction and ItemBadge
