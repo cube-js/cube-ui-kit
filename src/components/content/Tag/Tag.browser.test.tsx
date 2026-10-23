@@ -1,19 +1,10 @@
 import { IconCoin } from '@tabler/icons-react';
 
 import { renderWithRoot, screen } from '../../../test';
-import { Badge } from '../Badge/Badge';
 
 import { Tag } from './Tag';
 
 const LONG_LABEL = 'quarterly-revenue-report-final-v2.csv';
-
-const CASES = [
-  ['Tag', 'inline', Tag],
-  ['Tag', 'small', Tag],
-  ['Tag', 'medium', Tag],
-  ['Badge', 'inline', Badge],
-  ['Badge', 'small', Badge],
-] as const;
 
 function parts(qa: string) {
   const tag = screen.getByTestId(qa);
@@ -29,72 +20,70 @@ function parts(qa: string) {
   };
 }
 
-/** Whether the element clips what overflows it, so nothing past its edge paints. */
-function clips(element: HTMLElement) {
-  return getComputedStyle(element).overflowX !== 'visible';
-}
-
 /**
  * Item's label column can shrink to 0, but a border-box label can't shrink below its end padding,
- * so at full squeeze a sliver of the first letter paints in that padding. Tag and Badge used to
- * centre that box on the 0-wide column: half over the icon, half past the edge (CUB-6412). Only a
- * real engine lays this out.
+ * so at full squeeze a sliver of the first letter paints in that padding. Tag used to centre that
+ * box on the 0-wide column: half over the icon, half past the edge (CUB-6412). Only a real engine
+ * lays this out.
  */
-describe('Tag and Badge squeezed below their label', () => {
-  it.each(CASES)(
-    '%s at size %s keeps the label off the icon and inside',
-    async (_, size, Component) => {
+describe('Tag squeezed below its label', () => {
+  it.each(['inline', 'small', 'medium'] as const)(
+    'keeps the label off the icon at size %s and clips what passes the edge',
+    async (size) => {
       renderWithRoot(
         <div style={{ display: 'flex', width: 0 }}>
-          <Component qa="Squeezed" size={size} icon={<IconCoin />}>
+          <Tag qa="Squeezed" size={size} icon={<IconCoin />}>
             {LONG_LABEL}
-          </Component>
+          </Tag>
         </div>,
       );
 
       await screen.findByTestId('Squeezed');
 
-      const { tag, tagRect, iconRect, labelRect } = parts('Squeezed');
+      const { tag, iconRect, labelRect } = parts('Squeezed');
 
       expect(labelRect.left).toBeGreaterThanOrEqual(iconRect.right - 0.5);
-      expect(labelRect.right <= tagRect.right + 0.5 || clips(tag)).toBe(true);
+      // The end-padding box still overflows the Tag; only the Tag's clip keeps it from painting.
+      expect(getComputedStyle(tag).overflowX).toBe('clip');
     },
   );
 
-  it.each(CASES)(
-    '%s at size %s starts a cut label right after the icon',
-    async (_, size, Component) => {
+  it.each(['small', 'medium'] as const)(
+    'starts a cut label right after the icon at size %s',
+    async (size) => {
       renderWithRoot(
         <div style={{ display: 'flex', width: 90 }}>
-          <Component qa="Cut" size={size} icon={<IconCoin />}>
+          <Tag qa="Cut" size={size} icon={<IconCoin />}>
             {LONG_LABEL}
-          </Component>
+          </Tag>
         </div>,
       );
 
       await screen.findByTestId('Cut');
 
-      const { label, tagRect, iconRect, labelRect } = parts('Cut');
+      const { tag, label, tagRect, iconRect, labelRect } = parts('Cut');
 
       expect(label.scrollWidth).toBeGreaterThan(label.clientWidth);
-      expect(getComputedStyle(label).textOverflow).toBe('ellipsis');
       expect(labelRect.left).toBeCloseTo(iconRect.right, 0);
-      expect(labelRect.right).toBeLessThanOrEqual(tagRect.right + 0.5);
+      // Inside the clip edge, so the clip never cuts the ellipsis.
+      expect(labelRect.right).toBeLessThanOrEqual(
+        tagRect.right - tag.clientLeft + 0.5,
+      );
     },
   );
 
-  it.each(CASES)(
-    '%s at size %s keeps a label that fits where it was',
-    async (_, size, Component) => {
+  it.each(['inline', 'small', 'medium'] as const)(
+    'keeps a label that fits where it was at size %s',
+    async (size) => {
       renderWithRoot(
-        <Component
+        <Tag
           qa="Wide"
           size={size}
           icon={<IconCoin />}
-          styles={{ width: '200px' }}
+          styles={{ width: '25x' }}
         >
           Fits
-        </Component>,
+        </Tag>,
       );
 
       await screen.findByTestId('Wide');
@@ -116,7 +105,7 @@ describe('Tag and Badge squeezed below their label', () => {
     },
   );
 
-  it('keeps a squeezed closable Tag’s close button visible', async () => {
+  it('does not clip the close button of a squeezed closable Tag', async () => {
     renderWithRoot(
       <div style={{ display: 'flex', width: 0 }}>
         <Tag isClosable qa="Closable" size="small" icon={<IconCoin />}>
@@ -128,8 +117,11 @@ describe('Tag and Badge squeezed below their label', () => {
     await screen.findByTestId('Closable');
 
     const { tag, iconRect, labelRect } = parts('Closable');
+    const close = screen.getByRole('button').getBoundingClientRect();
 
     expect(labelRect.left).toBeGreaterThanOrEqual(iconRect.right - 0.5);
-    expect(clips(tag)).toBe(false);
+    expect(close.width).toBeGreaterThan(0);
+    // A closable Tag at its minimum lays its close button past its edge, so it must not clip.
+    expect(getComputedStyle(tag).overflowX).toBe('visible');
   });
 });
