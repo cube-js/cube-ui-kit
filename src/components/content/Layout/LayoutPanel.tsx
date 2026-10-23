@@ -146,14 +146,22 @@ const ResizeHandlerElement = tasty({
   styles: {
     position: 'absolute',
 
+    // The handle's geometry is in device pixels so the grip stays crisp at any
+    // gap: `$grip-size` is the track's thickness and each dot's length, and
+    // `$dot-size` each dot's thickness. The track and dot offsets below derive
+    // from these.
+    '$handle-size': `${HANDLER_WIDTH}px`,
+    '$grip-size': '3px',
+    '$dot-size': '1px',
+
     // Handler size
     width: {
       '': '100%',
-      horizontal: `${HANDLER_WIDTH}px`,
+      horizontal: '$handle-size',
       'disabled & horizontal': '1bw',
     },
     height: {
-      '': `${HANDLER_WIDTH}px`,
+      '': '$handle-size',
       horizontal: '100%',
       'disabled & !horizontal': '1bw',
     },
@@ -211,18 +219,18 @@ const ResizeHandlerElement = tasty({
     Track: {
       width: {
         '': 'initial',
-        horizontal: '3px',
-        'disabled & horizontal': '1px',
+        horizontal: '$grip-size',
+        'disabled & horizontal': '1bw',
       },
       height: {
-        '': '3px',
+        '': '$grip-size',
         horizontal: 'initial',
-        'disabled & !horizontal': '1px',
+        'disabled & !horizontal': '1bw',
       },
       position: 'absolute',
       inset: {
-        '': '3px 0',
-        horizontal: '0 3px',
+        '': '(($handle-size - $grip-size) / 2) 0',
+        horizontal: '0 (($handle-size - $grip-size) / 2)',
         disabled: '0 0',
       },
       fill: {
@@ -235,7 +243,7 @@ const ResizeHandlerElement = tasty({
         '': '1bw #primary-text.0',
         'drag | focused': '1bw #primary-text',
       },
-      outlineOffset: 1,
+      outlineOffset: '$outline-offset',
     },
 
     Drag: {
@@ -247,24 +255,24 @@ const ResizeHandlerElement = tasty({
         horizontal: 'column',
       },
       gridColumns: {
-        '': '3px 3px 3px 3px 3px',
+        '': 'repeat(5, $grip-size)',
         horizontal: 'auto',
       },
       gridRows: {
         '': 'auto',
-        horizontal: '3px 3px 3px 3px 3px',
+        horizontal: 'repeat(5, $grip-size)',
       },
       width: {
         '': 'auto',
-        horizontal: '1px',
+        horizontal: '$dot-size',
       },
       height: {
-        '': '1px',
+        '': '$dot-size',
         horizontal: 'auto',
       },
       inset: {
-        '': '4px 50% auto auto',
-        horizontal: '50% 4px auto auto',
+        '': '(($handle-size - $dot-size) / 2) 50% auto auto',
+        horizontal: '50% (($handle-size - $dot-size) / 2) auto auto',
       },
       transform: {
         '': 'translate(-50%, 0)',

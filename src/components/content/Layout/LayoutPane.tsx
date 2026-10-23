@@ -225,10 +225,12 @@ const PaneElement = tasty({
 
     // Custom scrollbar handles (when scrollbar="tiny")
     ScrollbarV: {
+      // It sits a device pixel in from the edge.
+      '$scrollbar-inset': '1px',
       position: 'absolute',
       right: {
-        '': '1px',
-        'edge=right': `${HANDLER_RESERVED + 1}px`,
+        '': '$scrollbar-inset',
+        'edge=right': `(${HANDLER_RESERVED}px + $scrollbar-inset)`,
       },
       top: '$scrollbar-v-top',
       width: '1ow',
@@ -245,10 +247,12 @@ const PaneElement = tasty({
 
     ScrollbarH: {
       $: '>',
+      // It sits a device pixel in from the edge.
+      '$scrollbar-inset': '1px',
       position: 'absolute',
       bottom: {
-        '': '1px',
-        'edge=bottom': `${HANDLER_RESERVED + 1}px`,
+        '': '$scrollbar-inset',
+        'edge=bottom': `(${HANDLER_RESERVED}px + $scrollbar-inset)`,
       },
       left: '$scrollbar-h-left',
       height: '1ow',
@@ -304,6 +308,8 @@ const PaneElement = tasty({
     },
 
     Drag: {
+      // Grip dots in device pixels, so they stay crisp at any gap.
+      '$grip-size': '3px',
       display: 'grid',
       gap: '2bw',
       border: 0,
@@ -312,19 +318,19 @@ const PaneElement = tasty({
         'edge=right': 'column',
       },
       gridColumns: {
-        '': '3px 3px 3px 3px 3px',
+        '': 'repeat(5, $grip-size)',
         'edge=right': 'auto',
       },
       gridRows: {
         '': 'auto',
-        'edge=right': '3px 3px 3px 3px 3px',
+        'edge=right': 'repeat(5, $grip-size)',
       },
       width: {
         '': 'auto',
-        'edge=right': '3px',
+        'edge=right': '$grip-size',
       },
       height: {
-        '': '3px',
+        '': '$grip-size',
         'edge=right': 'auto',
       },
       position: 'absolute',
@@ -337,7 +343,7 @@ const PaneElement = tasty({
         '': '0',
         'focused | drag': '1bw #primary-text',
       },
-      outlineOffset: 1,
+      outlineOffset: '$outline-offset',
     },
 
     DragPart: {

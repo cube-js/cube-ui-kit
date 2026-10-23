@@ -215,7 +215,7 @@ const InlineInputRoot = tasty({
       '': '1bw #primary.0',
       'focused & !styled': '1bw #primary',
     },
-    outlineOffset: 1,
+    outlineOffset: '$outline-offset',
     radius: {
       '': 0,
       focused: true,

@@ -34,6 +34,14 @@ describe('<Alert /> component', () => {
     expect(result.current.mods.type).toBe('danger');
   });
 
+  it('renders its status theme as the type mod, not as data-theme', () => {
+    const { container } = render(<Alert theme="danger">Alert</Alert>);
+    const alert = container.firstElementChild!;
+
+    expect(alert).toHaveAttribute('data-type', 'danger');
+    expect(alert).not.toHaveAttribute('data-theme');
+  });
+
   it('should correctly render theme', () => {
     const { result } = renderHook(() =>
       useAlert({ theme: 'danger', type: 'note' }),

@@ -67,8 +67,10 @@ const ContentElement = tasty({
     // Custom scrollbar handles (when scrollbar="tiny")
     ScrollbarV: {
       $: '>',
+      // It sits a device pixel in from the edge.
+      '$scrollbar-inset': '1px',
       position: 'absolute',
-      right: '1px',
+      right: '$scrollbar-inset',
       top: '$scrollbar-v-top',
       width: '1ow',
       height: '$scrollbar-v-height',
@@ -84,8 +86,10 @@ const ContentElement = tasty({
 
     ScrollbarH: {
       $: '>',
+      // It sits a device pixel in from the edge.
+      '$scrollbar-inset': '1px',
       position: 'absolute',
-      bottom: '1px',
+      bottom: '$scrollbar-inset',
       left: '$scrollbar-h-left',
       height: '1ow',
       width: '$scrollbar-h-width',

@@ -21,7 +21,9 @@ const LAYOUT_MAP = {
     return (
       <Flow gap="4x" {...rootProps}>
         <Space placeContent="space-between">
+          {/* oxlint-disable-next-line tasty/consistent-token-usage -- placeholder widths imitate text of varying length, not layout dimensions */}
           <Placeholder isStatic={isStatic} width="100px 25% 300px" />
+          {/* oxlint-disable-next-line tasty/consistent-token-usage -- placeholder widths imitate text of varying length, not layout dimensions */}
           <Placeholder isStatic={isStatic} width="50px 10% 150px" />
         </Space>
         <Flow gap="2x">

@@ -402,7 +402,7 @@ const ItemElement = tasty({
     },
     recipe: 'reset button',
     transition: 'theme',
-    outlineOffset: 1,
+    outlineOffset: '$outline-offset',
     cursor: {
       '': 'inherit',
       ':is(a)': 'pointer',

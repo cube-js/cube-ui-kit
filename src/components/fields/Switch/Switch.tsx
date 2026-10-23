@@ -81,7 +81,7 @@ const SwitchElement = tasty({
       '': '#primary-text.0',
       focused: '1bw #primary-text',
     },
-    outlineOffset: 1,
+    outlineOffset: '$outline-offset',
     transition: 'theme',
     cursor: '$pointer',
 

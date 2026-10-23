@@ -179,7 +179,7 @@ const ListBoxItem = tasty(Item, {
     },
     // Inside the option: options sit a hairline apart, so a ring outside one
     // would cover its neighbour, and the scroll box would clip it at the edges.
-    outlineOffset: '-1bw',
+    outlineOffset: '(-1 * $outline-offset)',
     Icon: {
       cursor: {
         draggable: 'grab',
@@ -220,12 +220,14 @@ const ListBoxDropIndicatorElement = tasty({
       position: 'absolute',
       left: '.5x',
       right: '.5x',
+      // A marker line in device pixels, not a border.
+      '$drop-indicator-size': '2px',
       // Centred in the gap between two options, or on the edge of the list.
       top: {
-        '': '(-1px - $list-gap / 2)',
-        ':first-child | :last-child': '-1px',
+        '': '($drop-indicator-size / -2 - $list-gap / 2)',
+        ':first-child | :last-child': '($drop-indicator-size / -2)',
       },
-      height: '2px',
+      height: '$drop-indicator-size',
       fill: '#primary',
       radius: 'round',
     },
