@@ -6,11 +6,14 @@ import { FilterPicker } from '../../fields/FilterPicker/FilterPicker';
 
 import { POPOVER_PLACEMENT_BY_TABS_PLACEMENT } from './popover-placement';
 
+import type { Styles } from '@tenphi/tasty';
 import type { ParsedTab, TabPlacement, TabSize, TabType } from './types';
 
-const NO_DIVIDER_STYLES = { border: 0 };
-const DIVIDER_STYLES = { border: { '': 0, '!:first-child': 'left' } };
-const VERTICAL_DIVIDER_STYLES = { border: { '': 0, '!:first-child': 'top' } };
+const NO_DIVIDER_STYLES: Styles = { border: 0 };
+const DIVIDER_STYLES: Styles = { border: { '': 0, '!:first-child': 'left' } };
+const VERTICAL_DIVIDER_STYLES: Styles = {
+  border: { '': 0, '!:first-child': 'top' },
+};
 
 // =============================================================================
 // Types

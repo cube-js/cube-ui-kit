@@ -11,14 +11,19 @@ const GridElement = tasty({
   },
 });
 
+/** Numbers are pixels: a custom property gets no default unit. */
+function toLength(value: string | number) {
+  return typeof value === 'number' ? `${value}px` : value;
+}
+
 export interface CubeGridProviderProps {
   children: ReactNode;
   columns?: number;
-  /** Gap between columns, as a single Tasty value such as `'1x'` or `8`. */
+  /** Gap between columns, as a single Tasty value such as `'1x'`, or pixels. */
   gap?: string | number;
-  /** Forced container width, as a single Tasty value. */
+  /** Forced container width, as a single Tasty value, or pixels. */
   width?: string | number;
-  /** Width before the resize observer measures the container. */
+  /** Width before the resize observer measures the container, or pixels. */
   initialWidth?: string | number;
 }
 
@@ -85,9 +90,9 @@ export const GridProvider = forwardRef<HTMLDivElement, CubeGridProviderProps>(
         {...filterBaseProps(props, { eventProps: true })}
         ref={ref}
         tokens={{
-          '$grid-width': width,
+          '$grid-width': toLength(width),
           '$columns-amount': columns,
-          '$column-gap': gap,
+          '$column-gap': toLength(gap),
         }}
       >
         {children}
