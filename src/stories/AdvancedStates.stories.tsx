@@ -1,27 +1,9 @@
+import { tasty } from '@tenphi/tasty';
 import { useState } from 'react';
 
-import {
-  Block,
-  Button,
-  Flex,
-  Layout,
-  Link,
-  setGlobalPredefinedStates,
-  tasty,
-  Text,
-} from '../index';
+import { Block, Button, Flex, Layout, Link, Text } from '../index';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
-
-// Set up global predefined states for the stories
-setGlobalPredefinedStates({
-  '@mobile': '@media(w < 768px)',
-  '@tablet': '@media(768px <= w < 1024px)',
-  '@desktop': '@media(w >= 1024px)',
-  '@dark': '@media(prefers-color-scheme: dark)',
-  '@light': '@media(prefers-color-scheme: light)',
-  '@print': '@media:print',
-});
 
 const meta: Meta = {
   title: 'Getting Started/Advanced States',
@@ -102,14 +84,17 @@ const ResponsiveBox = tasty({
 // Predefined States (Global)
 // =============================================================================
 
+// A story can't register global states: tasty ignores
+// `setGlobalPredefinedStates` once any styles exist, and it would redefine the
+// kit's aliases for every story. So the live demo uses `@dark`, which UI Kit's
+// `<Root>` registers globally.
 const PredefinedBox = tasty({
   styles: {
-    padding: {
-      '': '4x',
-      '@mobile': '2x',
-      '@tablet': '3x',
+    padding: '4x',
+    fill: {
+      '': '#success',
+      '@dark': '#purple',
     },
-    fill: '#success',
     color: '#white',
     radius: '2r',
   },
@@ -118,9 +103,11 @@ const PredefinedBox = tasty({
 export const PredefinedStates: StoryObj = {
   render: () => (
     <Flex flow="column" gap="2x">
-      <Text preset="t2">Uses global predefined @mobile and @tablet states</Text>
+      <Text preset="t2">
+        Uses @dark, which UI Kit&apos;s Root registers globally
+      </Text>
       <PredefinedBox>
-        <Text>Desktop: 4x | Tablet: 3x | Mobile: 2x</Text>
+        <Text>Light scheme: green | Dark scheme: purple</Text>
       </PredefinedBox>
     </Flex>
   ),
@@ -128,7 +115,7 @@ export const PredefinedStates: StoryObj = {
     docs: {
       description: {
         story: `
-Define global predefined states once, use them everywhere:
+Define global predefined states once, use them everywhere. UI Kit's \`<Root>\` registers \`@dark\` and \`@hc\` this way; an app adds its own once, before anything renders:
 
 \`\`\`tsx
 // Set up once at app initialization
@@ -177,7 +164,7 @@ const LocalPredefinedBox = tasty({
     },
     color: '#dark',
     radius: '2r',
-    transition: 'fill 0.2s',
+    transition: 'fill',
   },
 });
 
@@ -284,14 +271,9 @@ const ColorSchemeBox = tasty({
 });
 \`\`\`
 
-Or use predefined states:
+Or use the predefined \`@dark\` state. UI Kit's \`<Root>\` registers it, and it also follows the scheme set on \`<html data-scheme>\`:
 
 \`\`\`tsx
-setGlobalPredefinedStates({
-  '@dark': '@media(prefers-color-scheme: dark)',
-  '@light': '@media(prefers-color-scheme: light)',
-});
-
 const Box = tasty({
   styles: {
     fill: {
@@ -413,7 +395,7 @@ const CombinedStatesBox = tasty({
       '': 'pointer',
       '[disabled]': 'not-allowed',
     },
-    transition: 'fill 0.15s, color 0.15s',
+    transition: 'fill, color',
   },
 });
 
@@ -475,7 +457,7 @@ const ResponsiveInteractiveBox = tasty({
     fill: '#danger',
     color: '#white',
     radius: '2r',
-    transition: 'padding 0.2s',
+    transition: 'padding',
   },
 });
 
@@ -530,7 +512,7 @@ const Card = tasty({
         '@own(:hover)': '#purple-text',
       },
       cursor: 'pointer',
-      transition: 'color 0.15s',
+      transition: 'color',
     },
 
     // Sub-element that responds to parent hover
@@ -539,7 +521,7 @@ const Card = tasty({
         '': '#dark-04',
         ':hover': '#purple-text', // Parent's hover state
       },
-      transition: 'color 0.15s',
+      transition: 'color',
     },
   },
 });
@@ -691,6 +673,7 @@ const SupportsQueryBox = tasty({
     // Default to grid; if masonry lands, opt into it.
     display: {
       '': 'grid',
+      // oxlint-disable-next-line tasty/valid-value -- grid-lanes is valid CSS the plugin does not list (tenphi/eslint-plugin-tasty#104)
       '@supports(display: grid-lanes)': 'grid-lanes',
     },
     gridTemplateColumns: 'repeat(3, 1fr)',
@@ -702,7 +685,7 @@ const SupportsQueryBox = tasty({
     },
     color: '#white',
     radius: '2r',
-    transition: 'fill 0.2s',
+    transition: 'fill',
   },
 });
 
@@ -917,7 +900,7 @@ const ParentStateChild = tasty({
       '': '#dark',
       '@parent(variant)': '#white',
     },
-    transition: 'fill 0.2s, color 0.2s',
+    transition: 'fill, color',
   },
 });
 
@@ -1036,7 +1019,7 @@ const OrConditionBox = tasty({
       '': 'none',
       ':focus': '2px solid #focus',
     },
-    transition: 'fill 0.15s, color 0.15s',
+    transition: 'fill, color',
   },
   role: 'button',
   tabIndex: 0,
@@ -1093,6 +1076,7 @@ const FadeInBox = tasty({
       '': 'translateY(0)',
       '@starting': 'translateY(-20px)',
     },
+    // oxlint-disable-next-line tasty/no-raw-transition-duration -- a slow entrance so the @starting demo is visible; not a UI timing
     transition: 'opacity 0.5s ease-out, transform 0.5s ease-out',
   },
 });
@@ -1111,6 +1095,7 @@ const SlideInCard = tasty({
       '': 'scale(1)',
       '@starting': 'scale(0.8)',
     },
+    // oxlint-disable-next-line tasty/no-raw-transition-duration -- a slow entrance so the @starting demo is visible; not a UI timing
     transition: 'opacity 0.4s ease-out, transform 0.4s ease-out',
   },
 });
