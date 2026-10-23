@@ -1,4 +1,4 @@
-import { filterBaseProps, Styles, tasty } from '@tenphi/tasty';
+import { filterBaseProps, tasty } from '@tenphi/tasty';
 import { forwardRef, ReactNode, useCallback, useEffect, useState } from 'react';
 
 import { useCombinedRefs } from '../utils/react';
@@ -6,18 +6,20 @@ import { useCombinedRefs } from '../utils/react';
 const GridElement = tasty({
   styles: {
     display: 'contents',
+    '$column-width':
+      '(($grid-width - ($column-gap * ($columns-amount - 1))) / $columns-amount)',
   },
 });
-
-const COLUMN_WIDTH =
-  '(($grid-width - ($column-gap * ($columns-amount - 1))) / $columns-amount)';
 
 export interface CubeGridProviderProps {
   children: ReactNode;
   columns?: number;
-  gap?: Styles['gap'];
-  width?: Styles['width'];
-  initialWidth?: Styles['width'];
+  /** Gap between columns, as a single Tasty value such as `'1x'` or `8`. */
+  gap?: string | number;
+  /** Forced container width, as a single Tasty value. */
+  width?: string | number;
+  /** Width before the resize observer measures the container. */
+  initialWidth?: string | number;
 }
 
 export const GridProvider = forwardRef<HTMLDivElement, CubeGridProviderProps>(
@@ -32,7 +34,7 @@ export const GridProvider = forwardRef<HTMLDivElement, CubeGridProviderProps>(
       initialWidth,
     } = props;
 
-    let [width, setWidth] = useState<Styles['width']>(
+    let [width, setWidth] = useState<string | number>(
       forcedWidth || initialWidth || '100vw',
     );
 
@@ -82,11 +84,10 @@ export const GridProvider = forwardRef<HTMLDivElement, CubeGridProviderProps>(
       <GridElement
         {...filterBaseProps(props, { eventProps: true })}
         ref={ref}
-        styles={{
-          '--grid-width': width,
-          '--columns-amount': columns,
-          '--column-gap': gap,
-          '--column-width': COLUMN_WIDTH,
+        tokens={{
+          '$grid-width': width,
+          '$columns-amount': columns,
+          '$column-gap': gap,
         }}
       >
         {children}

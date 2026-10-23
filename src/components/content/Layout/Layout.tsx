@@ -223,6 +223,7 @@ function LayoutInner(
       outerStyles,
       contentPadding != null ? { '$content-padding': contentPadding } : null,
       styles,
+      // oxlint-disable-next-line tasty/no-runtime-styles-mutation -- Inner merges the consumer's `styles.Inner` and the public grid props (`columns`, `rows`, `template`)
       { Inner: mergeStyles(innerStyles, gridStyles, styles?.Inner as Styles) },
     );
   }, [

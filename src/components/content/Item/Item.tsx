@@ -895,6 +895,9 @@ const NATIVE_ROW_CONTROL_SELECTOR =
   ':where([data-menu-native-row]) :where([data-element=Prefix],[data-element=Suffix],[data-element=Actions]) :where(a[href],button,input,select,textarea,label[for],label:has(button,input,select,textarea),[tabindex],[contenteditable=""],[contenteditable="true"],[contenteditable="plaintext-only"],[role="button"],[role="checkbox"],[role="switch"],[role="menuitem"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="radio"],[role="textbox"],[role="combobox"],[role="slider"],[role="spinbutton"],[role="link"])';
 const NATIVE_ROW_CONTROL_STYLES: Styles = { pointerEvents: 'auto' };
 
+const HOTKEYS_STYLES: Styles = { padding: '1x left', opacity: 1 };
+const DISABLED_HOTKEYS_STYLES: Styles = { padding: '1x left', opacity: 0.5 };
+
 const Item = <T extends HTMLElement = HTMLDivElement>(
   props: ItemWithNativeLinksProps,
   ref: ForwardedRef<T>,
@@ -1047,7 +1050,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
         <HotKeys
           {...(keyboardShortcutProps as any)}
           type={getHotkeysType(theme, type)}
-          styles={{ padding: '1x left', opacity: finalIsDisabled ? 0.5 : 1 }}
+          styles={finalIsDisabled ? DISABLED_HOTKEYS_STYLES : HOTKEYS_STYLES}
         >
           {hotkeys}
         </HotKeys>
