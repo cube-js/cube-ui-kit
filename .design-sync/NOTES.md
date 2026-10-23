@@ -5,7 +5,7 @@ Working notes for `/design-sync`. Read this before doing anything; it is the onl
 ## Repo facts
 
 - **Shape:** storybook. Config dir `.storybook/` at repo root; stories glob is `src/**/*.stories.@(js|jsx|ts|tsx)` plus `src/**/*.docs.mdx`.
-- **Package manager:** pnpm (`pnpm@10.34.5`, `pnpm-lock.yaml`). Install with `pnpm install --frozen-lockfile`. Node pinned by `.nvmrc` (24.19; 24.18 works).
+- **Package manager:** pnpm (`pnpm@10.34.5`, `pnpm-lock.yaml`). Install with `pnpm install --frozen-lockfile`. Node pinned by `.nvmrc` (24.22.1; 24.18 and 24.19 also worked).
 - **Build:** `pnpm build` (tsdown) → `dist/`. Takes ~30s.
 - **`--entry` is required.** This is the package's own source repo, so `node_modules/@cube-dev/ui-kit` does not exist; the converter needs `--entry dist/index.js` (recorded as `cfg.entry`).
 - **`--node-modules`** is the repo root `node_modules` (react/react-dom live there).
