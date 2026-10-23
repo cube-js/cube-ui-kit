@@ -5,7 +5,6 @@ import { TabPanelElement } from './styled';
 
 import type { Styles } from '@tenphi/tasty';
 import type { ReactNode } from 'react';
-import type { AriaTabPanelProps } from 'react-aria';
 import type { TabListState } from 'react-stately';
 import type { CacheKeyValue, ParsedPanel, ParsedTab } from './types';
 
@@ -62,11 +61,9 @@ export function TabPanelRenderer({
   qaVal,
 }: TabPanelRendererProps) {
   const ref = useRef<HTMLElement>(null);
-  const { tabPanelProps } = useTabPanel(
-    { key: tabKey } as AriaTabPanelProps,
-    state,
-    ref,
-  );
+  // Without `id`, react-aria names every panel after the selected key, so
+  // prerendered panels would share one id.
+  const { tabPanelProps } = useTabPanel({ id: tabKey }, state, ref);
 
   const isActive = state.selectedKey === tabKey;
 

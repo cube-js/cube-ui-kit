@@ -743,6 +743,8 @@ export function TabButton({
             skipActionsWidthTransition={skipActionsWidthTransition}
             autoHideActions={effectiveAutoHideActions}
             as="button"
+            // A tab switches panels; inside a form it must not submit it.
+            htmlType="button"
             {...mergeProps(tabProps, hoverProps, focusProps, {
               onKeyDown: handleKeyDown,
               onPointerEnter: handleSpringLoadEnter,
