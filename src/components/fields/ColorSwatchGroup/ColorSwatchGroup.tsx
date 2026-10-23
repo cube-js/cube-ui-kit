@@ -32,8 +32,8 @@ export type CubeColorSwatchItem = string | { color: string; label?: string };
 
 /**
  * Two rings drawn inside the swatch, as React Aria marks selection. Outer ring
- * first: earlier shadows paint over later ones, so this reads as 2bw of
- * `#surface-text` at the edge and 2bw of `#surface` within it. Two tones that
+ * first: earlier shadows paint over later ones, so this reads as two ring widths
+ * of `#surface-text` at the edge and two of `#surface` within it. Two tones that
  * flip with the scheme stay visible against any color the swatch holds.
  */
 const SELECTED_RING =

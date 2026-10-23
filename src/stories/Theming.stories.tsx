@@ -1848,7 +1848,7 @@ const PreviewBody = tasty({
 const PreviewNav = tasty({
   styles: {
     display: 'grid',
-    gap: '1bw',
+    gap: '$item-gap',
     alignContent: 'start',
     padding: '1x',
     fill: '#surface-2',

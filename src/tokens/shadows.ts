@@ -4,7 +4,6 @@ import type { Styles } from '@tenphi/tasty';
  * Shadow tokens using tasty shorthand syntax.
  *
  * Format: `<offset-y> <blur> <spread?> <color>`
- * - `1bw` = 1 × border-width
  * - `.5x` = 0.5 × gap
  *
  * The shadow colors (`#shadow-sm` / `#shadow-md` / `#shadow-lg`) are

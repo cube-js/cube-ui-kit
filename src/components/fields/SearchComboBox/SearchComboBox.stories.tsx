@@ -108,7 +108,7 @@ const meta = {
       control: { type: 'number' },
       description: 'Space between options, in pixels',
       table: {
-        defaultValue: { summary: '1bw' },
+        defaultValue: { summary: '$item-gap' },
         type: { summary: 'number' },
       },
     },

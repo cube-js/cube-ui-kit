@@ -50,9 +50,9 @@ These CSS custom properties are defined in `src/tokens/base.ts` and applied glob
 | `$gap` | `8px` | Base spacing unit (used with `x` multiplier) |
 | `$radius` | `6px` | Base border radius (used with `r` multiplier) |
 | `$border-width` | `1px` | Base border width (used with `bw` multiplier) |
-| `$outline-width` | `3px` | Focus outline width (used with `ow` multiplier) |
+| `$outline-width` | `3px` | Width of a field's thick focus ring (used with `ow` multiplier) |
 | `$outline-offset` | `1px` | Gap between a focus outline and its element |
-| `$ring-width` | `1px` | Width of a focus or selection ring |
+| `$ring-width` | `1px` | Width of a hairline focus or selection ring |
 | `$item-gap` | `1px` | Hairline gap between adjacent items in a list, menu or action group |
 | `$stroke-width` | `1.5` | Icon stroke width |
 | `$disabled-opacity` | `0.4` | Opacity for disabled elements |
@@ -97,7 +97,7 @@ Defined in `src/tokens/shadows.ts`. Shadow colors (`#shadow-sm`, `#shadow-md`, `
 
 | Token            | Value                     |
 | ---------------- | ------------------------- |
-| `$item-shadow`   | `0 1bw 0.375x #shadow-sm` |
+| `$item-shadow`   | `0 1px 0.375x #shadow-sm` |
 | `$card-shadow`   | `0 0.5x 2x #shadow-md`    |
 | `$shadow`        | `0 0.5x 2x #shadow-md`    |
 | `$dialog-shadow` | `0 1x 4x #shadow-lg`      |

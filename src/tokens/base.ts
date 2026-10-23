@@ -25,11 +25,11 @@ export const BASE_TOKENS: Styles = {
   $gap: '8px',
   /** Stroke width for icons */
   '$stroke-width': 1.5,
-  /** Focus outline width */
+  /** Width of a field's thick focus ring (used with `ow`) */
   '$outline-width': 'calc(1rem / 16 * 3)',
   /** Gap between a focus outline and its element */
   '$outline-offset': '1px',
-  /** Width of a focus or selection ring */
+  /** Width of a hairline focus or selection ring */
   '$ring-width': '1px',
   /** Hairline gap between adjacent items in a list, menu or action group */
   '$item-gap': '1px',

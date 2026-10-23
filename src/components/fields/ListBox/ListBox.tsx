@@ -1083,7 +1083,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       return SIZES[SIZE_NAME_TO_KEY[size] as keyof typeof SIZES];
     },
     // Options are positioned absolutely here, so their margins space nothing.
-    // `1` matches the `1bw` default.
+    // The virtualizer takes pixels: `1` matches the `$item-gap` default.
     gap: listGap ?? 1,
     overscan: 10,
   });

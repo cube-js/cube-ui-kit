@@ -102,9 +102,7 @@ const CELL_STYLES: Styles = {
   // clobbering the other on a pinned selected cell.
   //
   // The ring is a shadow rather than an `outline`: an outline is drawn OUTSIDE
-  // the box, and pulling it back with a negative `outlineOffset` needs a value
-  // tasty will not resolve (`-1bw`), so the ring came out a pixel oversized on
-  // every side — over the row divider above and the column rule to the left. An
+  // the box, over the row divider above and the column rule to the left. An
   // inset shadow lands exactly on the cell's own edges and costs no layout.
   shadow: {
     '': false,
@@ -462,9 +460,11 @@ export const TableElement = tasty({
         'column-dividers': '#clear',
         '@own(:hover) | @own(:focus-visible)': '#purple',
       },
+      // At rest the line is the column rule, so it is a border width. On hover
+      // or focus it is a marker line in device pixels, like the drop indicators.
       '$resizer-line-width': {
         '': '1bw',
-        '@own(:hover) | @own(:focus-visible)': '2bw',
+        '@own(:hover) | @own(:focus-visible)': '2px',
       },
     },
 
