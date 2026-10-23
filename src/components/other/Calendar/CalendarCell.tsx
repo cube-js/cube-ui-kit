@@ -1,5 +1,5 @@
 import { CalendarDate, isSameDay } from '@internationalized/date';
-import { tasty } from '@tenphi/tasty';
+import { mergeStyles, tasty } from '@tenphi/tasty';
 import { useRef } from 'react';
 import { DateValue, useCalendarCell } from 'react-aria';
 import { CalendarState, RangeCalendarState } from 'react-stately';
@@ -16,12 +16,10 @@ const CalendarCellElement = tasty({
 
 const CalendarButtonElement = tasty({
   'data-popover-keep': true,
-  styles: {
-    // eslint-disable-next-line tasty/no-style-spread -- cell base shared with PeriodGrid
-    ...CALENDAR_CELL_STYLES,
+  styles: mergeStyles(CALENDAR_CELL_STYLES, {
     width: '3x',
     height: '3x',
-  },
+  }),
 });
 
 export interface CubeCalendarCellProps {

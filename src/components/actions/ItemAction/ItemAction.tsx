@@ -1,5 +1,5 @@
 import { FocusableRef } from '@react-types/shared';
-import { BaseProps, Styles, tasty } from '@tenphi/tasty';
+import { BaseProps, mergeStyles, Styles, tasty } from '@tenphi/tasty';
 import {
   ComponentProps,
   forwardRef,
@@ -103,9 +103,7 @@ type ItemActionVariant =
 
 const ItemActionElement = tasty({
   qa: 'ItemAction',
-  styles: {
-    // eslint-disable-next-line tasty/no-style-spread -- action base shared with ItemBadge
-    ...ITEM_ACTION_BASE_STYLES,
+  styles: mergeStyles(ITEM_ACTION_BASE_STYLES, {
     recipe: 'reset button',
     // Every variant below defines its own ring and overrides this one, which is
     // kept as the floor for a custom `type` that resolves to no variant at all.
@@ -136,12 +134,9 @@ const ItemActionElement = tasty({
     '$local-icon-size': '$icon-size',
 
     Icon: {
-      $: '>',
-      // eslint-disable-next-line tasty/no-style-spread -- Icon base shared with ItemBadge
-      ...(ITEM_ACTION_BASE_STYLES.Icon as Styles),
       '$icon-size': 'min($local-icon-size, ($action-size - .25x))',
     },
-  },
+  }),
   variants: {
     // Current theme — colors mixed from the inherited `currentcolor`. The
     // default `clear` flavour is borderless, so an action does not put a resting

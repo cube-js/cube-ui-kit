@@ -2,6 +2,7 @@ import {
   BaseProps,
   CONTAINER_STYLES,
   ContainerStyleProps,
+  mergeStyles,
   Mods,
   Styles,
   tasty,
@@ -476,18 +477,15 @@ const ItemElement = tasty({
         'max($block-padding, (($size - 4x) / 2) + $block-padding)',
     },
 
-    Icon: {
-      // eslint-disable-next-line tasty/no-style-spread -- icon base shared by Icon and RightIcon
-      ...DEFAULT_ICON_STYLES,
+    Icon: mergeStyles(DEFAULT_ICON_STYLES, {
       gridArea: 'icon',
       // A native row's Icon, Label and Description are aria-hidden copies of
       // the primary link that keep the slot layout. Presses pass through them
       // to the primary anchor, so it is the hit target wherever the text runs.
       pointerEvents: { '': undefined, '@native-row': 'none' },
-    },
+    }),
 
-    // eslint-disable-next-line tasty/no-style-spread -- icon base shared by Icon and RightIcon
-    RightIcon: { ...DEFAULT_ICON_STYLES, gridArea: 'rightIcon' },
+    RightIcon: mergeStyles(DEFAULT_ICON_STYLES, { gridArea: 'rightIcon' }),
 
     Label: {
       $: '>',
@@ -632,12 +630,10 @@ const ItemElement = tasty({
   variants: {
     ...ITEM_VARIANTS,
     // ItemCard's palette stays local so consumer directives reach this owner.
-    'default.item-card': {
-      // eslint-disable-next-line tasty/no-style-spread -- inherit the shared card foreground and palette defaults
-      ...ITEM_VARIANTS['default.card'],
+    'default.item-card': mergeStyles(ITEM_VARIANTS['default.card'], {
       fill: '#surface',
       border: '#border',
-    },
+    }),
   },
   styleProps: CONTAINER_STYLES,
 });

@@ -2,6 +2,7 @@ import { mergeRefs } from '@react-aria/utils';
 import {
   CONTAINER_STYLES,
   ContainerStyleProps,
+  mergeStyles,
   Styles,
   tasty,
 } from '@tenphi/tasty';
@@ -25,18 +26,14 @@ import type { Props } from '../../../props';
 const DateInputWrapperElement = tasty({
   qa: 'DateInputWrapper',
   role: 'presentation',
-  styles: {
-    // eslint-disable-next-line tasty/no-style-spread -- input wrapper base shared with TextInput, ComboBox, SearchComboBox and FilterListBox
-    ...INPUT_WRAPPER_STYLES,
+  styles: mergeStyles(INPUT_WRAPPER_STYLES, {
     display: 'flex',
-  },
+  }),
 });
 
 const DateInputElement = tasty({
   role: 'presentation',
-  styles: {
-    // eslint-disable-next-line tasty/no-style-spread -- input base shared with TextInput, ComboBox, SearchComboBox and FilterListBox
-    ...DEFAULT_INPUT_STYLES,
+  styles: mergeStyles(DEFAULT_INPUT_STYLES, {
     height: {
       '': '($size-md - 2bw)',
       'size=small': '($size-sm - 2bw)',
@@ -45,7 +42,7 @@ const DateInputElement = tasty({
     display: 'flex',
     flow: 'row',
     placeItems: 'center start',
-  },
+  }),
 });
 
 interface CubeDateAtomInputProps extends ContainerStyleProps {

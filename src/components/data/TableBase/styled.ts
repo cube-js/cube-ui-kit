@@ -1,4 +1,4 @@
-import { keyframes, tasty } from '@tenphi/tasty';
+import { keyframes, mergeStyles, tasty } from '@tenphi/tasty';
 
 import { Action } from '../../actions/Action/Action';
 import { Item } from '../../content/Item';
@@ -331,10 +331,8 @@ export const TableElement = tasty({
       '#row-text': '#dark-03',
       $dim: 1,
     },
-    HeaderGroupCell: {
+    HeaderGroupCell: mergeStyles(CELL_STYLES, {
       $: '> Scroller > Table > Head > HeadRow >',
-      // eslint-disable-next-line tasty/no-style-spread -- cell geometry shared by the cells of every row group
-      ...CELL_STYLES,
       padding: 0,
       paddingInline: 0,
       height: '($header-height + 1bw)',
@@ -345,19 +343,17 @@ export const TableElement = tasty({
       position: { '': 'relative', '@own(pin=start | pin=end)': 'sticky' },
       overflow: 'hidden',
       zIndex: { '': 'auto', '@own(pin=start | pin=end)': 3 },
-    },
-    HeaderCell: {
+    }),
+    HeaderCell: mergeStyles(CELL_STYLES, {
       $: '> Scroller > Table > Head > HeadRow >',
-      // eslint-disable-next-line tasty/no-style-spread -- cell geometry shared by the cells of every row group
-      ...CELL_STYLES,
       // No padding at all: the `Item` inside fills the cell edge to edge and
       // supplies the indent itself, per side. That is what lets a leading icon
       // sit tighter than text and a trailing icon sit flush — see
       // `TableHeaderItem`.
       //
       // `paddingInline` as well as the shorthand: the shared cell styles set
-      // the longhand for the checkbox column, and a longhand arriving through
-      // the spread outlives a `padding: 0` written after it.
+      // the longhand for the checkbox column, and a longhand arriving from
+      // `CELL_STYLES` outlives a `padding: 0` written after it.
       padding: 0,
       paddingInline: 0,
       height: '($header-height + 1bw)',
@@ -420,7 +416,7 @@ export const TableElement = tasty({
       // half its width past the table and the scroller gains a few pixels of
       // horizontal scroll onto blank space.
       '$resizer-offset': { '': '-.5x', '@own(last-column)': '0px' },
-    },
+    }),
 
     /**
      * The column resize handle, on the header cell's trailing edge.
@@ -797,10 +793,8 @@ export const TableElement = tasty({
         '@own(:hover)': 'underline',
       },
     },
-    Cell: {
+    Cell: mergeStyles(CELL_STYLES, {
       $: '> Scroller > Table > Body > Row >',
-      // eslint-disable-next-line tasty/no-style-spread -- cell geometry shared by the cells of every row group
-      ...CELL_STYLES,
       // A row-header cell is a `<th>`, which the UA renders bold. Weight is the
       // table's decision, not the tag's — and a UA rule beats inheritance, so it
       // has to be stated. Deliberately NOT in the shared cell styles: the header
@@ -871,7 +865,7 @@ export const TableElement = tasty({
         // and a total sitting at the frame's edge needs nothing below.
         '@own(pinned=bottom)': '1bw #border top, $column-divider #border right',
       },
-    },
+    }),
 
     ColumnSpacer: {
       $: '> Scroller > Table > Body > Row >',
@@ -962,13 +956,11 @@ export const TableElement = tasty({
       '#row-text': '#surface-text',
       $dim: 1,
     },
-    FootCell: {
+    FootCell: mergeStyles(CELL_STYLES, {
       $: '> Scroller > Table > Foot > FootRow >',
-      // eslint-disable-next-line tasty/no-style-spread -- cell geometry shared by the cells of every row group
-      ...CELL_STYLES,
       border: '1bw #border top',
       preset: 't3m',
-    },
+    }),
   },
 });
 
@@ -988,12 +980,10 @@ const TREE_TOGGLE_STYLES: Styles = {
 /** Disclosure control rendered in the configured tree column. */
 export const TableTreeToggle = tasty(Action, {
   qa: 'TableTreeToggle',
-  styles: {
-    // eslint-disable-next-line tasty/no-style-spread -- shared with TableTreeTogglePlaceholder so leaf rows keep the toggle footprint
-    ...TREE_TOGGLE_STYLES,
+  styles: mergeStyles(TREE_TOGGLE_STYLES, {
     color: { '': '#dark-02', ':hover': '#dark' },
     fill: { '': '#clear', ':hover': '#dark.04' },
-  },
+  }),
 });
 
 /** Leaf placeholder matching the disclosure control's footprint. */
