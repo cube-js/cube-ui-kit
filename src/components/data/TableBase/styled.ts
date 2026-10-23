@@ -352,8 +352,8 @@ export const TableElement = tasty({
       // `TableHeaderItem`.
       //
       // `paddingInline` as well as the shorthand: the shared cell styles set
-      // the longhand for the checkbox column, and a longhand arriving through
-      // the spread outlives a `padding: 0` written after it.
+      // the longhand for the checkbox column, and a longhand arriving from
+      // `CELL_STYLES` outlives a `padding: 0` written after it.
       padding: 0,
       paddingInline: 0,
       height: '($header-height + 1bw)',

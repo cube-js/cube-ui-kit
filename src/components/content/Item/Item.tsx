@@ -478,7 +478,7 @@ const ItemElement = tasty({
     },
 
     Icon: {
-      // eslint-disable-next-line tasty/no-style-spread -- in mergeStyles the plugin loses the root's local @native-row alias (tenphi/eslint-plugin-tasty#105)
+      // eslint-disable-next-line tasty/no-style-spread -- icon base shared with RightIcon; in mergeStyles the plugin loses the root's local @native-row alias (tenphi/eslint-plugin-tasty#105)
       ...DEFAULT_ICON_STYLES,
       gridArea: 'icon',
       // A native row's Icon, Label and Description are aria-hidden copies of

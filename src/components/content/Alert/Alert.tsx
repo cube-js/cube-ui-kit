@@ -28,7 +28,7 @@ const AlertElement = tasty({
     },
     fill: {
       '': '#clear',
-      // eslint-disable-next-line tasty/no-style-spread -- per-theme fill states generated from THEMES, spliced into this map; mergeStyles would move the map into a separate override layer
+      // eslint-disable-next-line tasty/no-style-spread -- per-theme fill states generated from THEMES, not a shared base; the plugin can't lint the generated map either way, so it stays in one place
       ...Object.keys(THEMES).reduce((map, type) => {
         map[`type=${type}`] = THEMES[type].fill;
 
@@ -37,7 +37,7 @@ const AlertElement = tasty({
     },
     border: {
       '': '#clear',
-      // eslint-disable-next-line tasty/no-style-spread -- per-theme border states generated from THEMES, spliced into this map; mergeStyles would move the map into a separate override layer
+      // eslint-disable-next-line tasty/no-style-spread -- per-theme border states generated from THEMES must precede 'shape=sharp'; mergeStyles would append them after it and flip its priority
       ...Object.keys(THEMES).reduce((map, type) => {
         map[`type=${type}`] = THEMES[type].border;
 

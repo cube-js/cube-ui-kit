@@ -26,7 +26,7 @@ const BadgeElement = tasty(Item, {
     },
     fill: {
       '': '#primary',
-      // eslint-disable-next-line tasty/no-style-spread -- per-theme fill states generated from THEMES, spliced into this map; mergeStyles would move the map into a separate override layer
+      // eslint-disable-next-line tasty/no-style-spread -- per-theme fill states generated from THEMES, not a shared base; the plugin can't lint the generated map either way, so it stays in one place
       ...FILL_STYLES,
     },
     preset: {

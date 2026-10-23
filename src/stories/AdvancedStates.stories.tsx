@@ -84,10 +84,8 @@ const ResponsiveBox = tasty({
 // Predefined States (Global)
 // =============================================================================
 
-// A story can't register global states: tasty ignores
-// `setGlobalPredefinedStates` once any styles exist, and it would redefine the
-// kit's aliases for every story. So the live demo uses `@dark`, which UI Kit's
-// `<Root>` registers globally.
+// Stories can't register global states (tasty ignores it once styles exist),
+// so the demo uses the kit's own `@dark`.
 const PredefinedBox = tasty({
   styles: {
     padding: '4x',
@@ -115,7 +113,20 @@ export const PredefinedStates: StoryObj = {
     docs: {
       description: {
         story: `
-Define global predefined states once, use them everywhere. UI Kit's \`<Root>\` registers \`@dark\` and \`@hc\` this way; an app adds its own once, before anything renders:
+Define global predefined states once, use them everywhere. UI Kit's \`<Root>\` registers \`@dark\` and \`@hc\` this way, and the box above uses \`@dark\`:
+
+\`\`\`tsx
+const Box = tasty({
+  styles: {
+    fill: {
+      '': '#success',
+      '@dark': '#purple',
+    },
+  },
+});
+\`\`\`
+
+An app adds its own once, at startup, before anything renders:
 
 \`\`\`tsx
 // Set up once at app initialization
