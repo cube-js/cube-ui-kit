@@ -55,28 +55,94 @@ describe('Badge theme="disabled"', () => {
  * centred on a 0-wide column, half over the icon and half past the edge.
  */
 describe('Badge squeezed below its label', () => {
-  it.each(['inline', 'small', 'medium'] as const)(
+  const SIZES = ['inline', 'small', 'medium'] as const;
+  const LONG_LABEL = 'quarterly-revenue-report-final-v2.csv';
+
+  /** Re-queries, since the first match can be replaced by a re-render after mount. */
+  async function parts(qa: string) {
+    await screen.findByTestId(qa);
+
+    const badge = screen.getByTestId(qa);
+    const label = badge.querySelector('[data-element="Label"]') as HTMLElement;
+
+    return {
+      badge,
+      label,
+      badgeRect: badge.getBoundingClientRect(),
+      iconRect: badge
+        .querySelector('[data-element="Icon"]')!
+        .getBoundingClientRect(),
+      labelRect: label.getBoundingClientRect(),
+    };
+  }
+
+  it.each(SIZES)(
     'keeps the label off the icon at size %s and clips what passes the edge',
     async (size) => {
       renderWithRoot(
         <div style={{ display: 'flex', width: 0 }}>
           <Badge qa="Squeezed" size={size} icon={<IconCoin />}>
-            quarterly-revenue-report-final-v2.csv
+            {LONG_LABEL}
           </Badge>
         </div>,
       );
 
-      await screen.findByTestId('Squeezed');
+      const { badge, iconRect, labelRect } = await parts('Squeezed');
 
-      // Re-query: the first match can be replaced by a re-render after mount.
-      const badge = screen.getByTestId('Squeezed');
-      const icon = badge.querySelector('[data-element="Icon"]')!;
-      const label = badge.querySelector('[data-element="Label"]')!;
-
-      expect(label.getBoundingClientRect().left).toBeGreaterThanOrEqual(
-        icon.getBoundingClientRect().right - 0.5,
-      );
+      expect(labelRect.left).toBeGreaterThanOrEqual(iconRect.right - 0.5);
       expect(getComputedStyle(badge).overflowX).toBe('clip');
+    },
+  );
+
+  it.each(SIZES)(
+    'starts a cut label right after the icon at size %s',
+    async (size) => {
+      renderWithRoot(
+        <div style={{ display: 'flex', width: 90 }}>
+          <Badge qa="Cut" size={size} icon={<IconCoin />}>
+            {LONG_LABEL}
+          </Badge>
+        </div>,
+      );
+
+      const { badge, label, badgeRect, iconRect, labelRect } =
+        await parts('Cut');
+
+      expect(label.scrollWidth).toBeGreaterThan(label.clientWidth);
+      expect(labelRect.left).toBeCloseTo(iconRect.right, 0);
+      expect(labelRect.right).toBeLessThanOrEqual(
+        badgeRect.right - badge.clientLeft + 0.5,
+      );
+    },
+  );
+
+  it.each(SIZES)(
+    'keeps a label that fits where it was at size %s',
+    async (size) => {
+      renderWithRoot(
+        <Badge
+          qa="Wide"
+          size={size}
+          icon={<IconCoin />}
+          styles={{ width: '25x' }}
+        >
+          Fits
+        </Badge>,
+      );
+
+      const { badge, label, badgeRect, iconRect } = await parts('Wide');
+      const range = document.createRange();
+
+      range.selectNodeContents(label);
+
+      const text = range.getBoundingClientRect();
+      const paddingRight = parseFloat(getComputedStyle(label).paddingRight);
+      const contentRight = badgeRect.right - badge.clientLeft - paddingRight;
+
+      expect((text.left + text.right) / 2).toBeCloseTo(
+        (iconRect.right + contentRight) / 2,
+        0,
+      );
     },
   );
 });

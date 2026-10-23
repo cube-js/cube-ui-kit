@@ -48,7 +48,7 @@ describe('Tag squeezed below its label', () => {
     },
   );
 
-  it.each(['small', 'medium'] as const)(
+  it.each(['inline', 'small', 'medium'] as const)(
     'starts a cut label right after the icon at size %s',
     async (size) => {
       renderWithRoot(
@@ -116,12 +116,12 @@ describe('Tag squeezed below its label', () => {
 
     await screen.findByTestId('Closable');
 
-    const { tag, iconRect, labelRect } = parts('Closable');
+    const { tag, tagRect, iconRect, labelRect } = parts('Closable');
     const close = screen.getByRole('button').getBoundingClientRect();
 
     expect(labelRect.left).toBeGreaterThanOrEqual(iconRect.right - 0.5);
-    expect(close.width).toBeGreaterThan(0);
-    // A closable Tag at its minimum lays its close button past its edge, so it must not clip.
+    // At its minimum the close button sits past the Tag's edge, so a clip would hide it.
+    expect(close.left).toBeGreaterThanOrEqual(tagRect.right - 0.5);
     expect(getComputedStyle(tag).overflowX).toBe('visible');
   });
 });
