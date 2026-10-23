@@ -477,15 +477,13 @@ const ItemElement = tasty({
         'max($block-padding, (($size - 4x) / 2) + $block-padding)',
     },
 
-    Icon: {
-      // eslint-disable-next-line tasty/no-style-spread -- icon base shared with RightIcon; in mergeStyles the plugin loses the root's local @native-row alias (tenphi/eslint-plugin-tasty#105)
-      ...DEFAULT_ICON_STYLES,
+    Icon: mergeStyles(DEFAULT_ICON_STYLES, {
       gridArea: 'icon',
       // A native row's Icon, Label and Description are aria-hidden copies of
       // the primary link that keep the slot layout. Presses pass through them
       // to the primary anchor, so it is the hit target wherever the text runs.
       pointerEvents: { '': undefined, '@native-row': 'none' },
-    },
+    }),
 
     RightIcon: mergeStyles(DEFAULT_ICON_STYLES, { gridArea: 'rightIcon' }),
 

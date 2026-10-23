@@ -684,7 +684,6 @@ const SupportsQueryBox = tasty({
     // Default to grid; if masonry lands, opt into it.
     display: {
       '': 'grid',
-      // oxlint-disable-next-line tasty/valid-value -- grid-lanes is valid CSS the plugin does not list (tenphi/eslint-plugin-tasty#104)
       '@supports(display: grid-lanes)': 'grid-lanes',
     },
     gridTemplateColumns: 'repeat(3, 1fr)',

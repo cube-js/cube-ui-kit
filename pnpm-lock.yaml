@@ -160,8 +160,8 @@ importers:
         specifier: ^10.3.6
         version: 10.3.6(esbuild@0.27.3)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(storybook@10.3.6(@testing-library/dom@10.4.1)(prettier@3.9.10)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(typescript@5.6.3)(vite@8.3.4(@types/node@24.13.3)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.31.1)(yaml@2.9.1))(webpack@5.76.1(esbuild@0.27.3))
       '@tenphi/eslint-plugin-tasty':
-        specifier: ^1.8.5
-        version: 1.8.5(@tenphi/tasty@3.13.0(@babel/core@7.28.5)(@babel/helper-plugin-utils@7.25.7)(@babel/types@7.29.8)(jiti@2.6.1)(react@19.3.0))(eslint@10.8.0(jiti@2.6.1))(typescript@5.6.3)
+        specifier: ^1.8.6
+        version: 1.8.6(@tenphi/tasty@3.13.0(@babel/core@7.28.5)(@babel/helper-plugin-utils@7.25.7)(@babel/types@7.29.8)(jiti@2.6.1)(react@19.3.0))(eslint@10.8.0(jiti@2.6.1))(typescript@5.6.3)
       '@testing-library/dom':
         specifier: ^10.4.1
         version: 10.4.1
@@ -1609,8 +1609,8 @@ packages:
   '@tanstack/virtual-core@3.13.12':
     resolution: {integrity: sha512-1YBOJfRHV4sXUmWsFSf5rQor4Ss82G8dQWLRbnk3GA4jeP8hQt1hxXh0tmflpC0dz3VgEv/1+qwPyLeWkQuPFA==}
 
-  '@tenphi/eslint-plugin-tasty@1.8.5':
-    resolution: {integrity: sha512-Gy+itpV1GjMOVbBiqpnK7f2EW+LIwtXGrZjtoK0XnzFMCofc1ijhlLQXlYMawUwj1tSnfD0HfbIXNDzJZMJM5g==}
+  '@tenphi/eslint-plugin-tasty@1.8.6':
+    resolution: {integrity: sha512-zHeyPPfEehBj8UjxIEd87XH9+6dNLBmiSnzuOHCFXNagVU/suiZxEaHaSMZCz5KMlrmFZ9hthTpW9M3KWUydSA==}
     engines: {node: '>=20'}
     peerDependencies:
       '@tenphi/tasty': '>=3.8.0'
@@ -7095,7 +7095,7 @@ snapshots:
 
   '@tanstack/virtual-core@3.13.12': {}
 
-  '@tenphi/eslint-plugin-tasty@1.8.5(@tenphi/tasty@3.13.0(@babel/core@7.28.5)(@babel/helper-plugin-utils@7.25.7)(@babel/types@7.29.8)(jiti@2.6.1)(react@19.3.0))(eslint@10.8.0(jiti@2.6.1))(typescript@5.6.3)':
+  '@tenphi/eslint-plugin-tasty@1.8.6(@tenphi/tasty@3.13.0(@babel/core@7.28.5)(@babel/helper-plugin-utils@7.25.7)(@babel/types@7.29.8)(jiti@2.6.1)(react@19.3.0))(eslint@10.8.0(jiti@2.6.1))(typescript@5.6.3)':
     dependencies:
       '@typescript-eslint/utils': 8.56.1(eslint@10.8.0(jiti@2.6.1))(typescript@5.6.3)
       eslint: 10.8.0(jiti@2.6.1)
