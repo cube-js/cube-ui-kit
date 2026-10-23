@@ -20,6 +20,20 @@ describe('<GridProvider />', () => {
     expect(grid.style.getPropertyValue('--column-gap')).toBe('8px');
   });
 
+  it('defaults the gap to a zero length', () => {
+    const { container } = render(
+      <GridProvider>
+        <div data-testid="child" />
+      </GridProvider>,
+    );
+
+    const grid = container.querySelector(
+      '[data-testid="child"]',
+    )!.parentElement!;
+
+    expect(grid.style.getPropertyValue('--column-gap')).toBe('0px');
+  });
+
   it('passes a Tasty value through', () => {
     const { container } = render(
       <GridProvider gap="1x" width="50vw">

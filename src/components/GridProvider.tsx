@@ -19,11 +19,11 @@ function toLength(value: string | number) {
 export interface CubeGridProviderProps {
   children: ReactNode;
   columns?: number;
-  /** Gap between columns, as a single Tasty value such as `'1x'`, or pixels. */
+  /** Gap between columns, as a single Tasty value such as `'1x'`, or a number of pixels. */
   gap?: string | number;
-  /** Forced container width, as a single Tasty value, or pixels. */
+  /** Forced container width, as a single Tasty value, or a number of pixels. */
   width?: string | number;
-  /** Width before the resize observer measures the container, or pixels. */
+  /** Width before the resize observer measures the container, as a single Tasty value, or a number of pixels. */
   initialWidth?: string | number;
 }
 
@@ -34,7 +34,7 @@ export const GridProvider = forwardRef<HTMLDivElement, CubeGridProviderProps>(
     let {
       children,
       columns = 2,
-      gap = '0',
+      gap = 0,
       width: forcedWidth,
       initialWidth,
     } = props;
