@@ -49,7 +49,7 @@ const CopyPasteBlockElement = tasty(Card, {
     fill: '#surface-2',
     radius: '1r',
     padding: {
-      '': '0 1px',
+      '': '0 1bw',
       ':focus': '0',
     },
     color: {
@@ -58,7 +58,7 @@ const CopyPasteBlockElement = tasty(Card, {
     },
     border: {
       '': 'dashed #dark-03',
-      ':focus': '2px dashed #primary-text',
+      ':focus': '2bw dashed #primary-text',
       error: 'dashed #danger',
     },
     cursor: '$pointer',

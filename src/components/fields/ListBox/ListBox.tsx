@@ -222,10 +222,10 @@ const ListBoxDropIndicatorElement = tasty({
       right: '.5x',
       // Centred in the gap between two options, or on the edge of the list.
       top: {
-        '': '(-1px - $list-gap / 2)',
-        ':first-child | :last-child': '-1px',
+        '': '(-1bw - $list-gap / 2)',
+        ':first-child | :last-child': '-1bw',
       },
-      height: '2px',
+      height: '2bw',
       fill: '#primary',
       radius: 'round',
     },

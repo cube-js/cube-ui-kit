@@ -297,7 +297,7 @@ export const TabsElement = tasty({
       $: '> Bar > ScrollWrapper >',
       position: 'absolute',
       bottom: {
-        '': '1px',
+        '': '1bw',
         'placement=left | placement=right': 'auto',
       },
       top: {
@@ -310,7 +310,7 @@ export const TabsElement = tasty({
       },
       right: {
         '': 'auto',
-        'placement=left | placement=right': '1px',
+        'placement=left | placement=right': '1bw',
       },
       height: {
         '': '1ow',
@@ -492,21 +492,21 @@ export const DropIndicatorElement = tasty({
     top: {
       '': 0,
       'placement=left | placement=right': 'auto',
-      '(placement=left | placement=right) & before': '-2px',
+      '(placement=left | placement=right) & before': '-.25x',
     },
     bottom: {
       '': 0,
       'placement=left | placement=right': 'auto',
-      '(placement=left | placement=right) & after': '-2px',
+      '(placement=left | placement=right) & after': '-.25x',
     },
     left: {
       '': 'auto',
-      'before & !(placement=left | placement=right)': '-2px',
+      'before & !(placement=left | placement=right)': '-.25x',
       'placement=left | placement=right': 0,
     },
     right: {
       '': 'auto',
-      'after & !(placement=left | placement=right)': '-2px',
+      'after & !(placement=left | placement=right)': '-.25x',
       'placement=left | placement=right': 0,
     },
   },

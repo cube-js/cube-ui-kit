@@ -220,7 +220,7 @@ export const DEFAULT_BUTTON_STYLES: Styles = {
     'size=xlarge': 't2m',
     'type=link': 'strong',
   },
-  outlineOffset: 1,
+  outlineOffset: '1bw',
   padding: {
     '': 0,
     'raw-children & !has-icons':

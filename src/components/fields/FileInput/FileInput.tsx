@@ -74,7 +74,7 @@ const FileInputElement = tasty(Action, {
         '': '#primary',
         disabled: '#dark.30',
       },
-      padding: '.5x (1.5x - 1px)',
+      padding: '.5x (1.5x - 1bw)',
       transition: 'theme',
     },
 

@@ -227,7 +227,7 @@ const PaneElement = tasty({
     ScrollbarV: {
       position: 'absolute',
       right: {
-        '': '1px',
+        '': '1bw',
         'edge=right': `${HANDLER_RESERVED + 1}px`,
       },
       top: '$scrollbar-v-top',
@@ -247,7 +247,7 @@ const PaneElement = tasty({
       $: '>',
       position: 'absolute',
       bottom: {
-        '': '1px',
+        '': '1bw',
         'edge=bottom': `${HANDLER_RESERVED + 1}px`,
       },
       left: '$scrollbar-h-left',
@@ -304,6 +304,8 @@ const PaneElement = tasty({
     },
 
     Drag: {
+      // Grip dots in device pixels, so they stay crisp at any gap.
+      '$grip-size': '3px',
       display: 'grid',
       gap: '2bw',
       border: 0,
@@ -312,19 +314,19 @@ const PaneElement = tasty({
         'edge=right': 'column',
       },
       gridColumns: {
-        '': '3px 3px 3px 3px 3px',
+        '': 'repeat(5, $grip-size)',
         'edge=right': 'auto',
       },
       gridRows: {
         '': 'auto',
-        'edge=right': '3px 3px 3px 3px 3px',
+        'edge=right': 'repeat(5, $grip-size)',
       },
       width: {
         '': 'auto',
-        'edge=right': '3px',
+        'edge=right': '$grip-size',
       },
       height: {
-        '': '3px',
+        '': '$grip-size',
         'edge=right': 'auto',
       },
       position: 'absolute',
@@ -337,7 +339,7 @@ const PaneElement = tasty({
         '': '0',
         'focused | drag': '1bw #primary-text',
       },
-      outlineOffset: 1,
+      outlineOffset: '1bw',
     },
 
     DragPart: {

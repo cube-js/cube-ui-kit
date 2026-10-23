@@ -68,7 +68,7 @@ const ContentElement = tasty({
     ScrollbarV: {
       $: '>',
       position: 'absolute',
-      right: '1px',
+      right: '1bw',
       top: '$scrollbar-v-top',
       width: '1ow',
       height: '$scrollbar-v-height',
@@ -85,7 +85,7 @@ const ContentElement = tasty({
     ScrollbarH: {
       $: '>',
       position: 'absolute',
-      bottom: '1px',
+      bottom: '1bw',
       left: '$scrollbar-h-left',
       height: '1ow',
       width: '$scrollbar-h-width',

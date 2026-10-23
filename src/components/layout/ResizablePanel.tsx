@@ -39,14 +39,19 @@ export interface CubeResizablePanelProps extends CubePanelProps {
 const HandlerElement = tasty({
   qa: 'ResizeHandler',
   styles: {
+    // The handle's geometry is in device pixels so the grip stays crisp at any
+    // gap; every other offset below derives from these two.
+    '$handle-size': '9px',
+    '$grip-size': '3px',
+
     // The real size is slightly bigger than the visual one.
     width: {
       '': 'initial',
-      horizontal: '9px',
+      horizontal: '$handle-size',
       'disabled & horizontal': '1bw',
     },
     height: {
-      '': '9px',
+      '': '$handle-size',
       horizontal: 'initial',
       'disabled & !horizontal': '1bw',
     },
@@ -88,26 +93,27 @@ const HandlerElement = tasty({
     padding: 0,
     boxSizing: 'border-box',
     transition: 'theme',
+    // The track's far edge: its inset plus its thickness.
     '--size-compensation': {
-      '': '6px',
+      '': '(($handle-size + $grip-size) / 2)',
       disabled: '1bw',
     },
 
     Track: {
       width: {
         '': 'initial',
-        horizontal: '3px',
-        'disabled & horizontal': '1px',
+        horizontal: '$grip-size',
+        'disabled & horizontal': '1bw',
       },
       height: {
-        '': '3px',
+        '': '$grip-size',
         horizontal: 'initial',
-        'disabled & !horizontal': '1px',
+        'disabled & !horizontal': '1bw',
       },
       position: 'absolute',
       inset: {
-        '': '3px 0',
-        horizontal: '0 3px',
+        '': '(($handle-size - $grip-size) / 2) 0',
+        horizontal: '0 (($handle-size - $grip-size) / 2)',
         disabled: '0 0',
       },
       fill: {
@@ -119,7 +125,7 @@ const HandlerElement = tasty({
         '': '1bw #primary-text.0',
         drag: '1bw #primary-text',
       },
-      outlineOffset: 1,
+      outlineOffset: '1bw',
     },
 
     Drag: {
@@ -130,24 +136,24 @@ const HandlerElement = tasty({
         horizontal: 'column',
       },
       gridColumns: {
-        '': '3px 3px 3px 3px 3px',
+        '': 'repeat(5, $grip-size)',
         horizontal: 'auto',
       },
       gridRows: {
         '': 'auto',
-        horizontal: '3px 3px 3px 3px 3px',
+        horizontal: 'repeat(5, $grip-size)',
       },
       width: {
         '': 'auto',
-        horizontal: '1px',
+        horizontal: '1bw',
       },
       height: {
-        '': '1px',
+        '': '1bw',
         horizontal: 'auto',
       },
       inset: {
-        '': '4px 50% auto auto',
-        horizontal: '50% 4px auto auto',
+        '': '(($handle-size - 1bw) / 2) 50% auto auto',
+        horizontal: '50% (($handle-size - 1bw) / 2) auto auto',
       },
       transform: {
         '': 'translate(-50%, 0)',

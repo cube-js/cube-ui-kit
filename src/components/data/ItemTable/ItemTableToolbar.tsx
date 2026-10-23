@@ -79,7 +79,7 @@ const ToolbarElement = tasty({
 
 const SearchElement = tasty(SearchInput, {
   qa: 'ItemTableSearchInput',
-  styles: { width: 'max 300px' },
+  styles: { width: 'max 37.5x' },
 });
 
 /** The table's search input, bound to the table's own state. */

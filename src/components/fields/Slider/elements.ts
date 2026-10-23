@@ -20,7 +20,7 @@ export const SliderThumbElement = tasty({
       '': '1bw #primary-text.0',
       focused: '1bw #primary-text',
     },
-    outlineOffset: 1,
+    outlineOffset: '1bw',
     radius: '50%',
     transition: 'theme',
     zIndex: {
@@ -45,10 +45,10 @@ export const SliderTrackContainerElement = tasty({
     fill: '#dark-05',
     height: {
       '': 'initial 10x 100%',
-      horizontal: '2px',
+      horizontal: '2bw',
     },
     width: {
-      '': '2px',
+      '': '2bw',
       horizontal: '100%',
     },
     radius: true,

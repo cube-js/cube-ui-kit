@@ -127,7 +127,7 @@ const CheckboxElement = tasty({
       '': '#primary-text.0',
       focused: '1bw #primary-text',
     },
-    outlineOffset: 1,
+    outlineOffset: '1bw',
     transition: 'theme',
   },
 });
