@@ -1,5 +1,17 @@
 # @cube-dev/ui-kit
 
+## 0.199.2
+
+### Patch Changes
+
+- [#1563](https://github.com/cube-js/cube-ui-kit/pull/1563) [`88e80cda`](https://github.com/cube-js/cube-ui-kit/commit/88e80cda412ca4dc637a52b77b5b723ed9e638da) Thanks [@tenphi](https://github.com/tenphi)! - Add two duration tokens: `$overlay-transition` (`250ms`), for a modal, tray or underlay entering and leaving, and `$scrollbar-transition` (`150ms`), for an auto-hiding (tiny) scrollbar fading in and out. `Modal`, `Tray`, `Underlay`, the `Layout` scrollbars and the `Tabs` scrollbar use them, at the same timings as before. Both are listed in the published `tasty.config.ts`.
+
+- [#1559](https://github.com/cube-js/cube-ui-kit/pull/1559) [`ddedc8cb`](https://github.com/cube-js/cube-ui-kit/commit/ddedc8cbbac894e7bb1b7bb3ddce1862ca518d34) Thanks [@tenphi](https://github.com/tenphi)! - Components now pass runtime values through Tasty `tokens` instead of inline `style`. `Prefix`, `Suffix`, `DirectionIcon`, `ResizablePanel`, `Layout.Panel`, `Layout.Pane` and `Layout.Content` keep a `style` you pass them, which their own inline style used to replace. `ComboBox` and `SearchComboBox` take their focused stacking from their styles, so a `styles.zIndex` override now applies.
+
+  `tasty.config.ts` now lists every color token the palette emits (45 were missing, including the `special` theme's accent tokens, the `*-accent-disabled-text`, `*-accent-selected-fill` and `*-accent-surface-border` tokens, and `#current-fill`) and the `@dark` and `@hc` states, so projects that extend it no longer get unknown-token or unknown-state errors for them from `@tenphi/eslint-plugin-tasty`.
+
+- [#1562](https://github.com/cube-js/cube-ui-kit/pull/1562) [`4e44c0a5`](https://github.com/cube-js/cube-ui-kit/commit/4e44c0a510b60eac72fc14b82d07e5aaad77b714) Thanks [@tenphi](https://github.com/tenphi)! - `Tabs`: a tab is now a `type="button"` button, so tabs inside a `<form>` no longer submit it when clicked or activated with Enter or Space, and Enter in a field of a tab panel no longer submits the form through the first tab. With `prerender` or `keepMounted`, each rendered panel now gets its own id, so the selected tab's `aria-controls` points at its own panel instead of the first one.
+
 ## 0.199.1
 
 ### Patch Changes
