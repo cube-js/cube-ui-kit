@@ -327,6 +327,8 @@ export default {
     '$disabled-opacity',
     '$stroke-width',
     '$outline-offset',
+    '$ring-width',
+    '$item-gap',
     '$large-radius',
     '$card-radius',
     '$leaf-sharp-radius',

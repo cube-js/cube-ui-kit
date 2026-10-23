@@ -60,7 +60,7 @@ const PaginationElement = tasty({
     Pages: {
       display: 'flex',
       flow: 'row',
-      gap: '1bw',
+      gap: '$item-gap',
       placeItems: 'center',
     },
 

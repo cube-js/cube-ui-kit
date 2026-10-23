@@ -17,7 +17,7 @@ export const ITEM_ACTION_BASE_STYLES: Styles = {
   gap: 0,
   position: 'relative',
   margin: {
-    '': '0 1bw 0 1bw',
+    '': '0 $item-gap 0 $item-gap',
     ':last-child & !:first-child': '$side-padding right',
     '!:last-child & :first-child': '$side-padding left',
     ':last-child & :first-child': '0 $side-padding',
@@ -64,7 +64,7 @@ export const ITEM_ACTION_BASE_STYLES: Styles = {
 export const DEFAULT_PRIMARY_STYLES: Styles = {
   outline: {
     '': '0 #primary-accent-text.0',
-    focused: '1bw #primary-accent-text',
+    focused: '$ring-width #primary-accent-text',
   },
   border: {
     '': '#primary-accent-surface-border',
@@ -114,7 +114,7 @@ export const DEFAULT_OUTLINE_STYLES: Styles = mergeStyles(
     // `palette.ts` for AA against the BASE selected fill (`accent-selected-fill`).
     outline: {
       '': '0 #primary-accent-text.0',
-      focused: '1bw #primary-accent-text',
+      focused: '$ring-width #primary-accent-text',
     },
     border: {
       '': true,
@@ -190,7 +190,7 @@ export const DEFAULT_CLEAR_STYLES: Styles = mergeStyles(
     // Selected = old CLEAR: brand-tinted overlay over the surface.
     outline: {
       '': '0 #primary-accent-text.0',
-      focused: '1bw #primary-accent-text',
+      focused: '$ring-width #primary-accent-text',
     },
     border: {
       '': '#clear',
@@ -246,7 +246,7 @@ export const DEFAULT_LINK_STYLES: Styles = {
   // clear AA on plain surfaces; both are adaptive across light/dark/HC.
   outline: {
     '': '0 #primary-accent-text.0',
-    focused: '1bw #primary-accent-text',
+    focused: '$ring-width #primary-accent-text',
   },
   border: '0',
   fill: {
@@ -263,7 +263,7 @@ export const DEFAULT_LINK_STYLES: Styles = {
 export const DANGER_PRIMARY_STYLES: Styles = {
   outline: {
     '': '0 #primary-accent-text.0',
-    focused: '1bw #primary-accent-text',
+    focused: '$ring-width #primary-accent-text',
   },
   border: {
     '': '#white.2',
@@ -292,7 +292,7 @@ export const DANGER_OUTLINE_STYLES: Styles = {
   // at their overlap into a darker stripe.
   outline: {
     '': '0 #primary-accent-text.0',
-    focused: '1bw #primary-accent-text',
+    focused: '$ring-width #primary-accent-text',
   },
   border: {
     '': '#danger-border',
@@ -338,7 +338,7 @@ export const DANGER_CLEAR_STYLES: Styles = {
   // Selected = old DANGER CLEAR: danger-text-tinted overlay.
   outline: {
     '': '0 #primary-accent-text.0',
-    focused: '1bw #primary-accent-text',
+    focused: '$ring-width #primary-accent-text',
   },
   border: {
     '': '#clear',
@@ -365,7 +365,7 @@ export const DANGER_LINK_STYLES: Styles = {
   // See DEFAULT_LINK_STYLES for the soft→strong rationale.
   outline: {
     '': '0 #primary-accent-text.0',
-    focused: '1bw #primary-accent-text',
+    focused: '$ring-width #primary-accent-text',
   },
   border: 0,
   fill: {
@@ -400,7 +400,7 @@ export const DANGER_ITEM_STYLES: Styles = {
 export const SUCCESS_PRIMARY_STYLES: Styles = {
   outline: {
     '': '0 #primary-accent-text.0',
-    focused: '1bw #primary-accent-text',
+    focused: '$ring-width #primary-accent-text',
   },
   border: {
     '': '#white.2',
@@ -425,7 +425,7 @@ export const SUCCESS_OUTLINE_STYLES: Styles = {
   // See DANGER_OUTLINE_STYLES for the border-anchor rationale.
   outline: {
     '': '0 #primary-accent-text.0',
-    focused: '1bw #primary-accent-text',
+    focused: '$ring-width #primary-accent-text',
   },
   border: {
     '': '#success-border',
@@ -469,7 +469,7 @@ export const SUCCESS_CLEAR_STYLES: Styles = {
   // Non-selected = old SUCCESS NEUTRAL; selected = old SUCCESS CLEAR.
   outline: {
     '': '0 #primary-accent-text.0',
-    focused: '1bw #primary-accent-text',
+    focused: '$ring-width #primary-accent-text',
   },
   border: {
     '': '#clear',
@@ -496,7 +496,7 @@ export const SUCCESS_LINK_STYLES: Styles = {
   // See DEFAULT_LINK_STYLES for the soft→strong rationale.
   outline: {
     '': '0 #primary-accent-text.0',
-    focused: '1bw #primary-accent-text',
+    focused: '$ring-width #primary-accent-text',
   },
   border: 0,
   fill: {
@@ -531,7 +531,7 @@ export const SUCCESS_ITEM_STYLES: Styles = {
 export const WARNING_PRIMARY_STYLES: Styles = {
   outline: {
     '': '0 #primary-accent-text.0',
-    focused: '1bw #primary-accent-text',
+    focused: '$ring-width #primary-accent-text',
   },
   border: {
     '': '#white.2',
@@ -556,7 +556,7 @@ export const WARNING_OUTLINE_STYLES: Styles = {
   // See DANGER_OUTLINE_STYLES for the border-anchor rationale.
   outline: {
     '': '0 #primary-accent-text.0',
-    focused: '1bw #primary-accent-text',
+    focused: '$ring-width #primary-accent-text',
   },
   border: {
     '': '#warning-border',
@@ -600,7 +600,7 @@ export const WARNING_CLEAR_STYLES: Styles = {
   // Non-selected = old WARNING NEUTRAL; selected = old WARNING CLEAR.
   outline: {
     '': '0 #primary-accent-text.0',
-    focused: '1bw #primary-accent-text',
+    focused: '$ring-width #primary-accent-text',
   },
   border: {
     '': '#clear',
@@ -627,7 +627,7 @@ export const WARNING_LINK_STYLES: Styles = {
   // See DEFAULT_LINK_STYLES for the soft→strong rationale.
   outline: {
     '': '0 #primary-accent-text.0',
-    focused: '1bw #primary-accent-text',
+    focused: '$ring-width #primary-accent-text',
   },
   border: 0,
   fill: {
@@ -662,7 +662,7 @@ export const WARNING_ITEM_STYLES: Styles = {
 export const NOTE_PRIMARY_STYLES: Styles = {
   outline: {
     '': '0 #primary-accent-text.0',
-    focused: '1bw #primary-accent-text',
+    focused: '$ring-width #primary-accent-text',
   },
   border: {
     '': '#white.2',
@@ -687,7 +687,7 @@ export const NOTE_OUTLINE_STYLES: Styles = {
   // See DANGER_OUTLINE_STYLES for the border-anchor rationale.
   outline: {
     '': '0 #primary-accent-text.0',
-    focused: '1bw #primary-accent-text',
+    focused: '$ring-width #primary-accent-text',
   },
   border: {
     '': '#note-border',
@@ -728,7 +728,7 @@ export const NOTE_CLEAR_STYLES: Styles = {
   // Non-selected = old NOTE NEUTRAL; selected = old NOTE CLEAR.
   outline: {
     '': '0 #primary-accent-text.0',
-    focused: '1bw #primary-accent-text',
+    focused: '$ring-width #primary-accent-text',
   },
   border: {
     '': '#clear',
@@ -755,7 +755,7 @@ export const NOTE_LINK_STYLES: Styles = {
   // See DEFAULT_LINK_STYLES for the soft→strong rationale.
   outline: {
     '': '0 #primary-accent-text.0',
-    focused: '1bw #primary-accent-text',
+    focused: '$ring-width #primary-accent-text',
   },
   border: 0,
   fill: {
@@ -801,7 +801,7 @@ export const SPECIAL_PRIMARY_STYLES: Styles = {
   // (the cross-theme default) which is `mode: 'auto'` and would shift in dark.
   outline: {
     '': '0 #special-accent-text.0',
-    focused: '1bw #special-accent-text',
+    focused: '$ring-width #special-accent-text',
   },
   border: {
     '': '#special-accent-surface-border',
@@ -838,7 +838,7 @@ export const SPECIAL_OUTLINE_STYLES: Styles = mergeStyles(
     // `SPECIAL_PRIMARY_STYLES.outline` for the full rationale.
     outline: {
       '': '0 #special-accent-text.0',
-      focused: '1bw #special-accent-text',
+      focused: '$ring-width #special-accent-text',
     },
     border: {
       '': '#white.15',
@@ -902,7 +902,7 @@ export const SPECIAL_CLEAR_STYLES: Styles = mergeStyles(
     // `SPECIAL_PRIMARY_STYLES.outline` for the full rationale.
     outline: {
       '': '0 #special-accent-text.0',
-      focused: '1bw #special-accent-text',
+      focused: '$ring-width #special-accent-text',
     },
     border: {
       '': '#clear',
@@ -938,7 +938,7 @@ export const SPECIAL_LINK_STYLES: Styles = {
   // `#special-accent-text` here instead of the cross-theme `#primary-accent-text`.
   outline: {
     '': '0 #special-accent-text.0',
-    focused: '1bw #special-accent-text',
+    focused: '$ring-width #special-accent-text',
   },
   border: '0',
   fill: {
@@ -1084,7 +1084,7 @@ const CURRENT_ITEM_RAMP: Styles = {
 const CURRENT_FOCUS_RING: Styles = {
   outline: {
     '': '0 #primary-accent-text.0',
-    focused: '1bw #primary-accent-text',
+    focused: '$ring-width #primary-accent-text',
   },
 } as const;
 

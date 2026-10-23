@@ -308,10 +308,12 @@ const PaneElement = tasty({
     },
 
     Drag: {
-      // Grip dots in device pixels, so they stay crisp at any gap.
+      // Grip dots and their spacing in device pixels, so they stay crisp at
+      // any gap.
       '$grip-size': '3px',
+      '$dot-gap': '2px',
       display: 'grid',
-      gap: '2bw',
+      gap: '$dot-gap',
       border: 0,
       flow: {
         '': 'row',
@@ -341,7 +343,7 @@ const PaneElement = tasty({
       radius: 'round',
       outline: {
         '': '0',
-        'focused | drag': '1bw #primary-text',
+        'focused | drag': '$ring-width #primary-text',
       },
       outlineOffset: '$outline-offset',
     },

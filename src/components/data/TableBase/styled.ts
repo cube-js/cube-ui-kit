@@ -110,11 +110,11 @@ const CELL_STYLES: Styles = {
     '': false,
     '@own(pin-edge) & @own(pin=start)': 'inset -1bw 0 0 0 #border',
     '@own(pin-edge) & @own(pin=end)': 'inset 1bw 0 0 0 #border',
-    '@own(cell-selected)': 'inset 0 0 0 1bw #purple',
+    '@own(cell-selected)': 'inset 0 0 0 $ring-width #purple',
     '@own(cell-selected) & @own(pin-edge) & @own(pin=start)':
-      'inset 0 0 0 1bw #purple, inset -1bw 0 0 0 #border',
+      'inset 0 0 0 $ring-width #purple, inset -1bw 0 0 0 #border',
     '@own(cell-selected) & @own(pin-edge) & @own(pin=end)':
-      'inset 0 0 0 1bw #purple, inset 1bw 0 0 0 #border',
+      'inset 0 0 0 $ring-width #purple, inset 1bw 0 0 0 #border',
   },
   // The frame's rounded corner, mirrored onto the cell that meets it. Without
   // it a selected cell there has its ring sliced off at 45°, since the root
@@ -443,7 +443,7 @@ export const TableElement = tasty({
       touchAction: 'none',
       outline: {
         '': 'none',
-        '@own(:focus-visible)': '1bw #focus',
+        '@own(:focus-visible)': '$ring-width #focus',
       },
       outlineOffset: '$outline-offset',
 
@@ -510,7 +510,9 @@ export const TableElement = tasty({
       position: 'absolute',
       top: 0,
       bottom: 0,
-      width: '2bw',
+      // A marker line in device pixels, not a border.
+      '$drop-indicator-size': '2px',
+      width: '$drop-indicator-size',
       insetInlineStart: { '': 'auto', '@own(position=before)': 0 },
       insetInlineEnd: { '': 'auto', '@own(position=after)': 0 },
       fill: '#purple',
@@ -548,7 +550,7 @@ export const TableElement = tasty({
         '': 'none',
         // Keyboard focus still has to be visible, even though the row is what
         // the user perceives as focused.
-        focused: '1bw #focus',
+        focused: '$ring-width #focus',
       },
     },
 
@@ -602,7 +604,9 @@ export const TableElement = tasty({
       insetInlineStart: 0,
       insetInlineEnd: 0,
       top: 0,
-      height: '2bw',
+      // A marker line in device pixels, not a border.
+      '$drop-indicator-size': '2px',
+      height: '$drop-indicator-size',
       // Centred on the boundary, so it covers the row divider instead of
       // sitting above or below it.
       translate: '0 -50%',
@@ -614,7 +618,7 @@ export const TableElement = tasty({
         // `@own`, not a bare `:focus-visible`: a sub-element's state keys
         // resolve against the ROOT, so the plain form asked whether the whole
         // table was focused. This is the keyboard drop target and needs its own.
-        '@own(:focus-visible)': '2bw #purple',
+        '@own(:focus-visible)': '(2 * $ring-width) #purple',
       },
       outlineOffset: '$outline-offset',
     },
@@ -746,7 +750,7 @@ export const TableElement = tasty({
       // modifier `outline` accepts.
       shadow: {
         '': false,
-        '@own(drop-target)': 'inset 0 0 0 2bw #purple',
+        '@own(drop-target)': 'inset 0 0 0 (2 * $ring-width) #purple',
       },
       cursor: {
         '': 'default',

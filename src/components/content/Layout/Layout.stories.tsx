@@ -618,7 +618,7 @@ export const CompleteApplicationShell: Story = {
             title="Navigation"
             onClose={() => setSidebarOpen(false)}
           />
-          <Layout.Content padding=".5x" scrollbar="tiny" gap="1bw">
+          <Layout.Content padding=".5x" scrollbar="tiny" gap="$item-gap">
             {['Dashboard', 'Analytics', 'Reports', 'Users', 'Settings'].map(
               (item) => (
                 <ItemButton key={item} type="clear" width="100%">
@@ -990,7 +990,7 @@ export const PanelAsDialog: Story = {
               Useful for mobile-responsive layouts where side panels should
               become modal dialogs on smaller screens.
             </Text>
-            <Space direction="vertical" gap="1bw">
+            <Space direction="vertical" gap="$item-gap">
               <ItemButton type="clear">Menu Item 1</ItemButton>
               <ItemButton type="clear">Menu Item 2</ItemButton>
               <ItemButton type="clear">Menu Item 3</ItemButton>
@@ -1058,7 +1058,7 @@ export const ResponsivePanelToDialog: Story = {
             title="Filters"
             onClose={() => setIsPanelOpen(false)}
           />
-          <Layout.Content padding=".5x" gap="1bw">
+          <Layout.Content padding=".5x" gap="$item-gap">
             <Title level={5} preset="c2" color="#dark-04" padding=".5x">
               Categories
             </Title>

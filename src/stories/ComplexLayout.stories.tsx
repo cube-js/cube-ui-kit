@@ -62,7 +62,7 @@ export const SidebarLayout: Story = {
             title="Menu"
             onClose={() => setIsOpen(false)}
           />
-          <Layout.Content padding=".5x" gap="1bw">
+          <Layout.Content padding=".5x" gap="$item-gap">
             <ItemButton type="clear">Dashboard</ItemButton>
             <ItemButton type="clear">Settings</ItemButton>
             <ItemButton type="clear">Profile</ItemButton>

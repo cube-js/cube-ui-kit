@@ -40,12 +40,13 @@ const HandlerElement = tasty({
   qa: 'ResizeHandler',
   styles: {
     // The handle's geometry is in device pixels so the grip stays crisp at any
-    // gap: `$grip-size` is the track's thickness and each dot's length, and
-    // `$dot-size` each dot's thickness. The track and dot offsets below derive
-    // from these.
+    // gap: `$grip-size` is the track's thickness and each dot's length,
+    // `$dot-size` each dot's thickness and `$dot-gap` the space between dots.
+    // The track and dot offsets below derive from these.
     '$handle-size': '9px',
     '$grip-size': '3px',
     '$dot-size': '1px',
+    '$dot-gap': '2px',
 
     // The real size is slightly bigger than the visual one.
     width: {
@@ -125,15 +126,15 @@ const HandlerElement = tasty({
       },
       transition: 'theme',
       outline: {
-        '': '1bw #primary-text.0',
-        drag: '1bw #primary-text',
+        '': '$ring-width #primary-text.0',
+        drag: '$ring-width #primary-text',
       },
       outlineOffset: '$outline-offset',
     },
 
     Drag: {
       display: 'grid',
-      gap: '2bw',
+      gap: '$dot-gap',
       flow: {
         '': 'row',
         horizontal: 'column',

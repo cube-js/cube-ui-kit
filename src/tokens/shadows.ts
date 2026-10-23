@@ -15,7 +15,7 @@ import type { Styles } from '@tenphi/tasty';
  */
 export const SHADOW_TOKENS: Styles = {
   /** Subtle shadow for list items */
-  '$item-shadow': '0 1bw .375x #shadow-sm',
+  '$item-shadow': '0 1px .375x #shadow-sm',
   /** Standard card shadow */
   '$card-shadow': '0 .5x 2x #shadow-md',
   /** Standard elevation */

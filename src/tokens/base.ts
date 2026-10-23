@@ -29,6 +29,10 @@ export const BASE_TOKENS: Styles = {
   '$outline-width': 'calc(1rem / 16 * 3)',
   /** Gap between a focus outline and its element */
   '$outline-offset': '1px',
+  /** Width of a focus or selection ring */
+  '$ring-width': '1px',
+  /** Hairline gap between adjacent items in a list, menu or action group */
+  '$item-gap': '1px',
   /** Border width for bordered elements */
   '$border-width': '1px',
 

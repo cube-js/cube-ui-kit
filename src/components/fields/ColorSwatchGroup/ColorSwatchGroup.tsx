@@ -36,7 +36,8 @@ export type CubeColorSwatchItem = string | { color: string; label?: string };
  * `#surface-text` at the edge and 2bw of `#surface` within it. Two tones that
  * flip with the scheme stay visible against any color the swatch holds.
  */
-const SELECTED_RING = 'inset 0 0 0 2bw #surface-text, inset 0 0 0 4bw #surface';
+const SELECTED_RING =
+  'inset 0 0 0 (2 * $ring-width) #surface-text, inset 0 0 0 (4 * $ring-width) #surface';
 
 /** The swatch edge in px, per size. `Item` takes an exact number. */
 const SWATCH_PX: Record<string, number> = {
@@ -154,10 +155,10 @@ const SwatchElement = tasty({
       '': 'inset 0 0 0 1bw #dark.15',
       selected: SELECTED_RING,
     },
-    // A 1bw offset keeps the ring clear of the 4px gap to its neighbours.
+    // The outline offset keeps the ring clear of the 4px gap to its neighbours.
     outline: {
-      '': '2bw #focus.0 / 1bw',
-      focused: '2bw #focus / 1bw',
+      '': '(2 * $ring-width) #focus.0 / $outline-offset',
+      focused: '(2 * $ring-width) #focus / $outline-offset',
     },
     transition: 'theme',
   },

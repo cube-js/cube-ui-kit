@@ -199,7 +199,7 @@ export interface CubeSearchComboBoxProps<T>
   sectionStyles?: Styles;
   /** Custom styles for section headings */
   headingStyles?: Styles;
-  /** Space between options, in pixels. Defaults to a hairline (`1bw`). */
+  /** Space between options, in pixels. Defaults to a hairline (`$item-gap`, `1px`). */
   listGap?: number;
 
   /** Whether the search combobox is disabled */

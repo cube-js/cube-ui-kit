@@ -34,7 +34,7 @@ const YEAR_COLUMNS = 3;
  * Exactly as wide as seven day cells (`3x` cell + a `2bw` gutter), so switching
  * between the day, month and year panels keeps the popover roughly in place.
  */
-const PERIOD_GRID_STYLES = { width: '(7 * (3x + 2bw))' } as const;
+const PERIOD_GRID_STYLES = { width: '(7 * (3x + $cell-gap))' } as const;
 
 interface Formatter {
   format(date: Date): string;

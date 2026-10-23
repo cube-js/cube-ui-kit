@@ -131,7 +131,7 @@ const ListElement = tasty({
   styles: {
     // The space between options. Set from `listGap`, which also hands the
     // same number to the virtualizer.
-    '$list-gap': '1bw',
+    '$list-gap': '$item-gap',
     display: 'block',
     // The space kept below the last option. Padding, so `listStyles` can take
     // it away, and outside the content box, where a virtualized list sets its
@@ -359,7 +359,7 @@ export interface CubeListBoxProps<T>
   /** Custom styles for section headings */
   headingStyles?: Styles;
   /**
-   * Space between options, in pixels. Defaults to a hairline (`1bw`). It
+   * Space between options, in pixels. Defaults to a hairline (`$item-gap`, `1px`). It
    * applies to flat, virtualized, sectioned and reorderable lists alike.
    */
   listGap?: number;

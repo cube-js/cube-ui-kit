@@ -40,7 +40,7 @@ export interface ListBoxPopoverProps {
   optionHighlight?: string;
   sectionStyles?: Styles;
   headingStyles?: Styles;
-  /** Space between options, in pixels. Defaults to a hairline (`1bw`). */
+  /** Space between options, in pixels. Defaults to a hairline (`$item-gap`, `1px`). */
   listGap?: number;
   selectedKey?: Key | null;
   /**

@@ -68,7 +68,7 @@ const TagRowElement = tasty({
     radius: true,
     outline: {
       '': '0 #primary-accent-text.0',
-      focused: '1bw #primary-accent-text',
+      focused: '$ring-width #primary-accent-text',
     },
     outlineOffset: '$outline-offset',
     transition: 'theme',

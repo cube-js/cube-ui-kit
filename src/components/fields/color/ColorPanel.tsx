@@ -100,7 +100,7 @@ const TRACK_STYLES: Styles = {
 
 /** A ring keeps the thumb visible wherever it sits on its own gradient. */
 const THUMB_STYLES: Styles = {
-  shadow: '0 0 0 2bw #surface, 0 0 0 3bw #dark.2',
+  shadow: '0 0 0 (2 * $ring-width) #surface, 0 0 0 (3 * $ring-width) #dark.2',
 };
 
 const THUMB_TOKENS = { '#slider-thumb': '(#color-picker, #surface)' };

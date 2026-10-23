@@ -17,8 +17,8 @@ export const SliderThumbElement = tasty({
     },
     cursor: '$pointer',
     outline: {
-      '': '1bw #primary-text.0',
-      focused: '1bw #primary-text',
+      '': '$ring-width #primary-text.0',
+      focused: '$ring-width #primary-text',
     },
     outlineOffset: '$outline-offset',
     radius: '50%',

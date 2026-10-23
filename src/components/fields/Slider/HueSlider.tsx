@@ -88,8 +88,8 @@ function HueSlider(
   const thumbStyles = mergeStyleLayers(
     {
       outline: {
-        '': '1bw #slider-thumb-hovered.0',
-        focused: '1bw #slider-thumb-hovered',
+        '': '$ring-width #slider-thumb-hovered.0',
+        focused: '$ring-width #slider-thumb-hovered',
       },
     },
     userThumbStyles,

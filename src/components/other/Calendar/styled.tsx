@@ -58,8 +58,8 @@ export const CALENDAR_CELL_STYLES: Styles = {
     'selected & (disabled | unavailable)': '#white',
   },
   outline: {
-    '': '1bw #primary-text.0',
-    focused: '1bw #primary-text',
+    '': '$ring-width #primary-text.0',
+    focused: '$ring-width #primary-text',
   },
   outlineOffset: '($outline-offset / 2)',
   radius: true,

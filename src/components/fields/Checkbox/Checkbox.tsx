@@ -125,7 +125,7 @@ const CheckboxElement = tasty({
     height: '(2x - 2bw)',
     outline: {
       '': '#primary-text.0',
-      focused: '1bw #primary-text',
+      focused: '$ring-width #primary-text',
     },
     outlineOffset: '$outline-offset',
     transition: 'theme',

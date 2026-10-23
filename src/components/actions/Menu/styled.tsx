@@ -46,7 +46,7 @@ export const StyledMenu = tasty({
     display: 'flex',
     flow: 'column',
     gap: {
-      '': '1bw',
+      '': '$item-gap',
       sections: false,
     },
     boxSizing: 'border-box',

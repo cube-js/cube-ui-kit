@@ -90,8 +90,9 @@ export const TabsElement = tasty({
       flexGrow: 0,
 
       $transition: '$tab-transition',
+      // The indicator line's thickness, in device pixels.
       '$tab-indicator-size': {
-        '': '2bw',
+        '': '2px',
         'size=large': '1ow',
       },
     },
@@ -245,7 +246,7 @@ export const TabsElement = tasty({
         // keep the rule defensive in case the styled element is consumed
         // directly with a `type=narrow` mod set.
         '(type=default | type=narrow) & (placement=left | placement=right)':
-          '1bw',
+          '$item-gap',
       },
       placeContent: 'start',
       overflow: 'visible',
@@ -376,11 +377,11 @@ export const TabElement = tasty(Item, {
     shadow: {
       '': '$selection-shadow',
       'focused & focus-visible':
-        'inset 0 0 0 1bw #primary-text, $selection-shadow',
-      editing: 'inset 0 0 0 1bw #primary-text, $selection-shadow',
+        'inset 0 0 0 $ring-width #primary-text, $selection-shadow',
+      editing: 'inset 0 0 0 $ring-width #primary-text, $selection-shadow',
       'type=radio & selected': '$item-shadow',
       'type=radio & selected & focused & focus-visible':
-        '$item-shadow, inset 0 0 0 1bw #primary-text',
+        '$item-shadow, inset 0 0 0 $ring-width #primary-text',
     },
     outline: 'none',
     placeContent: {

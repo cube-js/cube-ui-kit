@@ -95,7 +95,7 @@ const ItemActionsWrapperElement = tasty({
         'type=card & @block-description': '(1bw + .5x) (1bw + .5x) auto auto',
       },
       display: 'flex',
-      gap: '1bw',
+      gap: '$item-gap',
       placeItems: 'center',
       placeContent: 'center end',
 
