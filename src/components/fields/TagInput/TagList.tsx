@@ -70,7 +70,7 @@ const TagRowElement = tasty({
       '': '0 #primary-accent-text.0',
       focused: '1bw #primary-accent-text',
     },
-    outlineOffset: '1bw',
+    outlineOffset: '$outline-offset',
     transition: 'theme',
     cursor: 'default',
   },

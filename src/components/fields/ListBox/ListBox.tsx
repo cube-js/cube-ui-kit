@@ -220,12 +220,14 @@ const ListBoxDropIndicatorElement = tasty({
       position: 'absolute',
       left: '.5x',
       right: '.5x',
+      // A marker line in device pixels, not a border.
+      '$drop-indicator-size': '2px',
       // Centred in the gap between two options, or on the edge of the list.
       top: {
-        '': '(-1bw - $list-gap / 2)',
-        ':first-child | :last-child': '-1bw',
+        '': '($drop-indicator-size / -2 - $list-gap / 2)',
+        ':first-child | :last-child': '($drop-indicator-size / -2)',
       },
-      height: '2bw',
+      height: '$drop-indicator-size',
       fill: '#primary',
       radius: 'round',
     },

@@ -64,9 +64,11 @@ const TooltipElement = tasty({
       '': 'none',
       material: 'auto',
     },
+    // A one-device-pixel halo outlines the light tooltip.
+    '$shadow-blur': '1px',
     filter: {
       '': false,
-      light: 'drop-shadow(0 0 1bw #surface-text-soft.2)',
+      light: 'drop-shadow(0 0 $shadow-blur #surface-text-soft.2)',
     },
     transition:
       'translate $transition ease-out, scale $transition ease-out, theme $transition ease-out',
@@ -114,8 +116,10 @@ const TooltipElement = tasty({
 const TooltipTipElement = tasty({
   styles: {
     position: 'absolute',
-    width: '1bw',
-    height: '1bw',
+    // The arrow is drawn by its borders around a one-device-pixel core.
+    '$tip-size': '1px',
+    width: '$tip-size',
+    height: '$tip-size',
     border: '.5x #clear',
     borderTop: {
       '': '.5x solid #surface-inverse.85',
@@ -141,9 +145,9 @@ const TooltipTipElement = tasty({
       '[data-placement="bottom"]': '100%',
     },
     transform: {
-      '': 'translate((-.375x - 1bw), 0)',
+      '': 'translate((-.375x - $tip-size), 0)',
       '[data-placement="bottom"]':
-        'translate((-.375x - 1bw), 0) rotate(180deg)',
+        'translate((-.375x - $tip-size), 0) rotate(180deg)',
       '[data-placement="left"]': 'translate(-.25x, -.25x) rotate(270deg)',
       '[data-placement="right"]': 'translate(.25x, -.25x) rotate(90deg)',
     },

@@ -326,6 +326,7 @@ export default {
     '$input-letter-spacing',
     '$disabled-opacity',
     '$stroke-width',
+    '$outline-offset',
     '$large-radius',
     '$card-radius',
     '$leaf-sharp-radius',

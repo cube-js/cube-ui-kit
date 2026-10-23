@@ -295,9 +295,11 @@ export const TabsElement = tasty({
     // properties come from `useTinyScrollbar.handleHTokens` / `handleVTokens`.
     Scrollbar: {
       $: '> Bar > ScrollWrapper >',
+      // It sits a device pixel in from the edge.
+      '$scrollbar-inset': '1px',
       position: 'absolute',
       bottom: {
-        '': '1bw',
+        '': '$scrollbar-inset',
         'placement=left | placement=right': 'auto',
       },
       top: {
@@ -310,7 +312,7 @@ export const TabsElement = tasty({
       },
       right: {
         '': 'auto',
-        'placement=left | placement=right': '1bw',
+        'placement=left | placement=right': '$scrollbar-inset',
       },
       height: {
         '': '1ow',

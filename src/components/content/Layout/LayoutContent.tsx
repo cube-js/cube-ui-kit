@@ -27,6 +27,8 @@ const ContentElement = tasty({
   as: 'div',
   qa: 'LayoutContent',
   styles: {
+    // The tiny scrollbars sit a device pixel in from the edge.
+    '$scrollbar-inset': '1px',
     container: 'content / inline-size',
     position: 'relative',
     display: 'grid',
@@ -68,7 +70,7 @@ const ContentElement = tasty({
     ScrollbarV: {
       $: '>',
       position: 'absolute',
-      right: '1bw',
+      right: '$scrollbar-inset',
       top: '$scrollbar-v-top',
       width: '1ow',
       height: '$scrollbar-v-height',
@@ -85,7 +87,7 @@ const ContentElement = tasty({
     ScrollbarH: {
       $: '>',
       position: 'absolute',
-      bottom: '1bw',
+      bottom: '$scrollbar-inset',
       left: '$scrollbar-h-left',
       height: '1ow',
       width: '$scrollbar-h-width',

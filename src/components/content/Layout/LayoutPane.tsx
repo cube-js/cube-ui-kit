@@ -173,6 +173,8 @@ const PaneElement = tasty({
   as: 'div',
   qa: 'LayoutPane',
   styles: {
+    // The tiny scrollbars sit a device pixel in from the edge.
+    '$scrollbar-inset': '1px',
     container: 'pane / inline-size',
     position: 'relative',
     display: 'grid',
@@ -227,8 +229,8 @@ const PaneElement = tasty({
     ScrollbarV: {
       position: 'absolute',
       right: {
-        '': '1bw',
-        'edge=right': `(${HANDLER_RESERVED}px + 1bw)`,
+        '': '$scrollbar-inset',
+        'edge=right': `(${HANDLER_RESERVED}px + $scrollbar-inset)`,
       },
       top: '$scrollbar-v-top',
       width: '1ow',
@@ -247,8 +249,8 @@ const PaneElement = tasty({
       $: '>',
       position: 'absolute',
       bottom: {
-        '': '1bw',
-        'edge=bottom': `(${HANDLER_RESERVED}px + 1bw)`,
+        '': '$scrollbar-inset',
+        'edge=bottom': `(${HANDLER_RESERVED}px + $scrollbar-inset)`,
       },
       left: '$scrollbar-h-left',
       height: '1ow',
@@ -339,7 +341,7 @@ const PaneElement = tasty({
         '': '0',
         'focused | drag': '1bw #primary-text',
       },
-      outlineOffset: '1bw',
+      outlineOffset: '$outline-offset',
     },
 
     DragPart: {

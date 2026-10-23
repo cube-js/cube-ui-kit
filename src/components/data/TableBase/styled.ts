@@ -445,7 +445,7 @@ export const TableElement = tasty({
         '': 'none',
         '@own(:focus-visible)': '1bw #focus',
       },
-      outlineOffset: '1bw',
+      outlineOffset: '$outline-offset',
 
       /**
        * The line is a real child, not `&::after`: state maps inside a
@@ -616,7 +616,7 @@ export const TableElement = tasty({
         // table was focused. This is the keyboard drop target and needs its own.
         '@own(:focus-visible)': '2bw #purple',
       },
-      outlineOffset: '1bw',
+      outlineOffset: '$outline-offset',
     },
 
     /**

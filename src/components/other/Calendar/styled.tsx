@@ -61,7 +61,7 @@ export const CALENDAR_CELL_STYLES: Styles = {
     '': '1bw #primary-text.0',
     focused: '1bw #primary-text',
   },
-  outlineOffset: '.5bw',
+  outlineOffset: '($outline-offset / 2)',
   radius: true,
   cursor: {
     '': '$pointer',

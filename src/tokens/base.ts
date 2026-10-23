@@ -27,6 +27,8 @@ export const BASE_TOKENS: Styles = {
   '$stroke-width': 1.5,
   /** Focus outline width */
   '$outline-width': 'calc(1rem / 16 * 3)',
+  /** Gap between a focus outline and its element */
+  '$outline-offset': '1px',
   /** Border width for bordered elements */
   '$border-width': '1px',
 

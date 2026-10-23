@@ -20,7 +20,7 @@ export const SliderThumbElement = tasty({
       '': '1bw #primary-text.0',
       focused: '1bw #primary-text',
     },
-    outlineOffset: '1bw',
+    outlineOffset: '$outline-offset',
     radius: '50%',
     transition: 'theme',
     zIndex: {
@@ -43,12 +43,14 @@ export const SliderTrackContainerElement = tasty({
     },
     position: 'absolute',
     fill: '#dark-05',
+    // The track's thickness, in device pixels.
+    '$track-size': '2px',
     height: {
       '': 'initial 10x 100%',
-      horizontal: '2bw',
+      horizontal: '$track-size',
     },
     width: {
-      '': '2bw',
+      '': '$track-size',
       horizontal: '100%',
     },
     radius: true,
