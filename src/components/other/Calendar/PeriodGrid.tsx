@@ -1,4 +1,4 @@
-import { Styles, tasty } from '@tenphi/tasty';
+import { mergeStyles, Styles, tasty } from '@tenphi/tasty';
 import { KeyboardEvent, useLayoutEffect, useRef } from 'react';
 
 import { CALENDAR_CELL_STYLES } from './styled';
@@ -27,13 +27,11 @@ const PeriodGridCellElement = tasty({
 const PeriodGridButtonElement = tasty({
   as: 'button',
   'data-popover-keep': true,
-  styles: {
-    // eslint-disable-next-line tasty/no-style-spread -- cell base shared with CalendarCell
-    ...CALENDAR_CELL_STYLES,
+  styles: mergeStyles(CALENDAR_CELL_STYLES, {
     width: '100%',
     height: '4x',
     padding: '0 .5x',
-  },
+  }),
 });
 
 export interface CubePeriodGridCell {

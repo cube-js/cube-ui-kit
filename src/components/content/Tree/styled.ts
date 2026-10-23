@@ -1,4 +1,4 @@
-import { Styles, tasty } from '@tenphi/tasty';
+import { mergeStyles, Styles, tasty } from '@tenphi/tasty';
 
 import { Action } from '../../actions/Action/Action';
 import { Item } from '../Item';
@@ -152,12 +152,10 @@ const TOGGLE_BASE_STYLES: Styles = {
  */
 export const TreeNodeToggle = tasty(Action, {
   qa: 'TreeNodeToggle',
-  styles: {
-    // eslint-disable-next-line tasty/no-style-spread -- shared with TreeNodeTogglePlaceholder so leaf rows keep the toggle footprint
-    ...TOGGLE_BASE_STYLES,
+  styles: mergeStyles(TOGGLE_BASE_STYLES, {
     color: { '': '#dark-02', ':hover': '#dark' },
     fill: { '': '#clear', ':hover': '#dark.04' },
-  },
+  }),
 });
 
 /**

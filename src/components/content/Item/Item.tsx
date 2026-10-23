@@ -2,6 +2,7 @@ import {
   BaseProps,
   CONTAINER_STYLES,
   ContainerStyleProps,
+  mergeStyles,
   Mods,
   Styles,
   tasty,
@@ -477,7 +478,7 @@ const ItemElement = tasty({
     },
 
     Icon: {
-      // eslint-disable-next-line tasty/no-style-spread -- icon base shared by Icon and RightIcon
+      // eslint-disable-next-line tasty/no-style-spread -- in mergeStyles the plugin loses the root's local @native-row alias (tenphi/eslint-plugin-tasty#105)
       ...DEFAULT_ICON_STYLES,
       gridArea: 'icon',
       // A native row's Icon, Label and Description are aria-hidden copies of
@@ -486,8 +487,7 @@ const ItemElement = tasty({
       pointerEvents: { '': undefined, '@native-row': 'none' },
     },
 
-    // eslint-disable-next-line tasty/no-style-spread -- icon base shared by Icon and RightIcon
-    RightIcon: { ...DEFAULT_ICON_STYLES, gridArea: 'rightIcon' },
+    RightIcon: mergeStyles(DEFAULT_ICON_STYLES, { gridArea: 'rightIcon' }),
 
     Label: {
       $: '>',
@@ -632,12 +632,10 @@ const ItemElement = tasty({
   variants: {
     ...ITEM_VARIANTS,
     // ItemCard's palette stays local so consumer directives reach this owner.
-    'default.item-card': {
-      // eslint-disable-next-line tasty/no-style-spread -- inherit the shared card foreground and palette defaults
-      ...ITEM_VARIANTS['default.card'],
+    'default.item-card': mergeStyles(ITEM_VARIANTS['default.card'], {
       fill: '#surface',
       border: '#border',
-    },
+    }),
   },
   styleProps: CONTAINER_STYLES,
 });

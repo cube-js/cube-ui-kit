@@ -1,5 +1,5 @@
 import { useObjectRef } from '@react-aria/utils';
-import { BaseProps, Styles, tasty } from '@tenphi/tasty';
+import { BaseProps, mergeStyles, Styles, tasty } from '@tenphi/tasty';
 import { ForwardedRef, forwardRef, ReactNode } from 'react';
 import {
   AriaOverlayProps,
@@ -25,12 +25,10 @@ import type { Props } from '../../../props';
 
 const TrayWrapperElement = tasty({
   qa: 'TrayWrapper',
-  styles: {
-    // eslint-disable-next-line tasty/no-style-spread -- overlay wrapper base shared with ModalWrapper
-    ...OVERLAY_WRAPPER_STYLES,
+  styles: mergeStyles(OVERLAY_WRAPPER_STYLES, {
     placeContent: 'end center',
     placeItems: 'end center',
-  },
+  }),
 });
 
 const TrayElement = tasty({

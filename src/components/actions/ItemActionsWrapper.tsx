@@ -1,5 +1,5 @@
 import { ClearPressResponder } from '@react-aria/interactions';
-import { Mods, Styles, tasty } from '@tenphi/tasty';
+import { mergeStyles, Mods, Styles, tasty } from '@tenphi/tasty';
 import {
   HTMLAttributes,
   ReactNode,
@@ -50,16 +50,13 @@ const ItemActionsWrapperElement = tasty({
   // tint with, on a dark purple surface. The variant carries the row's resting
   // color down so `currentcolor` means the same thing it does inside an `Item`.
   variants: ITEM_RESTING_COLOR_VARIANTS,
-  styles: {
-    // The row is the wrapper's own child, so the wrapper can read the one
-    // interaction the row expresses as a COLOR change rather than a fill change.
-    // Without it the label darkened under the finger while the caret and the
-    // actions laid over the same row — which paint from the color this element
-    // hands down — stayed at their resting tint. The variants restate it,
-    // because that is where the colors keyed on it live.
-    // eslint-disable-next-line tasty/no-style-spread -- shared with ITEM_RESTING_COLOR_VARIANTS, which declare the same states
-    ...ROW_STATE_ALIASES,
-
+  // `ROW_STATE_ALIASES`: the row is the wrapper's own child, so the wrapper can
+  // read the one interaction the row expresses as a COLOR change rather than a
+  // fill change. Without it the label darkened under the finger while the caret
+  // and the actions laid over the same row — which paint from the color this
+  // element hands down — stayed at their resting tint. The variants restate it,
+  // because that is where the colors keyed on it live.
+  styles: mergeStyles(ROW_STATE_ALIASES, {
     // The one layout the row does not want its actions centred in. A block
     // description stacks under the label and can make the row arbitrarily tall;
     // there the actions belong in the first line, beside the label, which is
@@ -176,7 +173,7 @@ const ItemActionsWrapperElement = tasty({
         'size=xlarge': 't2',
       },
     },
-  },
+  }),
 });
 
 /**

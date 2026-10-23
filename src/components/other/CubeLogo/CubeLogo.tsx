@@ -142,9 +142,7 @@ export const CubeLogo = forwardRef(function CubeLogo(
  */
 const CubeFullLogoElement = tasty(Icon, {
   qa: 'CubeFullLogo',
-  styles: {
-    // eslint-disable-next-line tasty/no-style-spread -- light/dark mark swap shared with CubeLogo
-    ...SCHEME_SWAP,
+  styles: mergeStyles(SCHEME_SWAP, {
     // Height still comes from `$icon-size` via `Icon`; width must not.
     width: 'auto',
     aspectRatio: FULL_ASPECT_RATIO,
@@ -154,7 +152,7 @@ const CubeFullLogoElement = tasty(Icon, {
       height: '1em 1em',
       aspectRatio: FULL_ASPECT_RATIO,
     },
-  },
+  }),
 });
 
 export const CubeFullLogo = forwardRef(function CubeFullLogo(

@@ -28,7 +28,7 @@ const AlertElement = tasty({
     },
     fill: {
       '': '#clear',
-      // eslint-disable-next-line tasty/no-style-spread -- per-theme fill states generated from THEMES
+      // eslint-disable-next-line tasty/no-style-spread -- per-theme fill states generated from THEMES, spliced into this map; mergeStyles would move the map into a separate override layer
       ...Object.keys(THEMES).reduce((map, type) => {
         map[`type=${type}`] = THEMES[type].fill;
 
@@ -37,7 +37,7 @@ const AlertElement = tasty({
     },
     border: {
       '': '#clear',
-      // eslint-disable-next-line tasty/no-style-spread -- per-theme border states generated from THEMES
+      // eslint-disable-next-line tasty/no-style-spread -- per-theme border states generated from THEMES, spliced into this map; mergeStyles would move the map into a separate override layer
       ...Object.keys(THEMES).reduce((map, type) => {
         map[`type=${type}`] = THEMES[type].border;
 

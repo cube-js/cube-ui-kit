@@ -2,6 +2,7 @@ import { ItemElement, Key } from '@react-types/shared';
 import {
   BASE_STYLES,
   COLOR_STYLES,
+  mergeStyles,
   OUTER_STYLES,
   Styles,
   tasty,
@@ -82,9 +83,7 @@ const FilterListBoxWrapperElement = tasty({
 
 const SearchWrapperElement = tasty({
   qa: 'FilterListBoxSearchWrapper',
-  styles: {
-    // eslint-disable-next-line tasty/no-style-spread -- input wrapper base shared with TextInput, ComboBox, SearchComboBox and DateInputBase
-    ...INPUT_WRAPPER_STYLES,
+  styles: mergeStyles(INPUT_WRAPPER_STYLES, {
     border: 'bottom',
     radius: '1r top',
     fill: '#clear',
@@ -95,14 +94,12 @@ const SearchWrapperElement = tasty({
       'size=medium': '$size-md',
       'size=large': '$size-lg',
     },
-  },
+  }),
 });
 
 const SearchInputElement = tasty({
   as: 'input',
-  styles: {
-    // eslint-disable-next-line tasty/no-style-spread -- input base shared with TextInput, ComboBox, SearchComboBox and DateInputBase
-    ...DEFAULT_INPUT_STYLES,
+  styles: mergeStyles(DEFAULT_INPUT_STYLES, {
     fill: '#clear',
     padding: {
       '': '.5x 1.5x',
@@ -110,7 +107,7 @@ const SearchInputElement = tasty({
       suffix: '.5x .5x .5x 1.5x',
       'prefix & suffix': '0 .5x 0 .5x',
     },
-  },
+  }),
 });
 
 const StyledHeaderWithoutBorder = tasty(StyledHeader, {
