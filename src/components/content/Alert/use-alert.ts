@@ -20,6 +20,11 @@ export function useAlert(props: CubeAlertProps) {
 
   const _theme = isDisabled ? 'disabled' : (theme ?? type ?? 'note');
 
+  // `theme` is the kit's status theme, rendered through the `type` mod. Tasty's
+  // `filterBaseProps` keeps its own `theme` prop and renders it as
+  // `data-theme`, so it comes out before filtering.
+  const { theme: _statusTheme, ...domProps } = props;
+
   return {
     styles,
     mods: {
@@ -27,6 +32,6 @@ export function useAlert(props: CubeAlertProps) {
       type: _theme,
       ...mods,
     },
-    filteredProps: filterBaseProps(props, { eventProps: true }),
+    filteredProps: filterBaseProps(domProps, { eventProps: true }),
   };
 }

@@ -150,13 +150,16 @@ function filterBaseProps(
 | Category | Examples |
 | --- | --- |
 | DOM ids | `id` |
-| Base props | `role`, `as`, `children`, `style`, `className`, `href`, `target`, `tabIndex`, `hidden`, `disabled` |
+| Base props | `role`, `title`, `as`, `children`, `style`, `className`, `href`, `target`, `tabIndex`, `hidden`, `disabled` |
+| Tasty props | `qa`, `qaVal`, `mods`, `tokens`, `theme` (rendered as `data-theme`), `isHidden`, `isDisabled`, `isChecked` |
 | ARIA attributes | `aria-label`, `aria-describedby`, etc. |
 | Data attributes | `data-qa`, `data-testid`, etc. |
 | Event handlers (opt-in) | `onClick`, `onFocus`, `onKeyDown`, etc. (when `eventProps: true`) |
 | Custom (opt-in) | Any prop name added to `opts.propNames` |
 
-Style props (`width`, `fill`, `padding`, `border`, etc.), tasty-specific props (`mods`, `qa`, `styles`), and React Aria interaction props (`onPress`, `onHoverStart`, `onHoverEnd`, `onPressStart`, `onPressEnd`) are filtered out.
+Style props (`width`, `fill`, `padding`, `border`, etc.), `styles`, and React Aria interaction props (`onPress`, `onHoverStart`, `onHoverEnd`, `onPressStart`, `onPressEnd`) are filtered out.
+
+An explicit prop written after the spread wins, so set a wrapper's own `tokens` or `theme` after `{...filterBaseProps(props)}`, or merge the `tokens` objects. A component whose own `theme` prop means something else (such as `Alert`'s status theme) takes it out before filtering.
 
 ### Usage
 
