@@ -326,7 +326,7 @@ export const TabsElement = tasty({
         '': 0,
         'focused | scrolling': 1,
       },
-      transition: 'opacity 0.15s',
+      transition: 'opacity $scrollbar-transition',
       pointerEvents: 'none',
     },
   },

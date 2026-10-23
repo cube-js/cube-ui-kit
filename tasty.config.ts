@@ -334,6 +334,8 @@ export default {
     '$disclosure-transition',
     '$tab-transition',
     '$fade-transition',
+    '$overlay-transition',
+    '$scrollbar-transition',
     '$scrollbar-width',
     '$scrollbar-outline-width',
     '$scrollbar-radius',

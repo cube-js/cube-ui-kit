@@ -80,7 +80,7 @@ const TextItemElement = tasty({
   styles: TEXT_DEFAULT_STYLES,
   variants: {
     plain: TEXT_ITEM_STYLES,
-    table: { ...TEXT_ITEM_STYLES, preset: 't3' },
+    table: mergeStyles(TEXT_ITEM_STYLES, { preset: 't3' }),
   },
 });
 

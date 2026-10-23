@@ -38,6 +38,7 @@ const CubeElement = tasty({
     },
     animationDuration: {
       '': '0s',
+      // oxlint-disable-next-line tasty/no-raw-motion-duration -- the length of one dice loop, tuned with its keyframes; not a UI transition
       'index=0 | index=1 | index=2': '2s',
     },
     animationIterationCount: {

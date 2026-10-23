@@ -62,6 +62,18 @@ Every disable directive needs a ` -- reason`, not only these ones. The repo-loca
 
 `tasty/no-style-prop` stays off. Since 1.8.2 it also recognizes Tasty components imported from relative modules, but it still covers only Tasty components, while the React rules cover every element, native and third-party ones included. Enabling both would need two directives on every exception.
 
+# Tasty lint rules
+
+`pnpm lint` runs Oxlint without `--deny-warnings`, so a rule at `warn` never fails CI: it is advisory. Every `@tenphi/eslint-plugin-tasty` rule UI Kit enforces is an `error` in `.oxlintrc.json`. `consistent-token-usage` is the one rule still at `warn`, until its hits are cleared (most of them are demo dimensions in stories). Add a new rule as `error` once it has no hits, or leave it off.
+
+An exception takes the same form as for inline style: `// oxlint-disable-next-line tasty/<rule> -- <reason>` on the line before (the older `eslint-disable-next-line` spelling works the same). The reasons accepted there, such as a library owning the value or a component forwarding its public prop, hold here too. Keep it to the line: a file-wide disable also waves through every later violation in that file.
+
+`no-style-spread` reports an object spread. Compose shared style objects with `mergeStyles(base, ...overrides)` instead: the plugin lints each of its object arguments, the first as a full base and later ones as partial overrides. `mergeStyles` merges sub-elements too, and an override state map that restates `''` replaces the base's map, while one without `''` extends it: a state it shares with the base replaces that entry in place, and a new state is added at the end. That covers splicing shared states into a map: `mergeStyles(theme, VALIDATION_STYLES)` appends the validation states to `theme`'s `border`. A spread that stays (the rule reports only the first of several at an object's top level, and each one in a nested map) is an exception whose reason names what it shares and why `mergeStyles` doesn't fit.
+
+Transitions and animations take their duration from a token. Leave the duration out to get the transition's own default (`$<name>-transition`, falling back to `$transition`), or name a duration token from `src/tokens/base.ts` (listed in the Usage docs). Derive a dependent timing from its token, such as `(2 * $overlay-transition)`, rather than hardcoding the result. A keyframe loop's length, or a one-off timing that no token's role covers, is an exception with its reason.
+
+Off on purpose: `no-style-prop` (see [Inline style](#inline-style)), `no-styles-prop` (UI Kit's own components pass `styles` down, and it is public API) and `prefer-shorthand-property` (single-side overrides are deliberate). `valid-custom-property` and `no-runtime-styles-mutation` stay off until their existing hits are cleared.
+
 # Markdown rules
 
 - **Never hard-wrap prose.** One paragraph is one line, in every `.md` and `.mdx` file — documentation, `AGENTS.md`, specs and changesets alike. No wrapping at 80 or 100 columns, no manual line breaks inside a sentence.

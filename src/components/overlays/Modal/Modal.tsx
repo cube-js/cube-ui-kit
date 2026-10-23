@@ -33,7 +33,9 @@ export const OVERLAY_WRAPPER_STYLES: Styles = {
   pointerEvents: 'none',
   zIndex: 10,
   transition: {
-    '': 'visibility .5s steps(2, start)',
+    // steps(2, start) over twice the exit fade flips visibility to hidden
+    // exactly when the $overlay-transition fade ends.
+    '': 'visibility (2 * $overlay-transition) steps(2, start)',
     open: 'visibility 0s linear',
   },
 };
@@ -66,7 +68,8 @@ const ModalElement = tasty({
       'type=panel': 'auto',
     },
     pointerEvents: 'none',
-    transition: 'opacity .25s linear, transform .25s ease-in-out',
+    transition:
+      'opacity $overlay-transition linear, transform $overlay-transition ease-in-out',
     transform: {
       '': 'initial',
       'type=modal & !open': 'translate(0, -3x) scale(1, 1)',

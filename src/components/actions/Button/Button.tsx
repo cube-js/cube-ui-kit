@@ -1,6 +1,7 @@
 import { FocusableRef, PressEvent } from '@react-types/shared';
 import {
   CONTAINER_STYLES,
+  mergeStyles,
   Mods,
   Styles,
   tasty,
@@ -285,8 +286,7 @@ export const DEFAULT_BUTTON_STYLES: Styles = {
   },
 
   // Icon sub-element (recommended format)
-  Icon: {
-    ...DEFAULT_ICON_STYLES,
+  Icon: mergeStyles(DEFAULT_ICON_STYLES, {
     width: {
       '': 'fixed 0px',
       'is-icon-shown': 'fixed ($size - 2bw)',
@@ -299,11 +299,10 @@ export const DEFAULT_BUTTON_STYLES: Styles = {
       '': '($size * 1 / 4) 0',
       'is-icon-shown': '0 0',
     },
-  },
+  }),
 
   // RightIcon sub-element (recommended format)
-  RightIcon: {
-    ...DEFAULT_ICON_STYLES,
+  RightIcon: mergeStyles(DEFAULT_ICON_STYLES, {
     width: {
       '': 'fixed 0px',
       'is-right-icon-shown': 'fixed ($size - 2bw)',
@@ -316,7 +315,7 @@ export const DEFAULT_BUTTON_STYLES: Styles = {
       '': '($size * -1 / 4) 0',
       'is-right-icon-shown': '0 0',
     },
-  },
+  }),
 
   // Label sub-element (recommended format)
   Label: {
