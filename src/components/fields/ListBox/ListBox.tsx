@@ -14,7 +14,6 @@ import {
   tasty,
 } from '@tenphi/tasty';
 import {
-  CSSProperties,
   DOMAttributes,
   ForwardedRef,
   forwardRef,
@@ -147,7 +146,16 @@ const ListElement = tasty({
       '': '.5x .5x 0 .5x',
       '[data-shape="plain"] | empty': '0',
     },
-    height: 'max-content',
+    // Virtualized, the list is as tall as every option, measured or estimated,
+    // and holds the options the virtualizer places.
+    position: {
+      '': false,
+      virtualized: 'relative',
+    },
+    height: {
+      '': 'max-content',
+      virtualized: '$list-virtual-height',
+    },
   },
 });
 
@@ -180,6 +188,19 @@ const ListBoxItem = tasty(Item, {
     // Inside the option: options sit a hairline apart, so a ring outside one
     // would cover its neighbour, and the scroll box would clip it at the edges.
     outlineOffset: '(-1 * $outline-offset)',
+    // Virtualized, the option sits at the offset the virtualizer gives it.
+    position: {
+      '': 'relative',
+      virtual: 'absolute',
+    },
+    inset: {
+      '': false,
+      virtual: 'top dock',
+    },
+    transform: {
+      '': false,
+      virtual: 'translateY($option-virtual-offset)',
+    },
     Icon: {
       cursor: {
         draggable: 'grab',
@@ -1334,20 +1355,22 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
             {...mergedListBoxProps}
             ref={listRef}
             styles={listStyles}
-            tokens={listGapTokens}
-            aria-disabled={isDisabled || undefined}
-            mods={{ sections: hasSections, empty: isEmpty }}
-            data-shape={shape}
-            data-input-type="listbox"
-            // oxlint-disable-next-line react/forbid-component-props -- the virtualizer measures the list's total height
-            style={
+            tokens={
               shouldVirtualize
                 ? {
-                    position: 'relative',
-                    height: `${rowVirtualizer.getTotalSize()}px`,
+                    ...listGapTokens,
+                    '$list-virtual-height': `${rowVirtualizer.getTotalSize()}px`,
                   }
-                : undefined
+                : listGapTokens
             }
+            aria-disabled={isDisabled || undefined}
+            mods={{
+              sections: hasSections,
+              empty: isEmpty,
+              virtualized: shouldVirtualize,
+            }}
+            data-shape={shape}
+            data-input-type="listbox"
           >
             {shouldVirtualize
               ? rowVirtualizer.getVirtualItems().map((virtualItem) => {
@@ -1369,13 +1392,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
                       isCheckable={isCheckable}
                       // Measures the option's real height; the virtualizer adds the gap.
                       virtualRef={rowVirtualizer.measureElement as any}
-                      virtualStyle={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        transform: `translateY(${virtualItem.start}px)`,
-                      }}
+                      virtualOffset={virtualItem.start}
                       virtualIndex={virtualItem.index}
                       lastFocusSourceRef={lastFocusSourceRef}
                       onClick={onOptionClick}
@@ -1481,7 +1498,7 @@ function Option({
   isListFocused = false,
   isCheckable,
   onClick: onOptionClick,
-  virtualStyle,
+  virtualOffset,
   virtualRef,
   virtualIndex,
   lastFocusSourceRef,
@@ -1501,8 +1518,8 @@ function Option({
   isListFocused?: boolean;
   isCheckable?: boolean;
   onClick?: (key: Key) => void;
-  /** Inline style applied when virtualized (absolute positioning etc.) */
-  virtualStyle?: CSSProperties;
+  /** The option's offset from the list's top, in pixels, when virtualized */
+  virtualOffset?: number;
   /** react-virtual's `measureElement`, called with the option after every commit */
   virtualRef?: (element: HTMLElement | null) => void;
   /** Virtual index from react-virtual for data-index attribute */
@@ -1562,9 +1579,12 @@ function Option({
     state.selectionManager.focusedKey === item.key;
 
   // Filter out service props - all remaining props can be passed to Item
-  const filteredItemProps = filterSelectionItemProps(
-    filterCollectionItemProps(item.props),
-  );
+  // An option takes no inline `style` from its item.
+  const {
+    style: _itemStyle,
+    tokens: itemTokens,
+    ...filteredItemProps
+  } = filterSelectionItemProps(filterCollectionItemProps(item.props));
 
   // Determine icon: drag handle > checkbox > user icon > default
   const effectiveIcon = useMemo(() => {
@@ -1696,8 +1716,14 @@ function Option({
         effectiveDragProps,
       )}
       theme={theme}
-      // oxlint-disable-next-line react/forbid-component-props -- the virtualizer positions the option
-      style={virtualStyle}
+      tokens={
+        virtualOffset == null
+          ? itemTokens
+          : {
+              ...itemTokens,
+              '$option-virtual-offset': `${virtualOffset}px`,
+            }
+      }
       data-size={size}
       data-index={virtualIndex}
       size={size}
@@ -1722,6 +1748,7 @@ function Option({
         checkable: isCheckable,
         hovered: isHovered,
         all: false, // This will be set to true for SelectAllOption
+        virtual: virtualOffset != null,
       }}
     >
       {item.rendered}

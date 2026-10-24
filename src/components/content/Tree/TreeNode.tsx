@@ -23,13 +23,7 @@ import {
 
 import type { Key, Node } from '@react-types/shared';
 import type { Styles } from '@tenphi/tasty';
-import type {
-  CSSProperties,
-  KeyboardEvent,
-  MouseEvent,
-  ReactNode,
-  Ref,
-} from 'react';
+import type { KeyboardEvent, MouseEvent, ReactNode, Ref } from 'react';
 import type { TreeState } from 'react-stately';
 import type {
   CubeTreeNodeData,
@@ -75,8 +69,8 @@ export interface TreeNodeProps {
   /** Styles applied to the visible row (`TreeRowItem`). */
   rowStyles?: Styles;
 
-  /** Inline style for virtualizer absolute positioning. */
-  virtualStyle?: CSSProperties;
+  /** The row's offset from the list's top, in pixels, from the virtualizer. */
+  virtualOffset?: number;
   /** Ref callback from `@tanstack/react-virtual` to measure row height. */
   virtualRef?: (element: HTMLElement | null) => void;
   /** Virtual index for `data-index` attribute. */
@@ -111,7 +105,7 @@ function TreeNodeInner(props: TreeNodeProps) {
     size,
     itemProps,
     rowStyles,
-    virtualStyle,
+    virtualOffset,
     virtualRef,
     virtualIndex,
     menu: treeMenu,
@@ -310,8 +304,12 @@ function TreeNodeInner(props: TreeNodeProps) {
   );
 
   const rowTokens = useMemo(
-    () => ({ '$tree-level': node.level ?? 0 }),
-    [node.level],
+    () => ({
+      '$tree-level': node.level ?? 0,
+      '$tree-row-offset':
+        virtualOffset == null ? undefined : `${virtualOffset}px`,
+    }),
+    [node.level, virtualOffset],
   );
 
   // Only emit `aria-checked` when the tree is in checkable mode.
@@ -433,8 +431,6 @@ function TreeNodeInner(props: TreeNodeProps) {
       ref={refs}
       mods={rowMods}
       tokens={rowTokens}
-      // oxlint-disable-next-line react/forbid-component-props -- the virtualizer positions the row
-      style={virtualStyle}
       data-element="Row"
       data-qa-key={String(node.key)}
       data-index={virtualIndex}

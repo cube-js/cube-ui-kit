@@ -121,6 +121,7 @@
     "tasty/no-unknown-state-alias": "error",
     "tasty/valid-state-definition": "error",
     "tasty/no-classname-prop": "error",
+    "tasty/no-style-prop": "error",
     "tasty/no-raw-transition-duration": "error",
     "tasty/no-raw-motion-duration": "error",
     "tasty/prefer-longhand-property": "error",
@@ -1415,7 +1416,7 @@
             "forbid": [
               {
                 "propName": "style",
-                "message": "Inline `style` bypasses Tasty. Pass runtime values through `tokens`, static ones through `styles` or style props, and states through `mods`. When a library or the component's public `style` prop owns the value, add `// oxlint-disable-next-line react/forbid-component-props -- <reason>`. See docs/rules/coding.md#inline-style."
+                "message": "Inline `style` bypasses Tasty. Pass runtime values through `tokens`, static ones through `styles` or style props, and states through `mods`. When a library or the component's public `style` prop owns the value, add `// oxlint-disable-next-line react/forbid-component-props -- <reason>`, naming `tasty/no-style-prop` too on a Tasty element. See docs/rules/coding.md#inline-style."
               }
             ]
           }

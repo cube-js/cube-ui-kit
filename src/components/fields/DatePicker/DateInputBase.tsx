@@ -116,7 +116,7 @@ function DateInputBase(props: CubeDateAtomInputProps, ref) {
       // For a dialog kept mounted while closed, which focuses the field's
       // first segment on every open, as `Button` marks itself.
       {...(autoFocus ? { 'data-autofocus': '' } : undefined)}
-      // oxlint-disable-next-line react/forbid-component-props -- forwards the consumer's public `style` prop
+      // oxlint-disable-next-line react/forbid-component-props, tasty/no-style-prop -- forwards the consumer's public `style` prop
       style={style}
     >
       <div data-element="Contents" role="presentation">

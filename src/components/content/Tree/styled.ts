@@ -43,6 +43,16 @@ export const TreeElement = tasty({
  * the scroll area visibly grow as `@tanstack/react-virtual`
  * re-measures rows during scroll.
  */
+/** As tall as every row, measured or estimated; holds the rows. */
+export const TreeSizer = tasty({
+  qa: 'TreeSizer',
+  styles: {
+    position: 'relative',
+    width: '100%',
+    height: '$tree-content-height',
+  },
+});
+
 export const TreeScrollContainer = tasty({
   qa: 'TreeScrollContainer',
   styles: {
@@ -70,6 +80,11 @@ export const TreeNodeRow = tasty({
   styles: {
     display: 'block',
     outline: 0,
+    // The virtualizer gives each row its offset; `$tree-padding` is the
+    // tree's `containerPadding`.
+    position: 'absolute',
+    inset: '0 $tree-padding top dock',
+    transform: 'translateY($tree-row-offset)',
   },
 });
 

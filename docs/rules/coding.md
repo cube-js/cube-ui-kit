@@ -34,33 +34,33 @@ When you do need to widen something inside `Root`'s tree, `node scripts/chromati
 
 # Inline style
 
-React's `style` prop bypasses Tasty: no tokens, units or states, and nothing a consumer's `styles` can override. `.oxlintrc.json` makes it an error on every element, through `react/forbid-component-props` and `react/forbid-dom-props`, in runtime code and stories alike. Specs are exempt, because they set inline styles to stage layouts and to check that a consumer's `style` reaches the DOM.
+React's `style` prop bypasses Tasty: no tokens, units or states, and nothing a consumer's `styles` can override. `.oxlintrc.json` makes it an error on every element, through `react/forbid-component-props` and `react/forbid-dom-props`, in runtime code and stories alike. On a Tasty element, `tasty/no-style-prop` reports it too. Specs are exempt, because they set inline styles to stage layouts and to check that a consumer's `style` reaches the DOM.
 
 Use the Tasty channel that fits the value:
 
-- **A value that changes at runtime** (a measured width, a drag position, a picked color): declare `$name` or `#name` in the element's styles and pass the value through `tokens`, for example ``tokens={{ '$panel-size': `${size}px` }}``. It renders as the same inline custom property, without a new style rule per value. A bare number renders unitless (`'$x': 12` gives `--x: 12`), so add the unit yourself.
+- **A value that changes at runtime** (a measured width, a drag position, a picked color): declare `$name` or `#name` in the element's styles and pass the value through `tokens`, for example ``tokens={{ '$panel-size': `${size}px` }}``. It renders as the same inline custom property, without a new style rule per value. A bare number renders unitless (`'$x': 12` gives `--x: 12`), so add the unit yourself. Custom properties inherit, so name the token after its element (`$slider-value-width`, not `$label-width`): when you set none, an ancestor's token of the same name fills it. A number a library computes, such as a virtualizer's row offset or total height, is such a value too.
 - **A fixed value**: put it in the element's `styles`, or in a style prop such as `width="25x"`.
 - **A value that depends on state**: a mod and a state map, not a conditional style object.
 
 Keep `style` only when something outside our styles owns the value, and say so on the line before it:
 
 ```tsx
-// oxlint-disable-next-line react/forbid-component-props -- React Aria's overlay positioning computes these coordinates
+// oxlint-disable-next-line react/forbid-component-props, tasty/no-style-prop -- React Aria's overlay positioning computes these coordinates
 style={positionProps.style}
 ```
 
+On a Tasty element the one directive names both rules. On a native or third-party element only the React rule applies; naming `tasty/no-style-prop` there leaves part of the directive unused, which `oxlint --report-unused-disable-directives` reports.
+
 The accepted reasons are:
 
-- a library computes the value: React Aria positioning, a virtualizer, prism-react-renderer;
+- a library supplies the style object: React Aria's positioning or date segment style, prism-react-renderer's theme;
 - the component forwards its own public `style` prop;
 - the value sits on a native element with no Tasty element to carry a token, such as a table cell that `TableElement` styles through sub-element selectors;
-- our styles cannot express the value or cannot win the cascade for it, such as a `preset` that owns `font-family`; name the cause, and for a Tasty limitation its issue and the condition for removing the exception.
+- our styles cannot express the value or cannot win the cascade for it, such as a `preset` that owns `font-family`, or React Aria's popover size cap, which has to hold over a consumer's `overlayStyles`; name the cause, and for a Tasty limitation its issue and the condition for removing the exception.
 
 The lint sees only a `style` JSX attribute. A `style` key in an object that reaches an element (`mergeProps(props, { style })`, a context value, a props object) gets past it, so hold those to the same rule in review, with the reason in a comment.
 
 Every disable directive needs a ` -- reason`, not only these ones. The repo-local `repo/require-disable-reason` rule (`scripts/oxlint-repo-rules.mjs`) fails a directive without one. A directive that names no rule, such as a file-wide `/* eslint-disable */`, switches that rule off too, so review has to check its reason.
-
-`tasty/no-style-prop` stays off. Since 1.8.2 it also recognizes Tasty components imported from relative modules, but it still covers only Tasty components, while the React rules cover every element, native and third-party ones included. Enabling both would need two directives on every exception.
 
 # Tasty lint rules
 
@@ -76,7 +76,7 @@ Pixel values take a unit or a token chosen by what the value means, not by what 
 
 Transitions and animations take their duration from a token. Leave the duration out to get the transition's own default (`$<name>-transition`, falling back to `$transition`), or name a duration token from `src/tokens/base.ts` (listed in the Usage docs). Derive a dependent timing from its token, such as `(2 * $overlay-transition)`, rather than hardcoding the result. A keyframe loop's length, or a one-off timing that no token's role covers, is an exception with its reason.
 
-Off on purpose: `no-style-prop` (see [Inline style](#inline-style)), `no-styles-prop` (UI Kit's own components pass `styles` down, and it is public API) and `prefer-shorthand-property` (single-side overrides are deliberate). `valid-custom-property` stays off until its existing hits are cleared.
+Off on purpose: `no-styles-prop` (UI Kit's own components pass `styles` down, and it is public API) and `prefer-shorthand-property` (single-side overrides are deliberate). `valid-custom-property` stays off until its existing hits are cleared.
 
 # Markdown rules
 

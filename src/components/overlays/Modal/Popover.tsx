@@ -154,7 +154,7 @@ const PopoverWrapper = forwardRef(function PopoverWrapper(
         entered: transitionState === 'entered',
       }}
       data-placement={placement}
-      // oxlint-disable-next-line react/forbid-component-props -- forwards the consumer's public `style` prop, which carries the overlay position
+      // oxlint-disable-next-line react/forbid-component-props, tasty/no-style-prop -- forwards the consumer's public `style` prop, which carries the overlay position
       style={style}
     >
       {children}

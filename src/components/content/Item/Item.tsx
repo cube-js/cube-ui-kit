@@ -1195,7 +1195,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
         {...(nativeMenuItemProps
           ? { 'aria-disabled': undefined, 'aria-selected': undefined }
           : null)}
-        // oxlint-disable-next-line react/forbid-component-props -- forwards the consumer's public `style` prop
+        // oxlint-disable-next-line react/forbid-component-props, tasty/no-style-prop -- forwards the consumer's public `style` prop
         style={style}
       >
         {nativeMenuItemProps ? (
@@ -1207,7 +1207,7 @@ const Item = <T extends HTMLElement = HTMLDivElement>(
             ref={nativeRowRef}
             styles={NATIVE_ROW_TARGET_STYLES}
             // Block gaps space visible slots, not this out-of-flow target.
-            // oxlint-disable-next-line react/forbid-component-props -- the block parent's `gap` margin (`> *:not(:last-child)`) outranks any style of this element's own
+            // oxlint-disable-next-line react/forbid-component-props, tasty/no-style-prop -- the block parent's `gap` margin (`> *:not(:last-child)`) outranks any style of this element's own
             style={{ margin: 0 }}
             aria-hidden={nativeMenuItemProps['aria-hidden']}
             data-menu-native-link=""

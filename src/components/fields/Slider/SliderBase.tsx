@@ -45,6 +45,8 @@ const LabelValueElement = tasty(Text, {
   styles: {
     display: 'block',
     textAlign: 'right',
+    // Fits the longest value label, so the label doesn't resize while dragging.
+    width: '$slider-value-width $slider-value-width initial',
   },
 });
 
@@ -192,13 +194,9 @@ function SliderBase(
     ) : (
       <LabelValueElement
         {...outputProps}
-        // oxlint-disable-next-line react/forbid-component-props -- `Text` drops `tokens` until tenphi/tasty#432 lands; move this width to a token then
-        style={
+        tokens={
           maxLabelLength
-            ? {
-                width: `${maxLabelLength + 1}ch`,
-                minWidth: `${maxLabelLength + 1}ch`,
-              }
+            ? { '$slider-value-width': `${maxLabelLength + 1}ch` }
             : undefined
         }
       >
