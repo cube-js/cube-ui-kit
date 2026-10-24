@@ -25,9 +25,15 @@ const TagElement = tasty(Item, {
 
     '$min-inline-padding': '.5x',
 
+    // Squeezed below its label, the label keeps its end padding as a box the
+    // column can't hold: `stretch` keeps that box after the icon, and `clip`
+    // hides the part past the edge. End content zeroes that padding, so then
+    // only the content itself overflows, and it must stay visible.
+    overflow: { '': 'clip', 'has-end-content': 'visible' },
+
     Label: {
       textAlign: 'center',
-      placeSelf: 'center',
+      placeSelf: 'center stretch',
     },
   },
 });

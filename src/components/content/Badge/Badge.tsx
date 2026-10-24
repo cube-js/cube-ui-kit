@@ -45,9 +45,13 @@ const BadgeElement = tasty(Item, {
       'size=inline': '.5x',
     },
 
+    // Same squeeze as Tag's: keep the label's end-padding box after the icon
+    // and clip what passes the edge, unless end content zeroes that padding.
+    overflow: { '': 'clip', 'has-end-content': 'visible' },
+
     Label: {
       textAlign: 'center',
-      placeSelf: 'center',
+      placeSelf: 'center stretch',
     },
   },
 });
