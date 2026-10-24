@@ -15,9 +15,9 @@ Provides CSS custom properties for responsive grid column calculations. Children
 ## Properties
 
 - **`columns`** `number` (default: `2`) — Number of grid columns
-- **`gap`** `Styles['gap']` (default: `'0'`) — Gap between columns
-- **`width`** `Styles['width']` — Forced container width (bypasses auto-detection)
-- **`initialWidth`** `Styles['width']` — Initial width before resize observer kicks in
+- **`gap`** `string | number` (default: `0`) — Gap between columns, as a single Tasty value such as `'1x'`, or a number of pixels. A string needs a unit: `'0'` makes `--column-width` invalid
+- **`width`** `string | number` — Forced container width (bypasses auto-detection), as a single Tasty value or a number of pixels
+- **`initialWidth`** `string | number` — Initial width before resize observer kicks in, as a single Tasty value or a number of pixels
 
 ### CSS Custom Properties Provided
 

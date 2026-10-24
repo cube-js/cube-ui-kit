@@ -14,6 +14,8 @@ import {
 } from '@tenphi/tasty';
 import { ForwardedRef, forwardRef, ReactNode } from 'react';
 
+import { extractStyles } from '../../utils/styles';
+
 const PanelElement = tasty({
   as: 'section',
   qa: 'Panel',
@@ -105,6 +107,14 @@ const STYLES = [
   'preset',
 ] as const;
 
+const OUTER_STYLE_PROPS = [
+  ...OUTER_STYLES,
+  ...BASE_STYLES,
+  ...BLOCK_STYLES,
+  ...COLOR_STYLES,
+  ...DIMENSION_STYLES,
+];
+
 function Panel(props: CubePanelProps, ref: ForwardedRef<HTMLDivElement>) {
   let {
     qa,
@@ -121,27 +131,26 @@ function Panel(props: CubePanelProps, ref: ForwardedRef<HTMLDivElement>) {
     ...otherProps
   } = props;
 
-  STYLES.forEach((style) => {
-    if (props[style]) {
-      innerStyles = { ...innerStyles, [style]: props[style] };
+  // The inner style props go to the inner element; the remaining style props
+  // go to the outer one. An inner prop left `undefined` keeps `innerStyles`.
+  innerStyles = extractStyles(
+    otherProps,
+    STYLES,
+    innerStyles,
+    undefined,
+    STYLES.filter((style) => otherProps[style] === undefined),
+  );
+  styles = extractStyles(
+    otherProps,
+    OUTER_STYLE_PROPS,
+    styles,
+    undefined,
+    STYLES,
+  );
 
-      delete otherProps[style];
-    }
-  });
-
-  [
-    ...OUTER_STYLES,
-    ...BASE_STYLES,
-    ...BLOCK_STYLES,
-    ...COLOR_STYLES,
-    ...DIMENSION_STYLES,
-  ].forEach((style) => {
-    if (style in otherProps) {
-      styles = { ...styles, [style]: otherProps[style] };
-
-      delete otherProps[style];
-    }
-  });
+  for (const style of [...STYLES, ...OUTER_STYLE_PROPS]) {
+    delete otherProps[style];
+  }
 
   const appliedMods = {
     floating: isFloating,
@@ -159,9 +168,9 @@ function Panel(props: CubePanelProps, ref: ForwardedRef<HTMLDivElement>) {
       styles={styles}
       // oxlint-disable-next-line react/forbid-component-props -- forwards the consumer's public `style` prop
       style={style}
-      // The loops above moved the style props into `styles` and
-      // `innerStyles`, but the type still lists them, and the `color` style
-      // prop collides with the HTML attribute of the same name.
+      // The style props were moved into `styles` and `innerStyles`, but the
+      // type still lists them, and the `color` style prop collides with the
+      // HTML attribute of the same name.
       {...(otherProps as BaseProps)}
     >
       <PanelInnerElement mods={appliedMods} styles={innerStyles}>

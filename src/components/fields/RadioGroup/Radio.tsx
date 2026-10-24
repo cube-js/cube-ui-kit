@@ -377,11 +377,6 @@ function Radio(props: CubeRadioProps, ref) {
     }
   }
 
-  labelStyles = {
-    ...INLINE_LABEL_STYLES,
-    ...labelStyles,
-  };
-
   let radioGroupProps = useRadioProvider();
 
   let state = radioGroupProps && radioGroupProps.state;

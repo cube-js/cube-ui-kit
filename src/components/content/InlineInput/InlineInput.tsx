@@ -28,7 +28,7 @@ import {
 
 import { useEvent } from '../../../_internal/hooks';
 import { mergeProps } from '../../../utils/react';
-import { extractStyles } from '../../../utils/styles';
+import { extractStyles, mergeStyleLayers } from '../../../utils/styles';
 import { AutoTooltipValue, useAutoTooltip } from '../use-auto-tooltip';
 
 import type {
@@ -737,15 +737,11 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
       ...customMods,
     };
 
-    const existingInput = stylesProp?.Input as Styles | undefined;
-    const mergedStyles: Styles | undefined = inputStyles
-      ? {
-          ...stylesProp,
-          Input: existingInput
-            ? { ...existingInput, ...inputStyles }
-            : inputStyles,
-        }
-      : stylesProp;
+    const mergedStyles = mergeStyleLayers(
+      stylesProp,
+      // oxlint-disable-next-line tasty/no-runtime-styles-mutation -- forwards the consumer's `inputStyles` to `Input`
+      inputStyles ? { Input: inputStyles } : null,
+    );
 
     const extractedStyles = extractStyles(
       otherProps,

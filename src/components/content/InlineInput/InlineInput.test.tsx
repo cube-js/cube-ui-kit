@@ -1190,4 +1190,30 @@ describe('<InlineInput />', () => {
       expect(handleCancel).not.toHaveBeenCalled();
     });
   });
+
+  describe('inputStyles', () => {
+    // Merged into `styles.Input` and passed on, so tasty merges it over the
+    // element's own `Input` styles once more. A `null` has to survive the
+    // first merge to remove the default it targets.
+    it('passes a null reset on to the Input', async () => {
+      const ref = createRef<CubeInlineInputRef>();
+
+      const { container } = renderWithRoot(
+        <InlineInput
+          ref={ref}
+          defaultValue="hello"
+          aria-label="Name"
+          inputStyles={{ textAlign: null }}
+        />,
+      );
+
+      await act(async () => {
+        ref.current?.startEditing();
+      });
+
+      expect(
+        getComputedStyle(container.querySelector('input')!).textAlign,
+      ).toBe('start');
+    });
+  });
 });

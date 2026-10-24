@@ -2,7 +2,8 @@
   "$schema": "./node_modules/oxlint/configuration_schema.json",
   "settings": {
     "tasty": {
-      "typeAwareJSX": { "project": "./tsconfig.json" }
+      "typeAwareJSX": { "project": "./tsconfig.json" },
+      "mergeFunctions": ["mergeStyleLayers"]
     }
   },
   "plugins": [],
@@ -107,6 +108,7 @@
     "tasty/no-own-at-root": "error",
     "tasty/valid-default-state-order": "error",
     "tasty/consistent-token-usage": "error",
+    "tasty/no-runtime-styles-mutation": "error",
     "tasty/prefer-auto-calc": "error",
     "tasty/prefer-state-negation": "error",
     "tasty/prefer-custom-property-syntax": "error",
@@ -1452,8 +1454,9 @@
       ]
     },
     {
-      // Stories and specs size their demos and fixtures in plain pixels, so
-      // raw-pixel token usage stays advisory there. Runtime code gets the error.
+      // Stories and specs size their demos and fixtures in plain pixels and
+      // build demo styles from data, so these rules stay advisory there.
+      // Runtime code gets the error.
       "files": [
         "**/*.stories.ts",
         "**/*.stories.tsx",
@@ -1469,7 +1472,8 @@
         "src/eslint-plugin/fixtures.tsx"
       ],
       "rules": {
-        "tasty/consistent-token-usage": "warn"
+        "tasty/consistent-token-usage": "warn",
+        "tasty/no-runtime-styles-mutation": "warn"
       }
     }
   ]

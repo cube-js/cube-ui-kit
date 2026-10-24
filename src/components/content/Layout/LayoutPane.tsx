@@ -744,6 +744,7 @@ function LayoutPane(
   const finalStyles = mergeStyles(
     styles,
     outerStyles,
+    // oxlint-disable-next-line tasty/no-runtime-styles-mutation -- forwards the consumer's `innerStyles` to `Inner`
     innerStyles ? { Inner: innerStyles } : null,
   );
 
