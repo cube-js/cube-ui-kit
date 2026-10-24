@@ -79,7 +79,7 @@ export const TreeSizer = tasty({
  * `TreeRowItem` to compute its left padding.
  *
  * It places the row at the virtualizer's offset (`--tree-row-offset`),
- * inset by `$tree-padding`. Otherwise it has no visual styles of its
+ * inset by `--tree-padding`. Otherwise it has no visual styles of its
  * own — the row's appearance lives on the inner `TreeRowItem` (which
  * extends `Item`).
  */

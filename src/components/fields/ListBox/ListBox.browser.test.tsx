@@ -676,9 +676,10 @@ describe('ListBox virtualized list height', () => {
     const scroller = list.parentElement!;
     const cap = parseFloat(getComputedStyle(list).maxHeight);
 
-    // Capped, not collapsed to its padding.
+    // Capped, not collapsed to its padding, and scrolling past the cap.
     expect(list.getBoundingClientRect().height).toBeGreaterThanOrEqual(cap);
     expect(scroller.clientHeight).toBeGreaterThanOrEqual(cap);
+    expect(scroller.scrollHeight).toBeGreaterThan(scroller.clientHeight);
 
     scroller.scrollTop = scroller.scrollHeight;
 
