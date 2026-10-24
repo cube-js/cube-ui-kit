@@ -22,7 +22,7 @@ const COPY_BUTTON = `import { Button, tasty } from '@cube-dev/ui-kit';
 export const CopyButton = tasty(Button, { type: 'clear' });
 `;
 
-const CONSUMER = `import { AlertDialog, Button, Card, CloseIcon, ColorSwatch, ComboBox, GridLayout, GridProvider, ItemButton, Layout, ResizablePanel, Root, Space, tasty, Text, TextArea } from '@cube-dev/ui-kit';
+const CONSUMER = `import { AlertDialog, Button, ButtonGroup, Card, CloseIcon, ColorSwatch, ComboBox, GridLayout, GridProvider, ItemButton, Layout, ResizablePanel, Root, Space, tasty, Text, TextArea } from '@cube-dev/ui-kit';
 
 import { CopyButton } from './CopyButton';
 
@@ -44,6 +44,7 @@ export function Consumer() {
       <ColorSwatch color="#ff0000" />
       <TextArea resize="vertical" />
       <Button.Group direction="vertical" />
+      <ButtonGroup gap="1x" flow="row" />
       <Button filter="grayscale(1)" />
       <AlertDialog content="Delete the file?" />
       <Root font="Inter" />
@@ -157,7 +158,8 @@ describe('tasty.config.ts', () => {
   // A consumer that extends this config gets `protectedComponents`, so
   // restyling a component reports, its primitives stay open, containers keep
   // the props that lay out their content, and a component's own prop named
-  // like a style (`filter`, `direction`, `scrollbar`, `color`) passes.
+  // like a style passes, while that name on a component that doesn't own it
+  // (`<Button filter>`) is reported.
   it('protects components for a consumer that extends it', () => {
     const reported = lintConsumer('no-protected-restyle', {
       'CopyButton.tsx': COPY_BUTTON,

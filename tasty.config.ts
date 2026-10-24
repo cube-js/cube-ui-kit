@@ -48,10 +48,15 @@ export default {
    * allowed in an entry of its own.
    */
   protectedComponents: [
-    // `Button` covers `Button.Group`, whose `direction` stacks its buttons.
+    // `Button.Group` resolves to `Button`, and its `direction` stacks its
+    // buttons, so `Button` and `Button.Split` get `direction` too, which is no
+    // plausible restyle of a button. `Button.Group`'s `gap` and `flow` still
+    // report until the plugin can name a sub-component
+    // (tenphi/eslint-plugin-tasty#125); the named `ButtonGroup`, a `Space`, is
+    // excluded below.
     {
       source: '@cube-dev/ui-kit',
-      include: ['Button', 'ButtonGroup'],
+      include: ['Button'],
       allowedStyleProps: ['position', 'dimension', 'direction'],
     },
     // `direction` places a field's popover, `filter` matches its options and
@@ -163,6 +168,7 @@ export default {
         'Flow',
         'Grid',
         'Space',
+        'ButtonGroup',
         'Prefix',
         'Suffix',
         'Text',

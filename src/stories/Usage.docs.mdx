@@ -411,7 +411,7 @@ Component themes are set via the `theme` prop or `theme=name` modifier:
 
 ## Customizing components
 
-Most components are a design contract: customize them through their own props (`type`, `theme`, `size`, …), `tokens` and `mods` rather than by restyling them. The layout and typography primitives (`Element`, `Block`, `Flex`, `Flow`, `Grid`, `Space`, `Prefix`, `Suffix`, `Text`, `TextItem`, `Title`, `Paragraph`, `Typography`), the `Action` base and the icons (including `IconSwitch`) are the exception: their `styles` are their API.
+Most components are a design contract: customize them through their own props (`type`, `theme`, `size`, …), `tokens` and `mods` rather than by restyling them. The layout and typography primitives (`Element`, `Block`, `Flex`, `Flow`, `Grid`, `Space`, `Prefix`, `Suffix`, `Text`, `TextItem`, `Title`, `Paragraph`, `Typography`, `ButtonGroup`), the `Action` base and the icons (including `IconSwitch`) are the exception: their `styles` are their API.
 
 The package's `tasty.config.ts` lists the other components as `protectedComponents`, and `tasty/no-protected-restyle` from `@tenphi/eslint-plugin-tasty` 1.11.0 or newer reports a restyle of one in your code:
 
@@ -420,6 +420,8 @@ The package's `tasty.config.ts` lists the other components as `protectedComponen
 - `tasty()` wrappers that restyle a protected component, and wrappers of those wrappers.
 
 A component's own prop that shares a name with a style passes, such as a field's `direction` and `filter`, a text field's `resize`, `ColorSwatch`'s `color` or `AlertDialog`'s `content`.
+
+The rule reads a sub-component as the component it hangs off, so `Button.Group` counts as `Button` and its `gap` and `flow` are reported. Set them on the `ButtonGroup` export instead, which is the same component.
 
 To turn it on, extend the package's config and enable the rule:
 
