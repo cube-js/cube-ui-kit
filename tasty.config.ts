@@ -48,13 +48,19 @@ export default {
    * allowed in an entry of its own.
    */
   protectedComponents: [
+    // `Button` covers `Button.Group`, whose `direction` stacks its buttons.
+    {
+      source: '@cube-dev/ui-kit',
+      include: ['Button', 'ButtonGroup'],
+      allowedStyleProps: ['position', 'dimension', 'direction'],
+    },
     // `direction` places a field's popover, `filter` matches its options and
-    // `resize` is a text field's resize handle; `Button` covers `Button.Group`.
+    // `resize` is a text field's resize handle. The fields share one entry, so
+    // a field without one of these props still gets its name, which is no
+    // plausible restyle of a field.
     {
       source: '@cube-dev/ui-kit',
       include: [
-        'Button',
-        'ButtonGroup',
         'ComboBox',
         'SearchComboBox',
         'Select',

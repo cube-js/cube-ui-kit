@@ -22,7 +22,7 @@ const COPY_BUTTON = `import { Button, tasty } from '@cube-dev/ui-kit';
 export const CopyButton = tasty(Button, { type: 'clear' });
 `;
 
-const CONSUMER = `import { Button, Card, CloseIcon, ColorSwatch, ComboBox, GridLayout, ItemButton, Layout, Space, tasty, Text } from '@cube-dev/ui-kit';
+const CONSUMER = `import { AlertDialog, Button, Card, CloseIcon, ColorSwatch, ComboBox, GridLayout, GridProvider, ItemButton, Layout, ResizablePanel, Root, Space, tasty, Text, TextArea } from '@cube-dev/ui-kit';
 
 import { CopyButton } from './CopyButton';
 
@@ -42,6 +42,13 @@ export function Consumer() {
       <ComboBox fill="#danger" />
       <ComboBox filter={false} direction="top" />
       <ColorSwatch color="#ff0000" />
+      <TextArea resize="vertical" />
+      <Button.Group direction="vertical" />
+      <Button filter="grayscale(1)" />
+      <AlertDialog content="Delete the file?" />
+      <Root font="Inter" />
+      <GridProvider gap={8} columns={12} />
+      <ResizablePanel direction="left" padding="2x" />
       <CopyButton styles={{ fill: '#danger' }} />
       <Space styles={{ gap: '2x' }} />
       <Text.Strong styles={{ color: '#danger' }} />
@@ -167,6 +174,7 @@ describe('tasty.config.ts', () => {
         "<ComboBox inputStyles={{ padding: '2x' }} />",
         "<CopyButton styles={{ fill: '#danger' }} />",
         '<ComboBox fill="#danger" />',
+        '<Button filter="grayscale(1)" />',
         '<Card fill="#danger" />',
       ].sort(),
     );
