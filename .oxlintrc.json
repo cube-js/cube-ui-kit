@@ -2,7 +2,8 @@
   "$schema": "./node_modules/oxlint/configuration_schema.json",
   "settings": {
     "tasty": {
-      "typeAwareJSX": { "project": "./tsconfig.json" }
+      "typeAwareJSX": { "project": "./tsconfig.json" },
+      "mergeFunctions": ["mergeStyleLayers"]
     }
   },
   "plugins": [],

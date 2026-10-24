@@ -139,6 +139,7 @@ describe('mergeStyleLayers', () => {
     expect(
       mergeStyleLayers(
         { Title: { color: null } },
+        // oxlint-disable-next-line tasty/valid-sub-element -- a null sub-element is a valid reset (tenphi/eslint-plugin-tasty#117)
         { Title: null },
         { Title: { preset: 't2' } },
       ),

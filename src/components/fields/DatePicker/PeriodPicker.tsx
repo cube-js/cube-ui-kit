@@ -86,6 +86,9 @@ export interface CubePeriodPickerProps<T extends DateValue = DateValue>
   formatValue?: (date: DateValue, picker: PickerType, locale: string) => string;
 }
 
+const INPUT_STYLES: Styles = { cursor: 'pointer' };
+const INERT_INPUT_STYLES: Styles = { cursor: 'default' };
+
 function PeriodPickerImpl<T extends DateValue>(
   rawProps: CubePeriodPickerProps<T>,
   ref: FocusableRef<HTMLElement>,
@@ -188,7 +191,7 @@ function PeriodPickerImpl<T extends DateValue>(
         props.wrapperStyles,
       )}
       inputStyles={mergeStyleLayers(
-        { cursor: isDisabled || isReadOnly ? 'default' : 'pointer' },
+        isDisabled || isReadOnly ? INERT_INPUT_STYLES : INPUT_STYLES,
         props.inputStyles,
       )}
       disableFocusRing={isFocusedButton}

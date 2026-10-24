@@ -739,6 +739,7 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
 
     const mergedStyles = mergeStyleLayers(
       stylesProp,
+      // oxlint-disable-next-line tasty/no-runtime-styles-mutation -- forwards the consumer's `inputStyles` to `Input`
       inputStyles ? { Input: inputStyles } : null,
     );
 
