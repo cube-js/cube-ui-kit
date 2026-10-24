@@ -3,6 +3,9 @@
  *
  * This file configures the tasty VSCode extension for the @cube-dev/ui-kit project.
  * It provides token names, units, presets, and state aliases for validation and autocomplete.
+ * For `@tenphi/eslint-plugin-tasty`, it also lists the components consumers
+ * customize through their props rather than by restyling them
+ * (`protectedComponents`).
  *
  * Projects using @cube-dev/ui-kit can extend this config:
  * ```typescript
@@ -33,18 +36,86 @@ export default {
    * reports their instance `styles` and `*Styles` props, appearance style
    * props, and `tasty()` wrappers that restyle them, so an intended override
    * carries a reasoned disable. Every export is protected except the layout
-   * and typography primitives and the bases meant for extension, whose
-   * `styles` are their API. Style props that place or size the root stay
-   * allowed, and containers also keep the props that lay out their content.
-   * The first matching entry decides, so the containers come first. Our own
-   * source imports components by relative path, which never matches
-   * `source`, so the rule holds consumers only.
+   * and typography primitives, the bases meant for extension and the icons,
+   * whose `styles` are their API. Style props that place or size the root
+   * stay allowed, and containers also keep the props that lay out their
+   * content. The first matching entry decides, so the last entry holds the
+   * rest. Our own source imports components by relative path, which never
+   * matches `source`, so the rule holds consumers only.
+   *
+   * Without `typeAwareJSX`, the rule reads any prop named like a Tasty style
+   * as one, so a component whose own prop shares such a name gets that name
+   * allowed in an entry of its own.
    */
   protectedComponents: [
+    // `direction` places a field's popover, `filter` matches its options and
+    // `resize` is a text field's resize handle; `Button` covers `Button.Group`.
     {
       source: '@cube-dev/ui-kit',
-      // `Layout` covers its sub-components, such as `Layout.Content`.
-      include: ['Card', 'Panel', 'Content', 'Header', 'Footer', 'Layout'],
+      include: [
+        'Button',
+        'ButtonGroup',
+        'ComboBox',
+        'SearchComboBox',
+        'Select',
+        'TagInput',
+        'CommandTextArea',
+        'CommandMenu',
+        'FilterListBox',
+        'FilterPicker',
+        'ListBox',
+        'Picker',
+        'Input',
+        'TextInputBase',
+        'TextInput',
+        'TextArea',
+        'PasswordInput',
+        'NumberInput',
+        'SearchInput',
+      ],
+      allowedStyleProps: [
+        'position',
+        'dimension',
+        'direction',
+        'filter',
+        'resize',
+      ],
+    },
+    {
+      source: '@cube-dev/ui-kit',
+      include: ['ColorSwatch'],
+      allowedStyleProps: ['position', 'dimension', 'color'],
+    },
+    {
+      source: '@cube-dev/ui-kit',
+      include: ['AlertDialog'],
+      allowedStyleProps: ['position', 'dimension', 'content'],
+    },
+    {
+      source: '@cube-dev/ui-kit',
+      include: ['Root'],
+      allowedStyleProps: ['position', 'dimension', 'font'],
+    },
+    {
+      source: '@cube-dev/ui-kit',
+      include: ['GridProvider'],
+      allowedStyleProps: ['position', 'dimension', 'gap'],
+    },
+    // Containers. `Layout` and `GridLayout` cover their sub-components, such
+    // as `Layout.Content`, whose `scrollbar` is their own prop;
+    // `ResizablePanel`'s `direction` is the side it resizes from.
+    {
+      source: '@cube-dev/ui-kit',
+      include: [
+        'Card',
+        'Panel',
+        'ResizablePanel',
+        'Content',
+        'Header',
+        'Footer',
+        'Layout',
+        'GridLayout',
+      ],
       allowedStyleProps: [
         'position',
         'dimension',
@@ -65,14 +136,20 @@ export default {
         'gridRows',
         'gridTemplate',
         'gridAreas',
+        'gridAutoFlow',
+        'gridAutoColumns',
+        'gridAutoRows',
         'padding',
         'blockPadding',
         'inlinePadding',
         'overflow',
+        'scrollbar',
+        'direction',
       ],
     },
     {
       source: '@cube-dev/ui-kit',
+      // `*Icon` also matches `Icon`.
       exclude: [
         'Element',
         'Block',
@@ -88,8 +165,8 @@ export default {
         'Paragraph',
         'Typography',
         'Action',
-        'Icon',
         '*Icon',
+        'IconSwitch',
       ],
       allowedStyleProps: ['position', 'dimension'],
     },

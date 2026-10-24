@@ -411,13 +411,15 @@ Component themes are set via the `theme` prop or `theme=name` modifier:
 
 ## Customizing components
 
-Most components are a design contract: customize them through their own props (`type`, `theme`, `size`, …), `tokens` and `mods` rather than by restyling them. The layout and typography primitives (`Element`, `Block`, `Flex`, `Flow`, `Grid`, `Space`, `Prefix`, `Suffix`, `Text`, `TextItem`, `Title`, `Paragraph`, `Typography`), the `Action` base and the icons are the exception: their `styles` are their API.
+Most components are a design contract: customize them through their own props (`type`, `theme`, `size`, …), `tokens` and `mods` rather than by restyling them. The layout and typography primitives (`Element`, `Block`, `Flex`, `Flow`, `Grid`, `Space`, `Prefix`, `Suffix`, `Text`, `TextItem`, `Title`, `Paragraph`, `Typography`), the `Action` base and the icons (including `IconSwitch`) are the exception: their `styles` are their API.
 
 The package's `tasty.config.ts` lists the other components as `protectedComponents`, and `tasty/no-protected-restyle` from `@tenphi/eslint-plugin-tasty` 1.11.0 or newer reports a restyle of one in your code:
 
 - instance `styles`, and every `*Styles` prop such as `inputStyles`;
-- style props other than the ones that place or size the component (`width`, `height`, `gridArea`, `margin`, `inset`, …). Containers (`Card`, `Panel`, `Content`, `Header`, `Footer` and the `Layout` family) also keep the ones that lay out their content: `padding`, `gap`, `flow`, `place*`, `align*`, `justify*`, `grid*` and `overflow`. Root `styles` that sets only allowed props passes too;
+- style props other than the ones that place or size the component (`width`, `height`, `gridArea`, `margin`, `inset`, …). Containers (`Card`, `Panel`, `ResizablePanel`, `Content`, `Header`, `Footer`, and `Layout` and `GridLayout` with their sub-components) also keep the ones that lay out their content: `padding`, `gap`, `flow`, `place*`, `align*`, `justify*`, `grid*`, `overflow` and `scrollbar`. Root `styles` that sets only allowed props passes too;
 - `tasty()` wrappers that restyle a protected component, and wrappers of those wrappers.
+
+A component's own prop that shares a name with a style passes, such as a field's `direction` and `filter`, a text field's `resize`, `ColorSwatch`'s `color` or `AlertDialog`'s `content`.
 
 To turn it on, extend the package's config and enable the rule:
 
@@ -434,11 +436,13 @@ export default { extends: '@cube-dev/ui-kit' };
 }
 ```
 
-An intended override takes a disable comment with its reason on the line before it:
+An intended override takes a disable comment with its reason on the line before it. Among JSX children, only the `{/* … */}` form works:
 
 ```tsx
-// oxlint-disable-next-line tasty/no-protected-restyle -- the empty state's call to action takes the brand fill
-<Button fill="#purple" />
+<Space>
+  {/* oxlint-disable-next-line tasty/no-protected-restyle -- the empty state's call to action takes the brand fill */}
+  <Button fill="#purple">Get started</Button>
+</Space>
 ```
 
 With this rule on, `tasty/no-styles-prop` can stay off, so the primitives keep their `styles`.

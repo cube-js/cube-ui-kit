@@ -22,7 +22,7 @@ const COPY_BUTTON = `import { Button, tasty } from '@cube-dev/ui-kit';
 export const CopyButton = tasty(Button, { type: 'clear' });
 `;
 
-const CONSUMER = `import { Button, Card, CloseIcon, ComboBox, ItemButton, Layout, Space, tasty, Text } from '@cube-dev/ui-kit';
+const CONSUMER = `import { Button, Card, CloseIcon, ColorSwatch, ComboBox, GridLayout, ItemButton, Layout, Space, tasty, Text } from '@cube-dev/ui-kit';
 
 import { CopyButton } from './CopyButton';
 
@@ -39,13 +39,19 @@ export function Consumer() {
       <Button width="100%" gridArea="actions" />
       <ItemButton styles={{ padding: '2x' }} />
       <ComboBox inputStyles={{ padding: '2x' }} />
+      <ComboBox fill="#danger" />
+      <ComboBox filter={false} direction="top" />
+      <ColorSwatch color="#ff0000" />
       <CopyButton styles={{ fill: '#danger' }} />
       <Space styles={{ gap: '2x' }} />
       <Text.Strong styles={{ color: '#danger' }} />
       <CloseIcon color="#danger" />
       <Card padding="2x" gap="1x" flow="row" />
       <Card fill="#danger" />
-      <Layout.Content padding="0" />
+      <Layout.Content padding="0" scrollbar="tiny" />
+      <GridLayout.Content padding="0" />
+      {/* oxlint-disable-next-line tasty/no-protected-restyle -- a reasoned override */}
+      <Button fill="#purple" />
     </>
   );
 }
@@ -96,7 +102,9 @@ function lintConsumer(rule: string, files: Record<string, string>) {
       ['-c', '.oxlintrc.json', '-f', 'json', ...Object.keys(files)],
       { cwd: dir, encoding: 'utf8' },
     );
-    const { diagnostics } = JSON.parse(result.stdout) as {
+    if (result.error) throw result.error;
+
+    let report: {
       diagnostics: {
         code: string;
         filename: string;
@@ -104,7 +112,13 @@ function lintConsumer(rule: string, files: Record<string, string>) {
       }[];
     };
 
-    return diagnostics
+    try {
+      report = JSON.parse(result.stdout);
+    } catch {
+      throw new Error(`oxlint failed:\n${result.stdout}\n${result.stderr}`);
+    }
+
+    return report.diagnostics
       .filter((diagnostic) => diagnostic.code === `tasty(${rule})`)
       .map((diagnostic) => {
         const lines = readFileSync(
@@ -134,8 +148,9 @@ describe('tasty.config.ts', () => {
   });
 
   // A consumer that extends this config gets `protectedComponents`, so
-  // restyling a component reports, its primitives stay open and containers
-  // keep the props that lay out their content.
+  // restyling a component reports, its primitives stay open, containers keep
+  // the props that lay out their content, and a component's own prop named
+  // like a style (`filter`, `direction`, `scrollbar`, `color`) passes.
   it('protects components for a consumer that extends it', () => {
     const reported = lintConsumer('no-protected-restyle', {
       'CopyButton.tsx': COPY_BUTTON,
@@ -151,6 +166,7 @@ describe('tasty.config.ts', () => {
         "<ItemButton styles={{ padding: '2x' }} />",
         "<ComboBox inputStyles={{ padding: '2x' }} />",
         "<CopyButton styles={{ fill: '#danger' }} />",
+        '<ComboBox fill="#danger" />',
         '<Card fill="#danger" />',
       ].sort(),
     );
