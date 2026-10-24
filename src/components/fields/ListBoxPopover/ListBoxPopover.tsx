@@ -390,7 +390,7 @@ export const ListBoxPopover = function ListBoxPopover(
                   ? `${comboBoxWidth}px`
                   : undefined,
               }}
-              // oxlint-disable-next-line react/forbid-component-props, tasty/no-style-prop -- React Aria's overlay positioning computes the space left; inline, it caps the size even when a consumer's `overlayStyles` sets `width` or `height`
+              // oxlint-disable-next-line react/forbid-component-props, tasty/no-style-prop -- React Aria's overlay positioning computes the space left once it has measured; inline, it overrides whatever max size the merged styles give, without restating their defaults
               style={{ maxHeight, maxWidth }}
             >
               <ListBox

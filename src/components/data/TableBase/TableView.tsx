@@ -1705,7 +1705,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
 
     return (
       <tr aria-hidden="true" data-spacer={position}>
-        {/* oxlint-disable-next-line react/forbid-dom-props -- the virtualizer's spacer stands in for the rows outside the window */}
+        {/* oxlint-disable-next-line react/forbid-dom-props -- a native cell styled by `TableElement`; its height stands in for the rows outside the virtualizer's window */}
         <td colSpan={Math.max(columnCount, 1)} style={{ height }} />
       </tr>
     );

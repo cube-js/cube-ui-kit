@@ -146,15 +146,23 @@ const ListElement = tasty({
       '': '.5x .5x 0 .5x',
       '[data-shape="plain"] | empty': '0',
     },
-    // Virtualized, the list is as tall as every option, measured or estimated,
-    // and holds the options the virtualizer places.
+    height: 'max-content',
+    // Virtualized, the options are placed absolutely, so the list takes its
+    // height from this spacer: every option, measured or estimated. As content,
+    // it leaves a `listStyles` height in charge, such as a `max` cap.
     position: {
       '': false,
       virtualized: 'relative',
     },
-    height: {
-      '': 'max-content',
-      virtualized: '$list-virtual-height',
+    Spacer: {
+      $: '&::after',
+      content: '""',
+      display: 'block',
+      hide: {
+        '': true,
+        virtualized: false,
+      },
+      height: '$list-virtual-height',
     },
   },
 });
@@ -1355,14 +1363,12 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
             {...mergedListBoxProps}
             ref={listRef}
             styles={listStyles}
-            tokens={
-              shouldVirtualize
-                ? {
-                    ...listGapTokens,
-                    '$list-virtual-height': `${rowVirtualizer.getTotalSize()}px`,
-                  }
-                : listGapTokens
-            }
+            tokens={{
+              ...listGapTokens,
+              '$list-virtual-height': shouldVirtualize
+                ? `${rowVirtualizer.getTotalSize()}px`
+                : undefined,
+            }}
             aria-disabled={isDisabled || undefined}
             mods={{
               sections: hasSections,
@@ -1716,14 +1722,11 @@ function Option({
         effectiveDragProps,
       )}
       theme={theme}
-      tokens={
-        virtualOffset == null
-          ? itemTokens
-          : {
-              ...itemTokens,
-              '$option-virtual-offset': `${virtualOffset}px`,
-            }
-      }
+      tokens={{
+        ...itemTokens,
+        '$option-virtual-offset':
+          virtualOffset == null ? undefined : `${virtualOffset}px`,
+      }}
       data-size={size}
       data-index={virtualIndex}
       size={size}

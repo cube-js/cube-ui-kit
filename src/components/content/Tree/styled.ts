@@ -15,6 +15,9 @@ import { Item } from '../Item';
  * Tree-wide modifiers (set on `TreeElement` itself):
  * - `has-height` — paired with the `$tree-height` token
  *   when the consumer passes a numeric `height` prop.
+ *
+ * It also sets `$tree-padding`, the `containerPadding` that insets the
+ * rows (`TreeNodeRow`).
  */
 export const TreeElement = tasty({
   qa: 'Tree',
@@ -38,21 +41,11 @@ export const TreeElement = tasty({
 
 /**
  * Inner scroll viewport. Block-level on purpose — placing the
- * virtualizer's sizer (`height: ${totalSize}px`) directly inside the
+ * virtualizer's sizer (`TreeSizer`) directly inside the
  * flex `TreeElement` lets `flex-shrink: 1` collapse it, which makes
  * the scroll area visibly grow as `@tanstack/react-virtual`
  * re-measures rows during scroll.
  */
-/** As tall as every row, measured or estimated; holds the rows. */
-export const TreeSizer = tasty({
-  qa: 'TreeSizer',
-  styles: {
-    position: 'relative',
-    width: '100%',
-    height: '$tree-content-height',
-  },
-});
-
 export const TreeScrollContainer = tasty({
   qa: 'TreeScrollContainer',
   styles: {
@@ -68,20 +61,33 @@ export const TreeScrollContainer = tasty({
 });
 
 /**
+ * The virtualizer's sizer: as tall as every row, measured or estimated
+ * (`$tree-content-height`), and the box the rows are placed in.
+ */
+export const TreeSizer = tasty({
+  qa: 'TreeSizer',
+  styles: {
+    position: 'relative',
+    width: '100%',
+    height: '$tree-content-height',
+  },
+});
+
+/**
  * Per-row wrapper carrying `role="row"`, `rowProps` from
  * `useTreeItem`, and the `--tree-level` CSS custom property used by
  * `TreeRowItem` to compute its left padding.
  *
- * Has no visual styles of its own — the row's appearance lives on
- * the inner `TreeRowItem` (which extends `Item`).
+ * It places the row at the virtualizer's offset (`--tree-row-offset`),
+ * inset by `$tree-padding`. Otherwise it has no visual styles of its
+ * own — the row's appearance lives on the inner `TreeRowItem` (which
+ * extends `Item`).
  */
 export const TreeNodeRow = tasty({
   qa: 'TreeRow',
   styles: {
     display: 'block',
     outline: 0,
-    // The virtualizer gives each row its offset; `$tree-padding` is the
-    // tree's `containerPadding`.
     position: 'absolute',
     inset: '0 $tree-padding top dock',
     transform: 'translateY($tree-row-offset)',

@@ -34,7 +34,7 @@ When you do need to widen something inside `Root`'s tree, `node scripts/chromati
 
 # Inline style
 
-React's `style` prop bypasses Tasty: no tokens, units or states, and nothing a consumer's `styles` can override. `.oxlintrc.json` makes it an error on every element, through `react/forbid-component-props` and `react/forbid-dom-props`, in runtime code and stories alike. On a Tasty element, `tasty/no-style-prop` reports it too. Specs are exempt, because they set inline styles to stage layouts and to check that a consumer's `style` reaches the DOM.
+React's `style` prop bypasses Tasty: no tokens, units or states, and nothing a consumer's `styles` can override. `.oxlintrc.json` makes it an error on every element, through `react/forbid-component-props` and `react/forbid-dom-props`, in runtime code and stories alike. On a Tasty element, `tasty/no-style-prop` reports it too. Specs are exempt from the React rules, because they set inline styles to stage layouts and to check that a consumer's `style` reaches the DOM; `tasty/no-style-prop` still applies to them.
 
 Use the Tasty channel that fits the value:
 
@@ -49,14 +49,14 @@ Keep `style` only when something outside our styles owns the value, and say so o
 style={positionProps.style}
 ```
 
-On a Tasty element the one directive names both rules. On a native or third-party element only the React rule applies; naming `tasty/no-style-prop` there leaves part of the directive unused, which `oxlint --report-unused-disable-directives` reports.
+On a Tasty element the one directive names both rules. On any other element (a native or third-party one, or one of our own non-Tasty components such as `Popover`) only the React rule applies; naming `tasty/no-style-prop` there leaves part of the directive unused, which `oxlint --report-unused-disable-directives` reports.
 
 The accepted reasons are:
 
 - a library supplies the style object: React Aria's positioning or date segment style, prism-react-renderer's theme;
 - the component forwards its own public `style` prop;
-- the value sits on a native element with no Tasty element to carry a token, such as a table cell that `TableElement` styles through sub-element selectors;
-- our styles cannot express the value or cannot win the cascade for it, such as a `preset` that owns `font-family`, or React Aria's popover size cap, which has to hold over a consumer's `overlayStyles`; name the cause, and for a Tasty limitation its issue and the condition for removing the exception.
+- the value sits on a native element with no Tasty element to carry a token, such as a table row or cell that `TableElement` styles through sub-element selectors, even when a virtualizer computes it;
+- our styles cannot express the value or cannot win the cascade for it, such as a `preset` that owns `font-family`, or React Aria's popover size cap, which applies only once React Aria has measured and otherwise leaves the max size the merged styles give; name the cause, and for a Tasty limitation its issue and the condition for removing the exception.
 
 The lint sees only a `style` JSX attribute. A `style` key in an object that reaches an element (`mergeProps(props, { style })`, a context value, a props object) gets past it, so hold those to the same rule in review, with the reason in a comment.
 
