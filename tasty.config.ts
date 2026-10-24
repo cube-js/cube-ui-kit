@@ -40,7 +40,9 @@ export default {
    * whose `styles` are their API. Style props that place or size the root
    * stay allowed, and containers also keep the props that lay out their
    * content. The first matching entry decides, so the last entry holds the
-   * rest. Our own source imports components by relative path, which never
+   * rest. A sub-component such as `Layout.Content` counts as the export it
+   * hangs off, unless an entry names its member path, which then decides
+   * first. Our own source imports components by relative path, which never
    * matches `source`, so the rule holds consumers only.
    *
    * Without `typeAwareJSX`, the rule reads any prop named like a Tasty style
@@ -48,17 +50,6 @@ export default {
    * allowed in an entry of its own.
    */
   protectedComponents: [
-    // `Button.Group` resolves to `Button`, and its `direction` stacks its
-    // buttons, so `Button` and `Button.Split` get `direction` too, which is no
-    // plausible restyle of a button. `Button.Group`'s `gap` and `flow` still
-    // report until the plugin can name a sub-component
-    // (tenphi/eslint-plugin-tasty#125); the named `ButtonGroup`, a `Space`, is
-    // excluded below.
-    {
-      source: '@cube-dev/ui-kit',
-      include: ['Button'],
-      allowedStyleProps: ['position', 'dimension', 'direction'],
-    },
     // `direction` places a field's popover, `filter` matches its options and
     // `resize` is a text field's resize handle. The fields share one entry, so
     // a field without one of these props still gets its name, which is no
@@ -160,7 +151,8 @@ export default {
     },
     {
       source: '@cube-dev/ui-kit',
-      // `*Icon` also matches `Icon`.
+      // `*Icon` also matches `Icon`. `Button.Group` is `ButtonGroup`, a
+      // `Space`, and its member path decides before `Button` does.
       exclude: [
         'Element',
         'Block',
@@ -169,6 +161,7 @@ export default {
         'Grid',
         'Space',
         'ButtonGroup',
+        'Button.Group',
         'Prefix',
         'Suffix',
         'Text',

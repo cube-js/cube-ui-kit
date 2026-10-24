@@ -411,9 +411,9 @@ Component themes are set via the `theme` prop or `theme=name` modifier:
 
 ## Customizing components
 
-Most components are a design contract: customize them through their own props (`type`, `theme`, `size`, …), `tokens` and `mods` rather than by restyling them. The layout and typography primitives (`Element`, `Block`, `Flex`, `Flow`, `Grid`, `Space`, `Prefix`, `Suffix`, `Text`, `TextItem`, `Title`, `Paragraph`, `Typography`, `ButtonGroup`), the `Action` base and the icons (including `IconSwitch`) are the exception: their `styles` are their API.
+Most components are a design contract: customize them through their own props (`type`, `theme`, `size`, …), `tokens` and `mods` rather than by restyling them. The layout and typography primitives (`Element`, `Block`, `Flex`, `Flow`, `Grid`, `Space`, `Prefix`, `Suffix`, `Text`, `TextItem`, `Title`, `Paragraph`, `Typography`, `ButtonGroup` and `Button.Group`), the `Action` base and the icons (including `IconSwitch`) are the exception: their `styles` are their API.
 
-The package's `tasty.config.ts` lists the other components as `protectedComponents`, and `tasty/no-protected-restyle` from `@tenphi/eslint-plugin-tasty` 1.11.0 or newer reports a restyle of one in your code:
+The package's `tasty.config.ts` lists the other components as `protectedComponents`, and `tasty/no-protected-restyle` from `@tenphi/eslint-plugin-tasty` 1.12.0 or newer reports a restyle of one in your code:
 
 - instance `styles`, and every `*Styles` prop such as `inputStyles`;
 - style props other than the ones that place or size the component (`width`, `height`, `gridArea`, `margin`, `inset`, …). Containers (`Card`, `Panel`, `ResizablePanel`, `Content`, `Header`, `Footer`, and `Layout` and `GridLayout` with their sub-components) also keep the ones that lay out their content: `padding`, `gap`, `flow`, `place*`, `align*`, `justify*`, `grid*`, `overflow` and `scrollbar`. Root `styles` that sets only allowed props passes too;
@@ -421,7 +421,7 @@ The package's `tasty.config.ts` lists the other components as `protectedComponen
 
 A component's own prop that shares a name with a style passes, such as a field's `direction` and `filter`, a text field's `resize`, `ColorSwatch`'s `color` or `AlertDialog`'s `content`.
 
-The rule reads a sub-component as the component it hangs off, so `Button.Group` counts as `Button` and its `gap` and `flow` are reported. Set them on the `ButtonGroup` export instead, which is the same component.
+A sub-component counts as the component it hangs off, so `Button.Split` is protected like `Button`, and `Layout.Content` is a container like `Layout`. The list names the exceptions, such as `Button.Group`.
 
 To turn it on, extend the package's config and enable the rule:
 

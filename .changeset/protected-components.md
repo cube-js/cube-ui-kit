@@ -2,7 +2,7 @@
 '@cube-dev/ui-kit': minor
 ---
 
-The published `tasty.config.ts` lists the components a consumer customizes through their props rather than by restyling them, as `protectedComponents`. With `@tenphi/eslint-plugin-tasty` 1.11.0 or newer, a project that extends the config gets `tasty/no-protected-restyle` reports for:
+The published `tasty.config.ts` lists the components a consumer customizes through their props rather than by restyling them, as `protectedComponents`. With `@tenphi/eslint-plugin-tasty` 1.12.0 or newer, a project that extends the config gets `tasty/no-protected-restyle` reports for:
 
 - instance `styles` and `*Styles` props;
 - appearance style props such as `fill`, `color`, `border` or `radius`;

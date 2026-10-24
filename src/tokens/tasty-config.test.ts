@@ -43,8 +43,9 @@ export function Consumer() {
       <ComboBox filter={false} direction="top" />
       <ColorSwatch color="#ff0000" />
       <TextArea resize="vertical" />
-      <Button.Group direction="vertical" />
+      <Button.Group direction="vertical" gap="1x" flow="row" />
       <ButtonGroup gap="1x" flow="row" />
+      <Button.Split fill="#danger" />
       <Button filter="grayscale(1)" />
       <AlertDialog content="Delete the file?" />
       <Root font="Inter" />
@@ -159,7 +160,8 @@ describe('tasty.config.ts', () => {
   // restyling a component reports, its primitives stay open, containers keep
   // the props that lay out their content, and a component's own prop named
   // like a style passes, while that name on a component that doesn't own it
-  // (`<Button filter>`) is reported.
+  // (`<Button filter>`) is reported. A sub-component counts as its export
+  // (`Button.Split`) unless the config names it (`Button.Group`).
   it('protects components for a consumer that extends it', () => {
     const reported = lintConsumer('no-protected-restyle', {
       'CopyButton.tsx': COPY_BUTTON,
@@ -177,6 +179,7 @@ describe('tasty.config.ts', () => {
         "<CopyButton styles={{ fill: '#danger' }} />",
         '<ComboBox fill="#danger" />',
         '<Button filter="grayscale(1)" />',
+        '<Button.Split fill="#danger" />',
         '<Card fill="#danger" />',
       ].sort(),
     );
