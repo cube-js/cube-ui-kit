@@ -4,7 +4,6 @@ import {
   CONTAINER_STYLES,
   ContainerStyleProps,
   filterBaseProps,
-  mergeStyles,
   OUTER_STYLES,
   tasty,
 } from '@tenphi/tasty';
@@ -377,8 +376,6 @@ function Radio(props: CubeRadioProps, ref) {
       ];
     }
   }
-
-  labelStyles = mergeStyles(INLINE_LABEL_STYLES, labelStyles);
 
   let radioGroupProps = useRadioProvider();
 

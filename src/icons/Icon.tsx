@@ -54,13 +54,18 @@ export const Icon = memo(
   ) {
     const { size, styles, stroke, ...rest } = props;
 
-    const finalStyles = mergeStyles(
-      styles,
-      // oxlint-disable-next-line tasty/no-runtime-styles-mutation -- forwards the consumer's `size` prop
-      size ? { fontSize: size } : null,
-      // oxlint-disable-next-line tasty/no-runtime-styles-mutation -- forwards the consumer's `stroke` prop
-      stroke ? { '$stroke-width': stroke } : null,
-    );
+    // Keeps `styles` itself when there is nothing to add, so tasty's
+    // per-object cache still hits.
+    const finalStyles =
+      size || stroke
+        ? mergeStyles(
+            styles,
+            // oxlint-disable-next-line tasty/no-runtime-styles-mutation -- forwards the consumer's `size` prop
+            size ? { fontSize: size } : null,
+            // oxlint-disable-next-line tasty/no-runtime-styles-mutation -- forwards the consumer's `stroke` prop
+            stroke ? { '$stroke-width': stroke } : null,
+          )
+        : styles;
 
     return <IconElement ref={ref} qa="Icon" {...rest} styles={finalStyles} />;
   }),

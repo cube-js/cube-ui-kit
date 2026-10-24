@@ -6,7 +6,6 @@ import {
   COLOR_STYLES,
   ColorStyleProps,
   filterBaseProps,
-  mergeStyles,
   OUTER_STYLES,
   OuterStyleProps,
   Styles,
@@ -29,7 +28,7 @@ import {
 
 import { useEvent } from '../../../_internal/hooks';
 import { mergeProps } from '../../../utils/react';
-import { extractStyles } from '../../../utils/styles';
+import { extractStyles, mergeStyleLayers } from '../../../utils/styles';
 import { AutoTooltipValue, useAutoTooltip } from '../use-auto-tooltip';
 
 import type {
@@ -738,9 +737,8 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
       ...customMods,
     };
 
-    const mergedStyles = mergeStyles(
+    const mergedStyles = mergeStyleLayers(
       stylesProp,
-      // oxlint-disable-next-line tasty/no-runtime-styles-mutation -- forwards the consumer's `inputStyles` to `Input`
       inputStyles ? { Input: inputStyles } : null,
     );
 

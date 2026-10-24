@@ -14,7 +14,7 @@ import {
 } from '@tenphi/tasty';
 import { ForwardedRef, forwardRef, ReactNode } from 'react';
 
-import { extractStyles } from '../../utils/styles';
+import { extractStyles, mergeStyleLayers } from '../../utils/styles';
 
 const PanelElement = tasty({
   as: 'section',
@@ -132,8 +132,11 @@ function Panel(props: CubePanelProps, ref: ForwardedRef<HTMLDivElement>) {
   } = props;
 
   // The inner style props go to the inner element; the remaining style props
-  // go to the outer one.
-  innerStyles = extractStyles(otherProps, STYLES, innerStyles);
+  // go to the outer one. An inner prop left `undefined` keeps `innerStyles`.
+  innerStyles = mergeStyleLayers(
+    innerStyles,
+    extractStyles(otherProps, STYLES),
+  );
   styles = extractStyles(
     otherProps,
     OUTER_STYLE_PROPS,
@@ -162,9 +165,9 @@ function Panel(props: CubePanelProps, ref: ForwardedRef<HTMLDivElement>) {
       styles={styles}
       // oxlint-disable-next-line react/forbid-component-props -- forwards the consumer's public `style` prop
       style={style}
-      // The style props were moved into `styles` and
-      // `innerStyles`, but the type still lists them, and the `color` style
-      // prop collides with the HTML attribute of the same name.
+      // The style props were moved into `styles` and `innerStyles`, but the
+      // type still lists them, and the `color` style prop collides with the
+      // HTML attribute of the same name.
       {...(otherProps as BaseProps)}
     >
       <PanelInnerElement mods={appliedMods} styles={innerStyles}>
