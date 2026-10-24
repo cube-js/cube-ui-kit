@@ -121,7 +121,9 @@
     "tasty/no-unknown-state-alias": "error",
     "tasty/valid-state-definition": "error",
     "tasty/no-classname-prop": "error",
-    "tasty/no-style-prop": "error",
+    // Inline `style` on any element, behind a reasoned directive only. See
+    // docs/rules/coding.md#inline-style.
+    "tasty/no-style-prop": ["error", { "elements": "all" }],
     "tasty/no-raw-transition-duration": "error",
     "tasty/no-raw-motion-duration": "error",
     "tasty/prefer-longhand-property": "error",
@@ -1402,44 +1404,9 @@
       }
     },
     {
-      // Inline `style` bypasses Tasty: no tokens, units or states, and nothing
-      // a consumer's `styles` can override. It stays only where something
-      // outside our styles owns the value, behind a reasoned directive. See
-      // docs/rules/coding.md#inline-style.
-      "files": [
-        "**/*.{jsx,tsx}"
-      ],
-      "rules": {
-        "react/forbid-component-props": [
-          "error",
-          {
-            "forbid": [
-              {
-                "propName": "style",
-                "message": "Inline `style` bypasses Tasty. Pass runtime values through `tokens`, static ones through `styles` or style props, and states through `mods`. When a library or the component's public `style` prop owns the value, add `// oxlint-disable-next-line react/forbid-component-props -- <reason>`, naming `tasty/no-style-prop` too on a Tasty element. See docs/rules/coding.md#inline-style."
-              }
-            ]
-          }
-        ],
-        "react/forbid-dom-props": [
-          "error",
-          {
-            "forbid": [
-              {
-                "propName": "style",
-                "message": "Inline `style` bypasses Tasty. Render a Tasty element and pass runtime values through `tokens`, static ones through `styles`, and states through `mods`. When a library owns the value, add `// oxlint-disable-next-line react/forbid-dom-props -- <reason>`. See docs/rules/coding.md#inline-style."
-              }
-            ]
-          }
-        ]
-      },
-      "plugins": [
-        "react"
-      ]
-    },
-    {
       // Specs set inline styles to stage layouts and to assert that a
       // consumer's `style` reaches the DOM; they are fixtures, not styling.
+      // Only `style` on a Tasty element is reported there.
       "files": [
         "**/*.test.ts",
         "**/*.test.tsx",
@@ -1447,12 +1414,8 @@
         "src/test/**"
       ],
       "rules": {
-        "react/forbid-component-props": "off",
-        "react/forbid-dom-props": "off"
-      },
-      "plugins": [
-        "react"
-      ]
+        "tasty/no-style-prop": ["error", { "elements": "tasty" }]
+      }
     },
     {
       // Stories and specs size their demos and fixtures in plain pixels and

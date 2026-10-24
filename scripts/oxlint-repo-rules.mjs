@@ -3,7 +3,7 @@
  * the published `src/eslint-plugin`.
  *
  * `require-disable-reason` makes every lint exception say why it exists. A
- * bare `oxlint-disable-next-line react/forbid-dom-props` tells a reviewer that
+ * bare `oxlint-disable-next-line tasty/no-style-prop` tells a reviewer that
  * a rule was switched off, not whether the inline style is a library contract
  * or a shortcut; the ` -- reason` suffix is where that decision is recorded.
  */

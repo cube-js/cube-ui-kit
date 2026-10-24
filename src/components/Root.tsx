@@ -245,7 +245,7 @@ export function Root(allProps: CubeRootProps) {
                 $pointer: cursorStrategy === 'web' ? 'pointer' : 'default',
                 ...tokens,
               }}
-              // oxlint-disable-next-line react/forbid-component-props, tasty/no-style-prop -- forwards the consumer's public `style` prop
+              // oxlint-disable-next-line tasty/no-style-prop -- forwards the consumer's public `style` prop
               style={style}
             >
               <GlobalStyles

@@ -421,7 +421,7 @@ function LayoutInner(
       mods={mods}
       styles={finalStyles}
       tokens={insetTokens}
-      // oxlint-disable-next-line react/forbid-component-props, tasty/no-style-prop -- forwards the consumer's public `style`; while clipping, the overflow shorthand must also beat its inline longhands
+      // oxlint-disable-next-line tasty/no-style-prop -- forwards the consumer's public `style`; while clipping, the overflow shorthand must also beat its inline longhands
       style={transitionStyle}
       onKeyDown={hasOverlayPanels ? handleKeyDown : undefined}
     >

@@ -482,7 +482,7 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
         ref={inputRef}
         rows={multiLine ? (rows ?? inputProps.rows ?? 1) : inputProps.rows}
         mods={modifiers}
-        // oxlint-disable-next-line react/forbid-component-props, tasty/no-style-prop -- `preset` owns font-family, and a `fontFamily` state map would replace the preset's in every state
+        // oxlint-disable-next-line tasty/no-style-prop -- `preset` owns font-family, and a `fontFamily` state map would replace the preset's in every state
         style={textSecurityStyles}
         {...(resolvedAutoFocus ? { 'data-autofocus': '' } : undefined)}
         autoFocus={resolvedAutoFocus}

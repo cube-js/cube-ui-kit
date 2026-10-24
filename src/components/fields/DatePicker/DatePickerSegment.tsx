@@ -96,7 +96,7 @@ function EditableSegment({ segment, state }: DatePickerSegmentProps) {
           ? { '$segment-min-width': `${String(segment.maxValue).length}ch` }
           : undefined
       }
-      // oxlint-disable-next-line react/forbid-component-props, tasty/no-style-prop -- React Aria's `useDateSegment` supplies the segment's style (caret and bidi)
+      // oxlint-disable-next-line tasty/no-style-prop -- React Aria's `useDateSegment` supplies the segment's style (caret and bidi)
       style={segmentStyle}
       data-testid={segment.type}
     >

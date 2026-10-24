@@ -34,7 +34,7 @@ When you do need to widen something inside `Root`'s tree, `node scripts/chromati
 
 # Inline style
 
-React's `style` prop bypasses Tasty: no tokens, units or states, and nothing a consumer's `styles` can override. `.oxlintrc.json` makes it an error on every element, through `react/forbid-component-props` and `react/forbid-dom-props`, in runtime code and stories alike. On a Tasty element, `tasty/no-style-prop` reports it too. Specs are exempt from the React rules, because they set inline styles to stage layouts and to check that a consumer's `style` reaches the DOM; `tasty/no-style-prop` still applies to them.
+React's `style` prop bypasses Tasty: no tokens, units or states, and nothing a consumer's `styles` can override. `.oxlintrc.json` makes it an error on every element, through `tasty/no-style-prop` with `elements: 'all'`: Tasty elements, other components and native elements, in runtime code and stories alike. In specs it covers only Tasty elements, because specs set inline styles on native elements and components to stage layouts and to check that a consumer's `style` reaches the DOM.
 
 Use the Tasty channel that fits the value:
 
@@ -45,11 +45,9 @@ Use the Tasty channel that fits the value:
 Keep `style` only when something outside our styles owns the value, and say so on the line before it:
 
 ```tsx
-// oxlint-disable-next-line react/forbid-component-props, tasty/no-style-prop -- React Aria's overlay positioning computes these coordinates
+// oxlint-disable-next-line tasty/no-style-prop -- React Aria's overlay positioning computes these coordinates
 style={positionProps.style}
 ```
-
-On a Tasty element the one directive names both rules. On any other element (a native or third-party one, or one of our own non-Tasty components such as `Popover`) only the React rule applies; naming `tasty/no-style-prop` there leaves part of the directive unused, which `oxlint --report-unused-disable-directives` reports.
 
 The accepted reasons are:
 
