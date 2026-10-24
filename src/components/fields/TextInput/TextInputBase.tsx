@@ -8,6 +8,7 @@ import {
   BlockStyleProps,
   COLOR_STYLES,
   ColorStyleProps,
+  mergeStyles,
   OUTER_STYLES,
   OuterStyleProps,
   Styles,
@@ -361,7 +362,8 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
   let type = otherProps.type;
 
   if (resize) {
-    inputStyles = { ...inputStyles, resize };
+    // oxlint-disable-next-line tasty/no-runtime-styles-mutation -- forwards the consumer's `resize` prop
+    inputStyles = mergeStyles(inputStyles, { resize });
   }
 
   let ElementType: 'textarea' | 'input' = multiLine ? 'textarea' : 'input';

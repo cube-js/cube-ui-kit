@@ -4,6 +4,7 @@ import {
   BaseStyleProps,
   COLOR_STYLES,
   ColorStyleProps,
+  mergeStyles,
   OUTER_STYLES,
   OuterStyleProps,
   Styles,
@@ -51,21 +52,16 @@ export const Icon = memo(
     props: CubeIconProps,
     ref: ForwardedRef<HTMLSpanElement>,
   ) {
-    let { size, styles, stroke, ...rest } = props;
+    const { size, styles, stroke, ...rest } = props;
 
-    if (size) {
-      styles = {
-        ...styles,
-        fontSize: size,
-      };
-    }
-    if (stroke) {
-      styles = {
-        ...styles,
-        '$stroke-width': stroke,
-      };
-    }
+    const finalStyles = mergeStyles(
+      styles,
+      // oxlint-disable-next-line tasty/no-runtime-styles-mutation -- forwards the consumer's `size` prop
+      size ? { fontSize: size } : null,
+      // oxlint-disable-next-line tasty/no-runtime-styles-mutation -- forwards the consumer's `stroke` prop
+      stroke ? { '$stroke-width': stroke } : null,
+    );
 
-    return <IconElement ref={ref} qa="Icon" {...rest} styles={styles} />;
+    return <IconElement ref={ref} qa="Icon" {...rest} styles={finalStyles} />;
   }),
 );

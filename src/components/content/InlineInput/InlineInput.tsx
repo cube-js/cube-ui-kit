@@ -6,6 +6,7 @@ import {
   COLOR_STYLES,
   ColorStyleProps,
   filterBaseProps,
+  mergeStyles,
   OUTER_STYLES,
   OuterStyleProps,
   Styles,
@@ -737,15 +738,11 @@ export const InlineInput = forwardRef<CubeInlineInputRef, CubeInlineInputProps>(
       ...customMods,
     };
 
-    const existingInput = stylesProp?.Input as Styles | undefined;
-    const mergedStyles: Styles | undefined = inputStyles
-      ? {
-          ...stylesProp,
-          Input: existingInput
-            ? { ...existingInput, ...inputStyles }
-            : inputStyles,
-        }
-      : stylesProp;
+    const mergedStyles = mergeStyles(
+      stylesProp,
+      // oxlint-disable-next-line tasty/no-runtime-styles-mutation -- forwards the consumer's `inputStyles` to `Input`
+      inputStyles ? { Input: inputStyles } : null,
+    );
 
     const extractedStyles = extractStyles(
       otherProps,
