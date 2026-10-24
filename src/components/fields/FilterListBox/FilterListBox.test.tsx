@@ -1818,29 +1818,25 @@ describe('<FilterListBox />', () => {
         await new Promise((resolve) => setTimeout(resolve, 100));
       });
 
-      // Check that virtualization is active
-      const virtualContainer = container.querySelector(
-        '[style*="height:"][style*="px"]',
-      ) as HTMLElement;
-      expect(virtualContainer).toBeInTheDocument();
-
-      // Verify that the virtual container has some reasonable height (should be substantial for 60 items)
-      const totalHeight = parseInt(virtualContainer?.style.height || '0');
-      // In test environment, height might be 0 or mocked, but in real virtualization it would be substantial
-      expect(totalHeight).toBeGreaterThanOrEqual(0);
+      // Check that virtualization is active: the list carries the total
+      // height of its options as a token
+      const list = container.querySelector('[role="listbox"]') as HTMLElement;
+      // In test environment, the height might be 0 or mocked, but in real
+      // virtualization it would be substantial
+      expect(list.style.getPropertyValue('--list-virtual-height')).toMatch(
+        /^\d+(\.\d+)?px$/,
+      );
 
       // Verify some items are rendered
       const visibleOptions = container.querySelectorAll('[role="option"]');
       expect(visibleOptions.length).toBeGreaterThan(0);
 
-      // Check that items are properly positioned in virtual containers
-      const firstVisibleOption = visibleOptions[0];
-      if (firstVisibleOption) {
-        const itemContainer = firstVisibleOption.closest(
-          '[style*="position: absolute"]',
-        );
-        expect(itemContainer).toBeInTheDocument();
-      }
+      // Check that items are placed at their virtual offset
+      const firstVisibleOption = visibleOptions[0] as HTMLElement;
+      expect(getComputedStyle(firstVisibleOption).position).toBe('absolute');
+      expect(
+        firstVisibleOption.style.getPropertyValue('--option-virtual-offset'),
+      ).toMatch(/^\d+(\.\d+)?px$/);
     }, 15000); // 15 second timeout
 
     it('should maintain correct content structure after filtering', async () => {

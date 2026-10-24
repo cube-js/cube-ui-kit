@@ -10,19 +10,14 @@ import { SIZE_NAME_TO_KEY, SIZES } from '../../../tokens/sizes';
 import { mergeRefs } from '../../../utils/react';
 import { extractStyles } from '../../../utils/styles';
 
-import { TreeElement, TreeScrollContainer } from './styled';
+import { TreeElement, TreeScrollContainer, TreeSizer } from './styled';
 import { buildTreeIndex } from './tree-index';
 import { TreeNode } from './TreeNode';
 import { useCheckboxTree } from './use-checkbox-tree';
 import { useLoadData } from './use-load-data';
 
 import type { Key, Node, Selection } from '@react-types/shared';
-import type {
-  CSSProperties,
-  ForwardedRef,
-  ReactElement,
-  ReactNode,
-} from 'react';
+import type { ForwardedRef, ReactElement, ReactNode } from 'react';
 import type {
   CubeTreeNodeData,
   CubeTreeProps,
@@ -364,19 +359,14 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
   });
 
   const treeTokens = useMemo(
-    () => (height == null ? undefined : { '$tree-height': `${height}px` }),
-    [height],
+    () => ({
+      '$tree-height': height == null ? undefined : `${height}px`,
+      '$tree-padding': `${containerPadding}px`,
+    }),
+    [height, containerPadding],
   );
 
   const totalSize = rowVirtualizer.getTotalSize();
-  const sizerStyle = useMemo<CSSProperties>(
-    () => ({
-      position: 'relative',
-      width: '100%',
-      height: `${totalSize}px`,
-    }),
-    [totalSize],
-  );
 
   /**
    * Each scroll effect tracks its own "last scrolled" target instead
@@ -469,8 +459,10 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
       tokens={treeTokens}
     >
       <TreeScrollContainer ref={mergedScrollRef}>
-        {/* oxlint-disable-next-line react/forbid-dom-props -- the virtualizer measures the scroll height and row offsets */}
-        <div role="presentation" style={sizerStyle}>
+        <TreeSizer
+          role="presentation"
+          tokens={{ '$tree-content-height': `${totalSize}px` }}
+        >
           {rowVirtualizer.getVirtualItems().map((virtualItem) => {
             const node = visibleNodes[virtualItem.index];
             if (!node) return null;
@@ -491,13 +483,7 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
                 size={size}
                 itemProps={itemProps}
                 rowStyles={rowStyles}
-                virtualStyle={{
-                  position: 'absolute',
-                  top: 0,
-                  left: containerPadding,
-                  right: containerPadding,
-                  transform: `translateY(${virtualItem.start}px)`,
-                }}
+                virtualOffset={virtualItem.start}
                 virtualRef={rowVirtualizer.measureElement}
                 virtualIndex={virtualItem.index}
                 menu={treeMenu}
@@ -509,7 +495,7 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
               />
             );
           })}
-        </div>
+        </TreeSizer>
       </TreeScrollContainer>
     </TreeElement>
   );
