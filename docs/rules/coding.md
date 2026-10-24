@@ -74,7 +74,9 @@ Pixel values take a unit or a token chosen by what the value means, not by what 
 
 Transitions and animations take their duration from a token. Leave the duration out to get the transition's own default (`$<name>-transition`, falling back to `$transition`), or name a duration token from `src/tokens/base.ts` (listed in the Usage docs). Derive a dependent timing from its token, such as `(2 * $overlay-transition)`, rather than hardcoding the result. A keyframe loop's length, or a one-off timing that no token's role covers, is an exception with its reason.
 
-Off on purpose: `no-styles-prop` (UI Kit's own components pass `styles` down, and it is public API) and `prefer-shorthand-property` (single-side overrides are deliberate). `valid-custom-property` stays off until its existing hits are cleared.
+Off on purpose: `no-styles-prop` (UI Kit's own components pass `styles` down, and it is public API), `prefer-shorthand-property` (single-side overrides are deliberate) and `no-protected-restyle`. `valid-custom-property` stays off until its existing hits are cleared.
+
+`no-protected-restyle` is for consumers. `protectedComponents` in `tasty.config.ts`, which consumers inherit through `extends`, lists the components a consumer customizes through their props rather than by restyling them. Our own source imports components by relative path, which never matches the list's `source`. When you add a component, decide its side of the list: a layout or typography primitive, or a base meant for extension, joins `exclude`; a container whose content layout is its consumer's call joins the first entry's `include`; anything else is protected by default. `src/tokens/tasty-config.test.ts` lints a consumer project that extends the config, and the Usage docs (Customizing components) describe the contract to consumers.
 
 # Markdown rules
 

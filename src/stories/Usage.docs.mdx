@@ -409,6 +409,40 @@ Component themes are set via the `theme` prop or `theme=name` modifier:
 | `note` | Informational / note states |
 | `current` | No palette of its own — every color is mixed from the inherited text color (`#current`), so the component adopts whatever its container paints with. Supported by `Button`, `Item` (and `ItemButton`, `Item.Action`, `ItemBadge`) |
 
+## Customizing components
+
+Most components are a design contract: customize them through their own props (`type`, `theme`, `size`, …), `tokens` and `mods` rather than by restyling them. The layout and typography primitives (`Element`, `Block`, `Flex`, `Flow`, `Grid`, `Space`, `Prefix`, `Suffix`, `Text`, `TextItem`, `Title`, `Paragraph`, `Typography`), the `Action` base and the icons are the exception: their `styles` are their API.
+
+The package's `tasty.config.ts` lists the other components as `protectedComponents`, and `tasty/no-protected-restyle` from `@tenphi/eslint-plugin-tasty` 1.11.0 or newer reports a restyle of one in your code:
+
+- instance `styles`, and every `*Styles` prop such as `inputStyles`;
+- style props other than the ones that place or size the component (`width`, `height`, `gridArea`, `margin`, `inset`, …). Containers (`Card`, `Panel`, `Content`, `Header`, `Footer` and the `Layout` family) also keep the ones that lay out their content: `padding`, `gap`, `flow`, `place*`, `align*`, `justify*`, `grid*` and `overflow`. Root `styles` that sets only allowed props passes too;
+- `tasty()` wrappers that restyle a protected component, and wrappers of those wrappers.
+
+To turn it on, extend the package's config and enable the rule:
+
+```ts
+// tasty.config.ts
+export default { extends: '@cube-dev/ui-kit' };
+```
+
+```jsonc
+// .oxlintrc.json
+{
+  "jsPlugins": [{ "name": "tasty", "specifier": "@tenphi/eslint-plugin-tasty" }],
+  "rules": { "tasty/no-protected-restyle": "warn" },
+}
+```
+
+An intended override takes a disable comment with its reason on the line before it:
+
+```tsx
+// oxlint-disable-next-line tasty/no-protected-restyle -- the empty state's call to action takes the brand fill
+<Button fill="#purple" />
+```
+
+With this rule on, `tasty/no-styles-prop` can stay off, so the primitives keep their `styles`.
+
 ## Recipes
 
 Reusable style presets applied via the `recipe` style property. Defined in `src/components/Root.tsx`.

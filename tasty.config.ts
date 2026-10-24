@@ -27,6 +27,74 @@ export default {
    */
   importSources: ['@cube-dev/ui-kit'],
 
+  /**
+   * Components a consumer customizes through their props (`type`, `theme`,
+   * `size`, …) rather than by restyling them. `tasty/no-protected-restyle`
+   * reports their instance `styles` and `*Styles` props, appearance style
+   * props, and `tasty()` wrappers that restyle them, so an intended override
+   * carries a reasoned disable. Every export is protected except the layout
+   * and typography primitives and the bases meant for extension, whose
+   * `styles` are their API. Style props that place or size the root stay
+   * allowed, and containers also keep the props that lay out their content.
+   * The first matching entry decides, so the containers come first. Our own
+   * source imports components by relative path, which never matches
+   * `source`, so the rule holds consumers only.
+   */
+  protectedComponents: [
+    {
+      source: '@cube-dev/ui-kit',
+      // `Layout` covers its sub-components, such as `Layout.Content`.
+      include: ['Card', 'Panel', 'Content', 'Header', 'Footer', 'Layout'],
+      allowedStyleProps: [
+        'position',
+        'dimension',
+        'flow',
+        'gap',
+        'columnGap',
+        'rowGap',
+        'place',
+        'placeItems',
+        'placeContent',
+        'align',
+        'alignItems',
+        'alignContent',
+        'justify',
+        'justifyItems',
+        'justifyContent',
+        'gridColumns',
+        'gridRows',
+        'gridTemplate',
+        'gridAreas',
+        'padding',
+        'blockPadding',
+        'inlinePadding',
+        'overflow',
+      ],
+    },
+    {
+      source: '@cube-dev/ui-kit',
+      exclude: [
+        'Element',
+        'Block',
+        'Flex',
+        'Flow',
+        'Grid',
+        'Space',
+        'Prefix',
+        'Suffix',
+        'Text',
+        'TextItem',
+        'Title',
+        'Paragraph',
+        'Typography',
+        'Action',
+        'Icon',
+        '*Icon',
+      ],
+      allowedStyleProps: ['position', 'dimension'],
+    },
+  ],
+
   tokens: [
     // Declared in src/tasty-augment.d.ts but previously absent here, so the
     // ESLint plugin reported them as unknown once story files started being
