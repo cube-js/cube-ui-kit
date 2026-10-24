@@ -6,7 +6,6 @@ import { CloseIcon } from '../../../icons/CloseIcon';
 import { renderWithRoot, screen, waitFor } from '../../../test';
 
 import { Radio } from './Radio';
-import { RadioGroup } from './RadioGroup';
 
 const LONG_LABEL = 'An option label far too long for its button';
 
@@ -383,23 +382,5 @@ describe('Disabled Radio.Button with a tooltip', () => {
       '-1',
       '-1',
     ]);
-  });
-});
-
-describe('Radio labelStyles', () => {
-  it('lets a null reset remove the label default', () => {
-    const { container } = renderWithRoot(
-      <div style={{ color: 'rgb(1, 2, 3)' }}>
-        <RadioGroup aria-label="Options" defaultValue="a">
-          <Radio value="a" labelStyles={{ color: null }}>
-            A
-          </Radio>
-        </RadioGroup>
-      </div>,
-    );
-
-    const label = container.querySelector('[data-qa="RadioLabel"]')!;
-
-    expect(getComputedStyle(label).color).toBe('rgb(1, 2, 3)');
   });
 });

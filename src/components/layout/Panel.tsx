@@ -14,7 +14,7 @@ import {
 } from '@tenphi/tasty';
 import { ForwardedRef, forwardRef, ReactNode } from 'react';
 
-import { extractStyles, mergeStyleLayers } from '../../utils/styles';
+import { extractStyles } from '../../utils/styles';
 
 const PanelElement = tasty({
   as: 'section',
@@ -133,9 +133,12 @@ function Panel(props: CubePanelProps, ref: ForwardedRef<HTMLDivElement>) {
 
   // The inner style props go to the inner element; the remaining style props
   // go to the outer one. An inner prop left `undefined` keeps `innerStyles`.
-  innerStyles = mergeStyleLayers(
+  innerStyles = extractStyles(
+    otherProps,
+    STYLES,
     innerStyles,
-    extractStyles(otherProps, STYLES),
+    undefined,
+    STYLES.filter((style) => otherProps[style] === undefined),
   );
   styles = extractStyles(
     otherProps,
