@@ -716,7 +716,7 @@ describe('<Radio /> and <RadioGroup />', () => {
   });
 
   it('lets a null in labelStyles remove the label default', () => {
-    const { container } = renderWithRoot(
+    const { getByTestId } = renderWithRoot(
       <div style={{ color: 'rgb(1, 2, 3)' }}>
         <Radio.Group aria-label="Options" defaultValue="a">
           <Radio value="a" labelStyles={{ color: null }}>
@@ -726,8 +726,8 @@ describe('<Radio /> and <RadioGroup />', () => {
       </div>,
     );
 
-    const label = container.querySelector('[data-qa="RadioLabel"]')!;
-
-    expect(getComputedStyle(label).color).toBe('rgb(1, 2, 3)');
+    expect(getComputedStyle(getByTestId('RadioLabel')).color).toBe(
+      'rgb(1, 2, 3)',
+    );
   });
 });

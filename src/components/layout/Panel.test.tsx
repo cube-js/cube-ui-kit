@@ -28,6 +28,24 @@ describe('<Panel />', () => {
       expect(getComputedStyle(inner).padding).toBe('2em');
     });
 
+    it('replace the same key in innerStyles with a state map', () => {
+      // Without a `''` key, a merge would keep `innerStyles`' `2em`; replaced,
+      // the inner element has no padding outside `card`.
+      render(
+        <Panel
+          qa="panel"
+          padding={{ card: '1em' }}
+          innerStyles={{ padding: '2em' }}
+        >
+          content
+        </Panel>,
+      );
+
+      const inner = screen.getByTestId('panel').firstElementChild!;
+
+      expect(getComputedStyle(inner).padding).toBe('0');
+    });
+
     it('apply a falsy value to the inner element', () => {
       render(
         <Panel qa="panel" padding={0} innerStyles={{ padding: '2em' }}>
