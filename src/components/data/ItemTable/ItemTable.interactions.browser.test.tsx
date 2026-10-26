@@ -54,15 +54,10 @@ async function enterTable() {
 }
 
 /** CDP coordinates include Vitest's iframe and its possible scale. */
-async function pressAt(
-  x: number,
-  y: number,
-  button: 'left' | 'middle' = 'left',
-  modifiers = 0,
-) {
+function nativePosition(x: number, y: number) {
   const frame = window.frameElement as HTMLElement | null;
   const bounds = frame?.getBoundingClientRect();
-  const position = {
+  return {
     x:
       (bounds?.left ?? 0) +
       (x + (frame?.clientLeft ?? 0)) *
@@ -72,6 +67,15 @@ async function pressAt(
       (y + (frame?.clientTop ?? 0)) *
         (bounds && frame ? bounds.height / frame.offsetHeight : 1),
   };
+}
+
+async function pressAt(
+  x: number,
+  y: number,
+  button: 'left' | 'middle' = 'left',
+  modifiers = 0,
+) {
+  const position = nativePosition(x, y);
   await act(async () => {
     await cdp().send('Input.dispatchMouseEvent', {
       type: 'mousePressed',
@@ -87,6 +91,26 @@ async function pressAt(
       buttons: 0,
       clickCount: 1,
       modifiers,
+      ...position,
+    });
+  });
+}
+
+async function wheelOver(element: HTMLElement, deltaY: number) {
+  const bounds = element.getBoundingClientRect();
+  const position = nativePosition(
+    bounds.left + bounds.width / 2,
+    bounds.top + bounds.height / 2,
+  );
+  await act(async () => {
+    await cdp().send('Input.dispatchMouseEvent', {
+      type: 'mouseMoved',
+      ...position,
+    });
+    await cdp().send('Input.dispatchMouseEvent', {
+      type: 'mouseWheel',
+      deltaX: 0,
+      deltaY,
       ...position,
     });
   });
@@ -264,6 +288,7 @@ describe('ItemTable flat virtual focus', () => {
   function virtualTable(data = ROWS) {
     return (
       <>
+        <button type="button">Before</button>
         <ItemTable
           data={data}
           columns={COLUMNS}
@@ -299,49 +324,67 @@ describe('ItemTable flat virtual focus', () => {
     ).toBeLessThan(ROWS.length);
   });
 
-  it('does not apply activation or a menu key to a stale virtual row', async () => {
-    const onRowAction = vi.fn();
-    renderWithRoot(
-      <ItemTable
-        data={ROWS}
-        columns={COLUMNS}
-        onRowAction={onRowAction}
-        rowContextMenu="context-only"
-        rowMenu={(record) => (
-          <Menu.Item key="open">Open {record.name}</Menu.Item>
-        )}
-        height="140px"
-        isVirtualized
-        overscan={0}
-        paginationMode="off"
-      />,
-    );
-    await vi.waitFor(() => expect(row('r0')).toBeInTheDocument());
-    await act(() => row('r0').focus());
-    await act(() => {
-      rapidDown(12);
-      for (const key of ['Enter', 'F10']) {
-        document.activeElement?.dispatchEvent(
-          new KeyboardEvent('keydown', {
-            key,
-            shiftKey: key === 'F10',
-            bubbles: true,
-          }),
+  it.each([false, true])(
+    'does not apply activation or a menu key to a stale virtual row (variable height: %s)',
+    async (variableHeight) => {
+      const onRowAction = vi.fn();
+      const data = variableHeight
+        ? ROWS.map((record, index) =>
+            index < 2
+              ? { ...record, description: LONG_TEXT.repeat(4) }
+              : record,
+          )
+        : ROWS;
+      const columns = variableHeight
+        ? [COLUMNS[0], { ...COLUMNS[1], autoHeight: true }]
+        : COLUMNS;
+      renderWithRoot(
+        <ItemTable
+          data={data}
+          columns={columns}
+          onRowAction={onRowAction}
+          rowContextMenu="context-only"
+          rowMenu={(record) => (
+            <Menu.Item key="open">Open {record.name}</Menu.Item>
+          )}
+          height="140px"
+          isVirtualized
+          overscan={0}
+          paginationMode="off"
+        />,
+      );
+      await vi.waitFor(() => expect(row('r0')).toBeInTheDocument());
+      if (variableHeight) {
+        await vi.waitFor(() =>
+          expect(row('r0').getBoundingClientRect().height).toBeGreaterThan(80),
         );
       }
-    });
-    await vi.waitFor(() => expect(row('r12')).toHaveFocus());
-    expect(onRowAction).not.toHaveBeenCalled();
-    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
-    await key('{Enter}');
-    expect(onRowAction).toHaveBeenCalledExactlyOnceWith(ROWS[12], 'r12');
-    await key('{Shift>}{F10}{/Shift}');
-    await vi.waitFor(() =>
-      expect(
-        screen.getByRole('menuitem', { name: 'Open Record 12' }),
-      ).toHaveFocus(),
-    );
-  });
+      await act(() => row('r0').focus());
+      await act(() => {
+        rapidDown(12);
+        for (const key of ['Enter', 'F10']) {
+          document.activeElement?.dispatchEvent(
+            new KeyboardEvent('keydown', {
+              key,
+              shiftKey: key === 'F10',
+              bubbles: true,
+            }),
+          );
+        }
+      });
+      await vi.waitFor(() => expect(row('r12')).toHaveFocus());
+      expect(onRowAction).not.toHaveBeenCalled();
+      expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+      await key('{Enter}');
+      expect(onRowAction).toHaveBeenCalledExactlyOnceWith(ROWS[12], 'r12');
+      await key('{Shift>}{F10}{/Shift}');
+      await vi.waitFor(() =>
+        expect(
+          screen.getByRole('menuitem', { name: 'Open Record 12' }),
+        ).toHaveFocus(),
+      );
+    },
+  );
 
   it('cancels pending focus when the user leaves the table', async () => {
     renderWithRoot(virtualTable());
@@ -354,6 +397,47 @@ describe('ItemTable flat virtual focus', () => {
     // Let the queued virtualizer render/focus attempt settle before checking.
     await new Promise((resolve) => setTimeout(resolve, 100));
     expect(screen.getByRole('button', { name: 'Outside' })).toHaveFocus();
+  });
+
+  it('keeps pointer scrolling when the focused row leaves the virtual window', async () => {
+    renderWithRoot(virtualTable());
+    await enterTable();
+    const scroller = grid().parentElement!;
+    await wheelOver(scroller, 720);
+    await vi.waitFor(() => expect(row('r0')).not.toBeInTheDocument());
+    await vi.waitFor(() => expect(scroller).toHaveFocus());
+    // Include the virtualizer's scrolling-rest commit, which must not restore
+    // the old row and move the viewport back to its former position.
+    await act(() => new Promise<void>((resolve) => setTimeout(resolve, 200)));
+    expect(scroller.scrollTop).toBeGreaterThan(400);
+    const firstMounted = grid().querySelector<HTMLTableRowElement>(
+      'tbody tr[data-element="Row"][data-key]',
+    )!;
+    await key('{ArrowDown}');
+    expect(firstMounted).toHaveFocus();
+    expect(scroller.scrollTop).toBeGreaterThan(400);
+  });
+
+  it('tabs into the visible window after pointer scrolling past the resting row', async () => {
+    renderWithRoot(virtualTable());
+    await enterTable();
+    await key('{ArrowDown}');
+    expect(row('r1')).toHaveFocus();
+    const outside = screen.getByRole('button', { name: 'Outside' });
+    await act(() => outside.focus());
+    const scroller = grid().parentElement!;
+    await wheelOver(scroller, 720);
+    await vi.waitFor(() => expect(row('r1')).not.toBeInTheDocument());
+    await act(() => new Promise<void>((resolve) => setTimeout(resolve, 200)));
+    expect(outside).toHaveFocus();
+    const candidate = grid().querySelector<HTMLTableRowElement>(
+      'tbody tr[data-element="Row"][tabindex="0"]',
+    );
+    expect(candidate).not.toBeNull();
+    await act(() => screen.getByRole('button', { name: 'Before' }).focus());
+    await key('{Tab}');
+    expect(candidate).toHaveFocus();
+    expect(scroller.scrollTop).toBeGreaterThan(400);
   });
 
   it('leaves a reachable row after the focused record is deleted', async () => {
@@ -506,6 +590,11 @@ describe('ItemTable native row links', () => {
                   >
                     Ignored control
                   </button>
+                  <div style={{ pointerEvents: 'none' }}>
+                    <button type="button" onClick={onControl}>
+                      Inherited ignored control
+                    </button>
+                  </div>
                 </>
               ),
             },
@@ -543,6 +632,20 @@ describe('ItemTable native row links', () => {
       ignoredBounds.top + ignoredBounds.height / 2,
     );
     expect(navigate).toHaveBeenCalledTimes(2);
+    expect(onControl).toHaveBeenCalledTimes(3);
+    const inherited = screen.getByRole('button', {
+      name: 'Inherited ignored control',
+    });
+    expect(getComputedStyle(inherited).pointerEvents).toBe('none');
+    await act(() =>
+      inherited.scrollIntoView({ block: 'nearest', inline: 'center' }),
+    );
+    const inheritedBounds = inherited.getBoundingClientRect();
+    await pressAt(
+      inheritedBounds.left + inheritedBounds.width / 2,
+      inheritedBounds.top + inheritedBounds.height / 2,
+    );
+    expect(navigate).toHaveBeenCalledTimes(3);
     expect(onControl).toHaveBeenCalledTimes(3);
   });
 });

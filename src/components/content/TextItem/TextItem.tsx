@@ -91,6 +91,10 @@ const TextItemElement = tasty({
   variants: {
     plain: TEXT_ITEM_STYLES,
     table: mergeStyles(TEXT_ITEM_STYLES, { preset: 't3' }),
+    nativePlain: mergeStyles(TEXT_ITEM_STYLES, NATIVE_LINK_STYLES),
+    nativeTable: mergeStyles(TEXT_ITEM_STYLES, NATIVE_LINK_STYLES, {
+      preset: 't3',
+    }),
   },
 });
 
@@ -112,6 +116,21 @@ const TEXT_ITEM_STYLE_KEYS = Object.keys(TEXT_ITEM_STYLES) as Array<
   keyof typeof TEXT_ITEM_STYLES
 >;
 
+/** Style merging copies state maps, so identity cannot recognize the defaults. */
+function matchesNativeState(value: unknown, expected: string | number) {
+  if (value == null || typeof value !== 'object' || Array.isArray(value))
+    return false;
+
+  const states = value as Record<string, unknown>;
+  return (
+    Object.keys(states).length === 2 &&
+    Object.hasOwn(states, '') &&
+    Object.hasOwn(states, 'native-link') &&
+    states[''] === undefined &&
+    states['native-link'] === expected
+  );
+}
+
 function getStaticVariant(styles: Styles) {
   const count = Object.keys(styles).length;
 
@@ -124,6 +143,17 @@ function getStaticVariant(styles: Styles) {
   if (count === TEXT_ITEM_STYLE_KEYS.length) return 'plain';
   if (count === TEXT_ITEM_STYLE_KEYS.length + 1 && styles.preset === 't3')
     return 'table';
+
+  if (
+    !matchesNativeState(styles.position, 'relative') ||
+    !matchesNativeState(styles.zIndex, 1)
+  ) {
+    return;
+  }
+
+  if (count === TEXT_ITEM_STYLE_KEYS.length + 2) return 'nativePlain';
+  if (count === TEXT_ITEM_STYLE_KEYS.length + 3 && styles.preset === 't3')
+    return 'nativeTable';
 }
 
 /** Own the DOM ref outside the tooltip's render prop so Compiler can retain it. */

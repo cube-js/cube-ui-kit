@@ -56,10 +56,11 @@ export function TableRowLink({
       const anchor = event.currentTarget;
       const isOrdinaryClick = shouldClientNavigate(anchor, event);
 
-      // Preserve Action's history and smooth hash contracts. Modified hash
-      // gestures still belong to the browser, like all other native links.
+      // Preserve Action's history, reload and smooth hash contracts. Modified
+      // hash gestures still belong to the browser, like other native links.
       if (
         isHistoryNavigation ||
+        (nativeRoute && cleanTo === '' && isOrdinaryClick) ||
         (isHashNavigation && isOrdinaryClick && !newTab)
       ) {
         event.preventDefault();

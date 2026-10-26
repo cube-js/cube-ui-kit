@@ -407,6 +407,9 @@ describe('ItemTable implicit row header', () => {
       );
       expect(within(row('r0')).queryByRole('rowheader')).toBeNull();
       expect(within(row('r0')).queryByRole('link')).toBeNull();
+      expect(
+        row('r0').querySelectorAll('a, [data-element="NativeLink"]'),
+      ).toHaveLength(0);
       expect(row('r0')).not.toHaveAttribute('tabindex', '0');
     },
   );

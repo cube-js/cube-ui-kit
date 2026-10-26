@@ -80,6 +80,7 @@ import type {
 import type { TreeState } from 'react-stately';
 import type { NavigateArg } from '../../../providers/navigation.types';
 import type { ColorThemeConfig } from '../../../tokens/color-theme';
+import type { CubeMenuTriggerProps } from '../../actions/Menu/MenuTrigger';
 import type { ColumnSortState } from './column-header';
 import type { TableTreeNode } from './table-tree';
 import type {
@@ -98,16 +99,47 @@ import type {
 import type { useCellSelection } from './use-cell-selection';
 import type { CubeTableSelectionState } from './use-table-selection';
 
-// The same zero-specificity interaction default as Item's native row slots:
-// custom content passes through to the row link; its controls keep their hits.
+// A zero-specificity layer keeps custom controls above the stretched link.
+// Consumer positioning and pointer-event inheritance remain authoritative.
 const CELL_CONTROL_SELECTOR =
   'a,button,input,select,textarea,label[for],label:has(button,input,select,textarea),[tabindex],[contenteditable=""],[contenteditable="true"],[contenteditable="plaintext-only"],[role="button"],[role="checkbox"],[role="switch"],[role="menuitem"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="radio"],[role="textbox"],[role="combobox"],[role="slider"],[role="spinbutton"],[role="link"]';
 const NATIVE_CELL_CONTROL_SELECTOR = `:where([data-element=CellContent][data-native-row-content]) :where(${CELL_CONTROL_SELECTOR})`;
-const NATIVE_CELL_CONTROL_STYLES: Styles = { pointerEvents: 'auto' };
+const NATIVE_CELL_CONTROL_STYLES: Styles = { position: 'relative', zIndex: 1 };
 
 function isCellControl(target: Element, row: Element) {
   const control = target.closest(CELL_CONTROL_SELECTOR);
   return control != null && control !== row;
+}
+
+type FlatRowFocus = { key: Key; index: number };
+
+function flatRowTabStop(
+  restingRow: FlatRowFocus | null,
+  visibleRow: FlatRowFocus | null,
+  mountedRows: readonly { index: number }[] | undefined,
+  range: { startIndex: number; endIndex: number } | null,
+) {
+  if (!mountedRows || !restingRow) return restingRow;
+  if (
+    range &&
+    restingRow.index >= range.startIndex &&
+    restingRow.index <= range.endIndex
+  )
+    return restingRow;
+  return visibleRow &&
+    mountedRows.some((item) => item.index === visibleRow.index)
+    ? visibleRow
+    : null;
+}
+
+function scrollerTabStop(
+  hasCellSelection: boolean | undefined,
+  hasRowNavigation: boolean,
+  restingRow: FlatRowFocus | null,
+  tabStopRow: FlatRowFocus | null,
+) {
+  if (hasRowNavigation && restingRow && !tabStopRow) return 0;
+  return hasCellSelection || hasRowNavigation ? -1 : undefined;
 }
 
 /** Visual/behavioural overrides a table adapter may attach to a single row. */
@@ -1225,7 +1257,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
               <ItemAction
                 // Flat rows expose their resting row's menu through Tab.
                 // Tree rows retain React Aria's in-row arrow navigation.
-                tabIndex={!tree && restingRow?.key === rowKey ? 0 : -1}
+                tabIndex={!tree && tabStopRow?.key === rowKey ? 0 : -1}
                 icon={<MoreIcon />}
                 aria-label={t('itemTable.rowActions', 'Row actions')}
                 {...rowMenuTriggerProps}
@@ -1639,9 +1671,10 @@ export function TableView<T = any>(props: TableViewProps<T>) {
         )}
       </tr>
     );
-    const link = selection?.isRowDisabled(rowKey)
-      ? undefined
-      : rowLink?.(row, index);
+    const link =
+      !hasRowLinkColumn || selection?.isRowDisabled(rowKey)
+        ? undefined
+        : rowLink?.(row, index);
     return (
       <TableRowLink key={`pinned-${edge}-${rowKey}`} to={link}>
         {render}
@@ -1713,7 +1746,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
       // Only the resting row takes a tab stop; the rest are reached with the
       // arrow keys. Off entirely when nothing on the row is operable.
       tabIndex: hasFlatRowNavigation
-        ? !isDisabled && rowKey === restingRow?.key
+        ? !isDisabled && rowKey === tabStopRow?.key
           ? 0
           : -1
         : undefined,
@@ -1792,9 +1825,10 @@ export function TableView<T = any>(props: TableViewProps<T>) {
         }
       </TableRow>
     );
-    const link = selection?.isRowDisabled(rowKey)
-      ? undefined
-      : rowLink?.(row, rowIndex);
+    const link =
+      !hasRowLinkColumn || selection?.isRowDisabled(rowKey)
+        ? undefined
+        : rowLink?.(row, rowIndex);
     return (
       <TableRowLink key={rowProps['data-key']} to={link}>
         {render}
@@ -1899,6 +1933,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
     // cheap.
     overscan,
   });
+  const virtualItems = shouldVirtualize ? virtualizer.getVirtualItems() : [];
 
   // Key identity no longer resets estimates on every render. Size changes do.
   useLayoutEffect(() => {
@@ -2046,6 +2081,21 @@ export function TableView<T = any>(props: TableViewProps<T>) {
     ? (focusableRowFrom(Math.max(restingIndex, 0), 1) ??
       focusableRowFrom(restingIndex, -1))
     : null;
+  // Keep logical focus through keyboard moves, but offer a mounted Tab entry
+  // after pointer scrolling has moved that record outside the visible range.
+  const visibleRow =
+    shouldVirtualize && virtualItems.length && hasFlatRowNavigation
+      ? focusableRowFrom(
+          virtualizer.range?.startIndex ?? virtualItems[0].index,
+          1,
+        )
+      : null;
+  const tabStopRow = flatRowTabStop(
+    restingRow,
+    visibleRow,
+    shouldVirtualize ? virtualItems : undefined,
+    virtualizer.range,
+  );
 
   function mountedRow(key: Key) {
     return Array.from(
@@ -2055,15 +2105,20 @@ export function TableView<T = any>(props: TableViewProps<T>) {
     ).find((element) => element.dataset.key === String(key));
   }
 
-  function focusFlatRow(next: { key: Key; index: number } | null) {
+  function focusFlatRow(next: FlatRowFocus | null) {
     if (!next) return;
     pendingRowFocus.current = next.key;
     setFocusedRow((current) =>
       current.key === next.key && current.index === next.index ? current : next,
     );
     selection?.selectionManager.setFocusedKey(next.key);
-    if (shouldVirtualize)
-      virtualizer.scrollToIndex(next.index, { align: 'auto' });
+    if (shouldVirtualize) {
+      // scrollToIndex retains asynchronous retries for each old destination.
+      // Rapid row keys need one immediate offset; the pending focus retry
+      // completes against the latest mounted window instead.
+      const offset = virtualizer.getOffsetForIndex(next.index, 'auto')?.[0];
+      if (offset != null) virtualizer.scrollToOffset(offset);
+    }
     const target = mountedRow(next.key);
     if (target) {
       pendingRowFocus.current = null;
@@ -2087,8 +2142,16 @@ export function TableView<T = any>(props: TableViewProps<T>) {
       pendingRowFocus.current = null;
       return;
     }
-    const wasRemoved =
+    const wasUnmounted =
       pendingRowFocus.current == null && previous && !previous.isConnected;
+    if (wasUnmounted && focusedRowIndex >= 0) {
+      // A virtual window can unmount a focused DOM row without removing the
+      // record. Park focus without pulling a pointer scroll back to that row.
+      ownedRow.current = null;
+      scrollerRef.current?.focus({ preventScroll: true });
+      return;
+    }
+    const wasRemoved = wasUnmounted && focusedRowIndex < 0;
     if (pendingRowFocus.current == null && !wasRemoved) return;
 
     const previousIndex = wasRemoved
@@ -2098,6 +2161,8 @@ export function TableView<T = any>(props: TableViewProps<T>) {
       ? (focusableRowFrom(Math.min(previousIndex, rows.length - 1), 1) ??
         focusableRowFrom(Math.min(previousIndex, rows.length - 1), -1))
       : restingRow;
+    // Recompute only the current pending destination as row measurements
+    // settle; no asynchronous requests remain for superseded row keys.
     if (next) focusFlatRow(next);
     else {
       pendingRowFocus.current = null;
@@ -2201,9 +2266,11 @@ export function TableView<T = any>(props: TableViewProps<T>) {
    * positions from the event's viewport coordinates, which is what a
    * pointer-anchored menu wants anyway.
    * ──────────────────────────────────────────────────────────────────────── */
-  const contextMenu = useContextMenu<HTMLDivElement, any>(Menu, {
-    placement: 'bottom start',
-  });
+  const contextMenu = useContextMenu<
+    HTMLDivElement,
+    any,
+    Omit<CubeMenuTriggerProps, 'children'>
+  >(Menu, { placement: 'bottom start' });
 
   function rememberRowMenuOrigin(
     key: Key,
@@ -2372,7 +2439,46 @@ export function TableView<T = any>(props: TableViewProps<T>) {
       : { row, index, key: bodyRowKey(row, index), element };
   }
 
-  const virtualItems = shouldVirtualize ? virtualizer.getVirtualItems() : [];
+  function handleFlatRowNavigation(
+    event: ReactKeyboardEvent<HTMLDivElement>,
+    found: ReturnType<typeof rowFromEvent>,
+  ) {
+    if (
+      !hasFlatRowNavigation ||
+      event.altKey ||
+      event.ctrlKey ||
+      event.metaKey ||
+      event.shiftKey ||
+      dragState?.draggingKeys?.size
+    )
+      return false;
+    if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key))
+      return false;
+
+    const target = event.target as HTMLElement;
+    if (target === event.currentTarget) {
+      switch (event.key) {
+        case 'Home':
+          focusFlatRow(focusableRowFrom(0, 1));
+          break;
+        case 'End':
+          focusFlatRow(focusableRowFrom(rows.length - 1, -1));
+          break;
+        default:
+          focusFlatRow(tabStopRow ?? restingRow);
+      }
+    } else if (found && target === found.element) {
+      moveRowFocus(found.index, event.key);
+    } else if (
+      event.key === 'ArrowDown' &&
+      target.matches('th[data-element="HeaderCell"]')
+    ) {
+      focusFlatRow(tabStopRow ?? restingRow);
+    } else return false;
+    event.preventDefault();
+    return true;
+  }
+
   const paddingTop = virtualItems.length ? virtualItems[0].start : 0;
   const paddingBottom = virtualItems.length
     ? virtualizer.getTotalSize() - virtualItems[virtualItems.length - 1].end
@@ -2649,9 +2755,12 @@ export function TableView<T = any>(props: TableViewProps<T>) {
         ref={handleScrollerRef}
         // Focusable only programmatically: a cell press moves focus here so the
         // range's shortcuts land, but the grid stays a single tab stop.
-        tabIndex={
-          cellSelection?.isEnabled || hasFlatRowNavigation ? -1 : undefined
-        }
+        tabIndex={scrollerTabStop(
+          cellSelection?.isEnabled,
+          hasFlatRowNavigation,
+          restingRow,
+          tabStopRow,
+        )}
         onFocusCapture={(event) => {
           if (!hasFlatRowNavigation) return;
           const found = rowFromEvent(event.target);
@@ -2692,31 +2801,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
             event.stopPropagation();
             return;
           }
-          if (
-            hasFlatRowNavigation &&
-            !event.altKey &&
-            !event.ctrlKey &&
-            !event.metaKey &&
-            !event.shiftKey &&
-            !dragState?.draggingKeys?.size
-          ) {
-            if (
-              isRowTarget &&
-              ['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)
-            ) {
-              event.preventDefault();
-              moveRowFocus(found.index, event.key);
-              return;
-            }
-            if (
-              event.key === 'ArrowDown' &&
-              target.matches('th[data-element="HeaderCell"]')
-            ) {
-              event.preventDefault();
-              focusFlatRow(restingRow);
-              return;
-            }
-          }
+          if (handleFlatRowNavigation(event, found)) return;
           // Shift+F10 is the standard way to reach a context menu from the
           // keyboard, and the only way when there is no `⋮` trigger.
           if (event.key === 'F10' && event.shiftKey && isMenuEnabled) {
