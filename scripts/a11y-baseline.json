@@ -15,7 +15,7 @@
     "label-title-only": 2,
     "nested-interactive": 9,
     "scrollable-region-focusable": 15,
-    "target-size": 243
+    "target-size": 333
   },
   "stories": {
     "actions-banner--stacked": { "color-contrast": 2 },
@@ -193,44 +193,74 @@
     "forms-commandtextarea--with-sections": { "aria-allowed-role": 1 },
     "forms-complexform--complex-form-side-label": {
       "color-contrast": 1,
-      "nested-interactive": 1
+      "nested-interactive": 1,
+      "target-size": 2
     },
     "forms-complexform--complex-form-split-label": {
       "color-contrast": 1,
-      "nested-interactive": 1
+      "nested-interactive": 1,
+      "target-size": 2
     },
     "forms-complexform--default": {
       "color-contrast": 1,
-      "nested-interactive": 1
+      "nested-interactive": 1,
+      "target-size": 2
     },
-    "forms-dateinput--default": { "color-contrast": 3 },
-    "forms-dateinput--small": { "color-contrast": 3 },
-    "forms-dateinput--validation": { "color-contrast": 6 },
-    "forms-dateinput--with-limited-range": { "color-contrast": 3 },
+    "forms-dateinput--default": { "color-contrast": 3, "target-size": 2 },
+    "forms-dateinput--small": { "color-contrast": 3, "target-size": 2 },
+    "forms-dateinput--validation": { "color-contrast": 6, "target-size": 4 },
+    "forms-dateinput--with-default-value": { "target-size": 2 },
+    "forms-dateinput--with-limited-range": {
+      "color-contrast": 3,
+      "target-size": 2
+    },
     "forms-dateinput--with-locale": { "color-contrast": 3, "target-size": 2 },
-    "forms-dateinput--with-second-granularity": { "target-size": 3 },
-    "forms-datepicker--default": { "color-contrast": 3 },
-    "forms-datepicker--small": { "color-contrast": 3 },
-    "forms-datepicker--validation": { "color-contrast": 6 },
-    "forms-datepicker--with-limited-range": { "color-contrast": 3 },
+    "forms-dateinput--with-second-granularity": { "target-size": 5 },
+    "forms-datepicker--default": { "color-contrast": 3, "target-size": 2 },
+    "forms-datepicker--small": { "color-contrast": 3, "target-size": 2 },
+    "forms-datepicker--validation": { "color-contrast": 6, "target-size": 4 },
+    "forms-datepicker--with-default-value": { "target-size": 2 },
+    "forms-datepicker--with-default-value-open": { "target-size": 2 },
+    "forms-datepicker--with-limited-range": {
+      "color-contrast": 3,
+      "target-size": 2
+    },
     "forms-datepicker--with-locale": { "color-contrast": 3, "target-size": 2 },
-    "forms-daterangepicker--default": { "color-contrast": 6 },
-    "forms-daterangepicker--small": { "color-contrast": 6 },
-    "forms-daterangepicker--validation": { "color-contrast": 12 },
+    "forms-daterangepicker--default": { "color-contrast": 6, "target-size": 4 },
+    "forms-daterangepicker--small": { "color-contrast": 6, "target-size": 4 },
+    "forms-daterangepicker--validation": {
+      "color-contrast": 12,
+      "target-size": 8
+    },
+    "forms-daterangepicker--with-default-value": { "target-size": 4 },
+    "forms-daterangepicker--with-default-value-open": { "target-size": 4 },
     "forms-daterangepicker--with-locale": {
       "color-contrast": 6,
       "target-size": 4
     },
-    "forms-daterangepicker--with-second-granularity": { "target-size": 6 },
-    "forms-daterangeseparatedpicker--default": { "color-contrast": 6 },
-    "forms-daterangeseparatedpicker--small": { "color-contrast": 6 },
-    "forms-daterangeseparatedpicker--validation": { "color-contrast": 12 },
+    "forms-daterangepicker--with-second-granularity": { "target-size": 10 },
+    "forms-daterangeseparatedpicker--default": {
+      "color-contrast": 6,
+      "target-size": 4
+    },
+    "forms-daterangeseparatedpicker--small": {
+      "color-contrast": 6,
+      "target-size": 4
+    },
+    "forms-daterangeseparatedpicker--validation": {
+      "color-contrast": 12,
+      "target-size": 8
+    },
+    "forms-daterangeseparatedpicker--with-default-value": { "target-size": 4 },
+    "forms-daterangeseparatedpicker--with-default-value-open": {
+      "target-size": 4
+    },
     "forms-daterangeseparatedpicker--with-locale": {
       "color-contrast": 6,
       "target-size": 4
     },
     "forms-daterangeseparatedpicker--with-second-granularity": {
-      "target-size": 6
+      "target-size": 10
     },
     "forms-fieldwrapper--backward-compatibility-message": {
       "color-contrast": 1

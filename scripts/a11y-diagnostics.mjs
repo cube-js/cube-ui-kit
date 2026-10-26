@@ -81,6 +81,15 @@ const OFF_RULES = [
 
 const IMPACTS = ['critical', 'serious', 'moderate', 'minor'];
 
+/**
+ * CI and Chromatic render on Linux, and the baseline holds Linux's counts.
+ * Text set in a system font stack (`system-ui`, `ui-monospace`) gets other
+ * fonts elsewhere, so a geometry rule can count differently: the DateInput
+ * segments sit 24px apart on macOS and closer on Linux, so `target-size`
+ * passes on one and fails on the other.
+ */
+const BASELINE_PLATFORM = 'linux';
+
 // ─── In the page ─────────────────────────────────────────────────────────────
 
 /**
@@ -437,6 +446,11 @@ async function main() {
 
   const stories = readStories(filter);
   console.log(`Running axe-core ${axeVersion} on ${stories.length} stories …`);
+  if (process.platform !== BASELINE_PLATFORM) {
+    console.warn(
+      `The baseline holds the counts CI sees on Linux. On ${process.platform}, text in system font stacks lays out differently, so geometry rules such as target-size can count differently here. Where this run and CI disagree, record CI's counts; the failing job prints each one.`,
+    );
+  }
 
   let results = await audit(stories, concurrency);
   const ids = stories.map((s) => s.id);
@@ -560,7 +574,11 @@ async function main() {
 
   if (shrunk.length) {
     console.log(
-      `\n${shrunk.length} rules now fail on fewer elements than the baseline. Lock that in with \`pnpm diagnostics:a11y --update\`.`,
+      `\n${shrunk.length} rules now fail on fewer elements than the baseline. ${
+        process.platform === BASELINE_PLATFORM
+          ? 'Lock that in with `pnpm diagnostics:a11y --update`.'
+          : 'Lock in only what CI sees as well; see the note on platforms above.'
+      }`,
     );
   }
   if (stale.length) {
