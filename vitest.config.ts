@@ -39,13 +39,11 @@ export default defineConfig({
       '**/*.browser.test.{ts,tsx}',
     ],
     setupFiles: ['./src/test/setup.ts'],
-    // Each file still gets its own context, but a `vm` context inside a
-    // long-lived worker reuses the compiled module graph instead of re-importing
-    // it per file: the suite runs ~35% faster than on `threads`, for roughly
-    // 2.5× the peak memory. `vmMemoryLimit` (default: system memory ÷ CPUs)
-    // recycles a worker that outgrows it. Sharing one context across files
-    // (`isolate: false`) is not the same thing: it fails dozens of specs.
+    // Each file keeps its own VM context while warm workers reuse the module graph.
+    // Recycle retained realms at a fixed budget: the default RAM/worker threshold
+    // lets a single-worker run retain almost all host memory.
     pool: 'vmThreads',
+    vmMemoryLimit: '1GB',
     server: {
       deps: {
         // A `vm` context loads externalized packages as Node does, and the
