@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.200.1
+
+### Patch Changes
+
+- [#1574](https://github.com/cube-js/cube-ui-kit/pull/1574) [`10da2671`](https://github.com/cube-js/cube-ui-kit/commit/10da2671efa8f8bf7141eb1aea82adb003fb16c8) Thanks [@tenphi](https://github.com/tenphi)! - Keep dialogs, trays and popovers open when a control inside already handles Escape, such as a code editor closing autocomplete. The handled key also stays inside the overlay, so an enclosing dialog stays open.
+
 ## 0.200.0
 
 ### Minor Changes
