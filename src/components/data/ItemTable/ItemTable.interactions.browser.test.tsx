@@ -324,6 +324,30 @@ describe('ItemTable flat virtual focus', () => {
     ).toBeLessThan(ROWS.length);
   });
 
+  it('keeps keyboard-focused rows fully visible below the sticky header', async () => {
+    renderWithRoot(virtualTable());
+    await enterTable();
+    const scroller = grid().parentElement!;
+    const expectVisible = (record: string) => {
+      const bounds = row(record).getBoundingClientRect();
+      const viewport = scroller.getBoundingClientRect();
+      const header = grid().querySelector('thead')!.getBoundingClientRect();
+      expect(bounds.top).toBeGreaterThanOrEqual(header.bottom - 1);
+      expect(bounds.bottom).toBeLessThanOrEqual(
+        viewport.top + scroller.clientTop + scroller.clientHeight + 1,
+      );
+    };
+    await key('{End}');
+    await vi.waitFor(() => expect(row('r59')).toHaveFocus());
+    expectVisible('r59');
+    await key('{Home}');
+    await vi.waitFor(() => expect(row('r0')).toHaveFocus());
+    expectVisible('r0');
+    await act(() => rapidDown(12));
+    await vi.waitFor(() => expect(row('r12')).toHaveFocus());
+    expectVisible('r12');
+  });
+
   it.each([false, true])(
     'does not apply activation or a menu key to a stale virtual row (variable height: %s)',
     async (variableHeight) => {
@@ -438,6 +462,13 @@ describe('ItemTable flat virtual focus', () => {
     await key('{Tab}');
     expect(candidate).toHaveFocus();
     expect(scroller.scrollTop).toBeGreaterThan(400);
+    const bounds = candidate!.getBoundingClientRect();
+    const viewport = scroller.getBoundingClientRect();
+    const header = grid().querySelector('thead')!.getBoundingClientRect();
+    expect(bounds.top).toBeGreaterThanOrEqual(header.bottom - 1);
+    expect(bounds.bottom).toBeLessThanOrEqual(
+      viewport.top + scroller.clientTop + scroller.clientHeight + 1,
+    );
   });
 
   it('leaves a reachable row after the focused record is deleted', async () => {

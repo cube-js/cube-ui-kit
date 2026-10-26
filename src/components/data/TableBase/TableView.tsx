@@ -1,3 +1,4 @@
+import { getInteractionModality } from '@react-aria/interactions';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { useGlobalStyles } from '@tenphi/tasty';
 import clsx from 'clsx';
@@ -140,6 +141,30 @@ function scrollerTabStop(
 ) {
   if (hasRowNavigation && restingRow && !tabStopRow) return 0;
   return hasCellSelection || hasRowNavigation ? -1 : undefined;
+}
+
+/** Correct native table/header geometry only when completing row focus. */
+function revealFocusedRow(
+  row: HTMLTableRowElement,
+  scroller: HTMLDivElement,
+  isHeaderSticky: boolean,
+) {
+  if (scroller.scrollHeight <= scroller.clientHeight) return;
+  const viewport = scroller.getBoundingClientRect();
+  const bounds = row.getBoundingClientRect();
+  const header = row.closest('table')?.tHead;
+  const headerHeight = isHeaderSticky
+    ? (header?.getBoundingClientRect().height ?? 0)
+    : 0;
+  const top = viewport.top + scroller.clientTop + headerHeight;
+  const bottom = viewport.top + scroller.clientTop + scroller.clientHeight;
+  if (bounds.top >= top && bounds.bottom <= bottom) return;
+
+  const delta =
+    bounds.top < top || bounds.height > bottom - top
+      ? bounds.top - top
+      : bounds.bottom - bottom;
+  scroller.scrollTop += delta;
 }
 
 /** Visual/behavioural overrides a table adapter may attach to a single row. */
@@ -2124,6 +2149,8 @@ export function TableView<T = any>(props: TableViewProps<T>) {
       pendingRowFocus.current = null;
       ownedRow.current = target;
       target.focus({ preventScroll: shouldVirtualize });
+      if (scrollerRef.current)
+        revealFocusedRow(target, scrollerRef.current, isHeaderSticky);
     }
   }
 
@@ -2764,13 +2791,32 @@ export function TableView<T = any>(props: TableViewProps<T>) {
         onFocusCapture={(event) => {
           if (!hasFlatRowNavigation) return;
           const found = rowFromEvent(event.target);
-          if (!found || selection?.isRowDisabled(found.key)) return;
-          if (focusableRowFrom(found.index, 1)?.key !== found.key) return;
+          if (
+            !found ||
+            selection?.isRowDisabled(found.key) ||
+            focusableRowFrom(found.index, 1)?.key !== found.key
+          ) {
+            pendingRowFocus.current = null;
+            ownedRow.current = null;
+            return;
+          }
           if (pendingRowFocus.current !== found.key)
             pendingRowFocus.current = null;
           ownedRow.current = found.element as HTMLTableRowElement;
           setFocusedRow({ key: found.key, index: found.index });
           selection?.selectionManager.setFocusedKey(found.key);
+          // Tab must clear the sticky header too. Pointer focus keeps its
+          // pressed link stationary until the native click completes.
+          if (
+            event.target === found.element &&
+            getInteractionModality() !== 'pointer' &&
+            scrollerRef.current
+          )
+            revealFocusedRow(
+              found.element as HTMLTableRowElement,
+              scrollerRef.current,
+              isHeaderSticky,
+            );
         }}
         onBlurCapture={(event) => {
           const target = event.relatedTarget;

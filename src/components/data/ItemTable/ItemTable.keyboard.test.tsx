@@ -118,6 +118,33 @@ describe('ItemTable flat row keyboard interaction', () => {
     expect(latest).toHaveBeenCalledTimes(1);
   });
 
+  it('keeps the header focused when a server-sort response replaces the previous row', async () => {
+    const columns: CubeItemTableColumn<Row>[] = [
+      { ...COLUMNS[0], isSortable: true },
+    ];
+    const onSortChange = vi.fn();
+    const table = (data: Row[]) => (
+      <Fixture
+        data={data}
+        columns={columns}
+        sortMode="server"
+        onSortChange={onSortChange}
+        onRowAction={() => {}}
+      />
+    );
+    const { rerender } = renderWithRoot(table(ROWS));
+    await userEvent.tab();
+    await userEvent.tab();
+    const header = screen.getByRole('columnheader');
+    await userEvent.keyboard('{ArrowDown}');
+    expect(row('r0')).toHaveFocus();
+    await userEvent.click(header);
+    expect(header).toHaveFocus();
+    expect(onSortChange).toHaveBeenCalledTimes(1);
+    rerender(table(ROWS.slice(1)));
+    expect(header).toHaveFocus();
+  });
+
   it('retains an uncontrolled cell and its focus when the same row link becomes inert and returns', async () => {
     const columns: CubeItemTableColumn<Row>[] = [
       ...COLUMNS,
