@@ -252,6 +252,25 @@ import { ItemButton } from '../../actions/ItemButton/ItemButton';
 
 `pnpm chromatic:check` fails when that set grows past its budget, which is the only thing that would ever notice.
 
+## The Accessibility Baseline
+
+`pnpm diagnostics:a11y` renders every story the way `chromatic:duplicates` does (real Chromium, `play` finished, DOM settled) and runs [axe-core](https://github.com/dequelabs/axe-core) on it against WCAG 2.2 A and AA plus axe's best practices. Rules about a whole page (`region`, `landmark-one-main`, `page-has-heading-one` and the like) are off, because a story is one component and not a page. So is `label-content-name-mismatch`: it reads an option's description and hotkey as part of its label, so it fails every described ListBox or Menu item. The list and the reasons are in `OFF_RULES` in the script.
+
+`scripts/a11y-baseline.json` records how many elements fail each rule in each story. CI runs `--check`, which fails when a story fails a rule on more elements than its entry allows. A new story has no entry, so it has to come in clean.
+
+```bash
+pnpm build-storybook
+pnpm diagnostics:a11y --filter Actions/Button --verbose   # what fails, on which elements
+pnpm diagnostics:a11y --check                              # what CI runs
+pnpm diagnostics:a11y --filter Actions/Button --update     # record a fix
+```
+
+- **Fix, then lower the baseline.** After a fix, run `--update` and commit the lower numbers. With `--filter` it rewrites only the entries of the stories it ran. `--check` points out counts that dropped without being recorded.
+- **Violations in a story count.** An icon-only `Button` without `aria-label` in a story is the story's bug, and fixing the story is the fix. Consumers copy stories.
+- **Raising the baseline is a decision.** `--update` records growth too, and the diff shows it. Do that only for an axe false positive or an axe-core upgrade, and say which in the PR. axe-core is pinned exactly for that reason: a new version finds different things, so it lands together with its baseline.
+- **A changed count is rendered twice.** A story whose counts differ from the baseline is rendered again on its own, and only a change both renders agree on is reported or recorded. A story that settles differently under load neither fails CI nor slips a lower number into the baseline.
+- **What it cannot see.** tasty compiles a two-colour `fill` to a solid `linear-gradient` layer, and axe skips contrast over any background image ([tenphi/tasty#436](https://github.com/tenphi/tasty/issues/436)). The script replaces those layers with the colour they paint before axe runs. Contrast over real gradients, images and overlapping elements stays inconclusive: it is listed, not counted. Stories render in the light scheme only. What a screen reader announces needs [the virtual screen reader](screen-reader.md) or a real one.
+
 ## MDX Documentation Structure
 
 ```mdx

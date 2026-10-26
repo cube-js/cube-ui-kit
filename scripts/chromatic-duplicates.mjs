@@ -49,17 +49,7 @@
  *   node scripts/chromatic-duplicates.mjs --concurrency 8
  */
 import { createHash } from 'node:crypto';
-import {
-  createReadStream,
-  existsSync,
-  readFileSync,
-  writeFileSync,
-} from 'node:fs';
-import { createServer } from 'node:http';
-import { dirname, extname, join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
-
-import { chromium } from 'playwright';
+import { writeFileSync } from 'node:fs';
 
 import {
   hasPlay,
@@ -67,9 +57,7 @@ import {
   isOverlayReviewed,
   sourceReader,
 } from './lib/story-snapshots.mjs';
-
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const STATIC_DIR = join(ROOT, 'storybook-static');
+import { readStories, ROOT, runStories } from './lib/storybook-runner.mjs';
 
 const args = process.argv.slice(2);
 const flag = (name, fallback) => {
@@ -80,27 +68,6 @@ const flag = (name, fallback) => {
 const filter = flag('--filter', null);
 const jsonOut = flag('--json', null);
 const concurrency = Number(flag('--concurrency', 6));
-
-/**
- * Chromatic's default viewport. Matching it keeps the fingerprints comparable
- * to what actually gets billed — a story that overflows at 1200px wide may not
- * at 800px, and the duplicate groups would differ.
- */
-const VIEWPORT = { width: 1200, height: 900 };
-
-/**
- * How long the DOM must stay unchanged after `storyFinished` before the story
- * counts as settled.
- *
- * `storyFinished` covers the `play` function; this covers what runs after it —
- * overlay transitions, portal mounts, `requestAnimationFrame` layout. CSS
- * animations do not mutate the DOM, so a permanently spinning story still
- * settles.
- */
-const QUIET_MS = 400;
-
-/** Cap on either wait, for a story that never finishes or never stops mutating. */
-const SETTLE_TIMEOUT_MS = 15000;
 
 /**
  * Story names that promise something rendered in an *overlay*.
@@ -128,52 +95,6 @@ const OVERLAY_ROLES = [
   'listbox',
   'grid',
 ];
-
-if (!existsSync(join(STATIC_DIR, 'index.json'))) {
-  console.error(
-    `No build at ${STATIC_DIR}.\nRun \`pnpm build-storybook\` first.`,
-  );
-  process.exit(2);
-}
-
-// ─── Static server ───────────────────────────────────────────────────────────
-
-const MIME = {
-  '.html': 'text/html',
-  '.js': 'text/javascript',
-  '.mjs': 'text/javascript',
-  '.css': 'text/css',
-  '.json': 'application/json',
-  '.svg': 'image/svg+xml',
-  '.png': 'image/png',
-  '.jpg': 'image/jpeg',
-  '.woff2': 'font/woff2',
-  '.woff': 'font/woff',
-  '.ico': 'image/x-icon',
-};
-
-function serve() {
-  const server = createServer((req, res) => {
-    const url = decodeURIComponent((req.url ?? '/').split('?')[0]);
-    const path = join(STATIC_DIR, url === '/' ? 'index.html' : url);
-
-    if (!path.startsWith(STATIC_DIR) || !existsSync(path)) {
-      res.writeHead(404).end('not found');
-      return;
-    }
-
-    res.writeHead(200, {
-      'content-type': MIME[extname(path)] ?? 'application/octet-stream',
-    });
-    createReadStream(path).pipe(res);
-  });
-
-  return new Promise((done) => {
-    server.listen(0, '127.0.0.1', () =>
-      done({ server, port: server.address().port }),
-    );
-  });
-}
 
 // ─── Fingerprinting ──────────────────────────────────────────────────────────
 
@@ -281,105 +202,7 @@ const FINGERPRINT = () => {
 const sha = (value) =>
   createHash('sha256').update(value).digest('hex').slice(0, 16);
 
-/**
- * Subscribes to Storybook's preview channel before the story boots.
- *
- * `storyFinished` is the event that fires once the `play` function has
- * resolved — the moment Chromatic photographs. Waiting for DOM quiescence
- * instead is not equivalent: several `play` functions here `await timeout(500)`
- * between steps, and the DOM is perfectly quiet during that sleep, so a
- * quiescence-only wait fingerprints a dialog that the story is about to close.
- */
-const WATCH_STORY_FINISHED = () => {
-  window.__storyFinished = null;
-
-  const describe = (error) => {
-    try {
-      return (
-        error?.message ??
-        error?.error?.message ??
-        JSON.stringify(error, Object.getOwnPropertyNames(error ?? {}))
-      );
-    } catch {
-      return String(error);
-    }
-  };
-
-  const subscribe = () => {
-    const channel = window.__STORYBOOK_ADDONS_CHANNEL__;
-    if (!channel) return false;
-
-    channel.on('storyFinished', (payload) => {
-      window.__storyFinished = { status: payload?.status ?? 'success' };
-    });
-    // Storybook reports a thrown `play` on its own event, and `storyFinished`
-    // does not carry the reason — so keep the message from here.
-    channel.on('playFunctionThrewException', (error) => {
-      window.__storyFinished = { status: 'error', error: describe(error) };
-    });
-
-    return true;
-  };
-
-  if (!subscribe()) {
-    const poll = setInterval(() => {
-      if (subscribe()) clearInterval(poll);
-    }, 10);
-  }
-};
-
-async function fingerprintStory(page, port, story) {
-  const url = `http://127.0.0.1:${port}/iframe.html?id=${encodeURIComponent(story.id)}&viewMode=story`;
-
-  await page.goto(url, { waitUntil: 'load', timeout: 30000 });
-
-  await page
-    .waitForFunction(
-      () => document.querySelector('#storybook-root')?.hasChildNodes(),
-      null,
-      { timeout: 20000 },
-    )
-    .catch(() => {});
-
-  // Stories without a `play` function also emit `storyFinished`, so this is the
-  // single wait for both cases. Stories that never emit it (a `play` that hangs)
-  // fall through to the quiescence wait below rather than stalling the run.
-  const finished = await page
-    .waitForFunction(() => window.__storyFinished, null, {
-      timeout: SETTLE_TIMEOUT_MS,
-    })
-    .then((handle) => handle.jsonValue())
-    .catch(() => ({ status: 'timeout' }));
-
-  await page.evaluate(
-    ([quietMs, timeoutMs]) =>
-      new Promise((resolve) => {
-        let quiet;
-        const observer = new MutationObserver(() => {
-          clearTimeout(quiet);
-          quiet = setTimeout(finish, quietMs);
-        });
-
-        function finish() {
-          clearTimeout(quiet);
-          clearTimeout(cap);
-          observer.disconnect();
-          resolve();
-        }
-
-        const cap = setTimeout(finish, timeoutMs);
-        quiet = setTimeout(finish, quietMs);
-
-        observer.observe(document.body, {
-          subtree: true,
-          childList: true,
-          attributes: true,
-          characterData: true,
-        });
-      }),
-    [QUIET_MS, SETTLE_TIMEOUT_MS],
-  );
-
+async function fingerprintStory(page, story, finished) {
   const dom = await page.evaluate(FINGERPRINT);
   if (!dom) return { id: story.id, error: 'no root' };
 
@@ -414,59 +237,14 @@ async function fingerprintStory(page, port, story) {
 
 // ─── Run ─────────────────────────────────────────────────────────────────────
 
-const index = JSON.parse(readFileSync(join(STATIC_DIR, 'index.json'), 'utf-8'));
-let stories = Object.values(index.entries).filter((e) => e.type === 'story');
-if (filter)
-  stories = stories.filter(
-    (s) => s.title.includes(filter) || s.id.includes(filter),
-  );
+const stories = readStories(filter);
 
-console.log(
-  `Fingerprinting ${stories.length} stories at ${VIEWPORT.width}×${VIEWPORT.height} …`,
-);
+console.log(`Fingerprinting ${stories.length} stories …`);
 
-const { server, port } = await serve();
-const browser = await chromium.launch();
-const results = [];
-let done = 0;
-
-async function worker() {
-  const context = await browser.newContext({
-    viewport: VIEWPORT,
-    deviceScaleFactor: 1,
-    reducedMotion: 'reduce',
-  });
-  await context.addInitScript(WATCH_STORY_FINISHED);
-
-  const page = await context.newPage();
-
-  for (;;) {
-    const story = stories[done++];
-    if (!story) break;
-
-    try {
-      results.push(await fingerprintStory(page, port, story));
-    } catch (error) {
-      results.push({
-        id: story.id,
-        title: story.title,
-        name: story.name,
-        importPath: story.importPath,
-        error: String(error.message ?? error),
-      });
-    }
-
-    if (results.length % 50 === 0) {
-      process.stdout.write(`  ${results.length}/${stories.length}\r`);
-    }
-  }
-
-  await context.close();
-}
-
-await Promise.all(Array.from({ length: concurrency }, worker));
-await browser.close();
-server.close();
+const results = await runStories(stories, {
+  concurrency,
+  visit: fingerprintStory,
+});
 
 // ─── Report ──────────────────────────────────────────────────────────────────
 
