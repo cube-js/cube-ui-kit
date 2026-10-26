@@ -41,6 +41,8 @@ const EditableSegmentElement = tasty({
       ':focus': '#primary',
     },
     radius: '.25x',
+    // Fits the segment's longest value, so typing doesn't resize it.
+    minWidth: '$segment-min-width',
 
     Placeholder: {
       opacity: '$disabled-opacity',
@@ -78,7 +80,9 @@ function LiteralSegment({ segment }: LiteralSegmentProps) {
 
 function EditableSegment({ segment, state }: DatePickerSegmentProps) {
   let ref = useRef(null);
-  let { segmentProps } = useDateSegment(segment, state, ref);
+  let {
+    segmentProps: { style: segmentStyle, ...segmentProps },
+  } = useDateSegment(segment, state, ref);
   return (
     <EditableSegmentElement
       {...segmentProps}
@@ -87,14 +91,13 @@ function EditableSegment({ segment, state }: DatePickerSegmentProps) {
         placeholder: segment.isPlaceholder,
         'read-only': !segment.isEditable,
       }}
-      // oxlint-disable-next-line react/forbid-component-props -- React Aria's `useDateSegment` supplies the segment's style; the width tracks its longest value
-      style={{
-        ...segmentProps.style,
-        minWidth:
-          segment.maxValue != null
-            ? `calc(${String(segment.maxValue).length + 'ch'})`
-            : undefined,
-      }}
+      tokens={
+        segment.maxValue != null
+          ? { '$segment-min-width': `${String(segment.maxValue).length}ch` }
+          : undefined
+      }
+      // oxlint-disable-next-line tasty/no-style-prop -- React Aria's `useDateSegment` supplies the segment's style (caret and bidi)
+      style={segmentStyle}
       data-testid={segment.type}
     >
       {segment.isPlaceholder ? (

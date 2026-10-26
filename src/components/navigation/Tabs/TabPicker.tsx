@@ -6,7 +6,14 @@ import { FilterPicker } from '../../fields/FilterPicker/FilterPicker';
 
 import { POPOVER_PLACEMENT_BY_TABS_PLACEMENT } from './popover-placement';
 
+import type { Styles } from '@tenphi/tasty';
 import type { ParsedTab, TabPlacement, TabSize, TabType } from './types';
+
+const NO_DIVIDER_STYLES: Styles = { border: 0 };
+const DIVIDER_STYLES: Styles = { border: { '': 0, '!:first-child': 'left' } };
+const VERTICAL_DIVIDER_STYLES: Styles = {
+  border: { '': 0, '!:first-child': 'top' },
+};
 
 // =============================================================================
 // Types
@@ -78,14 +85,13 @@ export function TabPicker({
       // Apply border to wrapper (FilterPickerWrapper) so :first-child evaluates
       // relative to Suffix container, not the internal DialogTrigger. The
       // divider side flips with the bar's orientation.
-      styles={{
-        border: showBorderDivider
-          ? {
-              '': 0,
-              '!:first-child': isVertical ? 'top' : 'left',
-            }
-          : 0,
-      }}
+      styles={
+        !showBorderDivider
+          ? NO_DIVIDER_STYLES
+          : isVertical
+            ? VERTICAL_DIVIDER_STYLES
+            : DIVIDER_STYLES
+      }
       triggerStyles={{ border: 0 }}
       aria-label={t('tabs.selectTab', 'Select tab')}
       isReorderable={isReorderable}

@@ -109,6 +109,7 @@ export const Placeholder = forwardRef(function Placeholder(
       data-loading-placeholder=""
       ref={ref}
       mods={{ animated: !isStatic, circle }}
+      // oxlint-disable-next-line tasty/no-runtime-styles-mutation -- forwards the consumer's `size` prop
       styles={mergeStyleLayers({ height: size }, styles)}
     />
   );

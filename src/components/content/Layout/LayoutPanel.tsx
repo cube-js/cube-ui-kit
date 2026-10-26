@@ -604,6 +604,7 @@ function LayoutPanel(
     () =>
       mergeStyles(
         styles,
+        // oxlint-disable-next-line tasty/no-runtime-styles-mutation -- forwards the consumer's `contentPadding` prop
         contentPadding != null ? { '$content-padding': contentPadding } : null,
         extractedStyles,
       ),

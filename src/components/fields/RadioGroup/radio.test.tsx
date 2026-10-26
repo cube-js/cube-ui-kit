@@ -714,4 +714,20 @@ describe('<Radio /> and <RadioGroup />', () => {
 
     inst.mockRestore();
   });
+
+  it('lets a null in labelStyles remove the label default', () => {
+    const { getByTestId } = renderWithRoot(
+      <div style={{ color: 'rgb(1, 2, 3)' }}>
+        <Radio.Group aria-label="Options" defaultValue="a">
+          <Radio value="a" labelStyles={{ color: null }}>
+            A
+          </Radio>
+        </Radio.Group>
+      </div>,
+    );
+
+    expect(getComputedStyle(getByTestId('RadioLabel')).color).toBe(
+      'rgb(1, 2, 3)',
+    );
+  });
 });

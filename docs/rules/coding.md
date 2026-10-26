@@ -34,33 +34,31 @@ When you do need to widen something inside `Root`'s tree, `node scripts/chromati
 
 # Inline style
 
-React's `style` prop bypasses Tasty: no tokens, units or states, and nothing a consumer's `styles` can override. `.oxlintrc.json` makes it an error on every element, through `react/forbid-component-props` and `react/forbid-dom-props`, in runtime code and stories alike. Specs are exempt, because they set inline styles to stage layouts and to check that a consumer's `style` reaches the DOM.
+React's `style` prop bypasses Tasty: no tokens, units or states, and nothing a consumer's `styles` can override. `.oxlintrc.json` makes it an error on every element, through `tasty/no-style-prop` with `elements: 'all'`: Tasty elements, other components and native elements, in runtime code and stories alike. In specs it covers only Tasty elements, because specs set inline styles on native elements and components to stage layouts and to check that a consumer's `style` reaches the DOM.
 
 Use the Tasty channel that fits the value:
 
-- **A value that changes at runtime** (a measured width, a drag position, a picked color): declare `$name` or `#name` in the element's styles and pass the value through `tokens`, for example ``tokens={{ '$panel-size': `${size}px` }}``. It renders as the same inline custom property, without a new style rule per value. A bare number renders unitless (`'$x': 12` gives `--x: 12`), so add the unit yourself.
+- **A value that changes at runtime** (a measured width, a drag position, a picked color): declare `$name` or `#name` in the element's styles and pass the value through `tokens`, for example ``tokens={{ '$panel-size': `${size}px` }}``. It renders as the same inline custom property, without a new style rule per value. A bare number renders unitless (`'$x': 12` gives `--x: 12`), so add the unit yourself. Custom properties inherit, so name the token after its element (`$slider-value-width`, not `$label-width`): when you set none, an ancestor's token of the same name fills it. A number a library computes, such as a virtualizer's row offset or total height, is such a value too.
 - **A fixed value**: put it in the element's `styles`, or in a style prop such as `width="25x"`.
 - **A value that depends on state**: a mod and a state map, not a conditional style object.
 
 Keep `style` only when something outside our styles owns the value, and say so on the line before it:
 
 ```tsx
-// oxlint-disable-next-line react/forbid-component-props -- React Aria's overlay positioning computes these coordinates
+// oxlint-disable-next-line tasty/no-style-prop -- React Aria's overlay positioning computes these coordinates
 style={positionProps.style}
 ```
 
 The accepted reasons are:
 
-- a library computes the value: React Aria positioning, a virtualizer, prism-react-renderer;
+- a library supplies the style object: React Aria's positioning or date segment style, prism-react-renderer's theme;
 - the component forwards its own public `style` prop;
-- the value sits on a native element with no Tasty element to carry a token, such as a table cell that `TableElement` styles through sub-element selectors;
-- our styles cannot express the value or cannot win the cascade for it, such as a `preset` that owns `font-family`; name the cause, and for a Tasty limitation its issue and the condition for removing the exception.
+- the value sits on a native element with no Tasty element to carry a token, such as a table row or cell that `TableElement` styles through sub-element selectors, even when a virtualizer computes it;
+- our styles cannot express the value or cannot win the cascade for it, such as a `preset` that owns `font-family`, or React Aria's popover size cap, which applies only once React Aria has measured and otherwise leaves the max size the merged styles give; name the cause, and for a Tasty limitation its issue and the condition for removing the exception.
 
 The lint sees only a `style` JSX attribute. A `style` key in an object that reaches an element (`mergeProps(props, { style })`, a context value, a props object) gets past it, so hold those to the same rule in review, with the reason in a comment.
 
 Every disable directive needs a ` -- reason`, not only these ones. The repo-local `repo/require-disable-reason` rule (`scripts/oxlint-repo-rules.mjs`) fails a directive without one. A directive that names no rule, such as a file-wide `/* eslint-disable */`, switches that rule off too, so review has to check its reason.
-
-`tasty/no-style-prop` stays off. Since 1.8.2 it also recognizes Tasty components imported from relative modules, but it still covers only Tasty components, while the React rules cover every element, native and third-party ones included. Enabling both would need two directives on every exception.
 
 # Tasty lint rules
 
@@ -72,9 +70,13 @@ An exception takes the same form as for inline style: `// oxlint-disable-next-li
 
 Pixel values take a unit or a token chosen by what the value means, not by what it equals. `bw` is a border width: use it for a border, or for a size that compensates for one (`(1.5x - 1bw)`), never for a `1px` that only happens to match, because a consumer who changes `--border-width` changes borders, not every pixel. `x` is for spacing and sizes on the grid. Three kit tokens name the shared device-pixel values: `$ring-width` for a hairline focus or selection ring (an outline, or a ring drawn with `shadow`; a field's thick focus ring is `ow`), `$outline-offset` for a ring's gap from its element, and `$item-gap` for the hairline between adjacent items in a list, menu or action group. A divider line drawn in `#border` is a border, so it stays `bw`. Geometry that has to stay in device pixels, such as a resize handle's grip, a tooltip arrow or a marker line, names its size once as a local custom property (`'$grip-size': '3px'`) and derives the rest from it. The rule doesn't check `$name` and `#name` definitions (it does check `--name` ones), so a comment on the definition says why the value stays in pixels. Other raw pixels are an exception with a reason.
 
+`no-runtime-styles-mutation` is an `error` in runtime code and stays `warn` in stories and specs, which build demo styles from data. It reports a value from render in a style object that reaches Tasty: one written in place in `styles` or an argument of `mergeStyles` or `mergeStyleLayers`, one behind a conditional or logical operator (`cond ? { … } : null`), and one held in a render-scope variable (declared with `const` or reassigned) that is then read as styles. Move a dynamic custom property to `tokens` (`tokens={{ '$grid-width': width }}`), a dynamic state to `mods` with a state map, or a choice between a few fixed shapes to module-level constants (`styles={isDisabled ? DISABLED_STYLES : STYLES}`). A component that forwards its consumer's public `styles`, style props or a style-valued prop (`innerStyles`, `size`, `contentPadding`) during render is an exception whose reason names those props. Extract style props with `extractStyles` rather than a loop of spreads. When a consumer's styles are merged over other styles and passed on as an element's `styles`, use `mergeStyleLayers` (`src/utils/styles.ts`): plain `mergeStyles` deletes a `null` in any argument after the first, so the consumer's reset never reaches that element. With the consumer's object first, `mergeStyles` keeps its resets. `.oxlintrc.json` lists `mergeStyleLayers` in `settings.tasty.mergeFunctions`, so the Tasty rules check its arguments like those of `mergeStyles`.
+
 Transitions and animations take their duration from a token. Leave the duration out to get the transition's own default (`$<name>-transition`, falling back to `$transition`), or name a duration token from `src/tokens/base.ts` (listed in the Usage docs). Derive a dependent timing from its token, such as `(2 * $overlay-transition)`, rather than hardcoding the result. A keyframe loop's length, or a one-off timing that no token's role covers, is an exception with its reason.
 
-Off on purpose: `no-style-prop` (see [Inline style](#inline-style)), `no-styles-prop` (UI Kit's own components pass `styles` down, and it is public API) and `prefer-shorthand-property` (single-side overrides are deliberate). `valid-custom-property` and `no-runtime-styles-mutation` stay off until their existing hits are cleared.
+Off on purpose: `no-styles-prop` (UI Kit's own components pass `styles` down, and it is public API), `prefer-shorthand-property` (single-side overrides are deliberate) and `no-protected-restyle`. `valid-custom-property` stays off until its existing hits are cleared.
+
+`no-protected-restyle` is for consumers. `protectedComponents` in `tasty.config.ts`, which consumers inherit through `extends`, lists the components a consumer customizes through their props rather than by restyling them. Our own source imports components by relative path, which never matches the list's `source`. When you add a component, decide its side of the list: a layout or typography primitive, an icon, or a base meant for extension joins the last entry's `exclude`; a container whose content layout is its consumer's call joins the containers' `include`; anything else is protected by default. A sub-component (`Layout.Content`) counts as its export unless an entry names its member path, so put a sub-component that belongs on the other side into that side's list by its member path, as the last entry's `exclude` does for `Button.Group`. Without `typeAwareJSX`, the rule reads a prop named like a Tasty style (`direction`, `filter`, `color`, `content`) as one, so a component that declares such a prop of its own needs an entry that allows that name. Update the lists in the Usage docs (Customizing components) with the config: they describe the contract to consumers. `src/tokens/tasty-config.test.ts` lints a consumer project that extends the config.
 
 # Markdown rules
 

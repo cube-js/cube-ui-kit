@@ -52,7 +52,7 @@ function Row(
       {...extra}
       ref={mergeRefs(measureRef, rowRef)}
       data-index={index}
-      // oxlint-disable-next-line react/forbid-dom-props -- the row's measured height, owned by the virtualizer
+      // oxlint-disable-next-line tasty/no-style-prop -- a native row styled by `TableElement`; carries the virtualizer's measured height
       style={height != null ? { height } : undefined}
     >
       {typeof children === 'function' ? children(undefined) : children}

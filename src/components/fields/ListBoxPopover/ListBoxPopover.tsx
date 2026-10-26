@@ -370,7 +370,7 @@ export const ListBoxPopover = function ListBoxPopover(
               compositeFocusProps,
             )}
             ref={mergeRefs(mergedPopoverRef, layerRef)}
-            // oxlint-disable-next-line react/forbid-component-props -- React Aria's overlay positioning computes these coordinates
+            // oxlint-disable-next-line tasty/no-style-prop -- React Aria's overlay positioning computes these coordinates
             style={positionStyle}
             // A press on the list while it fades out must not close the
             // overlay under it (CUB-5293) — see `Overlay`.
@@ -390,7 +390,7 @@ export const ListBoxPopover = function ListBoxPopover(
                   ? `${comboBoxWidth}px`
                   : undefined,
               }}
-              // oxlint-disable-next-line react/forbid-component-props -- React Aria's overlay positioning computes the space left
+              // oxlint-disable-next-line tasty/no-style-prop -- React Aria's overlay positioning computes the space left once it has measured; inline, it overrides whatever max size the merged styles give, without restating their defaults
               style={{ maxHeight, maxWidth }}
             >
               <ListBox

@@ -82,6 +82,7 @@ function LayoutContainer(
 
   const finalStyles = mergeStyles(
     styles,
+    // oxlint-disable-next-line tasty/no-runtime-styles-mutation -- forwards the consumer's `innerStyles` and container style props to `Inner`
     hasInnerStyles ? { Inner: innerStyles } : null,
   );
 

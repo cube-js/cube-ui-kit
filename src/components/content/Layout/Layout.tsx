@@ -221,8 +221,10 @@ function LayoutInner(
 
     return mergeStyles(
       outerStyles,
+      // oxlint-disable-next-line tasty/no-runtime-styles-mutation -- forwards the consumer's `contentPadding` prop
       contentPadding != null ? { '$content-padding': contentPadding } : null,
       styles,
+      // oxlint-disable-next-line tasty/no-runtime-styles-mutation -- Inner merges the consumer's `styles.Inner`, its inner style props and the grid props (`columns`, `rows`, `template`)
       { Inner: mergeStyles(innerStyles, gridStyles, styles?.Inner as Styles) },
     );
   }, [
@@ -419,7 +421,7 @@ function LayoutInner(
       mods={mods}
       styles={finalStyles}
       tokens={insetTokens}
-      // oxlint-disable-next-line react/forbid-component-props -- forwards the consumer's public `style`; while clipping, the overflow shorthand must also beat its inline longhands
+      // oxlint-disable-next-line tasty/no-style-prop -- forwards the consumer's public `style`; while clipping, the overflow shorthand must also beat its inline longhands
       style={transitionStyle}
       onKeyDown={hasOverlayPanels ? handleKeyDown : undefined}
     >

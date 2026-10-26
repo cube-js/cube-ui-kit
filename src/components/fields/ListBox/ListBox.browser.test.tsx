@@ -648,6 +648,46 @@ describe('ListBox virtualized option heights', () => {
 });
 
 /**
+ * A flat list places every option absolutely, so the list takes its height
+ * from a spacer the virtualizer sizes. A `listStyles` height has to cap that
+ * height, not replace it: Cube Cloud caps a value list with `height: 'max 30x'`.
+ * In a browser because jsdom has no layout.
+ */
+describe('ListBox virtualized list height', () => {
+  const VALUES = Array.from({ length: 40 }, (_, index) => ({
+    key: `value-${index}`,
+    label: `Value ${index}`,
+  }));
+
+  it('keeps a listStyles height cap and scrolls to the last option', async () => {
+    renderWithRoot(
+      <ListBox
+        aria-label="Values"
+        items={VALUES}
+        listStyles={{ height: 'max 30x' }}
+      >
+        {(value: (typeof VALUES)[number]) => (
+          <ListBox.Item key={value.key}>{value.label}</ListBox.Item>
+        )}
+      </ListBox>,
+    );
+
+    const list = screen.getByRole('listbox');
+    const scroller = list.parentElement!;
+    const cap = parseFloat(getComputedStyle(list).maxHeight);
+
+    // Capped, not collapsed to its padding, and scrolling past the cap.
+    expect(list.getBoundingClientRect().height).toBeGreaterThanOrEqual(cap);
+    expect(scroller.clientHeight).toBeGreaterThanOrEqual(cap);
+    expect(scroller.scrollHeight).toBeGreaterThan(scroller.clientHeight);
+
+    scroller.scrollTop = scroller.scrollHeight;
+
+    await waitFor(() => expect(screen.getByText('Value 39')).toBeVisible());
+  });
+});
+
+/**
  * A flat list renders only the options near its scroll position, so focus can
  * move to an option that is not in the document. The list has to scroll the
  * virtualizer to it, which then renders it. In a browser because jsdom has no

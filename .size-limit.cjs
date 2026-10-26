@@ -404,7 +404,12 @@ module.exports = [
     // (fc6b517f, run 39582996891), +252 B, nearly all of it in Tasty's style
     // engine (the kit's own change is two selection colors in
     // `GlobalStyles`). Fits in 633 kB, 999 B headroom; confirm in Linux CI.
-    limit: '633kB',
+    // `tasty/no-style-prop` (CUB-6554): CI run 40100259616 measured 633,041 B
+    // against main's 632,843 B (39629fb1, run 40097259171), +198 B for the
+    // tokens, state maps and the `ListBox` spacer and `TreeSizer` that replace
+    // inline styles in ListBox, Tree, Slider and DatePicker. Allow 634 kB,
+    // 959 B headroom.
+    limit: '634kB',
   },
   {
     name: 'Tree shaking (just a Button)',

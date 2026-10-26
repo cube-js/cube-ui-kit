@@ -293,7 +293,7 @@ export const DEFAULTS: DefaultsRegistry = {
       props: {
         columns: { kind: 'default', value: 2 },
         display: { kind: 'default', value: 'contents' },
-        gap: { kind: 'default', value: '0' },
+        gap: { kind: 'default', value: 0 },
       },
     },
     HotKeys: {

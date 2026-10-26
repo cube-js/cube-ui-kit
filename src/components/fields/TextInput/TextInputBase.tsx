@@ -8,6 +8,7 @@ import {
   BlockStyleProps,
   COLOR_STYLES,
   ColorStyleProps,
+  mergeStyles,
   OUTER_STYLES,
   OuterStyleProps,
   Styles,
@@ -361,7 +362,8 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
   let type = otherProps.type;
 
   if (resize) {
-    inputStyles = { ...inputStyles, resize };
+    // oxlint-disable-next-line tasty/no-runtime-styles-mutation -- forwards the consumer's `resize` prop
+    inputStyles = mergeStyles(inputStyles, { resize });
   }
 
   let ElementType: 'textarea' | 'input' = multiLine ? 'textarea' : 'input';
@@ -480,7 +482,7 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
         ref={inputRef}
         rows={multiLine ? (rows ?? inputProps.rows ?? 1) : inputProps.rows}
         mods={modifiers}
-        // oxlint-disable-next-line react/forbid-component-props -- `preset` owns font-family, and a `fontFamily` state map would replace the preset's in every state
+        // oxlint-disable-next-line tasty/no-style-prop -- `preset` owns font-family, and a `fontFamily` state map would replace the preset's in every state
         style={textSecurityStyles}
         {...(resolvedAutoFocus ? { 'data-autofocus': '' } : undefined)}
         autoFocus={resolvedAutoFocus}

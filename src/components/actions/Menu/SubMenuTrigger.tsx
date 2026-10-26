@@ -397,7 +397,7 @@ function InternalSubMenuTrigger(props: InternalSubMenuTriggerProps) {
           hideArrow
           isNonModal
           isOpen={!parentContext.isClosing}
-          // oxlint-disable-next-line react/forbid-component-props -- React Aria's overlay positioning computes these coordinates
+          // oxlint-disable-next-line tasty/no-style-prop -- React Aria's overlay positioning computes these coordinates
           style={positionProps.style}
           placement={resolvedPlacement ?? undefined}
           shouldCloseOnInteractOutside={shouldCloseOnInteractOutside}
