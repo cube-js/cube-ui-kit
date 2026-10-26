@@ -47,6 +47,36 @@ describe('<DialogTrigger type="popover" />', () => {
       </DialogTrigger>,
     );
 
+  it('keeps a claimed Escape inside the popover', async () => {
+    const onAncestorKeyDown = vi.fn();
+    const { baseElement } = renderWithRoot(
+      <div onKeyDown={onAncestorKeyDown}>
+        <DialogTrigger type="popover">
+          <Button qa="Trigger">Open</Button>
+          <Dialog aria-label="Expression editor">
+            <input aria-label="Expression" />
+          </Dialog>
+        </DialogTrigger>
+      </div>,
+    );
+    await openPopover(baseElement);
+    const input = screen.getByRole('textbox', { name: 'Expression' });
+    await user.click(input);
+    input.addEventListener('keydown', (event) => event.preventDefault(), {
+      once: true,
+    });
+
+    await user.keyboard('{Escape}');
+
+    expect(input).toBeInTheDocument();
+    expect(onAncestorKeyDown).not.toHaveBeenCalled();
+
+    await user.keyboard('{Escape}');
+
+    await waitFor(() => expect(input).not.toBeInTheDocument());
+    expect(onAncestorKeyDown).not.toHaveBeenCalled();
+  });
+
   it('closes on Escape right after opening', async () => {
     const { baseElement } = renderPopover();
 

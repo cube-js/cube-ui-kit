@@ -202,7 +202,7 @@ To clamp the width yourself, set `styles.width` (`styles={{ width: 'initial 520p
 
 - `Tab` - Moves focus between interactive elements within the dialog
 - `Shift + Tab` - Moves focus backward between interactive elements
-- `Escape` - Closes the dialog when its `DialogTrigger` or `DialogContainer` is dismissable (`isDismissable`, on by default) and `isKeyboardDismissDisabled` is not set
+- `Escape` - Closes the dialog when its `DialogTrigger` or `DialogContainer` is dismissable (`isDismissable`, on by default) and `isKeyboardDismissDisabled` is not set. If a control inside already prevents the key's default, the dialog stays open and keeps the handled Escape from reaching an enclosing dialog
 - `Enter/Space` - Activates focused buttons or interactive elements
 
 ### Screen Reader Support

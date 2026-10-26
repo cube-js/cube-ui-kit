@@ -7,7 +7,8 @@ import type { DOMAttributes, KeyboardEvent } from 'react';
 type OverlayDOMProps = DOMAttributes<any>;
 
 /**
- * Stops a CLOSED overlay from answering for `Escape` (CUB-4839).
+ * Stops a CLOSED overlay from answering for `Escape` (CUB-4839), and keeps an
+ * Escape already handled by a child inside its open overlay.
  *
  * `useOverlay`'s `Escape` handler calls `stopPropagation()` and
  * `preventDefault()` for every `Escape` it sees, and only THEN asks whether
@@ -36,6 +37,13 @@ export function useOverlayEscapeGuard<T extends OverlayDOMProps>(
   const onKeyDown = useEvent((event: KeyboardEvent<any>) => {
     // Decline it, so it reaches whoever can actually act on it.
     if (event.key === 'Escape' && !isOpen) return;
+
+    // Code editors can close autocomplete by preventing default alone.
+    // Keep that Escape inside this overlay, including an enclosing dialog.
+    if (event.key === 'Escape' && event.isDefaultPrevented()) {
+      event.stopPropagation();
+      return;
+    }
 
     // Aria's shortcut handler ignores physical DOM outsiders. A closing
     // popup still bubbles Escape through its logical React portal ancestry.
