@@ -53,7 +53,7 @@ describe('<DialogTrigger type="popover" />', () => {
       <div onKeyDown={onAncestorKeyDown}>
         <DialogTrigger type="popover">
           <Button qa="Trigger">Open</Button>
-          <Dialog>
+          <Dialog aria-label="Expression editor">
             <input aria-label="Expression" />
           </Dialog>
         </DialogTrigger>
