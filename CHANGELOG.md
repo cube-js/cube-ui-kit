@@ -1,5 +1,40 @@
 # @cube-dev/ui-kit
 
+## 0.200.0
+
+### Minor Changes
+
+- [#1573](https://github.com/cube-js/cube-ui-kit/pull/1573) [`7caf4add`](https://github.com/cube-js/cube-ui-kit/commit/7caf4add01f06c1cfa5ed9ef7c7cea92c29fa611) Thanks [@tenphi](https://github.com/tenphi)! - The published `tasty.config.ts` lists the components a consumer customizes through their props rather than by restyling them, as `protectedComponents`. With `@tenphi/eslint-plugin-tasty` 1.12.0 or newer, a project that extends the config gets `tasty/no-protected-restyle` reports for:
+
+  - instance `styles` and `*Styles` props;
+  - appearance style props such as `fill`, `color`, `border` or `radius`;
+  - `tasty()` wrappers that restyle one of these components.
+
+  Every component is protected except the layout and typography primitives, the `Action` base and the icons. Style props that place or size a component stay allowed. Containers also keep the ones that lay out their content: `Card`, `Panel`, `ResizablePanel`, `Content`, `Header`, `Footer`, `Layout` and `GridLayout`. A component's own prop that shares a name with a style, such as a field's `filter` or `ColorSwatch`'s `color`, passes.
+
+  The rule is a warning in both of the plugin's presets, so a project that uses a preset sees these warnings once it updates. A project that lists its rules sees them only after it enables `tasty/no-protected-restyle`. The Usage docs (Customizing components) describe the contract.
+
+### Patch Changes
+
+- [#1572](https://github.com/cube-js/cube-ui-kit/pull/1572) [`3268c4a5`](https://github.com/cube-js/cube-ui-kit/commit/3268c4a5450af0a8776e40423515975df1d05afa) Thanks [@tenphi](https://github.com/tenphi)! - A virtualized `ListBox` and `Tree`, the `Slider` value label and `DatePicker` segments now size and place themselves through Tasty tokens instead of inline `style`, and render the same. A virtualized `ListBox` takes its height from a spacer, so a `listStyles` height now applies to it: a cap such as `height: 'max 30x'` still caps the list, which now scrolls its whole length at once, and a fixed height, which the inline height used to replace, now sets it. A `position` in `listStyles`, or a `position`, `inset` or `transform` in an option's `styles`, now takes over from the virtualizer's value; before, the inline value won. `Tree` now wraps its rows in a Tasty element with `data-qa="TreeSizer"`.
+
+- [#1567](https://github.com/cube-js/cube-ui-kit/pull/1567) [`72048186`](https://github.com/cube-js/cube-ui-kit/commit/720481868f209b382230ae498870ab205546ef6d) Thanks [@tenphi](https://github.com/tenphi)! - Add the `$outline-offset` token (`1px`), the gap between a focus outline and its element. The focus rings of `Button`, `ItemAction`, `Item`, `InlineInput`, `Checkbox`, `Switch`, `Slider`, `TagInput`'s tags, `Calendar` (at half), `ListBox` options (inward), the `TableBase` column resizer and drop indicator, and the `Layout` and `ResizablePanel` resize handles use it. The `TableBase` and `ListBox` offsets no longer follow `--border-width`. `FileInput`'s padding and `CopyPasteBlock`'s padding and focus border compensate for a border, so they now use the `bw` unit and follow `--border-width`. The `Tabs` drop-indicator offset and `ItemTable`'s search width cap use the `x` unit. Rendered sizes are unchanged at the defaults.
+
+- [#1569](https://github.com/cube-js/cube-ui-kit/pull/1569) [`5e6a5f33`](https://github.com/cube-js/cube-ui-kit/commit/5e6a5f33d8f448a6b152c52c4524123e61319ed7) Thanks [@tenphi](https://github.com/tenphi)! - Stop using the `bw` unit for values that aren't border widths, so changing `--border-width` now moves only borders, dividers and the sizes that make room for a border. Two new tokens cover the shared values:
+
+  - `$ring-width` (`1px`), the width of a hairline focus or selection ring. The hairline focus outlines use it (a field's thick focus ring stays `ow`, `$outline-width`), and so do the rings drawn with `shadow` in `TableBase`, `Tabs`, `ColorSwatchGroup` and the color-picker thumb. `RadioGroup` and `ColorSwatchGroup` also take their ring offset from `$outline-offset` now.
+  - `$item-gap` (`1px`), the hairline between adjacent items. `Menu`, `Select`, `ListBox` and the other `listGap` lists, `Item` actions, `Pagination`, vertical `Tabs` and the `Layout` breadcrumbs use it, and `listGap` documents it as its default.
+
+  The resize-handle dot gaps, `Calendar` cell spacing, `DatePicker` segment padding, the `Tabs` indicator, the `TableBase` drop indicators and the resizer's hover line keep their own device-pixel sizes, and `$item-shadow`'s offset is a plain `1px`. Rendered sizes are unchanged at the defaults.
+
+- [#1570](https://github.com/cube-js/cube-ui-kit/pull/1570) [`39629fb1`](https://github.com/cube-js/cube-ui-kit/commit/39629fb15bf0a0735cb9488a5220634bfda21fed) Thanks [@tenphi](https://github.com/tenphi)! - `GridProvider` sets its grid custom properties through `tokens`, so a container resize updates them inline instead of generating a new class for every measured width. Its `width`, `initialWidth` and `gap` props now take a single value (`string | number`): a state map, such as a responsive `gap`, is no longer accepted, since `tokens` take one value. A number now means pixels, and the default `gap` is `0` pixels instead of `'0'`. A unitless value makes `--column-width` invalid, so a string needs a unit (`'8px'`, `'1x'`).
+
+  `InlineInput`'s `inputStyles`, the `resize` prop of `TextInput` and `TextArea`, and `Icon`'s `size` and `stroke` are now merged with Tasty's merge instead of an object spread. A state map without a `''` key in one of them now extends the same property in the styles it is merged over (`styles.Input`, `inputStyles` or `styles`) instead of replacing it. `Panel` now sends its inner style props (`padding`, `gap`, `fill`, …) to the inner element even when the value is falsy, such as `padding={0}`; before, a falsy value went to the outer element.
+
+- [#1571](https://github.com/cube-js/cube-ui-kit/pull/1571) [`aa1ef937`](https://github.com/cube-js/cube-ui-kit/commit/aa1ef937e117a9c45981d043a8873494f37800e3) Thanks [@tenphi](https://github.com/tenphi)! - `Tag` and `Badge` with an icon no longer paint a sliver of their label over the icon or past their edge when squeezed below their label. A cut label now starts right after the icon, and the element clips what passes its edge unless it has end content (a close button, suffix or right icon). A label that fits is placed as before.
+
+- [#1567](https://github.com/cube-js/cube-ui-kit/pull/1567) [`72048186`](https://github.com/cube-js/cube-ui-kit/commit/720481868f209b382230ae498870ab205546ef6d) Thanks [@tenphi](https://github.com/tenphi)! - Update Tasty to 3.14.0 (from 3.13.0). Components that pass their props through `filterBaseProps` (`Block`, `Flex`, `Text`, `Card`, `Action` and others) now apply a consumer's `tokens` instead of dropping them, render a Tasty `theme` as `data-theme`, and render `isChecked` as `data-checked`. `Alert`'s own `theme` prop, its status theme, still renders only through `data-type`. Sub-elements created by `elements` also accept `theme` now.
+
 ## 0.199.2
 
 ### Patch Changes
