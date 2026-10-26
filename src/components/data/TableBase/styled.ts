@@ -634,6 +634,17 @@ export const TableElement = tasty({
     },
 
     /** Wraps the `⋮` trigger so it centres without becoming a table cell box. */
+    CellContent: {
+      $: '> Scroller > Table > Body > Row > Cell >',
+      '@linked': '@own(native-row-content)',
+      // Custom renderers own their controls. Keep their existing inline flow
+      // while placing the rendered content above the stretched row link.
+      display: 'inline',
+      position: { '': 'static', '@linked': 'relative' },
+      zIndex: { '': 'auto', '@linked': 1 },
+      pointerEvents: { '': 'auto', '@linked': 'none' },
+    },
+
     RowActions: {
       $: '> Scroller > Table > Body > Row > Cell >',
       position: 'relative',

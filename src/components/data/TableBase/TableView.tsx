@@ -1,4 +1,5 @@
 import { useVirtualizer } from '@tanstack/react-virtual';
+import { useGlobalStyles } from '@tenphi/tasty';
 import clsx from 'clsx';
 import {
   Fragment,
@@ -19,7 +20,6 @@ import { getColorTheme, useColorTheme } from '../../../tokens/color-theme';
 import { usePaletteVersion } from '../../../tokens/palette-config';
 import { SIZE_NAME_TO_KEY, SIZES } from '../../../tokens/sizes';
 import { useSlotProps } from '../../../utils/react/Slots';
-import { Action } from '../../actions/Action/Action';
 import { ItemAction } from '../../actions/ItemAction/ItemAction';
 import { Menu, MenuTrigger } from '../../actions/Menu';
 import { useContextMenu } from '../../actions/use-context-menu';
@@ -28,7 +28,7 @@ import {
   PlaceholderGroupContext,
 } from '../../content/Placeholder/Placeholder';
 import { Skeleton } from '../../content/Skeleton/Skeleton';
-import { TextItem } from '../../content/TextItem';
+import { TextItemWithNativeLink } from '../../content/TextItem/TextItem';
 import { Checkbox } from '../../fields/Checkbox';
 import { useToast } from '../../overlays/Toast';
 import { TooltipProvider } from '../../overlays/Tooltip/TooltipProvider';
@@ -50,6 +50,7 @@ import {
 } from './styled';
 import { TableHeaderCell } from './TableHeaderCell';
 import { TableRow, TableRowDropIndicator } from './TableRow';
+import { TableRowLink } from './TableRowLink';
 import { TreeGridTable } from './TreeGridTable';
 import { selectionRowKey } from './types';
 import { toTsv } from './use-cell-selection';
@@ -68,6 +69,7 @@ import { useTableTooltipRefresh } from './use-table-tooltip-refresh';
 import type { Key, Node } from '@react-types/shared';
 import type { Styles } from '@tenphi/tasty';
 import type {
+  AnchorHTMLAttributes,
   CSSProperties,
   KeyboardEvent as ReactKeyboardEvent,
   MouseEvent as ReactMouseEvent,
@@ -95,6 +97,18 @@ import type {
 } from './types';
 import type { useCellSelection } from './use-cell-selection';
 import type { CubeTableSelectionState } from './use-table-selection';
+
+// The same zero-specificity interaction default as Item's native row slots:
+// custom content passes through to the row link; its controls keep their hits.
+const CELL_CONTROL_SELECTOR =
+  'a,button,input,select,textarea,label[for],label:has(button,input,select,textarea),[tabindex],[contenteditable=""],[contenteditable="true"],[contenteditable="plaintext-only"],[role="button"],[role="checkbox"],[role="switch"],[role="menuitem"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="radio"],[role="textbox"],[role="combobox"],[role="slider"],[role="spinbutton"],[role="link"]';
+const NATIVE_CELL_CONTROL_SELECTOR = `:where([data-element=CellContent][data-native-row-content]) :where(${CELL_CONTROL_SELECTOR})`;
+const NATIVE_CELL_CONTROL_STYLES: Styles = { pointerEvents: 'auto' };
+
+function isCellControl(target: Element, row: Element) {
+  const control = target.closest(CELL_CONTROL_SELECTOR);
+  return control != null && control !== row;
+}
 
 /** Visual/behavioural overrides a table adapter may attach to a single row. */
 export interface CubeTableRowRenderProps {
@@ -429,16 +443,28 @@ function TableCellContent<T>({
   column,
   row,
   rowIndex,
+  nativeLinkProps,
 }: {
   column: CubeResolvedColumn<T>;
   row: T;
   rowIndex: number;
+  nativeLinkProps?: AnchorHTMLAttributes<HTMLAnchorElement>;
 }): ReactNode {
   const text = getColumnText(column, row, rowIndex);
-  return column.autoHeight || text == null ? text : <TextItem>{text}</TextItem>;
+  return column.autoHeight || text == null ? (
+    text
+  ) : (
+    <TextItemWithNativeLink nativeLinkProps={nativeLinkProps}>
+      {text}
+    </TextItemWithNativeLink>
+  );
 }
 
-function renderCellValue(rendered: ReactNode, autoHeight?: boolean): ReactNode {
+function renderCellValue(
+  rendered: ReactNode,
+  autoHeight?: boolean,
+  nativeLinkProps?: AnchorHTMLAttributes<HTMLAnchorElement>,
+): ReactNode {
   const isText =
     typeof rendered === 'string' ||
     typeof rendered === 'number' ||
@@ -447,9 +473,18 @@ function renderCellValue(rendered: ReactNode, autoHeight?: boolean): ReactNode {
   // TextItem supplies truncation and its tooltip without Item's hotkey hooks.
   // Wrapping columns render the text directly instead.
   return isText && !autoHeight ? (
-    <TextItem>{String(rendered)}</TextItem>
+    <TextItemWithNativeLink nativeLinkProps={nativeLinkProps}>
+      {String(rendered)}
+    </TextItemWithNativeLink>
   ) : isText ? (
     String(rendered)
+  ) : rendered != null && typeof rendered !== 'boolean' ? (
+    <div
+      data-element="CellContent"
+      data-native-row-content={nativeLinkProps ? '' : undefined}
+    >
+      {rendered}
+    </div>
   ) : (
     rendered
   );
@@ -460,10 +495,16 @@ function renderCellContent<T>(
   row: T,
   rowIndex: number,
   ctx: CubeTableCellContext<T>,
+  nativeLinkProps?: AnchorHTMLAttributes<HTMLAnchorElement>,
 ): ReactNode {
   if (!column.render) {
     return column.isStructural ? null : (
-      <TableCellContent column={column} row={row} rowIndex={rowIndex} />
+      <TableCellContent
+        column={column}
+        row={row}
+        rowIndex={rowIndex}
+        nativeLinkProps={nativeLinkProps}
+      />
     );
   }
 
@@ -475,6 +516,7 @@ function renderCellContent<T>(
       ctx,
     ),
     column.autoHeight,
+    nativeLinkProps,
   );
 }
 
@@ -613,6 +655,10 @@ export function TableView<T = any>(props: TableViewProps<T>) {
   } = props;
 
   const { columns } = layout;
+  useGlobalStyles(
+    NATIVE_CELL_CONTROL_SELECTOR,
+    rowLink ? NATIVE_CELL_CONTROL_STYLES : undefined,
+  );
   const columnCount = columns.length;
   const headerGroupDepth = columns.reduce(
     (depth, column) =>
@@ -1166,14 +1212,27 @@ export function TableView<T = any>(props: TableViewProps<T>) {
       >
         {isMenuEmpty(items) ? null : (
           <div data-element="RowActions">
-            <MenuTrigger>
+            <MenuTrigger
+              isDisabled={selection?.isRowDisabled(rowKey)}
+              shouldRestoreFocus={tree ? undefined : false}
+              onOpenChange={
+                tree
+                  ? undefined
+                  : (isOpen) =>
+                      handleRowMenuOpenChange(isOpen, rowKey, rowIndex)
+              }
+            >
               <ItemAction
-                // The grid is one tab stop; in-cell controls are reached with
-                // arrow keys, matching `TreeNode`.
-                tabIndex={-1}
+                // Flat rows expose their resting row's menu through Tab.
+                // Tree rows retain React Aria's in-row arrow navigation.
+                tabIndex={!tree && restingRow?.key === rowKey ? 0 : -1}
                 icon={<MoreIcon />}
                 aria-label={t('itemTable.rowActions', 'Row actions')}
                 {...rowMenuTriggerProps}
+                isDisabled={
+                  selection?.isRowDisabled(rowKey) ||
+                  rowMenuTriggerProps?.isDisabled
+                }
               />
               <Menu onAction={menuActionHandler(row, rowKey, false)}>
                 {items}
@@ -1377,6 +1436,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
     // mods — state keys inside `Cell` resolve against the table root.
     pinnedEdge?: 'top' | 'bottom',
     treeItemAria?: ReturnType<typeof useTreeItem>,
+    nativeLinkProps?: AnchorHTMLAttributes<HTMLAnchorElement>,
   ) {
     // Section-qualified, because the same record is routinely pinned at both
     // edges. `rowKey` below stays the consumer's own — this identity is the
@@ -1450,7 +1510,13 @@ export function TableView<T = any>(props: TableViewProps<T>) {
       tree: pinnedEdge == null ? treeRowState(rowIndex) : undefined,
     };
 
-    const content = renderCellContent(column, row, rowIndex, ctx);
+    const content = renderCellContent(
+      column,
+      row,
+      rowIndex,
+      ctx,
+      nativeLinkProps,
+    );
 
     const treeEntry = pinnedEdge == null ? tree?.entries[rowIndex] : undefined;
     const displayContent =
@@ -1479,7 +1545,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
     // a `<tr>` cannot be wrapped in an `<a>`, and this is the one cell whose
     // text is the row's accessible name. ⌘-click, middle-click and "Open in
     // new tab" then work natively, which an onClick handler can never give.
-    const link = column.isRowHeader ? rowLink?.(row, rowIndex) : undefined;
+    const isLinkedHeader = column.isRowHeader && nativeLinkProps !== undefined;
 
     return (
       <CellTag
@@ -1490,7 +1556,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
         data-pin-edge={column.isPinEdge ? '' : undefined}
         data-align={column.align}
         data-wrap={column.autoHeight ? '' : undefined}
-        data-link={link !== undefined ? '' : undefined}
+        data-link={isLinkedHeader ? '' : undefined}
         data-last-row={isLastRow ? '' : undefined}
         data-pinned={pinnedEdge}
         data-odd={cellBandFlag(rowIndex, pinnedEdge)}
@@ -1521,10 +1587,10 @@ export function TableView<T = any>(props: TableViewProps<T>) {
         }
       >
         {displayContent}
-        {link !== undefined ? (
-          <Action
+        {isLinkedHeader ? (
+          <a
+            {...nativeLinkProps}
             data-element="RowLink"
-            to={link}
             // The row is the tab stop; the link is reached through it.
             tabIndex={-1}
             aria-label={getColumnText(column, row, rowIndex) ?? undefined}
@@ -1547,7 +1613,9 @@ export function TableView<T = any>(props: TableViewProps<T>) {
     // and scrolling rows alike, so both have to answer to the same identity.
     const rowKey = getRowKey(row, index);
 
-    return (
+    const render = (
+      nativeLinkProps?: AnchorHTMLAttributes<HTMLAnchorElement>,
+    ) => (
       <tr
         key={`pinned-${edge}-${rowKey}`}
         data-element="Row"
@@ -1557,10 +1625,27 @@ export function TableView<T = any>(props: TableViewProps<T>) {
       >
         {bodyColumns.map((segment) =>
           segment.column
-            ? renderCell(segment.column, row, index, rowKey, false, edge)
+            ? renderCell(
+                segment.column,
+                row,
+                index,
+                rowKey,
+                false,
+                edge,
+                undefined,
+                nativeLinkProps,
+              )
             : renderColumnSpacer(segment.key, segment.span, edge),
         )}
       </tr>
+    );
+    const link = selection?.isRowDisabled(rowKey)
+      ? undefined
+      : rowLink?.(row, index);
+    return (
+      <TableRowLink key={`pinned-${edge}-${rowKey}`} to={link}>
+        {render}
+      </TableRowLink>
     );
   }
 
@@ -1569,6 +1654,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
     row: T,
     rowIndex: number,
     treeItemAria?: ReturnType<typeof useTreeItem>,
+    nativeLinkProps?: AnchorHTMLAttributes<HTMLAnchorElement>,
   ) {
     const rowKey = bodyRowKey(row, rowIndex);
 
@@ -1582,6 +1668,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
             rowIndex === rows.length - 1,
             undefined,
             treeItemAria,
+            nativeLinkProps,
           )
         : renderColumnSpacer(
             segment.key,
@@ -1600,6 +1687,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
   function getRowElementProps(row: T, rowIndex: number) {
     const rowKey = bodyRowKey(row, rowIndex);
     const isSelected = selection?.isSelected(rowKey) ?? false;
+    const isDisabled = selection?.isRowDisabled(rowKey) ?? false;
     const ctx: CubeTableRowContext<T> = {
       row,
       rowKey,
@@ -1620,24 +1708,26 @@ export function TableView<T = any>(props: TableViewProps<T>) {
       'data-odd': isStriped && rowIndex % 2 === 1 ? '' : undefined,
       'data-dimmed': extra?.isDimmed ? '' : undefined,
       'data-selected': isSelected ? '' : undefined,
-      'data-disabled': selection?.isRowDisabled(rowKey) ? '' : undefined,
+      'data-disabled': isDisabled ? '' : undefined,
       role: 'row',
       // Only the resting row takes a tab stop; the rest are reached with the
       // arrow keys. Off entirely when nothing on the row is operable.
-      tabIndex:
-        !tree && isReorderable
-          ? rowIndex === focusedRowIndex
-            ? 0
-            : -1
-          : undefined,
+      tabIndex: hasFlatRowNavigation
+        ? !isDisabled && rowKey === restingRow?.key
+          ? 0
+          : -1
+        : undefined,
       // Only meaningful in a selectable grid; announcing "not selected" on
       // every row of a plain table is noise.
       'aria-selected': selection?.isEnabled ? isSelected : undefined,
+      'aria-disabled': isDisabled || undefined,
       'aria-rowindex': bodyRowIndex(rowIndex),
       title: extra?.tooltip,
       height: extra?.height,
       'data-clickable':
-        onRowAction != null || rowLink?.(row, rowIndex) !== undefined
+        !isDisabled &&
+        (onRowAction != null ||
+          (hasRowLinkColumn && rowLink?.(row, rowIndex) !== undefined))
           ? ''
           : undefined,
       onClick:
@@ -1646,9 +1736,8 @@ export function TableView<T = any>(props: TableViewProps<T>) {
               // A click that landed on a control inside the cell belongs to
               // that control — the row must not also act on it.
               if (
-                (event.target as HTMLElement).closest(
-                  'a, button, input, select, textarea, [role="button"], [role="menuitem"]',
-                )
+                isDisabled ||
+                isCellControl(event.target as Element, event.currentTarget)
               ) {
                 return;
               }
@@ -1656,10 +1745,11 @@ export function TableView<T = any>(props: TableViewProps<T>) {
               onRowAction(row, rowKey);
             }
           : undefined,
-      onContextMenu: isMenuEnabled
-        ? (event: ReactMouseEvent) =>
-            openContextMenuFor(row, rowIndex, rowKey, event)
-        : undefined,
+      onContextMenu:
+        isMenuEnabled && !isDisabled
+          ? (event: ReactMouseEvent) =>
+              openContextMenuFor(row, rowIndex, rowKey, event)
+          : undefined,
       ...Object.fromEntries(
         Object.entries(extra?.mods ?? {})
           .filter(([, active]) => active)
@@ -1674,7 +1764,9 @@ export function TableView<T = any>(props: TableViewProps<T>) {
     const treeNode = tree?.nodes[rowIndex];
     const treeEntry = tree?.entries[rowIndex];
 
-    return (
+    const render = (
+      nativeLinkProps?: AnchorHTMLAttributes<HTMLAnchorElement>,
+    ) => (
       <TableRow
         key={rowProps['data-key']}
         rowKey={rowKey}
@@ -1695,8 +1787,18 @@ export function TableView<T = any>(props: TableViewProps<T>) {
             : undefined
         }
       >
-        {(treeItemAria) => renderRowCells(row, rowIndex, treeItemAria)}
+        {(treeItemAria) =>
+          renderRowCells(row, rowIndex, treeItemAria, nativeLinkProps)
+        }
       </TableRow>
+    );
+    const link = selection?.isRowDisabled(rowKey)
+      ? undefined
+      : rowLink?.(row, rowIndex);
+    return (
+      <TableRowLink key={rowProps['data-key']} to={link}>
+        {render}
+      </TableRowLink>
     );
   }
 
@@ -1889,7 +1991,120 @@ export function TableView<T = any>(props: TableViewProps<T>) {
     MAX_LOAD_MORE_SKELETON_ROWS,
   );
 
-  const [focusedRowIndex, setFocusedRowIndex] = useState(0);
+  const isMenuEnabled = rowMenu != null && rowContextMenu !== false;
+  const hasMenuColumn = isMenuEnabled && rowContextMenu !== 'context-only';
+  const hasRowLinkColumn = columns.some((column) => column.isRowHeader);
+  const hasFlatRowNavigation =
+    !tree &&
+    (isReorderable ||
+      (rowLink != null && hasRowLinkColumn) ||
+      onRowAction != null ||
+      isMenuEnabled);
+  const [focusedRow, setFocusedRow] = useState<{
+    key: Key | null;
+    index: number;
+  }>({ key: null, index: 0 });
+  const pendingRowFocus = useRef<Key | null>(null);
+  const ownedRow = useRef<HTMLTableRowElement | null>(null);
+  const menuOrigin = useRef<{
+    key: Key;
+    index: number;
+    target: HTMLElement | null;
+    isContextMenu: boolean;
+  } | null>(null);
+
+  function focusableRowFrom(index: number, direction: number) {
+    for (; index >= 0 && index < rows.length; index += direction) {
+      const row = rows[index];
+      const key = bodyRowKey(row, index);
+      if (selection?.isRowDisabled(key)) continue;
+      if (
+        isReorderable ||
+        onRowAction != null ||
+        (hasRowLinkColumn && rowLink?.(row, index) !== undefined) ||
+        (isMenuEnabled && !isMenuEmpty(resolveRowMenu(row, index, key)))
+      )
+        return { key, index };
+    }
+    return null;
+  }
+
+  function rowIndexForKey(key: Key) {
+    return (
+      selection?.collection.indexOf(key) ??
+      rows.findIndex((row, index) => bodyRowKey(row, index) === key)
+    );
+  }
+
+  const focusedRowIndex =
+    focusedRow.key == null ? -1 : rowIndexForKey(focusedRow.key);
+  const restingIndex =
+    focusedRowIndex >= 0
+      ? focusedRowIndex
+      : Math.min(focusedRow.index, rows.length - 1);
+  const restingRow = hasFlatRowNavigation
+    ? (focusableRowFrom(Math.max(restingIndex, 0), 1) ??
+      focusableRowFrom(restingIndex, -1))
+    : null;
+
+  function mountedRow(key: Key) {
+    return Array.from(
+      localBodyRef.current?.querySelectorAll<HTMLTableRowElement>(
+        'tr[data-element="Row"][data-key]',
+      ) ?? [],
+    ).find((element) => element.dataset.key === String(key));
+  }
+
+  function focusFlatRow(next: { key: Key; index: number } | null) {
+    if (!next) return;
+    pendingRowFocus.current = next.key;
+    setFocusedRow((current) =>
+      current.key === next.key && current.index === next.index ? current : next,
+    );
+    selection?.selectionManager.setFocusedKey(next.key);
+    if (shouldVirtualize)
+      virtualizer.scrollToIndex(next.index, { align: 'auto' });
+    const target = mountedRow(next.key);
+    if (target) {
+      pendingRowFocus.current = null;
+      ownedRow.current = target;
+      target.focus({ preventScroll: shouldVirtualize });
+    }
+  }
+
+  // Complete a virtual move after the destination mounts. A removed focused
+  // row uses its last DOM position to choose the closest surviving neighbor.
+  // Concrete focus outside the table always wins over this delayed work.
+  useLayoutEffect(() => {
+    if (!hasFlatRowNavigation) return;
+    const previous = ownedRow.current;
+    const active = document.activeElement;
+    if (
+      active &&
+      active !== document.body &&
+      !scrollerRef.current?.contains(active)
+    ) {
+      pendingRowFocus.current = null;
+      return;
+    }
+    const wasRemoved =
+      pendingRowFocus.current == null && previous && !previous.isConnected;
+    if (pendingRowFocus.current == null && !wasRemoved) return;
+
+    const previousIndex = wasRemoved
+      ? Number(previous.dataset.rowIndex)
+      : (restingRow?.index ?? 0);
+    const next = wasRemoved
+      ? (focusableRowFrom(Math.min(previousIndex, rows.length - 1), 1) ??
+        focusableRowFrom(Math.min(previousIndex, rows.length - 1), -1))
+      : restingRow;
+    if (next) focusFlatRow(next);
+    else {
+      pendingRowFocus.current = null;
+      ownedRow.current = null;
+      scrollerRef.current?.focus({ preventScroll: true });
+    }
+  });
   // Only used to suppress text selection during the gesture; the range itself
   // lives in a ref so growing it does not re-render on every cell crossed.
   const [isRangeDragging, setIsRangeDragging] = useState(false);
@@ -1914,27 +2129,20 @@ export function TableView<T = any>(props: TableViewProps<T>) {
     };
   }, [isRangeDragging, cellSelection]);
 
-  const moveRowFocus = useEvent((from: HTMLElement, delta: number) => {
-    const current = from.closest('tr[data-element="Row"]');
-    const all = Array.from(
-      scrollerRef.current?.querySelectorAll<HTMLTableRowElement>(
-        'tbody tr[data-element="Row"]:not([data-placeholder])',
-      ) ?? [],
-    );
-
-    if (!all.length) return false;
-
-    const index = current ? all.indexOf(current as HTMLTableRowElement) : -1;
-    const next = Math.min(
-      Math.max((index === -1 ? focusedRowIndex : index) + delta, 0),
-      all.length - 1,
-    );
-
-    setFocusedRowIndex(next);
-    all[next]?.focus();
-
-    return true;
-  });
+  function moveRowFocus(index: number, key: string) {
+    const logicalIndex =
+      pendingRowFocus.current == null
+        ? index
+        : rowIndexForKey(pendingRowFocus.current);
+    const direction = key === 'ArrowUp' || key === 'End' ? -1 : 1;
+    const start =
+      key === 'Home'
+        ? 0
+        : key === 'End'
+          ? rows.length - 1
+          : logicalIndex + direction;
+    focusFlatRow(focusableRowFrom(start, direction));
+  }
 
   /* ── infinite scroll ────────────────────────────────────────────────────
    * An `IntersectionObserver` on a sentinel row rather than a scroll handler:
@@ -1997,8 +2205,69 @@ export function TableView<T = any>(props: TableViewProps<T>) {
     placement: 'bottom start',
   });
 
-  const isMenuEnabled = rowMenu != null && rowContextMenu !== false;
-  const hasMenuColumn = isMenuEnabled && rowContextMenu !== 'context-only';
+  function rememberRowMenuOrigin(
+    key: Key,
+    index: number,
+    isContextMenu = false,
+  ) {
+    menuOrigin.current = {
+      key,
+      index,
+      isContextMenu,
+      target:
+        document.activeElement instanceof HTMLElement
+          ? document.activeElement
+          : null,
+    };
+    const element = mountedRow(key);
+    if (element) ownedRow.current = element;
+    setFocusedRow({ key, index });
+  }
+
+  // A row menu can retain its close callback while the records change.
+  // Restore against the current rows, including a removed opening record.
+  const restoreRowMenuFocus = useEvent(() => {
+    const origin = menuOrigin.current;
+    menuOrigin.current = null;
+    if (!origin) return;
+    const active = document.activeElement;
+    // Menu actions can hand focus to a dialog or editor. Respect that handoff.
+    if (
+      active instanceof HTMLElement &&
+      active !== document.body &&
+      active.isConnected &&
+      active !== origin.target &&
+      !active.closest('[role="menu"]')
+    )
+      return;
+
+    if (origin.target?.isConnected && !selection?.isRowDisabled(origin.key))
+      origin.target.focus();
+    else {
+      const currentIndex = rowIndexForKey(origin.key);
+      const index =
+        currentIndex >= 0
+          ? currentIndex
+          : Math.min(origin.index, rows.length - 1);
+      const next = focusableRowFrom(index, 1) ?? focusableRowFrom(index, -1);
+      if (next) focusFlatRow(next);
+      else scrollerRef.current?.focus({ preventScroll: true });
+    }
+  });
+
+  function handleRowMenuOpenChange(isOpen: boolean, key: Key, index: number) {
+    if (isOpen) rememberRowMenuOrigin(key, index);
+    else restoreRowMenuFocus();
+  }
+
+  useEffect(() => {
+    if (contextMenu.isOpen || !menuOrigin.current?.isContextMenu) return;
+    // Escape leaves the hook's anchor mounted for its exit animation. Finish
+    // the row-owned close so an immediate reopen mounts and focuses a fresh
+    // menu rather than reusing the still-closing instance.
+    contextMenu.close();
+    restoreRowMenuFocus();
+  }, [contextMenu, restoreRowMenuFocus]);
 
   function resolveRowMenu(row: T, rowIndex: number, rowKey: Key) {
     if (!rowMenu) return null;
@@ -2014,9 +2283,20 @@ export function TableView<T = any>(props: TableViewProps<T>) {
     });
   }
 
+  // The context-menu hook retains its runtime action handler while open.
+  // Resolve through the current committed callback and record when it fires.
+  const notifyRowMenuAction = useEvent((action: Key, row: T, rowKey: Key) => {
+    const index = rowIndexForKey(rowKey);
+    onRowMenuAction?.(
+      normalizeMenuAction(action),
+      index >= 0 ? rows[index] : row,
+      rowKey,
+    );
+  });
+
   function menuActionHandler(row: T, rowKey: Key, closeAfter: boolean) {
     return (action: Key) => {
-      onRowMenuAction?.(normalizeMenuAction(action), row, rowKey);
+      notifyRowMenuAction(action, row, rowKey);
 
       // `useContextMenu` leaves its popover open after an action — the same
       // happens in `Tree`, so it is the hook's behaviour rather than this
@@ -2037,17 +2317,23 @@ export function TableView<T = any>(props: TableViewProps<T>) {
 
       // No items means no menu — falling through to the browser's own context
       // menu is more useful than opening an empty popover.
-      if (isMenuEmpty(items)) return;
+      if (selection?.isRowDisabled(rowKey) || isMenuEmpty(items)) return;
 
       event.preventDefault();
+      if (!tree) rememberRowMenuOrigin(rowKey, rowIndex, true);
+      const source = mountedRow(rowKey);
+      const rect = source?.getBoundingClientRect();
       contextMenu.open(
         { children: items, onAction: menuActionHandler(row, rowKey, true) },
-        undefined,
-        // Shift+F10 carries no coordinates; the hook then anchors on the
-        // element that produced the event, which is the row.
+        tree ? undefined : { shouldRestoreFocus: false },
+        // The shared context-menu hook has no attached target: position a
+        // keyboard opening at the source row rather than the viewport origin.
         'clientX' in event.nativeEvent
           ? (event.nativeEvent as MouseEvent)
-          : undefined,
+          : new MouseEvent('contextmenu', {
+              clientX: rect ? rect.left + rect.width / 2 : 0,
+              clientY: rect ? rect.top + rect.height / 2 : 0,
+            }),
       );
     },
   );
@@ -2073,7 +2359,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
       'tr[data-element="Row"][data-key]',
     );
 
-    if (!element) return null;
+    if (!element || element.parentElement !== localBodyRef.current) return null;
 
     const index = Number(element.getAttribute('data-row-index'));
 
@@ -2083,7 +2369,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
 
     return row === undefined
       ? null
-      : { row, index, key: bodyRowKey(row, index) };
+      : { row, index, key: bodyRowKey(row, index), element };
   }
 
   const virtualItems = shouldVirtualize ? virtualizer.getVirtualItems() : [];
@@ -2363,15 +2649,77 @@ export function TableView<T = any>(props: TableViewProps<T>) {
         ref={handleScrollerRef}
         // Focusable only programmatically: a cell press moves focus here so the
         // range's shortcuts land, but the grid stays a single tab stop.
-        tabIndex={cellSelection?.isEnabled ? -1 : undefined}
+        tabIndex={
+          cellSelection?.isEnabled || hasFlatRowNavigation ? -1 : undefined
+        }
+        onFocusCapture={(event) => {
+          if (!hasFlatRowNavigation) return;
+          const found = rowFromEvent(event.target);
+          if (!found || selection?.isRowDisabled(found.key)) return;
+          if (focusableRowFrom(found.index, 1)?.key !== found.key) return;
+          if (pendingRowFocus.current !== found.key)
+            pendingRowFocus.current = null;
+          ownedRow.current = found.element as HTMLTableRowElement;
+          setFocusedRow({ key: found.key, index: found.index });
+          selection?.selectionManager.setFocusedKey(found.key);
+        }}
+        onBlurCapture={(event) => {
+          const target = event.relatedTarget;
+          if (
+            target instanceof Element &&
+            !event.currentTarget.contains(target)
+          ) {
+            pendingRowFocus.current = null;
+            // A row menu lives in a portal, but still owns the row's focus.
+            if (!target.closest('[role="menu"]')) ownedRow.current = null;
+          }
+        }}
         // Escape is the standard way out of a selection, and it must work from
         // wherever focus happens to be inside the table.
         onKeyDown={(event) => {
+          const found = rowFromEvent(event.target);
+          const target = event.target as HTMLElement;
+          const isRowTarget = found && target === found.element;
+          if (
+            pendingRowFocus.current != null &&
+            found &&
+            pendingRowFocus.current !== found.key &&
+            (event.key === 'Enter' || (event.key === 'F10' && event.shiftKey))
+          ) {
+            // The old DOM row can still receive keys before a virtual
+            // destination mounts. It must never act for that stale record.
+            event.preventDefault();
+            event.stopPropagation();
+            return;
+          }
+          if (
+            hasFlatRowNavigation &&
+            !event.altKey &&
+            !event.ctrlKey &&
+            !event.metaKey &&
+            !event.shiftKey &&
+            !dragState?.draggingKeys?.size
+          ) {
+            if (
+              isRowTarget &&
+              ['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)
+            ) {
+              event.preventDefault();
+              moveRowFocus(found.index, event.key);
+              return;
+            }
+            if (
+              event.key === 'ArrowDown' &&
+              target.matches('th[data-element="HeaderCell"]')
+            ) {
+              event.preventDefault();
+              focusFlatRow(restingRow);
+              return;
+            }
+          }
           // Shift+F10 is the standard way to reach a context menu from the
           // keyboard, and the only way when there is no `⋮` trigger.
           if (event.key === 'F10' && event.shiftKey && isMenuEnabled) {
-            const found = rowFromEvent(event.target);
-
             if (found) {
               event.stopPropagation();
               openContextMenuFor(found.row, found.index, found.key, event);
@@ -2380,38 +2728,34 @@ export function TableView<T = any>(props: TableViewProps<T>) {
             return;
           }
 
-          if (event.key === 'Enter' && onRowAction) {
-            const found = rowFromEvent(event.target);
-
+          if (event.key === 'Enter' && found) {
             // Enter on a control inside the cell belongs to that control.
             if (
-              found &&
-              !(event.target as HTMLElement).closest(
-                'a, button, input, select, textarea, [role="button"]',
-              )
+              !selection?.isRowDisabled(found.key) &&
+              !isCellControl(target, found.element)
             ) {
-              onRowAction(found.row, found.key);
-            }
-
-            return;
-          }
-
-          if (
-            !tree &&
-            isReorderable &&
-            (event.key === 'ArrowDown' || event.key === 'ArrowUp')
-          ) {
-            // Not while a drag is in flight — the arrows then belong to React
-            // Aria, which uses them to choose the drop position.
-            if (dragState?.draggingKeys?.size) return;
-
-            if (
-              moveRowFocus(
-                event.target as HTMLElement,
-                event.key === 'ArrowDown' ? 1 : -1,
-              )
-            ) {
-              event.preventDefault();
+              // React Aria owns Enter-to-drag on a draggable row.
+              if (isReorderable && isRowTarget) return;
+              const link = found.element.querySelector<HTMLElement>(
+                '[data-element="RowLink"]',
+              );
+              if (link && !tree) {
+                event.preventDefault();
+                link.dispatchEvent(
+                  new MouseEvent('click', {
+                    bubbles: true,
+                    cancelable: true,
+                    button: 0,
+                    altKey: event.altKey,
+                    ctrlKey: event.ctrlKey,
+                    metaKey: event.metaKey,
+                    shiftKey: event.shiftKey,
+                  }),
+                );
+              } else if (onRowAction) {
+                event.preventDefault();
+                onRowAction(found.row, found.key);
+              }
             }
 
             return;

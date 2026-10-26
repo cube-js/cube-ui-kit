@@ -382,6 +382,26 @@ function ItemTable<T = any>(
       storage,
     });
 
+  // The layout has already removed hidden columns and identified structural
+  // ones. Resolve the header here so body windowing also retains its anchor.
+  const implicitRowHeader =
+    rowLink && !layout.columns.some((column) => column.isRowHeader)
+      ? layout.columns.find(
+          (column) => !column.isStructural && column.isRowHeader !== false,
+        )?.key
+      : undefined;
+  const tableLayout =
+    implicitRowHeader === undefined
+      ? layout
+      : {
+          ...layout,
+          columns: layout.columns.map((column) =>
+            column.key === implicitRowHeader
+              ? { ...column, isRowHeader: true }
+              : column,
+          ),
+        };
+
   const hasBulkSelection =
     bulkActions != null &&
     bulkActions.length > 0 &&
@@ -491,7 +511,7 @@ function ItemTable<T = any>(
       }
       totalRowCount={treeModel ? visibleRows.length : pagination.total}
       getRowKey={resolvedGetRowKey}
-      layout={layout}
+      layout={tableLayout}
       onScrollerRef={setScrollerEl}
       size={size}
       shape={shape}
