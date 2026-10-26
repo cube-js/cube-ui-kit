@@ -33,6 +33,36 @@ import { DialogContainer } from './DialogContainer';
 describe.each(['modal', 'tray'] as const)(
   '<DialogContainer type=%s />',
   (type) => {
+    it('contains a claimed Escape and dismisses on the next unclaimed Escape', async () => {
+      const onDismiss = vi.fn();
+      const onAncestorKeyDown = vi.fn();
+      renderWithRoot(
+        <div onKeyDown={onAncestorKeyDown}>
+          <DialogContainer type={type} isOpen onDismiss={onDismiss}>
+            <Dialog aria-label="Field editor">
+              <input aria-label="Expression" />
+            </Dialog>
+          </DialogContainer>
+        </div>,
+      );
+      const input = screen.getByRole('textbox', { name: 'Expression' });
+      await userEvent.click(input);
+      // CodeMirror claims Escape in a native handler without stopping propagation.
+      input.addEventListener('keydown', (event) => event.preventDefault(), {
+        once: true,
+      });
+
+      await userEvent.keyboard('{Escape}');
+
+      expect(onDismiss).not.toHaveBeenCalled();
+      expect(onAncestorKeyDown).not.toHaveBeenCalled();
+
+      await userEvent.keyboard('{Escape}');
+
+      expect(onDismiss).toHaveBeenCalledTimes(1);
+      expect(onAncestorKeyDown).not.toHaveBeenCalled();
+    });
+
     it.each([
       [true, false, true],
       [false, false, false],
