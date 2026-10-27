@@ -274,7 +274,7 @@ const meta: Meta<typeof FilterPicker> = {
       control: false,
       description: 'Custom styles for the trigger button element',
     },
-    triggerTooltip: {
+    tooltip: {
       control: { type: 'text' },
       description:
         'Tooltip for the trigger button (separate from `labelTooltip`)',
@@ -2348,7 +2348,7 @@ export const WithHotkeys: Story = {
     searchPlaceholder: 'Search options...',
     fieldStyles: { width: '0 30x 100%' },
     hotkeys: 'ctrl+f',
-    triggerTooltip: 'Press Ctrl+F to open filter',
+    tooltip: 'Press Ctrl+F to open filter',
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -2425,7 +2425,7 @@ export const WithTooltipAndDescription: Story = {
     selectionMode: 'single',
     searchPlaceholder: 'Search languages...',
     fieldStyles: { width: '0 30x 100%' },
-    triggerTooltip:
+    tooltip:
       'Select your preferred programming language. You can search and filter the options.',
     triggerDescription: 'Required for profile',
   },
@@ -2447,7 +2447,7 @@ export const WithTooltipAndDescription: Story = {
     docs: {
       description: {
         story:
-          'The `triggerTooltip` prop adds a helpful tooltip to the trigger button, while `triggerDescription` can show additional context below the main trigger content.',
+          'The `tooltip` prop adds a helpful tooltip to the trigger button, while `triggerDescription` can show additional context below the main trigger content.',
       },
     },
   },
@@ -2461,7 +2461,7 @@ export const AdvancedTriggerFeatures: Story = {
     searchPlaceholder: 'Search all options...',
     fieldStyles: { width: '0 40x 100%' },
     hotkeys: 'ctrl+shift+f',
-    triggerTooltip: {
+    tooltip: {
       title: 'Advanced Filter Picker',
       content:
         'This picker showcases all the advanced trigger features including hotkeys, prefix/suffix, and descriptions.',

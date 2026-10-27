@@ -26,6 +26,7 @@ import {
   FieldLayoutStyleProps,
   splitFieldLayout,
 } from '../../form/field-layout';
+import { resolveTriggerTooltip } from '../../form/legacy-tooltip';
 import { Dialog } from '../../overlays/Dialog/Dialog';
 import { DialogTrigger } from '../../overlays/Dialog/DialogTrigger';
 import { ColorSpace } from '../color/channels';
@@ -115,7 +116,12 @@ export interface CubeColorPickerProps
   /** The visual type of the trigger. */
   type?: CubeItemProps['type'];
   theme?: CubeItemProps['theme'];
-  /** Tooltip for the trigger, separate from `labelTooltip`. */
+  /**
+   * Tooltip for the trigger. The info badge next to the field's label is
+   * `labelTooltip`.
+   */
+  tooltip?: CubeItemProps['tooltip'];
+  /** @deprecated Use `tooltip`. */
   triggerTooltip?: CubeItemProps['tooltip'];
   /** Colors to offer under the editor, for picking without dialing one in. */
   swatches?: CubeColorSwatchItem[];
@@ -168,6 +174,7 @@ export const ColorPicker = forwardRef(function ColorPicker(
     size,
     type = 'outline',
     theme = 'default',
+    tooltip,
     triggerTooltip,
     swatches,
     swatchColumns,
@@ -274,7 +281,7 @@ export const ColorPicker = forwardRef(function ColorPicker(
             <ColorSwatch size="small" color={color} styles={swatchStyles} />
           }
           rightIcon={getValidationIcon({ isInvalid, isValid })}
-          tooltip={triggerTooltip}
+          tooltip={resolveTriggerTooltip(tooltip, triggerTooltip)}
           isDisabled={isEditingDisabled || isReadOnly}
           autoFocus={autoFocus}
           aria-label={ariaLabel}
@@ -334,7 +341,12 @@ export const ColorPicker = forwardRef(function ColorPicker(
     </ColorPickerWrapper>
   );
 
-  return wrapWithField(pickerField, { ...props, ...field });
+  return wrapWithField(pickerField, {
+    ...props,
+    ...field,
+    // The trigger's own. Handed on, it read as the legacy field `tooltip`.
+    tooltip: undefined,
+  });
 });
 
 /**

@@ -2,6 +2,7 @@ import { cloneElement, createRef, useState } from 'react';
 
 import {
   act,
+  hoverWithPointer,
   render,
   renderWithForm,
   renderWithRoot,
@@ -20,9 +21,11 @@ import { HueSlider } from '../fields/Slider/HueSlider';
 import { TagInput } from '../fields/TagInput/TagInput';
 import { TextInput } from '../fields/TextInput/TextInput';
 
+import { RESERVED_FIELD_PROPS, SHARED_FIELD_PROPS } from './field-chrome';
 import { Field } from './Form/Field';
 import { Form } from './Form/Form';
 import { createFormController } from './Form/modern/controller';
+import { resolveTriggerTooltip } from './legacy-tooltip';
 import { wrapWithField } from './wrapper';
 
 import type { DOMRefValue, FocusableRefValue } from '@react-types/shared';
@@ -600,17 +603,22 @@ describe('field refs', () => {
   });
 });
 
+/** Every field-level input, `HueSlider` included, mounted with a `label`. */
+const FIELD_LEVEL_INPUTS: typeof FIELD_INPUTS = [
+  ...FIELD_INPUTS,
+  ['HueSlider', <HueSlider label="HueSlider" />],
+];
+
 /**
  * An input's style props place and size its outer element: the field wrapper
  * when it renders, the control otherwise. `styles` stays on the control and
  * `fieldStyles` on the wrapper, under the style props.
  */
 describe('field layout style props', () => {
-  const inputs: typeof FIELD_INPUTS = [
-    // `TextInputMapper` takes no style props.
-    ...FIELD_INPUTS.filter(([name]) => name !== 'TextInputMapper'),
-    ['HueSlider', <HueSlider label="HueSlider" />],
-  ];
+  // `TextInputMapper` takes no style props.
+  const inputs = FIELD_LEVEL_INPUTS.filter(
+    ([name]) => name !== 'TextInputMapper',
+  );
 
   const WIDTH = 'calc(37 * var(--gap))';
 
@@ -739,6 +747,99 @@ describe('field layout style props', () => {
     expect(field).toHaveAttribute('data-has-sider');
     expect(field).toHaveAttribute('data-custom');
   });
+});
+
+/**
+ * The chrome reads its own props off an input's props by name, so an input's
+ * own props never take those names (`RESERVED_FIELD_PROPS`).
+ */
+describe('field prop names', () => {
+  it('reads only the reserved and shared props off the input', () => {
+    const read = new Set<PropertyKey>();
+    const props = new Proxy(
+      { label: 'Name' },
+      {
+        get(target, key, receiver) {
+          read.add(key);
+
+          return Reflect.get(target, key, receiver);
+        },
+      },
+    );
+
+    render(wrapWithField(<input aria-label="Name" />, props));
+
+    // `tooltip` is read only to warn that the label badge is `labelTooltip`.
+    expect([...read].filter((key) => key !== 'tooltip').sort()).toEqual(
+      [...RESERVED_FIELD_PROPS, ...SHARED_FIELD_PROPS].sort(),
+    );
+  });
+
+  it.each(FIELD_LEVEL_INPUTS)(
+    '%s renders the reserved texts in its field, never in its control',
+    (_, element) => {
+      const ref = createRef<unknown>();
+      const texts = {
+        description: 'Reserved description',
+        extra: 'Reserved extra',
+        labelSuffix: 'Reserved suffix',
+        errorMessage: 'Reserved error',
+      };
+
+      renderWithRoot(cloneElement(element, { ref, ...texts, isInvalid: true }));
+
+      const field = screen.getByTestId('Field');
+
+      for (const text of Object.values(texts)) {
+        expect(field).toHaveTextContent(text);
+      }
+
+      expect(elementOf(ref.current)?.textContent).not.toContain('Reserved');
+    },
+  );
+
+  // Formerly `triggerTooltip`; `tooltip` is the control's, as on `Select`.
+  const pickers = FIELD_LEVEL_INPUTS.filter(([name]) =>
+    ['ColorPicker', 'FilterPicker', 'Picker'].includes(name),
+  );
+
+  it('warns once about the deprecated triggerTooltip', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    expect(resolveTriggerTooltip(undefined, 'Old')).toBe('Old');
+    expect(resolveTriggerTooltip('New', 'Old')).toBe('New');
+
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(String(warn.mock.calls[0])).toContain('triggerTooltip');
+
+    warn.mockRestore();
+  });
+
+  it.each(pickers)(
+    '%s shows its tooltip on the trigger',
+    async (_, element) => {
+      renderWithRoot(cloneElement(element, { tooltip: 'Trigger tip' }));
+
+      await hoverWithPointer(screen.getAllByRole('button')[0]);
+
+      expect(await screen.findByRole('tooltip')).toHaveTextContent(
+        'Trigger tip',
+      );
+    },
+  );
+
+  it.each(pickers)(
+    '%s still shows the deprecated triggerTooltip on the trigger',
+    async (_, element) => {
+      renderWithRoot(cloneElement(element, { triggerTooltip: 'Trigger tip' }));
+
+      await hoverWithPointer(screen.getAllByRole('button')[0]);
+
+      expect(await screen.findByRole('tooltip')).toHaveTextContent(
+        'Trigger tip',
+      );
+    },
+  );
 });
 
 describe('field message slot precedence', () => {

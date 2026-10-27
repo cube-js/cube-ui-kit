@@ -47,6 +47,7 @@ import {
   FieldLayoutStyleProps,
   splitFieldLayout,
 } from '../../form/field-layout';
+import { resolveTriggerTooltip } from '../../form/legacy-tooltip';
 import { Dialog } from '../../overlays/Dialog/Dialog';
 import { DialogTrigger } from '../../overlays/Dialog/DialogTrigger';
 import {
@@ -73,8 +74,8 @@ interface ItemWithKey {
 export interface CubeFilterPickerProps<T>
   extends
     Omit<CubeFilterListBoxProps<T>, 'size' | 'shape' | 'children'>,
-    // `tooltip` is the trigger's, and on a picker the trigger's is spelled
-    // `triggerTooltip`; the label's info badge is `labelTooltip`.
+    // `tooltip` is declared below, for the trigger; the label's info badge is
+    // `labelTooltip`.
     Omit<CubeItemProps, 'children' | 'size' | 'tooltip'>,
     BasePropsWithoutChildren,
     FieldLayoutStyleProps,
@@ -130,7 +131,12 @@ export interface CubeFilterPickerProps<T>
   targetRef?: RefObject<HTMLElement | null>;
   /** Minimum padding in pixels between the popover and viewport edges */
   containerPadding?: number;
-  /** Tooltip for the trigger button (separate from `labelTooltip`) */
+  /**
+   * Tooltip for the trigger. The info badge next to the field's label is
+   * `labelTooltip`.
+   */
+  tooltip?: CubeItemProps['tooltip'];
+  /** @deprecated Use `tooltip`. */
   triggerTooltip?: CubeItemProps['tooltip'];
   /** Description for the trigger button (separate from field description) */
   triggerDescription?: CubeItemProps['description'];
@@ -306,6 +312,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     suffix,
     actions,
     hotkeys,
+    tooltip,
     triggerTooltip,
     triggerDescription,
     labelStyles,
@@ -894,7 +901,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
       prefix={prefix}
       suffix={suffix}
       hotkeys={hotkeys}
-      tooltip={triggerTooltip}
+      tooltip={resolveTriggerTooltip(tooltip, triggerTooltip)}
       description={triggerDescription}
       descriptionPlacement={descriptionPlacement}
       styles={triggerStyles}
@@ -1142,6 +1149,8 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     {
       ...props,
       ...fieldLayout.field,
+      // The trigger's own. Handed on, it read as the legacy field `tooltip`.
+      tooltip: undefined,
       labelProps: mergeProps(labelProps, props.labelProps),
     },
   );
