@@ -102,8 +102,9 @@ function resolveCheckedSets({
  *   indeterminate keys themselves.
  * - When the consumer passes `checkedKeys` as `{ checked, halfChecked }`,
  *   we keep the wire shape on the way out — same as AntD.
- * - Toggling a node propagates *down* (skipping ineligible descendants)
- *   and recomputes ancestors *up* in a single pass.
+ * - Toggling a node propagates *down* through its subtree, past locked
+ *   nodes to the eligible ones below them, and ancestors are then
+ *   recomputed *up* by the derive.
  */
 export function useCheckboxTree(opts: UseCheckboxTreeOptions): CheckboxTree {
   const {

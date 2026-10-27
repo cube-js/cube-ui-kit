@@ -354,6 +354,66 @@ describe('<Tree />', () => {
       expect(getByRole('checkbox', { name: 'Banana' })).toBeChecked();
     });
 
+    it('cascades through a node whose own checkbox is disabled', async () => {
+      const data: CubeTreeNodeData[] = [
+        {
+          key: 'food',
+          title: 'Food',
+          children: [{ ...SAMPLE[0], isCheckboxDisabled: true }, SAMPLE[1]],
+        },
+      ];
+      const onCheck = vi.fn();
+      const { getByRole, unmount } = renderWithRoot(
+        <Tree
+          isCheckable
+          treeData={data}
+          defaultExpandedKeys={['food', 'fruits', 'vegetables']}
+          defaultCheckedKeys={['food']}
+        />,
+      );
+
+      // A grandparent key reaches the leaves below the locked parent.
+      expect(getByRole('checkbox', { name: 'Food' })).toBeChecked();
+      expect(getByRole('checkbox', { name: 'Apple' })).toBeChecked();
+      expect(getByRole('checkbox', { name: 'Carrot' })).toBeChecked();
+      unmount();
+
+      const view = renderWithRoot(
+        <Tree
+          isCheckable
+          treeData={data}
+          defaultExpandedKeys={['food', 'fruits', 'vegetables']}
+          onCheck={onCheck}
+        />,
+      );
+      const lastKeys = () =>
+        [...onCheck.mock.calls[onCheck.mock.calls.length - 1][0]].sort();
+      const click = (name: string) =>
+        act(
+          async () =>
+            await userEvent.click(view.getByRole('checkbox', { name })),
+        );
+
+      // Completing the unlocked branch leaves the locked one alone.
+      await click('Carrot');
+      await click('Potato');
+      expect(lastKeys()).toEqual(['carrot', 'potato', 'vegetables']);
+
+      await click('Food');
+      expect(lastKeys()).toEqual([
+        'apple',
+        'banana',
+        'carrot',
+        'food',
+        'fruits',
+        'potato',
+        'vegetables',
+      ]);
+
+      await click('Food');
+      expect(lastKeys()).toEqual([]);
+    });
+
     it('puts the checked state on the checkbox, not on the row', () => {
       const { getByRole } = renderWithRoot(
         <Tree

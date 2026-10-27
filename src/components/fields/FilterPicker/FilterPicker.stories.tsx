@@ -356,7 +356,8 @@ const meta: Meta<typeof FilterPicker> = {
     },
     defaultExpandedKeys: {
       control: { type: null },
-      description: 'Initially expanded nodes in tree mode (uncontrolled)',
+      description:
+        'Initially expanded nodes in tree mode (uncontrolled), read once when the picker mounts',
       table: {
         type: { summary: 'string[]' },
       },

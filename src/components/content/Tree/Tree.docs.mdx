@@ -218,7 +218,7 @@ Pass the matching keys via `expandedKeys` and set `autoExpandParent` to keep the
 
 ### Per-node Disabling
 
-Disable the entire row, just the checkbox, or hide the checkbox via node-level flags.
+Disable the entire row, just the checkbox, or hide the checkbox via node-level flags. Such a node keeps its own checked state, and the cascade passes through it: checking its parent checks the eligible nodes below it, and a parent's state follows them.
 
 ```jsx
 const data = [

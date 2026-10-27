@@ -179,16 +179,18 @@ export function FilterTree(props: FilterTreeProps) {
   const isSearching = !!query && filter !== false;
 
   // Expansion during a search is its own: it starts from the ancestors of
-  // the matches and resets with every edit of the query. Clearing the search
-  // brings back the expansion the user had, untouched.
-  const [searchExpansion, setSearchExpansion] = useState<{
-    query: string;
-    keys: string[];
-  } | null>(null);
+  // the matches and resets whenever the query changes, typed or controlled.
+  // Clearing the search brings back the expansion the user had, untouched.
+  const [searchExpansion, setSearchExpansion] = useState<string[] | null>(null);
+  const [expansionQuery, setExpansionQuery] = useState(query);
+
+  if (expansionQuery !== query) {
+    setExpansionQuery(query);
+    setSearchExpansion(null);
+  }
 
   const setSearchValue = (value: string) => {
     if (controlledSearchValue === undefined) setInternalSearchValue(value);
-    setSearchExpansion(null);
     onSearchChange?.(value);
   };
 
@@ -208,15 +210,13 @@ export function FilterTree(props: FilterTreeProps) {
     : { nodes: treeData, expandKeys: [] };
 
   const expanded = isSearching
-    ? searchExpansion?.query === query
-      ? searchExpansion.keys
-      : filtered.expandKeys
+    ? (searchExpansion ?? filtered.expandKeys)
     : expandedKeys;
   const expandedSet = new Set(expanded);
 
   const setExpanded = (keys: string[]) => {
     if (isSearching) {
-      setSearchExpansion({ query, keys });
+      setSearchExpansion(keys);
       return;
     }
     onExpand(keys);

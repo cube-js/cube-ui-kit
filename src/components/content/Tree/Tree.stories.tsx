@@ -135,7 +135,7 @@ const meta = {
     checkedKeys: {
       control: { type: null },
       description:
-        'Controlled checked keys. Accepts `string[]` or `{ checked, halfChecked }`.',
+        'Controlled checked keys. In the array form, a parent key checks its whole subtree, as in AntD. Pass the object form to receive the same shape back from `onCheck`; it is taken as given.',
       table: {
         type: {
           summary: 'string[] | { checked: string[]; halfChecked?: string[] }',
@@ -144,7 +144,8 @@ const meta = {
     },
     defaultCheckedKeys: {
       control: { type: null },
-      description: 'Default checked keys (uncontrolled)',
+      description:
+        'Default checked keys (uncontrolled). A parent key checks its whole subtree, as in AntD.',
       table: { type: { summary: 'string[]' } },
     },
 

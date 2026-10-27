@@ -201,6 +201,29 @@ describe('<FilterPicker treeData />', () => {
     expect(row('engineering')).toHaveAttribute('aria-expanded', 'false');
   });
 
+  it('starts the search expansion over when a controlled query comes back', async () => {
+    const picker = (searchValue: string) => (
+      <FilterPicker
+        label="Groups"
+        treeData={GROUPS}
+        searchValue={searchValue}
+        onSearchChange={() => {}}
+      />
+    );
+    const { getByRole, rerender } = renderWithRoot(picker('ada'));
+
+    await open(getByRole);
+    expect(row('engineering')).toHaveAttribute('aria-expanded', 'true');
+
+    // Caret to the start of the text, then Left collapses the active row.
+    await user.keyboard('{ArrowLeft}{ArrowLeft}{ArrowLeft}{ArrowLeft}');
+    expect(row('engineering')).toHaveAttribute('aria-expanded', 'false');
+
+    rerender(picker(''));
+    rerender(picker('ada'));
+    expect(row('engineering')).toHaveAttribute('aria-expanded', 'true');
+  });
+
   it('moves the active row with the arrow keys and toggles it with Space', async () => {
     const onSelectionChange = vi.fn();
     const { getByRole } = renderWithRoot(
@@ -478,6 +501,55 @@ describe('<FilterPicker treeData />', () => {
       'locked:b',
       'contractors',
     ]);
+  });
+
+  it('keeps a grandparent key whose subtree passes through a locked parent', async () => {
+    const onSelectionChange = vi.fn();
+    const data: CubeTreeNodeData[] = [
+      {
+        key: 'org',
+        title: 'Organisation',
+        children: [
+          {
+            key: 'locked',
+            title: 'Locked',
+            isCheckboxDisabled: true,
+            children: [
+              { key: 'locked:a', title: 'Member A' },
+              { key: 'locked:b', title: 'Member B' },
+            ],
+          },
+          { key: 'org:c', title: 'Member C' },
+        ],
+      },
+      { key: 'contractors', title: 'Contractors', isLeaf: true },
+    ];
+    const { getByRole } = renderWithRoot(
+      <FilterPicker
+        label="Groups"
+        treeData={data}
+        defaultSelectedKeys={['org']}
+        defaultExpandedKeys={['org', 'locked']}
+        onSelectionChange={onSelectionChange}
+      />,
+    );
+
+    await open(getByRole);
+    expect(checkState('org')).toBe('true');
+    expect(checkState('locked:a')).toBe('true');
+
+    await user.click(within(row('contractors')!).getByRole('checkbox'));
+    expect(onSelectionChange).toHaveBeenLastCalledWith([
+      'org',
+      'locked',
+      'locked:a',
+      'locked:b',
+      'org:c',
+      'contractors',
+    ]);
+
+    await user.click(within(row('org')!).getByRole('checkbox'));
+    expect(onSelectionChange).toHaveBeenLastCalledWith(['contractors']);
   });
 
   it('opens a matching node that has a match below it, every time the query is typed', async () => {

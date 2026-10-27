@@ -97,9 +97,10 @@ function deriveCheckedState(
  *   descendant leaf is checked, and half-checked iff at least one eligible
  *   descendant is checked or half-checked, but not all.
  *
- * Ineligible nodes (disabled / opt-out) are ignored when computing the
- * parent's state — they neither force a parent into the unchecked nor
- * half state.
+ * Both passes look through ineligible nodes (disabled / opt-out): such a
+ * node neither forces a parent into the unchecked nor half state, nor
+ * stops a cascade from reaching the eligible nodes below it. A locked
+ * node with no eligible descendants keeps its own state.
  */
 export function deriveCheckedSets(
   treeData: CubeTreeNodeData[],
@@ -110,8 +111,7 @@ export function deriveCheckedSets(
   const halfChecked = new Set<string>();
 
   const checkSubtree = (node: CubeTreeNodeData) => {
-    if (!isNodeEligible(node)) return;
-    checked.add(node.key);
+    if (isNodeEligible(node)) checked.add(node.key);
     for (const ck of index.childrenOf.get(node.key) ?? []) {
       const child = index.byKey.get(ck);
       if (child) checkSubtree(child);
@@ -138,16 +138,16 @@ export function deriveCheckedSets(
 
 /**
  * Toggle `key` against the derived `checked` set: propagate *down*
- * (skipping ineligible descendants) and recompute ancestors *up*.
- * Returns the next source-of-truth set, or `null` when the node can't
- * be toggled.
+ * through its subtree, looking through ineligible nodes as
+ * `deriveCheckedSets` does, and drop ancestors that can no longer be
+ * fully checked. Returns the next source-of-truth set, or `null` when the
+ * node can't be toggled. Pass the result through `deriveCheckedSets`,
+ * which adds the ancestors a check completes.
  *
  * Seed it with the derived set, not the source one. The source set may
  * only contain leaf keys (e.g. when `defaultCheckedKeys` is leaf-only, or
- * a consumer in controlled-array mode passes only leaves). The ancestor
- * walk decides whether each ancestor is fully checked by inspecting its
- * direct children, which may themselves be inner nodes whose "fully
- * checked" status only exists in the derived set.
+ * a consumer in controlled-array mode passes only leaves), so it would
+ * read a fully checked parent as unchecked.
  */
 export function toggleCheckedKey(
   index: TreeIndex,
@@ -160,42 +160,32 @@ export function toggleCheckedKey(
   const willCheck = !checked.has(key);
   const next = new Set(checked);
 
-  const apply = (n: CubeTreeNodeData) => {
-    if (!isNodeEligible(n)) return;
-    if (willCheck) next.add(n.key);
-    else next.delete(n.key);
+  // Returns whether the subtree holds an eligible node. A locked node
+  // above one follows it; a locked node with none keeps its own state.
+  const apply = (n: CubeTreeNodeData): boolean => {
+    let follows = false;
     for (const ck of index.childrenOf.get(n.key) ?? []) {
       const child = index.byKey.get(ck);
-      if (child) apply(child);
+      if (child && apply(child)) follows = true;
     }
+    if (follows || isNodeEligible(n)) {
+      if (willCheck) next.add(n.key);
+      else next.delete(n.key);
+    }
+    return follows || isNodeEligible(n);
   };
 
   apply(node);
 
-  // After the cascade, recompute ancestors so the set doesn't carry
-  // parent keys that should be half-checked instead. Ancestors of `key`
-  // get visited bottom-up here.
-  let parentKey = index.parentOf.get(key);
-  while (parentKey) {
-    const parent = index.byKey.get(parentKey);
-    if (!parent) break;
-    let allEligibleChecked = true;
-    let anyEligible = false;
-    for (const ck of index.childrenOf.get(parentKey) ?? []) {
-      const child = index.byKey.get(ck);
-      if (!child || !isNodeEligible(child)) continue;
-      anyEligible = true;
-      if (!next.has(ck)) {
-        allEligibleChecked = false;
-        break;
-      }
-    }
-    if (anyEligible && allEligibleChecked && isNodeEligible(parent)) {
-      next.add(parentKey);
-    } else {
+  // An unchecked eligible node leaves every ancestor short of full. A
+  // check leaves them for the bottom-up pass, which also sees locked
+  // siblings' subtrees.
+  if (!willCheck) {
+    let parentKey = index.parentOf.get(key);
+    while (parentKey) {
       next.delete(parentKey);
+      parentKey = index.parentOf.get(parentKey);
     }
-    parentKey = index.parentOf.get(parentKey);
   }
 
   return next;

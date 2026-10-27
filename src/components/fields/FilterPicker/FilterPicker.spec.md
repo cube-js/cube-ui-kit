@@ -242,7 +242,7 @@ mods={{
 ### Tree Mode (`treeData`)
 1. **Value**: Always multiple selection. The value is every fully checked key, parents included, in tree order; a parent key in the value checks its subtree
 2. **Cascade**: Runs over the full `treeData`, never the filtered copy, so a search never reads a hidden node as unchecked
-3. **Search**: Keeps a matching node with its whole subtree, and ancestors of deeper matches with only their matching branches. Every node with a match below it, matching or not, opens through a search-only expansion that resets with every edit of the query; the user's expansion comes back when the search clears
+3. **Search**: Keeps a matching node with its whole subtree, and ancestors of deeper matches with only their matching branches. Every node with a match below it, matching or not, opens through a search-only expansion that resets whenever the query changes, typed or controlled; the user's expansion comes back when the search clears
 4. **Focus**: DOM focus stays in the search input (`aria-activedescendant` names the active row; row ids come from `getTreeRowId`). Nothing in the tree is a tab stop (rows, checkboxes, chevrons), and a click inside it hands focus back to the input
 5. **Row press**: Toggles the row's checkbox and keeps the popover open. `Enter` toggles the active row and closes it
 6. **Summary**: Labels of the topmost checked nodes
