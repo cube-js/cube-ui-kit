@@ -1,6 +1,6 @@
 import { StoryFn } from '@storybook/react-vite';
 
-import { Divider } from '../../../content/Divider';
+import { Divider } from '../../../content/Divider/Divider';
 import { Portal } from '../../Portal';
 import { PortalProps } from '../../types';
 

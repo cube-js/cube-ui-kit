@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Button } from '../../actions/Button';
 import { Switch } from '../../fields/Switch';
 import { Space } from '../../layout/Space';
-import { Divider } from '../Divider';
+import { Divider } from '../Divider/Divider';
 import { Paragraph } from '../Paragraph';
 import { Text } from '../Text';
 

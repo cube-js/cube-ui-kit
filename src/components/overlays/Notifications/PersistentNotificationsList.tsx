@@ -3,7 +3,7 @@ import { Fragment, Key, useContext, useEffect, useRef, useState } from 'react';
 
 import { useEvent } from '../../../_internal';
 import { useI18n } from '../../../i18n';
-import { Divider } from '../../content/Divider';
+import { Divider } from '../../content/Divider/Divider';
 import { Text } from '../../content/Text';
 
 import { formatRelativeTime } from './format-relative-time';
