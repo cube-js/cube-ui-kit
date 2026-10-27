@@ -105,10 +105,16 @@ describe.each([
     expect(screen.queryByText('Too loud')).not.toBeInTheDocument();
   });
 
-  it('disables its track and thumbs in a disabled form', () => {
-    renderWithForm(render({ name: 'volume' }), {
+  // A wrapper that forwards an unset `isDisabled` must not enable it.
+  it.each([
+    ['', {}],
+    [' given isDisabled={undefined}', { isDisabled: undefined }],
+  ])('is disabled as a whole in a disabled form%s', (__, props) => {
+    renderWithForm(render({ name: 'volume', ...props }), {
       formProps: { isDisabled: true },
     });
+
+    expect(screen.getByTestId('Label')).toHaveAttribute('data-disabled');
 
     expect(screen.getByTestId('SliderTrackContainer')).toHaveAttribute(
       'data-disabled',
