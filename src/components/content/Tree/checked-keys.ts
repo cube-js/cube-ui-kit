@@ -139,10 +139,10 @@ export function deriveCheckedSets(
 /**
  * Toggle `key` against the derived `checked` set: propagate *down*
  * through its subtree, looking through ineligible nodes as
- * `deriveCheckedSets` does, and drop ancestors that can no longer be
- * fully checked. Returns the next source-of-truth set, or `null` when the
- * node can't be toggled. Pass the result through `deriveCheckedSets`,
- * which adds the ancestors a check completes.
+ * `deriveCheckedSets` does, and drop its ancestors. Returns the next
+ * source-of-truth set, or `null` when the node can't be toggled. Pass the
+ * result through `deriveCheckedSets`, which adds back the ancestors that
+ * end up fully checked.
  *
  * Seed it with the derived set, not the source one. The source set may
  * only contain leaf keys (e.g. when `defaultCheckedKeys` is leaf-only, or
@@ -177,15 +177,13 @@ export function toggleCheckedKey(
 
   apply(node);
 
-  // An unchecked eligible node leaves every ancestor short of full. A
-  // check leaves them for the bottom-up pass, which also sees locked
-  // siblings' subtrees.
-  if (!willCheck) {
-    let parentKey = index.parentOf.get(key);
-    while (parentKey) {
-      next.delete(parentKey);
-      parentKey = index.parentOf.get(parentKey);
-    }
+  // The bottom-up pass decides the ancestors, locked siblings' subtrees
+  // included. Dropping them here also keeps an ancestor from a set taken as
+  // given (the object form) from conducting down onto untouched siblings.
+  let parentKey = index.parentOf.get(key);
+  while (parentKey) {
+    next.delete(parentKey);
+    parentKey = index.parentOf.get(parentKey);
   }
 
   return next;

@@ -227,6 +227,58 @@ describe('<Tree />', () => {
       expect(arg).toHaveProperty('halfChecked');
     });
 
+    it('checks only the clicked child under a parent the object form lists as checked', async () => {
+      const onCheck = vi.fn();
+      const { getByRole } = renderWithRoot(
+        <Tree
+          isCheckable
+          treeData={SAMPLE}
+          defaultExpandedKeys={['fruits']}
+          checkedKeys={{ checked: ['fruits'], halfChecked: [] }}
+          onCheck={onCheck}
+        />,
+      );
+
+      await act(
+        async () =>
+          await userEvent.click(getByRole('checkbox', { name: 'Apple' })),
+      );
+
+      expect(onCheck.mock.calls[0][0]).toEqual({
+        checked: ['apple'],
+        halfChecked: ['fruits'],
+      });
+    });
+
+    it('keeps a parent a check completed checked when children load later (uncontrolled)', async () => {
+      const { getByRole, rerender } = renderWithRoot(
+        <Tree isCheckable treeData={SAMPLE} defaultExpandedKeys={['fruits']} />,
+      );
+
+      for (const name of ['Apple', 'Banana']) {
+        await act(
+          async () => await userEvent.click(getByRole('checkbox', { name })),
+        );
+      }
+
+      const grown: CubeTreeNodeData[] = [
+        {
+          ...SAMPLE[0],
+          children: [
+            ...SAMPLE[0].children!,
+            { key: 'cherry', title: 'Cherry' },
+          ],
+        },
+        SAMPLE[1],
+      ];
+      rerender(
+        <Tree isCheckable treeData={grown} defaultExpandedKeys={['fruits']} />,
+      );
+
+      expect(getByRole('checkbox', { name: 'Fruits' })).toBeChecked();
+      expect(getByRole('checkbox', { name: 'Cherry' })).toBeChecked();
+    });
+
     it('marks the grandparent fully checked when completing a sibling subtree (uncontrolled)', async () => {
       // Three-level tree:
       //   root → [groupA → [a1, a2], groupB → [b1, b2]]

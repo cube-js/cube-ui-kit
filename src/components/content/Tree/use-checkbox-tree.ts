@@ -143,14 +143,20 @@ export function useCheckboxTree(opts: UseCheckboxTreeOptions): CheckboxTree {
     const next = toggleCheckedKey(index, checkedSet, key);
     if (!node || !next) return;
 
+    const { checked: finalChecked, halfChecked: finalHalf } = deriveCheckedSets(
+      treeData,
+      index,
+      next,
+    );
+
+    // Store the derived set, as a controlled consumer stores `onCheck`'s
+    // keys, so a parent a check completed still covers children that load
+    // later.
     if (!isControlled) {
-      setUncontrolledChecked(next);
+      setUncontrolledChecked(finalChecked);
     }
 
     if (onCheck) {
-      const { checked: finalChecked, halfChecked: finalHalf } =
-        deriveCheckedSets(treeData, index, next);
-
       const checkedArr = Array.from(finalChecked);
       const halfArr = Array.from(finalHalf);
       const checkedNodes: CubeTreeNodeData[] = checkedArr
