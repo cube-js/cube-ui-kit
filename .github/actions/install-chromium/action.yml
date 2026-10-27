@@ -1,0 +1,46 @@
+name: Install Chromium
+description: Playwright's Chromium and the system packages it needs, both cached, for the jobs that render in a real browser.
+
+runs:
+  using: composite
+  steps:
+    # Cached by Playwright's own version, so a browser is only downloaded when
+    # the dependency actually changes rather than on every run.
+    - name: Resolve Playwright version
+      id: playwright
+      shell: bash
+      run: echo "version=$(node -p "require('playwright/package.json').version")" >> "$GITHUB_OUTPUT"
+
+    - uses: actions/cache@v6
+      with:
+        path: ~/.cache/ms-playwright
+        key: ${{ runner.os }}-playwright-${{ steps.playwright.outputs.version }}
+
+    # `--with-deps` installs about 26 MB of system packages (mostly fonts)
+    # through apt on every run: the runner image does not have them, and the
+    # browser cache above does not hold them. The runner's Ubuntu mirror
+    # sometimes serves them at ~90 kB/s, which has held this step for up to 15
+    # minutes. So apt keeps what it downloads in a cached directory, and on a
+    # hit it only fetches packages that changed upstream since. The packages,
+    # and so the fonts every layout depends on, are still exactly the ones
+    # `--with-deps` picks.
+    - name: Resolve Ubuntu release
+      id: os
+      shell: bash
+      run: echo "release=$(. /etc/os-release && echo "$VERSION_ID")" >> "$GITHUB_OUTPUT"
+
+    - uses: actions/cache@v6
+      with:
+        path: ~/.cache/playwright-apt/*.deb
+        key: ${{ runner.os }}-ubuntu-${{ steps.os.outputs.release }}-playwright-apt-${{ steps.playwright.outputs.version }}
+
+    # `partial/` is apt's download area and has to exist. apt downloads as
+    # root, so its sandbox user `_apt` never needs to reach a directory in the
+    # runner's home.
+    - name: Install Chromium
+      shell: bash
+      run: |
+        mkdir -p ~/.cache/playwright-apt/partial
+        printf 'Dir::Cache::Archives "%s";\nAPT::Sandbox::User "root";\n' "$HOME/.cache/playwright-apt" \
+          | sudo tee /etc/apt/apt.conf.d/90-playwright-cache > /dev/null
+        pnpm exec playwright install --with-deps chromium
