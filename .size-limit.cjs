@@ -409,7 +409,11 @@ module.exports = [
     // tokens, state maps and the `ListBox` spacer and `TreeSizer` that replace
     // inline styles in ListBox, Tree, Slider and DatePicker. Allow 634 kB,
     // 959 B headroom.
-    limit: '634kB',
+    // ItemTable keyboard/native tooltip interactions: 636.20 kB locally vs
+    // the same-lock main build at 633,094 B (10da2671), about +3.1 kB.
+    // Button stays at 163,087 B. Allow 637 kB with about 800 B headroom;
+    // confirm the exact figures in Linux CI.
+    limit: '637kB',
   },
   {
     name: 'Tree shaking (just a Button)',
