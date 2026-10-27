@@ -862,31 +862,19 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
   const showClearButton =
     isClearable && effectiveInputValue !== '' && !isDisabled && !isReadOnly;
 
-  const mods = useMemo(
-    () => ({
-      ...getValidationMods({ isInvalid, isValid }),
-      disabled: isDisabled,
-      readonly: !!isReadOnly,
-      // Hover is handled purely via CSS `:hover`, so it never flows through mods.
-      hovered: false,
-      focused: isFocused,
-      loading: showLoading,
-      prefix: !!prefix,
-      // Always reserve the suffix slot (it holds validation/loading/clear/trigger).
-      suffix: true,
-      clearable: showClearButton,
-    }),
-    [
-      isInvalid,
-      isValid,
-      isDisabled,
-      isReadOnly,
-      isFocused,
-      showLoading,
-      prefix,
-      showClearButton,
-    ],
-  );
+  const mods = {
+    ...getValidationMods({ isInvalid, isValid }),
+    disabled: isDisabled,
+    readonly: !!isReadOnly,
+    // Hover is handled purely via CSS `:hover`, so it never flows through mods.
+    hovered: false,
+    focused: isFocused,
+    loading: showLoading,
+    prefix: !!prefix,
+    // Always reserve the suffix slot (it holds validation/loading/clear/trigger).
+    suffix: true,
+    clearable: showClearButton,
+  };
 
   const searchComboBoxWidth = wrapperRef?.current?.offsetWidth;
 

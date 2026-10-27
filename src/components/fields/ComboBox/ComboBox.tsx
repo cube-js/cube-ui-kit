@@ -1265,29 +1265,17 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     }
   }
 
-  let mods = useMemo(
-    () => ({
-      ...getValidationMods({ isInvalid, isValid }),
-      disabled: isDisabled,
-      readonly: !!isReadOnly,
-      hovered: false,
-      focused: isFocused,
-      loading: isLoading,
-      prefix: !!prefix,
-      suffix: true,
-      clearable: showClearButton,
-    }),
-    [
-      isInvalid,
-      isValid,
-      isDisabled,
-      isReadOnly,
-      isFocused,
-      isLoading,
-      prefix,
-      showClearButton,
-    ],
-  );
+  let mods = {
+    ...getValidationMods({ isInvalid, isValid }),
+    disabled: isDisabled,
+    readonly: !!isReadOnly,
+    hovered: false,
+    focused: isFocused,
+    loading: isLoading,
+    prefix: !!prefix,
+    suffix: true,
+    clearable: showClearButton,
+  };
 
   // The list is at least as wide as the field, measured as it shows.
   const [comboBoxWidth, setComboBoxWidth] = useState<number>();
