@@ -10,6 +10,7 @@ const jobs = [
   'form-react',
   'compiled-tests',
   'browser-tests',
+  'a11y',
 ];
 const results = (result) =>
   Object.fromEntries(jobs.map((job) => [job, { result }]));

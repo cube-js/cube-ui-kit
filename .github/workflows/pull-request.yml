@@ -201,9 +201,57 @@ jobs:
         env:
           UIKIT_REACT_COMPILER: ${{ matrix.compiler }}
 
+  # Every story rendered in real Chromium and checked with axe-core against the
+  # per-story baseline in `scripts/a11y-baseline.json`. A job of its own rather
+  # than a step after the Chromatic build, so a new violation never holds up
+  # visual review. Split in three because the whole check alone took ~8
+  # minutes; each shard builds Storybook itself (under a minute) rather than
+  # waiting for one build to be handed over.
+  a11y:
+    name: 'Accessibility (axe) (${{ matrix.shard }}/3)'
+    if: github.head_ref != 'changeset-release/main'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Resolve Playwright version
+        id: playwright
+        run: echo "version=$(node -p "require('playwright/package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@v6
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ steps.playwright.outputs.version }}
+
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Build Storybook
+        run: pnpm build-storybook
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+
+      # One page per core of the runner: the settle waits are timed, and an
+      # oversubscribed runner only sends more stories to the confirming rerun.
+      - name: Check stories against the accessibility baseline
+        run: pnpm diagnostics:a11y --check --concurrency 4 --shard ${{ matrix.shard }}/3
+
   required-tests:
     name: 'Tests & lint'
-    needs: [tests, static-checks, form-react, compiled-tests, browser-tests]
+    needs:
+      [tests, static-checks, form-react, compiled-tests, browser-tests, a11y]
     if: always()
     runs-on: ubuntu-latest
     steps:

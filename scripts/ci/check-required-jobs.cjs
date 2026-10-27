@@ -4,6 +4,7 @@ const required = [
   'form-react',
   'compiled-tests',
   'browser-tests',
+  'a11y',
 ];
 
 function checkRequiredJobs(results, branch) {
