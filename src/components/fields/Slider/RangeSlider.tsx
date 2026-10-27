@@ -24,7 +24,7 @@ function RangeSlider(
   props: CubeRangeSliderProps,
   ref: FocusableRef<HTMLDivElement>,
 ) {
-  let { isDisabled, styles, gradation, ...otherProps } = props;
+  let { styles, gradation, ...otherProps } = props;
 
   // The first thumb takes `SliderBase`'s `inputRef`, which the component ref's
   // `focus()` targets; the second thumb keeps its own.
@@ -44,7 +44,7 @@ function RangeSlider(
             <Gradation state={state} ranges={[0, 1]} values={gradation} />
             <SliderTrack
               state={state}
-              isDisabled={isDisabled}
+              isDisabled={state.isDisabled}
               isInvalid={isInvalid}
               isValid={isValid}
               orientation={props.orientation}
@@ -55,7 +55,7 @@ function RangeSlider(
               state={state}
               inputRef={inputRef}
               trackRef={trackRef}
-              isDisabled={isDisabled}
+              isDisabled={state.isDisabled}
               isInvalid={isInvalid}
               isValid={isValid}
             />
@@ -65,7 +65,7 @@ function RangeSlider(
               state={state}
               inputRef={maxThumbInputRef}
               trackRef={trackRef}
-              isDisabled={isDisabled}
+              isDisabled={state.isDisabled}
               isInvalid={isInvalid}
               isValid={isValid}
             />

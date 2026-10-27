@@ -33,7 +33,6 @@ function Slider(props: CubeSliderProps, ref: FocusableRef<HTMLDivElement>) {
     value,
     defaultValue,
     getValueLabel,
-    isDisabled,
     styles,
     gradation,
     orientation,
@@ -78,7 +77,7 @@ function Slider(props: CubeSliderProps, ref: FocusableRef<HTMLDivElement>) {
             <Gradation state={state} ranges={[0, 1]} values={gradation} />
             <SliderTrack
               state={state}
-              isDisabled={isDisabled}
+              isDisabled={state.isDisabled}
               isInvalid={isInvalid}
               isValid={isValid}
               orientation={orientation}
@@ -89,7 +88,7 @@ function Slider(props: CubeSliderProps, ref: FocusableRef<HTMLDivElement>) {
               state={state}
               inputRef={inputRef}
               trackRef={trackRef}
-              isDisabled={isDisabled}
+              isDisabled={state.isDisabled}
               isInvalid={isInvalid}
               isValid={isValid}
               styles={thumbStyles}
