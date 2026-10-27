@@ -189,7 +189,7 @@ const [searchValue, setSearchValue] = useState('');
 ### Keyboard Navigation
 
 - `Tab` - Moves focus to the search input. The clear button is skipped: it is not in the `Tab` order
-- `Escape` - Clears the search input and calls `onClear`, whether or not `isClearable` is set, as in a native search field. With the input already empty, `Escape` is left to the surrounding UI, so a `Dialog` closes on the next press
+- `Escape` - Clears the search input and calls `onClear`, whether or not `isClearable` is set, as in a native search field. With the input already empty, `Escape` is left to the surrounding UI, so a `Dialog` closes on the next press. An `onKeyDown` that prevents it keeps it at the input, as in every field; one that doesn't leaves `Escape` and `Tab` going on to the surrounding UI
 - `Enter` - Submits search or triggers onSubmit callback
 - All standard text input keyboard shortcuts work for text entry
 

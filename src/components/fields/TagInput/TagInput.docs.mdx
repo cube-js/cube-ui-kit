@@ -60,7 +60,7 @@ A multi-value field. The user types a value into a single-line input and commits
 - **`onOpenChange`** `(isOpen: boolean) => void` — Called when the suggestions popover opens or closes
 - **`onFocus`** `() => void` — Called when focus enters the component: the input, a chip or the popover
 - **`onBlur`** `() => void` — Called when focus leaves the component entirely, after the typed text is committed and before the press that moved focus is handled, so a Save click sees the new value
-- **`onKeyDown`** `(e: KeyboardEvent) => void` — Called when a key is pressed in the input, before the component handles it. Call `e.preventDefault()` to stop the built-in handling
+- **`onKeyDown`** `(e: KeyboardEvent) => void` — Called when a key is pressed in the input, before the component handles it. Call `e.preventDefault()` to stop the built-in handling. `Escape` and `Tab` go on to ancestors, so a surrounding `Dialog` still closes on `Escape` and moves focus on `Tab`, unless TagInput acts on them or you prevent them
 - **`inputRef`**, **`wrapperRef`**, **`popoverRef`**, **`listBoxRef`** `RefObject` — Refs to the input, the bordered input box, the popover and its listbox. The forwarded `ref` points at the root, which holds the input and the chips
 - **`mods`** `Record<string, boolean>` — Modifiers for the bordered input box, see [Modifiers](#modifiers)
 

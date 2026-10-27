@@ -59,7 +59,7 @@ A number input component that allows users to enter numeric values and increment
 - `Home` / `End` set the value to `minValue` / `maxValue`, when those are set
 - `Enter` commits the typed number, firing `onChange` when the value changed
 
-Because they run first, `e.preventDefault()` in `onKeyDown` cannot cancel them: it cancels only what the browser would do with the key, such as submitting a surrounding form on `Enter`. That makes NumberInput the exception among the fields with built-in key handling (`ComboBox`, `SearchComboBox`, `TagInput` and `CommandTextArea` run your handler first and skip their own handling for a key you prevent), and it is what makes an `Enter` handler work here: by the time it runs, the typed number is committed and any `onChange` for it has fired.
+Because they run first, `e.preventDefault()` in `onKeyDown` cannot cancel them: it cancels what the browser would do with the key, such as submitting a surrounding form on `Enter`, and keeps an `Escape` or `Tab` at the input (below). That makes NumberInput the exception among the fields with built-in key handling (`ComboBox`, `SearchComboBox`, `TagInput` and `CommandTextArea` run your handler first and skip their own handling for a key you prevent), and it is what makes an `Enter` handler work here: by the time it runs, the typed number is committed and any `onChange` for it has fired.
 
 ```jsx
 <NumberInput
@@ -72,7 +72,7 @@ Because they run first, `e.preventDefault()` in `onKeyDown` cannot cancel them: 
 />
 ```
 
-The handler receives React Aria's keyboard event rather than a plain React one. Keys other than `Enter` continue to ancestors as usual; `Enter` stops at the input unless you call `e.continuePropagation()`.
+The handler receives React Aria's keyboard event rather than a plain React one. Keys other than `Enter` continue to ancestors as usual; `Enter` stops at the input unless you call `e.continuePropagation()`. As in every field, an `Escape` or `Tab` your handler prevents stays at the input, so a surrounding `Dialog` neither closes nor moves focus on it.
 
 ### Base Properties
 

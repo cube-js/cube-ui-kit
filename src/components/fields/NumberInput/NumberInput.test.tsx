@@ -375,6 +375,21 @@ describe('<NumberInput />', () => {
     expect(calls).toEqual(['change:2', 'input:ArrowUp', 'parent:ArrowUp']);
   });
 
+  // Keys other than Enter go on by default, so stopping one is how a callback
+  // holds it; that must still hold Escape and Tab.
+  it.each(['Escape', 'Tab'])('keeps a %s the callback stops', (key) => {
+    const onParentKeyDown = vi.fn();
+    const { getByRole } = render(
+      <div onKeyDown={onParentKeyDown}>
+        <NumberInput label="test" onKeyDown={(e) => e.stopPropagation()} />
+      </div>,
+    );
+
+    fireEvent.keyDown(getByRole('textbox'), { key });
+
+    expect(onParentKeyDown).not.toHaveBeenCalled();
+  });
+
   it.each([false, true])(
     'provides an Aria keyup event with continuation: %s',
     (shouldContinue) => {

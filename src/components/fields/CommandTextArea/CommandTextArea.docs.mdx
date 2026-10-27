@@ -123,8 +123,8 @@ These properties allow direct style application without using the `styles` prop:
 - `Tab` — Moves focus into / out of the textarea.
 - `ArrowUp` / `ArrowDown` — Move the highlighted option (only while the popover is open; otherwise moves the caret).
 - `Home` / `End` — Jump to the first / last option while open.
-- `Enter` / `Tab` — Insert the highlighted option while open; otherwise insert a newline / submit.
-- `Escape` — Close the popover without changing the text.
+- `Enter` / `Tab` — Insert the highlighted option while open; otherwise insert a newline / submit. A `Tab` that inserts an option keeps focus in the textarea, inside a `Dialog` too.
+- `Escape` — Close the popover without changing the text. With the popover closed, `Escape` goes on to a surrounding `Dialog` and closes it, unless your `onKeyDown` prevents it.
 
 ### Screen Reader Support
 
