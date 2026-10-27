@@ -217,6 +217,38 @@ describe('Radio-type tab with a title too long for it', () => {
 });
 
 /**
+ * The radio pill is the Bar, `100%` of the Tabs root with `.5x` padding. It
+ * used to be a content box, so in an app with no global border-box reset
+ * (`<Root>` sets none) the padding landed on top of the 100%: the pill painted
+ * `1x` past the root and into the gap before its sibling. jsdom has no layout.
+ */
+describe('Radio-type strip next to a sibling', () => {
+  const GAP = 10;
+
+  it('keeps the pill inside the Tabs box and clear of the sibling', () => {
+    renderWithRoot(
+      <div style={{ display: 'flex', gap: GAP }}>
+        <Tabs qa="RadioTabs" type="radio" defaultActiveKey="all">
+          <Tab key="all" title="All" />
+          <Tab key="dashboards" title="Dashboards" />
+        </Tabs>
+        <div data-qa="Sibling" style={{ width: 80 }} />
+      </div>,
+    );
+
+    const root = screen.getByTestId('RadioTabs');
+    const bar = root.querySelector(':scope > [data-element="Bar"]')!;
+    const rootRect = root.getBoundingClientRect();
+    const barRect = bar.getBoundingClientRect();
+    const siblingRect = screen.getByTestId('Sibling').getBoundingClientRect();
+
+    expect(barRect.left).toBe(rootRect.left);
+    expect(barRect.right).toBe(rootRect.right);
+    expect(siblingRect.left - barRect.right).toBe(GAP);
+  });
+});
+
+/**
  * A strip mounted with its LAST tab active, in a bar too narrow for every tab.
  * The active tab is scrolled into view on mount, but that commit lays the tabs
  * out before their actions runs are measured, so every tab is still narrower

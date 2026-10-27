@@ -10,7 +10,7 @@ import {
 } from '../../../test';
 import { AutoTooltipValue } from '../use-auto-tooltip';
 
-import { TextItem } from './TextItem';
+import { TextItem, TextItemWithNativeLink } from './TextItem';
 
 describe('<TextItem /> tooltip contracts', () => {
   let overflow: boolean;
@@ -98,6 +98,48 @@ describe('<TextItem /> tooltip contracts', () => {
     await new Promise((resolve) => setTimeout(resolve, 350));
     expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
   });
+
+  it.each([undefined, 't3'] as const)(
+    'keeps %s preset automatic tooltip hover on a hidden native target without hiding its text',
+    async (preset) => {
+      const ref = createRef<HTMLElement>();
+      await act(async () => {
+        renderWithRoot(
+          <TextItemWithNativeLink
+            ref={ref}
+            preset={preset}
+            highlight="Label"
+            nativeLinkProps={{
+              href: '/records/label',
+              // The internal target cannot become a second keyboard or screen
+              // reader entry even if these attributes were supplied accidentally.
+              tabIndex: 0,
+              'aria-hidden': false,
+            }}
+          >
+            Label
+          </TextItemWithNativeLink>,
+        );
+      });
+      const link = screen.getByRole('link', { hidden: true });
+      expect(link).toHaveAttribute('tabindex', '-1');
+      expect(link).toHaveAttribute('aria-hidden', 'true');
+      expect(link).toHaveAttribute('href', '/records/label');
+      expect(screen.queryByRole('link')).not.toBeInTheDocument();
+      expect(ref.current).toContainElement(link);
+      expect(ref.current).not.toHaveAttribute('aria-hidden');
+      expect(ref.current?.querySelector('mark')).toHaveTextContent('Label');
+
+      await hoverWithPointer(link);
+      await waitFor(() =>
+        expect(screen.getByRole('tooltip').textContent).toBe('Label'),
+      );
+      await userEvent.unhover(link);
+      await waitFor(() =>
+        expect(screen.queryByRole('tooltip')).not.toBeInTheDocument(),
+      );
+    },
+  );
 
   it('forwards replacement refs and keeps current text, highlight and options', async () => {
     const before = vi.fn();

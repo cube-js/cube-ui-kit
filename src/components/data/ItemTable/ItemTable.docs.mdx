@@ -638,11 +638,17 @@ Unselectable rows are excluded from every scope. Pressing the header checkbox wh
 />
 ```
 
+When no visible column is marked `isRowHeader`, a table with `rowLink` uses its first visible data column eligible for the row header. Set `isRowHeader={false}` on a column to exclude it from that default. Selection and action columns do not affect the choice. If no data column is eligible, the table renders no row links.
+
 Because it is a real `<a href>`, ⌘-click, middle-click and "Open in new tab" all work natively — none of which an `onClick` handler can give you. The anchor sits below the cells' own content in the stacking order, so a button or `⋮` trigger inside a cell still takes its own clicks, and its accessible name comes from the row-header cell rather than being announced as "link".
 
 The row-header cell is styled as a link — `#purple-text` at weight 600, matching the kit's `Link`, with an underline while the row is hovered. The anchor itself is invisible, so without that the row would give no sign that it navigates.
 
 `onRowAction` is the non-navigational alternative — Enter, or a click that did not land on a control inside a cell. Use one or the other, not both.
+
+Flat tables with row links, row actions or exposed row menus have a resting body-row tab stop. Up/Down move between interactive rows, Home/End move to the first/last, and Enter activates the focused row's link or action. Down from a focused column header enters the body. Disabled rows are skipped; making a row unselectable only disables its checkbox. In-cell controls keep their own keys and Tab behavior. Reorderable rows retain their drag shortcuts.
+
+Keyboard focus emphasizes the row background, including selected rows, matching the kit's list items. Controls inside a row keep their own focus appearance.
 
 ### Row Menu
 
@@ -670,6 +676,8 @@ The row-header cell is styled as a link — `#purple-text` at weight 600, matchi
 | `'context-only'`  | no         | yes                     |
 
 A row whose resolver returns `null` gets no trigger, and right-clicking it falls through to the browser's own context menu — more useful than an empty popover.
+
+From a focused flat row, Tab reaches its visible `⋮` trigger; Shift+F10 opens its context menu, including in `'context-only'` mode. Closing restores the opening row or control, or a surviving neighbor if the row was removed. A menu action that focuses another control keeps that focus.
 
 <Canvas of={ItemTableStories.RowInteraction} />
 

@@ -1018,6 +1018,25 @@ export const RowInteraction: Story = {
       </Flow>
     );
   },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await waitFor(() => expect(canvas.getAllByRole('grid')[0]).toBeVisible());
+    const table = canvas.getAllByRole('grid')[0];
+    const firstRow = table.querySelector<HTMLElement>(
+      'tbody tr[data-element="Row"][tabindex="0"]',
+    );
+    firstRow?.focus();
+    await userEvent.keyboard('{ArrowDown}');
+    const focusedRow = table.querySelector<HTMLTableRowElement>(
+      'tbody tr[data-element="Row"][data-row-index="1"]',
+    );
+    await Promise.all(
+      Array.from<HTMLTableCellElement>(focusedRow?.cells ?? [])
+        .flatMap((cell) => cell.getAnimations())
+        .map((animation) => animation.finished),
+    );
+    await waitFor(() => expect(focusedRow).toHaveFocus());
+  },
 };
 
 /**

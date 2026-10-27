@@ -267,7 +267,8 @@ export interface CubeTableColumn<T = any> {
   /**
    * Renders `<th scope="row">` instead of `<td>`, names the row for screen
    * readers, and hosts the `rowLink` anchor. Defaults to the first
-   * non-structural column when a row link is present.
+   * visible non-structural column when a row link is present. Set `false` to
+   * exclude a column from that implicit default.
    */
   isRowHeader?: boolean;
 
