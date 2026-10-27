@@ -74,7 +74,10 @@ export function allowOverlayKeysToPropagate(
  * Shape-aware like `allowOverlayKeysToPropagate`: an event wrapped by
  * `useKeyboard` stops unless released, a plain one travels unless stopped.
  * A key an IME is composing with is left as it is: it cancels or confirms
- * the composition, and the overlay ignores it anyway.
+ * the composition, and the overlay ignores it anyway. That is `isComposing`
+ * alone. The key Safari fires as a composition ends (`keyCode` 229,
+ * `isComposing` false) is an ordinary key to the overlay, so it follows the
+ * rule here too, though fields skip it for their own key handling.
  */
 export function settleOverlayKey(event: MaybeAugmentedKeyboardEvent) {
   if (!OVERLAY_KEYS.has(event.key) || event.nativeEvent.isComposing) return;
