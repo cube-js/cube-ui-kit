@@ -54,14 +54,16 @@ const FIELDS: [string, ReactElement<any>][] = [
   ],
   ['TagInput', <TagInput label="Field" />],
   ['CommandTextArea', <CommandTextArea label="Field" />],
-];
-
-// No `onKeyDown` of their own to hand the key to.
-const FIELDS_WITHOUT_KEY_HANDLER: [string, ReactElement<any>][] = [
-  ['ColorInput', <ColorInput label="Field" />],
   ['SearchInput', <SearchInput label="Field" />],
 ];
 
+// No `onKeyDown` of its own to hand the key to.
+const FIELDS_WITHOUT_KEY_HANDLER: [string, ReactElement<any>][] = [
+  ['ColorInput', <ColorInput label="Field" />],
+];
+
+// `fireEvent`, not `userEvent`: user-event moves focus itself on an
+// unprevented `Tab`, which would hide whether the key ever left the field.
 function pressInField(field: ReactElement<any>, key: string) {
   const onParentKeyDown = vi.fn();
   const { container } = renderWithRoot(
@@ -92,6 +94,16 @@ describe.each(['Escape', 'Tab'])('%s from an idle field', (key) => {
       expect(pressInField(cloneElement(field, { onKeyDown }), key)).toBe(false);
       expect(onKeyDown).toHaveBeenCalledTimes(1);
     });
+
+    it('stops at the input when the handler prevents and continues it', () => {
+      // TagInput and CommandTextArea hand over a plain React event.
+      const onKeyDown = vi.fn((e) => {
+        e.continuePropagation?.();
+        e.preventDefault();
+      });
+
+      expect(pressInField(cloneElement(field, { onKeyDown }), key)).toBe(false);
+    });
   });
 
   it.each(FIELDS_WITHOUT_KEY_HANDLER)('%s reaches ancestors', (_, field) => {
@@ -99,27 +111,35 @@ describe.each(['Escape', 'Tab'])('%s from an idle field', (key) => {
   });
 });
 
+async function renderInDialog(field: ReactElement<any>) {
+  const onOpenChange = vi.fn();
+
+  renderWithRoot(
+    <DialogTrigger type="modal" onOpenChange={onOpenChange}>
+      <Button>Edit</Button>
+      <Dialog>
+        <Content>
+          {field}
+          <Button>Next</Button>
+        </Content>
+      </Dialog>
+    </DialogTrigger>,
+  );
+
+  await userEvent.click(screen.getByRole('button', { name: 'Edit' }));
+  await waitFor(() => expect(screen.getByRole('dialog')).toBeVisible());
+
+  return onOpenChange;
+}
+
 describe.each(FIELDS)('%s in a modal dialog', (_, field) => {
   async function openDialog(prevents: boolean) {
-    const onOpenChange = vi.fn();
     const onKeyDown = (e: KeyboardEvent) => {
       if (prevents) e.preventDefault();
     };
-
-    renderWithRoot(
-      <DialogTrigger type="modal" onOpenChange={onOpenChange}>
-        <Button>Edit</Button>
-        <Dialog>
-          <Content>
-            {cloneElement(field, { onKeyDown })}
-            <Button>Next</Button>
-          </Content>
-        </Dialog>
-      </DialogTrigger>,
+    const onOpenChange = await renderInDialog(
+      cloneElement(field, { onKeyDown }),
     );
-
-    await userEvent.click(screen.getByRole('button', { name: 'Edit' }));
-    await waitFor(() => expect(screen.getByRole('dialog')).toBeVisible());
 
     const input = screen
       .getByRole('dialog')
@@ -163,4 +183,67 @@ describe.each(FIELDS)('%s in a modal dialog', (_, field) => {
       }
     },
   );
+});
+
+// A field acting on the key with its list open: the key does that job and
+// stays, so the dialog around the field stays open with focus inside.
+describe('a field acting on the key in a modal dialog', () => {
+  const COMMANDS = (
+    <CommandTextArea label="Field">
+      <CommandTextArea.Item key="/one" textValue="/one">
+        /one
+      </CommandTextArea.Item>
+    </CommandTextArea>
+  );
+
+  it.each([
+    [
+      'SearchComboBox',
+      <SearchComboBox label="Field">
+        <SearchComboBox.Item key="one">One</SearchComboBox.Item>
+      </SearchComboBox>,
+      'O',
+    ],
+    [
+      'TagInput',
+      <TagInput label="Field">
+        <TagInput.Item key="one">One</TagInput.Item>
+      </TagInput>,
+      'O',
+    ],
+    ['CommandTextArea', COMMANDS, '/o'],
+  ] as const)(
+    '%s closes its list on Escape and keeps the dialog open',
+    async (_, field, text) => {
+      const onOpenChange = await renderInDialog(field);
+      const input = screen.getByRole('combobox');
+
+      await userEvent.type(input, text);
+      await waitFor(() =>
+        expect(input).toHaveAttribute('aria-expanded', 'true'),
+      );
+
+      await userEvent.keyboard('{Escape}');
+
+      await waitFor(() =>
+        expect(input).toHaveAttribute('aria-expanded', 'false'),
+      );
+      expect(onOpenChange.mock.calls).toEqual([[true]]);
+    },
+  );
+
+  it('CommandTextArea keeps focus when Tab inserts an option', async () => {
+    await renderInDialog(COMMANDS);
+    const input = screen.getByRole<HTMLTextAreaElement>('combobox', {
+      name: 'Field',
+    });
+
+    await userEvent.type(input, '/o');
+    await waitFor(() => expect(input).toHaveAttribute('aria-activedescendant'));
+
+    await userEvent.keyboard('{Tab}');
+
+    await waitFor(() => expect(input.value).toBe('/one '));
+    expect(input).toHaveFocus();
+  });
 });

@@ -27,7 +27,7 @@ import {
   castNullableStringValue,
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
-import { settleOverlayKey } from '../../../utils/react/overlayKeyPropagation';
+import { withOverlayKeys } from '../../../utils/react/overlayKeyPropagation';
 import { mergeStyleLayers } from '../../../utils/styles';
 import { CollectionItem as Item } from '../../CollectionItem';
 import { useFieldProps } from '../../form';
@@ -620,7 +620,7 @@ function CommandTextArea<T extends object>(
   });
 
   // ---- keyboard navigation (only while the popover is open) -------------
-  const handleCommandKey = useCallback(
+  const onKeyDownHandler = useCallback(
     (e: AriaKeyboardEvent) => {
       onKeyDown?.(e);
       if (e.defaultPrevented) return;
@@ -673,17 +673,6 @@ function CommandTextArea<T extends object>(
       }
     },
     [shouldShowPopover, activeToken, commit, onKeyDown, listStateRef],
-  );
-
-  const onKeyDownHandler = useCallback(
-    (e: AriaKeyboardEvent) => {
-      handleCommandKey(e);
-      // A `Tab` that picked an option, or an `Escape` that closed the list,
-      // stays here: a surrounding dialog would otherwise move focus on the
-      // `Tab` anyway. Unprevented ones go on to it.
-      settleOverlayKey(e);
-    },
-    [handleCommandKey],
   );
 
   // ---- initial focus on the first option when the popover opens ---------
@@ -772,7 +761,10 @@ function CommandTextArea<T extends object>(
         shouldShowPopover && focusedKey != null
           ? getListBoxOptionId(listBoxId, focusedKey)
           : undefined,
-      onKeyDown: onKeyDownHandler,
+      // A `Tab` that picked an option, or an `Escape` that closed the list, is
+      // prevented and stays here: a surrounding dialog would otherwise move
+      // focus on the `Tab` anyway. Unprevented ones go on to it.
+      onKeyDown: withOverlayKeys(onKeyDownHandler),
       onSelect: syncCaret,
       onKeyUp: syncCaret,
       onClick: syncCaret,

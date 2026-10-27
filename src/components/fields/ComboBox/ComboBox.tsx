@@ -39,7 +39,10 @@ import { FieldBaseProps, TextFieldKeyboardProps } from '../../../shared';
 import { generateRandomId } from '../../../utils/random';
 import { useCombinedRefs, useLayoutEffect } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
-import { OVERLAY_KEYS } from '../../../utils/react/overlayKeyPropagation';
+import {
+  OVERLAY_KEYS,
+  settleOverlayKey,
+} from '../../../utils/react/overlayKeyPropagation';
 import { usePopoverSync } from '../../../utils/react/usePopoverSync';
 import { extractStyles } from '../../../utils/styles';
 import { CollectionItem as Item } from '../../CollectionItem';
@@ -123,8 +126,9 @@ export interface CubeComboBoxProps<T>
    * key handling. Receives React Aria's keyboard event: `e.preventDefault()`
    * skips the built-in handling for the key. `Escape` and `Tab` go on to
    * ancestors, such as a surrounding dialog, unless ComboBox acts on them
-   * (`Escape` closing the list or clearing the value); other keys stop at the
-   * input unless the handler calls `e.continuePropagation()`.
+   * (`Escape` closing the list or clearing the value) or the handler prevents
+   * them; other keys stop at the input unless the handler calls
+   * `e.continuePropagation()`.
    */
   onKeyDown?: TextFieldKeyboardProps['onKeyDown'];
 
@@ -607,7 +611,15 @@ function useComboBoxKeyboard({
       // `defaultPrevented` field is fixed at the moment it was made.
       onKeyDown?.(e);
 
-      if (e.isDefaultPrevented() || isComposing(e)) return;
+      if (e.isDefaultPrevented()) {
+        // A prevented Escape or Tab stays here even if the handler also
+        // continued it, as in every field.
+        settleOverlayKey(e);
+
+        return;
+      }
+
+      if (isComposing(e)) return;
 
       // A read-only field neither opens, picks nor clears. Escape and Tab go
       // on to a surrounding dialog unless handled here, as for any field.

@@ -1464,9 +1464,6 @@ function TagInput<T extends object>(
   const handleKeyDown = useEvent((e: KeyboardEvent<HTMLInputElement>) => {
     onKeyDown?.(e);
 
-    // A Tab the consumer prevented moves no focus.
-    isTabbingRef.current = e.key === 'Tab' && !e.defaultPrevented;
-
     if (!e.defaultPrevented && isInteractive) {
       if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
         handleArrowKey(e);
@@ -1486,6 +1483,9 @@ function TagInput<T extends object>(
         handleEscapeKey(e);
       }
     }
+
+    // A Tab the consumer or a delimiter prevented moves no focus.
+    isTabbingRef.current = e.key === 'Tab' && !e.defaultPrevented;
 
     // A prevented `Escape` or `Tab`, the caller's or a delimiter's, stays
     // here, so a surrounding dialog neither closes nor moves focus on it.

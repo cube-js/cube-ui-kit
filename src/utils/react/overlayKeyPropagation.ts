@@ -30,11 +30,9 @@ export const OVERLAY_KEYS = new Set(['Escape', 'Tab']);
  * is opposite between them:
  *
  * - Wrapped by `useKeyboard`, the event is augmented and propagation is
- *   stopped unless the handler opts out. `createEventHandler` also keeps that
- *   decision for the LIFE of the handler rather than per event — nothing
- *   resets it when the next key arrives — so an earlier opt-out would keep
- *   releasing later keys until a render replaced the handler. Re-asserting the
- *   default here is what keeps the opt-out from outliving its own event.
+ *   stopped after the handler unless it opts out, decided per event. A
+ *   handler that already opted out keeps every key except `Escape` and `Tab`
+ *   contained here all the same, by re-asserting the stop.
  * - Spread straight onto an element, the event is an ordinary React one and
  *   propagation is the default, so containment is what has to be asked for.
  *
@@ -75,9 +73,11 @@ export function allowOverlayKeysToPropagate(
  *
  * Shape-aware like `allowOverlayKeysToPropagate`: an event wrapped by
  * `useKeyboard` stops unless released, a plain one travels unless stopped.
+ * A key an IME is composing with is left as it is: it cancels or confirms
+ * the composition, and the overlay ignores it anyway.
  */
 export function settleOverlayKey(event: MaybeAugmentedKeyboardEvent) {
-  if (!OVERLAY_KEYS.has(event.key)) return;
+  if (!OVERLAY_KEYS.has(event.key) || event.nativeEvent.isComposing) return;
 
   const isAugmented = typeof event.continuePropagation === 'function';
 

@@ -159,8 +159,9 @@ function NumberInput(
       if (event.key !== 'Enter') event.continuePropagation();
       props.onKeyDown?.(event);
       // Number handling never prevents `Escape` or `Tab`, so a prevented one
-      // is the caller's and stops here, as in every other field.
-      settleOverlayKey(event);
+      // is the caller's and stops here, as in every other field. An
+      // unprevented one already goes on, unless the caller stopped it.
+      if (event.isDefaultPrevented()) settleOverlayKey(event);
     },
     onKeyUp: props.onKeyUp,
   });

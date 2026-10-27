@@ -142,9 +142,10 @@ export interface CubeSearchComboBoxProps<T>
    * key handling. Receives React Aria's keyboard event: `e.preventDefault()`
    * skips the built-in handling for the key. `Escape` and `Tab` go on to
    * ancestors, such as a surrounding dialog, unless SearchComboBox acts on
-   * them (`Escape` closing the list or clearing the text) or the handler
-   * prevents them; other keys stop at the input unless the handler calls
-   * `e.continuePropagation()`.
+   * them or the handler prevents them. It acts on `Escape` while the list is
+   * open or the input has text: it closes the list, or clears the text, or,
+   * when not clearable, keeps the browser from clearing it. Other keys stop
+   * at the input unless the handler calls `e.continuePropagation()`.
    */
   onKeyDown?: TextFieldKeyboardProps['onKeyDown'];
 
