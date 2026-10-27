@@ -17,7 +17,7 @@ export default {
     children: {
       control: { type: 'text' },
       description:
-        'Text shown between two lines. It also names the separator for screen readers.',
+        'Text shown between two lines. It also names the separator for screen readers, unless `aria-label` or `aria-labelledby` names it.',
       table: { type: { summary: 'ReactNode' } },
     },
     /* Presentation */
@@ -25,7 +25,7 @@ export default {
       control: { type: 'radio' },
       options: ['horizontal', 'vertical'],
       description:
-        'The direction of the line. A vertical divider stretches to the height of its row.',
+        'The direction of the line. A vertical divider stretches to the height of its flex or grid row, even when the row centers its items. Elsewhere, or to make it shorter, give it a `height`.',
       table: {
         defaultValue: { summary: 'horizontal' },
         type: { summary: "'horizontal' | 'vertical'" },

@@ -52,11 +52,7 @@ import { ColorSwatchGroup, CubeColorSwatchItem } from '../ColorSwatchGroup';
  */
 const POPOVER_STYLES: Styles = { overflow: 'auto' };
 
-/**
- * The rule separating the palette from the editor. `Divider` is not used: it
- * places itself on named grid lines meant for menu layouts, which this panel
- * does not define, so it lands in the wrong row and spawns a stray column.
- */
+/** The rule separating the palette from the editor. */
 const PALETTE_STYLES: Styles = {
   border: 'top',
   padding: '1x top',

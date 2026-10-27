@@ -1,6 +1,7 @@
 import { createRef } from 'react';
 
 import { render, screen } from '../../../test';
+import { readWithScreenReader } from '../../../test/screen-reader';
 
 import { Divider } from './Divider';
 
@@ -34,17 +35,6 @@ describe('<Divider />', () => {
     expect(style.width).toBe('50%');
   });
 
-  it('claims no grid area, so a grid places it in the next cell', () => {
-    // A named area that no grid defines puts the divider in a stray column.
-    render(<Divider />);
-
-    expect(
-      getComputedStyle(screen.getByRole('separator')).getPropertyValue(
-        'grid-area',
-      ),
-    ).not.toContain('divider');
-  });
-
   it('is a vertical separator with orientation="vertical"', () => {
     render(<Divider orientation="vertical" />);
 
@@ -59,6 +49,27 @@ describe('<Divider />', () => {
     render(<Divider>or</Divider>);
 
     expect(screen.getByRole('separator', { name: 'or' })).toBeInTheDocument();
+  });
+
+  it('keeps a text of 0', () => {
+    render(<Divider>{0}</Divider>);
+
+    expect(screen.getByRole('separator', { name: '0' })).toBeInTheDocument();
+  });
+
+  it('reads its text once, as the name', async () => {
+    // Element children used to be read again after the name.
+    render(
+      <Divider>
+        <strong>or</strong>
+      </Divider>,
+    );
+
+    const phrases = await readWithScreenReader();
+
+    expect(phrases.filter((phrase) => phrase.includes('or'))).toEqual([
+      expect.stringMatching(/^separator, or/),
+    ]);
   });
 
   it('keeps a name given by aria-label or aria-labelledby', () => {

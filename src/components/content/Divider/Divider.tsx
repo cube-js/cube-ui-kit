@@ -31,7 +31,7 @@ const DividerElement = tasty({
       vertical: 'auto',
     },
     gridRows: {
-      '': 'auto',
+      '': false,
       vertical: '1fr auto 1fr',
     },
     placeItems: {
@@ -40,19 +40,21 @@ const DividerElement = tasty({
     },
     gap: '1x',
     preset: 'c1',
+    // `false` leaves a size alone, so `inlineSize` and `blockSize` still apply.
     width: {
-      '': 'auto',
+      '': false,
       'vertical & !text': '1bw 1bw',
     },
     height: {
       '': '1bw 1bw',
-      'vertical | text': 'auto',
+      'vertical | text': false,
     },
     // A vertical divider fills the height of the row it separates, even when
-    // the row centers its items.
+    // the row centers its items. One given a height follows the row's
+    // alignment instead.
     alignSelf: {
-      '': 'auto',
-      vertical: 'stretch',
+      '': false,
+      'vertical & !sized': 'stretch',
     },
     fill: {
       '': '#border',
@@ -63,12 +65,12 @@ const DividerElement = tasty({
 
     Line: {
       width: {
-        '': 'auto',
+        '': false,
         vertical: '1bw 1bw',
       },
       height: {
         '': '1bw 1bw',
-        vertical: 'auto',
+        vertical: false,
       },
       fill: '#border',
     },
@@ -85,7 +87,8 @@ export interface CubeDividerProps
   children?: ReactNode;
   /**
    * The direction of the line. A vertical divider separates the items of a
-   * row and stretches to the row's height.
+   * flex or grid row and stretches to the row's height, even when the row
+   * centers its items. Elsewhere, or to make it shorter, give it a `height`.
    * @default 'horizontal'
    */
   orientation?: 'horizontal' | 'vertical';
@@ -99,13 +102,14 @@ export const Divider = forwardRef(function Divider(
   const { mods, children, orientation = 'horizontal' } = allProps;
   const labelId = useId();
 
-  const hasText = !!children;
+  const hasText = children != null && children !== false && children !== '';
   const isVertical = orientation === 'vertical';
   // An `<hr>` is a horizontal separator on its own. React Aria leaves
   // `aria-orientation` off an `<hr>`, so a vertical divider is a `div`.
   const elementType = hasText || isVertical ? 'div' : 'hr';
 
   const { separatorProps } = useSeparator({ orientation, elementType });
+  const styles = extractStyles(allProps, STYLE_LIST);
 
   // ARIA makes a separator's children presentational, so its text alone is
   // not a name a screen reader can rely on.
@@ -123,14 +127,18 @@ export const Divider = forwardRef(function Divider(
       mods={{
         text: hasText,
         vertical: isVertical,
+        sized: styles.height != null || styles.blockSize != null,
         ...mods,
       }}
-      styles={extractStyles(allProps, STYLE_LIST)}
+      styles={styles}
     >
       {hasText ? (
         <>
           <div data-element="Line" />
-          <div id={labelId}>{children}</div>
+          {/* Hidden, so the text is read once, as the name. */}
+          <div id={labelId} aria-hidden>
+            {children}
+          </div>
           <div data-element="Line" />
         </>
       ) : null}

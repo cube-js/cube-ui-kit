@@ -23,7 +23,7 @@ A line that separates content. It is horizontal by default and vertical with `or
 ### Properties
 
 - **`children`** `ReactNode` — Text shown between two lines. It also names the separator for screen readers, unless `aria-label` or `aria-labelledby` names it.
-- **`orientation`** `'horizontal' | 'vertical'` (default: `'horizontal'`) — The direction of the line. A vertical divider stretches to the height of its row, even when the row centers its items.
+- **`orientation`** `'horizontal' | 'vertical'` (default: `'horizontal'`) — The direction of the line. A vertical divider stretches to the height of its flex or grid row, even when the row centers its items. Elsewhere, or to make it shorter, give it a `height`.
 
 ### Base Properties
 
@@ -33,16 +33,16 @@ Supports [Base properties](/docs/getting-started-base-properties--docs). A divid
 
 #### styles
 
-Customizes the root element. Without text, the root is the line itself, so `fill` sets its color.
+Customizes the root element. Without text, the root is the line itself.
 
 **Sub-elements:**
 
-- `Line` - Each of the two lines around the text. Set its `fill` to recolor the lines of a text divider.
+- `Line` - Each of the two lines around the text.
 
 ### Style Defaults
 
 - `fill` — `#border`; `none` with text, where the `Line` sub-elements carry the color
-- `height` — `1bw`; `auto` when vertical or with text
+- `height` — `1bw` when horizontal without text
 - `width` — `1bw` when vertical without text
 - `margin` — `0`
 - `preset` — `c1`
@@ -62,10 +62,11 @@ These properties allow direct style application without using the `styles` prop:
 
 The `mods` property accepts the following modifiers you can override:
 
-| Modifier | Type      | Description                              |
-| -------- | --------- | ---------------------------------------- |
-| text     | `boolean` | The divider shows text between two lines |
-| vertical | `boolean` | The divider is vertical                  |
+| Modifier | Type | Description |
+| --- | --- | --- |
+| text | `boolean` | The divider shows text between two lines |
+| vertical | `boolean` | The divider is vertical |
+| sized | `boolean` | It has a `height` or `blockSize` of its own, so a vertical divider follows the row's alignment instead of stretching |
 
 ## Examples
 
@@ -103,11 +104,17 @@ The `mods` property accepts the following modifiers you can override:
 </Space>
 ```
 
-A vertical divider takes the height of its row. Give it a `height` when it should be shorter:
+A vertical divider takes the height of its row in a flex or grid container. Give it a `height` when it should be shorter, or when its container is a plain block. A divider with a height follows the row's alignment, so it stays centered in a row that centers its items:
 
 ```jsx
-<Divider orientation="vertical" height="3x" />
+<Space placeItems="center" gap="1.5x">
+  <Button>Edit</Button>
+  <Divider orientation="vertical" height="3x" />
+  <Button>Delete</Button>
+</Space>
 ```
+
+A vertical divider with text needs a row about `8x` tall or more. In a shorter row the lines shrink to nothing and only the text is left.
 
 ## Accessibility
 
@@ -115,7 +122,7 @@ A vertical divider takes the height of its row. Give it a `height` when it shoul
 
 - A horizontal divider without text is an `<hr>`, which screen readers announce as a separator.
 - A vertical divider, or one with text, is a `div` with `role="separator"`. A vertical one carries `aria-orientation="vertical"`.
-- ARIA treats a separator's content as presentational, so a text divider is named by its text through `aria-labelledby`. Screen readers announce it as "separator, or". An `aria-label` or `aria-labelledby` you pass replaces that name.
+- ARIA treats a separator's content as presentational, so a text divider is named by its text through `aria-labelledby`: its accessible name is its text, and the text is hidden from screen readers so it is not read a second time. An `aria-label` or `aria-labelledby` you pass replaces that name.
 
 ## Best Practices
 
