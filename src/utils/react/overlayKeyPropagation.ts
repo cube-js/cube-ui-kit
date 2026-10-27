@@ -77,7 +77,7 @@ export function allowOverlayKeysToPropagate(
  * the composition, and the overlay ignores it anyway. That is `isComposing`
  * alone. The key Safari fires as a composition ends (`keyCode` 229,
  * `isComposing` false) is an ordinary key to the overlay, so it follows the
- * rule here too, though fields skip it for their own key handling.
+ * rule too, even in a field that skips it for its own key handling.
  */
 export function settleOverlayKey(event: MaybeAugmentedKeyboardEvent) {
   if (!OVERLAY_KEYS.has(event.key) || event.nativeEvent.isComposing) return;

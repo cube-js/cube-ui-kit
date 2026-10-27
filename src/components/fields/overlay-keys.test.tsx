@@ -64,13 +64,20 @@ const FIELDS_WITHOUT_KEY_HANDLER: [string, ReactElement<any>][] = [
 
 // `fireEvent`, not `userEvent`: user-event moves focus itself on an
 // unprevented `Tab`, which would hide whether the key ever left the field.
-function pressInField(field: ReactElement<any>, key: string) {
+function pressInField(
+  field: ReactElement<any>,
+  key: string,
+  init: KeyboardEventInit = {},
+) {
   const onParentKeyDown = vi.fn();
   const { container } = renderWithRoot(
     <div onKeyDown={(e) => onParentKeyDown(e.key)}>{field}</div>,
   );
 
-  fireEvent.keyDown(container.querySelector('input, textarea')!, { key });
+  fireEvent.keyDown(container.querySelector('input, textarea')!, {
+    key,
+    ...init,
+  });
 
   return onParentKeyDown.mock.calls.length > 0;
 }
@@ -103,6 +110,18 @@ describe.each(['Escape', 'Tab'])('%s from an idle field', (key) => {
       });
 
       expect(pressInField(cloneElement(field, { onKeyDown }), key)).toBe(false);
+    });
+
+    it('reaches ancestors when it ends an IME composition', () => {
+      // Safari fires that key with `isComposing` false, so the overlay acts
+      // on it as on any other.
+      const onKeyDown = vi.fn();
+
+      expect(
+        pressInField(cloneElement(field, { onKeyDown }), key, {
+          keyCode: 229,
+        }),
+      ).toBe(true);
     });
   });
 

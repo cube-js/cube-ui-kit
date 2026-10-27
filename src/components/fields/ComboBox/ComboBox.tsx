@@ -619,7 +619,13 @@ function useComboBoxKeyboard({
         return;
       }
 
-      if (isComposing(e)) return;
+      if (isComposing(e)) {
+        // The IME has the key, but Safari's key that ends a composition still
+        // reaches the overlay, so Escape and Tab follow the rule.
+        settleOverlayKey(e);
+
+        return;
+      }
 
       // A read-only field neither opens, picks nor clears. Escape and Tab go
       // on to a surrounding dialog unless handled here, as for any field.
