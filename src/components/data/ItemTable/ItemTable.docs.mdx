@@ -219,7 +219,7 @@ const Compact = tasty(ItemTable, {
 });
 ```
 
-Rows publish their paint as inherited custom properties — `#row-base`, `#row-overlay`, `#row-text` and `$dim` — which cells consume. That is what lets a pinned (and therefore opaque) cell match its row's state without duplicating the state matrix.
+Rows publish their paint as inherited custom properties — `#row-base`, `#row-overlay`, `$row-overlay-weight`, `#row-text` and `$dim` — which cells consume. `#row-overlay` is an opaque color that cells mix into `#row-base` at `$row-overlay-weight` (a percentage), so each cell paints one solid background color. That is what lets a pinned (and therefore opaque) cell match its row's state without duplicating the state matrix.
 
 Geometry runs through tokens too: `$row-height`, `$header-height`, `$cell-padding-x` (16px) and `$cell-padding-y`. Height lives on the **cells**, not the `<tr>` — table layout ignores `min-height` on a row and sizes it from its cells instead.
 

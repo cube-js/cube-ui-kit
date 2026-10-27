@@ -56,23 +56,21 @@ function declaredValues(rules: Rule[], property: string): string[] {
 
 describe('row state matrix', () => {
   it('keeps `selected & hovered` as a rule distinct from `selected`', () => {
-    const rules = bodyRowRules(renderTableCss()).filter((rule) =>
-      rule.body.includes('--row-overlay-color'),
-    );
+    const rules = bodyRowRules(renderTableCss());
+    const weightOf = (rule: Rule) =>
+      rule.body.match(/--row-overlay-weight:\s*([^;]+)/)?.[1].trim();
 
-    const compound = rules.find(
-      (rule) =>
-        rule.selector.includes('[data-selected]:hover') ||
-        /\[data-selected\][^,]*:hover/.test(rule.selector),
-    );
+    const compound = rules.find((rule) => weightOf(rule) === '12%');
+    const selected = rules.find((rule) => weightOf(rule) === '9%');
 
     expect(compound).toBeDefined();
-    // Matched on the token it derives from, not on how the opacity is applied:
-    // Tasty fades a colour token with `color-mix()`, and that form is its
-    // business to change.
-    expect(compound!.body).toMatch(
-      /--row-overlay-color:[^;]*var\(--surface-text-color\)/,
-    );
+    expect(selected).toBeDefined();
+
+    // Both conditions hold, un-negated, in the compound rule's own selector.
+    // The default state's rule also names both, inside `:not(...)`.
+    const required = compound!.selector.replace(/:not\([^()]*\)/g, '');
+    expect(required).toContain('[data-selected]');
+    expect(required).toContain(':hover');
   });
 
   it('keeps `dimmed` out of the fill maps entirely', () => {
@@ -84,7 +82,7 @@ describe('row state matrix', () => {
 
     for (const rule of dimmed) {
       // `dimmed` drives text colour and opacity independently of interaction.
-      expect(rule.body).not.toContain('--row-overlay-color');
+      expect(rule.body).not.toContain('--row-overlay');
     }
   });
 
@@ -96,7 +94,7 @@ describe('row state matrix', () => {
 
     for (const rule of rules) {
       if (!rule.body.includes('--row-base-color')) continue;
-      expect(rule.body).not.toContain('--row-overlay-color');
+      expect(rule.body).not.toContain('--row-overlay');
     }
   });
 });

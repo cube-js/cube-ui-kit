@@ -443,10 +443,10 @@ function cappedAccent(
 
 /**
  * Opaque stand-in for the BASE selected fill used by outline / outline-2 / clear Item
- * types (`#surface|#surface-2|#surface-3` + `#accent-surface.09`).
+ * types (`#accent-surface 9%` mixed into `#surface|#surface-2|#surface-3`).
  *
- * Anchors the `accent-text*` contrast. `value: 9` matches the `.09` alpha overlay;
- * `space: 'srgb'` approximates CSS two-layer compositing. Inherited so colored themes
+ * Anchors the `accent-text*` contrast. `value: 9` matches the 9% weight;
+ * `space: 'srgb'` approximates the sRGB mix `fill` paints. Inherited so colored themes
  * re-resolve against their own `surface` + `accent-surface` (default `surface-2` /
  * `surface-3` are `inherit: false` and can't be the mix base). Primary's tinted
  * `surface` makes this slightly harder than default clear-selected, covering
