@@ -793,6 +793,11 @@
     },
     "optOuts": 0
   },
+  "src/components/fields/FilterPicker/FilterTree.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
   "src/components/fields/ListBox/DraggableListBox.tsx": {
     "compiled": 1,
     "diagnostics": {},

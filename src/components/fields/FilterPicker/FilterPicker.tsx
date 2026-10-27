@@ -38,6 +38,8 @@ import { extractStyles, mergeStyleLayers } from '../../../utils/styles';
 import { CubeItemButtonProps, ItemAction, ItemButton } from '../../actions';
 import { CubeItemProps } from '../../content/Item';
 import { Text } from '../../content/Text';
+import { deriveCheckedSets } from '../../content/Tree/checked-keys';
+import { buildTreeIndex, getTreeNodeText } from '../../content/Tree/tree-index';
 import {
   getValidationIcon,
   getValidationTheme,
@@ -53,8 +55,11 @@ import {
 import { ListBox } from '../ListBox';
 import { TriggerActions, TriggerIcon } from '../TriggerActions';
 
+import { FilterTree } from './FilterTree';
+
 import type { KeyboardEvent as RAKeyboardEvent } from '@react-types/shared';
 import type { FieldBaseProps } from '../../../shared';
+import type { CubeTreeNodeData } from '../../content/Tree/types';
 
 interface ItemWithKey {
   key?: string | number;
@@ -66,7 +71,7 @@ interface ItemWithKey {
 
 export interface CubeFilterPickerProps<T>
   extends
-    Omit<CubeFilterListBoxProps<T>, 'size' | 'shape'>,
+    Omit<CubeFilterListBoxProps<T>, 'size' | 'shape' | 'children'>,
     // `tooltip` is the trigger's, and on a picker the trigger's is spelled
     // `triggerTooltip`; the label's info badge is `labelTooltip`.
     Omit<CubeItemProps, 'children' | 'size' | 'tooltip'>,
@@ -88,6 +93,8 @@ export interface CubeFilterPickerProps<T>
       | 'hotkeys'
       | 'shape'
     > {
+  /** The options, or a render function over `items`. Required unless `treeData` is set. */
+  children?: CollectionChildren<T>;
   /** Accessible name for the picker trigger when there is no visible label. */
   'aria-label'?: string;
   /** Ids of elements that also describe the trigger, beside the field's own description and message. */
@@ -190,9 +197,55 @@ export interface CubeFilterPickerProps<T>
   sortSelectedToTop?: boolean;
   /** Callback called when the popover open state changes */
   onOpenChange?: (isOpen: boolean) => void;
+
+  /**
+   * Tree-shaped options. When set, the popover shows a checkable `Tree` in
+   * place of the list, and `items` and `children` are not used.
+   *
+   * Tree mode is always multiple selection. The value (`selectedKeys`) is
+   * every fully checked key, parents included: checking a parent checks its
+   * children, and a parent with only some children checked is half-checked.
+   * The cascade runs over the whole tree, so a search never unchecks the
+   * nodes it hides. A press on a row toggles its checkbox. Disable a node
+   * with its own `isDisabled`, not `disabledKeys`.
+   *
+   * The search keeps a node that matches with its whole subtree, and the
+   * ancestors of deeper matches with only their matching branches, opened.
+   * The default summary lists the topmost checked nodes.
+   */
+  treeData?: CubeTreeNodeData[];
+  /** Expanded nodes in tree mode (controlled). A search expands on its own and restores these when cleared. */
+  expandedKeys?: string[];
+  /** Initially expanded nodes in tree mode (uncontrolled). */
+  defaultExpandedKeys?: string[];
+  /** Called when the user expands or collapses a node in tree mode, outside a search. */
+  onExpand?: (expandedKeys: string[]) => void;
 }
 
 const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
+
+/**
+ * Tree mode's summary: the topmost checked nodes, since a checked parent
+ * stands for its children. Keys the tree lacks are listed as they are.
+ */
+function getTreeSummaryLabels(
+  treeData: CubeTreeNodeData[],
+  index: ReturnType<typeof buildTreeIndex>,
+  keys: string[],
+): string[] {
+  const { checked } = deriveCheckedSets(treeData, index, keys);
+  const labels: string[] = [];
+
+  for (const [key, node] of index.byKey) {
+    const parentKey = index.parentOf.get(key);
+    if (!checked.has(key) || (parentKey != null && checked.has(parentKey))) {
+      continue;
+    }
+    labels.push(getTreeNodeText(node));
+  }
+
+  return [...labels, ...keys.filter((key) => !index.byKey.has(key))];
+}
 
 const FilterPickerWrapper = tasty({
   qa: 'FilterPicker',
@@ -214,15 +267,17 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
   const props = useFieldProps(inputProps, {
     valuePropsMapper: ({ value, onChange }) => {
       const fieldProps: Record<string, unknown> = {};
+      const isMultiple =
+        inputProps.selectionMode === 'multiple' || !!inputProps.treeData;
 
-      if (inputProps.selectionMode === 'multiple') {
+      if (isMultiple) {
         fieldProps.selectedKeys = value || [];
       } else {
         fieldProps.selectedKey = value ?? null;
       }
 
       fieldProps.onSelectionChange = (key: Key | null | 'all' | Key[]) => {
-        if (inputProps.selectionMode === 'multiple') {
+        if (isMultiple) {
           if (key === 'all') {
             onChange('all');
           } else {
@@ -329,8 +384,15 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     isReorderable,
     onReorder,
     form,
+    treeData,
+    expandedKeys,
+    defaultExpandedKeys,
+    onExpand,
     ...otherProps
   } = props;
+
+  // Tree mode is multiple selection, whatever `selectionMode` says.
+  if (treeData) selectionMode = 'multiple';
 
   const sortSelectedToTopExplicit = sortSelectedToTopProp !== undefined;
   const sortSelectedToTop = sortSelectedToTopProp ?? (items ? true : false);
@@ -438,8 +500,26 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     return effectiveSelectedKeys;
   }, [selectionMode, effectiveSelectedKeys, keyMap]);
 
+  const treeIndex = useMemo(
+    () => (treeData ? buildTreeIndex(treeData) : null),
+    [treeData],
+  );
+
+  // Tree mode's value as the tree reads it: `'all'` checks every node.
+  const treeCheckedKeys = useMemo(
+    () =>
+      effectiveSelectedKeys === 'all'
+        ? [...(treeIndex?.byKey.keys() ?? [])]
+        : (effectiveSelectedKeys ?? []).map(String),
+    [effectiveSelectedKeys, treeIndex],
+  );
+
   // Memoized label extraction using the labelMap
   const selectedLabels = useMemo(() => {
+    if (treeData && treeIndex) {
+      return getTreeSummaryLabels(treeData, treeIndex, treeCheckedKeys);
+    }
+
     if (selectionMode === 'multiple' && effectiveSelectedKeys === 'all') {
       return Array.from(labelMap.values());
     }
@@ -452,7 +532,15 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
           : [];
 
     return selectedKeyStrs.map((k) => labelMap.get(k) ?? k);
-  }, [selectionMode, effectiveSelectedKey, effectiveSelectedKeys, labelMap]);
+  }, [
+    treeData,
+    treeIndex,
+    treeCheckedKeys,
+    selectionMode,
+    effectiveSelectedKey,
+    effectiveSelectedKeys,
+    labelMap,
+  ]);
 
   const hasSelection = selectedLabels.length > 0;
 
@@ -921,72 +1009,104 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
             }
           >
             <FocusScope restoreFocus>
-              <FilterListBox
-                isBare
-                autoFocus
-                items={items ? (finalItems as typeof props.items) : undefined}
-                aria-label={pickerAriaLabel}
-                _internalCollection={localCollectionState.collection}
-                selectedKey={
-                  selectionMode === 'single' ? mappedSelectedKey : undefined
-                }
-                selectedKeys={
-                  selectionMode === 'multiple' ? mappedSelectedKeys : undefined
-                }
-                searchPlaceholder={searchPlaceholder}
-                filter={filter}
-                searchValue={searchValue}
-                listStyles={listStyles}
-                optionStyles={optionStyles}
-                sectionStyles={sectionStyles}
-                headingStyles={headingStyles}
-                listGap={listGap}
-                listRef={listRef}
-                disallowEmptySelection={disallowEmptySelection}
-                allowDuplicateSelectionEvents={
-                  selectionMode === 'single' && !!disallowEmptySelection
-                }
-                emptyLabel={emptyLabel}
-                searchInputStyles={searchInputStyles}
-                searchInputRef={searchInputRef}
-                disabledKeys={disabledKeys}
-                focusOnHover={focusOnHover}
-                shouldFocusWrap={shouldFocusWrap}
-                allowsCustomValue={allowsCustomValue}
-                selectionMode={selectionMode}
-                isInvalid={isInvalid}
-                isValid={isValid}
-                isDisabled={isDisabled}
-                isLoading={isLoading}
-                isLoadingItems={isLoadingItems}
-                stateRef={listStateRef}
-                isCheckable={isCheckable}
-                mods={{
-                  popover: true,
-                }}
-                size={size === 'small' ? 'medium' : size}
-                showSelectAll={showSelectAll}
-                selectAllLabel={selectAllLabel}
-                header={header}
-                footer={footer}
-                headerStyles={headerStyles}
-                footerStyles={footerStyles}
-                allValueProps={allValueProps}
-                customValueProps={customValueProps}
-                newCustomValueProps={newCustomValueProps}
-                isReorderable={isReorderable}
-                onSearchChange={onSearchChange}
-                onReorder={onReorder}
-                onEscape={handleEscape}
-                onOptionClick={handleOptionClick}
-                onSelectionChange={handleSelectionChange}
-              >
-                {
-                  (children
-                    ? (children as CollectionChildren<T>)
-                    : undefined) as CollectionChildren<T>
-                }
-              </FilterListBox>
+              {treeData ? (
+                <FilterTree
+                  autoFocus
+                  treeData={treeData}
+                  checkedKeys={treeCheckedKeys}
+                  expandedKeys={expandedKeys}
+                  defaultExpandedKeys={defaultExpandedKeys}
+                  aria-label={pickerAriaLabel}
+                  searchPlaceholder={searchPlaceholder}
+                  searchValue={searchValue}
+                  searchInputStyles={searchInputStyles}
+                  searchInputRef={searchInputRef}
+                  filter={filter}
+                  emptyLabel={emptyLabel}
+                  header={header}
+                  headerStyles={headerStyles}
+                  footer={footer}
+                  footerStyles={footerStyles}
+                  size={size === 'small' ? 'medium' : size}
+                  isDisabled={isDisabled}
+                  isLoadingItems={isLoadingItems}
+                  shouldFocusWrap={shouldFocusWrap}
+                  onExpand={onExpand}
+                  onSearchChange={onSearchChange}
+                  onCheckedKeysChange={handleSelectionChange}
+                  onEscape={handleEscape}
+                  onCommit={handleEscape}
+                />
+              ) : (
+                <FilterListBox
+                  isBare
+                  autoFocus
+                  items={items ? (finalItems as typeof props.items) : undefined}
+                  aria-label={pickerAriaLabel}
+                  _internalCollection={localCollectionState.collection}
+                  selectedKey={
+                    selectionMode === 'single' ? mappedSelectedKey : undefined
+                  }
+                  selectedKeys={
+                    selectionMode === 'multiple'
+                      ? mappedSelectedKeys
+                      : undefined
+                  }
+                  searchPlaceholder={searchPlaceholder}
+                  filter={filter}
+                  searchValue={searchValue}
+                  listStyles={listStyles}
+                  optionStyles={optionStyles}
+                  sectionStyles={sectionStyles}
+                  headingStyles={headingStyles}
+                  listGap={listGap}
+                  listRef={listRef}
+                  disallowEmptySelection={disallowEmptySelection}
+                  allowDuplicateSelectionEvents={
+                    selectionMode === 'single' && !!disallowEmptySelection
+                  }
+                  emptyLabel={emptyLabel}
+                  searchInputStyles={searchInputStyles}
+                  searchInputRef={searchInputRef}
+                  disabledKeys={disabledKeys}
+                  focusOnHover={focusOnHover}
+                  shouldFocusWrap={shouldFocusWrap}
+                  allowsCustomValue={allowsCustomValue}
+                  selectionMode={selectionMode}
+                  isInvalid={isInvalid}
+                  isValid={isValid}
+                  isDisabled={isDisabled}
+                  isLoading={isLoading}
+                  isLoadingItems={isLoadingItems}
+                  stateRef={listStateRef}
+                  isCheckable={isCheckable}
+                  mods={{
+                    popover: true,
+                  }}
+                  size={size === 'small' ? 'medium' : size}
+                  showSelectAll={showSelectAll}
+                  selectAllLabel={selectAllLabel}
+                  header={header}
+                  footer={footer}
+                  headerStyles={headerStyles}
+                  footerStyles={footerStyles}
+                  allValueProps={allValueProps}
+                  customValueProps={customValueProps}
+                  newCustomValueProps={newCustomValueProps}
+                  isReorderable={isReorderable}
+                  onSearchChange={onSearchChange}
+                  onReorder={onReorder}
+                  onEscape={handleEscape}
+                  onOptionClick={handleOptionClick}
+                  onSelectionChange={handleSelectionChange}
+                >
+                  {
+                    (children
+                      ? (children as CollectionChildren<T>)
+                      : undefined) as CollectionChildren<T>
+                  }
+                </FilterListBox>
+              )}
             </FocusScope>
           </Dialog>
         )}

@@ -19,11 +19,15 @@ FilterPicker (forwardRef)
         └── FilterListBox (internal search and selection)
             ├── SearchInput
             └── ListBox (with sorted options)
+        └── FilterTree (with `treeData`, in place of FilterListBox)
+            ├── SearchInput (combobox, drives the active row)
+            └── Tree (checkable, `selectionMode="none"`)
 ```
 
 ### Core Dependencies
 
 - **FilterListBox**: Uses FilterListBox as internal selection component
+- **FilterTree / Tree**: With `treeData`, an internal `FilterTree` renders a checkable `Tree` under FilterListBox's search chrome, and uses `deriveCheckedSets` / `toggleCheckedKey` (`Tree/checked-keys.ts`) to cascade checks over the full tree
 - **Dialog System**: `DialogTrigger`, `Dialog` for popover behavior
 - **Button Component**: Styled trigger button with states
 - **Form Integration**: Custom form hooks (`useFieldProps`, `useFormProps`)
@@ -234,6 +238,14 @@ mods={{
 2. **Checkbox Interaction**: Toggles selection, keeps popover open
 3. **Content Click**: (Optional) Closes popover if `onOptionClick` configured
 4. **Escape**: Closes popover
+
+### Tree Mode (`treeData`)
+1. **Value**: Always multiple selection. The value is every fully checked key, parents included, in tree order; a parent key in the value checks its subtree
+2. **Cascade**: Runs over the full `treeData`, never the filtered copy, so a search never reads a hidden node as unchecked
+3. **Search**: Keeps a matching node with its whole subtree, and ancestors of deeper matches with only their matching branches. Those ancestors open through a search-only expansion that resets per query; the user's expansion comes back when the search clears
+4. **Focus**: DOM focus stays in the search input (`aria-activedescendant` names the active row; row ids come from `getTreeRowId`). The tree is not a tab stop, and a click inside it hands focus back to the input
+5. **Row press**: Toggles the row's checkbox and keeps the popover open. `Enter` toggles the active row and closes it
+6. **Summary**: Labels of the topmost checked nodes
 
 ### Keyboard Interaction
 - **Trigger Focus**: Standard button keyboard behavior

@@ -1,0 +1,7 @@
+---
+"@cube-dev/ui-kit": minor
+---
+
+Add tree-shaped options to `FilterPicker`: pass `treeData` (with `expandedKeys`, `defaultExpandedKeys` and `onExpand`) and the popover shows a checkable `Tree` under the usual header, search and footer. Tree mode is always multiple selection. Its value is every fully checked key, parents included, in tree order: checking a parent checks its children, and a partly checked parent is half-checked. The cascade runs over the whole tree, so a search never unchecks the nodes it hides. A search keeps each match with its subtree and opens the ancestors of deeper matches, then restores the user's expansion when it clears. Focus stays in the search input, which drives the active row: arrows move it, Right and Left open and close it, Space toggles it while the search is empty, and Enter toggles it and closes the popover. The default summary lists the topmost checked nodes. `children` is now optional in `CubeFilterPickerProps`, since a tree-mode picker has none.
+
+`Tree` changes that come with it: a node's new `textValue` names its checkbox when `title` is not a string, and a `Tree` with an `id` gives each row an id derived from it. In `defaultCheckedKeys` and the array form of `checkedKeys`, a parent key now checks its whole subtree, as in AntD; before, a parent listed without its children rendered unchecked. The object form `{ checked, halfChecked }` is taken as given, as before.

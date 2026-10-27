@@ -14,6 +14,7 @@ A button-triggered field for keeping one or more selected values from a **search
 - Users need a visible search field to find options
 - A compact button trigger is preferable to an always-visible input
 - Multiple selection, checkboxes, select-all, grouped options, or a custom trigger summary are needed
+- The options form a tree, such as groups and their members, and parents should be checkable as a whole (`treeData`)
 - The selection should participate in form state and validation
 
 Choose a different component when the interaction has another shape:
@@ -86,6 +87,10 @@ Choose a different component when the interaction has another shape:
 - **`onClear`** `() => void` — Callback called when the clear button is pressed
 - **`actions`** `ReactNode` — Custom actions rendered inside the trigger, to the left of the built-in clear button and dropdown caret
 - **`onOpenChange`** `(isOpen: boolean) => void` — Callback called when the popover open state changes
+- **`treeData`** `CubeTreeNodeData[]` — Tree-shaped options. The popover shows a checkable `Tree` in place of the list, and `items` and `children` are not used. Tree mode is always multiple selection; see [Tree Options](#tree-options)
+- **`expandedKeys`** `string[]` — Expanded nodes in tree mode (controlled). A search expands nodes on its own and restores these when it clears
+- **`defaultExpandedKeys`** `string[]` — Initially expanded nodes in tree mode (uncontrolled)
+- **`onExpand`** `(expandedKeys: string[]) => void` — Called when the user expands or collapses a node in tree mode, outside a search
 - **`isReorderable`** `boolean` (default: `false`) — Enable drag-and-drop item reordering in the dropdown list
 - **`onReorder`** `(newOrder: string[]) => void` — Callback when items are reordered via drag-and-drop or keyboard (Alt+Arrow)
 
@@ -326,6 +331,8 @@ const categories = [
 - `single` - Allows selecting only one item at a time
 - `multiple` - Allows selecting multiple items
 
+With `treeData`, the picker is always `multiple`.
+
 ### Button Types
 
 - `outline` - Default outlined button style; `mods={{ selected: true }}` adds a brand-tinted fill
@@ -552,6 +559,53 @@ const DEFAULT_KEY = 'apple';
 </FilterPicker>
 ```
 
+### Tree Options
+
+<Story of={FilterPickerStories.TreeOptions} />
+
+Pass `treeData` to pick from a tree. The popover shows a checkable [Tree](/docs/content-tree--docs) under the same header, search and footer, and `items` and `children` are not used.
+
+- **Value.** Tree mode is always multiple selection. `selectedKeys` is every fully checked key, parents included, in tree order. A parent key passed without its children checks its whole subtree.
+- **Cascade.** Checking a parent checks its children, and a parent with only some of them checked is half-checked. The cascade runs over the whole tree, so unchecking a node during a search keeps the nodes the search hides as they were.
+- **Search.** A node that matches keeps its whole subtree. The ancestors of deeper matches stay with only their matching branches, and open. This expansion belongs to the search: clearing it brings back the nodes the user had open. Nodes match on `textValue`, else on `title` when it is a string, else on `key`.
+- **Summary.** The default trigger summary lists the topmost checked nodes: "Design" rather than "Design, Dieter Rams, Susan Kare". `renderSummary` receives every checked key.
+- **Disabling.** Disable a node with its own `isDisabled` or `isCheckboxDisabled`; `disabledKeys` does not apply.
+
+```jsx
+const userGroups = [
+  {
+    key: 'engineering',
+    title: 'Engineering',
+    children: [
+      { key: 'engineering:ada', title: 'Ada Lovelace' },
+      { key: 'engineering:grace', title: 'Grace Hopper' },
+    ],
+  },
+  {
+    key: 'design',
+    title: 'Design',
+    children: [
+      { key: 'design:dieter', title: 'Dieter Rams' },
+      { key: 'design:susan', title: 'Susan Kare' },
+    ],
+  },
+  { key: 'contractors', title: 'Contractors', isLeaf: true },
+];
+
+<FilterPicker
+  isClearable
+  label="User groups"
+  placeholder="Select user groups..."
+  searchPlaceholder="Search groups and members..."
+  treeData={userGroups}
+  defaultSelectedKeys={['design', 'engineering:ada']}
+  defaultExpandedKeys={['engineering']}
+  onSelectionChange={(keys) => console.log(keys)}
+/>
+```
+
+Keys must be unique across the whole tree. When one person belongs to several groups, give each occurrence its own key (`engineering:ada`, `support:ada`) and map the keys back to people in `onSelectionChange`.
+
 ### Loading Items
 
 Use `isLoadingItems` to indicate that items are currently being fetched. Unlike `isLoading`, the trigger stays enabled so users can still open the popover and interact with items that have already loaded. A loading spinner appears in the search input suffix.
@@ -640,6 +694,16 @@ const [keyOrder, setKeyOrder] = useState([
 - `Home/End` - Navigate to first/last option
 - `Alt+ArrowUp` / `Alt+ArrowDown` - Reorder the focused item (when `isReorderable`)
 
+With `treeData`, focus stays in the search input and the keys drive the active row:
+
+- `Arrow Up/Down` - Move the active row
+- `Home/End`, `Page Up/Page Down` - Move the active row to the first or last row
+- `Arrow Right` - Expands the active row, or moves to its first child when it is open. With text in the search, only when the caret is at the end
+- `Arrow Left` - Collapses the active row, or moves to its parent. With text in the search, only when the caret is at the start
+- `Space` - Toggles the active row while the search is empty; otherwise types a space
+- `Enter` - Toggles the active row and closes the popover
+- `Escape` - Clears the search, then closes the popover
+
 ### Screen Reader Support
 
 - Trigger button announces current selection state
@@ -655,6 +719,8 @@ const [keyOrder, setKeyOrder] = useState([
 - `aria-expanded` - Indicates whether the popover is open
 - `aria-controls` - References the popover while it is open
 - `aria-describedby` - Associates help text and descriptions
+
+In tree mode, the search input is a `combobox` with `aria-haspopup="tree"`, `aria-controls` naming the tree, and `aria-activedescendant` naming the active row. Each row reports its level, position, expansion and `aria-checked` (`true`, `false` or `mixed`).
 
 ## Best Practices
 
