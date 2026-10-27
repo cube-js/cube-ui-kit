@@ -34,8 +34,8 @@ The component's data shape (`treeData`) and the public callback shape are design
 - **`defaultExpandedKeys`** `string[]` — Default expanded keys (uncontrolled).
 - **`expandedKeys`** `string[]` — Controlled expanded keys.
 - **`autoExpandParent`** `boolean` (default: `false`) — Auto-expand parents of currently expanded keys. Useful for filtering.
-- **`defaultCheckedKeys`** `string[]` — Default checked keys (uncontrolled).
-- **`checkedKeys`** `string[] | { checked: string[]; halfChecked?: string[] }` — Controlled checked keys. Pass the object form to receive the same shape back from `onCheck`.
+- **`defaultCheckedKeys`** `string[]` — Default checked keys (uncontrolled). A parent key checks its whole subtree, as in AntD.
+- **`checkedKeys`** `string[] | { checked: string[]; halfChecked?: string[] }` — Controlled checked keys. In the array form, a parent key checks its whole subtree, as in AntD. Pass the object form to receive the same shape back from `onCheck`; it is taken as given.
 - **`defaultSelectedKeys`** `string[]` — Default selected keys (uncontrolled).
 - **`selectedKeys`** `string[]` — Controlled selected keys.
 - **`height`** `number` — Fixed height in pixels. When omitted, the tree fills the available vertical space and scrolls internally.
@@ -62,6 +62,7 @@ The component's data shape (`treeData`) and the public callback shape are design
 
 - **`key`** `string` — Unique identifier of the node.
 - **`title`** `ReactNode` — Visible label.
+- **`textValue`** `string` — Plain-text label, for a `title` that is not a string. It names the row's checkbox and is what `FilterPicker`'s tree mode searches and summarises.
 - **`children`** `CubeTreeNodeData[]` — Children. Pass `undefined` together with `isLeaf={false}` for lazy nodes.
 - **`isLeaf`** `boolean` — Force leaf rendering (no expand toggle, no `loadData` call).
 - **`isDisabled`** `boolean` — Disable interactions on this row (focus / select / expand / check).

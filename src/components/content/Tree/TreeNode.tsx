@@ -20,6 +20,7 @@ import {
   TreeNodeTogglePlaceholder,
   TreeRowItem,
 } from './styled';
+import { getTreeNodeText } from './tree-index';
 
 import type { Key, Node } from '@react-types/shared';
 import type { Styles } from '@tenphi/tasty';
@@ -54,6 +55,11 @@ export interface TreeNodeProps {
   isChecked: boolean;
   /** Whether `loadData` is currently fetching this row's children. */
   isLoading: boolean;
+  /**
+   * Whether an outside control points at this row (`_activeKey`). When set,
+   * it replaces DOM focus as the source of the `focused` look.
+   */
+  isActive?: boolean;
 
   /** Toggle this row's checkbox (cascades). */
   onToggleChecked: (key: string) => void;
@@ -101,6 +107,7 @@ function TreeNodeInner(props: TreeNodeProps) {
     isIndeterminate,
     isChecked,
     isLoading,
+    isActive,
     onToggleChecked,
     size,
     itemProps,
@@ -139,8 +146,9 @@ function TreeNodeInner(props: TreeNodeProps) {
   // React Aria's treegrid uses roving tabindex, so no `data-focused`
   // attribute lands on the row — mirror it as a mod manually.
   const isFocused =
-    state.selectionManager.isFocused &&
-    state.selectionManager.focusedKey === node.key;
+    isActive ??
+    (state.selectionManager.isFocused &&
+      state.selectionManager.focusedKey === node.key);
   const isRowCheckable = isCheckable && data.isCheckable !== false;
 
   const nodeState: TreeNodeState = {
@@ -331,6 +339,9 @@ function TreeNodeInner(props: TreeNodeProps) {
     ...mergeProps(rowProps, hoverProps),
     'aria-checked': ariaChecked,
     onKeyDown: composedKeyDown,
+    // Under an outside control (`isActive` set) no row is a tab stop, not
+    // even one a click focused.
+    ...(isActive === undefined ? null : { tabIndex: -1 }),
   };
 
   // ---- Toggle (chevron) and checkbox slots --------------------------------
@@ -362,9 +373,7 @@ function TreeNodeInner(props: TreeNodeProps) {
         isSelected={isChecked}
         isIndeterminate={isIndeterminate}
         isDisabled={isDisabled || data.isCheckboxDisabled}
-        aria-label={
-          typeof data.title === 'string' ? data.title : String(node.key)
-        }
+        aria-label={getTreeNodeText(data)}
         onChange={handleCheckboxChange}
       />
     </TreeNodeCheckboxWrapper>

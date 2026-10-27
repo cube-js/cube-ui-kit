@@ -11,7 +11,7 @@ import { mergeRefs } from '../../../utils/react';
 import { extractStyles } from '../../../utils/styles';
 
 import { TreeElement, TreeScrollContainer, TreeSizer } from './styled';
-import { buildTreeIndex } from './tree-index';
+import { buildTreeIndex, getTreeNodeText } from './tree-index';
 import { TreeNode } from './TreeNode';
 import { useCheckboxTree } from './use-checkbox-tree';
 import { useLoadData } from './use-load-data';
@@ -34,12 +34,10 @@ import type {
  * (`textValue` for keyboard nav, `childItems` for nested traversal).
  */
 function renderItem(node: CubeTreeNodeData): ReactElement {
-  const textValue =
-    typeof node.title === 'string' ? node.title : String(node.key);
   return (
     <Item
       key={node.key}
-      textValue={textValue}
+      textValue={getTreeNodeText(node)}
       childItems={node.children as CubeTreeNodeData[] | undefined}
     >
       {node.title as ReactNode}
@@ -136,6 +134,9 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
     onAction: treeOnAction,
     menuTriggerProps,
     menuProps,
+    id,
+    _activeKey: activeKey,
+    _onRowAction: onRowAction,
     ...otherProps
   } = props;
 
@@ -294,6 +295,12 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
       items: treeData,
       children: renderItem as any,
       'aria-label': treeLabel,
+      // Row ids derive from it (`<id>-<key>`), which is what lets a control
+      // outside the tree point at a row with `aria-activedescendant`.
+      id,
+      onAction: onRowAction
+        ? (key: Key) => onRowAction(String(key))
+        : undefined,
     }),
     [
       selectionMode,
@@ -307,6 +314,8 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
       disabledKeys,
       treeData,
       treeLabel,
+      id,
+      onRowAction,
     ],
   );
 
@@ -408,6 +417,26 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
   }, [state.selectionManager.focusedKey, rowVirtualizer]);
 
   /**
+   * Same for the row an outside control points at (`_activeKey`): that
+   * control keeps DOM focus, so `focusedKey` never moves.
+   */
+  const lastActiveScrollRef = useRef<string | null>(null);
+
+  useLayoutEffect(() => {
+    if (activeKey == null) {
+      lastActiveScrollRef.current = null;
+      return;
+    }
+    if (lastActiveScrollRef.current === activeKey) return;
+
+    const index = visibleNodes.findIndex((n) => String(n.key) === activeKey);
+    if (index < 0) return;
+
+    rowVirtualizer.scrollToIndex(index, { align: 'auto' });
+    lastActiveScrollRef.current = activeKey;
+  }, [activeKey, visibleNodes, rowVirtualizer]);
+
+  /**
    * Scroll into view when controlled `selectedKeys` changes externally.
    *
    * Selection-manager `focusedKey` only updates on explicit user
@@ -452,6 +481,9 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
   return (
     <TreeElement
       {...gridProps}
+      // Driven from outside (`_activeKey`), the tree is no tab stop: the
+      // control that points at its rows keeps focus.
+      tabIndex={activeKey === undefined ? gridProps.tabIndex : -1}
       ref={treeRef}
       qa={qa ?? 'Tree'}
       mods={mods}
@@ -480,6 +512,9 @@ function TreeBase(props: CubeTreeProps, ref: ForwardedRef<HTMLDivElement>) {
                 isChecked={checkbox.checkedSet.has(keyStr)}
                 isIndeterminate={checkbox.halfCheckedSet.has(keyStr)}
                 isLoading={loadDataController.loadingKeys.has(keyStr)}
+                isActive={
+                  activeKey === undefined ? undefined : activeKey === keyStr
+                }
                 size={size}
                 itemProps={itemProps}
                 rowStyles={rowStyles}

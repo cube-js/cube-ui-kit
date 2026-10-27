@@ -33,6 +33,11 @@ export interface CubeTreeNodeData {
   key: string;
   /** Visible label (any `ReactNode`). */
   title: ReactNode;
+  /**
+   * Plain-text label: what the checkbox is named and what a search or
+   * typeahead matches. Defaults to `title` when it is a string, else `key`.
+   */
+  textValue?: string;
   /** Children. Pass `undefined` together with `isLeaf={false}` for lazy nodes. */
   children?: CubeTreeNodeData[];
   /** Force leaf rendering (no expand toggle, no `loadData` call). */
@@ -289,4 +294,19 @@ export interface CubeTreeProps extends BaseProps, OuterStyleProps {
    * override them) and receives the same normalized action key.
    */
   menuProps?: Partial<CubeMenuProps<object>>;
+
+  /**
+   * Row a control outside the tree points at with `aria-activedescendant`
+   * (FilterPicker's search input). It shows as focused and is scrolled
+   * into view; give the tree an `id` so its row ids are predictable.
+   * @internal
+   */
+  _activeKey?: string | null;
+
+  /**
+   * Called when a row is pressed or Enter is pressed on it, in place of
+   * row selection. Used by FilterPicker to toggle the row's checkbox.
+   * @internal
+   */
+  _onRowAction?: (key: string) => void;
 }

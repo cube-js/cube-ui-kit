@@ -5,6 +5,7 @@ import { createRef, useState } from 'react';
 import { act, renderWithRoot, screen, waitFor } from '../../../test';
 import { Menu } from '../../actions/Menu';
 
+import { getTreeRowId } from './rowId';
 import { Tree } from './Tree';
 
 import type { CubeTreeNodeData, TreeLoadDataNode } from './types';
@@ -311,6 +312,53 @@ describe('<Tree />', () => {
       // Only "B" should have a checkbox
       expect(getAllByRole('checkbox').length).toBe(1);
     });
+
+    it('checks the subtree of a parent key passed without its children', async () => {
+      const onCheck = vi.fn();
+      const { getByRole } = renderWithRoot(
+        <Tree
+          isCheckable
+          treeData={SAMPLE}
+          defaultExpandedKeys={['fruits']}
+          defaultCheckedKeys={['fruits']}
+          onCheck={onCheck}
+        />,
+      );
+
+      expect(getByRole('checkbox', { name: 'Fruits' })).toBeChecked();
+      expect(getByRole('checkbox', { name: 'Apple' })).toBeChecked();
+      expect(getByRole('checkbox', { name: 'Banana' })).toBeChecked();
+
+      await act(
+        async () =>
+          await userEvent.click(getByRole('checkbox', { name: 'Apple' })),
+      );
+
+      const [keys, info] = onCheck.mock.calls[onCheck.mock.calls.length - 1];
+      expect(keys).toEqual(['banana']);
+      expect(info.halfCheckedKeys).toEqual(['fruits']);
+    });
+
+    it('names a checkbox by textValue when the title is an element', () => {
+      const { getByRole } = renderWithRoot(
+        <Tree
+          isCheckable
+          treeData={[
+            { key: 'a', title: <strong>Alpha</strong>, textValue: 'Alpha' },
+          ]}
+        />,
+      );
+
+      expect(getByRole('checkbox', { name: 'Alpha' })).toBeInTheDocument();
+    });
+  });
+
+  it('derives row ids from its id', () => {
+    renderWithRoot(<Tree id="catalog" treeData={SAMPLE} />);
+
+    expect(document.getElementById(getTreeRowId('catalog', 'fruits'))).toBe(
+      screen.getByRole('row', { name: /Fruits/ }),
+    );
   });
 
   describe('selection', () => {
