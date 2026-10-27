@@ -6,6 +6,7 @@ import {
   castNullableStringValue,
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
+import { withOverlayKeys } from '../../../utils/react/overlayKeyPropagation';
 import { useFieldProps } from '../../form';
 import { useDisplayedValidation } from '../TextInput/displayed-validation';
 import {
@@ -101,6 +102,7 @@ function TextArea(
       isRequired,
       onChange: chain(buffered.onChange, adjustHeight),
       onBlur: chain(otherProps.onBlur, buffered.reset),
+      onKeyDown: withOverlayKeys(otherProps.onKeyDown),
       inputElementType: 'textarea',
     }),
     inputRef,

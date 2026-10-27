@@ -36,6 +36,7 @@ import {
   castNullableArrayValue,
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
+import { settleOverlayKey } from '../../../utils/react/overlayKeyPropagation';
 import { extractStyles } from '../../../utils/styles';
 import { ItemAction } from '../../actions/ItemAction/ItemAction';
 import { CollectionItem as Item } from '../../CollectionItem';
@@ -130,6 +131,8 @@ export interface CubeTagInputProps<T = object>
   /**
    * Called when a key is pressed in the input, before the component handles it.
    * Call `e.preventDefault()` to stop the component from handling the key.
+   * `Escape` and `Tab` go on to a surrounding dialog unless TagInput acts on
+   * them or the handler prevents them.
    */
   onKeyDown?: (e: KeyboardEvent<HTMLInputElement>) => void;
 
@@ -1464,25 +1467,29 @@ function TagInput<T extends object>(
     // A Tab the consumer prevented moves no focus.
     isTabbingRef.current = e.key === 'Tab' && !e.defaultPrevented;
 
-    if (e.defaultPrevented || !isInteractive) return;
-
-    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-      handleArrowKey(e);
-    } else if ((e.key === 'Home' || e.key === 'End') && shouldShowPopover) {
-      handleEdgeKey(e);
-    } else if (
-      e.key === 'Backspace' &&
-      !draft &&
-      uniqueValues.some((value) => !isTagLocked(value))
-    ) {
-      handleBackspaceKey(e);
-    } else if (e.key === 'Enter') {
-      handleEnterKey(e);
-    } else if (delimiters.includes(e.key)) {
-      handleDelimiterKey(e);
-    } else if (e.key === 'Escape') {
-      handleEscapeKey(e);
+    if (!e.defaultPrevented && isInteractive) {
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        handleArrowKey(e);
+      } else if ((e.key === 'Home' || e.key === 'End') && shouldShowPopover) {
+        handleEdgeKey(e);
+      } else if (
+        e.key === 'Backspace' &&
+        !draft &&
+        uniqueValues.some((value) => !isTagLocked(value))
+      ) {
+        handleBackspaceKey(e);
+      } else if (e.key === 'Enter') {
+        handleEnterKey(e);
+      } else if (delimiters.includes(e.key)) {
+        handleDelimiterKey(e);
+      } else if (e.key === 'Escape') {
+        handleEscapeKey(e);
+      }
     }
+
+    // A prevented `Escape` or `Tab`, the caller's or a delimiter's, stays
+    // here, so a surrounding dialog neither closes nor moves focus on it.
+    settleOverlayKey(e);
   });
 
   // A separator can also arrive without a key press: autocorrect, IME, drag and

@@ -39,6 +39,7 @@ import { FieldBaseProps, TextFieldKeyboardProps } from '../../../shared';
 import { generateRandomId } from '../../../utils/random';
 import { useCombinedRefs, useLayoutEffect } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
+import { OVERLAY_KEYS } from '../../../utils/react/overlayKeyPropagation';
 import { usePopoverSync } from '../../../utils/react/usePopoverSync';
 import { extractStyles } from '../../../utils/styles';
 import { CollectionItem as Item } from '../../CollectionItem';
@@ -446,10 +447,6 @@ interface UseComboBoxKeyboardProps {
   onVirtualFocus: (key: Key) => void;
   onKeyDown?: TextFieldKeyboardProps['onKeyDown'];
 }
-
-// Keys that go on to a surrounding dialog unless the field acts on them:
-// Escape closes it, and its focus containment listens for Tab.
-const OVERLAY_KEYS = new Set(['Escape', 'Tab']);
 
 // An IME takes Enter, the arrow keys and Escape while it composes text: they
 // confirm, pick or cancel its candidate.

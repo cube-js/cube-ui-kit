@@ -146,7 +146,10 @@ export interface ToggleSelectionProps {
  *
  * Keep these signatures identical to React Aria's `KeyboardEvents`: the
  * handler receives React Aria's keyboard event, whose propagation stops after
- * the handler unless it calls `e.continuePropagation()`.
+ * the handler unless it calls `e.continuePropagation()`. `Escape` and `Tab`
+ * are the exception in every field: they go on to a surrounding overlay
+ * unless the field acts on them or the handler calls `e.preventDefault()`
+ * (`settleOverlayKey`).
  */
 export interface TextFieldKeyboardProps {
   /** Handler that is called when a key is pressed. */

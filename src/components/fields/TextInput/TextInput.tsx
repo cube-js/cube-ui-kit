@@ -6,6 +6,7 @@ import {
   castNullableStringValue,
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
+import { withOverlayKeys } from '../../../utils/react/overlayKeyPropagation';
 import { useFieldProps } from '../../form';
 
 import { useDisplayedValidation } from './displayed-validation';
@@ -71,6 +72,7 @@ export const TextInput = forwardRef(function TextInput(
       value: buffered.value,
       onChange: buffered.onChange,
       onBlur: chain(restProps.onBlur, buffered.reset),
+      onKeyDown: withOverlayKeys(restProps.onKeyDown),
       inputElementType: restProps.multiLine ? 'textarea' : 'input',
     }),
     inputRef as RefObject<HTMLInputElement | null>,

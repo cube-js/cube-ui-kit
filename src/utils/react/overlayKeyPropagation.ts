@@ -16,7 +16,7 @@ type MaybeAugmentedKeyboardEvent = KeyboardEvent<any> & {
  * the document, so a `Tab` held here left a Dialog's first or last control
  * unable to wrap (CUB-5603).
  */
-const OVERLAY_KEYS = new Set(['Escape', 'Tab']);
+export const OVERLAY_KEYS = new Set(['Escape', 'Tab']);
 
 /**
  * Let `Escape` and `Tab` keep travelling out of a trigger or list, and hold
@@ -59,4 +59,49 @@ export function allowOverlayKeysToPropagate(
   }
 
   if (!isOverlayKey) event.stopPropagation();
+}
+
+/**
+ * Where `Escape` and `Tab` go from a field a user types into, once the field
+ * and its caller's `onKeyDown` have both seen the key: a prevented one stops
+ * at the field, any other goes on to the overlay around it. Other keys are
+ * left as they are.
+ *
+ * Prevention is the signal because that is how the overlay reads it too: a
+ * Dialog stays open on a prevented `Escape` (`useOverlayEscapeGuard`). React
+ * Aria's `FocusScope` does not: it moves focus on every `Tab` that reaches it
+ * and ignores `defaultPrevented`, so a `Tab` a field or caller takes over has
+ * to stop here or focus moves anyway.
+ *
+ * Shape-aware like `allowOverlayKeysToPropagate`: an event wrapped by
+ * `useKeyboard` stops unless released, a plain one travels unless stopped.
+ */
+export function settleOverlayKey(event: MaybeAugmentedKeyboardEvent) {
+  if (!OVERLAY_KEYS.has(event.key)) return;
+
+  const isAugmented = typeof event.continuePropagation === 'function';
+
+  if (!event.isDefaultPrevented()) {
+    if (isAugmented) event.continuePropagation!();
+  } else if (!isAugmented || event.isPropagationStopped?.() === false) {
+    // Only when the flag is clear, the one case `stopPropagation` does not
+    // warn about on a wrapped event.
+    event.stopPropagation();
+  }
+}
+
+/**
+ * A text field's `onKeyDown`, followed by `settleOverlayKey`. Without a
+ * handler there is nothing to wrap: React Aria then leaves every key to
+ * propagate, `Escape` and `Tab` included.
+ */
+export function withOverlayKeys<E extends MaybeAugmentedKeyboardEvent>(
+  onKeyDown: ((event: E) => void) | undefined,
+) {
+  if (!onKeyDown) return undefined;
+
+  return (event: E) => {
+    onKeyDown(event);
+    settleOverlayKey(event);
+  };
 }

@@ -42,6 +42,7 @@ import { FieldBaseProps, TextFieldKeyboardProps } from '../../../shared';
 import { generateRandomId } from '../../../utils/random';
 import { useCombinedRefs } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
+import { settleOverlayKey } from '../../../utils/react/overlayKeyPropagation';
 import { usePopoverSync } from '../../../utils/react/usePopoverSync';
 import { extractStyles } from '../../../utils/styles';
 import { CollectionItem as Item } from '../../CollectionItem';
@@ -139,8 +140,11 @@ export interface CubeSearchComboBoxProps<T>
   /**
    * Callback fired when a key is pressed on the input, before the built-in
    * key handling. Receives React Aria's keyboard event: `e.preventDefault()`
-   * skips the built-in handling for the key, and propagation stops at the
-   * input unless the handler calls `e.continuePropagation()`.
+   * skips the built-in handling for the key. `Escape` and `Tab` go on to
+   * ancestors, such as a surrounding dialog, unless SearchComboBox acts on
+   * them (`Escape` closing the list or clearing the text) or the handler
+   * prevents them; other keys stop at the input unless the handler calls
+   * `e.continuePropagation()`.
    */
   onKeyDown?: TextFieldKeyboardProps['onKeyDown'];
 
@@ -820,24 +824,28 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
       // `defaultPrevented` field is fixed at the moment it was made.
       onKeyDown?.(e);
 
-      if (e.isDefaultPrevented()) return;
-
-      switch (e.key) {
-        case 'ArrowDown':
-        case 'ArrowUp':
-          handleArrowKey(e);
-          break;
-        case 'Enter':
-          handleEnterKey(e);
-          break;
-        case 'Escape':
-          handleEscapeKey(e);
-          break;
-        case 'Home':
-        case 'End':
-          handleEdgeKey(e);
-          break;
+      if (!e.isDefaultPrevented()) {
+        switch (e.key) {
+          case 'ArrowDown':
+          case 'ArrowUp':
+            handleArrowKey(e);
+            break;
+          case 'Enter':
+            handleEnterKey(e);
+            break;
+          case 'Escape':
+            handleEscapeKey(e);
+            break;
+          case 'Home':
+          case 'End':
+            handleEdgeKey(e);
+            break;
+        }
       }
+
+      // An `Escape` that closed the list or cleared the text is prevented and
+      // stays; otherwise it, and `Tab`, go on to a surrounding dialog.
+      settleOverlayKey(e);
     },
   });
 
