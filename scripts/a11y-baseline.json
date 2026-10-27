@@ -1,0 +1,567 @@
+{
+  "tooling": { "axe-core": "4.14.0" },
+  "totals": {
+    "aria-allowed-attr": 226,
+    "aria-allowed-role": 9,
+    "aria-dialog-name": 10,
+    "aria-input-field-name": 7,
+    "aria-required-attr": 15,
+    "aria-required-children": 14,
+    "button-name": 35,
+    "color-contrast": 675,
+    "empty-table-header": 6,
+    "heading-order": 8,
+    "label": 24,
+    "label-title-only": 2,
+    "nested-interactive": 9,
+    "scrollable-region-focusable": 15,
+    "target-size": 333
+  },
+  "stories": {
+    "actions-banner--stacked": { "color-contrast": 2 },
+    "actions-banner--themes": { "color-contrast": 3 },
+    "actions-banner--with-description": { "color-contrast": 1 },
+    "actions-banner--with-links": { "color-contrast": 3 },
+    "actions-button--current-states": { "color-contrast": 7 },
+    "actions-button--current-theme": { "button-name": 7, "color-contrast": 3 },
+    "actions-button--danger-states": { "color-contrast": 2 },
+    "actions-button--default-states": { "color-contrast": 7 },
+    "actions-button--note-states": { "color-contrast": 3 },
+    "actions-button--only-icon": { "button-name": 5 },
+    "actions-button--success-states": { "color-contrast": 3 },
+    "actions-button--warning-states": { "color-contrast": 3 },
+    "actions-commandmenu--items-with-actions": { "aria-required-children": 1 },
+    "actions-commandmenu--multiple-selection": { "aria-allowed-attr": 6 },
+    "actions-commandmenu--navigation-links": { "color-contrast": 1 },
+    "actions-commandmenu--single-selection": { "aria-allowed-attr": 6 },
+    "actions-commandmenu--with-dialog": { "aria-dialog-name": 1 },
+    "actions-commandmenu--with-dialog-container": { "aria-dialog-name": 1 },
+    "actions-commandmenu--with-sections": { "color-contrast": 4 },
+    "actions-itemaction--inside-item": { "target-size": 26 },
+    "actions-itemaction--inside-item-button": { "target-size": 24 },
+    "actions-itemaction--interactive-example": { "target-size": 7 },
+    "actions-itembutton--actions-vertical-alignment": { "target-size": 10 },
+    "actions-itembutton--with-actions-hover-behavior": { "target-size": 10 },
+    "actions-itembutton--with-actions-layouts": { "target-size": 42 },
+    "actions-itembutton--with-checkbox": { "color-contrast": 1 },
+    "actions-itembutton--with-highlight": {
+      "color-contrast": 1,
+      "target-size": 2
+    },
+    "actions-menu--comprehensive-popover-synchronization": {
+      "color-contrast": 1
+    },
+    "actions-menu--dynamic-collection-with-sections": { "color-contrast": 2 },
+    "actions-menu--inside-modal": {
+      "aria-allowed-attr": 3,
+      "aria-dialog-name": 1
+    },
+    "actions-menu--item-with-tooltip": { "aria-allowed-attr": 3 },
+    "actions-menu--items-with-actions": { "aria-required-children": 1 },
+    "actions-menu--menu-selectable-checkboxes": { "aria-allowed-attr": 4 },
+    "actions-menu--menu-selectable-multiple": { "aria-allowed-attr": 4 },
+    "actions-menu--menu-selectable-single": { "aria-allowed-attr": 4 },
+    "actions-menu--navigation-links": { "color-contrast": 1 },
+    "actions-menu--sections": { "color-contrast": 2 },
+    "actions-menu--sections-with-tooltips": {
+      "aria-allowed-attr": 6,
+      "color-contrast": 3
+    },
+    "actions-menu--styled-sections-and-items": { "color-contrast": 5 },
+    "content-copysnippet--complex": {
+      "button-name": 1,
+      "color-contrast": 7,
+      "scrollable-region-focusable": 1
+    },
+    "content-copysnippet--dax": { "scrollable-region-focusable": 1 },
+    "content-copysnippet--html-syntax": { "color-contrast": 33 },
+    "content-copysnippet--javascript-syntax": { "color-contrast": 26 },
+    "content-copysnippet--with-custom-button": { "button-name": 1 },
+    "content-copysnippet--with-scroll": { "scrollable-region-focusable": 1 },
+    "content-disclosure--card-shape": { "aria-allowed-attr": 1 },
+    "content-disclosure--content-preservation": { "aria-allowed-attr": 1 },
+    "content-disclosure--controlled": { "aria-allowed-attr": 1 },
+    "content-disclosure--default-expanded": { "aria-allowed-attr": 1 },
+    "content-disclosure--default-expanded-keys": { "aria-allowed-attr": 3 },
+    "content-disclosure--disabled": { "aria-allowed-attr": 1 },
+    "content-disclosure--disabled-group": { "aria-allowed-attr": 2 },
+    "content-disclosure--group-disclosure": { "aria-allowed-attr": 3 },
+    "content-disclosure--multiple-expanded": { "aria-allowed-attr": 3 },
+    "content-disclosure--nested": { "aria-allowed-attr": 1 },
+    "content-disclosure--sharp-shape": { "aria-allowed-attr": 1 },
+    "content-disclosure--single-disclosure": { "aria-allowed-attr": 1 },
+    "content-disclosure--trigger-with-actions": {
+      "aria-allowed-attr": 1,
+      "target-size": 1
+    },
+    "content-inlineinput--manual-trigger": { "label": 1 },
+    "content-inlineinput--placeholder": { "color-contrast": 1 },
+    "content-inlineinput--read-only": { "aria-allowed-attr": 1 },
+    "content-inlineinput--single-click-trigger": { "label": 1 },
+    "content-item--combined-features": {
+      "aria-allowed-attr": 3,
+      "color-contrast": 3
+    },
+    "content-item--current-states": { "color-contrast": 26 },
+    "content-item--current-theme": {
+      "aria-allowed-attr": 7,
+      "color-contrast": 19,
+      "target-size": 2
+    },
+    "content-item--description-with-complex-content": { "target-size": 4 },
+    "content-item--description-with-types": {
+      "aria-allowed-attr": 2,
+      "color-contrast": 7
+    },
+    "content-item--disabled": { "aria-allowed-attr": 1 },
+    "content-item--types-and-themes": { "heading-order": 1 },
+    "content-item--with-actions": {
+      "aria-allowed-attr": 1,
+      "color-contrast": 1,
+      "target-size": 30
+    },
+    "content-item--with-actions-on-hover": { "target-size": 2 },
+    "content-item--with-checkbox": { "aria-allowed-attr": 11 },
+    "content-item--with-highlight": { "color-contrast": 1, "target-size": 2 },
+    "content-item--with-loading": { "aria-allowed-attr": 1 },
+    "content-layout--all-panel-sides": { "aria-required-attr": 4 },
+    "content-layout--center-golden-ratio": { "heading-order": 1 },
+    "content-layout--collapsed-with-warning": {
+      "scrollable-region-focusable": 1
+    },
+    "content-layout--complete-application-shell": {
+      "aria-required-attr": 1,
+      "heading-order": 1
+    },
+    "content-layout--flex-with-scrolling": { "scrollable-region-focusable": 1 },
+    "content-layout--grid-with-scrolling": { "scrollable-region-focusable": 1 },
+    "content-layout--horizontal-scrollable-content": {
+      "scrollable-region-focusable": 1
+    },
+    "content-layout--natural-boundaries": { "aria-required-attr": 2 },
+    "content-layout--panel-as-dialog": { "aria-dialog-name": 1 },
+    "content-layout--resizable-panel": { "aria-required-attr": 1 },
+    "content-layout--resizable-panel-with-percent-max": {
+      "aria-required-attr": 1
+    },
+    "content-layout--resizable-panes": {
+      "aria-required-attr": 2,
+      "heading-order": 1
+    },
+    "content-layout--responsive-panel-to-dialog": {
+      "button-name": 1,
+      "color-contrast": 2,
+      "heading-order": 1
+    },
+    "content-layout--vertical-resizable-panes": {
+      "aria-required-attr": 1,
+      "heading-order": 1
+    },
+    "content-prismdiffcode--empty-line-diff": { "color-contrast": 1 },
+    "content-prismdiffcode--sql-syntax": { "color-contrast": 14 },
+    "content-prismdiffcode--yaml-syntax": { "color-contrast": 48 },
+    "content-tag--custom-styling": { "color-contrast": 1 },
+    "content-tree--checkable": { "aria-allowed-attr": 10 },
+    "content-tree--controlled-checked": { "aria-allowed-attr": 10 },
+    "content-tree--per-node-disable": { "aria-allowed-attr": 4 },
+    "data-datatable--column-menu": { "color-contrast": 1 },
+    "data-datatable--column-reordering": { "empty-table-header": 1 },
+    "data-datatable--query-results-layout": { "empty-table-header": 1 },
+    "data-datatable--row-numbers": { "empty-table-header": 1 },
+    "data-datatable--unpaginated": { "empty-table-header": 1 },
+    "data-itemtable--custom-search-placement": { "color-contrast": 1 },
+    "data-itemtable--per-row-visuals": { "color-contrast": 5 },
+    "data-itemtable--row-interaction": { "empty-table-header": 1 },
+    "data-itemtable--search": { "color-contrast": 1 },
+    "data-itemtable--selection": {
+      "color-contrast": 5,
+      "empty-table-header": 1
+    },
+    "forms-colorinput--open": { "aria-allowed-attr": 3 },
+    "forms-colorinput--opens-on-trigger": { "aria-allowed-attr": 3 },
+    "forms-colorpicker--default": { "color-contrast": 1 },
+    "forms-colorpicker--open": { "aria-allowed-attr": 3 },
+    "forms-colorpicker--with-swatches": { "aria-allowed-attr": 3 },
+    "forms-colorswatchgroup--inside-color-picker": { "aria-allowed-attr": 3 },
+    "forms-commandtextarea--auto-size": { "aria-allowed-role": 1 },
+    "forms-commandtextarea--controlled": { "aria-allowed-role": 1 },
+    "forms-commandtextarea--default": { "aria-allowed-role": 1 },
+    "forms-commandtextarea--mention-trigger": { "aria-allowed-role": 1 },
+    "forms-commandtextarea--multiline": { "aria-allowed-role": 1 },
+    "forms-commandtextarea--top-popover-position": { "aria-allowed-role": 1 },
+    "forms-commandtextarea--validation": { "aria-allowed-role": 2 },
+    "forms-commandtextarea--with-sections": { "aria-allowed-role": 1 },
+    "forms-complexform--complex-form-side-label": {
+      "color-contrast": 1,
+      "nested-interactive": 1,
+      "target-size": 2
+    },
+    "forms-complexform--complex-form-split-label": {
+      "color-contrast": 1,
+      "nested-interactive": 1,
+      "target-size": 2
+    },
+    "forms-complexform--default": {
+      "color-contrast": 1,
+      "nested-interactive": 1,
+      "target-size": 2
+    },
+    "forms-dateinput--default": { "color-contrast": 3, "target-size": 2 },
+    "forms-dateinput--small": { "color-contrast": 3, "target-size": 2 },
+    "forms-dateinput--validation": { "color-contrast": 6, "target-size": 4 },
+    "forms-dateinput--with-default-value": { "target-size": 2 },
+    "forms-dateinput--with-limited-range": {
+      "color-contrast": 3,
+      "target-size": 2
+    },
+    "forms-dateinput--with-locale": { "color-contrast": 3, "target-size": 2 },
+    "forms-dateinput--with-second-granularity": { "target-size": 5 },
+    "forms-datepicker--default": { "color-contrast": 3, "target-size": 2 },
+    "forms-datepicker--small": { "color-contrast": 3, "target-size": 2 },
+    "forms-datepicker--validation": { "color-contrast": 6, "target-size": 4 },
+    "forms-datepicker--with-default-value": { "target-size": 2 },
+    "forms-datepicker--with-default-value-open": { "target-size": 2 },
+    "forms-datepicker--with-limited-range": {
+      "color-contrast": 3,
+      "target-size": 2
+    },
+    "forms-datepicker--with-locale": { "color-contrast": 3, "target-size": 2 },
+    "forms-daterangepicker--default": { "color-contrast": 6, "target-size": 4 },
+    "forms-daterangepicker--small": { "color-contrast": 6, "target-size": 4 },
+    "forms-daterangepicker--validation": {
+      "color-contrast": 12,
+      "target-size": 8
+    },
+    "forms-daterangepicker--with-default-value": { "target-size": 4 },
+    "forms-daterangepicker--with-default-value-open": { "target-size": 4 },
+    "forms-daterangepicker--with-locale": {
+      "color-contrast": 6,
+      "target-size": 4
+    },
+    "forms-daterangepicker--with-second-granularity": { "target-size": 10 },
+    "forms-daterangeseparatedpicker--default": {
+      "color-contrast": 6,
+      "target-size": 4
+    },
+    "forms-daterangeseparatedpicker--small": {
+      "color-contrast": 6,
+      "target-size": 4
+    },
+    "forms-daterangeseparatedpicker--validation": {
+      "color-contrast": 12,
+      "target-size": 8
+    },
+    "forms-daterangeseparatedpicker--with-default-value": { "target-size": 4 },
+    "forms-daterangeseparatedpicker--with-default-value-open": {
+      "target-size": 4
+    },
+    "forms-daterangeseparatedpicker--with-locale": {
+      "color-contrast": 6,
+      "target-size": 4
+    },
+    "forms-daterangeseparatedpicker--with-second-granularity": {
+      "target-size": 10
+    },
+    "forms-fieldwrapper--backward-compatibility-message": {
+      "color-contrast": 1
+    },
+    "forms-fieldwrapper--default": { "color-contrast": 1 },
+    "forms-fieldwrapper--error-message-overrides-message": {
+      "color-contrast": 1
+    },
+    "forms-fieldwrapper--side-label": { "color-contrast": 1 },
+    "forms-fieldwrapper--side-label-with-description": { "color-contrast": 1 },
+    "forms-fieldwrapper--side-label-with-description-and-error-message": {
+      "color-contrast": 1
+    },
+    "forms-fieldwrapper--side-label-with-message": { "color-contrast": 1 },
+    "forms-fieldwrapper--side-label-with-tooltip": { "color-contrast": 1 },
+    "forms-fieldwrapper--small": { "color-contrast": 1 },
+    "forms-fieldwrapper--split-label": { "color-contrast": 1 },
+    "forms-fieldwrapper--split-label-with-description": { "color-contrast": 1 },
+    "forms-fieldwrapper--split-label-with-description-and-error-message": {
+      "color-contrast": 1
+    },
+    "forms-fieldwrapper--split-label-with-tooltip": { "color-contrast": 1 },
+    "forms-fieldwrapper--styled-label": { "color-contrast": 1 },
+    "forms-fieldwrapper--with-button-suffix": { "color-contrast": 1 },
+    "forms-fieldwrapper--with-button-suffix-and-tooltip": {
+      "color-contrast": 1
+    },
+    "forms-fieldwrapper--with-description": { "color-contrast": 1 },
+    "forms-fieldwrapper--with-description-and-error-message": {
+      "color-contrast": 1
+    },
+    "forms-fieldwrapper--with-error-message": { "color-contrast": 1 },
+    "forms-fieldwrapper--with-extra": { "color-contrast": 1 },
+    "forms-fieldwrapper--with-extra-and-suffix": { "color-contrast": 1 },
+    "forms-fieldwrapper--with-label-suffix": { "color-contrast": 1 },
+    "forms-fieldwrapper--with-suffix-and-tooltip": { "color-contrast": 1 },
+    "forms-fieldwrapper--with-suffix-extra-and-tooltip": {
+      "color-contrast": 1
+    },
+    "forms-fieldwrapper--with-tooltip": { "color-contrast": 1 },
+    "forms-fileinput--default": {
+      "color-contrast": 1,
+      "label": 1,
+      "nested-interactive": 1
+    },
+    "forms-fileinput--extract-text": {
+      "color-contrast": 1,
+      "label-title-only": 1,
+      "nested-interactive": 1
+    },
+    "forms-fileinput--long-file-name-overflow": {
+      "color-contrast": 1,
+      "label-title-only": 1,
+      "nested-interactive": 1
+    },
+    "forms-fileinput--long-file-placeholder-overflow": {
+      "color-contrast": 1,
+      "label": 1,
+      "nested-interactive": 1
+    },
+    "forms-fileinput--validation": {
+      "color-contrast": 2,
+      "nested-interactive": 2
+    },
+    "forms-filterlistbox--dynamic-sections": { "color-contrast": 3 },
+    "forms-filterlistbox--in-dialog": { "aria-dialog-name": 1 },
+    "forms-filterlistbox--in-form": { "color-contrast": 2 },
+    "forms-filterlistbox--virtualized-list": {
+      "scrollable-region-focusable": 1
+    },
+    "forms-filterlistbox--with-header-and-footer": { "color-contrast": 1 },
+    "forms-filterlistbox--with-icons": { "color-contrast": 2 },
+    "forms-filterlistbox--with-sections": { "color-contrast": 3 },
+    "forms-filterlistbox--with-sections-and-descriptions": {
+      "color-contrast": 3
+    },
+    "forms-filterpicker--advanced-trigger-features": { "color-contrast": 4 },
+    "forms-filterpicker--async-search": { "color-contrast": 1 },
+    "forms-filterpicker--clearable": { "target-size": 1 },
+    "forms-filterpicker--clearable-themes": { "target-size": 9 },
+    "forms-filterpicker--complex-example": {
+      "color-contrast": 4,
+      "scrollable-region-focusable": 1
+    },
+    "forms-filterpicker--default": { "color-contrast": 1 },
+    "forms-filterpicker--different-sizes": { "color-contrast": 3 },
+    "forms-filterpicker--different-types": { "color-contrast": 4 },
+    "forms-filterpicker--disabled-items": { "color-contrast": 1 },
+    "forms-filterpicker--dynamic-sections": {
+      "color-contrast": 4,
+      "scrollable-region-focusable": 1
+    },
+    "forms-filterpicker--in-form": { "color-contrast": 1 },
+    "forms-filterpicker--loading-items-state": { "color-contrast": 1 },
+    "forms-filterpicker--loading-items-with-custom-value": {
+      "color-contrast": 1
+    },
+    "forms-filterpicker--multiple-selection": {
+      "color-contrast": 2,
+      "scrollable-region-focusable": 1
+    },
+    "forms-filterpicker--validation": { "color-contrast": 2 },
+    "forms-filterpicker--virtualized-list": {
+      "scrollable-region-focusable": 1
+    },
+    "forms-filterpicker--with-actions": { "target-size": 2 },
+    "forms-filterpicker--with-checkboxes": { "color-contrast": 2 },
+    "forms-filterpicker--with-custom-values": { "color-contrast": 1 },
+    "forms-filterpicker--with-descriptions": { "color-contrast": 2 },
+    "forms-filterpicker--with-header-and-footer": {
+      "color-contrast": 4,
+      "scrollable-region-focusable": 1
+    },
+    "forms-filterpicker--with-hotkeys": { "color-contrast": 1 },
+    "forms-filterpicker--with-icons": { "color-contrast": 3 },
+    "forms-filterpicker--with-prefix-suffix": { "color-contrast": 3 },
+    "forms-filterpicker--with-sections": {
+      "color-contrast": 4,
+      "scrollable-region-focusable": 1
+    },
+    "forms-filterpicker--with-text-value": { "color-contrast": 1 },
+    "forms-filterpicker--with-tooltip-and-description": { "color-contrast": 1 },
+    "forms-hueslider--default": { "label": 1 },
+    "forms-hueslider--vertical": { "label": 1 },
+    "forms-listbox--different-shapes": { "color-contrast": 2 },
+    "forms-listbox--dynamic-sections": { "color-contrast": 3 },
+    "forms-listbox--in-form": { "color-contrast": 2 },
+    "forms-listbox--in-popover": {
+      "aria-dialog-name": 1,
+      "aria-input-field-name": 1,
+      "color-contrast": 2
+    },
+    "forms-listbox--option-gap": { "color-contrast": 7 },
+    "forms-listbox--tooltips-with-actions": { "color-contrast": 2 },
+    "forms-listbox--with-header-and-footer": { "color-contrast": 1 },
+    "forms-listbox--with-icons": { "color-contrast": 2 },
+    "forms-listbox--with-sections": { "color-contrast": 3 },
+    "forms-numberinput--default": { "label": 1 },
+    "forms-numberinput--disabled": { "label": 1 },
+    "forms-numberinput--small": { "label": 1 },
+    "forms-numberinput--with-default-value": { "label": 1 },
+    "forms-numberinput--with-suffix-after": { "label": 1 },
+    "forms-numberinput--with-suffix-before": { "label": 1 },
+    "forms-periodpicker--all-pickers": { "color-contrast": 4 },
+    "forms-periodpicker--month": { "color-contrast": 1 },
+    "forms-periodpicker--small": { "color-contrast": 1 },
+    "forms-periodpicker--validation": { "color-contrast": 2 },
+    "forms-periodpicker--with-limited-range": { "color-contrast": 1 },
+    "forms-picker--clearable-themes": { "target-size": 9 },
+    "forms-picker--controlled": { "color-contrast": 1 },
+    "forms-picker--controlled-multiple": { "target-size": 1 },
+    "forms-picker--different-sizes": { "color-contrast": 3 },
+    "forms-picker--dynamic-sections": { "color-contrast": 1 },
+    "forms-picker--is-clearable": { "target-size": 2 },
+    "forms-picker--multiple-selection": { "color-contrast": 1 },
+    "forms-picker--single-selection": { "color-contrast": 1 },
+    "forms-picker--validation": { "color-contrast": 1 },
+    "forms-picker--with-actions": { "target-size": 2 },
+    "forms-picker--with-description": { "color-contrast": 1 },
+    "forms-picker--with-items-array": { "color-contrast": 1 },
+    "forms-picker--with-sections": { "color-contrast": 1 },
+    "forms-picker--with-select-all": { "color-contrast": 1 },
+    "forms-radiogroup--button-group": { "aria-allowed-attr": 3 },
+    "forms-radiogroup--button-group-rich-content": { "aria-allowed-attr": 11 },
+    "forms-radiogroup--button-group-sizes": { "aria-allowed-attr": 15 },
+    "forms-radiogroup--custom-button-types": { "aria-allowed-attr": 12 },
+    "forms-radiogroup--disabled-state": { "aria-allowed-attr": 22 },
+    "forms-radiogroup--stretched": { "aria-allowed-attr": 6 },
+    "forms-radiogroup--tabs-group": { "aria-allowed-attr": 3 },
+    "forms-radiogroup--tabs-group-sizes": { "aria-allowed-attr": 6 },
+    "forms-searchcombobox--validation": { "label": 1 },
+    "forms-select--clear": { "color-contrast": 1 },
+    "forms-select--clearable": { "target-size": 1 },
+    "forms-select--clearable-themes": { "target-size": 9 },
+    "forms-select--default": { "button-name": 1 },
+    "forms-select--loading-state": { "color-contrast": 1 },
+    "forms-select--outline-2": { "color-contrast": 1 },
+    "forms-select--over-the-custom-bg": { "button-name": 1 },
+    "forms-select--primary": { "color-contrast": 1 },
+    "forms-select--sections-dynamic": {
+      "aria-input-field-name": 1,
+      "color-contrast": 3
+    },
+    "forms-select--sections-static": {
+      "aria-input-field-name": 1,
+      "color-contrast": 3
+    },
+    "forms-select--with-actions": { "target-size": 2 },
+    "forms-select--with-description": {
+      "aria-input-field-name": 1,
+      "color-contrast": 1
+    },
+    "forms-select--with-disabled-option": {
+      "aria-input-field-name": 1,
+      "button-name": 1
+    },
+    "forms-select--with-icon": { "button-name": 1 },
+    "forms-select--with-icons-and-descriptions": { "color-contrast": 1 },
+    "forms-select--with-placeholder": { "color-contrast": 1 },
+    "forms-select--with-tooltips": {
+      "aria-input-field-name": 1,
+      "color-contrast": 1
+    },
+    "forms-slider--default": { "label": 1 },
+    "forms-slider--disabled": { "label": 1 },
+    "forms-slider--vertical": { "label": 1 },
+    "forms-textarea--auto-size": { "label": 1 },
+    "forms-textarea--auto-size-max-rows": { "label": 1 },
+    "forms-textarea--default": { "label": 1 },
+    "forms-textarea--password": { "label": 1 },
+    "forms-textarea--with-default-value": { "label": 1 },
+    "forms-textarea--with-icon": { "label": 1 },
+    "forms-textinput--validation": { "label": 2 },
+    "forms-timeinput--default": { "target-size": 2 },
+    "forms-timeinput--small": { "target-size": 2 },
+    "forms-timeinput--twelve-hour-cycle": { "target-size": 3 },
+    "forms-timeinput--validation": { "target-size": 4 },
+    "forms-timeinput--with-default-value": { "target-size": 2 },
+    "forms-timeinput--with-limited-range": { "target-size": 2 },
+    "getting-started-advanced-states--container-queries": {
+      "aria-required-attr": 1
+    },
+    "getting-started-advanced-states--supports-queries": {
+      "color-contrast": 2
+    },
+    "getting-started-colors--code-syntax": { "color-contrast": 2 },
+    "getting-started-colors--disabled-states": { "color-contrast": 52 },
+    "getting-started-colors--neutral-surfaces": { "color-contrast": 5 },
+    "getting-started-colors--semantic-accent-text": { "color-contrast": 20 },
+    "getting-started-colors--solid-and-interaction-states": {
+      "color-contrast": 23
+    },
+    "getting-started-colors--utility-colors": { "color-contrast": 6 },
+    "getting-started-complex-layout--dialog-mode-panel": {
+      "aria-dialog-name": 1
+    },
+    "getting-started-complex-layout--grid-dashboard": { "heading-order": 1 },
+    "getting-started-complex-layout--resizable-pane": {
+      "aria-required-attr": 1,
+      "heading-order": 1
+    },
+    "getting-started-complex-layout--resizable-panel": {
+      "aria-required-attr": 1
+    },
+    "getting-started-theming--contrast-level": { "color-contrast": 1 },
+    "getting-started-theming--playground": {
+      "aria-allowed-attr": 7,
+      "color-contrast": 19
+    },
+    "getting-started-theming--status-themes": { "color-contrast": 8 },
+    "getting-started-theming--theme-builder": {
+      "aria-allowed-attr": 14,
+      "color-contrast": 7,
+      "scrollable-region-focusable": 1
+    },
+    "helpers-iconswitch--multiple-states": { "color-contrast": 1 },
+    "helpers-rendercache--default": { "aria-allowed-attr": 5 },
+    "navigation-tabs--deletable": { "aria-required-children": 1 },
+    "navigation-tabs--reorderable": { "aria-required-children": 1 },
+    "navigation-tabs--reorderable-left": { "aria-required-children": 1 },
+    "navigation-tabs--reorderable-tab-picker": { "aria-required-children": 1 },
+    "navigation-tabs--reorderable-with-menu": {
+      "aria-required-children": 1,
+      "button-name": 3
+    },
+    "navigation-tabs--with-context-menu": {
+      "aria-required-children": 1,
+      "button-name": 3
+    },
+    "navigation-tabs--with-context-menu-only": { "aria-required-children": 1 },
+    "navigation-tabs--with-editable-tabs": {
+      "aria-required-children": 1,
+      "button-name": 3
+    },
+    "navigation-tabs--with-menu": {
+      "aria-required-children": 1,
+      "button-name": 3
+    },
+    "navigation-tabs--with-menu-sections": {
+      "aria-required-children": 1,
+      "button-name": 2,
+      "color-contrast": 1
+    },
+    "navigation-tabs--with-per-tab-menu-override": {
+      "aria-required-children": 1,
+      "button-name": 2
+    },
+    "navigation-tabs--with-tab-actions": {
+      "aria-required-children": 1,
+      "target-size": 1
+    },
+    "other-calendar--periods": { "color-contrast": 2 },
+    "other-calendar--week-mode": { "color-contrast": 6 },
+    "other-calendar--year-panel": { "color-contrast": 2 },
+    "overlays-alertdialog--using-api": { "aria-dialog-name": 1 },
+    "overlays-dialog--popover-with-menu-and-select": {
+      "aria-dialog-name": 1,
+      "aria-input-field-name": 1,
+      "color-contrast": 1
+    },
+    "overlays-dialog--with-trigger-state": { "aria-dialog-name": 1 },
+    "overlays-notification--persistent-notifications": { "color-contrast": 1 }
+  }
+}

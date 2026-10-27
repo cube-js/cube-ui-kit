@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 
 import { DatabaseIcon } from '../../../icons/DatabaseIcon';
@@ -383,8 +383,17 @@ const LATENCY = 700;
 function useServerQuery<T>(compute: () => T, deps: unknown[]) {
   const [data, setData] = useState(compute);
   const [isLoading, setIsLoading] = useState(false);
+  // `useState` already holds the answer for the first dependencies, so the
+  // first round trip starts when they change. Simulating one on mount too left
+  // every story loading for its first `LATENCY`, and whether Chromatic or
+  // `pnpm diagnostics:a11y` caught the table loading or loaded was down to
+  // timing. Compared by value rather than flagged once, so Strict Mode's
+  // second effect run does not start it either.
+  const answered = useRef(deps);
 
   useEffect(() => {
+    if (deps.every((dep, i) => Object.is(dep, answered.current[i]))) return;
+    answered.current = deps;
     setIsLoading(true);
 
     const timer = setTimeout(() => {
