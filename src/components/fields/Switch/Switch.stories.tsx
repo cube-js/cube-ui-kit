@@ -62,6 +62,11 @@ export default {
         defaultValue: { summary: false },
       },
     },
+    tooltip: {
+      control: { type: 'text' },
+      description:
+        'Tooltip shown on hover over the switch and its inline label (including while disabled) and on keyboard focus',
+    },
     isLoading: {
       control: { type: 'boolean' },
       description:
