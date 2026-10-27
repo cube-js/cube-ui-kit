@@ -158,6 +158,23 @@ describe('<Switch /> tooltip', () => {
     expect(screen.getByRole('button', { name: 'After' })).toHaveFocus();
   });
 
+  it('keeps a disabled switch out of the Tab order with excludeFromTabOrder', async () => {
+    renderWithRoot(
+      <>
+        <Switch isDisabled excludeFromTabOrder tooltip="Add a schedule first">
+          Schedule
+        </Switch>
+        <button type="button">After</button>
+      </>,
+    );
+
+    expect(screen.getByRole('switch')).toHaveAttribute('tabindex', '-1');
+
+    await userEvent.tab();
+
+    expect(screen.getByRole('button', { name: 'After' })).toHaveFocus();
+  });
+
   it('keeps it apart from the field label badge', async () => {
     renderWithRoot(
       <Switch

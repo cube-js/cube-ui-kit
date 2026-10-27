@@ -191,8 +191,6 @@ function Checkbox(
   let inputRef = useRef(null);
   let domRef = useFocusableRef(ref, inputRef);
 
-  // Triggered by the wrapper rather than the input, so a disabled checkbox —
-  // whose input ignores the pointer — still shows it.
   let { renderWithTooltip, isTooltipActive } = useAutoTooltip({
     tooltip,
     children: null,
@@ -235,7 +233,9 @@ function Checkbox(
       as: 'input',
     }).isInert
   ) {
-    inputProps = getInertInputProps(inputProps);
+    inputProps = getInertInputProps(inputProps, {
+      excludeFromTabOrder: props.excludeFromTabOrder,
+    });
   }
 
   // Decorative: the input already announces checked, unchecked and mixed.

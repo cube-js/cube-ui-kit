@@ -193,8 +193,6 @@ function Switch(rawProps: WithNullableSelected<CubeSwitchProps>, ref) {
   let inputRef = useRef(null);
   let domRef = useFocusableRef(ref, inputRef);
 
-  // Triggered by the wrapper rather than the input, so a natively disabled
-  // switch, whose input ignores the pointer, still shows it on hover.
   let { renderWithTooltip, isTooltipActive } = useAutoTooltip({
     tooltip,
     children: null,
@@ -220,7 +218,9 @@ function Switch(rawProps: WithNullableSelected<CubeSwitchProps>, ref) {
       as: 'input',
     }).isInert
   ) {
-    inputProps = getInertInputProps(inputProps);
+    inputProps = getInertInputProps(inputProps, {
+      excludeFromTabOrder: props.excludeFromTabOrder,
+    });
   }
 
   const mods = {
@@ -272,10 +272,10 @@ function Switch(rawProps: WithNullableSelected<CubeSwitchProps>, ref) {
           <div data-element="Thumb" aria-hidden="true" />
         </SwitchElement>
         {/*
-            Not `nowrap`: it inherits, so no label could wrap and a long one ran out
-            of its container. The label inherits the wrapper's font and color, so
-            a caller's `styles` reach it.
-          */}
+          Not `nowrap`: it inherits, so no label could wrap and a long one ran out
+          of its container. The label inherits the wrapper's font and color, so
+          a caller's `styles` reach it.
+        */}
         {children ? <Text>{children}</Text> : null}
         {isLoading ? (
           <>

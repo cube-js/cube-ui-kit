@@ -396,6 +396,23 @@ describe('<Checkbox /> tooltip', () => {
 
       expect(screen.getByRole('button', { name: 'After' })).toHaveFocus();
     });
+
+    it('keeps it out of the Tab order with excludeFromTabOrder', async () => {
+      renderWithRoot(
+        <>
+          <Checkbox isDisabled excludeFromTabOrder tooltip="Requires admin">
+            Email
+          </Checkbox>
+          <button type="button">After</button>
+        </>,
+      );
+
+      expect(screen.getByRole('checkbox')).toHaveAttribute('tabindex', '-1');
+
+      await userEvent.tab();
+
+      expect(screen.getByRole('button', { name: 'After' })).toHaveFocus();
+    });
   });
 
   it('keeps it apart from the field label badge', async () => {

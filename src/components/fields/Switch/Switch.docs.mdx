@@ -28,7 +28,7 @@ A switch allows users to toggle between two states: on and off. It provides imme
 - **`isSelected`** `boolean` (default: `false`) — Whether the switch is selected (controlled)
 - **`defaultSelected`** `boolean` (default: `false`) — Whether the switch is selected by default (uncontrolled)
 - **`size`** `'small' | 'medium' | 'large'` (default: `medium`) — Switch size
-- **`tooltip`** `string | TooltipProviderProps` — Tooltip shown on hover over the switch and its inline label, including while disabled. A string, or `TooltipProvider` props such as `title` and `placement`. It also opens when the switch takes keyboard focus, and describes its input to screen readers. A disabled switch with a tooltip stays in the Tab order, marked `aria-disabled`, so the keyboard reaches the tooltip too. The info badge next to a field label is `labelTooltip`
+- **`tooltip`** `string | TooltipProviderProps` — Tooltip shown on hover over the switch and its inline label, including while disabled. A string, or `TooltipProvider` props such as `title` and `placement`. It also opens when the switch takes keyboard focus, and describes its input to screen readers. A disabled switch with a tooltip stays in the Tab order, marked `aria-disabled` rather than natively disabled, so the keyboard reaches the tooltip too, and a plain `<form>` submits it when it is on. The info badge next to a field label is `labelTooltip`
 - **`onChange`** — Callback fired when the switch value changes
 - **`onFocus`** — Callback fired when the switch receives focus
 - **`onBlur`** — Callback fired when the switch loses focus
@@ -152,7 +152,7 @@ Prefer `tooltip` to wrapping the switch in `TooltipProvider`: while disabled, a 
 
 - `Tab` - Moves focus to the switch. A disabled switch takes focus only while it has a `tooltip`, which then opens
 - `Space` - Toggles the switch state
-- `Enter` does not toggle the switch. Inside a form with a submit button, the browser submits the form instead.
+- `Enter` does not toggle the switch. Inside a form with a submit button, the browser submits the form instead, unless the switch is disabled.
 
 ### Screen Reader Support
 

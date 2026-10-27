@@ -25,6 +25,11 @@ export default {
       control: { type: 'text' },
       description: 'External label for the switch',
     },
+    tooltip: {
+      control: { type: 'text' },
+      description:
+        'Tooltip shown on hover over the switch and its inline label and on keyboard focus, including while disabled',
+    },
 
     /* State */
     isSelected: {
@@ -61,11 +66,6 @@ export default {
       table: {
         defaultValue: { summary: false },
       },
-    },
-    tooltip: {
-      control: { type: 'text' },
-      description:
-        'Tooltip shown on hover over the switch and its inline label (including while disabled) and on keyboard focus',
     },
     isLoading: {
       control: { type: 'boolean' },

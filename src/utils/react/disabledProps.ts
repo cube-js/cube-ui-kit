@@ -155,13 +155,20 @@ function ignoreChange(event: ChangeEvent) {
  * `<input>` into those of an inert one (`isInert` from
  * `getDisabledElementProps`): no native `disabled`, so it keeps its focus, and
  * nothing a click, `Space` or a change could toggle it with.
+ *
+ * React Aria leaves `tabIndex` out of a disabled input's props, so a caller's
+ * `excludeFromTabOrder` has to be passed again.
  */
-export function getInertInputProps<T extends Props>(inputProps: T): T {
+export function getInertInputProps<T extends Props>(
+  inputProps: T,
+  { excludeFromTabOrder }: { excludeFromTabOrder?: boolean } = {},
+): T {
   return mergeProps(
     {
       ...omitActivationEventProps(inputProps),
       disabled: false,
       onChange: ignoreChange,
+      ...(excludeFromTabOrder ? { tabIndex: -1 } : null),
     },
     INERT_PROPS,
   ) as T;
