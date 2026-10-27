@@ -91,10 +91,24 @@ describe.each([
     ),
   ],
 ] as const)('a disabled %s', (_, render) => {
-  it('mutes its label', () => {
+  // The label, the track and every thumb agree.
+  function expectDisabled(isDisabled: boolean) {
+    expect(screen.getByTestId('Label').hasAttribute('data-disabled')).toBe(
+      isDisabled,
+    );
+    expect(
+      screen.getByTestId('SliderTrackContainer').hasAttribute('data-disabled'),
+    ).toBe(isDisabled);
+
+    for (const thumb of screen.getAllByRole('slider')) {
+      expect((thumb as HTMLInputElement).disabled).toBe(isDisabled);
+    }
+  }
+
+  it('is disabled as a whole', () => {
     renderWithRoot(render({ isDisabled: true }));
 
-    expect(screen.getByTestId('Label')).toHaveAttribute('data-disabled');
+    expectDisabled(true);
   });
 
   it('hides its error message, as every disabled field does', () => {
@@ -105,23 +119,21 @@ describe.each([
     expect(screen.queryByText('Too loud')).not.toBeInTheDocument();
   });
 
-  // A wrapper that forwards an unset `isDisabled` must not enable it.
+  // A wrapper that forwards an unset `isDisabled` must not enable it; an
+  // explicit `false` does, as on every other field.
   it.each([
-    ['', {}],
-    [' given isDisabled={undefined}', { isDisabled: undefined }],
-  ])('is disabled as a whole in a disabled form%s', (__, props) => {
+    ['is disabled as a whole in a disabled form', {}, true],
+    [
+      'stays disabled given isDisabled={undefined}',
+      { isDisabled: undefined },
+      true,
+    ],
+    ['is enabled given isDisabled={false}', { isDisabled: false }, false],
+  ])('%s', (__, props, isDisabled) => {
     renderWithForm(render({ name: 'volume', ...props }), {
       formProps: { isDisabled: true },
     });
 
-    expect(screen.getByTestId('Label')).toHaveAttribute('data-disabled');
-
-    expect(screen.getByTestId('SliderTrackContainer')).toHaveAttribute(
-      'data-disabled',
-    );
-
-    for (const thumb of screen.getAllByRole('slider')) {
-      expect(thumb).toBeDisabled();
-    }
+    expectDisabled(isDisabled);
   });
 });
