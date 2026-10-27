@@ -1022,7 +1022,7 @@ export const RowInteraction: Story = {
       'tbody tr[data-element="Row"][data-row-index="1"]',
     );
     await Promise.all(
-      Array.from(focusedRow?.cells ?? [])
+      Array.from<HTMLTableCellElement>(focusedRow?.cells ?? [])
         .flatMap((cell) => cell.getAnimations())
         .map((animation) => animation.finished),
     );
