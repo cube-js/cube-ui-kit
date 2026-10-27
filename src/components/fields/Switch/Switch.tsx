@@ -8,13 +8,17 @@ import {
   Styles,
   tasty,
 } from '@tenphi/tasty';
-import { forwardRef, useRef } from 'react';
+import { forwardRef, ReactElement, useRef } from 'react';
 import { AriaSwitchProps, useHover, useSwitch } from 'react-aria';
 import { useToggleState } from 'react-stately';
 
 import { LoadingIcon } from '../../../icons/LoadingIcon';
 import { FieldBaseProps, ToggleSelectionProps } from '../../../shared';
-import { mergeProps } from '../../../utils/react';
+import { mergeProps, mergeRefs } from '../../../utils/react';
+import {
+  getDisabledElementProps,
+  getInertInputProps,
+} from '../../../utils/react/disabledProps';
 import { useFocus } from '../../../utils/react/interactions';
 import {
   castNullableIsSelected,
@@ -23,8 +27,15 @@ import {
 import { useId } from '../../../utils/react/useId';
 import { extractStyles } from '../../../utils/styles';
 import { Text } from '../../content/Text';
+import { useAutoTooltip } from '../../content/use-auto-tooltip';
 import { getValidationMods, useFieldProps, wrapWithField } from '../../form';
 import { HiddenInput } from '../../HiddenInput';
+import {
+  mergeTooltipFocusProps,
+  splitTooltipTriggerProps,
+} from '../../overlays/Tooltip/split-trigger-props';
+
+import type { CubeTooltipProviderProps } from '../../overlays/Tooltip/TooltipProvider';
 
 const SwitchWrapperElement = tasty({
   as: 'label',
@@ -135,6 +146,14 @@ export interface CubeSwitchProps
   inputStyles?: Styles;
   isLoading?: boolean;
   size?: 'large' | 'medium' | 'small';
+  /**
+   * The switch's own tooltip, shown on hover over the switch and its inline
+   * label and on keyboard focus, also while the switch is disabled: a disabled
+   * switch with a tooltip stays focusable. A string, or `TooltipProvider` props
+   * (`title`, `placement`, …). The info badge next to a field label is
+   * `labelTooltip`.
+   */
+  tooltip?: string | Omit<CubeTooltipProviderProps, 'children'>;
 }
 
 function Switch(rawProps: WithNullableSelected<CubeSwitchProps>, ref) {
@@ -161,6 +180,7 @@ function Switch(rawProps: WithNullableSelected<CubeSwitchProps>, ref) {
     isValid,
     size = 'medium',
     form,
+    tooltip,
   } = props;
 
   const id = useId(props.id);
@@ -173,15 +193,35 @@ function Switch(rawProps: WithNullableSelected<CubeSwitchProps>, ref) {
   let inputRef = useRef(null);
   let domRef = useFocusableRef(ref, inputRef);
 
+  let { renderWithTooltip, isTooltipActive } = useAutoTooltip({
+    tooltip,
+    children: null,
+  });
+
   // React Aria writes `form` onto the input as the id of its `<form>`, so the
   // form instance would render as `form="[object Object]"` and detach it. It
   // reads `children` only to warn about a switch with no visible label; a
   // field `label` is one, named through its `<label for>`.
-  let { inputProps } = useSwitch(
+  let { inputProps, isDisabled: isInputDisabled } = useSwitch(
     { ...props, form: undefined, children: children ?? label },
     useToggleState(props),
     inputRef,
   );
+
+  // A disabled switch with a tooltip keeps its focus, as `Checkbox` does: the
+  // tooltip is usually the reason it is disabled, and focus is how the keyboard
+  // opens it. It is `aria-disabled` and inert instead.
+  if (
+    getDisabledElementProps({
+      isDisabled: isInputDisabled,
+      keepEvents: isTooltipActive,
+      as: 'input',
+    }).isInert
+  ) {
+    inputProps = getInertInputProps(inputProps, {
+      excludeFromTabOrder: props.excludeFromTabOrder,
+    });
+  }
 
   const mods = {
     checked: inputProps.checked,
@@ -193,49 +233,65 @@ function Switch(rawProps: WithNullableSelected<CubeSwitchProps>, ref) {
     'side-label': labelPosition === 'side',
   };
 
-  const switchField = (
-    <SwitchWrapperElement
-      ref={domRef}
-      qa="SwitchWrapper"
-      mods={mods}
-      data-size={size}
-      styles={styles}
-      {...hoverProps}
-    >
-      <HiddenInput
-        qa={qa || 'Switch'}
-        data-input-type="switch"
-        // For a dialog kept mounted while closed, as on `Button`.
-        {...(props.autoFocus ? { 'data-autofocus': '' } : undefined)}
-        {...mergeProps(inputProps, focusProps)}
-        ref={inputRef}
-        id={id}
-      />
-      <SwitchElement
-        data-element="Input"
+  // The input, where keyboard focus lands, takes the tooltip's focus-side
+  // trigger props; the wrapper keeps the hover side and positions the tooltip.
+  // It shares the field's ref, which is the wrapper with or without chrome.
+  const switchField = renderWithTooltip((tooltipTriggerProps, tooltipRef) => {
+    const { pointerProps, focusProps: tooltipFocusProps } =
+      splitTooltipTriggerProps(tooltipTriggerProps);
+
+    return (
+      <SwitchWrapperElement
+        ref={tooltipRef ? mergeRefs(domRef, tooltipRef) : domRef}
+        qa="SwitchWrapper"
         mods={mods}
         data-size={size}
-        styles={inputStyles}
+        styles={styles}
+        {...mergeProps(hoverProps, pointerProps)}
       >
-        <div data-element="Thumb" aria-hidden="true" />
-      </SwitchElement>
-      {/*
-        Not `nowrap`: it inherits, so no label could wrap and a long one ran out
-        of its container. The label inherits the wrapper's font and color, so
-        a caller's `styles` reach it.
-      */}
-      {children ? <Text>{children}</Text> : null}
-      {isLoading ? (
-        <>
-          {label ? <>&nbsp;</> : null}
-          <LoadingIcon />
-        </>
-      ) : null}
-    </SwitchWrapperElement>
-  );
+        <HiddenInput
+          qa={qa || 'Switch'}
+          data-input-type="switch"
+          // For a dialog kept mounted while closed, as on `Button`.
+          {...(props.autoFocus ? { 'data-autofocus': '' } : undefined)}
+          {...mergeTooltipFocusProps(
+            mergeProps(inputProps, focusProps),
+            tooltipFocusProps,
+          )}
+          ref={inputRef}
+          id={id}
+          // Not left to the native `disabled`, which an inert input drops.
+          mods={{ disabled: isInputDisabled }}
+        />
+        <SwitchElement
+          data-element="Input"
+          mods={mods}
+          data-size={size}
+          styles={inputStyles}
+        >
+          <div data-element="Thumb" aria-hidden="true" />
+        </SwitchElement>
+        {/*
+          Not `nowrap`: it inherits, so no label could wrap and a long one ran out
+          of its container. The label inherits the wrapper's font and color, so
+          a caller's `styles` reach it.
+        */}
+        {children ? <Text>{children}</Text> : null}
+        {isLoading ? (
+          <>
+            {label ? <>&nbsp;</> : null}
+            <LoadingIcon />
+          </>
+        ) : null}
+      </SwitchWrapperElement>
+    );
+  }, 'top');
 
-  return wrapWithField(switchField, {
+  // `renderWithTooltip` is typed for any node; here it returns an element.
+  return wrapWithField(switchField as ReactElement, {
     ...props,
+    // The switch's own, not the legacy spelling of `labelTooltip`.
+    tooltip: undefined,
     id,
     labelProps: {
       ...props.labelProps,
