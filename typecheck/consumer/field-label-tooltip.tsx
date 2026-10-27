@@ -1,5 +1,7 @@
 import {
   Checkbox,
+  ColorPicker,
+  FilterPicker,
   Form,
   Picker,
   Radio,
@@ -34,6 +36,16 @@ export function FieldLabelTooltips() {
       <Picker label="Letter" triggerTooltip="On the trigger">
         <Picker.Item key="a">Alpha</Picker.Item>
       </Picker>
+
+      <FilterPicker label="Letter" tooltip="On the trigger">
+        <FilterPicker.Item key="a">Alpha</FilterPicker.Item>
+      </FilterPicker>
+      <FilterPicker label="Letter" triggerTooltip="On the trigger">
+        <FilterPicker.Item key="a">Alpha</FilterPicker.Item>
+      </FilterPicker>
+
+      <ColorPicker label="Color" tooltip="On the trigger" />
+      <ColorPicker label="Color" triggerTooltip="On the trigger" />
 
       <Slider label="Volume" labelTooltip="How loud" />
       {/* @ts-expect-error the label badge is `labelTooltip` */}

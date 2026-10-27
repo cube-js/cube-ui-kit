@@ -2,18 +2,19 @@ import { splitFieldLayout } from './field-layout';
 
 describe('splitFieldLayout', () => {
   it('keeps the style props on a bare input, over its styles', () => {
-    const fieldStyles = { margin: '1x' };
-
     expect(
       splitFieldLayout({
         isBare: true,
         width: '10x',
         styles: { width: '5x', fill: '#white' },
-        fieldStyles,
+        fieldStyles: { margin: '1x' },
       }),
     ).toEqual({
       styles: { width: '10x', fill: '#white' },
-      field: { fieldStyles, fieldProps: undefined },
+      // Nothing to spread over the props: they keep their own field keys.
+      field: {},
+      fillWidth: false,
+      fillHeight: false,
     });
   });
 
@@ -37,13 +38,28 @@ describe('splitFieldLayout', () => {
     });
   });
 
-  it('passes the field props through when no style prop is set', () => {
-    const fieldStyles = { width: '3x' };
-    const fieldProps = { mods: { custom: true } };
-
+  it('moves nothing when no style prop is set', () => {
     expect(
-      splitFieldLayout({ label: 'Name', fieldStyles, fieldProps }).field,
-    ).toEqual({ fieldStyles, fieldProps });
+      splitFieldLayout({
+        label: 'Name',
+        fieldStyles: { width: '3x' },
+        fieldProps: { mods: { custom: true } },
+      }),
+    ).toEqual({ styles: {}, field: {}, fillWidth: false, fillHeight: false });
+  });
+
+  it.each([
+    ['inlineSize', 'width'],
+    ['blockSize', 'height'],
+  ])('gives %s its physical name on the wrapper', (logical, physical) => {
+    expect(
+      splitFieldLayout({ label: 'Name', [logical]: '10x' }).field.fieldStyles,
+    ).toEqual({ [physical]: '10x' });
+    // The physical one, given as well, wins.
+    expect(
+      splitFieldLayout({ label: 'Name', [logical]: '10x', [physical]: '5x' })
+        .field.fieldStyles,
+    ).toEqual({ [physical]: '5x' });
   });
 
   it('keeps a null reset for the wrapper', () => {
@@ -57,12 +73,13 @@ describe('splitFieldLayout', () => {
     expect(field.fieldProps).toBeUndefined();
   });
 
-  it.each([null, undefined, 0, '0', 'none'])(
+  it.each([null, undefined, 0, '0', 'none', 'auto', 'initial'])(
     'does not fill for a width of %s',
     (width) => {
-      expect(
-        splitFieldLayout({ label: 'Name', width }).field.fieldProps,
-      ).toBeUndefined();
+      const layout = splitFieldLayout({ label: 'Name', width });
+
+      expect(layout.field.fieldProps).toBeUndefined();
+      expect(layout.fillWidth).toBe(false);
     },
   );
 
@@ -76,9 +93,12 @@ describe('splitFieldLayout', () => {
   );
 
   it.each(['height', 'blockSize'])('fills the height for %s', (name) => {
-    expect(
-      splitFieldLayout({ label: 'Name', [name]: '10x' }).field.fieldProps,
-    ).toEqual({ mods: { 'fill-width': false, 'fill-height': true } });
+    const layout = splitFieldLayout({ label: 'Name', [name]: '10x' });
+
+    expect(layout.field.fieldProps).toEqual({
+      mods: { 'fill-width': false, 'fill-height': true },
+    });
+    expect(layout).toMatchObject({ fillWidth: false, fillHeight: true });
   });
 
   it('fills the height for flex props only with fillHeightOnFlex', () => {

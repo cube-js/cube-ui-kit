@@ -37,10 +37,23 @@ const FILL_WIDTH_STYLES = [
 const FILL_HEIGHT_STYLES = ['height', 'blockSize'];
 const FLEX_STYLES = ['flexBasis', 'flexGrow', 'flex'];
 
+/** Values that leave an element at its natural size. */
+const NOT_SIZING = new Set<unknown>([0, '0', 'none', 'auto', 'initial']);
+
 /** A value that sizes its element: set, and not a reset or a no-op. */
 function isSizing(value: unknown) {
-  return value != null && value !== 0 && value !== '0' && value !== 'none';
+  return value != null && !NOT_SIZING.has(value);
 }
+
+/**
+ * The wrapper's own `width` follows a logical size in the same CSS rule and
+ * overrides it, so on the wrapper a logical size takes its physical name. A
+ * physical one given as well wins.
+ */
+const PHYSICAL_SIZES = [
+  ['inlineSize', 'width'],
+  ['blockSize', 'height'],
+] as const;
 
 export interface FieldLayoutOptions {
   /**
@@ -67,6 +80,10 @@ export interface FieldLayout {
    * with the style props over them, and its `fieldProps`, with the fill mods.
    */
   field: { fieldStyles?: Styles; fieldProps?: Props };
+  /** Whether the style props size the wrapper across: the input fills it. */
+  fillWidth: boolean;
+  /** Whether the style props size the wrapper down: the input fills it. */
+  fillHeight: boolean;
 }
 
 /**
@@ -86,19 +103,21 @@ export function splitFieldLayout(
     defaultStyles,
   } = options;
   const record = props as Record<string, unknown> & {
+    styles?: Styles;
     fieldStyles?: Styles;
     fieldProps?: Props;
   };
-  const { fieldStyles, fieldProps } = record;
 
   if (!hasChrome) {
     return {
       styles: extractStyles(props, FIELD_LAYOUT_STYLES, defaultStyles),
-      field: { fieldStyles, fieldProps },
+      field: {},
+      fillWidth: false,
+      fillHeight: false,
     };
   }
 
-  const styles = extractStyles(props, [], defaultStyles);
+  const styles = mergeStyleLayers(defaultStyles, record.styles);
   const layoutStyles = extractStyles(
     props,
     FIELD_LAYOUT_STYLES,
@@ -108,7 +127,14 @@ export function splitFieldLayout(
   );
 
   if (!Object.keys(layoutStyles).length) {
-    return { styles, field: { fieldStyles, fieldProps } };
+    return { styles, field: {}, fillWidth: false, fillHeight: false };
+  }
+
+  for (const [logical, physical] of PHYSICAL_SIZES) {
+    if (!(logical in layoutStyles)) continue;
+
+    layoutStyles[physical] ??= layoutStyles[logical];
+    delete layoutStyles[logical];
   }
 
   const sizes = (names: string[]) =>
@@ -120,13 +146,15 @@ export function splitFieldLayout(
   return {
     styles,
     field: {
-      fieldStyles: mergeStyleLayers(fieldStyles, layoutStyles),
+      fieldStyles: mergeStyleLayers(record.fieldStyles, layoutStyles),
       fieldProps:
         fillWidth || fillHeight
-          ? mergeProps(fieldProps, {
+          ? mergeProps(record.fieldProps, {
               mods: { 'fill-width': fillWidth, 'fill-height': fillHeight },
             })
-          : fieldProps,
+          : record.fieldProps,
     },
+    fillWidth,
+    fillHeight,
   };
 }

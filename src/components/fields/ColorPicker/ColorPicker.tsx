@@ -11,6 +11,7 @@ import {
 import { Placement } from 'react-aria';
 
 import { useEvent } from '../../../_internal';
+import { useWarn } from '../../../_internal/hooks/use-warn';
 import { useI18n } from '../../../i18n';
 import { FieldBaseProps } from '../../../shared';
 import { ItemButton } from '../../actions';
@@ -26,7 +27,7 @@ import {
   FieldLayoutStyleProps,
   splitFieldLayout,
 } from '../../form/field-layout';
-import { resolveTriggerTooltip } from '../../form/legacy-tooltip';
+import { TRIGGER_TOOLTIP_WARNING } from '../../form/legacy-tooltip';
 import { Dialog } from '../../overlays/Dialog/Dialog';
 import { DialogTrigger } from '../../overlays/Dialog/DialogTrigger';
 import { ColorSpace } from '../color/channels';
@@ -192,6 +193,8 @@ export const ColorPicker = forwardRef(function ColorPicker(
 
   const { styles, field } = splitFieldLayout(props);
 
+  useWarn(triggerTooltip !== undefined, TRIGGER_TOOLTIP_WARNING);
+
   /**
    * Loading locks the trigger, but the popover can outlive that — it may be
    * controlled, or opened before the load began — so the editor inside has to
@@ -281,7 +284,7 @@ export const ColorPicker = forwardRef(function ColorPicker(
             <ColorSwatch size="small" color={color} styles={swatchStyles} />
           }
           rightIcon={getValidationIcon({ isInvalid, isValid })}
-          tooltip={resolveTriggerTooltip(tooltip, triggerTooltip)}
+          tooltip={tooltip ?? triggerTooltip}
           isDisabled={isEditingDisabled || isReadOnly}
           autoFocus={autoFocus}
           aria-label={ariaLabel}

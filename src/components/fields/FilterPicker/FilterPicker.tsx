@@ -1,6 +1,7 @@
 import { CollectionChildren, FocusableRefValue } from '@react-types/shared';
 import {
   BasePropsWithoutChildren,
+  ContainerStyleProps,
   filterBaseProps,
   Styles,
   tasty,
@@ -47,7 +48,7 @@ import {
   FieldLayoutStyleProps,
   splitFieldLayout,
 } from '../../form/field-layout';
-import { resolveTriggerTooltip } from '../../form/legacy-tooltip';
+import { TRIGGER_TOOLTIP_WARNING } from '../../form/legacy-tooltip';
 import { Dialog } from '../../overlays/Dialog/Dialog';
 import { DialogTrigger } from '../../overlays/Dialog/DialogTrigger';
 import {
@@ -75,8 +76,12 @@ export interface CubeFilterPickerProps<T>
   extends
     Omit<CubeFilterListBoxProps<T>, 'size' | 'shape' | 'children'>,
     // `tooltip` is declared below, for the trigger; the label's info badge is
-    // `labelTooltip`.
-    Omit<CubeItemProps, 'children' | 'size' | 'tooltip'>,
+    // `labelTooltip`. Of the item's style props, only the field layout ones
+    // apply, through `FieldLayoutStyleProps`.
+    Omit<
+      CubeItemProps,
+      'children' | 'size' | 'tooltip' | keyof ContainerStyleProps
+    >,
     BasePropsWithoutChildren,
     FieldLayoutStyleProps,
     FieldBaseProps<
@@ -406,6 +411,8 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
   const fieldLayout = splitFieldLayout(props);
 
   styles = fieldLayout.styles;
+
+  useWarn(triggerTooltip !== undefined, TRIGGER_TOOLTIP_WARNING);
 
   useWarn(isCheckable === false && selectionMode === 'single', {
     key: ['filterpicker-checkable-single-mode'],
@@ -901,7 +908,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
       prefix={prefix}
       suffix={suffix}
       hotkeys={hotkeys}
-      tooltip={resolveTriggerTooltip(tooltip, triggerTooltip)}
+      tooltip={tooltip ?? triggerTooltip}
       description={triggerDescription}
       descriptionPlacement={descriptionPlacement}
       styles={triggerStyles}

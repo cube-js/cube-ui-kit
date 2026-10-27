@@ -1,5 +1,6 @@
 import { cloneElement, createRef, useState } from 'react';
 
+import { useWarn } from '../../_internal/hooks/use-warn';
 import {
   act,
   hoverWithPointer,
@@ -25,7 +26,7 @@ import { RESERVED_FIELD_PROPS, SHARED_FIELD_PROPS } from './field-chrome';
 import { Field } from './Form/Field';
 import { Form } from './Form/Form';
 import { createFormController } from './Form/modern/controller';
-import { resolveTriggerTooltip } from './legacy-tooltip';
+import { TRIGGER_TOOLTIP_WARNING } from './legacy-tooltip';
 import { wrapWithField } from './wrapper';
 
 import type { DOMRefValue, FocusableRefValue } from '@react-types/shared';
@@ -629,10 +630,33 @@ describe('field layout style props', () => {
     );
   }
 
-  it.each(inputs)(
-    '%s sizes its field wrapper with a style prop',
-    (_, element) => {
-      renderWithRoot(cloneElement(element, { width: '37x' }));
+  // What turns the field chrome on. The style props follow the chrome,
+  // whichever prop asked for it. Search fields never bind to a form.
+  const unlabelled = { label: undefined, 'aria-label': 'Billing' };
+  const chromeSources: [string, object, boolean][] = [
+    ['a label', {}, false],
+    ['a form binding', { ...unlabelled, name: 'billing' }, true],
+    ['isBare={false}', { ...unlabelled, isBare: false }, false],
+    ['a description', { ...unlabelled, description: 'Details' }, false],
+  ];
+  const bindable = new Set(FORM_ATTACHABLE_INPUTS.map(([name]) => name));
+
+  it.each(
+    inputs.flatMap(([name, element]) =>
+      chromeSources
+        .filter(([, , inForm]) => !inForm || bindable.has(name))
+        .map(
+          ([source, props, inForm]) =>
+            [name, source, element, props, inForm] as const,
+        ),
+    ),
+  )(
+    '%s sizes its field wrapper with a style prop, given %s',
+    (_, __, element, props, inForm) => {
+      const input = cloneElement(element, { ...props, width: '37x' });
+
+      if (inForm) renderWithForm(input);
+      else renderWithRoot(input);
 
       const field = screen.getByTestId('Field');
 
@@ -690,6 +714,58 @@ describe('field layout style props', () => {
     expect(others).toHaveLength(0);
     expect(checkbox).toContainElement(screen.getByRole('checkbox'));
     expect(screen.getByTestId('Field')).not.toHaveAttribute('data-fill-width');
+  });
+
+  it('keeps a sub-element of styles on the control', () => {
+    render(
+      <TextInput
+        label="Name"
+        prefix="$"
+        width="10x"
+        styles={{ Prefix: { width: '37x' } }}
+      />,
+    );
+
+    const [prefix, ...others] = sized();
+
+    expect(others).toHaveLength(0);
+    expect(prefix).toHaveAttribute('data-element', 'Prefix');
+  });
+
+  it('moves a state map to the wrapper whole', () => {
+    render(
+      <TextInput
+        label="Name"
+        width={{ '': '37x', '@media (w < 1px)': '1x' }}
+      />,
+    );
+
+    const field = screen.getByTestId('Field');
+
+    expect(sized()).toEqual([field]);
+    expect(field).toHaveAttribute('data-fill-width');
+  });
+
+  it('sizes the wrapper with a logical size', () => {
+    render(<TextInput label="Name" inlineSize="37x" />);
+
+    const field = screen.getByTestId('Field');
+
+    // The wrapper's own `width` would override `inline-size`.
+    expect(sized()).toEqual([field]);
+    expect(field).toHaveAttribute('data-fill-width');
+  });
+
+  it('lets fieldStyles reset a fieldProps style with null', () => {
+    render(
+      <TextInput
+        label="Name"
+        fieldProps={{ styles: { width: '37x' } }}
+        fieldStyles={{ width: null }}
+      />,
+    );
+
+    expect(sized()).toEqual([]);
   });
 
   it('puts a style prop over fieldStyles, and fieldStyles over fieldProps', () => {
@@ -754,6 +830,11 @@ describe('field layout style props', () => {
  * own props never take those names (`RESERVED_FIELD_PROPS`).
  */
 describe('field prop names', () => {
+  // Formerly `triggerTooltip`; `tooltip` is the control's, as on `Select`.
+  const pickers = FIELD_LEVEL_INPUTS.filter(([name]) =>
+    ['ColorPicker', 'FilterPicker', 'Picker'].includes(name),
+  );
+
   it('reads only the reserved and shared props off the input', () => {
     const read = new Set<PropertyKey>();
     const props = new Proxy(
@@ -775,44 +856,66 @@ describe('field prop names', () => {
     );
   });
 
-  it.each(FIELD_LEVEL_INPUTS)(
-    '%s renders the reserved texts in its field, never in its control',
-    (_, element) => {
-      const ref = createRef<unknown>();
-      const texts = {
-        description: 'Reserved description',
-        extra: 'Reserved extra',
-        labelSuffix: 'Reserved suffix',
-        errorMessage: 'Reserved error',
-      };
+  // The deprecated `message` shows only without `errorMessage`.
+  const reservedTexts = [
+    {
+      description: 'Reserved description',
+      extra: 'Reserved extra',
+      labelSuffix: 'Reserved suffix',
+      errorMessage: 'Reserved error',
+    },
+    { message: 'Reserved message' },
+  ];
 
-      renderWithRoot(cloneElement(element, { ref, ...texts, isInvalid: true }));
+  it.each(
+    FIELD_LEVEL_INPUTS.flatMap(([name, element]) =>
+      reservedTexts.map((texts) => [name, element, texts] as const),
+    ),
+  )(
+    '%s renders the reserved texts in its field, never in its control',
+    (_, element, texts) => {
+      const ref = createRef<unknown>();
+
+      renderWithRoot(
+        cloneElement(element, {
+          ref,
+          ...texts,
+          labelTooltip: 'Reserved badge',
+          isInvalid: true,
+        }),
+      );
 
       const field = screen.getByTestId('Field');
+      const control = elementOf(ref.current);
 
       for (const text of Object.values(texts)) {
         expect(field).toHaveTextContent(text);
       }
 
-      expect(elementOf(ref.current)?.textContent).not.toContain('Reserved');
+      expect(screen.getByTestId('Label')).toContainElement(
+        screen.getByTestId('InfoBadge'),
+      );
+      expect(control?.textContent).not.toContain('Reserved');
+      expect(control).not.toContainElement(screen.getByTestId('InfoBadge'));
     },
   );
 
-  // Formerly `triggerTooltip`; `tooltip` is the control's, as on `Select`.
-  const pickers = FIELD_LEVEL_INPUTS.filter(([name]) =>
-    ['ColorPicker', 'FilterPicker', 'Picker'].includes(name),
+  it.each(pickers)(
+    '%s warns about the deprecated triggerTooltip',
+    (_, element) => {
+      renderWithRoot(cloneElement(element, { triggerTooltip: 'Old' }));
+
+      expect(useWarn).toHaveBeenCalledWith(true, TRIGGER_TOOLTIP_WARNING);
+    },
   );
 
-  it('warns once about the deprecated triggerTooltip', () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+  it.each(pickers)('%s does not warn about tooltip', (_, element) => {
+    vi.mocked(useWarn).mockClear();
 
-    expect(resolveTriggerTooltip(undefined, 'Old')).toBe('Old');
-    expect(resolveTriggerTooltip('New', 'Old')).toBe('New');
+    renderWithRoot(cloneElement(element, { tooltip: 'New' }));
 
-    expect(warn).toHaveBeenCalledTimes(1);
-    expect(String(warn.mock.calls[0])).toContain('triggerTooltip');
-
-    warn.mockRestore();
+    expect(useWarn).toHaveBeenCalledWith(false, TRIGGER_TOOLTIP_WARNING);
+    expect(useWarn).not.toHaveBeenCalledWith(true, TRIGGER_TOOLTIP_WARNING);
   });
 
   it.each(pickers)(

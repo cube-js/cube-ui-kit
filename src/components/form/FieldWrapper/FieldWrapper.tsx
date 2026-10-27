@@ -47,13 +47,14 @@ const FieldElement = tasty({
     // takes what the label and texts leave; the last explicit row is the
     // input's, beside a side or split label and under a top one.
     gridRows: {
-      '': 'initial',
+      '': false,
       'fill-height': 'max-content 1sf',
       'fill-height & (has-sider | has-split)': '1sf',
     },
     // A field that grows in a flex column can shrink below its content. A
-    // caller's `height` replaces the whole value, minimum included.
-    height: { '': 'initial', 'fill-height': 'min 0' },
+    // caller's `height` replaces the whole value, minimum included; the style
+    // props pass `blockSize` as `height`.
+    height: { '': false, 'fill-height': 'min 0' },
     '$full-label-width': '($label-width + 1x)',
 
     LabelArea: {
@@ -84,18 +85,18 @@ const FieldElement = tasty({
         'fill-width | fill-height': 'row',
       },
       gap: '.5x',
-      gridColumns: { '': 'initial', 'fill-width | fill-height': '1sf' },
-      gridRows: { '': 'initial', 'fill-height': '1sf' },
-      gridAutoRows: { '': 'initial', 'fill-height': 'max-content' },
+      gridColumns: { '': false, 'fill-width | fill-height': '1sf' },
+      gridRows: { '': false, 'fill-height': '1sf' },
+      gridAutoRows: { '': false, 'fill-height': 'max-content' },
       gridColumn: {
         '': 'initial',
         'has-sider': 2,
         'has-split': 2,
       },
-      gridRow: { '': 'initial', 'fill-height': -2 },
+      gridRow: { '': false, 'fill-height': -2 },
       // Not `alignSelf: stretch`: the area stays in the baseline group, so a
       // side label keeps its baseline and a split label stays centred.
-      height: { '': 'initial', 'fill-height': '100%' },
+      height: { '': false, 'fill-height': '100%' },
     },
   },
 });

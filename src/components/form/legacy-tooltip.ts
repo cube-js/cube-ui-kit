@@ -1,5 +1,7 @@
 import { warn } from '../../utils/warnings';
 
+import type { WarnParameters } from '../../_internal/hooks/use-warn';
+
 let hasWarnedAboutLegacyTooltip = false;
 
 /**
@@ -28,28 +30,18 @@ export function warnAboutLegacyTooltip(props: object) {
   );
 }
 
-let hasWarnedAboutTriggerTooltip = false;
-
 /**
  * The trigger's tooltip on `Picker`, `FilterPicker` and `ColorPicker` was
  * `triggerTooltip`. It is `tooltip` now, as on `Select`, `Button` and `Item`,
  * since a field's own props never take the field chrome's names and `tooltip`
- * is not one of them. Returns the tooltip to render, `tooltip` first, and says
- * once when the old name is used.
+ * is not one of them. The pickers render `tooltip ?? triggerTooltip` and pass
+ * this to `useWarn` while the old name is used.
  *
  * A migration aid; remove with `triggerTooltip`.
  */
-export function resolveTriggerTooltip<T>(
-  tooltip: T | undefined,
-  triggerTooltip: T | undefined,
-) {
-  if (triggerTooltip !== undefined && !hasWarnedAboutTriggerTooltip) {
-    hasWarnedAboutTriggerTooltip = true;
-
-    warn(
-      'A picker received `triggerTooltip`, which is deprecated. Pass the trigger tooltip as `tooltip` instead.',
-    );
-  }
-
-  return tooltip ?? triggerTooltip;
-}
+export const TRIGGER_TOOLTIP_WARNING = {
+  key: 'picker-trigger-tooltip',
+  args: [
+    'A picker received `triggerTooltip`, which is deprecated. Pass the trigger tooltip as `tooltip` instead.',
+  ],
+} satisfies WarnParameters;

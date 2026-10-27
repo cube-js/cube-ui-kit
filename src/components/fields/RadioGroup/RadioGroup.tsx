@@ -66,7 +66,12 @@ const RadioGroupElement = tasty({
       '': '#clear',
       'tabs | disabled': '#surface-4',
     },
-    width: 'max-content max-content initial',
+    width: {
+      '': 'max-content max-content initial',
+      // In a field its style props size, the group fills the field as every
+      // other input does.
+      'fill-width': 'auto',
+    },
     flexShrink: 0,
     gap: {
       '': '1x',
@@ -198,6 +203,7 @@ function RadioGroup(rawProps: WithNullableValue<CubeRadioGroupProps>, ref) {
         button: type === 'button',
         tabs: type === 'tabs',
         focused: isFocusWithinVisible,
+        'fill-width': fieldLayout.fillWidth,
       }}
     >
       <FormScopeMask

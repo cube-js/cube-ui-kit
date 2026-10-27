@@ -2,6 +2,8 @@ import { renderWithRoot, screen } from '../../test';
 import { Checkbox } from '../fields/Checkbox/Checkbox';
 import { ListBox } from '../fields/ListBox/ListBox';
 import { Picker } from '../fields/Picker/Picker';
+import { Radio } from '../fields/RadioGroup/Radio';
+import { RadioGroup } from '../fields/RadioGroup/RadioGroup';
 import { Switch } from '../fields/Switch/Switch';
 import { TextArea } from '../fields/TextArea/TextArea';
 import { TextInput } from '../fields/TextInput/TextInput';
@@ -270,5 +272,96 @@ describe('field layout geometry', () => {
     expect(rect(fieldOf(inputBoxOf('Capped'))).height).toBe(
       rect(fieldOf(inputBoxOf('Free'))).height,
     );
+  });
+
+  it('keeps a side label in line under a height with only a maximum', () => {
+    renderWithRoot(
+      <>
+        <TextArea label="Capped" labelPosition="side" height="max 40x" />
+        <TextArea label="Free" labelPosition="side" />
+      </>,
+    );
+
+    const capped = fieldOf(inputBoxOf('Capped'));
+    const free = fieldOf(inputBoxOf('Free'));
+
+    expect(rect(labelOf(capped)).top - rect(capped).top).toBe(
+      rect(labelOf(free)).top - rect(free).top,
+    );
+  });
+
+  it('leaves an unsized field in a stretched flex row as it was', () => {
+    renderWithRoot(
+      <>
+        <Flex gap="2x" height="30x">
+          <TextInput label="In a row" />
+        </Flex>
+        <TextInput label="Alone" />
+      </>,
+    );
+
+    const row = inputBoxOf('In a row');
+
+    // The row stretches the field, and only style props let the input fill.
+    expect(rect(fieldOf(row)).height).toBe(30 * X);
+    expect(fieldOf(row)).not.toHaveAttribute('data-fill-height');
+    expect(rect(row).height).toBe(rect(inputBoxOf('Alone')).height);
+  });
+
+  it('sizes the field with blockSize, as with height', () => {
+    renderWithRoot(
+      <ListBox label="Options" blockSize="30x">
+        {options}
+      </ListBox>,
+    );
+
+    const field = fieldOf(screen.getByRole('listbox'));
+    const root = field.querySelector(
+      '[data-qa="ListBoxWrapper"]',
+    ) as HTMLElement;
+
+    expect(rect(field).height).toBe(30 * X);
+    expect(rect(root).bottom).toBe(rect(field).bottom);
+  });
+
+  it('keeps a logical size in fieldStyles working', () => {
+    renderWithRoot(
+      <TextInput label="Name" fieldStyles={{ blockSize: '30x' }} />,
+    );
+
+    expect(rect(fieldOf(inputBoxOf('Name'))).height).toBe(30 * X);
+  });
+
+  it('fills a sized field with a RadioGroup', () => {
+    renderWithRoot(
+      <RadioGroup
+        label="Period"
+        type="tabs"
+        orientation="horizontal"
+        width="60x"
+      >
+        <Radio value="day">Day</Radio>
+        <Radio value="week">Week</Radio>
+      </RadioGroup>,
+    );
+
+    const group = screen.getByRole('radiogroup');
+    const field = fieldOf(group);
+
+    expect(rect(field).width).toBe(60 * X);
+    expect(rect(group).width).toBe(60 * X);
+  });
+
+  it('keeps an unsized labelled RadioGroup at its content width', () => {
+    renderWithRoot(
+      <RadioGroup label="Period" type="tabs" orientation="horizontal">
+        <Radio value="day">Day</Radio>
+        <Radio value="week">Week</Radio>
+      </RadioGroup>,
+    );
+
+    const group = screen.getByRole('radiogroup');
+
+    expect(rect(group).width).toBeLessThan(rect(fieldOf(group)).width);
   });
 });
