@@ -4,6 +4,8 @@ import {
   countsOf,
   differences,
   mergeBaseline,
+  parseShard,
+  shardOf,
   totalsOf,
 } from './a11y-diagnostics.mjs';
 
@@ -96,5 +98,32 @@ it('totals elements per rule across stories', () => {
   expect(totalsOf({ a: { label: 2, region: 1 }, b: { label: 3 } })).toEqual({
     label: 5,
     region: 1,
+  });
+});
+
+describe('shards', () => {
+  const ids = Array.from({ length: 300 }, (_, i) => `story-${i}--default`);
+
+  it('puts every story in exactly one shard, the same one every time', () => {
+    for (const id of ids) {
+      const shard = shardOf(id, 3);
+      expect([1, 2, 3]).toContain(shard);
+      expect(shardOf(id, 3)).toBe(shard);
+    }
+  });
+
+  it('keeps the shards roughly even', () => {
+    for (const index of [1, 2, 3]) {
+      const size = ids.filter((id) => shardOf(id, 3) === index).length;
+      expect(size).toBeGreaterThan(70);
+      expect(size).toBeLessThan(130);
+    }
+  });
+
+  it('reads index/count and rejects anything else', () => {
+    expect(parseShard('2/3')).toEqual({ index: 2, count: 3 });
+    for (const value of ['0/3', '4/3', '3', 'a/b', '1/0']) {
+      expect(() => parseShard(value)).toThrow('--shard');
+    }
   });
 });

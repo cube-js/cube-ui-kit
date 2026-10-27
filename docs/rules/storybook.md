@@ -261,7 +261,8 @@ import { ItemButton } from '../../actions/ItemButton/ItemButton';
 ```bash
 pnpm build-storybook
 pnpm diagnostics:a11y --filter Actions/Button --verbose   # what fails, on which elements
-pnpm diagnostics:a11y --check                              # what CI runs
+pnpm diagnostics:a11y --check                              # what CI runs, in three shards
+pnpm diagnostics:a11y --check --shard 2/3                  # one CI shard
 pnpm diagnostics:a11y --filter Actions/Button --update     # record a fix
 ```
 

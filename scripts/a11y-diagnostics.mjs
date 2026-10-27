@@ -32,10 +32,13 @@
  *   pnpm diagnostics:a11y --filter Actions/Button # only matching titles or ids
  *   pnpm diagnostics:a11y --verbose               # every violation, with its elements
  *   pnpm diagnostics:a11y --json report.json      # raw results
+ *   pnpm diagnostics:a11y --shard 2/3          # one of three even parts, as CI runs it
  *   pnpm diagnostics:a11y --concurrency 8
  *
- * With `--filter`, `--update` rewrites only the entries of the stories it ran.
+ * With `--filter` or `--shard`, `--update` rewrites only the entries of the
+ * stories it ran.
  */
+import { createHash } from 'node:crypto';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
@@ -262,6 +265,26 @@ export function mergeBaseline(baseline, current, ids, knownIds) {
   return sortKeys(next);
 }
 
+/**
+ * Which of `count` shards a story belongs to, counting from 1. Hashed from the
+ * id rather than taken from the story's position, so the shards stay even and
+ * a new story does not move every story after it into another shard.
+ */
+export function shardOf(id, count) {
+  return (createHash('md5').update(id).digest().readUInt32BE(0) % count) + 1;
+}
+
+/** `"2/3"` → `{ index: 2, count: 3 }`. */
+export function parseShard(value) {
+  const match = /^(\d+)\/(\d+)$/.exec(value);
+  const index = Number(match?.[1]);
+  const count = Number(match?.[2]);
+  if (!match || index < 1 || index > count) {
+    throw new Error(`--shard takes "index/count", such as 1/3, not "${value}"`);
+  }
+  return { index, count };
+}
+
 export function totalsOf(stories) {
   const totals = {};
   for (const rules of Object.values(stories)) {
@@ -424,6 +447,8 @@ async function main() {
   const check = has('--check');
   const update = has('--update');
   const filter = flag('--filter', null);
+  const shardFlag = flag('--shard', null);
+  const shard = shardFlag && parseShard(shardFlag);
   const jsonOut = flag('--json', null);
   const concurrency = Number(flag('--concurrency', 6));
   const axeVersion = require('axe-core/package.json').version;
@@ -444,8 +469,13 @@ async function main() {
     );
   }
 
-  const stories = readStories(filter);
-  console.log(`Running axe-core ${axeVersion} on ${stories.length} stories …`);
+  const matching = readStories(filter);
+  const stories = shard
+    ? matching.filter((s) => shardOf(s.id, shard.count) === shard.index)
+    : matching;
+  console.log(
+    `Running axe-core ${axeVersion} on ${stories.length} stories${shard ? ` (shard ${shard.index}/${shard.count})` : ''} …`,
+  );
   if (process.platform !== BASELINE_PLATFORM) {
     console.warn(
       `The baseline holds the counts CI sees on Linux. On ${process.platform}, text in system font stacks lays out differently, so geometry rules such as target-size can count differently here. Where this run and CI disagree, record CI's counts; the failing job prints each one.`,
@@ -513,7 +543,7 @@ async function main() {
   const changes = differences(current, baselineStories, measuredIds);
   const grown = changes.filter((c) => c.after > c.before);
   const shrunk = changes.filter((c) => c.after < c.before);
-  const knownIds = filter ? null : new Set(ids);
+  const knownIds = filter ? null : new Set(matching.map((s) => s.id));
   const stale = knownIds
     ? Object.keys(baselineStories).filter((id) => !knownIds.has(id))
     : [];

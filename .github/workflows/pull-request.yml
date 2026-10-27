@@ -204,11 +204,17 @@ jobs:
   # Every story rendered in real Chromium and checked with axe-core against the
   # per-story baseline in `scripts/a11y-baseline.json`. A job of its own rather
   # than a step after the Chromatic build, so a new violation never holds up
-  # visual review, at the price of building Storybook twice in parallel.
+  # visual review. Split in three because the whole check alone took ~8
+  # minutes; each shard builds Storybook itself (under a minute) rather than
+  # waiting for one build to be handed over.
   a11y:
-    name: 'Accessibility (axe)'
+    name: 'Accessibility (axe) (${{ matrix.shard }}/3)'
     if: github.head_ref != 'changeset-release/main'
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6
@@ -240,7 +246,7 @@ jobs:
       # One page per core of the runner: the settle waits are timed, and an
       # oversubscribed runner only sends more stories to the confirming rerun.
       - name: Check stories against the accessibility baseline
-        run: pnpm diagnostics:a11y --check --concurrency 4
+        run: pnpm diagnostics:a11y --check --concurrency 4 --shard ${{ matrix.shard }}/3
 
   required-tests:
     name: 'Tests & lint'
