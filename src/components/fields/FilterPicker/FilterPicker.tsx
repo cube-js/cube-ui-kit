@@ -38,7 +38,10 @@ import { extractStyles, mergeStyleLayers } from '../../../utils/styles';
 import { CubeItemButtonProps, ItemAction, ItemButton } from '../../actions';
 import { CubeItemProps } from '../../content/Item';
 import { Text } from '../../content/Text';
-import { deriveCheckedSets } from '../../content/Tree/checked-keys';
+import {
+  deriveCheckedSets,
+  toOrderedKeys,
+} from '../../content/Tree/checked-keys';
 import { buildTreeIndex, getTreeNodeText } from '../../content/Tree/tree-index';
 import {
   getValidationIcon,
@@ -229,11 +232,9 @@ const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
  * stands for its children. Keys the tree lacks are listed as they are.
  */
 function getTreeSummaryLabels(
-  treeData: CubeTreeNodeData[],
   index: ReturnType<typeof buildTreeIndex>,
-  keys: string[],
+  checked: Set<string>,
 ): string[] {
-  const { checked } = deriveCheckedSets(treeData, index, keys);
   const labels: string[] = [];
 
   for (const [key, node] of index.byKey) {
@@ -244,7 +245,11 @@ function getTreeSummaryLabels(
     labels.push(getTreeNodeText(node));
   }
 
-  return [...labels, ...keys.filter((key) => !index.byKey.has(key))];
+  for (const key of checked) {
+    if (!index.byKey.has(key)) labels.push(key);
+  }
+
+  return labels;
 }
 
 const FilterPickerWrapper = tasty({
@@ -514,10 +519,33 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     [effectiveSelectedKeys, treeIndex],
   );
 
+  // Every key the value checks, conducted over the whole tree, in tree
+  // order: what the tree shows and what `renderSummary` receives.
+  const treeSelectedKeys = useMemo(
+    () =>
+      treeData && treeIndex
+        ? toOrderedKeys(
+            treeIndex,
+            deriveCheckedSets(treeData, treeIndex, treeCheckedKeys).checked,
+          )
+        : null,
+    [treeData, treeIndex, treeCheckedKeys],
+  );
+
+  // The user's expansion, held here rather than in the popover, so it
+  // outlives closing it.
+  const [internalExpandedKeys, setInternalExpandedKeys] = useState<string[]>(
+    defaultExpandedKeys ?? [],
+  );
+  const handleExpand = (keys: string[]) => {
+    if (expandedKeys === undefined) setInternalExpandedKeys(keys);
+    onExpand?.(keys);
+  };
+
   // Memoized label extraction using the labelMap
   const selectedLabels = useMemo(() => {
-    if (treeData && treeIndex) {
-      return getTreeSummaryLabels(treeData, treeIndex, treeCheckedKeys);
+    if (treeIndex && treeSelectedKeys) {
+      return getTreeSummaryLabels(treeIndex, new Set(treeSelectedKeys));
     }
 
     if (selectionMode === 'multiple' && effectiveSelectedKeys === 'all') {
@@ -533,9 +561,8 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
 
     return selectedKeyStrs.map((k) => labelMap.get(k) ?? k);
   }, [
-    treeData,
     treeIndex,
-    treeCheckedKeys,
+    treeSelectedKeys,
     selectionMode,
     effectiveSelectedKey,
     effectiveSelectedKeys,
@@ -744,7 +771,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
 
       return renderSummary({
         selectedLabels,
-        selectedKeys: effectiveSelectedKeys,
+        selectedKeys: treeSelectedKeys ?? effectiveSelectedKeys,
         selectionMode: 'multiple',
       });
     } else if (renderSummary === false) {
@@ -766,6 +793,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     selectedLabels,
     effectiveSelectedKey,
     effectiveSelectedKeys,
+    treeSelectedKeys,
     hasSelection,
     placeholder,
     selectAllLabel,
@@ -1014,8 +1042,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
                   autoFocus
                   treeData={treeData}
                   checkedKeys={treeCheckedKeys}
-                  expandedKeys={expandedKeys}
-                  defaultExpandedKeys={defaultExpandedKeys}
+                  expandedKeys={expandedKeys ?? internalExpandedKeys}
                   aria-label={pickerAriaLabel}
                   searchPlaceholder={searchPlaceholder}
                   searchValue={searchValue}
@@ -1031,7 +1058,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
                   isDisabled={isDisabled}
                   isLoadingItems={isLoadingItems}
                   shouldFocusWrap={shouldFocusWrap}
-                  onExpand={onExpand}
+                  onExpand={handleExpand}
                   onSearchChange={onSearchChange}
                   onCheckedKeysChange={handleSelectionChange}
                   onEscape={handleEscape}

@@ -242,15 +242,15 @@ mods={{
 ### Tree Mode (`treeData`)
 1. **Value**: Always multiple selection. The value is every fully checked key, parents included, in tree order; a parent key in the value checks its subtree
 2. **Cascade**: Runs over the full `treeData`, never the filtered copy, so a search never reads a hidden node as unchecked
-3. **Search**: Keeps a matching node with its whole subtree, and ancestors of deeper matches with only their matching branches. Those ancestors open through a search-only expansion that resets per query; the user's expansion comes back when the search clears
-4. **Focus**: DOM focus stays in the search input (`aria-activedescendant` names the active row; row ids come from `getTreeRowId`). The tree is not a tab stop, and a click inside it hands focus back to the input
+3. **Search**: Keeps a matching node with its whole subtree, and ancestors of deeper matches with only their matching branches. Every node with a match below it, matching or not, opens through a search-only expansion that resets with every edit of the query; the user's expansion comes back when the search clears
+4. **Focus**: DOM focus stays in the search input (`aria-activedescendant` names the active row; row ids come from `getTreeRowId`). Nothing in the tree is a tab stop (rows, checkboxes, chevrons), and a click inside it hands focus back to the input
 5. **Row press**: Toggles the row's checkbox and keeps the popover open. `Enter` toggles the active row and closes it
 6. **Summary**: Labels of the topmost checked nodes
 
 ### Keyboard Interaction
 - **Trigger Focus**: Standard button keyboard behavior
-- **Popover Navigation**: Full FilterListBox keyboard support
-- **Escape Chains**: FilterListBox escape → popover close
+- **Popover Navigation**: Full FilterListBox keyboard support; in tree mode, FilterTree's own map (see Tree Mode)
+- **Escape Chains**: FilterListBox (or FilterTree) escape clears the search first, then closes the popover
 
 ## Performance Considerations
 

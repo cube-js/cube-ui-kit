@@ -91,7 +91,8 @@ function deriveCheckedState(
  * as AntD does:
  *
  * - First down: a checked key checks its eligible descendants, so a parent
- *   key stands for its subtree even when its children aren't listed.
+ *   key stands for its subtree even when its children aren't listed, and
+ *   even when the parent's own checkbox is disabled.
  * - Then bottom-up: a parent is fully checked iff every eligible
  *   descendant leaf is checked, and half-checked iff at least one eligible
  *   descendant is checked or half-checked, but not all.
@@ -117,10 +118,15 @@ export function deriveCheckedSets(
     }
   };
 
+  // A key stands for its subtree even when its own checkbox is off limits,
+  // so a locked parent in the value keeps its checked children, and with
+  // them its own key, through the bottom-up pass.
   for (const key of source) {
     checked.add(key);
-    const node = index.byKey.get(key);
-    if (node && isNodeEligible(node)) checkSubtree(node);
+    for (const childKey of index.childrenOf.get(key) ?? []) {
+      const child = index.byKey.get(childKey);
+      if (child) checkSubtree(child);
+    }
   }
 
   for (const root of treeData) {
@@ -193,4 +199,19 @@ export function toggleCheckedKey(
   }
 
   return next;
+}
+
+/** A checked set as an array in tree order; keys the tree lacks go last. */
+export function toOrderedKeys(
+  index: TreeIndex,
+  checked: Iterable<string>,
+): string[] {
+  const set = new Set(checked);
+  const ordered = [...index.byKey.keys()].filter((key) => set.has(key));
+
+  for (const key of set) {
+    if (!index.byKey.has(key)) ordered.push(key);
+  }
+
+  return ordered;
 }

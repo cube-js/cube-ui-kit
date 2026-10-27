@@ -54,7 +54,14 @@ const ENGINEERING = [
 const row = (key: string) =>
   document.querySelector<HTMLElement>(`[data-qa-key="${key}"]`);
 
-const checkState = (key: string) => row(key)?.getAttribute('aria-checked');
+// The row's checkbox reports the state to assistive tech; the row mirrors it
+// in mods, which jsdom reads without the checkbox's `indeterminate` property.
+const checkState = (key: string) => {
+  const el = row(key);
+  if (!el) return undefined;
+  if (el.hasAttribute('data-indeterminate')) return 'mixed';
+  return el.hasAttribute('data-checked') ? 'true' : 'false';
+};
 
 const search = () =>
   document.querySelector<HTMLInputElement>('[data-qa="FilterTreeSearch"]')!;
@@ -330,6 +337,238 @@ describe('<FilterPicker treeData />', () => {
       expect(row('support')).toHaveAttribute('aria-expanded', 'true'),
     );
     expect(onExpand).toHaveBeenCalledTimes(1);
+  });
+
+  it('passes every checked key, in tree order, to renderSummary', () => {
+    const renderSummary = vi.fn(() => 'summary');
+    renderWithRoot(
+      <FilterPicker
+        label="Groups"
+        treeData={GROUPS}
+        defaultSelectedKeys={['design', 'engineering:ada']}
+        renderSummary={renderSummary}
+      />,
+    );
+
+    expect(renderSummary).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        selectedLabels: ['Ada Lovelace', 'Design'],
+        selectedKeys: [
+          'engineering:ada',
+          'design',
+          'design:dieter',
+          'design:susan',
+        ],
+      }),
+    );
+  });
+
+  it('follows controlled selectedKeys holding a parent key', async () => {
+    function Controlled() {
+      const [keys, setKeys] = useState<string[]>(['design']);
+
+      return (
+        <FilterPicker
+          label="Groups"
+          treeData={GROUPS}
+          selectedKeys={keys}
+          defaultExpandedKeys={['design']}
+          onSelectionChange={(next) => setKeys(next as string[])}
+        />
+      );
+    }
+
+    const { getByRole } = renderWithRoot(<Controlled />);
+
+    await open(getByRole);
+    expect(checkState('design:susan')).toBe('true');
+
+    await user.click(within(row('design:susan')!).getByRole('checkbox'));
+
+    expect(checkState('design')).toBe('mixed');
+    expect(checkState('design:dieter')).toBe('true');
+    expect(checkState('design:susan')).toBe('false');
+    expect(getByRole('button', { name: /Groups/ })).toHaveTextContent(
+      'Dieter Rams',
+    );
+  });
+
+  it('lets Tab move on from the search to the footer', async () => {
+    const { getByRole } = renderWithRoot(
+      <FilterPicker
+        label="Groups"
+        treeData={GROUPS}
+        defaultExpandedKeys={['engineering']}
+        footer={<button type="button">Apply</button>}
+      />,
+    );
+
+    await open(getByRole);
+    await user.tab();
+
+    expect(getByRole('button', { name: 'Apply' })).toHaveFocus();
+  });
+
+  it('keeps the active row when Space unchecks it', async () => {
+    const onSelectionChange = vi.fn();
+    const { getByRole } = renderWithRoot(
+      <FilterPicker
+        label="Groups"
+        treeData={GROUPS}
+        defaultSelectedKeys={['design']}
+        onSelectionChange={onSelectionChange}
+      />,
+    );
+
+    await open(getByRole);
+    expect(search().getAttribute('aria-activedescendant')).toBe(
+      row('design')!.id,
+    );
+
+    await user.keyboard(' ');
+    expect(onSelectionChange).toHaveBeenLastCalledWith([]);
+    expect(search().getAttribute('aria-activedescendant')).toBe(
+      row('design')!.id,
+    );
+
+    await user.keyboard(' ');
+    expect(onSelectionChange).toHaveBeenLastCalledWith([
+      'design',
+      'design:dieter',
+      'design:susan',
+    ]);
+  });
+
+  it('keeps a parent whose checkbox is disabled, and leaves Enter on it a no-op', async () => {
+    const onSelectionChange = vi.fn();
+    const data: CubeTreeNodeData[] = [
+      {
+        key: 'locked',
+        title: 'Locked',
+        isCheckboxDisabled: true,
+        children: [
+          { key: 'locked:a', title: 'Member A' },
+          { key: 'locked:b', title: 'Member B' },
+        ],
+      },
+      { key: 'contractors', title: 'Contractors', isLeaf: true },
+    ];
+    const { getByRole } = renderWithRoot(
+      <FilterPicker
+        label="Groups"
+        treeData={data}
+        defaultSelectedKeys={['locked']}
+        onSelectionChange={onSelectionChange}
+      />,
+    );
+
+    expect(getByRole('button', { name: /Groups/ })).toHaveTextContent('Locked');
+
+    await open(getByRole);
+    expect(checkState('locked')).toBe('true');
+
+    await user.keyboard('{Enter}');
+    expect(onSelectionChange).not.toHaveBeenCalled();
+    expect(search()).toBeInTheDocument();
+
+    await user.click(within(row('contractors')!).getByRole('checkbox'));
+    expect(onSelectionChange).toHaveBeenLastCalledWith([
+      'locked',
+      'locked:a',
+      'locked:b',
+      'contractors',
+    ]);
+  });
+
+  it('opens a matching node that has a match below it, every time the query is typed', async () => {
+    const data: CubeTreeNodeData[] = [
+      {
+        key: 'support',
+        title: 'Support',
+        children: [
+          { key: 'support:bot', title: 'Support Bot' },
+          { key: 'support:linus', title: 'Linus Torvalds' },
+        ],
+      },
+    ];
+    const { getByRole } = renderWithRoot(
+      <FilterPicker label="Groups" treeData={data} />,
+    );
+
+    await open(getByRole);
+    await user.keyboard('support');
+    await waitFor(() =>
+      expect(row('support')).toHaveAttribute('aria-expanded', 'true'),
+    );
+    // The match keeps its whole subtree.
+    expect(row('support:linus')).toBeInTheDocument();
+
+    // Collapse it, clear, and type the same query again: it opens again.
+    await user.click(within(row('support')!).getByLabelText(/Collapse/));
+    expect(row('support')).toHaveAttribute('aria-expanded', 'false');
+    await user.clear(search());
+    await user.keyboard('support');
+    await waitFor(() =>
+      expect(row('support')).toHaveAttribute('aria-expanded', 'true'),
+    );
+  });
+
+  it('keeps the expansion it was left with across closing and reopening', async () => {
+    const { getByRole } = renderWithRoot(
+      <FilterPicker label="Groups" treeData={GROUPS} />,
+    );
+
+    await open(getByRole);
+    await user.keyboard('{ArrowDown}{ArrowRight}');
+    expect(row('design')).toHaveAttribute('aria-expanded', 'true');
+
+    await user.keyboard('{Escape}');
+    await waitFor(() => expect(search()).toBeNull());
+
+    await open(getByRole);
+    expect(row('design')).toHaveAttribute('aria-expanded', 'true');
+  });
+
+  it('points at no tree while a search finds nothing', async () => {
+    const { getByRole } = renderWithRoot(
+      <FilterPicker label="Groups" treeData={GROUPS} />,
+    );
+
+    await open(getByRole);
+    expect(search()).toHaveAttribute('aria-controls');
+
+    await user.keyboard('zzz');
+    await waitFor(() => expect(search()).not.toHaveAttribute('aria-controls'));
+    expect(search()).not.toHaveAttribute('aria-activedescendant');
+  });
+
+  it('steps Left past a disabled parent to the nearest reachable one', async () => {
+    const data: CubeTreeNodeData[] = [
+      {
+        key: 'org',
+        title: 'Org',
+        children: [
+          {
+            key: 'team',
+            title: 'Team',
+            isDisabled: true,
+            children: [{ key: 'team:ada', title: 'Ada Lovelace' }],
+          },
+        ],
+      },
+    ];
+    const { getByRole } = renderWithRoot(
+      <FilterPicker
+        label="Groups"
+        treeData={data}
+        defaultExpandedKeys={['org', 'team']}
+      />,
+    );
+
+    await open(getByRole);
+    await user.keyboard('{End}{ArrowLeft}');
+
+    expect(search().getAttribute('aria-activedescendant')).toBe(row('org')!.id);
   });
 
   it('holds its value as a form field', async () => {

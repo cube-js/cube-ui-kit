@@ -180,12 +180,14 @@ export interface CubeTreeProps extends BaseProps, OuterStyleProps {
    */
   autoExpandParent?: boolean;
 
-  /** Default checked keys (uncontrolled). */
+  /** Default checked keys (uncontrolled). A parent key checks its whole subtree, as in AntD. */
   defaultCheckedKeys?: string[];
   /**
    * Controlled checked keys.
    *
    * Accepts either an array of keys or AntD's `{ checked, halfChecked }` shape.
+   * In the array form a parent key checks its whole subtree, as in AntD; the
+   * object form is taken as given.
    */
   checkedKeys?: string[] | { checked: string[]; halfChecked?: string[] };
 

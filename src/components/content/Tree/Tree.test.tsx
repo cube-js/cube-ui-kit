@@ -339,6 +339,40 @@ describe('<Tree />', () => {
       expect(info.halfCheckedKeys).toEqual(['fruits']);
     });
 
+    it('checks the subtree of a parent key whose own checkbox is disabled', () => {
+      const { getByRole } = renderWithRoot(
+        <Tree
+          isCheckable
+          treeData={[{ ...SAMPLE[0], isCheckboxDisabled: true }, SAMPLE[1]]}
+          defaultExpandedKeys={['fruits']}
+          defaultCheckedKeys={['fruits']}
+        />,
+      );
+
+      expect(getByRole('checkbox', { name: 'Fruits' })).toBeChecked();
+      expect(getByRole('checkbox', { name: 'Apple' })).toBeChecked();
+      expect(getByRole('checkbox', { name: 'Banana' })).toBeChecked();
+    });
+
+    it('puts the checked state on the checkbox, not on the row', () => {
+      const { getByRole } = renderWithRoot(
+        <Tree
+          isCheckable
+          treeData={SAMPLE}
+          defaultCheckedKeys={['apple']}
+          defaultExpandedKeys={['fruits']}
+        />,
+      );
+
+      const fruits = getByRole('row', { name: 'Fruits' });
+      expect(fruits).not.toHaveAttribute('aria-checked');
+      expect(fruits).toHaveAttribute('data-indeterminate');
+      expect(
+        (getByRole('checkbox', { name: 'Fruits' }) as HTMLInputElement)
+          .indeterminate,
+      ).toBe(true);
+    });
+
     it('names a checkbox by textValue when the title is an element', () => {
       const { getByRole } = renderWithRoot(
         <Tree

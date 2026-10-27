@@ -87,7 +87,7 @@ Choose a different component when the interaction has another shape:
 - **`onClear`** `() => void` — Callback called when the clear button is pressed
 - **`actions`** `ReactNode` — Custom actions rendered inside the trigger, to the left of the built-in clear button and dropdown caret
 - **`onOpenChange`** `(isOpen: boolean) => void` — Callback called when the popover open state changes
-- **`treeData`** `CubeTreeNodeData[]` — Tree-shaped options. The popover shows a checkable `Tree` in place of the list, and `items` and `children` are not used. Tree mode is always multiple selection; see [Tree Options](#tree-options)
+- **`treeData`** `CubeTreeNodeData[]` — Tree-shaped options. The popover shows a checkable `Tree` in place of the list, and `items` and `children` are not used. Tree mode is always multiple selection, and the value is every fully checked key, parents included
 - **`expandedKeys`** `string[]` — Expanded nodes in tree mode (controlled). A search expands nodes on its own and restores these when it clears
 - **`defaultExpandedKeys`** `string[]` — Initially expanded nodes in tree mode (uncontrolled)
 - **`onExpand`** `(expandedKeys: string[]) => void` — Called when the user expands or collapses a node in tree mode, outside a search
@@ -281,7 +281,7 @@ For dynamic content, use the `items` prop with a render function. Virtualization
 
 ### Dynamic Sections Pattern
 
-For hierarchical data with sections, use the `items` prop with nested render functions. Each section contains a `children` array of items.
+For grouped options (sections), use the `items` prop with nested render functions. Each section contains a `children` array of items. Sections are one level of grouping; for a real tree, with parents that expand and check their children, see [Tree Options](#tree-options).
 
 ```jsx
 const categories = [
@@ -567,9 +567,11 @@ Pass `treeData` to pick from a tree. The popover shows a checkable [Tree](/docs/
 
 - **Value.** Tree mode is always multiple selection. `selectedKeys` is every fully checked key, parents included, in tree order. A parent key passed without its children checks its whole subtree.
 - **Cascade.** Checking a parent checks its children, and a parent with only some of them checked is half-checked. The cascade runs over the whole tree, so unchecking a node during a search keeps the nodes the search hides as they were.
-- **Search.** A node that matches keeps its whole subtree. The ancestors of deeper matches stay with only their matching branches, and open. This expansion belongs to the search: clearing it brings back the nodes the user had open. Nodes match on `textValue`, else on `title` when it is a string, else on `key`.
-- **Summary.** The default trigger summary lists the topmost checked nodes: "Design" rather than "Design, Dieter Rams, Susan Kare". `renderSummary` receives every checked key.
-- **Disabling.** Disable a node with its own `isDisabled` or `isCheckboxDisabled`; `disabledKeys` does not apply.
+- **Search.** A node that matches keeps its whole subtree. The ancestors of deeper matches stay with only their matching branches, and every node with a match below it opens. This expansion belongs to the search: clearing it brings back the nodes the user had open. Nodes match on `textValue`, else on `title` when it is a string, else on `key`.
+- **Summary.** The default trigger summary lists the topmost checked nodes: "Design" rather than "Design, Dieter Rams, Susan Kare". `renderSummary` receives every checked key, conducted over the tree and in tree order, as `onSelectionChange` reports them.
+- **Disabling.** Disable a node with its own `isDisabled` or `isCheckboxDisabled`; `disabledKeys` does not apply. A disabled node's key in the value still checks its subtree, and Enter or Space on a row whose checkbox is disabled does nothing.
+- **Expansion.** Uncontrolled expansion (`defaultExpandedKeys`) is kept while the picker is mounted, across opening and closing the popover.
+- **List-only props.** These apply to the flat list and have no effect with `treeData`: `items`, `children`, `disabledKeys`, `allowsCustomValue`, `showSelectAll`, `selectAllLabel`, `isCheckable`, `disallowEmptySelection`, `sortSelectedToTop`, `isReorderable`, `onReorder`, `onOptionClick`, `focusOnHover`, `listGap`, `listStyles`, `optionStyles`, `sectionStyles` and `headingStyles`.
 
 ```jsx
 const userGroups = [
@@ -720,7 +722,7 @@ With `treeData`, focus stays in the search input and the keys drive the active r
 - `aria-controls` - References the popover while it is open
 - `aria-describedby` - Associates help text and descriptions
 
-In tree mode, the search input is a `combobox` with `aria-haspopup="tree"`, `aria-controls` naming the tree, and `aria-activedescendant` naming the active row. Each row reports its level, position, expansion and `aria-checked` (`true`, `false` or `mixed`).
+In tree mode, the search input is a `combobox` with `aria-haspopup="tree"`, `aria-controls` naming the tree while it has rows, and `aria-activedescendant` naming the active row. Each row reports its level, position and expansion, and its checkbox reports checked, not checked or mixed. Nothing in the tree is a tab stop, so `Tab` moves from the search to the footer.
 
 ## Best Practices
 

@@ -320,15 +320,6 @@ function TreeNodeInner(props: TreeNodeProps) {
     [node.level, virtualOffset],
   );
 
-  // Only emit `aria-checked` when the tree is in checkable mode.
-  const ariaChecked: 'mixed' | 'true' | 'false' | undefined = isRowCheckable
-    ? isIndeterminate
-      ? 'mixed'
-      : isChecked
-        ? 'true'
-        : 'false'
-    : undefined;
-
   // ---- Compose row props ---------------------------------------------------
 
   // Merge react-aria + hover props but EXCLUDE `onKeyDown` from the
@@ -336,8 +327,10 @@ function TreeNodeInner(props: TreeNodeProps) {
   // must run first so our Shift+F10 / Space-checkbox shortcuts can
   // short-circuit the default react-aria behavior.
   const finalRowProps = {
+    // No `aria-checked` here: a `row` doesn't take it (axe aria-allowed-attr).
+    // The row's checkbox carries checked and mixed; the row has `checked` and
+    // `indeterminate` mods.
     ...mergeProps(rowProps, hoverProps),
-    'aria-checked': ariaChecked,
     onKeyDown: composedKeyDown,
     // Under an outside control (`isActive` set) no row is a tab stop, not
     // even one a click focused.
@@ -374,6 +367,9 @@ function TreeNodeInner(props: TreeNodeProps) {
         isIndeterminate={isIndeterminate}
         isDisabled={isDisabled || data.isCheckboxDisabled}
         aria-label={getTreeNodeText(data)}
+        // Under an outside control the tree has no tab stops at all, so Tab
+        // moves on from that control instead of into a row.
+        excludeFromTabOrder={isActive !== undefined}
         onChange={handleCheckboxChange}
       />
     </TreeNodeCheckboxWrapper>

@@ -10,6 +10,7 @@ import { Item } from '../../content/Item/Item';
 import {
   deriveCheckedSets,
   toggleCheckedKey,
+  toOrderedKeys,
 } from '../../content/Tree/checked-keys';
 import { getTreeRowId } from '../../content/Tree/rowId';
 import { Tree } from '../../content/Tree/Tree';
@@ -23,20 +24,19 @@ import {
 
 import type { Styles } from '@tenphi/tasty';
 import type { ReactNode, RefObject } from 'react';
-import type { TreeIndex } from '../../content/Tree/tree-index';
 import type { CubeTreeNodeData } from '../../content/Tree/types';
 
 type FilterFn = (textValue: string, inputValue: string) => boolean;
 
 export interface FilterTreeProps {
   treeData: CubeTreeNodeData[];
-  /** Checked keys over the whole tree. Parents are derived from children. */
+  /** The value: checked keys over the whole tree. A parent key checks its subtree. */
   checkedKeys: readonly string[];
   /** Every fully checked key, parents included, in tree order. */
   onCheckedKeysChange: (keys: string[]) => void;
-  expandedKeys?: string[];
-  defaultExpandedKeys?: string[];
-  onExpand?: (keys: string[]) => void;
+  /** The user's expansion. FilterPicker holds it, so it outlives the popover. */
+  expandedKeys: string[];
+  onExpand: (keys: string[]) => void;
   searchValue?: string;
   onSearchChange?: (value: string) => void;
   searchPlaceholder?: string;
@@ -77,8 +77,8 @@ const FOOTER_ROWS_STYLES: Styles = {
 
 /**
  * Keep the nodes that match, each with its whole subtree, and the ancestors
- * of deeper matches with only their matching branches. `expandKeys` are
- * those ancestors: kept for a descendant, so they open to show it.
+ * of deeper matches with only their matching branches. `expandKeys` are the
+ * nodes with a match below them, matching or not, so they open to show it.
  */
 function filterTreeData(
   nodes: CubeTreeNodeData[],
@@ -91,6 +91,12 @@ function filterTreeData(
   for (const node of nodes) {
     if (match(getTreeNodeText(node), query)) {
       kept.push(node);
+      if (
+        node.children &&
+        filterTreeData(node.children, query, match, expandKeys).nodes.length
+      ) {
+        expandKeys.push(node.key);
+      }
       continue;
     }
 
@@ -123,17 +129,6 @@ function getNavigableRows(
   return out;
 }
 
-/** The checked set as an array in tree order; keys the tree lacks go last. */
-function toOrderedKeys(index: TreeIndex, checked: Set<string>): string[] {
-  const ordered = [...index.byKey.keys()].filter((key) => checked.has(key));
-
-  for (const key of checked) {
-    if (!index.byKey.has(key)) ordered.push(key);
-  }
-
-  return ordered;
-}
-
 /**
  * FilterPicker's popover in tree mode: FilterListBox's header, search row
  * and footer around a checkable `Tree`.
@@ -149,7 +144,6 @@ export function FilterTree(props: FilterTreeProps) {
     checkedKeys,
     onCheckedKeysChange,
     expandedKeys,
-    defaultExpandedKeys,
     onExpand,
     searchValue: controlledSearchValue,
     onSearchChange,
@@ -184,8 +178,17 @@ export function FilterTree(props: FilterTreeProps) {
   const query = searchValue.trim();
   const isSearching = !!query && filter !== false;
 
+  // Expansion during a search is its own: it starts from the ancestors of
+  // the matches and resets with every edit of the query. Clearing the search
+  // brings back the expansion the user had, untouched.
+  const [searchExpansion, setSearchExpansion] = useState<{
+    query: string;
+    keys: string[];
+  } | null>(null);
+
   const setSearchValue = (value: string) => {
     if (controlledSearchValue === undefined) setInternalSearchValue(value);
+    setSearchExpansion(null);
     onSearchChange?.(value);
   };
 
@@ -204,22 +207,11 @@ export function FilterTree(props: FilterTreeProps) {
       )
     : { nodes: treeData, expandKeys: [] };
 
-  // Expansion during a search is its own: it starts from the ancestors of
-  // the matches and resets with every new query. Clearing the search brings
-  // back the expansion the user had, untouched.
-  const [internalExpandedKeys, setInternalExpandedKeys] = useState<string[]>(
-    defaultExpandedKeys ?? [],
-  );
-  const [searchExpansion, setSearchExpansion] = useState<{
-    query: string;
-    keys: string[];
-  } | null>(null);
-
   const expanded = isSearching
     ? searchExpansion?.query === query
       ? searchExpansion.keys
       : filtered.expandKeys
-    : (expandedKeys ?? internalExpandedKeys);
+    : expandedKeys;
   const expandedSet = new Set(expanded);
 
   const setExpanded = (keys: string[]) => {
@@ -227,8 +219,7 @@ export function FilterTree(props: FilterTreeProps) {
       setSearchExpansion({ query, keys });
       return;
     }
-    if (expandedKeys === undefined) setInternalExpandedKeys(keys);
-    onExpand?.(keys);
+    onExpand(keys);
   };
 
   const rows = getNavigableRows(filtered.nodes, expandedSet);
@@ -242,12 +233,22 @@ export function FilterTree(props: FilterTreeProps) {
       ? storedActiveKey
       : (rowKeys.find((key) => checked.has(key)) ?? rowKeys[0] ?? null);
 
-  const toggle = (key: string) => {
+  // Whether the node could be toggled: one with its checkbox disabled or
+  // opted out stays as it is.
+  const toggle = (key: string): boolean => {
     const next = toggleCheckedKey(index, checked, key);
-    if (!next) return;
+    if (!next) return false;
     onCheckedKeysChange(
       toOrderedKeys(index, deriveCheckedSets(treeData, index, next).checked),
     );
+    return true;
+  };
+
+  // Toggle the active row and keep it active, though the fallback above
+  // would move away from a row that is no longer checked.
+  const toggleActive = (key: string) => {
+    setActiveKey(key);
+    return toggle(key);
   };
 
   // A press on a row, its checkbox or its chevron moves DOM focus into the
@@ -307,7 +308,11 @@ export function FilterTree(props: FilterTreeProps) {
       return true;
     }
 
-    const parentKey = index.parentOf.get(row.key);
+    // The nearest ancestor the keyboard can reach; a disabled one is skipped.
+    let parentKey = index.parentOf.get(row.key);
+    while (parentKey != null && !rowKeys.includes(parentKey)) {
+      parentKey = index.parentOf.get(parentKey);
+    }
     if (parentKey == null) return false;
     moveActive(parentKey);
     return true;
@@ -346,13 +351,12 @@ export function FilterTree(props: FilterTreeProps) {
         case 'Enter':
           if (activeKey == null) break;
           e.preventDefault();
-          toggle(activeKey);
-          onCommit?.();
+          if (toggleActive(activeKey)) onCommit?.();
           break;
         case ' ':
           if (activeKey == null || searchValue) break;
           e.preventDefault();
-          toggle(activeKey);
+          toggleActive(activeKey);
           break;
         case 'Escape':
           if (searchValue) {
@@ -404,7 +408,7 @@ export function FilterTree(props: FilterTreeProps) {
           role="combobox"
           aria-expanded="true"
           aria-haspopup="tree"
-          aria-controls={treeId}
+          aria-controls={filtered.nodes.length ? treeId : undefined}
           aria-activedescendant={
             activeKey == null ? undefined : getTreeRowId(treeId, activeKey)
           }
@@ -426,7 +430,11 @@ export function FilterTree(props: FilterTreeProps) {
           </div>
         )}
       </SearchWrapperElement>
-      <FilterTreeListElement onFocus={refocusSearch}>
+      <FilterTreeListElement
+        // Only the tree's own focus goes back: an empty label may hold a
+        // control, such as Retry, that the keyboard has to reach.
+        onFocus={filtered.nodes.length ? refocusSearch : undefined}
+      >
         {filtered.nodes.length ? (
           <Tree
             id={treeId}
@@ -445,10 +453,7 @@ export function FilterTree(props: FilterTreeProps) {
             _activeKey={activeKey}
             onExpand={(keys) => setExpanded(keys.map(String))}
             onCheck={(_, info) => toggle(info.node.key)}
-            _onRowAction={(key) => {
-              setActiveKey(key);
-              toggle(key);
-            }}
+            _onRowAction={toggleActive}
           />
         ) : (
           <Item preset="t4" color="#dark-03" size={size} padding="(.5x - 1bw)">

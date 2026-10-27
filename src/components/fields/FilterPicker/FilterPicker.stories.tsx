@@ -341,7 +341,7 @@ const meta: Meta<typeof FilterPicker> = {
     treeData: {
       control: { type: null },
       description:
-        'Tree-shaped options. The popover shows a checkable Tree in place of the list; the value is every fully checked key, parents included',
+        'Tree-shaped options. The popover shows a checkable `Tree` in place of the list, and `items` and `children` are not used. Tree mode is always multiple selection, and the value is every fully checked key, parents included',
       table: {
         type: { summary: 'CubeTreeNodeData[]' },
       },
@@ -349,7 +349,7 @@ const meta: Meta<typeof FilterPicker> = {
     expandedKeys: {
       control: { type: null },
       description:
-        'Expanded nodes in tree mode (controlled). A search expands on its own and restores these when cleared',
+        'Expanded nodes in tree mode (controlled). A search expands nodes on its own and restores these when it clears',
       table: {
         type: { summary: 'string[]' },
       },
