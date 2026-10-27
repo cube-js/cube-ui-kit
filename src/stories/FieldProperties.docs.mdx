@@ -69,7 +69,7 @@ An input's style props (`width`, `height`, `flex*`, `gridArea`, `margin`, `inset
 
 A style prop wins over `fieldStyles` for the same key. `fieldStyles` keeps working for everything else, but it never makes the input fill the field. Field-level inputs take only these style props; restyle the input through `styles` and its part props (`inputStyles`, `triggerStyles`, …).
 
-A state map on a style prop resolves against the element it lands on, which is the wrapper on a labelled field. Use media, container or root states there, not the input's own states such as `focused`. `className`, `style`, `qa` and `ref` always stay on the input.
+A state map on a style prop resolves against the element it lands on, which is the wrapper on a labelled field. Use media, container or root states there, not the input's own states such as `focused`. `className`, `style`, `qa` and `ref` never move to the wrapper.
 
 Fields without labels no longer reserve an empty side or split label column. If a row should intentionally align with neighbouring side labels, add `fieldStyles={{ padding: '$full-label-width left' }}`. For a nameless legacy `Form.Item`, put that padding on the item's `styles` instead; it owns the wrapper. Remove deprecated `forceField` when migrating these rows.
 

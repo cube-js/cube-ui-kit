@@ -25,16 +25,16 @@ export const FIELD_LAYOUT_STYLES: readonly string[] = [
   ...DIMENSION_STYLES,
 ];
 
-/** Style props that size the wrapper across, so the input fills its width. */
-const FILL_WIDTH_STYLES = [
-  'width',
-  'inlineSize',
-  'flexBasis',
-  'flexGrow',
-  'flex',
-];
-/** Style props that size the wrapper down, so the input fills its height. */
-const FILL_HEIGHT_STYLES = ['height', 'blockSize'];
+/**
+ * Style props that size the wrapper across, so the input fills its width.
+ * `inlineSize` counts as `width`, below.
+ */
+const FILL_WIDTH_STYLES = ['width', 'flexBasis', 'flexGrow', 'flex'];
+/**
+ * Style props that size the wrapper down, so the input fills its height.
+ * `blockSize` counts as `height`, below.
+ */
+const FILL_HEIGHT_STYLES = ['height'];
 const FLEX_STYLES = ['flexBasis', 'flexGrow', 'flex'];
 
 /** Values that leave an element at its natural size. */
@@ -48,7 +48,7 @@ function isSizing(value: unknown) {
 /**
  * The wrapper's own `width` follows a logical size in the same CSS rule and
  * overrides it, so on the wrapper a logical size takes its physical name. A
- * physical one given as well wins.
+ * physical one given as well, `null` included, wins.
  */
 const PHYSICAL_SIZES = [
   ['inlineSize', 'width'],
@@ -133,12 +133,15 @@ export function splitFieldLayout(
   for (const [logical, physical] of PHYSICAL_SIZES) {
     if (!(logical in layoutStyles)) continue;
 
-    layoutStyles[physical] ??= layoutStyles[logical];
+    if (layoutStyles[physical] === undefined) {
+      layoutStyles[physical] = layoutStyles[logical];
+    }
+
     delete layoutStyles[logical];
   }
 
   const sizes = (names: string[]) =>
-    names.some((name) => isSizing(record[name]));
+    names.some((name) => isSizing(layoutStyles[name]));
   const fillWidth = sizes(FILL_WIDTH_STYLES);
   const fillHeight =
     sizes(FILL_HEIGHT_STYLES) || (fillHeightOnFlex && sizes(FLEX_STYLES));

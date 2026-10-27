@@ -903,6 +903,8 @@ describe('field prop names', () => {
   it.each(pickers)(
     '%s warns about the deprecated triggerTooltip',
     (_, element) => {
+      vi.mocked(useWarn).mockClear();
+
       renderWithRoot(cloneElement(element, { triggerTooltip: 'Old' }));
 
       expect(useWarn).toHaveBeenCalledWith(true, TRIGGER_TOOLTIP_WARNING);

@@ -55,11 +55,21 @@ describe('splitFieldLayout', () => {
     expect(
       splitFieldLayout({ label: 'Name', [logical]: '10x' }).field.fieldStyles,
     ).toEqual({ [physical]: '10x' });
-    // The physical one, given as well, wins.
+    // The physical one, given as well, wins: a reset too.
     expect(
       splitFieldLayout({ label: 'Name', [logical]: '10x', [physical]: '5x' })
         .field.fieldStyles,
     ).toEqual({ [physical]: '5x' });
+    expect(
+      splitFieldLayout({ label: 'Name', [logical]: '10x', [physical]: null })
+        .field.fieldStyles,
+    ).toEqual({ [physical]: null });
+  });
+
+  it('decides the fill on the size the wrapper gets', () => {
+    expect(
+      splitFieldLayout({ label: 'Name', width: 'auto', inlineSize: '10x' }),
+    ).toMatchObject({ field: { fieldProps: undefined }, fillWidth: false });
   });
 
   it('keeps a null reset for the wrapper', () => {
