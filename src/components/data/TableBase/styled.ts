@@ -73,9 +73,9 @@ const CELL_STYLES: Styles = {
    * — see `column-tint.ts`, which generates a `@own(tint=…)` branch per distinct
    * column colour and merges it in through `styles.Cell` / `styles.HeaderCell`.
    *
-   * The tint is pre-composed into the BASE rather than stacked as a second
-   * overlay, because `fill` has exactly two layers and the interaction paint
-   * needs the other one. That is what keeps hover, focus, selection and
+   * The tint is pre-composed into the BASE rather than mixed in as a second
+   * overlay, because `fill` mixes exactly two colors and the interaction paint
+   * is the other one. That is what keeps hover, focus, selection and
    * drop-target working over a tinted column instead of being displaced by it —
    * and it is why the row band has to reach the cell (`data-odd` is mirrored onto
    * body cells) rather than staying on the `<tr>`.
@@ -83,8 +83,8 @@ const CELL_STYLES: Styles = {
   '#cell-base': '#row-base',
   '#cell-text': '#row-text',
   fill: {
-    '': '#cell-base #row-overlay',
-    '@own(cell-selected)': '#cell-base #purple.10',
+    '': '#row-overlay $row-overlay-weight, #cell-base',
+    '@own(cell-selected)': '#purple 10%, #cell-base',
   },
   color: '#cell-text',
   opacity: '$dim',
@@ -182,7 +182,8 @@ export const TableElement = tasty({
     '$column-rule': { '': '0px', 'column-dividers': '1bw' },
     // Neutral defaults so a cell rendered outside a row still paints sanely.
     '#row-base': '#surface',
-    '#row-overlay': '#clear',
+    '#row-overlay': '#surface-text',
+    '$row-overlay-weight': '0%',
     '#row-text': '#surface-text',
     // The cell-level pair defaults to the row's, and a tinted column overrides
     // its own — see `CELL_STYLES`. Declared here too so the chain has a root even
@@ -326,7 +327,7 @@ export const TableElement = tasty({
       // Header rows never carry interaction paint; neutralise the inherited
       // tokens so nothing can leak in from a row above.
       '#row-base': '#surface-2',
-      '#row-overlay': '#clear',
+      '$row-overlay-weight': '0%',
       '#row-text': '#dark-03',
       $dim: 1,
     },
@@ -364,9 +365,9 @@ export const TableElement = tasty({
       border: '1bw #border bottom, $column-divider #border right',
       zIndex: { '': 'auto', '@own(pin=start | pin=end)': 3 },
       fill: {
-        '': '#cell-base #row-overlay',
+        '': '#row-overlay $row-overlay-weight, #cell-base',
         '(@own(sortable) & @own(:hover)) | @own(menu-open)':
-          '#cell-base #surface-text.04',
+          '#surface-text 4%, #cell-base',
       },
       // `pointer` wins on a sortable header: sorting is the primary action, and a
       // native drag needs movement while a click does not, so both still work.
@@ -775,7 +776,7 @@ export const TableElement = tasty({
        * responsibility can change without enumerating their combinations.
        *
        *   1. `odd` and `pinned` choose the opaque `#row-base`.
-       *   2. Interaction states choose `#row-overlay`.
+       *   2. Interaction states choose `#row-overlay` and its weight.
        *   3. `dimmed` and `disabled` choose `#row-text`; `dimmed` drives `$dim`.
        * ────────────────────────────────────────────────────────────────── */
       '#row-base': {
@@ -784,15 +785,22 @@ export const TableElement = tasty({
         // Opaque and distinct, because scrolling rows pass underneath it.
         '@own(pinned)': '#surface-3',
       },
+      // The overlay is an opaque color mixed into the base at a weight, so a
+      // cell paints one `background-color` that contrast checkers can read.
       '#row-overlay': {
-        '': '#surface-text.0',
-        '@own(:hover)': '#surface-text.04',
-        '@own(focused) | @own(:focus-visible)': '#surface-text.06',
-        '@own(selected)': '#surface-text.09',
+        '': '#surface-text',
+        '@own(drop-target)': '#purple',
+        '@own(disabled)': '#surface-text',
+      },
+      '$row-overlay-weight': {
+        '': '0%',
+        '@own(:hover)': '4%',
+        '@own(focused) | @own(:focus-visible)': '6%',
+        '@own(selected)': '9%',
         '@own(selected) & (@own(:hover) | @own(focused) | @own(:focus-visible))':
-          '#surface-text.12',
-        '@own(drop-target)': '#purple.10',
-        '@own(disabled)': '#surface-text.02',
+          '12%',
+        '@own(drop-target)': '10%',
+        '@own(disabled)': '2%',
       },
       '#row-text': {
         '': '#surface-text',
@@ -888,7 +896,7 @@ export const TableElement = tasty({
       boxSizing: 'border-box',
       height: '($row-height + 1bw)',
       padding: 0,
-      fill: '#row-base #row-overlay',
+      fill: '#row-overlay $row-overlay-weight, #row-base',
       opacity: '$dim',
       border: {
         '': '1bw #border bottom',
@@ -901,7 +909,7 @@ export const TableElement = tasty({
      * The single full-span cell that carries the empty / no-results / error
      * content.
      *
-     * Deliberately NOT a `Cell`: a `Cell` paints `#row-base`/`#row-overlay`, so
+     * Deliberately NOT a `Cell`: a `Cell` paints the row's base and overlay, so
      * the state content picked up the row's banding and hover fill and lit up
      * under the cursor as though it were a row of data to click. It is not a
      * row, so it does not read the row's paint tokens at all.
@@ -968,7 +976,7 @@ export const TableElement = tasty({
       $: '> Scroller > Table > Foot >',
       position: 'relative',
       '#row-base': '#surface-2',
-      '#row-overlay': '#clear',
+      '$row-overlay-weight': '0%',
       '#row-text': '#surface-text',
       $dim: 1,
     },

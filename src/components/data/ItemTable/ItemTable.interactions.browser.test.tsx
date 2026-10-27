@@ -152,7 +152,7 @@ describe('ItemTable row focus appearance', () => {
         );
         await hover(screen.getByRole('button', { name: 'Before' }));
         const paint = (key: string) =>
-          getComputedStyle(cell(key, 'name')).backgroundImage;
+          getComputedStyle(cell(key, 'name')).backgroundColor;
         const rest = [paint('r0'), paint('r1')];
         // Prime the native keyboard modality, including the selectable table
         // whose header checkbox takes the first Tab stop.

@@ -71,13 +71,11 @@ export const DEFAULT_PRIMARY_STYLES: Styles = {
     pressed: '#primary-accent-surface-border',
     disabled: '#clear',
   },
-  // All states share the same `#surface` base layer (opaque). Only the
-  // *overlay* varies between brand color, hover shade, and disabled chip.
-  // Keeping the layer shape identical (always two layers, same base, same
-  // gradient overlay slot) lets `background-color`, `background-image` and
-  // `--tasty-second-fill-color` all interpolate smoothly during the CSS
-  // transition — without it, the gradient overlay would snap on/off and the
-  // bg-color would briefly show through (the "surface flash" on form submit).
+  // Every state is one opaque `background-color`, like every other theme's
+  // fill (a mixed fill such as `'#surface-text 3%, #surface-2'` compiles to one
+  // too). A transition between any two of them, including a theme switch on
+  // form submit, interpolates that one property, so no layer snaps on or off
+  // and the surface never flashes through.
   //
   // The brand ramp `accent-surface` → `-2` → `-3` gives a monotonically
   // increasing contrast against `#surface` (cr ≈ 4.5 → 4.8 → 5.2 in light,
@@ -86,10 +84,10 @@ export const DEFAULT_PRIMARY_STYLES: Styles = {
   // scheme-symmetric chip (`accent-disabled-surface` cr ≈ 1.4 vs surface)
   // so the muted state stays identifiable as a brand color.
   fill: {
-    '': '#surface #primary-accent-surface',
-    hovered: '#surface #primary-accent-surface-2',
-    pressed: '#surface #primary-accent-surface-3',
-    disabled: '#surface #primary-accent-disabled-surface',
+    '': '#primary-accent-surface',
+    hovered: '#primary-accent-surface-2',
+    pressed: '#primary-accent-surface-3',
+    disabled: '#primary-accent-disabled-surface',
   },
   color: {
     '': '#white',
@@ -121,15 +119,13 @@ export const DEFAULT_OUTLINE_STYLES: Styles = mergeStyles(
       selected: '#primary-border',
       disabled: '#border',
     },
-    // Every state uses a two-layer fill: `#surface-2` (opaque base) + a tint
-    // overlay. Keeping the layer shape identical across non-selected, selected
-    // and disabled states lets the tint, base color, and gradient slot all
-    // interpolate smoothly during the CSS transition. Selected states paint the
-    // brand tint on top of `#surface-2` (slightly darker base than a
-    // body-composited single-layer `#primary-accent-surface.X` would be, but
-    // visually almost identical and free of the overlay-snap flash on click).
-    // Disabled paints the neutral `#disabled-surface` chip on top of the same
-    // base. When SELECTED it keeps the enabled selected chip instead and fades
+    // Every state mixes a tint into `#surface-2` (opaque base), as one
+    // `background-color`, so states transition smoothly. Selected states mix
+    // the brand tint into `#surface-2` (slightly darker than a translucent
+    // `#primary-accent-surface.X` over the body would be, but visually almost
+    // identical, and a solid color contrast checkers can read). Disabled
+    // paints the neutral `#disabled-surface` chip. When SELECTED it keeps the
+    // enabled selected chip instead and fades
     // only the LABEL, to `#accent-disabled-text` — so a disabled segmented
     // control still shows which option is active (CUB-3912) without the chip
     // changing weight at all. Every `selected & disabled` entry in this file
@@ -144,14 +140,15 @@ export const DEFAULT_OUTLINE_STYLES: Styles = mergeStyles(
     // chip from the neutral disabled tone at brand chroma fixed the weight but
     // read over-saturated next to the enabled selected chips it sits beside.
     fill: {
-      '': '#surface-2 #surface-text.0',
-      hovered: '#surface-2 #surface-text.03',
-      pressed: '#surface-2 #surface-text.09',
-      selected: '#surface-2 #primary-accent-surface.09',
-      'selected & (hovered | focused)': '#surface-2 #primary-accent-surface.12',
-      'selected & pressed': '#surface-2 #primary-accent-surface.18',
-      disabled: '#surface-2 #disabled-surface',
-      'selected & disabled': '#surface-2 #primary-accent-surface.09',
+      '': '#surface-2',
+      hovered: '#surface-text 3%, #surface-2',
+      pressed: '#surface-text 9%, #surface-2',
+      selected: '#primary-accent-surface 9%, #surface-2',
+      'selected & (hovered | focused)':
+        '#primary-accent-surface 12%, #surface-2',
+      'selected & pressed': '#primary-accent-surface 18%, #surface-2',
+      disabled: '#disabled-surface',
+      'selected & disabled': '#primary-accent-surface 9%, #surface-2',
     },
     color: {
       '': '#surface-text-soft',
@@ -172,14 +169,15 @@ export const DEFAULT_OUTLINE_2_STYLES: Styles = mergeStyles(
   DEFAULT_OUTLINE_STYLES,
   {
     fill: {
-      '': '#surface-3 #surface-text.0',
-      hovered: '#surface-3 #surface-text.03',
-      pressed: '#surface-3 #surface-text.09',
-      selected: '#surface-3 #primary-accent-surface.09',
-      'selected & (hovered | focused)': '#surface-3 #primary-accent-surface.12',
-      'selected & pressed': '#surface-3 #primary-accent-surface.15',
-      disabled: '#surface-3 #disabled-surface',
-      'selected & disabled': '#surface-3 #primary-accent-surface.09',
+      '': '#surface-3',
+      hovered: '#surface-text 3%, #surface-3',
+      pressed: '#surface-text 9%, #surface-3',
+      selected: '#primary-accent-surface 9%, #surface-3',
+      'selected & (hovered | focused)':
+        '#primary-accent-surface 12%, #surface-3',
+      'selected & pressed': '#primary-accent-surface 15%, #surface-3',
+      disabled: '#disabled-surface',
+      'selected & disabled': '#primary-accent-surface 9%, #surface-3',
     },
   },
 );
@@ -270,12 +268,12 @@ export const DANGER_PRIMARY_STYLES: Styles = {
     pressed: '#danger-accent-text',
     disabled: '#clear',
   },
-  // See `DEFAULT_PRIMARY_STYLES.fill` for the layer-shape + ramp rationale.
+  // See `DEFAULT_PRIMARY_STYLES.fill` for the ramp rationale.
   fill: {
-    '': '#surface #danger-accent-surface',
-    hovered: '#surface #danger-accent-surface-2',
-    pressed: '#surface #danger-accent-surface-3',
-    disabled: '#surface #danger-accent-disabled-surface',
+    '': '#danger-accent-surface',
+    hovered: '#danger-accent-surface-2',
+    pressed: '#danger-accent-surface-3',
+    disabled: '#danger-accent-disabled-surface',
   },
   color: {
     '': '#white',
@@ -299,14 +297,14 @@ export const DANGER_OUTLINE_STYLES: Styles = {
     disabled: '#border',
   },
   fill: {
-    '': '#surface-2 #danger-accent-surface.0',
-    hovered: '#surface-2 #danger-accent-surface.03',
-    pressed: '#surface-2 #danger-accent-surface.09',
-    selected: '#surface-2 #danger-accent-surface.09',
-    'selected & (hovered | focused)': '#surface-2 #danger-accent-surface.12',
-    'selected & pressed': '#surface-2 #danger-accent-surface.18',
-    disabled: '#surface-2 #disabled-surface',
-    'selected & disabled': '#surface-2 #danger-accent-surface.09',
+    '': '#surface-2',
+    hovered: '#danger-accent-surface 3%, #surface-2',
+    pressed: '#danger-accent-surface 9%, #surface-2',
+    selected: '#danger-accent-surface 9%, #surface-2',
+    'selected & (hovered | focused)': '#danger-accent-surface 12%, #surface-2',
+    'selected & pressed': '#danger-accent-surface 18%, #surface-2',
+    disabled: '#disabled-surface',
+    'selected & disabled': '#danger-accent-surface 9%, #surface-2',
   },
   color: {
     '': '#danger-accent-text-soft',
@@ -320,14 +318,15 @@ export const DANGER_OUTLINE_2_STYLES: Styles = mergeStyles(
   DANGER_OUTLINE_STYLES,
   {
     fill: {
-      '': '#surface-3 #danger-accent-surface.0',
-      hovered: '#surface-3 #danger-accent-surface.03',
-      pressed: '#surface-3 #danger-accent-surface.09',
-      selected: '#surface-3 #danger-accent-surface.09',
-      'selected & (hovered | focused)': '#surface-3 #danger-accent-surface.12',
-      'selected & pressed': '#surface-3 #danger-accent-surface.18',
-      disabled: '#surface-3 #disabled-surface',
-      'selected & disabled': '#surface-3 #danger-accent-surface.09',
+      '': '#surface-3',
+      hovered: '#danger-accent-surface 3%, #surface-3',
+      pressed: '#danger-accent-surface 9%, #surface-3',
+      selected: '#danger-accent-surface 9%, #surface-3',
+      'selected & (hovered | focused)':
+        '#danger-accent-surface 12%, #surface-3',
+      'selected & pressed': '#danger-accent-surface 18%, #surface-3',
+      disabled: '#disabled-surface',
+      'selected & disabled': '#danger-accent-surface 9%, #surface-3',
     },
   },
 );
@@ -407,12 +406,12 @@ export const SUCCESS_PRIMARY_STYLES: Styles = {
     pressed: '#success-accent-text',
     disabled: '#clear',
   },
-  // See `DEFAULT_PRIMARY_STYLES.fill` for the layer-shape + ramp rationale.
+  // See `DEFAULT_PRIMARY_STYLES.fill` for the ramp rationale.
   fill: {
-    '': '#surface #success-accent-surface',
-    hovered: '#surface #success-accent-surface-2',
-    pressed: '#surface #success-accent-surface-3',
-    disabled: '#surface #success-accent-disabled-surface',
+    '': '#success-accent-surface',
+    hovered: '#success-accent-surface-2',
+    pressed: '#success-accent-surface-3',
+    disabled: '#success-accent-disabled-surface',
   },
   color: {
     '': '#white',
@@ -432,14 +431,14 @@ export const SUCCESS_OUTLINE_STYLES: Styles = {
     disabled: '#border',
   },
   fill: {
-    '': '#surface-2 #success-accent-surface.0',
-    hovered: '#surface-2 #success-accent-surface.03',
-    pressed: '#surface-2 #success-accent-surface.09',
-    selected: '#surface-2 #success-accent-surface.09',
-    'selected & (hovered | focused)': '#surface-2 #success-accent-surface.12',
-    'selected & pressed': '#surface-2 #success-accent-surface.18',
-    disabled: '#surface-2 #disabled-surface',
-    'selected & disabled': '#surface-2 #success-accent-surface.09',
+    '': '#surface-2',
+    hovered: '#success-accent-surface 3%, #surface-2',
+    pressed: '#success-accent-surface 9%, #surface-2',
+    selected: '#success-accent-surface 9%, #surface-2',
+    'selected & (hovered | focused)': '#success-accent-surface 12%, #surface-2',
+    'selected & pressed': '#success-accent-surface 18%, #surface-2',
+    disabled: '#disabled-surface',
+    'selected & disabled': '#success-accent-surface 9%, #surface-2',
   },
   color: {
     '': '#success-accent-text-soft',
@@ -453,14 +452,15 @@ export const SUCCESS_OUTLINE_2_STYLES: Styles = mergeStyles(
   SUCCESS_OUTLINE_STYLES,
   {
     fill: {
-      '': '#surface-3 #success-accent-surface.0',
-      hovered: '#surface-3 #success-accent-surface.03',
-      pressed: '#surface-3 #success-accent-surface.09',
-      selected: '#surface-3 #success-accent-surface.09',
-      'selected & (hovered | focused)': '#surface-3 #success-accent-surface.12',
-      'selected & pressed': '#surface-3 #success-accent-surface.18',
-      disabled: '#surface-3 #disabled-surface',
-      'selected & disabled': '#surface-3 #success-accent-surface.09',
+      '': '#surface-3',
+      hovered: '#success-accent-surface 3%, #surface-3',
+      pressed: '#success-accent-surface 9%, #surface-3',
+      selected: '#success-accent-surface 9%, #surface-3',
+      'selected & (hovered | focused)':
+        '#success-accent-surface 12%, #surface-3',
+      'selected & pressed': '#success-accent-surface 18%, #surface-3',
+      disabled: '#disabled-surface',
+      'selected & disabled': '#success-accent-surface 9%, #surface-3',
     },
   },
 );
@@ -538,12 +538,12 @@ export const WARNING_PRIMARY_STYLES: Styles = {
     pressed: '#warning-accent-text',
     disabled: '#clear',
   },
-  // See `DEFAULT_PRIMARY_STYLES.fill` for the layer-shape + ramp rationale.
+  // See `DEFAULT_PRIMARY_STYLES.fill` for the ramp rationale.
   fill: {
-    '': '#surface #warning-accent-surface',
-    hovered: '#surface #warning-accent-surface-2',
-    pressed: '#surface #warning-accent-surface-3',
-    disabled: '#surface #warning-accent-disabled-surface',
+    '': '#warning-accent-surface',
+    hovered: '#warning-accent-surface-2',
+    pressed: '#warning-accent-surface-3',
+    disabled: '#warning-accent-disabled-surface',
   },
   color: {
     '': '#white',
@@ -563,14 +563,14 @@ export const WARNING_OUTLINE_STYLES: Styles = {
     disabled: '#border',
   },
   fill: {
-    '': '#surface-2 #warning-accent-surface.0',
-    hovered: '#surface-2 #warning-accent-surface.03',
-    pressed: '#surface-2 #warning-accent-surface.09',
-    selected: '#surface-2 #warning-accent-surface.09',
-    'selected & (hovered | focused)': '#surface-2 #warning-accent-surface.12',
-    'selected & pressed': '#surface-2 #warning-accent-surface.18',
-    disabled: '#surface-2 #disabled-surface',
-    'selected & disabled': '#surface-2 #warning-accent-surface.09',
+    '': '#surface-2',
+    hovered: '#warning-accent-surface 3%, #surface-2',
+    pressed: '#warning-accent-surface 9%, #surface-2',
+    selected: '#warning-accent-surface 9%, #surface-2',
+    'selected & (hovered | focused)': '#warning-accent-surface 12%, #surface-2',
+    'selected & pressed': '#warning-accent-surface 18%, #surface-2',
+    disabled: '#disabled-surface',
+    'selected & disabled': '#warning-accent-surface 9%, #surface-2',
   },
   color: {
     '': '#warning-accent-text-soft',
@@ -584,14 +584,15 @@ export const WARNING_OUTLINE_2_STYLES: Styles = mergeStyles(
   WARNING_OUTLINE_STYLES,
   {
     fill: {
-      '': '#surface-3 #warning-accent-surface.0',
-      hovered: '#surface-3 #warning-accent-surface.03',
-      pressed: '#surface-3 #warning-accent-surface.09',
-      selected: '#surface-3 #warning-accent-surface.09',
-      'selected & (hovered | focused)': '#surface-3 #warning-accent-surface.12',
-      'selected & pressed': '#surface-3 #warning-accent-surface.18',
-      disabled: '#surface-3 #disabled-surface',
-      'selected & disabled': '#surface-3 #warning-accent-surface.09',
+      '': '#surface-3',
+      hovered: '#warning-accent-surface 3%, #surface-3',
+      pressed: '#warning-accent-surface 9%, #surface-3',
+      selected: '#warning-accent-surface 9%, #surface-3',
+      'selected & (hovered | focused)':
+        '#warning-accent-surface 12%, #surface-3',
+      'selected & pressed': '#warning-accent-surface 18%, #surface-3',
+      disabled: '#disabled-surface',
+      'selected & disabled': '#warning-accent-surface 9%, #surface-3',
     },
   },
 );
@@ -669,12 +670,12 @@ export const NOTE_PRIMARY_STYLES: Styles = {
     pressed: '#note-accent-text',
     disabled: '#clear',
   },
-  // See `DEFAULT_PRIMARY_STYLES.fill` for the layer-shape + ramp rationale.
+  // See `DEFAULT_PRIMARY_STYLES.fill` for the ramp rationale.
   fill: {
-    '': '#surface #note-accent-surface',
-    hovered: '#surface #note-accent-surface-2',
-    pressed: '#surface #note-accent-surface-3',
-    disabled: '#surface #note-accent-disabled-surface',
+    '': '#note-accent-surface',
+    hovered: '#note-accent-surface-2',
+    pressed: '#note-accent-surface-3',
+    disabled: '#note-accent-disabled-surface',
   },
   color: {
     '': '#white',
@@ -694,14 +695,14 @@ export const NOTE_OUTLINE_STYLES: Styles = {
     disabled: '#border',
   },
   fill: {
-    '': '#surface-2 #note-accent-surface.0',
-    hovered: '#surface-2 #note-accent-surface.03',
-    pressed: '#surface-2 #note-accent-surface.09',
-    selected: '#surface-2 #note-accent-surface.09',
-    'selected & (hovered | focused)': '#surface-2 #note-accent-surface.12',
-    'selected & pressed': '#surface-2 #note-accent-surface.18',
-    disabled: '#surface-2 #disabled-surface',
-    'selected & disabled': '#surface-2 #note-accent-surface.09',
+    '': '#surface-2',
+    hovered: '#note-accent-surface 3%, #surface-2',
+    pressed: '#note-accent-surface 9%, #surface-2',
+    selected: '#note-accent-surface 9%, #surface-2',
+    'selected & (hovered | focused)': '#note-accent-surface 12%, #surface-2',
+    'selected & pressed': '#note-accent-surface 18%, #surface-2',
+    disabled: '#disabled-surface',
+    'selected & disabled': '#note-accent-surface 9%, #surface-2',
   },
   color: {
     '': '#note-accent-text-soft',
@@ -713,14 +714,14 @@ export const NOTE_OUTLINE_STYLES: Styles = {
 
 export const NOTE_OUTLINE_2_STYLES: Styles = mergeStyles(NOTE_OUTLINE_STYLES, {
   fill: {
-    '': '#surface-3 #note-accent-surface.0',
-    hovered: '#surface-3 #note-accent-surface.03',
-    pressed: '#surface-3 #note-accent-surface.09',
-    selected: '#surface-3 #note-accent-surface.09',
-    'selected & (hovered | focused)': '#surface-3 #note-accent-surface.12',
-    'selected & pressed': '#surface-3 #note-accent-surface.18',
-    disabled: '#surface-3 #disabled-surface',
-    'selected & disabled': '#surface-3 #note-accent-surface.09',
+    '': '#surface-3',
+    hovered: '#note-accent-surface 3%, #surface-3',
+    pressed: '#note-accent-surface 9%, #surface-3',
+    selected: '#note-accent-surface 9%, #surface-3',
+    'selected & (hovered | focused)': '#note-accent-surface 12%, #surface-3',
+    'selected & pressed': '#note-accent-surface 18%, #surface-3',
+    disabled: '#disabled-surface',
+    'selected & disabled': '#note-accent-surface 9%, #surface-3',
   },
 });
 
@@ -808,15 +809,14 @@ export const SPECIAL_PRIMARY_STYLES: Styles = {
     pressed: '#special-accent-surface-border',
     disabled: '#clear',
   },
-  // See `DEFAULT_PRIMARY_STYLES.fill` for the layer-shape + ramp rationale.
-  // The base layer is `#white` (matching the rest of the special theme's
-  // anchor) instead of `#surface`, but the same monotonic `-1`/`-2`/`-3`
-  // ramp gives the brand fill a visibly darker hover and pressed state.
+  // See `DEFAULT_PRIMARY_STYLES.fill` for the ramp rationale.
+  // The same monotonic `-1`/`-2`/`-3` ramp gives the brand fill a visibly
+  // darker hover and pressed state.
   fill: {
-    '': '#white #special-accent-surface',
-    hovered: '#white #special-accent-surface-2',
-    pressed: '#white #special-accent-surface-3',
-    disabled: '#white #special-accent-disabled-surface',
+    '': '#special-accent-surface',
+    hovered: '#special-accent-surface-2',
+    pressed: '#special-accent-surface-3',
+    disabled: '#special-accent-disabled-surface',
   },
   color: {
     '': '#white',
@@ -845,17 +845,17 @@ export const SPECIAL_OUTLINE_STYLES: Styles = mergeStyles(
       selected: '#white.2',
     },
     fill: {
-      '': '#special-surface #white.0',
-      hovered: '#special-surface #white.06',
-      pressed: '#special-surface #white.12',
-      selected: '#special-surface #white.18',
-      'selected & (hovered | focused)': '#special-surface #white.24',
-      'selected & pressed': '#special-surface #white.3',
-      disabled: '#special-surface #white.04',
+      '': '#special-surface',
+      hovered: '#white 6%, #special-surface',
+      pressed: '#white 12%, #special-surface',
+      selected: '#white 18%, #special-surface',
+      'selected & (hovered | focused)': '#white 24%, #special-surface',
+      'selected & pressed': '#white 30%, #special-surface',
+      disabled: '#white 4%, #special-surface',
       // Stays in the white-alpha register: the base here is a fixed dark tone.
       // Like the colored themes, a disabled SELECTED control keeps the chip it
       // has when enabled and fades only the label.
-      'selected & disabled': '#special-surface #white.18',
+      'selected & disabled': '#white 18%, #special-surface',
     },
     // Mirrors the colored-theme soft→opaque pattern (`*-accent-text-soft` →
     // `*-accent-text`) using white-alpha steps: default is slightly muted so
@@ -1293,17 +1293,14 @@ export const CURRENT_PRIMARY_STYLES: Styles = mergeStyles(
       '': '#current-fill.25',
       disabled: '#surface-text.2',
     },
-    // The resting entry carries a transparent second layer so every state has the
-    // same two-layer shape and the overlay interpolates instead of snapping in —
-    // the same pin `DEFAULT_PRIMARY_STYLES.fill` documents. Without it the resting
-    // rule emits no `background-image` at all, so hover has nothing to animate
-    // from.
+    // Every state is one `background-color`, so the overlay interpolates from
+    // the resting color instead of snapping in — see `DEFAULT_PRIMARY_STYLES.fill`.
     // A disabled chip can still hold focus (a tooltip Tab stop), and the overlay
     // there would read as live, so it stays on the resting layer.
     fill: {
-      '': '#current #black.0',
-      '(hovered | focused) & !disabled': '#current #black.08',
-      pressed: '#current #black.16',
+      '': '#current',
+      '(hovered | focused) & !disabled': '#black 8%, #current',
+      pressed: '#black 16%, #current',
     },
     // Disabled is expressed HERE and nowhere else, and that is the whole trick.
     // `fill` resolves `currentcolor` against this element's own `color`, so fading

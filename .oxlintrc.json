@@ -22,10 +22,7 @@
   "env": {
     "builtin": true
   },
-  "ignorePatterns": [
-    "*.js",
-    "*.d.ts"
-  ],
+  "ignorePatterns": ["*.js", "*.d.ts"],
   "rules": {
     "constructor-super": "error",
     "for-direction": "error",
@@ -113,6 +110,7 @@
     "tasty/prefer-state-negation": "error",
     "tasty/prefer-custom-property-syntax": "error",
     "tasty/prefer-hide": "error",
+    "tasty/prefer-fill-mix": "error",
     "tasty/no-raw-color-values": "error",
     "tasty/prefer-directional-shorthand": "error",
     "tasty/no-style-spread": "error",
@@ -138,10 +136,7 @@
       {
         "patterns": [
           {
-            "group": [
-              "**/icons",
-              "**/icons/index"
-            ],
+            "group": ["**/icons", "**/icons/index"],
             "message": "Import the icon's own file (`../../icons/CloseIcon`). The barrel re-exports 133 components, so importing it puts every one of them in the importer's dependency graph — which is what decides how much of the Storybook suite Chromatic has to re-snapshot when any single icon changes. See docs/rules/coding.md#imports."
           }
         ]
@@ -157,9 +152,7 @@
   },
   "overrides": [
     {
-      "files": [
-        "**/*.{js,jsx,ts,tsx,mjs,cjs}"
-      ],
+      "files": ["**/*.{js,jsx,ts,tsx,mjs,cjs}"],
       "rules": {
         "prefer-const": "off",
         "no-console": "off",
@@ -1312,42 +1305,26 @@
         "es2026": true,
         "commonjs": true
       },
-      "plugins": [
-        "react",
-        "import"
-      ]
+      "plugins": ["react", "import"]
     },
     {
-      "files": [
-        "**/*.{ts,tsx}"
-      ],
+      "files": ["**/*.{ts,tsx}"],
       "rules": {
         "no-unused-vars": "off",
         "no-empty-function": "off",
         "typescript/no-explicit-any": "off"
       },
-      "plugins": [
-        "typescript"
-      ]
+      "plugins": ["typescript"]
     },
     {
-      "files": [
-        "**/*.stories.tsx",
-        "**/storybook/**/*.tsx"
-      ],
+      "files": ["**/*.stories.tsx", "**/storybook/**/*.tsx"],
       "rules": {
         "react/no-unescaped-entities": "off"
       },
-      "plugins": [
-        "react"
-      ]
+      "plugins": ["react"]
     },
     {
-      "files": [
-        "**/*.test.ts",
-        "**/*.test.tsx",
-        "**/test/**/*.ts"
-      ],
+      "files": ["**/*.test.ts", "**/*.test.tsx", "**/test/**/*.ts"],
       "rules": {
         "no-unused-vars": "off"
       },
@@ -1356,25 +1333,17 @@
       }
     },
     {
-      "files": [
-        "**/*.ts",
-        "**/*.tsx"
-      ],
+      "files": ["**/*.ts", "**/*.tsx"],
       "rules": {
         "no-redeclare": "error",
         "react/exhaustive-deps": "off"
       },
-      "plugins": [
-        "react",
-        "typescript"
-      ]
+      "plugins": ["react", "typescript"]
     },
     {
       // Generator input for the differential-render prover, not consumer code.
       // Autofixing it would rewrite the very inputs that establish the registry.
-      "files": [
-        "**/eslint-plugin/fixtures.tsx"
-      ],
+      "files": ["**/eslint-plugin/fixtures.tsx"],
       "rules": {
         "cube-ui-kit/no-redundant-default-prop": "off"
       }
@@ -1384,11 +1353,7 @@
       // are render-equivalent today, but stripping `cols={12}` makes the test
       // assert whatever the default happens to be, so a later change to that
       // default passes instead of failing.
-      "files": [
-        "**/*.test.ts",
-        "**/*.test.tsx",
-        "**/*.test.jsx"
-      ],
+      "files": ["**/*.test.ts", "**/*.test.tsx", "**/*.test.jsx"],
       "rules": {
         "cube-ui-kit/no-redundant-default-prop": "off"
       }
@@ -1396,9 +1361,7 @@
     {
       // The package barrel exists to re-export the icon barrel — that is its
       // job, and it is the one place the wide import is correct.
-      "files": [
-        "src/index.ts"
-      ],
+      "files": ["src/index.ts"],
       "rules": {
         "no-restricted-imports": "off"
       }

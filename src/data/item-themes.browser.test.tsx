@@ -33,8 +33,9 @@ const STATES = Array.from({ length: 32 }, (_, bits) => ({
   disabled: Boolean(bits & 16),
 }));
 
-// The reference has one scalar fill and no state conditions. Checking both
-// background layers catches a wrong tint even when the opaque base is right.
+// The reference has one scalar fill and no state conditions. Every fill paints
+// one `background-color`; reading the image too catches a value that still
+// paints a second layer.
 const Reference = tasty({ styles: { transition: 'none' } });
 
 function background(element: Element) {

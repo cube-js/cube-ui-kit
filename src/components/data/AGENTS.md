@@ -29,7 +29,7 @@ Two constraints follow and must not be "simplified" away:
 
 Tasty sub-element state keys resolve against the **root**, not the element's DOM parent: inside `Cell: {}`, the key `hovered` compiles to `.t0.t0[data-hovered] […Cell]` — the _table_ hovered, not the row. A cell can therefore never react to its row's state through a state map.
 
-So `Row` publishes `#row-base`, `#row-overlay`, `#row-text` and `$dim`, and cells consume them (`fill: '#row-base #row-overlay'`). Custom properties inherit through the DOM and ignore selector context. Pinned cells overlay the scrolling ones and must be opaque, and this is what makes them match their row for free.
+So `Row` publishes `#row-base`, `#row-overlay`, `$row-overlay-weight`, `#row-text` and `$dim`, and cells consume them (`fill: '#row-overlay $row-overlay-weight, #row-base'`). Custom properties inherit through the DOM and ignore selector context. Pinned cells overlay the scrolling ones and must be opaque, and this is what makes them match their row for free.
 
 Use `@own(...)` for an element's own state.
 
@@ -44,7 +44,7 @@ Never spread `cellStyles` into `style`. A token there is an invalid inline value
 `styled.ts` keeps the row's base, interaction overlay and text/dimming independent, so changing one does not require enumerating combinations with the others:
 
 1. `odd` and `pinned` choose the opaque `#row-base`.
-2. Interaction states choose `#row-overlay`.
+2. Interaction states choose `#row-overlay`, an opaque color, and `$row-overlay-weight`, the share it is mixed into the base at.
 3. `dimmed` and `disabled` choose `#row-text`, while `dimmed` also drives `$dim`.
 
 Tasty preserves authored priority when values repeat; value uniqueness is not a requirement. See `src/data/AGENTS.md`.

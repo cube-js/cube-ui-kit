@@ -562,10 +562,9 @@ describe('DataTable column menu visibility', () => {
     await realInput.hover(away);
     await vi.waitFor(() => expect(opacity(slot)).toBe(0));
 
-    // `backgroundImage`, not `backgroundColor`: the two-colour `fill` form paints
-    // the base as the colour and the overlay as a gradient LAYER, so the
-    // interaction paint never touches `background-color` at all.
-    const restFill = getComputedStyle(cell).backgroundImage;
+    // The interaction paint is mixed into the base, so it shows up in
+    // `background-color`.
+    const restFill = getComputedStyle(cell).backgroundColor;
 
     await realInput.hover(cell);
     await realInput.click(screen.getByRole('button', { name: 'Column menu' }));
@@ -580,7 +579,7 @@ describe('DataTable column menu visibility', () => {
     expect(opacity(slot)).toBe(1);
     // And the cell keeps its hover fill, from `menu-open` in `HeaderCell.fill` —
     // an open popover hanging off an unlit column reads as detached from it.
-    expect(getComputedStyle(cell).backgroundImage).not.toBe(restFill);
+    expect(getComputedStyle(cell).backgroundColor).not.toBe(restFill);
   });
 });
 
@@ -742,14 +741,14 @@ describe('DataTable column colors', () => {
     await mount();
 
     const [even] = cellsOf('revenue');
-    const rest = getComputedStyle(even).backgroundImage;
+    const rest = getComputedStyle(even).backgroundColor;
 
     await realInput.hover(even);
     await vi.waitFor(() =>
-      // The tint is pre-composed into the cell's BASE, which leaves the second
-      // fill layer free for the interaction paint. Stacking the tint as an
+      // The tint is pre-composed into the cell's BASE, which leaves the mix's
+      // other color free for the interaction paint. Mixing the tint in as the
       // overlay instead would have displaced this.
-      expect(getComputedStyle(even).backgroundImage).not.toBe(rest),
+      expect(getComputedStyle(even).backgroundColor).not.toBe(rest),
     );
   });
 });
