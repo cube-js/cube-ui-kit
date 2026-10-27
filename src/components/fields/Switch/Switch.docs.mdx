@@ -28,6 +28,7 @@ A switch allows users to toggle between two states: on and off. It provides imme
 - **`isSelected`** `boolean` (default: `false`) — Whether the switch is selected (controlled)
 - **`defaultSelected`** `boolean` (default: `false`) — Whether the switch is selected by default (uncontrolled)
 - **`size`** `'small' | 'medium' | 'large'` (default: `medium`) — Switch size
+- **`tooltip`** `string | TooltipProviderProps` — Tooltip shown on hover over the switch and its inline label, including while disabled. A string, or `TooltipProvider` props such as `title` and `placement`. It also opens when the switch takes keyboard focus, and describes its input to screen readers. A disabled switch with a tooltip stays in the Tab order, marked `aria-disabled` rather than natively disabled, so the keyboard reaches the tooltip too, and a plain `<form>` submits it when it is on. The info badge next to a field label is `labelTooltip`
 - **`onChange`** — Callback fired when the switch value changes
 - **`onFocus`** — Callback fired when the switch receives focus
 - **`onBlur`** — Callback fired when the switch loses focus
@@ -125,6 +126,18 @@ Keep the label the same in both states. The switch announces its own on/off stat
 
 <Story of={SwitchStories.Disabled} />
 
+### With a Tooltip
+
+A disabled switch still shows its tooltip, which makes it a good place to say why it can't be changed. While it has a tooltip, it stays focusable and is marked `aria-disabled` instead of natively disabled, so keyboard users can read the reason too; `Space` and clicks still change nothing. Without a tooltip, a disabled switch is natively disabled and `Tab` skips it.
+
+```jsx
+<Switch isDisabled tooltip="Add a schedule to turn this on">
+  Run on schedule
+</Switch>
+```
+
+Prefer `tooltip` to wrapping the switch in `TooltipProvider`: while disabled, a switch takes no trigger props from a wrapper, so that tooltip never opens.
+
 ### Loading State
 
 <Story of={SwitchStories.Loading} />
@@ -137,9 +150,9 @@ Keep the label the same in both states. The switch announces its own on/off stat
 
 ### Keyboard Navigation
 
-- `Tab` - Moves focus to the switch
+- `Tab` - Moves focus to the switch. A disabled switch takes focus only while it has a `tooltip`, which then opens
 - `Space` - Toggles the switch state
-- `Enter` does not toggle the switch. Inside a form with a submit button, the browser submits the form instead.
+- `Enter` does not toggle the switch. Inside a form with a submit button, the browser submits the form instead, unless the switch is disabled.
 
 ### Screen Reader Support
 

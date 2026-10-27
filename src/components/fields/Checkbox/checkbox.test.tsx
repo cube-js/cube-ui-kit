@@ -302,6 +302,119 @@ describe('<Checkbox /> tooltip', () => {
     },
   );
 
+  // A disabled checkbox's tooltip is usually the reason it is disabled. A
+  // natively disabled input never takes focus, so only a mouse could read it.
+  describe('on a disabled checkbox', () => {
+    const CASES = [
+      [
+        'a standalone checkbox',
+        (props: { onChange?: () => void }) => (
+          <Checkbox isDisabled tooltip="Requires admin" {...props}>
+            Email
+          </Checkbox>
+        ),
+      ],
+      [
+        'a grouped checkbox',
+        (props: { onChange?: () => void }) => (
+          <CheckboxGroup aria-label="Notifications" {...props}>
+            <Checkbox isDisabled value="email" tooltip="Requires admin">
+              Email
+            </Checkbox>
+          </CheckboxGroup>
+        ),
+      ],
+      [
+        'a checkbox in a disabled group',
+        (props: { onChange?: () => void }) => (
+          <CheckboxGroup isDisabled aria-label="Notifications" {...props}>
+            <Checkbox value="email" tooltip="Requires admin">
+              Email
+            </Checkbox>
+          </CheckboxGroup>
+        ),
+      ],
+    ] as const;
+
+    it.each(CASES)(
+      'keeps %s focusable and opens its tooltip on focus',
+      async (_, render) => {
+        renderWithRoot(render({}));
+
+        await userEvent.tab();
+
+        const input = screen.getByRole('checkbox');
+
+        expect(input).toHaveFocus();
+        expect(input).not.toHaveAttribute('disabled');
+        expect(input).toHaveAttribute('aria-disabled', 'true');
+        // Its disabled styles, the cursor among them, key off this.
+        expect(input).toHaveAttribute('data-disabled');
+
+        const tooltip = await screen.findByRole('tooltip');
+
+        expect(tooltip).toHaveTextContent('Requires admin');
+        expect(input).toHaveAttribute('aria-describedby', tooltip.id);
+      },
+    );
+
+    it.each(CASES)('lets nothing toggle %s', async (_, render) => {
+      const onChange = vi.fn();
+
+      renderWithRoot(render({ onChange }));
+
+      const input = screen.getByRole('checkbox');
+
+      await userEvent.tab();
+      await userEvent.keyboard(' ');
+      await userEvent.click(input);
+      await userEvent.click(screen.getByText('Email'));
+
+      expect(onChange).not.toHaveBeenCalled();
+      // The box, not the input: jsdom undoes a cancelled click on a checkbox
+      // by toggling it once more, after React has already put it back, so
+      // the input reads checked there. A browser restores the state it saved
+      // (`Checkbox.browser.test.tsx`).
+      expect(
+        input.parentElement!.querySelector('[data-element="Input"]'),
+      ).not.toHaveAttribute('data-checked');
+    });
+
+    it('stays natively disabled without a tooltip', async () => {
+      renderWithRoot(
+        <>
+          <Checkbox isDisabled>Email</Checkbox>
+          <button type="button">After</button>
+        </>,
+      );
+
+      const input = screen.getByRole('checkbox');
+
+      expect(input).toBeDisabled();
+
+      await userEvent.tab();
+
+      expect(screen.getByRole('button', { name: 'After' })).toHaveFocus();
+    });
+
+    it('keeps it out of the Tab order with excludeFromTabOrder', async () => {
+      renderWithRoot(
+        <>
+          <Checkbox isDisabled excludeFromTabOrder tooltip="Requires admin">
+            Email
+          </Checkbox>
+          <button type="button">After</button>
+        </>,
+      );
+
+      expect(screen.getByRole('checkbox')).toHaveAttribute('tabindex', '-1');
+
+      await userEvent.tab();
+
+      expect(screen.getByRole('button', { name: 'After' })).toHaveFocus();
+    });
+  });
+
   it('keeps it apart from the field label badge', async () => {
     renderWithRoot(
       <Checkbox

@@ -14,7 +14,7 @@ import { FieldBaseProps } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
 import {
   getDisabledElementProps,
-  omitActivationEventProps,
+  getInertInputProps,
 } from '../../../utils/react/disabledProps';
 import { useFocus } from '../../../utils/react/interactions';
 import { extractStyles } from '../../../utils/styles';
@@ -36,7 +36,7 @@ import {
 import { useRadioProvider } from './context';
 import { RadioGroup } from './RadioGroup';
 
-import type { ChangeEvent, KeyboardEvent } from 'react';
+import type { KeyboardEvent } from 'react';
 import type { AriaRadioProps } from 'react-aria';
 import type { RadioGroupState } from 'react-stately';
 
@@ -209,15 +209,6 @@ function getRovingTabIndex(state: RadioGroupState, value: string) {
   return state.lastFocusedValue == null || state.lastFocusedValue === value
     ? 0
     : -1;
-}
-
-/**
- * React reports a click on an inert radio as a change: the browser checks it
- * before the click is cancelled. Kept as a handler rather than dropped, or
- * React would warn about a `checked` input without one.
- */
-function ignoreChange(event: ChangeEvent) {
-  event.stopPropagation();
 }
 
 /**
@@ -505,7 +496,7 @@ function Radio(props: CubeRadioProps, ref) {
   // not track its focus, so both are restored here; `RadioGroup` keeps the
   // arrow keys from selecting it.
   let getInputProps = (hasActiveTooltip: boolean) => {
-    let { isInert, inertProps } = getDisabledElementProps({
+    let { isInert } = getDisabledElementProps({
       isDisabled: isRadioDisabled,
       keepEvents: hasActiveTooltip,
       as: 'input',
@@ -513,20 +504,12 @@ function Radio(props: CubeRadioProps, ref) {
 
     if (!isInert) return inputProps;
 
-    return mergeProps(
-      {
-        ...omitActivationEventProps(inputProps),
-        disabled: false,
-        tabIndex: getRovingTabIndex(state, value),
-        onChange: ignoreChange,
-      },
-      {
-        onFocus: () => state.setLastFocusedValue(value),
-        onKeyDown: (event: KeyboardEvent<HTMLInputElement>) =>
-          leaveGroupOnTab(event, state.selectedValue),
-      },
-      inertProps,
-    );
+    return mergeProps(getInertInputProps(inputProps), {
+      tabIndex: getRovingTabIndex(state, value),
+      onFocus: () => state.setLastFocusedValue(value),
+      onKeyDown: (event: KeyboardEvent<HTMLInputElement>) =>
+        leaveGroupOnTab(event, state.selectedValue),
+    });
   };
 
   const mods = {
