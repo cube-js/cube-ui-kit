@@ -28,6 +28,10 @@ import { useToggleState } from 'react-stately';
 import { Icon } from '../../../icons/Icon';
 import { FieldBaseProps, ToggleSelectionProps } from '../../../shared';
 import { mergeProps, mergeRefs } from '../../../utils/react';
+import {
+  getDisabledElementProps,
+  getInertInputProps,
+} from '../../../utils/react/disabledProps';
 import { useFocus } from '../../../utils/react/interactions';
 import {
   castNullableIsSelected,
@@ -187,9 +191,10 @@ function Checkbox(
   let inputRef = useRef(null);
   let domRef = useFocusableRef(ref, inputRef);
 
-  // Triggered by the wrapper rather than the input, so a disabled checkbox —
-  // whose input ignores the pointer — still shows it.
-  let { renderWithTooltip } = useAutoTooltip({ tooltip, children: null });
+  let { renderWithTooltip, isTooltipActive } = useAutoTooltip({
+    tooltip,
+    children: null,
+  });
 
   const toggleState = useToggleState(props);
 
@@ -200,7 +205,7 @@ function Checkbox(
   // `aria-label` instead used to drop the inline text from the name and
   // replace the caller's own `aria-label`.
   let ariaProps = { ...props, form: undefined, children: children ?? label };
-  let { inputProps } = groupState
+  let { inputProps, isDisabled: isInputDisabled } = groupState
     ? useCheckboxGroupItem(
         {
           ...ariaProps,
@@ -216,6 +221,22 @@ function Checkbox(
         inputRef,
       )
     : useCheckbox(ariaProps, toggleState, inputRef);
+
+  // A disabled checkbox with a tooltip to show keeps its focus, as a disabled
+  // `Button` or `Radio` does: the tooltip is usually the reason it is disabled,
+  // and focus is how the keyboard opens it. It is `aria-disabled` and inert
+  // instead. React Aria's own result covers a disabled group too.
+  if (
+    getDisabledElementProps({
+      isDisabled: isInputDisabled,
+      keepEvents: isTooltipActive,
+      as: 'input',
+    }).isInert
+  ) {
+    inputProps = getInertInputProps(inputProps, {
+      excludeFromTabOrder: props.excludeFromTabOrder,
+    });
+  }
 
   // Decorative: the input already announces checked, unchecked and mixed.
   let markIcon = isIndeterminate ? (
@@ -287,6 +308,8 @@ function Checkbox(
           tooltipFocusProps,
         )}
         ref={inputRef}
+        // Not left to the native `disabled`, which an inert input drops.
+        mods={{ disabled: isInputDisabled }}
       />
       <CheckboxElement data-element="Input" mods={mods} styles={inputStyles}>
         {markIcon}
