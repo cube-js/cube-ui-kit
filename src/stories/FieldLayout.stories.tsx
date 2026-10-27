@@ -1,0 +1,66 @@
+import { Block } from '../components/Block';
+import { ListBox } from '../components/fields/ListBox/ListBox';
+import { TextArea } from '../components/fields/TextArea/TextArea';
+import { TextInput } from '../components/fields/TextInput/TextInput';
+import { Flex } from '../components/layout/Flex';
+import { Space } from '../components/layout/Space';
+
+import type { Meta, StoryObj } from '@storybook/react-vite';
+
+const meta: Meta = {
+  title: 'Getting Started/Field Layout',
+};
+
+export default meta;
+type Story = StoryObj;
+
+// The dashed frame shows the box the style props size.
+const FRAME_STYLES = { outline: '1bw dashed #dark-04', width: 'max 60x' };
+
+/**
+ * An input's style props size its outer element: the input when it is bare,
+ * the whole field when it has a label. A sized field lets its input fill it;
+ * `styles` sizes the input alone.
+ */
+export const FieldLayout: Story = {
+  render: () => (
+    <Space flow="column" gap="3x" width="max 60x">
+      <Block styles={FRAME_STYLES}>
+        <TextInput aria-label="Bare" placeholder="Bare" width="40x" />
+      </Block>
+      <Block styles={FRAME_STYLES}>
+        <TextInput label="Top label" width="40x" />
+      </Block>
+      <Block styles={FRAME_STYLES}>
+        <TextInput label="Side label" labelPosition="side" width="40x" />
+      </Block>
+      <Block styles={FRAME_STYLES}>
+        <TextInput label="Split label" labelPosition="split" width="40x" />
+      </Block>
+      <Block styles={FRAME_STYLES}>
+        <TextInput
+          label="Field 40x, input 20x"
+          width="40x"
+          styles={{ width: '20x' }}
+        />
+      </Block>
+      <Flex gap="2x" styles={FRAME_STYLES}>
+        <TextInput label="Grows" flexGrow={1} />
+        <TextInput
+          label="Grows, with an error"
+          flexGrow={1}
+          isInvalid
+          errorMessage="Required"
+        />
+        <TextArea label="Grows with the row" flexGrow={1} />
+      </Flex>
+      <Block styles={FRAME_STYLES}>
+        <ListBox label="Fills its 30x field" height="30x">
+          {Array.from({ length: 12 }, (_, index) => (
+            <ListBox.Item key={index}>{`Option ${index + 1}`}</ListBox.Item>
+          ))}
+        </ListBox>
+      </Block>
+    </Space>
+  ),
+};

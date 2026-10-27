@@ -66,7 +66,8 @@ Choose a different component when the interaction has another shape:
 - **`listBoxStyles`** `Styles` — Custom styles for the dropdown list container within the popover
 - **`popoverStyles`** `Styles` — Custom styles for the popover dialog that contains the FilterListBox
 - **`triggerStyles`** `Styles` — Custom styles for the trigger button element
-- **`triggerTooltip`** `string | TooltipProps` — Tooltip for the trigger button (separate from `labelTooltip`)
+- **`tooltip`** `string | TooltipProps` — Tooltip for the trigger button (separate from `labelTooltip`)
+- **`triggerTooltip`** `string | TooltipProps` — _(deprecated)_ Use `tooltip`.
 - **`triggerDescription`** `string` — Description for the trigger button (separate from field description)
 - **`prefix`** `ReactNode` — Content to show before the trigger button text
 - **`suffix`** `ReactNode` — Content to show after the trigger button text
@@ -168,11 +169,8 @@ Customizes the footer area when footer prop is provided.
 
 These properties allow direct style application without using the `styles` prop:
 
-- **Base:** `display`, `font`, `preset`, `hide`, `whiteSpace`, `opacity`, `transition`
 - **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `blockMargin`, `inlineMargin`, `inset`, `blockInset`, `inlineInset`, `position`, `scrollMargin`, `blockScrollMargin`, `inlineScrollMargin`, `scrollPadding`, `blockScrollPadding`, `inlineScrollPadding`
 - **Dimension:** `width`, `height`, `blockSize`, `inlineSize`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`
-- **Block:** `border`, `blockBorder`, `inlineBorder`, `radius`, `shadow`, `outline`
-- **Color:** `color`, `fill`, `fade`, `image`
 
 ### Modifiers
 

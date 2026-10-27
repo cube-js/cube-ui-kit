@@ -320,7 +320,7 @@ Supports all [Field properties](/docs/getting-started-field-properties--docs)
 ## Common Patterns
 
 - Use `baseProps` exclusion for design system props
-- Define whole-field sizing with `fieldStyles` in meta `args`; keep intentional control-only sizing on the control
+- Size a whole input field with style props (`width`) in meta `args`, and the control alone with `styles`; existing `fieldStyles` sizing still works
 - Create size/state matrix stories to show all variants
 - Use `Space` component for layout in template functions
 - Export type: `type Story = StoryObj<typeof meta>;`
