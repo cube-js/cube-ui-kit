@@ -62,6 +62,10 @@ export const TabsElement = tasty({
       // before the wrapper was introduced.
       // - horizontal placements: main-axis = wrapper width  (100%), cross-axis intrinsic (auto)
       // - vertical   placements: main-axis = wrapper height (100%), cross-axis intrinsic (auto / max-content for radio)
+      // `border-box` keeps the radio padding inside that 100%. Without a global
+      // border-box reset in the app, the pill would otherwise paint `1x` past
+      // the wrapper and into the gap before its sibling.
+      boxSizing: 'border-box',
       width: {
         '': '100%',
         'placement=left | placement=right': 'auto',
