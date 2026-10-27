@@ -174,6 +174,10 @@ describe('field layout geometry', () => {
 
     expect(rect(first).width).toBe(rect(fieldOf(first)).width);
     expect(rect(second).width).toBe(rect(fieldOf(second)).width);
+    // The row stretches the shorter fields; each keeps its input under its
+    // label, level with its neighbours'.
+    expect(rect(first).top).toBe(rect(second).top);
+    expect(rect(notes).top).toBe(rect(second).top);
     // Single-line boxes keep their height; the text area grows with the row.
     expect(rect(first).height).toBe(height);
     expect(rect(second).height).toBe(height);

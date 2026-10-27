@@ -38,9 +38,14 @@ const FieldElement = tasty({
       '': 'baseline stretch',
       'has-split': 'center',
     },
+    // A sized field that its row stretches keeps its rows packed at the top,
+    // so its input stays under its label, level with its neighbours'. Under
+    // `fill-height` the input's `1sf` row takes the height anyway.
     placeContent: {
       '': 'initial',
       'has-split': 'space-between',
+      'fill-width | fill-height': 'start normal',
+      '(fill-width | fill-height) & has-split': 'start space-between',
     },
     // An input's style props that size the field set `fill-width` /
     // `fill-height` (`splitFieldLayout`). Under `fill-height` the input's row
