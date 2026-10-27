@@ -1,13 +1,7 @@
 import { CollectionChildren, FocusableRefValue } from '@react-types/shared';
 import {
-  BASE_STYLES,
   BasePropsWithoutChildren,
-  BaseStyleProps,
-  COLOR_STYLES,
-  ColorStyleProps,
   filterBaseProps,
-  OUTER_STYLES,
-  OuterStyleProps,
   Styles,
   tasty,
 } from '@tenphi/tasty';
@@ -34,7 +28,7 @@ import { LoadingIcon } from '../../../icons/LoadingIcon';
 import { isTextOnly } from '../../../utils/react/isTextOnly';
 import { allowOverlayKeysToPropagate } from '../../../utils/react/overlayKeyPropagation';
 import { processSelectionArray } from '../../../utils/selection';
-import { extractStyles, mergeStyleLayers } from '../../../utils/styles';
+import { mergeStyleLayers } from '../../../utils/styles';
 import { CubeItemButtonProps, ItemAction, ItemButton } from '../../actions';
 import { CubeItemProps } from '../../content/Item';
 import { Text } from '../../content/Text';
@@ -49,6 +43,10 @@ import {
   useFieldProps,
   wrapWithField,
 } from '../../form';
+import {
+  FieldLayoutStyleProps,
+  splitFieldLayout,
+} from '../../form/field-layout';
 import { Dialog } from '../../overlays/Dialog/Dialog';
 import { DialogTrigger } from '../../overlays/Dialog/DialogTrigger';
 import {
@@ -79,9 +77,7 @@ export interface CubeFilterPickerProps<T>
     // `triggerTooltip`; the label's info badge is `labelTooltip`.
     Omit<CubeItemProps, 'children' | 'size' | 'tooltip'>,
     BasePropsWithoutChildren,
-    BaseStyleProps,
-    OuterStyleProps,
-    ColorStyleProps,
+    FieldLayoutStyleProps,
     FieldBaseProps<
       string | number | readonly (string | number)[] | null | undefined
     >,
@@ -224,8 +220,6 @@ export interface CubeFilterPickerProps<T>
   /** Called when the user expands or collapses a node in tree mode, outside a search. */
   onExpand?: (expandedKeys: string[]) => void;
 }
-
-const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
 
 /**
  * Tree mode's summary: the topmost checked nodes, since a checked parent
@@ -402,7 +396,9 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
   const sortSelectedToTopExplicit = sortSelectedToTopProp !== undefined;
   const sortSelectedToTop = sortSelectedToTopProp ?? (items ? true : false);
 
-  styles = extractStyles(otherProps, PROP_STYLES, styles);
+  const fieldLayout = splitFieldLayout(props);
+
+  styles = fieldLayout.styles;
 
   useWarn(isCheckable === false && selectionMode === 'single', {
     key: ['filterpicker-checkable-single-mode'],
@@ -1143,7 +1139,11 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
 
   return wrapWithField<Omit<CubeFilterPickerProps<T>, 'children'>>(
     filterPickerField,
-    { ...props, labelProps: mergeProps(labelProps, props.labelProps) },
+    {
+      ...props,
+      ...fieldLayout.field,
+      labelProps: mergeProps(labelProps, props.labelProps),
+    },
   );
 }) as unknown as (<T>(
   props: CubeFilterPickerProps<T> & { ref?: ForwardedRef<HTMLElement> },

@@ -1,19 +1,6 @@
 import { useObjectRef } from '@react-aria/utils';
 import { createFocusableRef } from '@react-spectrum/utils';
-import {
-  BASE_STYLES,
-  BaseProps,
-  BaseStyleProps,
-  BLOCK_STYLES,
-  BlockStyleProps,
-  COLOR_STYLES,
-  ColorStyleProps,
-  mergeStyles,
-  OUTER_STYLES,
-  OuterStyleProps,
-  Styles,
-  tasty,
-} from '@tenphi/tasty';
+import { BaseProps, mergeStyles, Styles, tasty } from '@tenphi/tasty';
 import {
   FocusEventHandler,
   forwardRef,
@@ -32,7 +19,6 @@ import {
   getInertInputProps,
 } from '../../../utils/react/disabledProps';
 import { useFocus } from '../../../utils/react/interactions';
-import { extractStyles } from '../../../utils/styles';
 import { useAutoTooltip } from '../../content/use-auto-tooltip';
 import {
   getValidationMods,
@@ -40,6 +26,10 @@ import {
   ValidationIndicator,
   wrapWithField,
 } from '../../form';
+import {
+  FieldLayoutStyleProps,
+  splitFieldLayout,
+} from '../../form/field-layout';
 import {
   mergeTooltipFocusProps,
   splitTooltipTriggerProps,
@@ -157,13 +147,6 @@ const InputWrapperElement = tasty({
   styles: INPUT_WRAPPER_STYLES,
 });
 
-const PROP_STYLES = [
-  ...BASE_STYLES,
-  ...OUTER_STYLES,
-  ...BLOCK_STYLES,
-  ...COLOR_STYLES,
-];
-
 export const DEFAULT_INPUT_STYLES: Styles = {
   recipe: 'reset input / input-autofill',
   placeSelf: 'stretch',
@@ -263,10 +246,7 @@ function preventPointerFocus(event: MouseEvent<HTMLElement>) {
 export interface CubeTextInputBaseProps
   extends
     BaseProps,
-    OuterStyleProps,
-    BlockStyleProps,
-    BaseStyleProps,
-    ColorStyleProps,
+    FieldLayoutStyleProps,
     Omit<
       AriaTextFieldProps<HTMLInputElement | HTMLTextAreaElement>,
       | 'validate'
@@ -403,7 +383,11 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
     ...otherProps
   } = props;
 
-  let styles = extractStyles(otherProps, PROP_STYLES);
+  // A text area grows with its flex line when bare, so it fills a field
+  // sized by flex props too.
+  const { styles, field } = splitFieldLayout(props, {
+    fillHeightOnFlex: !!multiLine,
+  });
   let type = otherProps.type;
 
   if (resize) {
@@ -592,6 +576,7 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
   // `tooltip` is the input's own, not the legacy spelling of `labelTooltip`.
   return wrapWithField(textField as ReactElement, {
     ...props,
+    ...field,
     tooltip: undefined,
     // A click on its label doesn't focus a natively disabled input either. The input keeps its
     // name through `aria-labelledby`.

@@ -1,14 +1,6 @@
 import { createFocusableRef, unwrapDOMRef } from '@react-spectrum/utils';
 import { useControlledState } from '@react-stately/utils';
-import {
-  BaseProps,
-  BlockStyleProps,
-  CONTAINER_STYLES,
-  ContainerStyleProps,
-  PositionStyleProps,
-  Styles,
-  tasty,
-} from '@tenphi/tasty';
+import { BaseProps, Styles, tasty } from '@tenphi/tasty';
 import {
   forwardRef,
   RefObject,
@@ -22,7 +14,7 @@ import { useEvent } from '../../../_internal/hooks/use-event';
 import { useI18n } from '../../../i18n';
 import { FieldBaseProps } from '../../../shared';
 import { mergeProps, useCombinedRefs } from '../../../utils/react';
-import { extractStyles } from '../../../utils/styles';
+import { mergeStyleLayers } from '../../../utils/styles';
 import { Action } from '../../actions';
 import {
   getValidationMods,
@@ -30,6 +22,10 @@ import {
   ValidationIndicator,
   wrapWithField,
 } from '../../form';
+import {
+  FieldLayoutStyleProps,
+  splitFieldLayout,
+} from '../../form/field-layout';
 
 import type { AriaLabelingProps, FocusableRefValue } from '@react-types/shared';
 import type { ChangeEvent } from 'react';
@@ -124,9 +120,7 @@ const FileInputElement = tasty(Action, {
 export interface CubeFileInputProps
   extends
     BaseProps,
-    PositionStyleProps,
-    ContainerStyleProps,
-    BlockStyleProps,
+    FieldLayoutStyleProps,
     Omit<AriaTextFieldProps, 'form' | 'name' | 'errorMessage'>,
     FieldBaseProps<string | null | undefined> {
   /**
@@ -182,7 +176,6 @@ function FileInput(allProps: CubeFileInputProps, ref) {
     inputProps,
     accept,
     form,
-    ...otherProps
   } = props;
 
   const [dragHover, setDragHover] = useState(false);
@@ -237,7 +230,7 @@ function FileInput(allProps: CubeFileInputProps, ref) {
     }
   });
 
-  let styles = extractStyles(otherProps, CONTAINER_STYLES);
+  const { styles, field } = splitFieldLayout(props);
 
   // The button is the control: the label points at the hidden native input so
   // that clicking it opens the file dialog, but the button is what takes focus.
@@ -278,7 +271,9 @@ function FileInput(allProps: CubeFileInputProps, ref) {
         .filter(Boolean)
         .join(' ')}
       aria-describedby={ariaDescribedBy}
-      styles={inputStyles}
+      // The button is the root, so `inputStyles` styles the same element and
+      // wins over `styles`, as `wrapperStyles` does on the date pickers.
+      styles={mergeStyleLayers(styles, inputStyles)}
       isDisabled={isDisabled}
       mods={{
         selected: !!fileName,
@@ -329,6 +324,7 @@ function FileInput(allProps: CubeFileInputProps, ref) {
 
   return wrapWithField(fileInput, {
     ...props,
+    ...field,
     labelProps: mergeProps(props.labelProps, { id: labelId }),
   });
 }

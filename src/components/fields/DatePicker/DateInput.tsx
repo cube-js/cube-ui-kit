@@ -1,11 +1,6 @@
 import { createCalendar } from '@internationalized/date';
 import { FocusableRef } from '@react-types/shared';
-import {
-  BaseProps,
-  CONTAINER_STYLES,
-  ContainerStyleProps,
-  Styles,
-} from '@tenphi/tasty';
+import { BaseProps, Styles } from '@tenphi/tasty';
 import { forwardRef, useRef } from 'react';
 import {
   AriaDateFieldProps,
@@ -17,8 +12,12 @@ import { useDateFieldState } from 'react-stately';
 
 import { FieldBaseProps } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
-import { extractStyles } from '../../../utils/styles';
+import { mergeStyleLayers } from '../../../utils/styles';
 import { useFieldProps, wrapWithField } from '../../form';
+import {
+  FieldLayoutStyleProps,
+  splitFieldLayout,
+} from '../../form/field-layout';
 
 import { DateInputBase } from './DateInputBase';
 import { DatePickerSegment } from './DatePickerSegment';
@@ -32,7 +31,7 @@ export interface CubeDateInputProps<T extends DateValue = DateValue>
   extends
     Omit<AriaDateFieldProps<T>, 'errorMessage' | 'form' | 'name'>,
     BaseProps,
-    ContainerStyleProps,
+    FieldLayoutStyleProps,
     FieldBaseProps<T | null | undefined> {
   wrapperStyles?: Styles;
   inputStyles?: Styles;
@@ -67,7 +66,7 @@ function DateInput<T extends DateValue>(
     useLocale: useLocaleProp,
   } = props;
 
-  let styles = extractStyles(props, CONTAINER_STYLES, wrapperStyles);
+  const { styles, field } = splitFieldLayout(props);
 
   let domRef = useRef<HTMLDivElement>(null);
 
@@ -99,7 +98,7 @@ function DateInput<T extends DateValue>(
       autoFocus={autoFocus}
       isInvalid={state.isInvalid}
       isValid={isValid}
-      styles={wrapperStyles}
+      styles={mergeStyleLayers(styles, wrapperStyles)}
       inputStyles={inputStyles}
     >
       {state.segments.map((segment, i) => (
@@ -117,6 +116,7 @@ function DateInput<T extends DateValue>(
 
   return wrapWithField(component, {
     ...props,
+    ...field,
     labelProps: mergeProps(props.labelProps, labelProps),
   });
 }

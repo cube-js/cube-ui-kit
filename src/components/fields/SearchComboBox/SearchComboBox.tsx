@@ -3,17 +3,7 @@ import {
   FocusableRef,
   Key,
 } from '@react-types/shared';
-import {
-  BASE_STYLES,
-  BasePropsWithoutChildren,
-  BaseStyleProps,
-  COLOR_STYLES,
-  ColorStyleProps,
-  OUTER_STYLES,
-  OuterStyleProps,
-  Styles,
-  tasty,
-} from '@tenphi/tasty';
+import { BasePropsWithoutChildren, Styles, tasty } from '@tenphi/tasty';
 import React, {
   cloneElement,
   ForwardedRef,
@@ -44,7 +34,6 @@ import { useCombinedRefs } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
 import { settleOverlayKey } from '../../../utils/react/overlayKeyPropagation';
 import { usePopoverSync } from '../../../utils/react/usePopoverSync';
-import { extractStyles } from '../../../utils/styles';
 import { CollectionItem as Item } from '../../CollectionItem';
 import {
   getValidationIcon,
@@ -53,6 +42,10 @@ import {
   wrapWithField,
 } from '../../form';
 import { asksForFieldChrome, withFieldChrome } from '../../form/field-chrome';
+import {
+  FieldLayoutStyleProps,
+  splitFieldLayout,
+} from '../../form/field-layout';
 import { getListBoxOptionId } from '../ListBox/optionId';
 import {
   filterCollectionNodes,
@@ -86,9 +79,7 @@ const InputElement = tasty({
 export interface CubeSearchComboBoxProps<T>
   extends
     BasePropsWithoutChildren,
-    BaseStyleProps,
-    OuterStyleProps,
-    ColorStyleProps,
+    FieldLayoutStyleProps,
     // SearchComboBox is not form-connected: it holds no persistent value, so
     // form-binding and form-validation props are excluded from the public API.
     Omit<
@@ -234,8 +225,6 @@ export interface CubeSearchComboBoxProps<T>
   /** Callback called when the popover open state changes */
   onOpenChange?: (isOpen: boolean) => void;
 }
-
-const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
 
 // ============================================================================
 // Hook: useDelayedFlag
@@ -433,7 +422,6 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
     onBlur,
     onKeyDown,
     disabledKeys,
-    ...otherProps
   } = props;
 
   // Generate a unique ID for this instance
@@ -457,7 +445,9 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
   // `shouldShowPopover` (results / delayed loading / empty-query state).
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 
-  styles = extractStyles(otherProps, PROP_STYLES, styles);
+  const fieldLayout = splitFieldLayout(props);
+
+  styles = fieldLayout.styles;
 
   inputRef = useCombinedRefs(inputRef);
   triggerRef = useCombinedRefs(triggerRef);
@@ -1080,7 +1070,7 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
 
   return wrapWithField<Omit<CubeSearchComboBoxProps<T>, 'children'>>(
     searchComboBoxField,
-    propsWithoutChildren,
+    { ...propsWithoutChildren, ...fieldLayout.field },
   );
 }) as unknown as (<T>(
   props: CubeSearchComboBoxProps<T> & { ref?: ForwardedRef<HTMLDivElement> },

@@ -1,6 +1,6 @@
 import { useFocusableRef } from '@react-spectrum/utils';
 import { FocusableRef, FocusableRefValue } from '@react-types/shared';
-import { OUTER_STYLES, tasty } from '@tenphi/tasty';
+import { tasty } from '@tenphi/tasty';
 import {
   ForwardedRef,
   forwardRef,
@@ -15,9 +15,9 @@ import { useNumberFormatter, useSlider } from 'react-aria';
 import { useSliderState } from 'react-stately';
 
 import { mergeProps } from '../../../utils/react';
-import { extractStyles } from '../../../utils/styles';
 import { Text } from '../../content/Text';
 import { getValidationMods, useFieldProps, wrapWithField } from '../../form';
+import { splitFieldLayout } from '../../form/field-layout';
 
 import { SliderControlsElement, SliderElement } from './elements';
 
@@ -91,7 +91,6 @@ function SliderBase(
     orientation: formOrientation,
     form,
     labelProps: userLabelProps,
-    ...otherProps
   } = props;
 
   let orientation = allProps.orientation || 'horizontal';
@@ -213,7 +212,9 @@ function SliderBase(
     [labelPosition, orientation, isInvalid, isValid],
   );
 
-  styles = extractStyles(otherProps, OUTER_STYLES, styles);
+  const fieldLayout = splitFieldLayout(props);
+
+  styles = fieldLayout.styles;
 
   const sliderField = (
     <SliderElement
@@ -240,6 +241,7 @@ function SliderBase(
 
   return wrapWithField(sliderField, {
     ...props,
+    ...fieldLayout.field,
     extra,
     labelProps: mergeProps(labelProps, userLabelProps),
   });

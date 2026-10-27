@@ -1,13 +1,7 @@
 import { CollectionChildren, FocusableRefValue } from '@react-types/shared';
 import {
-  BASE_STYLES,
   BasePropsWithoutChildren,
-  BaseStyleProps,
-  COLOR_STYLES,
-  ColorStyleProps,
   filterBaseProps,
-  OUTER_STYLES,
-  OuterStyleProps,
   Styles,
   tasty,
 } from '@tenphi/tasty';
@@ -36,7 +30,7 @@ import { LoadingIcon } from '../../../icons/LoadingIcon';
 import { isTextOnly } from '../../../utils/react/isTextOnly';
 import { allowOverlayKeysToPropagate } from '../../../utils/react/overlayKeyPropagation';
 import { processSelectionArray } from '../../../utils/selection';
-import { extractStyles, mergeStyleLayers } from '../../../utils/styles';
+import { mergeStyleLayers } from '../../../utils/styles';
 import { CubeItemButtonProps, ItemAction, ItemButton } from '../../actions';
 import { CubeItemProps } from '../../content/Item';
 import { Text } from '../../content/Text';
@@ -46,6 +40,10 @@ import {
   useFieldProps,
   wrapWithField,
 } from '../../form';
+import {
+  FieldLayoutStyleProps,
+  splitFieldLayout,
+} from '../../form/field-layout';
 import { Dialog } from '../../overlays/Dialog/Dialog';
 import { DialogTrigger } from '../../overlays/Dialog/DialogTrigger';
 import { CubeListBoxProps, ListBox } from '../ListBox/ListBox';
@@ -64,9 +62,7 @@ export interface CubePickerProps<T>
     // `triggerTooltip`; the label's info badge is `labelTooltip`.
     Omit<CubeItemProps, 'children' | 'size' | 'tooltip'>,
     BasePropsWithoutChildren,
-    BaseStyleProps,
-    OuterStyleProps,
-    ColorStyleProps,
+    FieldLayoutStyleProps,
     FieldBaseProps<
       string | number | readonly (string | number)[] | null | undefined
     >,
@@ -178,8 +174,6 @@ export interface CubePickerProps<T>
   /** Callback called when the popover open state changes */
   onOpenChange?: (isOpen: boolean) => void;
 }
-
-const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
 
 const PickerWrapper = tasty({
   qa: 'PickerWrapper',
@@ -307,7 +301,9 @@ export const Picker = forwardRef(function Picker<T extends object>(
     ...otherProps
   } = props;
 
-  styles = extractStyles(otherProps, PROP_STYLES, styles);
+  const fieldLayout = splitFieldLayout(props);
+
+  styles = fieldLayout.styles;
 
   // Warn if isCheckable is false in single selection mode
   useWarn(isCheckable === false && selectionMode === 'single', {
@@ -925,6 +921,7 @@ export const Picker = forwardRef(function Picker<T extends object>(
 
   return wrapWithField<Omit<CubePickerProps<T>, 'children'>>(pickerField, {
     ...props,
+    ...fieldLayout.field,
     labelProps: mergeProps(labelProps, props.labelProps),
   });
 }) as unknown as (<T>(

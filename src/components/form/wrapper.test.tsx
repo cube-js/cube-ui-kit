@@ -16,6 +16,7 @@ import { Checkbox } from '../fields/Checkbox/Checkbox';
 import { DatePicker } from '../fields/DatePicker/DatePicker';
 import { SearchComboBox } from '../fields/SearchComboBox/SearchComboBox';
 import { SearchInput } from '../fields/SearchInput/SearchInput';
+import { HueSlider } from '../fields/Slider/HueSlider';
 import { TagInput } from '../fields/TagInput/TagInput';
 import { TextInput } from '../fields/TextInput/TextInput';
 
@@ -28,6 +29,13 @@ import type { DOMRefValue, FocusableRefValue } from '@react-types/shared';
 import type { FieldBaseProps } from '../../shared/form';
 
 vi.mock('../../_internal/hooks/use-warn');
+
+// A DOM ref holds the element; a focusable or DOM handle unwraps to it.
+function elementOf(value: unknown) {
+  if (value instanceof HTMLElement) return value;
+
+  return (value as DOMRefValue | null)?.UNSAFE_getDOMNode() ?? null;
+}
 
 /**
  * A field renders its chrome when there is something to show, and only the
@@ -477,13 +485,6 @@ describe('field chrome without a label', () => {
  * a `labelRef` of its own.
  */
 describe('field refs', () => {
-  // A DOM ref holds the element; a focusable or DOM handle unwraps to it.
-  function elementOf(value: unknown) {
-    if (value instanceof HTMLElement) return value;
-
-    return (value as DOMRefValue | null)?.UNSAFE_getDOMNode() ?? null;
-  }
-
   it.each(FIELD_INPUTS)(
     '%s points its ref at the control with and without the chrome',
     (_, element) => {
@@ -596,6 +597,147 @@ describe('field refs', () => {
 
     expect(screen.getByTestId('custom')).toBeInTheDocument();
     expect(ref.current).toBeNull();
+  });
+});
+
+/**
+ * An input's style props place and size its outer element: the field wrapper
+ * when it renders, the control otherwise. `styles` stays on the control and
+ * `fieldStyles` on the wrapper, under the style props.
+ */
+describe('field layout style props', () => {
+  const inputs: typeof FIELD_INPUTS = [
+    // `TextInputMapper` takes no style props.
+    ...FIELD_INPUTS.filter(([name]) => name !== 'TextInputMapper'),
+    ['HueSlider', <HueSlider label="HueSlider" />],
+  ];
+
+  const WIDTH = 'calc(37 * var(--gap))';
+
+  // Every rendered element the test width reached.
+  function sized() {
+    return [...document.body.querySelectorAll<HTMLElement>('*')].filter(
+      (element) => getComputedStyle(element).width === WIDTH,
+    );
+  }
+
+  it.each(inputs)(
+    '%s sizes its field wrapper with a style prop',
+    (_, element) => {
+      renderWithRoot(cloneElement(element, { width: '37x' }));
+
+      const field = screen.getByTestId('Field');
+
+      expect(sized()).toEqual([field]);
+      expect(field).toHaveAttribute('data-fill-width');
+    },
+  );
+
+  it.each(inputs)(
+    '%s sizes the control with a style prop when bare',
+    (_, element) => {
+      const ref = createRef<unknown>();
+
+      renderWithRoot(
+        cloneElement(element, {
+          ref,
+          width: '37x',
+          label: undefined,
+          'aria-label': 'Billing',
+          isBare: true,
+        }),
+      );
+
+      expect(screen.queryByTestId('Field')).not.toBeInTheDocument();
+      expect(sized()).toEqual([elementOf(ref.current)]);
+    },
+  );
+
+  it.each(inputs)(
+    '%s keeps styles on the control in its field',
+    (_, element) => {
+      renderWithRoot(cloneElement(element, { styles: { width: '37x' } }));
+
+      const field = screen.getByTestId('Field');
+      const [control, ...others] = sized();
+
+      expect(others).toHaveLength(0);
+      expect(field).toContainElement(control);
+      expect(control).not.toBe(field);
+      expect(field).not.toHaveAttribute('data-fill-width');
+    },
+  );
+
+  it('sizes a grouped Checkbox itself, never its group', () => {
+    render(
+      <Checkbox.Group label="Group">
+        <Checkbox value="one" width="37x">
+          One
+        </Checkbox>
+      </Checkbox.Group>,
+    );
+
+    const [checkbox, ...others] = sized();
+
+    expect(others).toHaveLength(0);
+    expect(checkbox).toContainElement(screen.getByRole('checkbox'));
+    expect(screen.getByTestId('Field')).not.toHaveAttribute('data-fill-width');
+  });
+
+  it('puts a style prop over fieldStyles, and fieldStyles over fieldProps', () => {
+    render(
+      <TextInput
+        label="Name"
+        width="37x"
+        fieldStyles={{ width: '10x', height: '9x' }}
+        fieldProps={{ styles: { height: '8x' } }}
+      />,
+    );
+
+    const field = screen.getByTestId('Field');
+    const style = getComputedStyle(field);
+
+    expect(style.width).toBe(WIDTH);
+    expect(style.height).toBe('calc(9 * var(--gap))');
+    // Only style props fill: `fieldStyles` sizes the wrapper alone.
+    expect(field).not.toHaveAttribute('data-fill-height');
+  });
+
+  it('lets the control fill a field its style props size', () => {
+    render(<TextInput label="Name" height="20x" />);
+
+    const field = screen.getByTestId('Field');
+    const area = field.querySelector('[data-element="InputArea"]')!;
+
+    expect(field).toHaveAttribute('data-fill-height');
+    expect(field).not.toHaveAttribute('data-fill-width');
+    expect(getComputedStyle(area).display).toBe('grid');
+    expect(getComputedStyle(area).height).toBe('100%');
+  });
+
+  it('keeps the input area a block in a field sized by fieldStyles', () => {
+    render(<TextInput label="Name" fieldStyles={{ width: '37x' }} />);
+
+    const area = screen
+      .getByTestId('Field')
+      .querySelector('[data-element="InputArea"]')!;
+
+    expect(getComputedStyle(area).display).toBe('block');
+  });
+
+  it('adds fieldProps.mods to the mods the field computes', () => {
+    render(
+      <TextInput
+        label="Name"
+        labelPosition="side"
+        fieldProps={{ mods: { custom: true } }}
+      />,
+    );
+
+    const field = screen.getByTestId('Field');
+
+    expect(field).toHaveAttribute('data-has-sider');
+    expect(field).toHaveAttribute('data-custom');
   });
 });
 

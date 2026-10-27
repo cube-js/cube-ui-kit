@@ -1,12 +1,4 @@
-import {
-  BaseProps,
-  BLOCK_STYLES,
-  BlockStyleProps,
-  OUTER_STYLES,
-  OuterStyleProps,
-  Styles,
-  tasty,
-} from '@tenphi/tasty';
+import { BaseProps, Styles, tasty } from '@tenphi/tasty';
 import {
   ForwardedRef,
   forwardRef,
@@ -21,7 +13,6 @@ import { Placement } from 'react-aria';
 import { useEvent } from '../../../_internal';
 import { useI18n } from '../../../i18n';
 import { FieldBaseProps } from '../../../shared';
-import { extractStyles } from '../../../utils/styles';
 import { ItemButton } from '../../actions';
 import { CubeItemProps } from '../../content/Item';
 import { Text } from '../../content/Text';
@@ -31,6 +22,10 @@ import {
   useFieldProps,
   wrapWithField,
 } from '../../form';
+import {
+  FieldLayoutStyleProps,
+  splitFieldLayout,
+} from '../../form/field-layout';
 import { Dialog } from '../../overlays/Dialog/Dialog';
 import { DialogTrigger } from '../../overlays/Dialog/DialogTrigger';
 import { ColorSpace } from '../color/channels';
@@ -76,8 +71,7 @@ const ColorPickerWrapper = tasty({
 export interface CubeColorPickerProps
   extends
     BaseProps,
-    OuterStyleProps,
-    BlockStyleProps,
+    FieldLayoutStyleProps,
     FieldBaseProps<string | null | undefined> {
   /** The selected color, as a color string. */
   value?: string | null;
@@ -189,7 +183,7 @@ export const ColorPicker = forwardRef(function ColorPicker(
     'aria-describedby': ariaDescribedBy,
   } = props;
 
-  const styles = extractStyles(props, [...OUTER_STYLES, ...BLOCK_STYLES]);
+  const { styles, field } = splitFieldLayout(props);
 
   /**
    * Loading locks the trigger, but the popover can outlive that — it may be
@@ -340,7 +334,7 @@ export const ColorPicker = forwardRef(function ColorPicker(
     </ColorPickerWrapper>
   );
 
-  return wrapWithField(pickerField, props);
+  return wrapWithField(pickerField, { ...props, ...field });
 });
 
 /**

@@ -1,10 +1,5 @@
 import { FocusableRef } from '@react-types/shared';
-import {
-  BaseProps,
-  CONTAINER_STYLES,
-  ContainerStyleProps,
-  Styles,
-} from '@tenphi/tasty';
+import { BaseProps, Styles } from '@tenphi/tasty';
 import { forwardRef, useRef } from 'react';
 import {
   AriaTimeFieldProps,
@@ -16,8 +11,12 @@ import { useTimeFieldState } from 'react-stately';
 
 import { FieldBaseProps } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
-import { extractStyles } from '../../../utils/styles';
+import { mergeStyleLayers } from '../../../utils/styles';
 import { useFieldProps, wrapWithField } from '../../form';
+import {
+  FieldLayoutStyleProps,
+  splitFieldLayout,
+} from '../../form/field-layout';
 
 import { DateInputBase } from './DateInputBase';
 import { DatePickerSegment } from './DatePickerSegment';
@@ -32,7 +31,7 @@ export interface CubeTimeInputProps<T extends TimeValue = TimeValue>
       'errorMessage' | 'form' | 'name' | 'value' | 'onChange' | 'granularity'
     >,
     BaseProps,
-    ContainerStyleProps,
+    FieldLayoutStyleProps,
     FieldBaseProps<TimeValue | null | undefined> {
   wrapperStyles?: Styles;
   inputStyles?: Styles;
@@ -68,7 +67,7 @@ function TimeInput<T extends TimeValue>(
   });
   props = Object.assign({}, DEFAULT_TIME_PROPS, props);
 
-  let styles = extractStyles(props, CONTAINER_STYLES);
+  const { styles, field } = splitFieldLayout(props);
 
   let {
     qa,
@@ -111,7 +110,7 @@ function TimeInput<T extends TimeValue>(
       isReadOnly={isReadOnly}
       autoFocus={autoFocus}
       inputStyles={inputStyles}
-      styles={wrapperStyles}
+      styles={mergeStyleLayers(styles, wrapperStyles)}
       isInvalid={isInvalid}
       isValid={isValid}
     >
@@ -130,6 +129,7 @@ function TimeInput<T extends TimeValue>(
 
   return wrapWithField(timeInput, {
     ...props,
+    ...field,
     labelProps: mergeProps(labelProps, userLabelProps),
   });
 }

@@ -1068,7 +1068,6 @@ export const VirtualizedList: StoryObj<CubeListBoxProps<any>>['render'] = (
         label="Virtualized List with Mixed Content"
         selectedKey={selected}
         height="300px"
-        overflow="auto"
         onSelectionChange={setSelected}
       >
         {(item: any) => (

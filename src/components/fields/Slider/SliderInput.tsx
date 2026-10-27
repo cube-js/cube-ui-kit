@@ -1,6 +1,10 @@
 import { CubeNumberInputProps, NumberInput } from '../../../';
 
+import type { Styles } from '@tenphi/tasty';
 import type { SliderState } from 'react-stately';
+
+// On the input itself: style props now place and size the field only.
+const INPUT_STYLES: Styles = { textAlign: 'center' };
 
 export interface RangeInputProps extends CubeNumberInputProps {
   index: number;
@@ -42,7 +46,7 @@ export function SliderInput(props: RangeInputProps) {
       {...otherProps}
       hideStepper
       size="small"
-      textAlign="center"
+      inputStyles={INPUT_STYLES}
       formatOptions={formatOptions}
       value={value}
       minValue={state.getThumbMinValue(index)}

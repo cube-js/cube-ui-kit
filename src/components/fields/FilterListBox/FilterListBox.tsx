@@ -1,5 +1,5 @@
 import { ItemElement, Key } from '@react-types/shared';
-import { BASE_STYLES, COLOR_STYLES, OUTER_STYLES, Styles } from '@tenphi/tasty';
+import { Styles } from '@tenphi/tasty';
 import {
   cloneElement,
   ForwardedRef,
@@ -23,12 +23,12 @@ import { useI18n } from '../../../i18n';
 import { LoadingIcon } from '../../../icons/LoadingIcon';
 import { mergeProps, modAttrs, useCombinedRefs } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
-import { extractStyles } from '../../../utils/styles';
 import {
   CubeCollectionItemProps,
   CollectionItem as Item,
 } from '../../CollectionItem';
 import { getValidationMods, useFieldProps, wrapWithField } from '../../form';
+import { splitFieldLayout } from '../../form/field-layout';
 import { CubeListBoxProps, ListBox } from '../ListBox/ListBox';
 import { getListBoxOptionId } from '../ListBox/optionId';
 import {
@@ -131,8 +131,6 @@ export interface CubeFilterListBoxProps<T>
   _internalCollection?: Collection<Node<any>>;
 }
 
-const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
-
 export const FilterListBox = forwardRef(function FilterListBox<
   T extends object,
 >(props: CubeFilterListBoxProps<T>, ref: ForwardedRef<HTMLDivElement>) {
@@ -226,7 +224,6 @@ export const FilterListBox = forwardRef(function FilterListBox<
     isReorderable = false,
     onReorder,
     form,
-    ...otherProps
   } = props;
 
   // Preserve the original `children` (may be a render function) before we
@@ -602,7 +599,9 @@ export const FilterListBox = forwardRef(function FilterListBox<
     t,
   ]);
 
-  styles = extractStyles(otherProps, PROP_STYLES, styles);
+  const fieldLayout = splitFieldLayout(props, { fillHeightOnFlex: true });
+
+  styles = fieldLayout.styles;
 
   searchInputRef = useCombinedRefs(searchInputRef);
   listRef = useCombinedRefs(listRef);
@@ -1070,7 +1069,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
 
   return wrapWithField<Omit<CubeFilterListBoxProps<T>, 'children'>>(
     filterListBoxField,
-    props,
+    { ...props, ...fieldLayout.field },
   );
 }) as unknown as (<T>(
   props: CubeFilterListBoxProps<T> & { ref?: ForwardedRef<HTMLDivElement> },

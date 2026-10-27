@@ -24,7 +24,7 @@ function RangeSlider(
   props: CubeRangeSliderProps,
   ref: FocusableRef<HTMLDivElement>,
 ) {
-  let { styles, gradation, isDisabled, ...otherProps } = props;
+  let { gradation, isDisabled, ...otherProps } = props;
   // Only when set: `useProviderProps` spreads props over the form context, so
   // an explicit `undefined` would enable a slider in a disabled form.
   const baseProps =

@@ -1,15 +1,5 @@
 import { AriaLabelingProps, CollectionBase, Key } from '@react-types/shared';
-import {
-  BASE_STYLES,
-  BasePropsWithoutChildren,
-  BaseStyleProps,
-  COLOR_STYLES,
-  ColorStyleProps,
-  OUTER_STYLES,
-  OuterStyleProps,
-  Styles,
-  tasty,
-} from '@tenphi/tasty';
+import { BasePropsWithoutChildren, Styles, tasty } from '@tenphi/tasty';
 import React, {
   cloneElement,
   ForwardedRef,
@@ -58,7 +48,7 @@ import { focusProgrammatically } from '../../../utils/react/programmaticFocus';
 import { mergeRefs } from '../../../utils/react/useCombinedRefs';
 import { useOverlayEscapeGuard } from '../../../utils/react/useOverlayEscapeGuard';
 import { usePopoverSync } from '../../../utils/react/usePopoverSync';
-import { extractStyles, mergeStyleLayers } from '../../../utils/styles';
+import { mergeStyleLayers } from '../../../utils/styles';
 import { isOwnActionsPress } from '../../actions/actions-run';
 import { ItemAction } from '../../actions/ItemAction/ItemAction';
 import { ItemActionsWrapper } from '../../actions/ItemActionsWrapper';
@@ -81,6 +71,10 @@ import {
   useFieldProps,
   wrapWithField,
 } from '../../form';
+import {
+  FieldLayoutStyleProps,
+  splitFieldLayout,
+} from '../../form/field-layout';
 import { DisplayTransition } from '../../helpers';
 import { useModalLayerRef } from '../../overlays/Modal/modal-containment';
 import { CubeTooltipProviderProps } from '../../overlays/Tooltip/TooltipProvider';
@@ -204,9 +198,7 @@ export interface CubeSelectBaseProps<T>
   extends
     BasePropsWithoutChildren,
     AriaLabelingProps,
-    BaseStyleProps,
-    OuterStyleProps,
-    ColorStyleProps,
+    FieldLayoutStyleProps,
     FieldBaseProps<Key | null | undefined>,
     CollectionBase<T>,
     Omit<
@@ -337,8 +329,6 @@ export interface CubeSelectProps<T> extends CubeSelectBaseProps<T> {
   placeholder?: string;
 }
 
-const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
-
 const ignore = () => {};
 
 /**
@@ -419,7 +409,6 @@ function Select<T extends object>(
     clearLabel,
     onOpenChange,
     form,
-    ...otherProps
   } = props;
   const { t } = useI18n();
   // `useSelectState` reports `onOpenChange` itself, once per transition.
@@ -442,7 +431,9 @@ function Select<T extends object>(
     if (isInert && state.isOpen) closeList();
   }, [isInert, state.isOpen]);
 
-  styles = extractStyles(otherProps, PROP_STYLES, styles);
+  const fieldLayout = splitFieldLayout(props);
+
+  styles = fieldLayout.styles;
 
   ref = useCombinedRefs(ref);
   const triggerRef = useCombinedRefs(triggerRefProp);
@@ -741,6 +732,7 @@ function Select<T extends object>(
     mergeProps(
       {
         ...props,
+        ...fieldLayout.field,
         // The trigger's own. Handed on, it read as the legacy field `tooltip`.
         tooltip: undefined,
       },
