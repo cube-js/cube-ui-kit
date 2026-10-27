@@ -241,9 +241,14 @@ describe('a field acting on the key in a modal dialog', () => {
     await userEvent.type(input, '/o');
     await waitFor(() => expect(input).toHaveAttribute('aria-activedescendant'));
 
+    // Inserting focuses the field again, so focus that went to the dialog's
+    // next control would still end here: watch it leave instead.
+    const onBlur = vi.fn();
+    input.addEventListener('blur', onBlur);
+
     await userEvent.keyboard('{Tab}');
 
     await waitFor(() => expect(input.value).toBe('/one '));
-    expect(input).toHaveFocus();
+    expect(onBlur).not.toHaveBeenCalled();
   });
 });
