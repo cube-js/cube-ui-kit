@@ -217,10 +217,10 @@ describe('Radio-type tab with a title too long for it', () => {
 });
 
 /**
- * The radio pill is the Bar: `100%` of the Tabs root plus `.5x` padding. In an
- * app with no global border-box reset (`<Root>` sets none), it painted `1x`
- * past the root, so a sibling placed with a flex gap ended up touching it.
- * jsdom has no layout.
+ * The radio pill is the Bar, `100%` of the Tabs root with `.5x` padding. It
+ * used to be a content box, so in an app with no global border-box reset
+ * (`<Root>` sets none) the padding landed on top of the 100%: the pill painted
+ * `1x` past the root and into the gap before its sibling. jsdom has no layout.
  */
 describe('Radio-type strip next to a sibling', () => {
   const GAP = 10;
