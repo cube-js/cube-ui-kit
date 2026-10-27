@@ -1,5 +1,17 @@
 # @cube-dev/ui-kit
 
+## 0.201.0
+
+### Minor Changes
+
+- [#1579](https://github.com/cube-js/cube-ui-kit/pull/1579) [`4ae238eb0`](https://github.com/cube-js/cube-ui-kit/commit/4ae238eb06d3cf88cc874c0aeabd4c5f3d624321) Thanks [@tenphi](https://github.com/tenphi)! - Update Tasty to 3.15.0 and paint every two-color fill as one solid background color, so axe-core and Lighthouse can check the text contrast of buttons, items and table cells. Table rows now publish `#row-overlay` as an opaque color plus `$row-overlay-weight`, the percentage cells mix it into `#row-base` at. If your table styles set `#row-overlay` to a translucent color such as `#purple.1`, set the opaque color and its weight instead: `'#row-overlay': '#purple', '$row-overlay-weight': '10%'`.
+
+### Patch Changes
+
+- [#1578](https://github.com/cube-js/cube-ui-kit/pull/1578) [`041faedc7`](https://github.com/cube-js/cube-ui-kit/commit/041faedc7b5c102ebcef27e716f96d683aaf32d7) Thanks [@tenphi](https://github.com/tenphi)! - `Tabs` with `type="radio"` now keeps its pill inside the `Tabs` box in an app without a global `box-sizing: border-box` reset. Before, the pill painted `1x` past the box, so it sat `1x` closer to a sibling than the flex `gap` between them, and a `width` on `Tabs` made the pill `1x` wider than that width.
+
+- [#1576](https://github.com/cube-js/cube-ui-kit/pull/1576) [`b0f5e4848`](https://github.com/cube-js/cube-ui-kit/commit/b0f5e4848845f569db97237cc3d2b298c3a313a5) Thanks [@tenphi](https://github.com/tenphi)! - Make interactive ItemTable rows reachable by keyboard without reordering: navigate rows with arrows and Home/End, activate links or actions with Enter, and reach row menus with Tab or Shift+F10. Show row focus with theme-aware background emphasis, preserve focus across virtual windows and row changes, honor the implicit row-header default, and restore overflow tooltips on linked text while keeping native link gestures and cell controls independent.
+
 ## 0.200.1
 
 ### Patch Changes
