@@ -22,7 +22,7 @@ A line that separates content. It is horizontal by default and vertical with `or
 
 ### Properties
 
-- **`children`** `ReactNode` — Text shown between two lines. It also names the separator for screen readers, unless `aria-label` or `aria-labelledby` names it.
+- **`children`** `ReactNode` — Text shown between two lines. It also names the separator for screen readers, unless `aria-label` or `aria-labelledby` names it. Screen readers get it only as that name, so keep it to text: a link or button in it would be unreachable.
 - **`orientation`** `'horizontal' | 'vertical'` (default: `'horizontal'`) — The direction of the line. A vertical divider stretches to the height of its flex or grid row, even when the row centers its items. Elsewhere, or to make it shorter, give it a `height`.
 
 ### Base Properties
@@ -104,7 +104,7 @@ The `mods` property accepts the following modifiers you can override:
 </Space>
 ```
 
-A vertical divider takes the height of its row in a flex or grid container. Give it a `height` when it should be shorter, or when its container is a plain block. A divider with a height follows the row's alignment, so it stays centered in a row that centers its items:
+A vertical divider takes the height of its row in a flex or grid container. Give it a `height` when it should be shorter, or when its container is a plain block. A divider with a height follows the row's alignment, so it stays centered in a row that centers its items. A `min max` range counts as a height too; add `alignSelf="stretch"` to stretch within it:
 
 ```jsx
 <Space placeItems="center" gap="1.5x">

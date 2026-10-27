@@ -82,7 +82,7 @@ export interface CubeDividerProps
   /**
    * Text shown between two lines, such as "or". It also becomes the
    * separator's accessible name, unless `aria-label` or `aria-labelledby`
-   * gives one.
+   * gives one. Screen readers get it only as that name, so keep it to text.
    */
   children?: ReactNode;
   /**

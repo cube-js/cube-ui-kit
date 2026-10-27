@@ -17,7 +17,7 @@ export default {
     children: {
       control: { type: 'text' },
       description:
-        'Text shown between two lines. It also names the separator for screen readers, unless `aria-label` or `aria-labelledby` names it.',
+        'Text shown between two lines. It also names the separator for screen readers, unless `aria-label` or `aria-labelledby` names it. Screen readers get it only as that name, so keep it to text: a link or button in it would be unreachable.',
       table: { type: { summary: 'ReactNode' } },
     },
     /* Presentation */
