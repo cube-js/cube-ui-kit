@@ -14,8 +14,9 @@ const meta: Meta = {
 export default meta;
 type Story = StoryObj;
 
-// The dashed frame shows the box the style props size.
-const FRAME_STYLES = { outline: '1bw dashed #dark-04', width: 'max 60x' };
+// The dashed frame hugs the box the style props size.
+const FRAME_STYLES = { outline: '1bw dashed #dark-04', width: 'max-content' };
+const ROW_FRAME_STYLES = { outline: '1bw dashed #dark-04', width: 'max 60x' };
 
 /**
  * An input's style props size its outer element: the input when it is bare,
@@ -44,7 +45,7 @@ export const FieldLayout: Story = {
           styles={{ width: '20x' }}
         />
       </Block>
-      <Flex gap="2x" styles={FRAME_STYLES}>
+      <Flex gap="2x" styles={ROW_FRAME_STYLES}>
         <TextInput label="Grows" flexGrow={1} />
         <TextInput
           label="Grows, with an error"

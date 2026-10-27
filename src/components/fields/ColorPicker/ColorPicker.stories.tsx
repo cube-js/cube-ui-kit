@@ -71,6 +71,10 @@ export default {
       control: { type: null },
       description: 'Tooltip for the trigger, separate from `labelTooltip`',
     },
+    triggerTooltip: {
+      control: { type: null },
+      description: '_(deprecated)_ Use `tooltip`.',
+    },
     swatches: {
       control: { type: 'object' },
       description: 'Colors to offer under the editor, as a ColorSwatchGroup',
