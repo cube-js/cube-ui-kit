@@ -1,4 +1,6 @@
-import { renderWithRoot, screen } from '../../../test';
+import { userEvent } from 'vitest/browser';
+
+import { renderWithRoot, screen, waitFor } from '../../../test';
 import { Text } from '../../content/Text';
 
 import { Checkbox } from './Checkbox';
@@ -75,4 +77,74 @@ describe('standalone Checkbox label', () => {
 
     expect(wrapper.getBoundingClientRect().width).toBeCloseTo(300, 0);
   });
+});
+
+function tooltipTexts() {
+  return Array.from(document.querySelectorAll('[role="tooltip"]')).map(
+    (tip) => tip.textContent,
+  );
+}
+
+/**
+ * A disabled checkbox with a tooltip stays focusable, so the keyboard can read
+ * why it is disabled. It must stay as inert as a natively disabled one.
+ *
+ * In a browser because a cancelled click is the browser's own: Chromium puts
+ * back the state it saved before the click, while jsdom toggles the input once
+ * more, after React has already restored it, and reads it as checked.
+ */
+describe('Disabled Checkbox with a tooltip', () => {
+  beforeAll(async () => {
+    await userEvent.hover(document.body);
+  });
+
+  it.each([
+    ['standalone', false],
+    ['grouped', true],
+  ])(
+    'is reached by the keyboard and never toggled, %s',
+    async (_, isGrouped) => {
+      const onChange = vi.fn();
+      const checkbox = (
+        <Checkbox
+          isDisabled
+          value="email"
+          tooltip="Requires admin"
+          onChange={isGrouped ? undefined : onChange}
+        >
+          Email
+        </Checkbox>
+      );
+
+      renderWithRoot(
+        <>
+          <button type="button">Before</button>
+          {isGrouped ? (
+            <CheckboxGroup aria-label="Notifications" onChange={onChange}>
+              {checkbox}
+            </CheckboxGroup>
+          ) : (
+            checkbox
+          )}
+        </>,
+      );
+
+      const input = screen.getByRole('checkbox');
+
+      screen.getByRole('button', { name: 'Before' }).focus();
+      await userEvent.keyboard('{Tab}');
+
+      expect(input).toHaveFocus();
+      await waitFor(() => expect(tooltipTexts()).toEqual(['Requires admin']));
+
+      await userEvent.keyboard(' ');
+      // Forced: Playwright waits for an `aria-disabled` element to become
+      // enabled before clicking it, and a user's click does not.
+      await userEvent.click(input, { force: true });
+      await userEvent.click(screen.getByText('Email'), { force: true });
+
+      expect(input).not.toBeChecked();
+      expect(onChange).not.toHaveBeenCalled();
+    },
+  );
 });

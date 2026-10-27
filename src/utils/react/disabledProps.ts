@@ -1,4 +1,6 @@
-import type { KeyboardEvent, SyntheticEvent } from 'react';
+import { mergeProps } from './mergeProps';
+
+import type { ChangeEvent, KeyboardEvent, SyntheticEvent } from 'react';
 import type { Props } from '../../props';
 
 /**
@@ -137,4 +139,30 @@ export function omitActivationEventProps<T extends Props>(props: T): T {
   }
 
   return result;
+}
+
+/**
+ * React reports a click on an inert checkbox or radio as a change: the browser
+ * toggles it before the click is cancelled. Kept as a handler rather than
+ * dropped, or React would warn about a `checked` input without one.
+ */
+function ignoreChange(event: ChangeEvent) {
+  event.stopPropagation();
+}
+
+/**
+ * Turns the props React Aria gives a disabled checkbox, switch or radio
+ * `<input>` into those of an inert one (`isInert` from
+ * `getDisabledElementProps`): no native `disabled`, so it keeps its focus, and
+ * nothing a click, `Space` or a change could toggle it with.
+ */
+export function getInertInputProps<T extends Props>(inputProps: T): T {
+  return mergeProps(
+    {
+      ...omitActivationEventProps(inputProps),
+      disabled: false,
+      onChange: ignoreChange,
+    },
+    INERT_PROPS,
+  ) as T;
 }

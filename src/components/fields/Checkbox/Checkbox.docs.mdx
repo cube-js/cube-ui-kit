@@ -32,7 +32,7 @@ Checkboxes allow users to select multiple items from a list of individual items,
 - **`onChange`** `function` — Callback fired when the checkbox value changes
 - **`onFocus`** `function` — Callback fired when the checkbox receives focus
 - **`onBlur`** `function` — Callback fired when the checkbox loses focus
-- **`tooltip`** `string | TooltipProviderProps` — Tooltip shown on hover over the box and its inline label, in or out of a group, including while disabled. A string, or `TooltipProvider` props such as `title` and `placement`. It also opens when the checkbox takes keyboard focus, and describes its input to screen readers. The info badge next to a field label is `labelTooltip`
+- **`tooltip`** `string | TooltipProviderProps` — Tooltip shown on hover over the box and its inline label, in or out of a group, including while disabled. A string, or `TooltipProvider` props such as `title` and `placement`. It also opens when the checkbox takes keyboard focus, and describes its input to screen readers. A disabled checkbox with a tooltip stays in the Tab order, marked `aria-disabled`, so the keyboard reaches the tooltip too. The info badge next to a field label is `labelTooltip`
 
 ### Base Properties
 
@@ -113,7 +113,7 @@ The `mods` property accepts the following modifiers you can override:
 
 ### With a Tooltip
 
-A disabled checkbox still shows its tooltip, which makes it a good place to say why the option is unavailable.
+A disabled checkbox still shows its tooltip, which makes it a good place to say why the option is unavailable. While it has a tooltip, it stays focusable and is marked `aria-disabled` instead of natively disabled, so keyboard users can read the reason too; `Space` and clicks still change nothing. Without a tooltip, a disabled checkbox is natively disabled and `Tab` skips it.
 
 ```jsx
 <Checkbox isDisabled tooltip="Available on the Team plan">
@@ -147,7 +147,7 @@ A disabled checkbox still shows its tooltip, which makes it a good place to say 
 
 ### Keyboard Navigation
 
-- `Tab` - Moves focus to the checkbox
+- `Tab` - Moves focus to the checkbox. A disabled checkbox takes focus only while it has a `tooltip`, which then opens
 - `Space` - Toggles the checkbox state
 - `Enter` does not toggle the checkbox. Inside a form with a submit button, the browser submits the form instead.
 
