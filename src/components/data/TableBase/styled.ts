@@ -91,7 +91,8 @@ const CELL_STYLES: Styles = {
   position: { '': 'static', '@own(pin=start | pin=end)': 'sticky' },
   insetInlineStart: { '': 'auto', '@own(pin=start)': '$pin-offset' },
   insetInlineEnd: { '': 'auto', '@own(pin=end)': '$pin-offset' },
-  zIndex: { '': 'auto', '@own(pin=start | pin=end)': 1 },
+  // Linked text and controls sit at 1 within the row; pins must cover them.
+  zIndex: { '': 'auto', '@own(pin=start | pin=end)': 2 },
   // The innermost pinned column needs an edge, or content scrolling underneath
   // reads as part of the pinned group. An inset box-shadow rather than a border
   // so it costs no column width, and `#border` rather than `#shadow` so it
@@ -730,6 +731,9 @@ export const TableElement = tasty({
     },
     Row: {
       $: '> Scroller > Table > Body >',
+      // Match Item's background focus treatment; a native table-row outline
+      // ignores the cell/card geometry and paints over neighbouring rows.
+      outline: 'none',
       // `position: relative` (below) is also the containing block for
       // `RowLink`, which stretches over the whole row from inside the
       // row-header cell, and for the drop indicator.
@@ -746,7 +750,8 @@ export const TableElement = tasty({
         '@own(pinned=top)': '($header-height + 1bw)',
       },
       insetBlockEnd: { '': 'auto', '@own(pinned=bottom)': 0 },
-      zIndex: { '': 'auto', '@own(pinned)': 1 },
+      // Keep cell/link layers inside their row, below pinned rows and the head.
+      zIndex: { '': 0, '@own(pinned)': 1 },
 
       // The row being dragged, and a row that would receive a drop *on* it.
       // Landing *between* rows is drawn by `DropIndicator` instead.
@@ -782,9 +787,10 @@ export const TableElement = tasty({
       '#row-overlay': {
         '': '#surface-text.0',
         '@own(:hover)': '#surface-text.04',
-        '@own(focused)': '#surface-text.06',
+        '@own(focused) | @own(:focus-visible)': '#surface-text.06',
         '@own(selected)': '#surface-text.09',
-        '@own(selected & :hover)': '#surface-text.12',
+        '@own(selected) & (@own(:hover) | @own(focused) | @own(:focus-visible))':
+          '#surface-text.12',
         '@own(drop-target)': '#purple.10',
         '@own(disabled)': '#surface-text.02',
       },

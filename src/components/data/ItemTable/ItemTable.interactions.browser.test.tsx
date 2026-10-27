@@ -116,6 +116,111 @@ async function wheelOver(element: HTMLElement, deltaY: number) {
   });
 }
 
+describe('ItemTable row focus appearance', () => {
+  it.each([
+    ['light', false],
+    ['dark', false],
+    ['light', true],
+    ['dark', true],
+  ] as const)(
+    'uses row background emphasis in %s with selected=%s',
+    async (scheme, selected) => {
+      const root = document.documentElement;
+      const previousScheme = root.dataset.scheme;
+      root.dataset.scheme = scheme;
+      try {
+        renderWithRoot(
+          <>
+            <button type="button">Before</button>
+            <ItemTable
+              data={ROWS.slice(0, 3)}
+              columns={[
+                ...COLUMNS,
+                {
+                  key: 'edit',
+                  title: 'Edit',
+                  render: () => <button type="button">Edit record</button>,
+                },
+              ]}
+              selectionMode={selected ? 'multiple' : undefined}
+              selectedKeys={selected ? ['r0', 'r1'] : undefined}
+              onRowAction={() => {}}
+              paginationMode="off"
+              isRowMoveAnimated={false}
+            />
+          </>,
+        );
+        await hover(screen.getByRole('button', { name: 'Before' }));
+        const paint = (key: string) =>
+          getComputedStyle(cell(key, 'name')).backgroundImage;
+        const rest = [paint('r0'), paint('r1')];
+        // Prime the native keyboard modality, including the selectable table
+        // whose header checkbox takes the first Tab stop.
+        await key('{Tab}');
+        await act(() => row('r0').focus());
+        expect(row('r0').matches(':focus-visible')).toBe(true);
+        expect.soft(getComputedStyle(row('r0')).outlineStyle).toBe('none');
+        await vi.waitFor(() => expect(paint('r0')).not.toBe(rest[0]));
+        await key('{ArrowDown}');
+        expect(row('r1')).toHaveFocus();
+        expect(row('r1').matches(':focus-visible')).toBe(true);
+        await vi.waitFor(() => expect(paint('r0')).toBe(rest[0]));
+        await vi.waitFor(() => expect(paint('r1')).not.toBe(rest[1]));
+        await key('{Tab}');
+        expect(row('r1').contains(document.activeElement)).toBe(true);
+        expect(row('r1').matches(':focus-visible')).toBe(false);
+        await vi.waitFor(() => expect(paint('r1')).toBe(rest[1]));
+      } finally {
+        if (previousScheme == null) delete root.dataset.scheme;
+        else root.dataset.scheme = previousScheme;
+      }
+    },
+  );
+
+  it('keeps elevated linked text below the pinned cells while scrolling', async () => {
+    renderWithRoot(
+      <ItemTable
+        data={ROWS.slice(0, 3).map((record) => ({
+          ...record,
+          description: LONG_TEXT.repeat(4),
+        }))}
+        columns={[
+          { ...COLUMNS[0], pin: 'start' },
+          { ...COLUMNS[1], width: 800 },
+          {
+            key: 'edit',
+            title: 'Edit',
+            width: 80,
+            pin: 'end',
+            render: () => <button type="button">Edit record</button>,
+          },
+        ]}
+        rowLink={(record) => `/records/${record.id}`}
+        width="360px"
+        paginationMode="off"
+        isAutoHeight
+        isRowMoveAnimated={false}
+      />,
+    );
+    const scroller = grid().parentElement!;
+    await act(() => {
+      scroller.scrollLeft = 260;
+      scroller.dispatchEvent(new Event('scroll'));
+    });
+    await vi.waitFor(() => {
+      expect(scroller.scrollLeft).toBeGreaterThan(200);
+      for (const column of ['name', 'edit']) {
+        const bounds = cell('r0', column).getBoundingClientRect();
+        const hit = document.elementFromPoint(
+          bounds.right - 8,
+          bounds.top + bounds.height / 2,
+        );
+        expect(hit?.closest('[data-element="Cell"]')).toBe(cell('r0', column));
+      }
+    });
+  });
+});
+
 describe('ItemTable flat row keyboard interaction', () => {
   it.each(['link', 'action'] as const)(
     'enters a plain %s table with Tab, moves rows and activates once',

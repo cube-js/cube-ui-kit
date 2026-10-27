@@ -1018,11 +1018,15 @@ export const RowInteraction: Story = {
     );
     firstRow?.focus();
     await userEvent.keyboard('{ArrowDown}');
-    await waitFor(() =>
-      expect(
-        table.querySelector('tbody tr[data-element="Row"][data-row-index="1"]'),
-      ).toHaveFocus(),
+    const focusedRow = table.querySelector<HTMLTableRowElement>(
+      'tbody tr[data-element="Row"][data-row-index="1"]',
     );
+    await Promise.all(
+      Array.from(focusedRow?.cells ?? [])
+        .flatMap((cell) => cell.getAnimations())
+        .map((animation) => animation.finished),
+    );
+    await waitFor(() => expect(focusedRow).toHaveFocus());
   },
 };
 

@@ -648,6 +648,8 @@ The row-header cell is styled as a link — `#purple-text` at weight 600, matchi
 
 Flat tables with row links, row actions or exposed row menus have a resting body-row tab stop. Up/Down move between interactive rows, Home/End move to the first/last, and Enter activates the focused row's link or action. Down from a focused column header enters the body. Disabled rows are skipped; making a row unselectable only disables its checkbox. In-cell controls keep their own keys and Tab behavior. Reorderable rows retain their drag shortcuts.
 
+Keyboard focus emphasizes the row background, including selected rows, matching the kit's list items. Controls inside a row keep their own focus appearance.
+
 ### Row Menu
 
 `rowMenu` supplies `Menu.Item` children, and `rowContextMenu` decides where they are exposed. The split is deliberate: `rowMenu` alone renders nothing, so a row never grows a `⋮` nobody asked for.
