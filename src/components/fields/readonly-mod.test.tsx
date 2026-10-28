@@ -31,26 +31,45 @@ vi.mock('../../_internal/hooks/use-warn');
 type Props = { isReadOnly?: boolean };
 
 /**
- * Every field that draws the shared input box. `isReadOnly` has to reach the
- * box as the `readonly` mod, so its default look and a theme's `readonly` key
- * both apply.
+ * Every field that draws the shared input box, with the test id of that box.
+ * `isReadOnly` has to reach the box as the `readonly` mod, so its default look
+ * and a theme's `readonly` key both apply.
  */
-const BOXED_FIELDS: [string, (props: Props) => ReactElement][] = [
-  ['TextInput', (p) => <TextInput label="Field" defaultValue="a" {...p} />],
-  ['TextArea', (p) => <TextArea label="Field" defaultValue="a" {...p} />],
+const BOXED_FIELDS: [string, string, (props: Props) => ReactElement][] = [
+  [
+    'TextInput',
+    'InputWrapper',
+    (p) => <TextInput label="Field" defaultValue="a" {...p} />,
+  ],
+  [
+    'TextArea',
+    'InputWrapper',
+    (p) => <TextArea label="Field" defaultValue="a" {...p} />,
+  ],
   [
     'PasswordInput',
+    'InputWrapper',
     (p) => <PasswordInput label="Field" defaultValue="a" {...p} />,
   ],
-  ['SearchInput', (p) => <SearchInput label="Field" defaultValue="a" {...p} />],
-  ['NumberInput', (p) => <NumberInput label="Field" defaultValue={1} {...p} />],
+  [
+    'SearchInput',
+    'InputWrapper',
+    (p) => <SearchInput label="Field" defaultValue="a" {...p} />,
+  ],
+  [
+    'NumberInput',
+    'InputWrapper',
+    (p) => <NumberInput label="Field" defaultValue={1} {...p} />,
+  ],
   [
     'CommandTextArea',
+    'InputWrapper',
     (p) => <CommandTextArea label="Field" defaultValue="a" {...p} />,
   ],
-  ['ColorInput', (p) => <ColorInput label="Field" {...p} />],
+  ['ColorInput', 'InputWrapper', (p) => <ColorInput label="Field" {...p} />],
   [
     'TagInput',
+    'InputWrapper',
     (p) => (
       <TagInput label="Field" defaultValue={['a']} {...p}>
         <TagInput.Item key="a">A</TagInput.Item>
@@ -59,6 +78,7 @@ const BOXED_FIELDS: [string, (props: Props) => ReactElement][] = [
   ],
   [
     'ComboBox',
+    'ComboBoxWrapper',
     (p) => (
       <ComboBox label="Field" {...p}>
         <ComboBox.Item key="a">A</ComboBox.Item>
@@ -67,6 +87,7 @@ const BOXED_FIELDS: [string, (props: Props) => ReactElement][] = [
   ],
   [
     'SearchComboBox',
+    'SearchComboBoxWrapper',
     (p) => (
       <SearchComboBox label="Field" {...p}>
         <SearchComboBox.Item key="a">A</SearchComboBox.Item>
@@ -75,36 +96,48 @@ const BOXED_FIELDS: [string, (props: Props) => ReactElement][] = [
   ],
   [
     'DateInput',
+    'DateInput',
     (p) => (
       <DateInput label="Field" defaultValue={parseDate('2026-01-01')} {...p} />
     ),
   ],
   [
     'TimeInput',
+    'TimeInput',
     (p) => <TimeInput label="Field" defaultValue={parseTime('10:00')} {...p} />,
   ],
   [
+    'DatePicker',
     'DatePicker',
     (p) => (
       <DatePicker label="Field" defaultValue={parseDate('2026-01-01')} {...p} />
     ),
   ],
-  ['DateRangePicker', (p) => <DateRangePicker label="Field" {...p} />],
+  [
+    'DateRangePicker',
+    'DateRangePicker',
+    (p) => <DateRangePicker label="Field" {...p} />,
+  ],
   [
     'DateRangeSeparatedPicker',
+    'DateTimeInput',
     (p) => <DateRangeSeparatedPicker label="Field" {...p} />,
   ],
-  ['PeriodPicker', (p) => <PeriodPicker label="Field" {...p} />],
+  [
+    'PeriodPicker',
+    'PeriodPicker',
+    (p) => <PeriodPicker label="Field" {...p} />,
+  ],
 ];
 
 describe('readonly mod', () => {
-  describe.each(BOXED_FIELDS)('<%s />', (_, render) => {
+  describe.each(BOXED_FIELDS)('<%s />', (_, boxQa, render) => {
     it('marks its box read-only', () => {
-      const { container } = renderWithRoot(render({ isReadOnly: true }));
+      renderWithRoot(render({ isReadOnly: true }));
 
-      const boxes = container.querySelectorAll('[data-readonly]');
-
-      expect(boxes.length).toBeGreaterThan(0);
+      for (const box of screen.getAllByTestId(boxQa)) {
+        expect(box).toHaveAttribute('data-readonly');
+      }
     });
 
     it('leaves an editable box unmarked', () => {
@@ -114,7 +147,7 @@ describe('readonly mod', () => {
     });
   });
 
-  // Only `TextInputBase` tracks hover in mods; the other boxes hover in CSS.
+  // Only `TextInputBase` tracks hover; the other boxes take no hover state.
   it.each([
     ['editable', false],
     ['read-only', true],
@@ -191,6 +224,7 @@ describe('readonly mod', () => {
   describe.each([
     ['radio', 'RadioWrapper'],
     ['button', 'RadioButton'],
+    ['tabs', 'RadioButton'],
   ] as const)('<Radio type="%s" />', (type, wrapperQa) => {
     function renderGroup(props: Props) {
       return renderWithRoot(

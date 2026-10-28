@@ -74,6 +74,8 @@ export const INPUT_WRAPPER_STYLES: Styles = {
   border: {
     '': true,
     readonly: '#border.5',
+    // High contrast keeps the full outline it raises for every field.
+    'readonly & @hc': true,
     valid: '#success-text.50',
     invalid: '#danger-text.50',
     focused: '#primary-text',

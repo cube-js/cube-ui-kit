@@ -119,11 +119,10 @@ const CheckboxElement = tasty({
     color: {
       '': '#clear',
       'checked | indeterminate': '#white',
-      'readonly & (checked | indeterminate)': '#dark-02',
+      'readonly & !disabled & (checked | indeterminate)': '#dark-02',
     },
     border: {
       '': '#dark.30',
-      readonly: '#dark.20',
       invalid: '#danger',
       valid: '#success',
       'disabled | ((indeterminate | checked) & !invalid & !valid & !readonly)':
@@ -165,7 +164,6 @@ function Checkbox(
     qa,
     isIndeterminate = false,
     isDisabled = false,
-    isReadOnly = false,
     insideForm,
     children,
     label,
@@ -190,14 +188,7 @@ function Checkbox(
     [groupState, labelStyles],
   );
 
-  // A group makes every checkbox in it read-only, as React Aria does.
-  isReadOnly = isReadOnly || !!groupState?.isReadOnly;
-
   let { isFocused, focusProps } = useFocus(true);
-  // A read-only checkbox takes no hover state: a press would change nothing.
-  let { hoverProps, isHovered } = useHover({
-    isDisabled: isDisabled || isReadOnly,
-  });
 
   let inputRef = useRef(null);
   let domRef = useFocusableRef(ref, inputRef);
@@ -216,7 +207,12 @@ function Checkbox(
   // `aria-label` instead used to drop the inline text from the name and
   // replace the caller's own `aria-label`.
   let ariaProps = { ...props, form: undefined, children: children ?? label };
-  let { inputProps, isDisabled: isInputDisabled } = groupState
+  // `isReadOnly` is React Aria's: the checkbox's own or its group's.
+  let {
+    inputProps,
+    isDisabled: isInputDisabled,
+    isReadOnly,
+  } = groupState
     ? useCheckboxGroupItem(
         {
           ...ariaProps,
@@ -232,6 +228,11 @@ function Checkbox(
         inputRef,
       )
     : useCheckbox(ariaProps, toggleState, inputRef);
+
+  // A read-only checkbox takes no hover state: a press would change nothing.
+  let { hoverProps, isHovered } = useHover({
+    isDisabled: isDisabled || isReadOnly,
+  });
 
   // A disabled checkbox with a tooltip to show keeps its focus, as a disabled
   // `Button` or `Radio` does: the tooltip is usually the reason it is disabled,

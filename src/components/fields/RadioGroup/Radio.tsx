@@ -173,7 +173,7 @@ const RadioNormalElement = tasty({
     border: {
       '': '#dark-04',
       checked: '#primary-text',
-      readonly: '#dark.20',
+      readonly: '#dark-04',
       invalid: '#danger-text.50',
       valid: '#success-text.50',
       disabled: '#dark.12',
@@ -453,7 +453,8 @@ function Radio(props: CubeRadioProps, ref) {
   let effectiveIsDisabled =
     baseIsDisabled === true || (isLoadingButton && isDisabled !== false);
 
-  // The group's, as React Aria reads it: a single radio has no read-only prop.
+  // React Aria makes a radio read-only through its group only; a radio's own
+  // inherited `isReadOnly` has no effect, so the mod follows the group too.
   let isReadOnly = state.isReadOnly;
 
   let { isFocused, focusProps } = useFocus(true);
