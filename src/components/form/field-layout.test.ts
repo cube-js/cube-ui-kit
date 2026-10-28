@@ -83,7 +83,7 @@ describe('splitFieldLayout', () => {
     expect(field.fieldProps).toBeUndefined();
   });
 
-  it.each([null, undefined, 0, '0', 'none', 'auto', 'initial'])(
+  it.each([null, undefined, false, 0, '0', 'none', 'auto', 'initial'])(
     'does not fill for a width of %s',
     (width) => {
       const layout = splitFieldLayout({ label: 'Name', width });

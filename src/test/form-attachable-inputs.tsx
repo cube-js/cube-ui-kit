@@ -20,6 +20,7 @@ import {
   FileInput,
   FilterListBox,
   FilterPicker,
+  HueSlider,
   ListBox,
   MonthPicker,
   NumberInput,
@@ -134,7 +135,8 @@ export const FORM_ATTACHABLE_INPUTS: [string, ReactElement<any>][] = [
 
 /**
  * Every field-level input: the form-attachable ones, plus `SearchInput` and
- * `SearchComboBox`, which render the field chrome but never bind to a form.
+ * `SearchComboBox`, which render the field chrome but never bind to a form, and
+ * `HueSlider`, a `Slider` with a hue track.
  */
 export const FIELD_INPUTS: [string, ReactElement<any>][] = [
   ...FORM_ATTACHABLE_INPUTS,
@@ -145,4 +147,5 @@ export const FIELD_INPUTS: [string, ReactElement<any>][] = [
       <SearchComboBox.Item key="one">One</SearchComboBox.Item>
     </SearchComboBox>,
   ],
+  ['HueSlider', <HueSlider label="HueSlider" />],
 ];

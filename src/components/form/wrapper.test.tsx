@@ -18,7 +18,6 @@ import { Checkbox } from '../fields/Checkbox/Checkbox';
 import { DatePicker } from '../fields/DatePicker/DatePicker';
 import { SearchComboBox } from '../fields/SearchComboBox/SearchComboBox';
 import { SearchInput } from '../fields/SearchInput/SearchInput';
-import { HueSlider } from '../fields/Slider/HueSlider';
 import { TagInput } from '../fields/TagInput/TagInput';
 import { TextInput } from '../fields/TextInput/TextInput';
 
@@ -604,12 +603,6 @@ describe('field refs', () => {
   });
 });
 
-/** Every field-level input, `HueSlider` included, mounted with a `label`. */
-const FIELD_LEVEL_INPUTS: typeof FIELD_INPUTS = [
-  ...FIELD_INPUTS,
-  ['HueSlider', <HueSlider label="HueSlider" />],
-];
-
 /**
  * An input's style props place and size its outer element: the field wrapper
  * when it renders, the control otherwise. `styles` stays on the control and
@@ -617,9 +610,7 @@ const FIELD_LEVEL_INPUTS: typeof FIELD_INPUTS = [
  */
 describe('field layout style props', () => {
   // `TextInputMapper` takes no style props.
-  const inputs = FIELD_LEVEL_INPUTS.filter(
-    ([name]) => name !== 'TextInputMapper',
-  );
+  const inputs = FIELD_INPUTS.filter(([name]) => name !== 'TextInputMapper');
 
   const WIDTH = 'calc(37 * var(--gap))';
 
@@ -831,7 +822,7 @@ describe('field layout style props', () => {
  */
 describe('field prop names', () => {
   // Formerly `triggerTooltip`; `tooltip` is the control's, as on `Select`.
-  const pickers = FIELD_LEVEL_INPUTS.filter(([name]) =>
+  const pickers = FIELD_INPUTS.filter(([name]) =>
     ['ColorPicker', 'FilterPicker', 'Picker'].includes(name),
   );
 
@@ -868,7 +859,7 @@ describe('field prop names', () => {
   ];
 
   it.each(
-    FIELD_LEVEL_INPUTS.flatMap(([name, element]) =>
+    FIELD_INPUTS.flatMap(([name, element]) =>
       reservedTexts.map((texts) => [name, element, texts] as const),
     ),
   )(

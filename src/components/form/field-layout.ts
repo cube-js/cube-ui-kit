@@ -37,8 +37,8 @@ const FILL_WIDTH_STYLES = ['width', 'flexBasis', 'flexGrow', 'flex'];
 const FILL_HEIGHT_STYLES = ['height'];
 const FLEX_STYLES = ['flexBasis', 'flexGrow', 'flex'];
 
-/** Values that leave an element at its natural size. */
-const NOT_SIZING = new Set<unknown>([0, '0', 'none', 'auto', 'initial']);
+/** Values that leave an element at its natural size, `false` from a `cond && size` included. */
+const NOT_SIZING = new Set<unknown>([false, 0, '0', 'none', 'auto', 'initial']);
 
 /** A value that sizes its element: set, and not a reset or a no-op. */
 function isSizing(value: unknown) {

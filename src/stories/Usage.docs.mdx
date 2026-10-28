@@ -419,7 +419,7 @@ The package's `tasty.config.ts` lists the other components as `protectedComponen
 - style props other than the ones that place or size the component (`width`, `height`, `gridArea`, `margin`, `inset`, …). Containers (`Card`, `Panel`, `ResizablePanel`, `Content`, `Header`, `Footer`, and `Layout` and `GridLayout` with their sub-components) also keep the ones that lay out their content: `padding`, `gap`, `flow`, `place*`, `align*`, `justify*`, `grid*`, `overflow` and `scrollbar`. Root `styles` that sets only allowed props passes too;
 - `tasty()` wrappers that restyle a protected component, and wrappers of those wrappers.
 
-On an input, the style props that place or size it act on its outer element: the field wrapper when its label, texts or binding render, the input itself otherwise. Its `styles` always style the input, so a root `styles` that only sizes it passes the rule but sizes the input inside the field, not the field. Input components take no other style props.
+On an input, the style props that place or size it act on its outer element: the field wrapper when it renders (see [Field properties](/docs/getting-started-field-properties--docs)), the input itself otherwise. Its `styles` always style the input, so a root `styles` that only sizes it passes the rule but sizes the input inside the field, not the field. Input components take no other style props.
 
 A component's own prop that shares a name with a style passes, such as a field's `direction` and `filter`, a text field's `resize`, `ColorSwatch`'s `color` or `AlertDialog`'s `content`.
 

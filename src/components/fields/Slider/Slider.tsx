@@ -32,7 +32,6 @@ function Slider(props: CubeSliderProps, ref: FocusableRef<HTMLDivElement>) {
     value,
     defaultValue,
     getValueLabel,
-    isDisabled,
     styles,
     gradation,
     orientation,
@@ -44,9 +43,6 @@ function Slider(props: CubeSliderProps, ref: FocusableRef<HTMLDivElement>) {
 
   let baseProps: Omit<SliderBaseProps, 'children'> = {
     ...otherProps,
-    // Only when set: `useProviderProps` spreads props over the form context,
-    // so an explicit `undefined` would enable a slider in a disabled form.
-    ...(isDisabled === undefined ? null : { isDisabled }),
     // Normalize `value: number[]` to `value: number`
     value: value != null ? [value] : undefined,
     defaultValue: defaultValue != null ? [defaultValue] : undefined,
