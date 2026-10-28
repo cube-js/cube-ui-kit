@@ -67,6 +67,11 @@ export default {
         defaultValue: { summary: 'medium' },
       },
     },
+    tooltip: {
+      control: { type: 'text' },
+      description:
+        "The input's own tooltip, shown on hover over the field box and on keyboard focus, including while disabled",
+    },
     /* State */
     isDisabled: {
       control: { type: 'boolean' },

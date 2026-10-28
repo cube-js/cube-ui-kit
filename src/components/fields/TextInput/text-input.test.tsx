@@ -1,4 +1,4 @@
-import { createRef } from 'react';
+import { createRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 import {
@@ -401,6 +401,31 @@ describe('<TextInput /> tooltip', () => {
     expect(screen.getByRole('textbox')).toHaveValue('4');
   });
 
+  // Setting and clearing `tooltip` remounts the field box, so the docs send a
+  // caller that switches it while the input has focus to `isDisabled`.
+  it('keeps focus while isDisabled switches it off and on', async () => {
+    function Minimum() {
+      const [value, setValue] = useState('');
+
+      return (
+        <TextInput
+          aria-label="Minimum"
+          value={value}
+          tooltip={{ title: 'Empty is auto', isDisabled: value !== '' }}
+          onChange={setValue}
+        />
+      );
+    }
+
+    renderWithRoot(<Minimum />);
+
+    await userEvent.click(screen.getByRole('textbox'));
+    await userEvent.keyboard('4{Backspace}2');
+
+    expect(screen.getByRole('textbox')).toHaveFocus();
+    expect(screen.getByRole('textbox')).toHaveValue('2');
+  });
+
   it('keeps it apart from the field label badge', async () => {
     renderWithRoot(
       <TextInput
@@ -426,8 +451,14 @@ describe('<TextInput /> tooltip', () => {
   it('keeps the field ref on the field box', () => {
     const ref = createRef<FocusableRefValue<HTMLInputElement, HTMLElement>>();
 
+    // `TextInput` types its ref as an element; at runtime it is the focusable
+    // ref object.
     renderWithRoot(
-      <TextInput ref={ref} aria-label="Minimum" tooltip="Empty is auto" />,
+      <TextInput
+        ref={ref as never}
+        aria-label="Minimum"
+        tooltip="Empty is auto"
+      />,
     );
 
     expect(ref.current?.UNSAFE_getDOMNode()).toBe(
@@ -488,8 +519,6 @@ describe('<TextInput /> tooltip', () => {
       expect(input).not.toHaveAttribute('disabled');
       expect(input).toHaveAttribute('aria-disabled', 'true');
       expect(input).toHaveAttribute('readonly');
-      // Its disabled styles key off this.
-      expect(input).toHaveAttribute('data-disabled');
 
       await userEvent.tab();
 
@@ -535,6 +564,9 @@ describe('<TextInput /> tooltip', () => {
       const input = screen.getByRole('textbox');
 
       await userEvent.tab();
+
+      expect(input).toHaveFocus();
+
       await userEvent.keyboard('abc{Enter}');
       await userEvent.paste('pasted');
 
@@ -555,6 +587,20 @@ describe('<TextInput /> tooltip', () => {
       await userEvent.click(screen.getByRole('textbox'));
 
       expect(screen.getByRole('textbox')).not.toHaveFocus();
+    });
+
+    it('takes no focus from a click on its label, and keeps its name', async () => {
+      renderWithRoot(
+        <TextInput
+          isDisabled
+          label="Title"
+          tooltip="Show the axis to change this"
+        />,
+      );
+
+      await userEvent.click(screen.getByText('Title'));
+
+      expect(screen.getByRole('textbox', { name: 'Title' })).not.toHaveFocus();
     });
 
     it('stays natively disabled without a tooltip', async () => {

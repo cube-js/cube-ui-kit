@@ -6,6 +6,7 @@ import {
   waitFor,
 } from '../../test/index';
 import { Select } from '../fields/Select/Select';
+import { TagInput } from '../fields/TagInput/TagInput';
 import { TextInput } from '../fields/TextInput/TextInput';
 
 import { FieldWrapper } from './FieldWrapper/FieldWrapper';
@@ -85,10 +86,11 @@ describe('labelTooltip', () => {
       // the callers it cannot see — JS, loose spreads, index signatures.
       const legacy = { tooltip: 'Where we write' } as object;
 
+      // Not a text input: those take a `tooltip` of their own.
       renderWithRoot(
         <>
-          <TextInput label="Email" {...legacy} />
-          <TextInput label="Name" {...legacy} />
+          <TagInput label="Email" {...legacy} />
+          <TagInput label="Name" {...legacy} />
         </>,
       );
 

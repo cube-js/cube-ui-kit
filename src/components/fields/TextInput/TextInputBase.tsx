@@ -29,7 +29,7 @@ import { FieldBaseProps, TextFieldKeyboardProps } from '../../../shared';
 import { mergeProps, mergeRefs, useCombinedRefs } from '../../../utils/react';
 import {
   getDisabledElementProps,
-  omitActivationEventProps,
+  getInertInputProps,
 } from '../../../utils/react/disabledProps';
 import { useFocus } from '../../../utils/react/interactions';
 import { extractStyles } from '../../../utils/styles';
@@ -505,22 +505,28 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
   // A disabled input with a tooltip keeps its focus, as `Checkbox` and `Switch` do: the tooltip is
   // usually the reason it is disabled, and focus is how the keyboard opens it. It is
   // `aria-disabled` and read-only instead, and the pointer still can't focus it.
-  const { isInert, inertProps } = getDisabledElementProps({
+  const { isInert } = getDisabledElementProps({
     isDisabled: isInputDisabled,
     keepEvents: isTooltipActive,
-    as: ElementType,
+    as: 'input',
   });
 
   let ownInputProps = mergeProps(inputProps, focusProps, hoverProps);
 
   if (isInert) {
-    ownInputProps = mergeProps(omitActivationEventProps(ownInputProps), {
-      ...inertProps,
-      readOnly: true,
-      onMouseDown: preventPointerFocus,
-      // React Aria leaves `tabIndex` out of a disabled input's props.
-      ...(props.excludeFromTabOrder ? { tabIndex: -1 } : null),
-    });
+    ownInputProps = mergeProps(
+      getInertInputProps(
+        mergeProps(
+          // The field's own focus handlers never run on a natively disabled input, and
+          // `useNumberField` commits on blur: it would round a value the user can't edit.
+          { ...inputProps, onFocus: undefined, onBlur: undefined },
+          focusProps,
+          hoverProps,
+        ),
+        { excludeFromTabOrder: props.excludeFromTabOrder },
+      ),
+      { readOnly: true, onMouseDown: preventPointerFocus },
+    );
   }
 
   // The field box takes the tooltip's hover side and positions it, so it
@@ -587,6 +593,17 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
   return wrapWithField(textField as ReactElement, {
     ...props,
     tooltip: undefined,
+    // A click on its label doesn't focus a natively disabled input either. The input keeps its
+    // name through `aria-labelledby`.
+    ...(isInert
+      ? {
+          labelProps: {
+            ...props.labelProps,
+            htmlFor: undefined,
+            for: undefined,
+          },
+        }
+      : null),
   });
 }
 

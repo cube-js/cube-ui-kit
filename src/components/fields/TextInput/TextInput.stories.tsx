@@ -235,17 +235,15 @@ const timeout = (ms: number) =>
   new Promise((resolve) => setTimeout(resolve, ms));
 
 export const DisabledWithTooltip: StoryFn<CubeTextInputProps> = (args) => (
-  <TextInput
-    {...args}
-    isDisabled
-    aria-label="Axis title"
-    defaultValue="Count"
-    tooltip="Show the axis to change its title"
-  />
+  <TextInput qa="DisabledInput" {...args} />
 );
 
-// Room above the field, so the tooltip opens in its default `top` placement.
 DisabledWithTooltip.args = {
+  isDisabled: true,
+  'aria-label': 'Axis title',
+  defaultValue: 'Count',
+  tooltip: 'Show the axis to change its title',
+  // Room above the field, so the tooltip opens in its default `top` placement.
   fieldStyles: { width: '0 320px 100%', margin: '6x top' },
 };
 
@@ -263,9 +261,13 @@ DisabledWithTooltip.play = async ({ canvasElement }) => {
 
   // `TooltipProvider` wires the trigger up in a mount effect.
   await timeout(250);
+
+  const input = await canvas.findByTestId('DisabledInput');
+
   // Keyboard focus opens it without the hover delay or pointer modality.
   await userEvent.tab();
 
+  await waitFor(() => expect(input).toHaveFocus());
   await waitFor(() => expect(canvas.getByRole('tooltip')).toBeVisible());
 };
 

@@ -276,6 +276,34 @@ describe('<NumberInput />', () => {
     ).toBeDisabled();
   });
 
+  // React Aria commits a number field's value on blur, formatted, so passing
+  // through would round a value the user can't edit.
+  it('keeps its value when focus passes through while disabled with a tooltip', async () => {
+    const onChange = vi.fn();
+
+    renderWithRoot(
+      <>
+        <NumberInput
+          isDisabled
+          aria-label="Ratio"
+          defaultValue={3.14159}
+          tooltip="Locked by the template"
+          onChange={onChange}
+        />
+        <button type="button">After</button>
+      </>,
+    );
+
+    await userEvent.tab();
+
+    expect(screen.getByRole('textbox')).toHaveFocus();
+
+    await userEvent.tab();
+
+    expect(screen.getByRole('button', { name: 'After' })).toHaveFocus();
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
   it('steps on ArrowUp even when onKeyDown prevents the key', async () => {
     const onKeyDown = vi.fn((e) => e.preventDefault());
     const { getByRole } = render(

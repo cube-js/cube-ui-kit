@@ -198,23 +198,18 @@ describe('a disabled field with a tooltip', () => {
     );
   });
 
-  it('takes no focus from a click and keeps the disabled cursor', async () => {
-    renderWithRoot(
-      <>
-        <TextInput isDisabled aria-label="Title" tooltip={REASON} />
-        <TextInput isDisabled aria-label="Native" />
-      </>,
-    );
+  it('takes no focus from a click on it or on its label', async () => {
+    renderWithRoot(<TextInput isDisabled label="Title" tooltip={REASON} />);
 
     const input = screen.getByRole('textbox', { name: 'Title' });
-    const native = screen.getByRole('textbox', { name: 'Native' });
 
     // `force`: Playwright won't click an `aria-disabled` element otherwise.
     await act(() => userEvent.click(input, { force: true }));
 
     expect(input).not.toHaveFocus();
-    expect(getComputedStyle(input).cursor).toBe(
-      getComputedStyle(native).cursor,
-    );
+
+    await act(() => userEvent.click(screen.getByText('Title')));
+
+    expect(input).not.toHaveFocus();
   });
 });

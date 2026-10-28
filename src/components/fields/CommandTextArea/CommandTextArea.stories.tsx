@@ -111,6 +111,11 @@ export default {
       control: { type: null },
       description: 'Keys of disabled options',
     },
+    tooltip: {
+      control: { type: 'text' },
+      description:
+        "The input's own tooltip, shown on hover over the field box and on keyboard focus, including while disabled",
+    },
     ...VALIDATION_ARGS,
   },
 };
