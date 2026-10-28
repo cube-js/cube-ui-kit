@@ -156,7 +156,7 @@ export function formatPackageReport(changes) {
       ]),
     ]),
     '',
-    'If that is intended, approve it in `scripts/bundle-deps-baseline.json` and say why in the PR.',
+    `If that is intended, approve ${changes.length === 1 ? 'it' : 'them'} in \`scripts/bundle-deps-baseline.json\` and say why in the PR.`,
     ...(entries.length
       ? [
           '',
