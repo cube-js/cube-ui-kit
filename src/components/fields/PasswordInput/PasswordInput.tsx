@@ -9,6 +9,7 @@ import {
   castNullableStringValue,
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
+import { withOverlayKeys } from '../../../utils/react/overlayKeyPropagation';
 import { ItemAction } from '../../actions/ItemAction/ItemAction';
 import { ItemActionProvider } from '../../actions/ItemActionContext';
 import { useFieldProps } from '../../form';
@@ -74,6 +75,7 @@ function PasswordInput(
       value: buffered.value,
       onChange: buffered.onChange,
       onBlur: chain(rest.onBlur, buffered.reset),
+      onKeyDown: withOverlayKeys(rest.onKeyDown),
       type,
     }),
     inputRef as RefObject<HTMLInputElement | null>,

@@ -21,6 +21,7 @@ import {
   castNullableNumberValue,
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
+import { settleOverlayKey } from '../../../utils/react/overlayKeyPropagation';
 import { useFieldProps } from '../../form';
 import { useDisplayedValidation } from '../TextInput/displayed-validation';
 import {
@@ -157,6 +158,10 @@ function NumberInput(
       // NumberInput historically lets every key except Enter reach ancestors.
       if (event.key !== 'Enter') event.continuePropagation();
       props.onKeyDown?.(event);
+      // Number handling never prevents `Escape` or `Tab`, so a prevented one
+      // is the caller's and stops here, as in every other field. An
+      // unprevented one already goes on, unless the caller stopped it.
+      if (event.isDefaultPrevented()) settleOverlayKey(event);
     },
     onKeyUp: props.onKeyUp,
   });

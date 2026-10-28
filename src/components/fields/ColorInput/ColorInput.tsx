@@ -25,6 +25,7 @@ import { useI18n } from '../../../i18n';
 import { PipetteIcon } from '../../../icons/PipetteIcon';
 import { FieldBaseProps } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
+import { settleOverlayKey } from '../../../utils/react/overlayKeyPropagation';
 import { ItemAction, ItemActionProvider } from '../../actions';
 import { useFieldProps } from '../../form';
 import { Dialog } from '../../overlays/Dialog/Dialog';
@@ -309,6 +310,9 @@ export const ColorInput = forwardRef(function ColorInput(
 
   const handleKeyDown = useEvent((event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter') settle();
+    // React Aria holds every key this handler sees; `Escape` and `Tab` belong
+    // to the overlay around the field.
+    settleOverlayKey(event);
   });
 
   const handleColorChange = useEvent((nextColor: ColorValue) => {

@@ -1,4 +1,4 @@
-import { cloneElement, createRef, ReactElement, useState } from 'react';
+import { cloneElement, createRef, useState } from 'react';
 
 import {
   act,
@@ -8,7 +8,10 @@ import {
   screen,
   userEvent,
 } from '../../test';
-import { FORM_ATTACHABLE_INPUTS } from '../../test/form-attachable-inputs';
+import {
+  FIELD_INPUTS,
+  FORM_ATTACHABLE_INPUTS,
+} from '../../test/form-attachable-inputs';
 import { Checkbox } from '../fields/Checkbox/Checkbox';
 import { DatePicker } from '../fields/DatePicker/DatePicker';
 import { SearchComboBox } from '../fields/SearchComboBox/SearchComboBox';
@@ -474,17 +477,6 @@ describe('field chrome without a label', () => {
  * a `labelRef` of its own.
  */
 describe('field refs', () => {
-  const inputs: [string, ReactElement<any>][] = [
-    ...FORM_ATTACHABLE_INPUTS,
-    ['SearchInput', <SearchInput label="SearchInput" />],
-    [
-      'SearchComboBox',
-      <SearchComboBox label="SearchComboBox">
-        <SearchComboBox.Item key="one">One</SearchComboBox.Item>
-      </SearchComboBox>,
-    ],
-  ];
-
   // A DOM ref holds the element; a focusable or DOM handle unwraps to it.
   function elementOf(value: unknown) {
     if (value instanceof HTMLElement) return value;
@@ -492,7 +484,7 @@ describe('field refs', () => {
     return (value as DOMRefValue | null)?.UNSAFE_getDOMNode() ?? null;
   }
 
-  it.each(inputs)(
+  it.each(FIELD_INPUTS)(
     '%s points its ref at the control with and without the chrome',
     (_, element) => {
       const ref = createRef<unknown>();
@@ -536,7 +528,7 @@ describe('field refs', () => {
     },
   );
 
-  it.each(inputs)(
+  it.each(FIELD_INPUTS)(
     '%s points labelRef at the visually hidden label with isBare',
     (_, element) => {
       const error = vi.spyOn(console, 'error');

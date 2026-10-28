@@ -11,6 +11,7 @@ import {
   castNullableStringValue,
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
+import { withOverlayKeys } from '../../../utils/react/overlayKeyPropagation';
 import { ItemAction } from '../../actions/ItemAction/ItemAction';
 import { ItemActionProvider } from '../../actions/ItemActionContext';
 import { useValidationProps } from '../../form';
@@ -95,6 +96,7 @@ export const SearchInput = forwardRef(function SearchInput(
     value: buffered.value,
     onChange: buffered.onChange,
     onBlur: chain(restProps.onBlur, buffered.reset),
+    onKeyDown: withOverlayKeys(restProps.onKeyDown),
   };
 
   let state = useSearchFieldState(fieldProps);

@@ -16,7 +16,7 @@ type MaybeAugmentedKeyboardEvent = KeyboardEvent<any> & {
  * the document, so a `Tab` held here left a Dialog's first or last control
  * unable to wrap (CUB-5603).
  */
-const OVERLAY_KEYS = new Set(['Escape', 'Tab']);
+export const OVERLAY_KEYS = new Set(['Escape', 'Tab']);
 
 /**
  * Let `Escape` and `Tab` keep travelling out of a trigger or list, and hold
@@ -30,11 +30,9 @@ const OVERLAY_KEYS = new Set(['Escape', 'Tab']);
  * is opposite between them:
  *
  * - Wrapped by `useKeyboard`, the event is augmented and propagation is
- *   stopped unless the handler opts out. `createEventHandler` also keeps that
- *   decision for the LIFE of the handler rather than per event — nothing
- *   resets it when the next key arrives — so an earlier opt-out would keep
- *   releasing later keys until a render replaced the handler. Re-asserting the
- *   default here is what keeps the opt-out from outliving its own event.
+ *   stopped after the handler unless it opts out, decided per event. A
+ *   handler that already opted out keeps every key except `Escape` and `Tab`
+ *   contained here all the same, by re-asserting the stop.
  * - Spread straight onto an element, the event is an ordinary React one and
  *   propagation is the default, so containment is what has to be asked for.
  *
@@ -59,4 +57,54 @@ export function allowOverlayKeysToPropagate(
   }
 
   if (!isOverlayKey) event.stopPropagation();
+}
+
+/**
+ * Where `Escape` and `Tab` go from a field a user types into, once the field
+ * and its caller's `onKeyDown` have both seen the key: a prevented one stops
+ * at the field, any other goes on to the overlay around it. Other keys are
+ * left as they are.
+ *
+ * Prevention is the signal because that is how the overlay reads it too: a
+ * Dialog stays open on a prevented `Escape` (`useOverlayEscapeGuard`). React
+ * Aria's `FocusScope` does not: it moves focus on every `Tab` that reaches it
+ * and ignores `defaultPrevented`, so a `Tab` a field or caller takes over has
+ * to stop here or focus moves anyway.
+ *
+ * Shape-aware like `allowOverlayKeysToPropagate`: an event wrapped by
+ * `useKeyboard` stops unless released, a plain one travels unless stopped.
+ * A key an IME is composing with is left as it is: it cancels or confirms
+ * the composition, and the overlay ignores it anyway. That is `isComposing`
+ * alone. The key Safari fires as a composition ends (`keyCode` 229,
+ * `isComposing` false) is an ordinary key to the overlay, so it follows the
+ * rule too, even in a field that skips it for its own key handling.
+ */
+export function settleOverlayKey(event: MaybeAugmentedKeyboardEvent) {
+  if (!OVERLAY_KEYS.has(event.key) || event.nativeEvent.isComposing) return;
+
+  const isAugmented = typeof event.continuePropagation === 'function';
+
+  if (!event.isDefaultPrevented()) {
+    if (isAugmented) event.continuePropagation!();
+  } else if (!isAugmented || event.isPropagationStopped?.() === false) {
+    // Only when the flag is clear, the one case `stopPropagation` does not
+    // warn about on a wrapped event.
+    event.stopPropagation();
+  }
+}
+
+/**
+ * A text field's `onKeyDown`, followed by `settleOverlayKey`. Without a
+ * handler there is nothing to wrap: React Aria then leaves every key to
+ * propagate, `Escape` and `Tab` included.
+ */
+export function withOverlayKeys<E extends MaybeAugmentedKeyboardEvent>(
+  onKeyDown: ((event: E) => void) | undefined,
+) {
+  if (!onKeyDown) return undefined;
+
+  return (event: E) => {
+    onKeyDown(event);
+    settleOverlayKey(event);
+  };
 }

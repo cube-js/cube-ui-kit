@@ -27,6 +27,7 @@ import {
   castNullableStringValue,
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
+import { withOverlayKeys } from '../../../utils/react/overlayKeyPropagation';
 import { mergeStyleLayers } from '../../../utils/styles';
 import { CollectionItem as Item } from '../../CollectionItem';
 import { useFieldProps } from '../../form';
@@ -760,7 +761,10 @@ function CommandTextArea<T extends object>(
         shouldShowPopover && focusedKey != null
           ? getListBoxOptionId(listBoxId, focusedKey)
           : undefined,
-      onKeyDown: onKeyDownHandler,
+      // A `Tab` that picked an option, or an `Escape` that closed the list, is
+      // prevented and stays here: a surrounding dialog would otherwise move
+      // focus on the `Tab` anyway. Unprevented ones go on to it.
+      onKeyDown: withOverlayKeys(onKeyDownHandler),
       onSelect: syncCaret,
       onKeyUp: syncCaret,
       onClick: syncCaret,
