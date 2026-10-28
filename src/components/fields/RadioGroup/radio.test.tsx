@@ -115,6 +115,72 @@ describe('<Radio /> and <RadioGroup />', () => {
     expect(radio[1]).toBeChecked();
   });
 
+  it('still disables a loading button radio whose group and form pass isDisabled={false}', () => {
+    const { getAllByRole } = renderWithForm(
+      <Radio.ButtonGroup isDisabled={false} aria-label="Group">
+        <Radio value="test">test</Radio>
+        <Radio value="test2" isLoading>
+          test2
+        </Radio>
+      </Radio.ButtonGroup>,
+      { formProps: { isDisabled: false } },
+    );
+    const radio = getAllByRole('radio');
+
+    expect(radio[0]).not.toBeDisabled();
+    expect(radio[1]).toBeDisabled();
+  });
+
+  describe('a group with isDisabled={false} in a disabled form', () => {
+    it.each(['radio', 'button', 'tabs'] as const)(
+      'enables its %s options',
+      async (type) => {
+        const { getAllByRole } = renderWithForm(
+          <Radio.Group type={type} isDisabled={false} aria-label="Group">
+            <Radio value="test">test</Radio>
+            <Radio value="test2">test2</Radio>
+          </Radio.Group>,
+          { formProps: { isDisabled: true } },
+        );
+        const radio = getAllByRole('radio');
+
+        expect(radio[0]).not.toBeDisabled();
+        expect(radio[0].closest('label')).not.toHaveAttribute('data-disabled');
+
+        await act(async () => await userEvent.click(radio[1]));
+
+        expect(radio[1]).toBeChecked();
+      },
+    );
+
+    it("keeps an option's own isDisabled", () => {
+      const { getAllByRole } = renderWithForm(
+        <Radio.Group isDisabled={false} aria-label="Group">
+          <Radio value="test">test</Radio>
+          <Radio isDisabled value="test2">
+            test2
+          </Radio>
+        </Radio.Group>,
+        { formProps: { isDisabled: true } },
+      );
+      const radio = getAllByRole('radio');
+
+      expect(radio[0]).not.toBeDisabled();
+      expect(radio[1]).toBeDisabled();
+    });
+  });
+
+  it('leaves the options of a group that sets nothing disabled with their form', () => {
+    const { getAllByRole } = renderWithForm(
+      <Radio.Group aria-label="Group">
+        <Radio value="test">test</Radio>
+      </Radio.Group>,
+      { formProps: { isDisabled: true } },
+    );
+
+    expect(getAllByRole('radio')[0]).toBeDisabled();
+  });
+
   describe('tooltip (CUB-5017)', () => {
     // The reported case. A string tooltip never depended on the label's shape,
     // so this guards the ticket's scenario rather than failing without the fix.
