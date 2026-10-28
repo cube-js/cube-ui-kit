@@ -2,12 +2,24 @@ import { readFile } from 'node:fs/promises';
 
 import { setFailed, setOutput } from '@actions/core';
 import { getExecOutput } from '@actions/exec';
-import bytes from 'bytes';
 import { markdownTable } from 'markdown-table';
+
+import { checkPackages, formatSize, TOLERANCE } from '../bundle-deps.mjs';
+
+/** The entry the partial imports are measured against (`.size-limit.cjs`). */
+const FULL_ENTRY = 'All';
+
+/**
+ * A partial import may weigh at most this share of the full bundle. `{ Button }`
+ * was 24% of it in August 2026 and 26% in October; a broken `sideEffects` flag
+ * or a barrel import makes webpack keep most of the library, which pushes the
+ * share toward 100%. This replaces a byte limit that every feature had to raise.
+ */
+const MAX_PARTIAL_SHARE = 0.35;
 
 async function run() {
   /**
-   * @type {{size: number, name: string, passed: boolean}[] | null}
+   * @type {{size: number, name: string}[] | null}
    */
   const baselineOutputs = await (async () => {
     try {
@@ -20,7 +32,7 @@ async function run() {
   })();
 
   /**
-   * @type {{size: number, name: string, passed: boolean}[]}
+   * @type {{size: number, name: string}[]}
    */
   const jsonOutput = await (async () => {
     const { stdout } = await getExecOutput('npx size-limit', ['--json'], {
@@ -30,42 +42,108 @@ async function run() {
     return JSON.parse(stdout);
   })();
 
+  // Saved as the next baseline on `main`, so it is written before anything
+  // below can throw.
+  setOutput('result', jsonOutput);
+
+  const full = jsonOutput.find(({ name }) => name === FULL_ENTRY);
+
+  if (!full) {
+    throw new Error(`.size-limit.cjs has no "${FULL_ENTRY}" entry.`);
+  }
+
+  const failures = [];
+
   const formattedTable = markdownTable([
-    ['Name', 'Size', 'Passed?'],
+    ['Name', 'Size', 'Change'],
     ...jsonOutput.map((entry) => {
       const currentBaselineEntry = baselineOutputs?.find(
         ({ name }) => name === entry.name,
       );
+      let size = formatSize(entry.size);
+
+      if (entry !== full) {
+        const failure = checkShare(entry, full);
+
+        size += ` · ${formatShare(entry.size / full.size)} of ${FULL_ENTRY}`;
+
+        if (failure) {
+          size += ' ❌';
+          failures.push(failure);
+        }
+      }
 
       return [
         entry.name,
-        `${formatBytes(entry.size)} (${
-          currentBaselineEntry
-            ? compareSizeWithBaseline(entry.size, currentBaselineEntry.size)
-            : 'Baseline not found'
-        })`,
-        entry.passed ? 'Yes 🎉' : 'No 👎',
+        size,
+        currentBaselineEntry
+          ? compareSizeWithBaseline(entry.size, currentBaselineEntry.size)
+          : 'Baseline not found',
       ];
     }),
   ]);
 
-  setOutput('result', jsonOutput);
+  let packageReport;
+
+  try {
+    const { failed, report } = checkPackages();
+
+    if (failed) {
+      failures.push(
+        `A third-party package entered or left the bundle, or grew more than ${formatSize(TOLERANCE)} past its approved size.`,
+      );
+    }
+
+    packageReport = report;
+  } catch (error) {
+    failures.push(
+      `The third-party package check could not run: ${error.message}`,
+    );
+    packageReport = `❌ **The third-party package check could not run**: ${error.message}`;
+  }
+
   setOutput(
     'table',
-    `${formattedTable}\n\n${describeBaseline(baselineOutputs)}`,
+    [
+      formattedTable,
+      describeBaseline(baselineOutputs),
+      '### Third-party packages',
+      packageReport,
+    ].join('\n\n'),
   );
 
-  if (jsonOutput.some((entry) => entry.passed === false)) {
-    setFailed('Size limit has been exceeded.');
+  if (failures.length) {
+    setFailed(failures.join('\n'));
   }
+}
+
+/**
+ * The failure for a partial import that weighs too much of the full bundle,
+ * or `null` when it passes.
+ *
+ * @param entry {{size: number, name: string}}
+ * @param full {{size: number, name: string}}
+ * @return {string | null}
+ */
+export function checkShare(entry, full) {
+  const share = entry.size / full.size;
+
+  return share > MAX_PARTIAL_SHARE
+    ? `"${entry.name}" is ${formatShare(share)} of the full bundle, over ${formatShare(MAX_PARTIAL_SHARE)}: tree-shaking no longer drops the rest of the library.`
+    : null;
+}
+
+/**
+ * @param share {number}
+ * @return {string}
+ */
+function formatShare(share) {
+  return `${Math.round(share * 1000) / 10}%`;
 }
 
 /**
  * Spells out which run the baseline came from, so a stale or missing
  * comparison is visible in the PR comment instead of silently misleading.
- *
- * The result is spliced into a JS template literal by the workflow, so it must
- * never contain backticks or `${`.
  *
  * @param baselineOutputs {unknown | null}
  * @return {string}
@@ -96,14 +174,6 @@ function describeBaseline(baselineOutputs) {
 }
 
 /**
- * @param size {number}
- * @return {string | null}
- */
-function formatBytes(size) {
-  return bytes.format(size, { unitSeparator: ' ' });
-}
-
-/**
  * @param current {number}
  * @param baseline {number}
  * @return {string}
@@ -127,4 +197,6 @@ function compareSizeWithBaseline(current, baseline) {
   return `${formatted}% 🔽👏`;
 }
 
-await run();
+if (import.meta.main) {
+  await run();
+}
