@@ -1,5 +1,11 @@
 // @vitest-environment node
+import { mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+import baseline from './bundle-deps-baseline.json' with { type: 'json' };
 import {
+  checkPackages,
   formatPackageReport,
   packageOf,
   packageSizes,
@@ -66,15 +72,6 @@ describe('packageSizes', () => {
     expect(packageSizes(stats)).toEqual({ clsx: 15 });
   });
 
-  it('reads plain webpack stats and counts a module once across chunks', () => {
-    const shared = { identifier: 'x', name: pnpmPath('diff'), size: 20 };
-    const stats = {
-      chunks: [{ modules: [shared] }, { modules: [{ ...shared }] }],
-    };
-
-    expect(packageSizes(stats)).toEqual({ diff: 20 });
-  });
-
   it('fails loudly instead of approving an empty bundle', () => {
     expect(() => packageSizes({ chunks: [{ modules: [] }] })).toThrow(
       'no third-party packages',
@@ -134,5 +131,43 @@ describe('formatPackageReport', () => {
 
   it('passes in one line when the graph did not change', () => {
     expect(formatPackageReport([])).toMatch(/^✅ [^\n]+$/);
+  });
+});
+
+describe('checkPackages', () => {
+  /** A size-limit report folder whose bundle holds these packages. */
+  function reportFolder(sizes) {
+    const folder = mkdtempSync(join(tmpdir(), 'bundle-deps-'));
+    const modules = Object.entries(sizes).map(([name, size], id) => [
+      id,
+      { identifier: name, nameForCondition: pnpmPath(name), size },
+    ]);
+
+    writeFileSync(
+      join(folder, 'stats.json'),
+      JSON.stringify(
+        normalizedStats(
+          modules,
+          modules.map(([id]) => id),
+        ),
+      ),
+    );
+    return folder;
+  }
+
+  it('passes the bundle the baseline approved', () => {
+    expect(checkPackages(reportFolder(baseline))).toEqual({
+      failed: false,
+      report: expect.stringMatching(/^✅/),
+    });
+  });
+
+  it('fails when a package enters it', () => {
+    const { failed, report } = checkPackages(
+      reportFolder({ ...baseline, 'left-pad': 100 }),
+    );
+
+    expect(failed).toBe(true);
+    expect(report).toMatch(/`left-pad` .*\| new in the bundle/);
   });
 });

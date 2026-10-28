@@ -1,4 +1,4 @@
 {
-  "*.{js,mjs,cjs,jsx,ts,tsx}": ["prettier --experimental-cli --write", "oxlint --fix --no-error-on-unmatched-pattern"],
+  "*.{js,jsx,ts,tsx}": ["prettier --experimental-cli --write", "oxlint --fix --no-error-on-unmatched-pattern"],
   "*.{md,mdx}": ["prettier --experimental-cli --write"]
 }

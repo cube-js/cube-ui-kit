@@ -22,7 +22,7 @@ When you create or update a pull request:
 
    - A comment is posted with review and preview links
 
-4. **Size** — Bundle size is measured and reported in a PR comment; the check fails when a third-party package enters or leaves the bundle or grows past its approved size, or when tree-shaking breaks
+4. **Size** — Bundle size is measured and reported in a PR comment; the check fails when a third-party package enters or leaves the bundle or grows more than 10 KB past its approved size, or when tree-shaking breaks
 
 ### On Push to `main` Branch
 

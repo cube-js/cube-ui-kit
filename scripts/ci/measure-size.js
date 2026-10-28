@@ -1,19 +1,10 @@
 import { readFile } from 'node:fs/promises';
-import { resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
 
 import { setFailed, setOutput } from '@actions/core';
 import { getExecOutput } from '@actions/exec';
 import { markdownTable } from 'markdown-table';
 
-import {
-  formatPackageReport,
-  formatSize,
-  packageSizes,
-  readBaseline as readApprovedPackages,
-  readStats,
-  unapprovedChanges,
-} from '../bundle-deps.mjs';
+import { checkPackages, formatSize } from '../bundle-deps.mjs';
 
 /** The entry the partial imports are measured against (`.size-limit.cjs`). */
 const FULL_ENTRY = 'All';
@@ -95,20 +86,15 @@ async function run() {
   let packageReport;
 
   try {
-    const changes = unapprovedChanges(
-      packageSizes(
-        readStats(process.env.REPORT_FOLDER ?? './size-limit-report'),
-      ),
-      readApprovedPackages(),
-    );
+    const { failed, report } = checkPackages();
 
-    if (changes.length) {
+    if (failed) {
       failures.push(
-        'A third-party package entered or left the bundle, or grew past its approved size.',
+        'A third-party package entered or left the bundle, or grew more than 10 KB past its approved size.',
       );
     }
 
-    packageReport = formatPackageReport(changes);
+    packageReport = report;
   } catch (error) {
     failures.push(
       `The third-party package check could not run: ${error.message}`,
@@ -211,9 +197,6 @@ function compareSizeWithBaseline(current, baseline) {
   return `${formatted}% 🔽👏`;
 }
 
-if (
-  process.argv[1] &&
-  fileURLToPath(import.meta.url) === resolve(process.argv[1])
-) {
+if (import.meta.main) {
   await run();
 }
