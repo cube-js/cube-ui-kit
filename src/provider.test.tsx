@@ -1,21 +1,26 @@
 import { cloneElement, ReactElement } from 'react';
 
 import { Provider, useProviderProps } from './provider';
-import { FORM_ATTACHABLE_INPUTS } from './test/form-attachable-inputs';
+import { FIELD_INPUTS } from './test/form-attachable-inputs';
 import { renderHook, renderWithForm, renderWithRoot } from './test/index';
 
-import { SearchComboBox, SearchInput, TextInput } from './index';
+import { TextInput } from './index';
 
-const INPUTS: [string, ReactElement<any>][] = [
-  ...FORM_ATTACHABLE_INPUTS,
-  ['SearchInput', <SearchInput label="SearchInput" />],
-  [
-    'SearchComboBox',
-    <SearchComboBox label="SearchComboBox">
-      <SearchComboBox.Item key="one">One</SearchComboBox.Item>
-    </SearchComboBox>,
-  ],
-];
+/**
+ * These leave no trace of a read-only state in the DOM, so the read-only cases
+ * can't tell inherited from not inherited on them and skip them.
+ */
+const NO_READ_ONLY_TRACE = new Set([
+  'FileInput',
+  'FilterListBox',
+  'FilterPicker',
+  'ListBox',
+  'Picker',
+  'RangeSlider',
+  'Select',
+  'Slider',
+  'TextInputMapper',
+]);
 
 /**
  * A `false` on these does not reach every control inside them. A group's
@@ -96,21 +101,22 @@ describe.each(['isDisabled', 'isReadOnly'] as const)(
       return signature;
     }
 
-    it.each(INPUTS)(
+    const inputs = FIELD_INPUTS.filter(
+      ([name]) => prop !== 'isReadOnly' || !NO_READ_ONLY_TRACE.has(name),
+    );
+
+    it.each(inputs)(
       '%s keeps the inherited state when the prop is explicitly undefined',
       (_, input) => {
         const inherited = signatureOf(input, {});
 
-        if (prop === 'isDisabled') {
-          // The provider must show on the field, or the comparison proves nothing.
-          expect(inherited).not.toEqual(signatureOf(input, {}, false));
-        }
-
+        // The provider must show on the field, or the comparison proves nothing.
+        expect(inherited).not.toEqual(signatureOf(input, {}, false));
         expect(signatureOf(input, { [prop]: undefined })).toEqual(inherited);
       },
     );
 
-    it.each(INPUTS.filter(([name]) => !FALSE_STAYS_ON_THE_ROOT.has(name)))(
+    it.each(inputs.filter(([name]) => !FALSE_STAYS_ON_THE_ROOT.has(name)))(
       '%s overrides the provider with false',
       (_, input) => {
         expect(signatureOf(input, { [prop]: false })).toEqual(

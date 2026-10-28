@@ -6,7 +6,7 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 All input components in UI Kit (`TextInput`, `Select`, `ComboBox`, `Checkbox`, `RadioGroup`, `NumberInput`, `Switch`, `DatePicker`, `Slider`, `FileInput`, etc.) share a common set of field properties. These properties are provided by the `FieldBaseProps` interface and enable form integration, validation, labeling, and state management.
 
-When used inside a [Form](/docs/forms-form--docs), these properties are automatically inherited from the form context and can be overridden at the field level. For the state a form passes down (`isDisabled`, `isReadOnly`, `isInvalid` and `isValid`), a field prop set to `undefined` counts as not set, so a wrapper that passes an optional `isDisabled` through keeps the form's state; `false` overrides it.
+When used inside a [Form](/docs/forms-form--docs), these properties are automatically inherited from the form context and can be overridden at the field level. For the state a form passes down (`isDisabled`, `isReadOnly`, `isInvalid` and `isValid`), a field prop set to `undefined` counts as not set, so a wrapper that passes an optional `isDisabled` through keeps the form's state.
 
 For modern forms, follow the [use-case guide](/docs/forms-modernform--docs). Bind with `name` and put validation options on the input, or choose `field={form.field(path, options)}` for model-aware type checking and validator inference. Keep presentation props on the input. These binding styles are alternatives; descriptors are not required for nested data.
 
@@ -93,7 +93,7 @@ Fields without labels no longer reserve an empty side or split label column. If 
 
 ## State
 
-- **`isDisabled`** `boolean` (default: `false`) — Whether the field is disabled and non-interactive. A field also takes it from an enclosing `<Provider isDisabled>` or `<Form isDisabled>`, unless its own `isDisabled` is `true` or `false`. Buttons don't, apart from `Form.Submit` and `Form.Reset`: see [Button](/docs/actions-button--docs).
+- **`isDisabled`** `boolean` (default: `false`) — Whether the field is disabled and non-interactive. A field also takes it from an enclosing `<Provider isDisabled>` or `<Form isDisabled>`, including when its own `isDisabled` is `undefined`. Buttons don't, apart from `Form.Submit` and `Form.Reset`: see [Button](/docs/actions-button--docs).
 - **`isReadOnly`** `boolean` (default: `false`) — Whether the field can be focused but not changed.
 - **`isLoading`** `boolean` (default: `false`) — Whether the field shows its loading spinner. `Select`, `Picker`, `FilterPicker`, `ColorPicker` and a button-type `Radio` also disable while loading; other fields stay interactive, and fields without a spinner, such as `Checkbox`, `RadioGroup`, `ListBox` or `Slider`, ignore it.
 - **`isHidden`** `boolean` (default: `false`) — Whether the field is hidden.

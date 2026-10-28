@@ -99,11 +99,11 @@ export function Provider(allProps: PropsWithChildren<ProviderProps>) {
  */
 export function useProviderProps<T extends ProviderProps = Props>(props: T): T {
   const contextProps = useContext(UIKitContext);
-  const merged = { ...contextProps, ...props };
+  const merged: Record<string, unknown> = { ...contextProps, ...props };
 
-  for (const key of Object.keys(contextProps)) {
+  for (const [key, value] of Object.entries(contextProps)) {
     if (merged[key] === undefined) {
-      merged[key] = contextProps[key];
+      merged[key] = value;
     }
   }
 

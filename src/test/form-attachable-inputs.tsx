@@ -30,6 +30,8 @@ import {
   Radio,
   RadioGroup,
   RangeSlider,
+  SearchComboBox,
+  SearchInput,
   Select,
   Slider,
   Switch,
@@ -128,4 +130,19 @@ export const FORM_ATTACHABLE_INPUTS: [string, ReactElement<any>][] = [
   ['TimeInput', <TimeInput label="TimeInput" />],
   ['WeekPicker', <WeekPicker label="WeekPicker" />],
   ['YearPicker', <YearPicker label="YearPicker" />],
+];
+
+/**
+ * Every field-level input: the form-attachable ones, plus `SearchInput` and
+ * `SearchComboBox`, which render the field chrome but never bind to a form.
+ */
+export const FIELD_INPUTS: [string, ReactElement<any>][] = [
+  ...FORM_ATTACHABLE_INPUTS,
+  ['SearchInput', <SearchInput label="SearchInput" />],
+  [
+    'SearchComboBox',
+    <SearchComboBox label="SearchComboBox">
+      <SearchComboBox.Item key="one">One</SearchComboBox.Item>
+    </SearchComboBox>,
+  ],
 ];
