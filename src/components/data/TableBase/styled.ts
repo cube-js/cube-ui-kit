@@ -740,7 +740,7 @@ export const TableElement = tasty({
       padding: '1x $cell-padding-x',
       preset: 'c2',
       textAlign: 'start',
-      color: '#dark-03',
+      color: '#surface-2-text-soft',
       fill: '#surface-2',
       border: '1bw #border bottom',
       overflowWrap: 'anywhere',

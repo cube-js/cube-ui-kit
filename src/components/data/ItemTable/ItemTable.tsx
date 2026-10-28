@@ -345,21 +345,22 @@ function ItemTable<T = any>(
   const visibleRows = treeModel
     ? visibleTreeEntries.map((entry) => entry.row)
     : pagination.pageRows;
+  const visibleRowCount = visibleRows.length;
   const sectionPage = useMemo(
     () =>
       sectionModel
         ? {
             layout: {
-              ...sectionPageLayout(sectionModel, pageStart, visibleRows.length),
+              ...sectionPageLayout(sectionModel, pageStart, visibleRowCount),
               viewportWidth: containerWidth,
             },
             keys: sectionModel.keys.slice(
               pageStart,
-              pageStart + visibleRows.length,
+              pageStart + visibleRowCount,
             ),
           }
         : undefined,
-    [sectionModel, pageStart, visibleRows.length, containerWidth],
+    [sectionModel, pageStart, visibleRowCount, containerWidth],
   );
   const visibleRowKeys = treeModel
     ? visibleTreeEntries.map((entry) => entry.key)

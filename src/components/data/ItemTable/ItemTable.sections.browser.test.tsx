@@ -34,6 +34,50 @@ async function key(value: string) {
 }
 
 describe('ItemTable section layout', () => {
+  it('keeps default captions at AA contrast on the dark section surface', async () => {
+    const root = document.documentElement;
+    const previous = root.dataset.scheme;
+    root.dataset.scheme = 'dark';
+    try {
+      renderWithRoot(
+        <ItemTable
+          data={DATA.slice(0, 4)}
+          columns={COLUMNS}
+          sections={SECTIONS}
+          getSectionKey={getSectionKey}
+          paginationMode="off"
+          isAutoHeight
+        />,
+      );
+      const cell = grid().querySelector<HTMLElement>(
+        '[data-element="SectionCell"]',
+      )!;
+      const styles = getComputedStyle(cell);
+      const canvas = document.createElement('canvas').getContext('2d')!;
+      function luminance(color: string) {
+        canvas.fillStyle = color;
+        canvas.fillRect(0, 0, 1, 1);
+        const rgb = Array.from(canvas.getImageData(0, 0, 1, 1).data)
+          .slice(0, 3)
+          .map((value) => {
+            const channel = value / 255;
+            return channel <= 0.04045
+              ? channel / 12.92
+              : ((channel + 0.055) / 1.055) ** 2.4;
+          });
+        return rgb[0] * 0.2126 + rgb[1] * 0.7152 + rgb[2] * 0.0722;
+      }
+      const foreground = luminance(styles.color);
+      const background = luminance(styles.backgroundColor);
+      expect(
+        (Math.max(foreground, background) + 0.05) /
+          (Math.min(foreground, background) + 0.05),
+      ).toBeGreaterThanOrEqual(4.5);
+    } finally {
+      if (previous == null) delete root.dataset.scheme;
+      else root.dataset.scheme = previous;
+    }
+  });
   it.each(['light', 'dark'])(
     'spans pinned and scrolling columns in %s, preserving caption customization',
     async (scheme) => {
