@@ -1,24 +1,24 @@
 // @vitest-environment node
 import {
-  compareSizes,
   formatPackageReport,
   packageOf,
   packageSizes,
   TOLERANCE,
+  unapprovedChanges,
 } from './bundle-deps.mjs';
 
 const pnpmPath = (name, file = 'dist/index.js') =>
   `/repo/node_modules/.pnpm/${name.replace('/', '+')}@1.0.0/node_modules/${name}/${file}`;
 
-/** Stats in the shape Statoscope writes: modules once, by id, elsewhere. */
+/**
+ * Stats in the shape Statoscope writes: the chunk lists modules by id, and a
+ * concatenated module carries the modules merged into it inline.
+ */
 function normalizedStats(modules, chunkModules) {
   return {
-    hash: 'abc',
     chunks: [{ modules: chunkModules }],
     __statoscope: {
-      normalization: {
-        data: { compilations: [{ id: 'abc', data: { modules } }] },
-      },
+      normalization: { data: { compilations: [{ data: { modules } }] } },
     },
   };
 }
@@ -35,20 +35,30 @@ describe('packageOf', () => {
 });
 
 describe('packageSizes', () => {
-  it('sums the modules concatenated into one, by package', () => {
+  it('sums the modules concatenated into one, by third-party package', () => {
     const stats = normalizedStats(
       [
-        [1, { name: 'index.js + 3 modules', modules: [2, 3, 4], size: 999 }],
-        [2, { identifier: 'a', nameForCondition: pnpmPath('clsx'), size: 10 }],
         [
-          3,
+          1,
           {
-            identifier: 'b',
-            nameForCondition: pnpmPath('clsx', 'lite.js'),
-            size: 5,
+            name: 'index.js + 4 modules',
+            size: 999,
+            modules: [
+              { identifier: 'a', nameForCondition: pnpmPath('clsx'), size: 10 },
+              {
+                identifier: 'b',
+                nameForCondition: pnpmPath('clsx', 'lite.js'),
+                size: 5,
+              },
+              {
+                identifier: 'c',
+                nameForCondition: pnpmPath('@tenphi/tasty'),
+                size: 50,
+              },
+              { identifier: 'd', nameForCondition: '/repo/dist/a.js', size: 7 },
+            ],
           },
         ],
-        [4, { identifier: 'c', nameForCondition: '/repo/dist/a.js', size: 7 }],
       ],
       [1],
     );
@@ -67,95 +77,62 @@ describe('packageSizes', () => {
 
   it('fails loudly instead of approving an empty bundle', () => {
     expect(() => packageSizes({ chunks: [{ modules: [] }] })).toThrow(
-      'no node_modules packages',
+      'no third-party packages',
     );
     expect(() => packageSizes(normalizedStats([], [7]))).toThrow('Module 7');
   });
 });
 
-describe('compareSizes', () => {
-  const approved = { 'react-aria': 1000, clsx: 100, gone: 50 };
+describe('unapprovedChanges', () => {
+  const approved = { 'react-aria': 1000, clsx: 100 };
 
-  it('blocks a third-party package that enters the bundle', () => {
-    const [change] = compareSizes({ ...approved, gone: 50, diff: 1 }, approved);
-
-    expect(change).toMatchObject({
-      name: 'diff',
-      status: 'new',
-      blocking: true,
-    });
+  it('flags a package that enters the bundle', () => {
+    expect(unapprovedChanges({ ...approved, diff: 1 }, approved)).toEqual([
+      { name: 'diff', before: undefined, after: 1, status: 'new' },
+    ]);
   });
 
-  it('blocks growth past the tolerance and tolerates growth within it', () => {
-    const changes = compareSizes(
-      {
-        ...approved,
-        'react-aria': 1000 + TOLERANCE + 1,
-        clsx: 100 + TOLERANCE,
-      },
+  it('flags a package that leaves it, so it cannot return unreviewed', () => {
+    expect(unapprovedChanges({ 'react-aria': 1000 }, approved)).toEqual([
+      { name: 'clsx', before: 100, after: undefined, status: 'removed' },
+    ]);
+  });
+
+  it('flags growth past the tolerance and nothing within it', () => {
+    const changes = unapprovedChanges(
+      { 'react-aria': 1000 + TOLERANCE + 1, clsx: 100 + TOLERANCE },
       approved,
     );
 
     expect(changes).toEqual([
-      expect.objectContaining({ name: 'react-aria', blocking: true }),
-      expect.objectContaining({
-        name: 'clsx',
-        status: 'within tolerance',
-        blocking: false,
-      }),
+      expect.objectContaining({ name: 'react-aria', status: 'grown' }),
     ]);
   });
 
-  it('reports @tenphi packages without gating them', () => {
-    const [change] = compareSizes(
-      { ...approved, '@tenphi/tasty': 1e6 },
-      approved,
+  it('says nothing about a package that shrank', () => {
+    expect(unapprovedChanges({ 'react-aria': 1, clsx: 100 }, approved)).toEqual(
+      [],
     );
-
-    expect(change).toMatchObject({ status: 'new', blocking: false });
-  });
-
-  it('lists what shrank or left the bundle without failing', () => {
-    expect(compareSizes({ 'react-aria': 900, clsx: 100 }, approved)).toEqual([
-      expect.objectContaining({
-        name: 'gone',
-        status: 'removed',
-        blocking: false,
-      }),
-      expect.objectContaining({
-        name: 'react-aria',
-        status: 'smaller',
-        blocking: false,
-      }),
-    ]);
-  });
-
-  it('reports nothing when every size matches the baseline', () => {
-    expect(compareSizes({ ...approved }, approved)).toEqual([]);
   });
 });
 
 describe('formatPackageReport', () => {
-  it('names the update command when a change needs approval', () => {
+  it('lists each change and names the update command', () => {
     const report = formatPackageReport(
-      compareSizes({ clsx: 100, diff: 2048 }, { clsx: 100 }),
-    );
-
-    expect(report).toContain('❌');
-    expect(report).toContain('pnpm size --update');
-    expect(report).toMatch(/`diff` +\| — +\| 2 KB +\| new in the bundle ❌/);
-  });
-
-  it('passes with a table of tolerated changes', () => {
-    const report = formatPackageReport(
-      compareSizes(
-        { clsx: 1124, '@tenphi/tasty': 5 },
-        { clsx: 100, '@tenphi/tasty': 1029 },
+      unapprovedChanges(
+        { clsx: 100 + 2048 + TOLERANCE, diff: 2048 },
+        { clsx: 100, 'valid-url': 1024 },
       ),
     );
 
-    expect(report).toContain('✅');
-    expect(report).toMatch(/`@tenphi\/tasty` .*−1 KB \(not gated\)/);
-    expect(report).toMatch(/`clsx` .*\+1 KB +\|/);
+    expect(report).toContain('❌ **3 third-party packages need approval**');
+    expect(report).toContain('pnpm size --update');
+    expect(report).toMatch(/`clsx` .*\| \+12 KB +\|/);
+    expect(report).toMatch(/`diff` +\| — +\| 2 KB +\| new in the bundle +\|/);
+    expect(report).toMatch(/`valid-url` +\| 1 KB +\| — +\| left the bundle/);
+  });
+
+  it('passes in one line when the graph did not change', () => {
+    expect(formatPackageReport([])).toMatch(/^✅ [^\n]+$/);
   });
 });

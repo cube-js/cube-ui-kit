@@ -8,8 +8,9 @@ const reportFolder = process.env.REPORT_FOLDER ?? './size-limit-report';
 // made each such PR raise it. CI reports both sizes and their change against
 // `main`, and gates what a limit was meant to catch:
 //
-// - a third-party package entering the bundle or growing, read from the stats
-//   below by `scripts/bundle-deps.mjs` against `scripts/bundle-deps-baseline.json`;
+// - a change to the dependency graph (a third-party package entering, leaving
+//   or growing past its approved size), read from the stats below by
+//   `scripts/bundle-deps.mjs` against `scripts/bundle-deps-baseline.json`;
 // - broken tree-shaking, as the Button-only share of `All`
 //   (`scripts/ci/measure-size.js`).
 module.exports = [

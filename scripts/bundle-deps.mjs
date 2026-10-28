@@ -5,23 +5,25 @@
  * `size-limit` bundles the whole library with webpack (`.size-limit.cjs`), and
  * Statoscope writes that build's stats to `size-limit-report/stats.json`. This
  * script sums the bundled bytes of every package under `node_modules` and
- * compares them with `scripts/bundle-deps-baseline.json`, the sizes last
- * approved in review. It fails when a package enters the bundle, or when one
- * has grown more than `TOLERANCE` bytes beyond its approved size. UI Kit's own
- * code is not gated: it grows with every feature, and the PR comment reports
- * the total.
+ * compares them with `scripts/bundle-deps-baseline.json`, the packages last
+ * approved in review. It fails, and reports, only when the dependency graph
+ * changes: a package enters or leaves the bundle, or grows more than
+ * `TOLERANCE` bytes past its approved size. A version bump within the
+ * tolerance passes without a word. UI Kit's own code is not gated, since it
+ * grows with every feature, and neither are `@tenphi/*` packages, which are
+ * ours and released on their own.
  *
  * Sizes are module source bytes before minification, which are exact and the
  * same on every machine, unlike the minified, gzipped totals `size-limit`
- * reports. `@tenphi/*` packages are ours and released on their own, so they
- * are reported but never fail the check.
+ * reports.
  *
  *   pnpm build && pnpm size     # measure, then check the packages
- *   pnpm size --update          # approve the current sizes; commit the baseline
+ *   pnpm size --update          # approve the current packages; commit the baseline
  *
- * Growth within the tolerance is not approved, it is only tolerated: the next
- * change is measured against the same baseline, so creep adds up until someone
- * runs `--update` and says why in the PR.
+ * Growth within the tolerance is not approved, only tolerated: the next change
+ * is measured against the same baseline, so creep adds up until it fails. A
+ * package that left the bundle fails too, so the baseline holds only what
+ * ships, and nothing returns to the bundle unreviewed.
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
@@ -44,21 +46,16 @@ export function packageOf(path) {
   return matches.at(-1)?.[1] ?? null;
 }
 
-export function isGated(name) {
-  return !name.startsWith('@tenphi/');
-}
-
 /**
- * Bundled bytes per package, from webpack stats. Statoscope normalizes them:
- * modules are written once, as `[id, module]` pairs under
- * `__statoscope.normalization`, and referenced by id everywhere else. Plain
- * webpack stats, with module objects in place of ids, read the same way.
+ * Bundled bytes per third-party package, from webpack stats. Statoscope
+ * normalizes them: a chunk lists its modules by id, and the modules sit under
+ * `__statoscope.normalization` as `[id, module]` pairs. A concatenated module
+ * carries the modules webpack merged into it inline. Plain webpack stats, with
+ * module objects in place of ids, read the same way.
  */
 export function packageSizes(stats) {
-  const compilations =
+  const [compilation] =
     stats.__statoscope?.normalization?.data?.compilations ?? [];
-  const compilation =
-    compilations.find(({ id }) => id === stats.hash) ?? compilations[0];
   const byId = new Map(compilation?.data?.modules ?? []);
   const seen = new Set();
   const sizes = {};
@@ -68,7 +65,6 @@ export function packageSizes(stats) {
     if (!module) {
       throw new Error(`Module ${ref} is referenced but not in the stats.`);
     }
-    // A concatenated module lists the modules webpack merged into it.
     if (module.modules?.length) {
       for (const inner of module.modules) visit(inner);
       return;
@@ -77,7 +73,9 @@ export function packageSizes(stats) {
     if (seen.has(key)) return;
     seen.add(key);
     const name = packageOf(module.nameForCondition ?? module.name ?? '');
-    if (name) sizes[name] = (sizes[name] ?? 0) + (module.size ?? 0);
+    if (name && !name.startsWith('@tenphi/')) {
+      sizes[name] = (sizes[name] ?? 0) + (module.size ?? 0);
+    }
   };
 
   for (const chunk of stats.chunks ?? []) {
@@ -86,7 +84,7 @@ export function packageSizes(stats) {
 
   if (!Object.keys(sizes).length) {
     throw new Error(
-      'Found no node_modules packages in the bundle stats. Either the stats are not from size-limit, or their format changed.',
+      'Found no third-party packages in the bundle stats. Either the stats are not from size-limit, or their format changed.',
     );
   }
 
@@ -94,78 +92,67 @@ export function packageSizes(stats) {
 }
 
 /**
- * Every package whose size differs from the baseline. `blocking` marks what
- * fails the check: a gated package that is new, or grown past the tolerance.
+ * The changes that need approval: a package that entered or left the bundle,
+ * or grew more than `tolerance` bytes past its approved size.
  */
-export function compareSizes(current, approved, tolerance = TOLERANCE) {
+export function unapprovedChanges(current, approved, tolerance = TOLERANCE) {
   const names = [
     ...new Set([...Object.keys(approved), ...Object.keys(current)]),
   ];
 
   return names
-    .filter((name) => current[name] !== approved[name])
     .map((name) => {
       const before = approved[name];
       const after = current[name];
       const status =
-        after === undefined
-          ? 'removed'
-          : before === undefined
-            ? 'new'
+        before === undefined
+          ? 'new'
+          : after === undefined
+            ? 'removed'
             : after - before > tolerance
               ? 'grown'
-              : after > before
-                ? 'within tolerance'
-                : 'smaller';
-      const blocking =
-        isGated(name) && (status === 'new' || status === 'grown');
+              : null;
 
-      return { name, before, after, status, blocking };
+      return { name, before, after, status };
     })
-    .sort(
-      (a, b) =>
-        Number(b.blocking) - Number(a.blocking) || a.name.localeCompare(b.name),
-    );
+    .filter(({ status }) => status)
+    .sort((a, b) => a.name.localeCompare(b.name));
 }
 
 /** The Markdown section the size report and the PR comment show. */
 export function formatPackageReport(changes) {
-  const blocking = changes.filter((change) => change.blocking);
-  const lines = [];
+  const limit = formatSize(TOLERANCE);
 
-  if (blocking.length) {
-    const subject =
-      blocking.length === 1
-        ? 'A third-party package needs approval**: it is'
-        : `${blocking.length} third-party packages need approval**: each is`;
-
-    lines.push(
-      `❌ **${subject} new in the bundle, or more than ${formatSize(TOLERANCE)} over its approved size. If the growth is intended, run \`${UPDATE_COMMAND}\`, commit \`scripts/bundle-deps-baseline.json\`, and say why in the PR.`,
-    );
-  } else {
-    lines.push(
-      '✅ No third-party package entered the bundle or grew past its approved size.',
-    );
+  if (!changes.length) {
+    return `✅ No third-party package entered or left the bundle, and none grew more than ${limit} past its approved size.`;
   }
 
-  if (changes.length) {
-    lines.push(
-      '',
-      markdownTable([
-        ['Package', 'Approved', 'Now', 'Change'],
-        ...changes.map(({ name, before, after, status, blocking }) => [
-          `\`${name}\``,
-          formatSize(before),
-          formatSize(after),
-          `${describeChange(before, after, status)}${
-            blocking ? ' ❌' : isGated(name) ? '' : ' (not gated)'
-          }`,
-        ]),
+  const subject =
+    changes.length === 1
+      ? 'A third-party package needs approval**: it'
+      : `${changes.length} third-party packages need approval**: each`;
+
+  return [
+    `❌ **${subject} entered or left the bundle, or grew more than ${limit} past its approved size. If that is intended, run \`${UPDATE_COMMAND}\`, commit \`scripts/bundle-deps-baseline.json\`, and say why in the PR.`,
+    '',
+    markdownTable([
+      ['Package', 'Approved', 'Now', 'Change'],
+      ...changes.map(({ name, before, after, status }) => [
+        `\`${name}\``,
+        formatSize(before),
+        formatSize(after),
+        status === 'new'
+          ? 'new in the bundle'
+          : status === 'removed'
+            ? 'left the bundle'
+            : `+${formatSize(after - before)}`,
       ]),
-    );
-  }
+    ]),
+  ].join('\n');
+}
 
-  return lines.join('\n');
+export function formatSize(size) {
+  return size === undefined ? '—' : bytes.format(size, { unitSeparator: ' ' });
 }
 
 export function readStats(reportFolder) {
@@ -178,17 +165,6 @@ export function readBaseline() {
 
 function writeBaseline(sizes) {
   writeFileSync(baselinePath, `${JSON.stringify(sizes, null, 2)}\n`);
-}
-
-function describeChange(before, after, status) {
-  if (status === 'new') return 'new in the bundle';
-  if (status === 'removed') return 'left the bundle';
-  const delta = after - before;
-  return `${delta > 0 ? '+' : '−'}${formatSize(Math.abs(delta))}`;
-}
-
-function formatSize(size) {
-  return size === undefined ? '—' : bytes.format(size, { unitSeparator: ' ' });
 }
 
 function sortedByName(object) {
@@ -206,14 +182,14 @@ function main() {
   if (update) {
     writeBaseline(current);
     console.log(
-      `Approved the bundled size of ${Object.keys(current).length} packages in scripts/bundle-deps-baseline.json.`,
+      `Approved ${Object.keys(current).length} third-party packages in scripts/bundle-deps-baseline.json.`,
     );
     return;
   }
 
-  const changes = compareSizes(current, readBaseline());
+  const changes = unapprovedChanges(current, readBaseline());
   console.log(formatPackageReport(changes));
-  if (changes.some((change) => change.blocking)) process.exitCode = 1;
+  if (changes.length) process.exitCode = 1;
 }
 
 if (

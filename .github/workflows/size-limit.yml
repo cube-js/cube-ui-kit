@@ -120,7 +120,7 @@ jobs:
       # Tolerated on pull requests only. Baselines are resolved from runs on
       # the BASE branch (see `resolve-baseline.js`), so a PR run's artifact is
       # never consumed by anything and losing it cannot mislead a later run —
-      # whereas failing here would red-tick a bundle that is within budget. On
+      # whereas failing here would red-tick a bundle that passes the check. On
       # a push to main the artifact IS the next PR's baseline, so a failure
       # there stays loud.
       - name: Upload stats
@@ -162,7 +162,7 @@ jobs:
       # above, nothing later depends on it.
       #
       # Also tolerated: uploading 180 MB is the step most likely to time out,
-      # and losing the report must not report the bundle as over budget.
+      # and losing the report must not fail the size check.
       - name: Upload Statoscope report
         continue-on-error: true
         if: steps.statoscope.outputs.built == 'true'
