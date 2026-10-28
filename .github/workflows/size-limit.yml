@@ -69,8 +69,8 @@ jobs:
       # The baseline only supplies the delta column. `measure-size.js` already
       # falls back to absolute sizes when it cannot read one, so a transient
       # download failure must not fail the check — GitHub's artifact endpoint
-      # 503s intermittently during incidents, and that used to turn "the
-      # library is within its size limit" into a red tick.
+      # 503s intermittently during incidents, and that used to turn a passing
+      # size check into a red tick.
       #
       # Retry with linear backoff first, since these 503s are usually
       # short-lived, and wipe the target directory between attempts so a
@@ -100,7 +100,7 @@ jobs:
 
           rm -rf './__compare/size-limit-report'
           echo 'downloaded=false' >> "$GITHUB_OUTPUT"
-          echo '::warning::Could not download the baseline stats after 5 attempts. Reporting absolute sizes with no comparison; the size limit itself is still enforced.'
+          echo '::warning::Could not download the baseline stats after 5 attempts. Reporting absolute sizes with no comparison; the dependency and tree-shaking checks still run.'
 
       - name: Measure size
         id: measure_size
@@ -183,10 +183,16 @@ jobs:
       # `/report.html`. It now points at the artifact, and says so plainly when
       # there is no report (which happens whenever the baseline is missing,
       # since Statoscope has nothing to diff against).
+      #
+      # The report reaches the script through the environment, not through a
+      # `${{ }}` expression inside it: the package table carries backticks,
+      # which would end the template literal below.
       - name: Comment PR
         uses: actions/github-script@v6
         continue-on-error: true
         if: github.event.number
+        env:
+          SIZE_REPORT: ${{ steps.measure_size.outputs.table }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -195,7 +201,8 @@ jobs:
             await setMessage({
               header: "## 🏋️ Size limit report",
               body: `
-                ${{ steps.measure_size.outputs.table }}
+                ${process.env.SIZE_REPORT}
+
                 ---
                 ${{ steps.statoscope.outputs.built == 'true' && format('To see which modules changed, download the **size-limit-statoscope-report** artifact from [this run]({0}/{1}/actions/runs/{2}) and open report.html.', github.server_url, github.repository, github.run_id) || 'No module-level report for this run — Statoscope needs a baseline build to diff against.' }}
               `,
@@ -206,5 +213,5 @@ jobs:
       - name: Throw error
         if: steps.measure_size.outcome != 'success'
         run: |
-          echo "Size limit has been exceeded"
+          echo "The size check failed: see the Measure size step, or the report in the PR comment."
           exit 1

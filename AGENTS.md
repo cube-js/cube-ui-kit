@@ -105,6 +105,10 @@ Do not guess which stories are redundant, measure: `pnpm build-storybook && pnpm
 
 CI renders every story in real Chromium and runs axe-core on it: `pnpm diagnostics:a11y --check`, against WCAG 2.2 A/AA. `scripts/a11y-baseline.json` records how many elements fail each rule in each existing story, and nothing may grow. A new story has to be clean, including the labels on its icon-only buttons and fields, because consumers copy stories. After a fix, lower the baseline with `--update` and commit it. Raise it only for an axe false positive or an axe-core upgrade, and say which in the PR. Full rules: [storybook.md](docs/rules/storybook.md#the-accessibility-baseline).
 
+## Bundle Size: Gate Dependencies, Not Growth
+
+The size job (`.github/workflows/size-limit.yml`) has no byte limit: UI Kit's own code grows with every feature, and the PR comment reports the total and its change against `main`. It fails on two things instead. A third-party package enters the bundle, or grows more than 10 KB past its size in `scripts/bundle-deps-baseline.json`. Or the `{ Button }` import weighs more than 35% of the full bundle, which means tree-shaking broke. To approve a dependency change, run `pnpm build && pnpm size --update`, commit the baseline, and say in the PR why the package or the growth is worth it. Sizes are module bytes before minification, the same on every machine, so a local `--update` matches CI. `@tenphi/*` packages are reported, not gated. Growth within the 10 KB is tolerated but not approved, so it adds up across PRs until someone runs `--update`. See [`scripts/bundle-deps.mjs`](scripts/bundle-deps.mjs).
+
 ## Inspecting Rendered HTML & CSS — `pnpm probe`
 
 Answering "what CSS does this actually produce?" is one call, not a throwaway vitest spec: `pnpm probe styles '{"fill":"#purple"}'` (also `tokens`, `render`, `globals`). It loads the real config — the `configure()` and `setGlobalPredefinedStates()` from `src/components/Root.tsx` and the live Glaze palette. **Never verify a style through `node -e "import {renderStyles} from '@tenphi/tasty'"`** — that path loads none of it, so units, recipes, presets and tokens go unresolved and the output looks authoritative while being wrong.
@@ -147,7 +151,7 @@ Each component lives in `src/components/{category}/{ComponentName}/` and ships `
 - `pnpm test:browser` — run the `*.browser.test.tsx` specs in real Chromium (layout, pointer, observers)
 - `pnpm probe` — print the HTML, CSS or tokens a snippet actually produces, with the real config loaded. `pnpm probe:browser` for computed values, geometry and screenshots; `render --sr` for what a screen reader says. See [Inspecting Rendered HTML & CSS](#inspecting-rendered-html--css--pnpm-probe) and [Hearing What a Screen Reader Says](#hearing-what-a-screen-reader-says)
 - `pnpm fix` — lint + format (Oxlint + Prettier)
-- `pnpm size` — check bundle size limits
+- `pnpm size` — measure the bundle, then check its third-party packages against `scripts/bundle-deps-baseline.json` (needs `pnpm build` first); `--update` approves the current sizes. See [Bundle Size](#bundle-size-gate-dependencies-not-growth)
 - `pnpm chromatic` — visual regression
 - `pnpm chromatic:report` — snapshot inventory + TurboSnap blast radius. `pnpm chromatic:check` is the CI gate; `pnpm chromatic:duplicates` finds stories that photograph the same thing. All three read `storybook-static`, so run `pnpm build-storybook` first. See [The Snapshot Budget](#stories-the-snapshot-budget)
 - `pnpm add-icons` — add new icons from tabler

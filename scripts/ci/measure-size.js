@@ -5,6 +5,25 @@ import { getExecOutput } from '@actions/exec';
 import bytes from 'bytes';
 import { markdownTable } from 'markdown-table';
 
+import {
+  compareSizes,
+  formatPackageReport,
+  packageSizes,
+  readBaseline as readApprovedPackages,
+  readStats,
+} from '../bundle-deps.mjs';
+
+/** The entry the partial imports are measured against (`.size-limit.cjs`). */
+const FULL_ENTRY = 'All';
+
+/**
+ * A partial import may weigh at most this share of the full bundle. `{ Button }`
+ * was 24% of it in August 2026 and 26% in October; a broken `sideEffects` flag
+ * or a barrel import makes webpack keep most of the library, which pushes the
+ * share toward 100%. This replaces a byte limit that every feature had to raise.
+ */
+const MAX_PARTIAL_SHARE = 0.35;
+
 async function run() {
   /**
    * @type {{size: number, name: string, passed: boolean}[] | null}
@@ -30,42 +49,83 @@ async function run() {
     return JSON.parse(stdout);
   })();
 
+  const full = jsonOutput.find(({ name }) => name === FULL_ENTRY);
+
+  if (!full) {
+    throw new Error(`.size-limit.cjs has no "${FULL_ENTRY}" entry.`);
+  }
+
+  const failures = [];
+
   const formattedTable = markdownTable([
-    ['Name', 'Size', 'Passed?'],
+    ['Name', 'Size', 'Change'],
     ...jsonOutput.map((entry) => {
       const currentBaselineEntry = baselineOutputs?.find(
         ({ name }) => name === entry.name,
       );
+      let size = formatBytes(entry.size);
+
+      if (entry !== full) {
+        const share = entry.size / full.size;
+
+        size += ` · ${formatShare(share)} of ${FULL_ENTRY}`;
+
+        if (share > MAX_PARTIAL_SHARE) {
+          size += ' ❌';
+          failures.push(
+            `"${entry.name}" is ${formatShare(share)} of the full bundle, over ${formatShare(MAX_PARTIAL_SHARE)}: tree-shaking no longer drops the rest of the library.`,
+          );
+        }
+      }
 
       return [
         entry.name,
-        `${formatBytes(entry.size)} (${
-          currentBaselineEntry
-            ? compareSizeWithBaseline(entry.size, currentBaselineEntry.size)
-            : 'Baseline not found'
-        })`,
-        entry.passed ? 'Yes 🎉' : 'No 👎',
+        size,
+        currentBaselineEntry
+          ? compareSizeWithBaseline(entry.size, currentBaselineEntry.size)
+          : 'Baseline not found',
       ];
     }),
   ]);
 
+  const packageChanges = compareSizes(
+    packageSizes(readStats(process.env.REPORT_FOLDER ?? './size-limit-report')),
+    readApprovedPackages(),
+  );
+
+  if (packageChanges.some(({ blocking }) => blocking)) {
+    failures.push(
+      'A third-party package entered the bundle or grew past its approved size.',
+    );
+  }
+
   setOutput('result', jsonOutput);
   setOutput(
     'table',
-    `${formattedTable}\n\n${describeBaseline(baselineOutputs)}`,
+    [
+      formattedTable,
+      describeBaseline(baselineOutputs),
+      '### Third-party packages',
+      formatPackageReport(packageChanges),
+    ].join('\n\n'),
   );
 
-  if (jsonOutput.some((entry) => entry.passed === false)) {
-    setFailed('Size limit has been exceeded.');
+  if (failures.length) {
+    setFailed(failures.join('\n'));
   }
+}
+
+/**
+ * @param share {number}
+ * @return {string}
+ */
+function formatShare(share) {
+  return `${Math.round(share * 1000) / 10}%`;
 }
 
 /**
  * Spells out which run the baseline came from, so a stale or missing
  * comparison is visible in the PR comment instead of silently misleading.
- *
- * The result is spliced into a JS template literal by the workflow, so it must
- * never contain backticks or `${`.
  *
  * @param baselineOutputs {unknown | null}
  * @return {string}
