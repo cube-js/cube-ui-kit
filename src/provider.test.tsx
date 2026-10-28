@@ -8,7 +8,9 @@ import { TextInput } from './index';
 
 /**
  * These leave no trace of a read-only state in the DOM, so the read-only cases
- * can't tell inherited from not inherited on them and skip them.
+ * can't tell inherited from not inherited on them and skip them. A
+ * `CheckboxGroup` shows one only on its options, which read the provider
+ * themselves, so its read-only case holds whatever the group's own merge does.
  */
 const NO_READ_ONLY_TRACE = new Set([
   'FileInput',
