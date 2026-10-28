@@ -92,8 +92,20 @@ export function Provider(allProps: PropsWithChildren<ProviderProps>) {
   );
 }
 
+/**
+ * The component's props over the provider's values. A prop set to `undefined`
+ * counts as not set, so a wrapper that passes an optional `isDisabled` through
+ * keeps the state of the enclosing `<Form>` or `<Provider>`.
+ */
 export function useProviderProps<T extends ProviderProps = Props>(props: T): T {
   const contextProps = useContext(UIKitContext);
+  const merged: Record<string, unknown> = { ...contextProps, ...props };
 
-  return { ...contextProps, ...props } as T;
+  for (const [key, value] of Object.entries(contextProps)) {
+    if (merged[key] === undefined) {
+      merged[key] = value;
+    }
+  }
+
+  return merged as T;
 }
