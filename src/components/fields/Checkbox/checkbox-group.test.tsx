@@ -104,4 +104,54 @@ describe('<CheckboxGroup />', () => {
     expect(checkbox[1]).toBeChecked();
     expect(formInstance.getFieldValue('test')).toEqual(['two', 'one']);
   });
+
+  it('enables its options with isDisabled={false} in a disabled form', async () => {
+    const { getAllByRole } = renderWithForm(
+      <Checkbox.Group isDisabled={false} label="test">
+        <Checkbox value="one">One</Checkbox>
+        <Checkbox isDisabled value="two">
+          Two
+        </Checkbox>
+      </Checkbox.Group>,
+      { formProps: { isDisabled: true } },
+    );
+    const checkbox = getAllByRole('checkbox');
+
+    expect(checkbox[0]).not.toBeDisabled();
+    expect(checkbox[0].closest('label')).not.toHaveAttribute('data-disabled');
+    // An option's own `isDisabled` still wins over the group's.
+    expect(checkbox[1]).toBeDisabled();
+
+    await act(async () => await userEvent.click(checkbox[0]));
+
+    expect(checkbox[0]).toBeChecked();
+  });
+
+  it('makes its options editable with isReadOnly={false} in a read-only form', async () => {
+    const { getAllByRole } = renderWithForm(
+      <Checkbox.Group isReadOnly={false} label="test">
+        <Checkbox value="one">One</Checkbox>
+      </Checkbox.Group>,
+      { formProps: { isReadOnly: true } },
+    );
+    const [checkbox] = getAllByRole('checkbox');
+
+    expect(checkbox).not.toHaveAttribute('aria-readonly');
+    expect(checkbox.closest('label')).not.toHaveAttribute('data-readonly');
+
+    await act(async () => await userEvent.click(checkbox));
+
+    expect(checkbox).toBeChecked();
+  });
+
+  it('leaves the options of a group that sets nothing with their form', () => {
+    const { getAllByRole } = renderWithForm(
+      <Checkbox.Group label="test">
+        <Checkbox value="one">One</Checkbox>
+      </Checkbox.Group>,
+      { formProps: { isDisabled: true } },
+    );
+
+    expect(getAllByRole('checkbox')[0]).toBeDisabled();
+  });
 });

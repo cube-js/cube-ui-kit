@@ -9,8 +9,8 @@ import { TextInput } from './index';
 /**
  * These leave no trace of a read-only state in the DOM, so the read-only cases
  * can't tell inherited from not inherited on them and skip them. A
- * `CheckboxGroup` shows one only on its options, which read the provider
- * themselves, so its read-only case holds whatever the group's own merge does.
+ * `CheckboxGroup` shows one only on its options, which read the group's state
+ * from the provider it renders around them.
  */
 const NO_READ_ONLY_TRACE = new Set([
   'FileInput',
@@ -25,18 +25,11 @@ const NO_READ_ONLY_TRACE = new Set([
 ]);
 
 /**
- * A `false` on these does not reach every control inside them. A group's
- * options each read the provider themselves, so the provider's state wins over
- * the group's; `Slider` and `RangeSlider` drop `isDisabled` before
- * `SliderBase`, which reads only the provider.
+ * A `false` on these does not reach every control inside them: `Slider` and
+ * `RangeSlider` drop `isDisabled` before `SliderBase`, which reads only the
+ * provider.
  */
-const FALSE_STAYS_ON_THE_ROOT = new Set([
-  'CheckboxGroup',
-  'RadioGroup',
-  'RadioGroup (buttons)',
-  'Slider',
-  'RangeSlider',
-]);
+const FALSE_STAYS_ON_THE_ROOT = new Set(['Slider', 'RangeSlider']);
 
 /**
  * Every disabled and read-only attribute in the tree, element by element, so

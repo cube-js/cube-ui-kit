@@ -9,7 +9,6 @@ interface CubeRadioGroupState {
   size?: CubeItemProps['size'];
   buttonType?: CubeItemProps['type'];
   type?: 'radio' | 'button' | 'tabs';
-  isDisabled?: boolean;
 }
 
 export const RadioContext = createContext<CubeRadioGroupState | null>(null);

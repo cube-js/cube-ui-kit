@@ -10,6 +10,7 @@ import { forwardRef, useRef } from 'react';
 import { AriaRadioGroupProps, useFocusRing, useRadioGroup } from 'react-aria';
 import { RadioGroupState, useRadioGroupState } from 'react-stately';
 
+import { Provider } from '../../../provider';
 import { FieldBaseProps } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
 import {
@@ -115,6 +116,7 @@ function RadioGroup(rawProps: WithNullableValue<CubeRadioGroupProps>, ref) {
     qa,
     id,
     isDisabled,
+    isReadOnly,
     isRequired,
     labelPosition = 'top',
     isInvalid,
@@ -208,18 +210,23 @@ function RadioGroup(rawProps: WithNullableValue<CubeRadioGroupProps>, ref) {
           isDisabled,
         }}
       >
-        <RadioContext.Provider
-          value={{
-            state,
-            name: props.name,
-            size,
-            buttonType,
-            type,
-            isDisabled,
-          }}
-        >
-          {children}
-        </RadioContext.Provider>
+        {/* Each radio is a field that reads the provider before the form
+            context, so the group's own state has to reach it here to beat an
+            enclosing disabled form. `<Provider>` skips `undefined`, so a group
+            that sets nothing keeps the form's state. */}
+        <Provider isDisabled={isDisabled} isReadOnly={isReadOnly}>
+          <RadioContext.Provider
+            value={{
+              state,
+              name: props.name,
+              size,
+              buttonType,
+              type,
+            }}
+          >
+            {children}
+          </RadioContext.Provider>
+        </Provider>
       </FormScopeMask>
     </RadioGroupElement>
   );
