@@ -423,6 +423,10 @@ module.exports = [
     // shared checkbox cascade and Tree's active-row plumbing. On main's
     // 637,181 B (2e9ae4b8) that is about 639.7 kB. Allow 641 kB, about 1.3 kB
     // headroom; the Button-only bundle is unchanged.
+    // `readonly` mod on read-only fields: 640.0 kB locally on top of the
+    // FilterPicker tree mode (cc25d554), about +420 B for the `readonly`
+    // state-map entries in the input box, Checkbox, Switch and Radio. Fits
+    // 641 kB, about 1 kB headroom; Button unchanged. Confirm in Linux CI.
     limit: '641kB',
   },
   {
