@@ -105,14 +105,11 @@ describe.each(['isDisabled', 'isReadOnly'] as const)(
       },
     );
 
-    it.each(inputs)(
-      '%s overrides the provider with false',
-      (_, input) => {
-        expect(signatureOf(input, { [prop]: false })).toEqual(
-          signatureOf(input, {}, false),
-        );
-      },
-    );
+    it.each(inputs)('%s overrides the provider with false', (_, input) => {
+      expect(signatureOf(input, { [prop]: false })).toEqual(
+        signatureOf(input, {}, false),
+      );
+    });
   },
 );
 
