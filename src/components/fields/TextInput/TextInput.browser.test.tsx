@@ -125,3 +125,96 @@ describe('pressing the field box', () => {
     expect(input).not.toHaveFocus();
   });
 });
+
+/**
+ * A disabled field with a tooltip stays focusable so the keyboard reaches the
+ * tooltip. Whether a pointer reaches the field box, what a real click focuses
+ * and the painted focus border need a browser.
+ */
+describe('a disabled field with a tooltip', () => {
+  const REASON = 'Show the axis to change this';
+
+  async function waitForTooltip() {
+    return vi.waitFor(() => screen.getByRole('tooltip'), { timeout: 4000 });
+  }
+
+  /** The field box's border once its `theme` transition has ended. */
+  async function borderOf(input: HTMLElement, isFocused: boolean) {
+    const wrapper = wrapperOf(input);
+
+    await vi.waitFor(() =>
+      expect(wrapper.hasAttribute('data-focused')).toBe(isFocused),
+    );
+    wrapper.getAnimations().forEach((animation) => animation.finish());
+
+    return getComputedStyle(wrapper).borderTopColor;
+  }
+
+  it('opens on hover over the field box', async () => {
+    renderWithRoot(
+      <NumberInput isDisabled aria-label="Font size" tooltip={REASON} />,
+    );
+
+    await userEvent.hover(document.body);
+    await userEvent.hover(wrapperOf(screen.getByRole('textbox')));
+
+    expect(await waitForTooltip()).toHaveTextContent(REASON);
+  });
+
+  it('is reached by Tab, shows its focus border and opens above the field box', async () => {
+    renderWithRoot(
+      <>
+        {/* Room above the field, so the tooltip has no reason to flip. */}
+        <Button margin="120px 0 0">Before</Button>
+        <TextInput isDisabled aria-label="Title" tooltip={REASON} />
+        <TextInput aria-label="Enabled" />
+      </>,
+    );
+
+    const input = screen.getByRole('textbox', { name: 'Title' });
+    const enabled = screen.getByRole('textbox', { name: 'Enabled' });
+
+    // The border an enabled field shows while focused.
+    act(() => enabled.focus());
+    const focusedBorder = await borderOf(enabled, true);
+
+    act(() => enabled.blur());
+
+    const restingBorder = await borderOf(input, false);
+
+    expect(restingBorder).not.toBe(focusedBorder);
+
+    screen.getByRole('button', { name: 'Before' }).focus();
+    await userEvent.keyboard('{Tab}');
+
+    expect(input).toHaveFocus();
+    expect(await borderOf(input, true)).toBe(focusedBorder);
+
+    const tooltip = await waitForTooltip();
+
+    expect(tooltip).toHaveTextContent(REASON);
+    expect(tooltip.getBoundingClientRect().bottom).toBeLessThanOrEqual(
+      wrapperOf(input).getBoundingClientRect().top,
+    );
+  });
+
+  it('takes no focus from a click and keeps the disabled cursor', async () => {
+    renderWithRoot(
+      <>
+        <TextInput isDisabled aria-label="Title" tooltip={REASON} />
+        <TextInput isDisabled aria-label="Native" />
+      </>,
+    );
+
+    const input = screen.getByRole('textbox', { name: 'Title' });
+    const native = screen.getByRole('textbox', { name: 'Native' });
+
+    // `force`: Playwright won't click an `aria-disabled` element otherwise.
+    await act(() => userEvent.click(input, { force: true }));
+
+    expect(input).not.toHaveFocus();
+    expect(getComputedStyle(input).cursor).toBe(
+      getComputedStyle(native).cursor,
+    );
+  });
+});

@@ -242,6 +242,40 @@ describe('<NumberInput />', () => {
     expect(calls).toEqual(['change:42', 'keydown:Enter']);
   });
 
+  // A disabled field with a tooltip keeps its focus so the keyboard reaches
+  // the tooltip; it must not step or take text while it has it.
+  it('neither steps nor takes text while disabled with a tooltip', async () => {
+    const onChange = vi.fn();
+
+    renderWithRoot(
+      <NumberInput
+        isDisabled
+        aria-label="Font size"
+        defaultValue={11}
+        tooltip="Turn data labels on to change this"
+        onChange={onChange}
+      />,
+    );
+
+    const input = screen.getByRole('textbox');
+
+    await userEvent.tab();
+
+    expect(input).toHaveFocus();
+    expect(await screen.findByRole('tooltip')).toHaveTextContent(
+      'Turn data labels on to change this',
+    );
+
+    await userEvent.keyboard('{ArrowUp}{ArrowDown}{PageUp}{End}5');
+    fireEvent.wheel(input, { deltaY: -10 });
+
+    expect(input).toHaveValue('11');
+    expect(onChange).not.toHaveBeenCalled();
+    expect(
+      screen.getByRole('button', { name: 'Increase Font size' }),
+    ).toBeDisabled();
+  });
+
   it('steps on ArrowUp even when onKeyDown prevents the key', async () => {
     const onKeyDown = vi.fn((e) => e.preventDefault());
     const { getByRole } = render(

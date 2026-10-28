@@ -27,17 +27,27 @@ import {
 import { AriaNumberFieldProps, AriaTextFieldProps, useHover } from 'react-aria';
 
 import { FieldBaseProps, TextFieldKeyboardProps } from '../../../shared';
-import { mergeProps, useCombinedRefs } from '../../../utils/react';
+import { mergeProps, mergeRefs, useCombinedRefs } from '../../../utils/react';
+import {
+  getDisabledElementProps,
+  omitActivationEventProps,
+} from '../../../utils/react/disabledProps';
 import { useFocus } from '../../../utils/react/interactions';
 import { extractStyles } from '../../../utils/styles';
+import { useAutoTooltip } from '../../content/use-auto-tooltip';
 import {
   getValidationMods,
   hasValidationIndicator,
   ValidationIndicator,
   wrapWithField,
 } from '../../form';
+import {
+  mergeTooltipFocusProps,
+  splitTooltipTriggerProps,
+} from '../../overlays/Tooltip/split-trigger-props';
 
 import type { Props } from '../../../props';
+import type { CubeTooltipProviderProps } from '../../overlays/Tooltip/TooltipProvider';
 
 const ADD_STYLES = {
   $: '>',
@@ -82,6 +92,9 @@ export const INPUT_WRAPPER_STYLES: Styles = {
     'valid & focused': '#success-text',
     'invalid & focused': '#danger-text',
     disabled: true,
+    // Only an input kept focusable for its tooltip is focused while disabled,
+    // and only from the keyboard: the pointer can't focus it.
+    'disabled & focused': '#primary-text',
   },
   preset: 't3',
   radius: true,
@@ -170,6 +183,12 @@ export const DEFAULT_INPUT_STYLES: Styles = {
   },
   resize: 'none',
   userSelect: 'auto',
+  // The browser's own for a disabled input, which an input kept focusable for
+  // its tooltip doesn't get: it is read-only, not natively disabled.
+  cursor: {
+    '': 'text',
+    disabled: 'default',
+  },
 
   Placeholder: {
     $: '&::placeholder',
@@ -212,7 +231,14 @@ function focusInputOnBoxPress(
   input: HTMLInputElement | HTMLTextAreaElement | null | undefined,
 ) {
   if (event.button !== 0 || event.defaultPrevented) return;
-  if (!input || input.disabled) return;
+  // An input kept focusable for its tooltip is still disabled to the pointer.
+  if (
+    !input ||
+    input.disabled ||
+    input.getAttribute('aria-disabled') === 'true'
+  ) {
+    return;
+  }
 
   const box = event.currentTarget;
   const target = event.target as Element;
@@ -228,6 +254,11 @@ function focusInputOnBoxPress(
   // The default action would move focus to the press target first, blurring the input.
   event.preventDefault();
   input.focus();
+}
+
+/** A press doesn't focus a natively disabled input, so it doesn't focus an inert one either. */
+function preventPointerFocus(event: MouseEvent<HTMLElement>) {
+  event.preventDefault();
 }
 
 export interface CubeTextInputBaseProps
@@ -305,6 +336,15 @@ export interface CubeTextInputBaseProps
    * `autoComplete` wins when both are set.
    */
   autocomplete?: string;
+  /**
+   * The input's own tooltip: a short hint, such as what the value means or defaults to, or why the
+   * field is disabled. It opens on hover over the field box and on keyboard focus, and describes
+   * the input. A disabled input with a tooltip stays focusable, so the keyboard reaches it too. A
+   * string, or `TooltipProvider` props (`title`, `placement`, …). Never the field's name, an error
+   * or anything needed to fill the field in: touch users don't see it. The info badge next to a
+   * field label is `labelTooltip`.
+   */
+  tooltip?: string | Omit<CubeTooltipProviderProps, 'children'>;
 }
 
 /**
@@ -360,6 +400,7 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
     minLength,
     form,
     resize,
+    tooltip,
     ...otherProps
   } = props;
 
@@ -382,6 +423,11 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
   let domRef = useObjectRef(wrapperRef);
 
   inputRef = useCombinedRefs(inputRef);
+
+  let { renderWithTooltip, isTooltipActive } = useAutoTooltip({
+    tooltip,
+    children: null,
+  });
 
   // Expose imperative interface for ref
   useImperativeHandle(ref, () => ({
@@ -472,57 +518,94 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
         }
       : {};
 
-  const textField = (
-    <InputWrapperElement
-      ref={domRef}
-      mods={modifiers}
-      data-size={size}
-      styles={styles}
-      {...mergeProps(wrapperProps, {
-        onMouseDown: (event: MouseEvent<HTMLElement>) =>
-          focusInputOnBoxPress(event, inputRef?.current),
-      })}
-    >
-      {prefix ? <div data-element="Prefix">{prefix}</div> : null}
-      <InputElement
-        qa={qa || 'Input'}
-        as={ElementType}
-        data-input-type="textinput"
-        {...mergeProps(inputProps, focusProps, hoverProps)}
-        ref={inputRef}
-        rows={multiLine ? (rows ?? inputProps.rows ?? 1) : inputProps.rows}
-        mods={modifiers}
-        // oxlint-disable-next-line tasty/no-style-prop -- `preset` owns font-family, and a `fontFamily` state map would replace the preset's in every state
-        style={textSecurityStyles}
-        {...(resolvedAutoFocus ? { 'data-autofocus': '' } : undefined)}
-        autoFocus={resolvedAutoFocus}
-        data-size={size}
-        autoComplete={resolvedAutoComplete}
-        styles={inputStyles}
-        disabled={!!(isDisabled ?? inputProps.disabled)}
-        maxLength={maxLength ?? inputProps.maxLength}
-        minLength={minLength ?? inputProps.minLength}
-      />
-      {showValidationIndicator || suffix || actions ? (
-        <div data-element="Suffix">
-          {suffixPosition === 'before' ? suffix : null}
-          {isLoading && loadingIndicator ? (
-            <div data-element="State">{loadingIndicator}</div>
-          ) : (
-            <ValidationIndicator
-              isInvalid={isInvalid}
-              isValid={isValid}
-              isLoading={isLoading}
-            />
-          )}
-          {suffixPosition === 'after' ? suffix : null}
-          {actions}
-        </div>
-      ) : null}
-    </InputWrapperElement>
-  );
+  const isInputDisabled = !!(isDisabled ?? inputProps.disabled);
 
-  return wrapWithField(textField, props);
+  // A disabled input with a tooltip keeps its focus, as `Checkbox` and `Switch` do: the tooltip is
+  // usually the reason it is disabled, and focus is how the keyboard opens it. It is
+  // `aria-disabled` and read-only instead, and the pointer still can't focus it.
+  const { isInert, inertProps } = getDisabledElementProps({
+    isDisabled: isInputDisabled,
+    keepEvents: isTooltipActive,
+    as: ElementType,
+  });
+
+  let ownInputProps = mergeProps(inputProps, focusProps, hoverProps);
+
+  if (isInert) {
+    ownInputProps = mergeProps(omitActivationEventProps(ownInputProps), {
+      ...inertProps,
+      readOnly: true,
+      onMouseDown: preventPointerFocus,
+      // React Aria leaves `tabIndex` out of a disabled input's props.
+      ...(props.excludeFromTabOrder ? { tabIndex: -1 } : null),
+    });
+  }
+
+  // The field box takes the tooltip's hover side and positions it, so it
+  // covers the prefix, suffix and steppers and never the text being typed. The
+  // input, where keyboard focus lands, takes the focus side. The box keeps the
+  // field's ref, which `wrapperRef` also reaches.
+  const textField = renderWithTooltip((tooltipTriggerProps, tooltipRef) => {
+    const { pointerProps, focusProps: tooltipFocusProps } =
+      splitTooltipTriggerProps(tooltipTriggerProps);
+
+    return (
+      <InputWrapperElement
+        ref={tooltipRef ? mergeRefs(domRef, tooltipRef) : domRef}
+        mods={modifiers}
+        data-size={size}
+        styles={styles}
+        {...mergeProps(wrapperProps, pointerProps, {
+          onMouseDown: (event: MouseEvent<HTMLElement>) =>
+            focusInputOnBoxPress(event, inputRef?.current),
+        })}
+      >
+        {prefix ? <div data-element="Prefix">{prefix}</div> : null}
+        <InputElement
+          qa={qa || 'Input'}
+          as={ElementType}
+          data-input-type="textinput"
+          {...mergeTooltipFocusProps(ownInputProps, tooltipFocusProps)}
+          ref={inputRef}
+          rows={multiLine ? (rows ?? inputProps.rows ?? 1) : inputProps.rows}
+          mods={modifiers}
+          // oxlint-disable-next-line tasty/no-style-prop -- `preset` owns font-family, and a `fontFamily` state map would replace the preset's in every state
+          style={textSecurityStyles}
+          {...(resolvedAutoFocus ? { 'data-autofocus': '' } : undefined)}
+          autoFocus={resolvedAutoFocus}
+          data-size={size}
+          autoComplete={resolvedAutoComplete}
+          styles={inputStyles}
+          disabled={isInputDisabled && !isInert}
+          maxLength={maxLength ?? inputProps.maxLength}
+          minLength={minLength ?? inputProps.minLength}
+        />
+        {showValidationIndicator || suffix || actions ? (
+          <div data-element="Suffix">
+            {suffixPosition === 'before' ? suffix : null}
+            {isLoading && loadingIndicator ? (
+              <div data-element="State">{loadingIndicator}</div>
+            ) : (
+              <ValidationIndicator
+                isInvalid={isInvalid}
+                isValid={isValid}
+                isLoading={isLoading}
+              />
+            )}
+            {suffixPosition === 'after' ? suffix : null}
+            {actions}
+          </div>
+        ) : null}
+      </InputWrapperElement>
+    );
+  }, 'top');
+
+  // `renderWithTooltip` is typed for any node; here it returns an element.
+  // `tooltip` is the input's own, not the legacy spelling of `labelTooltip`.
+  return wrapWithField(textField as ReactElement, {
+    ...props,
+    tooltip: undefined,
+  });
 }
 
 const TextInputBase = forwardRef(_TextInputBase);

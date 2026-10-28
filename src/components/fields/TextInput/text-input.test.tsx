@@ -1,14 +1,31 @@
 import { createRef } from 'react';
 import { createPortal } from 'react-dom';
 
-import { Field, TextInput } from '../../../index';
+import {
+  CommandTextArea,
+  Field,
+  NumberInput,
+  PasswordInput,
+  SearchInput,
+  TextArea,
+  TextInput,
+} from '../../../index';
 import {
   act,
   fireEvent,
+  hoverWithPointer,
   render,
   renderWithForm,
+  renderWithRoot,
+  screen,
   userEvent,
+  waitFor,
 } from '../../../test';
+import { warnAboutLegacyTooltip } from '../../form/legacy-tooltip';
+
+import type { FocusableRefValue } from '@react-types/shared';
+
+vi.mock('../../form/legacy-tooltip', { spy: true });
 
 vi.mock('../../../_internal/hooks/use-warn');
 
@@ -320,5 +337,259 @@ describe('<TextInput />', () => {
     );
 
     warn.mockRestore();
+  });
+});
+
+describe('<TextInput /> tooltip', () => {
+  const wrapperOf = (input: HTMLElement) =>
+    input.closest('[data-qa="InputWrapper"]') as HTMLElement;
+
+  async function expectNoTooltip() {
+    await waitFor(() => expect(screen.queryByRole('tooltip')).toBeNull());
+  }
+
+  it('opens on hover over the field box', async () => {
+    renderWithRoot(<TextInput aria-label="Minimum" tooltip="Empty is auto" />);
+
+    await hoverWithPointer(wrapperOf(screen.getByRole('textbox')));
+
+    expect(await screen.findByRole('tooltip')).toHaveTextContent(
+      'Empty is auto',
+    );
+  });
+
+  it('opens on keyboard focus and joins the description in aria-describedby', async () => {
+    renderWithRoot(
+      <TextInput
+        aria-label="Minimum"
+        description="The lowest value on the axis"
+        tooltip="Empty is auto"
+      />,
+    );
+
+    await userEvent.tab();
+
+    const input = screen.getByRole('textbox');
+    const tooltip = await screen.findByRole('tooltip');
+    const describedBy = input.getAttribute('aria-describedby')!.split(' ');
+
+    expect(input).toHaveFocus();
+    expect(tooltip).toHaveTextContent('Empty is auto');
+    expect(describedBy).toContain(tooltip.id);
+    expect(
+      describedBy.map((id) => document.getElementById(id)?.textContent),
+    ).toContain('The lowest value on the axis');
+  });
+
+  it('does not open when the input is clicked into', async () => {
+    renderWithRoot(<TextInput aria-label="Minimum" tooltip="Empty is auto" />);
+
+    await userEvent.click(screen.getByRole('textbox'));
+
+    expect(screen.getByRole('textbox')).toHaveFocus();
+    await expectNoTooltip();
+  });
+
+  it('closes on a keystroke and lets it type', async () => {
+    renderWithRoot(<TextInput aria-label="Minimum" tooltip="Empty is auto" />);
+
+    await userEvent.tab();
+    await screen.findByRole('tooltip');
+    await userEvent.keyboard('4');
+
+    await expectNoTooltip();
+    expect(screen.getByRole('textbox')).toHaveValue('4');
+  });
+
+  it('keeps it apart from the field label badge', async () => {
+    renderWithRoot(
+      <TextInput
+        label="Minimum"
+        labelTooltip="About the axis"
+        tooltip={{ title: 'Empty is auto' }}
+      />,
+    );
+
+    // `tooltip` is the input's own, not the legacy spelling of `labelTooltip`.
+    expect(warnAboutLegacyTooltip).not.toHaveBeenCalledWith(
+      expect.objectContaining({ tooltip: expect.anything() }),
+    );
+    expect(screen.getByTestId('InfoBadge')).toBeInTheDocument();
+
+    await hoverWithPointer(wrapperOf(screen.getByRole('textbox')));
+
+    expect(await screen.findByRole('tooltip')).toHaveTextContent(
+      'Empty is auto',
+    );
+  });
+
+  it('keeps the field ref on the field box', () => {
+    const ref = createRef<FocusableRefValue<HTMLInputElement, HTMLElement>>();
+
+    renderWithRoot(
+      <TextInput ref={ref} aria-label="Minimum" tooltip="Empty is auto" />,
+    );
+
+    expect(ref.current?.UNSAFE_getDOMNode()).toBe(
+      wrapperOf(screen.getByRole('textbox')),
+    );
+  });
+
+  // Every field built on the text input base takes the prop through to it.
+  it.each([
+    [
+      'TextArea',
+      () => <TextArea aria-label="Notes" tooltip="Markdown works" />,
+    ],
+    [
+      'PasswordInput',
+      () => <PasswordInput aria-label="Token" tooltip="Markdown works" />,
+    ],
+    [
+      'SearchInput',
+      () => <SearchInput aria-label="Find" tooltip="Markdown works" />,
+    ],
+    [
+      'NumberInput',
+      () => <NumberInput aria-label="Size" tooltip="Markdown works" />,
+    ],
+    [
+      'CommandTextArea',
+      () => <CommandTextArea aria-label="Prompt" tooltip="Markdown works" />,
+    ],
+  ])('opens on keyboard focus in %s', async (_, renderField) => {
+    renderWithRoot(renderField());
+
+    await userEvent.tab();
+
+    const tooltip = await screen.findByRole('tooltip');
+
+    expect(tooltip).toHaveTextContent('Markdown works');
+    expect(document.activeElement).toHaveAttribute(
+      'aria-describedby',
+      expect.stringContaining(tooltip.id),
+    );
+  });
+
+  describe('while disabled', () => {
+    // The tooltip of a disabled field is usually the reason it is disabled, so
+    // the input keeps its focus: `aria-disabled` and read-only instead.
+    it('stays a Tab stop and opens on keyboard focus', async () => {
+      renderWithRoot(
+        <TextInput
+          isDisabled
+          aria-label="Title"
+          tooltip="Show the axis to change this"
+        />,
+      );
+
+      const input = screen.getByRole('textbox');
+
+      expect(input).not.toHaveAttribute('disabled');
+      expect(input).toHaveAttribute('aria-disabled', 'true');
+      expect(input).toHaveAttribute('readonly');
+      // Its disabled styles key off this.
+      expect(input).toHaveAttribute('data-disabled');
+
+      await userEvent.tab();
+
+      expect(input).toHaveFocus();
+      expect(await screen.findByRole('tooltip')).toHaveTextContent(
+        'Show the axis to change this',
+      );
+    });
+
+    it('opens on hover', async () => {
+      renderWithRoot(
+        <TextInput
+          isDisabled
+          aria-label="Title"
+          tooltip="Show the axis to change this"
+        />,
+      );
+
+      await hoverWithPointer(wrapperOf(screen.getByRole('textbox')));
+
+      expect(await screen.findByRole('tooltip')).toHaveTextContent(
+        'Show the axis to change this',
+      );
+    });
+
+    it('takes no text and submits no form', async () => {
+      const onChange = vi.fn();
+      const onSubmit = vi.fn((event) => event.preventDefault());
+
+      renderWithRoot(
+        <form onSubmit={onSubmit}>
+          <TextInput
+            isDisabled
+            aria-label="Title"
+            defaultValue="Count"
+            tooltip="Show the axis to change this"
+            onChange={onChange}
+          />
+          <button type="submit">Save</button>
+        </form>,
+      );
+
+      const input = screen.getByRole('textbox');
+
+      await userEvent.tab();
+      await userEvent.keyboard('abc{Enter}');
+      await userEvent.paste('pasted');
+
+      expect(input).toHaveValue('Count');
+      expect(onChange).not.toHaveBeenCalled();
+      expect(onSubmit).not.toHaveBeenCalled();
+    });
+
+    it('takes no focus from a press, as a natively disabled field', async () => {
+      renderWithRoot(
+        <TextInput
+          isDisabled
+          aria-label="Title"
+          tooltip="Show the axis to change this"
+        />,
+      );
+
+      await userEvent.click(screen.getByRole('textbox'));
+
+      expect(screen.getByRole('textbox')).not.toHaveFocus();
+    });
+
+    it('stays natively disabled without a tooltip', async () => {
+      renderWithRoot(
+        <>
+          <TextInput isDisabled aria-label="Title" />
+          <button type="button">After</button>
+        </>,
+      );
+
+      expect(screen.getByRole('textbox')).toBeDisabled();
+
+      await userEvent.tab();
+
+      expect(screen.getByRole('button', { name: 'After' })).toHaveFocus();
+    });
+
+    it('leaves the Tab order with excludeFromTabOrder', async () => {
+      renderWithRoot(
+        <>
+          <TextInput
+            isDisabled
+            excludeFromTabOrder
+            aria-label="Title"
+            tooltip="Show the axis to change this"
+          />
+          <button type="button">After</button>
+        </>,
+      );
+
+      expect(screen.getByRole('textbox')).toHaveAttribute('tabindex', '-1');
+
+      await userEvent.tab();
+
+      expect(screen.getByRole('button', { name: 'After' })).toHaveFocus();
+    });
   });
 });
