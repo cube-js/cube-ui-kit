@@ -413,7 +413,11 @@ module.exports = [
     // the same-lock main build at 633,094 B (10da2671), about +3.1 kB.
     // Button stays at 163,087 B. Allow 637 kB with about 800 B headroom;
     // confirm the exact figures in Linux CI.
-    limit: '637kB',
+    // Divider style props and `orientation`: CI run 40670666153 measured
+    // 637,181 B against main's 636,947 B (0db33183, run 40667443124), +234 B
+    // for the vertical and sized state maps and the text label's `useId`.
+    // Allow 638 kB, 819 B headroom; Button stays at 163,512 B.
+    limit: '638kB',
   },
   {
     name: 'Tree shaking (just a Button)',
