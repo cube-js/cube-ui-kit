@@ -16,12 +16,18 @@ type Story = StoryObj;
 
 // The dashed frame hugs the box the style props size.
 const FRAME_STYLES = { outline: '1bw dashed #dark-04', width: 'max-content' };
-const ROW_FRAME_STYLES = { outline: '1bw dashed #dark-04', width: 'max 60x' };
+// Taller than its inputs, so the text area shows that it fills the height too.
+const ROW_FRAME_STYLES = {
+  outline: '1bw dashed #dark-04',
+  width: 'max 60x',
+  height: '20x',
+};
 
 /**
  * An input's style props size its outer element: the input when it is bare,
  * the whole field when it has a label. A sized field lets its input fill it;
- * `styles` sizes the input alone.
+ * `styles` sizes the input alone. In a stretched row the text area fills the
+ * row's height, and single-line inputs keep theirs at the top.
  */
 export const FieldLayout: Story = {
   render: () => (
@@ -46,14 +52,15 @@ export const FieldLayout: Story = {
         />
       </Block>
       <Flex gap="2x" styles={ROW_FRAME_STYLES}>
+        {/* Short labels, so none wraps at 390px and the inputs stay level. */}
         <TextInput label="Grows" flexGrow={1} />
         <TextInput
-          label="Grows, with an error"
+          label="Invalid"
           flexGrow={1}
           isInvalid
           errorMessage="Required"
         />
-        <TextArea label="Grows with the row" flexGrow={1} />
+        <TextArea label="Text area" flexGrow={1} />
       </Flex>
       <Block styles={FRAME_STYLES}>
         <ListBox label="Fills its 30x field" height="30x">
