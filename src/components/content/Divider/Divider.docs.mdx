@@ -1,0 +1,143 @@
+import { Meta, Story } from '@storybook/addon-docs/blocks';
+
+import * as DividerStories from './Divider.stories';
+
+<Meta of={DividerStories} />
+
+# Divider
+
+A line that separates content. It is horizontal by default and vertical with `orientation="vertical"`, and it can show text, such as "or", between two lines. Built on React Aria's `useSeparator`.
+
+## When to Use
+
+- Separating sections of content
+- Separating the items of a toolbar or an action row (vertical)
+- "Or" or another label between two blocks of content
+
+## Component
+
+<Story of={DividerStories.Default} />
+
+---
+
+### Properties
+
+- **`children`** `ReactNode` — Text shown between two lines. It also names the separator for screen readers, unless `aria-label` or `aria-labelledby` names it. Screen readers get it only as that name, so keep it to text: a link or button in it would be unreachable.
+- **`orientation`** `'horizontal' | 'vertical'` (default: `'horizontal'`) — The direction of the line. A vertical divider stretches to the height of its flex or grid row, even when the row centers its items. Elsewhere, or to make it shorter, give it a `height`.
+
+### Base Properties
+
+Supports [Base properties](/docs/getting-started-base-properties--docs). A divider's `qa` defaults to `Divider`.
+
+### Styling Properties
+
+#### styles
+
+Customizes the root element. Without text, the root is the line itself.
+
+**Sub-elements:**
+
+- `Line` - Each of the two lines around the text.
+
+### Style Defaults
+
+- `fill` — `#border`; `none` with text, where the `Line` sub-elements carry the color
+- `height` — `1bw` when horizontal without text
+- `width` — `1bw` when vertical without text
+- `margin` — `0`
+- `preset` — `c1`
+- `display` — `block`; `grid` with text
+
+### Style Properties
+
+These properties allow direct style application without using the `styles` prop:
+
+- **Base:** `display`, `font`, `preset`, `hide`, `whiteSpace`, `opacity`, `transition`
+- **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `blockMargin`, `inlineMargin`, `inset`, `blockInset`, `inlineInset`, `position`, `scrollMargin`, `blockScrollMargin`, `inlineScrollMargin`, `scrollPadding`, `blockScrollPadding`, `inlineScrollPadding`
+- **Dimension:** `width`, `height`, `blockSize`, `inlineSize`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`
+- **Block:** `border`, `blockBorder`, `inlineBorder`, `radius`, `shadow`, `outline`
+- **Color:** `color`, `fill`, `fade`, `image`
+
+### Modifiers
+
+The `mods` property accepts the following modifiers you can override:
+
+| Modifier | Type | Description |
+| --- | --- | --- |
+| text | `boolean` | The divider shows text between two lines |
+| vertical | `boolean` | The divider is vertical |
+| sized | `boolean` | It has a `height` or `blockSize` of its own, so a vertical divider follows the row's alignment instead of stretching |
+
+## Examples
+
+<Story of={DividerStories.Variants} />
+
+### Between sections
+
+```jsx
+<Space flow="column" gap="1x">
+  <Paragraph>Section 1</Paragraph>
+  <Divider />
+  <Paragraph>Section 2</Paragraph>
+</Space>
+```
+
+### Spacing
+
+```jsx
+<Divider margin="1x 0" />
+```
+
+### With text
+
+```jsx
+<Divider>or</Divider>
+```
+
+### Vertical, in a row of actions
+
+```jsx
+<Space placeItems="center" gap="1.5x">
+  <Button>Edit</Button>
+  <Divider orientation="vertical" />
+  <Button>Delete</Button>
+</Space>
+```
+
+A vertical divider takes the height of its row in a flex or grid container. Give it a `height` when it should be shorter, or when its container is a plain block. A divider with a height follows the row's alignment, so it stays centered in a row that centers its items. A `min max` range counts as a height too; add `alignSelf="stretch"` to stretch within it:
+
+```jsx
+<Space placeItems="center" gap="1.5x">
+  <Button>Edit</Button>
+  <Divider orientation="vertical" height="3x" />
+  <Button>Delete</Button>
+</Space>
+```
+
+A vertical divider with text needs a row about `8x` tall or more. In a shorter row the lines shrink to nothing and only the text is left.
+
+## Accessibility
+
+### Screen Reader Support
+
+- A horizontal divider without text is an `<hr>`, which screen readers announce as a separator.
+- A vertical divider, or one with text, is a `div` with `role="separator"`. A vertical one carries `aria-orientation="vertical"`.
+- ARIA treats a separator's content as presentational, so a text divider is named by its text through `aria-labelledby`: its accessible name is its text, and the text is hidden from screen readers so it is not read a second time. An `aria-label` or `aria-labelledby` you pass replaces that name.
+
+## Best Practices
+
+1. **Do**: put spacing on the divider or its container
+
+   ```jsx
+   <Divider margin="2x 0" />
+   ```
+
+2. **Don't**: draw a separator with a bordered empty element; it is invisible to screen readers
+
+   ```jsx
+   <Block styles={{ border: 'top' }} />
+   ```
+
+## Related Components
+
+- [Space](/docs/layout-space--docs) - Lays out the content a divider separates
