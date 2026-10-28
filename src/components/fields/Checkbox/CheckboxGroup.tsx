@@ -10,6 +10,7 @@ import { forwardRef } from 'react';
 import { AriaCheckboxGroupProps, useCheckboxGroup } from 'react-aria';
 import { useCheckboxGroupState } from 'react-stately';
 
+import { Provider } from '../../../provider';
 import { FieldBaseProps } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
 import {
@@ -64,6 +65,7 @@ function CheckboxGroup(
   let {
     id,
     isDisabled,
+    isReadOnly,
     isRequired,
     necessityIndicator,
     label,
@@ -113,9 +115,15 @@ function CheckboxGroup(
           isValid,
         }}
       >
-        <CheckboxGroupContext.Provider value={state}>
-          {children}
-        </CheckboxGroupContext.Provider>
+        {/* Each checkbox is a field that reads the provider before the form
+            context, so the group's own state has to reach it here to beat an
+            enclosing disabled or read-only form. `<Provider>` skips
+            `undefined`, so a group that sets nothing keeps the form's state. */}
+        <Provider isDisabled={isDisabled} isReadOnly={isReadOnly}>
+          <CheckboxGroupContext.Provider value={state}>
+            {children}
+          </CheckboxGroupContext.Provider>
+        </Provider>
       </FormScopeMask>
     </CheckGroupElement>
   );

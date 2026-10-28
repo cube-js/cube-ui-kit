@@ -337,6 +337,10 @@ export interface CubeRadioProps
 }
 
 function Radio(props: CubeRadioProps, ref) {
+  // The radio's own prop, before it inherits the group's, a form's or a
+  // provider's state: only this one cancels the loading rule below.
+  let ownIsDisabled = props.isDisabled;
+
   props = useFieldProps(props, { defaultValidationTrigger: 'onChange' });
 
   let {
@@ -378,7 +382,6 @@ function Radio(props: CubeRadioProps, ref) {
   let contextSize = radioGroupProps?.size;
   let contextButtonType = radioGroupProps?.buttonType;
   let contextType = radioGroupProps?.type;
-  let contextIsDisabled = radioGroupProps?.isDisabled;
 
   if (!state) {
     throw new Error('CubeUI: The Radio button is used outside the RadioGroup.');
@@ -436,9 +439,6 @@ function Radio(props: CubeRadioProps, ref) {
     }
   }
 
-  // Use context isDisabled if prop isDisabled is not explicitly set
-  let baseIsDisabled = isDisabled ?? contextIsDisabled ?? false;
-
   // Loading has to disable the radio here, not inside `Item`. `useRadio` and the
   // `HiddenInput` covering the button own the actual selection, so leaving it to
   // `Item` would render a spinner on an option that still takes clicks and arrow
@@ -446,12 +446,13 @@ function Radio(props: CubeRadioProps, ref) {
   // an unresolved `isLoading` would additionally read to `Item` as an explicit
   // `isDisabled={false}` and cancel its own loading-disables-the-item rule.
   //
-  // Same precedence as `Item` / `ItemButton`: an explicit `isDisabled={false}`
-  // still wins over loading. Button-type only — a classic radio has no spinner,
-  // so disabling it on `isLoading` would leave no visible reason why.
+  // Same precedence as `Item` / `ItemButton`: the radio's own
+  // `isDisabled={false}` still wins over loading; a `false` it inherits does
+  // not. Button-type only — a classic radio has no spinner, so disabling it on
+  // `isLoading` would leave no visible reason why.
   let isLoadingButton = isButton && props.isLoading === true;
   let effectiveIsDisabled =
-    baseIsDisabled === true || (isLoadingButton && isDisabled !== false);
+    isDisabled === true || (isLoadingButton && ownIsDisabled !== false);
 
   // React Aria makes a radio read-only through its group only; a radio's own
   // inherited `isReadOnly` has no effect, so the mod follows the group too.
