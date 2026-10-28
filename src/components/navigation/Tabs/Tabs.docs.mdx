@@ -114,6 +114,55 @@ For individual tabs:
 - **`draggable`** `boolean` — True when tab can be dragged (reorderable)
 - **`dragging`** `boolean` — True when tab is being dragged
 
+### Theming
+
+Tabs has no theming props. To dress the tabs in your own colors and font, re-declare the tokens they read through `tabListStyles`, `styles` or `tokens`:
+
+- **Title** — `#surface-text-soft`. A disabled title keeps `#disabled-surface-text`.
+- **Active title** of a `default` or `narrow` tab, and a hovered `narrow` title — `#primary-accent-text`
+- **Selection indicator** — `#primary-accent-surface`: the line a `default` or `narrow` tab draws on the edge facing the panels, and the same edge of a selected `file` tab
+- **Title font** — `$font-sans`, which the tab's typography preset takes its font family from
+
+Tabs read these names directly, so overriding the legacy aliases they replaced (`#dark-02`, `#primary-text`, `#primary`) no longer reaches them.
+
+Put the tokens in `tabListStyles` to keep them to the tabs. In `tokens` or `styles` on `Tabs` they are declared on its outer wrapper, so they reach everything inside that reads them, the panels included: there `#primary-accent-surface` also fills primary buttons and `$font-sans` sets the body text. Use them there for a `Tabs` without panels, or when the panels should take the theme too. A `font` in a tab's own `styles` wins over the preset for that tab alone. The same tokens also color the tab's focus and editing ring (`#primary-accent-text`), the drag-and-drop indicator and the spring-load hint (`#primary-accent-surface`), so an override recolors those too.
+
+<Story of={TabsStories.Theming} />
+
+```jsx
+<Tabs
+  defaultActiveKey="overview"
+  tabListStyles={{
+    '#surface-text-soft': '#success-accent-text-soft',
+    '#primary-accent-text': '#success-accent-text',
+    '#primary-accent-surface': '#success-accent-surface',
+    '$font-sans': 'Georgia, serif',
+  }}
+>
+  <Tab key="overview" title="Overview" />
+  <Tab key="activity" title="Activity" />
+  <Tab key="query" title="Query" styles={{ font: 'monospace' }} />
+</Tabs>
+```
+
+A navigation strip with no panels, themed with your own tokens:
+
+```jsx
+<Tabs
+  activeKey={activeKey}
+  tokens={{
+    '#surface-text-soft': '#widget-text-secondary',
+    '#primary-accent-text': '#widget-title',
+    '#primary-accent-surface': '#widget-title',
+    '$font-sans': '$widget-title-font',
+  }}
+  onChange={setActiveKey}
+>
+  <Tab key="sales" title="Sales" />
+  <Tab key="marketing" title="Marketing" />
+</Tabs>
+```
+
 ## Variants
 
 ### Types
