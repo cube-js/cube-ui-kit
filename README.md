@@ -137,7 +137,7 @@ pnpm build            # Build the library (tsdown, unbundled ESM)
 pnpm test             # Run all tests (Vitest)
 pnpm test -- Button   # Run tests matching "Button"
 pnpm fix              # Lint and format (Oxlint + Prettier)
-pnpm size             # Check bundle size limits
+pnpm size             # Measure the bundle and check its dependencies
 pnpm chromatic        # Run visual regression tests
 ```
 
