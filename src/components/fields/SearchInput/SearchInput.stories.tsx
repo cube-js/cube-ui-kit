@@ -1,6 +1,9 @@
 import { StoryFn } from '@storybook/react-vite';
+import { within } from 'storybook/test';
 
+import { NO_SNAPSHOT } from '../../../stories/chromatic';
 import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
+import { openTooltip } from '../../../stories/interactions';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Space } from '../../layout/Space';
 
@@ -213,4 +216,47 @@ Disabled.args = {
   label: 'Search (Offline)',
   isDisabled: true,
   placeholder: 'Search unavailable',
+};
+
+export const WithTooltip: StoryFn<CubeSearchInputProps> = ({
+  tooltip,
+  ...args
+}) => (
+  <SearchInput
+    qa="SearchMembers"
+    {...args}
+    // `delay: 0` only so the story does not depend on the open delay.
+    tooltip={{ title: tooltip as string, delay: 0 }}
+  />
+);
+
+WithTooltip.args = {
+  'aria-label': 'Search members',
+  placeholder: 'Search members',
+  tooltip: 'Matches names and email addresses',
+  // Room above the field, so the tooltip opens in its default `top` placement.
+  fieldStyles: { width: '0 320px 100%', margin: '6x top' },
+};
+
+WithTooltip.parameters = {
+  // The same open tooltip over a field box as `TextInput / WithTooltip`, and
+  // `NumberInput / WithTooltip` photographs the anchor spanning more than the
+  // input.
+  ...NO_SNAPSHOT,
+  docs: {
+    description: {
+      story:
+        'While the tooltip is open, the first `Escape` closes it and keeps the text; the next one clears the field.',
+    },
+  },
+};
+
+WithTooltip.play = async ({ canvasElement }) => {
+  // The tooltip is the field box's, so hover the box, as a pointer would.
+  await openTooltip(
+    () =>
+      within(canvasElement)
+        .getByTestId('SearchMembers')
+        .closest('[data-qa="InputWrapper"]') as HTMLElement,
+  );
 };

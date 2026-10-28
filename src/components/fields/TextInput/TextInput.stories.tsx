@@ -3,6 +3,7 @@ import { IconCoin } from '@tabler/icons-react';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 
 import { IS_BARE_ARG, VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
+import { openTooltip, timeout } from '../../../stories/interactions';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Title } from '../../content/Title';
 import { Space } from '../../layout/Space';
@@ -178,6 +179,10 @@ export default {
   },
 };
 
+/** The field box an input sits in, where its tooltip's hover side lives. */
+const wrapperOf = (input: HTMLElement) =>
+  input.closest('[data-qa="InputWrapper"]') as HTMLElement;
+
 const Template: StoryFn<CubeTextInputProps> = (props) => (
   <TextInput
     placeholder="Placeholder"
@@ -231,8 +236,41 @@ Validation.parameters = {
 export const Disabled = Template.bind({});
 Disabled.args = { isDisabled: true };
 
-const timeout = (ms: number) =>
-  new Promise((resolve) => setTimeout(resolve, ms));
+export const WithTooltip: StoryFn<CubeTextInputProps> = ({
+  tooltip,
+  ...args
+}) => (
+  <TextInput
+    qa="AxisMinimum"
+    {...args}
+    // `delay: 0` only so the snapshot does not depend on the open delay.
+    tooltip={{ title: tooltip as string, delay: 0 }}
+  />
+);
+
+WithTooltip.args = {
+  'aria-label': 'Axis minimum',
+  placeholder: 'Auto',
+  tooltip: 'Empty is the lowest value in the data',
+  // Room above the field, so the tooltip opens in its default `top` placement.
+  fieldStyles: { width: '0 320px 100%', margin: '6x top' },
+};
+
+WithTooltip.parameters = {
+  docs: {
+    description: {
+      story:
+        'A short hint for an input without a visible label. It opens on hover over the field box and on keyboard focus, and closes on the first key.',
+    },
+  },
+};
+
+WithTooltip.play = async ({ canvasElement }) => {
+  // The tooltip is the field box's, so hover the box, as a pointer would.
+  await openTooltip(() =>
+    wrapperOf(within(canvasElement).getByTestId('AxisMinimum')),
+  );
+};
 
 export const DisabledWithTooltip: StoryFn<CubeTextInputProps> = (args) => (
   <TextInput qa="DisabledInput" {...args} />

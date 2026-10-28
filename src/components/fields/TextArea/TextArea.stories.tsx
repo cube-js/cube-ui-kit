@@ -1,8 +1,10 @@
 import { StoryFn } from '@storybook/react-vite';
 import { IconCoin } from '@tabler/icons-react';
 import { useState } from 'react';
+import { within } from 'storybook/test';
 
 import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
+import { openTooltip } from '../../../stories/interactions';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Button } from '../../actions/Button/Button';
 import { Space } from '../../layout/Space';
@@ -261,6 +263,45 @@ export const Validation: StoryFn<CubeTextAreaProps> = (props) => (
     />
   </Space>
 );
+
+export const WithTooltip: StoryFn<CubeTextAreaProps> = ({
+  tooltip,
+  ...args
+}) => (
+  <TextArea
+    qa="ChartNote"
+    {...args}
+    // `delay: 0` only so the snapshot does not depend on the open delay.
+    tooltip={{ title: tooltip as string, delay: 0 }}
+  />
+);
+
+WithTooltip.args = {
+  'aria-label': 'Chart note',
+  placeholder: 'Add a note',
+  tooltip: 'Shown under the chart in shared links',
+  // Room above the field, so the tooltip opens in its default `top` placement.
+  fieldStyles: { width: '0 320px 100%', margin: '6x top' },
+};
+
+WithTooltip.parameters = {
+  docs: {
+    description: {
+      story:
+        'The tooltip is anchored to the field box, not to the text area inside it.',
+    },
+  },
+};
+
+WithTooltip.play = async ({ canvasElement }) => {
+  // The tooltip is the field box's, so hover the box, as a pointer would.
+  await openTooltip(
+    () =>
+      within(canvasElement)
+        .getByTestId('ChartNote')
+        .closest('[data-qa="InputWrapper"]') as HTMLElement,
+  );
+};
 
 export const AutoSize = Template.bind({});
 AutoSize.args = { autoSize: true, defaultValue: '1\n2\n3\n4', rows: 2 };

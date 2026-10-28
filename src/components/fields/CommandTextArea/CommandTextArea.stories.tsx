@@ -1,8 +1,10 @@
 import { StoryFn } from '@storybook/react-vite';
 import { useState } from 'react';
+import { within } from 'storybook/test';
 
 import { NO_SNAPSHOT } from '../../../stories/chromatic';
 import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
+import { openTooltip } from '../../../stories/interactions';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Flex } from '../../layout/Flex';
 import { Space } from '../../layout/Space';
@@ -145,6 +147,55 @@ export const Default: StoryFn = (props) => (
     ))}
   </CommandTextArea>
 );
+
+export const WithTooltip: StoryFn = ({ tooltip, ...props }) => (
+  <CommandTextArea
+    qa="Message"
+    aria-label="Message"
+    placeholder="Type / to see commands…"
+    {...props}
+    // `delay: 0` only so the story does not depend on the open delay.
+    tooltip={{ title: tooltip, delay: 0 }}
+  >
+    {commands.map((c) => (
+      <CommandTextArea.Item
+        key={c.key}
+        textValue={c.key}
+        description={c.description}
+      >
+        {c.key}
+      </CommandTextArea.Item>
+    ))}
+  </CommandTextArea>
+);
+
+WithTooltip.args = {
+  tooltip: 'Visible to everyone in this channel',
+  // Room above the field, so the tooltip opens in its default `top` placement.
+  fieldStyles: { width: '0 40x 100%', margin: '6x top' },
+};
+
+WithTooltip.parameters = {
+  // The same open tooltip over a text area's field box as
+  // `TextArea / WithTooltip`, which photographs it.
+  ...NO_SNAPSHOT,
+  docs: {
+    description: {
+      story:
+        'The tooltip closes on the first key, so it never covers the command suggestions.',
+    },
+  },
+};
+
+WithTooltip.play = async ({ canvasElement }) => {
+  // The tooltip is the field box's, so hover the box, as a pointer would.
+  await openTooltip(
+    () =>
+      within(canvasElement)
+        .getByTestId('Message')
+        .closest('[data-qa="InputWrapper"]') as HTMLElement,
+  );
+};
 
 export const Validation: StoryFn = (props) => (
   <Space gap="2x" flow="column" placeItems="start">
