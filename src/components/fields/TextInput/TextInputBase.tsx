@@ -68,10 +68,12 @@ export const INPUT_WRAPPER_STYLES: Styles = {
   placeItems: 'stretch',
   fill: {
     '': '#surface',
+    readonly: '#surface-2',
     disabled: '#disabled-surface',
   },
   border: {
     '': true,
+    readonly: '#border.5',
     valid: '#success-text.50',
     invalid: '#danger-text.50',
     focused: '#primary-text',
@@ -333,6 +335,7 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
     isValid,
     prefix,
     isDisabled,
+    isReadOnly,
     multiLine,
     autoFocus,
     inputProps,
@@ -368,7 +371,10 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
 
   let ElementType: 'textarea' | 'input' = multiLine ? 'textarea' : 'input';
   let { isFocused, focusProps } = useFocus();
-  let { hoverProps, isHovered } = useHover({ isDisabled });
+  // A read-only field takes no hover state: nothing it could change would follow.
+  let { hoverProps, isHovered } = useHover({
+    isDisabled: isDisabled || isReadOnly,
+  });
   // The input box, with or without the field chrome, so the field's ref never
   // resolves to `null`; `wrapperRef` reaches the same element.
   let domRef = useObjectRef(wrapperRef);
@@ -425,6 +431,7 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
       focused: isFocused,
       hovered: isHovered,
       disabled: isDisabled,
+      readonly: !!isReadOnly,
       multiline: multiLine,
       prefix: !!prefix,
       suffix: showValidationIndicator || !!suffix || !!actions,
@@ -438,6 +445,7 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
       loadingIndicator,
       isFocused,
       isDisabled,
+      isReadOnly,
       isHovered,
       multiLine,
       prefix,

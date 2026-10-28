@@ -876,6 +876,7 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
     () => ({
       ...getValidationMods({ isInvalid, isValid }),
       disabled: isDisabled,
+      readonly: !!isReadOnly,
       // Hover is handled purely via CSS `:hover`, so it never flows through mods.
       hovered: false,
       focused: isFocused,
@@ -889,6 +890,7 @@ export const SearchComboBox = forwardRef(function SearchComboBox<
       isInvalid,
       isValid,
       isDisabled,
+      isReadOnly,
       isFocused,
       showLoading,
       prefix,

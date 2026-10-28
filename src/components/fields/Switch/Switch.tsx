@@ -64,16 +64,19 @@ const SwitchElement = tasty({
       checked: '#primary',
       'invalid & checked': '#danger',
       'valid & checked': '#success',
+      readonly: '#surface-2',
       disabled: '#border.5',
       'disabled & checked': '#border',
     },
     color: {
       '': '#dark-03',
       checked: '#white',
+      'readonly & checked': '#dark-02',
     },
     border: {
       '': '#dark-05',
       checked: '#primary-text',
+      readonly: '#dark-05',
       disabled: '#dark-05.5',
       invalid: '#danger',
       valid: '#success',
@@ -170,6 +173,7 @@ function Switch(rawProps: WithNullableSelected<CubeSwitchProps>, ref) {
   let {
     qa,
     isDisabled = false,
+    isReadOnly = false,
     children,
     label,
     insideForm,
@@ -188,7 +192,10 @@ function Switch(rawProps: WithNullableSelected<CubeSwitchProps>, ref) {
   let styles = extractStyles(props, PROP_STYLES);
 
   let { isFocused, focusProps } = useFocus(true);
-  let { hoverProps, isHovered } = useHover({ isDisabled });
+  // A read-only switch takes no hover state: a press would change nothing.
+  let { hoverProps, isHovered } = useHover({
+    isDisabled: isDisabled || isReadOnly,
+  });
 
   let inputRef = useRef(null);
   let domRef = useFocusableRef(ref, inputRef);
@@ -226,6 +233,7 @@ function Switch(rawProps: WithNullableSelected<CubeSwitchProps>, ref) {
   const mods = {
     checked: inputProps.checked,
     disabled: isDisabled,
+    readonly: isReadOnly,
     hovered: isHovered,
     focused: isFocused,
     ...getValidationMods({ isInvalid, isValid }),

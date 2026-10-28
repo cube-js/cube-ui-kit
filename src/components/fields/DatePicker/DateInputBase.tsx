@@ -49,6 +49,7 @@ interface CubeDateAtomInputProps extends ContainerStyleProps {
   qa?: string;
   inputType?: string;
   isDisabled?: boolean;
+  isReadOnly?: boolean;
   children?: React.ReactNode;
   fieldProps?: Props;
   style?: React.CSSProperties;
@@ -71,6 +72,7 @@ function DateInputBase(props: CubeDateAtomInputProps, ref) {
     qa,
     inputType,
     isDisabled,
+    isReadOnly,
     inputStyles,
     children,
     fieldProps,
@@ -108,6 +110,7 @@ function DateInputBase(props: CubeDateAtomInputProps, ref) {
       data-input-type={inputType ? inputType : 'datetimeinput'}
       mods={{
         disabled: isDisabled,
+        readonly: !!isReadOnly,
         focused: isFocused && !disableFocusRing,
         ...getValidationMods({ isInvalid, isValid }),
         suffix: showValidationIndicator || !!suffix,

@@ -108,6 +108,7 @@ const CheckboxElement = tasty({
       'invalid & checked': '#danger',
       'valid & !checked': '#surface',
       'valid & checked': '#success',
+      readonly: '#surface-2',
       disabled: '#dark.12',
     },
     // The check / minus icon is always rendered inside the box, so the
@@ -118,12 +119,15 @@ const CheckboxElement = tasty({
     color: {
       '': '#clear',
       'checked | indeterminate': '#white',
+      'readonly & (checked | indeterminate)': '#dark-02',
     },
     border: {
       '': '#dark.30',
+      readonly: '#dark.20',
       invalid: '#danger',
       valid: '#success',
-      'disabled | ((indeterminate | checked) & !invalid & !valid)': '#clear',
+      'disabled | ((indeterminate | checked) & !invalid & !valid & !readonly)':
+        '#clear',
     },
     width: '(2x - 2bw)',
     height: '(2x - 2bw)',
@@ -161,6 +165,7 @@ function Checkbox(
     qa,
     isIndeterminate = false,
     isDisabled = false,
+    isReadOnly = false,
     insideForm,
     children,
     label,
@@ -185,8 +190,14 @@ function Checkbox(
     [groupState, labelStyles],
   );
 
+  // A group makes every checkbox in it read-only, as React Aria does.
+  isReadOnly = isReadOnly || !!groupState?.isReadOnly;
+
   let { isFocused, focusProps } = useFocus(true);
-  let { hoverProps, isHovered } = useHover({ isDisabled });
+  // A read-only checkbox takes no hover state: a press would change nothing.
+  let { hoverProps, isHovered } = useHover({
+    isDisabled: isDisabled || isReadOnly,
+  });
 
   let inputRef = useRef(null);
   let domRef = useFocusableRef(ref, inputRef);
@@ -270,6 +281,7 @@ function Checkbox(
     indeterminate: isIndeterminate,
     ...getValidationMods({ isInvalid, isValid }),
     disabled: isDisabled,
+    readonly: isReadOnly,
     hovered: isHovered,
     focused: isFocused,
     'side-label': labelPosition === 'side',

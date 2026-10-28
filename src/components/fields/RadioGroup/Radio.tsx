@@ -158,6 +158,7 @@ const RadioNormalElement = tasty({
     radius: 'round',
     fill: {
       '': '#surface',
+      readonly: '#surface-2',
       disabled: '#disabled-surface',
     },
     color: {
@@ -165,12 +166,14 @@ const RadioNormalElement = tasty({
       checked: '#primary-text',
       'invalid & checked': '#danger-text',
       'valid & checked': '#success-text',
+      'readonly & checked': '#dark-02',
       'disabled | !checked': '#clear',
       'disabled & checked': '#dark.12',
     },
     border: {
       '': '#dark-04',
       checked: '#primary-text',
+      readonly: '#dark.20',
       invalid: '#danger-text.50',
       valid: '#success-text.50',
       disabled: '#dark.12',
@@ -450,8 +453,14 @@ function Radio(props: CubeRadioProps, ref) {
   let effectiveIsDisabled =
     baseIsDisabled === true || (isLoadingButton && isDisabled !== false);
 
+  // The group's, as React Aria reads it: a single radio has no read-only prop.
+  let isReadOnly = state.isReadOnly;
+
   let { isFocused, focusProps } = useFocus(true);
-  let { hoverProps, isHovered } = useHover({ isDisabled: effectiveIsDisabled });
+  // A read-only radio takes no hover state: a press would change nothing.
+  let { hoverProps, isHovered } = useHover({
+    isDisabled: effectiveIsDisabled || isReadOnly,
+  });
 
   // A button radio hands `tooltip` to its `Item`, which resolves it around the
   // element it renders. A classic radio has no `Item`, so it resolves its own —
@@ -516,6 +525,7 @@ function Radio(props: CubeRadioProps, ref) {
     checked: isRadioSelected,
     ...getValidationMods({ isInvalid, isValid }),
     disabled: isRadioDisabled,
+    readonly: isReadOnly,
     hovered: isHovered,
     button: isButton,
     focused: isFocused,
@@ -564,7 +574,11 @@ function Radio(props: CubeRadioProps, ref) {
               tooltipFocusProps,
             )}
             ref={inputRef}
-            mods={{ button: isButton, disabled: isRadioDisabled }}
+            mods={{
+              button: isButton,
+              disabled: isRadioDisabled,
+              readonly: isReadOnly,
+            }}
           />
         )}
       >
@@ -608,7 +622,11 @@ function Radio(props: CubeRadioProps, ref) {
           )}
           ref={inputRef}
           // Not left to the native `disabled`, which an inert radio drops.
-          mods={{ button: isButton, disabled: isRadioDisabled }}
+          mods={{
+            button: isButton,
+            disabled: isRadioDisabled,
+            readonly: isReadOnly,
+          }}
         />
         <RadioNormalElement data-element="Input" mods={mods} data-type={type}>
           {RadioCircleElement}

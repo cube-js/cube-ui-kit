@@ -234,6 +234,7 @@ function DateRangeSeparatedPicker<T extends DateValue>(
         autoFocus={autoFocus}
         disableFocusRing={startFocusProps.isFocused}
         isDisabled={isDisabled}
+        isReadOnly={props.isReadOnly}
         isInvalid={isInvalid}
         isValid={isValid}
         size={size}
@@ -303,6 +304,7 @@ function DateRangeSeparatedPicker<T extends DateValue>(
       <DateInputBase
         disableFocusRing={endFocusProps.isFocused}
         isDisabled={isDisabled}
+        isReadOnly={props.isReadOnly}
         isInvalid={isInvalid}
         isValid={isValid}
         size={size}
