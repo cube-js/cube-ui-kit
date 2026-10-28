@@ -22,7 +22,6 @@ import {
   ReactNode,
   RefObject,
   useImperativeHandle,
-  useMemo,
 } from 'react';
 import { AriaNumberFieldProps, AriaTextFieldProps, useHover } from 'react-aria';
 
@@ -369,7 +368,7 @@ export interface CubeBufferedValueProps {
  * never wires form state — that is the job of the component rendering it (`TextInput`, `TextArea`,
  * `PasswordInput`, `NumberInput`, `SearchInput`, `CommandTextArea`).
  */
-function _TextInputBase(props: CubeTextInputBaseProps, ref) {
+function TextInputBase(props: CubeTextInputBaseProps, ref) {
   let {
     qa,
     mods,
@@ -472,35 +471,18 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
     }
   }
 
-  const modifiers = useMemo(
-    () => ({
-      ...getValidationMods({ isInvalid, isValid }),
-      loadable: !!loadingIndicator,
-      focused: isFocused,
-      hovered: isHovered,
-      disabled: isDisabled,
-      readonly: !!isReadOnly,
-      multiline: multiLine,
-      prefix: !!prefix,
-      suffix: showValidationIndicator || !!suffix || !!actions,
-      ...mods,
-    }),
-    [
-      mods,
-      isInvalid,
-      isValid,
-      showValidationIndicator,
-      loadingIndicator,
-      isFocused,
-      isDisabled,
-      isReadOnly,
-      isHovered,
-      multiLine,
-      prefix,
-      suffix,
-      actions,
-    ],
-  );
+  const modifiers = {
+    ...getValidationMods({ isInvalid, isValid }),
+    loadable: !!loadingIndicator,
+    focused: isFocused,
+    hovered: isHovered,
+    disabled: isDisabled,
+    readonly: !!isReadOnly,
+    multiline: multiLine,
+    prefix: !!prefix,
+    suffix: showValidationIndicator || !!suffix || !!actions,
+    ...mods,
+  };
 
   // The explicit props win when they are set; an unset one falls back to the merged `inputProps`
   // instead of overwriting it with `undefined`. For `autoComplete` that keeps both a caller's
@@ -608,7 +590,7 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
   });
 }
 
-const TextInputBase = forwardRef(_TextInputBase);
+const _TextInputBase = forwardRef(TextInputBase);
 
-export { TextInputBase };
+export { _TextInputBase as TextInputBase };
 export type { AriaTextFieldProps };
