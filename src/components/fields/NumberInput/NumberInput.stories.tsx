@@ -1,12 +1,14 @@
 import { StoryFn } from '@storybook/react-vite';
 import { IconCoin } from '@tabler/icons-react';
+import { within } from 'storybook/test';
 
 import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
+import { openTooltip } from '../../../stories/interactions';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Text } from '../../content/Text';
 import { Space } from '../../layout/Space';
 
-import { NumberInput } from './NumberInput';
+import { CubeNumberInputProps, NumberInput } from './NumberInput';
 
 export default {
   title: 'Forms/NumberInput',
@@ -66,6 +68,11 @@ export default {
       table: {
         defaultValue: { summary: 'medium' },
       },
+    },
+    tooltip: {
+      control: { type: 'text' },
+      description:
+        "The input's own tooltip, shown on hover over the field box and on keyboard focus, including while disabled",
     },
     /* State */
     isDisabled: {
@@ -234,6 +241,45 @@ export const Validation: StoryFn<any> = (props) => (
 export const Disabled = Template.bind({});
 Disabled.args = {
   isDisabled: true,
+};
+
+export const WithTooltip: StoryFn<CubeNumberInputProps> = ({
+  tooltip,
+  ...args
+}) => (
+  <NumberInput
+    qa="DecimalPlaces"
+    {...args}
+    // `delay: 0` only so the snapshot does not depend on the open delay.
+    tooltip={{ title: tooltip as string, delay: 0 }}
+  />
+);
+
+WithTooltip.args = {
+  'aria-label': 'Decimal places',
+  defaultValue: 2,
+  tooltip: 'Also applies to the axis labels',
+  // Room above the field, so the tooltip opens in its default `top` placement.
+  fieldStyles: { width: '0 200px 100%', margin: '6x top' },
+};
+
+WithTooltip.parameters = {
+  docs: {
+    description: {
+      story:
+        'The tooltip is anchored to the whole field box, the steppers included.',
+    },
+  },
+};
+
+WithTooltip.play = async ({ canvasElement }) => {
+  // The tooltip is the field box's, so hover the box, as a pointer would.
+  await openTooltip(
+    () =>
+      within(canvasElement)
+        .getByTestId('DecimalPlaces')
+        .closest('[data-qa="InputWrapper"]') as HTMLElement,
+  );
 };
 
 export const WithSuffixBefore = Template.bind({});

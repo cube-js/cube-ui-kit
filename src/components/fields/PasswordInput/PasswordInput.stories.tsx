@@ -1,7 +1,10 @@
 import { StoryFn } from '@storybook/react-vite';
 import { IconKey } from '@tabler/icons-react';
+import { within } from 'storybook/test';
 
+import { NO_SNAPSHOT } from '../../../stories/chromatic';
 import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
+import { openTooltip } from '../../../stories/interactions';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Space } from '../../layout/Space';
 
@@ -54,6 +57,11 @@ export default {
       },
     },
 
+    tooltip: {
+      control: { type: 'text' },
+      description:
+        "The input's own tooltip, shown on hover over the field box and on keyboard focus, including while disabled",
+    },
     /* State */
     isDisabled: {
       control: { type: 'boolean' },
@@ -188,4 +196,45 @@ Disabled.args = {
   label: 'Disabled Password',
   isDisabled: true,
   value: 'hidden-password',
+};
+
+export const WithTooltip: StoryFn<CubePasswordInputProps> = ({
+  tooltip,
+  ...args
+}) => (
+  <PasswordInput
+    qa="ApiKey"
+    {...args}
+    // `delay: 0` only so the story does not depend on the open delay.
+    tooltip={{ title: tooltip as string, delay: 0 }}
+  />
+);
+
+WithTooltip.args = {
+  'aria-label': 'API key',
+  tooltip: 'Leave empty to keep the current key',
+  // Room above the field, so the tooltip opens in its default `top` placement.
+  fieldStyles: { width: '0 320px 100%', margin: '6x top' },
+};
+
+WithTooltip.parameters = {
+  // The same open tooltip over a field box as `TextInput / WithTooltip`, and
+  // `NumberInput / WithTooltip` photographs the anchor spanning a suffix.
+  ...NO_SNAPSHOT,
+  docs: {
+    description: {
+      story:
+        'The tooltip says what an empty value means. It is anchored to the field box, the show-password button included.',
+    },
+  },
+};
+
+WithTooltip.play = async ({ canvasElement }) => {
+  // The tooltip is the field box's, so hover the box, as a pointer would.
+  await openTooltip(
+    () =>
+      within(canvasElement)
+        .getByTestId('ApiKey')
+        .closest('[data-qa="InputWrapper"]') as HTMLElement,
+  );
 };

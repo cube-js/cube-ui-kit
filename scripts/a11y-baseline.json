@@ -1,8 +1,8 @@
 {
   "tooling": { "axe-core": "4.14.0" },
   "totals": {
-    "aria-allowed-attr": 226,
-    "aria-allowed-role": 9,
+    "aria-allowed-attr": 202,
+    "aria-allowed-role": 10,
     "aria-dialog-name": 10,
     "aria-input-field-name": 7,
     "aria-required-attr": 15,
@@ -188,6 +188,7 @@
     "forms-commandtextarea--top-popover-position": { "aria-allowed-role": 1 },
     "forms-commandtextarea--validation": { "aria-allowed-role": 2 },
     "forms-commandtextarea--with-sections": { "aria-allowed-role": 1 },
+    "forms-commandtextarea--with-tooltip": { "aria-allowed-role": 1 },
     "forms-complexform--complex-form-side-label": {
       "color-contrast": 1,
       "nested-interactive": 1,

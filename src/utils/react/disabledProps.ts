@@ -154,7 +154,8 @@ function ignoreChange(event: ChangeEvent) {
  * Turns the props React Aria gives a disabled checkbox, switch or radio
  * `<input>` into those of an inert one (`isInert` from
  * `getDisabledElementProps`): no native `disabled`, so it keeps its focus, and
- * nothing a click, `Space` or a change could toggle it with.
+ * nothing a click, `Space` or a change could toggle it with. A text input uses
+ * it too, made read-only by its caller, so it fires no change to ignore.
  *
  * React Aria leaves `tabIndex` out of a disabled input's props, so a caller's
  * `excludeFromTabOrder` has to be passed again.

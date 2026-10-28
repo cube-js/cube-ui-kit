@@ -1,6 +1,6 @@
 import { createRef, useState } from 'react';
 
-import { act, renderWithRoot, screen, userEvent } from '../../../test';
+import { act, renderWithRoot, screen, userEvent, waitFor } from '../../../test';
 import { Button } from '../../actions/Button/Button';
 
 import { SearchInput } from './SearchInput';
@@ -40,6 +40,35 @@ describe('<SearchInput />', () => {
       const input = screen.getByRole('searchbox');
 
       await userEvent.type(input, 'abc');
+      await userEvent.keyboard('{Escape}');
+
+      expect(input).toHaveValue('');
+      expect(onClear).toHaveBeenCalledTimes(1);
+    });
+
+    it('leaves the text to a second Escape while its tooltip is open', async () => {
+      const onClear = vi.fn();
+
+      renderWithRoot(
+        <SearchInput
+          aria-label="Search"
+          defaultValue="abc"
+          tooltip="Searches names only"
+          onClear={onClear}
+        />,
+      );
+
+      const input = screen.getByRole('searchbox');
+
+      await userEvent.tab();
+      await screen.findByRole('tooltip');
+      await userEvent.keyboard('{Escape}');
+
+      // The first Escape only closes the tooltip.
+      await waitFor(() => expect(screen.queryByRole('tooltip')).toBeNull());
+      expect(input).toHaveValue('abc');
+      expect(onClear).not.toHaveBeenCalled();
+
       await userEvent.keyboard('{Escape}');
 
       expect(input).toHaveValue('');

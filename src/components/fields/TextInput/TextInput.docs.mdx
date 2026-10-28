@@ -32,6 +32,7 @@ A text input component that allows users to input custom text entries with a key
 - **`prefix`** — Input decoration before the main input
 - **`suffix`** — Input decoration after the main input
 - **`suffixPosition`** `'before' | 'after'` (default: `before`) — Position of suffix relative to validation/loading state icons
+- **`tooltip`** `string | TooltipProviderProps` — The input's own tooltip, a short hint about the value. It opens on hover over the field box and on keyboard focus, and describes the input. A string, or `TooltipProvider` props such as `title` and `placement` (`top` by default). A disabled input with a tooltip stays in the Tab order, marked `aria-disabled` and read-only rather than natively disabled, so the keyboard reaches the tooltip too. The info badge next to a field label is `labelTooltip`. See [With a Tooltip](#with-a-tooltip)
 - **`type`** `'text' | 'password' | 'email' | 'url' | 'tel' | 'search'` (default: `text`) — Input type
 - **`multiLine`** `boolean` (default: `false`) — Whether the input is multiline (textarea)
 - **`rows`** `number` — Number of visible rows for multiline input
@@ -174,6 +175,35 @@ import { IconMail } from '@tabler/icons-react';
 />
 ```
 
+### With a Tooltip
+
+`tooltip` gives an input without a visible label a short hint, such as what an empty value means or why the field is disabled. It is anchored to the field box, prefix and suffix included, so it never covers the text being typed.
+
+```jsx
+<TextInput aria-label="Axis minimum" placeholder="Auto" tooltip="Empty is the lowest value in the data" />
+```
+
+<Story of={TextInputStories.WithTooltip} />
+
+| When | What happens |
+| --- | --- |
+| The pointer hovers the field box | Opens after the tooltip delay |
+| `Tab` moves focus to the input | Opens at once |
+| A click or tap into the input | Doesn't open, and an open one closes: the user is about to type |
+| Any key on the input | Closes until the next hover or keyboard focus |
+| `Escape` while it is open | Closes the tooltip only. The key goes no further, so it doesn't clear a `SearchInput` or close a surrounding dialog |
+| The input loses focus, or the pointer leaves | Closes |
+
+A disabled field still shows its tooltip, which makes it the place to say why it can't be changed. While it has a tooltip it stays focusable, marked `aria-disabled` and read-only instead of natively disabled, so keyboard users can read the reason too. It takes no text, `NumberInput` doesn't step, `Enter` submits nothing, and a click on it or on its label doesn't focus it, as with a natively disabled field. Screen readers announce it as disabled and read-only. Not being natively disabled, its value is part of a plain `<form>`'s submitted data; ui-kit's `Form` is not affected. Without a tooltip, a disabled input is natively disabled and `Tab` skips it.
+
+```jsx
+<NumberInput isDisabled aria-label="Font size" tooltip="Turn data labels on to change this" />
+```
+
+Keep the tooltip a hint. It is never the field's name (give the input a `label` or `aria-label`), an error (`errorMessage`) or anything the user needs to fill the field in (`description`): touch users never see it. When keyboard users must learn why a field can't be edited and a tooltip is not enough, show it as a `description`, or use `isReadOnly`. Prefer `tooltip` to wrapping the input in `TooltipProvider`: a disabled input takes no trigger props from a wrapper, so that tooltip never opens.
+
+To switch the tooltip off and on while the input can have focus, keep `tooltip` set with a non-empty `title` and toggle its `isDisabled` (`tooltip={{ title, isDisabled: !isEmpty }}`). Setting and clearing `tooltip`, or emptying its `title`, remounts the field box, and the input loses focus mid-typing.
+
 ### Multiline Text Area
 
 ```jsx
@@ -200,7 +230,7 @@ import { IconMail } from '@tabler/icons-react';
 
 ### Keyboard Navigation
 
-- `Tab` – Moves focus to the input field
+- `Tab` – Moves focus to the input field. A disabled field takes focus only while it has a `tooltip`, which then opens
 - `Shift + Tab` – Moves focus away from the input
 - Standard text editing shortcuts (Ctrl+A, Ctrl+C, etc.)
 

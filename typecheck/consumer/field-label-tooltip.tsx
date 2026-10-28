@@ -12,14 +12,17 @@ import {
  * The info badge next to a field's label is `labelTooltip`; `tooltip` is the
  * control's own. A consumer must see the old spelling as an error on every
  * field, including React Aria-derived props, except `Select`, where `tooltip`
- * remains the trigger's tooltip, and `Checkbox`, where it is the checkbox's.
+ * remains the trigger's tooltip, and `Checkbox` and the text inputs, where it
+ * is the control's own.
  */
 export function FieldLabelTooltips() {
   return (
     <>
-      <TextInput label="Email" labelTooltip="Where we write" />
-      {/* @ts-expect-error the label badge is `labelTooltip` */}
-      <TextInput label="Email" tooltip="Where we write" />
+      <TextInput
+        label="Email"
+        labelTooltip="Where we write"
+        tooltip={{ title: 'Over the field box', placement: 'right' }}
+      />
 
       <Picker label="Letter" labelTooltip="Why it matters">
         <Picker.Item key="a">Alpha</Picker.Item>

@@ -952,6 +952,11 @@
     "diagnostics": {},
     "optOuts": 0
   },
+  "src/components/fields/TextInput/TextInputBase.tsx": {
+    "compiled": 1,
+    "diagnostics": {},
+    "optOuts": 0
+  },
   "src/components/fields/TextInput/useAutoSizeTextArea.ts": {
     "compiled": 0,
     "diagnostics": {
