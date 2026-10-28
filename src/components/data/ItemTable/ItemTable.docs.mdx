@@ -29,6 +29,8 @@ Use `DataTable` instead when a _cell_ is the unit of interest — query results,
 - **`columns`** `CubeItemTableColumn<T>[]` — Column definitions. See below.
 - **`rowKey`** `string` (default: `'id'`) — Property used as the row key.
 - **`getRowKey`** `(row: T, index: number) => Key` — Wins over `rowKey`.
+- **`sections`** `readonly CubeItemTableSection[]` — Ordered `{ key, title }` captions for a flat list. Empty sections are omitted. Requires `getSectionKey`.
+- **`getSectionKey`** `(row: T) => Key` — Assigns every displayed record to a declared section key.
 - **`getRowChildren`** `(row: T) => readonly T[] | undefined` — Enables tree mode. `data` then contains top-level rows and children are read recursively.
 - **`treeColumnKey`** `string` — Column containing indentation and the disclosure control. Defaults to the first visible data column.
 - **`expandedKeys`** `Key[]` — Controlled expanded rows.
@@ -208,6 +210,7 @@ Customizes the root frame. Every internal part of the table is a **sub-element**
 - `TreeContent`, `TreeToggle`, `TreeValue` — indentation, disclosure/leaf placeholder, and the consumer-rendered value in the tree column
 - `SortIndicator` — the sort arrow, inside the header `Item`'s suffix
 - `Foot`, `FootRow`, `FootCell` — pinned totals
+- `SectionRow`, `SectionCell`, `SectionLabel` — full-width list section captions, separate from record hover/selection styles; labels stay visible while scrolling horizontally
 - `StateContent` — the empty / no-results / error content
 
 ```jsx
@@ -625,6 +628,30 @@ Deliberately distinct, and not interchangeable:
 Unselectable rows are excluded from every scope. Pressing the header checkbox while everything in scope is selected clears the **whole** selection, not just the scope — leaving keys selected on other pages behind an unchecked-looking box is how people delete things they did not mean to.
 
 <Canvas of={ItemTableStories.SelectAllScope} />
+
+### Section Headers
+
+Use `sections` to divide a flat list into labeled zones while sharing its column headers, column widths and scroll area:
+
+```jsx
+<ItemTable
+  data={items}
+  columns={columns}
+  sections={[
+    { key: 'favorites', title: 'Favorites' },
+    { key: 'other', title: 'Other items' },
+  ]}
+  getSectionKey={(item) => item.isFavorite ? 'favorites' : 'other'}
+/>
+```
+
+The array defines section order. Client sorting applies within each section; clearing the sort restores source order within each section. Search filters records, then empty sections disappear. Captions do not consume page slots or affect footer counts, selection, bulk actions, links or row actions. A section continuing onto another client page repeats its caption there. Keyboard row navigation skips captions, and virtualization measures them separately from records. Accessible captions are structural grid rows, so `aria-rowcount` and document-absolute row indices include them; pagination summaries still count records only. Sectioned records keep keys resolved from their source positions, including when `getRowKey` uses its index argument.
+
+`title` accepts a React node. Captions scroll with the list and can be customized with `styles.SectionCell` and `styles.SectionRow`. For example, `styles={{ SectionCell: { preset: 't3m' } }}` changes their typography without changing column headers or record cells.
+
+This first version applies to flat tables with client, infinite or no pagination. Infinite mode groups the currently loaded records; the caller still owns loading. Tree mode, row drag/drop and server pagination keep their existing behavior and ignore section props with a development warning. These modes need hierarchy, drop-boundary or unseen-section metadata that ordinary captions do not provide. Missing paired props, duplicate section keys or a displayed record returning an undeclared key also warn and fall back to the ordinary list, preserving all records.
+
+<Canvas of={ItemTableStories.Sections} />
 
 ### Row Links and Row Actions
 

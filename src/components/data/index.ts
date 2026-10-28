@@ -9,6 +9,7 @@ export { ItemTable } from './ItemTable';
 export type {
   CubeItemTableProps,
   CubeItemTableColumn,
+  CubeItemTableSection,
   ItemTableComponent,
 } from './ItemTable';
 

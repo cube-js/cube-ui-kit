@@ -20,6 +20,11 @@ import type { CubeTablePersistKey } from '../TableBase/use-table-storage';
 
 export type CubeItemTableColumn<T = any> = CubeTableColumn<T>;
 
+export interface CubeItemTableSection {
+  key: Key;
+  title: ReactNode;
+}
+
 export interface CubeItemTableProps<T = any>
   extends
     BaseProps,
@@ -33,6 +38,14 @@ export interface CubeItemTableProps<T = any>
   rowKey?: string;
   /** Wins over `rowKey`. */
   getRowKey?: (row: T, index: number) => Key;
+  /**
+   * Ordered, full-width captions for flat records. Empty sections are omitted;
+   * records sort within each section and captions do not consume page slots.
+   * Requires `getSectionKey`. Ignored for trees, row drag/drop and server paging.
+   */
+  sections?: readonly CubeItemTableSection[];
+  /** Every displayed record must return a declared section key. */
+  getSectionKey?: (row: T) => Key;
 
   /* ── status ───────────────────────────────────────────────────────── */
   isLoading?: boolean;
