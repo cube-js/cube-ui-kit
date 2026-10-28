@@ -2,8 +2,6 @@ import { useFocusableRef } from '@react-spectrum/utils';
 import { IconCheck, IconMinus } from '@tabler/icons-react';
 import {
   BaseProps,
-  CONTAINER_STYLES,
-  ContainerStyleProps,
   Element,
   filterBaseProps,
   Styles,
@@ -37,7 +35,6 @@ import {
   castNullableIsSelected,
   WithNullableSelected,
 } from '../../../utils/react/nullableValue';
-import { extractStyles } from '../../../utils/styles';
 import { useAutoTooltip } from '../../content/use-auto-tooltip';
 import {
   getValidationMods,
@@ -47,6 +44,10 @@ import {
   useFieldProps,
   wrapWithField,
 } from '../../form';
+import {
+  FieldLayoutStyleProps,
+  splitFieldLayout,
+} from '../../form/field-layout';
 import { HiddenInput } from '../../HiddenInput';
 import {
   mergeTooltipFocusProps,
@@ -63,7 +64,7 @@ import type { CubeTooltipProviderProps } from '../../overlays/Tooltip/TooltipPro
 export interface CubeCheckboxProps
   extends
     BaseProps,
-    ContainerStyleProps,
+    FieldLayoutStyleProps,
     Omit<AriaCheckboxProps, 'form' | 'name'>,
     ToggleSelectionProps,
     FieldBaseProps<boolean | null | undefined> {
@@ -178,7 +179,11 @@ function Checkbox(
     tooltip,
   } = props;
 
-  let styles: Styles = extractStyles(props, CONTAINER_STYLES);
+  // A grouped checkbox is an option of its group's field and never wraps.
+  const { styles, field } = splitFieldLayout(
+    props,
+    groupState ? { hasChrome: false } : undefined,
+  );
 
   labelStyles = useMemo(
     () => ({
@@ -376,6 +381,7 @@ function Checkbox(
     // `Switch` does.
     return wrapWithField(checkboxField as ReactElement, {
       ...props,
+      ...field,
       tooltip: undefined,
       labelProps: { ...props.labelProps, for: props.id },
     });

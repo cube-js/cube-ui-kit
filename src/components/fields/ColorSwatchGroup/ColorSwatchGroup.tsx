@@ -1,14 +1,5 @@
 import { useObjectRef } from '@react-aria/utils';
-import {
-  BaseProps,
-  BLOCK_STYLES,
-  BlockStyleProps,
-  mergeStyles,
-  OUTER_STYLES,
-  OuterStyleProps,
-  Styles,
-  tasty,
-} from '@tenphi/tasty';
+import { BaseProps, mergeStyles, Styles, tasty } from '@tenphi/tasty';
 import { ForwardedRef, forwardRef, useMemo, useRef, useState } from 'react';
 import { useRadio, useRadioGroup } from 'react-aria';
 import { useRadioGroupState } from 'react-stately';
@@ -18,8 +9,11 @@ import { useI18n } from '../../../i18n';
 import { FieldBaseProps } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
-import { extractStyles } from '../../../utils/styles';
 import { getValidationMods, useFieldProps, wrapWithField } from '../../form';
+import {
+  FieldLayoutStyleProps,
+  splitFieldLayout,
+} from '../../form/field-layout';
 import { HiddenInput } from '../../HiddenInput';
 import { ColorFormat, formatColor, parseColor, toHex } from '../color/color';
 import { useIsInsideColorPopover } from '../color/context';
@@ -167,8 +161,7 @@ const SwatchElement = tasty({
 export interface CubeColorSwatchGroupProps
   extends
     BaseProps,
-    OuterStyleProps,
-    BlockStyleProps,
+    FieldLayoutStyleProps,
     FieldBaseProps<string | null | undefined> {
   /** The colors to offer. Duplicates of the same color are dropped. */
   colors?: CubeColorSwatchItem[];
@@ -288,7 +281,7 @@ export const ColorSwatchGroup = forwardRef(function ColorSwatchGroup(
     'aria-label': ariaLabel,
   } = props;
 
-  const styles = extractStyles(props, [...OUTER_STYLES, ...BLOCK_STYLES]);
+  const { styles, field } = splitFieldLayout(props);
   const isInsidePopover = useIsInsideColorPopover();
   // A custom picker inside a color popover would open a popover of its own.
   const showCustom = allowCustom && !isInsidePopover;
@@ -423,6 +416,7 @@ export const ColorSwatchGroup = forwardRef(function ColorSwatchGroup(
 
   return wrapWithField(group, {
     ...props,
+    ...field,
     labelProps: mergeProps(props.labelProps, labelProps),
   });
 });

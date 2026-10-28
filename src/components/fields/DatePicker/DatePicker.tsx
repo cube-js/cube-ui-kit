@@ -1,10 +1,5 @@
 import { FocusableRef } from '@react-types/shared';
-import {
-  BaseProps,
-  CONTAINER_STYLES,
-  ContainerStyleProps,
-  Styles,
-} from '@tenphi/tasty';
+import { BaseProps, Styles } from '@tenphi/tasty';
 import { forwardRef, RefObject, useRef } from 'react';
 import {
   AriaDatePickerProps,
@@ -18,8 +13,12 @@ import { useDatePickerState } from 'react-stately';
 import { useI18n } from '../../../i18n';
 import { FieldBaseProps } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
-import { extractStyles, mergeStyleLayers } from '../../../utils/styles';
+import { mergeStyleLayers } from '../../../utils/styles';
 import { useFieldProps, wrapWithField } from '../../form';
+import {
+  FieldLayoutStyleProps,
+  splitFieldLayout,
+} from '../../form/field-layout';
 import { Calendar } from '../../other/Calendar/Calendar';
 import { Dialog } from '../../overlays/Dialog/Dialog';
 import { DialogTrigger } from '../../overlays/Dialog/DialogTrigger';
@@ -40,7 +39,7 @@ export interface CubeDatePickerProps<T extends DateValue = DateValue>
     >,
     DateFieldBase<T>,
     BaseProps,
-    ContainerStyleProps,
+    FieldLayoutStyleProps,
     FieldBaseProps<T | null | undefined> {
   wrapperStyles?: Styles;
   inputStyles?: Styles;
@@ -78,16 +77,9 @@ function DatePicker<T extends DateValue>(
   });
   props = Object.assign({}, DEFAULT_DATE_PROPS, props);
 
-  // The public type declares `ContainerStyleProps` and `styles`, so both have to
-  // reach the root — before this they were extracted and dropped, which made
-  // `width="100%"` type-check and do nothing. `extractStyles` already folds in
-  // `props.styles` and lets the individual style props override it, which is the
-  // precedence every other component uses; re-spreading `props.styles` here
-  // would invert it. `wrapperStyles` stays the most specific and keeps winning.
-  let styles = mergeStyleLayers(
-    extractStyles(props, CONTAINER_STYLES),
-    props.wrapperStyles,
-  );
+  // `wrapperStyles` styles the same box as `styles` and wins over it.
+  const fieldLayout = splitFieldLayout(props);
+  const styles = mergeStyleLayers(fieldLayout.styles, props.wrapperStyles);
 
   let {
     qa,
@@ -183,7 +175,6 @@ function DatePicker<T extends DateValue>(
             <Calendar {...calendarProps} />
             {showTimeField && (
               <TimeInput
-                padding="1x"
                 label={t('datePicker.time', 'Time')}
                 value={state.timeValue}
                 placeholderValue={timePlaceholder}
@@ -205,6 +196,7 @@ function DatePicker<T extends DateValue>(
 
   return wrapWithField(component, {
     ...props,
+    ...fieldLayout.field,
     labelProps: mergeProps(props.labelProps, labelProps),
   });
 }

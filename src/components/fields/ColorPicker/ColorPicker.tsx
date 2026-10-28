@@ -1,12 +1,4 @@
-import {
-  BaseProps,
-  BLOCK_STYLES,
-  BlockStyleProps,
-  OUTER_STYLES,
-  OuterStyleProps,
-  Styles,
-  tasty,
-} from '@tenphi/tasty';
+import { BaseProps, Styles, tasty } from '@tenphi/tasty';
 import {
   ForwardedRef,
   forwardRef,
@@ -19,9 +11,9 @@ import {
 import { Placement } from 'react-aria';
 
 import { useEvent } from '../../../_internal';
+import { useWarn } from '../../../_internal/hooks/use-warn';
 import { useI18n } from '../../../i18n';
 import { FieldBaseProps } from '../../../shared';
-import { extractStyles } from '../../../utils/styles';
 import { ItemButton } from '../../actions';
 import { CubeItemProps } from '../../content/Item';
 import { Text } from '../../content/Text';
@@ -31,6 +23,11 @@ import {
   useFieldProps,
   wrapWithField,
 } from '../../form';
+import {
+  FieldLayoutStyleProps,
+  splitFieldLayout,
+} from '../../form/field-layout';
+import { TRIGGER_TOOLTIP_WARNING } from '../../form/legacy-tooltip';
 import { Dialog } from '../../overlays/Dialog/Dialog';
 import { DialogTrigger } from '../../overlays/Dialog/DialogTrigger';
 import { ColorSpace } from '../color/channels';
@@ -76,8 +73,7 @@ const ColorPickerWrapper = tasty({
 export interface CubeColorPickerProps
   extends
     BaseProps,
-    OuterStyleProps,
-    BlockStyleProps,
+    FieldLayoutStyleProps,
     FieldBaseProps<string | null | undefined> {
   /** The selected color, as a color string. */
   value?: string | null;
@@ -121,7 +117,12 @@ export interface CubeColorPickerProps
   /** The visual type of the trigger. */
   type?: CubeItemProps['type'];
   theme?: CubeItemProps['theme'];
-  /** Tooltip for the trigger, separate from `labelTooltip`. */
+  /**
+   * Tooltip for the trigger. The info badge next to the field's label is
+   * `labelTooltip`.
+   */
+  tooltip?: CubeItemProps['tooltip'];
+  /** @deprecated Use `tooltip`. */
   triggerTooltip?: CubeItemProps['tooltip'];
   /** Colors to offer under the editor, for picking without dialing one in. */
   swatches?: CubeColorSwatchItem[];
@@ -174,6 +175,7 @@ export const ColorPicker = forwardRef(function ColorPicker(
     size,
     type = 'outline',
     theme = 'default',
+    tooltip,
     triggerTooltip,
     swatches,
     swatchColumns,
@@ -189,7 +191,9 @@ export const ColorPicker = forwardRef(function ColorPicker(
     'aria-describedby': ariaDescribedBy,
   } = props;
 
-  const styles = extractStyles(props, [...OUTER_STYLES, ...BLOCK_STYLES]);
+  const { styles, field } = splitFieldLayout(props);
+
+  useWarn(triggerTooltip !== undefined, TRIGGER_TOOLTIP_WARNING);
 
   /**
    * Loading locks the trigger, but the popover can outlive that — it may be
@@ -280,7 +284,7 @@ export const ColorPicker = forwardRef(function ColorPicker(
             <ColorSwatch size="small" color={color} styles={swatchStyles} />
           }
           rightIcon={getValidationIcon({ isInvalid, isValid })}
-          tooltip={triggerTooltip}
+          tooltip={tooltip ?? triggerTooltip}
           isDisabled={isEditingDisabled || isReadOnly}
           autoFocus={autoFocus}
           aria-label={ariaLabel}
@@ -340,7 +344,12 @@ export const ColorPicker = forwardRef(function ColorPicker(
     </ColorPickerWrapper>
   );
 
-  return wrapWithField(pickerField, props);
+  return wrapWithField(pickerField, {
+    ...props,
+    ...field,
+    // The trigger's own. Handed on, it read as the legacy field `tooltip`.
+    tooltip: undefined,
+  });
 });
 
 /**

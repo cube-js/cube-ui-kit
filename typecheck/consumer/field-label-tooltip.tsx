@@ -1,5 +1,7 @@
 import {
   Checkbox,
+  ColorPicker,
+  FilterPicker,
   Form,
   Picker,
   Radio,
@@ -11,9 +13,9 @@ import {
 /**
  * The info badge next to a field's label is `labelTooltip`; `tooltip` is the
  * control's own. A consumer must see the old spelling as an error on every
- * field, including React Aria-derived props, except `Select`, where `tooltip`
- * remains the trigger's tooltip, and `Checkbox` and the text inputs, where it
- * is the control's own.
+ * field, including React Aria-derived props, except `Select`, `Picker`,
+ * `FilterPicker` and `ColorPicker`, where `tooltip` is the trigger's tooltip,
+ * and `Checkbox` and the text inputs, where it is the control's own.
  */
 export function FieldLabelTooltips() {
   return (
@@ -27,10 +29,23 @@ export function FieldLabelTooltips() {
       <Picker label="Letter" labelTooltip="Why it matters">
         <Picker.Item key="a">Alpha</Picker.Item>
       </Picker>
-      {/* @ts-expect-error a picker's trigger tooltip is `triggerTooltip` */}
-      <Picker label="Letter" tooltip="Why it matters">
+      <Picker label="Letter" tooltip="On the trigger">
         <Picker.Item key="a">Alpha</Picker.Item>
       </Picker>
+      {/* The deprecated spelling still type-checks. */}
+      <Picker label="Letter" triggerTooltip="On the trigger">
+        <Picker.Item key="a">Alpha</Picker.Item>
+      </Picker>
+
+      <FilterPicker label="Letter" tooltip="On the trigger">
+        <FilterPicker.Item key="a">Alpha</FilterPicker.Item>
+      </FilterPicker>
+      <FilterPicker label="Letter" triggerTooltip="On the trigger">
+        <FilterPicker.Item key="a">Alpha</FilterPicker.Item>
+      </FilterPicker>
+
+      <ColorPicker label="Color" tooltip="On the trigger" />
+      <ColorPicker label="Color" triggerTooltip="On the trigger" />
 
       <Slider label="Volume" labelTooltip="How loud" />
       {/* @ts-expect-error the label badge is `labelTooltip` */}

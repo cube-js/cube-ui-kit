@@ -5,17 +5,7 @@ import {
   FocusableRef,
   Key,
 } from '@react-types/shared';
-import {
-  BASE_STYLES,
-  BasePropsWithoutChildren,
-  BaseStyleProps,
-  COLOR_STYLES,
-  ColorStyleProps,
-  OUTER_STYLES,
-  OuterStyleProps,
-  Styles,
-  tasty,
-} from '@tenphi/tasty';
+import { BasePropsWithoutChildren, Styles, tasty } from '@tenphi/tasty';
 import React, {
   ForwardedRef,
   forwardRef,
@@ -44,7 +34,6 @@ import {
   settleOverlayKey,
 } from '../../../utils/react/overlayKeyPropagation';
 import { usePopoverSync } from '../../../utils/react/usePopoverSync';
-import { extractStyles } from '../../../utils/styles';
 import { CollectionItem as Item } from '../../CollectionItem';
 import {
   getValidationIcon,
@@ -52,6 +41,10 @@ import {
   useFieldProps,
   wrapWithField,
 } from '../../form';
+import {
+  FieldLayoutStyleProps,
+  splitFieldLayout,
+} from '../../form/field-layout';
 import { getListBoxOptionId } from '../ListBox/optionId';
 import {
   filterCollectionNodes,
@@ -94,9 +87,7 @@ const InputElement = tasty({
 export interface CubeComboBoxProps<T>
   extends
     BasePropsWithoutChildren,
-    BaseStyleProps,
-    OuterStyleProps,
-    ColorStyleProps,
+    FieldLayoutStyleProps,
     FieldBaseProps<string | null | undefined> {
   /** The selected key in controlled mode */
   selectedKey?: string | null;
@@ -242,8 +233,6 @@ export interface CubeComboBoxProps<T>
    */
   onOpenChange?: (isOpen: boolean) => void;
 }
-
-const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
 
 // ============================================================================
 // Hook: useComboBoxState
@@ -836,7 +825,6 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     onBlur,
     onKeyDown,
     form,
-    ...otherProps
   } = props;
 
   // Generate a unique ID for this combobox instance
@@ -872,7 +860,9 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   // Default to true if items are provided, false otherwise
   const sortSelectedToTop = sortSelectedToTopProp ?? (items ? true : false);
 
-  styles = extractStyles(otherProps, PROP_STYLES, styles);
+  const fieldLayout = splitFieldLayout(props);
+
+  styles = fieldLayout.styles;
 
   inputRef = useCombinedRefs(inputRef);
   triggerRef = useCombinedRefs(triggerRef);
@@ -1275,29 +1265,17 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     }
   }
 
-  let mods = useMemo(
-    () => ({
-      ...getValidationMods({ isInvalid, isValid }),
-      disabled: isDisabled,
-      readonly: !!isReadOnly,
-      hovered: false,
-      focused: isFocused,
-      loading: isLoading,
-      prefix: !!prefix,
-      suffix: true,
-      clearable: showClearButton,
-    }),
-    [
-      isInvalid,
-      isValid,
-      isDisabled,
-      isReadOnly,
-      isFocused,
-      isLoading,
-      prefix,
-      showClearButton,
-    ],
-  );
+  let mods = {
+    ...getValidationMods({ isInvalid, isValid }),
+    disabled: isDisabled,
+    readonly: !!isReadOnly,
+    hovered: false,
+    focused: isFocused,
+    loading: isLoading,
+    prefix: !!prefix,
+    suffix: true,
+    clearable: showClearButton,
+  };
 
   // The list is at least as wide as the field, measured as it shows.
   const [comboBoxWidth, setComboBoxWidth] = useState<number>();
@@ -1475,10 +1453,10 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
 
   const { children: _, ...propsWithoutChildren } = props;
 
-  return wrapWithField<Omit<CubeComboBoxProps<T>, 'children'>>(
-    comboBoxField,
-    propsWithoutChildren,
-  );
+  return wrapWithField<Omit<CubeComboBoxProps<T>, 'children'>>(comboBoxField, {
+    ...propsWithoutChildren,
+    ...fieldLayout.field,
+  });
 }) as unknown as (<T>(
   props: CubeComboBoxProps<T> & { ref?: ForwardedRef<HTMLDivElement> },
 ) => ReactElement) & { Item: typeof Item; Section: typeof BaseSection };

@@ -2,14 +2,8 @@ import { useHover } from '@react-aria/interactions';
 import { IconMinus } from '@tabler/icons-react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import {
-  BASE_STYLES,
   BasePropsWithoutChildren,
-  BaseStyleProps,
-  COLOR_STYLES,
-  ColorStyleProps,
   mergeStyles,
-  OUTER_STYLES,
-  OuterStyleProps,
   Styles,
   tasty,
 } from '@tenphi/tasty';
@@ -57,7 +51,6 @@ import { SIZE_NAME_TO_KEY, SIZES } from '../../../tokens';
 import { mergeProps, useCombinedRefs } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
 import { allowOverlayKeysToPropagate } from '../../../utils/react/overlayKeyPropagation';
-import { extractStyles } from '../../../utils/styles';
 // Import Menu styled components for header and footer
 import {
   StyledDivider,
@@ -79,6 +72,10 @@ import {
   useFieldProps,
   wrapWithField,
 } from '../../form';
+import {
+  FieldLayoutStyleProps,
+  splitFieldLayout,
+} from '../../form/field-layout';
 import { createMockDragState } from '../../shared/DraggableCollection';
 import { useOptionOriginPress } from '../option-origin-press';
 
@@ -369,11 +366,7 @@ export interface CubeListBoxProps<T>
     CollectionBase<T>,
     FieldBaseProps<Key | readonly Key[] | null | undefined>,
     BasePropsWithoutChildren,
-    // The style props `PROP_STYLES` extracts at runtime and the docs list;
-    // without these a `height` or `width` worked but failed to type-check.
-    BaseStyleProps,
-    OuterStyleProps,
-    ColorStyleProps {
+    FieldLayoutStyleProps {
   /** Custom styles for the list container */
   listStyles?: Styles;
   /** Custom styles for individual options */
@@ -541,8 +534,6 @@ export interface CubeListBoxProps<T>
    */
   onReorder?: (newOrder: string[]) => void;
 }
-
-const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
 
 /** A collection with no options, for a list state that isn't needed. */
 const NO_OPTIONS: ListProps<any> = { children: [], selectionMode: 'none' };
@@ -852,7 +843,6 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     isReorderable = false,
     onReorder,
     form,
-    ...otherProps
   } = props;
 
   const lastSelectedKeyRef = useRef<Key | null>(null);
@@ -1039,7 +1029,9 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     },
   });
 
-  styles = extractStyles(otherProps, PROP_STYLES, styles);
+  const fieldLayout = splitFieldLayout(props, { fillHeightOnFlex: true });
+
+  styles = fieldLayout.styles;
 
   listRef = useCombinedRefs(listRef);
 
@@ -1482,6 +1474,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
 
   return wrapWithField<Omit<CubeListBoxProps<T>, 'children'>>(listBoxField, {
     ...props,
+    ...fieldLayout.field,
     labelProps: mergeAriaProps(labelProps, props.labelProps),
   });
 }) as unknown as (<T>(

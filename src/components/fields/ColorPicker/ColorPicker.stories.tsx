@@ -67,9 +67,13 @@ export default {
       description: 'Whether the popover may flip to the other side',
       table: { defaultValue: { summary: true } },
     },
-    triggerTooltip: {
+    tooltip: {
       control: { type: null },
       description: 'Tooltip for the trigger, separate from `labelTooltip`',
+    },
+    triggerTooltip: {
+      control: { type: null },
+      description: '_(deprecated)_ Use `tooltip`.',
     },
     swatches: {
       control: { type: 'object' },

@@ -24,18 +24,14 @@ function RangeSlider(
   props: CubeRangeSliderProps,
   ref: FocusableRef<HTMLDivElement>,
 ) {
-  let { styles, gradation, isDisabled, ...otherProps } = props;
-  // Only when set: `useProviderProps` spreads props over the form context, so
-  // an explicit `undefined` would enable a slider in a disabled form.
-  const baseProps =
-    isDisabled === undefined ? otherProps : { ...otherProps, isDisabled };
+  let { gradation, ...otherProps } = props;
 
   // The first thumb takes `SliderBase`'s `inputRef`, which the component ref's
   // `focus()` targets; the second thumb keeps its own.
   const maxThumbInputRef = useRef<HTMLInputElement>(null);
 
   return (
-    <SliderBase ref={ref} {...(baseProps as CubeSliderBaseProps<number[]>)}>
+    <SliderBase ref={ref} {...(otherProps as CubeSliderBaseProps<number[]>)}>
       {({
         trackRef,
         inputRef,

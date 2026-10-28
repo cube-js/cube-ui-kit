@@ -21,6 +21,8 @@ import {
 } from './field-description';
 import { CubeFieldWrapperProps } from './types';
 
+import type { Props } from '../../../props';
+
 const FieldElement = tasty({
   qa: 'Field',
   styles: {
@@ -36,10 +38,28 @@ const FieldElement = tasty({
       '': 'baseline stretch',
       'has-split': 'center',
     },
+    // A sized field that its row stretches keeps its rows packed at the top,
+    // so its input stays under its label, level with its neighbours'. Under
+    // `fill-height` the input's `1sf` row takes the height anyway. A split
+    // field has one row, which `space-between` never stretches.
     placeContent: {
       '': 'initial',
+      'fill-width | fill-height': 'start normal',
       'has-split': 'space-between',
     },
+    // An input's style props that size the field set `fill-width` /
+    // `fill-height` (`splitFieldLayout`). Under `fill-height` the input's row
+    // takes what the label and texts leave; the last explicit row is the
+    // input's, beside a side or split label and under a top one.
+    gridRows: {
+      '': false,
+      'fill-height': 'max-content 1sf',
+      'fill-height & (has-sider | has-split)': '1sf',
+    },
+    // A field that grows in a flex column can shrink below its content. A
+    // caller's `height` replaces the whole value, minimum included; the style
+    // props pass `blockSize` as `height`.
+    height: { '': false, 'fill-height': 'min 0' },
     '$full-label-width': '($label-width + 1x)',
 
     LabelArea: {
@@ -56,15 +76,32 @@ const FieldElement = tasty({
       },
     },
 
+    // Sized, the input area is a one-column grid, so the input is a grid item
+    // and its own CSS decides: an `auto` size stretches to the field, a fixed
+    // or capped one stays. Unsized, it is a block and the input keeps its
+    // natural size, as before.
     InputArea: {
-      display: 'block',
-      flow: 'column',
+      display: {
+        '': 'block',
+        'fill-width | fill-height': 'grid',
+      },
+      flow: {
+        '': 'column',
+        'fill-width | fill-height': 'row',
+      },
       gap: '.5x',
+      gridColumns: { '': false, 'fill-width | fill-height': '1sf' },
+      gridRows: { '': false, 'fill-height': '1sf' },
+      gridAutoRows: { '': false, 'fill-height': 'max-content' },
       gridColumn: {
         '': 'initial',
         'has-sider': 2,
         'has-split': 2,
       },
+      gridRow: { '': false, 'fill-height': -2 },
+      // Not `alignSelf: stretch`: the area stays in the baseline group, so a
+      // side label keeps its baseline and a split label stays centred.
+      height: { '': false, 'fill-height': '100%' },
     },
   },
 });
@@ -290,18 +327,22 @@ export const FieldWrapper = forwardRef(function FieldWrapper(
   };
 
   // Merge fieldProps with styles to ensure both are applied
-  const mergedFieldProps = styles
+  const mergedFieldProps: Props | undefined = styles
     ? mergeProps(fieldProps, { styles })
     : fieldProps;
+  // Mods merge key by key: a caller's `fieldProps.mods` (or the fill mods an
+  // input's style props set) adds to the computed ones instead of replacing
+  // `has-sider` and the validation state.
+  const { mods: fieldMods, ...otherFieldProps } = mergedFieldProps ?? {};
 
   return (
     <>
       <FieldElement
         ref={ref}
         as={as ?? 'div'}
-        mods={mods}
         isHidden={isHidden}
-        {...mergedFieldProps}
+        {...otherFieldProps}
+        mods={fieldMods ? { ...mods, ...fieldMods } : mods}
       >
         {labelComponent ? (
           <div data-element="LabelArea">

@@ -1359,7 +1359,6 @@ export const VirtualizedList: StoryFn<CubeFilterListBoxProps<any>> = (args) => {
         selectionMode="multiple"
         selectedKeys={selectedKeys}
         height="300px"
-        overflow="auto"
         items={items}
         onSelectionChange={(keys) => setSelectedKeys(keys as string[])}
       >

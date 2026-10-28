@@ -1,13 +1,5 @@
 import { useFocusableRef } from '@react-spectrum/utils';
-import {
-  BaseProps,
-  BLOCK_STYLES,
-  BlockStyleProps,
-  OUTER_STYLES,
-  OuterStyleProps,
-  Styles,
-  tasty,
-} from '@tenphi/tasty';
+import { BaseProps, Styles, tasty } from '@tenphi/tasty';
 import { forwardRef, ReactElement, useRef } from 'react';
 import { AriaSwitchProps, useHover, useSwitch } from 'react-aria';
 import { useToggleState } from 'react-stately';
@@ -25,10 +17,13 @@ import {
   WithNullableSelected,
 } from '../../../utils/react/nullableValue';
 import { useId } from '../../../utils/react/useId';
-import { extractStyles } from '../../../utils/styles';
 import { Text } from '../../content/Text';
 import { useAutoTooltip } from '../../content/use-auto-tooltip';
 import { getValidationMods, useFieldProps, wrapWithField } from '../../form';
+import {
+  FieldLayoutStyleProps,
+  splitFieldLayout,
+} from '../../form/field-layout';
 import { HiddenInput } from '../../HiddenInput';
 import {
   mergeTooltipFocusProps,
@@ -136,13 +131,10 @@ const SwitchElement = tasty({
   },
 });
 
-const PROP_STYLES = [...OUTER_STYLES, ...BLOCK_STYLES];
-
 export interface CubeSwitchProps
   extends
     BaseProps,
-    OuterStyleProps,
-    BlockStyleProps,
+    FieldLayoutStyleProps,
     FieldBaseProps<boolean | null | undefined>,
     ToggleSelectionProps,
     Omit<AriaSwitchProps, 'form' | 'name'> {
@@ -189,7 +181,7 @@ function Switch(rawProps: WithNullableSelected<CubeSwitchProps>, ref) {
 
   const id = useId(props.id);
 
-  let styles = extractStyles(props, PROP_STYLES);
+  const { styles, field } = splitFieldLayout(props);
 
   let { isFocused, focusProps } = useFocus(true);
   // A read-only switch takes no hover state: a press would change nothing.
@@ -298,6 +290,7 @@ function Switch(rawProps: WithNullableSelected<CubeSwitchProps>, ref) {
   // `renderWithTooltip` is typed for any node; here it returns an element.
   return wrapWithField(switchField as ReactElement, {
     ...props,
+    ...field,
     // The switch's own, not the legacy spelling of `labelTooltip`.
     tooltip: undefined,
     id,

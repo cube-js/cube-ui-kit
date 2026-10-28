@@ -1,12 +1,6 @@
 import { useControlledState } from '@react-stately/utils';
 import { Node as CollectionNode, Key } from '@react-types/shared';
-import {
-  BasePropsWithoutChildren,
-  CONTAINER_STYLES,
-  ContainerStyleProps,
-  Styles,
-  tasty,
-} from '@tenphi/tasty';
+import { BasePropsWithoutChildren, Styles, tasty } from '@tenphi/tasty';
 import {
   ClipboardEvent,
   cloneElement,
@@ -37,10 +31,13 @@ import {
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
 import { settleOverlayKey } from '../../../utils/react/overlayKeyPropagation';
-import { extractStyles } from '../../../utils/styles';
 import { ItemAction } from '../../actions/ItemAction/ItemAction';
 import { CollectionItem as Item } from '../../CollectionItem';
 import { withFieldChrome } from '../../form/field-chrome';
+import {
+  FieldLayoutStyleProps,
+  splitFieldLayout,
+} from '../../form/field-layout';
 import { useFieldProps } from '../../form/Form/use-field/use-field-props';
 import { rendersFieldChrome, wrapWithField } from '../../form/wrapper';
 import { getListBoxOptionId } from '../ListBox/optionId';
@@ -84,7 +81,7 @@ export type TagValidationResult = boolean | string | null | undefined;
 export interface CubeTagInputProps<T = object>
   extends
     BasePropsWithoutChildren,
-    ContainerStyleProps,
+    FieldLayoutStyleProps,
     FieldBaseProps<readonly string[] | null | undefined> {
   /** The values in controlled mode. */
   value?: readonly string[];
@@ -805,7 +802,7 @@ function TagInput<T extends object>(
     ...otherProps
   } = props;
 
-  const styles = extractStyles(otherProps, CONTAINER_STYLES);
+  const { styles, field } = splitFieldLayout(props);
 
   const rootRef = useCombinedRefs(ref);
   const inputRef = useCombinedRefs(inputRefProp);
@@ -1887,6 +1884,7 @@ function TagInput<T extends object>(
 
   return wrapWithField(tagInputField, {
     ...(fieldProps as Omit<CubeTagInputProps<T>, 'children'>),
+    ...field,
     labelProps: mergeProps(labelProps, userLabelProps),
     isInvalid: effectiveIsInvalid,
     // A rejected entry speaks for itself until the text is edited. Keyed, so

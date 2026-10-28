@@ -1,11 +1,5 @@
 import { useObjectRef } from '@react-aria/utils';
-import {
-  BaseProps,
-  CONTAINER_STYLES,
-  ContainerStyleProps,
-  Styles,
-  tasty,
-} from '@tenphi/tasty';
+import { BaseProps, Styles, tasty } from '@tenphi/tasty';
 import { forwardRef } from 'react';
 import { AriaCheckboxGroupProps, useCheckboxGroup } from 'react-aria';
 import { useCheckboxGroupState } from 'react-stately';
@@ -17,8 +11,11 @@ import {
   castNullableArrayValue,
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
-import { extractStyles } from '../../../utils/styles';
 import { FormScopeMask, useFieldProps, wrapWithField } from '../../form';
+import {
+  FieldLayoutStyleProps,
+  splitFieldLayout,
+} from '../../form/field-layout';
 
 import { CheckboxGroupContext } from './context';
 
@@ -44,7 +41,7 @@ export interface CubeCheckboxGroupProps
     BaseProps,
     Omit<AriaCheckboxGroupProps, 'errorMessage' | 'form' | 'name'>,
     FieldBaseProps<readonly string[] | null | undefined>,
-    ContainerStyleProps {
+    FieldLayoutStyleProps {
   orientation?: 'vertical' | 'horizontal';
   inputStyles?: Styles;
 }
@@ -81,12 +78,13 @@ function CheckboxGroup(
     labelSuffix,
     inputStyles,
     form,
-    ...otherProps
   } = props;
   let domRef = useObjectRef(ref);
 
-  // `inputStyles` styles the group too; `styles` and the style props go over it.
-  let styles = extractStyles(otherProps, CONTAINER_STYLES, inputStyles);
+  // `inputStyles` styles the group too; `styles` goes over it.
+  const { styles, field } = splitFieldLayout(props, {
+    defaultStyles: inputStyles,
+  });
 
   let state = useCheckboxGroupState(props);
   // React Aria hands `form` to every item's input as the id of its `<form>`,
@@ -130,6 +128,7 @@ function CheckboxGroup(
 
   return wrapWithField(radioGroup, {
     ...props,
+    ...field,
     labelProps: mergeProps(baseLabelProps, labelProps),
   });
 }

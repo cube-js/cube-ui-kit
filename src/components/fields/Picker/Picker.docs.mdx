@@ -67,7 +67,8 @@ Choose a different component when the interaction has another shape:
 - **`listBoxStyles`** `Styles` — Custom styles for the ListBox within the popover
 - **`popoverStyles`** `Styles` — Custom styles for the popover container
 - **`triggerStyles`** `Styles` — Custom styles for the trigger button
-- **`triggerTooltip`** `string | TooltipProps` — Tooltip for the trigger button (separate from `labelTooltip`)
+- **`tooltip`** `string | TooltipProps` — Tooltip for the trigger button (separate from `labelTooltip`)
+- **`triggerTooltip`** `string | TooltipProps` — _(deprecated)_ Use `tooltip`.
 - **`triggerDescription`** `string` — Description for the trigger button (separate from field description)
 - **`shouldFlip`** `boolean` — Whether to flip the popover placement when it overflows
 - **`placement`** `Placement` (default: `bottom start`) — Placement of the popover relative to the anchor, as a React Aria placement string (e.g. `'bottom start'`, `'top end'`)
@@ -152,11 +153,8 @@ Customizes the footer area when `footer` prop is provided.
 
 These properties allow direct style application without using the `styles` prop:
 
-- **Base:** `display`, `font`, `preset`, `hide`, `whiteSpace`, `opacity`, `transition`
 - **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `blockMargin`, `inlineMargin`, `inset`, `blockInset`, `inlineInset`, `position`, `scrollMargin`, `blockScrollMargin`, `inlineScrollMargin`, `scrollPadding`, `blockScrollPadding`, `inlineScrollPadding`
 - **Dimension:** `width`, `height`, `blockSize`, `inlineSize`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`
-- **Block:** `border`, `blockBorder`, `inlineBorder`, `radius`, `shadow`, `outline`
-- **Color:** `color`, `fill`, `fade`, `image`
 
 ### Modifiers
 

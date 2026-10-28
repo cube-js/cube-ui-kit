@@ -1,9 +1,10 @@
 import { DOMRef, FocusableRef } from '@react-types/shared';
-import { BaseProps } from '@tenphi/tasty';
+import { BaseProps, Styles } from '@tenphi/tasty';
 import { ReactElement, RefObject } from 'react';
 
 import { FieldBaseProps, FormBaseProps } from '../../shared/index';
 import { mergeProps } from '../../utils/react/index';
+import { mergeStyleLayers } from '../../utils/styles';
 
 import { hasFieldContent, warnAboutForceField } from './field-chrome';
 import { FieldWrapper } from './FieldWrapper/index';
@@ -90,9 +91,16 @@ export function wrapWithField<T extends WrapWithFieldProps>(
 
   warnAboutLegacyTooltip(props);
 
-  // Merge fieldStyles as shorthand for fieldProps.styles (fieldStyles takes priority)
+  // `fieldStyles` is the shorthand for `fieldProps.styles` and wins over it.
+  // Merged as layers, so a `null` reset in either survives to the wrapper.
   const mergedFieldProps = fieldStyles
-    ? mergeProps(fieldProps, { styles: fieldStyles })
+    ? {
+        ...fieldProps,
+        styles: mergeStyleLayers(
+          (fieldProps as { styles?: Styles } | undefined)?.styles,
+          fieldStyles,
+        ),
+      }
     : fieldProps;
 
   // Merge labelStyles as shorthand for labelProps.styles (labelStyles takes priority)

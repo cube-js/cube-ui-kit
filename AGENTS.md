@@ -220,7 +220,7 @@ Full rules in [`src/i18n/README.md`](src/i18n/README.md). The short version:
 ## TypeScript & Exports
 
 - **Module augmentation:** `src/tasty-augment.d.ts` extends `@tenphi/tasty` with project-specific color tokens, preset names, and theme names.
-- **Props naming:** `Cube{ComponentName}Props`. Extend `BaseProps`/`AllBaseProps` from `@tenphi/tasty`; mix in style-prop interfaces (`ContainerStyleProps`, `OuterStyleProps`, `ColorStyleProps`, …) as needed. Form types live in `src/shared/`.
+- **Props naming:** `Cube{ComponentName}Props`. Extend `BaseProps`/`AllBaseProps` from `@tenphi/tasty`; mix in style-prop interfaces (`ContainerStyleProps`, `OuterStyleProps`, `ColorStyleProps`, …) as needed. Field-level inputs take `FieldLayoutStyleProps` only ([input-components.md §1](docs/rules/input-components.md)). Form types live in `src/shared/`.
 - **Barrel exports:** every category has an `index.ts`; everything re-exports through `src/index.ts`.
 - **Modern Form adoption:** follow [`docs/modern-form-migration.md`](docs/modern-form-migration.md). Keep legacy wrappers on their existing backend until explicitly migrated, use selectors for rendering, and preserve legacy inline callback/rule inference in built-consumer fixtures. Path types resolve the supplied path only; do not introduce a recursive enumeration of all model paths.
 - **Compound components:** `Object.assign(Button, { Group: ButtonGroup, Split: ButtonSplit })`.

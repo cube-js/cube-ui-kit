@@ -60,47 +60,69 @@ describe.each([
     },
   );
 
-  it.each([false, true])(
-    'lets a style prop override the styles prop with isBare=%s',
-    async (isBare) => {
-      // `extractStyles` folds `styles` in first and lets the individual style
-      // props override it. Re-applying `styles` on top of the extracted object
-      // inverts that and makes these three disagree with every other component.
+  it('lets a style prop override the styles prop on a bare picker', async () => {
+    // `extractStyles` folds `styles` in first and lets the individual style
+    // props override it. Re-applying `styles` on top of the extracted object
+    // inverts that and makes these three disagree with every other component.
+    renderWithRoot(
+      <div style={{ width: 400 }}>
+        <Field
+          isBare
+          aria-label={name}
+          qa="DateControl"
+          width="100%"
+          styles={{ width: '50%' }}
+        />
+      </div>,
+    );
+
+    const root = await screen.findByTestId('DateControl');
+
+    expect(root.getBoundingClientRect().width).toBeCloseTo(400, 0);
+  });
+
+  it('keeps wrapperStyles winning over both on a bare picker', async () => {
+    renderWithRoot(
+      <div style={{ width: 400 }}>
+        <Field
+          isBare
+          aria-label={name}
+          qa="DateControl"
+          width="25%"
+          wrapperStyles={{ width: '50%' }}
+        />
+      </div>,
+    );
+
+    const root = await screen.findByTestId('DateControl');
+
+    expect(root.getBoundingClientRect().width).toBeCloseTo(200, 0);
+  });
+
+  it.each([
+    ['styles', { styles: { width: '50%' } }],
+    ['wrapperStyles', { wrapperStyles: { width: '50%' } }],
+  ])(
+    'sizes the field with a style prop and the picker with %s',
+    async (_, inputStyles) => {
+      // In a field the style prop sizes the field; `styles` and
+      // `wrapperStyles` still size the picker, now inside that field.
       renderWithRoot(
         <div style={{ width: 400 }}>
           <Field
-            isBare={isBare}
+            isBare={false}
             aria-label={name}
             qa="DateControl"
             width="100%"
-            styles={{ width: '50%' }}
+            {...inputStyles}
           />
         </div>,
       );
 
       const root = await screen.findByTestId('DateControl');
+      const field = root.closest('[data-qa="Field"]') as HTMLElement;
 
-      expect(root.getBoundingClientRect().width).toBeCloseTo(400, 0);
-    },
-  );
-
-  it.each([false, true])(
-    'keeps wrapperStyles winning over both with isBare=%s',
-    async (isBare) => {
-      renderWithRoot(
-        <div style={{ width: 400 }}>
-          <Field
-            isBare={isBare}
-            aria-label={name}
-            qa="DateControl"
-            width="25%"
-            wrapperStyles={{ width: '50%' }}
-          />
-        </div>,
-      );
-
-      const root = await screen.findByTestId('DateControl');
-
+      expect(field.getBoundingClientRect().width).toBeCloseTo(400, 0);
       expect(root.getBoundingClientRect().width).toBeCloseTo(200, 0);
     },
   );

@@ -772,6 +772,12 @@ function resolveLocalConst(constName, fileContent) {
 }
 
 function extractStylePropsFromFile(fileContent) {
+  // An input routes its style props with `splitFieldLayout`, which takes the
+  // field layout props: `FIELD_LAYOUT_STYLES` in `form/field-layout.ts`.
+  if (/(?<!function\s)\bsplitFieldLayout\(/.test(fileContent)) {
+    return [...POSITION_STYLES, ...DIMENSION_STYLES];
+  }
+
   const extractCallRe =
     /extractStyles\(\s*\w+\s*,\s*(\[[\s\S]*?\]|\w+)/g;
   let match;

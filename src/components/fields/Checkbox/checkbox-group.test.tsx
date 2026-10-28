@@ -4,13 +4,12 @@ import { act, render, renderWithForm, screen, userEvent } from '../../../test';
 vi.mock('../../../_internal/hooks/use-warn');
 
 describe('<CheckboxGroup />', () => {
-  it('applies style props and styles to the group', () => {
+  it('applies styles to the group and style props to its field', () => {
     render(
       <Checkbox.Group
         label="test"
-        gap="3x"
         width="40x"
-        styles={{ fill: '#purple' }}
+        styles={{ fill: '#purple', gap: '3x' }}
         inputStyles={{ fill: '#danger', flow: 'row' }}
       >
         <Checkbox value="one">One</Checkbox>
@@ -20,10 +19,25 @@ describe('<CheckboxGroup />', () => {
     const style = getComputedStyle(screen.getByRole('group'));
 
     expect(style.gap).toBe('calc(3 * var(--gap))');
-    expect(style.width).toBe('calc(40 * var(--gap))');
     // `styles` goes over `inputStyles`, which still applies where it is alone.
     expect(style.backgroundColor).toBe('var(--purple-color)');
     expect(style.flexFlow).toBe('row');
+    // A labelled group renders its field, which the style props size.
+    expect(getComputedStyle(screen.getByTestId('Field')).width).toBe(
+      'calc(40 * var(--gap))',
+    );
+  });
+
+  it('applies style props to a bare group over its styles', () => {
+    render(
+      <Checkbox.Group aria-label="test" width="40x" styles={{ width: '10x' }}>
+        <Checkbox value="one">One</Checkbox>
+      </Checkbox.Group>,
+    );
+
+    expect(getComputedStyle(screen.getByRole('group')).width).toBe(
+      'calc(40 * var(--gap))',
+    );
   });
 
   it('clears a controlled value set to null and stays controlled', () => {

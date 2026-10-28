@@ -36,7 +36,8 @@ Use [ColorInput](/docs/forms-colorinput--docs) instead when the color has to be 
 - **`type`** `CubeItemProps['type']` (default: `outline`) — Visual type of the trigger
 - **`theme`** `CubeItemProps['theme']` (default: `default`) — Theme of the trigger
 - **`size`** `CubeItemProps['size']` — Size of the trigger
-- **`triggerTooltip`** `CubeItemProps['tooltip']` — Tooltip for the trigger, separate from `labelTooltip`
+- **`tooltip`** `CubeItemProps['tooltip']` — Tooltip for the trigger, separate from `labelTooltip`
+- **`triggerTooltip`** `CubeItemProps['tooltip']` — _(deprecated)_ Use `tooltip`.
 - **`swatches`** `Array<string | { color: string; label?: string }>` — Colors to offer under the editor, as a [ColorSwatchGroup](/docs/forms-colorswatchgroup--docs)
 - **`swatchColumns`** `number` — How many swatches per row. Defaults to a single row
 - **`isOpen`** `boolean` — Whether the popover is open (controlled)
@@ -76,7 +77,6 @@ These properties allow direct style application without using the `styles` prop:
 
 - **Position:** `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `blockMargin`, `inlineMargin`, `inset`, `blockInset`, `inlineInset`, `position`, `scrollMargin`, `blockScrollMargin`, `inlineScrollMargin`, `scrollPadding`, `blockScrollPadding`, `inlineScrollPadding`
 - **Dimension:** `width`, `height`, `blockSize`, `inlineSize`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`
-- **Block:** `border`, `blockBorder`, `inlineBorder`, `radius`, `shadow`, `outline`, `padding`, `blockPadding`, `inlinePadding`, `overflow`, `scrollbar`, `textAlign`
 
 ### Modifiers
 

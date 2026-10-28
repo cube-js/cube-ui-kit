@@ -1,12 +1,4 @@
-import {
-  BaseProps,
-  BaseStyleProps,
-  BlockStyleProps,
-  ColorStyleProps,
-  OuterStyleProps,
-  Styles,
-  tasty,
-} from '@tenphi/tasty';
+import { BaseProps, Styles, tasty } from '@tenphi/tasty';
 import {
   FocusEvent,
   ForwardedRef,
@@ -28,6 +20,7 @@ import { mergeProps } from '../../../utils/react';
 import { settleOverlayKey } from '../../../utils/react/overlayKeyPropagation';
 import { ItemAction, ItemActionProvider } from '../../actions';
 import { useFieldProps } from '../../form';
+import { FieldLayoutStyleProps } from '../../form/field-layout';
 import { Dialog } from '../../overlays/Dialog/Dialog';
 import { DialogTrigger } from '../../overlays/Dialog/DialogTrigger';
 import { ColorSpace } from '../color/channels';
@@ -72,10 +65,7 @@ const ColorInputTrigger = tasty(ItemAction, {
 export interface CubeColorInputProps
   extends
     BaseProps,
-    BaseStyleProps,
-    OuterStyleProps,
-    BlockStyleProps,
-    ColorStyleProps,
+    FieldLayoutStyleProps,
     FieldBaseProps<string | null | undefined> {
   /** The selected color, as a color string. */
   value?: string | null;

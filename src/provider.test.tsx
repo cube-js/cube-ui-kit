@@ -16,6 +16,7 @@ const NO_READ_ONLY_TRACE = new Set([
   'FileInput',
   'FilterListBox',
   'FilterPicker',
+  'HueSlider',
   'ListBox',
   'Picker',
   'RangeSlider',
@@ -23,13 +24,6 @@ const NO_READ_ONLY_TRACE = new Set([
   'Slider',
   'TextInputMapper',
 ]);
-
-/**
- * A `false` on these does not reach every control inside them: `Slider` and
- * `RangeSlider` drop `isDisabled` before `SliderBase`, which reads only the
- * provider.
- */
-const FALSE_STAYS_ON_THE_ROOT = new Set(['Slider', 'RangeSlider']);
 
 /**
  * Every disabled and read-only attribute in the tree, element by element, so
@@ -111,14 +105,11 @@ describe.each(['isDisabled', 'isReadOnly'] as const)(
       },
     );
 
-    it.each(inputs.filter(([name]) => !FALSE_STAYS_ON_THE_ROOT.has(name)))(
-      '%s overrides the provider with false',
-      (_, input) => {
-        expect(signatureOf(input, { [prop]: false })).toEqual(
-          signatureOf(input, {}, false),
-        );
-      },
-    );
+    it.each(inputs)('%s overrides the provider with false', (_, input) => {
+      expect(signatureOf(input, { [prop]: false })).toEqual(
+        signatureOf(input, {}, false),
+      );
+    });
   },
 );
 

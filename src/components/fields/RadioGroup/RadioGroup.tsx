@@ -1,11 +1,5 @@
 import { getActiveElement, useObjectRef } from '@react-aria/utils';
-import {
-  BaseProps,
-  CONTAINER_STYLES,
-  ContainerStyleProps,
-  Styles,
-  tasty,
-} from '@tenphi/tasty';
+import { BaseProps, Styles, tasty } from '@tenphi/tasty';
 import { forwardRef, useRef } from 'react';
 import { AriaRadioGroupProps, useFocusRing, useRadioGroup } from 'react-aria';
 import { RadioGroupState, useRadioGroupState } from 'react-stately';
@@ -17,9 +11,12 @@ import {
   castNullableStringValue,
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
-import { extractStyles } from '../../../utils/styles';
 import { CubeItemProps } from '../../content/Item/Item';
 import { FormScopeMask, useFieldProps, wrapWithField } from '../../form';
+import {
+  FieldLayoutStyleProps,
+  splitFieldLayout,
+} from '../../form/field-layout';
 
 import { RadioContext } from './context';
 
@@ -29,7 +26,7 @@ export interface CubeRadioGroupProps
   extends
     BaseProps,
     Omit<AriaRadioGroupProps, 'errorMessage' | 'form' | 'name'>,
-    ContainerStyleProps,
+    FieldLayoutStyleProps,
     FieldBaseProps<string | null | undefined> {
   groupStyles?: Styles;
   orientation?: 'horizontal' | 'vertical';
@@ -69,7 +66,12 @@ const RadioGroupElement = tasty({
       '': '#clear',
       'tabs | disabled': '#surface-4',
     },
-    width: 'max-content max-content initial',
+    width: {
+      '': 'max-content max-content initial',
+      // In a field its style props size, the group fills the field as every
+      // other input does.
+      'fill-width': 'auto',
+    },
     flexShrink: 0,
     gap: {
       '': '1x',
@@ -131,11 +133,12 @@ function RadioGroup(rawProps: WithNullableValue<CubeRadioGroupProps>, ref) {
     buttonType,
     type,
     form,
-    ...otherProps
   } = props;
   let domRef = useObjectRef(ref);
 
-  styles = extractStyles(otherProps, CONTAINER_STYLES, styles);
+  const fieldLayout = splitFieldLayout(props);
+
+  styles = fieldLayout.styles;
 
   let baseState = useRadioGroupState(props);
   // The arrow keys focus the next radio and select it. A disabled radio that
@@ -200,6 +203,7 @@ function RadioGroup(rawProps: WithNullableValue<CubeRadioGroupProps>, ref) {
         button: type === 'button',
         tabs: type === 'tabs',
         focused: isFocusWithinVisible,
+        'fill-width': fieldLayout.fillWidth,
       }}
     >
       <FormScopeMask
@@ -233,6 +237,7 @@ function RadioGroup(rawProps: WithNullableValue<CubeRadioGroupProps>, ref) {
 
   return wrapWithField(radioGroup, {
     ...props,
+    ...fieldLayout.field,
     labelProps: mergeProps(baseLabelProps, labelProps),
   });
 }
