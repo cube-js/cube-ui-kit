@@ -79,8 +79,8 @@ export { Prefix } from './components/layout/Prefix';
 export type { CubePrefixProps } from './components/layout/Prefix';
 export { Suffix } from './components/layout/Suffix';
 export type { CubeSuffixProps } from './components/layout/Suffix';
-export { Divider } from './components/content/Divider';
-export type { CubeDividerProps } from './components/content/Divider';
+export { Divider } from './components/content/Divider/Divider';
+export type { CubeDividerProps } from './components/content/Divider/Divider';
 export { Disclosure } from './components/content/Disclosure';
 export type {
   CubeDisclosureProps,

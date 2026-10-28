@@ -247,7 +247,7 @@
     "diagnostics": {},
     "optOuts": 0
   },
-  "src/components/content/Divider.tsx": {
+  "src/components/content/Divider/Divider.tsx": {
     "compiled": 1,
     "diagnostics": {},
     "optOuts": 0

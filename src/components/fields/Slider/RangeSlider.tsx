@@ -24,14 +24,18 @@ function RangeSlider(
   props: CubeRangeSliderProps,
   ref: FocusableRef<HTMLDivElement>,
 ) {
-  let { isDisabled, styles, gradation, ...otherProps } = props;
+  let { styles, gradation, isDisabled, ...otherProps } = props;
+  // Only when set: `useProviderProps` spreads props over the form context, so
+  // an explicit `undefined` would enable a slider in a disabled form.
+  const baseProps =
+    isDisabled === undefined ? otherProps : { ...otherProps, isDisabled };
 
   // The first thumb takes `SliderBase`'s `inputRef`, which the component ref's
   // `focus()` targets; the second thumb keeps its own.
   const maxThumbInputRef = useRef<HTMLInputElement>(null);
 
   return (
-    <SliderBase ref={ref} {...(otherProps as CubeSliderBaseProps<number[]>)}>
+    <SliderBase ref={ref} {...(baseProps as CubeSliderBaseProps<number[]>)}>
       {({
         trackRef,
         inputRef,
@@ -44,7 +48,7 @@ function RangeSlider(
             <Gradation state={state} ranges={[0, 1]} values={gradation} />
             <SliderTrack
               state={state}
-              isDisabled={isDisabled}
+              isDisabled={state.isDisabled}
               isInvalid={isInvalid}
               isValid={isValid}
               orientation={props.orientation}
@@ -55,7 +59,7 @@ function RangeSlider(
               state={state}
               inputRef={inputRef}
               trackRef={trackRef}
-              isDisabled={isDisabled}
+              isDisabled={state.isDisabled}
               isInvalid={isInvalid}
               isValid={isValid}
             />
@@ -65,7 +69,7 @@ function RangeSlider(
               state={state}
               inputRef={maxThumbInputRef}
               trackRef={trackRef}
-              isDisabled={isDisabled}
+              isDisabled={state.isDisabled}
               isInvalid={isInvalid}
               isValid={isValid}
             />
