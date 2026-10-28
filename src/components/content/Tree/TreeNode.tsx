@@ -20,6 +20,7 @@ import {
   TreeNodeTogglePlaceholder,
   TreeRowItem,
 } from './styled';
+import { getTreeNodeText } from './tree-index';
 
 import type { Key, Node } from '@react-types/shared';
 import type { Styles } from '@tenphi/tasty';
@@ -54,6 +55,11 @@ export interface TreeNodeProps {
   isChecked: boolean;
   /** Whether `loadData` is currently fetching this row's children. */
   isLoading: boolean;
+  /**
+   * Whether an outside control points at this row (`_activeKey`). When set,
+   * it replaces DOM focus as the source of the `focused` look.
+   */
+  isActive?: boolean;
 
   /** Toggle this row's checkbox (cascades). */
   onToggleChecked: (key: string) => void;
@@ -101,6 +107,7 @@ function TreeNodeInner(props: TreeNodeProps) {
     isIndeterminate,
     isChecked,
     isLoading,
+    isActive,
     onToggleChecked,
     size,
     itemProps,
@@ -139,8 +146,9 @@ function TreeNodeInner(props: TreeNodeProps) {
   // React Aria's treegrid uses roving tabindex, so no `data-focused`
   // attribute lands on the row — mirror it as a mod manually.
   const isFocused =
-    state.selectionManager.isFocused &&
-    state.selectionManager.focusedKey === node.key;
+    isActive ??
+    (state.selectionManager.isFocused &&
+      state.selectionManager.focusedKey === node.key);
   const isRowCheckable = isCheckable && data.isCheckable !== false;
 
   const nodeState: TreeNodeState = {
@@ -312,15 +320,6 @@ function TreeNodeInner(props: TreeNodeProps) {
     [node.level, virtualOffset],
   );
 
-  // Only emit `aria-checked` when the tree is in checkable mode.
-  const ariaChecked: 'mixed' | 'true' | 'false' | undefined = isRowCheckable
-    ? isIndeterminate
-      ? 'mixed'
-      : isChecked
-        ? 'true'
-        : 'false'
-    : undefined;
-
   // ---- Compose row props ---------------------------------------------------
 
   // Merge react-aria + hover props but EXCLUDE `onKeyDown` from the
@@ -328,9 +327,14 @@ function TreeNodeInner(props: TreeNodeProps) {
   // must run first so our Shift+F10 / Space-checkbox shortcuts can
   // short-circuit the default react-aria behavior.
   const finalRowProps = {
+    // No `aria-checked` here: a `row` doesn't take it (axe aria-allowed-attr).
+    // The row's checkbox carries checked and mixed; the row has `checked` and
+    // `indeterminate` mods.
     ...mergeProps(rowProps, hoverProps),
-    'aria-checked': ariaChecked,
     onKeyDown: composedKeyDown,
+    // Under an outside control (`isActive` set) no row is a tab stop, not
+    // even one a click focused.
+    ...(isActive === undefined ? null : { tabIndex: -1 }),
   };
 
   // ---- Toggle (chevron) and checkbox slots --------------------------------
@@ -362,9 +366,10 @@ function TreeNodeInner(props: TreeNodeProps) {
         isSelected={isChecked}
         isIndeterminate={isIndeterminate}
         isDisabled={isDisabled || data.isCheckboxDisabled}
-        aria-label={
-          typeof data.title === 'string' ? data.title : String(node.key)
-        }
+        aria-label={getTreeNodeText(data)}
+        // Under an outside control the tree has no tab stops at all, so Tab
+        // moves on from that control instead of into a row.
+        excludeFromTabOrder={isActive !== undefined}
         onChange={handleCheckboxChange}
       />
     </TreeNodeCheckboxWrapper>

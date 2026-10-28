@@ -34,8 +34,8 @@ The component's data shape (`treeData`) and the public callback shape are design
 - **`defaultExpandedKeys`** `string[]` — Default expanded keys (uncontrolled).
 - **`expandedKeys`** `string[]` — Controlled expanded keys.
 - **`autoExpandParent`** `boolean` (default: `false`) — Auto-expand parents of currently expanded keys. Useful for filtering.
-- **`defaultCheckedKeys`** `string[]` — Default checked keys (uncontrolled).
-- **`checkedKeys`** `string[] | { checked: string[]; halfChecked?: string[] }` — Controlled checked keys. Pass the object form to receive the same shape back from `onCheck`.
+- **`defaultCheckedKeys`** `string[]` — Default checked keys (uncontrolled). A parent key checks its whole subtree, as in AntD.
+- **`checkedKeys`** `string[] | { checked: string[]; halfChecked?: string[] }` — Controlled checked keys. In the array form, a parent key checks its whole subtree, as in AntD. Pass the object form to receive the same shape back from `onCheck`; it is taken as given.
 - **`defaultSelectedKeys`** `string[]` — Default selected keys (uncontrolled).
 - **`selectedKeys`** `string[]` — Controlled selected keys.
 - **`height`** `number` — Fixed height in pixels. When omitted, the tree fills the available vertical space and scrolls internally.
@@ -62,6 +62,7 @@ The component's data shape (`treeData`) and the public callback shape are design
 
 - **`key`** `string` — Unique identifier of the node.
 - **`title`** `ReactNode` — Visible label.
+- **`textValue`** `string` — Plain-text label, for a `title` that is not a string. It names the row's checkbox and is what `FilterPicker`'s tree mode searches and summarises.
 - **`children`** `CubeTreeNodeData[]` — Children. Pass `undefined` together with `isLeaf={false}` for lazy nodes.
 - **`isLeaf`** `boolean` — Force leaf rendering (no expand toggle, no `loadData` call).
 - **`isDisabled`** `boolean` — Disable interactions on this row (focus / select / expand / check).
@@ -217,7 +218,7 @@ Pass the matching keys via `expandedKeys` and set `autoExpandParent` to keep the
 
 ### Per-node Disabling
 
-Disable the entire row, just the checkbox, or hide the checkbox via node-level flags.
+Disable the entire row, just the checkbox, or hide the checkbox via node-level flags. Such a node with no eligible nodes below it keeps its own checked state. Above eligible nodes, its state follows them, and the cascade passes through it: checking its parent checks the eligible nodes below it.
 
 ```jsx
 const data = [
@@ -295,7 +296,7 @@ Tree implements the [`treegrid` ARIA pattern](https://www.w3.org/WAI/ARIA/apg/pa
 ### Screen Reader Support
 
 - Each row reports `aria-level`, `aria-posinset` and `aria-setsize`. Expandable rows also report `aria-expanded`, including a lazy row (`isLeaf: false`) whose children have not loaded yet.
-- When `isCheckable` is enabled, the row carries `aria-checked` (`true`, `false`, or `mixed` for the indeterminate state).
+- When `isCheckable` is enabled, each row's checkbox carries the checked state (`checked`, `not checked`, or `mixed` for the indeterminate state), named by the node's `textValue` or string `title`. The row itself takes no `aria-checked`, which `row` does not support; it has `data-checked` and `data-indeterminate` for tests.
 - Disabled rows expose `aria-disabled="true"`.
 
 ### ARIA Properties

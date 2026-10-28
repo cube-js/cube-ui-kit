@@ -18,6 +18,15 @@ export interface TreeIndex {
   childrenOf: Map<string, string[]>;
 }
 
+/**
+ * A node's plain-text label: its `textValue`, else its `title` when that
+ * is a string, else its key.
+ */
+export function getTreeNodeText(node: CubeTreeNodeData): string {
+  if (node.textValue != null) return node.textValue;
+  return typeof node.title === 'string' ? node.title : node.key;
+}
+
 export function buildTreeIndex(treeData: CubeTreeNodeData[]): TreeIndex {
   const byKey = new Map<string, CubeTreeNodeData>();
   const parentOf = new Map<string, string | null>();

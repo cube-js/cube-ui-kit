@@ -1,0 +1,205 @@
+import type { TreeIndex } from './tree-index';
+import type { CubeTreeNodeData } from './types';
+
+/**
+ * Pure checkbox cascade for a tree: which keys are fully checked and which
+ * are half-checked, and what one toggle does to them.
+ *
+ * Shared by `Tree` (through `useCheckboxTree`) and `FilterPicker`'s tree
+ * mode. The picker renders a filtered copy of `treeData` but must conduct
+ * over the whole tree, so a search never reads a hidden node as unchecked.
+ */
+
+/**
+ * Returns whether a node should be checkable (i.e. clicking the
+ * checkbox should affect it).
+ *
+ * Skips:
+ * - explicitly disabled nodes (`isDisabled === true`)
+ * - explicitly disabled checkboxes (`isCheckboxDisabled === true`)
+ * - nodes that opted out via `isCheckable === false`
+ */
+export function isNodeEligible(node: CubeTreeNodeData | undefined): boolean {
+  if (!node) return false;
+  if (node.isDisabled) return false;
+  if (node.isCheckboxDisabled) return false;
+  if (node.isCheckable === false) return false;
+  return true;
+}
+
+/**
+ * Recursively walk a subtree bottom-up, deriving which nodes are fully
+ * checked vs half-checked.  Mutates `checked` and `half` in place.
+ */
+function deriveCheckedState(
+  node: CubeTreeNodeData,
+  index: TreeIndex,
+  checked: Set<string>,
+  half: Set<string>,
+): { allChecked: boolean; anyChecked: boolean; anyEligible: boolean } {
+  const childKeys = index.childrenOf.get(node.key) ?? [];
+
+  if (childKeys.length === 0) {
+    const eligible = isNodeEligible(node);
+    const isChecked = checked.has(node.key);
+    return {
+      allChecked: !eligible || isChecked,
+      anyChecked: isChecked,
+      anyEligible: eligible,
+    };
+  }
+
+  let allChecked = true;
+  let anyChecked = false;
+  let anyEligible = false;
+
+  for (const childKey of childKeys) {
+    const child = index.byKey.get(childKey);
+    if (!child) continue;
+    const r = deriveCheckedState(child, index, checked, half);
+    if (r.anyEligible) anyEligible = true;
+    if (!r.allChecked) allChecked = false;
+    if (r.anyChecked) anyChecked = true;
+  }
+
+  const eligible = isNodeEligible(node);
+
+  if (!anyEligible) {
+    // No eligible descendants — this node behaves like a leaf for
+    // checking purposes: its own checked state stands as-is.
+    half.delete(node.key);
+  } else if (allChecked) {
+    checked.add(node.key);
+    half.delete(node.key);
+  } else if (anyChecked) {
+    checked.delete(node.key);
+    half.add(node.key);
+  } else {
+    checked.delete(node.key);
+    half.delete(node.key);
+  }
+
+  return {
+    allChecked: !eligible ? allChecked : checked.has(node.key) && allChecked,
+    anyChecked: anyChecked || checked.has(node.key),
+    anyEligible: anyEligible || eligible,
+  };
+}
+
+/**
+ * Derive `{ checked, halfChecked }` from a source-of-truth `checked` set,
+ * as AntD does:
+ *
+ * - First down: a checked key checks its eligible descendants, so a parent
+ *   key stands for its subtree even when its children aren't listed, and
+ *   even when the parent's own checkbox is disabled.
+ * - Then bottom-up: a parent is fully checked iff every eligible
+ *   descendant leaf is checked, and half-checked iff at least one eligible
+ *   descendant is checked or half-checked, but not all.
+ *
+ * Both passes look through ineligible nodes (disabled / opt-out): such a
+ * node neither forces a parent into the unchecked nor half state, nor
+ * stops a cascade from reaching the eligible nodes below it. A locked
+ * node with no eligible descendants keeps its own state.
+ */
+export function deriveCheckedSets(
+  treeData: CubeTreeNodeData[],
+  index: TreeIndex,
+  source: Iterable<string>,
+): { checked: Set<string>; halfChecked: Set<string> } {
+  const checked = new Set<string>();
+  const halfChecked = new Set<string>();
+
+  const checkSubtree = (node: CubeTreeNodeData) => {
+    if (isNodeEligible(node)) checked.add(node.key);
+    for (const ck of index.childrenOf.get(node.key) ?? []) {
+      const child = index.byKey.get(ck);
+      if (child) checkSubtree(child);
+    }
+  };
+
+  // A key stands for its subtree even when its own checkbox is off limits,
+  // so a locked parent in the value keeps its checked children, and with
+  // them its own key, through the bottom-up pass.
+  for (const key of source) {
+    checked.add(key);
+    for (const childKey of index.childrenOf.get(key) ?? []) {
+      const child = index.byKey.get(childKey);
+      if (child) checkSubtree(child);
+    }
+  }
+
+  for (const root of treeData) {
+    deriveCheckedState(root, index, checked, halfChecked);
+  }
+
+  return { checked, halfChecked };
+}
+
+/**
+ * Toggle `key` against the derived `checked` set: propagate *down*
+ * through its subtree, looking through ineligible nodes as
+ * `deriveCheckedSets` does, and drop its ancestors. Returns the next
+ * source-of-truth set, or `null` when the node can't be toggled. Pass the
+ * result through `deriveCheckedSets`, which adds back the ancestors that
+ * end up fully checked.
+ *
+ * Seed it with the derived set, not the source one. The source set may
+ * only contain leaf keys (e.g. when `defaultCheckedKeys` is leaf-only, or
+ * a consumer in controlled-array mode passes only leaves), so it would
+ * read a fully checked parent as unchecked.
+ */
+export function toggleCheckedKey(
+  index: TreeIndex,
+  checked: Set<string>,
+  key: string,
+): Set<string> | null {
+  const node = index.byKey.get(key);
+  if (!node || !isNodeEligible(node)) return null;
+
+  const willCheck = !checked.has(key);
+  const next = new Set(checked);
+
+  // Returns whether the subtree holds an eligible node. A locked node
+  // above one follows it; a locked node with none keeps its own state.
+  const apply = (n: CubeTreeNodeData): boolean => {
+    let follows = false;
+    for (const ck of index.childrenOf.get(n.key) ?? []) {
+      const child = index.byKey.get(ck);
+      if (child && apply(child)) follows = true;
+    }
+    if (follows || isNodeEligible(n)) {
+      if (willCheck) next.add(n.key);
+      else next.delete(n.key);
+    }
+    return follows || isNodeEligible(n);
+  };
+
+  apply(node);
+
+  // The bottom-up pass decides the ancestors, locked siblings' subtrees
+  // included. Dropping them here also keeps an ancestor from a set taken as
+  // given (the object form) from conducting down onto untouched siblings.
+  let parentKey = index.parentOf.get(key);
+  while (parentKey) {
+    next.delete(parentKey);
+    parentKey = index.parentOf.get(parentKey);
+  }
+
+  return next;
+}
+
+/** A checked set as an array in tree order; keys the tree lacks go last. */
+export function toOrderedKeys(
+  index: TreeIndex,
+  checked: Iterable<string>,
+): string[] {
+  const set = new Set(checked);
+  const ordered = [...index.byKey.keys()].filter((key) => set.has(key));
+
+  for (const key of set) {
+    if (!index.byKey.has(key)) ordered.push(key);
+  }
+
+  return ordered;
+}

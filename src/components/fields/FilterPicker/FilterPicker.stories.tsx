@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from 'react';
-import { userEvent, within } from 'storybook/test';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 
 import { CheckIcon } from '../../../icons/CheckIcon';
 import { DatabaseIcon } from '../../../icons/DatabaseIcon';
@@ -26,6 +26,7 @@ import { FilterPicker } from './FilterPicker';
 
 import type { Key } from '@react-types/shared';
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import type { CubeTreeNodeData } from '../../content/Tree/types';
 
 const meta: Meta<typeof FilterPicker> = {
   title: 'Forms/FilterPicker',
@@ -335,6 +336,38 @@ const meta: Meta<typeof FilterPicker> = {
       table: {
         defaultValue: { summary: '8' },
         type: { summary: 'number' },
+      },
+    },
+    treeData: {
+      control: { type: null },
+      description:
+        'Tree-shaped options. The popover shows a checkable `Tree` in place of the list, and `items` and `children` are not used. Tree mode is always multiple selection, and the value is every fully checked key, parents included',
+      table: {
+        type: { summary: 'CubeTreeNodeData[]' },
+      },
+    },
+    expandedKeys: {
+      control: { type: null },
+      description:
+        'Expanded nodes in tree mode (controlled). A search expands nodes on its own and restores these when it clears',
+      table: {
+        type: { summary: 'string[]' },
+      },
+    },
+    defaultExpandedKeys: {
+      control: { type: null },
+      description:
+        'Initially expanded nodes in tree mode (uncontrolled), read once when the picker mounts',
+      table: {
+        type: { summary: 'string[]' },
+      },
+    },
+    onExpand: {
+      action: 'expand',
+      description:
+        'Called when the user expands or collapses a node in tree mode, outside a search',
+      table: {
+        type: { summary: '(expandedKeys: string[]) => void' },
       },
     },
     sortSelectedToTop: {
@@ -1287,6 +1320,70 @@ export const WithHeaderAndFooter: Story = {
       description: {
         story:
           'Add custom header and footer content to provide additional context or actions for the picker.',
+      },
+    },
+  },
+};
+
+const userGroups: CubeTreeNodeData[] = [
+  {
+    key: 'engineering',
+    title: 'Engineering',
+    children: [
+      { key: 'engineering:ada', title: 'Ada Lovelace' },
+      { key: 'engineering:alan', title: 'Alan Turing' },
+      { key: 'engineering:grace', title: 'Grace Hopper' },
+    ],
+  },
+  {
+    key: 'design',
+    title: 'Design',
+    children: [
+      { key: 'design:dieter', title: 'Dieter Rams' },
+      { key: 'design:susan', title: 'Susan Kare' },
+    ],
+  },
+  {
+    key: 'support',
+    title: 'Support',
+    children: [
+      { key: 'support:ada', title: 'Ada Lovelace' },
+      { key: 'support:linus', title: 'Linus Torvalds' },
+    ],
+  },
+  // A group with no members is a leaf: checking it checks only itself.
+  { key: 'contractors', title: 'Contractors', isLeaf: true },
+];
+
+export const TreeOptions: Story = {
+  args: {
+    label: 'User groups',
+    placeholder: 'Select user groups...',
+    searchPlaceholder: 'Search groups and members...',
+    fieldStyles: { width: '0 35x 100%' },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const trigger = canvas.getByRole('button', { name: /User groups/ });
+    await userEvent.click(trigger);
+    await waitFor(() =>
+      expect(within(document.body).getByRole('treegrid')).toBeVisible(),
+    );
+  },
+  render: (args) => (
+    <FilterPicker
+      {...args}
+      treeData={userGroups}
+      // Design is checked whole, Engineering only in part.
+      defaultSelectedKeys={['design', 'engineering:ada', 'engineering:grace']}
+      defaultExpandedKeys={['engineering']}
+    />
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Pass `treeData` to pick from a tree: the popover shows a checkable `Tree` under the same header and search. Checking a parent checks its children, and a parent with only some of them checked is half-checked. The value is every fully checked key, parents included. A search keeps each match with its subtree and opens the ancestors of deeper matches: type a name to see every group that person belongs to.',
       },
     },
   },

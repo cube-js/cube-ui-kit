@@ -417,7 +417,13 @@ module.exports = [
     // 637,181 B against main's 636,947 B (0db33183, run 40667443124), +234 B
     // for the vertical and sized state maps and the text label's `useId`.
     // Allow 638 kB, 819 B headroom; Button stays at 163,512 B.
-    limit: '638kB',
+    // FilterPicker tree mode (`treeData`): CI run 40568256062 measured
+    // 639,247 B against main's 636,714 B (b727ba8c, run 40555430465), +2,533 B
+    // for the internal FilterTree (search, keyboard, search expansion), the
+    // shared checkbox cascade and Tree's active-row plumbing. On main's
+    // 637,181 B (2e9ae4b8) that is about 639.7 kB. Allow 641 kB, about 1.3 kB
+    // headroom; the Button-only bundle is unchanged.
+    limit: '641kB',
   },
   {
     name: 'Tree shaking (just a Button)',

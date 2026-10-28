@@ -2,6 +2,8 @@ import { useState } from 'react';
 
 import { useEvent } from '../../../_internal/hooks';
 
+import { deriveCheckedSets, toggleCheckedKey } from './checked-keys';
+
 import type { Key } from '@react-types/shared';
 import type { TreeIndex } from './tree-index';
 import type { CubeTreeNodeData, TreeOnCheckInfo } from './types';
@@ -32,82 +34,6 @@ export interface CheckboxTree {
   toggle: (key: string) => void;
 }
 
-/**
- * Returns whether a node should be checkable (i.e. clicking the
- * checkbox should affect it).
- *
- * Skips:
- * - explicitly disabled nodes (`isDisabled === true`)
- * - explicitly disabled checkboxes (`isCheckboxDisabled === true`)
- * - nodes that opted out via `isCheckable === false`
- */
-function isNodeEligible(node: CubeTreeNodeData | undefined): boolean {
-  if (!node) return false;
-  if (node.isDisabled) return false;
-  if (node.isCheckboxDisabled) return false;
-  if (node.isCheckable === false) return false;
-  return true;
-}
-
-/**
- * Recursively walk a subtree bottom-up, deriving which nodes are fully
- * checked vs half-checked.  Mutates `checked` and `half` in place.
- */
-function deriveCheckedState(
-  node: CubeTreeNodeData,
-  index: TreeIndex,
-  checked: Set<string>,
-  half: Set<string>,
-): { allChecked: boolean; anyChecked: boolean; anyEligible: boolean } {
-  const childKeys = index.childrenOf.get(node.key) ?? [];
-
-  if (childKeys.length === 0) {
-    const eligible = isNodeEligible(node);
-    const isChecked = checked.has(node.key);
-    return {
-      allChecked: !eligible || isChecked,
-      anyChecked: isChecked,
-      anyEligible: eligible,
-    };
-  }
-
-  let allChecked = true;
-  let anyChecked = false;
-  let anyEligible = false;
-
-  for (const childKey of childKeys) {
-    const child = index.byKey.get(childKey);
-    if (!child) continue;
-    const r = deriveCheckedState(child, index, checked, half);
-    if (r.anyEligible) anyEligible = true;
-    if (!r.allChecked) allChecked = false;
-    if (r.anyChecked) anyChecked = true;
-  }
-
-  const eligible = isNodeEligible(node);
-
-  if (!anyEligible) {
-    // No eligible descendants — this node behaves like a leaf for
-    // checking purposes: its own checked state stands as-is.
-    half.delete(node.key);
-  } else if (allChecked) {
-    checked.add(node.key);
-    half.delete(node.key);
-  } else if (anyChecked) {
-    checked.delete(node.key);
-    half.add(node.key);
-  } else {
-    checked.delete(node.key);
-    half.delete(node.key);
-  }
-
-  return {
-    allChecked: !eligible ? allChecked : checked.has(node.key) && allChecked,
-    anyChecked: anyChecked || checked.has(node.key),
-    anyEligible: anyEligible || eligible,
-  };
-}
-
 function normalizeControlledChecked(
   controlled: UseCheckboxTreeOptions['checkedKeys'],
 ): { checked: Set<string>; halfChecked: Set<string> } | null {
@@ -124,19 +50,7 @@ function normalizeControlledChecked(
   };
 }
 
-/**
- * Derive `{ checked, halfChecked }` from the source-of-truth `checked` set
- * by walking the tree bottom-up:
- *
- * - A parent is considered fully checked iff every eligible descendant
- *   leaf is checked.
- * - A parent is half-checked iff at least one eligible descendant is
- *   checked or half-checked, but not all.
- *
- * Ineligible nodes (disabled / opt-out) are ignored when computing the
- * parent's state — they neither force a parent into the unchecked nor
- * half state.
- */
+/** Resolve the rendered sets from the source-of-truth `checked` set. */
 function resolveCheckedSets({
   isCheckable,
   sourceChecked,
@@ -171,14 +85,13 @@ function resolveCheckedSets({
     };
   }
 
-  const checked = new Set(sourceChecked);
-  const half = new Set<string>();
+  const { checked, halfChecked } = deriveCheckedSets(
+    treeData,
+    index,
+    sourceChecked,
+  );
 
-  for (const root of treeData) {
-    deriveCheckedState(root, index, checked, half);
-  }
-
-  return { checkedSet: checked, halfCheckedSet: half };
+  return { checkedSet: checked, halfCheckedSet: halfChecked };
 }
 
 /**
@@ -189,8 +102,9 @@ function resolveCheckedSets({
  *   indeterminate keys themselves.
  * - When the consumer passes `checkedKeys` as `{ checked, halfChecked }`,
  *   we keep the wire shape on the way out — same as AntD.
- * - Toggling a node propagates *down* (skipping ineligible descendants)
- *   and recomputes ancestors *up* in a single pass.
+ * - Toggling a node propagates *down* through its subtree, past locked
+ *   nodes to the eligible ones below them, and ancestors are then
+ *   recomputed *up* by the derive.
  */
 export function useCheckboxTree(opts: UseCheckboxTreeOptions): CheckboxTree {
   const {
@@ -226,81 +140,23 @@ export function useCheckboxTree(opts: UseCheckboxTreeOptions): CheckboxTree {
 
   const toggle = useEvent((key: string) => {
     const node = index.byKey.get(key);
-    if (!node || !isNodeEligible(node)) return;
+    const next = toggleCheckedKey(index, checkedSet, key);
+    if (!node || !next) return;
 
-    const isCurrentlyChecked = checkedSet.has(key);
-    const willCheck = !isCurrentlyChecked;
+    const { checked: finalChecked, halfChecked: finalHalf } = deriveCheckedSets(
+      treeData,
+      index,
+      next,
+    );
 
-    /**
-     * Seed from the derived `checkedSet`, not `sourceChecked`. The
-     * source-of-truth set may only contain leaf keys (e.g. when
-     * `defaultCheckedKeys` is leaf-only, or a consumer in controlled-array
-     * mode passes only leaves). The ancestor walk below decides whether
-     * each ancestor is fully checked by inspecting its direct children
-     * via `next.has(ck)` — those children may themselves be inner nodes
-     * whose "fully checked" status only exists in the derived set. Seeding
-     * from `sourceChecked` causes a sibling subtree's parent key to be
-     * missing from `next`, which would incorrectly drop the grandparent
-     * from the stored state (the next render's derivation self-corrects,
-     * but the intermediate stored value violates the cascade invariant).
-     */
-    const next = new Set(checkedSet);
-
-    const apply = (n: CubeTreeNodeData, value: boolean) => {
-      if (!isNodeEligible(n)) return;
-      if (value) next.add(n.key);
-      else next.delete(n.key);
-      const childKeys = index.childrenOf.get(n.key) ?? [];
-      for (const ck of childKeys) {
-        const child = index.byKey.get(ck);
-        if (child) apply(child, value);
-      }
-    };
-
-    apply(node, willCheck);
-
-    /**
-     * After the cascade, recompute ancestors so the public `checked` set
-     * doesn't carry parent keys that should be half-checked instead.
-     * Ancestors of `key` get visited bottom-up here.
-     */
-    let parentKey = index.parentOf.get(key);
-    while (parentKey) {
-      const parent = index.byKey.get(parentKey);
-      if (!parent) break;
-      const childKeys = index.childrenOf.get(parentKey) ?? [];
-      let allEligibleChecked = true;
-      let anyEligible = false;
-      for (const ck of childKeys) {
-        const child = index.byKey.get(ck);
-        if (!child) continue;
-        if (!isNodeEligible(child)) continue;
-        anyEligible = true;
-        if (!next.has(ck)) {
-          allEligibleChecked = false;
-          break;
-        }
-      }
-      if (anyEligible && allEligibleChecked && isNodeEligible(parent)) {
-        next.add(parentKey);
-      } else {
-        next.delete(parentKey);
-      }
-      parentKey = index.parentOf.get(parentKey);
-    }
-
+    // Store the derived set, as a controlled consumer stores `onCheck`'s
+    // keys, so a parent a check completed still covers children that load
+    // later.
     if (!isControlled) {
-      setUncontrolledChecked(next);
+      setUncontrolledChecked(finalChecked);
     }
 
     if (onCheck) {
-      const finalChecked = new Set(next);
-      const finalHalf = new Set<string>();
-
-      for (const root of treeData) {
-        deriveCheckedState(root, index, finalChecked, finalHalf);
-      }
-
       const checkedArr = Array.from(finalChecked);
       const halfArr = Array.from(finalHalf);
       const checkedNodes: CubeTreeNodeData[] = checkedArr
@@ -308,7 +164,7 @@ export function useCheckboxTree(opts: UseCheckboxTreeOptions): CheckboxTree {
         .filter((n): n is CubeTreeNodeData => !!n);
 
       const info: TreeOnCheckInfo = {
-        checked: willCheck,
+        checked: next.has(key),
         node,
         checkedNodes,
         halfCheckedKeys: halfArr,
