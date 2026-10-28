@@ -239,7 +239,7 @@ Show a tooltip only when certain conditions are met. Empty content (`null`, `und
 </TooltipProvider>
 ```
 
-A disabled `Button` receives neither hover nor focus, so a `TooltipProvider` around it never opens. Give the button its own `tooltip` instead; it then stays hoverable and focusable while disabled:
+A disabled `Button` receives neither hover nor focus, so a `TooltipProvider` around it never opens. Give the button its own `tooltip` instead; it then stays hoverable and focusable while disabled. The same goes for `Checkbox`, `Switch`, `Radio` and the text inputs (`TextInput`, `NumberInput` and the rest), which take a `tooltip` of their own:
 
 ```jsx
 <Button isDisabled={hasError} tooltip={hasError ? 'Fix errors first' : undefined}>

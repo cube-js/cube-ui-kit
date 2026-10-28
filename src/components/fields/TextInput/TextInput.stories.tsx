@@ -1,5 +1,6 @@
 import { StoryFn } from '@storybook/react-vite';
 import { IconCoin } from '@tabler/icons-react';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 
 import { IS_BARE_ARG, VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
@@ -43,6 +44,11 @@ export default {
     suffix: {
       control: { type: null },
       description: 'Input decoration after the main input',
+    },
+    tooltip: {
+      control: { type: 'text' },
+      description:
+        "The input's own tooltip, shown on hover over the field box and on keyboard focus, including while disabled",
     },
 
     /* Presentation */
@@ -224,6 +230,44 @@ Validation.parameters = {
 
 export const Disabled = Template.bind({});
 Disabled.args = { isDisabled: true };
+
+const timeout = (ms: number) =>
+  new Promise((resolve) => setTimeout(resolve, ms));
+
+export const DisabledWithTooltip: StoryFn<CubeTextInputProps> = (args) => (
+  <TextInput
+    {...args}
+    isDisabled
+    aria-label="Axis title"
+    defaultValue="Count"
+    tooltip="Show the axis to change its title"
+  />
+);
+
+// Room above the field, so the tooltip opens in its default `top` placement.
+DisabledWithTooltip.args = {
+  fieldStyles: { width: '0 320px 100%', margin: '6x top' },
+};
+
+DisabledWithTooltip.parameters = {
+  docs: {
+    description: {
+      story:
+        'A disabled field with a `tooltip` stays in the Tab order, so keyboard users can read why it is disabled. Keyboard focus shows its focus border and opens the tooltip at once.',
+    },
+  },
+};
+
+DisabledWithTooltip.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement);
+
+  // `TooltipProvider` wires the trigger up in a mount effect.
+  await timeout(250);
+  // Keyboard focus opens it without the hover delay or pointer modality.
+  await userEvent.tab();
+
+  await waitFor(() => expect(canvas.getByRole('tooltip')).toBeVisible());
+};
 
 export const DifferentSizes: StoryFn<CubeTextInputProps> = (args) => (
   <Space gap="2x" flow="column" placeItems="start">
