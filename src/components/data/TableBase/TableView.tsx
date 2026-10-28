@@ -513,9 +513,13 @@ function pinStyle(column: CubeResolvedColumn): CSSProperties | undefined {
 }
 
 /** Reuse the adapter's measured scrollport; captions need no width observer. */
-function sectionCaptionTokens(layout: TableBodySections | undefined) {
+function sectionCaptionTokens(
+  layout: TableBodySections | undefined,
+  tableWidth: number | null,
+) {
   if (!layout) return undefined;
   return {
+    '$section-table-width': tableWidth != null ? `${tableWidth}px` : '100%',
     '$section-viewport-width':
       layout.viewportWidth != null ? `${layout.viewportWidth}px` : '100%',
   };
@@ -2801,15 +2805,26 @@ export function TableView<T = any>(props: TableViewProps<T>) {
         data-index={isVirtual ? index : undefined}
         ref={isVirtual ? virtualizer.measureElement : undefined}
       >
-        <td
-          data-element="SectionCell"
-          role="gridcell"
-          colSpan={Math.max(columnCount, 1)}
-          aria-colindex={1}
-          aria-colspan={Math.max(columnCount, 1)}
-        >
-          <div data-element="SectionLabel">{section.title}</div>
-        </td>
+        {Array.from(
+          { length: Math.ceil(Math.max(columnCount, 1) / 1000) },
+          (_, index) => (
+            <td
+              key={index}
+              data-element="SectionCell"
+              role={index === 0 ? 'gridcell' : 'presentation'}
+              aria-hidden={index > 0 || undefined}
+              colSpan={Math.min(Math.max(columnCount, 1) - index * 1000, 1000)}
+              aria-colindex={index === 0 ? 1 : undefined}
+              aria-colspan={index === 0 ? Math.max(columnCount, 1) : undefined}
+            >
+              {index === 0 ? (
+                <div data-element="SectionContent">
+                  <div data-element="SectionLabel">{section.title}</div>
+                </div>
+              ) : null}
+            </td>
+          ),
+        )}
       </tr>
     );
   }
@@ -2871,7 +2886,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
       ref={rootRef}
       qa={qa || 'Table'}
       styles={mergedStyles}
-      tokens={sectionCaptionTokens(sectionLayout)}
+      tokens={sectionCaptionTokens(sectionLayout, layout.totalWidth)}
       mods={{
         size,
         shape,

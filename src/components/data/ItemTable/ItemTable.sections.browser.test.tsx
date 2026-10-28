@@ -168,6 +168,52 @@ describe('ItemTable section layout', () => {
     },
   );
 
+  it('keeps captions across more than 1000 columns at the far horizontal edge', async () => {
+    renderWithRoot(
+      <ItemTable
+        data={[DATA[0], DATA[2]]}
+        sections={SECTIONS}
+        getSectionKey={getSectionKey}
+        columns={Array.from({ length: 1100 }, (_, index) => ({
+          key: `c${index}`,
+          title: `Column ${index}`,
+          width: 100,
+        }))}
+        width="360px"
+        paginationMode="off"
+        isAutoHeight
+        isRowMoveAnimated={false}
+      />,
+    );
+    const scroller = grid().parentElement!;
+    const caption = grid().querySelector<HTMLTableRowElement>(
+      '[data-element="SectionRow"]',
+    )!;
+    const cells = Array.from(caption.cells);
+    expect(cells.reduce((sum, cell) => sum + cell.colSpan, 0)).toBe(1100);
+    expect(cells.every((cell) => cell.colSpan <= 1000)).toBe(true);
+    expect(caption.querySelectorAll('[role="gridcell"]')).toHaveLength(1);
+    expect(cells[0]).toHaveAttribute('aria-colspan', '1100');
+    await act(() => {
+      scroller.scrollLeft = scroller.scrollWidth;
+      scroller.dispatchEvent(new Event('scroll'));
+    });
+    await vi.waitFor(() => expect(scroller.scrollLeft).toBeGreaterThan(100000));
+    const label = caption.querySelector<HTMLElement>(
+      '[data-element="SectionLabel"]',
+    )!;
+    expect(label.getBoundingClientRect().left).toBeGreaterThanOrEqual(
+      scroller.getBoundingClientRect().left,
+    );
+    expect(label.getBoundingClientRect().right).toBeLessThanOrEqual(
+      scroller.getBoundingClientRect().right,
+    );
+    expect(cells.at(-1)!.getBoundingClientRect().right).toBeCloseTo(
+      grid().getBoundingClientRect().right,
+      0,
+    );
+  });
+
   it('navigates across measured section rows and virtual windows using record indices', async () => {
     renderWithRoot(
       <>

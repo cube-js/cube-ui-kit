@@ -745,8 +745,14 @@ export const TableElement = tasty({
       border: '1bw #border bottom',
       overflowWrap: 'anywhere',
     },
-    SectionLabel: {
+    SectionContent: {
       $: '> Scroller > Table > Body > SectionRow > SectionCell >',
+      // Native spans stop at 1000 columns. Keep the caption's sticky containing
+      // block across the bounded cells, without affecting fixed column widths.
+      width: '($section-table-width - 2 * $cell-padding-x)',
+    },
+    SectionLabel: {
+      $: '> Scroller > Table > Body > SectionRow > SectionCell > SectionContent >',
       // Stay readable when scrolling past the caption's original column.
       position: 'sticky',
       insetInlineStart: '$cell-padding-x',
