@@ -200,7 +200,7 @@ A disabled field still shows its tooltip, which makes it the place to say why it
 
 Keep the tooltip a hint. It is never the field's name (give the input a `label` or `aria-label`), an error (`errorMessage`) or anything the user needs to fill the field in (`description`): touch users never see it. When keyboard users must learn why a field can't be edited and a tooltip is not enough, show it as a `description`, or use `isReadOnly`. Prefer `tooltip` to wrapping the input in `TooltipProvider`: a disabled input takes no trigger props from a wrapper, so that tooltip never opens.
 
-To switch the tooltip off and on while the input can have focus, keep `tooltip` set and toggle its `isDisabled` (`tooltip={{ title, isDisabled: !isEmpty }}`). Setting and clearing `tooltip` itself remounts the field box, and the input loses focus mid-typing.
+To switch the tooltip off and on while the input can have focus, keep `tooltip` set with a non-empty `title` and toggle its `isDisabled` (`tooltip={{ title, isDisabled: !isEmpty }}`). Setting and clearing `tooltip`, or emptying its `title`, remounts the field box, and the input loses focus mid-typing.
 
 ### Multiline Text Area
 
