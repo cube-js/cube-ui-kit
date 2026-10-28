@@ -108,6 +108,7 @@ function TimeInput<T extends TimeValue>(
       size={size}
       fieldProps={fieldProps}
       isDisabled={isDisabled}
+      isReadOnly={isReadOnly}
       autoFocus={autoFocus}
       inputStyles={inputStyles}
       styles={wrapperStyles}

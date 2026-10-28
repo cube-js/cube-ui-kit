@@ -95,6 +95,7 @@ function DateInput<T extends DateValue>(
       size={size}
       fieldProps={fieldProps}
       isDisabled={isDisabled}
+      isReadOnly={isReadOnly}
       autoFocus={autoFocus}
       isInvalid={state.isInvalid}
       isValid={isValid}

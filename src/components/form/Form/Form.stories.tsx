@@ -2,7 +2,12 @@ import { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, userEvent, within } from 'storybook/test';
 
 import { baseProps } from '../../../stories/lists/baseProps';
+import { Checkbox } from '../../fields/Checkbox/Checkbox';
+import { ComboBox } from '../../fields/ComboBox/ComboBox';
 import { Input } from '../../fields/Input';
+import { Radio } from '../../fields/RadioGroup/Radio';
+import { RadioGroup } from '../../fields/RadioGroup/RadioGroup';
+import { Switch } from '../../fields/Switch/Switch';
 import { Space } from '../../layout/Space';
 
 import { ResetButton } from './ResetButton';
@@ -482,6 +487,54 @@ export const WithDefaultValues: Story = {
   },
   args: {
     orientation: 'vertical',
+    labelPosition: 'top',
+  },
+};
+
+/**
+ * A read-only form: every field keeps its value at full contrast in a recessed
+ * box, checked controls show a dark mark instead of the brand color, and
+ * nothing takes a hover state. Each field's `readonly` mod comes from the
+ * form's `isReadOnly`. A date field is left out: its two-digit segments fail
+ * axe's target size, a DateInput issue its own stories carry in the a11y
+ * baseline, and a new story has to come in clean.
+ */
+export const ReadOnly: Story = {
+  render: function ReadOnly(args) {
+    const form = Form.useController({
+      defaultValues: {
+        name: 'Ada Lovelace',
+        seats: 3,
+        region: 'eu',
+        plan: 'pro',
+        newsletter: true,
+        alerts: true,
+      },
+    });
+
+    return (
+      <Form
+        form={form}
+        isReadOnly={args.isReadOnly}
+        labelPosition={args.labelPosition}
+      >
+        <Input.Text name="name" label="Name" />
+        <Input.Number name="seats" label="Seats" />
+        <ComboBox name="region" label="Region">
+          <ComboBox.Item key="eu">Europe</ComboBox.Item>
+          <ComboBox.Item key="us">United States</ComboBox.Item>
+        </ComboBox>
+        <RadioGroup name="plan" label="Plan" orientation="horizontal">
+          <Radio value="free">Free</Radio>
+          <Radio value="pro">Pro</Radio>
+        </RadioGroup>
+        <Checkbox name="newsletter">Send the newsletter</Checkbox>
+        <Switch name="alerts">Alerts</Switch>
+      </Form>
+    );
+  },
+  args: {
+    isReadOnly: true,
     labelPosition: 'top',
   },
 };

@@ -108,6 +108,7 @@ const CheckboxElement = tasty({
       'invalid & checked': '#danger',
       'valid & !checked': '#surface',
       'valid & checked': '#success',
+      readonly: '#surface-2',
       disabled: '#dark.12',
     },
     // The check / minus icon is always rendered inside the box, so the
@@ -118,12 +119,14 @@ const CheckboxElement = tasty({
     color: {
       '': '#clear',
       'checked | indeterminate': '#white',
+      'readonly & !disabled & (checked | indeterminate)': '#dark-02',
     },
     border: {
       '': '#dark.30',
       invalid: '#danger',
       valid: '#success',
-      'disabled | ((indeterminate | checked) & !invalid & !valid)': '#clear',
+      'disabled | ((indeterminate | checked) & !invalid & !valid & !readonly)':
+        '#clear',
     },
     width: '(2x - 2bw)',
     height: '(2x - 2bw)',
@@ -186,7 +189,6 @@ function Checkbox(
   );
 
   let { isFocused, focusProps } = useFocus(true);
-  let { hoverProps, isHovered } = useHover({ isDisabled });
 
   let inputRef = useRef(null);
   let domRef = useFocusableRef(ref, inputRef);
@@ -205,7 +207,12 @@ function Checkbox(
   // `aria-label` instead used to drop the inline text from the name and
   // replace the caller's own `aria-label`.
   let ariaProps = { ...props, form: undefined, children: children ?? label };
-  let { inputProps, isDisabled: isInputDisabled } = groupState
+  // `isReadOnly` is React Aria's: the checkbox's own or its group's.
+  let {
+    inputProps,
+    isDisabled: isInputDisabled,
+    isReadOnly,
+  } = groupState
     ? useCheckboxGroupItem(
         {
           ...ariaProps,
@@ -221,6 +228,11 @@ function Checkbox(
         inputRef,
       )
     : useCheckbox(ariaProps, toggleState, inputRef);
+
+  // A read-only checkbox takes no hover state: a press would change nothing.
+  let { hoverProps, isHovered } = useHover({
+    isDisabled: isDisabled || isReadOnly,
+  });
 
   // A disabled checkbox with a tooltip to show keeps its focus, as a disabled
   // `Button` or `Radio` does: the tooltip is usually the reason it is disabled,
@@ -270,6 +282,7 @@ function Checkbox(
     indeterminate: isIndeterminate,
     ...getValidationMods({ isInvalid, isValid }),
     disabled: isDisabled,
+    readonly: isReadOnly,
     hovered: isHovered,
     focused: isFocused,
     'side-label': labelPosition === 'side',

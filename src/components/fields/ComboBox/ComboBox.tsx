@@ -1279,6 +1279,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     () => ({
       ...getValidationMods({ isInvalid, isValid }),
       disabled: isDisabled,
+      readonly: !!isReadOnly,
       hovered: false,
       focused: isFocused,
       loading: isLoading,
@@ -1290,6 +1291,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
       isInvalid,
       isValid,
       isDisabled,
+      isReadOnly,
       isFocused,
       isLoading,
       prefix,

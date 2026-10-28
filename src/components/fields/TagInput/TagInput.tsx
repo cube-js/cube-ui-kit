@@ -1792,6 +1792,7 @@ function TagInput<T extends object>(
         size={size}
         autoFocus={autoFocus}
         isDisabled={isDisabled}
+        isReadOnly={isReadOnly}
         isLoading={isLoading}
         isInvalid={effectiveIsInvalid}
         isValid={isValid}

@@ -196,6 +196,7 @@ function PeriodPickerImpl<T extends DateValue>(
       )}
       disableFocusRing={isFocusedButton}
       isDisabled={isDisabled}
+      isReadOnly={isReadOnly}
       isInvalid={isInvalid}
       isValid={isValid}
       size={size}
