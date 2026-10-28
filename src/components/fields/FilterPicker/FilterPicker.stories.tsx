@@ -1360,7 +1360,6 @@ export const TreeOptions: Story = {
     label: 'User groups',
     placeholder: 'Select user groups...',
     searchPlaceholder: 'Search groups and members...',
-    isClearable: true,
     fieldStyles: { width: '0 35x 100%' },
   },
   play: async ({ canvasElement }) => {
