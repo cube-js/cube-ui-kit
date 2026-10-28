@@ -1,6 +1,7 @@
 import { CONTAINER_STYLES } from '@tenphi/tasty';
 import { forwardRef, useMemo, useRef, useState } from 'react';
 
+import { useWarn } from '../../../_internal/hooks/use-warn';
 import { useI18n } from '../../../i18n';
 import { useCombinedRefs } from '../../../utils/react';
 import { extractStyles, mergeStyleLayers } from '../../../utils/styles';
@@ -24,6 +25,10 @@ import {
 import { useTableStorage } from '../TableBase/use-table-storage';
 import { useTableTreeState } from '../TableBase/use-table-tree-state';
 
+import {
+  buildItemTableSections,
+  sectionPageLayout,
+} from './item-table-sections';
 import { ItemTableBulkBar } from './ItemTableBulkBar';
 import { ItemTableFooter } from './ItemTableFooter';
 import {
@@ -60,6 +65,8 @@ function ItemTable<T = any>(
     columns,
     rowKey = 'id',
     getRowKey,
+    sections,
+    getSectionKey,
     getRowChildren,
     treeColumnKey,
     expandedKeys,
@@ -255,11 +262,44 @@ function ItemTable<T = any>(
     storage,
   });
 
-  // Search → sort → paginate. Paging last, so a page always reflects the rows
-  // the user is actually looking at.
+  const hasSectionProps = sections != null || getSectionKey != null;
+  const canSection =
+    !treeModel && !isReorderable && !dropOnRow && paginationMode !== 'server';
+  // These keys and positions feed the virtualizer's retained getItemKey
+  // callback. Keep that wiring stable in uncompiled consumers too.
+  const sectionModel = useMemo(
+    () =>
+      sections && getSectionKey && canSection
+        ? buildItemTableSections(
+            data,
+            sortedRows,
+            sections,
+            getSectionKey,
+            resolvedGetRowKey,
+          )
+        : null,
+    [data, sortedRows, sections, getSectionKey, canSection, resolvedGetRowKey],
+  );
+  useWarn(hasSectionProps && !canSection, {
+    key: ['item-table-sections-unsupported'],
+    args: [
+      'ItemTable:',
+      'Sections are ignored for tree rows, row drag/drop and server pagination.',
+    ],
+  });
+  useWarn(hasSectionProps && canSection && sectionModel == null, {
+    key: ['item-table-sections-invalid'],
+    args: [
+      'ItemTable:',
+      'Sections require unique section keys and getSectionKey returning a declared key for every displayed record. Falling back to the ordinary flat list.',
+    ],
+  });
+  const orderedRows = sectionModel?.rows ?? sortedRows;
+
+  // Search → sort → section → paginate. Captions never consume record slots.
   const pagination = useItemTablePagination<T>({
     mode: paginationMode,
-    rows: sortedRows,
+    rows: orderedRows,
     treeRoots: sortedTreeRoots,
     isTree: treeModel != null,
     pageSize: pageSizeProp,
@@ -298,17 +338,39 @@ function ItemTable<T = any>(
   });
 
   const visibleTreeEntries = treeModel ? treeState.visibleEntries : [];
+  const pageStart =
+    paginationMode === 'client'
+      ? (pagination.page - 1) * pagination.pageSize
+      : 0;
   const visibleRows = treeModel
     ? visibleTreeEntries.map((entry) => entry.row)
     : pagination.pageRows;
+  const visibleRowCount = visibleRows.length;
+  const sectionPage = useMemo(
+    () =>
+      sectionModel
+        ? {
+            layout: {
+              ...sectionPageLayout(sectionModel, pageStart, visibleRowCount),
+              viewportWidth: containerWidth,
+            },
+            keys: sectionModel.keys.slice(
+              pageStart,
+              pageStart + visibleRowCount,
+            ),
+          }
+        : undefined,
+    [sectionModel, pageStart, visibleRowCount, containerWidth],
+  );
   const visibleRowKeys = treeModel
     ? visibleTreeEntries.map((entry) => entry.key)
-    : undefined;
+    : sectionPage?.keys;
 
   const selection = useItemTableSelection<T>({
     rows: visibleRows,
     rowKeys: visibleRowKeys,
-    sortedRows,
+    sortedRows: orderedRows,
+    sortedRowKeys: sectionModel?.keys,
     isTree: treeModel != null,
     sortedTreeRoots,
     pageTreeRoots: pagination.pageTreeRoots,
@@ -497,6 +559,7 @@ function ItemTable<T = any>(
       qa={qa || 'ItemTable'}
       rows={visibleRows}
       rowKeys={visibleRowKeys}
+      sectionLayout={sectionPage?.layout}
       // `aria-rowindex` is document-absolute by contract: on page 3 a screen
       // reader should hear "row 51 of 240", not "row 1 of 25". Infinite scroll
       // never offsets — every loaded row is already in `visibleRows`.

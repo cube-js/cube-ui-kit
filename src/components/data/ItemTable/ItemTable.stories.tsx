@@ -158,6 +158,15 @@ const meta = {
     ariaLabel: 'Deployments',
   },
   argTypes: {
+    sections: {
+      control: { type: null },
+      description:
+        'Ordered key/title captions for flat record sections. Empty sections are omitted.',
+    },
+    getSectionKey: {
+      control: { type: null },
+      description: 'Assigns each record to one declared section key.',
+    },
     /* Content */
     data: {
       control: { type: null },
@@ -297,6 +306,21 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {};
+
+/** One column model and one scroller, with captions outside the record model. */
+export const Sections: Story = {
+  args: {
+    shape: 'card',
+    paginationMode: 'off',
+    selectionMode: 'multiple',
+    sections: [
+      { key: 'favorites', title: 'Favorites' },
+      { key: 'other', title: 'Other items' },
+    ],
+    getSectionKey: (row) =>
+      row.id === 'd1' || row.id === 'd3' ? 'favorites' : 'other',
+  },
+};
 
 /**
  * Nested source rows opt into a native treegrid. The disclosure is independent

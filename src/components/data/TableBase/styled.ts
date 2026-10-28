@@ -730,6 +730,35 @@ export const TableElement = tasty({
     Body: {
       $: '> Scroller > Table >',
     },
+    SectionRow: {
+      $: '> Scroller > Table > Body >',
+    },
+    SectionCell: {
+      $: '> Scroller > Table > Body > SectionRow >',
+      boxSizing: 'border-box',
+      height: '($header-height + 1bw)',
+      padding: '1x $cell-padding-x',
+      preset: 'c2',
+      textAlign: 'start',
+      color: '#surface-2-text-soft',
+      fill: '#surface-2',
+      border: '1bw #border bottom',
+      overflowWrap: 'anywhere',
+    },
+    SectionContent: {
+      $: '> Scroller > Table > Body > SectionRow > SectionCell >',
+      // Native spans stop at 1000 columns. Keep the caption's sticky containing
+      // block across the bounded cells, without affecting fixed column widths.
+      width: '($section-table-width - 2 * $cell-padding-x)',
+    },
+    SectionLabel: {
+      $: '> Scroller > Table > Body > SectionRow > SectionCell > SectionContent >',
+      // Stay readable when scrolling past the caption's original column.
+      position: 'sticky',
+      insetInlineStart: '$cell-padding-x',
+      width: 'fit-content',
+      maxWidth: '($section-viewport-width - 2 * $cell-padding-x)',
+    },
     Row: {
       $: '> Scroller > Table > Body >',
       // Match Item's background focus treatment; a native table-row outline

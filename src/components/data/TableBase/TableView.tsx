@@ -49,6 +49,7 @@ import {
   TableTreeToggle,
   TableTreeTogglePlaceholder,
 } from './styled';
+import { buildTableBodyItems } from './table-body-sections';
 import { TableHeaderCell } from './TableHeaderCell';
 import { TableRow, TableRowDropIndicator } from './TableRow';
 import { TableRowLink } from './TableRowLink';
@@ -83,6 +84,7 @@ import type { NavigateArg } from '../../../providers/navigation.types';
 import type { ColorThemeConfig } from '../../../tokens/color-theme';
 import type { CubeMenuTriggerProps } from '../../actions/Menu/MenuTrigger';
 import type { ColumnSortState } from './column-header';
+import type { TableBodyItem, TableBodySections } from './table-body-sections';
 import type { TableTreeNode } from './table-tree';
 import type {
   CubeResolvedColumn,
@@ -119,16 +121,21 @@ function flatRowTabStop(
   visibleRow: FlatRowFocus | null,
   mountedRows: readonly { index: number }[] | undefined,
   range: { startIndex: number; endIndex: number } | null,
+  recordIndices?: readonly number[],
 ) {
   if (!mountedRows || !restingRow) return restingRow;
+  const restingIndex = recordIndices?.[restingRow.index] ?? restingRow.index;
   if (
     range &&
-    restingRow.index >= range.startIndex &&
-    restingRow.index <= range.endIndex
+    restingIndex >= range.startIndex &&
+    restingIndex <= range.endIndex
   )
     return restingRow;
   return visibleRow &&
-    mountedRows.some((item) => item.index === visibleRow.index)
+    mountedRows.some(
+      (item) =>
+        item.index === (recordIndices?.[visibleRow.index] ?? visibleRow.index),
+    )
     ? visibleRow
     : null;
 }
@@ -182,6 +189,8 @@ export interface TableViewProps<T = any> extends CubeTableLayoutProps {
   rows: readonly T[];
   /** Stable keys for `rows`; required when a tree was flattened for display. */
   rowKeys?: readonly Key[];
+  /** Flat-list captions and their document-absolute presentation positions. */
+  sectionLayout?: TableBodySections;
   getRowKey: (row: T, index: number) => Key;
   layout: CubeTableColumnLayout<T>;
   /** Group path for each leaf column, from the outermost header inward. */
@@ -489,10 +498,31 @@ const ESTIMATED_ROW_HEIGHT = {
   xlarge: 56,
 } as const;
 
+const ESTIMATED_HEADER_HEIGHT = {
+  xsmall: 24,
+  small: 28,
+  medium: 32,
+  large: 40,
+  xlarge: 48,
+} as const;
+
 function pinStyle(column: CubeResolvedColumn): CSSProperties | undefined {
   if (column.pinOffset == null) return undefined;
 
   return { ['--pin-offset' as any]: `${column.pinOffset}px` };
+}
+
+/** Reuse the adapter's measured scrollport; captions need no width observer. */
+function sectionCaptionTokens(
+  layout: TableBodySections | undefined,
+  tableWidth: number | null,
+) {
+  if (!layout) return undefined;
+  return {
+    '$section-table-width': tableWidth != null ? `${tableWidth}px` : '100%',
+    '$section-viewport-width':
+      layout.viewportWidth != null ? `${layout.viewportWidth}px` : '100%',
+  };
 }
 
 /** Default text keeps its tooltip tree while the virtual window moves. */
@@ -627,6 +657,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
     qa,
     rows,
     rowKeys,
+    sectionLayout,
     getRowKey,
     layout,
     columnHeaderPaths,
@@ -803,14 +834,16 @@ export function TableView<T = any>(props: TableViewProps<T>) {
   const pinnedBottomCount = pinnedBottomRows?.length ?? 0;
   // The whole result, not this page. `rows.length` is the honest fallback when
   // the adapter does not know a total.
-  const bodyRowCount = Math.max(
-    totalRowCount ?? rows.length,
-    rowIndexOffset + rows.length,
-  );
+  const bodyRowCount =
+    sectionLayout?.rowCount ??
+    Math.max(totalRowCount ?? rows.length, rowIndexOffset + rows.length);
 
   /** 1-based `aria-rowindex` for the i-th body row of the current page. */
   const bodyRowIndex = (rowIndex: number) =>
-    headerRowCount + pinnedTopCount + rowIndexOffset + rowIndex + 1;
+    headerRowCount +
+    pinnedTopCount +
+    (sectionLayout?.rowIndices[rowIndex] ?? rowIndexOffset + rowIndex) +
+    1;
   const bodyRowKey = (row: T, rowIndex: number) =>
     rowKeys?.[rowIndex] ?? getRowKey(row, rowIndex);
   const treeRowState = (rowIndex: number) => {
@@ -1816,7 +1849,12 @@ export function TableView<T = any>(props: TableViewProps<T>) {
     } as Record<string, any>;
   }
 
-  function renderRow(row: T, rowIndex: number, isVirtual = false) {
+  function renderRow(
+    row: T,
+    rowIndex: number,
+    isVirtual = false,
+    virtualIndex = rowIndex,
+  ) {
     const { height, ...rowProps } = getRowElementProps(row, rowIndex);
     const rowKey = bodyRowKey(row, rowIndex);
     const treeNode = tree?.nodes[rowIndex];
@@ -1830,7 +1868,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
         rowKey={rowKey}
         rowProps={rowProps}
         height={height}
-        index={isVirtual ? rowIndex : undefined}
+        index={isVirtual ? virtualIndex : undefined}
         measureRef={isVirtual ? virtualizer.measureElement : undefined}
         dragState={isReorderable ? dragState : undefined}
         dropState={isReorderable ? dropState : undefined}
@@ -1855,7 +1893,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
         ? undefined
         : rowLink?.(row, rowIndex);
     return (
-      <TableRowLink key={rowProps['data-key']} to={link}>
+      <TableRowLink key={`record:${rowProps['data-key']}`} to={link}>
         {render}
       </TableRowLink>
     );
@@ -1879,9 +1917,14 @@ export function TableView<T = any>(props: TableViewProps<T>) {
    * The indicators render nothing unless a drag is in flight, so a table that
    * is merely *capable* of dragging keeps its ordinary structure.
    */
-  function withDropIndicators(row: T, index: number, isVirtual = false) {
+  function withDropIndicators(
+    row: T,
+    index: number,
+    isVirtual = false,
+    virtualIndex = index,
+  ) {
     const rowKey = bodyRowKey(row, index);
-    const rowNode = renderRow(row, index, isVirtual);
+    const rowNode = renderRow(row, index, isVirtual, virtualIndex);
 
     if (!isReorderable || !dropState) return rowNode;
 
@@ -1930,12 +1973,30 @@ export function TableView<T = any>(props: TableViewProps<T>) {
     (isVirtualized === true ||
       (isVirtualized === 'auto' && rows.length > virtualizeThreshold));
 
+  // The retained key callback maps physical items to records. Rebuilding this
+  // mapping during a scroll would invalidate the virtualizer's size cache.
+  const bodyItems = useMemo(
+    () =>
+      sectionLayout
+        ? buildTableBodyItems(rows.length, sectionLayout)
+        : undefined,
+    [rows.length, sectionLayout],
+  );
+
   // TanStack invalidates every cached position when this callback changes.
   // Keep its wiring stable during scroll renders, including without Compiler.
   const getItemKey = useCallback(
-    (index: number) =>
-      String(rowKeys?.[index] ?? getRowKey(rows[index], index)),
-    [rows, rowKeys, getRowKey],
+    (index: number) => {
+      const item = bodyItems?.items[index];
+      if (item?.kind === 'section')
+        return `section:${typeof item.section.key}:${item.section.key}`;
+      const rowIndex = item?.rowIndex ?? index;
+      const key = String(
+        rowKeys?.[rowIndex] ?? getRowKey(rows[rowIndex], rowIndex),
+      );
+      return bodyItems ? `record:${key}` : key;
+    },
+    [rows, rowKeys, getRowKey, bodyItems],
   );
 
   // `getScrollElement` is read from a ref, not the state value: the virtualizer
@@ -1946,11 +2007,16 @@ export function TableView<T = any>(props: TableViewProps<T>) {
       (rowSizeKey
         ? SIZES[rowSizeKey]
         : ESTIMATED_ROW_HEIGHT[size ?? 'medium'])) + 1;
+  const estimatedSectionHeight =
+    (headerHeight ?? ESTIMATED_HEADER_HEIGHT[size]) + 1;
   const virtualizer = useVirtualizer({
-    count: shouldVirtualize ? rows.length : 0,
+    count: shouldVirtualize ? (bodyItems?.items.length ?? rows.length) : 0,
     getScrollElement: () => scrollerRef.current,
     getItemKey,
-    estimateSize: () => estimatedRowHeight,
+    estimateSize: (index) =>
+      bodyItems?.items[index]?.kind === 'section'
+        ? estimatedSectionHeight
+        : estimatedRowHeight,
     measureElement: (element) => element.getBoundingClientRect().height,
     // Rows beyond each viewport edge. Higher than a list's, because a fast
     // flick outruns React's re-render and the gap shows as blank rows — and a
@@ -1968,7 +2034,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
     localBodyRef.current
       ?.querySelectorAll<HTMLTableRowElement>('tr[data-index]')
       .forEach((element) => virtualizer.measureElement(element));
-  }, [estimatedRowHeight, virtualizer]);
+  }, [estimatedRowHeight, estimatedSectionHeight, virtualizer]);
   useTableTooltipRefresh(
     scrollerEl,
     virtualizer.isScrolling,
@@ -2111,7 +2177,9 @@ export function TableView<T = any>(props: TableViewProps<T>) {
   const visibleRow =
     shouldVirtualize && virtualItems.length && hasFlatRowNavigation
       ? focusableRowFrom(
-          virtualizer.range?.startIndex ?? virtualItems[0].index,
+          recordIndexAtItem(
+            virtualizer.range?.startIndex ?? virtualItems[0].index,
+          ),
           1,
         )
       : null;
@@ -2120,7 +2188,15 @@ export function TableView<T = any>(props: TableViewProps<T>) {
     visibleRow,
     shouldVirtualize ? virtualItems : undefined,
     virtualizer.range,
+    bodyItems?.recordIndices,
   );
+
+  function recordIndexAtItem(index: number) {
+    const item = bodyItems?.items[index];
+    return item?.kind === 'section'
+      ? item.section.rowIndex
+      : (item?.rowIndex ?? index);
+  }
 
   function mountedRow(key: Key) {
     return Array.from(
@@ -2141,7 +2217,10 @@ export function TableView<T = any>(props: TableViewProps<T>) {
       // scrollToIndex retains asynchronous retries for each old destination.
       // Rapid row keys need one immediate offset; the pending focus retry
       // completes against the latest mounted window instead.
-      const offset = virtualizer.getOffsetForIndex(next.index, 'auto')?.[0];
+      const offset = virtualizer.getOffsetForIndex(
+        bodyItems?.recordIndices[next.index] ?? next.index,
+        'auto',
+      )?.[0];
       if (offset != null) virtualizer.scrollToOffset(offset);
     }
     const target = mountedRow(next.key);
@@ -2694,14 +2773,60 @@ export function TableView<T = any>(props: TableViewProps<T>) {
         <>
           {renderSpacerRow(paddingTop, 'top')}
           {virtualItems.map((v) =>
-            withDropIndicators(rows[v.index], v.index, true),
+            renderBodyItem(bodyItems?.items[v.index], v.index, true),
           )}
           {renderSpacerRow(paddingBottom, 'bottom')}
         </>
       );
     }
 
-    return rows.map((row, index) => withDropIndicators(row, index));
+    return bodyItems
+      ? bodyItems.items.map((item, index) => renderBodyItem(item, index))
+      : rows.map((row, index) => withDropIndicators(row, index));
+  }
+
+  function renderBodyItem(
+    item: TableBodyItem | undefined,
+    index: number,
+    isVirtual = false,
+  ) {
+    if (item?.kind !== 'section') {
+      const rowIndex = item?.rowIndex ?? index;
+      return withDropIndicators(rows[rowIndex], rowIndex, isVirtual, index);
+    }
+    const { section } = item;
+    return (
+      <tr
+        key={`section:${typeof section.key}:${section.key}`}
+        data-element="SectionRow"
+        data-section-key={String(section.key)}
+        role="row"
+        aria-rowindex={headerRowCount + pinnedTopCount + section.index + 1}
+        data-index={isVirtual ? index : undefined}
+        ref={isVirtual ? virtualizer.measureElement : undefined}
+      >
+        {Array.from(
+          { length: Math.ceil(Math.max(columnCount, 1) / 1000) },
+          (_, index) => (
+            <td
+              key={index}
+              data-element="SectionCell"
+              role={index === 0 ? 'gridcell' : 'presentation'}
+              aria-hidden={index > 0 || undefined}
+              colSpan={Math.min(Math.max(columnCount, 1) - index * 1000, 1000)}
+              aria-colindex={index === 0 ? 1 : undefined}
+              aria-colspan={index === 0 ? Math.max(columnCount, 1) : undefined}
+            >
+              {index === 0 ? (
+                <div data-element="SectionContent">
+                  <div data-element="SectionLabel">{section.title}</div>
+                </div>
+              ) : null}
+            </td>
+          ),
+        )}
+      </tr>
+    );
   }
 
   const bodyContent = renderBodyContent();
@@ -2761,6 +2886,7 @@ export function TableView<T = any>(props: TableViewProps<T>) {
       ref={rootRef}
       qa={qa || 'Table'}
       styles={mergedStyles}
+      tokens={sectionCaptionTokens(sectionLayout, layout.totalWidth)}
       mods={{
         size,
         shape,

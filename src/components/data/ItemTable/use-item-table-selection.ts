@@ -16,6 +16,8 @@ interface SelectionScopeOptions<T> {
   rows: readonly T[];
   /** Every searched, sorted flat row, across pages. */
   sortedRows: readonly T[];
+  rowKeys?: readonly Key[];
+  sortedRowKeys?: readonly Key[];
   isTree: boolean;
   /** Every searched, sorted tree root, across pages. */
   sortedTreeRoots: TableTreeNode<T>[];
@@ -52,6 +54,8 @@ export interface UseItemTableSelectionOptions<T>
 function getSelectionScope<T>({
   rows,
   sortedRows,
+  rowKeys,
+  sortedRowKeys,
   isTree,
   sortedTreeRoots,
   pageTreeRoots,
@@ -67,9 +71,9 @@ function getSelectionScope<T>({
   if (!isTree) {
     return {
       pageRows: rows,
-      pageRowKeys: undefined,
+      pageRowKeys: rowKeys,
       filteredRows: isClientPaginated ? sortedRows : rows,
-      filteredRowKeys: undefined,
+      filteredRowKeys: isClientPaginated ? sortedRowKeys : rowKeys,
     };
   }
 
@@ -94,6 +98,7 @@ export function useItemTableSelection<T>({
   rows,
   rowKeys,
   sortedRows,
+  sortedRowKeys,
   isTree,
   sortedTreeRoots,
   pageTreeRoots,
@@ -145,6 +150,8 @@ export function useItemTableSelection<T>({
     ...getSelectionScope({
       rows,
       sortedRows,
+      rowKeys,
+      sortedRowKeys,
       isTree,
       sortedTreeRoots,
       pageTreeRoots,
