@@ -189,6 +189,7 @@ function TabsRoot(props: CubeTabsProps, ref: ForwardedRef<HTMLDivElement>) {
     tabListStyles,
     prefixStyles,
     suffixStyles,
+    tokens,
     ...otherProps
   } = props;
 
@@ -743,7 +744,8 @@ function TabsRoot(props: CubeTabsProps, ref: ForwardedRef<HTMLDivElement>) {
         qa={qa}
         mods={mods}
         styles={combinedStyles}
-        tokens={handleTokens}
+        // The measured scrollbar handle wins over a caller's token of the same name.
+        tokens={{ ...tokens, ...handleTokens }}
         data-size={size}
       >
         <div data-element="Bar">
