@@ -4,7 +4,7 @@ import { setFailed, setOutput } from '@actions/core';
 import { getExecOutput } from '@actions/exec';
 import { markdownTable } from 'markdown-table';
 
-import { checkPackages, formatSize } from '../bundle-deps.mjs';
+import { checkPackages, formatSize, TOLERANCE } from '../bundle-deps.mjs';
 
 /** The entry the partial imports are measured against (`.size-limit.cjs`). */
 const FULL_ENTRY = 'All';
@@ -90,7 +90,7 @@ async function run() {
 
     if (failed) {
       failures.push(
-        'A third-party package entered or left the bundle, or grew more than 10 KB past its approved size.',
+        `A third-party package entered or left the bundle, or grew more than ${formatSize(TOLERANCE)} past its approved size.`,
       );
     }
 

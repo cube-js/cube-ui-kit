@@ -17,7 +17,7 @@ Before taking this PR from the draft, please, make sure you have done the follow
 - [ ] Tests are passed successfully
 - [ ] If you're adding a new component/new props, add stories that describe how this component/prop works
 - [ ] Changeset(s) is(are) added
-- [ ] If the size check flagged a third-party package, the baseline is updated (`pnpm build && pnpm size --update`) and the PR says why
+- [ ] If the size check flagged a third-party package, the baseline entries from its comment are committed and the PR says why
 - [ ] Commit message follows [commit guidelines](https://github.com/cube-js/cube-ui-kit/blob/main/CONTRIBUTING.md)
 
 Closes: <!-- Please add tickets id's which are relevant to current pr, e.g. CUK-1, CUK-2 ... CUK-XX--> N/A

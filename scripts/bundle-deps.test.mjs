@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { mkdtempSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -114,7 +114,7 @@ describe('unapprovedChanges', () => {
 });
 
 describe('formatPackageReport', () => {
-  it('lists each change and names the update command', () => {
+  it('lists each change and the baseline edit that approves it', () => {
     const report = formatPackageReport(
       unapprovedChanges(
         { clsx: 100 + 2048 + TOLERANCE, diff: 2048 },
@@ -123,10 +123,14 @@ describe('formatPackageReport', () => {
     );
 
     expect(report).toContain('❌ **3 third-party packages need approval**');
-    expect(report).toContain('pnpm size --update');
     expect(report).toMatch(/`clsx` .*\| \+12 KB +\|/);
     expect(report).toMatch(/`diff` +\| — +\| 2 KB +\| new in the bundle +\|/);
     expect(report).toMatch(/`valid-url` +\| 1 KB +\| — +\| left the bundle/);
+    expect(report).toContain(
+      '```json\n"clsx": 12388,\n"diff": 2048\n```\n\nDelete `valid-url`.',
+    );
+    // `set-message.cjs` dedents the comment, which would strip indentation.
+    expect(report).not.toMatch(/^[ \t]/m);
   });
 
   it('passes in one line when the graph did not change', () => {
@@ -138,6 +142,7 @@ describe('checkPackages', () => {
   /** A size-limit report folder whose bundle holds these packages. */
   function reportFolder(sizes) {
     const folder = mkdtempSync(join(tmpdir(), 'bundle-deps-'));
+    onTestFinished(() => rmSync(folder, { recursive: true, force: true }));
     const modules = Object.entries(sizes).map(([name, size], id) => [
       id,
       { identifier: name, nameForCondition: pnpmPath(name), size },

@@ -17,15 +17,17 @@
  * same on every machine, unlike the minified, gzipped totals `size-limit`
  * reports.
  *
+ * CI runs it on every PR (`.github/workflows/size-limit.yml`), and when it
+ * fails the PR comment lists the exact baseline entries to set and delete, so
+ * approving a change needs no local build. Locally:
+ *
  *   pnpm build && pnpm size     # measure, then check the packages
- *   pnpm size --update          # approve the current packages; commit the baseline
+ *   pnpm size --update          # re-approve every package at its current size
  *
  * Growth within the tolerance is not approved, only tolerated: the next change
  * is measured against the same baseline, so creep adds up until it fails. A
  * package that left the bundle fails too, so the baseline holds only what
- * ships, and nothing returns to the bundle unreviewed. `--update` re-approves
- * every package at its current size, so review the whole baseline diff, not
- * only the flagged rows.
+ * ships, and nothing returns to the bundle unreviewed.
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
@@ -40,7 +42,6 @@ const defaultReportFolder =
   process.env.REPORT_FOLDER ?? join(root, 'size-limit-report');
 
 export const TOLERANCE = 10 * 1024;
-const UPDATE_COMMAND = 'pnpm build && pnpm size --update';
 
 /** The package a bundled module belongs to, or `null` for UI Kit's own code. */
 export function packageOf(path) {
@@ -118,7 +119,11 @@ export function unapprovedChanges(current, approved, tolerance = TOLERANCE) {
     .sort((a, b) => a.name.localeCompare(b.name));
 }
 
-/** The Markdown section the size report and the PR comment show. */
+/**
+ * The Markdown section the size report and the PR comment show. Every line
+ * starts at column 0: the comment goes through `dedent` (`set-message.cjs`),
+ * which would strip an indented line.
+ */
 export function formatPackageReport(changes) {
   const limit = formatSize(TOLERANCE);
 
@@ -131,8 +136,11 @@ export function formatPackageReport(changes) {
       ? ['A third-party package needs approval', 'it']
       : [`${changes.length} third-party packages need approval`, 'each'];
 
+  const entries = changes.filter(({ status }) => status !== 'removed');
+  const removed = changes.filter(({ status }) => status === 'removed');
+
   return [
-    `❌ **${lead}**: ${subject} entered or left the bundle, or grew more than ${limit} past its approved size. If that is intended, run \`${UPDATE_COMMAND}\`, commit \`scripts/bundle-deps-baseline.json\`, and say why in the PR.`,
+    `❌ **${lead}**: ${subject} entered or left the bundle, or grew more than ${limit} past its approved size.`,
     '',
     markdownTable([
       ['Package', 'Approved', 'Now', 'Change'],
@@ -147,6 +155,23 @@ export function formatPackageReport(changes) {
             : `+${formatSize(after - before)}`,
       ]),
     ]),
+    '',
+    'If that is intended, approve it in `scripts/bundle-deps-baseline.json` and say why in the PR.',
+    ...(entries.length
+      ? [
+          '',
+          'Set these entries:',
+          '',
+          '```json',
+          entries
+            .map(({ name, after }) => `${JSON.stringify(name)}: ${after}`)
+            .join(',\n'),
+          '```',
+        ]
+      : []),
+    ...(removed.length
+      ? ['', `Delete ${removed.map(({ name }) => `\`${name}\``).join(', ')}.`]
+      : []),
   ].join('\n');
 }
 
