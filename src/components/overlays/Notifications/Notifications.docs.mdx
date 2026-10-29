@@ -302,6 +302,23 @@ Maximum 5 notifications are visible at once. When a new notification arrives and
 
 <Story of={NotificationStories.StackCap} />
 
+## Positioning
+
+Toasts and notifications share one stack, fixed at the top center of the viewport, 16px below the top edge. An app with its own fixed bar at the top can push the stack below it with the `$overlay-inset-top` custom property (`--overlay-inset-top`, default `0px`), added to those 16px. Set it from the component that renders the bar, for as long as the bar is shown:
+
+```tsx
+import { useGlobalStyles } from '@tenphi/tasty';
+
+function TopBar() {
+  // The bar is 6x tall, plus its 1bw bottom border.
+  useGlobalStyles(':root', { '$overlay-inset-top': '(6x + 1bw)' });
+
+  return <BarElement>…</BarElement>;
+}
+```
+
+A collapsed toast stack still slides up to the viewport's top edge, so the 10px strip it leaves sits over the bar, which stays clickable through it.
+
 ## Duration Defaults
 
 - **Non-persistent overlay** — 3000ms
