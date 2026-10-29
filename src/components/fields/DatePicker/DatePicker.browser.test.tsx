@@ -1,13 +1,6 @@
 import { CalendarDate } from '@internationalized/date';
 
-import {
-  cleanup,
-  renderWithRoot,
-  screen,
-  userEvent,
-  waitFor,
-  within,
-} from '../../../test';
+import { cleanup, renderWithRoot, screen, within } from '../../../test';
 
 import { DatePicker } from './DatePicker';
 import { DateRangePicker } from './DateRangePicker';
@@ -248,25 +241,6 @@ describe('<DateRangeSeparatedPicker /> in a narrow container', () => {
     expect(rect(end).left).toBeCloseTo(rect(picker).left, 0);
     // Not pushed to the far edge of the first row.
     expect(rect(dash).left).toBeCloseTo(rect(start).right, 0);
-  });
-
-  // On two rows the picker is as wide as its container, so a calendar aligned
-  // to the picker's corner would open past the boxes.
-  it.each([
-    ['start', /start date/],
-    ['end', /end date/],
-  ])('opens the %s calendar under the boxes on two rows', async (_, name) => {
-    const { end } = renderPicker(300);
-
-    await userEvent.click(screen.getByRole('button', { name }));
-
-    const popover = await screen.findByRole('dialog');
-
-    await waitFor(() => {
-      expect(rect(popover).right).toBeCloseTo(rect(end).right, 0);
-    });
-
-    expect(rect(popover).top).toBeGreaterThanOrEqual(rect(end).bottom);
   });
 });
 

@@ -71,7 +71,7 @@ export interface CubeDateRangeSeparatedPickerProps<
   shouldFlip?: boolean;
   /**
    * The ref of the element the popover should visually attach itself to.
-   * Defaults to the end date's box, under the last row.
+   * Defaults to the field wrapper.
    *
    * Forwarded to `DialogTrigger`, so the anchor also becomes what outside-click
    * dismissal treats as the trigger.
@@ -115,9 +115,6 @@ function DateRangeSeparatedPicker<T extends DateValue>(
     autoFocus,
   } = props;
   let targetRef = useRef<HTMLDivElement>(null);
-  // Both calendars open from the end box: on one row its corner is the
-  // picker's, and on two rows the picker is wider than the boxes it holds.
-  let endBoxRef = useRef<HTMLDivElement>(null);
 
   let state = useDateRangePickerState({
     ...props,
@@ -249,7 +246,7 @@ function DateRangeSeparatedPicker<T extends DateValue>(
               hideArrow
               type="popover"
               placement={props.placement ?? 'bottom right'}
-              targetRef={props.targetRef ?? endBoxRef}
+              targetRef={props.targetRef ?? targetRef}
               isOpen={startState.isOpen}
               shouldFlip={props.shouldFlip}
               onOpenChange={startState.setOpen}
@@ -307,7 +304,6 @@ function DateRangeSeparatedPicker<T extends DateValue>(
         <DateRangeDash />
       </DateRangeStart>
       <DateInputBase
-        wrapperRef={endBoxRef}
         disableFocusRing={endFocusProps.isFocused}
         isDisabled={isDisabled}
         isReadOnly={props.isReadOnly}
@@ -320,7 +316,7 @@ function DateRangeSeparatedPicker<T extends DateValue>(
             hideArrow
             type="popover"
             placement={props.placement ?? 'bottom right'}
-            targetRef={props.targetRef ?? endBoxRef}
+            targetRef={props.targetRef ?? targetRef}
             isOpen={endState.isOpen}
             shouldFlip={props.shouldFlip}
             onOpenChange={endState.setOpen}
