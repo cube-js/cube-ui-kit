@@ -658,12 +658,18 @@ describe('<ComboBox />', () => {
 
   it('should allow form submission with single Enter press when allowsCustomValue and no matches', async () => {
     const onSubmit = vi.fn();
+    // user-event submits on Enter without a submit button only when the form
+    // holds one `<input>`, and it counts the ComboBox's hidden one. Browsers
+    // don't: a hidden input never blocks implicit submission.
     const { getByRole, formInstance } = renderWithForm(
-      <ComboBox allowsCustomValue name="tag" label="Tag">
-        {items.map((item) => (
-          <ComboBox.Item key={item.key}>{item.children}</ComboBox.Item>
-        ))}
-      </ComboBox>,
+      <>
+        <ComboBox allowsCustomValue name="tag" label="Tag">
+          {items.map((item) => (
+            <ComboBox.Item key={item.key}>{item.children}</ComboBox.Item>
+          ))}
+        </ComboBox>
+        <button type="submit">Save</button>
+      </>,
       { formProps: { onSubmit } },
     );
 

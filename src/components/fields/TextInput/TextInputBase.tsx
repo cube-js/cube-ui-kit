@@ -553,7 +553,7 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
           maxLength={maxLength ?? inputProps.maxLength}
           minLength={minLength ?? inputProps.minLength}
         />
-        {/* Content that takes no room in the box, such as `NumberInput`'s hidden form value. */}
+        {/* Inside the box, so a parent's `:last-child` rules still see the field: `NumberInput`'s hidden form value goes here. */}
         {children}
         {showValidationIndicator || suffix || actions ? (
           <div data-element="Suffix">

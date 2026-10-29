@@ -191,7 +191,7 @@ import { IconMail } from '@tabler/icons-react';
 | `Escape` while it is open | Closes the tooltip only. The key goes no further, so it doesn't clear a `SearchInput` or close a surrounding dialog |
 | The input loses focus, or the pointer leaves | Closes |
 
-A disabled field still shows its tooltip, which makes it the place to say why it can't be changed. While it has a tooltip it stays focusable, marked `aria-disabled` and read-only instead of natively disabled, so keyboard users can read the reason too. It takes no text, `NumberInput` doesn't step, `Enter` submits nothing, and a click on it or on its label doesn't focus it, as with a natively disabled field. Screen readers announce it as disabled and read-only. Not being natively disabled, its value is part of a plain `<form>`'s submitted data; ui-kit's `Form` is not affected. Without a tooltip, a disabled input is natively disabled and `Tab` skips it.
+A disabled field still shows its tooltip, which makes it the place to say why it can't be changed. While it has a tooltip it stays focusable, marked `aria-disabled` and read-only instead of natively disabled, so keyboard users can read the reason too. It takes no text, `NumberInput` doesn't step, `Enter` submits nothing, and a click on it or on its label doesn't focus it, as with a natively disabled field. Screen readers announce it as disabled and read-only. Not being natively disabled, its value is part of a plain `<form>`'s submitted data, except `NumberInput`'s, which submits through a hidden input that is disabled with the field; ui-kit's `Form` is not affected. Without a tooltip, a disabled input is natively disabled and `Tab` skips it.
 
 ```jsx
 <NumberInput isDisabled aria-label="Font size" tooltip="Turn data labels on to change this" />
