@@ -495,6 +495,29 @@ export const LargeSize: Story = {
 };
 
 /**
+ * Tabs dressed in the caller's own tokens: the titles, the indicator and the
+ * font follow tokens re-declared on the tab list, and one tab sets its own font.
+ */
+export const Theming: Story = {
+  render: (args) => (
+    <Tabs
+      {...args}
+      defaultActiveKey="overview"
+      tabListStyles={{
+        '#surface-text-soft': '#success-accent-text-soft',
+        '#primary-accent-text': '#success-accent-text',
+        '#primary-accent-surface': '#success-accent-surface',
+        '$font-sans': 'Georgia, serif',
+      }}
+    >
+      <Tab key="overview" title="Overview" />
+      <Tab key="activity" title="Activity" />
+      <Tab key="query" title="Query" styles={{ font: 'monospace' }} />
+    </Tabs>
+  ),
+};
+
+/**
  * Tabs with a disabled tab
  */
 export const DisabledTab: Story = {

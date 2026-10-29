@@ -56,6 +56,15 @@ export default {
         defaultValue: { summary: 'medium' },
       },
     },
+    shape: {
+      options: ['default', 'plain'],
+      control: { type: 'radio' },
+      description:
+        'Shape of the field box. `plain` is square with no border at rest, for a field set flush in a container that draws its edges',
+      table: {
+        defaultValue: { summary: 'default' },
+      },
+    },
 
     tooltip: {
       control: { type: 'text' },

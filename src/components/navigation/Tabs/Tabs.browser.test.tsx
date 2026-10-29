@@ -370,3 +370,72 @@ describe('Active tab at the end of a crowded strip', () => {
     },
   );
 });
+
+/**
+ * A caller themes the tabs by re-declaring current tokens on `Tabs`. Root
+ * resolves the legacy colour aliases once, on the root, so a tab reading one
+ * would ignore that override. jsdom does not resolve custom properties, so only
+ * a browser shows which value a tab ends up with.
+ */
+describe('Tabs themed through the caller’s tokens', () => {
+  const THEME = {
+    '#surface-text-soft': 'rgb(0, 128, 0)',
+    '#primary-accent-text': 'rgb(255, 0, 0)',
+    '#primary-accent-surface': 'rgb(0, 0, 255)',
+  } as const;
+  const SECONDARY = THEME['#surface-text-soft'];
+  const TITLE = THEME['#primary-accent-text'];
+  const ACCENT = THEME['#primary-accent-surface'];
+
+  const tabStyle = (name: string) =>
+    getComputedStyle(screen.getByRole('tab', { name }));
+
+  it('colours the titles and the indicator from `tabListStyles`', async () => {
+    renderWithRoot(
+      <Tabs defaultActiveKey="active" tabListStyles={THEME}>
+        <Tab key="active" title="Active" />
+        <Tab key="inactive" title="Inactive" />
+      </Tabs>,
+    );
+
+    expect(tabStyle('Active').color).toBe(TITLE);
+    expect(tabStyle('Inactive').color).toBe(SECONDARY);
+
+    // The indicator is the one child of the tab list that holds no tab.
+    const indicator = () =>
+      [...screen.getByRole('tablist').children].find(
+        (child) => !child.querySelector('[role="tab"]'),
+      );
+
+    await waitFor(() => {
+      expect(getComputedStyle(indicator()!).backgroundColor).toBe(ACCENT);
+    });
+  });
+
+  it('colours the file-type selection edge from `tokens`', () => {
+    renderWithRoot(
+      <Tabs type="file" defaultActiveKey="active" tokens={THEME}>
+        <Tab key="active" title="Active" />
+        <Tab key="inactive" title="Inactive" />
+      </Tabs>,
+    );
+
+    expect(tabStyle('Active').boxShadow).toContain(ACCENT);
+  });
+
+  it('sets the title font from `$font-sans` in `styles`, or from a tab’s own `styles`', () => {
+    renderWithRoot(
+      <Tabs
+        size="xsmall"
+        defaultActiveKey="themed"
+        styles={{ '$font-sans': 'Georgia, serif' }}
+      >
+        <Tab key="themed" title="Themed" />
+        <Tab key="own" title="Own" styles={{ font: 'Courier' }} />
+      </Tabs>,
+    );
+
+    expect(tabStyle('Themed').fontFamily).toMatch(/^georgia,/i);
+    expect(tabStyle('Own').fontFamily).toMatch(/^courier,/i);
+  });
+});

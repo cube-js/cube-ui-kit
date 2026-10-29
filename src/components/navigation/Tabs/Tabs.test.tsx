@@ -45,6 +45,25 @@ describe('<Tabs />', () => {
       expect(getByTestId('TestTabs')).toBeInTheDocument();
     });
 
+    it('forwards `tokens` to the root alongside the scrollbar handle', () => {
+      const { getByTestId } = renderWithRoot(
+        <Tabs
+          qa="TestTabs"
+          defaultActiveKey="tab1"
+          tokens={{ '#surface-text-soft': 'rgb(0 128 0)' }}
+        >
+          <Tab key="tab1" title="Tab 1" />
+        </Tabs>,
+      );
+
+      const root = getByTestId('TestTabs');
+
+      expect(root.style.getPropertyValue('--surface-text-soft-color')).toBe(
+        'rgb(0 128 0)',
+      );
+      expect(root.style.getPropertyValue('--scrollbar-h-left')).not.toBe('');
+    });
+
     it('should add data-qa and data-qaval to the tab list', () => {
       const { getByRole, getByTestId } = renderWithRoot(
         <Tabs defaultActiveKey="tab1">

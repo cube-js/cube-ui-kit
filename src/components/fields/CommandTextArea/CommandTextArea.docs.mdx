@@ -45,6 +45,7 @@ Choose a different component when the interaction has another outcome:
 - **`autoSize`** `boolean` (default: `false`) — Resize to fit content.
 - **`rows`** `number` (default: `3`) — Visible rows.
 - **`maxRows`** `number` (default: `10`) — Max visible rows when `autoSize` is true.
+- **`shape`** `'default' | 'plain'` (default: `default`) — Shape of the field box. `plain` is square with no border at rest, for a field set flush in a container that draws its edges, such as a toolbar or a panel header. Its border keeps its width and shows on focus and in a valid or invalid state, so nothing shifts
 - **`tooltip`** `string | TooltipProviderProps` — The input's own tooltip, opened on hover over the field box and on keyboard focus. It closes on the first key, so it never covers the suggestions. See [TextInput](/docs/forms-textinput--docs#with-a-tooltip) for the behaviour
 
 Each option's value is the **literal string to insert**. For commands, set the item's `textValue` (and `key`) to the full `/clear` — the slash is part of both the active token and the inserted value, so `/cle` becomes `/clear ` with no duplication. This decouples insertion from the trigger, so non-command autocomplete (e.g. a `@mention` resolving to `@john`) works the same way.

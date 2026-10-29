@@ -14,7 +14,6 @@ import { useEvent } from '../../../_internal/hooks/use-event';
 import { useI18n } from '../../../i18n';
 import { FieldBaseProps } from '../../../shared';
 import { mergeProps, useCombinedRefs } from '../../../utils/react';
-import { mergeStyleLayers } from '../../../utils/styles';
 import { Action } from '../../actions';
 import {
   getValidationMods,
@@ -230,7 +229,11 @@ function FileInput(allProps: CubeFileInputProps, ref) {
     }
   });
 
-  const { styles, field } = splitFieldLayout(props);
+  // The button is the root, so `inputStyles` styles the same element and wins
+  // over `styles`, as `wrapperStyles` does on the date pickers.
+  const { styles, field } = splitFieldLayout(props, {
+    overStyles: inputStyles,
+  });
 
   // The button is the control: the label points at the hidden native input so
   // that clicking it opens the file dialog, but the button is what takes focus.
@@ -271,9 +274,7 @@ function FileInput(allProps: CubeFileInputProps, ref) {
         .filter(Boolean)
         .join(' ')}
       aria-describedby={ariaDescribedBy}
-      // The button is the root, so `inputStyles` styles the same element and
-      // wins over `styles`, as `wrapperStyles` does on the date pickers.
-      styles={mergeStyleLayers(styles, inputStyles)}
+      styles={styles}
       isDisabled={isDisabled}
       mods={{
         selected: !!fileName,

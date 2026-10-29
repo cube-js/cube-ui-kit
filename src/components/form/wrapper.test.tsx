@@ -691,6 +691,113 @@ describe('field layout style props', () => {
     },
   );
 
+  it.each(inputs)(
+    '%s sizes the control with controlWidth, and the field with width',
+    (_, element) => {
+      renderWithRoot(
+        cloneElement(element, { width: '20x', controlWidth: '37x' }),
+      );
+
+      const field = screen.getByTestId('Field');
+      const [control, ...others] = sized();
+
+      expect(others).toHaveLength(0);
+      expect(field).toContainElement(control);
+      expect(control).not.toBe(field);
+      expect(getComputedStyle(field).width).toBe('calc(20 * var(--gap))');
+      // It is a prop, never an attribute.
+      expect(document.querySelector('[controlwidth]')).toBeNull();
+    },
+  );
+
+  it.each(inputs)(
+    '%s sizes the control with controlWidth over width when bare',
+    (_, element) => {
+      const ref = createRef<unknown>();
+
+      renderWithRoot(
+        cloneElement(element, {
+          ref,
+          width: '10x',
+          controlWidth: '37x',
+          label: undefined,
+          'aria-label': 'Billing',
+          isBare: true,
+        }),
+      );
+
+      expect(sized()).toEqual([elementOf(ref.current)]);
+    },
+  );
+
+  it('puts controlWidth over styles.width', () => {
+    render(
+      <TextInput
+        label="Name"
+        controlWidth="37x"
+        styles={{ width: '10x', inlineSize: '9x' }}
+      />,
+    );
+
+    const [control, ...others] = sized();
+
+    expect(others).toHaveLength(0);
+    expect(control).toHaveAttribute('data-qa', 'InputWrapper');
+    // A logical size counts as `width`, so it goes too.
+    expect(getComputedStyle(control).inlineSize).toBe('auto');
+  });
+
+  it('leaves the width alone with controlWidth={false}', () => {
+    // What `cond && size` gives when `cond` is false.
+    render(
+      <>
+        <TextInput aria-label="Bare" width="37x" controlWidth={false} />
+        <TextInput
+          label="Labelled"
+          styles={{ width: '37x' }}
+          controlWidth={false}
+        />
+      </>,
+    );
+
+    expect(sized().map((element) => element.dataset.qa)).toEqual([
+      'InputWrapper',
+      'InputWrapper',
+    ]);
+  });
+
+  // The inputs with a prop that styles the control over `styles`.
+  const overStyles: Record<string, string> = {
+    DateInput: 'wrapperStyles',
+    DatePicker: 'wrapperStyles',
+    DateRangePicker: 'wrapperStyles',
+    DateRangeSeparatedPicker: 'wrapperStyles',
+    FileInput: 'inputStyles',
+    MonthPicker: 'wrapperStyles',
+    PeriodPicker: 'wrapperStyles',
+    QuarterPicker: 'wrapperStyles',
+    TimeInput: 'wrapperStyles',
+    WeekPicker: 'wrapperStyles',
+    YearPicker: 'wrapperStyles',
+  };
+
+  it.each(inputs.filter(([name]) => name in overStyles))(
+    '%s puts controlWidth over the styles above styles',
+    (name, element) => {
+      renderWithRoot(
+        cloneElement(element, {
+          controlWidth: '37x',
+          [overStyles[name]]: { width: '10x' },
+        }),
+      );
+
+      const [control, ...others] = sized();
+
+      expect(others).toHaveLength(0);
+      expect(screen.getByTestId('Field')).toContainElement(control);
+    },
+  );
+
   it('sizes a grouped Checkbox itself, never its group', () => {
     render(
       <Checkbox.Group label="Group">

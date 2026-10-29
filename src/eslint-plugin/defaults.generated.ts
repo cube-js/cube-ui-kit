@@ -137,6 +137,7 @@ export const DEFAULTS: DefaultsRegistry = {
         maxRows: { kind: 'default', value: 10 },
         overlayOffset: { kind: 'default', value: 8 },
         rows: { kind: 'default', value: 3 },
+        shape: { kind: 'default', value: 'default' },
         shouldFlip: { kind: 'default', value: true },
       },
     },
@@ -509,6 +510,7 @@ export const DEFAULTS: DefaultsRegistry = {
       props: {
         autoComplete: { kind: 'default', value: 'off' },
         hideStepper: { kind: 'default', value: false },
+        shape: { kind: 'default', value: 'default' },
         size: { kind: 'default', value: 'medium' },
         suffixPosition: { kind: 'default', value: 'before' },
       },
@@ -528,6 +530,7 @@ export const DEFAULTS: DefaultsRegistry = {
     PasswordInput: {
       props: {
         isBuffered: { kind: 'default', value: true },
+        shape: { kind: 'default', value: 'default' },
         size: { kind: 'default', value: 'medium' },
         suffixPosition: { kind: 'default', value: 'after' },
       },
@@ -616,6 +619,7 @@ export const DEFAULTS: DefaultsRegistry = {
       props: {
         isBuffered: { kind: 'default', value: true },
         isClearable: { kind: 'default', value: false },
+        shape: { kind: 'default', value: 'default' },
         size: { kind: 'default', value: 'medium' },
         suffixPosition: { kind: 'default', value: 'after' },
       },
@@ -753,6 +757,7 @@ export const DEFAULTS: DefaultsRegistry = {
         isBuffered: { kind: 'default', value: true },
         maxRows: { kind: 'default', value: 10 },
         rows: { kind: 'default', value: 3 },
+        shape: { kind: 'default', value: 'default' },
         size: { kind: 'default', value: 'medium' },
         suffixPosition: { kind: 'default', value: 'before' },
       },
@@ -761,6 +766,7 @@ export const DEFAULTS: DefaultsRegistry = {
       props: {
         isBuffered: { kind: 'default', value: true },
         multiLine: { kind: 'default', value: false },
+        shape: { kind: 'default', value: 'default' },
         size: { kind: 'default', value: 'medium' },
         suffixPosition: { kind: 'default', value: 'before' },
         type: { kind: 'default', value: 'text' },

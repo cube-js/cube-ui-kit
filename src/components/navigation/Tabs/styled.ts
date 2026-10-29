@@ -328,7 +328,7 @@ export const TabsElement = tasty({
         'placement=left | placement=right': '1ow',
       },
       radius: 'round',
-      fill: '#dark.35',
+      fill: '#surface-text.35',
       opacity: {
         '': 0,
         'focused | scrolling': 1,
@@ -354,21 +354,25 @@ export const TabElement = tasty(Item, {
       'type=narrow & placement=left': 'left',
       'type=narrow & placement=right': 'right',
     },
+    // Tab colors read current tokens, not the legacy aliases that point at them
+    // (`#dark-02`, `#primary-text`, `#primary`). Root resolves an alias once, on
+    // the page root, so a caller re-declaring the current token on `Tabs` would
+    // never reach it. The contract is under "Theming" in `Tabs.docs.mdx`.
     color: {
-      '': '#dark-02',
-      'type=narrow & (hovered & !selected)': '#primary-text',
-      '(type=default | type=narrow) & selected': '#primary-text',
+      '': '#surface-text-soft',
+      'type=narrow & (hovered & !selected)': '#primary-accent-text',
+      '(type=default | type=narrow) & selected': '#primary-accent-text',
       disabled: '#disabled-surface-text',
     },
     fill: {
       '': '#clear',
-      'hovered & !type=narrow': '#dark.03',
+      'hovered & !type=narrow': '#surface-text.03',
       'type=file': '#surface-3',
       'type=file & hovered': '#surface-3.5',
       'type=radio & hovered': '#surface.5',
       '(type=file | type=radio) & selected': '#surface',
       // Spring-load hint: a widget is hovering this tab and it is about to open.
-      'drop-pending': '#primary.10',
+      'drop-pending': '#primary-accent-surface.10',
     },
     border: {
       '': '#clear',
@@ -381,11 +385,12 @@ export const TabElement = tasty(Item, {
     shadow: {
       '': '$selection-shadow',
       'focused & focus-visible':
-        'inset 0 0 0 $ring-width #primary-text, $selection-shadow',
-      editing: 'inset 0 0 0 $ring-width #primary-text, $selection-shadow',
+        'inset 0 0 0 $ring-width #primary-accent-text, $selection-shadow',
+      editing:
+        'inset 0 0 0 $ring-width #primary-accent-text, $selection-shadow',
       'type=radio & selected': '$item-shadow',
       'type=radio & selected & focused & focus-visible':
-        '$item-shadow, inset 0 0 0 $ring-width #primary-text',
+        '$item-shadow, inset 0 0 0 $ring-width #primary-accent-text',
     },
     outline: 'none',
     placeContent: {
@@ -405,15 +410,16 @@ export const TabElement = tasty(Item, {
     // the panel area. Flips with placement so the highlight always sits on
     // the edge adjacent to the content.
     '$selection-shadow': {
-      '': 'inset 0 0 0 0 #primary',
-      'type=file & selected': 'inset 0 (-1 * $tab-indicator-size) 0 0 #primary',
+      '': 'inset 0 0 0 0 #primary-accent-surface',
+      'type=file & selected':
+        'inset 0 (-1 * $tab-indicator-size) 0 0 #primary-accent-surface',
       'type=file & selected & placement=bottom':
-        'inset 0 $tab-indicator-size 0 0 #primary',
+        'inset 0 $tab-indicator-size 0 0 #primary-accent-surface',
       'type=file & selected & placement=left':
-        'inset (-1 * $tab-indicator-size) 0 0 0 #primary',
+        'inset (-1 * $tab-indicator-size) 0 0 0 #primary-accent-surface',
       'type=file & selected & placement=right':
-        'inset $tab-indicator-size 0 0 0 #primary',
-      '!type=file': 'inset 0 0 0 0 #primary.0',
+        'inset $tab-indicator-size 0 0 0 #primary-accent-surface',
+      '!type=file': 'inset 0 0 0 0 #primary-accent-surface.0',
     },
     // Collapse horizontal padding for narrow type
     '$label-padding-left': {
@@ -487,7 +493,7 @@ export const DropIndicatorElement = tasty({
       '': 0,
       'drop-target': 1,
     },
-    fill: '#primary',
+    fill: '#primary-accent-surface',
     width: {
       '': '.5x',
       'placement=left | placement=right': 'auto',
@@ -556,7 +562,7 @@ export const TabIndicatorElement = tasty({
       '': '$indicator-size',
       'placement=left | placement=right': '$tab-indicator-size',
     },
-    fill: '#primary',
+    fill: '#primary-accent-surface',
     // Transition all four properties unconditionally — only the two relevant
     // ones change per render, the others stay constant.
     transition:

@@ -106,13 +106,6 @@ export default {
         type: { summary: 'Intl.NumberFormatOptions' },
       },
     },
-    inputWidth: {
-      control: { type: 'text' },
-      description: 'Width of the slider input area',
-      table: {
-        type: { summary: 'string' },
-      },
-    },
     inputStyles: {
       control: { type: null },
       table: {

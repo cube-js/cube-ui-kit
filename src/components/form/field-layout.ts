@@ -14,12 +14,22 @@ import type { Props } from '../../props';
 
 /**
  * An input's style props. They place and size its outer element: the field
- * wrapper when it renders, the input itself otherwise.
+ * wrapper when it renders, the input itself otherwise. `controlWidth` always
+ * sizes the input.
  */
 export interface FieldLayoutStyleProps
-  extends PositionStyleProps, DimensionStyleProps {}
+  extends PositionStyleProps, DimensionStyleProps {
+  /**
+   * The control's own width: the element `width` sizes when the input renders
+   * bare, in every label position. Beside a side label, `width` takes the label
+   * column too, so this is the one that sizes the control alone. It wins over
+   * `width` on a bare input and over `styles.width`. A state map resolves
+   * against the control, and `false` leaves the width as it is.
+   */
+  controlWidth?: Styles['width'];
+}
 
-/** The names of `FieldLayoutStyleProps`. */
+/** The names of the style props in `FieldLayoutStyleProps`: all but `controlWidth`. */
 export const FIELD_LAYOUT_STYLES: readonly string[] = [
   ...POSITION_STYLES,
   ...DIMENSION_STYLES,
@@ -70,10 +80,18 @@ export interface FieldLayoutOptions {
   fillHeightOnFlex?: boolean;
   /** The input's own default styles, under `styles`. */
   defaultStyles?: Styles;
+  /**
+   * Styles a caller sets on the same element over `styles`, such as
+   * `wrapperStyles` on the date pickers. `controlWidth` still wins.
+   */
+  overStyles?: Styles;
 }
 
 export interface FieldLayout {
-  /** The input's styles: `styles`, plus the style props when it is bare. */
+  /**
+   * The input's styles: `styles`, plus the style props when it is bare, then
+   * `overStyles`, and `controlWidth` over all of them.
+   */
   styles: Styles;
   /**
    * Spread into the props of `wrapWithField`: the wrapper's `fieldStyles`,
@@ -87,11 +105,27 @@ export interface FieldLayout {
 }
 
 /**
+ * The control's styles with `controlWidth` over their width. A logical size
+ * counts as `width` here too, so it goes. `false`, from a `cond && size`, is
+ * no width at all.
+ */
+function withControlWidth(styles: Styles, controlWidth: unknown): Styles {
+  if (controlWidth === undefined || controlWidth === false) return styles;
+
+  const sized = { ...styles, width: controlWidth } as Record<string, unknown>;
+
+  delete sized.inlineSize;
+
+  return sized as Styles;
+}
+
+/**
  * Routes an input's style props to its outer element. Bare, they join the
  * input's `styles`. With the field chrome, they go to the wrapper over
  * `fieldStyles`, and a wrapper they size gets `fill-width` / `fill-height`,
  * under which `FieldWrapper` lets the input stretch as it would in a grid cell
- * of that size. `styles` always stays on the input.
+ * of that size. `styles` always stays on the input, and `controlWidth` sizes
+ * it over `styles`, wherever the style props go.
  */
 export function splitFieldLayout(
   props: object,
@@ -101,23 +135,33 @@ export function splitFieldLayout(
     hasChrome = rendersFieldChrome(props),
     fillHeightOnFlex = false,
     defaultStyles,
+    overStyles,
   } = options;
   const record = props as Record<string, unknown> & {
     styles?: Styles;
     fieldStyles?: Styles;
     fieldProps?: Props;
+    controlWidth?: Styles['width'];
   };
 
   if (!hasChrome) {
+    const styles = extractStyles(props, FIELD_LAYOUT_STYLES, defaultStyles);
+
     return {
-      styles: extractStyles(props, FIELD_LAYOUT_STYLES, defaultStyles),
+      styles: withControlWidth(
+        overStyles ? mergeStyleLayers(styles, overStyles) : styles,
+        record.controlWidth,
+      ),
       field: {},
       fillWidth: false,
       fillHeight: false,
     };
   }
 
-  const styles = mergeStyleLayers(defaultStyles, record.styles);
+  const styles = withControlWidth(
+    mergeStyleLayers(defaultStyles, record.styles, overStyles),
+    record.controlWidth,
+  );
   const layoutStyles = extractStyles(
     props,
     FIELD_LAYOUT_STYLES,

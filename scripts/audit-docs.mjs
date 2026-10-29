@@ -100,7 +100,7 @@ const FIELD_PROPS = new Set([
   'labelPosition', 'labelStyles', 'labelProps', 'form', 'rules',
   'defaultValue', 'autoFocus',
   'insideForm', 'fieldProps', 'fieldStyles', 'messageStyles', 'forceField',
-  'isBare',
+  'isBare', 'controlWidth',
   'requiredMark', 'validateTrigger', 'showValid', 'idPrefix', 'shouldUpdate',
   'validationDelay', 'message',
   'field', 'rulesKey', 'dependsOn', 'deps', 'errorPolicy', 'preserve', 'isEqual',

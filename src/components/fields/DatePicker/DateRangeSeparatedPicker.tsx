@@ -14,7 +14,6 @@ import { useDatePickerState, useDateRangePickerState } from 'react-stately';
 import { useI18n } from '../../../i18n';
 import { FieldBaseProps } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
-import { mergeStyleLayers } from '../../../utils/styles';
 import { useFieldProps, wrapWithField } from '../../form';
 import {
   FieldLayoutStyleProps,
@@ -91,8 +90,10 @@ function DateRangeSeparatedPicker<T extends DateValue>(
   props = Object.assign({}, DEFAULT_DATE_PROPS, props);
 
   // `wrapperStyles` styles the same box as `styles` and wins over it.
-  const fieldLayout = splitFieldLayout(props);
-  const styles = mergeStyleLayers(fieldLayout.styles, props.wrapperStyles);
+  const fieldLayout = splitFieldLayout(props, {
+    overStyles: props.wrapperStyles,
+  });
+  const styles = fieldLayout.styles;
 
   let {
     qa,
