@@ -432,6 +432,8 @@ interface UseComboBoxKeyboardProps {
   selectedLabel: string;
   isClearable?: boolean;
   onSelectionChange: (selection: Key | Key[] | null) => void;
+  /** Settles the typed text on an option by the rule blur uses. */
+  onSettleTypedText: () => void;
   onClearValue: () => void;
   onOpenList: () => void;
   onCloseList: () => void;
@@ -458,6 +460,7 @@ function useComboBoxKeyboard({
   selectedLabel,
   isClearable,
   onSelectionChange,
+  onSettleTypedText,
   onClearValue,
   onOpenList,
   onCloseList,
@@ -528,6 +531,10 @@ function useComboBoxKeyboard({
       // Text that names nothing, or none, clears the selection.
       e.preventDefault();
       onSelectionChange(null);
+    } else {
+      // Nothing is highlighted, as when the list is closed: the text settles
+      // as it would on blur, and Enter goes on to submit the settled value.
+      onSettleTypedText();
     }
   };
 
@@ -1001,11 +1008,11 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     }
   };
 
-  // In non-custom-value mode: auto-select the exact match, or the only filtered
-  // result, unless it is disabled; keep a selected item even when it is
-  // disabled; clear invalid input (no selectable match) when clearOnBlur is set
-  // or the input is empty.
-  const settleOptionOnBlur = () => {
+  // In non-custom-value mode, on blur and on an Enter that has no option to
+  // pick: auto-select the exact match, or the only filtered result, unless it
+  // is disabled; keep a selected item even when it is disabled; clear invalid
+  // input (no selectable match) when clearOnBlur is set or the input is empty.
+  const settleTypedOption = () => {
     const matchKey = findTypedOption(
       filteredOptions,
       effectiveInputValue,
@@ -1038,7 +1045,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     } else if (allowsCustomValue) {
       settleCustomValueOnBlur();
     } else {
-      settleOptionOnBlur();
+      settleTypedOption();
     }
 
     onBlur?.();
@@ -1242,6 +1249,11 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     selectedLabel,
     isClearable,
     onSelectionChange: handleSelectionChange,
+    onSettleTypedText: () => {
+      settleTypedOption();
+      // As after a pick, the list shows every option when it opens again.
+      setIsFilterActive(false);
+    },
     onClearValue: clearValue,
     onOpenList: openList,
     onCloseList: () => setIsPopoverOpen(false),
