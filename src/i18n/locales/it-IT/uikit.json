@@ -4,7 +4,13 @@
     "cancel": "Annulla"
   },
   "dialog": {
-    "dismiss": "Chiudi"
+    "dismiss": "Chiudi",
+    "discardChanges": {
+      "title": "Scartare le modifiche?",
+      "content": "Tutte le modifiche non salvate andranno perse.",
+      "discard": "Scarta",
+      "keepEditing": "Continua a modificare"
+    }
   },
   "dialogForm": {
     "submit": "Invia",

@@ -183,3 +183,32 @@ Default.play = async ({ canvasElement, viewMode }) => {
   await userEvent.click(canvas.getByRole('button', { name: 'Open' }));
   await waitFor(() => expect(canvas.getByRole('dialog')).toBeVisible());
 };
+
+/** Escape on a form with edits asks before it discards them. */
+export const UnsavedChanges: StoryFn<
+  Omit<ModernDialogFormProps<{ name: string }>, 'form'>
+> = (args) => {
+  const form = Form.useController({ defaultValues: { name: '' } });
+
+  return (
+    <DialogTrigger>
+      <Button>Open</Button>
+
+      <DialogForm form={form} title="Rename" {...args}>
+        <Input.Text name="name" label="Name" />
+      </DialogForm>
+    </DialogTrigger>
+  );
+};
+
+UnsavedChanges.play = async ({ canvasElement, viewMode }) => {
+  if (viewMode === 'docs') return;
+  const canvas = within(canvasElement);
+  await userEvent.click(canvas.getByRole('button', { name: 'Open' }));
+  await userEvent.type(
+    await canvas.findByRole('textbox', { name: 'Name' }),
+    'Draft',
+  );
+  await userEvent.keyboard('{Escape}');
+  await waitFor(() => expect(canvas.getByRole('alertdialog')).toBeVisible());
+};

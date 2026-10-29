@@ -1,3 +1,5 @@
+import { useEffect } from 'react';
+
 import { useI18n } from '../../../i18n';
 import { Button } from '../../actions/Button/Button';
 import { ButtonGroup } from '../../actions/ButtonGroup/ButtonGroup';
@@ -34,6 +36,13 @@ export interface CubeDialogFormProps<T extends FieldTypes = FieldTypes>
   cancelProps?: CubeButtonProps;
   /** Preserve form values after submission or dismissal. */
   preserve?: boolean;
+  /**
+   * Whether Escape, an outside click and the close button ask "Discard
+   * changes?" before they close the dialog. Unset, they ask while a field the
+   * user edited differs from its default, unless `preserve` is set. An
+   * explicit `confirmDismiss` on the `DialogTrigger` or `DialogContainer` wins.
+   */
+  confirmDismiss?: boolean;
   /** Whether to hide action button so developer can manually specify them */
   noActions?: boolean;
   /** The title of the dialog */
@@ -104,6 +113,7 @@ function LegacyDialogForm<T extends FieldTypes>(props: CubeDialogFormProps<T>) {
     submitProps,
     cancelProps,
     preserve,
+    confirmDismiss,
     title,
     size,
     closeIcon,
@@ -113,7 +123,23 @@ function LegacyDialogForm<T extends FieldTypes>(props: CubeDialogFormProps<T>) {
   [form] = useForm(form);
 
   const { t } = useI18n();
-  const { onClose } = useDialogContext();
+  const { onClose, registerUnsavedChanges } = useDialogContext();
+
+  // Escape, an outside click and the close button ask before they discard
+  // what the user typed: fields they edited away from their defaults. A form
+  // filled from code is not an edit. `preserve` keeps the values anyway.
+  useEffect(
+    () =>
+      registerUnsavedChanges?.(
+        () =>
+          confirmDismiss ??
+          (!preserve &&
+            form
+              .getDirtyFieldNames()
+              .some((name) => form.isFieldTouched(name))),
+      ),
+    [registerUnsavedChanges, form, preserve, confirmDismiss],
+  );
 
   function onLocalDismiss() {
     onClose?.();

@@ -38,7 +38,7 @@ export interface AlertDialogApiActions {
 
 export interface DialogProps
   extends
-    Omit<CubeDialogContainerProps, 'onDismiss' | 'children'>,
+    Omit<CubeDialogContainerProps, 'onDismiss' | 'children' | 'confirmDismiss'>,
     Omit<CubeAlertDialogProps, 'type' | 'id' | 'content' | 'actions'> {
   content: ReactNode | (({ resolve, reject }) => ReactNode);
   actions?: AlertDialogApiActions;

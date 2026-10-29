@@ -4,7 +4,13 @@
     "cancel": "Hủy"
   },
   "dialog": {
-    "dismiss": "Đóng"
+    "dismiss": "Đóng",
+    "discardChanges": {
+      "title": "Loại bỏ các thay đổi?",
+      "content": "Tất cả các thay đổi chưa lưu sẽ bị mất.",
+      "discard": "Loại bỏ",
+      "keepEditing": "Tiếp tục chỉnh sửa"
+    }
   },
   "dialogForm": {
     "submit": "Gửi",

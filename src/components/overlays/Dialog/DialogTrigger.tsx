@@ -26,7 +26,12 @@ import { isOwnActionsPress } from '../../actions/actions-run';
 import { Modal, Popover, Tray, WithCloseBehavior } from '../Modal';
 
 import { DialogContext } from './context';
+import { DialogContainer } from './DialogContainer';
 import { useDialogOpenSync } from './use-dialog-open-sync';
+import {
+  DiscardChangesDialog,
+  useDismissConfirmation,
+} from './use-dismiss-confirmation';
 
 export type CubeDialogClose = (close: () => void) => ReactElement;
 
@@ -71,6 +76,14 @@ export interface CubeDialogTriggerProps
   isDismissable?: boolean;
   /** Whether pressing the escape key to close the dialog should be disabled. */
   isKeyboardDismissDisabled?: boolean;
+  /**
+   * Whether Escape, an outside click and the close button ask "Discard
+   * changes?" before they close the dialog. Unset, they ask while a
+   * `DialogForm` inside has unsaved edits. Explicit actions (submit, Cancel,
+   * the `close` function) never ask, and a popover never does: it closes on
+   * its own in more ways than these.
+   */
+  confirmDismiss?: boolean;
   /** The screen breakpoint for the mobile type */
   mobileViewport?: number;
   /** The style map for the overlay **/
@@ -114,6 +127,7 @@ export function DialogTrigger(props: CubeDialogTriggerProps) {
     onDismiss,
     isDismissable = true,
     isKeyboardDismissDisabled,
+    confirmDismiss,
     styles,
     mobileViewport = 700,
     hideOnClose,
@@ -206,12 +220,30 @@ export function DialogTrigger(props: CubeDialogTriggerProps) {
     };
   }, []);
 
-  function onClose(action, fromAction = false) {
-    if (isDismissable || fromAction) {
-      onDismiss && onDismiss(action);
-      state.close();
-    }
+  const { requestDismiss, registerUnsavedChanges, confirmationProps } =
+    useDismissConfirmation(
+      type === 'popover' ? false : confirmDismiss,
+      state.isOpen,
+    );
+
+  function close(action?: string) {
+    onDismiss && onDismiss(action);
+    state.close();
   }
+
+  // Explicit dialog actions close at once. A passive dismissal (Escape or an
+  // outside click) needs `isDismissable`, and asks first while the dialog
+  // holds unsaved edits.
+  function onClose(action, fromAction = false) {
+    if (fromAction) close(action);
+    else if (isDismissable) requestDismiss(() => close(action));
+  }
+
+  const confirmation = confirmationProps && (
+    <DialogContainer {...confirmationProps}>
+      <DiscardChangesDialog />
+    </DialogContainer>
+  );
 
   if (type === 'popover') {
     return (
@@ -276,18 +308,23 @@ export function DialogTrigger(props: CubeDialogTriggerProps) {
   };
 
   return (
-    <DialogTriggerBase
-      type={type}
-      state={state}
-      isDismissable={isDismissable}
-      trigger={trigger}
-      overlay={renderOverlay()}
-      hideOnClose={hideOnClose}
-      syncTriggerRef={syncTriggerRef}
-      overlayRef={syncOverlayRef}
-      shouldRestoreFocus={shouldRestoreFocus}
-      onClose={onClose}
-    />
+    <>
+      <DialogTriggerBase
+        type={type}
+        state={state}
+        isDismissable={isDismissable}
+        trigger={trigger}
+        overlay={renderOverlay()}
+        hideOnClose={hideOnClose}
+        syncTriggerRef={syncTriggerRef}
+        overlayRef={syncOverlayRef}
+        shouldRestoreFocus={shouldRestoreFocus}
+        requestDismiss={requestDismiss}
+        registerUnsavedChanges={registerUnsavedChanges}
+        onClose={onClose}
+      />
+      {confirmation}
+    </>
   );
 }
 
@@ -501,6 +538,8 @@ function DialogTriggerBase(props: any) {
     overlay,
     trigger,
     shouldRestoreFocus = true,
+    requestDismiss,
+    registerUnsavedChanges,
   } = props;
 
   let context = {
@@ -509,6 +548,8 @@ function DialogTriggerBase(props: any) {
     onClose: (action?: string) => onClose?.(action, true),
     isDismissable,
     isOpen: state.isOpen,
+    requestDismiss,
+    registerUnsavedChanges,
     // Reaches `Dialog`'s `FocusScope`, which owns the restore for
     // popover-type dialogs (`Dialog` itself, for a retained one). `useDialog`
     // filters it out of the DOM props.

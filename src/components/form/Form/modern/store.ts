@@ -60,6 +60,8 @@ interface FieldRecord<ErrorValue> {
   owner?: Registration<ErrorValue>;
   fieldDefault?: { value: unknown };
   touched: boolean;
+  /** A user write changed it; a blur, `touch()` or a programmatic set never does. */
+  edited: boolean;
   errors: readonly ErrorValue[];
   status: FieldState['status'];
   validationRevision: number;
@@ -215,6 +217,7 @@ export function createFormStore<
         explicit,
         registrations: new Set(),
         touched: false,
+        edited: false,
         errors: EMPTY_ERRORS,
         status: 'unvalidated',
         validationRevision: 0,
@@ -484,6 +487,7 @@ export function createFormStore<
       invalidateRelated(record.path, previous, config);
     }
     if (config.touch ?? config.source === 'user') record.touched = true;
+    if (config.source === 'user') record.edited = true;
     if (changed && (config.notify ?? config.source === 'user')) {
       event([record.name], 'set', config.source);
     }
@@ -660,6 +664,7 @@ export function createFormStore<
                 const previous = values;
                 values = writePath(values, record.path, undefined, true);
                 record.touched = false;
+                record.edited = false;
                 invalidateRelated(record.path, previous, { validate: 'auto' });
                 if (!hasPath(defaults, record.path))
                   records.delete(record.name);
@@ -711,9 +716,11 @@ export function createFormStore<
         for (const record of records.values()) {
           invalidate(record);
           record.touched = false;
+          record.edited = false;
         }
         event(Array.from(records.keys()), 'defaults');
       }
+      spendCleanEdits();
     });
   }
 
@@ -775,7 +782,16 @@ export function createFormStore<
         if (changed) names.push(record.name);
       }
       event(names, 'adopt');
+      spendCleanEdits();
     });
+  }
+
+  // A new baseline that matches what the user typed, or replaces it, spends
+  // the edit: a later set from code is not the user's.
+  function spendCleanEdits() {
+    for (const record of records.values()) {
+      if (record.edited && !dirty(record)) record.edited = false;
+    }
   }
 
   function reset(config: { values?: Partial<T> } = {}) {
@@ -786,6 +802,7 @@ export function createFormStore<
       for (const record of records.values()) {
         invalidate(record);
         record.touched = false;
+        record.edited = false;
         if (!record.registrations.size && !hasPath(values, record.path))
           records.delete(record.name);
       }
@@ -1244,8 +1261,16 @@ export function createFormStore<
     reset,
     touch(path: FormPath, touched = true) {
       batch(() => {
-        ensure(path).touched = touched;
+        const record = ensure(path);
+        record.touched = touched;
+        if (!touched) record.edited = false;
       });
+    },
+    hasUserEdits() {
+      for (const record of records.values()) {
+        if (record.edited && dirty(record)) return true;
+      }
+      return false;
     },
     setFieldErrors,
     clearFieldErrors: (path: FormPath) => setFieldErrors(path, EMPTY_ERRORS),

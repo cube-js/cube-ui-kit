@@ -207,6 +207,11 @@ export interface FormStore<
   ): void;
   reset(options?: { values?: Partial<T> }): void;
   touch(path: FormPath, touched?: boolean): void;
+  /**
+   * Whether a field the user changed through its input still differs from its
+   * default. A blur, `touch()` or a programmatic set alone never counts.
+   */
+  hasUserEdits(): boolean;
   setFieldErrors(path: FormPath, errors: readonly ErrorValue[]): void;
   clearFieldErrors(path: FormPath): void;
   startValidation(path: FormPath): ValidationToken<ErrorValue>;

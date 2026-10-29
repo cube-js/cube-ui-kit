@@ -4,7 +4,13 @@
     "cancel": "Avbryt"
   },
   "dialog": {
-    "dismiss": "Stäng"
+    "dismiss": "Stäng",
+    "discardChanges": {
+      "title": "Kassera ändringarna?",
+      "content": "Alla osparade ändringar kommer att gå förlorade.",
+      "discard": "Kassera",
+      "keepEditing": "Fortsätt redigera"
+    }
   },
   "dialogForm": {
     "submit": "Skicka",

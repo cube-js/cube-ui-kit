@@ -6,6 +6,10 @@ import { Tray } from '../Modal/Tray';
 import { WithCloseBehavior } from '../Modal/types';
 
 import { DialogContext } from './context';
+import {
+  DiscardChangesDialog,
+  useDismissConfirmation,
+} from './use-dismiss-confirmation';
 
 export interface CubeDialogContainerProps extends WithCloseBehavior {
   /** The Dialog to display, if any. */
@@ -27,6 +31,13 @@ export interface CubeDialogContainerProps extends WithCloseBehavior {
   isOpen?: boolean;
   /** Whether pressing the escape key to close the dialog should be disabled. */
   isKeyboardDismissDisabled?: boolean;
+  /**
+   * Whether Escape, an outside click and the close button ask "Discard
+   * changes?" before they close the dialog. Unset, they ask while a
+   * `DialogForm` inside has unsaved edits. Explicit actions (submit, Cancel,
+   * closing it from code) never ask.
+   */
+  confirmDismiss?: boolean;
 }
 
 /**
@@ -45,6 +56,7 @@ export function DialogContainer(props: CubeDialogContainerProps) {
     isOpen,
     hideOnClose,
     styles,
+    confirmDismiss,
   } = props;
 
   const childArray = Children.toArray(children);
@@ -62,32 +74,50 @@ export function DialogContainer(props: CubeDialogContainerProps) {
     setLastDialog({ children, child });
   }
 
+  const { requestDismiss, registerUnsavedChanges, confirmationProps } =
+    useDismissConfirmation(confirmDismiss, isActuallyOpened);
+
   const context = {
     type,
     onClose: onDismiss,
     isDismissable,
     isOpen: isActuallyOpened,
+    requestDismiss,
+    registerUnsavedChanges,
   };
   const OverlayComponent = type === 'tray' ? Tray : Modal;
 
   return (
-    // The exit animation preserves its children. Keep live open state outside
-    // that snapshot so forms cancel immediately when the container closes.
-    <DialogContext.Provider value={context}>
-      <OverlayComponent
-        isOpen={isActuallyOpened}
-        type={type === 'tray' ? undefined : type}
-        styles={styles}
-        hideOnClose={hideOnClose}
-        isDismissable={isDismissable}
-        isKeyboardDismissDisabled={isKeyboardDismissDisabled}
-        onClose={isDismissable ? onDismiss : undefined}
-      >
-        <>
-          {child ??
-            (hideOnClose && !isActuallyOpened ? lastDialog.child : null)}
-        </>
-      </OverlayComponent>
-    </DialogContext.Provider>
+    <>
+      {/*
+        The exit animation preserves its children. Keep live open state outside
+        that snapshot so forms cancel immediately when the container closes.
+      */}
+      <DialogContext.Provider value={context}>
+        <OverlayComponent
+          isOpen={isActuallyOpened}
+          type={type === 'tray' ? undefined : type}
+          styles={styles}
+          hideOnClose={hideOnClose}
+          isDismissable={isDismissable}
+          isKeyboardDismissDisabled={isKeyboardDismissDisabled}
+          onClose={
+            isDismissable && onDismiss
+              ? () => requestDismiss(() => onDismiss())
+              : undefined
+          }
+        >
+          <>
+            {child ??
+              (hideOnClose && !isActuallyOpened ? lastDialog.child : null)}
+          </>
+        </OverlayComponent>
+      </DialogContext.Provider>
+      {confirmationProps && (
+        <DialogContainer {...confirmationProps}>
+          <DiscardChangesDialog />
+        </DialogContainer>
+      )}
+    </>
   );
 }

@@ -21,6 +21,16 @@ export interface DialogContextValue extends HTMLAttributes<HTMLElement> {
    * restoring focus.
    */
   shouldRestoreFocus?: boolean;
+  /**
+   * Runs a passive dismissal, such as the close button's: at once, or after
+   * the user confirms discarding unsaved edits. See `useDismissConfirmation`.
+   */
+  requestDismiss?: (dismiss: () => void) => void;
+  /**
+   * How a `DialogForm` reports unsaved edits to its trigger or container.
+   * Returns the unregister.
+   */
+  registerUnsavedChanges?: (hasUnsavedChanges: () => boolean) => () => void;
 }
 
 /**

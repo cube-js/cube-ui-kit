@@ -299,6 +299,41 @@ describe('atomic commands, callbacks, and reentrancy', () => {
     expect(onValuesChange).toHaveBeenCalledTimes(1);
   });
 
+  it('counts only user sets that still differ from the default as user edits', () => {
+    const store = createFormStore({ defaultValues: { a: 1, b: 1 } });
+    store.register('a');
+    store.register('b');
+    // Set from code, then visited: touched and dirty, but not edited.
+    store.setValue('a', 2);
+    store.blur('a');
+    store.touch('b');
+    expect(store.getSnapshot().dirtyFields.has('a')).toBe(true);
+    expect(store.getSnapshot().touchedFields.has('a')).toBe(true);
+    expect(store.hasUserEdits()).toBe(false);
+    store.setValue('b', 2, { source: 'user' });
+    expect(store.hasUserEdits()).toBe(true);
+    // Typed back to the default.
+    store.setValue('b', 1, { source: 'user' });
+    expect(store.hasUserEdits()).toBe(false);
+    store.setValue('b', 3, { source: 'user' });
+    store.touch('b', false);
+    expect(store.hasUserEdits()).toBe(false);
+    store.setValue('b', 4, { source: 'user' });
+    store.reset();
+    store.setValue('b', 5);
+    expect(store.hasUserEdits()).toBe(false);
+    // A baseline that takes over or replaces the typed value spends the edit.
+    store.reset();
+    store.setValue('b', 6, { source: 'user' });
+    store.setDefaultValues({ a: 1, b: 6 });
+    store.setValue('b', 7);
+    expect(store.hasUserEdits()).toBe(false);
+    store.setValue('b', 8, { source: 'user' });
+    store.adoptDefaultValues({ a: 1, b: 9 }, { when: 'always' });
+    store.setValue('b', 10);
+    expect(store.hasUserEdits()).toBe(false);
+  });
+
   it('finishes delivery of the original snapshot before publishing reentrant writes', () => {
     const events: unknown[] = [];
     const store = createFormStore({
