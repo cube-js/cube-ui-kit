@@ -13,6 +13,7 @@ import { useDateRangePickerState } from 'react-stately';
 import { useI18n } from '../../../i18n';
 import { FieldBaseProps } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
+import { mergeStyleLayers } from '../../../utils/styles';
 import { useFieldProps, wrapWithField } from '../../form';
 import {
   FieldLayoutStyleProps,
@@ -41,6 +42,32 @@ const DateRangeDash = tasty({
     padding: '0 .5x',
   },
 });
+
+// One row of the box: the start date with its dash, or the end date. Too narrow
+// for one row, the end date's row wraps under the start date's.
+const DateRangeRow = tasty({
+  role: 'presentation',
+  styles: {
+    display: 'flex',
+    placeItems: 'center start',
+    height: '($size - 2bw)',
+  },
+});
+
+// The box grows by a row for a wrapped end date, its suffix stays on the first
+// row, and it is never narrower than its widest row.
+const WRAPPER_STYLES: Styles = {
+  width: 'min min-content',
+  height: 'min $size',
+  Suffix: {
+    height: '($size - 2bw)',
+  },
+};
+
+const INPUT_STYLES: Styles = {
+  flow: 'row wrap',
+  height: 'auto',
+};
 
 export interface CubeDateRangePickerProps<T extends DateValue = DateValue>
   extends
@@ -163,7 +190,8 @@ function DateRangePicker<T extends DateValue>(
       qa={qa || 'DateRangePicker'}
       inputType="daterangepicker"
       autoFocus={autoFocus}
-      styles={styles}
+      styles={mergeStyleLayers(WRAPPER_STYLES, styles)}
+      inputStyles={INPUT_STYLES}
       disableFocusRing={isFocusedButton}
       isDisabled={isDisabled}
       isReadOnly={props.isReadOnly}
@@ -222,9 +250,13 @@ function DateRangePicker<T extends DateValue>(
         </DialogTrigger>
       }
     >
-      <DatePickerInput useLocale={useLocaleProp} {...startFieldProps} />
-      <DateRangeDash />
-      <DatePickerInput useLocale={useLocaleProp} {...endFieldProps} />
+      <DateRangeRow qa="DateRangeStart">
+        <DatePickerInput useLocale={useLocaleProp} {...startFieldProps} />
+        <DateRangeDash />
+      </DateRangeRow>
+      <DateRangeRow qa="DateRangeEnd">
+        <DatePickerInput useLocale={useLocaleProp} {...endFieldProps} />
+      </DateRangeRow>
     </DateInputBase>
   );
 
