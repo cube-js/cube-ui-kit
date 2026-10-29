@@ -90,6 +90,7 @@ The `mods` property accepts the following modifiers you can override:
 - **`valid`** `boolean` — Whether the search input is valid
 - **`hovered`** `boolean` — Whether the search input is being hovered
 - **`inside-form`** `boolean` — Whether the search input is inside a form field
+- **`shape`** `'default' | 'plain'` — Set from `shape`: `plain` drops the radius, and the border colour at rest.
 
 ## Variants
 
@@ -98,6 +99,19 @@ The `mods` property accepts the following modifiers you can override:
 - `small` - Compact size for dense interfaces
 - `medium` - Standard size
 - `large` - Emphasized size for prominent search functionality
+
+### Shapes
+
+- `default` - A rounded field box with a border
+- `plain` - A square field box with no border at rest, for a field set flush in a container that draws its edges, such as a toolbar or a panel header. The border still marks focus and validity.
+
+<Story of={SearchInputStories.Plain} />
+
+```jsx
+<Block styles={{ border: 'bottom', fill: '#surface' }}>
+  <SearchInput shape="plain" width="100%" aria-label="Search models" placeholder="Search models" />
+</Block>
+```
 
 ## Examples
 

@@ -320,4 +320,49 @@ describe('the plain shape', () => {
       expect(style.borderTopColor).toBe('rgba(0, 0, 0, 0)');
     }
   });
+
+  it('keeps the outline in high contrast', async () => {
+    document.documentElement.setAttribute('data-contrast', 'high');
+
+    try {
+      renderWithRoot(
+        <>
+          <TextInput aria-label="Default" />
+          <TextInput aria-label="Plain" shape="plain" />
+          <TextInput isReadOnly aria-label="Plain read-only" shape="plain" />
+          <TextInput isDisabled aria-label="Plain disabled" shape="plain" />
+        </>,
+      );
+
+      const outline = (
+        await boxStyleOf(screen.getByRole('textbox', { name: 'Default' }))
+      ).borderTopColor;
+
+      expect(outline).not.toBe('rgba(0, 0, 0, 0)');
+
+      for (const name of ['Plain', 'Plain read-only', 'Plain disabled']) {
+        expect(
+          (await boxStyleOf(screen.getByRole('textbox', { name })))
+            .borderTopColor,
+        ).toBe(outline);
+      }
+    } finally {
+      document.documentElement.removeAttribute('data-contrast');
+    }
+  });
+
+  it('squares the NumberInput step buttons', () => {
+    renderWithRoot(<NumberInput aria-label="Plain" shape="plain" />);
+
+    // The steppers are named after the field.
+    const up = getComputedStyle(
+      screen.getByRole('button', { name: 'Increase Plain' }),
+    );
+    const down = getComputedStyle(
+      screen.getByRole('button', { name: 'Decrease Plain' }),
+    );
+
+    expect(up.borderTopRightRadius).toBe('0px');
+    expect(down.borderBottomRightRadius).toBe('0px');
+  });
 });

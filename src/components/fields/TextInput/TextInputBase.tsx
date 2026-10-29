@@ -53,6 +53,12 @@ const ADD_STYLES = {
   },
 };
 
+// The field box and its input share the corners: a plain box is square.
+const INPUT_RADIUS = {
+  '': true,
+  'shape=plain': 0,
+};
+
 export const INPUT_WRAPPER_STYLES: Styles = {
   display: 'grid',
   flow: 'row',
@@ -77,8 +83,9 @@ export const INPUT_WRAPPER_STYLES: Styles = {
     'readonly & @hc': true,
     // A plain field sits flush in a container that draws its edges. Its border
     // keeps its width, so nothing shifts, and shows only to mark focus or
-    // validity.
+    // validity, and in high contrast.
     'shape=plain': '#clear',
+    'shape=plain & @hc': true,
     valid: '#success-text.50',
     invalid: '#danger-text.50',
     focused: '#primary-text',
@@ -86,15 +93,13 @@ export const INPUT_WRAPPER_STYLES: Styles = {
     'invalid & focused': '#danger-text',
     disabled: true,
     'disabled & shape=plain': '#clear',
+    'disabled & shape=plain & @hc': true,
     // Only an input kept focusable for its tooltip is focused while disabled,
     // and only from the keyboard: the pointer can't focus it.
     'disabled & focused': '#primary-text',
   },
   preset: 't3',
-  radius: {
-    '': true,
-    'shape=plain': 0,
-  },
+  radius: INPUT_RADIUS,
   cursor: 'text',
   color: {
     '': '#dark-02',
@@ -160,10 +165,7 @@ export const DEFAULT_INPUT_STYLES: Styles = {
   placeSelf: 'stretch',
   width: 'initial 100% 100%',
   transition: 'theme',
-  radius: {
-    '': true,
-    'shape=plain': 0,
-  },
+  radius: INPUT_RADIUS,
   padding: '$vertical-padding $right-padding $vertical-padding $left-padding',
   textAlign: 'left',
   preset: 't3',

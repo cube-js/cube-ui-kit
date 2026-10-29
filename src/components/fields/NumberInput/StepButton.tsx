@@ -11,6 +11,8 @@ const StepButtonElement = tasty(Button, {
     radius: {
       '': '0 (1r - 1bw) 0 0',
       down: '0 0 (1r - 1bw) 0',
+      // A plain field box is square.
+      plain: 0,
     },
     padding: 0,
 
@@ -28,13 +30,14 @@ const StepButtonElement = tasty(Button, {
  * Buttons for NumberField. Their names come from `useNumberField`, which
  * `NumberInput` gives the translated labels.
  */
-export function StepButton(props) {
+export function StepButton({ isPlain, ...props }) {
   return (
     <StepButtonElement
       type="clear"
       mods={{
         up: props.direction === 'up',
         down: props.direction === 'down',
+        plain: !!isPlain,
       }}
       // Stepping is an edit, not a choice: a press must not close a popover
       // the field sits in.
