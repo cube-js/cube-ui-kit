@@ -141,8 +141,8 @@ describe('modern DialogForm', () => {
     },
   );
 
-  it.each(['Escape', 'close button', 'external'] as const)(
-    'ends the editing session on %s',
+  it.each(['Escape', 'close button', 'outside click'] as const)(
+    'ends the editing session on %s once the edits are discarded',
     async (source) => {
       const form = controller();
       renderWithRoot(<DialogFixture form={form} />);
@@ -151,9 +151,12 @@ describe('modern DialogForm', () => {
       if (source === 'close button')
         await userEvent.click(screen.getByTestId('ModalCloseButton'));
       // Behind the open dialog, so hidden from screen readers and nameless to
-      // a role query.
-      if (source === 'external')
+      // a role query. The press lands outside the dialog.
+      if (source === 'outside click')
         await userEvent.click(screen.getByText('Close externally'));
+      await userEvent.click(
+        await screen.findByRole('button', { name: 'Discard' }),
+      );
       expect(await reopen()).toHaveValue('Initial');
     },
   );

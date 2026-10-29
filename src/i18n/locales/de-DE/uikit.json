@@ -4,7 +4,13 @@
     "cancel": "Abbrechen"
   },
   "dialog": {
-    "dismiss": "Schließen"
+    "dismiss": "Schließen",
+    "discardChanges": {
+      "title": "Änderungen verwerfen?",
+      "content": "Alle nicht gespeicherten Änderungen gehen verloren.",
+      "discard": "Verwerfen",
+      "keepEditing": "Weiter bearbeiten"
+    }
   },
   "dialogForm": {
     "submit": "Absenden",

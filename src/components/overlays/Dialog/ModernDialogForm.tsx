@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { useEvent } from '../../../_internal/hooks/use-event';
 import { useI18n } from '../../../i18n';
@@ -48,6 +48,7 @@ export function ModernDialogForm<T extends object>(
     cancelProps,
     noActions,
     preserve,
+    confirmDismiss,
     children,
     onDismiss,
     name,
@@ -79,7 +80,7 @@ export function ModernDialogForm<T extends object>(
     ...dialogProps
   } = props;
   const { t } = useI18n();
-  const { onClose, isOpen } = useDialogContext();
+  const { onClose, isOpen, registerUnsavedChanges } = useDialogContext();
   const internals = getControllerInternals(form, '<DialogForm>');
   const transition = useOpenTransitionContext();
   const isClosing =
@@ -111,6 +112,22 @@ export function ModernDialogForm<T extends object>(
     if (!isClosing && !current.wasOpen) current.ended = false;
     current.wasOpen = !isClosing;
   });
+
+  // Escape, an outside click and the close button ask before they discard
+  // what the user typed: fields they edited away from their defaults. A value
+  // set from code is not an edit. `preserve` keeps the values anyway.
+  useEffect(
+    () =>
+      registerUnsavedChanges?.(() => {
+        if (confirmDismiss !== undefined) return confirmDismiss;
+        if (preserve) return false;
+
+        const { dirtyFields, touchedFields } = form.getSnapshot();
+
+        return [...dirtyFields].some((name) => touchedFields.has(name));
+      }),
+    [registerUnsavedChanges, form, preserve, confirmDismiss],
+  );
 
   // Portals may relocate (remounting this component) and Strict Mode reconnects
   // effects. A replacement root owns the same session; only a detached

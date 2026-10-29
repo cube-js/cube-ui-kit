@@ -4,7 +4,13 @@
     "cancel": "Annuler"
   },
   "dialog": {
-    "dismiss": "Fermer"
+    "dismiss": "Fermer",
+    "discardChanges": {
+      "title": "Abandonner les modifications ?",
+      "content": "Toutes les modifications non enregistrées seront perdues.",
+      "discard": "Abandonner",
+      "keepEditing": "Continuer à modifier"
+    }
   },
   "dialogForm": {
     "submit": "Envoyer",

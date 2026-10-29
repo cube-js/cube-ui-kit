@@ -251,7 +251,7 @@ const DialogContent = forwardRef(function DialogContent(
   props: CubeDialogProps,
   ref: Ref<HTMLDivElement>,
 ) {
-  let { type = 'modal', ...contextProps } = useDialogContext();
+  let { type = 'modal', requestDismiss, ...contextProps } = useDialogContext();
 
   let {
     qa,
@@ -302,11 +302,20 @@ const DialogContent = forwardRef(function DialogContent(
     domRef,
   );
 
+  // The close button and the hidden dismiss button dismiss passively, like
+  // Escape: while the dialog holds unsaved edits, its owner asks first.
+  const dismiss = () => {
+    if (!onDismiss) return;
+
+    if (requestDismiss) requestDismiss(() => onDismiss());
+    else onDismiss();
+  };
+
   // If rendered in a popover or tray there won't be a visible dismiss button,
   // so we render a hidden one for screen readers.
   let dismissButton;
   if (type === 'popover' || type === 'tray') {
-    dismissButton = <DismissButton onDismiss={onDismiss} />;
+    dismissButton = <DismissButton onDismiss={dismiss} />;
   }
 
   // Focus the first focusable element in the dialog when it opens.
@@ -517,7 +526,7 @@ const DialogContent = forwardRef(function DialogContent(
           <CloseButton
             icon={closeIcon || <CloseIcon size={20} />}
             aria-label={t('dialog.dismiss', 'Dismiss')}
-            onPress={() => onDismiss && onDismiss()}
+            onPress={dismiss}
           />
         )}
         {children}

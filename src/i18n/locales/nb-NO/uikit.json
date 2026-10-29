@@ -4,7 +4,13 @@
     "cancel": "Avbryt"
   },
   "dialog": {
-    "dismiss": "Lukk"
+    "dismiss": "Lukk",
+    "discardChanges": {
+      "title": "Forkaste endringene?",
+      "content": "Alle ulagrede endringer vil gå tapt.",
+      "discard": "Forkast",
+      "keepEditing": "Fortsett å redigere"
+    }
   },
   "dialogForm": {
     "submit": "Send inn",

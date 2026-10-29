@@ -28,6 +28,7 @@ DialogTrigger serves as a wrapper around a Dialog and its associated trigger, li
 - **`mobileViewport`** `number` (default: `700`) — The screen breakpoint for the mobile type
 - **`isDismissable`** `boolean` (default: `true`) — Whether passive dismissal (Escape or an outside click) can close the dialog. Explicit dialog actions, such as Submit and Cancel, can still close it. A popover that is not dismissable leaves outside presses alone: the control pressed still receives the press, and a text field there can take focus, because such a popover does not hold focus. It stays open when another popover opens, and closes when a modal, tray, fullscreen or panel dialog opens from another `DialogTrigger`.
 - **`isKeyboardDismissDisabled`** `boolean` (default: `false`) — Whether pressing the escape key to close the dialog should be disabled
+- **`confirmDismiss`** `boolean` — Whether Escape, an outside click and the close button ask "Discard changes?" before they close the dialog. Unset, they ask while a `DialogForm` inside has unsaved edits; `true` always asks, `false` never does. Explicit actions (Submit, Cancel, the `close` function) never ask, and neither does a popover. See [Unsaved edits](#unsaved-edits)
 - **`isOpen`** `boolean` — Whether the dialog is open (controlled)
 - **`defaultOpen`** `boolean` (default: `false`) — Whether the dialog is open by default (uncontrolled)
 - **`offset`** `number` (default: `8`) — The gap between the trigger and a popover, along the main axis. `0` places the popover flush against the trigger
@@ -133,6 +134,35 @@ These properties allow direct style application without using the `styles` prop:
 </DialogTrigger>
 ```
 
+### Unsaved edits
+
+A dialog that holds unsaved edits asks before a passive dismissal discards them: Escape from any control, a click outside the dialog, or its close button opens a "Discard changes?" confirmation instead of closing. **Discard** closes the dialog and calls `onDismiss`; **Keep editing**, Escape or a click outside the confirmation returns to the dialog with its edits and focus where they were.
+
+A `DialogForm` turns this on while a field the user edited differs from its default, so a form dialog needs no wiring; a value set from code doesn't count. For any other dialog, bind `confirmDismiss` to its own state:
+
+```jsx
+<DialogTrigger confirmDismiss={notes !== savedNotes}>
+  <Button>Edit notes</Button>
+  {(close) => (
+    <Dialog isDismissable>
+      <Header>
+        <Title>Notes</Title>
+      </Header>
+      <Content>
+        <TextArea label="Notes" value={notes} onChange={setNotes} />
+      </Content>
+      <Footer>
+        <Button type="primary" onPress={() => save(notes).then(close)}>
+          Save
+        </Button>
+      </Footer>
+    </Dialog>
+  )}
+</DialogTrigger>
+```
+
+`confirmDismiss={false}`, on the `DialogForm` or here, keeps a form dialog closing at once: a confirmation such as typing a name to delete loses nothing when the user backs out. A value set here wins over the form's. `isDismissable={false}` still turns passive dismissal off altogether. A popover never asks: it also closes when another popover opens or a button inside it is pressed, and its edits are often applied as they are made.
+
 ### Controlled State
 
 ```jsx
@@ -157,7 +187,7 @@ function ControlledDialog() {
 ### Keyboard Navigation
 
 - `Enter/Space` - Opens the dialog when trigger is focused
-- `Escape` - Closes the dialog (unless disabled)
+- `Escape` - Closes the dialog (unless disabled). While the dialog holds unsaved edits, it asks first; see [Unsaved edits](#unsaved-edits)
 - `Tab` - Cycles through focusable elements within the dialog
 
 ### Screen Reader Support

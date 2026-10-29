@@ -4,7 +4,13 @@
     "cancel": "Cancel"
   },
   "dialog": {
-    "dismiss": "Dismiss"
+    "dismiss": "Dismiss",
+    "discardChanges": {
+      "title": "Discard changes?",
+      "content": "All unsaved changes will be lost.",
+      "discard": "Discard",
+      "keepEditing": "Keep editing"
+    }
   },
   "dialogForm": {
     "submit": "Submit",

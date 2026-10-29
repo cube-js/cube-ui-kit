@@ -4,7 +4,13 @@
     "cancel": "キャンセル"
   },
   "dialog": {
-    "dismiss": "閉じる"
+    "dismiss": "閉じる",
+    "discardChanges": {
+      "title": "変更を破棄しますか？",
+      "content": "保存されていない変更はすべて失われます。",
+      "discard": "破棄",
+      "keepEditing": "編集を続ける"
+    }
   },
   "dialogForm": {
     "submit": "送信",
