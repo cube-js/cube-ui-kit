@@ -35,6 +35,7 @@ A search input provides a specialized text field for search functionality, featu
 - **`suffixPosition`** `'before' | 'after'` (default: `after`) — Position of suffix relative to validation/loading state icons
 - **`isClearable`** `boolean` (default: `false`) — Whether the search input shows a clear button while it has text. `Escape` clears the input either way
 - **`size`** `'small' | 'medium' | 'large'` (default: `medium`) — Input size
+- **`shape`** `'default' | 'plain'` (default: `default`) — Shape of the field box. `plain` is square with no border at rest, for a field set flush in a container that draws its edges, such as a toolbar or a panel header. Its border keeps its width and shows on focus and in a valid or invalid state, so nothing shifts
 - **`autoComplete`** `string` — HTML [`autocomplete`](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/autocomplete) token that tells the browser what to autofill (`off` to suppress autofill on a filter field). The lowercase `autocomplete` alias is deprecated.
 - **`inputProps`** `Props` — Direct props passed to the native input element, merged over the props React Aria generates: a key you set wins, and event handlers are chained rather than replaced
 - **`wrapperProps`** `Props` — Direct props passed to the input wrapper element

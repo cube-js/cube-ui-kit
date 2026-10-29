@@ -213,3 +213,111 @@ describe('a disabled field with a tooltip', () => {
     expect(input).not.toHaveFocus();
   });
 });
+
+/**
+ * A plain field sits flush in a container that draws its edges. It hides its
+ * border at rest without changing its geometry, and shows the default field's
+ * border wherever that border marks focus or validity.
+ */
+describe('the plain shape', () => {
+  const rect = (element: Element) => element.getBoundingClientRect();
+
+  /** The field box's settled style, its colour transition finished. */
+  async function boxStyleOf(input: HTMLElement, isFocused = false) {
+    const wrapper = wrapperOf(input);
+
+    await vi.waitFor(() =>
+      expect(wrapper.hasAttribute('data-focused')).toBe(isFocused),
+    );
+    wrapper.getAnimations().forEach((animation) => animation.finish());
+
+    return getComputedStyle(wrapper);
+  }
+
+  it('hides the border and the radius at rest, and moves nothing', async () => {
+    renderWithRoot(
+      <>
+        <TextInput aria-label="Default" defaultValue="Text" />
+        <TextInput aria-label="Plain" shape="plain" defaultValue="Text" />
+      </>,
+    );
+
+    const def = screen.getByRole('textbox', { name: 'Default' });
+    const plain = screen.getByRole('textbox', { name: 'Plain' });
+    const style = await boxStyleOf(plain);
+
+    expect(style.borderTopColor).toBe('rgba(0, 0, 0, 0)');
+    expect(style.borderTopLeftRadius).toBe('0px');
+    expect(getComputedStyle(plain).borderTopLeftRadius).toBe('0px');
+    expect(style.borderTopWidth).toBe((await boxStyleOf(def)).borderTopWidth);
+    expect(rect(wrapperOf(plain)).height).toBe(rect(wrapperOf(def)).height);
+    expect(rect(plain).left - rect(wrapperOf(plain)).left).toBe(
+      rect(def).left - rect(wrapperOf(def)).left,
+    );
+  });
+
+  it('shows the default border colour on focus', async () => {
+    renderWithRoot(
+      <>
+        <TextInput aria-label="Default" />
+        <TextInput aria-label="Plain" shape="plain" />
+      </>,
+    );
+
+    const def = screen.getByRole('textbox', { name: 'Default' });
+    const plain = screen.getByRole('textbox', { name: 'Plain' });
+
+    act(() => def.focus());
+    const focused = (await boxStyleOf(def, true)).borderTopColor;
+
+    act(() => plain.focus());
+
+    expect((await boxStyleOf(plain, true)).borderTopColor).toBe(focused);
+    expect(focused).not.toBe('rgba(0, 0, 0, 0)');
+  });
+
+  it.each([
+    ['valid', { isValid: true }],
+    ['invalid', { isInvalid: true }],
+  ])('shows the default border colour when %s', async (_, validation) => {
+    renderWithRoot(
+      <>
+        <TextInput aria-label="Default" {...validation} />
+        <TextInput aria-label="Plain" shape="plain" {...validation} />
+      </>,
+    );
+
+    const def = screen.getByRole('textbox', { name: 'Default' });
+    const plain = screen.getByRole('textbox', { name: 'Plain' });
+
+    expect((await boxStyleOf(plain)).borderTopColor).toBe(
+      (await boxStyleOf(def)).borderTopColor,
+    );
+  });
+
+  it('keeps the read-only and disabled fills, without a border', async () => {
+    renderWithRoot(
+      <>
+        <TextInput isReadOnly aria-label="Read-only" />
+        <TextInput isReadOnly aria-label="Plain read-only" shape="plain" />
+        <TextInput isDisabled aria-label="Disabled" />
+        <TextInput isDisabled aria-label="Plain disabled" shape="plain" />
+      </>,
+    );
+
+    for (const [name, plainName] of [
+      ['Read-only', 'Plain read-only'],
+      ['Disabled', 'Plain disabled'],
+    ]) {
+      const style = await boxStyleOf(
+        screen.getByRole('textbox', { name: plainName }),
+      );
+
+      expect(style.backgroundColor).toBe(
+        (await boxStyleOf(screen.getByRole('textbox', { name })))
+          .backgroundColor,
+      );
+      expect(style.borderTopColor).toBe('rgba(0, 0, 0, 0)');
+    }
+  });
+});

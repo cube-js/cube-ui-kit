@@ -639,3 +639,42 @@ describe('<TextInput /> tooltip', () => {
     });
   });
 });
+
+describe('text inputs: shape', () => {
+  it.each([
+    ['TextInput', <TextInput key="field" aria-label="Field" shape="plain" />],
+    ['TextArea', <TextArea key="field" aria-label="Field" shape="plain" />],
+    [
+      'SearchInput',
+      <SearchInput key="field" aria-label="Field" shape="plain" />,
+    ],
+    [
+      'PasswordInput',
+      <PasswordInput key="field" aria-label="Field" shape="plain" />,
+    ],
+    [
+      'NumberInput',
+      <NumberInput key="field" aria-label="Field" shape="plain" />,
+    ],
+    [
+      'CommandTextArea',
+      <CommandTextArea key="field" aria-label="Field" shape="plain" />,
+    ],
+  ])('%s passes shape to its field box', (_, element) => {
+    renderWithRoot(element);
+
+    expect(screen.getByTestId('InputWrapper')).toHaveAttribute(
+      'data-shape',
+      'plain',
+    );
+  });
+
+  it('defaults to the default shape', () => {
+    renderWithRoot(<TextInput aria-label="Field" />);
+
+    expect(screen.getByTestId('InputWrapper')).toHaveAttribute(
+      'data-shape',
+      'default',
+    );
+  });
+});

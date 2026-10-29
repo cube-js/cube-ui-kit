@@ -75,18 +75,26 @@ export const INPUT_WRAPPER_STYLES: Styles = {
     readonly: '#border.5',
     // High contrast keeps the full outline it raises for every field.
     'readonly & @hc': true,
+    // A plain field sits flush in a container that draws its edges. Its border
+    // keeps its width, so nothing shifts, and shows only to mark focus or
+    // validity.
+    'shape=plain': '#clear',
     valid: '#success-text.50',
     invalid: '#danger-text.50',
     focused: '#primary-text',
     'valid & focused': '#success-text',
     'invalid & focused': '#danger-text',
     disabled: true,
+    'disabled & shape=plain': '#clear',
     // Only an input kept focusable for its tooltip is focused while disabled,
     // and only from the keyboard: the pointer can't focus it.
     'disabled & focused': '#primary-text',
   },
   preset: 't3',
-  radius: true,
+  radius: {
+    '': true,
+    'shape=plain': 0,
+  },
   cursor: 'text',
   color: {
     '': '#dark-02',
@@ -152,7 +160,10 @@ export const DEFAULT_INPUT_STYLES: Styles = {
   placeSelf: 'stretch',
   width: 'initial 100% 100%',
   transition: 'theme',
-  radius: true,
+  radius: {
+    '': true,
+    'shape=plain': 0,
+  },
   padding: '$vertical-padding $right-padding $vertical-padding $left-padding',
   textAlign: 'left',
   preset: 't3',
@@ -306,6 +317,16 @@ export interface CubeTextInputBaseProps
   /** The size of the input */
   size?: 'small' | 'medium' | 'large' | (string & {});
   /**
+   * The shape of the field box.
+   * - `default` - rounded, with a border.
+   * - `plain` - square, with no border at rest, for a field set flush in a
+   *   container that draws its edges, such as a toolbar or a panel header. The
+   *   border keeps its width, and shows on focus and in a valid or invalid
+   *   state.
+   * @default "default"
+   */
+  shape?: 'default' | 'plain';
+  /**
    * What kind of autofill the browser may offer for the input, as the HTML `autocomplete` token
    * (`email`, `current-password`, `off`, …). See [MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/autocomplete).
    */
@@ -372,6 +393,7 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
     wrapperRef,
     rows,
     size = 'medium',
+    shape = 'default',
     autoComplete,
     autocomplete,
     icon,
@@ -465,6 +487,7 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
     multiline: multiLine,
     prefix: !!prefix,
     suffix: showValidationIndicator || !!suffix || !!actions,
+    shape,
     ...mods,
   };
 
