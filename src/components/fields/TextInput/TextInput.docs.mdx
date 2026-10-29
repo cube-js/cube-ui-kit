@@ -38,6 +38,7 @@ A text input component that allows users to input custom text entries with a key
 - **`rows`** `number` — Number of visible rows for multiline input
 - **`resize`** `string` — CSS resize value for multiline input (e.g. `'vertical'`, `'none'`)
 - **`size`** `'small' | 'medium' | 'large'` (default: `medium`) — Input size
+- **`shape`** `'default' | 'plain'` (default: `default`) — Shape of the field box. `plain` is square with no border at rest, for a field set flush in a container that draws its edges, such as a toolbar or a panel header. Its border keeps its width and shows on focus and in a valid or invalid state, so nothing shifts
 - **`autoComplete`** `string` — HTML [`autocomplete`](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/autocomplete) token that tells the browser what to autofill (`email`, `username`, `off`, …). The lowercase `autocomplete` alias is deprecated.
 - **`maxLength`** `number` — Maximum number of characters allowed
 - **`minLength`** `number` — Minimum number of characters required
@@ -129,6 +130,7 @@ The `mods` prop accepts the following modifiers you can override:
 - **`multiline`** `boolean` — Set for a multiline input.
 - **`prefix`** `boolean` — Indicates presence of prefix content.
 - **`suffix`** `boolean` — Indicates presence of suffix content.
+- **`shape`** `'default' | 'plain'` — Set from `shape`: `plain` drops the radius, and the border colour at rest.
 
 ## Variants
 
@@ -146,6 +148,17 @@ The `mods` prop accepts the following modifiers you can override:
 - `small` – Compact height for dense interfaces
 - `medium` – Standard height for most use cases
 - `large` – Emphasized height for important inputs
+
+### Shapes
+
+- `default` – A rounded field box with a border
+- `plain` – A square field box with no border at rest, for a field set flush in a container that draws its edges, such as a toolbar or a panel header. The border still marks focus and validity. See `SearchInput`'s Plain story.
+
+```jsx
+<Block styles={{ border: 'bottom' }}>
+  <TextInput shape="plain" width="100%" aria-label="Title" placeholder="Untitled" />
+</Block>
+```
 
 ## Examples
 

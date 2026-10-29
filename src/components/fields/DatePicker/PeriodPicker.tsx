@@ -97,7 +97,10 @@ function PeriodPickerImpl<T extends DateValue>(
     defaultValidationTrigger: 'onBlur',
   });
 
-  const { styles, field } = splitFieldLayout(props);
+  // `wrapperStyles` styles the same box as `styles` and wins over it.
+  const { styles, field } = splitFieldLayout(props, {
+    overStyles: props.wrapperStyles,
+  });
 
   let {
     qa,
@@ -183,11 +186,7 @@ function PeriodPickerImpl<T extends DateValue>(
       wrapperRef={domRef}
       qa={qa || 'PeriodPicker'}
       inputType="datepicker"
-      styles={mergeStyleLayers(
-        { display: 'grid' },
-        styles,
-        props.wrapperStyles,
-      )}
+      styles={mergeStyleLayers({ display: 'grid' }, styles)}
       inputStyles={mergeStyleLayers(
         isDisabled || isReadOnly ? INERT_INPUT_STYLES : INPUT_STYLES,
         props.inputStyles,

@@ -1,10 +1,11 @@
 import { StoryFn } from '@storybook/react-vite';
-import { within } from 'storybook/test';
+import { expect, waitFor, within } from 'storybook/test';
 
 import { NO_SNAPSHOT } from '../../../stories/chromatic';
 import { VALIDATION_ARGS } from '../../../stories/FormFieldArgs';
 import { openTooltip } from '../../../stories/interactions';
 import { baseProps } from '../../../stories/lists/baseProps';
+import { Block } from '../../Block';
 import { Space } from '../../layout/Space';
 
 import { CubeSearchInputProps, SearchInput } from './SearchInput';
@@ -54,6 +55,15 @@ export default {
       description: 'Input size',
       table: {
         defaultValue: { summary: 'medium' },
+      },
+    },
+    shape: {
+      options: ['default', 'plain'],
+      control: { type: 'radio' },
+      description:
+        'Shape of the field box. `plain` is square with no border at rest, for a field set flush in a container that draws its edges',
+      table: {
+        defaultValue: { summary: 'default' },
       },
     },
 
@@ -210,6 +220,51 @@ export const Validation: StoryFn<CubeSearchInputProps> = (props) => (
     />
   </Space>
 );
+
+// A toolbar that draws the field's edges.
+const TOOLBAR_STYLES = { border: 'bottom', fill: '#surface' };
+
+/**
+ * A plain field sits flush in a container that draws its edges, such as a
+ * toolbar. Its border shows only to mark focus, as on the first field, or
+ * validity, as on the second.
+ */
+export const Plain: StoryFn<CubeSearchInputProps> = (props) => (
+  <Space gap="2x" flow="column" width="max 320px">
+    <Block styles={TOOLBAR_STYLES}>
+      <SearchInput
+        {...props}
+        qa="PlainSearch"
+        shape="plain"
+        width="100%"
+        aria-label="Search models"
+        placeholder="Search models"
+      />
+    </Block>
+    <Block styles={TOOLBAR_STYLES}>
+      <SearchInput
+        {...props}
+        isInvalid
+        shape="plain"
+        width="100%"
+        aria-label="Search tables"
+        defaultValue="orders_"
+      />
+    </Block>
+  </Space>
+);
+
+Plain.play = async ({ canvasElement }) => {
+  const input = within(canvasElement).getByTestId('PlainSearch');
+
+  input.focus();
+
+  await waitFor(() =>
+    expect(input.closest('[data-qa="InputWrapper"]')).toHaveAttribute(
+      'data-focused',
+    ),
+  );
+};
 
 export const Disabled = Template.bind({});
 Disabled.args = {

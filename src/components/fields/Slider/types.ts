@@ -14,7 +14,6 @@ export interface CubeSliderBaseProps<T>
   gradation?: string[];
   // onChange?: (range: T) => void;
   // onChangeEnd?: (range: T) => void;
-  inputWidth?: string;
   /**
    * The display format of the value label.
    */

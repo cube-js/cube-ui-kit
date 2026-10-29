@@ -177,6 +177,7 @@ function NumberInput(
         {...incrementButtonProps}
         aria-label={stepUpLabel}
         size={otherProps.size}
+        isPlain={otherProps.shape === 'plain'}
       />
       <StepButton
         isDisabled={props.isDisabled}
@@ -184,6 +185,7 @@ function NumberInput(
         {...decrementButtonProps}
         aria-label={stepDownLabel}
         size={otherProps.size}
+        isPlain={otherProps.shape === 'plain'}
       />
     </StepperContainer>
   ) : undefined;

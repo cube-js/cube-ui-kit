@@ -53,6 +53,12 @@ const ADD_STYLES = {
   },
 };
 
+// The field box and its input share the corners: a plain box is square.
+const INPUT_RADIUS = {
+  '': true,
+  'shape=plain': 0,
+};
+
 export const INPUT_WRAPPER_STYLES: Styles = {
   display: 'grid',
   flow: 'row',
@@ -75,18 +81,25 @@ export const INPUT_WRAPPER_STYLES: Styles = {
     readonly: '#border.5',
     // High contrast keeps the full outline it raises for every field.
     'readonly & @hc': true,
+    // A plain field sits flush in a container that draws its edges. Its border
+    // keeps its width, so nothing shifts, and shows only to mark focus or
+    // validity, and in high contrast.
+    'shape=plain': '#clear',
+    'shape=plain & @hc': true,
     valid: '#success-text.50',
     invalid: '#danger-text.50',
     focused: '#primary-text',
     'valid & focused': '#success-text',
     'invalid & focused': '#danger-text',
     disabled: true,
+    'disabled & shape=plain': '#clear',
+    'disabled & shape=plain & @hc': true,
     // Only an input kept focusable for its tooltip is focused while disabled,
     // and only from the keyboard: the pointer can't focus it.
     'disabled & focused': '#primary-text',
   },
   preset: 't3',
-  radius: true,
+  radius: INPUT_RADIUS,
   cursor: 'text',
   color: {
     '': '#dark-02',
@@ -152,7 +165,7 @@ export const DEFAULT_INPUT_STYLES: Styles = {
   placeSelf: 'stretch',
   width: 'initial 100% 100%',
   transition: 'theme',
-  radius: true,
+  radius: INPUT_RADIUS,
   padding: '$vertical-padding $right-padding $vertical-padding $left-padding',
   textAlign: 'left',
   preset: 't3',
@@ -306,6 +319,16 @@ export interface CubeTextInputBaseProps
   /** The size of the input */
   size?: 'small' | 'medium' | 'large' | (string & {});
   /**
+   * The shape of the field box.
+   * - `default` - rounded, with a border.
+   * - `plain` - square, with no border at rest, for a field set flush in a
+   *   container that draws its edges, such as a toolbar or a panel header. The
+   *   border keeps its width, and shows on focus and in a valid or invalid
+   *   state.
+   * @default "default"
+   */
+  shape?: 'default' | 'plain';
+  /**
    * What kind of autofill the browser may offer for the input, as the HTML `autocomplete` token
    * (`email`, `current-password`, `off`, …). See [MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/autocomplete).
    */
@@ -372,6 +395,7 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
     wrapperRef,
     rows,
     size = 'medium',
+    shape = 'default',
     autoComplete,
     autocomplete,
     icon,
@@ -466,6 +490,7 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
     multiline: multiLine,
     prefix: !!prefix,
     suffix: showValidationIndicator || !!suffix || !!actions,
+    shape,
     ...mods,
   };
 

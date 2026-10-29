@@ -57,19 +57,30 @@ The field wrapper stays in place when a description or message appears or disapp
 
 An input's style props (`width`, `height`, `flex*`, `gridArea`, `margin`, `inset`, `position`, …) place and size its outer element: the field wrapper when it renders, the input itself otherwise. Adding a label never changes where they apply. When they size a wrapped field, the input stretches to fill it as it would in a grid cell of that size. Inputs with a fixed or capped size keep it: `Checkbox` and `Switch` their content width, single-line inputs and a vertical `Slider` their height. A side label's column is part of the width, and a split label keeps the input at its content width.
 
-`styles` always styles the input and `fieldStyles` always styles the wrapper. To size them apart, use a style prop for the field and `styles` for the input:
+`width` is the space an input takes in the layout, label included. `controlWidth` is the control's own width: it sizes the element `width` sizes when the input renders bare, in every label position. On a bare input, with no label, description or form binding, the two reach the same element, so use `width` there; `controlWidth` wins when both are set. Beside a side label, `controlWidth` sizes the control alone, fixed, capped or following its value, however long the label is in a given language:
 
 ```jsx
 // The field is 40x wide, label column included; the input fills it.
 <TextInput label="Name" labelPosition="side" width="40x" />
 
+// The select is 100px wide beside its label.
+<Select label="Limit" labelPosition="side" controlWidth="100px">…</Select>
+
+// The select fills the space beside its label, up to 30x.
+<Select label="Compare with" labelPosition="side" controlWidth="max 30x">…</Select>
+
+// The select follows its value, up to 30x.
+<Select label="Compare with" labelPosition="side" controlWidth="initial max-content 30x">…</Select>
+
 // The field is 40x wide; the input inside it stays 20x.
-<TextInput label="Name" width="40x" styles={{ width: '20x' }} />
+<TextInput label="Name" width="40x" controlWidth="20x" />
 ```
 
-A style prop wins over `fieldStyles` for the same key. `fieldStyles` keeps working for everything else, but it never makes the input fill the field. Field-level inputs take only these style props; restyle the input through `styles` and its part props (`inputStyles`, `triggerStyles`, …).
+In a `Form`, a side label's column is the Form's `labelWidth` (25x by default) plus 1x, so the control starts `labelWidth` + 1x from the field's edge and is `controlWidth` wide. `controlWidth` wins over `styles.width`. `styles` always styles the input and `fieldStyles` always styles the wrapper: keep `styles` for restyling the input itself.
 
-A state map on a style prop resolves against the element it lands on, which is the wrapper on a labelled field. Use media, container or root states there, not the input's own states such as `focused`. `className`, `style`, `qa` and `ref` never move to the wrapper.
+A style prop wins over `fieldStyles` for the same key. `fieldStyles` keeps working for everything else, but it never makes the input fill the field. Field-level inputs take only these style props and `controlWidth`; restyle the input through `styles` and its part props (`inputStyles`, `triggerStyles`, …).
+
+A state map on a style prop resolves against the element it lands on, which is the wrapper on a labelled field. Use media, container or root states there, not the input's own states such as `focused`. A state map on `controlWidth` resolves against the control. `className`, `style`, `qa` and `ref` never move to the wrapper.
 
 Fields without labels no longer reserve an empty side or split label column. If a row should intentionally align with neighbouring side labels, add `fieldStyles={{ padding: '$full-label-width left' }}`. For a nameless legacy `Form.Item`, put that padding on the item's `styles` instead; it owns the wrapper. Remove deprecated `forceField` when migrating these rows.
 
@@ -127,6 +138,7 @@ Fields without labels no longer reserve an empty side or split label column. If 
 
 ## Styling
 
+- **`controlWidth`** `Styles['width']` — The control's own width, in every label position: the element `width` sizes when the input renders bare. Beside a side label it sizes the control alone. It wins over `width` on a bare input and over `styles.width`; see _Field sizing and alignment_.
 - **`fieldStyles`** `Styles` — Tasty styles for the field wrapper. A style prop for the same key wins over it.
 - **`messageStyles`** `Styles` — Tasty styles for the message/error text.
 
