@@ -526,8 +526,12 @@ function useComboBoxKeyboard({
       inputRef.current?.focus();
     } else if (allowsCustomValue) {
       commitTypedText(e);
-    } else if (!effectiveInputValue.trim() || !hasTypedMatch()) {
-      // Text that names nothing, or none, clears the selection.
+    } else if (
+      !effectiveInputValue.trim() ||
+      (effectiveInputValue !== selectedLabel && !hasTypedMatch())
+    ) {
+      // Text that names nothing, or none, clears the selection. The selection's
+      // own label names it even when the items no longer hold it.
       e.preventDefault();
       onSelectionChange(null);
     } else {

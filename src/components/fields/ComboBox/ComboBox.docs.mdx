@@ -83,7 +83,7 @@ A combobox component that combines a text input with a dropdown list, allowing u
 </ComboBox>
 ```
 
-**Enter inside a form.** `preventDefault()` stops the browser's form submission and ComboBox's own handling together; it cannot stop just one. With `allowsCustomValue` and the popover closed, the built-in `Enter` commits the typed value and lets the event through, so the surrounding form submits. Without it, the built-in `Enter` on a closed popover settles the typed text as blur does and lets the event through the same way, so a handler that prevents it leaves the text unsettled until blur. A handler that prevents that `Enter` stops both: the form does not submit, and the value is not committed until the input loses focus (when `shouldCommitOnBlur` is on, the default). In earlier versions such a handler stopped only the submit, and the value was still committed on `Enter`. To keep that behavior, commit the value in your handler:
+**Enter inside a form.** `preventDefault()` stops the browser's form submission and ComboBox's own handling together; it cannot stop just one. With `allowsCustomValue` and the popover closed, the built-in `Enter` commits the typed value and lets the event through, so the surrounding form submits. A handler that prevents that `Enter` stops both: the form does not submit, and the value is not committed until the input loses focus (when `shouldCommitOnBlur` is on, the default). In earlier versions such a handler stopped only the submit, and the value was still committed on `Enter`. To keep that behavior, commit the value in your handler:
 
 ```jsx
 const [selectedKey, setSelectedKey] = useState(null);
@@ -108,6 +108,8 @@ const [selectedKey, setSelectedKey] = useState(null);
   ))}
 </ComboBox>;
 ```
+
+Without `allowsCustomValue`, the built-in `Enter` on a closed popover settles text that matches an option as blur does, then lets the form submit (see `Enter` under [Keyboard Navigation](#keyboard-navigation)). A handler that prevents it leaves the text unsettled until blur.
 
 **defaultInputValue** - Sets the initial input value in uncontrolled mode. This is useful when you want to display a specific text in the input field on mount without selecting any option. When both `defaultInputValue` and `defaultSelectedKey` are provided, `defaultInputValue` takes priority. The value can be changed by the user and is not enforced after initial render.
 
