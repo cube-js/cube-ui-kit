@@ -214,3 +214,38 @@ describe('ComboBox presses and Tab in a browser', () => {
     expect(input).toHaveFocus();
   });
 });
+
+describe('ComboBox Enter in a native form', () => {
+  it('submits the typed match on Enter with the list closed', async () => {
+    const onSubmit = vi.fn();
+
+    renderWithRoot(
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          onSubmit(new FormData(e.currentTarget).get('color'));
+        }}
+      >
+        <ComboBox name="color" label="Color">
+          <ComboBox.Item key="red">Red</ComboBox.Item>
+          <ComboBox.Item key="green">Green</ComboBox.Item>
+          <ComboBox.Item key="grey">Grey</ComboBox.Item>
+        </ComboBox>
+        <button type="submit">Save</button>
+      </form>,
+    );
+
+    const input = screen.getByRole('combobox');
+
+    await act(() => input.focus());
+    await act(() => userEvent.keyboard('Gree'));
+    await waitFor(() => expect(screen.getByRole('listbox')).toBeVisible());
+    await act(() => userEvent.keyboard('{Escape}'));
+    await waitFor(() => expect(screen.queryByRole('listbox')).toBeNull());
+
+    await act(() => userEvent.keyboard('{Enter}'));
+
+    expect(onSubmit.mock.calls).toEqual([['green']]);
+    expect(input).toHaveValue('Green');
+  });
+});

@@ -492,6 +492,215 @@ describe('<ComboBox />', () => {
     });
   });
 
+  describe('Enter with the list closed in a form', () => {
+    const colors = [
+      { key: 'red', children: 'Red' },
+      { key: 'green', children: 'Green' },
+      { key: 'grey', children: 'Grey' },
+    ];
+
+    const renderForm = (
+      props: Record<string, unknown> = {},
+      defaultValues: Record<string, unknown> = { color: 'red' },
+      options = colors,
+    ) => {
+      const onSubmit = vi.fn();
+      const view = renderWithForm(
+        <>
+          <ComboBox name="color" label="Color" {...props}>
+            {options.map((item) => (
+              <ComboBox.Item key={item.key}>{item.children}</ComboBox.Item>
+            ))}
+          </ComboBox>
+          <button type="submit">Save</button>
+        </>,
+        { formProps: { onSubmit, defaultValues } },
+      );
+
+      return { ...view, combobox: view.getByRole('combobox'), onSubmit };
+    };
+
+    // Replaces the text with `text`, then closes the list it opened.
+    const typeAndClose = async (combobox: HTMLElement, text: string) => {
+      await userEvent.clear(combobox);
+      await userEvent.type(combobox, text);
+      await act(async () => {
+        await userEvent.keyboard('{Escape}');
+      });
+      expect(combobox).toHaveAttribute('aria-expanded', 'false');
+    };
+
+    it('selects the only match with popoverTrigger="manual" and submits it', async () => {
+      const { combobox, onSubmit } = renderForm(
+        { popoverTrigger: 'manual' },
+        {},
+      );
+
+      await userEvent.type(combobox, 'Gree');
+      expect(combobox).toHaveAttribute('aria-expanded', 'false');
+      await userEvent.keyboard('{Enter}');
+
+      await waitFor(() =>
+        expect(onSubmit).toHaveBeenCalledWith({ color: 'green' }),
+      );
+      expect(combobox).toHaveValue('Green');
+    });
+
+    it.each(['Enter', 'a click on Save'])(
+      'submits the only match after Escape on %s',
+      async (how) => {
+        const { combobox, getByRole, onSubmit } = renderForm();
+
+        await typeAndClose(combobox, 'Gree');
+
+        if (how === 'Enter') {
+          await userEvent.keyboard('{Enter}');
+        } else {
+          await userEvent.click(getByRole('button', { name: 'Save' }));
+        }
+
+        await waitFor(() =>
+          expect(onSubmit).toHaveBeenCalledWith({ color: 'green' }),
+        );
+        expect(combobox).toHaveValue('Green');
+      },
+    );
+
+    it('keeps the selection when the text names several options', async () => {
+      const { combobox, onSubmit } = renderForm();
+
+      await typeAndClose(combobox, 'Gr');
+      await userEvent.keyboard('{Enter}');
+
+      await waitFor(() =>
+        expect(onSubmit).toHaveBeenCalledWith({ color: 'red' }),
+      );
+      expect(combobox).toHaveValue('Red');
+    });
+
+    it('clears the selection with clearOnBlur when the text names several options', async () => {
+      const { combobox, formInstance, onSubmit } = renderForm({
+        clearOnBlur: true,
+      });
+
+      await typeAndClose(combobox, 'Gr');
+      await userEvent.keyboard('{Enter}');
+
+      await waitFor(() => expect(onSubmit).toHaveBeenCalled());
+      expect(formInstance.getFieldValue('color')).toBeNull();
+      expect(combobox).toHaveValue('');
+    });
+
+    it('does not select a disabled exact match', async () => {
+      const { combobox, onSubmit } = renderForm({ disabledKeys: ['green'] });
+
+      await typeAndClose(combobox, 'Green');
+      await userEvent.keyboard('{Enter}');
+
+      await waitFor(() =>
+        expect(onSubmit).toHaveBeenCalledWith({ color: 'red' }),
+      );
+      expect(combobox).toHaveValue('Red');
+    });
+
+    it('picks the highlighted match on an open list without submitting', async () => {
+      const { combobox, formInstance, onSubmit } = renderForm();
+
+      await userEvent.clear(combobox);
+      await userEvent.type(combobox, 'Gr');
+      expect(combobox).toHaveAttribute('aria-expanded', 'true');
+      await userEvent.keyboard('{Enter}');
+
+      await waitFor(() =>
+        expect(formInstance.getFieldValue('color')).toBe('green'),
+      );
+      expect(combobox).toHaveValue('Green');
+      // Form calls `onSubmit` a moment later, but marks the submit at once.
+      expect(formInstance.isSubmitting).toBe(false);
+      expect(onSubmit).not.toHaveBeenCalled();
+    });
+
+    it.each([null, 'Purple '])(
+      'submits a selection the items do not hold, shown by its key (typed: %s)',
+      async (typed) => {
+        const { combobox, onSubmit } = renderForm({}, { color: 'purple' });
+
+        expect(combobox).toHaveValue('purple');
+
+        if (typed) {
+          await userEvent.clear(combobox);
+          await userEvent.type(combobox, typed);
+        } else {
+          await act(async () => combobox.focus());
+        }
+
+        await userEvent.keyboard('{Enter}');
+
+        await waitFor(() =>
+          expect(onSubmit).toHaveBeenCalledWith({ color: 'purple' }),
+        );
+        expect(combobox).toHaveValue('purple');
+      },
+    );
+
+    it('closes an open list with no option to pick and submits the selection', async () => {
+      const { combobox, onSubmit } = renderForm({
+        disabledKeys: ['green', 'grey'],
+      });
+
+      await userEvent.clear(combobox);
+      await userEvent.type(combobox, 'Gr');
+      expect(combobox).toHaveAttribute('aria-expanded', 'true');
+      await userEvent.keyboard('{Enter}');
+
+      await waitFor(() =>
+        expect(onSubmit).toHaveBeenCalledWith({ color: 'red' }),
+      );
+      expect(combobox).toHaveValue('Red');
+      expect(combobox).toHaveAttribute('aria-expanded', 'false');
+    });
+
+    // The arrow keys open the list with every option on text that matches
+    // none, but the text still names none of them.
+    describe('text that matches no option, with the list showing every option', () => {
+      const renderApple = () =>
+        renderForm({}, {}, [{ key: 'apple', children: 'Apple' }]);
+
+      const typeAndShowAll = async (combobox: HTMLElement) => {
+        await userEvent.type(combobox, 'xyz');
+        await act(async () => {
+          await userEvent.keyboard('{ArrowDown}');
+        });
+        expect(combobox).toHaveAttribute('aria-expanded', 'true');
+        await act(async () => {
+          await userEvent.keyboard('{Escape}');
+        });
+      };
+
+      it('clears on Enter without submitting', async () => {
+        const { combobox, formInstance, onSubmit } = renderApple();
+
+        await typeAndShowAll(combobox);
+        await userEvent.keyboard('{Enter}');
+
+        expect(combobox).toHaveValue('');
+        expect(formInstance.getFieldValue('color')).toBeFalsy();
+        expect(formInstance.isSubmitting).toBe(false);
+        expect(onSubmit).not.toHaveBeenCalled();
+      });
+
+      it('does not select the only option on blur', async () => {
+        const { combobox, formInstance } = renderApple();
+
+        await typeAndShowAll(combobox);
+        await userEvent.tab();
+
+        expect(formInstance.getFieldValue('color')).toBeFalsy();
+        expect(combobox).toHaveValue('');
+      });
+    });
+  });
+
   it('should clear in a single click while the popover is open (controlled + external filter)', async () => {
     function ControlledCombo() {
       const [inputValue, setInputValue] = useState('Red');
@@ -2612,11 +2821,16 @@ describe('<ComboBox />', () => {
 
   it('picks the first match on an Enter pressed right after typing, without submitting the form', async () => {
     const onSubmit = vi.fn();
+    // The submit button lets user-event submit on Enter at all: it counts the
+    // ComboBox's hidden input.
     const { getByRole, formInstance } = renderWithForm(
-      <ComboBox name="fruit" label="Fruit">
-        <ComboBox.Item key="apple">Apple</ComboBox.Item>
-        <ComboBox.Item key="cherry">Cherry</ComboBox.Item>
-      </ComboBox>,
+      <>
+        <ComboBox name="fruit" label="Fruit">
+          <ComboBox.Item key="apple">Apple</ComboBox.Item>
+          <ComboBox.Item key="cherry">Cherry</ComboBox.Item>
+        </ComboBox>
+        <button type="submit">Save</button>
+      </>,
       { formProps: { onSubmit } },
     );
     const combobox = getByRole('combobox');
@@ -2628,6 +2842,8 @@ describe('<ComboBox />', () => {
       expect(formInstance.getFieldValue('fruit')).toBe('cherry'),
     );
     expect(combobox).toHaveValue('Cherry');
+    // Form calls `onSubmit` a moment later, but marks the submit at once.
+    expect(formInstance.isSubmitting).toBe(false);
     expect(onSubmit).not.toHaveBeenCalled();
   });
 
