@@ -1,10 +1,15 @@
+import { useState } from 'react';
 import { userEvent as browserEvent } from 'vitest/browser';
 
 import { renderWithRoot, screen, waitFor, within } from '../../../test';
 import { Button } from '../../actions/Button/Button';
+import { Content } from '../../content/Content';
+import { Header } from '../../content/Header';
+import { Title } from '../../content/Title';
 import { TextInput } from '../../fields/TextInput/TextInput';
 import { createFormController } from '../../form/Form/modern/controller';
 
+import { Dialog } from './Dialog';
 import { DialogForm } from './DialogForm';
 import { DialogTrigger } from './DialogTrigger';
 
@@ -75,6 +80,62 @@ describe('confirmDismiss in a browser', () => {
     // Typing goes on in the field.
     await browserEvent.keyboard('s');
     expect(input).toHaveValue('Drafts');
+  });
+
+  it('keeps editing on a click outside the question', async () => {
+    renderWithRoot(<FormDialog />);
+
+    const input = await openAndEdit();
+
+    await browserEvent.keyboard('{Escape}');
+    await screen.findByRole('alertdialog');
+    // The question's own underlay sits above the dialog's.
+    await browserEvent.click(screen.getAllByTestId('Underlay')[1], {
+      position: { x: 5, y: 5 },
+    });
+
+    await waitFor(() =>
+      expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument(),
+    );
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(input).toHaveValue('Draft');
+    expect(input).toHaveFocus();
+  });
+
+  it('gives focus back after a click outside a dialog bound to its own state', async () => {
+    function NotesDialog() {
+      const [notes, setNotes] = useState('');
+
+      return (
+        <DialogTrigger confirmDismiss={notes !== ''}>
+          <Button>Open</Button>
+          <Dialog>
+            <Header>
+              <Title>Notes</Title>
+            </Header>
+            <Content>
+              <TextInput label="Notes" value={notes} onChange={setNotes} />
+            </Content>
+          </Dialog>
+        </DialogTrigger>
+      );
+    }
+
+    renderWithRoot(<NotesDialog />);
+
+    await browserEvent.click(screen.getByRole('button', { name: 'Open' }));
+
+    const input = await screen.findByRole('textbox', { name: 'Notes' });
+
+    await browserEvent.click(input);
+    await browserEvent.keyboard('Draft');
+    await clickOutside();
+    await browserEvent.click(
+      await screen.findByRole('button', { name: 'Keep editing' }),
+    );
+
+    await waitFor(() => expect(input).toHaveFocus());
+    expect(input).toHaveValue('Draft');
   });
 
   it('closes on Discard, and focus goes back to the trigger', async () => {

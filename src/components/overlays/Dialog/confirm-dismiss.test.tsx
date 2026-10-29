@@ -189,6 +189,73 @@ describe('confirmDismiss', () => {
     expect(question()).not.toBeInTheDocument();
   });
 
+  it('does not count a field the user only visited after code set it', async () => {
+    renderWithRoot(<FormDialog />);
+
+    const input = await open();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Load' }));
+    await userEvent.click(input);
+    await userEvent.tab();
+    await userEvent.keyboard('{Escape}');
+
+    await expectClosed();
+    expect(question()).not.toBeInTheDocument();
+  });
+
+  it('asks when the form sets confirmDismiss, even without edits', async () => {
+    renderWithRoot(<FormDialog formConfirmDismiss />);
+
+    await open();
+    await userEvent.keyboard('{Escape}');
+
+    expect(await screen.findByRole('alertdialog')).toBeInTheDocument();
+  });
+
+  it("asks from a tray's hidden dismiss button", async () => {
+    renderWithRoot(<FormDialog type="tray" />);
+
+    await edit();
+
+    // The visible close button shares its name; the hidden one has no `qa`.
+    const hidden = screen
+      .getAllByRole('button', { name: 'Dismiss' })
+      .find((button) => !button.hasAttribute('data-qa'));
+
+    await userEvent.click(hidden!);
+
+    expect(await screen.findByRole('alertdialog')).toBeInTheDocument();
+  });
+
+  describe('on a phone', () => {
+    beforeEach(() => {
+      vi.stubGlobal(
+        'matchMedia',
+        vi.fn((query: string) => ({
+          matches: true,
+          media: query,
+          addListener: vi.fn(),
+          removeListener: vi.fn(),
+          addEventListener: vi.fn(),
+          removeEventListener: vi.fn(),
+        })),
+      );
+    });
+
+    afterEach(() => {
+      vi.unstubAllGlobals();
+    });
+
+    it('asks for a popover that opens as a modal', async () => {
+      renderWithRoot(<FormDialog type="popover" mobileType="modal" />);
+
+      await edit();
+      await userEvent.keyboard('{Escape}');
+
+      expect(await screen.findByRole('alertdialog')).toBeInTheDocument();
+    });
+  });
+
   it('neither closes nor asks when the dialog is not dismissable', async () => {
     renderWithRoot(<FormDialog isDismissable={false} />);
 
@@ -240,6 +307,56 @@ describe('confirmDismiss', () => {
     );
 
     expect(onDismiss).toHaveBeenCalledTimes(1);
+  });
+
+  it("lets the container's confirmDismiss win over unsaved edits", async () => {
+    const onDismiss = vi.fn();
+    const form = controller();
+
+    renderWithRoot(
+      <DialogContainer confirmDismiss={false} onDismiss={onDismiss}>
+        <DialogForm form={form} title="Profile">
+          <TextInput name="name" label="Name" />
+        </DialogForm>
+      </DialogContainer>,
+    );
+
+    const input = await screen.findByRole('textbox', { name: 'Name' });
+
+    await userEvent.clear(input);
+    await userEvent.type(input, 'Edited');
+    await userEvent.keyboard('{Escape}');
+
+    expect(onDismiss).toHaveBeenCalledTimes(1);
+    expect(question()).not.toBeInTheDocument();
+  });
+
+  it('takes the question away when the dialog closes from code', async () => {
+    const notes = (
+      <Dialog>
+        <Header>
+          <Title>Notes</Title>
+        </Header>
+        <Content>Unsaved notes</Content>
+      </Dialog>
+    );
+    const { rerender } = renderWithRoot(
+      <DialogContainer confirmDismiss onDismiss={() => {}}>
+        {notes}
+      </DialogContainer>,
+    );
+
+    await userEvent.keyboard('{Escape}');
+    await screen.findByRole('alertdialog');
+
+    rerender(
+      <DialogContainer confirmDismiss isOpen={false} onDismiss={() => {}}>
+        {notes}
+      </DialogContainer>,
+    );
+
+    await expectClosed();
+    await waitFor(() => expect(question()).not.toBeInTheDocument());
   });
 
   describe('legacy DialogForm', () => {

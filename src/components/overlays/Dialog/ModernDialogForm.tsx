@@ -115,18 +115,17 @@ export function ModernDialogForm<T extends object>(
 
   // Escape, an outside click and the close button ask before they discard
   // what the user typed: fields they edited away from their defaults. A value
-  // set from code is not an edit. `preserve` keeps the values anyway.
+  // set from code, even in a field the user then visited, is not an edit.
+  // `preserve` keeps the values anyway.
   useEffect(
     () =>
       registerUnsavedChanges?.(() => {
         if (confirmDismiss !== undefined) return confirmDismiss;
         if (preserve) return false;
 
-        const { dirtyFields, touchedFields } = form.getSnapshot();
-
-        return [...dirtyFields].some((name) => touchedFields.has(name));
+        return internals.store.hasUserEdits();
       }),
-    [registerUnsavedChanges, form, preserve, confirmDismiss],
+    [registerUnsavedChanges, internals, preserve, confirmDismiss],
   );
 
   // Portals may relocate (remounting this component) and Strict Mode reconnects

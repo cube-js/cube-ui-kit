@@ -263,8 +263,6 @@ export function DialogTrigger(props: CubeDialogTriggerProps) {
         syncTriggerRef={syncTriggerRef}
         syncOverlayRef={syncOverlayRef}
         triggerType={type}
-        requestDismiss={requestDismiss}
-        registerUnsavedChanges={registerUnsavedChanges}
         onClose={onClose}
       />
     );
@@ -348,8 +346,6 @@ function PopoverTrigger(allProps) {
     syncTriggerRef,
     syncOverlayRef,
     triggerType,
-    requestDismiss,
-    registerUnsavedChanges,
     ...props
   } = allProps;
 
@@ -511,8 +507,6 @@ function PopoverTrigger(allProps) {
       overlayRef={overlayRef}
       isDismissable={isDismissable}
       shouldRestoreFocus={shouldRestoreFocus}
-      requestDismiss={requestDismiss}
-      registerUnsavedChanges={registerUnsavedChanges}
       onClose={onClose}
     />
   );

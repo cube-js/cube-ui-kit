@@ -55,6 +55,15 @@ export default {
         defaultValue: { summary: true },
       },
     },
+    confirmDismiss: {
+      control: { type: 'boolean' },
+      description:
+        'Whether Escape, an outside click and the close button ask "Discard changes?" first. Unset, they ask while a DialogForm inside has unsaved edits. Explicit actions never ask',
+      table: {
+        type: { summary: 'boolean' },
+        defaultValue: { summary: 'while a DialogForm has unsaved edits' },
+      },
+    },
     isKeyboardDismissDisabled: {
       control: { type: 'boolean' },
       description:

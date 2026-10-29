@@ -43,9 +43,14 @@ export function useDismissConfirmation(
   if (pending && !isDialogOpen) setPending(null);
 
   // A click outside drops focus to `<body>` on its way to closing the dialog,
-  // so the question gives focus back to where it was last.
+  // so the question gives focus back to where it was last. A `confirmDismiss`
+  // bound to state turns on while the user types, so start from that field.
   useEffect(() => {
     if (!canAsk) return;
+
+    if (document.activeElement !== document.body) {
+      lastFocused.current = document.activeElement;
+    }
 
     const onFocusIn = (event: FocusEvent) => {
       lastFocused.current = event.target as Element;

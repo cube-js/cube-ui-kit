@@ -29,7 +29,7 @@ Dialogs are windows containing contextual information, tasks, or workflows that 
 - **`styles`** — Custom styles for the dialog root
 - **`closeButtonStyles`** — Custom styles for the close button
 - **`isDismissable`** `boolean` (default: from its `DialogTrigger` or `DialogContainer`) — Whether the dialog shows its close button. Inside a `DialogTrigger` or `DialogContainer` it takes their `isDismissable` (default `true`), except in a popover. A popover or a standalone dialog shows no close button unless you set this prop. `Escape` and outside presses follow the trigger's or container's `isDismissable`, not this one
-- **`onDismiss`** `function` — Callback fired when the dialog is dismissed
+- **`onDismiss`** `function` — Callback fired when the dialog is dismissed. The close button calls it, after "Discard changes?" when its trigger or container asks first (`confirmDismiss`)
 - **`closeIcon`** — Custom close icon element
 - **`role`** `'dialog' | 'alertdialog'` (default: `dialog`) — ARIA role for the dialog
 
@@ -202,7 +202,7 @@ To clamp the width yourself, set `styles.width` (`styles={{ width: 'initial 520p
 
 - `Tab` - Moves focus between interactive elements within the dialog
 - `Shift + Tab` - Moves focus backward between interactive elements
-- `Escape` - Closes the dialog when its `DialogTrigger` or `DialogContainer` is dismissable (`isDismissable`, on by default) and `isKeyboardDismissDisabled` is not set. If a control inside already prevents the key's default, the dialog stays open and keeps the handled Escape from reaching an enclosing dialog
+- `Escape` - Closes the dialog when its `DialogTrigger` or `DialogContainer` is dismissable (`isDismissable`, on by default) and `isKeyboardDismissDisabled` is not set. A dialog with unsaved edits asks "Discard changes?" first (`confirmDismiss`). If a control inside already prevents the key's default, the dialog stays open and keeps the handled Escape from reaching an enclosing dialog
 - `Enter/Space` - Activates focused buttons or interactive elements
 
 ### Screen Reader Support
