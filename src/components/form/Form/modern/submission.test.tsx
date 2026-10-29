@@ -2,6 +2,9 @@ import { act, render, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { createRef, StrictMode } from 'react';
 
+import { renderWithRoot } from '../../../../test';
+import { ComboBox } from '../../../fields/ComboBox/ComboBox';
+import { NumberInput } from '../../../fields/NumberInput/NumberInput';
 import { TextInput } from '../../../fields/TextInput/TextInput';
 import { Form } from '../index';
 
@@ -181,6 +184,26 @@ describe('modern root submission and validation', () => {
     expect(data.get('code')).toBe('authorization-code');
     expect(onSubmit).not.toHaveBeenCalled();
     expect(form.getSnapshot().isSubmitting).toBe(false);
+    view.unmount();
+  });
+
+  it('puts bound ComboBox and NumberInput values into a native action submission', () => {
+    const form = createFormController({
+      defaultValues: { country: 'uk', qty: 1234.5 },
+    });
+    const ref = createRef<HTMLFormElement>();
+    const view = renderWithRoot(
+      <Form form={form} ref={ref} action="/save" method="post">
+        <ComboBox name="country" label="Country">
+          <ComboBox.Item key="us">United States</ComboBox.Item>
+          <ComboBox.Item key="uk">United Kingdom</ComboBox.Item>
+        </ComboBox>
+        <NumberInput name="qty" label="Quantity" />
+      </Form>,
+    );
+    const data = new FormData(ref.current!);
+    expect(data.get('country')).toBe('uk');
+    expect(data.get('qty')).toBe('1234.5');
     view.unmount();
   });
 });
