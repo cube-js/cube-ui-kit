@@ -720,6 +720,7 @@ export function createFormStore<
         }
         event(Array.from(records.keys()), 'defaults');
       }
+      spendCleanEdits();
     });
   }
 
@@ -781,7 +782,16 @@ export function createFormStore<
         if (changed) names.push(record.name);
       }
       event(names, 'adopt');
+      spendCleanEdits();
     });
+  }
+
+  // A new baseline that matches what the user typed, or replaces it, spends
+  // the edit: a later set from code is not the user's.
+  function spendCleanEdits() {
+    for (const record of records.values()) {
+      if (record.edited && !dirty(record)) record.edited = false;
+    }
   }
 
   function reset(config: { values?: Partial<T> } = {}) {

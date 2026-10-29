@@ -322,6 +322,16 @@ describe('atomic commands, callbacks, and reentrancy', () => {
     store.reset();
     store.setValue('b', 5);
     expect(store.hasUserEdits()).toBe(false);
+    // A baseline that takes over or replaces the typed value spends the edit.
+    store.reset();
+    store.setValue('b', 6, { source: 'user' });
+    store.setDefaultValues({ a: 1, b: 6 });
+    store.setValue('b', 7);
+    expect(store.hasUserEdits()).toBe(false);
+    store.setValue('b', 8, { source: 'user' });
+    store.adoptDefaultValues({ a: 1, b: 9 }, { when: 'always' });
+    store.setValue('b', 10);
+    expect(store.hasUserEdits()).toBe(false);
   });
 
   it('finishes delivery of the original snapshot before publishing reentrant writes', () => {

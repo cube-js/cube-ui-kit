@@ -123,7 +123,8 @@ export function ModernDialogForm<T extends object>(
         if (confirmDismiss !== undefined) return confirmDismiss;
         if (preserve) return false;
 
-        return internals.store.hasUserEdits();
+        // A controller from an older copy of the kit can't tell; it never asks.
+        return internals.store.hasUserEdits?.() ?? false;
       }),
     [registerUnsavedChanges, internals, preserve, confirmDismiss],
   );
