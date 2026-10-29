@@ -81,7 +81,6 @@ function SliderBase(
     inputStyles,
     minValue = 0,
     maxValue = 100,
-    inputWidth,
     formatOptions,
     getValueLabel,
     onChange,

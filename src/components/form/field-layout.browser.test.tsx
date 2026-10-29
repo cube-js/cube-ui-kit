@@ -98,6 +98,68 @@ describe('field layout geometry', () => {
     expect(rect(box).width).toBe(20 * X);
   });
 
+  it.each([
+    ['standalone', false],
+    ['in a Form', true],
+  ])(
+    'sizes the control beside a side label with controlWidth %s',
+    (_, inForm) => {
+      // A short and a long label: the control's width doesn't follow either.
+      const inputs = (
+        <>
+          <TextInput label="Limit" labelPosition="side" controlWidth="20x" />
+          <TextInput
+            label="Vergleichen mit"
+            labelPosition="side"
+            controlWidth="20x"
+          />
+        </>
+      );
+
+      renderWithRoot(inForm ? <Form>{inputs}</Form> : inputs);
+
+      for (const name of ['Limit', 'Vergleichen mit']) {
+        const box = inputBoxOf(name);
+
+        expect(rect(box).width).toBe(20 * X);
+        expect(rect(labelOf(fieldOf(box))).right).toBeLessThanOrEqual(
+          rect(box).left,
+        );
+      }
+    },
+  );
+
+  it('caps the control beside a side label with controlWidth', () => {
+    renderWithRoot(
+      <Flex flow="column" placeItems="start">
+        <Picker
+          label="Short"
+          labelPosition="side"
+          controlWidth="max 30x"
+          defaultSelectedKey="one"
+        >
+          <Picker.Item key="one">One</Picker.Item>
+        </Picker>
+        <Picker
+          label="Long"
+          labelPosition="side"
+          controlWidth="max 30x"
+          defaultSelectedKey="long"
+        >
+          <Picker.Item key="long">
+            A long option that does not fit in thirty units
+          </Picker.Item>
+        </Picker>
+      </Flex>,
+    );
+
+    const short = screen.getByRole('button', { name: /Short/ });
+    const long = screen.getByRole('button', { name: /Long/ });
+
+    expect(rect(short).width).toBeLessThan(30 * X);
+    expect(rect(long).width).toBe(30 * X);
+  });
+
   it('keeps an input at its content width beside a split label', () => {
     renderWithRoot(
       <TextInput label="Name" labelPosition="split" width="60x" />,

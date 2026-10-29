@@ -691,6 +691,62 @@ describe('field layout style props', () => {
     },
   );
 
+  it.each(inputs)(
+    '%s sizes the control with controlWidth, and the field with width',
+    (_, element) => {
+      renderWithRoot(
+        cloneElement(element, { width: '20x', controlWidth: '37x' }),
+      );
+
+      const field = screen.getByTestId('Field');
+      const [control, ...others] = sized();
+
+      expect(others).toHaveLength(0);
+      expect(field).toContainElement(control);
+      expect(control).not.toBe(field);
+      expect(getComputedStyle(field).width).toBe('calc(20 * var(--gap))');
+      // It is a prop, never an attribute.
+      expect(document.querySelector('[controlwidth]')).toBeNull();
+    },
+  );
+
+  it.each(inputs)(
+    '%s sizes the control with controlWidth over width when bare',
+    (_, element) => {
+      const ref = createRef<unknown>();
+
+      renderWithRoot(
+        cloneElement(element, {
+          ref,
+          width: '10x',
+          controlWidth: '37x',
+          label: undefined,
+          'aria-label': 'Billing',
+          isBare: true,
+        }),
+      );
+
+      expect(sized()).toEqual([elementOf(ref.current)]);
+    },
+  );
+
+  it('puts controlWidth over styles.width', () => {
+    render(
+      <TextInput
+        label="Name"
+        controlWidth="37x"
+        styles={{ width: '10x', inlineSize: '9x' }}
+      />,
+    );
+
+    const [control, ...others] = sized();
+
+    expect(others).toHaveLength(0);
+    expect(control).toHaveAttribute('data-qa', 'InputWrapper');
+    // A logical size counts as `width`, so it goes too.
+    expect(getComputedStyle(control).inlineSize).toBe('auto');
+  });
+
   it('sizes a grouped Checkbox itself, never its group', () => {
     render(
       <Checkbox.Group label="Group">

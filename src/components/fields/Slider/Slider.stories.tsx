@@ -163,14 +163,6 @@ export default {
       description:
         'Custom styles object for styling the component and sub-elements',
     },
-
-    inputWidth: {
-      control: { type: 'text' },
-      description: 'Width of the input area',
-      table: {
-        type: { summary: 'string' },
-      },
-    },
     trackStyles: {
       control: { type: null },
       description: 'Custom styles for the track element',

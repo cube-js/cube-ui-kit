@@ -26,8 +26,9 @@ const ROW_FRAME_STYLES = {
 /**
  * An input's style props size its outer element: the input when it is bare,
  * the whole field when it has a label. A sized field lets its input fill it;
- * `styles` sizes the input alone. In a stretched row the text area fills the
- * row's height, and single-line inputs keep theirs at the top.
+ * `controlWidth` sizes the input alone, beside a label of any length. In a
+ * stretched row the text area fills the row's height, and single-line inputs
+ * keep theirs at the top.
  */
 export const FieldLayout: Story = {
   render: () => (
@@ -48,7 +49,17 @@ export const FieldLayout: Story = {
         <TextInput
           label="Field 40x, input 20x"
           width="40x"
-          styles={{ width: '20x' }}
+          controlWidth="20x"
+        />
+      </Block>
+      <Block styles={FRAME_STYLES}>
+        <TextInput label="Limit" labelPosition="side" controlWidth="20x" />
+      </Block>
+      <Block styles={FRAME_STYLES}>
+        <TextInput
+          label="A longer label"
+          labelPosition="side"
+          controlWidth="20x"
         />
       </Block>
       <Flex gap="2x" styles={ROW_FRAME_STYLES}>
