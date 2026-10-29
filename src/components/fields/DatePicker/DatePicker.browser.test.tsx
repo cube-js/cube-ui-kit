@@ -1,9 +1,17 @@
-import { cleanup, renderWithRoot, screen, within } from '../../../test';
+import { CalendarDate } from '@internationalized/date';
+
+import {
+  cleanup,
+  renderWithRoot,
+  screen,
+  userEvent,
+  waitFor,
+  within,
+} from '../../../test';
 
 import { DatePicker } from './DatePicker';
 import { DateRangePicker } from './DateRangePicker';
 import { DateRangeSeparatedPicker } from './DateRangeSeparatedPicker';
-import { parseAbsoluteDate } from './parseDate';
 
 /**
  * All three date pickers declare `ContainerStyleProps` and `styles` on their
@@ -130,8 +138,8 @@ describe.each([
 });
 
 const RANGE = {
-  start: parseAbsoluteDate(new Date('2020-09-10')),
-  end: parseAbsoluteDate(new Date('2021-04-01')),
+  start: new CalendarDate(2020, 9, 10),
+  end: new CalendarDate(2021, 4, 1),
 };
 
 function rect(element: Element) {
@@ -204,8 +212,11 @@ describe('<DateRangeSeparatedPicker /> in a narrow container', () => {
     }
   });
 
-  it('is never narrower than its widest row', () => {
-    const { picker, start, end, dash } = renderPicker(100);
+  it.each([
+    ['its own width', {}],
+    ['a consumer width', { wrapperStyles: { width: '100%' } }],
+  ])('is never narrower than its widest row with %s', (_, props) => {
+    const { picker, start, end, dash } = renderPicker(100, props);
 
     expect(rect(picker).width).toBeCloseTo(
       rect(dash).right - rect(start).left,
@@ -216,38 +227,59 @@ describe('<DateRangeSeparatedPicker /> in a narrow container', () => {
   });
 
   // Cloud's dashboard filter stretches the picker and spreads its boxes.
-  it.each([
-    [320, 'one row'],
-    [250, 'two rows'],
-  ])('spreads a stretched picker at %ipx on %s', (width) => {
-    const { picker, start, end, dash } = renderPicker(width, {
+  it('spreads a stretched picker on one row', () => {
+    const { picker, start, end, dash } = renderPicker(320, {
       wrapperStyles: { width: '100%', placeContent: 'space-between' },
     });
 
+    expect(rect(end).top).toBeCloseTo(rect(start).top, 0);
     expect(rect(start).left).toBeCloseTo(rect(picker).left, 0);
     expect(rect(dash).left).toBeCloseTo(rect(start).right, 0);
+    expect(rect(end).right).toBeCloseTo(rect(picker).right, 0);
+  });
 
-    if (rect(end).top > rect(start).top) {
-      // Each row sits at the start, rather than the dash at the far edge.
-      expect(rect(end).left).toBeCloseTo(rect(picker).left, 0);
-    } else {
-      expect(rect(end).right).toBeCloseTo(rect(picker).right, 0);
-    }
+  it('starts both rows of a stretched picker at its start', () => {
+    const { picker, start, end, dash } = renderPicker(250, {
+      wrapperStyles: { width: '100%', placeContent: 'space-between' },
+    });
 
-    expect(rect(end).top > rect(start).top).toBe(width < 281);
+    expect(rect(end).top).toBeGreaterThan(rect(start).bottom);
+    expect(rect(start).left).toBeCloseTo(rect(picker).left, 0);
+    expect(rect(end).left).toBeCloseTo(rect(picker).left, 0);
+    // Not pushed to the far edge of the first row.
+    expect(rect(dash).left).toBeCloseTo(rect(start).right, 0);
+  });
+
+  // On two rows the picker is as wide as its container, so a calendar aligned
+  // to the picker's corner would open past the boxes.
+  it.each([
+    ['start', /start date/],
+    ['end', /end date/],
+  ])('opens the %s calendar under the boxes on two rows', async (_, name) => {
+    const { end } = renderPicker(300);
+
+    await userEvent.click(screen.getByRole('button', { name }));
+
+    const popover = await screen.findByRole('dialog');
+
+    await waitFor(() => {
+      expect(rect(popover).right).toBeCloseTo(rect(end).right, 0);
+    });
+
+    expect(rect(popover).top).toBeGreaterThanOrEqual(rect(end).bottom);
   });
 });
 
 describe('<DateRangePicker /> in a narrow container', () => {
-  function renderPicker(width: number, size = 'medium') {
+  function renderPicker(width: number, props: Record<string, unknown> = {}) {
     renderWithRoot(
       <div style={{ width }}>
         <DateRangePicker
           isBare
           aria-label="Range"
           qa="Range"
-          size={size}
           defaultValue={RANGE}
+          {...props}
         />
       </div>,
     );
@@ -269,14 +301,14 @@ describe('<DateRangePicker /> in a narrow container', () => {
   it.each(['small', 'medium', 'large'])(
     'grows a %s box by one row for the end date',
     (size) => {
-      const oneRow = renderPicker(400, size);
+      const oneRow = renderPicker(400, { size });
       const oneRowHeight = rect(oneRow.box).height;
 
       expect(rect(oneRow.end).top).toBeCloseTo(rect(oneRow.start).top, 0);
 
       cleanup();
 
-      const { box, start, end, dash, button } = renderPicker(180, size);
+      const { box, start, end, dash, button } = renderPicker(180, { size });
       const rowHeight = oneRowHeight - 2;
 
       expect(rect(box).width).toBeCloseTo(180, 0);
@@ -295,8 +327,23 @@ describe('<DateRangePicker /> in a narrow container', () => {
     },
   );
 
-  it('is never narrower than its widest row', () => {
-    const { box, start, end, dash, button } = renderPicker(100);
+  it('keeps the validation indicator on the first row', () => {
+    const { box, button } = renderPicker(180, { isInvalid: true });
+    const firstRow = screen.getByTestId('DateRangeStart');
+    const indicator = box.querySelector('[data-element="State"]')!;
+
+    expectInside(indicator, box);
+    expect(rect(indicator).right).toBeLessThanOrEqual(rect(button).left + 0.5);
+    expect(rect(indicator).bottom).toBeLessThanOrEqual(
+      rect(firstRow).bottom + 0.5,
+    );
+  });
+
+  it.each([
+    ['its own width', {}],
+    ['a consumer width', { styles: { width: '100%' } }],
+  ])('is never narrower than its widest row with %s', (_, props) => {
+    const { box, start, end, dash, button } = renderPicker(100, props);
 
     expect(rect(box).width).toBeGreaterThan(100);
 

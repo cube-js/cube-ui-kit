@@ -13,7 +13,6 @@ import { useDateRangePickerState } from 'react-stately';
 import { useI18n } from '../../../i18n';
 import { FieldBaseProps } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
-import { mergeStyleLayers } from '../../../utils/styles';
 import { useFieldProps, wrapWithField } from '../../form';
 import {
   FieldLayoutStyleProps,
@@ -57,7 +56,7 @@ const DateRangeRow = tasty({
 // The box grows by a row for a wrapped end date, its suffix stays on the first
 // row, and it is never narrower than its widest row.
 const WRAPPER_STYLES: Styles = {
-  width: 'min min-content',
+  minWidth: 'min-content',
   height: 'min $size',
   Suffix: {
     height: '($size - 2bw)',
@@ -116,6 +115,7 @@ function DateRangePicker<T extends DateValue>(
 
   // `wrapperStyles` styles the same box as `styles` and wins over it.
   const fieldLayout = splitFieldLayout(props, {
+    defaultStyles: WRAPPER_STYLES,
     overStyles: props.wrapperStyles,
   });
   const styles = fieldLayout.styles;
@@ -190,7 +190,7 @@ function DateRangePicker<T extends DateValue>(
       qa={qa || 'DateRangePicker'}
       inputType="daterangepicker"
       autoFocus={autoFocus}
-      styles={mergeStyleLayers(WRAPPER_STYLES, styles)}
+      styles={styles}
       inputStyles={INPUT_STYLES}
       disableFocusRing={isFocusedButton}
       isDisabled={isDisabled}

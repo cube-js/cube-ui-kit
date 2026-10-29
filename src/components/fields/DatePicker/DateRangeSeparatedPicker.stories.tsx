@@ -92,7 +92,7 @@ export const Validation: StoryFn<CubeDateRangeSeparatedPickerProps> = (
 export const Narrow = Template.bind({});
 Narrow.args = {
   ...WithDefaultValue.args,
-  fieldStyles: { width: '200px' },
+  width: '200px',
 };
 
 export const Disabled = Template.bind({});

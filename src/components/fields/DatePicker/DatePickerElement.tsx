@@ -8,7 +8,7 @@ export const DatePickerElement = tasty(Space, {
     // picker is never narrower than its widest row.
     flow: 'row wrap',
     gap: '.5x 0',
-    width: 'min min-content',
+    minWidth: 'min-content',
     outline: {
       '': '#purple-03.0',
       focused: '#purple-03',
