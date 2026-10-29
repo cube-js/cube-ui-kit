@@ -620,18 +620,28 @@ describe('<ComboBox />', () => {
       expect(onSubmit).not.toHaveBeenCalled();
     });
 
-    it('submits a selection the items do not hold, shown by its key', async () => {
-      const { combobox, onSubmit } = renderForm({}, { color: 'purple' });
+    it.each([null, 'Purple '])(
+      'submits a selection the items do not hold, shown by its key (typed: %s)',
+      async (typed) => {
+        const { combobox, onSubmit } = renderForm({}, { color: 'purple' });
 
-      expect(combobox).toHaveValue('purple');
-      await act(async () => combobox.focus());
-      await userEvent.keyboard('{Enter}');
+        expect(combobox).toHaveValue('purple');
 
-      await waitFor(() =>
-        expect(onSubmit).toHaveBeenCalledWith({ color: 'purple' }),
-      );
-      expect(combobox).toHaveValue('purple');
-    });
+        if (typed) {
+          await userEvent.clear(combobox);
+          await userEvent.type(combobox, typed);
+        } else {
+          await act(async () => combobox.focus());
+        }
+
+        await userEvent.keyboard('{Enter}');
+
+        await waitFor(() =>
+          expect(onSubmit).toHaveBeenCalledWith({ color: 'purple' }),
+        );
+        expect(combobox).toHaveValue('purple');
+      },
+    );
 
     it('closes an open list with no option to pick and submits the selection', async () => {
       const { combobox, onSubmit } = renderForm({

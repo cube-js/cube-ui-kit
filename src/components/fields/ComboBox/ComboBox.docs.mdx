@@ -109,7 +109,7 @@ const [selectedKey, setSelectedKey] = useState(null);
 </ComboBox>;
 ```
 
-Without `allowsCustomValue`, the built-in `Enter` on a closed popover settles text that matches an option as blur does, then lets the form submit (see `Enter` under [Keyboard Navigation](#keyboard-navigation)). A handler that prevents it leaves the text unsettled until blur.
+Without `allowsCustomValue`, the built-in `Enter` on a closed popover settles text that matches an option, or names the selection, as blur does, then lets the form submit (see `Enter` under [Keyboard Navigation](#keyboard-navigation)). A handler that prevents it leaves the text unsettled until blur.
 
 **defaultInputValue** - Sets the initial input value in uncontrolled mode. This is useful when you want to display a specific text in the input field on mount without selecting any option. When both `defaultInputValue` and `defaultSelectedKey` are provided, `defaultInputValue` takes priority. The value can be changed by the user and is not enforced after initial render.
 
@@ -631,7 +631,7 @@ const [selectedKey, setSelectedKey] = useState(null);
 - `Tab` - Moves focus to/from the combobox input and closes the popover. The chevron and clear buttons are not Tab stops
 - `ArrowDown` - Opens popover (if closed) or moves focus to next option
 - `ArrowUp` - Opens popover (if closed) or moves focus to previous option
-- `Enter` - Selects the focused option and closes popover. With the popover open, pressed right after typing, it picks the first match. With the popover closed and without `allowsCustomValue`, settles the typed text as leaving the input does (see **Blur**) and lets a surrounding form submit the result; text that matches no option, or no text, clears the selection instead and does not submit. With `allowsCustomValue` and the popover closed, commits the typed text. Ignored while an input method (IME) is composing text
+- `Enter` - Selects the focused option and closes popover. With the popover open, pressed right after typing, it picks the first match. With the popover closed and without `allowsCustomValue`, settles the typed text as leaving the input does (see **Blur**) and lets a surrounding form submit the result; text that matches no option and does not name the selection, or no text, clears the selection instead and does not submit. With `allowsCustomValue` and the popover closed, commits the typed text. Ignored while an input method (IME) is composing text
 - `Escape` - Closes popover (if open) or clears input (if clearable and popover closed); otherwise it goes on, so a surrounding dialog closes
 - `Home` - Moves focus to the first option (when popover is open)
 - `End` - Moves focus to the last option (when popover is open)

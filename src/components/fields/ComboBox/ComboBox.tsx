@@ -422,7 +422,10 @@ interface UseComboBoxKeyboardProps {
   isListShown: boolean;
   isReadOnly?: boolean;
   listStateRef: RefObject<any>;
-  /** Whether the typed text matches an option, even one the list hides. */
+  /**
+   * Whether the typed text matches an option, even one the list hides, or
+   * names the selection, even one the items no longer hold.
+   */
   hasTypedMatch: () => boolean;
   allowsCustomValue?: boolean;
   effectiveInputValue: string;
@@ -526,12 +529,8 @@ function useComboBoxKeyboard({
       inputRef.current?.focus();
     } else if (allowsCustomValue) {
       commitTypedText(e);
-    } else if (
-      !effectiveInputValue.trim() ||
-      (effectiveInputValue !== selectedLabel && !hasTypedMatch())
-    ) {
-      // Text that names nothing, or none, clears the selection. The selection's
-      // own label names it even when the items no longer hold it.
+    } else if (!effectiveInputValue.trim() || !hasTypedMatch()) {
+      // Text that names nothing, or none, clears the selection.
       e.preventDefault();
       onSelectionChange(null);
     } else {
@@ -1255,7 +1254,10 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     isListShown: shouldShowPopover,
     isReadOnly,
     listStateRef,
-    hasTypedMatch: () => getTypedOptions().length > 0,
+    hasTypedMatch: () =>
+      (effectiveSelectedKey != null &&
+        isSameText(selectedLabel, effectiveInputValue.trim())) ||
+      getTypedOptions().length > 0,
     allowsCustomValue,
     effectiveInputValue,
     selectedKey: effectiveSelectedKey,
